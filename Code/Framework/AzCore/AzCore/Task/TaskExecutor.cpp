@@ -90,7 +90,7 @@ namespace AZ
 
                 eventTracker.WriteEventInfo(this, CTGEvent::Deallocated, "CTG::Release parent=false");
 
-                azdestroy(this);
+                delete this;
             }
 
             return remaining;

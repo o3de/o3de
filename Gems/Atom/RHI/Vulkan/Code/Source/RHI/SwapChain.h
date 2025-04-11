@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/SwapChain.h>
+#include <Atom/RHI/DeviceSwapChain.h>
 #include <Atom/RHI.Reflect/SwapChainDescriptor.h>
 #include <AzCore/std/containers/list.h>
 #include <AzCore/std/containers/vector.h>
@@ -27,9 +27,9 @@ namespace AZ
         class CommandQueue;
 
         class SwapChain final
-            : public RHI::SwapChain
+            : public RHI::DeviceSwapChain
         {
-            using Base = RHI::SwapChain;
+            using Base = RHI::DeviceSwapChain;
 
         public:
             AZ_CLASS_ALLOCATOR(SwapChain, AZ::SystemAllocator);
@@ -51,7 +51,7 @@ namespace AZ
 
             void QueueBarrier(const VkPipelineStageFlags src, const VkPipelineStageFlags dst, const VkImageMemoryBarrier& imageBarrier);
 
-            void ProcessRecreation() override;
+            bool ProcessRecreation() override;
         private:
             SwapChain() = default;
 
@@ -61,14 +61,16 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////
-            // RHI::SwapChain
+            // RHI::DeviceSwapChain
             RHI::ResultCode InitInternal(RHI::Device& device, const RHI::SwapChainDescriptor& descriptor, RHI::SwapChainDimensions* nativeDimensions) override;
             void ShutdownInternal() override;
-            RHI::ResultCode InitImageInternal(const RHI::SwapChain::InitImageRequest& request) override;
+            RHI::ResultCode InitImageInternal(const RHI::DeviceSwapChain::InitImageRequest& request) override;
             RHI::ResultCode ResizeInternal(const RHI::SwapChainDimensions& dimensions, RHI::SwapChainDimensions* nativeDimensions) override;
             uint32_t PresentInternal() override;
             void SetVerticalSyncIntervalInternal(uint32_t previousVsyncInterval) override;
             //////////////////////////////////////////////////////////////////////
+
+            void SetHDRMetaData(float maxOutputNits, float minOutputNits, float maxContentLightLevel, float maxFrameAverageLightLevel);
 
             RHI::ResultCode BuildSurface(const RHI::SwapChainDescriptor& descriptor);
 
@@ -100,6 +102,8 @@ namespace AZ
             //! Destroy the swapchain.
             void InvalidateNativeSwapChain(VkSwapchainKHR swapchain);
 
+            VkColorSpaceKHR m_colorSpace = VK_COLOR_SPACE_MAX_ENUM_KHR;
+
             RHI::Ptr<WSISurface> m_surface;
             VkSwapchainKHR m_nativeSwapChain = VK_NULL_HANDLE;
             CommandQueue* m_presentationQueue = nullptr;
@@ -109,7 +113,7 @@ namespace AZ
             VkSurfaceFormatKHR m_surfaceFormat = {};
             VkSurfaceCapabilitiesKHR m_surfaceCapabilities = {};
             VkPresentModeKHR m_presentMode = {};
-            VkCompositeAlphaFlagBitsKHR m_compositeAlphaFlagBits = {}; 
+            VkCompositeAlphaFlagBitsKHR m_compositeAlphaFlagBits = {};
             AZStd::vector<VkImage> m_swapchainNativeImages;
             RHI::SwapChainDimensions m_dimensions;
 

@@ -9,6 +9,7 @@
 
 #include <AzCore/base.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/Settings/CommandLineParser.h>
 #include <AzCore/std/containers/span.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/fixed_string.h>
@@ -61,9 +62,9 @@ namespace AZ
         CommandLine();
 
         /**
-         * Initializes a CommandLine instance which uses the provided commandLineOptionPreix for parsing switches
+         * Initializes a CommandLine instance which uses the provided commandLineOptionPrefix for parsing switches
          */
-        CommandLine(AZStd::string_view commandLineOptionPrefix);
+        CommandLine(Settings::CommandLineOptionPrefixSpan optionPrefixes);
         /**
         * Construct a command line parser.
         * It will load parameters from the given ARGC/ARGV parameters instead of process command line.
@@ -148,13 +149,12 @@ namespace AZ
         auto crend() const -> ArgumentVector::const_reverse_iterator;
 
     private:
-        struct ArgumentParserState;
-        void AddArgument(AZStd::string_view currentArg, ArgumentParserState&);
-        void ParseOptionArgument(AZStd::string_view newOption, AZStd::string_view newValue, CommandArgument* inProgressArgument);
+        void ParseArgument(AZStd::string_view newOption, AZStd::string_view newValue);
 
         ArgumentVector m_allValues;
 
-        inline static constexpr size_t MaxCommandOptionPrefixes = 8;
-        AZStd::fixed_string<MaxCommandOptionPrefixes> m_commandLineOptionPrefix;
+        // Stores the option prefixes which is used to configure the CommandLineParserSettings
+        // to determine what kind of tokens are treated as command line options
+        Settings::CommandLineOptionPrefixArray m_optionPrefixes;
     };
 }

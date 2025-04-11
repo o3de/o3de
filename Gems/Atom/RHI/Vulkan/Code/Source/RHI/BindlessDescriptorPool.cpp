@@ -6,15 +6,15 @@
  *
  */
 
-#include "BindlessDescriptorPool.h"
-
-#include "BufferView.h"
-#include "Device.h"
-#include "ImageView.h"
+#include <Atom_RHI_Vulkan_Platform.h>
+#include <RHI/BindlessDescriptorPool.h>
+#include <RHI/BufferView.h>
+#include <RHI/Device.h>
+#include <RHI/ImageView.h>
 #include <Atom/RHI.Reflect/VkAllocator.h>
 #include <Atom/RHI.Reflect/Vulkan/Conversion.h>
-#include <Atom/RHI/ShaderResourceGroupData.h>
-#include <vulkan/vulkan.h>
+#include <Atom/RHI/DeviceShaderResourceGroupData.h>
+
 
 namespace AZ::Vulkan
 {
@@ -321,6 +321,6 @@ namespace AZ::Vulkan
 
     bool BindlessDescriptorPool::IsInitialized() const
     {
-        return m_pool->IsInitialized();
+        return m_pool && m_pool->IsInitialized();
     }
 } // namespace AZ::Vulkan

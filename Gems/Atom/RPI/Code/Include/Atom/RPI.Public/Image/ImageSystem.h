@@ -18,6 +18,7 @@
 #include <Atom/RPI.Reflect/Asset/BuiltInAssetHandler.h>
 #include <Atom/RPI.Reflect/Image/ImageSystemDescriptor.h>
 
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
 #include <Atom/RPI.Public/Image/AttachmentImage.h>
 #include <Atom/RPI.Public/Image/AttachmentImagePool.h>
@@ -36,7 +37,7 @@ namespace AZ
 
     namespace RPI
     {
-        class ImageSystem final
+        class ATOM_RPI_PUBLIC_API ImageSystem final
             : public ImageSystemInterface
         {
         public:

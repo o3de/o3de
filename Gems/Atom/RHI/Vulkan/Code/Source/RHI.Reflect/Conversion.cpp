@@ -124,6 +124,26 @@ namespace AZ
             return flags;
         }
 
+        RHI::ImageAspectFlags ConvertImageAspectFlags(VkImageAspectFlags imageAspect)
+        {
+            RHI::ImageAspectFlags flags = {};
+            if (RHI::CheckBitsAll(imageAspect, static_cast<VkImageAspectFlags>(VK_IMAGE_ASPECT_COLOR_BIT)))
+            {
+                flags |= RHI::ImageAspectFlags::Color;
+            }
+
+            if (RHI::CheckBitsAll(imageAspect, static_cast<VkImageAspectFlags>(VK_IMAGE_ASPECT_DEPTH_BIT)))
+            {
+                flags |= RHI::ImageAspectFlags::Depth;
+            }
+
+            if (RHI::CheckBitsAll(imageAspect, static_cast<VkImageAspectFlags>(VK_IMAGE_ASPECT_STENCIL_BIT)))
+            {
+                flags |= RHI::ImageAspectFlags::Stencil;
+            }
+            return flags;
+        }
+
         VkPrimitiveTopology ConvertTopology(RHI::PrimitiveTopology topology)
         {
             switch (topology)
@@ -173,7 +193,7 @@ namespace AZ
             switch (heapMemoryLevel)
             {
             case RHI::HeapMemoryLevel::Host:
-                return VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
+                return VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_CACHED_BIT;
             case RHI::HeapMemoryLevel::Device:
                 return VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
             default:
@@ -377,37 +397,7 @@ namespace AZ
                 AZ_Assert(false, "SampleCount is invalid.");
                 return VK_SAMPLE_COUNT_1_BIT;
             }
-        }
-
-        VkAttachmentLoadOp ConvertAttachmentLoadAction(RHI::AttachmentLoadAction loadAction)
-        {
-            switch (loadAction)
-            {
-            case RHI::AttachmentLoadAction::Load:
-                return VK_ATTACHMENT_LOAD_OP_LOAD;
-            case RHI::AttachmentLoadAction::Clear:
-                return VK_ATTACHMENT_LOAD_OP_CLEAR;
-            case RHI::AttachmentLoadAction::DontCare:
-                return VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-            default:    
-                AZ_Assert(false, "AttachmentLoadAction is illegal.");
-                return VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-            }
-        }
-
-        VkAttachmentStoreOp ConvertAttachmentStoreAction(RHI::AttachmentStoreAction storeAction)
-        {
-            switch (storeAction)
-            {
-            case RHI::AttachmentStoreAction::Store:
-                return VK_ATTACHMENT_STORE_OP_STORE;
-            case RHI::AttachmentStoreAction::DontCare:
-                return VK_ATTACHMENT_STORE_OP_DONT_CARE;
-            default:
-                AZ_Assert(false, "AttachmentStoreAction is illegal.");
-                return VK_ATTACHMENT_STORE_OP_DONT_CARE;
-            }
-        }
+        }        
 
         void FillClearValue(const RHI::ClearValue& rhiClearValue, VkClearValue& vulkanClearValue)
         {
@@ -559,7 +549,7 @@ namespace AZ
             return flags;
         }
 
-        VkShaderStageFlagBits ConvertShaderStage(RHI::ShaderStage stage, uint32_t subStageIndex /* = 0 */)
+        VkShaderStageFlagBits ConvertShaderStage(RHI::ShaderStage stage, [[maybe_unused]] uint32_t subStageIndex /* = 0 */)
         {
             switch (stage)
             {
@@ -569,8 +559,8 @@ namespace AZ
                 return VK_SHADER_STAGE_FRAGMENT_BIT;
             case RHI::ShaderStage::Compute:
                 return VK_SHADER_STAGE_COMPUTE_BIT;
-            case RHI::ShaderStage::Tessellation:
-                return subStageIndex == 0 ? VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT : VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
+            case RHI::ShaderStage::Geometry:
+                return VK_SHADER_STAGE_GEOMETRY_BIT;
             default:
                 AZ_Assert(false, "Invalid shader stage %d", stage);
                 return VkShaderStageFlagBits(0);
@@ -652,7 +642,7 @@ namespace AZ
                     bindFlags,
                     RHI::BufferBindFlags::InputAssembly | RHI::BufferBindFlags::DynamicInputAssembly |
                         RHI::BufferBindFlags::RayTracingShaderTable | RHI::BufferBindFlags::RayTracingAccelerationStructure |
-                        RHI::BufferBindFlags::RayTracingScratchBuffer))
+                        RHI::BufferBindFlags::RayTracingScratchBuffer | RHI::BufferBindFlags::Indirect))
             {
                 usageFlags |=  VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
             }
@@ -805,6 +795,12 @@ namespace AZ
 
         VkAccessFlags GetSupportedAccessFlags(VkPipelineStageFlags pipelineStageFlags)
         {
+            if (RHI::CheckBitsAny(pipelineStageFlags, static_cast<VkPipelineStageFlags>(VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT)) ||
+                RHI::CheckBitsAny(pipelineStageFlags, static_cast<VkPipelineStageFlags>(VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT)))
+            {
+                return VK_ACCESS_NONE;
+            }
+
             // The initial access flags don't need special stages.
             VkAccessFlags accessFlagBits = VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT;
             if (RHI::CheckBitsAny(pipelineStageFlags, static_cast<VkPipelineStageFlags>(VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT)))
@@ -908,6 +904,82 @@ namespace AZ
             vkMapping.b = ConvertComponentSwizzle(mapping.m_blue);
             vkMapping.a = ConvertComponentSwizzle(mapping.m_alpha);
             return vkMapping;
+        }
+
+        RHI::ImageSubresourceRange ConvertSubresourceRange(const VkImageSubresourceRange& range)
+        {
+            RHI::ImageSubresourceRange rhiRange;
+            rhiRange.m_aspectFlags = ConvertImageAspectFlags(range.aspectMask);
+            rhiRange.m_mipSliceMin = static_cast<uint16_t>(range.baseMipLevel);
+            rhiRange.m_mipSliceMax = static_cast<uint16_t>(range.baseMipLevel + range.levelCount - 1);
+            rhiRange.m_arraySliceMin = static_cast<uint16_t>(range.baseArrayLayer);
+            rhiRange.m_arraySliceMax = static_cast<uint16_t>(range.baseArrayLayer + range.layerCount - 1);
+            return rhiRange;
+        }
+
+        VkImageSubresourceRange ConvertSubresourceRange(const RHI::ImageSubresourceRange& range)
+        {
+            VkImageSubresourceRange vkRange = {};
+            vkRange.aspectMask = ConvertImageAspectFlags(range.m_aspectFlags);
+            vkRange.baseMipLevel = range.m_mipSliceMin;
+            vkRange.levelCount = range.m_mipSliceMax - range.m_mipSliceMin + 1;
+            vkRange.baseArrayLayer = range.m_arraySliceMin;
+            vkRange.layerCount = range.m_arraySliceMax - range.m_arraySliceMin + 1;
+            return vkRange;
+        }
+
+        VkPipelineStageFlags ConvertScopeAttachmentStage(const RHI::ScopeAttachmentStage& stage)
+        {
+            VkPipelineStageFlags flags = {};
+            if (RHI::CheckBitsAll(stage, RHI::ScopeAttachmentStage::VertexShader))
+            {
+                flags |= VK_PIPELINE_STAGE_VERTEX_SHADER_BIT;
+            }
+            if (RHI::CheckBitsAll(stage, RHI::ScopeAttachmentStage::FragmentShader))
+            {
+                flags |= VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+            }
+            if (RHI::CheckBitsAll(stage, RHI::ScopeAttachmentStage::ComputeShader))
+            {
+                flags |= VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+            }
+            if (RHI::CheckBitsAll(stage, RHI::ScopeAttachmentStage::RayTracingShader))
+            {
+                flags |= VK_PIPELINE_STAGE_RAY_TRACING_SHADER_BIT_KHR;
+            }
+            if (RHI::CheckBitsAll(stage, RHI::ScopeAttachmentStage::EarlyFragmentTest))
+            {
+                flags |= VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+            }
+            if (RHI::CheckBitsAll(stage, RHI::ScopeAttachmentStage::LateFragmentTest))
+            {
+                flags |= VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+            }
+            if (RHI::CheckBitsAll(stage, RHI::ScopeAttachmentStage::ColorAttachmentOutput))
+            {
+                flags |= VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+            }
+            if (RHI::CheckBitsAll(stage, RHI::ScopeAttachmentStage::Copy))
+            {
+                flags |= VK_PIPELINE_STAGE_TRANSFER_BIT;
+            }
+            if (RHI::CheckBitsAll(stage, RHI::ScopeAttachmentStage::Predication))
+            {
+                flags |= VK_PIPELINE_STAGE_CONDITIONAL_RENDERING_BIT_EXT;
+            }
+            if (RHI::CheckBitsAll(stage, RHI::ScopeAttachmentStage::DrawIndirect))
+            {
+                flags |= VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT;
+            }
+            if (RHI::CheckBitsAll(stage, RHI::ScopeAttachmentStage::VertexInput))
+            {
+                flags |= VK_PIPELINE_STAGE_VERTEX_INPUT_BIT;
+            }
+            if (RHI::CheckBitsAll(stage, RHI::ScopeAttachmentStage::ShadingRate))
+            {
+                flags |= VK_PIPELINE_STAGE_FRAGMENT_DENSITY_PROCESS_BIT_EXT | VK_PIPELINE_STAGE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR;
+            }
+            return flags;
         }
     }
 }

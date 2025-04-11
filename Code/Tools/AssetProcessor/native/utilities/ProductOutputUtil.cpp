@@ -232,7 +232,7 @@ namespace AssetProcessor
         AZ_Assert(updateInterface, "Programmer Error - IMetadataUpdates interface is not available.");
         updateInterface->PrepareForFileMove(oldAbsolutePath.c_str(), newAbsolutePath.c_str());
 
-        bool result = AssetUtilities::MoveFileWithTimeout(oldAbsolutePath.c_str(), newAbsolutePath.c_str());
+        [[maybe_unused]] bool result = AssetUtilities::MoveFileWithTimeout(oldAbsolutePath.c_str(), newAbsolutePath.c_str());
 
         AZ_Error(
             "ProductOutputUtil",

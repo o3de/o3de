@@ -51,6 +51,7 @@ namespace AZ
             m_eventListener = [[MTLSharedEventListener alloc] init];
 
             InitFeatures();
+            m_clearAttachments.Init(*this);
             return RHI::ResultCode::Success;
         }
 
@@ -107,6 +108,7 @@ namespace AZ
             m_asyncUploadQueue.Shutdown();
             m_stagingBufferPool.reset();
             m_nullDescriptorManager.Shutdown();
+            m_clearAttachments.Shutdown();
             m_bindlessArgumentBuffer.GarbageCollect();
         }
 
@@ -136,6 +138,7 @@ namespace AZ
 
         void Device::EndFrameInternal()
         {
+            m_bindlessArgumentBuffer.GarbageCollect();
             m_argumentBufferConstantsAllocator.GarbageCollect();
             m_argumentBufferAllocator.GarbageCollect();
             m_commandQueueContext.End();
@@ -345,8 +348,6 @@ namespace AZ
 
         void Device::InitFeatures()
         {
-            
-            m_features.m_tessellationShader = false;
             m_features.m_geometryShader = false;
             m_features.m_computeShader = true;
             m_features.m_independentBlend = true;
@@ -384,7 +385,10 @@ namespace AZ
             
             m_features.m_unboundedArrays = m_metalDevice.argumentBuffersSupport == MTLArgumentBuffersTier2;
             m_features.m_unboundedArrays = false; //Remove this when unbounded array support is added to spirv-cross
-            m_features.m_simulateBindlessUA = true; // Simulate unbounded arrays for Bindless srg
+            
+            // Metal backend is able to simulate unbounded arrays for Bindless srg. However it is disabled by default as it uses up memory and we dont have
+            // any features that is using Bindless at the moment.
+            m_features.m_simulateBindlessUA = false;
 
             //Values taken from https://developer.apple.com/metal/Metal-Feature-Set-Tables.pdf
             m_limits.m_maxImageDimension1D = 8192;
@@ -395,8 +399,11 @@ namespace AZ
             m_limits.m_minConstantBufferViewOffset = Alignment::Constant;
             m_limits.m_maxConstantBufferSize = m_metalDevice.maxBufferLength;
             m_limits.m_maxBufferSize = m_metalDevice.maxBufferLength;
+ 
+            m_features.m_swapchainScalingFlags = RHI::ScalingFlags::Stretch;
+            AZ_Assert(m_metalDevice.argumentBuffersSupport >= MTLArgumentBuffersTier1, "Atom needs Argument buffer support to run");
             
-            AZ_Assert(m_metalDevice.argumentBuffersSupport, "Atom needs Argument buffer support to run");
+            m_features.m_subpassInputSupport = RHI::SubpassInputSupportType::Color;
         }
 
         CommandList* Device::AcquireCommandList(RHI::HardwareQueueClass hardwareQueueClass)
@@ -438,7 +445,7 @@ namespace AZ
             
             RHI::Ptr<Buffer> stagingBuffer = Buffer::Create();
             RHI::BufferDescriptor bufferDesc(bufferBindFlags, byteCount);
-            RHI::BufferInitRequest initRequest(*stagingBuffer, bufferDesc);
+            RHI::DeviceBufferInitRequest initRequest(*stagingBuffer, bufferDesc);
             const RHI::ResultCode result = m_stagingBufferPool->InitBuffer(initRequest);
             if (result != RHI::ResultCode::Success)
             {
@@ -462,6 +469,11 @@ namespace AZ
         BindlessArgumentBuffer& Device::GetBindlessArgumentBuffer()
         {
             return m_bindlessArgumentBuffer;
+        }
+    
+        RHI::ResultCode Device::ClearRenderAttachments(CommandList& commandList, MTLRenderPassDescriptor* renderpassDesc, const AZStd::vector<ClearAttachments::ClearData>& clearAttachmentData)
+        {
+            return m_clearAttachments.Clear(commandList, renderpassDesc, clearAttachmentData);
         }
     }
 }

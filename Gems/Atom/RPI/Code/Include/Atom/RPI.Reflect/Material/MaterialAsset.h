@@ -13,6 +13,7 @@
 
 #include <Atom/RPI.Public/AssetInitBus.h>
 #include <Atom/RPI.Reflect/Base.h>
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/Material/MaterialTypeAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertyValue.h>
 
@@ -34,10 +35,12 @@ namespace AZ
 
         //! MaterialAsset defines a single material, which can be used to create a Material instance for rendering at runtime.
         //! Use a MaterialAssetCreator to create a MaterialAsset.
-        class MaterialAsset
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+        class ATOM_RPI_REFLECT_API MaterialAsset
             : public AZ::Data::AssetData
             , public AssetInitBus::Handler
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             friend class MaterialVersionUpdates;
             friend class MaterialAssetCreator;
             friend class MaterialAssetHandler;
@@ -48,9 +51,9 @@ namespace AZ
             AZ_RTTI(MaterialAsset, "{522C7BE0-501D-463E-92C6-15184A2B7AD8}", AZ::Data::AssetData);
             AZ_CLASS_ALLOCATOR(MaterialAsset, SystemAllocator);
 
-            static const char* DisplayName;
-            static const char* Group;
-            static const char* Extension;
+            static constexpr const char* DisplayName{ "MaterialAsset" };
+            static constexpr const char* Group{ "Material" };
+            static constexpr const char* Extension{ "azmaterial" };
             
             static constexpr uint32_t UnspecifiedMaterialTypeVersion = static_cast<uint32_t>(-1);
 
@@ -132,7 +135,7 @@ namespace AZ
             //! Called by asset creators to assign the asset to a ready state.
             void SetReady();
 
-            static const char* s_debugTraceName;
+            static constexpr const char* s_debugTraceName{ "MaterialAsset" };
 
             Data::Asset<MaterialTypeAsset> m_materialTypeAsset = { AZ::Data::AssetLoadBehavior::PreLoad };
 
@@ -161,8 +164,10 @@ namespace AZ
         };
        
 
-        class MaterialAssetHandler : public AssetHandler<MaterialAsset>
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+        class ATOM_RPI_REFLECT_API MaterialAssetHandler : public AssetHandler<MaterialAsset>
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             using Base = AssetHandler<MaterialAsset>;
         public:
             AZ_RTTI(MaterialAssetHandler, "{949DFEF5-6E19-4C81-8CF0-C764F474CCDD}", Base);

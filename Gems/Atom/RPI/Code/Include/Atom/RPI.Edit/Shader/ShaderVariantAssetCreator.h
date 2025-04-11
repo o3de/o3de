@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <Atom/RPI.Edit/Configuration.h>
 #include <Atom/RPI.Reflect/AssetCreator.h>
 #include <Atom/RPI.Reflect/Shader/ShaderVariantAsset.h>
 #include <Atom/RPI.Reflect/Shader/ShaderOptionGroupLayout.h>
@@ -16,7 +17,7 @@ namespace AZ
     namespace RPI
     {
         //! The "builder" pattern class that creates a ShaderVariantAsset2.
-        class ShaderVariantAssetCreator final
+        class ATOM_RPI_EDIT_API ShaderVariantAssetCreator final
             : public AssetCreator<ShaderVariantAsset>
         {
         public:
@@ -28,7 +29,11 @@ namespace AZ
             //!        It is still useful, because when creating the Root Variant for the ShaderAsset this assetId should
             //!        match the value that will be assigned by the asset processor because the Root Variant is serialized
             //!        as a Data::Asset<ShaderVariantAsset> inside the ShaderAsset.
-            void Begin(const AZ::Data::AssetId& assetId, const ShaderVariantId& shaderVariantId, RPI::ShaderVariantStableId stableId, bool isFullyBaked);
+            void Begin(
+                const AZ::Data::AssetId& assetId,
+                const ShaderVariantId& shaderVariantId,
+                RPI::ShaderVariantStableId stableId,
+                bool isFullyBaked);
 
             //! Finalizes and assigns ownership of the asset to result, if successful. 
             //! Otherwise false is returned and result is left untouched.

@@ -328,7 +328,7 @@ namespace AzToolsFramework
             AzToolsFramework::CReflectedVarAudioControl::Reflect(context);
             ReflectPropertyEditor(context);
 
-            DocumentPropertyEditorSettings::Reflect(context);
+            AZ::DocumentPropertyEditor::ExpanderSettings::Reflect(context);
 
             // reflect data for script, serialization, editing...
             if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))

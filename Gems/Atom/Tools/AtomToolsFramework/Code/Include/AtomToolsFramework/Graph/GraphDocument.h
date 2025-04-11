@@ -108,6 +108,8 @@ namespace AtomToolsFramework
         bool m_buildPropertiesQueued = {};
         // This plan will be set to true if a request has been made to compile the graph data.
         bool m_compileGraphQueued = {};
+        // Next time that a cued compile can be executed
+        AZStd::chrono::steady_clock::time_point m_compileGraphQueueTime = AZStd::chrono::steady_clock::now();
         // Container of file paths that were affected by the compiler.
         AZStd::vector<AZStd::string> m_generatedFiles;
         // This is a pointer to the optional graph compiler that can be injected into the graph document to process the graph data.

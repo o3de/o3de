@@ -19,7 +19,9 @@
 #include "GeneratedTransforms/CalculateLuminance_LinearSrgb.azsli"
 #include "GeneratedTransforms/CalculateLuminance_AcesCg.azsli"
 
-enum class ColorSpaceId
+// !! THIS ENUM MUST MATCH THE ONE IN: TransformColor.h !!
+// Removing enum class so that variables can be created using this type without causing compile errors.
+enum ColorSpaceId
 {
     SRGB = 0,
     LinearSRGB,
@@ -90,6 +92,12 @@ real3 TransformColor(in real3 color, ColorSpaceId fromColorSpace, ColorSpaceId t
 
     return color;
     
+}
+
+real4 TransformColor4(in real4 color, ColorSpaceId fromColorSpace, ColorSpaceId toColorSpace)
+{
+    color.rgb = TransformColor(color.rgb, fromColorSpace, toColorSpace);
+    return color;
 }
 
 real CalculateLuminance(in real3 color, ColorSpaceId colorSpace)

@@ -32,7 +32,7 @@ namespace LmbrCentral
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(0, &ReferenceShapeConfig::m_shapeEntityId, "Shape Entity Id", "Entity with shape component to reference.")
-                    ->Attribute(AZ::Edit::Attributes::RequiredService, AZ_CRC("ShapeService", 0xe86aa5fe))
+                    ->Attribute(AZ::Edit::Attributes::RequiredService, AZ_CRC_CE("ShapeService"))
                     ;
             }
         }
@@ -49,13 +49,13 @@ namespace LmbrCentral
 
     void ReferenceShapeComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("ShapeService", 0xe86aa5fe));
+        services.push_back(AZ_CRC_CE("ShapeService"));
         services.push_back(AZ_CRC_CE("ReferenceShapeService"));
     }
 
     void ReferenceShapeComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("ShapeService", 0xe86aa5fe));
+        services.push_back(AZ_CRC_CE("ShapeService"));
     }
 
     void ReferenceShapeComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& services)
@@ -197,7 +197,7 @@ namespace LmbrCentral
         }
     }
 
-    AZ::Crc32 ReferenceShapeComponent::GetShapeType()
+    AZ::Crc32 ReferenceShapeComponent::GetShapeType() const
     {
         AZ::Crc32 result = {};
 
@@ -210,7 +210,7 @@ namespace LmbrCentral
         return result;
     }
 
-    AZ::Aabb ReferenceShapeComponent::GetEncompassingAabb()
+    AZ::Aabb ReferenceShapeComponent::GetEncompassingAabb() const
     {
         AZ::Aabb result = AZ::Aabb::CreateNull();
 
@@ -223,7 +223,7 @@ namespace LmbrCentral
         return result;
     }
 
-    void ReferenceShapeComponent::GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds)
+    void ReferenceShapeComponent::GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds) const
     {
         transform = AZ::Transform::CreateIdentity();
         bounds = AZ::Aabb::CreateNull();
@@ -235,7 +235,7 @@ namespace LmbrCentral
         }
     }
 
-    bool ReferenceShapeComponent::IsPointInside(const AZ::Vector3& point)
+    bool ReferenceShapeComponent::IsPointInside(const AZ::Vector3& point) const
     {
         bool result = false;
 
@@ -248,7 +248,7 @@ namespace LmbrCentral
         return result;
     }
 
-    float ReferenceShapeComponent::DistanceFromPoint(const AZ::Vector3& point)
+    float ReferenceShapeComponent::DistanceFromPoint(const AZ::Vector3& point) const
     {
         float result = FLT_MAX;
 
@@ -261,7 +261,7 @@ namespace LmbrCentral
         return result;
     }
 
-    float ReferenceShapeComponent::DistanceSquaredFromPoint(const AZ::Vector3& point)
+    float ReferenceShapeComponent::DistanceSquaredFromPoint(const AZ::Vector3& point) const
     {
         float result = FLT_MAX;
 
@@ -274,7 +274,7 @@ namespace LmbrCentral
         return result;
     }
 
-    AZ::Vector3 ReferenceShapeComponent::GenerateRandomPointInside(AZ::RandomDistributionType randomDistribution)
+    AZ::Vector3 ReferenceShapeComponent::GenerateRandomPointInside(AZ::RandomDistributionType randomDistribution) const
     {
         AZ::Vector3 result = AZ::Vector3::CreateZero();
 
@@ -287,7 +287,7 @@ namespace LmbrCentral
         return result;
     }
 
-    bool ReferenceShapeComponent::IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance)
+    bool ReferenceShapeComponent::IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) const
     {
         bool result = false;
 

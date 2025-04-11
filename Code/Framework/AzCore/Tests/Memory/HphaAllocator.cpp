@@ -22,13 +22,9 @@ namespace UnitTest
         HphaSchema_TestAllocator()
         {
             Create();
-            PostCreate();
         }
 
-        ~HphaSchema_TestAllocator() override
-        {
-            PreDestroy();
-        }
+        ~HphaSchema_TestAllocator() override = default;
     };
 
     static const size_t s_kiloByte = 1024;
@@ -87,7 +83,7 @@ namespace UnitTest
          HphaSchemaTestParameters(s_smallAllocationSizes, 2),
          HphaSchemaTestParameters(s_smallAllocationSizes, 100)
     };
-    INSTANTIATE_TEST_CASE_P(Small,
+    INSTANTIATE_TEST_SUITE_P(Small,
         HphaSchemaTestFixture,
         ::testing::ValuesIn(s_smallInstancesParameters));
 
@@ -95,7 +91,7 @@ namespace UnitTest
          HphaSchemaTestParameters(s_bigAllocationSizes, 2),
          HphaSchemaTestParameters(s_bigAllocationSizes, 100)
     };
-    INSTANTIATE_TEST_CASE_P(Big,
+    INSTANTIATE_TEST_SUITE_P(Big,
         HphaSchemaTestFixture,
         ::testing::ValuesIn(s_bigInstancesParameters));
 
@@ -103,7 +99,7 @@ namespace UnitTest
          HphaSchemaTestParameters(s_mixedAllocationSizes, 2),
          HphaSchemaTestParameters(s_mixedAllocationSizes, 100)
     };
-    INSTANTIATE_TEST_CASE_P(Mixed,
+    INSTANTIATE_TEST_SUITE_P(Mixed,
         HphaSchemaTestFixture,
         ::testing::ValuesIn(s_mixedInstancesParameters));
 }

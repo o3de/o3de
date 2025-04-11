@@ -1,0 +1,41 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "SilhouettePassTemplate",
+            "PassClass": "SilhouetteCompositePass",
+            "Slots": [
+                {
+                    "Name": "InputOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "RenderTarget"
+                },
+                {
+                    "Name": "Silhouettes",
+                    "ShaderInputName": "m_silhouettes",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                }
+            ],
+            "PassData": {
+                "$type": "FullscreenTrianglePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/Silhouette/Silhouette.shader"
+                },
+                "BindViewSrg": true,
+                "CanBeSubpass": false
+            },
+            "Connections": [
+                {
+                    "LocalSlot": "Silhouettes",
+                    "AttachmentRef": {
+                        "Pass": "PipelineGlobal",
+                        "Attachment": "SilhouetteGatherBuffer"
+                    }
+                }
+            ]
+        }
+    }
+}

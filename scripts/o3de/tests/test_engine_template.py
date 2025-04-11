@@ -41,6 +41,8 @@ namespace ${SanitizedCppName}
         // Put your public methods here
     };
 
+    // ${SomeVar}
+
     class ${SanitizedCppName}BusTraits
         : public AZ::EBusTraits
     {
@@ -402,21 +404,33 @@ class TestCreateTemplate:
     @pytest.mark.parametrize(
         "concrete_contents, templated_contents,"
         " keep_license_text, force, expect_failure,"
-        " template_json_contents", [
+        " template_json_contents, replace_contents", [
             pytest.param(TEST_CONCRETE_TESTTEMPLATE_CONTENT_WITH_LICENSE, TEST_TEMPLATED_CONTENT_WITH_LICENSE,
                          True, True, False,
-                         TEST_TEMPLATE_JSON_CONTENTS),
+                         TEST_TEMPLATE_JSON_CONTENTS, None),
             pytest.param(TEST_CONCRETE_TESTTEMPLATE_CONTENT_WITHOUT_LICENSE, TEST_TEMPLATED_CONTENT_WITH_LICENSE,
                          False, True, False,
-                         TEST_TEMPLATE_JSON_CONTENTS)
+                         TEST_TEMPLATE_JSON_CONTENTS, None),
+            # Expect success when replacing a var with a value
+            pytest.param(TEST_CONCRETE_TESTTEMPLATE_CONTENT_WITHOUT_LICENSE, TEST_TEMPLATED_CONTENT_WITH_LICENSE,
+                         False, True, False,
+                         TEST_TEMPLATE_JSON_CONTENTS, ['${SomeVar}','ReplacedVar']),
+            # Expect failure when trying to replace a var with no value
+            pytest.param(TEST_CONCRETE_TESTTEMPLATE_CONTENT_WITHOUT_LICENSE, TEST_TEMPLATED_CONTENT_WITH_LICENSE,
+                         False, True, True,
+                         TEST_TEMPLATE_JSON_CONTENTS, ['${SomeVar}'])
         ]
     )
     def test_create_from_template(self, tmpdir, concrete_contents, templated_contents, keep_license_text, force,
-                                  expect_failure, template_json_contents):
-
+                                  expect_failure, template_json_contents, replace_contents):
+        if replace_contents and len(replace_contents) % 2 == 0:
+            # update concrete_contents with replaced pairs
+            it = iter(replace_contents)
+            for data in it:
+                concrete_contents = concrete_contents.replace(data, next(it), 1)
         self.instantiate_template_wrapper(tmpdir, engine_template.create_from_template, 'TestTemplate', concrete_contents,
                                           templated_contents, keep_license_text, force, expect_failure,
-                                          template_json_contents, destination_name='TestTemplate')
+                                          template_json_contents, destination_name='TestTemplate', replace=replace_contents)
 
 
     @pytest.mark.parametrize(
@@ -464,15 +478,15 @@ class TestCreateTemplate:
             pytest.param(TEST_CONCRETE_TESTGEM_TEMPLATE_CONTENT_WITH_LICENSE, TEST_TEMPLATED_CONTENT_WITH_LICENSE,
                          True, True, False,
                          TEST_TEMPLATE_JSON_CONTENTS,
-                         "Test Gem", "Test Summary", "Test Requirements", "Test License", "https://o3de.org/license", 
-                         "Test Origin", "https://o3de.org", "tag1", "Windows", "preview.png", "https://o3de.org/docs", "https://o3de.org/repo",
+                         "Test Gem", "Test Summary", "Test Requirements", "Test License", "https://www.o3de.org/license", 
+                         "Test Origin", "https://www.o3de.org", "tag1", "Windows", "preview.png", "https://www.o3de.org/docs", "https://www.o3de.org/repo",
                          None,
                          ["tag1","TestGem"], ['Windows']),
             pytest.param(TEST_CONCRETE_TESTGEM_TEMPLATE_CONTENT_WITHOUT_LICENSE, TEST_TEMPLATED_CONTENT_WITH_LICENSE,
                          False, True, False,
                          TEST_TEMPLATE_JSON_CONTENTS,
-                         "Test Gem2", "Test Summary2", "Test Requirements2", "Test License2", "https://o3de.org/license2", 
-                         "Test Origin2", "https://o3de.org/2", "tag2 tag3  tag4", "MacOS Linux Windows", "preview2.png", "https://o3de.org/docs2", "https://o3de.org/repo2",
+                         "Test Gem2", "Test Summary2", "Test Requirements2", "Test License2", "https://www.o3de.org/license2", 
+                         "Test Origin2", "https://www.o3de.org/2", "tag2 tag3  tag4", "MacOS Linux Windows", "preview2.png", "https://www.o3de.org/docs2", "https://www.o3de.org/repo2",
                          "1.2.3",
                          ["tag2","tag3","tag4","TestGem"], ['MacOS', 'Linux', 'Windows']),
         ]

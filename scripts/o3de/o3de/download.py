@@ -407,7 +407,7 @@ def add_parser_args(parser):
     parser.add_argument('--force', '-f', action='store_true', required=False,
                             default=False,
                             help = 'Force overwrite the current object')
-    parser.add_argument('--use-source-control', '--src', action='store_true', required=False,
+    parser.add_argument('--use-source-control', '-src', action='store_true', required=False,
                             default=False,
                             help = 'Acquire from source control instead of downloading a .zip archive.  Requires that the object has a valid source_control_uri.')
 

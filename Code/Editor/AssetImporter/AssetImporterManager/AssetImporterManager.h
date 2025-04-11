@@ -52,9 +52,11 @@ public:
 Q_SIGNALS:
     void StartAssetImporter();
     void StopAssetImporter();
+    void AssetImportingComplete();
 
 private Q_SLOTS:
     void reject();
+    void CompleteAssetImporting(bool wasSuccessful = true);
     void OnDragAndDropFiles(const QStringList* fileList);
     void OnBrowseDestinationFilePath(QLineEdit* destinationLineEdit);
     void OnCopyFiles();

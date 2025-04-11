@@ -12,6 +12,7 @@
 #include <AzCore/Settings/SettingsRegistryVisitorUtils.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/Utils/Utils.h>
+#include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
 
 #include <AzFramework/API/ApplicationAPI.h>
 
@@ -156,7 +157,7 @@ namespace AzToolsFramework
             });
         }
 
-        void SearchWidget::Setup(bool stringFilter, bool assetTypeFilter)
+        void SearchWidget::Setup(bool stringFilter, bool assetTypeFilter, bool useFavorites)
         {
             ClearTextFilter();
             ClearTypeFilter();
@@ -165,6 +166,7 @@ namespace AzToolsFramework
 
             SetTextFilterVisible(stringFilter);
             SetTypeFilterVisible(assetTypeFilter);
+            SetUseFavorites(useFavorites);
 
             if (stringFilter)
             {
@@ -188,24 +190,38 @@ namespace AzToolsFramework
                 SetTypeFilters(buildTypesFilterList());
             }
 
-            AZ::IO::Path projectPath{ AZ::Utils::GetProjectPath() };
-            AZ::IO::Path enginePath{ AZ::Utils::GetEnginePath() };
-            auto engineFilter = new EngineFilter();
-            engineFilter->SetEngineAndProject(enginePath, projectPath);
+            const AZ::IO::Path enginePath{ AZ::Utils::GetEnginePath() };
+            AZ::IO::Path engineAssets =  (enginePath / "Assets" / "Engine").LexicallyNormal();
+            AZ::IO::Path setregAssets = (enginePath / "Registry").LexicallyNormal();
+
+            auto filterFn = [engineAssets, setregAssets](const AssetBrowserEntry* entry)
+            {
+                AZ::IO::Path absolutePath = entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Product
+                    ? entry->GetParent()->GetFullPath()
+                    : entry->GetFullPath();
+
+                return !(absolutePath.IsRelativeTo(engineAssets) || absolutePath.IsRelativeTo(setregAssets));
+            };
+            auto engineFilter = new CustomFilter(filterFn);
             m_engineFilter->AddFilter(FilterConstType(engineFilter));
 
             AZStd::vector<AZ::Data::AssetType> types = BuildAssetTypeList();
-            auto compositeTypeFilter = new CompositeFilter(CompositeFilter::LogicOperatorType::OR);
-            compositeTypeFilter->SetFilterPropagation(AssetBrowserEntryFilter::PropagateDirection::Down);
-            for (AZ::Data::AssetType type : types)
+            auto productFilterFn = [types](const AssetBrowserEntry* entry)
             {
-                auto typeFilter = new AssetTypeFilter();
-                typeFilter->SetAssetType(type);
-                compositeTypeFilter->AddFilter(FilterConstType(typeFilter));
-            }
-            auto inverseTypeFilter = new InverseFilter();
-            inverseTypeFilter->SetFilter(FilterConstType(compositeTypeFilter));
-            m_unusableProductsFilter->AddFilter(FilterConstType(inverseTypeFilter));
+                if (const ProductAssetBrowserEntry* productEntry = azrtti_cast<const ProductAssetBrowserEntry*>(entry))
+                {
+                    return !AZStd::any_of(
+                        types.begin(),
+                        types.end(),
+                        [&](const auto& type)
+                        {
+                            return productEntry->GetAssetType() == type;
+                        });
+                }
+                return true;
+            };
+            auto productFilter = new CustomFilter(productFilterFn);
+            m_unusableProductsFilter->AddFilter(FilterConstType(productFilter));
 
             auto directoryFilter = new EntryTypeFilter();
             directoryFilter->SetName("Folder");
@@ -217,11 +233,17 @@ namespace AzToolsFramework
         {
             if (!checked)
             {
-                m_filter->RemoveFilter(FilterConstType(m_engineFilter));
+                if (GetIsEngineFilterActive())
+                {
+                    m_filter->RemoveFilter(FilterConstType(m_engineFilter));
+                }
             }
             else
             {
-                m_filter->AddFilter(FilterConstType(m_engineFilter));
+                if (!GetIsEngineFilterActive())
+                {
+                    m_filter->AddFilter(FilterConstType(m_engineFilter));
+                }
             }
         }
 
@@ -229,11 +251,17 @@ namespace AzToolsFramework
         {
             if (!checked)
             {
-                m_filter->RemoveFilter(FilterConstType(m_unusableProductsFilter));
+                if (GetIsUnusableProductsFilterActive())
+                {
+                    m_filter->RemoveFilter(FilterConstType(m_unusableProductsFilter));
+                }
             }
             else
             {
-                m_filter->AddFilter(FilterConstType(m_unusableProductsFilter));
+                if (!GetIsUnusableProductsFilterActive())
+                {
+                    m_filter->AddFilter(FilterConstType(m_unusableProductsFilter));
+                }
             }
         }
 
@@ -303,6 +331,26 @@ namespace AzToolsFramework
         QSharedPointer<CompositeFilter> SearchWidget::GetFolderFilter() const
         {
             return m_folderFilter;
+        }
+
+        bool SearchWidget::GetIsEngineFilterActive()
+        {
+            return m_filter->GetSubFilters().contains(m_engineFilter);
+        }
+
+        bool SearchWidget::GetIsUnusableProductsFilterActive()
+        {
+            return m_filter->GetSubFilters().contains(m_unusableProductsFilter);
+        }
+
+        bool SearchWidget::GetIsFolderFilterActive()
+        {
+            return m_filter->GetSubFilters().contains(m_folderFilter);
+        }
+
+        void SearchWidget::SetFilterString(const QString& searchTerm)
+        {
+            SetTextFilter(searchTerm);
         }
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

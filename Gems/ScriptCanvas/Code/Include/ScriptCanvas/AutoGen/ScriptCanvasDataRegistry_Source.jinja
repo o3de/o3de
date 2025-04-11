@@ -48,23 +48,6 @@ namespace ScriptCanvas
 
     void {{autogenTargetName}}DataRegistry::Reflect(AZ::ReflectContext* context)
     {
-        if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
-        {
-{% for ScriptCanvas in dataFiles %}
-{%     for Data in ScriptCanvas -%}
-{%         set dataName = Data.attrib['Name'] %}
-{%         set namespaceName = '' %}
-{%         if Data.attrib['Namespace'] is defined and Data.attrib['Namespace'] %}
-{%             set namespaceName = Data.attrib['Namespace'] + '::' %}
-{%         endif %}
-            //serializeContext->RegisterGenericType<AZStd::vector<{{namespaceName}}{{dataName}}>>();
-            //serializeContext->RegisterGenericType<AZStd::unordered_map<AZStd::string, {{namespaceName}}{{dataName}}>>();
-            //serializeContext->RegisterGenericType<AZStd::unordered_map<double, {{namespaceName}}{{dataName}}>>();
-
-{%     endfor %}
-{% endfor %}
-        }
-
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
 {% for ScriptCanvas in dataFiles %}

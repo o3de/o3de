@@ -17,6 +17,9 @@
                     "recursive": 1,
                     "order": 3
                 },
+                "Exclude export scripts": {
+                    "pattern": ".*\\\\/ExportScripts\\\\/.*"
+                },
                 "ProjectRelativeGemsScanFolderPriority":"higher"
             }
         }

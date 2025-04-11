@@ -630,6 +630,38 @@ namespace Benchmark
         }
     }
 
+    BENCHMARK_F(BM_MathVector4, GetExpEstimate)(benchmark::State& state)
+    {
+        for ([[maybe_unused]] auto _ : state)
+        {
+            for (auto& vecData : m_vecDataArray)
+            {
+                AZ::Vector4 result = vecData.v1.GetExpEstimate();
+                benchmark::DoNotOptimize(result);
+            }
+        }
+    }
+
+    BENCHMARK_F(BM_MathVector4, ScalarExpBaseline)(benchmark::State& state)
+    {
+        // This is just a comparison benchmark, so we can easily validate that our ExpEstimate is a performance improvement over simply calling exp()
+        // If ScalarExpBaseline is ever the same speed or faster than GetExpEstimate then we have an issue with our estimate function
+        for ([[maybe_unused]] auto _ : state)
+        {
+            for (auto& vecData : m_vecDataArray)
+            {
+                float r0 = exp(vecData.v1.GetX());
+                float r1 = exp(vecData.v1.GetY());
+                float r2 = exp(vecData.v1.GetZ());
+                float r3 = exp(vecData.v1.GetW());
+                benchmark::DoNotOptimize(r0);
+                benchmark::DoNotOptimize(r1);
+                benchmark::DoNotOptimize(r2);
+                benchmark::DoNotOptimize(r3);
+            }
+        }
+    }
+
     BENCHMARK_F(BM_MathVector4, GetAngleMod)(benchmark::State& state)
     {
         for ([[maybe_unused]] auto _ : state)

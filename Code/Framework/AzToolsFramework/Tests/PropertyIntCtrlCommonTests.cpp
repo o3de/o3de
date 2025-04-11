@@ -21,7 +21,7 @@ namespace UnitTest
 
     };
 
-    TYPED_TEST_CASE(PropertyIntCtrlCommonFixture, IntegerPrimtitiveTestConfigs);
+    TYPED_TEST_SUITE(PropertyIntCtrlCommonFixture, IntegerPrimtitiveTestConfigs);
 
     TYPED_TEST(PropertyIntCtrlCommonFixture, ValidMinValue_ExpectSafeValueEqualToOriginalValue)
     {

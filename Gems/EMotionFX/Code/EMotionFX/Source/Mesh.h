@@ -13,7 +13,7 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/std/string/string.h>
-#include "BaseObject.h"
+#include <MCore/Source/RefCounted.h>
 #include "VertexAttributeLayer.h"
 #include "Transform.h"
 
@@ -53,8 +53,8 @@ namespace EMotionFX
      * @see FindVertexData.
      * @see FindOriginalVertexData.
      */
-    class EMFX_API Mesh
-        : public BaseObject
+    class EMFX_API Mesh final
+        : public MCore::RefCounted
     {
         AZ_CLASS_ALLOCATOR_DECL
 

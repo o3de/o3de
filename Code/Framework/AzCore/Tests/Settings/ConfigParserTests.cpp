@@ -196,7 +196,7 @@ namespace UnitTest
         }
     }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ReadConfigFile,
     ConfigParserParamFixture,
     ::testing::Values(

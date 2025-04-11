@@ -30,7 +30,7 @@ namespace GraphCanvas
 
         // Some large Qt field. Should be larger then 256 which is the Qt::UserRole
         // Don't want to make it too close to avoid Running into other custom user controls.
-        static const int ComboBoxDelegateRole = 0xdd31a0a6; //AZ_CRC("GenericComboBoxDelegate", 0xdd31a0a6);
+        static const int ComboBoxDelegateRole = 0xdd31a0a6; //AZ_CRC_CE("GenericComboBoxDelegate");
 
         explicit GenericComboBoxDelegate(QObject* parent);
         

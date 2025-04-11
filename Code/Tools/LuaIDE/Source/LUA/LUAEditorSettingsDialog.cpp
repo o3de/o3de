@@ -23,6 +23,8 @@
 
 #include <Source/LUA/ui_LUAEditorSettingsDialog.h>
 
+#include <QPushButton>
+
 namespace
 {
 }
@@ -44,34 +46,40 @@ namespace LUAEditor
         }
 
 
-        AZStd::intrusive_ptr<SyntaxStyleSettings> syntaxStyleSettings = AZ::UserSettings::CreateFind<SyntaxStyleSettings>(AZ_CRC("LUA Editor Text Settings", 0xb6e15565), AZ::UserSettings::CT_GLOBAL);
+        AZStd::intrusive_ptr<SyntaxStyleSettings> syntaxStyleSettings = AZ::UserSettings::CreateFind<SyntaxStyleSettings>(AZ_CRC_CE("LUA Editor Text Settings"), AZ::UserSettings::CT_GLOBAL);
 
         // Store a copy to revert if needed.
         m_originalSettings = *syntaxStyleSettings;
 
         m_gui->propertyEditor->Setup(context, nullptr, true, 420);
         m_gui->propertyEditor->AddInstance(syntaxStyleSettings.get(), syntaxStyleSettings->RTTI_GetType());
-
         m_gui->propertyEditor->setObjectName("m_gui->propertyEditor");
         m_gui->propertyEditor->setMinimumHeight(500);
         m_gui->propertyEditor->setMaximumHeight(1000);
-        m_gui->propertyEditor->SetSavedStateKey(AZ_CRC("LuaIDE_SyntaxStyleSettings"));
+        m_gui->propertyEditor->SetSavedStateKey(AZ_CRC_CE("LuaIDE_SyntaxStyleSettings"));
 
         setModal(false);
 
         m_gui->propertyEditor->InvalidateAll();
         m_gui->propertyEditor->ExpandAll();
-
         m_gui->propertyEditor->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
 
-        QVBoxLayout* layout = new QVBoxLayout(this);
-        layout->setContentsMargins(0, 0, 0, 0);
-        layout->setSpacing(0);
-
+        auto* layout = new QVBoxLayout(this);
         layout->addWidget(m_gui->propertyEditor);
-        layout->addWidget(m_gui->cancelButton);
-        layout->addWidget(m_gui->saveButton);
-        layout->addWidget(m_gui->saveCloseButton);
+
+        auto* hlayout = new QHBoxLayout(this);
+        hlayout->addWidget(m_gui->applyButton);
+        hlayout->addItem(new QSpacerItem(1, 1, QSizePolicy::Expanding, QSizePolicy::Fixed));
+        hlayout->addWidget(m_gui->saveButton);
+        hlayout->addWidget(m_gui->saveCloseButton);
+        hlayout->addWidget(m_gui->cancelButton);
+
+        layout->addLayout(hlayout);
+
+        QObject::connect(m_gui->saveButton, &QPushButton::clicked, this, &LUAEditorSettingsDialog::OnSave);
+        QObject::connect(m_gui->saveCloseButton, &QPushButton::clicked, this, &LUAEditorSettingsDialog::OnSaveClose);
+        QObject::connect(m_gui->cancelButton, &QPushButton::clicked, this, &LUAEditorSettingsDialog::OnCancel);
+        QObject::connect(m_gui->applyButton, &QPushButton::clicked, this, &LUAEditorSettingsDialog::OnApply);
 
         setLayout(layout);
     }
@@ -91,7 +99,7 @@ namespace LUAEditor
 
     void LUAEditorSettingsDialog::OnCancel()
     {
-        AZStd::intrusive_ptr<SyntaxStyleSettings> syntaxStyleSettings = AZ::UserSettings::CreateFind<SyntaxStyleSettings>(AZ_CRC("LUA Editor Text Settings", 0xb6e15565), AZ::UserSettings::CT_GLOBAL);
+        AZStd::intrusive_ptr<SyntaxStyleSettings> syntaxStyleSettings = AZ::UserSettings::CreateFind<SyntaxStyleSettings>(AZ_CRC_CE("LUA Editor Text Settings"), AZ::UserSettings::CT_GLOBAL);
 
         // Revert the stored copy, no changes will be stored.
         *syntaxStyleSettings = m_originalSettings;
@@ -99,6 +107,11 @@ namespace LUAEditor
         LUAEditorMainWindowMessages::Bus::Broadcast(&LUAEditorMainWindowMessages::Bus::Events::Repaint);
 
         close();
+    }
+
+    void LUAEditorSettingsDialog::OnApply()
+    {
+        LUAEditorMainWindowMessages::Bus::Broadcast(&LUAEditorMainWindowMessages::Bus::Events::Repaint);
     }
 
     LUAEditorSettingsDialog::~LUAEditorSettingsDialog()
@@ -112,13 +125,10 @@ namespace LUAEditor
         if (event->key() == Qt::Key_Escape)
         {
             OnCancel();
-            return;
         }
-        else
-        if (event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return)
+        else if (event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return)
         {
             OnSaveClose();
-            return;
         }
     }
 }//namespace LUAEditor

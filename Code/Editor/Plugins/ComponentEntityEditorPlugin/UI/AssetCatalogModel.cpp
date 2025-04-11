@@ -9,9 +9,7 @@
 #include <EditorDefs.h>
 #include "CryEdit.h"
 #include "AssetCatalogModel.h"
-#include "Objects/ComponentEntityObject.h"
 
-#include <ISourceControl.h>
 #include <IEditor.h>
 #include <qevent.h>
 #include <qmimedata.h>
@@ -21,7 +19,6 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
-#include <AzCore/Slice/SliceAsset.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Asset/AssetTypeInfoBus.h>
@@ -34,7 +31,6 @@
 #include <AzToolsFramework/ToolsComponents/ComponentAssetMimeDataContainer.h>
 #include <AzToolsFramework/ToolsComponents/ScriptEditorComponent.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
-#include <AzToolsFramework/Commands/EntityStateCommand.h>
 
 #include <QTimer>
 
@@ -161,7 +157,7 @@ AssetCatalogModel::AssetCatalogModel(QObject* parent)
 
                     if (!assetType.IsNull())
                     {
-                        const AZ::Edit::Attribute* iconAttribute = element->FindAttribute(AZ_CRC("Icon"));
+                        const AZ::Edit::Attribute* iconAttribute = element->FindAttribute(AZ_CRC_CE("Icon"));
                         if (iconAttribute)
                         {
                             auto* iconAttributeData = azdynamic_cast<const AZ::Edit::AttributeData<const char*>*>(iconAttribute);

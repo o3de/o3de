@@ -1,0 +1,9 @@
+[
+    // This file is intended to be included in exported projects to prevent the asset processor 
+    // from launching from the exported location. 
+    {
+        "op": "add",
+        "path": "/O3DE/Autoexec/ConsoleCommands/bg_ConnectToAssetProcessor",
+        "value": false
+    }
+]

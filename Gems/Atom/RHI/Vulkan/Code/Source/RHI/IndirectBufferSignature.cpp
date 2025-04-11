@@ -18,7 +18,7 @@ namespace AZ
             return aznew IndirectBufferSignature();
         }
 
-        RHI::ResultCode IndirectBufferSignature::InitInternal([[maybe_unused]] RHI::Device& deviceBase, const RHI::IndirectBufferSignatureDescriptor& descriptor)
+        RHI::ResultCode IndirectBufferSignature::InitInternal([[maybe_unused]] RHI::Device& deviceBase, const RHI::DeviceIndirectBufferSignatureDescriptor& descriptor)
         {
             // Vulkan doesn't have an object to represent an indirect buffer signature.
             // We just calculate the offsets of the commands and the stride of the whole sequence.
@@ -40,6 +40,9 @@ namespace AZ
                     break;
                 case RHI::IndirectCommandType::Dispatch:
                     m_stride += sizeof(VkDispatchIndirectCommand);
+                    break;
+                case RHI::IndirectCommandType::DispatchRays:
+                    m_stride += sizeof(VkTraceRaysIndirectCommandKHR);
                     break;
                 default:
                     // Unsupported command types.

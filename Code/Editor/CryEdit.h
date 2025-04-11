@@ -26,9 +26,6 @@ class CCryEditDoc;
 class CEditCommandLineInfo;
 class CMainFrame;
 class CConsoleDialog;
-struct mg_connection;
-struct mg_request_info;
-struct mg_context;
 class QAction;
 class MainWindow;
 class QSharedMemory;
@@ -56,9 +53,6 @@ public:
     AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
     QSettings m_settings;
 };
-
-
-#define PROJECT_CONFIGURATOR_GEM_PAGE "Gems Settings"
 
 
 /**
@@ -94,6 +88,7 @@ class SANDBOX_API CCryEditApp
     : public QObject
     , protected AzFramework::AssetSystemInfoBus::Handler
     , protected EditorIdleProcessingBus::Handler
+    , protected AzFramework::AssetSystemStatusBus::Handler
 {
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
@@ -114,7 +109,6 @@ public:
 
     static CCryEditApp* instance();
 
-    bool GetRootEnginePath(QDir& rootEnginePath) const;
     bool CreateLevel(bool& wasCreateLevelOperationCancelled);
     void LoadFile(QString fileName);
     void ForceNextIdleProcessing() { m_bForceProcessIdle = true; }
@@ -136,7 +130,7 @@ public:
     void SetEditorWindowTitle(QString sTitleStr = QString(), QString sPreTitleStr = QString(), QString sPostTitleStr = QString());
     RecentFileList* GetRecentFileList();
     virtual void AddToRecentFileList(const QString& lpszPathName);
-    ECreateLevelResult CreateLevel(const QString& levelName, QString& fullyQualifiedLevelName);
+    ECreateLevelResult CreateLevel(const QString& templateName, const QString& levelName, QString& fullyQualifiedLevelName);
     bool FirstInstance(bool bForceNewInstance = false);
     void InitFromCommandLine(CEditCommandLineInfo& cmdInfo);
     bool CheckIfAlreadyRunning();
@@ -163,8 +157,8 @@ public:
 
     QString GetRootEnginePath() const;
     void RedirectStdoutToNull();
+
     // Overrides
-    // ClassWizard generated virtual function overrides
 public:
     virtual bool InitInstance();
     virtual int ExitInstance(int exitCode = 0);
@@ -175,40 +169,28 @@ public:
 
     CCryDocManager* GetDocManager() { return m_pDocManager; }
 
-    void RegisterActionHandlers();
-
     // Implementation
     void OnCreateLevel();
     void OnOpenLevel();
-    void OnCreateSlice();
-    void OnOpenSlice();
     void OnAppAbout();
     void OnAppShowWelcomeScreen();
     void OnUpdateShowWelcomeScreen(QAction* action);
     void OnDocumentationTutorials();
     void OnDocumentationGlossary();
     void OnDocumentationO3DE();
-    void OnDocumentationGamelift();
     void OnDocumentationReleaseNotes();
     void OnDocumentationGameDevBlog();
     void OnDocumentationForums();
-    void OnDocumentationAWSSupport();
-    void OnCommercePublish();
-    void OnCommerceMerch();
     void OnEditHold();
     void OnEditFetch();
     void OnFileExportToGameNoSurfaceTexture();
     void OnViewSwitchToGame();
     void OnViewSwitchToGameFullScreen();
-    void OnViewDeploy();
     void OnMoveObject();
     void OnRenameObj();
     void OnUndo();
-    void OnOpenAssetImporter();
-    void OnUpdateSelected(QAction* action);
     void OnEditLevelData();
     void OnFileEditLogFile();
-    void OnFileResaveSlices();
     void OnFileEditEditorini();
     void OnPreferences();
     void OnOpenProjectManagerSettings();
@@ -235,6 +217,10 @@ public:
 protected:
     // ------- AzFramework::AssetSystemInfoBus::Handler ------
     void OnError(AzFramework::AssetSystem::AssetSystemErrors error) override;
+    // -------------------------------------------
+
+    // ------- AzFramework::AssetSystemStatusBus::Handler ------
+    void AssetSystemWaiting() override;
     // -------------------------------------------
 
 private:
@@ -339,8 +325,6 @@ AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 private:
-    static inline constexpr const char* DefaultLevelTemplateName = "Prefabs/Default_Level.prefab";
-
     // Optional Uri to start an external lua debugger. If not specified,
     // then the Editor will open LuaIDE.exe.
     // For example, if using The Visual Studio Debugger Extension provided by lumbermixalot
@@ -366,14 +350,11 @@ private:
     void OnViewConfigureLayout();
 
     void OnCustomizeKeyboard();
-    void OnToolsConfiguretools();
     void OnToolsScriptHelp();
     void OnViewCycle2dviewport();
     void OnDisplayGotoPosition();
     void OnFileSavelevelresources();
     void OnClearRegistryData();
-    void OnSwitchToDefaultCamera();
-    void OnUpdateSwitchToDefaultCamera(QAction* action);
     void OnSwitchToSequenceCamera();
     void OnUpdateSwitchToSequenceCamera(QAction* action);
     void OnSwitchToSelectedcamera();

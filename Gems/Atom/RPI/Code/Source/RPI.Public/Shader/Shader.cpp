@@ -37,31 +37,17 @@ namespace AZ
                 return nullptr;
             }
 
-            // create the InstanceId from the combined assetId and supervariantIndex
-            const Data::AssetId& assetId = shaderAsset.GetId();
-            uint32_t shaderSupervariantIndex = supervariantIndex.GetIndex();
-
-            const uint32_t instanceIdDataSize = sizeof(assetId.m_guid) + sizeof(assetId.m_subId) + sizeof(shaderSupervariantIndex);
-            uint8_t instanceIdData[instanceIdDataSize];
-            uint8_t* instanceIdDataPtr = instanceIdData;
-
-            memcpy(instanceIdDataPtr, &assetId.m_guid, sizeof(assetId.m_guid));
-            instanceIdDataPtr += sizeof(assetId.m_guid);
-            memcpy(instanceIdDataPtr, &assetId.m_subId, sizeof(assetId.m_subId));
-            instanceIdDataPtr += sizeof(assetId.m_subId);
-            memcpy(instanceIdDataPtr, &shaderSupervariantIndex, sizeof(shaderSupervariantIndex));
-
-            Data::InstanceId instanceId = Data::InstanceId::CreateData(instanceIdData, instanceIdDataSize);
+            // Create the instance ID using the shader asset with an additional unique identifier from the Super variant index.
+            const Data::InstanceId instanceId =
+                Data::InstanceId::CreateFromAsset(shaderAsset, { supervariantIndex.GetIndex() });
 
             // retrieve the shader instance from the Instance database
-            Data::Instance<Shader> shaderInstance = Data::InstanceDatabase<Shader>::Instance().FindOrCreate(instanceId, shaderAsset, &anySupervariantName);
-
-            return shaderInstance;
+            return Data::InstanceDatabase<Shader>::Instance().FindOrCreate(instanceId, shaderAsset, &anySupervariantName);
         }
 
         Data::Instance<Shader> Shader::FindOrCreate(const Data::Asset<ShaderAsset>& shaderAsset)
         {
-            return FindOrCreate(shaderAsset, AZ::Name { "" });
+            return FindOrCreate(shaderAsset, AZ::Name{ "" });
         }
 
         Data::Instance<Shader> Shader::CreateInternal([[maybe_unused]] ShaderAsset& shaderAsset, const AZStd::any* anySupervariantName)
@@ -89,7 +75,10 @@ namespace AZ
             Shutdown();
         }
 
-        static bool GetPipelineLibraryPath(char* pipelineLibraryPath, size_t pipelineLibraryPathLength, const ShaderAsset& shaderAsset)
+        static bool GetPipelineLibraryPaths(
+            AZStd::unordered_map<int, AZStd::string>& pipelineLibraryPaths,
+            size_t pipelineLibraryPathLength,
+            const ShaderAsset& shaderAsset)
         {
             if (auto* fileIOBase = IO::FileIOBase::GetInstance())
             {
@@ -100,9 +89,6 @@ namespace AZ
 
                 AZStd::string uuidString;
                 assetId.m_guid.ToString<AZStd::string>(uuidString, false, false);
-
-                RHI::RHISystemInterface* rhiSystem = RHI::RHISystemInterface::Get();
-                RHI::PhysicalDeviceDescriptor physicalDeviceDesc = rhiSystem->GetDevice()->GetPhysicalDevice().GetDescriptor();
 
                 AZStd::string configString;
                 if (RHI::BuildOptions::IsDebugBuild)
@@ -117,17 +103,33 @@ namespace AZ
                 {
                     configString = "Release";
                 }
-                
-                char pipelineLibraryPathTemp[AZ_MAX_PATH_LEN];
-                azsnprintf(
-                    pipelineLibraryPathTemp, AZ_MAX_PATH_LEN, "@user@/Atom/PipelineStateCache_%s_%u_%u_%s_Ver_%i/%s/%s_%s_%d.bin",
-                    ToString(physicalDeviceDesc.m_vendorId).data(), physicalDeviceDesc.m_deviceId,
-                    physicalDeviceDesc.m_driverVersion, configString.data(),
-                    PSOCacheVersion, platformName.GetCStr(),
-                    shaderName.GetCStr(), uuidString.data(),
-                    assetId.m_subId);
 
-                fileIOBase->ResolvePath(pipelineLibraryPathTemp, pipelineLibraryPath, pipelineLibraryPathLength);
+                auto deviceCount = RHI::RHISystemInterface::Get()->GetDeviceCount();
+
+                for (int deviceIndex = 0; deviceIndex < deviceCount; ++deviceIndex)
+                {
+                    RHI::PhysicalDeviceDescriptor devicePhysicalDeviceDesc{
+                        RHI::RHISystemInterface::Get()->GetDevice(deviceIndex)->GetPhysicalDevice().GetDescriptor()
+                    };
+                    char pipelineLibraryPathTemp[AZ_MAX_PATH_LEN];
+                    azsnprintf(
+                        pipelineLibraryPathTemp,
+                        AZ_MAX_PATH_LEN,
+                        "@user@/Atom/PipelineStateCache_%s_%u_%u_%s_Ver_%i/%s/%s_%s_%d",
+                        ToString(devicePhysicalDeviceDesc.m_vendorId).data(),
+                        devicePhysicalDeviceDesc.m_deviceId,
+                        devicePhysicalDeviceDesc.m_driverVersion,
+                        configString.data(),
+                        PSOCacheVersion,
+                        platformName.GetCStr(),
+                        shaderName.GetCStr(),
+                        uuidString.data(),
+                        assetId.m_subId);
+
+                    char resolvedPipelineLibraryPath[AZ_MAX_PATH_LEN];
+                    fileIOBase->ResolvePath(pipelineLibraryPathTemp, resolvedPipelineLibraryPath, pipelineLibraryPathLength);
+                    pipelineLibraryPaths[deviceIndex] = resolvedPipelineLibraryPath;
+                }
                 return true;
             }
             return false;
@@ -135,7 +137,7 @@ namespace AZ
 
         RHI::ResultCode Shader::Init(ShaderAsset& shaderAsset)
         {
-            Data::AssetBus::Handler::BusDisconnect();
+            Data::AssetBus::MultiHandler::BusDisconnect();
             ShaderVariantFinderNotificationBus::Handler::BusDisconnect();
 
             RHI::RHISystemInterface* rhiSystem = RHI::RHISystemInterface::Get();
@@ -144,7 +146,7 @@ namespace AZ
             m_asset = { &shaderAsset, AZ::Data::AssetLoadBehavior::PreLoad };
             m_pipelineStateType = shaderAsset.GetPipelineStateType();
 
-            GetPipelineLibraryPath(m_pipelineLibraryPath, AZ_MAX_PATH_LEN, *m_asset);
+            GetPipelineLibraryPaths(m_pipelineLibraryPaths, AZ_MAX_PATH_LEN, *m_asset);
 
             {
                 AZStd::unique_lock<decltype(m_variantCacheMutex)> lock(m_variantCacheMutex);
@@ -161,8 +163,9 @@ namespace AZ
                 // in a new pipeline library every time.
 
                 RHI::PipelineStateCache* pipelineStateCache = rhiSystem->GetPipelineStateCache();
-                ConstPtr<RHI::PipelineLibraryData> serializedData = LoadPipelineLibrary();
-                RHI::PipelineLibraryHandle pipelineLibraryHandle = pipelineStateCache->CreateLibrary(serializedData.get(), m_pipelineLibraryPath);
+                auto serializedData = LoadPipelineLibrary();
+                RHI::PipelineLibraryHandle pipelineLibraryHandle =
+                    pipelineStateCache->CreateLibrary(serializedData, m_pipelineLibraryPaths);
 
                 if (pipelineLibraryHandle.IsNull())
                 {
@@ -185,20 +188,30 @@ namespace AZ
             }
 
             ShaderVariantFinderNotificationBus::Handler::BusConnect(m_asset.GetId());
-            Data::AssetBus::Handler::BusConnect(m_asset.GetId());
 
+            m_reloadedAssets.clear();
+            const auto& supervariants = m_asset->GetCurrentShaderApiData().m_supervariants;
+            m_expectedAssetReloadCount = 1 /*m_asset*/ + supervariants.size();
+            Data::AssetBus::MultiHandler::BusConnect(m_asset.GetId());
+            for (const auto& supervariant : supervariants)
+            {
+                Data::AssetBus::MultiHandler::BusConnect(supervariant.m_rootShaderVariantAsset.GetId());
+            }
             return RHI::ResultCode::Success;
         }
 
         void Shader::Shutdown()
         {
             ShaderVariantFinderNotificationBus::Handler::BusDisconnect();
-            Data::AssetBus::Handler::BusDisconnect();
+            Data::AssetBus::MultiHandler::BusDisconnect();
 
             if (m_pipelineLibraryHandle.IsValid())
             {
-                SavePipelineLibrary();
-
+                if (r_enablePsoCaching)
+                {
+                    SavePipelineLibrary();
+                }
+                
                 m_pipelineStateCache->ReleaseLibrary(m_pipelineLibraryHandle);
                 m_pipelineStateCache = nullptr;
                 m_pipelineLibraryHandle = {};
@@ -216,21 +229,77 @@ namespace AZ
         // AssetBus overrides
         void Shader::OnAssetReloaded(Data::Asset<Data::AssetData> asset)
         {
-            ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->Shader::OnAssetReloaded %s", this, asset.GetHint().c_str());
+            ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->Shader::OnAssetReloaded %s.\n",
+                this, asset.GetHint().c_str());
 
-            m_asset = Data::static_pointer_cast<ShaderAsset>(asset);
+            m_reloadedAssets.emplace(asset.GetId(), asset);
 
             if (ShaderReloadDebugTracker::IsEnabled())
             {
-                AZStd::sys_time_t now = AZStd::GetTimeUTCMilliSecond();
+                ShaderReloadDebugTracker::Printf(
+                    "Current ShaderAssetPtr={%p} with RootVariantAssetPtr={%p}", m_asset.Get(), m_asset->GetRootVariantAsset().Get());
 
-                const auto shaderVariantAsset = m_asset->GetRootVariantAsset();
-                ShaderReloadDebugTracker::Printf("{%p}->Shader::OnAssetReloaded for shader '%s' [current time %lld] found variant '%s'",
-                    this, m_asset.GetHint().c_str(), now, shaderVariantAsset.GetHint().c_str());
+                ShaderReloadDebugTracker::Printf("{%p} -> Shader::OnAssetReloaded so far only %zu of %zu assets have been reloaded.",
+                    this, m_reloadedAssets.size(), m_expectedAssetReloadCount);
+
+                AZStd::sys_time_t now = AZStd::GetTimeUTCMilliSecond();
+                if (asset.GetType() == AZ::AzTypeInfo<ShaderVariantAsset>::Uuid())
+                {
+                    ShaderReloadDebugTracker::Printf(
+                        "{%p}->Shader::OnRootVariantReloaded [current time %lld] got new variant {%p}'%s'",
+                        this,
+                        now,
+                        asset.Get(),
+                        asset.GetHint().c_str());
+                }
+                else
+                {
+                    const auto* newShaderAsset = asset.GetAs<ShaderAsset>();
+                    const auto shaderVariantAsset = newShaderAsset->GetRootVariantAsset();
+                    ShaderReloadDebugTracker::Printf(
+                        "{%p}->Shader::OnShaderAssetReloaded [current time %lld] got new shader {%p}'%s' with included variant {%p}'%s'",
+                        this,
+                        now,
+                        newShaderAsset,
+                        asset.GetHint().c_str(),
+                        shaderVariantAsset.Get(),
+                        shaderVariantAsset.GetHint().c_str());
+                }
             }
+
+            if (m_reloadedAssets.size() != m_expectedAssetReloadCount)
+            {
+                return;
+            }
+
+            // Time to update all references:
+            auto itor = m_reloadedAssets.find(m_asset.GetId());
+            if (itor == m_reloadedAssets.end())
+            {
+                AZ_Error("Shader", false, "Can not find the reloaded ShaderAsset with ID '%s'. Hint '%s'",
+                    m_asset.GetId().ToString<AZStd::string>().c_str(),
+                    m_asset.GetHint().c_str());
+                return;
+            }
+
+            m_asset = itor->second;
+            m_reloadedAssets.erase(itor);
+            for (auto& [assetId, rootVariantAsset] : m_reloadedAssets)
+            {
+                AZ_Assert(rootVariantAsset.GetType() == AZ::AzTypeInfo<ShaderVariantAsset>::Uuid(),
+                    "Was expecting only ShaderVariantAsset(s)");
+                if (!m_asset->UpdateRootShaderVariantAsset(Data::static_pointer_cast<ShaderVariantAsset>(rootVariantAsset)))
+                {
+                    AZ_Error("Shader", false,
+                        "Failed to update Root ShaderVariantAsset {%p}'%s'",
+                        rootVariantAsset.Get(),
+                        rootVariantAsset.GetHint().c_str());
+                }
+            }
+            m_reloadedAssets.clear();
+
             Init(*m_asset.Get());
             ShaderReloadNotificationBus::Event(asset.GetId(), &ShaderReloadNotificationBus::Events::OnShaderReinitialized, *this);
-
         }
         ///////////////////////////////////////////////////////////////////////
 
@@ -301,42 +370,54 @@ namespace AZ
             ShaderReloadNotificationBus::Event(m_asset.GetId(), &ShaderReloadNotificationBus::Events::OnShaderVariantReinitialized, updatedVariant);
         }
         ///////////////////////////////////////////////////////////////////
-        
-        ConstPtr<RHI::PipelineLibraryData> Shader::LoadPipelineLibrary() const
+
+        AZStd::unordered_map<int, ConstPtr<RHI::PipelineLibraryData>> Shader::LoadPipelineLibrary() const
         {
-            RHI::Device* device = RHI::RHISystemInterface::Get()->GetDevice();
-            //Check if explicit file load/save operation is needed as the RHI backend api may not support it
-            if (m_pipelineLibraryPath[0] != 0 && device->GetFeatures().m_isPsoCacheFileOperationsNeeded)
+            AZStd::unordered_map<int, ConstPtr<RHI::PipelineLibraryData>> pipelineLibraries;
+            auto deviceCount = RHI::RHISystemInterface::Get()->GetDeviceCount();
+
+            for (int deviceIndex = 0; deviceIndex < deviceCount; ++deviceIndex)
             {
-                return Utils::LoadObjectFromFile<RHI::PipelineLibraryData>(m_pipelineLibraryPath);
+                pipelineLibraries[deviceIndex] =
+                    Utils::LoadObjectFromFile<RHI::PipelineLibraryData>(m_pipelineLibraryPaths.at(deviceIndex));
             }
-            return nullptr;
+
+            return pipelineLibraries;
         }
 
         void Shader::SavePipelineLibrary() const
         {
-            RHI::Device* device = RHI::RHISystemInterface::Get()->GetDevice();
-            if (m_pipelineLibraryPath[0] != 0)
+            if (!m_pipelineLibraryPaths.empty())
             {
-                RHI::ConstPtr<RHI::PipelineLibrary> pipelineLib = m_pipelineStateCache->GetMergedLibrary(m_pipelineLibraryHandle);
-                if(!pipelineLib)
+                RHI::ConstPtr<RHI::PipelineLibrary> pipelineLibrary = m_pipelineStateCache->GetMergedLibrary(m_pipelineLibraryHandle);
+                if (!pipelineLibrary)
                 {
                     return;
                 }
-                
-                //Check if explicit file load/save operation is needed as the RHI backend api may not support it
-                if (device->GetFeatures().m_isPsoCacheFileOperationsNeeded)
+
+                auto deviceCount = RHI::RHISystemInterface::Get()->GetDeviceCount();
+
+                for (int deviceIndex = 0; deviceIndex < deviceCount; ++deviceIndex)
                 {
-                    RHI::ConstPtr<RHI::PipelineLibraryData> serializedData = pipelineLib->GetSerializedData();
-                    if(serializedData)
+                    RHI::Device* device = RHI::RHISystemInterface::Get()->GetDevice(deviceIndex);
+
+                    RHI::ConstPtr<RHI::DevicePipelineLibrary> pipelineLib = pipelineLibrary->GetDevicePipelineLibrary(deviceIndex);
+
+                    // Check if explicit file load/save operation is needed as the RHI backend api may not support it
+                    if (device->GetFeatures().m_isPsoCacheFileOperationsNeeded)
                     {
-                        Utils::SaveObjectToFile<RHI::PipelineLibraryData>(m_pipelineLibraryPath, DataStream::ST_BINARY, serializedData.get());
+                        RHI::ConstPtr<RHI::PipelineLibraryData> serializedData = pipelineLib->GetSerializedData();
+                        if (serializedData)
+                        {
+                            Utils::SaveObjectToFile<RHI::PipelineLibraryData>(
+                                m_pipelineLibraryPaths.at(deviceIndex), DataStream::ST_BINARY, serializedData.get());
+                        }
                     }
-                }
-                else
-                {
-                    [[maybe_unused]] bool result = pipelineLib->SaveSerializedData(m_pipelineLibraryPath);
-                    AZ_Error("Shader", result, "Pipeline Library %s was not saved", &m_pipelineLibraryPath);
+                    else
+                    {
+                        [[maybe_unused]] bool result = pipelineLib->SaveSerializedData(m_pipelineLibraryPaths.at(deviceIndex));
+                        AZ_Error("Shader", result, "Pipeline Library %s was not saved", &m_pipelineLibraryPaths.at(deviceIndex));
+                    }
                 }
             }
         }
@@ -454,7 +535,7 @@ namespace AZ
 
         const RHI::PipelineState* Shader::AcquirePipelineState(const RHI::PipelineStateDescriptor& descriptor) const
         {
-            return m_pipelineStateCache->AcquirePipelineState(m_pipelineLibraryHandle, descriptor);
+            return m_pipelineStateCache->AcquirePipelineState(m_pipelineLibraryHandle, descriptor, m_asset->GetName());
         }
 
         const RHI::Ptr<RHI::ShaderResourceGroupLayout>& Shader::FindShaderResourceGroupLayout(const Name& shaderResourceGroupName) const
@@ -484,8 +565,9 @@ namespace AZ
             if (drawSrgLayout)
             {
                 drawSrg = RPI::ShaderResourceGroup::Create(m_asset, GetSupervariantIndex(), drawSrgLayout->GetName());
-
-                if (drawSrgLayout->HasShaderVariantKeyFallbackEntry())
+                bool useFallbackKey = !shaderOptions.GetShaderOptionLayout()->IsFullySpecialized() ||
+                    !m_asset->UseSpecializationConstants(GetSupervariantIndex());
+                if (useFallbackKey && drawSrgLayout->HasShaderVariantKeyFallbackEntry())
                 {
                     drawSrg->SetShaderVariantKeyFallbackValue(shaderOptions.GetShaderVariantKeyFallbackValue());
                 }

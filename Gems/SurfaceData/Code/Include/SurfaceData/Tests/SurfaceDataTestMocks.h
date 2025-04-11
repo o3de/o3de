@@ -66,30 +66,30 @@ namespace UnitTest
 
         AZ::Aabb m_GetLocalBounds = AZ::Aabb::CreateCenterRadius(AZ::Vector3::CreateZero(), 0.5f);
         AZ::Transform m_GetTransform = AZ::Transform::CreateIdentity();
-        void GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds) override
+        void GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds) const override
         {
             transform = m_GetTransform;
             bounds = m_GetLocalBounds;
         }
 
-        AZ::Crc32 m_GetShapeType = AZ_CRC("MockShapeComponentHandler", 0x5189d279);
-        AZ::Crc32 GetShapeType() override
+        AZ::Crc32 m_GetShapeType = AZ_CRC_CE("MockShapeComponentHandler");
+        AZ::Crc32 GetShapeType() const override
         {
             return m_GetShapeType;
         }
 
         AZ::Aabb m_GetEncompassingAabb = AZ::Aabb::CreateCenterRadius(AZ::Vector3::CreateZero(), 0.5f);
-        AZ::Aabb GetEncompassingAabb() override
+        AZ::Aabb GetEncompassingAabb() const override
         {
             return m_GetEncompassingAabb;
         }
 
-        bool IsPointInside(const AZ::Vector3& point) override
+        bool IsPointInside(const AZ::Vector3& point) const override
         {
             return m_GetEncompassingAabb.Contains(point);
         }
 
-        float DistanceSquaredFromPoint(const AZ::Vector3& point) override
+        float DistanceSquaredFromPoint(const AZ::Vector3& point) const override
         {
             return m_GetEncompassingAabb.GetDistanceSq(point);
         }
@@ -107,7 +107,7 @@ namespace UnitTest
         static void Reflect(AZ::ReflectContext* reflect) { AZ_UNUSED(reflect); }
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("ShapeService", 0xe86aa5fe));
+            provided.push_back(AZ_CRC_CE("ShapeService"));
         }
     };
 

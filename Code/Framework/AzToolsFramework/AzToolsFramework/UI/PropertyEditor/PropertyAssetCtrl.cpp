@@ -91,6 +91,7 @@ namespace AzToolsFramework
         pLayout->setContentsMargins(0, 0, 0, 0);
         pLayout->setSpacing(2);
 
+        m_browseEdit->lineEdit()->setAcceptDrops(false);
         setAcceptDrops(true);
 
         m_thumbnail = new ThumbnailPropertyCtrl(this);
@@ -432,28 +433,32 @@ namespace AzToolsFramework
             AZStd::vector<const AssetBrowser::AssetBrowserEntry*> entries;
             if (AssetBrowser::Utils::FromMimeData(pData, entries))
             {
-                // Searching all source data entries for a compatible asset
+                // Search all of the entries for a compatible product asset
                 for (const auto entry : entries)
                 {
-                    // If this entry is a product asset then we check it for compatibility first
-                    if (const auto product = azrtti_cast<const AssetBrowser::ProductAssetBrowserEntry*>(entry))
+                    if (entry->GetEntryType() == AssetBrowser::AssetBrowserEntry::AssetEntryType::Product ||
+                        entry->GetEntryType() == AssetBrowser::AssetBrowserEntry::AssetEntryType::Source)
                     {
-                        if (checkAsset(product->GetAssetId(), product->GetAssetType()))
+                        // Support selecting and assigning source and product assets. If the entry is a matching product asset, it will be
+                        // assigned immediately. If it is a source asset entry, enumerate all of the children and assign the first
+                        // compatible product asset.
+                        bool result = false;
+                        entry->VisitDown(
+                            [&](const auto& currentEntry)
+                            {
+                                if (!result)
+                                {
+                                    if (const auto product = azrtti_cast<const AssetBrowser::ProductAssetBrowserEntry*>(currentEntry))
+                                    {
+                                        result = checkAsset(product->GetAssetId(), product->GetAssetType());
+                                    }
+                                }
+                                return !result;
+                            });
+
+                        if (result)
                         {
                             return true;
-                        }
-                    }
-                    else
-                    {
-                        // For all other container entry types search all of the child entries for a compatible asset
-                        AZStd::vector<const ProductAssetBrowserEntry*> children;
-                        entry->GetChildren<ProductAssetBrowserEntry>(children);
-                        for (const auto child : children)
-                        {
-                            if (checkAsset(child->GetAssetId(), child->GetAssetType()))
-                            {
-                                return true;
-                            }
                         }
                     }
                 }
@@ -728,7 +733,9 @@ namespace AzToolsFramework
 
     AssetSelectionModel PropertyAssetCtrl::GetAssetSelectionModel()
     {
-        auto selectionModel = AssetSelectionModel::AssetTypesSelection(GetSelectableAssetTypes());
+        const bool multiselect = false;
+        const bool supportSelectingSources = true;
+        auto selectionModel = AssetSelectionModel::AssetTypeSelection(GetSelectableAssetTypes(), multiselect, supportSelectingSources);
         selectionModel.SetTitle(m_title);
         return selectionModel;
     }
@@ -791,13 +798,15 @@ namespace AzToolsFramework
                     if (!assetID.IsValid())
                     {
                         // No Asset Id selected - Open editor and create new asset for them
-                        AssetEditor::AssetEditorRequestsBus::Broadcast(&AssetEditor::AssetEditorRequests::CreateNewAsset, GetCurrentAssetType(), m_componentUuid);
+                        AssetEditor::AssetEditorRequestsBus::Broadcast(
+                            &AssetEditor::AssetEditorRequests::CreateNewAsset, GetCurrentAssetType(), m_componentUuid);
                     }
                     else
                     {
                         // Open the asset with the preferred asset editor
                         bool handled = false;
-                        AssetBrowser::AssetBrowserInteractionNotificationBus::Broadcast(&AssetBrowser::AssetBrowserInteractionNotifications::OpenAssetInAssociatedEditor, assetID, handled);
+                        AssetBrowser::AssetBrowserInteractionNotificationBus::Broadcast(
+                            &AssetBrowser::AssetBrowserInteractionNotifications::OpenAssetInAssociatedEditor, assetID, handled);
                     }
 
                     return;
@@ -842,16 +851,33 @@ namespace AzToolsFramework
         PickAssetSelectionFromDialog(selection, parentWidget());
         if (selection.IsValid())
         {
-            const auto product = azrtti_cast<const ProductAssetBrowserEntry*>(selection.GetResult());
-            auto folder = azrtti_cast<const FolderAssetBrowserEntry*>(selection.GetResult());
-            AZ_Assert(product || folder, "Incorrect entry type selected. Expected product or folder.");
-            if (product)
+            const auto entry = selection.GetResult();
+            if (entry->GetEntryType() == AssetBrowser::AssetBrowserEntry::AssetEntryType::Product ||
+                entry->GetEntryType() == AssetBrowser::AssetBrowserEntry::AssetEntryType::Source)
             {
-                SetSelectedAssetID(product->GetAssetId());
+                // Support selecting and assigning source and product assets. If the entry is a matching product asset, it will be assigned
+                // immediately. If it is a source asset entry, enumerate all of the children and assign the first compatible product asset.
+                bool result = false;
+                entry->VisitDown(
+                    [&](const auto& currentEntry)
+                    {
+                        if (!result)
+                        {
+                            if (const auto product = azrtti_cast<const AssetBrowser::ProductAssetBrowserEntry*>(currentEntry))
+                            {
+                                if (CanAcceptAsset(product->GetAssetId(), product->GetAssetType()))
+                                {
+                                    SetSelectedAssetID(product->GetAssetId());
+                                    result = true;
+                                }
+                            }
+                        }
+                        return !result;
+                    });
             }
-            else if (folder)
+            else if (entry->GetEntryType() == AssetBrowser::AssetBrowserEntry::AssetEntryType::Folder)
             {
-                SetFolderSelection(folder->GetRelativePath());
+                SetFolderSelection(entry->GetRelativePath());
                 SetSelectedAssetID(AZ::Data::AssetId());
             }
         }
@@ -970,12 +996,12 @@ namespace AzToolsFramework
     // Functionality to use the default asset when no asset is selected has to be implemented on the component side.
     void PropertyAssetCtrl::SetDefaultAssetID(const AZ::Data::AssetId& defaultID)
     {
-        if (defaultID.IsValid())
-        {
-            m_defaultAssetID = defaultID;
+        m_defaultAssetID = defaultID;
+        m_defaultAssetHint.clear();
+        m_browseEdit->setPlaceholderText("");
 
-            AZ::Data::AssetInfo assetInfo;
-            AZStd::string rootFilePath;
+        if (m_defaultAssetID.IsValid())
+        {
             AZStd::string assetPath;
 
             if (m_showProductAssetName)
@@ -985,14 +1011,16 @@ namespace AzToolsFramework
             }
             else
             {
-                const AZStd::string platformName = ""; // Empty for default
+                AZ::Data::AssetInfo assetInfo;
+                AZStd::string rootFilePath;
+                const AZStd::string platformName; // Empty for default
                 for (const auto& assetType : GetSelectableAssetTypes())
                 {
                     bool result = false;
                     AssetSystemRequestBus::BroadcastResult(
                         result,
                         &AssetSystem::AssetSystemRequest::GetAssetInfoById,
-                        defaultID,
+                        m_defaultAssetID,
                         assetType,
                         platformName,
                         assetInfo,
@@ -1009,28 +1037,16 @@ namespace AzToolsFramework
             {
                 AzFramework::StringFunc::Path::GetFileName(assetPath.c_str(), m_defaultAssetHint);
             }
+
             m_browseEdit->setPlaceholderText((m_defaultAssetHint + m_DefaultSuffix).c_str());
         }
-        else
-        {
-            if (m_selectedAssetID.IsValid())
-            {
-                ClearErrorButton();
-            }
-            else
-            {
-                UpdateErrorButtonWithMessage(AZStd::string("Default asset is invalid"));
-                m_browseEdit->setPlaceholderText("Invalid");
-            }
-        }
 
-        UpdateEditButton();
+        UpdateAssetDisplay();
     }
 
     void PropertyAssetCtrl::UpdateAssetDisplay()
     {
         UpdateThumbnail();
-
         UpdateEditButton();
 
         const AZStd::string& folderPath = GetFolderSelection();
@@ -1692,6 +1708,21 @@ namespace AzToolsFramework
         return ReadValuesIntoGUIInternal(index, GUI, instance, node);
     }
 
+    AZ::Data::Asset<AZ::Data::AssetData>* AssetPropertyHandlerDefault::CastToInternal(void* instance, const InstanceDataNode* node)
+    {
+        if (node->GetElementMetadata()->m_genericClassInfo && node->GetElementMetadata()->m_genericClassInfo->GetGenericTypeId() == AZ::GetAssetClassId())
+        {
+            return static_cast<AZ::Data::Asset<AZ::Data::AssetData>*>(instance);
+        }
+
+        return nullptr;
+    }
+
+    AZ::Data::Asset<AZ::Data::AssetData>* AssetPropertyHandlerDefault::CastTo(void* instance, const InstanceDataNode* node, [[maybe_unused]] const AZ::Uuid& fromId, [[maybe_unused]] const AZ::Uuid& toId) const
+    {
+        return CastToInternal(instance, node);
+    }
+
     QWidget* AssetIdPropertyHandlerDefault::CreateGUI(QWidget* pParent)
     {
         PropertyAssetCtrl* newCtrl = aznew PropertyAssetCtrl(pParent);
@@ -1745,7 +1776,7 @@ namespace AzToolsFramework
         ConsumeAttributeForPropertyAssetCtrl(GUI, attrib, attrValue, debugName);
     }
 
-    void SimpleAssetPropertyHandlerDefault::WriteGUIValuesIntoProperty(size_t index, PropertyAssetCtrl* GUI, property_t& instance, InstanceDataNode* node)
+    void SimpleAssetPropertyHandlerDefault::WriteGUIValuesIntoPropertyInternal(size_t index, PropertyAssetCtrl* GUI, property_t& instance, InstanceDataNode* node)
     {
         (void)index;
         (void)node;
@@ -1757,7 +1788,12 @@ namespace AzToolsFramework
         instance.SetAssetPath(assetPath.c_str());
     }
 
-    bool SimpleAssetPropertyHandlerDefault::ReadValuesIntoGUI(size_t index, PropertyAssetCtrl* GUI, const property_t& instance, InstanceDataNode* node)
+    void SimpleAssetPropertyHandlerDefault::WriteGUIValuesIntoProperty(size_t index, PropertyAssetCtrl* GUI, property_t& instance, InstanceDataNode* node)
+    {
+        WriteGUIValuesIntoPropertyInternal(index, GUI, instance, node);
+    }
+
+    bool SimpleAssetPropertyHandlerDefault::ReadValuesIntoGUIInternal(size_t index, PropertyAssetCtrl* GUI, const property_t& instance, InstanceDataNode* node)
     {
         (void)index;
         (void)node;
@@ -1778,6 +1814,11 @@ namespace AzToolsFramework
 
         GUI->blockSignals(false);
         return false;
+    }
+
+    bool SimpleAssetPropertyHandlerDefault::ReadValuesIntoGUI(size_t index, PropertyAssetCtrl* GUI, const property_t& instance, InstanceDataNode* node)
+    {
+        return ReadValuesIntoGUIInternal(index, GUI, instance, node);
     }
 
     void RegisterAssetPropertyHandler()

@@ -74,6 +74,10 @@ namespace ScriptCanvasUnitTest
         actualType = FromAZType(ToAZType(expectedType));
         EXPECT_EQ(actualType, expectedType);
 
+        expectedType = Type::MatrixMxN();
+        actualType = FromAZType(ToAZType(expectedType));
+        EXPECT_EQ(actualType, expectedType);
+
         expectedType = Type::Number();
         actualType = FromAZType(ToAZType(expectedType));
         EXPECT_EQ(actualType, expectedType);
@@ -107,6 +111,10 @@ namespace ScriptCanvasUnitTest
         EXPECT_EQ(actualType, expectedType);
 
         expectedType = Type::Vector4();
+        actualType = FromAZType(ToAZType(expectedType));
+        EXPECT_EQ(actualType, expectedType);
+
+        expectedType = Type::VectorN();
         actualType = FromAZType(ToAZType(expectedType));
         EXPECT_EQ(actualType, expectedType);
 
@@ -243,6 +251,15 @@ namespace ScriptCanvasUnitTest
         EXPECT_TRUE(actualResult);
     }
 
+    TEST_F(ScriptCanvasUnitTestDataTypeUtils, IsMatrixMxN_GetExpectedResult_WhileCheckingMatrixMxNType)
+    {
+        auto actualResult = IsMatrixMxN(AZ::MatrixMxN::TYPEINFO_Uuid());
+        EXPECT_TRUE(actualResult);
+
+        actualResult = IsMatrixMxN(Type::MatrixMxN());
+        EXPECT_TRUE(actualResult);
+    }
+
     TEST_F(ScriptCanvasUnitTestDataTypeUtils, IsOBB_GetExpectedResult_WhileCheckingOBBType)
     {
         auto actualResult = IsOBB(AZ::Obb::TYPEINFO_Uuid());
@@ -315,6 +332,15 @@ namespace ScriptCanvasUnitTest
         EXPECT_TRUE(actualResult);
     }
 
+    TEST_F(ScriptCanvasUnitTestDataTypeUtils, IsVectorN_GetExpectedResult_WhileCheckingVectorNType)
+    {
+        auto actualResult = IsVectorN(AZ::VectorN::TYPEINFO_Uuid());
+        EXPECT_TRUE(actualResult);
+
+        actualResult = IsVectorN(Type::VectorN());
+        EXPECT_TRUE(actualResult);
+    }
+
     TEST_F(ScriptCanvasUnitTestDataTypeUtils, IsVectorType_GetExpectedResult_WhileCheckingVectorType)
     {
         auto result = IsVectorType(AZ::Vector2::TYPEINFO_Uuid());
@@ -330,6 +356,11 @@ namespace ScriptCanvasUnitTest
         result = IsVectorType(AZ::Vector4::TYPEINFO_Uuid());
         EXPECT_TRUE(result);
         result = IsVectorType(Type::Vector4());
+        EXPECT_TRUE(result);
+
+        result = IsVectorType(AZ::VectorN::TYPEINFO_Uuid());
+        EXPECT_TRUE(result);
+        result = IsVectorType(Type::VectorN());
         EXPECT_TRUE(result);
 
         result = IsVectorType(AZ::Transform::TYPEINFO_Uuid());
@@ -542,7 +573,7 @@ namespace ScriptCanvasUnitTest
     TEST_F(ScriptCanvasUnitTestDataTypeUtils, ToAZType_GetNullUuid_WhileCheckingInvalidType)
     {
         AZ_TEST_START_TRACE_SUPPRESSION;
-        auto actualResult = ToAZType((eType) 20);
+        auto actualResult = ToAZType(eType::Count);
         AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT;
         EXPECT_TRUE(actualResult.IsNull());
     }

@@ -62,9 +62,6 @@ namespace AZ
             Name m_drawListTagName;
             RHI::DrawListTag m_drawListTag;
 
-            // The base name of the pipeline view tags for the children.
-            RPI::PipelineViewTag m_basePipelineViewTag;
-
             // The name of the camera view associated to the shadow.
             // It is used to generate distinct child's pipeline view tags for each camera view.
             AZStd::string m_cameraViewName;

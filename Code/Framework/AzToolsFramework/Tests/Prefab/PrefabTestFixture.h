@@ -37,9 +37,6 @@ namespace UnitTest
     {
     public:
         PrefabTestToolsApplication(AZStd::string appName);
-
-        // Make sure our prefab tests always run with prefabs enabled
-        bool IsPrefabSystemEnabled() const override;
     };
 
     //! Defines prefab testing environment.
@@ -89,6 +86,8 @@ namespace UnitTest
         AZ::EntityId GetRootContainerEntityId();
 
         //! After prefab template is updated, we need to propagate the changes to all prefab instances.
+        //! Note that any instances involved inside this template may be destroyed and recreated, so do not hold
+        //! onto Entity* or Component* pointers into objects that may be affected by this call.  They may not be valid.
         void PropagateAllTemplateChanges();
 
         //! Helper function to compare two instances and asserts will be thrown if two instances are not identical.

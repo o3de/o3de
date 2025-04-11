@@ -54,12 +54,12 @@ namespace ImageProcessingAtom
 
     void ImageProcessingSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("AtomImageBuilderService", 0x76ded592));
+        provided.push_back(AZ_CRC_CE("AtomImageBuilderService"));
     }
 
     void ImageProcessingSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("AtomImageBuilderService", 0x76ded592));
+        incompatible.push_back(AZ_CRC_CE("AtomImageBuilderService"));
     }
 
     void ImageProcessingSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)

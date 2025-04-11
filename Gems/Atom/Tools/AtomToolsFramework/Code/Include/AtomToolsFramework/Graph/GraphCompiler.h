@@ -103,5 +103,8 @@ namespace AtomToolsFramework
 
         // Optional function for handling state changes
         StateChangeHandler m_stateChangeHandler;
+
+        // Asset status report request ID
+        const AZ::Uuid m_assetReportRequestId = AZ::Uuid::CreateRandom();
     };
 } // namespace AtomToolsFramework

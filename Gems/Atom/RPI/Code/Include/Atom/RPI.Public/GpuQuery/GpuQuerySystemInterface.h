@@ -8,7 +8,7 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/AttachmentEnums.h>
-
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/GpuQuery/GpuQueryTypes.h>
 
 namespace AZ
@@ -20,7 +20,7 @@ namespace AZ
         //! The GpuQuerySystem is the interface the user communicates with in order to create RPI Queries.
         //! For each QueryType, the GpuQuerySystem creates a RPI QueryPool. The GpuQuerySystem will create a RPI Query instance in the
         //! applicable RPI QueryPool depending on the requested QueryType.
-        class GpuQuerySystemInterface
+        class ATOM_RPI_PUBLIC_API GpuQuerySystemInterface
         {
         public:
             AZ_RTTI(GpuQuerySystemInterface, "{55DF69E7-3C0E-471F-86EF-EA561901407C}");

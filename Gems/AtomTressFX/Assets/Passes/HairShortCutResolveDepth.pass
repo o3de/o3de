@@ -30,7 +30,7 @@
                     // Looking for it in the Shaders directory relative to the Assets directory
                     "FilePath": "Shaders/HairShortCutResolveDepth.shader"
                 },
-                "PipelineViewTag": "MainCamera"
+                "BindViewSrg": true
             }
         }
     }

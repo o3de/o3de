@@ -262,12 +262,12 @@ namespace AZ
                                         .arg(m_editData.m_materialParentSourcePath.c_str())
                                         .arg(materialParentSourceFileName.c_str());
                 }
-                if (!m_editData.m_materialTypeSourcePath.empty())
+                if (!m_editData.m_originalMaterialTypeSourcePath.empty())
                 {
                     // Inserting links that will be used to open the material/type in the material editor
-                    const auto& materialTypeSourceFileName = GetFileName(m_editData.m_materialTypeSourcePath);
+                    const auto& materialTypeSourceFileName = GetFileName(m_editData.m_originalMaterialTypeSourcePath);
                     materialInfo += tr("<tr><td><b>Material Type&emsp;</b></td><td><a href=\"%1\">%2</a></td></tr>")
-                                        .arg(m_editData.m_materialTypeSourcePath.c_str())
+                                        .arg(m_editData.m_originalMaterialTypeSourcePath.c_str())
                                         .arg(materialTypeSourceFileName.c_str());
                 }
                 materialInfo += tr("</table>");

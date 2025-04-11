@@ -92,10 +92,10 @@ namespace AZ
             virtual bool GetExcludeFromReflectionCubeMaps() const = 0;
 
             //! Returns the axis-aligned bounding box for the model at its world position.
-            virtual AZ::Aabb GetWorldBounds() = 0;
+            virtual AZ::Aabb GetWorldBounds() const = 0;
 
             //! Returns the axis-aligned bounding box in model space.
-            virtual AZ::Aabb GetLocalBounds() = 0;
+            virtual AZ::Aabb GetLocalBounds() const = 0;
         };
         using MeshComponentRequestBus = EBus<MeshComponentRequests>;
 
@@ -106,6 +106,10 @@ namespace AZ
             : public ComponentBus
         {
         public:
+            // Notifications can be triggered from job threads, so this uses a mutex to guard against
+            // listeners joining or leaving the ebus on other threads mid-notification.
+            using MutexType = AZStd::recursive_mutex;
+
             //! Notifies listeners when a model has been loaded.
             //! If the model is already loaded when first connecting to the MeshComponentNotificationBus,
             //! the OnModelReady event will occur when connecting.

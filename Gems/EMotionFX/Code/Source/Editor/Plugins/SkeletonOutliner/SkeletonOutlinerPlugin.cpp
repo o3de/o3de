@@ -72,7 +72,7 @@ namespace EMotionFX
     {
         m_mainWidget = new QWidget(m_dock);
         [[maybe_unused]] auto* toastNotificationsView =
-            new AzToolsFramework::ToastNotificationsView(m_mainWidget, AZ_CRC("SkeletonOutliner"));
+            new AzToolsFramework::ToastNotificationsView(m_mainWidget, AZ_CRC_CE("SkeletonOutliner"));
 
         QVBoxLayout* mainLayout = new QVBoxLayout();
         m_mainWidget->setLayout(mainLayout);

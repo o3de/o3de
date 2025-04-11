@@ -10,6 +10,7 @@
 #include "MorphSetupInstance.h"
 #include "MorphSetup.h"
 #include <EMotionFX/Source/Allocators.h>
+#include <MCore/Source/RefCounted.h>
 
 namespace EMotionFX
 {
@@ -18,7 +19,7 @@ namespace EMotionFX
 
     // default constructor
     MorphSetupInstance::MorphSetupInstance()
-        : BaseObject()
+        : MCore::RefCounted()
     {
         Init(nullptr);
     }

@@ -160,9 +160,6 @@ from PySide2 import QtGui
 from PySide2.QtCore import Slot, QObject, QUrl
 from shiboken2 import wrapInstance, getCppPointer
 
-# import additional O3DE QtForPython Gem modules
-import az_qt_helpers
-
 # additional DCCsi imports that utilize PySide2
 from DccScriptingInterface.Editor.Scripts.ui import start_service
 from DccScriptingInterface.Editor.Scripts.ui import hook_register_action_sampleui
@@ -346,6 +343,8 @@ def click_action_dccsi_about():
     """Open DCCsi About Dialog"""
     _LOGGER.debug(f'Clicked: click_action_dccsi_about')
 
+    # import additional O3DE QtForPython Gem modules
+    import az_qt_helpers
     EDITOR_MAIN_WINDOW = az_qt_helpers.get_editor_main_window()
 
     about_dialog = DccsiAbout(EDITOR_MAIN_WINDOW)

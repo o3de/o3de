@@ -5,28 +5,115 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "HDRi Skybox",
-                "category": "Rendering"
+                "name": "HDRi Skybox"
             },
             "methods": [
+                {
+                    "base": "SetCubemapAssetId",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Cubemap Asset Id"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Cubemap Asset Id is invoked"
+                    },
+                    "details": {
+                        "name": "Set Cubemap Asset Id"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
+                            "details": {
+                                "name": "Asset Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetCubemapAssetId",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Cubemap Asset Id"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Cubemap Asset Id is invoked"
+                    },
+                    "details": {
+                        "name": "Get Cubemap Asset Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
+                            "details": {
+                                "name": "Asset Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetCubemapAssetPath",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Cubemap Asset Path"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Cubemap Asset Path is invoked"
+                    },
+                    "details": {
+                        "name": "Set Cubemap Asset Path"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Asset Path"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetCubemapAssetPath",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Cubemap Asset Path"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Cubemap Asset Path is invoked"
+                    },
+                    "details": {
+                        "name": "Get Cubemap Asset Path"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Asset Path"
+                            }
+                        }
+                    ]
+                },
                 {
                     "base": "SetExposure",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetExposure"
+                        "tooltip": "When signaled, this will invoke Set Exposure"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetExposure is invoked"
+                        "tooltip": "Signaled after Set Exposure is invoked"
                     },
                     "details": {
-                        "name": "SetExposure"
+                        "name": "Set Exposure"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Exposure"
                             }
                         }
                     ]
@@ -35,20 +122,20 @@
                     "base": "GetExposure",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetExposure"
+                        "tooltip": "When signaled, this will invoke Get Exposure"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetExposure is invoked"
+                        "tooltip": "Signaled after Get Exposure is invoked"
                     },
                     "details": {
-                        "name": "GetExposure"
+                        "name": "Get Exposure"
                     },
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Exposure"
                             }
                         }
                     ]

@@ -124,6 +124,7 @@ namespace AZ
 
             // Bake the diffuse probe grid textures to assets
             void BakeTextures(DiffuseProbeGridBakeTexturesCallback callback);
+            bool CanBakeTextures();
 
             // Update the baked texture assets from the configuration
             void UpdateBakedTextures();

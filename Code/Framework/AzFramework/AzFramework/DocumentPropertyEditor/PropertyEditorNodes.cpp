@@ -42,6 +42,8 @@ namespace AZ::DocumentPropertyEditor::Nodes
         system->RegisterNodeAttribute<NodeWithVisiblityControl>(NodeWithVisiblityControl::Visibility);
         system->RegisterNodeAttribute<NodeWithVisiblityControl>(NodeWithVisiblityControl::ReadOnly);
         system->RegisterNodeAttribute<NodeWithVisiblityControl>(NodeWithVisiblityControl::NameLabelOverride);
+        system->RegisterNodeAttribute<NodeWithVisiblityControl>(NodeWithVisiblityControl::SetTrueLabel);
+        system->RegisterNodeAttribute<NodeWithVisiblityControl>(NodeWithVisiblityControl::SetFalseLabel);
 
         system->RegisterNode<Adapter, NodeWithVisiblityControl>();
 
@@ -62,6 +64,7 @@ namespace AZ::DocumentPropertyEditor::Nodes
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::EnumUnderlyingType);
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::InternalEnumValueKey);
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::ChangeNotify);
+        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::ChangeValidate);
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::ValueHashed);
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::ParentValue);
 
@@ -70,9 +73,40 @@ namespace AZ::DocumentPropertyEditor::Nodes
         system->RegisterNodeAttribute<PropertyEditor>(Container::RemoveNotify);
         system->RegisterNodeAttribute<PropertyEditor>(Container::ClearNotify);
         system->RegisterNodeAttribute<PropertyEditor>(Container::ContainerCanBeModified);
+        system->RegisterNodeAttribute<PropertyEditor>(Container::IndexedChildNameLabelOverride);
 
         system->RegisterPropertyEditor<UIElement>();
         system->RegisterNodeAttribute<UIElement>(UIElement::Handler);
+
+        system->RegisterPropertyEditor<DoubleNumericEditor>();
+        system->RegisterNodeAttribute<DoubleNumericEditor>(DoubleNumericEditor::Min);
+        system->RegisterNodeAttribute<DoubleNumericEditor>(DoubleNumericEditor::Max);
+        system->RegisterNodeAttribute<DoubleNumericEditor>(DoubleNumericEditor::Step);
+        system->RegisterNodeAttribute<DoubleNumericEditor>(DoubleNumericEditor::Suffix);
+        system->RegisterNodeAttribute<DoubleNumericEditor>(DoubleNumericEditor::SoftMin);
+        system->RegisterNodeAttribute<DoubleNumericEditor>(DoubleNumericEditor::SoftMax);
+        system->RegisterNodeAttribute<DoubleNumericEditor>(DoubleNumericEditor::Decimals);
+        system->RegisterNodeAttribute<DoubleNumericEditor>(DoubleNumericEditor::DisplayDecimals);
+
+        system->RegisterPropertyEditor<IntNumericEditor>();
+        system->RegisterNodeAttribute<IntNumericEditor>(IntNumericEditor::Min);
+        system->RegisterNodeAttribute<IntNumericEditor>(IntNumericEditor::Max);
+        system->RegisterNodeAttribute<IntNumericEditor>(IntNumericEditor::Step);
+        system->RegisterNodeAttribute<IntNumericEditor>(IntNumericEditor::Suffix);
+        system->RegisterNodeAttribute<IntNumericEditor>(IntNumericEditor::SoftMin);
+        system->RegisterNodeAttribute<IntNumericEditor>(IntNumericEditor::SoftMax);
+        system->RegisterNodeAttribute<IntNumericEditor>(IntNumericEditor::Decimals);
+        system->RegisterNodeAttribute<IntNumericEditor>(IntNumericEditor::DisplayDecimals);
+
+        system->RegisterPropertyEditor<UintNumericEditor>();
+        system->RegisterNodeAttribute<UintNumericEditor>(UintNumericEditor::Min);
+        system->RegisterNodeAttribute<UintNumericEditor>(UintNumericEditor::Max);
+        system->RegisterNodeAttribute<UintNumericEditor>(UintNumericEditor::Step);
+        system->RegisterNodeAttribute<UintNumericEditor>(UintNumericEditor::Suffix);
+        system->RegisterNodeAttribute<UintNumericEditor>(UintNumericEditor::SoftMin);
+        system->RegisterNodeAttribute<UintNumericEditor>(UintNumericEditor::SoftMax);
+        system->RegisterNodeAttribute<UintNumericEditor>(UintNumericEditor::Decimals);
+        system->RegisterNodeAttribute<UintNumericEditor>(UintNumericEditor::DisplayDecimals);
 
         system->RegisterPropertyEditor<NumericEditor<>>();
         system->RegisterNodeAttribute<NumericEditor<>>(NumericEditor<>::Min);

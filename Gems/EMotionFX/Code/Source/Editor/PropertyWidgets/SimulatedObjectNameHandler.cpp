@@ -53,7 +53,7 @@ namespace EMotionFX
 
     AZ::u32 SimulatedObjectNameHandler::GetHandlerName() const
     {
-        return AZ_CRC("SimulatedObjectName", 0xd11d7db9);
+        return AZ_CRC_CE("SimulatedObjectName");
     }
 
     QWidget* SimulatedObjectNameHandler::CreateGUI(QWidget* parent)

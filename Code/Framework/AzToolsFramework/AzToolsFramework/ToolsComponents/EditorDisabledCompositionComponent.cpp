@@ -46,7 +46,7 @@ namespace AzToolsFramework
                     if (disabledComponentsIter->value.IsArray())
                     {
                         // If the serialized data is an array type, then convert the data to a map.
-                        AZStd::vector<AZ::Component*> componentVector;
+                        AZ::Entity::ComponentArrayType componentVector;
                         disabledComponentsResult = ContinueLoadingFromJsonObjectField(
                             &componentVector, azrtti_typeid<decltype(componentVector)>(), inputValue, "DisabledComponents", context);
 
@@ -66,6 +66,13 @@ namespace AzToolsFramework
                         // the template is null and the component should not be added.
                         if (component && component->GetUnderlyingComponentType() != genericComponentWrapperTypeId)
                         {
+                            // When a component is first added into the disabledComponents list, it will already have
+                            // a serialized identifier set, which is then used as the componentKey.
+                            // When serializing the component back in, the identifier isn't serialized with the component itself,
+                            // so we need to set it manually with the componentKey to restore the state back to what it was
+                            // at the original point of serialization.
+                            component->SetSerializedIdentifier(componentKey);
+
                             componentInstance->m_disabledComponents.emplace(componentKey, component);
                         }
                     }
@@ -115,15 +122,15 @@ namespace AzToolsFramework
 
         void EditorDisabledCompositionComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
         {
-            services.push_back(AZ_CRC("EditorDisabledCompositionService", 0x277e3445));
+            services.push_back(AZ_CRC_CE("EditorDisabledCompositionService"));
         }
 
         void EditorDisabledCompositionComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
         {
-            services.push_back(AZ_CRC("EditorDisabledCompositionService", 0x277e3445));
+            services.push_back(AZ_CRC_CE("EditorDisabledCompositionService"));
         }
 
-        void EditorDisabledCompositionComponent::GetDisabledComponents(AZStd::vector<AZ::Component*>& components)
+        void EditorDisabledCompositionComponent::GetDisabledComponents(AZ::Entity::ComponentArrayType& components)
         {
             for (auto const& pair : m_disabledComponents)
             {

@@ -28,6 +28,7 @@ set(FILES
     DataTypes/GraphData/IAnimationData.h
     DataTypes/GraphData/IBlendShapeData.h
     DataTypes/Groups/IGroup.h
+    DataTypes/Groups/IImportGroup.h
     DataTypes/Groups/ISceneNodeGroup.h
     DataTypes/Groups/IMeshGroup.h
     DataTypes/Groups/ISkeletonGroup.h
@@ -119,6 +120,8 @@ set(FILES
     Events/SceneSerializationBus.h
     Import/ManifestImportRequestHandler.h
     Import/ManifestImportRequestHandler.cpp
+    Import/SceneImportSettings.h
+    Import/SceneImportSettings.cpp
     Utilities/CoordinateSystemConverter.h
     Utilities/CoordinateSystemConverter.cpp
     Utilities/SceneGraphSelector.h

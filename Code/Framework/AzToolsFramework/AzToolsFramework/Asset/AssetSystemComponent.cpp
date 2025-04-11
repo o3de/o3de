@@ -110,7 +110,7 @@ namespace AzToolsFramework
             AZ_Assert(socketConn, "AzToolsFramework::AssetSystem::AssetSystemComponent requires a valid socket conection!");
             if (socketConn)
             {
-                m_cbHandle = socketConn->AddMessageHandler(AZ_CRC("AssetProcessorManager::SourceFileNotification", 0x8bfc4d1c),
+                m_cbHandle = socketConn->AddMessageHandler(AZ_CRC_CE("AssetProcessorManager::SourceFileNotification"),
                     [context](unsigned int typeId, unsigned int /*serial*/, const void* data, unsigned int dataLength)
                 {
                     OnAssetSystemMessage(typeId, data, dataLength, context);
@@ -156,7 +156,7 @@ namespace AzToolsFramework
             {
                 socketConn->RemoveMessageHandler(AssetSystem::WantAssetBrowserShowRequest::MessageType, m_wantShowAssetBrowserCBHandle);
                 socketConn->RemoveMessageHandler(AssetSystem::AssetBrowserShowRequest::MessageType, m_showAssetBrowserCBHandle);
-                socketConn->RemoveMessageHandler(AZ_CRC("AssetProcessorManager::SourceFileNotification", 0x8bfc4d1c), m_cbHandle);
+                socketConn->RemoveMessageHandler(AZ_CRC_CE("AssetProcessorManager::SourceFileNotification"), m_cbHandle);
             }
 
             AssetSystemBus::AllowFunctionQueuing(false);
@@ -228,17 +228,17 @@ namespace AzToolsFramework
 
         void AssetSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("AssetProcessorToolsConnection", 0x734669bc));
+            provided.push_back(AZ_CRC_CE("AssetProcessorToolsConnection"));
         }
 
         void AssetSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("AssetProcessorToolsConnection", 0x734669bc));
+            incompatible.push_back(AZ_CRC_CE("AssetProcessorToolsConnection"));
         }
 
         void AssetSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC("AssetProcessorConnection", 0xf0cd75cd));
+            required.push_back(AZ_CRC_CE("AssetProcessorConnection"));
         }
 
         bool AssetSystemComponent::GetRelativeProductPathFromFullSourceOrProductPath(const AZStd::string& fullPath, AZStd::string& outputPath)

@@ -6,10 +6,10 @@
  *
  */
 #include <Prefab/Procedural/ProceduralPrefabAsset.h>
+
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Settings/SettingsRegistry.h>
-#include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/FileFunc/FileFunc.h>
 
 namespace AZ::Prefab
@@ -57,14 +57,7 @@ namespace AZ::Prefab
 
     bool ProceduralPrefabAsset::UseProceduralPrefabs()
     {
-        bool prefabsEnabled = false;
-        AzFramework::ApplicationRequests::Bus::Broadcast(
-            [&prefabsEnabled](AzFramework::ApplicationRequests::Bus::Events* ebus)
-        {
-            prefabsEnabled = ebus->IsPrefabSystemEnabled();
-        });
-
-        return prefabsEnabled;
+        return true;
     }
 
     // PrefabDomData

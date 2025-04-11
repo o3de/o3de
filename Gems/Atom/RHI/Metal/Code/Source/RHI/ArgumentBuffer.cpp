@@ -117,6 +117,7 @@ namespace AZ
         {
             bool resourceAdded = false;
 
+            
             for (const RHI::ShaderInputBufferDescriptor& shaderInputBuffer : m_srgLayout->GetShaderInputListForBuffers())
             {
                 MTLArgumentDescriptor* bufferArgDescriptor = [[[MTLArgumentDescriptor alloc] init] autorelease];
@@ -127,10 +128,14 @@ namespace AZ
 
             for (const RHI::ShaderInputImageDescriptor& shaderInputImage : m_srgLayout->GetShaderInputListForImages())
             {
-                MTLArgumentDescriptor* imgArgDescriptor = [[[MTLArgumentDescriptor alloc] init] autorelease];
-                ConvertImageArgumentDescriptor(imgArgDescriptor, shaderInputImage);
-                [argBufferDecriptors addObject:imgArgDescriptor];
-                resourceAdded = true;
+                // SubpassInputs do not use a texture in the SRG for Metal.
+                if (shaderInputImage.m_type != RHI::ShaderInputImageType::SubpassInput)
+                {
+                    MTLArgumentDescriptor* imgArgDescriptor = [[[MTLArgumentDescriptor alloc] init] autorelease];
+                    ConvertImageArgumentDescriptor(imgArgDescriptor, shaderInputImage);
+                    [argBufferDecriptors addObject:imgArgDescriptor];
+                    resourceAdded = true;
+                }
             }
 
             for (const RHI::ShaderInputSamplerDescriptor& shaderInputSampler : m_srgLayout->GetShaderInputListForSamplers())
@@ -138,7 +143,7 @@ namespace AZ
                 MTLArgumentDescriptor* samplerArgDescriptor = [[[MTLArgumentDescriptor alloc] init] autorelease];
                 samplerArgDescriptor.dataType = MTLDataTypeSampler;
                 samplerArgDescriptor.index = shaderInputSampler.m_registerId;
-                samplerArgDescriptor.access = MTLArgumentAccessReadOnly;
+                samplerArgDescriptor.access = GetBindingAccess(RHI::ShaderInputImageAccess::Read);
                 samplerArgDescriptor.arrayLength = shaderInputSampler.m_count > 1 ? shaderInputSampler.m_count:0;
                 [argBufferDecriptors addObject:samplerArgDescriptor];
                 resourceAdded = true;
@@ -149,7 +154,7 @@ namespace AZ
                 MTLArgumentDescriptor* staticSamplerArgDescriptor = [[[MTLArgumentDescriptor alloc] init] autorelease];
                 staticSamplerArgDescriptor.dataType = MTLDataTypeSampler;
                 staticSamplerArgDescriptor.index = staticSamplerInput.m_registerId;
-                staticSamplerArgDescriptor.access = MTLArgumentAccessReadOnly;
+                staticSamplerArgDescriptor.access = GetBindingAccess(RHI::ShaderInputImageAccess::Read);
                 [argBufferDecriptors addObject:staticSamplerArgDescriptor];
                 resourceAdded = true;
             }
@@ -161,7 +166,7 @@ namespace AZ
                 MTLArgumentDescriptor* constBufferArgDescriptor = [[[MTLArgumentDescriptor alloc] init] autorelease];
                 constBufferArgDescriptor.dataType = MTLDataTypePointer;
                 constBufferArgDescriptor.index = shaderInputConstant.m_registerId;
-                constBufferArgDescriptor.access = MTLArgumentAccessReadOnly;
+                constBufferArgDescriptor.access = GetBindingAccess(RHI::ShaderInputImageAccess::Read);
                 [argBufferDecriptors addObject:constBufferArgDescriptor];
                 resourceAdded = true;
             }
@@ -206,13 +211,19 @@ namespace AZ
         }
 
         void ArgumentBuffer::UpdateImageViews(const RHI::ShaderInputImageDescriptor& shaderInputImage,
-                                              const AZStd::span<const RHI::ConstPtr<RHI::ImageView>>& imageViews)
+                                              const AZStd::span<const RHI::ConstPtr<RHI::DeviceImageView>>& imageViews)
         {
+            if (shaderInputImage.m_type == RHI::ShaderInputImageType::SubpassInput)
+            {
+                // SubpassInputs don't need to update the argument buffer because they are not really a texture.
+                return;
+            }
+            
             int imageArrayLen = 0;
             AZStd::array<id<MTLTexture>, MaxEntriesInArgTable> mtlTextures;
             
             m_resourceBindings[shaderInputImage.m_name].clear();
-            for (const RHI::ConstPtr<RHI::ImageView>& imageViewBase : imageViews)
+            for (const RHI::ConstPtr<RHI::DeviceImageView>& imageViewBase : imageViews)
             {
                 if (imageViewBase && !imageViewBase->IsStale())
                 {
@@ -270,7 +281,7 @@ namespace AZ
         }
 
         void ArgumentBuffer::UpdateBufferViews(const RHI::ShaderInputBufferDescriptor& shaderInputBuffer,
-                                               const AZStd::span<const RHI::ConstPtr<RHI::BufferView>>& bufferViews)
+                                               const AZStd::span<const RHI::ConstPtr<RHI::DeviceBufferView>>& bufferViews)
         {
             int bufferArrayLen = 0;
             AZStd::array<id<MTLBuffer>, MaxEntriesInArgTable> mtlBuffers;
@@ -278,7 +289,7 @@ namespace AZ
             AZStd::array<id<MTLTexture>, MaxEntriesInArgTable> mtlTextures;
 
             m_resourceBindings[shaderInputBuffer.m_name].clear();
-            for (const RHI::ConstPtr<RHI::BufferView>& bufferViewBase : bufferViews)
+            for (const RHI::ConstPtr<RHI::DeviceBufferView>& bufferViewBase : bufferViews)
             {
                 if (bufferViewBase && !bufferViewBase->IsStale())
                 {

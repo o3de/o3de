@@ -27,6 +27,16 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
     RWTexture2DArray<float> m_outputShadowmap;
     Buffer<uint2> m_shadowmapIndexTable;
     StructuredBuffer<FilterParameter> m_filterParameters;
+    float m_esmExponent;
+}
+
+// The calculation of ESM is given by formula exp((occluder - zReceiver) * esmComponent). Which can be spitted into 2 parts.
+// exp(occluer*esmComponent) * exp(-zReceiver * esmComponent).  Here is the calculation of occluder part.
+float CalculateESMShadowMapExponent(float linearDepth, float esmExponent)
+{
+    // note that ESMShadowMapComponent is really a huge number. if esmExponent is a large number, exp(esmExponent*linearDistance)
+    // will quickly overflow  r16_float on the 5 exponent bit. We need r32 which uses 8 bit for exponent part.
+    return exp(linearDepth * esmExponent);
 }
 
 [numthreads(16,16,1)]
@@ -70,8 +80,8 @@ void MainCS(uint3 dispatchId: SV_DispatchThreadID)
         case ShadowmapLightType::Spot:
         {
             const float3 coefficients = float3(
-                filterParameter.m_n_f_n,
-                filterParameter.m_n_f,
+                filterParameter.m_nf,
+                filterParameter.m_f_n,
                 filterParameter.m_f);
             
             // With a spot light shadowmap, "depthInClip" is calculated
@@ -80,7 +90,8 @@ void MainCS(uint3 dispatchId: SV_DispatchThreadID)
             // and it often causes light bleeding with ESM.
             // So this converts it to a linear depth to emphasize the 
             // difference like a orthogonal depth.
-            PassSrg::m_outputShadowmap[dispatchId].r = PerspectiveDepthToLinear(depthInClip, coefficients);
+            PassSrg::m_outputShadowmap[dispatchId].r =
+                CalculateESMShadowMapExponent(PerspectiveDepthToLinear(depthInClip, coefficients), PassSrg::m_esmExponent);
             break;
         }
     }

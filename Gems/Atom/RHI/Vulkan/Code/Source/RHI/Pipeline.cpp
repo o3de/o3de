@@ -32,6 +32,7 @@ namespace AZ
             }
 
             Base::Init(*descriptor.m_device);
+            m_specializationConstantData.Init(*descriptor.m_pipelineDescritor);
 
             RHI::ResultCode result = InitInternal(descriptor, *layout);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
@@ -60,9 +61,20 @@ namespace AZ
 
         void Pipeline::SetNameInternal(const AZStd::string_view& name)
         {
-            if (IsInitialized() && !name.empty())
+            if (m_nativePipeline != VK_NULL_HANDLE && !name.empty())
             {
                 Debug::SetNameToObject(reinterpret_cast<uint64_t>(m_nativePipeline), name.data(), VK_OBJECT_TYPE_PIPELINE, static_cast<Device&>(GetDevice()));
+            }
+
+            AZ::Name azName = AZ::Name(name);
+            if (m_pipelineLayout)
+            {
+                m_pipelineLayout->SetName(azName);
+            }
+
+            for (auto& shaderModule : m_shaderModules)
+            {
+                shaderModule->SetName(azName);
             }
         }
 
@@ -80,6 +92,7 @@ namespace AZ
                 device.GetContext().DestroyPipeline(device.GetNativeDevice(), m_nativePipeline, VkSystemAllocator::Get());
                 m_nativePipeline = VK_NULL_HANDLE;
             }
+            m_specializationConstantData.Shutdown();
             Base::Shutdown();
         }
 
@@ -95,18 +108,8 @@ namespace AZ
             case RHI::ShaderStage::Vertex:
                 stageBits = VK_SHADER_STAGE_VERTEX_BIT;
                 break;
-            case RHI::ShaderStage::Tessellation:
-                switch (subStageIndex)
-                {
-                case ShaderSubStage::TesselationControl:
-                    stageBits = VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT;
-                    break;
-                case ShaderSubStage::TesselationEvaluattion:
-                    stageBits = VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
-                    break;
-                default:
-                    AZ_Assert(false, "Shader Sub Stage is wrong.");
-                }
+            case RHI::ShaderStage::Geometry:
+                stageBits = VK_SHADER_STAGE_GEOMETRY_BIT;
                 break;
             case RHI::ShaderStage::Fragment:
                 stageBits = VK_SHADER_STAGE_FRAGMENT_BIT;
@@ -136,7 +139,7 @@ namespace AZ
             createInfo.stage = stageBits;
             createInfo.module = shaderModule->GetNativeShaderModule();
             createInfo.pName = shaderModule->GetEntryFunctionName().c_str();
-            createInfo.pSpecializationInfo = nullptr;
+            createInfo.pSpecializationInfo = m_specializationConstantData.GetVkSpecializationInfo();
         }
     }
 }

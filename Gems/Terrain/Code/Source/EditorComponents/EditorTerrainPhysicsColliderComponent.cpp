@@ -81,6 +81,7 @@ namespace Terrain
                     EditorTerrainPhysicsColliderComponent::s_componentDescription)
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Icon, EditorTerrainPhysicsColliderComponent::s_icon)
+                    ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://docs.o3de.org/docs/user-guide/components/reference/terrain/terrain-physics-collider/")
                     ->Attribute(AZ::Edit::Attributes::ViewportIcon, EditorTerrainPhysicsColliderComponent::s_viewportIcon)
                     ->Attribute(AZ::Edit::Attributes::HelpPageURL, EditorTerrainPhysicsColliderComponent::s_helpUrl)
                     ->Attribute(AZ::Edit::Attributes::Category, EditorTerrainPhysicsColliderComponent::s_categoryName)

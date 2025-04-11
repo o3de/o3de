@@ -19,7 +19,13 @@ namespace AZ
         {
         public:
             //! Get a map representing the default layout and values for all material assignment slots on the source model or object
-            virtual MaterialAssignmentMap GetDefautMaterialMap() const = 0;
+            virtual MaterialAssignmentMap GetDefaultMaterialMap() const = 0;
+
+            // O3DE_DEPRECATION_NOTICE(GHI-16783) Function is being replaced by GetDefaultMaterialMap
+            virtual MaterialAssignmentMap GetDefautMaterialMap() const
+            {
+                return GetDefaultMaterialMap();
+            }
 
             //! Search for a material assignment ID matching the lod and label parameters
             //! @param lod Index of the LOD to be searched for the material assignment ID. -1 is used to search the default material and
@@ -34,6 +40,11 @@ namespace AZ
             //! @returns Default asset ID associated with the material assignment ID, otherwise an invalid asset ID.
             virtual AZ::Data::AssetId GetDefaultMaterialAssetId(const MaterialAssignmentId& materialAssignmentId) const = 0;
 
+            //! @param materialAssignmentId ID of material assignment slot for which the information is being requested.
+            //! @returns Asset<MaterialAsset>::IsReady() state of the material asset associated with the source model
+            //!          or object prior to overrides being applied.
+            virtual bool IsDefaultMaterialAssetReady(const MaterialAssignmentId& materialAssignmentId) const = 0;
+
             //! Get the material asset associated with the source model or object prior to overrides being applied.
             //! @param materialAssignmentId ID of material assignment slot for which the information is being requested.
             //! @returns String corresponding to the display name of the material slot.
@@ -46,6 +57,15 @@ namespace AZ
             //! Returns all materials and properties used by the material component.
             //! @returns Map of material assigned data including materials, property overrides, and other parameters.
             virtual const MaterialAssignmentMap& GetMaterialMap() const = 0;
+
+            //! Similar as above, but returns a deep copy of all materials.
+            //! This "Copy" function is useful for Lua because GetMaterialMap()
+            //! returns a reference and Lua treats it a as a reference too.
+            //! Making further chages to the material component, for example by calling SetMaterialAssetId()
+            //! would indirectly affect the MaterialAssignmentMap that was returned by reference.
+            //! To avoid this scenario, a Lua script can call this function to get an actual copy that remains
+            //! unaffected by calling functions like SetMaterialAssetId().
+            virtual MaterialAssignmentMap GetMaterialMapCopy() const = 0;
 
             //! Clears all overridden materials and properties from the material component.
             virtual void ClearMaterialMap() = 0;
@@ -92,14 +112,23 @@ namespace AZ
             //! @returns The current material asset ID is found, otherwise invalid asset ID .
             virtual AZ::Data::AssetId GetMaterialAssetId(const MaterialAssignmentId& materialAssignmentId) const = 0;
 
+            //! @param materialAssignmentId ID of material assignment slot for which the information is being requested.
+            //! @returns Asset<MaterialAsset>::IsReady() state of the material asset associated with the material assignment ID.
+            virtual bool IsMaterialAssetReady(const MaterialAssignmentId& materialAssignmentId) const = 0;
+
             //! Removes the material asset associated with the material assignment ID
             //! @param materialAssignmentId ID of material slot.
             virtual void ClearMaterialAssetId(const MaterialAssignmentId& materialAssignmentId) = 0;
 
             //! Check if the material slot contains an explicit material asset override
             //! @param materialAssignmentId ID of material slot.
-            //! @returns true if a valid material asset has been assigned. 
+            //! @returns true if a valid material asset has been assigned.
             virtual bool IsMaterialAssetIdOverridden(const MaterialAssignmentId& materialAssignmentId) const = 0;
+
+            //! Check if the material slot contains any overridden property values
+            //! @param materialAssignmentId ID of material slot.
+            //! @returns true if any property values have been overridden on this material slot.
+            virtual bool HasPropertiesOverridden(const MaterialAssignmentId& materialAssignmentId) const = 0;
 
             //! Set a material property override value wrapped by an AZStd::any
             //! @param materialAssignmentId ID of material slot.
@@ -214,7 +243,13 @@ namespace AZ
             virtual MaterialAssignmentLabelMap GetMaterialLabels() const = 0;
 
             //! Returns the available material slots and default assigned materials
-            virtual MaterialAssignmentMap GetDefautMaterialMap() const = 0;
+            virtual MaterialAssignmentMap GetDefaultMaterialMap() const = 0;
+
+            // O3DE_DEPRECATION_NOTICE(GHI-16783) Function is being replaced by GetDefaultMaterialMap
+            virtual MaterialAssignmentMap GetDefautMaterialMap() const
+            {
+                return GetDefaultMaterialMap();
+            }
 
             //! Returns a map of UV Overridable UV channel names
             virtual AZStd::unordered_set<AZ::Name> GetModelUvNames() const = 0;

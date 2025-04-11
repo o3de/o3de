@@ -35,12 +35,8 @@ namespace AZ
                 MESHLETS_THREAD_GROUP_SIZE, 1, 1
             );
 
-            m_dispatchItem.m_arguments = dispatchArgs;
-            m_dispatchItem.m_shaderResourceGroupCount = 1;      // Per pass srg can be added by the individual passes
-            m_dispatchItem.m_shaderResourceGroups =
-            {
-                meshletsDataSrg->GetRHIShaderResourceGroup()
-            };
+            m_dispatchItem.SetArguments(dispatchArgs);
+            m_dispatchItem.SetShaderResourceGroups({meshletsDataSrg->GetRHIShaderResourceGroup(), 1});       // Per pass srg can be added by the individual passes
             m_meshletsDataSrg = meshletsDataSrg;    // can also be retrieve directly from the m_dispatchItem
 
             m_shader = shader;
@@ -48,7 +44,7 @@ namespace AZ
             {
                 RHI::PipelineStateDescriptorForDispatch pipelineDesc;
                 m_shader->GetVariant(RPI::ShaderAsset::RootShaderVariantStableId).ConfigurePipelineState(pipelineDesc);
-                m_dispatchItem.m_pipelineState = m_shader->AcquirePipelineState(pipelineDesc);
+                m_dispatchItem.SetPipelineState(m_shader->AcquirePipelineState(pipelineDesc));
             }
         }
 
@@ -59,7 +55,7 @@ namespace AZ
             {
                 RHI::PipelineStateDescriptorForDispatch pipelineDesc;
                 m_shader->GetVariant(RPI::ShaderAsset::RootShaderVariantStableId).ConfigurePipelineState(pipelineDesc);
-                m_dispatchItem.m_pipelineState = m_shader->AcquirePipelineState(pipelineDesc);
+                m_dispatchItem.SetPipelineState(m_shader->AcquirePipelineState(pipelineDesc));
             }
         }
 

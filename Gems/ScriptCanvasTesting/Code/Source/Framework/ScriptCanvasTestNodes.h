@@ -151,7 +151,11 @@ namespace TestNodes
 
         bool TestIsSlotConnectedToConcreteDisplayType(const ScriptCanvas::Slot& slot, ExploredDynamicGroupCache& exploredGroupCache) const;
 
-    protected:
+        void SetSlotExecutionMap(ScriptCanvas::SlotExecution::Map* executionMap);
+        const ScriptCanvas::SlotExecution::Map* GetSlotExecutionMap() const override;
+
+    private:
+        ScriptCanvas::SlotExecution::Map* m_slotExecutionMap = nullptr;
     };
 
 

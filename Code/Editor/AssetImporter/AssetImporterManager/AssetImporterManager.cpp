@@ -166,9 +166,23 @@ void AssetImporterManager::Exec(const QStringList& dragAndDropFileList, const QS
 // used to cancel actions and close the dialog
 void AssetImporterManager::reject()
 {
+    CompleteAssetImporting(false);
+}
+
+void AssetImporterManager::CompleteAssetImporting(bool wasSuccessful)
+{
+    // Clear the pathMap to prevent trying to reimport assets later.
     m_pathMap.clear();
     m_destinationRootDirectory = "";
-    Q_EMIT StopAssetImporter();
+    // Inform listeners that we have completed the copy/move operation.
+    if (wasSuccessful)
+    {
+        Q_EMIT AssetImportingComplete();
+    }
+    else
+    {
+        Q_EMIT StopAssetImporter();
+    }
 }
 
 void AssetImporterManager::OnDragAndDropFiles(const QStringList* fileList)
@@ -465,6 +479,10 @@ void AssetImporterManager::ProcessCopyFiles()
     {
         reject();
     }
+    else
+    {
+        CompleteAssetImporting();
+    }
 }
 
 void AssetImporterManager::ProcessMoveFiles()
@@ -515,6 +533,10 @@ void AssetImporterManager::ProcessMoveFiles()
     if (numberOfProcessedFiles == 0)
     {
         reject();
+    }
+    else
+    {
+        CompleteAssetImporting();
     }
 }
 

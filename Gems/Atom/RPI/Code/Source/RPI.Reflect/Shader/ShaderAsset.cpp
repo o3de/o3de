@@ -21,14 +21,12 @@
 #include <Atom/RPI.Public/Shader/ShaderReloadDebugTracker.h>
 #include <Atom/RPI.Public/Shader/ShaderReloadNotificationBus.h>
 
-DECLARE_EBUS_INSTANTIATION(RPI::ShaderVariantFinderNotification);
+DECLARE_EBUS_INSTANTIATION_DLL_MULTI_ADDRESS(RPI::ShaderVariantFinderNotification);
 
 namespace AZ
 {
     namespace RPI
     {
-        const ShaderVariantStableId ShaderAsset::RootShaderVariantStableId{0};
-
         static constexpr uint32_t SubProductTypeBitPosition = 0;
         static constexpr uint32_t SubProductTypeNumBits = SupervariantIndexBitPosition - SubProductTypeBitPosition;
         [[maybe_unused]] static constexpr uint32_t SubProductTypeMaxValue = (1 << SubProductTypeNumBits) - 1;
@@ -72,6 +70,7 @@ namespace AZ
                     ->Field("RenderStates", &Supervariant::m_renderStates)
                     ->Field("AttributeMapList", &Supervariant::m_attributeMaps)
                     ->Field("RootVariantAsset", &Supervariant::m_rootShaderVariantAsset)
+                    ->Field("UseSpecializationConstants", &Supervariant::m_useSpecializationConstants)
                     ;
             }
         }
@@ -194,7 +193,7 @@ namespace AZ
             Data::Asset<ShaderAsset> thisAsset(this, Data::AssetLoadBehavior::Default);
             Data::Asset<ShaderVariantAsset> shaderVariantAsset =
                 variantFinder->GetShaderVariantAssetByVariantId(thisAsset, shaderVariantId, supervariantIndex);
-            if (!shaderVariantAsset)
+            if (!shaderVariantAsset && !IsFullySpecialized(supervariantIndex))
             {
                 variantFinder->QueueLoadShaderVariantAssetByVariantId(thisAsset, shaderVariantId, supervariantIndex);
             }
@@ -206,7 +205,7 @@ namespace AZ
             uint32_t dynamicOptionCount = aznumeric_cast<uint32_t>(GetShaderOptionGroupLayout()->GetShaderOptions().size());
             ShaderVariantSearchResult variantSearchResult{RootShaderVariantStableId,  dynamicOptionCount };
 
-            if (!dynamicOptionCount)
+            if (!dynamicOptionCount || m_isFullySpecialized)
             {
                 // The shader has no options at all. There's nothing to search.
                 return variantSearchResult;
@@ -245,7 +244,9 @@ namespace AZ
         Data::Asset<ShaderVariantAsset> ShaderAsset::GetVariantAsset(
             ShaderVariantStableId shaderVariantStableId, SupervariantIndex supervariantIndex) const
         {
-            if (!shaderVariantStableId.IsValid() || shaderVariantStableId == RootShaderVariantStableId)
+            if (!shaderVariantStableId.IsValid() ||
+                shaderVariantStableId == RootShaderVariantStableId ||
+                IsFullySpecialized(supervariantIndex))
             {
                 return GetRootVariantAsset(supervariantIndex);
             }
@@ -457,6 +458,22 @@ namespace AZ
             return attrPair->second;
         }
 
+        bool ShaderAsset::UseSpecializationConstants(SupervariantIndex supervariantIndex) const
+        {
+            auto supervariant = GetSupervariant(supervariantIndex);
+            if (!supervariant)
+            {
+                return false;
+            }
+
+            return supervariant->m_useSpecializationConstants;
+        }
+
+        bool ShaderAsset::IsFullySpecialized(SupervariantIndex supervariantIndex) const
+        {            
+            return UseSpecializationConstants(supervariantIndex) && m_shaderOptionGroupLayout->IsFullySpecialized();
+        }
+
         ShaderAsset::ShaderApiDataContainer& ShaderAsset::GetCurrentShaderApiData()
         {
             const size_t perApiShaderDataCount = m_perAPIShaderData.size();
@@ -556,12 +573,14 @@ namespace AZ
                 }
             }
 
+            m_isFullySpecialized = m_shaderOptionGroupLayout->IsFullySpecialized();
             // Common finalize check
             for (const auto& shaderApiData : m_perAPIShaderData)
             {
                 const auto& supervariants = shaderApiData.m_supervariants;
                 for (const auto& supervariant : supervariants)
                 {
+                    m_isFullySpecialized &= supervariant.m_useSpecializationConstants;
                     bool beTrue = supervariant.m_attributeMaps.size() == RHI::ShaderStageCount;
                     if (!beTrue)
                     {
@@ -572,6 +591,20 @@ namespace AZ
             }
 
             return true;
+        }
+
+        bool ShaderAsset::UpdateRootShaderVariantAsset(Data::Asset<ShaderVariantAsset> shaderVariantAsset)
+        {
+            auto& supervariants = GetCurrentShaderApiData().m_supervariants;
+            for (auto& supervariant : supervariants)
+            {
+                if (supervariant.m_rootShaderVariantAsset.GetId() == shaderVariantAsset.GetId())
+                {
+                    supervariant.m_rootShaderVariantAsset = shaderVariantAsset;
+                    return true;
+                }
+            }
+            return false;
         }
 
         bool ShaderAsset::PostLoadInit()

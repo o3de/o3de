@@ -24,6 +24,7 @@
 #include <AzToolsFramework/AssetBrowser/Entries/RootAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryCache.h>
+#include <AzToolsFramework/AssetBrowser/Favorites/AssetBrowserFavoritesManager.h>
 #include <AzToolsFramework/AssetDatabase/AssetDatabaseConnection.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 #include <Editor/AzAssetBrowser/AzAssetBrowserRequestHandler.h>
@@ -124,14 +125,14 @@ namespace UnitTest
     {
     public:
         MOCK_METHOD2(AddComponentsToEntities, AzToolsFramework::EntityCompositionRequests::AddComponentsOutcome(const AzToolsFramework::EntityIdList&, const AZ::ComponentTypeList&));
-        MOCK_METHOD1(CutComponents, void(const AZStd::vector<AZ::Component*>&));
-        MOCK_METHOD1(CopyComponents, void(const AZStd::vector<AZ::Component*>&));
+        MOCK_METHOD1(CutComponents, void(AZStd::span<AZ::Component* const>));
+        MOCK_METHOD1(CopyComponents, void(AZStd::span<AZ::Component* const>));
         MOCK_METHOD1(PasteComponentsToEntity, void (AZ::EntityId ));
         MOCK_METHOD0(HasComponentsToPaste, bool ());
-        MOCK_METHOD1(EnableComponents,void (const AZStd::vector<AZ::Component*>&));
-        MOCK_METHOD1(DisableComponents, void (const AZStd::vector<AZ::Component*>&));
-        MOCK_METHOD2(AddExistingComponentsToEntityById,  AzToolsFramework::EntityCompositionRequests::AddExistingComponentsOutcome(const AZ::EntityId&, const AZStd::vector<AZ::Component*>&));
-        MOCK_METHOD1(RemoveComponents,AzToolsFramework::EntityCompositionRequests::RemoveComponentsOutcome(const AZStd::vector<AZ::Component*>&));
+        MOCK_METHOD1(EnableComponents,void (AZStd::span<AZ::Component* const>));
+        MOCK_METHOD1(DisableComponents, void (AZStd::span<AZ::Component* const>));
+        MOCK_METHOD2(AddExistingComponentsToEntityById,  AzToolsFramework::EntityCompositionRequests::AddExistingComponentsOutcome(const AZ::EntityId&, AZStd::span<AZ::Component* const>));
+        MOCK_METHOD1(RemoveComponents,AzToolsFramework::EntityCompositionRequests::RemoveComponentsOutcome(AZStd::span<AZ::Component* const>));
         MOCK_METHOD1(ScrubEntities, AzToolsFramework::EntityCompositionRequests::ScrubEntitiesOutcome(const AzToolsFramework::EntityList&));
         MOCK_METHOD1(GetPendingComponentInfo, AzToolsFramework::EntityCompositionRequests::PendingComponentInfo(const AZ::Component*));
         MOCK_METHOD1(GetComponentName, AZStd::string(const AZ::Component*));
@@ -375,6 +376,7 @@ namespace UnitTest
             AZ::IO::FileIOBase::SetInstance(m_priorFileIO);
             m_rootAssetBrowserEntry.reset();
             AzToolsFramework::AssetBrowser::EntryCache::DestroyInstance();
+            AzToolsFramework::AssetBrowser::AssetBrowserFavoritesManager::DestroyInstance();
 
             m_editorComponentDescriptor->ReleaseDescriptor();
 

@@ -42,6 +42,12 @@ namespace AZ
                 return m_sourceFilename;
             }
 
+            AZStd::string_view Scene::GetSourceExtension() const
+            {
+                const AZ::IO::PathView sourcePath(m_sourceFilename);
+                return AZStd::string_view(sourcePath.Extension());
+            }
+
             const Uuid& Scene::GetSourceGuid() const
             {
                 return m_sourceGuid;
@@ -142,6 +148,7 @@ namespace AZ
                         ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
                         ->Attribute(AZ::Script::Attributes::Module, "scene")
                         ->Constructor<const AZStd::string&>()
+                            ->Attribute(AZ::Script::Attributes::DefaultConstructorOverrideIndex, 0)
                         ->Property("name", BehaviorValueGetter(&Scene::m_name), nullptr)
                         ->Property("manifestFilename", BehaviorValueGetter(&Scene::m_manifestFilename), nullptr)
                         ->Property("sourceFilename", BehaviorValueGetter(&Scene::m_sourceFilename), nullptr)

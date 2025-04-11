@@ -87,6 +87,7 @@ namespace ScriptCanvas
         AZStd::pair< EndpointMapConstIterator, EndpointMapConstIterator > GetConnectedEndpointIterators(const Endpoint& endpoint) const override;
         bool IsEndpointConnected(const Endpoint& endpoint) const override;
         bool FindConnection(AZ::Entity*& connectionEntity, const Endpoint& firstEndpoint, const Endpoint& otherEndpoint) const override;
+        bool FindConnection(const Endpoint& firstEndpoint, const Endpoint& otherEndpoint) const;
 
         bool Connect(const AZ::EntityId& sourceNodeId, const SlotId& sourceSlotId, const AZ::EntityId& targetNodeId, const SlotId& targetSlotId) override;
         bool Disconnect(const AZ::EntityId& sourceNodeId, const SlotId& sourceSlotId, const AZ::EntityId& targetNodeId, const SlotId& targetSlotId) override;
@@ -166,12 +167,12 @@ namespace ScriptCanvas
 
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("ScriptCanvasRuntimeService", 0x776e1e3a));;
+            incompatible.push_back(AZ_CRC_CE("ScriptCanvasRuntimeService"));;
         }
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("ScriptCanvasService", 0x41fd58f3));
+            provided.push_back(AZ_CRC_CE("ScriptCanvasService"));
         }
 
         void PostActivate();

@@ -72,9 +72,11 @@ namespace ScriptCanvas
                     Data::Type::Vector2(),
                     Data::Type::Vector3(),
                     Data::Type::Vector4(),
+                    Data::Type::VectorN(),
                     Data::Type::Color(),
                     Data::Type::Matrix3x3(),
-                    Data::Type::Matrix4x4()
+                    Data::Type::Matrix4x4(),
+                    Data::Type::MatrixMxN()
                 };
             }
 
@@ -98,11 +100,17 @@ namespace ScriptCanvas
                 case Data::eType::Vector4:
                     OperatorEvaluator::Evaluate<Data::Vector4Type>(OperatorSubImpl<Data::Vector4Type>(), operands, result);
                     break;
+                case Data::eType::VectorN:
+                    OperatorEvaluator::Evaluate<Data::VectorNType>(OperatorSubImpl<Data::VectorNType>(), operands, result);
+                    break;
                 case Data::eType::Matrix3x3:
                     OperatorEvaluator::Evaluate<Data::Matrix3x3Type>(OperatorSubImpl<Data::Matrix3x3Type>(), operands, result);
                     break;
                 case Data::eType::Matrix4x4:
                     OperatorEvaluator::Evaluate<Data::Matrix4x4Type>(OperatorSubImpl<Data::Matrix4x4Type>(), operands, result);
+                    break;
+                case Data::eType::MatrixMxN:
+                    OperatorEvaluator::Evaluate<Data::MatrixMxNType>(OperatorSubImpl<Data::MatrixMxNType>(), operands, result);
                     break;
                 default:
                     AZ_Assert(false, "Subtraction operator not defined for type: %s", Data::ToAZType(type).ToString<AZStd::string>().c_str());

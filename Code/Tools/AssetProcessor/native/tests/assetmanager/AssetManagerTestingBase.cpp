@@ -57,9 +57,19 @@ namespace UnitTests
         m_settingsRegistry = AZStd::make_unique<AZ::SettingsRegistryImpl>();
         AZ::SettingsRegistry::Register(m_settingsRegistry.get());
 
-        auto projectPathKey =
-            AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
-        m_settingsRegistry->Set(projectPathKey, m_databaseLocationListener.GetAssetRootDir().c_str());
+        // Make sure that the entire system doesn't somehow find the "real" project but instead finds our fake project folder. 
+        m_settingsRegistry->Set("/O3DE/Runtime/Internal/project_root_scan_up_path", assetRootDir.c_str());
+
+        // The engine is actually pretty good at finding the real project folder and tries to do so a number of ways, including
+        // overwriting all the keys we're about to set if we allow it to.
+        auto projectPathKey = AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
+        m_settingsRegistry->Set(projectPathKey, assetRootDir.c_str());
+
+        // we need to also set up the cache root:
+        auto cacheRootPathKey =
+                AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::FilePathKey_CacheProjectRootFolder);
+        m_settingsRegistry->Set(cacheRootPathKey, (assetRootDir / "Cache").c_str());
+
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*m_settingsRegistry);
 
         // We need a QCoreApplication set up in order for QCoreApplication::processEvents to function

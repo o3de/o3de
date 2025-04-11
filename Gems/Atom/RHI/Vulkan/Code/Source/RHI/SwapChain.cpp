@@ -16,6 +16,7 @@
 #include <Atom/RHI.Reflect/Vulkan/XRVkDescriptors.h>
 #include <AzCore/std/algorithm.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/Console/ILogger.h>
 #include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/Device.h>
 #include <RHI/Image.h>
@@ -70,7 +71,7 @@ namespace AZ
             m_swapChainBarrier.m_isValid = true;
         }
 
-        void SwapChain::ProcessRecreation()
+        bool SwapChain::ProcessRecreation()
         {
             if (m_pendingRecreation)
             {
@@ -82,7 +83,9 @@ namespace AZ
                 InitImages();
 
                 m_pendingRecreation = false;
+                return true;
             }
+            return false;
         }
 
         void SwapChain::SetVerticalSyncIntervalInternal(uint32_t previousVsyncInterval)
@@ -95,12 +98,9 @@ namespace AZ
             }
         }
 
-        void SwapChain::SetNameInternal(const AZStd::string_view& name)
+        void SwapChain::SetNameInternal([[maybe_unused]] const AZStd::string_view& name)
         {
-            if ((m_nativeSwapChain != VK_NULL_HANDLE) && IsInitialized() && !name.empty())
-            {
-                Debug::SetNameToObject(reinterpret_cast<uint64_t>(m_nativeSwapChain), name.data(), VK_OBJECT_TYPE_SWAPCHAIN_KHR, static_cast<Device&>(GetDevice()));
-            }
+            // On some GPUs, like the Adreno 740, setting the name of the swapchain causes a crash, so we don't do it.
         }
 
         RHI::ResultCode SwapChain::InitInternal(RHI::Device& baseDevice, const RHI::SwapChainDescriptor& descriptor, RHI::SwapChainDimensions* nativeDimensions)
@@ -138,7 +138,7 @@ namespace AZ
                     *nativeDimensions = m_dimensions;
                     nativeDimensions->m_imageFormat = ConvertFormat(m_surfaceFormat.format);
                 }
-            }    
+            }
 
             SetName(GetName());
             return result;
@@ -161,7 +161,7 @@ namespace AZ
             m_currentFrameContext = {};
         }
 
-        RHI::ResultCode SwapChain::InitImageInternal(const RHI::SwapChain::InitImageRequest& request)
+        RHI::ResultCode SwapChain::InitImageInternal(const RHI::DeviceSwapChain::InitImageRequest& request)
         {
             auto& device = static_cast<Device&>(GetDevice());
             Image* image = static_cast<Image*>(request.m_image);
@@ -266,20 +266,21 @@ namespace AZ
                     commandList->EndCommandBuffer();
 
                     // This semaphore will be signaled once the transfer has completed.
-                    auto transferSemaphore = device.GetSemaphoreAllocator().Allocate();
+                    auto transferSemaphore = device.GetSwapChainSemaphoreAllocator().Allocate();
                     // We wait until the swapchain image has finished being rendered to initialize the
                     // ownership transfer.
                     vulkanQueue->SubmitCommandBuffers(
-                        AZStd::vector<RHI::Ptr<CommandList>>{commandList},
-                        AZStd::vector<Semaphore::WaitSemaphore>{AZStd::make_pair(VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, presentSemaphore)},
-                        AZStd::vector< RHI::Ptr<Semaphore>>{transferSemaphore},
+                        AZStd::vector<RHI::Ptr<CommandList>>{ commandList },
+                        AZStd::vector<Semaphore::WaitSemaphore>{ AZStd::make_pair(VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, presentSemaphore) },
+                        AZStd::vector<RHI::Ptr<Semaphore>>{ transferSemaphore },
+                        {},
                         nullptr);
 
                     // The presentation engine must wait until the ownership transfer has completed.
                     waitSemaphore = transferSemaphore->GetNativeSemaphore();
                     transferSemaphore->SignalEvent();
                     // This will not deallocate immediately. It has a collect latency.
-                    device.GetSemaphoreAllocator().DeAllocate(transferSemaphore);
+                    device.GetSwapChainSemaphoreAllocator().DeAllocate(transferSemaphore);
                     m_swapChainBarrier.m_isValid = false;
                 }
 
@@ -347,6 +348,64 @@ namespace AZ
             }
         }
 
+        void SwapChain::SetHDRMetaData(float maxOutputNits, float minOutputNits, float maxContentLightLevel,
+            float maxFrameAverageLightLevel)
+        {
+            auto& device = static_cast<Device&>(GetDevice());
+
+            //From DX12 RHI
+            struct DisplayChromacities
+            {
+                float RedX;
+                float RedY;
+                float GreenX;
+                float GreenY;
+                float BlueX;
+                float BlueY;
+                float WhiteX;
+                float WhiteY;
+            };
+            static const DisplayChromacities DisplayChromacityList[] =
+            {
+                { 0.64000f, 0.33000f, 0.30000f, 0.60000f, 0.15000f, 0.06000f, 0.31270f, 0.32900f }, // Display Gamut Rec709
+                { 0.70800f, 0.29200f, 0.17000f, 0.79700f, 0.13100f, 0.04600f, 0.31270f, 0.32900f }, // Display Gamut Rec2020
+            };
+
+            // Select the chromaticity based on HDR format
+            int selectedChroma = 0;
+            if (m_colorSpace == VK_COLOR_SPACE_EXTENDED_SRGB_LINEAR_EXT)
+            {
+                selectedChroma = 0;
+            }
+            else if (m_colorSpace == VK_COLOR_SPACE_HDR10_ST2084_EXT)
+            {
+                selectedChroma = 1;
+            }
+            else
+            {
+                AZ_Assert(false, "Unhandled color space for swapchain.");
+            }
+
+            const DisplayChromacities& Chroma = DisplayChromacityList[selectedChroma];
+            VkHdrMetadataEXT hdrMetadata;
+            hdrMetadata.sType = VK_STRUCTURE_TYPE_HDR_METADATA_EXT;
+            //DX12 RHI scales these by 50000 but VKD3D removes that so just use the raw values.
+            hdrMetadata.displayPrimaryRed = {Chroma.RedX, Chroma.RedY};
+            hdrMetadata.displayPrimaryGreen = {Chroma.GreenX, Chroma.GreenY};
+            hdrMetadata.displayPrimaryBlue = {Chroma.BlueX, Chroma.BlueY};
+            hdrMetadata.whitePoint = {Chroma.WhiteX, Chroma.WhiteY};
+            //Mult. by 10,000 because its what VKD3D does, you can look at convert_max_luminance and convert_min_luminance for reference.
+            //Since the DX12 RHI scales these by 10000 we should too but VKD3D downscales by the same amount for minLuminance.
+            //https://github.com/HansKristian-Work/vkd3d-proton/blob/8165096180a9019542b693ce1fcb80f44433b1e2/libs/vkd3d/swapchain.c#L866C36-L866C57
+            hdrMetadata.maxLuminance = maxOutputNits * 10000.0f;
+            hdrMetadata.minLuminance = minOutputNits;
+            hdrMetadata.maxContentLightLevel = maxContentLightLevel;
+            hdrMetadata.maxFrameAverageLightLevel = maxFrameAverageLightLevel;
+
+            AZ_Assert(device.GetContext().SetHdrMetadataEXT != nullptr, "Calling SetHDRMetaData when HDR isn't supported.");
+            device.GetContext().SetHdrMetadataEXT(device.GetNativeDevice(), 1, &m_nativeSwapChain, &hdrMetadata);
+        }
+
         RHI::ResultCode SwapChain::BuildSurface(const RHI::SwapChainDescriptor& descriptor)
         {
             WSISurface::Descriptor surfaceDesc{};
@@ -396,27 +455,29 @@ namespace AZ
         {
             AZ_Assert(m_surface, "Surface has not been initialized.");
 
-            if (verticalSyncInterval > 0)
+            AZStd::vector<VkPresentModeKHR> preferredModes;
+            if (verticalSyncInterval == 0)
             {
-                // When a non-zero vsync interval is requested, the FIFO presentation mode (always available)
-                // is usable without needing to query available presentation modes.
-                return VK_PRESENT_MODE_FIFO_KHR;
+                // No vsync, so we try to use the immediate mode.
+                preferredModes.push_back(VK_PRESENT_MODE_IMMEDIATE_KHR);
+                // If immediate mode is not available we try for mailbox, which technically is still vsync
+                // but doesn't block the CPU when queue is full.
+                preferredModes.push_back(VK_PRESENT_MODE_MAILBOX_KHR);
             }
-
+            preferredModes.push_back(VK_PRESENT_MODE_FIFO_KHR);
             auto& device = static_cast<Device&>(GetDevice());
             const auto& physicalDevice = static_cast<const PhysicalDevice&>(device.GetPhysicalDevice());
 
             uint32_t modeCount = 0;
             AssertSuccess(device.GetContext().GetPhysicalDeviceSurfacePresentModesKHR(
                 physicalDevice.GetNativePhysicalDevice(), m_surface->GetNativeSurface(), &modeCount, nullptr));
-            // At least VK_PRESENT_MODE_FIFO_KHR have to be supported.
+            // VK_PRESENT_MODE_FIFO_KHR has to be supported.
             // https://www.khronos.org/registry/vulkan/specs/1.1-extensions/man/html/VkPresentModeKHR.html
             AZ_Assert(modeCount > 0, "no available present mode.");
             AZStd::vector<VkPresentModeKHR> supportedModes(modeCount);
             AssertSuccess(device.GetContext().GetPhysicalDeviceSurfacePresentModesKHR(
                 physicalDevice.GetNativePhysicalDevice(), m_surface->GetNativeSurface(), &modeCount, supportedModes.data()));
 
-            VkPresentModeKHR preferredModes[] = {VK_PRESENT_MODE_IMMEDIATE_KHR, VK_PRESENT_MODE_MAILBOX_KHR};
             for (VkPresentModeKHR preferredMode : preferredModes)
             {
                 for (VkPresentModeKHR supportedMode : supportedModes)
@@ -496,6 +557,16 @@ namespace AZ
                 }
             }
 
+            VkColorSpaceKHR colorSpace = m_surfaceFormat.colorSpace;
+            bool hdrEnabled = false;
+
+            if(device.GetContext().SetHdrMetadataEXT != nullptr &&
+                dimensions.m_imageFormat == RHI::Format::R10G10B10A2_UNORM)
+            {
+                colorSpace = VK_COLOR_SPACE_HDR10_ST2084_EXT;
+                hdrEnabled = true;
+            }
+
             VkSwapchainCreateInfoKHR createInfo{};
             createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
             createInfo.pNext = nullptr;
@@ -505,7 +576,7 @@ namespace AZ
             // need to be less than or equal to the difference between the number of images in swapchain and the value of VkSurfaceCapabilitiesKHR::minImageCount
             createInfo.minImageCount = AZStd::max(dimensions.m_imageCount, simultaneousAcquiredImages + m_surfaceCapabilities.minImageCount);
             createInfo.imageFormat = m_surfaceFormat.format;
-            createInfo.imageColorSpace = m_surfaceFormat.colorSpace;
+            createInfo.imageColorSpace = colorSpace;
             createInfo.imageExtent = extent;
             createInfo.imageArrayLayers = 1; // non-stereoscopic
             createInfo.imageUsage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
@@ -524,13 +595,23 @@ namespace AZ
                 device.GetContext().CreateSwapchainKHR(device.GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &m_nativeSwapChain);
             AssertSuccess(result);
 
+            if(hdrEnabled)
+            {
+                m_colorSpace = createInfo.imageColorSpace;
+                float maxOutputNits = 1000.f;
+                float minOutputNits = 0.001f;
+                float maxContentLightLevelNits = 2000.f;
+                float maxFrameAverageLightLevelNits = 500.f;
+                SetHDRMetaData(maxOutputNits, minOutputNits, maxContentLightLevelNits, maxFrameAverageLightLevelNits);
+            }
+
             return ConvertResult(result);
         }
 
         RHI::ResultCode SwapChain::AcquireNewImage(uint32_t* acquiredImageIndex)
         {
             auto& device = static_cast<Device&>(GetDevice());
-            auto& semaphoreAllocator = device.GetSemaphoreAllocator();
+            auto& semaphoreAllocator = device.GetSwapChainSemaphoreAllocator();
             Semaphore* imageAvailableSemaphore = semaphoreAllocator.Allocate();
             VkResult vkResult = device.GetContext().AcquireNextImageKHR(
                 device.GetNativeDevice(),
@@ -543,7 +624,6 @@ namespace AZ
             RHI::ResultCode result = ConvertResult(vkResult);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
 
-            imageAvailableSemaphore->SignalEvent();
             if (m_currentFrameContext.m_imageAvailableSemaphore)
             {
                 semaphoreAllocator.DeAllocate(m_currentFrameContext.m_imageAvailableSemaphore);
@@ -568,7 +648,7 @@ namespace AZ
             auto& device = static_cast<Device&>(GetDevice());
             auto presentCommand = [&device, swapchain]([[maybe_unused]] void* queue)
             {
-                device.GetContext().DeviceWaitIdle(device.GetNativeDevice());
+                device.GetCommandQueueContext().GetCommandQueue(RHI::HardwareQueueClass::Graphics).WaitForIdle();
                 if (swapchain != VK_NULL_HANDLE)
                 {
                     device.GetContext().DestroySwapchainKHR(device.GetNativeDevice(), swapchain, VkSystemAllocator::Get());
@@ -586,7 +666,7 @@ namespace AZ
             m_surfaceCapabilities = GetSurfaceCapabilities();
             m_surfaceFormat = GetSupportedSurfaceFormat(m_dimensions.m_imageFormat);
             m_presentMode = GetSupportedPresentMode(GetDescriptor().m_verticalSyncInterval);
-            m_compositeAlphaFlagBits = GetSupportedCompositeAlpha(); 
+            m_compositeAlphaFlagBits = GetSupportedCompositeAlpha();
 
             if (!ValidateSurfaceDimensions(m_dimensions))
             {
@@ -600,14 +680,13 @@ namespace AZ
                     m_dimensions.m_imageWidth,
                     m_surfaceCapabilities.minImageExtent.width,
                     m_surfaceCapabilities.maxImageExtent.width);
-                AZ_Printf(
-                    "Vulkan", "Resizing swapchain from (%u, %u) to (%u, %u).",
+                AZLOG_DEBUG("Resizing swapchain from (%u, %u) to (%u, %u).",
                     oldWidth, oldHeight, m_dimensions.m_imageWidth, m_dimensions.m_imageHeight);
             }
 
             RHI::ResultCode result = BuildNativeSwapChain(m_dimensions);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
-            AZ_TracePrintf("Vulkan", "Swapchain created. Width: %u, Height: %u.\n", m_dimensions.m_imageWidth, m_dimensions.m_imageHeight);
+            AZLOG_DEBUG("Swapchain created. Width: %u, Height: %u.\n", m_dimensions.m_imageWidth, m_dimensions.m_imageHeight);
 
             // Do not recycle the semaphore because they may not ever get signaled and since
             // we can't recycle Vulkan semaphores we just delete them.
@@ -634,13 +713,13 @@ namespace AZ
                 device.GetNativeDevice(), m_nativeSwapChain, &m_dimensions.m_imageCount, m_swapchainNativeImages.data());
             AssertSuccess(vkResult);
             RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(vkResult));
-            AZ_TracePrintf("Swapchain", "Obtained presentable images.\n");
+            AZLOG_DEBUG("Obtained presentable images.\n");
 
             // Acquire the first image
             uint32_t imageIndex = 0;
             result = AcquireNewImage(&imageIndex);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
-            AZ_TracePrintf("Swapchain", "Acquired the first image.\n");
+            AZLOG_DEBUG("Acquired the first image.\n");
 
             return RHI::ResultCode::Success;
         }

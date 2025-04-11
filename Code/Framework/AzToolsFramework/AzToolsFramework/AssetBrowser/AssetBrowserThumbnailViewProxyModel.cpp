@@ -6,7 +6,6 @@
  *
  */
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
-#include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserThumbnailViewProxyModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
@@ -17,8 +16,6 @@
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserViewUtils.h>
 
 #include <AzQtComponents/Components/Widgets/AssetFolderThumbnailView.h>
-
-
 
 namespace AzToolsFramework
 {
@@ -42,6 +39,10 @@ namespace AzToolsFramework
 
             switch (role)
             {
+            case Qt::DisplayRole:
+                {
+                    return AssetBrowserViewUtils::GetAssetBrowserEntryNameWithHighlighting(assetBrowserEntry, m_searchString);
+                }
             case Qt::DecorationRole:
                 {
                     return AssetBrowserViewUtils::GetThumbnail(assetBrowserEntry);
@@ -52,13 +53,8 @@ namespace AzToolsFramework
                 }
             case static_cast<int>(AzQtComponents::AssetFolderThumbnailView::Role::IsExpandable):
                 {
-                    // We don't want to see children on folders in the thumbnail view
-                    if (assetBrowserEntry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Folder)
-                    {
-                        return false;
-                    }
-
-                    return rowCount(index) > 0;
+                    // In thumbnail mode, folders are not expandable, only source assets with products beneath them.
+                    return rowCount(index) > 0 && assetBrowserEntry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source;
                 }
             case static_cast<int>(AzQtComponents::AssetFolderThumbnailView::Role::IsTopLevel):
                 {
@@ -68,23 +64,14 @@ namespace AzToolsFramework
                             index.data(static_cast<int>(AzQtComponents::AssetFolderThumbnailView::Role::IsExactMatch)).value<bool>();
                         return isExactMatch;
                     }
-                    else
-                    {
-                        if (m_rootIndex.isValid())
-                        {
-                            return index.parent() == m_rootIndex;
-                        }
-                        else
-                        {
-                            return index.parent().isValid() && !index.parent().parent().isValid();
-                        }
-                    }
+
+                    return index.parent().isValid() && (index.parent() == m_rootIndex || !index.parent().parent().isValid());
                 }
             case static_cast<int>(AzQtComponents::AssetFolderThumbnailView::Role::IsVisible):
                 {
                     auto isExactMatch =
                         index.data(static_cast<int>(AzQtComponents::AssetFolderThumbnailView::Role::IsExactMatch)).value<bool>();
-                    return !m_searchResultsMode || (m_searchResultsMode && isExactMatch);
+                    return !m_searchResultsMode || isExactMatch;
                 }
             }
 
@@ -116,6 +103,11 @@ namespace AzToolsFramework
             }
         }
 
+        void AssetBrowserThumbnailViewProxyModel::SetSearchString(const QString& searchString)
+        {
+            m_searchString = searchString;
+        }
+
         Qt::DropActions AssetBrowserThumbnailViewProxyModel::supportedDropActions() const
         {
             return Qt::CopyAction | Qt::MoveAction;
@@ -123,24 +115,14 @@ namespace AzToolsFramework
 
         Qt::ItemFlags AssetBrowserThumbnailViewProxyModel::flags(const QModelIndex& index) const
         {
-            Qt::ItemFlags defaultFlags = QAbstractItemModel::flags(index) | Qt::ItemIsEditable;
+            const Qt::ItemFlags defaultFlags = QAbstractItemModel::flags(index) | Qt::ItemIsEditable;
 
             if (index.isValid())
             {
-                // We can only drop items onto folders so set flags accordingly
-                const AssetBrowserEntry* item = mapToSource(index).data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
-                if (item)
-                {
-                    if (item->GetEntryType() == AssetBrowserEntry::AssetEntryType::Product || item->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source)
-                    {
-                        return Qt::ItemIsDragEnabled | defaultFlags;
-                    }
-                    if (item->GetEntryType() == AssetBrowserEntry::AssetEntryType::Folder)
-                    {
-                        return Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled | defaultFlags;
-                    }
-                }
+                return AssetBrowserViewUtils::GetAssetBrowserEntryCommonItemFlags(
+                    mapToSource(index).data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>(), defaultFlags);
             }
+
             return defaultFlags;
         }
 

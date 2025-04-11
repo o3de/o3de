@@ -48,7 +48,7 @@ namespace AzFramework
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    void XcbNativeWindow::InitWindow(const AZStd::string& title, const WindowGeometry& geometry, const WindowStyleMasks& styleMasks)
+    void XcbNativeWindow::InitWindowInternal(const AZStd::string& title, const WindowGeometry& geometry, const WindowStyleMasks& styleMasks)
     {
         // Get the parent window
         const xcb_setup_t* xcbSetup = xcb_get_setup(m_xcbConnection);
@@ -59,8 +59,8 @@ namespace AzFramework
         m_xcbWindow = xcb_generate_id(m_xcbConnection);
 
         uint16_t borderWidth = 0;
-        const uint32_t mask = styleMasks.m_platformAgnosticStyleMask;
-        if ((mask & WindowStyleMasks::WINDOW_STYLE_BORDERED) || (mask & WindowStyleMasks::WINDOW_STYLE_RESIZEABLE))
+        m_styleMask = styleMasks.m_platformAgnosticStyleMask;
+        if ((m_styleMask & WindowStyleMasks::WINDOW_STYLE_BORDERED) || (m_styleMask & WindowStyleMasks::WINDOW_STYLE_RESIZEABLE))
         {
             borderWidth = s_DefaultXcbWindowBorderWidth;
         }
@@ -87,6 +87,8 @@ namespace AzFramework
         m_width = geometry.m_width;
         m_height = geometry.m_height;
 
+        SetWindowSizeHints();
+
         InitializeAtoms();
 
         xcb_client_message_event_t event;
@@ -110,6 +112,58 @@ namespace AzFramework
         xcb_change_property(m_xcbConnection, XCB_PROP_MODE_REPLACE, m_xcbWindow, _NET_WM_PID, XCB_ATOM_CARDINAL, 32, 1, &pid);
 
         xcb_flush(m_xcbConnection);
+    }
+
+    void XcbNativeWindow::SetWindowSizeHints()
+    {
+        struct XcbSizeHints
+        {
+            uint32_t flags;
+            int32_t  x, y;
+            int32_t  width, height;
+            int32_t  minWidth, minHeight;
+            int32_t  maxWidth, maxHeight;
+            int32_t  widthInc, heightInc;
+            int32_t  minAspectNum, minAspectDen;
+            int32_t  maxAspectNum, maxAspectDen;
+            int32_t  baseWidth, baseHeight;
+            uint32_t winGravity;
+        };
+
+        enum XcbSizeHintsFlags
+        {
+            USPosition  = 1U << 0,
+            USSize      = 1U << 1,
+            PPosition   = 1U << 2,
+            PSize       = 1U << 3,
+            PMinSize    = 1U << 4,
+            PMaxSize    = 1U << 5,
+            PResizeInc  = 1U << 6,
+            PAspect     = 1U << 7,
+            PWinGravity = 1U << 9
+        };
+
+        XcbSizeHints hints{};
+
+        if ((m_styleMask & WindowStyleMasks::WINDOW_STYLE_RESIZEABLE) == 0)
+        {
+            hints.flags      |= XcbSizeHintsFlags::PMaxSize | XcbSizeHintsFlags::PMinSize,
+            hints.minWidth   = static_cast<int32_t>(m_width);
+            hints.minHeight  = static_cast<int32_t>(m_height);
+            hints.maxWidth   = static_cast<int32_t>(m_width);
+            hints.maxHeight  = static_cast<int32_t>(m_height);
+        }
+
+        xcb_void_cookie_t xcbCheckResult;
+        xcbCheckResult = xcb_change_property(m_xcbConnection,
+                                             XCB_PROP_MODE_REPLACE,
+                                             m_xcbWindow,
+                                             XCB_ATOM_WM_NORMAL_HINTS,
+                                             XCB_ATOM_WM_SIZE_HINTS,
+                                             32,
+                                             18,
+                                             &hints);
+        AZ_Assert(ValidateXcbResult(xcbCheckResult), "Failed to set window size hints.");
     }
 
     xcb_atom_t XcbNativeWindow::GetAtom(const char* atomName)
@@ -432,10 +486,6 @@ namespace AzFramework
             {
                 WindowNotificationBus::Event(
                     reinterpret_cast<NativeWindowHandle>(m_xcbWindow), &WindowNotificationBus::Events::OnWindowResized, width, height);
-                if (!m_enableCustomizedResolution)
-                {
-                    WindowNotificationBus::Event(GetWindowHandle(), &WindowNotificationBus::Events::OnResolutionChanged, width, height);
-                }
             }
         }
     }

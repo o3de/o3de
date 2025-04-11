@@ -7,6 +7,7 @@
  */
 
 #include <AtomLyIntegration/CommonFeatures/CoreLights/AreaLightComponentConfig.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/std/limits.h>
 
 namespace AZ
@@ -18,7 +19,7 @@ namespace AZ
             if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Class<AreaLightComponentConfig, ComponentConfig>()
-                    ->Version(8) // Added AffectsGI
+                    ->Version(10) // Added m_goboImageAsset
                     ->Field("LightType", &AreaLightComponentConfig::m_lightType)
                     ->Field("Color", &AreaLightComponentConfig::m_color)
                     ->Field("IntensityMode", &AreaLightComponentConfig::m_intensityMode)
@@ -27,6 +28,7 @@ namespace AZ
                     ->Field("AttenuationRadius", &AreaLightComponentConfig::m_attenuationRadius)
                     ->Field("LightEmitsBothDirections", &AreaLightComponentConfig::m_lightEmitsBothDirections)
                     ->Field("UseFastApproximation", &AreaLightComponentConfig::m_useFastApproximation)
+                    ->Field("GoboAsset", &AreaLightComponentConfig::m_goboImageAsset)
                     // Shutters
                     ->Field("EnableShutters", &AreaLightComponentConfig::m_enableShutters)
                     ->Field("InnerShutterAngleDegrees", &AreaLightComponentConfig::m_innerShutterAngleDegrees)
@@ -44,6 +46,8 @@ namespace AZ
                     // Global Illumination
                     ->Field("Affects GI", &AreaLightComponentConfig::m_affectsGI)
                     ->Field("Affects GI Factor", &AreaLightComponentConfig::m_affectsGIFactor)
+                    // Lighting channel
+                    ->Field("LightingChannelConfig", &AreaLightComponentConfig::m_lightingChannelConfig)
                     ;
             }
         }
@@ -114,7 +118,7 @@ namespace AZ
 
         bool AreaLightComponentConfig::SupportsShadows() const
         {
-            return m_lightType == LightType::SpotDisk || m_lightType == LightType::Sphere;
+            return m_lightType == LightType::SpotDisk || m_lightType == LightType::Sphere || m_lightType == LightType::SimpleSpot;
         }
 
         bool AreaLightComponentConfig::SupportsAffectsGI() const
@@ -199,6 +203,11 @@ namespace AZ
         {
             return ShadowsDisabled() ||
                 !(m_shadowFilterMethod == ShadowFilterMethod::Esm || m_shadowFilterMethod == ShadowFilterMethod::EsmPcf);
+        }
+
+        bool AreaLightComponentConfig::SupportsGobo() const
+        {
+            return m_lightType == LightType::SimpleSpot;
         }
     }
 }

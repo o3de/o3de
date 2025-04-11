@@ -35,7 +35,13 @@
      <string>&amp;File</string>
     </property>
     <addaction name="actionNew"/>
-    <addaction name="actionAssetBrowser"/>
+    <addaction name="actionOpen"/>
+    <widget class="QMenu" name="menuOpenRecent">
+      <property name="title">
+         <string>Open Recent</string>
+      </property>
+    </widget>
+    <addaction name="menuOpenRecent"/>
     <addaction name="actionSave"/>
     <addaction name="actionSaveAs"/>
     <addaction name="actionSaveAll"/>
@@ -434,7 +440,7 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="actionAssetBrowser"/>
+   <addaction name="actionOpen"/>
    <addaction name="actionNew"/>
    <addaction name="actionSave"/>
    <addaction name="actionSaveAll"/>
@@ -1108,7 +1114,7 @@
     <string>Shift+F11</string>
    </property>
   </action>
-  <action name="actionAssetBrowser">
+  <action name="actionOpen">
    <property name="icon">
     <iconset resource="../../../../Framework/AzToolsFramework/AzToolsFramework/UI/LegacyFramework/Resources/sharedResources.qrc">
      <normaloff>:/toolbar/AssetBrowserIcon.png</normaloff>:/toolbar/AssetBrowserIcon.png</iconset>

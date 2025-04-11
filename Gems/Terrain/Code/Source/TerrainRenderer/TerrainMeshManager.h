@@ -23,7 +23,7 @@
 #include <Atom/RPI.Public/FeatureProcessor.h>
 #include <Atom/RPI.Public/MeshDrawPacket.h>
 
-#include <RayTracing/RayTracingFeatureProcessor.h>
+#include <Atom/Feature/RayTracing/RayTracingFeatureProcessorInterface.h>
 
 #include <TerrainRenderer/Vector2i.h>
 
@@ -84,7 +84,6 @@ namespace Terrain
 
     class TerrainMeshManager
         : private AzFramework::Terrain::TerrainDataNotificationBus::Handler
-        , private AZ::RPI::SceneNotificationBus::Handler
     {
     private:
         
@@ -107,6 +106,8 @@ namespace Terrain
         void Update(const AZ::RPI::ViewPtr mainView, AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg);
 
         void DrawMeshes(const AZ::RPI::FeatureProcessor::RenderPacket& process, const AZ::RPI::ViewPtr mainView);
+
+        void SetRebuildDrawPackets();
 
     private:
 
@@ -141,8 +142,8 @@ namespace Terrain
             struct MeshGroup
             {
                 AZ::Uuid m_id { AZ::Uuid::CreateRandom() };
-                AZ::Render::RayTracingFeatureProcessor::Mesh m_mesh;
-                AZ::Render::RayTracingFeatureProcessor::SubMeshVector m_submeshVector;
+                AZ::Render::RayTracingFeatureProcessorInterface::Mesh m_mesh;
+                AZ::Render::RayTracingFeatureProcessorInterface::SubMeshVector m_submeshVector;
                 bool m_isVisible = false;
             };
 
@@ -152,6 +153,7 @@ namespace Terrain
 
         struct Sector
         {
+            AZ::RHI::GeometryView m_geometryView;
             AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> m_srg;
             AZ::Aabb m_aabb = AZ::Aabb::CreateNull();
             AZStd::array<AZ::Aabb, 4> m_quadrantAabbs;
@@ -160,10 +162,10 @@ namespace Terrain
             // When drawing, either the m_rhiDrawPacket will be used, or some number of the m_rhiDrawPacketQuadrants
             AZ::RHI::ConstPtr<AZ::RHI::DrawPacket> m_rhiDrawPacket;
             AZStd::array<AZ::RHI::ConstPtr<AZ::RHI::DrawPacket>, 4> m_rhiDrawPacketQuadrant;
+            AZStd::array<AZ::RHI::GeometryView, 4> m_quadrantGeometryViews;
 
             AZ::Data::Instance<AZ::RPI::Buffer> m_heightsNormalsBuffer;
             AZ::Data::Instance<AZ::RPI::Buffer> m_lodHeightsNormalsBuffer;
-            AZStd::array<AZ::RHI::StreamBufferView, StreamIndex::Count> m_streamBufferViews;
 
             // Hold reference to the draw srgs so they don't get released.
             AZStd::fixed_vector<AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>, AZ::RHI::DrawPacketBuilder::DrawItemCountMax> m_perDrawSrgs;
@@ -218,6 +220,7 @@ namespace Terrain
             AZ::RHI::DrawListTag m_drawListTag;
             AZ::RHI::Ptr<AZ::RHI::ShaderResourceGroupLayout> m_drawSrgLayout;
             AZ::RPI::ShaderVariant m_shaderVariant;
+            AZ::Name m_materialPipelineName;
         };
 
         struct HeightNormalVertex
@@ -245,14 +248,12 @@ namespace Terrain
             uint32_t m_lodLevel;
         };
 
-        // AZ::RPI::SceneNotificationBus overrides...
-        void OnRenderPipelineChanged(AZ::RPI::RenderPipeline* pipeline, AZ::RPI::SceneNotification::RenderPipelineChangeType changeType) override;
-
         // AzFramework::Terrain::TerrainDataNotificationBus overrides...
         void OnTerrainDataCreateEnd() override;
         void OnTerrainDataDestroyBegin() override;
         void OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask) override;
 
+        void ClearSectorBuffers();
         bool UpdateGridSize(float distanceToFirstLod);
         void BuildDrawPacket(Sector& sector);
         void BuildRtSector(Sector& sector, uint32_t lodLevel);
@@ -291,7 +292,7 @@ namespace Terrain
 
         MeshConfiguration m_config;
         AZ::RPI::Scene* m_parentScene;
-        AZ::Render::RayTracingFeatureProcessor* m_rayTracingFeatureProcessor;
+        AZ::Render::RayTracingFeatureProcessorInterface* m_rayTracingFeatureProcessor;
 
         MaterialInstance m_materialInstance;
         AZStd::vector<CachedDrawData> m_cachedDrawData; // Holds common parts of draw packets

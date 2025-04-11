@@ -131,7 +131,7 @@ namespace AZ
     /**
     * Use this macro outside a class to allow it to be identified across modules and serialized (in different contexts).
     * The expected input is the class and the assigned uuid as a string or an instance of a uuid.
-    * Note that the AZ_TYPE_INFO_SPECIALIZE does NOT need has to be declared in "namespace AZ".
+    * Note that the AZ_TYPE_INFO_SPECIALIZE does NOT need to be declared in "namespace AZ".
     * It can be declared outside the namespace as mechanism for adding TypeInfo uses function overloading
     * instead of template specialization
     * Example:

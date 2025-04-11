@@ -48,6 +48,8 @@ AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 // because it has members like m_node.
 AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
+class AzAssetBrowserWindow;
+
 class SANDBOX_API AzAssetBrowserRequestHandler
     : protected AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler
     , protected AzQtComponents::DragAndDropEventsBus::Handler
@@ -64,6 +66,8 @@ public:
     void AddSourceFileOpeners(const char* fullSourceFileName, const AZ::Uuid& sourceUUID, AzToolsFramework::AssetBrowser::SourceFileOpenerList& openers) override;
     void AddSourceFileCreators(const char* fullSourceFileName, const AZ::Uuid& sourceUUID, AzToolsFramework::AssetBrowser::SourceFileCreatorList& openers) override;
     void OpenAssetInAssociatedEditor(const AZ::Data::AssetId& assetId, bool& alreadyHandled) override;
+    void SelectAsset(QWidget* caller, const AZStd::string& fullFilePath) override;
+    void SelectFolderAsset([[maybe_unused]] QWidget* caller, [[maybe_unused]] const AZStd::string& fullFolderPath) override;
 
     static bool OpenWithOS(const AZStd::string& fullEntryPath);
     void AddCreateMenu(QMenu* menu, const AZStd::string fullFolderPath);
@@ -72,10 +76,11 @@ public:
         AzToolsFramework::AssetBrowser::AssetBrowserThumbnailView* thumbnailView,
         AzToolsFramework::AssetBrowser::AssetBrowserTreeView* treeView,
         QString name,
-        AzToolsFramework::AssetBrowser::AssetBrowserFilterModel::AssetBrowserSortMode sortMode);
+        AzToolsFramework::AssetBrowser::AssetBrowserEntry::AssetEntrySortMode sortMode);
     void AddSortMenu(QMenu* menu,
         AzToolsFramework::AssetBrowser::AssetBrowserThumbnailView* thumbnailView,
-        AzToolsFramework::AssetBrowser::AssetBrowserTreeView* treeView
+        AzToolsFramework::AssetBrowser::AssetBrowserTreeView* treeView,
+        AzToolsFramework::AssetBrowser::AssetBrowserTableView* tableView
         );
 
 protected:
@@ -95,6 +100,8 @@ protected:
 
     bool DecodeDragMimeData(const QMimeData* mimeData,
                             AZStd::vector<const AzToolsFramework::AssetBrowser::ProductAssetBrowserEntry*>* outVector = nullptr) const;
+    AzAssetBrowserWindow* FindAzAssetBrowserWindow(QWidget* widgetToStartSearchFrom);
+    AzAssetBrowserWindow* FindAzAssetBrowserWindowThatContainsWidget(QWidget* widget);
 };
 
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING

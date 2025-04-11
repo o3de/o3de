@@ -407,7 +407,7 @@ namespace AZStd
 
         inline iterator insert(const_iterator insertPos, const_reference value)
         {
-            node_ptr_type newNode = reinterpret_cast<node_ptr_type>(m_allocator.allocate(sizeof(node_type), alignment_of<node_type>::value));
+            node_ptr_type newNode = reinterpret_cast<node_ptr_type>(static_cast<void*>(m_allocator.allocate(sizeof(node_type), alignof(node_type))));
 
             // copy construct
             pointer ptr = &newNode->m_value;
@@ -440,7 +440,7 @@ namespace AZStd
 
             for (; 0 < numElements; --numElements)
             {
-                node_ptr_type newNode = reinterpret_cast<node_ptr_type>(m_allocator.allocate(sizeof(node_type), alignment_of<node_type>::value));
+                node_ptr_type newNode = reinterpret_cast<node_ptr_type>(static_cast<void*>(m_allocator.allocate(sizeof(node_type), alignof(node_type))));
                 // copy construct
                 pointer ptr = &newNode->m_value;
                 Internal::construct<pointer>::single(ptr, value);
@@ -581,7 +581,7 @@ namespace AZStd
                 this_type temp(m_allocator);
 
                 // Different allocators, move elements
-                for (auto& element : * this)
+                for (auto& element : *this)
                 {
                     temp.push_back(AZStd::move(element));
                 }
@@ -980,8 +980,8 @@ namespace AZStd
         * @{
         */
         // The only difference from the standard is that we return the allocator instance, not a copy.
-        AZ_FORCE_INLINE allocator_type&         get_allocator()         { return m_allocator; }
-        AZ_FORCE_INLINE const allocator_type&   get_allocator() const   { return m_allocator; }
+        AZ_FORCE_INLINE allocator_type& get_allocator() { return m_allocator; }
+        AZ_FORCE_INLINE const allocator_type& get_allocator() const { return m_allocator; }
         /// Set the vector allocator. If different than then current all elements will be reallocated.
         inline void                     set_allocator(const allocator_type& allocator)
         {
@@ -1050,7 +1050,7 @@ namespace AZStd
         */
         inline iterator insert(iterator insertPos)
         {
-            node_ptr_type newNode = reinterpret_cast<node_ptr_type>(m_allocator.allocate(sizeof(node_type), alignment_of<node_type>::value));
+            node_ptr_type newNode = reinterpret_cast<node_ptr_type>(static_cast<void*>(m_allocator.allocate(sizeof(node_type), alignof(node_type))));
 
             // construct
             pointer ptr = &newNode->m_value;
@@ -1073,7 +1073,7 @@ namespace AZStd
 
         inline iterator insert_after(iterator insertPos, const_reference value)
         {
-            node_ptr_type newNode = reinterpret_cast<node_ptr_type>(m_allocator.allocate(sizeof(node_type), alignment_of<node_type>::value));
+            node_ptr_type newNode = reinterpret_cast<node_ptr_type>(static_cast<void*>(m_allocator.allocate(sizeof(node_type), alignof(node_type))));
 
             // copy construct
             pointer ptr = &newNode->m_value;
@@ -1104,9 +1104,9 @@ namespace AZStd
             base_node_ptr_type insNode = insertPos.m_node;
 #endif
 
-            for (; 0  < numElements; --numElements)
+            for (; 0 < numElements; --numElements)
             {
-                node_ptr_type newNode = reinterpret_cast<node_ptr_type>(m_allocator.allocate(sizeof(node_type), alignment_of<node_type>::value));
+                node_ptr_type newNode = reinterpret_cast<node_ptr_type>(static_cast<void*>(m_allocator.allocate(sizeof(node_type), alignof(node_type))));
 
                 // copy construct
                 pointer ptr = &newNode->m_value;
@@ -1169,7 +1169,7 @@ namespace AZStd
     protected:
         AZ_FORCE_INLINE void    deallocate_node(node_ptr_type node)
         {
-            m_allocator.deallocate(node, sizeof(node_type), alignment_of<node_type>::value);
+            m_allocator.deallocate(node, sizeof(node_type), alignof(node_type));
         }
 
         template <class InputIterator>
@@ -1226,7 +1226,7 @@ namespace AZStd
         template<class ... ArgumentsInputs>
         reference insert_element(const_iterator insertPos, ArgumentsInputs&& ... arguments)
         {
-            node_ptr_type newNode = reinterpret_cast<node_ptr_type>(m_allocator.allocate(sizeof(node_type), alignment_of<node_type>::value));
+            node_ptr_type newNode = reinterpret_cast<node_ptr_type>(static_cast<void*>(m_allocator.allocate(sizeof(node_type), alignof(node_type))));
 
             // construct
             pointer ptr = &newNode->m_value;

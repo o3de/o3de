@@ -31,7 +31,7 @@ namespace RecastNavigation
                 editContext->Class<EditorRecastNavigationMeshComponent>("Recast Navigation Mesh",
                     "[Calculates the walkable navigation mesh within a specified area.]")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game"))
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
 
@@ -47,7 +47,7 @@ namespace RecastNavigation
                 editContext->Class<RecastNavigationMeshConfig>("Recast Navigation Mesh Config",
                     "[Navigation mesh configuration]")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game"))
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
                     // Agent configuration

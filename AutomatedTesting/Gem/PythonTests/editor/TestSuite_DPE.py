@@ -16,7 +16,7 @@ from ly_test_tools.o3de.editor_test import EditorSingleTest, EditorTestSuite
 class TestAutomationDPE(EditorTestSuite):
 
     # Disable Batch Mode and autotest mode and enable the DPE
-    global_extra_cmdline_args = ["-ed_enableDPE=true"]
+    global_extra_cmdline_args = ["-ed_enableDPEInspector=true"]
 
     @pytest.mark.xfail(reason="https://github.com/o3de/o3de/issues/15718, https://github.com/o3de/o3de/issues/15704, "
                               "https://github.com/o3de/o3de/issues/15695, https://github.com/o3de/o3de/issues/15579")

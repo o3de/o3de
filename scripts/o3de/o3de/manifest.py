@@ -32,7 +32,6 @@ def get_this_engine_path() -> pathlib.Path:
     else:
         return pathlib.Path(os.path.realpath(__file__)).parents[3].resolve()
 
-
 def get_home_folder() -> pathlib.Path:
     return pathlib.Path(os.path.expanduser("~")).resolve()
 
@@ -335,6 +334,28 @@ def get_engine_templates() -> list:
                         engine_object['templates'])) if 'templates' in engine_object else []
     return []
 
+def is_sdk_engine(engine_name:str = None, engine_path:str or pathlib.Path = None) -> bool:
+    """
+    Queries if the engine is an SDK engine that was created via the CMake install command
+    :param engine_name: Name of a registered engine to lookup in the ~/.o3de/o3de_manifest.json file
+    :param engine_path: The path to the engine
+    :return True if the engine.json contains an "sdk_engine" field which is True
+    """
+    engine_json_data = get_engine_json_data(engine_name, engine_path)
+    if engine_json_data:
+        return engine_json_data.get('sdk_engine', False)
+
+    if engine_path:
+        logger.warning('Failed to retrieve engine json data for the engine at '
+                     f'"{engine_path}". Treating engine as source engine.')
+    elif engine_name:
+        logger.warning('Failed to retrieve engine json data for registered engine '
+                     f'"{engine_name}". Treating engine as source engine.')
+    else:
+        logger.warning('Failed to retrieve engine json data as neither an engine name nor path were given.'
+                     'Treating engine as source engine')
+    return False
+
 
 # project.json queries
 def get_project_gems(project_path:pathlib.Path, recurse:bool = False, gems_json_data_by_path:dict = None) -> list:
@@ -432,6 +453,7 @@ def get_enabled_gems(cmake_file: pathlib.Path) -> set:
     return gem_target_set
 
 
+FALLBACK_ENGINE_PROJECT_PATHS_WARNINGS = set()
 
 def get_project_enabled_gems(project_path: pathlib.Path, include_dependencies:bool = True) -> dict or None:
     """
@@ -466,8 +488,12 @@ def get_project_enabled_gems(project_path: pathlib.Path, include_dependencies:bo
                             f'"{project_path}" which is required to resolve gem dependencies.')
             return result
 
-        logger.warning('Failed to determine the correct engine for the project at '
-                        f'"{project_path}", falling back to this engine at {engine_path}.')
+        # Warn about falling back to a default engine once per project
+        global FALLBACK_ENGINE_PROJECT_PATHS_WARNINGS
+        if project_path not in FALLBACK_ENGINE_PROJECT_PATHS_WARNINGS:
+            FALLBACK_ENGINE_PROJECT_PATHS_WARNINGS.add(project_path)
+            logger.warning('Failed to determine the correct engine for the project at '
+                           f'"{project_path}", falling back to this engine at {engine_path}.')
     
     engine_json_data = get_engine_json_data(engine_path=engine_path)
     if not engine_json_data:
@@ -527,9 +553,8 @@ def get_project_engine_path(project_path: pathlib.Path,
                             user_project_json_data: dict = None, 
                             engines_json_data: dict = None) -> pathlib.Path or None:
     """
-    Returns the most compatible engine path for a project based on the project's 
-    'engine' field and taking into account <project_path>/user/project.json overrides
-    or the engine the project is registered with.
+    Returns the most compatible engine path for a project based on the project's 'engine' field and taking into account
+    <project_path>/user/project.json overrides or the engine the project is registered with.
     :param project_path: Path to the project
     :param project_json_data: Optional json data to use to avoid reloading project.json  
     :param user_project_json_data: Optional json data to use to avoid reloading <project_path>/user/project.json  

@@ -11,6 +11,7 @@
 #include <AzCore/Asset/AssetCommon.h>
 
 #include <Atom/RPI.Edit/Common/ConvertibleSource.h>
+#include <Atom/RPI.Edit/Configuration.h>
 #include <Atom/RHI.Reflect/Base.h>
 
 namespace AZ
@@ -20,7 +21,7 @@ namespace AZ
     {          
         //! Source data for AssetAliases. It implements the ConvertibleSource interface so it can be converted to 
         //! AssetAliases data when it's used for AnyAsset and be processed by AnyAssetBuilder.
-        class AssetAliasesSourceData final
+        class ATOM_RPI_EDIT_API AssetAliasesSourceData final
             : public ConvertibleSource
         {
         public:

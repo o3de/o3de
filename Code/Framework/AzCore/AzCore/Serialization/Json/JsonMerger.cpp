@@ -12,12 +12,9 @@
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Serialization/Json/StackedString.h>
 #include <AzCore/std/string/fixed_string.h>
-#include <AzCore/std/string/osstring.h>
 
 namespace AZ
 {
-    using ReporterString = AZStd::fixed_string<1024>;
-
     JsonSerializationResult::ResultCode JsonMerger::ApplyPatch(rapidjson::Value& target,
         rapidjson::Document::AllocatorType& allocator, const rapidjson::Value& patch,
         JsonApplyPatchSettings& settings)
@@ -285,7 +282,7 @@ namespace AZ
         }
 
         rapidjson::Value newValue;
-        newValue.CopyFrom(value->value, allocator);
+        newValue.CopyFrom(value->value, allocator, true);
         return ApplyPatch_AddValue(target, allocator, path, AZStd::move(newValue), element, settings);
     }
 
@@ -459,7 +456,7 @@ namespace AZ
                 ResultCode(Tasks::Merge, Outcomes::Invalid), element);
         }
 
-        memberValue->CopyFrom(value->value, allocator);
+        memberValue->CopyFrom(value->value, allocator, true);
 
         rapidjson::StringBuffer pointerPathString;
         path.Stringify(pointerPathString);
@@ -499,7 +496,7 @@ namespace AZ
         {
             AZ_Assert(fromValue, R"(The "fromValue" was retrieved but is still null.)");
             rapidjson::Value copiedValue;
-            copiedValue.CopyFrom(*fromValue, allocator);
+            copiedValue.CopyFrom(*fromValue, allocator, true);
             result.Combine(ApplyPatch_AddValue(target, allocator, path, AZStd::move(copiedValue), element, settings));
         }
         return result;

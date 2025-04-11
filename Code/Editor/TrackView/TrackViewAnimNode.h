@@ -9,14 +9,14 @@
 
 #pragma once
 
-#include <AzCore/std/containers/map.h>
-#include <AzCore/Component/EntityId.h>
 #include <AzCore/Component/EntityBus.h>
+#include <AzCore/Component/EntityId.h>
+#include <AzCore/Component/TransformBus.h>
+#include <AzCore/std/containers/map.h>
+#include <AzCore/std/containers/vector.h>
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
-#include <AzCore/Component/TransformBus.h>
 
-#include "Objects/BaseObject.h"
 #include "TrackViewNode.h"
 #include "TrackViewTrack.h"
 
@@ -41,7 +41,7 @@ public:
     void CollapseAll();
 
 private:
-    std::vector<CTrackViewAnimNode*> m_animNodes;
+    AZStd::vector<CTrackViewAnimNode*> m_animNodes;
 };
 
 // Callback called by animation node when its animated.
@@ -58,7 +58,7 @@ public:
     virtual void UnBind([[maybe_unused]] CTrackViewAnimNode* pNode) {}
 };
 
-////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
 //
 // This class represents a IAnimNode in TrackView and contains
 // the editor side code for changing it
@@ -66,11 +66,10 @@ public:
 // It does *not* have ownership of the IAnimNode, therefore deleting it
 // will not destroy the CryMovie track
 //
-////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
 class CTrackViewAnimNode
     : public CTrackViewNode
     , public IAnimNodeOwner
-    , public ITransformDelegate
     , public AzToolsFramework::EditorEntityContextNotificationBus::Handler
     , public AZ::EntityBus::Handler
     , private AZ::TransformNotificationBus::Handler
@@ -95,7 +94,7 @@ public:
     virtual void SyncToConsole(SAnimContext& animContext);
 
     // CTrackViewAnimNode
-    virtual ETrackViewNodeType GetNodeType() const override { return eTVNT_AnimNode; }
+    ETrackViewNodeType GetNodeType() const override { return eTVNT_AnimNode; }
 
     // Create & remove sub anim nodes
     virtual CTrackViewAnimNode* CreateSubNode(
@@ -106,6 +105,9 @@ public:
     // Create & remove sub tracks
     virtual CTrackViewTrack* CreateTrack(const CAnimParamType& paramType);
     virtual void RemoveTrack(CTrackViewTrack* pTrack);
+
+    // Updates track default values before adding a new key at time, so that animated entity is not affected by adding a key
+    void UpdateTrackDefaultValue(float time, IAnimTrack* pTrack);
 
     // Add selected entities from scene to group node
     virtual CTrackViewAnimNodeBundle AddSelectedEntities(const AZStd::vector<AnimParamType>& tracks);
@@ -120,13 +122,10 @@ public:
     // Checks if anim node is part of active sequence and of an active director
     virtual bool IsActive();
 
-    // Set as view camera
-    virtual void SetAsViewCamera();
-
     // Name setter/getter
     AZStd::string GetName() const override { return m_animNode->GetName(); }
-    virtual bool SetName(const char* pName) override;
-    virtual bool CanBeRenamed() const override;
+    bool SetName(const char* pName) override;
+    bool CanBeRenamed() const override;
 
     // Node owner setter/getter
     virtual void SetNodeEntityId(AZ::EntityId entityId);
@@ -136,8 +135,8 @@ public:
     bool IsBoundToAzEntity() const { return m_animNode ? m_animNode->GetAzEntityId().IsValid(): false; }
 
     // Snap time value to prev/next key in sequence
-    virtual bool SnapTimeToPrevKey(float& time) const override;
-    virtual bool SnapTimeToNextKey(float& time) const override;
+    bool SnapTimeToPrevKey(float& time) const override;
+    bool SnapTimeToNextKey(float& time) const override;
 
     // Expanded state interface
     void SetExpanded(bool expanded) override;
@@ -156,9 +155,9 @@ public:
     virtual CTrackViewTrackBundle GetTracksByParam(const CAnimParamType& paramType) const;
 
     // Key getters
-    virtual CTrackViewKeyBundle GetAllKeys() override;
-    virtual CTrackViewKeyBundle GetSelectedKeys() override;
-    virtual CTrackViewKeyBundle GetKeysInTimeRange(const float t0, const float t1) override;
+    CTrackViewKeyBundle GetAllKeys() override;
+    CTrackViewKeyBundle GetSelectedKeys() override;
+    CTrackViewKeyBundle GetKeysInTimeRange(const float t0, const float t1) override;
 
     // Type getters
     AnimNodeType GetType() const;
@@ -168,22 +167,13 @@ public:
     bool AreFlagsSetOnNodeOrAnyParent(EAnimNodeFlags flagsToCheck) const;
 
     // Disabled state
-    virtual void SetDisabled(bool bDisabled) override;
-    virtual bool IsDisabled() const override;
+    void SetDisabled(bool bDisabled) override;
+    bool IsDisabled() const override;
     bool CanBeEnabled() const override;
 
     // Return track assigned to the specified parameter.
     CTrackViewTrack* GetTrackForParameter(const CAnimParamType& paramType, uint32 index = 0) const;
-
-    // Rotation/Position & Scale
-    void SetPos(const Vec3& position);
-    Vec3 GetPos() const { return m_animNode->GetPos(); }
-    void SetScale(const Vec3& scale);
-    Vec3 GetScale() const { return m_animNode->GetScale(); }
-    void SetRotation(const Quat& rotation);
-    Quat GetRotation() const { return m_animNode->GetRotate(); }
-    Quat GetRotation(float time) const { return m_animNode != nullptr ? m_animNode->GetRotate(time) : Quat(0,0,0,0); }
-
+    
     // Param
     unsigned int GetParamCount() const;
     CAnimParamType GetParamType(unsigned int index) const;
@@ -209,7 +199,7 @@ public:
     }
 
     // Check if it's a group node
-    virtual bool IsGroupNode() const override;
+    bool IsGroupNode() const override;
 
     // Generate a new node name
     virtual QString GetAvailableNodeNameStartingWith(const QString& name) const;
@@ -225,7 +215,7 @@ public:
     virtual bool IsValidReparentingTo(CTrackViewAnimNode* pNewParent);
 
     int GetDefaultKeyTangentFlags() const { return m_animNode ? m_animNode->GetDefaultKeyTangentFlags() : SPLINE_KEY_TANGENT_UNIFIED; }
-    
+
     void SetComponent(AZ::ComponentId componentId, const AZ::Uuid& componentTypeId);
 
     // returns the AZ::ComponentId of the component associated with this node if it is of type AnimNodeType::Component, InvalidComponentId otherwise
@@ -235,7 +225,7 @@ public:
     void MarkAsModified() override;
     // ~IAnimNodeOwner
 
-    // Compares all of the node's track values at the given time with the associated property value and 
+    // Compares all of the node's track values at the given time with the associated property value and
     //     sets a key at that time if they are different to match the latter
     // Returns the number of keys set
     int SetKeysForChangedTrackValues(float time) { return m_animNode->SetKeysForChangedTrackValues(time); }
@@ -253,7 +243,7 @@ public:
     // AZ::EntityBus
     void OnEntityActivated(const AZ::EntityId& entityId) override;
     void OnEntityDestruction(const AZ::EntityId& entityId) override;
-    //~AZ::EntityBus 
+    //~AZ::EntityBus
 
     //////////////////////////////////////////////////////////////////////////
     //! AZ::TransformNotificationBus::Handler
@@ -274,13 +264,12 @@ protected:
 
 private:
     // Copy selected keys to XML representation for clipboard
-    virtual void CopyKeysToClipboard(XmlNodeRef& xmlNode, const bool bOnlySelectedKeys, const bool bOnlyFromSelectedTracks) override;
+    void CopyKeysToClipboard(XmlNodeRef& xmlNode, const bool bOnlySelectedKeys, const bool bOnlyFromSelectedTracks) override;
 
     void CopyNodesToClipboardRec(CTrackViewAnimNode* pCurrentAnimNode, XmlNodeRef& xmlNode, const bool bOnlySelected);
 
     void PasteTracksFrom(XmlNodeRef& xmlNodeWithTracks);
 
-    bool HasObsoleteTrackRec(CTrackViewNode* pCurrentNode) const;
     CTrackViewTrackBundle GetTracks(const bool bOnlySelected, const CAnimParamType& paramType) const;
 
     void PasteNodeFromClipboard(AZStd::map<int, IAnimNode*>& copiedIdToNodeMap, XmlNodeRef xmlNode);
@@ -293,23 +282,6 @@ private:
     void OnNodeVisibilityChanged(IAnimNode* pNode, const bool bHidden) override;
     void OnNodeReset(IAnimNode* pNode) override;
     // ~IAnimNodeOwner
-
-    // ITransformDelegate
-    void MatrixInvalidated() override;
-
-    Vec3 GetTransformDelegatePos(const Vec3& realPos) const override;
-    Quat GetTransformDelegateRotation(const Quat& realRotation) const override;
-    Vec3 GetTransformDelegateScale(const Vec3& realScale) const override;
-
-    void SetTransformDelegatePos(const Vec3& position) override;
-    void SetTransformDelegateRotation(const Quat& rotation) override;
-    void SetTransformDelegateScale(const Vec3& scale) override;
-
-    // If those return true the base object uses its own transform instead
-    bool IsPositionDelegated() const override;
-    bool IsRotationDelegated() const override;
-    bool IsScaleDelegated() const override;
-    // ~ITransformDelegate
 
     // Helper for Is<Position/Rotation/Scale>Delegated to call internally
     bool IsTransformAnimParamTypeDelegated(AnimParamType animParamType) const;

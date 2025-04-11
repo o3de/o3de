@@ -94,6 +94,9 @@ namespace ScriptCanvas
                 case Data::eType::Vector4:
                     OperatorEvaluator::Evaluate<Data::Vector4Type>(OperatorAddImpl<Data::Vector4Type>(), operands, result);
                     break;
+                case Data::eType::VectorN:
+                    OperatorEvaluator::Evaluate<Data::VectorNType>(OperatorAddImpl<Data::VectorNType>(), operands, result);
+                    break;
                 case Data::eType::String:
                     OperatorEvaluator::Evaluate<Data::StringType>(OperatorAddImpl<Data::StringType>(), operands, result);
                     break;
@@ -109,6 +112,9 @@ namespace ScriptCanvas
                 case Data::eType::Matrix4x4:
                     OperatorEvaluator::Evaluate<Data::Matrix4x4Type>(OperatorAddImpl<Data::Matrix4x4Type>(), operands, result);
                     break;
+                case Data::eType::MatrixMxN:
+                    OperatorEvaluator::Evaluate<Data::MatrixMxNType>(OperatorAddImpl<Data::MatrixMxNType>(), operands, result);
+                    break;
                 default:
                     AZ_Assert(false, "Addition operator not defined for type: %s", Data::ToAZType(type).ToString<AZStd::string>().c_str());
                     break;
@@ -122,11 +128,13 @@ namespace ScriptCanvas
                     Data::Type::Vector2(),
                     Data::Type::Vector3(),
                     Data::Type::Vector4(),
+                    Data::Type::VectorN(),
                     Data::Type::Color(),
                     Data::Type::Quaternion(),
                     Data::Type::AABB(),
                     Data::Type::Matrix3x3(),
-                    Data::Type::Matrix4x4()
+                    Data::Type::Matrix4x4(),
+                    Data::Type::MatrixMxN()
                 };
             }
 
@@ -148,6 +156,8 @@ namespace ScriptCanvas
                         return !datum->GetAs<Data::Matrix3x3Type>()->IsClose(Data::Matrix3x3Type::CreateIdentity());
                     case Data::eType::Matrix4x4:
                         return !datum->GetAs<Data::Matrix4x4Type>()->IsClose(Data::Matrix4x4Type::CreateIdentity());
+                    case Data::eType::MatrixMxN:
+                        return true;
                     default:
                         break;
                     }

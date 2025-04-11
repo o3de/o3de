@@ -93,6 +93,14 @@ namespace ImageProcessingAtom
         RPI::StreamingImageAssetCreator builder;
         builder.Begin(imageAssetId);
 
+        uint32_t imageDepth = m_imageObject->GetDepth(0);
+        const bool isVolumeTexture = m_imageObject->HasImageFlags(EIF_Volumetexture) || (imageDepth > 1);
+        if (m_imageObject->HasImageFlags(EIF_Cubemap) && isVolumeTexture)
+        {
+            AZ_Assert(false, "An image can not be a cubemap and a volume texture at the same time!");
+            return false;
+        }
+
         int32_t arraySize = m_imageObject->HasImageFlags(EIF_Cubemap) ? 6 : 1;
         uint32_t imageWidth = m_imageObject->GetWidth(0);
         // The current cubemap faces are vertically aligned in the same buffer of image object. So the height should be divided by the array size.
@@ -100,7 +108,9 @@ namespace ImageProcessingAtom
         RHI::Format format = Utils::PixelFormatToRHIFormat(m_imageObject->GetPixelFormat(), m_imageObject->HasImageFlags(EIF_SRGBRead));
         RHI::ImageBindFlags bindFlag = RHI::ImageBindFlags::ShaderRead;
 
-        RHI::ImageDescriptor imageDesc = RHI::ImageDescriptor::Create2DArray(bindFlag, imageWidth, imageHeight, static_cast<uint16_t>(arraySize), format);
+        RHI::ImageDescriptor imageDesc = isVolumeTexture
+            ? RHI::ImageDescriptor::Create3D(bindFlag, imageWidth, imageHeight, imageDepth, format)
+            : RHI::ImageDescriptor::Create2DArray(bindFlag, imageWidth, imageHeight, static_cast<uint16_t>(arraySize), format);
         imageDesc.m_mipLevels = static_cast<uint16_t>(m_imageObject->GetMipCount());
         if (m_imageObject->HasImageFlags(EIF_Cubemap))
         {
@@ -187,9 +197,10 @@ namespace ImageProcessingAtom
             // Add all the mip chain assets as dependencies except the tail mip chain since its embedded in the StreamingImageAsset
             if (it->Get() != mipChains.begin()->Get())
             {
-                // Use PreLoad for mipchain assets for now.
-                // [GFX TODO] [ATOM-14467] Remove unnecessary code in StreamingImage::OnAssetReloaded when runtime switching dependency load behavior is supported
-                product.m_dependencies.push_back(AssetBuilderSDK::ProductDependency(it->GetId(), AZ::Data::ProductDependencyInfo::CreateFlags(AZ::Data::AssetLoadBehavior::PreLoad)));
+                // Note: we don't want to preload the mipchain assets here to reduce loading time and memory footprint.
+                // The mipchain assets will be loaded by StreamingImage automatically or loaded when user is accessing the mipmap data via
+                // StreamingImageAsset::GetSubImageData() function
+                product.m_dependencies.push_back(AssetBuilderSDK::ProductDependency(it->GetId(), AZ::Data::ProductDependencyInfo::CreateFlags(AZ::Data::AssetLoadBehavior::NoLoad)));
             }
         }
 
@@ -219,16 +230,7 @@ namespace ImageProcessingAtom
                 product.m_productSubID = imageAsset.GetId().m_subId;
                 product.m_productFileName = destPath;
 
-                // The StreamingImageAsset is added to end of product list in purpose.
-                // This is in case a new mip chain file is generated, for example when updating the original image's resolution,
-                // the mip chain asset hasn't be registered by the AssetCatalog when processing the asset change notification for
-                // StreamingImageAsset reload and it leads to an unknown asset error.
-                // The Asset system can be modified to solve the problem so the order doesn't matter.
-                // The task is tracked in ATOM-242
-                m_jobProducts.push_back(AZStd::move(product));
-
                 auto& imageDescriptor = imageAsset->GetImageDescriptor();
-
                 AZStd::string folder;
                 AZStd::string jsonName;
                 folder = AZStd::string::format("%s/%s.abdata.json", m_productFolder.c_str(), m_fileName.c_str());
@@ -245,8 +247,16 @@ namespace ImageProcessingAtom
                 });
 
                 AssetBuilderSDK::JobProduct jsonProduct(folder);
-                jsonProduct.m_productSubID = product.m_productSubID + 1;
-                m_jobProducts.push_back(AZStd::move(jsonProduct));
+                jsonProduct.m_productSubID |= product.m_productSubID;
+                m_jobProducts.emplace_back(AZStd::move(jsonProduct));
+
+                // The StreamingImageAsset is added to end of product list on purpose.
+                // This is in case a new mip chain file is generated, for example when updating the original image's resolution,
+                // the mip chain asset hasn't be registered by the AssetCatalog when processing the asset change notification for
+                // StreamingImageAsset reload and it leads to an unknown asset error.
+                // The Asset system can be modified to solve the problem so the order doesn't matter.
+                // The task is tracked in ATOM-242
+                m_jobProducts.emplace_back(AZStd::move(product));
             }
         }
 
@@ -266,13 +276,17 @@ namespace ImageProcessingAtom
             uint32_t pitch;
             m_imageObject->GetImagePointer(mip, mipBuffer, pitch);
             RHI::Format format = Utils::PixelFormatToRHIFormat(m_imageObject->GetPixelFormat(), m_imageObject->HasImageFlags(EIF_SRGBRead));
-            
-            RHI::ImageSubresourceLayout layout = RHI::GetImageSubresourceLayout(RHI::Size(m_imageObject->GetWidth(mip), m_imageObject->GetHeight(mip) / arraySize, 1), format);
+
+            const auto mipSize = (m_imageObject->GetDepth(0) == 1)
+                ? RHI::Size(m_imageObject->GetWidth(mip), m_imageObject->GetHeight(mip) / arraySize, 1)
+                : RHI::Size(m_imageObject->GetWidth(mip), m_imageObject->GetHeight(mip), m_imageObject->GetDepth(mip));
+            RHI::DeviceImageSubresourceLayout layout = RHI::GetImageSubresourceLayout(mipSize, format);
+            const auto mipSizeInBytes = layout.m_bytesPerImage * mipSize.m_depth;
             builder.BeginMip(layout);
 
             for (uint32_t arrayIndex = 0; arrayIndex < arraySize; ++arrayIndex)
             {
-                builder.AddSubImage(mipBuffer + arrayIndex * layout.m_bytesPerImage, layout.m_bytesPerImage);
+                builder.AddSubImage(mipBuffer + arrayIndex * mipSizeInBytes, mipSizeInBytes);
             }
 
             builder.EndMip();

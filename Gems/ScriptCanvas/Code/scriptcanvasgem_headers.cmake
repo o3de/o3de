@@ -126,6 +126,48 @@ set(FILES
     Include/ScriptCanvas/Internal/Nodes/StringFormatted.h
     Include/ScriptCanvas/Internal/Nodes/StringFormatted.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/Libraries.h
+    Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactAddNodeable.h
+    Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactAddNodeable.ScriptCanvasNodeable.xml
+    Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactDecrementNodeable.h
+    Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactDecrementNodeable.ScriptCanvasNodeable.xml
+    Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactDivideNodeable.h
+    Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactDivideNodeable.ScriptCanvasNodeable.xml
+    Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactIncrementNodeable.h
+    Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactIncrementNodeable.ScriptCanvasNodeable.xml
+    Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactMultiplyNodeable.h
+    Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactMultiplyNodeable.ScriptCanvasNodeable.xml
+    Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactNegateNodeable.h
+    Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactNegateNodeable.ScriptCanvasNodeable.xml
+    Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactSubtractNodeable.h
+    Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactSubtractNodeable.ScriptCanvasNodeable.xml
+    Include/ScriptCanvas/Libraries/Compact/MathematicalFunctions/CompactCeilingNodeable.h
+    Include/ScriptCanvas/Libraries/Compact/MathematicalFunctions/CompactCeilingNodeable.ScriptCanvasNodeable.xml
+    Include/ScriptCanvas/Libraries/Compact/MathematicalFunctions/CompactFloorNodeable.h
+    Include/ScriptCanvas/Libraries/Compact/MathematicalFunctions/CompactFloorNodeable.ScriptCanvasNodeable.xml
+    Include/ScriptCanvas/Libraries/Compact/MathematicalFunctions/CompactModuloNodeable.h
+    Include/ScriptCanvas/Libraries/Compact/MathematicalFunctions/CompactModuloNodeable.ScriptCanvasNodeable.xml
+    Include/ScriptCanvas/Libraries/Compact/MathematicalFunctions/CompactPowerNodeable.h
+    Include/ScriptCanvas/Libraries/Compact/MathematicalFunctions/CompactPowerNodeable.ScriptCanvasNodeable.xml
+    Include/ScriptCanvas/Libraries/Compact/MathematicalFunctions/CompactRoundNodeable.h
+    Include/ScriptCanvas/Libraries/Compact/MathematicalFunctions/CompactRoundNodeable.ScriptCanvasNodeable.xml
+    Include/ScriptCanvas/Libraries/Compact/MathematicalFunctions/CompactSquareNodeable.h
+    Include/ScriptCanvas/Libraries/Compact/MathematicalFunctions/CompactSquareNodeable.ScriptCanvasNodeable.xml
+    Include/ScriptCanvas/Libraries/Compact/MathematicalFunctions/CompactSquareRootNodeable.h
+    Include/ScriptCanvas/Libraries/Compact/MathematicalFunctions/CompactSquareRootNodeable.ScriptCanvasNodeable.xml
+    Include/ScriptCanvas/Libraries/Compact/Trigonometry/CompactArccosineNodeable.h
+    Include/ScriptCanvas/Libraries/Compact/Trigonometry/CompactArccosineNodeable.ScriptCanvasNodeable.xml
+    Include/ScriptCanvas/Libraries/Compact/Trigonometry/CompactArcsineNodeable.h
+    Include/ScriptCanvas/Libraries/Compact/Trigonometry/CompactArcsineNodeable.ScriptCanvasNodeable.xml
+    Include/ScriptCanvas/Libraries/Compact/Trigonometry/CompactArctangent2Nodeable.h
+    Include/ScriptCanvas/Libraries/Compact/Trigonometry/CompactArctangent2Nodeable.ScriptCanvasNodeable.xml
+    Include/ScriptCanvas/Libraries/Compact/Trigonometry/CompactArctangentNodeable.h
+    Include/ScriptCanvas/Libraries/Compact/Trigonometry/CompactArctangentNodeable.ScriptCanvasNodeable.xml
+    Include/ScriptCanvas/Libraries/Compact/Trigonometry/CompactCosineNodeable.h
+    Include/ScriptCanvas/Libraries/Compact/Trigonometry/CompactCosineNodeable.ScriptCanvasNodeable.xml
+    Include/ScriptCanvas/Libraries/Compact/Trigonometry/CompactSineNodeable.h
+    Include/ScriptCanvas/Libraries/Compact/Trigonometry/CompactSineNodeable.ScriptCanvasNodeable.xml
+    Include/ScriptCanvas/Libraries/Compact/Trigonometry/CompactTangentNodeable.h
+    Include/ScriptCanvas/Libraries/Compact/Trigonometry/CompactTangentNodeable.ScriptCanvasNodeable.xml
     Include/ScriptCanvas/Libraries/Core/AzEventHandler.h
     Include/ScriptCanvas/Libraries/Core/AzEventHandler.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/Core/BinaryOperator.h
@@ -201,6 +243,8 @@ set(FILES
     Include/ScriptCanvas/Libraries/Math/Matrix3x3.ScriptCanvasFunction.xml
     Include/ScriptCanvas/Libraries/Math/Matrix4x4.h
     Include/ScriptCanvas/Libraries/Math/Matrix4x4.ScriptCanvasFunction.xml
+    Include/ScriptCanvas/Libraries/Math/MatrixMxN.h
+    Include/ScriptCanvas/Libraries/Math/MatrixMxN.ScriptCanvasFunction.xml
     Include/ScriptCanvas/Libraries/Math/OBB.h
     Include/ScriptCanvas/Libraries/Math/OBB.ScriptCanvasFunction.xml
     Include/ScriptCanvas/Libraries/Math/Plane.h
@@ -215,6 +259,8 @@ set(FILES
     Include/ScriptCanvas/Libraries/Math/Vector3.ScriptCanvasFunction.xml
     Include/ScriptCanvas/Libraries/Math/Vector4.h
     Include/ScriptCanvas/Libraries/Math/Vector4.ScriptCanvasFunction.xml
+    Include/ScriptCanvas/Libraries/Math/VectorN.h
+    Include/ScriptCanvas/Libraries/Math/VectorN.ScriptCanvasFunction.xml
     Include/ScriptCanvas/Libraries/Comparison/ComparisonLibrary.h
     Include/ScriptCanvas/Libraries/Comparison/EqualTo.h
     Include/ScriptCanvas/Libraries/Comparison/NotEqualTo.h
@@ -236,7 +282,7 @@ set(FILES
     Include/ScriptCanvas/Libraries/Time/TimerNodeable.ScriptCanvasNodeable.xml
     Include/ScriptCanvas/Libraries/Spawning/CreateSpawnTicketNodeable.h
     Include/ScriptCanvas/Libraries/Spawning/CreateSpawnTicketNodeable.ScriptCanvasNodeable.xml
-    Include/ScriptCanvas/Libraries/Spawning/SpawningData.ScriptCanvasData.xml
+    Include/ScriptCanvas/Libraries/Spawning/SpawningData.ScriptCanvasFunction.xml
     Include/ScriptCanvas/Libraries/Spawning/SpawnNodeable.h
     Include/ScriptCanvas/Libraries/Spawning/SpawnNodeable.ScriptCanvasNodeable.xml
     Include/ScriptCanvas/Libraries/Spawning/DespawnNodeable.h

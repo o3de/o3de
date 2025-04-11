@@ -11,6 +11,7 @@
 #include <Atom/RHI/DrawListContext.h>
 
 #include <Atom/RPI.Public/Base.h>
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/SceneBus.h>
 
 #include <Atom/RPI.Reflect/FeatureProcessorDescriptor.h>
@@ -42,15 +43,17 @@ namespace AZ
         //! 
         //!         It is recommended that each feature processor maintain a data buffer that is buffered N times for the data that is
         //!         expected to be delivered via an Ebus.
-        class FeatureProcessor
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+        class ATOM_RPI_PUBLIC_API FeatureProcessor
             : public SceneNotificationBus::Handler
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             friend class Scene;
-        public:
 
-            // [GFX TODO]: now these structure are empty, but we will clean up them later when we are sure we won't have any members in them.
+        public:
             struct PrepareViewsPacket
             {
+                AZStd::map<ViewPtr, RHI::DrawListMask> m_persistentViews;
             };
 
             struct SimulatePacket
@@ -105,7 +108,8 @@ namespace AZ
             //! views (transient views) are views that must be rendered only to correctly render 
             //! the main views. This function is called per frame and it happens on main thread.
             //! Support views should be added to outViews with their associated pipeline view tags.
-            virtual void PrepareViews(const PrepareViewsPacket&, AZStd::vector<AZStd::pair<PipelineViewTag, ViewPtr>>& /* outViews*/) {}
+            virtual void PrepareViews(
+                const PrepareViewsPacket& /*prepareViewPacket*/, AZStd::vector<AZStd::pair<PipelineViewTag, ViewPtr>>& /*outViews*/) {}
 
             //! The feature processor should perform any internal simulation at this point - For 
             //! instance, updating a particle system or animation. Not every feature processor

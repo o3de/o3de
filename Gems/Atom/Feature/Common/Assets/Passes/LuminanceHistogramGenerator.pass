@@ -36,7 +36,7 @@
                 "ShaderAsset": {
                     "FilePath": "Shaders/PostProcessing/LuminanceHistogramGenerator.shader"
                 },
-                "Make Fullscreen Pass": false
+                "FullscreenDispatch": false
             }
         }
     }

@@ -260,7 +260,7 @@ namespace AZ
             return imageAsset->GetImageDescriptor().m_mipLevels;
         }
 
-        RHI::ImageSubresourceLayout DecalTextureArray::GetLayout(const DecalMapType mapType, int mip) const
+        RHI::DeviceImageSubresourceLayout DecalTextureArray::GetLayout(const DecalMapType mapType, int mip) const
         {
             AZ_Assert(m_materials.size() > 0, "GetLayout() cannot be called unless at least one material has been added");
 
@@ -288,6 +288,11 @@ namespace AZ
             {
                 return {};
             }
+            AZ_Assert(
+                mip < image->GetImageDescriptor().m_mipLevels,
+                "It is expected that all decals in a texture array must have the same number of mips which may not be the case here. "
+                "Please ensure that all the materials within m_materials are pointing to textures with same mips.");
+
             const auto srcData = image->GetSubImageData(mip, 0);
             return srcData;
         }

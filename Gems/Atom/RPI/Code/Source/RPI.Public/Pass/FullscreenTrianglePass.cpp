@@ -17,7 +17,7 @@
 
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/FrameScheduler.h>
-#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/DevicePipelineState.h>
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Asset/AssetManagerBus.h>
@@ -36,8 +36,10 @@ namespace AZ
 
         FullscreenTrianglePass::FullscreenTrianglePass(const PassDescriptor& descriptor)
             : RenderPass(descriptor)
+            , m_item(RHI::MultiDevice::AllDevices)
             , m_passDescriptor(descriptor)
         {
+            m_defaultShaderAttachmentStage = RHI::ScopeAttachmentStage::FragmentShader;
             LoadShader();
         }
 
@@ -66,6 +68,12 @@ namespace AZ
             LoadShader();
         }
 
+        void FullscreenTrianglePass::UpdateShaderOptionsCommon()
+        {
+            m_pipelineStateForDraw.UpdateSrgVariantFallback(m_shaderResourceGroup);
+            BuildDrawItem();
+        }
+
         void FullscreenTrianglePass::LoadShader()
         {
             AZ_Assert(GetPassState() != PassState::Rendering, "FullscreenTrianglePass - Reloading shader during Rendering phase!");
@@ -79,14 +87,26 @@ namespace AZ
                 return;
             }
 
-            // Load Shader
-            Data::Asset<ShaderAsset> shaderAsset;
-            if (passData->m_shaderAsset.m_assetId.IsValid())
+            AZ::Data::AssetId shaderAssetId = passData->m_shaderAsset.m_assetId;
+            if (!shaderAssetId.IsValid())
             {
-                shaderAsset = RPI::FindShaderAsset(passData->m_shaderAsset.m_assetId, passData->m_shaderAsset.m_filePath);
+                // This case may happen when PassData comes from a PassRequest defined inside an *.azasset.
+                // Unlike the PassBuilder, the AnyAssetBuilder doesn't record the AssetId, so we have to discover the asset id at runtime.
+                AZStd::string azshaderPath = passData->m_shaderAsset.m_filePath;
+                AZ::StringFunc::Path::ReplaceExtension(azshaderPath, "azshader");
+                AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                    shaderAssetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, azshaderPath.c_str(),
+                    azrtti_typeid<ShaderAsset>(), false /*autoRegisterIfNotFound*/);
             }
 
-            if (!shaderAsset.GetId().IsValid())
+            // Load Shader
+            Data::Asset<ShaderAsset> shaderAsset;
+            if (shaderAssetId.IsValid())
+            {
+                shaderAsset = RPI::FindShaderAsset(shaderAssetId, passData->m_shaderAsset.m_filePath);
+            }
+
+            if (!shaderAsset.IsReady())
             {
                 AZ_Error("PassSystem", false, "[FullscreenTrianglePass '%s']: Failed to load shader '%s'!",
                     GetPathName().GetCStr(),
@@ -94,10 +114,10 @@ namespace AZ
                 return;
             }
 
-            m_shader = Shader::FindOrCreate(shaderAsset);
+            m_shader = Shader::FindOrCreate(shaderAsset, GetSuperVariantName());
             if (m_shader == nullptr)
             {
-                AZ_Error("PassSystem", false, "[FullscreenTrianglePass '%s']: Failed to load shader '%s'!",
+                AZ_Error("PassSystem", false, "[FullscreenTrianglePass '%s']: Failed to create shader instance from asset '%s'!",
                     GetPathName().GetCStr(),
                     passData->m_shaderAsset.m_filePath.data());
                 return;
@@ -106,7 +126,7 @@ namespace AZ
             // Store stencil reference value for the draw call
             m_stencilRef = passData->m_stencilRef;
 
-            m_pipelineStateForDraw.Init(m_shader);
+            m_pipelineStateForDraw.Init(m_shader, m_shader->GetDefaultShaderOptions().GetShaderVariantId());
 
             UpdateSrgs();
 
@@ -164,12 +184,11 @@ namespace AZ
             // This draw item purposefully does not reference any geometry buffers.
             // Instead it's expected that the extended class uses a vertex shader 
             // that generates a full-screen triangle completely from vertex ids.
-            RHI::DrawLinear draw = RHI::DrawLinear();
-            draw.m_vertexCount = 3;
+            m_geometryView.SetDrawArguments(RHI::DrawLinear(3, 0));
 
-            m_item.m_arguments = RHI::DrawArguments(draw);
-            m_item.m_pipelineState = m_pipelineStateForDraw.Finalize();
-            m_item.m_stencilRef = static_cast<uint8_t>(m_stencilRef);
+            m_item.SetGeometryView(& m_geometryView);
+            m_item.SetPipelineState(m_pipelineStateForDraw.Finalize());
+            m_item.SetStencilRef(static_cast<uint8_t>(m_stencilRef));
         }
 
         void FullscreenTrianglePass::UpdateShaderOptions(const ShaderOptionList& shaderOptions)
@@ -177,13 +196,27 @@ namespace AZ
             if (m_shader)
             {
                 m_pipelineStateForDraw.Init(m_shader, &shaderOptions);
-                m_pipelineStateForDraw.UpdateSrgVariantFallback(m_shaderResourceGroup);
-                BuildDrawItem();
+                UpdateShaderOptionsCommon();
+            }
+        }
+
+        void FullscreenTrianglePass::UpdateShaderOptions(const ShaderVariantId& shaderVariantId)
+        {
+            if (m_shader)
+            {
+                m_pipelineStateForDraw.Init(m_shader, shaderVariantId);
+                UpdateShaderOptionsCommon();
             }
         }
 
         void FullscreenTrianglePass::InitializeInternal()
         {
+            BuildRenderAttachmentConfiguration();
+            if (m_shader->GetSupervariantIndex() != m_shader->GetAsset()->GetSupervariantIndex(GetSuperVariantName()))
+            {
+                LoadShader();
+            }
+
             RenderPass::InitializeInternal();
             
             ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->FullscreenTrianglePass::InitializeInternal", this);
@@ -231,6 +264,33 @@ namespace AZ
         void FullscreenTrianglePass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
         {
             RenderPass::SetupFrameGraphDependencies(frameGraph);
+
+            // Update scissor/viewport regions based on the mip level of the render target that is being written into
+            uint16_t viewMinMip = RHI::ImageSubresourceRange::HighestSliceIndex;
+            for (const PassAttachmentBinding& attachmentBinding : m_attachmentBindings)
+            {
+                if (attachmentBinding.GetAttachment() != nullptr &&
+                    frameGraph.GetAttachmentDatabase().IsAttachmentValid(attachmentBinding.GetAttachment()->GetAttachmentId()) &&
+                    attachmentBinding.m_unifiedScopeDesc.GetType() == RHI::AttachmentType::Image &&
+                    RHI::CheckBitsAny(attachmentBinding.GetAttachmentAccess(), RHI::ScopeAttachmentAccess::Write) &&
+                    attachmentBinding.m_scopeAttachmentUsage == RHI::ScopeAttachmentUsage::RenderTarget)
+                {
+                    RHI::ImageViewDescriptor viewDesc = attachmentBinding.m_unifiedScopeDesc.GetAsImage().m_imageViewDescriptor;
+                    viewMinMip = AZStd::min(viewMinMip, viewDesc.m_mipSliceMin);
+                }
+            }
+            
+            if(viewMinMip < RHI::ImageSubresourceRange::HighestSliceIndex)
+            {
+                uint32_t viewportStateMaxX = static_cast<uint32_t>(m_viewportState.m_maxX);
+                uint32_t viewportStateMaxY = static_cast<uint32_t>(m_viewportState.m_maxY);
+                m_viewportState.m_maxX = static_cast<float>(viewportStateMaxX >> viewMinMip);
+                m_viewportState.m_maxY = static_cast<float>(viewportStateMaxY >> viewMinMip);
+
+                m_scissorState.m_maxX = static_cast<uint32_t>(m_scissorState.m_maxX) >> viewMinMip;
+                m_scissorState.m_maxY = static_cast<uint32_t>(m_scissorState.m_maxY) >> viewMinMip;
+            }
+            
             frameGraph.SetEstimatedItemCount(1);
         }
 
@@ -253,12 +313,12 @@ namespace AZ
         {
             RHI::CommandList* commandList = context.GetCommandList();
 
-            SetSrgsForDraw(commandList);
+            SetSrgsForDraw(context);
 
             commandList->SetViewport(m_viewportState);
             commandList->SetScissor(m_scissorState);
 
-            commandList->Submit(m_item);
+            commandList->Submit(m_item.GetDeviceDrawItem(context.GetDeviceIndex()));
         }
         
     }   // namespace RPI

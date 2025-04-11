@@ -7,14 +7,15 @@
  */
 #pragma once
 
-#include <Atom/RHI/DeviceObject.h>
-#include <Atom/RHI/Buffer.h>
-#include <Atom/RHI/BufferView.h>
-#include <Atom/RHI/Image.h>
-#include <Atom/RHI/ImageView.h>
 #include <Atom/RHI.Reflect/SamplerState.h>
-#include <AzCore/std/containers/span.h>
+#include <Atom/RHI/DeviceBuffer.h>
+#include <Atom/RHI/DeviceBufferView.h>
+#include <Atom/RHI/DeviceImage.h>
+#include <Atom/RHI/DeviceImageView.h>
+#include <Atom/RHI/DeviceObject.h>
+#include <AtomCore/std/containers/small_vector.h>
 #include <AzCore/Memory/PoolAllocator.h>
+#include <AzCore/std/containers/span.h>
 #include <RHI/Buffer.h>
 
 namespace AZ
@@ -38,6 +39,8 @@ namespace AZ
             using Base = RHI::DeviceObject;
             friend class DescriptorPool;
 
+            static constexpr size_t ViewsFixedsize = 2;
+
         public:
             
             //Using SystemAllocator here instead of ThreadPoolAllocator as it gets slower when
@@ -60,21 +63,26 @@ namespace AZ
 
             void CommitUpdates();
 
-            void UpdateBufferViews(uint32_t index, const AZStd::span<const RHI::ConstPtr<RHI::BufferView>>& bufViews);
-            void UpdateImageViews(uint32_t index, const AZStd::span<const RHI::ConstPtr<RHI::ImageView>>& imageViews, RHI::ShaderInputImageType imageType);
+            void ReserveUpdateData(size_t numUpdates);
+
+            void UpdateBufferViews(uint32_t index, const AZStd::span<const RHI::ConstPtr<RHI::DeviceBufferView>>& bufViews);
+            void UpdateImageViews(uint32_t index, const AZStd::span<const RHI::ConstPtr<RHI::DeviceImageView>>& imageViews, RHI::ShaderInputImageType imageType);
             void UpdateSamplers(uint32_t index, const AZStd::span<const RHI::SamplerState>& samplers);
             void UpdateConstantData(AZStd::span<const uint8_t> data);
 
             RHI::Ptr<BufferView> GetConstantDataBufferView() const;
 
         private:
+            // we use the small_vector to speed up SRG compilation, but we have to be a bit careful with the size of the pre-allocation:
+            // e.g. the StarterGame - Level has about 8000 objects (~4000 meshes with 2 LODs) that get a unique Draw-Srgs for
+            // each pass. And with 2 Material-Pipelines we have about 20 passes, so we end up with 160.000 unique Draw-Srgs
             struct WriteDescriptorData
             {
                 uint32_t m_layoutIndex = 0;
-                AZStd::vector<VkDescriptorBufferInfo> m_bufferViewsInfo;
-                AZStd::vector<VkDescriptorImageInfo> m_imageViewsInfo;
-                AZStd::vector<VkBufferView> m_texelBufferViews;
-                AZStd::vector<VkAccelerationStructureKHR> m_accelerationStructures;
+                AZStd::small_vector<VkDescriptorBufferInfo, ViewsFixedsize> m_bufferViewsInfo;
+                AZStd::small_vector<VkDescriptorImageInfo, ViewsFixedsize> m_imageViewsInfo;
+                AZStd::small_vector<VkBufferView, ViewsFixedsize> m_texelBufferViews;
+                AZStd::small_vector<VkAccelerationStructureKHR, ViewsFixedsize> m_accelerationStructures;
             };
 
             DescriptorSet() = default;
@@ -93,7 +101,7 @@ namespace AZ
             void AllocateDescriptorSetWithUnboundedArray();
 
             template<typename T>
-            AZStd::vector<RHI::Interval> GetValidDescriptorsIntervals(const AZStd::vector<T>& descriptorsInfo) const;
+            AZStd::small_vector<RHI::Interval, ViewsFixedsize> GetValidDescriptorsIntervals(const AZStd::span<T>& descriptorsInfo) const;
 
             static bool IsNullDescriptorInfo(const VkDescriptorBufferInfo& descriptorInfo);
             static bool IsNullDescriptorInfo(const VkDescriptorImageInfo& descriptorInfo);
@@ -110,15 +118,17 @@ namespace AZ
         };
 
         template<typename T>
-        AZStd::vector<RHI::Interval> DescriptorSet::GetValidDescriptorsIntervals(const AZStd::vector<T>& descriptorsInfo) const
+        AZStd::small_vector<RHI::Interval, DescriptorSet::ViewsFixedsize> DescriptorSet::GetValidDescriptorsIntervals(
+            const AZStd::span<T>& descriptorsInfo) const
         {
+            AZStd::small_vector<RHI::Interval, DescriptorSet::ViewsFixedsize> intervals;
             // if Null descriptors are supported, then we just return one interval that covers the whole range.
             if (m_nullDescriptorSupported)
             {
-                return { RHI::Interval(0, aznumeric_caster(descriptorsInfo.size())) };
+                intervals.push_back(RHI::Interval(0, aznumeric_caster(descriptorsInfo.size())));
+                return intervals;
             }
 
-            AZStd::vector<RHI::Interval> intervals;
             auto beginInterval = descriptorsInfo.begin();
             auto endInterval = beginInterval;
             bool (*IsNullFuntion)(const T&) = &DescriptorSet::IsNullDescriptorInfo;
@@ -129,8 +139,8 @@ namespace AZ
                 {
                     endInterval = AZStd::find_if(beginInterval, descriptorsInfo.end(), IsNullFuntion);
 
-                    intervals.emplace_back();
-                    RHI::Interval& interval = intervals.back();
+                    intervals.push_back({});
+                    RHI::Interval& interval = intervals.span().back();
                     interval.m_min = aznumeric_caster(AZStd::distance(descriptorsInfo.begin(), beginInterval));
                     interval.m_max = endInterval == descriptorsInfo.end() ? static_cast<uint32_t>(descriptorsInfo.size()) : static_cast<uint32_t>(AZStd::distance(descriptorsInfo.begin(), endInterval));
                 }

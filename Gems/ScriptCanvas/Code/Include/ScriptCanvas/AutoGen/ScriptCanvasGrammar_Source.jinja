@@ -47,6 +47,25 @@ namespace {{attribute_Namespace}}
 {
 {% endif %}
 
+{# Use the fully qualified name, but strip out the class name #}
+{% set parts = Class.attrib['QualifiedName'].split("::") %}
+{% set result = parts[:-1] | join("::") %}
+
+{% set className = Class.attrib['Name'] %}
+
+{% set classUuid = Class.attrib['Uuid'] %}
+{% if classUuid is not defined %}
+{% set classUuid = className|createHashGuid %}
+{% endif %}
+
+
+// Register reflection
+SCRIPTCANVAS_REGISTER({{className}}_Reflection)
+{
+    ScriptCanvasModel::Instance().RegisterReflection( "AutoReflection_{{className}}", [] (AZ::ReflectContext* context) { {{ Class.attrib['QualifiedName'] }}::Reflect(context); }, {{Class.attrib['QualifiedName']}}::CreateDescriptor() );
+}
+
+
 
 void {{ Class.attrib['QualifiedName'] }}::ConfigureSlots()
 {
@@ -202,7 +221,7 @@ void {{ Class.attrib['QualifiedName'] }}::Reflect(AZ::ReflectContext* context)
 
     if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
     {
-        serializeContext->Class<{{ Class.attrib['QualifiedName'] }}, {{ baseClass }}>()
+        serializeContext->Class<{{ Class.attrib['QualifiedName'] }}, {{ baseClass }}, AZ::Component>()
 {% if Class.attrib['EventHandler'] is defined %}
 #if defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)////
             ->EventHandler<{{ Class.attrib['EventHandler'] }}>()

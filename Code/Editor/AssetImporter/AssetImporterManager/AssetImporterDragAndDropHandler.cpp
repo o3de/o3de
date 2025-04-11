@@ -33,6 +33,7 @@ AssetImporterDragAndDropHandler::AssetImporterDragAndDropHandler(QObject* parent
     // They are used to prevent opening the Asset Importer by dragging and dropping files and folders to the Main Window when it is already running
     connect(m_assetImporterManager, &AssetImporterManager::StartAssetImporter, this, &AssetImporterDragAndDropHandler::OnStartAssetImporter);
     connect(m_assetImporterManager, &AssetImporterManager::StopAssetImporter, this, &AssetImporterDragAndDropHandler::OnStopAssetImporter);
+    connect(m_assetImporterManager, &AssetImporterManager::AssetImportingComplete, this, &AssetImporterDragAndDropHandler::OnAssetImportingComplete);
 }
 
 AssetImporterDragAndDropHandler::~AssetImporterDragAndDropHandler()
@@ -197,6 +198,10 @@ void AssetImporterDragAndDropHandler::OnStopAssetImporter()
     m_isAssetImporterRunning = false;
 }
 
+void AssetImporterDragAndDropHandler::OnAssetImportingComplete()
+{
+    m_isAssetImporterRunning = false;
+}
 
 bool AssetImporterDragAndDropHandler::ContainCrateFiles(QString path)
 {

@@ -40,5 +40,8 @@ namespace SceneLoggingExample
         {
             result = "LoggingGroupBehavior";
         }
+
+    private:
+        static constexpr int s_loggingPreferredTabOrder{ 10 };
     };
 } // namespace SceneLoggingExample

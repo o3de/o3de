@@ -7,6 +7,7 @@
  */
 #pragma once
 #include <SceneAPI/SDKWrapper/SceneWrapper.h>
+#include <SceneAPI/SceneCore/Import/SceneImportSettings.h>
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 
@@ -24,8 +25,8 @@ namespace AZ
             AssImpSceneWrapper(aiScene* aiScene);
             ~AssImpSceneWrapper() override = default;
 
-            bool LoadSceneFromFile(const char* fileName) override;
-            bool LoadSceneFromFile(const AZStd::string& fileName) override;
+            bool LoadSceneFromFile(const char* fileName, const AZ::SceneAPI::SceneImportSettings& importSettings) override;
+            bool LoadSceneFromFile(const AZStd::string& fileName, const AZ::SceneAPI::SceneImportSettings& importSettings) override;
 
             const std::shared_ptr<SDKNode::NodeWrapper> GetRootNode() const override;
             std::shared_ptr<SDKNode::NodeWrapper> GetRootNode() override;

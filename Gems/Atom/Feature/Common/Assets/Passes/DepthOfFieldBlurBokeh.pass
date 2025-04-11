@@ -55,7 +55,7 @@
                 "ShaderAsset": {
                     "FilePath": "Shaders/PostProcessing/DepthOfFieldBlurBokeh.shader"
                 },
-                "PipelineViewTag": "MainCamera"
+                "BindViewSrg": true
             }
         }
     }

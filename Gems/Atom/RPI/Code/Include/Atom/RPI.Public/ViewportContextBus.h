@@ -32,7 +32,7 @@ namespace AZ
         //! push camera state to an arbitrary ViewportContext.
         //!
         //! All methods are thread-safe, but the underlying ViewportContext may not be.
-        class ViewportContextRequestsInterface
+        class ATOM_RPI_PUBLIC_API ViewportContextRequestsInterface
         {
         public:
             AZ_RTTI(ViewportContextRequestsInterface, "{FDB82F02-7021-433B-AAD3-25B97EC69962}");

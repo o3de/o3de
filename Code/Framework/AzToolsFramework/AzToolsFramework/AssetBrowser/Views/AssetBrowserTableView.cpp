@@ -5,84 +5,119 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTableView.h>
 
-#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
-#include <AzToolsFramework/AssetBrowser/AssetBrowserTableFilterModel.h>
-#include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
-#include <AzToolsFramework/AssetBrowser/AssetBrowserTableViewProxyModel.h>
-#include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
-#include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
-#include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
-#include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h>
-#include <AzToolsFramework/AssetBrowser/Views/AssetBrowserViewUtils.h>
-#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
-#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
-#include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzCore/Utils/Utils.h>
-
+#include <AzFramework/StringFunc/StringFunc.h>
 #include <AzQtComponents/Components/Widgets/AssetFolderTableView.h>
 #include <AzQtComponents/DragAndDrop/MainWindowDragAndDrop.h>
-
+#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
+#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
-#include <AzFramework/StringFunc/StringFunc.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserTableViewProxyModel.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserTreeToTableProxyModel.h>
+#include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTableView.h>
+#include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h>
+#include <AzToolsFramework/AssetBrowser/Views/AssetBrowserViewUtils.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
+#include <AzToolsFramework/Editor/ActionManagerUtils.h>
+#include <AzToolsFramework/Editor/RichTextHighlighter.h>
 
 #if !defined(Q_MOC_RUN)
-#include <QVBoxLayout>
-#include <QtWidgets/QApplication>
+#include <QApplication>
 #include <QDragMoveEvent>
 #include <QHeaderView>
 #include <QLineEdit>
 #include <QMenu>
+#include <QVBoxLayout>
 #endif
 
 namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
-        static constexpr const char* const ExpandedTableViewMainViewName = "AssetBrowserExpandedTableView_main";
+        static constexpr const char* const TableViewMainViewName = "AssetBrowserTableView_main";
 
         AssetBrowserTableView::AssetBrowserTableView(QWidget* parent)
             : QWidget(parent)
-            , m_expandedTableViewWidget(new AzQtComponents::AssetFolderTableView(parent))
-            , m_expandedTableViewProxyModel(new AssetBrowserTableViewProxyModel(parent))
-            , m_assetFilterModel(new AssetBrowserTableFilterModel(parent))
-            , m_expandedTableViewDelegate(new ExpandedTableViewDelegate(m_expandedTableViewWidget))
+            , m_tableViewWidget(new AzQtComponents::AssetFolderTableView(parent))
+            , m_tableViewProxyModel(new AssetBrowserTableViewProxyModel(parent))
+            , m_treeToTableProxyModel(new AssetBrowserTreeToTableProxyModel(parent))
+            , m_assetFilterModel(new AssetBrowserFilterModel(parent, true))
+            , m_tableViewDelegate(new TableViewDelegate(m_tableViewWidget))
         {
             // Using our own instance of AssetBrowserFilterModel to be able to show also files when the main model
             // only lists directories, and at the same time get sort and filter entries features from AssetBrowserFilterModel.
-            m_assetFilterModel->sort(0, Qt::DescendingOrder);
-            m_expandedTableViewProxyModel->setSourceModel(m_assetFilterModel);
-            m_expandedTableViewWidget->setModel(m_expandedTableViewProxyModel);
-            m_expandedTableViewWidget->setItemDelegateForColumn(0, m_expandedTableViewDelegate);
-            for (int i = 0; i < m_expandedTableViewWidget->header()->count(); ++i)
+            using namespace AzToolsFramework::AssetBrowser;
+            AssetBrowserComponentRequestBus::BroadcastResult(m_assetBrowserModel, &AssetBrowserComponentRequests::GetAssetBrowserModel);
+
+            m_treeToTableProxyModel->setSourceModel(m_assetFilterModel);
+            m_tableViewProxyModel->setSourceModel(m_assetFilterModel);
+            m_tableViewWidget->setSortingEnabled(false);
+            m_tableViewWidget->header()->setSectionsClickable(true);
+            m_tableViewWidget->header()->setSortIndicatorShown(true);
+            m_tableViewWidget->setModel(m_tableViewProxyModel);
+            m_tableViewWidget->setItemDelegateForColumn(0, m_tableViewDelegate);
+
+            for (int i = 0; i < m_tableViewWidget->header()->count(); ++i)
             {
-                m_expandedTableViewWidget->header()->setSectionResizeMode(i, QHeaderView::ResizeToContents);
+                m_tableViewWidget->header()->setSectionResizeMode(i, QHeaderView::ResizeToContents);
             }
 
+            SetSortMode(AssetBrowserEntry::AssetEntrySortMode::Name);
+
             connect(
-                m_expandedTableViewWidget,
+                m_tableViewWidget->header(),
+                &QHeaderView::sortIndicatorChanged,
+                this,
+                [this](const int index, Qt::SortOrder order)
+                {
+                    m_assetFilterModel->sort(index, order);
+                });
+
+            connect(
+                m_tableViewWidget->header(),
+                &QHeaderView::sectionClicked,
+                this,
+                [this](const int index)
+                {
+                    SetSortMode(ColumnToSortMode(index));
+                });
+
+            connect(
+                m_tableViewWidget,
+                &AzQtComponents::AssetFolderTableView::selectionChangedSignal,
+                this,
+                [this](const QItemSelection& selected, const QItemSelection& deselected)
+                {
+                    Q_EMIT selectionChangedSignal(selected, deselected);
+                });
+
+            connect(
+                m_tableViewWidget,
                 &AzQtComponents::AssetFolderTableView::clicked,
                 this,
                 [this](const QModelIndex& index)
                 {
                     auto indexData = index.data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
-                    if (indexData->GetEntryType() != AssetBrowserEntry::AssetEntryType::Folder)
-                    {
-                        AssetBrowserPreviewRequestBus::Broadcast(&AssetBrowserPreviewRequest::PreviewAsset, indexData);
-                    }
                     emit entryClicked(indexData);
                 });
 
-             connect(
-                m_expandedTableViewWidget,
-                &AzQtComponents::AssetFolderTableView::rowDeselected, this, []
+            connect(
+                m_tableViewWidget,
+                &AzQtComponents::AssetFolderTableView::rowDeselected,
+                this,
+                []
                 {
                     AssetBrowserPreviewRequestBus::Broadcast(&AssetBrowserPreviewRequest::ClearPreview);
                 });
 
-             connect(
-                m_expandedTableViewWidget,
+            connect(
+                m_tableViewWidget,
                 &AzQtComponents::AssetFolderTableView::doubleClicked,
                 this,
                 [this](const QModelIndex& index)
@@ -91,82 +126,83 @@ namespace AzToolsFramework
                     emit entryDoubleClicked(indexData);
                 });
 
-             connect(
-                 m_expandedTableViewWidget,
-                 &AzQtComponents::AssetFolderTableView::customContextMenuRequested,
-                 this,
-                 [this](const QPoint& pos)
-                 {
-                     if (auto index = m_expandedTableViewWidget->indexAt(pos); index.isValid())
-                     {
-                         QMenu menu(this);
-                         AZStd::vector<const AssetBrowserEntry*> entries = GetSelectedAssets();
-                         AssetBrowserInteractionNotificationBus::Broadcast(
-                             &AssetBrowserInteractionNotificationBus::Events::AddContextMenuActions, this, &menu, entries);
+            connect(
+                m_tableViewWidget,
+                &AzQtComponents::AssetFolderTableView::customContextMenuRequested,
+                this,
+                [this](const QPoint& pos)
+                {
+                    if (auto index = m_tableViewWidget->indexAt(pos); index.isValid())
+                    {
+                        QMenu menu(this);
+                        const auto& entries = GetSelectedAssets();
+                        AssetBrowserInteractionNotificationBus::Broadcast(
+                            &AssetBrowserInteractionNotificationBus::Events::AddContextMenuActions, this, &menu, entries);
 
-                         if (!menu.isEmpty())
-                         {
-                             menu.exec(QCursor::pos());
-                         }
-                     }
-                     else if (!index.isValid() && m_assetTreeView)
-                     {
-                         m_assetTreeView->OnContextMenu(pos);
-                     }
-                 });
-
-              connect(
-                 m_expandedTableViewDelegate,
-                 &ExpandedTableViewDelegate::renameTableEntry, this,
-                 [this](QString name)
-                 {
-                     AfterRename(name);
-                 });
-
-              AssignWidgetToActionContextHelper(EditorIdentifiers::EditorAssetBrowserActionContextIdentifier, this);
-
-              QAction* deleteAction = new QAction("Delete Action", this);
-              deleteAction->setShortcut(QKeySequence::Delete);
-              deleteAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-              connect(
-                  deleteAction,
-                  &QAction::triggered,
-                  this,
-                  [this]()
-                  {
-                      DeleteEntries();
-                  });
-              addAction(deleteAction);
-
-              QAction* renameAction = new QAction("Rename Action", this);
-              renameAction->setShortcut(Qt::Key_F2);
-              renameAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-              connect(
-                  renameAction,
-                  &QAction::triggered,
-                  this,
-                  [this]()
-                  {
-                      RenameEntry();
-                  });
-              addAction(renameAction);
-
-              QAction* duplicateAction = new QAction("Duplicate Action", this);
-              duplicateAction->setShortcut(QKeySequence("Ctrl+D"));
-              duplicateAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-              connect(
-                  duplicateAction,
-                  &QAction::triggered,
-                  this,
-                  [this]()
-                  {
-                      DuplicateEntries();
-                  });
-              addAction(duplicateAction);
+                        if (!menu.isEmpty())
+                        {
+                            menu.exec(QCursor::pos());
+                        }
+                    }
+                    else if (!index.isValid() && m_assetTreeView)
+                    {
+                        m_assetTreeView->OnContextMenu(pos);
+                    }
+                });
 
             connect(
-                m_expandedTableViewWidget,
-                 &AzQtComponents::AssetFolderTableView::showInTableFolderTriggered,
+                m_tableViewDelegate,
+                &TableViewDelegate::renameTableEntry,
+                this,
+                [this](QString name)
+                {
+                    AfterRename(name);
+                });
+
+            AssignWidgetToActionContextHelper(EditorIdentifiers::EditorAssetBrowserActionContextIdentifier, this);
+
+            QAction* deleteAction = new QAction("Delete Action", this);
+            deleteAction->setShortcut(QKeySequence::Delete);
+            deleteAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+            connect(
+                deleteAction,
+                &QAction::triggered,
+                this,
+                [this]()
+                {
+                    DeleteEntries();
+                });
+            addAction(deleteAction);
+
+            QAction* renameAction = new QAction("Rename Action", this);
+            renameAction->setShortcut(Qt::Key_F2);
+            renameAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+            connect(
+                renameAction,
+                &QAction::triggered,
+                this,
+                [this]()
+                {
+                    RenameEntry();
+                });
+            addAction(renameAction);
+
+            QAction* duplicateAction = new QAction("Duplicate Action", this);
+            duplicateAction->setShortcut(QKeySequence("Ctrl+D"));
+            duplicateAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+            connect(
+                duplicateAction,
+                &QAction::triggered,
+                this,
+                [this]()
+                {
+                    DuplicateEntries();
+                });
+            addAction(duplicateAction);
+
+            connect(
+                m_tableViewWidget,
+                &AzQtComponents::AssetFolderTableView::showInTableFolderTriggered,
                 this,
                 [this](const QModelIndex& index)
                 {
@@ -176,13 +212,13 @@ namespace AzToolsFramework
 
             // Track the root index on the proxy model as well so it can provide info such as whether an entry is first level or not
             connect(
-                m_expandedTableViewWidget,
+                m_tableViewWidget,
                 &AzQtComponents::AssetFolderTableView::tableRootIndexChanged,
-                m_expandedTableViewProxyModel,
+                m_tableViewProxyModel,
                 &AssetBrowserTableViewProxyModel::SetRootIndex);
 
             auto layout = new QVBoxLayout();
-            layout->addWidget(m_expandedTableViewWidget);
+            layout->addWidget(m_tableViewWidget);
             setLayout(layout);
 
             setAcceptDrops(true);
@@ -193,12 +229,46 @@ namespace AzToolsFramework
             RemoveWidgetFromActionContextHelper(EditorIdentifiers::EditorAssetBrowserActionContextIdentifier, this);
         }
 
-        AzQtComponents::AssetFolderTableView* AssetBrowserTableView::GetExpandedTableViewWidget() const
+        AssetBrowserEntry::AssetEntrySortMode AssetBrowserTableView::ColumnToSortMode(const int columnIndex) const
         {
-            return m_expandedTableViewWidget;
+            switch (columnIndex)
+            {
+            case AssetBrowserTableViewProxyModel::Type:
+                return AssetBrowserEntry::AssetEntrySortMode::FileType;
+            case AssetBrowserTableViewProxyModel::DiskSize:
+                return AssetBrowserEntry::AssetEntrySortMode::Size;
+            case AssetBrowserTableViewProxyModel::Vertices:
+                return AssetBrowserEntry::AssetEntrySortMode::Vertices;
+            case AssetBrowserTableViewProxyModel::ApproxSize:
+                return AssetBrowserEntry::AssetEntrySortMode::Dimensions;
+            default:
+                return AssetBrowserEntry::AssetEntrySortMode::Name;
+            }
         }
 
-         void AssetBrowserTableView::SetName(const QString& name)
+        int AssetBrowserTableView::SortModeToColumn(const AssetBrowserEntry::AssetEntrySortMode sortMode) const
+        {
+            switch (sortMode)
+            {
+            case AssetBrowserEntry::AssetEntrySortMode::FileType:
+                return AssetBrowserTableViewProxyModel::Type;
+            case AssetBrowserEntry::AssetEntrySortMode::Size:
+                return AssetBrowserTableViewProxyModel::DiskSize;
+            case AssetBrowserEntry::AssetEntrySortMode::Vertices:
+                return AssetBrowserTableViewProxyModel::Vertices;
+            case AssetBrowserEntry::AssetEntrySortMode::Dimensions:
+                return AssetBrowserTableViewProxyModel::ApproxSize;
+            default:
+                return 0;
+            }
+        }
+
+        AzQtComponents::AssetFolderTableView* AssetBrowserTableView::GetTableViewWidget() const
+        {
+            return m_tableViewWidget;
+        }
+
+        void AssetBrowserTableView::SetName(const QString& name)
         {
             m_name = name;
         }
@@ -210,12 +280,12 @@ namespace AzToolsFramework
 
         void AssetBrowserTableView::SetIsAssetBrowserMainView()
         {
-            SetName(ExpandedTableViewMainViewName);
+            SetName(TableViewMainViewName);
         }
 
         bool AssetBrowserTableView::GetIsAssetBrowserMainView() const
         {
-            return GetName() == ExpandedTableViewMainViewName;
+            return GetName() == TableViewMainViewName;
         }
 
         void AssetBrowserTableView::SetTableViewActive(bool isActiveView)
@@ -230,39 +300,35 @@ namespace AzToolsFramework
 
         void AssetBrowserTableView::DeleteEntries()
         {
-            auto entries = GetSelectedAssets();
-
+            const auto& entries = GetSelectedAssets();
             AssetBrowserViewUtils::DeleteEntries(entries, this);
         }
 
         void AssetBrowserTableView::MoveEntries()
         {
-            auto entries = GetSelectedAssets();
-
+            const auto& entries = GetSelectedAssets();
             AssetBrowserViewUtils::MoveEntries(entries, this);
         }
 
         void AssetBrowserTableView::DuplicateEntries()
         {
-            auto entries = GetSelectedAssets();
+            const auto& entries = GetSelectedAssets();
             AssetBrowserViewUtils::DuplicateEntries(entries);
         }
 
         void AssetBrowserTableView::RenameEntry()
         {
-            auto entries = GetSelectedAssets();
-
+            const auto& entries = GetSelectedAssets();
             if (AssetBrowserViewUtils::RenameEntry(entries, this))
             {
-                QModelIndex selectedIndex = m_expandedTableViewWidget->selectionModel()->selectedIndexes()[0];
-                m_expandedTableViewWidget->edit(selectedIndex);
+                QModelIndex selectedIndex = m_tableViewWidget->selectionModel()->selectedIndexes()[0];
+                m_tableViewWidget->edit(selectedIndex);
             }
         }
 
         void AssetBrowserTableView::AfterRename(QString newVal)
         {
-            auto entries = GetSelectedAssets();
-
+            const auto& entries = GetSelectedAssets();
             AssetBrowserViewUtils::AfterRename(newVal, entries, this);
         }
 
@@ -270,10 +336,12 @@ namespace AzToolsFramework
         {
             // No need to check for product assets since they do not appear in the table view
             AZStd::vector<const AssetBrowserEntry*> entries;
-            if (m_expandedTableViewWidget->selectionModel())
+            if (m_tableViewWidget->selectionModel())
             {
-                auto indexes = m_expandedTableViewWidget->selectionModel()->selectedRows();
-                for (const auto index : indexes)
+                const auto& indexes = m_tableViewWidget->selectionModel()->selectedRows();
+                entries.reserve(indexes.size());
+
+                for (const auto& index : indexes)
                 {
                     const AssetBrowserEntry* item = index.data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
                     if (item)
@@ -287,13 +355,14 @@ namespace AzToolsFramework
 
         void AssetBrowserTableView::OpenItemForEditing(const QModelIndex& index)
         {
-            QModelIndex proxyIndex = m_expandedTableViewProxyModel->mapFromSource(m_assetFilterModel->mapFromSource(index));
+            QModelIndex proxyIndex = m_tableViewProxyModel->mapFromSource(m_assetFilterModel->mapFromSource(index));
 
             if (proxyIndex.isValid())
             {
-                m_expandedTableViewWidget->selectionModel()->select(proxyIndex, QItemSelectionModel::SelectionFlag::ClearAndSelect | QItemSelectionModel::Rows);
+                m_tableViewWidget->selectionModel()->select(
+                    proxyIndex, QItemSelectionModel::SelectionFlag::ClearAndSelect | QItemSelectionModel::Rows);
 
-                m_expandedTableViewWidget->scrollTo(proxyIndex, QAbstractItemView::ScrollHint::PositionAtCenter);
+                m_tableViewWidget->scrollTo(proxyIndex, QAbstractItemView::ScrollHint::PositionAtCenter);
 
                 RenameEntry();
             }
@@ -336,7 +405,7 @@ namespace AzToolsFramework
                 return;
             }
 
-            const AssetBrowserEntry* item = m_expandedTableViewProxyModel->mapToSource(m_expandedTableViewProxyModel->GetRootIndex())
+            const AssetBrowserEntry* item = m_tableViewProxyModel->mapToSource(m_tableViewProxyModel->GetRootIndex())
                                                 .data(AssetBrowserModel::Roles::EntryRole)
                                                 .value<const AssetBrowserEntry*>();
             AZStd::string pathName = item->GetFullPath();
@@ -370,11 +439,12 @@ namespace AzToolsFramework
             }
 
             m_assetTreeView = treeView;
-
             if (!m_assetTreeView)
             {
                 return;
             }
+
+            m_assetTreeView->SetAttachedTableView(this);
 
             auto treeViewFilterModel = qobject_cast<AssetBrowserFilterModel*>(m_assetTreeView->model());
             if (!treeViewFilterModel)
@@ -406,19 +476,19 @@ namespace AzToolsFramework
 
         void AssetBrowserTableView::setSelectionMode(QAbstractItemView::SelectionMode mode)
         {
-            m_expandedTableViewWidget->setSelectionMode(mode);
+            m_tableViewWidget->setSelectionMode(mode);
         }
 
         QAbstractItemView::SelectionMode AssetBrowserTableView::selectionMode() const
         {
-            return m_expandedTableViewWidget->selectionMode();
+            return m_tableViewWidget->selectionMode();
         }
 
         void AssetBrowserTableView::SelectEntry(QString assetName)
         {
-            QModelIndex rootIndex = m_expandedTableViewProxyModel->GetRootIndex();
+            QModelIndex rootIndex = m_tableViewProxyModel->GetRootIndex();
 
-            auto model = GetExpandedTableViewWidget()->model();
+            auto model = GetTableViewWidget()->model();
 
             for (int rowIndex = 0; rowIndex < model->rowCount(rootIndex); rowIndex++)
             {
@@ -431,8 +501,8 @@ namespace AzToolsFramework
                 auto str = index.data().toString();
                 if (assetName == str)
                 {
-                    m_expandedTableViewWidget->selectionModel()->select(index, QItemSelectionModel::ClearAndSelect);
-                    m_expandedTableViewWidget->scrollTo(index, QAbstractItemView::ScrollHint::PositionAtCenter);
+                    m_tableViewWidget->selectionModel()->select(index, QItemSelectionModel::ClearAndSelect);
+                    m_tableViewWidget->scrollTo(index, QAbstractItemView::ScrollHint::PositionAtCenter);
                 }
             }
         }
@@ -447,17 +517,19 @@ namespace AzToolsFramework
                 return;
             }
 
-            auto selectedIndexes = selected.indexes();
-            if (selectedIndexes.count() > 0)
+            const auto& selectedIndexes = selected.indexes();
+            if (!selectedIndexes.empty())
             {
-                auto newRootIndex = m_expandedTableViewProxyModel->mapFromSource(
+                auto newRootIndex = m_tableViewProxyModel->mapFromSource(
                     m_assetFilterModel->mapFromSource(treeViewFilterModel->mapToSource(selectedIndexes[0])));
-                m_expandedTableViewWidget->setRootIndex(newRootIndex);
+                m_tableViewWidget->setRootIndex(newRootIndex);
             }
             else
             {
-                m_expandedTableViewWidget->setRootIndex({});
+                m_tableViewWidget->setRootIndex({});
             }
+
+            m_assetFilterModel->sort(0, Qt::DescendingOrder);
         }
 
         void AssetBrowserTableView::UpdateFilterInLocalFilterModel()
@@ -479,43 +551,106 @@ namespace AzToolsFramework
                 return;
             }
 
-            auto filterCopy = new CompositeFilter(CompositeFilter::LogicOperatorType::AND);
+            bool hasString{ false };
+            const QString tagString("String");
+            const QString tagFolder("Folder");
+            auto clonedFilter = new CompositeFilter(CompositeFilter::LogicOperatorType::AND);
             for (const auto& subFilter : filter->GetSubFilters())
             {
-                // Switch between "search mode" where all results in the asset folder tree are shown,
-                // and "normal mode", where only contents for a single folder are shown, depending on
-                // whether there is an active string search ongoing.
-                if (subFilter->GetTag() == "String")
+                if (subFilter->GetTag() == tagString)
                 {
                     auto stringCompFilter = qobject_cast<const CompositeFilter*>(subFilter.get());
-                    if (!stringCompFilter)
-                    {
-                        continue;
-                    }
-
-                    auto stringSubFilters = stringCompFilter->GetSubFilters();
-
-                    m_expandedTableViewProxyModel->SetShowSearchResultsMode(stringSubFilters.count() != 0);
-                    m_expandedTableViewWidget->SetShowSearchResultsMode(stringSubFilters.count() != 0);
+                    hasString |= stringCompFilter && !stringCompFilter->GetSubFilters().empty();
                 }
 
-                // Skip the folder filter on the thumbnail view so that we can see files
-                if (subFilter->GetTag() != "Folder")
+                // Skip the folder filter on the table view so that we can see files
+                if (subFilter->GetTag() != tagFolder)
                 {
-                    filterCopy->AddFilter(subFilter);
+                    clonedFilter->AddFilter(FilterConstType(subFilter->Clone()));
                 }
             }
-            filterCopy->SetFilterPropagation(AssetBrowserEntryFilter::Up | AssetBrowserEntryFilter::Down);
-            m_assetFilterModel->SetFilter(FilterConstType(filterCopy));
+
+            // Switch between "search mode" where all results in the asset folder tree are shown,
+            // and "normal mode", where only contents for a single folder are shown, depending on
+            // whether there is an active string search ongoing.
+            m_tableViewProxyModel->SetShowSearchResultsMode(hasString);
+            m_tableViewWidget->SetShowSearchResultsMode(hasString);
+
+            if (hasString)
+            {
+                // With string searches enabled we disable filter propagation to only show exact mattress.
+                for (auto subFilter : clonedFilter->GetSubFilters())
+                {
+                    if (auto clonedCompositeFilter = qobject_cast<const CompositeFilter*>(subFilter.get()); clonedCompositeFilter)
+                    {
+                        auto modifiedCompositeFilter = const_cast<CompositeFilter*>(clonedCompositeFilter);
+                        modifiedCompositeFilter->SetFilterPropagation(AssetBrowserEntryFilter::PropagateDirection::None);
+                    }
+                }
+
+                // With string searches enabled we only want to show sources and products in this view.
+                auto customTypeFilter = new CustomFilter(
+                    [](const AssetBrowserEntry* entry)
+                    {
+                        switch (entry->GetEntryType())
+                        {
+                        case AssetBrowserEntry::AssetEntryType::Product:
+                        case AssetBrowserEntry::AssetEntryType::Source:
+                            return true;
+                        }
+                        return false;
+                    });
+                clonedFilter->AddFilter(FilterConstType(customTypeFilter));
+
+                clonedFilter->SetFilterPropagation(AssetBrowserEntryFilter::PropagateDirection::Down);
+                m_tableViewWidget->expandAll();
+                m_tableViewProxyModel->setSourceModel(m_treeToTableProxyModel);
+                m_treeToTableProxyModel->ConnectSignals();
+                m_assetFilterModel->SetFilter(FilterConstType(clonedFilter));
+            }
+            else
+            {
+                clonedFilter->SetFilterPropagation(AssetBrowserEntryFilter::PropagateDirection::Down);
+                m_assetFilterModel->SetFilter(FilterConstType(clonedFilter));
+                m_tableViewWidget->collapseAll();
+                m_tableViewProxyModel->setSourceModel(m_assetFilterModel);
+                m_treeToTableProxyModel->DisconnectSignals();
+            }
         }
 
-        ExpandedTableViewDelegate::ExpandedTableViewDelegate(QWidget* parent)
-            : QStyledItemDelegate(parent)
+        void AssetBrowserTableView::SetSortMode(const AssetBrowserEntry::AssetEntrySortMode mode)
+        {
+            // If the sort mode is being set to the same value then alternate the sort order
+            if (m_assetFilterModel->GetSortMode() == mode)
+            {
+                m_assetFilterModel->SetSortOrder(
+                    m_assetFilterModel->GetSortOrder() == Qt::DescendingOrder ? Qt::AscendingOrder : Qt::DescendingOrder);
+            }
 
+            m_assetFilterModel->SetSortMode(mode);
+            m_assetFilterModel->sort(0, m_assetFilterModel->GetSortOrder());
+            m_assetFilterModel->setDynamicSortFilter(true);
+
+            m_tableViewWidget->header()->setSortIndicator(
+                SortModeToColumn(m_assetFilterModel->GetSortMode()), m_assetFilterModel->GetSortOrder());
+        }
+
+        AssetBrowserEntry::AssetEntrySortMode AssetBrowserTableView::GetSortMode() const
+        {
+            return m_assetFilterModel->GetSortMode();
+        }
+
+        void AssetBrowserTableView::SetSearchString(const QString& searchString)
+        {
+            m_tableViewProxyModel->SetSearchString(searchString);
+        }
+
+        TableViewDelegate::TableViewDelegate(QWidget* parent)
+            : QStyledItemDelegate(parent)
         {
         }
 
-        void ExpandedTableViewDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
+        void TableViewDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
         {
             const QVariant text = index.data(Qt::DisplayRole);
             if (text.isValid())
@@ -525,7 +660,6 @@ namespace AzToolsFramework
                 int height = options.rect.height();
                 QRect iconRect(0, options.rect.y() + 5, height - 10, height - 10);
                 QSize iconSize = iconRect.size();
-                QStyle* style = options.widget ? options.widget->style() : qApp->style();
 
                 const auto& qVariant = index.data(Qt::UserRole + 1);
                 if (!qVariant.isNull())
@@ -542,15 +676,18 @@ namespace AzToolsFramework
                         icon.paint(painter, iconRect, Qt::AlignLeft | Qt::AlignVCenter);
                     }
                 }
-                QRect textRect{options.rect};
+                QRect textRect{ options.rect };
                 textRect.setX(textRect.x() + 4);
-                style->drawItemText(
-                    painter, options.rect, Qt::AlignLeft | Qt::AlignVCenter, options.palette, options.state & QStyle::State_Enabled, text.toString());
+
+                QStyleOptionViewItem optionV4{ option };
+                initStyleOption(&optionV4, index);
+                optionV4.state &= ~(QStyle::State_HasFocus | QStyle::State_Selected);
+
+                RichTextHighlighter::PaintHighlightedRichText(text.toString(), painter, optionV4, textRect);
             }
         }
 
-        QWidget* ExpandedTableViewDelegate::createEditor(
-            QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const
+        QWidget* TableViewDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const
         {
             QWidget* widget = QStyledItemDelegate::createEditor(parent, option, index);
             if (auto* lineEdit = qobject_cast<QLineEdit*>(widget))
@@ -570,6 +707,5 @@ namespace AzToolsFramework
             }
             return widget;
         }
-
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

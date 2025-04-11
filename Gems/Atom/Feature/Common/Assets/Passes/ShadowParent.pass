@@ -147,7 +147,7 @@
                                 "Attachment": "Shadowmap"
                             },
                             "ImageDescriptor": {
-                                "Format": "R16_FLOAT"
+                                "Format": "R32_FLOAT"
                             }
                         }
                     ],

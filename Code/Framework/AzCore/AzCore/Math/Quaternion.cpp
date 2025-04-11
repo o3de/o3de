@@ -152,6 +152,11 @@ namespace AZ
                 AZ_Error("Script", false, "Quaternion.Set only supports Set(number), Set(number, number, number, number), Set(Vector3, number)");
             }
         }
+
+        Quaternion CreateFromValues(float x, float y, float z, float w)
+        {
+            return Quaternion(x, y, z, w);
+        }
     }
 
 
@@ -228,17 +233,35 @@ namespace AZ
                     Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)->
                 Method("InvertFast", &Quaternion::InvertFast)->
                     Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)->
-                Method("GetInverseFull", &Quaternion::GetInverseFull)->                
+                Method("GetInverseFull", &Quaternion::GetInverseFull)->
                 Method("InvertFull", &Quaternion::InvertFull)->
                     Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)->
                 Method("Dot", &Quaternion::Dot)->
                 Method("IsClose", &Quaternion::IsClose, behaviorContext->MakeDefaultValues(Constants::Tolerance))->
                 Method("IsIdentity", &Quaternion::IsIdentity, behaviorContext->MakeDefaultValues(Constants::Tolerance))->
                 Method("IsZero", &Quaternion::IsZero, behaviorContext->MakeDefaultValues(Constants::FloatEpsilon))->
+                //! O3DE_DEPRECATION_NOTICE(GHI-10929)
+                //! @deprecated use GetEulerRadiansXYZ()
                 Method("GetEulerDegrees", &Quaternion::GetEulerDegrees)->
+                    Attribute(AZ::Script::Attributes::Deprecated, true)->
+                //! O3DE_DEPRECATION_NOTICE(GHI-10929)
+                //! @deprecated use GetEulerRadiansXYZ()
                 Method("GetEulerRadians", &Quaternion::GetEulerRadians)->
+                    Attribute(AZ::Script::Attributes::Deprecated, true)->
+                Method("GetEulerDegreesXYZ", &Quaternion::GetEulerDegreesXYZ)->
+                Method("GetEulerRadiansXYZ", &Quaternion::GetEulerRadiansXYZ)->
+                Method("GetEulerDegreesYXZ", &Quaternion::GetEulerDegreesYXZ)->
+                Method("GetEulerRadiansYXZ", &Quaternion::GetEulerRadiansYXZ)->
+                Method("GetEulerDegreesZYX", &Quaternion::GetEulerDegreesZYX)->
+                Method("GetEulerRadiansZYX", &Quaternion::GetEulerRadiansZYX)->
+                //! O3DE_DEPRECATION_NOTICE(GHI-10929)
+                //! @deprecated use CreateFromEulerDegreesXYZ()
                 Method("SetFromEulerDegrees", &Quaternion::SetFromEulerDegrees)->
+                    Attribute(AZ::Script::Attributes::Deprecated, true)->
+                //! O3DE_DEPRECATION_NOTICE(GHI-10929)
+                //! @deprecated use CreateFromEulerRadiansXYZ()
                 Method("SetFromEulerRadians", &Quaternion::SetFromEulerRadians)->
+                    Attribute(AZ::Script::Attributes::Deprecated, true)->
                 Method("GetImaginary", &Quaternion::GetImaginary)->
                 Method("IsFinite", &Quaternion::IsFinite)->
                 Method("GetAngle", &Quaternion::GetAngle)->
@@ -256,7 +279,18 @@ namespace AZ
                 Method("CreateFromAxisAngle", &Quaternion::CreateFromAxisAngle)->
                 Method("CreateFromScaledAxisAngle", &Quaternion::CreateFromScaledAxisAngle)->
                 Method("CreateShortestArc", &Quaternion::CreateShortestArc)->
-                Method("CreateFromEulerAnglesDegrees", &Quaternion::CreateFromEulerAnglesDegrees)
+                //! O3DE_DEPRECATION_NOTICE(GHI-10929)
+                //! @deprecated use CreateFromEulerDegreesXYZ()
+                Method("CreateFromEulerAnglesDegrees", &Quaternion::CreateFromEulerAnglesDegrees)->
+                    Attribute(AZ::Script::Attributes::Deprecated, true)->
+                Method("CreateFromEulerRadiansXYZ", &Quaternion::CreateFromEulerRadiansXYZ)->
+                Method("CreateFromEulerDegreesXYZ", &Quaternion::CreateFromEulerDegreesXYZ)->
+                Method("CreateFromEulerRadiansYXZ", &Quaternion::CreateFromEulerRadiansYXZ)->
+                Method("CreateFromEulerDegreesYXZ", &Quaternion::CreateFromEulerDegreesYXZ)->
+                Method("CreateFromEulerRadiansZYX", &Quaternion::CreateFromEulerRadiansZYX)->
+                Method("CreateFromEulerDegreesZYX", &Quaternion::CreateFromEulerDegreesZYX)->
+                Method("CreateFromValues", &Internal::CreateFromValues)->
+                Method("CreateFromBasis", &Quaternion::CreateFromBasis)
                 ;
         }
     }
@@ -371,9 +405,9 @@ namespace AZ
             const Simd::Vec3::FloatType angles = Simd::Vec3::LoadImmediate(omega, (1.0f - t) * omega, t * omega);
             const Simd::Vec3::FloatType sin = Simd::Vec3::Sin(angles);
 
-            const float sinom = 1.0f / Simd::Vec3::SelectFirst(sin);
-            sclA = Simd::Vec3::SelectSecond(sin) * sinom;
-            sclB = Simd::Vec3::SelectThird(sin) * sinom;
+            const float sinom = 1.0f / Simd::Vec3::SelectIndex0(sin);
+            sclA = Simd::Vec3::SelectIndex1(sin) * sinom;
+            sclB = Simd::Vec3::SelectIndex2(sin) * sinom;
         }
         else
         {
@@ -390,6 +424,172 @@ namespace AZ
         return (*this) * sclA + dest * sclB;
     }
 
+    // O3DE_DEPRECATION_NOTICE(GHI-10929)
+    // @deprecated use GetEulerRadiansXYZ(), which is somewhat improved
+    Vector3 Quaternion::GetEulerRadians() const
+    {
+        const float sinp = 2.0f * (m_w * m_y + m_z * m_x);
+        if (sinp * sinp < 0.5f)
+        {
+            // roll (x-axis rotation)
+            const float roll = Atan2(2.0f * (m_w * m_x - m_z * m_y), 1.0f - 2.0f * (m_x * m_x + m_y * m_y));
+            // pitch (y-axis rotation)
+            const float pitch = asinf(sinp);
+            // yaw (z-axis rotation)
+            const float yaw = Atan2(2.0f * (m_w * m_z - m_x * m_y), 1.0f - 2.0f * (m_y * m_y + m_z * m_z));
+            return Vector3(roll, pitch, yaw);
+        }
+        // find the pitch from its cosine instead, to avoid issues with sensitivity of asin when the sine value is close to 1
+        else
+        {
+            const float sign = sinp > 0.0f ? 1.0f : -1.0f;
+            const float m12 = 2.0f * (m_z * m_y - m_w * m_x);
+            const float m22 = 1.0f - 2.0f * (m_x * m_x + m_y * m_y);
+            const float cospSq = m12 * m12 + m22 * m22;
+            const float cosp = Sqrt(cospSq);
+            const float pitch = sign * acosf(cosp);
+            if (cospSq > Constants::FloatEpsilon)
+            {
+                const float roll = Atan2(-m12, m22);
+                const float yaw = Atan2(2.0f * (m_w * m_z - m_x * m_y), 1.0f - 2.0f * (m_y * m_y + m_z * m_z));
+                return Vector3(roll, pitch, yaw);
+            }
+            // if the pitch is close enough to +-pi/2, use a different approach because the terms used above lose roll and yaw information
+            else
+            {
+                const float m21 = 2.0f * (m_y * m_z + m_x * m_w);
+                const float m11 = 1.0f - 2.0f * (m_x * m_x + m_z * m_z);
+                const float roll = Atan2(m21, m11); // this operation has very low precision an meaning
+                return Vector3(roll, pitch, 0.0f);
+            }
+        }
+    }
+
+    /*
+    * According to Matrix3x3::SetRotationPartFromQuaternion(const Quaternion& q)
+    *
+    * x2  = m_x * 2;  y2  = m_y * 2;  z2  = m_z * 2;
+    * wx2 = m_w * x2; wy2 = m_w * y2; wz2 = m_w * z2;
+    * xx2 = m_x * x2; xy2 = m_x * y2; xz2 = m_x * z2;
+    * yy2 = m_y * y2; yz2 = m_y * z2; zz2 = m_y * z2;
+    *
+    * m11 = 1 - yy2 - zz2   m12 =     xy2 - wz2     m13 =     xz2 + wy2
+    * m21 =     xy2 + wz2   m22 = 1 - xx2 - zz2     m23 =     yz2 - wx2
+    * m31 =     xz2 - wy2   m32 =     yz2 + wx2     m33 = 1 - xx2 - yy2
+    */
+    Vector3 Quaternion::GetEulerRadiansXYZ() const
+    {
+        const float x2 = m_x * 2.0f;
+        const float y2 = m_y * 2.0f;
+        const float z2 = m_z * 2.0f;
+        const float wx2 = m_w * x2;
+        const float wy2 = m_w * y2;
+        const float wz2 = m_w * z2;
+        const float xx2 = m_x * x2;
+        const float xy2 = m_x * y2;
+        const float xz2 = m_x * z2;
+        const float yy2 = m_y * y2;
+        const float yz2 = m_y * z2;
+        const float zz2 = m_z * z2;
+
+        const float m11 = 1.f - yy2 - zz2;
+        const float m12n = wz2 - xy2;
+        const float m13 = wy2 + xz2;
+        const float m23n = wx2 - yz2;
+        const float m33 = 1.f - xx2 - yy2;
+
+        const float cospSq = m23n * m23n + m33 * m33;
+        const float signp = m13 >= 0.0f ? 1.f : -1.f;
+        if (cospSq <= Constants::FloatEpsilon) // Is the pitch angle close to +-pi/2 value ?
+        {
+            // A gimbal lock occurs, information on roll and yaw is lost.
+            // x-axis rotation (presumably roll) - deliberately zeroed.
+            constexpr float x = 0.0f;
+            // y-axis rotation (presumably pitch) - deliberately set near +-pi/2, but smaller in modulus.
+            const float y = (AZ::Constants::HalfPi - AZ::Constants::FloatEpsilon) * signp;
+            // z-axis rotation (presumably yaw) - undefined, as atan2(m21, m31) = roll - sign(pitch) * yaw;
+            // because precision is low, and in order to save performance, is deliberately zeroed.
+            constexpr float z = 0.0f;
+            return Vector3(x, y, z);
+        }
+
+        // Normal computation using rotation matrix members
+        // x-axis rotation (presumably roll)
+        const float roll = Atan2(m23n, m33);
+        // y-axis rotation (presumably pitch)
+        // In case pitch modulus < 45 degrees, use which has reasonable precision with small angles,
+        // otherwise find the pitch from its cosine for better precision.
+        const float pitch = (m13 * m13 < 0.5f) ? asinf(m13) : signp * acosf(Sqrt(cospSq));
+        // z-axis rotation (presumably yaw)
+        const float yaw = Atan2(m12n, m11);
+        return Vector3(roll, pitch, yaw);
+    }
+
+    Vector3 Quaternion::GetEulerRadiansYXZ() const
+    {
+        const float x2 = m_x * 2.0f;
+        const float y2 = m_y * 2.0f;
+        const float z2 = m_z * 2.0f;
+        const float wx2 = m_w * x2;
+        const float wy2 = m_w * y2;
+        const float wz2 = m_w * z2;
+        const float xx2 = m_x * x2;
+        const float xy2 = m_x * y2;
+        const float xz2 = m_x * z2;
+        const float yy2 = m_y * y2;
+        const float yz2 = m_y * z2;
+        const float zz2 = m_z * z2;
+
+        const float x = asinf(wx2 - yz2);
+        const float y = Atan2(wy2 + xz2, 1.0f - xx2 -yy2);
+        const float z = Atan2(wz2 + xy2, 1.0f - xx2 -zz2);
+        return Vector3(x, y, z);
+    }
+
+    Vector3 Quaternion::GetEulerRadiansZYX() const
+    {
+        const float x2 = m_x * 2.0f;
+        const float y2 = m_y * 2.0f;
+        const float z2 = m_z * 2.0f;
+        const float wx2 = m_w * x2;
+        const float wy2 = m_w * y2;
+        const float wz2 = m_w * z2;
+        const float xx2 = m_x * x2;
+        const float xy2 = m_x * y2;
+        const float xz2 = m_x * z2;
+        const float yy2 = m_y * y2;
+        const float yz2 = m_y * z2;
+        const float zz2 = m_z * z2;
+
+        const float m11 = 1.f - yy2 - zz2;
+        const float m21 = xy2 + wz2;
+        const float m31n = wy2 - xz2;
+        const float m32 = yz2 + wx2;
+        const float m33 = 1.f - xx2 - yy2;
+
+        const float cospSq = m32 * m32 + m33 * m33;
+        const float signp = m31n >= 0.0f ? 1.f : -1.f;
+        if (cospSq <= Constants::FloatEpsilon) // Is the pitch angle close to +-pi/2 value ?
+        {
+            // A gimbal lock occurs, information on roll and yaw is lost.
+            // x-axis rotation (presumably roll) - deliberately zeroed, which is better for camera rotations.
+            constexpr float x = 0.0f;
+            // y-axis rotation (presumably pitch) - deliberately set near +-pi/2, but smaller in modulus.
+            const float y = (AZ::Constants::HalfPi - AZ::Constants::FloatEpsilon) * signp;
+            // z-axis rotation (presumably yaw) - undefined, as atan2(m21, m31) = roll - sign(pitch) * yaw;
+            // because precision is low, and in order to save performance, is deliberately zeroed.
+            constexpr float z = 0.0f;
+            return Vector3(x, y, z);
+        }
+
+        // Normal computation using rotation matrix members
+        const float x = Atan2(m32, m33);
+        // In case y angle modulus < 45 degrees, use which has reasonable precision with small angles,
+        // otherwise find the pitch from its cosine for better precision.
+        const float y = (m31n * m31n < 0.5f) ? asinf(m31n) : signp * acosf(Sqrt(cospSq));
+        const float z = Atan2(m21, m11);
+        return Vector3(x, y, z);
+    }
 
     void Quaternion::SetFromEulerRadians(const Vector3& eulerRadians)
     {
@@ -398,12 +598,12 @@ namespace AZ
         Simd::Vec3::FloatType sin, cos;
         Simd::Vec3::SinCos(angles, sin, cos);
 
-        const float sx = Simd::Vec3::SelectFirst(sin);
-        const float sy = Simd::Vec3::SelectSecond(sin);
-        const float sz = Simd::Vec3::SelectThird(sin);
-        const float cx = Simd::Vec3::SelectFirst(cos);
-        const float cy = Simd::Vec3::SelectSecond(cos);
-        const float cz = Simd::Vec3::SelectThird(cos);
+        const float sx = Simd::Vec3::SelectIndex0(sin);
+        const float sy = Simd::Vec3::SelectIndex1(sin);
+        const float sz = Simd::Vec3::SelectIndex2(sin);
+        const float cx = Simd::Vec3::SelectIndex0(cos);
+        const float cy = Simd::Vec3::SelectIndex1(cos);
+        const float cz = Simd::Vec3::SelectIndex2(cos);
 
         // rot = rotx * roty * rotz
         const float w = cx * cy * cz - sx * sy * sz;
@@ -421,12 +621,12 @@ namespace AZ
         Simd::Vec3::FloatType sin, cos;
         Simd::Vec3::SinCos(angles, sin, cos);
 
-        const float sx = Simd::Vec3::SelectFirst(sin);
-        const float cx = Simd::Vec3::SelectFirst(cos);
-        const float sy = Simd::Vec3::SelectSecond(sin);
-        const float cy = Simd::Vec3::SelectSecond(cos);    
-        const float sz = Simd::Vec3::SelectThird(sin);
-        const float cz = Simd::Vec3::SelectThird(cos);
+        const float sx = Simd::Vec3::SelectIndex0(sin);
+        const float cx = Simd::Vec3::SelectIndex0(cos);
+        const float sy = Simd::Vec3::SelectIndex1(sin);
+        const float cy = Simd::Vec3::SelectIndex1(cos);
+        const float sz = Simd::Vec3::SelectIndex2(sin);
+        const float cz = Simd::Vec3::SelectIndex2(cos);
 
         // rot = rotx * roty * rotz
         return AZ::Quaternion(
@@ -444,12 +644,12 @@ namespace AZ
         Simd::Vec3::FloatType sin, cos;
         Simd::Vec3::SinCos(angles, sin, cos);
 
-        const float sx = Simd::Vec3::SelectFirst(sin);
-        const float cx = Simd::Vec3::SelectFirst(cos);
-        const float sy = Simd::Vec3::SelectSecond(sin);
-        const float cy = Simd::Vec3::SelectSecond(cos);
-        const float sz = Simd::Vec3::SelectThird(sin);
-        const float cz = Simd::Vec3::SelectThird(cos);
+        const float sx = Simd::Vec3::SelectIndex0(sin);
+        const float cx = Simd::Vec3::SelectIndex0(cos);
+        const float sy = Simd::Vec3::SelectIndex1(sin);
+        const float cy = Simd::Vec3::SelectIndex1(cos);
+        const float sz = Simd::Vec3::SelectIndex2(sin);
+        const float cz = Simd::Vec3::SelectIndex2(cos);
 
         // rot = roty * rotx * rotz
         return AZ::Quaternion(
@@ -459,6 +659,7 @@ namespace AZ
             cy * cx * cz + sy * sx * sz
         );
     }
+
     Quaternion Quaternion::CreateFromEulerRadiansZYX(const Vector3& eulerRadians)
     {
         const Simd::Vec3::FloatType half = Simd::Vec3::Splat(0.5f);
@@ -466,12 +667,12 @@ namespace AZ
         Simd::Vec3::FloatType sin, cos;
         Simd::Vec3::SinCos(angles, sin, cos);
 
-        const float sx = Simd::Vec3::SelectFirst(sin);
-        const float cx = Simd::Vec3::SelectFirst(cos);
-        const float sy = Simd::Vec3::SelectSecond(sin);
-        const float cy = Simd::Vec3::SelectSecond(cos);
-        const float sz = Simd::Vec3::SelectThird(sin);
-        const float cz = Simd::Vec3::SelectThird(cos);
+        const float sx = Simd::Vec3::SelectIndex0(sin);
+        const float cx = Simd::Vec3::SelectIndex0(cos);
+        const float sy = Simd::Vec3::SelectIndex1(sin);
+        const float cy = Simd::Vec3::SelectIndex1(cos);
+        const float sz = Simd::Vec3::SelectIndex2(sin);
+        const float cz = Simd::Vec3::SelectIndex2(cos);
         
         // rot = rotz * roty * rotx
         return AZ::Quaternion(
@@ -517,4 +718,4 @@ namespace AZ
             return halfAngle * 2.0f * (imaginary / length);
         }
     }
-}
+} // namespace AZ

@@ -139,7 +139,6 @@ namespace EMotionFX
         }
 
     public:
-        AZStd::unique_ptr<OneBlendTreeNodeAnimGraph> m_blendTreeAnimGraph;
         std::vector<AnimGraphMotionNode*> m_motionNodes;
         std::vector<Motion*> m_motions;
         BlendTree* m_blendTree = nullptr;
@@ -284,7 +283,7 @@ namespace EMotionFX
         }
     };
 
-    INSTANTIATE_TEST_CASE_P(EventFilterTests,
+    INSTANTIATE_TEST_SUITE_P(EventFilterTests,
         AnimGraphNodeEventFilterTestFixture,
         ::testing::ValuesIn(EventFilteringTestData));
 } // namespace EMotionFX

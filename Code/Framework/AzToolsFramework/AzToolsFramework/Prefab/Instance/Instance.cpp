@@ -18,6 +18,8 @@
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/Prefab/Instance/TemplateInstanceMapperInterface.h>
 
+#include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
+
 namespace AzToolsFramework
 {
     namespace Prefab
@@ -85,6 +87,8 @@ namespace AzToolsFramework
                 "It is a requirement for the Prefab Instance class. "
                 "Check that it is being correctly initialized.");
 
+            m_isDomCachingEnabled = s_DomCachingEnabledDefault;
+
             if (parent)
             {
                 AliasPath absoluteInstancePath = m_parent->GetAbsoluteInstanceAliasPath();
@@ -100,7 +104,9 @@ namespace AzToolsFramework
 
         Instance::~Instance()
         {
-            Reset();
+            // when destroying an instance in its destructor, do not re-create any 
+            // new entities or instances (Avoids a leak)
+            Reset(false);
         }
 
         void Instance::Reflect(AZ::ReflectContext* context)
@@ -309,7 +315,7 @@ namespace AzToolsFramework
             }
         }
 
-        void Instance::Reset()
+        void Instance::Reset(bool forReuse)
         {
             m_templateInstanceMapper->UnregisterInstance(*this);
 
@@ -317,14 +323,35 @@ namespace AzToolsFramework
 
             m_nestedInstances.clear();
             m_cachedInstanceDom = PrefabDom();
-            m_containerEntity.reset(aznew AZ::Entity());
-            RegisterEntity(m_containerEntity->GetId(), GenerateEntityAlias());
 
+            // forReuse will be true unless we're in destructor
+            // If we're in a destructor, there is no point in creating a new entity for the container
+            // or registering a new one in the map, otherwise we would leak elements in the map.
+            if (forReuse)
+            {
+                m_containerEntity.reset(aznew AZ::Entity());
+                RegisterEntity(m_containerEntity->GetId(), GenerateEntityAlias());
+            }
+            else
+            {
+                m_containerEntity.reset();
+            }
         }
 
         void Instance::RemoveEntities(
             const AZStd::function<bool(const AZStd::unique_ptr<AZ::Entity>&)>& filter)
         {
+            // It is possible for the container entity to be the one being asked to be removed
+            // This can happen if the prefab is being exported to a spawnable, and the container
+            // entity is set to "editor only" or even "not exported".  This is what allows
+            // prefab container entities to be set to Editor Only without causing a crash in the Editor.
+            if ((m_containerEntity)&&(m_entityIdInstanceRelationship == EntityIdInstanceRelationship::OneToOne))
+            {
+                if (filter(m_containerEntity)) // asked to filter out the container
+                {
+                    DestroyContainerEntity();
+                }
+            }
             AZStd::erase_if(m_entities,
                 [this, &filter](const auto& item)
                 {
@@ -947,8 +974,21 @@ namespace AzToolsFramework
 
         void Instance::SetCachedInstanceDom(PrefabDomValueConstReference instanceDom)
         {
-            m_cachedInstanceDom = PrefabDom(); // force a flush of memory by clearing first.
-            m_cachedInstanceDom.CopyFrom(instanceDom->get(), m_cachedInstanceDom.GetAllocator());
+            // force a flush of memory by clearing first if cache isn't empty.
+            if (!m_cachedInstanceDom.IsNull())
+            {
+                m_cachedInstanceDom = PrefabDom(); 
+            }
+
+            if (m_isDomCachingEnabled)
+            {
+                m_cachedInstanceDom.CopyFrom(instanceDom->get(), m_cachedInstanceDom.GetAllocator());
+            }
+        }
+
+        void Instance::EnableDomCaching(bool enableDomCaching)
+        {
+            m_isDomCachingEnabled = enableDomCaching;
         }
     }
 } // namespace AzToolsFramework

@@ -243,7 +243,7 @@ static constexpr AZ::ThreadSafety ConsoleThreadSafety<_TYPE, std::enable_if_t<st
     extern CVarDataWrapperType##_NAME _NAME;
 
 //! Implements a console functor for a class member function.
-//! @param _CLASS the that the function gets invoked on
+//! @param _CLASS the class that the function gets invoked on
 //! @param _FUNCTION the method to invoke
 //!        You have no guarantees as to what thread will invoke the function
 //!        It is the responsibility of the implementor of the console function to ensure thread safety

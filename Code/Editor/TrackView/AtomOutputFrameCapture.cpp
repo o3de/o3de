@@ -10,10 +10,11 @@
 
 #include <Atom/RPI.Public/Pass/Specific/RenderToTexturePass.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
+#include <Atom/RPI.Public/RPISystemInterface.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Reflect/System/RenderPipelineDescriptor.h>
-#include <PostProcess/PostProcessFeatureProcessor.h>
+#include <Atom/Feature/PostProcess/PostProcessFeatureProcessorInterface.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Math/MatrixUtils.h>
 #include <AzCore/Name/Name.h>
@@ -30,7 +31,7 @@ namespace TrackView
         pipelineDesc.m_mainViewTagName = "MainCamera"; // must be "MainCamera"
         pipelineDesc.m_name = pipelineName;
         pipelineDesc.m_rootPassTemplate = "MainPipelineRenderToTexture";
-        pipelineDesc.m_renderSettings.m_multisampleState.m_samples = 4;
+        pipelineDesc.m_renderSettings.m_multisampleState = AZ::RPI::RPISystemInterface::Get()->GetApplicationMultisampleState();
         m_renderPipeline = AZ::RPI::RenderPipeline::CreateRenderPipeline(pipelineDesc);
 
         if (auto renderToTexturePass = azrtti_cast<AZ::RPI::RenderToTexturePass*>(m_renderPipeline->GetRootPass().get()))
@@ -49,16 +50,22 @@ namespace TrackView
         m_view = AZ::RPI::View::CreateView(viewName, AZ::RPI::View::UsageCamera);
         m_renderPipeline->SetDefaultView(m_view);
         m_targetView = scene.GetDefaultRenderPipeline()->GetDefaultView();
-        if (AZ::Render::PostProcessFeatureProcessor* fp = scene.GetFeatureProcessor<AZ::Render::PostProcessFeatureProcessor>())
+        if (auto* fp = scene.GetFeatureProcessor<AZ::Render::PostProcessFeatureProcessorInterface>())
         {
             // This will be set again to mimic the active camera in UpdateView
             fp->SetViewAlias(m_view, m_targetView);
         }
+        m_pipelineCreated = true;
     }
 
     void AtomOutputFrameCapture::DestroyPipeline(AZ::RPI::Scene& scene)
     {
-        if (AZ::Render::PostProcessFeatureProcessor* fp = scene.GetFeatureProcessor<AZ::Render::PostProcessFeatureProcessor>())
+        if (!m_pipelineCreated)
+        {
+            return;
+        }
+
+        if (auto* fp = scene.GetFeatureProcessor<AZ::Render::PostProcessFeatureProcessorInterface>())
         {
             // Remove view alias introduced in CreatePipeline and UpdateView
             fp->RemoveViewAlias(m_view);
@@ -68,6 +75,8 @@ namespace TrackView
         m_renderPipeline.reset();
         m_view.reset();
         m_targetView.reset();
+
+        m_pipelineCreated = false;
     }
 
     void AtomOutputFrameCapture::UpdateView(const AZ::Matrix3x4& cameraTransform, const AZ::Matrix4x4& cameraProjection, const AZ::RPI::ViewPtr targetView)
@@ -76,7 +85,7 @@ namespace TrackView
         {
             if (AZ::RPI::Scene* scene = SceneFromGameEntityContext())
             {
-                if (AZ::Render::PostProcessFeatureProcessor* fp = scene->GetFeatureProcessor<AZ::Render::PostProcessFeatureProcessor>())
+                if (auto* fp = scene->GetFeatureProcessor<AZ::Render::PostProcessFeatureProcessorInterface>())
                 {
                     fp->SetViewAlias(m_view, targetView);
                     m_targetView = targetView;

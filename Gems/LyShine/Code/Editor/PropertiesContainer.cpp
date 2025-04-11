@@ -117,8 +117,7 @@ private:
 
 //-------------------------------------------------------------------------------
 
-PropertiesContainer::PropertiesContainer(PropertiesWidget* propertiesWidget,
-    EditorWindow* editorWindow)
+PropertiesContainer::PropertiesContainer(PropertiesWidget* propertiesWidget, EditorWindow* editorWindow)
     : QScrollArea(propertiesWidget)
     , m_propertiesWidget(propertiesWidget)
     , m_editorWindow(editorWindow)
@@ -127,6 +126,7 @@ PropertiesContainer::PropertiesContainer(PropertiesWidget* propertiesWidget,
     , m_isCanvasSelected(false)
     , m_selectionEventAccepted(false)
     , m_componentEditorLastSelectedIndex(-1)
+    , m_serializeContext(nullptr)
 {
     setFocusPolicy(Qt::ClickFocus);
     setFrameShape(QFrame::NoFrame);
@@ -358,7 +358,7 @@ void PropertiesContainer::BuildSharedComponentList(ComponentTypeMap& sharedCompo
                     AZ::u32 visibilityValue;
                     if (reader.Read<AZ::u32>(visibilityValue))
                     {
-                        if (visibilityValue == AZ_CRC("PropertyVisibility_Hide", 0x32ab90f7))
+                        if (visibilityValue == AZ_CRC_CE("PropertyVisibility_Hide"))
                         {
                             continue;
                         }

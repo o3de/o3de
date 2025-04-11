@@ -26,10 +26,8 @@
 #include "DisplaySettings.h"
 #include "EditorViewportSettings.h"
 #include "GameEngine.h"
-#include "Include/IObjectManager.h"
 #include "MainWindow.h"
 #include "MathConversion.h"
-#include "Objects/SelectionGroup.h"
 #include "Settings.h"
 #include "UsedResources.h"
 #include "ViewPane.h"
@@ -202,7 +200,7 @@ void CViewportTitleDlg::OnMenuAspectRatioCustom()
     const unsigned int width = viewportRect.width();
     const unsigned int height = viewportRect.height();
 
-    int whGCD = gcd(width, height);
+    int whGCD = AZ::GetGCD(width, height);
     CCustomAspectRatioDlg aspectRatioInputDialog(width / whGCD, height / whGCD, this);
 
     if (aspectRatioInputDialog.exec() == QDialog::Accepted)
@@ -320,6 +318,17 @@ inline double Round(double fVal, double fStep)
     {
         return AzToolsFramework::HelpersVisible();
     }
+
+    void PyToggleIcons()
+    {
+        AzToolsFramework::SetIconsVisible(!AzToolsFramework::IconsVisible());
+        AzToolsFramework::EditorSettingsAPIBus::Broadcast(&AzToolsFramework::EditorSettingsAPIBus::Events::SaveSettingsRegistryFile);
+    }
+
+    bool PyIsIconsShown()
+    {
+        return AzToolsFramework::IconsVisible();
+    }
 } // namespace
 
 namespace AzToolsFramework
@@ -338,6 +347,8 @@ namespace AzToolsFramework
 
             addLegacyGeneral(behaviorContext->Method("toggle_helpers", PyToggleHelpers, nullptr, "Toggles the display of helpers."));
             addLegacyGeneral(behaviorContext->Method("is_helpers_shown", PyIsHelpersShown, nullptr, "Gets the display state of helpers."));
+            addLegacyGeneral(behaviorContext->Method("toggle_icons", PyToggleIcons, nullptr, "Toggles the display of icons."));
+            addLegacyGeneral(behaviorContext->Method("is_icons_shown", PyIsIconsShown, nullptr, "Gets the display state of icons."));
         }
     }
 } // namespace AzToolsFramework

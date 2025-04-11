@@ -15,8 +15,8 @@
 #include <Atom/Features/MatrixUtility.azsli>
 #include <Atom/Features/ShaderQualityOptions.azsli>
 
-#include <scenesrg.srgi>
-#include <viewsrg.srgi>
+#include <scenesrg_all.srgi>
+#include <viewsrg_all.srgi>
 
 #ifndef ENABLE_PHYSICAL_SKY
 #define ENABLE_PHYSICAL_SKY              1
@@ -196,7 +196,7 @@ PSOutput MainPS(VSOutput input)
     color = ApplyManualExposure(color, real(ViewSrg::GetExposureValueCompensation()));
 
     // We could add Aces support here as well if perf allows.
-    color = ApplyFilmicTonemap(color);
+    color = TonemapFilmic(color);
 #endif
 
     PSOutput OUT;

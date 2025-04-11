@@ -91,7 +91,7 @@ def PhysXColliderSurfaceTagEmitter_E2E_Editor():
     dynveg.create_surface_entity("Baseline Surface", entity_center_point, 32.0, 32.0, 1.0)
 
     # Create a new entity with required vegetation area components
-    pink_flower_asset_path = os.path.join("assets", "objects", "foliage", "grass_flower_pink.azmodel")
+    pink_flower_asset_path = os.path.join("assets", "objects", "foliage", "grass_flower_pink.fbx.azmodel")
     pink_flower_prefab = dynveg.create_temp_mesh_prefab(pink_flower_asset_path, "PhysXCollider_PinkFlower")[0]
     spawner_entity = dynveg.create_temp_prefab_vegetation_area("Instance Spawner", entity_center_point, test_box_size,
                                                                test_box_size, test_box_size, pink_flower_prefab)
@@ -173,7 +173,7 @@ def PhysXColliderSurfaceTagEmitter_E2E_Editor():
     test_physx_mesh_asset_id = asset.AssetCatalogRequestBus(
         bus.Broadcast, "GetAssetIdByPath", os.path.join("assets", "objects",
                                                         "pxmesh",
-                                                        "test.pxmesh"), math.Uuid(), False)
+                                                        "test.fbx.pxmesh"), math.Uuid(), False)
     collider_entity.remove_component(PHYSX_PRIMITIVE_COLLIDER)
     collider_entity.add_component(PHYSX_MESH_COLLIDER)
     helper.wait_for_condition(lambda: editor.EditorComponentAPIBus(bus.Broadcast, 'IsComponentEnabled',

@@ -12,6 +12,7 @@ import logging
 import os
 import pathlib
 import shutil
+import stat
 import sys
 import json
 import uuid
@@ -283,6 +284,9 @@ def _execute_template_json(json_data: dict,
             _transform_copy(in_file, out_file, replacements, keep_license_text)
         else:
             shutil.copy(in_file, out_file)
+        # If the copied file is an executable, make sure the executable flag is enabled
+        if copy_file.get('isExecutable', False):
+            os.chmod(out_file, stat.S_IROTH | stat.S_IRGRP | stat.S_IRUSR | stat.S_IWGRP | stat.S_IXOTH | stat.S_IXGRP | stat.S_IXUSR)
 
 
 def _execute_restricted_template_json(template_json_data: dict,
@@ -553,7 +557,7 @@ def create_template(source_path: pathlib.Path,
         template_path = default_templates_folder / source_name
         logger.info(f'Template path empty. Using default templates folder {template_path}')
     if not force and template_path.is_dir() and len(list(template_path.iterdir())):
-        logger.error(f'Template path {template_path} already exists.')
+        logger.error(f'Template path {template_path} already exists; use --force to overwrite existing contents.')
         return 1
 
     # Make sure the output directory for the template is outside the source path directory
@@ -1240,6 +1244,23 @@ def create_from_template(destination_path: pathlib.Path,
         logger.error(f'Template Name or Template Path must be specified.')
         return 1
 
+    # if replacements are provided we need an even number of
+    # replace arguments because they are A->B pairs
+    if replace and len(replace) % 2 == 1:
+        replacement_pairs = []
+        for replace_index in range(0, len(replace), 2):
+            if replace_index + 1 < len(replace):
+                replacement_pairs.append(f' {replace[replace_index]} -> {replace[replace_index + 1]}')
+            else:
+                replacement_pairs.append(f' {replace[replace_index]} is missing replacement')
+        logger.error("Invalid replacement argument pairs.  "
+                     "Verify you have provided replacement match and value pairs "
+                     "and your replacement arguments are in single quotes "
+                     "e.g. -r '${GemName}' 'NameValue'\n\n"
+                     "The current set of replacement pairs are:\n" + 
+                     ("\n".join(replacement_pairs)))
+        return 1
+
     if template_name:
         template_path = manifest.get_registered(template_name=template_name)
 
@@ -1379,7 +1400,7 @@ def create_from_template(destination_path: pathlib.Path,
         logger.error('Destination path cannot be empty.')
         return 1
     if not force and os.path.isdir(destination_path):
-        logger.error(f'Destination path {destination_path} already exists.')
+        logger.error(f'Destination path {destination_path} already exists; use --force to overwrite existing contents.')
         return 1
     else:
         os.makedirs(destination_path, exist_ok=force)
@@ -1709,6 +1730,12 @@ def create_project(project_path: pathlib.Path,
         logger.error(f'Project name cannot be a restricted name. {project_name}')
         return 1
 
+    # the generic launcher (and the engine, often) are referred to as o3de, so prevent the user from 
+    # accidentally creating a confusing error situation.
+    if project_name.lower() == 'o3de':
+        logger.error(f"Project name cannot be 'o3de' as this is reserved for the generic launcher.")
+        return 1
+
     # project restricted name
     if project_restricted_name and not project_restricted_path:
         gem_restricted_path = manifest.get_registered(restricted_name=project_restricted_name)
@@ -1743,6 +1770,8 @@ def create_project(project_path: pathlib.Path,
     replacements.append(("${NameLower}", project_name.lower()))
     replacements.append(("${SanitizedCppName}", sanitized_cpp_name))
     replacements.append(("${Version}", version if version else "1.0.0"))
+    replacements.append(("${ProjectPath}", project_path.as_posix()))
+    replacements.append(("${EnginePath}", manifest.get_this_engine_path().as_posix()))
 
     # was a project id specified
     if project_id:
@@ -1854,6 +1883,8 @@ def create_project(project_path: pathlib.Path,
                 if register.register(restricted_path=project_restricted_path):
                     logger.error(f'Failed to register the restricted {project_restricted_path}.')
                     return 1
+
+    print(f'Project created at {project_path}')
 
     # Register the project with the either o3de_manifest.json or engine.json
     # and set the project.json "engine" field to match the
@@ -2296,6 +2327,8 @@ def create_gem(gem_path: pathlib.Path,
                     logger.error(f'Failed to register the restricted {gem_restricted_path}.')
                     return 1
 
+    print(f'Gem created at {gem_path}')
+
     # Register the gem with the either o3de_manifest.json, engine.json or project.json based on the gem path
     return register.register(gem_path=gem_path) if not no_register else 0
 
@@ -2363,6 +2396,9 @@ def create_repo(repo_path: pathlib.Path,
 
     # create repo.json file
     _execute_template_json(template_json_data, repo_path, template_path, replacements)
+
+    print(f'Repo created at {repo_path}')
+
     return register.register(repo_uri=repo_path.as_posix(), force_register_with_o3de_manifest=True) if not no_register else 0
 
 def _run_create_template(args: argparse) -> int:
@@ -2639,7 +2675,7 @@ def add_args(subparsers) -> None:
     create_from_template_subparser.add_argument('-r', '--replace', type=str, required=False,
                                                 nargs='*',
                                                 help='String that specifies A->B replacement pairs.'
-                                                     ' Ex. --replace CoolThing ${the_thing} ${id} 1723905'
+                                                     ' Ex. --replace CoolThing \'${the_thing}\' \'${id}\' 1723905'
                                                      ' Note: <DestinationName> is the last component of destination_path'
                                                      ' Note: ${Name} is automatically <DestinationName>'
                                                      ' Note: ${NameLower} is automatically <destinationname>'
@@ -2730,7 +2766,7 @@ def add_args(subparsers) -> None:
                                                ' all other standard project replacements will be automatically'
                                                ' inferred from the project name. These replacements will superseded'
                                                ' all inferred replacements.'
-                                               ' Ex. --replace ${DATE} 1/1/2020 ${id} 1723905'
+                                               ' Ex. --replace \'${DATE}\' 1/1/2020 \'${id}\' 1723905'
                                                ' Note: <ProjectName> is the last component of project_path'
                                                ' Note: ${Name} is automatically <ProjectName>'
                                                ' Note: ${NameLower} is automatically <projectname>'
@@ -2824,7 +2860,7 @@ def add_args(subparsers) -> None:
                                            ' all other standard gem replacements will be automatically inferred'
                                            ' from the gem name. These replacements will superseded all inferred'
                                            ' replacement pairs.'
-                                           ' Ex. --replace ${DATE} 1/1/2020 ${id} 1723905'
+                                           ' Ex. --replace \'${DATE}\' 1/1/2020 \'${id}\' 1723905'
                                            ' Note: <GemName> is the last component of gem_path'
                                            ' Note: ${Name} is automatically <GemName>'
                                            ' Note: ${NameLower} is automatically <gemname>'
@@ -2920,7 +2956,7 @@ def add_args(subparsers) -> None:
                                            ' all other standard gem replacements will be automatically inferred'
                                            ' from the repo name. These replacements will superseded all inferred'
                                            ' replacement pairs.'
-                                           ' Ex. --replace ${DATE} 1/1/2020 ${id} 1723905'
+                                           ' Ex. --replace \'${DATE}\' 1/1/2020 \'${id}\' 1723905'
                                            ' Note: <RepoName> is the last component of repo_path'
                                            ' Note: ${Name} is automatically <Name>')
     create_repo_subparser.add_argument('--no-register', action='store_true', default=False,

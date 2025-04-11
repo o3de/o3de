@@ -43,7 +43,7 @@ namespace GraphCanvas
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
             provided.push_back(kSlotServiceProviderId);
-            provided.push_back(AZ_CRC("GraphCanvas_SceneMemberService", 0xe9759a2d));
+            provided.push_back(AZ_CRC_CE("GraphCanvas_SceneMemberService"));
         }
 
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& /*dependent*/)
@@ -113,6 +113,8 @@ namespace GraphCanvas
         AZStd::any* GetUserData() override;
 
         bool HasConnections() const override;
+
+        bool IsNameHidden() const;
 
         AZ::EntityId GetLastConnection() const override;
         AZStd::vector<AZ::EntityId> GetConnections() const override;

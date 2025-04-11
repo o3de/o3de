@@ -27,7 +27,7 @@ namespace ScriptCanvas
                 , public AZ::TickBus::Handler
                 , public AZ::SystemTickBus::Handler
             {
-                SCRIPTCANVAS_NODE(BaseTimer)
+                SCRIPTCANVAS_NODE(BaseTimer);
 
             public:
                 AZ_CLASS_ALLOCATOR(BaseTimer, AZ::SystemAllocator)

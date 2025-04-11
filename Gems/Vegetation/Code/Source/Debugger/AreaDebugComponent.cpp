@@ -22,8 +22,8 @@ namespace Vegetation
         {
             if (classElement.GetVersion() < 1)
             {
-                classElement.RemoveElementByName(AZ_CRC("PropagateDebug", 0xb5675baa));
-                classElement.RemoveElementByName(AZ_CRC("InheritDebug", 0xd227cd11));
+                classElement.RemoveElementByName(AZ_CRC_CE("PropagateDebug"));
+                classElement.RemoveElementByName(AZ_CRC_CE("InheritDebug"));
             }
             return true;
         }
@@ -70,12 +70,12 @@ namespace Vegetation
 
     void AreaDebugComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationAreaDebugService", 0x2c6f3c5c));
+        services.push_back(AZ_CRC_CE("VegetationAreaDebugService"));
     }
 
     void AreaDebugComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationAreaDebugService", 0x2c6f3c5c));
+        services.push_back(AZ_CRC_CE("VegetationAreaDebugService"));
     }
 
     void AreaDebugComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& services)

@@ -10,6 +10,7 @@
 
 #include <AzCore/Math/IntersectSegment.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
+#include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 namespace AzToolsFramework
@@ -45,12 +46,13 @@ namespace AzToolsFramework
             {
                 ToolsApplicationRequests::Bus::Broadcast(
                     &ToolsApplicationRequests::Bus::Events::AddDirtyEntity, entityComponentId.GetEntityId());
+                ToolsApplicationNotificationBus::Broadcast(
+                    &ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplayForComponent,
+                    entityComponentId,
+                    Refresh_Values);
             }
 
             (*this.*m_onLeftMouseDownImpl)(interaction, rayIntersectionDistance);
-
-            ToolsApplicationNotificationBus::Broadcast(&ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplay, Refresh_Values);
-
             return true;
         }
 
@@ -71,12 +73,13 @@ namespace AzToolsFramework
             {
                 ToolsApplicationRequests::Bus::Broadcast(
                     &ToolsApplicationRequests::Bus::Events::AddDirtyEntity, entityComponentId.GetEntityId());
+                ToolsApplicationNotificationBus::Broadcast(
+                    &ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplayForComponent,
+                    entityComponentId,
+                    Refresh_Values);
+
             }
-
             (*this.*m_onRightMouseDownImpl)(interaction, rayIntersectionDistance);
-
-            ToolsApplicationNotificationBus::Broadcast(&ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplay, Refresh_Values);
-
             return true;
         }
 
@@ -120,7 +123,13 @@ namespace AzToolsFramework
     {
         OnMouseWheelImpl(interaction);
 
-        ToolsApplicationNotificationBus::Broadcast(&ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplay, Refresh_Values);
+        for (const AZ::EntityComponentIdPair& entityComponentId : m_entityComponentIdPairs)
+        {
+            ToolsApplicationNotificationBus::Broadcast(
+                &ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplayForComponent,
+                entityComponentId,
+                Refresh_Values);
+        }
     }
 
     void BaseManipulator::OnMouseMove(const ViewportInteraction::MouseInteraction& interaction)
@@ -135,7 +144,13 @@ namespace AzToolsFramework
         }
 
         // ensure property grid (entity inspector) values are refreshed
-        ToolsApplicationNotificationBus::Broadcast(&ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplay, Refresh_Values);
+        for (const AZ::EntityComponentIdPair& entityComponentId : m_entityComponentIdPairs)
+        {
+            ToolsApplicationNotificationBus::Broadcast(
+                &ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplayForComponent,
+                entityComponentId,
+                Refresh_Values);
+        }
 
         OnMouseMoveImpl(interaction);
     }

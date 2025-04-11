@@ -40,6 +40,11 @@ set(FILES
     Source/CubeMapCapture/CubeMapCaptureComponent.cpp
     Source/CubeMapCapture/CubeMapCaptureComponentController.h
     Source/CubeMapCapture/CubeMapCaptureComponentController.cpp
+    Source/Debug/RayTracingDebugComponent.h
+    Source/Debug/RayTracingDebugComponent.cpp
+    Source/Debug/RayTracingDebugComponentConfig.cpp
+    Source/Debug/RayTracingDebugComponentController.h
+    Source/Debug/RayTracingDebugComponentController.cpp
     Source/Debug/RenderDebugComponent.cpp
     Source/Debug/RenderDebugComponent.h
     Source/Debug/RenderDebugComponentConfig.cpp
@@ -89,6 +94,26 @@ set(FILES
     Source/PostProcess/ChromaticAberration/ChromaticAberrationComponentConfig.cpp
     Source/PostProcess/ChromaticAberration/ChromaticAberrationComponentController.cpp
     Source/PostProcess/ChromaticAberration/ChromaticAberrationComponentController.h
+    Source/PostProcess/PaniniProjection/PaniniProjectionComponent.cpp
+    Source/PostProcess/PaniniProjection/PaniniProjectionComponent.h
+    Source/PostProcess/PaniniProjection/PaniniProjectionComponentConfig.cpp
+    Source/PostProcess/PaniniProjection/PaniniProjectionComponentController.cpp
+    Source/PostProcess/PaniniProjection/PaniniProjectionComponentController.h
+    Source/PostProcess/FilmGrain/FilmGrainComponent.cpp
+    Source/PostProcess/FilmGrain/FilmGrainComponent.h
+    Source/PostProcess/FilmGrain/FilmGrainComponentConfig.cpp
+    Source/PostProcess/FilmGrain/FilmGrainComponentController.cpp
+    Source/PostProcess/FilmGrain/FilmGrainComponentController.h
+    Source/PostProcess/WhiteBalance/WhiteBalanceComponent.cpp
+    Source/PostProcess/WhiteBalance/WhiteBalanceComponent.h
+    Source/PostProcess/WhiteBalance/WhiteBalanceComponentConfig.cpp
+    Source/PostProcess/WhiteBalance/WhiteBalanceComponentController.cpp
+    Source/PostProcess/WhiteBalance/WhiteBalanceComponentController.h
+    Source/PostProcess/Vignette/VignetteComponent.cpp
+    Source/PostProcess/Vignette/VignetteComponent.h
+    Source/PostProcess/Vignette/VignetteComponentConfig.cpp
+    Source/PostProcess/Vignette/VignetteComponentController.cpp
+    Source/PostProcess/Vignette/VignetteComponentController.h
     Source/PostProcess/ColorGrading/HDRColorGradingComponent.cpp
     Source/PostProcess/ColorGrading/HDRColorGradingComponent.h
     Source/PostProcess/ColorGrading/HDRColorGradingComponentConfig.cpp

@@ -38,6 +38,7 @@
 #include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Editor/ActionManagerUtils.h>
+#include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <ScriptCanvas/Variable/GraphVariable.h>
 
 namespace ScriptCanvasEditor
@@ -626,8 +627,8 @@ namespace ScriptCanvasEditor
 
             if (graphVariable->GetScope() != ScriptCanvas::VariableFlags::Scope::FunctionReadOnly)
             {
-            itemFlags |= Qt::ItemIsEditable;
-        }
+                itemFlags |= Qt::ItemIsEditable;
+            }
 
         }
         else if (index.column() == ColumnIndex::InitialValueSource)
@@ -866,6 +867,19 @@ namespace ScriptCanvasEditor
             QModelIndex otherIndex = createIndex(index, ColumnIndex::Count - 1, nullptr);
 
             dataChanged(modelIndex, otherIndex);
+        }
+    }
+
+    void GraphVariablesModel::OnVariableRenamed(AZStd::string_view /*newVariableName*/)
+    {
+        const ScriptCanvas::GraphScopedVariableId* variableId = ScriptCanvas::VariableNotificationBus::GetCurrentBusId();
+
+        int index = FindRowForVariableId((*variableId).m_identifier);
+
+        if (index >= 0)
+        {
+            QModelIndex modelIndex = createIndex(index, ColumnIndex::Name, nullptr);
+            dataChanged(modelIndex, modelIndex);
         }
     }
 
@@ -1260,7 +1274,7 @@ namespace ScriptCanvasEditor
 
     void GraphVariablesTableView::ApplyPreferenceSort()
     {
-        AZStd::intrusive_ptr<EditorSettings::ScriptCanvasEditorSettings> settings = AZ::UserSettings::CreateFind<EditorSettings::ScriptCanvasEditorSettings>(AZ_CRC("ScriptCanvasPreviewSettings", 0x1c5a2965), AZ::UserSettings::CT_LOCAL);
+        AZStd::intrusive_ptr<EditorSettings::ScriptCanvasEditorSettings> settings = AZ::UserSettings::CreateFind<EditorSettings::ScriptCanvasEditorSettings>(AZ_CRC_CE("ScriptCanvasPreviewSettings"), AZ::UserSettings::CT_LOCAL);
         m_proxyModel->sort(settings->m_variablePanelSorting);
     }
 

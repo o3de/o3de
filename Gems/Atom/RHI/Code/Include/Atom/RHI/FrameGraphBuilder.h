@@ -11,28 +11,21 @@
 
 #include <Atom/RHI/FrameGraphAttachmentInterface.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    class ScopeProducer;
+
+    class FrameGraphBuilder
     {
-        class ScopeProducer;
+    public:
+        virtual ~FrameGraphBuilder() = default;
 
-        class FrameGraphBuilder
-        {
-        public:
-            virtual ~FrameGraphBuilder() = default;
+        //! Returns the frame graph attachment builder, which allows the user to declare global attachments.
+        virtual FrameGraphAttachmentInterface GetAttachmentDatabase() = 0;
 
-            /**
-             * Returns the frame graph attachment builder, which allows the user to declare global attachments.
-             */
-            virtual FrameGraphAttachmentInterface GetAttachmentDatabase() = 0;
-
-            /**
-             * Imports a scope producer into the frame graph. Scope producers are prepared in the order they are
-             * imported, however the compile phase runs a topological sort based on the attachment and explicit scope
-             * dependencies.
-             */
-            virtual ResultCode ImportScopeProducer(ScopeProducer& scopeProducer) = 0;
-        };
-    }
+        //! Imports a scope producer into the frame graph. Scope producers are prepared in the order they are
+        //! imported, however the compile phase runs a topological sort based on the attachment and explicit scope
+        //! dependencies.
+        virtual ResultCode ImportScopeProducer(ScopeProducer& scopeProducer) = 0;
+    };
 }

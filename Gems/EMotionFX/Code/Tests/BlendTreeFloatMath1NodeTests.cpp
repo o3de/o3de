@@ -148,7 +148,6 @@ namespace EMotionFX
         }
 
     protected:
-        AZStd::unique_ptr<OneBlendTreeNodeAnimGraph> m_blendTreeAnimGraph;
         BlendTree* m_blendTree = nullptr;
         BlendTreeFloatMath1Node* m_floatMath1Node = nullptr;
         BlendTreeFloatMath1NodeTestData m_param;
@@ -375,7 +374,7 @@ namespace EMotionFX
         TestInput<MCore::AttributeBool, bool>("BoolParam", m_param.m_xInputBool);
     };
 
-    INSTANTIATE_TEST_CASE_P(BlendTreeFloatMath1Node_ValidOutputTests,
+    INSTANTIATE_TEST_SUITE_P(BlendTreeFloatMath1Node_ValidOutputTests,
         BlendTreeFloatMath1NodeFixture,
             ::testing::ValuesIn(blendTreeFloatMath1NodeTestData)
     );

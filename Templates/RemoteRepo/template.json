@@ -18,7 +18,29 @@
         {
             "file": "repo.json",
             "isTemplated": true
+        },
+        {
+            "file": "Gems/README.md",
+            "isTemplated": false
+        },
+        {
+            "file": "Templates/README.md",
+            "isTemplated": false
+        },
+        {
+            "file": "Projects/README.md",
+            "isTemplated": false
         }
     ],
-    "createDirectories": []
+    "createDirectories": [
+        {
+            "dir": "Gems"
+        },
+        {
+            "dir": "Templates"
+        },
+        {
+            "dir": "Projects"
+        }
+    ]
 }

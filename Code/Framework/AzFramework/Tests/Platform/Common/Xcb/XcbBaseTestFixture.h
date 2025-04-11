@@ -11,6 +11,7 @@
 #include <gtest/gtest.h>
 #include <xcb/xcb.h>
 #include <AzCore/UnitTest/TestTypes.h>
+#include <AzFramework/Components/NativeUISystemComponent.h>
 
 #include "MockXcbInterface.h"
 
@@ -21,6 +22,8 @@ namespace AzFramework
         : public ::UnitTest::LeakDetectionFixture
     {
     public:
+        XcbBaseTestFixture();
+
         void SetUp() override;
 
         template<typename T>
@@ -32,5 +35,6 @@ namespace AzFramework
     protected:
         testing::NiceMock<MockXcbInterface> m_interface;
         xcb_connection_t m_connection{};
+        AZStd::unique_ptr<AzFramework::NativeUISystemComponent> m_nativeUiComponent;
     };
 } // namespace AzFramework

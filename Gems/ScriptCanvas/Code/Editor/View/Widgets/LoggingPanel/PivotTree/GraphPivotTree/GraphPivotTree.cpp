@@ -582,7 +582,7 @@ namespace ScriptCanvasEditor
     /////////////////////////
 
     GraphPivotTreeWidget::GraphPivotTreeWidget(QWidget* parent)
-        : PivotTreeWidget(aznew GraphPivotTreeRoot(), AZ_CRC("GraphPivotTreeId", 0xed815ba3), parent)
+        : PivotTreeWidget(aznew GraphPivotTreeRoot(), AZ_CRC_CE("GraphPivotTreeId"), parent)
     {
         static_cast<GraphPivotTreeRoot*>(GetTreeRoot())->TraverseTree();
     }

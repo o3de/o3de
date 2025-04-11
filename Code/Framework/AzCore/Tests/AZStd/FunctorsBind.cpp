@@ -1028,7 +1028,7 @@ namespace UnitTest
         FunctionTestInternal::Functor<1>,
         FunctionTestInternal::Functor<sizeof(AZStd::Internal::function_util::function_buffer) + 8>
     >;
-    TYPED_TEST_CASE(FunctionFunctorTestFixture, FunctionFunctorTypes);
+    TYPED_TEST_SUITE(FunctionFunctorTestFixture, FunctionFunctorTypes);
 
 
 

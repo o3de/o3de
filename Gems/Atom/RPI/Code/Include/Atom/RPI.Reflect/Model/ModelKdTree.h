@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Vector3.h>
@@ -21,7 +22,7 @@ namespace AZ
 
         //! Spatial structure for a single model.
         //! May contain indices pointing to triangles from multiple meshes, if a model contains multiple meshes.
-        class ModelKdTree
+        class ATOM_RPI_REFLECT_API ModelKdTree
         {
         public:
 
@@ -67,7 +68,7 @@ namespace AZ
                 ModelKdTreeNode* pNode, const AZ::Vector3& raySrc, const AZ::Vector3& rayDir, AZStd::vector<AZ::Aabb>& outBoxes);
             void ConstructMeshList(const ModelAsset* model, const AZ::Transform& matParent);
 
-            static const int s_MinimumVertexSizeInLeafNode = 3 * 10;
+            static constexpr int s_MinimumVertexSizeInLeafNode = 3 * 10;
             // Stop splitting the tree if more than 10% of the triangles are straddling the split axis
             static constexpr float s_MaximumSplitAxisStraddlingTriangles = 1.1;
             AZStd::unique_ptr<ModelKdTreeNode> m_pRootNode;
@@ -93,7 +94,7 @@ namespace AZ
             static AZStd::tuple<ESplitAxis, float> SearchForBestSplitAxis(const AZ::Aabb& aabb);
         };
 
-        class ModelKdTreeNode
+        class ATOM_RPI_REFLECT_API ModelKdTreeNode
         {
         public:
             AZ::u32 GetVertexBufferSize() const

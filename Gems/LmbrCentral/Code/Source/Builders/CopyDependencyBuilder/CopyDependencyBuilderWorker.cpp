@@ -57,8 +57,8 @@ namespace CopyDependencyBuilder
             // Add source dependencies to job parameters and pass them to ProcessJob
             const int sourceDependencyStartPoint = static_cast<int>(descriptor.m_jobParameters.size());
             const int sourceDependenciesNum = static_cast<int>(response.m_sourceFileDependencyList.size());
-            descriptor.m_jobParameters[AZ_CRC("sourceDependencyStartPoint", 0xdfa24dde)] = AZStd::to_string(sourceDependencyStartPoint);
-            descriptor.m_jobParameters[AZ_CRC("sourceDependenciesNum", 0xf52e721a)] = AZStd::to_string(sourceDependenciesNum);
+            descriptor.m_jobParameters[AZ_CRC_CE("sourceDependencyStartPoint")] = AZStd::to_string(sourceDependencyStartPoint);
+            descriptor.m_jobParameters[AZ_CRC_CE("sourceDependenciesNum")] = AZStd::to_string(sourceDependenciesNum);
 
             for (int index = 0; index < sourceDependenciesNum; ++index)
             {

@@ -25,13 +25,13 @@ namespace ScriptCanvas
         if (rootElementNode.GetVersion() < VariableData::Version::UUID_To_Variable)
         {
             AZStd::unordered_map<AZ::Uuid, Deprecated::VariableNameValuePair > uuidToVariableMap;
-            if (!rootElementNode.GetChildData(AZ_CRC("m_nameVariableMap", 0xc4de98e7), uuidToVariableMap))
+            if (!rootElementNode.GetChildData(AZ_CRC_CE("m_nameVariableMap"), uuidToVariableMap))
             {
                 AZ_Error("Script Canvas", false, "Variable id in version 0 VariableData element should be AZ::Uuid");
                 return false;
             }
 
-            rootElementNode.RemoveElementByName(AZ_CRC("m_nameVariableMap", 0xc4de98e7));
+            rootElementNode.RemoveElementByName(AZ_CRC_CE("m_nameVariableMap"));
             AZStd::unordered_map<VariableId, GraphVariable> idToVariableMap;
             for (auto& uuidToVariableNamePair : uuidToVariableMap)
             {
@@ -43,12 +43,12 @@ namespace ScriptCanvas
         else if (rootElementNode.GetVersion() < VariableData::Version::VariableDatumSimplification)
         {
             AZStd::unordered_map<VariableId, Deprecated::VariableNameValuePair> idToPairMap;
-            if (!rootElementNode.GetChildData(AZ_CRC("m_nameVariableMap", 0xc4de98e7), idToPairMap))
+            if (!rootElementNode.GetChildData(AZ_CRC_CE("m_nameVariableMap"), idToPairMap))
             {
                 return false;
             }
 
-            rootElementNode.RemoveElementByName(AZ_CRC("m_nameVariableMap", 0xc4de98e7));
+            rootElementNode.RemoveElementByName(AZ_CRC_CE("m_nameVariableMap"));
 
             AZStd::unordered_map<VariableId, GraphVariable> idToVariableMap;
 
@@ -197,7 +197,7 @@ namespace ScriptCanvas
         if (rootElementNode.GetVersion() <= 1)
         {
             AZStd::list<Deprecated::VariableNameValuePair> varNameValueVariableList;
-            if (!rootElementNode.GetChildData(AZ_CRC("m_properties", 0x4227dbda), varNameValueVariableList))
+            if (!rootElementNode.GetChildData(AZ_CRC_CE("m_properties"), varNameValueVariableList))
             {
                 AZ_Error("ScriptCanvas", false, "Unable to find m_properties list of VariableNameValuePairs on EditableVariableData version %d", rootElementNode.GetVersion());
                 return false;
@@ -209,7 +209,7 @@ namespace ScriptCanvas
                 editableVariableConfigurationList.push_back({ GraphVariable(AZStd::move(varNameValuePair)),  });
             }
 
-            rootElementNode.RemoveElementByName(AZ_CRC("m_properties", 0x4227dbda));
+            rootElementNode.RemoveElementByName(AZ_CRC_CE("m_properties"));
             rootElementNode.AddElementWithData(serializeContext, "m_variables", editableVariableConfigurationList);
         }
 

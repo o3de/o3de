@@ -19,15 +19,15 @@ using namespace AZ::Data;
 
 namespace UnitTest
 {
-    static const InstanceId s_instanceId0{ Uuid("{5B29FE2B-6B41-48C9-826A-C723951B0560}") };
-    static const InstanceId s_instanceId1{ Uuid("{BD354AE5-B5D5-402A-A12E-BE3C96F6522B}") };
-    static const InstanceId s_instanceId2{ Uuid("{EE99215B-7AB4-4757-B8AF-F78BD4903AC4}") };
-    static const InstanceId s_instanceId3{ Uuid("{D9CDAB04-D206-431E-BDC0-1DD615D56197}") };
-
     static const AssetId s_assetId0{ Uuid("{5B29FE2B-6B41-48C9-826A-C723951B0560}") };
     static const AssetId s_assetId1{ Uuid("{BD354AE5-B5D5-402A-A12E-BE3C96F6522B}") };
     static const AssetId s_assetId2{ Uuid("{EE99215B-7AB4-4757-B8AF-F78BD4903AC4}") };
     static const AssetId s_assetId3{ Uuid("{D9CDAB04-D206-431E-BDC0-1DD615D56197}") };
+
+    static const InstanceId s_instanceId0{ InstanceId::CreateFromAssetId(s_assetId0) };
+    static const InstanceId s_instanceId1{ InstanceId::CreateFromAssetId(s_assetId1) };
+    static const InstanceId s_instanceId2{ InstanceId::CreateFromAssetId(s_assetId2) };
+    static const InstanceId s_instanceId3{ InstanceId::CreateFromAssetId(s_assetId3) };
 
     // test asset type
     class TestAssetType : public AssetData
@@ -303,8 +303,8 @@ namespace UnitTest
                     {
                         const size_t index = rand() % guids.size();
                         const Uuid uuid = guids[index];
-                        const InstanceId instanceId{ uuid };
                         const AssetId assetId{ uuid };
+                        const InstanceId instanceId{ InstanceId::CreateFromAssetId(assetId) };
 
                         ParralleInstanceCurrentAction currentAction = ParallelInstanceGetCurrentAction(testCase);
 

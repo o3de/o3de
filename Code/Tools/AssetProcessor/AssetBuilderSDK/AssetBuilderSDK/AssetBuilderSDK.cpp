@@ -46,6 +46,7 @@ namespace AssetBuilderSDK
     const AZ::u32 SUBID_LOD_LEVEL_SHIFT = 16; // shift 16 bits to the left to get 0x000F0000
     const AZ::u32 SUBID_FLAG_DIFF       = 0x00100000;
     const AZ::u32 SUBID_FLAG_ALPHA      = 0x00200000;
+    const AZ::u32 SUBID_FLAG_ABDATA     = 0x00400000;
 
     AZ::u32 GetSubID_ID(AZ::u32 packedSubId)
     {
@@ -760,6 +761,10 @@ namespace AssetBuilderSDK
     static constexpr AZ::Data::AssetType fontAssetType("{57767D37-0EBE-43BE-8F60-AB36D2056EF8}"); // form UiAssetTypes.h
     static constexpr AZ::Data::AssetType uiCanvasAssetType("{E48DDAC8-1F1E-4183-AAAB-37424BCC254B}"); // from UiAssetTypes.h
 
+    // AssetBrowser metadata file type
+    static const char* abdataExtension = ".abdata.json";
+    static constexpr AZ::Data::AssetType abdataAssetType("{D0A5E84E-9866-4AD7-A6A1-4D28FE7871C5}");
+
     // EMotionFX Gem types
     // If we have a way to register gem specific asset type in the future, we can remove this.
     static const char* emotionFXActorExtension = ".actor";
@@ -779,6 +784,12 @@ namespace AssetBuilderSDK
         {
             // files which have no extension at all are not currently supported
             return unknownAssetType;
+        }
+
+        // Look for the abdata double extension
+        if (AzFramework::StringFunc::EndsWith(productFile, abdataExtension))
+        {
+            return abdataAssetType;
         }
 
         // intercept texture mips and mesh lods first
@@ -995,7 +1006,13 @@ namespace AssetBuilderSDK
             return AZ::DynamicSliceAsset::GetAssetSubId();
         }
 
-        //get the extension
+        // Look for the abdata double extension
+        if (AzFramework::StringFunc::EndsWith(productFile, abdataExtension))
+        {
+            return SUBID_FLAG_ABDATA;
+        }
+
+        // get the extension
         AZStd::string extension;
         if (!AzFramework::StringFunc::Path::GetExtension(productFile, extension, true))
         {

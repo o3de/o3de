@@ -394,6 +394,10 @@ namespace AZ
         //! into the Settings Registry
         struct MergeSettingsResult
         {
+            //! Any values that is >= MergeSettingsReturnCode::Unset
+            //! is treated as a successful operation
+            //! This means that a default initialized MergeSettingsResult
+            //! is convertible to true
             explicit operator bool() const;
 
             // Combine MergeSettingsResult together by concatenating the
@@ -403,6 +407,8 @@ namespace AZ
             MergeSettingsResult& Combine(MergeSettingsResult otherResult) &;
             // rvalue reference of combine returns a copy
             MergeSettingsResult Combine(MergeSettingsResult otherResult) &&;
+            // Combine the return code directly
+            MergeSettingsResult Combine(MergeSettingsReturnCode otherReturnCode);
 
             // Return a reference to the operation messages string
             const AZStd::string& GetMessages() const;

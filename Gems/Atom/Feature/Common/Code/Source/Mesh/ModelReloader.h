@@ -11,7 +11,7 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/RTTI/TypeInfo.h>
 #include <Atom/Feature/Mesh/ModelReloaderSystemInterface.h>
-#include <Source/Mesh/ModelReloaderSystem.h>
+#include <Mesh/ModelReloaderSystem.h>
 
 namespace AZ
 {

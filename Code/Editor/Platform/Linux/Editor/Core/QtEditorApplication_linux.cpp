@@ -11,6 +11,8 @@
 #ifdef PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
 #include <AzFramework/XcbEventHandler.h>
 #include <AzFramework/XcbConnectionManager.h>
+#include <AzFramework/Input/Buses/Requests/InputSystemCursorRequestBus.h>
+#include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <qpa/qplatformnativeinterface.h>
 #include <AzFramework/XcbEventHandler.h>
 #endif
@@ -71,7 +73,18 @@ namespace Editor
                 // responding.
                 return false;
             }
+
+            auto systemCursorState = AzFramework::SystemCursorState::Unknown;
+            AzFramework::InputSystemCursorRequestBus::EventResult(systemCursorState, AzFramework::InputDeviceMouse::Id, &AzFramework::InputSystemCursorRequestBus::Events::GetSystemCursorState);
+            if(systemCursorState == AzFramework::SystemCursorState::UnconstrainedAndVisible)
+            {
+                // If the system cursor is visible and unconstrained, the user 
+                // can interact with the editor so allow all events.
+                return false;
+            }
 #endif
+            // Consume all input so the user cannot use editor menu actions
+            // while in game.
             return true;
         }
         return false;

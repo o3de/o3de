@@ -7,6 +7,9 @@
  */
 
 #include "Exporter.h"
+
+#include <AzCore/Serialization/Locale.h>
+
 #include <EMotionFX/Source/Node.h>
 #include <EMotionFX/Source/Actor.h>
 #include <EMotionFX/Source/NodeGroup.h>
@@ -20,6 +23,8 @@ namespace ExporterLib
 {
     void SaveNode(MCore::Stream* file, EMotionFX::Actor* actor, EMotionFX::Node* node, MCore::Endian::EEndianType targetEndianType)
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale; // Ensures that %f uses "." as decimal separator
+
         MCORE_ASSERT(file);
         MCORE_ASSERT(actor);
         MCORE_ASSERT(node);
@@ -93,7 +98,7 @@ namespace ExporterLib
         MCore::LogDetailedInfo("    + NumChilds: %i", nodeChunk.m_numChilds);
         MCore::LogDetailedInfo("    + Position: x=%f y=%f z=%f", nodeChunk.m_localPos.m_x, nodeChunk.m_localPos.m_y, nodeChunk.m_localPos.m_z);
         MCore::LogDetailedInfo("    + Rotation: x=%f y=%f z=%f w=%f", nodeChunk.m_localQuat.m_x, nodeChunk.m_localQuat.m_y, nodeChunk.m_localQuat.m_z, nodeChunk.m_localQuat.m_w);
-        const AZ::Vector3 euler = MCore::AzQuaternionToEulerAngles(rotation);
+        const AZ::Vector3 euler = rotation.GetEulerRadiansZYX();
         MCore::LogDetailedInfo("    + Rotation Euler: x=%f y=%f z=%f",
             float(euler.GetX()) * 180.0 / MCore::Math::pi,
             float(euler.GetY()) * 180.0 / MCore::Math::pi,

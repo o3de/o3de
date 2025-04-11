@@ -46,11 +46,15 @@ namespace ScriptCanvasEditor
         EditorScriptCanvasComponent();
         EditorScriptCanvasComponent(const SourceHandle& sourceHandle);
         ~EditorScriptCanvasComponent() override;
-                        
+
+        //=====================================================================
+        // EditorComponentBase
+        void SetPrimaryAsset(const AZ::Data::AssetId&) override;
+
     protected:
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("ScriptCanvasService", 0x41fd58f3));
+            provided.push_back(AZ_CRC_CE("ScriptCanvasService"));
         }
 
         static void Reflect(AZ::ReflectContext* context);
@@ -63,7 +67,6 @@ namespace ScriptCanvasEditor
         //=====================================================================
         // EditorComponentBase
         void BuildGameEntity(AZ::Entity* gameEntity) override;
-        void SetPrimaryAsset(const AZ::Data::AssetId&) override;
 
     private:
         Configuration m_configuration;

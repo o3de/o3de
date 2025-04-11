@@ -118,15 +118,21 @@ namespace LyShine
     {
         // Add a pass that renders to the specified texture
         AZ::RPI::PassSystemInterface* passSystem = AZ::RPI::PassSystemInterface::Get();
-        auto passName = attachmentImage->GetRHIImage()->GetName(); // Use attachment name (but not attachment id) as pass name so the pass can be found by GetRttPass() function
-        AZ::RPI::Ptr<RttChildPass> rttChildPass = azrtti_cast<RttChildPass*>(passSystem->CreatePassFromTemplate(AZ::Name("RttChildPassTemplate"), passName).get());
-        AZ_Assert(rttChildPass, "[LyShinePass] Unable to create a RttChildPass.");
+        if (attachmentImage)
+        {
+            auto passName = attachmentImage->GetRHIImage()->GetName(); // Use attachment name (but not attachment id) as pass name so the pass can be found by GetRttPass() function
+            AZ::RPI::Ptr<RttChildPass> rttChildPass = azrtti_cast<RttChildPass*>(passSystem->CreatePassFromTemplate(AZ::Name("RttChildPassTemplate"), passName).get());
+            AZ_Assert(rttChildPass, "[LyShinePass] Unable to create a RttChildPass.");
 
-        // Store the info needed to attach to slots and set up frame graph dependencies
-        rttChildPass->m_attachmentImage = attachmentImage;
-        rttChildPass->m_attachmentImageDependencies = attachmentImageDependencies;
+            // Store the info needed to attach to slots and set up frame graph dependencies
+            rttChildPass->m_attachmentImage = attachmentImage;
+            rttChildPass->m_attachmentImageDependencies = attachmentImageDependencies;
 
-        AddChild(rttChildPass);
+            // Disable by default, the RenderGraph will enable it when render to render target
+            rttChildPass->SetEnabled(false);
+
+            AddChild(rttChildPass);
+        }
     }
 
     void LyShinePass::AddUiCanvasChildPass(LyShine::AttachmentImagesAndDependencies AttachmentImagesAndDependencies)
@@ -181,7 +187,7 @@ namespace LyShine
             desc.m_imageViewDescriptor = attachmentImage->GetImageView()->GetDescriptor();
             desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::Load;
 
-            frameGraph.UseShaderAttachment(desc, AZ::RHI::ScopeAttachmentAccess::Read);
+            frameGraph.UseShaderAttachment(desc, AZ::RHI::ScopeAttachmentAccess::Read, AZ::RHI::ScopeAttachmentStage::FragmentShader);
         }
     }
 

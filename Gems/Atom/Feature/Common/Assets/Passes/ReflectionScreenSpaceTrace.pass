@@ -108,7 +108,6 @@
                     },
                     "ImageDescriptor": {
                         "Format": "R16G16B16A16_FLOAT",
-                        "MipLevels": 4,
                         "SharedQueueMask": "Graphics",
                         "BindFlags": [
                             "ShaderReadWrite",
@@ -175,7 +174,7 @@
                 "ShaderAsset": {
                     "FilePath": "Shaders/Reflections/ReflectionScreenSpaceTrace.shader"
                 },
-                "PipelineViewTag": "MainCamera"
+                "BindViewSrg": true
             }
         }
     }

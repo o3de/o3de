@@ -122,14 +122,14 @@ namespace AzNetworking
     template <typename TYPE>
     inline bool GetBitHelper(TYPE element, uint32_t bitIndex)
     {
-        AZ_Assert(bitIndex < AZ::Log2(TYPE(~0)), "Out of bounds access (requested %u, size %u)", bitIndex, AZ::Log2(TYPE(~0)));
+        AZ_Assert(bitIndex < AZ::RequiredBitsForValue(TYPE(~0)), "Out of bounds access (requested %u, size %u)", bitIndex, AZ::RequiredBitsForValue(TYPE(~0)));
         return ((element >> bitIndex) & 0x01) ? true : false;
     }
 
     template <typename TYPE>
     inline void SetBitHelper(TYPE &element, uint32_t bitIndex, bool value)
     {
-        AZ_Assert(bitIndex < AZ::Log2(TYPE(~0)), "Out of bounds access (requested %u, size %u)", bitIndex, AZ::Log2(TYPE(~0)));
+        AZ_Assert(bitIndex < AZ::RequiredBitsForValue(TYPE(~0)), "Out of bounds access (requested %u, size %u)", bitIndex, AZ::RequiredBitsForValue(TYPE(~0)));
         const TYPE mask = TYPE(0x01 << bitIndex);
         element = (value) ? (element | mask) : (element & (TYPE)(~mask));
     }

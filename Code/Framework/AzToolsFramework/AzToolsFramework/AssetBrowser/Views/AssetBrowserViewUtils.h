@@ -35,7 +35,14 @@ namespace AzToolsFramework
 
             // Returns the custom image or default icon for a given asset browser entry
             // @param returnIcon - when set to true, always returns the default icon for a given entry
-            static QVariant GetThumbnail(const AssetBrowserEntry* entry, bool returnIcon = false);
+            // @param isFavorite - used for folders in the AssetBrowser, will return the favoriteFolder ison rather than a standard folder.
+            static QVariant GetThumbnail(const AssetBrowserEntry* entry, bool returnIcon = false, bool isFavorite = false);
+
+            //! @return the most common flags for an asset browser entry, included drag and drop.
+            static Qt::ItemFlags GetAssetBrowserEntryCommonItemFlags(const AssetBrowserEntry* entry, Qt::ItemFlags defaultFlags);
+
+            //! @return the asset browser entry name with highlighted text
+            static QString GetAssetBrowserEntryNameWithHighlighting(const AssetBrowserEntry* entry, const QString& highlightedText);
         };
     } // namespace AssetBrowser
 

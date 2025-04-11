@@ -26,7 +26,6 @@
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorMenuIdentifiers.h>
 #include <AzToolsFramework/Editor/ActionManagerUtils.h>
-#include <AzToolsFramework/Editor/EditorContextMenuBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
@@ -281,7 +280,7 @@ namespace AzToolsFramework
         {
             ComponentPaletteUtil::ComponentDataTable componentDataTable;
             ComponentPaletteUtil::ComponentIconTable componentIconTable;
-            AZStd::vector<AZ::ComponentServiceType> serviceFilter;
+            AZ::ComponentDescriptor::DependencyArrayType serviceFilter;
 
             ComponentPaletteUtil::BuildComponentTables(serializeContext, AppearsInGameComponentMenu, serviceFilter, componentDataTable, componentIconTable);
 
@@ -366,41 +365,47 @@ namespace AzToolsFramework
         EntityIdList newlyDeselected;
         ExtractEntityIdsFromSelection(deselected, newlyDeselected);
 
-        ScopedUndoBatch undo("Select Entity");
+        // This function could be called during undo/redo, in which case, we don't want to MAKE new undo/redo commands
+        // but we still want to update our own internal state.
+        AZStd::unique_ptr<ScopedUndoBatch> undo;
+        AZStd::unique_ptr<SelectionCommand> selectionCommand;
+        if (!m_isDuringUndoRedo)
+        {
+            // initialize the selection command here to store the current selection before
+            // new entities are selected or deselected below
+            // (SelectionCommand calls GetSelectedEntities in the constructor)
 
-        // initialize the selection command here to store the current selection before
-        // new entities are selected or deselected below
-        // (SelectionCommand calls GetSelectedEntities in the constructor)
-        auto selectionCommand =
-            AZStd::make_unique<SelectionCommand>(AZStd::vector<AZ::EntityId>{}, "");
+            undo = AZStd::make_unique<ScopedUndoBatch>("Select Entity");
+            selectionCommand = AZStd::make_unique<SelectionCommand>(AZStd::vector<AZ::EntityId>{}, "");
+        }
 
+    
         // Add the newly selected and deselected entities from the outliner to the appropriate selection buffer.
         for (const AZ::EntityId& entityId : newlySelected)
         {
             m_entitiesSelectedByOutliner.insert(entityId);
         }
 
-        ToolsApplicationRequestBus::Broadcast(
-            &ToolsApplicationRequests::MarkEntitiesSelected, newlySelected);
+        ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequests::MarkEntitiesSelected, newlySelected);
 
         for (const AZ::EntityId& entityId : newlyDeselected)
         {
             m_entitiesDeselectedByOutliner.insert(entityId);
         }
 
-        ToolsApplicationRequestBus::Broadcast(
-            &ToolsApplicationRequests::MarkEntitiesDeselected, newlyDeselected);
+        ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequests::MarkEntitiesDeselected, newlyDeselected);
 
         // call GetSelectedEntities again after all changes, and then update the selection
         // command  so the 'after' state is valid and up to date
         EntityIdList selectedEntities;
-        ToolsApplicationRequests::Bus::BroadcastResult(
-            selectedEntities, &ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
+        ToolsApplicationRequests::Bus::BroadcastResult(selectedEntities, &ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
 
-        selectionCommand->UpdateSelection(selectedEntities);
-
-        selectionCommand->SetParent(undo.GetUndoBatch());
-        selectionCommand.release();
+        if ((undo) && (selectionCommand))
+        {
+            selectionCommand->UpdateSelection(selectedEntities);
+            selectionCommand->SetParent(undo->GetUndoBatch());
+            selectionCommand.release(); // SetParent is an ownership transfer, the undo batch will now own deletion of this memory.
+        }
 
         m_entitiesDeselectedByOutliner.clear();
         m_entitiesSelectedByOutliner.clear();
@@ -845,6 +850,7 @@ namespace AzToolsFramework
 
     void EntityOutlinerWidget::OnTreeItemDoubleClicked(const QModelIndex& index)
     {
+        AzToolsFramework::EditorRequestBus::Broadcast(&AzToolsFramework::EditorRequestBus::Events::GoToSelectedEntitiesInViewports);
         if (AZ::EntityId entityId = GetEntityIdFromIndex(index); auto entityUiHandler = m_editorEntityUiInterface->GetHandler(entityId))
         {
             entityUiHandler->OnOutlinerItemDoubleClick(index);
@@ -876,10 +882,12 @@ namespace AzToolsFramework
 
     void EntityOutlinerWidget::OnSelectEntity(const AZ::EntityId& entityId, bool selected)
     {
+        bool selectionChanged = false;
         if (selected)
         {
             if (m_entitiesSelectedByOutliner.find(entityId) == m_entitiesSelectedByOutliner.end())
             {
+                selectionChanged = true;
                 m_entitiesToSelect.insert(entityId);
                 m_entitiesToDeselect.erase(entityId);
             }
@@ -888,11 +896,15 @@ namespace AzToolsFramework
         {
             if (m_entitiesDeselectedByOutliner.find(entityId) == m_entitiesDeselectedByOutliner.end())
             {
+                selectionChanged = true;
                 m_entitiesToSelect.erase(entityId);
                 m_entitiesToDeselect.insert(entityId);
             }
         }
-        QueueUpdateSelection();
+        if (selectionChanged)
+        {
+            QueueUpdateSelection();
+        }
     }
 
     void EntityOutlinerWidget::OnEnableSelectionUpdates(bool enable)
@@ -1233,6 +1245,16 @@ namespace AzToolsFramework
         }
 
         QueueScrollToNewContent(GetEntityIdFromIndex(firstSelectedEntityIndex));
+    }
+
+    // ToolsApplicationEventBus handler
+    void EntityOutlinerWidget::BeforeUndoRedo()
+    {
+        m_isDuringUndoRedo = true;
+    }
+    void EntityOutlinerWidget::AfterUndoRedo()
+    {
+        m_isDuringUndoRedo = false;
     }
 
 }

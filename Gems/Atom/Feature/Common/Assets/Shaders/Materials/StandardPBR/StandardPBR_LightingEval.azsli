@@ -17,10 +17,10 @@
 
 #include "../BasePBR/BasePBR_LightingEval.azsli"
 
-void InitializeLightingData_StandardPBR(inout Surface surface, float4 screenPosition, inout LightingData lightingData)
+void InitializeLightingData_StandardPBR(inout Surface surface, float4 screenPosition, float3 viewPosition, inout LightingData lightingData)
 {
     // --- Base PBR ---
-    InitializeLightingData_BasePBR(surface, screenPosition, lightingData);
+    InitializeLightingData_BasePBR(surface, screenPosition, viewPosition, lightingData);
 
     // --- Standard PBR ---
 
@@ -32,15 +32,15 @@ void InitializeLightingData_StandardPBR(inout Surface surface, float4 screenPosi
     if(o_clearCoat_feature_enabled)
     {
         // Clear coat layer has fixed IOR = 1.5 and transparent => F0 = (1.5 - 1)^2 / (1.5 + 1)^2 = 0.04
-        lightingData.diffuseResponse *= 1.0 - (FresnelSchlickWithRoughness(lightingData.NdotV, real3(0.04, 0.04, 0.04), surface.clearCoat.roughness) * surface.clearCoat.factor);
+        lightingData.diffuseResponse *= 1.0 - (FresnelSchlickWithRoughness(lightingData.GetSpecularNdotV(), real3(0.04, 0.04, 0.04), surface.clearCoat.roughness) * surface.clearCoat.factor);
     }
 #endif
 }
 
-LightingData EvaluateLighting_StandardPBR(inout Surface surface, float4 screenPosition)
+LightingData EvaluateLighting_StandardPBR(inout Surface surface, float4 screenPosition, float3 viewPosition)
 {
     LightingData lightingData;
-    InitializeLightingData_StandardPBR(surface, screenPosition, lightingData);
+    InitializeLightingData_StandardPBR(surface, screenPosition, viewPosition, lightingData);
     CalculateLighting_BasePBR(surface, screenPosition, lightingData);
     return lightingData;
 }

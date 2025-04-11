@@ -36,16 +36,9 @@ namespace AzToolsFramework
             Q_OBJECT
 
         public:
-            enum class AssetBrowserSortMode
-            {
-                Name,
-                FileType,
-                LastModified,
-                Size
-            };
-
+            
             AZ_CLASS_ALLOCATOR(AssetBrowserFilterModel, AZ::SystemAllocator);
-            explicit AssetBrowserFilterModel(QObject* parent = nullptr);
+            explicit AssetBrowserFilterModel(QObject* parent = nullptr, bool isTableView = false);
             ~AssetBrowserFilterModel() override;
 
             // QSortFilterProxyModel
@@ -62,8 +55,13 @@ namespace AzToolsFramework
             void OnAssetBrowserComponentReady() override;
             QSharedPointer<const StringFilter> GetStringFilter() const;
 
-            void SetSortMode(const AssetBrowserSortMode sortMode);
-            AssetBrowserSortMode GetSortMode() const;
+            void SetSortMode(const AssetBrowserEntry::AssetEntrySortMode sortMode);
+            AssetBrowserEntry::AssetEntrySortMode GetSortMode() const;
+            void SetSortOrder(const Qt::SortOrder sortOrder);
+            Qt::SortOrder GetSortOrder() const;
+
+            void SetSearchString(const QString& searchString);
+
         Q_SIGNALS:
             void filterChanged();
             //////////////////////////////////////////////////////////////////////////
@@ -86,11 +84,15 @@ namespace AzToolsFramework
             FilterConstType m_filter;
             AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: class '...' needs to have dll-interface to be used by clients of class '...'
             QSharedPointer<const StringFilter> m_stringFilter;
-            QWeakPointer<const CompositeFilter> m_assetTypeFilter;
             QCollator m_collator;  // cache the collator as its somewhat expensive to constantly create and destroy one.
             AZ_POP_DISABLE_WARNING
             bool m_invalidateFilter = false;
-            AssetBrowserSortMode m_sortMode = AssetBrowserSortMode::Name;
+            
+            bool m_isTableView{ false };
+            AssetBrowserEntry::AssetEntrySortMode m_sortMode = AssetBrowserEntry::AssetEntrySortMode::Name;
+            Qt::SortOrder m_sortOrder = Qt::DescendingOrder;
+ 
+            QString m_searchString;
         };
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

@@ -96,6 +96,27 @@ set(FILES
     Include/ScriptCanvas/Internal/Nodes/ExpressionNodeBase.cpp
     Include/ScriptCanvas/Internal/Nodes/StringFormatted.cpp
     Include/ScriptCanvas/Libraries/Libraries.cpp
+    Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactAddNodeable.cpp
+    Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactDecrementNodeable.cpp
+    Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactDivideNodeable.cpp
+    Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactIncrementNodeable.cpp
+    Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactMultiplyNodeable.cpp
+    Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactNegateNodeable.cpp
+    Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactSubtractNodeable.cpp
+    Include/ScriptCanvas/Libraries/Compact/Trigonometry/CompactArccosineNodeable.cpp
+    Include/ScriptCanvas/Libraries/Compact/MathematicalFunctions/CompactCeilingNodeable.cpp
+    Include/ScriptCanvas/Libraries/Compact/MathematicalFunctions/CompactFloorNodeable.cpp
+    Include/ScriptCanvas/Libraries/Compact/MathematicalFunctions/CompactModuloNodeable.cpp
+    Include/ScriptCanvas/Libraries/Compact/MathematicalFunctions/CompactPowerNodeable.cpp
+    Include/ScriptCanvas/Libraries/Compact/MathematicalFunctions/CompactRoundNodeable.cpp
+    Include/ScriptCanvas/Libraries/Compact/MathematicalFunctions/CompactSquareNodeable.cpp
+    Include/ScriptCanvas/Libraries/Compact/MathematicalFunctions/CompactSquareRootNodeable.cpp
+    Include/ScriptCanvas/Libraries/Compact/Trigonometry/CompactArcsineNodeable.cpp
+    Include/ScriptCanvas/Libraries/Compact/Trigonometry/CompactArctangent2Nodeable.cpp
+    Include/ScriptCanvas/Libraries/Compact/Trigonometry/CompactArctangentNodeable.cpp
+    Include/ScriptCanvas/Libraries/Compact/Trigonometry/CompactCosineNodeable.cpp
+    Include/ScriptCanvas/Libraries/Compact/Trigonometry/CompactSineNodeable.cpp
+    Include/ScriptCanvas/Libraries/Compact/Trigonometry/CompactTangentNodeable.cpp
     Include/ScriptCanvas/Libraries/Core/AzEventHandler.cpp
     Include/ScriptCanvas/Libraries/Core/BinaryOperator.cpp
     Include/ScriptCanvas/Libraries/Core/CoreLibrary.cpp
@@ -136,6 +157,7 @@ set(FILES
     Include/ScriptCanvas/Libraries/Math/MathNodeUtilities.cpp
     Include/ScriptCanvas/Libraries/Math/Matrix3x3.cpp
     Include/ScriptCanvas/Libraries/Math/Matrix4x4.cpp
+    Include/ScriptCanvas/Libraries/Math/MatrixMxN.cpp
     Include/ScriptCanvas/Libraries/Math/OBB.cpp
     Include/ScriptCanvas/Libraries/Math/Plane.cpp
     Include/ScriptCanvas/Libraries/Math/Quaternion.cpp
@@ -143,6 +165,7 @@ set(FILES
     Include/ScriptCanvas/Libraries/Math/Vector2.cpp
     Include/ScriptCanvas/Libraries/Math/Vector3.cpp
     Include/ScriptCanvas/Libraries/Math/Vector4.cpp
+    Include/ScriptCanvas/Libraries/Math/VectorN.cpp
     Include/ScriptCanvas/Libraries/Comparison/ComparisonLibrary.cpp
     Include/ScriptCanvas/Libraries/Time/DelayNodeable.cpp
     Include/ScriptCanvas/Libraries/Time/TimeDelayNodeable.cpp

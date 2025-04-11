@@ -51,6 +51,8 @@ namespace ScriptCanvas
         bool IsMatrix3x3(const Type& type);
         bool IsMatrix4x4(const AZ::Uuid& type);
         bool IsMatrix4x4(const Type& type);
+        bool IsMatrixMxN(const AZ::Uuid& type);
+        bool IsMatrixMxN(const Type& type);
         bool IsOBB(const AZ::Uuid& type);
         bool IsOBB(const Type& type);
         bool IsPlane(const AZ::Uuid& type);
@@ -67,6 +69,8 @@ namespace ScriptCanvas
         bool IsVector3(const Type& type);
         bool IsVector4(const AZ::Uuid& type);
         bool IsVector4(const Type& type);
+        bool IsVectorN(const AZ::Uuid& type);
+        bool IsVectorN(const Type& type);
 
         bool IsVectorType(const AZ::Uuid& type);
         bool IsVectorType(const Type& type);
