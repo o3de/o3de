@@ -44,8 +44,8 @@ namespace AzToolsFramework
         CursorModeWrappedY //!< Flags whether the cursor is going to wrap around the source widget only on the top and bottom side.
     };
 
-    AzFramework::InputDeviceId GetSyntheticKeyboardDeviceId(const AzFramework::ViewportId viewportId);
-    AzFramework::InputDeviceId GetSyntheticMouseDeviceId(const AzFramework::ViewportId viewportId);
+    AzFramework::InputDeviceId GetSyntheticKeyboardDeviceId(AzFramework::ViewportId viewportId);
+    AzFramework::InputDeviceId GetSyntheticMouseDeviceId(AzFramework::ViewportId viewportId);
 
     //! Maps events from the Qt input system to synthetic InputChannels in AzFramework
     //! that can be used by AzFramework::ViewportControllers.
@@ -133,6 +133,7 @@ namespace AzToolsFramework
         class EditorQtMouseDevice : public AzFramework::InputDeviceMouse
         {
         public:
+            AZ_CLASS_ALLOCATOR(EditorQtMouseDevice, AZ::SystemAllocator)
             EditorQtMouseDevice(AzFramework::InputDeviceId id);
 
             // AzFramework::InputDeviceMouse overrides ...
@@ -193,10 +194,12 @@ namespace AzToolsFramework
         QPoint m_previousGlobalCursorPosition;
         // The source widget to map events from, used to calculate the relative mouse position within the widget bounds.
         QWidget* m_sourceWidget;
-        // Flags whether or not Qt events should currently be processed.
-        bool m_enabled = true;
         // Controls the cursor behavior.
         AzToolsFramework::CursorInputMode m_cursorMode = AzToolsFramework::CursorInputMode::CursorModeNone;
+        // The viewport id this input mapper is associated with.
+        AzFramework::ViewportId m_viewportId = AzFramework::InvalidViewportId;
+        // Flags whether or not Qt events should currently be processed.
+        bool m_enabled = true;
         // Flags whether the cursor has been overridden.
         bool m_overrideCursor = false;
 

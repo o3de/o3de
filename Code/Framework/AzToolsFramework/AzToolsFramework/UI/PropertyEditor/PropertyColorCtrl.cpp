@@ -246,9 +246,11 @@ namespace AzToolsFramework
     {
         // Update the color but don't need to update the dialog color since
         // this signal came from the dialog
-        SetColor(color, false);
-
-        emit valueChanged(m_color);
+        if (m_color != color)
+        {
+            SetColor(color, false);
+            emit valueChanged(m_color);
+        }
     }
 
     QColor PropertyColorCtrl::convertFromString(const QString& string)
@@ -328,7 +330,7 @@ namespace AzToolsFramework
 
     void AZColorPropertyHandler::ConsumeAttribute(PropertyColorCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName)
     {
-        if (attrib == AZ_CRC("AlphaChannel", 0xa0cab5cf))
+        if (attrib == AZ_CRC_CE("AlphaChannel"))
         {
             bool alphaChannel;
             if (attrValue->Read<bool>(alphaChannel))
@@ -344,7 +346,7 @@ namespace AzToolsFramework
         // Unlike other property editors that are configured through a collection of attributes attributes, PropertyColorCtrl uses a single ColorEditorConfiguration
         // attribute that encompasses many settings. This is because ColorEditorConfiguration's settings are closely related to each other, and if a widget needs
         // to set one of these settings, it likely needs to set all of the settings. So it's less cumbersome to just group them all together.
-        else if (attrib == AZ_CRC("ColorEditorConfiguration", 0xc8b9510e))
+        else if (attrib == AZ_CRC_CE("ColorEditorConfiguration"))
         {
             ColorEditorConfiguration config;
             if (attrValue->Read<ColorEditorConfiguration>(config))
@@ -358,6 +360,7 @@ namespace AzToolsFramework
     void PropertyColorCtrl::SetColorEditorConfiguration(const ColorEditorConfiguration& configuration)
     {
         m_config = configuration;
+        setAlphaChannelEnabled(m_config.m_colorPickerDialogConfiguration == AzQtComponents::ColorPicker::Configuration::RGBA);
     }
 
     QColor PropertyColorCtrl::TransformColor(const QColor& color, uint32_t fromColorSpaceId, uint32_t toColorSpaceId) const
@@ -405,7 +408,7 @@ namespace AzToolsFramework
         PropertyColorCtrl* newCtrl = aznew PropertyColorCtrl(pParent);
         connect(newCtrl, &PropertyColorCtrl::valueChanged, this, [newCtrl]()
             {
-                EBUS_EVENT(PropertyEditorGUIMessages::Bus, RequestWrite, newCtrl);
+                PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Events::RequestWrite, newCtrl);
             });
         connect(newCtrl, &PropertyColorCtrl::editingFinished, this, [newCtrl]()
             {
@@ -444,8 +447,10 @@ namespace AzToolsFramework
     ////////////////////////////////////////////////////////////////
     void RegisterColorPropertyHandlers()
     {
-        EBUS_EVENT(PropertyTypeRegistrationMessages::Bus, RegisterPropertyType, aznew Vector3ColorPropertyHandler());
-        EBUS_EVENT(PropertyTypeRegistrationMessages::Bus, RegisterPropertyType, aznew AZColorPropertyHandler());
+        PropertyTypeRegistrationMessages::Bus::Broadcast(
+            &PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew Vector3ColorPropertyHandler());
+        PropertyTypeRegistrationMessages::Bus::Broadcast(
+            &PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew AZColorPropertyHandler());
     }
 
 }

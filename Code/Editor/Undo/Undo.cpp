@@ -13,8 +13,6 @@
 
 #include "Settings.h"
 #include "IUndoManagerListener.h"
-#include "Objects/ObjectManager.h"
-#include <Include/ILogFile.h>
 #include <list>
 
 #include <QString>
@@ -308,7 +306,7 @@ void CUndoManager::Redo(int numSteps)
 
     if (m_bRecording || m_bSuperRecording)
     {
-        GetIEditor()->GetLogFile()->FormatLine("Cannot Redo while Recording");
+        AZ_Warning("CUndoManager", false, "Cannot Redo while Recording");
         return;
     }
 
@@ -324,6 +322,13 @@ void CUndoManager::Redo(int numSteps)
             m_bRedoing = true;
             CUndoStep* redo = m_redoStack.back();
             redo->Redo();
+
+            AZ_Printf("CUndoManager",
+                "(Undo: %d, Redo: %d) - Redo last operation: '%s'",
+                m_undoStack.size(),
+                m_redoStack.size(),
+                redo->GetName().toUtf8().constData());
+
             m_redoStack.pop_back();
             // Push undo object to redo stack.
             m_undoStack.push_back(redo);
@@ -335,8 +340,6 @@ void CUndoManager::Redo(int numSteps)
     {
         GetIEditor()->UpdateViews(eUpdateObjects);
     }
-    GetIEditor()->GetLogFile()->FormatLine("Redo (Undo:%d,Redo:%d)", m_undoStack.size(), m_redoStack.size());
-    GetIEditor()->GetObjectManager()->InvalidateVisibleList();
 
     m_bRedoing = true;
     EndUndoTransaction();
@@ -363,7 +366,7 @@ void CUndoManager::Undo(int numSteps)
 
     if (m_bRecording || m_bSuperRecording)
     {
-        GetIEditor()->GetLogFile()->FormatLine("Cannot Undo while Recording");
+        AZ_Warning("CUndoManager", false, "Cannot Undo while Recording");
         return;
     }
 
@@ -379,6 +382,13 @@ void CUndoManager::Undo(int numSteps)
             m_bUndoing = true;
             CUndoStep* undo = m_undoStack.back();
             undo->Undo(true);
+
+            AZ_Printf("CUndoManager",
+                "(Undo: %d, Redo: %d) - Undo last operation: '%s'",
+                m_undoStack.size(),
+                m_redoStack.size(),
+                undo->GetName().toUtf8().constData());
+
             m_undoStack.pop_back();
             // Push undo object to redo stack.
             m_redoStack.push_back(undo);
@@ -391,8 +401,6 @@ void CUndoManager::Undo(int numSteps)
     {
         GetIEditor()->UpdateViews(eUpdateObjects);
     }
-    GetIEditor()->GetLogFile()->FormatLine("Undo (Undo:%d,Redo:%d)", m_undoStack.size(), m_redoStack.size());
-    GetIEditor()->GetObjectManager()->InvalidateVisibleList();
 
     m_bUndoing = true;
     EndUndoTransaction();

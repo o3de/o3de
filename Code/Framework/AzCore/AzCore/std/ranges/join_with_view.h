@@ -426,7 +426,7 @@ namespace AZStd::ranges
         }
 
 
-        friend constexpr void iter_swap(iterator& x, iterator& y)
+        friend constexpr void iter_swap(const iterator& x, const iterator& y)
         {
             visit(ranges::iter_swap, x.m_innerIter, y.m_innerIter);
         }

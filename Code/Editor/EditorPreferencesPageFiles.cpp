@@ -9,6 +9,8 @@
 
 #include "EditorPreferencesPageFiles.h"
 
+#include <AzCore/Serialization/EditContext.h>
+
 // AzToolsFramework
 #include <AzToolsFramework/Slice/SliceUtilities.h>
 
@@ -64,7 +66,7 @@ void CEditorPreferencesPage_Files::Reflect(AZ::SerializeContext& serialize)
             ->Attribute(AZ::Edit::Attributes::Min, 1)
             ->Attribute(AZ::Edit::Attributes::Max, 100)
             ->DataElement(AZ::Edit::UIHandlers::LineEdit, &Files::m_standardTempDirectory, "Standard Temporary Directory", "Standard Temporary Directory")
-            ->DataElement(AZ::Edit::UIHandlers::LineEdit, &Files::m_saveLocation, "Slice Save location", "Specify the default location to save new slices");
+            ->DataElement(AZ::Edit::UIHandlers::LineEdit, &Files::m_saveLocation, "UI Slice Save location", "Specify the default location to save new UI slices");
 
         editContext->Class<ExternalEditors>("External Editors", "External Editors")
             ->DataElement(AZ::Edit::UIHandlers::ExeSelectBrowseEdit, &ExternalEditors::m_scripts, "Scripts Editor", "Scripts Text Editor")
@@ -92,7 +94,7 @@ void CEditorPreferencesPage_Files::Reflect(AZ::SerializeContext& serialize)
 
         editContext->Class<CEditorPreferencesPage_Files>("File Preferences", "Class for handling File Preferences")
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-            ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC("PropertyVisibility_ShowChildrenOnly", 0xef428f20))
+            ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC_CE("PropertyVisibility_ShowChildrenOnly"))
             ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_Files::m_files, "Files", "File Preferences")
             ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_Files::m_editors, "External Editors", "External Editors")
             ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_Files::m_autoBackup, "Auto Backup", "Auto Backup")
@@ -117,7 +119,7 @@ void CEditorPreferencesPage_Files::OnApply()
 {
     using namespace AzToolsFramework::SliceUtilities;
 
-    auto sliceSettings = AZ::UserSettings::CreateFind<SliceUserSettings>(AZ_CRC("SliceUserSettings", 0x055b32eb), AZ::UserSettings::CT_LOCAL);
+    auto sliceSettings = AZ::UserSettings::CreateFind<SliceUserSettings>(AZ_CRC_CE("SliceUserSettings"), AZ::UserSettings::CT_LOCAL);
     sliceSettings->m_autoNumber = m_files.m_autoNumberSlices;
     sliceSettings->m_saveLocation = m_files.m_saveLocation;
 
@@ -142,7 +144,7 @@ void CEditorPreferencesPage_Files::OnApply()
 void CEditorPreferencesPage_Files::InitializeSettings()
 {
     using namespace AzToolsFramework::SliceUtilities;
-    auto sliceSettings = AZ::UserSettings::CreateFind<SliceUserSettings>(AZ_CRC("SliceUserSettings", 0x055b32eb), AZ::UserSettings::CT_LOCAL);
+    auto sliceSettings = AZ::UserSettings::CreateFind<SliceUserSettings>(AZ_CRC_CE("SliceUserSettings"), AZ::UserSettings::CT_LOCAL);
 
     m_files.m_autoNumberSlices = sliceSettings->m_autoNumber;
     m_files.m_saveLocation = sliceSettings->m_saveLocation;

@@ -13,7 +13,9 @@
 
 #include <Atom/RPI.Public/Buffer/BufferSystemInterface.h>
 
+#include <Atom/RPI.Reflect/Allocators.h>
 #include <Atom/RPI.Reflect/Asset/AssetHandler.h>
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/ResourcePoolAsset.h>
 
 #include <AzCore/std/containers/span.h>
@@ -28,18 +30,20 @@ namespace AZ
     {
         //! An asset representation of a buffer meant to be uploaded to the GPU.
         //! For example: vertex buffer, index buffer, etc
-        class BufferAsset final
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+        class ATOM_RPI_REFLECT_API BufferAsset final
             : public Data::AssetData
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             friend class BufferAssetCreator;
 
         public:
-            static const char* DisplayName;
-            static const char* Extension;
-            static const char* Group;
+            static constexpr const char* DisplayName{ "BufferAsset" };
+            static constexpr const char* Group{ "Buffer" };
+            static constexpr const char* Extension{ "azbuffer" };
 
             AZ_RTTI(BufferAsset, "{F6C5EA8A-1DB3-456E-B970-B6E2AB262AED}", Data::AssetData);
-            AZ_CLASS_ALLOCATOR(BufferAsset, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR_DECL;
 
             static void Reflect(AZ::ReflectContext* context);
 
@@ -60,9 +64,16 @@ namespace AZ
             const AZStd::string& GetName() const;
 
         private:
+            using Allocator = BufferAssetAllocator_for_std_t;
+
             // AssetData overrides...
             bool HandleAutoReload() override
             {
+                // Automatic asset reloads via the AssetManager are disabled for Atom models and their dependent assets because reloads
+                // need to happen in a specific order to refresh correctly. They require more complex code than what the default
+                // AssetManager reloading provides. See ModelReloader() for the actual handling of asset reloads.
+                // Models need to be loaded via the MeshFeatureProcessor to reload correctly, and reloads can be listened
+                // to by using MeshFeatureProcessor::ConnectModelChangeEventHandler().
                 return false;
             }
 
@@ -71,7 +82,7 @@ namespace AZ
 
             AZStd::string m_name;
 
-            AZStd::vector<uint8_t> m_buffer;
+            AZStd::vector<uint8_t, Allocator> m_buffer;
 
             RHI::BufferDescriptor m_bufferDescriptor;
 

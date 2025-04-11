@@ -21,7 +21,7 @@ namespace ScriptCanvas
         , public HighlightVariableEffect
     {
     public:
-        AZ_CLASS_ALLOCATOR(InvalidVariableTypeEvent, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(InvalidVariableTypeEvent, AZ::SystemAllocator);
         AZ_RTTI(InvalidVariableTypeEvent, "{85670BDB-ED14-44BC-A7F1-FFF0D749EF72}", ValidationEvent, HighlightVariableEffect);
         
         InvalidVariableTypeEvent(const VariableId& variableId)

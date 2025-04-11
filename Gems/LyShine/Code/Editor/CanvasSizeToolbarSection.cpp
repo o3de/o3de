@@ -520,7 +520,7 @@ void ReferenceCanvasSizeToolbarSection::SetCanvasSizeByComboBoxIndex()
     AZ::Vector2 canvasSize(aznumeric_cast<float>(m_canvasSizePresets[comboIndex].width), aznumeric_cast<float>(m_canvasSizePresets[comboIndex].height));
 
     // set the canvas size on the canvas entity being edited
-    EBUS_EVENT_ID(m_editorWindow->GetCanvas(), UiCanvasBus, SetCanvasSize, canvasSize);
+    UiCanvasBus::Event(m_editorWindow->GetCanvas(), &UiCanvasBus::Events::SetCanvasSize, canvasSize);
     m_editorWindow->GetViewport()->GetViewportInteraction()->CenterCanvasInViewport(&canvasSize);
     m_editorWindow->GetViewport()->Refresh();
 }

@@ -26,7 +26,7 @@ namespace AzToolsFramework
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(PropertyCRCCtrl, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PropertyCRCCtrl, AZ::SystemAllocator);
 
         PropertyCRCCtrl(QWidget* pParent = NULL);
         virtual ~PropertyCRCCtrl();
@@ -70,7 +70,7 @@ namespace AzToolsFramework
         , public CRC32HandlerCommon<AZ::u32>
     {
     public:
-        AZ_CLASS_ALLOCATOR(U32CRCHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(U32CRCHandler, AZ::SystemAllocator);
 
         QWidget* CreateGUI(QWidget* pParent) override;
         bool IsDefaultHandler() const override { return false; }
@@ -84,7 +84,7 @@ namespace AzToolsFramework
         , public CRC32HandlerCommon<AZ::Crc32>
     {
     public:
-        AZ_CLASS_ALLOCATOR(CRC32Handler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CRC32Handler, AZ::SystemAllocator);
 
         QWidget* CreateGUI(QWidget* pParent) override;
         bool IsDefaultHandler() const override { return true; }

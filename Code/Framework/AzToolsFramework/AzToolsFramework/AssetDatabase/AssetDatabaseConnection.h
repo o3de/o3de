@@ -73,6 +73,8 @@ namespace AzToolsFramework
             ChangedSourceDependencySourceColumn,
             SplitMaterialBuilderAndMaterialAssetBuilder,
             NewMaterialTypeBuildPipeline,
+            AddedJobFailureSourceColumn,
+            AddedMissingDependenciesIndex,
             //Add all new versions before this
             DatabaseVersionCount,
             LatestVersion = DatabaseVersionCount - 1
@@ -187,6 +189,8 @@ namespace AzToolsFramework
             AZ::Uuid m_builderGuid;
             AssetSystem::JobStatus m_status = AssetSystem::JobStatus::Queued;
             AZ::u64 m_jobRunKey = 0;
+            AZ::s64 m_failureCauseSourcePK = InvalidEntryId;
+            AZ::u32 m_failureCauseFingerprint = 0;
             AZ::s64 m_firstFailLogTime = 0;
             AZStd::string m_firstFailLogFile;
             AZ::s64 m_lastFailLogTime = 0;
@@ -215,7 +219,7 @@ namespace AzToolsFramework
             };
 
             SourceFileDependencyEntry() = default;
-            SourceFileDependencyEntry(AZ::Uuid builderGuid, AZ::Uuid sourceGuid, PathOrUuid dependsOnSource, TypeOfDependency dependencyType, AZ::u32 fromAssetId, const char* subIds);
+            SourceFileDependencyEntry(AZ::Uuid builderGuid, AZ::Uuid sourceGuid, PathOrUuid dependsOnSource, TypeOfDependency dependencyType, bool fromAssetId, const char* subIds);
 
             AZStd::string ToString() const;
             auto GetColumns();
@@ -243,7 +247,15 @@ namespace AzToolsFramework
                 AZ::Data::AssetType assetType, AZ::Uuid legacyGuid = AZ::Uuid::CreateNull(), AZ::u64 hash = 0, AZStd::bitset<64> flags = 0);
             AZ_DEFAULT_COPY_MOVE(ProductDatabaseEntry);
 
+            // Literal, all-fields equality operator.
+            // This includes the hash of the file and its flags.  Use IsSameLogicalProductAs instead, if you need to
+            //  compare whether its represents the same product as the other rather than identical in every way (including file data).
             bool operator==(const ProductDatabaseEntry& other) const;
+
+            //! Logical equality compare.
+            //! It will return true if the fields that establish the identify of a product are identical, regardless
+            //! of the equality of things like its flags and hash.
+            bool IsSameLogicalProductAs(const ProductDatabaseEntry& other) const;
 
             AZStd::string ToString() const;
             auto GetColumns();
@@ -458,7 +470,7 @@ namespace AzToolsFramework
         class AssetDatabaseConnection : public SQLite::SQLiteQueryLogBus::Handler
         {
         public:
-            AZ_CLASS_ALLOCATOR(AssetDatabaseConnection, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AssetDatabaseConnection, AZ::SystemAllocator);
 
             AssetDatabaseConnection();
             virtual ~AssetDatabaseConnection();
@@ -574,6 +586,7 @@ namespace AzToolsFramework
             bool QueryJobByJobRunKey(AZ::u64 jobRunKey, jobHandler handler);
             bool QueryJobByProductID(AZ::s64 productID, jobHandler handler);
             bool QueryJobBySourceID(AZ::s64 sourceID, jobHandler handler, AZ::Uuid builderGuid = AZ::Uuid::CreateNull(), const char* jobKey = nullptr, const char* platform = nullptr, AssetSystem::JobStatus status = AssetSystem::JobStatus::Any);
+            bool QueryJobsByFailureCauseSourceID(AZ::s64 sourceID, jobHandler handler);
 
             //product
             bool QueryProductByProductID(AZ::s64 productID, productHandler handler);
@@ -585,6 +598,7 @@ namespace AzToolsFramework
             bool QueryProductLikeProductName(const char* likeProductName, LikeType likeType, productHandler handler, AZ::Uuid builderGuid = AZ::Uuid::CreateNull(), const char* jobKey = nullptr, const char* platform = nullptr, AssetSystem::JobStatus status = AssetSystem::JobStatus::Any);
 
             bool QueryProductBySourceName(const char* exactSourceName, productHandler handler, AZ::Uuid builderGuid = AZ::Uuid::CreateNull(), const char* jobKey = nullptr, const char* platform = nullptr, AssetSystem::JobStatus status = AssetSystem::JobStatus::Any);
+            bool QueryProductBySourceNameScanFolderID(const char* exactSourceName, AZ::s64 scanFolderID, productHandler handler, AZ::Uuid builderGuid = AZ::Uuid::CreateNull(), const char* jobKey = nullptr, const char* platform = nullptr, AssetSystem::JobStatus status = AssetSystem::JobStatus::Any);
             bool QueryProductLikeSourceName(const char* likeSourceName, LikeType likeType, productHandler handler, AZ::Uuid builderGuid = AZ::Uuid::CreateNull(), const char* jobKey = nullptr, const char* platform = nullptr, AssetSystem::JobStatus status = AssetSystem::JobStatus::Any);
             bool QueryProductByJobIDSubID(AZ::s64 jobID, AZ::u32 subId, productHandler handler);
 
@@ -612,7 +626,9 @@ namespace AzToolsFramework
 
 
             //SourceDependency
-            /// direct query - look up table row by row ID
+            //! Query all source dependencies
+            bool QuerySourceDependencies(sourceFileDependencyHandler handler);
+            //! direct query - look up table row by row ID
             bool QuerySourceDependencyBySourceDependencyId(AZ::s64 sourceDependencyID, sourceFileDependencyHandler handler);
 
             //! Query sources which depend on 'dependsOnSource'

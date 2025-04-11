@@ -122,7 +122,7 @@ namespace EMotionFX
         Vector4ParameterT
     >;
 
-    TYPED_TEST_CASE(CanSetParameterToDefaultValueWhenInGroupFixture, TypesToTest);
+    TYPED_TEST_SUITE(CanSetParameterToDefaultValueWhenInGroupFixture, TypesToTest);
 
     TYPED_TEST(CanSetParameterToDefaultValueWhenInGroupFixture, CanSetParameterToDefaultValueWhenInGroup)
     {
@@ -139,7 +139,7 @@ namespace EMotionFX
             R"(CreateMotionSet -name CanSetParameterToDefaultValueWhenInGroupMotionSet -motionSetID 200)",
             R"(CreateAnimGraph -animGraphID 100)",
             R"(AnimGraphAddGroupParameter -animGraphID 100 -name GroupParam)",
-            R"(AnimGraphCreateParameter -animGraphID 100 -parent GroupParam -name Param -type )" + azrtti_typeid<ParameterT>().template ToString<std::string>(),
+            R"(AnimGraphCreateParameter -animGraphID 100 -parent GroupParam -name Param -type )" + std::string(azrtti_typeid<ParameterT>().ToFixedString().c_str()),
             R"(ActivateAnimGraph -animGraphID 100 -motionSetID 200 -actorInstanceID )" + std::to_string(actorInstance->GetID()),
         });
 

@@ -621,6 +621,26 @@ namespace AzFramework
 
         //---------------------------------------------------------------------
 
+        unsigned int UpdateSourceControlStatusRequest::GetMessageType() const
+        {
+            return MessageType;
+        }
+
+        void UpdateSourceControlStatusRequest::Reflect(AZ::ReflectContext* context)
+        {
+            auto serialize = azrtti_cast<AZ::SerializeContext*>(context);
+            if (serialize)
+            {
+                serialize->Class<UpdateSourceControlStatusRequest>()
+                    ->Version(1)
+                    ->Field("SourceControlEnabled", &UpdateSourceControlStatusRequest::m_sourceControlEnabled);
+            }
+        }
+
+        //---------------------------------------------------------------------
+
+        //---------------------------------------------------------------------
+
         unsigned int ShowAssetInAssetProcessorRequest::GetMessageType() const
         {
             return MessageType;
@@ -1515,10 +1535,11 @@ namespace AzFramework
         }
 
         AssetChangeReportRequest::AssetChangeReportRequest(
-            const AZ::OSString& fromPath, const AZ::OSString& toPath, ChangeType changeType)
+            const AZ::OSString& fromPath, const AZ::OSString& toPath, ChangeType changeType, bool isFolder)
             : m_fromPath(fromPath)
             , m_toPath(toPath)
             , m_type(changeType)
+            , m_isFolder(isFolder)
         {
         }
 
@@ -1537,13 +1558,14 @@ namespace AzFramework
                     ->Version(1)
                     ->Field("FromPath", &AssetChangeReportRequest::m_fromPath)
                     ->Field("ToPath", &AssetChangeReportRequest::m_toPath)
-                    ->Field("ChangeType", &AssetChangeReportRequest::m_type);
-
+                    ->Field("ChangeType", &AssetChangeReportRequest::m_type)
+                    ->Field("IsFolder", &AssetChangeReportRequest::m_isFolder);
             }
         }
 
-        AssetChangeReportResponse::AssetChangeReportResponse(AZStd::vector<AZStd::string> lines)
+        AssetChangeReportResponse::AssetChangeReportResponse(AZStd::vector<AZStd::string> lines, bool success)
             : m_lines(lines)
+            , m_success(success)
         {
         }
 
@@ -1558,8 +1580,9 @@ namespace AzFramework
             if (serialize)
             {
                 serialize->Class<AssetChangeReportResponse, BaseAssetProcessorMessage>()
-                    ->Version(1)
-                    ->Field("Report", &AssetChangeReportResponse::m_lines);
+                    ->Version(2)
+                    ->Field("Report", &AssetChangeReportResponse::m_lines)
+                    ->Field("Success", &AssetChangeReportResponse::m_success);
             }
         }
 
@@ -1584,13 +1607,12 @@ namespace AzFramework
             if (serialize)
             {
                 serialize->Class<AssetNotificationMessage, BaseAssetProcessorMessage>()
-                    ->Version(6)
+                    ->Version(7)
                     ->Field("StringData", &AssetNotificationMessage::m_data)
                     ->Field("NotificationType", &AssetNotificationMessage::m_type)
                     ->Field("size", &AssetNotificationMessage::m_sizeBytes)
                     ->Field("assetId", &AssetNotificationMessage::m_assetId)
                     ->Field("assetType", &AssetNotificationMessage::m_assetType)
-                    ->Field("legacyAssetIds", &AssetNotificationMessage::m_legacyAssetIds)
                     ->Field("dependencies", &AssetNotificationMessage::m_dependencies)
                     ->Field("platform", &AssetNotificationMessage::m_platform);
             }

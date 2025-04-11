@@ -30,7 +30,6 @@ namespace MultiplayerCompression
             {
                 ec->Class<MultiplayerCompressionSystemComponent>("MultiplayerCompression", "Provides packet compression via an open source library for the Multiplayer Gem")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }
@@ -39,23 +38,30 @@ namespace MultiplayerCompression
 
     void MultiplayerCompressionSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("MultiplayerCompressionService"));
+        provided.push_back(AZ_CRC_CE("MultiplayerCompressionService"));
     }
 
     void MultiplayerCompressionSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("MultiplayerCompressionService"));
+        incompatible.push_back(AZ_CRC_CE("MultiplayerCompressionService"));
     }
 
-    MultiplayerCompressionSystemComponent::MultiplayerCompressionSystemComponent()
+    void MultiplayerCompressionSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        m_multiplayerCompressionFactory = new MultiplayerCompressionFactory();
-        AZ::Interface<AzNetworking::INetworking>::Get()->RegisterCompressorFactory(m_multiplayerCompressionFactory);
+        required.push_back(AZ_CRC_CE("NetworkingService"));  // Required for getting AzNetworking::INetworking interface
     }
 
-    MultiplayerCompressionSystemComponent::~MultiplayerCompressionSystemComponent()
+    void MultiplayerCompressionSystemComponent::Activate()
     {
-        AZ::Interface<AzNetworking::INetworking>::Get()->UnregisterCompressorFactory(m_multiplayerCompressionFactory->GetFactoryName());
-        delete m_multiplayerCompressionFactory;
+        // The registering class is responsible for managing the lifetime of the factory.
+        // We'll save the factory name required for unregistering later, but not manage the pointer ourselves.
+        auto* compressionFactory = new MultiplayerCompressionFactory();
+        m_multiplayerCompressionFactoryName = compressionFactory->GetFactoryName();
+        AZ::Interface<AzNetworking::INetworking>::Get()->RegisterCompressorFactory(compressionFactory);
+    }
+
+    void MultiplayerCompressionSystemComponent::Deactivate()
+    {
+        AZ::Interface<AzNetworking::INetworking>::Get()->UnregisterCompressorFactory(m_multiplayerCompressionFactoryName);
     }
 }

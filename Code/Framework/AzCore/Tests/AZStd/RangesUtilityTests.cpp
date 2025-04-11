@@ -17,7 +17,7 @@
 namespace UnitTest
 {
     class RangesUtilityTestFixture
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {};
 
 

@@ -46,9 +46,9 @@ namespace AZ
     void UserSettingsComponent::Load()
     {
         AZStd::string settingsPath;
-        EBUS_EVENT_RESULT(settingsPath, UserSettingsFileLocatorBus, ResolveFilePath, m_providerId);
+        UserSettingsFileLocatorBus::BroadcastResult(settingsPath, &UserSettingsFileLocatorBus::Events::ResolveFilePath, m_providerId);
         SerializeContext* serializeContext = nullptr;
-        EBUS_EVENT_RESULT(serializeContext, ComponentApplicationBus, GetSerializeContext);
+        ComponentApplicationBus::BroadcastResult(serializeContext, &ComponentApplicationBus::Events::GetSerializeContext);
         AZ_Warning("UserSettings", serializeContext != nullptr, "Failed to retrieve the serialization context. User settings cannot be loaded.");
         if (!settingsPath.empty() && serializeContext != nullptr)
         {
@@ -60,9 +60,9 @@ namespace AZ
     void UserSettingsComponent::Save()
     {
         AZStd::string settingsPath;
-        EBUS_EVENT_RESULT(settingsPath, UserSettingsFileLocatorBus, ResolveFilePath, m_providerId);
+        UserSettingsFileLocatorBus::BroadcastResult(settingsPath, &UserSettingsFileLocatorBus::Events::ResolveFilePath, m_providerId);
         SerializeContext* serializeContext = nullptr;
-        EBUS_EVENT_RESULT(serializeContext, ComponentApplicationBus, GetSerializeContext);
+        ComponentApplicationBus::BroadcastResult(serializeContext, &ComponentApplicationBus::Events::GetSerializeContext);
         AZ_Warning("UserSettings", serializeContext != nullptr, "Failed to retrieve the serialization context. User settings cannot be stored.");
         if (!settingsPath.empty() && serializeContext != nullptr)
         {
@@ -83,13 +83,7 @@ namespace AZ
     //-----------------------------------------------------------------------------
     void UserSettingsComponent::GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("UserSettingsService", 0xa0eadff5));
-    }
-
-    //-----------------------------------------------------------------------------
-    void UserSettingsComponent::GetDependentServices(ComponentDescriptor::DependencyArrayType& dependent)
-    {
-        dependent.push_back(AZ_CRC("MemoryService", 0x5c4d473c));
+        provided.push_back(AZ_CRC_CE("UserSettingsService"));
     }
 
     //-----------------------------------------------------------------------------
@@ -114,7 +108,6 @@ namespace AZ
                     "User Settings", "Provides userdata storage for all system components")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Editor")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &UserSettingsComponent::m_providerId, "ProviderId", "The settings group this provider with handle.")
                         ->EnumAttribute(UserSettings::CT_LOCAL, "Local")
                         ->EnumAttribute(UserSettings::CT_GLOBAL, "Global")

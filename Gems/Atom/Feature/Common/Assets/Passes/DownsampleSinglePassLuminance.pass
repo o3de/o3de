@@ -1,0 +1,68 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "DownsampleSinglePassLuminanceTemplate",
+            "PassClass": "DownsampleSinglePassLuminancePass",
+            "PassData": {
+                "$type": "ComputePassData",
+                "FullscreenDispatch": false,
+                "ShaderAsset": {
+                    "FilePath": "Shaders/PostProcessing/DownsampleSinglePassLuminance.shader" 
+                }
+            },
+            "Slots": [
+                {
+                    "Name": "Input",
+                    "SlotType": "Input",
+                    "ShaderInputName": "m_inputImage",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ImageViewDesc": {
+                        "MipSliceMin": "0",
+                        "MipSliceMax": "0"
+                    }
+                },                
+                {
+                    "Name": "Output",
+                    "SlotType": "Output",
+                    "ShaderInputName": "m_imageDestination",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ImageViewDesc": {
+                        "MipSliceMin": 0,
+                        "MipSliceMax": 12
+                    }
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "LuminanceMinAvgMax",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "This",
+                            "Attachment": "Input"
+                        },
+                        "Multipliers": {
+                            "WidthMultiplier": 0.5,
+                            "HeightMultiplier": 0.5
+                        }
+                    },
+                    "ImageDescriptor": {
+                        "Format": "R16G16B16A16_FLOAT"
+                    },
+                    "GenerateFullMipChain": true
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "Output",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "LuminanceMinAvgMax"
+                    }
+                }
+            ]
+        }
+    }
+}

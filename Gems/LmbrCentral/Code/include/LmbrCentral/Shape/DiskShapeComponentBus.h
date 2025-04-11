@@ -29,7 +29,7 @@ namespace LmbrCentral
         : public ShapeComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(DiskShapeConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DiskShapeConfig, AZ::SystemAllocator);
         AZ_RTTI(DiskShapeConfig, "{24EC2919-F198-4871-8404-F6DE8A16275E}", ShapeComponentConfig);
         
         static void Reflect(AZ::ReflectContext* context);
@@ -45,17 +45,17 @@ namespace LmbrCentral
         : public AZ::ComponentBus
     {
     public:
-        virtual DiskShapeConfig GetDiskConfiguration() = 0;
+        virtual const DiskShapeConfig& GetDiskConfiguration() const = 0;
 
         //! @brief Returns the radius for the disk shape component.
-        virtual float GetRadius() = 0;
+        virtual float GetRadius() const = 0;
 
         //! @brief Sets the radius for the disk shape component.
         //! @param radius new Radius of the disk shape.
         virtual void SetRadius(float radius) = 0;
 
         //! @brief Convenience function that returns the facing normal for the disk determined by the transform component.
-        virtual const AZ::Vector3& GetNormal() = 0;
+        virtual const AZ::Vector3& GetNormal() const = 0;
 
     };
 

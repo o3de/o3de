@@ -42,7 +42,6 @@ namespace RemoteTools
             {
                 ec->Class<RemoteToolsSystemComponent>("RemoteTools", "[Description of functionality provided by this System Component]")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }
@@ -95,7 +94,6 @@ namespace RemoteTools
 
     void RemoteToolsSystemComponent::Activate()
     {
-        m_outboxThread = AZStd::make_unique<RemoteToolsOutboxThread>(remote_outbox_interval);
         m_joinThread = AZStd::make_unique<RemoteToolsJoinThread>(remote_join_interval, this);
         AZ::SystemTickBus::Handler::BusConnect();
     }
@@ -104,7 +102,6 @@ namespace RemoteTools
     {
         AZ::SystemTickBus::Handler::BusDisconnect();
         m_joinThread = nullptr;
-        m_outboxThread = nullptr;
         if (AzNetworking::INetworking* networking = AZ::Interface<AzNetworking::INetworking>::Get())
         {
             for (auto registryIt = m_entryRegistry.begin(); registryIt != m_entryRegistry.end(); ++registryIt)
@@ -117,6 +114,15 @@ namespace RemoteTools
 
     void RemoteToolsSystemComponent::OnSystemTick()
     {
+        if (!m_messageTypesToClearForNextTick.empty())
+        {
+            for (const AZ::Crc32& key : m_messageTypesToClearForNextTick)
+            {
+                ClearReceivedMessages(key);
+            }
+            m_messageTypesToClearForNextTick.clear();
+        }
+
         // Join thread can stop itself, check if it needs to join
         if (m_joinThread && !m_joinThread->IsRunning())
         {
@@ -141,7 +147,7 @@ namespace RemoteTools
             netInterface->SetTimeoutMs(AZ::TimeMs(0));
         }
 
-        if (!m_joinThread->IsRunning())
+        if (m_joinThread && !m_joinThread->IsRunning())
         {
             m_joinThread->Join();
             m_joinThread->Start();
@@ -185,6 +191,11 @@ namespace RemoteTools
         {
             m_inbox.at(key).clear();
         }
+    }
+
+    void RemoteToolsSystemComponent::ClearReceivedMessagesForNextTick(AZ::Crc32 key)
+    {
+        m_messageTypesToClearForNextTick.insert(key);
     }
 
     void RemoteToolsSystemComponent::RegisterRemoteToolsEndpointJoinedHandler(
@@ -315,35 +326,8 @@ namespace RemoteTools
     void RemoteToolsSystemComponent::SendRemoteToolsMessage(
         const AzFramework::RemoteToolsEndpointInfo& target, const AzFramework::RemoteToolsMessage& msg)
     {
-        AZ::SerializeContext* serializeContext;
-        EBUS_EVENT_RESULT(serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
-
-        // Messages targeted at our own application just transfer right over to the inbox.
-        if (target.IsSelf())
-        {
-            AzFramework::RemoteToolsMessage* inboxMessage = aznew AzFramework::RemoteToolsMessage(msg.GetId());
-            inboxMessage->SetSenderTargetId(target.GetPersistentId());
-
-            if (msg.GetCustomBlobSize() > 0)
-            {
-                if (msg.GetIsBlobOwner())
-                {
-                    void* blob = azmalloc(msg.GetCustomBlobSize(), 16, AZ::OSAllocator);
-                    memcpy(blob, msg.GetCustomBlob().data(), msg.GetCustomBlobSize());
-                    inboxMessage->AddCustomBlob(blob, msg.GetCustomBlobSize(), true);
-                }
-                else
-                {
-                    inboxMessage->AddCustomBlob(msg.GetCustomBlob(), false);
-                }
-            }
-
-            m_inboxMutex.lock();
-            m_inbox[msg.GetSenderTargetId()].push_back(inboxMessage);
-            m_inboxMutex.unlock();
-
-            return;
-        }
+        AZ::SerializeContext* serializeContext = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
 
         AZStd::vector<char, AZ::OSStdAllocator> msgBuffer;
         AZ::IO::ByteContainerStream<AZStd::vector<char, AZ::OSStdAllocator>> outMsg(&msgBuffer);
@@ -355,26 +339,64 @@ namespace RemoteTools
             AZ_Assert(false, "ObjectStream failed to serialize outbound TmMsg!");
         }
 
-        size_t customBlobSize = msg.GetCustomBlobSize();
-        if (msg.GetCustomBlobSize() > 0)
+        const size_t customBlobSize = msg.GetCustomBlobSize();
+        if (customBlobSize > 0)
         {
             outMsg.Write(customBlobSize, msg.GetCustomBlob().data());
+        }
+
+        // Messages targeted at our own application are also serialized/deserialized then moved onto the inbox
+        const size_t totalSize = msgBuffer.size();
+        if (target.IsSelf())
+        {
+            AZStd::vector<AZStd::byte> buffer;
+            buffer.reserve(static_cast<uint32_t>(totalSize));
+            memcpy(buffer.begin(), msgBuffer.data(), totalSize);
+            AzFramework::RemoteToolsMessage* result = DeserializeMessage(target.GetPersistentId(), buffer, static_cast<uint32_t>(totalSize));
+
+            m_inboxMutex.lock();
+            if (!m_inbox[target.GetPersistentId()].full())
+            {
+                m_inbox[target.GetPersistentId()].push_back(result);
+            }
+            else
+            {
+                // As no network latency and not bound to framerate with local messages, possible to overflow the inbox size
+                AZ_Error("RemoteTool", false, "Inbox is full, a local message got skipped on %d channel", target.GetPersistentId());
+                delete result;
+            }
+            m_inboxMutex.unlock();
+
+            return;
         }
 
         AzNetworking::INetworkInterface* networkInterface =
             AZ::Interface<AzNetworking::INetworking>::Get()->RetrieveNetworkInterface(
                 AZ::Name(m_entryRegistry[target.GetPersistentId()].m_name));
-        
-        OutboundToolingDatum datum;
-        datum.first = target.GetPersistentId();
-        datum.second.swap(msgBuffer);
-        m_outboxThread->PushOutboxMessage(
-            networkInterface, static_cast<AzNetworking::ConnectionId>(target.GetNetworkId()), AZStd::move(datum));
-        if (!m_outboxThread->IsRunning())
+
+        auto connectionId = static_cast<AzNetworking::ConnectionId>(target.GetNetworkId());
+        const uint8_t* outBuffer = reinterpret_cast<const uint8_t*>(msgBuffer.data());
+        size_t outSize = totalSize;
+        while (outSize > 0 && networkInterface != nullptr)
         {
-            m_outboxThread->Join();
-            m_outboxThread->Start();
+            // Fragment the message into RemoteToolsMessageBuffer packet sized chunks and send
+            size_t bufferSize = AZStd::min(outSize, aznumeric_cast<size_t>(RemoteToolsBufferSize));
+            RemoteToolsPackets::RemoteToolsMessage tmPacket;
+            tmPacket.SetPersistentId(target.GetPersistentId());
+            tmPacket.SetSize(aznumeric_cast<uint32_t>(totalSize));
+            RemoteToolsMessageBuffer encodingBuffer;
+            encodingBuffer.CopyValues(outBuffer + (totalSize - outSize), bufferSize);
+            tmPacket.SetMessageBuffer(encodingBuffer);
+
+            if (!networkInterface->SendReliablePacket(connectionId, tmPacket))
+            {
+                AZ_Error("RemoteToolsSystemComponent", false, "SendReliablePacket failed with remaining bytes %zu of %zu.\n", outSize, totalSize);
+                break;
+            }
+
+            outSize -= bufferSize;
         }
+
     }
 
     void RemoteToolsSystemComponent::OnMessageParsed(
@@ -410,7 +432,7 @@ namespace RemoteTools
         [[maybe_unused]] const AzNetworking::IPacketHeader& packetHeader,
         [[maybe_unused]] const RemoteToolsPackets::RemoteToolsMessage& packet)
     {
-        AZ::Crc32 key = packet.GetPersistentId();
+        const AZ::Crc32 key = packet.GetPersistentId();
 
         // Receive
         if (connection->GetConnectionRole() == AzNetworking::ConnectionRole::Acceptor
@@ -460,35 +482,16 @@ namespace RemoteTools
         m_entryRegistry[key].m_tmpInboundBufferPos += readSize;
         if (m_entryRegistry[key].m_tmpInboundBufferPos == totalBufferSize)
         {
-            AZ::SerializeContext* serializeContext;
-            EBUS_EVENT_RESULT(serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
-
-            // Deserialize the complete buffer
-            AZ::IO::MemoryStream msgBuffer(m_entryRegistry[key].m_tmpInboundBuffer.data(), totalBufferSize, totalBufferSize);
-            AzFramework::RemoteToolsMessage* msg = nullptr;
-            AZ::ObjectStream::ClassReadyCB readyCB(AZStd::bind(
-                &RemoteToolsSystemComponent::OnMessageParsed, this, &msg, AZStd::placeholders::_1, AZStd::placeholders::_2,
-                AZStd::placeholders::_3));
-            AZ::ObjectStream::LoadBlocking(
-                &msgBuffer, *serializeContext, readyCB,
-                AZ::ObjectStream::FilterDescriptor(nullptr, AZ::ObjectStream::FILTERFLAG_IGNORE_UNKNOWN_CLASSES));
+            AzFramework::RemoteToolsMessage* msg = DeserializeMessage(key, m_entryRegistry[key].m_tmpInboundBuffer, totalBufferSize);
+            m_entryRegistry[key].m_tmpInboundBuffer.clear();
+            m_entryRegistry[key].m_tmpInboundBufferPos = 0;
 
             // Append to the inbox for handling
             if (msg)
             {
-                if (msg->GetCustomBlobSize() > 0)
-                {
-                    void* blob = azmalloc(msg->GetCustomBlobSize(), 1, AZ::OSAllocator, "TmMsgBlob");
-                    msgBuffer.Read(msg->GetCustomBlobSize(), blob);
-                    msg->AddCustomBlob(blob, msg->GetCustomBlobSize(), true);
-                }
-                msg->SetSenderTargetId(packet.GetPersistentId());
-
                 m_inboxMutex.lock();
                 m_inbox[msg->GetSenderTargetId()].push_back(msg);
                 m_inboxMutex.unlock();
-                m_entryRegistry[key].m_tmpInboundBuffer.clear();
-                m_entryRegistry[key].m_tmpInboundBufferPos = 0;
             }
         }
 
@@ -552,20 +555,36 @@ namespace RemoteTools
             m_joinThread->Join();
             m_joinThread->Start();
         }
+    }
 
-        // Check if there are any active connections, if not stop the outbox thread
-        bool hasActiveConnection = false;
-        for (auto registryIt = m_entryRegistry.begin(); registryIt != m_entryRegistry.end(); ++registryIt)
+    AzFramework::RemoteToolsMessage* RemoteToolsSystemComponent::DeserializeMessage(
+        const AZ::Crc32& key, AZStd::vector<AZStd::byte>& buffer, const uint32_t& totalBufferSize)
+    {
+        AZ::SerializeContext* serializeContext = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
+
+        // Deserialize the complete buffer
+        AZ::IO::MemoryStream msgBuffer(buffer.data(), totalBufferSize, totalBufferSize);
+        AzFramework::RemoteToolsMessage* msg = nullptr; 
+        AZ::ObjectStream::ClassReadyCB readyCB(AZStd::bind(
+            &RemoteToolsSystemComponent::OnMessageParsed, this, &msg, AZStd::placeholders::_1, AZStd::placeholders::_2,
+            AZStd::placeholders::_3));
+        AZ::ObjectStream::LoadBlocking(
+            &msgBuffer, *serializeContext, readyCB,
+            AZ::ObjectStream::FilterDescriptor(nullptr, AZ::ObjectStream::FILTERFLAG_IGNORE_UNKNOWN_CLASSES));
+
+        if (msg)
         {
-            hasActiveConnection =
-                AZ::Interface<AzNetworking::INetworking>::Get()->RetrieveNetworkInterface(registryIt->second.m_name) != nullptr;
+            if (msg->GetCustomBlobSize() > 0)
+            {
+                void* blob = azmalloc(msg->GetCustomBlobSize(), 1, AZ::OSAllocator);
+                msgBuffer.Read(msg->GetCustomBlobSize(), blob);
+                msg->AddCustomBlob(blob, msg->GetCustomBlobSize(), true);
+            }
+            msg->SetSenderTargetId(key);
         }
 
-        if (!hasActiveConnection)
-        {
-            m_outboxThread->Stop();
-            m_outboxThread->Join();
-        }
+        return msg;
     }
 
 } // namespace RemoteTools

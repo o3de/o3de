@@ -31,7 +31,7 @@ namespace AZ
 
         public:
             AZ_RTTI(BloomCompositePass, "{02E41C48-5CC7-4277-B66E-009E4D6D32BA}", ParentPass);
-            AZ_CLASS_ALLOCATOR(BloomCompositePass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(BloomCompositePass, SystemAllocator);
             virtual ~BloomCompositePass() = default;
 
             //! Creates a BloomCompositePass
@@ -80,7 +80,7 @@ namespace AZ
 
         public:
             AZ_RTTI(BloomCompositeChildPass, "{85D3FE9B-D347-40D6-B666-B4DF855F5B80}", RenderPass);
-            AZ_CLASS_ALLOCATOR(BloomCompositeChildPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(BloomCompositeChildPass, SystemAllocator);
             virtual ~BloomCompositeChildPass() = default;
 
             //! Creates a BloomCompositeChildPass

@@ -13,6 +13,8 @@
 #include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/DescriptorSetLayout.h>
 #include <RHI/Device.h>
+#include <Atom/RHI.Reflect/VkAllocator.h>
+#include <AzFramework/StringFunc/StringFunc.h>
 
 namespace AZ
 {
@@ -42,27 +44,27 @@ namespace AZ
 
         const AZStd::vector<VkDescriptorSetLayoutBinding>& DescriptorSetLayout::GetNativeLayoutBindings() const
         {
-            return m_descriptorSetLayoutBindings;
+            return m_layoutBindingInfo.GetLayoutBindings();
         }
 
         const AZStd::vector<VkDescriptorBindingFlags>& DescriptorSetLayout::GetNativeBindingFlags() const
         {
-            return m_descriptorBindingFlags;
+            return m_layoutBindingInfo.GetBindingFlags();
         }
 
         size_t DescriptorSetLayout::GetDescriptorSetLayoutBindingsCount() const
         {
-            return m_descriptorSetLayoutBindings.size();
+            return GetNativeBindingFlags().size();
         }
 
         VkDescriptorType DescriptorSetLayout::GetDescriptorType(size_t index) const
         {
-            return m_descriptorSetLayoutBindings[index].descriptorType;
+            return GetNativeLayoutBindings()[index].descriptorType;
         }
 
         uint32_t DescriptorSetLayout::GetDescriptorCount(size_t index) const
         {
-            return m_descriptorSetLayoutBindings[index].descriptorCount;
+            return GetNativeLayoutBindings()[index].descriptorCount;
         }
 
         uint32_t DescriptorSetLayout::GetConstantDataSize() const
@@ -72,7 +74,7 @@ namespace AZ
 
         uint32_t DescriptorSetLayout::GetBindingIndex(uint32_t index) const
         {
-            return m_descriptorSetLayoutBindings[index].binding;
+            return GetNativeLayoutBindings()[index].binding;
         }
 
         uint32_t DescriptorSetLayout::GetLayoutIndexFromGroupIndex(uint32_t groupIndex, ResourceType type) const
@@ -103,7 +105,8 @@ namespace AZ
             const RHI::ResultCode result = BuildNativeDescriptorSetLayout();
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
 
-            SetName(GetName());
+            // Name the descriptor layout from the SRG layout
+            SetName(m_shaderResourceGroupLayout->GetName());
             return result;
         }
 
@@ -120,7 +123,8 @@ namespace AZ
             if (m_nativeDescriptorSetLayout != VK_NULL_HANDLE)
             {
                 auto& device = static_cast<Device&>(GetDevice());
-                device.GetContext().DestroyDescriptorSetLayout(device.GetNativeDevice(), m_nativeDescriptorSetLayout, nullptr);
+                device.GetContext().DestroyDescriptorSetLayout(
+                    device.GetNativeDevice(), m_nativeDescriptorSetLayout, VkSystemAllocator::Get());
                 m_nativeDescriptorSetLayout = VK_NULL_HANDLE;
             }
             m_shaderResourceGroupLayout = nullptr;
@@ -134,21 +138,34 @@ namespace AZ
 
             VkDescriptorSetLayoutBindingFlagsCreateInfo bindingFlagsCreateInfo{};
             bindingFlagsCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
-            bindingFlagsCreateInfo.bindingCount = aznumeric_cast<uint32_t>(m_descriptorBindingFlags.size());
-            bindingFlagsCreateInfo.pBindingFlags = m_descriptorBindingFlags.data();
+            bindingFlagsCreateInfo.bindingCount = aznumeric_cast<uint32_t>(GetNativeBindingFlags().size());
+            bindingFlagsCreateInfo.pBindingFlags = GetNativeBindingFlags().data();
 
             VkDescriptorSetLayoutCreateInfo createInfo{};
             createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
             createInfo.pNext = &bindingFlagsCreateInfo;
             createInfo.flags = 0;
-            createInfo.bindingCount = static_cast<uint32_t>(m_descriptorSetLayoutBindings.size());
-            createInfo.pBindings = m_descriptorSetLayoutBindings.size() ? m_descriptorSetLayoutBindings.data() : nullptr;
+            if (IsBindlessSRGLayout())
+            {
+                // This flag is needed as we are using VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT for descriptors within unbounded arrays
+                createInfo.flags |= VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT;
+            }
+            createInfo.bindingCount = static_cast<uint32_t>(GetNativeLayoutBindings().size());
+            createInfo.pBindings = GetNativeLayoutBindings().size() ? GetNativeLayoutBindings().data() : nullptr;
 
             auto& device = static_cast<Device&>(GetDevice());
-            const VkResult result =
-                device.GetContext().CreateDescriptorSetLayout(device.GetNativeDevice(), &createInfo, nullptr, &m_nativeDescriptorSetLayout);
+            const VkResult result = device.GetContext().CreateDescriptorSetLayout(
+                device.GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &m_nativeDescriptorSetLayout);
 
             return ConvertResult(result);
+        }
+
+        bool IsUsingDepthFormat(const RHI::ShaderInputImageDescriptor& input)
+        {
+            // [GFX_TODO] Use Azslc or reflection to properly check if a texture may use a depth format.
+            // This is needed when using the NullDescriptorManager and the texture to use as "null" needs a depth format (if not it generates a validation error)
+            return AzFramework::StringFunc::Contains(input.m_name.GetStringView(), "Shadow") ||
+                AzFramework::StringFunc::Contains(input.m_name.GetStringView(), "Depth");
         }
 
         RHI::ResultCode DescriptorSetLayout::BuildDescriptorSetLayoutBindings()
@@ -162,8 +179,8 @@ namespace AZ
 
             // About VK_SHADER_STAGE_ALL...
             // We attempted to configure the descriptor set with the actual resource visibility but it was problematic...
-            // Vulkan requires that the visibility flags used to create the VkDescriptorSet (RHI::ShaderResourceGroup) must exactly match the ones
-            // used to create the VkPipelineLayout (RHI::PipelineState).
+            // Vulkan requires that the visibility flags used to create the VkDescriptorSet (RHI::DeviceShaderResourceGroup) must exactly match the ones
+            // used to create the VkPipelineLayout (RHI::DevicePipelineState).
             // See https://www.khronos.org/registry/vulkan/specs/1.2-extensions/html/vkspec.html#VUID-vkCmdBindDescriptorSets-pDescriptorSets-00358
             // But Atom currently expects to be able to use certain ShaderResourceGroup instances with many different pipeline states regardless of visibility.
             // - ShaderResourceGroupLayouts for "SceneSrg" and "ViewSrg" are defined in a special SceneAndViewSrgs.shader file. This shader has no entry points
@@ -186,7 +203,7 @@ namespace AZ
             static const VkShaderStageFlags DefaultShaderStageVisibility = VK_SHADER_STAGE_ALL;
 
             // The + 1 is for Constant Data.
-            m_descriptorSetLayoutBindings.reserve(
+            m_layoutBindingInfo = LayoutBindingInfo(
                 1 +
                 bufferDescs.size() +
                 imageDescs.size() +
@@ -195,15 +212,12 @@ namespace AZ
                 samplerDescs.size() +
                 staticSamplerDescs.size());
 
-            m_descriptorBindingFlags.reserve(m_descriptorSetLayoutBindings.capacity());
             m_constantDataSize = m_shaderResourceGroupLayout->GetConstantDataSize();
             if (m_constantDataSize)
             {
                 AZStd::span<const RHI::ShaderInputConstantDescriptor> inputListForConstants = m_shaderResourceGroupLayout->GetShaderInputListForConstants();
                 AZ_Assert(!inputListForConstants.empty(), "Empty constant input list");
-                m_descriptorSetLayoutBindings.emplace_back(VkDescriptorSetLayoutBinding{});
-                VkDescriptorSetLayoutBinding& vbinding = m_descriptorSetLayoutBindings.back();
-                m_descriptorBindingFlags.emplace_back(VkDescriptorBindingFlags{});
+                auto [vbinding, _1, _2] = m_layoutBindingInfo.Add();
 
                 // All constant data of the SRG have the same binding.
                 vbinding.binding = inputListForConstants[0].m_registerId;
@@ -216,15 +230,12 @@ namespace AZ
 
             // buffers
             m_layoutIndexOffset[static_cast<uint32_t>(ResourceType::BufferView)] =
-                bufferDescs.empty() ? InvalidLayoutIndex : static_cast<uint32_t>(m_descriptorSetLayoutBindings.size());
+                bufferDescs.empty() ? InvalidLayoutIndex : static_cast<uint32_t>(m_layoutBindingInfo.GetSize());
 
             for (uint32_t index = 0; index < bufferDescs.size(); ++index)
             {
                 const RHI::ShaderInputBufferDescriptor& desc = bufferDescs[index];
-                m_descriptorSetLayoutBindings.emplace_back(VkDescriptorSetLayoutBinding{});
-                VkDescriptorSetLayoutBinding& vbinding = m_descriptorSetLayoutBindings.back();
-                m_descriptorBindingFlags.emplace_back(VkDescriptorBindingFlags{});
-
+                auto [vbinding, _1, _2] = m_layoutBindingInfo.Add();
                 vbinding.binding = desc.m_registerId;
                 switch (desc.m_access)
                 {
@@ -265,15 +276,13 @@ namespace AZ
 
             // images
             m_layoutIndexOffset[static_cast<uint32_t>(ResourceType::ImageView)] =
-                imageDescs.empty() ? InvalidLayoutIndex : static_cast<uint32_t>(m_descriptorSetLayoutBindings.size());
+                imageDescs.empty() ? InvalidLayoutIndex : static_cast<uint32_t>(m_layoutBindingInfo.GetSize());
 
             for (uint32_t index = 0; index < imageDescs.size(); ++index)
             {
                 const RHI::ShaderInputImageDescriptor& desc = imageDescs[index];
-                m_descriptorSetLayoutBindings.emplace_back(VkDescriptorSetLayoutBinding{});
-                VkDescriptorSetLayoutBinding& vbinding = m_descriptorSetLayoutBindings.back();
-                m_descriptorBindingFlags.emplace_back(VkDescriptorBindingFlags{});
-
+                auto [vbinding, _, usesDepthFormat] = m_layoutBindingInfo.Add();
+                usesDepthFormat = IsUsingDepthFormat(desc);
                 vbinding.binding = desc.m_registerId;
                 if (desc.m_type == RHI::ShaderInputImageType::SubpassInput)
                 {
@@ -303,15 +312,12 @@ namespace AZ
 
             // samplers
             m_layoutIndexOffset[static_cast<uint32_t>(ResourceType::Sampler)] =
-                samplerDescs.empty() ? InvalidLayoutIndex : static_cast<uint32_t>(m_descriptorSetLayoutBindings.size());
+                samplerDescs.empty() ? InvalidLayoutIndex : static_cast<uint32_t>(m_layoutBindingInfo.GetSize());
 
             for (uint32_t index = 0; index < samplerDescs.size(); ++index)
             {
                 const RHI::ShaderInputSamplerDescriptor& desc = samplerDescs[index];
-                m_descriptorSetLayoutBindings.emplace_back(VkDescriptorSetLayoutBinding{});
-                VkDescriptorSetLayoutBinding& vbinding = m_descriptorSetLayoutBindings.back();
-                m_descriptorBindingFlags.emplace_back(VkDescriptorBindingFlags{});
-
+                auto [vbinding, _1, _2] = m_layoutBindingInfo.Add();
                 vbinding.binding = desc.m_registerId;
                 vbinding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
                 vbinding.descriptorCount = desc.m_count;
@@ -331,10 +337,7 @@ namespace AZ
                     samplerDesc.m_samplerState = staticSamplerInput.m_samplerState;
                     m_nativeSamplers[index] = device.AcquireSampler(samplerDesc)->GetNativeSampler();
 
-                    m_descriptorSetLayoutBindings.emplace_back(VkDescriptorSetLayoutBinding{});
-                    VkDescriptorSetLayoutBinding& vbinding = m_descriptorSetLayoutBindings.back();
-                    m_descriptorBindingFlags.emplace_back(VkDescriptorBindingFlags{});
-
+                    auto [vbinding, _1, _2] = m_layoutBindingInfo.Add();
                     vbinding.binding = staticSamplerInput.m_registerId;
                     vbinding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
                     vbinding.descriptorCount = 1;
@@ -345,17 +348,21 @@ namespace AZ
 
             // buffer unbounded arrays
             m_layoutIndexOffset[static_cast<uint32_t>(ResourceType::BufferViewUnboundedArray)] =
-                bufferUnboundedArrayDescs.empty() ? InvalidLayoutIndex : static_cast<uint32_t>(m_descriptorSetLayoutBindings.size());
+                bufferUnboundedArrayDescs.empty() ? InvalidLayoutIndex : static_cast<uint32_t>(m_layoutBindingInfo.GetSize());
 
-            if (bufferUnboundedArrayDescs.size())
+            for (const RHI::ShaderInputBufferUnboundedArrayDescriptor& desc : bufferUnboundedArrayDescs)
             {
-                AZ_Assert(bufferUnboundedArrayDescs.size() == 1, "Vulkan descriptor layout can have at most one unbounded array");
-
-                const RHI::ShaderInputBufferUnboundedArrayDescriptor& desc = bufferUnboundedArrayDescs[0];
-                m_descriptorSetLayoutBindings.emplace_back(VkDescriptorSetLayoutBinding{});
-                VkDescriptorSetLayoutBinding& vbinding = m_descriptorSetLayoutBindings.back();
-                m_descriptorBindingFlags.emplace_back(VkDescriptorBindingFlags{});
-                m_descriptorBindingFlags.back() = VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT | VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT;
+                auto [vbinding, bindingFlags, _] = m_layoutBindingInfo.Add();
+                VkDescriptorBindingFlags descriptorBindingFlag = VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT;
+                if (IsBindlessSRGLayout())
+                {
+                    descriptorBindingFlag |= VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT;
+                }
+                else
+                {
+                    descriptorBindingFlag |= VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT;
+                }
+                bindingFlags = descriptorBindingFlag;
 
                 vbinding.binding = desc.m_registerId;
                 switch (desc.m_access)
@@ -365,6 +372,9 @@ namespace AZ
                     {
                     case RHI::ShaderInputBufferType::Typed:
                         vbinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER;
+                        break;
+                    case RHI::ShaderInputBufferType::AccelerationStructure:
+                        vbinding.descriptorType = VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR;
                         break;
                     default:
                         vbinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
@@ -388,17 +398,22 @@ namespace AZ
 
             // image unbounded arrays
             m_layoutIndexOffset[static_cast<uint32_t>(ResourceType::ImageViewUnboundedArray)] =
-                imageUnboundedArrayDescs.empty() ? InvalidLayoutIndex : static_cast<uint32_t>(m_descriptorSetLayoutBindings.size());
+                imageUnboundedArrayDescs.empty() ? InvalidLayoutIndex : static_cast<uint32_t>(m_layoutBindingInfo.GetSize());
 
-            if (imageUnboundedArrayDescs.size())
+            for (const RHI::ShaderInputImageUnboundedArrayDescriptor& desc : imageUnboundedArrayDescs)
             {
-                AZ_Assert(m_hasUnboundedArray == false && imageUnboundedArrayDescs.size() == 1, "Vulkan descriptor layout can have at most one unbounded array");
-                const RHI::ShaderInputImageUnboundedArrayDescriptor& desc = imageUnboundedArrayDescs[0];
 
-                m_descriptorSetLayoutBindings.emplace_back(VkDescriptorSetLayoutBinding{});
-                VkDescriptorSetLayoutBinding& vbinding = m_descriptorSetLayoutBindings.back();
-                m_descriptorBindingFlags.emplace_back(VkDescriptorBindingFlags{});
-                m_descriptorBindingFlags.back() = VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT | VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT;
+                auto [vbinding, bindingFlags, _] = m_layoutBindingInfo.Add();
+                VkDescriptorBindingFlags descriptorBindingFlag = VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT;
+                if (IsBindlessSRGLayout())
+                {
+                    descriptorBindingFlag |= VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT;
+                }
+                else
+                {
+                    descriptorBindingFlag |= VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT;
+                }
+                bindingFlags = descriptorBindingFlag;
 
                 vbinding.binding = desc.m_registerId;
                 switch (desc.m_access)
@@ -442,5 +457,53 @@ namespace AZ
         {
             return m_shaderResourceGroupLayout.get();
         }
-    }
+
+        bool DescriptorSetLayout::UsesDepthFormat(uint32_t layoutIndex) const
+        {
+            return m_layoutBindingInfo.GetUseDepthFormat()[layoutIndex];
+        }
+
+        bool DescriptorSetLayout::IsBindlessSRGLayout()
+        {
+            auto& device = static_cast<Device&>(GetDevice());
+            return m_shaderResourceGroupLayout->GetBindingSlot() == device.GetBindlessDescriptorPool().GetBindlessSrgBindingSlot();
+        }
+
+        DescriptorSetLayout::LayoutBindingInfo::LayoutBindingInfo(size_t size)
+        {
+            m_descriptorSetLayoutBindings.reserve(size);
+            m_descriptorBindingFlags.reserve(size);
+            m_useDepthFormat.reserve(size);
+        }
+
+        DescriptorSetLayout::LayoutBindingInfo::Element DescriptorSetLayout::LayoutBindingInfo::Add()
+        {
+            m_descriptorSetLayoutBindings.emplace_back(VkDescriptorSetLayoutBinding{});
+            m_descriptorBindingFlags.emplace_back(VkDescriptorBindingFlags{});
+            m_useDepthFormat.emplace_back(false);
+
+            return LayoutBindingInfo::Element(
+                m_descriptorSetLayoutBindings.back(), m_descriptorBindingFlags.back(), m_useDepthFormat.back());
+        }
+
+        AZStd::size_t DescriptorSetLayout::LayoutBindingInfo::GetSize() const
+        {
+            return m_descriptorSetLayoutBindings.size();
+        }
+
+        const AZStd::vector<VkDescriptorSetLayoutBinding>& DescriptorSetLayout::LayoutBindingInfo::GetLayoutBindings() const
+        {
+            return m_descriptorSetLayoutBindings;
+        }
+
+        const AZStd::vector<VkDescriptorBindingFlags>& DescriptorSetLayout::LayoutBindingInfo::GetBindingFlags() const
+        {
+            return m_descriptorBindingFlags;
+        }
+
+        const AZStd::vector<bool>& DescriptorSetLayout::LayoutBindingInfo::GetUseDepthFormat() const
+        {
+            return m_useDepthFormat;
+        }
+    } // namespace Vulkan
 }

@@ -33,7 +33,7 @@ namespace GraphCanvas
         , public VisualNotificationBus::Handler
     {    
     public:
-        AZ_CLASS_ALLOCATOR(PropertySlotLayout, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PropertySlotLayout, AZ::SystemAllocator);
 
         PropertySlotLayout(PropertySlotLayoutComponent& owner);
         ~PropertySlotLayout();
@@ -72,8 +72,6 @@ namespace GraphCanvas
         QGraphicsWidget*                                m_spacer;
         NodePropertyDisplayWidget*                      m_nodePropertyDisplay;
         GraphCanvasLabel*                               m_slotText;
-
-        QGraphicsLayoutItem*                            m_layoutItem;
     };    
 
     //! Lays out the parts of the Data Slot

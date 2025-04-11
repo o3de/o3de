@@ -20,6 +20,7 @@
 #include <GraphCanvas/Widgets/NodePalette/TreeItems/NodePaletteTreeItem.h>
 #include <AzQtComponents/Utilities/Conversions.h>
 #include "AnimGraphPlugin.h"
+#include <AzQtComponents/Components/StyleManager.h>
 #include <QVBoxLayout>
 #include <QIcon>
 #include <QAction>
@@ -31,7 +32,7 @@
 
 namespace EMStudio
 {
-    AZ_CLASS_ALLOCATOR_IMPL(NodePaletteWidget::EventHandler, EMotionFX::EventHandlerAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(NodePaletteWidget::EventHandler, EMotionFX::EventHandlerAllocator)
 
     NodePaletteWidget::EventHandler::EventHandler(NodePaletteWidget* widget)
         : m_widget(widget)
@@ -88,6 +89,8 @@ namespace EMStudio
         m_palette->SetupNodePalette(config);
         m_palette->hide();
         m_layout->addWidget(m_palette);
+        // GHI-13382 Investigate why we need to apply the style here even though it's applied globally to the editor
+        AzQtComponents::StyleManager::setStyleSheet(m_palette, QStringLiteral("style:Editor.qss"));
 
         // set the default layout
         setLayout(m_layout);

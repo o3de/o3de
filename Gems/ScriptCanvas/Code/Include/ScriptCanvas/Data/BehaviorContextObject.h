@@ -11,8 +11,6 @@
 #include <AzCore/RTTI/AttributeReader.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Script/ScriptContextAttributes.h>
-#include <AzCore/Serialization/EditContext.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/any.h>
 #include <AzCore/std/parallel/atomic.h>
 #include <ScriptCanvas/Data/Data.h>
@@ -21,8 +19,17 @@
 
 namespace AZ
 {
+    template<typename ValueType, typename>
+    struct AnyTypeInfoConcept;
+
     class ReflectContext;
     class BehaviorContextObjectSerializer;
+}
+
+namespace AZ::Serialize
+{
+    template<class T, bool U, bool A>
+    struct InstanceFactory;
 }
 
 namespace ScriptCanvas
@@ -35,12 +42,12 @@ namespace ScriptCanvas
 
     public:
         AZ_TYPE_INFO(BehaviorContextObject, "{B735214D-5182-4536-B748-61EC83C1F007}");
-        AZ_CLASS_ALLOCATOR(BehaviorContextObject, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BehaviorContextObject, AZ::SystemAllocator);
 
         static void Reflect(AZ::ReflectContext* reflection);
 
         static BehaviorContextObjectPtr Create(const AZ::BehaviorClass& behaviorClass, const void* value = nullptr);
-        
+
         template<typename t_Value>
         AZ_INLINE static BehaviorContextObjectPtr Create(const t_Value& value, const AZ::BehaviorClass& behaviorClass);
 
@@ -423,4 +430,4 @@ namespace ScriptCanvas
         ++m_referenceCount;
     }
 
-} 
+}

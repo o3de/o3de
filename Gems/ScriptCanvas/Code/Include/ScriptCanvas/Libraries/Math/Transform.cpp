@@ -8,6 +8,8 @@
 
 #include "Transform.h"
 
+#include <Include/ScriptCanvas/Libraries/Math/Transform.generated.h>
+
 namespace ScriptCanvas
 {
     namespace TransformFunctions

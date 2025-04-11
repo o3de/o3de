@@ -45,7 +45,7 @@ public:
             return 0;
         }
         CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
-        assert(sequence);
+        AZ_Assert(sequence, "Sequence is null");
         return sequence->GetTrackEventsCount();
     }
 
@@ -64,27 +64,41 @@ public:
         bool result = true;
 
         CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
-        assert(sequence);
+        AZ_Assert(sequence, "Sequence is null");
 
         AzToolsFramework::ScopedUndoBatch undo("Remove Track Event");
 
-        for (int r = row; r < row + count; ++r)
+        for (int r = row, max = row + count; r < max; ++r)
         {
             const QString eventName = index(r, 0).data().toString();
-            beginRemoveRows(QModelIndex(), r, r);
-            result &= sequence->RemoveTrackEvent(eventName.toUtf8().data());
-            endRemoveRows();
+            bool remove = true;
+            float timeFirstUsed;
+            int usageCount = GetNumberOfUsageAndFirstTimeUsed(eventName.toStdString().c_str(), timeFirstUsed);
+            if (usageCount > 0)
+            {
+                remove = QMessageBox::warning(
+                             nullptr,
+                             tr("Remove Event"),
+                             tr("Remove \"") + eventName + tr("\" event might cause some link breakages in Flow Graph.\nStill continue?"),
+                             QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes;
+            }
 
-            undo.MarkEntityDirty(sequence->GetSequenceComponentEntityId());
+            if (remove)
+            {
+                beginRemoveRows(QModelIndex(), r, r);
+                result &= sequence->RemoveTrackEvent(eventName.toUtf8().data());
+                endRemoveRows();
+                undo.MarkEntityDirty(sequence->GetSequenceComponentEntityId());
+            }
         }
 
         return result;
     }
 
-    bool addRow(const QString& name)
+    bool AddRow(const QString& name)
     {
         CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
-        assert(sequence);
+        AZ_Assert(sequence, "Sequence is null");
         const int index = rowCount();
         beginInsertRows(QModelIndex(), index, index);
         bool result = false;
@@ -102,10 +116,10 @@ public:
         return result;
     }
 
-    bool moveRow(const QModelIndex& index, bool up)
+    bool MoveRow(const QModelIndex& index, bool up)
     {
         CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
-        assert(sequence);
+        AZ_Assert(sequence, "Sequence is null");
         if (!index.isValid() || (up && index.row() == 0) || (!up && index.row() == rowCount() - 1))
         {
             return false;
@@ -134,7 +148,7 @@ public:
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override
     {
         CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
-        assert(sequence);
+        AZ_Assert(sequence, "Sequence is null");
         if (role != Qt::DisplayRole)
         {
             return QVariant();
@@ -159,7 +173,7 @@ public:
     bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole) override
     {
         CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
-        assert(sequence);
+        AZ_Assert(sequence, "Sequence is null");
         if (role != Qt::DisplayRole && role != Qt::EditRole)
         {
             return false;
@@ -230,7 +244,7 @@ CTVEventsDialog::~CTVEventsDialog()
 void CTVEventsDialog::OnBnClickedButtonAddEvent()
 {
     const QString add = QInputDialog::getText(this, tr("Track Event Name"), QString());
-    if (!add.isEmpty() && static_cast<TVEventsModel*>(m_ui->m_List->model())->addRow(add))
+    if (!add.isEmpty() && static_cast<TVEventsModel*>(m_ui->m_List->model())->AddRow(add))
     {
         m_lastAddedEvent = add;
         m_ui->m_List->setCurrentIndex(m_ui->m_List->model()->index(m_ui->m_List->model()->rowCount() - 1, 0));
@@ -248,10 +262,7 @@ void CTVEventsDialog::OnBnClickedButtonRemoveEvent()
 
     for (auto index : indexes)
     {
-        if (QMessageBox::warning(this, tr("Remove Event"), tr("This removal might cause some link breakages in Flow Graph.\nStill continue?"), QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes)
-        {
-            m_ui->m_List->model()->removeRow(index.row());
-        }
+        m_ui->m_List->model()->removeRow(index.row());
     }
     m_ui->m_List->setFocus();
 }
@@ -259,10 +270,10 @@ void CTVEventsDialog::OnBnClickedButtonRemoveEvent()
 void CTVEventsDialog::OnBnClickedButtonRenameEvent()
 {
     const QModelIndex index = m_ui->m_List->currentIndex();
-
+    QString oldName = m_ui->m_List->model()->index(index.row(), 0).data().toString();
     if (index.isValid())
     {
-        const QString newName = QInputDialog::getText(this, tr("Track Event Name"), QString());
+        const QString newName = QInputDialog::getText(this, tr("Track Event Name"), QString(), QLineEdit::Normal, oldName);
         if (!newName.isEmpty())
         {
             m_ui->m_List->model()->setData(index.sibling(index.row(), 0), newName);
@@ -273,14 +284,14 @@ void CTVEventsDialog::OnBnClickedButtonRenameEvent()
 
 void CTVEventsDialog::OnBnClickedButtonUpEvent()
 {
-    static_cast<TVEventsModel*>(m_ui->m_List->model())->moveRow(m_ui->m_List->currentIndex(), true);
+    static_cast<TVEventsModel*>(m_ui->m_List->model())->MoveRow(m_ui->m_List->currentIndex(), true);
     UpdateButtons();
     m_ui->m_List->setFocus();
 }
 
 void CTVEventsDialog::OnBnClickedButtonDownEvent()
 {
-    static_cast<TVEventsModel*>(m_ui->m_List->model())->moveRow(m_ui->m_List->currentIndex(), false);
+    static_cast<TVEventsModel*>(m_ui->m_List->model())->MoveRow(m_ui->m_List->currentIndex(), false);
     UpdateButtons();
     m_ui->m_List->setFocus();
 }
@@ -290,7 +301,7 @@ void CTVEventsDialog::OnInitDialog()
     m_ui->m_List->setModel(new TVEventsModel(this));
     m_ui->m_List->header()->resizeSections(QHeaderView::ResizeToContents);
 
-    assert(GetIEditor()->GetAnimation()->GetSequence());
+    AZ_Assert(GetIEditor()->GetAnimation()->GetSequence(), "Current sequence is null");
 
     UpdateButtons();
 }

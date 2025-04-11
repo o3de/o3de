@@ -33,9 +33,9 @@ namespace AZ
                             "Atom Hair", "Controls Hair Properties")
                             ->ClassElement(Edit::ClassElements::EditorData, "")
                                 ->Attribute(Edit::Attributes::Category, "Graphics/Mesh")
-                                ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/Component_Placeholder.svg")
-                                ->Attribute(AZ::Edit::Attributes::ViewportIcon, "editor/icons/components/viewport/component_placeholder.png")
-                                ->Attribute(Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
+                                ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Component_Placeholder.svg")
+                                ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Component_Placeholder.svg")
+                                ->Attribute(Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                                 ->Attribute(Edit::Attributes::AutoExpand, true)
                             ;
                         

@@ -15,6 +15,8 @@ set(FILES
     Source/RHI/BufferPoolResolver.h
     Source/RHI/BufferView.cpp
     Source/RHI/BufferView.h
+    Source/RHI/BindlessDescriptorPool.cpp
+    Source/RHI/BindlessDescriptorPool.h
     Source/RHI/CommandList.cpp
     Source/RHI/CommandList.h
     Source/RHI/CommandPool.cpp
@@ -37,24 +39,31 @@ set(FILES
     Source/RHI/DescriptorSetAllocator.cpp
     Source/RHI/Device.cpp
     Source/RHI/Device.h
+    Source/RHI/DispatchRaysIndirectBuffer.h
+    Source/RHI/BinaryFence.cpp
+    Source/RHI/BinaryFence.h
     Source/RHI/Fence.cpp
     Source/RHI/Fence.h
+    Source/RHI/FenceBase.cpp
+    Source/RHI/FenceBase.h
+    Source/RHI/TimelineSemaphoreFence.cpp
+    Source/RHI/TimelineSemaphoreFence.h
     Source/RHI/Framebuffer.cpp
     Source/RHI/Framebuffer.h
     Source/RHI/FrameGraphCompiler.cpp
     Source/RHI/FrameGraphCompiler.h
     Source/RHI/FrameGraphExecuteGroupHandler.cpp
     Source/RHI/FrameGraphExecuteGroupHandler.h
-    Source/RHI/FrameGraphExecuteGroupHandlerBase.cpp
-    Source/RHI/FrameGraphExecuteGroupHandlerBase.h
-    Source/RHI/FrameGraphExecuteGroupMergedHandler.cpp
-    Source/RHI/FrameGraphExecuteGroupMergedHandler.h
-    Source/RHI/FrameGraphExecuteGroupBase.cpp
-    Source/RHI/FrameGraphExecuteGroupBase.h
+    Source/RHI/FrameGraphExecuteGroupPrimaryHandler.cpp
+    Source/RHI/FrameGraphExecuteGroupPrimaryHandler.h
+    Source/RHI/FrameGraphExecuteGroupSecondaryHandler.cpp
+    Source/RHI/FrameGraphExecuteGroupSecondaryHandler.h
     Source/RHI/FrameGraphExecuteGroup.cpp
     Source/RHI/FrameGraphExecuteGroup.h
-    Source/RHI/FrameGraphExecuteGroupMerged.cpp
-    Source/RHI/FrameGraphExecuteGroupMerged.h
+    Source/RHI/FrameGraphExecuteGroupPrimary.cpp
+    Source/RHI/FrameGraphExecuteGroupPrimary.h
+    Source/RHI/FrameGraphExecuteGroupSecondary.cpp
+    Source/RHI/FrameGraphExecuteGroupSecondary.h
     Source/RHI/FrameGraphExecuter.cpp
     Source/RHI/FrameGraphExecuter.h
     Source/RHI/Image.cpp
@@ -83,14 +92,10 @@ set(FILES
     Source/RHI/RenderPassBuilder.cpp
     Source/RHI/RenderPassBuilder.h
     Source/RHI/ResourcePoolResolver.h
-    Source/RHI/MemoryTypeView.h
     Source/RHI/MemoryView.h
-    Source/RHI/Memory.cpp
-    Source/RHI/Memory.h
-    Source/RHI/MemoryTypeAllocator.h
-    Source/RHI/MemoryAllocator.h
-    Source/RHI/MemoryPageAllocator.cpp
-    Source/RHI/MemoryPageAllocator.h
+    Source/RHI/MemoryTypeView.h
+    Source/RHI/VulkanMemoryAllocation.cpp
+    Source/RHI/VulkanMemoryAllocation.h
     Source/RHI/Instance.cpp
     Source/RHI/Instance.h
     Source/RHI/PhysicalDevice.cpp
@@ -111,10 +116,13 @@ set(FILES
     Source/RHI/PipelineState.h
     Source/RHI/Sampler.cpp
     Source/RHI/Sampler.h
-    Source/RHI/SemaphoreAllocator.cpp
     Source/RHI/SemaphoreAllocator.h
     Source/RHI/Semaphore.cpp
     Source/RHI/Semaphore.h
+    Source/RHI/TimelineSemaphore.cpp
+    Source/RHI/TimelineSemaphore.h
+    Source/RHI/BinarySemaphore.cpp
+    Source/RHI/BinarySemaphore.h
     Source/RHI/Scope.cpp
     Source/RHI/Scope.h
     Source/RHI/ShaderResourceGroup.cpp
@@ -148,17 +156,23 @@ set(FILES
     Source/RHI/ReleaseContainer.h
     Source/RHI/BufferMemory.cpp
     Source/RHI/BufferMemory.h
-    Source/RHI/BufferMemoryPageAllocator.cpp
-    Source/RHI/BufferMemoryPageAllocator.h
     Source/RHI/BufferMemoryView.h
-    Source/RHI/BufferMemoryAllocator.h
+    Source/RHI/RayTracingAccelerationStructure.cpp
+    Source/RHI/RayTracingAccelerationStructure.h
     Source/RHI/RayTracingBufferPools.h
     Source/RHI/RayTracingBlas.cpp
     Source/RHI/RayTracingBlas.h
+    Source/RHI/RayTracingCompactionQueryPool.cpp
+    Source/RHI/RayTracingCompactionQueryPool.h
     Source/RHI/RayTracingTlas.cpp
     Source/RHI/RayTracingTlas.h
     Source/RHI/RayTracingPipelineState.cpp
     Source/RHI/RayTracingPipelineState.h
     Source/RHI/RayTracingShaderTable.cpp
     Source/RHI/RayTracingShaderTable.h
+    Source/RHI/Conversion.cpp
+    Source/RHI/Conversion.h
+    Source/RHI/WindowSurfaceBus.h
+    Source/RHI/SpecializationConstantData.cpp
+    Source/RHI/SpecializationConstantData.h
 )

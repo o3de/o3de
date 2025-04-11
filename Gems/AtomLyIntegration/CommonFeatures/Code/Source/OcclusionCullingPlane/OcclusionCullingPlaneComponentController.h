@@ -25,7 +25,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(AZ::Render::OcclusionCullingPlaneComponentConfig, "{D0E107CA-5AFB-4675-BC97-94BCA5F248DB}", ComponentConfig);
-            AZ_CLASS_ALLOCATOR(OcclusionCullingPlaneComponentConfig, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(OcclusionCullingPlaneComponentConfig, SystemAllocator);
             static void Reflect(AZ::ReflectContext* context);
 
             bool m_showVisualization = true;
@@ -41,7 +41,7 @@ namespace AZ
         public:
             friend class EditorOcclusionCullingPlaneComponent;
 
-            AZ_CLASS_ALLOCATOR(OcclusionCullingPlaneComponentController, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(OcclusionCullingPlaneComponentController, AZ::SystemAllocator);
             AZ_RTTI(AZ::Render::OcclusionCullingPlaneComponentController, "{8EDA3C7D-5171-4843-9969-4D84DB13F221}");
 
             static void Reflect(AZ::ReflectContext* context);

@@ -28,7 +28,7 @@ namespace AZ::IO::ZipDir
         : public FileRecord
         , public AZStd::intrusive_base
     {
-        AZ_CLASS_ALLOCATOR(FileDataRecord, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(FileDataRecord, AZ::SystemAllocator);
         FileDataRecord(const FileRecord& rThat);
 
         void* GetData() {return m_data.get(); }

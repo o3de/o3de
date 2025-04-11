@@ -5,7 +5,7 @@
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
     xmlns:bal="http://schemas.microsoft.com/wix/BalExtension">
 
-    <Bundle Name="$(var.CPACK_PACKAGE_NAME) [Developer Preview]"
+    <Bundle Name="$(var.CPACK_PACKAGE_NAME)"
         Version="$(var.CPACK_PACKAGE_VERSION)"
         Manufacturer="$(var.CPACK_PACKAGE_VENDOR)"
         UpgradeCode="$(var.CPACK_BOOTSTRAP_UPGRADE_GUID)"

@@ -7,7 +7,6 @@
  */
 
 #include "FFMPEGPlugin.h"
-#include "Include/IEditorClassFactory.h"
 
 
 PLUGIN_API IPlugin* CreatePluginInstance(PLUGIN_INIT_PARAM* pInitParam)

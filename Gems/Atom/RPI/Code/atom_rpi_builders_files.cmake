@@ -26,7 +26,7 @@ set(FILES
     Source/RPI.Builders/Model/ModelExporterComponent.cpp
     Source/RPI.Builders/Model/ModelExporterComponent.h
     Source/RPI.Builders/Model/ModelExporterContexts.cpp
-    Source/RPI.Builders/Model/ModelExporterContexts.h
+    Include/Atom/RPI.Builders/Model/ModelExporterContexts.h
     Source/RPI.Builders/Model/MorphTargetExporter.cpp
     Source/RPI.Builders/Model/MorphTargetExporter.h
     Source/RPI.Builders/Pass/PassBuilder.cpp

@@ -1,0 +1,18 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "RenderPipelineDescriptor",
+    "ClassData": {
+        "Name": "MobilePipeline",
+        "MainViewTag": "MainCamera",
+        "MaterialPipelineTag": "MobilePipeline",
+        "RootPassTemplate": "MobilePipelineTemplate",
+        "AllowModification": true,
+        "AllowSubpassMerging" : true,
+        "RenderSettings": {
+            "MultisampleState": {
+                "samples": 1
+            }
+        }
+    }
+}

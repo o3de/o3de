@@ -56,19 +56,13 @@ namespace UnitTest
 
         AZ::EntityId newEntityId = InstanceEntityIdMapper::GenerateEntityIdForAliasPath(newAbsoluteEntityPath);
         AZ::Entity* newEntity = aznew AZ::Entity(newEntityId, entityName.c_str());
+        newEntity->Init();
+        newEntity->Activate();
+        AddRequiredEditorComponents({ newEntity->GetId() });
 
         owningInstance.AddEntity(*newEntity, newEntityAlias);
 
-        AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
-            &AzToolsFramework::EditorEntityContextRequests::HandleEntitiesAdded, AzToolsFramework::EntityList{ newEntity });
-        AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
-            &AzToolsFramework::EditorEntityContextRequests::FinalizeEditorEntity, newEntity);
-
-        newEntity->Deactivate();
-        auto transform = aznew AzToolsFramework::Components::TransformComponent;
-        transform->SetParent(parentEntity.GetId());
-        newEntity->AddComponent(transform);
-        newEntity->Activate();
+        AZ::TransformBus::Event(newEntityId, &AZ::TransformBus::Events::SetParent, parentEntity.GetId());
 
         return newEntityAlias;
     }

@@ -167,6 +167,12 @@ namespace AZ::IO
         constexpr int Compare(AZStd::string_view pathString) const noexcept;
         constexpr int Compare(const value_type* pathString) const noexcept;
 
+        // string conversion
+        //! The string and wstring functions cannot be constexpr until AZStd::basic_string is made constexpr.
+        //! This cannot occur until C++20 as operator new/delete cannot be used within constexpr functions
+        //! Returns a new instance of an AZStd::string made from the internal string
+        AZStd::string String() const;
+
         // Extension for fixed strings
         //! extension: fixed string types with MaxPathLength capacity
         //! Returns a new instance of an AZStd::fixed_string with capacity of MaxPathLength
@@ -177,6 +183,14 @@ namespace AZ::IO
         //! Replicates the behavior of the Python pathlib as_posix method
         //! by replacing the Windows Path Separator with the Posix Path Seperator
         constexpr AZStd::fixed_string<MaxPathLength> FixedMaxPathStringAsPosix() const noexcept;
+        AZStd::string StringAsPosix() const;
+
+        // as_uri
+        //! Models the Python pathlib as_uri method
+        //! Percent encodes the path and appends file: to the front
+        AZStd::fixed_string<MaxPathLength> AsUri() const noexcept;
+        AZStd::string StringAsUri() const;
+        AZStd::fixed_string<MaxPathLength> FixedMaxPathStringAsUri() const noexcept;
 
         // decomposition
         //! Given a windows path of "C:\O3DE\foo\bar\name.txt" and a posix path of
@@ -237,7 +251,7 @@ namespace AZ::IO
         //!    ^            ^
         //! root part    relative part
         [[nodiscard]] constexpr bool HasRelativePath() const;
-        //! checks whether the path has a parent path that  empty
+        //! checks whether the path has a parent path that is empty
         [[nodiscard]] constexpr bool HasParentPath() const;
         //! Checks whether the filename is empty
         [[nodiscard]] constexpr bool HasFilename() const;
@@ -254,6 +268,9 @@ namespace AZ::IO
         [[nodiscard]] constexpr bool IsRelative() const;
         //! Check whether the path is relative to the base path
         [[nodiscard]] constexpr bool IsRelativeTo(const PathView& base) const;
+
+        //! Returns the preferred separator for this instance
+        constexpr const char PreferredSeparator() const noexcept;
 
         //! Normalizes a path in a purely lexical manner.
         //! # Path separators are converted to their preferred path separator
@@ -557,10 +574,17 @@ namespace AZ::IO
 
         // as_posix
         //! Replicates the behavior of the Python pathlib as_posix method
-        //! by replacing the Windows Path Separator with the Posix Path Seperator
+        //! by replacing the Windows Path Separator with the Posix Path Separator
         constexpr string_type AsPosix() const;
         AZStd::string StringAsPosix() const;
         constexpr AZStd::fixed_string<MaxPathLength> FixedMaxPathStringAsPosix() const noexcept;
+
+        // as_uri
+        //! Models the Python pathlib as_uri method
+        //! Percent encodes the path and appends file: to the front
+        string_type AsUri() const;
+        AZStd::string StringAsUri() const;
+        AZStd::fixed_string<MaxPathLength> FixedMaxPathStringAsUri() const noexcept;
 
         // compare
         //! Performs a compare of each of the path parts for equivalence
@@ -648,12 +672,8 @@ namespace AZ::IO
         //! Check whether the path is relative to the base path
         [[nodiscard]] constexpr bool IsRelativeTo(const PathView& base) const;
 
-        // decomposition
-        //! Given a windows path of "C:\O3DE\foo\bar\name.txt" and a posix path of
-        //! "/O3DE/foo/bar/name.txt"
-        //! The following functions return the following
-
-        // query
+        //! Returns the preferred separator for this instance
+        constexpr const char PreferredSeparator() const noexcept;
 
         // relative paths
         //! Normalizes a path in a purely lexical manner.
@@ -739,8 +759,13 @@ namespace AZ::IO
 
 namespace AZ
 {
+    AZ_TYPE_INFO_SPECIALIZE(AZ::IO::PathView, "{A3F81F4A-F87C-4CD6-8328-7E9C9C83D131}");
     AZ_TYPE_INFO_SPECIALIZE(AZ::IO::Path, "{88E0A40F-3085-4CAB-8B11-EF5A2659C71A}");
     AZ_TYPE_INFO_SPECIALIZE(AZ::IO::FixedMaxPath, "{FA6CA49F-376A-417C-9767-DD50744DF203}");
 }
+
+//! Use this macro to simplify safe printing of a PathView or BasicPath* which may not be null-terminated.
+//! Example: AZStd::fixed_string<1024>::format("Safely formatted: %.*s", AZ_PATH_ARG(myPathView));
+#define AZ_PATH_ARG(path) static_cast<int>(path.Native().size()), path.Native().data()
 
 #include <AzCore/IO/Path/Path.inl>

@@ -18,7 +18,7 @@ namespace AssetProcessor
     {
     public:
         ProductAssetTreeModel(AZStd::shared_ptr<AzToolsFramework::AssetDatabase::AssetDatabaseConnection> sharedDbConnection, QObject *parent = nullptr);
-        virtual ~ProductAssetTreeModel();
+        ~ProductAssetTreeModel() override;
 
         // AssetDatabaseNotificationBus::Handler
         void OnProductFileChanged(const AzToolsFramework::AssetDatabase::ProductDatabaseEntry& entry) override;
@@ -31,7 +31,7 @@ namespace AssetProcessor
         void ResetModel() override;
 
         void AddOrUpdateEntry(
-            const AzToolsFramework::AssetDatabase::ProductDatabaseEntry& product,
+            const AzToolsFramework::AssetDatabase::CombinedDatabaseEntry& product,
             bool modelIsResetting);
 
         void RemoveAsset(AZ::s64 productId);

@@ -8,6 +8,15 @@
 
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    # With Android Studio, the CMAKE_RUNTIME_OUTPUT_DIRECTORY, CMAKE_LIBRARY_OUTPUT_DIRECTORY and CMAKE_RUNTIME_OUTPUT_DIRECTORY are
+    # already different per configuration. There's no need to do "CMAKE_RUNTIME_OUTPUT_DIRECTORY\Debug" as the output folder.
+    # Having this extra configuration folder creates issues when copying the "runtime dependencies" files into the APK.
+    foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
+        string(TOUPPER ${conf} UCONF)
+        unset(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${UCONF} CACHE)    # Just use the CMAKE_ARCHIVE_OUTPUT_DIRECTORY for all configurations
+        unset(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${UCONF} CACHE)    # Just use the CMAKE_LIBRARY_OUTPUT_DIRECTORY for all configurations
+        unset(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${UCONF} CACHE)    # Just use the CMAKE_ARCHIVE_OUTPUT_DIRECTORY for all configurations
+    endforeach()
 
     include(cmake/Platform/Common/Configurations_common.cmake)
     include(cmake/Platform/Common/Clang/Configurations_clang.cmake)
@@ -20,7 +29,6 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     ly_append_configurations_options(
         DEFINES
             LINUX64
-            __ARM_NEON__
             _LINUX
             LINUX
             ANDROID
@@ -55,9 +63,6 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
             -stdlib=libc++
 
             -u ANativeActivity_onCreate
-
-            -L${LY_NDK_ABI_ROOT}/usr/lib
-            -L${LY_NDK_SRC_ROOT}/cxx-stl/llvm-libc++/libs/${ANDROID_ABI}
 
         LINK_NON_STATIC_DEBUG
             -Wl,--build-id       # Android Studio needs the libraries to have an id in order to match them with what"s running on the device.

@@ -21,6 +21,7 @@ namespace AZ::Render
         : public ComponentConfig
     {
     public:
+        AZ_CLASS_ALLOCATOR(StarsComponentConfig, SystemAllocator)
         AZ_RTTI(AZ::Render::StarsComponentConfig, "{10E6A838-3A66-4518-BF53-FCA8325C4759}", AZ::ComponentConfig);
 
         static void Reflect(ReflectContext* context);

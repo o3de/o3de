@@ -15,6 +15,7 @@
 #include <TestRunner/Common/Enumeration/TestImpactTestEnumeration.h>
 #include <TestRunner/Common/Job/TestImpactTestEnumerationJobData.h>
 #include <TestRunner/Common/Job/TestImpactTestJobRunner.h>
+#include <TestRunner/Common/Enumeration/TestImpactTestEnumerationSerializer.h>
 
 namespace TestImpact
 {
@@ -26,26 +27,21 @@ namespace TestImpact
     public:
         using TestJobRunner = TestJobRunner<AdditionalInfo, TestEnumeration>;
         using TestJobRunner::TestJobRunner;
+        using NotificationBus = typename TestJobRunner::NotificationBus;
 
         //! Executes the specified test enumeration jobs according to the specified cache and job exception policies.
         //! @param jobInfos The enumeration jobs to execute.
         //! @param stdOutRouting The standard output routing to be specified for all jobs.
         //! @param stdErrRouting The standard error routing to be specified for all jobs.
-        //! @param cacheExceptionPolicy The cache exception policy to be used for this run.
-        //! @param jobExceptionPolicy The enumeration job exception policy to be used for this run.
         //! @param enumerationTimeout The maximum duration an enumeration may be in-flight for before being forcefully terminated.
         //! @param enumeratorTimeout The maximum duration the enumerator may run before forcefully terminating all in-flight enumerations.
-        //! @param clientCallback The optional client callback to be called whenever an enumeration job changes state.
-        //! @param stdContentCallback 
         //! @return The result of the run sequence and the enumeration jobs with their associated test enumeration payloads.
-        AZStd::pair<ProcessSchedulerResult, AZStd::vector<typename TestJobRunner::Job>> Enumerate(
-            const AZStd::vector<typename TestJobRunner::JobInfo>& jobInfos,
+        [[nodiscard]] AZStd::pair<ProcessSchedulerResult, AZStd::vector<typename TestJobRunner::Job>> Enumerate(
+            const typename TestJobRunner::JobInfos& jobInfos,
             StdOutputRouting stdOutRouting,
             StdErrorRouting stdErrRouting,
             AZStd::optional<AZStd::chrono::milliseconds> enumerationTimeout,
-            AZStd::optional<AZStd::chrono::milliseconds> enumeratorTimeout,
-            AZStd::optional<typename TestJobRunner::JobCallback> clientCallback,
-            AZStd::optional<typename TestJobRunner::StdContentCallback> stdContentCallback);
+            AZStd::optional<AZStd::chrono::milliseconds> enumeratorTimeout);
 
     protected:
         //! Default implementation of payload producer for test enumerators.
@@ -53,28 +49,47 @@ namespace TestImpact
 
         //! Extracts the payload outcome for a given job payload.
         virtual typename TestJobRunner::JobPayloadOutcome
-          PayloadExtractor(const typename TestJobRunner::JobInfo& jobData, const JobMeta& jobMeta) = 0;
+        PayloadExtractor(const typename TestJobRunner::JobInfo& jobData, const JobMeta& jobMeta) = 0;
     };
 
     template<typename AdditionalInfo>
     AZStd::pair<ProcessSchedulerResult, AZStd::vector<typename TestEnumerator<AdditionalInfo>::TestJobRunner::Job>> TestEnumerator<
         AdditionalInfo>::
         Enumerate(
-        const AZStd::vector<typename TestJobRunner::JobInfo>& jobInfos,
+        const typename TestJobRunner::JobInfos& jobInfos,
         StdOutputRouting stdOutRouting,
         StdErrorRouting stdErrRouting,
         AZStd::optional<AZStd::chrono::milliseconds> enumerationTimeout,
-        AZStd::optional<AZStd::chrono::milliseconds> enumeratorTimeout,
-        AZStd::optional<typename TestJobRunner::JobCallback> clientCallback,
-        AZStd::optional<typename TestJobRunner::StdContentCallback> stdContentCallback)
+        AZStd::optional<AZStd::chrono::milliseconds> enumeratorTimeout)
     {
-        AZStd::vector<typename TestJobRunner::Job> cachedJobs;
-        AZStd::vector<typename TestJobRunner::JobInfo> jobQueue;
+        AZStd::vector<typename TestJobRunner::Job> cachedAndUnenumerableJobs;
+        typename TestJobRunner::JobInfos jobQueue;
 
         for (auto jobInfo = jobInfos.begin(); jobInfo != jobInfos.end(); ++jobInfo)
         {
+            // If this job doesn't support enumeration, add an empty enumeration
+            if (jobInfo->GetCommand().m_args.empty())
+            {
+                // Test target cannot enumerate, this job will not be placed in the job queue
+                const JobMeta JobMeta;
+                cachedAndUnenumerableJobs.emplace_back(typename TestJobRunner::Job(*jobInfo, {}, AZStd::nullopt));
+
+                AZ::EBusAggregateResults<ProcessCallbackResult> results;
+                NotificationBus::BroadcastResult(results, &NotificationBus::Events::OnJobComplete, *jobInfo, JobMeta, StdContent{});
+                if (GetAggregateProcessCallbackResult(results) == ProcessCallbackResult::Abort)
+                {
+                    // Client chose to abort so we will copy over the existing cache enumerations and fill the rest with blanks
+                    AZStd::vector<typename TestJobRunner::Job> jobs(cachedAndUnenumerableJobs);
+                    for (auto emptyJobInfo = ++jobInfo; emptyJobInfo != jobInfos.end(); ++emptyJobInfo)
+                    {
+                        jobs.emplace_back(typename TestJobRunner::Job(*emptyJobInfo, {}, AZStd::nullopt));
+                    }
+
+                    return { ProcessSchedulerResult::UserAborted, jobs };
+                }
+            }
             // If this job has a cache read policy attempt to read the cache
-            if (jobInfo->GetCache().has_value())
+            else if (jobInfo->GetCache().has_value())
             {
                 if (jobInfo->GetCache()->m_policy == TestEnumerationJobData::CachePolicy::Read)
                 {
@@ -96,15 +111,18 @@ namespace TestImpact
                     if (enumeration.has_value())
                     {
                         // Cache read successfully, this job will not be placed in the job queue
-                        cachedJobs.emplace_back(Job(*jobInfo, AZStd::move(meta), AZStd::move(enumeration)));
+                        cachedAndUnenumerableJobs.emplace_back(
+                            typename TestJobRunner::Job(*jobInfo, AZStd::move(meta), AZStd::move(enumeration)));
 
-                        if (clientCallback.has_value() && (*clientCallback)(*jobInfo, meta) == ProcessCallbackResult::Abort)
+                        AZ::EBusAggregateResults<ProcessCallbackResult> results;
+                        NotificationBus::BroadcastResult(results, &NotificationBus::Events::OnJobComplete, *jobInfo, meta, StdContent{});
+                        if (GetAggregateProcessCallbackResult(results) == ProcessCallbackResult::Abort)
                         {
                             // Client chose to abort so we will copy over the existing cache enumerations and fill the rest with blanks
-                            AZStd::vector<Job> jobs(cachedJobs);
+                            AZStd::vector<typename TestJobRunner::Job> jobs(cachedAndUnenumerableJobs);
                             for (auto emptyJobInfo = ++jobInfo; emptyJobInfo != jobInfos.end(); ++emptyJobInfo)
                             {
-                                jobs.emplace_back(Job(*emptyJobInfo, {}, AZStd::nullopt));
+                                jobs.emplace_back(typename TestJobRunner::Job(*emptyJobInfo, {}, AZStd::nullopt));
                             }
 
                             return { ProcessSchedulerResult::UserAborted, jobs };
@@ -144,12 +162,10 @@ namespace TestImpact
             stdOutRouting,
             stdErrRouting,
             enumerationTimeout,
-            enumeratorTimeout,
-            clientCallback,
-            stdContentCallback);
+            enumeratorTimeout);
 
-        // We need to add the cached jobs to the completed job list even though they technically weren't executed
-        for (auto&& job : cachedJobs)
+        // We need to add the cached and unenumerable jobs to the completed job list even though they technically weren't executed
+        for (auto&& job : cachedAndUnenumerableJobs)
         {
             jobs.emplace_back(AZStd::move(job));
         }

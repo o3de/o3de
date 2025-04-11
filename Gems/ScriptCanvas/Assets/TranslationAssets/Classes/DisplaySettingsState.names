@@ -10,7 +10,6 @@
             "methods": [
                 {
                     "base": "ToString",
-                    "context": "DisplaySettingsState",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke ToString"

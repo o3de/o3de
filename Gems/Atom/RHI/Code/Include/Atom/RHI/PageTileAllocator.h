@@ -13,7 +13,7 @@
 
 namespace AZ::RHI
 {
-    //! A structure to represent continous number of tiles of a given heap page
+    //! A structure to represent continuous number of tiles of a given heap page
     struct PageTileSpan
     {
     public:

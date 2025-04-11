@@ -17,7 +17,13 @@
 
 #include <Atom/RPI.Reflect/Material/MaterialPropertyDescriptor.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
+#include <Atom/RPI.Edit/Configuration.h>
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
+
+namespace AZ::RPI::MaterialUtils
+{
+    using ImportedJsonFiles = AZStd::unordered_set<AZ::IO::Path>;
+}
 
 namespace AZ
 {
@@ -34,14 +40,8 @@ namespace AZ
         class MaterialAsset;
         class MaterialAssetCreator;
 
-        enum class MaterialAssetProcessingMode
-        {
-            PreBake,      //!< all material asset processing is done in the Asset Processor, producing a finalized material asset
-            DeferredBake  //!< some material asset processing is deferred, and the material asset is finalized at runtime after loading
-        };
-
         //! This is a simple data structure for serializing in/out material source files.
-        class MaterialSourceData final
+        class ATOM_RPI_EDIT_API MaterialSourceData final
         {
         public:
             AZ_TYPE_INFO(AZ::RPI::MaterialSourceData, "{B8881D92-DF9F-4552-9F22-FF4421C45D9A}");
@@ -92,7 +92,6 @@ namespace AZ
             Outcome<Data::Asset<MaterialAsset>> CreateMaterialAsset(
                 Data::AssetId assetId,
                 const AZStd::string& materialSourceFilePath,
-                MaterialAssetProcessingMode processingMode,
                 bool elevateWarnings = true) const;
 
             //! Creates a MaterialAsset from the MaterialSourceData content.
@@ -105,7 +104,7 @@ namespace AZ
                 Data::AssetId assetId,
                 AZStd::string_view materialSourceFilePath = "",
                 bool elevateWarnings = true,
-                AZStd::unordered_set<AZStd::string>* sourceDependencies = nullptr) const;
+                MaterialUtils::ImportedJsonFiles* sourceDependencies = nullptr) const;
 
         private:
 

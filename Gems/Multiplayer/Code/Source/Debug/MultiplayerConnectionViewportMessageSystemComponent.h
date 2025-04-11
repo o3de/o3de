@@ -33,12 +33,18 @@ namespace Multiplayer
 
         // Messaging for client during editor play mode
         static constexpr char CenterViewportDebugTitle[] = "Multiplayer Editor";
-        static constexpr char OnServerLaunchedMessage[] = "(1/3) Launching server...";
-        static constexpr char OnServerLaunchFailMessage[] = "(1/3) Could not launch editor server.\nSee console for more info.";
-        static constexpr char OnEditorConnectionAttemptMessage[] = "(2/3) Attempting to connect to server in order to send level data.\nAttempt %i of %i";
-        static constexpr char OnEditorConnectionAttemptsFailedMessage[] = "(2/3) Failed to connect to server after %i attempts!\nPlease exit play mode and try again.";  
-        static constexpr char OnEditorSendingLevelDataMessage[] = "(3/3) Editor is sending the editor-server the level data packet.";
-        static constexpr char OnConnectToSimulationFailMessage[] = "EditorServerReady packet was received, but connecting to the editor-server's network simulation failed! Is the editor and server using the same sv_port (%i)?";
+        static constexpr char OnServerLaunchedMessage[] = "(1/4) Launching server...";
+        static constexpr char OnServerLaunchFailMessage[] = "(1/4) Could not launch editor server.\nSee console for more info.";
+        static constexpr char OnEditorConnectionAttemptMessage[] = "(2/4) Attempting to connect to server in order to send level data.\nAttempt %i of %i";
+        static constexpr char OnEditorConnectionAttemptsFailedMessage[] = "(2/4) Failed to connect to server after %i attempts!\nPlease exit play mode and try again.";  
+        static constexpr char OnEditorSendingLevelDataMessage[] = "(3/4) Editor is sending the editor-server the level data packet.\nBytes %u / %u sent.";
+        static constexpr char OnEditorSendingLevelDataFailedMessage[] =
+            "(3/4) Editor failed to send the editor-server the level data packet.\nPlease exit play mode and try again.";
+        static constexpr char OnEditorSendingLevelDataSuccessMessage[] =
+            "(4/4) Waiting for editor-server to finish loading the level data.";
+        static constexpr char OnConnectToSimulationFailMessage[] =
+            "EditorServerReady packet was received, but connecting to the editor-server's network simulation failed! Is the editor and "
+            "server using the same sv_port (%i)?";
         static constexpr char OnEditorServerStoppedUnexpectedly[] ="Editor server has unexpectedly stopped running!";
 
         // Messaging for clients
@@ -61,6 +67,7 @@ namespace Multiplayer
         static constexpr char OnBlockedLevelLoadMessage[] = "Blocked level load; see log for details.";
         static constexpr char OnNoServerLevelLoadedMessageClientSide[] = "Server accept message did not provide a level.\nEnsure server has level loaded before connecting.";
         static constexpr char OnNoServerLevelLoadedMessageServerSide[] = "A client has connected, but we're not in a level.\nPlease load a valid multiplayer level before accepting clients.";
+        static constexpr char OnVersionMismatch[] = "Multiplayer Version Mismatch.\nEnsure server and client are both up to date.";
 
         AZ_COMPONENT(MultiplayerConnectionViewportMessageSystemComponent, "{7600cfcf-e380-4876-aa90-8120e57205e9}");
 
@@ -86,7 +93,9 @@ namespace Multiplayer
         void OnServerLaunchFail() override;
         void OnEditorConnectionAttempt(uint16_t connectionAttempts, uint16_t maxAttempts) override;
         void OnEditorConnectionAttemptsFailed(uint16_t failedAttempts) override;
-        void OnEditorSendingLevelData() override;
+        void OnEditorSendingLevelData(uint32_t bytesSent, uint32_t bytesTotal) override;
+        void OnEditorSendingLevelDataFailed() override;
+        void OnEditorSendingLevelDataSuccess() override;
         void OnConnectToSimulationSuccess() override;
         void OnConnectToSimulationFail(uint16_t serverPort) override;
         void OnPlayModeEnd() override;
@@ -100,6 +109,9 @@ namespace Multiplayer
 
         void OnNoServerLevelLoadedEvent();
         NoServerLevelLoadedEvent::Handler m_noServerLevelLoadedHandler = NoServerLevelLoadedEvent::Handler([this](){OnNoServerLevelLoadedEvent();});
+
+        void OnVersionMismatchEvent();
+        VersionMismatchEvent::Handler m_versionMismatchEventHandler = VersionMismatchEvent::Handler([this](){OnVersionMismatchEvent();});
         //! @}
 
         void DrawConnectionStatus(AzNetworking::ConnectionState connectionState, const AzNetworking::IpAddress& hostAddress);

@@ -178,7 +178,8 @@ namespace
                                 const AzFramework::ModifierKeyMask activeModifierKeys = AzFramework::ModifierKeyMask::None)
     {
         bool handled = false;
-        EBUS_EVENT_ID_RESULT(handled, canvasEntityId, UiCanvasBus, HandleInputEvent, inputSnapshot, viewportPos, activeModifierKeys);
+        UiCanvasBus::EventResult(
+            handled, canvasEntityId, &UiCanvasBus::Events::HandleInputEvent, inputSnapshot, viewportPos, activeModifierKeys);
 
         // Execute events that have been queued during the input event handler
         AZ::Interface<ILyShine>::Get()->ExecuteQueuedEvents();
@@ -189,7 +190,7 @@ namespace
     bool HandleCanvasTextEvent(AZ::EntityId canvasEntityId, const AZStd::string& textUTF8)
     {
         bool handled = false;
-        EBUS_EVENT_ID_RESULT(handled, canvasEntityId, UiCanvasBus, HandleTextEvent, textUTF8);
+        UiCanvasBus::EventResult(handled, canvasEntityId, &UiCanvasBus::Events::HandleTextEvent, textUTF8);
 
         // Execute events that have been queued during the input event handler
         AZ::Interface<ILyShine>::Get()->ExecuteQueuedEvents();
@@ -919,7 +920,7 @@ LyShine::AttachmentImagesAndDependencies ViewportWidget::GetRenderTargets()
     if (canvasEntityId.IsValid())
     {
         AZ::Entity* canvasEntity = nullptr;
-        EBUS_EVENT_RESULT(canvasEntity, AZ::ComponentApplicationBus, FindEntity, canvasEntityId);
+        AZ::ComponentApplicationBus::BroadcastResult(canvasEntity, &AZ::ComponentApplicationBus::Events::FindEntity, canvasEntityId);
         AZ_Assert(canvasEntity, "Canvas entity not found by ID");
         if (canvasEntity)
         {
@@ -956,13 +957,13 @@ void ViewportWidget::UpdateEditMode(float deltaTime)
     }
 
     AZ::Vector2 canvasSize;
-    EBUS_EVENT_ID_RESULT(canvasSize, canvasEntityId, UiCanvasBus, GetCanvasSize);
+    UiCanvasBus::EventResult(canvasSize, canvasEntityId, &UiCanvasBus::Events::GetCanvasSize);
 
     // Set the target size of the canvas
-    EBUS_EVENT_ID(canvasEntityId, UiCanvasBus, SetTargetCanvasSize, false, canvasSize);
+    UiCanvasBus::Event(canvasEntityId, &UiCanvasBus::Events::SetTargetCanvasSize, false, canvasSize);
 
     // Update this canvas (must be done after SetTargetCanvasSize)
-    EBUS_EVENT_ID(canvasEntityId, UiEditorCanvasBus, UpdateCanvasInEditorViewport, deltaTime, false);
+    UiEditorCanvasBus::Event(canvasEntityId, &UiEditorCanvasBus::Events::UpdateCanvasInEditorViewport, deltaTime, false);
 }
 
 void ViewportWidget::RenderEditMode()
@@ -982,7 +983,7 @@ void ViewportWidget::RenderEditMode()
     QTreeWidgetItemRawPtrQList selection = m_editorWindow->GetHierarchy()->selectedItems();
 
     AZ::Vector2 canvasSize;
-    EBUS_EVENT_ID_RESULT(canvasSize, canvasEntityId, UiCanvasBus, GetCanvasSize);
+    UiCanvasBus::EventResult(canvasSize, canvasEntityId, &UiCanvasBus::Events::GetCanvasSize);
 
     m_draw2d->SetSortKey(backgroundKey);
 
@@ -996,11 +997,11 @@ void ViewportWidget::RenderEditMode()
         m_viewportInteraction->GetCanvasToViewportTranslation());
 
     // Set the target size of the canvas
-    EBUS_EVENT_ID(canvasEntityId, UiCanvasBus, SetTargetCanvasSize, false, canvasSize);
+    UiCanvasBus::Event(canvasEntityId, &UiCanvasBus::Events::SetTargetCanvasSize, false, canvasSize);
 
     // Render this canvas
     AZ::Vector2 viewportSize = GetRenderViewportSize();
-    EBUS_EVENT_ID(canvasEntityId, UiEditorCanvasBus, RenderCanvasInEditorViewport, false, viewportSize);
+    UiEditorCanvasBus::Event(canvasEntityId, &UiEditorCanvasBus::Events::RenderCanvasInEditorViewport, false, viewportSize);
 
     m_draw2d->SetSortKey(topLayerKey);
     // Draw borders around selected and unselected UI elements in the viewport
@@ -1117,10 +1118,10 @@ void ViewportWidget::UpdatePreviewMode(float deltaTime)
         }
 
         // Set the target size of the canvas
-        EBUS_EVENT_ID(canvasEntityId, UiCanvasBus, SetTargetCanvasSize, true, canvasSize);
+        UiCanvasBus::Event(canvasEntityId, &UiCanvasBus::Events::SetTargetCanvasSize, true, canvasSize);
 
         // Update this canvas (must be done after SetTargetCanvasSize)
-        EBUS_EVENT_ID(canvasEntityId, UiEditorCanvasBus, UpdateCanvasInEditorViewport, deltaTime, true);
+        UiEditorCanvasBus::Event(canvasEntityId, &UiEditorCanvasBus::Events::UpdateCanvasInEditorViewport, deltaTime, true);
 
         // Execute events that have been queued during the canvas update
         AZ::Interface<ILyShine>::Get()->ExecuteQueuedEvents();
@@ -1202,7 +1203,7 @@ void ViewportWidget::RenderPreviewMode()
             (viewportSize.GetY() - (canvasSize.GetY() * scale)) * 0.5f, 0.0f);
         AZ::Matrix4x4 canvasToViewportMatrix = AZ::Matrix4x4::CreateScale(scale3);
         canvasToViewportMatrix.SetTranslation(translation);
-        EBUS_EVENT_ID(canvasEntityId, UiCanvasBus, SetCanvasToViewportMatrix, canvasToViewportMatrix);
+        UiCanvasBus::Event(canvasEntityId, &UiCanvasBus::Events::SetCanvasToViewportMatrix, canvasToViewportMatrix);
 
         m_draw2d->SetSortKey(backgroundKey);
 
@@ -1221,7 +1222,7 @@ void ViewportWidget::RenderPreviewMode()
         // NOTE: the displayBounds param is always false. If we wanted a debug option to display the bounds
         // in preview mode we would need to render the deferred primitives after this call so that they
         // show up in the correct viewport
-        EBUS_EVENT_ID(canvasEntityId, UiEditorCanvasBus, RenderCanvasInEditorViewport, true, viewportSize);
+        UiEditorCanvasBus::Event(canvasEntityId, &UiEditorCanvasBus::Events::RenderCanvasInEditorViewport, true, viewportSize);
     }
 }
 

@@ -114,7 +114,8 @@ namespace AZ
                 uint32_t lodIndex,
                 uint32_t meshIndex,
                 const RHI::InputStreamLayout& inputLayout,
-                const RPI::ModelLod::StreamBufferViewList& streamBufferViews,
+                RPI::ModelLod::Mesh& mesh,
+                const RHI::StreamBufferIndices& streamIndices,
                 const char* modelName);
 
             void CreateOutputOffsets(
@@ -151,7 +152,7 @@ namespace AZ
             : public AZStd::intrusive_base
         {
         public:
-            AZ_CLASS_ALLOCATOR(SkinnedMeshInputBuffers, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SkinnedMeshInputBuffers, AZ::SystemAllocator);
 
             SkinnedMeshInputBuffers();
             ~SkinnedMeshInputBuffers();

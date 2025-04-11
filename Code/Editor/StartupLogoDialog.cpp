@@ -96,14 +96,12 @@ void CStartupLogoDialog::SetText(const char* text)
 
 void CStartupLogoDialog::SetInfoText(const char* text)
 {
-    m_ui->m_TransparentText->setText(text);
-
-    if (QThread::currentThread() == thread())
-    {
-        m_ui->m_TransparentText->repaint();
-    }
-
-    qApp->processEvents(QEventLoop::ExcludeUserInputEvents); // if you don't process events, repaint does not function correctly.
+    QMetaObject::invokeMethod(
+        this,
+        [this, text = QString(text)]()
+        {
+            m_ui->m_TransparentText->setText(text);
+        });
 }
 
 void CStartupLogoDialog::paintEvent(QPaintEvent*)

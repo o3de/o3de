@@ -43,12 +43,11 @@ namespace Multiplayer
     using namespace ::UnitTest;
 
     class NetworkEntityTests
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         void SetUp() override
         {
-            SetupAllocator();
             AZ::NameDictionary::Create();
 
             m_mockComponentApplicationRequests = AZStd::make_unique<NiceMock<MockComponentApplicationRequests>>();
@@ -133,10 +132,13 @@ namespace Multiplayer
             AZ::Interface<IMultiplayer>::Unregister(m_mockMultiplayer.get());
             AZ::Interface<AZ::ComponentApplicationRequests>::Unregister(m_mockComponentApplicationRequests.get());
 
+            m_networkEntityManager->Reset();
+            m_networkEntityManager.reset();
+
+            m_eventScheduler->Deactivate();
             m_eventScheduler.reset();
             m_mockTime.reset();
 
-            m_networkEntityManager.reset();
             m_mockMultiplayer.reset();
             m_visisbilitySystem->Disconnect();
             m_visisbilitySystem.reset();
@@ -153,7 +155,6 @@ namespace Multiplayer
             m_mockComponentApplicationRequests.reset();
 
             AZ::NameDictionary::Destroy();
-            TeardownAllocator();
         }
 
         AZStd::unique_ptr<AZ::IConsole> m_console;

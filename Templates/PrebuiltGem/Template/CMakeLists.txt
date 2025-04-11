@@ -6,22 +6,9 @@
 #
 # {END_LICENSE}
 
-# Query the gem name from the gem.json file if possible
-# otherwise fallback to using ${Name}
-o3de_find_ancestor_gem_root(gempath gem_name "${CMAKE_CURRENT_SOURCE_DIR}")
-if (NOT gem_name)
-    set(gem_name "${Name}")
-endif()
-
-# Fallback to using the current source CMakeLists.txt directory as the gem root path
-if (NOT gem_path)
-    set(gem_path ${CMAKE_CURRENT_SOURCE_DIR})
-endif()
-
-set(gem_json ${gem_path}/gem.json)
-
-o3de_restricted_path(${gem_json} gem_restricted_path gem_parent_relative_path)
-
-ly_add_external_target_path(${CMAKE_CURRENT_SOURCE_DIR}/3rdParty)
+# Setup the gem meta variables that includes the "gem_path", "gem_name" and "gem_version"
+# The "pal_dir" variable is also set which refers to the Platform/<platform-name> directory
+# based on the directory of this CMakeLists.txt
+o3de_gem_setup("${Name}")
 
 add_subdirectory(Code)

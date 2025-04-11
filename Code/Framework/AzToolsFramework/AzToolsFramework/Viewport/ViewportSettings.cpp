@@ -7,6 +7,7 @@
  */
 
 #include <AzToolsFramework/Viewport/ViewportSettings.h>
+#include <AzToolsFramework/API/SettingsRegistryUtils.h>
 
 namespace AzToolsFramework
 {

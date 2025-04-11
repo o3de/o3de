@@ -8,7 +8,7 @@
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
-        NAME LandscapeCanvas.Editor.Static STATIC
+        NAME ${gem_name}.Editor.Static STATIC
         NAMESPACE Gem
         AUTOMOC
         FILES_CMAKE
@@ -44,7 +44,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             Gem::LmbrCentral.Editor
     )
     ly_add_target(
-        NAME LandscapeCanvas.Editor GEM_MODULE
+        NAME ${gem_name}.Editor GEM_MODULE
         NAMESPACE Gem
         FILES_CMAKE
             landscapecanvas_editor_files.cmake
@@ -62,7 +62,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AzToolsFramework
                 Legacy::Editor.Headers
                 Gem::GraphModel.Editor.Static
-                Gem::LandscapeCanvas.Editor.Static
+                Gem::${gem_name}.Editor.Static
         RUNTIME_DEPENDENCIES
             Gem::GraphCanvas.Editor
             Gem::LmbrCentral.Editor
@@ -71,9 +71,18 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             Gem::SurfaceData.Editor
     )
 
-    # by default, load the above "Gem::LandscapeCanvas.Editor" module in dev applications
-    ly_create_alias(NAME LandscapeCanvas.Builders NAMESPACE Gem TARGETS Gem::LandscapeCanvas.Editor)
-    ly_create_alias(NAME LandscapeCanvas.Tools    NAMESPACE Gem TARGETS Gem::LandscapeCanvas.Editor)
+    # Inject the gem name into the Module source file
+    ly_add_source_properties(
+        SOURCES
+            Source/LandscapeCanvasEditorModule.cpp
+        PROPERTY COMPILE_DEFINITIONS
+            VALUES
+                O3DE_GEM_NAME=${gem_name}
+                O3DE_GEM_VERSION=${gem_version})
+
+    # by default, load the above "Gem::${gem_name}.Editor" module in dev applications
+    ly_create_alias(NAME ${gem_name}.Builders NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
+    ly_create_alias(NAME ${gem_name}.Tools    NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
 
 endif()
 
@@ -83,7 +92,7 @@ endif()
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     if(PAL_TRAIT_BUILD_HOST_TOOLS)
         ly_add_target(
-            NAME LandscapeCanvas.Editor.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+            NAME ${gem_name}.Editor.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
             NAMESPACE Gem
             FILES_CMAKE
                 landscapecanvas_tests_editor_files.cmake
@@ -101,12 +110,13 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     AZ::AzFramework
                     AZ::AzToolsFramework
                     Gem::GraphModel.Editor.Static
-                    Gem::LandscapeCanvas.Editor.Static
+                    Gem::${gem_name}.Editor.Static
             RUNTIME_DEPENDENCIES
                 Gem::GraphCanvasWidgets
         )
         ly_add_googletest(
-            NAME Gem::LandscapeCanvas.Editor.Tests
+            NAME Gem::${gem_name}.Editor.Tests
+            LABELS REQUIRES_tiaf
         )
     endif()
 endif()

@@ -39,7 +39,14 @@ bool GUIApplicationServer::startListening(unsigned short port)
 
         if (!listen(QHostAddress::Any, aznumeric_cast<quint16>(m_serverListeningPort)))
         {
-            AZ_Error(AssetProcessor::ConsoleChannel, false, "Cannot start Asset Processor server - another instance of the Asset Processor may already be running on port number %d.  If you'd like to run multiple Asset Processors on different branches at the same time, please edit bootstrap.cfg and assign different remote_port values to each branch instance.\n", m_serverListeningPort);
+            AZ_Error(
+                AssetProcessor::ConsoleChannel,
+                false,
+                "Cannot start Asset Processor server - another instance of the Asset Processor may already be running on port number %d.  "
+                "If you'd like to run multiple Asset Processors on different branches at the same time, please modify the /Amazon/AzCore/Bootstrap/remote_port "
+                " registry setting (by default this is set in bootstrap.setreg) and assign different remote_port values to each branch "
+                "instance.\n",
+                m_serverListeningPort);
             return false;
         }
         m_serverListeningPort = serverPort();

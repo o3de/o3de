@@ -34,6 +34,9 @@ namespace AZ
 
             /// A set of user fences to signal after executing the command lists.
             AZStd::vector<Fence*> m_userFencesToSignal;
+
+            /// A set of user fences to wait for before executing the command lists.
+            AZStd::vector<Fence*> m_userFencesToWaitFor;
         };
 
         enum class HardwareQueueSubclass
@@ -54,7 +57,7 @@ namespace AZ
             using Base = RHI::CommandQueue;
         public:
             
-            AZ_CLASS_ALLOCATOR(CommandQueue, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(CommandQueue, AZ::SystemAllocator);
             AZ_RTTI(CommandQueue, "{9F93F430-E440-4033-9FBD-1A399B03355B}", Base);
 
             static RHI::Ptr<CommandQueue> Create();
@@ -66,6 +69,7 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
 
             void CalibrateClock();
+            AZStd::pair<uint64_t, uint64_t> GetClockCalibration();
 
             ID3D12CommandQueue* GetPlatformQueue() const;
 

@@ -6,12 +6,11 @@
  *
  */
 
-#include <AudioSystemGemSystemComponent.h>
+#include "AudioSystemGemSystemComponent.h"
 
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ILogger.h>
 #include <AzCore/Interface/Interface.h>
-#include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/Module/Environment.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -58,7 +57,6 @@ namespace AudioSystemGem
             {
                 ec->Class<AudioSystemGemSystemComponent>("Audio System Gem", "Audio System handles requests and managages data related to the audio sub-system")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }
@@ -67,12 +65,12 @@ namespace AudioSystemGem
 
     void AudioSystemGemSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("AudioSystemGemService"));
+        provided.push_back(AZ_CRC_CE("AudioSystemGemService"));
     }
 
     void AudioSystemGemSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("AudioSystemGemService"));
+        incompatible.push_back(AZ_CRC_CE("AudioSystemGemService"));
     }
 
     void AudioSystemGemSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)

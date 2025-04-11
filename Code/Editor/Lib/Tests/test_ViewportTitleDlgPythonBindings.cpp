@@ -23,7 +23,7 @@ namespace ViewportTitleDlgFuncsUnitTests
 {
 
     class ViewportTitleDlgPythonBindingsFixture
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         AzToolsFramework::ToolsApplication m_app;
@@ -31,8 +31,9 @@ namespace ViewportTitleDlgFuncsUnitTests
         void SetUp() override
         {
             AzFramework::Application::Descriptor appDesc;
-
-            m_app.Start(appDesc);
+            AZ::ComponentApplication::StartupParameters startupParameters;
+            startupParameters.m_loadSettingsRegistry = false;
+            m_app.Start(appDesc, startupParameters);
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
             // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash
             // in the unit tests.
@@ -53,5 +54,7 @@ namespace ViewportTitleDlgFuncsUnitTests
 
         EXPECT_TRUE(behaviorContext->m_methods.find("toggle_helpers") != behaviorContext->m_methods.end());
         EXPECT_TRUE(behaviorContext->m_methods.find("is_helpers_shown") != behaviorContext->m_methods.end());
+        EXPECT_TRUE(behaviorContext->m_methods.find("toggle_icons") != behaviorContext->m_methods.end());
+        EXPECT_TRUE(behaviorContext->m_methods.find("is_icons_shown") != behaviorContext->m_methods.end());
     }
 }

@@ -12,9 +12,9 @@
 #include <AzCore/Debug/TraceMessageBus.h>
 #include <QDir>
 #include <AzFramework/IO/LocalFileIO.h>
-#endif
 
 #include <AzCore/UnitTest/UnitTest.h>
+#endif
 
 // ----------------- UTILITY FUNCTIONS --------------------
 namespace UnitTestUtils
@@ -26,6 +26,8 @@ namespace UnitTestUtils
     **/
     void SleepForMinimumFileSystemTime();
 
+    //! Create a dummy file using AZ::IO APIs which support mocking
+    bool CreateDummyFileAZ(AZ::IO::PathView fullPathToFile, AZStd::string_view contents = "");
     //! Create a dummy file, with optional contents.  Will create directories for it too.
     bool CreateDummyFile(const QString& fullPathToFile, QString contents = "");
     //! This function pumps the Qt event queue until either the varToWatch becomes true or the specified millisecond elapse.

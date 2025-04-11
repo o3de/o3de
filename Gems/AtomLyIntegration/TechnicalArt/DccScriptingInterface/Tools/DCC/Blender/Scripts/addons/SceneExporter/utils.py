@@ -177,40 +177,41 @@ def loop_through_selected_materials(texture_file_path):
     selected_materials = get_selected_materials(bpy.context.selected_objects)
     # Loop through Materials
     for mat in selected_materials:
-        # Get the material
-        material = bpy.data.materials[mat]
-        # Loop through material node tree and get all the texture iamges
-        for img in material.node_tree.nodes:
-            if img.type == 'TEX_IMAGE':
-                # Frist make sure the image is not packed inside blender
-                if img.image.packed_file:
-                    if Path(img.image.name).suffix in constants.IMAGE_EXT:
-                        bpy.data.images[img.image.name].filepath = str(Path(texture_file_path).joinpath(img.image.name))
-                    else:
-                        ext = '.png'
-                        build_string = f'{img.image.name}{ext}'
-                        bpy.data.images[img.image.name].filepath = str(Path(texture_file_path).joinpath(build_string))
-                    
-                    bpy.data.images[img.image.name].save()
-                full_path = Path(bpy.path.abspath(img.image.filepath, library=img.image.library))
-                base_name = Path(full_path).name
-                if not full_path.exists(): # if embedded path doesnt exist, check current folder
-                    full_path = Path(bpy.data.filepath).parent.joinpath(base_name)
-                o3de_texture_path = Path(texture_file_path).joinpath(base_name)
-                # Add to stored_image_source_paths to replace later
-                if not check_file_paths_duplicate(full_path, o3de_texture_path): # We check first if its not already copied over.
-                    bpy.types.Scene.stored_image_source_paths[img.image.name] = full_path
-                    # Copy the image to Destination
-                    try:
-                        bpy.data.images[img.image.name].filepath = str(o3de_texture_path)
-                        if full_path.exists():
-                            copy_texture_file(full_path, o3de_texture_path)
+        if mat:
+            # Get the material
+            material = bpy.data.materials[mat]
+            # Loop through material node tree and get all the texture iamges
+            for img in material.node_tree.nodes:
+                if img.type == 'TEX_IMAGE':
+                    # First make sure the image is not packed inside blender
+                    if img.image.packed_file:
+                        if Path(img.image.name).suffix in constants.IMAGE_EXT:
+                            bpy.data.images[img.image.name].filepath = str(Path(texture_file_path).joinpath(img.image.name))
                         else:
-                            bpy.data.images[img.image.name].save() 
-                            # Save image to location
-                    except (FileNotFoundError, RuntimeError):
-                        pass
-                img.image.reload()
+                            ext = '.png'
+                            build_string = f'{img.image.name}{ext}'
+                            bpy.data.images[img.image.name].filepath = str(Path(texture_file_path).joinpath(build_string))
+                        
+                        bpy.data.images[img.image.name].save()
+                    full_path = Path(bpy.path.abspath(img.image.filepath, library=img.image.library))
+                    base_name = Path(full_path).name
+                    if not full_path.exists(): # if embedded path doesnt exist, check current folder
+                        full_path = Path(bpy.data.filepath).parent.joinpath(base_name)
+                    o3de_texture_path = Path(texture_file_path).joinpath(base_name)
+                    # Add to stored_image_source_paths to replace later
+                    if not check_file_paths_duplicate(full_path, o3de_texture_path): # We check first if its not already copied over.
+                        bpy.types.Scene.stored_image_source_paths[img.image.name] = full_path
+                        # Copy the image to Destination
+                        try:
+                            bpy.data.images[img.image.name].filepath = str(o3de_texture_path)
+                            if full_path.exists():
+                                copy_texture_file(full_path, o3de_texture_path)
+                            else:
+                                bpy.data.images[img.image.name].save() 
+                                # Save image to location
+                        except (FileNotFoundError, RuntimeError):
+                            pass
+                    img.image.reload()
 
 def copy_texture_file(source_path, destination_path):
     """!

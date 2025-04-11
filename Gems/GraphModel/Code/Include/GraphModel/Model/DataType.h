@@ -29,10 +29,10 @@ namespace GraphModel
     class DataType
     {
     public:
-        AZ_CLASS_ALLOCATOR(DataType, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DataType, AZ::SystemAllocator);
         AZ_RTTI(DataType, "{B8CBD17E-B8F7-4090-99A7-E9E9970D3EF3}");
 
-        static void Reflect(AZ::ReflectContext* reflection);
+        static void Reflect(AZ::ReflectContext* context);
 
         //! Data types can be described by a simple enum value. Client systems can
         //! use whatever value they want as long as each type has a unique value.

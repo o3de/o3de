@@ -19,14 +19,14 @@
 
 namespace UnitTest
 {
-    class EditorViewportIconFixture : public AllocatorsTestFixture
+    class EditorViewportIconFixture : public LeakDetectionFixture
     {
     public:
         inline static constexpr AzFramework::ViewportId TestViewportId = 2468;
 
         void SetUp() override
         {
-            AllocatorsTestFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             m_focusModeMock = AZStd::make_unique<::testing::NiceMock<MockFocusModeInterface>>();
             m_editorViewportIconDisplayMock = AZStd::make_unique<::testing::NiceMock<MockEditorViewportIconDisplayInterface>>();
@@ -58,7 +58,7 @@ namespace UnitTest
             m_editorViewportIconDisplayMock.reset();
             m_focusModeMock.reset();
 
-            AllocatorsTestFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         AZStd::unique_ptr<ViewportSettingsTestImpl> m_viewportSettings;
@@ -83,6 +83,9 @@ namespace UnitTest
             .WillByDefault(Return(AZ::Vector3(0.0f, insideNearClip, 0.0f)));
 
         EXPECT_CALL(*m_editorViewportIconDisplayMock, DrawIcon(_)).Times(0);
+        EXPECT_CALL(*m_editorViewportIconDisplayMock, AddIcon(_)).Times(0);
+        EXPECT_CALL(*m_editorViewportIconDisplayMock, DrawIcons()).Times(1);
+
 
         // when
         m_editorHelpers->DisplayHelpers(
@@ -104,6 +107,8 @@ namespace UnitTest
         ON_CALL(*m_entityVisibleEntityDataCacheMock, GetVisibleEntityPosition(_)).WillByDefault(Return(AZ::Vector3(0.0f, -1.0f, 0.0f)));
 
         EXPECT_CALL(*m_editorViewportIconDisplayMock, DrawIcon(_)).Times(0);
+        EXPECT_CALL(*m_editorViewportIconDisplayMock, AddIcon(_)).Times(0);
+        EXPECT_CALL(*m_editorViewportIconDisplayMock, DrawIcons()).Times(1);
 
         // when
         m_editorHelpers->DisplayHelpers(

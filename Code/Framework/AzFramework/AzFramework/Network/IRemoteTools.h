@@ -39,7 +39,7 @@ namespace AzFramework
     class RemoteToolsMessage : public AZStd::intrusive_refcount<size_t>
     {
     public:
-        AZ_CLASS_ALLOCATOR(RemoteToolsMessage, AZ::OSAllocator, 0);
+        AZ_CLASS_ALLOCATOR(RemoteToolsMessage, AZ::OSAllocator);
         AZ_RTTI(RemoteToolsMessage, "{8512328C-949D-4F0C-B48D-77C26C207443}");
 
         RemoteToolsMessage() = default;
@@ -84,7 +84,7 @@ namespace AzFramework
 
         //! Reflect RemoteToolsMessage
         //! @param reflection Context to reflect to
-        static void ReflectRemoteToolsMessage(AZ::ReflectContext* reflection);
+        static void Reflect(AZ::ReflectContext* reflection);
 
     protected:
         AZ::u64 m_msgId = 0;
@@ -105,7 +105,7 @@ namespace AzFramework
     {
 
     public:
-        AZ_CLASS_ALLOCATOR(RemoteToolsEndpointInfo, AZ::OSAllocator, 0);
+        AZ_CLASS_ALLOCATOR(RemoteToolsEndpointInfo, AZ::OSAllocator);
         AZ_TYPE_INFO(RemoteToolsEndpointInfo, "{DD0E9B2A-3B25-43B1-951E-CACCEC5D6754}");
 
         explicit RemoteToolsEndpointInfo(AZStd::string displayName = AZStd::string{}, AZ::u32 networkId = 0)
@@ -146,6 +146,10 @@ namespace AzFramework
 
         bool IsIdentityEqualTo(const RemoteToolsEndpointInfo& other) const;
 
+        //! Reflect RemoteToolsEndpointInfo
+        //! @param reflection Context to reflect to
+        static void Reflect(AZ::ReflectContext* reflection);
+
     private:
         AZStd::string m_displayName;
         AZ::u32 m_persistentId = 0; // this is a CRC key used to identify a RemoteTools target
@@ -156,7 +160,7 @@ namespace AzFramework
     using RemoteToolsEndpointStatusEvent = AZ::Event<RemoteToolsEndpointInfo>;
     using RemoteToolsEndpointConnectedEvent = AZ::Event<bool>;
     using RemoteToolsEndpointChangedEvent = AZ::Event<AZ::u32, AZ::u32>;
-    using ReceivedRemoteToolsMessages = AZStd::fixed_vector<RemoteToolsMessagePointer, 64>;
+    using ReceivedRemoteToolsMessages = AZStd::fixed_vector<RemoteToolsMessagePointer, 128>;
 
     class IRemoteTools
     {
@@ -184,6 +188,11 @@ namespace AzFramework
         //! Useful for situations in which messages must be processed out of band.
         //! @param key The key of the service to clear messages for
         virtual void ClearReceivedMessages(AZ::Crc32 key) = 0;
+
+        //! Will clear pending received messages at the start of the next tick
+        //! Useful if multiple areas of the same service wants to read the messages
+        //! @param key The key of the service to clear messages for
+        virtual void ClearReceivedMessagesForNextTick(AZ::Crc32 key) = 0;
 
         virtual void RegisterRemoteToolsEndpointJoinedHandler(AZ::Crc32 key, RemoteToolsEndpointStatusEvent::Handler& handler) = 0;
 

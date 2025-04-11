@@ -21,10 +21,12 @@
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryUtils.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
+#include <AzToolsFramework/Prefab/Instance/TemplateInstanceMapperInterface.h>
 #include <AzToolsFramework/Prefab/PrefabLoaderInterface.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/Procedural/ProceduralPrefabAsset.h>
+#include <AzToolsFramework/UI/Notifications/ToastNotificationsView.h>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerDragAndDropContext.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 
@@ -111,17 +113,26 @@ namespace AzToolsFramework
             m_instanceEntityMapperInterface = AZ::Interface<InstanceEntityMapperInterface>::Get();
             if (m_instanceEntityMapperInterface == nullptr)
             {
-                AZ_Assert(false, "InstanceEntityMapperInterface - could not get InstanceEntityMapperInterface on construction.");
+                AZ_Assert(false, "PrefabSaveHandler - could not get InstanceEntityMapperInterface on construction.");
                 return;
             }
 
+            m_templateInstanceMapperInterface = AZ::Interface<TemplateInstanceMapperInterface>::Get();
+            if (m_templateInstanceMapperInterface == nullptr)
+            {
+                AZ_Assert(false, "PrefabSaveHandler - could not get TemplateInstanceMapperInterface on construction.");
+                return;
+            }
+            
             // we care about both outliner and viewport.
             AzQtComponents::DragAndDropEventsBus::Handler::BusConnect(AzQtComponents::DragAndDropContexts::EditorViewport);
             AzQtComponents::DragAndDropItemViewEventsBus::Handler::BusConnect(AzQtComponents::DragAndDropContexts::EntityOutliner);
+            AzToolsFramework::AssetSystemBus::Handler::BusConnect();
         }
 
         PrefabSaveHandler::~PrefabSaveHandler()
         {
+            AzToolsFramework::AssetSystemBus::Handler::BusDisconnect();
             AzQtComponents::DragAndDropEventsBus::Handler::BusDisconnect();
             AzQtComponents::DragAndDropItemViewEventsBus::Handler::BusDisconnect();
         }
@@ -202,15 +213,17 @@ namespace AzToolsFramework
                 {
                     WarningDialog("Prefab Instantiation Error", instantiatePrefabOutcome.GetError());
                 }
-
-                // is it in the "to detach also" list?
-                if (AZStd::find(prefabsToDetach.begin(), prefabsToDetach.end(), entry) != prefabsToDetach.end())
+                else
                 {
-                    AZ::EntityId instantiatedContainerEntity = instantiatePrefabOutcome.GetValue();
-                    auto detachOutcome = s_prefabPublicInterface->DetachPrefab(instantiatedContainerEntity);
-                    if (!detachOutcome.IsSuccess())
+                    // is it in the "to detach also" list?
+                    if (AZStd::find(prefabsToDetach.begin(), prefabsToDetach.end(), entry) != prefabsToDetach.end())
                     {
-                        WarningDialog("Prefab was instantiated but could not detach:", detachOutcome.GetError());
+                        AZ::EntityId instantiatedContainerEntity = instantiatePrefabOutcome.GetValue();
+                        auto detachOutcome = s_prefabPublicInterface->DetachPrefab(instantiatedContainerEntity);
+                        if (!detachOutcome.IsSuccess())
+                        {
+                            WarningDialog("Prefab was instantiated but could not detach:", detachOutcome.GetError());
+                        }
                     }
                 }
             }
@@ -246,7 +259,7 @@ namespace AzToolsFramework
         }
 
         bool PrefabSaveHandler::CanDragAndDropData(
-            const QMimeData* data, AZStd::vector<AZStd::string>* prefabsToInstantiate, AZStd::vector<AZStd::string>* prefabsToDetach) const
+            const QMimeData* mimeData, AZStd::vector<AZStd::string>* prefabsToInstantiate, AZStd::vector<AZStd::string>* prefabsToDetach) const
         {
             using namespace AzToolsFramework;
             using namespace AzToolsFramework::AssetBrowser;
@@ -256,7 +269,7 @@ namespace AzToolsFramework
             // opposed to the actual procprefab). indirectly-dragged procprefabs will auto-detach.
             bool foundSomething = false;
 
-            if (!data)
+            if (!mimeData)
             {
                 return false;
             }
@@ -286,7 +299,7 @@ namespace AzToolsFramework
             };
 
             AZStd::vector<const AssetBrowserEntry*> decoded;
-            if (!Utils::FromMimeData(data, decoded))
+            if (!Utils::FromMimeData(mimeData, decoded))
             {
                 return false;
             }
@@ -400,6 +413,21 @@ namespace AzToolsFramework
             }
 
             return QDialogButtonBox::DestructiveRole;
+        }
+
+        void PrefabSaveHandler::InitializePrefabToastNotificationsView()
+        {
+            QWidget* mainWindow = nullptr;
+            AzToolsFramework::EditorRequestBus::BroadcastResult(mainWindow, &AzToolsFramework::EditorRequests::GetMainWindow);
+            AZ_Assert(mainWindow != nullptr, "PrefabSaveHandler - Editor MainWindow is not available.");
+
+            m_prefabToastNotificationsView =
+                AZStd::make_unique<AzToolsFramework::ToastNotificationsView>(mainWindow, AZ_CRC_CE("PrefabToastNotificationsView"));
+
+            m_prefabToastNotificationsView->SetRejectDuplicates(false);
+            m_prefabToastNotificationsView->SetAnchorPoint(QPoint(1, 1));
+            m_prefabToastNotificationsView->SetOffset(QPoint(10, 75));
+            m_prefabToastNotificationsView->OnShow();
         }
 
         void PrefabSaveHandler::ExecuteSavePrefabDialog(AZ::EntityId entityId)
@@ -620,7 +648,7 @@ namespace AzToolsFramework
             AZStd::string prefabNameFiltered = prefabName;
             AZ::StringFunc::Replace(prefabNameFiltered, ' ', '_');
 
-            auto settings = AZ::UserSettings::CreateFind<PrefabUserSettings>(AZ_CRC("PrefabUserSettings"), AZ::UserSettings::CT_LOCAL);
+            auto settings = AZ::UserSettings::CreateFind<PrefabUserSettings>(AZ_CRC_CE("PrefabUserSettings"), AZ::UserSettings::CT_LOCAL);
             if (settings->m_autoNumber)
             {
                 AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
@@ -992,6 +1020,37 @@ namespace AzToolsFramework
             unsavedPrefabsContainer->setContentWidget(unsavedPrefabsScrollArea);
 
             return AZStd::move(unsavedPrefabsContainer);
+        }
+
+        void PrefabSaveHandler::SourceFileRemoved(
+            AZStd::string relativePath, AZStd::string scanFolder, [[maybe_unused]] AZ::Uuid sourceUUID)
+        {
+            // This gets triggered for every source file. We only need source files that are prefabs and are loaded in the current level.
+            TemplateId loadedTemplateId = s_prefabSystemComponentInterface->GetTemplateIdFromFilePath(relativePath.c_str());
+            if (loadedTemplateId != InvalidTemplateId)
+            {
+                InstanceSetConstReference instancesMappedToTemplate =
+                    m_templateInstanceMapperInterface->FindInstancesOwnedByTemplate(loadedTemplateId);
+
+                if (!instancesMappedToTemplate.has_value() || instancesMappedToTemplate->get().size() == 0)
+                {
+                    // There are no instances mapping to this template. So it can be removed from memory.
+                    s_prefabSystemComponentInterface->RemoveTemplate(loadedTemplateId);
+                }
+                else
+                {
+                    m_prefabToastNotificationsView->ShowToastNotification(
+                        AzQtComponents::ToastConfiguration{ AzQtComponents::ToastType::Warning, "Missing prefab(s) detected", " See Editor Console for details." });
+                    AZ_Warning(
+                        "Prefab",
+                        false,
+                        "Missing Prefab '%s'. %u instance(s) exist in the level. Save the prefab to restore the file, or delete all "
+                        "instances to resolve this warning.",
+                        relativePath.c_str(),
+                        instancesMappedToTemplate->get().size());
+                    s_prefabSystemComponentInterface->SetTemplateDirtyFlag(loadedTemplateId, true);
+                }
+            }
         }
     } // namespace Prefab
 } // namespace AzToolsFramework

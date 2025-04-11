@@ -8,11 +8,11 @@
 
 #pragma once
 
-#include <BuildTarget/Common/TestImpactBuildGraph.h>
 #include <BuildTarget/Common/TestImpactBuildTarget.h>
 #include <BuildTarget/Common/TestImpactBuildTargetException.h>
 #include <Target/Common/TestImpactTargetList.h>
 
+#include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/variant.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
@@ -20,6 +20,9 @@
 
 namespace TestImpact
 {
+    template<typename ProductionTarget, typename TestTarget>
+    class BuildGraph;
+
     template<typename ProductionTarget, typename TestTarget>
     class BuildTargetList
     {

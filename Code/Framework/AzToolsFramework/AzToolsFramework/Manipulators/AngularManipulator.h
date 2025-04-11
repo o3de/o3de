@@ -31,7 +31,7 @@ namespace AzToolsFramework
 
     public:
         AZ_RTTI(AngularManipulator, "{01CB40F9-4537-4187-A8A6-1A12356D3FD1}", BaseManipulator);
-        AZ_CLASS_ALLOCATOR(AngularManipulator, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AngularManipulator, AZ::SystemAllocator);
 
         AngularManipulator() = delete;
         AngularManipulator(const AngularManipulator&) = delete;

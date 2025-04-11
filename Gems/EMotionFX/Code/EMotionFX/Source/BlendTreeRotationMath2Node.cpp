@@ -16,7 +16,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeRotationMath2Node, AnimGraphAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeRotationMath2Node, AnimGraphAllocator)
 
 
     BlendTreeRotationMath2Node::BlendTreeRotationMath2Node()

@@ -18,10 +18,6 @@
 #include <AzFramework/Components/ConsoleBus.h>
 #include <AzFramework/CommandLine/CommandRegistrationBus.h>
 
-#include <AzFramework/Input/Buses/Requests/InputSystemCursorRequestBus.h>
-#include <AzFramework/Input/Events/InputChannelEventListener.h>
-#include <AzFramework/Input/Events/InputTextEventListener.h>
-
 #include <list>
 #include <map>
 //forward declaration
@@ -107,8 +103,6 @@ struct IRenderer;
 */
 class CXConsole
     : public IConsole
-    , public AzFramework::InputChannelEventListener
-    , public AzFramework::InputTextEventListener
     , public IRemoteConsoleListener
     , public AzFramework::ConsoleRequestBus::Handler
     , public AzFramework::CommandRegistrationBus::Handler
@@ -151,9 +145,6 @@ public:
     void DumpKeyBinds(IKeyBindDumpSink* pCallback) override;
     void CreateKeyBind(const char* sCmd, const char* sRes) override;
     const char* FindKeyBind(const char* sCmd) const override;
-    void    SetImage(ITexture* pImage, bool bDeleteCurrent) override;
-    inline ITexture* GetImage() override { return m_pImage; }
-    void StaticBackground(bool bStatic) override { m_bStaticBackground = bStatic; }
     bool GetLineNo(int indwLineNo, char* outszBuffer, int indwBufferSize) const override;
     int GetLineCount() const override;
     ICVar* GetCVar(const char* name) override;
@@ -164,7 +155,6 @@ public:
     bool GetStatus() override;
     void Clear() override;
     void Update() override;
-    void Draw() override;
     bool AddCommand(const char* sCommand, ConsoleCommandFunc func, int nFlags = 0, const char* sHelp = NULL) override;
     bool AddCommand(const char* sName, const char* sScriptFunc, int nFlags = 0, const char* sHelp = NULL) override;
     void RemoveCommand(const char* sName) override;
@@ -183,9 +173,6 @@ public:
     void RegisterAutoComplete(const char* sVarOrCommand, IConsoleArgumentAutoComplete* pArgAutoComplete) override;
     void UnRegisterAutoComplete(const char* sVarOrCommand) override;
     void ResetAutoCompletion() override;
-    void ResetProgressBar(int nProgressRange) override;
-    void TickProgressBar() override;
-    void SetLoadingImage(const char* szFilename) override;
     void AddConsoleVarSink(IConsoleVarSink* pSink) override;
     void RemoveConsoleVarSink(IConsoleVarSink* pSink) override;
     const char* GetHistoryElement(bool bUpOrDown) override;
@@ -195,16 +182,10 @@ public:
     void EnableActivationKey(bool bEnable) override;
     void SetClientDataProbeString(const char* pName, const char* pValue) override;
 
-    // InputChannelEventListener / InputTextEventListener
-    bool OnInputChannelEventFiltered(const AzFramework::InputChannel& inputChannel) override;
-    bool OnInputTextEventFiltered(const AZStd::string& textUTF8) override;
-
     // interface IRemoteConsoleListener ------------------------------------------------------------------
-
     void OnConsoleCommand(const char* cmd) override;
 
     // interface IConsoleVarSink ----------------------------------------------------------------------
-
     virtual bool OnBeforeVarChange(ICVar* pVar, const char* sNewValue);
     virtual void OnAfterVarChange(ICVar* pVar);
 
@@ -219,11 +200,9 @@ public:
     bool GetIsProcessingGroup() const { return m_bIsProcessingGroup; }
 
 protected: // ----------------------------------------------------------------------------------------
-    void DrawBuffer(int nScrollPos, const char* szEffect);
 
     void RegisterVar(ICVar* pCVar, ConsoleVarFunc pChangeFunc = nullptr);
 
-    bool ProcessInput(const AzFramework::InputChannel& inputChannel);
     void AddLine(AZStd::string_view inputStr);
     void AddLineAppendWithPrevLine(AZStd::string_view inputStr);
     void AddInputUTF8(const AZStd::string& textUTF8);
@@ -333,6 +312,28 @@ private: // ----------------------------------------------------------
     ConsoleVariablesVector          m_alwaysCheckedVariables;
     std::vector<IOutputPrintSink*> m_OutputSinks;                       // objects in this vector are not released
 
+    template<typename T>
+    struct FunctorWrapper
+    {
+        FunctorWrapper(const char* name, const char* desc, T initialValue)
+            : proxyValue(AZStd::move(initialValue))
+            , m_functor(name, desc, AZ::ConsoleFunctorFlags::DontDuplicate, AZ::AzTypeInfo<T>::Uuid(), proxyValue, ArgToValue)
+        {
+        }
+        T proxyValue;
+        AZ::ConsoleFunctor<T, true> m_functor;
+
+    private:
+        static void ArgToValue(T& outValue, const AZ::ConsoleCommandContainer& arguments)
+        {
+            AZ::ConsoleTypeHelpers::ToValue(outValue, arguments);
+        }
+    };
+
+    AZStd::vector<FunctorWrapper<float>> m_floatWrappers;
+    AZStd::vector<FunctorWrapper<int>> m_intWrappers;
+    AZStd::vector<FunctorWrapper<AZStd::string>> m_stringWrappers;
+
     TDeferredCommandList                        m_deferredCommands;             // A fifo of deferred commands
     bool                                                        m_deferredExecution;            // True when deferred commands are processed
     int                                                         m_waitFrames;                           // A counter which is used by wait_frames command
@@ -354,15 +355,12 @@ private: // ----------------------------------------------------------
     ITexture*                                               m_pImage;
 
     float                                                       m_fRepeatTimer;                     // relative, next repeat even in .. decreses over time, repeats when 0, only valid if m_nRepeatEvent.keyId != eKI_Unknown
-    AzFramework::InputChannelId                                 m_nRepeatEventId;                     // event that will be repeated
 
     float                                                       m_fCursorBlinkTimer;            // relative, increases over time,
     bool                                                        m_bDrawCursor;
 
     ScrollDir                                               m_sdScrollDir;
 
-
-    AzFramework::SystemCursorState                              m_previousSystemCursorState;
     bool                                                        m_bConsoleActive;
     bool                                                        m_bActivationKeyEnable;
     bool                                                        m_bIsProcessingGroup;
@@ -374,7 +372,6 @@ private: // ----------------------------------------------------------
     uint64                          m_nCheatHash;
 
     CSystem*                                               m_pSystem;
-    IFFont*                                                m_pFont;
 
     ICVar*                                                 m_pSysDeactivateConsole;
 

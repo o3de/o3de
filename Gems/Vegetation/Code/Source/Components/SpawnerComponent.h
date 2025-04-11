@@ -41,7 +41,7 @@ namespace Vegetation
         : public AreaConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(SpawnerConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SpawnerConfig, AZ::SystemAllocator);
         AZ_RTTI(SpawnerConfig, "{98A6B0CE-FAD0-4108-B019-6B01931E649F}", AreaConfig);
         static void Reflect(AZ::ReflectContext* context);
         bool m_inheritBehavior = true;

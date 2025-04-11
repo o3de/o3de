@@ -60,7 +60,7 @@ namespace AzToolsFramework
                 parentEntityAliasPathForPatch;
 
             PrefabDom parentEntityDomAfterAddingEntity;
-            m_instanceToTemplateInterface->GenerateDomForEntity(parentEntityDomAfterAddingEntity, parentEntity);
+            m_instanceToTemplateInterface->GenerateEntityDomBySerializing(parentEntityDomAfterAddingEntity, parentEntity);
 
             TemplateId focusedTemplateId = focusedInstance.GetTemplateId();
             PrefabDom& focusedTemplateDom =
@@ -74,15 +74,15 @@ namespace AzToolsFramework
                     "Could not load parent entity's DOM from the focused template's DOM. "
                     "Focused template id: '%llu'.", static_cast<AZ::u64>(focusedTemplateId));
 
-                PrefabUndoUtils::GenerateUpdateEntityPatch(m_redoPatch,
-                    *parentEntityDomInFocusedTemplate, parentEntityDomAfterAddingEntity, parentEntityAliasPathForPatch);
+                PrefabUndoUtils::GenerateAndAppendPatch(
+                    m_redoPatch, *parentEntityDomInFocusedTemplate, parentEntityDomAfterAddingEntity, parentEntityAliasPathForPatch);
             }
 
             const AZStd::string newEntityAliasPathForPatch =
                 entityAliasPathPrefixForPatch + newEntityAliasPath;
 
             PrefabDom newEntityDom;
-            m_instanceToTemplateInterface->GenerateDomForEntity(newEntityDom, newEntity);
+            m_instanceToTemplateInterface->GenerateEntityDomBySerializing(newEntityDom, newEntity);
             PrefabUndoUtils::AppendAddEntityPatch(m_redoPatch, newEntityDom, newEntityAliasPathForPatch);
 
             const LinkId linkId = climbUpResult.m_climbedInstances.back()->GetLinkId();
@@ -92,10 +92,8 @@ namespace AzToolsFramework
             PrefabDomReference cachedOwningInstanceDom = owningInstance.GetCachedInstanceDom();
             if (cachedOwningInstanceDom.has_value())
             {
-                PrefabUndoUtils::UpdateCachedOwningInstanceDom(cachedOwningInstanceDom,
-                    parentEntityDomAfterAddingEntity, parentEntityAliasPath);
-                PrefabUndoUtils::UpdateCachedOwningInstanceDom(cachedOwningInstanceDom,
-                    newEntityDom, newEntityAliasPath);
+                PrefabUndoUtils::UpdateEntityInPrefabDom(cachedOwningInstanceDom, parentEntityDomAfterAddingEntity, parentEntityAliasPath);
+                PrefabUndoUtils::UpdateEntityInPrefabDom(cachedOwningInstanceDom, newEntityDom, newEntityAliasPath);
             }
         }
     }

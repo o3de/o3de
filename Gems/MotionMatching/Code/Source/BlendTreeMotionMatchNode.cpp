@@ -26,8 +26,8 @@
 
 namespace EMotionFX::MotionMatching
 {
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeMotionMatchNode, AnimGraphAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeMotionMatchNode::UniqueData, AnimGraphObjectUniqueDataAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeMotionMatchNode, AnimGraphAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeMotionMatchNode::UniqueData, AnimGraphObjectUniqueDataAllocator)
 
     BlendTreeMotionMatchNode::BlendTreeMotionMatchNode()
         : AnimGraphNode()

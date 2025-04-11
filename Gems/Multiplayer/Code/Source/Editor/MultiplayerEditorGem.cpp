@@ -15,7 +15,7 @@
 
 namespace Multiplayer
 {
-    AZ_CLASS_ALLOCATOR_IMPL(MultiplayerEditorModule, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(MultiplayerEditorModule, AZ::SystemAllocator)
 
     MultiplayerEditorModule::MultiplayerEditorModule()
         : MultiplayerModule()
@@ -39,4 +39,8 @@ namespace Multiplayer
     }
 } // namespace Multiplayer
 
-AZ_DECLARE_MODULE_CLASS(Gem_MultiplayerEditor, Multiplayer::MultiplayerEditorModule)
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME, _Editor), Multiplayer::MultiplayerEditorModule)
+#else
+AZ_DECLARE_MODULE_CLASS(Gem_Multiplayer_Editor, Multiplayer::MultiplayerEditorModule)
+#endif

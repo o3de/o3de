@@ -9,6 +9,7 @@
 #include <Atom/RPI.Edit/Material/MaterialPropertySerializer.h>
 #include <Atom/RPI.Edit/Material/MaterialPropertyId.h>
 #include <Atom/RPI.Edit/Material/MaterialUtils.h>
+#include <Atom/RPI.Edit/Material/MaterialPropertySourceData.h>
 
 #include <AzCore/Serialization/Json/BaseJsonSerializer.h>
 #include <AzCore/Serialization/Json/JsonSerializationResult.h>
@@ -67,7 +68,7 @@ namespace AZ
             };
         }
 
-        AZ_CLASS_ALLOCATOR_IMPL(JsonMaterialPropertySerializer, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR_IMPL(JsonMaterialPropertySerializer, SystemAllocator);
 
 
         template<typename T>
@@ -100,7 +101,7 @@ namespace AZ
 
         template<typename T>
         JsonSerializationResult::ResultCode JsonMaterialPropertySerializer::LoadNumericValues(
-            MaterialTypeSourceData::PropertyDefinition* intoProperty,
+            MaterialPropertySourceData* intoProperty,
             const T& defaultValue,
             const rapidjson::Value& inputValue,
             JsonDeserializerContext& context)
@@ -158,7 +159,7 @@ namespace AZ
 
         template<typename T>
         JsonSerializationResult::ResultCode JsonMaterialPropertySerializer::LoadNonNumericValues(
-            MaterialTypeSourceData::PropertyDefinition* intoProperty,
+            MaterialPropertySourceData* intoProperty,
             const T& defaultValue,
             const rapidjson::Value& inputValue,
             JsonDeserializerContext& context)
@@ -188,12 +189,12 @@ namespace AZ
             namespace JSR = JsonSerializationResult;
             using namespace JsonMaterialPropertySerializerInternal;
 
-            AZ_Assert(azrtti_typeid<MaterialTypeSourceData::PropertyDefinition>() == outputValueTypeId,
+            AZ_Assert(azrtti_typeid<MaterialPropertySourceData>() == outputValueTypeId,
                 "Unable to deserialize material property to json because the provided type is %s",
                 outputValueTypeId.ToString<AZStd::string>().c_str());
             AZ_UNUSED(outputValueTypeId);
 
-            MaterialTypeSourceData::PropertyDefinition* property = reinterpret_cast<MaterialTypeSourceData::PropertyDefinition*>(outputValue);
+            MaterialPropertySourceData* property = reinterpret_cast<MaterialPropertySourceData*>(outputValue);
             AZ_Assert(property, "Output value for JsonMaterialPropertySerializer can't be null.");
 
             JSR::ResultCode result(JSR::Tasks::ReadField);
@@ -294,7 +295,7 @@ namespace AZ
         template<typename T>
         JsonSerializationResult::ResultCode JsonMaterialPropertySerializer::StoreNumericValues(
             rapidjson::Value& outputValue,
-            const MaterialTypeSourceData::PropertyDefinition* property,
+            const MaterialPropertySourceData* property,
             const T& defaultValue,
             JsonSerializerContext& context)
         {
@@ -339,7 +340,7 @@ namespace AZ
         template<typename T>
         JsonSerializationResult::ResultCode JsonMaterialPropertySerializer::StoreNonNumericValues(
             rapidjson::Value& outputValue,
-            const MaterialTypeSourceData::PropertyDefinition* property,
+            const MaterialPropertySourceData* property,
             const T& defaultValue,
             JsonSerializerContext& context)
         {
@@ -363,12 +364,12 @@ namespace AZ
             namespace JSR = JsonSerializationResult;
             using namespace JsonMaterialPropertySerializerInternal;
 
-            AZ_Assert(azrtti_typeid<MaterialTypeSourceData::PropertyDefinition>() == valueTypeId,
+            AZ_Assert(azrtti_typeid<MaterialPropertySourceData>() == valueTypeId,
                 "Unable to serialize material property to json because the provided type is %s",
                 valueTypeId.ToString<AZStd::string>().c_str());
             AZ_UNUSED(valueTypeId);
 
-            const MaterialTypeSourceData::PropertyDefinition* property = reinterpret_cast<const MaterialTypeSourceData::PropertyDefinition*>(inputValue);
+            const MaterialPropertySourceData* property = reinterpret_cast<const MaterialPropertySourceData*>(inputValue);
             AZ_Assert(property, "Input value for JsonMaterialPropertySerializer can't be null.");
             
             JSR::ResultCode result(JSR::Tasks::WriteValue);
@@ -421,7 +422,7 @@ namespace AZ
             result.Combine(ContinueStoringToJsonObjectField(outputValue, Field::visibility, &property->m_visibility, &defaultVisibility, azrtti_typeid(property->m_visibility), context));
 
             // Support loading a "connection" property as a single entry in m_outputConnections
-            MaterialTypeSourceData::PropertyConnection defaultConnection;
+            MaterialPropertySourceData::Connection defaultConnection;
             if (property->m_outputConnections.size() == 1)
             {
                 result.Combine(ContinueStoringToJsonObjectField(outputValue, Field::connection, &property->m_outputConnections.back(), &defaultConnection, azrtti_typeid(property->m_outputConnections.back()), context));
@@ -450,7 +451,7 @@ namespace AZ
             }
         }
 
-        JsonSerializationResult::ResultCode JsonMaterialPropertySerializer::LoadVectorLabels(MaterialTypeSourceData::PropertyDefinition* intoProperty,
+        JsonSerializationResult::ResultCode JsonMaterialPropertySerializer::LoadVectorLabels(MaterialPropertySourceData* intoProperty,
             const rapidjson::Value& inputValue, JsonDeserializerContext& context)
         {
             namespace JSR = JsonSerializationResult;
@@ -467,7 +468,7 @@ namespace AZ
         }
 
         JsonSerializationResult::ResultCode JsonMaterialPropertySerializer::StoreVectorLabels(rapidjson::Value& outputValue,
-            const MaterialTypeSourceData::PropertyDefinition* property, JsonSerializerContext& context)
+            const MaterialPropertySourceData* property, JsonSerializerContext& context)
         {
             AZStd::string emptyString;
             namespace JSR = JsonSerializationResult;

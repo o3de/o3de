@@ -56,6 +56,7 @@ namespace Multiplayer
         MOCK_METHOD2(GetSimulatedBodyFromHandle, AzPhysics::SimulatedBody*(AzPhysics::SceneHandle, AzPhysics::SimulatedBodyHandle));
         MOCK_CONST_METHOD1(IsEnabled, bool(AzPhysics::SceneHandle));
         MOCK_METHOD2(QueryScene, AzPhysics::SceneQueryHits(AzPhysics::SceneHandle, const AzPhysics::SceneQueryRequest*));
+        MOCK_METHOD3(QueryScene, bool(AzPhysics::SceneHandle sceneHandle, const AzPhysics::SceneQueryRequest* request, AzPhysics::SceneQueryHits&));
         MOCK_METHOD4(
             QuerySceneAsync,
             bool(
@@ -153,7 +154,7 @@ namespace Multiplayer
             m_netRigidBodyDescriptor->Reflect(m_serializeContext.get());
 
             m_rigidBody = AZStd::make_unique<PhysX::RigidBody>();
-            m_mockSceneInterface = AZStd::make_unique<Multiplayer::MockSceneInterface>();
+            m_mockSceneInterface = AZStd::make_unique<testing::NiceMock<Multiplayer::MockSceneInterface>>();
             ON_CALL(*m_mockSceneInterface, GetSimulatedBodyFromHandle(_, _))
                 .WillByDefault(Invoke(
                     [this](AzPhysics::SceneHandle, AzPhysics::SimulatedBodyHandle)

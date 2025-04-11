@@ -18,8 +18,14 @@
 
 namespace AZ::Debug
 {
-    PerformanceCollector::PerformanceCollector(const AZStd::string_view logCategory, AZStd::span<const AZStd::string_view> m_metricNames, OnBatchCompleteCallback onBatchCompleteCallback)
-        : m_logCategory(logCategory), m_onBatchCompleteCallback(onBatchCompleteCallback)
+    PerformanceCollector::PerformanceCollector(
+        const AZStd::string_view logCategory,
+        AZStd::span<const AZStd::string_view> m_metricNames,
+        OnBatchCompleteCallback onBatchCompleteCallback,
+        const AZStd::string_view fileExtension)
+        : m_logCategory(logCategory)
+        , m_onBatchCompleteCallback(onBatchCompleteCallback)
+        , m_fileExtension(fileExtension)
     {
         for (const auto& metricName : m_metricNames)
         {
@@ -48,7 +54,7 @@ namespace AZ::Debug
                 AZStd::chrono::steady_clock::time_point now = AZStd::chrono::steady_clock::now();
                 if (m_startWaitTime.time_since_epoch().count() == 0)
                 {
-                    AZ_TracePrintf(LogName, "Will Wait %lld seconds before starting batch %u...\n", m_waitTimeBeforeEachBatch.count(), m_numberOfCaptureBatches);
+                    AZ_Trace(LogName, "Will Wait %lld seconds before starting batch %u...\n", m_waitTimeBeforeEachBatch.count(), m_numberOfCaptureBatches);
                     m_startWaitTime = now;
                 }
                 auto duration = AZStd::chrono::duration_cast<AZStd::chrono::seconds>(now - m_startWaitTime);
@@ -57,7 +63,7 @@ namespace AZ::Debug
                     return; // Do nothing. Keep waiting.
                 }
             }
-            AZ_TracePrintf(LogName, "Waited %lld seconds. Will start collecting performance numbers for %u frames at batch %u...\n", m_waitTimeBeforeEachBatch.count(), m_frameCountPerCaptureBatch, m_numberOfCaptureBatches);
+            AZ_Trace(LogName, "Waited %lld seconds. Will start collecting performance numbers for %u frames at batch %u...\n", m_waitTimeBeforeEachBatch.count(), m_frameCountPerCaptureBatch, m_numberOfCaptureBatches);
             m_isWaitingBeforeNextBatch = false;
         }
 
@@ -87,7 +93,7 @@ namespace AZ::Debug
         {
             // This will close the file that contains performance results for all batches.
             m_eventLogger.ResetStream(nullptr);
-            AZ_TracePrintf(LogName, "Performance data output file <%s> is ready\n", m_outputFilePath.c_str());
+            AZ_Info(LogName, "Performance data output file <%s> is ready\n", m_outputFilePath.c_str());
         }
 
     }
@@ -222,7 +228,7 @@ namespace AZ::Debug
             CreateOutputJsonFile();
         }
         m_numberOfCaptureBatches = newValue;
-        AZ_TracePrintf(LogName, "%s updated value to %u\n", __FUNCTION__, m_numberOfCaptureBatches);
+        AZ_Trace(LogName, "%s updated value to %u\n", __FUNCTION__, m_numberOfCaptureBatches);
     }
 
     void PerformanceCollector::CreateOutputJsonFile()
@@ -244,7 +250,7 @@ namespace AZ::Debug
             settingsRegistry->Get(m_outputFilePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectUserPath);
             AZ::Date::Iso8601TimestampString utcTimestamp;
             AZ::Date::GetFilenameCompatibleFormatNowWithMicroseconds(utcTimestamp);
-            m_outputFilePath /= AZStd::string::format("Performance_%s_%s.json", m_logCategory.c_str(), utcTimestamp.c_str());
+            m_outputFilePath /= AZStd::string::format("Performance_%s_%s.%s", m_logCategory.c_str(), utcTimestamp.c_str(), m_fileExtension.c_str());
 
             constexpr AZ::IO::OpenMode openMode = AZ::IO::OpenMode::ModeWrite;
             auto stream = AZStd::make_unique<AZ::IO::SystemFileStream>(m_outputFilePath.c_str(), openMode);

@@ -28,6 +28,8 @@ namespace AZ
                     ->Field("Opacity", &DecalComponentConfig::m_opacity)
                     ->Field("Normal Map Opacity", &DecalComponentConfig::m_normalMapOpacity)
                     ->Field("SortKey", &DecalComponentConfig::m_sortKey)
+                    ->Field("Decal Color", &DecalComponentConfig::m_decalColor)
+                    ->Field("Decal Color Factor", &DecalComponentConfig::m_decalColorFactor)
                     ->Field("Material", &DecalComponentConfig::m_materialAsset)
                 ;
             }
@@ -55,10 +57,16 @@ namespace AZ
                     ->Event("SetNormalMapOpacity", &DecalRequestBus::Events::SetNormalMapOpacity)
                     ->Event("SetSortKey", &DecalRequestBus::Events::SetSortKey)
                     ->Event("GetSortKey", &DecalRequestBus::Events::GetSortKey)
+                    ->Event("GetDecalColor", &DecalRequestBus::Events::GetDecalColor)
+                    ->Event("SetDecalColor", &DecalRequestBus::Events::SetDecalColor)
+                    ->Event("GetDecalColorFactor", &DecalRequestBus::Events::GetDecalColorFactor)
+                    ->Event("SetDecalColorFactor", &DecalRequestBus::Events::SetDecalColorFactor)
                     ->VirtualProperty("AttenuationAngle", "GetAttenuationAngle", "SetAttenuationAngle")
                     ->VirtualProperty("Opacity", "GetOpacity", "SetOpacity")
                     ->VirtualProperty("NormalMapOpacity", "GetNormalMapOpacity", "SetNormalMapOpacity")
                     ->VirtualProperty("SortKey", "GetSortKey", "SetSortKey")
+                    ->VirtualProperty("DecalColor", "GetDecalColor", "SetDecalColor")
+                    ->VirtualProperty("DecalColorFactor", "GetDecalColorFactor", "SetDecalColorFactor")
                     ->Event("SetMaterial", &DecalRequestBus::Events::SetMaterialAssetId)
                     ->Event("GetMaterial", &DecalRequestBus::Events::GetMaterialAssetId)
                     ->VirtualProperty("Material", "GetMaterial", "SetMaterial")
@@ -159,6 +167,8 @@ namespace AZ
             OpacityChanged();
             NormalMapOpacityChanged();
             SortKeyChanged();
+            DecalColorChanged();
+            DecalColorFactorChanged();
             MaterialChanged();
         }
 
@@ -171,6 +181,28 @@ namespace AZ
         {
             m_configuration.m_attenuationAngle = attenuationAngle;
             AttenuationAngleChanged();
+        }
+
+        const AZ::Vector3& DecalComponentController::GetDecalColor() const
+        {
+            return m_configuration.m_decalColor;
+        }
+
+        void DecalComponentController::SetDecalColor(const AZ::Vector3& color)
+        {
+            m_configuration.m_decalColor = color;
+            DecalColorChanged();
+        }
+
+        float DecalComponentController::GetDecalColorFactor() const
+        {
+            return m_configuration.m_decalColorFactor;
+        }
+
+        void DecalComponentController::SetDecalColorFactor(float colorFactor)
+        {
+            m_configuration.m_decalColorFactor = colorFactor;
+            DecalColorFactorChanged();
         }
 
         float DecalComponentController::GetOpacity() const
@@ -212,6 +244,24 @@ namespace AZ
             if (m_featureProcessor)
             {
                 m_featureProcessor->SetDecalAttenuationAngle(m_handle, m_configuration.m_attenuationAngle);
+            }
+        }
+
+        void DecalComponentController::DecalColorChanged()
+        {
+            DecalNotificationBus::Event(m_entityId, &DecalNotifications::OnDecalColorChanged, m_configuration.m_decalColor);
+            if (m_featureProcessor)
+            {
+                m_featureProcessor->SetDecalColor(m_handle, m_configuration.m_decalColor);
+            }
+        }
+
+        void DecalComponentController::DecalColorFactorChanged()
+        {
+            DecalNotificationBus::Event(m_entityId, &DecalNotifications::OnDecalColorFactorChanged, m_configuration.m_decalColorFactor);
+            if (m_featureProcessor)
+            {
+                m_featureProcessor->SetDecalColorFactor(m_handle, m_configuration.m_decalColorFactor);
             }
         }
 

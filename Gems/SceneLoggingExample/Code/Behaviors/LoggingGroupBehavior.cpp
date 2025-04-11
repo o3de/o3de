@@ -61,7 +61,7 @@ namespace SceneLoggingExample
     // users from adding groups that have no effect.
     void LoggingGroupBehavior::GetCategoryAssignments(CategoryRegistrationList& categories, [[maybe_unused]] const AZ::SceneAPI::Containers::Scene& scene)
     {
-        categories.emplace_back("Logging", LoggingGroup::TYPEINFO_Uuid());
+        categories.emplace_back("Logging", LoggingGroup::TYPEINFO_Uuid(), s_loggingPreferredTabOrder);
     }
 
     // When a scene is loaded for the first time (for example, from an .fbx file), there won't be a manifest (.assetinfo file).

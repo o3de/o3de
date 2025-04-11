@@ -49,13 +49,22 @@ namespace AZ
             {
             public:
                 AZStd::string GetBuilderSettingsFingerprint() const;
-                void CreateJobsHelper(const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response, const MaterialTypeSourceData& materialTypeSourceData) const;
-                void ProcessJobHelper(const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response) const;
+                void CreateJobsHelper(
+                    const AssetBuilderSDK::CreateJobsRequest& request,
+                    AssetBuilderSDK::CreateJobsResponse& response,
+                    const AZStd::string& materialTypeSourcePath,
+                    const MaterialTypeSourceData& materialTypeSourceData) const;
+                void ProcessJobHelper(
+                    const AssetBuilderSDK::ProcessJobRequest& request,
+                    AssetBuilderSDK::ProcessJobResponse& response,
+                    const AZStd::string& materialTypeSourcePath,
+                    MaterialTypeSourceData& materialTypeSourceData) const;
 
             private:
-                AZStd::vector<AZStd::string> GetMaterialPipelinePaths() const;
+                AZStd::set<AZStd::string> GetMaterialPipelinePaths() const;
                 AZStd::map<AZ::IO::Path, MaterialPipelineSourceData> LoadMaterialPipelines() const;
-                bool ShouldEnableMaterialPipelineSystem() const;
+                Name GetMaterialPipelineName(const AZ::IO::Path& materialPipelineFilePath) const;
+
             } m_pipelineStage;
 
             //! These job functions operate on .materialtype files in the "direct" format (see MaterialTypeSourceData), which includes a full list of shaders.
@@ -65,16 +74,24 @@ namespace AZ
             {
             public:
                 AZStd::string GetBuilderSettingsFingerprint() const;
-                void CreateJobsHelper(const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response, const MaterialTypeSourceData& materialTypeSourceData) const;
-                void ProcessJobHelper(const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response) const;
+                void CreateJobsHelper(
+                    const AssetBuilderSDK::CreateJobsRequest& request,
+                    AssetBuilderSDK::CreateJobsResponse& response,
+                    const AZStd::string& materialTypeSourcePath,
+                    const MaterialTypeSourceData& materialTypeSourceData) const;
+                void ProcessJobHelper(
+                    const AssetBuilderSDK::ProcessJobRequest& request,
+                    AssetBuilderSDK::ProcessJobResponse& response,
+                    const AZStd::string& materialTypeSourcePath,
+                    const MaterialTypeSourceData& materialTypeSourceData) const;
 
             private:
                 bool ShouldOutputAllPropertiesMaterial() const;
 
                 enum class MaterialTypeProductSubId : u32
                 {
-                    MaterialTypeAsset = 0,
-                    AllPropertiesMaterialSourceFile = 1
+                    MaterialTypeAsset = MaterialTypeAsset::SubId,
+                    AllPropertiesMaterialSourceFile
                 };
 
             } m_finalStage;

@@ -22,6 +22,7 @@ namespace AZ
             : public AZ::RPI::MaterialFunctorSourceData
         {
         public:
+            AZ_CLASS_ALLOCATOR(Transform2DFunctorSourceData, AZ::SystemAllocator)
             AZ_RTTI(Transform2DFunctorSourceData, "{82E9FE9B-A0C2-42D4-BCE7-A0C10CC0E445}", RPI::MaterialFunctorSourceData);
 
             static void Reflect(AZ::ReflectContext* context);

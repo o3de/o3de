@@ -12,7 +12,6 @@ set(FILES
     Include/IErrorReport.h
     Include/IFileUtil.h
     Include/EditorCoreAPI.h
-    Include/IImageUtil.h
     Controls/ReflectedPropertyControl/ReflectedPropertyCtrl.qrc
     Controls/ReflectedPropertyControl/ReflectedPropertyCtrl.cpp
     Controls/ReflectedPropertyControl/ReflectedPropertyCtrl.h
@@ -44,9 +43,7 @@ set(FILES
     Util/RefCountBase.h
     Util/PathUtil.h
     Util/PathUtil.cpp
-    Util/ImageHistogram.cpp
     Util/Image.cpp
-    Util/ImageHistogram.h
     Util/Image.h
     Undo/Undo.cpp
     Undo/IUndoManagerListener.h
@@ -57,5 +54,4 @@ set(FILES
     QtUI/ColorButton.h
     QtUtil.h
     QtUtilWin.h
-    QtViewPane.h
 )

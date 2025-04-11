@@ -48,6 +48,11 @@ namespace AZ::DocumentPropertyEditor
         return m_currentPath;
     }
 
+    void AdapterBuilder::SetCurrentPath(const Dom::Path& newPath)
+    {
+        m_currentPath = newPath;
+    }
+
     bool AdapterBuilder::IsError() const
     {
         return !m_error.empty();

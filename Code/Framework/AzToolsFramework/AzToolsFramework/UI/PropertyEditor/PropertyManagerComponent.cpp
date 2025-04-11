@@ -8,6 +8,7 @@
 #include "PropertyManagerComponent.h"
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/ToolsComponents/EditorEntityIdContainer.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/DocumentPropertyEditor.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyAudioCtrlTypes.h>
@@ -36,6 +37,7 @@ namespace AzToolsFramework
     void RegisterCrcHandler();
     void ReflectPropertyEditor(AZ::ReflectContext* context);
     void RegisterExeSelectPropertyHandler();
+    void RegisterLabelHandler();
 
     namespace Components
     {
@@ -118,6 +120,11 @@ namespace AzToolsFramework
     #endif
             pHandler->RegisterDpeHandler();
 
+            auto propertyEditorSystemInterface = AZ::Interface<AZ::DocumentPropertyEditor::PropertyEditorSystemInterface>::Get();
+            AZ_Assert(propertyEditorSystemInterface,
+                "PropertyEditorSystemInterface was nullptr when attempting to register property handler adapter elements");
+            pHandler->RegisterWithPropertySystem(propertyEditorSystemInterface);
+
             m_Handlers.insert(AZStd::make_pair(pHandler->GetHandlerName(), pHandler));
 
             if (pHandler->IsDefaultHandler())
@@ -177,6 +184,20 @@ namespace AzToolsFramework
 
         void PropertyManagerComponent::RequestWrite(QWidget* editorGUI)
         {
+            if (m_currentUndoBatch)
+            {
+                AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                    m_currentUndoBatch,
+                    &AzToolsFramework::ToolsApplicationRequests::ResumeUndoBatch,
+                    m_currentUndoBatch,
+                    "Modify Property");
+            }
+            else
+            {
+                AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                    m_currentUndoBatch, &AzToolsFramework::ToolsApplicationRequests::BeginUndoBatch, "Modify Property");
+            }
+
             IndividualPropertyHandlerEditNotifications::Bus::Event(
                 editorGUI, &IndividualPropertyHandlerEditNotifications::Bus::Events::OnValueChanged,
                 AZ::DocumentPropertyEditor::Nodes::ValueChangeType::InProgressEdit);
@@ -187,6 +208,12 @@ namespace AzToolsFramework
             IndividualPropertyHandlerEditNotifications::Bus::Event(
                 editorGUI, &IndividualPropertyHandlerEditNotifications::Bus::Events::OnValueChanged,
                 AZ::DocumentPropertyEditor::Nodes::ValueChangeType::FinishedEdit);
+
+            if (m_currentUndoBatch)
+            {
+                AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(&AzToolsFramework::ToolsApplicationRequests::EndUndoBatch);
+                m_currentUndoBatch = nullptr;
+            }
         }
 
         void PropertyManagerComponent::RequestPropertyNotify(QWidget* editorGUI)
@@ -217,6 +244,7 @@ namespace AzToolsFramework
             RegisterButtonPropertyHandlers();
             RegisterMultiLineEditHandler();
             RegisterExeSelectPropertyHandler();
+            RegisterLabelHandler();
 
             // GenericComboBoxHandlers
             RegisterGenericComboBoxHandler<AZ::Crc32>();
@@ -230,7 +258,9 @@ namespace AzToolsFramework
             PropertyHandlerBase* pHandlerFound = nullptr;
             while ((it != m_Handlers.end()) && (it->first == handlerName))
             {
-                if ((it->second->Priority() > highestPriorityFound) && (it->second->HandlesType(handlerType)))
+                // Don't need to check against the handlerType if its null, which would only happen
+                // for non-data elements (e.g. UIElement) where the handler was requested specifically by name
+                if ((it->second->Priority() > highestPriorityFound) && (handlerType.IsNull() || it->second->HandlesType(handlerType)))
                 {
                     highestPriorityFound = it->second->Priority();
                     pHandlerFound = it->second;
@@ -258,7 +288,7 @@ namespace AzToolsFramework
             {
                 // does a base class have a handler?
                 AZ::SerializeContext* sc = nullptr;
-                EBUS_EVENT_RESULT(sc, AZ::ComponentApplicationBus, GetSerializeContext);
+                AZ::ComponentApplicationBus::BroadcastResult(sc, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
                 AZStd::vector<const AZ::SerializeContext::ClassData*> classes;
 
                 sc->EnumerateBase(
@@ -298,7 +328,7 @@ namespace AzToolsFramework
             AzToolsFramework::CReflectedVarAudioControl::Reflect(context);
             ReflectPropertyEditor(context);
 
-            DocumentPropertyEditorSettings::Reflect(context);
+            AZ::DocumentPropertyEditor::ExpanderSettings::Reflect(context);
 
             // reflect data for script, serialization, editing...
             if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
@@ -312,7 +342,6 @@ namespace AzToolsFramework
                         "Property Manager", "Provides services for registration of property editors")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::Category, "Editor")
-                            ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                         ;
                 }
             }

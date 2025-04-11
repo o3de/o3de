@@ -431,7 +431,7 @@ void UiImageComponent::Render(LyShine::IRenderGraph* renderGraph)
         if (!UiCanvasPixelAlignmentNotificationBus::Handler::BusIsConnected())
         {
             AZ::EntityId canvasEntityId;
-            EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
+            UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
             UiCanvasPixelAlignmentNotificationBus::Handler::BusConnect(canvasEntityId);
         }
     }
@@ -559,7 +559,7 @@ void UiImageComponent::SetSprite(ISprite* sprite)
     }
 
     InvalidateLayouts();
-    EBUS_EVENT_ID(GetEntityId(), UiSpriteSourceNotificationBus, OnSpriteSourceChanged);
+    UiSpriteSourceNotificationBus::Event(GetEntityId(), &UiSpriteSourceNotificationBus::Events::OnSpriteSourceChanged);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -915,7 +915,7 @@ float UiImageComponent::GetTargetHeight(float /*maxHeight*/)
             {
                 // Get element size
                 AZ::Vector2 size(0.0f, 0.0f);
-                EBUS_EVENT_ID_RESULT(size, GetEntityId(), UiTransformBus, GetCanvasSpaceSizeNoScaleRotate);
+                UiTransformBus::EventResult(size, GetEntityId(), &UiTransformBus::Events::GetCanvasSpaceSizeNoScaleRotate);
 
                 targetHeight = textureSize.GetY() * (size.GetX() / textureSize.GetX());
             }
@@ -1001,14 +1001,14 @@ void UiImageComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::Category, "UI")
                 ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/UiImage.png")
                 ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/UiImage.png")
-                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("UI", 0x27ff46b0))
+                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
             editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiImageComponent::m_spriteType, "SpriteType", "The sprite type.")
                 ->EnumAttribute(UiImageInterface::SpriteType::SpriteAsset, "Sprite/Texture asset")
                 ->EnumAttribute(UiImageInterface::SpriteType::RenderTarget, "Render target")
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageComponent::OnEditorSpriteTypeChange)
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c));
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
             editInfo->DataElement("Sprite", &UiImageComponent::m_spritePathname, "Sprite path", "The sprite path. Can be overridden by another component such as an interactable.")
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiImageComponent::IsSpriteTypeAsset)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageComponent::OnEditorSpritePathnameChange);
@@ -1035,7 +1035,7 @@ void UiImageComponent::Reflect(AZ::ReflectContext* context)
                 ->EnumAttribute(UiImageInterface::ImageType::Tiled, "Tiled")
                 ->EnumAttribute(UiImageInterface::ImageType::StretchedToFit, "Stretched To Fit")
                 ->EnumAttribute(UiImageInterface::ImageType::StretchedToFill, "Stretched To Fill")
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c))
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageComponent::OnEditorImageTypeChange);
             editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiImageComponent::m_fillCenter, "Fill Center", "Sliced image center is filled.")
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiImageComponent::IsSliced)
@@ -1057,7 +1057,7 @@ void UiImageComponent::Reflect(AZ::ReflectContext* context)
                 ->EnumAttribute(UiImageComponent::FillType::Radial, "Radial")
                 ->EnumAttribute(UiImageComponent::FillType::RadialCorner, "RadialCorner")
                 ->EnumAttribute(UiImageComponent::FillType::RadialEdge, "RadialEdge")
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c))
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageComponent::OnEditorRenderSettingChange);
             editInfo->DataElement(AZ::Edit::UIHandlers::Slider, &UiImageComponent::m_fillAmount, "Fill Amount", "The amount of the image to be filled.")
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiImageComponent::IsFilled)
@@ -1272,7 +1272,7 @@ void UiImageComponent::ResetSpriteSheetCellIndex()
 void UiImageComponent::RenderStretchedSprite(ISprite* sprite, int cellIndex, uint32 packedColor)
 {
     UiTransformInterface::RectPoints points;
-    EBUS_EVENT_ID(GetEntityId(), UiTransformBus, GetViewportSpacePoints, points);
+    UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::GetViewportSpacePoints, points);
 
     if (sprite)
     {
@@ -1316,7 +1316,7 @@ void UiImageComponent::RenderSlicedSprite(ISprite* sprite, int cellIndex, uint32
 
     // get the untransformed rect for the element plus it's transform matrix
     UiTransformInterface::RectPoints points;
-    EBUS_EVENT_ID(GetEntityId(), UiTransformBus, GetCanvasSpacePointsNoScaleRotate, points);
+    UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::GetCanvasSpacePointsNoScaleRotate, points);
 
     ISprite::Borders cellUvBorders(sprite->GetCellUvBorders(cellIndex));
     float leftBorder = cellUvBorders.m_left;
@@ -1350,7 +1350,7 @@ void UiImageComponent::RenderSlicedSprite(ISprite* sprite, int cellIndex, uint32
     }
 
     AZ::Matrix4x4 transform;
-    EBUS_EVENT_ID(GetEntityId(), UiTransformBus, GetTransformToViewport, transform);
+    UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::GetTransformToViewport, transform);
 
     if (m_isSlicingStretched)
     {
@@ -1387,10 +1387,10 @@ void UiImageComponent::RenderFixedSprite(ISprite* sprite, int cellIndex, uint32 
     AZ::Vector2 textureSize(sprite->GetCellSize(cellIndex));
 
     UiTransformInterface::RectPoints points;
-    EBUS_EVENT_ID(GetEntityId(), UiTransformBus, GetCanvasSpacePointsNoScaleRotate, points);
+    UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::GetCanvasSpacePointsNoScaleRotate, points);
 
     AZ::Vector2 pivot;
-    EBUS_EVENT_ID_RESULT(pivot, GetEntityId(), UiTransformBus, GetPivot);
+    UiTransformBus::EventResult(pivot, GetEntityId(), &UiTransformBus::Events::GetPivot);
 
     // change width and height to match texture
     AZ::Vector2 rectSize = points.GetAxisAlignedSize();
@@ -1405,7 +1405,7 @@ void UiImageComponent::RenderFixedSprite(ISprite* sprite, int cellIndex, uint32 
     points.BottomLeft() = AZ::Vector2(points.TopLeft().GetX(), points.BottomRight().GetY());
 
     // now apply scale and rotation
-    EBUS_EVENT_ID(GetEntityId(), UiTransformBus, RotateAndScalePoints, points);
+    UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::RotateAndScalePoints, points);
 
     // now draw the same as Stretched
     const UiTransformInterface::RectPoints& uvCoords = sprite->GetCellUvCoords(cellIndex);
@@ -1432,14 +1432,14 @@ void UiImageComponent::RenderTiledSprite(ISprite* sprite, uint32 packedColor)
     AZ::Vector2 textureSize = sprite->GetSize();
 
     UiTransformInterface::RectPoints points;
-    EBUS_EVENT_ID(GetEntityId(), UiTransformBus, GetCanvasSpacePointsNoScaleRotate, points);
+    UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::GetCanvasSpacePointsNoScaleRotate, points);
 
     // scale UV's so that one texel is one pixel on screen
     AZ::Vector2 rectSize = points.GetAxisAlignedSize();
     AZ::Vector2 uvScale(rectSize.GetX() / textureSize.GetX(), rectSize.GetY() / textureSize.GetY());
 
     // now apply scale and rotation to points
-    EBUS_EVENT_ID(GetEntityId(), UiTransformBus, RotateAndScalePoints, points);
+    UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::RotateAndScalePoints, points);
 
     // now draw the same as Stretched but with UV's adjusted
     const AZ::Vector2 uvs[4] = { AZ::Vector2(0, 0), AZ::Vector2(uvScale.GetX(), 0), AZ::Vector2(uvScale.GetX(), uvScale.GetY()), AZ::Vector2(0, uvScale.GetY()) };
@@ -1459,10 +1459,10 @@ void UiImageComponent::RenderStretchedToFitOrFillSprite(ISprite* sprite, int cel
     AZ::Vector2 textureSize = sprite->GetCellSize(cellIndex);
 
     UiTransformInterface::RectPoints points;
-    EBUS_EVENT_ID(GetEntityId(), UiTransformBus, GetCanvasSpacePointsNoScaleRotate, points);
+    UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::GetCanvasSpacePointsNoScaleRotate, points);
 
     AZ::Vector2 pivot;
-    EBUS_EVENT_ID_RESULT(pivot, GetEntityId(), UiTransformBus, GetPivot);
+    UiTransformBus::EventResult(pivot, GetEntityId(), &UiTransformBus::Events::GetPivot);
 
     // scale the texture so it either fits or fills the enclosing rect
     AZ::Vector2 rectSize = points.GetAxisAlignedSize();
@@ -1484,7 +1484,7 @@ void UiImageComponent::RenderStretchedToFitOrFillSprite(ISprite* sprite, int cel
     points.BottomLeft() = AZ::Vector2(points.TopLeft().GetX(), points.BottomRight().GetY());
 
     // now apply scale and rotation
-    EBUS_EVENT_ID(GetEntityId(), UiTransformBus, RotateAndScalePoints, points);
+    UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::RotateAndScalePoints, points);
 
     // now draw the same as Stretched
     const UiTransformInterface::RectPoints& uvCoords = sprite->GetCellUvCoords(cellIndex);
@@ -1861,7 +1861,7 @@ void UiImageComponent::RenderSlicedFixedSprite(ISprite* sprite, int cellIndex, u
     };
 
     AZ::Vector2 pivot;
-    EBUS_EVENT_ID_RESULT(pivot, GetEntityId(), UiTransformBus, GetPivot);
+    UiTransformBus::EventResult(pivot, GetEntityId(), &UiTransformBus::Events::GetPivot);
 
     float sValues[numValues];
     float tValues[numValues];
@@ -2321,8 +2321,8 @@ void UiImageComponent::MarkRenderGraphDirty()
 {
     // tell the canvas to invalidate the render graph (never want to do this while rendering)
     AZ::EntityId canvasEntityId;
-    EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
-    EBUS_EVENT_ID(canvasEntityId, UiCanvasComponentImplementationBus, MarkRenderGraphDirty);
+    UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
+    UiCanvasComponentImplementationBus::Event(canvasEntityId, &UiCanvasComponentImplementationBus::Events::MarkRenderGraphDirty);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2343,9 +2343,9 @@ void UiImageComponent::SnapOffsetsToFixedImage()
 
     // Check that this element is not controlled by a parent layout component
     AZ::EntityId parentElementId;
-    EBUS_EVENT_ID_RESULT(parentElementId, GetEntityId(), UiElementBus, GetParentEntityId);
+    UiElementBus::EventResult(parentElementId, GetEntityId(), &UiElementBus::Events::GetParentEntityId);
     bool isControlledByParent = false;
-    EBUS_EVENT_ID_RESULT(isControlledByParent, parentElementId, UiLayoutBus, IsControllingChild, GetEntityId());
+    UiLayoutBus::EventResult(isControlledByParent, parentElementId, &UiLayoutBus::Events::IsControllingChild, GetEntityId());
     if (isControlledByParent)
     {
         return;
@@ -2354,12 +2354,12 @@ void UiImageComponent::SnapOffsetsToFixedImage()
     // get the anchors and offsets from the element's transform component
     UiTransform2dInterface::Anchors anchors;
     UiTransform2dInterface::Offsets offsets;
-    EBUS_EVENT_ID_RESULT(anchors, GetEntityId(), UiTransform2dBus, GetAnchors);
-    EBUS_EVENT_ID_RESULT(offsets, GetEntityId(), UiTransform2dBus, GetOffsets);
+    UiTransform2dBus::EventResult(anchors, GetEntityId(), &UiTransform2dBus::Events::GetAnchors);
+    UiTransform2dBus::EventResult(offsets, GetEntityId(), &UiTransform2dBus::Events::GetOffsets);
 
     // Get the size of the element rect before scale/rotate
     UiTransformInterface::RectPoints points;
-    EBUS_EVENT_ID(GetEntityId(), UiTransformBus, GetCanvasSpacePointsNoScaleRotate, points);
+    UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::GetCanvasSpacePointsNoScaleRotate, points);
     AZ::Vector2 rectSize = points.GetAxisAlignedSize();
 
     // get the texture size
@@ -2370,7 +2370,7 @@ void UiImageComponent::SnapOffsetsToFixedImage()
 
     // get the pivot of the element, the fixed image will render the texture aligned with the pivot
     AZ::Vector2 pivot;
-    EBUS_EVENT_ID_RESULT(pivot, GetEntityId(), UiTransformBus, GetPivot);
+    UiTransformBus::EventResult(pivot, GetEntityId(), &UiTransformBus::Events::GetPivot);
 
     // if the anchors are together (no stretching) in either dimension
     // and that dimension is not controlled by a LayoutFitter
@@ -2392,8 +2392,8 @@ void UiImageComponent::SnapOffsetsToFixedImage()
 
     if (offsetsChanged)
     {
-        EBUS_EVENT_ID(GetEntityId(), UiTransform2dBus, SetOffsets, offsets);
-        EBUS_EVENT(UiEditorChangeNotificationBus, OnEditorTransformPropertiesNeedRefresh);
+        UiTransform2dBus::Event(GetEntityId(), &UiTransform2dBus::Events::SetOffsets, offsets);
+        UiEditorChangeNotificationBus::Broadcast(&UiEditorChangeNotificationBus::Events::OnEditorTransformPropertiesNeedRefresh);
     }
 }
 
@@ -2401,9 +2401,9 @@ void UiImageComponent::SnapOffsetsToFixedImage()
 bool UiImageComponent::IsPixelAligned()
 {
     AZ::EntityId canvasEntityId;
-    EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
+    UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
     bool isPixelAligned = true;
-    EBUS_EVENT_ID_RESULT(isPixelAligned, canvasEntityId, UiCanvasBus, GetIsPixelAligned);
+    UiCanvasBus::EventResult(isPixelAligned, canvasEntityId, &UiCanvasBus::Events::GetIsPixelAligned);
     return isPixelAligned;
 }
 
@@ -2477,7 +2477,7 @@ void UiImageComponent::OnEditorSpritePathnameChange()
         SnapOffsetsToFixedImage();
     }
 
-    EBUS_EVENT(UiEditorChangeNotificationBus, OnEditorPropertiesRefreshEntireTree);
+    UiEditorChangeNotificationBus::Broadcast(&UiEditorChangeNotificationBus::Events::OnEditorPropertiesRefreshEntireTree);
     CheckLayoutFitterAndRefreshEditorTransformProperties();
 }
 
@@ -2541,7 +2541,7 @@ void UiImageComponent::OnSpritePathnameChange()
 
     InvalidateLayouts();
     ResetSpriteSheetCellIndex();
-    EBUS_EVENT_ID(GetEntityId(), UiSpriteSourceNotificationBus, OnSpriteSourceChanged);
+    UiSpriteSourceNotificationBus::Event(GetEntityId(), &UiSpriteSourceNotificationBus::Events::OnSpriteSourceChanged);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2589,9 +2589,10 @@ void UiImageComponent::OnColorChange()
 void UiImageComponent::InvalidateLayouts()
 {
     AZ::EntityId canvasEntityId;
-    EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
-    EBUS_EVENT_ID(canvasEntityId, UiLayoutManagerBus, MarkToRecomputeLayoutsAffectedByLayoutCellChange, GetEntityId(), true);
-    EBUS_EVENT_ID(canvasEntityId, UiLayoutManagerBus, MarkToRecomputeLayout, GetEntityId());
+    UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
+    UiLayoutManagerBus::Event(
+        canvasEntityId, &UiLayoutManagerBus::Events::MarkToRecomputeLayoutsAffectedByLayoutCellChange, GetEntityId(), true);
+    UiLayoutManagerBus::Event(canvasEntityId, &UiLayoutManagerBus::Events::MarkToRecomputeLayout, GetEntityId());
 
     MarkRenderCacheDirty();
 }

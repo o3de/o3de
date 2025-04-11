@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/ShaderResourceGroupPool.h>
+#include <Atom/RHI/DeviceShaderResourceGroupPool.h>
 #include <RHI/Buffer.h>
 #include <RHI/BufferPool.h>
 #include <RHI/DescriptorSetAllocator.h>
@@ -19,13 +19,13 @@ namespace AZ
     namespace Vulkan
     {
         class ShaderResourceGroupPool
-            : public RHI::ShaderResourceGroupPool
+            : public RHI::DeviceShaderResourceGroupPool
         {
-            using Base = RHI::ShaderResourceGroupPool;
+            using Base = RHI::DeviceShaderResourceGroupPool;
             friend class ShaderResourceGroup;
 
         public:
-            AZ_CLASS_ALLOCATOR(ShaderResourceGroupPool, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ShaderResourceGroupPool, AZ::SystemAllocator);
             AZ_RTTI(ShaderResourceGroupPool, "593C5F3B-67FD-415C-8305-8C5D272649B7", Base);
 
             static RHI::Ptr<ShaderResourceGroupPool> Create();
@@ -34,10 +34,10 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
             // Platform API
             RHI::ResultCode InitInternal(RHI::Device& deviceBase, const RHI::ShaderResourceGroupPoolDescriptor& descriptor) override;
-            RHI::ResultCode InitGroupInternal(RHI::ShaderResourceGroup& groupBase) override;
+            RHI::ResultCode InitGroupInternal(RHI::DeviceShaderResourceGroup& groupBase) override;
             void ShutdownInternal() override;
-            RHI::ResultCode CompileGroupInternal(RHI::ShaderResourceGroup& groupBase, const RHI::ShaderResourceGroupData& groupData) override;
-            void ShutdownResourceInternal(RHI::Resource& resourceBase) override;
+            RHI::ResultCode CompileGroupInternal(RHI::DeviceShaderResourceGroup& groupBase, const RHI::DeviceShaderResourceGroupData& groupData) override;
+            void ShutdownResourceInternal(RHI::DeviceResource& resourceBase) override;
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////

@@ -72,7 +72,7 @@ namespace AZ::Debug
     AZ_CVAR(
         bool,
         bg_assertsAutoBreak,
-        false,
+        true,
         nullptr,
         ConsoleFunctorFlags::Null,
         "Automatically break on assert when the debugger is attached. 0=disabled, 1=enabled.");
@@ -87,7 +87,7 @@ namespace AZ::Debug
         Debug::ITrace::Instance().SetAlwaysPrintCallstack(enable);
     }
 
-    AZ_CVAR_SCOPED(int, bg_traceLogLevel, LogLevel::Info, &TraceLevelChanged, ConsoleFunctorFlags::Null, "Enable trace message logging in release mode.  0=disabled, 1=errors, 2=warnings, 3=info.");
+    AZ_CVAR_SCOPED(int, bg_traceLogLevel, static_cast<int>(LogLevel::Info), &TraceLevelChanged, ConsoleFunctorFlags::Null, "Enable trace message logging in release mode.  0=disabled, 1=errors, 2=warnings, 3=info, 4=debug, 5=trace.");
     AZ_CVAR_SCOPED(bool, bg_alwaysShowCallstack, false, &AlwaysShowCallstackChanged, ConsoleFunctorFlags::Null, "Force stack trace output without allowing ebus interception.");
 
     // Allow redirection of trace raw output writes to stdout, stderr or to /dev/null
@@ -336,7 +336,7 @@ namespace AZ::Debug
         va_end(mark);
 
         TraceMessageResult result;
-        EBUS_EVENT_RESULT(result, TraceMessageBus, OnPreAssert, fileName, line, funcName, message);
+        TraceMessageBus::BroadcastResult(result, &TraceMessageBus::Events::OnPreAssert, fileName, line, funcName, message);
 
         if (GetAlwaysPrintCallstack())
         {
@@ -359,7 +359,7 @@ namespace AZ::Debug
             azstrcat(message, g_maxMessageLength, "\n");
             Output(g_dbgSystemWnd, message);
 
-            EBUS_EVENT_RESULT(result, TraceMessageBus, OnAssert, message);
+            TraceMessageBus::BroadcastResult(result, &TraceMessageBus::Events::OnAssert, message);
             if (result.m_value)
             {
                 Output(g_dbgSystemWnd, "==================================================================\n");
@@ -403,7 +403,8 @@ namespace AZ::Debug
             else if (currentLevel == assertLevel_nativeUI)
             {
                 AZ::NativeUI::AssertAction buttonResult;
-                EBUS_EVENT_RESULT(buttonResult, AZ::NativeUI::NativeUIRequestBus, DisplayAssertDialog, dialogBoxText);
+                AZ::NativeUI::NativeUIRequestBus::BroadcastResult(
+                    buttonResult, &AZ::NativeUI::NativeUIRequestBus::Events::DisplayAssertDialog, dialogBoxText);
                 switch (buttonResult)
                 {
                 case AZ::NativeUI::AssertAction::BREAK:
@@ -448,9 +449,9 @@ namespace AZ::Debug
         }
 
         using namespace DebugInternal;
-        if (!window)
+        if (window == nullptr)
         {
-            window = g_dbgSystemWnd;
+            window = NoWindow;
         }
 
         char message[g_maxMessageLength];
@@ -464,11 +465,11 @@ namespace AZ::Debug
 
         va_list mark;
         va_start(mark, format);
-        azvsnprintf(message, g_maxMessageLength-1, format, mark); // -1 to make room for the "/n" that will be appended below
+        azvsnprintf(message, g_maxMessageLength - 1, format, mark); // -1 to make room for the "/n" that will be appended below
         va_end(mark);
 
         TraceMessageResult result;
-        EBUS_EVENT_RESULT(result, TraceMessageBus, OnPreError, window, fileName, line, funcName, message);
+        TraceMessageBus::BroadcastResult(result, &TraceMessageBus::Events::OnPreError, window, fileName, line, funcName, message);
         if (result.m_value)
         {
             g_alreadyHandlingAssertOrFatal = false;
@@ -481,7 +482,7 @@ namespace AZ::Debug
         azstrcat(message, g_maxMessageLength, "\n");
         Output(window, message);
 
-        EBUS_EVENT_RESULT(result, TraceMessageBus, OnError, window, message);
+        TraceMessageBus::BroadcastResult(result, &TraceMessageBus::Events::OnError, window, message);
         Output(window, "==================================================================\n");
         if (result.m_value)
         {
@@ -495,8 +496,7 @@ namespace AZ::Debug
     // Warning
     // [8/3/2009]
     //=========================================================================
-    void
-    Trace::Warning(const char* fileName, int line, const char* funcName, const char* window, const char* format, ...)
+    void Trace::Warning(const char* fileName, int line, const char* funcName, const char* window, const char* format, ...)
     {
         if (!IsTraceLoggingEnabledForLevel(LogLevel::Warnings))
         {
@@ -512,7 +512,7 @@ namespace AZ::Debug
         va_end(mark);
 
         TraceMessageResult result;
-        EBUS_EVENT_RESULT(result, TraceMessageBus, OnPreWarning, window, fileName, line, funcName, message);
+        TraceMessageBus::BroadcastResult(result, &TraceMessageBus::Events::OnPreWarning, window, fileName, line, funcName, message);
         if (result.m_value)
         {
             return;
@@ -524,7 +524,7 @@ namespace AZ::Debug
         azstrcat(message, g_maxMessageLength, "\n");
         Output(window, message);
 
-        EBUS_EVENT_RESULT(result, TraceMessageBus, OnWarning, window, message);
+        TraceMessageBus::BroadcastResult(result, &TraceMessageBus::Events::OnWarning, window, message);
         Output(window, "==================================================================\n");
     }
 
@@ -532,12 +532,11 @@ namespace AZ::Debug
     // Printf
     // [8/3/2009]
     //=========================================================================
-    void
-    Trace::Printf(const char* window, const char* format, ...)
+    void Trace::Printf(const char* window, const char* format, ...)
     {
-        if (!window)
+        if (window == nullptr)
         {
-            window = g_dbgSystemWnd;
+            window = NoWindow;
         }
 
         char message[g_maxMessageLength];
@@ -548,7 +547,7 @@ namespace AZ::Debug
         va_end(mark);
 
         TraceMessageResult result;
-        EBUS_EVENT_RESULT(result, TraceMessageBus, OnPrintf, window, message);
+        TraceMessageBus::BroadcastResult(result, &TraceMessageBus::Events::OnPrintf, window, message);
         if (result.m_value)
         {
             return;
@@ -563,12 +562,10 @@ namespace AZ::Debug
     //=========================================================================
     void Trace::Output(const char* window, const char* message)
     {
-        if (!window)
+        if (window == nullptr)
         {
-            window = g_dbgSystemWnd;
+            window = NoWindow;
         }
-
-        Platform::OutputToDebugger(window, message);
 
         if (!DebugInternal::g_suppressEBusCalls)
         {
@@ -576,36 +573,52 @@ namespace AZ::Debug
             // would likely just lead to even more exceptions.
 
             TraceMessageResult result;
-            EBUS_EVENT_RESULT(result, TraceMessageBus, OnOutput, window, message);
+            TraceMessageBus::BroadcastResult(result, &TraceMessageBus::Events::OnOutput, window, message);
             if (result.m_value)
             {
                 return;
             }
         }
 
+        OutputToRawAndDebugger(window, message);
+    }
+
+    void Trace::OutputToRawAndDebugger(const char* window, const char* message)
+    {
+        if (window == nullptr)
+        {
+            window = NoWindow;
+        }
+
+        Platform::OutputToDebugger(window, message);
         RawOutput(window, message);
     }
 
     void Trace::RawOutput(const char* window, const char* message)
     {
-        if (!window)
+        if (window == nullptr)
         {
-            window = g_dbgSystemWnd;
+            window = NoWindow;
         }
-
 
         // printf on Windows platforms seem to have a buffer length limit of 4096 characters
         // Therefore fwrite is used directly to write the window and message to stdout or stderr
+
+        // Wrapping the NoWindow constant in a string_view to allow use of string_view::operator== for string compare
         AZStd::string_view windowView{ window };
         AZStd::string_view messageView{ message };
         constexpr AZStd::string_view windowMessageSeparator{ ": " };
 
         // If the raw output stream environment variable is set to a non-nullptr FILE* stream
         // write to that stream, otherwise write stdout
-        if (FILE* rawOutputStream = s_fileStream ? *s_fileStream : stdout; rawOutputStream != nullptr)
+        FILE* stdoutStream = stdout;
+        if (FILE* rawOutputStream = s_fileStream ? *s_fileStream : stdoutStream; rawOutputStream != nullptr)
         {
-            fwrite(windowView.data(), 1, windowView.size(), rawOutputStream);
-            fwrite(windowMessageSeparator.data(), 1, windowMessageSeparator.size(), rawOutputStream);
+            if (!windowView.empty())
+            {
+                fwrite(windowView.data(), 1, windowView.size(), rawOutputStream);
+                fwrite(windowMessageSeparator.data(), 1, windowMessageSeparator.size(), rawOutputStream);
+            }
             fwrite(messageView.data(), 1, messageView.size(), rawOutputStream);
         }
     }
@@ -642,7 +655,9 @@ namespace AZ::Debug
                     continue;
                 }
 
-                azstrcat(lines[i], AZ_ARRAY_SIZE(lines[i]), "\n");
+                const size_t endOfStr = AZStd::min(strlen(lines[i]), AZ_ARRAY_SIZE(lines[i]) - 2);
+                lines[i][endOfStr] = '\n';
+                lines[i][endOfStr + 1] = '\0';
 
                 // Use Output instead of AZ_Printf to be consistent with the exception output code and avoid
                 // this accidentally being suppressed as a normal message

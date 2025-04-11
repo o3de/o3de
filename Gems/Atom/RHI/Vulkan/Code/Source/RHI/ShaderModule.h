@@ -23,7 +23,7 @@ namespace AZ
             using Base = RHI::DeviceObject;
 
         public:
-            AZ_CLASS_ALLOCATOR(ShaderModule, AZ::ThreadPoolAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ShaderModule, AZ::ThreadPoolAllocator);
             AZ_RTTI(ShaderModule, "FB682B11-D456-4151-AEE4-5D73A4C7B6F2", Base);
 
             struct Descriptor
@@ -56,7 +56,6 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
 
             Descriptor m_descriptor;
-            AZStd::vector<uint32_t> m_alignedByteCode;
             VkShaderModule m_nativeShaderModule = VK_NULL_HANDLE;
         };
     }

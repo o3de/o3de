@@ -7,7 +7,6 @@
 #
 
 set(FILES
-    Source/Allocators.cpp
     Source/Allocators.h
     Source/Commands.cpp
     Source/Commands.h

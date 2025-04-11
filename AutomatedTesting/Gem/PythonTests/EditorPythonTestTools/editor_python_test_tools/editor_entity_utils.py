@@ -17,6 +17,7 @@ import azlmbr
 import azlmbr.bus as bus
 import azlmbr.editor as editor
 import azlmbr.math as math
+import azlmbr.prefab as prefab
 
 # Helper file Imports
 from editor_python_test_tools.wait_utils import PrefabWaiter
@@ -251,6 +252,19 @@ class EditorComponent:
             get_component_property_outcome.IsSuccess()
         ), f"Failure: Could not get value from {self.get_component_name()} : {component_property_path}"
         return get_component_property_outcome.GetValue()
+    
+    def check_component_property_value(self, component_property_path: str) -> tuple[bool, object]:
+        """
+        Similar as get_component_property_value, but does not assert.
+        :return: a tuple with a boolean that is True if the property exists, if the
+                 property exists, the second value in the tuple is the Value of the property.
+        """
+        get_component_property_outcome = editor.EditorComponentAPIBus(
+            bus.Broadcast, "GetComponentProperty", self.id, component_property_path
+        )
+        if get_component_property_outcome.IsSuccess():
+            return True, get_component_property_outcome.GetValue()
+        return False, None 
 
     def set_component_property_value(self, component_property_path: str, value: object):
         """
@@ -312,6 +326,24 @@ class EditorComponent:
         type_ids = editor.EditorComponentAPIBus(
             bus.Broadcast, "FindComponentTypeIdsByEntityType", component_names, entity_type.value)
         return type_ids
+
+    def get_property_visibility(self, component_property_path: str) -> str:
+        """
+        Used to get the visibility of the given property path.
+        :param component_property_path: String of component property. (e.g. 'Settings|Visible')
+
+        :return: The string result
+        """
+        component_properties_type_visible = self.get_property_type_visibility()
+
+        assert component_property_path in component_properties_type_visible, f"Error: The {self.get_component_name()} does not have a component property of \"{component_property_path}\"."
+
+        property_type, visibility = component_properties_type_visible[component_property_path]
+
+        assert visibility != "" or visibility is not None, \
+            f"No property visibility found for component property path {component_property_path}"
+
+        return visibility
 
 
 def convert_to_azvector3(xyz) -> azlmbr.math.Vector3:
@@ -731,6 +763,21 @@ class EditorEntity:
         assert self.id.isValid(), "A valid entity id is required to focus on its owning prefab."
         focus_prefab_result = azlmbr.prefab.PrefabFocusPublicRequestBus(bus.Broadcast, "FocusOnOwningPrefab", self.id)
         assert focus_prefab_result.IsSuccess(), f"Prefab operation 'FocusOnOwningPrefab' failed. Error: {focus_prefab_result.GetError()}"
+
+    def has_overrides(self) -> bool:
+        """
+        Validates if a given entity has overrides present. NOTE: This should only be used on an entity within a prefab
+        as this will currently always return as True on a container entity.
+        :return: True if overrides are present, False otherwise
+        """
+        return prefab.PrefabOverridePublicRequestBus(bus.Broadcast, "AreOverridesPresent", self.id, "")
+
+    def revert_overrides(self) -> bool:
+        """
+        Reverts overrides on a given entity if overrides are present
+        :return: True is overrides were detected and reverted, False otherwise
+        """
+        return prefab.PrefabOverridePublicRequestBus(bus.Broadcast, "RevertOverrides", self.id, "")
 
 
 class EditorLevelEntity:

@@ -13,6 +13,7 @@ namespace EMotionFX
     {
     public:
         AZ_RTTI(AnimGraphNode, "{7F1C0E1D-4D32-4A6D-963C-20193EA28F95}", AnimGraphObject)
+        AZ_CLASS_ALLOCATOR(AnimGraphNode, AnimGraphAllocator)
 
         virtual ~AnimGraphNode() = default;
 

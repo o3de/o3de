@@ -22,7 +22,7 @@ class TUiAnimSplineTrack
     : public IUiAnimTrack
 {
 public:
-    AZ_CLASS_ALLOCATOR(TUiAnimSplineTrack, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR(TUiAnimSplineTrack, AZ::SystemAllocator)
     AZ_RTTI((TUiAnimSplineTrack, "{A78AAC62-84D0-4E2E-958E-564F51A140D2}", ValueType), IUiAnimTrack);
 
     TUiAnimSplineTrack()
@@ -184,7 +184,7 @@ public:
     void SetValue([[maybe_unused]] float time, [[maybe_unused]] const AZ::Vector4& value, [[maybe_unused]] bool bDefault = false) override { assert(0); }
     void SetValue([[maybe_unused]] float time, [[maybe_unused]] const AZ::Color& value, [[maybe_unused]] bool bDefault = false) override { assert(0); }
 
-    void OffsetKeyPosition([[maybe_unused]] const Vec3& value) override { assert(0); };
+    void OffsetKeyPosition([[maybe_unused]] const AZ::Vector3& value) override { AZ_Assert(0, "Not implemented"); };
 
     bool Serialize(IUiAnimationSystem* uiAnimationSystem, XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTracks) override;
     bool SerializeSelection(XmlNodeRef& xmlNode, bool bLoading, bool bCopySelected, float fTimeOffset) override;
@@ -337,7 +337,7 @@ public:
     void ClearCustomColor()
     { m_bCustomColorSet = false; }
 
-    static void Reflect(AZ::SerializeContext* serializeContext) {}
+    static void Reflect(AZ::ReflectContext*) {}
 
 protected:
 
@@ -376,8 +376,6 @@ private:
     float m_fMaxKeyValue;
 
     UiAnimParamData m_componentParamData;
-
-    static bool VersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement) { return false; };
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -617,16 +615,46 @@ inline bool TUiAnimSplineTrack<T>::SerializeSelection(XmlNodeRef& xmlNode, bool 
     return true;
 }
 
-// This is the current main.
-#include "AnimSplineTrack_Vec2Specialization.h"
-typedef TUiAnimSplineTrack<Vec2>        C2DSplineTrack;
+// Specialize TUIAnimSplineTrack for Vec2
+template <>
+TUiAnimSplineTrack<Vec2>::TUiAnimSplineTrack();
+template <>
+void TUiAnimSplineTrack<Vec2>::GetValue(float time, float& value);
+template <>
+EUiAnimCurveType TUiAnimSplineTrack<Vec2>::GetCurveType();
+template <>
+EUiAnimValue TUiAnimSplineTrack<Vec2>::GetValueType();
+template <>
+void TUiAnimSplineTrack<Vec2>::SetValue(float time, const float& value, bool bDefault);
+template <>
+void TUiAnimSplineTrack<Vec2>::GetKey(int index, IKey* key) const;
 
-#if 0
-// Followings are deprecated and supported only for the backward compatibility.
-#include "AnimSplineTrack_FloatSpecialization.h"
-#include "AnimSplineTrack_Vec3Specialization.h"
-#include "AnimSplineTrack_QuatSpecialization.h"
-typedef TUiAnimSplineTrack<float>   CTcbFloatTrack;
-typedef TUiAnimSplineTrack<Vec3>        CTcbVectorTrack;
-typedef TUiAnimSplineTrack<Quat>        CTcbQuatTrack;
-#endif
+template <>
+void TUiAnimSplineTrack<Vec2>::SetKey(int index, IKey* key);
+
+//! Create key at given time, and return its index.
+template <>
+int TUiAnimSplineTrack<Vec2>::CreateKey(float time);
+
+template <>
+int TUiAnimSplineTrack<Vec2>::CopyKey(IUiAnimTrack* pFromTrack, int nFromKey);
+
+template <>
+bool TUiAnimSplineTrack<Vec2>::Serialize([[maybe_unused]] IUiAnimationSystem* uiAnimationSystem, XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTracks);
+
+template <>
+bool TUiAnimSplineTrack<Vec2>::SerializeSelection(XmlNodeRef& xmlNode, bool bLoading, bool bCopySelected, float fTimeOffset);
+
+template<>
+void TUiAnimSplineTrack<Vec2>::GetKeyInfo(int index, const char*& description, float& duration);
+
+template <>
+void TUiAnimSplineTrack<Vec2>::add_ref();
+
+template <>
+void TUiAnimSplineTrack<Vec2>::release();
+
+template <>
+void TUiAnimSplineTrack<Vec2>::Reflect(AZ::ReflectContext* context);
+
+using C2DSplineTrack = TUiAnimSplineTrack<Vec2>;

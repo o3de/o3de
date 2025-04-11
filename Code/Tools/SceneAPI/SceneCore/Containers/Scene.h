@@ -12,6 +12,7 @@
 #include <SceneAPI/SceneCore/Containers/SceneGraph.h>
 #include <SceneAPI/SceneCore/Containers/SceneManifest.h>
 #include <SceneAPI/SceneCore/SceneCoreConfiguration.h>
+#include <AzCore/Math/Vector3.h>
 
 namespace AZ
 {
@@ -25,13 +26,15 @@ namespace AZ
             {
             public:
                 AZ_TYPE_INFO(Scene, "{1F2E6142-B0D8-42C6-A6E5-CD726DAA9EF0}");
-                
+
+                Scene() = default;
                 explicit Scene(const AZStd::string& name);
                 explicit Scene(AZStd::string&& name);
 
                 void SetSource(const AZStd::string& filename, const Uuid& guid);
                 void SetSource(AZStd::string&& filename, const Uuid& guid);
                 const AZStd::string& GetSourceFilename() const;
+                AZStd::string_view GetSourceExtension() const;
                 const Uuid& GetSourceGuid() const;
 
                 void SetWatchFolder(const AZStd::string& watchFolder);
@@ -40,6 +43,7 @@ namespace AZ
                 void SetManifestFilename(const AZStd::string& name);
                 void SetManifestFilename(AZStd::string&& name);
                 const AZStd::string& GetManifestFilename() const;
+                bool HasDimension() const;
 
                 SceneGraph& GetGraph();
                 const SceneGraph& GetGraph() const;
@@ -52,8 +56,11 @@ namespace AZ
                 enum class SceneOrientation {YUp, ZUp, XUp, NegYUp, NegZUp, NegXUp};
 
                 void SetOriginalSceneOrientation(SceneOrientation orientation);
+                void SetSceneDimension(Vector3 dimension);
+                void SetSceneVertices(uint32_t vertices);
                 SceneOrientation GetOriginalSceneOrientation() const;
-
+                Vector3& GetSceneDimension();
+                uint32_t GetSceneVertices() const;
                 static void Reflect(ReflectContext* context);
 
             private:
@@ -67,6 +74,9 @@ namespace AZ
                 SceneGraph m_graph;
                 SceneManifest m_manifest;
                 SceneOrientation m_originalOrientation = SceneOrientation::YUp;
+                Vector3 m_sceneDimension;
+                uint32_t m_vertices;
+                bool m_hasDimension{ false };
             AZ_POP_DISABLE_WARNING
             };
         } // Containers

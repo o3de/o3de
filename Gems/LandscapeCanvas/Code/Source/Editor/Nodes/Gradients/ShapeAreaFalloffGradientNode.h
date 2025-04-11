@@ -26,7 +26,7 @@ namespace LandscapeCanvas
     class ShapeAreaFalloffGradientNode : public BaseGradientNode
     {
     public:
-        AZ_CLASS_ALLOCATOR(ShapeAreaFalloffGradientNode, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ShapeAreaFalloffGradientNode, AZ::SystemAllocator);
         AZ_RTTI(ShapeAreaFalloffGradientNode, "{8871F483-5087-4776-A4F8-35388B3D9CE0}", BaseGradientNode);
 
         static void Reflect(AZ::ReflectContext* context);

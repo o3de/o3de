@@ -25,7 +25,7 @@ namespace AzToolsFramework
         {
             Q_OBJECT
         public:
-            AZ_CLASS_ALLOCATOR(AssetBrowserTreeViewDialog, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AssetBrowserTreeViewDialog, AZ::SystemAllocator);
             explicit AssetBrowserTreeViewDialog(AssetSelectionModel& selection, QWidget* parent = nullptr);
 
         protected:

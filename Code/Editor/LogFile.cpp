@@ -32,6 +32,9 @@
 #if !defined(AZ_PLATFORM_WINDOWS)
 #include <time.h>
 #include <QTime>
+#else
+#include <Wbemidl.h>
+#pragma comment(lib, "wbemuuid.lib")
 #endif
 
 #if defined(AZ_PLATFORM_MAC)
@@ -68,7 +71,6 @@ SANDBOX_API void ErrorV(const char* format, va_list argList)
     QString str = "####-ERROR-####: ";
     str += szBuffer;
 
-    //CLogFile::WriteLine( str );
     CryWarning(VALIDATOR_MODULE_EDITOR, VALIDATOR_ERROR, "%s", str.toUtf8().data());
 
     if (!CCryEditApp::instance()->IsInTestMode() && !CCryEditApp::instance()->IsInExportMode() && !CCryEditApp::instance()->IsInLevelLoadTestMode())
@@ -178,6 +180,215 @@ void CLogFile::FormatLineV(const char * format, va_list argList)
     CryLog("%s", szBuffer);
 }
 
+namespace LogFileInternal
+{
+#if defined(AZ_PLATFORM_WINDOWS)
+    // Stores information about the OS queried from WMI
+    struct OSInfo
+    {
+        // Stores the Name property from Win32_OperatingSystem
+        AZStd::string m_name;
+        // Stores the Version property from Win32_OperatingSystem
+        AZStd::string m_version;
+    };
+
+    // This uses the GetVersionEx API which was deprecated in Windows 10
+    // as a fall back to query the version information for Windows
+    // On Windows 10 and after, this always returns the version as 6.2
+    OSInfo QueryOSInfoUsingGetVersionEx()
+    {
+        OSInfo osInfo;
+
+        OSVERSIONINFO osVersionInfo;
+        osVersionInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+
+        AZ_PUSH_DISABLE_WARNING(4996, "-Wunknown-warning-option")
+            GetVersionEx(&osVersionInfo);
+        AZ_POP_DISABLE_WARNING;
+
+        // Default the name of the operating system to just Windows as the version information
+        // is based on the manifest at the time application was built, which probably
+        // does not match the current version of Windows that is running
+        osInfo.m_name = "Windows";
+        osInfo.m_version = AZStd::string::format("%ld.%ld", osVersionInfo.dwMajorVersion, osVersionInfo.dwMinorVersion);
+        return osInfo;
+    }
+
+    // This specifically avoids using the GetVersion/GetVersionEx WinAPI
+    // functions because those will only return the version of Windows
+    // that was manifested at the time the application was built
+    // and not the version of Windows that is currently running
+    // https://learn.microsoft.com/en-us/windows/win32/api/sysinfoapi/nf-sysinfoapi-getversion
+    AZ::Outcome<OSInfo, AZStd::string> QueryOSInfoUsingWMI()
+    {
+        // Get the thread Id as an numeric value
+        static_assert(sizeof(AZStd::thread_id) <= sizeof(uintptr_t), "Thread Id should less than a size of a pointer");
+        // Using curly braces to zero initalize all bytes the uintptr_t
+        // If the thread Id is < sizeof(uintptr_t), the high bytes would be zeroed out
+        uintptr_t numericThreadId{};
+        *reinterpret_cast<AZStd::thread_id*>(&numericThreadId) = AZStd::this_thread::get_id();
+
+        OSInfo osInfo;
+        // Query the Windows version using WMI
+        HRESULT hResult = CoInitialize(nullptr);
+        if (FAILED(hResult))
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Failed to initialize the Com library on thread %#" PRIxPTR ": %lu", numericThreadId, static_cast<unsigned long>(hResult)));
+        }
+
+        // Obtain the initial locator to Windows Management on a particular host computer.
+        IWbemLocator* locator = nullptr;
+        hResult = CoCreateInstance(CLSID_WbemLocator, 0, CLSCTX_INPROC_SERVER, IID_IWbemLocator, (LPVOID*)&locator);
+        if (FAILED(hResult))
+        {
+            return AZ::Failure(
+                AZStd::string::format("Failed to create the Windows Management COM class: %lu", static_cast<unsigned long>(hResult)));
+        }
+        // Connect to the root\cimv2 namespace with the current user and obtain pointer pSvc to make IWbemServices calls.
+        IWbemServices* services = nullptr;
+        auto serverPath = SysAllocString(TEXT(R"(ROOT\CIMV2)"));
+        hResult = locator->ConnectServer(serverPath, nullptr, nullptr, 0, 0, nullptr, nullptr, &services);
+        SysFreeString(serverPath);
+
+        if (FAILED(hResult))
+        {
+            return AZ::Failure(
+                AZStd::string::format("Could not connect the WMI on the local machine: %lu", static_cast<unsigned long>(hResult)));
+        }
+
+        // Set the IWbemServices proxy so that impersonation of the user (client) occurs.
+        hResult = CoSetProxyBlanket(
+            services,
+            RPC_C_AUTHN_WINNT,
+            RPC_C_AUTHZ_NONE,
+            nullptr,
+            RPC_C_AUTHN_LEVEL_CALL,
+            RPC_C_IMP_LEVEL_IMPERSONATE,
+            nullptr,
+            EOAC_NONE);
+
+        if (FAILED(hResult))
+        {
+            return AZ::Failure(
+                AZStd::string::format("Cannot impersonate current user for proxy call: %lu", static_cast<unsigned long>(hResult)));
+        }
+
+        IEnumWbemClassObject* classObjectEnumerator = nullptr;
+
+        // query the Name and Version property from the Win32_OperatingSystem class
+        // https://learn.microsoft.com/en-us/windows/win32/cimwin32prov/win32-operatingsystem
+        AZStd::wstring propertyQuery{ L"SELECT Name,Version FROM Win32_OperatingSystem" };
+
+        // ExecQuery expects BSTR types
+        auto query = SysAllocString(propertyQuery.c_str());
+        auto language = SysAllocString(L"WQL");
+        hResult =
+            services->ExecQuery(language, query, WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, nullptr, &classObjectEnumerator);
+        SysFreeString(language);
+        SysFreeString(query);
+
+        if (FAILED(hResult))
+        {
+            return AZ::Failure(AZStd::string::format(
+                "WQL query from Win32_OperatingSystem WMI class has failed: %lu", static_cast<unsigned long>(hResult)));
+        }
+
+        // prepare to enumerate the object, blocking until the objects are ready
+        IWbemClassObject* classObject = nullptr;
+        ULONG numResults = 0;
+        hResult = classObjectEnumerator->Next(WBEM_INFINITE, 1, &classObject, &numResults);
+
+        if (FAILED(hResult))
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Enumerating the CIM objects has failed with result code: %lu", static_cast<unsigned long>(hResult)));
+        }
+        else if (classObject == nullptr || numResults == 0)
+        {
+            return AZ::Failure(AZStd::string(
+                "There are no CIM objects found when querying the Win32_OperatingSystem class"));
+        }
+
+        constexpr const wchar_t* namePropertyName{ L"Name" };
+        constexpr const wchar_t* versionPropertyName{ L"Version" };
+        // get the class object's property value
+        VARIANT propertyValue;
+        // Query the Name field
+        if (FAILED(classObject->Get(namePropertyName, 0, &propertyValue, nullptr, nullptr)))
+        {
+            return AZ::Failure(AZStd::string::format(
+                R"(Could not retrieve the ")" AZ_TRAIT_FORMAT_STRING_PRINTF_WSTRING R"(" property from the CIM object: %lu)", namePropertyName, static_cast<unsigned long>(hResult)));
+        }
+
+        // If the name is a binary string copy it over
+        if ((propertyValue.vt & VT_BSTR) == VT_BSTR)
+        {
+            AZStd::to_string(osInfo.m_name, V_BSTR(&propertyValue));
+        }
+        // VariantClear must be called on the variant retrieved from `IWbemClassObject::Get`
+        // according to the documentation:
+        // https://learn.microsoft.com/en-us/windows/win32/api/wbemcli/nf-wbemcli-iwbemclassobject-get
+        VariantClear(&propertyValue);
+
+        // Query the Version field
+        if (FAILED(classObject->Get(versionPropertyName, 0, &propertyValue, nullptr, nullptr)))
+        {
+            {
+                return AZ::Failure(AZStd::string::format(
+                    R"(Could not retrieve the ")" AZ_TRAIT_FORMAT_STRING_PRINTF_WSTRING R"(" property from the CIM object: %lu)", versionPropertyName, static_cast<unsigned long>(hResult)));
+            }
+        }
+
+        // If the name is a binary string copy it over
+        if ((propertyValue.vt & VT_BSTR) == VT_BSTR)
+        {
+            AZStd::to_string(osInfo.m_version, V_BSTR(&propertyValue));
+        }
+        // VariantClear must be called on the variant retrieved from `IWbemClassObject::Get`
+        // according to the documentation:
+        // https://learn.microsoft.com/en-us/windows/win32/api/wbemcli/nf-wbemcli-iwbemclassobject-get
+        VariantClear(&propertyValue);
+
+        if (classObject)
+        {
+            classObject->Release();
+        }
+
+        if (classObjectEnumerator)
+        {
+            classObjectEnumerator->Release();
+        }
+
+        if (services)
+        {
+            services->Release();
+        }
+
+        if (locator)
+        {
+            locator->Release();
+        }
+
+        CoUninitialize();
+
+        return osInfo;
+    }
+
+    OSInfo QueryOSInfo()
+    {
+        auto queryOSInfoOutcome = QueryOSInfoUsingWMI();
+        if (!queryOSInfoOutcome)
+        {
+            CryLog("Failed to query Windows version info using WMI with error: %s.\n"
+                "Falling back to using GetVersionEx", queryOSInfoOutcome.GetError().c_str());
+            return QueryOSInfoUsingGetVersionEx();
+        }
+        return queryOSInfoOutcome.GetValue();
+    }
+
+#endif
+}
 
 void CLogFile::AboutSystem()
 {
@@ -193,8 +404,6 @@ void CLogFile::AboutSystem()
 #if defined(AZ_PLATFORM_WINDOWS)
     wchar_t szLanguageBufferW[64];
     DEVMODE DisplayConfig;
-    OSVERSIONINFO OSVerInfo;
-    OSVerInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
 
     //////////////////////////////////////////////////////////////////////
     // Display editor and Windows version
@@ -217,90 +426,13 @@ void CLogFile::AboutSystem()
 
 #if defined(AZ_PLATFORM_WINDOWS)
     // Format and send OS version line
-    QString str = "Windows ";
-
-AZ_PUSH_DISABLE_WARNING(4996, "-Wunknown-warning-option")
-    GetVersionEx(&OSVerInfo);
-AZ_POP_DISABLE_WARNING
-
-    if (OSVerInfo.dwMajorVersion == 4)
-    {
-        if (OSVerInfo.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS)
-        {
-            if (OSVerInfo.dwMinorVersion > 0)
-            {
-                // Windows 98
-                str += "98";
-            }
-            else
-            {
-                // Windows 95
-                str += "95";
-            }
-        }
-        else
-        {
-            // Windows NT
-            str += "NT";
-        }
-    }
-    else if (OSVerInfo.dwMajorVersion == 5)
-    {
-        if (OSVerInfo.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS)
-        {
-            // Windows Millennium
-            str += "ME";
-        }
-        else
-        {
-            if (OSVerInfo.dwMinorVersion > 0)
-            {
-                // Windows XP
-                str += "XP";
-            }
-            else
-            {
-                // Windows 2000
-                str += "2000";
-            }
-        }
-    }
-    else if (OSVerInfo.dwMajorVersion == 6)
-    {
-        if (OSVerInfo.dwMinorVersion == 0)
-        {
-            // Windows Vista
-            str += "Vista";
-        }
-        else if (OSVerInfo.dwMinorVersion == 1)
-        {
-            // Windows 7
-            str += "7";
-        }
-        else if (OSVerInfo.dwMinorVersion == 2)
-        {
-            // Windows 8
-            str += "8";
-        }
-        else
-        {
-            // Windows unknown (newer than Win8)
-            str += "Version Unknown";
-        }
-    }
-    azsnprintf(szBuffer, MAX_LOGBUFFER_SIZE, " %ld.%ld", OSVerInfo.dwMajorVersion, OSVerInfo.dwMinorVersion);
-    str += szBuffer;
+    auto osInfo = LogFileInternal::QueryOSInfo();
+    QString str = QString("%1 %2").arg(osInfo.m_name.c_str()).arg(osInfo.m_version.c_str());
 
     //////////////////////////////////////////////////////////////////////
     // Show Windows directory
     //////////////////////////////////////////////////////////////////////
 
-    str += " (";
-    wchar_t szBufferW[MAX_LOGBUFFER_SIZE];
-    GetWindowsDirectoryW(szBufferW, sizeof(szBufferW));
-    AZStd::to_string(szBuffer, MAX_LOGBUFFER_SIZE, szBufferW);
-    str += szBuffer;
-    str += ")";
     CryLog("%s", str.toUtf8().data());
 #elif defined(AZ_PLATFORM_LINUX)
     // TODO: Add more detail about the current Linux Distro
@@ -456,12 +588,12 @@ AZ_POP_DISABLE_WARNING
 //////////////////////////////////////////////////////////////////////////
 QString CLogFile::GetMemUsage()
 {
-    ProcessMemInfo mi;
-    CProcessInfo::QueryMemInfo(mi);
-    int MB = 1024 * 1024;
+    AZ::ProcessMemInfo mi;
+    AZ::QueryMemInfo(mi);
+    constexpr int MB = 1024 * 1024;
 
     QString str;
-    str = QStringLiteral("Memory=%1Mb, Pagefile=%2Mb").arg(mi.WorkingSet / MB).arg(mi.PagefileUsage / MB);
+    str = QStringLiteral("Memory=%1Mb, Pagefile=%2Mb").arg(mi.m_workingSet / MB).arg(mi.m_pagefileUsage / MB);
     //FormatLine( "PeakWorkingSet=%dMb, PeakPagefileUsage=%dMb",pc.PeakWorkingSetSize/MB,pc.PeakPagefileUsage/MB );
     //FormatLine( "PagedPoolUsage=%d",pc.QuotaPagedPoolUsage/MB );
     //FormatLine( "NonPagedPoolUsage=%d",pc.QuotaNonPagedPoolUsage/MB );

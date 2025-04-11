@@ -22,6 +22,7 @@ namespace EMotionFX
     const char* SkeletonModel::s_ragdollJointLimitIconPath = ":/EMotionFX/RagdollJointLimit.svg";
     const char* SkeletonModel::s_simulatedJointIconPath = ":/EMotionFX/SimulatedObjectColored.svg";
     const char* SkeletonModel::s_simulatedColliderIconPath = ":/EMotionFX/SimulatedObjectCollider.svg";
+    const char* SkeletonModel::s_characterIconPath = ":/EMotionFX/Character.svg";
 
     SkeletonModel::SkeletonModel()
         : m_selectionModel(this)
@@ -36,6 +37,7 @@ namespace EMotionFX
         , m_ragdollJointLimitIcon(s_ragdollJointLimitIconPath)
         , m_simulatedJointIcon(s_simulatedJointIconPath)
         , m_simulatedColliderIcon(s_simulatedColliderIconPath)
+        , m_characterIcon(s_characterIconPath)
     {
         m_selectionModel.setModel(this);
 
@@ -67,10 +69,10 @@ namespace EMotionFX
 
     SkeletonModel::~SkeletonModel()
     {
-        m_characterRootNode->Destroy();
-
         // Calling Reset will trigger the modelReset signal, thus notify other widgets to clear cached information about this model.
         Reset();
+
+        m_characterRootNode->Destroy();
 
         ActorEditorNotificationBus::Handler::BusDisconnect();
     }
@@ -283,6 +285,8 @@ namespace EMotionFX
                 {
                     switch (index.column())
                     {
+                    case COLUMN_NAME:
+                        return m_characterIcon;
                     case COLUMN_RAGDOLL_LIMIT:
                     case COLUMN_RAGDOLL_COLLIDERS:
                     case COLUMN_HITDETECTION_COLLIDERS:

@@ -11,6 +11,7 @@ set(FILES
     AzFrameworkModule.h
     AzFrameworkModule.cpp
     API/ApplicationAPI.h
+    API/ApplicationAPI.cpp
     Application/Application.cpp
     Application/Application.h
     Archive/Archive.cpp
@@ -77,6 +78,15 @@ set(FILES
     Asset/Benchmark/BenchmarkSettingsAsset.h
     CommandLine/CommandLine.h
     CommandLine/CommandRegistrationBus.h
+    Device/DeviceAttributeDeviceModel.cpp
+    Device/DeviceAttributeDeviceModel.h
+    Device/DeviceAttributeInterface.h
+    Device/DeviceAttributeRAM.cpp
+    Device/DeviceAttributeRAM.h
+    Device/DeviceAttributeGPUModel.cpp
+    Device/DeviceAttributeGPUModel.h
+    Device/DeviceAttributesSystemComponent.cpp
+    Device/DeviceAttributesSystemComponent.h
     Viewport/ViewportBus.h
     Viewport/ViewportBus.cpp
     Viewport/ViewportColors.h
@@ -102,7 +112,6 @@ set(FILES
     Viewport/ClickDetector.h
     Viewport/ClickDetector.cpp
     Viewport/CursorState.h
-    Viewport/DisplayContextRequestBus.h
     Entity/BehaviorEntity.cpp
     Entity/BehaviorEntity.h
     Entity/GameEntityContextComponent.cpp
@@ -137,12 +146,16 @@ set(FILES
     Components/NonUniformScaleComponent.cpp
     DocumentPropertyEditor/AdapterBuilder.cpp
     DocumentPropertyEditor/AdapterBuilder.h
+    DocumentPropertyEditor/AggregateAdapter.cpp
+    DocumentPropertyEditor/AggregateAdapter.h
     DocumentPropertyEditor/BasicAdapter.cpp
     DocumentPropertyEditor/BasicAdapter.h
     DocumentPropertyEditor/DocumentAdapter.cpp
     DocumentPropertyEditor/DocumentAdapter.h
     DocumentPropertyEditor/DocumentSchema.cpp
     DocumentPropertyEditor/DocumentSchema.h
+    DocumentPropertyEditor/ExpanderSettings.cpp
+    DocumentPropertyEditor/ExpanderSettings.h
     DocumentPropertyEditor/FilterAdapter.cpp
     DocumentPropertyEditor/FilterAdapter.h
     DocumentPropertyEditor/PropertyEditorNodes.cpp
@@ -169,6 +182,8 @@ set(FILES
     DocumentPropertyEditor/Reflection/LegacyReflectionBridge.h
     DocumentPropertyEditor/Reflection/Visitor.cpp
     DocumentPropertyEditor/Reflection/Visitor.h
+    DocumentPropertyEditor/SettingsRegistrar.cpp
+    DocumentPropertyEditor/SettingsRegistrar.h
     FileFunc/FileFunc.h
     FileFunc/FileFunc.cpp
     Font/FontInterface.h
@@ -219,6 +234,14 @@ set(FILES
     StreamingInstall/StreamingInstall.cpp
     StreamingInstall/StreamingInstallRequests.h
     StreamingInstall/StreamingInstallNotifications.h
+    PaintBrush/PaintBrush.cpp
+    PaintBrush/PaintBrush.h
+    PaintBrush/PaintBrushNotificationBus.h
+    PaintBrush/PaintBrushSessionBus.h
+    PaintBrush/PaintBrushSystemComponent.cpp
+    PaintBrush/PaintBrushSystemComponent.h
+    PaintBrush/PaintBrushSettings.cpp
+    PaintBrush/PaintBrushSettings.h
     Physics/Collision/CollisionEvents.h
     Physics/Collision/CollisionEvents.cpp
     Physics/Collision/CollisionLayers.h
@@ -268,8 +291,6 @@ set(FILES
     Physics/Material/PhysicsMaterialManager.cpp
     Physics/Material/PhysicsMaterialSystemComponent.h
     Physics/Material/PhysicsMaterialSystemComponent.cpp
-    Physics/Material/Legacy/LegacyPhysicsMaterialSelection.h
-    Physics/Material/Legacy/LegacyPhysicsMaterialSelection.cpp
     Physics/HeightfieldProviderBus.h
     Physics/HeightfieldProviderBus.cpp
     Physics/SimulatedBodies/RigidBody.h
@@ -308,14 +329,18 @@ set(FILES
     Process/ProcessCommunicator.cpp
     Process/ProcessCommunicator.h
     Process/ProcessCommon_fwd.h
-    Process/ProcessCommunicator.h
     Process/ProcessWatcher.cpp
     Process/ProcessWatcher.h
-    Process/ProcessCommon_fwd.h
     Process/ProcessCommunicatorTracePrinter.cpp
     Process/ProcessCommunicatorTracePrinter.h
+    Process/ProcessUtils.h
     ProjectManager/ProjectManager.h
     ProjectManager/ProjectManager.cpp
+    Quality/QualityCVarGroup.cpp
+    Quality/QualityCVarGroup.h
+    Quality/QualitySystemComponent.cpp
+    Quality/QualitySystemComponent.h
+    Quality/QualitySystemBus.h
     Render/GameIntersectorComponent.h
     Render/GameIntersectorComponent.cpp
     Render/GeometryIntersectionBus.h
@@ -366,7 +391,9 @@ set(FILES
     Input/Buses/Notifications/InputSystemNotificationBus.h
     Input/Buses/Notifications/InputTextNotificationBus.h
     Input/Buses/Requests/InputChannelRequestBus.h
+    Input/Buses/Requests/InputChannelRequestBus.cpp
     Input/Buses/Requests/InputDeviceRequestBus.h
+    Input/Buses/Requests/InputDeviceRequestBus.cpp
     Input/Buses/Requests/InputHapticFeedbackRequestBus.h
     Input/Buses/Requests/InputLightBarRequestBus.h
     Input/Buses/Requests/InputMotionSensorRequestBus.h
@@ -454,19 +481,20 @@ set(FILES
     Slice/SliceInstantiationBus.h
     Slice/SliceInstantiationTicket.h
     Slice/SliceInstantiationTicket.cpp
-    Visibility/IVisibilitySystem.h
-    Visibility/OctreeSystemComponent.h
-    Visibility/OctreeSystemComponent.cpp
-    Visibility/BoundsBus.h
     Visibility/BoundsBus.cpp
-    Visibility/VisibilityDebug.h
-    Visibility/VisibilityDebug.cpp
+    Visibility/BoundsBus.h
     Visibility/EntityBoundsUnionBus.h
-    Visibility/EntityVisibilityBoundsUnionSystem.h
     Visibility/EntityVisibilityBoundsUnionSystem.cpp
-    Visibility/EntityVisibilityQuery.h
+    Visibility/EntityVisibilityBoundsUnionSystem.h
     Visibility/EntityVisibilityQuery.cpp
-    Dependency/Dependency.h
-    Dependency/Dependency.inl
-    Dependency/Version.h
+    Visibility/EntityVisibilityQuery.h
+    Visibility/IVisibilitySystem.h
+    Visibility/OcclusionBus.cpp
+    Visibility/OcclusionBus.h
+    Visibility/OctreeSystemComponent.cpp
+    Visibility/OctreeSystemComponent.h
+    Visibility/VisibilityDebug.cpp
+    Visibility/VisibilityDebug.h
+    Visibility/VisibleGeometryBus.cpp
+    Visibility/VisibleGeometryBus.h
 )

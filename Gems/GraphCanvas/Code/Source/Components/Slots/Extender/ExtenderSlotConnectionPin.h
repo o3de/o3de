@@ -16,7 +16,7 @@ namespace GraphCanvas
     {
     public:
         AZ_RTTI(ExtenderSlotConnectionPin, "{E495A7EA-98E2-4A7B-B776-097F2CBF6636}", SlotConnectionPin);
-        AZ_CLASS_ALLOCATOR(ExtenderSlotConnectionPin, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ExtenderSlotConnectionPin, AZ::SystemAllocator);
         
         ExtenderSlotConnectionPin(const AZ::EntityId& slotId);
         ~ExtenderSlotConnectionPin();

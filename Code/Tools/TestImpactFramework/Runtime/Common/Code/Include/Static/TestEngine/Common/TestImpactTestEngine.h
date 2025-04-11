@@ -7,8 +7,10 @@
  */
 
 #include <Process/Scheduler/TestImpactProcessScheduler.h>
+#include <TestEngine/Common/TestImpactTestEngineBus.h>
 #include <TestEngine/Common/TestImpactTestEngineException.h>
-#include <TestEngine/Common/Job/TestImpactTestEngineJob.h>
+#include <TestImpactFramework/TestImpactPolicy.h>
+#include <TestImpactFramework/TestImpactTestSequence.h>
 
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/vector.h>
@@ -17,25 +19,23 @@
 
 namespace TestImpact
 {
-    template<typename TestTarget>
+    template<typename TestTargetType>
     class TestEngineRegularRun;
 
-    template<typename TestTarget, typename Coverage>
+    template<typename TestTargetType, typename Coverage>
     class TestEngineInstrumentedRun;
 
     //! Callback for when a given test engine job has failed and requires determination of the error code it returned.
-    template<typename TestJobRunner> 
+    template<typename TestJobRunner>
     using ErrorCodeCheckerCallback = AZStd::function<AZStd::optional<Client::TestRunResult>(const typename TestJobRunner::JobInfo& jobInfo, const JobMeta& meta)>;
 
-    //! Callback for when a given test engine job completes.
-    template<typename TestTarget>
-    using TestEngineJobCompleteCallback = AZStd::function<void(const TestEngineJob<TestTarget>& testJob)>;
+    //! Result of regular test engine runs.
+    template<typename TestTargetType>
+    using TestEngineRegularRunResult = AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineRegularRun<TestTargetType>>>;
 
-    template<typename TestTarget>
-    using TestEngineRegularRunResult = AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineRegularRun<TestTarget>>>;
-
-    template<typename TestTarget, typename Coverage>
-    using TestEngineInstrumentedRunResult = AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineInstrumentedRun<TestTarget, Coverage>>>;
+    //! Result of instrumented test engine runs.
+    template<typename TestTargetType, typename Coverage>
+    using TestEngineInstrumentedRunResult = AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineInstrumentedRun<TestTargetType, Coverage>>>;
 
     // Calculate the sequence result by analyzing the state of the test targets that were run.
     template<typename TestEngineJobType>
@@ -84,106 +84,132 @@ namespace TestImpact
     }
 
     // Map for storing the test engine job data of completed test target runs
-    template<typename IdType, typename TestTarget>
-    using TestEngineJobMap = AZStd::unordered_map<IdType, TestEngineJob<TestTarget>>;
+    template<typename IdType, typename TestTargetType>
+    using TestEngineJobMap = AZStd::unordered_map<IdType, TestEngineJob<TestTargetType>>;
 
     // Functor for handling test job runner callbacks
-    template<typename TestJobRunner, typename TestTarget>
-    class TestJobRunnerCallbackHandler
+    template<typename TestJobRunner, typename TestTargetType>
+    class TestJobRunnerNotificationHandler
+        : private TestJobRunner::NotificationBus::Handler
     {
         using IdType = typename TestJobRunner::JobInfo::IdType;
         using JobInfo = typename TestJobRunner::JobInfo;
 
     public:
-        TestJobRunnerCallbackHandler(
-            const AZStd::vector<const TestTarget*>& testTargets,
-            TestEngineJobMap<IdType, TestTarget>* engineJobs,
+        TestJobRunnerNotificationHandler(
+            const typename TestJobRunner::JobInfos& jobInfos,
+            const AZStd::vector<const TestTargetType*>& testTargets,
+            TestEngineJobMap<IdType, TestTargetType>& engineJobs,
             Policy::ExecutionFailure executionFailurePolicy,
             Policy::TestFailure testFailurePolicy,
-            ErrorCodeCheckerCallback<TestJobRunner> errorCodeCheckerCallback,
-            AZStd::optional<TestEngineJobCompleteCallback<TestTarget>>* callback)
-            : m_testTargets(testTargets)
-            , m_engineJobs(engineJobs)
-            , m_executionFailurePolicy(executionFailurePolicy)
-            , m_testFailurePolicy(testFailurePolicy)
-            , m_errorCodeCheckerCallback(errorCodeCheckerCallback)
-            , m_callback(callback)
-        {
-        }
+            const ErrorCodeCheckerCallback<TestJobRunner>& errorCodeCheckerCallback);
 
-        [[nodiscard]] ProcessCallbackResult operator()(const typename JobInfo& jobInfo, const TestImpact::JobMeta& meta, StdContent&& std)
-        {
-            const auto id = jobInfo.GetId().m_value;
-            const auto& args = jobInfo.GetCommand().m_args;
-            const auto* target = m_testTargets[id];
-            const auto result = GetClientTestRunResultForMeta(jobInfo, meta);
-
-            // Place the test engine job associated with this test run into the map along with its client test run result so
-            // that it can be retrieved when the sequence has ended (and any associated artifacts processed)
-            const auto& [it, success] = m_engineJobs->emplace(
-                id,
-                TestEngineJob<TestTarget>(
-                    target, args, meta, result, AZStd::move(std.m_out.value_or("")), AZStd::move(std.m_err.value_or(""))));
-
-            if (m_callback->has_value())
-            {
-                (*m_callback).value()(it->second);
-            }
-
-            if ((result == Client::TestRunResult::FailedToExecute && m_executionFailurePolicy == Policy::ExecutionFailure::Abort) ||
-                (result == Client::TestRunResult::TestFailures && m_testFailurePolicy == Policy::TestFailure::Abort))
-            {
-                return ProcessCallbackResult::Abort;
-            }
-
-            return ProcessCallbackResult::Continue;
-        }
-
-        // Deduces the run result for a given test target based on how the process exited and known return values
-        Client::TestRunResult GetClientTestRunResultForMeta(const typename JobInfo& jobInfo, const JobMeta& meta)
-        {
-            // Attempt to determine why a given test target executed successfully but return with an error code
-            if (meta.m_returnCode.has_value())
-            {
-                if (const auto result = m_errorCodeCheckerCallback(jobInfo, meta); result.has_value())
-                {
-                    return result.value();
-                }
-            }
-
-            switch (meta.m_result)
-            {
-            // If the test target executed successfully but returned in an unknown abnormal state it's probably because a test caused
-            // an unhandled exception, segfault or any other of the weird and wonderful ways a badly behaving test can terminate
-            case JobResult::ExecutedWithFailure:
-                return Client::TestRunResult::TestFailures;
-            // The trivial case: all of the tests in the test target passed
-            case JobResult::ExecutedWithSuccess:
-                return Client::TestRunResult::AllTestsPass;
-            // NotExecuted happens when a test is queued for launch but the test runner terminates the sequence (either due to client
-            // abort or due to the sequence timer expiring) whereas Terminated happens when the aforementioned scenarios happen when the
-            // test target is in flight
-            case JobResult::NotExecuted:
-            case JobResult::Terminated:
-                return Client::TestRunResult::NotRun;
-            // The individual timer for the test target expired
-            case JobResult::Timeout:
-                return Client::TestRunResult::Timeout;
-            case JobResult::FailedToExecute:
-                return Client::TestRunResult::FailedToExecute;
-            default:
-                throw(TestEngineException(AZStd::string::format("Unexpected job result: %u", static_cast<unsigned int>(meta.m_result))));
-            }
-        }
+        ~TestJobRunnerNotificationHandler();
 
     private:
-        const AZStd::vector<const TestTarget*>& m_testTargets;
-        TestEngineJobMap<typename IdType, TestTarget>* m_engineJobs;
+        // NotificationsBus overrides ...
+        ProcessCallbackResult OnJobComplete(const JobInfo& jobInfo, const TestImpact::JobMeta& meta, const StdContent& std);
+
+        // Deduces the run result for a given test target based on how the process exited and known return values
+        Client::TestRunResult GetClientTestRunResultForMeta(const JobInfo& jobInfo, const JobMeta& meta);
+
+        TestEngineJobMap<IdType, TestTargetType>* m_engineJobs = nullptr;
         Policy::ExecutionFailure m_executionFailurePolicy;
         Policy::TestFailure m_testFailurePolicy;
-        ErrorCodeCheckerCallback<TestJobRunner> m_errorCodeCheckerCallback;
-        AZStd::optional<TestEngineJobCompleteCallback<TestTarget>>* m_callback;
+        const ErrorCodeCheckerCallback<TestJobRunner>* m_errorCodeCheckerCallback = nullptr;
+        AZStd::unordered_map<IdType, const TestTargetType*> m_jobInfoIdToTestTargetMap;
     };
+
+    template<typename TestJobRunner, typename TestTargetType>
+    TestJobRunnerNotificationHandler<TestJobRunner, TestTargetType>::TestJobRunnerNotificationHandler(
+        const typename TestJobRunner::JobInfos& jobInfos,
+        const AZStd::vector<const TestTargetType*>& testTargets,
+        TestEngineJobMap<IdType, TestTargetType>& engineJobs,
+        Policy::ExecutionFailure executionFailurePolicy,
+        Policy::TestFailure testFailurePolicy,
+        const ErrorCodeCheckerCallback<TestJobRunner>& errorCodeCheckerCallback)
+        : m_engineJobs(&engineJobs)
+        , m_executionFailurePolicy(executionFailurePolicy)
+        , m_testFailurePolicy(testFailurePolicy)
+        , m_errorCodeCheckerCallback(&errorCodeCheckerCallback)
+    {
+        TestJobRunner::NotificationBus::Handler::BusConnect();
+        for (size_t i = 0; i < jobInfos.size(); i++)
+        {
+            m_jobInfoIdToTestTargetMap[jobInfos[i].GetId().m_value] = testTargets[i];
+        }
+    }
+
+    template<typename TestJobRunner, typename TestTargetType>
+    TestJobRunnerNotificationHandler<TestJobRunner, TestTargetType>::~TestJobRunnerNotificationHandler()
+    {
+        TestJobRunner::NotificationBus::Handler::BusDisconnect();
+    }
+
+    template<typename TestJobRunner, typename TestTargetType>
+    ProcessCallbackResult TestJobRunnerNotificationHandler<TestJobRunner, TestTargetType>::OnJobComplete(
+        const JobInfo& jobInfo, const TestImpact::JobMeta& meta, const StdContent& std)
+    {
+        const auto id = jobInfo.GetId().m_value;
+        const auto& args = jobInfo.GetCommand().m_args;
+        const auto* target = m_jobInfoIdToTestTargetMap.at(id);
+        const auto result = GetClientTestRunResultForMeta(jobInfo, meta);
+
+        // Place the test engine job associated with this test run into the map along with its client test run result so
+        // that it can be retrieved when the sequence has ended (and any associated artifacts processed)
+        const auto& [it, success] = m_engineJobs->emplace(
+            id,
+            TestEngineJob<TestTargetType>(
+                target, args, meta, result, AZStd::move(std.m_out.value_or("")), AZStd::move(std.m_err.value_or(""))));
+
+        TestEngineNotificationBus<TestTargetType>::Broadcast(&TestEngineNotificationBus<TestTargetType>::Events::OnJobComplete, it->second);
+
+        if ((result == Client::TestRunResult::FailedToExecute && m_executionFailurePolicy == Policy::ExecutionFailure::Abort) ||
+            (result == Client::TestRunResult::TestFailures && m_testFailurePolicy == Policy::TestFailure::Abort))
+        {
+            return ProcessCallbackResult::Abort;
+        }
+
+        return ProcessCallbackResult::Continue;
+    }
+
+    template<typename TestJobRunner, typename TestTargetType>
+    Client::TestRunResult TestJobRunnerNotificationHandler<TestJobRunner, TestTargetType>::GetClientTestRunResultForMeta(
+        const JobInfo& jobInfo, const JobMeta& meta)
+    {
+        // Attempt to determine why a given test target executed successfully but return with an error code
+        if (meta.m_returnCode.has_value())
+        {
+            if (const auto result = (*m_errorCodeCheckerCallback)(jobInfo, meta); result.has_value())
+            {
+                return result.value();
+            }
+        }
+
+        switch (meta.m_result)
+        {
+        // If the test target executed successfully but returned in an unknown abnormal state it's probably because a test caused
+        // an unhandled exception, segfault or any other of the weird and wonderful ways a badly behaving test can terminate
+        case JobResult::ExecutedWithFailure:
+            return Client::TestRunResult::TestFailures;
+        // The trivial case: all of the tests in the test target passed
+        case JobResult::ExecutedWithSuccess:
+            return Client::TestRunResult::AllTestsPass;
+        // NotExecuted happens when a test is queued for launch but the test runner terminates the sequence (either due to client
+        // abort or due to the sequence timer expiring) whereas Terminated happens when the aforementioned scenarios happen when the
+        // test target is in flight
+        case JobResult::NotExecuted:
+        case JobResult::Terminated:
+            return Client::TestRunResult::NotRun;
+        // The individual timer for the test target expired
+        case JobResult::Timeout:
+            return Client::TestRunResult::Timeout;
+        case JobResult::FailedToExecute:
+            return Client::TestRunResult::FailedToExecute;
+        default:
+            throw(TestEngineException(AZStd::string::format("Unexpected job result: %u", static_cast<unsigned int>(meta.m_result))));
+        }
+    }
 
     // Helper trait for identifying the test engine job specialization for a given test job runner
     template<typename TestJobRunner>
@@ -196,11 +222,11 @@ namespace TestImpact
     using TestEngineJobType = typename TestJobRunnerTrait<TestJobRunner>::TestEngineJobType;
 
     // Helper function to compile the run type specific test engine jobs from their associated jobs and payloads
-    template<typename TestJobRunner, typename TestTarget>
+    template<typename TestJobRunner, typename TestTargetType>
     AZStd::vector<TestEngineJobType<TestJobRunner>> CompileTestEngineRuns(
-        const AZStd::vector<const TestTarget*>& testTargets,
+        const AZStd::vector<const TestTargetType*>& testTargets,
         AZStd::vector<typename TestJobRunner::Job>& runnerjobs,
-        TestEngineJobMap<typename TestJobRunner::JobInfo::IdType, TestTarget>&& engineJobs)
+        TestEngineJobMap<typename TestJobRunner::JobInfo::IdType, TestTargetType>&& engineJobs)
     {
         AZStd::vector<TestEngineJobType<TestJobRunner>> engineRuns;
         engineRuns.reserve(testTargets.size());
@@ -223,7 +249,7 @@ namespace TestImpact
                 const auto& args = job.GetJobInfo().GetCommand().m_args;
                 const auto* target = testTargets[id];
                 TestEngineJobType<TestJobRunner> run(
-                    TestEngineJob<TestTarget>(target, args, {}, Client::TestRunResult::NotRun, "", ""), {});
+                    TestEngineJob<TestTargetType>(target, args, {}, Client::TestRunResult::NotRun, "", ""), {});
                 engineRuns.push_back(AZStd::move(run));
             }
         }
@@ -232,94 +258,28 @@ namespace TestImpact
     }
 
     //! Helper function to run the specified tests.
-    template<typename TestJobRunner, typename TestTarget>
+    template<typename TestJobRunner, typename TestTargetType>
     auto RunTests(
         TestJobRunner* testRunner,
-        const AZStd::vector<typename TestJobRunner::JobInfo>& jobInfos,
-        const AZStd::vector<const TestTarget*>& testTargets,
+        const typename TestJobRunner::JobInfos& jobInfos,
+        const AZStd::vector<const TestTargetType*>& testTargets,
         ErrorCodeCheckerCallback<TestJobRunner> errorCheckerCallback,
         Policy::ExecutionFailure executionFailurePolicy,
         Policy::TestFailure testFailurePolicy,
         Policy::TargetOutputCapture targetOutputCapture,
         AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
-        AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-        AZStd::optional<TestEngineJobCompleteCallback<TestTarget>> jobCallback,
-        AZStd::optional<typename TestJobRunner::StdContentCallback> stdContentCallback)
+        AZStd::optional<AZStd::chrono::milliseconds> globalTimeout)
     {
-        TestEngineJobMap<typename TestJobRunner::JobInfo::IdType, TestTarget> engineJobs;
+        TestEngineJobMap<typename TestJobRunner::JobInfo::IdType, TestTargetType> engineJobs;
+        TestJobRunnerNotificationHandler<TestJobRunner, TestTargetType> handler(
+            jobInfos, testTargets, engineJobs, executionFailurePolicy, testFailurePolicy, errorCheckerCallback);
         auto [result, runnerJobs] = testRunner->RunTests(
             jobInfos,
             targetOutputCapture == Policy::TargetOutputCapture::None ? StdOutputRouting::None : StdOutputRouting::ToParent,
             targetOutputCapture == Policy::TargetOutputCapture::None ? StdErrorRouting::None : StdErrorRouting::ToParent,
             testTargetTimeout,
-            globalTimeout,
-            TestJobRunnerCallbackHandler<TestJobRunner, TestTarget>(
-                testTargets,
-                &engineJobs,
-                executionFailurePolicy,
-                testFailurePolicy,
-                errorCheckerCallback,
-                &jobCallback),
-            stdContentCallback);
-
-        auto engineRuns = CompileTestEngineRuns<TestJobRunner, TestTarget>(testTargets, runnerJobs, AZStd::move(engineJobs));
+            globalTimeout);
+        auto engineRuns = CompileTestEngineRuns<TestJobRunner, TestTargetType>(testTargets, runnerJobs, AZStd::move(engineJobs));
         return AZStd::pair{ CalculateSequenceResult(result, engineRuns, executionFailurePolicy), AZStd::move(engineRuns) };
-    }
-
-    //! Helper function to generate the test engine job infos and the proceed to running the tests.
-    template<typename TestJobRunner, typename TestJobInfoGenerator, typename TestTarget>
-    auto GenerateJobInfosAndRunTests(
-        TestJobRunner* testRunner,
-        TestJobInfoGenerator* jobInfoGenerator,
-        const AZStd::vector<const TestTarget*>& testTargets,
-        ErrorCodeCheckerCallback<TestJobRunner> errorCheckerCallback,
-        Policy::ExecutionFailure executionFailurePolicy,
-        Policy::TestFailure testFailurePolicy,
-        Policy::TargetOutputCapture targetOutputCapture,
-        AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
-        AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-        AZStd::optional<TestEngineJobCompleteCallback<TestTarget>> jobCallback,
-        AZStd::optional<typename TestJobRunner::StdContentCallback> stdContentCallback)
-    {
-        return RunTests(
-            testRunner,
-            jobInfoGenerator->GenerateJobInfos(testTargets),
-            testTargets,
-            errorCheckerCallback,
-            executionFailurePolicy,
-            testFailurePolicy,
-            targetOutputCapture,
-            testTargetTimeout,
-            globalTimeout,
-            jobCallback,
-            stdContentCallback
-        );
-    }
-
-    template<typename TestEngineJob>
-    auto GenerateInstrumentedRunResult(const AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineJob>>& engineJobs, Policy::IntegrityFailure integrityFailurePolicy)
-    {
-        const auto& [result, engineRuns] = engineJobs;
-
-        // Now that we know the true result of successful jobs that return non-zero we can deduce if we have any integrity failures
-        // where a test target ran and completed its tests without incident yet failed to produce coverage data
-        if (integrityFailurePolicy == Policy::IntegrityFailure::Abort)
-        {
-            for (const auto& engineRun : engineRuns)
-            {
-                if (const auto testResult = engineRun.GetTestResult();
-                    testResult == Client::TestRunResult::AllTestsPass || testResult == Client::TestRunResult::TestFailures)
-                {
-                    AZ_TestImpact_Eval(
-                        engineRun.GetCoverge().has_value(),
-                        TestEngineException,
-                        AZStd::string::format(
-                            "Test target %s completed its test run but failed to produce coverage data",
-                            engineRun.GetTestTarget()->GetName().c_str()));
-                }
-            }
-        }
-
-        return AZStd::pair{ result, engineRuns };
     }
 } // namespace TestImpact

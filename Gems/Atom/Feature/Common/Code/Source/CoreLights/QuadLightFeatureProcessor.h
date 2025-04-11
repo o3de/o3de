@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <Atom/Feature/CoreLights/LightCommon.h>
+#include <CoreLights/LightCommon.h>
 #include <Atom/Feature/CoreLights/QuadLightFeatureProcessorInterface.h>
 #include <Atom/Feature/Mesh/MeshCommon.h>
 #include <Atom/Feature/Utils/GpuBufferHandler.h>
@@ -25,6 +25,7 @@ namespace AZ
             : public QuadLightFeatureProcessorInterface
         {
         public:
+            AZ_CLASS_ALLOCATOR(QuadLightFeatureProcessor, AZ::SystemAllocator)
             AZ_RTTI(AZ::Render::QuadLightFeatureProcessor, "{F1E50245-5F05-475E-857F-221FB17C7E45}", AZ::Render::QuadLightFeatureProcessorInterface);
 
             static void Reflect(AZ::ReflectContext* context);
@@ -51,10 +52,11 @@ namespace AZ
             void SetQuadDimensions(LightHandle handle, float width, float height) override;
             void SetAffectsGI(LightHandle handle, bool affectsGI) override;
             void SetAffectsGIFactor(LightHandle handle, float affectsGIFactor) override;
+            void SetLightingChannelMask(LightHandle handle, uint32_t lightingChannelMask) override;
             void SetQuadData(LightHandle handle, const QuadLightData& data) override;
 
-            const Data::Instance<RPI::Buffer> GetLightBuffer()const;
-            uint32_t GetLightCount()const;
+            const Data::Instance<RPI::Buffer> GetLightBuffer() const override;
+            uint32_t GetLightCount() const override;
 
         private:
             QuadLightFeatureProcessor(const QuadLightFeatureProcessor&) = delete;

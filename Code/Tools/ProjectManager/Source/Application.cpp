@@ -76,45 +76,31 @@ namespace O3DE::ProjectManager
         // unit tests may provide custom python bindings 
         m_pythonBindings = pythonBindings ? AZStd::move(pythonBindings) : AZStd::make_unique<PythonBindings>(GetEngineRoot());
 
+
+        // If the first attempt of starting python failed, then attempt to bootstrap python by 
+        // calling the get python script
         if (!m_pythonBindings->PythonStarted())
         {
-            if (!interactive)
+            auto getPythonResult = ProjectUtils::RunGetPythonScript(GetEngineRoot());
+            if (getPythonResult.IsSuccess())
             {
-                return false;
+                // If the bootstrap for python was successful, then attempt to start python again
+                m_pythonBindings->StartPython();
             }
+        }
 
-            int result = QMessageBox::warning(nullptr, QObject::tr("Failed to start Python"),
+        if (!m_pythonBindings->PythonStarted())
+        {
+            if (interactive)
+            {
+                QMessageBox::critical(nullptr, QObject::tr("Failed to start Python"),
                 QObject::tr("This tool requires an O3DE engine with a Python runtime, "
-                            "but either Python is missing or mis-configured.<br><br>Press 'OK' to "
-                            "run the %1 script automatically, or 'Cancel' "
-                            " if you want to manually resolve the issue by renaming your "
-                            " python/runtime folder and running %1 yourself.")
-                            .arg(GetPythonScriptPath),
-                QMessageBox::Cancel, QMessageBox::Ok);
-            if (result == QMessageBox::Ok)
-            {
-                auto getPythonResult = ProjectUtils::RunGetPythonScript(GetEngineRoot());
-                if (!getPythonResult.IsSuccess())
-                {
-                    QMessageBox::critical(
-                        nullptr, QObject::tr("Failed to run %1 script").arg(GetPythonScriptPath),
-                        QObject::tr("The %1 script failed, was canceled, or could not be run.  "
-                                    "Please rename your python/runtime folder and then run "
-                                    "<pre>%1</pre>").arg(GetPythonScriptPath));
-                }
-                else if (!m_pythonBindings->StartPython())
-                {
-                    QMessageBox::critical(
-                        nullptr, QObject::tr("Failed to start Python"),
-                        QObject::tr("Failed to start Python after running %1")
-                                    .arg(GetPythonScriptPath));
-                }
+                            "but was unable to automatically install O3DE's built-in Python."
+                            "You can troubleshoot this issue by trying to manually install O3DE's built-in "
+                            "Python by running the '%1' script.")
+                            .arg(GetPythonScriptPath));
             }
-
-            if (!m_pythonBindings->PythonStarted())
-            {
-                return false;
-            }
+            return false;
         }
 
         m_settings = AZStd::make_unique<Settings>();
@@ -180,7 +166,6 @@ namespace O3DE::ProjectManager
 
     bool Application::RegisterEngine(bool interactive)
     {
-        // get this engine's info
         auto engineInfoOutcome = m_pythonBindings->GetEngineInfo();
         if (!engineInfoOutcome)
         {
@@ -203,43 +188,9 @@ namespace O3DE::ProjectManager
             return true;
         }
 
-        // check if an engine with this name is already registered and has a valid engine.json
-        auto existingEngineResult = m_pythonBindings->GetEngineInfo(engineInfo.m_name);
-        if (existingEngineResult)
-        {
-            if (!interactive)
-            {
-                AZ_Error("Project Manager", false, "An engine with the name %s is already registered with the path %s",
-                    engineInfo.m_name.toUtf8().constData(), engineInfo.m_path.toUtf8().constData());
-                return false;
-            }
-
-            // get the updated engine name unless the user wants to cancel
-            bool okPressed = false;
-            const EngineInfo& otherEngineInfo = existingEngineResult.GetValue();
-
-            engineInfo.m_name = QInputDialog::getText(nullptr,
-                QObject::tr("Engine '%1' already registered").arg(engineInfo.m_name),
-                QObject::tr("An engine named '%1' is already registered.<br /><br />"
-                            "<b>Current path</b><br />%2<br/><br />"
-                            "<b>New path</b><br />%3<br /><br />"
-                            "Press 'OK' to force registration, or provide a new engine name below.<br />"
-                            "Alternatively, press `Cancel` to close the Project Manager and resolve the issue manually.")
-                            .arg(engineInfo.m_name, otherEngineInfo.m_path, engineInfo.m_path),
-                QLineEdit::Normal,
-                engineInfo.m_name,
-                &okPressed);
-
-            if (!okPressed)
-            {
-                // user elected not to change the name or force registration
-                return false;
-            }
-        }
-
-        // always force register in case there is an engine registered in o3de_manifest.json, but
-        // the engine.json is missing or corrupt in which case GetEngineInfo() fails
-        constexpr bool forceRegistration = true;
+        // We no longer force registration because we no longer require that only one engine can
+        // be registered with each engine name
+        constexpr bool forceRegistration = false;
         auto registerOutcome = m_pythonBindings->SetEngineInfo(engineInfo, forceRegistration);
         if (!registerOutcome)
         {

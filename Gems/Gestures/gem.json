@@ -1,5 +1,6 @@
 {
     "gem_name": "Gestures",
+    "version": "0.0.0",
     "display_name": "Gestures",
     "license": "Apache-2.0 Or MIT",
     "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
@@ -17,7 +18,7 @@
     ],
     "icon_path": "preview.png",
     "requirements": "",
-    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/input/gestures/",
+    "documentation_url": "https://www.o3de.org/docs/user-guide/gems/reference/input/gestures/",
     "dependencies": [
         "Atom_RPI"
     ]

@@ -14,14 +14,32 @@
 // ---------------------------------------------------------------------------------
 
 #include <Atom/Features/MatrixUtility.azsli>
+#include <Atom/Features/BlendUtility.azsli>
+#include <Atom/Feature/Common/Assets/Shaders/Materials/MaterialInputs/BaseColorInput.azsli>
 #include <Atom/Features/Decals/DecalTextureUtil.azsli>
 #include <Atom/Features/LightCulling/LightCullingTileIterator.azsli>
 #include <Atom/RPI/TangentSpace.azsli>
 
+#ifndef ENABLE_DECALS_CAP
+#define ENABLE_DECALS_CAP 20 // Default cap if it was not set by the pipeline. This is only applicable if gpu culling is disabled
+#endif
+
+
 void ApplyDecal(uint currDecalIndex, inout Surface surface);
+
+#if ENABLE_DECALS
+
+void ApplyDecalInternal(uint currDecalIndex, inout Surface surface)
+{
+    if (o_enableDecals)
+    {
+        ApplyDecal(currDecalIndex, surface);
+    }
+}
 
 void ApplyDecals(inout LightCullingTileIterator tileIterator, inout Surface surface)
 {
+#if ENABLE_LIGHT_CULLING
     tileIterator.LoadAdvance();
     
     while( !tileIterator.IsDone() )
@@ -29,16 +47,25 @@ void ApplyDecals(inout LightCullingTileIterator tileIterator, inout Surface surf
         uint currDecalIndex = tileIterator.GetValue();
         tileIterator.LoadAdvance();
         
-        ApplyDecal(currDecalIndex, surface);
-    }    
+        ApplyDecalInternal(currDecalIndex, surface);
+    }
+#else
+    // Since there's no GPU culling for decals, we rely on culling done by CPU
+    // Only apply visible decals
+    for(uint decalIndex = 0; (decalIndex < ENABLE_DECALS_CAP && decalIndex < ViewSrg::m_visibleDecalCount); decalIndex++)
+    {
+        ApplyDecalInternal(ViewSrg::m_visibleDecalIndices[decalIndex], surface);
+    }
+#endif
 }
-
-float GetDecalAttenuation(float3 surfNormal, float3 decalUp, float decalAngleAttenutation)
-{ 
+ 
+ 
+real GetDecalAttenuation(real3 surfNormal, real3 decalUp, real decalAngleAttenutation)
+{
     const half DecalClampAngle = 0.55;
-    float dotAtten = dot(surfNormal, decalUp);
+    real dotAtten = dot(surfNormal, decalUp);
     dotAtten = clamp(dotAtten, DecalClampAngle, 1.0);
-    dotAtten = smoothstep(DecalClampAngle, 1.0f, dotAtten);
+    dotAtten = smoothstep(DecalClampAngle, 1.0, dotAtten);
      
     return lerp(1, dotAtten, decalAngleAttenutation);
 }
@@ -47,18 +74,18 @@ void ApplyDecal(uint currDecalIndex, inout Surface surface)
 {
     ViewSrg::Decal decal = ViewSrg::m_decals[currDecalIndex];
 
-    float3x3 decalRot = MatrixFromQuaternion(decal.m_quaternion);
+    real3x3 decalRot = MatrixFromQuaternion(real4(decal.m_quaternion));
     decalRot = transpose(decalRot);
     
-    float3 localPos = surface.position - decal.m_position;
+    real3 localPos = real3(surface.position - decal.m_position);
     localPos = mul(decalRot, localPos);
 
-    float3 decalUVW = localPos * rcp(decal.m_halfSize);
+    real3 decalUVW = localPos * rcp(real3(decal.m_halfSize));
     
     [branch]
-    if(decalUVW.x >= -1.0f && decalUVW.x <= 1.0f &&
-       decalUVW.y >= -1.0f && decalUVW.y <= 1.0f &&
-       decalUVW.z >= -1.0f && decalUVW.z <= 1.0f)
+    if(decalUVW.x >= -1.0 && decalUVW.x <= 1.0 &&
+       decalUVW.y >= -1.0 && decalUVW.y <= 1.0 &&
+       decalUVW.z >= -1.0 && decalUVW.z <= 1.0)
     {
         // [GFX TODO][ATOM-13798] Investigate using SampleGrad in the decal shader
         const uint textureArrayIndex = decal.m_textureArrayIndex;
@@ -66,13 +93,11 @@ void ApplyDecal(uint currDecalIndex, inout Surface surface)
         
         decalUVW.y *= -1;
 
-        float3 decalUV = float3(decalUVW.xy * 0.5f + 0.5f, textureIndex);
-         
-        float3 decalSample;
-
+        real3 decalUV = real3(decalUVW.xy * 0.5 + 0.5, textureIndex);
+        
         float4 baseMap = 0;
         float2 normalMap = 0;
-        // Each texture array handles a size permutation. 
+        // Each texture array handles a size permutation.
         // e.g. it could be that tex array 0 handles 256x256 and tex array 1 handles 512x64, etc.
         [branch]
         switch(textureArrayIndex)
@@ -99,12 +124,21 @@ void ApplyDecal(uint currDecalIndex, inout Surface surface)
             break;            
         }
         
-        const float decalAttenuation = GetDecalAttenuation(surface.normal, decalRot[2], decal.m_angleAttenuation);
-        const float albedoOpacity = baseMap.a * decal.m_opacity * decalAttenuation;
-        surface.albedo = lerp(surface.albedo, baseMap.rgb, albedoOpacity);      
+        const real decalAttenuation = GetDecalAttenuation(surface.GetVertexNormal(), decalRot[2], real(decal.m_angleAttenuation));
+        const real albedoOpacity = real(baseMap.a) * real(decal.m_opacity) * decalAttenuation;
 
-        const float normalOpacity = baseMap.a * decal.m_normalMapOpacity * decalAttenuation;
-        const float3 normalMapWS = GetWorldSpaceNormal(normalMap, decalRot[2], decalRot[0], decalRot[1], 1.0f);      
+        bool useTexture = true;
+        real3 blendedBaseColor = BlendBaseColor(real3(baseMap.rgb), real3(decal.m_decalColor), real(decal.m_decalColorFactor), TextureBlendMode::Multiply, useTexture);
+        surface.albedo = lerp(surface.albedo, real3(blendedBaseColor.rgb), albedoOpacity);
+
+        const real normalOpacity = real(baseMap.a) * real(decal.m_normalMapOpacity) * decalAttenuation;
+        const real3 normalMapWS = GetWorldSpaceNormal(real2(normalMap), decalRot[2], decalRot[0], decalRot[1], 1.0);
         surface.normal = normalize(lerp(surface.normal, normalMapWS, normalOpacity));
     }
 }
+#else
+void ApplyDecals(inout LightCullingTileIterator tileIterator, inout Surface surface)
+{
+    //Not Enabled
+}
+#endif

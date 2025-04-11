@@ -29,7 +29,7 @@ namespace AZ
             using Base = RHI::DeviceObject;
 
         public:
-            AZ_CLASS_ALLOCATOR(Framebuffer, AZ::ThreadPoolAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Framebuffer, AZ::ThreadPoolAllocator);
             AZ_RTTI(Framebuffer, "1EF7EE0F-CB6C-45EB-8D8A-8254F4AC5F67", Base);
 
             struct Descriptor
@@ -49,6 +49,12 @@ namespace AZ
             const RenderPass* GetRenderPass() const;
 
             const RHI::Size& GetSize() const;
+
+            //! Returns a list with image views of the framebuffer.
+            const AZStd::vector<RHI::ConstPtr<ImageView>>& GetImageViews() const;
+            //! Returns the index of the image view that correspons to one used by the ImageScopeAttachment.
+            //! If not found an empty optional is returned.
+            AZStd::optional<uint32_t> FindImageViewIndex(RHI::ImageScopeAttachment& scopeAttachment) const;
 
         private:
             Framebuffer() = default;

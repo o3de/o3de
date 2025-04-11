@@ -81,20 +81,8 @@ UiAnimationSystem::UiAnimationSystem()
 
     m_nextSequenceId = 1;
 
-    DoNodeStaticInitialisation();
     RegisterNodeTypes();
     RegisterParamTypes();
-}
-
-//////////////////////////////////////////////////////////////////////////
-UiAnimationSystem::~UiAnimationSystem()
-{
-}
-
-//////////////////////////////////////////////////////////////////////////
-void UiAnimationSystem::DoNodeStaticInitialisation()
-{
-    CUiAnimAzEntityNode::Initialize();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1293,7 +1281,8 @@ void UiAnimationSystem::SerializeParamData(UiAnimParamData& animParamData, XmlNo
         unsigned long idHi = id64 >> 32;
         unsigned long idLo = id64 & 0xFFFFFFFF;
 
-        XmlString uuidStr = animParamData.GetTypeId().ToString<XmlString>();
+        XmlString uuidStr;
+        uuidStr += animParamData.GetTypeId().ToString<AZStd::string>();
         XmlString nameStr(animParamData.GetName());
         size_t offset = animParamData.GetOffset();
 

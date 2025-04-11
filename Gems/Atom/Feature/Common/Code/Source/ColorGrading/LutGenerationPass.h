@@ -26,7 +26,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(LutGenerationPass, "{C21DABA8-B538-4C80-BA18-5B97CC9259E5}", AZ::RPI::FullscreenTrianglePass);
-            AZ_CLASS_ALLOCATOR(LutGenerationPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(LutGenerationPass, SystemAllocator);
 
             virtual ~LutGenerationPass() = default;
 

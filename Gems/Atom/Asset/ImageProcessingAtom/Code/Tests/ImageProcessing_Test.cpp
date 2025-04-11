@@ -74,6 +74,8 @@
 #include <AzCore/UnitTest/TestTypes.h>
 #include <ImageBuilderComponent.h>
 
+extern "C" void CleanUpRpiPublicGenericClassInfo();
+
 using namespace ImageProcessingAtom;
 
 namespace UnitTest
@@ -90,8 +92,7 @@ namespace UnitTest
     };
 
     class ImageProcessingTest
-        : public ::testing::Test
-        , public AllocatorsBase
+        : public LeakDetectionFixture
         , public AZ::ComponentApplicationBus::Handler
     {
     public:
@@ -134,14 +135,9 @@ namespace UnitTest
 
         void SetUp() override
         {
-            AllocatorsBase::SetupAllocator();
-
             // Adding this handler to allow utility functions access the serialize context
             ComponentApplicationBus::Handler::BusConnect();
             AZ::Interface<AZ::ComponentApplicationRequests>::Register(this);
-
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
 
             // AssetManager required to generate image assets
             AZ::Data::AssetManager::Descriptor desc;
@@ -179,7 +175,7 @@ namespace UnitTest
             threadDesc.m_cpuId = 0; // Don't set processors IDs on windows
 #endif 
 
-            uint32_t numWorkerThreads = AZStd::thread::hardware_concurrency();
+            uint32_t numWorkerThreads = jobManagerDesc.GetWorkerThreadCount(AZStd::thread::hardware_concurrency());
 
             for (unsigned int i = 0; i < numWorkerThreads; ++i)
             {
@@ -260,12 +256,10 @@ namespace UnitTest
 
             AZ::Data::AssetManager::Destroy();
 
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
-
             AZ::Interface<AZ::ComponentApplicationRequests>::Unregister(this);
             ComponentApplicationBus::Handler::BusDisconnect();
-            AllocatorsBase::TeardownAllocator();
+
+            CleanUpRpiPublicGenericClassInfo();
         }
 
         //enum names for Images with specific identification
@@ -280,7 +274,7 @@ namespace UnitTest
             Image_512X288_RGB8_Tga,
             Image_1024X1024_RGB8_Tif,
             Image_UpperCase_Tga,
-            Image_1024x1024_normal_tiff,
+            Image_512x512_normal_tiff,
             Image_128x128_Transparent_Tga,
             Image_237x177_RGB_Jpg,
             Image_GreyScale_Png,
@@ -310,7 +304,7 @@ namespace UnitTest
             m_imagFileNameMap[Image_512X288_RGB8_Tga] = (m_testFileFolder / "512x288_24bit.tga").Native();
             m_imagFileNameMap[Image_1024X1024_RGB8_Tif] = (m_testFileFolder / "1024x1024_24bit.tif").Native();
             m_imagFileNameMap[Image_UpperCase_Tga] = (m_testFileFolder / "uppercase.TGA").Native();
-            m_imagFileNameMap[Image_1024x1024_normal_tiff] = (m_testFileFolder / "1024x1024_normal.tiff").Native();
+            m_imagFileNameMap[Image_512x512_normal_tiff] = (m_testFileFolder / "512x512_normal.tiff").Native();
             m_imagFileNameMap[Image_128x128_Transparent_Tga] = (m_testFileFolder / "128x128_RGBA8.tga").Native();
             m_imagFileNameMap[Image_237x177_RGB_Jpg] = (m_testFileFolder / "237x177_RGB.jpg").Native();
             m_imagFileNameMap[Image_GreyScale_Png] = (m_testFileFolder / "greyscale.png").Native();
@@ -895,7 +889,7 @@ namespace UnitTest
         AZStd::string inputFile;
         AZStd::vector<AssetBuilderSDK::JobProduct> outProducts;
 
-        inputFile = m_imagFileNameMap[Image_1024x1024_normal_tiff];
+        inputFile = m_imagFileNameMap[Image_512x512_normal_tiff];
         IImageObjectPtr srcImage = IImageObjectPtr(LoadImageFromFile(inputFile));
 
         ImageConvertProcess* process = CreateImageConvertProcess(inputFile, m_outputFolder.Native(), "ios", outProducts, m_context.get());

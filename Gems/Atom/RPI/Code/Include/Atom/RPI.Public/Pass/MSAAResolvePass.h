@@ -12,6 +12,7 @@
 #include <Atom/RHI/CommandList.h>
 #include <Atom/RHI/ScopeProducer.h>
 
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/Pass/RenderPass.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
@@ -20,14 +21,14 @@ namespace AZ
 {
     namespace RPI
     {
-        class MSAAResolvePass
+        class ATOM_RPI_PUBLIC_API MSAAResolvePass
             : public RenderPass
         {
             AZ_RPI_PASS(MSAAResolvePass);
 
         public:
             AZ_RTTI(MSAAResolvePass, "{0234AE92-3EE3-4796-9138-C9B28F9F7AEE}", RenderPass);
-            AZ_CLASS_ALLOCATOR(MSAAResolvePass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(MSAAResolvePass, SystemAllocator);
             virtual ~MSAAResolvePass() = default;
 
             static Ptr<MSAAResolvePass> Create(const PassDescriptor& descriptor);

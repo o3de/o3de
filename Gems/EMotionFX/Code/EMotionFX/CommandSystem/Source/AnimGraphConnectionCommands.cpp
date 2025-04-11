@@ -736,7 +736,7 @@ namespace CommandSystem
         CommandSystem::GetCommandManager()->ExecuteCommandOrAddToGroup(command, commandGroup, executeInsideCommand);
     }
 
-    AZ_CLASS_ALLOCATOR_IMPL(CommandAnimGraphAdjustTransition, EMotionFX::CommandAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(CommandAnimGraphAdjustTransition, EMotionFX::CommandAllocator)
     const char* CommandAnimGraphAdjustTransition::s_commandName = "AnimGraphAdjustTransition";
 
     CommandAnimGraphAdjustTransition::CommandAnimGraphAdjustTransition(MCore::Command* orgCommand)

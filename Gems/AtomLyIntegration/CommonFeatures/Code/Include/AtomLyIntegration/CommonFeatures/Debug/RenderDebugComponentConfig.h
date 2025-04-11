@@ -17,6 +17,7 @@ namespace AZ::Render
         : public ComponentConfig
     {
     public:
+        AZ_CLASS_ALLOCATOR(RenderDebugComponentConfig, SystemAllocator)
         AZ_RTTI(AZ::Render::RenderDebugComponentConfig, "{07362463-95C9-40CE-89E7-76FD25978E96}", AZ::ComponentConfig);
 
         static void Reflect(ReflectContext* context);

@@ -19,6 +19,7 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <sys/epoll.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <errno.h>
@@ -27,10 +28,7 @@
 #include <AzCore/Android/APKFileHandler.h>
 #include <AzCore/Android/Utils.h>
 
-namespace AZ::IO
-{
-
-namespace UnixLikePlatformUtil
+namespace AZ::IO::UnixLikePlatformUtil
 {
     bool CanCreateDirRecursive(char* dirPath)
     {
@@ -42,99 +40,134 @@ namespace UnixLikePlatformUtil
     }
 }
 
-namespace
+namespace AZ::IO
 {
-    static const SystemFile::FileHandleType PlatformSpecificInvalidHandle = AZ_TRAIT_SYSTEMFILE_INVALID_HANDLE;
+    namespace
+    {
+        static const SystemFile::FileHandleType PlatformSpecificInvalidHandle = AZ_TRAIT_SYSTEMFILE_INVALID_HANDLE;
+    }
 }
 
-bool SystemFile::PlatformOpen(int mode, int platformFlags)
+namespace AZ::IO
 {
-    const char* openMode = nullptr;
-    if ((mode & SF_OPEN_READ_ONLY) == SF_OPEN_READ_ONLY)
+     SystemFile SystemFile::GetStdin()
     {
-        openMode = "r";
+        SystemFile systemFile;
+        systemFile.m_handle = stdin;
+        systemFile.m_fileName = "/dev/stdin";
+        // The destructor of the SystemFile will not close the stdin handle
+        systemFile.m_closeOnDestruction = false;
+        return systemFile;
     }
-    else if ((mode & SF_OPEN_WRITE_ONLY) == SF_OPEN_WRITE_ONLY)
+
+    SystemFile SystemFile::GetStdout()
     {
-        if ((mode & SF_OPEN_APPEND) == SF_OPEN_APPEND)
+        SystemFile systemFile;
+        systemFile.m_handle = stdout;
+        systemFile.m_fileName = "/dev/stdout";
+        // The destructor of the SystemFile will not close the stdout handle
+        systemFile.m_closeOnDestruction = false;
+        return systemFile;
+    }
+    SystemFile SystemFile::GetStderr()
+    {
+        SystemFile systemFile;
+        systemFile.m_handle = stderr;
+        systemFile.m_fileName = "/dev/stderr";
+        // The destructor of the SystemFile will not close the stderr handle
+        systemFile.m_closeOnDestruction = false;
+        return systemFile;
+    }
+
+    bool SystemFile::PlatformOpen(int mode, int platformFlags)
+    {
+        const char* openMode = nullptr;
+        if ((mode & SF_OPEN_READ_ONLY) == SF_OPEN_READ_ONLY)
         {
-            openMode = "a+";
+            openMode = "r";
         }
-        else if (mode & (SF_OPEN_TRUNCATE | SF_OPEN_CREATE_NEW | SF_OPEN_CREATE))
+        else if ((mode & SF_OPEN_WRITE_ONLY) == SF_OPEN_WRITE_ONLY)
         {
-            openMode = "w+";
+            if ((mode & SF_OPEN_APPEND) == SF_OPEN_APPEND)
+            {
+                openMode = "a+";
+            }
+            else if (mode & (SF_OPEN_TRUNCATE | SF_OPEN_CREATE_NEW | SF_OPEN_CREATE))
+            {
+                openMode = "w+";
+            }
+            else
+            {
+                openMode = "w";
+            }
+        }
+        else if ((mode & SF_OPEN_READ_WRITE) == SF_OPEN_READ_WRITE)
+        {
+            if ((mode & SF_OPEN_APPEND) == SF_OPEN_APPEND)
+            {
+                openMode = "a+";
+            }
+            else if (mode & (SF_OPEN_TRUNCATE | SF_OPEN_CREATE_NEW | SF_OPEN_CREATE))
+            {
+                openMode = "w+";
+            }
+            else
+            {
+                openMode = "r+";
+            }
         }
         else
-        {
-            openMode = "w";
-        }
-    }
-    else if ((mode & SF_OPEN_READ_WRITE) == SF_OPEN_READ_WRITE)
-    {
-        if ((mode & SF_OPEN_APPEND) == SF_OPEN_APPEND)
-        {
-            openMode = "a+";
-        }
-        else if (mode & (SF_OPEN_TRUNCATE | SF_OPEN_CREATE_NEW | SF_OPEN_CREATE))
-        {
-            openMode = "w+";
-        }
-        else
-        {
-            openMode = "r+";
-        }
-    }
-    else
-    {
-        return false;
-    }
-
-    bool createPath = false;
-    if (mode & (SF_OPEN_CREATE_NEW | SF_OPEN_CREATE))
-    {
-        createPath = (mode & SF_OPEN_CREATE_PATH) == SF_OPEN_CREATE_PATH;
-    }
-
-    bool isApkFile = AZ::Android::Utils::IsApkPath(m_fileName.c_str());
-
-    if (createPath)
-    {
-        if (isApkFile)
         {
             return false;
         }
 
-        CreatePath(m_fileName.c_str());
+        bool createPath = false;
+        if (mode & (SF_OPEN_CREATE_NEW | SF_OPEN_CREATE))
+        {
+            createPath = (mode & SF_OPEN_CREATE_PATH) == SF_OPEN_CREATE_PATH;
+        }
+
+        bool isApkFile = AZ::Android::Utils::IsApkPath(m_fileName.c_str());
+
+        if (createPath)
+        {
+            if (isApkFile)
+            {
+                return false;
+            }
+
+            CreatePath(m_fileName.c_str());
+        }
+
+        if (isApkFile)
+        {
+            AZ::u64 size = 0;
+            m_handle = AZ::Android::APKFileHandler::Open(m_fileName.c_str(), openMode, size);
+        }
+        else
+        {
+            m_handle = fopen(m_fileName.c_str(), openMode);
+        }
+
+        if (m_handle == PlatformSpecificInvalidHandle)
+        {
+            return false;
+        }
+
+        return true;
     }
 
-    if (isApkFile)
+    void SystemFile::PlatformClose()
     {
-        AZ::u64 size = 0;
-        m_handle = AZ::Android::APKFileHandler::Open(m_fileName.c_str(), openMode, size);
+        if (m_handle != PlatformSpecificInvalidHandle)
+        {
+            fclose(m_handle);
+            m_handle = PlatformSpecificInvalidHandle;
+        }
     }
-    else
-    {
-        m_handle = fopen(m_fileName.c_str(), openMode);
-    }
+} // namespace AZ::IO
 
-    if (m_handle == PlatformSpecificInvalidHandle)
-    {
-        return false;
-    }
-
-    return true;
-}
-
-void SystemFile::PlatformClose()
-{
-    if (m_handle != PlatformSpecificInvalidHandle)
-    {
-        fclose(m_handle);
-        m_handle = PlatformSpecificInvalidHandle;
-    }
-}
-
-namespace Platform::Internal
+namespace AZ::IO::Platform::Internal
 {
     void FindFilesOnDisk(const char* filter, const SystemFile::FindFileCB& cb)
     {
@@ -190,9 +223,9 @@ namespace Platform::Internal
         };
         AZ::Android::APKFileHandler::ParseDirectory(filterDir.c_str(), ParseDirectoryFindFile);
     }
-}
+} // namespace AZ::IO::Platform::Internal
 
-namespace Platform
+namespace AZ::IO::Platform
 {
     using FileHandleType = SystemFile::FileHandleType;
 
@@ -353,8 +386,6 @@ namespace Platform
     }
 } // namespace AZ::IO::Platform
 
-} // namespace AZ::IO
-
 namespace AZ::IO::PosixInternal
 {
     int Pipe(int(&pipeFileDescriptors)[2], int, OpenFlags pipeFlags)
@@ -362,3 +393,103 @@ namespace AZ::IO::PosixInternal
         return pipe2(pipeFileDescriptors, static_cast<int>(pipeFlags));
     }
 } // namespace AZ::IO::PosixInternal
+
+namespace AZ::IO
+{
+    // Android implementation of FileDescriptor::Start
+    // uses epoll for waiting for the read end of the pipe to fill with data.
+    // Same as Linux
+    void FileDescriptorCapturer::Start(OutputRedirectVisitor redirectCallback,
+        AZStd::chrono::milliseconds waitTimeout,
+        int pipeSize)
+    {
+        if (auto expectedState = RedirectState::Idle;
+            !m_redirectState.compare_exchange_strong(expectedState, RedirectState::Active))
+        {
+            // Return as a capture is already in progress
+            return;
+        }
+
+        if (m_sourceDescriptor == -1)
+        {
+            // Source file descriptor isn't set.
+            return;
+        }
+
+        // The pipe is created in an int[2] array
+        int redirectPipe[2];
+        int pipeCreated = PosixInternal::Pipe(redirectPipe, pipeSize, PosixInternal::OpenFlags::NonBlock);
+        // copy created pipe descriptors to intptr_t[2] array
+        m_pipe[0] = redirectPipe[0];
+        m_pipe[1] = redirectPipe[1];
+
+        if (pipeCreated == -1)
+        {
+            return;
+        }
+
+        // Duplicate the original source descriptor to restore in Stop
+        m_dupSourceDescriptor = PosixInternal::Dup(m_sourceDescriptor);
+
+        // Duplicate the write end of the pipe onto the original source descriptor
+        // This causes the writes to the source descriptor to redirect to the pipe
+        if (PosixInternal::Dup2(static_cast<int>(m_pipe[WriteEnd]), m_sourceDescriptor) == -1)
+        {
+            // Failed to redirect the source descriptor to the pipe
+            PosixInternal::Close(m_dupSourceDescriptor);
+            PosixInternal::Close(static_cast<int>(m_pipe[WriteEnd]));
+            PosixInternal::Close(static_cast<int>(m_pipe[ReadEnd]));
+            // Reset pipe descriptor to -1
+            m_pipe[WriteEnd] = -1;
+            m_pipe[ReadEnd] = -1;
+            m_dupSourceDescriptor = -1;
+            return;
+        }
+
+        // Create an epoll handle
+        if (m_pipeData = epoll_create1(0);
+            m_pipeData == -1)
+        {
+            // Failed to create epoll handle so reset descriptors
+            Reset();
+            return;
+        }
+
+        struct epoll_event event;
+
+        event.events = EPOLLIN;
+        event.data.fd = static_cast<int>(m_pipe[ReadEnd]);
+        if (int epollCtlResult = epoll_ctl(static_cast<int>(m_pipeData), EPOLL_CTL_ADD, event.data.fd, &event);
+            epollCtlResult == -1)
+        {
+            // Failed to create epoll handle so reset descriptors
+            Reset();
+            return;
+        }
+
+        // Setup flush thread which pumps the read end of the pipe when filled with data
+        m_redirectCallback = AZStd::move(redirectCallback);
+
+        auto PumpReadQueue = [this, waitTimeout]
+        {
+            do
+            {
+                struct epoll_event event;
+                auto timeout = static_cast<int>(AZStd::min<decltype(waitTimeout)::rep>(waitTimeout.count(),
+                    AZStd::numeric_limits<int>::max()));
+
+                if (bool waitResult = epoll_wait(static_cast<int>(m_pipeData), &event, 1, timeout);
+                    waitResult > 0)
+                {
+                    Flush();
+                }
+                // Since this is redirecting file descriptors it isn't safe
+                // to log an error using a file descriptor such as stdout or stderr
+                // since it may be the descriptor that is being redirected
+                // Normally if the return value is -1 errno has been set to an error
+            } while (m_redirectState < RedirectState::DisconnectedPipe);
+        };
+        m_flushThread = AZStd::thread(PumpReadQueue);
+
+    }
+} // namespace AZ::IO

@@ -8,7 +8,21 @@
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_pytest(
-        NAME AutomatedTesting::Atom_Main_Null_Render_00
+        NAME AutomatedTesting::Atom_TestSuite_Periodic_GPU
+        TEST_SUITE periodic
+        TEST_REQUIRES gpu
+        TEST_SERIAL
+        TIMEOUT 1200
+        PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Periodic_GPU.py
+        RUNTIME_DEPENDENCIES
+            AssetProcessor
+            AutomatedTesting.Assets
+            Editor
+        COMPONENT
+            Atom
+    )
+    ly_add_pytest(
+        NAME AutomatedTesting::Atom_Main_Null_Render_Level_Loads
         TEST_SUITE main
         PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Main_Null_Render_Level_Loads.py
         TEST_SERIAL
@@ -19,6 +33,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             Editor
         COMPONENT
             Atom
+        LABELS REQUIRES_tiaf
     )
     ly_add_pytest(
         NAME AutomatedTesting::Atom_Main_Null_Render_01
@@ -32,6 +47,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             Editor
         COMPONENT
             Atom
+        LABELS REQUIRES_tiaf
     )
     ly_add_pytest(
         NAME AutomatedTesting::Atom_Main_Null_Render_02
@@ -45,6 +61,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             Editor
         COMPONENT
             Atom
+        LABELS REQUIRES_tiaf
     )
     ly_add_pytest(
         NAME AutomatedTesting::Atom_Main_Null_Render_03
@@ -58,6 +75,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             Editor
         COMPONENT
             Atom
+        LABELS REQUIRES_tiaf
     )
     ly_add_pytest(
         NAME AutomatedTesting::Atom_TestSuite_Sandbox
@@ -125,6 +143,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             MaterialEditor
         COMPONENT
             Atom
+        LABELS REQUIRES_tiaf
     )
     ly_add_pytest(
         NAME AutomatedTesting::Atom_Main_Null_Render_MaterialCanvas
@@ -138,6 +157,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             MaterialCanvas
         COMPONENT
             Atom
+        LABELS REQUIRES_tiaf
     )
     ly_add_pytest(
         NAME AutomatedTesting::Atom_Periodic_Null_Render_01
@@ -149,8 +169,31 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             AssetProcessor
             AutomatedTesting.Assets
             Editor
-            MaterialCanvas
+        COMPONENT
+            Atom
+    )
+    ly_add_pytest(
+        NAME AutomatedTesting::Atom_Periodic_Null_Render_MaterialEditor
+        TEST_SUITE periodic
+        TEST_SERIAL
+        TIMEOUT 1200
+        PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Periodic_Null_Render_MaterialEditor_01.py
+        RUNTIME_DEPENDENCIES
+            AssetProcessor
+            AutomatedTesting.Assets
             MaterialEditor
+        COMPONENT
+            Atom
+    )
+    ly_add_pytest(
+        NAME AutomatedTesting::RGATest 
+        TEST_SUITE sandbox
+        TIMEOUT 1200
+        PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Manual.py
+        TEST_SERIAL 
+        RUNTIME_DEPENDENCIES 
+            AssetProcessor
+            AutomatedTesting.Assets
         COMPONENT
             Atom
     )

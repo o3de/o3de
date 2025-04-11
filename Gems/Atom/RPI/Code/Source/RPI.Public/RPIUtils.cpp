@@ -13,9 +13,14 @@
 #include <Atom/RPI.Reflect/System/AnyAsset.h>
 
 #include <Atom/RPI.Public/BlockCompression.h>
+#include <Atom/RPI.Public/Pass/PassFilter.h>
+#include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
+#include <Atom/RPI.Public/ViewportContext.h>
+#include <Atom/RPI.Public/ViewportContextBus.h>
+#include <Atom/RPI.Public/WindowContext.h>
 
 #include <AzCore/Math/Color.h>
 #include <AzCore/std/containers/array.h>
@@ -224,6 +229,11 @@ namespace AZ
                         float color = actualMem[indices.first].GetBlockColor(indices.second).GetElement(componentIndex);
                         return s_SrgbGammaToLinearLookupTable[aznumeric_cast<uint8_t>(color * AZStd::numeric_limits<AZ::u8>::max())];
                     }
+                case AZ::RHI::Format::BC4_UNORM:
+                    {
+                        auto actualMem = reinterpret_cast<const BC4Block*>(mem);
+                        return actualMem[indices.first].GetBlockColor(indices.second).GetElement(componentIndex);
+                    }
                 default:
                     AZ_Assert(false, "Unsupported pixel format: %s", AZ::RHI::ToString(format));
                     return 0.0f;
@@ -427,6 +437,11 @@ namespace AZ
                             s_SrgbGammaToLinearLookupTable[aznumeric_cast<uint8_t>(color.GetB() * AZStd::numeric_limits<AZ::u8>::max())],
                             s_SrgbGammaToLinearLookupTable[aznumeric_cast<uint8_t>(color.GetA() * AZStd::numeric_limits<AZ::u8>::max())]);
                     }
+                case AZ::RHI::Format::BC4_UNORM:
+                    {
+                        auto actualMem = reinterpret_cast<const BC4Block*>(mem);
+                        return actualMem[indices.first].GetBlockColor(indices.second);
+                    }
                 default:
                     AZ_Assert(false, "Unsupported pixel format: %s", AZ::RHI::ToString(format));
                     return AZ::Color::CreateZero();
@@ -518,11 +533,33 @@ namespace AZ
                 case AZ::RHI::Format::BC1_UNORM:
                 case AZ::RHI::Format::BC1_UNORM_SRGB:
                     return BC1Block::GetBlockIndices(width, x, y);
+                case AZ::RHI::Format::BC4_UNORM:
+                    return BC4Block::GetBlockIndices(width, x, y);
                 default:
                     return AZStd::pair<size_t, size_t>((y * width + x) * numComponents, 0);
                 }
             }
         } // namespace Internal
+
+        ViewportContextPtr GetDefaultViewportContext()
+        {
+            RPI::ViewportContextRequestsInterface* viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+            if (viewportContextManager)
+            {
+                return viewportContextManager->GetDefaultViewportContext();
+            }
+            return nullptr;
+        }
+
+        WindowContextSharedPtr GetDefaultWindowContext()
+        {
+            ViewportContextPtr viewportContext = GetDefaultViewportContext();
+            if (viewportContext)
+            {
+                return viewportContext->GetWindowContext();
+            }
+            return nullptr;
+        }
 
         bool IsNullRenderer()
         {
@@ -590,7 +627,7 @@ namespace AZ
             Data::AssetId shaderAssetId, const AZStd::string& shaderFilePath, const AZStd::string& supervariantName)
         {
             auto shaderAsset = FindShaderAsset(shaderAssetId, shaderFilePath);
-            if (!shaderAsset)
+            if (!shaderAsset.IsReady())
             {
                 return nullptr;
             }
@@ -634,34 +671,7 @@ namespace AZ
 
         AZ::Data::Instance<RPI::StreamingImage> LoadStreamingTexture(AZStd::string_view path)
         {
-            AzFramework::AssetSystem::AssetStatus status = AzFramework::AssetSystem::AssetStatus_Unknown;
-            AzFramework::AssetSystemRequestBus::BroadcastResult(
-                status, &AzFramework::AssetSystemRequestBus::Events::CompileAssetSync, path);
-
-            // When running with no Asset Processor (for example in release), CompileAssetSync will return AssetStatus_Unknown.
-            AZ_Error(
-                "RPIUtils",
-                status == AzFramework::AssetSystem::AssetStatus_Compiled || status == AzFramework::AssetSystem::AssetStatus_Unknown,
-                "Could not compile image at '%s'",
-                path.data());
-
-            Data::AssetId streamingImageAssetId;
-            Data::AssetCatalogRequestBus::BroadcastResult(
-                streamingImageAssetId,
-                &Data::AssetCatalogRequestBus::Events::GetAssetIdByPath,
-                path.data(),
-                azrtti_typeid<RPI::StreamingImageAsset>(),
-                false);
-            if (!streamingImageAssetId.IsValid())
-            {
-                AZ_Error("RPI Utils", false, "Failed to get streaming image asset id with path " AZ_STRING_FORMAT, AZ_STRING_ARG(path));
-                return AZ::Data::Instance<RPI::StreamingImage>();
-            }
-
-            auto streamingImageAsset = Data::AssetManager::Instance().GetAsset<RPI::StreamingImageAsset>(
-                streamingImageAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
-
-            streamingImageAsset.BlockUntilLoadComplete();
+            auto streamingImageAsset = RPI::AssetUtils::LoadCriticalAsset<RPI::StreamingImageAsset>(path);
 
             if (!streamingImageAsset.IsReady())
             {
@@ -670,6 +680,38 @@ namespace AZ
             }
 
             return RPI::StreamingImage::FindOrCreate(streamingImageAsset);
+        }
+
+        // Find a format for formats with two planars (DepthStencil) based on its ImageView's aspect flag
+        RHI::Format FindFormatForAspect(RHI::Format format, RHI::ImageAspect imageAspect)
+        {
+            RHI::ImageAspectFlags imageAspectFlags = RHI::GetImageAspectFlags(format);
+
+            // only need to convert if the source contains two aspects
+            if (imageAspectFlags == RHI::ImageAspectFlags::DepthStencil)
+            {
+                switch (imageAspect)
+                {
+                case RHI::ImageAspect::Stencil:
+                    return RHI::Format::R8_UINT;
+                case RHI::ImageAspect::Depth:
+                {
+                    switch (format)
+                    {
+                    case RHI::Format::D32_FLOAT_S8X24_UINT:
+                        return RHI::Format::R32_FLOAT;
+                    case RHI::Format::D24_UNORM_S8_UINT:
+                        return RHI::Format::R32_UINT;
+                    case RHI::Format::D16_UNORM_S8_UINT:
+                        return RHI::Format::R16_UNORM;
+                    default:
+                        AZ_Assert(false, "Unknown DepthStencil format. Please update this function");
+                        return RHI::Format::R32_FLOAT;
+                    }
+                }
+                }
+            }
+            return format;
         }
 
         //! A helper function for GetComputeShaderNumThreads(), to consolidate error messages, etc.
@@ -827,6 +869,7 @@ namespace AZ
             // Compressed types
             case AZ::RHI::Format::BC1_UNORM:
             case AZ::RHI::Format::BC1_UNORM_SRGB:
+            case AZ::RHI::Format::BC4_UNORM:
                 return true;
             }
 
@@ -834,7 +877,7 @@ namespace AZ
         }
 
         template<>
-        AZ::Color GetImageDataPixelValue<AZ::Color>(
+        AZ_DLL_EXPORT AZ::Color GetImageDataPixelValue<AZ::Color>(
             AZStd::span<const uint8_t> imageData,
             const AZ::RHI::ImageDescriptor& imageDescriptor,
             uint32_t x,
@@ -846,7 +889,7 @@ namespace AZ
         }
 
         template<>
-        float GetImageDataPixelValue<float>(
+        AZ_DLL_EXPORT float GetImageDataPixelValue<float>(
             AZStd::span<const uint8_t> imageData,
             const AZ::RHI::ImageDescriptor& imageDescriptor,
             uint32_t x,
@@ -858,7 +901,7 @@ namespace AZ
         }
 
         template<>
-        AZ::u32 GetImageDataPixelValue<AZ::u32>(
+        AZ_DLL_EXPORT AZ::u32 GetImageDataPixelValue<AZ::u32>(
             AZStd::span<const uint8_t> imageData,
             const AZ::RHI::ImageDescriptor& imageDescriptor,
             uint32_t x,
@@ -870,7 +913,7 @@ namespace AZ
         }
 
         template<>
-        AZ::s32 GetImageDataPixelValue<AZ::s32>(
+        AZ_DLL_EXPORT AZ::s32 GetImageDataPixelValue<AZ::s32>(
             AZStd::span<const uint8_t> imageData,
             const AZ::RHI::ImageDescriptor& imageDescriptor,
             uint32_t x,
@@ -906,7 +949,7 @@ namespace AZ
         }
 
         template<>
-        float GetSubImagePixelValue<float>(
+        AZ_DLL_EXPORT float GetSubImagePixelValue<float>(
             const AZ::Data::Asset<AZ::RPI::StreamingImageAsset>& imageAsset,
             uint32_t x,
             uint32_t y,
@@ -918,7 +961,7 @@ namespace AZ
         }
 
         template<>
-        AZ::u32 GetSubImagePixelValue<AZ::u32>(
+        AZ_DLL_EXPORT AZ::u32 GetSubImagePixelValue<AZ::u32>(
             const AZ::Data::Asset<AZ::RPI::StreamingImageAsset>& imageAsset,
             uint32_t x,
             uint32_t y,
@@ -930,7 +973,7 @@ namespace AZ
         }
 
         template<>
-        AZ::s32 GetSubImagePixelValue<AZ::s32>(
+        AZ_DLL_EXPORT AZ::s32 GetSubImagePixelValue<AZ::s32>(
             const AZ::Data::Asset<AZ::RPI::StreamingImageAsset>& imageAsset,
             uint32_t x,
             uint32_t y,
@@ -1053,10 +1096,10 @@ namespace AZ
         }
 
         AZStd::optional<RenderPipelineDescriptor> GetRenderPipelineDescriptorFromAsset(
-            const AZStd::string& pipelineAssetPath, AZStd::string_view nameSuffix)
+            const Data::AssetId& pipelineAssetId, AZStd::string_view nameSuffix)
         {
             AZ::Data::Asset<AZ::RPI::AnyAsset> pipelineAsset =
-                AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(pipelineAssetPath.c_str(), AssetUtils::TraceLevel::Error);
+                AssetUtils::LoadAssetById<AZ::RPI::AnyAsset>(pipelineAssetId, AssetUtils::TraceLevel::Error);
             if (!pipelineAsset.IsReady())
             {
                 // Error already reported by LoadAssetByProductPath
@@ -1065,14 +1108,85 @@ namespace AZ
             const RenderPipelineDescriptor* assetPipelineDesc = GetDataFromAnyAsset<AZ::RPI::RenderPipelineDescriptor>(pipelineAsset);
             if (!assetPipelineDesc)
             {
-                AZ_Error("RPIUtils", false, "Invalid render pipeline descriptor from asset %s", pipelineAssetPath.c_str());
+                AZ_Error("RPIUtils", false, "Invalid render pipeline descriptor from asset %s", pipelineAssetId.ToString<AZStd::string>().c_str());
                 return AZStd::nullopt;
             }
 
             RenderPipelineDescriptor pipelineDesc = *assetPipelineDesc;
             pipelineDesc.m_name += nameSuffix;
 
-            return { AZStd::move(pipelineDesc) };
+            return {AZStd::move(pipelineDesc)};
+        }
+
+        AZStd::optional<RenderPipelineDescriptor> GetRenderPipelineDescriptorFromAsset(
+            const AZStd::string& pipelineAssetPath, AZStd::string_view nameSuffix)
+        {
+            Data::AssetId assetId = AssetUtils::GetAssetIdForProductPath(pipelineAssetPath.c_str(), AssetUtils::TraceLevel::Error);
+            if (assetId.IsValid())
+            {
+                return GetRenderPipelineDescriptorFromAsset(assetId, nameSuffix);
+            }
+            else
+            {
+                return AZStd::nullopt;
+            }
+        }
+
+        void AddPassRequestToRenderPipeline(
+            AZ::RPI::RenderPipeline* renderPipeline,
+            const char* passRequestAssetFilePath,
+            const char* referencePass,
+            bool beforeReferencePass)
+        {
+            auto passRequestAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(
+                passRequestAssetFilePath, AZ::RPI::AssetUtils::TraceLevel::Warning);
+            const AZ::RPI::PassRequest* passRequest = nullptr;
+            if (passRequestAsset->IsReady())
+            {
+                passRequest = passRequestAsset->GetDataAs<AZ::RPI::PassRequest>();
+            }
+            if (!passRequest)
+            {
+                AZ_Error("RPIUtils", false, "Can't load PassRequest from %s", passRequestAssetFilePath);
+                return;
+            }
+
+            // Return if the pass to be created already exists
+            AZ::RPI::PassFilter passFilter = AZ::RPI::PassFilter::CreateWithPassName(passRequest->m_passName, renderPipeline);
+            AZ::RPI::Pass* existingPass = AZ::RPI::PassSystemInterface::Get()->FindFirstPass(passFilter);
+            if (existingPass)
+            {
+                return;
+            }
+
+            // Create the pass
+            AZ::RPI::Ptr<AZ::RPI::Pass> newPass = AZ::RPI::PassSystemInterface::Get()->CreatePassFromRequest(passRequest);
+            if (!newPass)
+            {
+                AZ_Error("RPIUtils", false, "Failed to create the pass from pass request [%s].", passRequest->m_passName.GetCStr());
+                return;
+            }
+
+            // Add the pass to render pipeline
+            bool success;
+            if (beforeReferencePass)
+            {
+                success = renderPipeline->AddPassBefore(newPass, AZ::Name(referencePass));
+            }
+            else
+            {
+                success = renderPipeline->AddPassAfter(newPass, AZ::Name(referencePass));
+            }
+            // only create pass resources if it was success
+            if (!success)
+            {
+                AZ_Error(
+                    "RPIUtils",
+                    false,
+                    "Failed to add pass [%s] to render pipeline [%s].",
+                    newPass->GetName().GetCStr(),
+                    renderPipeline->GetId().GetCStr());
+            }
         }
     } // namespace RPI
 } // namespace AZ

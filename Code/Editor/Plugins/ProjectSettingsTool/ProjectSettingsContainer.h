@@ -109,7 +109,7 @@ namespace ProjectSettingsTool
         AZStd::unique_ptr<PlistDictionary> CreatePlistDictionary(const Platform& plat);
 
         // Returns the allocator used by ProjectJson
-        rapidjson::RAPIDJSON_DEFAULT_ALLOCATOR& GetProjectJsonAllocator();
+        rapidjson::Document::AllocatorType& GetProjectJsonAllocator();
 
         static AZ::Outcome<rapidjson::Value*, void> GetJsonValue(rapidjson::Document& settings, const char* key);
 

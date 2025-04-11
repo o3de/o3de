@@ -11,6 +11,7 @@
 #include <Draw/DrawableMeshEntity.h>
 
 #include <AzCore/Component/Component.h>
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 #include <EditorModeFeedback/EditorModeFeedbackInterface.h>
 
@@ -26,7 +27,8 @@ namespace AZ
         //! Component for the editor mode feedback system.
         class EditorModeFeedbackSystemComponent
             : public AzToolsFramework::Components::EditorComponentBase
-            , public EditorModeFeedbackInterface
+            , public EditorModeFeedbackInterface            
+            , private AzToolsFramework::EditorEntityContextNotificationBus::Handler
         {
         public:
             AZ_EDITOR_COMPONENT(EditorModeFeedbackSystemComponent, "{A88EE29D-4C72-4995-B3BD-41EEDE480487}");
@@ -41,7 +43,14 @@ namespace AZ
             bool IsEnabled() const override;
 
         private:
-            //! Settings registery override for enabling/disabling editor mode feedback.
+            // EditorEntityContextNotificationBus overrides ...
+            void OnStartPlayInEditorBegin() override;
+            void OnStopPlayInEditor() override;
+
+            // Enable/disable editor mode feedback rendering for the level viewport (main scene)
+            void SetEnableRender(bool enableRender);
+
+            //! Settings registry override for enabling/disabling editor mode feedback.
             bool m_registeryEnabled = false;
         };
     } // namespace Render

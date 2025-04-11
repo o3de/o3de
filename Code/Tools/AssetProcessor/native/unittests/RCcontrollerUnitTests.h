@@ -28,8 +28,8 @@ public:
 
 protected:
     void FinishJob(AssetProcessor::RCJob* rcJob);
-    void PrepareRCJobListModelTest();
-    void PrepareCompileGroupTests(bool& gotCreated, bool& gotCompleted, AssetProcessor::NetworkRequestID& gotGroupID, AzFramework::AssetSystem::AssetStatus& gotStatus);
+    void PrepareRCJobListModelTest(int& numJobs);
+    void PrepareCompileGroupTests(const QStringList& tempJobNames, bool& gotCreated, bool& gotCompleted, AssetProcessor::NetworkRequestID& gotGroupID, AzFramework::AssetSystem::AssetStatus& gotStatus);
     void Reset();
 
     void ConnectCompileGroupSignalsAndSlots(bool& gotCreated, bool& gotCompleted, AssetProcessor::NetworkRequestID& gotGroupID, AzFramework::AssetSystem::AssetStatus& gotStatus);

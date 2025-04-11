@@ -38,7 +38,7 @@ namespace ScriptCanvas
     {
     public:
         AZ_RTTI(Nodeable, "{C8195695-423A-4960-A090-55B2E94E0B25}");
-        AZ_CLASS_ALLOCATOR(Nodeable, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Nodeable, AZ::SystemAllocator);
 
         // reflect nodeable class API
         static void Reflect(AZ::ReflectContext* reflectContext);

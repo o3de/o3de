@@ -33,7 +33,7 @@ namespace EMotionFX::MotionMatching
 {
     AZ_CVAR_EXTERNED(bool, mm_multiThreadedInitialization);
 
-    AZ_CLASS_ALLOCATOR_IMPL(MotionMatchingData, MotionMatchAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(MotionMatchingData, MotionMatchAllocator)
 
     MotionMatchingData::MotionMatchingData(const FeatureSchema& featureSchema)
         : m_featureSchema(featureSchema)

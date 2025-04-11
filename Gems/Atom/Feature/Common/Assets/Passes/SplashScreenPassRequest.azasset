@@ -1,0 +1,10 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassRequest",
+    "ClassData": {
+        "Name": "SplashScreenPass",
+        "TemplateName": "SplashScreenPassTemplate",
+        "Enabled": true
+    }
+}

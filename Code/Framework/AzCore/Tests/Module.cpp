@@ -24,7 +24,6 @@ using namespace AZ;
 using ::testing::Return;
 using ::testing::StrEq;
 using ::testing::Matcher;
-using ::testing::_;
 
 namespace UnitTest
 {
@@ -75,6 +74,7 @@ namespace UnitTest
         , public ModuleTestRequestBus::Handler
     {
     public:
+        AZ_CLASS_ALLOCATOR(StaticModule, AZ::SystemAllocator)
         static bool s_loaded;
         static bool s_reflected;
 
@@ -118,10 +118,14 @@ namespace UnitTest
     {
         modulesOut.push_back(new UnitTest::StaticModule());
     }
+
+    class ModuleManager : public UnitTest::LeakDetectionFixture
+    {
+    };
 #if AZ_TRAIT_DISABLE_FAILED_MODULE_TESTS
-    TEST(ModuleManager, DISABLED_Test)
+    TEST_F(ModuleManager, DISABLED_Test)
 #else
-    TEST(ModuleManager, Test)
+    TEST_F(ModuleManager, Test)
 #endif // AZ_TRAIT_DISABLE_FAILED_MODULE_TESTS
     {
         {
@@ -130,7 +134,7 @@ namespace UnitTest
             // Create application descriptor
             ComponentApplication::Descriptor appDesc;
             appDesc.m_memoryBlocksByteSize = 10 * 1024 * 1024;
-            appDesc.m_recordingMode = Debug::AllocationRecords::RECORD_FULL;
+            appDesc.m_recordingMode = Debug::AllocationRecords::Mode::RECORD_FULL;
 
             // AZCoreTestDLL will load as a dynamic module
             DynamicModuleDescriptor& dynamicModuleDescriptor = appDesc.m_modules.emplace_back();
@@ -141,6 +145,7 @@ namespace UnitTest
             // Start up application
             ComponentApplication::StartupParameters startupParams;
             startupParams.m_createStaticModulesCallback = AZCreateStaticModules;
+            startupParams.m_loadSettingsRegistry = false;
             Entity* systemEntity = app.Create(appDesc, startupParams);
             EXPECT_NE(nullptr, systemEntity);
             systemEntity->Init();
@@ -152,7 +157,7 @@ namespace UnitTest
 
             { // Query both modules via the ModuleTestRequestBus
                 EBusAggregateResults<const char*> moduleNames;
-                EBUS_EVENT_RESULT(moduleNames, ModuleTestRequestBus, GetModuleName);
+                ModuleTestRequestBus::BroadcastResult(moduleNames, &ModuleTestRequestBus::Events::GetModuleName);
 
                 EXPECT_TRUE(moduleNames.values.size() == 2);
                 bool foundStaticModule = false;
@@ -225,9 +230,9 @@ namespace UnitTest
     }
 
 #if AZ_TRAIT_DISABLE_FAILED_MODULE_TESTS
-    TEST(ModuleManager, DISABLED_SequentialLoadTest)
+    TEST_F(ModuleManager, DISABLED_SequentialLoadTest)
 #else
-    TEST(ModuleManager, SequentialLoadTest)
+    TEST_F(ModuleManager, SequentialLoadTest)
 #endif
     {
         {
@@ -236,6 +241,7 @@ namespace UnitTest
             // Start up application
             ComponentApplication::Descriptor appDesc;
             ComponentApplication::StartupParameters startupParams;
+            startupParams.m_loadSettingsRegistry = false;
             Entity* systemEntity = app.Create(appDesc, startupParams);
 
             EXPECT_NE(nullptr, systemEntity);
@@ -349,7 +355,7 @@ namespace UnitTest
         AZ::OSString m_stringToWatchFor;
     };
 
-    TEST(ModuleManager, OwnerInitializesAndDeinitializesTest)
+    TEST_F(ModuleManager, OwnerInitializesAndDeinitializesTest)
     {
         // in this test, we make sure that a module is always initialized even if the operating
         // system previously loaded it (due to static linkage or other reason)
@@ -363,6 +369,7 @@ namespace UnitTest
         // Start up application
         ComponentApplication::Descriptor appDesc;
         ComponentApplication::StartupParameters startupParams;
+        startupParams.m_loadSettingsRegistry = false;
         Entity* systemEntity = app.Create(appDesc, startupParams);
 
         ASSERT_NE(nullptr, systemEntity);
@@ -403,14 +410,14 @@ namespace UnitTest
                 PrintFCollector watchForCreation("InitializeDynamicModule called");
                 {
                     auto handle = DynamicModuleHandle::Create("AzCoreTestDLL");
-                    handle->Load(true);
+                    handle->Load(AZ::DynamicModuleHandle::LoadFlags::InitFuncRequired);
                     EXPECT_TRUE(watchForCreation.m_foundWhatWeWereWatchingFor); // should not destroy until we leave scope.
                                                                                 // steal the file path (which will be resolved with per-platform extensions like DLL or SO.
                     EXPECT_FALSE(watchForDestruction.m_foundWhatWeWereWatchingFor); // should not destroy until we leave scope.
 
                     PrintFCollector watchForCreationSecondTime("InitializeDynamicModule called");
                     auto handle2 = DynamicModuleHandle::Create("AzCoreTestDLL");
-                    handle2->Load(true);
+                    handle2->Load(AZ::DynamicModuleHandle::LoadFlags::InitFuncRequired);
                     // this should NOT have initialized it again:
                     EXPECT_FALSE(watchForCreationSecondTime.m_foundWhatWeWereWatchingFor); // should not destroy until we leave scope.
                 }

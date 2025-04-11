@@ -14,7 +14,7 @@
 
 namespace EMotionFX::MotionMatching
 {
-    AZ_CLASS_ALLOCATOR_IMPL(StandardScaler, MotionMatchAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(StandardScaler, MotionMatchAllocator);
 
     bool StandardScaler::Fit(const FeatureMatrix& featureMatrix, [[maybe_unused]] const Settings& settings)
     {

@@ -37,7 +37,7 @@ namespace AzToolsFramework
         Q_OBJECT
 
     public:
-        AZ_CLASS_ALLOCATOR(SearchCriteriaButton, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SearchCriteriaButton, AZ::SystemAllocator);
 
         SearchCriteriaButton(QString typeText, QString labelText, QWidget* pParent = nullptr);
         ~SearchCriteriaButton() {};
@@ -85,7 +85,7 @@ Q_SIGNALS:
         Q_OBJECT
 
     public:
-        AZ_CLASS_ALLOCATOR(SearchCriteriaWidget, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SearchCriteriaWidget, AZ::SystemAllocator);
 
         SearchCriteriaWidget(QWidget* pParent = nullptr);
         ~SearchCriteriaWidget() {};

@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Serialization/Locale.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/IO/GenericStreams.h>
 #include <EMotionFX/Source/ActorInstance.h>
@@ -49,11 +50,15 @@ namespace EMotionFX::MotionMatching
 
     void CsvWriterBase::WriteVector3ToString(const AZ::Vector3& vec, AZStd::string& text)
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale; // ensure that %f is read/written using the "C" locale.
+
         text += AZStd::string::format("%.8f,%.8f,%.8f,", vec.GetX(), vec.GetY(), vec.GetZ());
     };
 
     void CsvWriterBase::WriteFloatArrayToString(const AZStd::vector<float>& values, AZStd::string& text)
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale; // ensure that %f is read/written using the "C" locale.
+
         text.reserve(text.size() + values.size() * 10);
         for (float value : values)
         {
@@ -321,6 +326,7 @@ namespace EMotionFX::MotionMatching
 
             auto LoadVector3FromString = [&valueTokens](size_t& valueIndex, AZ::Vector3& outVec)
             {
+                AZ::Locale::ScopedSerializationLocale scopedLocale; // use the "C" locale for reading/writing floats with "." in them
                 outVec.SetX(AZStd::stof(valueTokens[valueIndex + 0]));
                 outVec.SetY(AZStd::stof(valueTokens[valueIndex + 1]));
                 outVec.SetZ(AZStd::stof(valueTokens[valueIndex + 2]));

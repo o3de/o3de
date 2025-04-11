@@ -30,7 +30,7 @@ namespace ScriptCanvasEditor
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(MainWindowStatusWidget, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MainWindowStatusWidget, AZ::SystemAllocator);
         
         MainWindowStatusWidget(QWidget* parent = nullptr);
         ~MainWindowStatusWidget() = default;

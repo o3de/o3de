@@ -22,8 +22,12 @@ namespace AzToolsFramework
 
         virtual ~ComponentModeCollectionInterface() = default;
 
-        //! Retrieves the list of all Component types (usually one).
+        //! Retrieves the list of all component types (usually one).
         //! @note If called outside of component mode, an empty vector will be returned.
         virtual AZStd::vector<AZ::Uuid> GetComponentTypes() const = 0;
+
+        //! Calls the handler function for each component mode that is currently active.
+        using ActiveComponentModeCB = AZStd::function<void(const AZ::EntityComponentIdPair&, const AZ::Uuid&)>;
+        virtual void EnumerateActiveComponents(const ActiveComponentModeCB& callBack) const = 0;
     };
 } // namespace AzToolsFramework

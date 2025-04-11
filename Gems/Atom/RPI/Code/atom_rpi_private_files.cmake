@@ -13,4 +13,6 @@ set(FILES
     Source/RPI.Private/RPISystemComponent.h
     Source/RPI.Private/PerformanceCVarManager.cpp
     Source/RPI.Private/PerformanceCVarManager.h
+    Source/RPI.Private/PassTemplatesAutoLoader.cpp
+    Source/RPI.Private/PassTemplatesAutoLoader.h
 )

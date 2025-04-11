@@ -3,9 +3,10 @@
     "Version": 1,
     "ClassName": "RenderPipelineDescriptor",
     "ClassData": {
-        "Name": "XRLeft",
+        "Name": "MultiViewXRLeftPipeline",
         "MainViewTag": "MainCamera",
-        "RootPassTemplate": "LowEndPipelineXRLeftTemplate",
+        "MaterialPipelineTag": "MultiViewPipeline",
+        "RootPassTemplate": "MultiViewPipelineTemplate",
         "AllowModification": true,
         "RenderSettings": {
             "MultisampleState": {

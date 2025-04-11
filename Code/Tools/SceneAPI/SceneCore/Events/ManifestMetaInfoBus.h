@@ -86,6 +86,15 @@ namespace AZ
                 //! @param sender An optional argument to keep track of the object that called this function. This can be used if the
                 //! same object that sends a message also handles the callback to avoid recursively updating.
                 virtual void ObjectUpdated(const Containers::Scene& scene, const DataTypes::IManifestObject* target, void* sender = nullptr);
+
+                //! Manifest management is two phases: The UI for editing scene settings tends to work in the manifest objects directly,
+                //! updating the actual scene. If the scene is directly edited as a response to InitializeObject or ObjectUpdated
+                //! (with the scene made non-const), then the UI won't actually refresh, because it's operating on stale data.
+                //! The intended flow here is, if a listener on this bus wants to add aditional objects to the scene manifest in the UI:
+                //! 1) Listen to the InitializeObject or ObjectUpdated command. 2) Create the vector of new manifest objects that should
+                //! be created in response to that command. 3) Emit this message, so the UI can respond and update/add those objects.
+                //! This shouldn't be called during asset processing, it won't be as functional.
+                virtual void AddObjects([[maybe_unused]] AZStd::vector<AZStd::shared_ptr<DataTypes::IManifestObject>>& objects) {}
             };
 
             inline ManifestMetaInfo::~ManifestMetaInfo() = default;

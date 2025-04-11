@@ -13,7 +13,6 @@
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 #include <Atom/RPI.Reflect/System/AnyAsset.h>
 #include <AzCore/Component/TickBus.h>
-#include <AzFramework/Asset/AssetCatalogBus.h>
 #include <AzToolsFramework/Thumbnails/Thumbnail.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
 #include <Thumbnails/Thumbnail.h>
@@ -26,10 +25,9 @@ namespace AZ
         class SharedThumbnailRenderer final
             : public AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::MultiHandler
             , public SystemTickBus::Handler
-            , public AzFramework::AssetCatalogEventBus::Handler
         {
         public:
-            AZ_CLASS_ALLOCATOR(SharedThumbnailRenderer, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SharedThumbnailRenderer, AZ::SystemAllocator);
 
             SharedThumbnailRenderer();
             ~SharedThumbnailRenderer();
@@ -51,9 +49,6 @@ namespace AZ
 
             //! SystemTickBus::Handler interface overrides...
             void OnSystemTick() override;
-
-            // AzFramework::AssetCatalogEventBus::Handler overrides...
-            void OnCatalogLoaded(const char* catalogFile) override;
 
             // Default assets to be kept loaded and used for rendering if not overridden
             Data::Asset<RPI::AnyAsset> m_defaultLightingPresetAsset;

@@ -12,6 +12,7 @@
 #include <Atom/RHI.Reflect/Viewport.h>
 
 #include <Atom/RPI.Reflect/Asset/AssetReference.h>
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/Pass/RenderPassData.h>
 
 namespace AZ
@@ -19,29 +20,16 @@ namespace AZ
     namespace RPI
     {
         //! Custom data for the RasterPass. Should be specified in the PassRequest.
-        struct RasterPassData
+        struct ATOM_RPI_REFLECT_API RasterPassData
             : public RenderPassData
         {
             AZ_RTTI(RasterPassData, "{48AAC4A1-EFD5-46E8-9376-E08243F88F54}", RenderPassData);
-            AZ_CLASS_ALLOCATOR(RasterPassData, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(RasterPassData, SystemAllocator);
 
             RasterPassData() = default;
             virtual ~RasterPassData() = default;
 
-            static void Reflect(ReflectContext* context)
-            {
-                if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
-                {
-                    serializeContext->Class<RasterPassData, RenderPassData>()
-                        ->Version(3) // ATOM-15472
-                        ->Field("DrawListTag", &RasterPassData::m_drawListTag)
-                        ->Field("PassSrgShaderAsset", &RasterPassData::m_passSrgShaderReference)
-                        ->Field("Viewport", &RasterPassData::m_overrideViewport)
-                        ->Field("Scissor", &RasterPassData::m_overrideScissor)
-                        ->Field("DrawListSortType", &RasterPassData::m_drawListSortType)
-                        ;
-                }
-            }
+            static void Reflect(ReflectContext* context);
 
             Name m_drawListTag;
 
@@ -52,6 +40,14 @@ namespace AZ
             RHI::Scissor m_overrideScissor = RHI::Scissor::CreateNull();
 
             RHI::DrawListSortType m_drawListSortType = RHI::DrawListSortType::KeyThenDepth;
+
+            // Forces viewport and scissor to match width/height of output image at specified index.
+            // Does nothing if index is negative.
+            s32 m_viewportAndScissorTargetOutputIndex = -1;
+
+            // Specifies whether to enable DrawItems with this DrawListTag when they are created
+            // Set to false if you want to manually enable draw items for your Pass/DrawListTag
+            bool m_enableDrawItemsByDefault = true;
         };
     } // namespace RPI
 } // namespace AZ

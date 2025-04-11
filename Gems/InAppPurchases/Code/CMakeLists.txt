@@ -9,7 +9,7 @@
 o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 
 ly_add_target(
-    NAME InAppPurchases.Static STATIC
+    NAME ${gem_name}.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
         inapppurchases_files.cmake
@@ -27,7 +27,7 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME InAppPurchases ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME ${gem_name} ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         inapppurchases_shared_files.cmake
@@ -38,10 +38,21 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         PRIVATE
-            Gem::InAppPurchases.Static
+            Gem::${gem_name}.Static
 )
-# Load the above "Gem::InAppPurchases" module in all app types
-ly_create_alias(NAME InAppPurchases.Clients  NAMESPACE Gem TARGETS Gem::InAppPurchases)
-ly_create_alias(NAME InAppPurchases.Servers  NAMESPACE Gem TARGETS Gem::InAppPurchases)
-ly_create_alias(NAME InAppPurchases.Builders NAMESPACE Gem TARGETS Gem::InAppPurchases)
-ly_create_alias(NAME InAppPurchases.Tools    NAMESPACE Gem TARGETS Gem::InAppPurchases)
+
+# Inject the gem name into the Module source file
+ly_add_source_properties(
+    SOURCES
+        Source/InAppPurchasesModule.cpp
+    PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_GEM_NAME=${gem_name}
+            O3DE_GEM_VERSION=${gem_version})
+
+# Load the above "Gem::${gem_name}" module in all app types
+ly_create_alias(NAME ${gem_name}.Clients  NAMESPACE Gem TARGETS Gem::${gem_name})
+ly_create_alias(NAME ${gem_name}.Servers  NAMESPACE Gem TARGETS Gem::${gem_name})
+ly_create_alias(NAME ${gem_name}.Unified  NAMESPACE Gem TARGETS Gem::${gem_name})
+ly_create_alias(NAME ${gem_name}.Builders NAMESPACE Gem TARGETS Gem::${gem_name})
+ly_create_alias(NAME ${gem_name}.Tools    NAMESPACE Gem TARGETS Gem::${gem_name})

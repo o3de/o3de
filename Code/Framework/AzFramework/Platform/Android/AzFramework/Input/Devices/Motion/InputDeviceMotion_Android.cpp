@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzFramework/Components/NativeUISystemComponent.h>
 #include <AzFramework/Input/Devices/Motion/InputDeviceMotion.h>
 
 #include <AzCore/Android/JNI/JNI.h>
@@ -26,7 +27,7 @@ namespace AzFramework
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Allocator
-        AZ_CLASS_ALLOCATOR(InputDeviceMotionAndroid, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(InputDeviceMotionAndroid, AZ::SystemAllocator);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Constructor
@@ -145,13 +146,6 @@ namespace AzFramework
         static constexpr const char* s_javaFieldNameMotionSensorDataPackedLength = "MOTION_SENSOR_DATA_PACKED_LENGTH";
         ///@}
     };
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    InputDeviceMotion::Implementation* InputDeviceMotion::Implementation::Create(
-        InputDeviceMotion& inputDevice)
-    {
-        return aznew InputDeviceMotionAndroid(inputDevice);
-    }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     InputDeviceMotionAndroid::InputDeviceMotionAndroid(InputDeviceMotion& inputDevice)
@@ -439,5 +433,23 @@ namespace AzFramework
     bool InputDeviceMotionAndroid::IsRequiredOrientationCurrent() const
     {
         return m_enabledChannelIds.find(InputDeviceMotion::Orientation::Current) != m_enabledChannelIds.end();
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    class AndroidDeviceMotionImplFactory
+        : public InputDeviceMotion::ImplementationFactory
+    {
+    public:
+        AZStd::unique_ptr<InputDeviceMotion::Implementation> Create(InputDeviceMotion& inputDevice) override
+        {
+            return AZStd::make_unique<InputDeviceMotionAndroid>(inputDevice);
+        }
+    };
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    void NativeUISystemComponent::InitializeDeviceMotionImplentationFactory()
+    {
+        m_deviceMotionImplFactory = AZStd::make_unique<AndroidDeviceMotionImplFactory>();
+        AZ::Interface<InputDeviceMotion::ImplementationFactory>::Register(m_deviceMotionImplFactory.get());
     }
 } // namespace AzFramework

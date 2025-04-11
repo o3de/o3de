@@ -137,7 +137,7 @@ void CommandHierarchyItemReparent::Reparent(ChildItemList& sourceChildren, Child
     // First remove all elements
     for (auto child : sourceChildren)
     {
-        EBUS_EVENT_ID(child.m_id, UiElementBus, RemoveFromParent);
+        UiElementBus::Event(child.m_id, &UiElementBus::Events::RemoveFromParent);
     }
 
     // Add elements to new parents
@@ -149,7 +149,7 @@ void CommandHierarchyItemReparent::Reparent(ChildItemList& sourceChildren, Child
         AZ::Entity* parentElement = (destinationParent ? destinationParent->GetElement() : nullptr);
 
         // Add the element to its new parent
-        EBUS_EVENT_ID(child.m_id, UiElementBus, AddToParentAtIndex, parentElement, child.m_row);
+        UiElementBus::Event(child.m_id, &UiElementBus::Events::AddToParentAtIndex, parentElement, child.m_row);
 
         // Add item to selected item list
         HierarchyItem* item = HierarchyItem::RttiCast(HierarchyHelpers::ElementToItem(m_hierarchy, child.m_id, false));

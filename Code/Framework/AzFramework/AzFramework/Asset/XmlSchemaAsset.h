@@ -147,7 +147,7 @@ namespace AzFramework
     {
     public:
         AZ_RTTI(XmlSchemaAsset, "{2DF35909-AF12-40A8-BED2-A033478D864D}", AZ::Data::AssetData);
-        AZ_CLASS_ALLOCATOR(XmlSchemaAsset, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(XmlSchemaAsset, AZ::SystemAllocator);
 
         static const char* GetDisplayName() { return "XML Schema"; }
         static const char* GetGroup() { return "XmlSchema"; }

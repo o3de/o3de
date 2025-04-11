@@ -10,7 +10,6 @@
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Jobs/JobManagerComponent.h>
-#include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
@@ -60,8 +59,9 @@ namespace SceneProcessing
         {
             SceneProcessing::InitSceneAPIFixture::SetUp();
 
-            m_systemEntity = m_app.Create({}, {});
-            m_systemEntity->AddComponent(aznew AZ::MemoryComponent());
+            AZ::ComponentApplication::StartupParameters startupParameters;
+            startupParameters.m_loadSettingsRegistry = false;
+            m_systemEntity = m_app.Create({}, startupParameters);
             m_systemEntity->AddComponent(aznew AZ::JobManagerComponent());
             m_systemEntity->Init();
             m_systemEntity->Activate();

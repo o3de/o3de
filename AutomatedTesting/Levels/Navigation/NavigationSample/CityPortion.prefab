@@ -7,10 +7,6 @@
                 "$type": "EditorEntityIconComponent",
                 "Id": 11043277518452554776
             },
-            "Component_[1224239024537701137]": {
-                "$type": "SelectionComponent",
-                "Id": 1224239024537701137
-            },
             "Component_[12825388930915858146]": {
                 "$type": "EditorDisabledCompositionComponent",
                 "Id": 12825388930915858146
@@ -165,11 +161,6 @@
                                     "Name": "Entire object"
                                 }
                             ]
-                        },
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
-                            ]
                         }
                     },
                     "ShapeConfiguration": {
@@ -187,9 +178,9 @@
                     "$type": "EditorEntitySortComponent",
                     "Id": 8231836430223196434
                 },
-                "Component_[9076658479587913644]": {
-                    "$type": "SelectionComponent",
-                    "Id": 9076658479587913644
+                "Component_[9129779652031523105]": {
+                    "$type": "EditorStaticRigidBodyComponent",
+                    "Id": 9129779652031523105
                 }
             }
         },
@@ -204,10 +195,6 @@
                 "Component_[11940241940314955283]": {
                     "$type": "EditorDisabledCompositionComponent",
                     "Id": 11940241940314955283
-                },
-                "Component_[12094608478409290456]": {
-                    "$type": "SelectionComponent",
-                    "Id": 12094608478409290456
                 },
                 "Component_[15065514314034488866]": {
                     "$type": "EditorInspectorComponent",
@@ -270,6 +257,10 @@
             "Id": "Entity_[11299011348621]",
             "Name": "Ground",
             "Components": {
+                "Component_[10444376930591328744]": {
+                    "$type": "EditorStaticRigidBodyComponent",
+                    "Id": 10444376930591328744
+                },
                 "Component_[10946777360722158921]": {
                     "$type": "EditorInspectorComponent",
                     "Id": 10946777360722158921,
@@ -370,11 +361,6 @@
                                     "Name": "Entire object"
                                 }
                             ]
-                        },
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
-                            ]
                         }
                     },
                     "ShapeConfiguration": {
@@ -391,10 +377,6 @@
                 "Component_[8231836430223196434]": {
                     "$type": "EditorEntitySortComponent",
                     "Id": 8231836430223196434
-                },
-                "Component_[9076658479587913644]": {
-                    "$type": "SelectionComponent",
-                    "Id": 9076658479587913644
                 }
             }
         },
@@ -502,11 +484,6 @@
                                     "Name": "Entire object"
                                 }
                             ]
-                        },
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
-                            ]
                         }
                     },
                     "ShapeConfiguration": {
@@ -524,9 +501,9 @@
                     "$type": "EditorEntitySortComponent",
                     "Id": 8231836430223196434
                 },
-                "Component_[9076658479587913644]": {
-                    "$type": "SelectionComponent",
-                    "Id": 9076658479587913644
+                "Component_[8260769176303463586]": {
+                    "$type": "EditorStaticRigidBodyComponent",
+                    "Id": 8260769176303463586
                 }
             }
         },
@@ -624,6 +601,10 @@
                     "$type": "EditorEntityIconComponent",
                     "Id": 4191213037974650114
                 },
+                "Component_[5523114719137612391]": {
+                    "$type": "EditorStaticRigidBodyComponent",
+                    "Id": 5523114719137612391
+                },
                 "Component_[561144275819577369]": {
                     "$type": "EditorColliderComponent",
                     "Id": 561144275819577369,
@@ -633,11 +614,6 @@
                                 {
                                     "Name": "Entire object"
                                 }
-                            ]
-                        },
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
                             ]
                         }
                     },
@@ -655,10 +631,6 @@
                 "Component_[8231836430223196434]": {
                     "$type": "EditorEntitySortComponent",
                     "Id": 8231836430223196434
-                },
-                "Component_[9076658479587913644]": {
-                    "$type": "SelectionComponent",
-                    "Id": 9076658479587913644
                 }
             }
         },
@@ -686,6 +658,10 @@
                             "SortIndex": 3
                         }
                     ]
+                },
+                "Component_[1143529838174529455]": {
+                    "$type": "EditorStaticRigidBodyComponent",
+                    "Id": 1143529838174529455
                 },
                 "Component_[11786689926888634210]": {
                     "$type": "EditorPendingCompositionComponent",
@@ -766,11 +742,6 @@
                                     "Name": "Entire object"
                                 }
                             ]
-                        },
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
-                            ]
                         }
                     },
                     "ShapeConfiguration": {
@@ -787,10 +758,6 @@
                 "Component_[8231836430223196434]": {
                     "$type": "EditorEntitySortComponent",
                     "Id": 8231836430223196434
-                },
-                "Component_[9076658479587913644]": {
-                    "$type": "SelectionComponent",
-                    "Id": 9076658479587913644
                 }
             }
         },
@@ -818,6 +785,10 @@
                             "SortIndex": 3
                         }
                     ]
+                },
+                "Component_[11626066835780709791]": {
+                    "$type": "EditorStaticRigidBodyComponent",
+                    "Id": 11626066835780709791
                 },
                 "Component_[11786689926888634210]": {
                     "$type": "EditorPendingCompositionComponent",
@@ -898,11 +869,6 @@
                                     "Name": "Entire object"
                                 }
                             ]
-                        },
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
-                            ]
                         }
                     },
                     "ShapeConfiguration": {
@@ -919,10 +885,6 @@
                 "Component_[8231836430223196434]": {
                     "$type": "EditorEntitySortComponent",
                     "Id": 8231836430223196434
-                },
-                "Component_[9076658479587913644]": {
-                    "$type": "SelectionComponent",
-                    "Id": 9076658479587913644
                 }
             }
         },
@@ -1030,11 +992,6 @@
                                     "Name": "Entire object"
                                 }
                             ]
-                        },
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
-                            ]
                         }
                     },
                     "ShapeConfiguration": {
@@ -1048,13 +1005,13 @@
                         }
                     }
                 },
+                "Component_[5617458393138790682]": {
+                    "$type": "EditorStaticRigidBodyComponent",
+                    "Id": 5617458393138790682
+                },
                 "Component_[8231836430223196434]": {
                     "$type": "EditorEntitySortComponent",
                     "Id": 8231836430223196434
-                },
-                "Component_[9076658479587913644]": {
-                    "$type": "SelectionComponent",
-                    "Id": 9076658479587913644
                 }
             }
         },
@@ -1086,6 +1043,10 @@
                 "Component_[11786689926888634210]": {
                     "$type": "EditorPendingCompositionComponent",
                     "Id": 11786689926888634210
+                },
+                "Component_[12721781019698885872]": {
+                    "$type": "EditorStaticRigidBodyComponent",
+                    "Id": 12721781019698885872
                 },
                 "Component_[13316023297093478237]": {
                     "$type": "EditorDisabledCompositionComponent",
@@ -1167,11 +1128,6 @@
                                     "Name": "Entire object"
                                 }
                             ]
-                        },
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
-                            ]
                         }
                     },
                     "ShapeConfiguration": {
@@ -1188,10 +1144,6 @@
                 "Component_[8231836430223196434]": {
                     "$type": "EditorEntitySortComponent",
                     "Id": 8231836430223196434
-                },
-                "Component_[9076658479587913644]": {
-                    "$type": "SelectionComponent",
-                    "Id": 9076658479587913644
                 }
             }
         },
@@ -1281,6 +1233,10 @@
                     "$type": "EditorLockComponent",
                     "Id": 17193921221555106955
                 },
+                "Component_[18148311216392106435]": {
+                    "$type": "EditorStaticRigidBodyComponent",
+                    "Id": 18148311216392106435
+                },
                 "Component_[18333533576999955869]": {
                     "$type": "EditorOnlyEntityComponent",
                     "Id": 18333533576999955869
@@ -1299,11 +1255,6 @@
                                     "Name": "Entire object"
                                 }
                             ]
-                        },
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
-                            ]
                         }
                     },
                     "ShapeConfiguration": {
@@ -1320,10 +1271,6 @@
                 "Component_[8231836430223196434]": {
                     "$type": "EditorEntitySortComponent",
                     "Id": 8231836430223196434
-                },
-                "Component_[9076658479587913644]": {
-                    "$type": "SelectionComponent",
-                    "Id": 9076658479587913644
                 }
             }
         },
@@ -1417,6 +1364,10 @@
                     "$type": "EditorOnlyEntityComponent",
                     "Id": 18333533576999955869
                 },
+                "Component_[3659461388081519064]": {
+                    "$type": "EditorStaticRigidBodyComponent",
+                    "Id": 3659461388081519064
+                },
                 "Component_[4191213037974650114]": {
                     "$type": "EditorEntityIconComponent",
                     "Id": 4191213037974650114
@@ -1430,11 +1381,6 @@
                                 {
                                     "Name": "Entire object"
                                 }
-                            ]
-                        },
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
                             ]
                         }
                     },
@@ -1452,10 +1398,6 @@
                 "Component_[8231836430223196434]": {
                     "$type": "EditorEntitySortComponent",
                     "Id": 8231836430223196434
-                },
-                "Component_[9076658479587913644]": {
-                    "$type": "SelectionComponent",
-                    "Id": 9076658479587913644
                 }
             }
         },
@@ -1563,11 +1505,6 @@
                                     "Name": "Entire object"
                                 }
                             ]
-                        },
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
-                            ]
                         }
                     },
                     "ShapeConfiguration": {
@@ -1581,13 +1518,13 @@
                         }
                     }
                 },
+                "Component_[8130325540891911590]": {
+                    "$type": "EditorStaticRigidBodyComponent",
+                    "Id": 8130325540891911590
+                },
                 "Component_[8231836430223196434]": {
                     "$type": "EditorEntitySortComponent",
                     "Id": 8231836430223196434
-                },
-                "Component_[9076658479587913644]": {
-                    "$type": "SelectionComponent",
-                    "Id": 9076658479587913644
                 }
             }
         },
@@ -1595,6 +1532,10 @@
             "Id": "Entity_[11569594288269]",
             "Name": "Ground",
             "Components": {
+                "Component_[10466589213229408165]": {
+                    "$type": "EditorStaticRigidBodyComponent",
+                    "Id": 10466589213229408165
+                },
                 "Component_[10946777360722158921]": {
                     "$type": "EditorInspectorComponent",
                     "Id": 10946777360722158921,
@@ -1695,11 +1636,6 @@
                                     "Name": "Entire object"
                                 }
                             ]
-                        },
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
-                            ]
                         }
                     },
                     "ShapeConfiguration": {
@@ -1716,10 +1652,6 @@
                 "Component_[8231836430223196434]": {
                     "$type": "EditorEntitySortComponent",
                     "Id": 8231836430223196434
-                },
-                "Component_[9076658479587913644]": {
-                    "$type": "SelectionComponent",
-                    "Id": 9076658479587913644
                 }
             }
         },
@@ -1793,6 +1725,10 @@
                         }
                     }
                 },
+                "Component_[16562318651126349772]": {
+                    "$type": "EditorStaticRigidBodyComponent",
+                    "Id": 16562318651126349772
+                },
                 "Component_[16756187867691340653]": {
                     "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
                     "Id": 16756187867691340653,
@@ -1827,11 +1763,6 @@
                                     "Name": "Entire object"
                                 }
                             ]
-                        },
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
-                            ]
                         }
                     },
                     "ShapeConfiguration": {
@@ -1848,10 +1779,6 @@
                 "Component_[8231836430223196434]": {
                     "$type": "EditorEntitySortComponent",
                     "Id": 8231836430223196434
-                },
-                "Component_[9076658479587913644]": {
-                    "$type": "SelectionComponent",
-                    "Id": 9076658479587913644
                 }
             }
         },
@@ -1945,6 +1872,10 @@
                     "$type": "EditorOnlyEntityComponent",
                     "Id": 18333533576999955869
                 },
+                "Component_[2019623542322377295]": {
+                    "$type": "EditorStaticRigidBodyComponent",
+                    "Id": 2019623542322377295
+                },
                 "Component_[4191213037974650114]": {
                     "$type": "EditorEntityIconComponent",
                     "Id": 4191213037974650114
@@ -1958,11 +1889,6 @@
                                 {
                                     "Name": "Entire object"
                                 }
-                            ]
-                        },
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
                             ]
                         }
                     },
@@ -1980,10 +1906,6 @@
                 "Component_[8231836430223196434]": {
                     "$type": "EditorEntitySortComponent",
                     "Id": 8231836430223196434
-                },
-                "Component_[9076658479587913644]": {
-                    "$type": "SelectionComponent",
-                    "Id": 9076658479587913644
                 }
             }
         },
@@ -2023,6 +1945,10 @@
                 "Component_[13633009520175731636]": {
                     "$type": "EditorVisibilityComponent",
                     "Id": 13633009520175731636
+                },
+                "Component_[1422295178687924955]": {
+                    "$type": "EditorStaticRigidBodyComponent",
+                    "Id": 1422295178687924955
                 },
                 "Component_[14594453775970915486]": {
                     "$type": "AZ::Render::EditorMeshComponent",
@@ -2091,11 +2017,6 @@
                                     "Name": "Entire object"
                                 }
                             ]
-                        },
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
-                            ]
                         }
                     },
                     "ShapeConfiguration": {
@@ -2112,10 +2033,6 @@
                 "Component_[8231836430223196434]": {
                     "$type": "EditorEntitySortComponent",
                     "Id": 8231836430223196434
-                },
-                "Component_[9076658479587913644]": {
-                    "$type": "SelectionComponent",
-                    "Id": 9076658479587913644
                 }
             }
         },
@@ -2223,11 +2140,6 @@
                                     "Name": "Entire object"
                                 }
                             ]
-                        },
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
-                            ]
                         }
                     },
                     "ShapeConfiguration": {
@@ -2245,9 +2157,9 @@
                     "$type": "EditorEntitySortComponent",
                     "Id": 8231836430223196434
                 },
-                "Component_[9076658479587913644]": {
-                    "$type": "SelectionComponent",
-                    "Id": 9076658479587913644
+                "Component_[8986611733273153699]": {
+                    "$type": "EditorStaticRigidBodyComponent",
+                    "Id": 8986611733273153699
                 }
             }
         },
@@ -2274,6 +2186,10 @@
                     "$type": "EditorInspectorComponent",
                     "Id": 12731562982192231049
                 },
+                "Component_[15404821413892525429]": {
+                    "$type": "EditorStaticRigidBodyComponent",
+                    "Id": 15404821413892525429
+                },
                 "Component_[15662589502982568121]": {
                     "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
                     "Id": 15662589502982568121,
@@ -2299,10 +2215,6 @@
                 "Component_[1989157093308533954]": {
                     "$type": "EditorVisibilityComponent",
                     "Id": 1989157093308533954
-                },
-                "Component_[3336260609790664760]": {
-                    "$type": "SelectionComponent",
-                    "Id": 3336260609790664760
                 },
                 "Component_[3703844470882397551]": {
                     "$type": "EditorMaterialComponent",
@@ -2339,11 +2251,6 @@
                                 {
                                     "Name": "Entire object"
                                 }
-                            ]
-                        },
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
                             ]
                         }
                     },
@@ -2417,13 +2324,13 @@
                     "$type": "EditorEntityIconComponent",
                     "Id": 15918579274461744191
                 },
+                "Component_[17017182064968299551]": {
+                    "$type": "EditorStaticRigidBodyComponent",
+                    "Id": 17017182064968299551
+                },
                 "Component_[1989157093308533954]": {
                     "$type": "EditorVisibilityComponent",
                     "Id": 1989157093308533954
-                },
-                "Component_[3336260609790664760]": {
-                    "$type": "SelectionComponent",
-                    "Id": 3336260609790664760
                 },
                 "Component_[3703844470882397551]": {
                     "$type": "EditorMaterialComponent",
@@ -2460,11 +2367,6 @@
                                 {
                                     "Name": "Entire object"
                                 }
-                            ]
-                        },
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
                             ]
                         }
                     },
@@ -2542,10 +2444,6 @@
                     "$type": "EditorVisibilityComponent",
                     "Id": 1989157093308533954
                 },
-                "Component_[3336260609790664760]": {
-                    "$type": "SelectionComponent",
-                    "Id": 3336260609790664760
-                },
                 "Component_[3703844470882397551]": {
                     "$type": "EditorMaterialComponent",
                     "Id": 3703844470882397551,
@@ -2582,11 +2480,6 @@
                                     "Name": "Entire object"
                                 }
                             ]
-                        },
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
-                            ]
                         }
                     },
                     "ShapeConfiguration": {
@@ -2611,6 +2504,10 @@
                 "Component_[8659510516882020099]": {
                     "$type": "EditorEntitySortComponent",
                     "Id": 8659510516882020099
+                },
+                "Component_[9104334404173946520]": {
+                    "$type": "EditorStaticRigidBodyComponent",
+                    "Id": 9104334404173946520
                 }
             }
         },
@@ -2676,10 +2573,6 @@
                     "$type": "EditorVisibilityComponent",
                     "Id": 1989157093308533954
                 },
-                "Component_[3336260609790664760]": {
-                    "$type": "SelectionComponent",
-                    "Id": 3336260609790664760
-                },
                 "Component_[3874326360471912205]": {
                     "$type": "EditorPendingCompositionComponent",
                     "Id": 3874326360471912205
@@ -2697,11 +2590,6 @@
                                 {
                                     "Name": "Entire object"
                                 }
-                            ]
-                        },
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
                             ]
                         }
                     },
@@ -2727,6 +2615,10 @@
                 "Component_[8659510516882020099]": {
                     "$type": "EditorEntitySortComponent",
                     "Id": 8659510516882020099
+                },
+                "Component_[8946763346869141532]": {
+                    "$type": "EditorStaticRigidBodyComponent",
+                    "Id": 8946763346869141532
                 }
             }
         }

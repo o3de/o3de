@@ -7,8 +7,8 @@
  */
 
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
-#include <Atom/RPI.Reflect/Image/ImageAsset.h>
 #include <Atom/RPI.Reflect/Image/AttachmentImageAsset.h>
+#include <Atom/RPI.Reflect/Image/ImageAsset.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialTypeAsset.h>
@@ -16,6 +16,9 @@
 #include <AtomToolsFramework/Util/MaterialPropertyUtil.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/Math/Color.h>
+#include <AzCore/Math/Matrix3x3.h>
+#include <AzCore/Math/Matrix3x4.h>
+#include <AzCore/Math/Matrix4x4.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Vector4.h>
@@ -32,7 +35,7 @@ namespace AtomToolsFramework
         return AZ::RPI::MaterialPropertyValue::ToAny(value);
     }
 
-    void ConvertToPropertyConfig(AtomToolsFramework::DynamicPropertyConfig& propertyConfig, const AZ::RPI::MaterialTypeSourceData::PropertyDefinition& propertyDefinition)
+    void ConvertToPropertyConfig(AtomToolsFramework::DynamicPropertyConfig& propertyConfig, const AZ::RPI::MaterialPropertySourceData& propertyDefinition)
     {
         propertyConfig.m_name = propertyDefinition.GetName();
         propertyConfig.m_displayName = propertyDefinition.m_displayName;
@@ -112,13 +115,19 @@ namespace AtomToolsFramework
             ComparePropertyValues<int32_t>(valueA, valueB) ||
             ComparePropertyValues<uint32_t>(valueA, valueB) ||
             ComparePropertyValues<float>(valueA, valueB) ||
+            ComparePropertyValues<double>(valueA, valueB) ||
             ComparePropertyValues<AZ::Vector2>(valueA, valueB) ||
             ComparePropertyValues<AZ::Vector3>(valueA, valueB) ||
             ComparePropertyValues<AZ::Vector4>(valueA, valueB) ||
+            ComparePropertyValues<AZ::Matrix3x3>(valueA, valueB) ||
+            ComparePropertyValues<AZ::Matrix3x4>(valueA, valueB) ||
+            ComparePropertyValues<AZ::Matrix4x4>(valueA, valueB) ||
             ComparePropertyValues<AZ::Color>(valueA, valueB) ||
             ComparePropertyValues<AZ::Data::AssetId>(valueA, valueB) ||
             ComparePropertyValues<AZ::Data::Asset<AZ::Data::AssetData>>(valueA, valueB) ||
             ComparePropertyValues<AZ::Data::Asset<AZ::RPI::ImageAsset>>(valueA, valueB) ||
+            ComparePropertyValues<AZ::Data::Asset<AZ::RPI::AttachmentImageAsset>>(valueA, valueB) ||
+            ComparePropertyValues<AZ::Data::Asset<AZ::RPI::StreamingImageAsset>>(valueA, valueB) ||
             ComparePropertyValues<AZ::Data::Asset<AZ::RPI::MaterialAsset>>(valueA, valueB) ||
             ComparePropertyValues<AZ::Data::Asset<AZ::RPI::MaterialTypeAsset>>(valueA, valueB) ||
             ComparePropertyValues<AZStd::string>(valueA, valueB))
@@ -132,20 +141,57 @@ namespace AtomToolsFramework
     bool ConvertToExportFormat(
         const AZStd::string& exportPath,
         [[maybe_unused]] const AZ::Name& propertyId,
-        const AZ::RPI::MaterialTypeSourceData::PropertyDefinition& propertyDefinition,
+        const AZ::RPI::MaterialPropertySourceData& propertyDefinition,
         AZ::RPI::MaterialPropertyValue& propertyValue)
     {
-        if (propertyDefinition.m_dataType == AZ::RPI::MaterialPropertyDataType::Enum && propertyValue.Is<uint32_t>())
+        if (propertyDefinition.m_dataType == AZ::RPI::MaterialPropertyDataType::Enum)
         {
-            const uint32_t index = propertyValue.GetValue<uint32_t>();
-            if (index >= propertyDefinition.m_enumValues.size())
+            if (propertyDefinition.m_enumValues.empty())
             {
-                AZ_Error("AtomToolsFramework", false, "Invalid value for material enum property: '%s'.", propertyId.GetCStr());
+                AZ_Error("AtomToolsFramework", false, "No enum values are specified for property: '%s'.", propertyId.GetCStr());
                 return false;
             }
 
-            propertyValue = propertyDefinition.m_enumValues[index];
-            return true;
+            if (propertyValue.Is<uint32_t>())
+            {
+                const uint32_t index = propertyValue.GetValue<uint32_t>();
+                if (index >= propertyDefinition.m_enumValues.size())
+                {
+                    AZ_Warning(
+                        "AtomToolsFramework",
+                        false,
+                        "Invalid value for material enough property, using default: '%s'.",
+                        propertyId.GetCStr());
+                    propertyValue = propertyDefinition.m_enumValues[0];
+                    return true;
+                }
+
+                propertyValue = propertyDefinition.m_enumValues[index];
+                return true;
+            }
+
+            if (propertyValue.Is<AZStd::string>())
+            {
+                const AZStd::string value = propertyValue.GetValue<AZStd::string>();
+                if (AZStd::find(propertyDefinition.m_enumValues.begin(), propertyDefinition.m_enumValues.end(), value) ==
+                    propertyDefinition.m_enumValues.end())
+                {
+                    AZ_Warning(
+                        "AtomToolsFramework",
+                        false,
+                        "Invalid value for material enough property, using default: '%s'.",
+                        propertyId.GetCStr());
+                    propertyValue = propertyDefinition.m_enumValues[0];
+                    return true;
+                }
+
+                propertyValue = value;
+                return true;
+            }
+
+            AZ_Error(
+                "AtomToolsFramework", false, "Property is of data type enum but value data type is not supported: '%s'.", propertyId.GetCStr());
+            return false;
         }
 
         // Image asset references must be converted from asset IDs to a relative source file path

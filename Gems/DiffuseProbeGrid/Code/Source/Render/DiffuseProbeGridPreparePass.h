@@ -25,7 +25,7 @@ namespace AZ
             AZ_RPI_PASS(DiffuseProbeGridPreparePass);
 
             AZ_RTTI(AZ::Render::DiffuseProbeGridPreparePass, "{5934A485-2550-4100-852C-04A375BCE44E}", RPI::RenderPass);
-            AZ_CLASS_ALLOCATOR(DiffuseProbeGridPreparePass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DiffuseProbeGridPreparePass, SystemAllocator);
             virtual ~DiffuseProbeGridPreparePass() = default;
 
             static RPI::Ptr<DiffuseProbeGridPreparePass> Create(const RPI::PassDescriptor& descriptor);

@@ -39,7 +39,7 @@ namespace GraphCanvas
         QObject::connect(m_ui->groupNodes, &QToolButton::clicked, this, &AssetEditorToolbar::GroupSelection);
         QObject::connect(m_ui->ungroupNodes, &QToolButton::clicked, this, &AssetEditorToolbar::UngroupSelection);
 
-        m_commentPresetsMenu = aznew EditorContextMenu(editorId);
+        m_commentPresetsMenu = aznew EditorContextMenu(editorId, this);
         m_commentPresetsMenu->SetIsToolBarMenu(true);
 
         QObject::connect(m_commentPresetsMenu, &QMenu::aboutToShow, this, &AssetEditorToolbar::OnCommentMenuAboutToShow);
@@ -49,7 +49,7 @@ namespace GraphCanvas
         m_ui->addComment->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
         QObject::connect(m_ui->addComment, &QWidget::customContextMenuRequested, this, &AssetEditorToolbar::OnCommentPresetsContextMenu);
 
-        m_nodeGroupPresetsMenu = aznew EditorContextMenu(editorId);
+        m_nodeGroupPresetsMenu = aznew EditorContextMenu(editorId, this);
         m_nodeGroupPresetsMenu->SetIsToolBarMenu(true);
 
         QObject::connect(m_nodeGroupPresetsMenu, &QMenu::aboutToShow, this, &AssetEditorToolbar::OnNodeGroupMenuAboutToShow);
@@ -179,11 +179,17 @@ namespace GraphCanvas
 
             SceneRequestBus::EventResult(selectedElements, m_activeGraphId, &SceneRequests::GetSelectedNodes);
 
-            if (selectedElements.size() == 1)
+            for (const auto& selectedElement : selectedElements)
             {
-                AZ::EntityId selectedElement = selectedElements.front();
-
-                GraphCanvas::GraphUtils::UngroupGroup(m_activeGraphId, selectedElement);
+                AZStd::vector< NodeId > selectedNodes;
+                SceneRequestBus::EventResult(selectedNodes, m_activeGraphId, &SceneRequests::GetSelectedNodes);
+                for (const auto& nodeId : selectedNodes)
+                {
+                    if (GraphUtils::IsNodeGroup(nodeId))
+                    {
+                        GraphCanvas::GraphUtils::UngroupGroup(m_activeGraphId, selectedElement);
+                    }
+                }
             }
         }
     }
@@ -316,15 +322,31 @@ namespace GraphCanvas
         bool hasSelection = false;
         SceneRequestBus::EventResult(hasSelection, m_activeGraphId, &SceneRequests::HasSelectedItems);
 
-        m_ui->topAlign->setEnabled(hasSelection && hasScene && !m_viewDisabled);
-        m_ui->bottomAlign->setEnabled(hasSelection && hasScene && !m_viewDisabled);
-
-        m_ui->leftAlign->setEnabled(hasSelection && hasScene && !m_viewDisabled);
-        m_ui->rightAlign->setEnabled(hasSelection && hasScene && !m_viewDisabled);
-
         m_ui->addComment->setEnabled(hasScene && !m_viewDisabled);
         m_ui->groupNodes->setEnabled(hasScene && !m_viewDisabled);
-        m_ui->ungroupNodes->setEnabled(hasSelection && hasScene && !m_viewDisabled);
+
+        bool isGroup = false;
+
+        AZStd::vector< NodeId > selectedNodes;
+        SceneRequestBus::EventResult(selectedNodes, m_activeGraphId, &SceneRequests::GetSelectedNodes);
+        for (const auto& nodeId : selectedNodes)
+        {
+            if (GraphUtils::IsNodeGroup(nodeId))
+            {
+                isGroup = true;
+            }
+        }
+
+        m_ui->ungroupNodes->setEnabled(hasSelection && hasScene && !m_viewDisabled && isGroup);
+
+        bool multipleNodesSelected = selectedNodes.size() > 1;
+
+        bool enableAlignment = multipleNodesSelected && hasSelection && hasScene && !m_viewDisabled;
+        m_ui->topAlign->setEnabled(enableAlignment);
+        m_ui->bottomAlign->setEnabled(enableAlignment);
+        m_ui->leftAlign->setEnabled(enableAlignment);
+        m_ui->rightAlign->setEnabled(enableAlignment);
+
     }
 
     void AssetEditorToolbar::OnCommentMenuAboutToShow()

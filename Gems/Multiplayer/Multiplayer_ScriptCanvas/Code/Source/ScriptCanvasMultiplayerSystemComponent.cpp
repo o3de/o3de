@@ -11,9 +11,6 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 
 #include "ScriptCanvasMultiplayerSystemComponent.h"
-#include <AutoGenNodeableRegistry.generated.h>
-
-REGISTER_SCRIPTCANVAS_AUTOGEN_NODEABLE(Multiplayer_ScriptCanvasStatic);
 
 namespace ScriptCanvasMultiplayer
 {
@@ -28,7 +25,6 @@ namespace ScriptCanvasMultiplayer
             {
                 ec->Class<ScriptCanvasMultiplayerSystemComponent>("ScriptCanvasMultiplayer", "Provides various Script Canvas nodes for multiplayer.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("System"))
                     ->Attribute(AZ::Script::Attributes::Category, "Multiplayer")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)

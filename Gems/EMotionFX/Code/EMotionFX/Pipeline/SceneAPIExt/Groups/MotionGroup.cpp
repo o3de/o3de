@@ -29,7 +29,7 @@ namespace EMotionFX
     {
         namespace Group
         {
-            AZ_CLASS_ALLOCATOR_IMPL(MotionGroup, AZ::SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR_IMPL(MotionGroup, AZ::SystemAllocator)
 
             MotionGroup::MotionGroup()
                 : m_id(AZ::Uuid::CreateRandom())
@@ -105,13 +105,14 @@ namespace EMotionFX
                             ->Attribute("AutoExpand", true)
                             ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
                             ->Attribute(AZ::Edit::Attributes::CategoryStyle, "display divider")
-                        ->DataElement(AZ_CRC("ManifestName", 0x5215b349), &MotionGroup::m_name, "Name motion",
+                            ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/assets/scene-settings/motions-tab/")
+                        ->DataElement(AZ_CRC_CE("ManifestName"), &MotionGroup::m_name, "Name motion",
                             "Name for the group. This name will also be used as the name for the generated file.")
                             ->Attribute("FilterType", IMotionGroup::TYPEINFO_Uuid())
                         ->DataElement("NodeListSelection", &MotionGroup::m_selectedRootBone, "Select root bone", "The root bone of the animation that will be exported.")
                             ->Attribute("ClassTypeIdFilter", AZ::SceneAPI::DataTypes::IBoneData::TYPEINFO_Uuid())
                         ->DataElement(AZ::Edit::UIHandlers::Default, &MotionGroup::m_rules, "", "Add or remove rules to fine-tune the export process.")
-                            ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC("PropertyVisibility_ShowChildrenOnly", 0xef428f20));
+                            ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC_CE("PropertyVisibility_ShowChildrenOnly"));
                 }
             }
 
@@ -131,19 +132,19 @@ namespace EMotionFX
                 if (version < 3)
                 {
                     AZ::u32 startFrame, endFrame;
-                    AZ::SerializeContext::DataElementNode* startFrameNode = classElement.FindSubElement(AZ_CRC("startFrame", 0xd7642114));
-                    AZ::SerializeContext::DataElementNode* endFrameNode = classElement.FindSubElement(AZ_CRC("endFrame", 0xc61fc092));
+                    AZ::SerializeContext::DataElementNode* startFrameNode = classElement.FindSubElement(AZ_CRC_CE("startFrame"));
+                    AZ::SerializeContext::DataElementNode* endFrameNode = classElement.FindSubElement(AZ_CRC_CE("endFrame"));
                     if (startFrameNode && endFrameNode)
                     {
                         startFrameNode->GetData<AZ::u32>(startFrame);
                         endFrameNode->GetData<AZ::u32>(endFrame);
 
                         AZ::SceneAPI::Containers::RuleContainer ruleContainer;
-                        AZ::SerializeContext::DataElementNode* ruleContainerNode = classElement.FindSubElement(AZ_CRC("rules", 0x899a993c));
+                        AZ::SerializeContext::DataElementNode* ruleContainerNode = classElement.FindSubElement(AZ_CRC_CE("rules"));
                         if (ruleContainerNode)
                         {
                             ruleContainerNode->GetDataHierarchy<AZ::SceneAPI::Containers::RuleContainer>(context, ruleContainer);
-                            ruleContainerNode->RemoveElementByName(AZ_CRC("rules", 0x899a993c));
+                            ruleContainerNode->RemoveElementByName(AZ_CRC_CE("rules"));
                         }
                         else
                         {
@@ -158,22 +159,22 @@ namespace EMotionFX
                         ruleContainer.AddRule(rule);
                         ruleContainerNode->SetData(context, ruleContainer);
 
-                        classElement.RemoveElementByName(AZ_CRC("startFrame", 0xd7642114));
-                        classElement.RemoveElementByName(AZ_CRC("endFrame", 0xc61fc092));
+                        classElement.RemoveElementByName(AZ_CRC_CE("startFrame"));
+                        classElement.RemoveElementByName(AZ_CRC_CE("endFrame"));
                     }
                 }
 
                 // Motion compression settings rule is converted to motion sampling rule under 'Non-uniform sampling'.
                 if (version < 4)
                 {
-                    AZ::SerializeContext::DataElementNode* ruleContainerNode = classElement.FindSubElement(AZ_CRC("rules", 0x899a993c));
+                    AZ::SerializeContext::DataElementNode* ruleContainerNode = classElement.FindSubElement(AZ_CRC_CE("rules"));
                     if (!ruleContainerNode)
                     {
                         AZ_TracePrintf(AZ::SceneAPI::Utilities::ErrorWindow, "Can't find rule container.\n");
                         return false;
                     }
 
-                    AZ::SerializeContext::DataElementNode* rulesNode = ruleContainerNode->FindSubElement(AZ_CRC("rules", 0x899a993c));
+                    AZ::SerializeContext::DataElementNode* rulesNode = ruleContainerNode->FindSubElement(AZ_CRC_CE("rules"));
                     if (!rulesNode)
                     {
                         AZ_TracePrintf(AZ::SceneAPI::Utilities::ErrorWindow, "Can't find rules within rule container.\n");
@@ -192,9 +193,9 @@ namespace EMotionFX
                             AZ::SerializeContext::DataElementNode& currentRuleNode = sharedPointerNode.GetSubElement(0);
                             if (currentRuleNode.GetId() == azrtti_typeid<Rule::MotionCompressionSettingsRule>())
                             {
-                                currentRuleNode.FindSubElementAndGetData(AZ_CRC("maxTranslationError"), translationError);
-                                currentRuleNode.FindSubElementAndGetData(AZ_CRC("maxRotationError"), rotationError);
-                                currentRuleNode.FindSubElementAndGetData(AZ_CRC("maxScaleError"), scaleError);
+                                currentRuleNode.FindSubElementAndGetData(AZ_CRC_CE("maxTranslationError"), translationError);
+                                currentRuleNode.FindSubElementAndGetData(AZ_CRC_CE("maxRotationError"), rotationError);
+                                currentRuleNode.FindSubElementAndGetData(AZ_CRC_CE("maxScaleError"), scaleError);
 
                                 // Create the motion sampling rule.
                                 AZStd::shared_ptr<Rule::MotionSamplingRule> motionSamplingRule = AZStd::make_shared<Rule::MotionSamplingRule>();
@@ -231,14 +232,14 @@ namespace EMotionFX
                 // Motion meta data introduced (no more string- or object-based commands stored in the former meta data rule)
                 if (version < 6)
                 {
-                    AZ::SerializeContext::DataElementNode* ruleContainerNode = classElement.FindSubElement(AZ_CRC("rules", 0x899a993c));
+                    AZ::SerializeContext::DataElementNode* ruleContainerNode = classElement.FindSubElement(AZ_CRC_CE("rules"));
                     if (!ruleContainerNode)
                     {
                         AZ_TracePrintf(AZ::SceneAPI::Utilities::ErrorWindow, "Can't find rule container.\n");
                         return false;
                     }
 
-                    AZ::SerializeContext::DataElementNode* rulesNode = ruleContainerNode->FindSubElement(AZ_CRC("rules", 0x899a993c));
+                    AZ::SerializeContext::DataElementNode* rulesNode = ruleContainerNode->FindSubElement(AZ_CRC_CE("rules"));
                     if (!rulesNode)
                     {
                         AZ_TracePrintf(AZ::SceneAPI::Utilities::ErrorWindow, "Can't find rules within rule container.\n");

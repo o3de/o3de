@@ -18,6 +18,7 @@
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/PrefabUndoCache.h>
+#include <AzCore/Math/Transform.h>
 
 class QString;
 
@@ -36,22 +37,29 @@ namespace AzToolsFramework
             : public PrefabPublicInterface
         {
         public:
-            AZ_CLASS_ALLOCATOR(PrefabPublicHandler, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PrefabPublicHandler, AZ::SystemAllocator);
             AZ_RTTI(PrefabPublicHandler, "{35802943-6B60-430F-9DED-075E3A576A25}", PrefabPublicInterface);
+
+            PrefabPublicHandler();
 
             void RegisterPrefabPublicHandlerInterface();
             void UnregisterPrefabPublicHandlerInterface();
 
             // PrefabPublicInterface...
             CreatePrefabResult CreatePrefabInDisk(const EntityIdList& entityIds, AZ::IO::PathView filePath) override;
+            CreatePrefabResult CreatePrefabAndSaveToDisk(const EntityIdList& entityIds, AZ::IO::PathView filePath) override;
             CreatePrefabResult CreatePrefabInMemory(const EntityIdList& entityIds, AZ::IO::PathView filePath) override;
             InstantiatePrefabResult InstantiatePrefab(
+                AZStd::string_view filePath, AZ::EntityId parentId, const AZ::Transform& transform) override;
+            InstantiatePrefabResult InstantiatePrefab(
                 AZStd::string_view filePath, AZ::EntityId parentId, const AZ::Vector3& position) override;
+
             PrefabOperationResult SavePrefab(AZ::IO::Path filePath) override;
             PrefabEntityResult CreateEntity(AZ::EntityId parentId, const AZ::Vector3& position) override;
             
             PrefabOperationResult GenerateUndoNodesForEntityChangeAndUpdateCache(AZ::EntityId entityId, UndoSystem::URSequencePoint* parentUndoBatch) override;
 
+            bool IsOwnedByPrefabInstance(AZ::EntityId entityId) const override;
             bool IsOwnedByProceduralPrefabInstance(AZ::EntityId entityId) const override;
             bool IsInstanceContainerEntity(AZ::EntityId entityId) const override;
             bool IsLevelInstanceContainerEntity(AZ::EntityId entityId) const override;
@@ -65,8 +73,11 @@ namespace AzToolsFramework
             DuplicatePrefabResult DuplicateEntitiesInInstance(const EntityIdList& entityIds) override;
 
             PrefabOperationResult DetachPrefab(const AZ::EntityId& containerEntityId) override;
+            PrefabOperationResult DetachPrefabAndRemoveContainerEntity(const AZ::EntityId& containerEntityId) override;
 
         private:
+            PrefabOperationResult DetachPrefabImpl(const AZ::EntityId& containerEntityId, bool keepContainerEntity);
+
             PrefabOperationResult DeleteFromInstance(const EntityIdList& entityIds);
             PrefabOperationResult RetrieveAndSortPrefabEntitiesAndInstances(
                 const EntityList& inputEntities,
@@ -77,11 +88,6 @@ namespace AzToolsFramework
             //! Sanitizes an EntityIdList to remove entities that should not be affected by prefab operations.
             //! It will identify and exclude the container entity of the root prefab instance, and all read-only entities.
             EntityIdList SanitizeEntityIdList(const EntityIdList& entityIds) const;
-
-            //! Copies the entity DOM from owning template into the given map if the map sees
-            //! the entity id for the first time.
-            void CaptureInitialEntityDomFromOwningTemplate(AZStd::unordered_map<AZ::EntityId, PrefabDom>& entityIdDomMap,
-                const AZ::EntityId entityId, const PrefabDom& owningTemplateDom) const;
 
             InstanceOptionalReference GetOwnerInstanceByEntityId(AZ::EntityId entityId) const;
             void AddNewEntityToSortOrder(Instance& owningInstance, PrefabDom& domToAddEntityUnder,
@@ -178,9 +184,14 @@ namespace AzToolsFramework
             static void Internal_HandleContainerOverride(
                 UndoSystem::URSequencePoint* undoBatch, AZ::EntityId entityId, const PrefabDom& patch,
                 const LinkId linkId);
+
+            // if a non-nullopt const reference is sent to HandleEntityChange, it essentially means that the instance in question
+            // will be fully updated by this function (as in, the template it came from will be updated, as well as the instance in question)
+            // and thus, it can skip the instance update queue that happens later.
             static void Internal_HandleEntityChange(
                 UndoSystem::URSequencePoint* undoBatch, AZ::EntityId entityId, PrefabDom& beforeState,
-                PrefabDom& afterState);
+                PrefabDom& afterState, InstanceOptionalConstReference instanceToSkipUpdateQueue = AZStd::nullopt);
+
             void Internal_HandleInstanceChange(UndoSystem::URSequencePoint* undoBatch, AZ::Entity* entity, AZ::EntityId beforeParentId, AZ::EntityId afterParentId);
 
             void UpdateLinkPatchesWithNewEntityAliases(
@@ -215,6 +226,8 @@ namespace AzToolsFramework
             PrefabFocusHandler m_prefabFocusHandler;
 
             uint64_t m_newEntityCounter = 1;
+
+            bool m_isRunningInEditor = true;
         };
     } // namespace Prefab
 } // namespace AzToolsFramework

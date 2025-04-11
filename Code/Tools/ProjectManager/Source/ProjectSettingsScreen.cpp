@@ -49,6 +49,9 @@ namespace O3DE::ProjectManager
         connect(m_projectName->lineEdit(), &QLineEdit::textChanged, this, &ProjectSettingsScreen::OnProjectNameUpdated);
         m_verticalLayout->addWidget(m_projectName);
 
+        m_projectVersion = new FormLineEditWidget(tr("Project version"), "1.0.0", this);
+        m_verticalLayout->addWidget(m_projectVersion);
+
         m_projectPath = new FormFolderBrowseEditWidget(tr("Project Location"), "", this);
         connect(m_projectPath->lineEdit(), &QLineEdit::textChanged, this, &ProjectSettingsScreen::OnProjectPathUpdated);
         m_verticalLayout->addWidget(m_projectPath);
@@ -84,6 +87,7 @@ namespace O3DE::ProjectManager
     {
         ProjectInfo projectInfo;
         projectInfo.m_projectName = m_projectName->lineEdit()->text();
+        projectInfo.m_version = m_projectVersion->lineEdit()->text();
         // currently we don't have separate fields for changing the project name and display name 
         projectInfo.m_displayName = projectInfo.m_projectName;
         projectInfo.m_path = m_projectPath->lineEdit()->text();

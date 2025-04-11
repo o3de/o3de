@@ -29,19 +29,24 @@ set(FILES
     StaticLib/GraphCanvas/GraphCanvasBus.h
     StaticLib/GraphCanvas/Components/EntitySaveDataBus.h
     StaticLib/GraphCanvas/Components/GeometryBus.h
+    StaticLib/GraphCanvas/Components/GraphCanvasPropertyBus.cpp
     StaticLib/GraphCanvas/Components/GraphCanvasPropertyBus.h
     StaticLib/GraphCanvas/Components/GridBus.h
     StaticLib/GraphCanvas/Components/LayerBus.h
     StaticLib/GraphCanvas/Components/MimeDataHandlerBus.h
     StaticLib/GraphCanvas/Components/PersistentIdBus.h
     StaticLib/GraphCanvas/Components/SceneBus.h
+    StaticLib/GraphCanvas/Components/SceneBus.cpp
     StaticLib/GraphCanvas/Components/StyleBus.h
+    StaticLib/GraphCanvas/Components/StyleBus.cpp
     StaticLib/GraphCanvas/Components/ViewBus.h
     StaticLib/GraphCanvas/Components/VisualBus.h
     StaticLib/GraphCanvas/GraphicsItems/AnimatedPulse.cpp
     StaticLib/GraphCanvas/GraphicsItems/AnimatedPulse.h
     StaticLib/GraphCanvas/GraphicsItems/GlowOutlineGraphicsItem.cpp
     StaticLib/GraphCanvas/GraphicsItems/GlowOutlineGraphicsItem.h
+    StaticLib/GraphCanvas/GraphicsItems/GraphicsEffectBus.h
+    StaticLib/GraphCanvas/GraphicsItems/GraphicsEffectBus.cpp
     StaticLib/GraphCanvas/GraphicsItems/GraphicsEffect.h
     StaticLib/GraphCanvas/GraphicsItems/Occluder.cpp
     StaticLib/GraphCanvas/GraphicsItems/Occluder.h
@@ -73,6 +78,7 @@ set(FILES
     StaticLib/GraphCanvas/Components/Nodes/Group/NodeGroupBus.h
     StaticLib/GraphCanvas/Components/Nodes/Wrapper/WrapperNodeBus.h
     StaticLib/GraphCanvas/Components/Slots/SlotBus.h
+    StaticLib/GraphCanvas/Components/Slots/SlotBus.cpp
     StaticLib/GraphCanvas/Components/Slots/Data/DataSlotBus.h
     StaticLib/GraphCanvas/Components/Slots/Property/PropertySlotBus.h
     StaticLib/GraphCanvas/Editor/AssetEditorBus.h
@@ -82,6 +88,7 @@ set(FILES
     StaticLib/GraphCanvas/Editor/EditorTypes.h
     StaticLib/GraphCanvas/Editor/GraphCanvasProfiler.h
     StaticLib/GraphCanvas/Editor/GraphModelBus.h
+    StaticLib/GraphCanvas/Editor/GraphModelBus.cpp
     StaticLib/GraphCanvas/Styling/definitions.h
     StaticLib/GraphCanvas/Styling/PseudoElement.cpp
     StaticLib/GraphCanvas/Styling/PseudoElement.h
@@ -106,7 +113,7 @@ set(FILES
     StaticLib/GraphCanvas/Types/GraphCanvasGraphData.h
     StaticLib/GraphCanvas/Types/GraphCanvasGraphSerialization.cpp
     StaticLib/GraphCanvas/Types/GraphCanvasGraphSerialization.h
-    StaticLib/GraphCanvas/Types/SceneMemberComponentSaveData.h    
+    StaticLib/GraphCanvas/Types/SceneMemberComponentSaveData.h
     StaticLib/GraphCanvas/Types/Types.h
     StaticLib/GraphCanvas/Types/QtMetaTypes.h
     StaticLib/GraphCanvas/Widgets/Resources/default_style.json
@@ -118,6 +125,10 @@ set(FILES
     StaticLib/GraphCanvas/Widgets/Bookmarks/BookmarkDockWidget.ui
     StaticLib/GraphCanvas/Widgets/Bookmarks/BookmarkTableModel.cpp
     StaticLib/GraphCanvas/Widgets/Bookmarks/BookmarkTableModel.h
+    StaticLib/GraphCanvas/Widgets/GraphOutliner/GraphOutlinerDockWidget.cpp
+    StaticLib/GraphCanvas/Widgets/GraphOutliner/GraphOutlinerDockWidget.h
+    StaticLib/GraphCanvas/Widgets/GraphOutliner/GraphOutlinerTableModel.cpp
+    StaticLib/GraphCanvas/Widgets/GraphOutliner/GraphOutlinerTableModel.h
     StaticLib/GraphCanvas/Widgets/ComboBox/ComboBoxItemModels.h
     StaticLib/GraphCanvas/Widgets/ComboBox/ComboBoxItemModelInterface.h
     StaticLib/GraphCanvas/Widgets/ConstructPresetDialog/ConstructPresetDialog.cpp

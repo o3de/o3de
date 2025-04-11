@@ -10,16 +10,12 @@
 
 #if !defined(Q_MOC_RUN)
 #include <ScreenWidget.h>
-#include <FormFolderBrowseEditWidget.h>
-#include <FormLineEditWidget.h>
-#include <FormLineEditTagsWidget.h>
-#include <FormComboBoxWidget.h>
 #include <GemCatalog/GemInfo.h>
 #include <PythonBindings.h>
-#include <ScreenHeaderWidget.h>
 #endif
 
 QT_FORWARD_DECLARE_CLASS(QButtonGroup)
+QT_FORWARD_DECLARE_CLASS(QPushButton)
 QT_FORWARD_DECLARE_CLASS(QDialogButtonBox)
 QT_FORWARD_DECLARE_CLASS(QRadioButton)
 QT_FORWARD_DECLARE_CLASS(QScrollArea)
@@ -29,6 +25,13 @@ QT_FORWARD_DECLARE_CLASS(QDir)
 
 namespace O3DE::ProjectManager
 {
+    class FormFolderBrowseEditWidget;
+    class FormLineEditWidget;
+    class FormLineEditTagsWidget;
+    class FormOptionsWidget;
+    class FormComboBoxWidget;
+    class ScreenHeader;
+
     class CreateGem : public ScreenWidget
     {
         Q_OBJECT
@@ -49,11 +52,11 @@ namespace O3DE::ProjectManager
     protected slots:
         void HandleBackButton();
         void HandleNextButton();
+        void HandleGemDetailsTab();
         
 
     private slots:
         void HandleGemTemplateSelectionTab();
-        void HandleGemDetailsTab();
         void HandleGemCreatorDetailsTab();
 
     protected:
@@ -75,6 +78,7 @@ namespace O3DE::ProjectManager
         FormLineEditWidget* m_gemDisplayName = nullptr;
         FormLineEditWidget* m_gemName = nullptr;
         FormLineEditWidget* m_gemSummary = nullptr;
+        FormOptionsWidget* m_platformOptions = nullptr;
         FormLineEditWidget* m_requirements = nullptr;
         FormLineEditWidget* m_license = nullptr;
         FormLineEditWidget* m_licenseURL = nullptr;
@@ -105,9 +109,14 @@ namespace O3DE::ProjectManager
         static constexpr int GemDetailsScreen = 1;
         static constexpr int GemCreatorDetailsScreen = 2;
 
+        static inline constexpr int s_platformOptionItemSpacing = 24;
+
         int m_indexBackLimit = 0;
 
         QString m_gemActionString;
+
+        GemInfo::Platforms m_platformSupportMask = GemInfo::Platform::Windows | GemInfo::Platform::Linux |
+                                                 GemInfo::Platform::iOS | GemInfo::Platform::Android;
 
     private:
         void LoadButtonsFromGemTemplatePaths(QVBoxLayout* gemSetupLayout);

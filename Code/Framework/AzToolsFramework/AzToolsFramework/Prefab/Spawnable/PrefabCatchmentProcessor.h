@@ -23,7 +23,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         : public PrefabProcessor
     {
     public:
-        AZ_CLASS_ALLOCATOR(PrefabCatchmentProcessor, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PrefabCatchmentProcessor, AZ::SystemAllocator);
         AZ_RTTI(AzToolsFramework::Prefab::PrefabConversionUtils::PrefabCatchmentProcessor,
             "{F71E2FBA-22ED-44C7-B4C8-D2CF4B2C7B97}", PrefabProcessor);
 

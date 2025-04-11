@@ -1,8 +1,9 @@
 # Package list for Ubuntu 18.04
 
 # Build Tools Packages
-cmake/3.24.0-0kitware1ubuntu18.04.1     # For cmake
+cmake/3.22.1-0kitware1ubuntu18.04.1     # For cmake
 clang-12                                # For the compiler and its dependencies
+lld                                     # For the llvm linker
 ninja-build                             # For Ninja Build System
 java-11-amazon-corretto-jdk             # For Jenkins and Android
 
@@ -19,5 +20,10 @@ libxkbcommon-x11-dev                    # For xcb keyboard input
 libxkbcommon-dev                        # For xcb keyboard input
 libxcb-xfixes0-dev                      # For mouse input
 libxcb-xinput-dev                       # For mouse input
+libxcb-image0-dev                       # For xcb image support
+xxd
 zlib1g-dev
 mesa-common-dev
+libunwind-dev
+libzstd-dev
+pkg-config

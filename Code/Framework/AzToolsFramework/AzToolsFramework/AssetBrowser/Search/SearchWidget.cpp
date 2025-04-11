@@ -9,7 +9,10 @@
 #include <AzToolsFramework/AssetBrowser/Search/SearchWidget.h>
 
 #include <AzCore/Asset/AssetTypeInfoBus.h>
+#include <AzCore/Settings/SettingsRegistryVisitorUtils.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/Utils/Utils.h>
+#include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
 
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 'QTextFormat::d': class 'QSharedDataPointer<QTextFormatPrivate>' needs to have dll-interface to be used by clients of class 'QTextFormat'
 #include <QLineEdit>
@@ -81,6 +84,9 @@ namespace AzToolsFramework
             , m_filter(new CompositeFilter(CompositeFilter::LogicOperatorType::AND))
             , m_stringFilter(new CompositeFilter(CompositeFilter::LogicOperatorType::AND))
             , m_typesFilter(new CompositeFilter(CompositeFilter::LogicOperatorType::OR))
+            , m_engineFilter(new CompositeFilter(CompositeFilter::LogicOperatorType::AND))
+            , m_unusableProductsFilter(new CompositeFilter(CompositeFilter::LogicOperatorType::AND))
+            , m_folderFilter(new CompositeFilter(CompositeFilter::LogicOperatorType::AND))
         {
             m_filter->SetFilterPropagation(AssetBrowserEntryFilter::PropagateDirection::Down);
 
@@ -89,6 +95,15 @@ namespace AzToolsFramework
 
             m_typesFilter->SetFilterPropagation(AssetBrowserEntryFilter::PropagateDirection::Down);
             m_typesFilter->SetTag("AssetTypes");
+
+            m_engineFilter->SetFilterPropagation(AssetBrowserEntryFilter::PropagateDirection::Down);
+            m_engineFilter->SetTag("ProjectAssets");
+
+            m_unusableProductsFilter->SetFilterPropagation(AssetBrowserEntryFilter::PropagateDirection::Down);
+            m_unusableProductsFilter->SetTag("UnusableProducts");
+
+            m_folderFilter->SetFilterPropagation(AssetBrowserEntryFilter::PropagateDirection::Down);
+            m_folderFilter->SetTag("Folder");
 
             connect(this, &AzQtComponents::FilteredSearchWidget::TextFilterChanged, this,
                     [this](const QString& text)
@@ -128,7 +143,7 @@ namespace AzToolsFramework
             });
         }
 
-        void SearchWidget::Setup(bool stringFilter, bool assetTypeFilter)
+        void SearchWidget::Setup(bool stringFilter, bool assetTypeFilter, bool useFavorites)
         {
             ClearTextFilter();
             ClearTypeFilter();
@@ -137,6 +152,7 @@ namespace AzToolsFramework
 
             SetTextFilterVisible(stringFilter);
             SetTypeFilterVisible(assetTypeFilter);
+            SetUseFavorites(useFavorites);
 
             if (stringFilter)
             {
@@ -159,6 +175,118 @@ namespace AzToolsFramework
                 m_filter->AddFilter(FilterConstType(m_typesFilter));
                 SetTypeFilters(buildTypesFilterList());
             }
+
+            const AZ::IO::Path enginePath{ AZ::Utils::GetEnginePath() };
+            AZ::IO::Path engineAssets =  (enginePath / "Assets" / "Engine").LexicallyNormal();
+            AZ::IO::Path setregAssets = (enginePath / "Registry").LexicallyNormal();
+
+            auto filterFn = [engineAssets, setregAssets](const AssetBrowserEntry* entry)
+            {
+                AZ::IO::Path absolutePath = entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Product
+                    ? entry->GetParent()->GetFullPath()
+                    : entry->GetFullPath();
+
+                return !(absolutePath.IsRelativeTo(engineAssets) || absolutePath.IsRelativeTo(setregAssets));
+            };
+            auto engineFilter = new CustomFilter(filterFn);
+            m_engineFilter->AddFilter(FilterConstType(engineFilter));
+
+            AZStd::vector<AZ::Data::AssetType> types = BuildAssetTypeList();
+            auto productFilterFn = [types](const AssetBrowserEntry* entry)
+            {
+                if (const ProductAssetBrowserEntry* productEntry = azrtti_cast<const ProductAssetBrowserEntry*>(entry))
+                {
+                    return !AZStd::any_of(
+                        types.begin(),
+                        types.end(),
+                        [&](const auto& type)
+                        {
+                            return productEntry->GetAssetType() == type;
+                        });
+                }
+                return true;
+            };
+            auto productFilter = new CustomFilter(productFilterFn);
+            m_unusableProductsFilter->AddFilter(FilterConstType(productFilter));
+
+            auto directoryFilter = new EntryTypeFilter();
+            directoryFilter->SetName("Folder");
+            directoryFilter->SetEntryType(AssetBrowserEntry::AssetEntryType::Folder);
+            m_folderFilter->AddFilter(FilterConstType(directoryFilter));
+        }
+
+        void SearchWidget::ToggleEngineFilter(bool checked)
+        {
+            if (!checked)
+            {
+                if (GetIsEngineFilterActive())
+                {
+                    m_filter->RemoveFilter(FilterConstType(m_engineFilter));
+                }
+            }
+            else
+            {
+                if (!GetIsEngineFilterActive())
+                {
+                    m_filter->AddFilter(FilterConstType(m_engineFilter));
+                }
+            }
+        }
+
+        void SearchWidget::ToggleUnusableProductsFilter(bool checked)
+        {
+            if (!checked)
+            {
+                if (GetIsUnusableProductsFilterActive())
+                {
+                    m_filter->RemoveFilter(FilterConstType(m_unusableProductsFilter));
+                }
+            }
+            else
+            {
+                if (!GetIsUnusableProductsFilterActive())
+                {
+                    m_filter->AddFilter(FilterConstType(m_unusableProductsFilter));
+                }
+            }
+        }
+
+        AZStd::vector<AZ::Data::AssetType> SearchWidget::BuildAssetTypeList()
+        {
+            AZStd::vector<AZ::Data::AssetType> entries;
+            if (AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+            {
+                auto VisitFilteredAssetTypes = [&entries](const AZ::SettingsRegistryInterface::VisitArgs& visitArgs)
+                {
+                    using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
+                    if (FixedValueString value{}; visitArgs.m_registry.Get(value, visitArgs.m_jsonKeyPath))
+                    {
+                        AZ::Data::AssetType assetType{ AZStd::string_view(value) };
+                        entries.emplace_back(AZStd::move(assetType));
+                    }
+                    return AZ::SettingsRegistryInterface::VisitResponse::Skip;
+                };
+                AZ::SettingsRegistryVisitorUtils::VisitObject(
+                    *settingsRegistry, VisitFilteredAssetTypes, "/O3DE/AssetBrowser/AssetTypeUuidExcludes");
+            }
+
+            return entries;
+        }
+
+        void SearchWidget::AddFolderFilter()
+        {
+            if (!m_filter->GetSubFilters().contains(m_folderFilter))
+            {
+                m_filter->AddFilter(FilterConstType(m_folderFilter));
+            }
+        }
+
+        void SearchWidget::RemoveFolderFilter()
+        {
+            if (m_filter->GetSubFilters().contains(m_folderFilter))
+            {
+                m_filter->RemoveFilter(FilterConstType(m_folderFilter));
+            }
         }
 
         QSharedPointer<CompositeFilter> SearchWidget::GetFilter() const
@@ -174,6 +302,41 @@ namespace AzToolsFramework
         QSharedPointer<CompositeFilter> SearchWidget::GetTypesFilter() const
         {
             return m_typesFilter;
+        }
+
+        QSharedPointer<CompositeFilter> SearchWidget::GetEngineFilter() const
+        {
+            return m_engineFilter;
+        }
+
+        QSharedPointer<CompositeFilter> SearchWidget::GetUnusableProductsFilter() const
+        {
+            return m_unusableProductsFilter;
+        }
+
+        QSharedPointer<CompositeFilter> SearchWidget::GetFolderFilter() const
+        {
+            return m_folderFilter;
+        }
+
+        bool SearchWidget::GetIsEngineFilterActive()
+        {
+            return m_filter->GetSubFilters().contains(m_engineFilter);
+        }
+
+        bool SearchWidget::GetIsUnusableProductsFilterActive()
+        {
+            return m_filter->GetSubFilters().contains(m_unusableProductsFilter);
+        }
+
+        bool SearchWidget::GetIsFolderFilterActive()
+        {
+            return m_filter->GetSubFilters().contains(m_folderFilter);
+        }
+
+        void SearchWidget::SetFilterString(const QString& searchTerm)
+        {
+            SetTextFilter(searchTerm);
         }
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

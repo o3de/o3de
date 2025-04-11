@@ -11,6 +11,11 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Memory/PoolAllocator.h>
+#include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
+
+extern "C" void CleanUpRpiPublicGenericClassInfo();
+extern "C" void CleanUpRpiEditGenericClassInfo();
 
 namespace UnitTest
 {
@@ -18,16 +23,14 @@ namespace UnitTest
     {
         using namespace AZ::Data;
 
-        AllocatorsTestFixture::SetUp();
-
-        AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-        AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
+        LeakDetectionFixture::SetUp();
 
         AssetManager::Descriptor desc;
         AssetManager::Create(desc);
 
         m_reflectionManager = AZStd::make_unique<AZ::ReflectionManager>();
         m_reflectionManager->AddReflectContext<AZ::SerializeContext>();
+        m_reflectionManager->AddReflectContext<AZ::BehaviorContext>();
 
         AZ::ComponentApplicationBus::Handler::BusConnect();
         AZ::Interface<AZ::ComponentApplicationRequests>::Register(this);
@@ -44,10 +47,20 @@ namespace UnitTest
         m_reflectionManager->Clear();
         m_reflectionManager.reset();
 
-        AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
-        AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
+        CleanUpRpiPublicGenericClassInfo();
+        CleanUpRpiEditGenericClassInfo();
 
-        AllocatorsTestFixture::TearDown();
+        LeakDetectionFixture::TearDown();
+    }
+
+    AZ::BehaviorContext* AssetManagerTestFixture::GetBehaviorContext()
+    {
+        return m_reflectionManager ? m_reflectionManager->GetReflectContext<AZ::BehaviorContext>() : nullptr;
+    }
+
+    AZ::SerializeContext* AssetManagerTestFixture::GetSerializeContext()
+    {
+        return m_reflectionManager ? m_reflectionManager->GetReflectContext<AZ::SerializeContext>() : nullptr;
     }
 }
 

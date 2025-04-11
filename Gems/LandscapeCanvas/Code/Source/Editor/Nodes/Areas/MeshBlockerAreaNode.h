@@ -26,7 +26,7 @@ namespace LandscapeCanvas
     class MeshBlockerAreaNode : public BaseAreaNode
     {
     public:
-        AZ_CLASS_ALLOCATOR(MeshBlockerAreaNode, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MeshBlockerAreaNode, AZ::SystemAllocator);
         AZ_RTTI(MeshBlockerAreaNode, "{27CE0BEC-5AE3-4574-860E-C24D142D10F5}", BaseAreaNode);
 
         static void Reflect(AZ::ReflectContext* context);

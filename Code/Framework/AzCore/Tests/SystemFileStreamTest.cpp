@@ -14,7 +14,7 @@
 namespace UnitTest
 {
     class SystemFileStreamTest
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
     protected:
         AZ::Test::ScopedAutoTempDirectory m_tempDirectory;

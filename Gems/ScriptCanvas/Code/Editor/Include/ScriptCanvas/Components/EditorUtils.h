@@ -45,7 +45,7 @@ namespace ScriptCanvasEditor
     public:
         static void Reflect(AZ::ReflectContext* reflectContext);     
 
-        AZ_CLASS_ALLOCATOR(GraphStatisticsHelper, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GraphStatisticsHelper, AZ::SystemAllocator);
         AZ_RTTI(GraphStatisticsHelper, "{7D5B7A65-F749-493E-BA5C-6B8724791F03}");
 
         virtual ~GraphStatisticsHelper() = default;

@@ -9,7 +9,6 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
-#include <AzCore/Component/TickBus.h>
 #include <Compression/CompressionBus.h>
 
 namespace Compression
@@ -19,7 +18,7 @@ namespace Compression
         , protected CompressionRequestBus::Handler
     {
     public:
-        AZ_COMPONENT(CompressionSystemComponent, "{7E220BA3-B665-4225-9023-F0520E4B436E}");
+        AZ_COMPONENT_DECL(CompressionSystemComponent);
 
         static void Reflect(AZ::ReflectContext* context);
 

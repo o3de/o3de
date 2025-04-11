@@ -11,6 +11,7 @@
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Serialization/Json/BaseJsonSerializer.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Component/EntitySerializer.h>
 
 namespace AzToolsFramework
@@ -36,7 +37,7 @@ namespace AzToolsFramework
                 AZ::JsonDeserializerContext& context) override;
         };
 
-        AZ_CLASS_ALLOCATOR_IMPL(SelectionComponentSerializer, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR_IMPL(SelectionComponentSerializer, AZ::SystemAllocator);
 
         AZ::JsonSerializationResult::Result SelectionComponentSerializer::Load(
             [[maybe_unused]] void* outputValue,

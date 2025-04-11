@@ -10,8 +10,12 @@
 #include "StringIdPool.h"
 #include "LogManager.h"
 
+#include <AzCore/Serialization/SerializeContext.h>
+
 namespace MCore
 {
+    AZ_TYPE_INFO_SPECIALIZE_WITH_NAME_IMPL(StringIdPoolIndex, "StringIdPoolIndex", "{C374F051-8323-49DB-A1BD-C6B6CF0333C0}");
+
     StringIdPool::StringIdPool()
     {
         Reserve(10000);

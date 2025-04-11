@@ -38,6 +38,7 @@ namespace AZ::Render
         void SetFilteringSampleCount(uint32_t count) override;
         void SetEsmExponent(float esmExponent) override;
         void SetNormalShadowBias(float bias) override;
+        void SetShadowCachingMode(AreaLightComponentConfig::ShadowCachingMode cachingMode) override;
         void SetAffectsGI(bool affectsGI) override;
         void SetAffectsGIFactor(float affectsGIFactor) override;
         Aabb GetLocalVisualizationBounds() const override;
@@ -48,7 +49,7 @@ namespace AZ::Render
 
         float GetRadius() const;
 
-        LmbrCentral::SphereShapeComponentRequests* m_shapeBus = nullptr;
+        LmbrCentral::SphereShapeComponentRequests* m_sphereShapeBus = nullptr;
     };
 
     inline float SphereLightDelegate::GetEffectiveSolidAngle() const

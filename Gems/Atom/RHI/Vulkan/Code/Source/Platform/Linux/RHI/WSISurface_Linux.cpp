@@ -9,6 +9,7 @@
 #include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/Instance.h>
 #include <RHI/WSISurface.h>
+#include <Atom/RHI.Reflect/VkAllocator.h>
 
 #if PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
 #include <AzFramework/XcbConnectionManager.h>
@@ -38,7 +39,7 @@ namespace AZ
             createInfo.flags = 0;
             createInfo.connection = xcb_connection;
             createInfo.window = static_cast<xcb_window_t>(m_descriptor.m_windowHandle.GetIndex());
-            const VkResult result = instance.GetContext().CreateXcbSurfaceKHR(instance.GetNativeInstance(), &createInfo, nullptr, &m_nativeSurface);
+            const VkResult result = instance.GetContext().CreateXcbSurfaceKHR(instance.GetNativeInstance(), &createInfo, VkSystemAllocator::Get(), &m_nativeSurface);
             AssertSuccess(result);
 
             return ConvertResult(result);

@@ -19,6 +19,7 @@ namespace AZ::Render
         : public AZ::Render::RenderDebugFeatureProcessorInterface
     {
     public:
+        AZ_CLASS_ALLOCATOR(RenderDebugFeatureProcessor, AZ::SystemAllocator)
         AZ_RTTI(AZ::Render::RenderDebugFeatureProcessor, "{1F14912D-43E1-4992-9822-BE8967E59EA3}", AZ::Render::RenderDebugFeatureProcessorInterface);
 
         static void Reflect(AZ::ReflectContext* context);
@@ -63,6 +64,11 @@ namespace AZ::Render
         RHI::ShaderInputNameIndex m_customDebugFloatIndex02 = "m_customDebugFloat02";
         RHI::ShaderInputNameIndex m_customDebugFloatIndex03 = "m_customDebugFloat03";
         RHI::ShaderInputNameIndex m_customDebugFloatIndex04 = "m_customDebugFloat04";
+        RHI::ShaderInputNameIndex m_customDebugFloatIndex05 = "m_customDebugFloat05";
+        RHI::ShaderInputNameIndex m_customDebugFloatIndex06 = "m_customDebugFloat06";
+        RHI::ShaderInputNameIndex m_customDebugFloatIndex07 = "m_customDebugFloat07";
+        RHI::ShaderInputNameIndex m_customDebugFloatIndex08 = "m_customDebugFloat08";
+        RHI::ShaderInputNameIndex m_customDebugFloatIndex09 = "m_customDebugFloat09";
 
         Name m_shaderDebugEnableOptionName = Name("o_shader_debugging_enabled");
 

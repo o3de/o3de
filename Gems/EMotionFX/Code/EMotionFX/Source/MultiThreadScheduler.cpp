@@ -24,7 +24,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(MultiThreadScheduler, ActorUpdateAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(MultiThreadScheduler, ActorUpdateAllocator)
 
     // constructor
     MultiThreadScheduler::MultiThreadScheduler()

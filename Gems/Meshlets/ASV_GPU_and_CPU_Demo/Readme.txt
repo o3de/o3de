@@ -172,12 +172,11 @@ is not the case, simply replace with the directory name of your active project.
             }
     Remark: this is NOT required in this case as Meshlets can process regular Atom meshes
 
-3. Enable Meshlets gem for the active project - AtomSampleViewer/Gem/code/enabled_gems.cmake
-            (
-                set(ENABLED_GEMS
+3. Enable Meshlets gem for the active project - AtomSampleViewer/project.json
+            "gem_names": [
                 ...
-                Meshlets
-            )
+                "Meshlets"
+            ]
 
 4. Add a build dependency on the meshlets gem - AtomSampleViewer/Gem/Code/CMakeLists.txt
         ly_add_target(

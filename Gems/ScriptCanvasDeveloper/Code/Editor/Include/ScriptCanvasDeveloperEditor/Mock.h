@@ -30,7 +30,7 @@ namespace ScriptCanvas::Developer
         struct SlotConfig
         {
             AZ_TYPE_INFO(SlotConfig, "{10B5DF2F-1105-4BDD-B8C0-24684AA4ECB3}");
-            AZ_CLASS_ALLOCATOR(SlotConfig, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SlotConfig, AZ::SystemAllocator);
             static void Reflect(AZ::ReflectContext* context);
 
             AZ::Crc32 OnSlotNameChanged();
@@ -53,7 +53,7 @@ namespace ScriptCanvas::Developer
             : public AZ::ComponentConfig
         {
             AZ_RTTI(MockNodeConfig, "{6FA19B08-186D-4308-BAE3-530367D902E0}");
-            AZ_CLASS_ALLOCATOR(MockNodeConfig, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(MockNodeConfig, AZ::SystemAllocator);
 
             static constexpr AZ::TypeId GetComponentTypeId()
             {

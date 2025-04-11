@@ -19,4 +19,10 @@ namespace TestImpact
 
     //! Deserializes a test run from the specified test run data in JSON format.
     TestRun DeserializeTestRun(const AZStd::string& testRunString);
+
+    namespace GTest
+    {
+        //! Serializes the specified test run to GTest JUnit format.
+        AZStd::string SerializeTestRun(const TestRun& testRun);
+    } // namespace GTest
 } // namespace TestImpact

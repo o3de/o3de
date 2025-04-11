@@ -44,8 +44,8 @@
                             "Attachment": "Input"
                         },
                         "Multipliers":{
-                            "WidthMultiplier" : "0.5",
-                            "HeightMultiplier": "0.5"
+                            "WidthMultiplier" : 0.5,
+                            "HeightMultiplier": 0.5
                         }
                     },
                      "FormatSource": {
@@ -54,7 +54,7 @@
                     },
                     "ImageDescriptor": {
                         "MipLevels": "5",
-                        "SharedQueueMask": 3
+                        "SharedQueueMask": "Copy"
                     }
                 },
                 {
@@ -65,8 +65,8 @@
                             "Attachment": "Input"
                         },
                         "Multipliers":{
-                            "WidthMultiplier" : "0.5",
-                            "HeightMultiplier": "0.5"
+                            "WidthMultiplier" : 0.5,
+                            "HeightMultiplier": 0.5
                         }
                     },
                      "FormatSource": {
@@ -75,7 +75,7 @@
                     },
                     "ImageDescriptor": {
                         "MipLevels": "5",
-                        "SharedQueueMask": 3
+                        "SharedQueueMask": "Copy"
                     }
                 }
             ],
@@ -100,7 +100,7 @@
                 "ShaderAsset": {
                     "FilePath": "Shaders/PostProcessing/BloomDownsampleCS.shader"
                 },
-                "Make Fullscreen Pass": true
+                "FullscreenDispatch": true
             }
         }
     }

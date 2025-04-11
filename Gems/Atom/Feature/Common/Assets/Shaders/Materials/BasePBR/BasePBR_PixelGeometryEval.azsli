@@ -12,71 +12,53 @@
 // used in your shader. Simply #define EvaluatePixelGeometry to your custom definition before including this file
 //
 #ifndef EvaluatePixelGeometry
-#define EvaluatePixelGeometry(IN, isFrontFace)      EvaluatePixelGeometry_BasePBR(IN, isFrontFace)
+#define EvaluatePixelGeometry EvaluatePixelGeometry_BasePBR
 #endif
 
 #include "../MaterialFunctions/EvaluateTangentFrame.azsli"
+#include <Atom/Features/InstancedTransforms.azsli>
 
 PixelGeometryData EvaluatePixelGeometry_BasePBR(
     float3 positionWS,
-    float3 normal,
-    float3 tangent,
-    float3 bitangent,
+    real3 normalWS,
+    real3 tangentWS,
+    real3 bitangentWS,
     float2 uvs[UvSetCount],
-    bool isFrontFace,
-    bool evaluateTangentFrame)
+    bool isFrontFace)
 {
     PixelGeometryData geoData;
 
     geoData.positionWS = positionWS;
-    geoData.vertexNormal = normalize(normal);
-
-    geoData.tangents[0] = tangent;
-    geoData.tangents[1] = tangent;
-
-    geoData.bitangents[0] = bitangent;
-    geoData.bitangents[1] = bitangent;
+    geoData.vertexNormal = normalize(normalWS);
 
     geoData.uvs = uvs;
     geoData.isFrontFace = isFrontFace;
 
-    if (evaluateTangentFrame)
+    if (NeedsTangentFrame())
     {
         for (int i = 0; i != UvSetCount; ++i)
         {
             EvaluateTangentFrame(geoData.vertexNormal, positionWS, isFrontFace, uvs[i], i,
-                tangent, bitangent, geoData.tangents[i], geoData.bitangents[i]);
+                tangentWS, bitangentWS, geoData.tangents[i], geoData.bitangents[i]);
         }
     }
 
     return geoData;
 }
 
-PixelGeometryData EvaluatePixelGeometry_BasePBR(
-    float3 positionWS,
-    float3 normal,
-    float3 tangent,
-    float3 bitangent,
-    float2 uvs[UvSetCount],
-    bool isFrontFace)
-{
-    bool evaluateTangentFrame = o_normal_useTexture;
-    return EvaluatePixelGeometry_BasePBR(positionWS, normal, tangent, bitangent, uvs, isFrontFace, evaluateTangentFrame);
-}
-
 PixelGeometryData EvaluatePixelGeometry_BasePBR(VsOutput IN, bool isFrontFace)
 {
-    float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
-    float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
+    real4x4 objectToWorld = real4x4(GetObjectToWorldMatrix(IN.m_instanceId));
+    real3x3 objectToWorldIT = real3x3(GetObjectToWorldMatrixInverseTranspose(IN.m_instanceId));
 
-    float3 vertexNormal, vertexTangent, vertexBitangent;
-    ConstructTBN(IN.normal, IN.tangent, objectToWorld, objectToWorldIT, vertexNormal, vertexTangent, vertexBitangent);
+    real3 normalWS, tangentWS, bitangentWS;
+    ConstructTBN(real3(IN.normal), real4(IN.tangent), objectToWorld, objectToWorldIT, normalWS, tangentWS, bitangentWS);
 
     return EvaluatePixelGeometry_BasePBR(
         IN.worldPosition,
-        vertexNormal,
-        vertexTangent,
-        vertexBitangent,
+        normalWS,
+        tangentWS,
+        bitangentWS,
         IN.uvs,
         isFrontFace);
 }

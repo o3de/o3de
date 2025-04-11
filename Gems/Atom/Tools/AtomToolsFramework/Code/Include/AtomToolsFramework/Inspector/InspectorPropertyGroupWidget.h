@@ -32,7 +32,7 @@ namespace AtomToolsFramework
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(InspectorPropertyGroupWidget, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(InspectorPropertyGroupWidget, AZ::SystemAllocator);
 
         InspectorPropertyGroupWidget(
             void* instance,

@@ -30,7 +30,7 @@ namespace GraphCanvas
     class GlowOutlineConfiguration
     {
     public:
-        qreal m_blurRadius;
+        qreal m_blurRadius = 0; // #17174 using blur degrades performance
         QPen m_pen;
 
         AZStd::chrono::milliseconds m_pulseRate = AZStd::chrono::milliseconds(0);
@@ -65,7 +65,7 @@ namespace GraphCanvas
         , public AssetEditorSettingsNotificationBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(GlowOutlineGraphicsItem, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GlowOutlineGraphicsItem, AZ::SystemAllocator);
 
         GlowOutlineGraphicsItem(const FixedGlowOutlineConfiguration& configuration);
         GlowOutlineGraphicsItem(const SceneMemberGlowOutlineConfiguration& configuration);

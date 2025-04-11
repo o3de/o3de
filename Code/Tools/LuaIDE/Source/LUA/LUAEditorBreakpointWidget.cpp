@@ -27,7 +27,7 @@ namespace LUAEditor
             : public QTextBlockUserData
         {
         public:
-            AZ_CLASS_ALLOCATOR(OriginalLineNumber, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(OriginalLineNumber, AZ::SystemAllocator);
             OriginalLineNumber(int lineNumber, AZStd::function<void(int)> callback)
                 : m_Callback(callback)
                 , m_LineNumber(lineNumber) {}
@@ -68,7 +68,7 @@ namespace LUAEditor
     {
         QPainter p(this);
 
-        auto colors = AZ::UserSettings::CreateFind<SyntaxStyleSettings>(AZ_CRC("LUA Editor Text Settings", 0xb6e15565), AZ::UserSettings::CT_GLOBAL);
+        auto colors = AZ::UserSettings::CreateFind<SyntaxStyleSettings>(AZ_CRC_CE("LUA Editor Text Settings"), AZ::UserSettings::CT_GLOBAL);
 
         auto oldPen = p.pen();
         auto oldBrush = p.brush();
@@ -95,7 +95,7 @@ namespace LUAEditor
                 drawRect.setLeft(c_borderSize);
                 drawRect.setRight(c_borderSize + m_numDigits * avgCharWidth);
 
-                p.setPen(colors->GetTextColor());
+                p.setPen(colors->GetLineNumberColor());
                 p.drawText(drawRect.toRect(), Qt::AlignRight | Qt::AlignBottom, lineNumStr.c_str());
 
                 {

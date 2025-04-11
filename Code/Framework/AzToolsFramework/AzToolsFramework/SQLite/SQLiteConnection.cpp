@@ -27,7 +27,7 @@ namespace AzToolsFramework
         class StatementPrototype
         {
         public:
-            AZ_CLASS_ALLOCATOR(StatementPrototype, AZ::SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR(StatementPrototype, AZ::SystemAllocator)
             StatementPrototype();
             StatementPrototype(const AZStd::string& stmt);
             ~StatementPrototype();

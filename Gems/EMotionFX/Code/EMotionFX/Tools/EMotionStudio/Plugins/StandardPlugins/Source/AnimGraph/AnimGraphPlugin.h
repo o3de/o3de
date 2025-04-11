@@ -114,7 +114,13 @@ namespace EMStudio
             DISPLAYFLAG_PLAYSPEED       = 1 << 0,
             DISPLAYFLAG_GLOBALWEIGHT    = 1 << 1,
             DISPLAYFLAG_SYNCSTATUS      = 1 << 2,
-            DISPLAYFLAG_PLAYPOSITION    = 1 << 3
+            DISPLAYFLAG_PLAYPOSITION    = 1 << 3,
+#if defined(EMFX_ANIMGRAPH_PROFILER_ENABLED)
+            DISPLAYFLAG_PROFILING_UPDATE = 1 << 5,
+            DISPLAYFLAG_PROFILING_TOPDOWN = 1 << 6,
+            DISPLAYFLAG_PROFILING_POSTUPDATE = 1 << 7,
+            DISPLAYFLAG_PROFILING_OUTPUT = 1 << 8,
+#endif
         };
 
         AnimGraphPlugin();

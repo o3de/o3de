@@ -9,6 +9,8 @@
 #include <PresenceSystemComponent.h>
 #include <Presence/PresenceNotificationBus.h>
 #include <AzCore/Component/TickBus.h>
+#include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/EditContext.h>
 
 namespace Presence
 {
@@ -56,7 +58,7 @@ namespace Presence
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->Class<PresenceDetails>()
-                ->Constructor<PresenceDetails&>()
+                ->Constructor<const PresenceDetails&>()
                 ->Attribute(AZ::Script::Attributes::Storage, AZ::Script::Attributes::StorageType::Value)
                 ->Property("localUserId", BehaviorValueProperty(&PresenceDetails::localUserId))
                 ->Property("titleId", BehaviorValueProperty(&PresenceDetails::titleId))
@@ -86,7 +88,6 @@ namespace Presence
             {
                 ec->Class<PresenceSystemComponent>("Presence", "Platform agnostic interface for Presence API requests")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }
@@ -125,13 +126,13 @@ namespace Presence
     ////////////////////////////////////////////////////////////////////////////////////////////
     void PresenceSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("PresenceService"));
+        provided.push_back(AZ_CRC_CE("PresenceService"));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////
     void PresenceSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("PresenceService"));
+        incompatible.push_back(AZ_CRC_CE("PresenceService"));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////

@@ -63,7 +63,7 @@ namespace AzToolsFramework
         Q_OBJECT;
 
     public:
-        AZ_CLASS_ALLOCATOR(EntityOutlinerListModel, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EntityOutlinerListModel, AZ::SystemAllocator);
 
         //! Columns of data to display about each Entity.
         enum Column
@@ -118,6 +118,7 @@ namespace AzToolsFramework
 
         // Spacing is appropriate and matches the outliner concept work from the UI team.
         static const int s_OutlinerSpacing = 7;
+        static const int s_OutlinerSpacingForLevel = 10;
 
         static bool s_paintingName;
 
@@ -181,10 +182,9 @@ namespace AzToolsFramework
         void InvalidateFilter();
 
     protected:
-
-        //! Editor entity context notification bus
+        // EditorEntityContextNotificationBus overrides ...
         void OnEditorEntityDuplicated(const AZ::EntityId& oldEntity, const AZ::EntityId& newEntity) override;
-        void OnContextReset() override;
+        void OnPrepareForContextReset() override;
         void OnStartPlayInEditorBegin() override;
         void OnStartPlayInEditor() override;
 
@@ -202,6 +202,7 @@ namespace AzToolsFramework
 
         bool m_autoExpandEnabled = true;
         bool m_layoutResetQueued = false;
+        bool m_suppressNextSelectEntity = false;
 
         AZStd::string m_filterString;
         AZStd::vector<ComponentTypeValue> m_componentFilters;
@@ -268,13 +269,6 @@ namespace AzToolsFramework
         bool AreAllDescendantsSameLockState(const AZ::EntityId& entityId) const;
         bool AreAllDescendantsSameVisibleState(const AZ::EntityId& entityId) const;
 
-        enum LayerProperty
-        {
-            Locked,
-            Invisible
-        };
-        bool IsInLayerWithProperty(AZ::EntityId entityId, const LayerProperty& layerProperty) const;
-
         // These are needed until we completely disassociated selection control from the outliner state to
         // keep track of selection state before/during/after filtering and searching
         EntityIdList m_unfilteredSelectionEntityIds;
@@ -315,7 +309,7 @@ namespace AzToolsFramework
         : public QStyledItemDelegate
     {
     public:
-        AZ_CLASS_ALLOCATOR(EntityOutlinerItemDelegate, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EntityOutlinerItemDelegate, AZ::SystemAllocator);
 
         EntityOutlinerItemDelegate(QWidget* parent = nullptr);
 

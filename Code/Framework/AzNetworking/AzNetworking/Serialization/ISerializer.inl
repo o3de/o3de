@@ -76,7 +76,7 @@ namespace AzNetworking
     {
         static bool SerializeObject(ISerializer& serializer, TYPE& value)
         {
-            return value.Serialize(serializer);
+            return SerializeType<TYPE>::Serialize(serializer, value);
         }
     };
 
@@ -98,6 +98,11 @@ namespace AzNetworking
     inline void ISerializer::Invalidate()
     {
         m_serializerValid = false;
+    }
+
+    inline bool ISerializer::Serialize(char& value, const char* name, uint8_t minValue, uint8_t maxValue)
+    {
+        return Serialize(reinterpret_cast<uint8_t&>(value), name, minValue, maxValue);
     }
 
     template <typename TYPE>

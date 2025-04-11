@@ -55,3 +55,4 @@ namespace ScriptCanvas
     } // namespace MathRandoms
 } // namespace ScriptCanvas
 
+#include <Include/ScriptCanvas/Libraries/Math/MathFunctions.generated.h>

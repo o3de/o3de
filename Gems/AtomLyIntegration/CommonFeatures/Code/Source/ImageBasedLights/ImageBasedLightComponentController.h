@@ -27,7 +27,7 @@ namespace AZ
         public:
             friend class EditorImageBasedLightComponent;
 
-            AZ_CLASS_ALLOCATOR(ImageBasedLightComponentController, SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR(ImageBasedLightComponentController, SystemAllocator);
             AZ_RTTI(AZ::Render::ImageBasedLightComponentController, "{73DBD008-4E77-471C-B7DE-F2217A256FE2}");
 
             static void Reflect(ReflectContext* context);

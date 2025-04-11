@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/Image/StreamingImageController.h>
 
 #include <Atom/RPI.Reflect/Image/StreamingImagePoolAsset.h>
@@ -36,14 +37,16 @@ namespace AZ
         //! Users won't need to interact directly with pools. If a streaming image is instantiated which references
         //! the pool (by asset id), the pool is automatically brought up to accommodate the request. Likewise, if a pool
         //! is no longer referenced by a streaming image, it is shut down.
-        class StreamingImagePool final
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+        class ATOM_RPI_PUBLIC_API StreamingImagePool final
             : public Data::InstanceData
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             friend class StreamingImage;
             friend class ImageSystem;
         public:
             AZ_INSTANCE_DATA(StreamingImagePool, "{2F87FE52-4D20-49CA-9418-E544FB450B81}");
-            AZ_CLASS_ALLOCATOR(StreamingImagePool, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(StreamingImagePool, AZ::SystemAllocator);
 
             //! Instantiates or returns an existing runtime streaming image pool using its paired asset.
             //! @param streamingImagePoolAsset The asset used to instantiate an instance of the streaming image pool.
@@ -81,8 +84,8 @@ namespace AZ
             StreamingImagePool() = default;
 
             // Standard init path from asset data.
-            static Data::Instance<StreamingImagePool> CreateInternal(RHI::Device& device, StreamingImagePoolAsset& streamingImagePoolAsset);
-            RHI::ResultCode Init(RHI::Device& device, StreamingImagePoolAsset& poolAsset);
+            static Data::Instance<StreamingImagePool> CreateInternal(StreamingImagePoolAsset& streamingImagePoolAsset);
+            RHI::ResultCode Init(StreamingImagePoolAsset& poolAsset);
 
             // Updates the streaming controller (ticked by the system component).
             void Update();
@@ -98,9 +101,6 @@ namespace AZ
 
             // The controller used to manage streaming events on the pool.
             AZStd::unique_ptr<StreamingImageController> m_controller;
-
-            // The streamable image count
-            AZStd::atomic_uint m_streamableImageCount = 0;
         };
     }
 }

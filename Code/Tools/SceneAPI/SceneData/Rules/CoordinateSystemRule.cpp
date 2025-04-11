@@ -17,7 +17,7 @@
 
 namespace AZ::SceneAPI::SceneData
 {
-    AZ_CLASS_ALLOCATOR_IMPL(CoordinateSystemRule, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(CoordinateSystemRule, AZ::SystemAllocator)
 
     CoordinateSystemRule::CoordinateSystemRule()
         : m_targetCoordinateSystem(ZUpPositiveYForward)
@@ -168,14 +168,14 @@ namespace AZ::SceneAPI::SceneData
     bool CoordinateSystemRule::ConvertLegacyCoordinateSystemRule(AZ::SerializeContext& serializeContext,
         AZ::SerializeContext::DataElementNode& classElement)
     {
-        AZ::SerializeContext::DataElementNode* ruleContainerNode = classElement.FindSubElement(AZ_CRC("rules", 0x899a993c));
+        AZ::SerializeContext::DataElementNode* ruleContainerNode = classElement.FindSubElement(AZ_CRC_CE("rules"));
         if (!ruleContainerNode)
         {
             AZ_TracePrintf(AZ::SceneAPI::Utilities::ErrorWindow, "Can't find rule container.\n");
             return false;
         }
 
-        AZ::SerializeContext::DataElementNode* rulesNode = ruleContainerNode->FindSubElement(AZ_CRC("rules", 0x899a993c));
+        AZ::SerializeContext::DataElementNode* rulesNode = ruleContainerNode->FindSubElement(AZ_CRC_CE("rules"));
         if (!rulesNode)
         {
             AZ_TracePrintf(AZ::SceneAPI::Utilities::ErrorWindow, "Can't find rules within rule container.\n");
@@ -195,7 +195,7 @@ namespace AZ::SceneAPI::SceneData
                 if (currentRuleNode.GetId() == oldCoordSysRuleId)
                 {
                     int targetCoordinateSystem = 0;
-                    currentRuleNode.FindSubElementAndGetData(AZ_CRC("targetCoordinateSystem"), targetCoordinateSystem);
+                    currentRuleNode.FindSubElementAndGetData(AZ_CRC_CE("targetCoordinateSystem"), targetCoordinateSystem);
 
                     AZStd::shared_ptr<CoordinateSystemRule> coordSysRule = AZStd::make_shared<CoordinateSystemRule>();
                     coordSysRule->SetTargetCoordinateSystem(static_cast<AZ::SceneAPI::DataTypes::ICoordinateSystemRule::CoordinateSystem>(targetCoordinateSystem));

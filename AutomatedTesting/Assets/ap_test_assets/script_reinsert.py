@@ -59,7 +59,7 @@ def on_update_manifest(args):
             {
                 "$type": "{07B356B7-3635-40B5-878A-FAC4EFD5AD86} MeshGroup",
                 "name": "fake",
-                "nodeSelectionList": { "selectedNodes": ["fake_node"] }
+                "nodeSelectionList": { "selectedNodes": ["RootNode"] }
             }
         ]
     }"""

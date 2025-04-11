@@ -70,7 +70,7 @@ namespace GraphCanvas
         , public AZ::SystemTickBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(ParticleGraphicsItem, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ParticleGraphicsItem, AZ::SystemAllocator);
 
         ParticleGraphicsItem(const ParticleConfiguration& particleConfiguration);
         ~ParticleGraphicsItem();

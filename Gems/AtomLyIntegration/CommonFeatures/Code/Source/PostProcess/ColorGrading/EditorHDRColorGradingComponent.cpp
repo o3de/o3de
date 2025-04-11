@@ -146,11 +146,11 @@ namespace AZ
 
                         ->ClassElement(AZ::Edit::ClassElements::Group, "Channel Mixing")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->DataElement(AZ::Edit::UIHandlers::Slider, &HDRColorGradingComponentConfig::m_channelMixingRed, "Channel Mixing Red", "Channel Mixing Red Value")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &HDRColorGradingComponentConfig::m_channelMixingRed, "Channel Mixing Red", "Channel Mixing Red Value")
                             ->Attribute(Edit::Attributes::Min, 0.0f)
-                        ->DataElement(AZ::Edit::UIHandlers::Slider, &HDRColorGradingComponentConfig::m_channelMixingGreen, "Channel Mixing Green", "Channel Mixing Green Value")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &HDRColorGradingComponentConfig::m_channelMixingGreen, "Channel Mixing Green", "Channel Mixing Green Value")
                             ->Attribute(Edit::Attributes::Min, 0.0f)
-                        ->DataElement(AZ::Edit::UIHandlers::Slider, &HDRColorGradingComponentConfig::m_channelMixingBlue, "Channel Mixing Blue", "Channel Mixing Blue Value")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &HDRColorGradingComponentConfig::m_channelMixingBlue, "Channel Mixing Blue", "Channel Mixing Blue Value")
                             ->Attribute(Edit::Attributes::Min, 0.0f)
 
                         ->ClassElement(AZ::Edit::ClassElements::Group, "Shadow Midtones Highlights")
@@ -273,20 +273,26 @@ namespace AZ
             AzFramework::StringFunc::Path::GetFolderPath(resolvedOutputFilePath, lutGenerationCacheFolder);
             AZ::IO::SystemFile::CreateDir(lutGenerationCacheFolder.c_str());
 
-            AZ::Render::FrameCaptureId frameCaptureId = AZ::Render::InvalidFrameCaptureId;
+            AZ::Render::FrameCaptureOutcome captureOutcome;
             AZ::Render::FrameCaptureRequestBus::BroadcastResult(
-                frameCaptureId,
+                captureOutcome,
                 &AZ::Render::FrameCaptureRequestBus::Events::CapturePassAttachment,
+                m_currentTiffFilePath,
                 LutGenerationPassHierarchy,
                 AZStd::string(LutAttachment),
-                m_currentTiffFilePath,
                 AZ::RPI::PassAttachmentReadbackOption::Output);
 
-            if (frameCaptureId != AZ::Render::InvalidFrameCaptureId)
+            if (captureOutcome.IsSuccess())
             {
-                AZ::Render::FrameCaptureNotificationBus::Handler::BusConnect(frameCaptureId);
+                AZ::Render::FrameCaptureNotificationBus::Handler::BusConnect(captureOutcome.GetValue());
                 AZ::TickBus::Handler::BusDisconnect();
             }
+
+            AZ_Error(
+                "EditorHDRColorGradingComponent",
+                captureOutcome.IsSuccess(),
+                "Frame capture initialization failed. %s",
+                captureOutcome.GetError().m_errorMessage.c_str());
         }
 
         void EditorHDRColorGradingComponent::OnFrameCaptureFinished([[maybe_unused]] AZ::Render::FrameCaptureResult result, [[maybe_unused]]const AZStd::string& info)
@@ -317,9 +323,7 @@ namespace AZ
             m_controller.OnConfigChanged();
 
             m_generatedLutAbsolutePath = resolvedOutputFilePath + AZStd::string(".azasset");
-            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
-                &AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh,
-                AzToolsFramework::PropertyModificationRefreshLevel::Refresh_EntireTree);
+            InvalidatePropertyDisplay(AzToolsFramework::Refresh_EntireTree);
 
             EditorHDRColorGradingNotificationBus::Event(GetEntityId(), &EditorHDRColorGradingNotificationBus::Handler::OnGenerateLutCompleted, m_generatedLutAbsolutePath);
         }

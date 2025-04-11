@@ -69,7 +69,7 @@ def DistanceBetweenFilterOverrides_InstancesPlantAtSpecifiedRadius():
 
     # 2) Create a new entity with required vegetation area components
     spawner_center_point = math.Vector3(520.0, 520.0, 32.0)
-    cube_asset_path = os.path.join("testdata", "multi-mat_fbx", "multi-mat_1m_cube.azmodel")
+    cube_asset_path = os.path.join("testdata", "multi-mat_fbx", "multi-mat_1m_cube.fbx.azmodel")
     cube_prefab = dynveg.create_temp_mesh_prefab(cube_asset_path, "DistanceBetween_1m_cube2")[0]
     spawner_entity = dynveg.create_temp_prefab_vegetation_area("Instance Spawner", spawner_center_point, 16.0, 16.0, 16.0,
                                                                cube_prefab)

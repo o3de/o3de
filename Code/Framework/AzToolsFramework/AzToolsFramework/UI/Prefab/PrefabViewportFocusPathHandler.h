@@ -10,6 +10,7 @@
 
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 
+#include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
 #include <AzToolsFramework/Prefab/PrefabFocusNotificationBus.h>
 
 #include <AzQtComponents/Components/Widgets/BreadCrumbs.h>
@@ -21,38 +22,11 @@ namespace AzToolsFramework::Prefab
 {
     class PrefabFocusPublicInterface;
 
-    // Handler for the Prefab Focus Path widget used with the legacy Action Manager
-    class PrefabViewportFocusPathHandler
-        : public PrefabFocusNotificationBus::Handler
-        , private QObject
-    {
-    public:
-        PrefabViewportFocusPathHandler();
-        ~PrefabViewportFocusPathHandler();
-
-        void Initialize(AzQtComponents::BreadCrumbs* breadcrumbsWidget, QToolButton* backButton);
-
-        // PrefabFocusNotificationBus overrides ...
-        void OnPrefabFocusChanged(
-            [[maybe_unused]] AZ::EntityId previousContainerEntityId, [[maybe_unused]] AZ::EntityId newContainerEntityId) override;
-        void OnPrefabFocusRefreshed() override;
-
-    private:
-        void Refresh();
-
-        AzQtComponents::BreadCrumbs* m_breadcrumbsWidget = nullptr;
-        QToolButton* m_backButton = nullptr;
-
-        AzFramework::EntityContextId m_editorEntityContextId = AzFramework::EntityContextId::CreateNull();
-
-        PrefabFocusPublicInterface* m_prefabFocusPublicInterface = nullptr;
-    };
-
-    // Prefab Focus Path widget for use with the new Action Manager
-    
+    // Displays the Prefab Path to the currently focused prefab file.
     class PrefabFocusPathWidget
         : public AzQtComponents::BreadCrumbs
         , private PrefabFocusNotificationBus::Handler
+        , private ViewportEditorModeNotificationsBus::Handler
     {
     public:
         PrefabFocusPathWidget();
@@ -63,6 +37,10 @@ namespace AzToolsFramework::Prefab
         void OnPrefabFocusRefreshed() override;
 
     private:
+        // ViewportEditorModeNotificationsBus overrides ...
+        void OnEditorModeActivated(const ViewportEditorModesInterface& editorModeState, ViewportEditorMode mode) override;
+        void OnEditorModeDeactivated(const ViewportEditorModesInterface& editorModeState, ViewportEditorMode mode) override;
+
         void Refresh();
 
         AzFramework::EntityContextId m_editorEntityContextId = AzFramework::EntityContextId::CreateNull();

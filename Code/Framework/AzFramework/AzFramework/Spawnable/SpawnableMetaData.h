@@ -49,7 +49,7 @@ namespace AzFramework
             ArraySize
         };
 
-        AZ_TYPE_INFO(AZ::SpawnableMetaData, "{3832FA08-B10B-49AF-A81E-8E2FC1FF98B1}");
+        AZ_TYPE_INFO(SpawnableMetaData, "{3832FA08-B10B-49AF-A81E-8E2FC1FF98B1}");
 
         SpawnableMetaData() = default;
         // This constructor exists only so externally constructed tables can be provided by tools.

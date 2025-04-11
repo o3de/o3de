@@ -11,16 +11,23 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Math/Color.h>
 #include <Atom/Feature/CoreLights/PhotometricValue.h>
+#include <Atom/Feature/LightingChannel/LightingChannelConfiguration.h>
 #include <AtomLyIntegration/CommonFeatures/CoreLights/CoreLightsConstants.h>
 
 namespace AZ
 {
     namespace Render
     {
+        namespace DirectionalLightConstants
+        {
+            static const float MIN_CASCADE_FAR_DEPTH = 0.01f;
+        }
+
         struct DirectionalLightComponentConfig final
             : public ComponentConfig
         {
-            AZ_RTTI(DirectionalLightConfiguration, "EB01B835-F9FE-4FF0-BDC4-455462BFE769", ComponentConfig);
+            AZ_CLASS_ALLOCATOR(DirectionalLightComponentConfig, SystemAllocator)
+            AZ_RTTI(DirectionalLightComponentConfig, "EB01B835-F9FE-4FF0-BDC4-455462BFE769", ComponentConfig);
             static void Reflect(ReflectContext* context);
 
             // The following functions provide information to an EditContext...
@@ -55,6 +62,9 @@ namespace AZ
 
             //! Far depth clips for shadows.
             float m_shadowFarClipDistance = 100.f;
+
+            //! Whether this light enables shadow
+            bool m_shadowEnabled = true;
 
             //! Width/Height of shadowmap images.
             ShadowmapSize m_shadowmapSize = ShadowmapSize::Size1024;
@@ -132,12 +142,16 @@ namespace AZ
             bool m_affectsGI = true;
             float m_affectsGIFactor = 1.0f;
 
+            // Lighting channel
+            AZ::Render::LightingChannelConfiguration m_lightingChannelConfig;
             bool IsSplitManual() const;
             bool IsSplitAutomatic() const;
+            bool IsShadowDisabled() const;
             bool IsCascadeCorrectionDisabled() const;
             bool IsShadowFilteringDisabled() const;
             bool IsShadowPcfDisabled() const;
             bool IsEsmDisabled() const;
+            AZ::Crc32 UpdateCascadeFarDepths();
         };
     } // namespace Render
 } // namespace AZ

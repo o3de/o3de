@@ -11,10 +11,11 @@
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
 #include <AzFramework/Spawnable/Script/SpawnableScriptAssetRef.h>
 #include <AzFramework/Spawnable/Script/SpawnableScriptMediator.h>
-#include <Include/ScriptCanvas/Libraries/Spawning/CreateSpawnTicketNodeable.generated.h>
 #include <ScriptCanvas/CodeGen/NodeableCodegen.h>
 #include <ScriptCanvas/Core/Node.h>
 #include <ScriptCanvas/Core/Nodeable.h>
+
+#include <Include/ScriptCanvas/Libraries/Spawning/CreateSpawnTicketNodeable.generated.h>
 
 namespace ScriptCanvas::Nodeables::Spawning
 {
@@ -23,6 +24,7 @@ namespace ScriptCanvas::Nodeables::Spawning
     {
         SCRIPTCANVAS_NODE(CreateSpawnTicketNodeable);
     public:
+        AZ_CLASS_ALLOCATOR(CreateSpawnTicketNodeable, AZ::SystemAllocator)
         CreateSpawnTicketNodeable() = default;
         CreateSpawnTicketNodeable(const CreateSpawnTicketNodeable& rhs);
         CreateSpawnTicketNodeable& operator=(const CreateSpawnTicketNodeable& rhs);

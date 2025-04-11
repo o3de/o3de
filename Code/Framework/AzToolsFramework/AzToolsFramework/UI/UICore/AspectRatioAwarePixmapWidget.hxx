@@ -22,7 +22,7 @@ namespace AzToolsFramework
     class AspectRatioAwarePixmapWidget : public QWidget
     {
     public:
-        AZ_CLASS_ALLOCATOR(AspectRatioAwarePixmapWidget, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AspectRatioAwarePixmapWidget, AZ::SystemAllocator);
 
         explicit AspectRatioAwarePixmapWidget(QWidget* parent = 0);
 

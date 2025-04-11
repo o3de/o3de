@@ -13,6 +13,7 @@
 #include <AzCore/Module/Environment.h>
 #include <AzCore/Name/NameDictionary.h>
 #include <AzCore/UnitTest/TestTypes.h>
+#include <Tests/DLLTestVirtualClass.h>
 
 using namespace AZ;
 
@@ -21,12 +22,12 @@ namespace UnitTest
 #if !AZ_UNIT_TEST_SKIP_DLL_TEST
 
     class DLL
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             AZ::NameDictionary::Create();
         }
@@ -35,14 +36,14 @@ namespace UnitTest
         {
             AZ::NameDictionary::Destroy();
 
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         void LoadModule()
         {
             m_handle = DynamicModuleHandle::Create("AzCoreTestDLL");
-            bool isLoaded = m_handle->Load(true);
-            ASSERT_TRUE(isLoaded) << "Could not load required test module: " << m_handle->GetFilename().c_str(); // failed to load the DLL, please check the output paths
+            bool isLoaded = m_handle->Load(AZ::DynamicModuleHandle::LoadFlags::InitFuncRequired);
+            ASSERT_TRUE(isLoaded) << "Could not load required test module: " << m_handle->GetFilename(); // failed to load the DLL, please check the output paths
 
             auto createModule = m_handle->GetFunction<CreateModuleClassFunction>(CreateModuleClassFunctionName);
             // if this fails, we cannot continue as we will just nullptr exception
@@ -80,7 +81,11 @@ namespace UnitTest
         }
     };
 
+#if AZ_TRAIT_DISABLE_FAILED_DLL_TESTS
+    TEST_F(DLL, DISABLED_CrossModuleBusHandler)
+#else
     TEST_F(DLL, CrossModuleBusHandler)
+#endif // AZ_TRAIT DISABLE_FAILED_DLL_TESTS
     {
         TransformHandler transformHandler;
 
@@ -106,6 +111,7 @@ namespace UnitTest
 
         UnloadModule();
     }
+
 #if AZ_TRAIT_DISABLE_FAILED_DLL_TESTS
     TEST_F(DLL, DISABLED_CreateVariableFromModuleAndMain)
 #else
@@ -191,7 +197,7 @@ namespace UnitTest
     TEST_F(DLL, LoadFailure)
     {
         auto handle = DynamicModuleHandle::Create("Not_a_DLL");
-        bool isLoaded = handle->Load(true);
+        bool isLoaded = handle->Load(AZ::DynamicModuleHandle::LoadFlags::InitFuncRequired);
         EXPECT_FALSE(isLoaded);
 
         bool isUnloaded = handle->Unload();
@@ -201,12 +207,12 @@ namespace UnitTest
     TEST_F(DLL, LoadModuleTwice)
     {
         auto handle = DynamicModuleHandle::Create("AzCoreTestDLL");
-        bool isLoaded = handle->Load(true);
+        bool isLoaded = handle->Load(AZ::DynamicModuleHandle::LoadFlags::InitFuncRequired);
         EXPECT_TRUE(isLoaded);
         EXPECT_TRUE(handle->IsLoaded());
 
         auto secondHandle = DynamicModuleHandle::Create("AzCoreTestDLL");
-        isLoaded = secondHandle->Load(true);
+        isLoaded = secondHandle->Load(AZ::DynamicModuleHandle::LoadFlags::InitFuncRequired);
         EXPECT_TRUE(isLoaded);
         EXPECT_TRUE(handle->IsLoaded());
         EXPECT_TRUE(secondHandle->IsLoaded());
@@ -220,6 +226,54 @@ namespace UnitTest
         EXPECT_TRUE(isUnloaded);
         EXPECT_FALSE(handle->IsLoaded());
         EXPECT_FALSE(secondHandle->IsLoaded());
+    }
+
+    TEST_F(DLL, NoLoadModule)
+    {
+        auto handle = DynamicModuleHandle::Create("AzCoreTestDLL");
+        bool isLoaded = handle->Load(AZ::DynamicModuleHandle::LoadFlags::InitFuncRequired | AZ::DynamicModuleHandle::LoadFlags::NoLoad);
+        EXPECT_FALSE(isLoaded);
+        EXPECT_FALSE(handle->IsLoaded());
+    }
+
+    TEST_F(DLL, NoLoadLoadedModule)
+    {
+        auto handle = DynamicModuleHandle::Create("AzCoreTestDLL");
+        bool isLoaded = handle->Load(AZ::DynamicModuleHandle::LoadFlags::InitFuncRequired);
+        EXPECT_TRUE(isLoaded);
+        EXPECT_TRUE(handle->IsLoaded());
+
+        auto secondHandle = DynamicModuleHandle::Create("AzCoreTestDLL");
+        isLoaded = secondHandle->Load(AZ::DynamicModuleHandle::LoadFlags::InitFuncRequired | AZ::DynamicModuleHandle::LoadFlags::NoLoad);
+        EXPECT_TRUE(isLoaded);
+        EXPECT_TRUE(handle->IsLoaded());
+        EXPECT_TRUE(secondHandle->IsLoaded());
+
+        bool isUnloaded = handle->Unload();
+        EXPECT_TRUE(isUnloaded);
+        EXPECT_FALSE(handle->IsLoaded());
+        EXPECT_TRUE(secondHandle->IsLoaded());
+
+        {
+            // Check that the Module wasn't unloaded by the OS when unloading one DynamicModuleHandle (the OS should have 1 ref count left).
+            isLoaded = handle->Load(AZ::DynamicModuleHandle::LoadFlags::InitFuncRequired | AZ::DynamicModuleHandle::LoadFlags::NoLoad);
+            EXPECT_TRUE(isLoaded);
+            EXPECT_TRUE(handle->IsLoaded());
+            handle->Unload();
+        }
+
+        isUnloaded = secondHandle->Unload();
+        EXPECT_TRUE(isUnloaded);
+        EXPECT_FALSE(handle->IsLoaded());
+        EXPECT_FALSE(secondHandle->IsLoaded());
+
+        {
+            // Check that the Module was unloaded by the OS.
+            isLoaded = handle->Load(AZ::DynamicModuleHandle::LoadFlags::InitFuncRequired | AZ::DynamicModuleHandle::LoadFlags::NoLoad);
+            EXPECT_FALSE(isLoaded);
+            EXPECT_FALSE(handle->IsLoaded());
+            handle->Unload();
+        }
     }
 #endif // !AZ_UNIT_TEST_SKIP_DLL_TEST
 }

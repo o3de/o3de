@@ -9,7 +9,7 @@
 #include <TestImpactFramework/TestImpactUtils.h>
 #include <TestImpactFramework/Python/TestImpactPythonRuntime.h>
 
-#include <TestImpactRuntime.h>
+#include <TestImpactRuntimeUtils.h>
 #include <Artifact/Static/TestImpactPythonTestTargetMeta.h>
 #include <Artifact/Factory/TestImpactPythonTestTargetMetaMapFactory.h>
 #include <Dependency/TestImpactPythonTestSelectorAndPrioritizer.h>
@@ -25,10 +25,14 @@
 
 namespace TestImpact
 {
-    PythonTestTargetMetaMap ReadPythonTestTargetMetaMapFile(SuiteType suiteFilter, const RepoPath& testTargetMetaConfigFile, const AZStd::string& buildType)
+    PythonTestTargetMetaMap ReadPythonTestTargetMetaMapFile(
+        const SuiteSet& suiteSet,
+        const SuiteLabelExcludeSet& suiteLabelExcludeSet,
+        const RepoPath& testTargetMetaConfigFile,
+        const AZStd::string& buildType)
     {
         const auto masterTestListData = ReadFileContents<RuntimeException>(testTargetMetaConfigFile);
-        auto testTargetMetaMap = PythonTestTargetMetaMapFactory(masterTestListData, suiteFilter);
+        auto testTargetMetaMap = PythonTestTargetMetaMapFactory(masterTestListData, suiteSet, suiteLabelExcludeSet);
         for (auto& [name, meta] : testTargetMetaMap)
         {
             meta.m_scriptMeta.m_testCommand = AZStd::regex_replace(meta.m_scriptMeta.m_testCommand, AZStd::regex("\\$\\<CONFIG\\>"), buildType);
@@ -42,7 +46,8 @@ namespace TestImpact
         const AZStd::optional<RepoPath>& dataFile,
         [[maybe_unused]] const AZStd::optional<RepoPath>& previousRunDataFile,
         const AZStd::vector<ExcludedTarget>& testsToExclude,
-        SuiteType suiteFilter,
+        const SuiteSet& suiteSet,
+        const SuiteLabelExcludeSet& suiteLabelExcludeSet,
         Policy::ExecutionFailure executionFailurePolicy,
         Policy::FailedTestCoverage failedTestCoveragePolicy,
         Policy::TestFailure testFailurePolicy,
@@ -50,7 +55,8 @@ namespace TestImpact
         Policy::TargetOutputCapture targetOutputCapture,
         Policy::TestRunner testRunnerPolicy)
         : m_config(AZStd::move(config))
-        , m_suiteFilter(suiteFilter)
+        , m_suiteSet(suiteSet)
+        , m_suiteLabelExcludeSet(suiteLabelExcludeSet)
         , m_executionFailurePolicy(executionFailurePolicy)
         , m_failedTestCoveragePolicy(failedTestCoveragePolicy)
         , m_testFailurePolicy(testFailurePolicy)
@@ -62,13 +68,14 @@ namespace TestImpact
         auto targetDescriptors = ReadTargetDescriptorFiles(m_config.m_commonConfig.m_buildTargetDescriptor);
         auto buildTargets = CompilePythonTargetLists(
             AZStd::move(targetDescriptors),
-            ReadPythonTestTargetMetaMapFile(suiteFilter, m_config.m_commonConfig.m_testTargetMeta.m_metaFile, m_config.m_commonConfig.m_meta.m_buildConfig));
+            ReadPythonTestTargetMetaMapFile(
+                m_suiteSet, m_suiteLabelExcludeSet, m_config.m_commonConfig.m_testTargetMeta.m_metaFile, m_config.m_commonConfig.m_meta.m_buildConfig));
         auto&& [productionTargets, testTargets] = buildTargets;
-        m_buildTargets = AZStd::make_unique<BuildTargetList<ProductionTarget, TestTarget>>(
+        m_buildTargets = AZStd::make_unique<BuildTargetList<PythonProductionTarget, PythonTestTarget>>(
             AZStd::move(testTargets), AZStd::move(productionTargets));
 
         // Construct the dynamic dependency map from the build targets
-        m_dynamicDependencyMap = AZStd::make_unique<DynamicDependencyMap<ProductionTarget, TestTarget>>(m_buildTargets.get());
+        m_dynamicDependencyMap = AZStd::make_unique<DynamicDependencyMap<PythonProductionTarget, PythonTestTarget>>(m_buildTargets.get());
 
         // Construct the test selector and prioritizer from the dependency graph data (NOTE: currently not implemented)
         m_testSelectorAndPrioritizer = AZStd::make_unique<PythonTestSelectorAndPrioritizer>(*m_dynamicDependencyMap.get());
@@ -102,7 +109,7 @@ namespace TestImpact
             }
             else
             {
-                m_sparTiaFile = m_config.m_workspace.m_active.m_root / RepoPath(SuiteTypeAsString(m_suiteFilter)) /
+                m_sparTiaFile = m_config.m_workspace.m_active.m_root / RepoPath(SuiteSetAsString(m_suiteSet)) /
                     m_config.m_workspace.m_active.m_sparTiaFile;
             }
 
@@ -140,8 +147,8 @@ namespace TestImpact
             AZ_Printf(
                 LogCallSite,
                 AZStd::string::format(
-                    "No test impact analysis data found for suite '%s' at %s\n",
-                    SuiteTypeAsString(m_suiteFilter).c_str(),
+                    "No test impact analysis data found for suites '%s' at %s\n",
+                    SuiteSetAsString(m_suiteSet).c_str(),
                     m_sparTiaFile.c_str())
                     .c_str());
         }
@@ -152,14 +159,14 @@ namespace TestImpact
     AZStd::pair<AZStd::vector<const PythonTestTarget*>, AZStd::vector<const PythonTestTarget*>> PythonRuntime::SelectCoveringTestTargets(
         const ChangeList& changeList, Policy::TestPrioritization testPrioritizationPolicy)
     {
-        AZStd::vector<const TestTarget*> discardedTestTargets;
+        AZStd::vector<const PythonTestTarget*> discardedTestTargets;
 
         // Select and prioritize the test targets pertinent to this change list
         const auto changeDependencyList = m_dynamicDependencyMap->ApplyAndResoveChangeList(changeList, m_integrationFailurePolicy);
         const auto selectedTestTargets = m_testSelectorAndPrioritizer->SelectTestTargets(changeDependencyList, testPrioritizationPolicy);
 
         // Populate a set with the selected test targets so that we can infer the discarded test target not selected for this change list
-        const AZStd::unordered_set<const TestTarget*> selectedTestTargetSet(selectedTestTargets.begin(), selectedTestTargets.end());
+        const AZStd::unordered_set<const PythonTestTarget*> selectedTestTargetSet(selectedTestTargets.begin(), selectedTestTargets.end());
 
         // The test targets in the main list not in the selected test target set are the test targets not selected for this change list
         for (const auto& testTarget : m_dynamicDependencyMap->GetBuildTargetList()->GetTestTargetList().GetTargets())
@@ -188,7 +195,6 @@ namespace TestImpact
         policyState.m_integrityFailurePolicy = m_integrationFailurePolicy;
         policyState.m_targetOutputCapture = m_targetOutputCapture;
         policyState.m_testFailurePolicy = m_testFailurePolicy;
-        policyState.m_testShardingPolicy = Policy::TestSharding::Never;
 
         return policyState;
     }
@@ -209,84 +215,109 @@ namespace TestImpact
     {
         return { GeneratePolicyStateBase(), testPrioritizationPolicy, dynamicDependencyMapPolicy };
     }
-    Client::RegularSequenceReport PythonRuntime::RegularTestSequence(
-        [[maybe_unused]] AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
-        [[maybe_unused]] AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-        [[maybe_unused]] AZStd::optional<TestSequenceStartCallback> testSequenceStartCallback,
-        [[maybe_unused]] AZStd::optional<TestSequenceCompleteCallback<Client::RegularSequenceReport>> testSequenceEndCallback,
-        [[maybe_unused]] AZStd::optional<TestRunCompleteCallback> testCompleteCallback)
-    {
-        return Client::RegularSequenceReport(
-            1,
-            AZStd::nullopt,
-            AZStd::nullopt,
-            SequencePolicyState{},
-            m_suiteFilter,
-            Client::TestRunSelection(),
-            Client::TestRunReport(
-                TestSequenceResult::Success,
-                AZStd::chrono::steady_clock::time_point(),
-                AZStd::chrono::milliseconds{ 0 },
-                {},
-                {},
-                {},
-                {},
-                {}));
-    }
 
-    Client::ImpactAnalysisSequenceReport PythonRuntime::ImpactAnalysisTestSequence(
-        [[maybe_unused]] const ChangeList& changeList,
-        [[maybe_unused]] Policy::TestPrioritization testPrioritizationPolicy,
-        [[maybe_unused]] Policy::DynamicDependencyMap dynamicDependencyMapPolicy,
-        [[maybe_unused]] AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
-        [[maybe_unused]] AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-        [[maybe_unused]] AZStd::optional<ImpactAnalysisTestSequenceStartCallback> testSequenceStartCallback,
-        [[maybe_unused]] AZStd::optional<TestSequenceCompleteCallback<Client::ImpactAnalysisSequenceReport>> testSequenceEndCallback,
-        [[maybe_unused]] AZStd::optional<TestRunCompleteCallback> testCompleteCallback)
+    Client::RegularSequenceReport PythonRuntime::RegularTestSequence(
+        AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
+        AZStd::optional<AZStd::chrono::milliseconds> globalTimeout)
     {
         const Timer sequenceTimer;
+        AZStd::vector<const PythonTestTarget*> includedTestTargets;
+        AZStd::vector<const PythonTestTarget*> excludedTestTargets;
 
-        AZStd::vector<const TestTarget*> draftedTestTargets;
-        if (!HasImpactAnalysisData())
+        // Separate the test targets into those that are excluded by either the test filter or exclusion list and those that are not
+        for (const auto& testTarget : m_dynamicDependencyMap->GetBuildTargetList()->GetTestTargetList().GetTargets())
         {
-            const auto notCovered = m_dynamicDependencyMap->GetNotCoveringTests();
-            for (const auto& testTarget : notCovered)
+            if (m_testTargetExcludeList->IsTestTargetFullyExcluded(&testTarget))
             {
-                if (!m_testTargetExcludeList->IsTestTargetFullyExcluded(testTarget))
-                {
-                    draftedTestTargets.push_back(testTarget);
-                }
+                excludedTestTargets.push_back(&testTarget);
+            }
+            else
+            {
+                includedTestTargets.push_back(&testTarget);
             }
         }
 
+        // Extract the client facing representation of selected test targets
+        const Client::TestRunSelection selectedTests(
+            ExtractTestTargetNames(includedTestTargets), ExtractTestTargetNames(excludedTestTargets));
+
+        // Inform the client that the sequence is about to start
+        RegularTestSequenceNotificationBus::Broadcast(
+            &RegularTestSequenceNotificationBus::Events::OnTestSequenceStart, m_suiteSet, m_suiteLabelExcludeSet, selectedTests);
+
+        // Run the test targets and collect the test run results
+        TestEngineNotificationHandler<PythonTestTarget> handler(includedTestTargets.size());
+        const Timer testRunTimer;
+        const auto [result, testJobs] = m_testEngine->RegularRun(
+            includedTestTargets,
+            m_executionFailurePolicy,
+            m_testFailurePolicy,
+            m_targetOutputCapture,
+            testTargetTimeout,
+            globalTimeout);
+        const auto testRunDuration = testRunTimer.GetElapsedMs();
+
+        // Generate the sequence report for the client
+        const auto sequenceReport = Client::RegularSequenceReport(
+            1,
+            testTargetTimeout,
+            globalTimeout,
+            GenerateSequencePolicyState(),
+            m_suiteSet,
+            m_suiteLabelExcludeSet,
+            selectedTests,
+            GenerateTestRunReport(result, testRunTimer.GetStartTimePointRelative(sequenceTimer), testRunDuration, testJobs));
+
+        // Inform the client that the sequence has ended
+        RegularTestSequenceNotificationBus::Broadcast(
+            &RegularTestSequenceNotificationBus::Events::OnTestSequenceComplete, sequenceReport);
+
+        return sequenceReport;
+    }
+
+    Client::ImpactAnalysisSequenceReport PythonRuntime::ImpactAnalysisTestSequence(
+        const ChangeList& changeList,
+        Policy::TestPrioritization testPrioritizationPolicy,
+        Policy::DynamicDependencyMap dynamicDependencyMapPolicy,
+        AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
+        AZStd::optional<AZStd::chrono::milliseconds> globalTimeout)
+    {
+        const Timer sequenceTimer;
+
         // The test targets that were selected for the change list by the dynamic dependency map and the test targets that were not
         const auto [selectedTestTargets, discardedTestTargets] = SelectCoveringTestTargets(changeList, testPrioritizationPolicy);
+
+        // Set of selected tests so we can prune from drafted tests to avoid duplicate runs
+        const AZStd::unordered_set<const PythonTestTarget*> selectedTestTargetSet(selectedTestTargets.begin(), selectedTestTargets.end());
+
+        // Unlike native test impact analysis, python test impact analysis can have tests with no coverage so we cannot simply
+        // draft in tests without coverage (i.e. new tests, or tests that have yet to successfully execute in previous runs).
+        // Instead, the python test selector will run all parent test target tests when a new python test is added. What we
+        // should do in future versions (for both native and python) is draft in any previous failing tests. For now, we will
+        // leave the drafted set empty.
+        AZStd::vector<const PythonTestTarget*> draftedTestTargets;
 
         // The subset of selected test targets that are not on the configuration's exclude list and those that are
         const auto [includedSelectedTestTargets, excludedSelectedTestTargets] =
             SelectTestTargetsByExcludeList(*m_testTargetExcludeList, selectedTestTargets);
 
         // Functor for running instrumented test targets
-        const auto instrumentedTestRun = [this, &testTargetTimeout](
-                                             const AZStd::vector<const TestTarget*>& testsTargets,
-                                             TestRunCompleteCallbackHandler<TestTarget>& testRunCompleteHandler,
+        const auto instrumentedTestRun = [&](const AZStd::vector<const PythonTestTarget*>& testsTargets,
                                              AZStd::optional<AZStd::chrono::milliseconds> globalTimeout)
         {
             return m_testEngine->InstrumentedRun(
                 testsTargets,
                 m_executionFailurePolicy,
-                m_integrationFailurePolicy,
                 m_testFailurePolicy,
                 m_targetOutputCapture,
                 testTargetTimeout,
-                globalTimeout,
-                AZStd::ref(testRunCompleteHandler));
+                globalTimeout);
         };
 
         if (dynamicDependencyMapPolicy == Policy::DynamicDependencyMap::Update)
         {
-            AZStd::optional<AZStd::function<void(const AZStd::vector<TestEngineInstrumentedRun<TestTarget, TestCoverage>>& jobs)>>
-                updateCoverage = [this](const AZStd::vector<TestEngineInstrumentedRun<TestTarget, TestCoverage>>& jobs)
+            AZStd::optional<AZStd::function<void(const AZStd::vector<TestEngineInstrumentedRun<PythonTestTarget, TestCoverage>>& jobs)>>
+                updateCoverage = [this](const AZStd::vector<TestEngineInstrumentedRun<PythonTestTarget, TestCoverage>>& jobs)
             {
                 m_hasImpactAnalysisData = UpdateAndSerializeDynamicDependencyMap(
                                               *m_dynamicDependencyMap.get(),
@@ -301,7 +332,8 @@ namespace TestImpact
             return ImpactAnalysisTestSequenceWrapper(
                 1,
                 GenerateImpactAnalysisSequencePolicyState(testPrioritizationPolicy, dynamicDependencyMapPolicy),
-                m_suiteFilter,
+                m_suiteSet,
+                m_suiteLabelExcludeSet,
                 sequenceTimer,
                 instrumentedTestRun,
                 includedSelectedTestTargets,
@@ -310,9 +342,6 @@ namespace TestImpact
                 draftedTestTargets,
                 testTargetTimeout,
                 globalTimeout,
-                testSequenceStartCallback,
-                testSequenceEndCallback,
-                testCompleteCallback,
                 updateCoverage);
         }
         else
@@ -320,7 +349,8 @@ namespace TestImpact
             return ImpactAnalysisTestSequenceWrapper(
                 1,
                 GenerateImpactAnalysisSequencePolicyState(testPrioritizationPolicy, dynamicDependencyMapPolicy),
-                m_suiteFilter,
+                m_suiteSet,
+                m_suiteLabelExcludeSet,
                 sequenceTimer,
                 instrumentedTestRun,
                 includedSelectedTestTargets,
@@ -329,71 +359,183 @@ namespace TestImpact
                 draftedTestTargets,
                 testTargetTimeout,
                 globalTimeout,
-                testSequenceStartCallback,
-                testSequenceEndCallback,
-                testCompleteCallback,
-                AZStd::optional<AZStd::function<void(const AZStd::vector<TestEngineInstrumentedRun<TestTarget, TestCoverage>>& jobs)>>{
+                AZStd::optional<
+                    AZStd::function<void(const AZStd::vector<TestEngineInstrumentedRun<PythonTestTarget, TestCoverage>>& jobs)>>{
                     AZStd::nullopt });
         }
     }
 
     Client::SafeImpactAnalysisSequenceReport PythonRuntime::SafeImpactAnalysisTestSequence(
-        [[maybe_unused]] const ChangeList& changeList,
-        [[maybe_unused]] Policy::TestPrioritization testPrioritizationPolicy,
-        [[maybe_unused]] AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
-        [[maybe_unused]] AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-        [[maybe_unused]] AZStd::optional<SafeImpactAnalysisTestSequenceStartCallback> testSequenceStartCallback,
-        [[maybe_unused]] AZStd::optional<TestSequenceCompleteCallback<Client::SafeImpactAnalysisSequenceReport>> testSequenceEndCallback,
-        [[maybe_unused]] AZStd::optional<TestRunCompleteCallback> testCompleteCallback)
+        const ChangeList& changeList,
+        Policy::TestPrioritization testPrioritizationPolicy,
+        AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
+        AZStd::optional<AZStd::chrono::milliseconds> globalTimeout)
     {
-        return Client::SafeImpactAnalysisSequenceReport(
+        const Timer sequenceTimer;
+        TestRunData<TestEngineInstrumentedRun<PythonTestTarget, TestCoverage>> selectedTestRunData, draftedTestRunData;
+        TestRunData<TestEngineRegularRun<PythonTestTarget>> discardedTestRunData;
+        AZStd::optional<AZStd::chrono::milliseconds> sequenceTimeout = globalTimeout;
+
+        // Draft in the test targets that have no coverage entries in the dynamic dependency map
+        AZStd::vector<const PythonTestTarget*> draftedTestTargets = m_dynamicDependencyMap->GetNotCoveringTests();
+
+        // The test targets that were selected for the change list by the dynamic dependency map and the test targets that were not
+        const auto [selectedTestTargets, discardedTestTargets] = SelectCoveringTestTargets(changeList, testPrioritizationPolicy);
+
+        // The subset of selected test targets that are not on the configuration's exclude list and those that are
+        const auto [includedSelectedTestTargets, excludedSelectedTestTargets] =
+            SelectTestTargetsByExcludeList(*m_testTargetExcludeList, selectedTestTargets);
+
+        // The subset of discarded test targets that are not on the configuration's exclude list and those that are
+        const auto [includedDiscardedTestTargets, excludedDiscardedTestTargets] =
+            SelectTestTargetsByExcludeList(*m_testTargetExcludeList, discardedTestTargets);
+
+        // Extract the client facing representation of selected, discarded and drafted test targets
+        const Client::TestRunSelection selectedTests(
+            ExtractTestTargetNames(includedSelectedTestTargets), ExtractTestTargetNames(excludedSelectedTestTargets));
+        const Client::TestRunSelection discardedTests(
+            ExtractTestTargetNames(includedDiscardedTestTargets), ExtractTestTargetNames(excludedDiscardedTestTargets));
+        const auto draftedTests = ExtractTestTargetNames(draftedTestTargets);
+
+        // Inform the client that the sequence is about to start
+        SafeImpactAnalysisTestSequenceNotificationBus::Broadcast(
+            &SafeImpactAnalysisTestSequenceNotificationBus::Events::OnTestSequenceStart,
+            m_suiteSet,
+            m_suiteLabelExcludeSet,
+            selectedTests,
+            discardedTests,
+            draftedTests);
+
+        // We share the test run complete handler between the selected, discarded and drafted test runs as to present them together as one
+        // continuous test sequence to the client rather than three discrete test runs
+        const size_t totalNumTestRuns =
+            includedSelectedTestTargets.size() + draftedTestTargets.size() + includedDiscardedTestTargets.size();
+
+        // Functor for running instrumented test targets
+        const auto instrumentedTestRun = [&](const AZStd::vector<const PythonTestTarget*>& testsTargets)
+        {
+            return m_testEngine->InstrumentedRun(
+                testsTargets,
+                m_executionFailurePolicy,
+                m_testFailurePolicy,
+                m_targetOutputCapture,
+                testTargetTimeout,
+                sequenceTimeout);
+        };
+
+        // Functor for running uninstrumented test targets
+        const auto regularTestRun = [&](const AZStd::vector<const PythonTestTarget*>& testsTargets)
+        {
+            return m_testEngine->RegularRun(
+                testsTargets,
+                m_executionFailurePolicy,
+                m_testFailurePolicy,
+                m_targetOutputCapture,
+                testTargetTimeout,
+                sequenceTimeout);
+        };
+
+        // Functor for running instrumented test targets
+        const auto gatherTestRunData =
+            [&sequenceTimer](const AZStd::vector<const PythonTestTarget*>& testsTargets, const auto& testRunner, auto& testRunData)
+        {
+            const Timer testRunTimer;
+            testRunData.m_relativeStartTime = testRunTimer.GetStartTimePointRelative(sequenceTimer);
+            auto [result, jobs] = testRunner(testsTargets);
+            testRunData.m_result = result;
+            testRunData.m_jobs = AZStd::move(jobs);
+            testRunData.m_duration = testRunTimer.GetElapsedMs();
+        };
+
+        TestEngineNotificationHandler<PythonTestTarget> testRunCompleteHandler(totalNumTestRuns);
+        if (!includedSelectedTestTargets.empty())
+        {
+            // Run the selected test targets and collect the test run results
+            gatherTestRunData(includedSelectedTestTargets, instrumentedTestRun, selectedTestRunData);
+
+            // Carry the remaining global sequence time over to the discarded test run
+            if (globalTimeout.has_value())
+            {
+                const auto elapsed = selectedTestRunData.m_duration;
+                sequenceTimeout = elapsed < globalTimeout.value() ? globalTimeout.value() - elapsed : AZStd::chrono::milliseconds(0);
+            }
+        }
+
+        if (!includedDiscardedTestTargets.empty())
+        {
+            // Run the discarded test targets and collect the test run results
+            gatherTestRunData(includedDiscardedTestTargets, regularTestRun, discardedTestRunData);
+
+            // Carry the remaining global sequence time over to the drafted test run
+            if (globalTimeout.has_value())
+            {
+                const auto elapsed = selectedTestRunData.m_duration + discardedTestRunData.m_duration;
+                sequenceTimeout = elapsed < globalTimeout.value() ? globalTimeout.value() - elapsed : AZStd::chrono::milliseconds(0);
+            }
+        }
+
+        if (!draftedTestTargets.empty())
+        {
+            // Run the drafted test targets and collect the test run results
+            gatherTestRunData(draftedTestTargets, instrumentedTestRun, draftedTestRunData);
+        }
+
+        auto selectedTestRunReport = GenerateTestRunReport(
+            selectedTestRunData.m_result,
+            selectedTestRunData.m_relativeStartTime,
+            selectedTestRunData.m_duration,
+            selectedTestRunData.m_jobs);
+
+        auto discardedTestRunReport = GenerateTestRunReport(
+            discardedTestRunData.m_result,
+            discardedTestRunData.m_relativeStartTime,
+            discardedTestRunData.m_duration,
+            discardedTestRunData.m_jobs);
+
+        auto draftedTestRunReport = GenerateTestRunReport(
+            draftedTestRunData.m_result,
+            draftedTestRunData.m_relativeStartTime,
+            draftedTestRunData.m_duration,
+            draftedTestRunData.m_jobs);
+
+        // Generate the sequence report for the client
+        const auto sequenceReport = Client::SafeImpactAnalysisSequenceReport(
             1,
-            AZStd::nullopt,
-            AZStd::nullopt,
-            SafeImpactAnalysisSequencePolicyState{},
-            m_suiteFilter,
-            {},
-            {},
-            {},
-            Client::TestRunReport(
-                TestSequenceResult::Success,
-                AZStd::chrono::steady_clock::time_point(),
-                AZStd::chrono::milliseconds{ 0 },
-                {},
-                {},
-                {},
-                {},
-                {}),
-            Client::TestRunReport(
-                TestSequenceResult::Success,
-                AZStd::chrono::steady_clock::time_point(),
-                AZStd::chrono::milliseconds{ 0 },
-                {},
-                {},
-                {},
-                {},
-                {}),
-            Client::TestRunReport(
-                TestSequenceResult::Success,
-                AZStd::chrono::steady_clock::time_point(),
-                AZStd::chrono::milliseconds{ 0 },
-                {},
-                {},
-                {},
-                {},
-                {}));
+            testTargetTimeout,
+            globalTimeout,
+            GenerateSafeImpactAnalysisSequencePolicyState(testPrioritizationPolicy),
+            m_suiteSet,
+            m_suiteLabelExcludeSet,
+            selectedTests,
+            discardedTests,
+            draftedTests,
+            std::move(selectedTestRunReport),
+            std::move(discardedTestRunReport),
+            std::move(draftedTestRunReport));
+
+        // Inform the client that the sequence has ended
+        SafeImpactAnalysisTestSequenceNotificationBus::Broadcast(
+            &SafeImpactAnalysisTestSequenceNotificationBus::Events::OnTestSequenceComplete, sequenceReport);
+
+        m_hasImpactAnalysisData = UpdateAndSerializeDynamicDependencyMap(
+            *m_dynamicDependencyMap.get(),
+            ConcatenateVectors(selectedTestRunData.m_jobs, draftedTestRunData.m_jobs),
+            m_failedTestCoveragePolicy,
+            m_integrationFailurePolicy,
+            m_config.m_commonConfig.m_repo.m_root,
+            m_sparTiaFile)
+            .value_or(m_hasImpactAnalysisData);
+
+        return sequenceReport;
     }
 
     Client::SeedSequenceReport PythonRuntime::SeededTestSequence(
         AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
-        AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-        AZStd::optional<TestSequenceStartCallback> testSequenceStartCallback,
-        AZStd::optional<TestSequenceCompleteCallback<Client::SeedSequenceReport>> testSequenceEndCallback,
-        AZStd::optional<TestRunCompleteCallback> testCompleteCallback)
+        AZStd::optional<AZStd::chrono::milliseconds> globalTimeout)
     {
         const Timer sequenceTimer;
-        AZStd::vector<const TestTarget*> includedTestTargets;
-        AZStd::vector<const TestTarget*> excludedTestTargets;
+        AZStd::vector<const PythonTestTarget*> includedTestTargets;
+        AZStd::vector<const PythonTestTarget*> excludedTestTargets;
 
         // Separate the test targets into those that are excluded by either the test filter or exclusion list and those that are not
         for (const auto& testTarget : m_dynamicDependencyMap->GetBuildTargetList()->GetTestTargetList().GetTargets())
@@ -412,22 +554,19 @@ namespace TestImpact
         Client::TestRunSelection selectedTests(ExtractTestTargetNames(includedTestTargets), ExtractTestTargetNames(excludedTestTargets));
 
         // Inform the client that the sequence is about to start
-        if (testSequenceStartCallback.has_value())
-        {
-            (*testSequenceStartCallback)(m_suiteFilter, selectedTests);
-        }
+        SeedTestSequenceNotificationBus::Broadcast(
+            &SeedTestSequenceNotificationBus::Events::OnTestSequenceStart, m_suiteSet, m_suiteLabelExcludeSet, selectedTests);
 
         // Run the test targets and collect the test run results
+        TestEngineNotificationHandler<PythonTestTarget> handler(includedTestTargets.size());
         const Timer testRunTimer;
         const auto [result, testJobs] = m_testEngine->InstrumentedRun(
             includedTestTargets,
             m_executionFailurePolicy,
-            m_integrationFailurePolicy,
             m_testFailurePolicy,
             m_targetOutputCapture,
             testTargetTimeout,
-            globalTimeout,
-            TestRunCompleteCallbackHandler<TestTarget>(includedTestTargets.size(), testCompleteCallback));
+            globalTimeout); // realtime std callback
         const auto testRunDuration = testRunTimer.GetElapsedMs();
 
         // Generate the sequence report for the client
@@ -436,15 +575,13 @@ namespace TestImpact
             testTargetTimeout,
             globalTimeout,
             GenerateSequencePolicyState(),
-            m_suiteFilter,
+            m_suiteSet,
+            m_suiteLabelExcludeSet,
             selectedTests,
             GenerateTestRunReport(result, testRunTimer.GetStartTimePointRelative(sequenceTimer), testRunDuration, testJobs));
 
         // Inform the client that the sequence has ended
-        if (testSequenceEndCallback.has_value())
-        {
-            (*testSequenceEndCallback)(sequenceReport);
-        }
+        SeedTestSequenceNotificationBus::Broadcast(&SeedTestSequenceNotificationBus::Events::OnTestSequenceComplete, sequenceReport);
 
         ClearDynamicDependencyMapAndRemoveExistingFile();
 

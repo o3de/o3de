@@ -45,24 +45,8 @@ namespace AZ
                 static void Reflect(ReflectContext* context);
 
                 Events::ProcessingResult ImportSkinWeights(AssImpSceneNodeAppendedContext& context);
-                Events::ProcessingResult SetupNamedBoneLinks(AssImpFinalizeSceneContext& context);
 
             protected:
-                struct Pending
-                {
-                    const aiBone* m_bone = nullptr;
-                    AZStd::string m_sanitizedName;
-                    unsigned m_numVertices = 0;
-                    unsigned m_vertOffset = 0;
-                    AZStd::shared_ptr<SceneData::GraphData::SkinWeightData> m_skinWeightData;
-                };
-
-                //! List of skin weights that still need to be filled in. Setting the data for skin weights is
-                //! delayed until after the tree has been fully constructed as bones are linked by name, but until
-                //! the graph has been fully filled in, those names can change which would break the names recorded
-                //! for the skin.
-                AZStd::vector<Pending> m_pendingSkinWeights;
-
                 static const AZStd::string s_skinWeightName;
             };
         } // namespace SceneBuilder

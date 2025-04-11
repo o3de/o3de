@@ -15,7 +15,7 @@
 
 namespace EMotionFX::MotionMatching
 {
-    AZ_CLASS_ALLOCATOR_IMPL(FeatureMatrix, MotionMatchAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(FeatureMatrix, MotionMatchAllocator)
 
     void FeatureMatrix::Clear()
     {

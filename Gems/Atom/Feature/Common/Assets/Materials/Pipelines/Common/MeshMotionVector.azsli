@@ -1,0 +1,53 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+ 
+
+#define MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE 0 // Well, it does have a pixel stage, but not one that can be customized.
+#define MATERIALPIPELINE_USES_PREV_VERTEX_POSITION 1
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+#include MATERIAL_TYPE_AZSLI_FILE_PATH
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+#include <scenesrg_all.srgi>
+#include <viewsrg_all.srgi>
+
+struct PsOutput
+{
+    float2 m_motion : SV_Target0;
+};
+
+VsOutput VertexShader(VsInput IN, uint instanceId : SV_InstanceID)
+{
+    VsSystemValues SV;
+    SV.m_instanceId = instanceId;
+    VsOutput OUT = EvaluateVertexGeometry(IN, SV);
+    return OUT;
+}
+
+PsOutput PixelShader(VsOutput IN)
+{
+    PsOutput OUT;
+
+    // Current clip position
+    float4 clipPos = mul(ViewSrg::m_viewProjectionMatrix, float4(IN.m_worldPos, 1.0));
+    
+    // Reprojected last frame's clip position, for skinned mesh it also implies last key frame
+    float4 clipPosPrev = mul(ViewSrg::m_viewProjectionPrevMatrix, float4(IN.m_worldPosPrev, 1.0));
+
+    float2 motion = (clipPos.xy / clipPos.w - clipPosPrev.xy / clipPosPrev.w) * 0.5;
+
+    OUT.m_motion = motion;
+    
+    // Flip y to line up with uv coordinates
+    OUT.m_motion.y = -OUT.m_motion.y;
+    
+    return OUT;
+}

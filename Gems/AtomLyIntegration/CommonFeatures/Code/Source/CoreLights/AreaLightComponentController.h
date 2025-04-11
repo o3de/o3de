@@ -60,6 +60,7 @@ namespace AZ
             void SetUseFastApproximation(bool useFastApproximation) override;
             PhotometricUnit GetIntensityMode() const override;
             float GetIntensity() const override;
+            void SetIntensityAndMode(float intensity, PhotometricUnit intensityMode) override;
             void SetIntensity(float intensity, PhotometricUnit intensityMode) override;
             void SetIntensity(float intensity) override;
             float GetAttenuationRadius() const override;
@@ -89,11 +90,16 @@ namespace AZ
             void SetEsmExponent(float exponent) override;
             float GetNormalShadowBias() const override;
             void SetNormalShadowBias(float bias) override;
+            AreaLightComponentConfig::ShadowCachingMode GetShadowCachingMode() const override;
+            void SetShadowCachingMode(AreaLightComponentConfig::ShadowCachingMode cachingMode) override;
 
             bool GetAffectsGI() const override;
             void SetAffectsGI(bool affectsGI) const override;
             float GetAffectsGIFactor() const override;
             void SetAffectsGIFactor(float affectsGIFactor) const override;
+
+            uint32_t GetLightingChannelMask() const;
+            void SetLightingChannelMask(uint32_t lightingChannelMask) override;
 
             AZ::Aabb GetLocalVisualizationBounds() const override;
 
@@ -110,6 +116,7 @@ namespace AZ
             void AttenuationRadiusChanged();
             void ShuttersChanged();
             void ShadowsChanged();
+            void LightingChannelMaskChanged();
             
             //! Handles calculating the attenuation radius when LightAttenuationRadiusMode is auto
             void AutoCalculateAttenuationRadius();

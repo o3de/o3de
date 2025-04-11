@@ -32,7 +32,7 @@ namespace UnitTest
      * Hash functions test.
      */
     class HashedContainers
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         template <class H, bool hasValidate>
@@ -1162,7 +1162,7 @@ namespace UnitTest
 
     template<typename ContainerType>
     class HashedSetContainers
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     };
 
@@ -1234,7 +1234,7 @@ namespace UnitTest
         , HashedSetConfig<AZStd::unordered_set<MoveOnlyIntType, MoveOnlyIntTypeHasher>>
         , HashedSetConfig<AZStd::unordered_multiset<MoveOnlyIntType, MoveOnlyIntTypeHasher>>
     >;
-    TYPED_TEST_CASE(HashedSetContainers, SetContainerConfigs);
+    TYPED_TEST_SUITE(HashedSetContainers, SetContainerConfigs);
 
     TYPED_TEST(HashedSetContainers, ExtractNodeHandleByKeySucceeds)
     {
@@ -1396,7 +1396,7 @@ namespace UnitTest
 
     template <typename ContainerType>
     class HashedSetDifferentAllocatorFixture
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     };
 
@@ -1415,11 +1415,15 @@ namespace UnitTest
     using SetTemplateConfigs = ::testing::Types<
         HashedSetWithCustomAllocatorConfig<AZStd::unordered_set>
         , HashedSetWithCustomAllocatorConfig<AZStd::unordered_multiset>
-        >;
-    TYPED_TEST_CASE(HashedSetDifferentAllocatorFixture, SetTemplateConfigs);
+    >;
+    TYPED_TEST_SUITE(HashedSetDifferentAllocatorFixture, SetTemplateConfigs);
 
 #if GTEST_HAS_DEATH_TEST
+#if AZ_TRAIT_DISABLE_FAILED_DEATH_TESTS
+    TYPED_TEST(HashedSetDifferentAllocatorFixture, DISABLED_InsertNodeHandleWithDifferentAllocatorsLogsTraceMessages)
+#else
     TYPED_TEST(HashedSetDifferentAllocatorFixture, InsertNodeHandleWithDifferentAllocatorsLogsTraceMessages)
+#endif // AZ_TRAIT_DISABLE_FAILED_DEATH_TESTS
     {
         using ContainerType = typename TypeParam::ContainerType;
 
@@ -1436,7 +1440,7 @@ namespace UnitTest
                 {
                     // AZ_Assert does not cause the application to exit in profile_test configuration
                     // Therefore an exit with a non-zero error code is invoked to trigger the death condition
-                    abort();
+                    exit(1);
                 }
             }, ".*");
     }
@@ -1444,7 +1448,7 @@ namespace UnitTest
 
     template<typename ContainerType>
     class HashedMapContainers
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     };
 
@@ -1473,7 +1477,7 @@ namespace UnitTest
         , HashedMapConfig<AZStd::unordered_map<MoveOnlyIntType, int32_t, MoveOnlyIntTypeHasher>>
         , HashedMapConfig<AZStd::unordered_multimap<MoveOnlyIntType, int32_t, MoveOnlyIntTypeHasher>>
     >;
-    TYPED_TEST_CASE(HashedMapContainers, MapContainerConfigs);
+    TYPED_TEST_SUITE(HashedMapContainers, MapContainerConfigs);
 
     TYPED_TEST(HashedMapContainers, ExtractNodeHandleByKeySucceeds)
     {
@@ -1892,7 +1896,7 @@ namespace UnitTest
 
     template <typename ContainerType>
     class HashedMapDifferentAllocatorFixture
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     };
 
@@ -1912,10 +1916,14 @@ namespace UnitTest
         HashedMapWithCustomAllocatorConfig<AZStd::unordered_map>
         , HashedMapWithCustomAllocatorConfig<AZStd::unordered_multimap>
     >;
-    TYPED_TEST_CASE(HashedMapDifferentAllocatorFixture, MapTemplateConfigs);
+    TYPED_TEST_SUITE(HashedMapDifferentAllocatorFixture, MapTemplateConfigs);
 
 #if GTEST_HAS_DEATH_TEST
+#if AZ_TRAIT_DISABLE_FAILED_DEATH_TESTS
+    TYPED_TEST(HashedMapDifferentAllocatorFixture, DISABLED_InsertNodeHandleWithDifferentAllocatorsLogsTraceMessages)
+#else
     TYPED_TEST(HashedMapDifferentAllocatorFixture, InsertNodeHandleWithDifferentAllocatorsLogsTraceMessages)
+#endif // AZ_TRAIT_DISABLE_FAILED_DEATH_TESTS
     {
         using ContainerType = typename TypeParam::ContainerType;
 
@@ -1932,7 +1940,7 @@ namespace UnitTest
             {
                 // AZ_Assert does not cause the application to exit in profile_test configuration
                 // Therefore an exit with a non-zero error code is invoked to trigger the death condition
-                abort();
+                exit(1);
             }
         } , ".*");
     }
@@ -2012,7 +2020,7 @@ namespace UnitTest
     };
     template <typename ContainerType>
     class HashedContainerTransparentFixture
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
     protected:
         void SetUp() override
@@ -2042,7 +2050,7 @@ namespace UnitTest
         >
     >;
 
-    TYPED_TEST_CASE(HashedContainerTransparentFixture, HashedContainerConfigs);
+    TYPED_TEST_SUITE(HashedContainerTransparentFixture, HashedContainerConfigs);
 
     TYPED_TEST(HashedContainerTransparentFixture, FindDoesNotConstructKeyForTransparentHashEqual_NoKeyConstructed_Succeeds)
     {

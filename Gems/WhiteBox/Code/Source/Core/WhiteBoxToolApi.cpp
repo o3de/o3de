@@ -71,6 +71,7 @@ namespace OpenMesh
 
 // OpenMesh includes
 AZ_PUSH_DISABLE_WARNING(4702, "-Wunknown-warning-option") // OpenMesh\Core\Utils\Property.hh has unreachable code
+AZ_PUSH_DISABLE_WARNING(4127, "-Wunknown-warning-option") // Conditional expression is constant.
 #include <OpenMesh/Core/IO/MeshIO.hh>
 #include <OpenMesh/Core/IO/SR_binary.hh>
 #include <OpenMesh/Core/IO/importer/ImporterT.hh>
@@ -78,6 +79,7 @@ AZ_PUSH_DISABLE_WARNING(4702, "-Wunknown-warning-option") // OpenMesh\Core\Utils
 #include <OpenMesh/Core/Mesh/TriMesh_ArrayKernelT.hh>
 #include <OpenMesh/Core/Utils/GenProg.hh>
 #include <OpenMesh/Core/Utils/vector_traits.hh>
+AZ_POP_DISABLE_WARNING
 AZ_POP_DISABLE_WARNING
 
 AZ_DECLARE_BUDGET(AzToolsFramework);
@@ -326,6 +328,8 @@ namespace OpenMesh::IO
         using value_type = WhiteBox::FaceHandlePolygonMapping;
         static const bool is_streamable = true;
 
+        static std::string type_identifier(void) { return "WhiteBox::FaceHandlePolygonMapping"; }
+
         // return generic binary size of self, if known
         static size_t size_of()
         {
@@ -405,7 +409,7 @@ namespace WhiteBox
     // A wrapper for the OpenMesh source data.
     struct WhiteBoxMesh
     {
-        AZ_CLASS_ALLOCATOR(WhiteBoxMesh, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(WhiteBoxMesh, AZ::SystemAllocator);
 
         WhiteBoxMesh() = default;
         WhiteBoxMesh(WhiteBoxMesh&&) = default;
@@ -1950,19 +1954,19 @@ namespace WhiteBox
         // each face/vertex removal. If garbage_collection is deferred, the faces()/vertices()/halfedges()
         // range must be used to count iterations via skipping iterator to ignore deleted faces
 
-        size_t MeshFaceCount(const WhiteBoxMesh& whiteBox)
+        AZ::u64 MeshFaceCount(const WhiteBoxMesh& whiteBox)
         {
-            return whiteBox.mesh.n_faces();
+            return static_cast<AZ::u64>(whiteBox.mesh.n_faces());
         }
 
-        size_t MeshHalfedgeCount(const WhiteBoxMesh& whiteBox)
+        AZ::u64 MeshHalfedgeCount(const WhiteBoxMesh& whiteBox)
         {
-            return whiteBox.mesh.n_halfedges();
+            return static_cast<AZ::u64>(whiteBox.mesh.n_halfedges());
         }
 
-        size_t MeshVertexCount(const WhiteBoxMesh& whiteBox)
+        AZ::u64 MeshVertexCount(const WhiteBoxMesh& whiteBox)
         {
-            return whiteBox.mesh.n_vertices();
+            return static_cast<AZ::u64>(whiteBox.mesh.n_vertices());
         }
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -3380,10 +3384,10 @@ namespace WhiteBox
             AZStd::lock_guard lg(g_omSerializationLock);
 
             std::stringstream whiteBoxStream;
+            // OpenMesh 11.x + requires you to specify "Custom" options to write custom properties such as our polygons or those will be skipped
             if (OpenMesh::IO::write_mesh(
                     whiteBox.mesh, whiteBoxStream, ".om",
-                    OpenMesh::IO::Options::Binary | OpenMesh::IO::Options::FaceTexCoord |
-                        OpenMesh::IO::Options::FaceNormal))
+                    OpenMesh::IO::Options::Binary | OpenMesh::IO::Options::FaceTexCoord | OpenMesh::IO::Options::FaceNormal | OpenMesh::IO::Options::Custom))
             {
                 const std::string outputStr = whiteBoxStream.str();
                 output.clear();
@@ -3427,8 +3431,9 @@ namespace WhiteBox
                 return ReadResult::Error;
             }
 
+            // OpenMesh 11.x + requires you to specify "Custom" options to read custom properties such as our polygons or those will be skipped
             AZStd::lock_guard lg(g_omSerializationLock);
-            OpenMesh::IO::Options options{OpenMesh::IO::Options::FaceTexCoord | OpenMesh::IO::Options::FaceNormal};
+            OpenMesh::IO::Options options{OpenMesh::IO::Options::FaceTexCoord | OpenMesh::IO::Options::FaceNormal | OpenMesh::IO::Options::Custom};
             return OpenMesh::IO::read_mesh(whiteBox.mesh, input, ".om", options) ? ReadResult::Full : ReadResult::Error;
         }
 

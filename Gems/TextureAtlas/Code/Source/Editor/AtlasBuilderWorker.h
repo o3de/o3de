@@ -20,7 +20,7 @@ namespace TextureAtlasBuilder
     //! Struct that is used to communicate input commands
     struct AtlasBuilderInput
     {
-        AZ_CLASS_ALLOCATOR(AtlasBuilderInput, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AtlasBuilderInput, AZ::SystemAllocator);
         AZ_TYPE_INFO(AtlasBuilderInput, "{F54477F9-1BDE-4274-8CC0-8320A3EF4A42}");
 
         bool m_forceSquare;

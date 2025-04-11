@@ -9,16 +9,10 @@
 
 #include <AzCore/Asset/AssetCommon.h>
 
-// These classes are not directly referenced in this header only because the Set/GetPropertyValue()
-// functions are templatized. But the API is still specific to these data types so we include them here.
-#include <AzCore/Math/Vector2.h>
-#include <AzCore/Math/Vector3.h>
-#include <AzCore/Math/Vector4.h>
-#include <AzCore/Math/Color.h>
-
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
-#include <Atom/RPI.Reflect/Material/MaterialPropertyDescriptor.h>
-#include <Atom/RPI.Public/Material/MaterialReloadNotificationBus.h>
+#include <Atom/RPI.Reflect/Material/MaterialPropertyCollection.h>
+#include <Atom/RPI.Reflect/Material/MaterialPipelineState.h>
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/Shader/ShaderReloadNotificationBus.h>
 
 #include <AtomCore/Instance/InstanceData.h>
@@ -48,22 +42,22 @@ namespace AZ
         //! an error is emitted and the call returns false without performing the requested operation. Likewise, if 
         //! a getter method fails, an error is emitted and an empty value is returned. If validation is disabled, the 
         //! operation is always performed.
-        class Material
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+        class ATOM_RPI_PUBLIC_API Material
             : public Data::InstanceData
-            , public Data::AssetBus::Handler
             , public ShaderReloadNotificationBus::MultiHandler
-            , public MaterialReloadNotificationBus::Handler
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             friend class MaterialSystem;
         public:
             AZ_INSTANCE_DATA(Material, "{C99F75B2-8BD5-4CD8-8672-1E01EF0A04CF}");
-            AZ_CLASS_ALLOCATOR(Material, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Material, SystemAllocator);
 
             //! Material objects use a ChangeId to track when changes have been made to the material at runtime. See GetCurrentChangeId()
             using ChangeId = size_t;
 
             //! GetCurrentChangeId() will never return this value, so client code can use this to initialize a ChangeId that is immediately dirty
-            static const ChangeId DEFAULT_CHANGE_ID = 0;
+            static constexpr ChangeId DEFAULT_CHANGE_ID = 0;
 
             static Data::Instance<Material> FindOrCreate(const Data::Asset<MaterialAsset>& materialAsset);
             static Data::Instance<Material> Create(const Data::Asset<MaterialAsset>& materialAsset);
@@ -88,6 +82,8 @@ namespace AZ
             //! @return true if property value was changed
             bool SetPropertyValue(MaterialPropertyIndex index, const MaterialPropertyValue& value);
 
+            const MaterialPropertyCollection& GetPropertyCollection() const;
+
             const MaterialPropertyValue& GetPropertyValue(MaterialPropertyIndex index) const;
             const AZStd::vector<MaterialPropertyValue>& GetPropertyValues() const;
             
@@ -106,12 +102,24 @@ namespace AZ
             //! This gets incremented every time a change is made, like by calling SetPropertyValue().
             ChangeId GetCurrentChangeId() const;
 
-            //! Return the set of shaders to be run by this material.
-            const ShaderCollection& GetShaderCollection() const;
+            //! Return the general purpose shader collection that applies to any render pipeline.
+            const ShaderCollection& GetGeneralShaderCollection() const;
+
+            //! Returns the shader collection for a specific material pipeline.
+            //! @param forPipeline the name of the material pipeline to query for shaders.
+            const ShaderCollection& GetShaderCollection(const Name& forPipeline) const;
+
+            //! Iterates through all shader items in the material, for all render pipelines, including the general shader collection.
+            //! @param callback function is called for each shader item
+            //! @param materialPipelineName the name of the shader's material pipeline, or empty (MaterialPipelineNone) for items in the general shader collection.
+            void ForAllShaderItems(AZStd::function<bool(const Name& materialPipelineName, const ShaderCollection::Item& shaderItem)> callback) const;
+
+            //! Returns whether this material owns a particular shader option. In that case, SetSystemShaderOption may not be used.
+            bool MaterialOwnsShaderOption(const Name& shaderOptionName) const;
 
             //! Attempts to set the value of a system-level shader option that is controlled by this material.
             //! This applies to all shaders in the material's ShaderCollection.
-            //! Note, this may only be used to set shader options that are not "owned" by the material.
+            //! Note, this may only be used to set shader options that are not "owned" by the material, see MaterialOwnsShaderOption().
             //! @param shaderOptionName the name of the shader option(s) to set
             //! @param value the new value for the shader option(s)
             //! @param return the number of shader options that were updated, or Failure if the material owns the indicated shader option.
@@ -126,6 +134,8 @@ namespace AZ
             //! Do not set this in the shipping runtime unless you know what you are doing.
             void SetPsoHandlingOverride(MaterialPropertyPsoHandling psoHandlingOverride);
 
+            Data::Instance<RPI::ShaderResourceGroup> GetShaderResourceGroup();
+
             const RHI::ShaderResourceGroup* GetRHIShaderResourceGroup() const;
 
             const Data::Asset<MaterialAsset>& GetAsset() const;
@@ -136,20 +146,17 @@ namespace AZ
             //! Returns whether the material has property changes that have not been compiled yet.
             bool NeedsCompile() const;
 
+            using OnMaterialShaderVariantReadyEvent = AZ::Event<>;
+            //! Connect a handler to listen to the event that a shader variant asset of the shaders used by this material is ready.
+            //! This is a thread safe function.
+            void ConnectEvent(OnMaterialShaderVariantReadyEvent::Handler& handler);
+
         private:
-            Material() = default;
+            Material();
 
             //! Standard init path from asset data.
             static Data::Instance<Material> CreateInternal(MaterialAsset& materialAsset);
             RHI::ResultCode Init(MaterialAsset& materialAsset);
-
-            ///////////////////////////////////////////////////////////////////
-            // AssetBus overrides...
-            void OnAssetReloaded(Data::Asset<Data::AssetData> asset) override;
-
-            ///////////////////////////////////////////////////////////////////
-            // MaterialReloadNotificationBus overrides...
-            void OnMaterialAssetReinitialized(const Data::Asset<MaterialAsset>& materialAsset) override;
 
             ///////////////////////////////////////////////////////////////////
             // ShaderReloadNotificationBus overrides...
@@ -158,20 +165,41 @@ namespace AZ
             void OnShaderVariantReinitialized(const ShaderVariant& shaderVariant) override;
             ///////////////////////////////////////////////////////////////////
 
-            template<typename Type>
-            bool ValidatePropertyAccess(const MaterialPropertyDescriptor* propertyDescriptor) const;
+            //! Helper function to reinitialize the material while preserving property values.
+            void ReInitKeepPropertyValues();
 
-            //! Helper function for setting the value of a shader constant input, allowing for specialized handling of specific types.
-            //! This template is explicitly specialized in the cpp file.
-            template<typename Type>
-            void SetShaderConstant(RHI::ShaderInputConstantIndex shaderInputIndex, const Type& value);
+            //! Helper function for setting the value of a shader constant input, allowing for specialized handling of specific types,
+            //! converting to the native type before passing to the ShaderResourceGroup.
+            bool SetShaderConstant(RHI::ShaderInputConstantIndex shaderInputIndex, const MaterialPropertyValue& value);
 
             //! Helper function for setting the value of a shader option, allowing for specialized handling of specific types.
             //! This template is explicitly specialized in the cpp file.
-            template<typename Type>
-            bool SetShaderOption(ShaderOptionGroup& options, ShaderOptionIndex shaderOptionIndex, Type value);
+            bool SetShaderOption(ShaderOptionGroup& options, ShaderOptionIndex shaderOptionIndex, const MaterialPropertyValue & value);
 
-            static const char* s_debugTraceName;
+            bool TryApplyPropertyConnectionToShaderInput(
+                const MaterialPropertyValue & value,
+                const MaterialPropertyOutputId & connection,
+                const MaterialPropertyDescriptor * propertyDescriptor);
+            bool TryApplyPropertyConnectionToShaderOption(
+                const MaterialPropertyValue & value,
+                const MaterialPropertyOutputId & connection);
+            bool TryApplyPropertyConnectionToShaderEnable(
+                const MaterialPropertyValue & value,
+                const MaterialPropertyOutputId & connection);
+            bool TryApplyPropertyConnectionToInternalProperty(
+                const MaterialPropertyValue & value,
+                const MaterialPropertyOutputId & connection);
+
+            void ProcessDirectConnections();
+            void ProcessMaterialFunctors();
+            void ProcessInternalDirectConnections();
+            void ProcessInternalMaterialFunctors();
+
+            // Note we can't overload the ForAllShaderItems name, because the compiler fails to resolve the public
+            // version of the function when a private overload is present, just based on a lambda signature.
+            void ForAllShaderItemsWriteable(AZStd::function<bool(ShaderCollection::Item& shaderItem)> callback);
+
+            static constexpr const char* s_debugTraceName = "Material";
 
             //! The corresponding material asset that provides material type data and initial property values.
             Data::Asset<MaterialAsset> m_materialAsset;
@@ -182,20 +210,12 @@ namespace AZ
             //! The RHI shader resource group owned by m_shaderResourceGroup. Held locally to avoid an indirection.
             const RHI::ShaderResourceGroup* m_rhiShaderResourceGroup = nullptr;
 
-            //! Provides a description of the set of available material properties, cached locally so we don't have to keep fetching it from the MaterialTypeSourceData.
-            RHI::ConstPtr<MaterialPropertiesLayout> m_layout;
+            //! These the main material properties, exposed in the Material Editor, and configured directly by users.
+            MaterialPropertyCollection m_materialProperties;
 
-            //! Values for all properties in MaterialPropertiesLayout
-            AZStd::vector<MaterialPropertyValue> m_propertyValues;
+            ShaderCollection m_generalShaderCollection;
 
-            //! Flags indicate which properties have been modified so that related functors will update.
-            MaterialPropertyFlags m_propertyDirtyFlags;
-
-            //! Used to track which properties have been modified at runtime so they can be preserved if the material has to reinitialiize.
-            MaterialPropertyFlags m_propertyOverrideFlags;
-
-            //! A copy of the MaterialAsset's ShaderCollection is stored here to allow material-specific changes to the default collection.
-            ShaderCollection m_shaderCollection;
+            MaterialPipelineDataMap m_materialPipelineData;
 
             //! Tracks each change made to material properties.
             //! Initialized to DEFAULT_CHANGE_ID+1 to ensure that GetCurrentChangeId() will not return DEFAULT_CHANGE_ID (a value that client 
@@ -206,8 +226,13 @@ namespace AZ
             ChangeId m_compiledChangeId = DEFAULT_CHANGE_ID;
 
             bool m_isInitializing = false;
-                
+
             MaterialPropertyPsoHandling m_psoHandling = MaterialPropertyPsoHandling::Warning;
+
+            //! AZ::Event is not thread safe, so we have to do our own thread safe code
+            //! because MeshDrawPacket can connect to this event from different threads.
+            AZStd::recursive_mutex m_shaderVariantReadyEventMutex;
+            OnMaterialShaderVariantReadyEvent m_shaderVariantReadyEvent;
         };
 
     } // namespace RPI

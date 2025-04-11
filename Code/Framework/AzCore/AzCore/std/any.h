@@ -44,7 +44,7 @@ namespace AZStd
     {
     public:
         AZ_TYPE_INFO(AZStd::any, "{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}");
-        AZ_CLASS_ALLOCATOR(any, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(any, AZ::SystemAllocator);
 
         /// Typed used to identify other types (acquired via azrtti_typeid<Type>())
         using type_id = AZ::Uuid;
@@ -83,9 +83,15 @@ namespace AZStd
             bool m_isPointer = false;
             // Should the object be stored on the heap? (never true for pointers)
             bool m_useHeap = false;
-            // The size of the value stored by this type
-            size_t m_valueSize = 0;
         };
+
+        using action_handler_for_t = type_info::HandleFnT;
+        // Returns a default action handler for the type.
+        // The type must be constructible and destructible
+        // To support copy construction it must be constructible with a `const T&`
+        // To support move construction it must be constructible with a `T&&`
+        template <typename T>
+        static constexpr auto get_action_handler_for_t();
 
         /// Constructs an empty object.
         any(allocator alloc = allocator("AZStd::any"))
@@ -369,16 +375,13 @@ namespace AZStd
             }
         }
 
-        template <typename ValueType>
+        template<typename ValueType>
         static type_info create_template_type_info()
         {
-            type_info ti;
-            ti.m_id = azrtti_typeid<ValueType>();
-            ti.m_isPointer = is_pointer<ValueType>::value;
-            ti.m_useHeap = AZStd::GetMax(sizeof(ValueType), AZStd::alignment_of<ValueType>::value) > Internal::ANY_SBO_BUF_SIZE;
-            ti.m_valueSize = sizeof(AZStd::decay_t<AZStd::remove_pointer_t<ValueType>>);
-            ti.m_handler = type_info::HandleFnT(&action_handler<ValueType>);
-            return ti;
+            return { /* m_id */ azrtti_typeid<ValueType>(),
+                     /* m_handler */ type_info::HandleFnT(&action_handler<ValueType>),
+                     /* m_isPointer */ is_pointer<ValueType>::value,
+                     /* m_useHeap */ AZStd::GetMax(sizeof(ValueType), AZStd::alignment_of<ValueType>::value) > Internal::ANY_SBO_BUF_SIZE };
         }
 
         /**
@@ -426,6 +429,12 @@ namespace AZStd
         template <typename ValueType>
         friend add_pointer_t<ValueType> any_cast(any*);
     };
+
+    template <typename ValueType>
+    constexpr auto any::get_action_handler_for_t()
+    {
+        return &action_handler<ValueType>;
+    }
 
     namespace Internal
     {

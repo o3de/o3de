@@ -45,7 +45,7 @@ namespace ScriptCanvas
 
         public:
             AZ_RTTI((LerpBetweenNodeable, "{3467EB2B-801E-4799-B47A-AFEA621A152B}", t_Operand), Nodeable);
-            AZ_CLASS_ALLOCATOR(LerpBetweenNodeable<t_Operand>, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(LerpBetweenNodeable<t_Operand>, AZ::SystemAllocator);
 
             static constexpr void DeprecatedTypeNameVisitor(
                 const AZ::DeprecatedTypeNameCallback& visitCallback)

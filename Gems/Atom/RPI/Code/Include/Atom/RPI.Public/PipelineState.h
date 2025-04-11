@@ -9,8 +9,9 @@
 #pragma once
 
 #include <Atom/RHI/PipelineStateDescriptor.h>
-#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/DevicePipelineState.h>
 
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/Pass/RenderPass.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
 #include <Atom/RPI.Public/Shader/ShaderReloadNotificationBus.h>
@@ -24,12 +25,15 @@ namespace AZ
 
         //! The PipelineStateForDraw caches descriptor for RHI::PipelineState's creation so the RHI::PipelineState can be created
         //! or updated later when Scene's render pipelines changed or any other data in the descriptor has changed.
-        class PipelineStateForDraw
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+        class ATOM_RPI_PUBLIC_API PipelineStateForDraw
             : public AZStd::intrusive_base
             , public ShaderReloadNotificationBus::MultiHandler
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+
         public:
-            AZ_CLASS_ALLOCATOR(PipelineStateForDraw, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PipelineStateForDraw, SystemAllocator);
 
             PipelineStateForDraw();
             PipelineStateForDraw(const PipelineStateForDraw& right);
@@ -38,6 +42,7 @@ namespace AZ
             //! Initialize the pipeline state from a shader and one of its shader variant
             //! The previous data will be reset
             void Init(const Data::Instance<Shader>& shader, const ShaderOptionList* optionAndValues = nullptr);
+            void Init(const Data::Instance<Shader>& shader, const ShaderVariantId& shaderVariantId);
 
             //! Update the pipeline state descriptor for the specified scene
             //! This is usually called when Scene's render pipelines changed
@@ -67,6 +72,10 @@ namespace AZ
             //! Use ConstDescriptor() to access read-only InputStreamLayout
             RHI::InputStreamLayout& InputStreamLayout();
 
+            //! Updates the current shader variant id.
+            //! It sets this pipeline state to dirty whenever it's called.
+            void UpdateShaderVaraintId(const ShaderVariantId& shaderVariantId);
+
             const RHI::PipelineStateDescriptorForDraw& ConstDescriptor() const;
 
             //! Get the shader which is associated with this PipelineState
@@ -78,6 +87,9 @@ namespace AZ
 
             //! Clear all the states and references
             void Shutdown();
+
+            //! Returns the id of the shader variant being used
+            const ShaderVariantId& GetShaderVariantId() const;
 
         private:
             ///////////////////////////////////////////////////////////////////

@@ -15,6 +15,8 @@
 #include <Atom/RPI.Edit/Material/MaterialSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialPipelineSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialPropertyValueSourceData.h>
+#include <Atom/RPI.Edit/Material/MaterialPropertySourceData.h>
+#include <Atom/RPI.Edit/Material/MaterialFunctorSourceDataHolder.h>
 #include <Atom/RPI.Edit/Material/LuaMaterialFunctorSourceData.h>
 #include <Atom/RPI.Edit/Shader/ShaderSourceData.h>
 #include <Atom/RPI.Edit/Shader/ShaderVariantListSourceData.h>
@@ -36,6 +38,7 @@
 #include <BuilderComponent.h>
 #include <Common/AnyAssetBuilder.h>
 #include <Material/MaterialBuilder.h>
+#include <Material/MaterialPipelineScriptRunner.h>
 #include <Material/MaterialTypeBuilder.h>
 #include <ResourcePool/ResourcePoolBuilder.h>
 #include <Pass/PassBuilder.h>
@@ -54,6 +57,7 @@ namespace AZ
                 ;
             }
 
+            MaterialPropertySourceData::Reflect(context);
             MaterialTypeSourceData::Reflect(context);
             MaterialSourceData::Reflect(context);
             MaterialPipelineSourceData::Reflect(context);
@@ -66,6 +70,7 @@ namespace AZ
             AssetAliasesSourceData::Reflect(context);
             ShaderSourceData::Reflect(context);
             ShaderVariantListSourceData::Reflect(context);
+            MaterialPipelineScriptRunner::Reflect(context);
         }
 
         BuilderComponent::BuilderComponent()
@@ -76,6 +81,21 @@ namespace AZ
         BuilderComponent::~BuilderComponent()
         {
             m_materialFunctorRegistration.Shutdown();
+        }
+
+        void BuilderComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
+        {
+            provided.push_back(AZ_CRC_CE("RPIBuilderService"));
+        }
+
+        void BuilderComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
+        {
+            required.push_back(AZ_CRC_CE("ScriptService"));
+        }
+
+        void BuilderComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+        {
+            incompatible.push_back(AZ_CRC_CE("RPIBuilderService"));
         }
 
         void BuilderComponent::Activate()

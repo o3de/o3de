@@ -278,7 +278,7 @@ namespace AZStd
             {
                 Internal::destroy<pointer>::single(m_first);
             }
-            deallocate_memory(typename allocator_type::allow_memory_leaks());
+            deallocate_memory();
         }
 
         AZ_FORCE_INLINE this_type& operator = (const this_type& rhs)
@@ -288,8 +288,8 @@ namespace AZStd
                 return *this;
             }
             clear();
-            deallocate_memory(typename allocator_type::allow_memory_leaks());
-            m_buff = reinterpret_cast<pointer>(m_allocator.allocate(rhs.capacity() * sizeof(node_type), alignment_of<node_type>::value));
+            deallocate_memory();
+            m_buff = reinterpret_cast<pointer>(static_cast<void*>(m_allocator.allocate(rhs.capacity() * sizeof(node_type), alignof(node_type))));
             m_end = m_buff + rhs.capacity();
             m_first = m_buff;
             m_size = rhs.m_size;
@@ -301,25 +301,25 @@ namespace AZStd
             return *this;
         }
 
-        AZ_FORCE_INLINE iterator            begin()         { return iterator(AZSTD_CHECKED_ITERATOR_2(iterator, this, (m_size == 0) ? nullptr : m_first)); }
-        AZ_FORCE_INLINE const_iterator  begin() const   { return const_iterator(AZSTD_CHECKED_ITERATOR_2(const_iterator, this, (m_size == 0) ? nullptr : m_first)); }
-        AZ_FORCE_INLINE iterator            end()           { return iterator(AZSTD_CHECKED_ITERATOR_2(iterator, this, nullptr)); }
-        AZ_FORCE_INLINE const_iterator  end() const     { return const_iterator(AZSTD_CHECKED_ITERATOR_2(const_iterator, this, nullptr)); }
+        AZ_FORCE_INLINE iterator            begin() { return iterator(AZSTD_CHECKED_ITERATOR_2(iterator, this, (m_size == 0) ? nullptr : m_first)); }
+        AZ_FORCE_INLINE const_iterator  begin() const { return const_iterator(AZSTD_CHECKED_ITERATOR_2(const_iterator, this, (m_size == 0) ? nullptr : m_first)); }
+        AZ_FORCE_INLINE iterator            end() { return iterator(AZSTD_CHECKED_ITERATOR_2(iterator, this, nullptr)); }
+        AZ_FORCE_INLINE const_iterator  end() const { return const_iterator(AZSTD_CHECKED_ITERATOR_2(const_iterator, this, nullptr)); }
 
-        AZ_FORCE_INLINE reverse_iterator            rbegin()        { return reverse_iterator(end()); }
-        AZ_FORCE_INLINE const_reverse_iterator  rbegin() const  { return const_reverse_iterator(end()); }
-        AZ_FORCE_INLINE reverse_iterator            rend()          { return reverse_iterator(begin()); }
-        AZ_FORCE_INLINE const_reverse_iterator  rend() const    { return const_reverse_iterator(begin()); }
+        AZ_FORCE_INLINE reverse_iterator            rbegin() { return reverse_iterator(end()); }
+        AZ_FORCE_INLINE const_reverse_iterator  rbegin() const { return const_reverse_iterator(end()); }
+        AZ_FORCE_INLINE reverse_iterator            rend() { return reverse_iterator(begin()); }
+        AZ_FORCE_INLINE const_reverse_iterator  rend() const { return const_reverse_iterator(begin()); }
 
-        AZ_FORCE_INLINE reference operator[] (size_type index)              { return *add(m_first, index); }
-        AZ_FORCE_INLINE const_reference operator[] (size_type index) const  { return *add(m_first, index); }
-        AZ_FORCE_INLINE reference at(size_type index)                       { return *add(m_first, index); }
-        AZ_FORCE_INLINE const_reference at(size_type index) const           { return *add(m_first, index); }
+        AZ_FORCE_INLINE reference operator[] (size_type index) { return *add(m_first, index); }
+        AZ_FORCE_INLINE const_reference operator[] (size_type index) const { return *add(m_first, index); }
+        AZ_FORCE_INLINE reference at(size_type index) { return *add(m_first, index); }
+        AZ_FORCE_INLINE const_reference at(size_type index) const { return *add(m_first, index); }
 
         AZ_FORCE_INLINE reference front() { AZSTD_CONTAINER_ASSERT(m_size > 0, "AZStd::ring_buffer::front - container is empty!"); return *m_first; }
         AZ_FORCE_INLINE reference back() { AZSTD_CONTAINER_ASSERT(m_size > 0, "AZStd::ring_buffer::back - container is empty!"); return *((m_last == m_buff ? m_end : m_last) - 1); }
         AZ_FORCE_INLINE const_reference front() const { AZSTD_CONTAINER_ASSERT(m_size > 0, "AZStd::ring_buffer::front - container is empty!"); return *m_first; }
-        AZ_FORCE_INLINE const_reference back() const {  AZSTD_CONTAINER_ASSERT(m_size > 0, "AZStd::ring_buffer::back - container is empty!"); return *((m_last == m_buff ? m_end : m_last) - 1); }
+        AZ_FORCE_INLINE const_reference back() const { AZSTD_CONTAINER_ASSERT(m_size > 0, "AZStd::ring_buffer::back - container is empty!"); return *((m_last == m_buff ? m_end : m_last) - 1); }
 
         /// Get the first continuous array of the internal buffer.
         AZ_FORCE_INLINE array_range array_one() { return array_range(m_first, (m_last <= m_first && (m_size > 0) ? m_end : m_last) - m_first); }
@@ -416,12 +416,12 @@ namespace AZStd
             }
         }
 
-        AZ_FORCE_INLINE size_type size() const      { return m_size; }
-        AZ_FORCE_INLINE size_type max_size() const  { return AZStd::allocator_traits<allocator_type>::max_size(m_allocator) / sizeof(node_type); }
-        AZ_FORCE_INLINE bool empty() const          { return m_size == 0; }
-        AZ_FORCE_INLINE bool full() const           { return size_type(m_end - m_buff) == m_size; }
-        AZ_FORCE_INLINE size_type free() const      { return size_type(m_end - m_buff) - m_size; }
-        AZ_FORCE_INLINE size_type capacity() const  { return m_end - m_buff; }
+        AZ_FORCE_INLINE size_type size() const { return m_size; }
+        AZ_FORCE_INLINE size_type max_size() const { return AZStd::allocator_traits<allocator_type>::max_size(m_allocator) / sizeof(node_type); }
+        AZ_FORCE_INLINE bool empty() const { return m_size == 0; }
+        AZ_FORCE_INLINE bool full() const { return size_type(m_end - m_buff) == m_size; }
+        AZ_FORCE_INLINE size_type free() const { return size_type(m_end - m_buff) - m_size; }
+        AZ_FORCE_INLINE size_type capacity() const { return m_end - m_buff; }
 
         inline void resize(size_type new_size, const_reference value = value_type())
         {
@@ -464,9 +464,9 @@ namespace AZStd
         {
             if (m_allocator == rhs.m_allocator)
             {
-    #ifdef AZSTD_HAS_CHECKED_ITERATORS
+#ifdef AZSTD_HAS_CHECKED_ITERATORS
                 swap_all(rhs);
-    #endif
+#endif
                 AZStd::swap(m_buff, rhs.m_buff);
                 AZStd::swap(m_end, rhs.m_end);
                 AZStd::swap(m_first, rhs.m_first);
@@ -693,12 +693,12 @@ namespace AZStd
             {
                 return;
             }
-            pointer buff = reinterpret_cast<pointer>(m_allocator.allocate(new_capacity * sizeof(node_type), alignment_of<node_type>::value));
+            pointer buff = reinterpret_cast<pointer>(static_cast<void*>(m_allocator.allocate(new_capacity * sizeof(node_type), alignof(node_type))));
             iterator b = begin();
             pointer last = AZStd::uninitialized_copy(b, b + AZStd::GetMin(new_capacity, m_size), buff, Internal::is_fast_copy<iterator, pointer>());
 
             clear();
-            deallocate_memory(typename allocator_type::allow_memory_leaks());
+            deallocate_memory();
 
             m_size = last - buff;
             m_buff = m_first = buff;
@@ -712,12 +712,12 @@ namespace AZStd
             {
                 return;
             }
-            pointer buff = reinterpret_cast<pointer>(m_allocator.allocate(new_capacity * sizeof(node_type), alignment_of<node_type>::value));
+            pointer buff = reinterpret_cast<pointer>(static_cast<void*>(m_allocator.allocate(new_capacity * sizeof(node_type), alignof(node_type))));
             iterator e = end();
             pointer last = AZStd::uninitialized_copy(e - AZStd::GetMin(new_capacity, m_size), e, buff, Internal::is_fast_copy<iterator, pointer>());
 
             clear();
-            deallocate_memory(typename allocator_type::allow_memory_leaks());
+            deallocate_memory();
 
             m_size = last - buff;
             m_buff = m_first = buff;
@@ -810,14 +810,12 @@ namespace AZStd
         }
 
     private:
-        AZ_FORCE_INLINE void    deallocate_memory(const true_type& /* allocator::allow_memory_leaks */)     {}
-
-        AZ_FORCE_INLINE void    deallocate_memory(const false_type& /* !allocator::allow_memory_leaks */)
+        AZ_FORCE_INLINE void    deallocate_memory()
         {
             if (m_buff)
             {
                 size_type byteSize = sizeof(node_type) * capacity();
-                m_allocator.deallocate(m_buff, byteSize, alignment_of<node_type>::value);
+                m_allocator.deallocate(m_buff, byteSize, alignof(node_type));
             }
         }
         AZ_FORCE_INLINE void increment(pointer& p) const
@@ -872,7 +870,7 @@ namespace AZStd
         }
         AZ_FORCE_INLINE void initialize_buffer(size_type capacity)
         {
-            m_buff = reinterpret_cast<pointer>(m_allocator.allocate(capacity * sizeof(node_type), alignment_of<node_type>::value));
+            m_buff = reinterpret_cast<pointer>(static_cast<void*>(m_allocator.allocate(capacity * sizeof(node_type), alignof(node_type))));
             m_end = m_buff + capacity;
         }
         AZ_FORCE_INLINE void initialize_buffer(size_type capacity, const_reference value)

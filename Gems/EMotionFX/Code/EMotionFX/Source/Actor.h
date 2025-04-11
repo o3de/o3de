@@ -27,7 +27,7 @@
 
 // include required headers
 #include <EMotionFX/Source/PhysicsSetup.h>
-#include "BaseObject.h"
+#include <MCore/Source/RefCounted.h>
 #include "Pose.h"
 #include "Skeleton.h"
 
@@ -676,7 +676,10 @@ namespace EMotionFX
 
         const AZ::Aabb& GetStaticAabb() const;
         void SetStaticAabb(const AZ::Aabb& aabb);
-        void UpdateStaticAabb();    // VERY heavy operation, you shouldn't call this ever (internally creates an actor instance, updates mesh deformers, calcs a mesh based aabb, destroys the actor instance again)
+        /**
+        * Sets the static aabb and expects to have the model asset ready.
+        */
+        void UpdateStaticAabb();
 
         void SetThreadIndex(uint32 index)                   { m_threadIndex = index; }
         uint32 GetThreadIndex() const                       { return m_threadIndex; }

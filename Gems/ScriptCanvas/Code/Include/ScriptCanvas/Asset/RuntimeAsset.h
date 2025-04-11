@@ -48,7 +48,7 @@ namespace ScriptCanvas
     struct RuntimeData
     {
         AZ_TYPE_INFO(RuntimeData, "{A935EBBC-D167-4C59-927C-5D98C6337B9C}");
-        AZ_CLASS_ALLOCATOR(RuntimeData, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(RuntimeData, AZ::SystemAllocator);
         RuntimeData() = default;
         ~RuntimeData() = default;
         RuntimeData(const RuntimeData&) = default;
@@ -89,7 +89,7 @@ namespace ScriptCanvas
     struct RuntimeDataOverrides
     {
         AZ_TYPE_INFO(RuntimeDataOverrides, "{CE3C0AE6-4EBA-43B2-B2D5-7AC24A194E63}");
-        AZ_CLASS_ALLOCATOR(RuntimeDataOverrides, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(RuntimeDataOverrides, AZ::SystemAllocator);
 
         static void Reflect(AZ::ReflectContext* reflectContext);
 
@@ -133,6 +133,7 @@ namespace ScriptCanvas
         : public AZ::Data::AssetData
     {
     public:
+        AZ_CLASS_ALLOCATOR(RuntimeAsset, AZ::SystemAllocator)
         AZ_RTTI(RuntimeAsset, "{3E2AC8CD-713F-453E-967F-29517F331784}", AZ::Data::AssetData);
 
         static const char* GetFileExtension() { return "scriptcanvas_compiled"; }

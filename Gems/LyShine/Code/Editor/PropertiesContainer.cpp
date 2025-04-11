@@ -117,8 +117,7 @@ private:
 
 //-------------------------------------------------------------------------------
 
-PropertiesContainer::PropertiesContainer(PropertiesWidget* propertiesWidget,
-    EditorWindow* editorWindow)
+PropertiesContainer::PropertiesContainer(PropertiesWidget* propertiesWidget, EditorWindow* editorWindow)
     : QScrollArea(propertiesWidget)
     , m_propertiesWidget(propertiesWidget)
     , m_editorWindow(editorWindow)
@@ -127,6 +126,7 @@ PropertiesContainer::PropertiesContainer(PropertiesWidget* propertiesWidget,
     , m_isCanvasSelected(false)
     , m_selectionEventAccepted(false)
     , m_componentEditorLastSelectedIndex(-1)
+    , m_serializeContext(nullptr)
 {
     setFocusPolicy(Qt::ClickFocus);
     setFrameShape(QFrame::NoFrame);
@@ -152,7 +152,7 @@ PropertiesContainer::PropertiesContainer(PropertiesWidget* propertiesWidget,
     CreateActions();
 
     // Get the serialize context.
-    EBUS_EVENT_RESULT(m_serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
+    AZ::ComponentApplicationBus::BroadcastResult(m_serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
     AZ_Assert(m_serializeContext, "We should have a valid context!");
 
     QObject::connect(m_editorWindow->GetHierarchy(),
@@ -328,7 +328,7 @@ void PropertiesContainer::BuildSharedComponentList(ComponentTypeMap& sharedCompo
     for (AZ::EntityId entityId : entitiesShown)
     {
         AZ::Entity* entity = nullptr;
-        EBUS_EVENT_RESULT(entity, AZ::ComponentApplicationBus, FindEntity, entityId);
+        AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, entityId);
         AZ_Assert(entity, "Entity was selected but no such entity exists?");
         if (!entity)
         {
@@ -358,7 +358,7 @@ void PropertiesContainer::BuildSharedComponentList(ComponentTypeMap& sharedCompo
                     AZ::u32 visibilityValue;
                     if (reader.Read<AZ::u32>(visibilityValue))
                     {
-                        if (visibilityValue == AZ_CRC("PropertyVisibility_Hide", 0x32ab90f7))
+                        if (visibilityValue == AZ_CRC_CE("PropertyVisibility_Hide"))
                         {
                             continue;
                         }
@@ -469,7 +469,7 @@ void PropertiesContainer::BuildSharedComponentUI(ComponentTypeMap& sharedCompone
     // stay in the order they were added to the entity in, some of our slices do not have the
     // UiElementComponent first for example.
     const AZStd::vector<AZ::Uuid>* componentTypes;
-    EBUS_EVENT_RESULT(componentTypes, UiSystemBus, GetComponentTypesForMenuOrdering);
+    UiSystemBus::BroadcastResult(componentTypes, &UiSystemBus::Events::GetComponentTypesForMenuOrdering);
 
     // There could be components that were not registered for component ordering. We don't
     // want to hide them. So add them at the end of the list
@@ -782,7 +782,7 @@ void PropertiesContainer::Update()
             // Set the name in the properties pane to the name of the element
             AZ::EntityId selectedElement = m_selectedEntities.front();
             AZStd::string selectedEntityName;
-            EBUS_EVENT_ID_RESULT(selectedEntityName, selectedElement, UiElementBus, GetName);
+            UiElementBus::EventResult(selectedEntityName, selectedElement, &UiElementBus::Events::GetName);
             displayName = selectedEntityName.c_str();
         }
     }
@@ -926,7 +926,7 @@ void PropertiesContainer::Refresh(AzToolsFramework::PropertyModificationRefreshL
             // Set the name in the properties pane to the name of the element
             AZ::EntityId selectedElement = m_selectedEntities.front();
             AZStd::string selectedEntityName;
-            EBUS_EVENT_ID_RESULT(selectedEntityName, selectedElement, UiElementBus, GetName);
+            UiElementBus::EventResult(selectedEntityName, selectedElement, &UiElementBus::Events::GetName);
 
             // Update the selected element display name
             if (m_selectedEntityDisplayNameWidget != nullptr)
@@ -1002,7 +1002,8 @@ void PropertiesContainer::SetSelectedEntityDisplayNameWidget(QLineEdit* selected
 
                 AZ::EntityId selectedEntityId = m_selectedEntities.front();
                 AZ::Entity* selectedEntity = nullptr;
-                EBUS_EVENT_RESULT(selectedEntity, AZ::ComponentApplicationBus, FindEntity, selectedEntityId);
+                AZ::ComponentApplicationBus::BroadcastResult(
+                    selectedEntity, &AZ::ComponentApplicationBus::Events::FindEntity, selectedEntityId);
                 if (selectedEntity)
                 {
                     AZStd::string currentName = selectedEntity->GetName();

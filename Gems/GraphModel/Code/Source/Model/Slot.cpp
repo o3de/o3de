@@ -27,46 +27,62 @@
 
 namespace GraphModel
 {
-    void SlotIdData::Reflect(AZ::ReflectContext* context)
+    void SlotId::Reflect(AZ::ReflectContext* context)
     {
-        AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
-        if (serializeContext)
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<SlotIdData>()
+            serializeContext->Class<SlotId>()
                 ->Version(0)
-                ->Field("m_name", &SlotIdData::m_name)
-                ->Field("m_subId", &SlotIdData::m_subId)
+                ->Field("m_name", &SlotId::m_name)
+                ->Field("m_subId", &SlotId::m_subId)
+                ;
+        }
+
+        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->Class<SlotId>("GraphModelSlotId")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                ->Attribute(AZ::Script::Attributes::Category, "Editor")
+                ->Attribute(AZ::Script::Attributes::Module, "editor.graph")
+                ->Constructor<const SlotName&>()
+                ->Constructor<const SlotName&, SlotSubId>()
+                ->Method("__repr__", &SlotId::ToString)
+                ->Method("ToString", &SlotId::ToString)
+                ->Method("IsValid", &SlotId::IsValid)
+                ->Method("GetHash", &SlotId::GetHash)
+                ->Property("name", BehaviorValueProperty(&SlotId::m_name))
+                ->Property("subId", BehaviorValueProperty(&SlotId::m_subId))
                 ;
         }
     }
 
-    SlotIdData::SlotIdData(const SlotName& name)
+    SlotId::SlotId(const SlotName& name)
         : m_name(name)
     {
     }
 
-    SlotIdData::SlotIdData(const SlotName& name, SlotSubId subId)
+    SlotId::SlotId(const SlotName& name, SlotSubId subId)
         : m_name(name)
         , m_subId(subId)
     {
     }
 
-    bool SlotIdData::IsValid() const
+    bool SlotId::IsValid() const
     {
         return !m_name.empty() && (m_subId >= 0);
     }
 
-    bool SlotIdData::operator==(const SlotIdData& rhs) const
+    bool SlotId::operator==(const SlotId& rhs) const
     {
         return (m_name == rhs.m_name) && (m_subId == rhs.m_subId);
     }
 
-    bool SlotIdData::operator!=(const SlotIdData& rhs) const
+    bool SlotId::operator!=(const SlotId& rhs) const
     {
         return (m_name != rhs.m_name) || (m_subId != rhs.m_subId);
     }
 
-    bool SlotIdData::operator<(const SlotIdData& rhs) const
+    bool SlotId::operator<(const SlotId& rhs) const
     {
         if (m_name < rhs.m_name)
         {
@@ -81,7 +97,7 @@ namespace GraphModel
         return false;
     }
 
-    bool SlotIdData::operator>(const SlotIdData& rhs) const
+    bool SlotId::operator>(const SlotId& rhs) const
     {
         if (m_name > rhs.m_name)
         {
@@ -96,7 +112,7 @@ namespace GraphModel
         return false;
     }
 
-    AZStd::size_t SlotIdData::GetHash() const
+    AZStd::size_t SlotId::GetHash() const
     {
         AZStd::size_t result = 0;
         AZStd::hash_combine(result, m_name);
@@ -104,166 +120,44 @@ namespace GraphModel
         return result;
     }
 
+    AZStd::string SlotId::ToString() const
+    {
+        return AZStd::string::format("GraphModelSlotId(%s,%d)", m_name.c_str(), m_subId);
+    }
+
     /////////////////////////////////////////////////////////
     // SlotDefinition
 
-    SlotDefinitionPtr SlotDefinition::CreateInputData(
-        AZStd::string_view name,
-        AZStd::string_view displayName,
-        DataTypePtr dataType,
-        AZStd::any defaultValue,
-        AZStd::string_view description,
-        ExtendableSlotConfiguration* extendableSlotConfiguration,
+    SlotDefinition::SlotDefinition(
+        SlotDirection slotDirection,
+        SlotType slotType,
+        const AZStd::string& name,
+        const AZStd::string& displayName,
+        const AZStd::string& description,
+        const DataTypeList& supportedDataTypes,
+        const AZStd::any& defaultValue,
+        int minimumSlots,
+        int maximumSlots,
+        const AZStd::string& addButtonLabel,
+        const AZStd::string& addButtonTooltip,
+        const AZStd::vector<AZStd::string>& enumValues,
         bool visibleOnNode,
         bool editableOnNode)
+        : m_slotDirection(slotDirection)
+        , m_slotType(slotType)
+        , m_name(name)
+        , m_displayName(displayName)
+        , m_description(description)
+        , m_supportedDataTypes(supportedDataTypes)
+        , m_defaultValue(defaultValue)
+        , m_minimumSlots(AZStd::max(0, AZStd::min(minimumSlots, maximumSlots)))
+        , m_maximumSlots(AZStd::max(0, AZStd::max(minimumSlots, maximumSlots)))
+        , m_addButtonLabel(addButtonLabel)
+        , m_addButtonTooltip(addButtonTooltip)
+        , m_enumValues(enumValues)
+        , m_visibleOnNode(visibleOnNode)
+        , m_editableOnNode(editableOnNode)
     {
-        return CreateInputData(
-            name,
-            displayName,
-            DataTypeList{ dataType },
-            defaultValue,
-            description,
-            extendableSlotConfiguration,
-            visibleOnNode,
-            editableOnNode);
-    }
-
-    SlotDefinitionPtr SlotDefinition::CreateInputData(
-        AZStd::string_view name,
-        AZStd::string_view displayName,
-        DataTypeList supportedDataTypes,
-        AZStd::any defaultValue,
-        AZStd::string_view description,
-        ExtendableSlotConfiguration* extendableSlotConfiguration,
-        bool visibleOnNode,
-        bool editableOnNode)
-    {
-        AZStd::shared_ptr<SlotDefinition> slotDefinition = AZStd::make_shared<SlotDefinition>();
-        slotDefinition->m_slotDirection = SlotDirection::Input;
-        slotDefinition->m_slotType = SlotType::Data;
-        slotDefinition->m_name = name;
-        slotDefinition->m_displayName = displayName;
-        slotDefinition->m_supportedDataTypes = supportedDataTypes;
-        slotDefinition->m_defaultValue = defaultValue;
-        slotDefinition->m_description = description;
-        slotDefinition->m_visibleOnNode = visibleOnNode;
-        slotDefinition->m_editableOnNode = editableOnNode;
-
-        HandleExtendableSlotRegistration(slotDefinition, extendableSlotConfiguration);
-
-        return slotDefinition;
-    }
-
-    SlotDefinitionPtr SlotDefinition::CreateOutputData(
-        AZStd::string_view name,
-        AZStd::string_view displayName,
-        DataTypePtr dataType,
-        AZStd::string_view description,
-        ExtendableSlotConfiguration* extendableSlotConfiguration,
-        bool visibleOnNode,
-        bool editableOnNode)
-    {
-        AZStd::shared_ptr<SlotDefinition> slotDefinition = AZStd::make_shared<SlotDefinition>();
-        slotDefinition->m_slotDirection = SlotDirection::Output;
-        slotDefinition->m_slotType = SlotType::Data;
-        slotDefinition->m_name = name;
-        slotDefinition->m_displayName = displayName;
-        slotDefinition->m_supportedDataTypes = { dataType };
-        slotDefinition->m_defaultValue = dataType->GetDefaultValue();
-        slotDefinition->m_description = description;
-        slotDefinition->m_visibleOnNode = visibleOnNode;
-        slotDefinition->m_editableOnNode = editableOnNode;
-
-        HandleExtendableSlotRegistration(slotDefinition, extendableSlotConfiguration);
-
-        return slotDefinition;
-    }
-
-    SlotDefinitionPtr SlotDefinition::CreateInputEvent(
-        AZStd::string_view name,
-        AZStd::string_view displayName,
-        AZStd::string_view description,
-        ExtendableSlotConfiguration* extendableSlotConfiguration,
-        bool visibleOnNode,
-        bool editableOnNode)
-    {
-        AZStd::shared_ptr<SlotDefinition> slotDefinition = AZStd::make_shared<SlotDefinition>();
-        slotDefinition->m_slotDirection = SlotDirection::Input;
-        slotDefinition->m_slotType = SlotType::Event;
-        slotDefinition->m_name = name;
-        slotDefinition->m_displayName = displayName;
-        slotDefinition->m_description = description;
-        slotDefinition->m_visibleOnNode = visibleOnNode;
-        slotDefinition->m_editableOnNode = editableOnNode;
-
-        HandleExtendableSlotRegistration(slotDefinition, extendableSlotConfiguration);
-
-        return slotDefinition;
-    }
-
-    SlotDefinitionPtr SlotDefinition::CreateOutputEvent(
-        AZStd::string_view name,
-        AZStd::string_view displayName,
-        AZStd::string_view description,
-        ExtendableSlotConfiguration* extendableSlotConfiguration,
-        bool visibleOnNode,
-        bool editableOnNode)
-    {
-        AZStd::shared_ptr<SlotDefinition> slotDefinition = AZStd::make_shared<SlotDefinition>();
-        slotDefinition->m_slotDirection = SlotDirection::Output;
-        slotDefinition->m_slotType = SlotType::Event;
-        slotDefinition->m_name = name;
-        slotDefinition->m_displayName = displayName;
-        slotDefinition->m_description = description;
-        slotDefinition->m_visibleOnNode = visibleOnNode;
-        slotDefinition->m_editableOnNode = editableOnNode;
-
-        HandleExtendableSlotRegistration(slotDefinition, extendableSlotConfiguration);
-
-        return slotDefinition;
-    }
-
-    SlotDefinitionPtr SlotDefinition::CreateProperty(
-        AZStd::string_view name,
-        AZStd::string_view displayName,
-        DataTypePtr dataType,
-        AZStd::any defaultValue,
-        AZStd::string_view description,
-        ExtendableSlotConfiguration* extendableSlotConfiguration,
-        bool visibleOnNode,
-        bool editableOnNode)
-    {
-        AZStd::shared_ptr<SlotDefinition> slotDefinition = AZStd::make_shared<SlotDefinition>();
-        slotDefinition->m_slotDirection = SlotDirection::Input;
-        slotDefinition->m_slotType = SlotType::Property;
-        slotDefinition->m_name = name;
-        slotDefinition->m_displayName = displayName;
-        slotDefinition->m_supportedDataTypes = { dataType };
-        slotDefinition->m_defaultValue = defaultValue;
-        slotDefinition->m_description = description;
-        slotDefinition->m_visibleOnNode = visibleOnNode;
-        slotDefinition->m_editableOnNode = editableOnNode;
-
-        HandleExtendableSlotRegistration(slotDefinition, extendableSlotConfiguration);
-
-        return slotDefinition;
-    }
-
-    void SlotDefinition::HandleExtendableSlotRegistration(
-        AZStd::shared_ptr<SlotDefinition> slotDefinition, ExtendableSlotConfiguration* extendableSlotConfiguration)
-    {
-        if (extendableSlotConfiguration)
-        {
-            slotDefinition->m_extendableSlotConfiguration = *extendableSlotConfiguration;
-
-            if (slotDefinition->m_extendableSlotConfiguration.m_minimumSlots > slotDefinition->m_extendableSlotConfiguration.m_maximumSlots)
-            {
-                AZ_Assert(false, "Invalid extendable slot configuration for %s, minimum slots greater than maximum slots", slotDefinition->GetName().c_str());
-                return;
-            }
-
-            slotDefinition->m_extendableSlotConfiguration.m_isValid = true;
-        }
     }
 
     SlotDirection SlotDefinition::GetSlotDirection() const
@@ -304,7 +198,7 @@ namespace GraphModel
 
     bool SlotDefinition::SupportsExtendability() const
     {
-        return m_extendableSlotConfiguration.m_isValid;
+        return m_minimumSlots >= 0 && m_maximumSlots >= 1 && m_minimumSlots < m_maximumSlots;
     }
 
     bool SlotDefinition::Is(SlotDirection slotDirection, SlotType slotType) const
@@ -337,24 +231,29 @@ namespace GraphModel
         return m_defaultValue;
     }
 
+    const AZStd::vector<AZStd::string>& SlotDefinition::GetEnumValues() const
+    {
+        return m_enumValues;
+    }
+
     const int SlotDefinition::GetMinimumSlots() const
     {
-        return m_extendableSlotConfiguration.m_minimumSlots;
+        return m_minimumSlots;
     }
 
     const int SlotDefinition::GetMaximumSlots() const
     {
-        return m_extendableSlotConfiguration.m_maximumSlots;
+        return m_maximumSlots;
     }
 
     const AZStd::string& SlotDefinition::GetExtensionLabel() const
     {
-        return m_extendableSlotConfiguration.m_addButtonLabel;
+        return m_addButtonLabel;
     }
 
     const AZStd::string& SlotDefinition::GetExtensionTooltip() const
     {
-        return m_extendableSlotConfiguration.m_addButtonTooltip;
+        return m_addButtonTooltip;
     }
 
     /////////////////////////////////////////////////////////
@@ -364,11 +263,50 @@ namespace GraphModel
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<Slot>()
+            serializeContext->Class<Slot, GraphElement>()
                 ->Version(1)
                 ->Field("m_value", &Slot::m_value)
                 ->Field("m_subId", &Slot::m_subId)
                 ;
+
+            serializeContext->RegisterGenericType<SlotPtr>();
+            serializeContext->RegisterGenericType<SlotPtrList>();
+        }
+
+        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->Class<Slot>("GraphModelSlot")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                ->Attribute(AZ::Script::Attributes::Category, "Editor")
+                ->Attribute(AZ::Script::Attributes::Module, "editor.graph")
+                ->Method("Is", &Slot::Is)
+                ->Method("GetSlotDirection", &Slot::GetSlotDirection)
+                ->Method("GetSlotType", &Slot::GetSlotType)
+                ->Method("SupportsValues", &Slot::SupportsValues)
+                ->Method("SupportsDataTypes", &Slot::SupportsDataTypes)
+                ->Method("SupportsConnections", &Slot::SupportsConnections)
+                ->Method("SupportsExtendability", &Slot::SupportsExtendability)
+                ->Method("IsVisibleOnNode", &Slot::IsVisibleOnNode)
+                ->Method("IsEditableOnNode", &Slot::IsEditableOnNode)
+                ->Method("GetName", &Slot::GetName)
+                ->Method("GetDisplayName", &Slot::GetDisplayName)
+                ->Method("GetDescription", &Slot::GetDescription)
+                ->Method("GetEnumValues", &Slot::GetEnumValues)
+                ->Method("GetDataType", &Slot::GetDataType)
+                ->Method("GetDefaultDataType", &Slot::GetDefaultDataType)
+                ->Method("GetDefaultValue", &Slot::GetDefaultValue)
+                ->Method("GetSupportedDataTypes", &Slot::GetSupportedDataTypes)
+                ->Method("IsSupportedDataType", &Slot::IsSupportedDataType)
+                ->Method("GetMinimumSlots", &Slot::GetMinimumSlots)
+                ->Method("GetMaximumSlots", &Slot::GetMaximumSlots)
+                ->Method("GetSlotId", &Slot::GetSlotId)
+                ->Method("GetSlotSubId", &Slot::GetSlotSubId)
+                ->Method("GetParentNode", &Slot::GetParentNode)
+                ->Method("GetValue", static_cast<AZStd::any(Slot::*)()const>(&Slot::GetValue))
+                ->Method("SetValue", static_cast<void(Slot::*)(const AZStd::any&)>(&Slot::SetValue))
+                ->Method("GetConnections", &Slot::GetConnections)
+                ->Method("ClearCachedData", &Slot::ClearCachedData)
+            ;
         }
     }
 
@@ -387,6 +325,7 @@ namespace GraphModel
 
         m_graph = graph;
         m_slotDefinition = slotDefinition;
+        ClearCachedData();
 
         if (SupportsValues())
         {
@@ -400,52 +339,46 @@ namespace GraphModel
 
     NodePtr Slot::GetParentNode() const
     {
-        for (auto nodePair : GetGraph()->GetNodes())
+        AZStd::scoped_lock lock(m_parentNodeMutex);
+        if (m_parentNodeDirty)
         {
-            if (nodePair.second->Contains(shared_from_this()))
+            m_parentNodeDirty = false;
+            for (auto nodePair : GetGraph()->GetNodes())
             {
-                return nodePair.second;
+                if (nodePair.second->Contains(shared_from_this()))
+                {
+                    m_parentNode = nodePair.second;
+                    return m_parentNode;
+                }
             }
         }
-        return {};
+        return m_parentNode;
     }
 
     AZStd::any Slot::GetValue() const
     {
-        if (SupportsValues() && SupportsConnections())
+        return !m_value.empty() ? m_value : GetDefaultValue();
+    }
+
+    const Slot::ConnectionList& Slot::GetConnections() const
+    {
+        AZStd::scoped_lock lock(m_connectionsMutex);
+        if (m_connectionsDirty)
         {
+            m_connectionsDirty = false;
+            m_connections.clear();
+            m_connections.reserve(GetGraph()->GetConnectionCount());
             for (const auto& connection : GetGraph()->GetConnections())
             {
                 const auto& sourceSlot = connection->GetSourceSlot();
                 const auto& targetSlot = connection->GetTargetSlot();
-                if (targetSlot && sourceSlot && targetSlot != sourceSlot && targetSlot.get() == this)
+                if (targetSlot.get() == this || sourceSlot.get() == this)
                 {
-                    return sourceSlot->GetValue();
+                    m_connections.emplace_back(connection);
                 }
             }
         }
-
-        if (!m_value.empty())
-        {
-            return m_value;
-        }
-
-        return GetDefaultValue();
-    }
-
-    Slot::ConnectionList Slot::GetConnections() const
-    {
-        ConnectionList connections;
-        for (const auto& connection : GetGraph()->GetConnections())
-        {
-            const auto& sourceSlot = connection->GetSourceSlot();
-            const auto& targetSlot = connection->GetTargetSlot();
-            if (targetSlot && sourceSlot && targetSlot != sourceSlot && (targetSlot.get() == this || sourceSlot.get() == this))
-            {
-                connections.insert(connection);
-            }
-        }
-        return connections;
+        return m_connections;
     }
 
     SlotDefinitionPtr Slot::GetDefinition() const
@@ -511,6 +444,11 @@ namespace GraphModel
     const AZStd::string& Slot::GetDescription() const
     {
         return m_slotDefinition->GetDescription();
+    }
+
+    const AZStd::vector<AZStd::string>& Slot::GetEnumValues() const
+    {
+        return m_slotDefinition->GetEnumValues();
     }
 
     AZStd::any Slot::GetDefaultValue() const
@@ -625,5 +563,20 @@ namespace GraphModel
         }
 
         return {};
+    }
+
+    void Slot::ClearCachedData()
+    {
+        {
+            AZStd::scoped_lock lock(m_parentNodeMutex);
+            m_parentNodeDirty = true;
+            m_parentNode = {};
+        }
+
+        {
+            AZStd::scoped_lock lock(m_connectionsMutex);
+            m_connectionsDirty = true;
+            m_connections.clear();
+        }
     }
 } // namespace GraphModel

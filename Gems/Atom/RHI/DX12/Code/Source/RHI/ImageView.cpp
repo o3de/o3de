@@ -20,7 +20,7 @@ namespace AZ
             return aznew ImageView();
         }
 
-        RHI::ResultCode ImageView::InitInternal(RHI::Device& deviceBase, const RHI::Resource& resourceBase)
+        RHI::ResultCode ImageView::InitInternal(RHI::Device& deviceBase, const RHI::DeviceResource& resourceBase)
         {
             const Image& image = static_cast<const Image&>(resourceBase);
 
@@ -40,12 +40,13 @@ namespace AZ
 
             if (RHI::CheckBitsAny(bindFlags, RHI::ImageBindFlags::ShaderRead))
             {
-                context.CreateShaderResourceView(image, viewDescriptor, m_readDescriptor);
+                context.CreateShaderResourceView(image, viewDescriptor, m_readDescriptor, m_staticReadDescriptor);
             }
 
             if (RHI::CheckBitsAny(bindFlags, RHI::ImageBindFlags::ShaderWrite))
             {
-                context.CreateUnorderedAccessView(image, viewDescriptor, m_readWriteDescriptor, m_clearDescriptor);
+                context.CreateUnorderedAccessView(
+                    image, viewDescriptor, m_readWriteDescriptor, m_clearDescriptor, m_staticReadWriteDescriptor);
             }
 
             if (RHI::CheckBitsAny(bindFlags, RHI::ImageBindFlags::Color))
@@ -78,6 +79,8 @@ namespace AZ
             context.ReleaseDescriptor(m_colorDescriptor);
             context.ReleaseDescriptor(m_depthStencilDescriptor);
             context.ReleaseDescriptor(m_depthStencilReadDescriptor);
+            context.ReleaseStaticDescriptor(m_staticReadDescriptor);
+            context.ReleaseStaticDescriptor(m_staticReadWriteDescriptor);
             m_memory = nullptr;
         }
 
@@ -109,6 +112,16 @@ namespace AZ
         DescriptorHandle ImageView::GetDepthStencilDescriptor(RHI::ScopeAttachmentAccess access) const
         {
             return RHI::CheckBitsAny(access, RHI::ScopeAttachmentAccess::Write) ? m_depthStencilDescriptor : m_depthStencilReadDescriptor;
+        }
+
+        uint32_t ImageView::GetBindlessReadIndex() const
+        {
+            return m_staticReadDescriptor.m_index;
+        }
+
+        uint32_t ImageView::GetBindlessReadWriteIndex() const
+        {
+            return m_staticReadWriteDescriptor.m_index;
         }
 
         const Image& ImageView::GetImage() const

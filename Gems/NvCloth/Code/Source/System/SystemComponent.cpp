@@ -147,7 +147,6 @@ namespace NvCloth
             {
                 editContext->Class<SystemComponent>("NvCloth", "Provides functionality for simulating cloth using NvCloth")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("System"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }
@@ -170,8 +169,6 @@ namespace NvCloth
 
     void SystemComponent::InitializeNvClothLibrary()
     {
-        AZ::AllocatorInstance<AzClothAllocator>::Create();
-
         ClothAllocatorCallback = AZStd::make_unique<AzClothAllocatorCallback>();
         ClothErrorCallback = AZStd::make_unique<AzClothErrorCallback>();
         ClothAssertHandler = AZStd::make_unique<AzClothAssertHandler>();
@@ -192,8 +189,6 @@ namespace NvCloth
         ClothAssertHandler.reset();
         ClothErrorCallback.reset();
         ClothAllocatorCallback.reset();
-
-        AZ::AllocatorInstance<AzClothAllocator>::Destroy();
     }
 
     bool SystemComponent::CheckLastClothError()

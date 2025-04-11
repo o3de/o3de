@@ -17,7 +17,7 @@
 
 namespace EMStudio
 {
-    AZ_CLASS_ALLOCATOR_IMPL(Vector3ParameterEditor, EMStudio::UIAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(Vector3ParameterEditor, EMStudio::UIAllocator)
 
     Vector3ParameterEditor::Vector3ParameterEditor(EMotionFX::AnimGraph* animGraph, const EMotionFX::ValueParameter* valueParameter, const AZStd::vector<MCore::Attribute*>& attributes)
         : ValueParameterEditor(animGraph, valueParameter, attributes)

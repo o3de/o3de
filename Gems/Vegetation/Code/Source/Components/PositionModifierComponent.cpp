@@ -15,8 +15,8 @@
 #include <Vegetation/Descriptor.h>
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <Vegetation/InstanceData.h>
+#include <VegetationProfiler.h>
 #include <SurfaceData/SurfaceDataSystemRequestBus.h>
-#include <AzCore/Debug/Profiler.h>
 
 namespace Vegetation
 {
@@ -27,18 +27,18 @@ namespace Vegetation
             if (classElement.GetVersion() < 1)
             {
                 AZ::Vector3 rangeMin(-0.3f, -0.3f, 0.0f);
-                if (classElement.GetChildData(AZ_CRC("RangeMin", 0xedb80851), rangeMin))
+                if (classElement.GetChildData(AZ_CRC_CE("RangeMin"), rangeMin))
                 {
-                    classElement.RemoveElementByName(AZ_CRC("RangeMin", 0xedb80851));
+                    classElement.RemoveElementByName(AZ_CRC_CE("RangeMin"));
                     classElement.AddElementWithData(context, "RangeMinX", (float)rangeMin.GetX());
                     classElement.AddElementWithData(context, "RangeMinY", (float)rangeMin.GetY());
                     classElement.AddElementWithData(context, "RangeMinZ", (float)rangeMin.GetZ());
                 }
 
                 AZ::Vector3 rangeMax(0.3f, 0.3f, 0.0f);
-                if (classElement.GetChildData(AZ_CRC("RangeMax", 0xd1b53708), rangeMax))
+                if (classElement.GetChildData(AZ_CRC_CE("RangeMax"), rangeMax))
                 {
-                    classElement.RemoveElementByName(AZ_CRC("RangeMax", 0xd1b53708));
+                    classElement.RemoveElementByName(AZ_CRC_CE("RangeMax"));
                     classElement.AddElementWithData(context, "RangeMaxX", (float)rangeMax.GetX());
                     classElement.AddElementWithData(context, "RangeMaxY", (float)rangeMax.GetY());
                     classElement.AddElementWithData(context, "RangeMaxZ", (float)rangeMax.GetZ());
@@ -180,18 +180,18 @@ namespace Vegetation
 
     void PositionModifierComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationModifierService", 0xc551fca6));
-        services.push_back(AZ_CRC("VegetationPositionModifierService", 0xe7d7293e));
+        services.push_back(AZ_CRC_CE("VegetationModifierService"));
+        services.push_back(AZ_CRC_CE("VegetationPositionModifierService"));
     }
 
     void PositionModifierComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationPositionModifierService", 0xe7d7293e));
+        services.push_back(AZ_CRC_CE("VegetationPositionModifierService"));
     }
 
     void PositionModifierComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationAreaService", 0x6a859504));
+        services.push_back(AZ_CRC_CE("VegetationAreaService"));
     }
 
     void PositionModifierComponent::Reflect(AZ::ReflectContext* context)
@@ -281,7 +281,7 @@ namespace Vegetation
 
     void PositionModifierComponent::Execute(InstanceData& instanceData) const
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        VEGETATION_PROFILE_FUNCTION_VERBOSE
 
         const GradientSignal::GradientSampleParams sampleParams(instanceData.m_position);
         float factorX = m_configuration.m_gradientSamplerX.GetValue(sampleParams);

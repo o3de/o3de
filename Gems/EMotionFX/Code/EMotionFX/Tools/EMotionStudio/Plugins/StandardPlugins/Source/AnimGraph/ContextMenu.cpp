@@ -33,7 +33,7 @@
 
 namespace EMStudio
 {
-    void BlendGraphWidget::AddAssignNodeToGroupSubmenu(QMenu* menu, EMotionFX::AnimGraph* animGraph)
+    void BlendGraphWidget::AddAssignNodeToGroupSubmenu(QMenu* menu, EMotionFX::AnimGraph* animGraph, EMotionFX::AnimGraphNodeGroup* currentlyAssignedGroup)
     {
         const size_t numNodeGroups = animGraph->GetNumNodeGroups();
         if (numNodeGroups == 0)
@@ -41,20 +41,57 @@ namespace EMStudio
             return;
         }
 
+        const size_t selectedNodeCount = GetActiveGraph()->GetSelectedAnimGraphNodes().size();
+
         QMenu* nodeGroupMenu = new QMenu(tr("Assign To Node Group"), menu);
+
+        // We keep track of how many groups are valid for the level currently being shown on the animation graph.
+        // If there is none, we won't show the "assign" action on the context menu.
+        int validGroupCount = 0;
+
+        NodeGraph* activeGraph = GetActiveGraph();
+        QModelIndex currentLevelParentIndex = activeGraph->GetAnimGraphModel().GetFocus();
+        EMotionFX::AnimGraphNodeId currentLevelParentId = currentLevelParentIndex.isValid()
+            ? currentLevelParentIndex.data(AnimGraphModel::ROLE_ID).value<EMotionFX::AnimGraphNodeId>() : EMotionFX::AnimGraphNodeId{};
 
         for (size_t i = 0; i < numNodeGroups; ++i)
         {
             EMotionFX::AnimGraphNodeGroup* nodeGroup = animGraph->GetNodeGroup(i);
+            auto nodeGroupParentId = nodeGroup->GetParentNodeId();
+            AZ_Assert(nodeGroupParentId.IsValid(), "Invalid nodeGroupParentId");
 
-            AZ::Color nodeGroupColor;
-            nodeGroupColor.FromU32(nodeGroup->GetColor());
-            QAction* nodeGroupAction = nodeGroupMenu->addAction(QIcon(new SolidColorIconEngine(nodeGroupColor)), nodeGroup->GetName());
-            nodeGroupAction->setData(qulonglong(i + 1)); // index of the menu added, not used
-            connect(nodeGroupAction, &QAction::triggered, this, &BlendGraphWidget::AssignSelectedNodesToGroup);
+            // Check if the node group being iterated belongs to the same level currently being shown on the animation graph.
+            // We only want to add it to the assignable node groups list if the levels match.
+            if (nodeGroupParentId == currentLevelParentId)
+            {
+                AZ::Color nodeGroupColor;
+                nodeGroupColor.FromU32(nodeGroup->GetColor());
+                QAction* nodeGroupAction = nodeGroupMenu->addAction(QIcon(new SolidColorIconEngine(nodeGroupColor)), nodeGroup->GetName());
+                nodeGroupAction->setCheckable(true);
+                nodeGroupAction->setData(qulonglong(i + 1)); // index of the menu added, not used
+                if (currentlyAssignedGroup == nodeGroup && selectedNodeCount == 1)
+                {
+                    nodeGroupAction->setChecked(true);
+                }
+                else
+                {
+                    connect(
+                        nodeGroupAction,
+                        &QAction::triggered,
+                        this,
+                        [this, nodeGroup]()
+                        {
+                            AssignSelectedNodesToGroup(nodeGroup);
+                        });
+                }
+                validGroupCount++;
+            }
         }
 
-        menu->addMenu(nodeGroupMenu);
+        if (validGroupCount > 0)
+        {
+            menu->addMenu(nodeGroupMenu);
+        }
     }
 
     void BlendGraphWidget::AddPreviewMotionSubmenu(QMenu* menu, AnimGraphActionManager* actionManager, const EMotionFX::AnimGraphNode* selectedNode)
@@ -373,23 +410,20 @@ namespace EMStudio
                 connect(createNodeGroupAction, &QAction::triggered, this, &BlendGraphWidget::CreateNodeGroup);
                 if (actionFilter.m_editNodeGroups && !inReferenceGraph && animGraphNode->GetParentNode())
                 {
-                    AddAssignNodeToGroupSubmenu(menu, animGraphNode->GetAnimGraph());
+                    AddAssignNodeToGroupSubmenu(menu, animGraphNode->GetAnimGraph(), nullptr);
                 }
             }
             else
             {
+                AddAssignNodeToGroupSubmenu(menu, animGraphNode->GetAnimGraph(), nodeGroup);
                 QAction* removeFromGroupAction = menu->addAction(tr("Remove From Node Group"));
                 connect(
                     removeFromGroupAction,
                     &QAction::triggered,
                     this,
-                    [this, nodeGroup, selectedNodes]
+                    [this]
                     {
-                        nodeGroup->RemoveNodeById(selectedNodes[0]->GetId());
-                        if (nodeGroup->GetNumNodes() == 0)
-                        {
-                            DeleteNodeGroup(nodeGroup);
-                        }
+                        AssignSelectedNodesToGroup(nullptr);
                     });
             }
 
@@ -524,30 +558,20 @@ namespace EMStudio
                 connect(createNodeGroupAction, &QAction::triggered, this, &BlendGraphWidget::CreateNodeGroup);
                 if (actionFilter.m_editNodeGroups && !inReferenceGraph)
                 {
-                    AddAssignNodeToGroupSubmenu(&menu, selectedNodes[0]->GetAnimGraph());
+                    AddAssignNodeToGroupSubmenu(&menu, selectedNodes[0]->GetAnimGraph(), nullptr);
                 }
             }
             else
             {
+                AddAssignNodeToGroupSubmenu(&menu, selectedNodes[0]->GetAnimGraph(), nullptr);
                 QAction* removeFromGroupAction = menu.addAction(tr("Remove From Node Group"));
                 connect(
                     removeFromGroupAction,
                     &QAction::triggered,
                     this,
-                    [this, &selectedNodes]
+                    [this]
                     {
-                        for (EMotionFX::AnimGraphNode* node : selectedNodes)
-                        {
-                            auto* group = node->GetAnimGraph()->FindNodeGroupForNode(node);
-                            if (group)
-                            {
-                                group->RemoveNodeById(node->GetId());
-                                if (group->GetNumNodes() == 0)
-                                {
-                                    DeleteNodeGroup(group);
-                                }
-                            }
-                        }
+                        AssignSelectedNodesToGroup(nullptr);
                     });
             }
 

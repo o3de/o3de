@@ -9,9 +9,12 @@
 #pragma once
 
 #include <AzCore/Component/ComponentBus.h>
+#include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/Component/Entity.h>
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
+#include <AzFramework/Physics/Components/SimulatedBodyComponentBus.h>
 
 namespace AzPhysics
 {
@@ -20,12 +23,12 @@ namespace AzPhysics
 
 namespace Physics
 {
-
+    //! Requests interface for a rigid body (static or dynamic).
     class RigidBodyRequests
         : public AZ::ComponentBus
     {
     public:
-        using MutexType = AZStd::mutex;
+        using MutexType = AZStd::recursive_mutex;
 
         virtual void EnablePhysics() = 0;
         virtual void DisablePhysics() = 0;
@@ -79,13 +82,66 @@ namespace Physics
 
     using RigidBodyRequestBus = AZ::EBus<RigidBodyRequests>;
 
-
+    //! Notifications interface for a rigid body (static or dynamic).
     class RigidBodyNotifications
         : public AZ::ComponentBus
     {
+    private:
+        template<class Bus>
+        struct RigidBodyNotificationsConnectionPolicy : public AZ::EBusConnectionPolicy<Bus>
+        {
+            static void Connect(
+                typename Bus::BusPtr& busPtr,
+                typename Bus::Context& context,
+                typename Bus::HandlerNode& handler,
+                typename Bus::Context::ConnectLockGuard& connectLock,
+                const typename Bus::BusIdType& id = 0)
+            {
+                AZ::EBusConnectionPolicy<Bus>::Connect(busPtr, context, handler, connectLock, id);
+
+                AZ::Entity* entity = nullptr;
+                AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, id);
+                if (entity)
+                {
+                    // Only immediately dispatch if the entity is already active, otherwise when
+                    // entity will get activated it will send the notifications itself.
+                    const AZ::Entity::State entityState = entity->GetState();
+                    if (entityState == AZ::Entity::State::Active)
+                    {
+                        // Only immediately dispatch if the entity is a RigidBodyRequestBus' handler.
+                        AzPhysics::SimulatedBodyComponentRequestsBus::EnumerateHandlersId(
+                            id,
+                            [&handler, id](const AzPhysics::SimulatedBodyComponentRequests* simulatedBodyhandler)
+                            {
+                                if (simulatedBodyhandler->IsPhysicsEnabled())
+                                {
+                                    handler->OnPhysicsEnabled(id);
+                                }
+                                else
+                                {
+                                    handler->OnPhysicsDisabled(id);
+                                }
+                                return true;
+                            });
+                    }
+                }
+            }
+        };
+
     public:
-        virtual void OnPhysicsEnabled() = 0;
-        virtual void OnPhysicsDisabled() = 0;
+        //! With this connection policy, RigidBodyNotifications::OnPhysicsEnabled and
+        //! RigidBodyNotifications::OnPhysicsDisabled events will be immediately
+        //! dispatched when a handler connects to the bus.
+        template<class Bus>
+        using ConnectionPolicy = RigidBodyNotificationsConnectionPolicy<Bus>;
+
+        virtual void OnPhysicsEnabled([[maybe_unused]] const AZ::EntityId& entityId)
+        {
+        }
+
+        virtual void OnPhysicsDisabled([[maybe_unused]] const AZ::EntityId& entityId)
+        {
+        }
     };
 
     using RigidBodyNotificationBus = AZ::EBus<RigidBodyNotifications>;

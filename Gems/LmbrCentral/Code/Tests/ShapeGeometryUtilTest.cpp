@@ -18,21 +18,21 @@
 namespace UnitTest
 {
     class ShapeGeometryUtilTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
 
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
             m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
         }
 
         void TearDown() override
         {
             m_serializeContext.reset();
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
     };
 

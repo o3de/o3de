@@ -9,22 +9,34 @@
 #include <AzToolsFramework/Editor/ActionManagerUtils.h>
 
 #include <AzCore/Settings/SettingsRegistry.h>
+#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
+#include <AzToolsFramework/ActionManager/HotKey/HotKeyWidgetRegistrationInterface.h>
+
+#include <QWidget>
 
 namespace AzToolsFramework
 {
-    static constexpr AZStd::string_view ActionManagerToggleKey = "/O3DE/ActionManager/EnableNewActionManager";
-
     bool IsNewActionManagerEnabled()
     {
-        bool isNewActionManagerEnabled = false;
+        // New Action Manager system is always enabled.
+        // This helper will be removed once the legacy system is completely removed.
+        return true;
+    }
 
-        // Retrieve new action manager setting
-        if (auto* registry = AZ::SettingsRegistry::Get())
+    void AssignWidgetToActionContextHelper(const AZStd::string& actionContextIdentifier, QWidget* widget)
+    {
+        if (auto hotKeyWidgetRegistrationInterface = AZ::Interface<HotKeyWidgetRegistrationInterface>::Get())
         {
-            registry->Get(isNewActionManagerEnabled, ActionManagerToggleKey);
+            hotKeyWidgetRegistrationInterface->AssignWidgetToActionContext(actionContextIdentifier, widget);
         }
+    }
 
-        return isNewActionManagerEnabled;
+    void RemoveWidgetFromActionContextHelper(const AZStd::string& actionContextIdentifier, QWidget* widget)
+    {
+        if (auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
+        {
+            hotKeyManagerInterface->RemoveWidgetFromActionContext(actionContextIdentifier, widget);
+        }
     }
 
 } // namespace AzToolsFramework

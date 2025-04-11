@@ -15,6 +15,8 @@
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/std/sort.h>
 
+AZ_DECLARE_BUDGET(SurfaceData);
+
 namespace SurfaceData
 {
     namespace SurfaceTagUtil
@@ -24,9 +26,9 @@ namespace SurfaceData
             if (classElement.GetVersion() < 1)
             {
                 AZStd::string surfaceTag;
-                if (classElement.GetChildData(AZ_CRC("SurfaceTag", 0xafd98787), surfaceTag))
+                if (classElement.GetChildData(AZ_CRC_CE("SurfaceTag"), surfaceTag))
                 {
-                    classElement.RemoveElementByName(AZ_CRC("SurfaceTag", 0xafd98787));
+                    classElement.RemoveElementByName(AZ_CRC_CE("SurfaceTag"));
                     classElement.AddElementWithData(context, "SurfaceTagCrc", (AZ::u32)(AZ::Crc32(surfaceTag.data())));
                 }
             }
@@ -35,7 +37,7 @@ namespace SurfaceData
                 SurfaceTag surfaceTag;
                 if (classElement.GetData(surfaceTag))
                 {
-                    if (surfaceTag == AZ_CRC("(default)", 0x3c3d0dd8))
+                    if (surfaceTag == AZ_CRC_CE("(default)"))
                     {
                         surfaceTag = Constants::s_unassignedTagCrc;
                         classElement.SetData(context, surfaceTag);
@@ -95,7 +97,7 @@ namespace SurfaceData
 
     AZStd::vector<AZStd::pair<AZ::u32, AZStd::string>> SurfaceTag::GetRegisteredTags()
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        AZ_PROFILE_FUNCTION(SurfaceData);
 
         SurfaceTagNameSet labels;
         SurfaceDataTagProviderRequestBus::Broadcast(&SurfaceDataTagProviderRequestBus::Events::GetRegisteredSurfaceTagNames, labels);
@@ -141,7 +143,7 @@ namespace SurfaceData
 
     AZStd::vector<AZStd::pair<AZ::u32, AZStd::string>> SurfaceTag::BuildSelectableTagList() const
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        AZ_PROFILE_FUNCTION(SurfaceData);
 
         AZStd::vector<AZStd::pair<AZ::u32, AZStd::string>> selectableTags = GetRegisteredTags();
 
@@ -159,7 +161,7 @@ namespace SurfaceData
 
     AZStd::string SurfaceTag::GetDisplayName() const
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        AZ_PROFILE_FUNCTION(SurfaceData);
 
         AZStd::string name;
         FindDisplayName(GetRegisteredTags(), name);

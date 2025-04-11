@@ -32,6 +32,110 @@ namespace EMotionFX
             GetCapsuleShapeConfiguration(const_cast<const PhysicsSetupManipulatorData&>(physicsSetupManipulatorData)));
     }
 
+    void ColliderCapsuleManipulators::InstallCapsuleViewportEditFunctions()
+    {
+        if (!m_capsuleViewportEdit)
+        {
+            return;
+        }
+
+        m_capsuleViewportEdit->InstallGetManipulatorSpace(
+            [this]()
+            {
+                return m_physicsSetupManipulatorData.m_nodeWorldTransform;
+            });
+        m_capsuleViewportEdit->InstallGetNonUniformScale(
+            []()
+            {
+                return AZ::Vector3::CreateOne();
+            });
+        m_capsuleViewportEdit->InstallGetTranslationOffset(
+            [this]()
+            {
+                if (!m_physicsSetupManipulatorData.HasCapsuleCollider())
+                {
+                    return AZ::Vector3::CreateZero();
+                }
+
+                const Physics::ColliderConfiguration* colliderConfiguration =
+                    m_physicsSetupManipulatorData.m_colliderNodeConfiguration->m_shapes[0].first.get();
+
+                return colliderConfiguration->m_position;
+            });
+        m_capsuleViewportEdit->InstallGetRotationOffset(
+            [this]()
+            {
+                if (!m_physicsSetupManipulatorData.HasCapsuleCollider())
+                {
+                    return AZ::Quaternion::CreateIdentity();
+                }
+
+                const Physics::ColliderConfiguration* colliderConfiguration =
+                    m_physicsSetupManipulatorData.m_colliderNodeConfiguration->m_shapes[0].first.get();
+
+                return colliderConfiguration->m_rotation;
+            });
+        m_capsuleViewportEdit->InstallGetCapsuleRadius(
+            [this]()
+            {
+                if (auto* capsuleShapeConfiguration = GetCapsuleShapeConfiguration(m_physicsSetupManipulatorData))
+                {
+                    return capsuleShapeConfiguration->m_radius;
+                }
+
+                return Physics::ShapeConstants::DefaultCapsuleRadius;
+            });
+        m_capsuleViewportEdit->InstallGetCapsuleHeight(
+            [this]()
+            {
+                if (const auto* capsuleShapeConfiguration = GetCapsuleShapeConfiguration(m_physicsSetupManipulatorData))
+                {
+                    return capsuleShapeConfiguration->m_height;
+                }
+
+                return Physics::ShapeConstants::DefaultCapsuleHeight;
+            });
+        m_capsuleViewportEdit->InstallSetCapsuleRadius(
+            [this](float radius)
+            {
+                if (auto* capsuleShapeConfiguration = GetCapsuleShapeConfiguration(m_physicsSetupManipulatorData))
+                {
+                    capsuleShapeConfiguration->m_radius = radius;
+                    m_physicsSetupManipulatorData.m_collidersWidget->Update();
+                }
+            });
+        m_capsuleViewportEdit->InstallSetCapsuleHeight(
+            [this](float height)
+            {
+                if (auto* capsuleShapeConfiguration = GetCapsuleShapeConfiguration(m_physicsSetupManipulatorData))
+                {
+                    capsuleShapeConfiguration->m_height = height;
+                    m_physicsSetupManipulatorData.m_collidersWidget->Update();
+                }
+            });
+        m_capsuleViewportEdit->InstallSetTranslationOffset(
+            [this](const AZ::Vector3& translationOffset)
+            {
+                if (m_physicsSetupManipulatorData.HasCapsuleCollider())
+                {
+                    Physics::ColliderConfiguration* colliderConfiguration =
+                        m_physicsSetupManipulatorData.m_colliderNodeConfiguration->m_shapes[0].first.get();
+
+                    colliderConfiguration->m_position = translationOffset;
+                }
+            });
+        m_capsuleViewportEdit->InstallBeginEditing(
+            [this]()
+            {
+                BeginEditing();
+            });
+        m_capsuleViewportEdit->InstallEndEditing(
+            [this]()
+            {
+                EndEditing();
+            });
+    }
+
     void ColliderCapsuleManipulators::Setup(const PhysicsSetupManipulatorData& physicsSetupManipulatorData)
     {
         m_physicsSetupManipulatorData = physicsSetupManipulatorData;
@@ -41,7 +145,10 @@ namespace EMotionFX
             return;
         }
 
-        SetupCapsuleManipulators(EMStudio::g_animManipulatorManagerId);
+        const bool allowAsymmetricalEditing = true;
+        m_capsuleViewportEdit = AZStd::make_unique<AzToolsFramework::CapsuleViewportEdit>(allowAsymmetricalEditing);
+        InstallCapsuleViewportEditFunctions();
+        m_capsuleViewportEdit->Setup(EMStudio::g_animManipulatorManagerId);
 
         AZ::TickBus::Handler::BusConnect();
         PhysicsSetupManipulatorRequestBus::Handler::BusConnect();
@@ -51,9 +158,9 @@ namespace EMotionFX
 
     void ColliderCapsuleManipulators::Refresh()
     {
-        if (m_physicsSetupManipulatorData.HasCapsuleCollider())
+        if (m_capsuleViewportEdit)
         {
-            UpdateCapsuleManipulators();
+            m_capsuleViewportEdit->UpdateManipulators();
         }
     }
 
@@ -68,25 +175,18 @@ namespace EMotionFX
         m_adjustColliderCallback.reset();
         PhysicsSetupManipulatorRequestBus::Handler::BusDisconnect();
         AZ::TickBus::Handler::BusDisconnect();
-        if (m_radiusManipulator)
+        if (m_capsuleViewportEdit)
         {
-            m_radiusManipulator->Unregister();
+            m_capsuleViewportEdit->Teardown();
         }
-        if (m_heightManipulator)
-        {
-            m_heightManipulator->Unregister();
-        }
-        TeardownCapsuleManipulators();
     }
 
     void ColliderCapsuleManipulators::ResetValues()
     {
-        if (m_physicsSetupManipulatorData.HasCapsuleCollider())
+        if (m_capsuleViewportEdit)
         {
-            BeginEditing();
-            ResetCapsuleManipulators();
-            FinishEditing();
-            Refresh();
+            m_capsuleViewportEdit->ResetValues();
+            m_capsuleViewportEdit->UpdateManipulators();
         }
     }
 
@@ -112,7 +212,7 @@ namespace EMotionFX
         }
     }
 
-    void ColliderCapsuleManipulators::FinishEditing()
+    void ColliderCapsuleManipulators::EndEditing()
     {
         if (m_commandGroup.IsEmpty())
         {
@@ -134,73 +234,15 @@ namespace EMotionFX
 
     void ColliderCapsuleManipulators::OnTick([[maybe_unused]] float delta, [[maybe_unused]] AZ::ScriptTimePoint timePoint)
     {
-        const AzFramework::CameraState cameraState = AzToolsFramework::GetCameraState(m_viewportId);
-        OnCameraStateChanged(cameraState);
+        if (m_capsuleViewportEdit)
+        {
+            const AzFramework::CameraState cameraState = AzToolsFramework::GetCameraState(m_viewportId);
+            m_capsuleViewportEdit->OnCameraStateChanged(cameraState);
+        }
     }
 
     void ColliderCapsuleManipulators::OnUnderlyingPropertiesChanged()
     {
         Refresh();
-    }
-
-    AZ::Transform ColliderCapsuleManipulators::GetCapsuleWorldTransform() const
-    {
-        return m_physicsSetupManipulatorData.m_nodeWorldTransform;
-    }
-
-    AZ::Transform ColliderCapsuleManipulators::GetCapsuleLocalTransform() const
-    {
-        if (!m_physicsSetupManipulatorData.HasCapsuleCollider())
-        {
-            return AZ::Transform::CreateIdentity();
-        }
-
-        const Physics::ColliderConfiguration* colliderConfiguration =
-            m_physicsSetupManipulatorData.m_colliderNodeConfiguration->m_shapes[0].first.get();
-
-        return AZ::Transform::CreateFromQuaternionAndTranslation(colliderConfiguration->m_rotation, colliderConfiguration->m_position);
-    }
-
-    AZ::Vector3 ColliderCapsuleManipulators::GetCapsuleNonUniformScale() const
-    {
-        return AZ::Vector3::CreateOne();
-    }
-
-    float ColliderCapsuleManipulators::GetCapsuleRadius() const
-    {
-        if (auto* capsuleShapeConfiguration = GetCapsuleShapeConfiguration(m_physicsSetupManipulatorData))
-        {
-            return capsuleShapeConfiguration->m_radius;
-        }
-
-        return Physics::ShapeConstants::DefaultCapsuleRadius;
-    }
-
-    float ColliderCapsuleManipulators::GetCapsuleHeight() const
-    {
-        if (const auto* capsuleShapeConfiguration = GetCapsuleShapeConfiguration(m_physicsSetupManipulatorData))
-        {
-            return capsuleShapeConfiguration->m_height;
-        }
-
-        return Physics::ShapeConstants::DefaultCapsuleHeight;
-    }
-
-    void ColliderCapsuleManipulators::SetCapsuleRadius(float radius)
-    {
-        if (auto* capsuleShapeConfiguration = GetCapsuleShapeConfiguration(m_physicsSetupManipulatorData))
-        {
-            capsuleShapeConfiguration->m_radius = radius;
-            m_physicsSetupManipulatorData.m_collidersWidget->Update();
-        }
-    }
-
-    void ColliderCapsuleManipulators::SetCapsuleHeight(float height)
-    {
-        if (auto* capsuleShapeConfiguration = GetCapsuleShapeConfiguration(m_physicsSetupManipulatorData))
-        {
-            capsuleShapeConfiguration->m_height = height;
-            m_physicsSetupManipulatorData.m_collidersWidget->Update();
-        }
     }
 } // namespace EMotionFX

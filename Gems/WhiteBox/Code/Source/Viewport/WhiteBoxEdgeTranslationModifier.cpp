@@ -23,7 +23,7 @@
 
 namespace WhiteBox
 {
-    AZ_CLASS_ALLOCATOR_IMPL(EdgeTranslationModifier, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(EdgeTranslationModifier, AZ::SystemAllocator)
 
     static bool BeginningExtrude(
         const AzToolsFramework::PlanarManipulator::Action& action, const AppendStage appendStage)

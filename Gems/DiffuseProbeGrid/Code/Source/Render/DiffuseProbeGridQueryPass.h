@@ -25,7 +25,7 @@ namespace AZ
             AZ_RPI_PASS(DiffuseProbeGridQueryPass);
 
             AZ_RTTI(AZ::Render::DiffuseProbeGridQueryPass, "{EE52C193-98E2-4F93-8A19-B4E710F12592}", RPI::RenderPass);
-            AZ_CLASS_ALLOCATOR(DiffuseProbeGridQueryPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DiffuseProbeGridQueryPass, SystemAllocator);
             virtual ~DiffuseProbeGridQueryPass() = default;
 
             static RPI::Ptr<DiffuseProbeGridQueryPass> Create(const RPI::PassDescriptor& descriptor);

@@ -6,131 +6,130 @@
  *
  */
 #include <Atom/RHI/AliasingBarrierTracker.h>
-#include <Atom/RHI/Buffer.h>
 #include <Atom/RHI/Image.h>
 #include <Atom/RHI/Scope.h>
+#include <Atom/RHI/DeviceBuffer.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    void AliasingBarrierTracker::Reset()
     {
-        void AliasingBarrierTracker::Reset()
+        m_resources.clear();
+        m_barrierHashes.clear();
+        ResetInternal();
+    }
+
+    AliasingBarrierTracker::Overlap AliasingBarrierTracker::GetOverlap(
+        const AliasedResource& resourceOld,
+        const AliasedResource& resourceNew) const
+    {
+        if (resourceOld.m_byteOffsetMax < resourceNew.m_byteOffsetMin ||
+            resourceNew.m_byteOffsetMax < resourceOld.m_byteOffsetMin)
         {
-            m_resources.clear();
-            m_barrierHashes.clear();
-            ResetInternal();
+            return Overlap::Disjoint;
         }
-
-        AliasingBarrierTracker::Overlap AliasingBarrierTracker::GetOverlap(
-            const AliasedResource& resourceOld,
-            const AliasedResource& resourceNew) const
+        else if (
+            resourceOld.m_byteOffsetMin >= resourceNew.m_byteOffsetMin &&
+            resourceOld.m_byteOffsetMax <= resourceNew.m_byteOffsetMax)
         {
-            if (resourceOld.m_byteOffsetMax < resourceNew.m_byteOffsetMin ||
-                resourceNew.m_byteOffsetMax < resourceOld.m_byteOffsetMin)
-            {
-                return Overlap::Disjoint;
-            }
-            else if (
-                resourceOld.m_byteOffsetMin >= resourceNew.m_byteOffsetMin &&
-                resourceOld.m_byteOffsetMax <= resourceNew.m_byteOffsetMax)
-            {
-                return Overlap::Complete;
-            }
-            return Overlap::Partial;
+            return Overlap::Complete;
         }
+        return Overlap::Partial;
+    }
 
-        void AliasingBarrierTracker::AddResource(const AliasedResource& resourceNew)
+    void AliasingBarrierTracker::AddResource(const AliasedResource& resourceNew)
+    {
+        auto it = m_resources.begin();
+        while (it != m_resources.end())
         {
-            auto it = m_resources.begin();
-            while (it != m_resources.end())
+            AliasedResource& resourceOld = *it;
+
+            const Overlap overlap = GetOverlap(resourceOld, resourceNew);
+
+            if (overlap == Overlap::Complete)
             {
-                AliasedResource& resourceOld = *it;
+                TryAppendBarrier(resourceOld, resourceNew);
+                it = m_resources.erase(it);
+                continue; // Don't need to increment the iterator.
+            }
 
-                const Overlap overlap = GetOverlap(resourceOld, resourceNew);
+            if (overlap == Overlap::Partial)
+            {
+                TryAppendBarrier(resourceOld, resourceNew);
+                bool recycledOld = false;
 
-                if (overlap == Overlap::Complete)
+                // Part of the old resource sticks out of the left side.
+                if (resourceOld.m_byteOffsetMin < resourceNew.m_byteOffsetMin)
                 {
-                    TryAppendBarrier(resourceOld, resourceNew);
-                    it = m_resources.erase(it);
-                    continue; // Don't need to increment the iterator.
+                    resourceOld.m_byteOffsetMax = resourceNew.m_byteOffsetMin - 1;
+                    recycledOld = true;
                 }
 
-                if (overlap == Overlap::Partial)
+                // Part of the old resource sticks out of the right side.
+                if (resourceOld.m_byteOffsetMax > resourceNew.m_byteOffsetMax)
                 {
-                    TryAppendBarrier(resourceOld, resourceNew);
-                    bool recycledOld = false;
-
-                    // Part of the old resource sticks out of the left side.
-                    if (resourceOld.m_byteOffsetMin < resourceNew.m_byteOffsetMin)
+                    // The left is fully covered, so just resize the resource.
+                    if (!recycledOld)
                     {
-                        resourceOld.m_byteOffsetMax = resourceNew.m_byteOffsetMin - 1;
-                        recycledOld = true;
+                        resourceOld.m_byteOffsetMin = resourceNew.m_byteOffsetMax + 1;
                     }
 
-                    // Part of the old resource sticks out of the right side.
-                    if (resourceOld.m_byteOffsetMax > resourceNew.m_byteOffsetMax)
+                    // The new resource splits the old one in two.
+                    else
                     {
-                        // The left is fully covered, so just resize the resource.
-                        if (!recycledOld)
-                        {
-                            resourceOld.m_byteOffsetMin = resourceNew.m_byteOffsetMax + 1;
-                        }
+                        AliasedResource resourceOldRight = resourceOld;
+                        resourceOldRight.m_byteOffsetMin = resourceNew.m_byteOffsetMax + 1;
 
-                        // The new resource splits the old one in two.
-                        else
-                        {
-                            AliasedResource resourceOldRight = resourceOld;
-                            resourceOldRight.m_byteOffsetMin = resourceNew.m_byteOffsetMax + 1;
-
-                            // Insert after the lesser-offset "old" resource part.
-                            it = m_resources.insert(it + 1, resourceOldRight);
-                        }
+                        // Insert after the lesser-offset "old" resource part.
+                        it = m_resources.insert(it + 1, resourceOldRight);
                     }
                 }
-
-                ++it;
             }
 
-            for (it = m_resources.begin(); it != m_resources.end(); ++it)
-            {
-                const AliasedResource& resourceOld = *it;
+            ++it;
+        }
 
-                // Find first resource that has a greater VA address. Then insert before it.
-                if (resourceOld.m_byteOffsetMin > resourceNew.m_byteOffsetMin)
-                {
-                    it = m_resources.insert(it, resourceNew);
-                    break;
-                }
-            }
+        for (it = m_resources.begin(); it != m_resources.end(); ++it)
+        {
+            const AliasedResource& resourceOld = *it;
 
-            if (it == m_resources.end())
+            // Find first resource that has a greater VA address. Then insert before it.
+            if (resourceOld.m_byteOffsetMin > resourceNew.m_byteOffsetMin)
             {
-                m_resources.push_back(resourceNew);
+                it = m_resources.insert(it, resourceNew);
+                break;
             }
         }
 
-        void AliasingBarrierTracker::End()
+        if (it == m_resources.end())
         {
-            EndInternal();
+            m_resources.push_back(resourceNew);
         }
+        AddResourceInternal(resourceNew);
+    }
 
-        void AliasingBarrierTracker::ResetInternal() {}
-        void AliasingBarrierTracker::EndInternal() {}
+    void AliasingBarrierTracker::End()
+    {
+        EndInternal();
+    }
 
-        void AliasingBarrierTracker::TryAppendBarrier(
-            const AliasedResource& resourceBefore,
-            const AliasedResource& resourceAfter)
+    void AliasingBarrierTracker::AddResourceInternal([[maybe_unused]] const AliasedResource& resourceNew) {}
+    void AliasingBarrierTracker::ResetInternal() {}
+    void AliasingBarrierTracker::EndInternal() {}
+
+    void AliasingBarrierTracker::TryAppendBarrier(
+        const AliasedResource& resourceBefore,
+        const AliasedResource& resourceAfter)
+    {
+        // de-duplicate using hash.
+        size_t seed = 0;
+        AZStd::hash_combine(seed, reinterpret_cast<uintptr_t>(resourceBefore.m_resource));
+        AZStd::hash_combine(seed, reinterpret_cast<uintptr_t>(resourceAfter.m_resource));
+
+        const bool isUnique = m_barrierHashes.emplace(seed).second;
+        if (isUnique)
         {
-            // de-duplicate using hash.
-            size_t seed = 0;
-            AZStd::hash_combine(seed, reinterpret_cast<uintptr_t>(resourceBefore.m_resource));
-            AZStd::hash_combine(seed, reinterpret_cast<uintptr_t>(resourceAfter.m_resource));
-
-            const bool isUnique = m_barrierHashes.emplace(seed).second;
-            if (isUnique)
-            {
-                AppendBarrierInternal(resourceBefore, resourceAfter);
-            }
+            AppendBarrierInternal(resourceBefore, resourceAfter);
         }
     }
 }

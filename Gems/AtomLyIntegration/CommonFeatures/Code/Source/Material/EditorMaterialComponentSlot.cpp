@@ -167,7 +167,17 @@ namespace AZ
 
         AZStd::vector<char> EditorMaterialComponentSlot::GetPreviewPixmapData() const
         {
+            // Don't display a custom image if there is no material asset assigned to this slot.
             if (!GetActiveAssetId().IsValid())
+            {
+                return {};
+            }
+
+            // Don't display a custom image if no properties have been overridden. It will fall back to the default thumbnail.
+            bool hasPropertiesOverridden = false;
+            MaterialComponentRequestBus::EventResult(
+                hasPropertiesOverridden, m_entityId, &MaterialComponentRequestBus::Events::HasPropertiesOverridden, m_id);
+            if (!hasPropertiesOverridden)
             {
                 return {};
             }
@@ -278,26 +288,32 @@ namespace AZ
 
         void EditorMaterialComponentSlot::ExportMaterial(const AZStd::string& exportPath, bool overwrite)
         {
+            EditorMaterialComponentExporter::ProgressDialog progressDialog("Generating materials", "Generating material...", 1);
+
             EditorMaterialComponentExporter::ExportItem exportItem(GetDefaultAssetId(), GetLabel(), exportPath);
             exportItem.SetOverwrite(overwrite);
 
             if (EditorMaterialComponentExporter::ExportMaterialSourceData(exportItem))
             {
-                if (const auto& assetIdOutcome = AZ::RPI::AssetUtils::MakeAssetId(exportItem.GetExportPath(), 0))
+                const AZ::Data::AssetInfo assetInfo = progressDialog.ProcessItem(exportItem);
+                if (assetInfo.m_assetId.IsValid())
                 {
-                    SetAssetId(assetIdOutcome.GetValue());
+                    SetAssetId(assetInfo.m_assetId);
+                    progressDialog.CompleteItem();
                 }
             }
         }
 
+        void EditorMaterialComponentSlot::OpenMaterialCanvas() const
+        {
+            EditorMaterialSystemComponentRequestBus::Broadcast(&EditorMaterialSystemComponentRequestBus::Events::OpenMaterialCanvas, "");
+        }
+
         void EditorMaterialComponentSlot::OpenMaterialEditor() const
         {
-            const AZStd::string& sourcePath = AZ::RPI::AssetUtils::GetSourcePathByAssetId(GetActiveAssetId());
-            if (!sourcePath.empty() && AZ::StringFunc::Path::IsExtension(sourcePath.c_str(), AZ::RPI::MaterialSourceData::Extension))
-            {
-                EditorMaterialSystemComponentRequestBus::Broadcast(
-                    &EditorMaterialSystemComponentRequestBus::Events::OpenMaterialEditor, sourcePath);
-            }
+            EditorMaterialSystemComponentRequestBus::Broadcast(
+                &EditorMaterialSystemComponentRequestBus::Events::OpenMaterialEditor,
+                AZ::RPI::AssetUtils::GetSourcePathByAssetId(GetActiveAssetId()));
         }
 
         void EditorMaterialComponentSlot::OpenMaterialInspector(const AzToolsFramework::EntityIdSet& entityIdsToEdit)
@@ -349,13 +365,13 @@ namespace AZ
 
             menu.addSeparator();
 
-            action = menu.addAction("Edit Source Material...", [this]() { OpenMaterialEditor(); });
-            action->setEnabled(HasSourceData());
+            action = menu.addAction("Open Material Editor...", [this]() { OpenMaterialEditor(); });
+            action = menu.addAction("Open Material Canvas...", [this]() { OpenMaterialCanvas(); });
 
-            action = menu.addAction("Edit Material Instance...", [this, entityIdsToEdit]() { OpenMaterialInspector(entityIdsToEdit); });
+            action = menu.addAction("Open Material Instance Editor...", [this, entityIdsToEdit]() { OpenMaterialInspector(entityIdsToEdit); });
             action->setEnabled(GetActiveAssetId().IsValid() && hasMatchingMaterialTypes);
 
-            action = menu.addAction("Edit Material Instance UV Map...", [this, entityIdsToEdit]() { OpenUvNameMapInspector(entityIdsToEdit); });
+            action = menu.addAction("Open Material Instance UV Map Editor...", [this, entityIdsToEdit]() { OpenUvNameMapInspector(entityIdsToEdit); });
             action->setEnabled(GetActiveAssetId().IsValid() && hasMatchingMaterialTypes);
 
             menu.addSeparator();
@@ -421,6 +437,7 @@ namespace AZ
             // Reconnect the asset bus to the current active material asset ID so that the preview can be refreshed if the asset changes
             AZ::Data::AssetId assetId = {};
             MaterialComponentRequestBus::EventResult(assetId, m_entityId, &MaterialComponentRequestBus::Events::GetMaterialAssetId, m_id);
+
             if (!AZ::Data::AssetBus::Handler::BusIsConnectedId(assetId))
             {
                 AZ::Data::AssetBus::Handler::BusDisconnect();
@@ -455,6 +472,15 @@ namespace AZ
         void EditorMaterialComponentSlot::UpdatePreview() const
         {
             m_updatePreview = false;
+
+            bool hasPropertiesOverridden = false;
+            MaterialComponentRequestBus::EventResult(
+                hasPropertiesOverridden, m_entityId, &MaterialComponentRequestBus::Events::HasPropertiesOverridden, m_id);
+            if (!hasPropertiesOverridden)
+            {
+                return;
+            }
+
             EditorMaterialSystemComponentRequestBus::Broadcast(
                 &EditorMaterialSystemComponentRequestBus::Events::RenderMaterialPreview, m_entityId, m_id);
         }

@@ -1,0 +1,51 @@
+{
+    "values": [
+        {
+            "$type": "{5B03C8E6-8CEE-4DA0-A7FA-CD88689DD45B} MeshGroup",
+            "id": "{44E5F707-AD1D-52A9-A41C-EC38DCFF0F67}",
+            "name": "Hermanubis_High",
+            "NodeSelectionList": {
+                "unselectedNodes": [
+                    {},
+                    "RootNode",
+                    "RootNode.Camera",
+                    "RootNode.Hermanubis",
+                    "RootNode.Hermanubis.Mesh_high",
+                    "RootNode.Light"
+                ]
+            },
+            "PhysicsMaterialSlots": {
+                "Slots": [
+                    {
+                        "Name": "Entire object"
+                    }
+                ]
+            }
+        },
+        {
+            "$type": "{07B356B7-3635-40B5-878A-FAC4EFD5AD86} MeshGroup",
+            "name": "Hermanubis_High",
+            "nodeSelectionList": {
+                "selectedNodes": [
+                    {},
+                    "RootNode",
+                    "RootNode.Camera",
+                    "RootNode.Hermanubis",
+                    "RootNode.Hermanubis.Mesh_high",
+                    "RootNode.Light"
+                ]
+            },
+            "rules": {
+                "rules": [
+                    {
+                        "$type": "MaterialRule"
+                    }
+                ]
+            },
+            "id": "{5C835085-CC29-5D71-B53C-5F0CBA4FD215}"
+        },
+        {
+            "$type": "{41DCBEAB-203C-4A05-96FA-98E1D8A96FA1} ImportGroup"
+        }
+    ]
+}

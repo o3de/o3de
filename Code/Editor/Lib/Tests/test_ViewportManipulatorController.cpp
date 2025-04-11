@@ -27,6 +27,7 @@ namespace UnitTest
         void Disconnect();
 
         // EditorInteractionSystemViewportSelectionRequestBus overrides ...
+        const AzToolsFramework::EditorVisibleEntityDataCacheInterface* GetEntityDataCache() const override;
         void SetHandler(const AzToolsFramework::ViewportSelectionRequestsBuilderFn& interactionRequestsBuilder) override;
         void SetDefaultHandler() override;
         bool InternalHandleMouseViewportInteraction(const MouseInteractionEvent& mouseInteraction) override;
@@ -44,6 +45,11 @@ namespace UnitTest
     void EditorInteractionViewportSelectionFake::Disconnect()
     {
         AzToolsFramework::EditorInteractionSystemViewportSelectionRequestBus::Handler::BusDisconnect();
+    }
+
+    const AzToolsFramework::EditorVisibleEntityDataCacheInterface* EditorInteractionViewportSelectionFake::GetEntityDataCache() const
+    {
+        return nullptr;
     }
 
     void EditorInteractionViewportSelectionFake::SetHandler(
@@ -77,7 +83,7 @@ namespace UnitTest
         return false;
     }
 
-    class ViewportManipulatorControllerFixture : public AllocatorsTestFixture
+    class ViewportManipulatorControllerFixture : public LeakDetectionFixture
     {
     public:
         static inline constexpr AzFramework::ViewportId TestViewportId = 1234;
@@ -85,7 +91,7 @@ namespace UnitTest
 
         void SetUp() override
         {
-            AllocatorsTestFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             m_rootWidget = AZStd::make_unique<QWidget>();
             m_rootWidget->setFixedSize(WidgetSize);
@@ -113,7 +119,7 @@ namespace UnitTest
 
             QApplication::setActiveWindow(nullptr);
 
-            AllocatorsTestFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         AZStd::unique_ptr<QWidget> m_rootWidget;
@@ -256,6 +262,8 @@ namespace UnitTest
         using ::testing::Return;
         // note: WindowRequests is used internally by ViewportManipulatorController
         ON_CALL(mockWindowRequests, GetClientAreaSize())
+            .WillByDefault(Return(AzFramework::WindowSize(WidgetSize.width(), WidgetSize.height())));
+        ON_CALL(mockWindowRequests, GetRenderResolution())
             .WillByDefault(Return(AzFramework::WindowSize(WidgetSize.width(), WidgetSize.height())));
 
         EditorInteractionViewportSelectionFake editorInteractionViewportFake;

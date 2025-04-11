@@ -10,6 +10,7 @@
 #include <AzCore/Script/ScriptAsset.h>
 #include <AzCore/Script/ScriptContext.h>
 #include <AzCore/Component/Component.h>
+#include <AzCore/Component/TickBus.h>
 #include <AzCore/Serialization/DynamicSerializableField.h>
 #include <AzCore/Math/Crc.h>
 #include <AzCore/std/string/string.h>
@@ -78,6 +79,8 @@ namespace AzFramework
 
     class ScriptComponent
         : public AZ::Component
+        , private AZ::Data::AssetBus::Handler
+        , private AZ::TickBus::Handler
     {
         friend class AzToolsFramework::Components::ScriptEditorComponent;        
 
@@ -103,18 +106,22 @@ namespace AzFramework
 
     protected:
         ScriptComponent(const ScriptComponent&) = delete;
-        //////////////////////////////////////////////////////////////////////////
-        // Component base
+
         void Init() override;
         void Activate() override;
         void Deactivate() override;
-        //////////////////////////////////////////////////////////////////////////
+
+        // AssetBus
+        void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
+
+        // TickBus
+        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
         /// Loads the script into the context/VM, \returns true if the script is loaded
         bool LoadInContext();
 
-        // Create script instance table.
         void CreateEntityTable();
+        void DestroyEntityTable();
         
         void CreatePropertyGroup(const ScriptPropertyGroup& group, int propertyGroupTableIndex, int parentIndex, int metatableIndex, bool isRoot);
 

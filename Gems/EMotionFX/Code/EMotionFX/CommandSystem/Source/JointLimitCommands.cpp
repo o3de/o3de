@@ -19,8 +19,8 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(ParameterMixinActorIdJointName, EMotionFX::CommandAllocator, 0);
-    AZ_CLASS_ALLOCATOR_IMPL(CommandAdjustJointLimit, EMotionFX::CommandAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(ParameterMixinActorIdJointName, EMotionFX::CommandAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(CommandAdjustJointLimit, EMotionFX::CommandAllocator);
 
     ParameterMixinActorIdJointName::ParameterMixinActorIdJointName(AZ::u32 actorId, const AZStd::string& jointName)
         : ParameterMixinActorId(actorId)

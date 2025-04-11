@@ -29,7 +29,7 @@ void CommandHierarchyItemDelete::undo()
 
     HierarchyHelpers::CreateItemsAndElements(m_hierarchy, m_entries);
 
-    EBUS_EVENT(UiEditorAnimListenerBus, OnUiElementsDeletedOrReAdded);
+    UiEditorAnimListenerBus::Broadcast(&UiEditorAnimListenerBus::Events::OnUiElementsDeletedOrReAdded);
 }
 
 void CommandHierarchyItemDelete::redo()
@@ -38,7 +38,7 @@ void CommandHierarchyItemDelete::redo()
 
     HierarchyHelpers::Delete(m_hierarchy, m_entries);
 
-    EBUS_EVENT(UiEditorAnimListenerBus, OnUiElementsDeletedOrReAdded);
+    UiEditorAnimListenerBus::Broadcast(&UiEditorAnimListenerBus::Events::OnUiElementsDeletedOrReAdded);
 }
 
 void CommandHierarchyItemDelete::Push(UndoStack* stack,

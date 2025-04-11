@@ -10,7 +10,6 @@
 
 #include <PostProcess/PostProcessSettings.h>
 #include <Atom/Feature/PostProcess/PostProcessFeatureProcessorInterface.h>
-#include <Atom/RHI/ShaderResourceGroup.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Public/Base.h>
 #include <AtomCore/std/containers/vector_set.h>
@@ -26,6 +25,7 @@ namespace AZ
             : public PostProcessFeatureProcessorInterface
         {
         public:
+            AZ_CLASS_ALLOCATOR(PostProcessFeatureProcessor, AZ::SystemAllocator)
             AZ_RTTI(AZ::Render::PostProcessFeatureProcessor, "{A6A8357C-5A34-4297-B4DD-A1FB6556CE3E}", AZ::Render::PostProcessFeatureProcessorInterface);
             static void Reflect(AZ::ReflectContext* context);
 
@@ -43,9 +43,8 @@ namespace AZ
             void RemoveSettingsInterface(EntityId entityId) override;
             void OnPostProcessSettingsChanged() override;
             PostProcessSettings* GetLevelSettingsFromView(AZ::RPI::ViewPtr view);
-
-            void SetViewAlias(const AZ::RPI::ViewPtr sourceView, const AZ::RPI::ViewPtr targetView);
-            void RemoveViewAlias(const AZ::RPI::ViewPtr sourceView);
+            void SetViewAlias(const AZ::RPI::ViewPtr sourceView, const AZ::RPI::ViewPtr targetView) override;
+            void RemoveViewAlias(const AZ::RPI::ViewPtr sourceView) override;
 
         private:
             PostProcessFeatureProcessor(const PostProcessFeatureProcessor&) = delete;

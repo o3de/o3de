@@ -32,8 +32,8 @@ namespace AZ::Render
     {
         if (GetLightHandle().IsValid())
         {
-            GetFeatureProcessor()->SetPosition(GetLightHandle(), GetTransform().GetTranslation());
             GetFeatureProcessor()->SetDirection(GetLightHandle(), m_shapeBus->GetNormal());
+            GetFeatureProcessor()->SetPosition(GetLightHandle(), GetTransform().GetTranslation());
             GetFeatureProcessor()->SetDiskRadius(GetLightHandle(), GetRadius());
         }
     }
@@ -204,6 +204,15 @@ namespace AZ::Render
         if (GetShadowsEnabled() && GetLightHandle().IsValid())
         {
             GetFeatureProcessor()->SetEsmExponent(GetLightHandle(), exponent);
+        }
+    }
+
+    void DiskLightDelegate::SetShadowCachingMode(AreaLightComponentConfig::ShadowCachingMode cachingMode)
+    {
+        if (GetShadowsEnabled() && GetLightHandle().IsValid())
+        {
+            GetFeatureProcessor()->SetUseCachedShadows(GetLightHandle(),
+                cachingMode == AreaLightComponentConfig::ShadowCachingMode::UpdateOnChange);
         }
     }
 

@@ -21,6 +21,7 @@
 #include <AzToolsFramework/Prefab/PrefabPublicNotificationBus.h>
 #include <AzToolsFramework/ToolsMessaging/EntityHighlightBus.h>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerCacheBus.h>
+#include <AzToolsFramework/UI/Outliner/EntityOutlinerRequestBus.h>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerSearchWidget.h>
 #include <AzToolsFramework/UI/SearchWidget/SearchWidgetTypes.hxx>
 
@@ -66,10 +67,11 @@ namespace AzToolsFramework
         , private Prefab::PrefabFocusNotificationBus::Handler
         , private Prefab::PrefabPublicNotificationBus::Handler
         , private EditorWindowUIRequestBus::Handler
+        , private EntityOutlinerRequestBus::Handler
     {
         Q_OBJECT;
     public:
-        AZ_CLASS_ALLOCATOR(EntityOutlinerWidget, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(EntityOutlinerWidget, AZ::SystemAllocator)
 
         explicit EntityOutlinerWidget(QWidget* pParent = NULL, Qt::WindowFlags flags = Qt::WindowFlags());
         virtual ~EntityOutlinerWidget();
@@ -119,8 +121,11 @@ namespace AzToolsFramework
         void OnPrefabInstancePropagationEnd() override;
         void OnPrefabTemplateDirtyFlagUpdated(Prefab::TemplateId templateId, bool status) override;
 
-        // EditorWindowUIRequestBus overrides
+        // EditorWindowUIRequestBus overrides ...
         void SetEditorUiEnabled(bool enable) override;
+
+        // EntityOutlinerRequestBus overrides ...
+        void TriggerRenameEntityUi(const AZ::EntityId& entityId) override;
 
         // Build a selection object from the given entities. Entities already in the Widget's selection buffers are ignored.
         template <class EntityIdCollection>
@@ -128,10 +133,12 @@ namespace AzToolsFramework
 
         Ui::EntityOutlinerWidgetUI* m_gui;
         EntityOutlinerListModel* m_listModel;
-        EntityOutlinerContainerProxyModel* m_containerModel;
         EntityOutlinerSortFilterProxyModel* m_proxyModel;
-        AZ::u64 m_selectionContextId;
         AZStd::vector<AZ::EntityId> m_selectedEntityIds;
+
+        // ToolsApplicationEventBus handler
+        void BeforeUndoRedo() override;
+        void AfterUndoRedo() override;
 
         void PrepareSelection();
         void DoCreateEntity();
@@ -145,17 +152,6 @@ namespace AzToolsFramework
         void GoToEntitiesInViewport();
 
         void SetIndexAsCurrentAndSelected(const QModelIndex& index);
-
-        void SetupActions();
-
-        QAction* m_actionToCreateEntity;
-        QAction* m_actionToDeleteSelection;
-        QAction* m_actionToDeleteSelectionAndDescendants;
-        QAction* m_actionToRenameSelection;
-        QAction* m_actionToReparentSelection;
-        QAction* m_actionToMoveEntityUp;
-        QAction* m_actionToMoveEntityDown;
-        QAction* m_actionGoToEntitiesInViewport;
 
         void OnTreeItemClicked(const QModelIndex& index);
         void OnTreeItemDoubleClicked(const QModelIndex& index);
@@ -201,6 +197,8 @@ namespace AzToolsFramework
 
         QIcon m_emptyIcon;
         QIcon m_clearIcon;
+
+        bool m_isDuringUndoRedo = false;
 
         void QueueContentUpdateSort(const AZ::EntityId& entityId);
         void SortContent();

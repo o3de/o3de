@@ -94,8 +94,8 @@ namespace EMotionFX
 {
     const float BlendSpace2DNode::s_epsilonForBarycentricCoords = 0.001f;
 
-    AZ_CLASS_ALLOCATOR_IMPL(BlendSpace2DNode, AnimGraphAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(BlendSpace2DNode::UniqueData, AnimGraphObjectUniqueDataAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendSpace2DNode, AnimGraphAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendSpace2DNode::UniqueData, AnimGraphObjectUniqueDataAllocator)
 
     BlendSpace2DNode::Triangle::Triangle(uint16_t indexA, uint16_t indexB, uint16_t indexC)
     {
@@ -396,7 +396,7 @@ namespace EMotionFX
                 AnimGraphNode* paramSrcNode = paramConnection->GetSourceNode();
                 if (paramSrcNode)
                 {
-                    paramSrcNode->PerformTopDownUpdate(animGraphInstance, timePassedInSeconds);
+                    TopDownUpdateIncomingNode(animGraphInstance, paramSrcNode, timePassedInSeconds);
                 }
             }
         }
@@ -484,12 +484,12 @@ namespace EMotionFX
         EMotionFX::BlendTreeConnection* param1Connection = GetInputPort(INPUTPORT_XVALUE).m_connection;
         if (param1Connection)
         {
-            param1Connection->GetSourceNode()->PerformPostUpdate(animGraphInstance, timePassedInSeconds);
+            PostUpdateIncomingNode(animGraphInstance, param1Connection->GetSourceNode(), timePassedInSeconds);
         }
         EMotionFX::BlendTreeConnection* param2Connection = GetInputPort(INPUTPORT_YVALUE).m_connection;
         if (param2Connection)
         {
-            param2Connection->GetSourceNode()->PerformPostUpdate(animGraphInstance, timePassedInSeconds);
+            PostUpdateIncomingNode(animGraphInstance, param2Connection->GetSourceNode(), timePassedInSeconds);
         }
 
         if (uniqueData->m_motionInfos.empty())
@@ -1238,7 +1238,7 @@ namespace EMotionFX
             // Developer code and APIs with exclusionary terms will be deprecated as we introduce replacements across this project's related
             // codebases and APIs. Please note, some instances have been retained in the current version to provide backward compatibility
             // for assets/materials created prior to the change. These will be deprecated in the future.
-            int index = classElement.FindElement(AZ_CRC("syncMasterMotionId", 0xfaec9599));
+            int index = classElement.FindElement(AZ_CRC_CE("syncMasterMotionId"));
             if (index > 0)
             {
                 AZStd::string oldValue;
@@ -1295,24 +1295,24 @@ namespace EMotionFX
             ->DataElement(AZ::Edit::UIHandlers::ComboBox, &BlendSpace2DNode::m_calculationMethodX, "Calculation method (X-Axis)", "Calculation method for the X Axis")
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendSpace2DNode::Reinit)
-            ->DataElement(AZ_CRC("BlendSpaceEvaluator", 0x9a3f7d07), &BlendSpace2DNode::m_evaluatorTypeX, "X-Axis Evaluator", "Evaluator for the X axis value of motions")
+            ->DataElement(AZ_CRC_CE("BlendSpaceEvaluator"), &BlendSpace2DNode::m_evaluatorTypeX, "X-Axis Evaluator", "Evaluator for the X axis value of motions")
             ->Attribute(AZ::Edit::Attributes::Visibility, &BlendSpace2DNode::GetEvaluatorXVisibility)
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendSpace2DNode::Reinit)
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
             ->DataElement(AZ::Edit::UIHandlers::ComboBox, &BlendSpace2DNode::m_calculationMethodY, "Calculation method (Y-Axis)", "Calculation method for the Y Axis")
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendSpace2DNode::Reinit)
-            ->DataElement(AZ_CRC("BlendSpaceEvaluator", 0x9a3f7d07), &BlendSpace2DNode::m_evaluatorTypeY, "Y-Axis Evaluator", "Evaluator for the Y axis value of motions")
+            ->DataElement(AZ_CRC_CE("BlendSpaceEvaluator"), &BlendSpace2DNode::m_evaluatorTypeY, "Y-Axis Evaluator", "Evaluator for the Y axis value of motions")
             ->Attribute(AZ::Edit::Attributes::Visibility, &BlendSpace2DNode::GetEvaluatorYVisibility)
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendSpace2DNode::Reinit)
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
             ->DataElement(AZ::Edit::UIHandlers::ComboBox, &BlendSpace2DNode::m_syncMode)
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
-            ->DataElement(AZ_CRC("BlendSpaceMotion", 0x9be98fb7), &BlendSpace2DNode::m_syncLeaderMotionId, "Sync Leader Motion", "The leader motion used for motion synchronization.")
+            ->DataElement(AZ_CRC_CE("BlendSpaceMotion"), &BlendSpace2DNode::m_syncLeaderMotionId, "Sync Leader Motion", "The leader motion used for motion synchronization.")
             ->Attribute(AZ::Edit::Attributes::Visibility, &BlendSpace2DNode::GetSyncOptionsVisibility)
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendSpace2DNode::Reinit)
             ->DataElement(AZ::Edit::UIHandlers::ComboBox, &BlendSpace2DNode::m_eventFilterMode)
-            ->DataElement(AZ_CRC("BlendSpaceMotionContainer", 0x8025d37d), &BlendSpace2DNode::m_motions, "Motions", "Source motions for blend space")
+            ->DataElement(AZ_CRC_CE("BlendSpaceMotionContainer"), &BlendSpace2DNode::m_motions, "Motions", "Source motions for blend space")
             ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendSpace2DNode::Reinit)
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)

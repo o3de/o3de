@@ -1,4 +1,54 @@
 {
+  "public_metrics_pipe": {
+    "TAGS": [
+      "periodic-incremental-daily-internal"
+    ],
+    "steps": [
+      "test_cpu_profile_internal_metrics",
+      "generate_ctest_metrics",
+      "generate_pytest_metrics",
+      "upload_metrics"
+    ]
+  },
+  "generate_ctest_metrics": {
+    "TAGS": [],
+    "COMMAND": "python_windows.cmd",
+    "PARAMETERS": {
+      "SCRIPT_PATH": "scripts\\metrics\\ctest_metrics_xml_to_csv.py",
+      "SCRIPT_PARAMETERS": "build\\windows --output-directory build\\windows\\Testing\\csv --branch %BRANCH_NAME% -w"
+    }
+  },
+  "generate_pytest_metrics": {
+    "TAGS": [],
+    "COMMAND": "python_windows.cmd",
+    "PARAMETERS": {
+      "SCRIPT_PATH": "scripts\\metrics\\pytest_metrics_xml_to_csv.py",
+      "SCRIPT_PARAMETERS": "build\\windows\\Testing\\Pytest --output-directory build\\windows\\Testing\\csv --branch %BRANCH_NAME% -w"
+    }
+  },
+  "upload_metrics": {
+    "TAGS": [],
+    "COMMAND": "upload_metrics_windows.cmd",
+    "PARAMETERS": {
+      "CSV_DIRECTORY": "build\\windows\\Testing\\csv"
+    }
+  },
+  "test_cpu_profile_internal_metrics": {
+    "TAGS": [],
+    "COMMAND": "build_test_windows.cmd",
+    "PIPELINE_ENV": {
+      "NONBLOCKING_STEP": "True"
+    },
+    "PARAMETERS": {
+      "CONFIGURATION": "profile",
+      "OUTPUT_DIRECTORY": "build\\windows",
+      "CMAKE_OPTIONS": "-DCMAKE_SYSTEM_VERSION=10.0 -DO3DE_TEST_IMPACT_NATIVE_TEST_TARGETS_ENABLED=FALSE -DO3DE_TEST_IMPACT_PYTHON_TEST_TARGETS_ENABLED=TRUE",
+      "CMAKE_LY_PROJECTS": "AutomatedTesting",
+      "CMAKE_TARGET": "TEST_SUITE_smoke TEST_SUITE_main",
+      "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
+      "CTEST_OPTIONS": "-L \"(SUITE_smoke|SUITE_main)\" -LE \"(REQUIRES_gpu|REQUIRES_tiaf)\" -T Test --no-tests=error"
+    }
+  },
   "clean": {
     "TAGS": [],
     "COMMAND": "clean_windows.cmd",
@@ -28,17 +78,6 @@
       "test_cpu_profile"
     ]
   },
-  "profile_pipe_tiaf": {
-    "TAGS": [
-      "tiaf-testing"
-    ],
-    "steps": [
-      "profile",
-      "asset_profile",
-      "test_impact_analysis_profile_native",
-      "test_impact_analysis_profile_python"
-    ]
-  },
   "scrubbing": {
     "TAGS": [],
     "COMMAND": "python_windows.cmd",
@@ -65,7 +104,7 @@
       "CONFIGURATION": "profile",
       "SCRIPT_PATH": "scripts/build/TestImpactAnalysis/tiaf_driver.py",
       "SCRIPT_PARAMETERS": 
-      "--config=\"%OUTPUT_DIRECTORY%/bin/TestImpactFramework/profile/Persistent/tiaf.json\" --src-branch=%BRANCH_NAME% --dst-branch=%CHANGE_TARGET% --commit=%CHANGE_ID% --s3-bucket=%TEST_IMPACT_S3_BUCKET% --mars-index-prefix=o3de-tiaf --s3-top-level-dir=%REPOSITORY_NAME% --build-number=%BUILD_NUMBER% --suite=main --test-failure-policy=continue --runtime-type=native"
+      "--config=\"%OUTPUT_DIRECTORY%/bin/TestImpactFramework/profile/Persistent/tiaf.json\" --src-branch=%BRANCH_NAME% --dst-branch=%CHANGE_TARGET% --commit=%CHANGE_ID% --s3-bucket=%TEST_IMPACT_S3_BUCKET% --mars-index-prefix=o3de-tiaf --s3-top-level-dir=%REPOSITORY_NAME% --build-number=%BUILD_NUMBER% --suites smoke main --label-excludes REQUIRES_gpu --test-failure-policy=continue --runtime-type=native --target-output=stdout"
     }
   },
   "test_impact_analysis_profile_python": {
@@ -77,7 +116,7 @@
       "CONFIGURATION": "profile",
       "SCRIPT_PATH": "scripts/build/TestImpactAnalysis/tiaf_driver.py",
       "SCRIPT_PARAMETERS": 
-      "--config=\"%OUTPUT_DIRECTORY%/bin/TestImpactFramework/profile/Persistent/tiaf.json\" --src-branch=%BRANCH_NAME% --dst-branch=%CHANGE_TARGET% --commit=%CHANGE_ID% --s3-bucket=%TEST_IMPACT_S3_BUCKET% --mars-index-prefix=o3de-tiaf --s3-top-level-dir=%REPOSITORY_NAME% --build-number=%BUILD_NUMBER% --suite=main --test-failure-policy=continue --runtime-type=python --testrunner=live --target-output=stdout"
+      "--config=\"%OUTPUT_DIRECTORY%/bin/TestImpactFramework/profile/Persistent/tiaf.json\" --src-branch=%BRANCH_NAME% --dst-branch=%CHANGE_TARGET% --commit=%CHANGE_ID% --s3-bucket=%TEST_IMPACT_S3_BUCKET% --mars-index-prefix=o3de-tiaf --s3-top-level-dir=%REPOSITORY_NAME% --build-number=%BUILD_NUMBER% --suites smoke main --label-excludes REQUIRES_gpu --test-failure-policy=continue --runtime-type=python --testrunner=live --target-output=stdout"
     }
   },
   "debug": {
@@ -120,7 +159,7 @@
     "PARAMETERS": {
       "CONFIGURATION": "profile",
       "OUTPUT_DIRECTORY": "build\\windows",
-      "CMAKE_OPTIONS": "-DCMAKE_SYSTEM_VERSION=10.0 -DLY_TEST_IMPACT_INSTRUMENTATION_BIN=%TEST_IMPACT_WIN_BINARY%",
+      "CMAKE_OPTIONS": "-DCMAKE_SYSTEM_VERSION=10.0 -DO3DE_TEST_IMPACT_INSTRUMENTATION_BIN=%TEST_IMPACT_WIN_BINARY%",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "ALL_BUILD",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"
@@ -135,7 +174,7 @@
     "PARAMETERS": {
       "CONFIGURATION": "profile",
       "OUTPUT_DIRECTORY": "build\\windows",
-      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_TEST_IMPACT_INSTRUMENTATION_BIN=%TEST_IMPACT_WIN_BINARY%",
+      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DO3DE_TEST_IMPACT_INSTRUMENTATION_BIN=%TEST_IMPACT_WIN_BINARY%",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "ALL_BUILD",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"
@@ -166,11 +205,11 @@
     "PARAMETERS": {
       "CONFIGURATION": "profile",
       "OUTPUT_DIRECTORY": "build\\windows",
-      "CMAKE_OPTIONS": "-DCMAKE_SYSTEM_VERSION=10.0",
+      "CMAKE_OPTIONS": "-DCMAKE_SYSTEM_VERSION=10.0 -DO3DE_TEST_IMPACT_NATIVE_TEST_TARGETS_ENABLED=FALSE -DO3DE_TEST_IMPACT_PYTHON_TEST_TARGETS_ENABLED=FALSE",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "TEST_SUITE_smoke TEST_SUITE_main",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
-      "CTEST_OPTIONS": "-L \"(SUITE_smoke|SUITE_main)\" -LE \"(REQUIRES_gpu)\" -T Test --no-tests=error",
+      "CTEST_OPTIONS": "-E \"(o3de_repo)\" -L \"(SUITE_smoke|SUITE_main)\" -LE \"(REQUIRES_gpu|REQUIRES_tiaf)\" -T Test --no-tests=error",
       "TEST_METRICS": "True",
       "TEST_RESULTS": "True"
     }
@@ -403,9 +442,23 @@
     "PARAMETERS": {
         "CONFIGURATION": "profile",
         "OUTPUT_DIRECTORY": "build\\windows",
-        "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_DISABLE_TEST_MODULES=TRUE",
+        "CMAKE_OPTIONS": "-DCMAKE_SYSTEM_VERSION=10.0 -DLY_DISABLE_TEST_MODULES=TRUE",
         "CMAKE_TARGET": "INSTALL",
         "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"
+    }
+  },
+  "install_mono_release": {
+    "TAGS": [],
+    "PIPELINE_ENV": {
+      "NODE_LABEL":"windows-packaging"
+    },
+    "COMMAND": "build_windows.cmd",
+    "PARAMETERS": {
+      "CONFIGURATION": "release",
+      "OUTPUT_DIRECTORY": "build\\windows_mono",
+      "CMAKE_OPTIONS": "-DCMAKE_SYSTEM_VERSION=10.0 -DLY_MONOLITHIC_GAME=TRUE -DLY_DISABLE_TEST_MODULES=TRUE",
+      "CMAKE_TARGET": "INSTALL",
+      "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"
     }
   },
   "installer_pipe": { 
@@ -414,21 +467,23 @@
       "nightly-installer"
     ],
     "steps": [
+      "install_mono_release",
+      "install_mono_android_api_24_release",
       "installer",
       "installer_test"
     ]
   },
   "installer": {
     "TAGS": [],
-    "PIPELINE_ENV":{
+    "PIPELINE_ENV": {
       "NODE_LABEL":"windows-packaging"
     },
     "COMMAND": "build_installer_windows.cmd",
     "PARAMETERS": {
         "CONFIGURATION": "profile",
         "OUTPUT_DIRECTORY": "build\\windows",
-        "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_DISABLE_TEST_MODULES=TRUE -DLY_VERSION_ENGINE_NAME=o3de-sdk -DLY_INSTALLER_WIX_ROOT=\"!WIX! \"",
-        "EXTRA_CMAKE_OPTIONS": "-DLY_INSTALLER_AUTO_GEN_TAG=TRUE -DLY_INSTALLER_DOWNLOAD_URL=!INSTALLER_DOWNLOAD_URL! -DLY_INSTALLER_LICENSE_URL=!INSTALLER_DOWNLOAD_URL!/license",
+        "CMAKE_OPTIONS": "-DCMAKE_SYSTEM_VERSION=10.0 -DLY_DISABLE_TEST_MODULES=TRUE -DO3DE_INSTALL_ENGINE_NAME=o3de-sdk -DLY_INSTALLER_WIX_ROOT=\"!WIX! \"",
+        "EXTRA_CMAKE_OPTIONS": "-DLY_INSTALLER_AUTO_GEN_TAG=TRUE -DLY_INSTALLER_DOWNLOAD_URL=!INSTALLER_DOWNLOAD_URL! -DLY_INSTALLER_LICENSE_URL=!INSTALLER_DOWNLOAD_URL!/license -DCPACK_INSTALLED_DIRECTORIES=\"!WORKSPACE!/o3de/install;/CORE\"",
         "CMAKE_TARGET": "ALL_BUILD",
         "CPACK_OPTIONS": "-D CPACK_UPLOAD_URL=\"!CPACK_UPLOAD_URL!\"",
         "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"
@@ -436,13 +491,13 @@
   },
   "installer_test": {
     "TAGS": [],
-    "PIPELINE_ENV":{
+    "PIPELINE_ENV": {
       "NODE_LABEL":"windows-installer-test"
     },
     "COMMAND": "pytest_windows.cmd",
     "PARAMETERS": {
       "PYTEST_PATH": "cmake\\Platform\\Windows\\Packaging\\Tests",
-      "PYTEST_PARAMETERS": "--capture=no --log-file=%WORKSPACE%\\installer_test.log --install-root=%WORKSPACE%\\o3de_install --installer-uri=!INSTALLER_S3_BUCKET!/development/Latest/Windows/o3de_installer.exe --project-path=%WORKSPACE%\\TestProject"
+      "PYTEST_PARAMETERS": "--capture=no --log-file=%WORKSPACE%\\installer_test.log --install-root=%WORKSPACE%\\o3de_install --installer-uri=!INSTALLER_S3_BUCKET!!INSTALLER_S3_PATH! --project-path=%WORKSPACE%\\TestProject"
     }
   },
   "install_profile_pipe": {
@@ -514,7 +569,7 @@
     },
     "COMMAND": "deploy_cdk_applications.cmd",
     "PARAMETERS": {
-      "CDK_VERSION": "1.179.0"
+      "CDK_VERSION": "2.68.0"
     }
   },
   "awsi_destruction": {
@@ -524,7 +579,35 @@
     },
     "COMMAND": "destroy_cdk_applications.cmd",
     "PARAMETERS": {
-      "CDK_VERSION": "1.179.0"
+      "CDK_VERSION": "2.68.0"
+    }
+  },
+  "install_mono_android_api_24_release": {
+    "TAGS": [],
+    "PIPELINE_ENV": {
+      "NODE_LABEL":"windows-packaging"
+    },
+    "COMMAND": "build_windows.cmd",
+    "PARAMETERS": {
+      "CONFIGURATION": "release",
+      "OUTPUT_DIRECTORY": "build\\android_api_mono",
+      "CMAKE_OPTIONS":"-G \"Ninja Multi-Config\" -DCMAKE_TOOLCHAIN_FILE=cmake\\Platform\\Android\\Toolchain_android.cmake -DLY_MONOLITHIC_GAME=TRUE -DLY_DISABLE_TEST_MODULES=TRUE -DANDROID_NATIVE_API_LEVEL=24 -DLY_NDK_DIR=\"C:/AndroidSdk/ndk/25.1.8937393\"",
+      "CMAKE_TARGET": "install",
+      "CMAKE_BUILD_ARGS":"-j!NUMBER_OF_PROCESSORS!"
+    }
+  },
+  "install_mono_android_api_24_profile": {
+    "TAGS": [],
+    "PIPELINE_ENV": {
+      "NODE_LABEL":"windows-packaging"
+    },
+    "COMMAND": "build_windows.cmd",
+    "PARAMETERS": {
+      "CONFIGURATION": "profile",
+      "OUTPUT_DIRECTORY": "build\\android_api_mono",
+      "CMAKE_OPTIONS":"-G \"Ninja Multi-Config\" -DCMAKE_TOOLCHAIN_FILE=cmake\\Platform\\Android\\Toolchain_android.cmake -DLY_MONOLITHIC_GAME=TRUE -DLY_DISABLE_TEST_MODULES=TRUE -DANDROID_NATIVE_API_LEVEL=24 -DLY_NDK_DIR=\"C:/AndroidSdk/ndk/25.1.8937393\"",
+      "CMAKE_TARGET": "install",
+      "CMAKE_BUILD_ARGS":"-j!NUMBER_OF_PROCESSORS!"
     }
   }
 }

@@ -32,12 +32,15 @@ namespace AzToolsFramework
         class Link
         {
         public:
-            AZ_CLASS_ALLOCATOR(Link, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Link, AZ::SystemAllocator);
             AZ_RTTI(Link, "{49230756-7BAA-4456-8DFE-0E18CB887DB5}");
 
             // The structure to store metadata information about individual patches on a link.
             struct PrefabOverrideMetadata
             {
+                AZ_RTTI(PrefabOverrideMetadata, "{03A2996F-8E93-4D78-B13B-A30AE5E778A4}");
+                virtual ~PrefabOverrideMetadata() = default;
+
                 PrefabOverrideMetadata(PrefabDom&& patch, AZ::u32 patchIndex) noexcept
                     : m_patch(AZStd::move(patch))
                     , m_patchIndex(patchIndex)
@@ -86,7 +89,7 @@ namespace AzToolsFramework
             void SetSourceTemplateId(TemplateId id);
             void SetTargetTemplateId(TemplateId id);
             void SetLinkDom(const PrefabDomValue& linkDom);
-            void AddPatchesToLink(const PrefabDom& patches);
+            void SetLinkPatches(const PrefabDom& patches);
             void SetInstanceName(const char* instanceName);
 
             bool IsValid() const;
@@ -113,7 +116,27 @@ namespace AzToolsFramework
             //! @return true if overrides are present at the provided path.
             bool AreOverridesPresent(
                 AZ::Dom::Path path,
-                AZ::Dom::PrefixTreeTraversalFlags prefixTreeTraversalFlags = AZ::Dom::PrefixTreeTraversalFlags::ExcludeParentPaths);
+                AZ::Dom::PrefixTreeTraversalFlags prefixTreeTraversalFlags = AZ::Dom::PrefixTreeTraversalFlags::ExcludeParentPaths) const;
+
+            //! Gets an override patch at the exact provided path
+            //! @param path The path to get override for.
+            //! @return an override patch if an override is present at the exact provided path.
+            PrefabDomConstReference GetOverridePatchAtExactPath(AZ::Dom::Path path) const;
+            
+            //! Removes overrides at the provided path and all the nodes under it from the override tree
+            //! @param path The path at which the overrides should be removed from
+            //! @return The sub-tree representing the removed overrides.
+            AZ::Dom::DomPrefixTree<PrefabOverrideMetadata> RemoveOverrides(AZ::Dom::Path path);
+
+            //! Adds overrides at the provided path by attaching the provided subtree representing new overrides
+            //! @param path The path at which new overrides should be added
+            //! @param subTree The tree representing the new overrides to be added
+            //! @return Whether the overrides are successfully added or not.
+            bool AddOverrides(const AZ::Dom::Path& path, AZ::Dom::DomPrefixTree<PrefabOverrideMetadata>&& subTree);
+
+            //! Adds overrides patches to the tree. It can be used to add patches to tree for an entity.
+            //! @param patches The override patches that will be added to tree.
+            void AddOverrides(const PrefabDomValue& patches);
 
             PrefabDomPath GetInstancePath() const;
             const AZStd::string& GetInstanceName() const;
@@ -135,7 +158,6 @@ namespace AzToolsFramework
             void AddLinkIdToInstanceDom(PrefabDomValue& instanceDomValue);
 
         private:
-
             /**
              * Adds a linkId name,value object to the DOM of an instance.
              *
@@ -153,7 +175,11 @@ namespace AzToolsFramework
             //! @param patches The patches to build the tree with.
             void RebuildLinkPatchesTree(const PrefabDomValue& patches);
 
-            // The prefix tree to store patches on a link. The tree is built with nodes. A node may or maynot store a patch.
+            //! Adds patches to the existing tree. It can be used to add patches to tree for an entity.
+            //! @param patches The patches to be added to the tree.
+            void AddLinkPatchesToTree(const PrefabDomValue& patches);
+
+            // The prefix tree to store patches on a link. The tree is built with nodes. A node may or may not store a patch.
             // The path from the root to a node represents a path to a DOM value. Eg: 'Instances/Instance1/Entities/Entity1'.
             AZ::Dom::DomPrefixTree<PrefabOverrideMetadata> m_linkPatchesTree;
 
@@ -166,9 +192,15 @@ namespace AzToolsFramework
             // Name of the nested instance of target Template.
             AZStd::string m_instanceName;
 
+            // Identifier for the link.
             LinkId m_id = InvalidLinkId;
+
+            // Index counter for generating patches.
+            AZ::u32 m_patchIndexCounter = 0u;
 
             PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
         };
+
+        using PrefabOverridePrefixTree = AZ::Dom::DomPrefixTree<Link::PrefabOverrideMetadata>;
     } // namespace Prefab
 } // namespace AzToolsFramework

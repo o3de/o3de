@@ -1557,9 +1557,9 @@ namespace AZ
         }
     }
 
-    AZ_CLASS_ALLOCATOR_IMPL(Spline, SystemAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(LinearSpline, SystemAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(BezierSpline, SystemAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(BezierSpline::BezierData, SystemAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(CatmullRomSpline, SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(Spline, SystemAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(LinearSpline, SystemAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(BezierSpline, SystemAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(BezierSpline::BezierData, SystemAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(CatmullRomSpline, SystemAllocator);
 }

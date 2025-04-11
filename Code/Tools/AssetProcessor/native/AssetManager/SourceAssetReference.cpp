@@ -43,6 +43,41 @@ namespace AssetProcessor
         Normalize();
     }
 
+    SourceAssetReference::SourceAssetReference(AZ::s64 scanFolderId, AZ::IO::PathView pathRelativeToScanFolder)
+    {
+            IPathConversion* pathConversion = AZ::Interface<IPathConversion>::Get();
+
+            AZ_Assert(pathConversion, "IPathConversion interface is not available");
+
+            auto* scanFolder = pathConversion->GetScanFolderById(scanFolderId);
+
+            if(!scanFolder)
+            {
+                return;
+            }
+
+            AZ::IO::Path scanFolderPath = scanFolder->ScanPath().toUtf8().constData();
+
+            if(scanFolderPath.empty() || pathRelativeToScanFolder.empty())
+            {
+                return;
+            }
+
+            auto* scanFolderInfo = pathConversion->GetScanFolderForFile(scanFolderPath.FixedMaxPathStringAsPosix().c_str());
+
+            if(!scanFolderInfo)
+            {
+                return;
+            }
+
+            m_scanFolderPath = scanFolderPath;
+            m_relativePath = pathRelativeToScanFolder;
+            m_absolutePath = m_scanFolderPath / m_relativePath;
+            m_scanFolderId = scanFolderInfo->ScanFolderID();
+
+            Normalize();
+        }
+
     SourceAssetReference::SourceAssetReference(AZ::IO::PathView scanFolderPath, AZ::IO::PathView pathRelativeToScanFolder)
     {
         IPathConversion* pathConversion = AZ::Interface<IPathConversion>::Get();
@@ -65,6 +100,22 @@ namespace AssetProcessor
         m_relativePath = pathRelativeToScanFolder;
         m_absolutePath = m_scanFolderPath / m_relativePath;
         m_scanFolderId = scanFolderInfo->ScanFolderID();
+
+        Normalize();
+    }
+
+    SourceAssetReference::SourceAssetReference(
+        AZ::s64 scanFolderId, AZ::IO::PathView scanFolderPath, AZ::IO::PathView pathRelativeToScanFolder)
+    {
+        if (scanFolderPath.empty() || pathRelativeToScanFolder.empty())
+        {
+            return;
+        }
+
+        m_scanFolderPath = scanFolderPath;
+        m_relativePath = pathRelativeToScanFolder;
+        m_absolutePath = m_scanFolderPath / m_relativePath;
+        m_scanFolderId = scanFolderId;
 
         Normalize();
     }
@@ -99,19 +150,19 @@ namespace AssetProcessor
         return !m_absolutePath.empty();
     }
 
-    AZ::IO::Path SourceAssetReference::AbsolutePath() const
+    AZ::IO::FixedMaxPath SourceAssetReference::AbsolutePath() const
     {
-        return m_absolutePath;
+        return AZ::IO::FixedMaxPath(m_absolutePath);
     }
 
-    AZ::IO::Path SourceAssetReference::RelativePath() const
+    AZ::IO::FixedMaxPath SourceAssetReference::RelativePath() const
     {
-        return m_relativePath;
+        return AZ::IO::FixedMaxPath(m_relativePath);
     }
 
-    AZ::IO::Path SourceAssetReference::ScanFolderPath() const
+    AZ::IO::FixedMaxPath SourceAssetReference::ScanFolderPath() const
     {
-        return m_scanFolderPath;
+        return AZ::IO::FixedMaxPath(m_scanFolderPath);
     }
 
     AZ::s64 SourceAssetReference::ScanFolderId() const

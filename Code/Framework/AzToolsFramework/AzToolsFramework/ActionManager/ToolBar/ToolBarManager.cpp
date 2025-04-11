@@ -33,6 +33,7 @@ namespace AzToolsFramework
         ActionManagerNotificationBus::Handler::BusConnect();
 
         EditorToolBar::Initialize(defaultParentWidget);
+        ToolBarExpanderWatcher::Initialize();
         EditorToolBarArea::Initialize();
     }
 
@@ -43,6 +44,8 @@ namespace AzToolsFramework
 
         AZ::Interface<ToolBarManagerInternalInterface>::Unregister(this);
         AZ::Interface<ToolBarManagerInterface>::Unregister(this);
+
+        Reset();
     }
 
     void ToolBarManager::Reflect(AZ::ReflectContext* context)
@@ -344,7 +347,7 @@ namespace AzToolsFramework
         return AZ::Success();
     }
 
-    QToolBar* ToolBarManager::GetToolBar(const AZStd::string& toolBarIdentifier)
+    QToolBar* ToolBarManager::GenerateToolBar(const AZStd::string& toolBarIdentifier)
     {
         auto toolBarIterator = m_toolBars.find(toolBarIdentifier);
         if (toolBarIterator == m_toolBars.end())
@@ -352,7 +355,7 @@ namespace AzToolsFramework
             return nullptr;
         }
 
-        return toolBarIterator->second.GetToolBar();
+        return toolBarIterator->second.GenerateToolBar();
     }
     
     ToolBarManagerIntegerResult ToolBarManager::GetSortKeyOfActionInToolBar(const AZStd::string& toolBarIdentifier, const AZStd::string& actionIdentifier) const
@@ -434,7 +437,7 @@ namespace AzToolsFramework
             auto toolBarIterator = m_toolBars.find(toolBarIdentifier);
             if (toolBarIterator != m_toolBars.end())
             {
-                toolBarIterator->second.RefreshToolBar();
+                toolBarIterator->second.RefreshToolBars();
             }
         }
 
@@ -484,6 +487,18 @@ namespace AzToolsFramework
             "ToolBar Manager - Could not serialize toolbar \"%.s\" - serialization error.", toolBarIdentifier.c_str()));
     }
 
+    void ToolBarManager::Reset()
+    {
+        // Reset all stored values that are registered by the environment after initialization.
+        m_toolBars.clear();
+        m_toolBarAreas.clear();
+
+        m_actionsToToolBarsMap.clear();
+
+        m_toolBarsToRefresh.clear();
+        m_toolBarAreasToRefresh.clear();
+    }
+
     void ToolBarManager::OnSystemTick()
     {
         RefreshToolBars();
@@ -493,7 +508,7 @@ namespace AzToolsFramework
     void ToolBarManager::OnActionStateChanged(AZStd::string actionIdentifier)
     {
         // Only refresh the toolbar if the action state changing could result in the action being shown/hidden.
-        if (m_actionManagerInternalInterface->GetHideFromToolBarsWhenDisabled(actionIdentifier))
+        if (m_actionManagerInternalInterface->GetActionToolBarVisibility(actionIdentifier) != ActionVisibility::AlwaysShow)
         {
             QueueRefreshForToolBarsContainingAction(actionIdentifier);
         }

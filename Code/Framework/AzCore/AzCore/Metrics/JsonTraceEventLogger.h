@@ -23,7 +23,7 @@ namespace AZ::IO
 namespace AZ::Metrics
 {
     // Contains JsonTraceEventLogger specific configuration
-    struct JsonTraceLoggerEventConfig
+    struct JsonTraceEventLoggerConfig
     {
         //! Name of the JsonTraceEventLogger
         AZStd::string_view m_loggerName;
@@ -39,10 +39,10 @@ namespace AZ::Metrics
     {
     public:
         JsonTraceEventLogger();
-        explicit JsonTraceEventLogger(JsonTraceLoggerEventConfig);
+        explicit JsonTraceEventLogger(JsonTraceEventLoggerConfig);
         //! Generic stream which owned by the JsonEventLogger
         explicit JsonTraceEventLogger(AZStd::unique_ptr<AZ::IO::GenericStream> stream);
-        JsonTraceEventLogger(AZStd::unique_ptr<AZ::IO::GenericStream> stream, JsonTraceLoggerEventConfig);
+        JsonTraceEventLogger(AZStd::unique_ptr<AZ::IO::GenericStream> stream, JsonTraceEventLoggerConfig);
 
         ~JsonTraceEventLogger();
 

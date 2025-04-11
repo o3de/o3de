@@ -314,7 +314,7 @@ void UiTooltipDisplayComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::Category, "UI")
                 ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/UiTooltipDisplay.png")
                 ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/UiTooltipDisplay.png")
-                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("UI", 0x27ff46b0))
+                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
             editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiTooltipDisplayComponent::m_triggerMode, "Trigger Mode",
@@ -324,7 +324,7 @@ void UiTooltipDisplayComponent::Reflect(AZ::ReflectContext* context)
                 ->EnumAttribute(UiTooltipDisplayInterface::TriggerMode::OnClick, "On Click");
             editInfo->DataElement(0, &UiTooltipDisplayComponent::m_autoPosition, "Auto position",
                 "Whether the element will automatically be positioned.")
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c));
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
             editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiTooltipDisplayComponent::m_autoPositionMode, "Positioning",
                 "Sets the positioning behavior of the element.")
                 ->EnumAttribute(UiTooltipDisplayInterface::AutoPositionMode::OffsetFromMouse, "Offset from mouse")
@@ -503,18 +503,18 @@ void UiTooltipDisplayComponent::Show()
         if (m_maxWrapTextWidth < 0.0f)
         {
             UiTransformInterface::Rect textRect;
-            EBUS_EVENT_ID(m_textEntity, UiTransformBus, GetCanvasSpaceRectNoScaleRotate, textRect);
+            UiTransformBus::Event(m_textEntity, &UiTransformBus::Events::GetCanvasSpaceRectNoScaleRotate, textRect);
 
             m_maxWrapTextWidth = textRect.GetWidth();
         }
 
         // If wrapping is on, reset display element to its original width
         UiTextInterface::WrapTextSetting wrapSetting = UiTextInterface::WrapTextSetting::NoWrap;
-        EBUS_EVENT_ID_RESULT(wrapSetting, m_textEntity, UiTextBus, GetWrapText);
+        UiTextBus::EventResult(wrapSetting, m_textEntity, &UiTextBus::Events::GetWrapText);
         if (wrapSetting != UiTextInterface::WrapTextSetting::NoWrap)
         {
             UiTransformInterface::Rect textRect;
-            EBUS_EVENT_ID(m_textEntity, UiTransformBus, GetCanvasSpaceRectNoScaleRotate, textRect);
+            UiTransformBus::Event(m_textEntity, &UiTransformBus::Events::GetCanvasSpaceRectNoScaleRotate, textRect);
 
             AZ::Vector2 delta(m_maxWrapTextWidth - textRect.GetWidth(), 0.0f);
 
@@ -523,7 +523,7 @@ void UiTooltipDisplayComponent::Show()
     }
 
     // Assign tooltip data to the tooltip display element
-    EBUS_EVENT_ID(m_tooltipElement, UiTooltipDataPopulatorBus, PushDataToDisplayElement, GetEntityId());
+    UiTooltipDataPopulatorBus::Event(m_tooltipElement, &UiTooltipDataPopulatorBus::Events::PushDataToDisplayElement, GetEntityId());
 
     // Auto-resize display element so that the text element is the same size as the size of its text string
     if (m_autoSize && m_textEntity.IsValid())
@@ -558,7 +558,7 @@ void UiTooltipDisplayComponent::AutoResize()
 {
     // Get the text string size
     AZ::Vector2 stringSize(-1.0f, -1.0f);
-    EBUS_EVENT_ID_RESULT(stringSize, m_textEntity, UiTextBus, GetTextSize);
+    UiTextBus::EventResult(stringSize, m_textEntity, &UiTextBus::Events::GetTextSize);
 
     if (stringSize.GetX() < 0.0f || stringSize.GetY() < 0.0f)
     {
@@ -567,13 +567,13 @@ void UiTooltipDisplayComponent::AutoResize()
 
     // Get the text element's rect
     UiTransformInterface::Rect textRect;
-    EBUS_EVENT_ID(m_textEntity, UiTransformBus, GetCanvasSpaceRectNoScaleRotate, textRect);
+    UiTransformBus::Event(m_textEntity, &UiTransformBus::Events::GetCanvasSpaceRectNoScaleRotate, textRect);
 
     // Get the difference between the text element's size and the string size
     AZ::Vector2 delta(stringSize.GetX() - textRect.GetWidth(), stringSize.GetY() - textRect.GetHeight());
 
     UiTextInterface::WrapTextSetting wrapSetting;
-    EBUS_EVENT_ID_RESULT(wrapSetting, m_textEntity, UiTextBus, GetWrapText);
+    UiTextBus::EventResult(wrapSetting, m_textEntity, &UiTextBus::Events::GetWrapText);
     if (wrapSetting != UiTextInterface::WrapTextSetting::NoWrap)
     {
         // In order for the wrapping to remain the same after the resize, the
@@ -596,11 +596,11 @@ void UiTooltipDisplayComponent::ResizeElementByDelta(AZ::EntityId entityId, cons
     {
         // Resize the element based on the difference
         UiTransform2dInterface::Offsets offsets;
-        EBUS_EVENT_ID_RESULT(offsets, entityId, UiTransform2dBus, GetOffsets);
+        UiTransform2dBus::EventResult(offsets, entityId, &UiTransform2dBus::Events::GetOffsets);
 
         AZ::Vector2 pivot;
 
-        EBUS_EVENT_ID_RESULT(pivot, entityId, UiTransformBus, GetPivot);
+        UiTransformBus::EventResult(pivot, entityId, &UiTransformBus::Events::GetPivot);
 
         if (delta.GetX() != 0.0f)
         {
@@ -615,7 +615,7 @@ void UiTooltipDisplayComponent::ResizeElementByDelta(AZ::EntityId entityId, cons
             offsets.m_bottom += delta.GetY() - topOffsetDelta;
         }
 
-        EBUS_EVENT_ID(entityId, UiTransform2dBus, SetOffsets, offsets);
+        UiTransform2dBus::Event(entityId, &UiTransform2dBus::Events::SetOffsets, offsets);
     }
 }
 
@@ -628,21 +628,21 @@ void UiTooltipDisplayComponent::AutoPosition()
     {
         // Get current mouse position
         AZ::EntityId canvasId;
-        EBUS_EVENT_ID_RESULT(canvasId, GetEntityId(), UiElementBus, GetCanvasEntityId);
+        UiElementBus::EventResult(canvasId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
 
-        EBUS_EVENT_ID_RESULT(position, canvasId, UiCanvasBus, GetMousePosition);
+        UiCanvasBus::EventResult(position, canvasId, &UiCanvasBus::Events::GetMousePosition);
 
         if (position.GetX() >= 0.0f && position.GetY() >= 0.0f)
         {
             // Check if the mouse is hovering over the tooltip element
-            EBUS_EVENT_ID_RESULT(havePosition, m_tooltipElement, UiTransformBus, IsPointInRect, position);
+            UiTransformBus::EventResult(havePosition, m_tooltipElement, &UiTransformBus::Events::IsPointInRect, position);
         }
     }
 
     if (!havePosition)
     {
         // Get the pivot position of the tooltip element
-        EBUS_EVENT_ID_RESULT(position, m_tooltipElement, UiTransformBus, GetViewportSpacePivot);
+        UiTransformBus::EventResult(position, m_tooltipElement, &UiTransformBus::Events::GetViewportSpacePivot);
     }
 
     MoveToPosition(position, m_offset);
@@ -654,15 +654,15 @@ void UiTooltipDisplayComponent::MoveToPosition(const AZ::Vector2& point, const A
     // Move the display element so that its pivot is a certain distance from the point
 
     UiTransform2dInterface::Offsets offsets;
-    EBUS_EVENT_ID_RESULT(offsets, GetEntityId(), UiTransform2dBus, GetOffsets);
+    UiTransform2dBus::EventResult(offsets, GetEntityId(), &UiTransform2dBus::Events::GetOffsets);
 
     AZ::Vector2 pivot;
-    EBUS_EVENT_ID_RESULT(pivot, GetEntityId(), UiTransformBus, GetViewportSpacePivot);
+    UiTransformBus::EventResult(pivot, GetEntityId(), &UiTransformBus::Events::GetViewportSpacePivot);
 
     AZ::Vector2 moveDist = (point + offsetFromPoint) - pivot;
     offsets += moveDist;
 
-    EBUS_EVENT_ID(GetEntityId(), UiTransform2dBus, SetOffsets, offsets);
+    UiTransform2dBus::Event(GetEntityId(), &UiTransform2dBus::Events::SetOffsets, offsets);
 
     // Make sure that the display element stays within the bounds of its parent
 
@@ -670,19 +670,19 @@ void UiTooltipDisplayComponent::MoveToPosition(const AZ::Vector2& point, const A
     UiTransformInterface::Rect parentRect;
 
     AZ::Entity* parentEntity = nullptr;
-    EBUS_EVENT_ID_RESULT(parentEntity, GetEntityId(), UiElementBus, GetParent);
+    UiElementBus::EventResult(parentEntity, GetEntityId(), &UiElementBus::Events::GetParent);
 
     if (parentEntity)
     {
-        EBUS_EVENT_ID(parentEntity->GetId(), UiTransformBus, GetCanvasSpaceRectNoScaleRotate, parentRect);
+        UiTransformBus::Event(parentEntity->GetId(), &UiTransformBus::Events::GetCanvasSpaceRectNoScaleRotate, parentRect);
     }
     else
     {
         AZ::EntityId canvasEntityId;
-        EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
+        UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
 
         AZ::Vector2 size;
-        EBUS_EVENT_ID_RESULT(size, canvasEntityId, UiCanvasBus, GetCanvasSize);
+        UiCanvasBus::EventResult(size, canvasEntityId, &UiCanvasBus::Events::GetCanvasSize);
 
         parentRect.Set(0.0f, size.GetX(), 0.0f, size.GetY());
     }
@@ -722,12 +722,12 @@ void UiTooltipDisplayComponent::CheckBoundsAndChangeYPosition(const UiTransformI
     if (yMoveDist != 0.0f)
     {
         UiTransform2dInterface::Offsets offsets;
-        EBUS_EVENT_ID_RESULT(offsets, GetEntityId(), UiTransform2dBus, GetOffsets);
+        UiTransform2dBus::EventResult(offsets, GetEntityId(), &UiTransform2dBus::Events::GetOffsets);
 
         offsets.m_top += yMoveDist;
         offsets.m_bottom += yMoveDist;
 
-        EBUS_EVENT_ID(GetEntityId(), UiTransform2dBus, SetOffsets, offsets);
+        UiTransform2dBus::Event(GetEntityId(), &UiTransform2dBus::Events::SetOffsets, offsets);
     }
 }
 
@@ -762,11 +762,11 @@ void UiTooltipDisplayComponent::ConstrainToBounds(const UiTransformInterface::Re
     if (moveDist.GetX() != 0.0f || moveDist.GetY() != 0.0f)
     {
         UiTransform2dInterface::Offsets offsets;
-        EBUS_EVENT_ID_RESULT(offsets, GetEntityId(), UiTransform2dBus, GetOffsets);
+        UiTransform2dBus::EventResult(offsets, GetEntityId(), &UiTransform2dBus::Events::GetOffsets);
 
         offsets += moveDist;
 
-        EBUS_EVENT_ID(GetEntityId(), UiTransform2dBus, SetOffsets, offsets);
+        UiTransform2dBus::Event(GetEntityId(), &UiTransform2dBus::Events::SetOffsets, offsets);
     }
 }
 
@@ -774,10 +774,10 @@ void UiTooltipDisplayComponent::ConstrainToBounds(const UiTransformInterface::Re
 UiTransformInterface::Rect UiTooltipDisplayComponent::GetAxisAlignedRect()
 {
     UiTransformInterface::RectPoints points;
-    EBUS_EVENT_ID(GetEntityId(), UiTransformBus, GetCanvasSpacePointsNoScaleRotate, points);
+    UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::GetCanvasSpacePointsNoScaleRotate, points);
 
     AZ::Matrix4x4 transform;
-    EBUS_EVENT_ID(GetEntityId(), UiTransformBus, GetLocalTransform, transform);
+    UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::GetLocalTransform, transform);
 
     points = points.Transform(transform);
 
@@ -794,10 +794,10 @@ UiTransformInterface::Rect UiTooltipDisplayComponent::GetAxisAlignedRect()
 IUiAnimationSystem* UiTooltipDisplayComponent::GetAnimationSystem()
 {
     AZ::EntityId canvasId;
-    EBUS_EVENT_ID_RESULT(canvasId, GetEntityId(), UiElementBus, GetCanvasEntityId);
+    UiElementBus::EventResult(canvasId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
 
     IUiAnimationSystem* animSystem = nullptr;
-    EBUS_EVENT_ID_RESULT(animSystem, canvasId, UiCanvasBus, GetAnimationSystem);
+    UiCanvasBus::EventResult(animSystem, canvasId, &UiCanvasBus::Events::GetAnimationSystem);
 
     return animSystem;
 }
@@ -868,8 +868,13 @@ UiTooltipDisplayComponent::EntityComboBoxVec UiTooltipDisplayComponent::Populate
 
     // Get a list of all descendant elements that support the UiTextBus
     LyShine::EntityArray matchingElements;
-    EBUS_EVENT_ID(GetEntityId(), UiElementBus, FindDescendantElements,
-        [](const AZ::Entity* entity) { return UiTextBus::FindFirstHandler(entity->GetId()) != nullptr; },
+    UiElementBus::Event(
+        GetEntityId(),
+        &UiElementBus::Events::FindDescendantElements,
+        [](const AZ::Entity* entity)
+        {
+            return UiTextBus::FindFirstHandler(entity->GetId()) != nullptr;
+        },
         matchingElements);
 
     // add their names to the StringList and their IDs to the id list

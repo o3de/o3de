@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 #include <Atom/RPI.Reflect/Model/ModelLodAsset.h>
 #include <Atom/RPI.Reflect/AssetCreator.h>
@@ -17,7 +18,7 @@ namespace AZ
     namespace RPI
     {
         //! Constructs an instance of an ModelLodAsset.
-        class ModelLodAssetCreator
+        class ATOM_RPI_REFLECT_API ModelLodAssetCreator
             : public AssetCreator<ModelLodAsset>
         {
         public:
@@ -44,7 +45,7 @@ namespace AZ
 
             //! Sets the Aabb of the current SubMesh.
             //! Begin and BeginMesh must be called first.
-            void SetMeshAabb(AZ::Aabb&& aabb);
+            void SetMeshAabb(const AZ::Aabb& aabb);
 
             //! Sets the ID of the model's material slot that this mesh uses.
             //! Begin and BeginMesh must be called first

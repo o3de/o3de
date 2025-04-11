@@ -28,7 +28,7 @@ namespace AzToolsFramework
             friend class RootAssetBrowserEntry;
         public:
             AZ_RTTI(ProductAssetBrowserEntry, "{52C02087-D68B-4E9D-BB8A-01E43CE51BA2}", AssetBrowserEntry);
-            AZ_CLASS_ALLOCATOR(ProductAssetBrowserEntry, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ProductAssetBrowserEntry, AZ::SystemAllocator);
 
             ProductAssetBrowserEntry() = default;
             ~ProductAssetBrowserEntry() override;
@@ -46,7 +46,7 @@ namespace AzToolsFramework
 
             static ProductAssetBrowserEntry* GetProductByAssetId(const AZ::Data::AssetId& assetId);
 
-            void ThumbnailUpdated() override;
+            void SetThumbnailDirty() override;
 
         private:
             AZ::s64 m_productId = -1;

@@ -19,7 +19,7 @@ namespace RecastNavigation
     {
     public:
         AZ_RTTI(RecastNavigationEditorModule, "{a8fb0082-78ab-4ca6-8f63-68c98f1a6a6d}", RecastNavigationModuleInterface);
-        AZ_CLASS_ALLOCATOR(RecastNavigationEditorModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(RecastNavigationEditorModule, AZ::SystemAllocator);
 
         RecastNavigationEditorModule()
         {
@@ -46,4 +46,8 @@ namespace RecastNavigation
     };
 }// namespace RecastNavigation
 
-AZ_DECLARE_MODULE_CLASS(Gem_RecastNavigation, RecastNavigation::RecastNavigationEditorModule)
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME, _Editor), RecastNavigation::RecastNavigationEditorModule)
+#else
+AZ_DECLARE_MODULE_CLASS(Gem_RecastNavigation_Editor, RecastNavigation::RecastNavigationEditorModule)
+#endif

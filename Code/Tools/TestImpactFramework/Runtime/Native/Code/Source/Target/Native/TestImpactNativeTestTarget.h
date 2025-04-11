@@ -15,6 +15,14 @@
 
 namespace TestImpact
 {
+    //! The sharding configuration to use for a given test target opted in to test shard optimization.
+    enum class ShardingConfiguration
+    {
+        None, //!< Do not use test shard optimization.
+        TestInterleaved, //!< Interleave the tests across the available shards (better performance, less stable).
+        FixtureInterleaved //!< Interleave the fixtures across the available shards (less performance, more stable).
+    };
+
     //! Build target specialization for native test targets (build targets containing test code and no production code).
     class NativeTestTarget 
     : public TestTarget
@@ -28,7 +36,18 @@ namespace TestImpact
         //! Returns the test target launch method.
         LaunchMethod GetLaunchMethod() const;
 
+        //! Returns `true` if the target can shard, otherwise `false`.
+        bool CanShard() const;
+
+        //! Returns the sharding configuration for this test target.
+        ShardingConfiguration GetShardingConfiguration() const;
+
+        // TestTarget overrides ...
+        bool CanEnumerate() const override;
+
     private:
         NativeTargetLaunchMeta m_launchMeta;
+        ShardingConfiguration m_shardConfiguration = ShardingConfiguration::None;
+        bool m_canEnumerate = false;
     };
 } // namespace TestImpact

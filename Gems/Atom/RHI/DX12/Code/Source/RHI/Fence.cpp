@@ -8,6 +8,8 @@
 #include <RHI/Fence.h>
 #include <RHI/Device.h>
 
+#include <Atom/RHI.Reflect/DX12/DX12Bus.h>
+
 namespace AZ
 {
     namespace DX12
@@ -16,9 +18,7 @@ namespace AZ
             : m_EventHandle(nullptr)
             , m_name(name)
         {
-            AZStd::wstring nameW;
-            AZStd::to_wstring(nameW, name);
-            m_EventHandle = CreateEvent(nullptr, false, false, nameW.c_str());
+            m_EventHandle = CreateEvent(nullptr, false, false, nullptr);
         }
 
         FenceEvent::~FenceEvent()
@@ -34,7 +34,9 @@ namespace AZ
         RHI::ResultCode Fence::Init(ID3D12DeviceX* dx12Device, RHI::FenceState initialState)
         {
             Microsoft::WRL::ComPtr<ID3D12Fence> fencePtr;
-            if (!AssertSuccess(dx12Device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_GRAPHICS_PPV_ARGS(fencePtr.GetAddressOf()))))
+            D3D12_FENCE_FLAGS flags = D3D12_FENCE_FLAG_NONE;
+            DX12RequirementBus::Broadcast(&DX12RequirementBus::Events::CollectFenceFlags, flags);
+            if (!AssertSuccess(dx12Device->CreateFence(0, flags, IID_GRAPHICS_PPV_ARGS(fencePtr.GetAddressOf()))))
             {
                 AZ_Error("Fence", false, "Failed to initialize ID3D12Fence.");
                 return RHI::ResultCode::Fail;
@@ -144,7 +146,7 @@ namespace AZ
             return aznew FenceImpl();
         }
 
-        RHI::ResultCode FenceImpl::InitInternal(RHI::Device& deviceBase, RHI::FenceState initialState)
+        RHI::ResultCode FenceImpl::InitInternal(RHI::Device& deviceBase, RHI::FenceState initialState, [[maybe_unused]] bool usedForWaitingOnDevice)
         {
             return m_fence.Init(static_cast<Device&>(deviceBase).GetDevice(), initialState);
         }

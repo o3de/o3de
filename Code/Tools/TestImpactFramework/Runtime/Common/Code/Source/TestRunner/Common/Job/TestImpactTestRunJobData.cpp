@@ -15,6 +15,28 @@ namespace TestImpact
     {
     }
 
+    TestRunJobData::TestRunJobData(const TestRunJobData& other)
+        : m_runArtifact(other.m_runArtifact)
+    {
+    }
+
+    TestRunJobData::TestRunJobData(TestRunJobData&& other)
+        : m_runArtifact(AZStd::move(other.m_runArtifact))
+    {
+    }
+
+    TestRunJobData& TestRunJobData::operator=(const TestRunJobData& other)
+    {
+        m_runArtifact = other.m_runArtifact;
+        return *this;
+    }
+
+    TestRunJobData& TestRunJobData::operator=(TestRunJobData&& other)
+    {
+        m_runArtifact = AZStd::move(other.m_runArtifact);
+        return *this;
+    }
+
     const RepoPath& TestRunJobData::GetRunArtifactPath() const
     {
         return m_runArtifact;

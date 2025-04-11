@@ -39,7 +39,8 @@ namespace AZ
         TimeUs GetRealTickDeltaTimeUs() const override;
         TimeUs GetLastSimulationTickTime() const override;
         void SetSimulationTickDeltaOverride(TimeMs timeMs) override;
-        TimeMs GetSimulationTickDeltaOverride() const override;
+        void SetSimulationTickDeltaOverride(TimeUs timeUs) override;
+        TimeUs GetSimulationTickDeltaOverride() const override;
         void SetSimulationTickScale(float scale) override;
         float GetSimulationTickScale() const override;
         void SetSimulationTickRate(int rate) override;

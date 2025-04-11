@@ -8,124 +8,37 @@
 
 #include <Atom/Features/SrgSemantics.azsli>
 
+// this define specifies that the mesh buffers and material textures are stored in the Bindless Srg
+// Note1: The previous implementation using separate unbounded arrays is preserved since it demonstrates a TDR caused by
+//        the RHI unbounded array allocation.  This define and the previous codepath can be removed once the TDR is
+//        investigated and resolved.
+// Note2: There are corresponding USE_BINDLESS_SRG defines in the RayTracingMaterialSrg.azsli and RayTracingFeatureProcessor.h files
+//        that must match the setting of this define.
+#define USE_BINDLESS_SRG 1
+
+#include <Atom/Features/PBR/Lights/LightStructures.azsli>
+
 ShaderResourceGroup RayTracingSceneSrg : SRG_RayTracingScene
 {
     RaytracingAccelerationStructure m_scene;
 
-    // directional lights
-    struct DirectionalLight
-    {
-        float3 m_direction;
-        float  m_angularRadius;
-        float3 m_rgbIntensity;
-        float  m_affectsGIFactor;
-        bool   m_affectsGI;
-        float3 m_padding;
-    };
-    
     StructuredBuffer<DirectionalLight> m_directionalLights;
     uint m_directionalLightCount;
     
-    // simple point lights 
-    struct SimplePointLight
-    {
-        float3 m_position;
-        float m_invAttenuationRadiusSquared; // For a radius at which this light no longer has an effect, 1 / radius^2.
-        float3 m_rgbIntensityCandelas;
-        float m_affectsGIFactor;
-        bool m_affectsGI;
-        float3 m_padding;
-    };
-
     StructuredBuffer<SimplePointLight> m_simplePointLights;
     uint m_simplePointLightCount;
-
-    // simple spot lights
-    struct SimpleSpotLight
-    {
-        float3 m_position;
-        float m_invAttenuationRadiusSquared; // For a radius at which this light no longer has an effect, 1 / radius^2.
-        float3 m_direction;
-        float m_cosInnerConeAngle; // cosine of the outer cone angle
-        float3 m_rgbIntensityCandelas;
-        float m_cosOuterConeAngle; // cosine of the inner cone angle
-        float m_affectsGIFactor;
-        bool m_affectsGI;
-        float2 m_padding;
-    };
 
     StructuredBuffer<SimpleSpotLight> m_simpleSpotLights;
     uint m_simpleSpotLightCount;
 
-    // point lights (sphere)
-    struct PointLight
-    {
-        float3 m_position;
-        float  m_invAttenuationRadiusSquared;
-        float3 m_rgbIntensity;
-        float  m_bulbRadius;
-        uint3 m_shadowIndices;
-        float m_affectsGIFactor;
-        bool m_affectsGI;
-        float3 m_padding;
-    };
-    
     StructuredBuffer<PointLight> m_pointLights;
     uint m_pointLightCount;
-    
-    // disk lights
-    struct DiskLight
-    {
-        float3 m_position;
-        float m_invAttenuationRadiusSquared; // For a radius at which this light no longer has an effect, 1 / radius^2.
-        float3 m_rgbIntensityCandelas;
-        float m_diskRadius;
-        float3 m_direction;
-        uint m_flags;
-        float m_cosInnerConeAngle;
-        float m_cosOuterConeAngle;
-        float m_bulbPositionOffset;
-        uint m_shadowIndex;
-        float m_affectsGIFactor;
-        bool m_affectsGI;
-        float2 m_padding;
-    };
     
     StructuredBuffer<DiskLight> m_diskLights;
     uint m_diskLightCount;
     
-    // capsule lights
-    struct CapsuleLight
-    {
-        float3 m_startPoint;                    // one of the end points of the capsule
-        float m_radius;                         // radius of the capsule, ie distance from line segment to surface.
-        float3 m_direction;                     // normalized vector from m_startPoint towards the other end point.
-        float m_length;                         // length of the line segment making up the inside of the capsule. Doesn't include caps (0 length capsule == sphere)
-        float3 m_rgbIntensityCandelas;          // total rgb luminous intensity of the capsule in candelas
-        float m_invAttenuationRadiusSquared;    // inverse of the distance at which this light no longer has an effect, squared. Also used for falloff calculations.
-        float m_affectsGIFactor;
-        bool m_affectsGI;
-        float2 m_padding;
-    };
-    
     StructuredBuffer<CapsuleLight> m_capsuleLights;
     uint m_capsuleLightCount;
-    
-    // quad lights 
-    struct QuadLight
-    {
-        float3 m_position;
-        float  m_invAttenuationRadiusSquared;   // radius at which this light no longer has an effect, 1 / radius^2.
-        float3 m_leftDir;                       // direction from center of quad to the left edge
-        float  m_halfWidth;                     // half-width of the quad. m_leftDir * m_halfWidth is a vector from the center to the left edge.
-        float3 m_upDir;                         // cirection from center of quad to the top edge
-        float  m_halfHeight;                    // half-height of the quad. m_upDir * m_halfHeight is a vector from the center to the top edge.
-        float3 m_rgbIntensityNits;
-        uint   m_flags;                         // see QuadLightFlag enum
-        float  m_affectsGIFactor;
-        bool   m_affectsGI;
-        float2 m_padding;
-    };
     
     StructuredBuffer<QuadLight> m_quadLights;
     uint m_quadLightCount;
@@ -157,17 +70,22 @@ ShaderResourceGroup RayTracingSceneSrg : SRG_RayTracingScene
         uint     m_bufferFlags;
         uint     m_bufferStartIndex;
 
-        float4   m_irradianceColor;
         float3x4 m_worldInvTranspose;
     };
 
     // hit shaders can retrieve the MeshInfo for a mesh hit using: RayTracingSceneSrg::m_meshInfo[InstanceIndex()]    
     StructuredBuffer<MeshInfo> m_meshInfo;
+    uint m_meshInfoCount;
     
     // indirection buffer containing indices into the m_meshBuffers unbounded array
     // Note 1: the index list for a particular mesh begins at MeshInfo::m_bufferStartIndex
     // Note 2: multiple MeshInfos will refer to the same buffer in m_meshBuffers when they are instances of the same mesh
     Buffer<uint> m_meshBufferIndices;
+
+    // contains a mapping from RT InstanceIndex to procedural geometry instances, which can be used to read per-instance geometry data:
+    // [0] bindlessBufferIndex parameter from RegisterProceduralGeometryType
+    // [1] localInstanceIndex parameter from AddProceduralGeometry
+    Buffer<uint2> m_proceduralGeometryInfo;
 
     // buffer array index offsets from MeshInfo::m_bufferStartIndex in the m_meshBufferIndices indirection buffer
     // Note: every mesh has all six entries in the index list, but only the Index, Position, and Normal buffers are guaranteed to be valid
@@ -183,8 +101,13 @@ ShaderResourceGroup RayTracingSceneSrg : SRG_RayTracingScene
     #define MESH_BUFFER_FLAG_BITANGENT      (1 << 1)
     #define MESH_BUFFER_FLAG_UV             (1 << 2)
 
+    // Specifies which debug visualization to use (value must be from RayTracingDebugViewMode enum)
+    uint m_debugViewMode;
+
+#if !USE_BINDLESS_SRG
     // Unbounded array of mesh stream buffers:
     // Note 1: Index, Position, and Normal stream buffers are guaranteed to be valid for each mesh
     // Note 2: Optional stream buffers such as Tangent, Bitangent, and UV are indicated in the MeshInfo.m_bufferFlags field
     ByteAddressBuffer m_meshBuffers[];
+#endif
 }

@@ -89,14 +89,19 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
                 # is per-permutation, we need to install such headers per permutation. For the other cases, we can install
                 # under the default component since they are shared across permutations/configs.
                 cmake_path(IS_PREFIX CMAKE_BINARY_DIR ${include_directory} NORMALIZE include_directory_child_of_build)
-                if(NOT include_directory_child_of_build)
-                    set(include_directory_component ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME})
-                else()
-                    set(include_directory_component ${LY_INSTALL_PERMUTATION_COMPONENT})
-                endif()
+
+                # In order to combine profile and release monolithic, we use the CORE component
+                # because CPack will fail if it finds duplicated content in CORE and DEFAULT/MONOLITHIC
+                set(include_directory_component ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME})
 
                 unset(rel_include_dir)
-                cmake_path(RELATIVE_PATH include_directory BASE_DIRECTORY ${LY_ROOT_FOLDER} OUTPUT_VARIABLE rel_include_dir)
+                if(include_directory_child_of_build)
+                    # We need to use the path relative to the binary folder otherwise you will get an invalid 
+                    # relative path if the build folder is outside the engine root.
+                    cmake_path(RELATIVE_PATH include_directory BASE_DIRECTORY ${CMAKE_BINARY_DIR} OUTPUT_VARIABLE rel_include_dir)
+                else()
+                    cmake_path(RELATIVE_PATH include_directory BASE_DIRECTORY ${LY_ROOT_FOLDER} OUTPUT_VARIABLE rel_include_dir)
+                endif()
                 cmake_path(APPEND rel_include_dir "..")
                 cmake_path(NORMAL_PATH rel_include_dir OUTPUT_VARIABLE destination_dir)
 
@@ -196,7 +201,17 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
         string(GENEX_STRIP ${include} include_genex_expr)
         if(include_genex_expr STREQUAL include) # only for cases where there are no generation expressions
             # Make the include path relative to the source dir where the target will be declared
-            cmake_path(RELATIVE_PATH include BASE_DIRECTORY ${absolute_target_source_dir} OUTPUT_VARIABLE target_include)
+            cmake_path(IS_PREFIX CMAKE_BINARY_DIR ${include} NORMALIZE include_directory_child_of_build)
+            if(include_directory_child_of_build)
+                # Some autogen files are placed in the build folder so remove the build folder prefix
+                # and use it to calculate the relative path  
+                cmake_path(RELATIVE_PATH include BASE_DIRECTORY ${CMAKE_BINARY_DIR} OUTPUT_VARIABLE rel_include)
+                cmake_path(SET base_path ${LY_ROOT_FOLDER})
+                cmake_path(APPEND base_path ${rel_include} OUTPUT_VARIABLE absolute_include)
+                cmake_path(RELATIVE_PATH absolute_include BASE_DIRECTORY ${absolute_target_source_dir} OUTPUT_VARIABLE target_include)
+            else()
+                cmake_path(RELATIVE_PATH include BASE_DIRECTORY ${absolute_target_source_dir} OUTPUT_VARIABLE target_include)
+            endif()
             list(APPEND INCLUDE_DIRECTORIES_PLACEHOLDER "${PLACEHOLDER_INDENT}${target_include}")
         endif()
     endforeach()
@@ -349,6 +364,140 @@ function(ly_setup_subdirectories)
     endforeach()
 endfunction()
 
+#! ly_setup_3p_target: Export enough data such that the script-only mode knows about the runtime dependencies
+#! for the given target.  This function returns a string which is a setup function that can be called
+#! in script only mode to create a fake target for the 3p library that just includes its copy dependencies.
+function(ly_setup_3p_target OUTVAR_GENERATED_DATA_FILENAME OUTVAR_FILE_NAME_TO_GENERATE ALIAS_TARGET_NAME)
+    ly_de_alias_target(${ALIAS_TARGET_NAME} TARGET_NAME)
+    o3de_get_dependencies_for_target(
+            TARGET "${TARGET_NAME}"
+            COPY_DEPENDENCIES_VAR target_copy_dependencies
+            TARGET_DEPENDENCIES_VAR target_target_dependencies
+        )
+
+    # note that we want to actually create and register the aliased target name
+    # but get the data from the de-aliased target.  So except for the call above
+    # we use the aliased target name.
+    string(REPLACE "::" "__" CLEAN_TARGET_NAME "${ALIAS_TARGET_NAME}")  
+
+    unset(copy_dependencies_target_rel_path)
+    unset(copy_dependencies_source_file_path)
+    foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
+        unset(copy_dependencies_${conf})
+    endforeach()
+
+    foreach(dependency_for_target IN LISTS target_target_dependencies)
+        if (NOT TARGET ${dependency_for_target})
+            # Sometimes, things set actual shared libraries as a target dependency instead of a copy dependency.
+            list(APPEND target_copy_dependencies "${dependency_for_target}\n")
+        endif()
+    endforeach()     
+    
+    # note that the copy dependencies are actually in pairs newline delimited, so
+    # file_to_copy_a\nwhere_to_copy_a;file_to_copy_b\nwhere_to_copy_b;...
+    foreach(copy_dependency IN LISTS target_copy_dependencies)
+        string(REPLACE "\n" ";" copy_dep_pair "${copy_dependency}")
+        list(POP_FRONT copy_dep_pair source_filepath destination_relpath)
+        list(APPEND copy_dependencies_source_file_path "${source_filepath}")
+        # a quirk of list append is that if you give it an empty element, it does nothing.
+        # use dummy element (0) to indicate its an empty path
+        if (NOT destination_relpath)
+            set(destination_relpath "0")
+        endif()
+
+        list(APPEND copy_dependencies_target_rel_path "${destination_relpath}")
+    endforeach()
+
+    # sanity check
+    if (copy_dependencies_source_file_path OR copy_dependencies_target_rel_path)
+        list(LENGTH copy_dependencies_source_file_path source_list_length)
+        list(LENGTH copy_dependencies_target_rel_path  relpath_list_lenth)
+        if (NOT source_list_length EQUAL relpath_list_lenth)
+            message(FATAL_ERROR "Programmer error - for target ${ALIAS_TARGET_NAME}, lists are supposed to be same length, but\n\
+                                ${source_list_length} source and ${relpath_list_lenth} relpath\n\
+                                source:'${copy_dependencies_source_file_path}'\n\
+                                relpath: '${copy_dependencies_target_rel_path}'")
+        endif()
+    endif()
+
+    unset(${OUTVAR_GENERATED_DATA_FILENAME} PARENT_SCOPE)
+
+    # the absolute source paths of files to copy can have generator expressions that are per-config.
+    # use file(GENERATE ...) to evaluate the genexes, by writing it as a build file
+    # since GENERATE only happens during generate step, this is as far as we can go during
+    # configure.  It will be up to a build step to read these generated files back and
+    # do a final transform that removes things like absolute paths.
+    # note that we generate a file for every 3p target, as they must exist.
+    set(generate_content "set(target_name ${ALIAS_TARGET_NAME})\n")
+    if (copy_dependencies_source_file_path)
+        string(APPEND generate_content "set(copy_dependencies_source_file_path \"${copy_dependencies_source_file_path}\")\n")
+        string(APPEND generate_content "set(copy_dependencies_target_rel_path \"${copy_dependencies_target_rel_path}\")\n")
+    endif()
+
+    file(GENERATE OUTPUT  "${CMAKE_BINARY_DIR}/install/$<CONFIG>/${PAL_PLATFORM_NAME}/${CLEAN_TARGET_NAME}.cmake" 
+                  CONTENT "${generate_content}")
+    set(${OUTVAR_GENERATED_DATA_FILENAME} "${CMAKE_BINARY_DIR}/install/$<CONFIG>/${PAL_PLATFORM_NAME}/${CLEAN_TARGET_NAME}.cmake" PARENT_SCOPE)
+    set(${OUTVAR_FILE_NAME_TO_GENERATE} ${CLEAN_TARGET_NAME} PARENT_SCOPE)
+
+endfunction()
+
+# In "Script only mode", the 3p libraries are not downloaded at all.
+# But some of them (not all) have extraneous .so or .dll files that need to be deployed
+# into the final runtime package if you intend to ship a script-only runtime.
+# This function exports a file that is used only in script-only mode to supply that list
+# of extra DLLs to copy along with the game.
+function(ly_setup_3p_dependencies)
+
+    # 3p dependency generation is only relevant to installer builds, which is expected to happen only if no project is being built
+    # prevent this code from running in non-instlaler-builds, otherwise it will try to hang these commands off a non-existant generic
+    # game launcher target (which itself is also only relevant to installer builds for script-only mode.)
+    if (LY_PROJECTS)
+        return()
+    endif()
+
+    unset(list_of_files_to_process)
+    unset(expected_output_files)
+    set(final_3p_output_dir "${CMAKE_BINARY_DIR}/cmake/3rdParty/Platform/${PAL_PLATFORM_NAME}/${LY_BUILD_PERMUTATION}")
+    get_property(o3de_all_3rdparty_targets GLOBAL PROPERTY O3DE_ALL_3RDPARTY_TARGETS)
+
+    # call the ly_setup_3p_target for each 3p target.  It will create a GENERATE step
+    # that will output a file, and also return the file name of the generated file.
+    foreach(target_3p IN LISTS o3de_all_3rdparty_targets)
+        ly_setup_3p_target(file_to_process output_filename ${target_3p})
+        if (file_to_process)
+            list(APPEND list_of_files_to_process ${file_to_process})
+            list(APPEND expected_output_files ${final_3p_output_dir}/${output_filename}.cmake)
+        endif()
+    endforeach()
+    
+    # note that generate only occurs during the generate step.  The above file will not be available until the build step
+    # so a finalization build step needs to run a script to finalize it.
+    if (list_of_files_to_process)
+        add_custom_command(
+            COMMAND ${CMAKE_COMMAND} -P 
+                "${LY_ROOT_FOLDER}/cmake/3rdParty/script-only-mode/PostProcessScriptOnlyMappings.cmake" # Script to run
+                "${final_3p_output_dir}" # the output file to make
+                ${list_of_files_to_process}
+            OUTPUT ${expected_output_files}
+            COMMENT "Updating script-only mode 3rd Party library mappings..."
+            DEPENDS ${list_of_files_to_process} 
+                    "${LY_ROOT_FOLDER}/cmake/3rdParty/script-only-mode/PostProcessScriptOnlyMappings.cmake"
+            VERBATIM
+        )
+
+        # make a custom target that depends on the above output file.
+        add_custom_target(GenerateScriptOnlyMappings DEPENDS ${expected_output_files})
+
+        # make it so that at least one real target that actually gets built depends on the above target.
+        # or else cmake won't evaluate it since nothing hangs off it.
+        add_dependencies(O3DE.GameLauncher GenerateScriptOnlyMappings)
+
+        ly_install(FILES ${expected_output_files}
+            DESTINATION "cmake/3rdParty/Platform/${PAL_PLATFORM_NAME}/${LY_BUILD_PERMUTATION}"
+            COMPONENT ${LY_INSTALL_PERMUTATION_COMPONENT})
+    endif()
+endfunction()
+
 
 #! ly_setup_subdirectory: setup all targets in the subdirectory
 function(ly_setup_subdirectory absolute_target_source_dir)
@@ -370,7 +519,11 @@ function(ly_setup_subdirectory absolute_target_source_dir)
     # 1. Create the base CMakeLists.txt that will just include a cmake file per platform
     string(CONFIGURE [[
 @cmake_copyright_comment@
-include(Platform/${PAL_PLATFORM_NAME}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
+if(LY_MONOLITHIC_GAME)
+    include(Platform/${PAL_PLATFORM_NAME}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake OPTIONAL)
+else()
+    include(Platform/${PAL_PLATFORM_NAME}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
+endif()
 ]] subdirectory_cmakelist_content @ONLY)
 
     # Store off the generated CMakeLists.txt into a DIRECTORY property based on the subdirectory being visited
@@ -403,6 +556,7 @@ endif()
     #    that will declare the target and configure it
     ly_setup_subdirectory_create_alias("${absolute_target_source_dir}" CREATE_ALIASES_PLACEHOLDER)
     ly_setup_subdirectory_set_gem_variant_to_load("${absolute_target_source_dir}" GEM_VARIANT_TO_LOAD_PLACEHOLDER)
+    ly_setup_add_variant_dependencies_for_gem_dependencies("${absolute_target_source_dir}" O3DE_ADD_VARIANT_DEPS_FOR_GEM_DEPS)
     ly_setup_subdirectory_enable_gems("${absolute_target_source_dir}" ENABLE_GEMS_PLACEHOLDER)
     ly_setup_subdirectory_install_code("${absolute_target_source_dir}" O3DE_INSTALL_CODE_PLACEHOLDER)
 
@@ -414,6 +568,7 @@ endif()
         "\n"
         "${CREATE_ALIASES_PLACEHOLDER}"
         "${GEM_VARIANT_TO_LOAD_PLACEHOLDER}"
+        "${O3DE_ADD_VARIANT_DEPS_FOR_GEM_DEPS}"
         "${ENABLE_GEMS_PLACEHOLDER}"
     )
 
@@ -481,14 +636,45 @@ function(ly_setup_cmake_install)
             list(APPEND relative_external_subdirs "\"${engine_rel_external_subdir}\"")
         endif()
     endforeach()
-    list(JOIN relative_external_subdirs ",\n${indent}" LY_INSTALL_EXTERNAL_SUBDIRS)
+    # Sort the external subdirectories before joining them with commas
+    list(SORT relative_external_subdirs CASE INSENSITIVE)
+    list(JOIN relative_external_subdirs ",\n${indent}" O3DE_INSTALL_EXTERNAL_SUBDIRS)
+
+    # Use the cache list of "gem_names" from the engine.json to populate
+    # the generated engine.json file
+    # The O3DE_INSTALL_ENGINE_GEMS is the configure placeholder that needs to be set
+    # at the end
+    get_property(active_engine_gems GLOBAL PROPERTY "O3DE_EXPLICIT_ACTIVE_GEMS_ENGINE")
+    if (active_engine_gems)
+        foreach(active_engine_gem IN LISTS active_engine_gems)
+            list(APPEND quoted_active_engine_gems "\"${active_engine_gem}\"")
+        endforeach()
+        list(SORT quoted_active_engine_gems CASE INSENSITIVE)
+        list(JOIN quoted_active_engine_gems ",\n${indent}" O3DE_INSTALL_ENGINE_GEMS)
+    endif()
 
     # Read the "templates" key from the source engine.json
     o3de_read_json_array(engine_templates ${LY_ROOT_FOLDER}/engine.json "templates")
-    foreach(template_path ${engine_templates})
-        list(APPEND relative_templates "\"${template_path}\"")
-    endforeach()
-    list(JOIN relative_templates ",\n${indent}" LY_INSTALL_TEMPLATES)
+    if(engine_templates)
+        foreach(template_path IN LISTS engine_templates)
+            list(APPEND relative_templates "\"${template_path}\"")
+        endforeach()
+        list(SORT relative_templates CASE INSENSITIVE)
+        list(JOIN relative_templates ",\n${indent}" O3DE_INSTALL_TEMPLATES)
+    endif()
+
+    # Read the "repos" key from the source engine.json
+    o3de_read_json_array(engine_repos ${LY_ROOT_FOLDER}/engine.json "repos")
+    if(engine_repos)
+        foreach(repo_uri ${engine_repos})
+            list(APPEND repos "\"${repo_uri}\"")
+        endforeach()
+        list(SORT repos CASE INSENSITIVE)
+        list(JOIN repos ",\n${indent}" O3DE_INSTALL_REPOS)
+    endif()
+
+    # Read the "api_versions" key from the source engine.json
+    o3de_read_json_key(O3DE_INSTALL_API_VERSIONS ${LY_ROOT_FOLDER}/engine.json "api_versions")
 
     configure_file(${LY_ROOT_FOLDER}/cmake/install/engine.json.in ${CMAKE_CURRENT_BINARY_DIR}/cmake/engine.json @ONLY)
 
@@ -568,14 +754,14 @@ ${find_subdirectories}
         COMPONENT ${LY_INSTALL_PERMUTATION_COMPONENT}
     )
 
-    set(pal_builtin_file ${CMAKE_CURRENT_BINARY_DIR}/cmake/3rdParty/Platform/${PAL_PLATFORM_NAME}/BuiltInPackages_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
+    set(pal_builtin_file ${CMAKE_CURRENT_BINARY_DIR}/cmake/3rdParty/Platform/${PAL_PLATFORM_NAME}/BuiltInPackages_${PAL_PLATFORM_NAME_LOWERCASE}${LY_ARCHITECTURE_NAME_EXTENSION}.cmake)
     file(GENERATE OUTPUT ${pal_builtin_file}
         CONTENT
 "# Generated by O3DE install\n
 if(LY_MONOLITHIC_GAME)
-    include(cmake/3rdParty/Platform/${PAL_PLATFORM_NAME}/Monolithic/BuiltInPackages_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
+    include(cmake/3rdParty/Platform/${PAL_PLATFORM_NAME}/Monolithic/BuiltInPackages_${PAL_PLATFORM_NAME_LOWERCASE}${LY_ARCHITECTURE_NAME_EXTENSION}.cmake)
 else()
-    include(cmake/3rdParty/Platform/${PAL_PLATFORM_NAME}/Default/BuiltInPackages_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
+    include(cmake/3rdParty/Platform/${PAL_PLATFORM_NAME}/Default/BuiltInPackages_${PAL_PLATFORM_NAME_LOWERCASE}${LY_ARCHITECTURE_NAME_EXTENSION}.cmake)
 endif()
 "
     )
@@ -604,7 +790,7 @@ endif()
         string(APPEND builtinpackages "${builtin_packages_inject_code}\n")
     endif()
 
-    set(permutation_builtin_file ${CMAKE_CURRENT_BINARY_DIR}/cmake/3rdParty/Platform/${PAL_PLATFORM_NAME}/${LY_BUILD_PERMUTATION}/BuiltInPackages_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
+    set(permutation_builtin_file ${CMAKE_CURRENT_BINARY_DIR}/cmake/3rdParty/Platform/${PAL_PLATFORM_NAME}/${LY_BUILD_PERMUTATION}/BuiltInPackages_${PAL_PLATFORM_NAME_LOWERCASE}${LY_ARCHITECTURE_NAME_EXTENSION}.cmake)
     file(GENERATE OUTPUT ${permutation_builtin_file}
         CONTENT "${builtinpackages}"
     )
@@ -618,27 +804,44 @@ endfunction()
 #! ly_setup_runtime_dependencies: install runtime dependencies
 function(ly_setup_runtime_dependencies)
 
-    # Common functions used by the bellow code
+    # Common functions used by the below code
     if(COMMAND ly_setup_runtime_dependencies_copy_function_override)
         ly_setup_runtime_dependencies_copy_function_override()
     else()
         # despite this copy function being the same, we need to install it per component that uses it
         # (which is per-configuration per-permutation component)
+
+        # The template is needed to replace the @LY_COPY_PERMISSIONS@ variable with the permissions
+        # that should be used for the copied file
+        set(install_runtime_ly_copy_template [[
+        function(ly_copy source_files relative_target_directory)
+            set(options)
+            set(oneValueArgs TARGET_FILE_DIR SOURCE_TYPE SOURCE_GEM_MODULE)
+            set(multiValueArgs)
+            cmake_parse_arguments("${CMAKE_CURRENT_FUNCTION}" "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+            set(target_file_dir "${${CMAKE_CURRENT_FUNCTION}_TARGET_FILE_DIR}")
+            set(source_type "${${CMAKE_CURRENT_FUNCTION}_SOURCE_TYPE}")
+            set(source_is_gem "${${CMAKE_CURRENT_FUNCTION}_SOURCE_GEM_MODULE}")
+
+            # Create the full path to the target directory
+            cmake_path(APPEND target_directory "${target_file_dir}" "${relative_target_directory}")
+            foreach(source_file IN LISTS source_files)
+                cmake_path(GET source_file FILENAME target_filename)
+                cmake_path(APPEND full_target_directory "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}" "${target_directory}")
+                cmake_path(APPEND target_file "${full_target_directory}" "${target_filename}")
+                if("${source_file}" IS_NEWER_THAN "${target_file}")
+                    message(STATUS "Copying ${source_file} to ${full_target_directory}...")
+                    file(COPY "${source_file}" DESTINATION "${full_target_directory}" FILE_PERMISSIONS @LY_COPY_PERMISSIONS@ FOLLOW_SYMLINK_CHAIN)
+                    file(TOUCH_NOCREATE "${target_file}")
+                endif()
+            endforeach()
+        endfunction()
+]])
+        # replace the @...@ placeholders
+        string(CONFIGURE "${install_runtime_ly_copy_template}" install_runtime_ly_copy @ONLY)
         foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
             string(TOUPPER ${conf} UCONF)
-            ly_install(CODE
-"function(ly_copy source_files target_directory)
-    foreach(source_file IN LISTS source_files)
-        cmake_path(GET source_file FILENAME target_filename)
-        cmake_path(APPEND full_target_directory \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}\" \"\${target_directory}\")
-        cmake_path(APPEND target_file \"\${full_target_directory}\" \"\${target_filename}\")
-        if(\"\${source_file}\" IS_NEWER_THAN \"\${target_file}\")
-            message(STATUS \"Copying \${source_file} to \${full_target_directory}...\")
-            file(COPY \"\${source_file}\" DESTINATION \"\${full_target_directory}\" FILE_PERMISSIONS ${LY_COPY_PERMISSIONS} FOLLOW_SYMLINK_CHAIN)
-            file(TOUCH_NOCREATE \"${target_file}\")
-        endif()
-    endforeach()
-endfunction()"
+            ly_install(CODE "${install_runtime_ly_copy}"
                 COMPONENT ${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF}
             )
         endforeach()
@@ -662,11 +865,22 @@ endfunction()"
 
         # runtime dependencies that need to be copied to the output
         set(target_file_dir "${runtime_output_directory}/${target_runtime_output_subdirectory}")
-        ly_get_runtime_dependencies(runtime_dependencies ${target})
-        foreach(runtime_dependency ${runtime_dependencies})
+        unset(target_copy_dependencies)
+        unset(target_target_dependencies)
+        unset(target_link_dependencies)
+        unset(target_imported_dependencies)
+        o3de_get_dependencies_for_target(
+            TARGET "${target}"
+            COPY_DEPENDENCIES_VAR target_copy_dependencies
+            TARGET_DEPENDENCIES_VAR target_target_dependencies
+            LINK_DEPENDENCIES_VAR target_link_dependencies
+            IMPORTED_DEPENDENCIES_VAR target_imported_dependencies
+        )
+        foreach(dependency_for_target IN LISTS target_copy_dependencies target_target_dependencies
+            target_link_dependencies target_imported_dependencies)
             unset(runtime_command)
-            unset(runtime_depend) # unused, but required to be passed to ly_get_runtime_dependency_command
-            ly_get_runtime_dependency_command(runtime_command runtime_depend ${runtime_dependency})
+            o3de_get_command_for_dependency(COMMAND_VAR runtime_command
+                DEPENDENCY ${dependency_for_target})
             string(CONFIGURE "${runtime_command}" runtime_command @ONLY)
             list(APPEND runtime_commands ${runtime_command})
         endforeach()
@@ -690,21 +904,46 @@ function(ly_setup_assets)
     # Gem Source Assets and configuration files
     # Find all gem directories relative to the CMake Source Dir
 
-    # This first loop is to filter out transient and .gitignore'd folders that should be added to
+    # this first loop real-path-izes all the paths to avoid doing so repeatedly.
+    get_external_subdirectories_in_use(external_subdirs_non_realpath)
+    foreach(gem_candidate_dir IN LISTS external_subdirs_non_realpath)
+        file(REAL_PATH ${gem_candidate_dir} gem_candidate_dir BASE_DIRECTORY ${LY_ROOT_FOLDER})
+        list(APPEND external_subdirs ${gem_candidate_dir})
+    endforeach()
+
+    # This next loop is to filter out transient and .gitignore'd folders that should be added to
     # the install layout from the root directory. Such as <external-subdirectory-root>/Cache.
     # This is also done to avoid globbing thousands of files in subdirectories that shouldn't
     # be processed.
-    get_external_subdirectories_in_use(external_subdirs)
+    # It also filters out subdirectories that are themselves gem candidate directories so they are
+    # not double-visited.
+    
     foreach(gem_candidate_dir IN LISTS external_subdirs)
-        file(REAL_PATH ${gem_candidate_dir} gem_candidate_dir BASE_DIRECTORY ${LY_ROOT_FOLDER})
+        unset(external_subdir_files)
+        unset(external_subdir_files_tenative)
+
         # Don't recurse immediately in order to exclude transient source artifacts
         file(GLOB
-            external_subdir_files
+            external_subdir_files_tenative
             LIST_DIRECTORIES TRUE
             "${gem_candidate_dir}/*"
         )
         # Exclude transient artifacts that shouldn't be copied to the install layout
-        list(FILTER external_subdir_files EXCLUDE REGEX "/([Bb]uild|[Cc]ache|[Uu]ser)$")
+        list(FILTER external_subdir_files_tenative EXCLUDE REGEX "/([Bb]uild|[Cc]ache|[Uu]ser)$")
+
+        # Exclude folders that themselves are gem_candidate_dirs with their own gem.json
+        foreach(check_file IN LISTS external_subdir_files_tenative)
+            if(IS_DIRECTORY ${check_file})
+                list(FIND external_subdirs ${check_file} is_gem_candidate_dir)
+                if(is_gem_candidate_dir EQUAL -1)
+                    # it is not already in the list, so it is unique to this gem folder.
+                    list(APPEND external_subdir_files ${check_file})
+                endif()
+            else()
+                list(APPEND external_subdir_files ${check_file})                
+            endif()
+        endforeach()
+
         # Storing a "mapping" of gem candidate directories, to external_subdirectory files using
         # a DIRECTORY property for the "value" and the GLOBAL property for the "key"
         set_property(DIRECTORY ${gem_candidate_dir} APPEND PROPERTY directory_filtered_asset_paths "${external_subdir_files}")
@@ -785,9 +1024,28 @@ function(ly_setup_assets)
                     # to allow it to be installed next to the gem.json
                     set(gem_scratch_binary_dir "${CMAKE_CURRENT_BINARY_DIR}/install/${gem_install_dest_dir}")
 
+                    # 1. Create the base CMakeLists.txt that will just include a cmake file per platform
+                    string(CONFIGURE [[
+                    @cmake_copyright_comment@
+                    o3de_read_json_key(GEM_TYPE ${CMAKE_CURRENT_SOURCE_DIR}/gem.json "type")
+                    if (GEM_TYPE STREQUAL "Asset")
+                        if(LY_MONOLITHIC_GAME)
+                            include(Platform/${PAL_PLATFORM_NAME}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake OPTIONAL)                    
+                        else()
+                            include(Platform/${PAL_PLATFORM_NAME}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
+                        endif()
+                    endif()
+                    ]] subdirectory_cmakelist_content @ONLY)
+                    
+
+                    # Store off the generated CMakeLists.txt into a DIRECTORY property based on the subdirectory being visited
+                    # In the ly_setup_assets() function, it generates an empty CMakeLists.txt into the gem root directory
+                    # if one does not exist by checking if this property is set
+                    set_property(DIRECTORY "${absolute_target_source_dir}" APPEND_STRING PROPERTY O3DE_SUBDIRECTORY_CMAKELIST_CONTENT "${subdirectory_cmakelist_content}")
+                    
                     # copy the empty CMakeList.txt into the gem root directory, to allow add_subdirectory
                     # calls to succeed on the gem root in the install layout
-                    file(CONFIGURE OUTPUT "${gem_scratch_binary_dir}/CMakeLists.txt" CONTENT [[@cmake_copyright_comment@]] @ONLY)
+                    file(WRITE "${gem_scratch_binary_dir}/CMakeLists.txt" "${subdirectory_cmakelist_content}")
 
                     ly_install(FILES "${gem_scratch_binary_dir}/CMakeLists.txt"
                         DESTINATION ${gem_install_dest_dir}
@@ -807,6 +1065,27 @@ function(ly_setup_assets)
 
 endfunction()
 
+#! ly_setup_add_variant_dependencies_for_gem_dependencies: Replicates the call to
+#!  the `o3de_add_variant_dependencies_for_gem_dependencies` function
+#! within the generated CMakeLists.txt in the same relative install layout directory
+function(ly_setup_add_variant_dependencies_for_gem_dependencies absolute_target_source_dir output_script)
+    # Replicate the create_alias() calls made in the SOURCE_DIR into the generated CMakeLists.txt
+    string(JOIN "\n" add_variant_dependencies_for_gem_dependencies_template
+        "o3de_add_variant_dependencies_for_gem_dependencies(@add_variant_dependencies_for_gem_dependencies_args@)"
+        "")
+
+    unset(${output_script} PARENT_SCOPE)
+    get_property(add_variant_dependencies_for_gem_dependencies_args_list
+        DIRECTORY ${absolute_target_source_dir}
+        PROPERTY O3DE_ADD_VARIANT_DEPENDENCIES_FOR_GEM_DEPENDENCIES_ARGUMENTS)
+
+    unset(add_variant_dependencies_for_gem_dependencies_calls)
+    foreach(add_variant_dependencies_for_gem_dependencies_args IN LISTS add_variant_dependencies_for_gem_dependencies_args_list)
+        string(CONFIGURE "${add_variant_dependencies_for_gem_dependencies_template}" add_variant_dependencies_for_gem_dependencies_command @ONLY)
+        string(APPEND add_variant_dependencies_for_gem_dependencies_calls ${add_variant_dependencies_for_gem_dependencies_command})
+    endforeach()
+    set(${output_script} ${add_variant_dependencies_for_gem_dependencies_calls} PARENT_SCOPE)
+endfunction()
 
 #! ly_setup_subdirectory_create_alias: Replicates the call to the `ly_create_alias` function
 #! within the generated CMakeLists.txt in the same relative install layout directory
@@ -878,15 +1157,25 @@ function(ly_setup_o3de_install)
     ly_setup_cmake_install()
     ly_setup_runtime_dependencies()
     ly_setup_assets()
+    ly_setup_3p_dependencies()
 
     # Misc
     ly_install(FILES
         ${LY_ROOT_FOLDER}/pytest.ini
         ${LY_ROOT_FOLDER}/LICENSE.txt
         ${LY_ROOT_FOLDER}/README.md
+        ${LY_ROOT_FOLDER}/CMakePresets.json
         DESTINATION .
         COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
     )
+
+    if("$ENV{O3DE_PACKAGE_TYPE}" STREQUAL "DEB")
+        ly_install(FILES
+            ${LY_ROOT_FOLDER}/Code/Tools/ProjectManager/Resources/o3de_desktop.svg
+            DESTINATION .
+            COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
+        )
+    endif()
 
     # Inject other build directories
     foreach(external_dir ${LY_INSTALL_EXTERNAL_BUILD_DIRS})

@@ -151,10 +151,10 @@ namespace MaterialEditor
         documentType.m_supportedExtensionsToOpen.push_back({ "Material Type", AZ::RPI::MaterialTypeSourceData::Extension });
         documentType.m_supportedExtensionsToOpen.push_back({ "Material", AZ::RPI::MaterialSourceData::Extension });
         documentType.m_supportedExtensionsToSave.push_back({ "Material", AZ::RPI::MaterialSourceData::Extension });
-        documentType.m_supportedAssetTypesToCreate.insert(azrtti_typeid<AZ::RPI::MaterialTypeAsset>());
-        documentType.m_defaultAssetIdToCreate = AtomToolsFramework::GetSettingsObject<AZ::Data::AssetId>(
-            "/O3DE/Atom/MaterialEditor/DefaultMaterialTypeAsset",
-            AZ::RPI::AssetUtils::GetAssetIdForProductPath("materials/types/standardpbr.azmaterialtype"));
+        documentType.m_defaultDocumentTemplate =
+            AtomToolsFramework::GetPathWithoutAlias(AtomToolsFramework::GetSettingsValue<AZStd::string>(
+                "/O3DE/Atom/MaterialEditor/DefaultMaterialType",
+                "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardPBR.materialtype"));
         return documentType;
     }
 
@@ -304,6 +304,11 @@ namespace MaterialEditor
             return true;
         });
         return result;
+    }
+
+    bool MaterialDocument::CanSaveAsChild() const
+    {
+        return true;
     }
 
     bool MaterialDocument::BeginEdit()
@@ -675,7 +680,7 @@ namespace MaterialEditor
                         // image and formatting.
                         propertyConfig.m_description +=
                             "\n\n<img src=\':/Icons/changed_property.svg\'> An indicator icon will be shown to the left of properties with "
-                            "overridden values that are different from the parent material, or material type if there is no parent.";
+                            "overridden values that are different from the parent material, or material type if there is no parent.\n";
 
                         // The dynamic property uses the group name and display name to forward as attributes to the RPE and property asset
                         // control. The control will then use the attributes to display a context sensitive title when opening the asset
@@ -801,6 +806,10 @@ namespace MaterialEditor
             AZ::RPI::AssetUtils::ResolvePathReference(m_absolutePath, m_materialSourceData.m_parentMaterial);
         m_materialSourceData.m_materialType =
             AZ::RPI::AssetUtils::ResolvePathReference(m_absolutePath, m_materialSourceData.m_materialType);
+        // If the material was previously saved with a reference to a material pipeline generated material type in the intermediate asset
+        // folder, attempt to redirect to the original source material type.
+        m_materialSourceData.m_materialType =
+            AZ::RPI::MaterialUtils::PredictOriginalMaterialTypeSourcePath(m_materialSourceData.m_materialType);
 
         // Load the material type source data which provides the layout and default values of all of the properties
         auto materialTypeOutcome = AZ::RPI::MaterialUtils::LoadMaterialTypeSourceData(m_materialSourceData.m_materialType);
@@ -905,8 +914,8 @@ namespace MaterialEditor
             // which will later get caught in Process() when trying to access a property.
             if (materialPropertyDependencies.none() || functor->NeedsProcess(dirtyFlags))
             {
-                AZ::RPI::MaterialFunctor::EditorContext context = AZ::RPI::MaterialFunctor::EditorContext(
-                    m_materialInstance->GetPropertyValues(), m_materialInstance->GetMaterialPropertiesLayout(), propertyDynamicMetadata,
+                AZ::RPI::MaterialFunctorAPI::EditorContext context = AZ::RPI::MaterialFunctorAPI::EditorContext(
+                    m_materialInstance->GetPropertyCollection(), propertyDynamicMetadata,
                     propertyGroupDynamicMetadata, updatedProperties, updatedPropertyGroups,
                     &materialPropertyDependencies);
                 functor->Process(context);

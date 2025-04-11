@@ -10,7 +10,6 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Component/Entity.h>
-#include <LmbrCentral/Rendering/MeshAsset.h>
 #include <LmbrCentral/Animation/AttachmentComponentBus.h>
 #include <LmbrCentral/Animation/SkeletalHierarchyRequestBus.h>
 
@@ -95,8 +94,7 @@ namespace AZ
             m_scaleSource = configuration.m_scaleSource;
 
             m_cachedOwnerTransform = AZ::Transform::CreateIdentity();
-            EBUS_EVENT_ID_RESULT(m_cachedOwnerTransform, m_ownerId, AZ::TransformBus, GetWorldTM);
-
+            AZ::TransformBus::EventResult(m_cachedOwnerTransform, m_ownerId, &AZ::TransformBus::Events::GetWorldTM);
             if (configuration.m_attachedInitially)
             {
                 Attach(configuration.m_targetId, configuration.m_targetBoneName.c_str(), configuration.m_targetOffset);
@@ -181,7 +179,8 @@ namespace AZ
             if (m_targetId.IsValid())
             {
                 // alert others that we're detaching
-                EBUS_EVENT_ID(m_targetId, LmbrCentral::AttachmentComponentNotificationBus, OnDetached, m_ownerId);
+                LmbrCentral::AttachmentComponentNotificationBus::Event(
+                    m_targetId, &LmbrCentral::AttachmentComponentNotificationBus::Events::OnDetached, m_ownerId);
 
                 MeshComponentNotificationBus::Handler::BusDisconnect();
                 AZ::TransformNotificationBus::Handler::BusDisconnect(m_targetId);
@@ -269,7 +268,7 @@ namespace AZ
                 {
                     m_cachedOwnerTransform = finalTransform;
                     m_isUpdatingOwnerTransform = true;
-                    EBUS_EVENT_ID(m_ownerId, AZ::TransformBus, SetWorldTM, finalTransform);
+                    AZ::TransformBus::Event(m_ownerId, &AZ::TransformBus::Events::SetWorldTM, finalTransform);
                     m_isUpdatingOwnerTransform = false;
                 }
             }

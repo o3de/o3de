@@ -8,7 +8,7 @@
 
 #include <RHI/CommandList.h>
 #include <RHI/CommandQueue.h>
-#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
+#include <RHI/Conversion.h>
 #include <RHI/Device.h>
 #include <RHI/SwapChain.h>
 
@@ -72,7 +72,12 @@ namespace AZ
                 }
 
                 // Submit commands to queue for the current frame.
-                vulkanQueue->SubmitCommandBuffers({request.m_commandList}, request.m_semaphoresToWait, request.m_semaphoresToSignal, fenceToSignal);
+                vulkanQueue->SubmitCommandBuffers(
+                    { request.m_commandList },
+                    request.m_semaphoresToWait,
+                    request.m_semaphoresToSignal,
+                    request.m_fencesToWaitFor,
+                    fenceToSignal);
                 // Need to signal all the other fences (other than the first one)
                 for (size_t i = 1; i < request.m_fencesToSignal.size(); ++ i)
                 {
@@ -84,7 +89,7 @@ namespace AZ
                     AZ::Debug::ScopedTimer presentTimer(m_lastPresentDuration);
 
                     // present the image of the current frame.
-                    for (RHI::SwapChain* swapChain : request.m_swapChainsToPresent)
+                    for (RHI::DeviceSwapChain* swapChain : request.m_swapChainsToPresent)
                     {
                         swapChain->Present();
                     }
@@ -106,8 +111,9 @@ namespace AZ
                 Queue* vulkanQueue = static_cast<Queue*>(queue);
                 vulkanQueue->SubmitCommandBuffers(
                     AZStd::vector<RHI::Ptr<CommandList>>(),
-                    AZStd::vector<Semaphore::WaitSemaphore>(), 
-                    AZStd::vector<RHI::Ptr<Semaphore>>(), 
+                    AZStd::vector<Semaphore::WaitSemaphore>(),
+                    AZStd::vector<RHI::Ptr<Semaphore>>(),
+                    {},
                     &fence);
             });
         }

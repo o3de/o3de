@@ -26,7 +26,7 @@ namespace AzFramework
     {
     public:
         AZ_TYPE_INFO(BehaviorComponentId, "{60A9A069-9C3D-465A-B7AD-0D6CC803990A}");
-        AZ_CLASS_ALLOCATOR(BehaviorComponentId, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BehaviorComponentId, AZ::ComponentAllocator);
         static void Reflect(AZ::ReflectContext* context);
 
         BehaviorComponentId() = default;
@@ -49,7 +49,7 @@ namespace AzFramework
     {
     public:
         AZ_RTTI(BehaviorEntity, "{41CC88A4-FE07-48E6-943D-998DE68AFF5C}");
-        AZ_CLASS_ALLOCATOR(BehaviorEntity, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BehaviorEntity, AZ::EntityAllocator);
         static void Reflect(AZ::ReflectContext* context);
 
         virtual ~BehaviorEntity() = default;

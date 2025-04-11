@@ -61,10 +61,10 @@ namespace AZ
         
         //! Used to assign a sort order to assets in the case where the user
         //! drags and drops a source file (like a FBX, but others too) which result in many
-        //! different products of different types.  Creating entities for each will cause a jumbled
+        //! different products of different types. Creating entities for each will cause a jumbled
         //! mess, so instead, the products will be sorted using this value as a hint
         //! and the first one in the resulting list will be picked to represent the drop operation.
-        //! Highest number wins.   In the case of ties, the list will also be sorted alphabetically
+        //! Highest number wins. In the case of ties, the list will also be sorted alphabetically
         //! and give a higher weight to assets with the same name as the source file that produced them.
         virtual int GetAssetTypeDragAndDropCreationPriority() const { return s_NormalPriority; }
     };
@@ -72,3 +72,4 @@ namespace AZ
     using AssetTypeInfoBus = AZ::EBus<AssetTypeInfo>;
 } // namespace AZ
 
+DECLARE_EBUS_EXTERN_DLL_MULTI_ADDRESS(AssetTypeInfo);

@@ -7,7 +7,7 @@
 #
 
 ly_add_target(
-    NAME MultiplayerCompression.Static STATIC
+    NAME ${gem_name}.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
         multiplayercompression_files.cmake
@@ -22,7 +22,7 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME MultiplayerCompression ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME ${gem_name} ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         multiplayercompression_shared_files.cmake
@@ -31,14 +31,24 @@ ly_add_target(
             Source
     BUILD_DEPENDENCIES
         PRIVATE
-            Gem::MultiplayerCompression.Static
+            Gem::${gem_name}.Static
 )
 
-# use the MultiplayerCompression module everywhere except builders:
-ly_create_alias(NAME MultiplayerCompression.Clients NAMESPACE Gem TARGETS Gem::MultiplayerCompression)
-ly_create_alias(NAME MultiplayerCompression.Servers NAMESPACE Gem TARGETS Gem::MultiplayerCompression)
+# Inject the gem name into the Module source file
+ly_add_source_properties(
+    SOURCES
+        Source/MultiplayerCompressionModule.cpp
+    PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_GEM_NAME=${gem_name}
+            O3DE_GEM_VERSION=${gem_version})
+
+# use the ${gem_name} module everywhere except builders:
+ly_create_alias(NAME ${gem_name}.Clients NAMESPACE Gem TARGETS Gem::${gem_name})
+ly_create_alias(NAME ${gem_name}.Servers NAMESPACE Gem TARGETS Gem::${gem_name})
+ly_create_alias(NAME ${gem_name}.Unified NAMESPACE Gem TARGETS Gem::${gem_name})
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
-    ly_create_alias(NAME MultiplayerCompression.Tools   NAMESPACE Gem TARGETS Gem::MultiplayerCompression)
+    ly_create_alias(NAME ${gem_name}.Tools   NAMESPACE Gem TARGETS Gem::${gem_name})
 endif()
 
 ################################################################################
@@ -46,7 +56,7 @@ endif()
 ################################################################################
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_target(
-        NAME MultiplayerCompression.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+        NAME ${gem_name}.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
         NAMESPACE Gem
         FILES_CMAKE
             multiplayercompression_tests_files.cmake
@@ -57,9 +67,10 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzTest
-                Gem::MultiplayerCompression.Static
+                Gem::${gem_name}.Static
     )
     ly_add_googletest(
-        NAME Gem::MultiplayerCompression.Tests
+        NAME Gem::${gem_name}.Tests
+        LABELS REQUIRES_tiaf
     )
 endif()

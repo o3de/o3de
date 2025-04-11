@@ -6,7 +6,6 @@
  *
  */
 
-
 #include "EditorDefs.h"
 
 #include "Settings.h"
@@ -24,7 +23,6 @@
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Utils/Utils.h>
 
-
 // AzFramework
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
@@ -35,7 +33,6 @@
 // Editor
 #include "CryEdit.h"
 #include "MainWindow.h"
-
 
 //////////////////////////////////////////////////////////////////////////
 // Global Instance of Editor settings.
@@ -107,9 +104,7 @@ SEditorSettings::SEditorSettings()
     bSettingsManagerMode = false;
 
     undoLevels = 50;
-    m_undoSliceOverrideSaveValue = false;
     bShowDashboardAtStartup = true;
-    m_showCircularDependencyError = true;
     bAutoloadLastLevelAtStartup = false;
     bMuteAudio = false;
 
@@ -157,7 +152,6 @@ SEditorSettings::SEditorSettings()
     wheelZoomSpeed = 1;
     invertYRotation = false;
     invertPan = false;
-    fBrMultiplier = 2;
     bPreviewGeometryWindow = true;
     bBackupOnSave = true;
     backupOnSaveMaxCount = 3;
@@ -192,8 +186,6 @@ SEditorSettings::SEditorSettings()
 #endif
     animEditor = "";
 
-    terrainTextureExport = "";
-
     sTextureBrowserSettings.nCellSize = 128;
 
     // Experimental features settings
@@ -221,7 +213,6 @@ SEditorSettings::SEditorSettings()
     backgroundUpdatePeriod = 0;
     g_TemporaryLevelName = nullptr;
 
-    sliceSettings.dynamicByDefault = false;
     levelSaveSettings.saveAllPrefabsPreference = AzToolsFramework::Prefab::SaveAllPrefabsPreference::AskEveryTime;
 }
 
@@ -426,9 +417,7 @@ void SEditorSettings::Save(bool isEditorClosing)
 
     // Save settings to registry.
     SaveValue("Settings", "UndoLevels", undoLevels);
-    SaveValue("Settings", "UndoSliceOverrideSaveValue", m_undoSliceOverrideSaveValue);
     SaveValue("Settings", "ShowWelcomeScreenAtStartup", bShowDashboardAtStartup);
-    SaveValue("Settings", "ShowCircularDependencyError", m_showCircularDependencyError);
     SaveValue("Settings", "LoadLastLevelAtStartup", bAutoloadLastLevelAtStartup);
     SaveValue("Settings", "MuteAudio", bMuteAudio);
     SaveValue("Settings", "AutoBackup", autoBackupEnabled);
@@ -442,7 +431,6 @@ void SEditorSettings::Save(bool isEditorClosing)
     SaveValue("Settings", "WheelZoomSpeed", wheelZoomSpeed);
     SaveValue("Settings", "InvertYRotation", invertYRotation);
     SaveValue("Settings", "InvertPan", invertPan);
-    SaveValue("Settings", "BrMultiplier", fBrMultiplier);
     SaveValue("Settings", "CameraFastMoveSpeed", cameraFastMoveSpeed);
     SaveValue("Settings", "PreviewGeometryWindow", bPreviewGeometryWindow);
 
@@ -509,8 +497,6 @@ void SEditorSettings::Save(bool isEditorClosing)
     SaveValue("Settings\\Snap", "GridGetFromSelected", snap.bGridGetFromSelected);
     //////////////////////////////////////////////////////////////////////////
 
-    SaveValue("Settings", "TerrainTextureExport", terrainTextureExport);
-
     //////////////////////////////////////////////////////////////////////////
     // Texture browser settings
     //////////////////////////////////////////////////////////////////////////
@@ -569,17 +555,9 @@ void SEditorSettings::Save(bool isEditorClosing)
     SaveValue("Settings\\SmartFileOpen", "DlgRect.Right", smartOpenSettings.rect.right());
     SaveValue("Settings\\SmartFileOpen", "DlgRect.Bottom", smartOpenSettings.rect.bottom());
 
-    //////////////////////////////////////////////////////////////////////////
-    // Slice settings
-    //////////////////////////////////////////////////////////////////////////
-    SaveValue("Settings\\Slices", "DynamicByDefault", sliceSettings.dynamicByDefault);
-
     s_editorSettings()->sync();
 
     // --- Settings Registry values
-
-    // Prefab System UI
-    AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::SetPrefabSystemEnabled, prefabSystem);
 
     AzToolsFramework::Prefab::PrefabLoaderInterface* prefabLoaderInterface =
         AZ::Interface<AzToolsFramework::Prefab::PrefabLoaderInterface>::Get();
@@ -598,12 +576,7 @@ void SEditorSettings::Load()
         AZ::Interface<AzToolsFramework::Prefab::PrefabLoaderInterface>::Get();
     levelSaveSettings.saveAllPrefabsPreference = prefabLoaderInterface->GetSaveAllPrefabsPreference();
 
-    // Load from Settings Registry
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        prefabSystem, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-
     const int settingsVersion = s_editorSettings()->value(QStringLiteral("Settings/EditorSettingsVersion"), 0).toInt();
-
     if (settingsVersion != EditorSettingsVersion)
     {
         s_editorSettings()->setValue(QStringLiteral("Settings/EditorSettingsVersion"), EditorSettingsVersion);
@@ -614,9 +587,7 @@ void SEditorSettings::Load()
     QString     strPlaceholderString;
     // Load settings from registry.
     LoadValue("Settings", "UndoLevels", undoLevels);
-    LoadValue("Settings", "UndoSliceOverrideSaveValue", m_undoSliceOverrideSaveValue);
     LoadValue("Settings", "ShowWelcomeScreenAtStartup", bShowDashboardAtStartup);
-    LoadValue("Settings", "ShowCircularDependencyError", m_showCircularDependencyError);
     LoadValue("Settings", "LoadLastLevelAtStartup", bAutoloadLastLevelAtStartup);
     LoadValue("Settings", "MuteAudio", bMuteAudio);
     LoadValue("Settings", "AutoBackup", autoBackupEnabled);
@@ -630,7 +601,6 @@ void SEditorSettings::Load()
     LoadValue("Settings", "WheelZoomSpeed", wheelZoomSpeed);
     LoadValue("Settings", "InvertYRotation", invertYRotation);
     LoadValue("Settings", "InvertPan", invertPan);
-    LoadValue("Settings", "BrMultiplier", fBrMultiplier);
     LoadValue("Settings", "CameraFastMoveSpeed", cameraFastMoveSpeed);
     LoadValue("Settings", "PreviewGeometryWindow", bPreviewGeometryWindow);
 
@@ -702,8 +672,6 @@ void SEditorSettings::Load()
     LoadValue("Settings\\Snap", "GridUserDefined", snap.bGridUserDefined);
     LoadValue("Settings\\Snap", "GridGetFromSelected", snap.bGridGetFromSelected);
     //////////////////////////////////////////////////////////////////////////
-
-    LoadValue("Settings", "TerrainTextureExport", terrainTextureExport);
 
     //////////////////////////////////////////////////////////////////////////
     // Texture browser settings
@@ -787,11 +755,6 @@ void SEditorSettings::Load()
     }
 
     //////////////////////////////////////////////////////////////////////////
-    // Slice settings
-    //////////////////////////////////////////////////////////////////////////
-    LoadValue("Settings\\Slices", "DynamicByDefault", sliceSettings.dynamicByDefault);
-
-    //////////////////////////////////////////////////////////////////////////
     // Load paths.
     //////////////////////////////////////////////////////////////////////////
     for (int id = 0; id < EDITOR_PATH_LAST; id++)
@@ -871,30 +834,6 @@ void SEditorSettings::LoadDefaultGamePaths()
     iconsPath /= "Editor/UI/Icons";
     iconsPath.MakePreferred();
     searchPaths[EDITOR_PATH_UI_ICONS].push_back(iconsPath.c_str());
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool SEditorSettings::BrowseTerrainTexture(bool bIsSave)
-{
-    QString path;
-
-    if (!terrainTextureExport.isEmpty())
-    {
-        path = Path::GetPath(terrainTextureExport);
-    }
-    else
-    {
-        path = Path::GetEditingGameDataFolder().c_str();
-    }
-
-    if (bIsSave)
-    {
-        return CFileUtil::SelectSaveFile("Bitmap Image File (*.bmp)", "bmp", path, terrainTextureExport);
-    }
-    else
-    {
-        return CFileUtil::SelectFile("Bitmap Image File (*.bmp)", path, terrainTextureExport);
-    }
 }
 
 void EnableSourceControl(bool enable)

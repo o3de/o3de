@@ -99,9 +99,10 @@ QWidget* UserPopupWidgetHandler::CreateGUI(QWidget *pParent)
 {
     UserPropertyEditor* newCtrl = aznew UserPropertyEditor(pParent);
     connect(newCtrl, &UserPropertyEditor::ValueChanged, newCtrl, [newCtrl]()
-    {
-        EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, newCtrl);
-    });
+        {
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, newCtrl);
+        });
 
     return newCtrl;
 }
@@ -154,7 +155,8 @@ QWidget* FloatCurveHandler::CreateGUI(QWidget *pParent)
 }
 void FloatCurveHandler::OnSplineChange(CSplineCtrl*)
 {
-//    EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, splineWidget);
+    //AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+    //    &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, splineWidget);
 }
 
 void FloatCurveHandler::ConsumeAttribute(CSplineCtrl *, AZ::u32, AzToolsFramework::PropertyAttributeReader*, const char*)

@@ -22,7 +22,7 @@ namespace ScriptCanvasEditor
         Q_OBJECT
 
     public:
-        AZ_CLASS_ALLOCATOR(SourceHandlePropertyAssetCtrl, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SourceHandlePropertyAssetCtrl, AZ::SystemAllocator);
 
         SourceHandlePropertyAssetCtrl(QWidget* parent = nullptr);
 
@@ -55,7 +55,7 @@ namespace ScriptCanvasEditor
         Q_OBJECT
 
     public:
-        AZ_CLASS_ALLOCATOR(SourceHandlePropertyHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SourceHandlePropertyHandler, AZ::SystemAllocator);
 
         AZ::u32 GetHandlerName(void) const override { return AZ_CRC_CE("SourceHandle"); }
         bool IsDefaultHandler() const override { return true; }

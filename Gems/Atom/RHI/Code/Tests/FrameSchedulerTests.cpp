@@ -12,6 +12,10 @@
 #include <Atom/RHI/ScopeProducer.h>
 #include <Atom/RHI/FrameScheduler.h>
 #include <AzCore/Math/Random.h>
+#include <Atom/RHI/BufferPool.h>
+#include <Atom/RHI/ImagePool.h>
+
+#include <Atom/RHI/RHISystemInterface.h>
 
 namespace UnitTest
 {
@@ -45,7 +49,7 @@ namespace UnitTest
         : public RHI::ScopeProducer
     {
     public:
-        AZ_CLASS_ALLOCATOR(ScopeProducer, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScopeProducer, SystemAllocator);
 
         ScopeProducer(const RHI::ScopeId& scopeId)
             : RHI::ScopeProducer(scopeId)
@@ -85,12 +89,12 @@ namespace UnitTest
 
             for (const ImageUsage& usage : m_imageUsages)
             {
-                frameGraph.UseShaderAttachment(usage.m_descriptor, usage.m_access);
+                frameGraph.UseShaderAttachment(usage.m_descriptor, usage.m_access, RHI::ScopeAttachmentStage::AnyGraphics);
             }
 
             for (const BufferUsage& usage : m_bufferUsages)
             {
-                frameGraph.UseShaderAttachment(usage.m_descriptor, usage.m_access);
+                frameGraph.UseShaderAttachment(usage.m_descriptor, usage.m_access, RHI::ScopeAttachmentStage::AnyGraphics);
             }
 
             frameGraph.SetEstimatedItemCount(0);
@@ -154,23 +158,27 @@ namespace UnitTest
 
             m_rootFactory.reset(aznew Factory());
 
-            RHI::Ptr<RHI::Device> device = MakeTestDevice();
+            m_rhiSystem.reset(aznew AZ::RHI::RHISystem);
+            m_rhiSystem->InitDevices();
+            m_rhiSystem->Init();
 
-            m_device = device;
+            m_device = AZ::RHI::RHISystemInterface::Get()->GetDevice(RHI::MultiDevice::DefaultDeviceIndex);
+
             m_state.reset(new State);
 
             {
-                m_state->m_bufferPool = RHI::Factory::Get().CreateBufferPool();
+                m_state->m_bufferPool = aznew RHI::BufferPool;
 
                 RHI::BufferPoolDescriptor desc;
                 desc.m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite;
-                m_state->m_bufferPool->Init(*device, desc);
+                desc.m_deviceMask = RHI::MultiDevice::DefaultDevice;
+                m_state->m_bufferPool->Init(desc);
             }
 
             for (uint32_t i = 0; i < ImportedBufferCount; ++i)
             {
                 RHI::Ptr<RHI::Buffer> buffer;
-                buffer = RHI::Factory::Get().CreateBuffer();
+                buffer = aznew RHI::Buffer;
 
                 RHI::BufferDescriptor desc;
                 desc.m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite;
@@ -186,17 +194,17 @@ namespace UnitTest
             }
 
             {
-                m_state->m_imagePool = RHI::Factory::Get().CreateImagePool();
+                m_state->m_imagePool = aznew RHI::ImagePool();
 
                 RHI::ImagePoolDescriptor desc;
                 desc.m_bindFlags = RHI::ImageBindFlags::ShaderReadWrite;
-                m_state->m_imagePool->Init(*device, desc);
+                m_state->m_imagePool->Init(desc);
             }
 
             for (uint32_t i = 0; i < ImportedImageCount; ++i)
             {
                 RHI::Ptr<RHI::Image> image;
-                image = RHI::Factory::Get().CreateImage();
+                image = aznew RHI::Image();
 
                 RHI::ImageDescriptor desc = RHI::ImageDescriptor::Create2D(
                     RHI::ImageBindFlags::ShaderReadWrite,
@@ -223,6 +231,8 @@ namespace UnitTest
         {
             m_state.reset();
             m_device = nullptr;
+            m_rhiSystem->Shutdown();
+            m_rhiSystem.reset();
             m_rootFactory.reset();
             RHITestFixture::TearDown();
         }
@@ -232,8 +242,8 @@ namespace UnitTest
             RHI::FrameScheduler frameScheduler;
 
             RHI::FrameSchedulerDescriptor descriptor;
-            descriptor.m_transientAttachmentPoolDescriptor.m_bufferBudgetInBytes = 80 * 1024 * 1024;
-            frameScheduler.Init(*m_device, descriptor);
+            descriptor.m_transientAttachmentPoolDescriptors[RHI::MultiDevice::DefaultDeviceIndex].m_bufferBudgetInBytes = 80 * 1024 * 1024;
+            frameScheduler.Init(RHI::MultiDevice::DefaultDevice, descriptor);
 
             RHI::ImageScopeAttachmentDescriptor imageBindingDescs[2];
             imageBindingDescs[0].m_imageViewDescriptor = RHI::ImageViewDescriptor();
@@ -410,6 +420,7 @@ namespace UnitTest
         static const uint32_t ScopeCount = 16;
 
         AZStd::unique_ptr<Factory> m_rootFactory;
+        AZStd::unique_ptr<AZ::RHI::RHISystem> m_rhiSystem; //! Needed for the TransientAttachmentPool in the FrameScheduler
         RHI::Ptr<RHI::Device> m_device;
 
         struct State

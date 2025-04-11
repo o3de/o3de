@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#pragma once
 
 // At the moment all RHI APIs share the same struct layout for the commands.
 // This could be become a per API header if needed in the future.
@@ -31,6 +32,13 @@ struct DispatchIndirectCommand
     uint m_threadGroupCountX;
     uint m_threadGroupCountY;
     uint m_threadGroupCountZ;
+};
+
+struct DispatchRaysIndirectCommand
+{
+    uint m_width;
+    uint m_height;
+    uint m_depth;
 };
 
 struct VertexViewIndirectCommand

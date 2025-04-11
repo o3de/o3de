@@ -9,7 +9,8 @@
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <AtomToolsFramework/AssetSelection/AssetSelectionComboBox.h>
 #include <AtomToolsFramework/Util/Util.h>
-#include <AzToolsFramework/AssetBrowser/Thumbnails/ProductThumbnail.h>
+#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
+#include <AzToolsFramework/AssetBrowser/Thumbnails/SourceThumbnail.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
 
 #include <QAbstractItemView>
@@ -18,8 +19,9 @@
 
 namespace AtomToolsFramework
 {
-    AssetSelectionComboBox::AssetSelectionComboBox(const AZStd::function<bool(const AZ::Data::AssetInfo&)>& filterCallback, QWidget* parent)
+    AssetSelectionComboBox::AssetSelectionComboBox(const FilterFn& filterFn, QWidget* parent)
         : QComboBox(parent)
+        , m_filterFn(filterFn)
     {
         QSignalBlocker signalBlocker(this);
 
@@ -29,9 +31,7 @@ namespace AtomToolsFramework
 
         connect(
             this, static_cast<void (QComboBox::*)(const int)>(&QComboBox::currentIndexChanged), this,
-            [this]() { emit AssetSelected(GetSelectedAsset()); });
-
-        SetFilterCallback(filterCallback);
+            [this]() { emit PathSelected(GetSelectedPath()); });
 
         AzFramework::AssetCatalogEventBus::Handler::BusConnect();
     }
@@ -41,48 +41,103 @@ namespace AtomToolsFramework
         AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
     }
 
-    void AssetSelectionComboBox::Reset()
+    void AssetSelectionComboBox::Clear()
     {
         clear();
         m_thumbnailKeys.clear();
+    }
 
-        AZ::Data::AssetCatalogRequests::AssetEnumerationCB enumerateCB =
-            [this]([[maybe_unused]] const AZ::Data::AssetId assetId, const AZ::Data::AssetInfo& assetInfo) { AddAsset(assetInfo); };
+    void AssetSelectionComboBox::Populate()
+    {
+        Clear();
 
-        AZ::Data::AssetCatalogRequestBus::Broadcast(
-            &AZ::Data::AssetCatalogRequestBus::Events::EnumerateAssets, nullptr, enumerateCB, nullptr);
-
-        model()->sort(0, Qt::AscendingOrder);
+        for (const auto& path : GetPathsInSourceFoldersMatchingFilter(m_filterFn))
+        {
+            AddPath(path);
+        }
 
         setCurrentIndex(0);
     }
 
-    void AssetSelectionComboBox::SetFilterCallback(const AZStd::function<bool(const AZ::Data::AssetInfo&)>& filterCallback)
+    void AssetSelectionComboBox::SetFilter(const FilterFn& filterFn)
     {
-        m_filterCallback = filterCallback;
-        Reset();
+        m_filterFn = filterFn;
     }
 
-    void AssetSelectionComboBox::SelectAsset(const AZ::Data::AssetId& assetId)
+    const AssetSelectionComboBox::FilterFn& AssetSelectionComboBox::GetFilter() const
     {
-        const QVariant assetIdItemData(assetId.ToFixedString().c_str());
-        const int index = findData(assetIdItemData);
-        setCurrentIndex(index);
+        return m_filterFn;
     }
 
-    AZ::Data::AssetId AssetSelectionComboBox::GetSelectedAsset() const
+    void AssetSelectionComboBox::AddPath(const AZStd::string& path)
     {
-        return AZ::Data::AssetId::CreateString(currentData().toString().toUtf8().constData());
+        if (m_filterFn && !m_filterFn(path))
+        {
+            return;
+        }
+
+        const auto& pathWithAlias = GetPathWithAlias(path);
+        const auto& pathWithoutAlias = GetPathWithoutAlias(path);
+        if (!QFileInfo::exists(pathWithoutAlias.c_str()))
+        {
+            return;
+        }
+
+        const QVariant pathItemData(QString::fromUtf8(pathWithAlias.c_str(), static_cast<int>(pathWithAlias.size())));
+        if (const int index = findData(pathItemData); index < 0)
+        {
+            const auto& title = GetDisplayNameFromPath(pathWithoutAlias);
+
+            // Compare the item title against all other items and append a suffix until the new title is unique
+            AZStd::string uniqueTitle = title;
+            int uniqueTitleSuffix = 0;
+            bool uniqueTitleFound = true;
+            while (uniqueTitleFound)
+            {
+                uniqueTitleFound = false;
+                for (int i = 0; i < count(); ++i)
+                {
+                    if (uniqueTitle == itemText(i).toUtf8().constData())
+                    {
+                        uniqueTitle = AZStd::string::format("%s (%i)",title.c_str(), ++uniqueTitleSuffix);
+                        uniqueTitleFound = true;
+                        break;
+                    }
+                }
+            }
+
+            addItem(uniqueTitle.c_str(), pathItemData);
+            setItemData(count() - 1, pathWithoutAlias.c_str(), Qt::ToolTipRole);
+
+            QueueSort();
+            RegisterThumbnail(pathWithAlias);
+        }
     }
 
-    AZStd::string AssetSelectionComboBox::GetSelectedAssetSourcePath() const
+    void AssetSelectionComboBox::RemovePath(const AZStd::string& path)
     {
-        return AZ::RPI::AssetUtils::GetSourcePathByAssetId(GetSelectedAsset());
+        const auto& pathWithAlias = GetPathWithAlias(path);
+        const QVariant pathItemData(QString::fromUtf8(pathWithAlias.c_str(), static_cast<int>(pathWithAlias.size())));
+        if (const int index = findData(pathItemData); index >= 0)
+        {
+            removeItem(index);
+            m_thumbnailKeys.erase(pathWithAlias);
+        }
     }
 
-    AZStd::string AssetSelectionComboBox::GetSelectedAssetProductPath() const
+    void AssetSelectionComboBox::SelectPath(const AZStd::string& path)
     {
-        return AZ::RPI::AssetUtils::GetProductPathByAssetId(GetSelectedAsset());
+        const auto& pathWithAlias = GetPathWithAlias(path);
+        const QVariant pathItemData(QString::fromUtf8(pathWithAlias.c_str(), static_cast<int>(pathWithAlias.size())));
+        if (const int index = findData(pathItemData); index >= 0)
+        {
+            setCurrentIndex(index);
+        }
+    }
+
+    AZStd::string AssetSelectionComboBox::GetSelectedPath() const
+    {
+        return currentData().toString().toUtf8().constData();
     }
 
     void AssetSelectionComboBox::SetThumbnailsEnabled(bool enabled)
@@ -94,7 +149,7 @@ namespace AtomToolsFramework
             for (int index = 0; index < count(); ++index)
             {
                 setItemIcon(index, QIcon());
-                RegisterThumbnail(AZ::Data::AssetId::CreateString(itemData(index).toString().toUtf8().constData()));
+                RegisterThumbnail(itemData(index).toString().toUtf8().constData());
             }
         }
     }
@@ -106,67 +161,54 @@ namespace AtomToolsFramework
 
     void AssetSelectionComboBox::OnCatalogAssetAdded(const AZ::Data::AssetId& assetId)
     {
-        AZ::Data::AssetCatalogRequestBus::Broadcast(
-            [this, assetId](AZ::Data::AssetCatalogRequests* assetCatalogRequests)
-            {
-                AddAsset(assetCatalogRequests->GetAssetInfoById(assetId));
-                model()->sort(0, Qt::AscendingOrder);
-            });
+        AddPath(AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetId));
     }
 
-    void AssetSelectionComboBox::OnCatalogAssetRemoved(const AZ::Data::AssetId& assetId, const AZ::Data::AssetInfo& assetInfo)
+    void AssetSelectionComboBox::OnCatalogAssetRemoved(
+        const AZ::Data::AssetId& assetId, [[maybe_unused]] const AZ::Data::AssetInfo& assetInfo)
     {
-        if (m_filterCallback && m_filterCallback(assetInfo))
-        {
-            const QVariant assetIdItemData(assetId.ToFixedString().c_str());
-            const int index = findData(assetIdItemData);
-            removeItem(index);
-        }
+        RemovePath(AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetId));
     }
 
-    void AssetSelectionComboBox::AddAsset(const AZ::Data::AssetInfo& assetInfo)
-    {
-        if (m_filterCallback && m_filterCallback(assetInfo))
-        {
-            // Only add the asset if no item exists with the incoming asset ID
-            const QVariant assetIdItemData(assetInfo.m_assetId.ToFixedString().c_str());
-            const int index = findData(assetIdItemData);
-            if (index < 0)
-            {
-                const AZStd::string path = AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetInfo.m_assetId);
-                const AZStd::string displayName = GetDisplayNameFromPath(path);
-                addItem(displayName.c_str(), assetIdItemData);
-                RegisterThumbnail(assetInfo.m_assetId);
-            }
-        }
-    }
-
-    void AssetSelectionComboBox::RegisterThumbnail(const AZ::Data::AssetId& assetId)
+    void AssetSelectionComboBox::RegisterThumbnail(const AZStd::string& path)
     {
         if (m_thumbnailsEnabled)
         {
+            const auto& pathWithAlias = GetPathWithAlias(path);
+            const auto& pathWithoutAlias = GetPathWithoutAlias(path);
+
+            bool result = false;
+            AZ::Data::AssetInfo assetInfo;
+            AZStd::string watchFolder;
+            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+                result,
+                &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath,
+                pathWithoutAlias.c_str(),
+                assetInfo,
+                watchFolder);
+
             AzToolsFramework::Thumbnailer::SharedThumbnailKey thumbnailKey =
-                MAKE_TKEY(AzToolsFramework::AssetBrowser::ProductThumbnailKey, assetId);
-            m_thumbnailKeys[assetId] = thumbnailKey;
+                MAKE_TKEY(AzToolsFramework::AssetBrowser::SourceThumbnailKey, assetInfo.m_assetId.m_guid);
+            m_thumbnailKeys[pathWithAlias] = thumbnailKey;
 
             connect(
-                thumbnailKey.data(), &AzToolsFramework::Thumbnailer::ThumbnailKey::ThumbnailUpdatedSignal, this,
-                [this, assetId]() { QueueUpdateThumbnail(assetId); });
+                thumbnailKey.data(), &AzToolsFramework::Thumbnailer::ThumbnailKey::ThumbnailUpdated, this,
+                [this, pathWithAlias]() { QueueUpdateThumbnail(pathWithAlias); });
 
-            QueueUpdateThumbnail(assetId);
+            QueueUpdateThumbnail(pathWithAlias);
         }
     }
 
-    void AssetSelectionComboBox::UpdateThumbnail(const AZ::Data::AssetId& assetId)
+    void AssetSelectionComboBox::UpdateThumbnail(const AZStd::string& path)
     {
         if (m_thumbnailsEnabled)
         {
-            auto thumbnailKeyItr = m_thumbnailKeys.find(assetId);
+            const auto& pathWithAlias = GetPathWithAlias(path);
+            auto thumbnailKeyItr = m_thumbnailKeys.find(pathWithAlias);
             if (thumbnailKeyItr != m_thumbnailKeys.end())
             {
-                const QVariant assetIdItemData(assetId.ToFixedString().c_str());
-                const int index = findData(assetIdItemData);
-                if (index >= 0)
+                const QVariant pathItemData(QString::fromUtf8(pathWithAlias.c_str(), static_cast<int>(pathWithAlias.size())));
+                if (const int index = findData(pathItemData); index >= 0)
                 {
                     AzToolsFramework::Thumbnailer::SharedThumbnail thumbnail;
                     AzToolsFramework::Thumbnailer::ThumbnailerRequestBus::BroadcastResult(
@@ -187,9 +229,23 @@ namespace AtomToolsFramework
         }
     }
 
-    void AssetSelectionComboBox::QueueUpdateThumbnail(const AZ::Data::AssetId& assetId)
+    void AssetSelectionComboBox::QueueUpdateThumbnail(const AZStd::string& path)
     {
-        QTimer::singleShot(m_thumbnailDelayMs, this, [this, assetId]() { UpdateThumbnail(assetId); });
+        QTimer::singleShot(m_thumbnailDelayMs, this, [this, path]() {
+            UpdateThumbnail(path);
+        });
+    }
+
+    void AssetSelectionComboBox::QueueSort()
+    {
+        if (!m_queueSort)
+        {
+            m_queueSort = true;
+            QTimer::singleShot(0, this, [this]() {
+                m_queueSort = false;
+                model()->sort(0, Qt::AscendingOrder);
+            });
+        }
     }
 } // namespace AtomToolsFramework
 

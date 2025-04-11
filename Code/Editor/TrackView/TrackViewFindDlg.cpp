@@ -20,7 +20,6 @@ AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include "Maestro/Types/AnimNodeType.h"
 
-/////////////////////////////////////////////////////////////////////////////
 // CTrackViewFindDlg dialog
 
 
@@ -52,24 +51,28 @@ void CTrackViewFindDlg::FillData()
 {
     m_numSeqs = 0;
     m_objs.resize(0);
-    for (int k = 0; k < GetIEditor()->GetMovieSystem()->GetNumSequences(); ++k)
-    {
-        IAnimSequence* seq = GetIEditor()->GetMovieSystem()->GetSequence(k);
-        for (int i = 0; i < seq->GetNodeCount(); i++)
-        {
-            IAnimNode* pNode = seq->GetNode(i);
-            ObjName obj;
-            obj.m_objName = pNode->GetName();
-            obj.m_directorName = pNode->HasDirectorAsParent() ? pNode->HasDirectorAsParent()->GetName() : "";
-            AZStd::string fullname = seq->GetName();
-            obj.m_seqName = fullname.c_str();
-            m_objs.push_back(obj);
-        }
-        m_numSeqs++;
-    }
-    FillList();
-}
 
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+    if (movieSystem)
+    {
+        for (int k = 0; k < movieSystem->GetNumSequences(); ++k)
+        {
+            IAnimSequence* seq = movieSystem->GetSequence(k);
+            for (int i = 0; i < seq->GetNodeCount(); i++)
+            {
+                IAnimNode* pNode = seq->GetNode(i);
+                ObjName obj;
+                obj.m_objName = pNode->GetName();
+                obj.m_directorName = pNode->HasDirectorAsParent() ? pNode->HasDirectorAsParent()->GetName() : "";
+                AZStd::string fullname = seq->GetName();
+                obj.m_seqName = fullname.c_str();
+                m_objs.push_back(obj);
+            }
+            m_numSeqs++;
+        }
+        FillList();
+    }
+}
 
 void CTrackViewFindDlg::Init(CTrackViewDialog* tvDlg)
 {
@@ -80,6 +83,7 @@ void CTrackViewFindDlg::FillList()
 {
     QString filter = ui->FILTER->text();
     ui->LIST->clear();
+    m_objsSourceIndex.clear();
 
     for (int i = 0; i < m_objs.size(); i++)
     {
@@ -99,6 +103,7 @@ void CTrackViewFindDlg::FillList()
                 text += pObj.m_seqName;
             }
             ui->LIST->addItem(text);
+            m_objsSourceIndex.push_back(i);
         }
     }
     ui->LIST->setCurrentRow(0);
@@ -132,7 +137,8 @@ void CTrackViewFindDlg::ProcessSel()
 
     if (index >= 0 && m_tvDlg)
     {
-        ObjName object = m_objs[index];
+        int sourceIndex = m_objsSourceIndex[index];
+        ObjName object = m_objs[sourceIndex];
 
         const CTrackViewSequenceManager* pSequenceManager = GetIEditor()->GetSequenceManager();
         CTrackViewSequence* pSequence = pSequenceManager->GetSequenceByName(object.m_seqName);
@@ -152,9 +158,31 @@ void CTrackViewFindDlg::ProcessSel()
             CTrackViewAnimNodeBundle foundNodes = pParentDirector->GetAnimNodesByName(object.m_objName.toUtf8().data());
 
             const uint numNodes = foundNodes.GetCount();
-            for (uint i = 0; i < numNodes; ++i)
+            uint selectedNodeIndex = 0;
+            if (numNodes > 1)
             {
-                foundNodes.GetNode(i)->SetSelected(true);
+                for (int i = 0; i < sourceIndex; ++i)
+                {
+                    if (pParentDirector != pSequence && object.m_directorName != m_objs[i].m_directorName)
+                    {
+                        continue;
+                    }
+                    if (m_objs[i].m_objName == object.m_objName)
+                    {
+                        selectedNodeIndex++;
+                    }
+                }
+            }
+
+            if (selectedNodeIndex < numNodes)
+            {
+                CTrackViewAnimNodeBundle animNodes = pSequence->GetAllAnimNodes();
+                for (uint i = 0, numAnimNodes = animNodes.GetCount(); i < numAnimNodes; ++i)
+                {
+                    animNodes.GetNode(i)->SetSelected(false);
+                }
+
+                foundNodes.GetNode(selectedNodeIndex)->SetSelected(true);
             }
         }
     }

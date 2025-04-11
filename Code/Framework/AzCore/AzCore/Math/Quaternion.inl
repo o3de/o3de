@@ -279,7 +279,7 @@ namespace AZ
 #if AZ_TRAIT_USE_PLATFORM_SIMD_SCALAR
         return m_x * q.m_x + m_y * q.m_y + m_z * q.m_z + m_w * q.m_w;
 #else
-        return Simd::Vec1::SelectFirst(Simd::Vec4::Dot(m_value, q.m_value));
+        return Simd::Vec1::SelectIndex0(Simd::Vec4::Dot(m_value, q.m_value));
 #endif
     }
 
@@ -293,28 +293,28 @@ namespace AZ
     AZ_MATH_INLINE float Quaternion::GetLength() const
     {
         const Simd::Vec1::FloatType lengthSq = Simd::Vec4::Dot(m_value, m_value);
-        return Simd::Vec1::SelectFirst(Simd::Vec1::Sqrt(lengthSq));
+        return Simd::Vec1::SelectIndex0(Simd::Vec1::Sqrt(lengthSq));
     }
 
 
     AZ_MATH_INLINE float Quaternion::GetLengthEstimate() const
     {
         const Simd::Vec1::FloatType lengthSq = Simd::Vec4::Dot(m_value, m_value);
-        return Simd::Vec1::SelectFirst(Simd::Vec1::SqrtEstimate(lengthSq));
+        return Simd::Vec1::SelectIndex0(Simd::Vec1::SqrtEstimate(lengthSq));
     }
 
 
     AZ_MATH_INLINE float Quaternion::GetLengthReciprocal() const
     {
         const Simd::Vec1::FloatType lengthSq = Simd::Vec4::Dot(m_value, m_value);
-        return Simd::Vec1::SelectFirst(Simd::Vec1::SqrtInv(lengthSq));
+        return Simd::Vec1::SelectIndex0(Simd::Vec1::SqrtInv(lengthSq));
     }
 
 
     AZ_MATH_INLINE float Quaternion::GetLengthReciprocalEstimate() const
     {
         const Simd::Vec1::FloatType lengthSq = Simd::Vec4::Dot(m_value, m_value);
-        return Simd::Vec1::SelectFirst(Simd::Vec1::SqrtInvEstimate(lengthSq));
+        return Simd::Vec1::SelectIndex0(Simd::Vec1::SqrtInvEstimate(lengthSq));
     }
 
 
@@ -344,17 +344,19 @@ namespace AZ
 
     AZ_MATH_INLINE float Quaternion::NormalizeWithLength()
     {
-        const Simd::Vec1::FloatType length = Simd::Vec1::Sqrt(Simd::Vec4::Dot(m_value, m_value));
-        m_value = Simd::Vec4::Div(m_value, Simd::Vec4::FromVec1(length));
-        return Simd::Vec1::SelectFirst(length);
+        const float length = Simd::Vec1::SelectIndex0(
+            Simd::Vec1::Sqrt(Simd::Vec4::Dot(m_value, m_value)));
+        m_value = Simd::Vec4::Div(m_value, Simd::Vec4::Splat(length));
+        return length;
     }
 
 
     AZ_MATH_INLINE float Quaternion::NormalizeWithLengthEstimate()
     {
-        const Simd::Vec1::FloatType length = Simd::Vec1::SqrtEstimate(Simd::Vec4::Dot(m_value, m_value));
-        m_value = Simd::Vec4::Div(m_value, Simd::Vec4::FromVec1(length));
-        return Simd::Vec1::SelectFirst(length);
+        const float length = Simd::Vec1::SelectIndex0(
+            Simd::Vec1::SqrtEstimate(Simd::Vec4::Dot(m_value, m_value)));
+        m_value = Simd::Vec4::Div(m_value, Simd::Vec4::Splat(length));
+        return length;
     }
 
 
@@ -429,7 +431,8 @@ namespace AZ
 #if AZ_TRAIT_USE_PLATFORM_SIMD_SCALAR
         return (fabsf(m_x) <= tolerance) && (fabsf(m_y) <= tolerance) && (fabsf(m_z) <= tolerance) && (fabsf(m_w) <= tolerance);
 #else
-        return IsClose(CreateZero(), tolerance);
+        Simd::Vec4::FloatType absDiff = Simd::Vec4::Abs(m_value);
+        return Simd::Vec4::CmpAllLt(absDiff, Simd::Vec4::Splat(tolerance));
 #endif
     }
 
@@ -547,48 +550,21 @@ namespace AZ
     }
 
 
-    AZ_MATH_INLINE Vector3 Quaternion::GetEulerRadians() const
+    AZ_MATH_INLINE Vector3 Quaternion::GetEulerDegreesXYZ() const
     {
-        const float sinp = 2.0f * (m_w * m_y + m_z * m_x);
+        return Vector3RadToDeg(GetEulerRadiansXYZ());
+    }
 
-        if (sinp * sinp < 0.5f)
-        {
-            // roll (x-axis rotation)
-            const float roll = Atan2(2.0f * (m_w * m_x - m_z * m_y), 1.0f - 2.0f * (m_x * m_x + m_y * m_y));
 
-            // pitch (y-axis rotation)
-            const float pitch = asinf(sinp);
+    AZ_MATH_INLINE Vector3 Quaternion::GetEulerDegreesYXZ() const
+    {
+        return Vector3RadToDeg(GetEulerRadiansYXZ());
+    }
 
-            // yaw (z-axis rotation)
-            const float yaw = Atan2(2.0f * (m_w * m_z - m_x * m_y), 1.0f - 2.0f * (m_y * m_y + m_z * m_z));
 
-            return Vector3(roll, pitch, yaw);
-        }
-
-        // find the pitch from its cosine instead, to avoid issues with sensitivity of asin when the sine value is close to 1
-        else
-        {
-            const float sign = sinp > 0.0f ? 1.0f : -1.0f;
-            const float m12 = 2.0f * (m_z * m_y - m_w * m_x);
-            const float m22 = 1.0f - 2.0f * (m_x * m_x + m_y * m_y);
-            const float cospSq = m12 * m12 + m22 * m22;
-            const float cosp = Sqrt(cospSq);
-            const float pitch = sign * acosf(cosp);
-            if (cospSq > Constants::FloatEpsilon)
-            {
-                const float roll = Atan2(-m12, m22);
-                const float yaw = Atan2(2.0f * (m_w * m_z - m_x * m_y), 1.0f - 2.0f * (m_y * m_y + m_z * m_z));
-                return Vector3(roll, pitch, yaw);
-            }
-            // if the pitch is close enough to +-pi/2, use a different approach because the terms used above lose roll and yaw information
-            else
-            {
-                const float m21 = 2.0f * (m_y * m_z + m_x * m_w);
-                const float m11 = 1.0f - 2.0f * (m_x * m_x + m_z * m_z);
-                const float roll = Atan2(m21, m11);
-                return Vector3(roll, pitch, 0.0f);
-            }
-        }
+    AZ_MATH_INLINE Vector3 Quaternion::GetEulerDegreesZYX() const
+    {
+        return Vector3RadToDeg(GetEulerRadiansZYX());
     }
 
 

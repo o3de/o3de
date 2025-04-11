@@ -15,8 +15,8 @@
 
 namespace EMotionFX::MotionMatching
 {
-    AZ_CLASS_ALLOCATOR_IMPL(KdTree, MotionMatchAllocator, 0);
-    AZ_CLASS_ALLOCATOR_IMPL(KdTree::Node, MotionMatchAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(KdTree, MotionMatchAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(KdTree::Node, MotionMatchAllocator);
 
     KdTree::~KdTree()
     {

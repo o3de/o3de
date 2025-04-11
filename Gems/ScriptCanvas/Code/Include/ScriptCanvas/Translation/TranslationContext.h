@@ -20,7 +20,7 @@ namespace ScriptCanvas
         class Context
         {
         public:
-            AZ_CLASS_ALLOCATOR(Context, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Context, AZ::SystemAllocator);
 
             static AZStd::string GetCategoryLibraryName(const AZStd::string& categoryName);
 

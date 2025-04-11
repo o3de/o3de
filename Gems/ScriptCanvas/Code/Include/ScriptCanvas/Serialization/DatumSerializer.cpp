@@ -29,7 +29,7 @@ namespace DatumSerializerCpp
 
 namespace AZ
 {
-    AZ_CLASS_ALLOCATOR_IMPL(DatumSerializer, SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(DatumSerializer, SystemAllocator);
 
     JsonSerializationResult::Result DatumSerializer::Load
         ( void* outputValue

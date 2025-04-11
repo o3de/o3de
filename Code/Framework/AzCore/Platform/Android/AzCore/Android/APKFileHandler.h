@@ -58,7 +58,7 @@ namespace AZ
         {
         public:
             AZ_TYPE_INFO(APKFileHandler, "{D16233A2-A183-40FE-8CF4-ABE8D53AB5B5}")
-            AZ_CLASS_ALLOCATOR(APKFileHandler, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(APKFileHandler, AZ::OSAllocator);
 
 
             typedef AZStd::function<bool(const char*)> FindDirsCallbackType;

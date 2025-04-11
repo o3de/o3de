@@ -16,3 +16,15 @@ static const float4 s_AzslDebugColor = float4(165.0 / 255.0, 30.0 / 255.0, 36.0 
 
 // Different constant buffer alignment on platforms
 #define AZ_TRAIT_CONSTANT_BUFFER_ALIGNMENT      128
+
+//PC supports unbounded array
+#define UNBOUNDED_SIZE
+
+// Full floats for windows vulkan PC
+#define real float
+#define real2 float2
+#define real3 float3
+#define real4 float4
+#define real3x3 float3x3
+#define real3x4 float3x4
+#define real4x4 float4x4

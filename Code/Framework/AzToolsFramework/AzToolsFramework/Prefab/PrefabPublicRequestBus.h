@@ -83,6 +83,17 @@ namespace AzToolsFramework
             virtual PrefabOperationResult DetachPrefab(const AZ::EntityId& containerEntityId) = 0;
 
             /**
+              * The same operation as DetachPrefab, except it also removes the container entity and reparents its children 
+              * to the parent of the container entity.  This operation is the opposite operation of creating a prefab, which
+              * creates the container entity and reparents the children to the container entity.
+              * Note that the above function was the original API call, which originally kept the 
+              * container entities.   In order to ensure the API is stable for callers, the above
+              * function's outcome is left unchanged, and the new functionality to remove the container
+              * entity is instead added to a new API call.
+              */
+            virtual PrefabOperationResult DetachPrefabAndRemoveContainerEntity(const AZ::EntityId& containerEntityId) = 0;
+
+            /**
               * Duplicates all entities in the owning instance. Bails if the entities don't all belong to the same instance.
               * Return an outcome object with a list of ids of given entities' duplicates if duplication succeeded;
               * on failure, it comes with an error message detailing the cause of the error.

@@ -56,6 +56,7 @@ namespace ScriptCanvas::Developer
         };
 
     public:
+        AZ_CLASS_ALLOCATOR(CutCopyPasteDuplicateTest, AZ::SystemAllocator)
         CutCopyPasteDuplicateTest(QString nodeName);
         ~CutCopyPasteDuplicateTest() override = default;
 

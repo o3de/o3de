@@ -25,7 +25,7 @@ namespace LandscapeCanvas
     class PosterizeGradientModifierNode : public BaseGradientModifierNode
     {
     public:
-        AZ_CLASS_ALLOCATOR(PosterizeGradientModifierNode, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PosterizeGradientModifierNode, AZ::SystemAllocator);
         AZ_RTTI(PosterizeGradientModifierNode, "{92EC1905-BCCA-4614-9F64-B2AAF488DBA6}", BaseGradientModifierNode);
 
         static void Reflect(AZ::ReflectContext* context);

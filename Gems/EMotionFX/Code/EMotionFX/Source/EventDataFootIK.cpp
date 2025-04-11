@@ -15,7 +15,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(EventDataFootIK, MotionEventAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(EventDataFootIK, MotionEventAllocator)
 
     bool EventDataFootIK::Equal(const EventData& rhs, bool ignoreEmptyFields) const
     {
@@ -55,7 +55,7 @@ namespace EMotionFX
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                 ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                ->Attribute(AZ_CRC("Creatable", 0x47bff8c4), true)
+                ->Attribute(AZ_CRC_CE("Creatable"), true)
             ->DataElement(AZ::Edit::UIHandlers::ComboBox, &EventDataFootIK::m_foot, "Foot", "Which foot should have IK active?")
                 ->EnumAttribute(Foot::Left, "Left Foot")
                 ->EnumAttribute(Foot::Right, "Right Foot")

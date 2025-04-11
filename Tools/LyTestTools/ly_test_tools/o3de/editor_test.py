@@ -139,7 +139,7 @@ class EditorTestSuite(MultiTestSuite):
     # Tests usually run with no renderer, however some tests require a renderer and will disable this.
     use_null_renderer = True
     # Maximum time in seconds for a single Editor to stay open across the set of shared tests.
-    timeout_shared_test = 300
+    timeout_shared_test = 900
     # Name of the executable's log file.
     log_name = "editor_test.log"
     # Maximum time (seconds) for waiting for a crash file to finish being dumped to disk.

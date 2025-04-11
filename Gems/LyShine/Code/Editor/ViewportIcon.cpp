@@ -348,13 +348,13 @@ void ViewportIcon::DrawElementRectOutline(Draw2dHelper& draw2d, AZ::EntityId ent
 {
     // get the transformed rect for the element
     UiTransformInterface::RectPoints points;
-    EBUS_EVENT_ID(entityId, UiTransformBus, GetViewportSpacePoints, points);
+    UiTransformBus::Event(entityId, &UiTransformBus::Events::GetViewportSpacePoints, points);
 
     // work out if we should snap to exact pixel
     AZ::EntityId canvasEntityId;
-    EBUS_EVENT_ID_RESULT(canvasEntityId, entityId, UiElementBus, GetCanvasEntityId);
+    UiElementBus::EventResult(canvasEntityId, entityId, &UiElementBus::Events::GetCanvasEntityId);
     bool isPixelAligned = true;
-    EBUS_EVENT_ID_RESULT(isPixelAligned, canvasEntityId, UiCanvasBus, GetIsPixelAligned);
+    UiCanvasBus::EventResult(isPixelAligned, canvasEntityId, &UiCanvasBus::Events::GetIsPixelAligned);
     IDraw2d::Rounding pixelRounding = isPixelAligned ? IDraw2d::Rounding::Nearest : IDraw2d::Rounding::None;
 
     // round the points to the nearest pixel if the canvas is set to do that for elements since
@@ -370,7 +370,7 @@ void ViewportIcon::DrawElementRectOutline(Draw2dHelper& draw2d, AZ::EntityId ent
     // So we instead get the transform matrix and transform two unit vectors
     // and then normalize them (they have to be re-normalized since the transform can scale them)
     AZ::Matrix4x4 transform;
-    EBUS_EVENT_ID(entityId, UiTransformBus, GetTransformToViewport, transform);
+    UiTransformBus::Event(entityId, &UiTransformBus::Events::GetTransformToViewport, transform);
     AZ::Vector3 rightVec3(1.0f, 0.0f, 0.0f);
     AZ::Vector3 downVec3(0.0f, 1.0f, 0.0f);
     rightVec3 = transform.Multiply3x3(rightVec3);

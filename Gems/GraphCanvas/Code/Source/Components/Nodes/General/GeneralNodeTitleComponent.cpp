@@ -26,6 +26,9 @@
 
 namespace GraphCanvas
 {
+    // Implementation of RTTI functions for the GeneralNodeTitleComponent SaveData class in a cpp file
+    AZ_RTTI_NO_TYPE_INFO_IMPL(GeneralNodeTitleComponentSaveData, SceneMemberComponentSaveData<GeneralNodeTitleComponentSaveData>);
+
     //////////////////////////////
     // GeneralNodeTitleComponent
     //////////////////////////////

@@ -32,6 +32,7 @@ namespace AZ
 
             int GetErrorCount() const { return m_errorCount; }
             int GetWarningCount() const { return m_warningCount; }
+            bool IsFailed() const { return m_errorCount || m_warningsElevated && m_warningCount; }
 
             //! Errors should be reported for any condition that prevents creating a valid asset that can be used at runtime.
             //! The output asset data would be corrupt to the point that the runtime would report further errors or even crash.

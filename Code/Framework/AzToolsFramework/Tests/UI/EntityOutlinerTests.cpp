@@ -12,6 +12,7 @@
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Entity/EditorEntityContextComponent.h>
+#include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerListModel.hxx>
@@ -37,11 +38,6 @@ namespace UnitTest
             m_model->Initialize();
             m_modelTester =
                 AZStd::make_unique<QAbstractItemModelTester>(m_model.get(), QAbstractItemModelTester::FailureReportingMode::Fatal);
-            
-            // Create a new root prefab - the synthetic "NewLevel.prefab" that comes in by default isn't suitable for outliner tests
-            // because it's created before the EditorEntityModel that our EntityOutlinerListModel subscribes to, and we want to
-            // recreate it as part of the fixture regardless.
-            CreateRootPrefab();
         }
 
         void TearDownEditorFixtureImpl() override
@@ -71,14 +67,8 @@ namespace UnitTest
 
             AZ::Entity* entity = nullptr;
             AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationRequests::FindEntity, entityId);
-
-            entity->Deactivate();
+            
             entity->SetName(name);
-            auto transform = aznew AzToolsFramework::Components::TransformComponent;
-            entity->AddComponent(transform);
-            transform->SetParent(parentId);
-
-            entity->Activate();
 
             // Update our undo cache entry to include the rename / reparent as one atomic operation.
             m_prefabPublicInterface->GenerateUndoNodesForEntityChangeAndUpdateCache(entityId, m_undoStack->GetTop());
@@ -188,5 +178,284 @@ namespace UnitTest
             Redo();
             EXPECT_EQ(modelDepth(), i + 1);
         }
+    }
+
+    TEST_F(EntityOutlinerTest, TestReparentEntitiesSucceeds)
+    {
+        // Level     (prefab)   <-- focused
+        // | Seat
+        // | Driver_1
+        // | Driver_2
+
+        const AZStd::string seatEntityName = "Seat";
+        const AZStd::string driverOneEntityName = "Driver_1";
+        const AZStd::string driverTwoEntityName = "Driver_2";
+
+        // Create the Seat and Driver entities.
+        AZ::EntityId seatEntityId = CreateEditorEntityUnderRoot(seatEntityName);
+        AZ::EntityId driverOneEntityId = CreateEditorEntityUnderRoot(driverOneEntityName);
+        AZ::EntityId driverTwoEntityId = CreateEditorEntityUnderRoot(driverTwoEntityName);
+
+        // Reparent the Driver_1 and Driver_2 entities under the Seat entity.
+        auto appendForInvalid = AzToolsFramework::EntityOutlinerListModel::AppendEnd;
+        bool isReparented = m_model->ReparentEntities(
+            seatEntityId, { driverOneEntityId, driverTwoEntityId }, GetRootContainerEntityId(), appendForInvalid);
+        EXPECT_TRUE(isReparented);
+
+        // Validate that the parent entity of the Driver_1 and Driver_2 entities is the Seat entity.
+        AZ::EntityId parentEntityIdForDriverOne;
+        AZ::TransformBus::EventResult(parentEntityIdForDriverOne, driverOneEntityId, &AZ::TransformInterface::GetParentId);
+        EXPECT_EQ(parentEntityIdForDriverOne, seatEntityId);
+        AZ::EntityId parentEntityIdForDriverTwo;
+        AZ::TransformBus::EventResult(parentEntityIdForDriverTwo, driverTwoEntityId, &AZ::TransformInterface::GetParentId);
+        EXPECT_EQ(parentEntityIdForDriverTwo, seatEntityId);
+
+        // Validate that the child entity order of the Seat entity is [Driver_1, Driver_2].
+        AzToolsFramework::EntityOrderArray entityOrderArray = AzToolsFramework::GetEntityChildOrder(seatEntityId);
+        EXPECT_EQ(entityOrderArray.size(), 2);
+
+        AZStd::string childEntityName;
+        AZ::ComponentApplicationBus::BroadcastResult(
+            childEntityName, &AZ::ComponentApplicationRequests::GetEntityName, entityOrderArray[0]);
+        EXPECT_EQ(childEntityName, driverOneEntityName);
+        AZ::ComponentApplicationBus::BroadcastResult(
+            childEntityName, &AZ::ComponentApplicationRequests::GetEntityName, entityOrderArray[1]);
+        EXPECT_EQ(childEntityName, driverTwoEntityName);
+    }
+
+    TEST_F(EntityOutlinerTest, TestReparentPrefabsSucceeds)
+    {
+        // Level     (prefab)   <-- focused
+        // | Garage
+        // | Car     (prefab)
+        //   | CarTire
+        // | Bike    (prefab)
+        //   | BikeTire
+        
+        const AZStd::string carPrefabName = "CarPrefab";
+        const AZStd::string bikePrefabName = "BikePrefab";
+
+        const AZStd::string garageEntityName = "Garage";
+        const AZStd::string carTireEntityName = "CarTire";
+        const AZStd::string bikeTireEntityName = "BikeTire";
+
+        AZ::IO::Path engineRootPath;
+        m_settingsRegistryInterface->Get(engineRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+
+        AZ::IO::Path carPrefabFilepath = engineRootPath / carPrefabName;
+        AZ::IO::Path bikePrefabFilepath = engineRootPath / bikePrefabName;
+
+        // Create the Garage, CarTire and BikeTire entities.
+        AZ::EntityId garageEntityId = CreateEditorEntityUnderRoot(garageEntityName);
+        AZ::EntityId carTireEntityId = CreateEditorEntityUnderRoot(carTireEntityName);
+        AZ::EntityId bikeTireEntityId = CreateEditorEntityUnderRoot(bikeTireEntityName);
+
+        // Create the Car and Bike prefabs.
+        AZ::EntityId carContainerId = CreateEditorPrefab(carPrefabFilepath, { carTireEntityId });
+        AZ::EntityId bikeContainerId = CreateEditorPrefab(bikePrefabFilepath, { bikeTireEntityId });
+
+        // Reparent the Car prefab under the Garage entity.
+        auto appendForInvalid = AzToolsFramework::EntityOutlinerListModel::AppendBeginning; // test the opposite way of appending
+        bool isCarReparented =
+            m_model->ReparentEntities(garageEntityId, { carContainerId }, GetRootContainerEntityId(), appendForInvalid);
+        EXPECT_TRUE(isCarReparented);
+
+        // Reparent the Bike prefab under the Garage entity.
+        bool isBikeReparented =
+            m_model->ReparentEntities(garageEntityId, { bikeContainerId }, GetRootContainerEntityId(), appendForInvalid);
+        EXPECT_TRUE(isBikeReparented);
+
+        // Validate that the parent entity of the Car and Bike prefabs is the Garage entity.
+        AZ::EntityId parentEntityIdForCar;
+        AZ::TransformBus::EventResult(parentEntityIdForCar, carContainerId, &AZ::TransformInterface::GetParentId);
+        EXPECT_EQ(parentEntityIdForCar, garageEntityId);
+        AZ::EntityId parentEntityIdForBike;
+        AZ::TransformBus::EventResult(parentEntityIdForBike, bikeContainerId, &AZ::TransformInterface::GetParentId);
+        EXPECT_EQ(parentEntityIdForBike, garageEntityId);
+
+        // Validate that the child entity order of the Garage entity is [Bike, Car], which is reversed due to the AppendBeginning flag.
+        AzToolsFramework::EntityOrderArray entityOrderArray = AzToolsFramework::GetEntityChildOrder(garageEntityId);
+        EXPECT_EQ(entityOrderArray.size(), 2);
+
+        AZStd::string childEntityName;
+        AZ::ComponentApplicationBus::BroadcastResult(
+            childEntityName, &AZ::ComponentApplicationRequests::GetEntityName, entityOrderArray[0]);
+        EXPECT_EQ(childEntityName, bikePrefabName);
+        AZ::ComponentApplicationBus::BroadcastResult(
+            childEntityName, &AZ::ComponentApplicationRequests::GetEntityName, entityOrderArray[1]);
+        EXPECT_EQ(childEntityName, carPrefabName);
+    }
+
+    TEST_F(EntityOutlinerTest, TestReparentEntitiesThatDoNotBelongToSamePrefabFails)
+    {
+        // Level     (prefab)   <-- focused
+        // | Car     (prefab)
+        //   | Tire
+        // | Driver
+
+        const AZStd::string carPrefabName = "CarPrefab";
+        const AZStd::string bikePrefabName = "BikePrefab";
+
+        const AZStd::string tireEntityName = "Tire";
+        const AZStd::string pedalEntityName = "Pedal";
+        const AZStd::string driverEntityName = "Driver";
+
+        AZ::IO::Path engineRootPath;
+        m_settingsRegistryInterface->Get(engineRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+
+        AZ::IO::Path carPrefabFilepath = engineRootPath / carPrefabName;
+        AZ::IO::Path bikePrefabFilepath = engineRootPath / bikePrefabName;
+
+        // Create the Car prefab.
+        AZ::EntityId tireEntityId = CreateEditorEntityUnderRoot(tireEntityName);
+        AZ::EntityId carContainerId = CreateEditorPrefab(carPrefabFilepath, { tireEntityId });
+
+        // Create the Driver entity.
+        AZ::EntityId driverEntityId = CreateEditorEntityUnderRoot(driverEntityName);
+
+        // Retrieve the Tire entity id.
+        InstanceOptionalReference carInstance = m_instanceEntityMapperInterface->FindOwningInstance(carContainerId);
+        EXPECT_TRUE(carInstance.has_value());
+        EntityAlias tireEntityAlias = FindEntityAliasInInstance(carContainerId, tireEntityName);
+        EXPECT_FALSE(tireEntityAlias.empty());
+        tireEntityId = carInstance->get().GetEntityId(tireEntityAlias);
+
+        // Validate that the Tire and Driver entities cannot be reparented to Level.
+        bool isReparented = m_model->ReparentEntities(GetRootContainerEntityId(), { tireEntityId, driverEntityId });
+        EXPECT_FALSE(isReparented);
+    }
+
+    TEST_F(EntityOutlinerTest, TestReparentEntityToAnotherPrefabFails)
+    {
+        // Level     (prefab)   <-- focused
+        // | Car     (prefab)
+        //   | Tire
+        // | Bike    (prefab)
+        //   | Pedal
+        // | Driver
+
+        const AZStd::string carPrefabName = "CarPrefab";
+        const AZStd::string bikePrefabName = "BikePrefab";
+
+        const AZStd::string tireEntityName = "Tire";
+        const AZStd::string pedalEntityName = "Pedal";
+        const AZStd::string driverEntityName = "Driver";
+
+        AZ::IO::Path engineRootPath;
+        m_settingsRegistryInterface->Get(engineRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+
+        AZ::IO::Path carPrefabFilepath = engineRootPath / carPrefabName;
+        AZ::IO::Path bikePrefabFilepath = engineRootPath / bikePrefabName;
+
+        // Create the Car prefab.
+        AZ::EntityId tireEntityId = CreateEditorEntityUnderRoot(tireEntityName);
+        AZ::EntityId carContainerId = CreateEditorPrefab(carPrefabFilepath, { tireEntityId });
+
+        // Create the Bike prefab.
+        AZ::EntityId pedalEntityId = CreateEditorEntityUnderRoot(pedalEntityName);
+        AZ::EntityId bikeContainerId = CreateEditorPrefab(bikePrefabFilepath, { pedalEntityId });
+
+        // Create the Driver entity.
+        AZ::EntityId driverEntityId = CreateEditorEntityUnderRoot(driverEntityName);
+
+        // Retrieve the Tire entity id.
+        InstanceOptionalReference carInstance = m_instanceEntityMapperInterface->FindOwningInstance(carContainerId);
+        EXPECT_TRUE(carInstance.has_value());
+        EntityAlias tireEntityAlias = FindEntityAliasInInstance(carContainerId, tireEntityName);
+        EXPECT_FALSE(tireEntityAlias.empty());
+        tireEntityId = carInstance->get().GetEntityId(tireEntityAlias);
+
+        // Retrieve the Pedal entity id.
+        InstanceOptionalReference bikeInstance = m_instanceEntityMapperInterface->FindOwningInstance(bikeContainerId);
+        EXPECT_TRUE(bikeInstance.has_value());
+        EntityAlias pedalEntityAlias = FindEntityAliasInInstance(bikeContainerId, pedalEntityName);
+        EXPECT_FALSE(pedalEntityAlias.empty());
+        pedalEntityId = bikeInstance->get().GetEntityId(pedalEntityAlias);
+        
+        // Validate that the Driver entity cannot be reparented from the focused Level prefab to the unfocused Car prefab.
+        bool isReparented = m_model->ReparentEntities(tireEntityId, { driverEntityId });
+        EXPECT_FALSE(isReparented);
+
+        // Validate that the Pedal entity cannot be reparented from the unfocused Bike prefab to the unfocused Car prefab.
+        isReparented = m_model->ReparentEntities(tireEntityId, { pedalEntityId });
+        EXPECT_FALSE(isReparented);
+
+        // Validate that the Tire entity cannot be reparented from the unfocused Car prefab to the focused Level prefab.
+        isReparented = m_model->ReparentEntities(driverEntityId, { tireEntityId });
+        EXPECT_FALSE(isReparented);
+    }
+
+    TEST_F(EntityOutlinerTest, TestReparentPrefabToAnotherPrefabFails)
+    {
+        // Level     (prefab)   <-- focused
+        // | Car     (prefab)
+        //   | Wheel (prefab)
+        //     | Tire
+        //   | Trunk
+        // | Bike    (prefab)
+        //   | Pedal
+
+        const AZStd::string carPrefabName = "CarPrefab";
+        const AZStd::string wheelPrefabName = "WheelPrefab";
+        const AZStd::string bikePrefabName = "BikePrefab";
+
+        const AZStd::string tireEntityName = "Tire";
+        const AZStd::string trunkEntityName = "Trunk";
+        const AZStd::string pedalEntityName = "Pedal";
+
+        AZ::IO::Path engineRootPath;
+        m_settingsRegistryInterface->Get(engineRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+
+        AZ::IO::Path carPrefabFilepath = engineRootPath / carPrefabName;
+        AZ::IO::Path wheelPrefabFilepath = engineRootPath / wheelPrefabName;
+        AZ::IO::Path bikePrefabFilepath = engineRootPath / bikePrefabName;
+
+        // Create the Wheel prefab.
+        AZ::EntityId tireEntityId = CreateEditorEntityUnderRoot(tireEntityName);
+        AZ::EntityId wheelContainerId = CreateEditorPrefab(wheelPrefabFilepath, { tireEntityId });
+        AZ::EntityId trunkEntityId = CreateEditorEntityUnderRoot(trunkEntityName);
+
+        // Create the Car prefab.
+        AZ::EntityId carContainerId = CreateEditorPrefab(carPrefabFilepath, { wheelContainerId, trunkEntityId });
+
+        // Create the Bike prefab.
+        AZ::EntityId pedalEntityId = CreateEditorEntityUnderRoot(pedalEntityName);
+        AZ::EntityId bikeContainerId = CreateEditorPrefab(bikePrefabFilepath, { pedalEntityId });
+
+        // Retrieve Trunk entity id.
+        InstanceOptionalReference carInstance = m_instanceEntityMapperInterface->FindOwningInstance(carContainerId);
+        EXPECT_TRUE(carInstance.has_value());
+        EntityAlias trunkEntityAlias = FindEntityAliasInInstance(carContainerId, trunkEntityName);
+        EXPECT_FALSE(trunkEntityAlias.empty());
+        trunkEntityId = carInstance->get().GetEntityId(trunkEntityAlias);
+
+        // Retrieve the Wheel container entity id.
+        EntityOptionalReference wheelContainerEntity;
+        carInstance->get().GetNestedInstances(
+            [&wheelContainerEntity](AZStd::unique_ptr<Instance>& nestedInstance)
+            {
+                wheelContainerEntity = nestedInstance->GetContainerEntity();
+            });
+        EXPECT_TRUE(wheelContainerEntity.has_value());
+        wheelContainerId = wheelContainerEntity->get().GetId();
+
+        // Retrieve the Pedal entity id.
+        InstanceOptionalReference bikeInstance = m_instanceEntityMapperInterface->FindOwningInstance(bikeContainerId);
+        EXPECT_TRUE(bikeInstance.has_value());
+        EntityAlias pedalEntityAlias = FindEntityAliasInInstance(bikeContainerId, pedalEntityName);
+        EXPECT_FALSE(pedalEntityAlias.empty());
+        pedalEntityId = bikeInstance->get().GetEntityId(pedalEntityAlias);
+
+        // Validate that the Bike prefab cannot be reparented from the focused Level prefab to the unfocused Car prefab.
+        bool isReparented = m_model->ReparentEntities(trunkEntityId, { bikeContainerId });
+        EXPECT_FALSE(isReparented);
+
+        // Validate that the Wheel prefab cannot be reparented from the unfocused Car prefab to the unfocused Bike prefab.
+        isReparented = m_model->ReparentEntities(bikeContainerId, { wheelContainerId });
+        EXPECT_FALSE(isReparented);
+
+        // Validate that the Wheel prefab cannot be reparented from the unfocused Car prefab to the focused Level prefab.
+        isReparented = m_model->ReparentEntities(GetRootContainerEntityId(), { wheelContainerId });
+        EXPECT_FALSE(isReparented);
     }
 } // namespace UnitTest

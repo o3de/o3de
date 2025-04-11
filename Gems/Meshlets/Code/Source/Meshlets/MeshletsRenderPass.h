@@ -42,13 +42,13 @@ namespace AZ
 
         public:
             AZ_RTTI(MeshletsRenderPass, "{753E455B-8E36-4DC3-B315-789F0EF0483C}", RasterPass);
-            AZ_CLASS_ALLOCATOR(MeshletsRenderPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(MeshletsRenderPass, SystemAllocator);
 
             static RPI::Ptr<MeshletsRenderPass> Create(const RPI::PassDescriptor& descriptor);
 
             // Adds the lod array of render data
-            bool FillDrawRequestData(RHI::DrawPacketBuilder::DrawRequest& drawRequest);
-            bool AddDrawPackets(AZStd::list<const RHI::DrawPacket*> drawPackets);
+            bool FillDrawRequestData(RHI::DeviceDrawPacketBuilder::DeviceDrawRequest& drawRequest);
+            bool AddDrawPackets(AZStd::list<const RHI::DeviceDrawPacket*> drawPackets);
 
             Data::Instance<RPI::Shader> GetShader();
 

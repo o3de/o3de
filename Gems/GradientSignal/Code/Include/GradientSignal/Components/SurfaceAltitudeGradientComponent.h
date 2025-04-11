@@ -32,7 +32,7 @@ namespace GradientSignal
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(SurfaceAltitudeGradientConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SurfaceAltitudeGradientConfig, AZ::SystemAllocator);
         AZ_RTTI(SurfaceAltitudeGradientConfig, "{3CB05FC9-6E0F-435E-B420-F027B6716804}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
         AZ::EntityId m_shapeEntityId;

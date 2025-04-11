@@ -44,7 +44,7 @@ class TestContainer
 {
 public:
     AZ_TYPE_INFO(TestContainer, "{86586583-A58F-45FD-BB6E-C3E9C76DDA38}");
-    AZ_CLASS_ALLOCATOR(TestContainer, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(TestContainer, AZ::SystemAllocator);
 
     enum class EnumType : AZ::u8
     {
@@ -121,7 +121,7 @@ class SimpleKeyedContainer
 {
 public:
     AZ_TYPE_INFO(SimpleKeyedContainer, "{54E1AA90-1C09-47F4-8836-91600F225A34}");
-    AZ_CLASS_ALLOCATOR(SimpleKeyedContainer, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(SimpleKeyedContainer, AZ::SystemAllocator);
 
     AZStd::vector<AZStd::pair<int, int>> m_map;
 
@@ -153,7 +153,7 @@ namespace StandaloneRPE
 class RPEApplication : public AzToolsFramework::ToolsApplication
 {
 public:
-    RPEApplication(int* argc = nullptr, char*** argv = nullptr) : AzToolsFramework::ToolsApplication(argc, argv) {}
+    using AzToolsFramework::ToolsApplication::ToolsApplication;
 
     void Reflect(AZ::ReflectContext* context) override
     {

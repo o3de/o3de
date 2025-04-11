@@ -7,14 +7,16 @@
  */
 
 #include <AzTest/AzTest.h>
+#if !defined(Q_MOC_RUN)
 #include <AzCore/UnitTest/TestTypes.h>
+#endif
 #include "BuilderManagerTests.h"
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <native/connection/connectionManager.h>
 
 namespace UnitTests
 {
-    class BuilderManagerTest : public UnitTest::ScopedAllocatorSetupFixture
+    class BuilderManagerTest : public ::UnitTest::LeakDetectionFixture
     {
 
     };

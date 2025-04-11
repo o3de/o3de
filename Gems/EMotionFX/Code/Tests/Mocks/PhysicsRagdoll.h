@@ -15,6 +15,7 @@ namespace EMotionFX
         : public Physics::Ragdoll
     {
     public:
+        AZ_CLASS_ALLOCATOR(TestRagdoll, AZ::SystemAllocator)
         AZ_RTTI(TestRagdoll, "{A8FCEA6D-DC28-4D7D-9284-D98AD771E944}", Physics::Ragdoll)
 
         MOCK_METHOD1(EnableSimulation, void(const Physics::RagdollState&));

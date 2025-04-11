@@ -1,0 +1,63 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+// Usage:
+//
+// To access resources bindlessly, use the Get function defined by the bindless SRG corresponding to
+// the resource type you wish to access and supply the index provided by the SRG compiler. For example,
+// given an index to a particular Texture2D (say, 42), you may access this resource as follows:
+//
+//     Texture2D texture = Bindless::GetTexture2D(42);
+//
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#include "SrgSemantics.azsli"
+
+// Bindless SRG where all the views related to the following resource types (read only textures, read write textures,
+// read only buffers, read write buffers and read only cube map textures) reside and can be accessed indirectly by any shader
+partial ShaderResourceGroup Bindless : SRG_Bindless
+{
+    // UNBOUNDED_SIZE is used to approximate unbounded arrays on platforms that have issues with their
+    // unbounded array support. An example of that is Metal which natively supports unbounded arrays 
+    // but the sprir-v cross compiler that we use doesn't.
+    // The value is defined in Gems/Atom/Asset/Shader/Code/AZSL/Platform/<Platform Name>/Vulkan/AzslcHeader.azsli .
+    Texture2D<float4> m_Texture2D[UNBOUNDED_SIZE];
+    RWTexture2D<float4> m_RWTexture2D[UNBOUNDED_SIZE];
+    ByteAddressBuffer m_ByteAddressBuffer[UNBOUNDED_SIZE];
+    RWByteAddressBuffer m_RWByteAddressBuffer[UNBOUNDED_SIZE];
+    TextureCube m_TextureCube[UNBOUNDED_SIZE];
+
+    Texture2D<float4> GetTexture2D(uint index)
+    {
+        return m_Texture2D[index];
+    }
+
+    RWTexture2D<float4> GetRWTexture2D(uint index)
+    {
+        return m_RWTexture2D[index];
+    }
+
+    ByteAddressBuffer GetByteAddressBuffer(uint index)
+    {
+        return m_ByteAddressBuffer[index];
+    }
+
+    RWByteAddressBuffer GetRWByteAddressBuffer(uint index)
+    {
+        return m_RWByteAddressBuffer[index];
+    }
+
+    TextureCube GetTextureCube(uint index)
+    {
+        return m_TextureCube[index];
+    }
+
+};

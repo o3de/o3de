@@ -12,6 +12,7 @@
 #include <native/utilities/MissingDependencyScanner.h>
 #include <native/tests/MockAssetDatabaseRequestsHandler.h>
 #include <AssetDatabase/AssetDatabase.h>
+#include <native/utilities/assetUtils.h>
 
 namespace AssetProcessor
 {
@@ -72,6 +73,13 @@ namespace AssetProcessor
             {
                 return AZ::Failure(AZStd::string::format("Could not set create scan folder %s", scanFolderName.c_str()));
             }
+            // update the mock scan folder info as well, or else it will be using the default "c:/somepath" as the scan folder
+            // which only works if we are using a mock file IO, which this test is not using.  It would fail on posix systems otherwise.
+            ScanFolderInfo info{QString::fromUtf8(scanFolderPath.c_str()),
+                                QString::fromUtf8(scanFolderName.c_str()),
+                                QString::fromUtf8(scanFolderName.c_str()),
+                                true, true, { AssetBuilderSDK::PlatformInfo{ "pc", {} } }, 0, 1 };
+            m_data->m_pathConversion.SetScanFolder(info);
             return AZ::Success(scanFolder.m_scanFolderID);
         }
 
@@ -82,11 +90,17 @@ namespace AssetProcessor
         };
         AZ::Outcome<SourceAndProductInfo, AZStd::string> CreateSourceAndProductAsset(AZ::s64 scanFolderPK, const AZStd::string& sourceName, const AZStd::string& platform, const AZStd::string& productName)
         {
+            SourceAssetReference sourceAsset(scanFolderPK, sourceName.c_str());
+            UnitTestUtils::CreateDummyFile(sourceAsset.AbsolutePath().c_str());
+
             using namespace AzToolsFramework::AssetDatabase;
             SourceDatabaseEntry sourceEntry;
             sourceEntry.m_sourceName = sourceName;
-            sourceEntry.m_sourceGuid = AssetUtilities::CreateSafeSourceUUIDFromName(sourceEntry.m_sourceName.c_str());
             sourceEntry.m_scanFolderPK = scanFolderPK;
+            sourceEntry.m_sourceGuid = AssetUtilities::GetSourceUuid(sourceAsset).GetValueOr(AZ::Uuid());
+
+            EXPECT_FALSE(sourceEntry.m_sourceGuid.IsNull());
+
             if (!m_data->m_dbConn->SetSource(sourceEntry))
             {
                 return AZ::Failure(AZStd::string::format("Could not set source in the asset database for %s", sourceName.c_str()));
@@ -158,6 +172,10 @@ namespace AssetProcessor
             MockAssetDatabaseRequestsHandler m_databaseLocationListener;
             AZStd::shared_ptr<AssetDatabaseConnection> m_dbConn;
             MissingDependencyScanner_Test m_scanner;
+            UnitTests::MockPathConversion m_pathConversion;
+            AzToolsFramework::UuidUtilComponent m_uuidUtil;
+            AzToolsFramework::MetadataManager m_metadataManager;
+            AssetProcessor::UuidManager m_uuidManager;
             UnitTestUtils::ScopedDir m_scopedDir; // Sets up FileIO instance
         };
 
@@ -187,10 +205,13 @@ namespace AssetProcessor
         scanFolder.m_scanFolder = assetRootPath.absoluteFilePath("subfolder1").toUtf8().constData();
         ASSERT_TRUE(m_data->m_dbConn->SetScanFolder(scanFolder));
 
+        SourceAssetReference sourceAsset(1, "tests/1.source");
+        EXPECT_TRUE(UnitTestUtils::CreateDummyFile(sourceAsset.AbsolutePath().c_str()));
+
         SourceDatabaseEntry sourceEntry;
-        sourceEntry.m_sourceName = "tests/1.source";
-        sourceEntry.m_sourceGuid = AssetUtilities::CreateSafeSourceUUIDFromName(sourceEntry.m_sourceName.c_str());
-        sourceEntry.m_scanFolderPK = 1;
+        sourceEntry.m_sourceName = sourceAsset.RelativePath().c_str();
+        sourceEntry.m_scanFolderPK = sourceAsset.ScanFolderId();
+        sourceEntry.m_sourceGuid = AssetUtilities::GetSourceUuid(sourceAsset).GetValueOr(AZ::Uuid());
         ASSERT_TRUE(m_data->m_dbConn->SetSource(sourceEntry));
 
         JobDatabaseEntry jobEntry;
@@ -220,7 +241,7 @@ namespace AssetProcessor
         AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntryContainer container;
         AZStd::string dependencyToken = "dummy";
 
-        // Since dependency rule map is empty this should show a missing dependency 
+        // Since dependency rule map is empty this should show a missing dependency
         m_data->m_scanner.ScanFile(sourceFilePath.toUtf8().constData(), AssetProcessor::MissingDependencyScanner::DefaultMaxScanIteration, m_data->m_dbConn, dependencyToken, false, missingDependencyCallback);
         ASSERT_EQ(productDependency, productReference);
 

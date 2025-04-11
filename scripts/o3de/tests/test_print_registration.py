@@ -8,7 +8,6 @@
 
 import argparse
 import json
-import logging
 import pytest
 import pathlib
 from unittest.mock import patch
@@ -19,6 +18,7 @@ from o3de import print_registration
 TEST_PROJECT_JSON_PAYLOAD = '''
 {
     "project_name": "MinimalProject",
+    "version": "0.0.0",
     "origin": "The primary repo for MinimalProject goes here: i.e. http://www.mydomain.com",
     "license": "What license MinimalProject uses goes here: i.e. https://opensource.org/licenses/MIT",
     "display_name": "MinimalProject",
@@ -40,11 +40,12 @@ TEST_PROJECT_JSON_PAYLOAD = '''
 TEST_ENGINE_JSON_PAYLOAD = '''
 {
     "engine_name": "o3de",
+    "version": "0.0.0",
     "restricted_name": "o3de",
-    "FileVersion": 1,
+    "file_version": 1,
     "O3DEVersion": "0.0.0.0",
-    "O3DECopyrightYear": 2021,
-    "O3DEBuildNumber": 0,
+    "copyright_year": 2021,
+    "build": 0,
     "external_subdirectories": [
         "Gems/TestGem2"
     ],
@@ -59,6 +60,7 @@ TEST_ENGINE_JSON_PAYLOAD = '''
 TEST_GEM_JSON_PAYLOAD = '''
 {
     "gem_name": "TestGem",
+    "version": "0.0.0",
     "display_name": "TestGem",
     "license": "What license TestGem uses goes here: i.e. https://opensource.org/licenses/MIT",
     "origin": "The primary repo for TestGem goes here: i.e. http://www.mydomain.com",
@@ -134,10 +136,7 @@ TEST_O3DE_MANIFEST_JSON_PAYLOAD = '''
     "repos": [],
     "engines": [
         "D:/o3de/o3de"
-    ],
-    "engines_path": {
-        "o3de": "D:/o3de/o3de"
-    }
+    ]
 }
 '''
 
@@ -151,7 +150,9 @@ class TestPrintRegistration:
         return json.loads(TEST_ENGINE_JSON_PAYLOAD)
 
     @staticmethod
-    def get_project_json_data(project_path: pathlib.Path = None):
+    def get_project_json_data(project_name: str = None,
+                            project_path: str or pathlib.Path = None,
+                            user: bool = False) -> dict or None:
         return json.loads(TEST_PROJECT_JSON_PAYLOAD)
 
     @staticmethod

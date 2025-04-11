@@ -66,7 +66,7 @@ namespace Profiler
         friend class CpuProfiler;
 
     public:
-        AZ_CLASS_ALLOCATOR(CpuTimingLocalStorage, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CpuTimingLocalStorage, AZ::SystemAllocator);
 
         CpuTimingLocalStorage();
         ~CpuTimingLocalStorage();
@@ -131,7 +131,7 @@ namespace Profiler
 
     public:
         AZ_RTTI(CpuProfiler, "{10E9D394-FC83-4B45-B2B8-807C6BF07BF0}", AZ::Debug::Profiler);
-        AZ_CLASS_ALLOCATOR(CpuProfiler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CpuProfiler, AZ::SystemAllocator);
 
         CpuProfiler() = default;
         ~CpuProfiler() = default;
@@ -141,7 +141,7 @@ namespace Profiler
         void Shutdown();
 
         //! AZ::Debug::Profiler overrides...
-        void BeginRegion(const AZ::Debug::Budget* budget, const char* eventName, size_t eventNameArgCount, ...) final override;
+        void BeginRegion(const AZ::Debug::Budget* budget, const char* eventName, ...) final override;
         void EndRegion(const AZ::Debug::Budget* budget) final override;
 
         //! Get the last frame's TimeRegionMap

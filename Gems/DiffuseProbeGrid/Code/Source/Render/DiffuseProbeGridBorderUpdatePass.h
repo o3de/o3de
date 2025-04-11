@@ -9,6 +9,7 @@
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <Atom/RHI/CommandList.h>
+#include <Atom/RHI/DispatchItem.h>
 #include <Atom/RHI/ScopeProducer.h>
 #include <Atom/RPI.Public/Pass/RenderPass.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
@@ -25,7 +26,7 @@ namespace AZ
             AZ_RPI_PASS(DiffuseProbeGridBorderUpdatePass);
 
             AZ_RTTI(AZ::Render::DiffuseProbeGridBorderUpdatePass, "{31A5CCD0-CE97-4138-88DA-7BDBD38C9DC8}", RPI::RenderPass);
-            AZ_CLASS_ALLOCATOR(DiffuseProbeGridBorderUpdatePass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DiffuseProbeGridBorderUpdatePass, SystemAllocator);
             virtual ~DiffuseProbeGridBorderUpdatePass() = default;
 
             static RPI::Ptr<DiffuseProbeGridBorderUpdatePass> Create(const RPI::PassDescriptor& descriptor);
@@ -44,6 +45,16 @@ namespace AZ
             void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph) override;
             void CompileResources(const RHI::FrameGraphCompileContext& context) override;
             void BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context) override;
+            void FrameEndInternal() override;
+
+            // the data for submits in this pass are pre-built to properly handle submitting on multiple threads
+            struct SubmitItem
+            {
+                RHI::ShaderResourceGroup* m_shaderResourceGroup{nullptr};
+                RHI::DispatchItem m_dispatchItem{RHI::MultiDevice::AllDevices};
+            };
+
+            AZStd::vector<SubmitItem> m_submitItems;
 
             // shader
             Data::Instance<RPI::Shader> m_rowShader;

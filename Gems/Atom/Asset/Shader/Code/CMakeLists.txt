@@ -19,7 +19,7 @@ if(NOT PAL_TRAIT_BUILD_ATOM_ASSET_SHADER_SUPPORTED)
 
     # Create a stub
     ly_add_target(
-        NAME Atom_Asset_Shader.Builders GEM_MODULE
+        NAME ${gem_name}.Builders GEM_MODULE
 
         NAMESPACE Gem
         FILES_CMAKE
@@ -32,13 +32,24 @@ if(NOT PAL_TRAIT_BUILD_ATOM_ASSET_SHADER_SUPPORTED)
                 AZ::AzCore
     )
 
+    # Inject the gem name into the Module source file
+    ly_add_source_properties(
+        SOURCES
+            Source/Platform/Common/Unimplemented/ModuleStub_Unimplemented.cpp
+        PROPERTY COMPILE_DEFINITIONS
+            VALUES
+                O3DE_GEM_NAME=${gem_name}
+                O3DE_GEM_VERSION=${gem_version})
+    
+    # Create an alias to the old Atom_Asset_Shader.Builders target for backwards compatiblity
+    ly_create_alias(NAME Atom_Asset_Shader.Builders NAMESPACE Gem TARGETS Gem::${gem_name}.Builders)
     return()
 
 endif()
 
 
 ly_add_target(
-    NAME Atom_Asset_Shader.Static STATIC
+    NAME ${gem_name}.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
         atom_asset_shader_builders_files.cmake
@@ -49,8 +60,9 @@ ly_add_target(
     INCLUDE_DIRECTORIES
         PRIVATE
             Source
-            Source/Editor
             ${pal_source_dir}
+        PUBLIC
+            Source/Editor
     COMPILE_DEFINITIONS
         PRIVATE
             _SCL_SECURE_NO_WARNINGS
@@ -76,7 +88,7 @@ foreach(enabled_platform ${LY_PAL_TOOLS_ENABLED})
 endforeach()
 
 ly_add_target(
-    NAME Atom_Asset_Shader.Builders GEM_MODULE
+    NAME ${gem_name}.Builders GEM_MODULE
 
     NAMESPACE Gem
     FILES_CMAKE
@@ -91,7 +103,7 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             3rdParty::mcpp
-            Gem::Atom_Asset_Shader.Static
+            Gem::${gem_name}.Static
             Gem::Atom_RPI.Edit
     RUNTIME_DEPENDENCIES
         3rdParty::DirectXShaderCompilerDxc
@@ -99,9 +111,17 @@ ly_add_target(
         3rdParty::azslc
 )
 
-# The Atom_Asset_Shader is a required gem for Builders in order to process the assets that come WITHOUT
-# the Atom_Feature_Common required gem
-ly_enable_gems(GEMS Atom_Asset_Shader)
+# Inject the gem name into the Module source file
+ly_add_source_properties(
+    SOURCES
+        Source/Editor/AzslShaderBuilderModule.cpp
+    PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_GEM_NAME=${gem_name}
+            O3DE_GEM_VERSION=${gem_version})
+
+# Create an alias to the old Atom_Asset_Shader.Builders target for backwards compatiblity
+ly_create_alias(NAME Atom_Asset_Shader.Builders NAMESPACE Gem TARGETS Gem::${gem_name}.Builders)
 
 ################################################################################
 # Tests
@@ -109,7 +129,7 @@ ly_enable_gems(GEMS Atom_Asset_Shader)
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
 
     ly_add_target(
-        NAME Atom_Asset_Shader.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+        NAME ${gem_name}.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
         NAMESPACE Gem
         FILES_CMAKE
             atom_asset_shader_builders_tests_files.cmake
@@ -128,10 +148,11 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 Gem::Atom_RPI.Public
                 Gem::Atom_RHI.Public
                 Gem::Atom_RPI.Edit
-                Gem::Atom_Asset_Shader.Static
+                Gem::${gem_name}.Static
     )
     ly_add_googletest(
-        NAME Gem::Atom_Asset_Shader.Tests
+        NAME Gem::${gem_name}.Tests
+        LABELS REQUIRES_tiaf
     )
 
 endif()

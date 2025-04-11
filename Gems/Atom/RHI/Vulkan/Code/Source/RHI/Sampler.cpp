@@ -9,6 +9,7 @@
 #include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/Device.h>
 #include <RHI/Sampler.h>
+#include <Atom/RHI.Reflect/VkAllocator.h>
 
 namespace AZ
 {
@@ -55,7 +56,7 @@ namespace AZ
             if (m_nativeSampler != VK_NULL_HANDLE)
             {
                 auto& device = static_cast<Device&>(GetDevice());
-                device.GetContext().DestroySampler(device.GetNativeDevice(), m_nativeSampler, nullptr);
+                device.GetContext().DestroySampler(device.GetNativeDevice(), m_nativeSampler, VkSystemAllocator::Get());
                 m_nativeSampler = VK_NULL_HANDLE;
             }
             Base::Shutdown();
@@ -105,7 +106,7 @@ namespace AZ
             createInfo.addressModeV = ConvertAddressMode(samplerState.m_addressV);
             createInfo.addressModeW = ConvertAddressMode(samplerState.m_addressW);
             createInfo.mipLodBias = samplerState.m_mipLodBias;
-            createInfo.maxAnisotropy = AZStd::min(samplerState.m_anisotropyMax * 1.f, maxSamplerAnisotropy);
+            createInfo.maxAnisotropy = AZStd::clamp(samplerState.m_anisotropyMax * 1.f, 1.f, maxSamplerAnisotropy);
             createInfo.compareEnable = samplerState.m_comparisonFunc != RHI::ComparisonFunc::Always;
             createInfo.compareOp = ConvertComparisonFunction(samplerState.m_comparisonFunc);
             createInfo.minLod = samplerState.m_mipLodMin;
@@ -128,7 +129,8 @@ namespace AZ
 
             createInfo.unnormalizedCoordinates = VK_FALSE;
 
-            const VkResult result = device.GetContext().CreateSampler(device.GetNativeDevice(), &createInfo, nullptr, &m_nativeSampler);
+            const VkResult result =
+                device.GetContext().CreateSampler(device.GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &m_nativeSampler);
             AssertSuccess(result);
 
             return ConvertResult(result);

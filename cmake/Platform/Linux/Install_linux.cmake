@@ -8,17 +8,28 @@
 
 #! ly_setup_runtime_dependencies_copy_function_override: Linux-specific copy function to handle RPATH fixes
 set(ly_copy_template [[
-function(ly_copy source_files target_directory)
-    foreach(source_file IN LISTS source_files)  
+function(ly_copy source_files relative_target_directory)
+    set(options)
+    set(oneValueArgs TARGET_FILE_DIR SOURCE_TYPE SOURCE_GEM_MODULE)
+    set(multiValueArgs)
+    cmake_parse_arguments("${CMAKE_CURRENT_FUNCTION}" "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+    set(target_file_dir "${${CMAKE_CURRENT_FUNCTION}_TARGET_FILE_DIR}")
+    set(source_type "${${CMAKE_CURRENT_FUNCTION}_SOURCE_TYPE}")
+    set(source_is_gem "${${CMAKE_CURRENT_FUNCTION}_SOURCE_GEM_MODULE}")
+
+    # Create the full path to the target directory
+    cmake_path(APPEND target_directory "${target_file_dir}" "${relative_target_directory}")
+
+    foreach(source_file IN LISTS source_files)
         cmake_path(GET source_file FILENAME target_filename)
         cmake_path(APPEND full_target_directory "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}" "${target_directory}")
         cmake_path(APPEND target_file "${full_target_directory}" "${target_filename}")
         if("${source_file}" IS_NEWER_THAN "${target_file}")
             message(STATUS "Copying ${source_file} to ${full_target_directory}...")
             file(MAKE_DIRECTORY "${full_target_directory}")
-            file(COPY "${source_file}" DESTINATION "${full_target_directory}" FILE_PERMISSIONS @LY_COPY_PERMISSIONS@ FOLLOW_SYMLINK_CHAIN)
+            file(COPY "${source_file}" DESTINATION "${full_target_directory}" USE_SOURCE_PERMISSIONS FOLLOW_SYMLINK_CHAIN)
             file(TOUCH_NOCREATE "${target_file}")
-            
+
             # Special case for install
             cmake_PATH(GET source_file EXTENSION target_filename_ext)
             if("${target_filename_ext}" STREQUAL ".so")
@@ -39,7 +50,7 @@ function(ly_setup_runtime_dependencies_copy_function_override)
     string(CONFIGURE "${ly_copy_template}" ly_copy_function_linux @ONLY)
     foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
         string(TOUPPER ${conf} UCONF)
-        ly_install(CODE "${ly_copy_function_linux}" 
+        ly_install(CODE "${ly_copy_function_linux}"
             COMPONENT  ${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF}
         )
     endforeach()

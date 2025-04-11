@@ -10,30 +10,12 @@
 #include <AzTest/AzTest.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/UnitTest/UnitTest.h>
-#include <EditorEnvironment.h>
 
 #include <QApplication>
 
 class EditorLibTestEnvironment
     : public ::UnitTest::TraceBusHook
 {
-public:
-    ~EditorLibTestEnvironment() override = default;
-
-protected:
-    void SetupEnvironment() override
-    {
-        ::UnitTest::TraceBusHook::SetupEnvironment();
-
-        AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
-    }
-
-    void TeardownEnvironment() override
-    {
-        AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
-
-        ::UnitTest::TraceBusHook::TeardownEnvironment();
-    }
 };
 
 AZTEST_EXPORT int AZ_UNIT_TEST_HOOK_NAME(int argc, char** argv)

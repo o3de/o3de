@@ -36,7 +36,7 @@ namespace AZ
 #endif
 
             static Vec1::FloatType ToVec1(FloatArgType value);
-            static FloatType FromVec1(Vec1::FloatArgType value);
+            static FloatType FromVec1(Vec1::FloatArgType value); // Generates Vec2 {Vec1.x, Vec1.x}
 
             static FloatType LoadAligned(const float* __restrict addr); // addr *must* be 16-byte aligned
             static Int32Type LoadAligned(const int32_t* __restrict addr); // addr *must* be 16-byte aligned
@@ -51,19 +51,27 @@ namespace AZ
             static void StreamAligned(float* __restrict addr, FloatArgType value); // addr *must* be 16-byte aligned
             static void StreamAligned(int32_t* __restrict addr, Int32ArgType value); // addr *must* be 16-byte aligned
 
-            static float SelectFirst(FloatArgType value);
-            static float SelectSecond(FloatArgType value);
+            static float SelectIndex0(FloatArgType value);
+            static float SelectIndex1(FloatArgType value);
+            static float AZ_MATH_INLINE SelectFirst (FloatArgType value) { return SelectIndex0(value); } // O3DE_DEPRECATION_NOTICE(PR-16251)
+            static float AZ_MATH_INLINE SelectSecond(FloatArgType value) { return SelectIndex1(value); } // O3DE_DEPRECATION_NOTICE(PR-16251)
 
             static FloatType Splat(float value);
             static Int32Type Splat(int32_t value);
 
-            static FloatType SplatFirst(FloatArgType value);
-            static FloatType SplatSecond(FloatArgType value);
+            static FloatType SplatIndex0(FloatArgType value);
+            static FloatType SplatIndex1(FloatArgType value);
+            static FloatType AZ_MATH_INLINE SplatFirst (FloatArgType value) { return SplatIndex0(value); } // O3DE_DEPRECATION_NOTICE(PR-16251)
+            static FloatType AZ_MATH_INLINE SplatSecond(FloatArgType value) { return SplatIndex1(value); } // O3DE_DEPRECATION_NOTICE(PR-16251)
 
-            static FloatType ReplaceFirst(FloatArgType a, float b);
-            static FloatType ReplaceFirst(FloatArgType a, FloatArgType b);
-            static FloatType ReplaceSecond(FloatArgType a, float b);
-            static FloatType ReplaceSecond(FloatArgType a, FloatArgType b);
+            static FloatType ReplaceIndex0(FloatArgType a, float b);
+            static FloatType ReplaceIndex0(FloatArgType a, FloatArgType b);
+            static FloatType ReplaceIndex1(FloatArgType a, float b);
+            static FloatType ReplaceIndex1(FloatArgType a, FloatArgType b);
+            static FloatType AZ_MATH_INLINE ReplaceFirst (FloatArgType a,        float b) { return ReplaceIndex0(a, b); } // O3DE_DEPRECATION_NOTICE(PR-16251)
+            static FloatType AZ_MATH_INLINE ReplaceFirst (FloatArgType a, FloatArgType b) { return ReplaceIndex0(a, b); } // O3DE_DEPRECATION_NOTICE(PR-16251)
+            static FloatType AZ_MATH_INLINE ReplaceSecond(FloatArgType a,        float b) { return ReplaceIndex1(a, b); } // O3DE_DEPRECATION_NOTICE(PR-16251)
+            static FloatType AZ_MATH_INLINE ReplaceSecond(FloatArgType a, FloatArgType b) { return ReplaceIndex1(a, b); } // O3DE_DEPRECATION_NOTICE(PR-16251)
 
             static FloatType LoadImmediate(float x, float y);
             static Int32Type LoadImmediate(int32_t x, int32_t y);
@@ -150,6 +158,7 @@ namespace AZ
             static FloatType Atan(FloatArgType value);
             static FloatType Atan2(FloatArgType y, FloatArgType x);
             static Vec1::FloatType Atan2(FloatArgType value);
+            static FloatType ExpEstimate(FloatArgType x);
 
             // Vector ops
             static Vec1::FloatType Dot(FloatArgType arg1, FloatArgType arg2);

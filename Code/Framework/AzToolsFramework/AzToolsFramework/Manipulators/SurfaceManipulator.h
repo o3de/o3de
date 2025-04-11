@@ -29,7 +29,7 @@ namespace AzToolsFramework
 
     public:
         AZ_RTTI(SurfaceManipulator, "{75B8EF42-A5F0-48EB-893E-84BED1BC8BAF}", BaseManipulator)
-        AZ_CLASS_ALLOCATOR(SurfaceManipulator, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(SurfaceManipulator, AZ::SystemAllocator)
 
         SurfaceManipulator() = delete;
         SurfaceManipulator(const SurfaceManipulator&) = delete;

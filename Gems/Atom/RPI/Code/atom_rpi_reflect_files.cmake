@@ -7,8 +7,10 @@
 #
 
 set(FILES
+    Include/Atom/RPI.Reflect/Allocators.h
     Include/Atom/RPI.Reflect/AssetCreator.h
     Include/Atom/RPI.Reflect/Base.h
+    Include/Atom/RPI.Reflect/Configuration.h
     Include/Atom/RPI.Reflect/FeatureProcessorDescriptor.h
     Include/Atom/RPI.Reflect/GpuQuerySystemDescriptor.h
     Include/Atom/RPI.Reflect/Limits.h
@@ -19,6 +21,7 @@ set(FILES
     Include/Atom/RPI.Reflect/Buffer/BufferAssetCreator.h
     Include/Atom/RPI.Reflect/Buffer/BufferAssetView.h
     Include/Atom/RPI.Reflect/Model/ModelAsset.h
+    Include/Atom/RPI.Reflect/Model/ModelAssetHelpers.h
     Include/Atom/RPI.Reflect/Model/ModelKdTree.h
     Include/Atom/RPI.Reflect/Model/ModelLodAsset.h
     Include/Atom/RPI.Reflect/Model/ModelLodIndex.h
@@ -55,6 +58,8 @@ set(FILES
     Include/Atom/RPI.Reflect/Material/MaterialAssetCreator.h
     Include/Atom/RPI.Reflect/Material/MaterialDynamicMetadata.h
     Include/Atom/RPI.Reflect/Material/MaterialNameContext.h
+    Include/Atom/RPI.Reflect/Material/MaterialPipelineState.h
+    Include/Atom/RPI.Reflect/Material/MaterialPropertyCollection.h
     Include/Atom/RPI.Reflect/Material/MaterialPropertyDescriptor.h
     Include/Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h
     Include/Atom/RPI.Reflect/Material/MaterialPropertyValue.h
@@ -106,6 +111,7 @@ set(FILES
     Source/RPI.Reflect/Buffer/BufferAssetCreator.cpp
     Source/RPI.Reflect/Buffer/BufferAssetView.cpp
     Source/RPI.Reflect/Model/ModelAsset.cpp
+    Source/RPI.Reflect/Model/ModelAssetHelpers.cpp
     Source/RPI.Reflect/Model/ModelKdTree.cpp
     Source/RPI.Reflect/Model/ModelLodAsset.cpp
     Source/RPI.Reflect/Model/ModelAssetCreator.cpp
@@ -139,6 +145,7 @@ set(FILES
     Source/RPI.Reflect/Material/LuaMaterialFunctor.cpp
     Source/RPI.Reflect/Material/LuaScriptUtilities.cpp
     Source/RPI.Reflect/Material/MaterialDynamicMetadata.cpp
+    Source/RPI.Reflect/Material/MaterialPropertyCollection.cpp
     Source/RPI.Reflect/Material/MaterialPropertyDescriptor.cpp
     Source/RPI.Reflect/Material/MaterialPropertiesLayout.cpp
     Source/RPI.Reflect/Material/MaterialTypeAsset.cpp
@@ -148,6 +155,7 @@ set(FILES
     Source/RPI.Reflect/Material/MaterialVersionUpdate.cpp
     Source/RPI.Reflect/Pass/PassAsset.cpp
     Source/RPI.Reflect/Pass/PassAttachmentReflect.cpp
+    Source/RPI.Reflect/Pass/PassData.cpp
     Source/RPI.Reflect/Pass/PassRequest.cpp
     Source/RPI.Reflect/Pass/PassTemplate.cpp
     Source/RPI.Reflect/Shader/ShaderStageType.cpp
@@ -163,6 +171,7 @@ set(FILES
     Source/RPI.Reflect/Shader/PrecompiledShaderAssetSourceData.cpp
     Source/RPI.Reflect/System/AnyAsset.cpp
     Source/RPI.Reflect/System/AssetAliases.cpp
+    Source/RPI.Reflect/System/PipelineRenderSettings.cpp
     Source/RPI.Reflect/System/RenderPipelineDescriptor.cpp
     Source/RPI.Reflect/System/SceneDescriptor.cpp
 )

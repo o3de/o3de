@@ -60,7 +60,7 @@ namespace UnitTest
         , AssetCatalog
         , AssetCatalogRequestBus::Handler
     {
-        AZ_CLASS_ALLOCATOR(DataDrivenHandlerAndCatalog, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DataDrivenHandlerAndCatalog, AZ::SystemAllocator);
 
         DataDrivenHandlerAndCatalog();
         ~DataDrivenHandlerAndCatalog() override;
@@ -83,7 +83,7 @@ namespace UnitTest
         AssetInfo GetAssetInfoById(const AssetId& assetId) override;
 
         const char* GetStreamName(const AssetId& id);
-        
+
         const AssetDefinition* FindByType(const Uuid& type);
         const AssetDefinition* FindById(const AssetId& id);
         void AddDependenciesHelper(const AZStd::vector<ProductDependency>& list, AZStd::vector<ProductDependency>& listOutput);

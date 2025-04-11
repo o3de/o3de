@@ -8,8 +8,10 @@
 
 #pragma once
 
-#include <AzCore/Interface/Interface.h>
-#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Outcome/Outcome.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
+#include <AzCore/RTTI/RTTIMacros.h>
+#include <AzCore/std/string/string.h>
 
 #include <AzFramework/Entity/EntityContext.h>
 
@@ -26,7 +28,9 @@ namespace AzToolsFramework::Prefab
         SHOW_NESTED_INSTANCES_CONTENT
     };
 
-    //! Public Interface for external systems to utilize the Prefab Focus system.
+    //! Public Interface for external systems to utilize the Prefab Focus system. This interface shouldn't expose
+    //! internal prefab constructs like TemplateIds and prefab instances. For such cases, use the PrefabFocusInterface
+    //! instead.
     class PrefabFocusPublicInterface
     {
     public:

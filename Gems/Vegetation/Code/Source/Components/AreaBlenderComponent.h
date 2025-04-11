@@ -29,7 +29,7 @@ namespace Vegetation
         : public AreaConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(AreaBlenderConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AreaBlenderConfig, AZ::SystemAllocator);
         AZ_RTTI(AreaBlenderConfig, "{ED57731E-2821-4AA6-9BD6-9203ED0B6AB0}", AreaConfig);
         static void Reflect(AZ::ReflectContext* context);
         bool m_inheritBehavior = true;

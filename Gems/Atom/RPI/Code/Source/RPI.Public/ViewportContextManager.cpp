@@ -200,8 +200,16 @@ namespace AZ
                 AZ_Assert(false, "Attempted to rename ViewportContext \"%s\" to \"%s\", but \"%s\" is already assigned to another ViewportContext", viewportContext->m_name.GetCStr(), newContextName.GetCStr(), newContextName.GetCStr());
                 return;
             }
-            GetOrCreateViewStackForContext(newContextName);
+
+            // find the existing view group stack with the old name and extract it
+            auto nodeHandle = m_viewportViews.extract(viewportContext->GetName());
+            // rename the node handle with the new name (key)
+            nodeHandle.key() = newContextName;
+            // insert the updated view group back into the map with the new name
+            m_viewportViews.insert(AZStd::move(nodeHandle));
+            // update name of element
             viewportContext->m_name = newContextName;
+
             UpdateViewForContext(newContextName);
             // Ensure anyone listening on per-name viewport size updates gets notified.
             ViewportContextNotificationBus::Event(newContextName, &ViewportContextNotificationBus::Events::OnViewportSizeChanged, viewportContext->GetViewportSize());

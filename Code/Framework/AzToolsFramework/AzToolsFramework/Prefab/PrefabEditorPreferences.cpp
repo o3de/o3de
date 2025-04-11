@@ -6,13 +6,29 @@
  *
  */
 
-#include <AzToolsFramework/Prefab/PrefabEditorPreferences.h>
+#include <AzCore/Console/IConsole.h>
 #include <AzCore/Settings/SettingsRegistry.h>
+#include <AzToolsFramework/Prefab/PrefabEditorPreferences.h>
+
+AZ_CVAR(
+    bool,
+    ed_enableInspectorOverrideManagement,
+    true,
+    nullptr,
+    AZ::ConsoleFunctorFlags::DontReplicate | AZ::ConsoleFunctorFlags::DontDuplicate,
+    "If set, enables experimental prefab override support in the Entity Inspector");
+
+AZ_CVAR(
+    bool,
+    ed_enableOutlinerOverrideManagement,
+    true,
+    nullptr,
+    AZ::ConsoleFunctorFlags::DontReplicate | AZ::ConsoleFunctorFlags::DontDuplicate,
+    "If set, enables experimental prefab override support in the Outliner");
 
 namespace AzToolsFramework::Prefab
 {
-    static constexpr AZStd::string_view EnablePrefabOverridesUxKey = "/O3DE/Preferences/Prefabs/EnableOverridesUx";
-    static constexpr AZStd::string_view HotReloadToggleKey = "/O3DE/Preferences/Prefabs/EnableHotReloading";
+    const AZStd::string_view HotReloadToggleKey = "/O3DE/Preferences/Prefabs/EnableHotReloading";
 
     bool IsHotReloadingEnabled()
     {
@@ -26,15 +42,24 @@ namespace AzToolsFramework::Prefab
         return isHotReloadingEnabled;
     }
 
-    bool IsPrefabOverridesUxEnabled()
+    bool IsOutlinerOverrideManagementEnabled()
     {
-        bool prefabOverridesUxEnabled = false;
-        if (auto* registry = AZ::SettingsRegistry::Get())
+        bool isOutlinerOverrideManagementEnabled = true;
+        if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
         {
-            registry->Get(prefabOverridesUxEnabled, EnablePrefabOverridesUxKey);
+            console->GetCvarValue("ed_enableOutlinerOverrideManagement", isOutlinerOverrideManagementEnabled);
         }
+        return isOutlinerOverrideManagementEnabled;
+    }
 
-        return prefabOverridesUxEnabled;
+    bool IsInspectorOverrideManagementEnabled()
+    {
+        bool isInspectorOverrideManagementEnabled = true;
+        if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
+        {
+            console->GetCvarValue("ed_enableInspectorOverrideManagement", isInspectorOverrideManagementEnabled);
+        }
+        return isInspectorOverrideManagementEnabled;
     }
 
 } // namespace AzToolsFramework::Prefab

@@ -10,8 +10,7 @@
 #pragma once
 
 #include <AzCore/Debug/TraceMessageBus.h>
-#include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/Serialization/AZStdContainers.inl>
+#include <AzCore/JSON/prettywriter.h>
 #include <AzCore/std/string/regex.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/vector.h>
@@ -36,6 +35,7 @@ namespace AZ
 {
     class ComponentDescriptor;
     class Entity;
+    class ReflectContext;
 }
 
 namespace AzToolsFramework
@@ -62,7 +62,7 @@ namespace AssetBuilderSDK
      */
     struct ProductPathDependency
     {
-        AZ_CLASS_ALLOCATOR(ProductPathDependency, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ProductPathDependency, AZ::SystemAllocator);
         AZ_TYPE_INFO(ProductPathDependency, "{2632bfae-7490-476f-9214-a6d1f02e6085}");
 
         //! Relative path to the asset dependency
@@ -82,6 +82,8 @@ namespace AssetBuilderSDK
 
         static void Reflect(AZ::ReflectContext* context);
     };
+
+    void CreateABDataFile(AZStd::string& folder, AZStd::function<void(rapidjson::PrettyWriter<rapidjson::StringBuffer>&)> body);
 }
 
 namespace AZStd
@@ -107,7 +109,7 @@ namespace AssetBuilderSDK
     namespace ComponentTags
     {
         //! Components with the AssetBuilder tag in their reflect data's attributes as AZ::Edit::Attributes::SystemComponetTags will automatically be created on AssetBuilder startup
-        const static AZ::Crc32 AssetBuilder = AZ_CRC("AssetBuilder", 0xc739c7d7);
+        const static AZ::Crc32 AssetBuilder = AZ_CRC_CE("AssetBuilder");
     }
 
     extern const char* const ErrorWindow; //Use this window name to log error messages.
@@ -181,7 +183,7 @@ namespace AssetBuilderSDK
     //! Structure defining the type of pattern to use to apply
     struct AssetBuilderPattern
     {
-        AZ_CLASS_ALLOCATOR(AssetBuilderPattern, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AssetBuilderPattern, AZ::SystemAllocator);
         AZ_TYPE_INFO(AssetBuilderPattern, "{A8818121-D106-495E-9776-11F59E897BAD}");
 
         enum PatternType
@@ -209,7 +211,7 @@ namespace AssetBuilderSDK
     class FilePatternMatcher
     {
     public:
-        AZ_CLASS_ALLOCATOR(FilePatternMatcher, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(FilePatternMatcher, AZ::SystemAllocator);
         AZ_TYPE_INFO(FilePatternMatcher, "{3649C0D9-D9D5-4878-B14B-C7E1E1137894}");
 
         FilePatternMatcher() = default;
@@ -239,7 +241,7 @@ namespace AssetBuilderSDK
     //!Information that builders will send to the Asset Processor
     struct AssetBuilderDesc
     {
-        AZ_CLASS_ALLOCATOR(AssetBuilderDesc, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AssetBuilderDesc, AZ::SystemAllocator);
         AZ_TYPE_INFO(AssetBuilderDesc, "{7778EB3D-7B3B-4231-80C0-94C4226309AF}");
 
         enum class AssetBuilderType
@@ -313,7 +315,7 @@ namespace AssetBuilderSDK
     //! any one of them should be sufficient
     struct SourceFileDependency
     {
-        AZ_CLASS_ALLOCATOR(SourceFileDependency, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SourceFileDependency, AZ::SystemAllocator);
         AZ_TYPE_INFO(SourceFileDependency, "{d3c055d8-b5e8-44ab-a6ce-1ecb0da091ec}");
 
         // Corresponds to SourceFileDependencyEntry TypeOfDependency Values
@@ -371,14 +373,18 @@ namespace AssetBuilderSDK
 
         //! This is similiar to Order where the dependent job should only run after all the jobs it depends on are processed by the Asset Processor.
         //! The difference is that here only those dependent jobs matter that have never been processed by the Asset Processor.
-        //! Also important to note is the fingerprint of the dependent jobs will not alter the the fingerprint of the job.
+        //! Also important to note is the fingerprint of the dependent jobs will not alter the fingerprint of the job.
         OrderOnce,
+
+        //! Similar to Order, except that the dependent jobs do not rebuild when the jobs they depend on are processed.
+        //! Also important to note is the fingerprint of the dependent jobs will not alter the fingerprint of the job.
+        OrderOnly,
     };
 
     //! Job dependency information that the builder will send to the Asset Processor.
     struct JobDependency
     {
-        AZ_CLASS_ALLOCATOR(JobDependency, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(JobDependency, AZ::SystemAllocator);
         AZ_TYPE_INFO(JobDependency, "{93A9D915-8C9E-4588-8D86-578C01EEA388}");
         //! Source file dependency information that the builder will send to the Asset Processor.
         //! It is important to note that the builder does not need to provide both the sourceFileDependencyUUID and sourceFileDependencyPath info to the Asset Processor,
@@ -410,7 +416,7 @@ namespace AssetBuilderSDK
     //! JobDescriptor is used by the builder to store job related information
     struct JobDescriptor
     {
-        AZ_CLASS_ALLOCATOR(JobDescriptor, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(JobDescriptor, AZ::SystemAllocator);
         AZ_TYPE_INFO(JobDescriptor, "{bd0472a4-7634-41f3-97ef-00f3b239bae2}");
 
         //! Any builder specific parameters to pass to the Process Job Request
@@ -491,7 +497,7 @@ namespace AssetBuilderSDK
     */
     struct PlatformInfo
     {
-        AZ_CLASS_ALLOCATOR(PlatformInfo, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PlatformInfo, AZ::SystemAllocator);
         AZ_TYPE_INFO(PlatformInfo, "{F7DA39A5-C319-4552-954B-3479E2454D3F}");
 
         AZStd::string m_identifier; ///< like "pc" or "android" or "ios"...
@@ -511,7 +517,7 @@ namespace AssetBuilderSDK
     //! CreateJobsRequest contains input job data that will be send by the Asset Processor to the builder for creating jobs
     struct CreateJobsRequest
     {
-        AZ_CLASS_ALLOCATOR(CreateJobsRequest, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CreateJobsRequest, AZ::SystemAllocator);
         AZ_TYPE_INFO(CreateJobsRequest, "{02d470fb-4cb6-4cd7-876f-f0652910ff75}");
 
         //! The builder id to identify which builder will process this job request
@@ -597,7 +603,7 @@ namespace AssetBuilderSDK
     //! CreateJobsResponse contains job data that will be send by the builder to the Asset Processor in response to CreateJobsRequest
     struct CreateJobsResponse
     {
-        AZ_CLASS_ALLOCATOR(CreateJobsResponse, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CreateJobsResponse, AZ::SystemAllocator);
         AZ_TYPE_INFO(CreateJobsResponse, "{32a27d68-25bc-4425-a12b-bab961d6afcd}");
 
         CreateJobsResultCode         m_result = CreateJobsResultCode::Failed;   // The result code from the create jobs request
@@ -614,7 +620,7 @@ namespace AssetBuilderSDK
     //! Indicates a product asset that depends on another product asset
     struct ProductDependency
     {
-        AZ_CLASS_ALLOCATOR(ProductDependency, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ProductDependency, AZ::SystemAllocator);
         AZ_TYPE_INFO(ProductDependency, "{54338921-b437-4f39-a0da-b1d0d1ee7b57}");
 
         //! ID of the asset dependency
@@ -656,7 +662,7 @@ namespace AssetBuilderSDK
     //! JobProduct is used by the builder to store job product information
     struct JobProduct
     {
-        AZ_CLASS_ALLOCATOR(JobProduct, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(JobProduct, AZ::SystemAllocator);
         AZ_TYPE_INFO(JobProduct, "{d1d35d2c-3e4a-45c6-a13a-e20056344516}");
 
         AZStd::string m_productFileName; // relative or absolute product file path
@@ -730,7 +736,7 @@ namespace AssetBuilderSDK
     //! ProcessJobRequest contains input job data that will be send by the Asset Processor to the builder for processing jobs
     struct ProcessJobRequest
     {
-        AZ_CLASS_ALLOCATOR(ProcessJobRequest, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ProcessJobRequest, AZ::SystemAllocator);
         AZ_TYPE_INFO(ProcessJobRequest, "{20461454-d2f9-4079-ab95-703905e06002}");
 
         AZStd::string m_sourceFile; ///! relative source file name
@@ -760,12 +766,23 @@ namespace AssetBuilderSDK
     //! ProcessJobResponse contains job data that will be send by the builder to the Asset Processor in response to ProcessJobRequest
     struct ProcessJobResponse
     {
-        AZ_CLASS_ALLOCATOR(ProcessJobResponse, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ProcessJobResponse, AZ::SystemAllocator);
         AZ_TYPE_INFO(ProcessJobResponse, "{6b48ada5-0d52-43be-ad57-0bf8aeaef04b}");
 
         ProcessJobResultCode m_resultCode = ProcessJobResult_Failed;
         AZStd::vector<JobProduct> m_outputProducts;
         bool m_requiresSubIdGeneration = true; //!< Used to determine if legacy RC products need sub ids generated for them.
+
+        //! Typically the AP deletes the Temp folder when a job completes successfully. By setting this flag to true
+        //! the AssetBuilder will have the chance to preserve the temp folder and its content after a successful run.
+        //! REMARK-1: This flag was added for debugging purposes, make sure production code doesn't set this flag as true.
+        //!           Otherwise there will be an excessive proliferation of "JobTemp-xxxx" folders in user/AssetProcessorTemp.
+        //! REMARK-2: In normal circumstance the AP does a file-move operation when creating product assets. But when
+        //!           this flags is set to true it will do a file-copy operation, which may impact performance of the AP.
+        //!           Again, because this flag has been added for debugging purposes, it shouldn't be a big deal so long
+        //!           as production code keeps it as false. 
+        bool m_keepTempFolder = false;
+
         //! Populate m_sourcesToReprocess with sources by absolute path which you want to trigger a rebuild for
         //! To reprocess these sources, make sure to update fingerprints in CreateJobs of those builders which process them, like changing source dependencies.
         AZStd::vector<AZStd::string> m_sourcesToReprocess;

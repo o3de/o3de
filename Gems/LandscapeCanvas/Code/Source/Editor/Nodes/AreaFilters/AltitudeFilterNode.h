@@ -25,7 +25,7 @@ namespace LandscapeCanvas
     class AltitudeFilterNode : public BaseAreaFilterNode
     {
     public:
-        AZ_CLASS_ALLOCATOR(AltitudeFilterNode, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AltitudeFilterNode, AZ::SystemAllocator);
         AZ_RTTI(AltitudeFilterNode, "{42F4CF45-597B-4FB9-A21C-2B38A1F25FEA}", BaseAreaFilterNode);
 
         static void Reflect(AZ::ReflectContext* context);

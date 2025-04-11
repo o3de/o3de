@@ -15,7 +15,7 @@ if(NOT PAL_TRAIT_BUILD_CRASH_HANDLER_SUPPORTED)
 endif()
 
 ly_add_target(
-    NAME CrashReporting ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME ${gem_name} ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         crashreporting_static_files.cmake
@@ -31,14 +31,24 @@ ly_add_target(
             AZ::AzCore
 )
 
-# Load the "Gem::CrashReporting" module in Clients and Servers
-ly_create_alias(NAME CrashReporting.Clients NAMESPACE Gem TARGETS Gem::CrashReporting)
-ly_create_alias(NAME CrashReporting.Servers NAMESPACE Gem TARGETS Gem::CrashReporting)
+# Inject the gem name into the Module source file
+ly_add_source_properties(
+    SOURCES
+        Source/GameCrashHandler.cpp
+    PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_GEM_NAME=${gem_name}
+            O3DE_GEM_VERSION=${gem_version})
+
+# Load the "Gem::${gem_name}" module in Clients and Servers
+ly_create_alias(NAME ${gem_name}.Clients NAMESPACE Gem TARGETS Gem::${gem_name})
+ly_create_alias(NAME ${gem_name}.Servers NAMESPACE Gem TARGETS Gem::${gem_name})
+ly_create_alias(NAME ${gem_name}.Unified NAMESPACE Gem TARGETS Gem::${gem_name})
 
 if(NOT LY_MONOLITHIC_GAME)
 
     ly_add_target(
-        NAME CrashReporting.Uploader APPLICATION
+        NAME ${gem_name}.Uploader APPLICATION
         NAMESPACE AZ
         FILES_CMAKE
             game_crash_uploader_files.cmake

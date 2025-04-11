@@ -49,7 +49,7 @@ namespace // anonymous
 namespace UnitTest
 {
     class AssetSeedManagerTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
         , public AZ::Data::AssetCatalogRequestBus::Handler
     {
     public:
@@ -70,7 +70,9 @@ namespace UnitTest
             m_assetSeedManager = new AzToolsFramework::AssetSeedManager();
             m_assetRegistry = new AzFramework::AssetRegistry();
 
-            m_application->Start(AzFramework::Application::Descriptor());
+        AZ::ComponentApplication::StartupParameters startupParameters;
+            startupParameters.m_loadSettingsRegistry = false;
+            m_application->Start(AzFramework::Application::Descriptor(), startupParameters);
 
             // By default @products@ is setup to include the platform at the end. But this test is going to
             // loop over platforms and it will be included as part of the relative path of the file.
@@ -170,7 +172,7 @@ namespace UnitTest
             // in the unit tests.
             AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
 
-            AZ::SerializeContext* context;
+            AZ::SerializeContext* context = nullptr;
             AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
             ASSERT_TRUE(context) << "No serialize context.\n";
 

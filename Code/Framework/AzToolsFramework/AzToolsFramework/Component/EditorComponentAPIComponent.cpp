@@ -38,7 +38,7 @@ namespace AzToolsFramework
         class EditorEntityType final
         {
         public:
-            AZ_CLASS_ALLOCATOR(EditorEntityType, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(EditorEntityType, AZ::SystemAllocator);
             AZ_RTTI(EditorEntityType, "{9761CD58-D86E-4EA1-AE67-5302AECD54A4}");
 
             EditorEntityType() = default;
@@ -180,10 +180,6 @@ namespace AzToolsFramework
                             }
                             break;
                         default:
-                            if (!AzToolsFramework::AppearsInSystemComponentMenu(*componentClass))
-                            {
-                                return true;
-                            }
                             break;
                         }
                         for (int i = 0; i < typesCount; ++i)
@@ -219,7 +215,7 @@ namespace AzToolsFramework
             return foundTypeIds;
         }
 
-        AZStd::vector<AZ::Uuid> EditorComponentAPIComponent::FindComponentTypeIdsByService(const AZStd::vector<AZ::ComponentServiceType>& serviceFilter, const AZStd::vector<AZ::ComponentServiceType>& incompatibleServiceFilter)
+        AZStd::vector<AZ::Uuid> EditorComponentAPIComponent::FindComponentTypeIdsByService(AZStd::span<const AZ::ComponentServiceType> serviceFilter, const AZStd::vector<AZ::ComponentServiceType>& incompatibleServiceFilter)
         {
             AZStd::vector<AZ::Uuid> foundTypeIds;
 
@@ -320,10 +316,6 @@ namespace AzToolsFramework
                         }
                         break;
                     default:
-                        if (AzToolsFramework::AppearsInSystemComponentMenu(*componentClass))
-                        {
-                            typeNameList.push_back(componentClass->m_editData->m_name);
-                        }
                         break;
                     }
 
@@ -384,7 +376,7 @@ namespace AzToolsFramework
 
         size_t EditorComponentAPIComponent::CountComponentsOfType(AZ::EntityId entityId, AZ::Uuid componentTypeId)
         {
-            AZStd::vector<AZ::Component*> components = FindComponents(entityId, componentTypeId);
+            AZ::Entity::ComponentArrayType components = FindComponents(entityId, componentTypeId);
             return components.size();
         }
 
@@ -393,7 +385,7 @@ namespace AzToolsFramework
             AZ::Component* component = FindComponent(entityId, componentTypeId);
             if (component)
             {
-                return GetComponentOutcome( AZ::EntityComponentIdPair(entityId, component->GetId()) );
+                return GetComponentOutcome(AZ::EntityComponentIdPair(entityId, component->GetId()));
             }
             else
             {
@@ -403,7 +395,7 @@ namespace AzToolsFramework
 
         EditorComponentAPIRequests::GetComponentsOutcome EditorComponentAPIComponent::GetComponentsOfType(AZ::EntityId entityId, AZ::Uuid componentTypeId)
         {
-            AZStd::vector<AZ::Component*> components = FindComponents(entityId, componentTypeId);
+            AZ::Entity::ComponentArrayType components = FindComponents(entityId, componentTypeId);
 
             if (components.empty())
             {
@@ -418,18 +410,18 @@ namespace AzToolsFramework
                 componentIds.push_back(AZ::EntityComponentIdPair(entityId, component->GetId()));
             }
 
-            return {componentIds};
+            return { componentIds };
         }
 
         bool EditorComponentAPIComponent::IsValid(AZ::EntityComponentIdPair componentInstance)
         {
-            AZ::Component* component = FindComponent(componentInstance.GetEntityId() , componentInstance.GetComponentId());
+            AZ::Component* component = FindComponent(componentInstance.GetEntityId(), componentInstance.GetComponentId());
             return component != nullptr;
         }
 
         bool EditorComponentAPIComponent::EnableComponents(const AZStd::vector<AZ::EntityComponentIdPair>& componentInstances)
         {
-            AZStd::vector<AZ::Component*> components;
+            AZ::Entity::ComponentArrayType components;
             for (const AZ::EntityComponentIdPair& componentInstance : componentInstances)
             {
                 AZ::Component* component = FindComponent(componentInstance.GetEntityId(), componentInstance.GetComponentId());
@@ -488,7 +480,7 @@ namespace AzToolsFramework
 
         bool EditorComponentAPIComponent::DisableComponents(const AZStd::vector<AZ::EntityComponentIdPair>& componentInstances)
         {
-            AZStd::vector<AZ::Component*> components;
+            AZ::Entity::ComponentArrayType components;
             for (const AZ::EntityComponentIdPair& componentInstance : componentInstances)
             {
                 AZ::Component* component = FindComponent(componentInstance.GetEntityId(), componentInstance.GetComponentId());
@@ -520,7 +512,7 @@ namespace AzToolsFramework
         {
             bool cumulativeSuccess = true;
 
-            AZStd::vector<AZ::Component*> components;
+            AZ::Entity::ComponentArrayType components;
             for (const AZ::EntityComponentIdPair& componentInstance : componentInstances)
             {
                 AZ::Component* component = FindComponent(componentInstance.GetEntityId(), componentInstance.GetComponentId());
@@ -554,10 +546,10 @@ namespace AzToolsFramework
             if (!component)
             {
                 AZ_Error("EditorComponentAPIComponent", false, "BuildComponentPropertyTreeEditor - Component Instance is Invalid.");
-                return EditorComponentAPIRequests::PropertyTreeOutcome{AZStd::unexpect, PropertyTreeOutcome::ErrorType("BuildComponentPropertyTreeEditor - Component Instance is Invalid.") };
+                return EditorComponentAPIRequests::PropertyTreeOutcome{ AZStd::unexpect, PropertyTreeOutcome::ErrorType("BuildComponentPropertyTreeEditor - Component Instance is Invalid.") };
             }
 
-            return {PropertyTreeOutcome::ValueType(reinterpret_cast<void*>(component), component->GetUnderlyingComponentType())};
+            return { PropertyTreeOutcome::ValueType(reinterpret_cast<void*>(component), component->GetUnderlyingComponentType()) };
         }
 
         EditorComponentAPIRequests::PropertyOutcome EditorComponentAPIComponent::GetComponentProperty(const AZ::EntityComponentIdPair& componentInstance, const AZStd::string_view propertyPath)
@@ -567,7 +559,7 @@ namespace AzToolsFramework
             if (!component)
             {
                 AZ_Error("EditorComponentAPIComponent", false, "GetComponentProperty - Component Instance is Invalid.");
-                return EditorComponentAPIRequests::PropertyOutcome{AZStd::unexpect, PropertyOutcome::ErrorType("GetComponentProperty - Component Instance is Invalid.") };
+                return EditorComponentAPIRequests::PropertyOutcome{ AZStd::unexpect, PropertyOutcome::ErrorType("GetComponentProperty - Component Instance is Invalid.") };
             }
 
             PropertyTreeEditor pte = PropertyTreeEditor(reinterpret_cast<void*>(component), component->GetUnderlyingComponentType());
@@ -587,7 +579,7 @@ namespace AzToolsFramework
             if (!component)
             {
                 AZ_Error("EditorComponentAPIComponent", false, "SetComponentProperty - Component Instance is Invalid.");
-                return EditorComponentAPIRequests::PropertyOutcome{AZStd::unexpect, PropertyOutcome::ErrorType("SetComponentProperty - Component Instance is Invalid.") };
+                return EditorComponentAPIRequests::PropertyOutcome{ AZStd::unexpect, PropertyOutcome::ErrorType("SetComponentProperty - Component Instance is Invalid.") };
             }
 
             PropertyTreeEditor pte = PropertyTreeEditor(reinterpret_cast<void*>(component), component->GetUnderlyingComponentType());
@@ -683,7 +675,7 @@ namespace AzToolsFramework
             }
 
             // Check for pending components
-            AZStd::vector<AZ::Component*> pendingComponents;
+            AZ::Entity::ComponentArrayType pendingComponents;
             AzToolsFramework::EditorPendingCompositionRequestBus::Event(entityPtr->GetId(), &AzToolsFramework::EditorPendingCompositionRequests::GetPendingComponents, pendingComponents);
             for (AZ::Component* component : pendingComponents)
             {
@@ -694,7 +686,7 @@ namespace AzToolsFramework
             }
 
             // Check for disabled components
-            AZStd::vector<AZ::Component*> disabledComponents;
+            AZ::Entity::ComponentArrayType disabledComponents;
             AzToolsFramework::EditorDisabledCompositionRequestBus::Event(entityPtr->GetId(), &AzToolsFramework::EditorDisabledCompositionRequests::GetDisabledComponents, disabledComponents);
             for (AZ::Component* component : disabledComponents)
             {
@@ -729,7 +721,7 @@ namespace AzToolsFramework
             }
 
             // Check for pending components
-            AZStd::vector<AZ::Component*> pendingComponents;
+            AZ::Entity::ComponentArrayType pendingComponents;
             AzToolsFramework::EditorPendingCompositionRequestBus::Event(entityPtr->GetId(), &AzToolsFramework::EditorPendingCompositionRequests::GetPendingComponents, pendingComponents);
             for (AZ::Component* component : pendingComponents)
             {
@@ -740,7 +732,7 @@ namespace AzToolsFramework
             }
 
             // Check for disabled components
-            AZStd::vector<AZ::Component*> disabledComponents;
+            AZ::Entity::ComponentArrayType disabledComponents;
             AzToolsFramework::EditorDisabledCompositionRequestBus::Event(entityPtr->GetId(), &AzToolsFramework::EditorDisabledCompositionRequests::GetDisabledComponents, disabledComponents);
             for (AZ::Component* component : disabledComponents)
             {
@@ -753,9 +745,9 @@ namespace AzToolsFramework
             return nullptr;
         }
 
-        AZStd::vector<AZ::Component*> EditorComponentAPIComponent::FindComponents(AZ::EntityId entityId, AZ::Uuid componentTypeId)
+        AZ::Entity::ComponentArrayType EditorComponentAPIComponent::FindComponents(AZ::EntityId entityId, AZ::Uuid componentTypeId)
         {
-            AZStd::vector<AZ::Component*> components;
+            AZ::Entity::ComponentArrayType components;
 
             // Get AZ::Entity*
             AZ::Entity* entityPtr = FindEntity(entityId);
@@ -777,7 +769,7 @@ namespace AzToolsFramework
             }
 
             // Check for pending components
-            AZStd::vector<AZ::Component*> pendingComponents;
+            AZ::Entity::ComponentArrayType pendingComponents;
             AzToolsFramework::EditorPendingCompositionRequestBus::Event(entityId, &AzToolsFramework::EditorPendingCompositionRequests::GetPendingComponents, pendingComponents);
             for (AZ::Component* component : pendingComponents)
             {
@@ -788,7 +780,7 @@ namespace AzToolsFramework
             }
 
             // Check for disabled components
-            AZStd::vector<AZ::Component*> disabledComponents;
+            AZ::Entity::ComponentArrayType disabledComponents;
             AzToolsFramework::EditorDisabledCompositionRequestBus::Event(entityId, &AzToolsFramework::EditorDisabledCompositionRequests::GetDisabledComponents, disabledComponents);
             for (AZ::Component* component : disabledComponents)
             {

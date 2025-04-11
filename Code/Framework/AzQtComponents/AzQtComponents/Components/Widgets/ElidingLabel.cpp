@@ -22,23 +22,22 @@ namespace AzQtComponents
         , m_elideMode(Qt::ElideRight)
         , m_metricsLabel(new QLabel(this))
     {
-        connect(this, &ElidingLabel::elisionRequired, this, &ElidingLabel::handleElision);
-
         // Used to return the default sizeHint for a the un-elided text.
         // Should not be displayed.
         m_metricsLabel->hide();
         setText(text);
     }
 
-    void ElidingLabel::handleElision(bool geometryUpdateRequired)
+    void ElidingLabel::handleElision()
     {
         m_elidedText.clear();
 
         elide();
 
-        if (geometryUpdateRequired)
+        if (m_updateGeomentry)
         {
             updateGeometry();
+            m_updateGeomentry = false;
         }
     }
 
@@ -50,9 +49,9 @@ namespace AzQtComponents
         }
 
         m_text = text;
-        m_metricsLabel->setText(m_text);    
+        m_metricsLabel->setText(m_text);
 
-        emit elisionRequired(true);
+        requestElide(true);
     }
 
     void ElidingLabel::setDescription(const QString& description)
@@ -74,7 +73,7 @@ namespace AzQtComponents
     void ElidingLabel::resizeEvent(QResizeEvent* event)
     {
         QWidget::resizeEvent(event);
-        emit elisionRequired(false);
+        requestElide(false);
     }
 
     void ElidingLabel::elide()
@@ -85,16 +84,16 @@ namespace AzQtComponents
         {
             // If RichText tags are elided using fontMetrics.elidedText(), they will break.
             // A TextDocument is used to produce elided text that takes this into account.
-            const QString ellipsis("...");
+            static const QString ellipsis(QStringLiteral("..."));
             const int maxLineWidth = TextRect().width();
 
-            QTextDocument doc;
+            static QTextDocument doc;
             doc.setHtml(m_text);
             doc.setDefaultFont(font());
             doc.setDocumentMargin(0.0);
 
             // Turn off wrapping so the document uses a single line.
-            QTextOption option = doc.defaultTextOption();
+            static QTextOption option = doc.defaultTextOption();
             option.setWrapMode(QTextOption::WrapMode::NoWrap);
             doc.setDefaultTextOption(option);
             doc.adjustSize();
@@ -189,7 +188,7 @@ namespace AzQtComponents
     {
         // Override the QLabel minimumSizeHint width to let other
         // widgets know we can deal with less space.
-        return QWidget::minimumSizeHint().boundedTo({0, std::numeric_limits<int>::max()});
+        return QWidget::minimumSizeHint().boundedTo({ 0, std::numeric_limits<int>::max() });
     }
 
     QSize ElidingLabel::sizeHint() const
@@ -209,6 +208,10 @@ namespace AzQtComponents
         m_filterRegex = QRegExp(m_filterString, Qt::CaseInsensitive);
     }
 
+    bool ElidingLabel::TextMatchesFilter() const
+    {
+        return m_filterString.isEmpty() || m_text.contains(m_filterRegex);
+    }
 
     void ElidingLabel::paintEvent(QPaintEvent* event)
     {
@@ -233,7 +236,7 @@ namespace AzQtComponents
 
             int leftSpot = textRect.left() + preSelectedTextLength;
 
-            // Only need to do the draw if we actually are going to be highlighting the text.                
+            // Only need to do the draw if we actually are going to be highlighting the text.
             if (leftSpot < textRect.right())
             {
                 int visibleLength = AZStd::GetMin(selectedTextLength, textRect.right() - leftSpot);
@@ -246,6 +249,41 @@ namespace AzQtComponents
         painter.restore();
 
         QLabel::paintEvent(event);
+    }
+
+    void ElidingLabel::timerEvent([[maybe_unused]] QTimerEvent* event)
+    {
+        if (m_elideDeferred)
+        {
+            // do the elision, but keep the timer running in case another request comes in too quickly
+            handleElision();
+            m_elideDeferred = false;
+        }
+        else
+        {
+            // s_minTimeBetweenUpdates has elapsed since the last elide, and no new requests have come in
+            killTimer(m_elideTimerId);
+            m_elideTimerId = 0;
+        }
+    }
+
+    void ElidingLabel::requestElide(bool updateGeometry)
+    {
+        if (!m_updateGeomentry && updateGeometry)
+        {
+            m_updateGeomentry = true;
+        }
+        if (!m_elideTimerId)
+        {
+            // do the elision immediately, but start a timer to make sure we don't elide again too quickly
+            handleElision();
+            m_elideTimerId = startTimer(s_minTimeBetweenUpdates);
+        }
+        else
+        {
+            // the timer's already running
+            m_elideDeferred = true;
+        }
     }
 
 } // namespace AzQtComponents

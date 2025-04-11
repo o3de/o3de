@@ -81,7 +81,8 @@ namespace AzToolsFramework
                         AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications::FileCreationNotificationBusId,
                         &AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications::HandleAssetCreatedInEditor,
                         fullFilepath,
-                        AZ::Crc32());
+                        AZ::Crc32(),
+                        true);
                 }
                 else
                 {
@@ -112,7 +113,8 @@ namespace AzToolsFramework
                         AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications::FileCreationNotificationBusId,
                         &AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications::HandleAssetCreatedInEditor,
                         fullFilepath,
-                        LuaComponentScriptBusId);
+                        LuaComponentScriptBusId,
+                        true);
                 }
                 else
                 {
@@ -145,8 +147,7 @@ namespace AzToolsFramework
             const AZ::IO::Path filepath = AZ::IO::Path(fullFilepath);
             if (filepath.Extension() == LuaExtension)
             {
-                const AZStd::string_view& filename = filepath.Stem().Native();
-                const AZStd::string scriptBoilerplate = GenerateLuaComponentBoilerplate(filename);
+                const AZStd::string scriptBoilerplate = GenerateLuaComponentBoilerplate(filepath.Stem().Native());
 
                 const auto outcome = SaveLuaScriptFile(fullFilepath, scriptBoilerplate);
                 if (!outcome.IsSuccess())

@@ -32,102 +32,21 @@ namespace AZ
 {
     namespace RPI
     {
-        // Helper class to build scope producer with functions
-        class ScopeProducerFunction final
-            : public RHI::ScopeProducer
-        {
-        public:
-            AZ_CLASS_ALLOCATOR(ScopeProducerFunction, SystemAllocator, 0);
-
-            using PrepareFunction = AZStd::function<void(RHI::FrameGraphInterface)>;
-            using CompileFunction = AZStd::function<void(const RHI::FrameGraphCompileContext&)>;
-            using ExecuteFunction = AZStd::function<void(const RHI::FrameGraphExecuteContext&)>;
-
-            ScopeProducerFunction(
-                const RHI::ScopeId& scopeId,
-                PrepareFunction prepareFunction,
-                CompileFunction compileFunction,
-                ExecuteFunction executeFunction)
-                : ScopeProducer(scopeId)
-                , m_prepareFunction{ AZStd::move(prepareFunction) }
-                , m_compileFunction{ AZStd::move(compileFunction) }
-                , m_executeFunction{ AZStd::move(executeFunction) }
-            {}
-
-        private:
-            //////////////////////////////////////////////////////////////////////////
-            // ScopeProducer overrides
-            void SetupFrameGraphDependencies(RHI::FrameGraphInterface builder) override
-            {
-                m_prepareFunction(builder);
-            }
-
-            void CompileResources(const RHI::FrameGraphCompileContext& context) override
-            {
-                m_compileFunction(context);
-            }
-
-            void BuildCommandList(const RHI::FrameGraphExecuteContext& context) override
-            {
-                m_executeFunction(context);
-            }
-            //////////////////////////////////////////////////////////////////////////
-
-            PrepareFunction m_prepareFunction;
-            CompileFunction m_compileFunction;
-            ExecuteFunction m_executeFunction;
-        };
-
-
-        // Find a format for formats with two planars (DepthStencil) based on its ImageView's aspect flag
-        RHI::Format FindFormatForAspect(RHI::Format format, RHI::ImageAspect imageAspect)
-        {
-            RHI::ImageAspectFlags imageAspectFlags = RHI::GetImageAspectFlags(format);
-
-            // only need to convert is the source contains two aspects
-            if (imageAspectFlags == RHI::ImageAspectFlags::DepthStencil)
-            {
-                switch (imageAspect)
-                {
-                case RHI::ImageAspect::Stencil:
-                    return RHI::Format::R8_UINT;
-                case RHI::ImageAspect::Depth:
-                {
-                    switch (format)
-                    {
-                    case RHI::Format::D32_FLOAT_S8X24_UINT:
-                        return RHI::Format::R32_FLOAT;
-                    case RHI::Format::D24_UNORM_S8_UINT:
-                        return RHI::Format::R32_UINT;
-                    case RHI::Format::D16_UNORM_S8_UINT:
-                        return RHI::Format::R16_UNORM;
-                    default:
-                        AZ_Assert(false, "Unknown DepthStencil format. Please update this function");
-                        return RHI::Format::R32_FLOAT;
-                    }
-                }
-                }
-            }
-            return format;
-        }
-
-        AttachmentReadback::AttachmentReadback(const RHI::ScopeId& scopeId)
+        AttachmentReadback::AttachmentReadback(const RHI::ScopeId& scopeId) : m_dispatchItem(RHI::MultiDevice::AllDevices)
         {
             for(uint32_t i = 0; i < RHI::Limits::Device::FrameCountMax; i++)
             {
-                m_readbackBufferArray.push_back(nullptr);
                 m_isReadbackComplete.push_back(false);
             }
             
             // Create fence
-            RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
-            m_fence = RHI::Factory::Get().CreateFence();
+            m_fence = aznew RHI::Fence;
             AZ_Assert(m_fence != nullptr, "AttachmentReadback failed to create a fence");
-            [[maybe_unused]] RHI::ResultCode result = m_fence->Init(*device, RHI::FenceState::Reset);
+            [[maybe_unused]] RHI::ResultCode result = m_fence->Init(RHI::MultiDevice::AllDevices, RHI::FenceState::Reset);
             AZ_Assert(result == RHI::ResultCode::Success, "AttachmentReadback failed to init fence");
 
             // Load shader and srg
-            const char* ShaderPath = "shaders/decomposemsimage.azshader";
+            constexpr const char* ShaderPath = "shaders/decomposemsimage.azshader";
             m_decomposeShader = LoadCriticalShader(ShaderPath);
 
             if (m_decomposeShader == nullptr)
@@ -153,22 +72,22 @@ namespace AZ
             const auto& shaderVariant = m_decomposeShader->GetVariant(RPI::ShaderAsset::RootShaderVariantStableId);
             shaderVariant.ConfigurePipelineState(pipelineStateDescriptor);
 
-            m_dispatchItem.m_pipelineState = m_decomposeShader->AcquirePipelineState(pipelineStateDescriptor);
+            m_dispatchItem.SetPipelineState(m_decomposeShader->AcquirePipelineState(pipelineStateDescriptor));
 
-            m_dispatchItem.m_shaderResourceGroupCount = 1;
-            m_dispatchItem.m_shaderResourceGroups[0] = m_decomposeSrg->GetRHIShaderResourceGroup();
+            AZStd::array<const RHI::ShaderResourceGroup*, 1> srgs{m_decomposeSrg->GetRHIShaderResourceGroup()};
+
+            m_dispatchItem.SetShaderResourceGroups(srgs);
 
             // find srg input indexes
             m_decomposeInputImageIndex = m_decomposeSrg->FindShaderInputImageIndex(Name("m_msImage"));
             m_decomposeOutputImageIndex = m_decomposeSrg->FindShaderInputImageIndex(Name("m_outputImage"));
 
             // build scope producer for copying
-            m_copyScopeProducer = AZStd::make_shared<ScopeProducerFunction>(
-                    scopeId,
-                    AZStd::bind(&AttachmentReadback::CopyPrepare, this, AZStd::placeholders::_1),
-                    AZStd::bind(&AttachmentReadback::CopyCompile, this, AZStd::placeholders::_1),
-                    AZStd::bind(&AttachmentReadback::CopyExecute, this, AZStd::placeholders::_1)
-                );
+            m_copyScopeProducer = AZStd::make_shared<RHI::ScopeProducerFunctionNoData>(
+                scopeId,
+                AZStd::bind(&AttachmentReadback::CopyPrepare, this, AZStd::placeholders::_1),
+                AZStd::bind(&AttachmentReadback::CopyCompile, this, AZStd::placeholders::_1),
+                AZStd::bind(&AttachmentReadback::CopyExecute, this, AZStd::placeholders::_1));
 
             m_state = ReadbackState::Idle;
         }
@@ -180,7 +99,7 @@ namespace AZ
                 
         }
 
-        bool AttachmentReadback::ReadPassAttachment(const PassAttachment* attachment, const AZ::Name& readbackName)
+        bool AttachmentReadback::ReadPassAttachment(const PassAttachment* attachment, const AZ::Name& readbackName, const RHI::ImageSubresourceRange* mipsRange)
         {
             if (AZ::RHI::IsNullRHI())
             {
@@ -189,7 +108,7 @@ namespace AZ
 
             if (!IsReady())
             {
-                AZ_Assert(false, "AttachmentReadback is not ready to readback an attachment");
+                AZ_Assert(false, "AttachmentsReadbackGroup is not ready to readback attachments.");
                 return false;
             }
 
@@ -226,6 +145,9 @@ namespace AZ
                 {
                     m_bufferAttachmentByteSize = attachment->m_descriptor.m_buffer.m_byteCount;
                 }
+                m_readbackItems.push_back({});
+                auto& item = m_readbackItems.back();
+                item.m_readbackBufferArray.resize(RHI::Limits::Device::FrameCountMax, nullptr);
             }
             else
             {
@@ -239,16 +161,25 @@ namespace AZ
                     m_imageDescriptor = attachment->m_descriptor.m_image;
                 }
 
+                m_imageMipsRange = (mipsRange != nullptr)
+                    ? *mipsRange
+                    : RHI::ImageSubresourceRange(0, 0, 0, 0);
+                for (uint32_t mipIndex = m_imageMipsRange.m_mipSliceMin; mipIndex <= m_imageMipsRange.m_mipSliceMax; mipIndex++)
+                {
+                    m_readbackItems.push_back({});
+                    auto& mipItem = m_readbackItems.back();
+                    mipItem.m_readbackBufferArray.resize(RHI::Limits::Device::FrameCountMax, nullptr);
+                }
+
                 // Add decompose scope to convert multi-sampled images to image array
                 if (m_imageDescriptor.m_multisampleState.m_samples > 1)
                 {
                     m_copyAttachmentId = RHI::AttachmentId(AZStd::string::format("%s_Decomposed", m_attachmentId.GetCStr()));
-                    m_decomposeScopeProducer = AZStd::make_shared<ScopeProducerFunction>(
+                    m_decomposeScopeProducer = AZStd::make_shared<RHI::ScopeProducerFunctionNoData>(
                         m_copyAttachmentId,
                         AZStd::bind(&AttachmentReadback::DecomposePrepare, this, AZStd::placeholders::_1),
                         AZStd::bind(&AttachmentReadback::DecomposeCompile, this, AZStd::placeholders::_1),
-                        AZStd::bind(&AttachmentReadback::DecomposeExecute, this, AZStd::placeholders::_1)
-                        );
+                        AZStd::bind(&AttachmentReadback::DecomposeExecute, this, AZStd::placeholders::_1));
                 }
             }
             return true;
@@ -259,9 +190,10 @@ namespace AZ
             RHI::ImageScopeAttachmentDescriptor inputDesc{ m_attachmentId };
             inputDesc.m_imageViewDescriptor.m_aspectFlags = RHI::CheckBitsAny(RHI::GetImageAspectFlags(m_imageDescriptor.m_format), RHI::ImageAspectFlags::Depth)?
                 RHI::ImageAspectFlags::Depth:RHI::ImageAspectFlags::Color;
-            frameGraph.UseAttachment(inputDesc, RHI::ScopeAttachmentAccess::Read, RHI::ScopeAttachmentUsage::Shader);
+            frameGraph.UseAttachment(inputDesc, RHI::ScopeAttachmentAccess::Read, RHI::ScopeAttachmentUsage::Shader, RHI::ScopeAttachmentStage::ComputeShader);
             RHI::ImageScopeAttachmentDescriptor outputDesc{ m_copyAttachmentId };
-            frameGraph.UseAttachment(outputDesc, RHI::ScopeAttachmentAccess::Write, RHI::ScopeAttachmentUsage::Shader);
+            frameGraph.UseAttachment(
+                outputDesc, RHI::ScopeAttachmentAccess::Write, RHI::ScopeAttachmentUsage::Shader, RHI::ScopeAttachmentStage::ComputeShader);
         }
 
         void AttachmentReadback::DecomposeCompile(const RHI::FrameGraphCompileContext& context)
@@ -275,11 +207,10 @@ namespace AZ
             dispatchArgs.m_threadsPerGroupY = 16;
             dispatchArgs.m_threadsPerGroupZ = 1;
 
-            m_dispatchItem.m_arguments = dispatchArgs;
+            m_dispatchItem.SetArguments(dispatchArgs);
 
             const RHI::ImageView* imageView = context.GetImageView(m_attachmentId);
             m_decomposeSrg->SetImageView(m_decomposeInputImageIndex, imageView);
-
             imageView = context.GetImageView(m_copyAttachmentId);
             m_decomposeSrg->SetImageView(m_decomposeOutputImageIndex, imageView);
 
@@ -288,7 +219,7 @@ namespace AZ
 
         void AttachmentReadback::DecomposeExecute(const RHI::FrameGraphExecuteContext& context)
         {
-            context.GetCommandList()->Submit(m_dispatchItem);
+            context.GetCommandList()->Submit(m_dispatchItem.GetDeviceDispatchItem(context.GetDeviceIndex()));
         }
         
         void AttachmentReadback::CopyPrepare(RHI::FrameGraphInterface frameGraph)
@@ -305,6 +236,7 @@ namespace AZ
                 frameGraph.UseCopyAttachment(descriptor, RHI::ScopeAttachmentAccess::Read);
             }
 
+            frameGraph.SetEstimatedItemCount(static_cast<uint32_t>(m_readbackItems.size()));
             frameGraph.SignalFence(*m_fence);
 
             // CPU has already consumed the GPU buffer. We can clear it now.
@@ -317,34 +249,14 @@ namespace AZ
                 if (m_isReadbackComplete[i])
                 {
                     m_isReadbackComplete[i] = false;
-                    m_readbackBufferArray[i] = nullptr;
+                    for (auto& readbackItem : m_readbackItems)
+                    {
+                        readbackItem.m_readbackBufferArray[i] = nullptr;
+                    }
                 }
             }
             // Loop the triple buffer index and cache the current index to the callback.
             m_readbackBufferCurrentIndex = (m_readbackBufferCurrentIndex + 1) % RHI::Limits::Device::FrameCountMax;
-            
-            uint32_t readbackBufferCurrentIndex = m_readbackBufferCurrentIndex;
-            m_fence->WaitOnCpuAsync([this, readbackBufferCurrentIndex]()
-                {
-                    if (m_state == ReadbackState::Reading)
-                    {
-                        if (CopyBufferData(readbackBufferCurrentIndex))
-                        {
-                            m_state = ReadbackState::Success;
-                        }
-                        else
-                        {
-                            m_state = ReadbackState::Failed;
-                        }
-                    }
-                    if (m_callback)
-                    {
-                        m_callback(GetReadbackResult());
-                    }
-
-                    Reset();
-                }
-            );
         }
 
         void AttachmentReadback::CopyCompile(const RHI::FrameGraphCompileContext& context)
@@ -358,15 +270,15 @@ namespace AZ
                 desc.m_bufferName = m_readbackName.GetStringView();
                 desc.m_byteCount = buffer->GetDescriptor().m_byteCount;
 
-                m_readbackBufferArray[m_readbackBufferCurrentIndex] = BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
+                m_readbackItems[0].m_readbackBufferArray[m_readbackBufferCurrentIndex] = BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
 
                 // copy buffer
                 RHI::CopyBufferDescriptor copyBuffer;
                 copyBuffer.m_sourceBuffer = buffer;
-                copyBuffer.m_destinationBuffer = m_readbackBufferArray[m_readbackBufferCurrentIndex]->GetRHIBuffer();
+                copyBuffer.m_destinationBuffer = m_readbackItems[0].m_readbackBufferArray[m_readbackBufferCurrentIndex]->GetRHIBuffer();
                 copyBuffer.m_size = aznumeric_cast<uint32_t>(desc.m_byteCount);
-                
-                m_copyItem = copyBuffer;
+
+                m_readbackItems[0].m_copyItem = copyBuffer;
             }
             else if (m_attachmentType == RHI::AttachmentType::Image)
             {
@@ -377,67 +289,128 @@ namespace AZ
                     AZ_Warning("AttachmentReadback", false, "Failed to find attachment image %s for copy to buffer", m_copyAttachmentId.GetCStr());
                     return;
                 }
-                m_imageDescriptor = image->GetDescriptor();
 
-                // [GFX TODO] [ATOM-14140] [Pass Tree] Add the ability to output all the mipmaps, array and planars
-                // only copy mip level 0, array 0, and one aspect (planar) at this moment
-                RHI::ImageSubresourceRange range(0, 0, 0, 0);
-                range.m_aspectFlags = RHI::ImageAspectFlags::Color;
-
-                // setup aspect 
-                RHI::ImageAspect imageAspect = RHI::ImageAspect::Color;
-                RHI::ImageAspectFlags imageAspectFlags = RHI::GetImageAspectFlags(m_imageDescriptor.m_format);
-                if (RHI::CheckBitsAll(imageAspectFlags, RHI::ImageAspectFlags::Depth))
+                for (uint16_t itemIdx = 0; itemIdx < static_cast<uint16_t>(m_readbackItems.size()); itemIdx++)
                 {
-                    imageAspect = RHI::ImageAspect::Depth;
-                    range.m_aspectFlags = RHI::ImageAspectFlags::Depth;
+                    auto& readbackItem = m_readbackItems[itemIdx];
+
+                    // copy descriptor for copying image to buffer
+                    RHI::CopyImageToBufferDescriptor copyImageToBuffer;
+                    copyImageToBuffer.m_sourceImage = image;
+
+                    readbackItem.m_copyItem = copyImageToBuffer;
                 }
-
-                RHI::ImageSubresourceLayoutPlaced imageSubresourceLayout;
-                image->GetSubresourceLayouts(range, &imageSubresourceLayout, nullptr);
-
-                RPI::CommonBufferDescriptor desc;
-                desc.m_poolType = RPI::CommonBufferPoolType::ReadBack;
-                desc.m_bufferName = m_readbackName.GetStringView();
-                desc.m_byteCount = imageSubresourceLayout.m_bytesPerImage;
-
-                m_readbackBufferArray[m_readbackBufferCurrentIndex] = BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
-
-                // Use the aspect format as output format, this format is also used as copy destination's format
-                m_imageDescriptor.m_format = FindFormatForAspect(m_imageDescriptor.m_format, imageAspect);
-
-                // copy descriptor for copying image to buffer
-                RHI::CopyImageToBufferDescriptor copyImageToBuffer;
-                copyImageToBuffer.m_sourceImage = image;
-                copyImageToBuffer.m_sourceSize = m_imageDescriptor.m_size;
-                copyImageToBuffer.m_sourceSubresource = RHI::ImageSubresource(0 /*mipslice*/, 0 /*arraySlice*/, imageAspect);
-                copyImageToBuffer.m_destinationOffset = 0;
-                copyImageToBuffer.m_destinationBytesPerRow = imageSubresourceLayout.m_bytesPerRow;
-                copyImageToBuffer.m_destinationBytesPerImage = imageSubresourceLayout.m_bytesPerImage;
-                copyImageToBuffer.m_destinationBuffer = m_readbackBufferArray[m_readbackBufferCurrentIndex]->GetRHIBuffer();
-                copyImageToBuffer.m_destinationFormat = m_imageDescriptor.m_format;
-
-                m_copyItem = copyImageToBuffer;
             }
         }
 
         void AttachmentReadback::CopyExecute(const RHI::FrameGraphExecuteContext& context)
         {
-            if (!m_readbackBufferArray[m_readbackBufferCurrentIndex])
+            for (uint16_t itemIdx = 0; itemIdx < static_cast<uint16_t>(m_readbackItems.size()); itemIdx++)
             {
-                return;
+                auto& readbackItem = m_readbackItems[itemIdx];
+                if (m_attachmentType == RHI::AttachmentType::Image)
+                {
+                    // copy image to read back buffer since only buffer can be accessed by host
+                    const auto image = readbackItem.m_copyItem.m_image.m_sourceImage;
+                    if (!image)
+                    {
+                        AZ_Warning(
+                            "AttachmentReadback",
+                            false,
+                            "Failed to find attachment image %s for copy to buffer",
+                            m_copyAttachmentId.GetCStr());
+                        return;
+                    }
+
+                    m_imageDescriptor = image->GetDescriptor();
+                    // [GFX TODO] [ATOM-14140] [Pass Tree] Add the ability to output all the array subresources and planars
+                    // only array 0, and one aspect (planar) at this moment.
+                    // Note: Mip Levels and Texture3D images are supported.
+                    const uint16_t mipSlice = m_imageMipsRange.m_mipSliceMin + itemIdx;
+                    RHI::ImageSubresourceRange range(mipSlice, mipSlice, 0, 0);
+                    range.m_aspectFlags = RHI::ImageAspectFlags::Color;
+
+                    // setup aspect
+                    RHI::ImageAspect imageAspect = RHI::ImageAspect::Color;
+                    RHI::ImageAspectFlags imageAspectFlags = RHI::GetImageAspectFlags(m_imageDescriptor.m_format);
+                    if (RHI::CheckBitsAll(imageAspectFlags, RHI::ImageAspectFlags::Depth))
+                    {
+                        imageAspect = RHI::ImageAspect::Depth;
+                        range.m_aspectFlags = RHI::ImageAspectFlags::Depth;
+                    }
+
+                    AZStd::vector<RHI::DeviceImageSubresourceLayout> imageSubresourceLayouts;
+                    imageSubresourceLayouts.resize_no_construct(m_imageDescriptor.m_mipLevels);
+                    size_t totalSizeInBytes = 0;
+                    image->GetDeviceImage(context.GetDeviceIndex())->GetSubresourceLayouts(range, imageSubresourceLayouts.data(), &totalSizeInBytes);
+                    AZ::u64 byteCount = totalSizeInBytes;
+
+                    RPI::CommonBufferDescriptor desc;
+                    desc.m_poolType = RPI::CommonBufferPoolType::ReadBack;
+                    desc.m_bufferName = m_readbackName.GetStringView();
+                    desc.m_byteCount = byteCount;
+
+                    readbackItem.m_readbackBufferArray[m_readbackBufferCurrentIndex] =
+                        BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
+
+                    // Use the aspect format as output format, this format is also used as copy destination's format
+                    m_imageDescriptor.m_format = FindFormatForAspect(m_imageDescriptor.m_format, imageAspect);
+
+                    // copy descriptor for copying image to buffer
+                    RHI::CopyImageToBufferDescriptor copyImageToBuffer;
+                    copyImageToBuffer.m_sourceImage = image;
+                    copyImageToBuffer.m_sourceSize = imageSubresourceLayouts[mipSlice].m_size;
+                    copyImageToBuffer.m_sourceSubresource = RHI::ImageSubresource(mipSlice, 0 /*arraySlice*/, imageAspect);
+                    copyImageToBuffer.m_destinationOffset = 0;
+                    copyImageToBuffer.m_destinationBytesPerRow = imageSubresourceLayouts[mipSlice].m_bytesPerRow;
+                    copyImageToBuffer.m_destinationBytesPerImage = imageSubresourceLayouts[mipSlice].m_bytesPerImage;
+                    copyImageToBuffer.m_destinationBuffer = readbackItem.m_readbackBufferArray[m_readbackBufferCurrentIndex]->GetRHIBuffer();
+                    copyImageToBuffer.m_destinationFormat = m_imageDescriptor.m_format;
+
+                    readbackItem.m_mipInfo.m_slice = mipSlice;
+                    readbackItem.m_mipInfo.m_size = imageSubresourceLayouts[mipSlice].m_size;
+
+                    readbackItem.m_copyItem = copyImageToBuffer;
+                }
+
+                if (readbackItem.m_readbackBufferArray[m_readbackBufferCurrentIndex])
+                {
+                    context.GetCommandList()->Submit(readbackItem.m_copyItem.GetDeviceCopyItem(context.GetDeviceIndex()));
+                }
             }
 
-            context.GetCommandList()->Submit(m_copyItem);
+            uint32_t readbackBufferCurrentIndex = m_readbackBufferCurrentIndex;
+            auto deviceIndex = context.GetDeviceIndex();
+            m_fence->GetDeviceFence(deviceIndex)
+                ->WaitOnCpuAsync(
+                    [this, readbackBufferCurrentIndex, deviceIndex]()
+                    {
+                        if (m_state == ReadbackState::Reading)
+                        {
+                            if (CopyBufferData(readbackBufferCurrentIndex, deviceIndex))
+                            {
+                                m_state = ReadbackState::Success;
+                            }
+                            else
+                            {
+                                m_state = ReadbackState::Failed;
+                            }
+                        }
+                        if (m_callback)
+                        {
+                            m_callback(GetReadbackResult());
+                        }
+
+                        Reset();
+                    });
         }
-        
+
         void AttachmentReadback::Reset()
         {
             m_attachmentId = RHI::AttachmentId{};
-            m_copyItem = RHI::CopyItem{};
+            m_readbackItems.clear();
             m_state = ReadbackState::Idle;
             m_readbackName = AZ::Name{};
-            m_dataBuffer = nullptr;
             m_copyAttachmentId = RHI::AttachmentId{};
             m_decomposeScopeProducer = nullptr;
             if (m_decomposeSrg)
@@ -516,59 +489,97 @@ namespace AZ
         AttachmentReadback::ReadbackResult AttachmentReadback::GetReadbackResult() const
         {
             ReadbackResult result;
+
+            if (m_readbackItems.empty())
+            {
+                // the AttachmentReadback was reset before the readback was triggered from the GPU. Avoid 
+                // a crash by accessing a non-existend readback item
+                result.m_state = ReadbackState::Failed;
+                return result;
+            }
+
             result.m_state = m_state;
             result.m_attachmentType = m_attachmentType;
-            result.m_dataBuffer = m_dataBuffer;
+            result.m_dataBuffer = m_readbackItems[0].m_dataBuffer;
             result.m_name = m_readbackName;
             result.m_userIdentifier = m_userIdentifier;
             result.m_imageDescriptor = m_imageDescriptor;
             result.m_imageDescriptor.m_arraySize = 1;
+
+            if (m_attachmentType == RHI::AttachmentType::Image)
+            {
+                result.m_mipDataBuffers.reserve(m_readbackItems.size());
+                for (const auto& readbackItem : m_readbackItems)
+                {
+                    result.m_mipDataBuffers.push_back({});
+                    auto& mipDataBuffer = result.m_mipDataBuffers.back();
+                    mipDataBuffer.m_mipBuffer = readbackItem.m_dataBuffer;
+                    mipDataBuffer.m_mipInfo = readbackItem.m_mipInfo;
+                }
+            }
+
             return result;
         }
 
-        bool AttachmentReadback::CopyBufferData(uint32_t readbackBufferIndex)
+        bool AttachmentReadback::CopyBufferData(uint32_t readbackBufferIndex, int deviceIndex)
         {
-            Data::Instance<Buffer> readbackBufferCurrent = m_readbackBufferArray[readbackBufferIndex];
-
-            if (!readbackBufferCurrent)
+            for (auto& readbackItem : m_readbackItems)
             {
-                return false;
-            }
+                Data::Instance<Buffer> readbackBufferCurrent = readbackItem.m_readbackBufferArray[readbackBufferIndex];
 
-            auto bufferSize = readbackBufferCurrent->GetBufferSize();
-            m_dataBuffer = AZStd::make_shared<AZStd::vector<uint8_t>>();
-
-            void* buf = readbackBufferCurrent->Map(bufferSize, 0);
-            if (buf)
-            {
-                if (m_attachmentType == RHI::AttachmentType::Buffer)
+                if (!readbackBufferCurrent)
                 {
-                    m_dataBuffer->resize_no_construct(bufferSize);
-                    memcpy(m_dataBuffer->data(), buf, bufferSize);
+                    return false;
                 }
-                else if (m_attachmentType == RHI::AttachmentType::Image)
+
+                auto bufferSize = readbackBufferCurrent->GetBufferSize();
+                readbackItem.m_dataBuffer = AZStd::make_shared<AZStd::vector<uint8_t>>();
+
+                void* buf = readbackBufferCurrent->Map(bufferSize, 0)[deviceIndex];
+                if (buf)
                 {
-                    RHI::ImageSubresourceLayout imageLayout = RHI::GetImageSubresourceLayout(m_imageDescriptor.m_size,
-                        m_imageDescriptor.m_format);
-
-                    m_dataBuffer->resize_no_construct(imageLayout.m_bytesPerImage);
-
-                    for (uint32_t row = 0; row < imageLayout.m_rowCount; ++row)
+                    if (m_attachmentType == RHI::AttachmentType::Buffer)
                     {
-                        void* dest = m_dataBuffer->data() + row * imageLayout.m_bytesPerRow;
-                        void* source = static_cast<uint8_t*>(buf) + row * m_copyItem.m_imageToBuffer.m_destinationBytesPerRow;
-                        memcpy(dest, source, imageLayout.m_bytesPerRow);
+                        readbackItem.m_dataBuffer->resize_no_construct(bufferSize);
+                        memcpy(readbackItem.m_dataBuffer->data(), buf, bufferSize);
                     }
-                }
+                    else if (m_attachmentType == RHI::AttachmentType::Image)
+                    {
+                        RHI::Size mipSize = readbackItem.m_mipInfo.m_size;
+                        RHI::DeviceImageSubresourceLayout imageLayout = RHI::GetImageSubresourceLayout(mipSize,
+                            m_imageDescriptor.m_format);
 
-                readbackBufferCurrent->Unmap();
-                m_isReadbackComplete[readbackBufferIndex] = true;
-                return true;
+                        auto rowCount = imageLayout.m_rowCount;
+                        auto byteCount = imageLayout.m_bytesPerImage;
+                        if (m_imageDescriptor.m_dimension == AZ::RHI::ImageDimension::Image3D)
+                        {
+                            byteCount *= mipSize.m_depth;
+                            rowCount *= mipSize.m_depth;
+                        }
+
+                        readbackItem.m_dataBuffer->resize_no_construct(byteCount);
+                        const uint8_t* const sourceBegin = static_cast<uint8_t*>(buf);
+                        uint8_t* const destBegin = readbackItem.m_dataBuffer->data();
+                        // The source image WAS the destination when the copy item transferred data from GPU to CPU
+                        // this explains why the name srcBytesPerRow for these memcpy operations.
+                        const auto srcBytesPerRow = readbackItem.m_copyItem.m_imageToBuffer.m_destinationBytesPerRow;
+                        for (uint32_t row = 0; row < rowCount; ++row)
+                        {
+                            void* dest = destBegin + row * imageLayout.m_bytesPerRow;
+                            const void* source = sourceBegin + row * srcBytesPerRow;
+                            memcpy(dest, source, imageLayout.m_bytesPerRow);
+                        }
+                    }
+
+                    readbackBufferCurrent->Unmap();
+                    m_isReadbackComplete[readbackBufferIndex] = true;
+                }
+                else
+                {
+                    return false;
+                }
             }
-            else
-            {
-                return false;
-            }
+            return true;
         }
-    }   // namespace RPI
+    } // namespace RPI
 }   // namespace AZ

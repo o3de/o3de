@@ -28,6 +28,7 @@
 #include <AzQtComponents/Utilities/Conversions.h>
 #include <AzQtComponents/Utilities/ColorUtilities.h>
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/std/ranges/ranges_algorithm.h>
 
 // Disables warning messages triggered by the Qt library
 // 4251: class needs to have dll-interface to be used by clients of class 
@@ -398,6 +399,9 @@ ColorPicker::ColorPicker(ColorPicker::Configuration configuration, const QString
     m_alphaSlider->setMinimum(0);
     m_alphaSlider->setMaximum(255);
 
+    // Set the default value on the slider.
+    m_alphaSlider->setValue(qRound(m_currentColorController->alpha() * 255.0f));
+
     connect(m_alphaSlider, &QSlider::valueChanged, this, [this](int alpha) {
         m_currentColorController->setAlpha(aznumeric_cast<float>(alpha)/255.0f);
     });
@@ -415,9 +419,8 @@ ColorPicker::ColorPicker(ColorPicker::Configuration configuration, const QString
     connect(m_currentColorController, &Internal::ColorController::hsvHueChanged, m_colorGrid, &ColorGrid::setHue);
     connect(m_currentColorController, &Internal::ColorController::hsvSaturationChanged, m_colorGrid, &ColorGrid::setSaturation);
     connect(m_currentColorController, &Internal::ColorController::valueChanged, m_colorGrid, &ColorGrid::setValue);
-    connect(m_colorGrid, &ColorGrid::hueChanged, m_currentColorController, &Internal::ColorController::setHsvHue);
-    connect(m_colorGrid, &ColorGrid::saturationChanged, m_currentColorController, &Internal::ColorController::setHsvSaturation);
-    connect(m_colorGrid, &ColorGrid::valueChanged, m_currentColorController, &Internal::ColorController::setValue);
+    connect(m_colorGrid, &ColorGrid::hsvChanged, m_currentColorController, &Internal::ColorController::setHSV);
+
     connect(m_colorGrid, &ColorGrid::gridPressed, this, &ColorPicker::beginDynamicColorChange);
     connect(m_colorGrid, &ColorGrid::gridReleased, this, &ColorPicker::endDynamicColorChange);
 
@@ -867,6 +870,7 @@ void ColorPicker::setCurrentColor(const AZ::Color& color)
         m_previousColor = color;
     }
     m_currentColorController->setColor(color);
+    m_currentColorController->setAlpha(color.GetA());
 }
 
 AZ::Color ColorPicker::selectedColor() const
@@ -1177,13 +1181,19 @@ void ColorPicker::addPaletteCard(QSharedPointer<PaletteCard> card, ColorLibrary 
     QString fileName = colorLibrary.fileName;
     bool loaded = loader.load(fileName);
 
-    if (!loaded || (loaded && loader.colors() != card->palette()->colors()))
+    // If we can't load the palette file, then mark the palette as modified
+    // If we loaded the data and it was different to what we know OR
+    // Either way, we only mark it as modified if it's non-empty
+    if (!loaded)
     {
-        // If we loaded the data and it was different to what we know OR
-        // If we can't load the palette file, then mark the palette as modified
-        // Either way, we only mark it as modified if it's non-empty
 
         card->setModified(!card->palette()->colors().empty());
+    }
+    else
+    {
+        QVector<AZ::Color> loadedColors = loader.colors();
+        QVector<AZ::Color> paletteColors = card->palette()->colors();
+        card->setModified(!paletteColors.empty() && !AZStd::ranges::equal(loadedColors, paletteColors));
     }
 
     m_colorLibraries[card] = colorLibrary;

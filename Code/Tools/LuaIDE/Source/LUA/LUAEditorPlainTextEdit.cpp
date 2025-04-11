@@ -114,7 +114,7 @@ namespace LUAEditor
     {
         QPlainTextEdit::paintEvent(event);
 
-        auto colors = AZ::UserSettings::CreateFind<SyntaxStyleSettings>(AZ_CRC("LUA Editor Text Settings", 0xb6e15565), AZ::UserSettings::CT_GLOBAL);
+        auto colors = AZ::UserSettings::CreateFind<SyntaxStyleSettings>(AZ_CRC_CE("LUA Editor Text Settings"), AZ::UserSettings::CT_GLOBAL);
 
         QPainter painter(viewport());
 
@@ -628,7 +628,7 @@ namespace LUAEditor
                 AZ_TracePrintf("Debug", "URL: %s\n", path.toUtf8().data());
 
                 AZStd::string assetId(path.toUtf8().data());
-                EBUS_EVENT(Context_DocumentManagement::Bus, OnLoadDocument, assetId, true);
+                Context_DocumentManagement::Bus::Broadcast(&Context_DocumentManagement::Bus::Events::OnLoadDocument, assetId, true);
             }
         }
         else

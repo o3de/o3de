@@ -179,6 +179,20 @@ DIRECTIONAL_LIGHT_SHADOW_FILTER_METHOD = {
     'PCF+ESM': 3,
 }
 
+#Origin type for Sky Atmosphere component
+ATMOSPHERE_ORIGIN = {
+    'GroundAtWorldOrigin': 0,
+    'GroundAtLocalOrigin': 1,
+    'PlanetCenterAtLocalOrigin': 2,
+}
+
+# Fog Mode
+FOG_MODES = {
+    'Linear': 0,
+    'Exponential': 1,
+    'ExponentialSquared': 2
+}
+
 # Level list used in Editor Level Load Test
 # WARNING: "Sponza" level is sandboxed due to an intermittent failure.
 LEVEL_LIST = ["hermanubis", "hermanubis_high", "macbeth_shaderballs", "PbrMaterialChart", "ShadowTest"]
@@ -297,6 +311,30 @@ class AtomComponentProperties:
         return properties[property]
 
     @staticmethod
+    def chromatic_aberration(property: str = 'name') -> str:
+        """
+        Chromatic Aberration component properties
+          - 'Enable Chromatic Aberration' Toggle active state of the component (bool) default False
+          - 'Strength' Strength of effect. 0.0 (default) to 1.0 (float)
+          - 'Blend' Factor for additive blending with original image. 0.0 (default) to 1.0 (float)
+          - 'Enabled Override'  Toggle use of overrides on the Chromatic Aberration component (bool) default False
+          - 'Strength Override' Override for Strength factor. 0.0 (default) to 1.0 (float)
+          - 'Blend Override' Override for Blend factor. 0.0 (default) to 1.0 (float)
+        parameter property: From the last element of the property tree path. Default 'name' for component name string.
+        :return: Full property path OR component name if no property specified.
+        """
+        properties = {
+            'name': 'Chromatic Aberration',
+            'Enable Chromatic Aberration': 'Controller|Configuration|Enable Chromatic Aberration',
+            'Strength': 'Controller|Configuration|Strength',
+            'Blend': 'Controller|Configuration|Blend',
+            'Enabled Override': 'Controller|Configuration|Overrides|Enabled Override',
+            'Strength Override': 'Controller|Configuration|Overrides|Strength Override',
+            'Blend Override': 'Controller|Configuration|Overrides|Blend Override',
+        }
+        return properties[property]
+
+    @staticmethod
     def cube_map_capture(property: str = 'name') -> str:
         """
         CubeMap capture component properties.
@@ -361,6 +399,13 @@ class AtomComponentProperties:
           - 'Octaves Blend Factor' Blend factor between the noise octaves (0.0, 1.0).
           - 'Enable Turbulence Properties' Enables Turbulence Properties (bool).
           - 'Enable Fog Layer' Enables the fog layer (bool).
+          - 'Fog Mode' Set the fog formula
+          (enum, Uses above dictionary FOG_MODES)
+               Linear: f = (end - d)/(end - start)
+               Exponential: f = 1/exp(d * density)
+               ExponentialSquared: f = 1/exp((d * density)^2)
+          - 'Fog Density': Density control for Exponential and ExponentialSquared modes.
+          - 'Fog Density Clamp': The maximum density that the fog can reach. 
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
@@ -369,18 +414,21 @@ class AtomComponentProperties:
             'requires': [AtomComponentProperties.postfx_layer()],
             'Enable Deferred Fog': 'Controller|Configuration|Enable Deferred Fog',
             'Fog Color': 'Controller|Configuration|Fog Color',
-            'Fog Start Distance': 'Controller|Configuration|Fog Start Distance',
-            'Fog End Distance': 'Controller|Configuration|Fog End Distance',
-            'Fog Bottom Height': 'Controller|Configuration|Fog Bottom Height',
-            'Fog Max Height': 'Controller|Configuration|Fog Max Height',
-            'Noise Texture': 'Controller|Configuration|Noise Texture',
-            'Noise Texture First Octave Scale': 'Controller|Configuration|Noise Texture First Octave Scale',
-            'Noise Texture First Octave Velocity': 'Controller|Configuration|Noise Texture First Octave Velocity',
-            'Noise Texture Second Octave Scale': 'Controller|Configuration|Noise Texture Second Octave Scale',
-            'Noise Texture Second Octave Velocity': 'Controller|Configuration|Noise Texture Second Octave Velocity',
-            'Octaves Blend Factor': 'Controller|Configuration|Octaves Blend Factor',
+            'Fog Start Distance': 'Controller|Configuration|Distance|Fog Start Distance',
+            'Fog End Distance': 'Controller|Configuration|Distance|Fog End Distance',
+            'Fog Bottom Height': 'Controller|Configuration|Fog Layer|Fog Bottom Height',
+            'Fog Max Height': 'Controller|Configuration|Fog Layer|Fog Max Height',
+            'Noise Texture': 'Controller|Configuration|Turbulence|Noise Texture',
+            'Noise Texture First Octave Scale': 'Controller|Configuration|Turbulence|Noise Texture First Octave Scale',
+            'Noise Texture First Octave Velocity': 'Controller|Configuration|Turbulence|Noise Texture First Octave Velocity',
+            'Noise Texture Second Octave Scale': 'Controller|Configuration|Turbulence|Noise Texture Second Octave Scale',
+            'Noise Texture Second Octave Velocity': 'Controller|Configuration|Turbulence|Noise Texture Second Octave Velocity',
+            'Octaves Blend Factor': 'Controller|Configuration|Turbulence|Octaves Blend Factor',
             'Enable Turbulence Properties': 'Controller|Configuration|Enable Turbulence Properties',
             'Enable Fog Layer': 'Controller|Configuration|Enable Fog Layer',
+            'Fog Density': 'Controller|Configuration|Density Control|Fog Density',
+            'Fog Density Clamp': 'Controller|Configuration|Density Control|Fog Density Clamp',
+            'Fog Mode': 'Controller|Configuration|Fog Mode',
         }
         return properties[property]
 
@@ -421,7 +469,7 @@ class AtomComponentProperties:
         :return: Full property path OR component name if no property specified.
         """
         properties = {
-            'name': 'DepthOfField',
+            'name': 'Depth Of Field',
             'requires': [AtomComponentProperties.postfx_layer()],
             'Camera Entity': 'Controller|Configuration|Camera Entity',
             'CameraEntityId Override': 'Controller|Configuration|Overrides|CameraEntityId Override',
@@ -991,7 +1039,7 @@ class AtomComponentProperties:
             'Attenuation radius Radius': 'Controller|Configuration|Attenuation radius|Radius',
             'Enable shadow': 'Controller|Configuration|Shadows|Enable shadow',
             'Shadows Bias': 'Controller|Configuration|Shadows|Bias',
-            'Normal shadow bias': 'Controller|Configuration|Shadows|Normal Shadow Bias',
+            'Normal shadow bias': 'Controller|Configuration|Shadows|Normal shadow bias',
             'Shadowmap size': 'Controller|Configuration|Shadows|Shadowmap size',
             'Shadow filter method': 'Controller|Configuration|Shadows|Shadow filter method',
             'Filtering sample count': 'Controller|Configuration|Shadows|Filtering sample count',
@@ -1278,6 +1326,74 @@ class AtomComponentProperties:
         return properties[property]
 
     @staticmethod
+    def sky_atmosphere(property: str = 'name') -> str:
+        """
+        Sky Atmosphere component properties
+          - 'Ground albedo' Additional light from the surface of the ground (Vector3 float) default (0.0,0.0,0.0)
+          - 'Ground radius' Kilometers 0.0 to 100000.0 (float) default 6360.0
+          - 'Origin' The origin to use for the atmosphere (int)
+          - 'Atmosphere height' Kilometers 0.0 to 10000.0 (float) default 100.0
+          - 'Illuminance factor' An additional factor to brighten or darken the overall atmosphere (Vector3 float) default (1.0,1.0,1.0)
+          - 'Mie absorption scale' 0.0 to 1.0 (float) default 0.004
+          - 'Mie absorption' (Vector3 float) default (1.0,1.0,1.0)
+          - 'Mie exponential distribution' Altitude in kilometers at which Mie scattering is reduced to roughly 40%. 0.0 to 400.0 (float) default 1.2
+          - 'Mie scattering scale' 0.0 to 1.0 (float) default 0.004
+          - 'Mie scattering' Mie scattering coefficients from aerosole molecules at surface of the planet. (Vector3 float) default (1.0,1.0,1.0)
+          - 'Ozone absorption scale' Ozone molecule absorption scale 0.0 to 1.0 (float) default 0.001881
+          - 'Ozone absorption' Absorption coefficients from ozone molecules (Vector3 float) default (1.0,1.0,1.0)
+          - 'Rayleigh exponential distribution' Altitude in kilometers at which Rayleigh scattering is reduced to roughly 40%. 0.0 to 400.0 (float) default 8.0
+          - 'Rayleigh scattering scale' 0.0 to 1.0 (float) default 0.033100f
+          - 'Rayleigh scattering' Raleigh scattering coefficients from air molecules at surface of the planet. (Vector3 float) default (1.0,1.0,1.0)
+          - 'Show sun' display a sun (bool) default True
+          - 'Sun color' (azlmbr.math.Color RGBA) default (255.0,255.0,255.0,255.0)
+          - 'Sun falloff factor' 0.0 to 200.0 (float) default 1.0
+          - 'Sun limb color' for adjusting outer edge color of sun. (azlmbr.math.Color RGBA) default (255.0,255.0,255.0,255.0)
+          - 'Sun luminance factor' 0.0 to 100000.0 (float) default 0.05
+          - 'Sun orientation' Optional sun entity to use for orientation (EntityId)
+          - 'Sun radius factor' 0.0 to 100.0 (float) default 1.0
+          - 'Enable shadows' (bool) default False
+          - 'Fast sky' (bool) default True
+          - 'Max samples' 1 to 64 (unsigned int) default 14
+          - 'Min samples' 1 to 64 (unsigned int) default 4
+          - 'Near clip' 0.0 to inf (float) default 0.0
+          - 'Near fade distance' 0.0 to inf (float) default 0.0
+        :param property: From the last element of the property tree path. Default 'name' for component name string.
+        :return: Full property path OR component name if no property specified.
+        """
+        properties = {
+            'name': 'Sky Atmosphere',
+            'Ground albedo': 'Controller|Configuration|Planet|Ground albedo',
+            'Ground radius': 'Controller|Configuration|Planet|Ground radius',
+            'Origin': 'Controller|Configuration|Planet|Origin',
+            'Atmosphere height': 'Controller|Configuration|Atmosphere|Atmosphere height',
+            'Illuminance factor': 'Controller|Configuration|Atmosphere|Illuminance factor',
+            'Mie absorption scale': 'Controller|Configuration|Atmosphere|Mie absorption scale',
+            'Mie absorption': 'Controller|Configuration|Atmosphere|Mie absorption',
+            'Mie exponential distribution': 'Controller|Configuration|Atmosphere|Mie exponential distribution',
+            'Mie scattering scale': 'Controller|Configuration|Atmosphere|Mie scattering scale',
+            'Mie scattering': 'Controller|Configuration|Atmosphere|Mie scattering',
+            'Ozone absorption scale': 'Controller|Configuration|Atmosphere|Ozone absorption scale',
+            'Ozone absorption': 'Controller|Configuration|Atmosphere|Ozone absorption',
+            'Rayleigh exponential distribution': 'Controller|Configuration|Atmosphere|Rayleigh exponential distribution',
+            'Rayleigh scattering scale': 'Controller|Configuration|Atmosphere|Rayleigh scattering scale',
+            'Rayleigh scattering': 'Controller|Configuration|Atmosphere|Rayleigh scattering',
+            'Show sun': 'Controller|Configuration|Sun|Show sun',
+            'Sun color': 'Controller|Configuration|Sun|Sun color',
+            'Sun falloff factor': 'Controller|Configuration|Sun|Sun falloff factor',
+            'Sun limb color': 'Controller|Configuration|Sun|Sun limb color',
+            'Sun luminance factor': 'Controller|Configuration|Sun|Sun luminance factor',
+            'Sun orientation': 'Controller|Configuration|Sun|Sun orientation',
+            'Sun radius factor': 'Controller|Configuration|Sun|Sun radius factor',
+            'Enable shadows': 'Controller|Configuration|Advanced|Enable shadows',
+            'Fast sky': 'Controller|Configuration|Advanced|Fast sky',
+            'Max samples': 'Controller|Configuration|Advanced|Max samples',
+            'Min samples': 'Controller|Configuration|Advanced|Min samples',
+            'Near clip': 'Controller|Configuration|Advanced|Near clip',
+            'Near fade distance': 'Controller|Configuration|Advanced|Near fade distance',
+        }
+        return properties[property]
+
+    @staticmethod
     def ssao(property: str = 'name') -> str:
         """
         SSAO component properties. Requires PostFX Layer component.
@@ -1323,3 +1439,189 @@ class AtomComponentProperties:
             'EnableDownsample Override': 'Controller|Configuration|Overrides|EnableDownsample Override',
         }
         return properties[property]
+
+    @staticmethod
+    def stars(property: str = 'name') -> str:
+        """
+        Stars component properties
+          - 'Stars Asset' Asset.id of the star asset file (default.star)
+          - 'Exposure' controls how bright the stars are. 0.0 to 32.0 default 1.0 (float)
+          - 'Twinkle rate' how frequently stars twinkle. 0.0 to 10.0 default 0.5 (float)
+          - 'Radius factor' star radius multiplier. 0.0 to 64.0 default 7.0 (float)
+        :param property: From the last element of the property tree path. Default 'name' for component name string.
+        :return: Full property path OR component name if no property specified.
+        """
+        properties = {
+            'name': 'Stars',
+            'Stars Asset': 'Controller|Configuration|Stars Asset',
+            'Exposure': 'Controller|Configuration|Exposure',
+            'Twinkle rate': 'Controller|Configuration|Twinkle rate',
+            'Radius factor': 'Controller|Configuration|Radius factor',
+        }
+        return properties[property]
+
+
+class AtomToolsDocumentRequestBusEvents(object):
+    """
+    Used to store string constants representing the bus options for azlmbr.bus.AtomToolsDocumentRequestBus
+    """
+    GET_ABSOLUTE_PATH = "GetAbsolutePath"
+    OPEN = "Open"
+    REOPEN = "Reopen"
+    CLOSE = "Close"
+    SAVE = "Save"
+    SAVE_AS_CHILD = "SaveAsChild"
+    SAVE_AS_COPY = "SaveAsCopy"
+    IS_OPEN = "IsOpen"
+    IS_MODIFIED = "IsModified"
+    CAN_SAVE_AS_CHILD = "CanSaveAsChild"
+    CAN_UNDO = "CanUndo"
+    CAN_REDO = "CanRedo"
+    UNDO = "Undo"
+    REDO = "Redo"
+    BEGIN_EDIT = "BeginEdit"
+    END_EDIT = "EndEdit"
+
+
+class AtomToolsDocumentSystemRequestBusEvents(object):
+    """
+    Used to store string constants representing the bus options for azlmbr.bus.AtomToolsDocumentSystemRequestBus
+    """
+    CREATE_DOCUMENT_FROM_TYPE_NAME = "CreateDocumentFromTypeName"
+    CREATE_DOCUMENT_FROM_FILE_TYPE = "CreateDocumentFromFileType"
+    CREATE_DOCUMENT_FROM_FILE_PATH = "CreateDocumentFromFilePath"
+    DESTROY_DOCUMENT = "DestroyDocument"
+    OPEN_DOCUMENT = "OpenDocument"
+    CLOSE_DOCUMENT = "CloseDocument"
+    CLOSE_ALL_DOCUMENTS = "CloseAllDocuments"
+    CLOSE_ALL_DOCUMENTS_EXCEPT = "CloseAllDocumentsExcept"
+    SAVE_DOCUMENT = "SaveDocument"
+    SAVE_DOCUMENT_AS_COPY = "SaveDocumentAsCopy"
+    SAVE_DOCUMENT_AS_CHILD = "SaveDocumentAsChild"
+    SAVE_ALL_DOCUMENTS = "SaveAllDocuments"
+    SAVE_ALL_MODIFIED_DOCUMENTS = "SaveAllModifiedDocuments"
+    QUEUE_REOPEN_MODIFIED_DOCUMENTS = "QueueReopenModifiedDocuments"
+    REOPEN_MODIFIED_DOCUMENTS = "ReopenModifiedDocuments"
+    GET_DOCUMENT_COUNT = "GetDocumentCount"
+    IS_DOCUMENT_OPEN = "IsDocumentOpen"
+    ADD_RECENT_FILE_PATH = "AddRecentFilePath"
+    CLEAR_RECENT_FILE_PATHS = "ClearRecentFilePaths"
+    SET_RECENT_FILE_PATHS = "SetRecentFilePaths"
+    GET_RECENT_FILE_PATHS = "GetRecentFilePaths"
+
+
+class AtomToolsMainWindowRequestBusEvents(object):
+    """
+    Used to store string constants representing the bus options for azlmbr.bus.AtomToolsMainWindowRequestBus
+    """
+    ACTIVATE_WINDOW = "ActivateWindow"
+    SET_DOCK_WIDGET_VISIBLE = "SetDockWidgetVisible"
+    IS_DOCK_WIDGET_VISIBLE = "IsDockWidgetVisible"
+    GET_DOCK_WIDGET_NAMES = "GetDockWidgetNames"
+    QUEUE_UPDATE_MENUS = "QueueUpdateMenus"
+    SET_STATUS_MESSAGE = "SetStatusMessage"
+    SET_STATUS_WARNING = "SetStatusWarning"
+    SET_STATUS_ERROR = "SetStatusError"
+    RESIZE_VIEWPORT_RENDER_TARGET = "ResizeViewportRenderTarget"
+    LOCK_VIEWPORT_RENDER_TARGET_SIZE = "LockViewportRenderTargetSize"
+    UNLOCK_VIEWPORT_RENDER_TARGET_SIZE = "UnlockViewportRenderTargetSize"
+
+
+class EntityPreviewViewportSettingsRequestBusEvents(object):
+    """
+    Used to store string constants representing the bus options for azlmbr.bus.EntityPreviewViewportSettingsRequestBus
+    """
+    SET_LIGHTING_PRESET = "SetLightingPreset"
+    GET_LIGHTING_PRESET = "GetLightingPreset"
+    GET_LAST_LIGHTING_PRESET_ASSET_ID = "GetLastLightingPresetAssetId"
+    SAVE_LIGHTING_PRESET = "SaveLightingPreset"
+    LOAD_LIGHTING_PRESET = "LoadLightingPreset"
+    LOAD_LIGHTING_PRESET_BY_ASSET_ID = "LoadLightingPresetByAssetId"
+    GET_LAST_LIGHTING_PRESET_PATH = "GetLastLightingPresetPath"
+    GET_LAST_LIGHTING_PRESET_PATH_WITHOUT_ALIAS = "GetLastLightingPresetPathWithoutAlias"
+    REGISTER_LIGHTING_PRESET_PATH = "RegisterLightingPresetPath"
+    UNREGISTER_LIGHTING_PRESET_PATH = "UnregisterLightingPresetPath"
+    GET_REGISTERED_LIGHTING_PRESET_PATHS = "GetRegisteredLightingPresetPaths"
+    SET_MODEL_PRESET = "SetModelPreset"
+    GET_MODEL_PRESET = "GetModelPreset"
+    GET_LAST_MODEL_PRESET_ASSET_ID = "GetLastModelPresetAssetId"
+    SAVE_MODEL_PRESET = "SaveModelPreset"
+    LOAD_MODEL_PRESET = "LoadModelPreset"
+    LOAD_MODEL_PRESET_BY_ASSET_ID = "LoadModelPresetByAssetId"
+    GET_LAST_MODEL_PRESET_PATH = "GetLastModelPresetPath"
+    GET_LAST_MODEL_PRESET_PATH_WITHOUT_ALIAS = "GetLastModelPresetPathWithoutAlias"
+    REGISTER_MODEL_PRESET_PATH = "RegisterModelPresetPath"
+    UNREGISTER_MODEL_PRESET_PATH = "UnregisterModelPresetPath"
+    GET_REGISTERED_MODEL_PRESET_PATHS = "GetRegisteredModelPresetPaths"
+    LOAD_RENDER_PIPELINE = "LoadRenderPipeline"
+    LOAD_RENDER_PIPELINE_BY_ASSET_ID = "LoadRenderPipelineByAssetId"
+    GET_LAST_RENDER_PIPELINE_PATh = "GetLastRenderPipelinePath"
+    GET_LAST_RENDER_PIPELINE_PATH_WITHOUT_ALIAS = "GetLastRenderPipelinePathWithoutAlias"
+    REGISTER_RENDER_PIPELINE_PATH = "RegisterRenderPipelinePath"
+    UNREGISTER_RENDER_PIPELINE_PATH = "UnregisterRenderPipelinePath"
+    GET_REGISTERED_RENDER_PIPELINE_PATHS = "GetRegisteredRenderPipelinePaths"
+    SET_SHADOW_CATCHER_ENABLED = "SetShadowCatcherEnabled"
+    GET_SHADOW_CATCHER_ENABLED = "GetShadowCatcherEnabled"
+    SET_GRID_ENABLED = "SetGridEnabled"
+    GET_GRID_ENABLED = "GetGridEnabled"
+    SET_ALTERNATE_SKYBOX_ENABLED = "SetAlternateSkyboxEnabled"
+    GET_ALTERNATE_SKYBOX_ENABLED = "GetAlternateSkyboxEnabled"
+    SET_FIELD_OF_VIEW = "SetFieldOfView"
+    GET_FIELD_OF_VIEW = "GetFieldOfView"
+
+
+class DynamicNodeManagerRequestBusEvents(object):
+    """
+    Used to store string constants representing the bus options for azlmbr.atomtools.DynamicNodeManagerRequestBus
+    """
+    LOAD_CONFIG_FILES = "LoadConfigFiles"
+    REGISTER_CONFIG = "RegisterConfig"
+    GET_CONFIG_BY_ID = "GetConfigById"
+    CLEAR = "Clear"
+    CREATE_NODE_BY_ID = "CreateNodeById"
+    CREATE_NODE_BY_NAME = "CreateNodeByName"
+
+
+class GraphDocumentRequestBusEvents(object):
+    """
+    Used to store string constants representing the bus options for azlmbr.atomtools.GraphDocumentRequestBus
+    """
+    GET_GRAPH = "GetGraph"
+    GET_GRAPH_ID = "GetGraphId"
+    GET_GRAPH_NAME = "GetGraphName"
+    SET_GENERATED_FILE_PATHS = "SetGeneratedFilePaths"
+    GET_GENERATED_FILE_PATHS = "GetGeneratedFilePaths"
+    COMPILE_GRAPH = "CompileGraph"
+    QUEUE_COMPILE_GRAPH = "QueueCompileGraph"
+    IS_COMPILE_GRAPH_QUEUED = "IsCompileGraphQueued"
+
+
+class GraphControllerRequestBusEvents(object):
+    """
+    Used to store string constants representing the bus options for azlmbr.editor.graph.GraphControllerRequestBus
+    """
+    ADD_NODE = "AddNode"
+    REMOVE_NODE = "RemoveNode"
+    GET_POSITION = "GetPosition"
+    WRAP_NODE = "WrapNode"
+    WRAP_NODE_ORDERED = "WrapNodeOrdered"
+    UNWRAP_NODE = "UnwrapNode"
+    IS_NODE_WRAPPED = "IsNodeWrapped"
+    SET_WRAPPER_NODE_ACTION_STRING = "SetWrapperNodeActionString"
+    ADD_CONNECTION = "AddConnection"
+    ADD_CONNECTION_BY_SLOT_ID = "AddConnectionBySlotId"
+    ARE_SLOTS_CONNECTED = "AreSlotsConnected"
+    REMOVE_CONNECTION = "RemoveConnection"
+    EXTEND_SLOT = "ExtendSlot"
+    GET_NODE_BY_ID = "GetNodeById"
+    GET_NODES_FROM_GRAPH_NODE_IDS = "GetNodesFromGraphNodeIds"
+    GET_NODE_IDS_BY_NODE = "GetNodeIdByNode"
+    GET_SLOT_ID_BY_SLOT = "GetSlotIdBySlot"
+    GET_NODES = "GetNodes"
+    GET_SELECTED_NODES = "GetSelectedNodes"
+    SET_SELECTED = "SetSelected"
+    CLEAR_SELECTION = "ClearSelection"
+    ENABLE_NODE = "EnableNode"
+    DISABLE_NODE = "DisableNode"
+    CENTER_ON_NODES = "CenterOnNodes"
+    GET_MAJOR_PITCH = "GetMajorPitch"

@@ -21,7 +21,7 @@ namespace AssetBuilder
 {
     using namespace UnitTest;
 
-    using AssetBuilderAppTest = AllocatorsFixture;
+    using AssetBuilderAppTest = LeakDetectionFixture;
 
     TEST_F(AssetBuilderAppTest, AssetBuilder_EditorScriptingComponents_Exists)
     {
@@ -60,7 +60,7 @@ namespace AssetBuilder
     }
 
     struct LoggingTest
-        : ScopedAllocatorSetupFixture
+        : LeakDetectionFixture
     {
         void SetUp() override
         {

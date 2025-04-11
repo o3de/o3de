@@ -18,7 +18,7 @@ namespace AZ::Render
     {
     public:
         AZ_RTTI(StarsModule, "{1C13B38B-BAD5-4C42-AB75-9038596CBF3E}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(StarsModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(StarsModule, AZ::SystemAllocator);
 
         StarsModule()
         {

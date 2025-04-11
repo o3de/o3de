@@ -69,7 +69,7 @@ namespace GraphCanvas
         {
         public:
             AZ_RTTI(NodeGroupFrameComponentSaveData, "{6F4811ED-BD83-4A2A-8831-58EEA4020D57}", ComponentSaveData);
-            AZ_CLASS_ALLOCATOR(NodeGroupFrameComponentSaveData, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(NodeGroupFrameComponentSaveData, AZ::SystemAllocator);
 
             NodeGroupFrameComponentSaveData();
             NodeGroupFrameComponentSaveData(NodeGroupFrameComponent* nodeFrameComponent);
@@ -103,16 +103,16 @@ namespace GraphCanvas
         // AZ::Component
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("GraphCanvas_NodeVisualService", 0x39c4e7f3));
-            provided.push_back(AZ_CRC("GraphCanvas_RootVisualService", 0x9ec46d3b));
-            provided.push_back(AZ_CRC("GraphCanvas_VisualService", 0xfbb2c871));
+            provided.push_back(AZ_CRC_CE("GraphCanvas_NodeVisualService"));
+            provided.push_back(AZ_CRC_CE("GraphCanvas_RootVisualService"));
+            provided.push_back(AZ_CRC_CE("GraphCanvas_VisualService"));
         }
 
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("GraphCanvas_NodeVisualService", 0x39c4e7f3));
-            incompatible.push_back(AZ_CRC("GraphCanvas_RootVisualService", 0x9ec46d3b));
-            incompatible.push_back(AZ_CRC("GraphCanvas_VisualService", 0xfbb2c871));
+            incompatible.push_back(AZ_CRC_CE("GraphCanvas_NodeVisualService"));
+            incompatible.push_back(AZ_CRC_CE("GraphCanvas_RootVisualService"));
+            incompatible.push_back(AZ_CRC_CE("GraphCanvas_VisualService"));
         }
 
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
@@ -122,8 +122,8 @@ namespace GraphCanvas
 
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC("GraphCanvas_NodeService", 0xcc0f32cc));
-            required.push_back(AZ_CRC("GraphCanvas_StyledGraphicItemService", 0xeae4cdf4));
+            required.push_back(AZ_CRC_CE("GraphCanvas_NodeService"));
+            required.push_back(AZ_CRC_CE("GraphCanvas_StyledGraphicItemService"));
         }
         ////
 
@@ -352,7 +352,7 @@ namespace GraphCanvas
     {
     public:
         AZ_TYPE_INFO(NodeGroupFrameTitleWidget, "{FC062E52-CA81-4DA5-B9BF-48FD7BE6E374}");
-        AZ_CLASS_ALLOCATOR(NodeGroupFrameTitleWidget, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(NodeGroupFrameTitleWidget, AZ::SystemAllocator);
 
         NodeGroupFrameTitleWidget();
 
@@ -382,7 +382,7 @@ namespace GraphCanvas
     {
     public:
         AZ_TYPE_INFO(NodeGroupFrameBlockAreaWidget, "{9278BBBC-5872-4CA0-9F09-10BAE77ECA7E}");
-        AZ_CLASS_ALLOCATOR(NodeGroupFrameBlockAreaWidget, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(NodeGroupFrameBlockAreaWidget, AZ::SystemAllocator);
 
         NodeGroupFrameBlockAreaWidget();
 
@@ -414,7 +414,7 @@ namespace GraphCanvas
 
     public:
         AZ_TYPE_INFO(NodeGroupFrameGraphicsWidget, "{708C3817-C668-47B7-A4CB-0896425E634A}");
-        AZ_CLASS_ALLOCATOR(NodeGroupFrameGraphicsWidget, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(NodeGroupFrameGraphicsWidget, AZ::SystemAllocator);
 
         // Do not allow Serialization of Graphics Ui classes
         static void Reflect(AZ::ReflectContext*) = delete;

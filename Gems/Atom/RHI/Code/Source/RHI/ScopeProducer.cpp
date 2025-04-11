@@ -9,58 +9,62 @@
 #include <Atom/RHI/Scope.h>
 #include <Atom/RHI/Factory.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    ScopeProducer::ScopeProducer()
     {
-        ScopeProducer::ScopeProducer()
-        {
-            m_scope = Factory::Get().CreateScope();
-        }
+        m_scope = Factory::Get().CreateScope();
+    }
 
-        ScopeProducer::ScopeProducer(const ScopeId& scopeId)
-            : m_scopeId{scopeId}
-        {
-            m_scope = Factory::Get().CreateScope();
-            m_scope->Init(scopeId);
-        }
+    ScopeProducer::ScopeProducer(const ScopeId& scopeId, int deviceIndex)
+        : m_scopeId{ scopeId }
+        , m_deviceIndex{ deviceIndex }
+    {
+        m_scope = Factory::Get().CreateScope();
+        m_scope->Init(scopeId);
+    }
 
-        const ScopeId& ScopeProducer::GetScopeId() const
-        {
-            return m_scopeId;
-        }
+    const ScopeId& ScopeProducer::GetScopeId() const
+    {
+        return m_scopeId;
+    }
 
-        Scope* ScopeProducer::GetScope()
-        {
-            return m_scope.get();
-        }
+    Scope* ScopeProducer::GetScope()
+    {
+        return m_scope.get();
+    }
 
-        const Scope* ScopeProducer::GetScope() const
-        {
-            return m_scope.get();
-        }
+    const Scope* ScopeProducer::GetScope() const
+    {
+        return m_scope.get();
+    }
 
-        void ScopeProducer::SetHardwareQueueClass(HardwareQueueClass hardwareQueueClass)
-        {
-            m_scope->SetHardwareQueueClass(hardwareQueueClass);
-        }
+    int ScopeProducer::GetDeviceIndex() const
+    {
+        return m_deviceIndex;
+    }
 
-        // DEPRECATED: use InitScope instead
-        void ScopeProducer::SetScopeId(const ScopeId& scopeId)
-        {
-            InitScope(scopeId);
-        }
+    void ScopeProducer::SetHardwareQueueClass(HardwareQueueClass hardwareQueueClass)
+    {
+        m_scope->SetHardwareQueueClass(hardwareQueueClass);
+    }
 
-        void ScopeProducer::InitScope(const ScopeId& scopeId, HardwareQueueClass hardwareQueueClass)
-        {
-            m_scopeId = scopeId;
+    // DEPRECATED: use InitScope instead
+    void ScopeProducer::SetScopeId(const ScopeId& scopeId)
+    {
+        InitScope(scopeId);
+    }
+
+    void ScopeProducer::InitScope(const ScopeId& scopeId, HardwareQueueClass hardwareQueueClass, int deviceIndex)
+    {
+        m_scopeId = scopeId;
+        m_deviceIndex = deviceIndex;
             
-            if (m_scope->IsInitialized())
-            {
-                m_scope->Shutdown();
-            }
-            
-            m_scope->Init(scopeId, hardwareQueueClass);
+        if (m_scope->IsInitialized())
+        {
+            m_scope->Shutdown();
         }
+            
+        m_scope->Init(scopeId, hardwareQueueClass);
     }
 }

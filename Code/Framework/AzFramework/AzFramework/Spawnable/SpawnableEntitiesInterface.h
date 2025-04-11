@@ -170,7 +170,7 @@ namespace AzFramework
     public:
         friend class SpawnableEntitiesDefinition;
 
-        AZ_CLASS_ALLOCATOR(AzFramework::EntitySpawnTicket, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AzFramework::EntitySpawnTicket, AZ::SystemAllocator);
         AZ_TYPE_INFO(AzFramework::EntitySpawnTicket, "{BA62FF9A-A01E-4FEB-84C6-200881DF2B2B}");
         
         using Id = uint32_t;

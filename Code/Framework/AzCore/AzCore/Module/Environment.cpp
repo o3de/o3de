@@ -24,10 +24,9 @@ namespace AZ
         class OSStdAllocator
         {
         public:
-            using pointer_type = void *;
+            using pointer = void*;
             using size_type = AZStd::size_t;
             using difference_type = AZStd::ptrdiff_t;
-            using allow_memory_leaks = AZStd::false_type;         ///< Regular allocators should not leak.
 
             OSStdAllocator(Environment::AllocatorInterface* allocator)
                 : m_name("GlobalEnvironmentAllocator")
@@ -41,18 +40,18 @@ namespace AZ
             {
             }
 
-            pointer_type allocate(size_t byteSize, size_t alignment, int flags = 0)
+            pointer allocate(size_t byteSize, size_t alignment, int flags = 0)
             {
                 (void)flags;
                 return m_allocator->Allocate(byteSize, alignment);
             }
-            size_type resize(pointer_type ptr, size_type newSize)
+            size_type resize(pointer ptr, size_type newSize)
             {
                 (void)ptr;
                 (void)newSize;
                 return 0; // no resize
             }
-            void deallocate(pointer_type ptr, size_type byteSize, size_type alignment)
+            void deallocate(pointer ptr, size_type byteSize, size_type alignment)
             {
                 (void)byteSize;
                 (void)alignment;

@@ -11,7 +11,7 @@ o3de_pal_dir(editor_pal_dir ${CMAKE_CURRENT_LIST_DIR}/Editor/Platform/${PAL_PLAT
 set(editor_common_dir ${CMAKE_CURRENT_LIST_DIR}/Editor/Platform/Common)
 
 ly_add_target(
-    NAME EMotionFXStaticLib STATIC
+    NAME ${gem_name}StaticLib STATIC
     NAMESPACE Gem
     FILES_CMAKE
         emotionfx_shared_files.cmake
@@ -35,43 +35,54 @@ ly_add_target(
         PUBLIC
             AZ::AtomCore
             Gem::Atom_RPI.Public
-            Gem::AtomLyIntegration_CommonFeatures.Static
+            Gem::CommonFeaturesAtom.Static
             Gem::LmbrCentral
     COMPILE_DEFINITIONS
         PUBLIC
             EMFX_DEVELOPMENT_BUILD
+            EMFX_ANIMGRAPH_PROFILER_ENABLED
 )
 
 ly_add_target(
-    NAME EMotionFX.Static STATIC
+    NAME ${gem_name}.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
         emotionfx_files.cmake
     BUILD_DEPENDENCIES
         PUBLIC
-            Gem::EMotionFXStaticLib
+            Gem::${gem_name}StaticLib
 )
 
 ly_add_target(
-    NAME EMotionFX ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME ${gem_name} ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         Source/Integration/System/emotionfx_module_files.cmake
     BUILD_DEPENDENCIES
         PRIVATE
-            Gem::EMotionFX.Static
+            Gem::${gem_name}.Static
     RUNTIME_DEPENDENCIES
         Gem::LmbrCentral
 )
 
-# Clients and servers use the above EMotionFX module
-ly_create_alias(NAME EMotionFX.Clients NAMESPACE Gem TARGETS EMotionFX)
-ly_create_alias(NAME EMotionFX.Servers NAMESPACE Gem TARGETS EMotionFX)
+# Inject the gem name into the Module source file
+ly_add_source_properties(
+    SOURCES
+        Source/Integration/System/AnimationModule.cpp
+    PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_GEM_NAME=${gem_name}
+            O3DE_GEM_VERSION=${gem_version})
+
+# Clients and servers use the above ${gem_name} module
+ly_create_alias(NAME ${gem_name}.Clients NAMESPACE Gem TARGETS ${gem_name})
+ly_create_alias(NAME ${gem_name}.Servers NAMESPACE Gem TARGETS ${gem_name})
+ly_create_alias(NAME ${gem_name}.Unified NAMESPACE Gem TARGETS ${gem_name})
 
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
     
     ly_add_target(
-        NAME EMotionFX.Editor.Static STATIC
+        NAME ${gem_name}.Editor.Static STATIC
         NAMESPACE Gem
         AUTOMOC
         AUTORCC
@@ -94,7 +105,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 ${editor_pal_dir}
         BUILD_DEPENDENCIES
             PUBLIC
-                EMotionFXStaticLib
+                ${gem_name}StaticLib
                 3rdParty::Qt::OpenGL
                 3rdParty::Qt::Widgets
                 AZ::AssetBuilderSDK
@@ -115,7 +126,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
     )
 
     ly_add_target(
-        NAME EMotionFX.Editor GEM_MODULE
+        NAME ${gem_name}.Editor GEM_MODULE
 
         NAMESPACE Gem
         FILES_CMAKE
@@ -126,14 +137,14 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 EMotionFX/Pipeline
         BUILD_DEPENDENCIES
             PRIVATE
-                Gem::EMotionFX.Editor.Static
+                Gem::${gem_name}.Editor.Static
         RUNTIME_DEPENDENCIES
             Gem::LmbrCentral.Editor
     )
 
-    # builders and tools use the above EMotionFX.Editor module
-    ly_create_alias(NAME EMotionFX.Builders NAMESPACE Gem TARGETS EMotionFX.Editor)
-    ly_create_alias(NAME EMotionFX.Tools NAMESPACE Gem TARGETS EMotionFX.Editor)
+    # builders and tools use the above ${gem_name}.Editor module
+    ly_create_alias(NAME ${gem_name}.Builders NAMESPACE Gem TARGETS ${gem_name}.Editor)
+    ly_create_alias(NAME ${gem_name}.Tools NAMESPACE Gem TARGETS ${gem_name}.Editor)
 
 endif()
 
@@ -143,7 +154,7 @@ endif()
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
 
     ly_add_target(
-        NAME EMotionFX.Tests.Static STATIC
+        NAME ${gem_name}.Tests.Static STATIC
         NAMESPACE Gem
         FILES_CMAKE
             emotionfx_shared_tests_files.cmake
@@ -152,11 +163,11 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 Tests
         BUILD_DEPENDENCIES
             PRIVATE
-                Gem::EMotionFX.Static
+                Gem::${gem_name}.Static
     )
 
     ly_add_target(
-        NAME EMotionFX.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+        NAME ${gem_name}.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
         NAMESPACE Gem
         FILES_CMAKE
             emotionfx_tests_files.cmake
@@ -171,18 +182,19 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzTest
                 AZ::AzFramework
                 AZ::AzTestShared
-                Gem::EMotionFX.Static
-                Gem::EMotionFX.Tests.Static
+                Gem::${gem_name}.Static
+                Gem::${gem_name}.Tests.Static
     )
     ly_add_googletest(
-        NAME Gem::EMotionFX.Tests
+        NAME Gem::${gem_name}.Tests
+        LABELS REQUIRES_tiaf
     )
 
-    list(APPEND testTargets EMotionFX.Tests)
+    list(APPEND testTargets ${gem_name}.Tests)
 
     if (PAL_TRAIT_BUILD_HOST_TOOLS)
         ly_add_target(
-            NAME EMotionFX.Editor.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+            NAME ${gem_name}.Editor.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
             NAMESPACE Gem
             AUTOMOC
             FILES_CMAKE
@@ -202,14 +214,14 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     AZ::AzToolsFramework.Tests
                     3rdParty::Qt::Test
                     3rdParty::Qt::Concurrent
-                    Gem::EMotionFX.Editor.Static
-                    Gem::EMotionFX.Tests.Static
+                    Gem::${gem_name}.Editor.Static
         )
         ly_add_googletest(
-            NAME Gem::EMotionFX.Editor.Tests
+            NAME Gem::${gem_name}.Editor.Tests
+            LABELS REQUIRES_tiaf
         )
 
-        list(APPEND testTargets EMotionFX.Editor.Tests)
+        list(APPEND testTargets ${gem_name}.Editor.Tests)
     endif()
 
     ly_add_target_files(
@@ -223,7 +235,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             ${CMAKE_CURRENT_SOURCE_DIR}/Tests/TestAssets/EMotionFXBuilderTestAssets/MotionSetExample.motionset
             ${CMAKE_CURRENT_SOURCE_DIR}/Tests/TestAssets/EMotionFXBuilderTestAssets/MotionSetExampleNoDependency.motionset
         OUTPUT_SUBDIRECTORY
-            Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/EMotionFXBuilderTestAssets
+            Test.Assets/Gems/${gem_name}/Code/Tests/TestAssets/EMotionFXBuilderTestAssets
     )
     ly_add_target_files(
         TARGETS
@@ -259,7 +271,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             ${CMAKE_CURRENT_SOURCE_DIR}/Tests/TestAssets/Rin/rin_walk_turn_left.motion
             ${CMAKE_CURRENT_SOURCE_DIR}/Tests/TestAssets/Rin/rin_walk_turn_right.motion
         OUTPUT_SUBDIRECTORY
-            Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin
+            Test.Assets/Gems/${gem_name}/Code/Tests/TestAssets/Rin
     )
     ly_add_target_files(
         TARGETS
@@ -271,6 +283,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             ${CMAKE_CURRENT_SOURCE_DIR}/Tests/TestAssets/Pendulum/pendulum.motion
             ${CMAKE_CURRENT_SOURCE_DIR}/Tests/TestAssets/Pendulum/pendulum.motionset
         OUTPUT_SUBDIRECTORY
-            Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Pendulum
+            Test.Assets/Gems/${gem_name}/Code/Tests/TestAssets/Pendulum
     )
 endif()

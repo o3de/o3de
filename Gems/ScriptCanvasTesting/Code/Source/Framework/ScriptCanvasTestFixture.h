@@ -11,35 +11,30 @@
 #include <AzCore/Asset/AssetManagerComponent.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/IO/FileIO.h>
-#include <AzCore/Memory/MemoryComponent.h>
-#include <AzCore/Serialization/EditContext.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzTest/AzTest.h>
 
-#include <TestAutoGenFunctionRegistry.generated.h>
-#include <TestAutoGenNodeableRegistry.generated.h>
 #include <Nodes/BehaviorContextObjectTestNode.h>
 #include <Nodes/TestAutoGenFunctions.h>
+#include <ScriptCanvas/Components/EditorGraph.h>
 #include <ScriptCanvas/Core/Graph.h>
 #include <ScriptCanvas/Core/SlotConfigurationDefaults.h>
 #include <ScriptCanvas/ScriptCanvasGem.h>
 #include <ScriptCanvas/SystemComponent.h>
+#include <ScriptCanvas/Variable/GraphVariableManagerComponent.h>
 
 #include "EntityRefTests.h"
 #include "ScriptCanvasTestApplication.h"
 #include "ScriptCanvasTestBus.h"
 #include "ScriptCanvasTestNodes.h"
 #include "ScriptCanvasTestUtilities.h"
+#include <AutoGen/ScriptCanvasAutoGenRegistry.h>
 
 #define SC_EXPECT_DOUBLE_EQ(candidate, reference) EXPECT_NEAR(candidate, reference, 0.001)
 #define SC_EXPECT_FLOAT_EQ(candidate, reference) EXPECT_NEAR(candidate, reference, 0.001f)
-
-REGISTER_SCRIPTCANVAS_AUTOGEN_FUNCTION(ScriptCanvasTestingEditorStatic);
-REGISTER_SCRIPTCANVAS_AUTOGEN_NODEABLE(ScriptCanvasTestingEditorStatic);
 
 namespace ScriptCanvasTests
 {
@@ -57,8 +52,6 @@ namespace ScriptCanvasTests
 
         static void SetUpTestCase()
         {
-            s_allocatorSetup.SetupAllocator();
-
             s_asyncOperationActive = false;
 
             if (s_application == nullptr)
@@ -82,7 +75,7 @@ namespace ScriptCanvasTests
                     descriptor.m_modules.push_back(dynamicModuleDescriptor);
                     s_application->Start(descriptor, appStartup);
                     // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
-                    // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
+                    // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash
                     // in the unit tests.
                     AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
                     ScriptCanvasEditor::TraceSuppressionBus::Broadcast(&ScriptCanvasEditor::TraceSuppressionRequests::SuppressPrintf, false);
@@ -103,31 +96,44 @@ namespace ScriptCanvasTests
                 AZ::Test::AddActiveGem("ScriptEvents", *settingsRegistry, fileIO);
                 AZ::Test::AddActiveGem("ExpressionEvaluation", *settingsRegistry, fileIO);
             }
-            
+
             AZ::TickBus::AllowFunctionQueuing(true);
 
             auto m_serializeContext = s_application->GetSerializeContext();
             auto m_behaviorContext = s_application->GetBehaviorContext();
 
-            ScriptCanvasTesting::Reflect(m_serializeContext);
-            ScriptCanvasTesting::Reflect(m_behaviorContext);
-
-            ScriptCanvasTestingNodes::BehaviorContextObjectTest::Reflect(m_serializeContext);
-            ScriptCanvasTestingNodes::BehaviorContextObjectTest::Reflect(m_behaviorContext);
-
-            TestNodeableObject::Reflect(m_serializeContext);
-            TestNodeableObject::Reflect(m_behaviorContext);
-            ScriptUnitTestEventHandler::Reflect(m_serializeContext);
-            ScriptUnitTestEventHandler::Reflect(m_behaviorContext);
+            for (AZ::ReflectContext* context :
+                {static_cast<AZ::ReflectContext*>(m_serializeContext), static_cast<AZ::ReflectContext*>(m_behaviorContext)})
+            {
+                ScriptCanvasTesting::Reflect(context);
+                ScriptCanvasTestingNodes::BehaviorContextObjectTest::Reflect(context);
+                TestNodeableObject::Reflect(context);
+                TestBaseClass::Reflect(context);
+                TestSubClass::Reflect(context);
+                ScriptUnitTestEventHandler::Reflect(context);
+            }
         }
 
         static void TearDownTestCase()
         {
-            ScriptCanvas::AutoGenRegistryManager::GetInstance()->UnregisterRegistry("ScriptCanvasTestingEditorStaticFunctionRegistry");
-            ScriptCanvas::AutoGenRegistryManager::GetInstance()->UnregisterRegistry("ScriptCanvasTestingEditorStaticNodeableRegistry");
-
             // don't hang on to dangling assets
             AZ::Data::AssetManager::Instance().DispatchEvents();
+
+            auto m_serializeContext = s_application->GetSerializeContext();
+            auto m_behaviorContext = s_application->GetBehaviorContext();
+
+            for (AZ::ReflectContext* context :
+                {static_cast<AZ::ReflectContext*>(m_serializeContext), static_cast<AZ::ReflectContext*>(m_behaviorContext)})
+            {
+                context->EnableRemoveReflection();
+                ScriptCanvasTesting::Reflect(context);
+                ScriptCanvasTestingNodes::BehaviorContextObjectTest::Reflect(context);
+                TestNodeableObject::Reflect(context);
+                TestBaseClass::Reflect(context);
+                TestSubClass::Reflect(context);
+                ScriptUnitTestEventHandler::Reflect(context);
+                context->DisableRemoveReflection();
+            }
 
             if (s_application)
             {
@@ -135,8 +141,8 @@ namespace ScriptCanvasTests
                 delete s_application;
                 s_application = nullptr;
             }
-            
-            s_allocatorSetup.TeardownAllocator();
+
+            s_leakDetection.CheckAllocatorsForLeaks();
         }
 
         template<class T>
@@ -166,6 +172,9 @@ namespace ScriptCanvasTests
             m_stringToNumberMapType = ScriptCanvas::Data::Type::BehaviorContextObject(azrtti_typeid<AZStd::unordered_map<ScriptCanvas::Data::StringType, ScriptCanvas::Data::NumberType>>());
 
             m_dataSlotConfigurationType = ScriptCanvas::Data::Type::BehaviorContextObject(azrtti_typeid<ScriptCanvas::DataSlotConfiguration>());
+
+            m_baseClassType = ScriptCanvas::Data::Type::BehaviorContextObject(azrtti_typeid<TestBaseClass>());
+            m_subClassType = ScriptCanvas::Data::Type::BehaviorContextObject(azrtti_typeid<TestSubClass>());
         }
 
         void TearDown() override
@@ -178,6 +187,7 @@ namespace ScriptCanvasTests
             for (AZ::ComponentDescriptor* componentDescriptor : m_descriptors)
             {
                 GetApplication()->UnregisterComponentDescriptor(componentDescriptor);
+                delete componentDescriptor;
             }
 
             m_descriptors.clear();
@@ -185,13 +195,18 @@ namespace ScriptCanvasTests
 
         ScriptCanvas::Graph* CreateGraph()
         {
-            if (m_graph == nullptr)
-            {
-                m_graph = aznew ScriptCanvas::Graph();
-                m_graph->Init();
-            }
-
+            AZ_Assert(!m_graph, "Only one graph should be created per test.");
+            m_graph = aznew ScriptCanvas::Graph();
+            m_graph->Init();
             return m_graph;
+        }
+
+        ScriptCanvasEditor::EditorGraph* CreateEditorGraph()
+        {
+            AZ_Assert(!m_graph, "Only one graph should be created per test.");
+            m_graph = aznew ScriptCanvasEditor::EditorGraph();
+            m_graph->Init();
+            return static_cast<ScriptCanvasEditor::EditorGraph*>(m_graph);
         }
 
         TestNodes::ConfigurableUnitTestNode* CreateConfigurableNode(AZStd::string entityName = "ConfigurableNodeEntity")
@@ -199,12 +214,19 @@ namespace ScriptCanvasTests
             AZ::Entity* configurableNodeEntity = new AZ::Entity(entityName.c_str());
             auto configurableNode = configurableNodeEntity->CreateComponent<TestNodes::ConfigurableUnitTestNode>();
 
-            if (m_graph == nullptr)
+            AZ_Assert(m_graph, "A graph must be created before any nodes are created.");
+
+            if (!m_graph)
             {
-                CreateGraph();
+                return nullptr;
             }
 
+            ScriptCanvas::ScriptCanvasId scriptCanvasId = m_graph->GetScriptCanvasId();
+            configurableNodeEntity->CreateComponent<ScriptCanvas::GraphVariableManagerComponent>(scriptCanvasId);
+
             configurableNodeEntity->Init();
+
+            m_graph->Activate();
 
             m_graph->AddNode(configurableNodeEntity->GetId());
 
@@ -239,6 +261,70 @@ namespace ScriptCanvasTests
 
             EXPECT_EQ(m_graph->CanCreateConnectionBetween(sourceEndpoint, targetEndpoint).IsSuccess(), isValid);
             EXPECT_EQ(m_graph->CanCreateConnectionBetween(targetEndpoint, sourceEndpoint).IsSuccess(), isValid);
+        }
+
+        // Test if there is an existing connection between the provided endpoints
+        void TestIsConnectionBetween(const ScriptCanvas::Endpoint& sourceEndpoint, const ScriptCanvas::Endpoint& targetEndpoint, bool isValid = true)
+        {
+            AZ::Entity* ent;
+
+            EXPECT_EQ(m_graph->FindConnection(ent, sourceEndpoint, targetEndpoint), isValid);
+        }
+
+        // Tests implicit connections between nodes by connecting and disconnecting every data source and data slot while checking to make
+        // sure that a connection is maintained between the source and target execution slots as long as at least one set of source and target
+        // data slots are connected, and that no other execution out slots are connected to the target execution slot
+        void TestAllImplicitConnections(
+            ScriptCanvasEditor::EditorGraph* editorGraph,
+            AZStd::vector<ScriptCanvas::Endpoint> sourceDataSlots,
+            AZStd::vector<ScriptCanvas::Endpoint> targetDataSlots,
+            ScriptCanvas::Endpoint sourceExecSlot,
+            ScriptCanvas::Endpoint targetExecSlot,
+            AZStd::vector<ScriptCanvas::Endpoint> allExecutionOutSlots)
+        {
+            // Connect all of the data slots
+            for (auto sourceDataSlot : sourceDataSlots)
+            {
+                for (auto targetDataSlot : targetDataSlots)
+                {
+                    TestConnectionBetween(sourceDataSlot, targetDataSlot, true);
+                    editorGraph->UpdateCorrespondingImplicitConnection(sourceDataSlot, targetDataSlot);
+
+                    // Ensure the implicit connection exists
+                    TestIsConnectionBetween(sourceExecSlot, targetExecSlot, true);
+                    for (auto otherExecSlot : allExecutionOutSlots)
+                    {
+                        if (otherExecSlot.GetSlotId() != sourceExecSlot.GetSlotId())
+                        {
+                            // Ensure that no implicit connections exist between any of the other execution out slots and the target
+                            // execution slot
+                            TestIsConnectionBetween(otherExecSlot, targetExecSlot, false);
+                        }
+                    }
+                }
+            }
+            // Disconnect all of the data slots
+            for (int i = 0; i < sourceDataSlots.size(); i++)
+            {
+                for (int j = 0; j < targetDataSlots.size(); j++)
+                {
+                    editorGraph->DisconnectByEndpoint(sourceDataSlots[i], targetDataSlots[j]);
+                    editorGraph->UpdateCorrespondingImplicitConnection(sourceDataSlots[i], targetDataSlots[j]);
+
+                    // Ensure the implicit connection exists only if this is not the last data connection. If it is, then ensure that
+                    // no implicit connection exists
+                    TestIsConnectionBetween(sourceExecSlot, targetExecSlot, (i < sourceDataSlots.size() - 1 || j < targetDataSlots.size() - 1));
+                    for (auto otherExecSlot : allExecutionOutSlots)
+                    {
+                        if (otherExecSlot.GetSlotId() != sourceExecSlot.GetSlotId())
+                        {
+                            // Ensure that no implicit connections exist between any of the other execution out slots and the target
+                            // execution slot
+                            TestIsConnectionBetween(otherExecSlot, targetExecSlot, false);
+                        }
+                    }
+                }
+            }
         }
 
         void CreateExecutionFlowBetween(AZStd::vector<TestNodes::ConfigurableUnitTestNode*> unitTestNodes)
@@ -398,21 +484,22 @@ namespace ScriptCanvasTests
 
         ScriptCanvas::Data::Type m_dataSlotConfigurationType;
 
+        ScriptCanvas::Data::Type m_baseClassType;
+        ScriptCanvas::Data::Type m_subClassType;
+
         ScriptCanvas::Graph* m_graph = nullptr;
 
         int m_slotCounter = 0;
 
-        AZStd::unordered_map< AZ::EntityId, AZ::Entity* > m_entityMap;
-
     protected:
         static ScriptCanvasTests::Application* GetApplication() { return s_application; }
-        
+
     private:
 
-        static UnitTest::AllocatorsBase s_allocatorSetup;
         static bool s_setupSucceeded;
+        static inline UnitTest::LeakDetectionBase s_leakDetection{};
 
         AZStd::unordered_set< AZ::ComponentDescriptor* > m_descriptors;
-        
+
     };
 }

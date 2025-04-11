@@ -24,8 +24,8 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeLookAtNode, AnimGraphAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeLookAtNode::UniqueData, AnimGraphObjectUniqueDataAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeLookAtNode, AnimGraphAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeLookAtNode::UniqueData, AnimGraphObjectUniqueDataAllocator)
 
     BlendTreeLookAtNode::UniqueData::UniqueData(AnimGraphNode* node, AnimGraphInstance* animGraphInstance)
         : AnimGraphNodeData(node, animGraphInstance)
@@ -423,7 +423,7 @@ namespace EMotionFX
         root->ClassElement(AZ::Edit::ClassElements::EditorData, "")
             ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
             ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-            ->DataElement(AZ_CRC("ActorNode", 0x35d9eb50), &BlendTreeLookAtNode::m_targetNodeName, "Node", "The node to apply the lookat to. For example the head.")
+            ->DataElement(AZ_CRC_CE("ActorNode"), &BlendTreeLookAtNode::m_targetNodeName, "Node", "The node to apply the lookat to. For example the head.")
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeLookAtNode::Reinit)
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
             ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeLookAtNode::m_postRotation, "Post rotation", "The relative rotation applied after solving.");

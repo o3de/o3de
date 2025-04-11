@@ -1,0 +1,65 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+#include <Atom/Features/Pipeline/Forward/ForwardPassOutput.azsli>
+#include <Atom/Features/PostProcessing/Tonemap.azsli>
+#include <Atom/Features/ColorManagement/TransformColor.azsli>
+
+// --- Vertex Shader ---
+VsOutput VertexShader(VsInput IN, uint instanceId : SV_InstanceID)
+{
+    VsSystemValues SV;
+    SV.m_instanceId = instanceId;
+    VsOutput OUT = EvaluateVertexGeometry(IN, SV);
+    return OUT;
+}
+
+// --- Pixel Shader ---
+
+#if FORCE_EARLY_DEPTH_STENCIL
+    [earlydepthstencil]
+#endif
+ForwardPassOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
+{
+    // ------- Geometry -> Surface -> Lighting -------
+
+    PixelGeometryData geoData = EvaluatePixelGeometry(IN, isFrontFace);
+
+    Surface surface = EvaluateSurface(IN, geoData);
+
+    LightingData lightingData = EvaluateLighting(surface, IN.position, ViewSrg::m_worldPosition.xyz);
+
+    // ------- Output -------
+
+    ForwardPassOutput OUT;
+
+    real3 color = lightingData.diffuseLighting.rgb + lightingData.specularLighting.rgb + lightingData.emissiveLighting.rgb;
+
+#if ENABLE_MERGE_FILMIC_TONEMAP
+    // Apply manual exposure compensation
+    color = ApplyManualExposure(color, real(ViewSrg::GetExposureValueCompensation()));
+    
+    //Convert to linearsrg space as we are in acescg space and we will not be applying aces tonemap
+    color = AcesCg_To_LinearSrgb(color);
+
+    // We could add other forms of tonemapping in future via shader options.
+    color = TonemapFilmic(color);
+#endif
+
+    OUT.m_color.rgb = color;
+    OUT.m_color.a = 1.0;
+
+#if OUTPUT_DEPTH
+    OUT.m_depth = IN.position.z;
+#endif
+
+    return OUT;
+}
+

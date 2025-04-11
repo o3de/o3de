@@ -1,0 +1,174 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#pragma once
+
+// Disable specular AA as ddx_fine and ddy_fine functions are not supported in ray tracing shader
+#define ENABLE_SPECULARAA 0
+
+#include "ReflectionScreenSpaceRayTracingCommon.azsli"
+#include <Atom/RPI/Assets/ShaderLib/Atom/RPI/TangentSpace.azsli>
+#include <Atom/Features/PBR/Microfacet/Fresnel.azsli>
+
+void ScreenSpaceClosestHitImpl(inout PayloadData payload, VertexData vertexData, float3x4 worldInvTranspose)
+{
+    payload.m_hitT = RayTCurrent();
+
+    float3 positionWS = mul(ObjectToWorld3x4(), float4(vertexData.m_position, 1.0f));
+
+    uint2 dimensions = DispatchRaysDimensions().xy;
+    float4 hitCoords = mul(ViewSrg::m_viewProjectionMatrix, float4(positionWS, 1.0f));
+    hitCoords /= hitCoords.w;
+
+    // determine if hit position is off-screen
+    bool offScreen = any(float4(hitCoords.x < -1.0f, hitCoords.x > 1.0f, hitCoords.y < -1.0f, hitCoords.y > 1.0f));
+
+    // determine if hit position is behind the camera
+    float3 cameraToHit = normalize(positionWS - ViewSrg::m_worldPosition);
+    bool behindCamera = dot(cameraToHit, -ViewSrg::m_viewMatrix[2].xyz) <= 0.0f;
+
+    payload.m_offScreen = offScreen || behindCamera || IsRayTracingOverrideEnabled();
+    if (payload.m_offScreen && !IsRayTracingFallbackEnabled())
+    {
+        // the hit is offscreen and we're not raytracing fallback data, report this as a miss
+        payload.m_hitT = -1.0f;
+        return;
+    }
+
+    // convert hitCoords to screen space
+    hitCoords.y = -hitCoords.y;
+    hitCoords.xy = (hitCoords.xy * 0.5f + 0.5f) * dimensions;
+
+    // retrieve Material data for the hit
+    RayTracingMaterialSrg::MaterialInfo materialInfo = RayTracingMaterialSrg::m_materialInfo[NonUniformResourceIndex(InstanceIndex())];
+    TextureData textureData = GetHitTextureData(materialInfo, vertexData.m_uv);      
+    
+    float3 vertexNormalWS = normalize(mul(worldInvTranspose, float4(vertexData.m_normal, 0)).xyz);
+
+    float3 normalWS = float3(0.0f, 0.0f, 0.0f);    
+    if (materialInfo.m_textureFlags & TEXTURE_FLAG_NORMAL)
+    {           
+        float3x4 world34 = ObjectToWorld3x4();
+        float4x4 world44;
+        world44[0] = world34[0];
+        world44[1] = world34[1];
+        world44[2] = world34[2];
+        world44[3] = float4(0.0f, 0.0f, 0.0f, 1.0f);
+        
+        float3 tangentWS = float3(0.0f, 0.0f, 0.0f);
+        float3 bitangentWS = float3(0.0f, 0.0f, 0.0f);            
+        ConstructTBN(real3(vertexData.m_normal), 
+                     real4(vertexData.m_tangent), 
+                     world44, 
+                     (float3x3)worldInvTranspose,
+                     normalWS, 
+                     tangentWS, 
+                     bitangentWS);
+            
+        normalWS = GetWorldSpaceNormal(textureData.m_normal.xy, normalWS, tangentWS, bitangentWS);
+    }
+    else
+    {
+        normalWS = vertexNormalWS;
+    }
+  
+    float3 hitToCamera = ViewSrg::m_worldPosition.xyz - positionWS;
+    float distanceToCamera = length(hitToCamera);
+    hitToCamera = normalize(hitToCamera);
+
+    if (!payload.m_offScreen)
+    {
+        // secondary raycast back to the camera position, this will determine if there is data available on-screen
+        RayDesc secondaryRay;
+        secondaryRay.Origin = positionWS + (hitToCamera * 0.1f);
+        secondaryRay.Direction = hitToCamera;
+        secondaryRay.TMin = 0.0f;
+        secondaryRay.TMax = distanceToCamera;
+        
+        PayloadData secondaryPayload = (PayloadData)0;
+        secondaryPayload.m_cameraTrace = true;
+        TraceRay(
+            RayTracingSceneSrg::m_scene,
+            RAY_FLAG_SKIP_CLOSEST_HIT_SHADER,
+            0xFF,
+            0,
+            1,
+            0,
+            secondaryRay,
+            secondaryPayload);
+
+        payload.m_obstructed = (secondaryPayload.m_hitT >= 0.0f);
+    }
+
+    if (payload.m_obstructed && !IsRayTracingFallbackEnabled())
+    {
+        // the hit is obstructed and we're not raytracing fallback data, report this as a miss
+        payload.m_hitT = -1.0f;
+        return;
+    }
+
+    if (payload.m_obstructed || payload.m_offScreen)
+    {
+        // store the fallback data for this hit
+        float NdotV = saturate(dot(normalWS, hitToCamera));
+        float3 albedo = GetAlbedo(textureData.m_baseColor.rgb, textureData.m_metallic);
+        float3 specularF0 = CalculateSpecularF0(textureData.m_baseColor.rgb, textureData.m_metallic, 1.0f);
+
+        float roughnessLinear = textureData.m_roughness;
+        float roughnessA, roughnessA2;
+        CalculateRoughnessValues(normalWS, roughnessLinear, roughnessA, roughnessA2);
+
+        RayTracingLightingData rayTracingLightingData;
+        rayTracingLightingData.m_albedo = albedo;
+        rayTracingLightingData.m_specularF0 = specularF0;
+        rayTracingLightingData.m_diffuseResponse = 1.0f - FresnelSchlickWithRoughness(NdotV, rayTracingLightingData.m_specularF0, textureData.m_roughness);
+        rayTracingLightingData.m_worldPosition = positionWS;
+        rayTracingLightingData.m_normal = normalWS;
+        rayTracingLightingData.m_vertexNormal = vertexNormalWS;
+        rayTracingLightingData.m_roughnessA2 = roughnessA2;
+        rayTracingLightingData.m_dirToCamera = hitToCamera;
+        rayTracingLightingData.m_NdotV = NdotV;
+        rayTracingLightingData.m_normalBias = 0.001f;
+        rayTracingLightingData.m_viewBias = 0.0f;
+        rayTracingLightingData.m_scene = RayTracingSceneSrg::m_scene;
+
+        float3 diffuse = float3(0.0f, 0.0f, 0.0f);
+        float3 specular = float3(0.0f, 0.0f, 0.0f);
+        ApplyDirectLighting(rayTracingLightingData, RayTracingGlobalSrg::m_rayTraceFallbackSpecular, diffuse, specular);
+
+        // apply diffuse IBL
+        float sceneIblExposure = pow(2.0, SceneSrg::m_iblExposure);
+        float3 irradianceDir = MultiplyVectorQuaternion(rayTracingLightingData.m_normal, SceneSrg::m_iblOrientation);
+        float3 diffuseSample = SceneSrg::m_diffuseEnvMap.SampleLevel(SceneSrg::m_samplerEnv, GetCubemapCoords(irradianceDir), 0).rgb;
+        diffuse += diffuseSample * rayTracingLightingData.m_albedo * rayTracingLightingData.m_diffuseResponse * sceneIblExposure;
+
+        // apply specular IBL
+        float2 brdfUV = float2(NdotV, (1.0f - roughnessLinear));
+        float2 brdf = RayTracingGlobalSrg::m_brdfMap.SampleLevel(SceneSrg::m_samplerEnv, brdfUV, 0).rg;
+
+        TextureCube reflectionProbeCubeMap = Bindless::GetTextureCube(materialInfo.m_reflectionProbeCubeMapIndex);
+        float3 iblSpecular = GetIblSpecular(positionWS, normalWS, specularF0, roughnessLinear, rayTracingLightingData.m_dirToCamera, brdf, materialInfo.m_reflectionProbeData, reflectionProbeCubeMap);
+
+        float exposure = materialInfo.m_reflectionProbeData.m_useReflectionProbe ? pow(2.0, materialInfo.m_reflectionProbeData.m_exposure) : sceneIblExposure;
+        specular += iblSpecular * exposure;         
+
+        // compute emissive
+        float3 emissive = textureData.m_emissiveColor * albedo;
+
+        // set fallback outputs
+        payload.m_fallbackColor = diffuse + specular + emissive;
+        payload.m_fallbackAlbedo = albedo;
+        payload.m_fallbackPosition = positionWS;
+        payload.m_fallbackNormal = normalWS;
+        payload.m_opacity = materialInfo.m_irradianceColor.a;
+    }
+}

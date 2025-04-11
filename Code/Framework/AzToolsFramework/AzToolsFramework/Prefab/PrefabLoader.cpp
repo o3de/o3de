@@ -595,27 +595,42 @@ namespace AzToolsFramework
             // Prefabs are stored to disk with default values stripped. However, while in memory, we need those default values to be
             // present to make patches work consistently. To accomplish this, we'll instantiate the Dom, then serialize the instance
             // back into a Dom with all of the default values preserved.
-            // Note that this is the default behavior in Prefab serialization, so we don't need to specify StoreInstanceFlags.
+            // Note that this is the default behavior in Prefab serialization, so we don't need to specify any StoreInstanceFlags
+            // except StripLinkIds that is needed to remove link ids from template DOM.
 
             if (!loadedTemplateDom)
             {
                 return false;
             }
 
+            PrefabDom& loadedTemplateDomRef = loadedTemplateDom->get();
+
+            // first, check and fix prefabs which could be previously stored with invalid entities' parents (GHI #11500)
+            PrefabDomUtils::SubstituteInvalidParentsInEntities(loadedTemplateDomRef);
+
+            // second, decode the template DOM into actual Instance data.  This will actually create real
+            // C++ classes for the instances in the template DOM and fill their member properties with the
+            // properties from the DOM.
             Instance loadedPrefabInstance;
-            if (!PrefabDomUtils::LoadInstanceFromPrefabDom(loadedPrefabInstance, loadedTemplateDom->get(),
+            if (!PrefabDomUtils::LoadInstanceFromPrefabDom(loadedPrefabInstance, loadedTemplateDomRef,
                 PrefabDomUtils::LoadFlags::ReportDeprecatedComponents))
             {
                 return false;
             }
 
-            PrefabDom storedPrefabDom(&loadedTemplateDom->get().GetAllocator());
-            if (!PrefabDomUtils::StoreInstanceInPrefabDom(loadedPrefabInstance, storedPrefabDom))
+            // To avoid having double the memory allocated at any given time, first empty the original:
+            loadedTemplateDomRef = PrefabDom(); // this will deallocate all the memory previously held.
+
+            // Now that the Instance has been created, convert it back into a Prefab DOM.  Because we
+            // don't specify to skip default fields in the call to StoreInstanceInPrefabDom,
+            // this new DOM will have all fields from all classes.
+            if (!PrefabDomUtils::StoreInstanceInPrefabDom(loadedPrefabInstance, loadedTemplateDomRef))
             {
                 return false;
             }
 
-            loadedTemplateDom->get().CopyFrom(storedPrefabDom, loadedTemplateDom->get().GetAllocator());
+            // Remove 'LinkId' from the top level template DOM as only nested template DOMs should have 'LinkId' in them.
+            loadedTemplateDomRef.RemoveMember(PrefabDomUtils::LinkIdName);
             return true;
         }
 
@@ -973,7 +988,7 @@ namespace AzToolsFramework
                 else
                 {
                     // If a relative path was passed in, just return it.
-                    finalPath = path;
+                    finalPath = AZ::IO::Path(path.Native(), '/');
                 }
             }
 

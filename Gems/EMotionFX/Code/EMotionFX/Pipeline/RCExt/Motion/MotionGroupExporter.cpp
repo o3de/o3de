@@ -52,8 +52,22 @@ namespace EMotionFX
                 return SceneEvents::ProcessingResult::Ignored;
             }
 
+            // If we wanted to preserve the input file's extension as a part of the product asset name, we would pass
+            // context.m_scene.GetSourceExtension() here instead of emptySourceExtension. We aren't currently doing that for
+            // EmotionFX files (.actor, .motion) because source assets (.motionset, .emfxworkspace) can have references to
+            // existing product asset file names. Those names would need to get fixed up to contain the extension to preserve backwards
+            // compatibility.
+            // For example, 'walk.fbx' will produce 'walk.motion' here. If we pass in GetSourceExtension(), it would
+            // produce 'walk.fbx.motion'. The reason to want the latter is so that multiple input files that vary by extension only
+            // would produce different outputs (ex: 'walk.fbx' -> 'walk.fbx.motion', 'walk.obj' -> 'walk.obj.motion').
+            // If this is ever desired, the source asset input serialization would need to be modified to correctly change the
+            // assetId field that's stored in the source assets, and the version number on those files should be incremented.
+            const AZStd::string emptySourceExtension;
+
             const AZStd::string& groupName = context.m_group.GetName();
-            AZStd::string filename = SceneUtil::FileUtilities::CreateOutputFileName(groupName, context.m_outputDirectory, s_fileExtension);
+            AZStd::string filename = SceneUtil::FileUtilities::CreateOutputFileName(
+                groupName, context.m_outputDirectory, s_fileExtension, emptySourceExtension);
+
             if (filename.empty() || !SceneUtil::FileUtilities::EnsureTargetFolderExists(filename))
             {
                 return SceneEvents::ProcessingResult::Failure;

@@ -24,30 +24,25 @@ namespace O3DE::ProjectManager
     namespace ProjectUtils
     {
         class ProjectManagerUtilsTests
-            : public ::UnitTest::ScopedAllocatorSetupFixture
+            : public ::UnitTest::LeakDetectionFixture
         {
         public:
-            static inline QString ReplaceFirstAWithB(const QString& originalString)
-            {
-                QString bString(originalString);
-                return bString.replace(bString.indexOf('A'), 1, 'B');
-            }
 
             ProjectManagerUtilsTests()
             {
-                m_projectAPath = "ProjectA";
+                m_projectAPath = QDir(m_testFolder.GetDirectory()).path() + QDir::separator() + "ProjectA";
+                m_projectBPath = QDir(m_testFolder.GetDirectory()).path() + QDir::separator() + "ProjectB";
 
                 // Replaces first 'A' with 'B'
-                m_projectBPath = ReplaceFirstAWithB(m_projectAPath);
                 m_projectABuildPath = QString("%1%2%3").arg(m_projectAPath, QDir::separator(), ProjectBuildDirectoryName);
-                m_projectBBuildPath = ReplaceFirstAWithB(m_projectABuildPath);
+                m_projectBBuildPath = QString("%1%2%3").arg(m_projectBPath, QDir::separator(), ProjectBuildDirectoryName);
 
                 QDir dir;
                 dir.mkpath(m_projectABuildPath);
                 dir.mkdir(m_projectBPath);
 
                 m_projectAOrigFilePath = QString("%1%2%3").arg(m_projectAPath, QDir::separator(), "origFile.txt");
-                m_projectBOrigFilePath = ReplaceFirstAWithB(m_projectAOrigFilePath);
+                m_projectBOrigFilePath = QString("%1%2%3").arg(m_projectBPath, QDir::separator(), "origFile.txt");
                 QFile origFile(m_projectAOrigFilePath);
                 if (origFile.open(QIODevice::ReadWrite))
                 {
@@ -57,7 +52,7 @@ namespace O3DE::ProjectManager
                 }
 
                 m_projectAReplaceFilePath = QString("%1%2%3").arg(m_projectAPath, QDir::separator(), "replaceFile.txt");
-                m_projectBReplaceFilePath = ReplaceFirstAWithB(m_projectAReplaceFilePath);
+                m_projectBReplaceFilePath = QString("%1%2%3").arg(m_projectBPath, QDir::separator(), "replaceFile.txt");
                 QFile replaceFile(m_projectAReplaceFilePath);
                 if (replaceFile.open(QIODevice::ReadWrite))
                 {
@@ -67,7 +62,7 @@ namespace O3DE::ProjectManager
                 }
 
                 m_projectABuildFilePath = QString("%1%2%3").arg(m_projectABuildPath, QDir::separator(), "build.obj");
-                m_projectBBuildFilePath = ReplaceFirstAWithB(m_projectABuildFilePath);
+                m_projectBBuildFilePath = QString("%1%2%3").arg(m_projectBBuildPath, QDir::separator(), "build.obj");
                 QFile buildFile(m_projectABuildFilePath);
                 if (buildFile.open(QIODevice::ReadWrite))
                 {
@@ -96,6 +91,7 @@ namespace O3DE::ProjectManager
             QString m_projectBReplaceFilePath;
             QString m_projectBBuildPath;
             QString m_projectBBuildFilePath;
+            AZ::Test::ScopedAutoTempDirectory m_testFolder;
 
         };
 
@@ -106,8 +102,8 @@ namespace O3DE::ProjectManager
 #endif // !AZ_TRAIT_DISABLE_FAILED_PROJECT_MANAGER_TESTS
         {
             EXPECT_TRUE(MoveProject(
-                QDir::currentPath() + QDir::separator() + m_projectAPath,
-                QDir::currentPath() + QDir::separator() + m_projectBPath, nullptr,
+                m_projectAPath,
+                m_projectBPath, nullptr,
                 true, /*displayProgress=*/ false));
 
             QFileInfo origFile(m_projectAOrigFilePath);
@@ -130,8 +126,8 @@ namespace O3DE::ProjectManager
 #endif // !AZ_TRAIT_DISABLE_FAILED_PROJECT_MANAGER_TESTS
         {
             EXPECT_TRUE(MoveProject(
-                QDir::currentPath() + QDir::separator() + m_projectAPath,
-                QDir::currentPath() + QDir::separator() + m_projectBPath, nullptr,
+                m_projectAPath,
+                m_projectBPath, nullptr,
                 true, /*displayProgress=*/ false));
 
             QFileInfo origFile(m_projectAOrigFilePath);
@@ -151,8 +147,8 @@ namespace O3DE::ProjectManager
 #endif // !AZ_TRAIT_DISABLE_FAILED_PROJECT_MANAGER_TESTS
         {
             EXPECT_TRUE(CopyProject(
-                QDir::currentPath() + QDir::separator() + m_projectAPath,
-                QDir::currentPath() + QDir::separator() + m_projectBPath, nullptr,
+                m_projectAPath,
+                m_projectBPath, nullptr,
                 true, /*displayProgress=*/ false));
 
             QFileInfo origFile(m_projectAOrigFilePath);
@@ -175,8 +171,8 @@ namespace O3DE::ProjectManager
 #endif // !AZ_TRAIT_DISABLE_FAILED_PROJECT_MANAGER_TESTS
         {
             EXPECT_TRUE(CopyProject(
-                QDir::currentPath() + QDir::separator() + m_projectAPath,
-                QDir::currentPath() + QDir::separator() + m_projectBPath, nullptr,
+                m_projectAPath,
+                m_projectBPath, nullptr,
                 true, /*displayProgress=*/ false));
 
             QFileInfo origFile(m_projectAOrigFilePath);

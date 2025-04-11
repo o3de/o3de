@@ -61,6 +61,9 @@ namespace AzToolsFramework
             //! Note that what is being returned is a pointer to the actual entry in the actual Asset Browser tree,
             //! it is not deserializing or creating a new one.
             const AssetBrowserEntry* FindFromString(AZStd::string_view data);
+
+            //! This function returns the folder in which given asset is located or the entry itself if it's already a folder
+            const AssetBrowserEntry* FolderForEntry(const AssetBrowserEntry* entry);
         } 
     }
 }

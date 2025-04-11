@@ -14,8 +14,8 @@
 // by the inner probe volume so there is no blending.  Note that this shader only considers 
 // pixels stenciled to the inner volume.
 
-#include <scenesrg.srgi>
-#include <viewsrg.srgi>
+#include <scenesrg_all.srgi>
+#include <viewsrg_all.srgi>
 
 #include "ReflectionProbeRenderObjectSrg.azsli"
 
@@ -71,7 +71,11 @@ PSOutput MainPS(VSOutput IN, in uint sampleIndex : SV_SampleIndex)
 {
     // reconstruct world space position from the depth at this location in screenspace
     // Note: this is the world position of the rendered object covered by the probe volume, not the volume itself
-    float3 positionWS = ReconstructWorldPositionFromDepth(IN.m_position.xy, sampleIndex).xyz;
+    uint2 dimensions;
+    uint samples;
+    PassSrg::m_depth.GetDimensions(dimensions.x, dimensions.y, samples);
+    float depth = PassSrg::m_depth.Load(IN.m_position.xy, sampleIndex).r;
+    float3 positionWS = ReconstructWorldPositionFromDepth(IN.m_position.xy, depth, dimensions, sampleIndex).xyz;
 
     // compute specular using the probe cubemap and the roughness, normals, and specularF0 for the surface
     float3 specular = float3(0.0f, 0.0f, 0.0f);

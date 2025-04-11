@@ -30,6 +30,7 @@ namespace AzQtComponents
         ToastConfiguration(ToastType toastType, const QString& title, const QString& description);
 
         bool m_closeOnClick = true;
+        bool m_allowDuplicateNotifications = false;
 
         ToastType m_toastType = ToastType::Information;
 

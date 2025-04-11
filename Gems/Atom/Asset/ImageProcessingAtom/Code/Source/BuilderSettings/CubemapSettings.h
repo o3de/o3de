@@ -20,7 +20,7 @@ namespace ImageProcessingAtom
     struct CubemapSettings
     {
         AZ_TYPE_INFO(CubemapSettings, "{A4046BCB-E42E-4C77-AF77-1A1AD9B7CC64}");
-        AZ_CLASS_ALLOCATOR(CubemapSettings, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CubemapSettings, AZ::SystemAllocator);
         bool operator!=(const CubemapSettings& other);
         bool operator==(const CubemapSettings& other);
         static void Reflect(AZ::ReflectContext* context);

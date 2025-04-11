@@ -10,6 +10,8 @@
 
 namespace GraphCanvas
 {
+    // Add implementation of PersistentIdComponent SaveData RTTI functions
+    AZ_RTTI_NO_TYPE_INFO_IMPL(PersistentIdComponentSaveData, SceneMemberComponentSaveData<PersistentIdComponentSaveData>);
     //////////////////////////
     // PersistentIdComponent
     //////////////////////////

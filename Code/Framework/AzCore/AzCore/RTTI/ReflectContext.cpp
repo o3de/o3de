@@ -12,8 +12,32 @@
 #include <AzCore/std/functional.h>
 #include <AzCore/std/string/string.h>
 
+namespace AZ::Internal
+{
+    AttributeDeleter::AttributeDeleter() = default;
+    AttributeDeleter::AttributeDeleter(bool deletePtr)
+        : m_deletePtr(deletePtr)
+    {}
+
+    void AttributeDeleter::operator()(AZ::Attribute* attribute)
+    {
+        if (m_deletePtr)
+        {
+            delete attribute;
+        }
+    }
+}
+
 namespace AZ
 {
+    // Add implementations of TypeInfo and rtti functions for ReflectContext
+    // Attribute
+    AZ_TYPE_INFO_WITH_NAME_IMPL(ReflectContext, "ReflectContext", "{B18D903B-7FAD-4A53-918A-3967B3198224}");
+    AZ_RTTI_NO_TYPE_INFO_IMPL(ReflectContext);
+
+    AZ_TYPE_INFO_WITH_NAME_IMPL(Attribute, "Attribute", "{2C656E00-12B0-476E-9225-5835B92209CC}");
+    AZ_RTTI_NO_TYPE_INFO_IMPL(Attribute);
+
     const AZ::Name Attribute::s_typeField = AZ::Name::FromStringLiteral("$type", AZ::Interface<AZ::NameDictionary>::Get());
     const AZ::Name Attribute::s_instanceField = AZ::Name::FromStringLiteral("instance", AZ::Interface<AZ::NameDictionary>::Get());
     const AZ::Name Attribute::s_attributeField = AZ::Name::FromStringLiteral("attribute", AZ::Interface<AZ::NameDictionary>::Get());
@@ -139,4 +163,7 @@ namespace AZ
             m_currentlyProcessingTypeIds.pop_back();
         }
     }
+
+    template class AttributeData<Crc32>;
+
 }

@@ -15,6 +15,16 @@ namespace AZ::Utils
         return {};
     }
 
+    GetEnvOutcome GetEnv(AZStd::span<char>, const char*)
+    {
+        return AZ::Failure(GetEnvErrorResult{ GetEnvErrorCode::NotImplemented });
+    }
+
+    bool IsEnvSet(const char*)
+    {
+        return false;
+    }
+
     bool SetEnv([[maybe_unused]] const char* envname, [[maybe_unused]] const char* envvalue, [[maybe_unused]] bool overwrite)
     {
         return false;

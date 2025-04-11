@@ -10,13 +10,14 @@
 
 #include <AtomToolsFramework/AssetBrowser/AtomToolsAssetBrowser.h>
 #include <AtomToolsFramework/DynamicProperty/DynamicPropertyGroup.h>
+#include <AtomToolsFramework/SettingsDialog/SettingsDialog.h>
 #include <AtomToolsFramework/Window/AtomToolsMainWindowRequestBus.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzQtComponents/Components/DockMainWindow.h>
 #include <AzQtComponents/Components/FancyDocking.h>
 #include <AzQtComponents/Components/StyledDockWidget.h>
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
-#include <AzToolsFramework/UI/Logging/TracePrintFLogPanel.h>
+#include <AzToolsFramework/UI/Logging/StyledTracePrintFLogPanel.h>
 
 #include <QLabel>
 #include <QTimer>
@@ -43,19 +44,20 @@ namespace AtomToolsFramework
         AZStd::vector<AZStd::string> GetDockWidgetNames() const override;
         void QueueUpdateMenus(bool rebuildMenus) override;
 
+        void SetStatusMessage(const AZStd::string& message) override;
+        void SetStatusWarning(const AZStd::string& message) override;
+        void SetStatusError(const AZStd::string& message) override;
+
         // AtomToolsMainMenuRequestBus::Handler overrides...
         void CreateMenus(QMenuBar* menuBar) override;
         void UpdateMenus(QMenuBar* menuBar) override;
 
-        void SetStatusMessage(const QString& message);
-        void SetStatusWarning(const QString& message);
-        void SetStatusError(const QString& message);
-
-        virtual AZStd::vector<AZStd::shared_ptr<DynamicPropertyGroup>> GetSettingsDialogGroups() const;
+        virtual void PopulateSettingsInspector(InspectorWidget* inspector) const;
         virtual void OpenSettingsDialog();
+        virtual void OnSettingsDialogClosed();
 
-        virtual AZStd::string GetHelpDialogText() const;
-        virtual void OpenHelpDialog();
+        virtual AZStd::string GetHelpUrl() const;
+        virtual void OpenHelpUrl();
 
         virtual void OpenAboutDialog();
 
@@ -102,6 +104,9 @@ namespace AtomToolsFramework
         QMenu* m_menuHelp = {};
 
         AtomToolsFramework::AtomToolsAssetBrowser* m_assetBrowser = {};
-        AzToolsFramework::LogPanel::TracePrintFLogPanel* m_logPanel = {};
+        AzToolsFramework::LogPanel::StyledTracePrintFLogPanel* m_logPanel = {};
+
+        mutable AZStd::shared_ptr<DynamicPropertyGroup> m_applicationSettingsGroup;
+        mutable AZStd::shared_ptr<DynamicPropertyGroup> m_assetBrowserSettingsGroup;
     };
 } // namespace AtomToolsFramework

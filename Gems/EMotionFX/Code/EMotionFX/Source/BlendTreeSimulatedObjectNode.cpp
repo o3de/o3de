@@ -19,9 +19,9 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeSimulatedObjectNode, AnimGraphAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeSimulatedObjectNode::Simulation, AnimGraphAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeSimulatedObjectNode::UniqueData, AnimGraphObjectUniqueDataAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeSimulatedObjectNode, AnimGraphAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeSimulatedObjectNode::Simulation, AnimGraphAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeSimulatedObjectNode::UniqueData, AnimGraphObjectUniqueDataAllocator)
 
     BlendTreeSimulatedObjectNode::UniqueData::UniqueData(AnimGraphNode* node, AnimGraphInstance* animGraphInstance)
         : AnimGraphNodeData(node, animGraphInstance)
@@ -366,7 +366,7 @@ namespace EMotionFX
     {
         if (rootElementNode.GetVersion() == 1)
         {
-            rootElementNode.RemoveElementByName(AZ_CRC("simulationRate", 0x60a4df7b));
+            rootElementNode.RemoveElementByName(AZ_CRC_CE("simulationRate"));
         }
 
         return true;
@@ -399,7 +399,7 @@ namespace EMotionFX
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                 ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-            ->DataElement(AZ_CRC("SimulatedObjectSelection", 0x846970e2), &BlendTreeSimulatedObjectNode::m_simulatedObjectNames, "Simulated object names", "The simulated objects we want to pick from this actor.")
+            ->DataElement(AZ_CRC_CE("SimulatedObjectSelection"), &BlendTreeSimulatedObjectNode::m_simulatedObjectNames, "Simulated object names", "The simulated objects we want to pick from this actor.")
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeSimulatedObjectNode::Reinit)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
                 ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)

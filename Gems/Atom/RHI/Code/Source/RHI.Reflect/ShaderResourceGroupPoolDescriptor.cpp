@@ -9,19 +9,16 @@
 #include <Atom/RHI.Reflect/ShaderResourceGroupPoolDescriptor.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    void ShaderResourceGroupPoolDescriptor::Reflect(AZ::ReflectContext* context)
     {
-        void ShaderResourceGroupPoolDescriptor::Reflect(AZ::ReflectContext* context)
+        if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
         {
-            if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
-            {
-                serializeContext->Class<ShaderResourceGroupPoolDescriptor, ResourcePoolDescriptor>()
-                    ->Version(1)
-                    ->Field("m_usage", &ShaderResourceGroupPoolDescriptor::m_usage)
-                    ;
-            }
+            serializeContext->Class<ShaderResourceGroupPoolDescriptor, ResourcePoolDescriptor>()
+                ->Version(1)
+                ->Field("m_usage", &ShaderResourceGroupPoolDescriptor::m_usage)
+                ;
         }
     }
 }

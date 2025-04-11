@@ -103,7 +103,6 @@ ly_add_target(
             3rdParty::Qt::Widgets
             3rdParty::Qt::Concurrent
             3rdParty::TIFF
-            3rdParty::squish-ccr
             Legacy::CryCommon
             Legacy::EditorCommon
             AZ::AzCore
@@ -112,30 +111,27 @@ ly_add_target(
             AZ::AtomCore
             Gem::Atom_RPI.Edit
             Gem::Atom_RPI.Public
-            Gem::Atom_Feature_Common.Static
+            Gem::Atom_Feature_Common.Public
             Gem::AtomToolsFramework.Static
             Gem::AtomViewportDisplayInfo
-            Gem::EditorModeFeedback.Editor
+            Gem::EditorModeFeedback.Editor.Static
             ${additional_dependencies}
         PUBLIC
             3rdParty::Qt::Network
             Legacy::EditorCore
     RUNTIME_DEPENDENCIES
-        Gem::AtomViewportDisplayInfo
-        Gem::EditorModeFeedback.Editor
         Legacy::EditorCommon
 )
 ly_add_source_properties(
     SOURCES CryEdit.cpp
     PROPERTY COMPILE_DEFINITIONS 
     VALUES 
-        O3DE_COPYRIGHT_YEAR=${LY_VERSION_COPYRIGHT_YEAR}
-        LY_VERSION_BUILD_NUMBER=${LY_VERSION_BUILD_NUMBER}
+        O3DE_COPYRIGHT_YEAR=${O3DE_COPYRIGHT_YEAR}
+        O3DE_BUILD_VERSION=${O3DE_INSTALL_BUILD_VERSION}
         ${LY_PAL_TOOLS_DEFINES}
 )
 ly_add_source_properties(
     SOURCES
-        Core/LevelEditorMenuHandler.cpp
         MainWindow.cpp
     PROPERTY COMPILE_DEFINITIONS 
     VALUES ${LY_PAL_TOOLS_DEFINES}
@@ -216,6 +212,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     )
     ly_add_googletest(
         NAME Legacy::EditorCore.Tests
+        LABELS REQUIRES_tiaf
     )
 
     ly_add_target(
@@ -252,6 +249,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
 
     ly_add_googletest(
         NAME Legacy::EditorLib.Tests
+        LABELS REQUIRES_tiaf
     )
 
 endif()

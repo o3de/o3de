@@ -28,6 +28,7 @@ namespace JsonSerializationTests
             : public AZ::RPI::MaterialFunctorSourceData
         {
         public:
+            AZ_CLASS_ALLOCATOR(TestFunctorSourceData, AZ::SystemAllocator)
             AZ_RTTI(TestFunctorSourceData, "{D9B569EA-F45B-4852-9F42-0C104C51166A}", AZ::RPI::MaterialFunctorSourceData);
 
             static void Reflect(AZ::ReflectContext* context)
@@ -122,5 +123,5 @@ namespace JsonSerializationTests
     };
 
     using MaterialFunctorSourceDataSerializerTestTypes = ::testing::Types<MaterialFunctorSourceDataSerializerTestDescription>;
-    IF_JSON_CONFORMITY_ENABLED(INSTANTIATE_TYPED_TEST_CASE_P(MaterialFunctorSourceDataTests, JsonSerializerConformityTests, MaterialFunctorSourceDataSerializerTestTypes));
+    IF_JSON_CONFORMITY_ENABLED(INSTANTIATE_TYPED_TEST_SUITE_P(MaterialFunctorSourceDataTests, JsonSerializerConformityTests, MaterialFunctorSourceDataSerializerTestTypes));
 } // namespace JsonSerializationTests

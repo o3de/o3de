@@ -34,6 +34,22 @@ QVariant BuilderListModel::data(const QModelIndex& index, int role) const
     return {};
 }
 
+QModelIndex BuilderListModel::GetIndexForBuilder(const AZ::Uuid& builderUuid)
+{
+    AssetProcessor::BuilderInfoList builders;
+    AssetProcessor::AssetBuilderInfoBus::Broadcast(&AssetProcessor::AssetBuilderInfoBus::Events::GetAllBuildersInfo, builders);
+    
+    for (int builderRow = 0; builderRow < builders.size(); ++builderRow)
+    {
+        if (builders[builderRow].m_busId == builderUuid)
+        {
+            return createIndex(builderRow, 0);
+        }
+    }
+
+    return QModelIndex();
+}
+
 void BuilderListModel::Reset()
 {
     beginResetModel();

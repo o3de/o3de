@@ -10,10 +10,11 @@
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/EntityIdSerializer.h>
 #include <AzCore/Component/EntitySerializer.h>
+#include <AzCore/Component/EntityUtils.h>
 
 namespace AZ
 {
-    AZ_CLASS_ALLOCATOR_IMPL(JsonEntitySerializer, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(JsonEntitySerializer, AZ::SystemAllocator);
 
     JsonSerializationResult::Result JsonEntitySerializer::Load(void* outputValue, [[maybe_unused]] const Uuid& outputValueTypeId,
         const rapidjson::Value& inputValue, JsonDeserializerContext& context)
@@ -89,6 +90,7 @@ namespace AZ
                 if (component && (component->GetUnderlyingComponentType() != genericComponentWrapperTypeId))
                 {
                     entityInstance->m_components.emplace_back(component);
+                    component->SetSerializedIdentifier(componentKey);
                 }
             }
 
@@ -164,11 +166,11 @@ namespace AZ
             AZStd::unordered_map<AZStd::string, AZ::Component*> componentMap;
             AZStd::unordered_map<AZStd::string, AZ::Component*> defaultComponentMap;
 
-            ConvertComponentVectorToMap(*components, componentMap);
+            EntityUtils::ConvertComponentVectorToMap(*components, componentMap);
 
             if (defaultComponents)
             {
-                ConvertComponentVectorToMap(*defaultComponents, defaultComponentMap);
+                EntityUtils::ConvertComponentVectorToMap(*defaultComponents, defaultComponentMap);
             }
 
             JSR::ResultCode resultComponents =
@@ -196,18 +198,6 @@ namespace AZ
         return context.Report(result,
             result.GetProcessing() != JSR::Processing::Halted ? "Successfully stored Entity information." :
             "Failed to store Entity information.");
-    }
-
-    void JsonEntitySerializer::ConvertComponentVectorToMap(const AZ::Entity::ComponentArrayType& components,
-        AZStd::unordered_map<AZStd::string, AZ::Component*>& componentMapOut)
-    {
-        for (AZ::Component* component : components)
-        {
-            if (component)
-            {
-                componentMapOut.emplace(AZStd::string::format("Component_[%llu]", component->GetId()), component);
-            }
-        }
     }
 
     void DeprecatedComponentMetadata::SetEnableDeprecationTrackingCallback(EnableDeprecationTrackingCallback callback)

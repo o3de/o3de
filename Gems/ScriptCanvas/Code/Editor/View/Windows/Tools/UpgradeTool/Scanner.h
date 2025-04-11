@@ -20,7 +20,7 @@ namespace ScriptCanvasEditor
             : private AZ::SystemTickBus::Handler
         {
         public:
-            AZ_CLASS_ALLOCATOR(Scanner, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Scanner, AZ::SystemAllocator);
 
             Scanner(const ScanConfiguration& config, AZStd::function<void()> onComplete);
 

@@ -129,7 +129,7 @@ def AtomGPU_BasicLevelSetup_SetsUpLevel():
     from Atom.atom_utils.atom_component_helper import (
         enter_exit_game_mode_take_screenshot, compare_screenshot_to_golden_image)
 
-    from Atom.atom_utils.screenshot_utils import (FOLDER_PATH, screenshot_compare_result_code_to_string)
+    from Atom.atom_utils.screenshot_utils import FOLDER_PATH
 
     DEGREE_RADIAN_FACTOR = 0.0174533
 
@@ -245,7 +245,7 @@ def AtomGPU_BasicLevelSetup_SetsUpLevel():
         # 13. Add the Mesh component to the Ground Plane Entity and set the Mesh component Model Asset property.
         ground_plane_mesh_component = ground_plane_entity.add_component(AtomComponentProperties.mesh())
         Report.result(Tests.mesh_component_added, ground_plane_entity.has_component(AtomComponentProperties.mesh()))
-        ground_plane_model_asset_path = os.path.join("testdata", "objects", "plane.azmodel")
+        ground_plane_model_asset_path = os.path.join("testdata", "objects", "plane.fbx.azmodel")
         ground_plane_model_asset = Asset.find_asset_by_path(ground_plane_model_asset_path, False)
         ground_plane_mesh_component.set_component_property_value(
             AtomComponentProperties.mesh('Model Asset'), ground_plane_model_asset.id)
@@ -283,7 +283,7 @@ def AtomGPU_BasicLevelSetup_SetsUpLevel():
 
         # 18. Add Mesh component to Sphere Entity and set the Model Asset property for the Mesh component.
         sphere_mesh_component = sphere_entity.add_component(AtomComponentProperties.mesh())
-        sphere_model_asset_path = os.path.join("models", "sphere.azmodel")
+        sphere_model_asset_path = os.path.join("models", "sphere.fbx.azmodel")
         sphere_model_asset = Asset.find_asset_by_path(sphere_model_asset_path, False)
         sphere_mesh_component.set_component_property_value(
             AtomComponentProperties.mesh('Model Asset'), sphere_model_asset.id)
@@ -311,30 +311,31 @@ def AtomGPU_BasicLevelSetup_SetsUpLevel():
 
         # 22. Compare the screenshots to golden images.
         for screenshot_name, screenshot_threshold in screenshot_thresholds.items():
-            image_diff_result = compare_screenshot_to_golden_image(FOLDER_PATH, screenshot_name, screenshot_name)
+            image_diff_outcome = compare_screenshot_to_golden_image(FOLDER_PATH, screenshot_name, screenshot_name)
             screenshot_compare_execution = (
                     f"Screenshot {screenshot_name} comparison succeeded.",
-                    f"Screenshot {screenshot_name} comparison failed due to "
-                    + f"{screenshot_compare_result_code_to_string(image_diff_result.result_code)}.");
+                    f"Screenshot {screenshot_name} comparison failed.");
             Report.result(
                 screenshot_compare_execution,
-                image_diff_result.result_code == azlmbr.utils.ImageDiffResultCode_Success
+                image_diff_outcome.IsSuccess()
             )
 
-            if image_diff_result.result_code == azlmbr.utils.ImageDiffResultCode_Success:
+            if not image_diff_outcome.IsSuccess():
+                Report.info(f"Error: {image_diff_outcome.GetError().error_message}")
+            else:
                 screenshot_compare_result = (
                         "{0} diff score {1} under threshold {2}.".format(
                             screenshot_name,
-                            image_diff_result.diff_score,
+                            image_diff_outcome.GetValue().diff_score,
                             screenshot_threshold),
                         "{0} diff score {1} over threshold {2}.".format(
                             screenshot_name,
-                            image_diff_result.diff_score,
+                            image_diff_outcome.GetValue().diff_score,
                             screenshot_threshold)
                         )
                 Report.result(
                     screenshot_compare_result,
-                    image_diff_result.diff_score < screenshot_threshold)
+                    image_diff_outcome.GetValue().diff_score < screenshot_threshold)
 
         # 23. Look for errors.
         TestHelper.wait_for_condition(lambda: error_tracer.has_errors or error_tracer.has_asserts, 1.0)

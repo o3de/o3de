@@ -13,6 +13,7 @@
             "name": "linux-default",
             "displayName": "Linux",
             "description": "Linux default configuration",
+            "binaryDir": "${sourceDir}/build/linux",
             "inherits": [
                 "linux-ninja",
                 "linux-unity",
@@ -22,7 +23,8 @@
         {
             "name": "linux-mono-default",
             "displayName": "Linux Monolithic with Unity and Ninja",
-            "description": "Configures Mac to build the Monolithic permutation using Ninja with Unity builds",
+            "description": "Configures Linux to build the Monolithic permutation using Ninja with Unity builds",
+            "binaryDir": "${sourceDir}/build/linux_mono",
             "inherits": [
                 "linux-ninja",
                 "linux-unity",
@@ -55,7 +57,7 @@
             "name": "linux-unity",
             "displayName": "Linux Unity",
             "description": "Linux build which uses unity files",
-            "binaryDir": "${sourceDir}/build/linux",
+            "binaryDir": "${sourceDir}/build/linux_unity",
             "inherits": [
                 "unity",
                 "host-linux"
@@ -75,6 +77,7 @@
             "name": "linux-non-monolithic",
             "displayName": "Linux Non-monolithic",
             "description": "Default configuration for non-monolithic builds",
+            "binaryDir": "${sourceDir}/build/linux_non_mono",
             "inherits": [
                 "non-monolithic",
                 "host-linux"
@@ -281,6 +284,24 @@
             "configurePreset": "linux-mono-default",
             "inherits": [
                 "install",
+                "host-linux"
+            ]
+        },
+        {
+            "name": "linux-clang-default",
+            "displayName": "Linux",
+            "description": "Builds all targets for Linux using the Clang compiler",
+            "configurePreset": "linux-clang-default",
+            "inherits":[
+                "host-linux"
+            ]
+        },
+        {
+            "name": "linux-gcc-default",
+            "displayName": "Linux",
+            "description": "Builds all targets for Linux using the GCC compiler",
+            "configurePreset": "linux-gcc-default",
+            "inherits":[
                 "host-linux"
             ]
         },

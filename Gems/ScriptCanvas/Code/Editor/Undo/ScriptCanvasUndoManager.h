@@ -29,7 +29,7 @@ namespace ScriptCanvasEditor
     class UndoCache
     {
     public:
-        AZ_CLASS_ALLOCATOR(UndoCache, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(UndoCache, AZ::SystemAllocator);
 
         UndoCache() = default;
         ~UndoCache() = default;
@@ -59,7 +59,7 @@ namespace ScriptCanvasEditor
     class SceneUndoState
     {
     public:
-        AZ_CLASS_ALLOCATOR(SceneUndoState, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SceneUndoState, AZ::SystemAllocator);
 
         SceneUndoState() = default;
         SceneUndoState(AzToolsFramework::UndoSystem::IUndoNotify* undoNotify);

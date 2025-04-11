@@ -2226,7 +2226,7 @@ namespace UnitTests
 
         SourceDatabaseEntry resultSource;
 
-        EXPECT_FALSE(m_data->m_connection.GetSourceBySourceName("non_existent", resultSource));
+        EXPECT_FALSE(m_data->m_connection.GetSourceBySourceNameScanFolderId("non_existent", m_data->m_scanFolder.m_scanFolderID, resultSource));
 
         EXPECT_EQ(m_errorAbsorber->m_numAssertsAbsorbed, 0);
     }
@@ -2237,7 +2237,7 @@ namespace UnitTests
 
         SourceDatabaseEntry resultSource;
 
-        EXPECT_TRUE(m_data->m_connection.GetSourceBySourceName("somefile.tif", resultSource));
+        EXPECT_TRUE(m_data->m_connection.GetSourceBySourceNameScanFolderId("somefile.tif", m_data->m_scanFolder.m_scanFolderID, resultSource));
         EXPECT_EQ(resultSource.m_sourceGuid, m_data->m_sourceFile1.m_sourceGuid);
 
         EXPECT_EQ(m_errorAbsorber->m_numAssertsAbsorbed, 0);

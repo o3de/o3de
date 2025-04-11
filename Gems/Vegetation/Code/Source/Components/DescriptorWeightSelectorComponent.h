@@ -26,7 +26,7 @@ namespace Vegetation
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(DescriptorWeightSelectorConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DescriptorWeightSelectorConfig, AZ::SystemAllocator);
         AZ_RTTI(DescriptorWeightSelectorConfig, "{382116B1-5843-42A3-915B-A3BFC3CFAB78}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
 

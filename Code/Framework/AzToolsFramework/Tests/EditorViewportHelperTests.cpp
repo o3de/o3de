@@ -45,7 +45,7 @@ namespace UnitTest
     }
 
     class EditorViewportOnlyDrawHelpersForSelectedEntityFixture
-        : public ToolsApplicationFixture
+        : public ToolsApplicationFixture<>
         , public AzFramework::EntityDebugDisplayEventBus::MultiHandler
     {
     public:

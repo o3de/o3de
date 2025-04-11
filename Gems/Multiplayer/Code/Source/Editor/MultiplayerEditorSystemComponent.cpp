@@ -24,11 +24,18 @@
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/chrono/chrono.h>
 #include <AzCore/Utils/Utils.h>
-#include <AzFramework/API/ApplicationAPI.h>
+#include <AzFramework/Process/ProcessUtils.h>
 #include <AzNetworking/Framework/INetworking.h>
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
+#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorActionUpdaterIdentifiers.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorMenuIdentifiers.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
 #include <AzToolsFramework/UI/Prefab/PrefabIntegrationInterface.h>
@@ -37,7 +44,6 @@
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
-#include <AzFramework/Entity/EntityDebugDisplayBus.h>
 
 #include <QMenu>
 #include <QAction>
@@ -60,14 +66,14 @@ namespace Multiplayer
     AZ_CVAR(AZ::CVarFixedString, editorsv_rhi_override, "", nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "Override the default rendering hardware interface (rhi) when launching the Editor server. For example, you may be running an Editor using 'dx12', but want to launch a headless server using 'null'. If empty the server will launch using the same rhi as the Editor.");
     AZ_CVAR(uint16_t, editorsv_max_connection_attempts, 5, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
-        "The maximum times the editor will attempt to connect to the server.");
+        "The maximum times the editor will attempt to connect to the server. Time between attempts is increased based on the number of failed attempts.");
 
     AZ_CVAR(bool, editorsv_print_server_logs, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "Whether Editor should print its server's logs to the Editor console. Useful for seeing server prints, warnings, and errors without having to open up the server console or server.log file. Note: Must be set before entering the editor play mode.");
 
     AZ_CVAR_EXTERNED(uint16_t, editorsv_port);
     AZ_CVAR_EXTERNED(bool, bg_enableNetworkingMetrics);
-    
+
     //////////////////////////////////////////////////////////////////////////
     void PyEnterGameMode()
     {
@@ -110,7 +116,7 @@ namespace Multiplayer
 
         }
     }
-    
+
     void MultiplayerEditorSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         Automation::MultiplayerEditorAutomationHandler::Reflect(context);
@@ -161,17 +167,19 @@ namespace Multiplayer
         MultiplayerEditorServerRequestBus::Handler::BusConnect();
         AZ::Interface<IMultiplayer>::Get()->AddServerAcceptanceReceivedHandler(m_serverAcceptanceReceivedHandler);
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
-        AzToolsFramework::EditorContextMenuBus::Handler::BusConnect();
+        AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusConnect();
     }
 
     void MultiplayerEditorSystemComponent::Deactivate()
     {
-        AzToolsFramework::EditorContextMenuBus::Handler::BusDisconnect();
+        AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
         MultiplayerEditorServerRequestBus::Handler::BusDisconnect();
         AZ::TickBus::Handler::BusDisconnect();
         AzToolsFramework::Prefab::PrefabToInMemorySpawnableNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusDisconnect();
+
+        ResetLevelSendData();
     }
 
     void MultiplayerEditorSystemComponent::NotifyRegisterViews()
@@ -179,7 +187,16 @@ namespace Multiplayer
         AZ_Assert(m_editor == nullptr, "NotifyRegisterViews occurred twice!");
         m_editor = nullptr;
         AzToolsFramework::EditorRequests::Bus::BroadcastResult(m_editor, &AzToolsFramework::EditorRequests::GetEditor);
-        m_editor->RegisterNotifyListener(this);
+        if(m_editor)
+        {
+            m_editor->RegisterNotifyListener(this);
+        }
+    }
+
+    void MultiplayerEditorSystemComponent::ResetLevelSendData()
+    {
+        // Clear out the temporary buffer so that it doesn't consume any memory when not in use.
+        m_levelSendData = {};
     }
 
     void MultiplayerEditorSystemComponent::OnEditorNotifyEvent(EEditorNotifyEvent event)
@@ -198,7 +215,8 @@ namespace Multiplayer
             // Kill the configured server if it's active
             AZ::TickBus::Handler::BusDisconnect();
             m_connectionEvent.RemoveFromQueue();
-            
+            ResetLevelSendData();
+
             if (m_serverProcessWatcher)
             {
                 m_serverProcessWatcher->TerminateProcess(0);
@@ -229,7 +247,7 @@ namespace Multiplayer
             // Delete the spawnables we've stored for the server
             m_preAliasedSpawnablesForServer.clear();
 
-            // Turn off debug messaging: we've exiting playmode and intentionally disconnected from the server. 
+            // Turn off debug messaging: we've exiting playmode and intentionally disconnected from the server.
             MultiplayerEditorServerNotificationBus::Broadcast(&MultiplayerEditorServerNotificationBus::Events::OnPlayModeEnd);
             break;
         }
@@ -304,7 +322,7 @@ namespace Multiplayer
         }
 
         processLaunchInfo.m_commandlineParameters = AZStd::string::format(
-            R"("%s" --project-path "%s" --editorsv_isDedicated true --bg_ConnectToAssetProcessor false --rhi "%s" --editorsv_port %i --bg_enableNetworkingMetrics %i)",
+            R"("%s" --project-path "%s" --editorsv_isDedicated true --bg_ConnectToAssetProcessor false --rhi "%s" --editorsv_port %i --bg_enableNetworkingMetrics %i --sv_dedicated_host_onstartup false)",
             serverPath.c_str(),
             AZ::Utils::GetProjectPath().c_str(),
             server_rhi.GetCStr(),
@@ -313,10 +331,14 @@ namespace Multiplayer
         );
         processLaunchInfo.m_showWindow = !editorsv_hidden;
         processLaunchInfo.m_processPriority = AzFramework::ProcessPriority::PROCESSPRIORITY_NORMAL;
+        processLaunchInfo.m_tetherLifetime = true;
 
         // Launch the Server
-        AzFramework::ProcessWatcher* outProcess = AzFramework::ProcessWatcher::LaunchProcess(
-            processLaunchInfo, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_STDINOUT);
+        const AzFramework::ProcessCommunicationType communicationType = editorsv_print_server_logs
+            ? AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_STDINOUT
+            : AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_NONE;
+
+        AzFramework::ProcessWatcher* outProcess = AzFramework::ProcessWatcher::LaunchProcess(processLaunchInfo, communicationType);
 
         if (outProcess)
         {
@@ -332,9 +354,14 @@ namespace Multiplayer
 
             if (editorsv_print_server_logs)
             {
-                m_serverProcessTracePrinter = AZStd::make_unique<ProcessCommunicatorTracePrinter>(m_serverProcessWatcher->GetCommunicator(), "EditorServer");
-                AZ::TickBus::Handler::BusConnect();
+                // Create a threaded trace printer so that it will keep the output pipes flowing smoothly even while sending the
+                // editor data over to the server.
+                m_serverProcessTracePrinter = AZStd::make_unique<ProcessCommunicatorTracePrinter>(
+                    m_serverProcessWatcher->GetCommunicator(), "EditorServer", ProcessCommunicatorTracePrinter::TraceProcessing::Threaded);
             }
+
+            // Connect to the tick bus to listen for unexpected server process disconnections
+            AZ::TickBus::Handler::BusConnect();
         }
         else
         {
@@ -357,18 +384,15 @@ namespace Multiplayer
         const auto prefabEditorEntityOwnershipInterface = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
         if (!prefabEditorEntityOwnershipInterface)
         {
-            bool prefabSystemEnabled = false;
-            AzFramework::ApplicationRequests::Bus::BroadcastResult(prefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-            AZ_Error("MultiplayerEditor", !prefabSystemEnabled, "PrefabEditorEntityOwnershipInterface unavailable but prefabs are enabled");
+            AZ_Error("MultiplayerEditor", false, "PrefabEditorEntityOwnershipInterface could not find PrefabEditorEntityOwnershipInterface!");
             return;
         }
-        
-        MultiplayerEditorServerNotificationBus::Broadcast(&MultiplayerEditorServerNotificationBus::Events::OnEditorSendingLevelData);
+
         AZ_TracePrintf("MultiplayerEditor", "Editor is sending the editor-server the level data packet.")
 
-
-        AZStd::vector<uint8_t> buffer;
-        AZ::IO::ByteContainerStream byteStream(&buffer);
+        m_levelSendData.m_sendConnection = connection;
+        m_levelSendData.m_byteStream =
+            AZStd::make_unique<AZ::IO::ByteContainerStream<AZStd::vector<uint8_t>>>(&m_levelSendData.m_sendBuffer);
 
         // Serialize Asset information and AssetData into a potentially large buffer
         for (const auto& preAliasedSpawnableData : m_preAliasedSpawnablesForServer)
@@ -376,41 +400,130 @@ namespace Multiplayer
             // This is an un-aliased level spawnable (example: Root.spawnable and Root.network.spawnable) which we'll send to the server
             auto hintSize = aznumeric_cast<uint32_t>(preAliasedSpawnableData.assetHint.size());
 
-            byteStream.Write(sizeof(AZ::Data::AssetId), reinterpret_cast<const void*>(&preAliasedSpawnableData.assetId));
-            byteStream.Write(sizeof(uint32_t), reinterpret_cast<void*>(&hintSize));
-            byteStream.Write(preAliasedSpawnableData.assetHint.size(), preAliasedSpawnableData.assetHint.data());
-            AZ::Utils::SaveObjectToStream(byteStream, AZ::DataStream::ST_BINARY, preAliasedSpawnableData.spawnable.get(), preAliasedSpawnableData.spawnable->GetType());
+            m_levelSendData.m_byteStream->Write(sizeof(AZ::Data::AssetId), reinterpret_cast<const void*>(&preAliasedSpawnableData.assetId));
+            m_levelSendData.m_byteStream->Write(sizeof(uint32_t), reinterpret_cast<void*>(&hintSize));
+            m_levelSendData.m_byteStream->Write(preAliasedSpawnableData.assetHint.size(), preAliasedSpawnableData.assetHint.data());
+            AZ::Utils::SaveObjectToStream(
+                *m_levelSendData.m_byteStream,
+                AZ::DataStream::ST_BINARY,
+                preAliasedSpawnableData.spawnable.get(),
+                preAliasedSpawnableData.spawnable->GetType());
         }
-        
+
         // Spawnable library needs to be rebuilt since now we have newly registered in-memory spawnable assets
         AZ::Interface<INetworkSpawnableLibrary>::Get()->BuildSpawnablesList();
 
         // Read the buffer into EditorServerLevelData packets until we've flushed the whole thing
-        byteStream.Seek(0, AZ::IO::GenericStream::SeekMode::ST_SEEK_BEGIN);
+        m_levelSendData.m_byteStream->Seek(0, AZ::IO::GenericStream::SeekMode::ST_SEEK_BEGIN);
 
-        while (byteStream.GetCurPos() < byteStream.GetLength())
+        // Send an initial notification showing how much data will be sent.
+        MultiplayerEditorServerNotificationBus::Broadcast(
+            &MultiplayerEditorServerNotificationBus::Events::OnEditorSendingLevelData,
+            0,
+            aznumeric_cast<uint32_t>(m_levelSendData.m_byteStream->GetLength()));
+
+        // The actual data will get sent "asynchronously" during the OnTick callback over multiple frames.
+    }
+
+    void MultiplayerEditorSystemComponent::SendLevelDataToServer()
+    {
+        // This controls the maximum time slice to use for sending packets. Lower numbers will make the total send time take longer,
+        // but will give the Editor more time to do other work. Larger numbers will make the total send time faster, but will starve
+        // the Editor. The current value attempts to balance between the two.
+        static constexpr AZ::TimeMs MaxSendTimeMs = AZ::TimeMs{ 5 };
+
+        // These control how many retries and how to space them out for packet send failures.
+        static constexpr int MaxRetries = 20;
+        static constexpr AZ::TimeMs InitialMsDelayPerRetry = AZ::TimeMs { 10 };
+        static constexpr AZ::TimeMs MaxMsDelayPerRetry = AZ::TimeMs { 1000 };
+
+        // If there's no data left to send, exit.
+        if (!m_levelSendData.m_byteStream)
+        {
+            return;
+        }
+
+        bool updateFinished = false;
+        bool updateSuccessful = true;
+
+        AZ::TimeMs startTime = AZ::GetElapsedTimeMs();
+
+        // Loop and send packets until we've reached our max send time slice for this frame.
+        while (!updateFinished && ((AZ::GetElapsedTimeMs() - startTime) < MaxSendTimeMs))
         {
             MultiplayerEditorPackets::EditorServerLevelData editorServerLevelDataPacket;
             auto& outBuffer = editorServerLevelDataPacket.ModifyAssetData();
 
             // Size the packet's buffer appropriately
             size_t readSize = outBuffer.GetCapacity();
-            const size_t byteStreamSize = byteStream.GetLength() - byteStream.GetCurPos();
+            const size_t byteStreamSize = m_levelSendData.m_byteStream->GetLength() - m_levelSendData.m_byteStream->GetCurPos();
             if (byteStreamSize < readSize)
             {
                 readSize = byteStreamSize;
             }
 
             outBuffer.Resize(readSize);
-            byteStream.Read(readSize, outBuffer.GetBuffer());
+            m_levelSendData.m_byteStream->Read(readSize, outBuffer.GetBuffer());
 
             // If we've run out of buffer, mark that we're done
-            if (byteStream.GetCurPos() == byteStream.GetLength())
+            if (m_levelSendData.m_byteStream->GetCurPos() == m_levelSendData.m_byteStream->GetLength())
             {
                 editorServerLevelDataPacket.SetLastUpdate(true);
+                updateFinished = true;
             }
 
-            connection->SendReliablePacket(editorServerLevelDataPacket);
+            // Try to send the packet to the Editor server. Retry if necessary.
+            bool packetSent = false;
+            AZ::TimeMs millisecondDelayPerRetry = InitialMsDelayPerRetry;
+            int numRetries = 0;
+            while (!packetSent && (numRetries < MaxRetries))
+            {
+                packetSent = m_levelSendData.m_sendConnection->SendReliablePacket(editorServerLevelDataPacket);
+                if (!packetSent)
+                {
+                    AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(aznumeric_cast<int>(millisecondDelayPerRetry)));
+                    numRetries++;
+
+                    // Keep doubling the time between retries up to the max amount, then clamp it there.
+                    millisecondDelayPerRetry = AZStd::min(millisecondDelayPerRetry * AZ::TimeMs{ 2 }, MaxMsDelayPerRetry);
+
+                    // Force the networking buffers to try and flush before sending the packet again.
+                    AZ::Interface<AzNetworking::INetworking>::Get()->ForceUpdate();
+                }
+            }
+
+            if (packetSent)
+            {
+                // Update our information to track the current amount of data sent.
+                MultiplayerEditorServerNotificationBus::Broadcast(
+                    &MultiplayerEditorServerNotificationBus::Events::OnEditorSendingLevelData,
+                    aznumeric_cast<uint32_t>(m_levelSendData.m_byteStream->GetCurPos()),
+                    aznumeric_cast<uint32_t>(m_levelSendData.m_byteStream->GetLength()));
+            }
+            else
+            {
+                updateFinished = true;
+                updateSuccessful = false;
+            }
+        }
+
+        if (updateFinished)
+        {
+            // After we're done sending the level data, clear out our temporary buffer.
+            ResetLevelSendData();
+
+            if (updateSuccessful)
+            {
+                // Notify that the level has successfully been sent.
+                MultiplayerEditorServerNotificationBus::Broadcast(
+                    &MultiplayerEditorServerNotificationBus::Events::OnEditorSendingLevelDataSuccess);
+            }
+            else
+            {
+                // Notify that the level send failed.
+                MultiplayerEditorServerNotificationBus::Broadcast(
+                    &MultiplayerEditorServerNotificationBus::Events::OnEditorSendingLevelDataFailed);
+            }
         }
     }
 
@@ -418,7 +531,7 @@ namespace Multiplayer
     {
         PyEnterGameMode();
     }
-    
+
     bool MultiplayerEditorSystemComponent::IsInGameMode()
     {
         return PyIsInGameMode();
@@ -433,17 +546,8 @@ namespace Multiplayer
             AZ_Warning("MultiplayerEditorSystemComponent", false, "The editor server process has unexpectedly stopped running. Did it crash or get accidentally closed?")
         }
 
-        if (m_serverProcessTracePrinter)
-        {
-            m_serverProcessTracePrinter->Pump();
-        }
-        else
-        {
-            AZ::TickBus::Handler::BusDisconnect();
-            AZ_Warning(
-                "MultiplayerEditorSystemComponent", false,
-                "The server process trace printer is NULL so we won't be able to pipe server logs to the editor. Please update the code to call AZ::TickBus::Handler::BusDisconnect whenever the editor-server is terminated.")
-        }
+        // Continue sending the level data to the server if any more data exists that needs to be sent.
+        SendLevelDataToServer();
     }
 
     void MultiplayerEditorSystemComponent::Connect()
@@ -471,6 +575,13 @@ namespace Multiplayer
             m_connectionEvent.RemoveFromQueue();
             SendEditorServerLevelDataPacket(editorNetworkInterface->GetConnectionSet().GetConnection(m_editorConnId));
         }
+        else
+        {
+            // Increase the wait time based on the number of connection attempts.
+            const double retrySeconds = m_connectionAttempts;
+            constexpr bool autoRequeue = false;
+            m_connectionEvent.Enqueue(AZ::SecondsToTimeMs(retrySeconds), autoRequeue);
+        }
     }
 
     void MultiplayerEditorSystemComponent::OnPreparingInMemorySpawnableFromPrefab(
@@ -483,7 +594,7 @@ namespace Multiplayer
         {
             return;
         }
-        
+
         AZ::SerializeContext* serializeContext = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
         AZ_Assert(serializeContext, "Failed to retrieve application serialization context.")
@@ -545,7 +656,21 @@ namespace Multiplayer
                     remoteAddress.c_str()) return;
             }
 
-            AZ_Printf("MultiplayerEditor", "Editor is listening for the editor-server...")
+            // Find any existing server launchers before launching a new one.
+            // It's possible for a rogue server launcher to exist if the Editor shutdown unexpectedly while running a previous multiplayer session.
+            // It's also common to open ServerLaunchers by hand for testing, but then to forget to shut it down before starting the editor play mode.
+            const AZStd::string serverExeFilename(AZ::Utils::GetProjectName() + ".ServerLauncher" + AZ_TRAIT_OS_EXECUTABLE_EXTENSION);
+            int existingServers = AzFramework::ProcessUtils::ProcessCount(serverExeFilename);
+            if (existingServers > 0)
+            {
+                AZ_Warning("MultiplayerEditorSystemComponent", false,
+                    "There are already existing servers opened (x%i: %s); please terminate as your Editor may connect to the wrong server! "
+                    "If your intention was to connect to this server instead of automatically launching one from the Editor set editorsv_launch = false.",
+                    existingServers, serverExeFilename.c_str());
+            }
+
+            AZ_Printf("MultiplayerEditor", "Editor is listening for the editor-server...\n");
+
             // Launch the editor-server
             if (!LaunchEditorServer())
             {
@@ -557,65 +682,99 @@ namespace Multiplayer
         // Keep trying to connect until the port is finally available.
         m_connectionAttempts = 0;
         constexpr double retrySeconds = 1.0;
-        constexpr bool autoRequeue = true;
+        constexpr bool autoRequeue = false;
         m_connectionEvent.Enqueue(AZ::SecondsToTimeMs(retrySeconds), autoRequeue);
     }
 
-    void MultiplayerEditorSystemComponent::PopulateEditorGlobalContextMenu(QMenu* menu, const AZStd::optional<AzFramework::ScreenPoint>& point, [[ maybe_unused ]] int flags)
+
+    void MultiplayerEditorSystemComponent::OnActionRegistrationHook()
     {
-        AzToolsFramework::EntityIdList selected;
-        AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(selected, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
-
-        // Merge in highlighted entities..
-        // This stuff should probably be exposed from the SandboxIntegration class
-        {
-            AzToolsFramework::EntityIdList highlightedEntities;
-            AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(highlightedEntities, &AzToolsFramework::ToolsApplicationRequests::GetHighlightedEntities);
-            for (AZ::EntityId highlightedId : highlightedEntities)
-            {
-                if (selected.end() == AZStd::find(selected.begin(), selected.end(), highlightedId))
-                {
-                    selected.push_back(highlightedId);
-                }
-            }
-        }
-
-        AZ::EntityId parentEntityId = AZ::EntityId();
-        AZ::Vector3 worldPosition = AZ::Vector3::CreateZero();
-        if (selected.size() == 1)
-        {
-            parentEntityId = selected.front();
-        }
-
+        auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+        auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get();
         auto readOnlyEntityPublicInterface = AZ::Interface<AzToolsFramework::ReadOnlyEntityPublicInterface>::Get();
-        auto containerEntityInterface = AZ::Interface<AzToolsFramework::ContainerEntityInterface>::Get();
-        if ((readOnlyEntityPublicInterface && !readOnlyEntityPublicInterface->IsReadOnly(parentEntityId)) &&
-            (containerEntityInterface && containerEntityInterface->IsContainerOpen(parentEntityId)))
+        if (!actionManagerInterface || !hotKeyManagerInterface || !readOnlyEntityPublicInterface)
         {
-            menu->setToolTipsVisible(true);
+            return;
+        }
 
-            if (CViewport* view = GetIEditor()->GetViewManager()->GetGameViewport();
-                view && point.has_value())
-            {
-                worldPosition = AzToolsFramework::FindClosestPickIntersection(
-                    view->GetViewportId(), point.value(), AzToolsFramework::EditorPickRayLength,
-                    AzToolsFramework::GetDefaultEntityPlacementDistance());
-            }
+        // Create Multiplayer Entity
+        {
+            constexpr AZStd::string_view actionIdentifier = "o3de.action.multiplayer.createMultiplayerEntity";
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = "Create multiplayer entity";
+            actionProperties.m_description = "Create a multiplayer entity.";
+            actionProperties.m_category = "Entity";
 
-            QAction* action = nullptr;
+            actionManagerInterface->RegisterAction(
+                EditorIdentifiers::MainWindowActionContextIdentifier,
+                actionIdentifier,
+                actionProperties,
+                [this, readOnlyEntityPublicInterface]
+                {
+                    AzToolsFramework::EntityIdList selectedEntities;
+                    AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                        selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
 
-            action = menu->addAction(QObject::tr("Create multiplayer entity"));
-            action->setShortcut(QKeySequence(Qt::CTRL + Qt::ALT + Qt::Key_M));
-            QObject::connect(action, &QAction::triggered, action, [this, parentEntityId, worldPosition]
-            {
-                ContextMenu_NewMultiplayerEntity(parentEntityId, worldPosition);
-            });
+                    // when nothing is selected, entity is created at root level.
+                    if (selectedEntities.empty())
+                    {
+                        ContextMenu_NewMultiplayerEntity(AZ::EntityId(), AZ::Vector3::CreateZero());
+                    }
+                    // when a single entity is selected, entity is created as its child.
+                    else if (selectedEntities.size() == 1)
+                    {
+                        AZ::EntityId selectedEntityId = selectedEntities.front();
+                        bool selectedEntityIsReadOnly = readOnlyEntityPublicInterface->IsReadOnly(selectedEntityId);
+                        auto containerEntityInterface = AZ::Interface<AzToolsFramework::ContainerEntityInterface>::Get();
+
+                        if (containerEntityInterface && containerEntityInterface->IsContainerOpen(selectedEntityId) && !selectedEntityIsReadOnly)
+                        {
+                            ContextMenu_NewMultiplayerEntity(selectedEntityId, AZ::Vector3::CreateZero());
+                        }
+                    }
+                }
+            );
+
+            actionManagerInterface->InstallEnabledStateCallback(
+                actionIdentifier,
+                [readOnlyEntityPublicInterface]()
+                {
+                    AzToolsFramework::EntityIdList selectedEntities;
+                    AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                        selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
+
+                    if (selectedEntities.size() == 0)
+                    {
+                        return true;
+                    }
+                    else if (selectedEntities.size() == 1)
+                    {
+                        AZ::EntityId selectedEntityId = selectedEntities.front();
+                        bool selectedEntityIsReadOnly = readOnlyEntityPublicInterface->IsReadOnly(selectedEntityId);
+                        auto containerEntityInterface = AZ::Interface<AzToolsFramework::ContainerEntityInterface>::Get();
+
+                        return (containerEntityInterface && containerEntityInterface->IsContainerOpen(selectedEntityId) && !selectedEntityIsReadOnly);
+                    }
+
+                    return false;
+                }
+            );
+
+            actionManagerInterface->AddActionToUpdater(EditorIdentifiers::EntitySelectionChangedUpdaterIdentifier, actionIdentifier);
+
+            hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Ctrl+Alt+M");
         }
     }
 
-    int MultiplayerEditorSystemComponent::GetMenuPosition() const
+    void MultiplayerEditorSystemComponent::OnMenuBindingHook()
     {
-        return aznumeric_cast<int>(AzToolsFramework::EditorContextMenuOrdering::TOP);
+        auto menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
+        if (!menuManagerInterface)
+        {
+            return;
+        }
+
+        menuManagerInterface->AddActionToMenu(EditorIdentifiers::EntityCreationMenuIdentifier, "o3de.action.multiplayer.createMultiplayerEntity", 1000);
     }
 
     void MultiplayerEditorSystemComponent::ContextMenu_NewMultiplayerEntity(AZ::EntityId parentEntityId, const AZ::Vector3& worldPosition)

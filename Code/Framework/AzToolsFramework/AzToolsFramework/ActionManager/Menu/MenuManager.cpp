@@ -41,6 +41,8 @@ namespace AzToolsFramework
 
         AZ::Interface<MenuManagerInternalInterface>::Unregister(this);
         AZ::Interface<MenuManagerInterface>::Unregister(this);
+
+        Reset();
     }
     
     void MenuManager::Reflect(AZ::ReflectContext* context)
@@ -59,8 +61,7 @@ namespace AzToolsFramework
 
         m_menus.insert(
             {
-                menuIdentifier,
-                EditorMenu(properties.m_name)
+                menuIdentifier, EditorMenu(menuIdentifier, properties.m_name)
             }
         );
 
@@ -273,6 +274,14 @@ namespace AzToolsFramework
                 subMenuIdentifier.c_str(), menuIdentifier.c_str()));
         }
 
+        if (menuIdentifier == subMenuIdentifier)
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Menu Manager - Could not add sub-menu \"%s\" to menu \"%s\" - the two menus are the same.",
+                subMenuIdentifier.c_str(),
+                menuIdentifier.c_str()));
+        }
+
         if (menuIterator->second.ContainsSubMenu(subMenuIdentifier))
         {
             return AZ::Failure(AZStd::string::format(
@@ -280,7 +289,15 @@ namespace AzToolsFramework
                 subMenuIdentifier.c_str(), menuIdentifier.c_str()));
         }
 
+        if (WouldGenerateCircularDependency(menuIdentifier, subMenuIdentifier))
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Menu Manager - Could not add sub-menu \"%s\" to menu \"%s\" as this would generate a circular dependency.",
+                subMenuIdentifier.c_str(), menuIdentifier.c_str()));
+        }
+
         menuIterator->second.AddSubMenu(sortIndex, subMenuIdentifier);
+        m_subMenusToMenusMap[subMenuIdentifier].insert(menuIdentifier);
         m_menusToRefresh.insert(menuIdentifier);
         return AZ::Success();
     }
@@ -315,6 +332,7 @@ namespace AzToolsFramework
             }
 
             menuIterator->second.AddSubMenu(pair.second, pair.first);
+            m_subMenusToMenusMap[pair.first].insert(menuIdentifier);
         }
 
         m_menusToRefresh.insert(menuIdentifier);
@@ -546,6 +564,53 @@ namespace AzToolsFramework
         return AZ::Success(sortKey.value());
     }
 
+    MenuManagerOperationResult MenuManager::DisplayMenuAtScreenPosition(const AZStd::string& menuIdentifier, const QPoint& screenPosition)
+    {
+        auto menuIterator = m_menus.find(menuIdentifier);
+        if (menuIterator == m_menus.end())
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Menu Manager - Could not display menu \"%s\" - menu has not been registered.",
+                menuIdentifier.c_str()));
+        }
+
+        m_lastDisplayedMenuIdentifier = menuIdentifier;
+        menuIterator->second.DisplayAtPosition(screenPosition);
+
+        return AZ::Success();
+    }
+
+    MenuManagerOperationResult MenuManager::DisplayMenuUnderCursor(const AZStd::string& menuIdentifier)
+    {
+        auto menuIterator = m_menus.find(menuIdentifier);
+        if (menuIterator == m_menus.end())
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Menu Manager - Could not display menu \"%s\" - menu has not been registered.", menuIdentifier.c_str()));
+        }
+
+        m_lastDisplayedMenuIdentifier = menuIdentifier;
+        menuIterator->second.DisplayUnderCursor();
+
+        return AZ::Success();
+    }
+
+    MenuManagerPositionResult MenuManager::GetLastContextMenuPosition() const
+    {
+        if (m_lastDisplayedMenuIdentifier.empty())
+        {
+            return AZ::Failure("Menu Manager - Could not return last context menu position. No menu was displayed yet.");
+        }
+
+        auto menuIterator = m_menus.find(m_lastDisplayedMenuIdentifier);
+        if (menuIterator == m_menus.end())
+        {
+            return AZ::Failure("Menu Manager - Could not return last context menu position. Menu could not be found.");
+        }
+
+        return menuIterator->second.GetMenuPosition();
+    }
+
     MenuManagerOperationResult MenuManager::QueueRefreshForMenu(const AZStd::string& menuIdentifier)
     {
         if (!m_menus.contains(menuIdentifier))
@@ -560,11 +625,22 @@ namespace AzToolsFramework
 
     MenuManagerOperationResult MenuManager::QueueRefreshForMenusContainingAction(const AZStd::string& actionIdentifier)
     {
-        auto actionIterator = m_actionsToMenusMap.find(actionIdentifier);
-
-        if (actionIterator != m_actionsToMenusMap.end())
+        if (auto actionIterator = m_actionsToMenusMap.find(actionIdentifier); actionIterator != m_actionsToMenusMap.end())
         {
             for (const AZStd::string& menuIdentifier : actionIterator->second)
+            {
+                m_menusToRefresh.insert(menuIdentifier);
+            }
+        }
+
+        return AZ::Success();
+    }
+
+    MenuManagerOperationResult MenuManager::QueueRefreshForMenusContainingSubMenu(const AZStd::string& subMenuIdentifier)
+    {
+        if (auto menuIterator = m_subMenusToMenusMap.find(subMenuIdentifier); menuIterator != m_subMenusToMenusMap.end())
+        {
+            for (const AZStd::string& menuIdentifier : menuIterator->second)
             {
                 m_menusToRefresh.insert(menuIdentifier);
             }
@@ -587,7 +663,12 @@ namespace AzToolsFramework
 
     void MenuManager::RefreshMenus()
     {
-        for (const AZStd::string& menuIdentifier : m_menusToRefresh)
+        // RefreshMenu can add more menus to the refresh queue.
+        // Since it's unordered, we're making a copy of it to prevent issues with the iterator.
+        auto menusToRefreshTemp = m_menusToRefresh;
+        m_menusToRefresh.clear();
+
+        for (const AZStd::string& menuIdentifier : menusToRefreshTemp)
         {
             auto menuIterator = m_menus.find(menuIdentifier);
             if (menuIterator != m_menus.end())
@@ -596,7 +677,26 @@ namespace AzToolsFramework
             }
         }
 
-        m_menusToRefresh.clear();
+        // If more menus were added during the refresh process, do this again.
+        if (!m_menusToRefresh.empty())
+        {
+            RefreshMenus();
+        }
+    }
+
+    bool MenuManager::WouldGenerateCircularDependency(const AZStd::string& menuIdentifier, const AZStd::string& subMenuIdentifier)
+    {
+        // Iterate through all menus that have menuIdentifier as their submenu.
+        for (auto identifier : m_subMenusToMenusMap[menuIdentifier])
+        {
+            // Return true if the menu is the submenu we're trying to add, or keep checking with the ancestors.
+            if (identifier == subMenuIdentifier || WouldGenerateCircularDependency(identifier, subMenuIdentifier))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     void MenuManager::RefreshMenuBars()
@@ -611,6 +711,18 @@ namespace AzToolsFramework
         }
 
         m_menuBarsToRefresh.clear();
+    }
+
+    void MenuManager::RefreshLastDisplayedMenu()
+    {
+        if (!m_lastDisplayedMenuIdentifier.empty())
+        {
+            auto menuIterator = m_menus.find(m_lastDisplayedMenuIdentifier);
+            if (menuIterator != m_menus.end() && !menuIterator->second.IsMenuVisible())
+            {
+                m_lastDisplayedMenuIdentifier.clear();
+            }
+        }
     }
 
     MenuManagerStringResult MenuManager::SerializeMenu(const AZStd::string& menuIdentifier)
@@ -671,16 +783,30 @@ namespace AzToolsFramework
             AZStd::string::format("Menu Manager - Could not serialize menu bar \"%.s\" - serialization error.", menuBarIdentifier.c_str()));
     }
 
+    void MenuManager::Reset()
+    {
+        // Reset all stored values that are registered by the environment after initialization.
+        m_menus.clear();
+        m_menuBars.clear();
+
+        m_actionsToMenusMap.clear();
+        m_subMenusToMenusMap.clear();
+
+        m_menusToRefresh.clear();
+        m_menuBarsToRefresh.clear();
+    }
+
     void MenuManager::OnSystemTick()
     {
         RefreshMenus();
         RefreshMenuBars();
+        RefreshLastDisplayedMenu();
     }
 
     void MenuManager::OnActionStateChanged(AZStd::string actionIdentifier)
     {
         // Only refresh the menu if the action state changing could result in the action being shown/hidden.
-        if (m_actionManagerInternalInterface->GetHideFromMenusWhenDisabled(actionIdentifier))
+        if (m_actionManagerInternalInterface->GetActionMenuVisibility(actionIdentifier) != ActionVisibility::AlwaysShow)
         {
             QueueRefreshForMenusContainingAction(actionIdentifier);
         }

@@ -32,8 +32,6 @@ namespace EMotionFX
     {
         namespace Behavior
         {
-            const int MotionGroupBehavior::s_preferredTabOrder = 2;
-
             void MotionGroupBehavior::Reflect(AZ::ReflectContext* context)
             {
                 Group::MotionGroup::Reflect(context);
@@ -67,7 +65,7 @@ namespace EMotionFX
             {
                 if (SceneHasMotionGroup(scene) || AZ::SceneAPI::Utilities::DoesSceneGraphContainDataLike<AZ::SceneAPI::DataTypes::IAnimationData>(scene, false))
                 {
-                    categories.emplace_back("Motions", Group::MotionGroup::TYPEINFO_Uuid(), s_preferredTabOrder);
+                    categories.emplace_back("Motions", Group::MotionGroup::TYPEINFO_Uuid(), s_motionGroupPreferredTabOrder);
                 }
             }
 
@@ -177,7 +175,8 @@ namespace EMotionFX
                 //      in the same way again. To guarantee the same uuid, generate a stable one instead.
                 group->OverrideId(AZ::SceneAPI::DataTypes::Utilities::CreateStableUuid(scene, Group::MotionGroup::TYPEINFO_Uuid()));
 
-                EBUS_EVENT(AZ::SceneAPI::Events::ManifestMetaInfoBus, InitializeObject, scene, *group);
+                AZ::SceneAPI::Events::ManifestMetaInfoBus::Broadcast(
+                    &AZ::SceneAPI::Events::ManifestMetaInfoBus::Events::InitializeObject, scene, *group);
                 scene.GetManifest().AddEntry(AZStd::move(group));
 
                 return AZ::SceneAPI::Events::ProcessingResult::Success;

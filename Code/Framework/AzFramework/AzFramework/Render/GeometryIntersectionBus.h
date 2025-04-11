@@ -67,7 +67,7 @@ namespace AzFramework
             using BusIdType = EntityIdAndContext;
 
             // Intersection against this render geometry
-            virtual RayResult RenderGeometryIntersect(const RayRequest& ray) = 0;
+            virtual RayResult RenderGeometryIntersect(const RayRequest& ray) const = 0;
 
         private:
             inline static void OnConnect(const EntityIdAndContext& entityAndContext);

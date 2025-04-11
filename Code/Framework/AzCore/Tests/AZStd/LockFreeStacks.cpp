@@ -21,7 +21,7 @@ namespace UnitTest
     using namespace UnitTestInternal;
 
     class LockFreeStack
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         
@@ -160,7 +160,7 @@ namespace UnitTest
 
     
     class LockFreeIntrusiveStack
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
 #ifdef _DEBUG

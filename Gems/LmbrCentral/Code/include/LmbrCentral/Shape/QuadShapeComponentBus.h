@@ -24,7 +24,7 @@ namespace LmbrCentral
         : public ShapeComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(QuadShapeConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(QuadShapeConfig, AZ::SystemAllocator);
         AZ_RTTI(LmbrCentral::QuadShapeConfig, "{35CA7415-DB12-4630-B0D0-4A140CE1B9A7}", ShapeComponentConfig);
 
         static void Reflect(AZ::ReflectContext* context);
@@ -54,24 +54,24 @@ namespace LmbrCentral
         : public AZ::ComponentBus
     {
     public:
-        virtual QuadShapeConfig GetQuadConfiguration() = 0;
+        virtual const QuadShapeConfig& GetQuadConfiguration() const = 0;
 
         //! @brief Returns the width for the quad shape component.
-        virtual float GetQuadWidth() = 0;
+        virtual float GetQuadWidth() const = 0;
 
         //! @brief Sets the width for the quad shape component.
         //! @param width New width of the quad shape.
         virtual void SetQuadWidth(float width) = 0;
 
         //! @brief Returns the height for the quad shape component.
-        virtual float GetQuadHeight() = 0;
+        virtual float GetQuadHeight() const = 0;
 
         //! @brief Sets the height for the quad shape component.
         //! @param width New height of the quad shape.
         virtual void SetQuadHeight(float height) = 0;
 
         //! @brief Convenience function that returns the orientation as a quaternion for the quad determined by the transform component.
-        virtual const AZ::Quaternion& GetQuadOrientation() = 0;
+        virtual const AZ::Quaternion& GetQuadOrientation() const = 0;
 
     };
 

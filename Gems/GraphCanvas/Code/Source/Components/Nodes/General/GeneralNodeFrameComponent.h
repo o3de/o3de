@@ -39,16 +39,16 @@ namespace GraphCanvas
         // AZ::Component
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("GraphCanvas_NodeVisualService", 0x39c4e7f3));
-            provided.push_back(AZ_CRC("GraphCanvas_RootVisualService", 0x9ec46d3b));
-            provided.push_back(AZ_CRC("GraphCanvas_VisualService", 0xfbb2c871));
+            provided.push_back(AZ_CRC_CE("GraphCanvas_NodeVisualService"));
+            provided.push_back(AZ_CRC_CE("GraphCanvas_RootVisualService"));
+            provided.push_back(AZ_CRC_CE("GraphCanvas_VisualService"));
         }
 
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("GraphCanvas_NodeVisualService", 0x39c4e7f3));
-            incompatible.push_back(AZ_CRC("GraphCanvas_RootVisualService", 0x9ec46d3b));
-            incompatible.push_back(AZ_CRC("GraphCanvas_VisualService", 0xfbb2c871));
+            incompatible.push_back(AZ_CRC_CE("GraphCanvas_NodeVisualService"));
+            incompatible.push_back(AZ_CRC_CE("GraphCanvas_RootVisualService"));
+            incompatible.push_back(AZ_CRC_CE("GraphCanvas_VisualService"));
         }
 
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
@@ -58,8 +58,8 @@ namespace GraphCanvas
 
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC("GraphCanvas_NodeService", 0xcc0f32cc));
-            required.push_back(AZ_CRC("GraphCanvas_StyledGraphicItemService", 0xeae4cdf4));
+            required.push_back(AZ_CRC_CE("GraphCanvas_NodeService"));
+            required.push_back(AZ_CRC_CE("GraphCanvas_StyledGraphicItemService"));
         }
         
         void Init() override;
@@ -88,7 +88,7 @@ namespace GraphCanvas
     {
     public:
         AZ_RTTI(GeneralNodeFrameGraphicsWidget, "{15200183-8316-4A7D-985E-5C3257CD2463}", NodeFrameGraphicsWidget);
-        AZ_CLASS_ALLOCATOR(GeneralNodeFrameGraphicsWidget, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GeneralNodeFrameGraphicsWidget, AZ::SystemAllocator);
 
         // Do not allow Serialization of Graphics Ui classes
         static void Reflect(AZ::ReflectContext*) = delete;

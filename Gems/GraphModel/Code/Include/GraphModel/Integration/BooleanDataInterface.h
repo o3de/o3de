@@ -17,19 +17,18 @@
 namespace GraphModelIntegration
 {
     //! Satisfies GraphCanvas API requirements for showing bool property widgets in nodes.
-    class BooleanDataInterface
-        : public GraphCanvas::BooleanDataInterface
+    class BooleanDataInterface : public GraphCanvas::BooleanDataInterface
     {
     public:
-        AZ_CLASS_ALLOCATOR(BooleanDataInterface, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BooleanDataInterface, AZ::SystemAllocator);
 
         BooleanDataInterface(GraphModel::SlotPtr slot);
         ~BooleanDataInterface() = default;
-        
+
         bool GetBool() const override;
         void SetBool(bool enabled) override;
 
     private:
         AZStd::weak_ptr<GraphModel::Slot> m_slot;
     };
-}
+} // namespace GraphModelIntegration

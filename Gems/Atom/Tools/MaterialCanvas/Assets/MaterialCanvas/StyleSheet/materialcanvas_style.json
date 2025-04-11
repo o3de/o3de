@@ -2104,6 +2104,13 @@
     "background-color": "#AF937B"
   },
   {
+    "selectors": [ "UtilityNodeTitlePalette" ],
+    "palette-style": "solid",
+    "line-color": "#FFFFFF",
+    "background-color": "#FFFFFF",
+    "color": "#ffffff"
+  },
+  {
     "selectors": [ "DefaultNodeTitlePalette" ],
     "palette-style": "solid",
     "line-color": "#333333",
@@ -2181,7 +2188,7 @@
     "color": "#ffffff"
   },
   {
-    "selectors": [ "ObjectNodeTitlePalette" ],
+    "selectors": [ "VertexNodeTitlePalette" ],
     "palette-style": "solid",
     "line-color": "#0055FF",
     "background-color": "#0055FF",
@@ -2199,6 +2206,20 @@
     "palette-style": "solid",
     "line-color": "#FF00FF",
     "background-color": "#FF00FF",
+    "color": "#ffffff"
+  },
+  {
+    "selectors": [ "ViewNodeTitlePalette" ],
+    "palette-style": "solid",
+    "line-color": "#FF8800",
+    "background-color": "#FF8800",
+    "color": "#ffffff"
+  },
+  {
+    "selectors": [ "SceneNodeTitlePalette" ],
+    "palette-style": "solid",
+    "line-color": "#FF8800",
+    "background-color": "#FF8800",
     "color": "#ffffff"
   },
   {
@@ -2223,7 +2244,7 @@
     "color": "#ffffff"
   },
   {
-    "selectors": [ "MaterialTemplateNodeTitlePalette" ],
+    "selectors": [ "MaterialOutputNodeTitlePalette" ],
     "palette-style": "solid",
     "line-color": "#FF0000",
     "background-color": "#FF0000",

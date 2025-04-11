@@ -12,7 +12,6 @@
 #include <AzFramework/Application/Application.h>
 #include <AzToolsFramework/API/EditorLevelNotificationBus.h>
 #include <AzToolsFramework/AssetBrowser/Previewer/PreviewerBus.h>
-#include <AzToolsFramework/Entity/SliceEditorEntityOwnershipServiceBus.h>
 #include <SharedPreview/SharedPreviewerFactory.h>
 #include <SharedPreview/SharedThumbnailRenderer.h>
 
@@ -25,8 +24,6 @@ namespace AZ
         //! This is the editor-counterpart to this gem's main CommonSystemComponent class.
         class EditorCommonFeaturesSystemComponent
             : public AZ::Component
-            , public AzToolsFramework::EditorLevelNotificationBus::Handler
-            , public AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler
             , public AzToolsFramework::AssetBrowser::PreviewerRequestBus::Handler
             , public AzFramework::ApplicationLifecycleEvents::Bus::Handler
         {
@@ -48,14 +45,6 @@ namespace AZ
             void Init() override;
             void Activate() override;
             void Deactivate() override;
-
-            // EditorLevelNotificationBus overrides ...
-            void OnNewLevelCreated() override;
-
-            // SliceEditorEntityOwnershipServiceBus overrides ...
-            void OnSliceInstantiated(
-                const AZ::Data::AssetId&, AZ::SliceComponent::SliceInstanceAddress&, const AzFramework::SliceInstantiationTicket&) override;
-            void OnSliceInstantiationFailed(const AZ::Data::AssetId&, const AzFramework::SliceInstantiationTicket&) override;
 
             // AzToolsFramework::AssetBrowser::PreviewerRequestBus::Handler overrides...
             const AzToolsFramework::AssetBrowser::PreviewerFactory* GetPreviewerFactory(

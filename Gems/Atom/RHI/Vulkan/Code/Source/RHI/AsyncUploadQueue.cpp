@@ -5,25 +5,27 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <Atom/RHI/RHISystemInterface.h>
-#include <Atom/RHI.Reflect/PlatformLimitsDescriptor.h>
-#include <Atom/RHI/BufferPool.h>
-#include <Atom/RHI/StreamingImagePool.h>
 #include <Atom/RHI.Reflect/ImageSubresource.h>
+#include <Atom/RHI.Reflect/PlatformLimitsDescriptor.h>
+#include <Atom/RHI/DeviceBufferPool.h>
+#include <Atom/RHI/RHISystemInterface.h>
+#include <Atom/RHI/DeviceStreamingImagePool.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 #include <RHI/AsyncUploadQueue.h>
 #include <RHI/Buffer.h>
 #include <RHI/BufferPool.h>
 #include <RHI/CommandList.h>
 #include <RHI/CommandQueue.h>
 #include <RHI/CommandQueueContext.h>
-#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
+#include <RHI/Conversion.h>
 #include <RHI/Device.h>
 #include <RHI/Fence.h>
 #include <RHI/Image.h>
 #include <RHI/MemoryView.h>
 #include <RHI/Queue.h>
+#include <RHI/SignalEvent.h>
 
 namespace AZ
 {
@@ -43,7 +45,7 @@ namespace AZ
 
             m_queue = &device.GetCommandQueueContext().GetCommandQueue(RHI::HardwareQueueClass::Copy);
 
-            result = BuilidFramePackets();
+            result = BuildFramePackets();
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
 
             m_asyncWaitQueue.Init();
@@ -57,14 +59,14 @@ namespace AZ
             m_callbackList.clear();
         }
 
-        RHI::AsyncWorkHandle AsyncUploadQueue::QueueUpload(const RHI::BufferStreamRequest& request)
+        RHI::AsyncWorkHandle AsyncUploadQueue::QueueUpload(const RHI::DeviceBufferStreamRequest& request)
         {
             auto& device = static_cast<Device&>(GetDevice());
 
             const uint8_t* sourceData = reinterpret_cast<const uint8_t*>(request.m_sourceData);
             const size_t byteCount = request.m_byteCount;
             auto* buffer = static_cast<Buffer*>(request.m_buffer);
-            RHI::BufferPool* bufferPool = static_cast<RHI::BufferPool*>(buffer->GetPool());
+            RHI::DeviceBufferPool* bufferPool = static_cast<RHI::DeviceBufferPool*>(buffer->GetPool());
 
             if (byteCount == 0)
             {
@@ -76,11 +78,11 @@ namespace AZ
             {
                 // No need to use staging buffers since it's host memory.
                 // We just map, copy and then unmap.
-                RHI::BufferMapRequest mapRequest;
+                RHI::DeviceBufferMapRequest mapRequest;
                 mapRequest.m_buffer = request.m_buffer;
                 mapRequest.m_byteCount = request.m_byteCount;
                 mapRequest.m_byteOffset = request.m_byteOffset;
-                RHI::BufferMapResponse mapResponse;
+                RHI::DeviceBufferMapResponse mapResponse;
                 bufferPool->MapBuffer(mapRequest, mapResponse);
                 ::memcpy(mapResponse.m_data, request.m_sourceData, request.m_byteCount);
                 bufferPool->UnmapBuffer(*request.m_buffer);
@@ -93,6 +95,19 @@ namespace AZ
 
             RHI::Ptr<Fence> uploadFence = Fence::Create();
             uploadFence->Init(device, RHI::FenceState::Reset);
+
+            uploadFence->SetSignalEvent(AZStd::make_shared<SignalEvent>());
+            uploadFence->SetSignalEventBitToSignal(0);
+            uploadFence->SetSignalEventDependencies(1);
+
+            if (request.m_fenceToSignal)
+            {
+                auto fenceToSignal = static_cast<Fence*>(request.m_fenceToSignal);
+                fenceToSignal->SetSignalEvent(AZStd::make_shared<SignalEvent>());
+                fenceToSignal->SetSignalEventBitToSignal(0);
+                fenceToSignal->SetSignalEventDependencies(1);
+            }
+
             CommandQueue::Command command = [=, &device](void* queue)
             {
                 AZ_PROFILE_SCOPE(RHI, "Upload Buffer");
@@ -119,14 +134,14 @@ namespace AZ
                     memcpy(mapped, sourceData + pendingByteOffset, bytesToCopy);
                     framePacket->m_stagingBuffer->GetBufferMemoryView()->Unmap(RHI::HostMemoryAccess::Write);
 
-                    RHI::CopyBufferDescriptor copyDescriptor;
+                    RHI::DeviceCopyBufferDescriptor copyDescriptor;
                     copyDescriptor.m_sourceBuffer = framePacket->m_stagingBuffer.get();
                     copyDescriptor.m_sourceOffset = 0;
                     copyDescriptor.m_destinationBuffer = buffer;
                     copyDescriptor.m_destinationOffset = static_cast<uint32_t>(pendingByteOffset);
                     copyDescriptor.m_size = static_cast<uint32_t>(bytesToCopy);
 
-                    m_commandList->Submit(RHI::CopyItem(copyDescriptor));
+                    m_commandList->Submit(RHI::DeviceCopyItem(copyDescriptor));
 
                     pendingByteOffset += bytesToCopy;
                     pendingByteCount -= bytesToCopy;
@@ -154,6 +169,7 @@ namespace AZ
             m_queue->QueueCommand(AZStd::move(command));
 
             buffer->SetOwnerQueue(m_queue->GetId());
+            buffer->SetPipelineAccess({ VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, 0 });
             auto waitEvent = [buffer]()
             {
                 buffer->SetUploadHandle(RHI::AsyncWorkHandle::Null);
@@ -167,9 +183,14 @@ namespace AZ
         }
 
         // [GFX TODO][ATOM-4205] Stage/Upload 3D streaming images more efficiently.
-        RHI::AsyncWorkHandle AsyncUploadQueue::QueueUpload(const RHI::StreamingImageExpandRequest& request, uint32_t residentMip)
+        RHI::AsyncWorkHandle AsyncUploadQueue::QueueUpload(const RHI::DeviceStreamingImageExpandRequest& request, uint32_t residentMip)
         {
-            auto* image = static_cast<Image*>(request.m_image);
+            if (residentMip < request.m_mipSlices.size() || residentMip < 1)
+            {
+                AZ_Assert(false, "Wrong input parameter");
+            }
+
+            auto* image = static_cast<Image*>(request.m_image.get());
             auto& device = static_cast<Device&>(GetDevice());
 
             const uint16_t startMip = static_cast<uint16_t>(residentMip - 1);
@@ -177,6 +198,10 @@ namespace AZ
 
             RHI::Ptr<Fence> uploadFence = Fence::Create();
             uploadFence->Init(device, RHI::FenceState::Reset);
+
+            uploadFence->SetSignalEvent(AZStd::make_shared<SignalEvent>());
+            uploadFence->SetSignalEventBitToSignal(0);
+            uploadFence->SetSignalEventDependencies(1);
 
             CommandQueue::Command command = [=, &device](void* queue)
             {
@@ -198,7 +223,7 @@ namespace AZ
                 for (uint16_t curMip = endMip; curMip <= startMip; ++curMip)
                 {
                     const size_t sliceIndex = curMip - endMip;
-                    const RHI::ImageSubresourceLayout& subresourceLayout = request.m_mipSlices[sliceIndex].m_subresourceLayout;
+                    const RHI::DeviceImageSubresourceLayout& subresourceLayout = request.m_mipSlices[sliceIndex].m_subresourceLayout;
                     uint32_t arraySlice = 0;
                     const uint32_t subresourceSlicePitch = subresourceLayout.m_bytesPerImage;
 
@@ -261,13 +286,14 @@ namespace AZ
                                 }
 
                                 // Add copy command to copy image subresource from staging memory to image GPU resource.
-                                RHI::CopyBufferToImageDescriptor copyDescriptor;
+                                RHI::DeviceCopyBufferToImageDescriptor copyDescriptor;
                                 copyDescriptor.m_sourceBuffer = framePacket->m_stagingBuffer.get();
                                 copyDescriptor.m_sourceOffset = framePacket->m_dataOffset;
                                 copyDescriptor.m_sourceBytesPerRow = stagingRowPitch;
                                 copyDescriptor.m_sourceBytesPerImage = stagingSlicePitch;
                                 copyDescriptor.m_sourceSize = subresourceLayout.m_size;
                                 copyDescriptor.m_sourceSize.m_depth = 1;
+                                copyDescriptor.m_sourceFormat = image->GetDescriptor().m_format;
                                 copyDescriptor.m_destinationImage = image;
                                 copyDescriptor.m_destinationSubresource.m_mipSlice = curMip;
                                 copyDescriptor.m_destinationSubresource.m_arraySlice = static_cast<uint16_t>(arraySlice);
@@ -275,7 +301,7 @@ namespace AZ
                                 copyDescriptor.m_destinationOrigin.m_top = 0;
                                 copyDescriptor.m_destinationOrigin.m_front = depth;
 
-                                m_commandList->Submit(RHI::CopyItem(copyDescriptor));
+                                m_commandList->Submit(RHI::DeviceCopyItem(copyDescriptor));
 
                                 framePacket->m_dataOffset += stagingSlicePitch;
                             }
@@ -293,13 +319,14 @@ namespace AZ
                                 const uint8_t* subresourceDataStart = reinterpret_cast<const uint8_t*>(subresourceData.m_data) + (depth * subresourceSlicePitch);
 
                                 // The copy destination is same for each subresource.
-                                RHI::CopyBufferToImageDescriptor copyDescriptor;
+                                RHI::DeviceCopyBufferToImageDescriptor copyDescriptor;
                                 copyDescriptor.m_sourceBuffer = framePacket->m_stagingBuffer.get();
                                 copyDescriptor.m_sourceOffset = framePacket->m_dataOffset;
                                 copyDescriptor.m_sourceBytesPerRow = stagingRowPitch;
                                 copyDescriptor.m_sourceBytesPerImage = stagingSlicePitch;
                                 copyDescriptor.m_sourceSize = subresourceLayout.m_size;
                                 copyDescriptor.m_sourceSize.m_depth = 1;
+                                copyDescriptor.m_sourceFormat = image->GetDescriptor().m_format;
                                 copyDescriptor.m_destinationImage = image;
                                 copyDescriptor.m_destinationSubresource.m_mipSlice = curMip;
                                 copyDescriptor.m_destinationSubresource.m_arraySlice = static_cast<uint16_t>(arraySlice);
@@ -349,7 +376,7 @@ namespace AZ
                                     copyDescriptor.m_sourceSize.m_height = heightToCopy;
                                     copyDescriptor.m_sourceOffset = framePacket->m_dataOffset;
 
-                                    m_commandList->Submit(RHI::CopyItem(copyDescriptor));
+                                    m_commandList->Submit(RHI::DeviceCopyItem(copyDescriptor));
 
                                     framePacket->m_dataOffset += stagingSize;
                                     startRow = endRow;
@@ -380,6 +407,7 @@ namespace AZ
 
             image->SetOwnerQueue(m_queue->GetId(), &range);
             image->SetLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &range);
+            image->SetPipelineAccess({ VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, 0 });
             m_queue->QueueCommand(AZStd::move(command));
 
             auto waitEvent = [this, request, image, range]()
@@ -430,7 +458,22 @@ namespace AZ
             ProcessCallback(workHandle);
         }
 
-        RHI::ResultCode AsyncUploadQueue::BuilidFramePackets()
+        void AsyncUploadQueue::QueueBindSparse(const VkBindSparseInfo& bindInfo)
+        {
+            auto& device = static_cast<Device&>(GetDevice());
+
+            VkBindSparseInfo bindInfoCache = bindInfo;
+
+            CommandQueue::Command command = [=, &device](void* queue)
+            {            
+                Queue* vulkanQueue = static_cast<Queue*>(queue);
+                device.GetContext().QueueBindSparse(vulkanQueue->GetNativeQueue(), 1, &bindInfoCache, VK_NULL_HANDLE);
+            };
+            
+            m_queue->QueueCommand(AZStd::move(command));
+        }
+
+        RHI::ResultCode AsyncUploadQueue::BuildFramePackets()
         {
             auto& device = static_cast<Device&>(GetDevice());
             m_framePackets.resize(m_descriptor.m_frameCount);
@@ -443,6 +486,9 @@ namespace AZ
                 AZ_Assert(framePacket.m_stagingBuffer, "Failed to acquire staging buffer");
                 framePacket.m_fence = Fence::Create();
                 result = framePacket.m_fence->Init(device, RHI::FenceState::Signaled);
+                framePacket.m_fence->SetSignalEvent(AZStd::make_shared<SignalEvent>());
+                framePacket.m_fence->SetSignalEventBitToSignal(0);
+                framePacket.m_fence->SetSignalEventDependencies(1);
                 RETURN_RESULT_IF_UNSUCCESSFUL(result);
             }
 
@@ -484,7 +530,7 @@ namespace AZ
             {
                 semaphoresToSignal.push_back(semaphoreToSignal);
             }
-            queue->SubmitCommandBuffers(commandBuffers, semaphoresWaitInfo, semaphoresToSignal, framePacket.m_fence.get());
+            queue->SubmitCommandBuffers(commandBuffers, semaphoresWaitInfo, semaphoresToSignal, {}, framePacket.m_fence.get());
             queue->EndDebugLabel();
 
             m_frameIndex = (m_frameIndex + 1) % m_descriptor.m_frameCount;
@@ -521,7 +567,7 @@ namespace AZ
                 nullptr);
         }
 
-        void AsyncUploadQueue::EmmitPrologueMemoryBarrier(const RHI::StreamingImageExpandRequest& request, uint32_t residentMip)
+        void AsyncUploadQueue::EmmitPrologueMemoryBarrier(const RHI::DeviceStreamingImageExpandRequest& request, uint32_t residentMip)
         {
             const auto& image = static_cast<const Image&>(*request.m_image);
             const uint32_t beforeMip = residentMip;
@@ -594,7 +640,7 @@ namespace AZ
 
         void AsyncUploadQueue::EmmitEpilogueMemoryBarrier(
             CommandList& commandList,
-            const RHI::StreamingImageExpandRequest& request,
+            const RHI::DeviceStreamingImageExpandRequest& request,
             uint32_t residentMip)
         {
             const auto& image = static_cast<const Image&>(*request.m_image);
@@ -633,7 +679,7 @@ namespace AZ
                 &barrier);
         }
 
-        RHI::AsyncWorkHandle AsyncUploadQueue::CreateAsyncWork(RHI::Ptr<Fence> fence, RHI::Fence::SignalCallback callback /* = nullptr */)
+        RHI::AsyncWorkHandle AsyncUploadQueue::CreateAsyncWork(RHI::Ptr<Fence> fence, RHI::DeviceFence::SignalCallback callback /* = nullptr */)
         {
             return m_asyncWaitQueue.CreateAsyncWork([fence, callback]()
             {

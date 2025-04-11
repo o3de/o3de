@@ -1,0 +1,62 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+#ifndef VsInput
+#define VsInput         VsInput_DepthCommon
+#endif
+
+#ifndef VsSystemValues
+#define VsSystemValues  VsSystemValues_DepthCommon
+#endif
+
+#ifndef VsOutput
+#define VsOutput        VsOutput_DepthCommon
+#endif
+
+struct VsInput_DepthCommon
+{
+    float3 m_position : POSITION;
+    
+#if MATERIALPIPELINE_USES_PREV_VERTEX_POSITION
+    // This gets set automatically by the system at runtime only if it's available.
+    // There is a soft naming convention that associates this with o_prevPosition_isBound, which will be set to true whenever m_optional_prevPosition is available.
+    // (search "m_optional_" in ShaderVariantAssetBuilder for details on the naming convention).
+    // [GFX TODO][ATOM-14475]: Come up with a more elegant way to associate the isBound flag with the input stream.
+    // Vertex position of last frame to capture small scale motion due to vertex animation
+    float3 m_optional_prevPosition : POSITIONT;
+#endif
+};
+
+struct VsSystemValues_DepthCommon
+{
+    uint m_instanceId;
+};
+
+#if MATERIALPIPELINE_USES_PREV_VERTEX_POSITION
+    // Indicates whether the vertex input struct's "m_optional_prevPosition" is bound. If false, it is not safe to read from m_optional_prevPosition.
+    // This option gets set automatically by the system at runtime; there is a soft naming convention that associates it with m_optional_prevPosition.
+    // (search "m_optional_" in ShaderVariantAssetBuilder for details on the naming convention).
+    // [GFX TODO][ATOM-14475]: Come up with a more elegant way to associate the isBound flag with the input stream.
+    option bool o_prevPosition_isBound;
+#endif
+
+struct VsOutput_DepthCommon
+{
+    // "centroid" is needed for SV_Depth to compile
+    precise linear centroid 
+    float4 m_position : SV_Position;
+    
+#if MATERIALPIPELINE_USES_PREV_VERTEX_POSITION
+    float3 m_worldPos : TEXCOORD0;
+    float3 m_worldPosPrev: TEXCOORD1;
+#endif
+    uint m_instanceId : SV_InstanceID;
+};
+

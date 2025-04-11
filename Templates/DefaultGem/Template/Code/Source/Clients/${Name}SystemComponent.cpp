@@ -10,28 +10,22 @@
 
 #include "${Name}SystemComponent.h"
 
+#include <${Name}/${Name}TypeIds.h>
+
 #include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/Serialization/EditContext.h>
-#include <AzCore/Serialization/EditContextConstants.inl>
 
 namespace ${SanitizedCppName}
 {
+    AZ_COMPONENT_IMPL(${SanitizedCppName}SystemComponent, "${SanitizedCppName}SystemComponent",
+        ${SanitizedCppName}SystemComponentTypeId);
+
     void ${SanitizedCppName}SystemComponent::Reflect(AZ::ReflectContext* context)
     {
-        if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serialize->Class<${SanitizedCppName}SystemComponent, AZ::Component>()
+            serializeContext->Class<${SanitizedCppName}SystemComponent, AZ::Component>()
                 ->Version(0)
                 ;
-
-            if (AZ::EditContext* ec = serialize->GetEditContext())
-            {
-                ec->Class<${SanitizedCppName}SystemComponent>("${SanitizedCppName}", "[Description of functionality provided by this System Component]")
-                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
-                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ;
-            }
         }
     }
 

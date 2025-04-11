@@ -632,21 +632,21 @@ namespace AZ
          * @return True if there are any handlers connected to the
          * EBus. Otherwise, false.
          */
-        static inline bool HasHandlers();
+        static bool HasHandlers();
 
         /**
          * Returns whether handlers are connected to this specific address.
          * @return True if there are any handlers connected at the address.
          * Otherwise, false.
          */
-        static inline bool HasHandlers(const BusIdType& id);
+        static bool HasHandlers(const BusIdType& id);
 
         /**
          * Returns whether handlers are connected to the specific cached address.
          * @return True if there are any handlers connected at the cached address.
          * Otherwise, false.
          */
-        static inline bool HasHandlers(const BusPtr& ptr);
+        static bool HasHandlers(const BusPtr& ptr);
 
         /**
          * Gets the ID of the address that is currently receiving an event.
@@ -1038,12 +1038,6 @@ namespace AZ
     //////////////////////////////////////////////////////////////////////////
     // EBus implementations
 
-    namespace Internal
-    {
-        template <class C>
-        AZ_THREAD_LOCAL C* EBusCallstackStorage<C, true>::s_entry = nullptr;
-    }
-
     //=========================================================================
     // Context::Context
     //=========================================================================
@@ -1394,6 +1388,64 @@ AZ_POP_DISABLE_WARNING
     {
         //////////////////////////////////////////////////////////////////////////
         // NonIdHandler
+
+        template<typename Interface, typename Traits, typename ContainerType>
+        NonIdHandler<Interface, Traits, ContainerType>::NonIdHandler()
+            : m_node(nullptr)
+        {
+        }
+
+        template <typename Interface, typename Traits, typename ContainerType>
+        NonIdHandler<Interface, Traits, ContainerType>::NonIdHandler(const NonIdHandler& rhs)
+            : m_node(nullptr)
+        {
+            *this = rhs;
+        }
+
+        template <typename Interface, typename Traits, typename ContainerType>
+        NonIdHandler<Interface, Traits, ContainerType>& NonIdHandler<Interface, Traits, ContainerType>::operator=(const NonIdHandler& rhs)
+        {
+            BusDisconnect();
+            if (rhs.BusIsConnected())
+            {
+                BusConnect();
+            }
+            return *this;
+        }
+
+        template <typename Interface, typename Traits, typename ContainerType>
+        NonIdHandler<Interface, Traits, ContainerType>::NonIdHandler(NonIdHandler&& rhs)
+            : m_node(nullptr)
+        {
+            *this = AZStd::move(rhs);
+        }
+
+        template <typename Interface, typename Traits, typename ContainerType>
+        NonIdHandler<Interface, Traits, ContainerType>& NonIdHandler<Interface, Traits, ContainerType>::operator=(NonIdHandler&& rhs)
+        {
+            BusDisconnect();
+            if (rhs.BusIsConnected())
+            {
+                rhs.BusDisconnect();
+                BusConnect();
+            }
+            return *this;
+        }
+
+        template <typename Interface, typename Traits, typename ContainerType>
+        NonIdHandler<Interface, Traits, ContainerType>::~NonIdHandler()
+        {
+            AZ_PUSH_DISABLE_WARNING(4127, "-Wunknown-warning-option") // conditional expression is constant (for Traits::LocklessDispatch in asserts)
+            AZ_Assert((!AZStd::is_polymorphic<typename BusType::InterfaceType>::value || AZStd::is_same<typename BusType::MutexType, AZ::NullMutex>::value || !BusIsConnected()), "EBus handlers must be disconnected prior to destruction on multi-threaded buses with virtual functions");
+            AZ_POP_DISABLE_WARNING
+
+            if (BusIsConnected())
+            {
+                BusDisconnect();
+            }
+            EBUS_ASSERT(!BusIsConnected(), "Internal error: Bus was not properly disconnected!");
+        }
+
         template <typename Interface, typename Traits, typename ContainerType>
         void NonIdHandler<Interface, Traits, ContainerType>::BusConnect()
         {
@@ -1406,6 +1458,7 @@ AZ_POP_DISABLE_WARNING
                 BusType::ConnectInternal(context, m_node, contextLock, id);
             }
         }
+
         template <typename Interface, typename Traits, typename ContainerType>
         void NonIdHandler<Interface, Traits, ContainerType>::BusDisconnect()
         {
@@ -1419,8 +1472,76 @@ AZ_POP_DISABLE_WARNING
             }
         }
 
+        template <typename Interface, typename Traits, typename ContainerType>
+        bool NonIdHandler<Interface, Traits, ContainerType>::BusIsConnected() const
+        {
+            return static_cast<Interface*>(m_node) != nullptr;
+        }
+
+        // End of NonIdHandler
+        //////////////////////////////////////////////////////////////////////////
+
         //////////////////////////////////////////////////////////////////////////
         // IdHandler
+
+        template <typename Interface, typename Traits, typename ContainerType>
+        IdHandler<Interface, Traits, ContainerType>::IdHandler()
+            : m_node(nullptr)
+        {
+        }
+
+        template <typename Interface, typename Traits, typename ContainerType>
+        IdHandler<Interface, Traits, ContainerType>::IdHandler(const IdHandler& rhs)
+            : m_node(nullptr)
+        {
+            *this = rhs;
+        }
+
+        template <typename Interface, typename Traits, typename ContainerType>
+        IdHandler<Interface, Traits, ContainerType>& IdHandler<Interface, Traits, ContainerType>::operator=(const IdHandler& rhs)
+        {
+            BusDisconnect();
+            if (rhs.BusIsConnected())
+            {
+                BusConnect(rhs.m_node.GetBusId());
+            }
+            return *this;
+        }
+
+        template <typename Interface, typename Traits, typename ContainerType>
+        IdHandler<Interface, Traits, ContainerType>::IdHandler(IdHandler&& rhs)
+            : m_node(nullptr)
+        {
+            *this = AZStd::move(rhs);
+        }
+
+        template <typename Interface, typename Traits, typename ContainerType>
+        IdHandler<Interface, Traits, ContainerType>& IdHandler<Interface, Traits, ContainerType>::operator=(IdHandler&& rhs)
+        {
+            BusDisconnect();
+            if (rhs.BusIsConnected())
+            {
+                IdType id = rhs.m_node.GetBusId();
+                rhs.BusDisconnect(id);
+                BusConnect(id);
+            }
+            return *this;
+        }
+
+        template <typename Interface, typename Traits, typename ContainerType>
+        IdHandler<Interface, Traits, ContainerType>::~IdHandler()
+        {
+            AZ_PUSH_DISABLE_WARNING(4127, "-Wunknown-warning-option") // conditional expression is constant (for Traits::LocklessDispatch in asserts)
+            AZ_Assert((!AZStd::is_polymorphic<typename BusType::InterfaceType>::value || AZStd::is_same_v<typename BusType::MutexType, AZ::NullMutex> || !BusIsConnected()), "EBus handlers must be disconnected prior to destruction on multi-threaded buses with virtual functions");
+            AZ_POP_DISABLE_WARNING
+
+            if (BusIsConnected())
+            {
+                BusDisconnect();
+            }
+            EBUS_ASSERT(!BusIsConnected(), "Internal error: Bus was not properly disconnected!");
+        }
+
         template <typename Interface, typename Traits, typename ContainerType>
         void IdHandler<Interface, Traits, ContainerType>::BusConnect(const IdType& id)
         {
@@ -1440,6 +1561,7 @@ AZ_POP_DISABLE_WARNING
             m_node = this;
             BusType::ConnectInternal(context, m_node, contextLock, id);
         }
+
         template <typename Interface, typename Traits, typename ContainerType>
         void IdHandler<Interface, Traits, ContainerType>::BusDisconnect(const IdType& id)
         {
@@ -1452,6 +1574,7 @@ AZ_POP_DISABLE_WARNING
                 }
             }
         }
+
         template <typename Interface, typename Traits, typename ContainerType>
         void IdHandler<Interface, Traits, ContainerType>::BusDisconnect()
         {
@@ -1465,8 +1588,76 @@ AZ_POP_DISABLE_WARNING
             }
         }
 
+        template <typename Interface, typename Traits, typename ContainerType>
+        bool IdHandler<Interface, Traits, ContainerType>::BusIsConnectedId(const IdType& id) const
+        {
+            return BusIsConnected() && m_node.GetBusId() == id;
+        }
+
+        template <typename Interface, typename Traits, typename ContainerType>
+        bool IdHandler<Interface, Traits, ContainerType>::BusIsConnected() const
+        {
+            return m_node.m_holder != nullptr;
+        }
+
+        // End of IdHandler
+        //////////////////////////////////////////////////////////////////////////
+
         //////////////////////////////////////////////////////////////////////////
         // MultiHandler
+
+        template <typename Interface, typename Traits, typename ContainerType>
+        MultiHandler<Interface, Traits, ContainerType>::MultiHandler() = default;
+
+        template <typename Interface, typename Traits, typename ContainerType>
+        MultiHandler<Interface, Traits, ContainerType>::MultiHandler(const MultiHandler& rhs)
+        {
+            *this = rhs;
+        }
+
+        template <typename Interface, typename Traits, typename ContainerType>
+        MultiHandler<Interface, Traits, ContainerType>& MultiHandler<Interface, Traits, ContainerType>::operator=(const MultiHandler& rhs)
+        {
+            BusDisconnect();
+            for (const auto& nodePair : rhs.m_handlerNodes)
+            {
+                BusConnect(nodePair.first);
+            }
+            return *this;
+        }
+
+        template <typename Interface, typename Traits, typename ContainerType>
+        MultiHandler<Interface, Traits, ContainerType>::MultiHandler(MultiHandler&& rhs)
+        {
+            *this = AZStd::move(rhs);
+        }
+
+        template <typename Interface, typename Traits, typename ContainerType>
+        MultiHandler<Interface, Traits, ContainerType>& MultiHandler<Interface, Traits, ContainerType>::operator=(MultiHandler&& rhs)
+        {
+            BusDisconnect();
+            for (const auto& nodePair : rhs.m_handlerNodes)
+            {
+                BusConnect(nodePair.first);
+            }
+            rhs.BusDisconnect();
+            return *this;
+        }
+
+        template <typename Interface, typename Traits, typename ContainerType>
+        MultiHandler<Interface, Traits, ContainerType>::~MultiHandler()
+        {
+            AZ_PUSH_DISABLE_WARNING(4127, "-Wunknown-warning-option") // conditional expression is constant (for Traits::LocklessDispatch in asserts)
+            AZ_Assert((!AZStd::is_polymorphic<typename BusType::InterfaceType>::value || AZStd::is_same<typename BusType::MutexType, AZ::NullMutex>::value || !BusIsConnected()), "EBus handlers must be disconnected prior to destruction on multi-threaded buses with virtual functions");
+            AZ_POP_DISABLE_WARNING
+
+            if (BusIsConnected())
+            {
+                BusDisconnect();
+            }
+            EBUS_ASSERT(!BusIsConnected(), "Internal error: Bus was not properly disconnected!");
+        }
+
         template <typename Interface, typename Traits, typename ContainerType>
         void MultiHandler<Interface, Traits, ContainerType>::BusConnect(const IdType& id)
         {
@@ -1480,6 +1671,7 @@ AZ_POP_DISABLE_WARNING
                 BusType::ConnectInternal(context, *handlerNode, contextLock, id);
             }
         }
+
         template <typename Interface, typename Traits, typename ContainerType>
         void MultiHandler<Interface, Traits, ContainerType>::BusDisconnect(const IdType& id)
         {
@@ -1497,6 +1689,7 @@ AZ_POP_DISABLE_WARNING
                 }
             }
         }
+
         template <typename Interface, typename Traits, typename ContainerType>
         void MultiHandler<Interface, Traits, ContainerType>::BusDisconnect()
         {
@@ -1515,6 +1708,21 @@ AZ_POP_DISABLE_WARNING
                 }
             }
         }
+
+        template <typename Interface, typename Traits, typename ContainerType>
+        bool MultiHandler<Interface, Traits, ContainerType>::BusIsConnectedId(const IdType& id) const
+        {
+            return m_handlerNodes.end() != m_handlerNodes.find(id);
+        }
+
+        template <typename Interface, typename Traits, typename ContainerType>
+        bool MultiHandler<Interface, Traits, ContainerType>::BusIsConnected() const
+        {
+            return !m_handlerNodes.empty();
+        }
+
+        // End of MultiHandler
+        //////////////////////////////////////////////////////////////////////////
 
         template <class EBus, class TargetEBus, class BusIdType>
         struct EBusRouterQueueEventForwarder
@@ -1998,4 +2206,139 @@ AZ_POP_DISABLE_WARNING
             EBusRouterForwarderHelper<EBus, TargetEBus>::ForwardEventResult(result, event, args...);
         }
     } // namespace Internal
+}
+
+// The following allow heavily-used busses to be declared extern, in order to speed up compile time where the same header
+// with the same bus is included in many different source files.
+// to use it, declare the EBus extern using DECLARE_EBUS_EXTERN or DECLARE_EBUS_EXTERN_WITH_TRAITS in the header file
+// and then use DECLARE_EBUS_INSTANTIATION or DECLARE_EBUS_INSTANTIATION_WITH_TRAITS in a file that everything that includes the header
+// will link to (for example, in a static library, dynamic library with export library, or .inl that everyone must include in a compile unit).
+
+// The following must be declared AT GLOBAL SCOPE and the namespace AZ is assumed due to the rule that extern template declarations must occur
+// in their enclosing scope.
+
+//! Externs an EBus class template with both the interface and bus traits arguments
+#define DECLARE_EBUS_EXTERN_WITH_TRAITS(a,b) \
+namespace AZ \
+{ \
+   extern template class EBus<a, b>; \
+}
+
+//! Externs an EBus class template using only the interface argument
+//! for both the EBus Interface and BusTraits template parameters
+#define DECLARE_EBUS_EXTERN(a) \
+namespace AZ \
+{ \
+   extern template class EBus<a, a>; \
+}
+
+//! Instantiates an EBus class template with both the interface and bus traits arguments
+#define DECLARE_EBUS_INSTANTIATION_WITH_TRAITS(a,b) \
+namespace AZ \
+{ \
+   template class EBus<a, b>; \
+}
+
+//! Instantiates an EBus class template using only the interface argument
+//! for both the EBus Interface and BusTraits template parameters
+#define DECLARE_EBUS_INSTANTIATION(a) \
+namespace AZ \
+{ \
+   template class EBus<a, a>; \
+}
+
+//! Declares an EBus class template, which uses EBusAddressPolicy::Single and is instantiated in a shared library, as extern using only the
+//! interface argument for both the EBus Interface and BusTraits template parameters
+#define DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(a) \
+namespace AZ \
+{ \
+   extern template class AZCORE_API_EXTERN EBus<a, a>; \
+   AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING \
+   extern template class AZCORE_API_EXTERN Internal::NonIdHandler<a, a, EBus<a, a>::BusesContainer>; \
+   extern template struct AZCORE_API_EXTERN Internal::EBusCallstackStorage<Internal::CallstackEntryBase<a, a>, true>; \
+   AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING \
+}
+
+//! Explicitly instantiates an EBus which was declared with the function directly above
+#define DECLARE_EBUS_INSTANTIATION_DLL_SINGLE_ADDRESS(a) \
+namespace AZ \
+{ \
+   template class AZ_DLL_EXPORT EBus<a, a>; \
+   AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING \
+   template class AZ_DLL_EXPORT Internal::NonIdHandler<a, a, EBus<a, a>::BusesContainer>; \
+   template struct AZ_DLL_EXPORT Internal::EBusCallstackStorage<Internal::CallstackEntryBase<a, a>, true>; \
+   AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING \
+}
+
+//! Declares an EBus class template, which uses an address policy different from EBusAddressPolicy::Single and is instantiated in a shared
+//! library, as extern using only the interface argument for both the EBus Interface and BusTraits template parameters
+#define DECLARE_EBUS_EXTERN_DLL_MULTI_ADDRESS(a) \
+namespace AZ \
+{ \
+   extern template class AZCORE_API_EXTERN EBus<a, a>;  \
+   AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING \
+   extern template class AZCORE_API_EXTERN Internal::IdHandler<a, a, EBus<a, a>::BusesContainer>; \
+   extern template class AZCORE_API_EXTERN Internal::MultiHandler<a, a, EBus<a, a>::BusesContainer>; \
+   extern template struct AZCORE_API_EXTERN Internal::EBusCallstackStorage<Internal::CallstackEntryBase<a, a>, true>; \
+   AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING \
+}
+
+//! Explicitly instantiates an EBus which was declared with the function directly above
+#define DECLARE_EBUS_INSTANTIATION_DLL_MULTI_ADDRESS(a) \
+namespace AZ \
+{ \
+   template class AZ_DLL_EXPORT EBus<a, a>; \
+   AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING \
+   template class AZ_DLL_EXPORT Internal::IdHandler<a, a, EBus<a, a>::BusesContainer>; \
+   template class AZ_DLL_EXPORT Internal::MultiHandler<a, a, EBus<a, a>::BusesContainer>; \
+   template struct AZ_DLL_EXPORT Internal::EBusCallstackStorage<Internal::CallstackEntryBase<a, a>, true>; \
+   AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING \
+}
+
+//! Declares an EBus class template, which uses EBusAddressPolicy::Single and is instantiated in a shared library, as extern with both the
+//! interface and bus traits arguments
+#define DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS_WITH_TRAITS(a, b) \
+namespace AZ \
+{ \
+   extern template class AZCORE_API_EXTERN EBus<a, b>;     \
+   AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING \
+   extern template class AZCORE_API_EXTERN Internal::NonIdHandler<a, b, EBus<a, b>::BusesContainer>; \
+   extern template struct AZCORE_API_EXTERN Internal::EBusCallstackStorage<Internal::CallstackEntryBase<a, b>, true>; \
+   AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING \
+}
+
+//! Explicitly instantiates an EBus which was declared with the function directly above
+#define DECLARE_EBUS_INSTANTIATION_DLL_SINGLE_ADDRESS_WITH_TRAITS(a, b) \
+namespace AZ \
+{ \
+   template class AZ_DLL_EXPORT EBus<a, b>; \
+   AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING \
+   template class AZ_DLL_EXPORT Internal::NonIdHandler<a, b, EBus<a, b>::BusesContainer>; \
+   template struct AZ_DLL_EXPORT Internal::EBusCallstackStorage<Internal::CallstackEntryBase<a, b>, true>; \
+   AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING \
+}
+
+//! Declares an EBus class template, which uses an address policy different from EBusAddressPolicy::Single and is instantiated in a shared
+//! library, as extern with both the interface and bus traits arguments
+#define DECLARE_EBUS_EXTERN_DLL_MULTI_ADDRESS_WITH_TRAITS(a, b) \
+namespace AZ \
+{ \
+   extern template class AZCORE_API_EXTERN EBus<a, b>;  \
+   AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING \
+   extern template class AZCORE_API_EXTERN Internal::IdHandler<a, b, EBus<a, b>::BusesContainer>; \
+   extern template class AZCORE_API_EXTERN Internal::MultiHandler<a, b, EBus<a, b>::BusesContainer>; \
+   extern template struct AZCORE_API_EXTERN Internal::EBusCallstackStorage<Internal::CallstackEntryBase<a, b>, true>; \
+   AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING \
+}
+
+//! Explicitly instantiates an EBus which was declared with the function directly above
+#define DECLARE_EBUS_INSTANTIATION_DLL_MULTI_ADDRESS_WITH_TRAITS(a, b) \
+namespace AZ \
+{ \
+   template class AZ_DLL_EXPORT EBus<a, b>; \
+   AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING \
+   template class AZ_DLL_EXPORT Internal::IdHandler<a, b, EBus<a, b>::BusesContainer>; \
+   template class AZ_DLL_EXPORT Internal::MultiHandler<a, b, EBus<a, b>::BusesContainer>; \
+   template struct AZ_DLL_EXPORT Internal::EBusCallstackStorage<Internal::CallstackEntryBase<a, b>, true>; \
+   AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING \
 }

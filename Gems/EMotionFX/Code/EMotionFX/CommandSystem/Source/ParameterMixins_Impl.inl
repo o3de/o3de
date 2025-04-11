@@ -8,14 +8,14 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(ParameterMixinActorId, EMotionFX::CommandAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(ParameterMixinJointName, EMotionFX::CommandAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(ParameterMixinAnimGraphId, EMotionFX::CommandAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(ParameterMixinTransitionId, EMotionFX::CommandAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(ParameterMixinConditionIndex, EMotionFX::CommandAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(ParameterMixinAnimGraphNodeId, EMotionFX::CommandAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(ParameterMixinAttributesString, EMotionFX::CommandAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(ParameterMixinSerializedContents, EMotionFX::CommandAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(ParameterMixinActorId, EMotionFX::CommandAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(ParameterMixinJointName, EMotionFX::CommandAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(ParameterMixinAnimGraphId, EMotionFX::CommandAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(ParameterMixinTransitionId, EMotionFX::CommandAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(ParameterMixinConditionIndex, EMotionFX::CommandAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(ParameterMixinAnimGraphNodeId, EMotionFX::CommandAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(ParameterMixinAttributesString, EMotionFX::CommandAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(ParameterMixinSerializedContents, EMotionFX::CommandAllocator)
 
     const char* ParameterMixinActorId::s_actorIdParameterName = "actorId";
     const char* ParameterMixinJointName::s_jointNameParameterName = "jointName";
@@ -476,7 +476,7 @@ namespace EMotionFX
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    AZ_CLASS_ALLOCATOR_IMPL(ParameterMixinSerializedMembers, EMotionFX::CommandAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(ParameterMixinSerializedMembers, EMotionFX::CommandAllocator)
     const char* ParameterMixinSerializedMembers::s_parameterName = "serializedMembers";
 
     void ParameterMixinSerializedMembers::Reflect(AZ::ReflectContext* context)

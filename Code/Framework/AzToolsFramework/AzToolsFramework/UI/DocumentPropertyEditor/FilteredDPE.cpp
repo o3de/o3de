@@ -19,7 +19,6 @@ namespace AzToolsFramework
         m_ui->setupUi(this);
         setAttribute(Qt::WA_DeleteOnClose);
         
-        m_ui->m_dpe->SetAdapter(m_filterAdapter);
         QObject::connect(
             m_ui->m_searchBox,
             &QLineEdit::textChanged,
@@ -38,6 +37,7 @@ namespace AzToolsFramework
     {
         m_sourceAdapter = sourceAdapter;
         m_filterAdapter->SetSourceAdapter(m_sourceAdapter);
+        m_ui->m_dpe->SetAdapter(m_filterAdapter);
     }
 
     DocumentPropertyEditor* FilteredDPE::GetDPE()

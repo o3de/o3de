@@ -7,8 +7,9 @@
  */
 #pragma once
 
-#include <AzCore/Serialization/SerializeContext.h>
 #include <SceneAPI/SceneCore/DataTypes/IGraphObject.h>
+
+#include <AzCore/std/smart_ptr/shared_ptr.h>
 
 namespace AZ
 {
@@ -17,6 +18,7 @@ namespace AZ
     class BehaviorClass;
     class BehaviorMethod;
     class BehaviorProperty;
+    class ReflectContext;
 
     namespace Python
     {
@@ -24,7 +26,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(PythonBehaviorInfo, "{8055BD03-5B3B-490D-AEC5-1B1E2616D529}");
-            AZ_CLASS_ALLOCATOR(PythonBehaviorInfo, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PythonBehaviorInfo, AZ::SystemAllocator);
 
             static void Reflect(AZ::ReflectContext* context);
 
@@ -56,7 +58,7 @@ namespace AZ
             {
             public:
                 AZ_RTTI(GraphObjectProxy, "{3EF0DDEC-C734-4804-BE99-82058FEBDA71}");
-                AZ_CLASS_ALLOCATOR(GraphObjectProxy, AZ::SystemAllocator, 0);
+                AZ_CLASS_ALLOCATOR(GraphObjectProxy, AZ::SystemAllocator);
 
                 static void Reflect(AZ::ReflectContext* context);
 

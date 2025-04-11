@@ -9,122 +9,168 @@
 #include <RHI/Buffer.h>
 #include <RHI/Image.h>
 #include <RHI/Scope.h>
-#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
+#include <RHI/Conversion.h>
 #include <RHI/Device.h>
+#include <Atom/RHI/ScopeAttachment.h>
+#include <Atom/RHI/FrameAttachment.h>
+#include <Atom/RHI/BufferScopeAttachment.h>
+#include <Atom/RHI/ImageScopeAttachment.h>
 
 namespace AZ
 {
     namespace Vulkan
     {
-        AliasingBarrierTracker::AliasingBarrierTracker(Device& device)
+        AliasingBarrierTracker::AliasingBarrierTracker(Device& device, uint64_t heapSize)
             :m_device(device)
         {
+            m_pipelineAccess.assign(0, heapSize + 1, PipelineAccessFlags{ VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_ACCESS_NONE });
         }
 
-        void AliasingBarrierTracker::AppendBarrierInternal(const RHI::AliasedResource& beforeResource, const RHI::AliasedResource& afterResource)
+        template<class T>
+        PipelineAccessFlags CollectPipelineAccess(const AZStd::vector<T>& propertyRanges)
         {
-            // We only need a barrier if the old or new resource writes to memory.
-            bool needsBarrier = false;
-            VkPipelineStageFlags srcPipelineFlags = {};
-            VkPipelineStageFlags dstPipelineFlags = {};
-            VkAccessFlags srcAccessFlags = {};
-            VkAccessFlags dstAccessFlags = {};
-            const RHI::ImageBindFlags writeImageFlags = RHI::ImageBindFlags::ShaderWrite | RHI::ImageBindFlags::Color | RHI::ImageBindFlags::DepthStencil | RHI::ImageBindFlags::CopyWrite;
-            const RHI::BufferBindFlags writeBufferFlags = RHI::BufferBindFlags::ShaderWrite | RHI::BufferBindFlags::CopyWrite;
-
-            // Get the srcPipeline and srcAccessFlags from the resource (image or buffer)
-            if (beforeResource.m_type == RHI::AliasedResourceType::Image)
+            PipelineAccessFlags flags = {};
+            for (const auto& range : propertyRanges)
             {
-                const Image* image = static_cast<const Image*>(beforeResource.m_resource);
-                const auto& bindFlags = image->GetDescriptor().m_bindFlags;
-                needsBarrier |= RHI::CheckBitsAny(bindFlags, writeImageFlags);
-                srcPipelineFlags = GetResourcePipelineStateFlags(bindFlags);
-                srcAccessFlags = GetResourceAccessFlags(bindFlags);
+                flags |= range.m_property;
             }
-            else  // Buffer
-            {
-                const Buffer* buffer = static_cast<const Buffer*>(beforeResource.m_resource);
-                const auto& bindFlags = buffer->GetDescriptor().m_bindFlags;
-                needsBarrier |= RHI::CheckBitsAny(bindFlags, writeBufferFlags);
-                srcPipelineFlags = GetResourcePipelineStateFlags(bindFlags);
-                srcAccessFlags = GetResourceAccessFlags(bindFlags);
-            }
+            return flags;
+        }
 
-            const auto& queueContext = m_device.GetCommandQueueContext();
-            const QueueId& oldQueueId = queueContext.GetCommandQueue(beforeResource.m_endScope->GetHardwareQueueClass()).GetId();
-            const QueueId& newQueueId = queueContext.GetCommandQueue(afterResource.m_beginScope->GetHardwareQueueClass()).GetId();
-
-            if (afterResource.m_type == RHI::AliasedResourceType::Image)
-            {
-                Image* image = static_cast<Image*>(afterResource.m_resource);
-                const auto& bindFlags = image->GetDescriptor().m_bindFlags;
-                needsBarrier |= RHI::CheckBitsAny(bindFlags, writeImageFlags);
-                dstPipelineFlags = GetResourcePipelineStateFlags(bindFlags);
-                dstAccessFlags = GetResourceAccessFlags(bindFlags);
-
-                if (!needsBarrier)
+        // Builds the pipeline and access flags needed when accessing the same memory that this aliased
+        // resource is using.
+        PipelineAccessFlags GetAliasedResourcePipelineAccessFlags(const RHI::AliasedResource& resource)
+        {
+            // First find the first usage of the resource
+            const auto& transientAttachments = resource.m_beginScope->GetTransientAttachments();
+            auto it = AZStd::find_if(
+                transientAttachments.begin(),
+                transientAttachments.end(),
+                [&](const RHI::ScopeAttachment* scopeAttachment)
                 {
-                    return;
+                    return scopeAttachment->GetFrameAttachment().GetId() == resource.m_attachmentId;
+                });
+
+            AZ_Assert(it != transientAttachments.end(), "Failed to find transient attachment %s", resource.m_attachmentId.GetCStr());
+
+            // Need to collect the pipeline and access of all the usages of the resource.
+            PipelineAccessFlags transientFlags;
+            if (resource.m_type == RHI::AliasedResourceType::Image)
+            {
+                Image* image = static_cast<Image*>(resource.m_resource);
+                // Use an interval map to keep track of the stage and accesses.
+                Image::ImagePipelineAccessProperty imagePipelineAccess;
+                imagePipelineAccess.Init(image->GetDescriptor());
+                for (const RHI::ScopeAttachment* scopeAttachment = *it; scopeAttachment != nullptr;
+                     scopeAttachment = scopeAttachment->GetNext())
+                {
+                    PipelineAccessFlags flags;
+                    flags.m_access = GetResourceAccessFlags(*scopeAttachment);
+                    flags.m_pipelineStage = GetResourcePipelineStateFlags(*scopeAttachment);
+                    const RHI::ImageScopeAttachment* imageScopeAttachment = static_cast<const RHI::ImageScopeAttachment*>(scopeAttachment);
+                    auto range = RHI::ImageSubresourceRange(imageScopeAttachment->GetDescriptor().GetViewDescriptor());
+                    // If it's a write or read after write access, we override the PipelineAccessFlags values (since we know that the scope will synchronize against it)
+                    // If it's a read after read access, the scope will not synchronize, so we combine the PipelineAccessFlags, so future accesses synchronize
+                    // against all read accesses.
+                    if (IsReadOnlyAccess(flags.m_access))
+                    {
+                        PipelineAccessFlags currentFlags = CollectPipelineAccess(imagePipelineAccess.Get(range));
+                        if (IsReadOnlyAccess(currentFlags.m_access))
+                        {
+                            flags |= currentFlags;
+                        }
+                    }
+                    imagePipelineAccess.Set(range, flags);
                 }
-
-                // If the old and new queues are different, we will add a semaphore that
-                // serves as the memory dependency.
-                if (oldQueueId == newQueueId)
+                // Now collect the final PipelineAccessFlags values.
+                auto overlap = imagePipelineAccess.Get(RHI::ImageSubresourceRange(image->GetDescriptor()));
+                for (auto overlapIt : overlap)
                 {
-                    VkImageMemoryBarrier barrier = {};
-                    barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-                    barrier.pNext = nullptr;
-                    barrier.srcAccessMask = srcAccessFlags;
-                    barrier.dstAccessMask = dstAccessFlags;
-                    barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-                    barrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
-                    barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-                    barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-                    barrier.image = image->GetNativeImage();
-                    barrier.subresourceRange.aspectMask = image->GetImageAspectFlags();
-                    barrier.subresourceRange.baseMipLevel = 0;
-                    barrier.subresourceRange.levelCount = image->GetDescriptor().m_mipLevels;
-                    barrier.subresourceRange.baseArrayLayer = 0;
-                    barrier.subresourceRange.layerCount = image->GetDescriptor().m_arraySize;
-                    static_cast<Scope*>(afterResource.m_beginScope)->QueueBarrier(Scope::BarrierSlot::Aliasing, srcPipelineFlags, dstPipelineFlags, barrier);
-
-                    image->SetLayout(barrier.newLayout);
-                    image->SetOwnerQueue(newQueueId);
+                    transientFlags |= overlapIt.m_property;
                 }
             }
             else // Buffer
             {
-                Buffer* buffer = static_cast<Buffer*>(afterResource.m_resource);
-                const auto& bindFlags = buffer->GetDescriptor().m_bindFlags;
-                needsBarrier |= RHI::CheckBitsAny(bindFlags, writeBufferFlags);
-                dstPipelineFlags = GetResourcePipelineStateFlags(bindFlags);
-                dstAccessFlags = GetResourceAccessFlags(bindFlags);
-
-                if (!needsBarrier)
+                Buffer* buffer = static_cast<Buffer*>(resource.m_resource);
+                // Use an interval map to keep track of the stage and accesses.
+                Buffer::BufferPipelineAccessProperty bufferPipelineAccess;
+                bufferPipelineAccess.Init(buffer->GetDescriptor());
+                for (const RHI::ScopeAttachment* scopeAttachment = *it; scopeAttachment != nullptr;
+                     scopeAttachment = scopeAttachment->GetNext())
                 {
-                    return;
+                    PipelineAccessFlags flags;
+                    flags.m_access = GetResourceAccessFlags(*scopeAttachment);
+                    flags.m_pipelineStage = GetResourcePipelineStateFlags(*scopeAttachment);
+                    const RHI::BufferScopeAttachment* bufferScopeAttachment =
+                        static_cast<const RHI::BufferScopeAttachment*>(scopeAttachment);
+                    auto range = RHI::BufferSubresourceRange(bufferScopeAttachment->GetDescriptor().GetViewDescriptor());
+                    // If it's a write or read after write access, we override the PipelineAccessFlags values (since we know that the scope
+                    // will synchronize against it) If it's a read after read access, the scope will not synchronize, so we combine the
+                    // PipelineAccessFlags, so future accesses synchronize against all read accesses.
+                    if (IsReadOnlyAccess(flags.m_access))
+                    {
+                        PipelineAccessFlags currentFlags = CollectPipelineAccess(bufferPipelineAccess.Get(range));
+                        if (IsReadOnlyAccess(currentFlags.m_access))
+                        {
+                            flags |= currentFlags;
+                        }
+                    }
+                    bufferPipelineAccess.Set(range, flags);
                 }
-
-                // If the old and new queues are different, we will add a semaphore that
-                // serves as the memory dependency.
-                if (oldQueueId == newQueueId)
+                // Now collect the final PipelineAccessFlags values.
+                auto overlap = bufferPipelineAccess.Get(RHI::BufferSubresourceRange(buffer->GetDescriptor()));
+                for (auto overlapIt : overlap)
                 {
-                    const auto* bufferMemory = buffer->GetBufferMemoryView();
-                    VkBufferMemoryBarrier barrier{};
-                    barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
-                    barrier.pNext = nullptr;
-                    barrier.srcAccessMask = srcAccessFlags;
-                    barrier.dstAccessMask = dstAccessFlags;
-                    barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-                    barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-                    barrier.buffer = bufferMemory->GetNativeBuffer();
-                    barrier.offset = bufferMemory->GetOffset() + afterResource.m_byteOffsetMin;
-                    barrier.size = afterResource.m_byteOffsetMax - afterResource.m_byteOffsetMin + 1;
-                    static_cast<Scope*>(afterResource.m_beginScope)->QueueBarrier(Scope::BarrierSlot::Aliasing, srcPipelineFlags, dstPipelineFlags, barrier);
-
-                    buffer->SetOwnerQueue(newQueueId);
+                    transientFlags |= overlapIt.m_property;
                 }
             }
+
+            return transientFlags;
+        }
+
+        void AliasingBarrierTracker::AddResourceInternal(const RHI::AliasedResource& resourceNew)
+        {
+            // No need to emit an aliased barrier on first usage of the resource.
+            // We just need to set the proper pipeline and access flags so during first usage, the scope can synchronize properly.
+            // That first usage will provide the aliasing synchronization that is needed.
+            PipelineAccessFlags srcFlags{};
+
+            const auto& queueContext = m_device.GetCommandQueueContext();
+            QueueId newQueueId = queueContext.GetCommandQueue(resourceNew.m_beginScope->GetHardwareQueueClass()).GetId();
+
+            // Get the pipeline and access flags that the memory used by the aliased resource needs.
+            // These flags include previous usages of this memory by other resources.
+            auto overlap = m_pipelineAccess.overlap(resourceNew.m_byteOffsetMin, resourceNew.m_byteOffsetMax + 1);
+            for (auto it = overlap.first; it != overlap.second; ++it)
+            {
+                srcFlags |= it.value();
+            }
+
+            if (resourceNew.m_type == RHI::AliasedResourceType::Image)
+            {
+                Image* image = static_cast<Image*>(resourceNew.m_resource);
+                image->SetLayout(VK_IMAGE_LAYOUT_UNDEFINED);
+                image->SetOwnerQueue(newQueueId);
+                image->SetPipelineAccess(srcFlags);
+            }
+            else // Buffer
+            {
+                Buffer* buffer = static_cast<Buffer*>(resourceNew.m_resource);
+                buffer->SetOwnerQueue(newQueueId);
+                buffer->SetPipelineAccess(srcFlags);
+            }
+
+            // Set the aliased memory with the PipelineAccessFlags from using the aliased resource.
+            // This way future resources that use this same memory can synchronize properly.
+            PipelineAccessFlags dstFlags = GetAliasedResourcePipelineAccessFlags(resourceNew);
+            m_pipelineAccess.assign(resourceNew.m_byteOffsetMin, resourceNew.m_byteOffsetMax + 1, dstFlags);
+        }
+
+        void AliasingBarrierTracker::AppendBarrierInternal(const RHI::AliasedResource& beforeResource, const RHI::AliasedResource& afterResource)
+        {
+            const auto& queueContext = m_device.GetCommandQueueContext();
+            QueueId oldQueueId = queueContext.GetCommandQueue(beforeResource.m_endScope->GetHardwareQueueClass()).GetId();
+            QueueId newQueueId = queueContext.GetCommandQueue(afterResource.m_beginScope->GetHardwareQueueClass()).GetId();
 
             // If resources are in different queues then we need to add an execution dependency so
             // we don't start using the aliased resource in the new scope before the old scope finishes.
@@ -132,9 +178,10 @@ namespace AZ
             // these are two different resources that don't need a barrier/semaphore.
             if (oldQueueId != newQueueId)
             {
+                PipelineAccessFlags dstFlags = GetAliasedResourcePipelineAccessFlags(afterResource);
                 auto semaphore = m_device.GetSemaphoreAllocator().Allocate();
                 static_cast<Scope*>(beforeResource.m_endScope)->AddSignalSemaphore(semaphore);
-                static_cast<Scope*>(afterResource.m_beginScope)->AddWaitSemaphore(AZStd::make_pair(dstPipelineFlags, semaphore));
+                static_cast<Scope*>(afterResource.m_beginScope)->AddWaitSemaphore(AZStd::make_pair(dstFlags.m_pipelineStage, semaphore));
                 // This will not deallocate immediately.
                 m_barrierSemaphores.push_back(semaphore);
             }

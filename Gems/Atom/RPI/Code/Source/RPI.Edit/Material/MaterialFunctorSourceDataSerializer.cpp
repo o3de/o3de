@@ -27,7 +27,7 @@ namespace AZ
             constexpr const char ArgsField[] = "args";
         }
 
-        AZ_CLASS_ALLOCATOR_IMPL(JsonMaterialFunctorSourceDataSerializer, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR_IMPL(JsonMaterialFunctorSourceDataSerializer, SystemAllocator);
 
         JsonSerializationResult::Result JsonMaterialFunctorSourceDataSerializer::Load(void* outputValue, const Uuid& outputValueTypeId,
             const rapidjson::Value& inputValue, JsonDeserializerContext& context)
@@ -52,7 +52,7 @@ namespace AZ
             Uuid functorTypeId;
             if (!inputValue.HasMember(TypeField))
             {
-                return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Unsupported, "Functor type name is not specified.");
+                return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Missing, "Functor type name is not specified.");
             }
 
             // Load the name first and find the type.

@@ -19,7 +19,7 @@ namespace Gestures
     {
     public:
         AZ_RTTI(GesturesModule, "{5648A92C-04A3-4E30-B4E2-B0AEB280CA44}", CryHooksModule);
-        AZ_CLASS_ALLOCATOR(GesturesModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GesturesModule, AZ::SystemAllocator);
 
         GesturesModule()
             : CryHooksModule()
@@ -42,7 +42,8 @@ namespace Gestures
     };
 }
 
-// DO NOT MODIFY THIS LINE UNLESS YOU RENAME THE GEM
-// The first parameter should be GemName_GemIdLower
-// The second should be the fully qualified name of the class above
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME), Gestures::GesturesModule)
+#else
 AZ_DECLARE_MODULE_CLASS(Gem_Gestures, Gestures::GesturesModule)
+#endif

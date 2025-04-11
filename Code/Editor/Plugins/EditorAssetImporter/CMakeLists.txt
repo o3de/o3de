@@ -34,7 +34,6 @@ ly_add_target(
             AZ::SceneCore
             AZ::SceneUI
             AZ::SceneData
-            AZ::GFxFramework
             Legacy::CryCommon
             Legacy::EditorLib
             Legacy::EditorCommon

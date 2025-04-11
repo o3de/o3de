@@ -26,8 +26,8 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeFootIKNode, AnimGraphAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeFootIKNode::UniqueData, AnimGraphObjectUniqueDataAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeFootIKNode, AnimGraphAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeFootIKNode::UniqueData, AnimGraphObjectUniqueDataAllocator)
 
     void BlendTreeFootIKNode::UniqueData::Update()
     {
@@ -311,18 +311,20 @@ namespace EMotionFX
             heightOffset += uniqueData->m_legs[legId].m_toeHeight * actorInstanceScale;
         }
 
-        Integration::RaycastRequests::RaycastRequest rayRequest;
+        Integration::IRaycastRequests::RaycastRequest rayRequest;
         rayRequest.m_start = rayStart;
         rayRequest.m_direction = rayDirection;
         rayRequest.m_distance = maxDistance;
         rayRequest.m_queryType = AzPhysics::SceneQuery::QueryType::Static;
-        rayRequest.m_hint = Integration::RaycastRequests::UsecaseHint::FootPlant;
+        rayRequest.m_hint = Integration::IRaycastRequests::UsecaseHint::FootPlant;
 
         // Cast a ray, check for intersections.
-        Integration::RaycastRequests::RaycastResult rayResult;
+        Integration::IRaycastRequests::RaycastResult rayResult;
         if (animGraphInstance->GetActorInstance()->GetIsOwnedByRuntime() || m_forceUseRaycastBus)
         {
-            Integration::RaycastRequestBus::BroadcastResult(rayResult, &Integration::RaycastRequestBus::Events::Raycast, animGraphInstance->GetActorInstance()->GetEntityId(), rayRequest);
+            rayResult = AZ::Interface<Integration::IRaycastRequests>::Get()->Raycast(
+                animGraphInstance->GetActorInstance()->GetEntityId(), rayRequest);
+
             if (rayResult.m_intersected)
             {
                 ActorInstance* actorInstance = animGraphInstance->GetActorInstance();
@@ -1099,19 +1101,19 @@ namespace EMotionFX
 
         root->ClassElement(AZ::Edit::ClassElements::Group, "General settings")
             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-            ->DataElement(AZ_CRC("ActorNode", 0x35d9eb50), &BlendTreeFootIKNode::m_leftFootJointName, "Left foot joint", "The left foot joint.")
+            ->DataElement(AZ_CRC_CE("ActorNode"), &BlendTreeFootIKNode::m_leftFootJointName, "Left foot joint", "The left foot joint.")
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeFootIKNode::Reinit)
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
-            ->DataElement(AZ_CRC("ActorNode", 0x35d9eb50), &BlendTreeFootIKNode::m_leftToeJointName, "Left toe joint", "The left toe joint.")
+            ->DataElement(AZ_CRC_CE("ActorNode"), &BlendTreeFootIKNode::m_leftToeJointName, "Left toe joint", "The left toe joint.")
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeFootIKNode::Reinit)
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
-            ->DataElement(AZ_CRC("ActorNode", 0x35d9eb50), &BlendTreeFootIKNode::m_rightFootJointName, "Right foot joint", "The right foot joint.")
+            ->DataElement(AZ_CRC_CE("ActorNode"), &BlendTreeFootIKNode::m_rightFootJointName, "Right foot joint", "The right foot joint.")
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeFootIKNode::Reinit)
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
-            ->DataElement(AZ_CRC("ActorNode", 0x35d9eb50), &BlendTreeFootIKNode::m_rightToeJointName, "Right toe joint", "The right toe joint.")
+            ->DataElement(AZ_CRC_CE("ActorNode"), &BlendTreeFootIKNode::m_rightToeJointName, "Right toe joint", "The right toe joint.")
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeFootIKNode::Reinit)
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
-            ->DataElement(AZ_CRC("ActorNode", 0x35d9eb50), &BlendTreeFootIKNode::m_hipJointName, "Hip joint", "The hip/pelvis joint. This join will be moved downward in some cases to make the feet reach the surface below.")
+            ->DataElement(AZ_CRC_CE("ActorNode"), &BlendTreeFootIKNode::m_hipJointName, "Hip joint", "The hip/pelvis joint. This join will be moved downward in some cases to make the feet reach the surface below.")
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeFootIKNode::Reinit)
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
             ->DataElement(AZ::Edit::UIHandlers::ComboBox, &BlendTreeFootIKNode::m_footPlantMethod, "Footplant method", "The detection method for foot planting.")

@@ -100,12 +100,12 @@ namespace TestAssetBuilder
 
     void TestAssetBuilderComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("TestAssetBuilderPluginService", 0xa380f578));
+        provided.push_back(AZ_CRC_CE("TestAssetBuilderPluginService"));
     }
 
     void TestAssetBuilderComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("TestAssetBuilderPluginService", 0xa380f578));
+        incompatible.push_back(AZ_CRC_CE("TestAssetBuilderPluginService"));
     }
 
     void TestAssetBuilderComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)

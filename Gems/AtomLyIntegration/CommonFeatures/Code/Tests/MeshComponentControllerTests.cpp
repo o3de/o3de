@@ -7,6 +7,10 @@
  */
 
 #include <AzTest/AzTest.h>
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInternalInterface.h>
+#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInternalInterface.h>
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInternalInterface.h>
+#include <AzToolsFramework/ActionManager/ToolBar/ToolBarManagerInternalInterface.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
@@ -53,7 +57,7 @@ namespace UnitTest
         m_lastEntityIdChanged = entityId;
     }
 
-    class MeshComponentControllerFixture : public ToolsApplicationFixture
+    class MeshComponentControllerFixture : public ToolsApplicationFixture<false>
     {
     public:
         void SetUpEditorFixtureImpl() override

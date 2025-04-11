@@ -22,6 +22,9 @@ namespace AZ
 
 namespace AzFramework
 {
+    //! Provides an interface to query and set various view/camera properties.
+    //! These include a camera's view matrix, projection matrix and transform (inverse of view matrix).
+    //! @note The bus is addressed by ViewportId and should be preferred over existing global camera buses.
     class ViewportRequests : public AZ::EBusTraits
     {
     public:

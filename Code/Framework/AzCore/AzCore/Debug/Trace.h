@@ -25,18 +25,15 @@ namespace AZ
 {
     namespace Debug
     {
+        // The NoWindow constant contains a special case string that can skip outputting the
+        // "<window-name> :" portion of a trace message of the form "<window-name>: <message>"
+        inline constexpr const char* NoWindow = "";
         namespace Platform
         {
             void OutputToDebugger(AZStd::basic_string_view<char, AZStd::char_traits<char>> window, AZStd::basic_string_view<char, AZStd::char_traits<char>> message);
         }
 
-        enum LogLevel : int
-        {
-            Disabled = 0,
-            Errors = 1,
-            Warnings = 2,
-            Info = 3
-        };
+        enum class LogLevel { Disabled = 0, Errors = 1, Warnings = 2, Info = 3, Debug = 4, Trace = 5 };
 
         // Represents the options to select C language FILE* stream to write raw output
         enum class RedirectCStream
@@ -127,7 +124,21 @@ namespace AZ
             {
                 fprintf(stdout, "%s: %s\n", window, message);
             }
+            virtual void OutputToRawAndDebugger(const char* window, const char* message)
+            {
+                RawOutput(window, message);
+            }
+
             virtual void PrintCallstack(const char* /*window*/, unsigned int /*suppressCount*/ = 0, void* /*nativeContext*/ = nullptr) {}
+
+            // Catch the cases when an explicit nullptr has been passed in to the Trace window parameter
+            // A valid c-string parameter must at least be passed in
+            void Error(const char* fileName, int line, const char* funcName, std::nullptr_t window, const char* format, ...) = delete;
+            void Warning(const char* fileName, int line, const char* funcName, std::nullptr_t window, const char* format, ...) = delete;
+            void Printf(std::nullptr_t, const char* format, ...) = delete;
+            void Output(std::nullptr_t, const char* message) = delete;
+            void RawOutput(std::nullptr_t, const char* message) = delete;
+            void PrintCallstack(std::nullptr_t, unsigned int suppressCount = 0, void* nativeContext = nullptr) = delete;
 
         private:
             inline static constexpr size_t s_maxMessageLength = 4096;
@@ -153,6 +164,10 @@ namespace AZ
             * or to force a Trace message bus handler to do special processing by using a known, consistent char*
             */
             static const char* GetDefaultSystemWindow();
+
+            //! Returns a Window string that indicates that the window
+            //! parameter and the separating ":" not be part of the output
+            static constexpr const char* GetNoWindow() { return NoWindow; }
             bool IsDebuggerPresent() override;
             static bool AttachDebugger();
             static bool WaitForDebugger(float timeoutSeconds = -1.f);
@@ -175,6 +190,7 @@ namespace AZ
             void Printf(const char* window, const char* format, ...) override;
 
             void Output(const char* window, const char* message) override;
+            void OutputToRawAndDebugger(const char* window, const char* message) override;
 
             /// Called by output to handle the actual output, does not interact with ebus or allow interception
             void RawOutput(const char* window, const char* message) override;
@@ -286,10 +302,10 @@ namespace AZ
             "String used in place of boolean expression for AZ_ErrorOnce.",                                                 \
             "Did you mean AZ_ErrorOnce("#window", false, \"%s\", "#expression"); ?",                                        \
             "Did you mean AZ_ErrorOnce("#window", false, "#expression", "#__VA_ARGS__"); ?");                               \
-        static bool AZ_CONCAT_VAR_NAME(azErrorDisplayed, __LINE__) = false;                                                                    \
-        if (!AZ_CONCAT_VAR_NAME(azErrorDisplayed, __LINE__))                                                                                  \
+        static bool AZ_CONCAT_VAR_NAME(azErrorDisplayed, __LINE__) = false;                                                 \
+        if (!AZ_CONCAT_VAR_NAME(azErrorDisplayed, __LINE__))                                                                \
         {                                                                                                                   \
-            AZ_CONCAT_VAR_NAME(azErrorDisplayed, __LINE__) = true;                                                                            \
+            AZ_CONCAT_VAR_NAME(azErrorDisplayed, __LINE__) = true;                                                          \
             AZ::Debug::Trace::Instance().Error(__FILE__, __LINE__, AZ_FUNCTION_SIGNATURE, window, __VA_ARGS__);             \
         }                                                                                                                   \
     }                                                                                                                       \
@@ -319,22 +335,50 @@ namespace AZ
             "String used in place of boolean expression for AZ_WarningOnce.",                                                   \
             "Did you mean AZ_WarningOnce("#window", false, \"%s\", "#expression"); ?",                                          \
             "Did you mean AZ_WarningOnce("#window", false, "#expression", "#__VA_ARGS__"); ?");                                 \
-        static bool AZ_CONCAT_VAR_NAME(azWarningDisplayed, __LINE__) = false;                                                                     \
-        if (!AZ_CONCAT_VAR_NAME(azWarningDisplayed, __LINE__))                                                                                    \
+        static bool AZ_CONCAT_VAR_NAME(azWarningDisplayed, __LINE__) = false;                                                   \
+        if (!AZ_CONCAT_VAR_NAME(azWarningDisplayed, __LINE__))                                                                  \
         {                                                                                                                       \
             AZ::Debug::Trace::Instance().Warning(__FILE__, __LINE__, AZ_FUNCTION_SIGNATURE, window, __VA_ARGS__);               \
-            AZ_CONCAT_VAR_NAME(azWarningDisplayed, __LINE__) = true;                                                                              \
+            AZ_CONCAT_VAR_NAME(azWarningDisplayed, __LINE__) = true;                                                            \
         }                                                                                                                       \
     }                                                                                                                           \
     AZ_POP_DISABLE_WARNING
 
-    #define AZ_TracePrintf(window, ...)                                                                            \
-    if(AZ::Debug::Trace::Instance().IsTraceLoggingEnabledForLevel(AZ::Debug::LogLevel::Info))                                 \
+    #define AZ_Info(window, ...)                                                                                   \
+    if(AZ::Debug::Trace::Instance().IsTraceLoggingEnabledForLevel(AZ::Debug::LogLevel::Info))                      \
     {                                                                                                              \
         AZ::Debug::Trace::Instance().Printf(window, __VA_ARGS__);                                                  \
     }
 
+    #define AZ_Trace(window, ...)                                                                                  \
+    if(AZ::Debug::Trace::Instance().IsTraceLoggingEnabledForLevel(AZ::Debug::LogLevel::Trace))                     \
+    {                                                                                                              \
+        AZ::Debug::Trace::Instance().Printf(window, __VA_ARGS__);                                                  \
+    }
 
+    //! The AZ_TraceOnce macro output the result of the format string only once for each use of the macro
+    //! It does not take into account the result of the format string to determine whether to output the string or not
+    //! What this means is that if the formatting results in different output string result only the first result
+    //! will ever be output
+    #define AZ_TraceOnce(window, ...) \
+    { \
+        static bool AZ_CONCAT_VAR_NAME(azTracePrintfDisplayed, __LINE__) = false; \
+        if (!AZ_CONCAT_VAR_NAME(azTracePrintfDisplayed, __LINE__)) \
+        { \
+            AZ_Trace(window, __VA_ARGS__); \
+            AZ_CONCAT_VAR_NAME(azTracePrintfDisplayed, __LINE__) = true; \
+        } \
+    }
+
+    // O3DE_DEPRECATION_NOTICE(GHI-xxxx) - Use AZ_Trace
+    // Use of AZ_TracePrintf and AZ_TracePrintfOnce are deprecated
+    #define AZ_TracePrintf(window, ...)                                                                            \
+    if(AZ::Debug::Trace::Instance().IsTraceLoggingEnabledForLevel(AZ::Debug::LogLevel::Info))                      \
+    {                                                                                                              \
+        AZ::Debug::Trace::Instance().Printf(window, __VA_ARGS__);                                                  \
+    }
+
+    // O3DE_DEPRECATION_NOTICE(GHI-xxxx) - Use AZ_TraceOnce
     //! The AZ_TrancePrintfOnce macro output the result of the format string only once for each use of the macro
     //! It does not take into account the result of the format string to determine whether to output the string or not
     //! What this means is that if the formatting results in different output string result only the first result
@@ -373,6 +417,9 @@ namespace AZ
     #define AZ_ErrorOnce(...)
     #define AZ_Warning(...)
     #define AZ_WarningOnce(...)
+    #define AZ_Info(...)
+    #define AZ_Trace(...)
+    #define AZ_TraceOnce(...)
     #define AZ_TracePrintf(...)
     #define AZ_TracePrintfOnce(...)
 

@@ -51,7 +51,7 @@ namespace GraphCanvas
 
     public:
         AZ_TYPE_INFO(NodeFrameGraphicsWidget, "{33B9DFFB-9E40-4D55-82A7-85468F7E7790}");
-        AZ_CLASS_ALLOCATOR(NodeFrameGraphicsWidget, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(NodeFrameGraphicsWidget, AZ::SystemAllocator);
 
         // Do not allow Serialization of Graphics Ui classes
         static void Reflect(AZ::ReflectContext*) = delete;

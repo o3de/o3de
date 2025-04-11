@@ -9,7 +9,7 @@
 
 #include <RHI/TileAllocator.h>
 #include <RHI/MemoryView.h>
-#include <Atom/RHI/Image.h>
+#include <Atom/RHI/DeviceImage.h>
 #include <Atom/RHI/Allocator.h>
 #include <Atom/RHI/ImageProperty.h>
 #include <Atom/RHI.Reflect/Handle.h>
@@ -60,11 +60,11 @@ namespace AZ
         };
 
         class Image final
-            : public RHI::Image
+            : public RHI::DeviceImage
         {
-            using Base = RHI::Image;
+            using Base = RHI::DeviceImage;
         public:
-            AZ_CLASS_ALLOCATOR(Image, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Image, AZ::SystemAllocator);
             AZ_RTTI(Image, "{D2B32EE2-2ED5-477A-8346-95AF0D11DAC8}", Base);
             ~Image() = default;
 
@@ -101,6 +101,9 @@ namespace AZ
             // Set the attachment state of the image subresources. If argument "range" is nullptr, then the new state will be applied to all subresources.
             void SetAttachmentState(D3D12_RESOURCE_STATES state, const RHI::ImageSubresourceRange* range = nullptr);
 
+            // Set the attachment state of the image subresources using the subresource index.
+            void SetAttachmentState(D3D12_RESOURCE_STATES state, uint32_t subresourceIndex);
+
             // Get the attachment state of some of the subresources of the image by their RHI::ImageSubresourceRange.
             // If argument "range" is nullptr, then the state for all subresource will be return.
             AZStd::vector<SubresourceRangeAttachmentState> GetAttachmentStateByRange(const RHI::ImageSubresourceRange* range = nullptr) const;
@@ -128,15 +131,15 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::Resource
+            // RHI::DeviceResource
             void ReportMemoryUsage(RHI::MemoryStatisticsBuilder& builder) const override;
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::Image
+            // RHI::DeviceImage
             void GetSubresourceLayoutsInternal(
                 const RHI::ImageSubresourceRange& subresourceRange,
-                RHI::ImageSubresourceLayoutPlaced* subresourceLayouts,
+                RHI::DeviceImageSubresourceLayout* subresourceLayouts,
                 size_t* totalSizeInBytes) const override;
                                 
             bool IsStreamableInternal() const override;
@@ -161,7 +164,7 @@ namespace AZ
             // The minimum resident size of this image. The size is the same as resident size when image was initialized.
             size_t m_minimumResidentSizeInBytes = 0;
 
-            AZStd::array<RHI::ImageSubresourceLayoutPlaced, RHI::Limits::Image::MipCountMax> m_subresourceLayoutsPerMipChain;
+            AZStd::array<RHI::DeviceImageSubresourceLayout, RHI::Limits::Image::MipCountMax> m_subresourceLayoutsPerMipChain;
 
             // The layout of tiles with respect to each subresource in the image.
             ImageTileLayout m_tileLayout;

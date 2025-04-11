@@ -13,6 +13,7 @@
 #include <RHI/GraphicsPipeline.h>
 #include <RHI/RenderPass.h>
 #include <RHI/PipelineLibrary.h>
+#include <Atom/RHI.Reflect/VkAllocator.h>
 
 namespace AZ
 {
@@ -29,9 +30,9 @@ namespace AZ
             AZ_Assert(descriptor.m_pipelineDescritor->GetType() == RHI::PipelineStateType::Draw, "Invalid pipeline descriptor type");
 
             const auto* drawDescriptor = static_cast<const RHI::PipelineStateDescriptorForDraw*>(descriptor.m_pipelineDescritor);
-            const RHI::RenderAttachmentLayout& renderAttachmentLayout = drawDescriptor->m_renderAttachmentConfiguration.m_renderAttachmentLayout;            
-            auto renderpassDescriptor = RenderPass::ConvertRenderAttachmentLayout(renderAttachmentLayout, drawDescriptor->m_renderStates.m_multisampleState);
-            renderpassDescriptor.m_device = descriptor.m_device;
+            const RHI::RenderAttachmentLayout& renderAttachmentLayout = drawDescriptor->m_renderAttachmentConfiguration.m_renderAttachmentLayout;
+            auto renderpassDescriptor = RenderPass::ConvertRenderAttachmentLayout(
+                *descriptor.m_device, renderAttachmentLayout, drawDescriptor->m_renderStates.m_multisampleState);
             m_renderPass = descriptor.m_device->AcquireRenderPass(renderpassDescriptor);
 
             return BuildNativePipeline(descriptor, pipelineLayout);
@@ -42,6 +43,15 @@ namespace AZ
             m_renderPass = nullptr;
 
             Base::Shutdown();
+        }
+
+        void GraphicsPipeline::SetNameInternal(const AZStd::string_view& name)
+        {
+            if (m_renderPass)
+            {
+                m_renderPass->SetName(AZ::Name(name));
+            }
+            Base::SetNameInternal(name);
         }
 
         RHI::ResultCode GraphicsPipeline::BuildNativePipeline(const Descriptor& descriptor, const PipelineLayout& pipelineLayout)
@@ -69,7 +79,7 @@ namespace AZ
             BuildPipelineMultisampleStateCreateInfo(multisampleState, blendState);
             BuildPipelineDepthStencilStateCreateInfo(depthStencilState);
             BuildPipelineColorBlendStateCreateInfo(blendState, renderTargetConfig.GetRenderTargetCount());
-            BuildPipelineDynamicStateCreateInfo(multisampleState);
+            BuildPipelineDynamicStateCreateInfo();
 
             AZ_Assert(!m_pipelineShaderStageCreateInfos.empty(), "There is no shader stages.");
 
@@ -97,7 +107,7 @@ namespace AZ
             const VkPipelineCache pipelineCache = descriptor.m_pipelineLibrary ? descriptor.m_pipelineLibrary->GetNativePipelineCache() : VK_NULL_HANDLE;
 
             const VkResult vkResult = descriptor.m_device->GetContext().CreateGraphicsPipelines(
-                descriptor.m_device->GetNativeDevice(), pipelineCache, 1, &createInfo, nullptr, &GetNativePipelineRef());
+                descriptor.m_device->GetNativeDevice(), pipelineCache, 1, &createInfo, VkSystemAllocator::Get(), &GetNativePipelineRef());
 
             return ConvertResult(vkResult);
         }
@@ -113,16 +123,14 @@ namespace AZ
             m_pipelineShaderStageCreateInfos.emplace_back();
             FillPipelineShaderStageCreateInfo(*func, RHI::ShaderStage::Vertex, ShaderSubStage::Default, *m_pipelineShaderStageCreateInfos.rbegin());
 
-            if (GetDevice().GetFeatures().m_tessellationShader)
+            if (GetDevice().GetFeatures().m_geometryShader)
             {
-                func = static_cast<ShaderStageFunction const*>(descriptor.m_tessellationFunction.get());
+                func = static_cast<ShaderStageFunction const*>(descriptor.m_geometryFunction.get());
                 if (func)
                 {
-                    for (uint32_t subStageIndex = 0; subStageIndex < ShaderSubStageCountMax; ++subStageIndex)
-                    {
-                        m_pipelineShaderStageCreateInfos.emplace_back();
-                        FillPipelineShaderStageCreateInfo(*func, RHI::ShaderStage::Tessellation, subStageIndex, *m_pipelineShaderStageCreateInfos.rbegin());
-                    }
+                    m_pipelineShaderStageCreateInfos.emplace_back();
+                    FillPipelineShaderStageCreateInfo(
+                        *func, RHI::ShaderStage::Geometry, ShaderSubStage::Default, *m_pipelineShaderStageCreateInfos.rbegin());
                 }
             }
 
@@ -134,7 +142,7 @@ namespace AZ
             }
         }
 
-        void GraphicsPipeline::BuildPipelineVertexInputStateCreateInfo(const RHI::InputStreamLayout& inputStreamLayout) 
+        void GraphicsPipeline::BuildPipelineVertexInputStateCreateInfo(const RHI::InputStreamLayout& inputStreamLayout)
         {
             const auto& streamChannels = inputStreamLayout.GetStreamChannels();
             m_vertexInputAttributeDescriptions.resize(streamChannels.size());
@@ -164,7 +172,8 @@ namespace AZ
             uint32_t index, VkVertexInputAttributeDescription& desc)
         {
             AZ_Assert(index < inputStreamLayout.GetStreamChannels().size(), "Index is wrong.");
-            const RHI::StreamChannelDescriptor& chanDesc = inputStreamLayout.GetStreamChannels()[index];
+            const auto streamChannels = inputStreamLayout.GetStreamChannels();
+            const RHI::StreamChannelDescriptor& chanDesc = streamChannels[index];
 
             desc = {};
             desc.location = index;
@@ -177,7 +186,8 @@ namespace AZ
             uint32_t index, VkVertexInputBindingDescription& desc)
         {
             AZ_Assert(index < inputStreamLayout.GetStreamBuffers().size(), "Index is wrong.");
-            const RHI::StreamBufferDescriptor& buffDesc = inputStreamLayout.GetStreamBuffers()[index];
+            const auto streamBuffers = inputStreamLayout.GetStreamBuffers();
+            const RHI::StreamBufferDescriptor& buffDesc = streamBuffers[index];
 
             VkVertexInputRate inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
             switch (buffDesc.m_stepFunction)
@@ -199,16 +209,16 @@ namespace AZ
 
             if (desc.stride == 0)
             {
-                 const auto& streamChannels = inputStreamLayout.GetStreamChannels();
-                 
-                 for (uint32_t channelIndex = 0; channelIndex < streamChannels.size(); ++channelIndex)
-                 {
-                     const RHI::StreamChannelDescriptor& chanDesc = inputStreamLayout.GetStreamChannels()[channelIndex];
-                     if (chanDesc.m_bufferIndex == index)
-                     {
-                         desc.stride += GetFormatSize(chanDesc.m_format);
-                     }
-                 }
+                const auto streamChannels = inputStreamLayout.GetStreamChannels();
+
+                for (uint32_t channelIndex = 0; channelIndex < streamChannels.size(); ++channelIndex)
+                {
+                    const RHI::StreamChannelDescriptor& chanDesc = streamChannels[channelIndex];
+                    if (chanDesc.m_bufferIndex == index)
+                    {
+                        desc.stride += GetFormatSize(chanDesc.m_format);
+                    }
+                }
             }
         }
 
@@ -260,14 +270,14 @@ namespace AZ
             info.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
             info.pNext = nullptr;
             info.depthClampEnable = VK_FALSE;
-            info.flags = 0;            
+            info.flags = 0;
             info.rasterizerDiscardEnable = VK_FALSE;
 
             VkPipelineRasterizationDepthClipStateCreateInfoEXT& depthClipState = m_pipelineRasterizationDepthClipStateInfo;
             depthClipState.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_DEPTH_CLIP_STATE_CREATE_INFO_EXT;
             if (physicalDevice.IsFeatureSupported(DeviceFeature::DepthClipEnable))
             {
-                depthClipState.depthClipEnable = rasterState.m_depthClipEnable;                
+                depthClipState.depthClipEnable = rasterState.m_depthClipEnable;
                 info.pNext = &depthClipState;
             }
             else if (enabledFeatures.depthClamp)
@@ -354,7 +364,7 @@ namespace AZ
             info.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
             info.flags = 0;
             info.rasterizationSamples = ConvertSampleCount(multisampleState.m_samples);
- 
+
             info.sampleShadingEnable = VK_FALSE;
             info.pSampleMask = nullptr;
 
@@ -367,17 +377,23 @@ namespace AZ
                 if (physicalDevice.IsFeatureSupported(DeviceFeature::CustomSampleLocation))
                 {
                     AZStd::transform(
-                        multisampleState.m_customPositions.begin(), 
+                        multisampleState.m_customPositions.begin(),
                         multisampleState.m_customPositions.begin() + multisampleState.m_customPositionsCount,
                         AZStd::back_inserter(m_customSampleLocations), [&](const auto& item)
                     {
                         return ConvertSampleLocation(item);
                     });
 
+                    AZ_Assert(
+                        multisampleState.m_customPositionsCount >= static_cast<uint32_t>(info.rasterizationSamples),
+                        "Sample locations is smaller than rasterization samples %d < %d",
+                        static_cast<int>(multisampleState.m_customPositionsCount),
+                        static_cast<int>(info.rasterizationSamples));
+
                     VkSampleLocationsInfoEXT sampleLocations = {};
                     sampleLocations.sType = VK_STRUCTURE_TYPE_SAMPLE_LOCATIONS_INFO_EXT;
                     sampleLocations.sampleLocationGridSize = VkExtent2D{ 1, 1 };
-                    sampleLocations.sampleLocationsCount = multisampleState.m_customPositionsCount;
+                    sampleLocations.sampleLocationsCount = info.rasterizationSamples;
                     sampleLocations.sampleLocationsPerPixel = info.rasterizationSamples;
                     sampleLocations.pSampleLocations = m_customSampleLocations.data();
 
@@ -453,7 +469,15 @@ namespace AZ
             m_colorBlendAttachments.resize(info.attachmentCount);
             for (uint32_t index = 0; index < info.attachmentCount; ++index)
             {
-                FillColorBlendAttachmentState(blendState.m_targets[index], m_colorBlendAttachments[index]);
+                // If m_independentBlendEnable is not enabled, we use the values from attachment 0 (same as D3D12)
+                if (index == 0 || blendState.m_independentBlendEnable)
+                {
+                    FillColorBlendAttachmentState(blendState.m_targets[index], m_colorBlendAttachments[index]);
+                }
+                else
+                {
+                    m_colorBlendAttachments[index] = m_colorBlendAttachments[0];
+                }
             }
             info.pAttachments = m_colorBlendAttachments.empty() ? nullptr : m_colorBlendAttachments.data();
             for (uint32_t index = 0; index < BlendConstantsCount; ++index)
@@ -462,22 +486,20 @@ namespace AZ
             }
         }
 
-        void GraphicsPipeline::BuildPipelineDynamicStateCreateInfo(const RHI::MultisampleState& multisampleState)
+        void GraphicsPipeline::BuildPipelineDynamicStateCreateInfo()
         {
             m_dynamicStates =
             {
                 VK_DYNAMIC_STATE_VIEWPORT,
-                VK_DYNAMIC_STATE_SCISSOR, 
+                VK_DYNAMIC_STATE_SCISSOR,
                 VK_DYNAMIC_STATE_STENCIL_REFERENCE
             };
 
-            if (multisampleState.m_customPositionsCount)
+            auto& physicalDevice = static_cast<const PhysicalDevice&>(GetDevice().GetPhysicalDevice());
+            if (RHI::CheckBitsAll(GetDevice().GetFeatures().m_shadingRateTypeMask, RHI::ShadingRateTypeFlags::PerDraw) &&
+                physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::FragmentShadingRate))
             {
-                auto& physicalDevice = static_cast<const PhysicalDevice&>(GetDevice().GetPhysicalDevice());
-                if (physicalDevice.IsFeatureSupported(DeviceFeature::CustomSampleLocation))
-                {
-                    m_dynamicStates.push_back(VK_DYNAMIC_STATE_SAMPLE_LOCATIONS_EXT);
-                }
+                m_dynamicStates.push_back(VK_DYNAMIC_STATE_FRAGMENT_SHADING_RATE_KHR);
             }
 
             VkPipelineDynamicStateCreateInfo& info = m_pipelineDynamicStateCreateInfo;

@@ -7,9 +7,6 @@
 
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
 
-    set(SMOKETEST_FILTER "SUITE_smoke and not SerializeContext")
-
-    list(APPEND additional_dependencies AZ::SerializeContextTools) # test_CLITool_SerializeContextTools depends on it
     set(SMOKETEST_FILTER "SUITE_smoke")
 
     ly_add_pytest(

@@ -48,7 +48,7 @@ namespace AMD
     class TressFXSimulationSettings
     {
     public:
-        AZ_TYPE_INFO(AZ::Render::TressFXSimulationSettings, "{B16E92B3-C859-4421-9170-65C2C6A60062}");
+        AZ_TYPE_INFO(TressFXSimulationSettings, "{B16E92B3-C859-4421-9170-65C2C6A60062}");
         static void Reflect(AZ::ReflectContext* context);
 
         // VSPf
@@ -85,7 +85,7 @@ namespace AMD
     class TressFXRenderingSettings
     {
     public:
-        AZ_TYPE_INFO(AZ::Render::TressFXRenderingSettings, "{7EFD9317-4DE8-455D-A2E5-B5B62FF1F5D7}");
+        AZ_TYPE_INFO(TressFXRenderingSettings, "{7EFD9317-4DE8-455D-A2E5-B5B62FF1F5D7}");
         static void Reflect(AZ::ReflectContext* context);
 
         // LOD settings

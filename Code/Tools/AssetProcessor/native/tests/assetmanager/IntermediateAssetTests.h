@@ -14,19 +14,13 @@ namespace UnitTests
 {
     class IntermediateAssetTests
         : public AssetManagerTestingBase
-        , protected AZ::Debug::TraceMessageBus::Handler
     {
     public:
         void SetUp() override;
         void TearDown() override;
 
     protected:
-        bool OnPreAssert(const char*, int, const char*, const char* message) override;
-        bool OnPreError(const char*, const char*, int, const char*, const char* message) override;
-
         void DeleteIntermediateTest(const char* fileToDelete);
         void IncorrectBuilderConfigurationTest(bool commonPlatform, AssetBuilderSDK::ProductOutputFlags flags);
-
-        int m_expectedErrors = 0;
     };
 } // namespace UnitTests

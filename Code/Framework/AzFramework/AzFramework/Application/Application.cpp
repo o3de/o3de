@@ -14,7 +14,6 @@
 #include <AzCore/Component/NonUniformScaleBus.h>
 #include <AzCore/Console/Console.h>
 #include <AzCore/Debug/Profiler.h>
-#include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/Slice/SliceSystemComponent.h>
 #include <AzCore/Jobs/JobManagerComponent.h>
 #include <AzCore/IO/Streamer/StreamerComponent.h>
@@ -53,6 +52,8 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzFramework/IO/RemoteStorageDrive.h>
+#include <AzFramework/PaintBrush/PaintBrushSettings.h>
+#include <AzFramework/PaintBrush/PaintBrushSystemComponent.h>
 #include <AzFramework/Physics/Utils.h>
 #include <AzFramework/Physics/Material/PhysicsMaterialSystemComponent.h>
 #include <AzFramework/Render/GameIntersectorComponent.h>
@@ -70,6 +71,7 @@
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 #include <AzFramework/Viewport/ScreenGeometry.h>
 #include <AzFramework/Visibility/BoundsBus.h>
+#include <AzFramework/Visibility/VisibleGeometryBus.h>
 #include <AzFramework/Viewport/ViewportBus.h>
 #include <AzFramework/Physics/HeightfieldProviderBus.h>
 
@@ -87,7 +89,6 @@ namespace AzFramework
     namespace ApplicationInternal
     {
         static constexpr const char s_editorModeFeedbackKey[] = "/Amazon/Preferences/EnableEditorModeFeedback";
-        static constexpr const char s_prefabSystemKey[] = "/Amazon/Preferences/EnablePrefabSystem";
         static constexpr const char s_prefabWipSystemKey[] = "/Amazon/Preferences/EnablePrefabSystemWipFeatures";
         static constexpr const char s_legacySlicesAssertKey[] = "/Amazon/Preferences/ShouldAssertForLegacySlicesUsage";
         static constexpr const char* DeprecatedFileIOAliasesRoot = "/O3DE/AzCore/FileIO/DeprecatedAliases";
@@ -98,14 +99,25 @@ namespace AzFramework
     }
 
     Application::Application()
-        : Application(nullptr, nullptr)
+        : Application(nullptr, nullptr, {})
+    {
+    }
+
+    Application::Application(AZ::ComponentApplicationSettings componentAppSettings)
+        : Application(nullptr, nullptr, AZStd::move(componentAppSettings))
     {
     }
 
     Application::Application(int* argc, char*** argv)
+        : Application(argc, argv, {})
+    {
+    }
+
+    Application::Application(int* argc, char*** argv, AZ::ComponentApplicationSettings componentAppSettings)
         : ComponentApplication(
             argc ? *argc : 0,
-            argv ? *argv : nullptr
+            argv ? *argv : nullptr,
+            AZStd::move(componentAppSettings)
         )
     {
         // Startup default local FileIO (hits OSAllocator) if not already setup.
@@ -211,7 +223,8 @@ namespace AzFramework
 
     void Application::StartCommon(AZ::Entity* systemEntity)
     {
-        m_pimpl.reset(Implementation::Create());
+        auto implementationFactory = AZ::Interface<Application::ImplementationFactory>::Get();
+        m_pimpl = (implementationFactory != nullptr) ? implementationFactory->Create() : nullptr;
 
         systemEntity->Init();
         systemEntity->Activate();
@@ -280,7 +293,6 @@ namespace AzFramework
         // This is internal Amazon code, so register it's components for metrics tracking, otherwise the name of the component won't get sent back.
         AZStd::vector<AZ::Uuid> componentUuidsForMetricsCollection
         {
-            azrtti_typeid<AZ::MemoryComponent>(),
             azrtti_typeid<AZ::StreamerComponent>(),
             azrtti_typeid<AZ::JobManagerComponent>(),
             azrtti_typeid<AZ::AssetManagerComponent>(),
@@ -304,7 +316,8 @@ namespace AzFramework
 #endif // #if !defined(AZCORE_EXCLUDE_LUA)
         };
 
-        EBUS_EVENT(AzFramework::MetricsPlainTextNameRegistrationBus, RegisterForNameSending, componentUuidsForMetricsCollection);
+        AzFramework::MetricsPlainTextNameRegistrationBus::Broadcast(
+            &AzFramework::MetricsPlainTextNameRegistrationBus::Events::RegisterForNameSending, componentUuidsForMetricsCollection);
     }
 
     void Application::Reflect(AZ::ReflectContext* context)
@@ -324,6 +337,9 @@ namespace AzFramework
         AzFramework::BoundsRequests::Reflect(context);
         AzFramework::ScreenGeometryReflect(context);
         AzFramework::RemoteStorageDriveConfig::Reflect(context);
+        AzFramework::PaintBrushSettings::Reflect(context);
+        AzFramework::VisibleGeometry::Reflect(context);
+        AzFramework::VisibleGeometryRequests::Reflect(context);
 
         Physics::ReflectionUtils::ReflectPhysicsApi(context);
         AzFramework::SurfaceData::SurfaceTagWeight::Reflect(context);
@@ -345,7 +361,6 @@ namespace AzFramework
         AZ::ComponentTypeList components = ComponentApplication::GetRequiredSystemComponents();
 
         components.insert(components.end(), {
-            azrtti_typeid<AZ::MemoryComponent>(),
             azrtti_typeid<AZ::StreamerComponent>(),
             azrtti_typeid<AZ::AssetManagerComponent>(),
             azrtti_typeid<AZ::UserSettingsComponent>(),
@@ -363,6 +378,7 @@ namespace AzFramework
             azrtti_typeid<AzFramework::RenderGeometry::GameIntersectorComponent>(),
             azrtti_typeid<AzFramework::AssetSystem::AssetSystemComponent>(),
             azrtti_typeid<AzFramework::InputSystemComponent>(),
+            azrtti_typeid<AzFramework::PaintBrushSystemComponent>(),
             azrtti_typeid<AzFramework::StreamingInstall::StreamingInstallSystemComponent>(),
             azrtti_typeid<AzFramework::SpawnableSystemComponent>(),
             azrtti_typeid<Physics::MaterialSystemComponent>(),
@@ -430,7 +446,7 @@ namespace AzFramework
     {
         AZ::Uuid uuid(AZ::Uuid::CreateNull());
         AZ::Entity* entity = nullptr;
-        EBUS_EVENT_RESULT(entity, AZ::ComponentApplicationBus, FindEntity, entityId);
+        AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, entityId);
         if (entity)
         {
             AZ::Component* component = entity->FindComponent(componentId);
@@ -616,7 +632,7 @@ namespace AzFramework
         constexpr const char* userCachePathFilename{ "Cache" };
         AZ::IO::FixedMaxPath userCachePath = cacheUserPath / userCachePathFilename;
 #if AZ_TRAIT_OS_IS_HOST_OS_PLATFORM
-        // The number of max attempts ultimately dictates the number of Lumberyard instances that can run
+        // The number of max attempts ultimately dictates the number of application instances that can run
         // simultaneously.  This should be a reasonably high number so that it doesn't artificially limit
         // the number of instances (ex: parallel level exports via multiple Editor runs).  It also shouldn't
         // be set *infinitely* high - each cache folder is GBs in size, and finding a free directory is a
@@ -647,7 +663,7 @@ namespace AzFramework
         if (attemptNumber >= maxAttempts)
         {
             userCachePath.ReplaceFilename(userCachePathFilename);
-            AZ_TracePrintf("Application", "Couldn't find a valid asset cache folder after %i attempts."
+            AZ_WarningOnce("Application", false, "Couldn't find a valid asset cache folder after %i attempts."
                 " Setting cache folder to %s\n", maxAttempts, userCachePath.c_str());
         }
 #endif
@@ -754,12 +770,8 @@ namespace AzFramework
 
     bool Application::IsPrefabSystemEnabled() const
     {
-        bool value = true;
-        if (auto* registry = AZ::SettingsRegistry::Get())
-        {
-            registry->Get(value, ApplicationInternal::s_prefabSystemKey);
-        }
-        return value;
+        AZ_WarningOnce("Application", false, "'IsPrefabSystemEnabled' is deprecated, the editor only supports prefabs for level editing.");
+        return true;
     }
 
     bool Application::ArePrefabWipFeaturesEnabled() const
@@ -772,18 +784,15 @@ namespace AzFramework
         return value;
     }
 
-    void Application::SetPrefabSystemEnabled(bool enable)
+    void Application::SetPrefabSystemEnabled(bool /* enable */)
     {
-        if (auto* registry = AZ::SettingsRegistry::Get())
-        {
-            registry->Set(ApplicationInternal::s_prefabSystemKey, enable);
-        }
+        AZ_WarningOnce("Application", false, "'SetPrefabSystemEnabled' is deprecated, the editor only supports prefabs for level editing.");
     }
 
     bool Application::IsPrefabSystemForLevelsEnabled() const
     {
-        AZ_Warning("Application", false, "'IsPrefabSystemForLevelsEnabled' is deprecated, please use 'IsPrefabSystemEnabled' instead.");
-        return IsPrefabSystemEnabled();
+        AZ_WarningOnce("Application", false, "'IsPrefabSystemForLevelsEnabled' is deprecated, the editor only supports prefabs for level editing.");
+        return true;
     }
 
     bool Application::ShouldAssertForLegacySlicesUsage() const

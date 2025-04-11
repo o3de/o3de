@@ -6,7 +6,6 @@
 *
 */
 
-#pragma once
 
 #include <AzCore/Math/Aabb.h>
 
@@ -39,9 +38,9 @@ namespace AZ
 
         //----------------------------------------------------------------------
         // Meshlets Generation.
-        // Resulted operation will alter the mesh 
+        // Resulted operation will alter the mesh
         //----------------------------------------------------------------------
-        void MeshletsModel::debugMarkMeshletsUVs(GeneratorMesh& mesh)   
+        void MeshletsModel::debugMarkMeshletsUVs(GeneratorMesh& mesh)
         {
             for (uint32_t meshletId = 0; meshletId < m_meshletsData.Descriptors.size(); ++meshletId)
             {
@@ -56,7 +55,7 @@ namespace AZ
                         uint8_t((encodedTri >> 0) & 0xff),
                         uint8_t((encodedTri >> 8) & 0xff),
                         uint8_t((encodedTri >> 16) & 0xff)
-                    }; 
+                    };
 
                     for (uint32_t vtx = 0; vtx < 3; ++vtx)
                     {
@@ -65,7 +64,7 @@ namespace AZ
                         mesh.vertices[vtxIndex].tx = textureCoordU;
                         mesh.vertices[vtxIndex].ty = textureCoordV;
                     }
-                } 
+                }
             }
         }
 
@@ -111,7 +110,7 @@ namespace AZ
             &mesh.indices[0], mesh.indices.size(),
             &mesh.vertices[0].px, mesh.vertices.size(), sizeof(GeneratorVertex),
             max_vertices, max_triangles, cone_weight));
-            
+
             if (!m_meshletsData.meshlets.size())
             {
                 printf("Error generating meshlets - no meshlets were built\n");
@@ -160,7 +159,7 @@ namespace AZ
         }
 
         //----------------------------------------------------------------------
-        // Enhanced (Meshlet) Model Creation 
+        // Enhanced (Meshlet) Model Creation
         //----------------------------------------------------------------------
         Data::Asset<RPI::BufferAsset> MeshletsModel::CreateBufferAsset(
             const AZStd::string& bufferName,
@@ -206,7 +205,7 @@ namespace AZ
                     m_aabb.AddPoint(positionV3);
                 }
                 else
-                {   
+                {
                     AZ_Warning("Meshlets", false, "Warning -- vertex [%d:%d] out of bound (%.2f, %.2f, %.2f) in model [%s]",
                         vtx, vtxNum, positionV3.GetX(), positionV3.GetY(), positionV3.GetZ(), m_name.c_str());
                 }
@@ -230,7 +229,7 @@ namespace AZ
             modelAssetCreator.Begin(Uuid::CreateRandom());
             modelAssetCreator.SetName(m_name);
             //-------------------------------------------
-            
+
             // setup a stream layout and shader input contract for the vertex streams
             RHI::Format IndexStreamFormat;
             RHI::Format streamFromat;
@@ -359,7 +358,7 @@ namespace AZ
                     }
                 }
                 modelLodAssetCreator.EndMesh();
-                
+
                 // Create the model LOD based on the model LOD asset we created
                 Data::Asset<RPI::ModelLodAsset> modelLodAsset;
                 if (!modelLodAssetCreator.End(modelLodAsset))
@@ -396,14 +395,14 @@ namespace AZ
 
 
         //----------------------------------------------------------------------
-        // Model Traversal and Data Copy for Creation 
+        // Model Traversal and Data Copy for Creation
         //----------------------------------------------------------------------
         uint8_t* MeshletsModel::RetrieveBufferData(
             const RPI::BufferAssetView* bufferView,
             RHI::Format& format,
             uint32_t expectedAmount, uint32_t &existingAmount,
             RHI::BufferViewDescriptor& bufferDesc
-        )  
+        )
         {
             const Data::Asset<RPI::BufferAsset>& bufferAsset = bufferView->GetBufferAsset();
 //            const RHI::BufferViewDescriptor& bufferDesc = bufferView->GetBufferViewDescriptor();
@@ -508,8 +507,8 @@ namespace AZ
 
 
             MeshletsDescriptorsName = Name{ "MESHLETS" };
-            MeshletsTrianglesName = Name{ "MESHLETS_TRIANGLES" };     
-            MeshletsIndicesLookupName = Name{ "MESHLETS_LOOKUP" };     
+            MeshletsTrianglesName = Name{ "MESHLETS_TRIANGLES" };
+            MeshletsIndicesLookupName = Name{ "MESHLETS_LOOKUP" };
 
             m_name = "Model_" + AZStd::to_string(s_modelNumber++);
             m_aabb = Aabb::CreateNull();

@@ -91,7 +91,7 @@ namespace AzFramework
 
         struct ThreadSafeData
         {
-            AZ_CLASS_ALLOCATOR(SpawnableEntitiesContainer::ThreadSafeData, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SpawnableEntitiesContainer::ThreadSafeData, AZ::SystemAllocator);
             EntitySpawnTicket m_spawnedEntitiesTicket;
             uint32_t m_generation{ 0 };
         };

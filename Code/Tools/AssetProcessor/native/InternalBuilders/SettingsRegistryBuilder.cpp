@@ -35,7 +35,7 @@ namespace AssetProcessor
         builderDesc.m_busId = m_builderId;
         builderDesc.m_createJobFunction = AZStd::bind(&SettingsRegistryBuilder::CreateJobs, this, AZStd::placeholders::_1, AZStd::placeholders::_2);
         builderDesc.m_processJobFunction = AZStd::bind(&SettingsRegistryBuilder::ProcessJob, this, AZStd::placeholders::_1, AZStd::placeholders::_2);
-        builderDesc.m_version = 1;
+        builderDesc.m_version = 3;
 
         AssetBuilderSDK::AssetBuilderBus::Broadcast(&AssetBuilderSDK::AssetBuilderBusTraits::RegisterBuilderInformation, builderDesc);
 
@@ -129,7 +129,7 @@ namespace AssetProcessor
         response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
 
         AZStd::vector<AZStd::string> excludes = ReadExcludesFromRegistry();
-        // Exclude the AssetProcessor settings from the game regsitry
+        // Exclude the AssetProcessor settings from the game registry
         excludes.emplace_back(AssetProcessor::AssetProcessorSettingsKey);
 
         AZStd::vector<char> scratchBuffer;
@@ -138,7 +138,7 @@ namespace AssetProcessor
         AzFramework::PlatformHelper::AppendPlatformCodeNames(platformCodes, request.m_platformInfo.m_identifier);
         AZ_Assert(platformCodes.size() <= 1, "A one-to-one mapping of asset type platform identifier"
             " to platform codename is required in the SettingsRegistryBuilder."
-            " The bootstrap.game is now only produced per build configuration and doesn't take into account"
+            " The bootstrap.<launcher-type>.<config>.setreg is now only produced per launcher type + build configuration and doesn't take into account"
             " different platforms names");
 
         const AZStd::string& assetPlatformIdentifier = request.m_jobDescription.GetPlatformIdentifier();
@@ -146,18 +146,38 @@ namespace AssetProcessor
         const char* launcherType = assetPlatformIdentifier != AzFramework::PlatformHelper::GetPlatformName(AzFramework::PlatformId::SERVER)
             ? "_GameLauncher" : "_ServerLauncher";
 
-        AZ::SettingsRegistryInterface::Specializations specializations[] =
+        AZ::SettingsRegistryInterface::FilenameTags specializations[] =
         {
-            { AZStd::string_view{"release"}, AZStd::string_view{"game"} },
-            { AZStd::string_view{"profile"}, AZStd::string_view{"game"} },
-            { AZStd::string_view{"debug"}, AZStd::string_view{"game"} }
+            { AZStd::string_view{"client"}, AZStd::string_view{"release"} },
+            { AZStd::string_view{"client"} , AZStd::string_view{"profile"} },
+            { AZStd::string_view{"client"}, AZStd::string_view{"debug"} },
+            { AZStd::string_view{"server"}, AZStd::string_view{"release"} },
+            { AZStd::string_view{"server"} , AZStd::string_view{"profile"} },
+            { AZStd::string_view{"server"}, AZStd::string_view{"debug"} },
+            { AZStd::string_view{"unified"}, AZStd::string_view{"release"} },
+            { AZStd::string_view{"unified"} , AZStd::string_view{"profile"} },
+            { AZStd::string_view{"unified"}, AZStd::string_view{"debug"} }
         };
+
+        constexpr size_t LauncherTypeIndex = 0;
+        constexpr size_t BuildConfigIndex = 1;
+
+        // Append the specialization filename tag of "launcher" get all the `<filename>.*.launcher.*.setreg` files
+        // to be merged into the aggregate Settings Registry
+        constexpr AZStd::string_view LauncherFilenameTag = "launcher";
+        for (AZ::SettingsRegistryInterface::FilenameTags& specialization : specializations)
+        {
+            specialization.Append(LauncherFilenameTag);
+            // Also add the "game" tag for backwards compatibility with any existing
+            // `<filename>.*.game.*.setreg` files
+            specialization.Append("game");
+        }
 
         // Add the project specific specializations
         auto projectName = AZ::Utils::GetProjectName();
         if (!projectName.empty())
         {
-            for (AZ::SettingsRegistryInterface::Specializations& specialization : specializations)
+            for (AZ::SettingsRegistryInterface::FilenameTags& specialization : specializations)
             {
                 specialization.Append(projectName);
                 // The Game Launcher normally has a build target name of <ProjectName>Launcher
@@ -167,7 +187,7 @@ namespace AssetProcessor
             }
         }
 
-        AZ::IO::Path outputPath = AZ::IO::Path(request.m_tempDirPath) / "bootstrap.game.";
+        AZ::IO::Path outputPath = AZ::IO::Path(request.m_tempDirPath) / "bootstrap.";
         size_t extensionOffset = outputPath.Native().size();
 
         if (!platformCodes.empty())
@@ -189,7 +209,7 @@ namespace AssetProcessor
             AZStd::string_view platform = platformCodes.front();
             for (size_t i = 0; i < AZStd::size(specializations); ++i)
             {
-                const AZ::SettingsRegistryInterface::Specializations& specialization = specializations[i];
+                const AZ::SettingsRegistryInterface::FilenameTags& specialization = specializations[i];
                 if (m_isShuttingDown)
                 {
                     response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Cancelled;
@@ -225,7 +245,7 @@ namespace AssetProcessor
                     // to a local SettingsRegistry.
                     // The reason this is needed is so that the call to
                     // `MergeSettingsToRegistry_GemRegistries` below is able to locate each gems root directory
-                    // that will be merged into the bootstrap.game.<configuration>.setreg file
+                    // that will be merged into the bootstrap.<launcher-type>.<configuration>.setreg file
                     // This is used by the GameLauncher applications to read from a single merged .setreg file
                     // containing the settings needed to run a game/simulation without have access to the source code base registry
                     auto CopySettingsToLocalRegistry = [&registry, settingsRegistry, copiedSettings = AZStd::string()]
@@ -244,42 +264,46 @@ namespace AssetProcessor
                     CopySettingsToLocalRegistry(AZ::SettingsRegistryMergeUtils::ManifestGemsRootKey);
                 }
 
-                AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_EngineRegistry(registry, platform, specialization, &scratchBuffer);
-                AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_GemRegistries(registry, platform, specialization, &scratchBuffer);
-                AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectRegistry(registry, platform, specialization, &scratchBuffer);
+                AZ::SettingsRegistryInterface::MergeSettingsResult mergeResult;
+                mergeResult.Combine(AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_EngineRegistry(registry, platform, specialization, &scratchBuffer));
+                mergeResult.Combine(AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_GemRegistries(registry, platform, specialization, &scratchBuffer));
+                mergeResult.Combine(AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectRegistry(registry, platform, specialization, &scratchBuffer));
+
+                // Output any Settings Registry Merge result messages using the info log level if not empty
+                if (auto& operationMessages = mergeResult.GetMessages();
+                    !operationMessages.empty())
+                {
+                    [[maybe_unused]] AZStd::string_view launcherString = specialization.GetSpecialization(LauncherTypeIndex);
+                    [[maybe_unused]] AZStd::string_view buildConfiguration = specialization.GetSpecialization(BuildConfigIndex);
+                    AZ_Info("Settings Registry Builder", R"(Launcher Type: "%.*s", Build configuration: "%.*s")" "\n"
+                        "Merging the Engine, Gem, Project Registry directories resulted in the following messages:\n%s\n",
+                        AZ_STRING_ARG(launcherString), AZ_STRING_ARG(buildConfiguration),
+                         operationMessages.c_str());
+                }
 
                 // The Gem Root Key and Manifest Gems Root is removed now that each gems "<gem-root>/Registry" directory
                 // have been merged to the local Settings Registry
                 registry.Remove(AZ::SettingsRegistryMergeUtils::ActiveGemsRootKey);
                 registry.Remove(AZ::SettingsRegistryMergeUtils::ManifestGemsRootKey);
 
-                // Merge the Project User and User home settings registry only in non-release builds
-                constexpr bool executeRegDumpCommands = false;
                 AZ::CommandLine* commandLine{};
                 AZ::ComponentApplicationBus::Broadcast([&commandLine](AZ::ComponentApplicationRequests* appRequests)
                 {
                     commandLine = appRequests->GetAzCommandLine();
                 });
 
-                if (!specialization.Contains("release"))
-                {
-                    AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(registry, platform, specialization, &scratchBuffer);
-                    if (commandLine)
-                    {
-                        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, *commandLine, executeRegDumpCommands);
-                    }
-                    AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectUserRegistry(registry, platform, specialization, &scratchBuffer);
-                }
-
                 if (commandLine)
                 {
-                    AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, *commandLine, executeRegDumpCommands);
+                    AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, *commandLine, {});
                 }
 
                 if (AZ::IO::ByteContainerStream outputStream(&outputBuffer);
                     AZ::SettingsRegistryMergeUtils::DumpSettingsRegistryToStream(registry, "", outputStream, dumperSettings))
                 {
-                    AZStd::string_view specializationString(specialization.GetSpecialization(0));
+                    AZStd::string_view specializationString(specialization.GetSpecialization(LauncherTypeIndex));
+                    outputPath.Native() += specializationString; // Append launcher type (client, server, or unified)
+                    specializationString = specialization.GetSpecialization(BuildConfigIndex);
+                    outputPath.Native() += '.';
                     outputPath.Native() += specializationString; // Append configuration
                     outputPath.Native() += ".setreg";
 
@@ -297,11 +321,18 @@ namespace AssetProcessor
                     }
                     file.Close();
 
-                    const AZ::u32 hashedSpecialization = static_cast<AZ::u32>(AZStd::hash<AZStd::string_view>{}(specializationString));
+                    // Hash only the launcher type and build config specializations tags
+                    size_t hashedSpecialization{};
+                    // Get the launcher type specialization tag
+                    AZStd::hash_combine(hashedSpecialization, specialization.GetSpecialization(LauncherTypeIndex));
+                    // Get the build config specialization tag
+                    AZStd::hash_combine(hashedSpecialization, specialization.GetSpecialization(BuildConfigIndex));
                     AZ_Assert(hashedSpecialization != 0, "Product ID generation failed for specialization %.*s."
                         " This can result in a product ID collision with other builders for this asset.",
                         AZ_STRING_ARG(specializationString));
-                    response.m_outputProducts.emplace_back(outputPath.Native(), m_assetType, hashedSpecialization);
+
+                    auto setregSubId = static_cast<AZ::u32>(hashedSpecialization);
+                    response.m_outputProducts.emplace_back(outputPath.Native(), m_assetType, setregSubId);
                     response.m_outputProducts.back().m_dependenciesHandled = true;
 
                     outputPath.Native().erase(extensionOffset);

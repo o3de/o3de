@@ -27,6 +27,7 @@
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/algorithm.h>
+#include <AzCore/Serialization/Locale.h>
 #include <AzCore/Time/ITime.h>
 
 //#define DEFENCE_CVAR_HASH_LOGGING
@@ -103,6 +104,10 @@ void Command_SetWaitSeconds(IConsoleCmdArgs* pCmd)
 
     if (pCmd->GetArgCount() > 1)
     {
+        // console commands are interpreted in the invarant locale as they come from cfg files which need to be
+        // portable. 
+        AZ::Locale::ScopedSerializationLocale scopedLocale; 
+
         pConsole->m_waitSeconds.SetSeconds(atof(pCmd->GetArg(1)));
         const AZ::TimeMs elaspedTimeMs = AZ::GetRealElapsedTimeMs();
         pConsole->m_waitSeconds += CTimeValue(AZ::TimeMsToSecondsDouble(elaspedTimeMs));
@@ -149,22 +154,13 @@ int CXConsole::con_showonload = 0;
 int CXConsole::con_debug = 0;
 int CXConsole::con_restricted = 0;
 
-namespace
-{
-    const AzFramework::InputChannelId s_nullRepeatEventId("xconsole_null_repeat_event_id");
-}
-
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 CXConsole::CXConsole()
-    : AzFramework::InputChannelEventListener(AzFramework::InputChannelEventListener::GetPriorityDebug())
-    , AzFramework::InputTextEventListener(AzFramework::InputTextEventListener::GetPriorityDebug())
-    , m_nRepeatEventId(s_nullRepeatEventId)
 {
     m_fRepeatTimer = 0;
     m_pSysDeactivateConsole = 0;
-    m_pFont = NULL;
     m_pImage = NULL;
     m_nCursorPos = 0;
     m_nScrollPos = 0;
@@ -196,6 +192,10 @@ CXConsole::CXConsole()
     m_waitFrames = 0;
     m_waitSeconds = 0.0f;
     m_blockCounter = 0;
+
+    m_intWrappers.reserve(128);
+    m_floatWrappers.reserve(128);
+    m_stringWrappers.reserve(128);
 
     AzFramework::ConsoleRequestBus::Handler::BusConnect();
     AzFramework::CommandRegistrationBus::Handler::BusConnect();
@@ -301,13 +301,6 @@ void Command_DumpVars(IConsoleCmdArgs* Cmd)
 void CXConsole::Init(ISystem* pSystem)
 {
     m_pSystem = static_cast<CSystem*>(pSystem);
-    if (pSystem->GetICryFont())
-    {
-        m_pFont = pSystem->GetICryFont()->GetFont("default");
-    }
-
-    AzFramework::InputChannelEventListener::Connect();
-    AzFramework::InputTextEventListener::Connect();
 
 #if defined(_RELEASE)
     static const int kDeactivateConsoleDefault = 1;
@@ -452,8 +445,24 @@ void CXConsole::RegisterVar(ICVar* pCVar, ConsoleVarFunc pChangeFunc)
     }
 
     ConsoleVariablesMapItor::value_type value = ConsoleVariablesMapItor::value_type(pCVar->GetName(), pCVar);
-
     m_mapVariables.insert(value);
+
+    if (auto consoleInterface = AZ::Interface<AZ::IConsole>::Get();
+        consoleInterface != nullptr && !consoleInterface->HasCommand(pCVar->GetName(), AZ::ConsoleFunctorFlags::Null))
+    {
+        if (pCVar->GetType() == CVAR_INT)
+        {
+            m_intWrappers.emplace_back(pCVar->GetName(), pCVar->GetHelp(), pCVar->GetIVal());
+        }
+        else if (pCVar->GetType() == CVAR_FLOAT)
+        {
+            m_floatWrappers.emplace_back(pCVar->GetName(), pCVar->GetHelp(), pCVar->GetFVal());
+        }
+        else if (pCVar->GetType() == CVAR_STRING)
+        {
+            m_stringWrappers.emplace_back(pCVar->GetName(), pCVar->GetHelp(), pCVar->GetString());
+        }
+    }
 
     int flags = pCVar->GetFlags();
 
@@ -728,38 +737,11 @@ void CXConsole::SetScrollMax(int value)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void CXConsole::SetImage(ITexture* pImage, bool bDeleteCurrent)
-{
-    if (bDeleteCurrent)
-    {
-        pImage->Release();
-    }
-
-    m_pImage = pImage;
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void    CXConsole::ShowConsole(bool show, const int iRequestScrollMax)
 {
     if (m_pSysDeactivateConsole->GetIVal())
     {
         show = false;
-    }
-
-    if (show && !m_bConsoleActive)
-    {
-        AzFramework::InputSystemCursorRequestBus::EventResult(m_previousSystemCursorState,
-            AzFramework::InputDeviceMouse::Id,
-            &AzFramework::InputSystemCursorRequests::GetSystemCursorState);
-        AzFramework::InputSystemCursorRequestBus::Event(AzFramework::InputDeviceMouse::Id,
-            &AzFramework::InputSystemCursorRequests::SetSystemCursorState,
-            AzFramework::SystemCursorState::UnconstrainedAndVisible);
-    }
-    else if (!show && m_bConsoleActive)
-    {
-        AzFramework::InputSystemCursorRequestBus::Event(AzFramework::InputDeviceMouse::Id,
-            &AzFramework::InputSystemCursorRequests::SetSystemCursorState,
-            m_previousSystemCursorState);
     }
 
     SetStatus(show);
@@ -829,7 +811,6 @@ void CXConsole::DumpCVars(ICVarDumpSink* pCallback, unsigned int nFlagsFilter)
 //////////////////////////////////////////////////////////////////////////
 ICVar* CXConsole::GetCVar(const char* sName)
 {
-    assert(this);
     assert(sName);
 
     if (con_debug)
@@ -917,355 +898,7 @@ void CXConsole::Update()
 
     // Execute the deferred commands
     ExecuteDeferredCommands();
-
-    if (!m_bConsoleActive)
-    {
-        m_nRepeatEventId = s_nullRepeatEventId;
-    }
-
-    // Process Key press repeat (backspace and cursor on PC)
-    if (m_nRepeatEventId != s_nullRepeatEventId)
-    {
-        const float fRepeatDelay = 1.0f / 40.0f;          // in sec (similar to Windows default but might differ from actual setting)
-        const float fHitchDelay = 1.0f / 10.0f;               // in sec. Very low, but still reasonable frame-rate (debug builds)
-
-        const AZ::TimeUs delta = AZ::GetRealTickDeltaTimeUs(); // works even when time is manipulated
-        m_fRepeatTimer -= AZ::TimeUsToSeconds(delta); 
-
-        if (m_fRepeatTimer <= 0.0f)
-        {
-            if (m_fRepeatTimer < -fHitchDelay)
-            {
-                // bad framerate or hitch
-                m_nRepeatEventId = s_nullRepeatEventId;
-            }
-            else
-            {
-                const AzFramework::InputChannel* repeatInputChannel = AzFramework::InputChannelRequests::FindInputChannel(m_nRepeatEventId);
-                if (repeatInputChannel)
-                {
-                    ProcessInput(*repeatInputChannel);
-                }
-                m_fRepeatTimer = fRepeatDelay;            // next repeat even in .. sec
-            }
-        }
-    }
 }
-
-//enable this for now, we need it for profiling etc
-//MUST DISABLE FOR TCG BUILDS
-#   define PROCESS_XCONSOLE_INPUT
-
-//////////////////////////////////////////////////////////////////////////
-bool CXConsole::OnInputChannelEventFiltered(const AzFramework::InputChannel& inputChannel)
-{
-#ifdef PROCESS_XCONSOLE_INPUT
-    const AzFramework::InputDeviceId& deviceId = inputChannel.GetInputDevice().GetInputDeviceId();
-    if (!AzFramework::InputDeviceKeyboard::IsKeyboardDevice(deviceId))
-    {
-        // Don't consume non-keyboard events
-        return false;
-    }
-
-    if (inputChannel.IsStateEnded() && m_bConsoleActive)
-    {
-        m_nRepeatEventId = s_nullRepeatEventId;
-    }
-
-    if (!inputChannel.IsStateBegan())
-    {
-        // Consume keyboard events if the console is active
-        return m_bConsoleActive;
-    }
-
-    const AzFramework::InputChannelId& channelId = inputChannel.GetInputChannelId();
-    const AzFramework::ModifierKeyStates* customData = inputChannel.GetCustomData<AzFramework::ModifierKeyStates>();
-    const AzFramework::ModifierKeyStates modifierKeyStates = customData ? *customData : AzFramework::ModifierKeyStates();
-
-    // restart cursor blinking
-    m_fCursorBlinkTimer = 0.0f;
-    m_bDrawCursor = true;
-
-    // key repeat
-    const float fStartRepeatDelay = 0.5f;                       // in sec (similar to Windows default but might differ from actual setting)
-    m_nRepeatEventId = channelId;
-    m_fRepeatTimer = fStartRepeatDelay;
-
-    //execute Binds
-    if (!m_bConsoleActive)
-    {
-        const char* cmd = 0;
-
-        if (modifierKeyStates.GetActiveModifierKeys() == AzFramework::ModifierKeyMask::None)
-        {
-            // fast
-            cmd = FindKeyBind(channelId.GetName());
-        }
-        else
-        {
-            // slower
-            char szCombinedName[255];
-            int iLen = 0;
-
-            if (modifierKeyStates.IsActive(AzFramework::ModifierKeyMask::CtrlAny))
-            {
-                azstrcpy(szCombinedName, AZ_ARRAY_SIZE(szCombinedName), "ctrl_");
-                iLen += 5;
-            }
-            if (modifierKeyStates.IsActive(AzFramework::ModifierKeyMask::ShiftAny))
-            {
-                azstrcpy(&szCombinedName[iLen], AZ_ARRAY_SIZE(szCombinedName) - iLen, "shift_");
-                iLen += 6;
-            }
-            if (modifierKeyStates.IsActive(AzFramework::ModifierKeyMask::AltAny))
-            {
-                azstrcpy(&szCombinedName[iLen], AZ_ARRAY_SIZE(szCombinedName) - iLen, "alt_");
-                iLen += 4;
-            }
-            if (modifierKeyStates.IsActive(AzFramework::ModifierKeyMask::SuperAny))
-            {
-                azstrcpy(&szCombinedName[iLen], AZ_ARRAY_SIZE(szCombinedName) - iLen, "win_");
-                iLen += 4;
-            }
-
-            assert(sizeof(szCombinedName) > (iLen + strlen(channelId.GetName()) + 1));
-            azstrcpy(&szCombinedName[iLen], AZ_ARRAY_SIZE(szCombinedName) - iLen, channelId.GetName());
-
-            cmd = FindKeyBind(szCombinedName);
-        }
-
-        if (cmd)
-        {
-            SetInputLine("");
-            ExecuteStringInternal(cmd, true);        // keybinds are treated as they would come from console
-        }
-    }
-    else
-    {
-        if (channelId != AzFramework::InputDeviceKeyboard::Key::EditTab)
-        {
-            ResetAutoCompletion();
-        }
-
-        if (channelId == AzFramework::InputDeviceKeyboard::Key::AlphanumericC &&
-            modifierKeyStates.IsActive(AzFramework::ModifierKeyMask::CtrlAny))
-        {
-            Copy();
-
-            // Consume keyboard events if the console is active, which it will be if we get here
-            return true;
-        }
-        else if (channelId == AzFramework::InputDeviceKeyboard::Key::AlphanumericV &&
-            modifierKeyStates.IsActive(AzFramework::ModifierKeyMask::CtrlAny))
-        {
-            Paste();
-            return true;
-        }
-    }
-
-    if (channelId == AzFramework::InputDeviceKeyboard::Key::PunctuationTilde)
-    {
-        if (m_bActivationKeyEnable)
-        {
-            ShowConsole(!GetStatus());
-            m_nRepeatEventId = s_nullRepeatEventId;
-            m_bIsConsoleKeyPressed = true;
-            return true;
-        }
-    }
-    if (channelId == AzFramework::InputDeviceKeyboard::Key::Escape)
-    {
-        // hide console if it's active
-        if (GetStatus())
-        {
-            ShowConsole(false);
-            m_bIsConsoleKeyPressed = true;
-            return true;
-        }
-
-        //switch process or page or other things
-        if (m_pSystem)
-        {
-            ISystemUserCallback* pCallback = ((CSystem*)m_pSystem)->GetUserCallback();
-            if (pCallback)
-            {
-                pCallback->OnProcessSwitch();
-                m_bIsConsoleKeyPressed = true;
-                // Mark this input as handled. Pressing escape here is used in the editor to exit game mode, and return to edit mode.
-                // If AI/Physics mode was enabled before entering game mode, when returning to edit mode it will be enabled again.
-                // When it is enabled, it will reset input. If this returns false, then other handlers on the ebus would continue to process
-                // input events after the input had been reset. By returning true, the input is marked as handled.
-                return true;
-            }
-        }
-    }
-
-    return ProcessInput(inputChannel);
-
-#else
-
-    return false;
-
-#endif
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool CXConsole::OnInputTextEventFiltered(const AZStd::string& textUTF8)
-{
-#ifdef PROCESS_XCONSOLE_INPUT
-    // Ignore tilde/accent/power of two character since it is reserved for toggling the console
-    const bool isTilde = (textUTF8 == "~" || textUTF8 == "`" || textUTF8 == "\xC2\xB2");
-    if (m_bConsoleActive && !isTilde)
-    {
-        AddInputUTF8(textUTF8);
-    }
-#endif
-    return false;
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool CXConsole::ProcessInput(const AzFramework::InputChannel& inputChannel)
-{
-#ifdef PROCESS_XCONSOLE_INPUT
-
-    if (!m_bConsoleActive)
-    {
-        return false;
-    }
-
-    const AzFramework::InputChannelId& channelId = inputChannel.GetInputChannelId();
-    const AzFramework::ModifierKeyStates* customData = inputChannel.GetCustomData<AzFramework::ModifierKeyStates>();
-    const AzFramework::ModifierKeyStates modifierKeyStates = customData ? *customData : AzFramework::ModifierKeyStates();
-
-    const bool isAltModifierActive = modifierKeyStates.IsActive(AzFramework::ModifierKeyMask::AltAny);
-    const bool isCtrlModifierActive = modifierKeyStates.IsActive(AzFramework::ModifierKeyMask::CtrlAny);
-
-    if (channelId == AzFramework::InputDeviceKeyboard::Key::EditEnter ||
-        channelId == AzFramework::InputDeviceKeyboard::Key::NumPadEnter)
-    {
-        ExecuteInputBuffer();
-        m_nScrollLine = 0;
-        return true;
-    }
-    else if (channelId == AzFramework::InputDeviceKeyboard::Key::EditBackspace)
-    {
-        RemoveInputChar(true);
-        return true;
-    }
-    else if (channelId == AzFramework::InputDeviceKeyboard::Key::NavigationArrowLeft)
-    {
-        if (m_nCursorPos)
-        {
-            const char* pCursor = m_sInputBuffer.c_str() + m_nCursorPos;
-            pCursor -= Utf8::Internal::sequence_length(pCursor); // Note: This moves back one UCS code-point, but doesn't necessarily match one displayed character (ie, combining diacritics)
-            m_nCursorPos = pCursor - m_sInputBuffer.c_str();
-        }
-        return true;
-    }
-    else if (channelId == AzFramework::InputDeviceKeyboard::Key::NavigationArrowRight)
-    {
-        if (m_nCursorPos < (int)(m_sInputBuffer.length()))
-        {
-            const char* pCursor = m_sInputBuffer.c_str() + m_nCursorPos;
-            pCursor += Utf8::Internal::sequence_length(pCursor); // Note: This moves forward one UCS code-point, but doesn't necessarily match one displayed character (ie, combining diacritics)
-            m_nCursorPos = pCursor - m_sInputBuffer.c_str();
-        }
-        return true;
-    }
-    else if (channelId == AzFramework::InputDeviceKeyboard::Key::NavigationArrowUp)
-    {
-        const char* szHistoryLine = GetHistoryElement(true);      // true=UP
-
-        if (szHistoryLine)
-        {
-            m_sInputBuffer = szHistoryLine;
-            m_nCursorPos = (int)m_sInputBuffer.size();
-        }
-        return true;
-    }
-    else if (channelId == AzFramework::InputDeviceKeyboard::Key::NavigationArrowDown)
-    {
-        const char* szHistoryLine = GetHistoryElement(false);     // false=DOWN
-
-        if (szHistoryLine)
-        {
-            m_sInputBuffer = szHistoryLine;
-            m_nCursorPos = (int)m_sInputBuffer.size();
-        }
-        return true;
-    }
-    else if (channelId == AzFramework::InputDeviceKeyboard::Key::EditTab)
-    {
-        if (!isAltModifierActive)
-        {
-            m_sInputBuffer = ProcessCompletion(m_sInputBuffer.c_str());
-            m_nCursorPos = m_sInputBuffer.size();
-        }
-        return true;
-    }
-    else if (channelId == AzFramework::InputDeviceKeyboard::Key::NavigationPageUp)
-    {
-        if (isCtrlModifierActive)
-        {
-            m_nScrollLine = min((int)(m_dqConsoleBuffer.size() - 1), m_nScrollLine + 21);
-        }
-        else
-        {
-            m_nScrollLine = min((int)(m_dqConsoleBuffer.size() - 1), m_nScrollLine + 1);
-        }
-        return true;
-    }
-    else if (channelId == AzFramework::InputDeviceKeyboard::Key::NavigationPageDown)
-    {
-        if (isCtrlModifierActive)
-        {
-            m_nScrollLine = max(0, m_nScrollLine - 21);
-        }
-        else
-        {
-            m_nScrollLine = max(0, m_nScrollLine - 1);
-        }
-        return true;
-    }
-    else if (channelId == AzFramework::InputDeviceKeyboard::Key::NavigationHome)
-    {
-        if (isCtrlModifierActive)
-        {
-            m_nScrollLine = static_cast<int>(m_dqConsoleBuffer.size() - 1);
-        }
-        else
-        {
-            m_nCursorPos = 0;
-        }
-        return true;
-    }
-    else if (channelId == AzFramework::InputDeviceKeyboard::Key::NavigationEnd)
-    {
-        if (isCtrlModifierActive)
-        {
-            m_nScrollLine = 0;
-        }
-        else
-        {
-            m_nCursorPos = (int)m_sInputBuffer.length();
-        }
-        return true;
-    }
-    else if (channelId == AzFramework::InputDeviceKeyboard::Key::NavigationDelete)
-    {
-        RemoveInputChar(false);
-        return true;
-    }
-
-#endif
-
-    // Consume keyboard events if the console is active, which it will be if we get here
-    return true;
-}
-
-#ifdef PROCESS_XCONSOLE_INPUT
-#   undef PROCESS_XCONSOLE_INPUT
-#endif
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void CXConsole::OnConsoleCommand(const char* cmd)
@@ -1300,18 +933,6 @@ const char* CXConsole::GetHistoryElement(const bool bUpOrDown)
 
     return 0;
 }
-
-
-
-//////////////////////////////////////////////////////////////////////////
-void CXConsole::Draw()
-{
-}
-
-void CXConsole::DrawBuffer(int, const char*)
-{
-}
-
 
 //////////////////////////////////////////////////////////////////////////
 bool CXConsole::GetLineNo(const int indwLineNo, char* outszBuffer, const int indwBufferSize) const
@@ -2113,7 +1734,7 @@ void CXConsole::ExecuteCommand(CConsoleCommand& cmd, AZStd::string& str, bool bI
             for (unsigned int i = 1; i <= args.size(); i++)
             {
                 char pat[10];
-                azsprintf(pat, "%%%d", i);
+                azsnprintf(pat, AZ_ARRAY_SIZE(pat), "%%%d", i);
                 size_t pos = buf.find(pat);
                 if (pos == AZStd::string::npos)
                 {
@@ -2475,21 +2096,6 @@ void CXConsole::AddLine(AZStd::string_view inputStr)
         }
     };
     AZ::StringFunc::TokenizeVisitor(inputStr, ParseLine, "\r\n");
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CXConsole::ResetProgressBar(int)
-{
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CXConsole::TickProgressBar()
-{
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CXConsole::SetLoadingImage(const char*)
-{
 }
 
 //////////////////////////////////////////////////////////////////////////

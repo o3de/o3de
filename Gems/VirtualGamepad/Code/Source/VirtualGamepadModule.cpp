@@ -21,7 +21,7 @@ namespace VirtualGamepad
     {
     public:
         AZ_RTTI(VirtualGamepadModule, "{0454CF83-A35E-443B-A9BE-858EBE9C908F}", CryHooksModule);
-        AZ_CLASS_ALLOCATOR(VirtualGamepadModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(VirtualGamepadModule, AZ::SystemAllocator);
 
         VirtualGamepadModule()
             : CryHooksModule()
@@ -46,7 +46,8 @@ namespace VirtualGamepad
     };
 }
 
-// DO NOT MODIFY THIS LINE UNLESS YOU RENAME THE GEM
-// The first parameter should be GemName_GemIdLower
-// The second should be the fully qualified name of the class above
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME), VirtualGamepad::VirtualGamepadModule)
+#else
 AZ_DECLARE_MODULE_CLASS(Gem_VirtualGamepad, VirtualGamepad::VirtualGamepadModule)
+#endif

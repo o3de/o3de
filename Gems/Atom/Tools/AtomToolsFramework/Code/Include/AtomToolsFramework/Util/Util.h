@@ -80,6 +80,19 @@ namespace AtomToolsFramework
     //! @returns a pointer to the application main window 
     QWidget* GetToolMainWindow();
 
+    //! Searches a vector of string values for the first non empty string.
+    //! @param values Container of strings to be searched.
+    //! @param defaultValue Value returned if no valid string was found.
+    //! @returns The first nonempty string or the default value
+    AZStd::string GetFirstNonEmptyString(const AZStd::vector<AZStd::string>& values, const AZStd::string& defaultValue = {});
+
+    // Find and replace a whole word or symbol using regular expressions.
+    void ReplaceSymbolsInContainer(
+        const AZStd::string& findText, const AZStd::string& replaceText, AZStd::vector<AZStd::string>& container);
+
+    void ReplaceSymbolsInContainer(
+        const AZStd::vector<AZStd::pair<AZStd::string, AZStd::string>>& substitutionSymbols, AZStd::vector<AZStd::string>& container);
+
     //! Converts input text into a code-friendly symbol name, removing special characters and replacing whitespace with underscores.
     //! @param text Input text that will be converted into a symbol name
     //! @returns the symbol name generated from the text
@@ -268,8 +281,42 @@ namespace AtomToolsFramework
     //! Collect a set of file paths contained within asset browser entry or URL mime data
     AZStd::set<AZStd::string> GetPathsFromMimeData(const QMimeData* mimeData);
 
-    //! Collect a set of file paths from all project safe folders matching a wild card
-    AZStd::vector<AZStd::string> GetPathsInSourceFoldersMatchingWildcard(const AZStd::string& wildcard);
+    //! @brief Get the normalized, absolute path for a source asset by retrieving info from an absolute or relative source path 
+    //! @param path source file path for which the absolute path will be constructed 
+    //! @return absolute problem for the source file if it can be resolved, otherwise the input path 
+    AZStd::string GetAbsolutePathForSourceAsset(const AZStd::string& path);
+
+    //! @brief Create a list of all asset source files the input asset depends on
+    //! @param assetId ID of the asset for which dependencies will be collected
+    //! @return Container of absolute paths to dependency source files
+    AZStd::vector<AZStd::string> GetPathsForAssetSourceDependencies(const AZ::Data::AssetInfo& sourceInfo);
+    AZStd::vector<AZStd::string> GetPathsForAssetSourceDependenciesById(const AZ::Data::AssetId& assetId);
+    AZStd::vector<AZStd::string> GetPathsForAssetSourceDependenciesByPath(const AZStd::string& sourcePath);
+
+    //! @brief Create a list of all asset source files that depend on the input asset
+    //! @param assetId ID of the asset for which dependence will be collected
+    //! @return Container of absolute paths to dependent source files
+    AZStd::vector<AZStd::string> GetPathsForAssetSourceDependents(const AZ::Data::AssetInfo& sourceInfo);
+    AZStd::vector<AZStd::string> GetPathsForAssetSourceDependentsById(const AZ::Data::AssetId& assetId);
+    AZStd::vector<AZStd::string> GetPathsForAssetSourceDependentsByPath(const AZStd::string& sourcePath);
+
+    //! Invokes a visitor function on every file contained in the initial folder, optionally recursing through subfolders and visiting those files as well.
+    void VisitFilesInFolder(const AZStd::string& folder, const AZStd::function<bool(const AZStd::string&)> visitorFn, bool recurse);
+
+    //! Invokes a visitor function on all files contained in asset scan folders.
+    void VisitFilesInScanFolders(const AZStd::function<bool(const AZStd::string&)> visitorFn);
+
+    // Visits all scan folders asynchronously, gathering all of the paths matching the filter. 
+    AZStd::vector<AZStd::string> GetPathsInSourceFoldersMatchingFilter(const AZStd::function<bool(const AZStd::string&)> filterFn);
+
+    //! Collect a set of file paths from all project safe folders matching an extension
+    AZStd::vector<AZStd::string> GetPathsInSourceFoldersMatchingExtension(const AZStd::string& extension);
+
+    //! Returns true if settings are configured to ignore the input path
+    bool IsPathIgnored(const AZStd::string& path);
+
+    //! Returns a list of all asset safe folders except for those set to be ignored, cache and intermediate asset folders.
+    AZStd::vector<AZStd::string> GetSupportedSourceFolders();
 
     //! Add menu actions for scripts specified in the settings registry
     //! @param menu The menu where the actions will be inserted
@@ -281,3 +328,4 @@ namespace AtomToolsFramework
     void ReflectUtilFunctions(AZ::ReflectContext* context);
 
 } // namespace AtomToolsFramework
+

@@ -32,7 +32,6 @@ namespace Profiler
             {
                 ec->Class<ProfilerImGuiSystemComponent>("ProfilerImGui", "Provides in-game visualization of the performance data gathered by the ProfilerSystemComponent")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("System"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
             }
         }
@@ -112,6 +111,10 @@ namespace Profiler
         {
             ShowCpuProfilerWindow(m_showCpuProfiler);
         }
+        if (m_showHeapMemoryProfiler)
+        {
+            m_imguiHeapMemoryProfiler.Draw(m_showHeapMemoryProfiler);
+        }
     }
 
     void ProfilerImGuiSystemComponent::OnImGuiMainMenuUpdate()
@@ -122,6 +125,7 @@ namespace Profiler
             {
                 AZ::Debug::ProfilerSystemInterface::Get()->SetActive(m_showCpuProfiler);
             }
+            ImGui::MenuItem("Heap Memory", "", &m_showHeapMemoryProfiler);
             ImGui::EndMenu();
         }
     }

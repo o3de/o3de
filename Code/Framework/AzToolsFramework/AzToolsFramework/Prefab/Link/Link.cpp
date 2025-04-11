@@ -37,6 +37,7 @@ namespace AzToolsFramework
             , m_instanceName(AZStd::move(other.m_instanceName))
             , m_prefabSystemComponentInterface(AZStd::move(other.m_prefabSystemComponentInterface))
             , m_linkPatchesTree(AZStd::move(other.m_linkPatchesTree))
+            , m_patchIndexCounter(AZStd::move(other.m_patchIndexCounter))
         {
             other.m_prefabSystemComponentInterface = nullptr;
         }
@@ -56,6 +57,7 @@ namespace AzToolsFramework
                     "It is a requirement for the Link class. Check that it is being correctly initialized.");
                 other.m_prefabSystemComponentInterface = nullptr;
                 m_linkPatchesTree = AZStd::move(other.m_linkPatchesTree);
+                m_patchIndexCounter = AZStd::move(other.m_patchIndexCounter);
             }
             return *this;
         }
@@ -81,7 +83,7 @@ namespace AzToolsFramework
             }
         }
 
-        void Link::AddPatchesToLink(const PrefabDom& patches)
+        void Link::SetLinkPatches(const PrefabDom& patches)
         {
             RebuildLinkPatchesTree(patches);
         }
@@ -120,7 +122,7 @@ namespace AzToolsFramework
             return ConstructLinkDomFromPatches(linkDom, allocator);
         }
 
-        bool Link::AreOverridesPresent(AZ::Dom::Path path, AZ::Dom::PrefixTreeTraversalFlags prefixTreeTraversalFlags)
+        bool Link::AreOverridesPresent(AZ::Dom::Path path, AZ::Dom::PrefixTreeTraversalFlags prefixTreeTraversalFlags) const
         {
             bool areOverridesPresent = false;
             auto visitorFn = [&areOverridesPresent](AZ::Dom::Path, const PrefabOverrideMetadata&)
@@ -133,6 +135,33 @@ namespace AzToolsFramework
 
             m_linkPatchesTree.VisitPath(path, visitorFn, prefixTreeTraversalFlags);
             return areOverridesPresent;
+        }
+
+        PrefabDomConstReference Link::GetOverridePatchAtExactPath(AZ::Dom::Path path) const
+        {
+            PrefabDomConstReference overridePatch = {};
+            const PrefabOverrideMetadata* overrideData = m_linkPatchesTree.ValueAtPath(path, AZ::Dom::PrefixTreeMatch::ExactPath);
+            if (overrideData)
+            {
+                overridePatch = overrideData->m_patch;
+            }
+
+            return overridePatch;
+        }
+        
+        PrefabOverridePrefixTree Link::RemoveOverrides(AZ::Dom::Path path)
+        {
+            return m_linkPatchesTree.DetachSubTree(path);
+        }
+
+        bool Link::AddOverrides(const AZ::Dom::Path& path, AZ::Dom::DomPrefixTree<PrefabOverrideMetadata>&& subTree)
+        {
+            return m_linkPatchesTree.OverwritePath(path, AZStd::move(subTree));
+        }
+
+        void Link::AddOverrides(const PrefabDomValue& patches)
+        {
+            AddLinkPatchesToTree(patches);
         }
 
         PrefabDomPath Link::GetInstancePath() const
@@ -151,29 +180,28 @@ namespace AzToolsFramework
             PrefabDom& targetTemplatePrefabDom = m_prefabSystemComponentInterface->FindTemplateDom(m_targetTemplateId);
             PrefabDom& sourceTemplatePrefabDom = m_prefabSystemComponentInterface->FindTemplateDom(m_sourceTemplateId);
 
-            // Copy the source template dom so that the actual template DOM does not change and only the linked instance DOM does.
-            PrefabDom sourceTemplateDomCopy;
-            sourceTemplateDomCopy.CopyFrom(sourceTemplatePrefabDom, sourceTemplatePrefabDom.GetAllocator());
-
-            
             PrefabDom patchesDom;
             ConstructLinkDomFromPatches(patchesDom, patchesDom.GetAllocator());
             PrefabDomValueReference patchesReference = PrefabDomUtils::FindPrefabDomValue(patchesDom, PrefabDomUtils::PatchesName);
             if (!patchesReference.has_value())
             {
-                if (AZ::JsonSerialization::Compare(linkedInstanceDom, sourceTemplateDomCopy) != AZ::JsonSerializerCompareResult::Equal)
+                // if there are no patches, it means that the instance being copied should just be identical to the one
+                // in the source.
+                if (AZ::JsonSerialization::Compare(linkedInstanceDom, sourceTemplatePrefabDom) != AZ::JsonSerializerCompareResult::Equal)
                 {
-                    linkedInstanceDom.CopyFrom(sourceTemplateDomCopy, targetTemplatePrefabDom.GetAllocator());
+                    linkedInstanceDom.CopyFrom(sourceTemplatePrefabDom, targetTemplatePrefabDom.GetAllocator());
                 }
             }
             else
             {
+                // Copy the source template dom so that the actual template DOM does not change and only the linked instance DOM does.
+                linkedInstanceDom.CopyFrom(sourceTemplatePrefabDom, targetTemplatePrefabDom.GetAllocator());
+
                 AZ::JsonSerializationResult::ResultCode applyPatchResult =
-                    PrefabDomUtils::ApplyPatches(sourceTemplateDomCopy, targetTemplatePrefabDom.GetAllocator(), patchesReference->get());
-                linkedInstanceDom.CopyFrom(sourceTemplateDomCopy, targetTemplatePrefabDom.GetAllocator());
+                    PrefabDomUtils::ApplyPatches(linkedInstanceDom, targetTemplatePrefabDom.GetAllocator(), patchesReference->get());
 
                 [[maybe_unused]] PrefabDomValueReference sourceTemplateName =
-                    PrefabDomUtils::FindPrefabDomValue(sourceTemplateDomCopy, PrefabDomUtils::SourceName);
+                    PrefabDomUtils::FindPrefabDomValue(sourceTemplatePrefabDom, PrefabDomUtils::SourceName);
                 AZ_Assert(sourceTemplateName && sourceTemplateName->get().IsString(), "A valid source template name couldn't be found");
                 [[maybe_unused]] PrefabDomValueReference targetTemplateName =
                     PrefabDomUtils::FindPrefabDomValue(targetTemplatePrefabDom, PrefabDomUtils::SourceName);
@@ -263,7 +291,15 @@ namespace AzToolsFramework
 
         void Link::RebuildLinkPatchesTree(const PrefabDomValue& patches)
         {
+            // Remove all patches in tree and reset index counter for new patches.
             m_linkPatchesTree.Clear();
+            m_patchIndexCounter = 0u;
+
+            AddLinkPatchesToTree(patches);
+        }
+
+        void Link::AddLinkPatchesToTree(const PrefabDomValue& patches)
+        {
             if (patches.IsArray())
             {
                 rapidjson::GenericArray patchesArray = patches.GetArray();
@@ -272,11 +308,11 @@ namespace AzToolsFramework
                     PrefabDom patchEntry;
                     patchEntry.CopyFrom(patchesArray[i], patchEntry.GetAllocator());
 
-                    auto path = patchEntry.FindMember("path");
-                    if (path != patchEntry.MemberEnd())
+                    auto pathIter = patchEntry.FindMember("path");
+                    if (pathIter != patchEntry.MemberEnd())
                     {
-                        AZ::Dom::Path domPath(path->value.GetString());
-                        PrefabOverrideMetadata overrideMetadata(AZStd::move(patchEntry), i);
+                        AZ::Dom::Path domPath(pathIter->value.GetString());
+                        PrefabOverrideMetadata overrideMetadata(AZStd::move(patchEntry), m_patchIndexCounter++);
                         m_linkPatchesTree.SetValue(domPath, AZStd::move(overrideMetadata));
                     }
                 }

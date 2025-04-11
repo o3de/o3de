@@ -8,8 +8,9 @@
 
 #pragma once
 
+#include <AzFramework/DocumentPropertyEditor/AdapterBuilder.h>
 #include <AzFramework/DocumentPropertyEditor/RoutingAdapter.h>
-#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/string/string_view.h>
 
 namespace AZ::DocumentPropertyEditor
 {
@@ -60,9 +61,26 @@ namespace AZ::DocumentPropertyEditor
         //! property editor instances has altered its value.
         void NotifyPropertyChanged(const PropertyChangeInfo& changeInfo);
 
+        //! Creates a node for displaying label information.
+        //! Subclass adapter can override the default behavior.
+        //! @param adapterBuilder The adapter builder currently being used by this adapter.
+        //! @param labelText The text string to be displayed in label.
+        //! @param serializedPath The serialized path fetched from AZ::Reflection::DescriptorAttributes.
+        virtual void CreateLabel(AdapterBuilder* adapterBuilder, AZStd::string_view labelText, AZStd::string_view serializedPath);
+
+        //! Updates the contents of adapter Dom contents using the property change information provided. Child adapters can override
+        //! this function to make more changes to the Dom in addition to the property changes.
+        //! @param propertyChangeInfo Object containing information about the property change.
+        virtual void UpdateDomContents(const PropertyChangeInfo& propertyChangeInfo);
+
         void* GetInstance() { return m_instance; }
         const void* GetInstance() const { return m_instance; }
         AZ::TypeId GetTypeId() const { return m_typeId; }
+
+        ExpanderSettings* CreateExpanderSettings(
+            DocumentAdapter* referenceAdapter,
+            const AZStd::string& settingsRegistryKey = AZStd::string(),
+            const AZStd::string& propertyEditorName = AZStd::string()) override;
 
     protected:
         Dom::Value GenerateContents() override;

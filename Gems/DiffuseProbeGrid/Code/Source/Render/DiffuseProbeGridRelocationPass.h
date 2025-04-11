@@ -9,7 +9,7 @@
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <Atom/RHI/CommandList.h>
-#include <Atom/RHI/DrawItem.h>
+#include <Atom/RHI/DeviceDrawItem.h>
 #include <Atom/RHI/ScopeProducer.h>
 #include <Atom/RHI.Reflect/ShaderResourceGroupLayoutDescriptor.h>
 #include <Atom/RPI.Public/Pass/ComputePass.h>
@@ -31,7 +31,7 @@ namespace AZ
             AZ_RPI_PASS(DiffuseProbeGridRelocationPass);
 
             AZ_RTTI(AZ::Render::DiffuseProbeGridRelocationPass, "{E6FCBE1A-0404-49B3-AA78-C2B0DEE94FB1}", RPI::RenderPass);
-            AZ_CLASS_ALLOCATOR(DiffuseProbeGridRelocationPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DiffuseProbeGridRelocationPass, SystemAllocator);
             virtual ~DiffuseProbeGridRelocationPass() = default;
 
             static RPI::Ptr<DiffuseProbeGridRelocationPass> Create(const RPI::PassDescriptor& descriptor);

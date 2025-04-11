@@ -39,7 +39,7 @@ class WatchesFilterModel
     : public QSortFilterProxyModel
 {
 public:
-    AZ_CLASS_ALLOCATOR(WatchesFilterModel, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(WatchesFilterModel, AZ::SystemAllocator);
     WatchesFilterModel(QObject* pParent)
         : QSortFilterProxyModel(pParent)
     {
@@ -569,7 +569,7 @@ Qt::ItemFlags WatchesDataModel::flags (const QModelIndex& index) const
         bool RO =
             (dv == NULL)
             || (dv->m_type == LUA_TFUNCTION)
-            || (dv->m_type == LUA_TNONE)
+            || (static_cast<int>(dv->m_type) == LUA_TNONE)
                 || (dv->m_flags & AZ::ScriptContextDebug::DebugValue::FLAG_READ_ONLY);
 
         if (IsRealIndex(index) && !RO)
@@ -831,7 +831,7 @@ bool WatchesDataModel::setData (const QModelIndex& index, const QVariant& value,
 
 const char* WatchesDataModel::SafetyType(char c) const
 {
-    if (c <= LUA_TNONE || c > LUA_NUMTAGS)
+    if (static_cast<int>(c) <= LUA_TNONE || c > LUA_NUMTAGS)
     {
         return "<invalid>";
     }

@@ -28,7 +28,7 @@ namespace AzToolsFramework
         , public ViewBookmarkPersistInterface
     {
     public:
-        AZ_CLASS_ALLOCATOR(LocalViewBookmarkLoader, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(LocalViewBookmarkLoader, AZ::SystemAllocator);
         AZ_RTTI(LocalViewBookmarkLoader, "{A64F2300-0958-4430-9EEA-1D457997E618}", ViewBookmarkInterface);
 
         void RegisterViewBookmarkInterface();

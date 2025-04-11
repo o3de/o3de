@@ -1,5 +1,6 @@
 {
     "gem_name": "${Name}",
+    "version": "${Version}",
     "display_name": "${DisplayName}",
     "license": "${License}",
     "license_url": "${LicenseURL}",
@@ -13,10 +14,17 @@
     "user_tags": [
         "${UserTags}"
     ],
+    "platforms": [
+        "${Platforms}"
+    ],
     "icon_path": "${IconPath}",
     "requirements": "${Requirements}",
     "documentation_url": "${DocumentationURL}",
     "dependencies": [
     ],
-    "repo_uri": "${RepoURI}"
+    "repo_uri": "${RepoURI}",
+    "compatible_engines": [
+    ],
+    "engine_api_dependencies":[
+    ]
 }

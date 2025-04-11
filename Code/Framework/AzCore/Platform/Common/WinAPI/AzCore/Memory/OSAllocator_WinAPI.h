@@ -9,4 +9,6 @@
 
 #define AZ_OS_MALLOC(byteSize, alignment) _aligned_malloc(byteSize, alignment)
 #define AZ_OS_FREE(pointer) _aligned_free(pointer)
+#define AZ_OS_REALLOC(pointer, byteSize, alignment) _aligned_realloc(pointer, byteSize, alignment)
+#define AZ_OS_MSIZE(pointer, alignment) _aligned_msize(pointer, alignment, 0)
 #define AZ_MALLOC_TRIM(pad) AZ_UNUSED(pad)

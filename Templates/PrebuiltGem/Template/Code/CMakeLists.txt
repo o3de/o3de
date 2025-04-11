@@ -13,6 +13,17 @@
 # Get the platform specific folder ${pal_dir} for the current folder: ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME}
 o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 
+# Now that we have the platform abstraction layer (PAL) folder for this folder, thats where we will find the
+# traits for this platform. Traits for a platform are defines for things like whether or not something in this gem
+# is supported by this platform.
+include(${pal_dir}/PAL.cmake)
+
+# Check to see if the building the Gem Modules are supported for the current platform
+if(NOT PAL_TRAIT_${NameUpper}_SUPPORTED)
+    return()
+endif()
+
+
 # The ${gem_name}.API target declares the common interface that users of this gem should depend on in their targets
 ly_add_target(
     NAME ${gem_name}.API INTERFACE
@@ -52,10 +63,16 @@ ly_add_target(
 # active in Clients or Servers by default, delete one of both of the following lines:
 ly_create_alias(NAME ${gem_name}.Clients NAMESPACE Gem TARGETS Gem::${gem_name})
 ly_create_alias(NAME ${gem_name}.Servers NAMESPACE Gem TARGETS Gem::${gem_name})
+ly_create_alias(NAME ${gem_name}.Unified NAMESPACE Gem TARGETS Gem::${gem_name})
 
 # For the Client and Server variants of ${gem_name} Gem, an alias to the ${gem_name}.API target will be made
 ly_create_alias(NAME ${gem_name}.Clients.API NAMESPACE Gem TARGETS Gem::${gem_name}.API)
 ly_create_alias(NAME ${gem_name}.Servers.API NAMESPACE Gem TARGETS Gem::${gem_name}.API)
+ly_create_alias(NAME ${gem_name}.Unified.API NAMESPACE Gem TARGETS Gem::${gem_name}.API)
+
+# Add in CMake dependencies for each gem dependency listed in this gem's gem.json file
+# for the Client, Server and Unified gem variants
+o3de_add_variant_dependencies_for_gem_dependencies(GEM_NAME ${gem_name} VARIANTS Client Server Unified)
 
 # If we are on a host platform, we want to add the host tools targets like the ${gem_name}.Tools and ${gem_name}.Builders
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
@@ -121,6 +138,10 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
         RUNTIME_DEPENDENCIES
         TARGET_PROPERTIES
     )
+
+    # Add in CMake dependencies for each gem dependency listed in this gem's gem.json file
+    # for the Tools and Builders gem variants
+    o3de_add_variant_dependencies_for_gem_dependencies(GEM_NAME ${gem_name} VARIANTS Tools Builders)
 endif()
 
 ################################################################################

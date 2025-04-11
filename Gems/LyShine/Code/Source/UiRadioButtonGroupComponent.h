@@ -14,7 +14,10 @@
 #include <LyShine/Bus/UiInitializationBus.h>
 #include <LyShine/UiComponentTypes.h>
 
-#include <AzCore/Serialization/SerializeContext.h>
+namespace AZ
+{
+    class ReflectContext;
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 class UiRadioButtonGroupComponent
@@ -56,17 +59,17 @@ protected: // member functions
 
     static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("UiRadioButtonGroupService"));
+        provided.push_back(AZ_CRC_CE("UiRadioButtonGroupService"));
     }
 
     static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("UiRadioButtonGroupService"));
+        incompatible.push_back(AZ_CRC_CE("UiRadioButtonGroupService"));
     }
 
     static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("UiElementService", 0x3dca7ad4));
+        required.push_back(AZ_CRC_CE("UiElementService"));
     }
 
     static void Reflect(AZ::ReflectContext* context);

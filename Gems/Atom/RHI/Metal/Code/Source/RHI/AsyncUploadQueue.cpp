@@ -8,7 +8,7 @@
 
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI.Reflect/PlatformLimitsDescriptor.h>
-#include <Atom/RHI/BufferPool.h>
+#include <Atom/RHI/DeviceBufferPool.h>
 #include <Atom/RHI/CommandQueue.h>
 #include <AzCore/Component/TickBus.h>
 #include <RHI/AsyncUploadQueue.h>
@@ -30,16 +30,8 @@ namespace AZ
             Base::Init(device);
             id<MTLDevice> hwDevice = device.GetMtlDevice();
             
-            // Use separate work submission queue from the hw copy queue to avoid the per frame sync.
-            m_copyQueue = CommandQueue::Create();
-            m_copyQueue->SetName(AZ::Name("AsyncUpload Queue"));
-
-            RHI::CommandQueueDescriptor commandQueueDescriptor;
-            commandQueueDescriptor.m_hardwareQueueClass = RHI::HardwareQueueClass::Copy;
-            // Init takes the max number of submitted frames before blocking, set to 100K to avoid ever blocking.
-            commandQueueDescriptor.m_maxFrameQueueDepth = 100000;
-            m_copyQueue->Init(device, commandQueueDescriptor);
-
+            m_copyQueue = &device.GetCommandQueueContext().GetCommandQueue(RHI::HardwareQueueClass::Copy);
+            
             m_uploadFence.Init(&device, RHI::FenceState::Signaled);
             m_commandBuffer.Init(m_copyQueue->GetPlatformQueue());
             
@@ -78,22 +70,22 @@ namespace AZ
             Base::Shutdown();
         }
 
-        uint64_t AsyncUploadQueue::QueueUpload(const RHI::BufferStreamRequest& uploadRequest)
+        uint64_t AsyncUploadQueue::QueueUpload(const RHI::DeviceBufferStreamRequest& uploadRequest)
         {
             Buffer& destBuffer = static_cast<Buffer&>(*uploadRequest.m_buffer);
             const MemoryView& destMemoryView = destBuffer.GetMemoryView();
             MTLStorageMode mtlStorageMode = destBuffer.GetMemoryView().GetStorageMode();
-            RHI::BufferPool& bufferPool = static_cast<RHI::BufferPool&>(*destBuffer.GetPool());
+            RHI::DeviceBufferPool& bufferPool = static_cast<RHI::DeviceBufferPool&>(*destBuffer.GetPool());
             
             // No need to use staging buffers since it's host memory.
             // We just map, copy and then unmap.
             if(mtlStorageMode == MTLStorageModeShared || mtlStorageMode == GetCPUGPUMemoryMode())
             {
-                RHI::BufferMapRequest mapRequest;
+                RHI::DeviceBufferMapRequest mapRequest;
                 mapRequest.m_buffer = uploadRequest.m_buffer;
                 mapRequest.m_byteCount = uploadRequest.m_byteCount;
                 mapRequest.m_byteOffset = uploadRequest.m_byteOffset;
-                RHI::BufferMapResponse mapResponse;
+                RHI::DeviceBufferMapResponse mapResponse;
                 bufferPool.MapBuffer(mapRequest, mapResponse);
                 ::memcpy(mapResponse.m_data, uploadRequest.m_sourceData, uploadRequest.m_byteCount);
                 bufferPool.UnmapBuffer(*uploadRequest.m_buffer);
@@ -135,7 +127,7 @@ namespace AZ
                     {
                         AZ_PROFILE_SCOPE(RHI, "Copy CPU buffer");
                         memcpy(framePacket->m_stagingResourceData, sourceData + pendingByteOffset, bytesToCopy);
-                        Platform::SynchronizeBufferOnCPU(framePacket->m_stagingResource, 0, bytesToCopy);
+                        Platform::PublishBufferCpuChangeOnGpu(framePacket->m_stagingResource, 0, bytesToCopy);
                     }
 
                     id<MTLBlitCommandEncoder> blitEncoder = [framePacket->m_mtlCommandBuffer blitCommandEncoder];
@@ -168,11 +160,11 @@ namespace AZ
         }
                 
         // [GFX TODO][ATOM-4205] Stage/Upload 3D streaming images more efficiently.
-        RHI::AsyncWorkHandle AsyncUploadQueue::QueueUpload(const RHI::StreamingImageExpandRequest& request, uint32_t residentMip)
+        RHI::AsyncWorkHandle AsyncUploadQueue::QueueUpload(const RHI::DeviceStreamingImageExpandRequest& request, uint32_t residentMip)
         {
             auto& device = static_cast<Device&>(GetDevice());
             id<MTLDevice> mtlDevice = device.GetMtlDevice();
-            auto* image = static_cast<Image*>(request.m_image);
+            auto* image = static_cast<Image*>(request.m_image.get());
             const uint16_t startMip = residentMip - 1;
             const uint16_t endMip = static_cast<uint16_t>(residentMip - request.m_mipSlices.size());
 
@@ -184,7 +176,7 @@ namespace AZ
                 FramePacket* framePacket = BeginFramePacket(commandQueue);
                 
                 //[GFX TODO][ATOM-5605] - Cache alignments for all formats at Init
-                const static uint32_t bufferOffsetAlign = [mtlDevice minimumTextureBufferAlignmentForPixelFormat: ConvertPixelFormat(image->GetDescriptor().m_format)];
+                const static uint32_t bufferOffsetAlign = static_cast<uint32_t>([mtlDevice minimumTextureBufferAlignmentForPixelFormat: ConvertPixelFormat(image->GetDescriptor().m_format)]);
 
                 // Variables for split subresource slice.
                 // If a subresource slice pitch is large than one staging size, we may split the slice by rows.
@@ -194,7 +186,7 @@ namespace AZ
                 for (uint16_t curMip = endMip; curMip <= startMip; ++curMip)
                 {
                     const size_t sliceIndex = curMip - endMip;
-                    const RHI::ImageSubresourceLayout& subresourceLayout = request.m_mipSlices[sliceIndex].m_subresourceLayout;
+                    const RHI::DeviceImageSubresourceLayout& subresourceLayout = request.m_mipSlices[sliceIndex].m_subresourceLayout;
                     uint32_t arraySlice = 0;
                     const uint32_t subresourceSlicePitch = subresourceLayout.m_bytesPerImage;
 
@@ -255,7 +247,7 @@ namespace AZ
                                 }
 
                                 const uint32_t bytesCopied = subresourceLayout.m_rowCount * stagingRowPitch;
-                                Platform::SynchronizeBufferOnCPU(framePacket->m_stagingResource, framePacket->m_dataOffset, bytesCopied);
+                                Platform::PublishBufferCpuChangeOnGpu(framePacket->m_stagingResource, framePacket->m_dataOffset, bytesCopied);
 
                                 RHI::Size sourceSize = subresourceLayout.m_size;
                                 sourceSize.m_depth = 1;
@@ -300,7 +292,7 @@ namespace AZ
                                     }
 
                                     const uint32_t bytesCopied = (endRow - startRow) * stagingRowPitch;
-                                    Platform::SynchronizeBufferOnCPU(framePacket->m_stagingResource, framePacket->m_dataOffset, bytesCopied);
+                                    Platform::PublishBufferCpuChangeOnGpu(framePacket->m_stagingResource, framePacket->m_dataOffset, bytesCopied);
 
                                     //Clamp heightToCopy to match subresourceLayout.m_size.m_height as it is possible to go over
                                     //if subresourceLayout.m_size.m_height is not perfectly divisible by compressedTexelBlockSizeHeight
@@ -421,7 +413,7 @@ namespace AZ
             ProcessCallback(workHandle);
         }
     
-        RHI::AsyncWorkHandle AsyncUploadQueue::CreateAsyncWork(Fence& fence, RHI::Fence::SignalCallback callback )
+        RHI::AsyncWorkHandle AsyncUploadQueue::CreateAsyncWork(Fence& fence, RHI::DeviceFence::SignalCallback callback )
         {
             return m_asyncWaitQueue.CreateAsyncWork([fence, callback]()
             {

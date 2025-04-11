@@ -8,6 +8,7 @@
 #include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/Device.h>
 #include <RHI/PipelineLibrary.h>
+#include <Atom/RHI.Reflect/VkAllocator.h>
 
 namespace AZ
 {
@@ -23,7 +24,7 @@ namespace AZ
             return m_nativePipelineCache;
         }
 
-        RHI::ResultCode PipelineLibrary::InitInternal(RHI::Device& deviceBase, const RHI::PipelineLibraryDescriptor& descriptor)
+        RHI::ResultCode PipelineLibrary::InitInternal(RHI::Device& deviceBase, const RHI::DevicePipelineLibraryDescriptor& descriptor)
         {
             DeviceObject::Init(deviceBase);
             auto& device = static_cast<Device&>(deviceBase);
@@ -41,8 +42,8 @@ namespace AZ
                 createInfo.pInitialData = descriptor.m_serializedData->GetData().data();
             }
 
-            const VkResult result =
-                device.GetContext().CreatePipelineCache(device.GetNativeDevice(), &createInfo, nullptr, &m_nativePipelineCache);
+            const VkResult result = device.GetContext().CreatePipelineCache(
+                device.GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &m_nativePipelineCache);
             AssertSuccess(result);
             RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(result));
 
@@ -55,12 +56,12 @@ namespace AZ
             if (m_nativePipelineCache != VK_NULL_HANDLE)
             {
                 auto& device = static_cast<Device&>(GetDevice());
-                device.GetContext().DestroyPipelineCache(device.GetNativeDevice(), m_nativePipelineCache, nullptr);
+                device.GetContext().DestroyPipelineCache(device.GetNativeDevice(), m_nativePipelineCache, VkSystemAllocator::Get());
                 m_nativePipelineCache = VK_NULL_HANDLE;
             }
         }
 
-        RHI::ResultCode PipelineLibrary::MergeIntoInternal(AZStd::span<const RHI::PipelineLibrary * const> libraries)
+        RHI::ResultCode PipelineLibrary::MergeIntoInternal(AZStd::span<const RHI::DevicePipelineLibrary * const> libraries)
         {
             auto& device = static_cast<Device&>(GetDevice());
             if (libraries.empty())
@@ -70,7 +71,7 @@ namespace AZ
 
             AZStd::vector<VkPipelineCache> pipelineCaches;
             pipelineCaches.reserve(libraries.size());
-            for (const RHI::PipelineLibrary* libraryBase : libraries)
+            for (const RHI::DevicePipelineLibrary* libraryBase : libraries)
             {
                 const auto* library = static_cast<const PipelineLibrary*>(libraryBase);
                 pipelineCaches.emplace_back(library->GetNativePipelineCache());

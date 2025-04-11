@@ -149,6 +149,8 @@ namespace AzNetworking
 
         TimeoutId m_timeoutId;
         uint32_t  m_timeoutCounter = 0;
+
+        AZStd::mutex m_sendPacketMutex;
     };
 }
 

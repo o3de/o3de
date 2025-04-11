@@ -59,7 +59,7 @@ namespace GraphModel
         friend class Graph; // Because the Graph needs to set the ID, but no one else should be able to.
 
     public:
-        AZ_CLASS_ALLOCATOR(Node, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Node, AZ::SystemAllocator);
         AZ_RTTI(Node, "{274B4495-FDBF-45A9-9BAD-9E90269F2B73}", GraphElement);
         static void Reflect(AZ::ReflectContext* context);
 
@@ -113,6 +113,7 @@ namespace GraphModel
         //! other types, such as wrapper nodes
         virtual NodeType GetNodeType() const;
 
+        //! Return the unique ID for this node in the containing graph
         NodeId GetId() const;
 
         //! Return the greatest distance, number of connected nodes, between this node and other root nodes.
@@ -195,6 +196,9 @@ namespace GraphModel
         //! This method does nothing if the slot is not extendable.
         virtual SlotPtr AddExtendedSlot(const SlotName& slotName);
 
+        //! Clear any data that was cached for this node
+        void ClearCachedData();
+
     protected:
 
         //! Default implementation will prevent slots from being extended past the
@@ -268,6 +272,13 @@ namespace GraphModel
         SlotDefinitionList m_outputEventSlotDefinitions; //!< For slots with configuration = SlotDirection::Output SlotType::Event
         SlotDefinitionList m_extendableSlotDefinitions;  //!< For all extendable slot configurations
         SlotDefinitionList m_allSlotDefinitions; //!< Provies a single list of all of the above SlotDefinitionLists for convenient looping over them all
+
+        // Storing the minimum and maximum input depth for this node so that it does not have to be calculated every time
+        mutable AZStd::mutex m_maxInputDepthMutex;
+        mutable uint32_t m_maxInputDepth = AZStd::numeric_limits<uint32_t>::max();
+
+        mutable AZStd::mutex m_maxOutputDepthMutex;
+        mutable uint32_t m_maxOutputDepth = AZStd::numeric_limits<uint32_t>::max();
     };
 
 } // namespace GraphModel

@@ -35,8 +35,6 @@ def Multiplayer_BasicConnectivity_Connects():
     """
     import azlmbr.legacy.general as general
     from editor_python_test_tools.utils import Report
-    from editor_python_test_tools.utils import Tracer
-
     from editor_python_test_tools.utils import TestHelper as helper
 
 
@@ -47,13 +45,12 @@ def Multiplayer_BasicConnectivity_Connects():
     helper.open_level("Multiplayer", level_name)
     general.set_cvar_integer('editorsv_port', 33454)
 
-    with Tracer() as section_tracer:
-        # 2) Enter game mode
-        helper.multiplayer_enter_game_mode(TestConstants.enter_game_mode)
+    # 2) Enter game mode
+    helper.multiplayer_enter_game_mode(TestConstants.enter_game_mode, helper.EditorServerMode.DEDICATED_SERVER)
 
-        # 3) Make sure the network player was spawned
-        player_id = general.find_game_entity("Player")
-        Report.critical_result(TestConstants.find_network_player, player_id.IsValid())
+    # 3) Make sure the network player was spawned
+    player_id = general.find_game_entity("Player")
+    Report.critical_result(TestConstants.find_network_player, player_id.IsValid())
 
     # Exit game mode
     helper.exit_game_mode(TestConstants.exit_game_mode)
@@ -62,3 +59,4 @@ def Multiplayer_BasicConnectivity_Connects():
 if __name__ == "__main__":
     from editor_python_test_tools.utils import Report
     Report.start_test(Multiplayer_BasicConnectivity_Connects)
+    

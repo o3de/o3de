@@ -7,6 +7,7 @@
  */
 #include "native/utilities/PlatformConfiguration.h"
 #include "native/AssetManager/FileStateCache.h"
+#include "native/assetprocessor.h"
 
 #include <QDirIterator>
 
@@ -20,12 +21,8 @@
 #include <AzToolsFramework/Asset/AssetUtils.h>
 
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzToolsFramework/Metadata/MetadataManager.h>
 
-namespace
-{
-    // the starting order in the file for gems.
-    const int g_gemStartingOrder = 100;
-}
 
 namespace AssetProcessor
 {
@@ -624,6 +621,9 @@ namespace AssetProcessor
 
     const char AssetConfigPlatformDir[] = "AssetProcessorConfig/";
     const char AssetProcessorPlatformConfigFileName[] = "AssetProcessorPlatformConfig.ini";
+    constexpr const char* ProjectScanFolderKey = "Project/Assets";
+    constexpr const char* GemStartingPriorityOrderKey = "/GemScanFolderStartingPriorityOrder";
+    constexpr const char* ProjectRelativeGemPriorityKey = "/ProjectRelativeGemsScanFolderPriority";
 
     PlatformConfiguration::PlatformConfiguration(QObject* pParent)
         : QObject(pParent)
@@ -706,7 +706,7 @@ namespace AssetProcessor
     #if defined(AZ_DEBUG_BUILD) || defined(AZ_PROFILE_BUILD)
         if (commandLine)
         {
-            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(*settingsRegistry, *commandLine, true);
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(*settingsRegistry, *commandLine, {});
         }
     #endif
 
@@ -977,11 +977,11 @@ namespace AssetProcessor
         }
     }
 
-    void PlatformConfiguration::CacheIntermediateAssetsScanFolderId()
+    void PlatformConfiguration::CacheIntermediateAssetsScanFolderId() const
     {
         for (const auto& scanfolder : m_scanFolders)
         {
-            if (scanfolder.GetPortableKey() == IntermediateAssetsFolderName)
+            if (scanfolder.GetPortableKey() == AssetProcessor::IntermediateAssetsFolderName)
             {
                 m_intermediateAssetScanFolderId = scanfolder.ScanFolderID();
                 return;
@@ -1006,7 +1006,7 @@ namespace AssetProcessor
     // used to save our the AssetCacheServer settings to a remote location
     struct AssetCacheServerMatcher
     {
-        AZ_CLASS_ALLOCATOR(AssetCacheServerMatcher, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AssetCacheServerMatcher, AZ::SystemAllocator);
         AZ_TYPE_INFO(AssetCacheServerMatcher, "{329A59C9-755E-4FA9-AADB-05C50AC62FD5}");
 
         static void Reflect(AZ::SerializeContext* serializeContext)
@@ -1127,6 +1127,7 @@ namespace AssetProcessor
 
         AZ::IO::FixedMaxPath projectPath = AZ::Utils::GetProjectPath();
         AZ::IO::FixedMaxPathString projectName = AZ::Utils::GetProjectName();
+        AZ::IO::FixedMaxPathString executableDirectory = AZ::Utils::GetExecutableDirectory();
 
         AZ::IO::FixedMaxPath engineRoot(AZ::IO::PosixPathSeparator);
         settingsRegistry->Get(engineRoot.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
@@ -1202,6 +1203,7 @@ namespace AssetProcessor
                 AZ::StringFunc::Replace(scanFolderEntry.m_watchPath.Native(), "@ROOT@", assetRootPath.c_str());
                 AZ::StringFunc::Replace(scanFolderEntry.m_watchPath.Native(), "@PROJECTROOT@", projectPath.c_str());
                 AZ::StringFunc::Replace(scanFolderEntry.m_watchPath.Native(), "@ENGINEROOT@", engineRoot.c_str());
+                AZ::StringFunc::Replace(scanFolderEntry.m_watchPath.Native(), "@EXEFOLDER@", executableDirectory.c_str());
                 // Normalize path make sure it is using posix slashes
                 scanFolderEntry.m_watchPath = scanFolderEntry.m_watchPath.LexicallyNormal();
 
@@ -1241,8 +1243,11 @@ namespace AssetProcessor
 
                 // New assets can be saved in any scan folder defined except for the engine root.
                 const bool canSaveNewAssets = !isEngineRoot;
+
+                QString watchFolderPath = QString::fromUtf8(scanFolderEntry.m_watchPath.c_str(), static_cast<int>(scanFolderEntry.m_watchPath.Native().size()));
+                watchFolderPath = AssetUtilities::NormalizeDirectoryPath(watchFolderPath);
                 AddScanFolder(ScanFolderInfo(
-                    QString::fromUtf8(scanFolderEntry.m_watchPath.c_str(), aznumeric_cast<int>(scanFolderEntry.m_watchPath.Native().size())),
+                    watchFolderPath,
                     QString::fromUtf8(scanFolderEntry.m_scanFolderDisplayName.c_str(), aznumeric_cast<int>(scanFolderEntry.m_scanFolderDisplayName.size())),
                     QString::fromUtf8(scanFolderEntry.m_scanFolderIdentifier.c_str(), aznumeric_cast<int>(scanFolderEntry.m_scanFolderIdentifier.size())),
                     isEngineRoot,
@@ -1305,6 +1310,8 @@ namespace AssetProcessor
             visitor.m_metaDataTypes.push_back({ AZStd::string::format("%s.assetinfo", entry.c_str()), entry });
         }
 
+        AddMetaDataType(AzToolsFramework::MetadataManager::MetadataFileExtensionNoDot, "");
+
         for (const auto& metaDataType : visitor.m_metaDataTypes)
         {
             QString fileType = AssetUtilities::NormalizeFilePath(QString::fromUtf8(metaDataType.m_fileType.c_str(),
@@ -1323,6 +1330,19 @@ namespace AssetProcessor
         }
     }
 
+    int PlatformConfiguration::GetProjectScanFolderOrder() const
+    {
+        auto mainProjectScanFolder = FindScanFolder([](const AssetProcessor::ScanFolderInfo& scanFolderInfo) -> bool
+            {
+                return scanFolderInfo.GetPortableKey() == ProjectScanFolderKey;
+            });
+        if (mainProjectScanFolder)
+        {
+            return mainProjectScanFolder->GetOrder();
+        }
+        return 0;
+    }
+
     bool PlatformConfiguration::MergeConfigFileToSettingsRegistry(AZ::SettingsRegistryInterface& settingsRegistry, const AZ::IO::PathView& configFile)
     {
         // If the config file is a settings registry file use the SettingsRegistryInterface MergeSettingsFile function
@@ -1330,7 +1350,7 @@ namespace AssetProcessor
         // file to the settings registry
         if (configFile.Extension() == ".setreg")
         {
-            return settingsRegistry.MergeSettingsFile(configFile.Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch);
+            return static_cast<bool>(settingsRegistry.MergeSettingsFile(configFile.Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch));
         }
 
         AZ::SettingsRegistryMergeUtils::ConfigParserSettings configParserSettings;
@@ -1443,17 +1463,24 @@ namespace AssetProcessor
         return m_scanFolders[index];
     }
 
+    const AssetProcessor::ScanFolderInfo* PlatformConfiguration::FindScanFolder(
+        AZStd::function<bool(const AssetProcessor::ScanFolderInfo&)> predicate) const
+    {
+        auto resultIt = AZStd::ranges::find_if(m_scanFolders, predicate);
+        return resultIt != m_scanFolders.end() ? &(*resultIt) : nullptr;
+    }
+
     const AssetProcessor::ScanFolderInfo* PlatformConfiguration::GetScanFolderById(AZ::s64 id) const
     {
-        auto* result = AZStd::find_if(
-            m_scanFolders.begin(),
-            m_scanFolders.end(),
-            [id](const ScanFolderInfo& scanFolder)
+        return FindScanFolder([id](const ScanFolderInfo& scanFolder)
             {
                 return scanFolder.ScanFolderID() == id;
             });
+    }
 
-        return result != m_scanFolders.end() ? result : nullptr;
+    const AZ::s64 PlatformConfiguration::GetIntermediateAssetScanFolderId() const
+    {
+        return m_intermediateAssetScanFolderId;
     }
 
     void PlatformConfiguration::AddScanFolder(const AssetProcessor::ScanFolderInfo& source, bool isUnitTesting)
@@ -1462,6 +1489,12 @@ namespace AssetProcessor
         {
             //using a bool instead of using #define UNIT_TEST because the user can also run batch processing in unittest
             m_scanFolders.push_back(source);
+
+            // since we're synthesizing folder adds, assign ascending folder ids if not provided.
+            if (source.ScanFolderID() == 0)
+            {
+                m_scanFolders.back().SetScanFolderID(m_scanFolders.size() - 1);
+            }
             return;
         }
 
@@ -1573,7 +1606,10 @@ namespace AssetProcessor
         return QString();
     }
 
-    QString PlatformConfiguration::FindFirstMatchingFile(QString relativeName, bool skipIntermediateScanFolder) const
+    // This function is one of the most frequently called ones in the entire application
+    // and is invoked several times per file.  It can frequently become a bottleneck, so
+    // avoid doing expensive operations here, especially memory or IO operations.
+    QString PlatformConfiguration::FindFirstMatchingFile(QString relativeName, bool skipIntermediateScanFolder, const ScanFolderInfo** outScanFolderInfo) const
     {
         if (relativeName.isEmpty())
         {
@@ -1582,35 +1618,67 @@ namespace AssetProcessor
 
         auto* fileStateInterface = AZ::Interface<AssetProcessor::IFileStateRequests>::Get();
 
-        QDir cacheRoot;
-        AssetUtilities::ComputeProjectCacheRoot(cacheRoot);
+        // Only compute the intermediate assets folder path if we are going to search for and skip it.
+
+        if (skipIntermediateScanFolder)
+        {
+            if (m_intermediateAssetScanFolderId == -1)
+            {
+                CacheIntermediateAssetsScanFolderId();
+            }
+        }
+
+        QString absolutePath; // avoid allocating memory repeatedly here by reusing absolutePath each scan folder.
+        absolutePath.reserve(AZ_MAX_PATH_LEN);
+
+        QFileInfo details(relativeName); // note that this does not actually hit the actual storage medium until you query something
+        bool isAbsolute = details.isAbsolute(); // note that this looks at the file name string only, it does not hit storage.
 
         for (int pathIdx = 0; pathIdx < m_scanFolders.size(); ++pathIdx)
         {
-            AssetProcessor::ScanFolderInfo scanFolderInfo = m_scanFolders[pathIdx];
+            const AssetProcessor::ScanFolderInfo& scanFolderInfo = m_scanFolders[pathIdx];
 
-            if (skipIntermediateScanFolder && AssetUtilities::GetIntermediateAssetsFolder(cacheRoot.absolutePath().toUtf8().constData()) == AZ::IO::PathView(scanFolderInfo.ScanPath().toUtf8().constData()))
+            if ((skipIntermediateScanFolder) && (scanFolderInfo.ScanFolderID() == m_intermediateAssetScanFolderId))
             {
                 // There's only 1 intermediate assets folder, if we've skipped it, theres no point continuing to check every folder afterwards
                 skipIntermediateScanFolder = false;
                 continue;
             }
 
-            QString tempRelativeName(relativeName);
-
-            if ((!scanFolderInfo.RecurseSubFolders()) && (tempRelativeName.contains('/')))
+            if ((!scanFolderInfo.RecurseSubFolders()) && (relativeName.contains('/')))
             {
                 // the name is a deeper relative path, but we don't recurse this scan folder, so it can't win
                 continue;
             }
-            QDir rooted(scanFolderInfo.ScanPath());
-            QString absolutePath = rooted.absoluteFilePath(tempRelativeName);
+
+            if (isAbsolute)
+            {
+                if (!relativeName.startsWith(scanFolderInfo.ScanPath()))
+                {
+                    continue; // its not this scanfolder.
+                }
+                absolutePath = relativeName;
+            }
+            else
+            {
+                // scanfolders are always absolute paths and already normalized.  We can just concatenate.
+                // Do so with minimal allocation by using resize/append, instead of operator+
+                absolutePath.resize(0);
+                absolutePath.append(scanFolderInfo.ScanPath());
+                absolutePath.append('/');
+                absolutePath.append(relativeName);
+            }
             AssetProcessor::FileStateInfo fileStateInfo;
 
             if (fileStateInterface)
             {
                 if (fileStateInterface->GetFileInfo(absolutePath, &fileStateInfo))
                 {
+                    if (outScanFolderInfo)
+                    {
+                        *outScanFolderInfo = &scanFolderInfo;
+                    }
+
                     return AssetUtilities::NormalizeFilePath(fileStateInfo.m_absolutePath);
                 }
             }
@@ -1722,13 +1790,18 @@ namespace AssetProcessor
 
         // first, check for an EXACT match.  If there's an exact match, this must be the one returned!
         // this is to catch the case where the actual path of a scan folder is fed in to this.
+
+        // because exact matches are preferred over less exact, we first check exact matches:
         for (int pathIdx = 0; pathIdx < m_scanFolders.size(); ++pathIdx)
         {
             QString scanFolderName = m_scanFolders[pathIdx].ScanPath();
-            if (normalized.compare(scanFolderName, Qt::CaseInsensitive) == 0)
+            if (scanFolderName.length() == normalized.length())
             {
-                // if its an exact match, we're basically done
-                return &m_scanFolders[pathIdx];
+                if (normalized.compare(scanFolderName, Qt::CaseInsensitive) == 0)
+                {
+                    // if its an exact match, we're basically done
+                    return &m_scanFolders[pathIdx];
+                }
             }
         }
 
@@ -1763,15 +1836,10 @@ namespace AssetProcessor
     //! Given a scan folder path, get its complete info
     const AssetProcessor::ScanFolderInfo* PlatformConfiguration::GetScanFolderByPath(const QString& scanFolderPath) const
     {
-        AZ::IO::Path scanFolderPathView(scanFolderPath.toUtf8().constData());
-        for (int pathIdx = 0; pathIdx < m_scanFolders.size(); ++pathIdx)
-        {
-            if (AZ::IO::PathView(m_scanFolders[pathIdx].ScanPath().toUtf8().constData()) == scanFolderPathView)
+        return FindScanFolder([&scanFolderPath](const AssetProcessor::ScanFolderInfo& scanFolder)
             {
-                return &m_scanFolders[pathIdx];
-            }
-        }
-        return nullptr;
+                return scanFolder.ScanPath() == scanFolderPath;
+            });
     }
 
     int PlatformConfiguration::GetMinJobs() const
@@ -1796,10 +1864,12 @@ namespace AssetProcessor
         settingsRegistry->Get(cacheRootFolder, AZ::SettingsRegistryMergeUtils::FilePathKey_CacheProjectRootFolder);
 
         AZ::IO::Path scanfolderPath = cacheRootFolder.c_str();
-        scanfolderPath /= IntermediateAssetsFolderName;
+        scanfolderPath /= AssetProcessor::IntermediateAssetsFolderName;
 
         AZStd::vector<AssetBuilderSDK::PlatformInfo> platforms;
         PopulatePlatformsForScanFolder(platforms);
+
+        scanfolderPath = AssetUtilities::NormalizeDirectoryPath(QString::fromUtf8(scanfolderPath.c_str())).toUtf8().constData();
 
         // By default the project scanfolder is recursive with an order of 0
         // The intermediate assets folder needs to be higher priority since its a subfolder (otherwise GetScanFolderForFile won't pick the right scanfolder)
@@ -1807,8 +1877,8 @@ namespace AssetProcessor
 
         AddScanFolder(ScanFolderInfo{
             scanfolderPath.c_str(),
-            IntermediateAssetsFolderName,
-            IntermediateAssetsFolderName,
+            AssetProcessor::IntermediateAssetsFolderName,
+            AssetProcessor::IntermediateAssetsFolderName,
             false,
             true,
             platforms,
@@ -1818,7 +1888,48 @@ namespace AssetProcessor
 
     void PlatformConfiguration::AddGemScanFolders(const AZStd::vector<AzFramework::GemInfo>& gemInfoList)
     {
-        int gemOrder = g_gemStartingOrder;
+        // If the gem is project-relative, make adjustments to its priority order based on registry settings:
+        // /Amazon/AssetProcessor/Settings/GemScanFolderStartingPriorityOrder
+        // /Amazon/AssetProcessor/Settings/ProjectRelativeGemsScanFolderPriority
+        // See <o3de-root>/Registry/AssetProcessorPlatformConfig.setreg for more information.
+
+        AZ::s64 gemStartingOrder = 100;
+        AZStd::string projectGemPrioritySetting{};
+        const AZ::IO::FixedMaxPath projectPath = AZ::Utils::GetProjectPath();
+        int pathCount = 0;
+
+        const int projectScanOrder = GetProjectScanFolderOrder();
+
+        if (auto const settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+        {
+            settingsRegistry->Get(gemStartingOrder,
+                AZ::SettingsRegistryInterface::FixedValueString(AssetProcessorSettingsKey) + GemStartingPriorityOrderKey);
+
+            settingsRegistry->Get(projectGemPrioritySetting,
+                AZ::SettingsRegistryInterface::FixedValueString(AssetProcessorSettingsKey) + ProjectRelativeGemPriorityKey);
+            AZStd::to_lower(projectGemPrioritySetting.begin(), projectGemPrioritySetting.end());
+        }
+
+        auto GetGemFolderOrder = [&](bool isProjectRelativeGem) -> int
+        {
+            ++pathCount;
+            int currentGemOrder = aznumeric_cast<int>(gemStartingOrder) + pathCount;
+            if (isProjectRelativeGem)
+            {
+                if (projectGemPrioritySetting == "higher")
+                {
+                    currentGemOrder = projectScanOrder - pathCount;
+                }
+                else if (projectGemPrioritySetting == "lower")
+                {
+                    currentGemOrder = projectScanOrder + pathCount;
+                }
+            }
+            return currentGemOrder;
+        };
+
+        int gemOrder = aznumeric_cast<int>(gemStartingOrder);
+
         AZStd::vector<AssetBuilderSDK::PlatformInfo> platforms;
         PopulatePlatformsForScanFolder(platforms);
 
@@ -1828,6 +1939,9 @@ namespace AssetProcessor
             {
                 const AZ::IO::Path& absoluteSourcePath = gemElement.m_absoluteSourcePaths[sourcePathIndex];
                 QString gemAbsolutePath = QString::fromUtf8(absoluteSourcePath.c_str(), aznumeric_cast<int>(absoluteSourcePath.Native().size())); // this is an absolute path!
+
+                const bool isProjectGem = absoluteSourcePath.IsRelativeTo(projectPath);
+
                 // Append the index of the source path array element to make a unique portable key is created for each path of a gem
                 AZ::Uuid gemNameUuid = AZ::Uuid::CreateName((gemElement.m_gemName + AZStd::to_string(sourcePathIndex)).c_str());
                 QString gemNameAsUuid(gemNameUuid.ToFixedString().c_str());
@@ -1849,7 +1963,7 @@ namespace AssetProcessor
                 QString portableKey = QString("gemassets-%1").arg(gemNameAsUuid);
                 bool isRoot = false;
                 bool isRecursive = true;
-                gemOrder++;
+                gemOrder = GetGemFolderOrder(isProjectGem);
 
                 AZ_TracePrintf(AssetProcessor::DebugChannel, "Adding GEM assets folder for monitoring / scanning: %s.\n", gemFolder.toUtf8().data());
                 AddScanFolder(ScanFolderInfo(
@@ -1869,7 +1983,7 @@ namespace AssetProcessor
 
                 assetBrowserDisplayName = AzFramework::GemInfo::GetGemRegistryFolder();
                 portableKey = QString("gemregistry-%1").arg(gemNameAsUuid);
-                gemOrder++;
+                gemOrder = GetGemFolderOrder(isProjectGem);
 
                 AZ_TracePrintf(AssetProcessor::DebugChannel, "Adding GEM registry folder for monitoring / scanning: %s.\n", gemFolder.toUtf8().data());
                 AddScanFolder(ScanFolderInfo(
@@ -1935,12 +2049,20 @@ namespace AssetProcessor
         QString relPath, scanFolderName;
         if (ConvertToRelativePath(fileName, relPath, scanFolderName))
         {
-            for (const ExcludeAssetRecognizer& excludeRecognizer : m_excludeAssetRecognizers)
+            return IsFileExcludedRelPath(relPath);
+        }
+
+        return false;
+    }
+
+    bool AssetProcessor::PlatformConfiguration::IsFileExcludedRelPath(QString relPath) const
+    {
+        AZ::IO::FixedMaxPathString encoded = relPath.toUtf8().constData();
+        for (const ExcludeAssetRecognizer& excludeRecognizer : m_excludeAssetRecognizers)
+        {
+            if (excludeRecognizer.m_patternMatcher.MatchesPath(encoded.c_str()))
             {
-                if (excludeRecognizer.m_patternMatcher.MatchesPath(relPath.toUtf8().constData()))
-                {
-                    return true;
-                }
+                return true;
             }
         }
 

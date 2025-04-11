@@ -5,27 +5,14 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
-import os
-from PySide2 import QtWidgets
-from editor_python_test_tools.utils import Report
-import pyside_utils
-import scripting_utils.scripting_tools as tools
-import azlmbr.legacy.general as general
-from scripting_utils.scripting_constants import (ASSET_EDITOR_UI, SCRIPT_EVENT_FILE_PATH)
-
-# fmt: off
-class Tests():
-    file_saved = ("Successfully saved event asset", "Failed to save event asset")
-    asset_editor_opened = ("asset editor successfully opened",    "Asset editor failed to open")
-# fmt: on
-
-class ScriptEvent_AddRemoveParameter_ActionsSuccessful:
+def ScriptEvent_AddRemoveParameter_ActionsSuccessful():
     """
     Summary:
      Parameter can be removed from a Script Event method
 
     Expected Behavior:
-     Upon saving the updated .scriptevents asset the removed paramenter should no longer be present on the Script Event
+     clicking the "+" parameter button adds a parameter to a script event.
+     Clicking the trash can button removes the parameter
 
     Test Steps:
      1) Open Asset Editor
@@ -35,50 +22,50 @@ class ScriptEvent_AddRemoveParameter_ActionsSuccessful:
      5) Remove Parameter from Event
 
     Note:
-     - This test file must be called from the Open 3D Engine Editor command terminal
      - Any passed and failed tests are written to the Editor.log file.
         Parsing the file or running a log_monitor are required to observe the test results.
 
     :return: None
     """
 
-    def __init__(self):
-        self.editor_main_window = None
-        self.asset_editor = None
-        self.asset_editor_widget = None
-        self.asset_editor_row_container = None
-        self.asset_editor_menu_bar = None
+    # Preconditions
+    import os
+    from PySide2 import QtWidgets
+    from editor_python_test_tools.utils import Report
+    import pyside_utils
+    import scripting_utils.scripting_tools as tools
+    import azlmbr.legacy.general as general
+    from editor_python_test_tools.QtPy.QtPyO3DEEditor import QtPyO3DEEditor
+    from scripting_utils.scripting_constants import (ASSET_EDITOR_UI, SCRIPT_EVENT_UI)
 
-    @pyside_utils.wrap_async
-    async def run_test(self):
+    general.idle_enable(True)
+    general.close_pane(ASSET_EDITOR_UI)
 
-        # Preconditions
-        general.idle_enable(True)
-        general.close_pane(ASSET_EDITOR_UI)
+    # 1) Get a handle on our O3DE QtPy objects then initialize the Asset Editor object
+    qtpy_o3de_editor = QtPyO3DEEditor()
+    # Close and reopen Asset Editor to ensure we don't have any existing assets open
+    qtpy_o3de_editor.close_asset_editor()
+    qtpy_asset_editor = qtpy_o3de_editor.open_asset_editor()
 
-        # 1) Open the asset editor
-        result = tools.open_asset_editor()
-        Report.result(Tests.asset_editor_opened, result)
+    # 2) Create new Script Event Asset
+    qtpy_asset_editor.click_menu_bar_option(SCRIPT_EVENT_UI)
 
-        # 2) Initialize the editor and asset editor qt objects
-        tools.initialize_editor_object(self)
-        tools.initialize_asset_editor_object(self)
+    # 3) Add a method to the script event
+    qtpy_asset_editor.add_method_to_script_event("test_method")
 
-        # 3) Create new Script Event Asset
-        tools.create_script_event(self)
-        result = tools.save_script_event_file(self, SCRIPT_EVENT_FILE_PATH)
-        Report.result(Tests.file_saved, result)
+    # 4) Add Parameter to Event
+    qtpy_asset_editor.add_parameter_to_method("test_parameter_0")
 
-        # 4) Add Parameter to Event
-        tools.create_script_event_parameter(self)
-        result = tools.save_script_event_file(self, SCRIPT_EVENT_FILE_PATH)
-        Report.result(Tests.file_saved, result)
-
-        # 5) Remove Parameter from Event
-        tools.remove_script_event_parameter(self)
-        result = tools.save_script_event_file(self, SCRIPT_EVENT_FILE_PATH)
-        Report.result(Tests.file_saved, result)
+    # 5) Remove Parameter from Event
+    qtpy_asset_editor.delete_parameter_from_method(0)
 
 
-test = ScriptEvent_AddRemoveParameter_ActionsSuccessful()
-test.run_test()
+if __name__ == "__main__":
+
+    import ImportPathHelper as imports
+
+    imports.init()
+    from editor_python_test_tools.utils import Report
+
+    Report.start_test(ScriptEvent_AddRemoveParameter_ActionsSuccessful)
+    

@@ -38,8 +38,10 @@ namespace Multiplayer
             editorInterfaceName, ProtocolType::Tcp, TrustZone::ExternalClientToServer, *this);
         m_networkEditorInterface->SetTimeoutMs(AZ::Time::ZeroTimeMs); // Disable timeouts on this network interface
 
-        // Wait to activate the editor-server until LegacySystemInterfaceCreated so that the logging system is ready
-        // Automated testing listens for these logs
+        // Wait to activate the editor-server until:
+        // - LegacySystemInterfaceCreated is signaled, so that the logging system is ready. Automated testing listens for these logs.
+        // - LegacyCommandLineProcessed is signaled, so that everything has initialized and finished their blocking loads, so that it
+        // should be relatively safe to start receiving packets without as much fear of too much time passing between system ticks.
         if (editorsv_isDedicated)
         {
             // Server logs will be piped to the editor so turn off buffering,
@@ -59,7 +61,7 @@ namespace Multiplayer
                     {
                         ActivateDedicatedEditorServer();
                     },
-                    "CriticalAssetsCompiled");
+                    "LegacyCommandLineProcessed");
             }
         }
     }

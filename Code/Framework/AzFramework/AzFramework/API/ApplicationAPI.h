@@ -6,9 +6,6 @@
  *
  */
 
-#ifndef AZFRAMEWORK_APPLICATIONAPI_H
-#define AZFRAMEWORK_APPLICATIONAPI_H
-
 #pragma once
 
 #include <AzCore/base.h>
@@ -102,10 +99,11 @@ namespace AzFramework
         /// Calculate the branch token from the current application's engine root
         virtual void CalculateBranchTokenForEngineRoot(AZStd::string& token) const = 0;
 
-        /// Returns true if Prefab System is enabled, false if Legacy Slice System is enabled
+        /// Returns true if Editor Mode Feedback is enabled
         virtual bool IsEditorModeFeedbackEnabled() const { return false; }
 
         /// Returns true if Prefab System is enabled, false if Legacy Slice System is enabled
+        /// @deprecated the Legacy Slice System for level editing has been deprecated.
         virtual bool IsPrefabSystemEnabled() const { return true; }
 
         /// Returns true if the additional work in progress Prefab features are enabled, false otherwise
@@ -252,4 +250,4 @@ namespace AzFramework
     using LevelSystemLifecycleNotificationBus = AZ::EBus<LevelSystemLifecycleNotifications>;
 } // namespace AzFramework
 
-#endif // AZFRAMEWORK_APPLICATIONAPI_H
+DECLARE_EBUS_EXTERN(AzFramework::ApplicationRequests);

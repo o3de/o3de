@@ -552,12 +552,13 @@ TEST_F(PlatformConfigurationUnitTests, Test_MetaFileTypes_AssetImporterExtension
     m_errorAbsorber->Clear();
     ASSERT_FALSE(config.InitializeFromConfigFiles(configRoot->c_str(), testExeFolder->c_str(), projectPath.c_str(), false, false));
     ASSERT_GT(m_errorAbsorber->m_numErrorsAbsorbed, 0);
-    ASSERT_TRUE(config.MetaDataFileTypesCount() == 2);
+    ASSERT_TRUE(config.MetaDataFileTypesCount() == 3);
 
     QStringList entriesToTest{ "aaa", "bbb" };
     for (int idx = 0; idx < entriesToTest.size(); idx++)
     {
-        ASSERT_EQ(config.GetMetaDataFileTypeAt(idx).first, QString("%1.assetinfo").arg(entriesToTest[idx]));
-        ASSERT_EQ(config.GetMetaDataFileTypeAt(idx).second, QString("%1").arg(entriesToTest[idx]));
+        // + 1 skip .meta files
+        ASSERT_EQ(config.GetMetaDataFileTypeAt(idx + 1).first, QString("%1.assetinfo").arg(entriesToTest[idx]));
+        ASSERT_EQ(config.GetMetaDataFileTypeAt(idx + 1).second, QString("%1").arg(entriesToTest[idx]));
     }
 }

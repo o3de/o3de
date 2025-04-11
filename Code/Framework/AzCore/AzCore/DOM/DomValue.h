@@ -10,15 +10,17 @@
 
 #include <AzCore/DOM/DomBackend.h>
 #include <AzCore/DOM/DomVisitor.h>
-#include <AzCore/Memory/HphaSchema.h>
+#include <AzCore/Memory/ChildAllocatorSchema.h>
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Memory/PoolAllocator.h>
+#include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/stack.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/variant.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
+#include <AzCore/std/utility/to_underlying.h>
 
 namespace AZ::Dom
 {
@@ -43,20 +45,7 @@ namespace AZ::Dom
 
     //! The allocator used by Value.
     //! Value heap allocates shared_ptrs for its container storage (Array / Object / Node) alongside
-    class ValueAllocator final : public SimpleSchemaAllocator<AZ::HphaSchema, AZ::HphaSchema::Descriptor, false, false>
-    {
-    public:
-        AZ_TYPE_INFO(ValueAllocator, "{5BC8B389-72C7-459E-B502-12E74D61869F}");
-
-        using Base = SimpleSchemaAllocator<AZ::HphaSchema, AZ::HphaSchema::Descriptor, false, false>;
-
-        ValueAllocator()
-            : Base("DomValueAllocator", "Allocator for AZ::Dom::Value")
-        {
-        }
-    };
-
-    using StdValueAllocator = AZStdAlloc<ValueAllocator>;
+    AZ_CHILD_ALLOCATOR_WITH_NAME(ValueAllocator, "ValueAllocator", "{5BC8B389-72C7-459E-B502-12E74D61869F}", AZ::SystemAllocator);
 
     class Value;
 
@@ -64,11 +53,11 @@ namespace AZ::Dom
     class Array
     {
     public:
-        using ContainerType = AZStd::vector<Value, StdValueAllocator>;
+        using ContainerType = AZStd::vector<Value, ValueAllocator_for_std_t>;
         using Iterator = ContainerType::iterator;
         using ConstIterator = ContainerType::const_iterator;
         static constexpr const size_t ReserveIncrement = 4;
-        static_assert((ReserveIncrement & (ReserveIncrement - 1)) == 0, "ReserveIncremenet must be a power of 2");
+        static_assert((ReserveIncrement & (ReserveIncrement - 1)) == 0, "ReserveIncrement must be a power of 2");
 
         const ContainerType& GetValues() const;
 
@@ -86,7 +75,7 @@ namespace AZ::Dom
     {
     public:
         using EntryType = AZStd::pair<KeyType, Value>;
-        using ContainerType = AZStd::vector<EntryType, StdValueAllocator>;
+        using ContainerType = AZStd::vector<EntryType, ValueAllocator_for_std_t>;
         using Iterator = ContainerType::iterator;
         using ConstIterator = ContainerType::const_iterator;
         static constexpr const size_t ReserveIncrement = 8;
@@ -160,7 +149,7 @@ namespace AZ::Dom
     {
     public:
         AZ_TYPE_INFO(Value, "{3E20677F-3B8E-4F89-B665-ED41D74F4799}");
-        AZ_CLASS_ALLOCATOR(Value, ValueAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Value, ValueAllocator);
 
         // Determine the short string buffer size based on the size of our largest internal type (string_view)
         // minus the size of the short string size field.
@@ -173,13 +162,16 @@ namespace AZ::Dom
         //! The internal storage type for Value.
         //! These types do not correspond one-to-one with the Value's external Type as there may be multiple storage classes
         //! for the same type in some instances, such as string storage.
+        //! The AZ type aliases of `AZ::s64` and `AZ::u64` are being used in lieu of `int64_t` and `uint64_t`
+        //! As those guaranteed to always be `long long` and `unsigned long long` on all platforms, where the C standard type aliases
+        //! are long-based on Linux and Android and long long-based on Windows, Mac and iOS
         using ValueType = AZStd::variant<
             // Null
             AZStd::monostate,
             // Int64
-            int64_t,
+            AZ::s64,
             // Uint64
-            uint64_t,
+            AZ::u64,
             // Double
             double,
             // Bool
@@ -210,13 +202,19 @@ namespace AZ::Dom
         explicit Value(uint16_t value);
         explicit Value(int32_t value);
         explicit Value(uint32_t value);
-        explicit Value(int64_t value);
-        explicit Value(uint64_t value);
+        explicit Value(long value);
+        explicit Value(unsigned long value);
+        explicit Value(long long value);
+        explicit Value(unsigned long long value);
         explicit Value(float value);
         explicit Value(double value);
         explicit Value(bool value);
 
         explicit Value(Type type);
+
+        // Stores the enum type as it's underlying type
+        template<class EnumType, class = AZStd::enable_if_t<AZStd::is_enum_v<EnumType>>>
+        explicit Value(EnumType enumType);
 
         // Disable accidental calls to Value(bool) with pointer types
         template<class T>
@@ -284,10 +282,8 @@ namespace AZ::Dom
         bool HasMember(KeyType name) const;
         bool HasMember(AZStd::string_view name) const;
 
-        Value& AddMember(KeyType name, const Value& value);
-        Value& AddMember(AZStd::string_view name, const Value& value);
-        Value& AddMember(KeyType name, Value&& value);
-        Value& AddMember(AZStd::string_view name, Value&& value);
+        Value& AddMember(KeyType name, Value value);
+        Value& AddMember(AZStd::string_view name, Value value);
 
         void RemoveAllMembers();
         void RemoveMember(KeyType name);
@@ -324,6 +320,15 @@ namespace AZ::Dom
         Value& ArrayPushBack(Value value);
         Value& ArrayPopBack();
 
+        // Insert a contigious span of Dom Values before position
+        Array::Iterator ArrayInsertRange(Array::ConstIterator insertPos, AZStd::span<Value> values);
+        // Insert elements from range [first, last) before position
+        Array::Iterator ArrayInsert(Array::ConstIterator insertPos, Array::ConstIterator first, Array::ConstIterator last);
+        // Insert an array from an initializer_list
+        Array::Iterator ArrayInsert(Array::ConstIterator insertPos, AZStd::initializer_list<Value> initList);
+        // Insert single Value value before position
+        Array::Iterator ArrayInsert(Array::ConstIterator insertPos, Value value);
+
         Array::Iterator ArrayErase(Array::Iterator pos);
         Array::Iterator ArrayErase(Array::Iterator first, Array::Iterator last);
 
@@ -346,12 +351,12 @@ namespace AZ::Dom
         const Node& GetNode() const;
 
         // int API...
-        int64_t GetInt64() const;
-        void SetInt64(int64_t);
+        AZ::s64 GetInt64() const;
+        void SetInt64(AZ::s64);
 
         // uint API...
-        uint64_t GetUint64() const;
-        void SetUint64(uint64_t);
+        AZ::u64 GetUint64() const;
+        void SetUint64(AZ::u64);
 
         // bool API...
         bool GetBool() const;
@@ -414,4 +419,10 @@ namespace AZ::Dom
 
         ValueType m_value;
     };
+
+    template<class EnumType, class>
+    Value::Value(EnumType enumType)
+        : Value(AZStd::to_underlying(enumType))
+    {
+    }
 } // namespace AZ::Dom

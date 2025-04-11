@@ -24,7 +24,7 @@ namespace LUAEditor
         Q_OBJECT
 
     public:
-        AZ_CLASS_ALLOCATOR(LUAEditorPlainTextEdit, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(LUAEditorPlainTextEdit, AZ::SystemAllocator);
 
         LUAEditorPlainTextEdit(QWidget *pParent = nullptr);
         virtual ~LUAEditorPlainTextEdit();

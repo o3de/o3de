@@ -34,7 +34,7 @@
 namespace UnitTest
 {
     class RangesViewTestFixture
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {};
 
     TEST_F(RangesViewTestFixture, AllRangeAdaptor_Succeeds)

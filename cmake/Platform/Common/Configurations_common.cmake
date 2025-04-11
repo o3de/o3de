@@ -12,14 +12,21 @@
 # each platform include them
 
 # Clear all
-ly_set(CMAKE_C_FLAGS "")
-ly_set(CMAKE_CXX_FLAGS "")
-ly_set(LINK_OPTIONS "")
+set(O3DE_EXTRA_C_FLAGS ""       CACHE STRING "Additional C Compiler flags to apply globally")
+set(O3DE_EXTRA_CXX_FLAGS ""     CACHE STRING "Additional Cxx Compiler flags to apply globally")
+set(O3DE_EXTRA_LINK_OPTIONS ""  CACHE STRING "Additional link options to apply globally")
+
+ly_set(CMAKE_C_FLAGS "${O3DE_EXTRA_C_FLAGS}")
+ly_set(CMAKE_CXX_FLAGS "${O3DE_EXTRA_CXX_FLAGS}")
+ly_set(LINK_OPTIONS "${O3DE_EXTRA_LINK_OPTIONS}")
 foreach(conf ${CMAKE_CONFIGURATION_TYPES})
     string(TOUPPER ${conf} UCONF)
-    ly_set(CMAKE_C_FLAGS_${UCONF} "")
-    ly_set(CMAKE_CXX_FLAGS_${UCONF} "")
-    ly_set(LINK_OPTIONS_${UCONF} "")
+    set(O3DE_EXTRA_C_FLAGS_${UCONF} ""       CACHE STRING "Additional C Compiler flags to add globally when compiling in ${conf}")
+    set(O3DE_EXTRA_CXX_FLAGS_${UCONF} ""     CACHE STRING "Additional Cxx Compiler flags to add globally when compiling in ${conf}")
+    set(O3DE_EXTRA_LINK_OPTIONS_${UCONF} ""  CACHE STRING "Additional link options to add globally when linking in ${conf}")
+    ly_set(CMAKE_C_FLAGS_${UCONF} "${O3DE_EXTRA_C_FLAGS_${UCONF}}")
+    ly_set(CMAKE_CXX_FLAGS_${UCONF} "${O3DE_EXTRA_CXX_FLAGS_${UCONF}}")
+    ly_set(LINK_OPTIONS_${UCONF} "${O3DE_EXTRA_LINK_OPTIONS_${UCONF}}")
     ly_set(LY_BUILD_CONFIGURATION_TYPE_${UCONF} ${conf})
 endforeach()
 
@@ -68,3 +75,6 @@ set(CMAKE_POSITION_INDEPENDENT_CODE True)
 
 include(CheckPIESupported)
 check_pie_supported()
+
+# Determine if lld is installed to use as a default linker by supported platforms/configurations
+find_program(LLD_LINKER_INSTALLED lld)

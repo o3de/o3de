@@ -41,9 +41,18 @@ namespace AZ::Internal
     #define AZ_SIZE_ALIGN(_size, _align)         AZ_SIZE_ALIGN_UP(_size, _align)
 #endif // AZ_SIZE_ALIGN
 
-#define AZ_JOIN(X, Y) AZSTD_DO_JOIN(X, Y)
-#define AZSTD_DO_JOIN(X, Y) AZSTD_DO_JOIN2(X, Y)
-#define AZSTD_DO_JOIN2(X, Y) X##Y
+#if defined(AZ_MONOLITHIC_BUILD)
+    #define AZCORE_API
+    #define AZCORE_API_EXTERN
+#else
+    #if defined(AZCORE_EXPORTS)
+        #define AZCORE_API        AZ_DLL_EXPORT
+        #define AZCORE_API_EXTERN AZ_DLL_EXPORT_EXTERN
+    #else
+        #define AZCORE_API        AZ_DLL_IMPORT
+        #define AZCORE_API_EXTERN AZ_DLL_IMPORT_EXTERN
+    #endif
+#endif
 
 /**
  * Macros for calling into strXXX functions. These are simple wrappers that call into the platform
@@ -138,6 +147,18 @@ namespace AZ::Internal
 #   define azlocaltime                                      localtime_r
 #endif
 
+// When using -ffast-math flag INFs and NaNs are not handled and
+// it is expected that isfinite() have undefined behaviour.
+// In this case we will provide a replacement following IEEE 754 standard.
+#ifdef __FAST_MATH__
+    #undef azisfinite
+    constexpr bool azisfinite(float f) noexcept
+    {
+        union { float f; uint32_t x; } u = { f };
+        return (u.x & 0x7F800000U) != 0x7F800000U;
+    }
+#endif
+
 #if AZ_TRAIT_USE_POSIX_STRERROR_R
 #   define azstrerror_s(_dst, _num, _err)                   strerror_r(_err, _dst, _num)
 #else
@@ -163,29 +184,27 @@ using std::ptrdiff_t;
 
 namespace AZ
 {
-    typedef int8_t    s8;
-    typedef uint8_t   u8;
-    typedef int16_t   s16;
-    typedef uint16_t  u16;
-    typedef int32_t   s32;
-    typedef uint32_t  u32;
-#   if AZ_TRAIT_COMPILER_INT64_T_IS_LONG // int64_t is long
-    typedef signed long long        s64;
-    typedef unsigned long long      u64;
-#   else
-    typedef int64_t   s64;
-    typedef uint64_t  u64;
-#   endif //
+    using s8 = int8_t;
+    using u8 = uint8_t;
+    using s16 = int16_t;
+    using u16 = uint16_t;
+    using s32 = int32_t;
+    using u32 = uint32_t;
+    // s64 and u64 are always long long and unsigned long long on all platforms
+    // where it is 64-bits
+    // The previous behavior with checking the AZ_TRAIT_COMPILER_INT64_T_IS_LONG define
+    // was exactly the same as it is now.
+    using s64 = signed long long;
+    using u64 = unsigned long long;
 
-
-    typedef struct
+    struct s128
     {
         s64 a, b;
-    } s128;
-    typedef struct
+    };
+    struct u128
     {
         u64 a, b;
-    } u128;
+    };
 
     template<typename T>
     inline T SizeAlignUp(T s, size_t a) { return static_cast<T>((s+(a-1)) & ~(a-1)); }

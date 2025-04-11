@@ -28,6 +28,7 @@ namespace AZ::IO::Requests
 namespace AZ::IO
 {
     class StreamStackEntry;
+    class Streamer_SchedulerTest_RequestSorting_Test;
 
     /**
      * Data streamer.
@@ -35,9 +36,10 @@ namespace AZ::IO
     class Streamer final
         : public AZ::IO::IStreamer
     {
+        friend Streamer_SchedulerTest_RequestSorting_Test;
     public:
         AZ_RTTI(Streamer, "{3D880982-6E3F-4913-9947-55E01030D4AA}", IStreamer);
-        AZ_CLASS_ALLOCATOR(Streamer, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Streamer, SystemAllocator);
 
         //
         // Streamer commands.

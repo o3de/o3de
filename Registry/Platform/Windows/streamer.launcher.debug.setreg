@@ -1,0 +1,39 @@
+{
+    "Amazon":
+    {
+        "AzCore":
+        {
+            "Streamer":
+            {
+                "Profiles":
+                {
+                    "Generic":
+                    {
+                        "Stack":
+                        {
+                            "Drive":
+                            {
+                                "EnableFileSharing": true
+                            }
+                        }
+                    },
+                    "DevMode":
+                    {
+                        "Stack":
+                        {
+                            "Drive":
+                            {
+                                "$type": "AZ::IO::WindowsStorageDriveConfig",
+                                "MaxFileHandles": 128,
+                                "MaxMetaDataCache": 1024,
+                                "Overcommit": 8,
+                                "EnableFileSharing": true,
+                                "EnableUnbufferedReads": false
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

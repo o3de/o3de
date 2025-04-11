@@ -9,6 +9,8 @@
 #include <AzCore/DOM/DomUtils.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/RTTI/ReflectContext.h>
+#include <AzCore/Serialization/Json/RegistrationContext.h>
+#include <AzCore/UnitTest/MockComponentApplication.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <DOM/DomFixtures.h>
 
@@ -24,21 +26,20 @@ namespace AZ::AttributeDomInteropTests
     template<typename R, typename... Args>
     struct InvokeTestHelper<R(Args...)>
     {
-        AZ_RTTI((InvokeTestHelper<R(Args...)>, "{BE273EAA-FB6A-464F-A9F8-8A5C59650D70}", R, Args...));
-        using ThisType = InvokeTestHelper<R(Args...)>;
+        AZ_TYPE_INFO(InvokeTestHelper, "{BE273EAA-FB6A-464F-A9F8-8A5C59650D70}", R(Args...));
         using FunctionType = AZStd::function<R(Args...)>;
+        FunctionType m_fn;
 
-        InvokeTestHelper(FunctionType fn)
+        template<class F>
+        InvokeTestHelper(F fn)
             : m_fn(AZStd::move(fn))
         {
             s_instance = this;
         }
 
-        virtual ~InvokeTestHelper() = default;
+        ~InvokeTestHelper() = default;
 
-        FunctionType m_fn;
-
-        inline static ThisType* s_instance = nullptr;
+        inline static InvokeTestHelper* s_instance = nullptr;
         static R GlobalFunction(Args... args)
         {
             return s_instance->m_fn(args...);
@@ -51,16 +52,26 @@ namespace AZ::AttributeDomInteropTests
 
         void TestInvokeWithDomValues(AZ::Dom::Value expectedResult, AZ::Dom::Value args, bool invokeExpectedToWork = true)
         {
-            AZ::AttributeInvocable<FunctionType> invokeAttribute(m_fn);
+            // The invocable method must accept the class instance as the first argument
+            auto invocableClassMethod = [](InvokeTestHelper* self, Args... args) -> R
+            {
+                return self->m_fn(args...);
+            };
+            AZ::AttributeInvocable invokeAttribute(invocableClassMethod);
             AZ::AttributeFunction<R(Args...)> functionAttribute(&GlobalFunction);
-            AZ::AttributeMemberFunction<R (ThisType::*)(Args...)> memberFunctionAttribute(&ThisType::MemberFunction);
+            AZ::AttributeMemberFunction<R (InvokeTestHelper::*)(Args...)> memberFunctionAttribute(&InvokeTestHelper::MemberFunction);
             AZStd::array<AZ::Attribute*, 3> attributesToTest = { &invokeAttribute, &functionAttribute, &memberFunctionAttribute };
+
+            AZ::Dom::Value instanceAndArgs(AZ::Dom::Type::Array);
+            instanceAndArgs.ArrayPushBack(AZ::Dom::Utils::ValueFromType(this));
+            instanceAndArgs.ArrayInsert(instanceAndArgs.ArrayEnd(), args.ArrayBegin(), args.ArrayEnd());
 
             for (AZ::Attribute* attribute : attributesToTest)
             {
                 EXPECT_EQ(true, attribute->IsInvokable());
-                EXPECT_EQ(invokeExpectedToWork, attribute->CanDomInvoke(args));
-                EXPECT_TRUE(AZ::Dom::Utils::DeepCompareIsEqual(expectedResult, attribute->DomInvoke(this, args)));
+                EXPECT_EQ(invokeExpectedToWork, attribute->CanDomInvoke(instanceAndArgs));
+                // Move the arguments into an instanceAndArgs array and prepend the instance to the dom array
+                EXPECT_TRUE(AZ::Dom::Utils::DeepCompareIsEqual(expectedResult, attribute->DomInvoke(instanceAndArgs)));
             }
         }
 
@@ -69,11 +80,37 @@ namespace AZ::AttributeDomInteropTests
         {
             AZ::Dom::Value domArgs(AZ::Dom::Type::Array);
             (domArgs.ArrayPushBack(AZ::Dom::Utils::ValueFromType<Args>(args)), ...);
-            TestInvokeWithDomValues(AZ::Dom::Utils::ValueFromType(expectedResult), domArgs);
+            TestInvokeWithDomValues(AZ::Dom::Utils::ValueFromType(expectedResult), AZStd::move(domArgs));
         }
     };
 
-    using AttributeDomInteropTests = AZ::Dom::Tests::DomTestFixture;
+    class AttributeDomInteropTests
+        : public AZ::Dom::Tests::DomTestFixture
+    {
+    public:
+        AttributeDomInteropTests()
+            : m_serializeContext(AZStd::make_unique<AZ::SerializeContext>())
+            , m_jsonRegistrationContext(AZStd::make_unique<AZ::JsonRegistrationContext>())
+        {
+            m_componentApplicationMock = AZStd::make_unique<::testing::NiceMock<UnitTest::MockComponentApplication>>();
+            ON_CALL(*m_componentApplicationMock.get(), GetSerializeContext())
+                .WillByDefault(::testing::Return(m_serializeContext.get()));
+
+            ON_CALL(*m_componentApplicationMock.get(), GetJsonRegistrationContext())
+                .WillByDefault(::testing::Return(m_jsonRegistrationContext.get()));
+        }
+
+        ~AttributeDomInteropTests()
+        {
+            m_componentApplicationMock.reset();
+            m_serializeContext.reset();
+        }
+
+    protected:
+        AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
+        AZStd::unique_ptr<AZ::JsonRegistrationContext> m_jsonRegistrationContext;
+        AZStd::unique_ptr<::testing::NiceMock<UnitTest::MockComponentApplication>> m_componentApplicationMock;
+    };
 
     TEST_F(AttributeDomInteropTests, ArgumentHandling)
     {

@@ -16,40 +16,34 @@ namespace AZ
     {
         namespace MaterialBuilderUtils
         {
+            //! @brief configure and register a job dependency with the job descriptor
+            //! @param jobDescriptor job descriptor to which dependency will be added
+            //! @param path path to the source file for the dependency
+            //! @param jobKey job key for the builder processing the dependency
+            //! @param platformId list of platform IDs to monitor for the job dependency
+            //! @param subIds list of sub IDs that should be monitored for assets created by the job dependency
+            //! @param updateFingerprint flag specifying if the job descriptor fingerprint should be updated with information from the
+            //! dependency file
+            //! @return reference to the new job dependency added to the job descriptor dependency container
+            AssetBuilderSDK::JobDependency& AddJobDependency(
+                AssetBuilderSDK::JobDescriptor& jobDescriptor,
+                const AZStd::string& path,
+                const AZStd::string& jobKey,
+                const AZStd::string& platformId = {},
+                const AZStd::vector<AZ::u32>& subIds = {},
+                const bool updateFingerprint = true);
 
-            //! Adds all relevant dependencies for a referenced source file, considering that the path might be relative to the original file location or a full asset path.
-            //! This can include both source dependencies and a single job dependency, but will include only source dependencies if the file is not found.
-            //! Note the AssetBuilderSDK::JobDependency::m_platformIdentifier will not be set by this function. The calling code must set this value before passing back
-            //! to the AssetBuilderSDK::CreateJobsResponse.
-            //! @param currentFilePath The path of the .material or .materialtype file being processed
-            //! @param referencedParentPath The path to the referenced file as it appears in the current file
-            //! @param jobKey The job key for the job that is expected to process the referenced file
-            //! @param jobDependencies Dependencies may be added to this list
-            //! @param sourceDependencies Dependencies may be added to this list
-            //! @param forceOrderOnce If true, any job dependencies will use JobDependencyType::OrderOnce. Use this if the builder will only ever need to get the AssetId
-            //!                       of the referenced file but will not need to load the asset.
-            void AddPossibleDependencies(
-                const AZStd::string& currentFilePath,
-                const AZStd::string& referencedParentPath,
-                const char* jobKey,
-                AZStd::vector<AssetBuilderSDK::JobDependency>& jobDependencies,
-                AZStd::vector<AssetBuilderSDK::SourceFileDependency>& sourceDependencies,
-                bool forceOrderOnce = false,
-                AZStd::optional<AZ::u32> productSubId = AZStd::nullopt);
-
-
+            //! Resolve potential paths and add source and job dependencies for image assets
+            //! @param originatingSourceFilePath The path of the .material or .materialtype file being processed
+            //! @param referencedSourceFilePath The path to the referenced file as it appears in the current file
+            //! @param jobDescriptor Used to update job dependencies
             void AddPossibleImageDependencies(
-                const AZStd::string& currentFilePath,
-                const AZStd::string& imageFilePath,
-                AZStd::vector<AssetBuilderSDK::JobDependency>& jobDependencies,
-                AZStd::vector<AssetBuilderSDK::SourceFileDependency>& sourceDependencies);
+                const AZStd::string& originatingSourceFilePath,
+                const AZStd::string& referencedSourceFilePath,
+                AssetBuilderSDK::JobDescriptor& jobDescriptor);
 
-            //! Materials assets can either be finalized during asset-processing time or when materials are loaded at runtime.
-            //! Finalizing during asset processing reduces load times and obfuscates the material data.
-            //! Waiting to finalize at load time reduces dependencies on the material type data, resulting in fewer asset rebuilds and less time spent processing assets.
-            //! Removing the dependency on the material type data will require special handling of material type asset dependencies when loading and reloading materials.
-            bool BuildersShouldFinalizeMaterialAssets();
-        }
-
+            //! Append a fingerprint value to the job descriptor using the file modification time of the specified file path
+            void AddFingerprintForDependency(const AZStd::string& path, AssetBuilderSDK::JobDescriptor& jobDescriptor);
+        } // namespace MaterialBuilderUtils
     } // namespace RPI
 } // namespace AZ

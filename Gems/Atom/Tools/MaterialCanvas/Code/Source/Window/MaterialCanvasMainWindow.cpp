@@ -18,13 +18,26 @@
 namespace MaterialCanvas
 {
     MaterialCanvasMainWindow::MaterialCanvasMainWindow(
-        const AZ::Crc32& toolId, const AtomToolsFramework::GraphViewConfig& graphViewConfig, QWidget* parent)
+        const AZ::Crc32& toolId, AtomToolsFramework::GraphViewSettingsPtr graphViewSettingsPtr, QWidget* parent)
         : Base(toolId, "MaterialCanvasMainWindow", parent)
-        , m_graphViewConfig(graphViewConfig)
-        , m_styleManager(toolId, graphViewConfig.m_styleManagerPath)
+        , m_graphViewSettingsPtr(graphViewSettingsPtr)
+        , m_styleManager(toolId, graphViewSettingsPtr->m_styleManagerPath)
     {
-        m_assetBrowser->SetFilterState("", AZ::RPI::StreamingImageAsset::Group, true);
-        m_assetBrowser->SetFilterState("", AZ::RPI::MaterialAsset::Group, true);
+        m_assetBrowser->GetSearchWidget()->ClearTypeFilter();
+        m_assetBrowser->GetSearchWidget()->SetTypeFilterVisible(false);
+        m_assetBrowser->SetFileTypeFilters({
+            { "Material", { "material" }, true },
+            { "Material Graph", { "materialgraph", "materialgraphtemplate" }, true },
+            { "Material Graph Node", { "materialgraphnode", "materialgraphnodetemplate" }, true },
+            { "Material Type", { "materialtype" }, true },
+            { "Material Pipeline", { "materialpipeline" }, true },
+            { "Shader", { "shader" }, true },
+            { "Shader Template", { "shader.template" }, true },
+            { "Shader Variant List", { "shadervariantlist" }, true },
+            { "Image", { "tif", "tiff", "png", "bmp", "jpg", "jpeg", "tga", "gif", "dds", "exr" }, true },
+            { "Lua", { "lua" }, true },
+            { "AZSL", { "azsl", "azsli", "srgi" }, true },
+        });
 
         m_documentInspector = new AtomToolsFramework::AtomToolsDocumentInspector(m_toolId, this);
         m_documentInspector->SetDocumentSettingsPrefix("/O3DE/Atom/MaterialCanvas/DocumentInspector");
@@ -33,7 +46,7 @@ namespace MaterialCanvas
         // Set up the toolbar that controls the viewport settings
         m_toolBar = new AtomToolsFramework::EntityPreviewViewportToolBar(m_toolId, this);
 
-        // Create the dockable viewport widget that will be shared between all material canvas documents
+        // Create the dockable viewport widget that will be shared between all Material Canvas documents
         m_materialViewport = new AtomToolsFramework::EntityPreviewViewportWidget(m_toolId, this);
 
         // Initialize the entity context that will be used to create all of the entities displayed in the viewport
@@ -42,7 +55,7 @@ namespace MaterialCanvas
 
         // Initialize the atom scene and pipeline that will bind to the viewport window to render entities and presets
         auto viewportScene = AZStd::make_shared<AtomToolsFramework::EntityPreviewViewportScene>(
-            m_toolId, m_materialViewport, entityContext, "MaterialCanvasViewportWidget", "passes/MainRenderPipeline.azasset");
+            m_toolId, m_materialViewport, entityContext, "MaterialCanvasViewportWidget", "passes/mainrenderpipeline.azasset");
 
         // Viewport content will instantiate all of the entities that will be displayed and controlled by the viewport
         auto viewportContent = AZStd::make_shared<MaterialCanvasViewportContent>(m_toolId, m_materialViewport, entityContext);
@@ -76,17 +89,17 @@ namespace MaterialCanvas
         SetDockWidgetVisible("MiniMap", false);
 
         GraphCanvas::NodePaletteConfig nodePaletteConfig;
-        nodePaletteConfig.m_rootTreeItem = m_graphViewConfig.m_createNodeTreeItemsFn(m_toolId);
+        nodePaletteConfig.m_rootTreeItem = m_graphViewSettingsPtr->m_createNodeTreeItemsFn(m_toolId);
         nodePaletteConfig.m_editorId = m_toolId;
-        nodePaletteConfig.m_mimeType = m_graphViewConfig.m_nodeMimeType.c_str();
+        nodePaletteConfig.m_mimeType = m_graphViewSettingsPtr->m_nodeMimeType.c_str();
         nodePaletteConfig.m_isInContextMenu = false;
-        nodePaletteConfig.m_saveIdentifier = m_graphViewConfig.m_nodeSaveIdentifier;
+        nodePaletteConfig.m_saveIdentifier = m_graphViewSettingsPtr->m_nodeSaveIdentifier;
 
         m_nodePalette = aznew GraphCanvas::NodePaletteDockWidget(this, "Node Palette", nodePaletteConfig);
         AddDockWidget("Node Palette", m_nodePalette, Qt::LeftDockWidgetArea);
 
         AZ::IO::FixedMaxPath resolvedPath;
-        AZ::IO::FileIOBase::GetInstance()->ReplaceAlias(resolvedPath, m_graphViewConfig.m_translationPath.c_str());
+        AZ::IO::FileIOBase::GetInstance()->ReplaceAlias(resolvedPath, m_graphViewSettingsPtr->m_translationPath.c_str());
         const AZ::IO::FixedMaxPathString translationFilePath = resolvedPath.LexicallyNormal().FixedMaxPathString();
         if (m_translator.load(QLocale::Language::English, translationFilePath.c_str()))
         {
@@ -144,44 +157,112 @@ namespace MaterialCanvas
         m_materialViewport->UnlockRenderTargetSize();
     }
 
-    AZStd::vector<AZStd::shared_ptr<AtomToolsFramework::DynamicPropertyGroup>> MaterialCanvasMainWindow::GetSettingsDialogGroups() const
+    void MaterialCanvasMainWindow::PopulateSettingsInspector(AtomToolsFramework::InspectorWidget* inspector) const
     {
-        AZStd::vector<AZStd::shared_ptr<AtomToolsFramework::DynamicPropertyGroup>> groups;
-        groups.push_back(AtomToolsFramework::CreateSettingsGroup(
+        m_materialCanvasCompileSettingsGroup = AtomToolsFramework::CreateSettingsPropertyGroup(
             "Material Canvas Settings",
             "Material Canvas Settings",
-           {
-                AtomToolsFramework::CreatePropertyFromSetting(
-                    "/O3DE/Atom/MaterialCanvas/EnableMinimalShaderBuilds",
-                    "Enable Minimal Shader Builds",
-                    "Improve shader and material iteration and preview times by limiting the asset processor and shader compiler to the "
-                    "current platform and RHI. Changing this setting requires restarting Material Canvas and the asset processor.",
-                    false),
-            }));
+            { AtomToolsFramework::CreateSettingsPropertyValue(
+                  "/O3DE/Atom/MaterialCanvas/EnableFasterShaderBuilds",
+                  "Enable Faster Shader Builds",
+                  "By default, some platforms perform an exhaustive compilation of shaders for multiple RHI. For example, the default "
+                  "Windows shader builder settings automatically compiles shaders for DX12, Vulkan, and the Null renderer.\n\nThis option "
+                  "overrides those registry settings and makes compilation and preview times much faster by only compiling shaders for the "
+                  "currently active platform and RHI.\n\nThis also disables automatic shader variant generation.\n\nChanging this setting "
+                  "requires restarting Material Canvas and the Asset Processor.\n\nChanging the active RHI with this setting enabled may "
+                  "require clearing the cache to regenerate shaders for the new RHI.\n\nThe settings files containing the overrides will be "
+                  "placed in the user/Registry folder for the current project.",
+                  false),
+              AtomToolsFramework::CreateSettingsPropertyValue(
+                  "/O3DE/Atom/MaterialCanvas/ForceDeleteGeneratedFiles",
+                  "Delete Files On Compile",
+                  "This option forces files previously generated from the current graph to be deleted before creating new ones.",
+                  false),
+              AtomToolsFramework::CreateSettingsPropertyValue(
+                  "/O3DE/Atom/MaterialCanvas/ForceClearAssetFingerprints",
+                  "Clear Asset Fingerprints On Compile",
+                  "This option forces the AP to reprocess generated files even if no differences were detected since last generated. This "
+                  "guarantees that notifications are sent for assets like materials that may not be changed even if their dependent "
+                  "material types or shaders are. This setting is most useful to ensure that other systems or applications are able to "
+                  "recognize and not reload yeah materials after shaders are modified. Enabling this setting may affect the time it takes "
+                  "for the viewport to reflect shader and material changes.",
+                  false),
+              AtomToolsFramework::CreateSettingsPropertyValue(
+                  "/O3DE/AtomToolsFramework/GraphCompiler/CompileOnOpen",
+                  "Enable Compile On Open",
+                  "If enabled, shaders and materials will automatically be generated whenever a material graph is opened.",
+                  true),
+              AtomToolsFramework::CreateSettingsPropertyValue(
+                  "/O3DE/AtomToolsFramework/GraphCompiler/CompileOnSave",
+                  "Enable Compile On Save",
+                  "If enabled, shaders and materials will automatically be generated whenever a material graph is saved.",
+                  true),
+              AtomToolsFramework::CreateSettingsPropertyValue(
+                  "/O3DE/AtomToolsFramework/GraphCompiler/CompileOnEdit",
+                  "Enable Compile On Edit",
+                  "If enabled, shaders and materials will automatically be generated whenever a material graph is edited.",
+                  true),
+              AtomToolsFramework::CreateSettingsPropertyValue(
+                  "/O3DE/Atom/MaterialCanvas/Viewport/ClearMaterialOnCompileGraphStarted",
+                  "Clear Viewport Material When Compiling Starts",
+                  "Clear the viewport model's material whenever compiling shaders and materials starts.",
+                  true),
+              AtomToolsFramework::CreateSettingsPropertyValue(
+                  "/O3DE/Atom/MaterialCanvas/Viewport/ClearMaterialOnCompileGraphFailed",
+                  "Clear Viewport Material When Compiling Fails",
+                  "Clear the viewport model's material whenever compiling shaders and materials fails.",
+                  true),
+              AtomToolsFramework::CreateSettingsPropertyValue(
+                  "/O3DE/AtomToolsFramework/GraphCompiler/EnableLogging",
+                  "Enable Compiler Logging",
+                  "Toggle verbose logging for material graph generation.",
+                  false),
+              AtomToolsFramework::CreateSettingsPropertyValue(
+                  "/O3DE/AtomToolsFramework/DynamicNode/EnablePropertyEditingOnNodeUI",
+                  "Enable Property Editing On Nodes",
+                  "Toggle settings to display properties and allow them to be added directly on graph nodes.",
+                  true),
+              AtomToolsFramework::CreateSettingsPropertyValue(
+                  "/O3DE/Atom/MaterialCanvas/CreateDefaultDocumentOnStart",
+                  "Create Untitled Graph Document On Start",
+                  "Create a default, untitled graph document when Material Canvas starts.",
+                  true),
+              AtomToolsFramework::CreateSettingsPropertyValue(
+                  "/O3DE/AtomToolsFramework/GraphCompiler/QueueGraphCompileIntervalMs",
+                  "Queue Graph Compile Interval Ms",
+                  "The delay (in milliseconds) before the graph is recompiled after changes.",
+                  aznumeric_cast<AZ::s64>(500),
+                  aznumeric_cast<AZ::s64>(0),
+                  aznumeric_cast<AZ::s64>(1000)) });
 
-        // Add base class settings after app specific settings
-        AZStd::vector<AZStd::shared_ptr<AtomToolsFramework::DynamicPropertyGroup>> groupsFromBase = Base::GetSettingsDialogGroups();
-        groups.insert(groups.end(), groupsFromBase.begin(), groupsFromBase.end());
-        return groups;
+        inspector->AddGroup(
+            m_materialCanvasCompileSettingsGroup->m_name,
+            m_materialCanvasCompileSettingsGroup->m_displayName,
+            m_materialCanvasCompileSettingsGroup->m_description,
+            new AtomToolsFramework::InspectorPropertyGroupWidget(
+                m_materialCanvasCompileSettingsGroup.get(),
+                m_materialCanvasCompileSettingsGroup.get(),
+                azrtti_typeid<AtomToolsFramework::DynamicPropertyGroup>()));
+
+        inspector->AddGroup(
+            "Graph View Settings",
+            "Graph View Settings",
+            "Configuration settings for the graph view interaction, animation, and other behavior.",
+            new AtomToolsFramework::InspectorPropertyGroupWidget(
+                m_graphViewSettingsPtr.get(), m_graphViewSettingsPtr.get(), m_graphViewSettingsPtr->RTTI_Type()));
+
+        Base::PopulateSettingsInspector(inspector);
     }
 
-    AZStd::string MaterialCanvasMainWindow::GetHelpDialogText() const
+    void MaterialCanvasMainWindow::OnSettingsDialogClosed()
     {
-        return R"(<html><head/><body>
-            <p><h3><u>Shader Build Settings</u></h3></p>
-            <p>Shaders, materials, and other assets will be generated as changes are applied to the graph.
-            The viewport will update and display the generated materials and shaders once they have been
-            compiled by the Asset Processor. This can take a few seconds. Compilation times and preview
-            responsiveness can be improved by enabling the Minimal Shader Build settings in the Tools->Settings
-            menu. Changing the settings will require restarting Material Canvas and the Asset Processor.</p>
-            <p><h3><u>Camera Controls</u></h3></p>
-            <p><b>LMB</b> - rotate camera</p>
-            <p><b>RMB</b> or <b>Alt+LMB</b> - orbit camera around target</p>
-            <p><b>MMB</b> - pan camera on its xy plane</p>
-            <p><b>Alt+RMB</b> or <b>LMB+RMB</b> - dolly camera on its z axis</p>
-            <p><b>Ctrl+LMB</b> - rotate model</p>
-            <p><b>Shift+LMB</b> - rotate environment</p>
-            </body></html>)";
+        AtomToolsFramework::SetSettingsObject("/O3DE/Atom/GraphView/ViewSettings", m_graphViewSettingsPtr);
+        Base::OnSettingsDialogClosed();
+    }
+
+    AZStd::string MaterialCanvasMainWindow::GetHelpUrl() const
+    {
+        return "https://docs.o3de.org/docs/atom-guide/look-dev/tools/material-canvas/";
     }
 } // namespace MaterialCanvas
 

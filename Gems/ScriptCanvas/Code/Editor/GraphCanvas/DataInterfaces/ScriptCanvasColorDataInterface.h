@@ -22,7 +22,7 @@ namespace ScriptCanvasEditor
         : public ScriptCanvasDataInterface<GraphCanvas::VectorDataInterface>
     {
     public:
-        AZ_CLASS_ALLOCATOR(ScriptCanvasColorDataInterface, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptCanvasColorDataInterface, AZ::SystemAllocator);
         ScriptCanvasColorDataInterface(const AZ::EntityId& nodeId, const ScriptCanvas::SlotId& slotId)
             : ScriptCanvasDataInterface(nodeId, slotId)
         {

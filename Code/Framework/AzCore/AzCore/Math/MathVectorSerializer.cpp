@@ -198,7 +198,7 @@ namespace AZ
 
     // BaseJsonVectorSerializer
 
-    AZ_CLASS_ALLOCATOR_IMPL(BaseJsonVectorSerializer, SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(BaseJsonVectorSerializer, SystemAllocator);
 
     auto BaseJsonVectorSerializer::GetOperationsFlags() const -> OperationFlags
     {
@@ -208,7 +208,7 @@ namespace AZ
     
     // Vector2
 
-    AZ_CLASS_ALLOCATOR_IMPL(JsonVector2Serializer, SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(JsonVector2Serializer, SystemAllocator);
 
     JsonSerializationResult::Result JsonVector2Serializer::Load(void* outputValue, const Uuid& outputValueTypeId,
         const rapidjson::Value& inputValue, JsonDeserializerContext& context)
@@ -226,7 +226,7 @@ namespace AZ
 
     // Vector3
 
-    AZ_CLASS_ALLOCATOR_IMPL(JsonVector3Serializer, SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(JsonVector3Serializer, SystemAllocator);
 
     JsonSerializationResult::Result JsonVector3Serializer::Load(void* outputValue, const Uuid& outputValueTypeId,
         const rapidjson::Value& inputValue, JsonDeserializerContext& context)
@@ -244,7 +244,7 @@ namespace AZ
 
     // Vector4
 
-    AZ_CLASS_ALLOCATOR_IMPL(JsonVector4Serializer, SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(JsonVector4Serializer, SystemAllocator);
 
     JsonSerializationResult::Result JsonVector4Serializer::Load(void* outputValue, const Uuid& outputValueTypeId,
         const rapidjson::Value& inputValue, JsonDeserializerContext& context)
@@ -261,7 +261,7 @@ namespace AZ
 
     // Quaternion
 
-    AZ_CLASS_ALLOCATOR_IMPL(JsonQuaternionSerializer, SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(JsonQuaternionSerializer, SystemAllocator);
 
     JsonSerializationResult::Result JsonQuaternionSerializer::Load(void* outputValue, const Uuid& outputValueTypeId,
         const rapidjson::Value& inputValue, JsonDeserializerContext& context)

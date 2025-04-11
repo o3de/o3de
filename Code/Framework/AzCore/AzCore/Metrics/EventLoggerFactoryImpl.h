@@ -21,7 +21,7 @@ namespace AZ::Metrics
     {
     public:
         AZ_RTTI(EventLoggerFactoryImpl, "{7F44BCD5-D4B9-464C-A54C-ECDF3C2E3802}", IEventLoggerFactory);
-        AZ_CLASS_ALLOCATOR(EventLoggerFactoryImpl, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EventLoggerFactoryImpl, AZ::SystemAllocator);
 
         EventLoggerFactoryImpl();
         ~EventLoggerFactoryImpl();

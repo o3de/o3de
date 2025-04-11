@@ -8,7 +8,6 @@
 
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Jobs/JobManagerComponent.h>
-#include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/std/parallel/semaphore.h>
 
 #include <AzTest/AzTest.h>

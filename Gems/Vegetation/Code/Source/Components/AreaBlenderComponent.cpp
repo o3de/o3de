@@ -16,6 +16,8 @@
 #include <Vegetation/Ebuses/AreaSystemRequestBus.h>
 #include <Vegetation/Ebuses/DebugNotificationBus.h>
 
+#include <VegetationProfiler.h>
+
 namespace Vegetation
 {
     void AreaBlenderConfig::Reflect(AZ::ReflectContext* context)
@@ -43,7 +45,7 @@ namespace Vegetation
                     ->DataElement(0, &AreaBlenderConfig::m_vegetationAreaIds, "Vegetation Areas", "Ordered list of vegetation areas.")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, true)
-                    ->ElementAttribute(AZ::Edit::Attributes::RequiredService, AZ_CRC("VegetationAreaService", 0x6a859504));
+                    ->ElementAttribute(AZ::Edit::Attributes::RequiredService, AZ_CRC_CE("VegetationAreaService"));
                 ;
             }
         }
@@ -220,7 +222,7 @@ namespace Vegetation
 
     bool AreaBlenderComponent::PrepareToClaim(EntityIdStack& stackIds)
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        AZ_PROFILE_FUNCTION(Vegetation);
 
         bool result = true;
 
@@ -257,7 +259,7 @@ namespace Vegetation
 
     void AreaBlenderComponent::ClaimPositions(EntityIdStack& stackIds, ClaimContext& context)
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        AZ_PROFILE_FUNCTION(Vegetation);
 
         if (context.m_availablePoints.empty())
         {
@@ -294,7 +296,7 @@ namespace Vegetation
 
     void AreaBlenderComponent::UnclaimPosition(const ClaimHandle handle)
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        AZ_PROFILE_FUNCTION(Vegetation);
 
         AZ_ErrorOnce(
             "Vegetation", !AreaRequestBus::HasReentrantEBusUseThisThread(),
@@ -314,7 +316,7 @@ namespace Vegetation
 
     AZ::Aabb AreaBlenderComponent::GetEncompassingAabb() const
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        AZ_PROFILE_FUNCTION(Vegetation);
 
         AZ::Aabb bounds = AZ::Aabb::CreateNull();
 
@@ -345,7 +347,7 @@ namespace Vegetation
 
     AZ::u32 AreaBlenderComponent::GetProductCount() const
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        AZ_PROFILE_FUNCTION(Vegetation);
 
         AZ::u32 count = 0;
 

@@ -36,23 +36,34 @@ namespace EMStudio
             return;
         }
 
-        const auto parent = pNode->GetParent();
-        if (parent && parent->GetSerializeContext()->CanDowncast(parent->GetClassMetadata()->m_typeId, azrtti_typeid<EMotionFX::EventData>(), parent->GetClassMetadata()->m_azRtti, nullptr))
+        auto parent = pNode->GetParent();
+        while (parent)
         {
-            const EMotionFX::EventData* eventData = static_cast<EMotionFX::EventData*>(parent->FirstInstance());
-            const AZ::Outcome<size_t> eventDataIndex = m_editor->FindEventDataIndex(eventData);
-            if (eventDataIndex.IsSuccess())
+            // Keep checking the parent node because we could be editing data in deeper layer.
+            // For example, eventData holding an array of elements, and we are editing the individual element.
+            if (parent->GetSerializeContext()->CanDowncast(
+                    parent->GetClassMetadata()->m_typeId,
+                    azrtti_typeid<EMotionFX::EventData>(),
+                    parent->GetClassMetadata()->m_azRtti,
+                    nullptr))
             {
-                CommandSystem::CommandAdjustMotionEvent* adjustMotionEventCommand = aznew CommandSystem::CommandAdjustMotionEvent();
-                adjustMotionEventCommand->SetMotionID(m_editor->GetMotion()->GetID());
-                adjustMotionEventCommand->SetMotionEvent(m_editor->GetMotionEvent());
-                adjustMotionEventCommand->SetEventDataNr(eventDataIndex.GetValue());
-                adjustMotionEventCommand->SetEventData(EMotionFX::EventDataPtr(MCore::ReflectionSerializer::Clone(eventData)));
-                adjustMotionEventCommand->SetEventDataAction(CommandSystem::CommandAdjustMotionEvent::EventDataAction::Replace);
+                const EMotionFX::EventData* eventData = static_cast<EMotionFX::EventData*>(parent->FirstInstance());
+                const AZ::Outcome<size_t> eventDataIndex = m_editor->FindEventDataIndex(eventData);
+                if (eventDataIndex.IsSuccess())
+                {
+                    CommandSystem::CommandAdjustMotionEvent* adjustMotionEventCommand = aznew CommandSystem::CommandAdjustMotionEvent();
+                    adjustMotionEventCommand->SetMotionID(m_editor->GetMotion()->GetID());
+                    adjustMotionEventCommand->SetMotionEvent(m_editor->GetMotionEvent());
+                    adjustMotionEventCommand->SetEventDataNr(eventDataIndex.GetValue());
+                    adjustMotionEventCommand->SetEventData(EMotionFX::EventDataPtr(MCore::ReflectionSerializer::Clone(eventData)));
+                    adjustMotionEventCommand->SetEventDataAction(CommandSystem::CommandAdjustMotionEvent::EventDataAction::Replace);
 
-                AZStd::string result;
-                CommandSystem::GetCommandManager()->ExecuteCommand(adjustMotionEventCommand, result);
+                    AZStd::string result;
+                    CommandSystem::GetCommandManager()->ExecuteCommand(adjustMotionEventCommand, result);
+                    break;
+                }
             }
+            parent = parent->GetParent();
         }
     }
 
@@ -66,7 +77,7 @@ namespace EMStudio
 
     void EventDataEditor::Init()
     {
-        AZ::SerializeContext* context;
+        AZ::SerializeContext* context = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
 
         m_eventDataSelectionMenu = new QMenu(this);
@@ -86,7 +97,7 @@ namespace EMStudio
                 {
                     if (element.m_elementId == AZ::Edit::ClassElements::EditorData)
                     {
-                        const AZ::Attribute* attribute = AZ::FindAttribute(AZ_CRC("Creatable", 0x47bff8c4), element.m_attributes);
+                        const AZ::Attribute* attribute = AZ::FindAttribute(AZ_CRC_CE("Creatable"), element.m_attributes);
                         if (!attribute)
                         {
                             continue;
@@ -100,8 +111,11 @@ namespace EMStudio
                             this->m_eventDataSelectionMenu->addAction(
                                 editData->m_name,
                                 this,
-                                [this, classData]() { this->AppendEventData(classData->m_typeId); }
-                            );
+                                [this, classData]
+                                {
+                                    AppendEventData(classData->m_typeId);
+                                    emit eventsChanged(GetMotion(), GetMotionEvent());
+                                });
                             break;
                         }
                     }
@@ -114,8 +128,11 @@ namespace EMStudio
         m_deleteAction = m_deleteCurrentEventDataMenu->addAction(
             "Delete",
             this,
-            [this]() { this->RemoveEventData(this->m_deleteAction->data().value<size_t>()); }
-        );
+            [this]()
+            {
+                RemoveEventData(m_deleteAction->data().value<size_t>());
+                emit eventsChanged(GetMotion(), GetMotionEvent());
+            });
 
         m_emptyLabel = new QLabel("<i>No event data added</i>");
 
@@ -246,7 +263,7 @@ namespace EMStudio
 
     void EventDataEditor::AppendEventData(const AZ::Uuid& newTypeId)
     {
-        AZ::SerializeContext* context;
+        AZ::SerializeContext* context = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
 
         const AZ::SerializeContext::ClassData* classData = context->FindClassData(newTypeId);

@@ -10,8 +10,8 @@
 
 #include <Atom/Features/SrgSemantics.azsli>
 
-#include <scenesrg.srgi>
-#include <viewsrg.srgi>
+#include <scenesrg_all.srgi>
+#include <viewsrg_all.srgi>
 
 #include <Atom/RPI/BitOperations.azsli>
 
@@ -130,8 +130,9 @@ void DebugModifyOutput(inout float4 outDiffuse, inout float4 outSpecular, inout 
         else if(viewMode == RenderDebugViewMode::Albedo)         { outSpecular.rgb = albedo; }
         else if(viewMode == RenderDebugViewMode::Roughness)      { outSpecular.rgb = roughness.rrr; }
         else if(viewMode == RenderDebugViewMode::Metallic)       { outSpecular.rgb = metallic.rrr; }
+#if ENABLE_SHADER_DEBUGGING
         else if(viewMode == RenderDebugViewMode::CascadeShadows) { outSpecular.rgb = customDebugFloats.rgb; }
-
+#endif
         if(viewMode != RenderDebugViewMode::None)
         {
             outDiffuse = float4(0, 0, 0, 0);
@@ -200,6 +201,6 @@ bool OverrideMetallicEnabled()
     return IsDebuggingEnabled() && GetDebugOption( RenderDebugOptions::OverrideMetallic );
 }
 
-float3 GetBaseColorOverride() { return SceneSrg::m_debugOverrideBaseColor; }
-float GetRoughnessOverride() { return SceneSrg::m_debugOverrideRoughness; }
-float GetMetallicOverride() { return SceneSrg::m_debugOverrideMetallic; }
+real3 GetBaseColorOverride() { return real3(SceneSrg::m_debugOverrideBaseColor); }
+real GetRoughnessOverride() { return real(SceneSrg::m_debugOverrideRoughness); }
+real GetMetallicOverride() { return real(SceneSrg::m_debugOverrideMetallic); }

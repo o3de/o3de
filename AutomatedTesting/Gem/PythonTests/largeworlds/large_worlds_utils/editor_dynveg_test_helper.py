@@ -24,6 +24,7 @@ import editor_python_test_tools.hydra_editor_utils as hydra
 from editor_python_test_tools.editor_entity_utils import EditorEntity
 from editor_python_test_tools.prefab_utils import Prefab
 from editor_python_test_tools.wait_utils import PrefabWaiter
+from consts.physics import PHYSX_MESH_COLLIDER
 
 
 def create_temp_mesh_prefab(model_asset_path, prefab_filename):
@@ -47,14 +48,12 @@ def create_temp_physx_mesh_collider(physx_mesh_id, prefab_filename):
     # Create initial entity
     root = EditorEntity.create_editor_entity(name=prefab_filename)
     assert root.exists(), "Failed to create entity"
-    # Add PhysX Collider component
-    collider_component = root.add_component("PhysX Collider")
-    assert root.has_component("PhysX Collider") and collider_component.is_enabled(), \
-        "Failed to add/activate PhysX Collider component"
-    # Set the Collider's Shape Configuration field to PhysicsAsset, and assign the specified PhysX Mesh asset
-    collider_component.set_component_property_value("Shape Configuration|Shape", 7)
-    assert collider_component.get_component_property_value("Shape Configuration|Shape") == 7, \
-        "Failed to set Collider Shape to PhysicsAsset"
+    # Add PhysX Mesh Collider component
+    collider_component = root.add_component(PHYSX_MESH_COLLIDER)
+    static_rigid_body_component = root.add_component("PhysX Static Rigid Body")
+    assert root.has_component(PHYSX_MESH_COLLIDER) and collider_component.is_enabled() and \
+           static_rigid_body_component.is_enabled(), "Failed to add/activate PhysX Mesh Collider component"
+    # Assign the specified PhysX Mesh asset to PhysX Mesh Collider
     collider_component.set_component_property_value("Shape Configuration|Asset|PhysX Mesh", physx_mesh_id)
     assert collider_component.get_component_property_value("Shape Configuration|Asset|PhysX Mesh") == physx_mesh_id, \
         "Failed to assign PhysX Mesh asset"
@@ -79,7 +78,7 @@ def create_surface_entity(name, center_point, box_size_x, box_size_y, box_size_z
 
 def create_mesh_surface_entity_with_slopes(name, center_point, uniform_scale):
     # Creates an entity with the assigned mesh_asset as the specified scale and sets up as a planting surface
-    mesh_asset_path = os.path.join("models", "sphere.azmodel")
+    mesh_asset_path = os.path.join("models", "sphere.fbx.azmodel")
     mesh_asset = asset.AssetCatalogRequestBus(bus.Broadcast, "GetAssetIdByPath", mesh_asset_path, math.Uuid(),
                                               False)
     surface_entity = hydra.Entity(name)

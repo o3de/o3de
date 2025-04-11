@@ -8,6 +8,7 @@
 #pragma once
 
 #include <AzCore/Component/ComponentApplication.h>
+#include <AzCore/Memory/AllocationRecords.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzFramework/Application/Application.h>
@@ -84,7 +85,10 @@ namespace UnitTest
             m_fileIOHelper->m_fileIO.SetAlias("@engroot@", m_engineRoot.c_str());
 
             AzFramework::Application::Descriptor appDesc;
-            m_app.Create(appDesc);
+            appDesc.m_recordingMode = AZ::Debug::AllocationRecords::Mode::RECORD_NO_RECORDS;
+            AZ::ComponentApplication::StartupParameters startupParameters;
+            startupParameters.m_loadSettingsRegistry = false;
+            m_app.Create(appDesc, startupParameters);
 
             AzFramework::ApplicationRequests::Bus::Handler::BusConnect();
         }

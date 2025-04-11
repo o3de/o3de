@@ -7,6 +7,7 @@
  */
 
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
+#include <Atom/RPI.Reflect/Model/ModelAssetHelpers.h>
 #include <Atom/RPI.Reflect/Model/ModelKdTree.h>
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Jobs/JobFunction.h>
@@ -17,14 +18,12 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 
+#include <AzFramework/Asset/AssetSystemBus.h>
+
 namespace AZ
 {
     namespace RPI
     {
-        const char* ModelAsset::DisplayName = "ModelAsset";
-        const char* ModelAsset::Group = "Model";
-        const char* ModelAsset::Extension = "azmodel";
-
         void ModelAsset::Reflect(ReflectContext* context)
         {
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
@@ -35,6 +34,7 @@ namespace AZ
                     ->Field("Aabb", &ModelAsset::m_aabb)
                     ->Field("MaterialSlots", &ModelAsset::m_materialSlots)
                     ->Field("LodAssets", &ModelAsset::m_lodAssets)
+                    ->Field("Tags", &ModelAsset::m_tags)
                     ;
 
                 // Note: This class needs to have edit context reflection so PropertyAssetCtrl::OnEditButtonClicked
@@ -97,6 +97,48 @@ namespace AZ
             return AZStd::span<const Data::Asset<ModelLodAsset>>(m_lodAssets);
         }
 
+        void ModelAsset::LoadBufferAssets()
+        {
+            for (auto& lodAsset : m_lodAssets)
+            {
+                lodAsset->LoadBufferAssets();
+            }
+        }
+
+        void ModelAsset::ReleaseBufferAssets()
+        {
+            for (auto& lodAsset : m_lodAssets)
+            {
+                lodAsset->ReleaseBufferAssets();
+            }
+        }
+
+        void ModelAsset::AddRefBufferAssets()
+        {
+            if (m_bufferAssetsRef == 0)
+            {
+                LoadBufferAssets();
+            }
+            m_bufferAssetsRef++;
+        }
+
+        void ModelAsset::ReleaseRefBufferAssets()
+        {
+            if (m_bufferAssetsRef > 0)
+            {
+                m_bufferAssetsRef--;
+                if (m_bufferAssetsRef == 0)
+                {
+                    ReleaseBufferAssets();
+                }
+            }
+        }
+
+        bool ModelAsset::SupportLocalRayIntersection() const
+        {
+            return m_bufferAssetsRef > 0;
+        }
+
         void ModelAsset::SetReady()
         {
             m_status = Data::AssetData::AssetStatus::Ready;
@@ -129,6 +171,11 @@ namespace AZ
             }
 
             return BruteForceRayIntersect(rayStart, rayDir, distanceNormalized, normal);
+        }
+
+        const AZStd::vector<AZ::Name>& ModelAsset::GetTags() const
+        {
+            return m_tags;
         }
 
         void ModelAsset::BuildKdTree() const
@@ -335,6 +382,115 @@ namespace AZ
 
             return modelTriangleCount;
         }
+
+        void ModelAsset::InitData(
+            AZ::Name name,
+            AZStd::span<Data::Asset<ModelLodAsset>> lodAssets,
+            const ModelMaterialSlotMap& materialSlots,
+            const ModelMaterialSlot& fallbackSlot,
+            AZStd::span<AZ::Name> tags)
+        {
+            AZ_Assert(!m_isKdTreeCalculationRunning, "Overwriting a ModelAsset while it is calculating its kd tree.");
+
+            // Clear out the current AABB, we'll reset it with the data from the LOD assets.
+            m_aabb = AZ::Aabb::CreateNull();
+
+            // Copy the trivially-copyable data.
+            m_name = name;
+            m_materialSlots = materialSlots;
+            m_fallbackSlot = fallbackSlot;
+
+            // Clear out the runtime-calculated data.
+            m_kdTree = {};
+            m_isKdTreeCalculationRunning = false;
+            m_modelTriangleCount = {};
+
+            // Clear out tags and LOD Assets, we'll set those individually.
+            m_lodAssets.clear();
+            m_tags = {};
+
+            for (const auto& lodAsset : lodAssets)
+            {
+                m_lodAssets.push_back(lodAsset);
+                if (lodAsset.IsReady())
+                {
+                    m_aabb.AddAabb(lodAsset->GetAabb());
+                }
+            }
+
+            for (const auto& tag : tags)
+            {
+                m_tags.push_back(tag);
+            }
+        }
+
+        // Create a stable ID for our default fallback model.
+        const AZ::Data::AssetId ModelAssetHandler::s_defaultModelAssetId{ "{D676DD3C-0560-4F39-99E0-B6DCBC7CEDAA}", 0 };
+
+        Data::AssetHandler::LoadResult ModelAssetHandler::LoadAssetData(
+            const AZ::Data::Asset<AZ::Data::AssetData>& asset,
+            AZStd::shared_ptr<AZ::Data::AssetDataStream> stream,
+            const AZ::Data::AssetFilterCB& assetLoadFilterCB)
+        {
+            // If there's a 0-length stream, this must be trying to load our default fallback model.
+            // Fill in the asset data with a generated unit X-shaped model.
+            // We need to generate the data instead of load a fallback asset because model assets have dependencies
+            // on buffer and material assets, and fallback assets need to not have any dependencies to be able to load
+            // correctly when used as fallbacks. (The AssetManager doesn't currently support handling dependency pre-loading
+            // for fallback assets)
+            if (stream->GetLength() == 0)
+            {
+                auto assetData = asset.GetAs<AZ::RPI::ModelAsset>();
+                if (assetData)
+                {
+                    ModelAssetHelpers::CreateUnitX(assetData);
+                }
+
+                return Data::AssetHandler::LoadResult::LoadComplete;
+            }
+
+            return AssetHandler::LoadAssetData(asset, stream, assetLoadFilterCB);
+        }
+
+        Data::AssetId ModelAssetHandler::AssetMissingInCatalog(const Data::Asset<Data::AssetData>& asset)
+        {
+            AZ_Info(
+                "Model",
+                "Model id " AZ_STRING_FORMAT " not found in asset catalog, using fallback model.\n",
+                AZ_STRING_ARG(asset.GetId().ToFixedString()));
+
+            // Find out if the asset is missing completely or just still processing
+            // and escalate the asset to the top of the list if it's queued.
+            AzFramework::AssetSystem::AssetStatus missingAssetStatus = AzFramework::AssetSystem::AssetStatus::AssetStatus_Unknown;
+            AzFramework::AssetSystemRequestBus::BroadcastResult(
+                missingAssetStatus, &AzFramework::AssetSystem::AssetSystemRequests::GetAssetStatusById, asset.GetId().m_guid);
+
+            if (missingAssetStatus == AzFramework::AssetSystem::AssetStatus::AssetStatus_Queued)
+            {
+                bool sendSucceeded = false;
+                AzFramework::AssetSystemRequestBus::BroadcastResult(
+                    sendSucceeded, &AzFramework::AssetSystem::AssetSystemRequests::EscalateAssetByUuid, asset.GetId().m_guid);
+            }
+
+            // Make sure the default model asset has an entry in the asset catalog so that the asset system will try to load it.
+            // Note that we specifically give it a 0-byte size and a non-empty path so that the load will just trivially succeed
+            // with a 0-byte asset stream. This will enable us to detect it in LoadAssetData and fill in the data with a generated
+            // unit cube. We can't use an on-disk model asset because the AssetMissing system currently doesn't correctly handle
+            // assets with dependent assets (like azmodel), so we need to just load an "empty" asset and then fill it in with data
+            // in LoadAssetData.
+            {
+                Data::AssetInfo assetInfo;
+                assetInfo.m_assetId = s_defaultModelAssetId;
+                assetInfo.m_assetType = azrtti_typeid<AZ::RPI::ModelAsset>();
+                assetInfo.m_relativePath = "default_fallback_model";
+                assetInfo.m_sizeBytes = 0;
+                AZ::Data::AssetCatalogRequestBus::Broadcast(
+                    &AZ::Data::AssetCatalogRequestBus::Events::RegisterAsset, assetInfo.m_assetId, assetInfo);
+            }
+
+            return s_defaultModelAssetId;
+        }
+
 
     } // namespace RPI
 } // namespace AZ

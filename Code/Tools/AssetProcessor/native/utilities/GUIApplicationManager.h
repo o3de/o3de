@@ -51,8 +51,10 @@ class GUIApplicationManager
 {
     Q_OBJECT
 public:
-    explicit GUIApplicationManager(int* argc, char*** argv, QObject* parent = 0);
-    virtual ~GUIApplicationManager();
+    GUIApplicationManager(int* argc, char*** argv, QObject* parent = nullptr);
+    GUIApplicationManager(int* argc, char*** argv, AZ::ComponentApplicationSettings componentAppSettings);
+    GUIApplicationManager(int* argc, char*** argv, QObject* parent, AZ::ComponentApplicationSettings componentAppSettings);
+    ~GUIApplicationManager() override;
 
     ApplicationManager::BeforeRunStatus BeforeRun() override;
     IniConfiguration* GetIniConfiguration() const;
@@ -69,6 +71,8 @@ public:
     //! TraceMessageBus::Handler
     bool OnError(const char* window, const char* message) override;
     bool OnAssert(const char* message) override;
+
+    WId GetWindowId() const override;
 
 private:
     bool Activate() override;

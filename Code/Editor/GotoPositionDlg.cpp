@@ -24,13 +24,13 @@ AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include <ui_GotoPositionDlg.h>
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
-void GotoPositionPitchConstraints::DeterminePitchRange(const AngleRangeConfigureFn& configurePitchRangeFn) const
+void GoToPositionPitchConstraints::DeterminePitchRange(const AngleRangeConfigureFn& configurePitchRangeFn) const
 {
     const auto [pitchMinRadians, pitchMaxRadians] = AzFramework::CameraPitchMinMaxRadians();
     configurePitchRangeFn(AZ::RadToDeg(pitchMinRadians), AZ::RadToDeg(pitchMaxRadians));
 }
 
-float GotoPositionPitchConstraints::PitchClampedRadians(float pitchDegrees) const
+float GoToPositionPitchConstraints::PitchClampedRadians(float pitchDegrees) const
 {
     return AzFramework::ClampPitchRotation(AZ::DegToRad(pitchDegrees));
 }
@@ -74,7 +74,7 @@ void GotoPositionDialog::OnInitDialog()
     m_ui->m_dymZ->setValue(cameraTranslation.GetZ());
 
     // rotation
-    m_gotoPositionPitchConstraints.DeterminePitchRange(
+    m_goToPositionPitchConstraints.DeterminePitchRange(
         [this](const float minPitchDegrees, const float maxPitchDegrees)
         {
             m_ui->m_dymAnglePitch->setRange(minPitchDegrees, maxPitchDegrees);
@@ -122,12 +122,14 @@ void GotoPositionDialog::OnUpdateNumbers()
 void GotoPositionDialog::accept()
 {
     const auto position = AZ::Vector3(
-        aznumeric_cast<float>(m_ui->m_dymX->value()), aznumeric_cast<float>(m_ui->m_dymY->value()),
+        aznumeric_cast<float>(m_ui->m_dymX->value()),
+        aznumeric_cast<float>(m_ui->m_dymY->value()),
         aznumeric_cast<float>(m_ui->m_dymZ->value()));
-    const auto pitchRadians = m_gotoPositionPitchConstraints.PitchClampedRadians(aznumeric_cast<float>(m_ui->m_dymAnglePitch->value()));
+    const auto pitchRadians = m_goToPositionPitchConstraints.PitchClampedRadians(aznumeric_cast<float>(m_ui->m_dymAnglePitch->value()));
     const auto yawRadians = AZ::DegToRad(aznumeric_cast<float>(m_ui->m_dymAngleYaw->value()));
 
-    SandboxEditor::InterpolateDefaultViewportCameraToTransform(position, pitchRadians, yawRadians);
+    // either set or interpolate the camera to the new position and orientation
+    SandboxEditor::HandleDefaultViewportCameraTransitionFromSetting(position, pitchRadians, yawRadians);
 
     QDialog::accept();
 }

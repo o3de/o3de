@@ -94,7 +94,7 @@ namespace AZ
  
             RPI::Scene* scene = GetScene();
             PostProcessFeatureProcessor* fp = scene->GetFeatureProcessor<PostProcessFeatureProcessor>();
-            RPI::ViewPtr view = scene->GetDefaultRenderPipeline()->GetDefaultView();
+            RPI::ViewPtr view = m_pipeline->GetFirstView(GetPipelineViewTag());
             if (fp)
             {
                 PostProcessSettings* postProcessSettings = fp->GetLevelSettingsFromView(view);
@@ -119,9 +119,30 @@ namespace AZ
         {
             RPI::PassAttachmentBinding& parentInBinding = GetInputBinding(0);
             const RPI::Ptr<RPI::PassAttachment>& parentInAttachment = parentInBinding.GetAttachment();
+            if (!parentInAttachment)
+            {
+                AZ_Error(
+                    "PassSystem",
+                    false,
+                    "[BloomCompositePass '%s']: Slot '%s' has no attachment.",
+                    GetPathName().GetCStr(),
+                    parentInBinding.m_name.GetCStr());
+                return;
+            }
 
             RPI::PassAttachmentBinding& parentInOutBinding = GetInputOutputBinding(0);
             const RPI::Ptr<RPI::PassAttachment>& parentInOutAttachment = parentInOutBinding.GetAttachment();
+
+            if (!parentInOutAttachment)
+            {
+                AZ_Error(
+                    "PassSystem",
+                    false,
+                    "[BloomCompositePass '%s']: Slot '%s' has no attachment.",
+                    GetPathName().GetCStr(),
+                    parentInOutBinding.m_name.GetCStr());
+                return;
+            }
 
             // Create input binding, from downsampling pass
             RPI::PassAttachmentBinding inBinding;

@@ -25,7 +25,7 @@ class UserPropertyEditor : public QWidget
 {
     Q_OBJECT
 public:
-    AZ_CLASS_ALLOCATOR(UserPropertyEditor, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(UserPropertyEditor, AZ::SystemAllocator);
     UserPropertyEditor(QWidget *pParent = nullptr);
 
     void SetValue(const QString &value, bool notify = true);
@@ -53,11 +53,11 @@ class UserPopupWidgetHandler : public QObject, public AzToolsFramework::Property
 {
     Q_OBJECT
 public:
-    AZ_CLASS_ALLOCATOR(UserPopupWidgetHandler, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(UserPopupWidgetHandler, AZ::SystemAllocator);
     bool IsDefaultHandler() const override { return false; }
     QWidget* CreateGUI(QWidget *pParent) override;
 
-    AZ::u32 GetHandlerName(void) const override  {return AZ_CRC("ePropertyUser", 0x65b972c0); }
+    AZ::u32 GetHandlerName(void) const override  {return AZ_CRC_CE("ePropertyUser"); }
     void ConsumeAttribute(UserPropertyEditor* GUI, AZ::u32 attrib, AzToolsFramework::PropertyAttributeReader* attrValue, const char* debugName) override;
     void WriteGUIValuesIntoProperty(size_t index, UserPropertyEditor* GUI, property_t& instance, AzToolsFramework::InstanceDataNode* node) override;
     bool ReadValuesIntoGUI(size_t index, UserPropertyEditor* GUI, const property_t& instance, AzToolsFramework::InstanceDataNode* node)  override;
@@ -68,11 +68,11 @@ class FloatCurveHandler : public QObject, public AzToolsFramework::PropertyHandl
 {
     Q_OBJECT
 public:
-    AZ_CLASS_ALLOCATOR(FloatCurveHandler, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(FloatCurveHandler, AZ::SystemAllocator);
     bool IsDefaultHandler() const override { return false; }
     QWidget* CreateGUI(QWidget *pParent) override;
 
-    AZ::u32 GetHandlerName(void) const override { return AZ_CRC("ePropertyFloatCurve", 0x7440ccce); }
+    AZ::u32 GetHandlerName(void) const override { return AZ_CRC_CE("ePropertyFloatCurve"); }
 
     void ConsumeAttribute(CSplineCtrl* GUI, AZ::u32 attrib, AzToolsFramework::PropertyAttributeReader* attrValue, const char* debugName) override;
     void WriteGUIValuesIntoProperty(size_t index, CSplineCtrl* GUI, property_t& instance, AzToolsFramework::InstanceDataNode* node) override;

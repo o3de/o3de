@@ -78,6 +78,18 @@
         }                                                                                                                                  \
     }
 
+#define INCREMENT_PERFORMANCE_STAT(STATID)                                                                                                 \
+    {                                                                                                                                      \
+        if (auto* statSystem = AZ::Interface<IMultiplayerStatSystem>::Get())                                                               \
+        {                                                                                                                                  \
+            statSystem->IncrementStat(STATID);                                                                                             \
+        }                                                                                                                                  \
+        else                                                                                                                               \
+        {                                                                                                                                  \
+            AZLOG_WARN("INCREMENT_PERFORMANCE_STAT was called too early. IMultiplayerStatSystem isn't ready yet.");                        \
+        }                                                                                                                                  \
+    }
+
 #else
 
 #define DECLARE_PERFORMANCE_STAT_GROUP()
@@ -85,5 +97,7 @@
 #define DECLARE_PERFORMANCE_STAT()
 
 #define SET_PERFORMANCE_STAT()
+
+#define INCREMENT_PERFORMANCE_STAT()
 
 #endif

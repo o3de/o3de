@@ -13,7 +13,7 @@
 
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
-#include <AzToolsFramework/AssetBrowser/AssetBrowserTableModel.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserListModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
@@ -44,7 +44,7 @@ namespace AzToolsFramework
             : QDialog(parent)
             , m_ui(new Ui::AssetPickerDialogClass())
             , m_filterModel(new AssetBrowserFilterModel(parent))
-            , m_tableModel(new AssetBrowserTableModel(parent))
+            , m_listModel(new AssetBrowserListModel(parent))
             , m_selection(selection)
             , m_hasFilter(false)
         {
@@ -120,23 +120,23 @@ namespace AzToolsFramework
 
             m_persistentState = AZ::UserSettings::CreateFind<AzToolsFramework::QWidgetSavedState>(AZ::Crc32(("AssetBrowserTreeView_Dialog_" + name).toUtf8().data()), AZ::UserSettings::CT_GLOBAL);
 
-            m_ui->m_assetBrowserTableViewWidget->setVisible(false);
+            m_ui->m_assetBrowserListViewWidget->setVisible(false);
             if (ed_useNewAssetPickerView)
             {
-                m_ui->m_assetBrowserTreeViewWidget->setVisible(false);
-                m_ui->m_assetBrowserTableViewWidget->setVisible(true);
-                m_tableModel->setSourceModel(m_filterModel.get());
-                m_ui->m_assetBrowserTableViewWidget->setModel(m_tableModel.get());
+                m_ui->m_assetBrowserListViewWidget->setVisible(false);
+                m_ui->m_assetBrowserListViewWidget->setVisible(true);
+                m_listModel->setSourceModel(m_filterModel.get());
+                m_ui->m_assetBrowserListViewWidget->setModel(m_listModel.get());
 
-                m_ui->m_assetBrowserTableViewWidget->SetName("AssetBrowserTableView_" + name);
-                m_ui->m_assetBrowserTableViewWidget->setDragEnabled(false);
-                m_ui->m_assetBrowserTableViewWidget->setSelectionMode(
+                m_ui->m_assetBrowserListViewWidget->SetName("AssetBrowserListView_" + name);
+                m_ui->m_assetBrowserListViewWidget->setDragEnabled(false);
+                m_ui->m_assetBrowserListViewWidget->setSelectionMode(
                     selection.GetMultiselect() ? QAbstractItemView::SelectionMode::ExtendedSelection
                                                : QAbstractItemView::SelectionMode::SingleSelection);
 
                 if (ed_hideAssetPickerPathColumn)
                 {
-                    m_ui->m_assetBrowserTableViewWidget->hideColumn(1);
+                    m_ui->m_assetBrowserListViewWidget->hideColumn(1);
                 }
 
                 // if the current selection is invalid, disable the Ok button
@@ -146,32 +146,32 @@ namespace AzToolsFramework
                     m_filterModel.data(), &AssetBrowserFilterModel::filterChanged, this,
                     [this]()
                     {
-                        m_tableModel->UpdateTableModelMaps();
+                        m_listModel->UpdateListModelMaps();
                     });
 
                 connect(
-                    m_ui->m_assetBrowserTableViewWidget, &AssetBrowserTableView::selectionChangedSignal, this,
+                    m_ui->m_assetBrowserListViewWidget, &AssetBrowserListView::selectionChangedSignal, this,
                     [this](const QItemSelection&, const QItemSelection&)
                     {
                         SelectionChangedSlot();
                     });
 
-                connect(m_ui->m_assetBrowserTableViewWidget, &QAbstractItemView::doubleClicked, this, &AssetPickerDialog::DoubleClickedSlot);
+                connect(m_ui->m_assetBrowserListViewWidget, &QAbstractItemView::doubleClicked, this, &AssetPickerDialog::DoubleClickedSlot);
 
                 connect(
-                    m_ui->m_assetBrowserTableViewWidget, &AssetBrowserTableView::ClearStringFilter, m_ui->m_searchWidget,
+                    m_ui->m_assetBrowserListViewWidget, &AssetBrowserListView::ClearStringFilter, m_ui->m_searchWidget,
                     &SearchWidget::ClearStringFilter);
 
                 connect(
-                    m_ui->m_assetBrowserTableViewWidget, &AssetBrowserTableView::ClearTypeFilter, m_ui->m_searchWidget,
+                    m_ui->m_assetBrowserListViewWidget, &AssetBrowserListView::ClearTypeFilter, m_ui->m_searchWidget,
                     &SearchWidget::ClearTypeFilter);
 
                  connect(
-                    this, &AssetPickerDialog::SizeChangedSignal, m_ui->m_assetBrowserTableViewWidget,
-                    &AssetBrowserTableView::UpdateSizeSlot);
+                    this, &AssetPickerDialog::SizeChangedSignal, m_ui->m_assetBrowserListViewWidget,
+                    &AssetBrowserListView::UpdateSizeSlot);
 
-                m_ui->m_assetBrowserTableViewWidget->SetName("AssetBrowserTableView_main");
-                m_tableModel->UpdateTableModelMaps();
+                m_ui->m_assetBrowserListViewWidget->SetIsAssetBrowserMainView();
+                m_listModel->UpdateListModelMaps();
             }
 
             QTimer::singleShot(0, this, [this]() {
@@ -218,7 +218,7 @@ namespace AzToolsFramework
                 {
                     m_ui->m_assetBrowserTreeViewWidget->expandAll();
                 });
-                m_tableModel->UpdateTableModelMaps();
+                m_listModel->UpdateListModelMaps();
             }
 
             if (m_hasFilter && !hasFilter)
@@ -258,23 +258,22 @@ namespace AzToolsFramework
         bool AssetPickerDialog::EvaluateSelection() const
         {
             auto selectedAssets = m_ui->m_assetBrowserTreeViewWidget->isVisible() ? m_ui->m_assetBrowserTreeViewWidget->GetSelectedAssets()
-                                                                                : m_ui->m_assetBrowserTableViewWidget->GetSelectedAssets();
-            // exactly one item must be selected, even if multi-select option is disabled, still good practice to check
-            if (selectedAssets.empty())
-            {
-                return false;
-            }
+                                                                                  : m_ui->m_assetBrowserListViewWidget->GetSelectedAssets();
 
             m_selection.GetResults().clear();
+            AZStd::unordered_set<const AssetBrowserEntry*> entries;
 
             for (auto entry : selectedAssets)
             {
-                m_selection.GetSelectionFilter()->Filter(m_selection.GetResults(), entry);
-                if (m_selection.IsValid() && !m_selection.GetMultiselect())
+                m_selection.GetSelectionFilter()->Filter(entries, entry);
+
+                if (!entries.empty() && !m_selection.GetMultiselect())
                 {
                     break;
                 }
             }
+
+            m_selection.GetResults().assign(entries.begin(), entries.end());
             return m_selection.IsValid();
         }
 
@@ -289,9 +288,8 @@ namespace AzToolsFramework
 
         void AssetPickerDialog::UpdatePreview() const
         {
-            auto selectedAssets = m_ui->m_assetBrowserTreeViewWidget->isVisible()
-                ? m_ui->m_assetBrowserTreeViewWidget->GetSelectedAssets()
-                : m_ui->m_assetBrowserTableViewWidget->GetSelectedAssets();
+            auto selectedAssets = m_ui->m_assetBrowserTreeViewWidget->isVisible() ? m_ui->m_assetBrowserTreeViewWidget->GetSelectedAssets()
+                                                                                  : m_ui->m_assetBrowserListViewWidget->GetSelectedAssets();
             ;
             if (selectedAssets.size() != 1)
             {

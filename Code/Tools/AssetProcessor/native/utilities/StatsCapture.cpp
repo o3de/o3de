@@ -34,7 +34,7 @@ namespace AssetProcessor
         class StatsCaptureImpl final
         {
         public:
-            AZ_CLASS_ALLOCATOR(StatsCaptureImpl, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(StatsCaptureImpl, AZ::SystemAllocator);
             StatsCaptureImpl();
             void BeginCaptureStat(AZStd::string_view statName);
             AZStd::optional<AZStd::sys_time_t> EndCaptureStat(AZStd::string_view statName, bool persistToDb);

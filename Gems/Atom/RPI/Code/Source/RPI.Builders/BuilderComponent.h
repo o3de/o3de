@@ -43,9 +43,15 @@ namespace AZ
             BuilderComponent();
             ~BuilderComponent() override;
 
+            // Expose the RPI builder service and add dependent component services as well
+            void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
+            void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
+            void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
+
             // AZ::Component overrides...
             void Activate() override;
             void Deactivate() override;
+
 
         private:
             BuilderComponent(const BuilderComponent&) = delete;

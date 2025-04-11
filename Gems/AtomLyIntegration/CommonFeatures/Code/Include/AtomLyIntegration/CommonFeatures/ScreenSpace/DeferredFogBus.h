@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
+#include <Atom/Feature/ScreenSpace/DeferredFogSettingsInterface.h>
 
 namespace AZ
 {

@@ -24,7 +24,7 @@ namespace AZ
             "Defines the kind of data collection and logging. If starts with 's' it will log statistical summaries, if starts with 'a' will log each sample of data (high verbosity).");
 
         AZ_CVAR(AZ::u32, r_metricsWaitTimePerCaptureBatch,
-            0, // Starts at 0, which means "do not capture performance data". When this variable changes to >0 we'll start performance capture.
+            0, // Starts at 0, which means "do not wait before starting to capture performance data".
             nullptr, //&PerformanceCvarManager::OnWaitTimePerCaptureBatchChanged,
             ConsoleFunctorFlags::DontReplicate,
             "How many seconds to wait before each batch of performance capture.");
@@ -53,7 +53,7 @@ namespace AZ
 
         AZ::Debug::PerformanceCollector::DataLogType GetDataLogTypeFromCVar(const AZ::CVarFixedString& newCaptureType)
         {
-            if (newCaptureType[0] == 'a' || newCaptureType[0] == 'A')
+            if (newCaptureType.starts_with('a') || newCaptureType.starts_with('A'))
             {
                 return AZ::Debug::PerformanceCollector::DataLogType::LogAllSamples;
             }

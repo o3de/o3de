@@ -50,11 +50,19 @@ namespace AZ::Render
     {
         const auto templateName = Name(MainPassParentTemplateName);
 
-        // Early return if pass is already found in render pipeline.
+        // Early return if pass is already found in render pipeline or if the pipeline is not the default one (i.e it is an XR pipeline).
         auto passFilter = AZ::RPI::PassFilter::CreateWithTemplateName(templateName, renderPipeline);
         auto foundPass = AZ::RPI::PassSystemInterface::Get()->FindFirstPass(passFilter);
-        if (foundPass)
+        if (foundPass || renderPipeline->GetViewType() != RPI::ViewType::Default)
         {
+            return;
+        }
+
+        // check if the reference pass of insert position exist
+        Name postProcessPassName = Name("PostProcessPass");
+        if (renderPipeline->FindFirstPass(postProcessPassName) == nullptr)
+        {
+            AZ_Warning("EditorModeFeedback", false, "Can't find %s in the render pipeline. Editor mode feedback is disabled", postProcessPassName.GetCStr());
             return;
         }
 
@@ -102,7 +110,7 @@ namespace AZ::Render
             }
 
             // Editor state passes
-            auto previousOutput = AZStd::make_pair<Name, Name>(Name("Parent"), Name("ColorInputOutput"));
+            auto previousOutput = AZStd::make_pair(Name("Parent"), Name("ColorInputOutput"));
             for (const auto& state : m_editorStates)
             {
                 CreateAndAddStateParentPassTemplate(*state);
@@ -165,7 +173,7 @@ namespace AZ::Render
         passRequest.m_passName = Name(MainPassParentPassName);
         passRequest.m_templateName = mainParentPassTemplate->m_name;
         passRequest.AddInputConnection(
-            RPI::PassConnection{ Name("ColorInputOutput"), RPI::PassAttachmentRef{ Name("PostProcessPass"), Name("Output") } });
+            RPI::PassConnection{ Name("ColorInputOutput"), RPI::PassAttachmentRef{ postProcessPassName, Name("Output") } });
         passRequest.AddInputConnection(
             RPI::PassConnection{ Name("InputDepth"), RPI::PassAttachmentRef{ Name("DepthPrePass"), Name("Depth") } });
 
@@ -177,7 +185,7 @@ namespace AZ::Render
         }
 
         // Inject the parent pass after the PostProcess pass
-        if (!renderPipeline->AddPassAfter(parentPass, Name("PostProcessPass")))
+        if (!renderPipeline->AddPassAfter(parentPass, postProcessPassName))
         {
             AZ_Error(
                 "EditorStatePassSystem", false, "Add editor mode feedback parent pass to render pipeline [%s] failed", renderPipeline->GetId().GetCStr());
@@ -195,7 +203,7 @@ namespace AZ::Render
             {
                 const auto entityIds = state->GetMaskedEntities();
                 auto& mask = entityMaskMap[state->GetEntityMaskDrawList()];
-                for (const auto entityId : entityIds)
+                for (const auto& entityId : entityIds)
                 {
                     mask.insert(entityId);
                 }
@@ -211,6 +219,11 @@ namespace AZ::Render
         {
             state->UpdatePassDataForPipelines();
         }
+    }
+    
+    const char* EditorStatePassSystem::GetParentPassTemplateName() const
+    {
+        return MainPassParentTemplateName;
     }
 
     void EditorStatePassSystem::ConfigureStatePassesForPipeline([[maybe_unused]]RPI::RenderPipeline* renderPipeline)

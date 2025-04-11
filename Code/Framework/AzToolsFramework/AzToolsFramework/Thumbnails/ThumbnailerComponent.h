@@ -14,9 +14,7 @@
 #include <AzToolsFramework/Thumbnails/Thumbnail.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
 
-#include <QList>
 #include <QObject>
-#include <QThreadPool>
 #endif
 
 class QString;
@@ -29,7 +27,6 @@ namespace AzToolsFramework
         class ThumbnailerComponent
             : public AZ::Component
             , public ThumbnailerRequestBus::Handler
-            , public QObject
         {
         public:
             AZ_COMPONENT(ThumbnailerComponent, "{80090CA5-6A3A-4554-B5FE-A6D74ECB2D84}")
@@ -50,9 +47,9 @@ namespace AzToolsFramework
             SharedThumbnail GetThumbnail(SharedThumbnailKey thumbnailKey) override;
             bool IsLoading(SharedThumbnailKey thumbnailKey) override;
 
-            void RedrawThumbnail();
-
         private:
+            void Cleanup();
+
             struct ProviderCompare
             {
                 bool operator()(const SharedThumbnailProvider& lhs, const SharedThumbnailProvider& rhs) const
@@ -68,10 +65,10 @@ namespace AzToolsFramework
             SharedThumbnail m_missingThumbnail;
             //! Default loading thumbnail used when thumbnail is found by is not yet generated
             SharedThumbnail m_loadingThumbnail;
-            //! Maximum number of concurrent jobs allowed.
-            const int m_maxThumbnailJobs{ 64 };
+            //! Using placeholder object rather than inheritance for connecting signals and slots
+            AZStd::unique_ptr<QObject> m_placeholderObject;
             //! Current number of jobs running.
-            int m_currentJobsCount;
+            AZStd::set<SharedThumbnail> m_thumbnailsBeingLoaded;
         };
     } // Thumbnailer
 } // namespace AssetBrowser

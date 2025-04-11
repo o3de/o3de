@@ -43,10 +43,6 @@
             "Component_[8018146290632383969]": {
                 "$type": "EditorEntityIconComponent",
                 "Id": 8018146290632383969
-            },
-            "Component_[8452360690590857075]": {
-                "$type": "SelectionComponent",
-                "Id": 8452360690590857075
             }
         }
     },
@@ -55,13 +51,13 @@
             "Id": "Entity_[258695561562]",
             "Name": "Terrain",
             "Components": {
+                "Component_[103605035329056672]": {
+                    "$type": "EditorStaticRigidBodyComponent",
+                    "Id": 103605035329056672
+                },
                 "Component_[11134362586460591061]": {
                     "$type": "EditorVisibilityComponent",
                     "Id": 11134362586460591061
-                },
-                "Component_[12079850593699113824]": {
-                    "$type": "SelectionComponent",
-                    "Id": 12079850593699113824
                 },
                 "Component_[12876908415630047209]": {
                     "$type": "EditorOnlyEntityComponent",
@@ -129,9 +125,11 @@
                     "$type": "EditorShapeColliderComponent",
                     "Id": 8251430000110142445,
                     "ColliderConfiguration": {
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
                             ]
                         }
                     },
@@ -193,10 +191,6 @@
                     "$type": "EditorEntityIconComponent",
                     "Id": 3047355939801335922
                 },
-                "Component_[3687396159953003426]": {
-                    "$type": "SelectionComponent",
-                    "Id": 3687396159953003426
-                },
                 "Component_[9042477178449779636]": {
                     "$type": "EditorOnlyEntityComponent",
                     "Id": 9042477178449779636
@@ -230,10 +224,6 @@
                 "Component_[12002902910001242503]": {
                     "$type": "EditorEntitySortComponent",
                     "Id": 12002902910001242503
-                },
-                "Component_[12062958768063128753]": {
-                    "$type": "SelectionComponent",
-                    "Id": 12062958768063128753
                 },
                 "Component_[16573499138393956547]": {
                     "$type": "EditorEntityIconComponent",
@@ -271,12 +261,17 @@
                         "entityId": "",
                         "Gravity Enabled": false,
                         "Compute Mass": false,
-                        "Inertia tensor": {
-                            "roll": 0.0,
-                            "pitch": 0.0,
-                            "yaw": 0.0,
-                            "scale": 2.5
-                        }
+                        "Inertia tensor": [
+                            2.5,
+                            0.0,
+                            0.0,
+                            0.0,
+                            2.5,
+                            0.0,
+                            0.0,
+                            0.0,
+                            2.5
+                        ]
                     }
                 },
                 "Component_[7842182096652302722]": {
@@ -287,9 +282,11 @@
                     "$type": "EditorColliderComponent",
                     "Id": 8567733134384127375,
                     "ColliderConfiguration": {
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
                             ]
                         }
                     },

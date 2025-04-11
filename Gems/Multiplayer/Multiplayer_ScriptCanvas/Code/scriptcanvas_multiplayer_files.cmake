@@ -10,6 +10,14 @@ set(FILES
     Source/ScriptCanvasMultiplayerSystemComponent.cpp
     Source/ScriptCanvasMultiplayerSystemComponent.h
 
+    Source/Nodes/Nodeables/GatherEntitiesByComponentAabb.cpp
+    Source/Nodes/Nodeables/GatherEntitiesByComponentAabb.h
+    Source/Nodes/Nodeables/GatherEntitiesByComponentAabb.ScriptCanvasNodeable.xml
+    
+    Source/Nodes/Nodeables/GatherEntitiesByComponentSphere.cpp
+    Source/Nodes/Nodeables/GatherEntitiesByComponentSphere.h
+    Source/Nodes/Nodeables/GatherEntitiesByComponentSphere.ScriptCanvasNodeable.xml
+
     Source/Nodes/Nodeables/IfNetRoleNodeable.cpp
     Source/Nodes/Nodeables/IfNetRoleNodeable.h
     Source/Nodes/Nodeables/IfNetRoleNodeable.ScriptCanvasNodeable.xml

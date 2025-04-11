@@ -29,7 +29,7 @@ namespace AzToolsFramework
         virtual ~EditorEntityIdContainer() { }
 
         AZ_RTTI(EditorEntityIdContainer, "{22F4C72A-8ADD-49B3-884C-30C7F254AAC6}");
-        AZ_CLASS_ALLOCATOR(EditorEntityIdContainer, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EditorEntityIdContainer, AZ::SystemAllocator);
 
         static const QString& GetMimeType();
 

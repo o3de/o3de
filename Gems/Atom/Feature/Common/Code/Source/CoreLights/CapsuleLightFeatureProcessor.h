@@ -25,6 +25,7 @@ namespace AZ
             : public CapsuleLightFeatureProcessorInterface
         {
         public:
+            AZ_CLASS_ALLOCATOR(CapsuleLightFeatureProcessor, AZ::SystemAllocator)
             AZ_RTTI(AZ::Render::CapsuleLightFeatureProcessor, "{0FC290C5-DD28-4194-8C0B-B90C3291BAF6}", AZ::Render::CapsuleLightFeatureProcessorInterface);
 
             static void Reflect(AZ::ReflectContext* context);
@@ -48,10 +49,11 @@ namespace AZ
             void SetCapsuleRadius(LightHandle handle, float radius) override;
             void SetAffectsGI(LightHandle handle, bool affectsGI) override;
             void SetAffectsGIFactor(LightHandle handle, float affectsGIFactor) override;
+            void SetLightingChannelMask(LightHandle handle, uint32_t lightingChannelMask) override;
             void SetCapsuleData(LightHandle handle, const CapsuleLightData& data) override;
 
-            const Data::Instance<RPI::Buffer> GetLightBuffer()const;
-            uint32_t GetLightCount()const;
+            const Data::Instance<RPI::Buffer> GetLightBuffer() const override;
+            uint32_t GetLightCount() const override;
 
         private:
             CapsuleLightFeatureProcessor(const CapsuleLightFeatureProcessor&) = delete;

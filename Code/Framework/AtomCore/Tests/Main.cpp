@@ -44,16 +44,12 @@ class TestEnvironmentHook
 public:
     void SetupEnvironment() override
     {
-        AllocatorInstance<OSAllocator>::Create(); // used by the bus
-
         BusConnect();
     }
 
     void TeardownEnvironment() override
     {
         BusDisconnect();
-
-        AllocatorInstance<OSAllocator>::Destroy(); // used by the bus
     }
 };
 

@@ -49,7 +49,7 @@ namespace Terrain
                     ->DataElement(AZ::Edit::UIHandlers::Slider, &TerrainLayerSpawnerConfig::m_priority, "Sub Priority", "Defines order terrain spawners are applied within a layer.  Larger numbers = higher priority")
                     ->Attribute(AZ::Edit::Attributes::Min, AreaConstants::s_priorityMin)
                     ->Attribute(AZ::Edit::Attributes::Max, AreaConstants::s_priorityMax)
-                    ->Attribute(AZ::Edit::Attributes::SoftMin, AreaConstants::s_priorityMin)
+                    ->Attribute(AZ::Edit::Attributes::SoftMin, AreaConstants::s_prioritySoftMin)
                     ->Attribute(AZ::Edit::Attributes::SoftMax, AreaConstants::s_prioritySoftMax)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainLayerSpawnerConfig::m_useGroundPlane, "Use Ground Plane", "Determines whether or not to provide a default ground plane")
                     ;
@@ -79,12 +79,12 @@ namespace Terrain
 
     void TerrainLayerSpawnerComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("TerrainAreaService"));
+        services.push_back(AZ_CRC_CE("TerrainAreaService"));
     }
 
     void TerrainLayerSpawnerComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("TerrainAreaService"));
+        services.push_back(AZ_CRC_CE("TerrainAreaService"));
     }
 
     void TerrainLayerSpawnerComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services)
@@ -172,8 +172,8 @@ namespace Terrain
 
         // Notify the terrain system that the entire layer has changed, so both height and surface data can be affected.
         TerrainSystemServiceRequestBus::Broadcast(
-            &TerrainSystemServiceRequestBus::Events::RefreshArea, GetEntityId(),
-            static_cast<Terrain::TerrainDataChangedMask>(Terrain::HeightData | Terrain::SurfaceData)
-        );
+            &TerrainSystemServiceRequestBus::Events::RefreshArea,
+            GetEntityId(),
+            Terrain::TerrainDataChangedMask::HeightData | Terrain::TerrainDataChangedMask::SurfaceData);
     }
 }

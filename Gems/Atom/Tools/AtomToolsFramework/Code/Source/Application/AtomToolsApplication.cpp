@@ -10,21 +10,20 @@
 #include <AtomToolsFramework/Application/AtomToolsApplication.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AtomToolsFramework/Window/AtomToolsMainWindowRequestBus.h>
-
 #include <AzCore/Component/ComponentApplicationLifecycle.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Utils/Utils.h>
-
 #include <AzFramework/Asset/AssetSystemComponent.h>
+#include <AzFramework/AzFrameworkNativeUIModule.h>
+#include <AzFramework/Components/NativeUISystemComponent.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzFramework/Network/AssetProcessorConnection.h>
 #include <AzFramework/StringFunc/StringFunc.h>
-
 #include <AzQtComponents/Components/GlobalEventFilter.h>
-
 #include <AzToolsFramework/API/EditorPythonConsoleBus.h>
 #include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
+#include <AzToolsFramework/ActionManager/ActionManagerSystemComponent.h>
 #include <AzToolsFramework/Asset/AssetSystemComponent.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserComponent.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
@@ -39,6 +38,7 @@
 #include "AtomToolsFramework_Traits_Platform.h"
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
+#include <QClipboard>
 #include <QMessageBox>
 #include <QObject>
 AZ_POP_DISABLE_WARNING
@@ -48,8 +48,13 @@ namespace AtomToolsFramework
     AtomToolsApplication* AtomToolsApplication::m_instance = {};
 
     AtomToolsApplication::AtomToolsApplication(const char* targetName, int* argc, char*** argv)
+        : AtomToolsApplication(targetName, argc, argv, {})
+    {
+    }
+
+    AtomToolsApplication::AtomToolsApplication(const char* targetName, int* argc, char*** argv, AZ::ComponentApplicationSettings componentAppSettings)
         : AzQtApplication(*argc, *argv)
-        , Application(argc, argv)
+        , Application(argc, argv, AZStd::move(componentAppSettings))
         , m_targetName(targetName)
         , m_toolId(targetName)
     {
@@ -68,15 +73,12 @@ namespace AtomToolsFramework
             GetSettingsValue(AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder, AZStd::string()));
         m_styleManager.reset(new AzQtComponents::StyleManager(this));
         m_styleManager->initialize(this, engineRootPath);
-
-        AtomToolsMainWindowNotificationBus::Handler::BusConnect(m_toolId);
     }
 
     AtomToolsApplication ::~AtomToolsApplication()
     {
         m_instance = {};
         m_styleManager.reset();
-        AtomToolsMainWindowNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler::BusDisconnect();
         AzToolsFramework::EditorPythonConsoleNotificationBus::Handler::BusDisconnect();
     }
@@ -148,12 +150,13 @@ namespace AtomToolsFramework
         components.insert(
             components.end(),
             {
-                azrtti_typeid<AzToolsFramework::AssetSystem::AssetSystemComponent>(),
+                azrtti_typeid<AzToolsFramework::ActionManagerSystemComponent>(),
                 azrtti_typeid<AzToolsFramework::AssetBrowser::AssetBrowserComponent>(),
                 azrtti_typeid<AzToolsFramework::AssetSystem::AssetSystemComponent>(),
-                azrtti_typeid<AzToolsFramework::Thumbnailer::ThumbnailerComponent>(),
                 azrtti_typeid<AzToolsFramework::Components::PropertyManagerComponent>(),
                 azrtti_typeid<AzToolsFramework::PerforceComponent>(),
+                azrtti_typeid<AzToolsFramework::Thumbnailer::ThumbnailerComponent>(),
+                azrtti_typeid<AzFramework::NativeUISystemComponent>(),
             });
 
         return components;
@@ -163,6 +166,8 @@ namespace AtomToolsFramework
     {
         Base::CreateStaticModules(outModules);
         outModules.push_back(aznew AzToolsFramework::AzToolsFrameworkModule);
+        outModules.push_back(aznew AzFramework::AzFrameworkNativeUIModule());
+
     }
 
     void AtomToolsApplication::StartCommon(AZ::Entity* systemEntity)
@@ -196,7 +201,8 @@ namespace AtomToolsFramework
         AzToolsFramework::SourceControlConnectionRequestBus::Broadcast(
             &AzToolsFramework::SourceControlConnectionRequests::EnableSourceControl, enableSourceControl);
 
-        if (!AZ::RPI::RPISystemInterface::Get()->IsInitialized())
+        auto rpiInterface = AZ::RPI::RPISystemInterface::Get();
+        if (rpiInterface && !rpiInterface->IsInitialized())
         {
             AZ::RPI::RPISystemInterface::Get()->InitializeSystemAssets();
         }
@@ -232,11 +238,17 @@ namespace AtomToolsFramework
         }
 
         // Per Qt documentation, forcing Stop to be called when the application is about to quit in case exit bypasses Stop or destructor
-        connect(this, &QApplication::aboutToQuit, this, [this] { Stop(); });
+        connect(this, &QApplication::aboutToQuit, this, [this] {
+            AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::ExitMainLoop);
+            Stop();
+        });
     }
 
     void AtomToolsApplication::Destroy()
     {
+        // Clearing graph canvas clipboard mime data for copied nodes before exiting the application to prevent a crash in qt_call_post_routines
+        QApplication::clipboard()->clear();
+
         m_assetBrowserInteractions.reset();
         m_styleManager.reset();
 
@@ -259,7 +271,6 @@ namespace AtomToolsFramework
 
         AzToolsFramework::EditorPythonConsoleNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler::BusDisconnect();
-        AtomToolsMainWindowNotificationBus::Handler::BusDisconnect();
         AzFramework::AssetSystemRequestBus::Broadcast(&AzFramework::AssetSystem::AssetSystemRequests::StartDisconnectingAssetProcessor);
 
 #if AZ_TRAIT_ATOMTOOLSFRAMEWORK_SKIP_APP_DESTROY
@@ -295,11 +306,6 @@ namespace AtomToolsFramework
         }
 
         quit();
-    }
-
-    void AtomToolsApplication::OnMainWindowClosing()
-    {
-        AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::ExitMainLoop);
     }
 
     AZStd::vector<AZStd::string> AtomToolsApplication::GetCriticalAssetFilters() const
@@ -370,10 +376,8 @@ namespace AtomToolsFramework
             AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::ExitMainLoop);
         }
 
-        AZ::ComponentApplicationLifecycle::SignalEvent(*m_settingsRegistry, "CriticalAssetsCompiled", R"({})");
-
         // Reload the assetcatalog.xml at this point again
-        // Start Monitoring Asset changes over the network and load the AssetCatalog
+        // Start monitoring asset changes over the network and load the AssetCatalog
         auto LoadCatalog = [settingsRegistry = m_settingsRegistry.get()](AZ::Data::AssetCatalogRequests* assetCatalogRequests)
         {
             if (AZ::IO::FixedMaxPath assetCatalogPath;
@@ -384,6 +388,9 @@ namespace AtomToolsFramework
             }
         };
         AZ::Data::AssetCatalogRequestBus::Broadcast(AZStd::move(LoadCatalog));
+
+        // Only signal the event *after* the asset catalog has been loaded.
+        AZ::ComponentApplicationLifecycle::SignalEvent(*m_settingsRegistry, "CriticalAssetsCompiled", R"({})");
     }
 
     void AtomToolsApplication::SaveSettings()

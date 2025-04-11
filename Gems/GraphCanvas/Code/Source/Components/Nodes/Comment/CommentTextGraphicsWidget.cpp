@@ -40,7 +40,6 @@ namespace GraphCanvas
         , m_displayLabel(nullptr)
         , m_textEdit(nullptr)
         , m_proxyWidget(nullptr)
-        , m_pressed(false)
         , m_entityId(targetId)
     {
         setFlag(ItemIsMovable, false);

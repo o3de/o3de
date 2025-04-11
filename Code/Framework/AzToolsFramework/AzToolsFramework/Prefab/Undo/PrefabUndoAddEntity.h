@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <AzToolsFramework/Prefab/Undo/PrefabUndoBase.h>
 
 namespace AzToolsFramework
@@ -21,7 +20,7 @@ namespace AzToolsFramework
         {
         public:
             AZ_RTTI(PrefabUndoAddEntity, "{67EC7123-7F42-4BDD-9543-43349E2EA605}", PrefabUndoBase);
-            AZ_CLASS_ALLOCATOR(PrefabUndoAddEntity, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PrefabUndoAddEntity, AZ::SystemAllocator);
 
             explicit PrefabUndoAddEntity(const AZStd::string& undoOperationName);
 

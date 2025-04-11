@@ -18,15 +18,23 @@ namespace ScriptCanvasUnitTest
     TEST_F(ScriptCanvasUnitTestTransformFunctions, FromMatrix3x3_Call_GetExpectedResult)
     {
         auto actualResult = TransformFunctions::FromMatrix3x3(AZ::Matrix3x3::CreateIdentity());
-        EXPECT_EQ(actualResult, AZ::Transform::CreateIdentity());
+        auto expectedResult = AZ::Transform::CreateIdentity();
+#if AZ_TRAIT_USE_PLATFORM_SIMD_NEON
+        EXPECT_THAT(actualResult, IsClose(expectedResult));
+#else
+        EXPECT_EQ(actualResult, expectedResult);
+#endif // AZ_TRAIT_USE_PLATFORM_SIMD_NEON
     }
 
     TEST_F(ScriptCanvasUnitTestTransformFunctions, FromMatrix3x3AndTranslation_Call_GetExpectedResult)
     {
         auto actualResult = TransformFunctions::FromMatrix3x3AndTranslation(AZ::Matrix3x3::CreateIdentity(), AZ::Vector3::CreateOne());
         EXPECT_EQ(actualResult.GetUniformScale(), 1);
-        EXPECT_EQ(actualResult.GetRotation(), AZ::Quaternion::CreateIdentity());
+#if AZ_TRAIT_USE_PLATFORM_SIMD_NEON
+        EXPECT_THAT(actualResult.GetRotation(), IsClose(AZ::Quaternion::CreateIdentity()));
+#else
         EXPECT_EQ(actualResult.GetTranslation(), AZ::Vector3::CreateOne());
+#endif // AZ_TRAIT_USE_PLATFORM_SIMD_NEON
     }
 
     TEST_F(ScriptCanvasUnitTestTransformFunctions, FromRotation_Call_GetExpectedResult)
@@ -66,19 +74,31 @@ namespace ScriptCanvasUnitTest
     TEST_F(ScriptCanvasUnitTestTransformFunctions, GetRight_Call_GetExpectedResult)
     {
         auto actualResult = TransformFunctions::GetRight(AZ::Transform::CreateIdentity(), 1);
+#if AZ_TRAIT_USE_PLATFORM_SIMD_NEON
+        EXPECT_THAT(actualResult, IsClose(AZ::Vector3(1, 0, 0)));
+#else
         EXPECT_EQ(actualResult, AZ::Vector3(1, 0, 0));
+#endif // AZ_TRAIT_USE_PLATFORM_SIMD_NEON
     }
 
     TEST_F(ScriptCanvasUnitTestTransformFunctions, GetForward_Call_GetExpectedResult)
     {
         auto actualResult = TransformFunctions::GetForward(AZ::Transform::CreateIdentity(), 1);
+#if AZ_TRAIT_USE_PLATFORM_SIMD_NEON
+        EXPECT_THAT(actualResult, IsClose(AZ::Vector3(0, 1, 0)));
+#else
         EXPECT_EQ(actualResult, AZ::Vector3(0, 1, 0));
+#endif // AZ_TRAIT_USE_PLATFORM_SIMD_NEON
     }
 
     TEST_F(ScriptCanvasUnitTestTransformFunctions, GetUp_Call_GetExpectedResult)
     {
         auto actualResult = TransformFunctions::GetUp(AZ::Transform::CreateIdentity(), 1);
+#if AZ_TRAIT_USE_PLATFORM_SIMD_NEON
+        EXPECT_THAT(actualResult, IsClose(AZ::Vector3(0, 0, 1)));
+#else
         EXPECT_EQ(actualResult, AZ::Vector3(0, 0, 1));
+#endif // AZ_TRAIT_USE_PLATFORM_SIMD_NEON
     }
 
     TEST_F(ScriptCanvasUnitTestTransformFunctions, GetTranslation_Call_GetExpectedResult)

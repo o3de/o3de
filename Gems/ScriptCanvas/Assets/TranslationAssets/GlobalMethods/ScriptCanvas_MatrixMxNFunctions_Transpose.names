@@ -1,0 +1,36 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_MatrixMxNFunctions_Transpose",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "Transpose"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_MatrixMxNFunctions_Transpose",
+                    "details": {
+                        "name": "Transpose"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{B751D885-87D0-40BF-A6B3-48EFF0147AFA}",
+                            "details": {
+                                "name": "Source"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{B751D885-87D0-40BF-A6B3-48EFF0147AFA}",
+                            "details": {
+                                "name": "Matrix MxN"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

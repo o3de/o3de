@@ -25,7 +25,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
     class PrefabInMemorySpawnableConverter
     {
     public:
-        AZ_CLASS_ALLOCATOR(PrefabInMemorySpawnableConverter, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PrefabInMemorySpawnableConverter, AZ::SystemAllocator);
 
         ~PrefabInMemorySpawnableConverter();
 

@@ -26,7 +26,7 @@ namespace AZ::Render
 
     public:
         AZ_RTTI(SkyAtmosphereParentPass, "{3FF065BD-67B6-4D46-9589-BFAF6364D4ED}", Base);
-        AZ_CLASS_ALLOCATOR(SkyAtmosphereParentPass, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SkyAtmosphereParentPass, SystemAllocator);
 
         virtual ~SkyAtmosphereParentPass() = default;
 

@@ -13,7 +13,7 @@
 namespace UnitTest
 {
     class RangesTestFixture
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {};
 
     struct RangeLikeCustomizationPoint {};

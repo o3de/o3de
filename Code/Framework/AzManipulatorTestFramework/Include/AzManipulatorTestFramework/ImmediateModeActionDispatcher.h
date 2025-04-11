@@ -64,6 +64,8 @@ namespace AzManipulatorTestFramework
         void MouseLButtonUpImpl() override;
         void MouseMButtonDownImpl() override;
         void MouseMButtonUpImpl() override;
+        void MouseRButtonDownImpl() override;
+        void MouseRButtonUpImpl() override;
         void MouseLButtonDoubleClickImpl() override;
         void MousePositionImpl(const AzFramework::ScreenPoint& position) override;
         void KeyboardModifierDownImpl(KeyboardModifier keyModifier) override;

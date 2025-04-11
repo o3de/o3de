@@ -13,6 +13,7 @@
 #include <AzCore/IO/Path/Path.h>
 #include <utilities/IPathConversion.h>
 #include <native/AssetManager/assetScanFolderInfo.h>
+#include <AssetDatabase/AssetDatabaseConnection.h>
 
 namespace AssetProcessor
 {
@@ -34,8 +35,10 @@ namespace AssetProcessor
 
         explicit SourceAssetReference(AZ::IO::PathView absolutePath);
 
-        SourceAssetReference(AZ::s64 scanFolderId, AZ::IO::PathView pathRelativeToScanFolder)
-            : SourceAssetReference(AZ::Interface<IPathConversion>::Get()->GetScanFolderById(scanFolderId)->ScanPath().toUtf8().constData(), pathRelativeToScanFolder)
+        SourceAssetReference(AZ::s64 scanFolderId, AZ::IO::PathView pathRelativeToScanFolder);
+
+        SourceAssetReference(const AzToolsFramework::AssetDatabase::SourceDatabaseEntry& sourceEntry)
+            : SourceAssetReference(sourceEntry.m_scanFolderPK, sourceEntry.m_sourceName.c_str())
         {
         }
 
@@ -52,6 +55,8 @@ namespace AssetProcessor
 
         SourceAssetReference(AZ::IO::PathView scanFolderPath, AZ::IO::PathView pathRelativeToScanFolder);
 
+        SourceAssetReference(AZ::s64 scanFolderId, AZ::IO::PathView scanFolderPath, AZ::IO::PathView pathRelativeToScanFolder);
+
         AZ_DEFAULT_COPY_MOVE(SourceAssetReference);
 
         bool operator==(const SourceAssetReference& other) const;
@@ -61,9 +66,9 @@ namespace AssetProcessor
         explicit operator bool() const;
 
         bool IsValid() const;
-        AZ::IO::Path AbsolutePath() const;
-        AZ::IO::Path RelativePath() const;
-        AZ::IO::Path ScanFolderPath() const;
+        AZ::IO::FixedMaxPath AbsolutePath() const;
+        AZ::IO::FixedMaxPath RelativePath() const;
+        AZ::IO::FixedMaxPath ScanFolderPath() const;
         AZ::s64 ScanFolderId() const;
 
     private:

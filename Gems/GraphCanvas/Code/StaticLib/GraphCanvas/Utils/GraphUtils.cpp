@@ -110,7 +110,7 @@ namespace GraphCanvas
             ConnectionId m_connectionId;
         };
 
-        AZ_CLASS_ALLOCATOR(OrganizationHelper, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(OrganizationHelper, AZ::SystemAllocator);
         OrganizationHelper() = default;
 
         OrganizationHelper(const NodeId& nodeId, const AlignConfig& alignConfig, const QRectF& overallBoundingRect)

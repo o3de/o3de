@@ -46,6 +46,7 @@ namespace Multiplayer
         void DeclareStatGroup(int uniqueGroupId, const char* groupName) override;
         void DeclareStat(int uniqueGroupId, int uniqueStatId, const char* statName) override;
         void SetStat(int uniqueStatId, double value) override;
+        void IncrementStat(int uniqueStatId) override;
         //! @}
 
     private:
@@ -63,6 +64,7 @@ namespace Multiplayer
             AZStd::string m_name;
             AverageWindowType m_average;
             double m_lastValue = 0;
+            AZ::u64 m_counterValue = 0; // Used by counters.
         };
 
         //! A custom combined data structure for fast iteration and fast insertion.

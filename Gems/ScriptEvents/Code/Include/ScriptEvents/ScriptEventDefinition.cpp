@@ -145,11 +145,21 @@ namespace ScriptEvents
                 return outcome;
             }
 
-            if (method.GetName().compare(methodName) == 0)
+            int duplicateCount = 0;
+            for (auto item = m_methods.begin(); item != m_methods.end(); item++)
             {
-                return AZ::Failure(AZStd::string::format("Cannot have duplicate method names (%d: %s) make sure each method name is unique", methodIndex, methodName.c_str()));
+                if (item->GetName().compare(methodName) == 0)
+                {
+                    duplicateCount++;
+                }
+                if (duplicateCount > 1)
+                {
+                    return AZ::Failure(AZStd::string::format(
+                        "Cannot have duplicate method names (%d: %s) make sure each method name is unique",
+                        methodIndex,
+                        methodName.c_str()));
+                }
             }
-
             methodName = method.GetName();
             ++methodIndex;
 

@@ -29,13 +29,22 @@ namespace AzToolsFramework
                 const PrefabDom& endState,
                 TemplateId templateId);
         };
-        
-        //! Undo class for handling deletion of entities to a prefab template.
-        class PrefabUndoRemoveEntities
+
+        //! Undo class for handling addition of entity DOMs to a prefab template.
+        class PrefabUndoAddEntityDoms : public PrefabUndoBase
+        {
+        public:
+            explicit PrefabUndoAddEntityDoms(const AZStd::string& undoOperationName);
+
+            void Capture(const AZStd::vector<const AZ::Entity*>& entityList, TemplateId templateId);
+        };
+
+        //! Undo class for handling removal of entity DOMs to a prefab template.
+        class PrefabUndoRemoveEntityDoms
             : public PrefabUndoBase
         {
         public:
-            explicit PrefabUndoRemoveEntities(const AZStd::string& undoOperationName);
+            explicit PrefabUndoRemoveEntityDoms(const AZStd::string& undoOperationName);
 
             void Capture(const AZStd::vector<AZStd::pair<const PrefabDomValue*, AZStd::string>>& entityDomAndPathList,
                 TemplateId templateId);
@@ -47,11 +56,11 @@ namespace AzToolsFramework
         {
         public:
             AZ_RTTI(PrefabUndoEntityUpdate, "{6D60C5A6-9535-45B3-8897-E5F6382FDC93}", PrefabUndoBase);
-            AZ_CLASS_ALLOCATOR(PrefabUndoEntityUpdate, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PrefabUndoEntityUpdate, AZ::SystemAllocator);
 
             explicit PrefabUndoEntityUpdate(const AZStd::string& undoOperationName);
 
-            void Capture(const PrefabDomValue& initialState, const PrefabDomValue& endState, AZ::EntityId entity);
+            void Capture(const PrefabDomValue& initialState, const PrefabDomValue& endState, AZ::EntityId entity, bool updateCache = true);
 
             void Undo() override;
             void Redo() override;
@@ -67,6 +76,7 @@ namespace AzToolsFramework
             : public PrefabUndoBase
         {
         public:
+            AZ_CLASS_ALLOCATOR(PrefabUndoInstanceLink, AZ::SystemAllocator)
             enum class LinkStatus
             {
                 ADD,

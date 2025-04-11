@@ -44,7 +44,12 @@ namespace AZ::Debug
         //!                    Each output file will be named Performance_<Category>_<CreationTime>.json
         //! @param m_metricNames List of all the metrics that will be recorded. All metrics will be measured in Microseconds.
         //! @param onBatchCompleteCallback See comments above in OnBatchCompleteCallback declaration.
-        PerformanceCollector(const AZStd::string_view logCategory, AZStd::span<const AZStd::string_view> m_metricNames, OnBatchCompleteCallback onBatchCompleteCallback);
+        //! @param m_fileExtension The extension of the output file, to appear after "." Defaults to "json".
+        PerformanceCollector(
+            const AZStd::string_view logCategory,
+            AZStd::span<const AZStd::string_view> m_metricNames,
+            OnBatchCompleteCallback onBatchCompleteCallback,
+            const AZStd::string_view fileExtension = "json");
         ~PerformanceCollector() = default;
 
         static constexpr char LogName[] = "PerformanceCollector";
@@ -94,9 +99,11 @@ namespace AZ::Debug
         //! and performance capture for as many batches.
         void UpdateNumberOfCaptureBatches(AZ::u32 newValue);
 
-        const AZ::IO::Path& GetOutputFilePath() { return m_outputFilePath;  }
+        const AZ::IO::Path& GetOutputFilePath() const { return m_outputFilePath;  }
 
-        const AZStd::string& GetOutputDataBuffer() { return m_outputDataBuffer; }
+        const AZStd::string& GetOutputDataBuffer() const { return m_outputDataBuffer; }
+
+        const AZStd::string& GetFileExtension() const { return m_fileExtension; }
 
     private:
         //! A helper function that loops across all statistics in @m_statisticsManager
@@ -118,6 +125,7 @@ namespace AZ::Debug
         AZStd::chrono::steady_clock::time_point m_startWaitTime;
         bool m_isWaitingBeforeNextBatch = true;
         OnBatchCompleteCallback m_onBatchCompleteCallback; // A notification will be sent each time a batch of frames is performance collected.
+        AZStd::string m_fileExtension = "json";
 
         //! Only used when @m_captureType == CaptureType::LogStatistics.
         AZ::Statistics::StatisticsManager<AZStd::string> m_statisticsManager;

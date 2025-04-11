@@ -24,7 +24,7 @@ namespace Vegetation
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(SurfaceSlopeFilterConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SurfaceSlopeFilterConfig, AZ::SystemAllocator);
         AZ_RTTI(SurfaceSlopeFilterConfig, "{6CEBAF3A-2A5C-4508-A351-9613E32CF63F}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
         FilterStage m_filterStage = FilterStage::Default;

@@ -9,7 +9,7 @@
 #include <RHI/ImagePool.h>
 #include <RHI/ImagePoolResolver.h>
 #include <RHI/MemoryView.h>
-#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
+#include <RHI/Conversion.h>
 #include <Atom/RHI.Reflect/Bits.h>
 
 namespace AZ
@@ -21,7 +21,7 @@ namespace AZ
         {
         }
 
-        RHI::ResultCode ImagePoolResolver::UpdateImage(const RHI::ImageUpdateRequest& request, size_t& bytesTransferred)
+        RHI::ResultCode ImagePoolResolver::UpdateImage(const RHI::DeviceImageUpdateRequest& request, size_t& bytesTransferred)
         {
             auto* image = static_cast<Image*>(request.m_image);
             const auto& subresourceLayout = request.m_sourceSubresourceLayout;
@@ -126,6 +126,7 @@ namespace AZ
                 }
 
                 image.SetLayout(barrier.newLayout);
+                image.SetPipelineAccess({ barrierInfo.m_dstStageMask, barrier.dstAccessMask });
             }
         }
 
@@ -134,15 +135,16 @@ namespace AZ
             auto& device = static_cast<Device&>(commandList.GetDevice());
             for (const auto& packet : m_uploadPackets)
             {
-                const RHI::ImageSubresourceLayout& subresourceLayout = packet.m_subresourceLayout;
+                const RHI::DeviceImageSubresourceLayout& subresourceLayout = packet.m_subresourceLayout;
                 const uint32_t stagingRowPitch = subresourceLayout.m_bytesPerRow;
                 const uint32_t stagingSlicePitch = subresourceLayout.m_rowCount * stagingRowPitch;
 
-                RHI::CopyBufferToImageDescriptor copyDescriptor;
+                RHI::DeviceCopyBufferToImageDescriptor copyDescriptor;
                 copyDescriptor.m_sourceBuffer = packet.m_stagingBuffer.get();
                 copyDescriptor.m_sourceOffset = 0;
                 copyDescriptor.m_sourceBytesPerRow = stagingRowPitch;
                 copyDescriptor.m_sourceBytesPerImage = stagingSlicePitch;
+                copyDescriptor.m_sourceFormat = packet.m_destinationImage->GetDescriptor().m_format;
                 copyDescriptor.m_sourceSize = subresourceLayout.m_size;
                 copyDescriptor.m_destinationImage = packet.m_destinationImage;
                 copyDescriptor.m_destinationSubresource.m_mipSlice = packet.m_subresource.m_mipSlice;
@@ -151,7 +153,7 @@ namespace AZ
                 copyDescriptor.m_destinationOrigin.m_top = packet.m_offset.m_top;
                 copyDescriptor.m_destinationOrigin.m_front = packet.m_offset.m_front;
 
-                commandList.Submit(RHI::CopyItem(copyDescriptor));
+                commandList.Submit(RHI::DeviceCopyItem(copyDescriptor));
                 
                 device.QueueForRelease(packet.m_stagingBuffer);
             }
@@ -164,7 +166,7 @@ namespace AZ
             m_epiloqueBarriers.clear();
         }
 
-        void ImagePoolResolver::OnResourceShutdown(const RHI::Resource& resource)
+        void ImagePoolResolver::OnResourceShutdown(const RHI::DeviceResource& resource)
         {
             AZStd::lock_guard<AZStd::mutex> lock(m_uploadPacketsLock);
             const Image* image = static_cast<const Image*>(&resource);
@@ -183,20 +185,26 @@ namespace AZ
             m_epiloqueBarriers.erase(AZStd::remove_if(m_epiloqueBarriers.begin(), m_epiloqueBarriers.end(), predicateBarrier), m_epiloqueBarriers.end());
         }
 
-        void ImagePoolResolver::QueuePrologueTransitionBarriers(CommandList& commandList)
+        void ImagePoolResolver::QueuePrologueTransitionBarriers(CommandList& commandList, BarrierTypeFlags mask)
         {
-            EmmitBarriers(commandList, m_prologueBarriers);
+            EmmitBarriers(commandList, m_prologueBarriers, mask);
         }
 
-        void ImagePoolResolver::QueueEpilogueTransitionBarriers(CommandList& commandList)
+        void ImagePoolResolver::QueueEpilogueTransitionBarriers(CommandList& commandList, BarrierTypeFlags mask)
         {
-            EmmitBarriers(commandList, m_epiloqueBarriers);
+            EmmitBarriers(commandList, m_epiloqueBarriers, mask);
         }
 
-        void ImagePoolResolver::EmmitBarriers(CommandList& commandList, const AZStd::vector<BarrierInfo>& barriers) const
+        void ImagePoolResolver::EmmitBarriers(
+            CommandList& commandList, const AZStd::vector<BarrierInfo>& barriers, BarrierTypeFlags mask) const
         {
             for (const auto& barrierInfo : barriers)
             {
+                if (!RHI::CheckBitsAll(mask, ConvertBarrierType(VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER)))
+                {
+                    continue;
+                }
+
                 m_device.GetContext().CmdPipelineBarrier(
                     commandList.GetNativeCommandBuffer(),
                     barrierInfo.m_srcStageMask,

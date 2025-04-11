@@ -9,12 +9,13 @@
 #include <PythonSystemComponent.h>
 #include <EditorPythonBindings/EditorPythonBindingsBus.h>
 
-#include <Source/PythonCommon.h>
+#include <EditorPythonBindings/PythonCommon.h>
 #include <Source/PythonSymbolsBus.h>
-#include <pybind11/pybind11.h>
+#include <osdefs.h> // for DELIM
 #include <pybind11/embed.h>
 #include <pybind11/eval.h>
-#include <osdefs.h> // for DELIM
+#include <pybind11/pybind11.h>
+
 
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/IO/SystemFile.h>
@@ -38,13 +39,7 @@
 
 #include <AzToolsFramework/API/EditorPythonConsoleBus.h>
 #include <AzToolsFramework/API/EditorPythonScriptNotificationsBus.h>
-
-namespace Platform
-{
-    // Implemented in each different platform's implementation files, as it differs per platform.
-    bool InsertPythonBinaryLibraryPaths(AZStd::unordered_set<AZStd::string>& paths, const char* pythonPackage, const char* engineRoot);
-    AZStd::string GetPythonHomePath(const char* pythonPackage, const char* engineRoot);
-}
+#include <AzToolsFramework/API/PythonLoader.h>
 
 // this is called the first time a Python script contains "import azlmbr"
 PYBIND11_EMBEDDED_MODULE(azlmbr, m)
@@ -350,7 +345,6 @@ namespace EditorPythonBindings
             {
                 ec->Class<PythonSystemComponent>("PythonSystemComponent", "The Python interpreter")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("System"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }
@@ -495,19 +489,28 @@ namespace EditorPythonBindings
         };
 
         // The discovery order will be:
-        //   1 - engine-root/EngineAsets
-        //   2 - gems
-        //   3 - project
-        //   4 - user(dev)
+        //   1 - The python venv site-packages
+        //   2 - engine-root/EngineAsets
+        //   3 - gems
+        //   4 - project
+        //   5 - user(dev)
 
-        // 1 - engine
+        // 1 - The python venv site-packages
+        AzToolsFramework::EmbeddedPython::PythonLoader::ReadPythonEggLinkPaths(
+            AZ::Utils::GetEnginePath().c_str(),
+            [&pythonPathStack](AZ::IO::PathView path)
+            {
+                pythonPathStack.emplace_back(path.Native());
+            });
+
+        // 2 - engine
         AZ::IO::FixedMaxPath engineRoot;
         if (settingsRegistry->Get(engineRoot.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder); !engineRoot.empty())
         {
             resolveScriptPath((engineRoot / "Assets").Native());
         }
 
-        // 2 - gems
+        // 3 - gems
         AZStd::vector<AZ::IO::Path> gemSourcePaths;
         auto AppendGemPaths = [&gemSourcePaths](AZStd::string_view, AZStd::string_view gemPath)
         {
@@ -520,10 +523,10 @@ namespace EditorPythonBindings
             resolveScriptPath(gemSourcePath.Native());
         }
 
-        // 3 - project
+        // 4 - project
         resolveScriptPath(AZStd::string_view{ projectPath });
 
-        // 4 - user
+        // 5 - user
         AZStd::string assetsType;
         AZ::SettingsRegistryMergeUtils::PlatformGet(*settingsRegistry, assetsType,
             AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey, AzFramework::AssetSystem::Assets);
@@ -547,7 +550,8 @@ namespace EditorPythonBindings
             AzFramework::StringFunc::Path::Join(path.c_str(), "bootstrap.py", bootstrapPath);
             if (AZ::IO::SystemFile::Exists(bootstrapPath.c_str()))
             {
-                ExecuteByFilename(bootstrapPath);
+                [[maybe_unused]] bool success = ExecuteByFilename(bootstrapPath);
+                AZ_Assert(success, "Error while executing bootstrap script: %s", bootstrapPath.c_str());
             }
         }
     }
@@ -559,7 +563,7 @@ namespace EditorPythonBindings
         AZ::IO::FixedMaxPath engineRoot = AZ::Utils::GetEnginePath();
 
         // set PYTHON_HOME
-        AZStd::string pyBasePath = Platform::GetPythonHomePath(PY_PACKAGE, engineRoot.c_str());
+        AZStd::string pyBasePath = AzToolsFramework::EmbeddedPython::PythonLoader::GetPythonHomePath(engineRoot.c_str()).StringAsPosix();
         if (!AZ::IO::SystemFile::Exists(pyBasePath.c_str()))
         {
             AZ_Warning("python", false, "Python home path must exist! path:%s", pyBasePath.c_str());
@@ -569,12 +573,6 @@ namespace EditorPythonBindings
         AZStd::to_wstring(pyHomePath, pyBasePath);
         Py_SetPythonHome(pyHomePath.c_str());
 
-        // display basic Python information
-        AZ_TracePrintf("python", "Py_GetVersion=%s \n", Py_GetVersion());
-        AZ_TracePrintf("python", "Py_GetPath=%ls \n", Py_GetPath());
-        AZ_TracePrintf("python", "Py_GetExecPrefix=%ls \n", Py_GetExecPrefix());
-        AZ_TracePrintf("python", "Py_GetProgramFullPath=%ls \n", Py_GetProgramFullPath());
-
         PyImport_AppendInittab("azlmbr_redirect", RedirectOutput::PyInit_RedirectOutput);
         try
         {
@@ -582,9 +580,16 @@ namespace EditorPythonBindings
             Py_IsolatedFlag = 1; // -I - Also sets Py_NoUserSiteDirectory.  If removed PyNoUserSiteDirectory should be set.
             Py_IgnoreEnvironmentFlag = 1; // -E
             Py_InspectFlag = 1; // unhandled SystemExit will terminate the process unless Py_InspectFlag is set
+            Py_DontWriteBytecodeFlag = 1; // Do not generate precompiled bytecode
 
             const bool initializeSignalHandlers = true;
             pybind11::initialize_interpreter(initializeSignalHandlers);
+
+            // display basic Python information
+            AZ_Trace("python", "Py_GetVersion=%s \n", Py_GetVersion());
+            AZ_Trace("python", "Py_GetPath=%ls \n", Py_GetPath());
+            AZ_Trace("python", "Py_GetExecPrefix=%ls \n", Py_GetExecPrefix());
+            AZ_Trace("python", "Py_GetProgramFullPath=%ls \n", Py_GetProgramFullPath());
 
             // Add custom site packages after initializing the interpreter above.  Calling Py_SetPath before initialization
             // alters the behavior of the initializer to not compute default search paths. See https://docs.python.org/3/c-api/init.html#c.Py_SetPath
@@ -723,12 +728,12 @@ namespace EditorPythonBindings
         }
     }
 
-    void PythonSystemComponent::ExecuteByFilename(AZStd::string_view filename)
+    bool PythonSystemComponent::ExecuteByFilename(AZStd::string_view filename)
     {
         AZStd::vector<AZStd::string_view> args;
         AzToolsFramework::EditorPythonScriptNotificationsBus::Broadcast(
             &AzToolsFramework::EditorPythonScriptNotificationsBus::Events::OnStartExecuteByFilename, filename);
-        ExecuteByFilenameWithArgs(filename, args);
+        return ExecuteByFilenameWithArgs(filename, args);
     }
 
     bool PythonSystemComponent::ExecuteByFilenameAsTest(AZStd::string_view filename, AZStd::string_view testCase, const AZStd::vector<AZStd::string_view>& args)
@@ -740,11 +745,12 @@ namespace EditorPythonBindings
         return evalResult == Result::Okay;
     }
 
-    void PythonSystemComponent::ExecuteByFilenameWithArgs(AZStd::string_view filename, const AZStd::vector<AZStd::string_view>& args)
+    bool PythonSystemComponent::ExecuteByFilenameWithArgs(AZStd::string_view filename, const AZStd::vector<AZStd::string_view>& args)
     {
         AzToolsFramework::EditorPythonScriptNotificationsBus::Broadcast(
             &AzToolsFramework::EditorPythonScriptNotificationsBus::Events::OnStartExecuteByFilenameWithArgs, filename, args);
-        EvaluateFile(filename, args);
+        const Result result = EvaluateFile(filename, args);
+        return result == Result::Okay;
     }
 
     PythonSystemComponent::Result PythonSystemComponent::EvaluateFile(AZStd::string_view filename, const AZStd::vector<AZStd::string_view>& args)
@@ -812,6 +818,7 @@ namespace EditorPythonBindings
             const int updatePath = 1;
             PySys_SetArgvEx(argc, argv, updatePath);
 
+            Py_DontWriteBytecodeFlag = 1;
             PyCompilerFlags flags;
             flags.cf_flags = 0;
             const int bAutoCloseFile = true;

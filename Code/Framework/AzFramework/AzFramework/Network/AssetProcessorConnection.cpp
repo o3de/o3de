@@ -198,7 +198,7 @@ namespace AzFramework
             //send the connecting event
             DebugMessage("AssetProcessorConnection::ConnectThread - Sending connecting event.");
             m_connectionState = EConnectionState::Connecting;
-            EBUS_EVENT(EngineConnectionEvents::Bus, Connecting, this);
+            EngineConnectionEvents::Bus::Broadcast(&EngineConnectionEvents::Bus::Events::Connecting, this);
 
             //set the address
             AZ::AzSock::AzSocketAddress socketAddress;
@@ -270,7 +270,7 @@ namespace AzFramework
                 DebugMessage("AssetProcessorConnection::ConnectThread - Negotiation with %s:%u, Successful.", m_connectAddr.c_str(), m_port);
                 //we successfully negotiated, send the connected event
                 m_connectionState = EConnectionState::Connected;
-                EBUS_EVENT(EngineConnectionEvents::Bus, Connected, this);
+                EngineConnectionEvents::Bus::Broadcast(&EngineConnectionEvents::Bus::Events::Connected, this);
                 return;
             }
 
@@ -345,7 +345,7 @@ namespace AzFramework
 
             //set disconnecting state
             m_connectionState = EConnectionState::Disconnecting;
-            EBUS_EVENT(EngineConnectionEvents::Bus, Disconnecting, this);
+            EngineConnectionEvents::Bus::Broadcast(&EngineConnectionEvents::Bus::Events::Disconnecting, this);
 
             FlushResponseHandlers();
 
@@ -397,7 +397,7 @@ namespace AzFramework
             //set disconnected state
             DebugMessage("AssetProcessorConnection::DisconnectThread - All threads joined, Setting Disconnected state.");
             m_connectionState = EConnectionState::Disconnected;
-            EBUS_EVENT(EngineConnectionEvents::Bus, Disconnected, this);
+            EngineConnectionEvents::Bus::Broadcast(&EngineConnectionEvents::Bus::Events::Disconnected, this);
 
             DebugMessage("AssetProcessorConnection::DisconnectThread - crossing the isBusyDisconnecting line");
             // once we cross this line, we would need to restart the disconnect thread in order to properly disconnect
@@ -458,7 +458,7 @@ namespace AzFramework
             {
                 m_negotiationFailed = true;
                 DebugMessage("AssetProcessorConnection::NegotateWithServer - negotiation invalid.Version Mismatch");
-                EBUS_EVENT(AssetSystemConnectionNotificationsBus, NegotiationFailed);
+                AssetSystemConnectionNotificationsBus::Broadcast(&AssetSystemConnectionNotificationsBus::Events::NegotiationFailed);
                 return false;
             }
 
@@ -474,7 +474,7 @@ namespace AzFramework
             {
                 m_negotiationFailed = true;
                 DebugMessage("AssetProcessorConnection::NegotiateWithServer - negotiation invalid");
-                EBUS_EVENT(AssetSystemConnectionNotificationsBus, NegotiationFailed);
+                AssetSystemConnectionNotificationsBus::Broadcast(&AssetSystemConnectionNotificationsBus::Events::NegotiationFailed);
                 return false;
             }
 
@@ -542,7 +542,7 @@ namespace AzFramework
             {
                 m_negotiationFailed = true;
                 DebugMessage("AssetProcessorConnection::NegotiateWithServer - negotiation invalid.Version Mismatch");
-                EBUS_EVENT(AssetSystemConnectionNotificationsBus, NegotiationFailed);
+                AssetSystemConnectionNotificationsBus::Broadcast(&AssetSystemConnectionNotificationsBus::Events::NegotiationFailed);
                 return false;
             }
 
@@ -558,7 +558,7 @@ namespace AzFramework
                 AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(100));    //Sleeping to make sure that the message get delivered to AP before socket get disconnected
                 m_negotiationFailed = true;
                 DebugMessage("AssetProcessorConnection::NegotiationWithClient - negotiation invalid");
-                EBUS_EVENT(AssetSystemConnectionNotificationsBus, NegotiationFailed);
+                AssetSystemConnectionNotificationsBus::Broadcast(&AssetSystemConnectionNotificationsBus::Events::NegotiationFailed);
                 return false;
             }
 
@@ -573,7 +573,7 @@ namespace AzFramework
             {
                 m_negotiationFailed = true;
                 DebugMessage("AssetProcessorConnection::NegotiationWithClient - negotiation invalid");
-                EBUS_EVENT(AssetSystemConnectionNotificationsBus, NegotiationFailed);
+                AssetSystemConnectionNotificationsBus::Broadcast(&AssetSystemConnectionNotificationsBus::Events::NegotiationFailed);
                 return false;
             }
 
@@ -719,7 +719,7 @@ namespace AzFramework
             }
 
             m_connectionState = EConnectionState::Listening;
-            EBUS_EVENT(EngineConnectionEvents::Bus, Listening, this);
+            EngineConnectionEvents::Bus::Broadcast(&EngineConnectionEvents::Bus::Events::Listening, this);
 
             // Listen for one connection
             result = AZ::AzSock::Listen(m_socket, 1);
@@ -787,7 +787,7 @@ namespace AzFramework
                 }
 
                 m_connectionState = EConnectionState::Connected;
-                EBUS_EVENT(EngineConnectionEvents::Bus, Connected, this);
+                EngineConnectionEvents::Bus::Broadcast(&EngineConnectionEvents::Bus::Events::Connected, this);
                 return;
             }
 

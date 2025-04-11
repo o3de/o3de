@@ -37,7 +37,7 @@ def NodePalette_HappyPath_ClearSelection():
     #Preconditions
     from editor_python_test_tools.utils import Report
     import azlmbr.legacy.general as general
-    from editor_python_test_tools.QtPyO3DEEditor import QtPyO3DEEditor
+    from editor_python_test_tools.QtPy.QtPyO3DEEditor import QtPyO3DEEditor
     from consts.scripting import (NODE_STRING_TO_NUMBER)
 
     general.idle_enable(True)

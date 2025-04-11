@@ -1,0 +1,35 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#include "ReflectionScreenSpaceRayTracingCommon.azsli"
+
+[shader("miss")]
+void Miss(inout PayloadData payload)
+{
+    payload.m_hitT = -1.0f;
+
+    if (payload.m_cameraTrace)
+    {
+        return;
+    }
+
+    if (IsRayTracingFallbackEnabled())
+    {
+        // query mip0 of the global cubemap for the fallback color
+        float3 sampleDir = mul(WorldRayDirection(), (float3x3)SceneSrg::m_cubemapRotationMatrix);
+        payload.m_fallbackColor = SceneSrg::m_specularEnvMap.SampleLevel(SceneSrg::m_samplerEnv, GetCubemapCoords(sampleDir), 0.0f).rgb;
+    
+        // apply exposure
+        float exposureFactor = pow(2.0, SceneSrg::m_cubemapExposure);
+        payload.m_fallbackColor *= exposureFactor;
+    }
+}

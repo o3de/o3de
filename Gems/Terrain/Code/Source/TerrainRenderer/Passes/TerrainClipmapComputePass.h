@@ -31,7 +31,7 @@ namespace Terrain
 
     public:
         AZ_RTTI(Terrain::TerrainMacroClipmapGenerationPass, "{E1F7C18F-E77A-496E-ABD7-1EC7D75AA4B0}", AZ::RPI::ComputePass);
-        AZ_CLASS_ALLOCATOR(Terrain::TerrainMacroClipmapGenerationPass, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Terrain::TerrainMacroClipmapGenerationPass, AZ::SystemAllocator);
         virtual ~TerrainMacroClipmapGenerationPass() = default;
 
         static AZ::RPI::Ptr<TerrainMacroClipmapGenerationPass> Create(const AZ::RPI::PassDescriptor& descriptor);
@@ -65,7 +65,7 @@ namespace Terrain
 
     public:
         AZ_RTTI(Terrain::TerrainDetailClipmapGenerationPass, "{BD504E93-87F4-484E-A17A-E337C3F2279C}", AZ::RPI::ComputePass);
-        AZ_CLASS_ALLOCATOR(Terrain::TerrainDetailClipmapGenerationPass, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Terrain::TerrainDetailClipmapGenerationPass, AZ::SystemAllocator);
         virtual ~TerrainDetailClipmapGenerationPass() = default;
 
         static AZ::RPI::Ptr<TerrainDetailClipmapGenerationPass> Create(const AZ::RPI::PassDescriptor& descriptor);

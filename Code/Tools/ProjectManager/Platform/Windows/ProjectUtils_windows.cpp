@@ -22,6 +22,21 @@ namespace O3DE::ProjectManager
 {
     namespace ProjectUtils
     {
+        bool AppendToPath(QString newPath)
+        {
+            QString pathEnv = qEnvironmentVariable("Path");
+            QStringList pathEnvList = pathEnv.split(";");
+            if (!pathEnvList.contains(newPath, Qt::CaseInsensitive))
+            {
+                pathEnv += ";" + newPath;
+                if (!qputenv("Path", pathEnv.toStdString().c_str()))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
         AZ::Outcome<void, QString> SetupCommandLineProcessEnvironment()
         {
             // Use the engine path to insert a path for cmake
@@ -37,14 +52,20 @@ namespace O3DE::ProjectManager
             // This also takes affect for all child processes.
             QDir cmakePath(engineInfo.m_path);
             cmakePath.cd("cmake/runtime/bin");
-            QString pathEnv = qEnvironmentVariable("Path");
-            QStringList pathEnvList = pathEnv.split(";");
-            if (!pathEnvList.contains(cmakePath.path()))
+            if (!AppendToPath(cmakePath.path()))
             {
-                pathEnv += ";" + cmakePath.path();
-                if (!qputenv("Path", pathEnv.toStdString().c_str()))
+                return AZ::Failure(QObject::tr("Failed to append the path to CMake to the PATH environment variable"));
+            }
+
+            // if we don't have ninja, use one that might come with the installer
+            auto ninjaQueryResult = ExecuteCommandResult("ninja", QStringList{ "--version" });
+            if (!ninjaQueryResult.IsSuccess())
+            {
+                QDir ninjaPath(engineInfo.m_path);
+                ninjaPath.cd("ninja");
+                if (!AppendToPath(ninjaPath.path()))
                 {
-                    return AZ::Failure(QObject::tr("Failed to set Path environment variable"));
+                    return AZ::Failure(QObject::tr("Failed to append the path to ninja to the PATH environment variable"));
                 }
             }
 
@@ -67,7 +88,28 @@ namespace O3DE::ProjectManager
             return AZ::Success(QString{ ProjectCMakeCommand });
         }
 
-        AZ::Outcome<QString, QString> FindSupportedCompilerForPlatform()
+        AZ::Outcome<QString, QString> FindSupportedNinja()
+        {
+            // Validate that cmake is installed and is in the path
+            auto ninjaQueryResult = ExecuteCommandResult("ninja", QStringList{ "--version" });
+            if (!ninjaQueryResult.IsSuccess())
+            {
+                return AZ::Failure(
+                    QObject::tr("Ninja.exe Build System was not found in the PATH environment variable.<br>"
+                                "Ninja is used to prepare script-only projects and avoid C++ compilation.<br>"
+                                "You can either automatically install it with the Windows Package Manager, or manually download it "
+                                "from the <a href='https://ninja-build.org/'>official Ninja website</a>.<br>"
+                                "To automatically install it using the Windows Package Manager, use this command in a command window like Powershell:\n\n"
+                                "<pre>winget install Ninja-build.Ninja</pre><br><br>"
+                                "After installation, you may have to restart O3DE's Project Manager.<br><br>"
+                                "Refer to the <a href='https://o3de.org/docs/welcome-guide/setup/requirements/#cmake'>O3DE "
+                                "requirements</a> for more information."));
+            }
+
+            return AZ::Success(QString{ "Ninja" });
+        }
+
+        AZ::Outcome<QString, QString> FindSupportedCompilerForPlatform(const ProjectInfo& projectInfo)
         {
             // Validate that cmake is installed
             auto cmakeProcessEnvResult = SetupCommandLineProcessEnvironment();
@@ -79,6 +121,14 @@ namespace O3DE::ProjectManager
             if (auto cmakeVersionQueryResult = FindSupportedCMake(); !cmakeVersionQueryResult.IsSuccess())
             {
                 return cmakeVersionQueryResult;
+            }
+
+            if (projectInfo.m_isScriptOnly)
+            {
+                if (auto ninjaVersionQueryResult = FindSupportedNinja(); !ninjaVersionQueryResult.IsSuccess())
+                {
+                    return ninjaVersionQueryResult;
+                }
             }
 
             // Validate that the minimal version of visual studio is installed

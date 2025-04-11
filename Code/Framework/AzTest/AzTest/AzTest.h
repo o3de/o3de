@@ -488,15 +488,3 @@ int main(int argc, char** argv)                                                 
             return unitTestMain.ReturnCode();                                       \
         }                                                                           \
     } while (0); // safe multi-line macro - creates a single statement
-
-// Avoid problems with new/delete when AZ allocators are not ready or properly un/initialized.
-#define AZ_TEST_CLASS_ALLOCATOR(Class_)                                 \
-    void* operator new (size_t size)                                    \
-    {                                                                   \
-        return AZ_OS_MALLOC(size, AZStd::alignment_of<Class_>::value);  \
-    }                                                                   \
-    void operator delete(void* ptr)                                     \
-    {                                                                   \
-        AZ_OS_FREE(ptr);                                                \
-    }
-

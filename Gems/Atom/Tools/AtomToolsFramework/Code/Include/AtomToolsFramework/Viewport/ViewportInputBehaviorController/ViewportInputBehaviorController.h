@@ -26,7 +26,7 @@ namespace AtomToolsFramework
     {
     public:
         AZ_TYPE_INFO(ViewportInputBehaviorController, "{569A0544-7654-4DCE-8156-00A71B408374}");
-        AZ_CLASS_ALLOCATOR(ViewportInputBehaviorController, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ViewportInputBehaviorController, AZ::SystemAllocator);
         AZ_DISABLE_COPY_MOVE(ViewportInputBehaviorController);
 
         using KeyMask = uint32_t;

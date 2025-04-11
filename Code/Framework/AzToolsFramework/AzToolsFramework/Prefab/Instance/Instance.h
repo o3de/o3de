@@ -64,7 +64,7 @@ namespace AzToolsFramework
         class Instance
         {
         public:
-            AZ_CLASS_ALLOCATOR(Instance, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Instance, AZ::SystemAllocator);
             AZ_RTTI(Instance, "{D4219332-A648-4285-9CA6-B7F095987CD3}");
 
             friend class AzToolsFramework::PrefabEditorEntityOwnershipService;
@@ -97,6 +97,10 @@ namespace AzToolsFramework
             //! AzCore Reflection.
             //! @param context reflection context.
             static void Reflect(AZ::ReflectContext* context);
+
+            //! Whether caching the instance's dom should be enabled by default.
+            //! Setting can be changed for individual instances using EnableDomCaching.
+            inline static bool s_DomCachingEnabledDefault = false;
 
             //! Gets template id.
             //! @return Template id of the instance.
@@ -177,7 +181,8 @@ namespace AzToolsFramework
 
             //! Resets the instance to an initial state.
             //! It unregisters the instance, entities and nested instances.
-            void Reset();
+            //! @param forReuse If true, the instance can be reused after reset, otherwise it is partially destroyed
+            void Reset(bool forReuse=true);
 
             //! Gets the aliases for the entities in the Instance DOM.
             //! @return The list of EntityAliases.
@@ -315,10 +320,12 @@ namespace AzToolsFramework
             //! @}
 
             //! Getter and setter for cached instance DOM.
+            //! Note that caching the DOM is disabled by default and needs to be enabled per instance.
             //! @{
             PrefabDomConstReference GetCachedInstanceDom() const;
             PrefabDomReference GetCachedInstanceDom();
             void SetCachedInstanceDom(PrefabDomValueConstReference instanceDom);
+            void EnableDomCaching(bool enableDomCaching);
             //! @}
 
         private:
@@ -408,6 +415,10 @@ namespace AzToolsFramework
 
             // Defines entity id and instance relationship. The default relationship is one-to-one.
             EntityIdInstanceRelationship m_entityIdInstanceRelationship = DefaultEntityIdInstanceRelationship;
+
+            // Whether the instance should store a cache of its DOM or not.
+            // Default value is set by s_DomCachingEnabledDefault in the constructor.
+            bool m_isDomCachingEnabled = false;
         };
     } // namespace Prefab
 } // namespace AzToolsFramework

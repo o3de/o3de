@@ -9,6 +9,7 @@
 
 #include <AzCore/base.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/Settings/CommandLineParser.h>
 #include <AzCore/std/containers/span.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/fixed_string.h>
@@ -19,19 +20,35 @@ namespace AZ
 {
     /**
     * Given a commandline, this allows uniform parsing of it into parameter values and extra values.
-    * When parsed, the commandline becomes a series of "switches" or "extra values"
-    * For example, a switch may be specified as either 
-    *      /switchName=value1[,value2...]
-    *      /switchname value[,value2...]
-    *      --switchname value[,value2...]
+    * When parsed, the commandline becomes a series of "options" or "extra values"
+    * For example, a option may be specified as either
+    *      /optionName=value1[,value2...]
+    *      /optionname value[,value2...]
+    *      --optionname value[,value2...]
     *    or other combinations of the above
-    * You may NOT use a colon as a switch separator since file names may easily contain them.
-    * any additional parameters which are not associated with any switch are considered "misc values"
+    * You may NOT use a colon as a option separator since file names may easily contain them.
+    * any additional parameters which are not associated with any option are considered "misc values"
+    *
+    * NOTE: "flags" options which doesn't specify a value need care when using
+    * This is because the Parse() methods don't accept external metadata indicating actions to perform
+    * on flag arguments unlike python argparse
+    * https://docs.python.org/3/library/argparse.html#action
+    * For example the command line of
+    * `app.exe --verbose <PositionalArg>` would parse <PositionalArg> as the value of the "verbose" flag
+    * The workaround is to either
+    * 1. specify the flag options at the end of the command line
+    * `app.exe <PositionalArg> --verbose`
+    * 2. specify second option right after the previous flag option with and add a value to it
+    * `app.exe --verbose --count 2 <PositionalArg>`
+    * 3. specify a value for the 'verbose'option
+    *     here only the 1 is parse as part of the verbose option, the <PositionalArg>
+    *     separated by whitespace is a new argument
+    * `app.exe --verbose 1 <PositionalArg>`  or `app.exe --verbose=1 <PositionalArg>`
     */
     class CommandLine
     {
     public:
-        AZ_CLASS_ALLOCATOR(CommandLine, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CommandLine, AZ::SystemAllocator);
 
         using ParamContainer = AZStd::vector<AZStd::string>;
 
@@ -45,9 +62,9 @@ namespace AZ
         CommandLine();
 
         /**
-         * Initializes a CommandLine instance which uses the provided commandLineOptionPreix for parsing switches
+         * Initializes a CommandLine instance which uses the provided commandLineOptionPrefix for parsing switches
          */
-        CommandLine(AZStd::string_view commandLineOptionPrefix);
+        CommandLine(Settings::CommandLineOptionPrefixSpan optionPrefixes);
         /**
         * Construct a command line parser.
         * It will load parameters from the given ARGC/ARGV parameters instead of process command line.
@@ -132,12 +149,12 @@ namespace AZ
         auto crend() const -> ArgumentVector::const_reverse_iterator;
 
     private:
-        void AddArgument(AZStd::string_view currentArg, AZStd::string& currentSwitch);
-        void ParseOptionArgument(AZStd::string_view newOption, AZStd::string_view newValue, CommandArgument* inProgressArgument);
+        void ParseArgument(AZStd::string_view newOption, AZStd::string_view newValue);
 
         ArgumentVector m_allValues;
 
-        inline static constexpr size_t MaxCommandOptionPrefixes = 8;
-        AZStd::fixed_string<MaxCommandOptionPrefixes> m_commandLineOptionPrefix;
+        // Stores the option prefixes which is used to configure the CommandLineParserSettings
+        // to determine what kind of tokens are treated as command line options
+        Settings::CommandLineOptionPrefixArray m_optionPrefixes;
     };
 }

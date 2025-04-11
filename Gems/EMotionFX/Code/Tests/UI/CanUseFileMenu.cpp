@@ -72,7 +72,7 @@ namespace EMotionFX
 
         QString GetAssetSaveFolder() const
         {
-            auto testAssetsPath = AZ::IO::Path(GetEMotionFX().GetAssetCacheFolder()) / "TmpTestAssets";
+            auto testAssetsPath = AZ::IO::Path(GetEMotionFX().GetAssetCacheFolder()) / "tmptestassets";
             QString dataDir = QString::fromUtf8(testAssetsPath.c_str(), aznumeric_cast<int>(testAssetsPath.Native().size()));
 
             if (!QDir(dataDir).exists())
@@ -673,11 +673,7 @@ namespace EMotionFX
             QString m_lastSavedWorkspaceFilename;
     };
 
-#if AZ_TRAIT_DISABLE_FAILED_EMOTION_FX_EDITOR_TESTS
-    TEST_F(CanUseFileMenuUIFixture, DISABLED_CanUseFileMenu)
-#else
     TEST_F(CanUseFileMenuUIFixture, CanUseFileMenu)
-#endif // AZ_TRAIT_DISABLE_FAILED_EMOTION_FX_EDITOR_TESTS
     {
         RecordProperty("test_case_id", "C1698601");
         RecordProperty("test_case_id", "C16302183");

@@ -17,7 +17,7 @@ namespace AZ::Prefab
     {
     public:
         AZ_RTTI(AZ::Prefab::PrefabBuilderModule, "{088B2BA8-9F19-469C-A0B5-1DD523879C70}", Module);
-        AZ_CLASS_ALLOCATOR(PrefabBuilderModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PrefabBuilderModule, AZ::SystemAllocator);
 
         PrefabBuilderModule()
             : Module()
@@ -30,4 +30,8 @@ namespace AZ::Prefab
     };
 } // namespace AZ::Prefab
 
-AZ_DECLARE_MODULE_CLASS(Gem_Prefab_PrefabBuilder, AZ::Prefab::PrefabBuilderModule)
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME, _Builders), AZ::Prefab::PrefabBuilderModule)
+#else
+AZ_DECLARE_MODULE_CLASS(Gem_PrefabBuilder_Builders, AZ::Prefab::PrefabBuilderModule)
+#endif

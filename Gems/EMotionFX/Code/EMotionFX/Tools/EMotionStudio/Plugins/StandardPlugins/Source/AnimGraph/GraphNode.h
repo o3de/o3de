@@ -10,7 +10,6 @@
 
 #include <MCore/Source/StandardHeaders.h>
 #include <AzCore/std/containers/vector.h>
-#include <MCore/Source/Color.h>
 #include <MCore/Source/StringIdPool.h>
 #include "../StandardPluginsConfig.h"
 #include <QItemSelectionModel>
@@ -154,7 +153,7 @@ namespace EMStudio
 
         bool GetIsInside(const QPoint& globalPoint) const;
         bool GetIsSelected() const;
-        
+
         void MoveRelative(const QPoint& deltaMove);
         void MoveAbsolute(const QPoint& newUpperLeft);
         virtual void Update(const QRect& visibleRect, const QPoint& mousePos);

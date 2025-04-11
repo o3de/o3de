@@ -19,22 +19,22 @@ namespace LegacyFramework
     namespace CustomMenusCommon
     {
         const AZ::Crc32 WorldEditor::Application = AZ_CRC_CE("World Editor");
-        const AZ::Crc32 WorldEditor::File = AZ_CRC("World Editor - File", 0x4b085508);
-        const AZ::Crc32 WorldEditor::Debug = AZ_CRC("World Editor - Debug", 0x7f0e4892);
-        const AZ::Crc32 WorldEditor::Edit = AZ_CRC("World Editor - Edit", 0x46a2bd02);
-        const AZ::Crc32 WorldEditor::Build = AZ_CRC("World Editor - Build", 0xae0bfdee);
+        const AZ::Crc32 WorldEditor::File = AZ_CRC_CE("World Editor - File");
+        const AZ::Crc32 WorldEditor::Debug = AZ_CRC_CE("World Editor - Debug");
+        const AZ::Crc32 WorldEditor::Edit = AZ_CRC_CE("World Editor - Edit");
+        const AZ::Crc32 WorldEditor::Build = AZ_CRC_CE("World Editor - Build");
 
         const AZ::Crc32 LUAEditor::Application = AZ_CRC_CE("LUAEditor");
-        const AZ::Crc32 LUAEditor::File = AZ_CRC("LUAEditor - File", 0xcf589de3);
-        const AZ::Crc32 LUAEditor::Edit = AZ_CRC("LUAEditor - Edit", 0xc2f275e9);
-        const AZ::Crc32 LUAEditor::View = AZ_CRC("LUAEditor - View", 0xbd3a007d);
-        const AZ::Crc32 LUAEditor::Debug = AZ_CRC("LUAEditor - Debug", 0x485223aa);
-        const AZ::Crc32 LUAEditor::SourceControl = AZ_CRC("LUAEditor - SourceControl", 0x7a3d336c);
-        const AZ::Crc32 LUAEditor::Options = AZ_CRC("LUAEditor - Options", 0x2f44057c);
+        const AZ::Crc32 LUAEditor::File = AZ_CRC_CE("LUAEditor - File");
+        const AZ::Crc32 LUAEditor::Edit = AZ_CRC_CE("LUAEditor - Edit");
+        const AZ::Crc32 LUAEditor::View = AZ_CRC_CE("LUAEditor - View");
+        const AZ::Crc32 LUAEditor::Debug = AZ_CRC_CE("LUAEditor - Debug");
+        const AZ::Crc32 LUAEditor::SourceControl = AZ_CRC_CE("LUAEditor - SourceControl");
+        const AZ::Crc32 LUAEditor::Options = AZ_CRC_CE("LUAEditor - Options");
 
-        const AZ::Crc32 Viewport::Layout = AZ_CRC("Viewport - Layout", 0x0d57aea6);
-        const AZ::Crc32 Viewport::Grid = AZ_CRC("Viewport - Grid", 0x005b038a);
-        const AZ::Crc32 Viewport::View = AZ_CRC("Viewport - View", 0xd0867133);
+        const AZ::Crc32 Viewport::Layout = AZ_CRC_CE("Viewport - Layout");
+        const AZ::Crc32 Viewport::Grid = AZ_CRC_CE("Viewport - Grid");
+        const AZ::Crc32 Viewport::View = AZ_CRC_CE("Viewport - View");
     }
 
     class CustomMenusComponent
@@ -73,7 +73,8 @@ namespace LegacyFramework
     {
         CustomMenusMessages::Bus::Handler::BusConnect();
 
-        EBUS_EVENT(LegacyFramework::CustomMenusRegistration::Bus, RegisterMenuEntries);
+        LegacyFramework::CustomMenusRegistration::Bus::Broadcast(
+            &LegacyFramework::CustomMenusRegistration::Bus::Events::RegisterMenuEntries);
     }
 
     void CustomMenusComponent::Deactivate()
@@ -92,7 +93,8 @@ namespace LegacyFramework
 
         if (hotkeyId != AZ::Crc32())
         {
-            EBUS_EVENT(AzToolsFramework::FrameworkMessages::Bus, RegisterActionToHotkey, hotkeyId, action);
+            AzToolsFramework::FrameworkMessages::Bus::Broadcast(
+                &AzToolsFramework::FrameworkMessages::Bus::Events::RegisterActionToHotkey, hotkeyId, action);
         }
     }
 

@@ -27,7 +27,7 @@ namespace AzFramework
         : public AZ::Data::AssetData
     {
     public:
-        AZ_CLASS_ALLOCATOR(Spawnable, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Spawnable, AZ::SystemAllocator);
         AZ_RTTI(AzFramework::Spawnable, "{855E3021-D305-4845-B284-20C3F7FDF16B}", AZ::Data::AssetData);
 
         // The order is important for sorting in the SpawnableAssetHandler.
@@ -51,7 +51,7 @@ namespace AzFramework
         //! An entity alias redirects the spawning of an entity to another entity, possibly in another spawnable.
         struct EntityAlias
         {
-            AZ_CLASS_ALLOCATOR(EntityAlias, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(EntityAlias, AZ::SystemAllocator);
             AZ_TYPE_INFO(AzFramework::Spawnable::EntityAlias, "{C8D0C5BC-1F0B-4572-98C1-73B2CA8C9356}");
 
             bool HasLowerIndex(const EntityAlias& other) const;
@@ -69,27 +69,43 @@ namespace AzFramework
         using EntityList = AZStd::vector<AZStd::unique_ptr<AZ::Entity>>;
         using EntityAliasList = AZStd::vector<EntityAlias>;
 
-    private:
-        class EntityAliasVisitorBase
+        class EntityAliasConstVisitor
         {
         protected:
-            bool IsValid(const EntityAliasList* aliases) const;
-
-            bool HasAliases(const EntityAliasList* aliases) const;
-            bool AreAllSpawnablesReady(const EntityAliasList* aliases) const;
-
-            EntityAliasList::const_iterator begin(const EntityAliasList* aliases) const;
-            EntityAliasList::const_iterator end(const EntityAliasList* aliases) const;
-            EntityAliasList::const_iterator cbegin(const EntityAliasList* aliases) const;
-            EntityAliasList::const_iterator cend(const EntityAliasList* aliases) const;
-
             using ListTargetSpawanblesCallback = AZStd::function<void(const AZ::Data::Asset<Spawnable>& targetSpawnable)>;
-            void ListTargetSpawnables(const EntityAliasList* aliases, const ListTargetSpawanblesCallback& callback) const;
-            void ListTargetSpawnables(const EntityAliasList* aliases, AZ::Crc32 tag, const ListTargetSpawanblesCallback& callback) const;
+
+        public:
+            EntityAliasConstVisitor(const Spawnable& owner, const EntityAliasList* entityAliasList);
+            ~EntityAliasConstVisitor();
+
+            EntityAliasConstVisitor(EntityAliasConstVisitor&& rhs);
+            EntityAliasConstVisitor& operator=(EntityAliasConstVisitor&& rhs);
+
+            EntityAliasConstVisitor(const EntityAliasConstVisitor& rhs) = delete;
+            EntityAliasConstVisitor& operator=(const EntityAliasConstVisitor& rhs) = delete;
+
+            //! Checks if the visitor was able to retrieve data. This needs to be checked before calling any other functions.
+            bool IsValid() const;
+
+            bool HasAliases() const;
+            bool AreAllSpawnablesReady() const;
+
+            // Modification of aliases is limited to specific changes that can only be done through the available modification functions.
+            // For this reason access through iterators is limited to unmodifiable constant iterators.
+            EntityAliasList::const_iterator begin() const;
+            EntityAliasList::const_iterator end() const;
+            EntityAliasList::const_iterator cbegin() const;
+            EntityAliasList::const_iterator cend() const;
+
+            void ListTargetSpawnables(const ListTargetSpawanblesCallback& callback) const;
+            void ListTargetSpawnables(AZ::Crc32 tag, const ListTargetSpawanblesCallback& callback) const;
+
+        protected:
+            const Spawnable& m_owner;
+            const EntityAliasList* m_entityAliasList{};
         };
 
-    public:
-        class EntityAliasVisitor final : public EntityAliasVisitorBase
+        class EntityAliasVisitor final : public EntityAliasConstVisitor
         {
         public:
             EntityAliasVisitor(Spawnable& owner, EntityAliasList* m_entityAliasList);
@@ -100,23 +116,6 @@ namespace AzFramework
 
             EntityAliasVisitor(const EntityAliasVisitor& rhs) = delete;
             EntityAliasVisitor& operator=(const EntityAliasVisitor& rhs) = delete;
-
-            //! Checks if the visitor was able to retrieve data. This needs to be checked before calling any other functions.
-            bool IsValid() const;
-
-            bool HasAliases() const;
-            bool AreAllSpawnablesReady() const;
-
-            // Modification of aliases is limited to specific changes that can only be done through the available modification functions.
-            // For this reason access through iterators is limited to unmodifiable constant iterators.
-
-            EntityAliasList::const_iterator begin() const;
-            EntityAliasList::const_iterator end() const;
-            EntityAliasList::const_iterator cbegin() const;
-            EntityAliasList::const_iterator cend() const;
-            
-            void ListTargetSpawnables(const ListTargetSpawanblesCallback& callback) const;
-            void ListTargetSpawnables(AZ::Crc32 tag, const ListTargetSpawanblesCallback& callback) const;
 
             void AddAlias(
                 AZ::Data::Asset<Spawnable> targetSpawnable,
@@ -143,34 +142,9 @@ namespace AzFramework
             void Optimize();
 
         private:
-            Spawnable& m_owner;
-            EntityAliasList* m_entityAliasList{ nullptr };
+            EntityAliasList* GetEntityAliasList() const;
+
             bool m_dirty{ false };
-        };
-
-        class EntityAliasConstVisitor final : public EntityAliasVisitorBase
-        {
-        public:
-            EntityAliasConstVisitor(const Spawnable& owner, const EntityAliasList* entityAliasList);
-            ~EntityAliasConstVisitor();
-
-            //! Checks if the visitor was able to retrieve data. This needs to be checked before calling any other functions.
-            bool IsValid() const;
-
-            bool HasAliases() const;
-            bool AreAllSpawnablesReady() const;
-
-            EntityAliasList::const_iterator begin() const;
-            EntityAliasList::const_iterator end() const;
-            EntityAliasList::const_iterator cbegin() const;
-            EntityAliasList::const_iterator cend() const;
-
-            void ListTargetSpawnables(const ListTargetSpawanblesCallback& callback) const;
-            void ListTargetSpawnables(AZ::Crc32 tag, const ListTargetSpawanblesCallback& callback) const;
-
-        private:
-            const Spawnable& m_owner;
-            const EntityAliasList* m_entityAliasList;
         };
 
         inline static constexpr const char* DefaultMainSpawnableName = "Root";

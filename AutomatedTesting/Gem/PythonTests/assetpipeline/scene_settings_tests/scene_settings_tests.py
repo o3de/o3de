@@ -47,6 +47,54 @@ class TestAutomation(EditorTestSuite):
             cleanup_test_files(workspace, self.test_file_names)
 
         from .tests import scene_settings_tests_in_editor as test_module
+        
+    class scene_settings_clear_unsaved_changes(EditorSingleTest):
+        @classmethod
+        def setup(self, instance, request, workspace):
+            self.test_file_names = ["auto_test_fbx.fbx"]
+            setup_test_files(workspace, self.test_file_names)
+        @classmethod
+        def teardown(self, instance, request, workspace, editor_test_results):
+            cleanup_test_files(workspace, self.test_file_names)
+
+        from .tests import scene_settings_clear_unsaved_changes as test_module
+
+    class scene_settings_max_prefab_groups_is_one(EditorSingleTest):
+        @classmethod
+        def setup(self, instance, request, workspace):
+            self.test_file_names = ["auto_test_fbx.fbx"]
+            setup_test_files(workspace, self.test_file_names)
+        @classmethod
+        def teardown(self, instance, request, workspace, editor_test_results):
+            cleanup_test_files(workspace, self.test_file_names)
+
+        from .tests import scene_settings_max_prefab_groups_is_one as test_module
+
+
+    class scene_settings_tests_readonly_rule(EditorSingleTest):
+        @classmethod
+        def setup(self, instance, request, workspace):
+            self.test_file_names = ["auto_test_fbx.fbx"]
+            setup_test_files(workspace, self.test_file_names)
+
+        @classmethod
+        def teardown(self, instance, request, workspace, editor_test_results):
+            cleanup_test_files(workspace, self.test_file_names)
+
+        from .tests import scene_settings_readonly_rule_test as test_module
+        
+
+    class scene_settings_procedural_mesh_groups_test(EditorSingleTest):
+        @classmethod
+        def setup(self, instance, request, workspace):
+            self.test_file_names = ["auto_test_fbx.fbx"]
+            setup_test_files(workspace, self.test_file_names)
+
+        @classmethod
+        def teardown(self, instance, request, workspace, editor_test_results):
+            cleanup_test_files(workspace, self.test_file_names)
+
+        from .tests import scene_settings_procedural_mesh_groups_test as test_module
 
 
     class scene_settings_manifest_vector_widget_tests_in_editor(EditorSingleTest):

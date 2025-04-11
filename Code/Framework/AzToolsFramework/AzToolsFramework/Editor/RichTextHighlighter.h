@@ -26,7 +26,7 @@ namespace AzToolsFramework
     class RichTextHighlighter
     {
     public:
-        AZ_CLASS_ALLOCATOR(RichTextHighlighter, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(RichTextHighlighter, AZ::SystemAllocator);
         RichTextHighlighter() = delete;
 
         static QString HighlightText(const QString& displayString, const QString& matchingSubstring);

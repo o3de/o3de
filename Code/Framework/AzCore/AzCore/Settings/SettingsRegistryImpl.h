@@ -19,18 +19,16 @@
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/parallel/scoped_lock.h>
 
-// Using a define instead of a static string to avoid the need for temporary buffers to composite the full paths.
-#define AZ_SETTINGS_REGISTRY_HISTORY_KEY "/Amazon/AzCore/Runtime/Registry/FileHistory"
-
 namespace AZ
 {
     class StackedString;
+    struct JsonImportSettings;
 
     class SettingsRegistryImpl final
         : public SettingsRegistryInterface
     {
     public:
-        AZ_CLASS_ALLOCATOR(SettingsRegistryImpl, AZ::OSAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SettingsRegistryImpl, AZ::OSAllocator);
         AZ_RTTI(AZ::SettingsRegistryImpl, "{E9C34190-F888-48CA-83C9-9F24B4E21D72}", AZ::SettingsRegistryInterface);
 
         static constexpr size_t MaxRegistryFolderEntries = 128;
@@ -79,10 +77,10 @@ namespace AZ
 
         bool MergeCommandLineArgument(AZStd::string_view argument, AZStd::string_view anchorKey,
             const CommandLineArgumentSettings& commandLineSettings) override;
-        bool MergeSettings(AZStd::string_view data, Format format, AZStd::string_view anchorKey = "") override;
-        bool MergeSettingsFile(AZStd::string_view path, Format format, AZStd::string_view anchorKey = "",
+        MergeSettingsResult MergeSettings(AZStd::string_view data, Format format, AZStd::string_view anchorKey = "") override;
+        MergeSettingsResult MergeSettingsFile(AZStd::string_view path, Format format, AZStd::string_view anchorKey = "",
             AZStd::vector<char>* scratchBuffer = nullptr) override;
-        bool MergeSettingsFolder(AZStd::string_view path, const Specializations& specializations,
+        MergeSettingsResult MergeSettingsFolder(AZStd::string_view path, const Specializations& specializations,
             AZStd::string_view platform, AZStd::string_view anchorKey = "", AZStd::vector<char>* scratchBuffer = nullptr) override;
 
         void SetNotifyForMergeOperations(bool notify) override;
@@ -111,10 +109,19 @@ namespace AZ
             const rapidjson::Value& value) const;
 
         // Compares if lhs is less than rhs in terms of processing order. This can also detect and report conflicts.
-        bool IsLessThan(bool& collisionFound, const RegistryFile& lhs, const RegistryFile& rhs, const Specializations& specializations,
-            const rapidjson::Pointer& historyPointer, AZStd::string_view folderPath);
+        bool IsLessThan(MergeSettingsResult& collisionFoundResult, const RegistryFile& lhs, const RegistryFile& rhs, const Specializations& specializations,
+            AZStd::string_view folderPath);
         bool ExtractFileDescription(RegistryFile& output, AZStd::string_view filename, const Specializations& specializations);
-        bool MergeSettingsFileInternal(const char* path, Format format, AZStd::string_view rootKey, AZStd::vector<char>& scratchBuffer);
+        MergeSettingsResult MergeSettingsFileInternal(const char* path, Format format, AZStd::string_view rootKey);
+        MergeSettingsResult MergeSettingsJsonDocument(const rapidjson::Document& jsonPatch, Format format, AZStd::string_view rootKey,
+            AZ::IO::PathView filePath);
+
+        //! The filePath here is for the loaded json content in the string parameter
+        //! The jsonData parameter is accepted by value for efficiency as the string
+        //! will be modified inside of the method
+        MergeSettingsResult MergeSettingsString(AZStd::string jsonData, Format format, AZStd::string_view anchorKey,
+            AZ::IO::PathView filePath);
+        MergeSettingsResult LoadJsonFileIntoString(AZStd::string& jsonData, const char* filePath);
 
         void SignalNotifier(AZStd::string_view jsonPath, SettingsType type);
 

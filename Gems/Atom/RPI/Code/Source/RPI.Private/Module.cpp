@@ -10,11 +10,17 @@
 #include <AzCore/Module/Module.h>
 #include <RPI.Private/Module.h>
 
+#include <Atom/RPI.Public/Image/ImageTagSystemComponent.h>
+#include <Atom/RPI.Public/Model/ModelTagSystemComponent.h>
 #include <RPI.Private/RPISystemComponent.h>
+#include <RPI.Private/PassTemplatesAutoLoader.h>
 
 AZ::RPI::Module::Module()
 {
     m_descriptors.push_back(AZ::RPI::RPISystemComponent::CreateDescriptor());
+    m_descriptors.push_back(AZ::RPI::ImageTagSystemComponent::CreateDescriptor());
+    m_descriptors.push_back(AZ::RPI::ModelTagSystemComponent::CreateDescriptor());
+    m_descriptors.push_back(AZ::RPI::PassTemplatesAutoLoader::CreateDescriptor());
 }
 
 AZ::ComponentTypeList AZ::RPI::Module::GetRequiredSystemComponents() const
@@ -22,13 +28,17 @@ AZ::ComponentTypeList AZ::RPI::Module::GetRequiredSystemComponents() const
     return
     {
         azrtti_typeid<AZ::RPI::RPISystemComponent>(),
+        azrtti_typeid<AZ::RPI::ImageTagSystemComponent>(),
+        azrtti_typeid<AZ::RPI::ModelTagSystemComponent>(),
+        azrtti_typeid<AZ::RPI::PassTemplatesAutoLoader>()
     };
 }
 
 
 #ifndef RPI_EDITOR
-  // DO NOT MODIFY THIS LINE UNLESS YOU RENAME THE GEM
-  // The first parameter should be GemName_GemIdLower
-  // The second should be the fully qualified name of the class above
-AZ_DECLARE_MODULE_CLASS(Gem_Atom_RPI_Private, AZ::RPI::Module);
+    #if defined(O3DE_GEM_NAME)
+    AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME, _Private), AZ::RPI::Module)
+    #else
+    AZ_DECLARE_MODULE_CLASS(Gem_Atom_RPI_Private, AZ::RPI::Module)
+    #endif
 #endif // RPI_EDITOR

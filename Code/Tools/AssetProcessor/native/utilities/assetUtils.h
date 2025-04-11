@@ -165,6 +165,9 @@ namespace AssetUtilities
     // UUID generation defaults to lowercase SHA1 of the source name, this does normalization and such
     AZ::Uuid CreateSafeSourceUUIDFromName(const char* sourceName, bool caseInsensitive = true);
 
+    AZ::Outcome<AZ::Uuid, AZStd::string> GetSourceUuid(const AssetProcessor::SourceAssetReference& sourceAsset);
+    AZ::Outcome<AZStd::unordered_set<AZ::Uuid>, AZStd::string> GetLegacySourceUuids(const AssetProcessor::SourceAssetReference& sourceAsset);
+
     //! Compute a CRC given a null-terminated string
     //! @param[in] priorCRC     If supplied, continues an existing CRC by feeding it more data
     unsigned int ComputeCRC32(const char* inString, unsigned int priorCRC = 0xFFFFFFFF);
@@ -248,7 +251,10 @@ namespace AssetUtilities
     QString GuessProductNameInDatabase(QString path, QString platform, AssetProcessor::AssetDatabaseConnection* databaseConnection);
 
     //! A utility function which checks the given path starting at the root and updates the relative path to be the actual case correct path.
-    bool UpdateToCorrectCase(const QString& rootPath, QString& relativePathFromRoot);
+    //! Set checkEntirePath to false if the caller is absolutely sure the path is correct and only the last element (file name or extension)
+    //! is potentially wrong. This can happen when for example taking a real file found from a real file directory that is already correct
+    //! and modifying just the file path or extension.  It is significantly faster to avoid checking the entire path.
+    bool UpdateToCorrectCase(const QString& rootPath, QString& relativePathFromRoot, bool checkEntirePath = true);
 
     //! Returns true if the path is in the cachePath and *not* in the intermediate assets folder.
     //! If cachePath is empty, it will be computed using ComputeProjectCacheRoot.
@@ -266,6 +272,11 @@ namespace AssetUtilities
 
     //! Finds the top level source that produced an intermediate product.  If the source is not yet recorded in the database or has no top level source, this will return nothing
     AZStd::optional<AzToolsFramework::AssetDatabase::SourceDatabaseEntry> GetTopLevelSourceForIntermediateAsset(const AssetProcessor::SourceAssetReference& sourceAsset, AZStd::shared_ptr<AssetProcessor::AssetDatabaseConnection> db);
+
+    //! Gets the absolute path to the top level source that produced an intermediate product. Returns nothing if the source is not yet recorded, there is no top level source, or other issues are encountered.
+    //! Does not check if the file exists.
+    AZStd::optional<AZ::IO::Path> GetTopLevelSourcePathForIntermediateAsset(
+        const AssetProcessor::SourceAssetReference& sourceAsset, AZStd::shared_ptr<AssetProcessor::AssetDatabaseConnection> db);
 
     //! Finds all the sources (up and down) in an intermediate output chain
     AZStd::vector<AssetProcessor::SourceAssetReference> GetAllIntermediateSources(
@@ -302,6 +313,7 @@ namespace AssetUtilities
         : public AssetBuilderSDK::FilePatternMatcher
     {
     public:
+        AZ_CLASS_ALLOCATOR(BuilderFilePatternMatcher, AZ::SystemAllocator)
         BuilderFilePatternMatcher() = default;
         BuilderFilePatternMatcher(const BuilderFilePatternMatcher& copy);
         BuilderFilePatternMatcher(const AssetBuilderSDK::AssetBuilderPattern& pattern, const AZ::Uuid& builderDescID);

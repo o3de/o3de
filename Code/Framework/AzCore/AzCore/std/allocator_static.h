@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZSTD_ALLOCATOR_STATIC_H
-#define AZSTD_ALLOCATOR_STATIC_H
+
+#pragma once
 
 #include <AzCore/std/base.h>
 #include <AzCore/std/typetraits/integral_constant.h>
@@ -29,46 +29,32 @@ namespace AZStd
         static_assert(Size > 0, "Size of static buffer must be not be 0");
         typedef static_buffer_allocator<Size, Alignment> this_type;
     public:
-        typedef void*               pointer_type;
-        typedef AZStd::size_t       size_type;
-        typedef AZStd::ptrdiff_t    difference_type;
-        typedef AZStd::true_type    allow_memory_leaks;
+        using pointer = void*;
+        using size_type = AZStd::size_t;
+        using difference_type = AZStd::ptrdiff_t;
 
-        AZ_FORCE_INLINE static_buffer_allocator(const char* name = "AZStd::static_buffer_allocator")
-            : m_name(name)
-            , m_lastAllocation(nullptr)
+        AZ_FORCE_INLINE static_buffer_allocator()
+            : m_lastAllocation(nullptr)
         {
             m_freeData = reinterpret_cast<char*>(&m_data);
         }
 
         // When we copy the allocator we don't copy the allocated memory since it's the user responsibility.
-        AZ_FORCE_INLINE static_buffer_allocator(const this_type& rhs)
-            : m_name(rhs.m_name)
-            , m_freeData(reinterpret_cast<char*>(&m_data))
+        AZ_FORCE_INLINE static_buffer_allocator(const this_type&)
+            : m_freeData(reinterpret_cast<char*>(&m_data))
             , m_lastAllocation(nullptr)
         {}
         
-        AZ_FORCE_INLINE static_buffer_allocator(const this_type& rhs, const char* name)
-            : m_name(name)
+        AZ_FORCE_INLINE this_type& operator=(const this_type&)
         {
-            (void)rhs;
-            m_freeData = reinterpret_cast<char*>(&m_data);
-        }
-
-        AZ_FORCE_INLINE this_type& operator=(const this_type& rhs)
-        {
-            m_name = rhs.m_name;
             return *this;
         }
         
-        AZ_FORCE_INLINE const char* get_name() const            { return m_name; }
-        AZ_FORCE_INLINE void        set_name(const char* name)  { m_name = name; }
         constexpr size_type         max_size() const { return Size; }
         AZ_FORCE_INLINE size_type   get_allocated_size() const { return m_freeData - reinterpret_cast<const char*>(&m_data); }
                 
-        pointer_type allocate(size_type byteSize, size_type alignment, int flags = 0)
+        pointer allocate(size_type byteSize, size_type alignment, [[maybe_unused]] int flags = 0)
         {
-            (void)flags;
             AZ_Assert(alignment > 0 && (alignment & (alignment - 1)) == 0, "AZStd::static_buffer_allocator::allocate - alignment must be > 0 and power of 2");
             char* address = AZ::PointerAlignUp(m_freeData, alignment);
             m_freeData = address + byteSize;
@@ -77,17 +63,13 @@ namespace AZStd
                 AZ_Assert(false, "AZStd::static_buffer_allocator - run out of memory!");
                 return nullptr;
             }
-            else
-            {
-                m_lastAllocation = address;
-                return address;
-            }
+
+            m_lastAllocation = address;
+            return address;
         }
 
-        AZ_FORCE_INLINE void  deallocate(pointer_type ptr, size_type byteSize = 0, size_type alignment = 0)
+        AZ_FORCE_INLINE void  deallocate(pointer ptr, [[maybe_unused]] size_type byteSize = 0, [[maybe_unused]] size_type alignment = 0)
         {
-            (void)byteSize;
-            (void)alignment;
             // we can free only the last allocation
             if (ptr == m_lastAllocation)
             {
@@ -95,7 +77,7 @@ namespace AZStd
                 m_freeData = reinterpret_cast<char*>(ptr);
             }
         }
-        AZ_FORCE_INLINE size_type    resize(pointer_type ptr, size_type newSize)
+        AZ_FORCE_INLINE size_type    resize(pointer ptr, size_type newSize)
         {
             // We allow resize on last allocations only
             if (ptr == m_lastAllocation && newSize <= (Size - size_t(reinterpret_cast<char*>(ptr) - reinterpret_cast<char*>(&m_data))))
@@ -117,7 +99,6 @@ namespace AZStd
         }
 
     private:
-        const char*    m_name;
         typename aligned_storage<Size, Alignment>::type  m_data;
         char*           m_freeData;
         void*           m_lastAllocation;
@@ -126,21 +107,13 @@ namespace AZStd
     template<AZStd::size_t Size, AZStd::size_t Alignment>
     AZ_FORCE_INLINE bool operator==(const static_buffer_allocator<Size, Alignment>& a, const static_buffer_allocator<Size, Alignment>& b)
     {
-        if (&a == &b)
-        {
-            return true;
-        }
-        return false;
+        return &a == &b;
     }
 
     template<AZStd::size_t Size, AZStd::size_t Alignment>
     AZ_FORCE_INLINE bool operator!=(const static_buffer_allocator<Size, Alignment>& a, const static_buffer_allocator<Size, Alignment>& b)
     {
-        if (&a != &b)
-        {
-            return true;
-        }
-        return false;
+        return &a != &b;
     }
 
     /**
@@ -165,13 +138,11 @@ namespace AZStd
         };
 
     public:
-        typedef void*               pointer_type;
-        typedef AZStd::size_t       size_type;
-        typedef AZStd::ptrdiff_t    difference_type;
-        typedef AZStd::false_type   allow_memory_leaks;
+        using pointer = void*;
+        using size_type = AZStd::size_t;
+        using difference_type = AZStd::ptrdiff_t;
 
-        AZ_FORCE_INLINE static_pool_allocator(const char* name = "AZStd::static_pool_allocator")
-            : m_name(name)
+        AZ_FORCE_INLINE static_pool_allocator()
         {
             reset();
         }
@@ -182,14 +153,10 @@ namespace AZStd
         }
 
         // When we copy the allocator we don't copy the allocated memory since it's the user responsibility.
-        AZ_FORCE_INLINE static_pool_allocator(const this_type& rhs)
-            : m_name(rhs.m_name)    {  reset(); }
-        AZ_FORCE_INLINE static_pool_allocator(const this_type& rhs, const char* name)
-            : m_name(name) { (void)rhs; reset(); }
-        AZ_FORCE_INLINE this_type& operator=(const this_type& rhs)      { m_name = rhs.m_name; return *this; }
+        AZ_FORCE_INLINE static_pool_allocator(const this_type&)
+            { reset(); }
+        AZ_FORCE_INLINE this_type& operator=(const this_type&)      { return *this; }
 
-        AZ_FORCE_INLINE const char*  get_name() const           { return m_name; }
-        AZ_FORCE_INLINE void         set_name(const char* name) { m_name = name; }
         constexpr size_type          max_size() const           { return NumNodes * sizeof(Node); }
         AZ_FORCE_INLINE size_type   get_allocated_size() const  { return m_numOfAllocatedNodes * sizeof(Node); }
 
@@ -202,7 +169,7 @@ namespace AZStd
             return reinterpret_cast<Node*>(poolNode);
         }
 
-        inline pointer_type allocate(size_type byteSize, size_type alignment, int flags = 0)
+        inline pointer allocate(size_type byteSize, size_type alignment, int flags = 0)
         {
             (void)alignment;
             (void)byteSize;
@@ -226,7 +193,7 @@ namespace AZStd
             --m_numOfAllocatedNodes;
         }
 
-        inline void  deallocate(pointer_type ptr, size_type byteSize, size_type alignment)
+        inline void  deallocate(pointer ptr, size_type byteSize, size_type alignment)
         {
             (void)byteSize;
             (void)alignment;
@@ -235,7 +202,7 @@ namespace AZStd
             deallocate(reinterpret_cast<Node*>(ptr));
         }
 
-        AZ_FORCE_INLINE size_type    resize(pointer_type ptr, size_type newSize)
+        AZ_FORCE_INLINE size_type    resize(pointer ptr, size_type newSize)
         {
             (void)ptr;
             (void)newSize;
@@ -268,7 +235,6 @@ namespace AZStd
 
     private:
         typename aligned_storage<sizeof(Node) * NumNodes, AZStd::alignment_of<Node>::value>::type m_data;
-        const char*    m_name;
         index_type      m_firstFreeNode;
         size_type       m_numOfAllocatedNodes;
     };
@@ -285,6 +251,3 @@ namespace AZStd
         return &a != &b;
     }
 }
-
-#endif // AZSTD_ALLOCATOR_STATIC_H
-#pragma once

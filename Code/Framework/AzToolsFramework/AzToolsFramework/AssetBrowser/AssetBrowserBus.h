@@ -12,10 +12,12 @@
 #include <AzCore/std/function/function_fwd.h>
 #include <AzCore/std/string/string.h>
 // warning C4251: 'QBrush::d': class 'QScopedPointer<QBrushData,QBrushDataPointerDeleter>' needs to have dll-interface to be used by clients of class 'QBrush'
-AZ_PUSH_DISABLE_WARNING(4127 4251, "-Wunknown-warning-option") 
+AZ_PUSH_DISABLE_WARNING(4127 4251, "-Wunknown-warning-option")
 #include <QIcon>
 AZ_POP_DISABLE_WARNING
 
+class QIcon;
+class QMainWindow;
 class QMimeData;
 class QWidget;
 class QImage;
@@ -43,6 +45,9 @@ namespace AzToolsFramework
         class AssetSelectionModel;
         class AssetBrowserModel;
         class AssetBrowserEntry;
+        class AssetBrowserFavoriteItem;
+        class AssetBrowserFavoritesView; 
+        class SearchWidget;
 
         //////////////////////////////////////////////////////////////////////////
         // AssetBrowserComponent
@@ -222,7 +227,7 @@ namespace AzToolsFramework
             virtual AZ::s32 GetPriority() const { return 0; }
 
             //! Notification that a context menu is about to be shown and offers an opportunity to add actions.
-            virtual void AddContextMenuActions(QWidget* /*caller*/, QMenu* /*menu*/, const AZStd::vector<AssetBrowserEntry*>& /*entries*/) {};
+            virtual void AddContextMenuActions(QWidget* /*caller*/, QMenu* /*menu*/, const AZStd::vector<const AssetBrowserEntry*>& /*entries*/) {};
 
             //! Implement AddSourceFileOpeners to provide your own editor for source files
             //! This gets called to collect the list of available openers for a file.
@@ -260,6 +265,12 @@ namespace AzToolsFramework
                 return SourceFileDetails();
             }
 
+            //! Selects the asset identified by the path in the AzAssetBrowser identified by caller.
+            virtual void SelectAsset([[maybe_unused]] QWidget* caller, [[maybe_unused]] const AZStd::string& fullFilePath) {};
+
+            //! Selects the folder identified by the path in the AzAssetBrowser identified by caller.
+            virtual void SelectFolderAsset([[maybe_unused]] QWidget* caller, [[maybe_unused]] const AZStd::string& fullFolderPath){};
+
             //! required in order to sort the busses.
             inline bool Compare(const AssetBrowserInteractionNotifications* other) const
             {
@@ -287,6 +298,9 @@ namespace AzToolsFramework
 
             virtual void BeginRemoveEntry(AssetBrowserEntry* entry) = 0;
             virtual void EndRemoveEntry() = 0;
+
+            virtual void BeginReset() = 0;
+            virtual void EndReset() = 0;
         };
 
         using AssetBrowserModelRequestBus = AZ::EBus<AssetBrowserModelRequests>;
@@ -330,6 +344,33 @@ namespace AzToolsFramework
         };
         using AssetBrowserViewRequestBus = AZ::EBus<AssetBrowserViewRequests>;
 
+        //! Preview the currently selected Asset in a PreviewFrame
+        class AssetBrowserPreviewRequest : public AZ::EBusTraits
+        {
+        public:
+            static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
+
+            //! Updates the asset browser inspector panel with data about the passed entry.
+            //! Clears the panel if nullptr is passed
+            virtual void PreviewAsset([[maybe_unused]]const AzToolsFramework::AssetBrowser::AssetBrowserEntry* selectedEntry){};
+
+            //! Clears the asset browser inspector panel
+            virtual void ClearPreview(){};
+
+            //! Preview the selected entry in the scene settings window, returns true if successful 
+            virtual void PreviewSceneSettings([[maybe_unused]]const AzToolsFramework::AssetBrowser::AssetBrowserEntry* selectedEntry){};
+
+            //! Check if the source asset can be opened in the scene settings
+            virtual bool HandleSource([[maybe_unused]]const AzToolsFramework::AssetBrowser::AssetBrowserEntry* selectedEntry) const { return false; };
+
+            //! Opens and returns the scene settings window
+            virtual QMainWindow* GetSceneSettings() { return nullptr; }
+
+            //! return true if the asset browser inspector panel has unsaved changes and must save before closing
+            virtual bool SaveBeforeClosing() { return false; };
+        };
+        using AssetBrowserPreviewRequestBus = AZ::EBus<AssetBrowserPreviewRequest>;
+
         //////////////////////////////////////////////////////////////////////////
         // File creation notifications
         //////////////////////////////////////////////////////////////////////////
@@ -349,7 +390,8 @@ namespace AzToolsFramework
             //! Notifies the handler that a new asset was created from the editor so they can handle renaming or other behavior as necessary.
             //! @param assetPath The full path to the asset that was created.
             //! @param creatorBusId The file creator's bus handler address. A default constructed Crc32 implies no one is listening.
-            virtual void HandleAssetCreatedInEditor(const AZStd::string_view /*assetPath*/, const AZ::Crc32& /*creatorBusId*/) {}
+            //! @param initialFilenameChange Notifies the handler that this file should give users the option to rename upon creation, set to false if you will use custom naming
+            virtual void HandleAssetCreatedInEditor(const AZStd::string_view /*assetPath*/, const AZ::Crc32& /*creatorBusId*/, const bool /*initialFilenameChange*/) {}
 
             //! Notifies a given handler that an asset which was recently created has been given a non-default name.
             //! @param assetPath The full path to the asset that had its initial name change.
@@ -363,6 +405,62 @@ namespace AzToolsFramework
             ~AssetBrowserFileCreationNotifications() = default;
         };
         using AssetBrowserFileCreationNotificationBus = AZ::EBus<AssetBrowserFileCreationNotifications>;
+
+        //////////////////////////////////////////////////////////////////////////
+        // File action notifications
+        //////////////////////////////////////////////////////////////////////////
+
+        //! Used for sending and/or recieving notifications regarding source file manipulation through the Asset Browser.
+        class AssetBrowserFileActionNotifications
+            : public AZ::EBusTraits
+        {
+        public:
+            //! Notifies when a source file has been moved or renamed
+            virtual void OnSourceFilePathNameChanged(
+                [[maybe_unused]] const AZStd::string_view fromPathName, [[maybe_unused]] const AZStd::string_view toPathName) {}
+
+            //! Notifies when a source folder has been moved or renamed
+            virtual void OnSourceFolderPathNameChanged(
+                [[maybe_unused]] const AZStd::string_view fromPathName, [[maybe_unused]] const AZStd::string_view toPathName) {}
+
+        protected:
+            ~AssetBrowserFileActionNotifications() = default;
+        };
+        using AssetBrowserFileActionNotificationBus = AZ::EBus<AssetBrowserFileActionNotifications>;
+
+        //! Sends requests to the Asset Browser Favorite system.
+        class AssetBrowserFavoriteRequests
+            : public AZ::EBusTraits
+        {
+        public:
+            static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
+
+            virtual bool GetIsFavoriteAsset(const AssetBrowserEntry* entry) = 0;
+
+            virtual void AddFavoriteAsset(const AssetBrowserEntry* favorite) = 0;
+            virtual void AddFavoriteSearchButtonPressed(SearchWidget* searchWidget) = 0;
+            virtual void AddFavoriteEntriesButtonPressed(QWidget* sourceWindow) = 0;
+
+            virtual void RemoveEntryFromFavorites(const AssetBrowserEntry* favorite) = 0;
+            virtual void RemoveFromFavorites(const AssetBrowserFavoriteItem* favorite) = 0;
+
+            virtual void ViewEntryInAssetBrowser(AssetBrowserFavoritesView* targetWindow, const AssetBrowserEntry* favorite) = 0;
+
+            virtual void SaveFavorites() = 0;
+
+            virtual AZStd::vector<AssetBrowserFavoriteItem*> GetFavorites() = 0;
+        };
+        using AssetBrowserFavoriteRequestBus = AZ::EBus<AssetBrowserFavoriteRequests>;
+
+        //! Used for sending/receiving notifications about changes in the favorites system.
+        class AssetBrowserFavoritesNotifications : public AZ::EBusTraits
+        {
+        public:
+            virtual void FavoritesChanged() {}
+        protected:
+            ~AssetBrowserFavoritesNotifications() = default;
+        };
+        using AssetBrowserFavoritesNotificationBus = AZ::EBus<AssetBrowserFavoritesNotifications>;
 
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

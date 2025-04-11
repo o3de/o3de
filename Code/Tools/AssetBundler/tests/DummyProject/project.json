@@ -1,5 +1,6 @@
 {
     "project_name": "DummyProject",
+    "version": "1.0.0",
     "product_name": "DummyProject",
     "executable_name": "DummyProjectLauncher",
     "modules" : [],

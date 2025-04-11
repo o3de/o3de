@@ -23,7 +23,7 @@ namespace SettingsCpp
 {
     void UpdateProcessingSettings()
     {
-        if (auto userSettings = AZ::UserSettings::CreateFind<ScriptCanvasEditor::EditorSettings::ScriptCanvasEditorSettings>(AZ_CRC("ScriptCanvasPreviewSettings", 0x1c5a2965), AZ::UserSettings::CT_LOCAL))
+        if (auto userSettings = AZ::UserSettings::CreateFind<ScriptCanvasEditor::EditorSettings::ScriptCanvasEditorSettings>(AZ_CRC_CE("ScriptCanvasPreviewSettings"), AZ::UserSettings::CT_LOCAL))
         {
             ScriptCanvas::Grammar::g_saveRawTranslationOuputToFile = userSettings->m_saveRawTranslationOuputToFile;
             ScriptCanvas::Grammar::g_printAbstractCodeModel = userSettings->m_printAbstractCodeModel;
@@ -47,7 +47,7 @@ namespace ScriptCanvasEditor
         {
             if (constructType == GraphCanvas::ConstructType::NodeGroup)
             {
-                GraphCanvas::NodeGroupPresetBucket* nodeGroupPresetBucket = static_cast<GraphCanvas::NodeGroupPresetBucket*>(ModPresetBuckket(GraphCanvas::ConstructType::NodeGroup));
+                GraphCanvas::NodeGroupPresetBucket* nodeGroupPresetBucket = static_cast<GraphCanvas::NodeGroupPresetBucket*>(ModPresetBucket(GraphCanvas::ConstructType::NodeGroup));
 
                 if (nodeGroupPresetBucket)
                 {
@@ -81,7 +81,7 @@ namespace ScriptCanvasEditor
             }
             else if (constructType == GraphCanvas::ConstructType::CommentNode)
             {
-                GraphCanvas::CommentPresetBucket* commentPresetBucket = static_cast<GraphCanvas::CommentPresetBucket*>(ModPresetBuckket(GraphCanvas::ConstructType::CommentNode));
+                GraphCanvas::CommentPresetBucket* commentPresetBucket = static_cast<GraphCanvas::CommentPresetBucket*>(ModPresetBucket(GraphCanvas::ConstructType::CommentNode));
                 commentPresetBucket->ClearPresets();
             }
         }
@@ -235,14 +235,14 @@ namespace ScriptCanvasEditor
         {
             if (classElement.GetVersion() <= 5)
             {
-                AZ::Crc32 dragCouplingEnabledId = AZ_CRC("m_enableNodeDragCoupling", 0x3edd74aa);
-                AZ::Crc32 dragCouplingTimeId = AZ_CRC("m_dragNodeCouplingTime", 0xe6f213ae);
+                AZ::Crc32 dragCouplingEnabledId = AZ_CRC_CE("m_enableNodeDragCoupling");
+                AZ::Crc32 dragCouplingTimeId = AZ_CRC_CE("m_dragNodeCouplingTime");
 
-                AZ::Crc32 dragSplicingEnabledId = AZ_CRC("m_enableNodeDragConnectionSplicing", 0x77957b8f);
-                AZ::Crc32 dragSplicingTimeId = AZ_CRC("m_dragNodeConnectionSplicingTime", 0x3e3742fb);
+                AZ::Crc32 dragSplicingEnabledId = AZ_CRC_CE("m_enableNodeDragConnectionSplicing");
+                AZ::Crc32 dragSplicingTimeId = AZ_CRC_CE("m_dragNodeConnectionSplicingTime");
 
-                AZ::Crc32 dropSplicingEnabledId = AZ_CRC("m_enableNodeDropConnectionSplicing", 0x371180a9);
-                AZ::Crc32 dropSplicingTimeId = AZ_CRC("m_dropNodeConnectionSplicingTime", 0xba85498e);
+                AZ::Crc32 dropSplicingEnabledId = AZ_CRC_CE("m_enableNodeDropConnectionSplicing");
+                AZ::Crc32 dropSplicingTimeId = AZ_CRC_CE("m_dropNodeConnectionSplicingTime");
 
                 ToggleableConfiguration dragCouplingConfiguration(false,1000);
                 ToggleableConfiguration dragSplicingConfiguration(true, 1000);
@@ -317,8 +317,8 @@ namespace ScriptCanvasEditor
 
             if (classElement.GetVersion() <= 14)
             {
-                classElement.RemoveElementByName(AZ_CRC("m_showPreviewMessage", 0x375b279b));
-                classElement.RemoveElementByName(AZ_CRC("m_showExcludedNodes", 0x4c802d0c));
+                classElement.RemoveElementByName(AZ_CRC_CE("m_showPreviewMessage"));
+                classElement.RemoveElementByName(AZ_CRC_CE("m_showExcludedNodes"));
             }
 
             return true;
@@ -468,7 +468,7 @@ namespace ScriptCanvasEditor
                     editContext->Class<ScriptCanvasEditorSettings>("Script Canvas Editor Preferences", "Preferences relating to the Script Canvas editor.")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                            ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC("PropertyVisibility_ShowChildrenOnly", 0xef428f20))
+                            ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC_CE("PropertyVisibility_ShowChildrenOnly"))
                         ->DataElement(AZ::Edit::UIHandlers::Default, &ScriptCanvasEditorSettings::m_snapDistance, "Connection Snap Distance", "The distance from a slot under which connections will snap to it.")
                             ->Attribute(AZ::Edit::Attributes::Min, 10.0)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &ScriptCanvasEditorSettings::m_enableGroupDoubleClickCollapse, "Double Click to Collapse/Expand Group", "Enables the user to decide whether you can double click on a group to collapse/expand a group.")

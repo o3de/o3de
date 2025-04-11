@@ -19,7 +19,7 @@ namespace ScriptCanvas
     {                   
         struct TypeErasedDataTraits
         {
-            AZ_CLASS_ALLOCATOR(TypeErasedDataTraits, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(TypeErasedDataTraits, AZ::SystemAllocator);
 
             TypeErasedDataTraits() = default;
 
@@ -219,6 +219,21 @@ namespace ScriptCanvas
         };
 
         template<>
+        struct Traits<MatrixMxNType> : public TraitsBase<MatrixMxNType>
+        {
+            using Type = MatrixMxNType;
+            static const bool s_isAutoBoxed = false;
+            static const bool s_isNative = true;
+            static const eType s_type = eType::MatrixMxN;
+
+            static AZ::Uuid GetAZType(const Data::Type & = {}) { return azrtti_typeid<MatrixMxNType>(); }
+            static Data::Type GetSCType(const AZ::TypeId & = AZ::TypeId::CreateNull()) { return Data::Type::MatrixMxN(); }
+            static AZStd::string GetName(const Data::Type & = {}) { return "MatrixMxN"; }
+            static Type GetDefault(const Data::Type & = {}) { return MatrixMxNType::CreateZero(0, 0); }
+            static bool IsDefault(const Type&, const Data::Type& = {}) { return false; }
+        };
+
+        template<>
         struct Traits<NumberType> : public TraitsBase<NumberType>
         {
             using Type = NumberType;
@@ -362,6 +377,21 @@ namespace ScriptCanvas
             static bool IsDefault(const Type& value, const Data::Type& = {}) { return value == GetDefault(); }
         };
 
+        template<>
+        struct Traits<VectorNType> : public TraitsBase<VectorNType>
+        {
+            using Type = VectorNType;
+            static const bool s_isAutoBoxed = false;
+            static const bool s_isNative = true;
+            static const eType s_type = eType::VectorN;
+
+            static AZ::Uuid GetAZType(const Data::Type & = {}) { return azrtti_typeid<VectorNType>(); }
+            static Data::Type GetSCType(const AZ::TypeId & = AZ::TypeId::CreateNull()) { return Data::Type::VectorN(); }
+            static AZStd::string GetName(const Data::Type & = {}) { return "VectorN"; }
+            static Type GetDefault(const Data::Type & = {}) { return VectorNType::CreateZero(0); }
+            static bool IsDefault(const Type&, const Data::Type& = {}) { return false; }
+        };
+
         /*template<>
         struct Traits<AzFramework::SliceInstantiationTicket> : public TraitsBase<AzFramework::SliceInstantiationTicket>
         {
@@ -446,6 +476,9 @@ namespace ScriptCanvas
         struct eTraits<eType::Matrix4x4> : Traits<Matrix4x4Type> {};
 
         template<>
+        struct eTraits<eType::MatrixMxN> : Traits<MatrixMxNType> {};
+
+        template<>
         struct eTraits<eType::Number> : Traits<NumberType> {};
 
         template<>
@@ -472,5 +505,7 @@ namespace ScriptCanvas
         template<>
         struct eTraits<eType::Vector4> : Traits<Vector4Type> {};
 
-    } 
+        template<>
+        struct eTraits<eType::VectorN> : Traits<VectorNType> {};
+    }
 } 

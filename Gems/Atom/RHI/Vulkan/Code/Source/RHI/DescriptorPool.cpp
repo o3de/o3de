@@ -14,6 +14,7 @@
 #include <RHI/DescriptorSet.h>
 #include <RHI/DescriptorSetLayout.h>
 #include <RHI/Device.h>
+#include <Atom/RHI.Reflect/VkAllocator.h>
 
 namespace AZ
 {
@@ -42,7 +43,12 @@ namespace AZ
             collectorDescriptor.m_collectFunction = nullptr;
             m_collector.Init(collectorDescriptor);
 
-            SetName(GetName());
+            AZ::Name name = GetName();
+            if (name.IsEmpty())
+            {
+                name = AZ::Name("DescriptorPool");
+            }
+            SetName(name);
             return result;
         }
 
@@ -60,7 +66,7 @@ namespace AZ
             if (m_nativeDescriptorPool != VK_NULL_HANDLE)
             {
                 auto& device = static_cast<Device&>(GetDevice());
-                device.GetContext().DestroyDescriptorPool(device.GetNativeDevice(), m_nativeDescriptorPool, nullptr);
+                device.GetContext().DestroyDescriptorPool(device.GetNativeDevice(), m_nativeDescriptorPool, VkSystemAllocator::Get());
                 m_nativeDescriptorPool = VK_NULL_HANDLE;
             }
             Base::Shutdown();
@@ -86,9 +92,14 @@ namespace AZ
             createInfo.poolSizeCount = static_cast<uint32_t>(m_descriptor.m_descriptorPoolSizes.size());
             createInfo.pPoolSizes = m_descriptor.m_descriptorPoolSizes.empty() ? nullptr : m_descriptor.m_descriptorPoolSizes.data();
 
+            if (m_descriptor.m_updateAfterBind)
+            {
+                createInfo.flags |= VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT;
+            }
+
             auto& device = static_cast<Device&>(GetDevice());
-            const VkResult result =
-                device.GetContext().CreateDescriptorPool(device.GetNativeDevice(), &createInfo, nullptr, &m_nativeDescriptorPool);
+            const VkResult result = device.GetContext().CreateDescriptorPool(
+                device.GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &m_nativeDescriptorPool);
             AssertSuccess(result);
 
             return ConvertResult(result);

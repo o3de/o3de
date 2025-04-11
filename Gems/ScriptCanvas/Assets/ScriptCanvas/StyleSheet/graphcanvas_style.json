@@ -99,7 +99,7 @@
     "opacity": "40%"
   },
   {
-    "selectors": [ "node.small" ],
+    "selectors": [ "node.compact" ],
 
     "border-width": 0,
     "spacing": 0,
@@ -144,7 +144,7 @@
     "margin": 5
   },
   {
-    "selectors": [ "node.small > title" ],
+    "selectors": [ "node.compact > title" ],
 
     "background-color": "transparent",
 
@@ -172,7 +172,7 @@
     "margin": 0
   },
   {
-    "selectors": [ "node.small > .maintitle" ],
+    "selectors": [ "node.compact > .maintitle" ],
 
     "text-alignment": "center",
 
@@ -193,7 +193,7 @@
     "background-color": "#6441A4"
   },
   {
-    "selectors": [ "node.small:disabled > .maintitle" ],
+    "selectors": [ "node.compact:disabled > .maintitle" ],
     "font-style": "italic",
     "color": "#ffffff"
   },
@@ -674,7 +674,7 @@
     "padding": 0
   },
   {
-    "selectors": [ "generalSlotLayout.small" ],
+    "selectors": [ "generalSlotLayout.compact" ],
 
     "spacing": 0
   },
@@ -912,7 +912,7 @@
     "border-color": "#E25243"
   },
   {
-    "selectors": [ "dataSlot.small" ],
+    "selectors": [ "dataSlot.compact" ],
 
     "spacing": 0,
     "padding": 0
@@ -951,11 +951,6 @@
     "min-height": 25
   },
   {
-    "selectors": [ "dataSlot.small > .slotName" ],
-
-    "min-height": 0
-  },
-  {
     "selectors": [ "dataSlot > .inputSlotName" ],
 
     "font-family": "Open Sans",
@@ -976,9 +971,11 @@
     "min-height": 25
   },
   {
-    "selectors": [ "dataSlot.small > .inputSlotName" ],
+    "selectors": [ "dataSlot.compact > .inputSlotName" ],
 
-    "min-height": 0
+    "min-height": 0,
+    "min-width": 20,
+    "font-size": "80%"
   },
   {
     "selectors": [ "dataSlot > .inputSlotName:validDrop" ],
@@ -1011,9 +1008,11 @@
     "min-height": 25
   },
   {
-    "selectors": [ "dataSlot.small > .outputSlotName" ],
+    "selectors": [ "dataSlot.compact > .outputSlotName" ],
 
-    "min-height": 0
+    "min-height": 0,
+    "min-width": 20,
+    "font-size": "80%"
   },
   {
     "selectors": [ "dataSlot > .outputSlotName:validDrop" ],

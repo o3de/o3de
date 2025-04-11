@@ -24,7 +24,7 @@ namespace AzToolsFramework
         : public QComboBox
     {
     public:
-        AZ_CLASS_ALLOCATOR(DHQComboBox, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DHQComboBox, AZ::SystemAllocator);
 
         explicit DHQComboBox(QWidget* parent = 0);
 

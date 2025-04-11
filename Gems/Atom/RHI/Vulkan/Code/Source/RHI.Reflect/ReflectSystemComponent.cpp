@@ -8,8 +8,9 @@
 
 #include <Atom/RHI.Reflect/Vulkan/ReflectSystemComponent.h>
 #include <Atom/RHI.Reflect/Vulkan/ShaderStageFunction.h>
-#include <Atom/RHI.Reflect/Vulkan/BufferPoolDescriptor.h>
 #include <Atom/RHI.Reflect/Vulkan/PlatformLimitsDescriptor.h>
+
+#include <AzCore/Serialization/SerializeContext.h>
 
 namespace AZ
 {
@@ -23,7 +24,6 @@ namespace AZ
                     ->Version(1);
             }
 
-            BufferPoolDescriptor::Reflect(context);
             ShaderStageFunction::Reflect(context);
             PlatformLimitsDescriptor::Reflect(context);
         }

@@ -25,7 +25,7 @@ namespace EMotionFX::MotionMatching
 {
     AZ_CVAR_EXTERNED(float, mm_debugDrawVelocityScale);
 
-    AZ_CLASS_ALLOCATOR_IMPL(FeatureVelocity, MotionMatchAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(FeatureVelocity, MotionMatchAllocator)
 
     void FeatureVelocity::ExtractFeatureValues(const ExtractFeatureContext& context)
     {

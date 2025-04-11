@@ -11,10 +11,12 @@
 #include <Atom/Feature/Utils/GpuBufferHandler.h>
 #include <Atom/Feature/Utils/IndexedDataVector.h>
 #include <Atom/Feature/Decals/DecalFeatureProcessorInterface.h>
+#include <Atom/Feature/Utils/MultiIndexedDataVector.h>
 #include <Atom/RPI.Reflect/Image/ImageAsset.h>
 #include <Atom/RPI.Public/Image/StreamingImage.h>
 #include <AtomCore/Instance/Instance.h>
 #include <Atom/Feature/Utils/IndexableList.h>
+#include <AzCore/Math/Sphere.h>
 #include <Decals/DecalTextureArray.h>
 #include <Decals/AsyncLoadTracker.h>
 
@@ -33,6 +35,7 @@ namespace AZ
             , public Data::AssetBus::MultiHandler
         {
         public:
+            AZ_CLASS_ALLOCATOR(DecalTextureArrayFeatureProcessor, AZ::SystemAllocator)
 
             AZ_RTTI(AZ::Render::DecalTextureArrayFeatureProcessor, "{5E8365FA-BEA7-4D02-9A5C-67E6810D5465}", AZ::Render::DecalFeatureProcessorInterface);
 
@@ -61,6 +64,12 @@ namespace AZ
             //! Sets the position of the decal
             void SetDecalPosition(const DecalHandle handle, const AZ::Vector3& position) override;
 
+            //! Sets the color of the decal
+            void SetDecalColor(const DecalHandle handle, const AZ::Vector3& color) override;
+
+            //! Sets the factor for the decal color
+            void SetDecalColorFactor(const DecalHandle handle, float colorFactor) override;
+
             //! Sets the orientation of the decal
             void SetDecalOrientation(const DecalHandle handle, const AZ::Quaternion& orientation) override;
 
@@ -88,6 +97,13 @@ namespace AZ
 
             //! Sets the material information for this decal
             void SetDecalMaterial(const DecalHandle handle, const AZ::Data::AssetId id) override;
+
+            // SceneNotificationBus::Handler overrides...
+            void OnRenderPipelinePersistentViewChanged(
+                RPI::RenderPipeline* renderPipeline,
+                RPI::PipelineViewTag viewTag,
+                RPI::ViewPtr newView,
+                RPI::ViewPtr previousView) override;
 
         private:
 
@@ -123,8 +139,13 @@ namespace AZ
             bool RemoveDecalFromTextureArrays(const DecalLocation decalLocation);
             AZ::Data::AssetId GetMaterialUsedByDecal(const DecalHandle handle) const;
             void PackTexureArrays();
+            void SetMaterialToDecals(RPI::MaterialAsset* materialAsset, const AZStd::vector<DecalHandle>& decalsThatUseThisMaterial);
+            // Cull the decals for a view using the CPU.
+            void CullDecals(const RPI::ViewPtr& view);
+            void UpdateBounds(const DecalHandle handle);
 
-            IndexedDataVector<DecalData> m_decalData;
+            MultiIndexedDataVector<DecalData, AZ::Aabb> m_decalData;
+            RHI::Handle<uint32_t> m_decalMeshFlag;
 
             // Texture arrays are organized one per texture size permutation.
             // e.g. There may be a situation where we have 3 texture arrays:
@@ -140,6 +161,13 @@ namespace AZ
             AZStd::unordered_map< AZ::Data::AssetId, DecalLocationAndUseCount> m_materialToTextureArrayLookupTable;
 
             bool m_deviceBufferNeedsUpdate = false;
+
+            // Handlers to GPU buffer that are being used for CPU culling visibility.
+            AZStd::vector<GpuBufferHandler> m_visibleDecalBufferHandlers;
+            // Number of buffers being used for visibility in the current frame.
+            uint32_t m_visibleDecalBufferUsedCount = 0;
+            // Views that have a GPU culling pass per render pipeline.
+            AZStd::unordered_map<const RPI::View*, AZStd::vector<const RPI::RenderPipeline*>> m_cpuCulledPipelinesPerView;
         };
     } // namespace Render
 } // namespace AZ

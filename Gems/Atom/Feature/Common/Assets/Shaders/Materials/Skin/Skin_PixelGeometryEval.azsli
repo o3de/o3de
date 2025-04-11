@@ -12,24 +12,24 @@
 // used in your shader. Simply #define EvaluatePixelGeometry to your custom definition before including this file
 //
 #ifndef EvaluatePixelGeometry
-#define EvaluatePixelGeometry(IN, isFrontFace)      EvaluatePixelGeometry_Skin(IN, isFrontFace)
+#define EvaluatePixelGeometry EvaluatePixelGeometry_Skin
 #endif
 
 #include "../BasePBR/BasePBR_PixelGeometryEval.azsli"
+#include <Atom/Features/InstancedTransforms.azsli>
 
 PixelGeometryData EvaluatePixelGeometry_Skin(
     float3 positionWS,
-    float3 normal,
-    float3 tangent,
-    float3 bitangent,
+    real3 normalWS,
+    real3 tangentWS,
+    real3 bitangentWS,
     float2 uvs[UvSetCount],
     float2 detailUv,
-    float4 wrinkleBlendFactors,
+    real4 wrinkleBlendFactors,
     bool isFrontFace)
 {
     // Base PBR Geo Data
-    bool evaluateTangentFrame = o_normal_useTexture || o_detail_normal_useTexture;
-    PixelGeometryData geoData = EvaluatePixelGeometry_BasePBR(positionWS, normal, tangent, bitangent, uvs, isFrontFace, evaluateTangentFrame);
+    PixelGeometryData geoData = EvaluatePixelGeometry_BasePBR(positionWS, normalWS, tangentWS, bitangentWS, uvs, isFrontFace);
 
     // Skin specifics
     geoData.detailUv = detailUv;
@@ -40,19 +40,19 @@ PixelGeometryData EvaluatePixelGeometry_Skin(
 
 PixelGeometryData EvaluatePixelGeometry_Skin(VsOutput IN, bool isFrontFace)
 {
-    float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
-    float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
+    real4x4 objectToWorld = real4x4(GetObjectToWorldMatrix(IN.m_instanceId));
+    real3x3 objectToWorldIT = real3x3(GetObjectToWorldMatrixInverseTranspose(IN.m_instanceId));
 
-    float3 vertexNormal, vertexTangent, vertexBitangent;
-    ConstructTBN(IN.normal, IN.tangent, objectToWorld, objectToWorldIT, vertexNormal, vertexTangent, vertexBitangent);
+    real3 normalWS, tangentWS, bitangentWS;
+    ConstructTBN(real3(IN.normal), real4(IN.tangent), objectToWorld, objectToWorldIT, normalWS, tangentWS, bitangentWS);
 
     return EvaluatePixelGeometry_Skin(
         IN.worldPosition,
-        vertexNormal,
-        vertexTangent,
-        vertexBitangent,
+        normalWS,
+        tangentWS,
+        bitangentWS,
         IN.uvs,
         IN.detailUv,
-        IN.wrinkleBlendFactors,
+        real4(IN.wrinkleBlendFactors),
         isFrontFace);
 }

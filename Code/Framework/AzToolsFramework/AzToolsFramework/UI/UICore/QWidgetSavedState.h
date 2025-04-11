@@ -27,7 +27,7 @@ namespace AzToolsFramework
     {
     public:
         AZ_RTTI(QWidgetSavedState, "{ED8EEF58-C577-4FCC-AE84-66FF63A1BDEB}", AZ::UserSettings);
-        AZ_CLASS_ALLOCATOR(QWidgetSavedState, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(QWidgetSavedState, AZ::SystemAllocator);
         
         virtual ~QWidgetSavedState() {}
 

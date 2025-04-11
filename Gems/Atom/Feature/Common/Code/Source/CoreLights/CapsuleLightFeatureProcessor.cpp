@@ -12,9 +12,9 @@
 #include <AzCore/Math/Color.h>
 
 #include <Atom/Feature/CoreLights/CoreLightsConstants.h>
-#include <Atom/Feature/CoreLights/LightCommon.h>
 #include <Atom/Feature/Mesh/MeshCommon.h>
-#include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
+#include <CoreLights/LightCommon.h>
+#include <Mesh/MeshFeatureProcessor.h>
 
 #include <Atom/RHI/Factory.h>
 
@@ -56,7 +56,7 @@ namespace AZ
             MeshFeatureProcessor* meshFeatureProcessor = GetParentScene()->GetFeatureProcessor<MeshFeatureProcessor>();
             if (meshFeatureProcessor)
             {
-                m_lightMeshFlag = meshFeatureProcessor->GetFlagRegistry()->AcquireTag(AZ::Name("o_enableCapsuleLights"));
+                m_lightMeshFlag = meshFeatureProcessor->GetShaderOptionFlagRegistry()->AcquireTag(AZ::Name("o_enableCapsuleLights"));
             }
         }
 
@@ -210,6 +210,14 @@ namespace AZ
             AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to CapsuleLightFeatureProcessor::SetAffectsGIFactor().");
 
             m_lightData.GetData<0>(handle.GetIndex()).m_affectsGIFactor = affectsGIFactor;
+            m_deviceBufferNeedsUpdate = true;
+        }
+
+        void CapsuleLightFeatureProcessor::SetLightingChannelMask(LightHandle handle, uint32_t lightingChannelMask)
+        {
+            AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to CapsuleLightFeatureProcessor::SetLightingChannelMask().");
+ 
+            m_lightData.GetData<0>(handle.GetIndex()).m_lightingChannelMask = lightingChannelMask;
             m_deviceBufferNeedsUpdate = true;
         }
 

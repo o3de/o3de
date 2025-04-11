@@ -21,7 +21,7 @@ namespace GraphCanvas
         friend class SlotConnectionFilter;
     public:
         AZ_RTTI(DataSlotTypeFilter, "{D625AE2F-5F71-461E-A553-554402A824BF}", ConnectionFilter);
-        AZ_CLASS_ALLOCATOR(DataSlotTypeFilter, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DataSlotTypeFilter, AZ::SystemAllocator);
 
         DataSlotTypeFilter()
         {

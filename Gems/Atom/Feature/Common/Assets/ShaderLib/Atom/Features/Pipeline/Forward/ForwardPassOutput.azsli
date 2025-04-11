@@ -20,7 +20,7 @@
 #endif
 
 
-#ifdef UNIFIED_FORWARD_OUTPUT
+#if UNIFIED_FORWARD_OUTPUT
 
 struct ForwardPassOutput
 {

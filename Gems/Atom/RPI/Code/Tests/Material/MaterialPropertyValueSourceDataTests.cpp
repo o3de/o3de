@@ -80,7 +80,7 @@ namespace JsonSerializationTests
     };
 
     using MaterialPropertyValueSourceDataSerializerTestTypes = ::testing::Types<MaterialPropertyValueSourceDataSerializerTestDescription>;
-    IF_JSON_CONFORMITY_ENABLED(INSTANTIATE_TYPED_TEST_CASE_P(MaterialPropertyValueSourceDataTests, JsonSerializerConformityTests, MaterialPropertyValueSourceDataSerializerTestTypes));
+    IF_JSON_CONFORMITY_ENABLED(INSTANTIATE_TYPED_TEST_SUITE_P(MaterialPropertyValueSourceDataTests, JsonSerializerConformityTests, MaterialPropertyValueSourceDataSerializerTestTypes));
 } // namespace JsonSerializationTests
 
 namespace UnitTest
@@ -104,6 +104,7 @@ namespace UnitTest
             : public MaterialFunctor
         {
         public:
+            AZ_CLASS_ALLOCATOR(ValueFunctor, SystemAllocator)
             AZ_RTTI(MaterialPropertyValueSourceDataTests::ValueFunctor, "{07CE498C-6E97-45C9-8B2D-18BC03724055}", AZ::RPI::MaterialFunctor);
 
             static void Reflect(ReflectContext* context)
@@ -126,6 +127,7 @@ namespace UnitTest
             : public MaterialFunctorSourceData
         {
         public:
+            AZ_CLASS_ALLOCATOR(ValueFunctorSourceData, AZ::SystemAllocator)
             AZ_RTTI(ValueFunctorSourceData, "{777CE7A5-3023-4C63-BA43-5763DF51D82D}", AZ::RPI::MaterialFunctorSourceData);
 
             static void Reflect(ReflectContext* context)
@@ -241,7 +243,7 @@ namespace UnitTest
         for (uint32_t i = static_cast<uint32_t>(MaterialPropertyDataType::Invalid) + 1u; i < propertyTypeCount; ++i)
         {
             MaterialPropertyDataType type = static_cast<MaterialPropertyDataType>(i);
-            azsprintf(inputJson,
+            azsnprintf(inputJson, AZ_ARRAY_SIZE(inputJson),
                 R"(
                     {
                         "propertyName": "general.%s",
@@ -265,7 +267,6 @@ namespace UnitTest
                     "Dummy.materialtype",
                     m_materialTypeCreator.GetMaterialPropertiesLayout(),
                     m_materialTypeCreator.GetMaterialShaderResourceGroupLayout(),
-                    m_materialTypeCreator.GetShaderCollection(),
                     &nameContext
                 )
             );

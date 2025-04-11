@@ -25,7 +25,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
     class InMemorySpawnableAssetProcessor
     {
     public:
-        AZ_CLASS_ALLOCATOR(InMemorySpawnableAssetProcessor, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(InMemorySpawnableAssetProcessor, AZ::SystemAllocator);
 
         ~InMemorySpawnableAssetProcessor();
 

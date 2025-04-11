@@ -26,7 +26,7 @@ namespace Vegetation
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(ShapeIntersectionFilterConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ShapeIntersectionFilterConfig, AZ::SystemAllocator);
         AZ_RTTI(ShapeIntersectionFilterConfig, "{B88C9D87-8609-4EAB-82D6-92DFEF006629}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
         FilterStage m_filterStage = FilterStage::Default;

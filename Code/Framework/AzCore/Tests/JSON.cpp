@@ -20,7 +20,7 @@ namespace UnitTest
      * Rapid XML parser
      */
     class RapidJSON
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         RapidJSON() {}
@@ -121,7 +121,7 @@ namespace UnitTest
                 char lbuffer[10];
                 int len = azsnprintf(lbuffer, AZ_ARRAY_SIZE(lbuffer), "%s %s", "Milo", "Yip");  // synthetic example of dynamically created string.
 
-                author.SetString(lbuffer, static_cast<size_t>(len), document.GetAllocator());
+                author.SetString(lbuffer, static_cast<rapidjson_ly::SizeType>(len), document.GetAllocator());
                 // Shorter but slower version:
                 // document["hello"].SetString(buffer, document.GetAllocator());
 

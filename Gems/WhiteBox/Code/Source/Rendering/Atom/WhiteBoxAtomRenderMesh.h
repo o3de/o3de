@@ -93,7 +93,7 @@ namespace WhiteBox
         AZ::Data::Instance<AZ::RPI::Model> m_model;
         AZ::Render::MeshFeatureProcessorInterface* m_meshFeatureProcessor = nullptr;
         AZ::Render::MeshFeatureProcessorInterface::MeshHandle m_meshHandle;
-        AZ::Render::MaterialAssignmentMap m_materialMap;
+        AZ::Data::Instance<AZ::RPI::Material> m_materialInstance;
         uint32_t m_vertexCount = 0;
         AZStd::unique_ptr<IndexBuffer> m_indexBuffer;
         AZStd::array<
@@ -106,8 +106,7 @@ namespace WhiteBox
         bool m_visible = true;
 
         //! Default white box mesh material.
-        static constexpr AZStd::string_view TexturedMaterialPath = "materials/defaultpbr.azmaterial";
-        static constexpr AZStd::string_view SolidMaterialPath = "materials/defaultpbr.azmaterial";
+        static constexpr AZStd::string_view TexturedMaterialPath = "materials/whiteboxdefault.azmaterial";
         static constexpr AZ::RPI::ModelMaterialSlot::StableId OneMaterialSlotId = 0;
 
         //! White box model name.

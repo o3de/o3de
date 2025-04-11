@@ -26,6 +26,7 @@ namespace AZ
             , private AZ::TickBus::Handler
         {
         public:
+            AZ_CLASS_ALLOCATOR(EditorModeFeatureProcessor, SystemAllocator)
             AZ_RTTI(AZ::Render::EditorModeFeatureProcessor, "{78D40D57-F564-4ECD-B9F5-D8C9784B15D0}", AZ::RPI::FeatureProcessor);
 
             static void Reflect(AZ::ReflectContext* context);
@@ -42,6 +43,9 @@ namespace AZ
 
             // AZ::TickBus overrides ...
             void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
+
+            //! Enable or disable the rendering editor mode feedback.
+            void SetEnableRender(bool enableRender);
 
         private:
             //! The pass system for the editor state feedback effects.

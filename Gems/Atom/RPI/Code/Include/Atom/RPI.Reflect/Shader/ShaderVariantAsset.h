@@ -11,6 +11,7 @@
 
 #include <Atom/RHI.Reflect/ShaderStageFunction.h>
 #include <Atom/RPI.Reflect/Asset/AssetHandler.h>
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/Shader/ShaderVariantKey.h>
 
 namespace AZ
@@ -19,13 +20,16 @@ namespace AZ
     {
         //! A ShaderVariantAsset contains the shader byte code for each shader stage (Vertex, Fragment, Tessellation, etc) for a given RHI::APIType (dx12, vulkan, metal, etc).
         //! One independent file per RHI::APIType.
-        class ShaderVariantAsset final
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+        class ATOM_RPI_REFLECT_API ShaderVariantAsset final
             : public Data::AssetData
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             friend class ShaderVariantAssetHandler;
             friend class ShaderVariantAssetCreator;
 
         public:
+            AZ_CLASS_ALLOCATOR(ShaderVariantAsset , SystemAllocator)
             AZ_RTTI(ShaderVariantAsset, "{51BED815-36D8-410E-90F0-1FA9FF765FBA}", Data::AssetData);
 
             static void Reflect(ReflectContext* context);
@@ -57,14 +61,10 @@ namespace AZ
 
             //! Returns whether the variant is fully baked variant (all options are static branches), or false if the
             //! variant uses dynamic branches for some shader options.
-            //! If the shader variant is not fully baked, the ShaderVariantKeyFallbackValue must be correctly set when drawing.
+            //! If the shader variant is not fully baked or fully specialized, the ShaderVariantKeyFallbackValue must be correctly set when drawing.
             bool IsFullyBaked() const;
 
-            //! Return the timestamp when this asset was built, and it must be >= than the timestamp of the main ShaderAsset.
-            //! This is used to synchronize versions of the ShaderAsset and ShaderVariantAsset, especially during hot-reload.
-            AZ::u64 GetBuildTimestamp() const;
-
-            bool IsRootVariant() const { return m_stableId == RPI::RootShaderVariantStableId; } 
+            bool IsRootVariant() const { return m_stableId == RPI::RootShaderVariantStableId; }
 
         private:
             //! Called by asset creators to assign the asset to a ready state.
@@ -80,13 +80,14 @@ namespace AZ
 
             AZStd::array<RHI::Ptr<RHI::ShaderStageFunction>, RHI::ShaderStageCount> m_functionsByStage;
 
-            //! Used to synchronize versions of the ShaderAsset and ShaderVariantAsset, especially during hot-reload.
-            AZ::u64 m_buildTimestamp = 0;
+
         };
 
-        class ShaderVariantAssetHandler final
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+        class ATOM_RPI_REFLECT_API ShaderVariantAssetHandler final
             : public AssetHandler<ShaderVariantAsset>
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             using Base = AssetHandler<ShaderVariantAsset>;
         public:
             ShaderVariantAssetHandler() = default;

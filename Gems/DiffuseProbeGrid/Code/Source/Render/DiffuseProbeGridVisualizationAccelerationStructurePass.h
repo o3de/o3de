@@ -16,6 +16,8 @@ namespace AZ
 {
     namespace Render
     {
+        class DiffuseProbeGrid;
+
         //! This pass builds the DiffuseProbeGrid visualization acceleration structure
         class DiffuseProbeGridVisualizationAccelerationStructurePass final
             : public RPI::Pass
@@ -25,7 +27,7 @@ namespace AZ
             AZ_RPI_PASS(DiffuseProbeGridVisualizationAccelerationStructurePass);
 
             AZ_RTTI(DiffuseProbeGridVisualizationAccelerationStructurePass, "{103D8917-D4DC-4CA3-BFB4-CD62846D282A}", Pass);
-            AZ_CLASS_ALLOCATOR(DiffuseProbeGridVisualizationAccelerationStructurePass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DiffuseProbeGridVisualizationAccelerationStructurePass, SystemAllocator);
 
             //! Creates a DiffuseProbeGridVisualizationAccelerationStructurePass
             static RPI::Ptr<DiffuseProbeGridVisualizationAccelerationStructurePass> Create(const RPI::PassDescriptor& descriptor);

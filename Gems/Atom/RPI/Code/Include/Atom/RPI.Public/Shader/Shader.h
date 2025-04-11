@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/Shader/ShaderVariant.h>
 #include <Atom/RPI.Public/Shader/ShaderReloadNotificationBus.h>
 
@@ -16,6 +17,7 @@
 
 #include <Atom/RHI/DrawListTagRegistry.h>
 #include <Atom/RHI/PipelineLibrary.h>
+#include <Atom/RHI/PipelineState.h>
 
 #include <AtomCore/Instance/InstanceData.h>
 #include <AzCore/IO/SystemFile.h>
@@ -50,15 +52,17 @@ namespace AZ
         //! 
         //! Remember that the returned RHI::PipelineState instance lifetime is tied to the Shader lifetime.
         //! If you need guarantee lifetime, it is safe to take a reference on the returned pipeline state.
-        class Shader final
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+        class ATOM_RPI_PUBLIC_API Shader final
             : public Data::InstanceData
             , public Data::AssetBus::MultiHandler
             , public ShaderVariantFinderNotificationBus::Handler
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             friend class ShaderSystem;
         public:
             AZ_INSTANCE_DATA(Shader, "{232D8BD6-3BD4-4842-ABD2-F380BD5B0863}");
-            AZ_CLASS_ALLOCATOR(Shader, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Shader, SystemAllocator);
 
             //! Returns the shader instance associated with the provided asset.
             static Data::Instance<Shader> FindOrCreate(const Data::Asset<ShaderAsset>& shaderAsset, const Name& supervariantName);
@@ -70,7 +74,7 @@ namespace AZ
             AZ_DISABLE_COPY_MOVE(Shader);
 
             //! returns the SupervariantIndex that corresponds to the given supervariant name given at instantiation.
-            SupervariantIndex GetSupervariantIndex() { return m_supervariantIndex; }
+            SupervariantIndex GetSupervariantIndex() const { return m_supervariantIndex; }
 
             //! Constructs a shader option group suitable to generate a shader variant key for this shader.
             ShaderOptionGroup CreateShaderOptionGroup() const;
@@ -168,7 +172,7 @@ namespace AZ
 
             void Shutdown();
 
-            ConstPtr<RHI::PipelineLibraryData> LoadPipelineLibrary() const;
+            AZStd::unordered_map<int, ConstPtr<RHI::PipelineLibraryData>> LoadPipelineLibrary() const;
             void SavePipelineLibrary() const;
             
             const ShaderVariant& GetVariantInternal(ShaderVariantStableId shaderVariantStableId);
@@ -182,6 +186,21 @@ namespace AZ
 
             //! A strong reference to the shader asset.
             Data::Asset<ShaderAsset> m_asset;
+
+            /////////////////////////////////////////////////////////////////////////////////////
+            //! The following variables are necessary to reliably reload the Shader
+            //! whenever the Shader source assets and dependencies change.
+            //! 
+            //! Each time the Shader is initialized, this variable
+            //! caches all the Assets that we are expecting to be reloaded whenever
+            //! the Shader asset changes. This includes m_asset + each Supervariant ShaderVariantAsset.
+            //! Typically most shaders only contain one Supervariant, so this variable becomes 2. 
+            size_t m_expectedAssetReloadCount = 0;
+            //! Each time one of the assets is reloaded we store it here, and when the
+            //! size of this dictionary equals @m_expectedAssetReloadCount then we know it is safe
+            //! to reload the Shader.
+            AZStd::unordered_map<Data::AssetId, Data::Asset<Data::AssetData>> m_reloadedAssets;
+            /////////////////////////////////////////////////////////////////////////////////////
 
             //! Selects current supervariant to be used.
             //! This value is defined at instantiation.
@@ -210,13 +229,7 @@ namespace AZ
             RHI::DrawListTag m_drawListTag;
 
             //! PipelineLibrary file name
-            char m_pipelineLibraryPath[AZ_MAX_PATH_LEN] = { 0 };
-
-            //! During OnAssetReloaded, the internal references to ShaderVariantAsset inside
-            //! ShaderAsset are not updated correctly. We store here a reference to the root ShaderVariantAsset
-            //! when it got reloaded, later when We get OnAssetReloaded for the ShaderAsset We update its internal
-            //! reference to the root variant asset.
-            Data::Asset<ShaderVariantAsset> m_reloadedRootShaderVariantAsset;
+            AZStd::unordered_map<int, AZStd::string> m_pipelineLibraryPaths;
         };
     }
 }

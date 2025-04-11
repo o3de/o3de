@@ -14,7 +14,7 @@
 namespace UnitTest
 {
     class RangesAlgorithmTestFixture
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {};
 
     // range algorithm min and max
@@ -509,6 +509,39 @@ namespace UnitTest
         EXPECT_EQ(testString.end(), unaryResult.in);
 
         EXPECT_THAT(ordinals, ::testing::ElementsAre('h', 'e', 'l', 'l', 'o'));
+    }
+
+
+    struct ReverseMoveOnly
+    {
+        ReverseMoveOnly() = default;
+        ReverseMoveOnly(const ReverseMoveOnly&) = delete;
+        ReverseMoveOnly& operator=(const ReverseMoveOnly&) = delete;
+        ReverseMoveOnly(ReverseMoveOnly&&) = default;
+        ReverseMoveOnly& operator=(ReverseMoveOnly&&) = default;
+
+        friend bool operator==(const ReverseMoveOnly& left, const ReverseMoveOnly& right)
+        {
+            return left.m_value == right.m_value;
+        }
+
+        friend bool operator!=(const ReverseMoveOnly& left, const ReverseMoveOnly& right)
+        {
+            return !operator==(left, right);
+        }
+
+        int m_value{};
+    };
+    TEST_F(RangesAlgorithmTestFixture, RangesReverse_SwapsInplace_Succeeds)
+    {
+        AZStd::array testArray{ ReverseMoveOnly{ 0 }, ReverseMoveOnly{ 1 }, ReverseMoveOnly{ 2 }, ReverseMoveOnly{ 3 } };
+
+        auto endOfRangeIter = AZStd::ranges::reverse(testArray);
+        EXPECT_EQ(testArray.end(), endOfRangeIter);
+
+        constexpr AZStd::array expectedArray{ ReverseMoveOnly{ 3 }, ReverseMoveOnly{ 2 }, ReverseMoveOnly{ 1 }, ReverseMoveOnly{ 0 } };
+
+        EXPECT_EQ(testArray, expectedArray);
     }
 
     TEST_F(RangesAlgorithmTestFixture, RangesContains_LocatesElementInContainer_Succeeds)

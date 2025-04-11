@@ -11,6 +11,11 @@
 #include <Atom/RHI.Reflect/MemoryEnums.h>
 #include <Atom/RHI/MemoryAllocation.h>
 
+namespace D3D12MA
+{
+    class Allocation;
+}
+
 namespace AZ
 {
     namespace DX12
@@ -42,8 +47,17 @@ namespace AZ
 
         public:
             MemoryView() = default;
-            MemoryView(RHI::Ptr<Memory> memory, size_t offset, size_t size, size_t alignment, MemoryViewType viewType);
-            MemoryView(const MemoryAllocation& memAllocation, MemoryViewType viewType);
+            MemoryView(
+                RHI::Ptr<Memory> memory,
+                size_t offset,
+                size_t size,
+                size_t alignment,
+                MemoryViewType viewType,
+                ID3D12Heap* heap = nullptr,
+                size_t heapOffset = 0ull);
+            MemoryView(D3D12MA::Allocation* allocation, RHI::Ptr<Memory> memory, size_t offset, size_t size, size_t alignment, MemoryViewType viewType);
+            MemoryView(
+                const MemoryAllocation& memAllocation, MemoryViewType viewType, ID3D12Heap* heap = nullptr, size_t heapOffset = 0ull);
 
             /// Supports copy and move construction / assignment.
             MemoryView(const MemoryView& rhs) = default;
@@ -65,6 +79,9 @@ namespace AZ
             /// Returns a pointer to the memory chunk this view is sub-allocated from.
             Memory* GetMemory() const;
 
+            // Returns a pointer to the D3D12MA allocations that contains this view
+            D3D12MA::Allocation* GetD3d12maAllocation() const;
+
             /// A convenience method to map the resource region spanned by the view for CPU access.
             CpuVirtualAddress Map(RHI::HostMemoryAccess hostAccess) const;
 
@@ -80,6 +97,12 @@ namespace AZ
             /// Sets the name of the ID3D12Resource.
             void SetName(const AZStd::wstring_view& name);
 
+            // Heap the Memory was allocated in. Will be nullptr for committed resources
+            ID3D12Heap* GetHeap();
+
+            // Offset in the heap that the Memory is allocated in. Will be zero for committed resources
+            size_t GetHeapOffset();
+
         private:
             void Construct();
 
@@ -89,6 +112,11 @@ namespace AZ
             MemoryAllocation m_memoryAllocation;
 
             MemoryViewType m_viewType;
+
+            ID3D12Heap* m_heap = nullptr;
+            size_t m_heapOffset = 0;
+
+            D3D12MA::Allocation* m_d3d12maAllocation = nullptr; //filled in for allocations created through D3D12MA
         };
     }
 }

@@ -40,7 +40,7 @@ namespace AtomToolsFramework
                 ->Event("SaveAsCopy", &AtomToolsDocumentRequestBus::Events::SaveAsCopy)
                 ->Event("IsOpen", &AtomToolsDocumentRequestBus::Events::IsOpen)
                 ->Event("IsModified", &AtomToolsDocumentRequestBus::Events::IsModified)
-                ->Event("CanSave", &AtomToolsDocumentRequestBus::Events::CanSave)
+                ->Event("CanSaveAsChild", &AtomToolsDocumentRequestBus::Events::CanSaveAsChild)
                 ->Event("CanUndo", &AtomToolsDocumentRequestBus::Events::CanUndo)
                 ->Event("CanRedo", &AtomToolsDocumentRequestBus::Events::CanRedo)
                 ->Event("Undo", &AtomToolsDocumentRequestBus::Events::Undo)
@@ -132,7 +132,7 @@ namespace AtomToolsFramework
 
     bool AtomToolsDocument::Save()
     {
-        if (!CanSave())
+        if (!GetDocumentTypeInfo().IsSupportedExtensionToSave(m_absolutePath))
         {
             AZ_Error("AtomToolsDocument", false, "Document type can not be saved: '%s'.", m_absolutePath.c_str());
             return SaveFailed();
@@ -156,7 +156,7 @@ namespace AtomToolsFramework
 
     bool AtomToolsDocument::SaveAsCopy(const AZStd::string& savePath)
     {
-        if (!CanSave())
+        if (!GetDocumentTypeInfo().IsSupportedExtensionToSave(savePath))
         {
             AZ_Error("AtomToolsDocument", false, "Document type can not be saved: '%s'.", m_absolutePath.c_str());
             return SaveFailed();
@@ -180,6 +180,12 @@ namespace AtomToolsFramework
 
     bool AtomToolsDocument::SaveAsChild(const AZStd::string& savePath)
     {
+        if (!GetDocumentTypeInfo().IsSupportedExtensionToSave(savePath))
+        {
+            AZ_Error("AtomToolsDocument", false, "Document type can not be saved: '%s'.", m_absolutePath.c_str());
+            return SaveFailed();
+        }
+
         m_savePathNormalized = savePath;
         if (!ValidateDocumentPath(m_savePathNormalized))
         {
@@ -235,9 +241,9 @@ namespace AtomToolsFramework
         return false;
     }
 
-    bool AtomToolsDocument::CanSave() const
+    bool AtomToolsDocument::CanSaveAsChild() const
     {
-        return GetDocumentTypeInfo().IsSupportedExtensionToSave(m_absolutePath);
+        return false;
     }
 
     bool AtomToolsDocument::CanUndo() const
@@ -292,7 +298,7 @@ namespace AtomToolsFramework
 
     bool AtomToolsDocument::OpenSucceeded()
     {
-        AZ_TracePrintf("AtomToolsDocument", "Document opened: '%s'.\n", m_absolutePath.c_str());
+        AZ_TracePrintf("AtomToolsDocument", "Document opened: '%s' (uuid %s)\n", m_absolutePath.c_str(), m_id.ToString<AZStd::string>().c_str());
         AzToolsFramework::AssetSystemBus::Handler::BusConnect();
         AtomToolsDocumentNotificationBus::Event(m_toolId, &AtomToolsDocumentNotificationBus::Events::OnDocumentOpened, m_id);
         return true;
@@ -300,7 +306,7 @@ namespace AtomToolsFramework
 
     bool AtomToolsDocument::OpenFailed()
     {
-        AZ_TracePrintf("AtomToolsDocument", "Document could not opened: '%s'.\n", m_absolutePath.c_str());
+        AZ_TracePrintf("AtomToolsDocument", "Document could not open: '%s'.\n", m_absolutePath.c_str());
         AtomToolsDocumentNotificationBus::Event(m_toolId, &AtomToolsDocumentNotificationBus::Events::OnDocumentError, m_id);
         Clear();
         return false;

@@ -31,8 +31,6 @@ namespace Multiplayer
     AZ_CVAR_SCOPED(int, cl_viewportConnectionStatusMaxDrawCount, 4, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, 
         "Limits the number of connect statuses seen in the viewport. Generally, clients are connected to 1 server, but defining a max draw count in case other connections are established.");
 
-    AZ_CVAR_EXTERNED(bool, sv_isDedicated);
-
 
     void MultiplayerConnectionViewportMessageSystemComponent::Reflect(AZ::ReflectContext* context)
     {
@@ -56,6 +54,7 @@ namespace Multiplayer
 
         if (auto multiplayerSystemComponent = AZ::Interface<IMultiplayer>::Get())
         {
+            multiplayerSystemComponent->AddVersionMismatchHandler(m_versionMismatchEventHandler);
             multiplayerSystemComponent->AddLevelLoadBlockedHandler(m_levelLoadBlockedHandler);
             multiplayerSystemComponent->AddNoServerLevelLoadedHandler(m_noServerLevelLoadedHandler);
         }
@@ -65,6 +64,7 @@ namespace Multiplayer
     {
         m_noServerLevelLoadedHandler.Disconnect();
         m_levelLoadBlockedHandler.Disconnect();
+        m_versionMismatchEventHandler.Disconnect();
         MultiplayerEditorServerNotificationBus::Handler::BusDisconnect();
         AZ::RPI::ViewportContextNotificationBus::Handler::BusDisconnect();
     }
@@ -115,11 +115,22 @@ namespace Multiplayer
         switch (agentType)
         {
         case MultiplayerAgentType::Uninitialized:
-            if (sv_isDedicated)
+            if (const auto console = AZ::Interface<AZ::IConsole>::Get())
             {
-                DrawConnectionStatusLine(DedicatedServerNotHosting, AZ::Colors::Red);
-                DrawConnectionStatusLine(DedicatedServerStatusTitle, AZ::Colors::White);
+                bool isDedicatedServer = false;
+                if (console->GetCvarValue("sv_isDedicated", isDedicatedServer) != AZ::GetValueResult::Success)
+                {
+                    AZLOG_WARN("MultiplayerConnectionViewport failed to access cvar  (sv_isDedicated).")
+                    break;
+                }
+
+                if (isDedicatedServer)
+                {
+                    DrawConnectionStatusLine(DedicatedServerNotHosting, AZ::Colors::Red);
+                    DrawConnectionStatusLine(DedicatedServerStatusTitle, AZ::Colors::White);
+                }
             }
+            
             break;
         case MultiplayerAgentType::Client:
             {
@@ -364,11 +375,24 @@ namespace Multiplayer
         m_centerViewportDebugText = OnServerLaunchFailMessage;
     }
 
-    void MultiplayerConnectionViewportMessageSystemComponent::OnEditorSendingLevelData()
+    void MultiplayerConnectionViewportMessageSystemComponent::OnEditorSendingLevelData(uint32_t bytesSent, uint32_t bytesTotal)
     {
         m_centerViewportDebugTextColor = AZ::Colors::Yellow;
-        m_centerViewportDebugText = OnEditorSendingLevelDataMessage;
+        m_centerViewportDebugText =
+            AZStd::fixed_string<MaxMessageLength>::format(OnEditorSendingLevelDataMessage, bytesSent, bytesTotal);
     }   
+
+    void MultiplayerConnectionViewportMessageSystemComponent::OnEditorSendingLevelDataFailed()
+    {
+        m_centerViewportDebugTextColor = AZ::Colors::Red;
+        m_centerViewportDebugText = OnEditorSendingLevelDataFailedMessage;
+    }
+
+    void MultiplayerConnectionViewportMessageSystemComponent::OnEditorSendingLevelDataSuccess()
+    {
+        m_centerViewportDebugTextColor = AZ::Colors::Yellow;
+        m_centerViewportDebugText = OnEditorSendingLevelDataSuccessMessage;
+    }
 
     void MultiplayerConnectionViewportMessageSystemComponent::OnEditorConnectionAttempt(uint16_t connectionAttempts, uint16_t maxAttempts)
     {
@@ -427,6 +451,12 @@ namespace Multiplayer
         {
             m_centerViewportDebugToastText = OnNoServerLevelLoadedMessageServerSide;
         }
+        m_centerViewportDebugToastStartTime = static_cast<AZ::TimeMs>(AZStd::GetTimeUTCMilliSecond());
+    }
+
+    void MultiplayerConnectionViewportMessageSystemComponent::OnVersionMismatchEvent()
+    {
+        m_centerViewportDebugToastText = OnVersionMismatch;
         m_centerViewportDebugToastStartTime = static_cast<AZ::TimeMs>(AZStd::GetTimeUTCMilliSecond());
     }
 }

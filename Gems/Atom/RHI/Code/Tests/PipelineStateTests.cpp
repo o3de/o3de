@@ -94,7 +94,7 @@ namespace UnitTest
 
     TEST_F(PipelineStateTests, PipelineState_CreateEmpty_Test)
     {
-        RHI::Ptr<RHI::PipelineState> empty = RHI::Factory::Get().CreatePipelineState();
+        RHI::Ptr<RHI::DevicePipelineState> empty = RHI::Factory::Get().CreatePipelineState();
         EXPECT_NE(empty.get(), nullptr);
         EXPECT_FALSE(empty->IsInitialized());
     }
@@ -103,7 +103,7 @@ namespace UnitTest
     {
         RHI::Ptr<RHI::Device> device = MakeTestDevice();
 
-        RHI::Ptr<RHI::PipelineState> pipelineState = RHI::Factory::Get().CreatePipelineState();
+        RHI::Ptr<RHI::DevicePipelineState> pipelineState = RHI::Factory::Get().CreatePipelineState();
         RHI::ResultCode resultCode = pipelineState->Init(*device, CreatePipelineStateDescriptor(0));
         EXPECT_EQ(resultCode, RHI::ResultCode::Success);
 
@@ -119,7 +119,7 @@ namespace UnitTest
     {
         RHI::Ptr<RHI::Device> device = MakeTestDevice();
 
-        RHI::Ptr<RHI::PipelineState> pipelineState = RHI::Factory::Get().CreatePipelineState();
+        RHI::Ptr<RHI::DevicePipelineState> pipelineState = RHI::Factory::Get().CreatePipelineState();
         auto descriptor = CreatePipelineStateDescriptor(0);
         descriptor.m_renderAttachmentConfiguration.m_subpassIndex = 1337;
         AZ_TEST_START_ASSERTTEST;
@@ -132,16 +132,18 @@ namespace UnitTest
     {
         RHI::Ptr<RHI::Device> device = MakeTestDevice();
 
-        RHI::Ptr<RHI::PipelineState> pipelineState = RHI::Factory::Get().CreatePipelineState();
+        RHI::Ptr<RHI::DevicePipelineState> pipelineState = RHI::Factory::Get().CreatePipelineState();
         auto descriptor = CreatePipelineStateDescriptor(0);
         descriptor.m_renderAttachmentConfiguration.m_renderAttachmentLayout.m_subpassLayouts[0].m_subpassInputCount = 1;
-        descriptor.m_renderAttachmentConfiguration.m_renderAttachmentLayout.m_subpassLayouts[0].m_subpassInputIndices[0] = 1;
+        descriptor.m_renderAttachmentConfiguration.m_renderAttachmentLayout.m_subpassLayouts[0].m_subpassInputDescriptors[0].m_attachmentIndex = 1;
         RHI::ResultCode resultCode = pipelineState->Init(*device, descriptor);
         EXPECT_EQ(resultCode, RHI::ResultCode::Success);
 
         AZ_TEST_START_ASSERTTEST;
         pipelineState = RHI::Factory::Get().CreatePipelineState();
-        descriptor.m_renderAttachmentConfiguration.m_renderAttachmentLayout.m_subpassLayouts[0].m_subpassInputIndices[0] = 3;
+        descriptor.m_renderAttachmentConfiguration.m_renderAttachmentLayout.m_subpassLayouts[0]
+            .m_subpassInputDescriptors[0]
+            .m_attachmentIndex = 3;
         resultCode = pipelineState->Init(*device, descriptor);
         AZ_TEST_STOP_ASSERTTEST(1);
         EXPECT_EQ(resultCode, RHI::ResultCode::InvalidOperation);
@@ -151,7 +153,7 @@ namespace UnitTest
     {
         RHI::Ptr<RHI::Device> device = MakeTestDevice();
 
-        RHI::Ptr<RHI::PipelineState> pipelineState = RHI::Factory::Get().CreatePipelineState();
+        RHI::Ptr<RHI::DevicePipelineState> pipelineState = RHI::Factory::Get().CreatePipelineState();
         auto descriptor = CreatePipelineStateDescriptor(0);
         descriptor.m_renderAttachmentConfiguration.m_renderAttachmentLayout.m_subpassLayouts[0].m_rendertargetDescriptors[0].m_resolveAttachmentIndex = 1;
         RHI::ResultCode resultCode = pipelineState->Init(*device, descriptor);
@@ -174,7 +176,7 @@ namespace UnitTest
 
     TEST_F(PipelineStateTests, PipelineLibrary_CreateEmpty_Test)
     {
-        RHI::Ptr<RHI::PipelineLibrary> empty = RHI::Factory::Get().CreatePipelineLibrary();
+        RHI::Ptr<RHI::DevicePipelineLibrary> empty = RHI::Factory::Get().CreatePipelineLibrary();
         EXPECT_NE(empty.get(), nullptr);
         EXPECT_FALSE(empty->IsInitialized());
 
@@ -188,178 +190,15 @@ namespace UnitTest
     {
         RHI::Ptr<RHI::Device> device = MakeTestDevice();
 
-        RHI::Ptr<RHI::PipelineLibrary> pipelineLibrary = RHI::Factory::Get().CreatePipelineLibrary();
-        RHI::ResultCode resultCode = pipelineLibrary->Init(*device, RHI::PipelineLibraryDescriptor{});
+        RHI::Ptr<RHI::DevicePipelineLibrary> pipelineLibrary = RHI::Factory::Get().CreatePipelineLibrary();
+        RHI::ResultCode resultCode = pipelineLibrary->Init(*device, RHI::DevicePipelineLibraryDescriptor{});
         EXPECT_EQ(resultCode, RHI::ResultCode::Success);
 
         // Second init should fail and throw validation error.
         AZ_TEST_START_ASSERTTEST;
-        resultCode = pipelineLibrary->Init(*device, RHI::PipelineLibraryDescriptor{});
+        resultCode = pipelineLibrary->Init(*device, RHI::DevicePipelineLibraryDescriptor{});
         AZ_TEST_STOP_ASSERTTEST(1);
 
         EXPECT_EQ(resultCode, RHI::ResultCode::InvalidOperation);
-    }
-
-    TEST_F(PipelineStateTests, PipelineStateCache_Init_Test)
-    {
-        RHI::Ptr<RHI::Device> device = MakeTestDevice();
-        RHI::Ptr<RHI::PipelineStateCache> pipelineStateCache = RHI::PipelineStateCache::Create(*device);
-
-        AZStd::array<RHI::PipelineLibraryHandle, RHI::PipelineStateCache::LibraryCountMax> handles;
-        for (size_t i = 0; i < handles.size(); ++i)
-        {
-            handles[i] = pipelineStateCache->CreateLibrary(nullptr);
-
-            EXPECT_TRUE(handles[i].IsValid());
-
-            for (size_t j = 0; j < i; ++j)
-            {
-                EXPECT_NE(handles[i], handles[j]);
-            }
-        }
-
-        // Creating more than the maximum number of libraries should assert but still function.
-        AZ_TEST_START_ASSERTTEST;
-        EXPECT_EQ(pipelineStateCache->CreateLibrary(nullptr), RHI::PipelineLibraryHandle{});
-        AZ_TEST_STOP_ASSERTTEST(1);
-
-        // Reset should no-op.
-        pipelineStateCache->Reset();
-
-        for (size_t i = 0; i < handles.size(); ++i)
-        {
-            pipelineStateCache->ResetLibrary(handles[i]);
-            pipelineStateCache->ReleaseLibrary(handles[i]);
-        }
-
-        // Test free-list by allocating another set of libraries.
-
-        for (size_t i = 0; i < handles.size(); ++i)
-        {
-            handles[i] = pipelineStateCache->CreateLibrary(nullptr);
-            EXPECT_FALSE(handles[i].IsNull());
-        }
-    }
-
-    TEST_F(PipelineStateTests, PipelineStateCache_NullHandle_Test)
-    {
-        RHI::Ptr<RHI::Device> device = MakeTestDevice();
-        RHI::Ptr<RHI::PipelineStateCache> pipelineStateCache = RHI::PipelineStateCache::Create(*device);
-
-        // Calling library methods with a null handle should early out.
-        pipelineStateCache->ResetLibrary({});
-        pipelineStateCache->ReleaseLibrary({});
-        EXPECT_EQ(pipelineStateCache->GetMergedLibrary({}), nullptr);
-        EXPECT_EQ(pipelineStateCache->AcquirePipelineState({}, CreatePipelineStateDescriptor(0)), nullptr);
-        pipelineStateCache->Compact();
-        ValidateCacheIntegrity(pipelineStateCache);
-    }
-
-    TEST_F(PipelineStateTests, PipelineStateCache_PipelineStateThreading_Same_Test)
-    {
-        RHI::Ptr<RHI::Device> device = MakeTestDevice();
-        RHI::Ptr<RHI::PipelineStateCache> pipelineStateCache = RHI::PipelineStateCache::Create(*device);
-
-        static const size_t IterationCountMax = 10000;
-        static const size_t ThreadCountMax = 8;
-
-        RHI::PipelineStateDescriptorForDraw descriptor = CreatePipelineStateDescriptor(0);
-
-        RHI::PipelineLibraryHandle libraryHandle = pipelineStateCache->CreateLibrary(nullptr);
-
-        AZStd::mutex mutex;
-        AZStd::unordered_set<const RHI::PipelineState*> pipelineStatesMerged;
-
-        ThreadTester::Dispatch(ThreadCountMax, [&] ([[maybe_unused]] size_t threadIndex)
-        {
-            AZStd::unordered_set<const RHI::PipelineState*> pipelineStates;
-
-            for (size_t i = 0; i < IterationCountMax; ++i)
-            {
-                pipelineStates.insert(pipelineStateCache->AcquirePipelineState(libraryHandle, descriptor));
-            }
-
-            EXPECT_EQ(pipelineStates.size(), 1);
-            EXPECT_NE(*pipelineStates.begin(), nullptr);
-
-            mutex.lock();
-            pipelineStatesMerged.insert(*pipelineStates.begin());
-            mutex.unlock();
-        });
-
-        pipelineStateCache->Compact();
-        ValidateCacheIntegrity(pipelineStateCache);
-
-        EXPECT_EQ(pipelineStatesMerged.size(), 1);
-    }
-
-    TEST_F(PipelineStateTests, PipelineStateCache_PipelineStateThreading_Fuzz_Test)
-    {
-        RHI::Ptr<RHI::Device> device = MakeTestDevice();
-        RHI::Ptr<RHI::PipelineStateCache> pipelineStateCache = RHI::PipelineStateCache::Create(*device);
-
-        static const size_t CycleIterationCountMax = 4;
-        static const size_t AcquireIterationCountMax = 2000;
-        static const size_t ThreadCountMax = 4;
-        static const size_t PipelineStateCountMax = 128;
-        static const size_t LibraryCountMax = 2;
-
-        AZStd::vector<RHI::PipelineStateDescriptorForDraw> descriptors;
-        descriptors.reserve(PipelineStateCountMax);
-        for (size_t i = 0; i < PipelineStateCountMax; ++i)
-        {
-            descriptors.push_back(CreatePipelineStateDescriptor(static_cast<uint32_t>(i)));
-        }
-
-        AZStd::vector<RHI::PipelineLibraryHandle> libraryHandles;
-        for (size_t i = 0; i < LibraryCountMax; ++i)
-        {
-            libraryHandles.push_back(pipelineStateCache->CreateLibrary(nullptr));
-        }
-
-        AZStd::mutex mutex;
-
-        for (size_t cycleIndex = 0; cycleIndex < CycleIterationCountMax; ++cycleIndex)
-        {
-            for (size_t libraryIndex = 0; libraryIndex < LibraryCountMax; ++libraryIndex)
-            {
-                RHI::PipelineLibraryHandle libraryHandle = libraryHandles[libraryIndex];
-
-                AZStd::unordered_set<const RHI::PipelineState*> pipelineStatesMerged;
-
-                ThreadTester::Dispatch(ThreadCountMax, [&](size_t threadIndex)
-                {
-                    SimpleLcgRandom random(threadIndex);
-
-                    AZStd::unordered_set<const RHI::PipelineState*> pipelineStates;
-
-                    for (size_t i = 0; i < AcquireIterationCountMax; ++i)
-                    {
-                        size_t descriptorIndex = random.GetRandom() % descriptors.size();
-
-                        pipelineStates.emplace(pipelineStateCache->AcquirePipelineState(libraryHandle, descriptors[descriptorIndex]));
-                    }
-
-                    mutex.lock();
-                    for (const RHI::PipelineState* pipelineState : pipelineStates)
-                    {
-                        pipelineStatesMerged.emplace(pipelineState);
-                    }
-                    mutex.unlock();
-                });
-
-                EXPECT_EQ(pipelineStatesMerged.size(), PipelineStateCountMax);
-            }
-
-            pipelineStateCache->Compact();
-            ValidateCacheIntegrity(pipelineStateCache);
-
-            // Halfway through, reset the caches.
-
-            if (cycleIndex == (CycleIterationCountMax / 2))
-            {
-                pipelineStateCache->Reset();
-            }
-        }
     }
 }

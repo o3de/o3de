@@ -21,7 +21,7 @@ namespace AzToolsFramework
 {
     //! Base class for all property editor widgets in the DocumentPropertyEditor.
     //! Property handler widgets are registered to the PropertyEditorToolsSystemInterface and
-    //! instantited as part of the DocumentPropertyEditor, with one handler instance being constructed
+    //! instantiated as part of the DocumentPropertyEditor, with one handler instance being constructed
     //! for each property editor.
     class PropertyHandlerWidgetInterface
     {
@@ -33,6 +33,12 @@ namespace AzToolsFramework
         //! Sets up the widget provided by GetWidget to reflect the values provided by a given DOM node.
         //! This should consume both the property value (if applicable) and any attributes, including OnChange.
         virtual void SetValueFromDom(const AZ::Dom::Value& node) = 0;
+
+        //! Attempts to reset the widget handler to default, typically for recycling. Returns true if successful
+        virtual bool ResetToDefaults()
+        {
+            return false;
+        }
         //! Returns the first widget in the tab order for this property editor, i.e. the widget that should be selected
         //! when the user hits tab on the widget immediately prior to this.
         //! By default, this returns GetWidget, a single widget tab order.
@@ -42,10 +48,10 @@ namespace AzToolsFramework
         //! By default, this returns GetWidget, a single widget tab order.
         virtual QWidget* GetLastInTabOrder();
 
-        //! Returns true if this handler should be used for this node (assuming its type already matches GetHandlerName())
+        //! Returns true if this handler should be used for this type (assuming its type already matches GetHandlerName())
         //! This may be reimplemented in subclasses to allow handler specialization, for example a handler that handles
         //! integral types and a separate handler for handling floating point types.
-        static bool ShouldHandleNode([[maybe_unused]] const AZ::Dom::Value& node)
+        static bool ShouldHandleType([[maybe_unused]] const AZ::TypeId& typeId)
         {
             return true;
         }
@@ -57,8 +63,8 @@ namespace AzToolsFramework
             return "<undefined handler name>";
         }
 
-        //! If overrideen, this can be used to indicate that this handler should be added to the "default" pool of
-        //! property handlers. Default property handlers will have ShouldHandleNode queried for PropertyEditor nodes
+        //! If overridden, this can be used to indicate that this handler should be added to the "default" pool of
+        //! property handlers. Default property handlers will have ShouldHandleType queried for PropertyEditor nodes
         //! that don't have an explicit Type set.
         //! For example, a numeric spin box might be registered as a default handler, in which case a node like:
         //! <PropertyEditor Value=5 ValueType="int" />

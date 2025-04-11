@@ -34,6 +34,7 @@
 #include <GraphCanvas/Editor/AssetEditorBus.h>
 #include <GraphCanvas/Editor/EditorTypes.h>
 #include <GraphCanvas/Widgets/Bookmarks/BookmarkDockWidget.h>
+#include <GraphCanvas/Widgets/GraphOutliner/GraphOutlinerDockWidget.h>
 #include <GraphCanvas/Widgets/ConstructPresetDialog/ConstructPresetDialog.h>
 #include <GraphCanvas/Styling/StyleManager.h>
 
@@ -96,6 +97,7 @@ namespace ScriptCanvasEditor
         , private UpgradeNotificationsBus::Handler
     {
     public:
+        AZ_CLASS_ALLOCATOR(ScriptCanvasAssetBrowserModel, AZ::SystemAllocator);
 
         explicit ScriptCanvasAssetBrowserModel(QObject* parent = nullptr)
             : AzToolsFramework::AssetBrowser::AssetBrowserFilterModel(parent)
@@ -159,7 +161,7 @@ namespace ScriptCanvasEditor
         Workspace(MainWindow* mainWindow)
             : m_mainWindow(mainWindow)
         {
-            auto userSettings = AZ::UserSettings::CreateFind<EditorSettings::ScriptCanvasEditorSettings>(AZ_CRC("ScriptCanvasPreviewSettings", 0x1c5a2965), AZ::UserSettings::CT_LOCAL);
+            auto userSettings = AZ::UserSettings::CreateFind<EditorSettings::ScriptCanvasEditorSettings>(AZ_CRC_CE("ScriptCanvasPreviewSettings"), AZ::UserSettings::CT_LOCAL);
             m_rememberOpenCanvases = (userSettings && userSettings->m_rememberOpenCanvases);
         }
 
@@ -374,6 +376,7 @@ namespace ScriptCanvasEditor
 
         // Tools menu
         void OnViewNodePalette();
+        void OnViewGraphOutliner();
         void OnViewProperties();
         void OnViewDebugger();
         void OnViewCommandLine();
@@ -388,14 +391,6 @@ namespace ScriptCanvasEditor
         void OnViewStatisticsPanel();
         void OnViewPresetsEditor();
         void OnRestoreDefaultLayout();
-
-        // ScriptEvent Extension Actions
-        void OnScriptEventAddHelpers();
-        void OnScriptEventClearStatus();
-        void OnScriptEventMenuPreShow();
-        void OnScriptEventOpen();
-        void OnScriptEventParseAs();
-        void OnScriptEventSaveAs();
 
         void UpdateViewMenu();
         /////////////////////////////////////////////////////////////////////////////////////////////
@@ -526,6 +521,7 @@ namespace ScriptCanvasEditor
         AZ::EntityId FindAssetNodeIdByEditorNodeId(const SourceHandle& assetId, AZ::EntityId editorNodeId) const override;
 
     private:
+
         void SourceFileChanged(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid fileAssetId) override;
         void SourceFileRemoved(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid fileAssetId) override;
 
@@ -643,10 +639,11 @@ namespace ScriptCanvasEditor
 
         void OpenNextFile();
 
-
         void DisableAssetView(const SourceHandle& memoryAssetId);
         void EnableAssetView(const SourceHandle& memoryAssetId);
 
+        void EnableOpenDocumentActions(bool enable);
+        void EnableAlignmentActions(bool enable);
 
         QWidget* m_host = nullptr;
 
@@ -675,7 +672,8 @@ namespace ScriptCanvasEditor
         Widget::NodePaletteDockWidget*      m_nodePalette = nullptr;
         Widget::LogPanelWidget*             m_logPanel = nullptr;
         Widget::PropertyGrid*               m_propertyGrid = nullptr;
-        Widget::CommandLine*                m_commandLine = nullptr;
+        Widget::CommandLine* m_commandLine = nullptr;
+        GraphCanvas::GraphOutlinerDockWidget* m_graphOutlinerDockWidget = nullptr;
         GraphCanvas::BookmarkDockWidget*    m_bookmarkDockWidget = nullptr;
         GraphCanvas::MiniMapDockWidget*     m_minimap = nullptr;
         LoggingWindow*                      m_loggingWindow = nullptr;
@@ -765,7 +763,7 @@ namespace ScriptCanvasEditor
         AZStd::unique_ptr<VersionExplorer::FileSaver> m_fileSaver;
         VersionExplorer::FileSaveResult m_fileSaveResult;
         void OnSaveCallBack(const VersionExplorer::FileSaveResult& result);
-
+        SourceHandle OnSaveComplete(const SourceHandle& sourceHandle, const VersionExplorer::FileSaveResult& result);
         void ClearStaleSaves();
         bool IsRecentSave(const SourceHandle& handle) const;
         void MarkRecentSave(const SourceHandle& handle);

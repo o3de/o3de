@@ -7,19 +7,21 @@
  */
 
 #include <Source/Debug/MultiplayerDebugSystemComponent.h>
+#include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/Component/TickBus.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/StringFunc/StringFunc.h>
-#include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzNetworking/Framework/INetworking.h>
 #include <AzNetworking/Framework/INetworkInterface.h>
 #include <Multiplayer/IMultiplayer.h>
 #include <Multiplayer/MultiplayerConstants.h>
+#include <Multiplayer/MultiplayerPerformanceStats.h>
+#include <Multiplayer/MultiplayerMetrics.h>
 #include <Atom/Feature/ImGui/SystemBus.h>
 #include <ImGuiContextScope.h>
-#include <ImGui/ImGuiPass.h>
 #include <imgui/imgui.h>
 #include <imgui/imgui_internal.h>
 
@@ -70,6 +72,10 @@ namespace Multiplayer
     {
 #ifdef IMGUI_ENABLED
         ImGui::ImGuiUpdateListenerBus::Handler::BusDisconnect();
+        m_auditTrailElems.clear();
+        m_committedAuditTrail.clear();
+        m_pendingAuditTrail.clear();
+        m_filteredAuditTrail.clear();
 #endif
     }
 
@@ -94,6 +100,11 @@ namespace Multiplayer
         [[maybe_unused]] const AZStd::string& name,
         [[maybe_unused]] AZStd::vector<MultiplayerAuditingElement>&& entryDetails)
     {
+        if (category == AuditCategory::Desync)
+        {
+            INCREMENT_PERFORMANCE_STAT(MultiplayerStat_DesyncCorrections);
+        }
+
 #ifdef IMGUI_ENABLED
         while (m_auditTrailElems.size() >= net_DebutAuditTrail_HistorySize)
         {
@@ -246,25 +257,8 @@ namespace Multiplayer
         bool displaying = m_displayNetworkingStats || m_displayMultiplayerStats || m_displayPerEntityStats || m_displayHierarchyDebugger ||
             m_displayNetAuditTrail;
 
-        // Get the default ImGui pass.
-        AZ::Render::ImGuiPass* defaultImGuiPass = nullptr;
-        AZ::Render::ImGuiSystemRequestBus::BroadcastResult(
-            defaultImGuiPass, &AZ::Render::ImGuiSystemRequestBus::Events::GetDefaultImGuiPass);
-        if (displaying && defaultImGuiPass)
+        if (displaying)
         {
-            if (m_previousSystemCursorState == AzFramework::SystemCursorState::Unknown)
-            {
-                AzFramework::InputSystemCursorRequestBus::EventResult(
-                    m_previousSystemCursorState, AzFramework::InputDeviceMouse::Id,
-                    &AzFramework::InputSystemCursorRequests::GetSystemCursorState);
-                AzFramework::InputSystemCursorRequestBus::Event(
-                    AzFramework::InputDeviceMouse::Id, &AzFramework::InputSystemCursorRequests::SetSystemCursorState,
-                    AzFramework::SystemCursorState::UnconstrainedAndVisible);
-            }
-
-            // Create an ImGui context scope using the default ImGui pass context.
-            ImGui::ImGuiContextScope contextScope(defaultImGuiPass->GetContext());
-
             if (m_displayNetworkingStats)
             {
                 if (ImGui::Begin("Networking Stats", &m_displayNetworkingStats, ImGuiWindowFlags_None))
@@ -364,13 +358,6 @@ namespace Multiplayer
                     m_auditTrail.reset();
                 }
             }
-        }
-        else if (m_previousSystemCursorState != AzFramework::SystemCursorState::Unknown)
-        {
-            AzFramework::InputSystemCursorRequestBus::Event(
-                AzFramework::InputDeviceMouse::Id, &AzFramework::InputSystemCursorRequests::SetSystemCursorState,
-                m_previousSystemCursorState);
-            m_previousSystemCursorState = AzFramework::SystemCursorState::Unknown;
         }
     }
 

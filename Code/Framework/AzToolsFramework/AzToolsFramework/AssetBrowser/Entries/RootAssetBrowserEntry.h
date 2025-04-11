@@ -50,7 +50,7 @@ namespace AzToolsFramework
         {
         public:
             AZ_RTTI(RootAssetBrowserEntry, "{A35CA80E-E1EB-420B-8BFE-B7792E3CCEDB}");
-            AZ_CLASS_ALLOCATOR(RootAssetBrowserEntry, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(RootAssetBrowserEntry, AZ::SystemAllocator);
 
             RootAssetBrowserEntry();
 
@@ -71,6 +71,7 @@ namespace AzToolsFramework
 
             bool IsInitialUpdate() const;
             void SetInitialUpdate(bool newValue);
+            void PrepareForReset();
 
         protected:
             void UpdateChildPaths(AssetBrowserEntry* child) const override;
@@ -79,6 +80,8 @@ namespace AzToolsFramework
             AZ_DISABLE_COPY_MOVE(RootAssetBrowserEntry);
 
             AZ::IO::Path m_enginePath;
+            AZ::IO::Path m_projectPath;
+            AZStd::unordered_set<AZ::IO::Path> m_gemNames;
 
             //! Create folder entry child
             FolderAssetBrowserEntry* CreateFolder(AZStd::string_view folderName, AssetBrowserEntry* parent, bool isScanFolder);

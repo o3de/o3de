@@ -43,7 +43,7 @@ namespace EMotionFX
             {
             public:
                 AZ_RTTI(ActorPhysicsSetupRule, "{B18E9412-85DC-442D-9AA3-293B583EC1A6}", AZ::SceneAPI::DataTypes::IRule);
-                AZ_CLASS_ALLOCATOR(ActorPhysicsSetupRule, AZ::SystemAllocator, 0)
+                AZ_CLASS_ALLOCATOR(ActorPhysicsSetupRule, AZ::SystemAllocator)
 
                 ActorPhysicsSetupRule();
                 ActorPhysicsSetupRule(const AZStd::shared_ptr<EMotionFX::PhysicsSetup>& data);

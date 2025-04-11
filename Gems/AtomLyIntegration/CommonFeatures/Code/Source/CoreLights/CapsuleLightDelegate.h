@@ -55,6 +55,6 @@ namespace AZ::Render
 
         CapsuleVisualizationDimensions CalculateCapsuleVisualizationDimensions() const;
 
-        LmbrCentral::CapsuleShapeComponentRequests* m_shapeBus = nullptr;
+        LmbrCentral::CapsuleShapeComponentRequests* m_capsuleShapeBus = nullptr;
     };
 } // namespace AZ::Render

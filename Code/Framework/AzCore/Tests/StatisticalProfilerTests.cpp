@@ -38,20 +38,20 @@ namespace UnitTest
     }
 
     class AllocatorsWithTraceFixture
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
         , public AZ::Debug::TraceMessageBus::Handler
     {
     public:
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
             AZ::Debug::TraceMessageBus::Handler::BusConnect();
         }
 
         void TearDown() override
         {
             AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         bool OnPrintf(const char* window, const char* message) override
@@ -107,7 +107,7 @@ namespace UnitTest
         StatisticalProfilerTestTraits<AZ::HashValue32, AZStd::shared_mutex>,
         StatisticalProfilerTestTraits<AZ::HashValue64, AZStd::shared_mutex>
     >;
-    TYPED_TEST_CASE(StatisticalProfilerFixture, StatisticalProfilerTestTypes);
+    TYPED_TEST_SUITE(StatisticalProfilerFixture, StatisticalProfilerTestTypes);
 
     TYPED_TEST(StatisticalProfilerFixture, ProfileCode_SingleThread_ValidateStatistics)
     {
@@ -159,7 +159,7 @@ namespace UnitTest
         StatisticalProfilerTestTraits<AZ::HashValue32, AZStd::shared_mutex>,
         StatisticalProfilerTestTraits<AZ::HashValue64, AZStd::shared_mutex>
     >;
-    TYPED_TEST_CASE(ThreadedStatisticalProfilerFixture, ThreadedStatisticalProfilerTestTypes);
+    TYPED_TEST_SUITE(ThreadedStatisticalProfilerFixture, ThreadedStatisticalProfilerTestTypes);
 
     TYPED_TEST(ThreadedStatisticalProfilerFixture, ProfileCode_4Threads_ValidateStatistics)
     {

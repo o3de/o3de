@@ -17,6 +17,7 @@
 #include <AzCore/Math/Vector2.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>
 #include <AzFramework/Components/TransformComponent.h>
+#include <AZTestShared/Math/MathTestHelpers.h>
 
 #include <GradientSignal/Components/ImageGradientComponent.h>
 #include <GradientSignal/Components/GradientTransformComponent.h>
@@ -802,7 +803,7 @@ namespace UnitTest
             MockShapeComponentHandler mockShapeComponentHandler(mockShape->GetId());
             // Create a 2x2 box shape (shapes are inclusive, so that's 3x3 sampling space), so that each pixel in the image directly maps to 1 meter in the box.
             mockShapeComponentHandler.m_GetEncompassingAabb = AZ::Aabb::CreateFromMinMax(AZ::Vector3(0.0f), AZ::Vector3(2.0f));
-            mockShapeComponentHandler.m_GetLocalBounds = mockShapeComponentHandler.m_GetEncompassingAabb;
+            mockShapeComponentHandler.m_GetLocalBounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(-1.0f), AZ::Vector3(1.0f));
             // Shapes internally just cache the WorldTM, so make sure we've done the same for our test data.
             mockShapeComponentHandler.m_GetTransform = mockShapeTransformHandler.m_GetWorldTMOutput;
 
@@ -850,6 +851,147 @@ namespace UnitTest
 
             TestFixedDataSampler(expectedOutput, dataSize, entity->GetId());
         }
+    }
+
+    struct GradientSignalImagePaintingTestsFixture
+        : public GradientSignalTest
+    {
+        AZStd::unique_ptr<AZ::Entity> CreateTestImageGradientEntity(
+            float boundsSize, uint32_t width, uint32_t height, AZStd::span<const uint8_t> pixels)
+        {
+            // Create an entity with a Box Shape
+            auto entity = CreateTestEntity(boundsSize / 2.0f);
+
+            // Create an Image Gradient Component with an image asset based on the passed-in pixel data.
+            GradientSignal::ImageGradientConfig config;
+            config.m_imageAsset = CreateImageAssetFromPixelData(width, height, AZ::RHI::Format::R8_UNORM, pixels);
+            m_imageGradientComponent = entity->CreateComponent<GradientSignal::ImageGradientComponent>(config);
+
+            // Create a Gradient Transform Component with default parameters
+            entity->CreateComponent<GradientSignal::GradientTransformComponent>();
+
+            ActivateEntity(entity.get());
+            EXPECT_EQ(entity->GetState(), AZ::Entity::State::Active);
+
+            return entity;
+        }
+
+       // Keep track of the image gradient component so that we have an easy way to get its component ID.
+       GradientSignal::ImageGradientComponent* m_imageGradientComponent = nullptr;
+    };
+
+    TEST_F(GradientSignalImagePaintingTestsFixture, ImageGradientHasWorkingEyedropper)
+    {
+        // This test verifies that the paintbrush eyedropper can read values correctly from an Image Gradient.
+
+        // Create an Image Gradient in a box that goes from (0, 0, 0) to (4, 4, 4) in world space.
+        // We'll create a 4x4 image to map onto it, so each pixel is 1 x 1 m in size.
+        // The lower left corner of the image maps to (0, 0) and the upper right to (4, 4).
+
+        constexpr uint32_t width = 4;
+        constexpr uint32_t height = 4;
+
+        // The pixel values themselves are arbitrary, they're just all set to different values to help verify that the correct pixel
+        // colors are getting read by the eyedropper at each world location.
+        AZStd::vector<uint8_t> pixels = {
+            // 0 - 1 m   1 - 2 m   2 - 3 m   3 - 4 m
+                0x11,     0x22,     0x33,     0x44, // 3 - 4 m
+                0x55,     0x66,     0x77,     0x88, // 2 - 3 m
+                0x99,     0xAA,     0xBB,     0xCC, // 1 - 2 m
+                0xDD,     0xEE,     0xFF,     0x00, // 0 - 1 m
+        };
+
+        constexpr float BoxBounds = 4.0f;
+        auto entity = CreateTestImageGradientEntity(BoxBounds, width, height, pixels);
+
+        AzFramework::PaintBrushSettings brushSettings;
+
+        AzFramework::PaintBrush paintBrush({ entity->GetId(), m_imageGradientComponent->GetId() });
+        paintBrush.BeginPaintMode();
+
+        AZ::Aabb shapeBounds = AZ::Aabb::CreateNull();
+        LmbrCentral::ShapeComponentRequestsBus::EventResult(
+            shapeBounds, entity->GetId(), &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
+
+        // Loop through each pixel, use the eyedropper in world space to try to look it up, and verify the intensities match.
+        for (uint32_t pixelIndex = 0; pixelIndex < pixels.size(); pixelIndex++)
+        {
+            uint32_t pixelX = pixelIndex % width;
+            uint32_t pixelY = pixelIndex / width;
+
+            auto location = PixelCoordinatesToWorldSpace(pixelX, pixelY, shapeBounds, width, height);
+
+            // Use the eyedropper for each world position and verify that it matches the value in the gradient image.
+            AZ::Color pixelColor = paintBrush.UseEyedropper(location);
+            EXPECT_EQ(pixels[pixelIndex], pixelColor.GetR8());
+        }
+
+        paintBrush.EndPaintMode();
+
+        entity.reset();
+    }
+
+    TEST_F(GradientSignalImagePaintingTestsFixture, ImageGradientCanBePainted)
+    {
+        // This test verifies that the paintbrush paint commands can modify values correctly in an Image Gradient.
+
+        // Create an Image Gradient in a box that goes from (0, 0, 0) to (4, 4, 4) in world space.
+        // We'll create a 4x4 image to map onto it, so each pixel is 1 x 1 m in size.
+        // The lower left corner of the image maps to (0, 0) and the upper right to (4, 4).
+
+        constexpr uint32_t width = 4;
+        constexpr uint32_t height = 4;
+        AZStd::vector<uint8_t> pixels(width * height);
+
+        constexpr float BoxBounds = 4.0f;
+        auto entity = CreateTestImageGradientEntity(BoxBounds, width, height, pixels);
+
+        AZ::Aabb shapeBounds = AZ::Aabb::CreateNull();
+        LmbrCentral::ShapeComponentRequestsBus::EventResult(
+            shapeBounds, entity->GetId(), &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
+
+        // Choose arbitrary but equal color values except for the alpha, which is set to opaque.
+        AZ::Color brushColor(0.5f, 0.5f, 0.5f, 1.0f);
+
+        AzFramework::PaintBrushSettings brushSettings;
+        brushSettings.SetColor(brushColor);
+        brushSettings.SetSize(1.0f);
+        EXPECT_THAT(brushSettings.GetColor(), UnitTest::IsClose(brushColor));
+
+        // Find the location of the center of an arbitrary pixel in world space.
+        constexpr uint32_t paintedPixelX = 2;
+        constexpr uint32_t paintedPixelY = 1;
+        auto paintedPixelLocation = PixelCoordinatesToWorldSpace(paintedPixelX, paintedPixelY, shapeBounds, width, height);
+
+        AzFramework::PaintBrush paintBrush({ entity->GetId(), m_imageGradientComponent->GetId() });
+        paintBrush.BeginPaintMode();
+
+        // Verify that before painting, the pixel intensity is 0.
+        AZ::Color startColor = paintBrush.UseEyedropper(paintedPixelLocation);
+        EXPECT_EQ(startColor.GetR(), 0.0f);
+
+        // Paint one pixel with the paintbrush.
+        paintBrush.BeginBrushStroke(brushSettings);
+        paintBrush.PaintToLocation(paintedPixelLocation, brushSettings);
+        paintBrush.EndBrushStroke();
+
+        // Loop through each pixel, use the eyedropper in world space to try to look it up, and verify the intensities match expectations.
+        // Most of the pixels should still be 0.0, but the one painted pixel should be 0.5 (our brush intensity).
+        for (uint32_t pixelIndex = 0; pixelIndex < pixels.size(); pixelIndex++)
+        {
+            uint32_t pixelX = pixelIndex % width;
+            uint32_t pixelY = pixelIndex / width;
+            auto queryLocation = PixelCoordinatesToWorldSpace(pixelX, pixelY, shapeBounds, width, height);
+
+            // Use the eyedropper for each world position and verify that it matches the expected color.
+            uint8_t expectedIntensity = (pixelX == paintedPixelX) && (pixelY == paintedPixelY) ? brushColor.GetR8() : (uint8_t)(0);
+            AZ::Color pixelColor = paintBrush.UseEyedropper(queryLocation);
+            EXPECT_EQ(pixelColor.GetR8(), expectedIntensity);
+        }
+
+        paintBrush.EndPaintMode();
+
+        entity.reset();
     }
 }
 

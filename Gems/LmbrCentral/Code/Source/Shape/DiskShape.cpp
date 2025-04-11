@@ -79,7 +79,7 @@ namespace LmbrCentral
             ShapeComponentNotifications::ShapeChangeReasons::TransformChanged);
     }
 
-    DiskShapeConfig DiskShape::GetDiskConfiguration()
+    const DiskShapeConfig& DiskShape::GetDiskConfiguration() const
     {
         AZStd::shared_lock lock(m_mutex);
         return m_diskShapeConfig;
@@ -97,13 +97,13 @@ namespace LmbrCentral
             ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
     }
 
-    float DiskShape::GetRadius()
+    float DiskShape::GetRadius() const
     {
         AZStd::shared_lock lock(m_mutex);
         return m_diskShapeConfig.m_radius;
     }
 
-    const AZ::Vector3& DiskShape::GetNormal()
+    const AZ::Vector3& DiskShape::GetNormal() const
     {
         AZStd::shared_lock lock(m_mutex);
         m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_diskShapeConfig, &m_mutex);
@@ -111,7 +111,7 @@ namespace LmbrCentral
         return m_intersectionDataCache.m_normal;
     }
 
-    AZ::Aabb DiskShape::GetEncompassingAabb()
+    AZ::Aabb DiskShape::GetEncompassingAabb() const
     {
         AZStd::shared_lock lock(m_mutex);
         m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_diskShapeConfig, &m_mutex);
@@ -127,7 +127,7 @@ namespace LmbrCentral
         return AZ::Aabb::CreateCenterHalfExtents(m_currentTransform.GetTranslation(), halfsize);
     }
 
-    void DiskShape::GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds)
+    void DiskShape::GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds) const
     {
         AZStd::shared_lock lock(m_mutex);
         const float radius = m_diskShapeConfig.m_radius;
@@ -135,12 +135,12 @@ namespace LmbrCentral
         transform = m_currentTransform;
     }
 
-    bool DiskShape::IsPointInside([[maybe_unused]] const AZ::Vector3& point)
+    bool DiskShape::IsPointInside([[maybe_unused]] const AZ::Vector3& point) const
     {
         return false; // 2D object cannot have points that are strictly inside in 3d space.
     }
 
-    float DiskShape::DistanceSquaredFromPoint(const AZ::Vector3& point)
+    float DiskShape::DistanceSquaredFromPoint(const AZ::Vector3& point) const
     {
         AZStd::shared_lock lock(m_mutex);
         m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_diskShapeConfig, &m_mutex);
@@ -162,7 +162,7 @@ namespace LmbrCentral
         return closestPoint.GetDistanceSq(point);
     }
 
-    bool DiskShape::IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance)
+    bool DiskShape::IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) const
     {
         AZStd::shared_lock lock(m_mutex);
         m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_diskShapeConfig, &m_mutex);
@@ -178,12 +178,6 @@ namespace LmbrCentral
         m_position = currentTransform.GetTranslation();
         m_normal = currentTransform.GetBasisZ().GetNormalized();
         m_radius = configuration.m_radius * currentTransform.GetUniformScale();
-    }
-
-    const DiskShapeConfig& DiskShape::GetDiskConfiguration() const
-    {
-        AZStd::shared_lock lock(m_mutex);
-        return m_diskShapeConfig;
     }
 
     void DiskShape::SetDiskConfiguration(const DiskShapeConfig& diskShapeConfig)
@@ -211,7 +205,7 @@ namespace LmbrCentral
         if (shapeDrawParams.m_filled)
         {
             debugDisplay.SetColor(shapeDrawParams.m_shapeColor.GetAsVector4());
-            debugDisplay.DrawDisk(AZ::Vector3::CreateZero(), AZ::Vector3::CreateAxisZ(), diskConfig.m_radius);
+            debugDisplay.DrawDisk(AZ::Vector3::CreateZero(), AZ::Vector3::CreateAxisZ(), diskConfig.m_radius, false);
         }
 
         debugDisplay.SetColor(shapeDrawParams.m_wireColor.GetAsVector4());

@@ -35,6 +35,7 @@ class MockPinchRecognizer
     : public Gestures::RecognizerPinch
 {
 public:
+    AZ_CLASS_ALLOCATOR(MockPinchRecognizer, AZ::SystemAllocator)
     MockPinchRecognizer()
         : m_initCount(0)
         , m_updateCount(0)

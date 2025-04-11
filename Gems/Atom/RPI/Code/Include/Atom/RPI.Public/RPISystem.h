@@ -9,6 +9,7 @@
 #pragma once
 
 #include <Atom/RPI.Public/Buffer/BufferSystem.h>
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/FeatureProcessorFactory.h>
 #include <Atom/RPI.Public/DynamicDraw/DynamicDrawSystem.h>
 #include <Atom/RPI.Public/Image/ImageSystem.h>
@@ -46,16 +47,18 @@ namespace AZ
     {
         class FeatureProcessor;
 
-        class RPISystem final
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+        class ATOM_RPI_PUBLIC_API RPISystem final
             : public RPISystemInterface
             , public AZ::SystemTickBus::Handler
             , public AZ::Debug::TraceMessageBus::Handler
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             friend class UnitTest::RPITestFixture;
 
         public:
             AZ_TYPE_INFO(RPISystem, "{D248ED01-1D68-4F76-9DD8-1332B11F452A}");
-            AZ_CLASS_ALLOCATOR(RPISystem, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(RPISystem, AZ::SystemAllocator);
 
             static void Reflect(ReflectContext* context);
 
@@ -74,6 +77,7 @@ namespace AZ
             Scene* GetScene(const SceneId& sceneId) const override;
             Scene* GetSceneByName(const AZ::Name& name) const override;
             ScenePtr GetDefaultScene() const override;
+            uint32_t GetNumScenes() const override;
             RenderPipelinePtr GetRenderPipelineForWindow(AzFramework::NativeWindowHandle windowHandle) override;
             Data::Asset<ShaderAsset> GetCommonShaderAssetForSrgs() const override;
             RHI::Ptr<RHI::ShaderResourceGroupLayout> GetSceneSrgLayout() const override;
@@ -107,6 +111,9 @@ namespace AZ
             void OnSystemTick() override;
 
             float GetCurrentTime() const;
+
+            // Initializes XR resources (session, device, swapchain, etc).
+            void InitXRSystem();
 
             // The set of core asset handlers registered by the system.
             AZStd::vector<AZStd::unique_ptr<Data::AssetHandler>> m_assetHandlers;

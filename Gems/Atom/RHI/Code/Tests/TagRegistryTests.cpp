@@ -61,7 +61,7 @@ namespace UnitTest
     {
         auto tagRegistry = RHI::TagRegistry<IndexType, 32>::Create();
         EXPECT_EQ(tagRegistry->GetAllocatedTagCount(), 0);
-        auto tagA = tagRegistry->AcquireTag(Name("A"));
+        [[maybe_unused]] auto tagA = tagRegistry->AcquireTag(Name("A"));
         EXPECT_EQ(tagRegistry->GetAllocatedTagCount(), 1);
         tagRegistry->Reset();
         EXPECT_EQ(tagRegistry->GetAllocatedTagCount(), 0);
@@ -163,7 +163,7 @@ namespace UnitTest
     {
         auto tagBitRegistry = RHI::TagBitRegistry<IndexType>::Create();
         EXPECT_EQ(tagBitRegistry->GetAllocatedTagCount(), 0);
-        auto tagA = tagBitRegistry->AcquireTag(Name("A"));
+        [[maybe_unused]] auto tagA = tagBitRegistry->AcquireTag(Name("A"));
         EXPECT_EQ(tagBitRegistry->GetAllocatedTagCount(), 1);
         tagBitRegistry->Reset();
         EXPECT_EQ(tagBitRegistry->GetAllocatedTagCount(), 0);

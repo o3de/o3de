@@ -10,6 +10,7 @@
 
 #include <Source/AutoGen/NetworkRigidBodyComponent.AutoComponent.h>
 #include <AzCore/Component/TransformBus.h>
+#include <AzFramework/Physics/RigidBodyBus.h>
 #include <Multiplayer/Components/NetBindComponent.h>
 
 namespace Physics
@@ -27,6 +28,7 @@ namespace Multiplayer
 
     class NetworkRigidBodyComponent final
         : public NetworkRigidBodyComponentBase
+        , private Physics::RigidBodyNotificationBus::Handler
         , private NetworkRigidBodyRequestBus::Handler
     {
         friend class NetworkRigidBodyComponentController;
@@ -45,6 +47,9 @@ namespace Multiplayer
         void OnDeactivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
 
     private:
+        // Physics::RigidBodyNotifications overrides ...
+        void OnPhysicsEnabled(const AZ::EntityId& entityId) override;
+
         void OnTransformUpdate(const AZ::Transform& worldTm);
         void OnSyncRewind();
 
@@ -56,14 +61,24 @@ namespace Multiplayer
 
     class NetworkRigidBodyComponentController
         : public NetworkRigidBodyComponentControllerBase
+        , private Physics::RigidBodyNotificationBus::Handler
     {
     public:
         NetworkRigidBodyComponentController(NetworkRigidBodyComponent& parent);
         void OnActivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
         void OnDeactivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
+#if AZ_TRAIT_SERVER
         void HandleSendApplyImpulse(AzNetworking::IConnection* invokingConnection, const AZ::Vector3& impulse, const AZ::Vector3& worldPoint) override;
+
     private:
         void OnTransformUpdate();
         AZ::TransformChangedEvent::Handler m_transformChangedHandler;
+#endif
+
+    private:
+        // Physics::RigidBodyNotifications overrides ...
+        void OnPhysicsEnabled(const AZ::EntityId& entityId) override;
+
+        Physics::RigidBodyRequests* m_physicsRigidBodyComponent = nullptr;
     };
 } // namespace Multiplayer

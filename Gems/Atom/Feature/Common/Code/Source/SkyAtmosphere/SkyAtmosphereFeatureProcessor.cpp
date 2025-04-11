@@ -18,13 +18,6 @@
 
 namespace AZ::Render
 {
-    SkyAtmosphereFeatureProcessor::SkyAtmosphere::~SkyAtmosphere()
-    {
-        m_id.Reset();
-        m_passNeedsUpdate = false;
-        m_enabled = false;
-    }
-
     void SkyAtmosphereFeatureProcessor::Reflect(ReflectContext* context)
     {
         if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
@@ -45,7 +38,7 @@ namespace AZ::Render
         DisableSceneNotification();
 
         m_atmospheres.Clear();
-        m_skyAtmosphereParentPasses.clear();
+        m_renderPipelineToSkyAtmosphereParentPasses.clear();
     }
 
     SkyAtmosphereFeatureProcessor::AtmosphereId SkyAtmosphereFeatureProcessor::CreateAtmosphere()
@@ -70,10 +63,11 @@ namespace AZ::Render
             m_atmospheres.Release(id.GetIndex());
         }
 
-        for (auto pass : m_skyAtmosphereParentPasses )
-        {
-            pass->ReleaseAtmospherePass(id);
-        }
+        for (auto& [_, skyAtmosphereParentPasses] : m_renderPipelineToSkyAtmosphereParentPasses)
+            for (auto pass : skyAtmosphereParentPasses)
+            {
+                pass->ReleaseAtmospherePass(id);
+            }
     }
 
     void SkyAtmosphereFeatureProcessor::SetAtmosphereParams(AtmosphereId id, const SkyAtmosphereParams& params)
@@ -83,6 +77,27 @@ namespace AZ::Render
         atmosphere.m_passNeedsUpdate = true;
     }
 
+    void SkyAtmosphereFeatureProcessor::SetAtmosphereEnabled(AtmosphereId id, bool enabled)
+    {
+        if (id.IsValid())
+        {
+            auto& atmosphere = m_atmospheres.GetElement(id.GetIndex());
+            atmosphere.m_enabled = enabled;
+        }
+    }
+
+    bool SkyAtmosphereFeatureProcessor::GetAtmosphereEnabled(AtmosphereId id)
+    {
+        if (id.IsValid())
+        {
+            auto& atmosphere = m_atmospheres.GetElement(id.GetIndex());
+            return atmosphere.m_enabled;
+        }
+
+        return false;
+    }
+
+
     void SkyAtmosphereFeatureProcessor::InitializeAtmosphere(AtmosphereId id)
     {
         auto& atmosphere = m_atmospheres.GetElement(id.GetIndex());
@@ -90,24 +105,34 @@ namespace AZ::Render
         atmosphere.m_passNeedsUpdate = true;
         atmosphere.m_enabled = true;
 
-        for (auto pass : m_skyAtmosphereParentPasses )
+        for (auto& [_, skyAtmosphereParentPasses] : m_renderPipelineToSkyAtmosphereParentPasses)
         {
-            pass->CreateAtmospherePass(id);
+            for (auto pass : skyAtmosphereParentPasses)
+            {
+                pass->CreateAtmospherePass(id);
+            }
         }
     }
 
     void SkyAtmosphereFeatureProcessor::AddRenderPasses(RPI::RenderPipeline* renderPipeline)
     {
-        m_skyAtmosphereParentPasses.clear();
+        if (m_renderPipelineToSkyAtmosphereParentPasses.find(renderPipeline) != m_renderPipelineToSkyAtmosphereParentPasses.end())
+        {
+            m_renderPipelineToSkyAtmosphereParentPasses.erase(renderPipeline);
+        }
+        m_renderPipelineToSkyAtmosphereParentPasses[renderPipeline] = {};
+
+        auto& skyAtmosphereParentPasses = m_renderPipelineToSkyAtmosphereParentPasses[renderPipeline];
 
         RPI::PassFilter passFilter = RPI::PassFilter::CreateWithTemplateName(Name("SkyAtmosphereParentTemplate"), renderPipeline);
-        RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [this](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
+        RPI::PassSystemInterface::Get()->ForEachPass(
+            passFilter,
+            [&skyAtmosphereParentPasses](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
             {
                 SkyAtmosphereParentPass* parentPass = static_cast<SkyAtmosphereParentPass*>(pass);
-                m_skyAtmosphereParentPasses.emplace_back(parentPass);
+                skyAtmosphereParentPasses.emplace_back(parentPass);
                 return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
             });
-
 
         // make sure atmospheres are created if needed
         for (size_t i = 0; i < m_atmospheres.GetSize(); ++i)
@@ -128,6 +153,11 @@ namespace AZ::Render
         {
             UpdateBackgroundClearColor();
         }
+
+        if (changeType == RPI::SceneNotification::RenderPipelineChangeType::Removed)
+        {
+            m_renderPipelineToSkyAtmosphereParentPasses.erase(pipeline);
+        }
     }
     
     void SkyAtmosphereFeatureProcessor::Render([[maybe_unused]] const FeatureProcessor::RenderPacket& packet)
@@ -140,9 +170,12 @@ namespace AZ::Render
             if (atmosphere.m_id.IsValid() && atmosphere.m_enabled && atmosphere.m_passNeedsUpdate)
             {
                 // update every atmosphere parent pass (per-pipeline)
-                for (auto pass : m_skyAtmosphereParentPasses)
+                for (auto& [_, skyAtmosphereParentPasses] : m_renderPipelineToSkyAtmosphereParentPasses)
                 {
-                    pass->UpdateAtmospherePassSRG(atmosphere.m_id, atmosphere.m_params);
+                    for (auto pass : skyAtmosphereParentPasses)
+                    {
+                        pass->UpdateAtmospherePassSRG(atmosphere.m_id, atmosphere.m_params);
+                    }
                 }
 
                 atmosphere.m_passNeedsUpdate = false;

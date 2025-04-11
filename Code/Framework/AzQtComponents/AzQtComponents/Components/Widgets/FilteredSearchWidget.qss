@@ -65,6 +65,59 @@ AzQtComponents--FilterCriteriaButton #tagText
     margin-right: 4px;
 }
 
+AzQtComponents--SelectionCountButton
+{
+    padding: 0px;
+    border-radius: 2px;
+    border: 1px solid #808080;
+    background-color: rgb(46, 46, 46);
+    /* 22 + 2 * 1 = 24 */
+    min-height: 22px;
+    max-height: 22px;
+}
+
+AzQtComponents--FilterTextButton
+{
+    padding: 0px;
+    border-radius: 2px;
+    border: 1px solid #808080;
+    background-color: rgb(46, 46, 46);
+    /* 22 + 2 * 1 = 24 */
+    min-height: 22px;
+    max-height: 22px;
+}
+
+AzQtComponents--FilterTextButton QPushButton#closeTag
+{
+    qproperty-icon: url(:/stylesheet/img/close_x.svg);
+    qproperty-iconSize: 10px 10px;
+    qproperty-flat: true;
+    background-color: transparent;
+    padding: 0px;
+    margin: 0px;
+    max-height: 16px;
+    max-width: 16px;
+    min-width: 16px;
+}
+
+AzQtComponents--FilterTextButton QLabel
+{
+    background-color: transparent;
+    padding: 0px;
+    margin: 0px;
+}
+
+AzQtComponents--FilterTextButton #tagIcon
+{
+    margin-right: 4px;
+}
+
+AzQtComponents--FilterTextButton #tagText
+{
+    margin-left: 4px;
+    margin-right: 4px;
+}
+
 AzQtComponents--SearchTypeSelector QTreeView
 {
     border: none;

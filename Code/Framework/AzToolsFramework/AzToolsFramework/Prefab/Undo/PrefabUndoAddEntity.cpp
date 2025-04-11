@@ -7,7 +7,9 @@
  */
 
 #include <AzCore/Interface/Interface.h>
+#include <AzToolsFramework/Prefab/Instance/InstanceDomGeneratorInterface.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceToTemplateInterface.h>
+#include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/Undo/PrefabUndoAddEntity.h>
 #include <AzToolsFramework/Prefab/Undo/PrefabUndoUtils.h>
@@ -43,38 +45,65 @@ namespace AzToolsFramework
                 static_cast<AZ::u64>(newEntityId));
 
             PrefabDom parentEntityDomAfterAddingEntity;
-            m_instanceToTemplateInterface->GenerateDomForEntity(parentEntityDomAfterAddingEntity, parentEntity);
+            m_instanceToTemplateInterface->GenerateEntityDomBySerializing(parentEntityDomAfterAddingEntity, parentEntity);
 
-            PrefabDom& focusedTemplateDom =
-                m_prefabSystemComponentInterface->FindTemplateDom(m_templateId);
-            PrefabDomPath entityPathInFocusedTemplate(parentEntityAliasPath.c_str());
-            // This scope is added to limit their usage and ensure DOM is not modified when it is being used.
+            // If the parent is the focused container entity, we need to fetch from root template rather than
+            // retrieving from the focused template. The focused containter entity DOM in focused template does
+            // not contain transform data seen from root, but after-state entity DOM from serialization always
+            // contain the transform data, which may generate unexpected patches to update transform.
+            if (parentEntityId == focusedInstance.GetContainerEntityId())
             {
-                // DOM value pointers can't be relied upon if the original DOM gets modified after pointer creation.
-                const PrefabDomValue* parentEntityDomInFocusedTemplate = entityPathInFocusedTemplate.Get(focusedTemplateDom);
-                AZ_Assert(parentEntityDomInFocusedTemplate,
-                    "Could not load parent entity's DOM from the focused template's DOM. "
-                    "Focused template id: '%llu'.", static_cast<AZ::u64>(m_templateId));
+                PrefabDom parentEntityDomBeforeAddingEntity;
+                m_instanceDomGeneratorInterface->GetEntityDomFromTemplate(parentEntityDomBeforeAddingEntity, parentEntity);
 
-                PrefabUndoUtils::GenerateUpdateEntityPatch(m_redoPatch,
-                    *parentEntityDomInFocusedTemplate, parentEntityDomAfterAddingEntity, parentEntityAliasPath);
-                PrefabUndoUtils::GenerateUpdateEntityPatch(m_undoPatch,
-                    parentEntityDomAfterAddingEntity, *parentEntityDomInFocusedTemplate, parentEntityAliasPath);
+                if (parentEntityDomBeforeAddingEntity.IsNull())
+                {
+                    AZ_Error("Prefab", false, "PrefabUndoAddEntity::Capture - "
+                        "Cannot retrieve parent container entity DOM from root template via instance DOM generator.");
+                }
+                else
+                {
+                    PrefabUndoUtils::GenerateAndAppendPatch(
+                        m_redoPatch, parentEntityDomBeforeAddingEntity, parentEntityDomAfterAddingEntity, parentEntityAliasPath);
+                    PrefabUndoUtils::GenerateAndAppendPatch(
+                        m_undoPatch, parentEntityDomAfterAddingEntity, parentEntityDomBeforeAddingEntity, parentEntityAliasPath);
+                }
+            }
+            else
+            {
+                PrefabDom& focusedTemplateDom = m_prefabSystemComponentInterface->FindTemplateDom(m_templateId);
+                PrefabDomPath entityPathInFocusedTemplate(parentEntityAliasPath.c_str());
+                // This scope is added to limit their usage and ensure DOM is not modified when it is being used.
+                {
+                    // DOM value pointers can't be relied upon if the original DOM gets modified after pointer creation.
+                    const PrefabDomValue* parentEntityDomInFocusedTemplate = entityPathInFocusedTemplate.Get(focusedTemplateDom);
+
+                    if (!parentEntityDomInFocusedTemplate)
+                    {
+                        AZ_Error("Prefab", false, "PrefabUndoAddEntity::Capture - "
+                            "Cannot retrieve parent entity DOM from focused template.");
+                    }
+                    else
+                    {
+                        PrefabUndoUtils::GenerateAndAppendPatch(
+                            m_redoPatch, *parentEntityDomInFocusedTemplate, parentEntityDomAfterAddingEntity, parentEntityAliasPath);
+                        PrefabUndoUtils::GenerateAndAppendPatch(
+                            m_undoPatch, parentEntityDomAfterAddingEntity, *parentEntityDomInFocusedTemplate, parentEntityAliasPath);
+                    }
+                }
             }
 
             PrefabDom newEntityDom;
-            m_instanceToTemplateInterface->GenerateDomForEntity(newEntityDom, newEntity);
+            m_instanceToTemplateInterface->GenerateEntityDomBySerializing(newEntityDom, newEntity);
             PrefabUndoUtils::AppendAddEntityPatch(m_redoPatch, newEntityDom, newEntityAliasPath);
-            PrefabUndoUtils::AppendRemoveEntityPatch(m_undoPatch, newEntityAliasPath);
+            PrefabUndoUtils::AppendRemovePatch(m_undoPatch, newEntityAliasPath);
 
             // Preemptively updates the cached DOM to prevent reloading instance DOM.
             PrefabDomReference cachedOwningInstanceDom = focusedInstance.GetCachedInstanceDom();
             if (cachedOwningInstanceDom.has_value())
             {
-                PrefabUndoUtils::UpdateCachedOwningInstanceDom(cachedOwningInstanceDom,
-                    parentEntityDomAfterAddingEntity, parentEntityAliasPath);
-                PrefabUndoUtils::UpdateCachedOwningInstanceDom(cachedOwningInstanceDom,
-                    newEntityDom, newEntityAliasPath);
+                PrefabUndoUtils::UpdateEntityInPrefabDom(cachedOwningInstanceDom, parentEntityDomAfterAddingEntity, parentEntityAliasPath);
+                PrefabUndoUtils::UpdateEntityInPrefabDom(cachedOwningInstanceDom, newEntityDom, newEntityAliasPath);
             }
         }
     }

@@ -7,15 +7,20 @@
  */
 
 #pragma once
+
 #include <AzToolsFramework/UI/PropertyEditor/InstanceDataHierarchy.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyRowWidget.hxx>
 #include <QSet>
 
 namespace AzToolsFramework
 {
+    class IPropertyEditor;
+    AZ_TYPE_INFO_SPECIALIZE(IPropertyEditor, "{78E75216-0559-43B9-93FE-33FD6EBF3B9C}");
+
     class IPropertyEditor
     {
         public:
+            AZ_RTTI_NO_TYPE_INFO_DECL();
             virtual void SetValueComparisonFunction([[maybe_unused]] const InstanceDataHierarchy::ValueComparisonFunction& valueComparisonFunction){};
 
             using ReadOnlyQueryFunction = AZStd::function<bool(const InstanceDataNode*)>;

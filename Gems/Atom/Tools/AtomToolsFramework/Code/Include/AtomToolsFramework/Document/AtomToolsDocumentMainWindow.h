@@ -31,7 +31,7 @@ namespace AtomToolsFramework
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(AtomToolsDocumentMainWindow, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AtomToolsDocumentMainWindow, AZ::SystemAllocator);
 
         using Base = AtomToolsMainWindow;
 
@@ -78,13 +78,13 @@ namespace AtomToolsFramework
         virtual void PopulateTabContextMenu(const AZ::Uuid& documentId, QMenu& menu);
 
         //! Select the target path where a document will be saved.
-        virtual AZStd::string GetSaveDocumentParams(const AZStd::string& initialPath) const;
+        virtual AZStd::string GetSaveDocumentParams(const AZStd::string& initialPath, const AZ::Uuid& documentId) const;
 
         // AtomToolsMainWindowRequestBus::Handler overrides...
         void CreateMenus(QMenuBar* menuBar) override;
         void UpdateMenus(QMenuBar* menuBar) override;
 
-        AZStd::vector<AZStd::shared_ptr<DynamicPropertyGroup>> GetSettingsDialogGroups() const override;
+        void PopulateSettingsInspector(InspectorWidget* inspector) const override;
 
     protected:
         // Create menus and actions to open and create files for all registered document types 
@@ -93,6 +93,16 @@ namespace AtomToolsFramework
 
         void AddDocumentTabBar();
         void UpdateRecentFileMenu();
+
+        // Return true when save success
+        bool SaveDocument(const AZ::Uuid& documentId);
+
+        // Return true when save success or no save
+        // Return false when save failed or save cancel or close cancel
+        bool CloseDocumentCheck(const AZ::Uuid& documentId);
+        // Return false when CloseDocumentCheck failed or close failed
+        bool CloseDocuments(const AZStd::vector<AZ::Uuid>& documentIds);
+        const AZStd::vector<AZ::Uuid> GetOpenDocumentIds() const;
 
         // AtomToolsDocumentNotificationBus::Handler overrides...
         void OnDocumentOpened(const AZ::Uuid& documentId) override;
@@ -130,5 +140,7 @@ namespace AtomToolsFramework
         QAction* m_actionPreviousTab = {};
 
         AzQtComponents::TabWidget* m_tabWidget = {};
+
+        mutable AZStd::shared_ptr<DynamicPropertyGroup> m_documentSystemSettingsGroup;
     };
 } // namespace AtomToolsFramework

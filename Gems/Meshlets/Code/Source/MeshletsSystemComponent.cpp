@@ -36,7 +36,6 @@ namespace AZ
                 {
                     ec->Class<MeshletsSystemComponent>("Meshlets", "[Description of functionality provided by this System Component]")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                            ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ;
                 }
@@ -58,8 +57,8 @@ namespace AZ
         void MeshletsSystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
         {
             required.push_back(AZ::RHI::Factory::GetComponentService());
-            required.push_back(AZ_CRC("AssetDatabaseService", 0x3abf5601));
-            required.push_back(AZ_CRC("RPISystem", 0xf2add773));
+            required.push_back(AZ_CRC_CE("AssetDatabaseService"));
+            required.push_back(AZ_CRC_CE("RPISystem"));
         }
 
         void MeshletsSystemComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)

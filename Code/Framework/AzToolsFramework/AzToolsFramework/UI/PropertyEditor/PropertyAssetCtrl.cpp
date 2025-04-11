@@ -49,6 +49,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/UI/Logging/GenericLogPanel.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
+
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailWidget.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
@@ -90,6 +91,7 @@ namespace AzToolsFramework
         pLayout->setContentsMargins(0, 0, 0, 0);
         pLayout->setSpacing(2);
 
+        m_browseEdit->lineEdit()->setAcceptDrops(false);
         setAcceptDrops(true);
 
         m_thumbnail = new ThumbnailPropertyCtrl(this);
@@ -431,28 +433,32 @@ namespace AzToolsFramework
             AZStd::vector<const AssetBrowser::AssetBrowserEntry*> entries;
             if (AssetBrowser::Utils::FromMimeData(pData, entries))
             {
-                // Searching all source data entries for a compatible asset
+                // Search all of the entries for a compatible product asset
                 for (const auto entry : entries)
                 {
-                    // If this entry is a product asset then we check it for compatibility first
-                    if (const auto product = azrtti_cast<const AssetBrowser::ProductAssetBrowserEntry*>(entry))
+                    if (entry->GetEntryType() == AssetBrowser::AssetBrowserEntry::AssetEntryType::Product ||
+                        entry->GetEntryType() == AssetBrowser::AssetBrowserEntry::AssetEntryType::Source)
                     {
-                        if (checkAsset(product->GetAssetId(), product->GetAssetType()))
+                        // Support selecting and assigning source and product assets. If the entry is a matching product asset, it will be
+                        // assigned immediately. If it is a source asset entry, enumerate all of the children and assign the first
+                        // compatible product asset.
+                        bool result = false;
+                        entry->VisitDown(
+                            [&](const auto& currentEntry)
+                            {
+                                if (!result)
+                                {
+                                    if (const auto product = azrtti_cast<const AssetBrowser::ProductAssetBrowserEntry*>(currentEntry))
+                                    {
+                                        result = checkAsset(product->GetAssetId(), product->GetAssetType());
+                                    }
+                                }
+                                return !result;
+                            });
+
+                        if (result)
                         {
                             return true;
-                        }
-                    }
-                    else
-                    {
-                        // For all other container entry types search all of the child entries for a compatible asset
-                        AZStd::vector<const ProductAssetBrowserEntry*> children;
-                        entry->GetChildren<ProductAssetBrowserEntry>(children);
-                        for (const auto child : children)
-                        {
-                            if (checkAsset(child->GetAssetId(), child->GetAssetType()))
-                            {
-                                return true;
-                            }
                         }
                     }
                 }
@@ -622,7 +628,7 @@ namespace AzToolsFramework
         SetCurrentAssetHint(AZStd::string());
         SetSelectedAssetID(AZ::Data::AssetId());
         // To clear the asset we only need to refresh the values.
-        EBUS_EVENT(ToolsApplicationEvents::Bus, InvalidatePropertyDisplay, Refresh_Values);
+        ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::Bus::Events::InvalidatePropertyDisplay, Refresh_Values);
     }
 
     void PropertyAssetCtrl::SourceFileChanged(AZStd::string /*relativePath*/, AZStd::string /*scanFolder*/, AZ::Uuid sourceUUID)
@@ -638,6 +644,23 @@ namespace AzToolsFramework
         if (GetCurrentAssetID().m_guid == sourceUUID)
         {
             UpdateAssetDisplay();
+        }
+    }
+
+    void PropertyAssetCtrl::OnAssetCreated(const AZ::Data::AssetId& assetId)
+    {
+        AZ::Data::AssetInfo assetInfo;
+
+        AZ::Data::AssetCatalogRequestBus::Broadcast(
+            [&assetInfo, assetId](AZ::Data::AssetCatalogRequestBus::Events* handler)
+            {
+                assetInfo = handler->GetAssetInfoById(assetId);
+            }
+        );
+
+        if (assetInfo.m_assetType == GetCurrentAssetType())
+        {
+            SetSelectedAssetID(assetId);
         }
     }
 
@@ -710,7 +733,9 @@ namespace AzToolsFramework
 
     AssetSelectionModel PropertyAssetCtrl::GetAssetSelectionModel()
     {
-        auto selectionModel = AssetSelectionModel::AssetTypesSelection(GetSelectableAssetTypes());
+        const bool multiselect = false;
+        const bool supportSelectingSources = true;
+        auto selectionModel = AssetSelectionModel::AssetTypeSelection(GetSelectableAssetTypes(), multiselect, supportSelectingSources);
         selectionModel.SetTitle(m_title);
         return selectionModel;
     }
@@ -746,8 +771,9 @@ namespace AzToolsFramework
 
     PropertyAssetCtrl::~PropertyAssetCtrl()
     {
-        AssetSystemBus::Handler::BusDisconnect();
+        AssetEditor::AssetEditorNotificationsBus::Handler::BusDisconnect();
         AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
+        AssetSystemBus::Handler::BusDisconnect();
     }
 
     void PropertyAssetCtrl::OnEditButtonClicked()
@@ -763,7 +789,7 @@ namespace AzToolsFramework
         {
             // Show default asset editor (property grid dialog) if this asset type has edit reflection.
             AZ::SerializeContext* serializeContext = nullptr;
-            EBUS_EVENT_RESULT(serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
+            AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
             if (serializeContext)
             {
                 const AZ::SerializeContext::ClassData* classData = serializeContext->FindClassData(GetCurrentAssetType());
@@ -772,13 +798,15 @@ namespace AzToolsFramework
                     if (!assetID.IsValid())
                     {
                         // No Asset Id selected - Open editor and create new asset for them
-                        AssetEditor::AssetEditorRequestsBus::Broadcast(&AssetEditor::AssetEditorRequests::CreateNewAsset, GetCurrentAssetType());
+                        AssetEditor::AssetEditorRequestsBus::Broadcast(
+                            &AssetEditor::AssetEditorRequests::CreateNewAsset, GetCurrentAssetType(), m_componentUuid);
                     }
                     else
                     {
                         // Open the asset with the preferred asset editor
                         bool handled = false;
-                        AssetBrowser::AssetBrowserInteractionNotificationBus::Broadcast(&AssetBrowser::AssetBrowserInteractionNotifications::OpenAssetInAssociatedEditor, assetID, handled);
+                        AssetBrowser::AssetBrowserInteractionNotificationBus::Broadcast(
+                            &AssetBrowser::AssetBrowserInteractionNotifications::OpenAssetInAssociatedEditor, assetID, handled);
                     }
 
                     return;
@@ -823,16 +851,33 @@ namespace AzToolsFramework
         PickAssetSelectionFromDialog(selection, parentWidget());
         if (selection.IsValid())
         {
-            const auto product = azrtti_cast<const ProductAssetBrowserEntry*>(selection.GetResult());
-            auto folder = azrtti_cast<const FolderAssetBrowserEntry*>(selection.GetResult());
-            AZ_Assert(product || folder, "Incorrect entry type selected. Expected product or folder.");
-            if (product)
+            const auto entry = selection.GetResult();
+            if (entry->GetEntryType() == AssetBrowser::AssetBrowserEntry::AssetEntryType::Product ||
+                entry->GetEntryType() == AssetBrowser::AssetBrowserEntry::AssetEntryType::Source)
             {
-                SetSelectedAssetID(product->GetAssetId());
+                // Support selecting and assigning source and product assets. If the entry is a matching product asset, it will be assigned
+                // immediately. If it is a source asset entry, enumerate all of the children and assign the first compatible product asset.
+                bool result = false;
+                entry->VisitDown(
+                    [&](const auto& currentEntry)
+                    {
+                        if (!result)
+                        {
+                            if (const auto product = azrtti_cast<const AssetBrowser::ProductAssetBrowserEntry*>(currentEntry))
+                            {
+                                if (CanAcceptAsset(product->GetAssetId(), product->GetAssetType()))
+                                {
+                                    SetSelectedAssetID(product->GetAssetId());
+                                    result = true;
+                                }
+                            }
+                        }
+                        return !result;
+                    });
             }
-            else if (folder)
+            else if (entry->GetEntryType() == AssetBrowser::AssetBrowserEntry::AssetEntryType::Folder)
             {
-                SetFolderSelection(folder->GetRelativePath());
+                SetFolderSelection(entry->GetRelativePath());
                 SetSelectedAssetID(AZ::Data::AssetId());
             }
         }
@@ -952,45 +997,56 @@ namespace AzToolsFramework
     void PropertyAssetCtrl::SetDefaultAssetID(const AZ::Data::AssetId& defaultID)
     {
         m_defaultAssetID = defaultID;
+        m_defaultAssetHint.clear();
+        m_browseEdit->setPlaceholderText("");
 
-        AZ::Data::AssetInfo assetInfo;
-        AZStd::string rootFilePath;
-        AZStd::string assetPath;
+        if (m_defaultAssetID.IsValid())
+        {
+            AZStd::string assetPath;
 
-        if (m_showProductAssetName)
-        {
-            AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, m_defaultAssetID);
-        }
-        else
-        {
-            const AZStd::string platformName = ""; // Empty for default
-            for (const auto& assetType : GetSelectableAssetTypes())
+            if (m_showProductAssetName)
             {
-                bool result = false;
-                AssetSystemRequestBus::BroadcastResult(
-                    result, &AssetSystem::AssetSystemRequest::GetAssetInfoById, defaultID, assetType, platformName, assetInfo,
-                    rootFilePath);
-                if (result)
+                AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                    assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, m_defaultAssetID);
+            }
+            else
+            {
+                AZ::Data::AssetInfo assetInfo;
+                AZStd::string rootFilePath;
+                const AZStd::string platformName; // Empty for default
+                for (const auto& assetType : GetSelectableAssetTypes())
                 {
-                    assetPath = assetInfo.m_relativePath;
-                    break;
+                    bool result = false;
+                    AssetSystemRequestBus::BroadcastResult(
+                        result,
+                        &AssetSystem::AssetSystemRequest::GetAssetInfoById,
+                        m_defaultAssetID,
+                        assetType,
+                        platformName,
+                        assetInfo,
+                        rootFilePath);
+                    if (result)
+                    {
+                        assetPath = assetInfo.m_relativePath;
+                        break;
+                    }
                 }
             }
+
+            if (!assetPath.empty())
+            {
+                AzFramework::StringFunc::Path::GetFileName(assetPath.c_str(), m_defaultAssetHint);
+            }
+
+            m_browseEdit->setPlaceholderText((m_defaultAssetHint + m_DefaultSuffix).c_str());
         }
 
-        if (!assetPath.empty())
-        {
-            AzFramework::StringFunc::Path::GetFileName(assetPath.c_str(), m_defaultAssetHint);
-        }
-        m_browseEdit->setPlaceholderText((m_defaultAssetHint + m_DefaultSuffix).c_str());
-
-        UpdateEditButton();
+        UpdateAssetDisplay();
     }
 
     void PropertyAssetCtrl::UpdateAssetDisplay()
     {
         UpdateThumbnail();
-
         UpdateEditButton();
 
         const AZStd::string& folderPath = GetFolderSelection();
@@ -1002,101 +1058,113 @@ namespace AzToolsFramework
         {
             const AZ::Data::AssetId assetID = GetCurrentAssetID();
 
-            AZ::Outcome<AssetSystem::JobInfoContainer> jobOutcome = AZ::Failure();
-            AssetSystemJobRequestBus::BroadcastResult(jobOutcome, &AssetSystemJobRequestBus::Events::GetAssetJobsInfoByAssetID, assetID, false, false);
-
-            if (jobOutcome.IsSuccess())
+            if (assetID.IsValid())
             {
-                AZStd::string assetPath;
-                AssetSystem::JobInfoContainer& jobs = jobOutcome.GetValue();
+                AZ::Outcome<AssetSystem::JobInfoContainer> jobOutcome = AZ::Failure();
+                AssetSystemJobRequestBus::BroadcastResult(jobOutcome, &AssetSystemJobRequestBus::Events::GetAssetJobsInfoByAssetID, assetID, false, false);
 
-                // Get the asset relative path
-                AssetSystem::JobStatus assetStatus = AssetSystem::JobStatus::Completed;
-
-                if (!jobs.empty())
+                if (jobOutcome.IsSuccess())
                 {
-                    // The default behavior is to show the source filename.
-                    assetPath = jobs[0].m_sourceFile;
+                    AZStd::string assetPath;
+                    AssetSystem::JobInfoContainer& jobs = jobOutcome.GetValue();
 
-                    AZStd::string errorLog;
+                    // Get the asset relative path
+                    AssetSystem::JobStatus assetStatus = AssetSystem::JobStatus::Completed;
 
-                    for (const auto& jobInfo : jobs)
+                    if (!jobs.empty())
                     {
-                        // If the job has failed, mark the asset as failed, and collect the log.
-                        switch (jobInfo.m_status)
+                        // The default behavior is to show the source filename.
+                        assetPath = jobs[0].m_sourceFile;
+
+                        AZStd::string errorLog;
+
+                        for (const auto& jobInfo : jobs)
                         {
+                            // If the job has failed, mark the asset as failed, and collect the log.
+                            switch (jobInfo.m_status)
+                            {
                             case AssetSystem::JobStatus::Failed:
                             case AssetSystem::JobStatus::Failed_InvalidSourceNameExceedsMaxLimit:
-                            {
-                                assetStatus = AssetSystem::JobStatus::Failed;
-
-                                AZ::Outcome<AZStd::string> logOutcome = AZ::Failure();
-                                AssetSystemJobRequestBus::BroadcastResult(logOutcome, &AssetSystemJobRequestBus::Events::GetJobLog, jobInfo.m_jobRunKey);
-                                if (logOutcome.IsSuccess())
                                 {
-                                    errorLog += logOutcome.TakeValue();
-                                    errorLog += '\n';
+                                    assetStatus = AssetSystem::JobStatus::Failed;
+
+                                    AZ::Outcome<AZStd::string> logOutcome = AZ::Failure();
+                                    AssetSystemJobRequestBus::BroadcastResult(logOutcome, &AssetSystemJobRequestBus::Events::GetJobLog, jobInfo.m_jobRunKey);
+                                    if (logOutcome.IsSuccess())
+                                    {
+                                        errorLog += logOutcome.TakeValue();
+                                        errorLog += '\n';
+                                    }
                                 }
-                            }
-                            break;
+                                break;
 
                             // If the job is in progress, mark the asset as in progress
                             case AssetSystem::JobStatus::InProgress:
-                            {
-                                // Only mark asset in progress if it isn't already in progress, or marked as an error
-                                if (assetStatus == AssetSystem::JobStatus::Completed)
                                 {
-                                    assetStatus = AssetSystem::JobStatus::InProgress;
+                                    // Only mark asset in progress if it isn't already in progress, or marked as an error
+                                    if (assetStatus == AssetSystem::JobStatus::Completed)
+                                    {
+                                        assetStatus = AssetSystem::JobStatus::InProgress;
+                                    }
                                 }
+                                break;
+                            }
+                        }
+
+                        switch (assetStatus)
+                        {
+                        // In case of failure, render failure icon
+                        case AssetSystem::JobStatus::Failed:
+                            {
+                                UpdateErrorButtonWithLog(errorLog);
+                            }
+                            break;
+
+                        // In case of success, remove error elements
+                        case AssetSystem::JobStatus::Completed:
+                            {
+                                ClearErrorButton();
                             }
                             break;
                         }
                     }
-
-                    switch (assetStatus)
+                    else
                     {
-                        // In case of failure, render failure icon
-                        case AssetSystem::JobStatus::Failed:
+                        // If there aren't any jobs and the asset ID is valid, the asset must have been removed.
+                        if (assetID.IsValid())
                         {
-                            UpdateErrorButtonWithLog(errorLog);
+                            UpdateErrorButtonWithMessage(AZStd::string::format(
+                                "Asset has been removed.\n\nID: %s\nHint:%s",
+                                assetID.ToString<AZStd::string>().c_str(),
+                                GetCurrentAssetHint().c_str()));
                         }
-                        break;
+                    }
 
-                        // In case of success, remove error elements
-                        case AssetSystem::JobStatus::Completed:
-                        {
-                            ClearErrorButton();
-                        }
-                        break;
+                    // This can be turned on with an attribute in EditContext
+                    if (m_showProductAssetName)
+                    {
+                        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, assetID);
+                    }
+
+                    // Only change the asset name if the asset not found or there's no last known good name for it
+                    if (!assetPath.empty() && (assetStatus != AssetSystem::JobStatus::Completed || m_currentAssetHint != assetPath))
+                    {
+                        m_currentAssetHint = assetPath;
                     }
                 }
                 else
                 {
-                    // If there aren't any jobs and the asset ID is valid, the asset must have been removed.
-                    if (assetID.IsValid())
+                    // The asset might have been created in-memory (for example for the default asset provided
+                    // via DefaultAsset attribute) and therefore it doesn't have a job info.
+                    // Only report the asset missing if it doesn't exist in the asset manager.
+                    if (!AZ::Data::AssetManager::Instance().FindAsset(assetID, AZ::Data::AssetLoadBehavior::Default))
                     {
                         UpdateErrorButtonWithMessage(AZStd::string::format(
-                            "Asset has been removed.\n\nID: %s\nHint:%s",
+                            "Asset is missing.\n\nID: %s\nHint:%s",
                             assetID.ToString<AZStd::string>().c_str(),
                             GetCurrentAssetHint().c_str()));
                     }
                 }
-
-                // This can be turned on with an attribute in EditContext
-                if (m_showProductAssetName)
-                {
-                    AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, assetID);
-                }
-
-                // Only change the asset name if the asset not found or there's no last known good name for it
-                if (!assetPath.empty() && (assetStatus != AssetSystem::JobStatus::Completed || m_currentAssetHint != assetPath))
-                {
-                    m_currentAssetHint = assetPath;
-                }
-            }
-            else
-            {
-                UpdateErrorButtonWithMessage(AZStd::string::format("Asset is missing.\n\nID: %s\nHint:%s", assetID.ToString<AZStd::string>().c_str(), GetCurrentAssetHint().c_str()));
             }
         }
 
@@ -1108,15 +1176,15 @@ namespace AzToolsFramework
         }
 
         setToolTip(m_currentAssetHint.c_str());
-
+        
         // If no asset is selected but a default asset id is, show the default name.
-        if (!m_selectedAssetID.IsValid() && m_defaultAssetID.IsValid())
+        if (m_selectedAssetID.IsValid())
         {
-            m_browseEdit->setText("");
+            m_browseEdit->setText(assetName.c_str());
         }
         else
         {
-            m_browseEdit->setText(assetName.c_str());
+            m_browseEdit->setText("");
         }
     }
 
@@ -1179,6 +1247,12 @@ namespace AzToolsFramework
     void PropertyAssetCtrl::SetEditButtonTooltip(QString tooltip)
     {
         m_editButton->setToolTip(tooltip);
+    }
+
+    void PropertyAssetCtrl::SetComponentId(const AZ::Uuid& uuid)
+    {
+        m_componentUuid = uuid;
+        AssetEditor::AssetEditorNotificationsBus::Handler::BusConnect(m_componentUuid);
     }
 
     void PropertyAssetCtrl::SetBrowseButtonIcon(const QIcon& icon)
@@ -1244,7 +1318,7 @@ namespace AzToolsFramework
         // if Edit button is in use (shown), enable/disable it depending on the current asset id.
         if (m_showEditButton && m_disableEditButtonWhenNoAssetSelected)
         {
-            m_editButton->setEnabled(GetCurrentAssetID().IsValid());
+            m_editButton->setEnabled(GetSelectedAssetID().IsValid());
         }
     }
 
@@ -1356,7 +1430,7 @@ namespace AzToolsFramework
         connect(newCtrl, &PropertyAssetCtrl::OnAssetIDChanged, this, [newCtrl](AZ::Data::AssetId newAssetID)
         {
             (void)newAssetID;
-            EBUS_EVENT(PropertyEditorGUIMessages::Bus, RequestWrite, newCtrl);
+            PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Events::RequestWrite, newCtrl);
             AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, newCtrl);
         });
         return newCtrl;
@@ -1421,6 +1495,14 @@ namespace AzToolsFramework
             if (attrValue->Read<AZStd::string>(buttonTooltip))
             {
                 GUI->SetEditButtonTooltip(QObject::tr(buttonTooltip.c_str()));
+            }
+        }
+        else if (attrib == AZ_CRC_CE("ComponentIdentifier"))
+        {
+            AZ::Uuid uuid;
+            if (attrValue->Read<AZ::Uuid>(uuid))
+            {
+                GUI->SetComponentId(uuid);
             }
         }
         else if (attrib == AZ_CRC_CE("DisableEditButtonWhenNoAssetSelected"))
@@ -1617,6 +1699,7 @@ namespace AzToolsFramework
         GUI->SetEditNotifyTarget(node->GetParent()->GetInstance(0));
 
         GUI->blockSignals(false);
+
         return false;
     }
 
@@ -1625,13 +1708,28 @@ namespace AzToolsFramework
         return ReadValuesIntoGUIInternal(index, GUI, instance, node);
     }
 
+    AZ::Data::Asset<AZ::Data::AssetData>* AssetPropertyHandlerDefault::CastToInternal(void* instance, const InstanceDataNode* node)
+    {
+        if (node->GetElementMetadata()->m_genericClassInfo && node->GetElementMetadata()->m_genericClassInfo->GetGenericTypeId() == AZ::GetAssetClassId())
+        {
+            return static_cast<AZ::Data::Asset<AZ::Data::AssetData>*>(instance);
+        }
+
+        return nullptr;
+    }
+
+    AZ::Data::Asset<AZ::Data::AssetData>* AssetPropertyHandlerDefault::CastTo(void* instance, const InstanceDataNode* node, [[maybe_unused]] const AZ::Uuid& fromId, [[maybe_unused]] const AZ::Uuid& toId) const
+    {
+        return CastToInternal(instance, node);
+    }
+
     QWidget* AssetIdPropertyHandlerDefault::CreateGUI(QWidget* pParent)
     {
         PropertyAssetCtrl* newCtrl = aznew PropertyAssetCtrl(pParent);
         connect(newCtrl, &PropertyAssetCtrl::OnAssetIDChanged, this, [newCtrl](AZ::Data::AssetId newAssetID)
         {
             (void)newAssetID;
-            EBUS_EVENT(PropertyEditorGUIMessages::Bus, RequestWrite, newCtrl);
+            PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Events::RequestWrite, newCtrl);
             AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, newCtrl);
         });
         return newCtrl;
@@ -1667,7 +1765,7 @@ namespace AzToolsFramework
         connect(newCtrl, &PropertyAssetCtrl::OnAssetIDChanged, this, [newCtrl](AZ::Data::AssetId newAssetID)
         {
             (void)newAssetID;
-            EBUS_EVENT(PropertyEditorGUIMessages::Bus, RequestWrite, newCtrl);
+            PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Events::RequestWrite, newCtrl);
             AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, newCtrl);
         });
         return newCtrl;
@@ -1678,18 +1776,24 @@ namespace AzToolsFramework
         ConsumeAttributeForPropertyAssetCtrl(GUI, attrib, attrValue, debugName);
     }
 
-    void SimpleAssetPropertyHandlerDefault::WriteGUIValuesIntoProperty(size_t index, PropertyAssetCtrl* GUI, property_t& instance, InstanceDataNode* node)
+    void SimpleAssetPropertyHandlerDefault::WriteGUIValuesIntoPropertyInternal(size_t index, PropertyAssetCtrl* GUI, property_t& instance, InstanceDataNode* node)
     {
         (void)index;
         (void)node;
 
         AZStd::string assetPath;
-        EBUS_EVENT_RESULT(assetPath, AZ::Data::AssetCatalogRequestBus, GetAssetPathById, GUI->GetSelectedAssetID());
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+            assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, GUI->GetSelectedAssetID());
 
         instance.SetAssetPath(assetPath.c_str());
     }
 
-    bool SimpleAssetPropertyHandlerDefault::ReadValuesIntoGUI(size_t index, PropertyAssetCtrl* GUI, const property_t& instance, InstanceDataNode* node)
+    void SimpleAssetPropertyHandlerDefault::WriteGUIValuesIntoProperty(size_t index, PropertyAssetCtrl* GUI, property_t& instance, InstanceDataNode* node)
+    {
+        WriteGUIValuesIntoPropertyInternal(index, GUI, instance, node);
+    }
+
+    bool SimpleAssetPropertyHandlerDefault::ReadValuesIntoGUIInternal(size_t index, PropertyAssetCtrl* GUI, const property_t& instance, InstanceDataNode* node)
     {
         (void)index;
         (void)node;
@@ -1699,7 +1803,8 @@ namespace AzToolsFramework
         AZ::Data::AssetId assetId;
         if (!instance.GetAssetPath().empty())
         {
-            EBUS_EVENT_RESULT(assetId, AZ::Data::AssetCatalogRequestBus, GetAssetIdByPath, instance.GetAssetPath().c_str(), instance.GetAssetType(), true);
+            AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath,
+                instance.GetAssetPath().c_str(), instance.GetAssetType(), true);
         }
 
         // Set the hint in case the asset is not able to be found by assetId
@@ -1709,6 +1814,11 @@ namespace AzToolsFramework
 
         GUI->blockSignals(false);
         return false;
+    }
+
+    bool SimpleAssetPropertyHandlerDefault::ReadValuesIntoGUI(size_t index, PropertyAssetCtrl* GUI, const property_t& instance, InstanceDataNode* node)
+    {
+        return ReadValuesIntoGUIInternal(index, GUI, instance, node);
     }
 
     void RegisterAssetPropertyHandler()

@@ -292,10 +292,10 @@ namespace AZ::JsonSerializationUtils
         }
 
         auto dataItr = jsonDocument.FindMember(ClassDataTag);
-        // data can be empty but it should be an object
-        if (dataItr != jsonDocument.MemberEnd() && !dataItr->value.IsObject())
+        // data can be empty but it should be an object or array
+        if (dataItr != jsonDocument.MemberEnd() && (!dataItr->value.IsObject() && !dataItr->value.IsArray()))
         {
-            return AZ::Failure(AZStd::string::format("ClassData should be an object"));
+            return AZ::Failure(AZStd::string::format("ClassData should be an object or array"));
         }
 
         return AZ::Success();

@@ -5,11 +5,11 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <Source/PythonCommon.h>
-#include <pybind11/pybind11.h>
-#include <pybind11/embed.h>
-#include "PythonTraceMessageSink.h"
 #include "PythonTestingUtility.h"
+#include "PythonTraceMessageSink.h"
+#include <EditorPythonBindings/PythonCommon.h>
+#include <pybind11/embed.h>
+#include <pybind11/pybind11.h>
 
 #include <Source/PythonSystemComponent.h>
 #include <Source/PythonReflectionComponent.h>
@@ -28,7 +28,7 @@ namespace UnitTest
     {
     public:
         AZ_TYPE_INFO(FakeComponentId, "{A0A9A069-9C3D-465A-B7AD-0D6CC803990A}");
-        AZ_CLASS_ALLOCATOR(FakeComponentId, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(FakeComponentId, AZ::SystemAllocator);
 
         FakeComponentId() = default;
         bool operator==(const FakeComponentId& rhs) const { return m_id == rhs.m_id; }

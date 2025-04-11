@@ -15,11 +15,14 @@
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/IO/Path/Path.h>
 
+// this is an intentional relative local include so that it can be shared between two unrelated projects
+// namely this one test file as well as the one shot executable that these tests invoke.
+#include "ProcessLaunchTestTokens.h"
 
 namespace UnitTest
 {
     class ProcessLaunchParseTests
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
     public:
         using ParsedArgMap = AZStd::unordered_map<AZStd::string, AZStd::vector<AZStd::string>>;
@@ -81,6 +84,58 @@ namespace UnitTest
 
         EXPECT_EQ(launchReturn, true);
         EXPECT_EQ(processOutput.outputResult.empty(), false);
+    }
+
+    TEST_F(ProcessLaunchParseTests, LaunchProcessAndRetrieveOutput_LargeDataNoError_ContainsEntireOutput)
+    {
+        using namespace ProcessLaunchTestInternal;
+
+        AzFramework::ProcessOutput processOutput;
+        AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
+
+        processLaunchInfo.m_commandlineParameters.emplace<AZStd::vector<AZStd::string>>(
+            AZStd::vector<AZStd::string>{(AZ::IO::Path(AZ::Test::GetCurrentExecutablePath()) / "ProcessLaunchTest").Native(), "-plentyOfOutput"});
+
+        processLaunchInfo.m_workingDirectory = AZ::Test::GetCurrentExecutablePath();
+        processLaunchInfo.m_showWindow = false;
+        bool launchReturn = AzFramework::ProcessWatcher::LaunchProcessAndRetrieveOutput(processLaunchInfo, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_STDINOUT, processOutput);
+
+        EXPECT_TRUE(launchReturn);
+        EXPECT_FALSE(processOutput.outputResult.empty());
+        EXPECT_FALSE(processOutput.HasError());
+
+        const auto& output = processOutput.outputResult;
+        EXPECT_EQ(output.length(), s_numOutputBytesInPlentyMode);
+        EXPECT_TRUE(output.starts_with(s_beginToken));
+        EXPECT_TRUE(output.ends_with(s_endToken));
+    }
+    
+    // this also tests that it can separately read error and stdout, and that the stream way of doing it works.
+    TEST_F(ProcessLaunchParseTests, LaunchProcessAndRetrieveOutput_LargeDataWithError_ContainsEntireOutput)
+    {
+        using namespace ProcessLaunchTestInternal;
+
+        AzFramework::ProcessOutput processOutput;
+        AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
+
+        processLaunchInfo.m_commandlineParameters.emplace<AZStd::vector<AZStd::string>>(
+            AZStd::vector<AZStd::string>{(AZ::IO::Path(AZ::Test::GetCurrentExecutablePath()) / "ProcessLaunchTest").Native(), "-plentyOfOutput", "-exitCode", "1"});
+
+        processLaunchInfo.m_workingDirectory = AZ::Test::GetCurrentExecutablePath();
+        processLaunchInfo.m_showWindow = false;
+        bool launchReturn = AzFramework::ProcessWatcher::LaunchProcessAndRetrieveOutput(processLaunchInfo, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_STDINOUT, processOutput);
+
+        EXPECT_TRUE(launchReturn);
+        EXPECT_TRUE(processOutput.HasOutput());
+        EXPECT_TRUE(processOutput.HasError());
+
+        EXPECT_EQ(processOutput.outputResult.length(), s_numOutputBytesInPlentyMode);
+        EXPECT_TRUE(processOutput.outputResult.starts_with(s_beginToken));
+        EXPECT_TRUE(processOutput.outputResult.ends_with(s_endToken));
+
+        EXPECT_EQ(processOutput.errorResult.length(), s_numOutputBytesInPlentyMode);
+        EXPECT_TRUE(processOutput.errorResult.starts_with(s_beginToken));
+        EXPECT_TRUE(processOutput.errorResult.ends_with(s_endToken));
     }
    
     TEST_F(ProcessLaunchParseTests, ProcessLauncher_BasicParameter_Success)

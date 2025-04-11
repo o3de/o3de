@@ -31,7 +31,7 @@ namespace Terrain
     class TerrainSurfaceGradientMapping final
     {
     public:
-        AZ_CLASS_ALLOCATOR(TerrainSurfaceGradientMapping, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TerrainSurfaceGradientMapping, AZ::SystemAllocator);
         AZ_RTTI(TerrainSurfaceGradientMapping, "{473AD2CE-F22A-45A9-803F-2192F3D9F2BF}");
         static void Reflect(AZ::ReflectContext* context);
 
@@ -55,7 +55,7 @@ namespace Terrain
     class TerrainSurfaceGradientListConfig : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(TerrainSurfaceGradientListConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TerrainSurfaceGradientListConfig, AZ::SystemAllocator);
         AZ_RTTI(TerrainSurfaceGradientListConfig, "{E9B083AD-8D30-47DA-8F8E-AA089BFA35E9}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
 

@@ -26,7 +26,7 @@ namespace EMotionFX
         {
         public:
             AZ_RTTI(EMotionFXAsset, "{043F606A-A483-4910-8110-D8BC4B78922C}", AZ::Data::AssetData)
-            AZ_CLASS_ALLOCATOR(EMotionFXAsset, EMotionFXAllocator, 0)
+            AZ_CLASS_ALLOCATOR(EMotionFXAsset, EMotionFXAllocator)
 
             EMotionFXAsset(AZ::Data::AssetId id = AZ::Data::AssetId())
                 : AZ::Data::AssetData(id)
@@ -50,7 +50,7 @@ namespace EMotionFX
             , protected AZ::AssetTypeInfoBus::Handler
         {
         public:
-            AZ_CLASS_ALLOCATOR(EMotionFXAssetHandler<DataType>, EMotionFXAllocator, 0)
+            AZ_CLASS_ALLOCATOR(EMotionFXAssetHandler<DataType>, EMotionFXAllocator)
 
             EMotionFXAssetHandler()
             {

@@ -9,6 +9,7 @@
 #include <RHI/BufferPool.h>
 #include <RHI/BufferView.h>
 #include <Atom/RHI.Reflect/Vulkan/Conversion.h>
+#include <Atom/RHI.Reflect/Vulkan/ImageViewDescriptor.h>
 #include <RHI/CommandQueueContext.h>
 #include <RHI/CommandQueue.h>
 #include <RHI/CommandList.h>
@@ -16,12 +17,14 @@
 #include <RHI/DescriptorSetLayout.h>
 #include <RHI/DescriptorSet.h>
 #include <RHI/Device.h>
+#include <RHI/ImagePool.h>
 #include <RHI/ImageView.h>
 #include <RHI/MemoryView.h>
 #include <RHI/ImagePoolResolver.h>
 #include <RHI/NullDescriptorManager.h>
 #include <RHI/Queue.h>
 #include <RHI/PhysicalDevice.h>
+#include <Atom/RHI.Reflect/VkAllocator.h>
 
 namespace AZ
 {
@@ -35,13 +38,10 @@ namespace AZ
         RHI::ResultCode NullDescriptorManager::Init(Device& device)
         {
             DeviceObject::Init(device);
-            RHI::ResultCode result = CreateImage();
+            RHI::ResultCode result = CreateImages();
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
 
-            result = CreateBuffer();
-            RETURN_RESULT_IF_UNSUCCESSFUL(result);
-
-            result = CreateTexel();
+            result = CreateBuffers();
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
 
             return result;
@@ -49,142 +49,167 @@ namespace AZ
 
         void NullDescriptorManager::Shutdown()
         {
-            const Device& device = static_cast<Device&>(GetDevice());
-            for (auto& image : m_imageNullDescriptor.m_images)
-            {
-                device.GetContext().DestroyImage(device.GetNativeDevice(), image.m_image, nullptr);
-                device.GetContext().DestroyImageView(device.GetNativeDevice(), image.m_view, nullptr);
-                image.m_deviceMemory.reset();
-            }
+            m_imageNullDescriptors.fill({});
+            m_texelBufferViewNull = nullptr;
+            m_bufferNull = nullptr;
 
-            device.GetContext().DestroyBuffer(device.GetNativeDevice(), m_bufferNullDescriptor.m_buffer, nullptr);
-            device.GetContext().DestroyBufferView(device.GetNativeDevice(), m_bufferNullDescriptor.m_view, nullptr);
-            m_bufferNullDescriptor.m_memory.reset();
-
-            device.GetContext().DestroyBuffer(device.GetNativeDevice(), m_texelViewNullDescriptor.m_buffer, nullptr);
-            device.GetContext().DestroyBufferView(device.GetNativeDevice(), m_texelViewNullDescriptor.m_view, nullptr);
-            m_texelViewNullDescriptor.m_memory.reset();
+            m_bufferPool = nullptr;
+            m_imagePool = nullptr;
 
             RHI::DeviceObject::Shutdown();
         }
 
-        RHI::ResultCode NullDescriptorManager::CreateImage()
+        RHI::ResultCode NullDescriptorManager::CreateImages()
         {
             Device& device = static_cast<Device&>(GetDevice());
 
+            RHI::ImagePoolDescriptor imagePoolDesc;
+            imagePoolDesc.m_bindFlags = RHI::ImageBindFlags::ShaderReadWrite | RHI::ImageBindFlags::CopyWrite;
+            m_imagePool = ImagePool::Create();
+            RHI::ResultCode result = m_imagePool->Init(device, imagePoolDesc);
+            RETURN_RESULT_IF_UNSUCCESSFUL(result);
+
             const uint32_t imageDimension = 8;
+            const RHI::Format depthFormat = device.GetNearestSupportedFormat(RHI::Format::D16_UNORM, RHI::FormatCapabilities::DepthStencil);
 
             // fill out the different options for the types of image null descriptors
-            m_imageNullDescriptor.m_images.resize(static_cast<uint32_t>(ImageTypes::Count));
-
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::General2D)] = {};
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::General2D)].m_name = "NULL_DESCRIPTOR_GENERAL_2D";
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::General2D)].m_sampleCountFlag = VK_SAMPLE_COUNT_1_BIT;
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::General2D)].m_format = VK_FORMAT_R8G8B8A8_SRGB;
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::General2D)].m_usageFlagBits = VkImageUsageFlagBits(VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::General2D)].m_arrayLayers = 1;
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::General2D)].m_imageCreateFlagBits = VkImageCreateFlagBits(0);
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::General2D)].m_layout = VK_IMAGE_LAYOUT_GENERAL;
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::General2D)].m_dimension = imageDimension;
-
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::ReadOnly2D)] = m_imageNullDescriptor.m_images[static_cast<uint32_t>(NullDescriptorManager::ImageTypes::General2D)];
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::ReadOnly2D)].m_name = "NULL_DESCRIPTOR_READONLY_2D";
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::ReadOnly2D)].m_sampleCountFlag = VK_SAMPLE_COUNT_1_BIT;
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::ReadOnly2D)].m_format = VK_FORMAT_R8G8B8A8_SRGB;
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::ReadOnly2D)].m_usageFlagBits = VkImageUsageFlagBits(VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::ReadOnly2D)].m_arrayLayers = 1;
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::ReadOnly2D)].m_imageCreateFlagBits = VkImageCreateFlagBits(0);
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::ReadOnly2D)].m_layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::ReadOnly2D)].m_dimension = imageDimension;
-            
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::Storage2D)] = m_imageNullDescriptor.m_images[static_cast<uint32_t>(NullDescriptorManager::ImageTypes::General2D)];
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::Storage2D)].m_name = "NULL_DESCRIPTOR_STORAGE_2D";
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::Storage2D)].m_sampleCountFlag = VK_SAMPLE_COUNT_1_BIT;
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::Storage2D)].m_format = VK_FORMAT_R32G32B32A32_UINT;
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::Storage2D)].m_usageFlagBits = VkImageUsageFlagBits(VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT);
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::Storage2D)].m_arrayLayers = 1;
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::Storage2D)].m_layout = VK_IMAGE_LAYOUT_GENERAL;
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::Storage2D)].m_dimension = 256;
-
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::MultiSampleGeneral2D)] = m_imageNullDescriptor.m_images[static_cast<uint32_t>(NullDescriptorManager::ImageTypes::General2D)];
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::MultiSampleGeneral2D)].m_name = "NULL_DESCRIPTOR_MULTISAMPLE_GENERAL_2D";
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::MultiSampleGeneral2D)].m_sampleCountFlag = VK_SAMPLE_COUNT_4_BIT;
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::MultiSampleGeneral2D)].m_layout = VK_IMAGE_LAYOUT_GENERAL;
-
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::MultiSampleReadOnly2D)] = m_imageNullDescriptor.m_images[static_cast<uint32_t>(NullDescriptorManager::ImageTypes::General2D)];
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::MultiSampleReadOnly2D)].m_name = "NULL_DESCRIPTOR_MULTISAMPLE_READONLY_2D";
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::MultiSampleReadOnly2D)].m_sampleCountFlag = VK_SAMPLE_COUNT_4_BIT;
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::MultiSampleReadOnly2D)].m_layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::GeneralArray2D)] = {};
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::GeneralArray2D)].m_name = "NULL_DESCRIPTOR_GENERAL_ARRAY_2D";
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::GeneralArray2D)].m_sampleCountFlag = VK_SAMPLE_COUNT_1_BIT;
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::GeneralArray2D)].m_format = VK_FORMAT_R8G8B8A8_SRGB;
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::GeneralArray2D)].m_usageFlagBits =VkImageUsageFlagBits(VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::GeneralArray2D)].m_arrayLayers = 1;
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::GeneralArray2D)].m_imageCreateFlagBits = VkImageCreateFlagBits(0);
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::GeneralArray2D)].m_layout = VK_IMAGE_LAYOUT_GENERAL;
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::GeneralArray2D)].m_dimension = imageDimension;
-
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::ReadOnlyArray2D)] = m_imageNullDescriptor.m_images[static_cast<uint32_t>(NullDescriptorManager::ImageTypes::GeneralArray2D)];
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::ReadOnlyArray2D)].m_name = "NULL_DESCRIPTOR_READONLY_ARRAY_2D";
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::ReadOnlyArray2D)].m_sampleCountFlag = VK_SAMPLE_COUNT_1_BIT;
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::ReadOnlyArray2D)].m_format = VK_FORMAT_R8G8B8A8_SRGB;
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::ReadOnlyArray2D)].m_usageFlagBits = VkImageUsageFlagBits(VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::ReadOnlyArray2D)].m_arrayLayers = 1;
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::ReadOnlyArray2D)].m_imageCreateFlagBits = VkImageCreateFlagBits(0);
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::ReadOnlyArray2D)].m_layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::ReadOnlyArray2D)].m_dimension = imageDimension;
-
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::StorageArray2D)] = m_imageNullDescriptor.m_images[static_cast<uint32_t>(NullDescriptorManager::ImageTypes::General2D)];
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::StorageArray2D)].m_name = "NULL_DESCRIPTOR_STORAGE_ARRAY_2D";
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::StorageArray2D)].m_sampleCountFlag = VK_SAMPLE_COUNT_1_BIT;
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::StorageArray2D)].m_format = VK_FORMAT_R32G32B32A32_UINT;
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::StorageArray2D)].m_usageFlagBits = VkImageUsageFlagBits(VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT);
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::StorageArray2D)].m_arrayLayers = 1;
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::StorageArray2D)].m_layout = VK_IMAGE_LAYOUT_GENERAL;
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::StorageArray2D)].m_dimension = 256;
-
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::GeneralCube)] = m_imageNullDescriptor.m_images[static_cast<uint32_t>(NullDescriptorManager::ImageTypes::General2D)];
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::GeneralCube)].m_name = "NULL_DESCRIPTOR_GENERAL_CUBE";
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::GeneralCube)].m_arrayLayers = 6;
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::GeneralCube)].m_imageCreateFlagBits = VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::GeneralCube)].m_layout = VK_IMAGE_LAYOUT_GENERAL;
-
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::ReadOnlyCube)] = m_imageNullDescriptor.m_images[static_cast<uint32_t>(NullDescriptorManager::ImageTypes::GeneralCube)];
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::ReadOnlyCube)].m_name = "NULL_DESCRIPTOR_READONLY_CUBE";
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::ReadOnlyCube)].m_layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::General3D)] = {};
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::General3D)].m_name = "NULL_DESCRIPTOR_GENERAL_3D";
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::General3D)].m_sampleCountFlag = VK_SAMPLE_COUNT_1_BIT;
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::General3D)].m_format = VK_FORMAT_R8G8B8A8_SRGB;
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::General3D)].m_usageFlagBits = VkImageUsageFlagBits(VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::General3D)].m_arrayLayers = 1;
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::General3D)].m_imageCreateFlagBits = VkImageCreateFlagBits(0);
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::General3D)].m_layout = VK_IMAGE_LAYOUT_GENERAL;
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::General3D)].m_dimension = imageDimension;
-
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::ReadOnly3D)] = m_imageNullDescriptor.m_images[static_cast<uint32_t>(NullDescriptorManager::ImageTypes::General3D)];
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::ReadOnly3D)].m_name = "NULL_DESCRIPTOR_READONLY_3D";
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::ReadOnly3D)].m_layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            
-            AZStd::vector<uint32_t> queueFamilies(device.GetCommandQueueContext().GetQueueFamilyIndices(RHI::HardwareQueueClassMask::All));
-            
-            // Default create info
-            VkImageCreateInfo imageCreateInfo = {};
-            imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-            imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
-            imageCreateInfo.format = VK_FORMAT_R8G8B8A8_SRGB;
-            imageCreateInfo.mipLevels = 1;
-            imageCreateInfo.arrayLayers = 1;
-            imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-            imageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-            imageCreateInfo.sharingMode = queueFamilies.size() > 1 ? VK_SHARING_MODE_CONCURRENT : VK_SHARING_MODE_EXCLUSIVE;
-            imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-            imageCreateInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-            imageCreateInfo.queueFamilyIndexCount = aznumeric_caster(queueFamilies.size());
-            imageCreateInfo.pQueueFamilyIndices = queueFamilies.data();
+            {
+                auto& desc = m_imageNullDescriptors[static_cast<uint32_t>(ImageTypes::General2D)];
+                desc.m_name = "NULL_DESCRIPTOR_GENERAL_2D";
+                desc.m_descriptor = RHI::ImageDescriptor::Create2D(
+                    RHI::ImageBindFlags::ShaderRead | RHI::ImageBindFlags::CopyWrite,
+                    imageDimension,
+                    imageDimension,
+                    RHI::Format::R8G8B8A8_UNORM_SRGB);
+                desc.m_layout = VK_IMAGE_LAYOUT_GENERAL;
+            }
+            {
+                auto& desc = m_imageNullDescriptors[static_cast<uint32_t>(ImageTypes::ReadOnly2D)];
+                desc.m_name = "NULL_DESCRIPTOR_READONLY_2D";
+                desc.m_descriptor = RHI::ImageDescriptor::Create2D(
+                    RHI::ImageBindFlags::ShaderRead | RHI::ImageBindFlags::CopyWrite,
+                    imageDimension,
+                    imageDimension,
+                    RHI::Format::R8G8B8A8_UNORM_SRGB);
+                desc.m_layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            }
+            {
+                auto& desc = m_imageNullDescriptors[static_cast<uint32_t>(ImageTypes::Storage2D)];
+                desc.m_name = "NULL_DESCRIPTOR_STORAGE_2D";
+                desc.m_descriptor = RHI::ImageDescriptor::Create2D(
+                    RHI::ImageBindFlags::ShaderReadWrite | RHI::ImageBindFlags::CopyWrite,
+                    256,
+                    256,
+                    RHI::Format::R32G32B32A32_FLOAT);
+                desc.m_layout = VK_IMAGE_LAYOUT_GENERAL;
+            }
+            {
+                auto& desc = m_imageNullDescriptors[static_cast<uint32_t>(ImageTypes::Depth2D)];
+                desc.m_name = "NULL_DESCRIPTOR_DEPTH_2D";
+                desc.m_descriptor = RHI::ImageDescriptor::Create2D(
+                    RHI::ImageBindFlags::ShaderRead | RHI::ImageBindFlags::CopyWrite,
+                    imageDimension,
+                    imageDimension,
+                    depthFormat);
+                desc.m_layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            }
+            {
+                auto& desc = m_imageNullDescriptors[static_cast<uint32_t>(ImageTypes::MultiSampleGeneral2D)];
+                desc.m_name = "NULL_DESCRIPTOR_MULTISAMPLE_GENERAL_2D";
+                desc.m_descriptor = RHI::ImageDescriptor::Create2D(
+                    RHI::ImageBindFlags::ShaderRead | RHI::ImageBindFlags::CopyWrite,
+                    imageDimension,
+                    imageDimension,
+                    RHI::Format::R8G8B8A8_UNORM_SRGB);
+                desc.m_descriptor.m_multisampleState.m_samples = 4;
+                desc.m_layout = VK_IMAGE_LAYOUT_GENERAL;
+            }
+            {
+                auto& desc = m_imageNullDescriptors[static_cast<uint32_t>(ImageTypes::MultiSampleReadOnly2D)];
+                desc = m_imageNullDescriptors[static_cast<uint32_t>(ImageTypes::MultiSampleGeneral2D)];
+                desc.m_name = "NULL_DESCRIPTOR_MULTISAMPLE_READONLY_2D";
+                desc.m_layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            }
+            {
+                auto& desc = m_imageNullDescriptors[static_cast<uint32_t>(ImageTypes::GeneralArray2D)];
+                desc.m_name = "NULL_DESCRIPTOR_GENERAL_ARRAY_2D";
+                desc.m_descriptor = RHI::ImageDescriptor::Create2DArray(
+                    RHI::ImageBindFlags::ShaderRead | RHI::ImageBindFlags::CopyWrite,
+                    imageDimension,
+                    imageDimension,
+                    1,
+                    RHI::Format::R8G8B8A8_UNORM_SRGB);
+                desc.m_layout = VK_IMAGE_LAYOUT_GENERAL;
+            }
+            {
+                auto& desc = m_imageNullDescriptors[static_cast<uint32_t>(ImageTypes::ReadOnlyArray2D)];
+                desc = m_imageNullDescriptors[static_cast<uint32_t>(ImageTypes::GeneralArray2D)];
+                desc.m_name = "NULL_DESCRIPTOR_READONLY_ARRAY_2D";
+                desc.m_layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            }
+            {
+                auto& desc = m_imageNullDescriptors[static_cast<uint32_t>(ImageTypes::StorageArray2D)];
+                desc.m_name = "NULL_DESCRIPTOR_STORAGE_ARRAY_2D";
+                desc.m_descriptor = RHI::ImageDescriptor::Create2DArray(
+                    RHI::ImageBindFlags::ShaderReadWrite | RHI::ImageBindFlags::CopyWrite,
+                    256,
+                    256,
+                    1,
+                    RHI::Format::R32G32B32A32_FLOAT);
+                desc.m_layout = VK_IMAGE_LAYOUT_GENERAL;
+            }
+            {
+                auto& desc = m_imageNullDescriptors[static_cast<uint32_t>(ImageTypes::DepthArray2D)];
+                desc.m_name = "NULL_DESCRIPTOR_DEPTH_ARRAY_2D";
+                desc.m_descriptor = RHI::ImageDescriptor::Create2DArray(
+                    RHI::ImageBindFlags::ShaderRead | RHI::ImageBindFlags::CopyWrite,
+                    imageDimension,
+                    imageDimension,
+                    1,
+                    depthFormat);
+                desc.m_layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            }
+            {
+                auto& desc = m_imageNullDescriptors[static_cast<uint32_t>(ImageTypes::GeneralCube)];
+                desc.m_name = "NULL_DESCRIPTOR_GENERAL_CUBE";
+                desc.m_descriptor = RHI::ImageDescriptor::CreateCubemap(
+                    RHI::ImageBindFlags::ShaderRead | RHI::ImageBindFlags::CopyWrite,
+                    imageDimension,
+                    RHI::Format::R8G8B8A8_UNORM_SRGB);
+                desc.m_layout = VK_IMAGE_LAYOUT_GENERAL;
+            }
+            {
+                auto& desc = m_imageNullDescriptors[static_cast<uint32_t>(ImageTypes::ReadOnlyCube)];
+                desc = m_imageNullDescriptors[static_cast<uint32_t>(ImageTypes::GeneralCube)];
+                desc.m_name = "NULL_DESCRIPTOR_READONLY_CUBE";
+                desc.m_layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            }
+            {
+                auto& desc = m_imageNullDescriptors[static_cast<uint32_t>(ImageTypes::General3D)];
+                desc.m_name = "NULL_DESCRIPTOR_GENERAL_3D";
+                desc.m_descriptor = RHI::ImageDescriptor::Create3D(
+                    RHI::ImageBindFlags::ShaderRead | RHI::ImageBindFlags::CopyWrite,
+                    imageDimension,
+                    imageDimension,
+                    1,
+                    RHI::Format::R8G8B8A8_UNORM_SRGB);
+                desc.m_layout = VK_IMAGE_LAYOUT_GENERAL;
+            }
+            {
+                auto& desc = m_imageNullDescriptors[static_cast<uint32_t>(ImageTypes::DepthCube)];
+                desc.m_name = "NULL_DESCRIPTOR_DEPTH_CUBE";
+                desc.m_descriptor = RHI::ImageDescriptor::CreateCubemap(
+                    RHI::ImageBindFlags::ShaderRead | RHI::ImageBindFlags::CopyWrite,
+                    imageDimension,
+                    depthFormat);
+                desc.m_layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            }
+            {
+                auto& desc = m_imageNullDescriptors[static_cast<uint32_t>(ImageTypes::ReadOnly3D)];
+                desc = m_imageNullDescriptors[static_cast<uint32_t>(ImageTypes::General3D)];
+                desc.m_name = "NULL_DESCRIPTOR_NULL_DESCRIPTOR_READONLY_3DREADONLY_CUBE";
+                desc.m_layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            }
 
             // Default layout transition
             VkImageMemoryBarrier barrier = {};
@@ -192,7 +217,6 @@ namespace AZ
             barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
             barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
             barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-            barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
             barrier.subresourceRange.baseMipLevel = 0;
             barrier.subresourceRange.levelCount = VK_REMAINING_MIP_LEVELS;
             barrier.subresourceRange.baseArrayLayer = 0;
@@ -200,94 +224,64 @@ namespace AZ
 
             AZStd::vector<VkImageMemoryBarrier> layoutTransitions;
 
-            for (uint32_t imageIndex = static_cast<uint32_t>(NullDescriptorManager::ImageTypes::General2D); imageIndex < static_cast<uint32_t>(NullDescriptorManager::ImageTypes::Count); imageIndex++)
+            for (uint32_t i = 0; i < static_cast<uint32_t>(NullDescriptorManager::ImageTypes::Count); ++i)
             {
-                // different options for the images
-                imageCreateInfo.imageType = (imageIndex >= static_cast<uint32_t>(NullDescriptorManager::ImageTypes::General3D)) ? VK_IMAGE_TYPE_3D : VK_IMAGE_TYPE_2D;
-                imageCreateInfo.extent = { m_imageNullDescriptor.m_images[imageIndex].m_dimension, m_imageNullDescriptor.m_images[imageIndex].m_dimension, 1 };
-                imageCreateInfo.samples = m_imageNullDescriptor.m_images[imageIndex].m_sampleCountFlag;
-                imageCreateInfo.format = m_imageNullDescriptor.m_images[imageIndex].m_format;
-                imageCreateInfo.usage = m_imageNullDescriptor.m_images[imageIndex].m_usageFlagBits;
-                imageCreateInfo.arrayLayers = m_imageNullDescriptor.m_images[imageIndex].m_arrayLayers;
-                imageCreateInfo.flags = m_imageNullDescriptor.m_images[imageIndex].m_imageCreateFlagBits;
+                NullDescriptorManager::ImageTypes type = static_cast<NullDescriptorManager::ImageTypes>(i);
+                auto& desc = m_imageNullDescriptors[i];
+                desc.m_image = Image::Create();
+                RHI::DeviceImageInitRequest request(*desc.m_image, desc.m_descriptor);
+                result = m_imagePool->InitImage(request);
+                RETURN_RESULT_IF_UNSUCCESSFUL(result);
+                desc.m_image->SetLayout(desc.m_layout);
 
-                VkResult result = device.GetContext().CreateImage(
-                    device.GetNativeDevice(), &imageCreateInfo, nullptr, &m_imageNullDescriptor.m_images[imageIndex].m_image);
-                RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(result));
+                desc.m_imageView = ImageView::Create();
+                ImageViewDescriptor viewDesc;
+                viewDesc.m_aspectFlags = RHI::ImageAspectFlags::Color;
+                // Swizzle all channels to return (0, 0, 0, 1) always
+                // This is similar to what the robustness2 extension does when reading a null texture.
+                viewDesc.m_componentMapping = ImageComponentMapping(
+                    ImageComponentMapping::Swizzle::Zero,
+                    ImageComponentMapping::Swizzle::Zero,
+                    ImageComponentMapping::Swizzle::Zero,
+                    ImageComponentMapping::Swizzle::One);
 
-                VkMemoryRequirements memReqs = {};
-                device.GetContext().GetImageMemoryRequirements(
-                    device.GetNativeDevice(), m_imageNullDescriptor.m_images[imageIndex].m_image, &memReqs);
+                barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 
-                // image device memory
-                m_imageNullDescriptor.m_images[imageIndex].m_deviceMemory = device.AllocateMemory(memReqs.size, memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-                result = device.GetContext().BindImageMemory(
-                    device.GetNativeDevice(), m_imageNullDescriptor.m_images[imageIndex].m_image,
-                    m_imageNullDescriptor.m_images[imageIndex].m_deviceMemory->GetNativeDeviceMemory(), 0);
-                RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(result));
+                switch (type)
+                {
+                    case NullDescriptorManager::ImageTypes::Depth2D:
+                        viewDesc.m_aspectFlags = RHI::ImageAspectFlags::Depth;
+                        barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+                        break;
+                    case NullDescriptorManager::ImageTypes::DepthArray2D:
+                        viewDesc.m_aspectFlags = RHI::ImageAspectFlags::Depth;
+                        barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+                        [[fallthrough]];
+                    case NullDescriptorManager::ImageTypes::GeneralArray2D:
+                    case NullDescriptorManager::ImageTypes::ReadOnlyArray2D:
+                    case NullDescriptorManager::ImageTypes::StorageArray2D:
+                        viewDesc.m_isArray = true;
+                        break;
+                    case NullDescriptorManager::ImageTypes::DepthCube:
+                        viewDesc.m_aspectFlags = RHI::ImageAspectFlags::Depth;
+                        barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+                        [[fallthrough]];
+                    case NullDescriptorManager::ImageTypes::GeneralCube:
+                    case NullDescriptorManager::ImageTypes::ReadOnlyCube:
+                        viewDesc.m_isCubemap = true;
+                        break;
+                    default:
+                        break;
+                }
 
-                // Transition to the proper layout. Images can only be created with VK_IMAGE_LAYOUT_UNDEFINED or VK_IMAGE_LAYOUT_PREINITIALIZED.
-                barrier.newLayout = m_imageNullDescriptor.m_images[imageIndex].m_layout;
-                barrier.image = m_imageNullDescriptor.m_images[imageIndex].m_image;
+                result = desc.m_imageView->Init(*desc.m_image, viewDesc);
+                RETURN_RESULT_IF_UNSUCCESSFUL(result);
+
+                // Transition to the proper layout. Images can only be created with VK_IMAGE_LAYOUT_UNDEFINED or
+                // VK_IMAGE_LAYOUT_PREINITIALIZED.
+                barrier.newLayout = desc.m_layout;
+                barrier.image = desc.m_image->GetNativeImage();
                 layoutTransitions.push_back(barrier);
-
-                // sampler
-                VkSamplerCreateInfo samplerCreateInfo = {};
-                samplerCreateInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-                samplerCreateInfo.maxAnisotropy = 1.0f;
-                samplerCreateInfo.magFilter = VK_FILTER_LINEAR;
-                samplerCreateInfo.minFilter = VK_FILTER_LINEAR;
-                samplerCreateInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-                samplerCreateInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-                samplerCreateInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-                samplerCreateInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-                samplerCreateInfo.mipLodBias = 0.0f;
-                samplerCreateInfo.compareOp = VK_COMPARE_OP_NEVER;
-                samplerCreateInfo.minLod = 0.0f;
-                samplerCreateInfo.maxLod = 0.0f;
-                samplerCreateInfo.maxAnisotropy = 1.0;
-                samplerCreateInfo.anisotropyEnable = VK_FALSE;
-                samplerCreateInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
-                result = device.GetContext().CreateSampler(
-                    device.GetNativeDevice(), &samplerCreateInfo, nullptr, &m_imageNullDescriptor.m_images[imageIndex].m_sampler);
-                RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(result));
-
-                // image view
-                VkImageViewCreateInfo imageViewCreateInfo = {};
-                imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-                imageViewCreateInfo.format = m_imageNullDescriptor.m_images[imageIndex].m_format;
-                imageViewCreateInfo.components = { VK_COMPONENT_SWIZZLE_ZERO, VK_COMPONENT_SWIZZLE_ZERO, VK_COMPONENT_SWIZZLE_ZERO, VK_COMPONENT_SWIZZLE_ONE };
-                imageViewCreateInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-                imageViewCreateInfo.subresourceRange.baseMipLevel = 0;
-                imageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
-                imageViewCreateInfo.subresourceRange.layerCount = 1;
-                imageViewCreateInfo.subresourceRange.levelCount = 1;
-                imageViewCreateInfo.image = m_imageNullDescriptor.m_images[imageIndex].m_image;
-
-                // 2d, 3d, or cube view
-                imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-                if (imageCreateInfo.arrayLayers > 1)
-                {
-                    imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_CUBE;
-                    imageViewCreateInfo.subresourceRange.layerCount = m_imageNullDescriptor.m_images[imageIndex].m_arrayLayers;
-                    imageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
-                }
-                else if (imageIndex == static_cast<uint32_t>(ImageTypes::General3D) || imageIndex == static_cast<uint32_t>(ImageTypes::ReadOnly3D))
-                {
-                    imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_3D;
-                }
-                else if (imageIndex >= static_cast<uint32_t>(ImageTypes::GeneralArray2D) && imageIndex <= static_cast<uint32_t>(ImageTypes::StorageArray2D))
-                {
-                    imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
-                }
-
-                result = device.GetContext().CreateImageView(
-                    device.GetNativeDevice(), &imageViewCreateInfo, nullptr, &m_imageNullDescriptor.m_images[imageIndex].m_view);
-                RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(result));
-
-                m_imageNullDescriptor.m_images[imageIndex].m_descriptorImageInfo.imageLayout = m_imageNullDescriptor.m_images[imageIndex].m_layout;
-                m_imageNullDescriptor.m_images[imageIndex].m_descriptorImageInfo.imageView = m_imageNullDescriptor.m_images[imageIndex].m_view;
-                m_imageNullDescriptor.m_images[imageIndex].m_descriptorImageInfo.sampler = m_imageNullDescriptor.m_images[imageIndex].m_sampler;
             }
 
             auto commandList = device.AcquireCommandList(RHI::HardwareQueueClass::Graphics);
@@ -309,109 +303,47 @@ namespace AZ
             {
                 Queue* vulkanQueue = static_cast<Queue*>(queue);
                 vulkanQueue->SubmitCommandBuffers(
-                    { commandList },
-                    AZStd::vector<Semaphore::WaitSemaphore>(),
-                    AZStd::vector<RHI::Ptr<Semaphore>>(),
-                    nullptr);
+                    { commandList }, AZStd::vector<Semaphore::WaitSemaphore>(), AZStd::vector<RHI::Ptr<Semaphore>>(), {}, nullptr);
             });
 
             return RHI::ResultCode::Success;
         }
 
-        RHI::ResultCode NullDescriptorManager::CreateBuffer()
+        RHI::ResultCode NullDescriptorManager::CreateBuffers()
         {
             Device& device = static_cast<Device&>(GetDevice());
 
+            RHI::BufferPoolDescriptor bufferPoolDesc = {};
+            bufferPoolDesc.m_bindFlags = RHI::BufferBindFlags::Constant | RHI::BufferBindFlags::ShaderReadWrite;
+            bufferPoolDesc.m_sharedQueueMask = RHI::HardwareQueueClassMask::All;
+            bufferPoolDesc.m_heapMemoryLevel = RHI::HeapMemoryLevel::Device;
+            bufferPoolDesc.m_hostMemoryAccess = RHI::HostMemoryAccess::Write;
+
+            m_bufferPool = BufferPool::Create();
+            RHI::ResultCode result = m_bufferPool->Init(device, bufferPoolDesc);            
+            RETURN_RESULT_IF_UNSUCCESSFUL(result);
+
             const uint32_t bufferSize = 64;
-            AZStd::vector<uint32_t> queueFamilies(device.GetCommandQueueContext().GetQueueFamilyIndices(RHI::HardwareQueueClassMask::All));
+            RHI::BufferDescriptor bufferDescriptor;
+            bufferDescriptor.m_bindFlags = bufferPoolDesc.m_bindFlags;
+            bufferDescriptor.m_byteCount = bufferSize;
+            bufferDescriptor.m_sharedQueueMask = bufferPoolDesc.m_sharedQueueMask;
 
-            VkBufferCreateInfo bufferCreateInfo = {};
-            bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-            bufferCreateInfo.size = bufferSize;
-            bufferCreateInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT;
-            bufferCreateInfo.sharingMode = queueFamilies.size() > 1 ? VK_SHARING_MODE_CONCURRENT : VK_SHARING_MODE_EXCLUSIVE;
-            bufferCreateInfo.queueFamilyIndexCount = aznumeric_caster(queueFamilies.size());
-            bufferCreateInfo.pQueueFamilyIndices = queueFamilies.data();
-            VkResult result =
-                device.GetContext().CreateBuffer(device.GetNativeDevice(), &bufferCreateInfo, nullptr, &m_bufferNullDescriptor.m_buffer);
-            RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(result));
-
-            VkMemoryRequirements memReqs;
-            device.GetContext().GetBufferMemoryRequirements(device.GetNativeDevice(), m_bufferNullDescriptor.m_buffer, &memReqs);
-
-            // device memory
-            m_bufferNullDescriptor.m_memory = device.AllocateMemory(memReqs.size, memReqs.memoryTypeBits, 0);
-            result = device.GetContext().BindBufferMemory(
-                device.GetNativeDevice(), m_bufferNullDescriptor.m_buffer, m_bufferNullDescriptor.m_memory->GetNativeDeviceMemory(), 0);
-            RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(result));
-
-            m_bufferNullDescriptor.m_bufferSize = bufferSize;
-            VkBufferViewCreateInfo bufferViewCreateInfo = {};
-            bufferViewCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_VIEW_CREATE_INFO;
-            bufferViewCreateInfo.buffer = m_bufferNullDescriptor.m_buffer;
-            bufferViewCreateInfo.flags = 0;
-            bufferViewCreateInfo.format = VK_FORMAT_R8_UINT;
-            bufferViewCreateInfo.offset = 0;
-            bufferViewCreateInfo.pNext = nullptr;
-            bufferViewCreateInfo.range = m_bufferNullDescriptor.m_bufferSize;
-            result = device.GetContext().CreateBufferView(
-                device.GetNativeDevice(), &bufferViewCreateInfo, nullptr, &m_bufferNullDescriptor.m_view);
-            RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(result));
-
-            m_bufferNullDescriptor.m_bufferInfo.buffer = m_bufferNullDescriptor.m_buffer;
-            m_bufferNullDescriptor.m_bufferInfo.offset = 0;
-            m_bufferNullDescriptor.m_bufferInfo.range = m_bufferNullDescriptor.m_bufferSize;
+            m_bufferNull = Buffer::Create();
+            RHI::DeviceBufferInitRequest request(*m_bufferNull, bufferDescriptor);
+            result = m_bufferPool->InitBuffer(request);
+            RETURN_RESULT_IF_UNSUCCESSFUL(result);
+           
+            RHI::BufferViewDescriptor bufferViewDesc = RHI::BufferViewDescriptor::CreateTyped(0, bufferSize, RHI::Format::R8_UINT);
+            m_texelBufferViewNull = BufferView::Create();
+            result = m_texelBufferViewNull->Init(*m_bufferNull, bufferViewDesc);
+            RETURN_RESULT_IF_UNSUCCESSFUL(result);
 
             return RHI::ResultCode::Success;
         }
 
-        RHI::ResultCode NullDescriptorManager::CreateTexel()
-        {
-            Device& device = static_cast<Device&>(GetDevice());
-
-            const uint32_t bufferSize = 64;
-            AZStd::vector<uint32_t> queueFamilies(device.GetCommandQueueContext().GetQueueFamilyIndices(RHI::HardwareQueueClassMask::All));
-
-            VkBufferCreateInfo bufferCreateInfo = {};
-            bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-            bufferCreateInfo.size = bufferSize;
-            bufferCreateInfo.usage = VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT;
-            bufferCreateInfo.sharingMode = queueFamilies.size() > 1 ? VK_SHARING_MODE_CONCURRENT : VK_SHARING_MODE_EXCLUSIVE;
-            bufferCreateInfo.queueFamilyIndexCount = aznumeric_caster(queueFamilies.size());
-            bufferCreateInfo.pQueueFamilyIndices = queueFamilies.data();
-            VkResult result =
-                device.GetContext().CreateBuffer(device.GetNativeDevice(), &bufferCreateInfo, nullptr, &m_texelViewNullDescriptor.m_buffer);
-            RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(result));
-
-            // device memory
-            VkMemoryRequirements memReqs;
-            device.GetContext().GetBufferMemoryRequirements(device.GetNativeDevice(), m_texelViewNullDescriptor.m_buffer, &memReqs);
-            m_texelViewNullDescriptor.m_memory = device.AllocateMemory(memReqs.size, memReqs.memoryTypeBits, 0);
-
-            result = device.GetContext().BindBufferMemory(
-                device.GetNativeDevice(),
-                m_texelViewNullDescriptor.m_buffer,
-                m_texelViewNullDescriptor.m_memory->GetNativeDeviceMemory(),
-                0);
-            RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(result));
-
-            m_texelViewNullDescriptor.m_bufferSize = 64;
-            VkBufferViewCreateInfo bufferViewCreateInfo = {};
-            bufferViewCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_VIEW_CREATE_INFO;
-            bufferViewCreateInfo.buffer = m_texelViewNullDescriptor.m_buffer;
-            bufferViewCreateInfo.flags = 0;
-            bufferViewCreateInfo.format = VK_FORMAT_R8_UINT;
-            bufferViewCreateInfo.offset = 0;
-            bufferViewCreateInfo.pNext = nullptr;
-            bufferViewCreateInfo.range = m_texelViewNullDescriptor.m_bufferSize;
-            result = device.GetContext().CreateBufferView(
-                device.GetNativeDevice(), &bufferViewCreateInfo, nullptr, &m_texelViewNullDescriptor.m_view);
-            RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(result));
-
-            return RHI::ResultCode::Success;
-        }
-
-        VkDescriptorImageInfo NullDescriptorManager::GetDescriptorImageInfo(RHI::ShaderInputImageType imageType, bool storageImage)
+        VkDescriptorImageInfo NullDescriptorManager::GetDescriptorImageInfo(
+            RHI::ShaderInputImageType imageType, bool storageImage, bool usesDepthFormat) const
         {
             if (imageType == RHI::ShaderInputImageType::Image2D)
             {
@@ -421,7 +353,7 @@ namespace AZ
                 }
                 else
                 {
-                    return GetImage(ImageTypes::ReadOnly2D);
+                    return usesDepthFormat ? GetImage(ImageTypes::Depth2D) : GetImage(ImageTypes::ReadOnly2D);
                 }
             }
             else if (imageType == RHI::ShaderInputImageType::Image2DArray)
@@ -432,7 +364,7 @@ namespace AZ
                 }
                 else
                 {
-                    return GetImage(ImageTypes::ReadOnlyArray2D);
+                    return usesDepthFormat ? GetImage(ImageTypes::DepthArray2D) : GetImage(ImageTypes::ReadOnlyArray2D);
                 }
             }
             else if (imageType == RHI::ShaderInputImageType::Image2DMultisample)
@@ -454,7 +386,7 @@ namespace AZ
                 }
                 else
                 {
-                    return GetImage(ImageTypes::ReadOnlyCube);
+                    return usesDepthFormat ? GetImage(ImageTypes::DepthCube) : GetImage(ImageTypes::ReadOnlyCube);
                 }
             }
             else if (imageType == RHI::ShaderInputImageType::Image3D)
@@ -476,22 +408,29 @@ namespace AZ
             return GetImage(ImageTypes::ReadOnly2D);
         }
 
-        VkDescriptorImageInfo NullDescriptorManager::GetImage(ImageTypes type)
+        VkDescriptorImageInfo NullDescriptorManager::GetImage(ImageTypes type) const
         {
             uint32_t index = static_cast<uint32_t>(type);
             
-            AZ_Assert(index < m_imageNullDescriptor.m_images.size(), "%d out of bounds for image null descriptor size: %d", index, m_imageNullDescriptor.m_images.size());
-            return m_imageNullDescriptor.m_images[index].m_descriptorImageInfo;
+            AZ_Assert(
+                index < m_imageNullDescriptors.size(),
+                "%d out of bounds for image null descriptor size: %d",
+                index,
+                m_imageNullDescriptors.size());
+
+            return VkDescriptorImageInfo{ VK_NULL_HANDLE,
+                                          m_imageNullDescriptors[index].m_imageView->GetNativeImageView(),
+                                          m_imageNullDescriptors[index].m_layout};
         }
 
-        VkBufferView NullDescriptorManager::GetTexelBufferView()
+        const BufferView& NullDescriptorManager::GetTexelBufferView() const
         {
-            return m_texelViewNullDescriptor.m_view;
+            return *m_texelBufferViewNull;
         }
 
-        VkDescriptorBufferInfo NullDescriptorManager::GetBuffer()
+        const Buffer& NullDescriptorManager::GetBuffer() const
         {
-            return m_bufferNullDescriptor.m_bufferInfo;
+            return *m_bufferNull;
         }
     }
 }

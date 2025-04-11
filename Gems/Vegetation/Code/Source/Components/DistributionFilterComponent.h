@@ -26,7 +26,7 @@ namespace Vegetation
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(DistributionFilterConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DistributionFilterConfig, AZ::SystemAllocator);
         AZ_RTTI(DistributionFilterConfig, "{7E304208-5FDF-4384-BC28-E7CDD2A15BEC}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
         

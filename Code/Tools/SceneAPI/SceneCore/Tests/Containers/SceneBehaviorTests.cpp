@@ -30,13 +30,15 @@ extern "C" AZ_DLL_EXPORT void ReflectBehavior(AZ::BehaviorContext* context);
 // the DLL entry point for SceneCore to reflect its serialize context
 extern "C" AZ_DLL_EXPORT void ReflectTypes(AZ::SerializeContext* context);
 
+extern "C" AZ_DLL_EXPORT void CleanUpSceneCoreGenericClassInfo();
+
 namespace AZ::SceneAPI::Containers
 {
     class MockManifestRule : public DataTypes::IManifestObject
     {
     public:
         AZ_RTTI(MockManifestRule, "{D6F96B48-4E6F-4EE8-A5A3-959B76F90DA8}", IManifestObject);
-        AZ_CLASS_ALLOCATOR(MockManifestRule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MockManifestRule, AZ::SystemAllocator);
 
         MockManifestRule() = default;
 
@@ -412,7 +414,7 @@ namespace AZ::SceneAPI::Containers
     // SceneGraphBehaviorScriptTest
     //
     class SceneGraphBehaviorScriptTest
-        : public UnitTest::AllocatorsFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         AZStd::unique_ptr<MockSceneComponentApplication> m_componentApplication;
@@ -477,7 +479,7 @@ namespace AZ::SceneAPI::Containers
 
         void SetUp() override
         {
-            UnitTest::AllocatorsFixture::SetUp();
+            UnitTest::LeakDetectionFixture::SetUp();
 
             m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
             m_serializeContext->RegisterGenericType<AZStd::string>();
@@ -529,7 +531,7 @@ namespace AZ::SceneAPI::Containers
             m_serializeContext.reset();
             m_behaviorContext.reset();
 
-            UnitTest::AllocatorsFixture::TearDown();
+            UnitTest::LeakDetectionFixture::TearDown();
         }
 
         void ExpectExecute(AZStd::string_view script)
@@ -767,7 +769,7 @@ namespace AZ::SceneAPI::Containers
     // SceneManifestBehaviorScriptTest is meant to test the script abilities of the SceneManifest
     //
     class SceneManifestBehaviorScriptTest
-        : public UnitTest::AllocatorsFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         AZStd::unique_ptr<MockSceneComponentApplication> m_componentApplication;
@@ -784,7 +786,7 @@ namespace AZ::SceneAPI::Containers
 
         void SetUp() override
         {
-            UnitTest::AllocatorsFixture::SetUp();
+            UnitTest::LeakDetectionFixture::SetUp();
 
             m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
             MockBuilder::Reflect(m_serializeContext.get());
@@ -836,7 +838,10 @@ namespace AZ::SceneAPI::Containers
             m_scriptContext.reset();
             m_behaviorContext.reset();
             m_componentApplication.reset();
-            UnitTest::AllocatorsFixture::TearDown();
+
+            CleanUpSceneCoreGenericClassInfo();
+
+            UnitTest::LeakDetectionFixture::TearDown();
         }
 
         void ExpectExecute(AZStd::string_view script)

@@ -50,7 +50,7 @@ namespace ScriptCanvas
     {
     public:
         AZ_RTTI(ExecutionState, k_ExecutionStateAzTypeIdString);
-        AZ_CLASS_ALLOCATOR(ExecutionState, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ExecutionState, AZ::SystemAllocator);
 
         const AZ::u32 m_lightUserDataMark = UserDataMark;
 

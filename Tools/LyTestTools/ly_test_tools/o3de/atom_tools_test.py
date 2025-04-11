@@ -147,7 +147,7 @@ class AtomToolsTestSuite(MultiTestSuite):
     # Atom Tools executable name to open with the Atom Tools launchers.
     executable_name = ""
     # Maximum time in seconds for a single Atom tools executable to stay open across the set of shared tests.
-    timeout_shared_test = 300
+    timeout_shared_test = 900
     # Maximum time (seconds) for waiting for a crash file to finish being dumped to disk.
     _timeout_crash_log = 20
     # Return code for test failure.

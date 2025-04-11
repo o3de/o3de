@@ -9,6 +9,7 @@
 #pragma once
 
 #include <Atom/RPI.Reflect/Image/Image.h>
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/Image/StreamingImageContext.h>
 
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
@@ -42,18 +43,21 @@ namespace AZ
         //! the streaming phase of the controller, in order to make uploads deterministic.
         //! 
         //! A trim operation will immediately trim the GPU image down and cancel any in-flight mip chain fetches.
-        //! 
-        class StreamingImage final
+        //!
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+        class ATOM_RPI_PUBLIC_API StreamingImage final
             : public Image
             , public Data::AssetBus::MultiHandler
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             static_assert(RHI::Limits::Image::MipCountMax < 16, "StreamingImageAsset is optimized to support a maximum of 16 mip levels.");
 
             friend class ImageSystem;
             friend class StreamingImageController;
+            friend class StreamingImageContext;
         public:
             AZ_INSTANCE_DATA(StreamingImage, "{E48A7FF0-3065-42C6-9673-4FE7C8905629}", Image);
-            AZ_CLASS_ALLOCATOR(StreamingImage, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(StreamingImage, SystemAllocator);
 
             //! Instantiates or returns an existing streaming image instance using its paired asset.
             static Data::Instance<StreamingImage> FindOrCreate(const Data::Asset<StreamingImageAsset>& streamingImageAsset);
@@ -98,6 +102,9 @@ namespace AZ
             //! Queues an expansion to the mip chain that is one level higher than the resident mip chain.
             void QueueExpandToNextMipChainLevel();
 
+            //! Cancel ongoing mip expanding
+            void CancelExpanding();
+
             //! Performs the GPU mip chain expansion for any contiguous range of ready (loaded) mip chain assets. Returns
             //! the result of the RHI pool residency update. If no new mip chains are available, this will no-op
             //! and return success.
@@ -129,7 +136,7 @@ namespace AZ
             bool IsStreamed() const;
 
         private:
-            StreamingImage() = default;
+            StreamingImage();
 
             static Data::Instance<StreamingImage> CreateInternal(StreamingImageAsset& streamingImageAsset);
             RHI::ResultCode Init(StreamingImageAsset& imageAsset);
@@ -159,6 +166,8 @@ namespace AZ
 
             // Uploads the mip chain content from the asset to the GPU
             RHI::ResultCode UploadMipChain(size_t mipChainIndex);
+
+            AZStd::mutex m_mipChainMutex;
 
             struct MipChainState
             {

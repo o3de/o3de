@@ -15,25 +15,33 @@ namespace AzToolsFramework
 {
     namespace Prefab
     {
+        class InstanceEntityMapperInterface;
         class InstanceToTemplateInterface;
         class PrefabFocusInterface;
         class PrefabSystemComponentInterface;
 
-        class PrefabOverridePublicHandler : private PrefabOverridePublicInterface
+        class PrefabOverridePublicHandler : public PrefabOverridePublicRequestBus::Handler
         {
         public:
             PrefabOverridePublicHandler();
             virtual ~PrefabOverridePublicHandler();
 
+            static void Reflect(AZ::ReflectContext* context);
+
         private:
-            //! Checks whether overrides are present on the given entity id. Overrides can come from any ancestor prefab but
-            //! this function specifically checks for overrides from the focused prefab.
-            //! @param entityId The id of the entity to check for overrides.
-            //! @return true if overrides are present on the given entity id from the focused prefab.
-            bool AreOverridesPresent(AZ::EntityId entityId) override;
+            bool AreOverridesPresent(AZ::EntityId entityId, AZStd::string_view relativePathFromEntity = {}) override;
+            bool AreComponentOverridesPresent(AZ::EntityComponentIdPair entityComponentIdPair) override;
+            AZStd::optional<OverrideType> GetEntityOverrideType(AZ::EntityId entityId) override;
+            AZStd::optional<OverrideType> GetComponentOverrideType(const AZ::EntityComponentIdPair& entityComponentIdPair) override;
+            bool RevertOverrides(AZ::EntityId entityId, AZStd::string_view relativePathFromEntity = {}) override;
+            bool RevertComponentOverrides(const AZ::EntityComponentIdPair& entityComponentIdPair) override;
+            bool ApplyComponentOverrides(const AZ::EntityComponentIdPair& entityComponentIdPair) override;
+            AZStd::pair<AZ::Dom::Path, LinkId> GetEntityPathAndLinkIdFromFocusedPrefab(AZ::EntityId entityId);
+            AZStd::pair<AZ::Dom::Path, LinkId> GetComponentPathAndLinkIdFromFocusedPrefab(const AZ::EntityComponentIdPair& entityComponentIdPair);
 
             PrefabOverrideHandler m_prefabOverrideHandler;
 
+            InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
             InstanceToTemplateInterface* m_instanceToTemplateInterface = nullptr;
             PrefabFocusInterface* m_prefabFocusInterface = nullptr;
             PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;

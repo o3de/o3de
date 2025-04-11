@@ -7,8 +7,9 @@
 
 #pragma once
 
-#include <Atom/Features/ColorManagement/TransformColor.azsli>
+#include <Atom/Features/Bindless.azsli>
 #include <Atom/Features/BlendUtility.azsli>
+#include <Atom/Features/ColorManagement/TransformColor.azsli>
 #include <Atom/RPI/TangentSpace.azsli>
 
 enum DetailTextureFlags
@@ -91,48 +92,11 @@ void AddDetailSurface(inout DetailSurface surface, in DetailSurface surfaceToAdd
     surface.m_height += surfaceToAdd.m_height;
 }
 
-// Detail material index getters
-
-uint GetDetailColorIndex(TerrainSrg::DetailMaterialData materialData)
-{
-    return materialData.m_colorNormalImageIndices & 0x0000FFFF;
-}
-
-uint GetDetailNormalIndex(TerrainSrg::DetailMaterialData materialData)
-{
-    return materialData.m_colorNormalImageIndices >> 16;
-}
-
-uint GetDetailRoughnessIndex(TerrainSrg::DetailMaterialData materialData)
-{
-    return materialData.m_roughnessMetalnessImageIndices & 0x0000FFFF;
-}
-
-uint GetDetailMetalnessIndex(TerrainSrg::DetailMaterialData materialData)
-{
-    return materialData.m_roughnessMetalnessImageIndices >> 16;
-}
-
-uint GetDetailSpecularF0Index(TerrainSrg::DetailMaterialData materialData)
-{
-    return materialData.m_specularF0OcclusionImageIndices & 0x0000FFFF;
-}
-
-uint GetDetailOcclusionIndex(TerrainSrg::DetailMaterialData materialData)
-{
-    return materialData.m_specularF0OcclusionImageIndices >> 16;
-}
-
-uint GetDetailHeightIndex(TerrainSrg::DetailMaterialData materialData)
-{
-    return materialData.m_heightImageIndex & 0x0000FFFF;
-}
-
 // Detail material value getters
 
 float4 SampleTexture(uint index, in MaterialContext materialContext)
 {
-    return TerrainSrg::m_textures[index].SampleGrad(TerrainMaterialSrg::m_sampler, materialContext.m_uv, materialContext.m_ddx, materialContext.m_ddy);
+    return Bindless::GetTexture2D(index).SampleGrad(TerrainMaterialSrg::m_detailSampler, materialContext.m_uv, materialContext.m_ddx, materialContext.m_ddy);
 }
 
 float3 GetDetailColor(in MaterialContext materialContext, in float3 macroColor)
@@ -141,7 +105,7 @@ float3 GetDetailColor(in MaterialContext materialContext, in float3 macroColor)
     float3 color = materialData.m_baseColor;
     if ((materialData.m_flags & DetailTextureFlags::UseTextureBaseColor) > 0)
     {
-        color = SampleTexture(GetDetailColorIndex(materialData), materialContext).rgb;
+        color = SampleTexture(materialData.m_colorImageIndex, materialContext).rgb;
         color = TransformColor(color, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg);
         color = sqrt(color); // Put in a more perceptual space for blending. This will be undone later.
     }
@@ -175,7 +139,7 @@ float3 GetDetailNormal(in MaterialContext materialContext)
     float2 normal = float2(0.0, 0.0);
     if ((materialData.m_flags & DetailTextureFlags::UseTextureNormal) > 0)
     {
-        normal = SampleTexture(GetDetailNormalIndex(materialData), materialContext).rg;
+        normal = SampleTexture(materialData.m_normalImageIndex, materialContext).rg;
     }
     
     // X and Y are inverted here to be consistent with SampleNormalXY in NormalInput.azsli.
@@ -196,7 +160,7 @@ float GetDetailRoughness(in MaterialContext materialContext)
     float roughness = materialData.m_roughnessScale;
     if ((materialData.m_flags & DetailTextureFlags::UseTextureRoughness) > 0)
     {
-        roughness = SampleTexture(GetDetailRoughnessIndex(materialData), materialContext).r;
+        roughness = SampleTexture(materialData.m_roughnessImageIndex, materialContext).r;
         roughness = materialData.m_roughnessBias + roughness * materialData.m_roughnessScale;
     }
     return roughness;
@@ -208,7 +172,7 @@ float GetDetailMetalness(in MaterialContext materialContext)
     float metalness = 1.0;
     if ((materialData.m_flags & DetailTextureFlags::UseTextureMetallic) > 0)
     {
-        metalness = SampleTexture(GetDetailMetalnessIndex(materialData), materialContext).r;
+        metalness = SampleTexture(materialData.m_metalnessImageIndex, materialContext).r;
     }
     return metalness * materialData.m_metalFactor;
 }
@@ -219,7 +183,7 @@ float GetDetailSpecularF0(in MaterialContext materialContext)
     float specularF0 = 1.0;
     if ((materialData.m_flags & DetailTextureFlags::UseTextureSpecularF0) > 0)
     {
-        specularF0 = SampleTexture(GetDetailSpecularF0Index(materialData), materialContext).r;
+        specularF0 = SampleTexture(materialData.m_specularF0ImageIndex, materialContext).r;
     }
     return specularF0 * materialData.m_specularF0Factor;
 }
@@ -230,7 +194,7 @@ float GetDetailOcclusion(in MaterialContext materialContext)
     float occlusion = 1.0;
     if ((materialData.m_flags & DetailTextureFlags::UseTextureOcclusion) > 0)
     {
-        occlusion = SampleTexture(GetDetailOcclusionIndex(materialData), materialContext).r;
+        occlusion = SampleTexture(materialData.m_occlusionImageIndex, materialContext).r;
     }
     return occlusion * materialData.m_occlusionFactor;
 }
@@ -241,7 +205,7 @@ float GetDetailHeight(in MaterialContext materialContext)
     float height = materialData.m_heightFactor;
     if ((materialData.m_flags & DetailTextureFlags::UseTextureHeight) > 0)
     {
-        height = SampleTexture(GetDetailHeightIndex(materialData), materialContext).r;
+        height = SampleTexture(materialData.m_heightImageIndex, materialContext).r;
         height = materialData.m_heightOffset + height * materialData.m_heightFactor;
     }
     return height;
@@ -393,7 +357,8 @@ bool GetDetailSurface(inout DetailSurface surface, float2 detailMaterialIdCoord,
     macroColor = sqrt(macroColor); // Put macro color into an approximate perceptual space.
 
     // The detail material id texture wraps since the "center" point can be anywhere in the texture, so mod by intTextureSize
-    int2 detailMaterialIdTopLeft = int2(floor(detailMaterialIdCoord)) % intTextureSize;
+    // We can't use the '%' operator for 'detailMaterialIdCoord' because it's only defined when both sides are negative, or both sides are positive.
+    int2 detailMaterialIdTopLeft = int2(fmod(floor(detailMaterialIdCoord), textureSize));
     detailMaterialIdTopLeft = (detailMaterialIdTopLeft + intTextureSize) % intTextureSize; // Make a negative result from modulus positive.
     int2 detailMaterialIdBottomRight = (detailMaterialIdTopLeft + 1) % intTextureSize;
 

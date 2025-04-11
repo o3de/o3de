@@ -9,7 +9,7 @@
 #include <RHI/BufferPool.h>
 #include <RHI/BufferPoolResolver.h>
 #include <RHI/MemoryView.h>
-#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
+#include <RHI/Conversion.h>
 
 #include <algorithm>
 
@@ -22,24 +22,26 @@ namespace AZ
         {
         }
 
-        void* BufferPoolResolver::MapBuffer(const RHI::BufferMapRequest& request)
+        void* BufferPoolResolver::MapBuffer(const RHI::DeviceBufferMapRequest& request)
         {
             AZ_Assert(request.m_byteCount > 0, "ByteCount of request is null");
             auto* buffer = static_cast<Buffer*>(request.m_buffer);
-            RHI::Ptr<Buffer> stagingBuffer = m_device.AcquireStagingBuffer(request.m_byteCount);
+            RHI::Ptr<Buffer> stagingBuffer = m_device.AcquireStagingBuffer(request.m_byteCount, buffer->GetDescriptor().m_alignment);
             if (stagingBuffer)
             {
-                m_uploadPacketsLock.lock();
-                m_uploadPackets.emplace_back();
-                BufferUploadPacket& uploadRequest = m_uploadPackets.back();
-                m_uploadPacketsLock.unlock();
-
+                BufferUploadPacket uploadRequest;
                 uploadRequest.m_attachmentBuffer = buffer;
                 uploadRequest.m_byteOffset = request.m_byteOffset;
                 uploadRequest.m_stagingBuffer = stagingBuffer;
                 uploadRequest.m_byteSize = request.m_byteCount;
 
-                return stagingBuffer->GetBufferMemoryView()->Map(RHI::HostMemoryAccess::Write);
+                auto address = stagingBuffer->GetBufferMemoryView()->Map(RHI::HostMemoryAccess::Write);
+
+                m_uploadPacketsLock.lock();
+                m_uploadPackets.emplace_back(AZStd::move(uploadRequest));
+                m_uploadPacketsLock.unlock();
+
+                return address;
             }
 
             return nullptr;
@@ -101,14 +103,14 @@ namespace AZ
                 AZ_Assert(stagingBuffer, "Staging Buffer is null.");
                 AZ_Assert(destBuffer, "Attachment Buffer is null.");
 
-                RHI::CopyBufferDescriptor copyDescriptor;
+                RHI::DeviceCopyBufferDescriptor copyDescriptor;
                 copyDescriptor.m_sourceBuffer = stagingBuffer;
                 copyDescriptor.m_sourceOffset = 0;
                 copyDescriptor.m_destinationBuffer = destBuffer;
                 copyDescriptor.m_destinationOffset = static_cast<uint32_t>(packet.m_byteOffset);
                 copyDescriptor.m_size = static_cast<uint32_t>(packet.m_byteSize);
 
-                commandList.Submit(RHI::CopyItem(copyDescriptor));
+                commandList.Submit(RHI::DeviceCopyItem(copyDescriptor));
                 device.QueueForRelease(stagingBuffer);                
             }
         }
@@ -126,7 +128,7 @@ namespace AZ
             list.erase(AZStd::remove_if(list.begin(), list.end(), predicate), list.end());
         }
 
-        void BufferPoolResolver::OnResourceShutdown(const RHI::Resource& resource)
+        void BufferPoolResolver::OnResourceShutdown(const RHI::DeviceResource& resource)
         {
             AZStd::lock_guard<AZStd::mutex> lock(m_uploadPacketsLock);
             const Buffer* buffer = static_cast<const Buffer*>(&resource);
@@ -166,20 +168,26 @@ namespace AZ
             EraseResourceFromList(m_epilogueBarriers, predicateBarriers);
         }
 
-        void BufferPoolResolver::QueuePrologueTransitionBarriers(CommandList& commandList)
+        void BufferPoolResolver::QueuePrologueTransitionBarriers(CommandList& commandList, BarrierTypeFlags mask)
         {
-            EmmitBarriers(commandList, m_prologueBarriers);
+            EmmitBarriers(commandList, m_prologueBarriers, mask);
         }
 
-        void BufferPoolResolver::QueueEpilogueTransitionBarriers(CommandList& commandList)
+        void BufferPoolResolver::QueueEpilogueTransitionBarriers(CommandList& commandList, BarrierTypeFlags mask)
         {
-            EmmitBarriers(commandList, m_epilogueBarriers);
+            EmmitBarriers(commandList, m_epilogueBarriers, mask);
         }
 
-        void BufferPoolResolver::EmmitBarriers(CommandList& commandList, const AZStd::vector<BarrierInfo>& barriers) const
+        void BufferPoolResolver::EmmitBarriers(
+            CommandList& commandList, const AZStd::vector<BarrierInfo>& barriers, BarrierTypeFlags mask) const
         {
             for (const BarrierInfo& barrierInfo : barriers)
             {
+                if (!RHI::CheckBitsAll(mask, ConvertBarrierType(VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER)))
+                {
+                    continue;
+                }
+
                 m_device.GetContext().CmdPipelineBarrier(
                     commandList.GetNativeCommandBuffer(),
                     barrierInfo.m_srcStageMask,

@@ -5,7 +5,7 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
-def prepare_scene_ui_for_test(test_file_name, manifest_should_exist):
+def prepare_scene_ui_for_test(test_file_name, manifest_should_exist, should_create_manifest):
     import asyncio
     from editor_python_test_tools.utils import Report
     import os
@@ -39,25 +39,26 @@ def prepare_scene_ui_for_test(test_file_name, manifest_should_exist):
     widget_main_window = QtWidgets.QWidget.find(window_id)
 
     # When the window is first opened, even if it's to a new scene settings file not yet saved to disk, it shouldn't be marked with unsaved changes.
-    has_unsaved_changes = azlmbr.qt.SceneSettingsRootDisplayScriptRequestBus(azlmbr.bus.Broadcast, "HasUnsavedChanges")
-    Report.critical_result(tm.Test_Messages.scene_settings_update_disabled_on_launch, not has_unsaved_changes)
+    if should_create_manifest:
+        has_unsaved_changes = azlmbr.qt.SceneSettingsRootDisplayScriptRequestBus(azlmbr.bus.Broadcast, "HasUnsavedChanges")
+        Report.critical_result(tm.Test_Messages.scene_settings_update_disabled_on_launch, not has_unsaved_changes)
 
-    card_layout_area = widget_main_window.findChild(QtWidgets.QWidget, "m_cardAreaLayoutWidget")
+        card_layout_area = widget_main_window.findChild(QtWidgets.QWidget, "m_cardAreaLayoutWidget")
     
-    # On initial launch of the Scene Settings UI, it will generate one processing event to load the requested file.
-    # Find the card for this processing event and close it.
-    first_card_push_buttons = card_layout_area.findChildren(QtWidgets.QPushButton,"")
-    Report.critical_result(tm.Test_Messages.scene_settings_only_one_card_in_layout, len(first_card_push_buttons) == 1)
-    Report.critical_result(tm.Test_Messages.scene_settings_status_card_can_be_clicked, first_card_push_buttons[0].isEnabled())
+        # On initial launch of the Scene Settings UI, it will generate one processing event to load the requested file.
+        # Find the card for this processing event and close it.
+        first_card_push_buttons = card_layout_area.findChildren(QtWidgets.QPushButton,"")
+        Report.critical_result(tm.Test_Messages.scene_settings_only_one_card_in_layout, len(first_card_push_buttons) == 1)
+        Report.critical_result(tm.Test_Messages.scene_settings_status_card_can_be_clicked, first_card_push_buttons[0].isEnabled())
 
-    # Click the button
-    first_card_push_buttons[0].click()
-    # Wait a brief period of time after clicking to make sure the status card is removed.
-    general.idle_wait_frames(30)
+        # Click the button
+        first_card_push_buttons[0].click()
+        # Wait a brief period of time after clicking to make sure the status card is removed.
+        general.idle_wait_frames(30)
 
-    # Verify the button no longer exists
-    first_card_push_buttons = card_layout_area.findChildren(QtWidgets.QPushButton,"")
-    Report.critical_result(tm.Test_Messages.scene_setting_card_dismissed_on_click, len(first_card_push_buttons) == 0)
+        # Verify the button no longer exists
+        first_card_push_buttons = card_layout_area.findChildren(QtWidgets.QPushButton,"")
+        Report.critical_result(tm.Test_Messages.scene_setting_card_dismissed_on_click, len(first_card_push_buttons) == 0)
     
     reflected_property_root = widget_main_window.findChild(QtWidgets.QWidget, "m_rootWidget")
 

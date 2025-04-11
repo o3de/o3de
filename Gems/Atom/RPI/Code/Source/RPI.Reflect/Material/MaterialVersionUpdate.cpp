@@ -185,7 +185,7 @@ namespace AZ
         bool MaterialVersionUpdate::Action::Validate(AZStd::function<void(const char*)> onError) const
         {
             bool error = false;
-            if (m_operation == AZ::Name("rename"))
+            if (m_operation == AZ::Name("rename") || m_operation == AZ::Name("renamePrefix"))
             {
                 error = error || !HasExpectedNumArguments(2, "'from', 'to'", onError);
                 error = error || !HasExpectedArgument<AZStd::string>("from", "string", onError);
@@ -249,17 +249,27 @@ namespace AZ
 
             for (const auto& action : m_actions)
             {
-                if (action.GetOperation() != AZ::Name("rename"))
+                if (action.GetOperation() == AZ::Name("rename"))
                 {
-                    continue;
+                    const AZ::Name& from = action.GetArgAsName(AZ::Name("from"));
+                    if (propertyId == from)
+                    {
+                        propertyId = action.GetArgAsName(AZ::Name("to"));
+                        renamed = true;
+                    }
+                }
+                else if (action.GetOperation() == AZ::Name("renamePrefix"))
+                {
+                    const AZ::Name& from = action.GetArgAsName(AZ::Name("from"));
+                    if (propertyId.GetStringView().starts_with(from.GetCStr()))
+                    {
+                        AZStd::string renamedProperty = propertyId.GetCStr();
+                        AzFramework::StringFunc::Replace(renamedProperty, action.GetArgAsName(AZ::Name("from")).GetCStr(), action.GetArgAsName(AZ::Name("to")).GetCStr(), true, true);
+                        propertyId = Name{renamedProperty};
+                        renamed = true;
+                    }
                 }
 
-                const AZ::Name& from = action.GetArgAsName(AZ::Name("from"));
-                if (propertyId == from)
-                {
-                    propertyId = action.GetArgAsName(AZ::Name("to"));
-                    renamed = true;
-                }
             }
 
             return renamed;

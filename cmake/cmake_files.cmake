@@ -10,6 +10,7 @@ set(FILES
     3rdParty.cmake
     3rdPartyPackages.cmake
     AzAutoGen.py
+    CalculateEnginePathId.cmake
     CMakeFiles.cmake
     CommandExecution.cmake
     Configurations.cmake

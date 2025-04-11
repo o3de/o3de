@@ -178,6 +178,8 @@ namespace AzToolsFramework
         PropertyTypeRegistrationMessages::Bus::Broadcast(&PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew IntSpinBoxHandler<AZ::u32>());
         PropertyTypeRegistrationMessages::Bus::Broadcast(&PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew IntSpinBoxHandler<AZ::s64>());
         PropertyTypeRegistrationMessages::Bus::Broadcast(&PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew IntSpinBoxHandler<AZ::u64>());
+        PropertyTypeRegistrationMessages::Bus::Broadcast(&PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew IntSpinBoxHandler<long>());
+        PropertyTypeRegistrationMessages::Bus::Broadcast(&PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew IntSpinBoxHandler<unsigned long>());
     }
 
 } //AzToolsFramework

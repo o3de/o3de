@@ -36,15 +36,15 @@ namespace AZ::DocumentPropertyEditor
         return {};
     }
 
-    AZStd::shared_ptr<AZ::Attribute> TypeIdAttributeDefinition::DomValueToLegacyAttribute(const AZ::Dom::Value& value) const
+    AZStd::shared_ptr<AZ::Attribute> TypeIdAttributeDefinition::DomValueToLegacyAttribute(const AZ::Dom::Value& value, bool) const
     {
         AZ::Uuid uuidValue = DomToValue(value).value_or(AZ::Uuid::CreateNull());
         return AZStd::make_shared<AZ::AttributeData<AZ::Uuid>>(AZStd::move(uuidValue));
     }
 
-    AZ::Dom::Value TypeIdAttributeDefinition::LegacyAttributeToDomValue(void* instance, AZ::Attribute* attribute) const
+    AZ::Dom::Value TypeIdAttributeDefinition::LegacyAttributeToDomValue(AZ::PointerObject instanceObject, AZ::Attribute* attribute) const
     {
-        AZ::AttributeReader reader(instance, attribute);
+        AZ::AttributeReader reader(instanceObject.m_address, attribute);
         AZ::Uuid value;
         if (!reader.Read<AZ::Uuid>(value))
         {
@@ -67,7 +67,7 @@ namespace AZ::DocumentPropertyEditor
         return {};
     }
 
-    AZStd::shared_ptr<AZ::Attribute> NamedCrcAttributeDefinition::DomValueToLegacyAttribute(const AZ::Dom::Value& value) const
+    AZStd::shared_ptr<AZ::Attribute> NamedCrcAttributeDefinition::DomValueToLegacyAttribute(const AZ::Dom::Value& value, bool) const
     {
         AZ::Crc32 crc = 0;
         if (value.IsString())
@@ -78,10 +78,10 @@ namespace AZ::DocumentPropertyEditor
         return AZStd::make_shared<AZ::AttributeData<AZ::Crc32>>(crc);
     }
 
-    AZ::Dom::Value NamedCrcAttributeDefinition::LegacyAttributeToDomValue(void* instance, AZ::Attribute* attribute) const
+    AZ::Dom::Value NamedCrcAttributeDefinition::LegacyAttributeToDomValue(AZ::PointerObject instanceObject, AZ::Attribute* attribute) const
     {
         AZ::Name result;
-        AZ::AttributeReader reader(instance, attribute);
+        AZ::AttributeReader reader(instanceObject.m_address, attribute);
 
         AZ::Crc32 valueCrc = 0;
         if (!reader.Read<AZ::Crc32>(valueCrc))
@@ -102,38 +102,5 @@ namespace AZ::DocumentPropertyEditor
         }
 
         return Dom::Value(result.GetStringView(), false);
-    }
-
-    Dom::Value EnumValuesAttributeDefinition::ValueToDom(const EnumValuesContainer& attribute) const
-    {
-        Dom::Value result(Dom::Type::Array);
-        for (const auto& entry : attribute)
-        {
-            Dom::Value entryDom(Dom::Type::Object);
-            entryDom[EntryDescriptionKey] = Dom::Value(entry.m_description, true);
-            entryDom[EntryValueKey] = Dom::Value(static_cast<uint64_t>(entry.m_value));
-            result.ArrayPushBack(AZStd::move(entryDom));
-        }
-        return result;
-    }
-
-    AZStd::optional<EnumValuesContainer> EnumValuesAttributeDefinition::DomToValue(const Dom::Value& value) const
-    {
-        if (!value.IsArray())
-        {
-            return {};
-        }
-
-        EnumValuesContainer result;
-        for (const Dom::Value& entryDom : value.GetArray())
-        {
-            if (!entryDom.IsObject() || !entryDom.HasMember(EntryDescriptionKey) || !entryDom.HasMember(EntryValueKey))
-            {
-                continue;
-            }
-            result.emplace_back(static_cast<AZ::u64>(entryDom[EntryValueKey].GetUint64()), entryDom[EntryDescriptionKey].GetString());
-        }
-
-        return result;
     }
 } // namespace AZ::DocumentPropertyEditor

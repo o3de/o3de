@@ -9,6 +9,7 @@
 #include <AzTest/AzTest.h>
 
 #include <AZTestShared/Math/MathTestHelpers.h>
+#include <AZTestShared/Utils/Utils.h>
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzFramework/Components/TransformComponent.h>
@@ -21,8 +22,7 @@
 namespace UnitTest
 {
     class CapsuleShapeTest
-        : public AllocatorsFixture
-        , public ShapeOffsetTestsBase
+        : public LeakDetectionFixture
     {
         AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
         AZStd::unique_ptr<AZ::ComponentDescriptor> m_transformComponentDescriptor;
@@ -33,8 +33,7 @@ namespace UnitTest
     public:
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
-            ShapeOffsetTestsBase::SetUp();
+            LeakDetectionFixture::SetUp();
             m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
 
             m_transformComponentDescriptor = AZStd::unique_ptr<AZ::ComponentDescriptor>(AzFramework::TransformComponent::CreateDescriptor());
@@ -54,8 +53,7 @@ namespace UnitTest
             m_capsuleShapeComponentDescriptor.reset();
             m_transformComponentDescriptor.reset();
             m_serializeContext.reset();
-            ShapeOffsetTestsBase::TearDown();
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
     };
 

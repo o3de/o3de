@@ -28,7 +28,7 @@ namespace Physics
     class MaterialSlots
     {
     public:
-        AZ_CLASS_ALLOCATOR(Physics::MaterialSlots, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Physics::MaterialSlots, AZ::SystemAllocator);
         AZ_RTTI(Physics::MaterialSlots, "{8A0D64CB-C98E-42E3-96A9-B81D7118CA6F}");
 
         static void Reflect(AZ::ReflectContext* context);
@@ -78,9 +78,7 @@ namespace Physics
             AZStd::string m_name;
             AZ::Data::Asset<MaterialAsset> m_materialAsset;
 
-        private:
-            friend class MaterialSlots;
-            AZ::Data::AssetId GetDefaultMaterialAssetId() const;
+            // Used for the ReadOnly attribute of m_materialAsset in edit context.
             bool m_slotsReadOnly = false;
         };
 

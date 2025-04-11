@@ -41,7 +41,7 @@ namespace ScriptCanvas
         {
         public:
             AZ_TYPE_INFO(PerformanceStatistician, "{3B93771A-B539-4F49-82E9-F15A75BFC703}");
-            AZ_CLASS_ALLOCATOR(PerformanceStatistician, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PerformanceStatistician, AZ::SystemAllocator);
 
             static void Reflect(AZ::ReflectContext* context);
 

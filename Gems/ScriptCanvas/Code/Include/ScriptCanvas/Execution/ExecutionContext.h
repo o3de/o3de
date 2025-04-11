@@ -46,7 +46,7 @@ namespace ScriptCanvas
         {
         public:
             AZ_TYPE_INFO(Context, "{2C137581-19F4-42EB-8BF3-14DBFBC02D8D}");
-            AZ_CLASS_ALLOCATOR(Context, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Context, AZ::SystemAllocator);
 
             static ActivationInputRange CreateActivateInputRange(ActivationData& activationData);
             static void InitializeStaticActivationData(RuntimeData& runtimeData);

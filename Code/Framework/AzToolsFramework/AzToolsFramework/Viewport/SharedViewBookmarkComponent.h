@@ -16,7 +16,7 @@ namespace AzToolsFramework
     //! @brief struct that stores a vector of View bookmarks.
     struct EditorViewBookmarks final
     {
-        AZ_CLASS_ALLOCATOR(EditorViewBookmarks, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EditorViewBookmarks, AZ::SystemAllocator);
         AZ_TYPE_INFO(EditorViewBookmarks, "{EA0B8FF9-F706-4115-8226-E3F54F1EE8A1}");
 
         static void Reflect(AZ::ReflectContext* context);

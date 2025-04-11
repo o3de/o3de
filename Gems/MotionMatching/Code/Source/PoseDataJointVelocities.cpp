@@ -17,7 +17,7 @@
 
 namespace EMotionFX::MotionMatching
 {
-    AZ_CLASS_ALLOCATOR_IMPL(PoseDataJointVelocities, MotionMatchAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(PoseDataJointVelocities, MotionMatchAllocator)
 
     PoseDataJointVelocities::PoseDataJointVelocities()
         : PoseData()

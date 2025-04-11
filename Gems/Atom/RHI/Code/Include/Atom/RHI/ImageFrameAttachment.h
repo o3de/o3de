@@ -13,54 +13,49 @@
 #include <Atom/RHI/ObjectCache.h>
 #include <AzCore/Memory/PoolAllocator.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    class ImageScopeAttachment;
+
+    //! A specialization of Attachment for an image. Provides access to the image.
+    class ImageFrameAttachment
+        : public FrameAttachment
     {
-        class ImageScopeAttachment;
+    public:
+        AZ_RTTI(ImageFrameAttachment, "{F620A6ED-C33A-4487-9BF7-12F652B8B1E3}", FrameAttachment);
+        AZ_CLASS_ALLOCATOR(ImageFrameAttachment, SystemAllocator);
+        virtual ~ImageFrameAttachment() override = default;
 
-        /**
-         * A specialization of Attachment for an image. Provides access to the image.
-         */
-        class ImageFrameAttachment
-            : public FrameAttachment
-        {
-        public:
-            AZ_RTTI(ImageFrameAttachment, "{F620A6ED-C33A-4487-9BF7-12F652B8B1E3}", FrameAttachment);
-            AZ_CLASS_ALLOCATOR(ImageFrameAttachment, AZ::PoolAllocator, 0);
-            virtual ~ImageFrameAttachment() override = default;
+        //! Initialization for imported images.
+        ImageFrameAttachment(const AttachmentId& attachmentId, Ptr<Image> image);
 
-            /// Initialization for imported images.
-            ImageFrameAttachment(const AttachmentId& attachmentId, Ptr<Image> image);
+        //! Initialization for transient images.
+        ImageFrameAttachment(const TransientImageDescriptor& descriptor);
 
-            /// Initialization for transient images.
-            ImageFrameAttachment(const TransientImageDescriptor& descriptor);
+        //! Returns the first scope attachment in the linked list.
+        const ImageScopeAttachment* GetFirstScopeAttachment(int deviceIndex) const;
+        ImageScopeAttachment* GetFirstScopeAttachment(int deviceIndex);
 
-            /// Returns the first scope attachment in the linked list.
-            const ImageScopeAttachment* GetFirstScopeAttachment() const;
-            ImageScopeAttachment* GetFirstScopeAttachment();
+        //! Returns the last scope attachment in the linked list.
+        const ImageScopeAttachment* GetLastScopeAttachment(int deviceIndex) const;
+        ImageScopeAttachment* GetLastScopeAttachment(int deviceIndex);
 
-            /// Returns the last scope attachment in the linked list.
-            const ImageScopeAttachment* GetLastScopeAttachment() const;
-            ImageScopeAttachment* GetLastScopeAttachment();
+        //! Returns the image assigned to this attachment. This is not guaranteed to exist
+        //! until after frame graph compilation.
+        const Image* GetImage() const;
+        Image *GetImage();
 
-            /// Returns the image assigned to this attachment. This is not guaranteed to exist
-            /// until after frame graph compilation.
-            const Image* GetImage() const;
-            Image* GetImage();
+        //! Returns the image descriptor for this attachment.
+        const ImageDescriptor& GetImageDescriptor() const;
 
-            /// Returns the image descriptor for this attachment.
-            const ImageDescriptor& GetImageDescriptor() const;
+        //! Returns an optimized clear value for the image by traversing the usage chain.
+        ClearValue GetOptimizedClearValue(int deviceIndex) const;
 
-            /// Returns an optimized clear value for the image by traversing the usage chain.
-            ClearValue GetOptimizedClearValue() const;
+    private:
+        ImageDescriptor m_imageDescriptor;
 
-        private:
-            ImageDescriptor m_imageDescriptor;
-
-            /// TODO: Replace with optional. A user clear value in the case of a transient attachment.
-            bool m_hasClearValueOverride = false;
-            ClearValue m_clearValueOverride;
-        };
-    }
+        /// TODO: Replace with optional. A user clear value in the case of a transient attachment.
+        bool m_hasClearValueOverride = false;
+        ClearValue m_clearValueOverride;
+    };
 }

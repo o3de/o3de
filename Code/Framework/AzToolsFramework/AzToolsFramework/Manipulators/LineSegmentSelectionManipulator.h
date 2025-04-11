@@ -26,7 +26,7 @@ namespace AzToolsFramework
 
     public:
         AZ_RTTI(LineSegmentSelectionManipulator, "{8BA5A9E4-72B4-4B48-BD54-D9DB58EDDA72}", BaseManipulator);
-        AZ_CLASS_ALLOCATOR(LineSegmentSelectionManipulator, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(LineSegmentSelectionManipulator, AZ::SystemAllocator);
 
         LineSegmentSelectionManipulator(const LineSegmentSelectionManipulator&) = delete;
         LineSegmentSelectionManipulator& operator=(const LineSegmentSelectionManipulator&) = delete;

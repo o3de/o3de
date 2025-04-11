@@ -48,7 +48,7 @@ namespace AZ
 
         for (PlaneId i = PlaneId::Near; i < PlaneId::MAX; ++i)
         {
-            const float distance = Simd::Vec1::SelectFirst(Simd::Vec4::PlaneDistance(m_planes[i], center.GetSimdValue()));
+            const float distance = Simd::Vec1::SelectIndex0(Simd::Vec4::PlaneDistance(m_planes[i], center.GetSimdValue()));
 
             if (distance < -radius)
             {
@@ -79,7 +79,7 @@ namespace AZ
         for (PlaneId i = PlaneId::Near; i < PlaneId::MAX; ++i)
         {
             const Vector3 disjointSupport = aabb.GetSupport(-Vector3(Simd::Vec4::ToVec3(m_planes[i])));
-            const float   disjointDistance = Simd::Vec1::SelectFirst(Simd::Vec4::PlaneDistance(m_planes[i], disjointSupport.GetSimdValue()));
+            const float   disjointDistance = Simd::Vec1::SelectIndex0(Simd::Vec4::PlaneDistance(m_planes[i], disjointSupport.GetSimdValue()));
 
             if (disjointDistance < 0.0f)
             {
@@ -89,7 +89,7 @@ namespace AZ
             // We now know the interior point we just checked passes the plane check..
             // Check an exterior support point to determine whether or not the whole AABB is contained or if this is an intersection
             const Vector3 intersectSupport = aabb.GetSupport(Vector3(Simd::Vec4::ToVec3(m_planes[i])));
-            const float   intersectDistance = Simd::Vec1::SelectFirst(Simd::Vec4::PlaneDistance(m_planes[i], intersectSupport.GetSimdValue()));
+            const float   intersectDistance = Simd::Vec1::SelectIndex0(Simd::Vec4::PlaneDistance(m_planes[i], intersectSupport.GetSimdValue()));
 
             if (intersectDistance >= 0.0f)
             {

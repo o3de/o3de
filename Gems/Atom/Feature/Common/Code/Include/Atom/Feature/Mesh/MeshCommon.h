@@ -13,6 +13,7 @@
 #include <AzCore/Math/Hemisphere.h>
 #include <AzCore/Math/ShapeIntersection.h>
 #include <AzCore/Math/Sphere.h>
+#include <AzCore/Name/NameDictionary.h>
 #include <AzCore/std/containers/variant.h>
 
 #include <Atom/RPI.Public/Culling.h>
@@ -20,6 +21,12 @@
 
 namespace AZ::Render::MeshCommon
 {
+
+    inline static AZ::Name MeshMovedName = AZ::Name::FromStringLiteral("MeshMoved", AZ::Interface<AZ::NameDictionary>::Get());
+
+    // The DrawListTag name for drawing to MeshMotionVector pass
+    inline static AZ::Name MotionDrawListTagName = AZ::Name::FromStringLiteral("motion", AZ::Interface<AZ::NameDictionary>::Get());
+
     template <typename BoundsType>
     void MarkMeshesForBounds(AZ::RPI::Scene* scene, const BoundsType& bounds, AZ::RPI::Cullable::FlagType flag)
     {
@@ -30,14 +37,15 @@ namespace AZ::Render::MeshCommon
                 bool nodeIsContainedInBounds = ShapeIntersection::Contains(boundsRef, nodeData.m_bounds);
                 for (auto* visibleEntry : nodeData.m_entries)
                 {
-                    if (visibleEntry->m_typeFlags == AzFramework::VisibilityEntry::TYPE_RPI_Cullable)
+                    if (visibleEntry->m_typeFlags & AzFramework::VisibilityEntry::TYPE_RPI_Cullable ||
+                        visibleEntry->m_typeFlags & AzFramework::VisibilityEntry::TYPE_RPI_VisibleObjectList)
                     {
                         RPI::Cullable* cullable = static_cast<RPI::Cullable*>(visibleEntry->m_userData);
 
                         if (nodeIsContainedInBounds || ShapeIntersection::Overlaps(boundsRef, cullable->m_cullData.m_boundingSphere))
                         {
                             // This flag is cleared by the mesh feature processor each frame in OnEndPrepareRender()
-                            cullable->m_flags.fetch_or(flag);
+                            cullable->m_shaderOptionFlags.fetch_or(flag);
                         }
                     }
                 }
@@ -45,7 +53,7 @@ namespace AZ::Render::MeshCommon
         );
     }
 
-    using BoundsVariant = AZStd::variant<Sphere, Hemisphere, Frustum, Aabb, Capsule>;
+    using BoundsVariant = AZStd::variant<AZStd::monostate, Sphere, Hemisphere, Frustum, Aabb, Capsule>;
 
     template <typename BoundsType>
     struct EmptyFilter

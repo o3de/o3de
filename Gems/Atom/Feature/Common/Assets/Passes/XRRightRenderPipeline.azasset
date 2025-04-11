@@ -3,9 +3,10 @@
     "Version": 1,
     "ClassName": "RenderPipelineDescriptor",
     "ClassData": {
-        "Name": "XRRight",
+        "Name": "MultiViewXRRightPipeline",
         "MainViewTag": "MainCamera",
-        "RootPassTemplate": "LowEndPipelineXRRightTemplate",
+        "MaterialPipelineTag": "MultiViewPipeline",
+        "RootPassTemplate": "MultiViewPipelineTemplate",
         "AllowModification": true,
         "RenderSettings": {
             "MultisampleState": {

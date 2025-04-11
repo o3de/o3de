@@ -8,9 +8,10 @@
 
 #pragma once
 
-#include <AzCore/Interface/Interface.h>
 #include <AzCore/IO/Path/Path.h>
-#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Outcome/Outcome.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
+#include <AzCore/std/string/string.h>
 #include <AzToolsFramework/Prefab/PrefabIdTypes.h>
 #include <AzCore/EBus/EBus.h>
 

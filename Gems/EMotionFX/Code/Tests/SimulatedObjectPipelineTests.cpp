@@ -7,7 +7,6 @@
  */
 
 #include <AzCore/std/smart_ptr/unique_ptr.h>
-#include <AzCore/Memory/MemoryComponent.h>
 #include <Tests/InitSceneAPIFixture.h>
 
 #include <AzToolsFramework/UI/PropertyEditor/PropertyManagerComponent.h>
@@ -19,7 +18,7 @@
 #include <SceneAPI/SceneCore/Events/ExportEventContext.h>
 #include <SceneAPI/SceneCore/Events/ExportProductList.h>
 
-#include <MCore/Source/MemoryObject.h>
+#include <MCore/Source/RefCounted.h>
 #include <EMotionFX/Pipeline/RCExt/Actor/ActorBuilder.h>
 #include <EMotionFX/Pipeline/RCExt/Actor/ActorGroupExporter.h>
 #include <EMotionFX/Pipeline/RCExt/ExportContexts.h>
@@ -30,7 +29,6 @@
 namespace EMotionFX
 {
     using ActorCanSaveSimulatedObjectSetupFixtureBase = InitSceneAPIFixture<
-        AZ::MemoryComponent,
         AZ::AssetManagerComponent,
         AZ::JobManagerComponent,
         AZ::StreamerComponent,

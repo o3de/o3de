@@ -6,69 +6,51 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_CRYMOVIE_ANIMPOSTFXNODE_H
-#define CRYINCLUDE_CRYMOVIE_ANIMPOSTFXNODE_H
 #pragma once
-
 
 #include "AnimNode.h"
 
-class CFXNodeDescription;
-
-//////////////////////////////////////////////////////////////////////////
-class CAnimPostFXNode
-    : public CAnimNode
+namespace Maestro
 {
-public:
-    AZ_CLASS_ALLOCATOR(CAnimPostFXNode, AZ::SystemAllocator, 0);
-    AZ_RTTI(CAnimPostFXNode, "{41FCA8BB-46A8-4F37-87C2-C1D10994854B}", CAnimNode);
 
-    //-----------------------------------------------------------------------------
-    //!
-    static void Initialize();
-    static CFXNodeDescription* GetFXNodeDescription(AnimNodeType nodeType);
-    static CAnimNode* CreateNode(const int id, AnimNodeType nodeType);
+    class CFXNodeDescription;
 
-    //-----------------------------------------------------------------------------
-    //!
-    CAnimPostFXNode();
-    CAnimPostFXNode(const int id, AnimNodeType nodeType, CFXNodeDescription* pDesc);
+    class CAnimPostFXNode : public CAnimNode
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(CAnimPostFXNode, AZ::SystemAllocator);
+        AZ_RTTI(CAnimPostFXNode, "{41FCA8BB-46A8-4F37-87C2-C1D10994854B}", CAnimNode);
 
-    //-----------------------------------------------------------------------------
-    //!
-    void SerializeAnims(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTracks) override;
+        static void Initialize();
+        static CFXNodeDescription* GetFXNodeDescription(AnimNodeType nodeType);
+        static CAnimNode* CreateNode(const int id, AnimNodeType nodeType);
 
-    //-----------------------------------------------------------------------------
-    //!
-    unsigned int GetParamCount() const override;
-    CAnimParamType GetParamType(unsigned int nIndex) const override;
+        CAnimPostFXNode();
+        CAnimPostFXNode(const int id, AnimNodeType nodeType, CFXNodeDescription* pDesc);
 
-    //-----------------------------------------------------------------------------
-    //!
+        void SerializeAnims(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTracks) override;
 
-    //-----------------------------------------------------------------------------
-    //!
-    void CreateDefaultTracks() override;
+        unsigned int GetParamCount() const override;
+        CAnimParamType GetParamType(unsigned int nIndex) const override;
 
-    void OnReset() override;
+        void CreateDefaultTracks() override;
 
-    //-----------------------------------------------------------------------------
-    //!
-    void Animate(SAnimContext& ac) override;
+        void OnReset() override;
 
-    void InitPostLoad(IAnimSequence* sequence) override;
+        void Animate(SAnimContext& ac) override;
 
-    static void Reflect(AZ::ReflectContext* context);
+        void InitPostLoad(IAnimSequence* sequence) override;
 
-protected:
-    bool GetParamInfoFromType(const CAnimParamType& paramId, SParamInfo& info) const override;
+        static void Reflect(AZ::ReflectContext* context);
 
-    typedef std::map< AnimNodeType, _smart_ptr<CFXNodeDescription> > FxNodeDescriptionMap;
-    static StaticInstance<FxNodeDescriptionMap> s_fxNodeDescriptions;
-    static bool s_initialized;
+    protected:
+        bool GetParamInfoFromType(const CAnimParamType& paramId, SParamInfo& info) const override;
 
-    CFXNodeDescription* m_pDescription;
-};
+        using FxNodeDescriptionMap = AZStd::map<AnimNodeType, AZStd::unique_ptr<CFXNodeDescription>>;
+        static FxNodeDescriptionMap s_fxNodeDescriptions;
+        static inline bool s_initialized{};
 
-#endif // CRYINCLUDE_CRYMOVIE_ANIMPOSTFXNODE_H
+        CFXNodeDescription* m_pDescription;
+    };
+
+} // namespace Maestro

@@ -228,5 +228,9 @@ namespace AZ
     using SystemTickBus = AZ::EBus<SystemTickEvents>;
 }
 
+DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(TickEvents);
+DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(SystemTickEvents);
+DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(TickRequests);
+
 #endif // AZCORE_COMPONENT_TICK_BUS_H
 #pragma once

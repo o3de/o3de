@@ -97,7 +97,7 @@ namespace AZ::Render
         }
 
         // Child passes
-        auto previousOutput = AZStd::make_pair<Name, Name>(Name("Parent"), Name("InputColor"));
+        auto previousOutput = AZStd::make_pair(Name("Parent"), Name("InputColor"));
         AZ::u32 passCount = 0;
         for (const auto& childPassTemplate : state.GetChildPassNameList())
         {
@@ -240,6 +240,8 @@ namespace AZ::Render
             slot.m_shaderInputName = Name("m_existingDepth");
             slot.m_scopeAttachmentUsage = RHI::ScopeAttachmentUsage::Shader;
             slot.m_shaderImageDimensionsName = Name("m_existingDepthDimensions");
+            slot.m_imageViewDesc = AZStd::make_shared<RHI::ImageViewDescriptor>();
+            slot.m_imageViewDesc->m_aspectFlags = RHI::ImageAspectFlags::Depth;
             maskPassTemplate->AddSlot(slot);
         }
 

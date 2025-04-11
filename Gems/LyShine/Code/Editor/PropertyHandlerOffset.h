@@ -19,7 +19,7 @@ class PropertyHandlerOffset
     : public UIVectorPropertyHandlerBase< UiTransform2dInterface::Offsets>
 {
 public:
-    AZ_CLASS_ALLOCATOR(PropertyHandlerOffset, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(PropertyHandlerOffset, AZ::SystemAllocator);
 
     PropertyHandlerOffset()
         : UIVectorPropertyHandlerBase(4, 2)
@@ -28,7 +28,7 @@ public:
 
     AZ::u32 GetHandlerName(void) const override
     {
-        return AZ_CRC("Offset", 0x590acad0);
+        return AZ_CRC_CE("Offset");
     }
 
     bool IsDefaultHandler() const override

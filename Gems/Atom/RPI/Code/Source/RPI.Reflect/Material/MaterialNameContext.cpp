@@ -117,7 +117,49 @@ namespace AZ
             shaderOptionName = m_shaderOptionNameContext + shaderOptionName;
             return true;
         }
-        
+
+        Name MaterialNameContext::GetContextualizedProperty(Name& propertyName) const
+        {
+            Name contextualizedName = propertyName;
+            ContextualizeProperty(contextualizedName);
+            return contextualizedName;
+        }
+
+        Name MaterialNameContext::GetContextualizedSrgInput(Name& srgInputName) const
+        {
+            Name contextualizedName = srgInputName;
+            ContextualizeSrgInput(contextualizedName);
+            return contextualizedName;
+        }
+
+        Name MaterialNameContext::GetContextualizedShaderOption(Name& shaderOptionName) const
+        {
+            Name contextualizedName = shaderOptionName;
+            ContextualizeShaderOption(contextualizedName);
+            return contextualizedName;
+        }
+
+        AZStd::string MaterialNameContext::GetContextualizedProperty(const AZStd::string& propertyName) const
+        {
+            AZStd::string contextualizedName = propertyName;
+            ContextualizeProperty(contextualizedName);
+            return contextualizedName;
+        }
+
+        AZStd::string MaterialNameContext::GetContextualizedSrgInput(const AZStd::string& srgInputName) const
+        {
+            AZStd::string contextualizedName = srgInputName;
+            ContextualizeSrgInput(contextualizedName);
+            return contextualizedName;
+        }
+
+        AZStd::string MaterialNameContext::GetContextualizedShaderOption(const AZStd::string& shaderOptionName) const
+        {
+            AZStd::string contextualizedName = shaderOptionName;
+            ContextualizeShaderOption(contextualizedName);
+            return contextualizedName;
+        }
+
         bool MaterialNameContext::HasContextForProperties() const
         {
             return !m_propertyIdContext.empty();

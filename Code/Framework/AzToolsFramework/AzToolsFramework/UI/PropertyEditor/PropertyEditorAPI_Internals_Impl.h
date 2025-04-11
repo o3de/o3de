@@ -25,10 +25,12 @@ namespace AzToolsFramework
         WidgetType* wid = static_cast<WidgetType*>(widget);
         AZ_Assert(wid, "Invalid class cast - this is not the right kind of widget!");
 
+        BeforeConsumeAttributes(wid, dataNode);
+
         InstanceDataNode* parent = dataNode->GetParent();
 
         // Function callbacks require the instance pointer to be the first non-container ancestor.
-        while (parent && parent->GetClassMetadata()->m_container)
+        while (parent && parent->GetClassMetadata() && parent->GetClassMetadata()->m_container)
         {
             parent = parent->GetParent();
         }
@@ -39,6 +41,7 @@ namespace AzToolsFramework
             parent = dataNode;
         }
 
+        AZ_Assert(parent->HasInstances(), "No parent instance - there is no parent instance in the parent data node.");
         void* classInstance = parent->FirstInstance(); // pointer to the owner class so we can read member variables and functions
 
         void* parentClassInstance = nullptr;

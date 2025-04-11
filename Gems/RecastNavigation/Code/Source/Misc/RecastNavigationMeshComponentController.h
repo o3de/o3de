@@ -29,7 +29,7 @@ namespace RecastNavigation
     {
         friend class EditorRecastNavigationMeshComponent;
     public:
-        AZ_CLASS_ALLOCATOR(RecastNavigationMeshComponentController, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(RecastNavigationMeshComponentController, AZ::SystemAllocator);
         AZ_RTTI(RecastNavigationMeshComponentController, "{D34CD5E0-8C29-4545-8734-9C7A92F03740}");
 
         RecastNavigationMeshComponentController();

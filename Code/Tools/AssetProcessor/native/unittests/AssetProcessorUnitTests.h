@@ -7,7 +7,9 @@
 */
 #pragma once
 
+#if !defined(Q_MOC_RUN)
 #include <AzCore/UnitTest/TestTypes.h>
+#endif
 #include <native/utilities/BatchApplicationManager.h>
 
 namespace UnitTestUtils
@@ -35,7 +37,7 @@ namespace UnitTest
     };
 
     class AssetProcessorUnitTestBase
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         AssetProcessorUnitTestBase();

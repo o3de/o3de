@@ -14,7 +14,7 @@
 namespace UnitTest
 {
     class EventLoggerFactoryFixture
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
     public:
         EventLoggerFactoryFixture()
@@ -30,7 +30,7 @@ namespace UnitTest
         : public AZ::Metrics::IEventLogger
     {
     public:
-        AZ_CLASS_ALLOCATOR(TestEventLogger, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TestEventLogger, AZ::SystemAllocator);
         void Flush() override {}
 
         ResultOutcome RecordDurationEventBegin(const AZ::Metrics::DurationArgs&) override { return AZ::Success(); }

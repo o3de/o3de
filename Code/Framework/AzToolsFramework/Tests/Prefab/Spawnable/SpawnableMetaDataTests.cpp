@@ -12,7 +12,7 @@
 namespace UnitTest
 {
     class SpawnableMetaDataTests
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     };
 
@@ -86,7 +86,7 @@ namespace UnitTest
         }
     };
 
-    TYPED_TEST_CASE_P(TypedSpawnableMetaDataTests);
+    TYPED_TEST_SUITE_P(TypedSpawnableMetaDataTests);
 
     TYPED_TEST_P(TypedSpawnableMetaDataTests, Add_AddValueToMetaData_NoCrash)
     {
@@ -228,7 +228,7 @@ namespace UnitTest
         }
     }
 
-    REGISTER_TYPED_TEST_CASE_P(TypedSpawnableMetaDataTests,
+    REGISTER_TYPED_TEST_SUITE_P(TypedSpawnableMetaDataTests,
         Add_AddValueToMetaData_NoCrash,
         Add_ChainAdds_NoCrash,
         Add_AddThenRetrieveValue_StoredIsSameAsRetrieved,
@@ -242,7 +242,7 @@ namespace UnitTest
         Get_WrongType_ReturnsFalse);
 
     using SpawnableMetaDataTestTypes = ::testing::Types<bool, AZ::u64, AZ::s64, double, AZStd::string>;
-    INSTANTIATE_TYPED_TEST_CASE_P(SpawnableMetaDataTests, TypedSpawnableMetaDataTests, SpawnableMetaDataTestTypes);
+    INSTANTIATE_TYPED_TEST_SUITE_P(SpawnableMetaDataTests, TypedSpawnableMetaDataTests, SpawnableMetaDataTestTypes);
 
 
     TEST_F(SpawnableMetaDataTests, Get_UnknownKey_ReturnsFalse)

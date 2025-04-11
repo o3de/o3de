@@ -19,7 +19,6 @@
 #include <AzCore/Module/ModuleManager.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/IO/SystemFile.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/RTTI/ReflectionManager.h>
 #include <AzCore/Settings/CommandLine.h>
 #include <AzCore/Settings/SettingsRegistry.h>
@@ -34,6 +33,7 @@
 namespace AZ
 {
     class BehaviorContext;
+    class SerializeContext;
     class IConsole;
     class Module;
     class ModuleManager;
@@ -71,6 +71,17 @@ namespace AZ
 
     };
 
+    //! Settings used to customize the constructor calls for the ComponentApplications
+    //! This differs from the ComponentApplication::StartupParameters and ComponentApplication::Descriptor structs
+    //! These settings are only used at construction time of the ComponentApplication and not in ComponentApplication::Create()
+    struct ComponentApplicationSettings
+    {
+        //! JSON string that will be merged to the Settings Registry right after construction
+        AZStd::string_view m_setregBootstrapJson;
+        //! Defaults to merging the JSON string using JSON Merge Patch, where a regular JSON string can be supplied
+        AZ::SettingsRegistryInterface::Format m_setregFormat = AZ::SettingsRegistryInterface::Format::JsonMergePatch;
+    };
+
     /**
      * A main class that can be used directly or as a base to start a
      * component based application. It will provide all the proper bootstrap
@@ -89,7 +100,7 @@ namespace AZ
 
     public:
         AZ_RTTI(ComponentApplication, "{1F3B070F-89F7-4C3D-B5A3-8832D5BC81D7}");
-        AZ_CLASS_ALLOCATOR(ComponentApplication, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ComponentApplication, SystemAllocator);
 
         /**
          * Configures the component application.
@@ -99,29 +110,9 @@ namespace AZ
          *       Use the OSAllocator only.
          */
         struct Descriptor
-            : public SerializeContext::IObjectFactory
         {
             AZ_TYPE_INFO(ComponentApplication::Descriptor, "{70277A3E-2AF5-4309-9BBF-6161AFBDE792}");
-            AZ_CLASS_ALLOCATOR(ComponentApplication::Descriptor, SystemAllocator, 0);
-
-            struct AllocatorRemapping
-            {
-                AZ_TYPE_INFO(ComponentApplication::Descriptor::AllocatorRemapping, "{4C865590-4506-4B76-BF14-6CCB1B83019A}");
-                AZ_CLASS_ALLOCATOR(ComponentApplication::Descriptor::AllocatorRemapping, OSAllocator, 0);
-
-                static void Reflect(ReflectContext* context, ComponentApplication* app);
-
-                OSString m_from;
-                OSString m_to;
-            };
-
-            typedef AZStd::vector<AllocatorRemapping, OSStdAllocator> AllocatorRemappings;
-
-            ///////////////////////////////////////////////
-            // SerializeContext::IObjectFactory
-            void* Create(const char* name) override;
-            void  Destroy(void* data) override;
-            ///////////////////////////////////////////////
+            AZ_CLASS_ALLOCATOR(ComponentApplication::Descriptor, SystemAllocator);
 
             /// Reflect the descriptor data.
             static void     Reflect(ReflectContext* context, ComponentApplication* app);
@@ -129,8 +120,6 @@ namespace AZ
             Descriptor();
 
             bool            m_useExistingAllocator;     //!< True if the user is creating the system allocation and setup tracking modes, if this is true all other parameters are IGNORED. (default: false)
-            bool            m_grabAllMemory;            //!< True if we want to grab all available memory minus reserved fields. (default: false)
-            bool            m_allocationRecords;        //!< True if we want to track memory allocations, otherwise false. (default: true)
             bool            m_allocationRecordsSaveNames; //!< True if we want to allocate space for saving the name/filename of each allocation so unloaded module memory leaks have valid names to read, otherwise false. (default: false, automatically true with recording mode FULL)
             bool            m_allocationRecordsAttemptDecodeImmediately; ///< True if we want to attempt decoding frames at time of allocation, otherwise false. Very expensive, used specifically for debugging allocations that fail to decode. (default: false)
             bool            m_autoIntegrityCheck;       //!< True to check the heap integrity on each allocation/deallocation. (default: false)
@@ -138,14 +127,8 @@ namespace AZ
             bool            m_doNotUsePools;            //!< True of we want to pipe all allocation to a generic allocator (not pools), this can help debugging a memory stomp. (default: false)
             bool            m_enableScriptReflection;   //!< True if we want to enable reflection to the script context.
 
-            unsigned int    m_pageSize;                 //!< Page allocation size must be 1024 bytes aligned. (default: SystemAllocator::Descriptor::Heap::m_defaultPageSize)
-            unsigned int    m_poolPageSize;             //!< Page size used to small memory allocations. Must be less or equal to m_pageSize and a multiple of it. (default: SystemAllocator::Descriptor::Heap::m_defaultPoolPageSize)
-            unsigned int    m_memoryBlockAlignment;     //!< Alignment of memory block. (default: SystemAllocator::Descriptor::Heap::m_memoryBlockAlignment)
-            AZ::u64         m_memoryBlocksByteSize;     //!< Memory block size in bytes if. This parameter is ignored if m_grabAllMemory is set to true. (default: 0 - use memory on demand, no preallocation)
-            AZ::u64         m_reservedOS;               //!< Reserved memory for the OS in bytes. Used only when m_grabAllMemory is set to true. (default: 0)
-            AZ::u64         m_reservedDebug;            //!< Reserved memory for Debugging (allocation,etc.). Used only when m_grabAllMemory is set to true. (default: 0)
-            Debug::AllocationRecords::Mode m_recordingMode; //!< When to record stack traces (default: AZ::Debug::AllocationRecords::RECORD_STACK_IF_NO_FILE_LINE)
-            AZ::u64         m_stackRecordLevels;        //!< If stack recording is enabled, how many stack levels to record. (default: 5)
+            AZ::u64         m_memoryBlocksByteSize;     //!< Memory block size in bytes.
+            Debug::AllocationRecords::Mode m_recordingMode; //!< When to record stack traces (default: AZ::Debug::AllocationRecords::Mode::RECORD_STACK_IF_NO_FILE_LINE)
 
             ModuleDescriptorList m_modules;             //!< Dynamic modules used by the application.
                                                         //!< These will be loaded on startup.
@@ -156,10 +139,6 @@ namespace AZ
         struct StartupParameters
         {
             StartupParameters() {}
-
-            //! If set, this allocator is used to allocate the temporary bootstrap memory, as well as the main \ref SystemAllocator heap.
-            //! If it's left nullptr (default), the \ref OSAllocator will be used.
-            IAllocator* m_allocator = nullptr;
 
             //! Callback to create AZ::Modules for the static libraries linked by this application.
             //! Leave null if the application uses no static AZ::Modules.
@@ -177,10 +156,16 @@ namespace AZ
             bool m_createEditContext = false;
             //! Indicates whether the AssetCatalog.xml should be loaded by default in Application::StartCommon
             bool m_loadAssetCatalog = true;
+            //! Used by test fixtures to disable initializing, reading, and writing to the settings registry
+            bool m_loadSettingsRegistry = true;
         };
 
         ComponentApplication();
         ComponentApplication(int argC, char** argV);
+        // Allows passing in a JSON Merge Patch string that can bootstrap
+        // the settings registry with an initial set of settings
+        explicit ComponentApplication(ComponentApplicationSettings componentAppSettings);
+        ComponentApplication(int argC, char** argV, ComponentApplicationSettings componentAppSettings);
         virtual ~ComponentApplication();
 
         /**
@@ -195,7 +180,6 @@ namespace AZ
          */
         virtual Entity* Create(const Descriptor& descriptor, const StartupParameters& startupParameters = StartupParameters());
         virtual void Destroy();
-        virtual void DestroyAllocator(); // Called at the end of Destroy(). Applications can override to do tear down work right before allocator is destroyed.
 
         //////////////////////////////////////////////////////////////////////////
         // ComponentApplicationRequests
@@ -303,10 +287,15 @@ namespace AZ
         void LoadDynamicModules();
 
     protected:
-        void InitializeSettingsRegistry();
+        //! The Bootstrap JSON settings are merged to the Settings Registry immediately
+        //! after creation
+        void InitializeSettingsRegistry(const ComponentApplicationSettings& componentAppSettings);
         void InitializeEventLoggerFactory();
         void InitializeLifecyleEvents(SettingsRegistryInterface& settingsRegistry);
         void InitializeConsole(SettingsRegistryInterface& settingsRegistry);
+        //! Reads any allocator settings from the either the <executable-directory>/startup.cfg
+        //! or a file specified by the last --startup-file-cfg=<path> option
+        void InitializeAllocatorSettings(int argc, char** argv);
 
         void RegisterCoreEventLogger();
 
@@ -321,17 +310,26 @@ namespace AZ
         /// Common logic shared between the multiple Create(...) functions.
         void        CreateCommon();
 
-        /// Create the operating system allocator if not supplied in the StartupParameters
-        void        CreateOSAllocator();
-
-        /// Create the system allocator using the data in the m_descriptor
-        void        CreateSystemAllocator();
+        /// Create the system allocator to track allocations
+        void        ConfigureSystemAllocatorTracking();
 
         virtual void MergeSettingsToRegistry(SettingsRegistryInterface& registry);
+
+        void MergeSharedSettings(
+            SettingsRegistryInterface& registry,
+            const AZ::SettingsRegistryInterface::Specializations& specializations,
+            AZStd::vector<char>& scratchBuffer);
+
+        void MergeUserSettings(
+            SettingsRegistryInterface& registry,
+            const AZ::SettingsRegistryInterface::Specializations& specializations,
+            AZStd::vector<char>& scratchBuffer);
 
         //! Sets the specializations that will be used when loading the Settings Registry. Extend this in derived
         //! application classes to specialize settings for those applications.
         virtual void SetSettingsRegistrySpecializations(SettingsRegistryInterface::Specializations& specializations);
+
+        void ReportBadEngineRoot();
 
         /**
          * This is the function that will be called instantly after the memory
@@ -377,9 +375,6 @@ namespace AZ
         EntityRemovedEvent                          m_entityDeactivatedEvent;
         Descriptor                                  m_descriptor;
         bool                                        m_isStarted{ false };
-        bool                                        m_isSystemAllocatorOwner{ false };
-        bool                                        m_isOSAllocatorOwner{ false };
-        void*                                       m_fixedMemoryBlock{ nullptr }; //!< Pointer to the memory block allocator, so we can free it OnDestroy.
         IAllocator*                                 m_osAllocator{ nullptr };
         EntitySetType                               m_entities;
 

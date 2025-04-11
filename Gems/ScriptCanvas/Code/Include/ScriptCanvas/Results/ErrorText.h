@@ -79,7 +79,7 @@ namespace ScriptCanvas
         constexpr const char* NoOutSlotInFunctionDefinitionStart = "No 'Out' slot in start of function definition";
         constexpr const char* NoOutSlotInStart = "No 'Out' slot in start node";
         constexpr const char* NoOutputInExtraction = "No output found in property extraction node";
-        constexpr const char* NotEnoughArgsForArithmeticOperator = "Less then two valid arguments for arithmetic operator";
+        constexpr const char* NotEnoughArgsForArithmeticOperator = "Less than two valid arguments for arithmetic operator";
         constexpr const char* NotEnoughBranchesForReturn = "Not enough branches for defined out return values.";
         constexpr const char* NotEnoughInputForArithmeticOperator = "Not enough input for arithmetic operator";
         constexpr const char* NullEntityInGraph = "Null entity pointer in graph";

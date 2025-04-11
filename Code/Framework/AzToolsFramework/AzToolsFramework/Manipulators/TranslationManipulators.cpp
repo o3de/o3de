@@ -35,7 +35,6 @@ namespace AzToolsFramework
 
     TranslationManipulators::TranslationManipulators(
         const Dimensions dimensions, const AZ::Transform& worldFromLocal, const AZ::Vector3& nonUniformScale)
-        : m_dimensions(dimensions)
     {
         switch (dimensions)
         {

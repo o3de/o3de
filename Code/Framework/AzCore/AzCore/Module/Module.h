@@ -5,8 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZCORE_MODULE_INCLUDE_H
-#define AZCORE_MODULE_INCLUDE_H 1
+#pragma once
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Memory/SystemAllocator.h>
@@ -33,7 +32,7 @@ namespace AZ
     {
     public:
         AZ_RTTI(Module, "{59682E0E-731F-4361-BC0B-039BC5376CA1}");
-        AZ_CLASS_ALLOCATOR(Module, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Module, AZ::SystemAllocator);
 
         /**
          * Override to register the module's ComponentDescriptors.
@@ -81,6 +80,30 @@ namespace AZ
     };
 } // namespace AZ
 
+
+#if defined(AZ_MONOLITHIC_BUILD)
+// Calls an _IMPL macro to allow the MODULE_NAME and MODULE_CLASSNAME to resolve any macros
+#   define AZ_DECLARE_MODULE_CLASS_IMPL(MODULE_NAME, MODULE_CLASSNAME) \
+    extern "C" AZ::Module * CreateModuleClass_##MODULE_NAME() { return aznew MODULE_CLASSNAME; }
+#else
+#   define AZ_DECLARE_MODULE_CLASS_IMPL(MODULE_NAME, MODULE_CLASSNAME)                           \
+    AZ_DECLARE_MODULE_INITIALIZATION                                                             \
+    extern "C" AZ_DLL_EXPORT AZ::Module* CreateModuleClass()                                     \
+    {                                                                                            \
+        if (auto console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)               \
+        {                                                                                        \
+             console->LinkDeferredFunctors(AZ::ConsoleFunctorBase::GetDeferredHead());           \
+             console->ExecuteDeferredConsoleCommands();                                          \
+        }                                                                                        \
+        if (AZ::NameDictionary::IsReady())                                                       \
+        {                                                                                        \
+            AZ::NameDictionary::Instance().LoadDeferredNames(AZ::Name::GetDeferredHead());       \
+        }                                                                                        \
+        return aznew MODULE_CLASSNAME;                                                           \
+    }                                                                                            \
+    extern "C" AZ_DLL_EXPORT void DestroyModuleClass(AZ::Module* module) { delete module; }
+#endif
+
 /// \def AZ_DECLARE_MODULE_CLASS(MODULE_NAME, MODULE_CLASSNAME)
 /// For modules which define a \ref AZ::Module class.
 /// This macro provides default implementations of functions that \ref
@@ -99,27 +122,4 @@ namespace AZ
 /// Execute any deferred console commands after linking any new deferred functors
 /// This allows deferred console commands defined within the module to now execute
 /// at this point now that the module has been loaded
-#if defined(AZ_MONOLITHIC_BUILD)
-#   define AZ_DECLARE_MODULE_CLASS(MODULE_NAME, MODULE_CLASSNAME) \
-    extern "C" AZ::Module * CreateModuleClass_##MODULE_NAME() { return aznew MODULE_CLASSNAME; }
-#else
-#   define AZ_DECLARE_MODULE_CLASS(MODULE_NAME, MODULE_CLASSNAME)                                \
-    AZ_DECLARE_MODULE_INITIALIZATION                                                             \
-    extern "C" AZ_DLL_EXPORT AZ::Module* CreateModuleClass()                                     \
-    {                                                                                            \
-        if (auto console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)               \
-        {                                                                                        \
-             console->LinkDeferredFunctors(AZ::ConsoleFunctorBase::GetDeferredHead());           \
-             console->ExecuteDeferredConsoleCommands();                                          \
-        }                                                                                        \
-        if (AZ::NameDictionary::IsReady())                                                       \
-        {                                                                                        \
-            AZ::NameDictionary::Instance().LoadDeferredNames(AZ::Name::GetDeferredHead());       \
-        }                                                                                        \
-        return aznew MODULE_CLASSNAME;                                                           \
-    }                                                                                            \
-    extern "C" AZ_DLL_EXPORT void DestroyModuleClass(AZ::Module* module) { delete module; }
-#endif
-
-#endif // AZCORE_MODULE_INCLUDE_H
-#pragma once
+#define AZ_DECLARE_MODULE_CLASS(MODULE_NAME, MODULE_CLASSNAME) AZ_DECLARE_MODULE_CLASS_IMPL(MODULE_NAME, MODULE_CLASSNAME)

@@ -15,12 +15,12 @@ namespace UnitTest
 
     template<typename ValueType>
     struct QtWidgetLimitsFixture
-        : public ToolsApplicationFixture
+        : public ToolsApplicationFixture<>
     {
 
     };
 
-    TYPED_TEST_CASE(QtWidgetLimitsFixture, IntegerPrimtitiveTestConfigs);
+    TYPED_TEST_SUITE(QtWidgetLimitsFixture, IntegerPrimtitiveTestConfigs);
 
     TYPED_TEST(QtWidgetLimitsFixture, MinRange)
     {

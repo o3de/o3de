@@ -7,14 +7,14 @@
  */
 
 #include <CoreLights/PointLightFeatureProcessor.h>
+#include <CoreLights/LightCommon.h>
+#include <Mesh/MeshFeatureProcessor.h>
 
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Color.h>
 
 #include <Atom/Feature/CoreLights/CoreLightsConstants.h>
-#include <Atom/Feature/CoreLights/LightCommon.h>
 #include <Atom/Feature/Mesh/MeshCommon.h>
-#include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
 
 #include <Atom/RHI/Factory.h>
 
@@ -64,8 +64,8 @@ namespace AZ
             MeshFeatureProcessor* meshFeatureProcessor = GetParentScene()->GetFeatureProcessor<MeshFeatureProcessor>();
             if (meshFeatureProcessor)
             {
-                m_lightMeshFlag = meshFeatureProcessor->GetFlagRegistry()->AcquireTag(AZ::Name("o_enableSphereLights"));
-                m_shadowMeshFlag = meshFeatureProcessor->GetFlagRegistry()->AcquireTag(AZ::Name("o_enableSphereLightShadows"));
+                m_lightMeshFlag = meshFeatureProcessor->GetShaderOptionFlagRegistry()->AcquireTag(AZ::Name("o_enableSphereLights"));
+                m_shadowMeshFlag = meshFeatureProcessor->GetShaderOptionFlagRegistry()->AcquireTag(AZ::Name("o_enableSphereLightShadows"));
             }
         }
 
@@ -120,6 +120,22 @@ namespace AZ
             {
                 m_lightData.GetData<0>(handle.GetIndex()) = m_lightData.GetData<0>(sourceLightHandle.GetIndex());
                 m_lightData.GetData<1>(handle.GetIndex()) = m_lightData.GetData<1>(sourceLightHandle.GetIndex());
+
+                auto& light = m_lightData.GetData<0>(handle.GetIndex());
+                for (int i = 0; i < PointLightData::NumShadowFaces; ++i)
+                {
+                    ShadowId shadowId = ShadowId(light.m_shadowIndices[i]);
+                    if (shadowId.IsValid())
+                    {
+                        // Since the source light has a valid shadow, a new shadow must be generated for the cloned light.
+                        ProjectedShadowFeatureProcessorInterface::ProjectedShadowDescriptor originalDesc =
+                            m_shadowFeatureProcessor->GetShadowProperties(shadowId);
+                        ShadowId cloneShadow = m_shadowFeatureProcessor->AcquireShadow();
+                        light.m_shadowIndices[i] = cloneShadow.GetIndex();
+                        m_shadowFeatureProcessor->SetShadowProperties(cloneShadow, originalDesc);
+                    }
+                }
+
                 m_deviceBufferNeedsUpdate = true;
             }
             return handle;
@@ -320,6 +336,11 @@ namespace AZ
             SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetShadowBias, bias);
         }
 
+        void PointLightFeatureProcessor::SetUseCachedShadows(LightHandle handle, bool useCachedShadows)
+        {
+            SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetUseCachedShadows, useCachedShadows);
+        }
+
         void PointLightFeatureProcessor::SetAffectsGI(LightHandle handle, bool affectsGI)
         {
             AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to PointLightFeatureProcessor::SetAffectsGI().");
@@ -333,6 +354,14 @@ namespace AZ
             AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to PointLightFeatureProcessor::SetAffectsGIFactor().");
 
             m_lightData.GetData<0>(handle.GetIndex()).m_affectsGIFactor = affectsGIFactor;
+            m_deviceBufferNeedsUpdate = true;
+        }
+
+        void PointLightFeatureProcessor::SetLightingChannelMask(LightHandle handle, uint32_t lightingChannelMask)
+        {
+            AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to PointLightFeatureProcessor::SetLightingChannelMask().");
+
+            m_lightData.GetData<0>(handle.GetIndex()).m_lightingChannelMask = lightingChannelMask;
             m_deviceBufferNeedsUpdate = true;
         }
 

@@ -30,7 +30,7 @@ namespace GraphCanvas
     public:
         friend class NodePaletteSortFilterProxyModel;
 
-        AZ_CLASS_ALLOCATOR(NodePaletteAutoCompleteModel, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(NodePaletteAutoCompleteModel, AZ::SystemAllocator);
 
         NodePaletteAutoCompleteModel(QObject* parent = nullptr);
         ~NodePaletteAutoCompleteModel() = default;
@@ -57,7 +57,7 @@ namespace GraphCanvas
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(NodePaletteSortFilterProxyModel, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(NodePaletteSortFilterProxyModel, AZ::SystemAllocator);
 
         NodePaletteSortFilterProxyModel(QObject* parent);
 

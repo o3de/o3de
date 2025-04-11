@@ -42,6 +42,12 @@ namespace AZ
                 return m_sourceFilename;
             }
 
+            AZStd::string_view Scene::GetSourceExtension() const
+            {
+                const AZ::IO::PathView sourcePath(m_sourceFilename);
+                return AZStd::string_view(sourcePath.Extension());
+            }
+
             const Uuid& Scene::GetSourceGuid() const
             {
                 return m_sourceGuid;
@@ -102,9 +108,35 @@ namespace AZ
                 m_originalOrientation = orientation;
             }
 
+            void Scene::SetSceneDimension(Vector3 dimension)
+            {
+                m_sceneDimension = dimension;
+                m_hasDimension = true;
+            }
+
+            void Scene::SetSceneVertices(uint32_t vertices)
+            {
+                m_vertices = vertices;
+            }
+
+            bool Scene::HasDimension() const
+            {
+                return m_hasDimension;
+            }
+
             Scene::SceneOrientation Scene::GetOriginalSceneOrientation() const
             {
                 return m_originalOrientation;
+            }
+
+            Vector3& Scene::GetSceneDimension()
+            {
+                return m_sceneDimension;
+            }
+
+            uint32_t Scene::GetSceneVertices() const
+            {
+                return m_vertices;
             }
 
             void Scene::Reflect(ReflectContext* context)
@@ -116,6 +148,7 @@ namespace AZ
                         ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
                         ->Attribute(AZ::Script::Attributes::Module, "scene")
                         ->Constructor<const AZStd::string&>()
+                            ->Attribute(AZ::Script::Attributes::DefaultConstructorOverrideIndex, 0)
                         ->Property("name", BehaviorValueGetter(&Scene::m_name), nullptr)
                         ->Property("manifestFilename", BehaviorValueGetter(&Scene::m_manifestFilename), nullptr)
                         ->Property("sourceFilename", BehaviorValueGetter(&Scene::m_sourceFilename), nullptr)

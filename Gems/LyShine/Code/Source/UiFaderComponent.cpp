@@ -73,7 +73,7 @@ UiFaderComponent::~UiFaderComponent()
 {
     if (m_isFading && m_entity)
     {
-        EBUS_EVENT_ID(GetEntityId(), UiFaderNotificationBus, OnFaderDestroyed);
+        UiFaderNotificationBus::Event(GetEntityId(), &UiFaderNotificationBus::Events::OnFaderDestroyed);
     }
 
     DestroyRenderTarget();
@@ -163,7 +163,7 @@ void UiFaderComponent::SetFadeValue(float fade)
 {
     if (m_isFading)
     {
-        EBUS_EVENT_ID(GetEntityId(), UiFaderNotificationBus, OnFadeInterrupted);
+        UiFaderNotificationBus::Event(GetEntityId(), &UiFaderNotificationBus::Events::OnFadeInterrupted);
         m_isFading = false;
     }
 
@@ -175,14 +175,14 @@ void UiFaderComponent::Fade(float targetValue, float speed)
 {
     if (m_isFading)
     {
-        EBUS_EVENT_ID(GetEntityId(), UiFaderNotificationBus, OnFadeInterrupted);
+        UiFaderNotificationBus::Event(GetEntityId(), &UiFaderNotificationBus::Events::OnFadeInterrupted);
     }
 
     // Connect to UpdateBus for updates while fading
     if (!UiCanvasUpdateNotificationBus::Handler::BusIsConnected())
     {
         AZ::EntityId canvasEntityId;
-        EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
+        UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
 
         // if this element has not been fixed up then canvasEntityId will be invalid. We handle this
         // in OnUiElementFixup
@@ -278,7 +278,7 @@ void UiFaderComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::Category, "UI")
                 ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/UiFader.png")
                 ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/UiFader.png")
-                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("UI", 0x27ff46b0))
+                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
             editInfo->DataElement(AZ::Edit::UIHandlers::Slider, &UiFaderComponent::m_fade, "Fade", "The initial fade value")
@@ -337,7 +337,7 @@ void UiFaderComponent::Activate()
     if (m_isFading)
     {
         AZ::EntityId canvasEntityId;
-        EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
+        UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
         if (canvasEntityId.IsValid())
         {
             UiCanvasUpdateNotificationBus::Handler::BusConnect(canvasEntityId);
@@ -375,7 +375,7 @@ void UiFaderComponent::CompleteFade()
 {
     SetFadeValueInternal(m_fadeTarget);
     // Queue the OnFadeComplete event to prevent deletions during the canvas update
-    EBUS_QUEUE_EVENT_ID(GetEntityId(), UiFaderNotificationBus, OnFadeComplete);
+    UiFaderNotificationBus::QueueEvent(GetEntityId(), &UiFaderNotificationBus::Events::OnFadeComplete);
     m_isFading = false;
 
     // Disconnect from UpdateBus
@@ -435,8 +435,8 @@ void UiFaderComponent::MarkRenderGraphDirty()
 {
     // tell the canvas to invalidate the render graph
     AZ::EntityId canvasEntityId;
-    EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
-    EBUS_EVENT_ID(canvasEntityId, UiCanvasComponentImplementationBus, MarkRenderGraphDirty);
+    UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
+    UiCanvasComponentImplementationBus::Event(canvasEntityId, &UiCanvasComponentImplementationBus::Events::MarkRenderGraphDirty);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -460,9 +460,14 @@ void UiFaderComponent::CreateOrResizeRenderTarget(const AZ::Vector2& pixelAligne
 
     // Create a render target that this element and its children will be rendered to
     AZ::EntityId canvasEntityId;
-    EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
+    UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
     AZ::RHI::Size imageSize(static_cast<uint32_t>(renderTargetSize.GetX()), static_cast<uint32_t>(renderTargetSize.GetY()), 1);
-    EBUS_EVENT_ID_RESULT(m_attachmentImageId, canvasEntityId, LyShine::RenderToTextureRequestBus, UseRenderTarget, AZ::Name(m_renderTargetName.c_str()), imageSize);
+    LyShine::RenderToTextureRequestBus::EventResult(
+        m_attachmentImageId,
+        canvasEntityId,
+        &LyShine::RenderToTextureRequestBus::Events::UseRenderTarget,
+        AZ::Name(m_renderTargetName.c_str()),
+        imageSize);
     if (m_attachmentImageId.IsEmpty())
     {
         AZ_Warning("UI", false, "Failed to create render target for UiFaderComponent");
@@ -485,8 +490,9 @@ void UiFaderComponent::DestroyRenderTarget()
     if (!m_attachmentImageId.IsEmpty())
     {
         AZ::EntityId canvasEntityId;
-        EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
-        EBUS_EVENT_ID(canvasEntityId, LyShine::RenderToTextureRequestBus, ReleaseRenderTarget, m_attachmentImageId);
+        UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
+        LyShine::RenderToTextureRequestBus::Event(
+            canvasEntityId, &LyShine::RenderToTextureRequestBus::Events::ReleaseRenderTarget, m_attachmentImageId);
         m_attachmentImageId = AZ::RHI::AttachmentId{};
     }
 }
@@ -538,7 +544,7 @@ void UiFaderComponent::ComputePixelAlignedBounds(AZ::Vector2& pixelAlignedTopLef
     // in main viewport space. We then snap them to the nearest pixel since the render target has to be an exact number
     // of pixels.
     UiTransformInterface::RectPoints points;
-    EBUS_EVENT_ID(GetEntityId(), UiTransformBus, GetViewportSpacePoints, points);
+    UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::GetViewportSpacePoints, points);
     pixelAlignedTopLeft = Draw2dHelper::RoundXY(points.GetAxisAlignedTopLeft(), IDraw2d::Rounding::Nearest);
     pixelAlignedBottomRight = Draw2dHelper::RoundXY(points.GetAxisAlignedBottomRight(), IDraw2d::Rounding::Nearest);
 }
@@ -564,8 +570,9 @@ void UiFaderComponent::RenderRttFader(LyShine::IRenderGraph* renderGraph, UiElem
     // Get the render target
     AZ::Data::Instance<AZ::RPI::AttachmentImage> attachmentImage;
     AZ::EntityId canvasEntityId;
-    EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
-    EBUS_EVENT_ID_RESULT(attachmentImage, canvasEntityId, LyShine::RenderToTextureRequestBus, GetRenderTarget, m_attachmentImageId);
+    UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
+    LyShine::RenderToTextureRequestBus::EventResult(
+        attachmentImage, canvasEntityId, &LyShine::RenderToTextureRequestBus::Events::GetRenderTarget, m_attachmentImageId);
 
     // Render the element and its children to a render target
     {

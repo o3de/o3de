@@ -8,9 +8,7 @@
 #pragma once
 
 // AZ
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
-#include <AzFramework/StringFunc/StringFunc.h>
 
 // Graph Canvas
 #include <GraphCanvas/Widgets/NodePalette/TreeItems/DraggableNodePaletteTreeItem.h>
@@ -21,38 +19,23 @@
 #include <GraphModel/Model/Common.h>
 #include <GraphModel/Model/Module/ModuleNode.h>
 
+namespace AZ
+{
+    class ReflectContext;
+}
+
 namespace GraphModelIntegration
 {
-    AZStd::string GetNodeName(AZStd::string_view sourceFileName)
-    {
-        AZStd::string name = "Unnamed";
-        if (!AzFramework::StringFunc::Path::GetFileName(sourceFileName.data(), name))
-        {
-            AZ_Assert(false, "Could not get node name from module file path [%s]", sourceFileName.data());
-        }
-        return name;
-    }
+    AZStd::string GetNodeName(AZStd::string_view sourceFileName);
 
     class CreateModuleNodeMimeEvent
         : public GraphCanvas::GraphCanvasMimeEvent
     {
     public:
         AZ_RTTI(CreateModuleNodeMimeEvent, "{914F9D88-7B60-408D-A16F-BCCE4CA41EFB}", GraphCanvas::GraphCanvasMimeEvent);
-        AZ_CLASS_ALLOCATOR(CreateModuleNodeMimeEvent, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CreateModuleNodeMimeEvent, AZ::SystemAllocator);
 
-        static void Reflect(AZ::ReflectContext* reflectContext)
-        {
-            AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(reflectContext);
-
-            if (serializeContext)
-            {
-                serializeContext->Class<CreateModuleNodeMimeEvent, GraphCanvas::GraphCanvasMimeEvent>()
-                    ->Version(0)
-                    ->Field("m_sourceFileName", &CreateModuleNodeMimeEvent::m_sourceFileName)
-                    ->Field("m_sourceFileId", &CreateModuleNodeMimeEvent::m_sourceFileId)
-                    ;
-            }
-        }
+        static void Reflect(AZ::ReflectContext* reflectContext);
 
         CreateModuleNodeMimeEvent() = default; // required by SerializeContext
         CreateModuleNodeMimeEvent(AZStd::string_view sourceFileName, AZ::Uuid sourceFileId)
@@ -86,16 +69,16 @@ namespace GraphModelIntegration
         AZ::Uuid m_sourceFileId;
     };
 
-    //! Provides the interface for instantiating ModuleNodes through the Node Palette. The ModuleNode is based on a 
+    //! Provides the interface for instantiating ModuleNodes through the Node Palette. The ModuleNode is based on a
     //! module node graph file that defines the inputs, outputs, and behavior of the node.
     class ModuleNodePaletteItem
         : public GraphCanvas::DraggableNodePaletteTreeItem
     {
     public:
-        AZ_CLASS_ALLOCATOR(ModuleNodePaletteItem, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ModuleNodePaletteItem, AZ::SystemAllocator);
 
         //! Constructor
-        //! \param editorId        Unique name of the client system editor (ex: AZ_CRC("ShaderCanvas", 0x0a1dff96))
+        //! \param editorId        Unique name of the client system editor (ex: AZ_CRC_CE("ShaderCanvas"))
         //! \param sourceFileId    The unique id for the module node graph source file.
         //! \param sourceFilePath  The path to the module node graph source file. This will be used for node naming and debug output.
         ModuleNodePaletteItem(GraphCanvas::EditorId editorId, AZ::Uuid sourceFileId, AZStd::string_view sourceFilePath)

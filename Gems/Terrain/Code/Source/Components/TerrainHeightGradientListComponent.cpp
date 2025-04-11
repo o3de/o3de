@@ -19,8 +19,7 @@
 
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <SurfaceData/SurfaceDataProviderRequestBus.h>
-
-AZ_DECLARE_BUDGET(Terrain);
+#include <TerrainProfiler.h>
 
 namespace Terrain
 {
@@ -135,7 +134,7 @@ namespace Terrain
         // Since this height data will no longer exist, notify the terrain system to refresh the area.
         TerrainSystemServiceRequestBus::Broadcast(
             &TerrainSystemServiceRequestBus::Events::RefreshArea, GetEntityId(),
-            AzFramework::Terrain::TerrainDataNotifications::HeightData);
+            AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::HeightData);
     }
 
     bool TerrainHeightGradientListComponent::ReadInConfig(const AZ::ComponentConfig* baseConfig)
@@ -206,7 +205,7 @@ namespace Terrain
     void TerrainHeightGradientListComponent::GetHeights(
         AZStd::span<AZ::Vector3> inOutPositionList, AZStd::span<bool> terrainExistsList)
     {
-        AZ_PROFILE_FUNCTION(Terrain);
+        TERRAIN_PROFILE_FUNCTION_VERBOSE
 
         // Make sure we don't run queries simultaneously with changing any of the cached data.
         AZStd::shared_lock lock(m_queryMutex);
@@ -310,7 +309,7 @@ namespace Terrain
                 TerrainSystemServiceRequestBus::Broadcast(
                     &TerrainSystemServiceRequestBus::Events::RefreshRegion,
                     clampedDirtyRegion,
-                    AzFramework::Terrain::TerrainDataNotifications::HeightData);
+                    AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::HeightData);
             }
         }
         else
@@ -318,13 +317,13 @@ namespace Terrain
             TerrainSystemServiceRequestBus::Broadcast(
                 &TerrainSystemServiceRequestBus::Events::RefreshArea,
                 GetEntityId(),
-                AzFramework::Terrain::TerrainDataNotifications::HeightData);
+                AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::HeightData);
         }
     }
 
     void TerrainHeightGradientListComponent::OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask)
     {
-        if (dataChangedMask & TerrainDataChangedMask::Settings)
+        if ((dataChangedMask & TerrainDataChangedMask::Settings) == TerrainDataChangedMask::Settings)
         {
             // If the terrain system settings changed, it's possible that the world bounds have changed, which can affect our height data.
             // Refresh the min/max heights and notify that the height data for this area needs to be refreshed.

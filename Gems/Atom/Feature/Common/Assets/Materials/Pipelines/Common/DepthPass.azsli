@@ -5,33 +5,19 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-#include <Atom/Features/PBR/DefaultObjectSrg.azsli>
-#include <viewsrg.srgi>
-
-struct VSInput
-{
-    float3 m_position : POSITION;
-};
  
-struct VSDepthOutput
-{
-    precise float4 m_position : SV_Position;
-};
-
 #define MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE 0
-#include <Atom/RPI/MaterialPipelineCallbacks.azsli>
 
-VSDepthOutput DepthPassVS(VSInput IN)
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+#include MATERIAL_TYPE_AZSLI_FILE_PATH
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+VsOutput VertexShader(VsInput IN, uint instanceId : SV_InstanceID)
 {
-    VertexData adjustableVertexData;
-    adjustableVertexData.InitializeToZero();
-    adjustableVertexData.positionWS = LocalSpaceToWorldSpace(IN.m_position);
-
-    MaterialFunction_AdjustVertexData(IN.m_position, adjustableVertexData);
-    
-    VSDepthOutput OUT;
-    OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(adjustableVertexData.positionWS, 1.0));
+    VsSystemValues SV;
+    SV.m_instanceId = instanceId;
+    VsOutput OUT = EvaluateVertexGeometry(IN, SV);
     return OUT;
 }
 

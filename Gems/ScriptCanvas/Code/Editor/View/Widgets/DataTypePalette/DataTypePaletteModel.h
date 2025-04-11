@@ -32,7 +32,7 @@ namespace ScriptCanvasEditor
             Count
         };
 
-        AZ_CLASS_ALLOCATOR(DataTypePaletteModel, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DataTypePaletteModel, AZ::SystemAllocator);
 
         DataTypePaletteModel(QObject* parent = nullptr);
 
@@ -83,7 +83,7 @@ namespace ScriptCanvasEditor
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(DataTypePaletteSortFilterProxyModel, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DataTypePaletteSortFilterProxyModel, AZ::SystemAllocator);
 
         DataTypePaletteSortFilterProxyModel(QObject* parent = nullptr);
         

@@ -13,9 +13,15 @@
 #include <PrefabGroup/PrefabGroupBus.h>
 #include <SceneAPI/SceneCore/Containers/SceneGraph.h>
 #include <AzCore/Component/EntityId.h>
+#include <AzToolsFramework/Prefab/Instance/Instance.h>
 
 namespace AZ::SceneAPI
 {
+    namespace SceneData
+    {
+        class MeshGroup;
+    }
+
     using PrefabGroup = AZ::SceneAPI::SceneData::PrefabGroup;
     using Scene = AZ::SceneAPI::Containers::Scene;
 
@@ -33,6 +39,7 @@ namespace AZ::SceneAPI
 
         // PrefabGroupEventBus::Handler
         AZStd::optional<ManifestUpdates> GeneratePrefabGroupManifestUpdates(const Scene& scene) const override;
+        AZStd::vector<AZStd::shared_ptr<DataTypes::IManifestObject>> GenerateDefaultPrefabMeshGroups(const Scene& scene) const override;
 
     protected:
         // this stores the data related with nodes that will translate to entities in the prefab group
@@ -46,8 +53,14 @@ namespace AZ::SceneAPI
         using NodeDataMapEntry = AZStd::pair<Containers::SceneGraph::NodeIndex, NodeDataForEntity>;
         using NodeDataMap = AZStd::unordered_map<Containers::SceneGraph::NodeIndex, NodeDataForEntity>; // NodeIndex -> NodeDataForEntity
         using ManifestUpdates = AZStd::vector<AZStd::shared_ptr<DataTypes::IManifestObject>>;
-        using NodeEntityMap = AZStd::unordered_map<Containers::SceneGraph::NodeIndex, AZ::EntityId>; // NodeIndex -> EntityId
-        using EntityIdList = AZStd::vector<AZ::EntityId>;
+
+        using NodeEntityMap = AZStd::unordered_map<Containers::SceneGraph::NodeIndex, AZStd::pair<AZ::EntityId, AzToolsFramework::Prefab::EntityAlias>>;
+        using EntityIdMap = AZStd::unordered_map<AZ::EntityId, AzToolsFramework::Prefab::EntityAlias>;
+
+        AZStd::shared_ptr<SceneData::MeshGroup> BuildMeshGroupForNode(
+            const Scene& scene,
+            const NodeDataForEntity& nodeData,
+            const NodeDataMap& nodeDataMap) const;
 
         NodeDataMap CalculateNodeDataMap(const Containers::Scene& scene) const;
 
@@ -58,7 +71,8 @@ namespace AZ::SceneAPI
         bool AddEditorMeshComponent(
             const AZ::EntityId& entityId,
             const AZStd::string& relativeSourcePath,
-            const AZStd::string& meshGroupName) const;
+            const AZStd::string& meshGroupName,
+            const AZStd::string& sourceFileExtension) const;
 
         bool CreateMeshGroupAndComponents(
             ManifestUpdates& manifestUpdates,
@@ -74,7 +88,7 @@ namespace AZ::SceneAPI
             const Containers::Scene& scene,
             const AZStd::string& relativeSourcePath) const;
 
-        EntityIdList FixUpEntityParenting(
+        EntityIdMap FixUpEntityParenting(
             const NodeEntityMap& nodeEntityMap,
             const Containers::SceneGraph& graph,
             const NodeDataMap& nodeDataMap)  const;
@@ -82,7 +96,7 @@ namespace AZ::SceneAPI
         bool CreatePrefabGroupManifestUpdates(
             ManifestUpdates& manifestUpdates,
             const Containers::Scene& scene,
-            const EntityIdList& entities,
+            const EntityIdMap& entities,
             const AZStd::string& filenameOnly,
             const AZStd::string& relativeSourcePath) const;
     };

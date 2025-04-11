@@ -28,7 +28,7 @@ namespace AZ
         static Data::Instance<RPI::Material> CreateMaskMaterial()
         {
             const AZStd::string path = "shaders/editormodemask.azmaterial";
-            const auto materialAsset = GetAssetFromPath<RPI::MaterialAsset>(path, Data::AssetLoadBehavior::PreLoad, true);
+            const auto materialAsset = RPI::AssetUtils::LoadCriticalAsset<RPI::MaterialAsset>(path);
             const auto maskMaterial = RPI::Material::FindOrCreate(materialAsset);
             return maskMaterial;
         }
@@ -142,6 +142,23 @@ namespace AZ
             {
                 AZ::TickBus::Handler::BusDisconnect();
             }
+        }
+
+        void EditorModeFeatureProcessor::SetEnableRender(bool enableRender)
+        {            
+            if (!m_editorStatePassSystem)
+            {
+                return;
+            }
+
+            const auto templateName = Name(m_editorStatePassSystem->GetParentPassTemplateName());
+
+            auto passFilter = AZ::RPI::PassFilter::CreateWithTemplateName(templateName, GetParentScene());
+            AZ::RPI::PassSystemInterface::Get()->ForEachPass(passFilter,  [enableRender](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
+                {
+                    pass->SetEnabled(enableRender);
+                    return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
+                });
         }
     } // namespace Render
 } // namespace AZ

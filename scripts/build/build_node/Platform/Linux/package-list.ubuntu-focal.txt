@@ -1,8 +1,9 @@
 # Package list for Ubuntu 20.04
 
 # Build Tools Packages
-cmake/3.24.0-0kitware1ubuntu20.04.1     # For cmake
+cmake/3.22.1-0kitware1ubuntu20.04.1     # For cmake
 clang-12                                # For the compiler and its dependencies
+lld                                     # For the llvm linker
 ninja-build                             # For Ninja Build System
 java-11-amazon-corretto-jdk             # For Jenkins and Android
 
@@ -12,12 +13,21 @@ libxcb-xinerama0                        # For Qt plugins at runtime
 libxcb-xinput0                          # For Qt plugins at runtime
 libfontconfig1-dev                      # For Qt plugins at runtime
 libcurl4-openssl-dev                    # For HttpRequestor
-# libsdl2-dev                             # for WWise/Audio
 libssl-dev                              # For system default OpenSSL
 libxcb-xkb-dev                          # For xcb keyboard input
 libxkbcommon-x11-dev                    # For xcb keyboard input
 libxkbcommon-dev                        # For xcb keyboard input
 libxcb-xfixes0-dev                      # For mouse input
 libxcb-xinput-dev                       # For mouse input
+libxcb-image0-dev                       # For xcb image support
+xxd
 zlib1g-dev
 mesa-common-dev
+ros-humble-ackermann-msgs 
+ros-humble-control-toolbox 
+ros-humble-gazebo-msgs 
+ros-humble-tf2-ros
+ros-humble-urdfdom
+ros-humble-vision-msgs
+libunwind-dev
+libzstd-dev

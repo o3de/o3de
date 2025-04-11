@@ -5,108 +5,70 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <RHI/CommandList.h>
-#include <RHI/Device.h>
-#include <RHI/FrameGraphExecuteGroupHandler.h>
+#include <Atom/RHI/FrameGraphExecuteGroup.h>
 #include <RHI/FrameGraphExecuteGroup.h>
-#include <RHI/RenderPass.h>
-#include <RHI/RenderPassBuilder.h>
+#include <RHI/FrameGraphExecuteGroupHandler.h>
+#include <RHI/Device.h>
 
 namespace AZ
 {
     namespace Vulkan
     {
-        RHI::ResultCode FrameGraphExecuteGroupHandler::InitInternal(Device& device, const AZStd::vector<RHI::FrameGraphExecuteGroup*>& executeGroups)
+        RHI::ResultCode FrameGraphExecuteGroupHandler::Init(
+            Device& device, const AZStd::vector<RHI::FrameGraphExecuteGroup*>& executeGroups)
         {
-            // We first need to build the renderpass that will be used by all groups.
-            RenderPassBuilder builder(device, static_cast<uint32_t>(executeGroups.size()));
-            for (auto executeGroupBase : executeGroups)
-            {
-                const FrameGraphExecuteGroup* executeGroup = static_cast<const FrameGraphExecuteGroup*>(executeGroupBase);
-                AZ_Assert(executeGroup, "Invalid execute group on FrameGraphExecuteGroupHandler");
-                AZ_Assert(executeGroup->GetScopes().size() == 1, "Incorrect number of scopes (%d) in group on FrameGraphExecuteGroupHandler", executeGroup->GetScopes().size());
-                builder.AddScopeAttachments(*executeGroup->GetScopes()[0]);
-            }
+            m_device = &device;
+            m_executeGroups = executeGroups;
+            m_hardwareQueueClass = static_cast<FrameGraphExecuteGroup*>(executeGroups.back())->GetHardwareQueueClass();
 
-            // This will update the m_renderPassContext with the proper renderpass and framebuffer.
-            RHI::ResultCode result = builder.End(m_renderPassContext);
-            RETURN_RESULT_IF_UNSUCCESSFUL(result);
-
-            // Set the RenderPassContext for each group.
-            for (uint32_t i = 0; i < executeGroups.size(); ++i)
-            {
-                auto executeGroup = azrtti_cast<FrameGraphExecuteGroup*>(executeGroups[i]);
-                executeGroup->SetRenderContext(m_renderPassContext, i);
-            }
-
-            return RHI::ResultCode::Success;
+            return InitInternal(device, executeGroups);
         }
 
-        void FrameGraphExecuteGroupHandler::EmitScopeBarriers(CommandList& commandList, Scope::BarrierSlot slot) const
+        void FrameGraphExecuteGroupHandler::End()
         {
-            for (auto group : m_executeGroups)
-            {
-                const FrameGraphExecuteGroup* executeGroup = static_cast<const FrameGraphExecuteGroup*>(group);
-                // There's only one scope in this type of handler.
-                executeGroup->GetScopes()[0]->EmitScopeBarriers(commandList, slot);
-            }
+            EndInternal();
+            CommandQueue* cmdQueue = &m_device->GetCommandQueueContext().GetCommandQueue(m_hardwareQueueClass);
+            cmdQueue->ExecuteWork(AZStd::move(m_workRequest));
+#if defined(AZ_FORCE_CPU_GPU_INSYNC)
+            //Cache the name of the scope we just queued and wait for it to finish on the cpu
+            m_device->SetLastExecutingScope(m_workRequest.m_commandList->GetName().GetStringView());
+            cmdQueue->FlushCommands();
+            cmdQueue->WaitForIdle();
+#endif
+            m_isExecuted = true;
         }
 
-
-        void FrameGraphExecuteGroupHandler::ProcessClearRequests(CommandList& commandList) const
+        bool FrameGraphExecuteGroupHandler::IsComplete() const
         {
-            for (auto group : m_executeGroups)
+            for (const auto& group : m_executeGroups)
             {
-                const FrameGraphExecuteGroup* executeGroup = static_cast<const FrameGraphExecuteGroup*>(group);
-                // There's only one scope in this type of handler.
-                executeGroup->GetScopes()[0]->ProcessClearRequests(commandList);
+                if (!group->IsComplete())
+                {
+                    return false;
+                }
             }
+
+            return true;
         }
 
-        void FrameGraphExecuteGroupHandler::ResetQueryPools(CommandList& commandList) const
+        bool FrameGraphExecuteGroupHandler::IsExecuted() const
         {
-            for (auto group : m_executeGroups)
-            {
-                const FrameGraphExecuteGroup* executeGroup = static_cast<const FrameGraphExecuteGroup*>(group);
-                // Reset the RHI Queries of the scope before starting the renderpass.
-                // There's only one scope in this type of handler.
-                executeGroup->GetScopes()[0]->ResetQueryPools(commandList);
-            }
+            return m_isExecuted;
         }
 
-        void FrameGraphExecuteGroupHandler::EndInternal()
+        template<class T>
+        void InsertWorkRequestElements(T& destination, const T& source)
         {
-            RHI::Ptr<CommandList> commandList = m_device->AcquireCommandList(m_hardwareQueueClass);
-            commandList->BeginCommandBuffer();
-            // First emit all scope barriers outside of the renderpass.
-            EmitScopeBarriers(*commandList, Scope::BarrierSlot::Aliasing);
-            ProcessClearRequests(*commandList);
-            EmitScopeBarriers(*commandList, Scope::BarrierSlot::Prologue);
-            CommandList::BeginRenderPassInfo beginInfo;
-            beginInfo.m_frameBuffer = m_renderPassContext.m_framebuffer.get();
-            beginInfo.m_clearValues = AZStd::move(m_renderPassContext.m_clearValues);
-            beginInfo.m_subpassContentType = VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS;
-            // Reset the RHI QueryPools.
-            ResetQueryPools(*commandList);
-            // Start the renderpass.
-            commandList->BeginRenderPass(beginInfo);
-            for (uint32_t i = 0; i < m_executeGroups.size(); ++i)
-            {
-                FrameGraphExecuteGroupBase* group = static_cast<FrameGraphExecuteGroupBase*>(m_executeGroups[i]);
-                auto commandLists = group->GetCommandLists();
-                commandList->ExecuteSecondaryCommandLists(commandLists);
-                // Move to the next subpass. If this is the last one, the NextSubpass function will do nothing.
-                commandList->NextSubpass(VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
+            destination.insert(destination.end(), source.begin(), source.end());
+        }
 
-                AddWorkRequest(group->GetWorkRequest());
-            }
-            // End the renderpass
-            commandList->EndRenderPass();
-            // Emit epilogue barriers outside the renderpass.
-            EmitScopeBarriers(*commandList, Scope::BarrierSlot::Epilogue);
-            commandList->EndCommandBuffer();
-
-            m_workRequest.m_commandList = commandList;
+        void FrameGraphExecuteGroupHandler::AddWorkRequest(const ExecuteWorkRequest& workRequest)
+        {
+            InsertWorkRequestElements(m_workRequest.m_swapChainsToPresent, workRequest.m_swapChainsToPresent);
+            InsertWorkRequestElements(m_workRequest.m_semaphoresToWait, workRequest.m_semaphoresToWait);
+            InsertWorkRequestElements(m_workRequest.m_semaphoresToSignal, workRequest.m_semaphoresToSignal);
+            InsertWorkRequestElements(m_workRequest.m_fencesToSignal, workRequest.m_fencesToSignal);
+            InsertWorkRequestElements(m_workRequest.m_fencesToWaitFor, workRequest.m_fencesToWaitFor);
         }
     }
 }

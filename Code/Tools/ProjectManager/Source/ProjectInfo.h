@@ -31,6 +31,7 @@ namespace O3DE::ProjectManager
             const QString& iconPath,
             const QString& newPreviewImagePath,
             const QString& newBackgroundImagePath,
+            bool isScriptOnly,
             bool needsBuild);
                     
         bool operator==(const ProjectInfo& rhs) const;
@@ -39,12 +40,14 @@ namespace O3DE::ProjectManager
         bool IsValid() const;
         const QString& GetProjectDisplayName() const;
 
-        // from o3de_manifest.json and o3de_projects.json
+        //! IMPORTANT this path might be the project folder or
+        //! the path to a remote project.json file in the cache
         QString m_path;
 
-        // From project.json
+        //! From project.json
         QString m_projectName;
         QString m_displayName;
+        QString m_version;
         QString m_engineName;
         QString m_enginePath;
         QString m_id;
@@ -53,17 +56,26 @@ namespace O3DE::ProjectManager
         QString m_iconPath;
         QString m_requirements;
         QString m_license;
+        QString m_restricted;
         QStringList m_userTags;
+
+        QStringList m_requiredGemDependencies;
+        QStringList m_optionalGemDependencies;
 
         // Used as temp variable for replace images
         QString m_newPreviewImagePath;
         QString m_newBackgroundImagePath;
-
+        QString m_currentExportScript;
+        QString m_expectedOutputDir;
         bool m_remote = false;
 
-        // Used in project creation
+        //! Used in project creation
         bool m_needsBuild = false; //! Does this project need to be built
         bool m_buildFailed = false;
+
+        //! If true, then this project must not use a compiler.
+        //! Only pre-built gems should be added to it.
+        bool m_isScriptOnly = false;
         QUrl m_logUrl;
     };
 } // namespace O3DE::ProjectManager

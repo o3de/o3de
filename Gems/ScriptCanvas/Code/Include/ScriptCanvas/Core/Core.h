@@ -19,7 +19,6 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/RTTI/ReflectContext.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/any.h>
 #include <AzCore/std/hash.h>
 #include <Core/NamedId.h>
@@ -191,7 +190,7 @@ namespace ScriptCanvas
 
     struct GraphIdentifier final
     {
-        AZ_CLASS_ALLOCATOR(GraphIdentifier, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GraphIdentifier, AZ::SystemAllocator);
         AZ_TYPE_INFO(GraphIdentifier, "{0DAFC7EF-D23A-4353-8DA5-7D0CC186D8E3}");
 
         AZ::ComponentId m_componentId = 0;
@@ -224,7 +223,7 @@ namespace ScriptCanvas
     struct RuntimeVariable
     {
         AZ_TYPE_INFO(RuntimeVariable, "{6E969359-5AF5-4ECA-BE89-A96AB30A624E}");
-        AZ_CLASS_ALLOCATOR(RuntimeVariable, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(RuntimeVariable, AZ::SystemAllocator);
 
         static void Reflect(AZ::ReflectContext* reflectContext);
 
@@ -333,7 +332,7 @@ namespace ScriptCanvas
     {
     public:
         AZ_TYPE_INFO(SourceHandle, "{65855A98-AE2F-427F-BFC8-69D45265E312}");
-        AZ_CLASS_ALLOCATOR(SourceHandle, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SourceHandle, AZ::SystemAllocator);
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -394,6 +393,9 @@ namespace ScriptCanvas
 
         AZStd::string ToString() const;
 
+        AZStd::string GetSuggestedFileName() const;
+        void SetSuggestedFileName(const AZStd::string_view suggestedFileName);
+
     private:
         SourceHandle(const SourceHandle& data, const AZ::Uuid& id, const AZ::IO::Path& path);
 
@@ -407,6 +409,7 @@ namespace ScriptCanvas
         AZ::Uuid m_id = AZ::Uuid::CreateNull();
         AZ::IO::Path m_relativePath;
         AZ::IO::Path m_absolutePath;
+        AZStd::string m_suggestedFileName;
 
         void SanitizePath();
     };
@@ -417,7 +420,7 @@ namespace ScriptCanvas
     public:
 
         AZ_RTTI(ScriptCanvasData, "{1072E894-0C67-4091-8B64-F7DB324AD13C}");
-        AZ_CLASS_ALLOCATOR(ScriptCanvasData, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptCanvasData, AZ::SystemAllocator);
         ScriptCanvasData() = default;
         virtual ~ScriptCanvasData() = default;
         ScriptCanvasData(ScriptCanvasData&& other);

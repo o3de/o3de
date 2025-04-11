@@ -23,7 +23,6 @@
 
 // Editor
 #include "AssetImporter/UI/FilesAlreadyExistDialog.h"
-#include "AssetImporter/UI/ProcessingAssetsDialog.h"
 
 namespace AssetImporterManagerPrivate
 {
@@ -70,6 +69,7 @@ void AssetImporterManager::Exec()
     {
         m_currentAbsolutePath = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
     }
+
     m_fileDialog->setDirectory(m_currentAbsolutePath);
 
     connect(m_fileDialog, &QFileDialog::rejected, [this]()
@@ -156,12 +156,33 @@ void AssetImporterManager::Exec(const QStringList& dragAndDropFileList)
     }
 }
 
+void AssetImporterManager::Exec(const QStringList& dragAndDropFileList, const QString& suggestedPath)
+{
+    m_suggestedInitialPath = suggestedPath;
+
+    Exec(dragAndDropFileList);
+}
+
 // used to cancel actions and close the dialog
 void AssetImporterManager::reject()
 {
+    CompleteAssetImporting(false);
+}
+
+void AssetImporterManager::CompleteAssetImporting(bool wasSuccessful)
+{
+    // Clear the pathMap to prevent trying to reimport assets later.
     m_pathMap.clear();
     m_destinationRootDirectory = "";
-    Q_EMIT StopAssetImporter();
+    // Inform listeners that we have completed the copy/move operation.
+    if (wasSuccessful)
+    {
+        Q_EMIT AssetImportingComplete();
+    }
+    else
+    {
+        Q_EMIT StopAssetImporter();
+    }
 }
 
 void AssetImporterManager::OnDragAndDropFiles(const QStringList* fileList)
@@ -316,7 +337,7 @@ void AssetImporterManager::OnOpenSelectDestinationDialog()
 
     QString numberOfFilesMessage = m_pathMap.size() == 1 ? QString(tr("Importing 1 asset")) : QString(tr("Importing %1 assets").arg(m_pathMap.size()));
 
-    SelectDestinationDialog selectDestinationDialog(numberOfFilesMessage, mainWindow);
+    SelectDestinationDialog selectDestinationDialog(numberOfFilesMessage, mainWindow, m_suggestedInitialPath);
 
     // Browse Destination File Path
     connect(&selectDestinationDialog, &SelectDestinationDialog::BrowseDestinationPath, this, &AssetImporterManager::OnBrowseDestinationFilePath);
@@ -409,19 +430,6 @@ bool AssetImporterManager::ProcessFileMethod(ProcessFilesMethod processMethod, Q
     return false;
 }
 
-void AssetImporterManager::OnOpenProcessingAssetsDialog(int numberOfProcessedFiles)
-{
-    // make sure the dialog is opened in front of the Editor main window
-    QWidget* mainWindow = nullptr;
-    AzToolsFramework::EditorRequestBus::BroadcastResult(mainWindow, &AzToolsFramework::EditorRequests::GetMainWindow);
-
-    ProcessingAssetsDialog processingAssetsDialog(numberOfProcessedFiles, mainWindow);
-    connect(&processingAssetsDialog, &ProcessingAssetsDialog::OpenLogDialog, this, &AssetImporterManager::OnOpenLogDialog);
-    connect(&processingAssetsDialog, &ProcessingAssetsDialog::CloseProcessingAssetsDialog, this, &AssetImporterManager::reject);
-
-    processingAssetsDialog.exec();
-}
-
 void AssetImporterManager::ProcessCopyFiles()
 {
     int numberOfFiles = m_pathMap.size();
@@ -467,13 +475,13 @@ void AssetImporterManager::ProcessCopyFiles()
         numberOfFiles--;
     }
 
-    if (numberOfProcessedFiles > 0)
+    if (numberOfProcessedFiles == 0)
     {
-        OnOpenProcessingAssetsDialog(numberOfProcessedFiles);
+        reject();
     }
     else
     {
-        reject();
+        CompleteAssetImporting();
     }
 }
 
@@ -522,13 +530,13 @@ void AssetImporterManager::ProcessMoveFiles()
         numberOfFiles--;
     }
 
-    if (numberOfProcessedFiles > 0)
+    if (numberOfProcessedFiles == 0)
     {
-        OnOpenProcessingAssetsDialog(numberOfProcessedFiles);
+        reject();
     }
     else
     {
-        reject();
+        CompleteAssetImporting();
     }
 }
 

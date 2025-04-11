@@ -9,28 +9,27 @@
 
 // Description : Anim Node Group
 
-#ifndef CRYINCLUDE_CRYMOVIE_ANIMNODEGROUP_H
-#define CRYINCLUDE_CRYMOVIE_ANIMNODEGROUP_H
-
 #pragma once
 
-#include "IMovieSystem.h"
+#include <IMovieSystem.h>
 #include "AnimNode.h"
 
-//////////////////////////////////////////////////////////////////////////
-class CAnimNodeGroup
-    : public CAnimNode
+namespace Maestro
 {
-public:
-    AZ_CLASS_ALLOCATOR(CAnimNodeGroup, AZ::SystemAllocator, 0);
-    AZ_RTTI(CAnimNodeGroup, "{6BDA5C06-7C15-4622-9550-68368E84D653}", CAnimNode);
 
-    CAnimNodeGroup();
-    CAnimNodeGroup(const int id);
+    //////////////////////////////////////////////////////////////////////////
+    class CAnimNodeGroup : public CAnimNode
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(CAnimNodeGroup, AZ::SystemAllocator);
+        AZ_RTTI(CAnimNodeGroup, "{6BDA5C06-7C15-4622-9550-68368E84D653}", CAnimNode);
 
-    virtual CAnimParamType GetParamType(unsigned int nIndex) const;
+        CAnimNodeGroup();
+        explicit CAnimNodeGroup(const int id);
 
-    static void Reflect(AZ::ReflectContext* context);
-};
+        CAnimParamType GetParamType(unsigned int nIndex) const override;
 
-#endif // CRYINCLUDE_CRYMOVIE_ANIMNODEGROUP_H
+        static void Reflect(AZ::ReflectContext* context);
+    };
+
+} // namespace Maestro

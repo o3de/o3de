@@ -21,7 +21,7 @@ namespace AZ
             class GraphType
             {
             public:
-                AZ_CLASS_ALLOCATOR(GraphType, AZ::SystemAllocator, 0);
+                AZ_CLASS_ALLOCATOR(GraphType, AZ::SystemAllocator);
                 AZ_RTTI(GraphType, "{368E85F4-4FF5-4708-82A1-FCDC993D4C34}");
 
                 GraphType();
@@ -44,7 +44,7 @@ namespace AZ
             class GraphTypeContainer
             {
             public:
-                AZ_CLASS_ALLOCATOR(GraphTypeContainer, AZ::SystemAllocator, 0);
+                AZ_CLASS_ALLOCATOR(GraphTypeContainer, AZ::SystemAllocator);
                 AZ_RTTI(GraphTypeContainer, "{35E70739-CD31-43C2-A024-769755A26CAE}");
 
                 GraphTypeContainer() = default;
@@ -60,7 +60,7 @@ namespace AZ
                 AZStd::vector<GraphType> m_types;
             };
 
-            AZ_CLASS_ALLOCATOR(FileSoftNameSetting, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FileSoftNameSetting, AZ::SystemAllocator);
             AZ_RTTI(FileSoftNameSetting, "{CED5FBF7-F74A-49E2-9FE0-DFF7EDA274CE}", SoftNameSetting);
 
             FileSoftNameSetting() = default;
@@ -69,6 +69,8 @@ namespace AZ
             ~FileSoftNameSetting() override = default;
 
             bool IsVirtualType(const SceneAPI::Containers::Scene& scene, SceneAPI::Containers::SceneGraph::NodeIndex node) const override;
+
+            const AZ::Uuid GetTypeId() const override;
 
             static void Reflect(AZ::ReflectContext* context);
 

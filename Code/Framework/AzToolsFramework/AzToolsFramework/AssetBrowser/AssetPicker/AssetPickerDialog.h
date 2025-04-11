@@ -33,7 +33,7 @@ namespace AzToolsFramework
     {
         class ProductAssetBrowserEntry;
         class AssetBrowserFilterModel;
-        class AssetBrowserTableModel;
+        class AssetBrowserListModel;
         class AssetBrowserModel;
         class AssetSelectionModel;
 
@@ -42,7 +42,7 @@ namespace AzToolsFramework
         {
             Q_OBJECT
         public:
-            AZ_CLASS_ALLOCATOR(AssetPickerDialog, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AssetPickerDialog, AZ::SystemAllocator);
             explicit AssetPickerDialog(AssetSelectionModel& selection, QWidget* parent = nullptr);
             virtual ~AssetPickerDialog();
 
@@ -74,7 +74,7 @@ namespace AzToolsFramework
             QScopedPointer<Ui::AssetPickerDialogClass> m_ui;
             AssetBrowserModel* m_assetBrowserModel = nullptr;
             QScopedPointer<AssetBrowserFilterModel> m_filterModel;
-            QScopedPointer<AssetBrowserTableModel> m_tableModel;
+            QScopedPointer<AssetBrowserListModel> m_listModel;
             AssetSelectionModel& m_selection;
             bool m_hasFilter;
             AZStd::unique_ptr<TreeViewState> m_filterStateSaver;

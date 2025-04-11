@@ -35,7 +35,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(EditorModeFeedbackChildPassBase, "{F1F345E3-1396-47F7-9CA4-9AC87A2E9829}", AZ::RPI::FullscreenTrianglePass);
-            AZ_CLASS_ALLOCATOR(EditorModeFeedbackChildPassBase, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(EditorModeFeedbackChildPassBase, SystemAllocator);
 
             //! Creates a EditorModeFeedbackPassBase
             static RPI::Ptr<EditorModeFeedbackChildPassBase> Create(const RPI::PassDescriptor& descriptor);

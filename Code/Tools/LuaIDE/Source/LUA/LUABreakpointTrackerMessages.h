@@ -27,7 +27,7 @@ namespace LUAEditor
     {
     public:
         AZ_RTTI(Breakpoint, "{6E203CB5-C09B-433D-BA31-177762F574B8}");
-        AZ_CLASS_ALLOCATOR(Breakpoint, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Breakpoint, AZ::SystemAllocator);
 
         virtual ~Breakpoint() = default;
 
