@@ -547,7 +547,7 @@ namespace PhysX
         EXPECT_EQ(result.m_hits[0].m_shape, sphereShape.get());
     }
 
-    INSTANTIATE_TEST_CASE_P(PhysX, SceneQueryFlagsTestFixture, ::testing::Combine(
+    INSTANTIATE_TEST_SUITE_P(PhysX, SceneQueryFlagsTestFixture, ::testing::Combine(
         ::testing::Bool(),
         ::testing::Bool()));
 

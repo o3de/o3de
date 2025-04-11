@@ -37,7 +37,11 @@ real GetOcclusionInput(Texture2D map, sampler mapSampler, float2 uv, real factor
         }
         else
         {
+            #ifdef CS_SAMPLERS
+            occlusion = real(map.SampleLevel(mapSampler, uv, 0).r);
+            #else
             occlusion = real(map.Sample(mapSampler, uv).r);
+            #endif
         }
         occlusion = pow(occlusion, factor);
     }

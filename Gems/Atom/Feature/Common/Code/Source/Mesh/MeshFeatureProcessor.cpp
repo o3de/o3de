@@ -7,6 +7,7 @@
  */
 
 #include <Mesh/MeshFeatureProcessor.h>
+#include <Mesh/StreamBufferViewsBuilder.h>
 #include <Atom/Feature/CoreLights/PhotometricValue.h>
 #include <Atom/Feature/Material/ConvertEmissiveUnitFunctor.h>
 #include <Atom/Feature/Mesh/MeshCommon.h>
@@ -1180,6 +1181,101 @@ namespace AZ
             return meshHandle.IsValid() ? ToModelDataInstance(meshHandle).m_descriptor.m_customMaterials : DefaultCustomMaterialMap;
         }
 
+        AZStd::unique_ptr<StreamBufferViewsBuilderInterface> MeshFeatureProcessor::CreateStreamBufferViewsBuilder(
+            const MeshHandle& meshHandle) const
+        {
+            return AZStd::make_unique<ShaderStreamBufferViewsBuilder>(meshHandle);
+        }
+
+        DispatchDrawItemList MeshFeatureProcessor::BuildDispatchDrawItemList(
+            const MeshHandle& meshHandle,
+            const uint32_t lodIndex,
+            const uint32_t meshIndex,
+            const RHI::DrawListMask drawListTagsFilter,
+            const RHI::DrawFilterMask materialPipelineFilter,
+            DispatchArgumentsSetupCB dispatchArgumentsSetupCB) const
+        {
+            DispatchDrawItemList retList;
+
+            const AZ::RPI::MeshDrawPacketLods& drawPacketListByLod = GetDrawPackets(meshHandle);
+            const uint32_t lodCount = aznumeric_caster(drawPacketListByLod.size());
+            if (lodIndex >= lodCount)
+            {
+                // This is normal. May happen if a caller got a valid MeshHandle before
+                // a mesh is fully loaded from assets.
+                return retList;
+            }
+            const AZ::RPI::MeshDrawPacketList& drawPacketList = drawPacketListByLod[lodIndex];
+            const uint32_t meshCount = aznumeric_caster(drawPacketList.size());
+            if (meshIndex >= meshCount)
+            {
+                AZ_Error("MeshFeatureProcessor", false,
+                    "For lodIndex=%u, got invalid meshIndex=%u, maxMeshCount=%u",
+                    lodIndex, meshIndex, meshCount);
+                return retList;
+            }
+            const AZ::RPI::MeshDrawPacket& meshDrawPacket = drawPacketList[meshIndex];
+            const RHI::DrawPacket* drawPacket = meshDrawPacket.GetRHIDrawPacket();
+            const auto& shadersList = meshDrawPacket.GetActiveShaderList();
+            if (drawPacket)
+            {
+                const uint32_t drawItemCount = aznumeric_caster(drawPacket->GetDrawItemCount());
+                for (uint32_t drawItemIdx = 0; drawItemIdx < drawItemCount; ++drawItemIdx)
+                {
+                    const RHI::DrawItem* drawItem = drawPacket->GetDrawItem(drawItemIdx);
+                    if (drawItem->GetPipelineStateType() != RHI::PipelineStateType::Dispatch)
+                    {
+                        continue;
+                    }
+                    // Only create the DispatchItems for DrawItems whose DrawListTag is included
+                    // in @drawListTagsFilter AND their DrawFilterMask is included in @materialPipelineFilter.
+                    RHI::DrawListTag tag = drawPacket->GetDrawListTag(drawItemIdx);
+                    RHI::DrawFilterMask drawItemPipelineFilter = drawPacket->GetDrawFilterMask(drawItemIdx);
+                    if (
+                        drawListTagsFilter.test(tag.GetIndex()) &&
+                        (materialPipelineFilter & drawItemPipelineFilter)
+                        )
+                    {
+                        retList.emplace_back(DispatchDrawItem(drawItem));
+                        auto& dispatchDrawItem = retList.back();
+                        const auto& shaderAsset = shadersList[drawItemIdx].m_shader->GetAsset();
+                        RHI::DispatchDirect dispatchDirect;
+                        RPI::GetComputeShaderNumThreads(shaderAsset, dispatchDirect);
+                        dispatchArgumentsSetupCB(lodIndex, meshIndex, drawItemIdx, drawItem, dispatchDirect);
+                        InitializeDispatchItemFromDrawItem(dispatchDrawItem.m_distpatchItem, drawItem, dispatchDirect);
+                    }
+                }
+            }
+
+            return retList;
+        }
+
+        void MeshFeatureProcessor::InitializeDispatchItemFromDrawItem(
+            RHI::DispatchItem& dstDispatchItem, const RHI::DrawItem* srcDrawItem, const RHI::DispatchDirect& dispatchDirect) const
+        {
+            RHI::DispatchArguments dispatchArguments(dispatchDirect);
+            dstDispatchItem.SetArguments(dispatchArguments);
+
+            bool deviceCommonDataIsSet = false;
+            RHI::MultiDeviceObject::IterateDevices(
+                RHI::MultiDevice::AllDevices,
+                [&](int deviceIndex)
+                {
+                    const auto& deviceDrawItem = srcDrawItem->GetDeviceDrawItem(deviceIndex);
+                    dstDispatchItem.SetDeviceShaderResourceGroups(
+                        deviceIndex, deviceDrawItem.m_shaderResourceGroups, deviceDrawItem.m_shaderResourceGroupCount);
+                    dstDispatchItem.SetUniqueDeviceShaderResourceGroup(deviceIndex, deviceDrawItem.m_uniqueShaderResourceGroup);
+                    dstDispatchItem.SetDevicePipelineState(deviceIndex, deviceDrawItem.m_pipelineState);
+                    if (!deviceCommonDataIsSet)
+                    {
+                        dstDispatchItem.SetRootConstantSize(deviceDrawItem.m_rootConstantSize);
+                        dstDispatchItem.SetRootConstants(deviceDrawItem.m_rootConstants);
+                        deviceCommonDataIsSet = true;
+                    }
+                    return true;
+                });
+        }
+
         void MeshFeatureProcessor::SetTransform(const MeshHandle& meshHandle, const AZ::Transform& transform, const AZ::Vector3& nonUniformScale)
         {
             if (meshHandle.IsValid())
@@ -1585,6 +1681,38 @@ namespace AZ
 
                 AZ_Printf("MeshFeatureProcessor", "Found %u references to [%s]", references, flagList.c_str());
             }
+        }
+
+        Data::Instance<RPI::ShaderResourceGroup>& MeshFeatureProcessor::GetDrawSrg(const MeshHandle& meshHandle,
+            uint32_t lodIndex, uint32_t subMeshIndex,
+            RHI::DrawListTag drawListTag, RHI::DrawFilterMask materialPipelineMask)
+        {
+            if (!meshHandle.IsValid())
+            {
+                return RPI::MeshDrawPacket::InvalidSrg;
+            }
+            // We need to get the DrawPacket, from the DrawPacket we can query the index of the DrawItem
+            // that matches drawListTag & materialPipelineMask. We can use that index to fetch the DrawSrg
+            // from MeshDrawPacket::m_perDrawSrgs
+            auto& meshDrawPacketsByLod = ToModelDataInstance(meshHandle).m_meshDrawPacketListsByLod;
+            if (lodIndex >= aznumeric_cast<uint32_t>(meshDrawPacketsByLod.size()))
+            {
+                AZ_Error("MeshFeatureProcessor", false, "%s lodIndex=%u is invalid.\n", __FUNCTION__, lodIndex);
+                return RPI::MeshDrawPacket::InvalidSrg;
+            }
+            auto& meshDrawPackets = meshDrawPacketsByLod[lodIndex];
+            if (subMeshIndex >= meshDrawPackets.size())
+            {
+                AZ_Error("MeshFeatureProcessor", false, "%s subMeshIndex=%u is invalid.\n", __FUNCTION__, subMeshIndex);
+                return RPI::MeshDrawPacket::InvalidSrg;
+            }
+            auto& meshDrawPacket = meshDrawPackets[subMeshIndex];
+            auto drawItemIndex = meshDrawPacket.GetRHIDrawPacket()->GetDrawListIndex(drawListTag, materialPipelineMask);
+            if (drawItemIndex < 0)
+            {
+                return RPI::MeshDrawPacket::InvalidSrg;
+            }
+            return meshDrawPacket.GetDrawSrg(drawItemIndex);
         }
 
         // ModelDataInstance::MeshLoader...
@@ -2274,18 +2402,21 @@ namespace AZ
                 RayTracingFeatureProcessor::SubMeshMaterial& subMeshMaterial = subMesh.m_material;
                 subMesh.m_positionFormat = PositionStreamFormat;
                 subMesh.m_positionVertexBufferView = streamIter[0];
-                subMesh.m_positionShaderBufferView = const_cast<RHI::Buffer*>(streamIter[0].GetBuffer())->BuildBufferView(positionBufferDescriptor);
+                subMesh.m_positionShaderBufferView =
+                    const_cast<RHI::Buffer*>(streamIter[0].GetBuffer())->GetBufferView(positionBufferDescriptor);
 
                 subMesh.m_normalFormat = NormalStreamFormat;
                 subMesh.m_normalVertexBufferView = streamIter[1];
-                subMesh.m_normalShaderBufferView = const_cast<RHI::Buffer*>(streamIter[1].GetBuffer())->BuildBufferView(normalBufferDescriptor);
+                subMesh.m_normalShaderBufferView =
+                    const_cast<RHI::Buffer*>(streamIter[1].GetBuffer())->GetBufferView(normalBufferDescriptor);
 
                 if (tangentBufferByteCount > 0)
                 {
                     subMesh.m_bufferFlags |= RayTracingSubMeshBufferFlags::Tangent;
                     subMesh.m_tangentFormat = TangentStreamFormat;
                     subMesh.m_tangentVertexBufferView = streamIter[2];
-                    subMesh.m_tangentShaderBufferView = const_cast<RHI::Buffer*>(streamIter[2].GetBuffer())->BuildBufferView(tangentBufferDescriptor);
+                    subMesh.m_tangentShaderBufferView =
+                        const_cast<RHI::Buffer*>(streamIter[2].GetBuffer())->GetBufferView(tangentBufferDescriptor);
                 }
 
                 if (bitangentBufferByteCount > 0)
@@ -2293,7 +2424,8 @@ namespace AZ
                     subMesh.m_bufferFlags |= RayTracingSubMeshBufferFlags::Bitangent;
                     subMesh.m_bitangentFormat = BitangentStreamFormat;
                     subMesh.m_bitangentVertexBufferView = streamIter[3];
-                    subMesh.m_bitangentShaderBufferView = const_cast<RHI::Buffer*>(streamIter[3].GetBuffer())->BuildBufferView(bitangentBufferDescriptor);
+                    subMesh.m_bitangentShaderBufferView =
+                        const_cast<RHI::Buffer*>(streamIter[3].GetBuffer())->GetBufferView(bitangentBufferDescriptor);
                 }
 
                 if (uvBufferByteCount > 0)
@@ -2301,11 +2433,12 @@ namespace AZ
                     subMesh.m_bufferFlags |= RayTracingSubMeshBufferFlags::UV;
                     subMesh.m_uvFormat = UVStreamFormat;
                     subMesh.m_uvVertexBufferView = streamIter[4];
-                    subMesh.m_uvShaderBufferView = const_cast<RHI::Buffer*>(streamIter[4].GetBuffer())->BuildBufferView(uvBufferDescriptor);
+                    subMesh.m_uvShaderBufferView = const_cast<RHI::Buffer*>(streamIter[4].GetBuffer())->GetBufferView(uvBufferDescriptor);
                 }
 
                 subMesh.m_indexBufferView = mesh.GetIndexBufferView();
-                subMesh.m_indexShaderBufferView = const_cast<RHI::Buffer*>(mesh.GetIndexBufferView().GetBuffer())->BuildBufferView(indexBufferDescriptor);
+                subMesh.m_indexShaderBufferView =
+                    const_cast<RHI::Buffer*>(mesh.GetIndexBufferView().GetBuffer())->GetBufferView(indexBufferDescriptor);
 
                 // add material data
                 if (material)
@@ -2704,8 +2837,10 @@ namespace AZ
                 meshMotionDrawListTag = AZ::RHI::RHISystemInterface::Get()->GetDrawListTagRegistry()->FindTag(MeshCommon::MotionDrawListTagName);
             }
 
+            uint32_t lodIndex = 0;
             for (auto& meshDrawPacketList : m_meshDrawPacketListsByLod)
             {
+                uint32_t meshIndex = 0;
                 for (auto& meshDrawPacket : meshDrawPacketList)
                 {
                     if (enableDrawMotion)
@@ -2714,9 +2849,11 @@ namespace AZ
                     }
                     if (meshDrawPacket.Update(*m_scene, forceUpdate))
                     {
-                        HandleDrawPacketUpdate(meshDrawPacket);
+                        HandleDrawPacketUpdate(lodIndex, meshIndex, meshDrawPacket);
                     }
+                    meshIndex++;
                 }
+                lodIndex++;
             }
         }
 
@@ -2992,11 +3129,11 @@ namespace AZ
             return CustomMaterialInfo{};
         }
 
-        void ModelDataInstance::HandleDrawPacketUpdate(RPI::MeshDrawPacket& meshDrawPacket)
+        void ModelDataInstance::HandleDrawPacketUpdate(uint32_t lodIndex, uint32_t meshIndex, RPI::MeshDrawPacket& meshDrawPacket)
         {
             // When the drawpacket is updated, the cullable must be rebuilt to use the latest draw packet
             m_flags.m_cullableNeedsRebuild = true;
-            m_meshDrawPacketUpdatedEvent.Signal(*this, meshDrawPacket);
+            m_meshDrawPacketUpdatedEvent.Signal(*this, lodIndex, meshIndex, meshDrawPacket);
         }
 
         void ModelDataInstance::ConnectMeshDrawPacketUpdatedHandler(MeshDrawPacketUpdatedEvent::Handler& handler)

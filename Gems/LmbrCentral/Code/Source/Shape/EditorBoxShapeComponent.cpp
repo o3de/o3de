@@ -47,7 +47,7 @@ namespace LmbrCentral
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Box_Shape.svg")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/shape/box-shape/")
+                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/components/reference/shape/box-shape/")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorBoxShapeComponent::m_boxShape, "Box Shape", "Box Shape Configuration")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorBoxShapeComponent::ConfigurationChanged)

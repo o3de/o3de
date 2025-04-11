@@ -16,7 +16,6 @@
 #include "KeyUIControls.h"
 #include "TrackViewKeyPropertiesDlg.h"  // for CTrackViewKeyUIControls
 
-//////////////////////////////////////////////////////////////////////////
 bool CSoundKeyUIControls::OnKeySelectionChange(const CTrackViewKeyBundle& selectedKeys)
 {
     if (!selectedKeys.AreAllKeysOfSameType())

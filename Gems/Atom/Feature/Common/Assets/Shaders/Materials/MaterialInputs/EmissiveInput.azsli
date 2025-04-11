@@ -42,7 +42,11 @@ real3 GetEmissiveInput(Texture2D map, sampler mapSampler, float2 uv, real factor
             }
             else
             {
-                sampledValue = real3(map.Sample(mapSampler, uv).rgb);
+                #ifdef CS_SAMPLERS
+                    sampledValue = real3(map.SampleLevel(mapSampler, uv, 0).rgb);
+                #else
+                    sampledValue = real3(map.Sample(mapSampler, uv).rgb);
+                #endif
             }
             emissive *= TransformColor(sampledValue, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg);
         }

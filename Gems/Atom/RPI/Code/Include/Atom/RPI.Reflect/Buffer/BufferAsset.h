@@ -15,6 +15,7 @@
 
 #include <Atom/RPI.Reflect/Allocators.h>
 #include <Atom/RPI.Reflect/Asset/AssetHandler.h>
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/ResourcePoolAsset.h>
 
 #include <AzCore/std/containers/span.h>
@@ -29,9 +30,11 @@ namespace AZ
     {
         //! An asset representation of a buffer meant to be uploaded to the GPU.
         //! For example: vertex buffer, index buffer, etc
-        class BufferAsset final
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+        class ATOM_RPI_REFLECT_API BufferAsset final
             : public Data::AssetData
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             friend class BufferAssetCreator;
 
         public:

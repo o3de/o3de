@@ -112,9 +112,6 @@ namespace ScriptCanvasTests
                 TestSubClass::Reflect(context);
                 ScriptUnitTestEventHandler::Reflect(context);
             }
-
-            ScriptCanvasModel::Instance().Init();
-
         }
 
         static void TearDownTestCase()
@@ -122,8 +119,25 @@ namespace ScriptCanvasTests
             // don't hang on to dangling assets
             AZ::Data::AssetManager::Instance().DispatchEvents();
 
+            auto m_serializeContext = s_application->GetSerializeContext();
+            auto m_behaviorContext = s_application->GetBehaviorContext();
+
+            for (AZ::ReflectContext* context :
+                {static_cast<AZ::ReflectContext*>(m_serializeContext), static_cast<AZ::ReflectContext*>(m_behaviorContext)})
+            {
+                context->EnableRemoveReflection();
+                ScriptCanvasTesting::Reflect(context);
+                ScriptCanvasTestingNodes::BehaviorContextObjectTest::Reflect(context);
+                TestNodeableObject::Reflect(context);
+                TestBaseClass::Reflect(context);
+                TestSubClass::Reflect(context);
+                ScriptUnitTestEventHandler::Reflect(context);
+                context->DisableRemoveReflection();
+            }
+
             if (s_application)
             {
+                s_application->Stop();
                 delete s_application;
                 s_application = nullptr;
             }
@@ -173,6 +187,7 @@ namespace ScriptCanvasTests
             for (AZ::ComponentDescriptor* componentDescriptor : m_descriptors)
             {
                 GetApplication()->UnregisterComponentDescriptor(componentDescriptor);
+                delete componentDescriptor;
             }
 
             m_descriptors.clear();

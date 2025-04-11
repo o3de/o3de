@@ -143,24 +143,86 @@ namespace AZ
                 m_supportedPipelineStageFlagsMask &= ~(VK_PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT | VK_PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT);
             }
 
+            static_assert(
+                AZStd::to_underlying(RHI::HardwareQueueClass::Count) == 3,
+                "Vulkan queue selection needs to be updated when new hardware queue classes are introduced.");
+
+            int graphicsFamilyIndex = -1;
+            int computeFamilyIndex = -1;
+            int transferFamilyIndex = -1;
+
+            for (int familyIndex = 0; familyIndex < static_cast<int>(m_queueFamilyProperties.size()); ++familyIndex)
+            {
+                const VkQueueFamilyProperties& familyProperties = m_queueFamilyProperties[familyIndex];
+
+                // There should be at least one queue family supporting both graphics and compute (as well as copying, but that might not be
+                // exposed)
+                if ((graphicsFamilyIndex == -1) &&
+                    AZ::RHI::CheckBitsAll(familyProperties.queueFlags, static_cast<VkFlags>(VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT)))
+                {
+                    graphicsFamilyIndex = familyIndex;
+                }
+
+                if (AZ::RHI::CheckBitsAny(familyProperties.queueFlags, static_cast<VkFlags>(VK_QUEUE_COMPUTE_BIT)))
+                {
+                    if (computeFamilyIndex == -1)
+                    {
+                        computeFamilyIndex = familyIndex;
+                    }
+                    else
+                    {
+                        // We take the queue family that supports the least amount of features, but still supports compute. That way we
+                        // likely get an async compute queue.
+                        if (AZ::RHI::CountBitsSet(familyProperties.queueFlags) <
+                            AZ::RHI::CountBitsSet(m_queueFamilyProperties[computeFamilyIndex].queueFlags))
+                        {
+                            computeFamilyIndex = familyIndex;
+                        }
+                    }
+                }
+
+                if (AZ::RHI::CheckBitsAny(familyProperties.queueFlags, static_cast<VkFlags>(VK_QUEUE_TRANSFER_BIT)))
+                {
+                    if (transferFamilyIndex == -1)
+                    {
+                        transferFamilyIndex = familyIndex;
+                    }
+                    else
+                    {
+                        // We take the queue family that supports the least amount of features, but still supports copying. That way we
+                        // likely get an async copy queue.
+                        if (AZ::RHI::CountBitsSet(familyProperties.queueFlags) <
+                            AZ::RHI::CountBitsSet(m_queueFamilyProperties[transferFamilyIndex].queueFlags))
+                        {
+                            transferFamilyIndex = familyIndex;
+                        }
+                    }
+                }
+            }
+
+            AZ_Assert(
+                graphicsFamilyIndex != -1 && computeFamilyIndex != -1 && transferFamilyIndex != -1, "Necessary queue families not found.");
+
+            AZStd::unordered_map<int, uint32_t> queueCounts;
+
+            queueCounts[graphicsFamilyIndex]++;
+            queueCounts[computeFamilyIndex]++;
+            queueCounts[transferFamilyIndex]++;
+
             AZStd::vector<VkDeviceQueueCreateInfo> queueCreationInfo;
             VkDeviceQueueCreateInfo queueCreateInfo = {};
             queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
 
-            for (size_t familyIndex = 0; familyIndex < m_queueFamilyProperties.size(); ++familyIndex)
-            {
-                const VkQueueFamilyProperties& familyProperties = m_queueFamilyProperties[familyIndex];
+            // [GFX TODO][ATOM-286] Figure out if we care about queue priority (currently: maximum of 3 queues per family)
+            AZStd::array<float, 3> queuePriority{ 1.0f, 1.0f, 1.0f };
 
-                // [GFX TODO][ATOM-286] Figure out if we care about queue priority
-                float* queuePriorities = new float[familyProperties.queueCount];
-                for (size_t index = 0; index < familyProperties.queueCount; ++index)
-                {
-                    queuePriorities[index] = 1.0f;
-                }
+            for (auto [familyIndex, queueCount] : queueCounts)
+            {
+                queueCount = AZStd::min(queueCount, m_queueFamilyProperties[familyIndex].queueCount);
 
                 queueCreateInfo.queueFamilyIndex = static_cast<uint32_t>(familyIndex);
-                queueCreateInfo.queueCount = familyProperties.queueCount;
-                queueCreateInfo.pQueuePriorities = queuePriorities;
+                queueCreateInfo.queueCount = queueCount;
+                queueCreateInfo.pQueuePriorities = queuePriority.data();
 
                 queueCreationInfo.push_back(queueCreateInfo);
             }
@@ -359,9 +421,9 @@ namespace AZ
                 return RHI::ResultCode::Fail;
             }
 
-            for (const VkDeviceQueueCreateInfo& queueInfo : queueCreationInfo)
+            if (physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::CalibratedTimestamps))
             {
-                delete[] queueInfo.pQueuePriorities;
+                InitializeTimeDomains();
             }
 
             //Load device features now that we have loaded all extension info
@@ -498,7 +560,8 @@ namespace AZ
                 // This will not allocate or bind memory.
                 ImageCreateInfo createInfo = BuildImageCreateInfo(descriptor);
                 VkImage vkImage = VK_NULL_HANDLE;
-                VkResult vkResult = GetContext().CreateImage(GetNativeDevice(), &createInfo.m_vkCreateInfo, VkSystemAllocator::Get(), &vkImage);
+                VkResult vkResult =
+                    GetContext().CreateImage(GetNativeDevice(), createInfo.GetCreateInfo(), VkSystemAllocator::Get(), &vkImage);
                 AssertSuccess(vkResult);
 
                 VkMemoryRequirements memoryRequirements = {};
@@ -525,7 +588,8 @@ namespace AZ
                 // This will not allocate or bind memory.
                 BufferCreateInfo createInfo = BuildBufferCreateInfo(descriptor);
                 VkBuffer vkBuffer = VK_NULL_HANDLE;
-                VkResult vkResult = GetContext().CreateBuffer(GetNativeDevice(), &createInfo.m_vkCreateInfo, VkSystemAllocator::Get(), &vkBuffer);
+                VkResult vkResult =
+                    GetContext().CreateBuffer(GetNativeDevice(), createInfo.GetCreateInfo(), VkSystemAllocator::Get(), &vkBuffer);
                 AssertSuccess(vkResult);
 
                 VkMemoryRequirements memoryRequirements = {};
@@ -864,6 +928,13 @@ namespace AZ
             AZStd::set<RHI::Format> formats;
             for (const VkSurfaceFormatKHR& surfaceFormat : surfaceFormats)
             {
+                // Don't expose formats for HDR output when the extension is missing
+                // This can happen on Linux with Wayland.
+                if (surfaceFormat.format == VK_FORMAT_A2R10G10B10_UNORM_PACK32 &&
+                    m_loaderContext->GetContext().SetHdrMetadataEXT == nullptr)
+                {
+                    continue;
+                }
                 formats.insert(ConvertFormat(surfaceFormat.format));
             }
             formatsList.assign(formats.begin(), formats.end());
@@ -958,6 +1029,55 @@ namespace AZ
             const auto& physicalDevice = static_cast<const PhysicalDevice&>(GetPhysicalDevice());
             auto timeInNano = AZStd::chrono::nanoseconds(static_cast<AZStd::chrono::nanoseconds::rep>(physicalDevice.GetDeviceLimits().timestampPeriod * gpuTimestamp));
             return AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(timeInNano);
+        }
+
+        AZStd::pair<uint64_t, uint64_t> Device::GetCalibratedTimestamp([[maybe_unused]] RHI::HardwareQueueClass queueClass)
+        {
+            if (!static_cast<const PhysicalDevice&>(GetPhysicalDevice())
+                     .IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::CalibratedTimestamps))
+            {
+                return { 0ull, AZStd::chrono::microseconds().count() };
+            }
+
+            uint64_t maxDeviation;
+            AZStd::pair<uint64_t, uint64_t> result;
+
+            AZStd::array<VkCalibratedTimestampInfoEXT, 2> timestampsInfos{
+                VkCalibratedTimestampInfoEXT{ VK_STRUCTURE_TYPE_CALIBRATED_TIMESTAMP_INFO_EXT, 0, VK_TIME_DOMAIN_DEVICE_EXT },
+                VkCalibratedTimestampInfoEXT{ VK_STRUCTURE_TYPE_CALIBRATED_TIMESTAMP_INFO_EXT, 0, m_hostTimeDomain }
+            };
+
+            GetContext().GetCalibratedTimestampsEXT(
+                m_nativeDevice, static_cast<uint32_t>(timestampsInfos.size()), timestampsInfos.data(), &result.first, &maxDeviation);
+            return result;
+        }
+
+        void Device::InitializeTimeDomains()
+        {
+            auto timeDomains{
+                static_cast<const PhysicalDevice&>(GetPhysicalDevice()).GetCalibratedTimeDomains(m_loaderContext->GetContext())
+            };
+
+            bool deviceTimeDomainFound{ false };
+
+            for (VkTimeDomainEXT timeDomain : timeDomains)
+            {
+                if (timeDomain == VK_TIME_DOMAIN_DEVICE_EXT)
+                {
+                    deviceTimeDomainFound = true;
+                }
+                // we prioritize VK_TIME_DOMAIN_CLOCK_MONOTONIC_RAW_EXT of the host time domains
+                else if (m_hostTimeDomain != VK_TIME_DOMAIN_CLOCK_MONOTONIC_RAW_EXT)
+                {
+                    m_hostTimeDomain = timeDomain;
+                }
+            }
+
+            // if there is no device time domain we reset the host one as this is pointless then
+            if (!deviceTimeDomainFound)
+            {
+                m_hostTimeDomain = VK_TIME_DOMAIN_MAX_ENUM_EXT;
+            }
         }
 
         RHI::ResourceMemoryRequirements Device::GetResourceMemoryRequirements(const RHI::ImageDescriptor& descriptor)
@@ -1348,6 +1468,17 @@ namespace AZ
             allocatorInfo.pVulkanFunctions = &vulkanFunctions;
             allocatorInfo.pAllocationCallbacks = VkSystemAllocator::Get();
 
+            VkExternalMemoryHandleTypeFlagsKHR externalHandleTypeFlags = 0;
+            ExternalHandleRequirementBus::Broadcast(
+                &ExternalHandleRequirementBus::Events::CollectExternalMemoryRequirements, externalHandleTypeFlags);
+            AZStd::vector<VkExternalMemoryHandleTypeFlagsKHR> externalTypes;
+            if (externalHandleTypeFlags != 0)
+            {
+                externalTypes = AZStd::vector<VkExternalMemoryHandleTypeFlagsKHR>(
+                    physicalDevice.GetMemoryProperties().memoryTypeCount, externalHandleTypeFlags);
+                allocatorInfo.pTypeExternalMemoryHandleTypes = externalTypes.data();
+            }
+
             if (GetContext().GetBufferMemoryRequirements2 && GetContext().GetImageMemoryRequirements2)
             {
                 allocatorInfo.flags |= VMA_ALLOCATOR_CREATE_KHR_DEDICATED_ALLOCATION_BIT;
@@ -1492,7 +1623,7 @@ namespace AZ
             AZ_Assert(descriptor.m_sharedQueueMask != RHI::HardwareQueueClassMask::None, "Invalid shared queue mask");
             createInfo.m_queueFamilyIndices = GetCommandQueueContext().GetQueueFamilyIndices(descriptor.m_sharedQueueMask);
 
-            auto& vkCreateInfo = createInfo.m_vkCreateInfo;
+            VkBufferCreateInfo vkCreateInfo = {};
             vkCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
             vkCreateInfo.pNext = nullptr;
             vkCreateInfo.flags = 0;
@@ -1509,6 +1640,20 @@ namespace AZ
                 : VK_SHARING_MODE_CONCURRENT;
             vkCreateInfo.queueFamilyIndexCount = static_cast<uint32_t>(createInfo.m_queueFamilyIndices.size());
             vkCreateInfo.pQueueFamilyIndices = createInfo.m_queueFamilyIndices.empty() ? nullptr : createInfo.m_queueFamilyIndices.data();
+            createInfo.SetCreateInfo(vkCreateInfo);
+
+            VkExternalMemoryHandleTypeFlagsKHR externalHandleTypeFlags = 0;
+            ExternalHandleRequirementBus::Broadcast(
+                &ExternalHandleRequirementBus::Events::CollectExternalMemoryRequirements, externalHandleTypeFlags);
+            if (externalHandleTypeFlags != 0)
+            {
+                VkExternalMemoryBufferCreateInfo externalInfo = {};
+                externalInfo.sType = VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_BUFFER_CREATE_INFO;
+                externalInfo.handleTypes = externalHandleTypeFlags;
+                externalInfo.pNext = nullptr;
+                createInfo.SetExternalCreateInfo(externalInfo);
+            }
+
             return createInfo;
         }
 
@@ -1518,7 +1663,7 @@ namespace AZ
 
             ImageCreateInfo createInfo;
 
-            auto& vkCreateInfo = createInfo.m_vkCreateInfo;
+            VkImageCreateInfo vkCreateInfo = {};
             vkCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
             vkCreateInfo.pNext = nullptr;
             vkCreateInfo.format = ConvertFormat(descriptor.m_format);
@@ -1567,6 +1712,19 @@ namespace AZ
             vkCreateInfo.queueFamilyIndexCount = static_cast<uint32_t>(createInfo.m_queueFamilyIndices.size());
             vkCreateInfo.pQueueFamilyIndices = createInfo.m_queueFamilyIndices.empty() ? nullptr : createInfo.m_queueFamilyIndices.data();
             vkCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            createInfo.SetCreateInfo(vkCreateInfo);
+
+            VkExternalMemoryHandleTypeFlagsKHR externalHandleTypeFlags = 0;
+            ExternalHandleRequirementBus::Broadcast(
+                &ExternalHandleRequirementBus::Events::CollectExternalMemoryRequirements, externalHandleTypeFlags);
+            if (externalHandleTypeFlags != 0)
+            {
+                VkExternalMemoryImageCreateInfo externalInfo = {};
+                externalInfo.sType = VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO;
+                externalInfo.handleTypes = externalHandleTypeFlags;
+                externalInfo.pNext = nullptr;
+                createInfo.SetExternalCreateInfo(externalInfo);
+            }
 
             return createInfo;
         }

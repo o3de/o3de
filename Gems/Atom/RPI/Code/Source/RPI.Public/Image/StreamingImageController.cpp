@@ -13,7 +13,7 @@
 #include <AzCore/Jobs/Job.h>
 #include <AzCore/Time/ITime.h>
 
-AZ_DECLARE_BUDGET(RPI);
+ATOM_RPI_PUBLIC_API AZ_DECLARE_BUDGET(RPI);
 
 #define ENABLE_STREAMING_DEBUG_TRACE 0
 

@@ -120,7 +120,7 @@ namespace EMotionFX
             m_actionManager->OnAddNewObjectAndAddJoints(m_actor, /*selectedJoints=*/{}, /*addChildJoints=*/false, m_dock);
         });
 
-        AZ::SerializeContext* serializeContext;
+        AZ::SerializeContext* serializeContext = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
 
         m_selectionWidget = new QWidget();

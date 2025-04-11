@@ -8,6 +8,7 @@
 
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/Scene.h>
+#include <Atom/RPI.Public/Pass/PassFilter.h>
 #include <Debug/RayTracingDebugFeatureProcessor.h>
 #include <RayTracing/RayTracingFeatureProcessor.h>
 
@@ -34,7 +35,8 @@ namespace AZ::Render
     {
         if (m_debugComponentCount == 0)
         {
-            AddDebugPass();
+            // force a rebuild, so we get a chance to add our debug-pass
+            MarkPipelineNeedsRebuild();
         }
         m_debugComponentCount++;
     }
@@ -44,7 +46,8 @@ namespace AZ::Render
         m_debugComponentCount--;
         if (m_debugComponentCount == 0)
         {
-            RemoveDebugPass();
+            // force a rebuild during which we won't add our debug-pass
+            MarkPipelineNeedsRebuild();
         }
     }
 
@@ -68,19 +71,38 @@ namespace AZ::Render
     void RayTracingDebugFeatureProcessor::AddRenderPasses(RPI::RenderPipeline* pipeline)
     {
         m_pipeline = pipeline;
+        if (m_debugComponentCount > 0)
+        {
+            auto pass = RPI::PassSystemInterface::Get()->CreatePassFromTemplate(Name{ "DebugRayTracingPassTemplate" }, Name{ "DebugRayTracingPass" });
+            if (!pass)
+            {
+                AZ_Assert(false, "Failed to create DebugRayTracingPass");
+                return;
+            }
+            m_pipeline->AddPassAfter(pass, Name{ "AuxGeomPass" });
+            m_isEnabled = m_settings->GetEnabled();
+            pass->SetEnabled(m_isEnabled);
+        }
         FeatureProcessor::AddRenderPasses(pipeline);
     }
 
     void RayTracingDebugFeatureProcessor::Render(const RPI::FeatureProcessor::RenderPacket& packet)
     {
-        if (!m_rayTracingPass)
+        if (m_debugComponentCount == 0)
         {
             return;
         }
-
-        if (m_rayTracingPass->IsEnabled() != m_settings->GetEnabled())
+        if (m_settings->GetEnabled() != m_isEnabled)
         {
-            m_rayTracingPass->SetEnabled(m_settings->GetEnabled());
+            m_isEnabled = m_settings->GetEnabled();
+            auto filter = AZ::RPI::PassFilter::CreateWithTemplateName(Name{ "DebugRayTracingPassTemplate" }, m_pipeline);
+            AZ::RPI::PassSystemInterface::Get()->ForEachPass(
+                filter,
+                [&](AZ::RPI::Pass* pass)
+                {
+                    pass->SetEnabled(m_isEnabled);
+                    return AZ::RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
+                });
         }
 
         if (!m_sceneSrg && m_settings->GetEnabled())
@@ -103,24 +125,11 @@ namespace AZ::Render
         FeatureProcessor::Render(packet);
     }
 
-    void RayTracingDebugFeatureProcessor::AddDebugPass()
+    void RayTracingDebugFeatureProcessor::MarkPipelineNeedsRebuild()
     {
-        m_rayTracingPass =
-            RPI::PassSystemInterface::Get()->CreatePassFromTemplate(Name{ "DebugRayTracingPassTemplate" }, Name{ "DebugRayTracingPass" });
-        if (!m_rayTracingPass)
+        if (m_pipeline)
         {
-            AZ_Assert(false, "Failed to create DebugRayTracingPass");
-            return;
-        }
-        m_pipeline->AddPassAfter(m_rayTracingPass, Name{ "AuxGeomPass" });
-    }
-
-    void RayTracingDebugFeatureProcessor::RemoveDebugPass()
-    {
-        if (m_rayTracingPass)
-        {
-            m_rayTracingPass->QueueForRemoval();
-            m_rayTracingPass.reset();
+            m_pipeline->MarkPipelinePassChanges(RPI::PipelinePassChanges::PipelineChangedByFeatureProcessor);
         }
     }
 } // namespace AZ::Render

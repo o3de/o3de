@@ -16,8 +16,8 @@
 // to the outer volumes.  Inner volumes always blend at 100% so there is no need to write them
 // to the blend weight texture.
 
-#include <scenesrg.srgi>
-#include <viewsrg.srgi>
+#include <scenesrg_all.srgi>
+#include <viewsrg_all.srgi>
 
 #include "ReflectionProbeRenderObjectSrg.azsli"
 

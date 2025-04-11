@@ -129,8 +129,12 @@ struct ParallaxOffset
 ParallaxOffset BasicParallaxMapping(float depthFactor, float2 uv, float3 dirToCameraTS)
 {
     // the amount to shift
+#ifdef CS_SAMPLERS
+    float2 delta = dirToCameraTS.xy * GetNormalizedDepth(0, depthFactor, uv, float2(0, 0), float2(0, 0)) * depthFactor;
+#else
     float2 delta = dirToCameraTS.xy * GetNormalizedDepth(0, depthFactor, uv, ddx_fine(uv), ddy_fine(uv)) * depthFactor;
-    
+#endif
+
     ParallaxOffset result;
 
     result.m_offsetTS = float3(0,0,0);
@@ -161,8 +165,13 @@ ParallaxOffset AdvancedParallaxMapping(float depthFactor, float depthOffset, flo
     // the amount to shift per step, shift in the inverse direction of dirToCameraTS
     float3 delta = -dirToCameraTS.xyz * depthFactor * dirToCameraZInverse * step;
 
+#ifdef CS_SAMPLERS
+    float2 ddx_uv = float2(0, 0);
+    float2 ddy_uv = float2(0, 0);
+#else
     float2 ddx_uv = ddx_fine(uv);
     float2 ddy_uv = ddy_fine(uv);
+#endif
 
     float depthSearchStart = depthOffset;
     float depthSearchEnd = depthSearchStart + depthFactor;

@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/Shader/ShaderVariant.h>
 #include <Atom/RPI.Public/Shader/ShaderReloadNotificationBus.h>
 
@@ -51,11 +52,13 @@ namespace AZ
         //! 
         //! Remember that the returned RHI::PipelineState instance lifetime is tied to the Shader lifetime.
         //! If you need guarantee lifetime, it is safe to take a reference on the returned pipeline state.
-        class Shader final
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+        class ATOM_RPI_PUBLIC_API Shader final
             : public Data::InstanceData
-            , public Data::AssetBus::Handler
+            , public Data::AssetBus::MultiHandler
             , public ShaderVariantFinderNotificationBus::Handler
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             friend class ShaderSystem;
         public:
             AZ_INSTANCE_DATA(Shader, "{232D8BD6-3BD4-4842-ABD2-F380BD5B0863}");
@@ -183,6 +186,21 @@ namespace AZ
 
             //! A strong reference to the shader asset.
             Data::Asset<ShaderAsset> m_asset;
+
+            /////////////////////////////////////////////////////////////////////////////////////
+            //! The following variables are necessary to reliably reload the Shader
+            //! whenever the Shader source assets and dependencies change.
+            //! 
+            //! Each time the Shader is initialized, this variable
+            //! caches all the Assets that we are expecting to be reloaded whenever
+            //! the Shader asset changes. This includes m_asset + each Supervariant ShaderVariantAsset.
+            //! Typically most shaders only contain one Supervariant, so this variable becomes 2. 
+            size_t m_expectedAssetReloadCount = 0;
+            //! Each time one of the assets is reloaded we store it here, and when the
+            //! size of this dictionary equals @m_expectedAssetReloadCount then we know it is safe
+            //! to reload the Shader.
+            AZStd::unordered_map<Data::AssetId, Data::Asset<Data::AssetData>> m_reloadedAssets;
+            /////////////////////////////////////////////////////////////////////////////////////
 
             //! Selects current supervariant to be used.
             //! This value is defined at instantiation.

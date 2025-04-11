@@ -199,14 +199,27 @@ namespace AzTestRunner
         if (testMainFunction->IsValid())
         {
             // collapse the arguments vector into a c-style array of character pointers
+            // note that the standard expects argc to be the number of actual arguments
+            // but it also expects argv[argc] to be a valid access, and be nullptr.
+            // as in, a real 3-argument program would have:
+            // char* argv[3] = { "program", "arg1", "arg2", nullptr};
+            // argc = 3;
+            // notice that in the above example, argv[argc] is expected to be not an out-of-bounds-access, but in fact, okay to access.
+            // this comes from the fact that the args to a program come from a block of memory passed to its process
+            // as part of its environment, and the args sit in memory null-separated, with an extra null denoting the end
+            // of the packed args.  This is relevant here because GoogleTest *absorbs* args (removing them from the command line as it parses them)
+            // by looping over  { argv[n] = argv[n+1]; } for n...argc-1 and would otherwise trip over the end of our created array
+            // if we didn't have that extra null at arg[n+1] (ASAN notices this).
             std::vector<const char*> charArguments;
-            charArguments.reserve(arguments.size());
+            charArguments.reserve(arguments.size() + 1);
             for (const std::string_view argument : arguments)
             {
                 charArguments.push_back(argument.data());
             }
+            
+            charArguments.push_back(nullptr);
 
-            result = (*testMainFunction)(static_cast<int>(charArguments.size()), const_cast<char**>(charArguments.data()));
+            result = (*testMainFunction)(static_cast<int>(charArguments.size() - 1), const_cast<char**>(charArguments.data()));
             std::cout << "OKAY " << symbol << "() returned " << result << std::endl;
             testMainFunction.reset();
         }

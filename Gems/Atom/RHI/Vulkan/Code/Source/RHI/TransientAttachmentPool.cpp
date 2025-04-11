@@ -7,6 +7,7 @@
  */
 #include <Atom/RHI.Reflect/TransientBufferDescriptor.h>
 #include <Atom/RHI.Reflect/TransientImageDescriptor.h>
+#include <Atom/RHI/RHIBus.h>
 #include <RHI/Buffer.h>
 #include <RHI/Device.h>
 #include <RHI/Image.h>
@@ -226,6 +227,16 @@ namespace AZ
             heapDesc.m_budgetInBytes = budgetInBytes;
             heapDesc.m_resourceTypeMask = resourceTypeMask;
             heapDesc.m_allocationParameters = heapParameters;
+            struct
+            {
+                size_t m_alignment = 0;
+                void operator=(size_t value)
+                {
+                    m_alignment = AZStd::max(m_alignment, value);
+                }
+            } alignment;
+            RHI::RHIRequirementRequestBus::BroadcastResult(alignment, &RHI::RHIRequirementsRequest::GetRequiredAlignment, device);
+            heapDesc.m_alignment = AZStd::max(alignment.m_alignment, heapDesc.m_alignment);
 
             auto result = allocator->Init(device, heapDesc);
             if (result != RHI::ResultCode::Success)

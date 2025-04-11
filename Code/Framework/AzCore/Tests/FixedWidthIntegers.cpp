@@ -445,7 +445,7 @@ namespace UnitTest
         AZ::s8, AZ::u8, AZ::s16, AZ::u16, AZ::s32, AZ::u32, AZ::s64, AZ::u64
     >;
 
-    TYPED_TEST_CASE(IntegralTypeTestFixture, IntegralTypeTestConfigs);
+    TYPED_TEST_SUITE(IntegralTypeTestFixture, IntegralTypeTestConfigs);
 
     ///////////////////////////////////////////////////////////////////////////
 

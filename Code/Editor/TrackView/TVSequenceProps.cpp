@@ -36,7 +36,8 @@ CTVSequenceProps::CTVSequenceProps(CTrackViewSequence* pSequence, float fps, QWi
     , ui(new Ui::CTVSequenceProps)
 {
     ui->setupUi(this);
-    assert(pSequence);
+
+    AZ_Assert(pSequence, "pSequence is null");
     m_pSequence = pSequence;
     connect(ui->buttonBox, &QDialogButtonBox::accepted, this, &CTVSequenceProps::OnOK);
     connect(ui->CUT_SCENE, &QCheckBox::toggled, this, &CTVSequenceProps::ToggleCutsceneOptions);
@@ -259,7 +260,8 @@ void CTVSequenceProps::OnOK()
         QMessageBox::warning(this, "Sequence Properties", "A sequence name cannot be empty!");
         return;
     }
-    else if (name.contains('/'))
+
+    if (name.contains('/'))
     {
         QMessageBox::warning(this, "Sequence Properties", "A sequence name cannot contain a '/' character!");
         return;
@@ -299,8 +301,8 @@ void CTVSequenceProps::OnBnClickedToFrames(bool v)
     ui->START_TIME->setSingleStep(1.0f);
     ui->END_TIME->setSingleStep(1.0f);
 
-    ui->START_TIME->setValue(std::round(ui->START_TIME->value() * static_cast<double>(m_FPS)));
-    ui->END_TIME->setValue(std::round(ui->END_TIME->value() * static_cast<double>(m_FPS)));
+    ui->START_TIME->setValue(AZStd::round(ui->START_TIME->value() * static_cast<double>(m_FPS)));
+    ui->END_TIME->setValue(AZStd::round(ui->END_TIME->value() * static_cast<double>(m_FPS)));
 
     m_timeUnit = Frames;
 }

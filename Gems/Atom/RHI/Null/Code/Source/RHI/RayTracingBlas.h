@@ -29,11 +29,24 @@ namespace AZ
             // RHI::DeviceRayTracingBlas overrides...
             virtual bool IsValid() const override { return true; }
 
+            uint64_t GetAccelerationStructureByteSize() override
+            {
+                return 0;
+            }
+
         private:
             RayTracingBlas() = default;
 
             // RHI::DeviceRayTracingBlas overrides...
             RHI::ResultCode CreateBuffersInternal([[maybe_unused]] RHI::Device& deviceBase, [[maybe_unused]] const RHI::DeviceRayTracingBlasDescriptor* descriptor, [[maybe_unused]] const RHI::DeviceRayTracingBufferPools& rayTracingBufferPools) override {return RHI::ResultCode::Success;}
+            RHI::ResultCode CreateCompactedBuffersInternal(
+                [[maybe_unused]] RHI::Device& device,
+                [[maybe_unused]] RHI::Ptr<RHI::DeviceRayTracingBlas> sourceBlas,
+                [[maybe_unused]] uint64_t compactedBufferSize,
+                [[maybe_unused]] const RHI::DeviceRayTracingBufferPools& rayTracingBufferPools) override
+            {
+                return RHI::ResultCode::Success;
+            }
         };
     }
 }

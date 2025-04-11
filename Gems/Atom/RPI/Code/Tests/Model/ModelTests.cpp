@@ -1206,7 +1206,7 @@ namespace UnitTest
         IntersectParams{ 0.778f, 0.778f, 1.0f, 0.0f, 0.0f, -1.0f, 0.5f, true },
     };
 
-    INSTANTIATE_TEST_CASE_P(KdTreeIntersectsPlane, KdTreeIntersectsParameterizedFixture, ::testing::ValuesIn(KdTreeIntersectTestData));
+    INSTANTIATE_TEST_SUITE_P(KdTreeIntersectsPlane, KdTreeIntersectsParameterizedFixture, ::testing::ValuesIn(KdTreeIntersectTestData));
 
     class KdTreeIntersectsFixture
         : public ModelTests
@@ -1300,7 +1300,7 @@ namespace UnitTest
         IntersectParams{ 0.0f,  20.0f, 0.0f, 0.0f, -19.0f, 0.0f, 1.0f, true },
     };
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         BruteForceIntersects, BruteForceIntersectsParameterizedFixture, ::testing::ValuesIn(BruteForceIntersectTestData));
 
     class BruteForceModelIntersectsFixture

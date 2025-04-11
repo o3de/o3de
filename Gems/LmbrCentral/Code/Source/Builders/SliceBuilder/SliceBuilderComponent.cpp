@@ -43,7 +43,7 @@ namespace SliceBuilder
 
         AssetBuilderSDK::AssetBuilderDesc builderDescriptor;
         builderDescriptor.m_name = "Slice Builder";
-        builderDescriptor.m_version = 8;
+        builderDescriptor.m_version = 9;
         builderDescriptor.m_analysisFingerprint = builderAnalysisFingerprint;
         builderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern(AZ::SliceAsset::GetFileFilter(), AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
         builderDescriptor.m_busId = SliceBuilderWorker::GetUUID();

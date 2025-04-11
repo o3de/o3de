@@ -49,7 +49,7 @@ namespace AZ
         size_type get_allocated_size(pointer ptr, size_type alignment) const override;
         void            GarbageCollect() override                 { m_subAllocator->GarbageCollect(); }
 
-        size_type       NumAllocatedBytes() const override       { return m_subAllocator->NumAllocatedBytes(); }
+        size_type       NumAllocatedBytes() const override;
 
         //////////////////////////////////////////////////////////////////////////
 

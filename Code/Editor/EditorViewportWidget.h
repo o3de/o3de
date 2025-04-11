@@ -130,13 +130,6 @@ private:
     ////////////////////////////////////////////////////////////////////////
     // Private types ...
 
-    enum class ViewSourceType
-    {
-        None,
-        CameraComponent,
-        ViewSourceTypesCount,
-    };
-
     enum class PlayInEditorState
     {
         Editor,
@@ -324,9 +317,6 @@ private:
 
     // The entity ID of the current camera for this viewport, or invalid if the default editor camera
     AZ::EntityId m_viewEntityId;
-
-    // Determines also if the current camera for this viewport is default editor camera
-    ViewSourceType m_viewSourceType = ViewSourceType::None;
 
     // During play game in editor, holds the editor entity ID of the last
     AZ::EntityId m_viewEntityIdCachedForEditMode;

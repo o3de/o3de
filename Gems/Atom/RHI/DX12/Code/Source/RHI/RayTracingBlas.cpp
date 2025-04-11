@@ -23,6 +23,11 @@ namespace AZ
             return aznew RayTracingBlas;
         }
 
+        uint64_t RayTracingBlas::GetAccelerationStructureByteSize()
+        {
+            return m_buffers.GetCurrentElement().m_blasBuffer->GetDescriptor().m_byteCount;
+        }
+
         RHI::ResultCode RayTracingBlas::CreateBuffersInternal([[maybe_unused]] RHI::Device& deviceBase, [[maybe_unused]] const RHI::DeviceRayTracingBlasDescriptor* descriptor, [[maybe_unused]] const RHI::DeviceRayTracingBufferPools& bufferPools)
         {
 #ifdef AZ_DX12_DXR_SUPPORT
@@ -145,6 +150,39 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
+        RHI::ResultCode RayTracingBlas::CreateCompactedBuffersInternal(
+            [[maybe_unused]] RHI::Device& device,
+            RHI::Ptr<RHI::DeviceRayTracingBlas> sourceBlas,
+            uint64_t compactedBufferSize,
+            const RHI::DeviceRayTracingBufferPools& rayTracingBufferPools)
+        {
+#ifdef AZ_DX12_DXR_SUPPORT
+            // advance to the next buffer
+            BlasBuffers& buffers = m_buffers.AdvanceCurrentElement();
+            // create BLAS buffer
+            buffers.m_blasBuffer = RHI::Factory::Get().CreateBuffer();
+            AZ::RHI::BufferDescriptor blasBufferDescriptor;
+            blasBufferDescriptor.m_bindFlags =
+                RHI::BufferBindFlags::ShaderReadWrite | RHI::BufferBindFlags::RayTracingAccelerationStructure;
+            blasBufferDescriptor.m_byteCount = compactedBufferSize;
+
+            AZ::RHI::DeviceBufferInitRequest blasBufferRequest;
+            blasBufferRequest.m_buffer = buffers.m_blasBuffer.get();
+            blasBufferRequest.m_descriptor = blasBufferDescriptor;
+            [[maybe_unused]] auto resultCode = rayTracingBufferPools.GetBlasBufferPool()->InitBuffer(blasBufferRequest);
+            AZ_Assert(resultCode == RHI::ResultCode::Success, "failed to create BLAS buffer");
+
+            MemoryView& blasMemoryView = static_cast<Buffer*>(buffers.m_blasBuffer.get())->GetMemoryView();
+            blasMemoryView.SetName(L"BLAS");
+
+            const auto* dx12SourceBlas = static_cast<RayTracingBlas*>(sourceBlas.get());
+            m_inputs = dx12SourceBlas->m_inputs;
+            m_geometryDescs = dx12SourceBlas->m_geometryDescs;
+#endif
+
+            return RHI::ResultCode::Success;
+        }
+
 #ifdef AZ_DX12_DXR_SUPPORT
         D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAGS RayTracingBlas::GetAccelerationStructureBuildFlags(const RHI::RayTracingAccelerationStructureBuildFlags &buildFlags)
         {
@@ -162,6 +200,11 @@ namespace AZ
             if (RHI::CheckBitsAny(buildFlags, RHI::RayTracingAccelerationStructureBuildFlags::ENABLE_UPDATE))
             {
                 dxBuildFlags |= D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_ALLOW_UPDATE;
+            }
+
+            if (RHI::CheckBitsAny(buildFlags, RHI::RayTracingAccelerationStructureBuildFlags::ENABLE_COMPACTION))
+            {
+                dxBuildFlags |= D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_ALLOW_COMPACTION;
             }
 
             return dxBuildFlags;

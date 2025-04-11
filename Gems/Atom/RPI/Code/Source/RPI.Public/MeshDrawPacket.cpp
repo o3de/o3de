@@ -21,6 +21,8 @@ namespace AZ
 {
     namespace RPI
     {
+        Data::Instance<RPI::ShaderResourceGroup> MeshDrawPacket::InvalidSrg;
+
         AZ_CVAR(bool,
             r_forceRootShaderVariantUsage,
             false,
@@ -245,6 +247,15 @@ namespace AZ
 #endif
         }
 
+        Data::Instance<RPI::ShaderResourceGroup>& MeshDrawPacket::GetDrawSrg(uint32_t drawItemIndex)
+        {
+            if (drawItemIndex >= aznumeric_cast<uint32_t>(m_perDrawSrgs.size()))
+            {
+                return InvalidSrg;
+            }
+            return m_perDrawSrgs[drawItemIndex];
+        }
+
         bool MeshDrawPacket::DoUpdate(const Scene& parentScene)
         {
             auto meshes = m_modelLod->GetMeshes();
@@ -316,7 +327,8 @@ namespace AZ
                     return false;
                 }
 
-                if (!parentScene.HasOutputForPipelineState(drawListTag))
+                const bool isRasterShader = (shaderItem.GetShaderAsset()->GetPipelineStateType() == RHI::PipelineStateType::Draw);
+                if (isRasterShader && !parentScene.HasOutputForPipelineState(drawListTag))
                 {
                     // drawListTag not found in this scene, so don't render this item
                     return false;
@@ -337,13 +349,17 @@ namespace AZ
                 // This might not be necessary anymore though, since ShaderAsset::GetDefaultShaderOptions() does this when the material type builder is creating the ShaderCollection.
                 shaderOptions.SetUnspecifiedToDefaultValues();
 
-                // [GFX_TODO][ATOM-14476]: according to this usage, we should make the shader input contract uniform across all shader variants.
-                m_modelLod->CheckOptionalStreams(
-                    shaderOptions,
-                    shader->GetInputContract(),
-                    m_modelLodMeshIndex,
-                    m_materialModelUvMap,
-                    m_material->GetAsset()->GetMaterialTypeAsset()->GetUvNameMap());
+                if (isRasterShader)
+                {
+                    // [GFX_TODO][ATOM-14476]: according to this usage, we should make the shader input contract uniform across all shader
+                    // variants.
+                    m_modelLod->CheckOptionalStreams(
+                        shaderOptions,
+                        shader->GetInputContract(),
+                        m_modelLodMeshIndex,
+                        m_materialModelUvMap,
+                        m_material->GetAsset()->GetMaterialTypeAsset()->GetUvNameMap());
+                }
 
                 // apply shader options from this draw packet to the ShaderItem
                 for (auto& meshShaderOption : m_shaderOptions)
@@ -368,27 +384,40 @@ namespace AZ
                 m_shaderVariantNames.push_back(variant.GetShaderVariantAsset().GetHint());
 #endif
 
-                RHI::PipelineStateDescriptorForDraw pipelineStateDescriptor;
-                variant.ConfigurePipelineState(pipelineStateDescriptor, shaderOptions);
-
-                // Render states need to merge the runtime variation.
-                // This allows materials to customize the render states that the shader uses.
-                const RHI::RenderStates& renderStatesOverlay = *shaderItem.GetRenderStatesOverlay();
-                RHI::MergeStateInto(renderStatesOverlay, pipelineStateDescriptor.m_renderStates);
-
                 UvStreamTangentBitmask uvStreamTangentBitmask;
                 RHI::StreamBufferIndices streamIndices;
+                RHI::PipelineStateDescriptorForDraw pipelineStateDescriptorDraw;
 
-                if (!m_modelLod->GetStreamsForMesh(
-                    pipelineStateDescriptor.m_inputStreamLayout,
-                    streamIndices,
-                    &uvStreamTangentBitmask,
-                    shader->GetInputContract(),
-                    m_modelLodMeshIndex,
-                    m_materialModelUvMap,
-                    m_material->GetAsset()->GetMaterialTypeAsset()->GetUvNameMap()))
+                RHI::PipelineStateDescriptorForDispatch pipelineStateDescriptorDispatch;
+
+                RHI::PipelineStateDescriptor* pipelineStateDescriptor = nullptr;
+                if (isRasterShader)
                 {
-                    return false;
+                    variant.ConfigurePipelineState(pipelineStateDescriptorDraw, shaderOptions);
+                    pipelineStateDescriptor = &pipelineStateDescriptorDraw;
+
+                    // Render states need to merge the runtime variation.
+                    // This allows materials to customize the render states that the shader uses.
+                    const RHI::RenderStates& renderStatesOverlay = *shaderItem.GetRenderStatesOverlay();
+                    RHI::MergeStateInto(renderStatesOverlay, pipelineStateDescriptorDraw.m_renderStates);
+
+                    if (!m_modelLod->GetStreamsForMesh(
+                            pipelineStateDescriptorDraw.m_inputStreamLayout,
+                            streamIndices,
+                            &uvStreamTangentBitmask,
+                            shader->GetInputContract(),
+                            m_modelLodMeshIndex,
+                            m_materialModelUvMap,
+                            m_material->GetAsset()->GetMaterialTypeAsset()->GetUvNameMap()))
+                    {
+                        return false;
+                    }
+                    parentScene.ConfigurePipelineState(drawListTag, pipelineStateDescriptorDraw);
+                }
+                else
+                {
+                    variant.ConfigurePipelineState(pipelineStateDescriptorDispatch, shaderOptions);
+                    pipelineStateDescriptor = &pipelineStateDescriptorDispatch;
                 }
 
                 Data::Instance<ShaderResourceGroup> drawSrg = shader->CreateDrawSrgForShaderVariant(shaderOptions, false);
@@ -404,12 +433,21 @@ namespace AZ
                         drawSrg->SetConstant(index, uvStreamTangentBitmask.GetFullTangentBitmask());
                     }
 
+                    AZ::Name drawSrgModelLodMeshIndex = AZ::Name(DrawSrgModelLodMeshIndex);
+                    index = drawSrg->FindShaderInputConstantIndex(drawSrgModelLodMeshIndex);
+
+                    if (index.IsValid())
+                    {
+                        drawSrg->SetConstant(index, aznumeric_cast<uint32_t>(m_modelLodMeshIndex));
+                    }
+
+                    // TODO: Does it make sense to call Compile() in the case where both SetConstant() calls above fail?
+                    // Leaving it as always calling Compile() as precaution that there's code somewhere else that assumes
+                    // Compile() was already called on DrawSrg.
                     drawSrg->Compile();
-                }
+                };
 
-                parentScene.ConfigurePipelineState(drawListTag, pipelineStateDescriptor);
-
-                const RHI::PipelineState* pipelineState = shader->AcquirePipelineState(pipelineStateDescriptor);
+                const RHI::PipelineState* pipelineState = shader->AcquirePipelineState(*pipelineStateDescriptor);
                 if (!pipelineState)
                 {
                     AZ_Error("MeshDrawPacket", false, "Shader '%s'. Failed to acquire default pipeline state", shaderItem.GetShaderAsset()->GetName().GetCStr());
@@ -417,7 +455,7 @@ namespace AZ
                 }
 
                 const RHI::ConstantsLayout* rootConstantsLayout =
-                    pipelineStateDescriptor.m_pipelineLayoutDescriptor->GetRootConstantsLayout();
+                    pipelineStateDescriptor->m_pipelineLayoutDescriptor->GetRootConstantsLayout();
                 if(isFirstShaderItem)
                 {
                     if (HasRootConstants(rootConstantsLayout))
@@ -445,8 +483,11 @@ namespace AZ
                 RHI::DrawPacketBuilder::DrawRequest drawRequest;
                 drawRequest.m_listTag = drawListTag;
                 drawRequest.m_pipelineState = pipelineState;
-                drawRequest.m_streamIndices = streamIndices;
-                drawRequest.m_stencilRef = m_stencilRef;
+                if (isRasterShader)
+                {
+                    drawRequest.m_streamIndices = streamIndices;
+                    drawRequest.m_stencilRef = m_stencilRef;
+                }
                 drawRequest.m_sortKey = m_sortKey;
                 if (drawSrg)
                 {
@@ -474,7 +515,7 @@ namespace AZ
                 shaderList.emplace_back(AZStd::move(shaderData));
 
                 return true;
-            };
+            }; // appendShader
 
             m_material->ApplyGlobalShaderOptions();
 

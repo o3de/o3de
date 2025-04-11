@@ -6,17 +6,19 @@
  *
  */
 
+#include <Atom/RHI/DeviceImageView.h>
+#include <Atom/RHI/Image.h>
 #include <Atom/RHI/ImageScopeAttachment.h>
+#include <Atom/RHI/ImageView.h>
+#include <Atom/RHI/Resource.h>
 #include <Atom/RHI/Scope.h>
 #include <Atom/RHI/ScopeAttachment.h>
-#include <Atom/RHI/Image.h>
-#include <Atom/RHI/Resource.h>
-#include <Atom/RHI/DeviceImageView.h>
-#include <RHI/Vulkan.h>
 #include <RHI/Conversion.h>
 #include <RHI/Device.h>
 #include <RHI/Image.h>
 #include <RHI/PhysicalDevice.h>
+#include <RHI/Vulkan.h>
+
 
 namespace AZ
 {
@@ -499,6 +501,7 @@ namespace AZ
             case RHI::HeapMemoryLevel::Host:
                 allocInfo.flags |= VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT;
                 allocInfo.requiredFlags |= VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
+                allocInfo.requiredFlags |= VK_MEMORY_PROPERTY_HOST_CACHED_BIT;
                 break;
             case RHI::HeapMemoryLevel::Device:
                 allocInfo.requiredFlags |= VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;

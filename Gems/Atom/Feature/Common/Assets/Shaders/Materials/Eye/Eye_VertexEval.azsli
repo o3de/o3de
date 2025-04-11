@@ -51,6 +51,21 @@ VsOutput EvaluateVertexGeometry_Eye(
     return output;
 }
 
+// Added this version to make it compatible with the number of arguments in BasePBR.
+// Avoids compilation errors for compute shaders, listed in a materialpipeline,
+// that call EvaluateVertexGeometry().
+VsOutput EvaluateVertexGeometry_Eye(
+    float3 position,
+    float3 normal,
+    float4 tangent,
+    float2 uv0,
+    float2 uv1,
+    uint instanceId)
+{
+    const float3 bitangent = float3(0, 0, 0);
+    return EvaluateVertexGeometry_Eye(position, normal, tangent, bitangent, uv0, uv1, instanceId);
+}
+
 VsOutput EvaluateVertexGeometry_Eye(VsInput IN, VsSystemValues SV)
 {
     return EvaluateVertexGeometry_Eye(

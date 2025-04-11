@@ -11,6 +11,7 @@
 #include <Atom/RHI/IndexBufferView.h>
 #include <Atom/RHI/StreamBufferView.h>
 #include <Atom/RPI.Public/Buffer/RingBuffer.h>
+#include <Atom/RPI.Public/Configuration.h>
 
 namespace AZ
 {
@@ -24,7 +25,7 @@ namespace AZ
         //! Limitation: the allocation may fail if the request buffer size is larger than the ring buffer size or
         //!     there isn't enough unused memory available within the ring buffer. User may increase the input of Init(ringBufferSize)
         //!     to increase the ring buffer's size.
-        class DynamicBufferAllocator
+        class ATOM_RPI_PUBLIC_API DynamicBufferAllocator
         {
         public:
             AZ_RTTI(AZ::RPI::DynamicBufferAllocator, "{82B047B3-C845-4F77-9852-747E39C53081}");

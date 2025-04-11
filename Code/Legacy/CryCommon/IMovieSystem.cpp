@@ -75,25 +75,28 @@ bool CAnimParamType::operator <(const CAnimParamType& animParamType) const
 
 void CAnimParamType::SaveToXml(XmlNodeRef& xmlNode) const
 {
-    if (gEnv->pMovieSystem)
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+    if (movieSystem)
     {
-        gEnv->pMovieSystem->SaveParamTypeToXml(*this, xmlNode);
+        movieSystem->SaveParamTypeToXml(*this, xmlNode);
     }
 }
 
 void CAnimParamType::LoadFromXml(const XmlNodeRef& xmlNode, const uint version)
 {
-    if (gEnv->pMovieSystem)
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+    if (movieSystem)
     {
-        gEnv->pMovieSystem->LoadParamTypeFromXml(*this, xmlNode, version);
+        movieSystem->LoadParamTypeFromXml(*this, xmlNode, version);
     }
 }
 
 void CAnimParamType::Serialize(XmlNodeRef& xmlNode, bool bLoading, const uint version)
 {
-    if (gEnv->pMovieSystem)
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+    if (movieSystem)
     {
-        gEnv->pMovieSystem->SerializeParamType(*this, xmlNode, bLoading, version);
+        movieSystem->SerializeParamType(*this, xmlNode, bLoading, version);
     }
 }
 
@@ -109,16 +112,6 @@ SAnimContext::SAnimContext()
     sequence = nullptr;
     trackMask = 0;
     startTime = 0;
-}
-
-
-// SCameraParams member functions
-
-SCameraParams::SCameraParams()
-{
-    fov = 0.0f;
-    nearZ = DEFAULT_NEAR;
-    justActivated = false;
 }
 
 

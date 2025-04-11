@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/RTTI/TypeInfo.h>
+#include <Atom/RPI.Edit/Configuration.h>
 #include <Atom/RPI.Reflect/Base.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertyDescriptor.h>
 #include <Atom/RPI.Reflect/Material/MaterialDynamicMetadata.h>
@@ -22,14 +23,14 @@ namespace AZ
         class JsonMaterialPropertySerializer;
 
         //! Stores data that defines one material property, for use in JSON source files such as .materialtype and .materialpipeline.
-        struct MaterialPropertySourceData
+        struct ATOM_RPI_EDIT_API MaterialPropertySourceData
         {
             friend class JsonMaterialPropertySerializer;
 
             AZ_CLASS_ALLOCATOR(MaterialPropertySourceData, SystemAllocator);
             AZ_TYPE_INFO(AZ::RPI::MaterialPropertySourceData, "{E0DB3C0D-75DB-4ADB-9E79-30DA63FA18B7}");
 
-            struct Connection
+            struct ATOM_RPI_EDIT_API Connection
             {
             public:
                 AZ_TYPE_INFO(AZ::RPI::MaterialPropertySourceData::Connection, "{C2F37C26-D7EF-4142-A650-EF50BB18610F}");

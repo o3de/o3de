@@ -5,29 +5,30 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <RHI/CommandList.h>
-#include <RHI/Conversions.h>
+#include <Atom/RHI/DeviceDispatchRaysItem.h>
+#include <Atom/RHI/DeviceIndirectArguments.h>
+#include <Atom/RHI/Factory.h>
+#include <Atom/RHI/RHISystemInterface.h>
 #include <RHI/Buffer.h>
+#include <RHI/BufferPool.h>
 #include <RHI/BufferView.h>
+#include <RHI/CommandList.h>
+#include <RHI/CommandQueue.h>
+#include <RHI/Conversions.h>
+#include <RHI/DescriptorContext.h>
 #include <RHI/Device.h>
 #include <RHI/Image.h>
 #include <RHI/ImageView.h>
 #include <RHI/IndirectBufferSignature.h>
-#include <RHI/ShaderResourceGroup.h>
-#include <RHI/DescriptorContext.h>
 #include <RHI/PipelineState.h>
-#include <RHI/SwapChain.h>
-#include <RHI/CommandQueue.h>
 #include <RHI/QueryPool.h>
 #include <RHI/RayTracingBlas.h>
-#include <RHI/RayTracingTlas.h>
+#include <RHI/RayTracingCompactionQueryPool.h>
 #include <RHI/RayTracingPipelineState.h>
 #include <RHI/RayTracingShaderTable.h>
-#include <RHI/BufferPool.h>
-#include <Atom/RHI/DeviceDispatchRaysItem.h>
-#include <Atom/RHI/Factory.h>
-#include <Atom/RHI/DeviceIndirectArguments.h>
-#include <Atom/RHI/RHISystemInterface.h>
+#include <RHI/RayTracingTlas.h>
+#include <RHI/ShaderResourceGroup.h>
+#include <RHI/SwapChain.h>
 
 #include <RHI/DispatchRaysIndirectBuffer.h>
 
@@ -701,6 +702,82 @@ namespace AZ
             blasDesc.DestAccelerationStructureData = blasDesc.SourceAccelerationStructureData;
             ID3D12GraphicsCommandList4* commandList = static_cast<ID3D12GraphicsCommandList4*>(GetCommandList());
             commandList->BuildRaytracingAccelerationStructure(&blasDesc, 0, nullptr);
+#endif
+        }
+
+        void CommandList::QueryBlasCompactionSizes(
+            const AZStd::vector<AZStd::pair<RHI::DeviceRayTracingBlas*, RHI::DeviceRayTracingCompactionQuery*>>& blasToQuery)
+        {
+#ifdef AZ_DX12_DXR_SUPPORT
+            ID3D12GraphicsCommandList4* commandList = static_cast<ID3D12GraphicsCommandList4*>(GetCommandList());
+
+            // Query compaction sizes for all given Blas
+            AZStd::unordered_set<RayTracingCompactionQueryPool*> usedQueryPools;
+            for (auto& [blas, query] : blasToQuery)
+            {
+                const auto& dx12RayTracingBlas = static_cast<const RayTracingBlas*>(blas);
+                const RayTracingBlas::BlasBuffers& blasBuffers = dx12RayTracingBlas->GetBuffers();
+
+                auto* dx12CompactionQuery = static_cast<RayTracingCompactionQuery*>(query);
+                int index = dx12CompactionQuery->Allocate();
+                auto pool = static_cast<RayTracingCompactionQueryPool*>(dx12CompactionQuery->GetPool());
+
+                auto queryPoolBufferAddress = static_cast<Buffer*>(pool->GetCurrentGPUBuffer())->GetMemoryView().GetGpuAddress();
+
+                D3D12_RESOURCE_BARRIER barrier;
+                barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
+                barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+                barrier.UAV.pResource = static_cast<Buffer*>(blasBuffers.m_blasBuffer.get())->GetMemoryView().GetMemory();
+                commandList->ResourceBarrier(1, &barrier);
+
+                D3D12_RAYTRACING_ACCELERATION_STRUCTURE_POSTBUILD_INFO_DESC desc;
+                desc.InfoType = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_POSTBUILD_INFO_COMPACTED_SIZE;
+                desc.DestBuffer = queryPoolBufferAddress + index * sizeof(uint64_t);
+                auto blasVirtualAddress = static_cast<Buffer*>(blasBuffers.m_blasBuffer.get())->GetMemoryView().GetGpuAddress();
+                commandList->EmitRaytracingAccelerationStructurePostbuildInfo(&desc, 1, &blasVirtualAddress);
+                usedQueryPools.insert(pool);
+            }
+
+            // Copy the gathered compaction sizes to the CPU buffer
+            for (auto pool : usedQueryPools)
+            {
+                auto gpuBuffer = static_cast<Buffer*>(pool->GetCurrentGPUBuffer());
+                auto cpuBuffer = static_cast<Buffer*>(pool->GetCurrentCPUBuffer());
+                D3D12_RESOURCE_TRANSITION_BARRIER transitionDesc;
+                transitionDesc.pResource = gpuBuffer->GetMemoryView().GetMemory();
+                transitionDesc.Subresource = 0;
+                transitionDesc.StateBefore = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+                transitionDesc.StateAfter = D3D12_RESOURCE_STATE_COPY_SOURCE;
+
+                D3D12_RESOURCE_BARRIER barrierDesc;
+                barrierDesc.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+                barrierDesc.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+                barrierDesc.Transition = transitionDesc;
+                commandList->ResourceBarrier(1, &barrierDesc);
+
+                commandList->CopyBufferRegion(
+                    cpuBuffer->GetMemoryView().GetMemory(),
+                    cpuBuffer->GetMemoryView().GetOffset(),
+                    gpuBuffer->GetMemoryView().GetMemory(),
+                    gpuBuffer->GetMemoryView().GetOffset(),
+                    pool->GetDescriptor().m_budget * sizeof(uint64_t));
+            }
+#endif
+        }
+
+        void CommandList::CompactBottomLevelAccelerationStructure(
+            const RHI::DeviceRayTracingBlas& sourceBlas, const RHI::DeviceRayTracingBlas& compactBlas)
+        {
+#ifdef AZ_DX12_DXR_SUPPORT
+            ID3D12GraphicsCommandList4* commandList = static_cast<ID3D12GraphicsCommandList4*>(GetCommandList());
+            auto& dx12SourceBlas = static_cast<const RayTracingBlas&>(sourceBlas);
+            auto sourceBlasVirtualAddress =
+                static_cast<Buffer*>(dx12SourceBlas.GetBuffers().m_blasBuffer.get())->GetMemoryView().GetGpuAddress();
+            auto& dx12CompactBlas = static_cast<const RayTracingBlas&>(compactBlas);
+            auto compactBlasVirtualAddress =
+                static_cast<Buffer*>(dx12CompactBlas.GetBuffers().m_blasBuffer.get())->GetMemoryView().GetGpuAddress();
+            commandList->CopyRaytracingAccelerationStructure(
+                compactBlasVirtualAddress, sourceBlasVirtualAddress, D3D12_RAYTRACING_ACCELERATION_STRUCTURE_COPY_MODE_COMPACT);
 #endif
         }
 

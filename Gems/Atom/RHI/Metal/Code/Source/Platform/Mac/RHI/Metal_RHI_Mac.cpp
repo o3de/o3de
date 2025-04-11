@@ -13,6 +13,7 @@
 #include <RHI/MemoryView.h>
 #include <RHI/MetalView_Platform.h>
 #include <RHI/PhysicalDevice.h>
+#include <Atom/RHI/RHIBus.h>
 
 namespace Platform
 {
@@ -41,6 +42,8 @@ namespace Platform
                 physicalDeviceList.emplace_back(physicalDevice);
             }
         }
+        AZ::RHI::RHIRequirementRequestBus::Broadcast(
+            &AZ::RHI::RHIRequirementsRequest::FilterSupportedPhysicalDevices, physicalDeviceList, AZ::RHI::APIIndex::Metal);
         return physicalDeviceList;
     }
     

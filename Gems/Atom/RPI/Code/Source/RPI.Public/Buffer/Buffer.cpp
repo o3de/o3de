@@ -18,7 +18,7 @@
 #include <AtomCore/Instance/InstanceDatabase.h>
 #include <AzCore/Component/TickBus.h>
 
-AZ_DECLARE_BUDGET(RPI);
+ATOM_RPI_PUBLIC_API AZ_DECLARE_BUDGET(RPI);
 
 namespace AZ
 {
@@ -235,7 +235,7 @@ namespace AZ
                 return;
             }
 
-            m_bufferView = m_rhiBuffer->BuildBufferView(m_bufferViewDescriptor);
+            m_bufferView = m_rhiBuffer->GetBufferView(m_bufferViewDescriptor);
 
             if(!m_bufferView.get())
             {

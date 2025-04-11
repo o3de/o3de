@@ -464,7 +464,7 @@ namespace JsonSerializationTests
         SmartPointerComplexDerivedClassWithDerivedInstanceTestDescription<AZStd::intrusive_ptr>
     >;
 
-    IF_JSON_CONFORMITY_ENABLED(INSTANTIATE_TYPED_TEST_CASE_P(SmartPointerSerializer, JsonSerializerConformityTests, SmartPointerSerializerConformityTestTypes));
+    IF_JSON_CONFORMITY_ENABLED(INSTANTIATE_TYPED_TEST_SUITE_P(SmartPointerSerializer, JsonSerializerConformityTests, SmartPointerSerializerConformityTestTypes));
 
     struct SimpleInheritenceAlt : BaseClass
     {

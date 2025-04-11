@@ -1564,6 +1564,10 @@ namespace AZ
 
         AZStd::unordered_set<ExplicitOverloadInfo> m_explicitOverloads;
         AZStd::unordered_map< const BehaviorMethod*, AZStd::pair<const BehaviorMethod*, const BehaviorClass*>> m_checksByOperations;
+    private:
+        BehaviorClass* ClassImpl(const char* name, const AZ::TypeId& typeUuid, AZ::IRttiHelper* rttiHelper, size_t alignment, size_t size);
+        bool MethodImpl(BehaviorMethod* method, const char* name, const BehaviorParameterOverrides* args, size_t argsSize, const char* deprecatedName);
+        void InitializeParameterOverrides(BehaviorValues* defaultValues, BehaviorParameterOverrides* paramOverrides, size_t paramOverridesCount);
     };
 
     //////////////////////////////////////////////////////////////////////////
@@ -2464,17 +2468,7 @@ namespace AZ
     BehaviorContext::GlobalMethodBuilder BehaviorContext::Method(const char* name, Function f, const char* deprecatedName, BehaviorValues* defaultValues, const char* dbgDesc)
     {
         BehaviorParameterOverridesArray<Function> parameterOverrides;
-        if (defaultValues)
-        {
-            AZ_Assert(defaultValues->GetNumValues() <= parameterOverrides.size(), "You can't have more default values than the number of function arguments");
-            // Copy default values to parameter override structure
-            size_t startArgumentIndex = parameterOverrides.size() - defaultValues->GetNumValues();
-            for (size_t i = 0; i < defaultValues->GetNumValues(); ++i)
-            {
-                parameterOverrides[startArgumentIndex + i].m_defaultValue = defaultValues->GetDefaultValue(i);
-            }
-            delete defaultValues;
-        }
+        InitializeParameterOverrides(defaultValues, parameterOverrides.begin(), parameterOverrides.size());
         return Method(name, f, deprecatedName, parameterOverrides, dbgDesc);
     }
 
@@ -2502,53 +2496,10 @@ namespace AZ
         BehaviorMethod* method = aznew AZ::Internal::BehaviorMethodImpl(static_cast<FunctionCastType>(f), this, name);
         method->m_debugDescription = dbgDesc;
 
-        /*
-        ** check to see if the deprecated name is used, and ensure its not duplicated.
-        */
-
-        if (deprecatedName != nullptr)
-        {
-            auto itr = m_methods.find(deprecatedName);
-            if (itr != m_methods.end())
-            {
-                // now check to make sure that the deprecated name is not being used as a identical deprecated name for another method.
-                bool isDuplicate = false;
-                for (const auto& i : m_methods)
-                {
-                    if (i.second->GetDeprecatedName() == deprecatedName)
-                    {
-                        AZ_Warning("BehaviorContext", false, "Method %s is attempting to use a deprecated name of %s which is already in use for method %s! Deprecated name is ignored!", name, deprecatedName, i.first.c_str());
-                        isDuplicate = true;
-                        break;
-                    }
-                }
-
-                if (!isDuplicate)
-                {
-                    itr->second->SetDeprecatedName(deprecatedName);
-                }
-            }
-            else
-            {
-                AZ_Warning("BehaviorContext", false, "Method %s is attempting to use a deprecated name of %s which is already in use! Deprecated name is ignored!", name, deprecatedName);
-            }
-        }
-
-        // global method
-        if (!m_methods.insert(AZStd::make_pair(name, method)).second)
+        if (!MethodImpl(method, name, args.begin(), args.size(), deprecatedName))
         {
             AZ_Error("Reflection", false, "Method '%s' is already registered in the global context!", name);
-            delete method;
             return GlobalMethodBuilder(this, nullptr, nullptr);
-        }
-
-        size_t classPtrIndex = method->IsMember() ? 1 : 0;
-        for (size_t i = 0; i < args.size(); ++i)
-        {
-            method->SetArgumentName(i + classPtrIndex, args[i].m_name);
-            method->SetArgumentToolTip(i + classPtrIndex, args[i].m_toolTip);
-            method->SetDefaultValue(i + classPtrIndex, args[i].m_defaultValue);
-            method->OverrideParameterTraits(i + classPtrIndex, args[i].m_addTraits, args[i].m_removeTraits);
         }
 
         return GlobalMethodBuilder(this, name, method);
@@ -2931,4 +2882,4 @@ namespace AZ
 #include <AzCore/RTTI/AzStdOnDemandPrettyName.inl>
 #include <AzCore/RTTI/AzStdOnDemandReflection.inl>
 
-DECLARE_EBUS_EXTERN(BehaviorContextEvents);
+DECLARE_EBUS_EXTERN_DLL_MULTI_ADDRESS(BehaviorContextEvents);

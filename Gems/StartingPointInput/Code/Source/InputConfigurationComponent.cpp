@@ -102,7 +102,7 @@ namespace StartingPointInput
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/InputConfig.svg")
                         ->Attribute(AZ::Edit::Attributes::PrimaryAssetType, AZ::AzTypeInfo<InputEventBindingsAsset>::Uuid())
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
-                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/gameplay/input/")
+                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/components/reference/gameplay/input/")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &InputConfigurationComponent::m_inputEventBindingsAsset, "Input to event bindings",
                     "Asset containing input to event binding information.")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
