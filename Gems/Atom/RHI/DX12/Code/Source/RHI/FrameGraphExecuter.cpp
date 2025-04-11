@@ -151,7 +151,8 @@ namespace AZ
                     else
                     {
                         // And then create a new group for the current scope with dedicated [1, N] command lists.
-                        const uint32_t commandListCount = AZStd::max(AZ::DivideAndRoundUp(totalScopeCost, CommandListCostThreshold), 1u);
+                        const uint32_t commandListCount =
+                            AZStd::clamp(AZ::DivideAndRoundUp(totalScopeCost, CommandListCostThreshold), 1u, estimatedItemCount);
 
                         FrameGraphExecuteGroup* scopeContextGroup = AddGroup<FrameGraphExecuteGroup>();
                         scopeContextGroup->Init(static_cast<Device&>(scope.GetDevice()), scope, commandListCount, GetJobPolicy());
