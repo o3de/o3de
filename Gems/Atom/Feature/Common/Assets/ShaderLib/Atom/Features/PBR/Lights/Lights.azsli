@@ -52,7 +52,14 @@ void ApplyDirectLighting(Surface surface, inout LightingData lightingData, float
         real3 lightIntensity = real3(SceneSrg::m_debugLightingIntensity);
         real3 lightDirection = real3(SceneSrg::m_debugLightingDirection);
 
+        // Diffuse lighting is view-independent
         lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, lightIntensity, lightDirection);
-        lightingData.specularLighting += GetSpecularLighting(surface, lightingData, lightIntensity, lightDirection);
+
+        // Calculate specular lighting for each view
+        [unroll]
+        for (uint viewIndex = 0; viewIndex < SHADING_VIEW_COUNT; ++viewIndex)
+        {
+            lightingData.specularLighting[viewIndex] += GetSpecularLighting(surface, lightingData, lightIntensity, lightDirection, viewIndex);
+        }
     }
 }

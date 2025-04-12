@@ -20,7 +20,7 @@
 
 int GetPointLightShadowCubemapFace(const float3 targetPos, const float3 lightPos)
 {
-    const float3 toPoint = targetPos - lightPos;    
+    const float3 toPoint = targetPos - lightPos;
     const float maxElement = max(abs(toPoint.z), max(abs(toPoint.x), abs(toPoint.y)));
     if (toPoint.x == -maxElement)
     {
@@ -29,7 +29,7 @@ int GetPointLightShadowCubemapFace(const float3 targetPos, const float3 lightPos
     else if (toPoint.x == maxElement)
     {
         return 1;
-    }   
+    }
     else if (toPoint.y == -maxElement)
     {
         return 2;
@@ -42,31 +42,31 @@ int GetPointLightShadowCubemapFace(const float3 targetPos, const float3 lightPos
     {
         return 4;
     }
-    else 
+    else
     {
         return 5;
-    }   
+    }
 }
 
-// PointLight::m_shadowIndices actually consists of uint16_t x 6 on the CPU, but visible as a uint32_t x 3 on the GPU. 
+// PointLight::m_shadowIndices actually consists of uint16_t x 6 on the CPU, but visible as a uint32_t x 3 on the GPU.
 // This function returns the proper uint16_t value given an input face in the range 0-5
 int UnpackPointLightShadowIndex(const PointLight light, const int face)
 {
     const int index = face >> 1;
     const int shiftAmount = (face & 1) * 16;
     return (light.m_shadowIndices[index] >> shiftAmount) & 0xFFFF;
-} 
+}
 
 uint ComputeShadowIndex(const PointLight light, const Surface surface)
 {
     // shadow map size and bias are the same across all shadowmaps used by a specific point light, so just grab the first one
     const uint lightIndex0 = UnpackPointLightShadowIndex(light, 0);
     const float shadowmapSize = ViewSrg::m_projectedFilterParams[lightIndex0].m_shadowmapSize;
-    
+
     // Note that the normal bias offset could potentially move the shadowed position from one map to another map inside the same point light shadow.
     const float normalBias = ViewSrg::m_projectedShadows[lightIndex0].m_normalShadowBias;
     const float3 biasedPosition = surface.position + ComputeNormalShadowOffset(normalBias, surface.vertexNormal, shadowmapSize);
-    
+
     const int shadowCubemapFace = GetPointLightShadowCubemapFace(biasedPosition, light.m_position);
     return UnpackPointLightShadowIndex(light, shadowCubemapFace);
 }
@@ -79,14 +79,14 @@ void ApplyPointLight(PointLight light, Surface surface, inout LightingData light
     real posToLightDist = length(posToLight);
     real d2 = dot(posToLight, posToLight); // light distance squared
     real falloff = d2 * real(light.m_invAttenuationRadiusSquared);
-    
+
     // Only calculate shading if light is in range
     if (falloff < 1.0)
     {
         // Smoothly adjusts the light intensity so it reaches 0 at light.m_attenuationRadius distance
         real radiusAttenuation = 1.0 - (falloff * falloff);
         radiusAttenuation = radiusAttenuation * radiusAttenuation;
-        
+
         // Standard quadratic falloff
         d2 = max(0.001 * 0.001, d2); // clamp the light to at least 1mm away to avoid extreme values.
         real3 lightIntensity = (real3(light.m_rgbIntensityCandelas) / d2) * radiusAttenuation;
@@ -132,22 +132,25 @@ void ApplyPointLight(PointLight light, Surface surface, inout LightingData light
         lightingData.translucentBackLighting += GetBackLighting(surface, lightingData, lightIntensity, normalize(posToLight), transmissionDistance, posToLightDist);
 #endif
 
-        // Adjust the light direcion for specular based on bulb size
+        // Calculate specular lighting for each view
+        [unroll]
+        for (uint viewIndex = 0; viewIndex < SHADING_VIEW_COUNT; ++viewIndex)
+        {
+            // Calculate the reflection off the normal from the view direction
+            real3 reflectionDir = reflect(-lightingData.dirToCamera[viewIndex], surface.GetSpecularNormal());
 
-        // Calculate the reflection off the normal from the view direction
-        real3 reflectionDir = reflect(-lightingData.dirToCamera, surface.GetSpecularNormal());
+            // Calculate a vector from the reflection vector to the light
+            real3 reflectionPosToLight = posToLight - dot(posToLight, reflectionDir) * reflectionDir;
 
-        // Calculate a vector from the reflection vector to the light
-        real3 reflectionPosToLight = posToLight - dot(posToLight, reflectionDir) * reflectionDir;
+            // Adjust the direction to light based on the bulb size
+            real3 viewPosToLight = posToLight - reflectionPosToLight * saturate(real(light.m_bulbRadius) / length(reflectionPosToLight));
 
-        // Adjust the direction to light based on the bulb size
-        posToLight -= reflectionPosToLight * saturate(real(light.m_bulbRadius) / length(reflectionPosToLight));
-        
-        // Adjust the intensity of the light based on the bulb size to conserve energy
-        real sphereIntensityNormalization = GetIntensityAdjustedByRadiusAndRoughness(surface.roughnessA, real(light.m_bulbRadius), d2);
+            // Adjust the intensity of the light based on the bulb size to conserve energy
+            real sphereIntensityNormalization = GetIntensityAdjustedByRadiusAndRoughness(surface.roughnessA, real(light.m_bulbRadius), d2);
 
-        // Specular contribution
-        lightingData.specularLighting += sphereIntensityNormalization * GetSpecularLighting(surface, lightingData, lightIntensity, normalize(posToLight)) * litRatio;
+            // Specular contribution
+            lightingData.specularLighting[viewIndex] += sphereIntensityNormalization * GetSpecularLighting(surface, lightingData, lightIntensity, normalize(viewPosToLight), viewIndex) * litRatio;
+        }
     }
 }
 
@@ -164,9 +167,13 @@ void ValidatePointLight(PointLight light, Surface surface, inout LightingData li
 {
     const uint sampleCount = 512;
 
-    real3 diffuseAcc = real3(0.0, 0.0, 0.0);
-    real3 specularAcc = real3(0.0, 0.0, 0.0);
-    real3 translucentAcc = real3(0.0, 0.0, 0.0);
+    float3 diffuseAcc = float3(0.0, 0.0, 0.0);
+    float3 translucentAcc = float3(0.0, 0.0, 0.0);
+    float3 specularAcc[SHADING_VIEW_COUNT];
+    
+    [unroll]
+    for(uint viewIndex = 0; viewIndex < SHADING_VIEW_COUNT; ++viewIndex)
+        specularAcc[viewIndex] = float3(0.0, 0.0, 0.0);
 
     for (uint i = 0; i < sampleCount; ++i)
     {
@@ -178,12 +185,16 @@ void ValidatePointLight(PointLight light, Surface surface, inout LightingData li
 
     // Lighting value is in Candela, convert to Lumen for total light output of the light
     real3 intensityLumens = real3(light.m_rgbIntensityCandelas) * 4.0 * PI;
+
     // Each of the N samples will contribute intensity / N lumens. However it will radiate in
     // equal directions across the hemisphere, so we need to account for that
     real3 intensity = intensityLumens * INV_PI;
 
     lightingData.diffuseLighting += (diffuseAcc / real(sampleCount)) * intensity;
-    lightingData.specularLighting += (specularAcc / real(sampleCount)) * intensity;
+
+    [unroll]
+    for(uint viewIndex = 0; viewIndex < SHADING_VIEW_COUNT; ++viewIndex)
+        lightingData.specularLighting[viewIndex] += (specularAcc[viewIndex] / real(sampleCount)) * intensity;
 
 #if ENABLE_TRANSMISSION
     lightingData.translucentBackLighting += (translucentAcc / real(sampleCount)) * intensity;
@@ -216,12 +227,12 @@ void ApplyPointLights(Surface surface, inout LightingData lightingData)
 {
 #if ENABLE_LIGHT_CULLING
     lightingData.tileIterator.LoadAdvance();
-    
-    while( !lightingData.tileIterator.IsDone() ) 
-    { 
-        uint currLightIndex = lightingData.tileIterator.GetValue(); 
+
+    while( !lightingData.tileIterator.IsDone() )
+    {
+        uint currLightIndex = lightingData.tileIterator.GetValue();
         lightingData.tileIterator.LoadAdvance();
-    
+
         ApplyPointLightInternal(currLightIndex, surface, lightingData);
     }
 #else

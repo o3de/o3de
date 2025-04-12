@@ -13,15 +13,19 @@
 #include <Atom/Features/LightCulling/LightCullingTileIterator.azsli>
 #include <Atom/Features/PBR/LightingUtils.azsli>
 
+#ifndef SHADING_VIEW_COUNT
+#define SHADING_VIEW_COUNT 1
+#endif
+
 class LightingData
 {
     LightCullingTileIterator tileIterator;
-        
+
     uint lightingChannels;
 
     // Lighting outputs
     real3 diffuseLighting;
-    real3 specularLighting;
+    real3 specularLighting[SHADING_VIEW_COUNT];
     real3 translucentBackLighting;
 
     // Factors for the amount of diffuse and specular lighting applied
@@ -29,17 +33,17 @@ class LightingData
     real3 specularResponse;
 
     // (N . L) to accept below (N . L = 0) in scattering through thin objects
-    real transmissionNdLBias; 
-    
+    real transmissionNdLBias;
+
     // Shrink (absolute) offset towards the normal opposite direction to ensure correct shadow map projection
     real shrinkFactor;
 
-    // Attenuation applied to hide artifacts due to low-res shadow maps 
+    // Attenuation applied to hide artifacts due to low-res shadow maps
     real distanceAttenuation;
 
     // Normalized direction from surface to camera
-    real3 dirToCamera;
-    
+    real3 dirToCamera[SHADING_VIEW_COUNT];
+
     // Scaling term to approximate multiscattering contribution in specular BRDF
     real3 multiScatterCompensation;
 
@@ -50,38 +54,43 @@ class LightingData
     real2 brdf;
 
     // Normal . View
-    real NdotV;
+    real NdotV[SHADING_VIEW_COUNT];
 
     // Occlusion factors
     // 0 = dark, 1 = light
     real diffuseAmbientOcclusion;
     real specularOcclusion;
 
-    void Init(real3 positionWS, real3 normal, real roughnessLinear, float3 viewPosition);
+    void Init(float3 positionWS, real3 specularNormal, real roughnessLinear, float3 viewPosition[SHADING_VIEW_COUNT]);
     void CalculateMultiscatterCompensation(real3 specularF0, bool enabled);
     void FinalizeLighting();
     void FinalizeLighting(real3 transmissionTint);
 
-    real GetSpecularNdotV() { return NdotV; }
+    real GetSpecularNdotV() { return NdotV[0]; }
+    real GetSpecularNdotV(uint i) { return NdotV[i]; }
 };
 
-void LightingData::Init(real3 positionWS, real3 normal, real roughnessLinear, float3 viewPosition)
+void LightingData::Init(real3 positionWS, real3 specularNormal, real roughnessLinear, float3 viewPosition[SHADING_VIEW_COUNT])
 {
     diffuseLighting = real3(0.0, 0.0, 0.0);
-    specularLighting = real3(0.0, 0.0, 0.0);
     translucentBackLighting = real3(0.0, 0.0, 0.0);
     multiScatterCompensation = real3(1.0, 1.0, 1.0);
     emissiveLighting = real3(0.0, 0.0, 0.0);
     diffuseAmbientOcclusion = 1.0;
     specularOcclusion = 1.0;
-    
+
     lightingChannels = 0xFFFFFFFF;
 
-    dirToCamera = normalize(viewPosition - positionWS);
+    [unroll]
+    for(uint i = 0; i < SHADING_VIEW_COUNT; ++i)
+    {
+        specularLighting[i] = real3(0.0, 0.0, 0.0);
+        dirToCamera[i] = normalize(viewPosition[i] - positionWS);
+        NdotV[i] = saturate(dot(specularNormal, dirToCamera[i]));
+    }
 
     // sample BRDF map (indexed by smoothness values rather than roughness)
-    NdotV = saturate(dot(normal, dirToCamera));
-    real2 brdfUV = real2(NdotV, (1.0 - roughnessLinear));
+    real2 brdfUV = real2(NdotV[0], (1.0 - roughnessLinear));
     brdf = real2(PassSrg::m_brdfMap.Sample(PassSrg::LinearSampler, brdfUV).rg);
 }
 
@@ -92,13 +101,17 @@ void LightingData::CalculateMultiscatterCompensation(real3 specularF0, bool enab
 
 void LightingData::FinalizeLighting()
 {
-    specularLighting *= specularOcclusion;
-    diffuseLighting *= diffuseAmbientOcclusion;
-
-    if(!IsSpecularLightingEnabled())
+    [unroll]
+    for(uint i = 0; i < SHADING_VIEW_COUNT; ++i)
     {
-        specularLighting = real3(0, 0, 0);
+        specularLighting[i] *= specularOcclusion;
+        if(!IsSpecularLightingEnabled())
+        {
+            specularLighting[i] = real3(0, 0, 0);
+        }
     }
+
+    diffuseLighting *= diffuseAmbientOcclusion;
     if(!IsDiffuseLightingEnabled())
     {
         diffuseLighting = real3(0, 0, 0);

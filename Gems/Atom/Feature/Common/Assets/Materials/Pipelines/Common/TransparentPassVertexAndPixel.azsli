@@ -29,13 +29,16 @@ VsOutput VertexShader(VsInput IN, uint instanceId : SV_InstanceID)
 
 ForwardPassOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
 {
+    float3 views[SHADING_VIEW_COUNT];
+    views[0] = ViewSrg::m_worldPosition.xyz;    // Assume one view for forward pass for now
+
     // ------- Geometry -> Surface -> Lighting -------
 
     PixelGeometryData geoData = EvaluatePixelGeometry(IN, isFrontFace);
 
     Surface surface = EvaluateSurface(IN, geoData);
 
-    LightingData lightingData = EvaluateLighting(surface, IN.position, ViewSrg::m_worldPosition.xyz);
+    LightingData lightingData = EvaluateLighting(surface, IN.position, views);
 
     // ------- Output -------
 
@@ -51,7 +54,7 @@ ForwardPassOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
     diffuse += lightingData.emissiveLighting;
 
     // m_opacityAffectsSpecularFactor controls how much the alpha masks out specular contribution.
-    float3 specular = lightingData.specularLighting.rgb;
+    float3 specular = lightingData.specularLighting[0].rgb;
     specular = lerp(specular, specular * surface.alpha, surface.opacityAffectsSpecularFactor);
 
     OUT.m_color1.rgb = diffuse + specular;

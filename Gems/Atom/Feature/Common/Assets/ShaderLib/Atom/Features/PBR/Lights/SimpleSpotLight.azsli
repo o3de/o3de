@@ -17,7 +17,7 @@
 void ApplySimpleSpotLight(SimpleSpotLight light, Surface surface, inout LightingData lightingData)
 {
     real3 posToLight = real3(light.m_position - surface.position);
-    
+
     real3 dirToLight = normalize(posToLight);
     real dotWithDirection = dot(dirToLight, -real3(light.m_direction));
 
@@ -37,7 +37,7 @@ void ApplySimpleSpotLight(SimpleSpotLight light, Surface surface, inout Lighting
         // Smoothly adjusts the light intensity so it reaches 0 at light.m_attenuationRadius distance
         real radiusAttenuation = 1.0 - (falloff * falloff);
         radiusAttenuation = radiusAttenuation * radiusAttenuation;
-        
+
         // Standard quadratic falloff
         d2 = max(0.001 * 0.001, d2); // clamp the light to at least 1mm away to avoid extreme values.
         real3 lightIntensity = (real3(light.m_rgbIntensityCandelas) / d2) * radiusAttenuation;
@@ -73,21 +73,26 @@ void ApplySimpleSpotLight(SimpleSpotLight light, Surface surface, inout Lighting
         }
 
         if (dotWithDirection < cosInnerConeAngle) // in penumbra
-        {   
+        {
             // Normalize into 0.0 - 1.0 space.
             real penumbraMask = (dotWithDirection - real(light.m_cosOuterConeAngle)) / (cosInnerConeAngle - real(light.m_cosOuterConeAngle));
-            
+
             // Apply smoothstep
             penumbraMask = penumbraMask * penumbraMask * (3.0 - 2.0 * penumbraMask);
-            
+
             lightIntensity *= penumbraMask;
         }
 
         // Diffuse contribution
         lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, lightIntensity, posToLightDir) * litRatio;
 
-        // Specular contribution
-        lightingData.specularLighting += GetSpecularLighting(surface, lightingData, lightIntensity, posToLightDir);
+        // Calculate specular lighting for each view
+        [unroll]
+        for (uint viewIndex = 0; viewIndex < SHADING_VIEW_COUNT; ++viewIndex)
+        {
+            // Specular contribution
+            lightingData.specularLighting[viewIndex] += GetSpecularLighting(surface, lightingData, lightIntensity, posToLightDir, viewIndex) * litRatio;
+        }
     }
 }
 
@@ -108,12 +113,12 @@ void ApplySimpleSpotLights(Surface surface, inout LightingData lightingData)
 {
 #if ENABLE_LIGHT_CULLING
     lightingData.tileIterator.LoadAdvance();
-                
-    while( !lightingData.tileIterator.IsDone() ) 
-    { 
-        uint currLightIndex = lightingData.tileIterator.GetValue(); 
+
+    while( !lightingData.tileIterator.IsDone() )
+    {
+        uint currLightIndex = lightingData.tileIterator.GetValue();
         lightingData.tileIterator.LoadAdvance();
-    
+
         ApplySimpleSpotLightInternal(currLightIndex, surface, lightingData);
     }
 #else
@@ -121,7 +126,7 @@ void ApplySimpleSpotLights(Surface surface, inout LightingData lightingData)
     // For perf we cap light count. If it was not set by the pipeline it will use the value specified below
     // This is only applicable if ENABLE_LIGHT_CULLING is disabled (i.e no gpu culling)
     #ifndef ENABLE_SIMPLE_SPOTLIGHTS_CAP
-        #define ENABLE_SIMPLE_SPOTLIGHTS_CAP 20 
+        #define ENABLE_SIMPLE_SPOTLIGHTS_CAP 20
     #endif
 
     // Since there's no GPU culling for simple spot lights, we rely on culling done by CPU
