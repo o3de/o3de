@@ -98,7 +98,7 @@ namespace AZ::Internal
         }
         return this;
     }
-    void ClassBuilderBase::SetDeprecatedName(const char* name, const char* deprecatedName)
+    void ClassBuilderBase::SetDeprecatedName([[maybe_unused]] const char* name, const char* deprecatedName)
     {
         /*
          ** check to see if the deprecated name is used, and ensure its not duplicated.

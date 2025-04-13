@@ -131,7 +131,7 @@ namespace AZ::Internal
         m_ebus->m_destroyHandler = destroyHandler;
     }
 
-    void EBusBuilderBase::EventWithBusImpl(const char* name, const char* deprecatedName, AZStd::unordered_map<AZStd::string, BehaviorEBusEventSender>::iterator& insertIt)
+    void EBusBuilderBase::EventWithBusImpl([[maybe_unused]] const char* name, const char* deprecatedName, AZStd::unordered_map<AZStd::string, BehaviorEBusEventSender>::iterator& insertIt)
     {
         // do we have a deprecated name for this event?
         if (deprecatedName != nullptr)

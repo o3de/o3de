@@ -117,7 +117,7 @@ namespace AZ::Internal
 
     private:
         void HandlerImpl(BehaviorMethod* createHandler, BehaviorMethod* destroyHandler);
-        void EventWithBusImpl(const char* name, const char* deprecatedName, AZStd::unordered_map<AZStd::string, BehaviorEBusEventSender>::iterator& insertIt);
+        void EventWithBusImpl([[maybe_unused]] const char* name, const char* deprecatedName, AZStd::unordered_map<AZStd::string, BehaviorEBusEventSender>::iterator& insertIt);
     };
 }
 

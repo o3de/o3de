@@ -90,7 +90,7 @@ namespace AZ::Internal
         BehaviorClass* m_class;
 
     private:
-        void SetDeprecatedName(const char* name, const char* deprecatedName);
+        void SetDeprecatedName([[maybe_unused]] const char* name, const char* deprecatedName);
     };
 }
 
