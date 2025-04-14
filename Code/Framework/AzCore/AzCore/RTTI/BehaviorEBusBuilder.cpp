@@ -175,9 +175,6 @@ namespace AZ::Internal
                     insertIt->second.m_deprecatedName = deprecatedName;
                 }
             }
-
-            Base::m_currentAttributes = &insertIt->second.m_attributes;
-            Base::SetEBusEventSender(&insertIt->second);
         }
     }
 

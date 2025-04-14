@@ -166,6 +166,8 @@ namespace AZ::Internal
                         }
                     }
                 }
+                Base::m_currentAttributes = &insertIt.first->second.m_attributes;
+                Base::SetEBusEventSender(&insertIt.first->second);
             }
         }
 
@@ -433,6 +435,13 @@ namespace AZ
         {
             EBusSetIdFeatures<T>(behaviorEBus);
             behaviorEBus->m_queueFunction = QueueFunctionMethod<T>();
+
+            // Switch to Set (we store the name in the class)
+            m_ebuses.insert(AZStd::make_pair(behaviorEBus->m_name, behaviorEBus));
+            if (!behaviorEBus->m_deprecatedName.empty())
+            {
+                m_ebuses.insert(AZStd::make_pair(behaviorEBus->m_deprecatedName, behaviorEBus));
+            }
         }
 
         return EBusBuilder<T>(this, behaviorEBus);

@@ -1044,13 +1044,6 @@ namespace AZ
                     behaviorEBus->m_deprecatedName = deprecatedName;
                 }
             }
-
-            // Switch to Set (we store the name in the class)
-            m_ebuses.insert(AZStd::make_pair(behaviorEBus->m_name, behaviorEBus));
-            if (!behaviorEBus->m_deprecatedName.empty())
-            {
-                m_ebuses.insert(AZStd::make_pair(behaviorEBus->m_deprecatedName, behaviorEBus));
-            }
             return behaviorEBus;
         }
     }
