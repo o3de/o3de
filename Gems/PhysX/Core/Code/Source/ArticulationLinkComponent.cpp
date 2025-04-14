@@ -601,6 +601,7 @@ namespace PhysX
 
     physx::PxArticulationJointReducedCoordinate* ArticulationLinkComponent::GetDriveJoint()
     {
+        PHYSX_SCENE_READ_LOCK(m_link->getScene());
         return const_cast<physx::PxArticulationJointReducedCoordinate*>(
             static_cast<const ArticulationLinkComponent&>(*this).GetDriveJoint());
     }
@@ -609,6 +610,7 @@ namespace PhysX
     {
         if (auto* joint = GetDriveJoint())
         {
+            PHYSX_SCENE_WRITE_LOCK(m_link->getScene());
             joint->setMotion(GetPxArticulationAxis(jointAxis), GetPxArticulationMotion(jointMotionType));
         }
     }
@@ -617,6 +619,7 @@ namespace PhysX
     {
         if (auto* joint = GetDriveJoint())
         {
+            PHYSX_SCENE_READ_LOCK(m_link->getScene());
             return GetArticulationJointMotionType(joint->getMotion(GetPxArticulationAxis(jointAxis)));
         }
         return ArticulationJointMotionType::Locked;
@@ -626,6 +629,7 @@ namespace PhysX
     {
         if (auto* joint = GetDriveJoint())
         {
+            PHYSX_SCENE_WRITE_LOCK(m_link->getScene());
             const physx::PxArticulationLimit limit(limitPair.first, limitPair.second);
             joint->setLimitParams(GetPxArticulationAxis(jointAxis), limit);
         }
@@ -635,6 +639,7 @@ namespace PhysX
     {
         if (auto* joint = GetDriveJoint())
         {
+            PHYSX_SCENE_READ_LOCK(m_link->getScene());
             const auto limit = joint->getLimitParams(GetPxArticulationAxis(jointAxis));
             return { limit.low, limit.high };
         }
@@ -645,6 +650,7 @@ namespace PhysX
     {
         if (auto* joint = GetDriveJoint())
         {
+            PHYSX_SCENE_WRITE_LOCK(m_link->getScene());
             const auto articulationAxis = GetPxArticulationAxis(jointAxis);
             auto driveParams = joint->getDriveParams(articulationAxis);
             driveParams.stiffness = stiffness;
@@ -656,6 +662,7 @@ namespace PhysX
     {
         if (auto* joint = GetDriveJoint())
         {
+            PHYSX_SCENE_READ_LOCK(m_link->getScene());
             auto driveParams = joint->getDriveParams(GetPxArticulationAxis(jointAxis));
             return driveParams.stiffness;
         }
@@ -666,6 +673,7 @@ namespace PhysX
     {
         if (auto* joint = GetDriveJoint())
         {
+            PHYSX_SCENE_READ_LOCK(m_link->getScene());
             const auto articulationAxis = GetPxArticulationAxis(jointAxis);
             auto driveParams = joint->getDriveParams(articulationAxis);
             driveParams.damping = damping;
@@ -677,6 +685,7 @@ namespace PhysX
     {
         if (auto* joint = GetDriveJoint())
         {
+            PHYSX_SCENE_READ_LOCK(m_link->getScene());
             auto driveParams = joint->getDriveParams(GetPxArticulationAxis(jointAxis));
             return driveParams.damping;
         }
@@ -687,6 +696,7 @@ namespace PhysX
     {
         if (auto* joint = GetDriveJoint())
         {
+            PHYSX_SCENE_WRITE_LOCK(m_link->getScene());
             const auto articulationAxis = GetPxArticulationAxis(jointAxis);
             auto driveParams = joint->getDriveParams(articulationAxis);
             driveParams.maxForce = maxForce;
@@ -698,6 +708,7 @@ namespace PhysX
     {
         if (auto* joint = GetDriveJoint())
         {
+            PHYSX_SCENE_READ_LOCK(m_link->getScene());
             auto driveParams = joint->getDriveParams(GetPxArticulationAxis(jointAxis));
             return driveParams.maxForce;
         }
@@ -708,6 +719,7 @@ namespace PhysX
     {
         if (auto* joint = GetDriveJoint())
         {
+            PHYSX_SCENE_READ_LOCK(m_link->getScene());
             const auto articulationAxis = GetPxArticulationAxis(jointAxis);
             auto driveParams = joint->getDriveParams(articulationAxis);
             driveParams.driveType =
@@ -720,6 +732,7 @@ namespace PhysX
     {
         if (auto* joint = GetDriveJoint())
         {
+            PHYSX_SCENE_READ_LOCK(m_link->getScene());
             auto driveParams = joint->getDriveParams(GetPxArticulationAxis(jointAxis));
             return driveParams.driveType == physx::PxArticulationDriveType::eACCELERATION;
         }
@@ -730,6 +743,7 @@ namespace PhysX
     {
         if (auto* joint = GetDriveJoint())
         {
+            PHYSX_SCENE_WRITE_LOCK(m_link->getScene());
             joint->setDriveTarget(GetPxArticulationAxis(jointAxis), target);
         }
     }
@@ -738,6 +752,7 @@ namespace PhysX
     {
         if (auto* joint = GetDriveJoint())
         {
+            PHYSX_SCENE_READ_LOCK(m_link->getScene());
             return joint->getDriveTarget(GetPxArticulationAxis(jointAxis));
         }
         return 0.0f;
@@ -747,6 +762,7 @@ namespace PhysX
     {
         if (auto* joint = GetDriveJoint())
         {
+            PHYSX_SCENE_READ_LOCK(m_link->getScene());
             joint->setDriveVelocity(GetPxArticulationAxis(jointAxis), targetVelocity);
         }
     }
@@ -755,6 +771,7 @@ namespace PhysX
     {
         if (auto* joint = GetDriveJoint())
         {
+            PHYSX_SCENE_READ_LOCK(m_link->getScene());
             return joint->getDriveVelocity(GetPxArticulationAxis(jointAxis));
         }
         return 0.0f;
@@ -764,6 +781,7 @@ namespace PhysX
     {
         if (auto* joint = GetDriveJoint())
         {
+            PHYSX_SCENE_READ_LOCK(m_link->getScene());
             return joint->getJointPosition(GetPxArticulationAxis(jointAxis));
         }
         return 0.0f;
@@ -773,6 +791,7 @@ namespace PhysX
     {
         if (auto* joint = GetDriveJoint())
         {
+            PHYSX_SCENE_READ_LOCK(m_link->getScene());
             return joint->getJointVelocity(GetPxArticulationAxis(jointAxis));
         }
         return 0.0f;
@@ -782,6 +801,7 @@ namespace PhysX
     {
         if (auto* joint = GetDriveJoint())
         {
+            PHYSX_SCENE_READ_LOCK(m_link->getScene());
             joint->setFrictionCoefficient(frictionCoefficient);
         }
     }
@@ -790,6 +810,7 @@ namespace PhysX
     {
         if (auto* joint = GetDriveJoint())
         {
+            PHYSX_SCENE_READ_LOCK(m_link->getScene());
             return joint->getFrictionCoefficient();
         }
         return 0.0f;
@@ -799,6 +820,7 @@ namespace PhysX
     {
         if (auto* joint = GetDriveJoint())
         {
+            PHYSX_SCENE_WRITE_LOCK(m_link->getScene());
             joint->setMaxJointVelocity(maxJointVelocity);
         }
     }
@@ -807,6 +829,7 @@ namespace PhysX
     {
         if (auto* joint = GetDriveJoint())
         {
+            PHYSX_SCENE_READ_LOCK(m_link->getScene());
             return joint->getMaxJointVelocity();
         }
         return 0.0f;
@@ -855,6 +878,7 @@ namespace PhysX
     {
         if (auto* sensor = GetSensor(sensorIndex))
         {
+            PHYSX_SCENE_READ_LOCK(m_link->getScene());
             return PxMathConvert(sensor->getRelativePose());
         }
         return AZ::Transform::CreateIdentity();
@@ -864,6 +888,7 @@ namespace PhysX
     {
         if (auto* sensor = GetSensor(sensorIndex))
         {
+            PHYSX_SCENE_READ_LOCK(m_link->getScene());
             sensor->setRelativePose(PxMathConvert(sensorTransform));
         }
     }
@@ -872,6 +897,7 @@ namespace PhysX
     {
         if (auto* sensor = GetSensor(sensorIndex))
         {
+            PHYSX_SCENE_READ_LOCK(m_link->getScene());
             return PxMathConvert(sensor->getForces().force);
         }
         return AZ::Vector3::CreateZero();
@@ -881,6 +907,7 @@ namespace PhysX
     {
         if (auto* sensor = GetSensor(sensorIndex))
         {
+            PHYSX_SCENE_READ_LOCK(m_link->getScene());
             return PxMathConvert(sensor->getForces().torque);
         }
         return AZ::Vector3::CreateZero();
