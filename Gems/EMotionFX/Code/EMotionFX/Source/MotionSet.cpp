@@ -895,13 +895,13 @@ namespace EMotionFX
 
     void MotionSet::Log()
     {
+#if defined(CARBONATED) && defined(CARBONATED_EMOTIONFX_CONCURRENCY_RW)
+        AZStd::shared_lock<AZStd::shared_mutex> readLock(m_motionEntriesMutex);  // here because GetNumMotionEntries() reads m_motionEntries
+#endif
         AZ_Printf("EMotionFX", " - MotionSet");
         AZ_Printf("EMotionFX", "     + Name = '%s'", m_name.c_str());
         AZ_Printf("EMotionFX", "     - Entries (%d)", GetNumMotionEntries());
 
-#if defined(CARBONATED) && defined(CARBONATED_EMOTIONFX_CONCURRENCY_RW)
-        AZStd::shared_lock<AZStd::shared_mutex> readLock(m_motionEntriesMutex);
-#endif
         int nr = 0;
         for (const auto& item : m_motionEntries)
         {
