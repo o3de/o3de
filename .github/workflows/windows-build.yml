@@ -138,10 +138,10 @@ jobs:
 
       - name: Configure environment
         run: |
-          echo "Installing dependancies"
+          echo "Installing dependencies"
           echo "Getting python..."
           python\get_python.bat
-          echo "Installing additional python dependancies..."
+          echo "Installing additional python dependencies..."
           python\pip.sh install tempfile2 PyGithub
           
       - name: Build ${{ inputs.type }}

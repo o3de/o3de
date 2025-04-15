@@ -141,7 +141,7 @@ jobs:
         # Install dependencies for gradle and clang builds from the NDK
         continue-on-error: true
         run: |
-          echo "Installing dependancies"
+          echo "Installing dependencies"
           echo "Getting python..."
           python\get_python.bat
 

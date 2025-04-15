@@ -141,13 +141,13 @@ jobs:
         # Install dependencies. The desktop packages are for tests and assetprocessor
         continue-on-error: true
         run: |
-          echo "Installing dependancies"
+          echo "Installing dependencies"
           pushd ./scripts/build/build_node/Platform/Linux
           sudo ./install-ubuntu.sh
           popd
           echo "Getting python..."
           ./python/get_python.sh
-          echo "Installing additional python dependancies..."
+          echo "Installing additional python dependencies..."
           ./python/pip.sh install tempfile2 PyGithub
 
           # If desktop is true, install desktop and x11 packages, otherwise install base packages
