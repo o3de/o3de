@@ -370,8 +370,14 @@ namespace EMotionFX
         }
 
         // Reset all motion entries in the motion sets of the current motion.
+#if defined(CARBONATED) && defined(CARBONATED_EMOTIONFX_CONCURRENCY_RW)
+        for (MotionSet* motionSet : m_motionSets)
+        {
+            AZStd::shared_lock<AZStd::shared_mutex> readLock(motionSet->GetMotionEntriesMutex());
+#else
         for (const MotionSet* motionSet : m_motionSets)
         {
+#endif
             const EMotionFX::MotionSet::MotionEntries& motionEntries = motionSet->GetMotionEntries();
             for (const auto& item : motionEntries)
             {

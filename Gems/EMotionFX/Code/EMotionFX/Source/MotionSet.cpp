@@ -262,8 +262,11 @@ namespace EMotionFX
     // Remove all motion entries from the set.
     void MotionSet::Clear()
     {
+#if defined(CARBONATED) && defined(CARBONATED_EMOTIONFX_CONCURRENCY_RW)
+        AZStd::unique_lock<AZStd::shared_mutex> writeLock(m_motionEntriesMutex);
+#else
         MCore::LockGuardRecursive lock(m_mutex);
-
+#endif
         for (const auto& item : m_motionEntries)
         {
             delete item.second;
@@ -275,7 +278,11 @@ namespace EMotionFX
 
     void MotionSet::AddMotionEntry(MotionEntry* motionEntry)
     {
+#if defined(CARBONATED) && defined(CARBONATED_EMOTIONFX_CONCURRENCY_RW)
+        AZStd::unique_lock<AZStd::shared_mutex> writeLock(m_motionEntriesMutex);
+#else
         MCore::LockGuardRecursive lock(m_mutex);
+#endif
         m_motionEntries.insert(AZStd::make_pair(motionEntry->GetId(), motionEntry));
     }
 
@@ -289,10 +296,15 @@ namespace EMotionFX
 
 
     // Build a list of unique string id values from all motion set entries.
+#if defined(CARBONATED) && defined(CARBONATED_EMOTIONFX_CONCURRENCY_RW)
+    void MotionSet::BuildIdStringList(AZStd::vector<AZStd::string>& idStrings)
+    {
+        AZStd::shared_lock<AZStd::shared_mutex> readLock(m_motionEntriesMutex);
+#else
     void MotionSet::BuildIdStringList(AZStd::vector<AZStd::string>& idStrings) const
     {
         MCore::LockGuardRecursive lock(m_mutex);
-
+#endif
         // Iterate through all entries and add their unique id strings to the given list.
         const size_t numMotionEntries = m_motionEntries.size();
         idStrings.reserve(numMotionEntries);
@@ -317,6 +329,27 @@ namespace EMotionFX
         return m_motionEntries;
     }
 
+#if defined(CARBONATED) && defined(CARBONATED_EMOTIONFX_CONCURRENCY_RW)
+    void MotionSet::RecursiveGetMotions(AZStd::unordered_set<Motion*>& childMotions)
+    {
+        if (GetIsOwnedByRuntime())
+        {
+            return;
+        }
+        {
+            AZStd::shared_lock<AZStd::shared_mutex> readLock(m_motionEntriesMutex);
+            for (const auto& item : m_motionEntries)
+            {
+                MotionEntry* motionEntry = item.second;
+                childMotions.insert(motionEntry->GetMotion());
+            }
+        }
+        for (MotionSet* childMotionSet : m_childSets)
+        {
+            childMotionSet->RecursiveGetMotions(childMotions);
+        }
+    }
+#else
     void MotionSet::RecursiveGetMotions(AZStd::unordered_set<Motion*>& childMotions) const
     {
         if (GetIsOwnedByRuntime())
@@ -333,20 +366,29 @@ namespace EMotionFX
             childMotionSet->RecursiveGetMotions(childMotions);
         }
     }
-
+#endif
+        
     void MotionSet::ReserveMotionEntries(size_t numMotionEntries)
     {
+#if defined(CARBONATED) && defined(CARBONATED_EMOTIONFX_CONCURRENCY_RW)
+        AZStd::unique_lock<AZStd::shared_mutex> writeLock(m_motionEntriesMutex);
+#else
         MCore::LockGuardRecursive lock(m_mutex);
-
+#endif
         m_motionEntries.reserve(numMotionEntries);
     }
 
 
     // Find the motion entry for a given motion.
+#if defined(CARBONATED) && defined(CARBONATED_EMOTIONFX_CONCURRENCY_RW)
+    MotionSet::MotionEntry* MotionSet::FindMotionEntry(const Motion* motion)
+    {
+        AZStd::shared_lock<AZStd::shared_mutex> lockRead(m_motionEntriesMutex);
+#else
     MotionSet::MotionEntry* MotionSet::FindMotionEntry(const Motion* motion) const
     {
         MCore::LockGuardRecursive lock(m_mutex);
-
+#endif
         for (const auto& item : m_motionEntries)
         {
             MotionEntry* motionEntry = item.second;
@@ -363,10 +405,21 @@ namespace EMotionFX
 
     void MotionSet::RemoveMotionEntry(MotionEntry* motionEntry)
     {
+#if defined(CARBONATED) && defined(CARBONATED_EMOTIONFX_CONCURRENCY_RW)
+        {
+            AZStd::unique_lock<AZStd::shared_mutex> writeLock(m_motionEntriesMutex);
+            m_motionEntries.erase(motionEntry->GetId());
+        }
+        {
+            MCore::LockGuardRecursive lock(m_mutex);
+            delete motionEntry;
+        }
+#else
         MCore::LockGuardRecursive lock(m_mutex);
 
         m_motionEntries.erase(motionEntry->GetId());
         delete motionEntry;
+#endif
     }
 
 
@@ -404,10 +457,15 @@ namespace EMotionFX
 
 
     // Find the motion entry by a given string.
+#if defined(CARBONATED) && defined(CARBONATED_EMOTIONFX_CONCURRENCY_RW)
+    MotionSet::MotionEntry* MotionSet::FindMotionEntryById(const AZStd::string& motionId)
+    {
+        AZStd::shared_lock<AZStd::shared_mutex> lockRead(m_motionEntriesMutex);
+#else
     MotionSet::MotionEntry* MotionSet::FindMotionEntryById(const AZStd::string& motionId) const
     {
         MCore::LockGuardRecursive lock(m_mutex);
-
+#endif
         const auto iterator = m_motionEntries.find(motionId);
         if (iterator == m_motionEntries.end())
         {
@@ -417,12 +475,16 @@ namespace EMotionFX
         return iterator->second;
     }
 
-
+        
     // Find the motion entry by string ID.
+#if defined(CARBONATED) && defined(CARBONATED_EMOTIONFX_CONCURRENCY_RW)
+    MotionSet::MotionEntry* MotionSet::RecursiveFindMotionEntryById(const AZStd::string& motionId)
+    {
+#else
     MotionSet::MotionEntry* MotionSet::RecursiveFindMotionEntryById(const AZStd::string& motionId) const
     {
         MCore::LockGuardRecursive lock(m_mutex);
-
+#endif
         // Is there a motion entry with the given id in the current motion set?
         MotionEntry* entry = FindMotionEntryById(motionId);
         if (entry)
@@ -443,7 +505,12 @@ namespace EMotionFX
 
 
     // Find motion by string ID.
+#if defined(CARBONATED) && defined(CARBONATED_EMOTIONFX_CONCURRENCY_RW)
+    Motion* MotionSet::RecursiveFindMotionById(const AZStd::string& motionId, bool loadOnDemand)
+    // keep the lock below because of LoadMotion()
+#else
     Motion* MotionSet::RecursiveFindMotionById(const AZStd::string& motionId, bool loadOnDemand) const
+#endif
     {
         MCore::LockGuardRecursive lock(m_mutex);
 
@@ -512,6 +579,9 @@ namespace EMotionFX
 
     void MotionSet::SetMotionEntryId(MotionEntry* motionEntry, const AZStd::string& newMotionId)
     {
+#if defined(CARBONATED)&& defined(CARBONATED_EMOTIONFX_CONCURRENCY_RW)
+        AZStd::unique_lock<AZStd::shared_mutex> writeLock(m_motionEntriesMutex);
+#endif
         const AZStd::string oldStringId = motionEntry->GetId();
 
         motionEntry->SetId(newMotionId);
@@ -576,6 +646,10 @@ namespace EMotionFX
     // Pre-load all motions.
     void MotionSet::Preload()
     {
+#if defined(CARBONATED)&& defined(CARBONATED_EMOTIONFX_CONCURRENCY_RW)
+        AZStd::shared_lock<AZStd::shared_mutex> lockRead(m_motionEntriesMutex);
+        // keep the lock below because of LoadMotion()
+#endif
         MCore::LockGuardRecursive lock(m_mutex);
 
         // Pre-load motions for all motion entries.
@@ -602,6 +676,16 @@ namespace EMotionFX
     // Reload all motions.
     void MotionSet::Reload()
     {
+#if defined(CARBONATED) && defined(CARBONATED_EMOTIONFX_CONCURRENCY_RW)
+        {
+            AZStd::unique_lock<AZStd::shared_mutex> writeLock(m_motionEntriesMutex);
+            for (const auto& item : m_motionEntries)
+            {
+                MotionEntry* motionEntry = item.second;
+                motionEntry->Reset();
+            }
+        }
+#else
         MCore::LockGuardRecursive lock(m_mutex);
 
         for (const auto& item : m_motionEntries)
@@ -609,7 +693,7 @@ namespace EMotionFX
             MotionEntry* motionEntry = item.second;
             motionEntry->Reset();
         }
-
+#endif
         // Pre-load the motions again.
         Preload();
     }
@@ -811,6 +895,9 @@ namespace EMotionFX
 
     void MotionSet::Log()
     {
+#if defined(CARBONATED) && defined(CARBONATED_EMOTIONFX_CONCURRENCY_RW)
+        AZStd::shared_lock<AZStd::shared_mutex> readLock(m_motionEntriesMutex);  // here because GetNumMotionEntries() reads m_motionEntries
+#endif
         AZ_Printf("EMotionFX", " - MotionSet");
         AZ_Printf("EMotionFX", "     + Name = '%s'", m_name.c_str());
         AZ_Printf("EMotionFX", "     - Entries (%d)", GetNumMotionEntries());
@@ -825,8 +912,14 @@ namespace EMotionFX
     }
 
 
+#if defined(CARBONATED) && defined(CARBONATED_EMOTIONFX_CONCURRENCY_RW)
+    size_t MotionSet::GetNumMorphMotions()
+    {
+        AZStd::shared_lock<AZStd::shared_mutex> readLock(m_motionEntriesMutex);
+#else
     size_t MotionSet::GetNumMorphMotions() const
     {
+#endif
         size_t numMorphMotions = 0;
         const MotionEntries& motionEntries = GetMotionEntries();
         for (const auto& item : motionEntries)
