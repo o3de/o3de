@@ -31,6 +31,26 @@ namespace AZ::DocumentPropertyEditor
         using OnChangedCallbackPrefixTree = AZ::Dom::DomPrefixTree<AZStd::function<Dom::Value(const Dom::Value&)>>;
         OnChangedCallbackPrefixTree m_onChangedCallbacks;
 
+        // Given a container node (The PropertyEditor node that represents the root of a container)
+        // get a AZ::Dom::Value that represents its contents.
+        AZ::Dom::Value GetContainerValue(void* containerInstance, const AZ::Dom::Value& containerNode)
+        {
+            AZ::Dom::Value resultValue;
+            auto typeIdAttribute = containerNode.FindMember(Nodes::PropertyEditor::ValueType.GetName());
+            if (typeIdAttribute != containerNode.MemberEnd())
+            {
+                AZ::TypeId typeId = AZ::Dom::Utils::DomValueToTypeId(typeIdAttribute->second);
+                if (const AZ::SerializeContext::ClassData* classData = m_serializeContext->FindClassData(typeId))
+                {
+                    AZ::JsonSerializerSettings storeSettings;
+                    // Defaults must be kept to make sure a complete object is written to the Dom::Value
+                    storeSettings.m_keepDefaults = true;
+                    AZ::Dom::Utils::StoreViaJsonSerialization(containerInstance, nullptr, typeId, resultValue, storeSettings);
+                }
+            }
+            return resultValue;
+        }
+
         //! This represents a container or associative container instance and has methods
         //! for interacting with the container.
         struct BoundContainer
@@ -134,20 +154,32 @@ namespace AZ::DocumentPropertyEditor
 
             void OnClear(ReflectionAdapterReflectionImpl* impl, const AZ::Dom::Path& path)
             {
+                auto containerNode = GetContainerNode(impl, path);
+
                 m_container->ClearElements(m_containerInstance, impl->m_serializeContext);
 
-                auto containerNode = GetContainerNode(impl, path);
-                Nodes::PropertyEditor::ChangeNotify.InvokeOnDomNode(containerNode);
+                // notify the new value in the container so that listeners can update dom / store overrides / undo redo
+                AZ::Dom::Value newValue = impl->GetContainerValue(m_containerInstance, containerNode);
+                Nodes::PropertyEditor::OnChanged.InvokeOnDomNode(containerNode, newValue, Nodes::ValueChangeType::InProgressEdit);
+                Nodes::PropertyEditor::OnChanged.InvokeOnDomNode(containerNode, newValue, Nodes::ValueChangeType::FinishedEdit);
+
                 impl->m_adapter->NotifyResetDocument();
             }
 
             void StoreReservedInstance(ReflectionAdapterReflectionImpl* impl, const AZ::Dom::Path& path)
             {
-                m_container->StoreElement(m_containerInstance, m_reservedElementInstance);
                 auto containerNode = GetContainerNode(impl, path);
-                Nodes::PropertyEditor::ChangeNotify.InvokeOnDomNode(containerNode);
-                impl->m_adapter->NotifyResetDocument();
-                m_reservedElementInstance = nullptr;
+
+                m_container->StoreElement(m_containerInstance, m_reservedElementInstance);
+
+                // Notify that the document has changed with the new value in the container:
+                AZ::Dom::Value newValue = impl->GetContainerValue(m_containerInstance, containerNode);
+                Nodes::PropertyEditor::OnChanged.InvokeOnDomNode(containerNode, newValue, Nodes::ValueChangeType::InProgressEdit);
+                Nodes::PropertyEditor::OnChanged.InvokeOnDomNode(containerNode, newValue, Nodes::ValueChangeType::FinishedEdit);
+
+                // rebuild the view based on the new contents, which could be many rows.
+                // This deletes the 'this' pointer!
+                impl->m_adapter->NotifyResetDocument(); 
             }
 
             void OnAddElement(ReflectionAdapterReflectionImpl* impl, const AZ::Dom::Path& path)
@@ -430,21 +462,30 @@ namespace AZ::DocumentPropertyEditor
 
             void OnRemoveElement(ReflectionAdapterReflectionImpl* impl, const AZ::Dom::Path& path)
             {
-                const AZ::SerializeContext::ClassElement* containerClassElement =
-                    m_container->GetElement(m_container->GetDefaultElementNameCrc());
+                auto containerNode = GetContainerNode(impl, path);
+                const AZ::SerializeContext::ClassElement* containerClassElement = m_container->GetElement(m_container->GetDefaultElementNameCrc());
                 auto elementInstance = m_container->GetElementByIndex(m_containerInstance, containerClassElement, m_elementIndex);
                 [[maybe_unused]] const bool elementRemoved = m_container->RemoveElement(m_containerInstance, elementInstance, impl->m_serializeContext);
                 AZ_Assert(elementRemoved, "could not remove element!");
-                auto containerNode = GetContainerNode(impl, path);
-                Nodes::PropertyEditor::ChangeNotify.InvokeOnDomNode(containerNode);
+
+                // notify about the new values in the container:
+                AZ::Dom::Value newValue = impl->GetContainerValue(m_containerInstance, containerNode);
+                Nodes::PropertyEditor::OnChanged.InvokeOnDomNode(containerNode, newValue, Nodes::ValueChangeType::InProgressEdit);
+                Nodes::PropertyEditor::OnChanged.InvokeOnDomNode(containerNode, newValue, Nodes::ValueChangeType::FinishedEdit);
+
                 impl->m_adapter->NotifyResetDocument();
             }
 
             void OnMoveElement(ReflectionAdapterReflectionImpl* impl, const AZ::Dom::Path& path, bool moveForward)
             {
-                m_container->SwapElements(m_containerInstance, m_elementIndex, (moveForward ? m_elementIndex + 1 : m_elementIndex - 1));
                 auto containerNode = GetContainerNode(impl, path);
-                Nodes::PropertyEditor::ChangeNotify.InvokeOnDomNode(containerNode);
+                m_container->SwapElements(m_containerInstance, m_elementIndex, (moveForward ? m_elementIndex + 1 : m_elementIndex - 1));
+
+                //  notify about the new values in the container:
+                AZ::Dom::Value newValue = impl->GetContainerValue(m_containerInstance, containerNode);
+                Nodes::PropertyEditor::OnChanged.InvokeOnDomNode(containerNode, newValue, Nodes::ValueChangeType::InProgressEdit);
+                Nodes::PropertyEditor::OnChanged.InvokeOnDomNode(containerNode, newValue, Nodes::ValueChangeType::FinishedEdit);
+
                 impl->m_adapter->NotifyResetDocument();
             }
 
@@ -647,7 +688,10 @@ namespace AZ::DocumentPropertyEditor
                     else
                     {
                         // Otherwise use Json Serialization to copy the Dom Value directly into the valuePointer address
-                        resultCode = AZ::Dom::Utils::LoadViaJsonSerialization(valuePointer, valueType, newValue);
+                        // containers will always show their full value, so clear them
+                        JsonDeserializerSettings settings;
+                        settings.m_clearContainers = true;
+                        resultCode = AZ::Dom::Utils::LoadViaJsonSerialization(valuePointer, valueType, newValue, settings);
                         if (resultCode.GetProcessing() == AZ::JsonSerializationResult::Processing::Halted)
                         {
                             AZ_Error(
@@ -1318,6 +1362,7 @@ namespace AZ::DocumentPropertyEditor
         m_impl->m_builder.AddMessageHandler(this, Nodes::Adapter::SetNodeDisabled);
         m_impl->m_builder.AddMessageHandler(this, Nodes::Adapter::QuerySubclass);
         m_impl->m_builder.AddMessageHandler(this, Nodes::Adapter::AddContainerSubclass);
+
         m_impl->m_onChangedCallbacks.Clear();
         m_impl->m_containers.Clear();
         if (m_instance != nullptr)
@@ -1484,6 +1529,8 @@ namespace AZ::DocumentPropertyEditor
             }
         };
 
+        // note that most container operations delete the 'this' pointer as they cause a refresh, which
+        // clears the container nodes.
         auto handleContainerOperation = [&]()
         {
             if (message.m_messageOrigin.Size() == 0)
