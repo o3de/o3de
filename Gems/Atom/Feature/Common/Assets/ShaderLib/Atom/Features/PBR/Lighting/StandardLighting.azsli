@@ -41,7 +41,7 @@ real3 GetDiffuseLighting(Surface surface, LightingData lightingData, real3 light
 
 real3 GetDiffuseLighting(Surface surface, LightingData lightingData, real3 lightIntensity, real3 dirToLight, uint viewIndex)
 {
-    GetDiffuseLighting(surface, lightingData, lightIntensity, dirToLight, 0);
+    return GetDiffuseLighting(surface, lightingData, lightIntensity, dirToLight, 0);
 }
 
 real3 GetSpecularLighting(Surface surface, LightingData lightingData, const real3 lightIntensity, const real3 dirToLight, uint viewIndex)

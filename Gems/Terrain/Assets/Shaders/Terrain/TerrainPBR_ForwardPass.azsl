@@ -102,6 +102,9 @@ void GatherSurfaceDataFromClipmaps(
 
 ForwardPassOutput TerrainPBR_MainPassPS(VSOutput input)
 {
+    float3 views[SHADING_VIEW_COUNT];
+    views[0] = ViewSrg::m_worldPosition.xyz;    // Assume one view for forward pass for now
+
     // ------- Surface -------
     Surface surface;
     surface.position = input.m_worldPosition.xyz;
@@ -162,13 +165,13 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput input)
 
     // Light iterator
     lightingData.tileIterator.Init(input.m_position, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
-    lightingData.Init(surface.position, surface.normal, surface.roughnessLinear, ViewSrg::m_worldPosition.xyz);
+    lightingData.Init(surface.position, surface.normal, surface.roughnessLinear, views);
 
     // Shadow, Occlusion
     lightingData.diffuseAmbientOcclusion = detailSurface.m_occlusion;
 
     // Diffuse and Specular response
-    lightingData.specularResponse = FresnelSchlickWithRoughness(lightingData.NdotV, surface.specularF0, surface.roughnessLinear);
+    lightingData.specularResponse = FresnelSchlickWithRoughness(lightingData.GetSpecularNdotV(), surface.specularF0, surface.roughnessLinear);
     lightingData.diffuseResponse = 1.0f - lightingData.specularResponse;
 
     const float alpha = 1.0f;

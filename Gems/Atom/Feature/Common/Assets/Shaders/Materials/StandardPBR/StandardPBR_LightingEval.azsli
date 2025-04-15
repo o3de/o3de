@@ -20,7 +20,7 @@
 void InitializeLightingData_StandardPBR(inout Surface surface, float4 screenPosition, float3 viewPosition[SHADING_VIEW_COUNT], inout LightingData lightingData)
 {
     // --- Base PBR ---
-    InitializeLightingData_BasePBR(surface, screenPosition, viewPosition[SHADING_VIEW_COUNT], lightingData);
+    InitializeLightingData_BasePBR(surface, screenPosition, viewPosition, lightingData);
 
     // --- Standard PBR ---
 
@@ -40,7 +40,7 @@ void InitializeLightingData_StandardPBR(inout Surface surface, float4 screenPosi
 LightingData EvaluateLighting_StandardPBR(inout Surface surface, float4 screenPosition, float3 viewPosition[SHADING_VIEW_COUNT])
 {
     LightingData lightingData;
-    InitializeLightingData_StandardPBR(surface, screenPosition, viewPosition[SHADING_VIEW_COUNT], lightingData);
+    InitializeLightingData_StandardPBR(surface, screenPosition, viewPosition, lightingData);
     CalculateLighting_BasePBR(surface, screenPosition, lightingData);
     return lightingData;
 }

@@ -20,7 +20,7 @@
 void InitializeLightingData_SkinPBR(inout Surface surface, float4 screenPosition, float3 viewPosition[SHADING_VIEW_COUNT], inout LightingData lightingData)
 {
     // --- Base PBR ---
-    InitializeLightingData_BasePBR(surface, screenPosition, viewPosition[SHADING_VIEW_COUNT], lightingData);
+    InitializeLightingData_BasePBR(surface, screenPosition, viewPosition, lightingData);
 
     // --- Skin PBR ---
     lightingData.diffuseAmbientOcclusion = surface.diffuseAmbientOcclusion;
@@ -30,7 +30,7 @@ void InitializeLightingData_SkinPBR(inout Surface surface, float4 screenPosition
 LightingData EvaluateLighting_SkinPBR(inout Surface surface, float4 screenPosition, float3 viewPosition[SHADING_VIEW_COUNT])
 {
     LightingData lightingData;
-    InitializeLightingData_SkinPBR(surface, screenPosition, viewPosition[SHADING_VIEW_COUNT], lightingData);
+    InitializeLightingData_SkinPBR(surface, screenPosition, viewPosition, lightingData);
     CalculateLighting_BasePBR(surface, screenPosition, lightingData);
     return lightingData;
 }
