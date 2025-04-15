@@ -223,6 +223,20 @@ namespace PhysX
     void ArticulationLinkComponent::OnTransformChanged(
         [[maybe_unused]] const AZ::Transform& local, [[maybe_unused]] const AZ::Transform& world)
     {
+#if (PX_PHYSICS_VERSION_MAJOR == 5)
+        if (m_enabled)
+        {
+            return;
+        }
+        AZ_Warning("ArticulationLinkComponent", IsRootArticulation(), "Pose can be adjusted only for the root articulation link.");
+        if (m_articulation && IsRootArticulation())
+        {
+            physx::PxArticulationKinematicFlags kinematicFlag {};
+            kinematicFlag.raise(physx::PxArticulationKinematicFlag::ePOSITION);
+            m_articulation->setRootGlobalPose(PxMathConvert(world));
+            m_articulation->updateKinematic(kinematicFlag);
+        }
+#endif
     }
 
 #if (PX_PHYSICS_VERSION_MAJOR == 5)
@@ -963,17 +977,30 @@ namespace PhysX
 
     void ArticulationLinkComponent::EnablePhysics()
     {
-        AZ_Error("ArticulationLinkComponent", false, "Articulation links don't support enabling and disabling physics yet. Physics is always enabled.");
+        if(m_enabled == true)
+        {
+            return;
+        }
+        m_enabled = true;
+        PHYSX_SCENE_WRITE_LOCK(m_link->getScene());
+        m_link->setActorFlag(physx::PxActorFlag::eDISABLE_SIMULATION, false);
     }
 
     void ArticulationLinkComponent::DisablePhysics()
     {
-        AZ_Error("ArticulationLinkComponent", false, "Articulation links don't support enabling and disabling physics yet. Physics is always enabled.");
+        if(m_enabled == false)
+        {
+            return;
+        }
+        m_enabled = false;
+        PHYSX_SCENE_WRITE_LOCK(m_link->getScene());
+        m_link->setActorFlag(physx::PxActorFlag::eDISABLE_SIMULATION, true);
+
     }
 
     bool ArticulationLinkComponent::IsPhysicsEnabled() const
     {
-        return true;
+        return m_enabled;
     }
 
     AZ::Aabb ArticulationLinkComponent::GetAabb() const
