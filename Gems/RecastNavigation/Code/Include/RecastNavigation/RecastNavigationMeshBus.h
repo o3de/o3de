@@ -20,6 +20,17 @@
 
 namespace RecastNavigation
 {
+#if defined(CARBONATED)
+    struct RecastNavMeshAgentSettings
+    {
+        float m_radius = 0.0f; //!< The radius of the agent.
+        float m_height = 0.0f; //!< The height of the agent.
+        float m_maxSlope = 0.0f; //!< The maximum slope the agent can walk on.
+        float m_maxClimb = 0.0f; //!< The maximum height the agent can climb.
+    };
+#endif
+
+
     //! The interface for request API of @RecastNavigationMeshRequestBus.
     class RecastNavigationMeshRequests
         : public AZ::ComponentBus
@@ -49,6 +60,8 @@ namespace RecastNavigation
 
         //! Returns maximal possible mesh height error (vertical mesh-to-surface distance)
         virtual float GetNavMeshHeightMaxError() const = 0;
+
+        virtual RecastNavMeshAgentSettings GetNavMeshAgentSettings() const = 0;
 #endif
 
         //! @returns the underlying navigation objects with the associated synchronization object.

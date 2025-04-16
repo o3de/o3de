@@ -276,6 +276,17 @@ namespace RecastNavigation
     {
         return m_configuration.m_cellHeight * m_configuration.m_detailSampleMaxError * 2.0f;  // apparently it can be larger than ch * dsme, so I added * 2.0f
     }
+
+    RecastNavMeshAgentSettings RecastNavigationMeshComponentController::GetNavMeshAgentSettings() const
+    {
+        RecastNavMeshAgentSettings agentSettings;
+        agentSettings.m_height = m_configuration.m_agentHeight;
+        agentSettings.m_radius = m_configuration.m_agentRadius;
+        agentSettings.m_maxSlope = m_configuration.m_agentMaxSlope;
+        agentSettings.m_maxClimb = m_configuration.m_agentMaxClimb;
+
+        return agentSettings;
+    }
 #endif
 
     AZStd::shared_ptr<NavMeshQuery> RecastNavigationMeshComponentController::GetNavigationObject()
