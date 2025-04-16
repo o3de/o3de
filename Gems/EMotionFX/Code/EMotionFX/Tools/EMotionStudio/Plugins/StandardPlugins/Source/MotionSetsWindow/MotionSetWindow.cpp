@@ -2166,8 +2166,11 @@ namespace EMStudio
         {
             return nullptr;
         }
-
+#if defined(CARBONATED) && defined(CARBONATED_EMOTIONFX_CONCURRENCY_RW)
+        EMotionFX::MotionSet* motionSet = m_plugin->GetSelectedSet();
+#else
         const EMotionFX::MotionSet* motionSet = m_plugin->GetSelectedSet();
+#endif
         if (!motionSet)
         {
             return nullptr;

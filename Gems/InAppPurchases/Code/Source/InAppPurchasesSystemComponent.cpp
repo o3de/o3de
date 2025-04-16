@@ -53,6 +53,9 @@ namespace InAppPurchases
             {
                 ec->Class<SystemComponent>("InAppPurchases", "Adds support for in app purchases on iOS and Android")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+#if defined(CARBONATED)  // PR375
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
+#endif
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }
@@ -188,7 +191,11 @@ namespace InAppPurchases
 
             if (doc.HasParseError())
             {
+#if defined(CARBONATED)  // PR375
+                AZ_Warning("O3DEInAppBilling", false, "Failed to parse product_ids: %s\n", rapidjson::GetParseError_En(doc.GetParseError()));
+#else
                 AZ_Warning("LumberyardInAppBilling", false, "Failed to parse product_ids: %s\n", rapidjson::GetParseError_En(doc.GetParseError()));
+#endif
                 return;
             }
 
@@ -261,6 +268,18 @@ namespace InAppPurchases
             InAppPurchasesInterface::GetInstance()->RestorePurchasedProducts();
         }
     }
+
+#if defined(CARBONATED)  // PR375
+    AZStd::string SystemComponent::GetTransactionReceipt() const
+    {
+        if (InAppPurchasesInterface::GetInstance() != nullptr)
+        {
+            return InAppPurchasesInterface::GetInstance()->GetTransactionReceipt();
+        }
+        
+        return "";
+    }
+#endif
 
     void SystemComponent::ConsumePurchase(const AZStd::string& purchaseToken) const
     {

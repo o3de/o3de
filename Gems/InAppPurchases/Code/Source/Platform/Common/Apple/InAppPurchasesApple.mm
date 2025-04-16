@@ -181,6 +181,9 @@ namespace InAppPurchases
 
     void InAppPurchasesApple::PurchaseProduct(const AZStd::string& productId, const AZStd::string& developerPayload) const
     {
+#if defined(CARBONATED)  // PR375
+        AZ_Info("O3DEInAppPurchases", "PurchaseProduct %s", productId.c_str());
+#endif
         NSString* productIdString = [NSString stringWithCString:productId.c_str() encoding:NSUTF8StringEncoding];
         if (!developerPayload.empty())
         {
@@ -200,12 +203,18 @@ namespace InAppPurchases
 
     void InAppPurchasesApple::RestorePurchasedProducts() const
     {
+#if defined(CARBONATED)  // PR375
+        AZ_Info("O3DEInAppPurchases", "RestorePurchasedProducts");
+#endif
         InAppPurchasesInterface::GetInstance()->GetCache()->ClearCachedPurchasedProductDetails();
         [m_delegate restorePurchasedProducts];
     }
     
     void InAppPurchasesApple::QueryPurchasedProducts() const
     {
+#if defined(CARBONATED)  // PR375
+        AZ_Info("O3DEInAppPurchases", "QueryPurchasedProducts");
+#endif
         [m_delegate refreshAppReceipt];
         InAppPurchasesInterface::GetInstance()->GetCache()->ClearCachedPurchasedProductDetails();
         NSURL* url = [[NSBundle mainBundle] appStoreReceiptURL];
@@ -233,14 +242,41 @@ namespace InAppPurchases
             }
         }
     }
+
+#if defined(CARBONATED)  // PR375
+    AZStd::string InAppPurchasesApple::GetTransactionReceipt() const
+    {
+        // iOS8 and later Receipt retrieval
+        // https://developer.apple.com/library/ios/releasenotes/General/ValidateAppStoreReceipt/Chapters/ValidateRemotely.html#//apple_ref/doc/uid/TP40010573-CH104-SW1
+        // Load the receipt from the app bundle.
+        NSURL *receiptURL = [[NSBundle mainBundle] appStoreReceiptURL];
+        NSData *receipt = [NSData dataWithContentsOfURL:receiptURL];
+        
+        if (!receipt)
+        {
+            AZ_Error("O3DEInAppPurchases", false, "No receipt");
+            return "";
+        }
+        
+        NSString *receiptStr = [receipt base64EncodedStringWithOptions:0];
+        
+        AZStd::string str = [receiptStr UTF8String];
+        return str;
+    }
+#endif
     
     void InAppPurchasesApple::ConsumePurchase(const AZStd::string& purchaseToken) const
     {
-        
+#if defined(CARBONATED)  // PR375
+        AZ_Info("O3DEInAppPurchases", "ConsumePurchase");
+#endif
     }
     
     void InAppPurchasesApple::FinishTransaction(const AZStd::string& transactionId, bool downloadHostedContent) const
     {
+#if defined(CARBONATED)  // PR375
+        AZ_Info("O3DEInAppPurchases", "FinishTransaction");
+#endif
         NSString* transactionIdString = [NSString stringWithCString:transactionId.c_str() encoding:NSASCIIStringEncoding];
         
         if (downloadHostedContent)

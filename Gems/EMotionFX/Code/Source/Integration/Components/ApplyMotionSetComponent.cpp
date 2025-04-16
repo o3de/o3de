@@ -89,7 +89,6 @@ namespace EMotionFX
                     auto& cfg = m_configuration;
                     MotionSet* motionSet = cfg.m_motionSetAsset.Get()->m_emfxMotionSet.get();
 #endif
-
                     pInstance->SetMotionSet(motionSet);
                 }
             }

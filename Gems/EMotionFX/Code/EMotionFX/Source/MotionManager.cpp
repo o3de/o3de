@@ -370,13 +370,26 @@ namespace EMotionFX
         }
 
         // Reset all motion entries in the motion sets of the current motion.
+#if defined(CARBONATED) && defined(CARBONATED_EMOTIONFX_CONCURRENCY_RW)
+        for (MotionSet* motionSet : m_motionSets)
+        {
+            AZStd::shared_lock<AZStd::shared_mutex> readLock(motionSet->GetMotionEntriesMutex());
+#else
         for (const MotionSet* motionSet : m_motionSets)
         {
+#endif
             const EMotionFX::MotionSet::MotionEntries& motionEntries = motionSet->GetMotionEntries();
             for (const auto& item : motionEntries)
             {
                 EMotionFX::MotionSet::MotionEntry* motionEntry = item.second;
-
+#if defined(CARBONATED) && defined(CARBONATED_EMOTIONFX_CONCURRENCY)
+                if (motionEntry == nullptr)
+                {
+                    AZ_Error("EMotionFXdebug", false, "motion entry nullptr, motion set %p, num entries %d", motionSet, motionEntries.size());
+                    AZ_Assert(false, "Motion entry container concurrency error");
+                    break;  // if the motionEntry container is changed by a concurrent thread, then run awat from it
+                }
+#endif
                 if (motionEntry->GetMotion() == motion)
                 {
                     motionEntry->Reset();

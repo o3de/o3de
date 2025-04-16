@@ -44,6 +44,10 @@ namespace InAppPurchases
         
         virtual void RestorePurchasedProducts() const = 0;
         
+#if defined(CARBONATED)  // PR375
+        virtual AZStd::string GetTransactionReceipt() const { return ""; }
+#endif
+        
         // This should be called when a user buys any consumable product(like virtual currency). Otherwise, the user will not be able to buy this product again.
         virtual void ConsumePurchase(const AZStd::string& purchaseToken) const = 0;
         

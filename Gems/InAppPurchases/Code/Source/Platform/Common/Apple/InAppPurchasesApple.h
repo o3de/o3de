@@ -31,6 +31,10 @@ namespace InAppPurchases
         
         void RestorePurchasedProducts() const override;
         
+#if defined(CARBONATED)  // PR375
+        AZStd::string GetTransactionReceipt() const override;
+#endif
+        
         void ConsumePurchase(const AZStd::string& purchaseToken) const override;
         
         void FinishTransaction(const AZStd::string& transactionId, bool downloadHostedContent) const override;

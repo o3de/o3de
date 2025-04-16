@@ -602,6 +602,10 @@ void CCryEditApp::OnFileSave()
 
     prefabIntegrationInterface->SaveCurrentPrefab();
 
+#if defined(CARBONATED) // Notify on level saves
+    AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(&AzToolsFramework::ToolsApplicationEvents::OnSaveLevel);
+#endif
+
     // when attempting to save, update the last known location using the active camera transform
     AzToolsFramework::StoreViewBookmarkLastKnownLocationFromActiveCamera();
 }

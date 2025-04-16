@@ -27,13 +27,25 @@ if(NOT EXISTS ${ly_game_resource_folder})
     message(FATAL_ERROR "Missing 'Resources' folder. Candidate paths tried were: ${formatted_error}")
 endif()
 
+# CARBONATED add LaunchStoryboard.storyboard
+set (resource_files
+    ${ly_game_resource_folder}/LaunchStoryboard.storyboard
+    ${ly_game_resource_folder}/Images.xcassets
+)
+target_sources(${project_name}.GameLauncher PRIVATE ${resource_files})
+# CARBONATED END
 
-target_sources(${project_name}.GameLauncher PRIVATE ${ly_game_resource_folder}/Images.xcassets)
 set_target_properties(${project_name}.GameLauncher PROPERTIES
     MACOSX_BUNDLE_INFO_PLIST ${ly_game_resource_folder}/Info.plist
-    RESOURCE ${ly_game_resource_folder}/Images.xcassets
+    
+    RESOURCE "${resource_files}"  # CARBONATED
+
     XCODE_ATTRIBUTE_ASSETCATALOG_COMPILER_APPICON_NAME ${project_name}AppIcon
-    XCODE_ATTRIBUTE_ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME LaunchImage
+
+    # CARBONATED
+    # XCODE_ATTRIBUTE_ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME LaunchImage
+    XCODE_ATTRIBUTE_INFOPLIST_KEY_UILaunchStoryboardName LaunchStoryboard.storyboard
+    # CARBONATED END
 )
 
 set(layout_tool_dir ${LY_ROOT_FOLDER}/cmake/Tools)
