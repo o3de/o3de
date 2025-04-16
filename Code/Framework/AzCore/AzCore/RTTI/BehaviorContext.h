@@ -1039,6 +1039,10 @@ namespace AZ
         BehaviorMethod* m_getter;
         BehaviorMethod* m_setter;
         AttributeArray m_attributes;
+
+    private:
+        bool SetGetterImpl(bool isClassType, BehaviorClass* currentClass);
+        bool SetSetterImpl(bool isClassType, BehaviorClass* currentClass);
     };
 
     struct BehaviorEBusEventSender
@@ -1568,6 +1572,7 @@ namespace AZ
         BehaviorClass* ClassImpl(const char* name, const AZ::TypeId& typeUuid, AZ::IRttiHelper* rttiHelper, size_t alignment, size_t size);
         bool MethodImpl(BehaviorMethod* method, const char* name, const BehaviorParameterOverrides* args, size_t argsSize, const char* deprecatedName);
         void InitializeParameterOverrides(BehaviorValues* defaultValues, BehaviorParameterOverrides* paramOverrides, size_t paramOverridesCount);
+        BehaviorEBus* BuildBehaviorEBus(const char* name, const char* deprecatedName = nullptr, const char* toolTip = nullptr);
     };
 
     //////////////////////////////////////////////////////////////////////////
@@ -2166,60 +2171,7 @@ namespace AZ
             typename GetterFunctionTraits::function_object_signature*>;
         m_getter = aznew AZ::Internal::BehaviorMethodImpl(static_cast<GetterCastType>(getter), context, getterPropertyName);
 
-        if constexpr (isClassType)
-        {
-            AZ_Assert(currentClass, "We should declare class property with in the class!");
-
-            // check getter to have only return value (and this pointer)
-            if (m_getter->GetNumArguments() != 1 || m_getter->GetArgument(0)->m_typeId != currentClass->m_typeId)
-            {
-                AZ_Assert(false, "Member Getter can't have any argument but thisPointer and just return type!");
-                delete m_getter;
-                m_getter = nullptr;
-                return false;
-            }
-
-            // assure that TR_THIS_PTR is set on the first parameter
-            m_getter->OverrideParameterTraits(0, AZ::BehaviorParameter::TR_THIS_PTR, 0);
-        }
-        else
-        {
-            // check getter to have only return value
-            if (m_getter->GetNumArguments() > 0)
-            {
-                bool isValidSignature = false;
-                if (currentClass && m_getter->GetNumArguments() == 1)
-                {
-                    AZ::TypeId thisPtrType = m_getter->GetArgument(0)->m_typeId;
-                    // Check that the class is either the same as the first argument, or they are convertible
-                    if (currentClass->m_azRtti)
-                    {
-                        isValidSignature = currentClass->m_azRtti->IsTypeOf(thisPtrType);
-                    }
-                    else
-                    {
-                        // No rtti, need to ensure types are the same
-                        isValidSignature = thisPtrType == currentClass->m_typeId;
-                    }
-                }
-
-                // assure that TR_THIS_PTR is set on the first parameter
-                m_getter->OverrideParameterTraits(0, AZ::BehaviorParameter::TR_THIS_PTR, 0);
-
-                if (!isValidSignature)
-                {
-                    AZ_Assert(false, "Getter can't have any argument just return type: %s!", currentClass->m_name.c_str());
-                    delete m_getter;
-                    m_getter = nullptr;
-                    return false;
-                }
-
-                // assure that TR_THIS_PTR is set on the first parameter
-                m_getter->OverrideParameterTraits(0, AZ::BehaviorParameter::TR_THIS_PTR, 0);
-            }
-        }
-
-        return true;
+        return SetGetterImpl(isClassType, currentClass);
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -2250,84 +2202,7 @@ namespace AZ
             typename SetterFunctionTraits::function_object_signature*>;
         m_setter = aznew AZ::Internal::BehaviorMethodImpl(static_cast<SetterCastType>(setter), context, setterPropertyName);
 
-        if constexpr (isClassType)
-        {
-            AZ_Assert(currentClass, "We should declare class property with in the class!");
-
-            // check setter have only 1 argument + 1 this pointer
-            if (m_setter->GetNumArguments() != 2 || m_setter->GetArgument(0)->m_typeId != currentClass->m_typeId)
-            {
-                AZ_Assert(false, "Member Setter should have 2 arguments, thisPointer and dataValue to be set!");
-                delete m_setter;
-                m_setter = nullptr;
-                return false;
-            }
-            // check getter result type is equal to setter input type
-            if (m_getter && m_getter->GetResult()->m_typeId != m_setter->GetArgument(1)->m_typeId)
-            {
-                AZStd::string getterType, setterType;
-                m_getter->GetResult()->m_typeId.ToString(getterType);
-                m_setter->GetArgument(1)->m_typeId.ToString(setterType);
-                AZ_Assert(false, "Getter return type and Setter input argument should be the same type! (getter: %s, setter: %s)", getterType.c_str(), setterType.c_str());
-                delete m_setter;
-                m_setter = nullptr;
-                return false;
-            }
-
-            // assure that TR_THIS_PTR is set on the first parameter
-            m_setter->OverrideParameterTraits(0, AZ::BehaviorParameter::TR_THIS_PTR, 0);
-        }
-        else
-        {
-            size_t valueIndex = 0;
-            // check setter have only 1 argument
-            if (m_setter->GetNumArguments() != 1)
-            {
-                bool isValidSignature = false;
-                if (currentClass && m_setter->GetNumArguments() == 2)
-                {
-                    AZ::TypeId thisPtrType = m_setter->GetArgument(0)->m_typeId;
-                    // Check that the class is either the same as the first argument, or they are convertible
-                    if (currentClass->m_azRtti)
-                    {
-                        isValidSignature = currentClass->m_azRtti->IsTypeOf(thisPtrType);
-                    }
-                    else
-                    {
-                        // No rtti, need to ensure types are the same
-                        isValidSignature = thisPtrType == currentClass->m_typeId;
-                    }
-                }
-
-                if (!isValidSignature)
-                {
-                    AZ_Assert(false, "Setter should have 1 argument, data value to be set!");
-                    delete m_setter;
-                    m_setter = nullptr;
-                    return false;
-                }
-
-                // it's ok as this is a different way to represent a member function
-                valueIndex = 1; // since this pointer is at 0
-
-                // assure that TR_THIS_PTR is set on the first parameter
-                m_setter->OverrideParameterTraits(0, AZ::BehaviorParameter::TR_THIS_PTR, 0);
-            }
-
-            // check getter result type is equal to setter input type
-            if (m_getter && m_getter->GetResult()->m_typeId != m_setter->GetArgument(valueIndex)->m_typeId)
-            {
-                AZStd::string getterType, setterType;
-                m_getter->GetResult()->m_typeId.ToString(getterType);
-                m_setter->GetArgument(valueIndex)->m_typeId.ToString(setterType);
-                AZ_Assert(false, "Getter return type and Setter input argument should be the same type! (getter: %s, setter: %s)", getterType.c_str(), setterType.c_str());
-                delete m_setter;
-                m_setter = nullptr;
-                return false;
-            }
-        }
-
-        return true;
+        return SetSetterImpl(isClassType, currentClass);
     }
 
     //////////////////////////////////////////////////////////////////////////
