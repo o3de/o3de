@@ -504,6 +504,7 @@ namespace AZ
                             AZ_Error("MeshDrawPacket", false, "Material has more than the limit of %d active shader items.", RHI::DrawPacketBuilder::DrawItemCountMax);
                             return false;
                         }
+                        
                         appendShader(shaderItem, materialPipelineName);
                     }
 
