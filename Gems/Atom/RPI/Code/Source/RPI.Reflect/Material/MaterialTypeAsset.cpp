@@ -86,6 +86,23 @@ namespace AZ
             {
                 return false;
             }
+#if defined(CARBONATED) && defined(CARBONATED_MOBILE_PIPELINE_ON_MOBILE)
+#if defined(AZ_PLATFORM_IOS) || defined(AZ_PLATFORM_ANDROID)
+            //  erase non-mobile pipeline info from the pipeline payload map
+            for (auto it = m_materialPipelinePayloads.begin(); it != m_materialPipelinePayloads.end(); )
+            {
+                const char* pipelineName = it->first.GetCStr();
+                if (pipelineName[0] != 0 && strcmp(pipelineName, "MobilePipeline") != 0)
+                {
+                    it = m_materialPipelinePayloads.erase(it);
+                }
+                else
+                {
+                    it++;
+                }
+            }
+#endif
+#endif
             for (auto& materialPipelinePair : m_materialPipelinePayloads)
             {
                 if (!materialPipelinePair.second.m_shaderCollection.InitializeShaderOptionGroups())
