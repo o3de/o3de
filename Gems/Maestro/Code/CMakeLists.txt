@@ -20,6 +20,10 @@ ly_add_target(
         PRIVATE
             Legacy::CryCommon
         PUBLIC
+            Gem::Atom_Bootstrap.Headers
+            Gem::Atom_RHI.Public
+            Gem::Atom_RHI.Reflect
+            Gem::Atom_RPI.Public
             Gem::AudioSystem.API
 )
 
@@ -37,6 +41,12 @@ ly_add_target(
         PRIVATE
             Legacy::CryCommon
             Gem::${gem_name}.Static
+        PUBLIC
+            Gem::Atom_Bootstrap.Headers
+            Gem::Atom_RHI.Public
+            Gem::Atom_RHI.Reflect
+            Gem::Atom_RPI.Public
+
     RUNTIME_DEPENDENCIES
         Gem::LmbrCentral
 )
@@ -80,6 +90,12 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AzToolsFramework
                 AZ::AssetBuilderSDK
                 Gem::${gem_name}.Static
+            PUBLIC
+                Gem::Atom_Bootstrap.Headers
+            	Gem::Atom_RHI.Public
+            	Gem::Atom_RHI.Reflect
+                Gem::Atom_RPI.Public
+
         RUNTIME_DEPENDENCIES
             Gem::LmbrCentral.Editor
     )
@@ -101,6 +117,9 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         NAMESPACE Gem
         FILES_CMAKE
             maestro_tests_files.cmake
+        COMPILE_DEFINITIONS
+            PRIVATE
+                MAESTRO_TESTS
         INCLUDE_DIRECTORIES
             PRIVATE
                 Tests
