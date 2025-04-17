@@ -10,7 +10,7 @@
 
 #include <AzCore/Component/Component.h>
 #include <ToolsComponents/EditorComponentBase.h>
-#if defined(CARBONATED)
+#if defined(CARBONATED) && defined(CARBONATED_RECAST_UPDATES)
 #include <RecastNavigation/DetourNavigationBus.h>
 #endif
 
@@ -19,7 +19,7 @@ namespace RecastNavigation
     //! Editor version of a path finding component, @DetourNavigationComponent.
     class EditorDetourNavigationComponent final
         : public AzToolsFramework::Components::EditorComponentBase
-#if defined(CARBONATED)
+#if defined(CARBONATED) && defined(CARBONATED_RECAST_UPDATES)
         , public DetourNavigationRequestBus::Handler
 #endif
     {
@@ -37,7 +37,7 @@ namespace RecastNavigation
         void BuildGameEntity(AZ::Entity* gameEntity) override;
         //! @}
 
-#if defined(CARBONATED)
+#if defined(CARBONATED) && defined(CARBONATED_RECAST_UPDATES)
         //! DetourNavigationBus overrides ...
         //! @{
         void SetNavigationMeshEntity(AZ::EntityId navMeshEntity) override;

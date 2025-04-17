@@ -124,7 +124,7 @@ namespace RecastNavigation
         return CollectGeometryAsyncImpl(tileSize, borderSize, GetWorldBounds(), AZStd::move(tileCallback));
     }
 
-#if defined(CARBONATED)
+#if defined(CARBONATED) && defined(CARBONATED_RECAST_UPDATES)
     AZStd::vector<AZStd::shared_ptr<TileGeometry>> RecastNavigationPhysXProviderComponentController::CollectPartialGeometry(
         float tileSize, float borderSize, const AZStd::vector<AZ::Aabb>& changedGeometry)
     {
@@ -343,7 +343,7 @@ namespace RecastNavigation
         return tiles;
     }
 
-#if defined(CARBONATED)
+#if defined(CARBONATED) && defined(CARBONATED_RECAST_UPDATES)
     AZStd::vector<AZStd::shared_ptr<TileGeometry>> RecastNavigationPhysXProviderComponentController::CollectPartialGeometryImpl(
         float tileSize, float borderSize, const AZ::Aabb& worldVolume, const AZStd::vector<AZ::Aabb>& changedGeometry)
     {
@@ -421,7 +421,7 @@ namespace RecastNavigation
     }
 #endif
 
-#if defined(CARBONATED)
+#if defined(CARBONATED) && defined(CARBONATED_RECAST_UPDATES)
     bool RecastNavigationPhysXProviderComponentController::CollectGeometryAsyncImpl(
         float tileSize, float borderSize, const AZ::Aabb& worldVolume, AZStd::function<void(AZStd::shared_ptr<TileGeometry>)> tileCallback)
     {

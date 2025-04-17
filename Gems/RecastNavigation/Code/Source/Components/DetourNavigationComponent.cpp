@@ -48,7 +48,7 @@ namespace RecastNavigation
         }
     }
 
-#if defined(CARBONATED)
+#if defined(CARBONATED) && defined(CARBONATED_RECAST_UPDATES)
     AZStd::vector<AZ::Vector3> DetourNavigationComponent::FindPathBetweenEntities(
         AZ::EntityId fromEntity, AZ::EntityId toEntity, bool addCrossings, bool& partial)
     {
@@ -79,7 +79,7 @@ namespace RecastNavigation
     }
 #endif
 
-#if defined(CARBONATED)
+#if defined(CARBONATED) && defined(CARBONATED_RECAST_UPDATES)
     AZStd::vector<AZ::Vector3> DetourNavigationComponent::FindPathBetweenPositions(
         const AZ::Vector3& fromWorldPosition, const AZ::Vector3& toWorldPosition, bool addCrossings, bool& partial)
 #else
@@ -138,7 +138,7 @@ namespace RecastNavigation
         {
             return {};
         }
-#if defined(CARBONATED)
+#if defined(CARBONATED) && defined(CARBONATED_RECAST_UPDATES)
         partial = ((result & DT_PARTIAL_RESULT) != 0);
 #endif
 
@@ -148,7 +148,7 @@ namespace RecastNavigation
         int detailedPathCount = 0;
 
         // Then the detailed path. This gives us actual specific waypoints along the path over the polygons found earlier.
-#if defined(CARBONATED)
+#if defined(CARBONATED) && defined(CARBONATED_RECAST_UPDATES)
         result = lock.GetNavQuery()->findStraightPath(startRecast.GetData(), endRecast.GetData(), path.data(), pathLength,
             detailedPath[0].GetData(), detailedPathFlags.data(), detailedPolyPathRefs.data(),
             &detailedPathCount, MaxPathLength, addCrossings ? DT_STRAIGHTPATH_ALL_CROSSINGS : 0);
