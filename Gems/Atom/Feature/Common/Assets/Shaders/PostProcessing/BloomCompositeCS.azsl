@@ -102,7 +102,11 @@ void MainCS(uint3 dID : SV_DispatchThreadID)
         PassSrg::m_inputTexture.SampleLevel(PassSrg::LinearSampler, sourceUv, PassSrg::m_sourceMipLevel).rgb;    
     float3 color1 = PassSrg::m_outputTexture[dID.xy].xyz;
 
-    float3 color = color0 * PassSrg::m_intensity * PassSrg::m_tint + color1;
+    float3 color = color1;
+    if (color0.x == color0.x && color0.y == color0.y && color0.z == color0.z )
+    {
+        color += color0 * PassSrg::m_intensity * PassSrg::m_tint;
+    }
 
     PassSrg::m_outputTexture[dID.xy] = float4(color, 1.0);
 }
