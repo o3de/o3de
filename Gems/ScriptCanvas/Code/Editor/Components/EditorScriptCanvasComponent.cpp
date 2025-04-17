@@ -139,9 +139,6 @@ namespace ScriptCanvasEditor
 
     void EditorScriptCanvasComponent::SetPrimaryAsset(const AZ::Data::AssetId& assetId)
     {
-        // AzToolsFramework::ScopedUndoBatch undoBatch("update script canvas graph on component");
-        // undoBatch.MarkEntityDirty(GetEntityId());
-
         SetDirty();
         m_configuration.Refresh(SourceHandle(nullptr, assetId.m_guid));
     }
