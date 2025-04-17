@@ -248,25 +248,46 @@ public:
 };
 
 //Class to hold ePropertyColor (IVariable::DT_COLOR)
-class CReflectedVarColor
+class CReflectedVarColor3
     : public CReflectedVar
 {
 public:
-    AZ_RTTI(CReflectedVarColor, "{CC69E773-B4FA-4B6D-8A46-0B580097B6D2}", CReflectedVar)
+    AZ_RTTI(CReflectedVarColor3, "{CC69E773-B4FA-4B6D-8A46-0B580097B6D2}", CReflectedVar)
 
-    CReflectedVarColor(const AZStd::string& name, AZ::Vector3 color = AZ::Vector3())
+    CReflectedVarColor3(const AZStd::string& name, AZ::Vector3 color = AZ::Vector3::CreateZero())
         : CReflectedVar(name)
-        , m_color(color) {}
-    CReflectedVarColor() {}
+        , m_color(color)
+    {}
+
+    CReflectedVarColor3() = default;
 
     AZStd::string varName() const { return m_varName; }
     AZStd::string description() const { return m_description; }
 
-    AZ::Vector3 m_color;
+    AZ::Vector3 m_color = AZ::Vector3::CreateZero();
+};
+
+//Class to hold ePropertyColorA (IVariable::DT_COLORA)
+class CReflectedVarColor4 : public CReflectedVar
+{
+public:
+    AZ_RTTI(CReflectedVarColor4, "{26FA70CD-9849-4002-986A-2D661CB941D3}", CReflectedVar)
+
+    CReflectedVarColor4(const AZStd::string& name, AZ::Vector4 color = AZ::Vector4::CreateZero())
+        : CReflectedVar(name)
+        , m_color(color)
+    {}
+
+    CReflectedVarColor4() = default;
+
+    AZStd::string varName() const { return m_varName; }
+    AZStd::string description() const { return m_description; }
+
+    AZ::Color m_color = AZ::Color::CreateZero();
 };
 
 //Class to hold:
-// ePropertyTexture          (IVariable::DT_TEXTURE)
+// ePropertyTexture             (IVariable::DT_TEXTURE)
 // ePropertyAudioTrigger        (IVariable::DT_AUDIO_TRIGGER)
 // ePropertyAudioSwitch         (IVariable::DT_AUDIO_SWITCH )
 // ePropertyAudioSwitchState    (IVariable::DT_AUDIO_SWITCH_STATE)
@@ -284,8 +305,10 @@ public:
         : CReflectedVar(name)
         , m_propertyType(ePropertyInvalid)
     {}
+
     CReflectedVarResource()
-        : m_propertyType(ePropertyInvalid){}
+        : m_propertyType(ePropertyInvalid)
+    {}
 
     AZStd::string varName() const { return m_varName; }
     AZStd::string description() const { return m_description; }
@@ -306,7 +329,10 @@ public:
         , m_enableEdit(false)
         , m_useTree(false)
     {}
-    CReflectedVarUser() : m_enableEdit(false), m_useTree(false) {}
+    CReflectedVarUser()
+        : m_enableEdit(false)
+        , m_useTree(false)
+    {}
 
     AZStd::string varName() const { return m_varName; }
 
@@ -320,6 +346,7 @@ public:
     AZStd::vector<AZStd::string> m_itemDescriptions;
 };
 
+//Class to hold a spline for a PropertyType
 class CReflectedVarSpline
     : public CReflectedVar
 {
@@ -344,7 +371,7 @@ public:
     PropertyType m_propertyType;
 };
 
-//Class to wrap all the many properties that can be represented by a string and edited via a popup
+//Class to wrap all the many properties that can be represented by a string and edited via a pop-up
 class CReflectedVarGenericProperty
     : public CReflectedVar
 {

@@ -37,9 +37,13 @@ void ReflectedVarInit::setupReflection(AZ::SerializeContext* serializeContext)
         ->Field("propertyType", &CReflectedVarResource::m_propertyType)
         ;
 
-    serializeContext->Class< CReflectedVarColor, CReflectedVar>()
+    serializeContext->Class< CReflectedVarColor3, CReflectedVar>()
         ->Version(1)
-        ->Field("color", &CReflectedVarColor::m_color);
+        ->Field("color", &CReflectedVarColor3::m_color);
+
+    serializeContext->Class<CReflectedVarColor4, CReflectedVar>()
+        ->Version(1)
+        ->Field("color", &CReflectedVarColor4::m_color);
 
     serializeContext->Class< CReflectedVarUser, CReflectedVar>()
         ->Version(1)
@@ -76,12 +80,33 @@ void ReflectedVarInit::setupReflection(AZ::SerializeContext* serializeContext)
             ->Attribute(AZ::Edit::Attributes::Handler, AZ_CRC_CE("ePropertyUser"))
             ;
 
-        ec->Class< CReflectedVarColor >("VarColor", "")
+        ec->Class< CReflectedVarColor3 >("VarColor", "Color RGB")
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
             ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC_CE("PropertyVisibility_ShowChildrenOnly"))
-            ->DataElement(AZ::Edit::UIHandlers::Color, &CReflectedVarColor::m_color, "Color", "")
-            ->Attribute(AZ::Edit::Attributes::NameLabelOverride, &CReflectedVarColor::varName)
-            ->Attribute(AZ::Edit::Attributes::DescriptionTextOverride, &CReflectedVarColor::description)
+            ->DataElement(AZ::Edit::UIHandlers::Color, &CReflectedVarColor3::m_color, "Color", "")
+            ->Attribute(AZ::Edit::Attributes::Min, 0)
+            ->Attribute(AZ::Edit::Attributes::Max, 255)
+            ->Attribute(AZ::Edit::Attributes::NameLabelOverride, &CReflectedVarColor3::varName)
+            ->Attribute(AZ::Edit::Attributes::DescriptionTextOverride, &CReflectedVarColor3::description)
+            ;
+
+        ec->Class<CReflectedVarColor4>("VarColorA", "Color RGBA")
+            ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+            ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC_CE("PropertyVisibility_ShowChildrenOnly"))
+            ->DataElement(AZ::Edit::UIHandlers::Color, &CReflectedVarColor4::m_color, "Color", "")
+            ->Attribute(AZ::Edit::Attributes::Min, 0)
+            ->Attribute(AZ::Edit::Attributes::Max, 255)
+            ->Attribute(AZ::Edit::Attributes::NameLabelOverride, &CReflectedVarColor4::varName)
+            ->Attribute(AZ::Edit::Attributes::DescriptionTextOverride, &CReflectedVarColor4::description)
+            ;
+
+        ec->Class<CReflectedVarResource>("VarResource", "Resource Path and Type")
+            ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+            ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC_CE("PropertyVisibility_ShowChildrenOnly"))
+            ->DataElement(AZ::Edit::UIHandlers::LineEdit, &CReflectedVarResource::m_path, "Path", "")
+            //->DataElement(AZ::Edit::UIHandlers::Default, &CReflectedVarResource::m_propertyType, "Type", "")
+            ->Attribute(AZ::Edit::Attributes::NameLabelOverride, &CReflectedVarResource::varName)
+            ->Attribute(AZ::Edit::Attributes::DescriptionTextOverride, &CReflectedVarResource::description)
             ;
 
         ec->Class< CReflectedVarSpline >("VarSpline", "")
@@ -108,6 +133,7 @@ void ReflectedVarInit::setupReflection(AZ::SerializeContext* serializeContext)
             ->Attribute(AZ::Edit::Attributes::DescriptionTextOverride, &CReflectedVarMotion::description)
             ;
     }
+
     CReflectedVarString::reflect(serializeContext);
     CReflectedVarBool::reflect(serializeContext);
     CReflectedVarFloat::reflect(serializeContext);
@@ -169,7 +195,7 @@ void CReflectedVarRanged<T, R>::reflect(AZ::SerializeContext* serializeContext)
     AZ::EditContext* ec = serializeContext->GetEditContext();
     if (ec)
     {
-        ec->Class< CReflectedVarRanged<T, R> >("VarAny", "")
+        ec->Class< CReflectedVarRanged<T, R> >("VarRanged", "")
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
             ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC_CE("PropertyVisibility_ShowChildrenOnly"))
             ->DataElement(AZ::Edit::UIHandlers::Slider, &CReflectedVarRanged<T, R>::m_value, "Value", "")
@@ -182,7 +208,6 @@ void CReflectedVarRanged<T, R>::reflect(AZ::SerializeContext* serializeContext)
             ->Attribute(AZ::Edit::Attributes::SoftMax, &CReflectedVarRanged<T, R>::softMaxVal)
             ;
     }
-
 }
 
 
