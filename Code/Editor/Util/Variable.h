@@ -24,6 +24,13 @@ AZ_POP_DISABLE_WARNING
 
 #include <StlUtils.h>
 
+#include <AzCore/std/string/string.h>
+#include <AzCore/Math/Color.h>
+#include <AzCore/Math/Vector2.h>
+#include <AzCore/Math/Vector3.h>
+#include <AzCore/Math/Vector4.h>
+#include <AzCore/Math/Quaternion.h>
+
 inline const char* to_c_str(const char* str) { return str; }
 #define MAX_VAR_STRING_LENGTH 4096
 
@@ -137,25 +144,25 @@ struct IVariable
     //! Type of data hold by variable.
     enum EDataType
     {
-        DT_SIMPLE = 0, //!< Standard param type.
+        DT_SIMPLE = 0,      //!< Standard param type (float).
         DT_BOOLEAN,
-        DT_PERCENT,     //!< Percent data type, (Same as simple but value is from 0-1 and UI will be from 0-100).
-        DT_COLOR,
+        DT_PERCENT,         //!< Percent data type, (Same as simple but value is from 0-1 and UI will be from 0-100).
+        DT_COLOR,           //!< RGB Color data type (Vector3).
         DT_ANGLE,
         DT_TEXTURE,
         DT_SHADER,
         DT_LOCAL_STRING,
         DT_EQUIP,
         DT_MATERIALLOOKUP,
-        DT_EXTARRAY,    // Extendable Array
-        DT_SEQUENCE,    // Movie Sequence (DEPRECATED, use DT_SEQUENCE_ID, instead.)
-        DT_MISSIONOBJ,  // Mission Objective
-        DT_USERITEMCB,  // Use a callback GetItemsCallback in user data of variable
+        DT_EXTARRAY,        // Extendable Array
+        DT_SEQUENCE,        // Movie Sequence (DEPRECATED, use DT_SEQUENCE_ID, instead.)
+        DT_MISSIONOBJ,      // Mission Objective
+        DT_USERITEMCB,      // Use a callback GetItemsCallback in user data of variable
         DT_UIENUM,          // DEPRECATED
-        DT_SEQUENCE_ID, // Movie Sequence
+        DT_SEQUENCE_ID,     // Movie Sequence
         DT_LIGHT_ANIMATION, // Light Animation Node in the global Light Animation Set
         DT_PARTICLE_EFFECT,
-        DT_DEPRECATED, // formerly DT_FLARE
+        DT_DEPRECATED,      // formerly DT_FLARE
         DT_AUDIO_TRIGGER,
         DT_AUDIO_SWITCH,
         DT_AUDIO_SWITCH_STATE,
@@ -163,8 +170,8 @@ struct IVariable
         DT_AUDIO_ENVIRONMENT,
         DT_AUDIO_PRELOAD_REQUEST,
         DT_UI_ELEMENT,
-        DT_COLORA,      // DT_COLOR with alpha channel
-        DT_MOTION,      // Motion animation asset
+        DT_COLORA,          //!< RGBA Color data type (Vector4).
+        DT_MOTION,          // Motion animation asset
         DT_CURVE = BIT(7),  // Combined with other types
     };
 
@@ -190,7 +197,7 @@ struct IVariable
     typedef AZStd::function<void(IVariable*)> OnSetCallback;
     using OnSetEnumCallback = OnSetCallback;
 
-    // Store IGetCustomItems into IVariable's UserData and set datatype to
+    // Store IGetCustomItems into IVariable's UserData and set data-type to
     // DT_USERITEMCB
     // RefCounting is NOT handled by IVariable!
     struct IGetCustomItems
@@ -266,6 +273,13 @@ struct IVariable
     virtual void Set(const char* value) = 0;
     virtual void SetDisplayValue(const QString& value) = 0;
 
+    virtual void Set(const AZ::Color& value) = 0;
+    virtual void Set(const AZ::Vector2& value) = 0;
+    virtual void Set(const AZ::Vector3& value) = 0;
+    virtual void Set(const AZ::Vector4& value) = 0;
+    virtual void Set(const AZ::Quaternion& value) = 0;
+    virtual void Set(const AZStd::string& value) = 0;
+
     // Called when value updated by any means (including internally).
     virtual void OnSetValue(bool bRecursive) = 0;
 
@@ -285,6 +299,13 @@ struct IVariable
     virtual QString GetDisplayValue() const = 0;
     virtual bool HasDefaultValue() const = 0;
 
+    virtual void Get(AZ::Color& value) const = 0;
+    virtual void Get(AZ::Vector2& value) const = 0;
+    virtual void Get(AZ::Vector3& value) const = 0;
+    virtual void Get(AZ::Vector4& value) const = 0;
+    virtual void Get(AZ::Quaternion& value) const = 0;
+    virtual void Get(AZStd::string& value) const = 0;
+
     //! reset value to default value
     virtual void ResetToDefault() = 0;
 
@@ -293,7 +314,7 @@ struct IVariable
 
     //! Copy variable value from specified variable.
     //! This method executed always recursively on all sub hierarchy of variables,
-    //! In Array vars, will never create new variables, only copy values of corresponding childs.
+    //! In Array vars, will never create new variables, only copy values of corresponding children.
     //! @param fromVar Source variable to copy value from.
     virtual void CopyValue(IVariable* fromVar) = 0;
 
@@ -399,14 +420,14 @@ public:
     //! Get name of parameter.
     QString GetDescription() const override { return m_description; };
 
-    EType   GetType() const override { return IVariable::UNKNOWN; };
+    EType GetType() const override { return IVariable::UNKNOWN; };
     int GetSize() const override { return sizeof(*this); };
 
-    unsigned char   GetDataType() const override { return m_dataType; };
+    unsigned char GetDataType() const override { return m_dataType; };
     void SetDataType(unsigned char dataType) override { m_dataType = dataType; }
 
     void SetFlags(int flags) override { m_flags = static_cast<uint16>(flags); }
-    int  GetFlags() const override { return m_flags; }
+    int GetFlags() const override { return m_flags; }
     void  SetFlagRecursive(EFlags flag) override { m_flags |= flag; }
 
     void SetUserData(const QVariant &data) override { m_userData = data; };
@@ -425,23 +446,37 @@ public:
     void Set([[maybe_unused]] const Ang3& value) override           { assert(0); }
     void Set([[maybe_unused]] const Quat& value) override           { assert(0); }
     void Set([[maybe_unused]] const QString& value) override        { assert(0); }
-    void Set([[maybe_unused]] const char* value) override            { assert(0); }
-    void SetDisplayValue(const QString& value) override    { Set(value); }
+    void Set([[maybe_unused]] const char* value) override           { assert(0); }
+    void SetDisplayValue(const QString& value) override             { Set(value); }
+
+    void Set([[maybe_unused]] const AZ::Color& value) override      { assert(0); }
+    void Set([[maybe_unused]] const AZ::Vector2& value) override    { assert(0); }
+    void Set([[maybe_unused]] const AZ::Vector3& value) override    { assert(0); }
+    void Set([[maybe_unused]] const AZ::Vector4& value) override    { assert(0); }
+    void Set([[maybe_unused]] const AZ::Quaternion& value) override { assert(0); }
+    void Set([[maybe_unused]] const AZStd::string& value) override  { assert(0); }
 
     //////////////////////////////////////////////////////////////////////////
     // Get methods.
     //////////////////////////////////////////////////////////////////////////
-    void Get([[maybe_unused]] int& value) const override        { assert(0); }
-    void Get([[maybe_unused]] bool& value) const override       { assert(0); }
-    void Get([[maybe_unused]] float& value) const override      { assert(0); }
-    void Get([[maybe_unused]] double& value) const override     { assert(0); }
-    void Get([[maybe_unused]] Vec2& value) const override       { assert(0); }
-    void Get([[maybe_unused]] Vec3& value) const override       { assert(0); }
-    void Get([[maybe_unused]] Vec4& value) const override       { assert(0); }
-    void Get([[maybe_unused]] Ang3& value) const override       { assert(0); }
-    void Get([[maybe_unused]] Quat& value) const override       { assert(0); }
-    void Get([[maybe_unused]] QString& value) const override    { assert(0); }
-    QString GetDisplayValue() const override     { QString val; Get(val); return val; }
+    void Get([[maybe_unused]] int& value) const override            { assert(0); }
+    void Get([[maybe_unused]] bool& value) const override           { assert(0); }
+    void Get([[maybe_unused]] float& value) const override          { assert(0); }
+    void Get([[maybe_unused]] double& value) const override         { assert(0); }
+    void Get([[maybe_unused]] Vec2& value) const override           { assert(0); }
+    void Get([[maybe_unused]] Vec3& value) const override           { assert(0); }
+    void Get([[maybe_unused]] Vec4& value) const override           { assert(0); }
+    void Get([[maybe_unused]] Ang3& value) const override           { assert(0); }
+    void Get([[maybe_unused]] Quat& value) const override           { assert(0); }
+    void Get([[maybe_unused]] QString& value) const override        { assert(0); }
+    QString GetDisplayValue() const override { QString val; Get(val); return val; }
+
+    void Get([[maybe_unused]] AZ::Color& value) const override      { assert(0); }
+    void Get([[maybe_unused]] AZ::Vector2& value) const override    { assert(0); }
+    void Get([[maybe_unused]] AZ::Vector3& value) const override    { assert(0); }
+    void Get([[maybe_unused]] AZ::Vector4& value) const override    { assert(0); }
+    void Get([[maybe_unused]] AZ::Quaternion& value) const override { assert(0); }
+    void Get([[maybe_unused]] AZStd::string& value) const override  { assert(0); }
 
     //////////////////////////////////////////////////////////////////////////
     // IVariableContainer functions
@@ -611,7 +646,7 @@ protected:
     QString m_humanName;
     QString m_description;
 
-    //! Optional userdata pointer
+    //! Optional user data pointer
     QVariant m_userData;
 
     AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
@@ -679,6 +714,7 @@ public:
     // Get methods.
     //////////////////////////////////////////////////////////////////////////
     void Get(QString& value) const override { value = m_strValue; }
+    void Get(AZStd::string& value) const override  { value.assign(m_strValue.toLatin1().data()); }
 
     bool HasDefaultValue() const override
     {
@@ -778,7 +814,7 @@ public:
             }
         }
 
-        // If not found search childs.
+        // If not found search children.
         if (bRecursive)
         {
             // Search all top level variables.
@@ -853,7 +889,7 @@ protected:
     QString m_strValue;
 };
 
-/** var_type namespace includes type definitions needed for CVariable implementaton.
+/** var_type namespace includes type definitions needed for CVariable implementation.
  */
 namespace var_type
 {
@@ -899,14 +935,27 @@ namespace var_type
     struct type_traits<Quat>
         : public type_traits_base<IVariable::QUAT, false, false, false, false> {};
     template<>
-    struct type_traits<QString>
+    struct type_traits<AZStd::string>
         : public type_traits_base<IVariable::STRING, false, false, false, false> {};
+    template<>
+    struct type_traits<AZ::Vector2>
+        : public type_traits_base<IVariable::VECTOR2, false, false, false, false> {};
+    template<>
+    struct type_traits<AZ::Vector3>
+        : public type_traits_base<IVariable::VECTOR, false, false, false, false> {};
+    template<>
+    struct type_traits<AZ::Vector4>
+        : public type_traits_base<IVariable::VECTOR4, false, false, false, false> {};
+    template<>
+    struct type_traits<AZ::Quaternion>
+        : public type_traits_base<IVariable::QUAT, false, false, false, false> {};
+
     //////////////////////////////////////////////////////////////////////////
 
     //////////////////////////////////////////////////////////////////////////
-    // General one type to another type convertor class.
+    // General one type to another type converter class.
     //////////////////////////////////////////////////////////////////////////
-    struct type_convertor
+    struct type_converter
     {
         template <class From, class To>
         void operator()([[maybe_unused]] const From& from, [[maybe_unused]] To& to) const { assert(0); }
@@ -933,6 +982,13 @@ namespace var_type
         void operator()(const Quat& from, Quat& to) const { to = from; }
         void operator()(const QString& from, QString& to) const { to = from; }
 
+        void operator()(const AZ::Color& from, AZ::Color& to) const { to = from; }
+        void operator()(const AZ::Vector2& from, AZ::Vector2& to) const { to = from; }
+        void operator()(const AZ::Vector3& from, AZ::Vector3& to) const { to = from; }
+        void operator()(const AZ::Vector4& from, AZ::Vector4& to) const { to = from; }
+        void operator()(const AZ::Quaternion& from, AZ::Quaternion& to) const { to = from; }
+        void operator()(const AZStd::string& from, AZStd::string& to) const { to = from; }
+
         void operator()(bool value, QString& to) const { to = QString::number((value) ? (int)1 : (int)0); }
         void operator()(int value, QString& to) const { to = QString::number(value); }
         void operator()(float value, QString& to) const { to = QString::number(value); };
@@ -943,9 +999,98 @@ namespace var_type
         void operator()(const Ang3& value, QString& to) const { to = QString::fromLatin1("%1,%2,%3").arg(value.x).arg(value.y).arg(value.z); }
         void operator()(const Quat& value, QString& to) const { to = QString::fromLatin1("%1,%2,%3,%4").arg(value.w).arg(value.v.x).arg(value.v.y).arg(value.v.z); }
 
-        void operator()(const QString& from, int& value) const { value = from.toInt(); }
-        void operator()(const QString& from, bool& value) const { value = from.toInt() != 0; }
-        void operator()(const QString& from, float& value) const { value = from.toFloat(); }
+        void operator()(const AZ::Color& from,  QString& to) const      { to = QString::fromLatin1("%1,%2,%3,%4").arg(from.GetR()).arg(from.GetG()).arg(from.GetB()).arg(from.GetA()); }
+        void operator()(const AZ::Vector2& from,  QString& to) const    { to = QString::fromLatin1("%1,%2").arg(from.GetX()).arg(from.GetY()); }
+        void operator()(const AZ::Vector3& from,  QString& to) const    { to = QString::fromLatin1("%1,%2,%3").arg(from.GetX()).arg(from.GetY()).arg(from.GetZ()); }
+        void operator()(const AZ::Vector4& from,  QString& to) const    { to = QString::fromLatin1("%1,%2,%3,%4").arg(from.GetX()).arg(from.GetY()).arg(from.GetZ()).arg(from.GetW()); }
+        void operator()(const AZ::Quaternion& from,  QString& to) const { to = QString::fromLatin1("%1,%2,%3,%4").arg(from.GetX()).arg(from.GetY()).arg(from.GetZ()).arg(from.GetW()); }
+        void operator()(const AZStd::string& from, QString& to) const   { to = QString::fromLatin1("%1").arg(from.c_str()); }
+
+        void operator()(bool value, AZStd::string& to) const            { to = value ? "1" : "0"; }
+        void operator()(int value, AZStd::string& to) const             { to = AZStd::to_string(value); }
+        void operator()(float value, AZStd::string& to) const           { to = AZStd::to_string(value); };
+        void operator()(double value, AZStd::string& to) const          { to = AZStd::to_string(value); };
+        void operator()(const Vec2& value, AZStd::string& to) const
+        {
+            char buf[128] = { 0 };
+            azsprintf(buf, "%f,%f", value.x, value.y);
+            to.assign(buf);
+        }
+        void operator()(const Vec3& value, AZStd::string& to) const
+        {
+            char buf[192] = { 0 };
+            azsprintf(buf, "%f,%f,%f", value.x, value.y, value.z);
+            to.assign(buf);
+        }
+        void operator()(const Vec4& value, AZStd::string& to) const
+        {
+            char buf[256] = { 0 };
+            azsprintf(buf, "%f,%f,%f,%f", value.x, value.y, value.z, value.w);
+            to.assign(buf);
+        }
+        void operator()(const Ang3& value, AZStd::string& to) const
+        {
+            char buf[192] = { 0 };
+            azsprintf(buf, "%f,%f,%f", value.x, value.y, value.z);
+            to.assign(buf);
+        }
+        void operator()(const Quat& value, AZStd::string& to) const
+        {
+            char buf[256] = { 0 };
+            azsprintf(buf, "%f,%f,%f,%f", value.w, value.v.x, value.v.y, value.v.z);
+            to.assign(buf);
+        }
+
+        void operator()(const AZ::Color& from, AZStd::string& to) const
+        {
+            char buf[256] = { 0 };
+            azsprintf(buf, "%f,%f,%f,%f", from.GetR(), from.GetG(), from.GetB(), from.GetA());
+            to.assign(buf);
+        }
+        void operator()(const AZ::Vector2& from, AZStd::string& to) const
+        {
+            char buf[128] = { 0 };
+            azsprintf(buf, "%f,%f", from.GetX(), from.GetY());
+            to.assign(buf);
+        }
+        void operator()(const AZ::Vector3& from, AZStd::string& to) const
+        {
+            char buf[192] = { 0 };
+            azsprintf(buf, "%f,%f,%f", from.GetX(), from.GetY(), from.GetZ());
+            to.assign(buf);
+        }
+        void operator()(const AZ::Vector4& from, AZStd::string& to) const
+        {
+            char buf[256] = { 0 };
+            azsprintf(buf, "%f,%f,%f,%f", from.GetX(), from.GetY(), from.GetZ(), from.GetZ());
+            to.assign(buf);
+        }
+        void operator()(const AZ::Quaternion& from, AZStd::string& to) const
+        {
+            char buf[256] = { 0 };
+            azsprintf(buf, "%f,%f,%f,%f", from.GetX(), from.GetY(), from.GetZ(), from.GetZ());
+            to.assign(buf);
+        }
+
+        /////////////////////////////////////////// Legal to Current Math Types
+        void operator()(const Vec2& from, AZ::Vector2& to) const    { to.Set(from.x, from.y); }
+        void operator()(const Vec3& from, AZ::Vector3& to) const    { to.Set(from.x, from.y, from.z); }
+        void operator()(const Vec4& from, AZ::Vector4& to) const    { to.Set(from.x, from.y, from.z, from.w); }
+        void operator()(const Ang3& from, AZ::Vector3& to) const    { to.Set(from.x, from.y, from.z); }
+        void operator()(const Quat& from, AZ::Quaternion& to) const { to.Set(from.v.x, from.v.y, from.v.z, from.w); }
+
+        /////////////////////////////////////////// Current to Legal Math Types
+        void operator()(const AZ::Vector2& from, Vec2& to) const    { to.set(from.GetX(), from.GetY()); }
+        void operator()(const AZ::Vector3& from, Vec3& to) const    { to.Set(from.GetX(), from.GetY(), from.GetZ()); }
+        void operator()(const AZ::Vector4& from, Vec4& to) const    { to = Vec4(from.GetX(), from.GetY(), from.GetZ(), from.GetW()); }
+        void operator()(const AZ::Vector3& from, Ang3& to) const    { to.Set(from.GetX(), from.GetY(), from.GetZ()); }
+        void operator()(const AZ::Quaternion& from, Quat& to) const { to = Quat(from.GetW(), from.GetX(), from.GetY(), from.GetZ()); }
+
+        /////////////////////////////////////////// From QString
+        void operator()(const QString& from, int& value) const      { value = from.toInt(); }
+        void operator()(const QString& from, bool& value) const     { value = from.toInt() != 0; }
+        void operator()(const QString& from, float& value) const    { value = from.toFloat(); }
+        void operator()(const QString& from, double& value) const   { value = from.toDouble(); }
         void operator()(const QString& from, Vec2& value) const
         {
             QStringList parts = from.split(QStringLiteral(","));
@@ -1002,6 +1147,143 @@ namespace var_type
             value.v.y = parts[2].toFloat();
             value.v.z = parts[3].toFloat();
         };
+
+        void operator()(const QString& from, AZ::Color& value) const
+        {
+            QStringList parts = from.split(QStringLiteral(","));
+            while (parts.size() < 4)
+            {
+                parts.push_back(QString());
+            }
+            for (int i = 0; i < 4; ++i)
+            {
+                value.SetElement(i, parts[i].toFloat());
+            }
+        }
+        void operator()(const QString& from, AZ::Vector2& value) const
+        {
+            QStringList parts = from.split(QStringLiteral(","));
+            while (parts.size() < 2)
+            {
+                parts.push_back(QString());
+            }
+            for (int i = 0; i < 2; ++i)
+            {
+                value.SetElement(i, parts[i].toFloat());
+            }
+        }
+        void operator()(const QString& from, AZ::Vector3& value) const
+        {
+            QStringList parts = from.split(QStringLiteral(","));
+            while (parts.size() < 3)
+            {
+                parts.push_back(QString());
+            }
+            for (int i = 0; i < 3; ++i)
+            {
+                value.SetElement(i, parts[i].toFloat());
+            }
+        }
+        void operator()(const QString& from, AZ::Vector4& value) const
+        {
+            QStringList parts = from.split(QStringLiteral(","));
+            while (parts.size() < 4)
+            {
+                parts.push_back(QString());
+            }
+            for (int i = 0; i < 4; ++i)
+            {
+                value.SetElement(i, parts[i].toFloat());
+            }
+        }
+        void operator()(const QString& from, AZ::Quaternion& value) const
+        {
+            QStringList parts = from.split(QStringLiteral(","));
+            while (parts.size() < 4)
+            {
+                parts.push_back(QString());
+            }
+            for (int i = 0; i < 4; ++i)
+            {
+                value.SetElement(i, parts[i].toFloat());
+            }
+        }
+        void operator()(const QString& from, AZStd::string& value) const
+        {
+            value.assign(from.toUtf8().data());
+        }
+
+        /////////////////////////////////////////// From AZStd::string
+        void operator()(const AZStd::string& from, int& value) const
+        {
+            azsscanf(from.c_str(), "%d", &value);
+        }
+        void operator()(const AZStd::string& from, bool& value) const
+        {
+            int val = 0;
+            azsscanf(from.c_str(), "%d", &val);
+            value = val != 0;
+        }
+        void operator()(const AZStd::string& from, float& value) const
+        {
+            azsscanf(from.c_str(), "%f", &value);
+        }
+        void operator()(const AZStd::string& from, double& value) const
+        {
+            azsscanf(from.c_str(), "%lf", &value);
+        }
+        void operator()(const AZStd::string& from, Vec2& value) const
+        {
+            azsscanf(from.c_str(), "%f,%f", &value.x, &value.y);
+        }
+        void operator()(const AZStd::string& from, Vec3& value) const
+        {
+            azsscanf(from.c_str(), "%f,%f,%f", &value.x, &value.y, &value.z);
+        }
+        void operator()(const AZStd::string& from, Vec4& value) const
+        {
+            azsscanf(from.c_str(), "%f,%f,%f,%f", &value.x, &value.y, &value.z, &value.w);
+        }
+        void operator()(const AZStd::string& from, Ang3& value) const
+        {
+            azsscanf(from.c_str(), "%f,%f,%f", &value.x, &value.y, &value.z);
+        }
+        void operator()(const AZStd::string& from, Quat& value) const
+        {
+            azsscanf(from.c_str(), "%f,%f,%f,%f", &value.w, &value.v.x, &value.v.y, &value.v.z);
+        }
+
+        void operator()(const AZStd::string& from, AZ::Color& value) const
+        {
+            float val[4];
+            azsscanf(from.c_str(), "%f,%f,%f,%f", val, val + 1, val + 2, val + 3);
+            value.Set(val);
+        }
+        void operator()(const AZStd::string& from, AZ::Vector2& value) const
+        {
+            float val[2];
+            azsscanf(from.c_str(), "%f,%f,", val, val + 1);
+            value = AZ::Vector2::CreateFromFloat2(val);
+        }
+        void operator()(const AZStd::string& from, AZ::Vector3& value) const
+        {
+            float val[3];
+            azsscanf(from.c_str(), "%f,%f,%f", val, val + 1, val + 2);
+            value.Set(val);
+        }
+        void operator()(const AZStd::string& from, AZ::Vector4& value) const
+        {
+            float val[4];
+            azsscanf(from.c_str(), "%f,%f,%f,%f", val, val + 1, val + 2, val + 3);
+            value.Set(val);
+        };
+        void operator()(const AZStd::string& from, AZ::Quaternion& value) const
+        {
+            float val[4];
+            azsscanf(from.c_str(), "%f,%f,%f,%f", val, val + 1, val + 2, val + 3);
+            value.Set(val);
+        };
+
     };
 
     //////////////////////////////////////////////////////////////////////////
@@ -1012,6 +1294,7 @@ namespace var_type
     {
         return arg1 == arg2;
     };
+    
     inline bool compare(const Vec2& v1, const Vec2& v2)
     {
         return v1.x == v2.x && v1.y == v2.y;
@@ -1032,6 +1315,7 @@ namespace var_type
     {
         return q1.v.x == q2.v.x && q1.v.y == q2.v.y && q1.v.z == q2.v.z && q1.w == q2.w;
     }
+    
     inline bool compare(const char* s1, const char* s2)
     {
         return strcmp(s1, s2) == 0;
@@ -1045,22 +1329,24 @@ namespace var_type
     inline void init(Type& val)
     {
         val = 0;
-    };
-    inline void init(Vec2& val)   {   val.x = 0; val.y = 0;   };
-    inline void init(Vec3& val)   {   val.x = 0; val.y = 0; val.z = 0; };
-    inline void init(Vec4& val)   {   val.x = 0; val.y = 0; val.z = 0; val.w = 0;  };
-    inline void init(Ang3& val)   {   val.x = 0; val.y = 0; val.z = 0; };
-    inline void init(Quat& val)
-    {
-        val.v.x = 0;
-        val.v.y = 0;
-        val.v.z = 0;
-        val.w = 0;
-    };
-    inline void init(const char*& val)
-    {
+    }
+
+    inline void init(Vec2& val) { val.x = 0; val.y = 0;   };
+    inline void init(Vec3& val) { val.x = 0; val.y = 0; val.z = 0; };
+    inline void init(Vec4& val) { val.x = 0; val.y = 0; val.z = 0; val.w = 0;  };
+    inline void init(Ang3& val) { val.x = 0; val.y = 0; val.z = 0; };
+    inline void init(Quat& val) { val.v.x = 0; val.v.y = 0; val.v.z = 0; val.w = 0; };
+
+    inline void init(AZ::Color& val)        { val = AZ::Color::CreateZero(); }
+    inline void init(AZ::Vector2& val)      { val = AZ::Vector2::CreateZero(); }
+    inline void init(AZ::Vector3& val)      { val = AZ::Vector3::CreateZero(); }
+    inline void init(AZ::Vector4& val)      { val = AZ::Vector4::CreateZero(); }
+    inline void init(AZ::Quaternion& val)   { val = AZ::Quaternion::CreateIdentity(); }
+    inline void init(AZStd::string& val)    { val = AZStd::string(); }
+
+    inline void init(const char*& val) {
         val = "";
-    };
+    }
     inline void init([[maybe_unused]] QString& val)
     {
         // self initializing.
@@ -1109,7 +1395,7 @@ public:
     explicit CVariable(const T& set)
         : CVariable()
     {
-        var_type::init(m_valueDef);   // Update F32NAN values in Debud mode
+        var_type::init(m_valueDef);   // Update F32NAN values in Debug mode
         SetValue(set);
     }
 
@@ -1120,30 +1406,45 @@ public:
     //////////////////////////////////////////////////////////////////////////
     // Set methods.
     //////////////////////////////////////////////////////////////////////////
-    void Set(int value) override                           { SetValue(value); }
-    void Set(bool value) override                      { SetValue(value); }
-    void Set(float value) override                     { SetValue(value); }
-    void Set(double value) override                { SetValue(value); }
-    void Set(const Vec2& value) override           { SetValue(value); }
-    void Set(const Vec3& value) override           { SetValue(value); }
-    void Set(const Vec4& value) override           { SetValue(value); }
-    void Set(const Ang3& value) override           { SetValue(value); }
-    void Set(const Quat& value) override           { SetValue(value); }
-    void Set(const QString& value) override    { SetValue(value); }
-    void Set(const char* value) override      { SetValue(QString(value)); }
+    void Set(int value) override                        { SetValue(value); }
+    void Set(bool value) override                       { SetValue(value); }
+    void Set(float value) override                      { SetValue(value); }
+    void Set(double value) override                     { SetValue(value); }
+    void Set(const Vec2& value) override                { SetValue(value); }
+    void Set(const Vec3& value) override                { SetValue(value); }
+    void Set(const Vec4& value) override                { SetValue(value); }
+    void Set(const Ang3& value) override                { SetValue(value); }
+    void Set(const Quat& value) override                { SetValue(value); }
+    void Set(const QString& value) override             { SetValue(value); }
+    void Set(const char* value) override                { SetValue(QString(value)); }
+
+    void Set(const AZ::Color& value) override           { SetValue(value); }
+    void Set(const AZ::Vector2& value) override         { SetValue(value); }
+    void Set(const AZ::Vector3& value) override         { SetValue(value); }
+    void Set(const AZ::Vector4& value) override         { SetValue(value); }
+    void Set(const AZ::Quaternion& value) override      { SetValue(value); }
+    void Set(const AZStd::string& value) override       { SetValue(value); }
 
     //////////////////////////////////////////////////////////////////////////
     // Get methods.
     //////////////////////////////////////////////////////////////////////////
-    void Get(int& value) const override                        { GetValue(value); }
-    void Get(bool& value) const override                   { GetValue(value); }
-    void Get(float& value) const override                  { GetValue(value); }
-    void Get(double& value) const override                  { GetValue(value); }
-    void Get(Vec2& value) const override                   { GetValue(value); }
-    void Get(Vec3& value) const override                   { GetValue(value); }
-    void Get(Vec4& value) const override                   { GetValue(value); }
-    void Get(Quat& value) const override                   { GetValue(value); }
-    void Get(QString& value) const override                { GetValue(value); }
+    void Get(int& value) const override                 { GetValue(value); }
+    void Get(bool& value) const override                { GetValue(value); }
+    void Get(float& value) const override               { GetValue(value); }
+    void Get(double& value) const override              { GetValue(value); }
+    void Get(Vec2& value) const override                { GetValue(value); }
+    void Get(Vec3& value) const override                { GetValue(value); }
+    void Get(Vec4& value) const override                { GetValue(value); }
+    void Get(Quat& value) const override                { GetValue(value); }
+    void Get(QString& value) const override             { GetValue(value); }
+
+    void Get(AZ::Color& value) const override           { GetValue(value); }
+    void Get(AZ::Vector2& value) const override         { GetValue(value); }
+    void Get(AZ::Vector3& value) const override         { GetValue(value); }
+    void Get(AZ::Vector4& value) const override         { GetValue(value); }
+    void Get(AZ::Quaternion& value) const override      { GetValue(value); }
+    void Get(AZStd::string& value) const override       { GetValue(value); }
+
     bool HasDefaultValue() const override
     {
         T defval;
@@ -1241,9 +1542,9 @@ protected:
     void SetValue(const P& value)
     {
         T newValue = T();
-        //var_type::type_convertor<P,T> convertor;
-        var_type::type_convertor convertor;
-        convertor(value, newValue);
+        //var_type::type_converter<P,T> converter;
+        var_type::type_converter converter;
+        converter(value, newValue);
 
         // compare old and new values.
         if (m_bForceModified || !var_type::compare(m_valueDef, newValue))
@@ -1258,8 +1559,8 @@ protected:
     template <class P>
     void GetValue(P& value) const
     {
-        var_type::type_convertor convertor;
-        convertor(m_valueDef, value);
+        var_type::type_converter converter;
+        converter(m_valueDef, value);
     }
 
 protected:
@@ -1765,7 +2066,7 @@ public:
     //////////////////////////////////////////////////////////////////////////
     //! Copy variable values from specified var block.
     //! Do not create new variables, only copy values of existing ones.
-    //! Should only be used to copy identical var blocks (eg. not Array type var copied to String type var)
+    //! Should only be used to copy identical var blocks (e.g. not Array type var copied to String type var)
     //! @param fromVarBlock Source variable block that contain copied values, must be identical to this var block.
     void CopyValues(const CVarBlock* fromVarBlock);
 
@@ -1780,7 +2081,7 @@ public:
 
 
     //////////////////////////////////////////////////////////////////////////
-    //! Set UI_CREATE_SPLINE flags for all the varialbes in this Var Block.
+    //! Set UI_CREATE_SPLINE flags for all the variables in this Var Block.
     //! This is because when the data was changed for a spline variable, the spline need to be recreated to reflect the change.
     //! Set the flag to notify the spline variable.
     void SetRecreateSplines();
