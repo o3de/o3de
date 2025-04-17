@@ -32,7 +32,7 @@ namespace RecastNavigation
 
         //! DetourNavigationRequestBus overrides ...
         //! @{
-#if defined(CARBONATED)
+#if defined(CARBONATED) && defined(CARBONATED_RECAST_UPDATES)
         AZStd::vector<AZ::Vector3> FindPathBetweenEntities(AZ::EntityId fromEntity, AZ::EntityId toEntity,
             bool addCrossings, bool& partial) override;
         AZStd::vector<AZ::Vector3> FindPathBetweenPositions(const AZ::Vector3& fromWorldPosition, const AZ::Vector3& toWorldPosition,

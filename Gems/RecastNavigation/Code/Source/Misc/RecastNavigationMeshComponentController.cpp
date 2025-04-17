@@ -141,7 +141,7 @@ namespace RecastNavigation
         return false;
     }
 
-#if defined(CARBONATED)
+#if defined(CARBONATED) && defined(CARBONATED_RECAST_UPDATES)
     bool RecastNavigationMeshComponentController::PartialUpdateNavigationMeshBlockUntilCompleted(const AZStd::vector<AZ::Aabb>& changedGeometry)
     {
         bool notInProgress = false;

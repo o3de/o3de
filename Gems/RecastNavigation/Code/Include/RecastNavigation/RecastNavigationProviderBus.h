@@ -25,7 +25,7 @@ namespace RecastNavigation
         //! @returns a container with triangle data for each tile.
         virtual AZStd::vector<AZStd::shared_ptr<TileGeometry>> CollectGeometry(float tileSize, float borderSize) = 0;
 
-#if defined(CARBONATED)
+#if defined(CARBONATED) && defined(CARBONATED_RECAST_UPDATES)
         // same as the above, but collect the geometry for tiles affected by AABBs in changedGeometry
         virtual AZStd::vector<AZStd::shared_ptr<TileGeometry>> CollectPartialGeometry(
             float tileSize, float borderSize, const AZStd::vector<AZ::Aabb>& changedGeometry) = 0;
@@ -40,7 +40,7 @@ namespace RecastNavigation
         virtual bool CollectGeometryAsync(float tileSize, float borderSize,
             AZStd::function<void(AZStd::shared_ptr<TileGeometry>)> tileCallback) = 0;
 
-#if defined(CARBONATED)
+#if defined(CARBONATED) && defined(CARBONATED_RECAST_UPDATES)
         // same as the above, but collect the geometry for tiles affected by AABBs in changedGeometry
         virtual bool CollectPartialGeometryAsync(
             float tileSize, float borderSize, const AZStd::vector<AZ::Aabb>& changedGeometry,

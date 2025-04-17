@@ -499,7 +499,7 @@ namespace RecastNavigationTests
         RecastNavigationMeshRequestBus::Event(e.GetId(), &RecastNavigationMeshRequests::UpdateNavigationMeshBlockUntilCompleted);
 
         AZStd::vector<AZ::Vector3> waypoints;
-#if defined(CARBONATED)
+#if defined(CARBONATED) && defined(CARBONATED_RECAST_UPDATES)
         bool partial;
         DetourNavigationRequestBus::EventResult(waypoints, AZ::EntityId(1), &DetourNavigationRequests::FindPathBetweenPositions,
             AZ::Vector3(0.f, 0, 0), AZ::Vector3(2.f, 2, 0), false, partial);
@@ -531,7 +531,7 @@ namespace RecastNavigationTests
         RecastNavigationMeshRequestBus::Event(e.GetId(), &RecastNavigationMeshRequests::UpdateNavigationMeshBlockUntilCompleted);
 
         AZStd::vector<AZ::Vector3> waypoints;
-#if defined(CARBONATED)
+#if defined(CARBONATED) && defined(CARBONATED_RECAST_UPDATES)
         bool partial;
         DetourNavigationRequestBus::EventResult(waypoints, AZ::EntityId(1), &DetourNavigationRequests::FindPathBetweenPositions,
             AZ::Vector3(0.f, 0, 0), AZ::Vector3(2.f, 2, 0), false, partial);
@@ -563,7 +563,7 @@ namespace RecastNavigationTests
         RecastNavigationMeshRequestBus::Event(e.GetId(), &RecastNavigationMeshRequests::UpdateNavigationMeshBlockUntilCompleted);
 
         AZStd::vector<AZ::Vector3> waypoints;
-#if defined(CARBONATED)
+#if defined(CARBONATED) && defined(CARBONATED_RECAST_UPDATES)
         bool partial;
         DetourNavigationRequestBus::EventResult(waypoints, AZ::EntityId(1), &DetourNavigationRequests::FindPathBetweenPositions,
             AZ::Vector3(0.f, 0, 0), AZ::Vector3(2000.f, 2000, 0), false, partial);
@@ -593,7 +593,7 @@ namespace RecastNavigationTests
             }));
 
         AZStd::vector<AZ::Vector3> waypoints;
-#if defined(CARBONATED)
+#if defined(CARBONATED) && defined(CARBONATED_RECAST_UPDATES)
         bool partial;
         DetourNavigationRequestBus::EventResult(waypoints, AZ::EntityId(1), &DetourNavigationRequests::FindPathBetweenPositions,
             AZ::Vector3(0.f, 0, 0), AZ::Vector3(2.f, 2, 0), false, partial);
@@ -623,7 +623,7 @@ namespace RecastNavigationTests
             }));
 
         AZStd::vector<AZ::Vector3> waypoints;
-#if defined(CARBONATED)
+#if defined(CARBONATED) && defined(CARBONATED_RECAST_UPDATES)
         bool partial;
         DetourNavigationRequestBus::EventResult(waypoints, AZ::EntityId(1), &DetourNavigationRequests::FindPathBetweenEntities,
             AZ::EntityId(), AZ::EntityId(), false, partial);
@@ -655,7 +655,7 @@ namespace RecastNavigationTests
             }));
 
         AZStd::vector<AZ::Vector3> waypoints;
-#if defined(CARBONATED)
+#if defined(CARBONATED) && defined(CARBONATED_RECAST_UPDATES)
         bool partial;
         DetourNavigationRequestBus::EventResult(waypoints, AZ::EntityId(1), &DetourNavigationRequests::FindPathBetweenEntities,
             AZ::EntityId(1), AZ::EntityId(2), false, partial);
@@ -880,7 +880,7 @@ namespace RecastNavigationTests
         RecastNavigationMeshRequestBus::Event(e.GetId(), &RecastNavigationMeshRequests::UpdateNavigationMeshAsync);
 
         AZStd::vector<AZ::Vector3> waypoints;
-#if defined(CARBONATED)
+#if defined(CARBONATED) && defined(CARBONATED_RECAST_UPDATES)
         bool partial;
         DetourNavigationRequestBus::EventResult(waypoints, AZ::EntityId(1), &DetourNavigationRequests::FindPathBetweenPositions,
             AZ::Vector3(0.f, 0.f, 0.f), AZ::Vector3(2.f, 2.f, 0.f), false, partial);
@@ -933,7 +933,7 @@ namespace RecastNavigationTests
         RecastNavigationMeshRequestBus::Event(e.GetId(), &RecastNavigationMeshRequests::UpdateNavigationMeshBlockUntilCompleted);
 
         detour->SetNavigationMeshEntity(AZ::EntityId(999)/*Doesn't exist*/);
-#if defined(CARBONATED)
+#if defined(CARBONATED) && defined(CARBONATED_RECAST_UPDATES)
         bool partial;
         AZStd::vector<AZ::Vector3> waypoints = detour->FindPathBetweenPositions(AZ::Vector3(0.f, 0.f, 0.f), AZ::Vector3(2.f, 2.f, 0.f), false, partial);
 #else
@@ -942,7 +942,7 @@ namespace RecastNavigationTests
         EXPECT_EQ(waypoints.size(), 0);
 
         detour->SetNavigationMeshEntity(AZ::EntityId(1)/*The right entity*/);
-#if defined(CARBONATED)
+#if defined(CARBONATED) && defined(CARBONATED_RECAST_UPDATES)
         waypoints = detour->FindPathBetweenPositions(AZ::Vector3(0.f, 0.f, 0.f), AZ::Vector3(2.f, 2.f, 0.f), false, partial);
 #else
         waypoints = detour->FindPathBetweenPositions(AZ::Vector3(0.f, 0.f, 0.f), AZ::Vector3(2.f, 2.f, 0.f));
@@ -968,7 +968,7 @@ namespace RecastNavigationTests
 
         AZStd::vector<AZ::Vector3> waypoints;
 
-#if defined(CARBONATED)
+#if defined(CARBONATED) && defined(CARBONATED_RECAST_UPDATES)
         bool partial;
         DetourNavigationRequestBus::EventResult(waypoints, AZ::EntityId(1), &DetourNavigationRequests::FindPathBetweenPositions,
             AZ::Vector3(0.f, 0.f, 0.f), AZ::Vector3(2.f, 2.f, 0.f), false, partial);
@@ -990,7 +990,7 @@ namespace RecastNavigationTests
         RecastNavigationMeshRequestBus::Event(e.GetId(), &RecastNavigationMeshRequests::UpdateNavigationMeshBlockUntilCompleted);
 
         waypoints.clear();
-#if defined(CARBONATED)
+#if defined(CARBONATED) && defined(CARBONATED_RECAST_UPDATES)
         DetourNavigationRequestBus::EventResult(waypoints, AZ::EntityId(1), &DetourNavigationRequests::FindPathBetweenPositions,
             AZ::Vector3(0.f, 0.f, 0.f), AZ::Vector3(2.f, 2.f, 0.f), false, partial);
 #else

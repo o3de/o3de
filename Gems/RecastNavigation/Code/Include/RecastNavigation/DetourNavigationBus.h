@@ -31,7 +31,7 @@ namespace RecastNavigation
         //! @param fromEntity The starting point of the path from the position of this entity.
         //! @param toEntity The end point of the path is at the position of this entity.
         //! @return If a path is found, returns a vector of waypoints. An empty vector is returned if a path was not found.
-#if defined(CARBONATED)
+#if defined(CARBONATED) && defined(CARBONATED_RECAST_UPDATES)
         virtual AZStd::vector<AZ::Vector3> FindPathBetweenEntities(AZ::EntityId fromEntity, AZ::EntityId toEntity,
             bool addCrossings, bool& partial) = 0;
 #else
@@ -42,7 +42,7 @@ namespace RecastNavigation
         //! @param fromWorldPosition The starting point of the path.
         //! @param toWorldPosition The end point of the path to find.
         //! @return If a path is found, returns a vector of waypoints. An empty vector is returned if a path was not found.
-#if defined(CARBONATED)        
+#if defined(CARBONATED) && defined(CARBONATED_RECAST_UPDATES)        
         virtual AZStd::vector<AZ::Vector3> FindPathBetweenPositions(const AZ::Vector3& fromWorldPosition, const AZ::Vector3& toWorldPosition,
             bool addCrossings, bool& partial) = 0;
 #else

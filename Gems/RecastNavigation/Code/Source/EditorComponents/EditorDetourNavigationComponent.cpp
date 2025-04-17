@@ -11,7 +11,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <Components/DetourNavigationComponent.h>
 
-#if defined(CARBONATED)
+#if defined(CARBONATED) && defined(CARBONATED_RECAST_UPDATES)
 #include <AzCore/Component/TransformBus.h>
 
 #include <RecastNavigation/RecastHelpers.h>
@@ -60,14 +60,14 @@ namespace RecastNavigation
     void EditorDetourNavigationComponent::Activate()
     {
         EditorComponentBase::Activate();
-#if defined(CARBONATED)
+#if defined(CARBONATED) && defined(CARBONATED_RECAST_UPDATES)
         DetourNavigationRequestBus::Handler::BusConnect(GetEntityId());
 #endif
     }
 
     void EditorDetourNavigationComponent::Deactivate()
     {
-#if defined(CARBONATED)
+#if defined(CARBONATED) && defined(CARBONATED_RECAST_UPDATES)
         DetourNavigationRequestBus::Handler::BusDisconnect();
 #endif
         EditorComponentBase::Deactivate();
@@ -78,7 +78,7 @@ namespace RecastNavigation
         gameEntity->CreateComponent<DetourNavigationComponent>(m_navQueryEntityId, m_nearestDistance);
     }
 
-#if defined(CARBONATED)
+#if defined(CARBONATED) && defined(CARBONATED_RECAST_UPDATES)
     void EditorDetourNavigationComponent::SetNavigationMeshEntity(AZ::EntityId navMeshEntity)
     {
         m_navQueryEntityId = navMeshEntity;

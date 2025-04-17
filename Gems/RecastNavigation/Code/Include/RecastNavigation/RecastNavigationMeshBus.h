@@ -14,13 +14,13 @@
 #include <RecastNavigation/NavMeshQuery.h>
 #include <RecastNavigation/RecastSmartPointer.h>
 
-#if defined(CARBONATED)
+#if defined(CARBONATED) && defined(CARBONATED_RECAST_UPDATES)
 #include <AzCore/Math/Aabb.h>
 #endif
 
 namespace RecastNavigation
 {
-#if defined(CARBONATED)
+#if defined(CARBONATED) && defined(CARBONATED_RECAST_UPDATES)
     struct RecastNavMeshAgentSettings
     {
         float m_radius = 0.0f; //!< The radius of the agent.
@@ -36,7 +36,7 @@ namespace RecastNavigation
         : public AZ::ComponentBus
     {
     public:
-#if defined(CARBONATED)
+#if defined(CARBONATED) && defined(CARBONATED_RECAST_UPDATES)
         using MutexType = AZStd::recursive_mutex;
 #endif
 
@@ -48,7 +48,7 @@ namespace RecastNavigation
         //! @returns false if another update operation is already in progress
         virtual bool UpdateNavigationMeshAsync() = 0;
 
-#if defined(CARBONATED)
+#if defined(CARBONATED) && defined(CARBONATED_RECAST_UPDATES)
         //! Re-calculates the navigation mesh for selective tiles based on the AABB provided. Blocking call.
         //! @returns false if another update operation is already in progress
         virtual bool PartialUpdateNavigationMeshBlockUntilCompleted(const AZStd::vector<AZ::Aabb>& changedGeometry) = 0;
@@ -67,7 +67,7 @@ namespace RecastNavigation
         //! @returns the underlying navigation objects with the associated synchronization object.
         virtual AZStd::shared_ptr<NavMeshQuery> GetNavigationObject() = 0;
 
-#if defined(CARBONATED)
+#if defined(CARBONATED) && defined(CARBONATED_RECAST_UPDATES)
         //! Finds the nearest point on the navigation mesh given the position provided.
         //! We are allowing some flexibility where looking for a point just a bit outside of the navigation mesh would still work.
         //! @returns true if the point is on mesh within the given tolerance.
