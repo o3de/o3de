@@ -17,7 +17,7 @@
 #include <RHI/PipelineLibrary.h>
 #include <AzCore/std/algorithm.h>
 
-#if defined(CARBONATED)
+#if defined(CARBONATED) && defined(CARBONATED_SHADER_LOADING_TIME) && !defined(RELEASE)
 #include <AzCore/Time/ITime.h>
 #endif
 
@@ -89,7 +89,7 @@ namespace AZ
             {
                 loadFromByteCode = true;
             }
-#if defined(CARBONATED)
+#if defined(CARBONATED) && defined(CARBONATED_SHADER_LOADING_TIME) && !defined(RELEASE)
             const int64_t startTime = static_cast<int64_t>(AZ::GetRealElapsedTimeMs());
 #endif
             const uint8_t* shaderByteCode = reinterpret_cast<const uint8_t*>(shaderFunction->GetByteCode().data());
@@ -118,7 +118,7 @@ namespace AZ
                     AZ_Assert(false, "Shader source is not added by default. It can be added by enabling /O3DE/Atom/RHI/GraphicsDevMode via settings registry and re-building the shader.");
                 }
             }
-#if defined(CARBONATED)
+#if defined(CARBONATED) && defined(CARBONATED_SHADER_LOADING_TIME) && !defined(RELEASE)
             const int64_t dt = static_cast<int64_t>(AZ::GetRealElapsedTimeMs()) - startTime;
             if (dt > 1)
             {
@@ -217,12 +217,12 @@ namespace AZ
             PipelineLibrary* pipelineLibrary = static_cast<PipelineLibrary*>(pipelineLibraryBase);
             if (pipelineLibrary && pipelineLibrary->IsInitialized())
             {
-#if defined(CARBONATED)
+#if defined(CARBONATED) && defined(CARBONATED_SHADER_LOADING_TIME) && !defined(RELEASE)
                 const int64_t startTime = static_cast<int64_t>(AZ::GetRealElapsedTimeMs());
                 m_graphicsPipelineState = pipelineLibrary->CreateGraphicsPipelineState(static_cast<uint64_t>(descriptor.GetHash()), m_renderPipelineDesc, &error);
 
                 const int64_t dt = static_cast<int64_t>(AZ::GetRealElapsedTimeMs()) - startTime;
-                if (dt > 100)
+                if (dt > 20)
                 {
                     AZ_Info("PrimitiveLoadTime", "Pipeline state created in %d ms",  dt);
                 }
