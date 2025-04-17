@@ -7,9 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/BufferPool.h>
-#include <Atom/RHI.Reflect/Vulkan/BufferPoolDescriptor.h>
-#include <RHI/BufferMemoryAllocator.h>
+#include <Atom/RHI/DeviceBufferPool.h>
 
 namespace AZ
 {
@@ -20,19 +18,17 @@ namespace AZ
         class Device;
 
         class BufferPool final
-            : public RHI::BufferPool
+            : public RHI::DeviceBufferPool
         {
-            using Base = RHI::BufferPool;
+            using Base = RHI::DeviceBufferPool;
 
         public:
             AZ_RTTI(BufferPool, "F3DE9E13-12F2-489E-8665-6895FD7446C0", Base);
-            AZ_CLASS_ALLOCATOR(BufferPool, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(BufferPool, AZ::SystemAllocator);
             ~BufferPool() = default;
             static RHI::Ptr<BufferPool> Create();
 
             Device& GetDevice() const;
-
-            void GarbageCollect();
 
         private:
             BufferPool() = default;
@@ -40,29 +36,17 @@ namespace AZ
             BufferPoolResolver* GetResolver();
 
             //////////////////////////////////////////////////////////////////////////
-            // FrameSchedulerEventBus::Handler
-            void OnFrameEnd() override;
-            //////////////////////////////////////////////////////////////////////////
-
-            //////////////////////////////////////////////////////////////////////////
-             // RHI::BufferPool
+             // RHI::DeviceBufferPool
             RHI::ResultCode InitInternal(RHI::Device& device, const RHI::BufferPoolDescriptor& descriptor) override;
             void ShutdownInternal() override;
-            RHI::ResultCode InitBufferInternal(RHI::Buffer& buffer, const RHI::BufferDescriptor& rhiDescriptor) override;
-            void ShutdownResourceInternal(RHI::Resource& resource) override;
-            RHI::ResultCode OrphanBufferInternal(RHI::Buffer& buffer) override;
-            RHI::ResultCode MapBufferInternal(const RHI::BufferMapRequest& mapRequest, RHI::BufferMapResponse& response) override;
-            void UnmapBufferInternal(RHI::Buffer& buffer) override;
-            RHI::ResultCode StreamBufferInternal(const RHI::BufferStreamRequest& request) override;
+            RHI::ResultCode InitBufferInternal(RHI::DeviceBuffer& buffer, const RHI::BufferDescriptor& rhiDescriptor) override;
+            void ShutdownResourceInternal(RHI::DeviceResource& resource) override;
+            RHI::ResultCode OrphanBufferInternal(RHI::DeviceBuffer& buffer) override;
+            RHI::ResultCode MapBufferInternal(const RHI::DeviceBufferMapRequest& mapRequest, RHI::DeviceBufferMapResponse& response) override;
+            void UnmapBufferInternal(RHI::DeviceBuffer& buffer) override;
+            RHI::ResultCode StreamBufferInternal(const RHI::DeviceBufferStreamRequest& request) override;
             void ComputeFragmentation() const override;
             //////////////////////////////////////////////////////////////////////////
-
-            //////////////////////////////////////////////////////////////////////////
-            // RHI::Object
-            void SetNameInternal(const AZStd::string_view& name) override;
-            //////////////////////////////////////////////////////////////////////////
-
-            BufferMemoryAllocator m_memoryAllocator;
         };
     }
 }

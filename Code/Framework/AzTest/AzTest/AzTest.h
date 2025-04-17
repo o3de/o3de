@@ -104,7 +104,7 @@ namespace AZ
 
         void addTestEnvironment(ITestEnvironment* env);
         void addTestEnvironments(std::vector<ITestEnvironment*> envs);
-        
+
         //! A hook that can be used to read any other misc parameters and remove them before google sees them.
         //! Note that this modifies argc and argv to delete the parameters it consumes.
         void ApplyGlobalParameters(int* argc, char** argv);
@@ -231,7 +231,7 @@ namespace AZ
         {
         public:
             std::list<std::string> resultList;
-            
+
             void OnTestEnd(const ::testing::TestInfo& test_info) override
             {
                 std::string result;
@@ -284,6 +284,11 @@ namespace AZ
         AZ::Test::printUnusedParametersWarning(argc, argv);                                             \
         AZ::Test::addTestEnvironments({TEST_ENV});                                                      \
         int result = RUN_ALL_TESTS();                                                                   \
+        if (::testing::UnitTest::GetInstance()->test_to_run_count() == 0)                               \
+        {                                                                                               \
+            std::cerr << "No tests were found for last suite ran!" << std::endl;                        \
+            result = 1;                                                                                 \
+        }                                                                                               \
         return result;                                                                                  \
     }
 
@@ -416,7 +421,7 @@ int main(int argc, char** argv)                                                 
             static AZ::Test::TestEnvironmentRegistry* AZ_UNIT_TEST_HOOK_REGISTRY_NAME =\
                 new( AZ_OS_MALLOC(sizeof(AZ::Test::TestEnvironmentRegistry),           \
                                   alignof(AZ::Test::TestEnvironmentRegistry)))         \
-              AZ::Test::TestEnvironmentRegistry({ TEST_ENV }, AZ_MODULE_NAME, true);         
+              AZ::Test::TestEnvironmentRegistry({ TEST_ENV }, AZ_MODULE_NAME, true);
 
 #define AZ_BENCHMARK_HOOK_ENV(TEST_ENV)
 #define AZ_BENCHMARK_HOOK()
@@ -426,7 +431,7 @@ int main(int argc, char** argv)                                                 
 
 
 // These macros are needed to implement unit test hooks necessary for running AzUnitTests or AzBenchmarks.
-// 
+//
 
 /* For unit test modules that implement AzUnitTests and AzBenchmarkTests with either a custom environment for AzUnitTests or a custom environment class for AzBenchmarks
    the follow use the overloaded 'IMPLEMENT_AZ_UNIT_TEST_HOOKS' macro
@@ -435,7 +440,7 @@ int main(int argc, char** argv)                                                 
 
    // Implement unit test hooks without a custom AzUnitTest or AzBenchmark environment,
    AZ_UNIT_TEST_HOOK(DEFAULT_UNIT_TEST_ENV);
-   
+
    // Implement unit test hooks with a custom AzUnitTest environment
    AZ_UNIT_TEST_HOOK(new CustomEnvClass());
 
@@ -483,15 +488,3 @@ int main(int argc, char** argv)                                                 
             return unitTestMain.ReturnCode();                                       \
         }                                                                           \
     } while (0); // safe multi-line macro - creates a single statement
-
-// Avoid problems with new/delete when AZ allocators are not ready or properly un/initialized.
-#define AZ_TEST_CLASS_ALLOCATOR(Class_)                                 \
-    void* operator new (size_t size)                                    \
-    {                                                                   \
-        return AZ_OS_MALLOC(size, AZStd::alignment_of<Class_>::value);  \
-    }                                                                   \
-    void operator delete(void* ptr)                                     \
-    {                                                                   \
-        AZ_OS_FREE(ptr);                                                \
-    }
-

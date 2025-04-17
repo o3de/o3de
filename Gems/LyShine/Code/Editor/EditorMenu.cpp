@@ -7,8 +7,11 @@
  */
 #include "EditorCommon.h"
 #include <AzQtComponents/Buses/ShortcutDispatch.h>
-#include <AzToolsFramework/Slice/SliceUtilities.h>
+#include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
+#include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
+#include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
+#include <AzToolsFramework/Slice/SliceUtilities.h>
 
 #include "AlignToolbarSection.h"
 #include "ViewportAlign.h"
@@ -58,13 +61,33 @@ void EditorWindow::EditorMenu_Open(QString optional_selectedFile)
             dir = FileHelpers::GetAbsoluteDir(UICANVASEDITOR_CANVAS_DIRECTORY);
         }
 
-        QFileDialog dialog(this, QString(), dir, "*." UICANVASEDITOR_CANVAS_EXTENSION);
-        dialog.setFileMode(QFileDialog::ExistingFiles);
+        AssetSelectionModel selection;
 
-        if (dialog.exec() == QDialog::Accepted)
+        StringFilter* stringFilter = new StringFilter();
+        const QString& filterString = QString(".") + UICANVASEDITOR_CANVAS_EXTENSION;
+        stringFilter->SetName("UI Canvas files (*.uicanvas)");
+        stringFilter->SetFilterString(filterString);
+        stringFilter->SetFilterPropagation(AssetBrowserEntryFilter::PropagateDirection::Down);
+        auto stringFilterPtr = FilterConstType(stringFilter);
+
+        selection.SetDisplayFilter(stringFilterPtr);
+        selection.SetSelectionFilter(stringFilterPtr);
+        selection.SetMultiselect(true);
+
+        AssetBrowserComponentRequestBus::Broadcast(&AssetBrowserComponentRequests::PickAssets, selection, AzToolsFramework::GetActiveWindow());
+
+        if (!selection.IsValid())
         {
-            OpenCanvases(dialog.selectedFiles());
+            return;
         }
+
+        QStringList list;
+        for (const auto& result : selection.GetResults())
+        {
+            list.push_back(result->GetFullPath().c_str());
+        }
+
+        OpenCanvases(list);
     }
     else
     {
@@ -606,7 +629,7 @@ void EditorWindow::AddMenu_View()
             {
                 // Clear guides
                 AZStd::string canvasUndoXml = CanvasHelpers::BeginUndoableCanvasChange(GetCanvas());
-                EBUS_EVENT_ID(GetCanvas(), UiEditorCanvasBus, RemoveAllGuides);
+                UiEditorCanvasBus::Event(GetCanvas(), &UiEditorCanvasBus::Events::RemoveAllGuides);
                 CanvasHelpers::EndUndoableCanvasChange(this, "clear guides", canvasUndoXml);
             });
         menu->addAction(action);
@@ -1031,7 +1054,7 @@ QAction* EditorWindow::CreateSaveCanvasAction(AZ::EntityId canvasEntityId, bool 
     if (canvasMetadata)
     {
         canvasSourcePathname = canvasMetadata->m_canvasSourceAssetPathname;
-        EBUS_EVENT_ID_RESULT(canvasFilename, canvasEntityId, UiCanvasBus, GetPathname);
+        UiCanvasBus::EventResult(canvasFilename, canvasEntityId, &UiCanvasBus::Events::GetPathname);
     }
 
     QFileInfo fileInfo(canvasSourcePathname.c_str());
@@ -1081,7 +1104,7 @@ QAction* EditorWindow::CreateSaveCanvasAsAction(AZ::EntityId canvasEntityId, boo
     if (canvasMetadata)
     {
         canvasSourcePathname = canvasMetadata->m_canvasSourceAssetPathname;
-        EBUS_EVENT_ID_RESULT(canvasFilename, canvasEntityId, UiCanvasBus, GetPathname);
+        UiCanvasBus::EventResult(canvasFilename, canvasEntityId, &UiCanvasBus::Events::GetPathname);
     }
 
     QAction* action = new QAction("Save Canvas &As...", this);
@@ -1128,7 +1151,7 @@ QAction* EditorWindow::CreateSaveSliceAction(UiCanvasMetadata *canvasMetadata, b
     // as a safeguard check that the entity still exists
     AZ::EntityId sliceEntityId = canvasMetadata->m_sliceEntityId;
     AZ::Entity* sliceEntity = nullptr;
-    EBUS_EVENT_RESULT(sliceEntity, AZ::ComponentApplicationBus, FindEntity, sliceEntityId);
+    AZ::ComponentApplicationBus::BroadcastResult(sliceEntity, &AZ::ComponentApplicationBus::Events::FindEntity, sliceEntityId);
     if (!sliceEntity)
     {
         // Slice entity not found, disable the menu item but also change it to indicate the error

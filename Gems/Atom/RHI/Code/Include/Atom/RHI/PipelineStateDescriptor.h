@@ -13,131 +13,128 @@
 #include <Atom/RHI.Reflect/ShaderStageFunction.h>
 #include <AzCore/Utils/TypeHash.h>
 #include <Atom/RHI.Reflect/PipelineLayoutDescriptor.h>
+#include <Atom/RHI/SpecializationConstant.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    enum class PipelineStateType : uint32_t
     {
-        enum class PipelineStateType : uint32_t
-        {
-            Draw = 0,
-            Dispatch,
-            RayTracing,
-            Count
-        };
+        Draw = 0,
+        Dispatch,
+        RayTracing,
+        Count
+    };
 
-        const uint32_t PipelineStateTypeCount = static_cast<uint32_t>(PipelineStateType::Count);
+    const uint32_t PipelineStateTypeCount = static_cast<uint32_t>(PipelineStateType::Count);
 
-        /**
-         * A base class to pipeline state descriptor.
-         */
-        class PipelineStateDescriptor
-        {
-        public:
-            AZ_RTTI(PipelineStateDescriptor, "{B334AE47-53CB-438C-B799-DCA542FF8D5D}");
+    //! A base class to pipeline state descriptor.
+    class PipelineStateDescriptor
+    {
+    public:
+        AZ_RTTI(PipelineStateDescriptor, "{B334AE47-53CB-438C-B799-DCA542FF8D5D}");
 
-            virtual ~PipelineStateDescriptor() = default;
+        virtual ~PipelineStateDescriptor() = default;
 
-            /// Returns the derived pipeline state type.
-            PipelineStateType GetType() const;
+        //! Returns the derived pipeline state type.
+        PipelineStateType GetType() const;
 
-            /// Returns the hash of the pipeline state descriptor contents.
-            virtual HashValue64 GetHash() const = 0;
+        //! Returns the hash of the pipeline state descriptor contents.
+        HashValue64 GetHash() const;
 
-            bool operator == (const PipelineStateDescriptor& rhs) const;
+        bool operator == (const PipelineStateDescriptor& rhs) const;
 
-            /// The pipeline layout describing the shader resource bindings.
-            ConstPtr<PipelineLayoutDescriptor> m_pipelineLayoutDescriptor = nullptr;
+        //! The pipeline layout describing the shader resource bindings.
+        ConstPtr<PipelineLayoutDescriptor> m_pipelineLayoutDescriptor = nullptr;
 
-        protected:
-            PipelineStateDescriptor(PipelineStateType pipelineStateType);
+        //! Values for specialization constants.
+        AZStd::vector<SpecializationConstant> m_specializationData;
 
-        private:
-            PipelineStateType m_type = PipelineStateType::Count;
-        };
+    protected:
+        PipelineStateDescriptor(PipelineStateType pipelineStateType);
 
-        /**
-         * Describes state necessary to build a compute pipeline state object. The compute pipe
-         * requires a pipeline layout and the shader byte code descriptor. Call Finalize after
-         * assigning data to build the hash value.
-         *
-         * NOTE: This class does not serialize. This is by design. the pipeline layout and shader
-         * byte code is likely shared by many PSOs and the serialization system would simply duplicate
-         * all of that data. However, the individual pieces are serializable, so a higher-level system
-         * could easily construct a PSO library.
-         */
-        class PipelineStateDescriptorForDispatch final
-            : public PipelineStateDescriptor
-        {
-        public:
-            AZ_RTTI(PipelineStateDescriptorForDispatch, "{78E775AD-DCA8-4408-9A42-CF78DEB1E640}", PipelineStateDescriptor);
+        virtual HashValue64 GetHashInternal() const = 0;
 
-            PipelineStateDescriptorForDispatch();
+    private:
+        PipelineStateType m_type = PipelineStateType::Count;
+    };
 
-            /// Computes the hash value for this descriptor.
-            HashValue64 GetHash() const override;
+    //! Describes state necessary to build a compute pipeline state object. The compute pipe
+    //! requires a pipeline layout and the shader byte code descriptor. Call Finalize after
+    //! assigning data to build the hash value.
+    //!
+    //! NOTE: This class does not serialize. This is by design. the pipeline layout and shader
+    //! byte code is likely shared by many PSOs and the serialization system would simply duplicate
+    //! all of that data. However, the individual pieces are serializable, so a higher-level system
+    //! could easily construct a PSO library.
+    class PipelineStateDescriptorForDispatch final
+        : public PipelineStateDescriptor
+    {
+    public:
+        AZ_RTTI(PipelineStateDescriptorForDispatch, "{78E775AD-DCA8-4408-9A42-CF78DEB1E640}", PipelineStateDescriptor);
 
-            bool operator == (const PipelineStateDescriptorForDispatch& rhs) const;
+        PipelineStateDescriptorForDispatch();
 
-            /// The compute function containing byte code to compile.
-            ConstPtr<ShaderStageFunction> m_computeFunction;
-        };
+        /// Computes the hash value for this descriptor.
+        HashValue64 GetHashInternal() const override;
 
-        /**
-         * Describes state necessary to build a graphics pipeline state object (PSO). The graphics pipe
-         * requires a pipeline layout and the shader byte code descriptor, as well as the fixed-function
-         * input assembly stream layout, render target attachment layout, and various render states.
-         *
-         * NOTE: This class does not serialize by design. See PipelineStateDescriptorForDispatch for details.
-         */
-        class PipelineStateDescriptorForDraw final
-            : public PipelineStateDescriptor
-        {
-        public:
-            AZ_RTTI(PipelineStateDescriptorForDraw, "{7121C45A-8102-42CE-827D-AB5199701CB2}", PipelineStateDescriptor);
+        bool operator == (const PipelineStateDescriptorForDispatch& rhs) const;
 
-            PipelineStateDescriptorForDraw();
+        /// The compute function containing byte code to compile.
+        ConstPtr<ShaderStageFunction> m_computeFunction;
+    };
 
-            /// Computes the hash value for this descriptor.
-            HashValue64 GetHash() const override;
+    //! Describes state necessary to build a graphics pipeline state object (PSO). The graphics pipe
+    //! requires a pipeline layout and the shader byte code descriptor, as well as the fixed-function
+    //! input assembly stream layout, render target attachment layout, and various render states.
+    //!
+    //! NOTE: This class does not serialize by design. See PipelineStateDescriptorForDispatch for details.
+    class PipelineStateDescriptorForDraw final
+        : public PipelineStateDescriptor
+    {
+    public:
+        AZ_RTTI(PipelineStateDescriptorForDraw, "{7121C45A-8102-42CE-827D-AB5199701CB2}", PipelineStateDescriptor);
 
-            bool operator == (const PipelineStateDescriptorForDraw& rhs) const;
+        PipelineStateDescriptorForDraw();
 
-            /// [Required] The vertex function to compile.
-            ConstPtr<ShaderStageFunction> m_vertexFunction;
+        /// Computes the hash value for this descriptor.
+        HashValue64 GetHashInternal() const override;
 
-            /// [Optional] The tessellation function to compile.
-            ConstPtr<ShaderStageFunction> m_tessellationFunction;
+        bool operator == (const PipelineStateDescriptorForDraw& rhs) const;
 
-            /// [Required] The fragment function used to compile.
-            ConstPtr<ShaderStageFunction> m_fragmentFunction;
+        /// [Required] The vertex function to compile.
+        ConstPtr<ShaderStageFunction> m_vertexFunction;
 
-            /// The input assembly vertex stream layout for the pipeline.
-            InputStreamLayout m_inputStreamLayout;
+        /// [Optional] The geometry function to compile.
+        ConstPtr<ShaderStageFunction> m_geometryFunction;
 
-            /// The render target configuration for the pipeline.
-            RenderAttachmentConfiguration m_renderAttachmentConfiguration;
+        /// [Required] The fragment function used to compile.
+        ConstPtr<ShaderStageFunction> m_fragmentFunction;
 
-            /// Various render states for the pipeline.
-            RenderStates m_renderStates;
-        };
+        /// The input assembly vertex stream layout for the pipeline.
+        InputStreamLayout m_inputStreamLayout;
 
-        //! Describes state necessary to build a ray tracing pipeline state object. 
-        class PipelineStateDescriptorForRayTracing final
-            : public PipelineStateDescriptor
-        {
-        public:
-            AZ_RTTI(PipelineStateDescriptorForRayTracing, "{1B55AD28-A56E-4BCD-92EE-22C2F89ABBE5}", PipelineStateDescriptor);
+        /// The render target configuration for the pipeline.
+        RenderAttachmentConfiguration m_renderAttachmentConfiguration;
 
-            PipelineStateDescriptorForRayTracing();
+        /// Various render states for the pipeline.
+        RenderStates m_renderStates;
+    };
 
-            //! Computes the hash value for this descriptor.
-            HashValue64 GetHash() const override;
+    //! Describes state necessary to build a ray tracing pipeline state object. 
+    class PipelineStateDescriptorForRayTracing final
+        : public PipelineStateDescriptor
+    {
+    public:
+        AZ_RTTI(PipelineStateDescriptorForRayTracing, "{1B55AD28-A56E-4BCD-92EE-22C2F89ABBE5}", PipelineStateDescriptor);
 
-            bool operator == (const PipelineStateDescriptorForRayTracing& rhs) const;
+        PipelineStateDescriptorForRayTracing();
 
-            // The ray tracing shader byte code
-            ConstPtr<ShaderStageFunction> m_rayTracingFunction;
-        };
-    }
+        //! Computes the hash value for this descriptor.
+        HashValue64 GetHashInternal() const override;
+
+        bool operator == (const PipelineStateDescriptorForRayTracing& rhs) const;
+
+        // The ray tracing shader byte code
+        ConstPtr<ShaderStageFunction> m_rayTracingFunction;
+    };
 }

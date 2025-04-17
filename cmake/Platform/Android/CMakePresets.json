@@ -18,36 +18,19 @@
         "android-ninja",
         "android-unity",
         "android-non-monolithic"
-      ],
-      "condition": {
-        "type": "inList",
-        "string": "${hostSystemName}",
-        "list": [
-          "Darwin",
-          "Linux",
-          "Windows"
-        ]
-      }
+      ]
     },
     {
       "name": "android-mono-default",
       "displayName": "Android Monolithic with Unity and Ninja",
       "description": "Configures Android to build the Monolithic permutation using Ninja with Unity builds",
       "toolchainFile": "${sourceDir}/cmake/Platform/Android/Toolchain_android.cmake",
+      "binaryDir": "${sourceDir}/build/android_mono",
       "inherits": [
         "android-ninja",
         "android-unity",
         "android-monolithic"
-      ],
-      "condition": {
-        "type": "inList",
-        "string": "${hostSystemName}",
-        "list": [
-          "Darwin",
-          "Linux",
-          "Windows"
-        ]
-      }
+      ]
     },
     {
       "name": "android-unity",
@@ -56,17 +39,9 @@
       "toolchainFile": "${sourceDir}/cmake/Platform/Android/Toolchain_android.cmake",
       "binaryDir": "${sourceDir}/build/android",
       "inherits": [
-        "unity"
-      ],
-      "condition": {
-        "type": "inList",
-        "string": "${hostSystemName}",
-        "list": [
-          "Darwin",
-          "Linux",
-          "Windows"
-        ]
-      }
+        "unity",
+        "host-windows-linux-mac"
+      ]
     },
     {
       "name": "android-no-unity",
@@ -75,17 +50,9 @@
       "toolchainFile": "${sourceDir}/cmake/Platform/Android/Toolchain_android.cmake",
       "binaryDir": "${sourceDir}/build/android_no_unity",
       "inherits": [
-        "no-unity"
-      ],
-      "condition": {
-        "type": "inList",
-        "string": "${hostSystemName}",
-        "list": [
-          "Darwin",
-          "Linux",
-          "Windows"
-        ]
-      }
+        "no-unity",
+        "host-windows-linux-mac"
+      ]
     },
     {
       "name": "android-non-monolithic",
@@ -93,17 +60,9 @@
       "description": "Default configuration for non-monolithic builds",
       "toolchainFile": "${sourceDir}/cmake/Platform/Android/Toolchain_android.cmake",
       "inherits": [
-        "non-monolithic"
-      ],
-      "condition": {
-        "type": "inList",
-        "string": "${hostSystemName}",
-        "list": [
-          "Darwin",
-          "Linux",
-          "Windows"
-        ]
-      }
+        "non-monolithic",
+        "host-windows-linux-mac"
+      ]
     },
     {
       "name": "android-monolithic",
@@ -112,17 +71,9 @@
       "toolchainFile": "${sourceDir}/cmake/Platform/Android/Toolchain_android.cmake",
       "binaryDir": "${sourceDir}/build/android_mono",
       "inherits": [
-        "monolithic"
-      ],
-      "condition": {
-        "type": "inList",
-        "string": "${hostSystemName}",
-        "list": [
-          "Darwin",
-          "Linux",
-          "Windows"
-        ]
-      }
+        "monolithic",
+        "host-windows-linux-mac"
+      ]
     },
     {
       "name": "android-ninja",
@@ -132,16 +83,7 @@
       "binaryDir": "${sourceDir}/build/android_ninja",
       "inherits": [
         "android-ninja-unity"
-      ],
-      "condition": {
-        "type": "inList",
-        "string": "${hostSystemName}",
-        "list": [
-          "Darwin",
-          "Linux",
-          "Windows"
-        ]
-      }
+      ]
     },
     {
       "name": "android-ninja-unity",
@@ -152,16 +94,7 @@
       "inherits": [
         "ninja-multi-config",
         "android-unity"
-      ],
-      "condition": {
-        "type": "inList",
-        "string": "${hostSystemName}",
-        "list": [
-          "Darwin",
-          "Linux",
-          "Windows"
-        ]
-      }
+      ]
     },
     {
       "name": "android-ninja-no-unity",
@@ -172,16 +105,7 @@
       "inherits": [
         "ninja-multi-config",
         "android-no-unity"
-      ],
-      "condition": {
-        "type": "inList",
-        "string": "${hostSystemName}",
-        "list": [
-          "Darwin",
-          "Linux",
-          "Windows"
-        ]
-      }
+      ]
     }
   ],
   "buildPresets": [
@@ -190,15 +114,9 @@
       "displayName": "Android",
       "description": "Builds all targets for Android",
       "configurePreset": "android-default",
-      "condition": {
-        "type": "inList",
-        "string": "${hostSystemName}",
-        "list": [
-          "Darwin",
-          "Linux",
-          "Windows"
-        ]
-      }
+      "inherits": [
+        "host-windows-linux-mac"
+      ]
     },
     {
       "name": "android-install",
@@ -206,32 +124,18 @@
       "description": "Builds the \"install\" target for Android, which builds all target and runs the CMake --install step",
       "configurePreset": "android-default",
       "inherits": [
-        "install"
-      ],
-      "condition": {
-        "type": "inList",
-        "string": "${hostSystemName}",
-        "list": [
-          "Darwin",
-          "Linux",
-          "Windows"
-        ]
-      }
+        "install",
+        "host-windows-linux-mac"
+      ]
     },
     {
       "name": "android-mono-default",
       "displayName": "Android Monolithic",
       "description": "Builds all targets for Android in the monolithic permutation",
       "configurePreset": "android-mono-default",
-      "condition": {
-        "type": "inList",
-        "string": "${hostSystemName}",
-        "list": [
-          "Darwin",
-          "Linux",
-          "Windows"
-        ]
-      }
+      "inherits": [
+        "host-windows-linux-mac"
+      ]
     },
     {
       "name": "android-mono-install",
@@ -239,17 +143,9 @@
       "description": "Builds the \"install\" target for android monolithic permutation, which builds all target and runs the CMake --install step",
       "configurePreset": "android-mono-default",
       "inherits": [
-        "install"
-      ],
-      "condition": {
-        "type": "inList",
-        "string": "${hostSystemName}",
-        "list": [
-          "Darwin",
-          "Linux",
-          "Windows"
-        ]
-      }
+        "install",
+        "host-windows-linux-mac"
+      ]
     }
   ],
   "testPresets": []

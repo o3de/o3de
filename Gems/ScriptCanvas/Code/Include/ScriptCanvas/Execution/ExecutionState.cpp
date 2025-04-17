@@ -8,8 +8,8 @@
 
 #include <AzCore/Asset/AssetManager.h>
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
+#include <ScriptCanvas/Asset/SubgraphInterfaceAsset.h>
 #include <ScriptCanvas/Execution/RuntimeComponent.h>
-
 #include <ScriptCanvas/Execution/ExecutionState.h>
 
 namespace ExecutionStateCpp

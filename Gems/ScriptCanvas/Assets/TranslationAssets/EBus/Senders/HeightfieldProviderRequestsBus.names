@@ -19,13 +19,24 @@
                         "tooltip": "Signaled after Get Heightfield Min Height is invoked"
                     },
                     "details": {
-                        "name": "Get Heightfield Min Height"
+                        "name": "Get Heightfield Min Height",
+                        "tooltip": "Get the minimum height that the heightfield can contain"
                     },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Id for the entity containing the heightfield"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Heightfield Min Height"
+                                "name": "Heightfield Min Height",
+                                "tooltip": "Minimum height that the heightfield can contain"
                             }
                         }
                     ]
@@ -41,13 +52,24 @@
                         "tooltip": "Signaled after Get Heights is invoked"
                     },
                     "details": {
-                        "name": "Get Heights"
+                        "name": "Get Heights",
+                        "tooltip": "Gets an array of height values for each point in the heightfield grid"
                     },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Id for the entity containing the heightfield"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{6106BF95-5ACD-5071-8D0E-4F846C2138AD}",
                             "details": {
-                                "name": "Heights"
+                                "name": "Heights",
+                                "tooltip": "An array of height values for each point in the heightfield grid"
                             }
                         }
                     ]
@@ -63,13 +85,24 @@
                         "tooltip": "Signaled after Get Heightfield Max Height is invoked"
                     },
                     "details": {
-                        "name": "Get Heightfield Max Height"
+                        "name": "Get Heightfield Max Height",
+                        "tooltip": "Get the maximum height that the heightfield can contain"
                     },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Id for the entity containing the heightfield"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Heightfield Max Height"
+                                "name": "Heightfield Max Height",
+                                "tooltip": "The maximum height that the heightfield can contain"
                             }
                         }
                     ]
@@ -85,13 +118,24 @@
                         "tooltip": "Signaled after Get Heightfield Grid Columns is invoked"
                     },
                     "details": {
-                        "name": "Get Heightfield Grid Columns"
+                        "name": "Get Heightfield Grid Columns",
+                        "tooltip": "Get the size of the heightfield grid in the x direction"
                     },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Id for the entity containing the heightfield"
+                            }
+                        }
+                    ],
                     "results": [
                         {
-                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "typeid": "{D6597933-47CD-4fc8-B911-63F3E2B0993A}",
                             "details": {
-                                "name": "Heightfield Grid Columns"
+                                "name": "Heightfield Grid Columns",
+                                "tooltip": "The size of the heightfield grid in the x direction"
                             }
                         }
                     ]
@@ -107,13 +151,24 @@
                         "tooltip": "Signaled after Get Material List is invoked"
                     },
                     "details": {
-                        "name": "Get Material List"
+                        "name": "Get Material List",
+                        "tooltip": "Get an array of the materials used by the heightfield"
                     },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Id for the entity containing the heightfield"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{82111EAD-9C65-57F0-BA72-46D6D931B434}",
                             "details": {
-                                "name": "Material List"
+                                "name": "Material List",
+                                "tooltip": "An array of the materials used by the heightfield"
                             }
                         }
                     ]
@@ -129,13 +184,24 @@
                         "tooltip": "Signaled after Get Heightfield Transform is invoked"
                     },
                     "details": {
-                        "name": "Get Heightfield Transform"
+                        "name": "Get Heightfield Transform",
+                        "tooltip": "Get the world transform for the heightfield"
                     },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Id for the entity containing the heightfield"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}",
                             "details": {
-                                "name": "Heightfield Transform"
+                                "name": "Heightfield Transform",
+                                "tooltip": "The world transform for the heightfield"
                             }
                         }
                     ]
@@ -151,13 +217,24 @@
                         "tooltip": "Signaled after Get Heightfield Grid Rows is invoked"
                     },
                     "details": {
-                        "name": "Get Heightfield Grid Rows"
+                        "name": "Get Heightfield Grid Rows",
+                        "tooltip": "Get the size of the heightfield grid in the y direction"
                     },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Id for the entity containing the heightfield"
+                            }
+                        }
+                    ],
                     "results": [
                         {
-                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "typeid": "{D6597933-47CD-4fc8-B911-63F3E2B0993A}",
                             "details": {
-                                "name": "Heightfield Grid Rows"
+                                "name": "Heightfield Grid Rows",
+                                "tooltip": "The size of the heightfield grid in the y direction"
                             }
                         }
                     ]
@@ -173,13 +250,24 @@
                         "tooltip": "Signaled after Get Heightfield Grid Spacing is invoked"
                     },
                     "details": {
-                        "name": "Get Heightfield Grid Spacing"
+                        "name": "Get Heightfield Grid Spacing",
+                        "tooltip": "Get the distance between grid points in the heightfield"
                     },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Id for the entity containing the heightfield"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
                             "details": {
-                                "name": "Heightfield Grid Spacing"
+                                "name": "Heightfield Grid Spacing",
+                                "tooltip": "The distance between grid points in the heightfield"
                             }
                         }
                     ]
@@ -195,13 +283,24 @@
                         "tooltip": "Signaled after Get Heightfield AABB is invoked"
                     },
                     "details": {
-                        "name": "Get Heightfield AABB"
+                        "name": "Get Heightfield AABB",
+                        "tooltip": "Get the axis-aligned bounding box for the heightfield"
                     },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Id for the entity containing the heightfield"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
                             "details": {
-                                "name": "AABB"
+                                "name": "AABB",
+                                "tooltip": "The axis-aligned bounding box for the heightfield"
                             }
                         }
                     ]
@@ -217,13 +316,24 @@
                         "tooltip": "Signaled after Get Heights And Materials is invoked"
                     },
                     "details": {
-                        "name": "Get Heights And Materials"
+                        "name": "Get Heights And Materials",
+                        "tooltip": "Get an array of height and material values for each point in the heightfield grid"
                     },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Id for the entity containing the heightfield"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{887288A6-8B56-55A7-BD10-3E4B19CBFD6C}",
                             "details": {
-                                "name": "Heights And Materials"
+                                "name": "Heights And Materials",
+                                "tooltip": "An array of height and material values for each point in the heightfield grid"
                             }
                         }
                     ]

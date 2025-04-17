@@ -99,7 +99,7 @@ namespace AzFramework
             // However, some data may have been exported with this field present, so 
             // remove it if its found, but only in this version which the change was present in, so that
             // future re-additions of it won't remove it (as long as they bump the version number.)
-            classElement.RemoveElementByName(AZ_CRC("InterpolateScale", 0x9d00b831));
+            classElement.RemoveElementByName(AZ_CRC_CE("InterpolateScale"));
         }
 
         return true;
@@ -158,7 +158,7 @@ namespace AzFramework
 
     void TransformComponent::Deactivate()
     {
-        EBUS_EVENT_ID(m_parentId, AZ::TransformNotificationBus, OnChildRemoved, GetEntityId());
+        AZ::TransformNotificationBus::Event(m_parentId, &AZ::TransformNotificationBus::Events::OnChildRemoved, GetEntityId());
         auto parentTransform = AZ::TransformBus::FindFirstHandler(m_parentId);
         if (parentTransform)
         {
@@ -435,7 +435,7 @@ namespace AzFramework
     AZStd::vector<AZ::EntityId> TransformComponent::GetChildren()
     {
         AZStd::vector<AZ::EntityId> children;
-        EBUS_EVENT_ID(GetEntityId(), AZ::TransformHierarchyInformationBus, GatherChildren, children);
+        AZ::TransformHierarchyInformationBus::Event(GetEntityId(), &AZ::TransformHierarchyInformationBus::Events::GatherChildren, children);
         return children;
     }
 
@@ -444,7 +444,8 @@ namespace AzFramework
         AZStd::vector<AZ::EntityId> descendants = GetChildren();
         for (size_t i = 0; i < descendants.size(); ++i)
         {
-            EBUS_EVENT_ID(descendants[i], AZ::TransformHierarchyInformationBus, GatherChildren, descendants);
+            AZ::TransformHierarchyInformationBus::Event(
+                descendants[i], &AZ::TransformHierarchyInformationBus::Events::GatherChildren, descendants);
         }
         return descendants;
     }
@@ -454,7 +455,8 @@ namespace AzFramework
         AZStd::vector<AZ::EntityId> descendants = { GetEntityId() };
         for (size_t i = 0; i < descendants.size(); ++i)
         {
-            EBUS_EVENT_ID(descendants[i], AZ::TransformHierarchyInformationBus, GatherChildren, descendants);
+            AZ::TransformHierarchyInformationBus::Event(
+                descendants[i], &AZ::TransformHierarchyInformationBus::Events::GatherChildren, descendants);
         }
         return descendants;
     }
@@ -462,6 +464,16 @@ namespace AzFramework
     bool TransformComponent::IsStaticTransform()
     {
         return m_isStatic;
+    }
+
+    AZ::OnParentChangedBehavior TransformComponent::GetOnParentChangedBehavior()
+    {
+        return m_onParentChangedBehavior;
+    }
+
+    void TransformComponent::SetOnParentChangedBehavior(AZ::OnParentChangedBehavior onParentChangedBehavior)
+    {
+        m_onParentChangedBehavior = onParentChangedBehavior;
     }
 
     void TransformComponent::OnTransformChanged(const AZ::Transform& parentLocalTM, const AZ::Transform& parentWorldTM)
@@ -577,17 +589,18 @@ namespace AzFramework
 
             if (oldParent.IsValid())
             {
-                EBUS_EVENT_PTR(m_notificationBus, AZ::TransformNotificationBus, OnTransformChanged, m_localTM, m_worldTM);
+                AZ::TransformNotificationBus::Event(
+                    m_notificationBus, &AZ::TransformNotificationBus::Events::OnTransformChanged, m_localTM, m_worldTM);
                 m_transformChangedEvent.Signal(m_localTM, m_worldTM);
             }
         }
 
-        EBUS_EVENT_PTR(m_notificationBus, AZ::TransformNotificationBus, OnParentChanged, oldParent, parentId);
+        AZ::TransformNotificationBus::Event(m_notificationBus, &AZ::TransformNotificationBus::Events::OnParentChanged, oldParent, parentId);
         m_parentChangedEvent.Signal(oldParent, parentId);
 
-        if (oldParent != parentId) // Don't send removal notification while activating.
+        if (oldParent.IsValid() && oldParent != parentId) // Don't send removal notification while activating.
         {
-            EBUS_EVENT_ID(oldParent, AZ::TransformNotificationBus, OnChildRemoved, GetEntityId());
+            AZ::TransformNotificationBus::Event(oldParent, &AZ::TransformNotificationBus::Events::OnChildRemoved, GetEntityId());
             auto oldParentTransform = AZ::TransformBus::FindFirstHandler(oldParent);
             if (oldParentTransform)
             {
@@ -595,7 +608,7 @@ namespace AzFramework
             }
         }
 
-        EBUS_EVENT_ID(parentId, AZ::TransformNotificationBus, OnChildAdded, GetEntityId());
+        AZ::TransformNotificationBus::Event(parentId, &AZ::TransformNotificationBus::Events::OnChildAdded, GetEntityId());
         auto newParentTransform = AZ::TransformBus::FindFirstHandler(parentId);
         if (newParentTransform)
         {
@@ -621,9 +634,21 @@ namespace AzFramework
         // Ignore the event until we've already derived our local transform.
         if (m_parentTM)
         {
-            m_worldTM = parentWorldTM * m_localTM;
-            EBUS_EVENT_PTR(m_notificationBus, AZ::TransformNotificationBus, OnTransformChanged, m_localTM, m_worldTM);
-            m_transformChangedEvent.Signal(m_localTM, m_worldTM);
+            if (m_onParentChangedBehavior == AZ::OnParentChangedBehavior::Update)
+            {
+                m_worldTM = parentWorldTM * m_localTM;
+                AZ::TransformNotificationBus::Event(
+                    m_notificationBus, &AZ::TransformNotificationBus::Events::OnTransformChanged, m_localTM, m_worldTM);
+                m_transformChangedEvent.Signal(m_localTM, m_worldTM);
+            }
+            else
+            {
+                // Update the local transform to make sure it is consistent with the parent's new transform
+                // but keeps our world transform unchanged. Do not send any notifications here, because our world
+                // transform has not changed, and with this OnParentChangedBehavior setting the expectation is that
+                // another system will update our transform, and the notification will be triggered then.
+                m_localTM = parentWorldTM.GetInverse() * m_worldTM;
+            }
         }
     }
 
@@ -638,7 +663,8 @@ namespace AzFramework
             m_localTM = m_worldTM;
         }
 
-        EBUS_EVENT_PTR(m_notificationBus, AZ::TransformNotificationBus, OnTransformChanged, m_localTM, m_worldTM);
+        AZ::TransformNotificationBus::Event(
+            m_notificationBus, &AZ::TransformNotificationBus::Events::OnTransformChanged, m_localTM, m_worldTM);
         m_transformChangedEvent.Signal(m_localTM, m_worldTM);
 
         AzFramework::IEntityBoundsUnion* boundsUnion = AZ::Interface<AzFramework::IEntityBoundsUnion>::Get();
@@ -659,7 +685,8 @@ namespace AzFramework
             m_worldTM = m_localTM;
         }
 
-        EBUS_EVENT_PTR(m_notificationBus, AZ::TransformNotificationBus, OnTransformChanged, m_localTM, m_worldTM);
+        AZ::TransformNotificationBus::Event(
+            m_notificationBus, &AZ::TransformNotificationBus::Events::OnTransformChanged, m_localTM, m_worldTM);
         m_transformChangedEvent.Signal(m_localTM, m_worldTM);
     }
 
@@ -677,7 +704,7 @@ namespace AzFramework
 
     void TransformComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("TransformService", 0x8ee22c50));
+        provided.push_back(AZ_CRC_CE("TransformService"));
     }
 
     void TransformComponent::Reflect(AZ::ReflectContext* reflection)
@@ -685,7 +712,7 @@ namespace AzFramework
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(reflection);
         if (serializeContext)
         {
-            serializeContext->ClassDeprecate("NetBindable", "{80206665-D429-4703-B42E-94434F82F381}");
+            serializeContext->ClassDeprecate("NetBindable", AZ::Uuid("{80206665-D429-4703-B42E-94434F82F381}"));
 
             serializeContext->Class<TransformComponent, AZ::Component>()
                 ->Version(5, &TransformComponentVersionConverter)
@@ -758,6 +785,7 @@ namespace AzFramework
                 ->Event("GetAllDescendants", &AZ::TransformBus::Events::GetAllDescendants)
                 ->Event("GetEntityAndAllDescendants", &AZ::TransformBus::Events::GetEntityAndAllDescendants)
                 ->Event("IsStaticTransform", &AZ::TransformBus::Events::IsStaticTransform)
+                ->Event("SetOnParentChangedBehavior", &AZ::TransformBus::Events::SetOnParentChangedBehavior)
                 ->Event("GetWorldUniformScale", &AZ::TransformBus::Events::GetWorldUniformScale)
                 ;
 

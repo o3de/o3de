@@ -20,10 +20,10 @@ namespace AzFramework
     class InMemorySpawnableAssetContainer
     {
     public:
-        AZ_CLASS_ALLOCATOR(InMemorySpawnableAssetContainer, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(InMemorySpawnableAssetContainer, AZ::SystemAllocator);
 
         using Assets = AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>;
-        using CreateSpawnableResult = AZ::Outcome<AZ::Data::Asset<AZ::Data::AssetData>&, AZStd::string>;
+        using CreateSpawnableResult = AZ::Outcome<AZStd::reference_wrapper<AZ::Data::Asset<AZ::Data::AssetData>>, AZStd::string>;
         using RemoveSpawnableResult = AZ::Outcome<void, AZStd::string>;
 
         using AssetDataInfoPair = AZStd::pair<AZ::Data::AssetData*, AZ::Data::AssetInfo>;
@@ -72,7 +72,7 @@ namespace AzFramework
 
     private:
         void LoadReferencedAssets(SpawnableAssetData& spawnable);
-        
+
         SpawnableAssets m_spawnableAssets;
     };
 } // namespace AzFramework

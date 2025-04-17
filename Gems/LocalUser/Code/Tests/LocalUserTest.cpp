@@ -17,12 +17,12 @@
 #include <AzCore/UnitTest/TestTypes.h>
 
 class LocalUserTest
-    : public UnitTest::AllocatorsTestFixture
+    : public UnitTest::LeakDetectionFixture
 {
 protected:
     void SetUp() override
     {
-        AllocatorsTestFixture::SetUp();
+        LeakDetectionFixture::SetUp();
         m_localUserSystemComponent = AZStd::make_unique<LocalUser::LocalUserSystemComponent>();
         m_localUserSystemComponent->LocalUser::LocalUserRequestBus::Handler::BusConnect();
     }
@@ -31,7 +31,7 @@ protected:
     {
         m_localUserSystemComponent->LocalUser::LocalUserRequestBus::Handler::BusDisconnect();
         m_localUserSystemComponent.reset();
-        AllocatorsTestFixture::TearDown();
+        LeakDetectionFixture::TearDown();
     }
 
 private:

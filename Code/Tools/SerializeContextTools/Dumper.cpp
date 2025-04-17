@@ -20,6 +20,8 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Serialization/Json/JsonSerializationSettings.h>
+#include <AzCore/Serialization/Utils.h>
+#include <AzCore/Settings/TextParser.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/sort.h>
@@ -206,7 +208,7 @@ namespace AZ::SerializeContextTools
                     result = false;
                 }
             };
-            if (!Utilities::InspectSerializedFile(filePath.c_str(), sc, callback))
+            if (!AZ::Utils::InspectSerializedFile(filePath.c_str(), sc, callback))
             {
                 result = false;
                 continue;
@@ -270,7 +272,6 @@ namespace AZ::SerializeContextTools
     bool Dumper::DumpTypes(Application& application)
     {
         // outputStream defaults to writing to stdout
-        AZ::IO::SystemFile systemFile;
         AZStd::variant<FunctorStream, AZ::IO::SystemFileStream> outputStream(AZStd::in_place_type<FunctorStream>,
             GetWriteBypassStdoutCapturerFunctor(application));
 
@@ -278,27 +279,32 @@ namespace AZ::SerializeContextTools
         // If the output-file parameter has been supplied open the file path using FileIOStream
         if (size_t optionCount = commandLine.GetNumSwitchValues("output-file"); optionCount > 0)
         {
-            AZ::IO::FixedMaxPath outputPath;
-            if (AZ::IO::PathView outputPathView(commandLine.GetSwitchValue("output-file", optionCount - 1));
-                outputPathView.IsRelative())
+            AZ::IO::PathView outputPathView(commandLine.GetSwitchValue("output-file", optionCount - 1));
+            // If the output file name is a single dash, use the default output stream value which writes to stdout
+            if (outputPathView != "-")
             {
-                AZ::Utils::ConvertToAbsolutePath(outputPath, outputPathView.Native());
-            }
-            else
-            {
-                outputPath = outputPathView.LexicallyNormal();
-            }
+                AZ::IO::FixedMaxPath outputPath;
+                if (outputPathView.IsRelative())
+                {
+                    AZ::Utils::ConvertToAbsolutePath(outputPath, outputPathView.Native());
+                }
+                else
+                {
+                    outputPath = outputPathView.LexicallyNormal();
+                }
 
-            constexpr AZ::IO::OpenMode openMode = AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeCreatePath;
-            auto& fileStream = outputStream.emplace<AZ::IO::SystemFileStream>(&systemFile, true);
-            if (!fileStream.Open(outputPath.c_str(), openMode))
-            {
-                AZ_Printf(
-                    "dumptypes",
-                    R"(Unable to open specified output-file "%s". Object will not be dumped)"
-                    "\n",
-                    outputPath.c_str());
-                return false;
+                constexpr AZ::IO::OpenMode openMode = AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeCreatePath;
+
+                if (auto& fileStream = outputStream.emplace<AZ::IO::SystemFileStream>(outputPath.c_str(), openMode);
+                    !fileStream.IsOpen())
+                {
+                    AZ_Printf(
+                        "dumptypes",
+                        R"(Unable to open specified output-file "%s". Object will not be dumped)"
+                        "\n",
+                        outputPath.c_str());
+                    return false;
+                }
             }
         }
 
@@ -440,7 +446,6 @@ namespace AZ::SerializeContextTools
     bool Dumper::CreateType(Application& application)
     {
         // outputStream defaults to writing to stdout
-        AZ::IO::SystemFile systemFile;
         AZStd::variant<FunctorStream, AZ::IO::SystemFileStream> outputStream(AZStd::in_place_type<FunctorStream>,
             GetWriteBypassStdoutCapturerFunctor(application));
 
@@ -448,27 +453,32 @@ namespace AZ::SerializeContextTools
         // If the output-file parameter has been supplied open the file path using FileIOStream
         if (size_t optionCount = commandLine.GetNumSwitchValues("output-file"); optionCount > 0)
         {
-            AZ::IO::FixedMaxPath outputPath;
-            if (AZ::IO::PathView outputPathView(commandLine.GetSwitchValue("output-file", optionCount - 1));
-                outputPathView.IsRelative())
+            AZ::IO::PathView outputPathView(commandLine.GetSwitchValue("output-file", optionCount - 1));
+            // If the output file name is a single dash, use the default output stream value which writes to stdout
+            if (outputPathView != "-")
             {
-                AZ::Utils::ConvertToAbsolutePath(outputPath, outputPathView.Native());
-            }
-            else
-            {
-                outputPath = outputPathView.LexicallyNormal();
-            }
+                AZ::IO::FixedMaxPath outputPath;
+                if (outputPathView.IsRelative())
+                {
+                    AZ::Utils::ConvertToAbsolutePath(outputPath, outputPathView.Native());
+                }
+                else
+                {
+                    outputPath = outputPathView.LexicallyNormal();
+                }
 
-            constexpr AZ::IO::OpenMode openMode = AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeCreatePath;
-            auto& fileStream = outputStream.emplace<AZ::IO::SystemFileStream>(&systemFile, true);
-            if (!fileStream.Open(outputPath.c_str(), openMode))
-            {
-                AZ_Printf(
-                    "createtype",
-                    R"(Unable to specified output-file "%s". Object will not be dumped)"
-                    "\n",
-                    outputPath.c_str());
-                return false;
+                constexpr AZ::IO::OpenMode openMode = AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeCreatePath;
+
+                if (auto& fileStream = outputStream.emplace<AZ::IO::SystemFileStream>(outputPath.c_str(), openMode);
+                    !fileStream.IsOpen())
+                {
+                    AZ_Printf(
+                        "createtype",
+                        R"(Unable to open specified output-file "%s". Object will not be dumped)"
+                        "\n",
+                        outputPath.c_str());
+                    return false;
+                }
             }
         }
 
@@ -592,6 +602,145 @@ namespace AZ::SerializeContextTools
             return false;
         };
         const bool result = AZStd::visit(VisitStream, outputStream);
+
+        return result;
+    }
+
+    bool Dumper::CreateUuid(Application& application)
+    {
+        // outputStream defaults to writing to stdout
+        AZStd::variant<FunctorStream, AZ::IO::SystemFileStream> outputStream(AZStd::in_place_type<FunctorStream>,
+            GetWriteBypassStdoutCapturerFunctor(application));
+
+        AZ::CommandLine& commandLine = *application.GetAzCommandLine();
+        // If the output-file parameter has been supplied open the file path using FileIOStream
+        if (size_t optionCount = commandLine.GetNumSwitchValues("output-file"); optionCount > 0)
+        {
+            AZ::IO::PathView outputPathView(commandLine.GetSwitchValue("output-file", optionCount - 1));
+            // If the output file name is a single dash, use the default output stream value which writes to stdout
+            if (outputPathView != "-")
+            {
+                AZ::IO::FixedMaxPath outputPath;
+                if (outputPathView.IsRelative())
+                {
+                    AZ::Utils::ConvertToAbsolutePath(outputPath, outputPathView.Native());
+                }
+                else
+                {
+                    outputPath = outputPathView.LexicallyNormal();
+                }
+
+                constexpr AZ::IO::OpenMode openMode = AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeCreatePath;
+
+                if (auto& fileStream = outputStream.emplace<AZ::IO::SystemFileStream>(outputPath.c_str(), openMode);
+                    !fileStream.IsOpen())
+                {
+                    AZ_Printf(
+                        "createuuid",
+                        R"(Unable to open specified output-file "%s". Uuid will not be output to stream)"
+                        "\n",
+                        outputPath.c_str());
+                    return false;
+                }
+            }
+        }
+
+        size_t valuesOptionCount = commandLine.GetNumSwitchValues("values");
+        size_t valuesFileOptionCount = commandLine.GetNumSwitchValues("values-file");
+        if (valuesOptionCount == 0 && valuesFileOptionCount == 0)
+        {
+            AZ_Error("createuuid", false, "One of following options must be supplied: --values or --values-file");
+            return false;
+        }
+
+        bool withCurlyBraces = true;
+        if (size_t withCurlyBracesOptionCount = commandLine.GetNumSwitchValues("with-curly-braces");
+            withCurlyBracesOptionCount > 0)
+        {
+            withCurlyBraces = AZ::StringFunc::ToBool(commandLine.GetSwitchValue("with-curly-braces", withCurlyBracesOptionCount - 1).c_str());
+        }
+
+        bool withDashes = true;
+        if (size_t withDashesOptionCount = commandLine.GetNumSwitchValues("with-dashes");
+            withDashesOptionCount > 0)
+        {
+            withDashes = AZ::StringFunc::ToBool(commandLine.GetSwitchValue("with-dashes", withDashesOptionCount - 1).c_str());
+        }
+
+        const bool quietOutput = commandLine.HasSwitch("q") || commandLine.HasSwitch("quiet");
+
+        bool result = true;
+
+        struct UuidStringPair
+        {
+            AZ::Uuid m_uuid;
+            AZStd::string m_value;
+        };
+        AZStd::vector<UuidStringPair> uuidsToWrite;
+        for (size_t i = 0; i < valuesOptionCount; ++i)
+        {
+            AZStd::string value = commandLine.GetSwitchValue("values", i);
+            auto uuidFromName = AZ::Uuid::CreateName(value);
+            uuidsToWrite.push_back({ AZStd::move(uuidFromName), AZStd::move(value) });
+        }
+
+        // Read string values from each --values-file argument
+        for (size_t i = 0; i < valuesFileOptionCount; ++i)
+        {
+            AZ::IO::FixedMaxPath inputValuePath(AZ::IO::PathView(commandLine.GetSwitchValue("values-file", i)));
+            AZ::IO::SystemFileStream valuesFileStream;
+            if (inputValuePath == "-")
+            {
+                // If the input file is dash read from stdin
+                valuesFileStream = AZ::IO::SystemFileStream(AZ::IO::SystemFile::GetStdin());
+            }
+            else
+            {
+                // Open the path from the values-file option
+                constexpr AZ::IO::OpenMode openMode = AZ::IO::OpenMode::ModeRead;
+                valuesFileStream.Open(inputValuePath.c_str(), openMode);
+            }
+
+            if (valuesFileStream.IsOpen())
+            {
+                // Use the text parser to parse plain text lines
+                AZ::Settings::TextParserSettings textParserSettings;
+                textParserSettings.m_parseTextEntryFunc = [&uuidsToWrite](AZStd::string_view token)
+                {
+                    // Remove leading and surrounding spaces and carriage returns
+                    token = AZ::StringFunc::StripEnds(token, " \r");
+                    auto uuidFromName = AZ::Uuid::CreateName(token);
+                    uuidsToWrite.push_back({ AZStd::move(uuidFromName), token });
+                    return true;
+                };
+
+                AZ::Settings::ParseTextFile(valuesFileStream, textParserSettings);
+            }
+        }
+
+        for (const UuidStringPair& uuidStringPair : uuidsToWrite)
+        {
+            auto VisitStream = [&uuidToWrite = uuidStringPair.m_uuid, &value = uuidStringPair.m_value,
+                withCurlyBraces, withDashes, quietOutput](auto&& stream) -> bool
+            {
+                AZStd::fixed_string<256> uuidString;
+                if (quietOutput)
+                {
+                    uuidString = AZStd::fixed_string<256>::format("%s\n",
+                        uuidToWrite.ToFixedString(withCurlyBraces, withDashes).c_str());
+                }
+                else
+                {
+                    uuidString = AZStd::fixed_string<256>::format(R"(%s %s)" "\n",
+                        uuidToWrite.ToFixedString(withCurlyBraces, withDashes).c_str(),
+                        value.c_str());
+                }
+
+                size_t bytesWritten = stream.Write(uuidString.size(), uuidString.c_str());
+                return bytesWritten == uuidString.size();
+            };
+            result = AZStd::visit(VisitStream, outputStream) && result;
+        }
 
         return result;
     }

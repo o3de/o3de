@@ -64,7 +64,7 @@ namespace AZ
 
         private:
             ///////////////////////////////////////////////////////////////////
-            // IntrusivePtCountPolicy template overrides
+            // IntrusivePtrCountPolicy template overrides
             void add_ref();
             void release();
             ///////////////////////////////////////////////////////////////////

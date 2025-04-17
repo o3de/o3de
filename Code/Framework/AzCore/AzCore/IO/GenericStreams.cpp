@@ -6,7 +6,6 @@
  *
  */
 
-#include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/GenericStreams.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/IO/IOUtils.h>
@@ -37,7 +36,7 @@ namespace AZ::IO
             {
                 // Read in the appropriate number of bytes on every loop iteration.
                 // (ex:  515 bytes requested will read 256 bytes, 256 bytes, and 3 bytes)
-                SizeType transferBytes = AZ::GetMin(bytes - windowOffset, aznumeric_cast<SizeType>(StreamToStreamCopyBufferSize));
+                SizeType transferBytes = AZStd::GetMin(bytes - windowOffset, aznumeric_cast<SizeType>(StreamToStreamCopyBufferSize));
 
                 SizeType bytesRead = inputStream->Read(transferBytes, tempBuffer);
                 if (bytesRead > 0)
@@ -141,29 +140,42 @@ namespace AZ::IO
     /*
      * SystemFileStream
      */
-    SystemFileStream::SystemFileStream(SystemFile* file, bool isOwner, SizeType baseOffset, SizeType fakeLen)
-        : m_file(file)
-        , m_baseOffset(baseOffset)
-        , m_curPos(0)
-        , m_fakeLen(fakeLen)
-        , m_isFileOwner(isOwner)
-        , m_mode(OpenMode::Invalid)
+    SystemFileStream::SystemFileStream()
+        : m_mode(OpenMode::Invalid)
+    {}
+
+    SystemFileStream::SystemFileStream(SystemFile&& file)
+        : SystemFileStream(AZStd::move(file), OpenMode::Invalid)
     {
-        AZ_Assert(file, "file is NULL!");
-        Seek(0, ST_SEEK_BEGIN);
     }
 
-    SystemFileStream::~SystemFileStream()
+    SystemFileStream::SystemFileStream(SystemFile&& file, OpenMode mode)
+        : m_file(AZStd::move(file))
+        , m_mode(mode)
     {
-        if (m_file && m_isFileOwner)
-        {
-            m_file->Close();
-        }
     }
+
+    SystemFileStream::SystemFileStream(const char* path, OpenMode mode)
+    {
+        Open(path, mode);
+    }
+
+    // Let the SystemFile destructor close or not close any files based
+    // on its destruction logic
+    SystemFileStream::~SystemFileStream() = default;
+
+    // Default the move constructor and assignment operator
+    SystemFileStream::SystemFileStream(SystemFileStream&&) = default;
+    SystemFileStream& SystemFileStream::operator=(SystemFileStream&&) = default;
 
     bool SystemFileStream::IsOpen() const
     {
-        return m_file && m_file->IsOpen();
+        return m_file.IsOpen();
+    }
+
+    bool SystemFileStream::CanSeek() const
+    {
+        return true;
     }
 
     bool SystemFileStream::CanRead() const
@@ -180,57 +192,76 @@ namespace AZ::IO
     {
         m_mode = mode;
         Close();
-        return m_file ? m_file->Open(path, TranslateOpenModeToSystemFileMode(path, mode)) : false;
+        return m_file.Open(path, TranslateOpenModeToSystemFileMode(path, mode));
     }
-
 
     void SystemFileStream::Close()
     {
-        if (m_file)
+        m_file.Close();
+    }
+
+    static SystemFile::SeekMode ConvertStreamToSystemFileSeekMode(GenericStream::SeekMode mode)
+    {
+        switch (mode)
         {
-            m_file->Close();
+            case GenericStream::SeekMode::ST_SEEK_BEGIN:
+                return SystemFile::SeekMode::SF_SEEK_BEGIN;
+            case GenericStream::SeekMode::ST_SEEK_CUR:
+                return SystemFile::SeekMode::SF_SEEK_CURRENT;
+            case GenericStream::SeekMode::ST_SEEK_END:
+                return SystemFile::SeekMode::SF_SEEK_END;
+            default:
+                AZ_Assert(false, "Invalid Seek mode specified %d", static_cast<int>(mode));
+                break;
         }
+
+        return SystemFile::SeekMode::SF_SEEK_BEGIN;
     }
 
     void SystemFileStream::Seek(OffsetType bytes, SeekMode mode)
     {
-        m_curPos = ComputeSeekPosition(bytes, mode);
-        m_file->Seek(m_baseOffset + m_curPos, AZ::IO::SystemFile::SF_SEEK_BEGIN);
+        m_file.Seek(bytes, ConvertStreamToSystemFileSeekMode(mode));
+    }
+
+    SizeType SystemFileStream::GetCurPos() const
+    {
+        return m_file.Tell();
     }
 
     SizeType SystemFileStream::Read(SizeType bytes, void* oBuffer)
     {
-        SizeType len = GetLength();
-        SizeType bytesToRead = bytes + m_curPos > len ? len - m_curPos : bytes;
-        SizeType bytesRead = m_file->Read(bytesToRead, oBuffer);
-        m_curPos += bytesRead;
-        return bytesRead;
+        return m_file.Read(bytes, oBuffer);
     }
 
     SizeType SystemFileStream::Write(SizeType bytes, const void* iBuffer)
     {
-        AZ_Assert(m_fakeLen == static_cast<SizeType>(-1) || bytes + m_curPos <= GetLength(), "Length has been restricted by m_fakeLen and you are trying to write past it!");
-        SizeType bytesWritten = m_file->Write(iBuffer, bytes);
-        m_curPos += bytesWritten;
-        return bytesWritten;
+        return m_file.Write(iBuffer, bytes);
     }
 
     SizeType SystemFileStream::GetLength() const
     {
-        return m_fakeLen == static_cast<SizeType>(-1)
-            ? m_file->Length() - m_baseOffset
-            : m_fakeLen;
+        return m_file.Length();
     }
 
     const char* SystemFileStream::GetFilename() const
     {
-        return m_file->Name();
+        return m_file.Name();
+    }
+
+    OpenMode SystemFileStream::GetModeFlags() const
+    {
+        return m_mode;
     }
 
     bool SystemFileStream::ReOpen()
     {
         AZ_Assert(m_mode != OpenMode::Invalid, "File must have been opened at least once with valid OpenMode flags in order to be reopened");
-        return m_file ? Open(m_file->Name(), m_mode) : false;
+        return Open(m_file.Name(), m_mode);
+    }
+
+    SystemFile SystemFileStream::MoveSystemFile() &&
+    {
+        return AZStd::move(m_file);
     }
 
 

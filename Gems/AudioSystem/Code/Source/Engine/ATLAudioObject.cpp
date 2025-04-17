@@ -11,7 +11,7 @@
 
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Console/ILogger.h>
-#include <AzCore/std/chrono/clocks.h>
+#include <AzCore/std/chrono/chrono.h>
 
 #include <MathConversion.h>
 

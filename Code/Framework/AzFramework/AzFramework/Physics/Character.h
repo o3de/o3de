@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Math/Vector3.h>
+#include <AzCore/Outcome/Outcome.h>
 
 #include <AzFramework/Physics/Shape.h>
 
@@ -17,6 +18,11 @@
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <AzFramework/Physics/Configuration/SimulatedBodyConfiguration.h>
+
+namespace AZ
+{
+    class ReflectContext;
+}
 
 namespace Physics
 {
@@ -59,7 +65,7 @@ namespace Physics
         : public AzPhysics::SimulatedBodyConfiguration
     {
     public:
-        AZ_CLASS_ALLOCATOR(CharacterConfiguration, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CharacterConfiguration, AZ::SystemAllocator);
         AZ_RTTI(Physics::CharacterConfiguration, "{58D5A6CA-113B-4AC3-8D53-239DB0C4E240}", AzPhysics::SimulatedBodyConfiguration);
 
         virtual ~CharacterConfiguration() = default;
@@ -69,7 +75,6 @@ namespace Physics
         AzPhysics::CollisionGroups::Id m_collisionGroupId; //!< Which layers does this character collide with.
         AzPhysics::CollisionLayer m_collisionLayer; //!< Which collision layer is this character on.
         MaterialSlots m_materialSlots; //!< Material slots for the character.
-        PhysicsLegacy::MaterialSelection m_legacyMaterialSelection; //!< Kept to convert old physics material assets.
         AZ::Vector3 m_upDirection = AZ::Vector3::CreateAxisZ(); //!< Up direction for character orientation and step behavior.
         float m_maximumSlopeAngle = 30.0f; //!< The maximum slope on which the character can move, in degrees.
         float m_stepHeight = 0.5f; //!< Affects what size steps the character can climb.
@@ -88,7 +93,7 @@ namespace Physics
         : public AzPhysics::SimulatedBody
     {
     public:
-        AZ_CLASS_ALLOCATOR(Character, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Character, AZ::SystemAllocator);
         AZ_RTTI(Physics::Character, "{962E37A1-3401-4672-B896-0A6157CFAC97}", AzPhysics::SimulatedBody);
 
         ~Character() override = default;

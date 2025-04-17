@@ -17,8 +17,7 @@ import urllib.parse
 import urllib.request
 from pathlib import Path, PurePath
 from subprocess import run, list2cmdline
-from tempfile import NamedTemporaryFile, mkdtemp
-from time import sleep
+from tempfile import NamedTemporaryFile, TemporaryDirectory
 
 
 def pytest_addoption(parser):
@@ -48,16 +47,26 @@ class SessionContext:
         self.install_root = Path(request.config.getoption("--install-root")).resolve()
         self.project_path = Path(request.config.getoption("--project-path")).resolve()
 
+        # create the project path or TemporaryDirectory can fail
+        os.makedirs(self.project_path, exist_ok=True)
+
+        # use a temp folder inside the project path to avoid issues where we cannot
+        # clean up or remove the actual project folder
+        with TemporaryDirectory(dir=self.project_path) as tmp_project_dir:
+            self.project_path = Path(tmp_project_dir).resolve()
+
         self.cmake_runtime_path = self.install_root / 'cmake/runtime'
         self.engine_bin_path = self.install_root / 'bin/Windows/profile/Default'
-        self.project_build_path = self.project_path / 'build/Windows'
-        self.project_bin_path = self.project_build_path / 'bin/profile'
+        self.project_build_path_profile = self.project_path / 'build/Windows'
+        self.project_build_path_release = self.project_path / 'build/Windows_mono'
+        self.project_bin_path_profile = self.project_build_path_profile / 'bin/profile'
+        self.project_bin_path_release = self.project_build_path_release / 'bin/release'
 
         # start a log reader thread to print the output to screen
+        self.log_reader_shutdown = False
         self.log_reader = io.open(self.temp_file.name, 'r', buffering=1)
         self.log_reader_thread = threading.Thread(target=self._tail_log, daemon=True)
         self.log_reader_thread.start()
-        self.log_reader_shutdown = False
     
     def _tail_log(self):
         """ Tail the log file and print to screen for easy viewing in Jenkins. """

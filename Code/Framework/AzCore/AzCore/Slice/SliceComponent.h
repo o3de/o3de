@@ -116,7 +116,7 @@ namespace AZ
         class DataFlagsPerEntity
         {
         public:
-            AZ_CLASS_ALLOCATOR(DataFlagsPerEntity, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DataFlagsPerEntity, AZ::SystemAllocator);
             AZ_TYPE_INFO(DataFlagsPerEntity, "{57FE7B9E-B2AF-4F6F-9F8D-87F671E91C99}");
             static void Reflect(ReflectContext* context);
 
@@ -225,7 +225,7 @@ namespace AZ
          */
         struct InstantiatedContainer
         {
-            AZ_CLASS_ALLOCATOR(InstantiatedContainer, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(InstantiatedContainer, SystemAllocator);
             AZ_TYPE_INFO(InstantiatedContainer, "{05038EF7-9EF7-40D8-A29B-503D85B85AF8}");
 
             InstantiatedContainer(bool deleteEntitiesOnDestruction = true);
@@ -524,7 +524,11 @@ namespace AZ
                 const AZ::IdUtils::Remapper<AZ::EntityId>::IdMapper& customMapper = nullptr);
 
             /// Instantiate all instances (by default we just hold the deltas - data patch), the Slice component controls the instantiate state
-            bool Instantiate(const AZ::ObjectStream::FilterDescriptor& filterDesc);
+            /// serializeContext and relativeToAbsoluteSlicePaths arguments are used for a specific case when asset processor is not available
+            bool Instantiate(
+                const AZ::ObjectStream::FilterDescriptor& filterDesc,
+                AZ::SerializeContext* serializeContext = nullptr,
+                AZStd::unordered_map<AZStd::string, AZStd::string>* relativeToAbsoluteSlicePaths = nullptr);
 
             void UnInstantiate();
 
@@ -936,8 +940,11 @@ namespace AZ
 
         /**
         * Instantiate entities for this slice, otherwise only the data are stored.
+        * \param serializeContext and relativeToAbsoluteSlicePaths are used for a specific case when asset processor is not available
         */
-        InstantiateResult Instantiate();
+        InstantiateResult Instantiate(
+            AZ::SerializeContext* serializeContext = nullptr,
+            AZStd::unordered_map<AZStd::string, AZStd::string>* relativeToAbsoluteSlicePaths = nullptr);
         bool IsInstantiated() const;
         /**
          * Generate new entity Ids and remap references
@@ -1084,6 +1091,7 @@ namespace AZ
         class EntityIdAccessor final : public AZ::Entity
         {
         public:
+            AZ_CLASS_ALLOCATOR(EntityIdAccessor, SystemAllocator)
             void ForceSetId(AZ::EntityId id)
             {
                 m_id = id;
@@ -1121,6 +1129,9 @@ namespace AZ
 
             return replaced;
         }
+
+        // Deserialize a slice without using asset processor and read root entity from it
+        AZ::Entity* LoadRootEntityFromSlicePath(const char* filePath, SerializeContext* context);
     } // namespace EntityUtils
 
     namespace IdUtils

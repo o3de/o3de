@@ -13,7 +13,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(PoseData, PoseAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(PoseData, PoseAllocator)
 
     PoseData::PoseData()
         : m_pose(nullptr)

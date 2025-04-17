@@ -12,6 +12,7 @@
 #if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 
 #include <QtWidgets/QDockWidget>
 
@@ -61,7 +62,7 @@ namespace LUAEditor
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(LUAViewWidget, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(LUAViewWidget, AZ::SystemAllocator);
 
         LUAViewWidget(QWidget *pParent = NULL);
         virtual ~LUAViewWidget();
@@ -86,8 +87,6 @@ namespace LUAEditor
         void BreakpointsUpdate(const LUAEditor::BreakpointMap& uniqueBreakpoints) override;
         void BreakpointHit(const LUAEditor::Breakpoint& breakpoint) override;
         void BreakpointResume() override;
-
-        void BreakpointToggle(int line);
         
         bool IsReadOnly() const;
         bool IsModified() const;
@@ -153,6 +152,7 @@ namespace LUAEditor
         void RegainFocus();
         
     private:
+        void UpdateModifyFlag();
         void keyPressEvent(QKeyEvent *ev) override;
         int CalcDocPosition(int line, int column);
         template<typename Callable> //callabe must take a const QTextCursor& as a parameter
@@ -162,8 +162,6 @@ namespace LUAEditor
         template<typename Callable> //callabe sig (QString&, QTextBlock&)
         void CommentHelper(Callable callable);
         void SetReadonly(bool readonly);
-        void OnBreakpointLineMoved(int fromLineNumber, int toLineNumber);
-        void OnBreakpointLineDeleted(int removedLineNumber);
         //will call callable with 2 ints(start and end brace). if no matching braces currently, then callable is not called.
         //if currently on a bracket, but its not matched then callable will still get called, but with -1 for end brace
         template<typename Callable>
@@ -179,9 +177,6 @@ namespace LUAEditor
         AzToolsFramework::ProgressShield *m_pLoadingProgressShield;
         AzToolsFramework::ProgressShield *m_pSavingProgressShield;
         AzToolsFramework::ProgressShield *m_pRequestingEditProgressShield;
-
-        int m_breakpointMarker_Waiting;
-        bool m_bHasInitialUpdate;
 
         struct BreakpointData
         {
@@ -203,6 +198,10 @@ namespace LUAEditor
 
         AZStd::mutex m_extraHighlightingMutex;
 
+    private slots: 
+        void OnBreakpointLineMoved(int fromLineNumber, int toLineNumber);
+        void OnBreakpointLineDeleted(int removedLineNumber);
+
     public slots:
         void modificationChanged(bool m);
         void PullFreshBreakpoints();
@@ -211,6 +210,7 @@ namespace LUAEditor
         void OnVisibilityChanged(bool vc);
         void OnZoomIn();
         void OnZoomOut();
+        void BreakpointToggle(int line);
     };
 
     class LUAViewMessages : public AZ::EBusTraits

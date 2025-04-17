@@ -41,6 +41,12 @@ namespace EMotionFX::MotionMatching
         MotionMatchingData(const FeatureSchema& featureSchema);
         virtual ~MotionMatchingData();
 
+        enum FeatureScalerType
+        {
+            StandardScalerType = 0,
+            MinMaxScalerType = 1
+        };
+
         struct EMFX_API InitSettings
         {
             ActorInstance* m_actorInstance = nullptr;
@@ -51,6 +57,7 @@ namespace EMotionFX::MotionMatching
             bool m_importMirrored = false;
 
             bool m_normalizeData = false;
+            FeatureScalerType m_featureScalerType = StandardScalerType;
             FeatureMatrixTransformer::Settings m_featureTansformerSettings = {};
         };
         bool Init(const InitSettings& settings);

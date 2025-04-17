@@ -1,5 +1,6 @@
 {
     "gem_name": "ReferenceMaterials",
+    "version": "0.0.0",
     "display_name": "PBR Reference Materials",
     "license": "Code, text, data files: Apache-2.0 Or MIT, assets/content/images: CC BY 4.0",
     "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",

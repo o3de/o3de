@@ -1,5 +1,6 @@
 {
     "project_name": "${Name}",
+    "version": "${Version}",
     "project_id": "${ProjectId}",
     "origin": "The primary repo for ${Name} goes here: i.e. http://www.mydomain.com",
     "license": "What license ${Name} uses goes here: i.e. https://opensource.org/licenses/Apache-2.0 Or https://opensource.org/licenses/MIT etc.",
@@ -16,5 +17,30 @@
     "external_subdirectories": [
         "Gem"
     ],
-    "restricted": "${Name}"
+    "restricted": "${Name}",
+    "gem_names": [
+        "${Name}",
+        "Atom",
+        "AudioSystem",
+        "CameraFramework",
+        "DebugDraw",
+        "DiffuseProbeGrid",
+        "EditorPythonBindings",
+        "EMotionFX",
+        "GameState",
+        "ImGui",
+        "LandscapeCanvas",
+        "LyShine",
+        "MiniAudio",
+        "PhysX",
+        "PrimitiveAssets",
+        "PrefabBuilder",
+        "SaveData",
+        "ScriptCanvasPhysics",
+        "ScriptEvents",
+        "StartingPointInput",
+        "TextureAtlas",
+        "WhiteBox",
+        "RemoteTools"
+    ]
 }

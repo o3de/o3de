@@ -39,10 +39,13 @@
                 "GlossBias": 0.0,
                 "Streaming": false,
                 "Enable": false
+            },
+            "server": {
+                "Enable": false
             }
         },
         "PresetsByFileMask": {
-        
+
             // Albedo
             "_alb": [ "Albedo" ],
             "_albedo": [ "Albedo" ],
@@ -52,7 +55,7 @@
             "_color": [ "Albedo" ],
             "_diff": [ "Albedo" ],
             "_diffuse": [ "Albedo" ],
-            
+
             // Albedo with Coverage
             "_albc": [ "AlbedoWithCoverage" ],
             "_albedoc": [ "AlbedoWithCoverage" ],
@@ -62,7 +65,7 @@
             "_colorc": [ "AlbedoWithCoverage" ],
             "_diffc": [ "AlbedoWithCoverage" ],
             "_diffusec": [ "AlbedoWithCoverage" ],
-            
+
             // Albedo with Alpha
             "_alba": [ "AlbedoWithGenericAlpha" ],
             "_albedoa": [ "AlbedoWithGenericAlpha" ],
@@ -72,20 +75,20 @@
             "_colora": [ "AlbedoWithGenericAlpha" ],
             "_diffa": [ "AlbedoWithGenericAlpha" ],
             "_diffusea": [ "AlbedoWithGenericAlpha" ],
-            
+
             // Ambient Occulusion
             "_amb": [ "AmbientOcclusion" ],
             "_ambientocclusion": [ "AmbientOcclusion" ],
             "_ambocc": [ "AmbientOcclusion" ],
             "_ao": [ "AmbientOcclusion" ],
-            
+
             // Convolved Cubemap
             "_ccm": [ "ConvolvedCubemap" ],
             "_convolvedcubemap": [ "ConvolvedCubemap" ],
-            
+
             // Decal
             "_decal": [ "Decal_AlbedoWithOpacity" ],
-            
+
             // Displacement
             "_d": [ "Displacement" ],
             "_disp": [ "Displacement" ],
@@ -98,22 +101,25 @@
             "_hm": [ "Displacement" ],
             "_ht": [ "Displacement" ],
             "_thickness": [ "Displacement" ],
-            
+
             // Emissive
             "_e": [ "Emissive" ],
             "_em": [ "Emissive" ],
             "_emissive": [ "Emissive" ],
             "_emit": [ "Emissive" ],
             "_glow": [ "Emissive" ],
-            
+
             // Gradient
             "_grad": [ "Gradient" ],
             "_gradient": [ "Gradient" ],
-            
+            "_sm": [ "Gradient" ],
+            "_splat": [ "Gradient" ],
+            "_splatmap": [ "Gradient" ],
+
             // Greyscale
             "_grey": [ "Greyscale" ],
             "_greyscale": [ "Greyscale" ],
-            
+
             // IBL
             "_ibldiffusecm": [ "IBLDiffuse" ],
             "_cm": [ "IBLGlobal" ],
@@ -126,11 +132,11 @@
             "_iblspecularcm128": [ "IBLSpecularLow" ],
             "_iblspecularcm1024": [ "IBLSpecularVeryHigh" ],
             "_iblspecularcm64": [ "IBLSpecularVeryLow" ],
-            
+
             // Layer mask
             "_layers": [ "LayerMask" ],
             "_rgbmask": [ "LayerMask" ],
-            
+
             // LUT
             "_lut": [ "LUT_RG8" ],
             "_lutr32f": [ "LUT_R32F" ],
@@ -140,7 +146,7 @@
             "_lutrg16": [ "LUT_RG16" ],
             "_lutrg32f": [ "LUT_RG32F" ],
             "_lutrgba32f": [ "LUT_RGBA32F" ],
-            
+
             // Normals
             "_ddn": [ "Normals" ],
             "_n": [ "Normals" ],
@@ -151,14 +157,14 @@
             "_normalmap": [ "Normals" ],
             "_normals": [ "Normals" ],
             "_nrm": [ "Normals" ],
-            
+
             // Normals with Smoothness
             "_ddna": [ "NormalsWithSmoothness" ],
             "_na": [ "NormalsWithSmoothness" ],
             "_nma": [ "NormalsWithSmoothness" ],
             "_normala": [ "NormalsWithSmoothness" ],
             "_nrma": [ "NormalsWithSmoothness" ],
-            
+
             // Opacity
             "_blend": [ "Opacity" ],
             "_influence": [ "Opacity" ],
@@ -170,17 +176,17 @@
             "_opacity": [ "Opacity" ],
             "_sss": [ "Opacity" ],
             "_trans": [ "Opacity" ],
-			"_transmission": [ "Opacity" ],
-			"_Transmissive": [ "Opacity" ],
-            
+                "_transmission": [ "Opacity" ],
+                "_Transmissive": [ "Opacity" ],
+
             //Reference
             "_ref": [ "ReferenceImage" ],
             "_refhdr": [ "ReferenceImage_HDRLinear" ],
             "_refhdru": [ "ReferenceImage_HDRLinearUncompressed" ],
             "_reflinear": [ "ReferenceImage_Linear" ],
-            
+
             // Reflectance, linear single channel
-			"_cavity": [ "Reflectance" ],
+                "_cavity": [ "Reflectance" ],
             "_f0": [ "Reflectance" ],
             "_g": [ "Reflectance" ],
             "_gloss": [ "Reflectance" ],
@@ -199,16 +205,18 @@
             "_spec": [ "Reflectance" ],
             "_specf0": [ "Reflectance" ],
             "_specular": [ "Reflectance" ],
-			"_SpecularReflectance": [ "Reflectance" ],
-			"_thickness": [ "Reflectance" ],
-            
+                "_SpecularReflectance": [ "Reflectance" ],
+                "_thickness": [ "Reflectance" ],
+                "_linear": [ "Reflectance" ],
+
+
             // Skybox
             "_skyboxcm": [ "Skybox" ],
-            
+
             // UI
             "_ui": [ "UserInterface_Compressed" ],
             "_uil": [ "UserInterface_Lossless" ],
-            
+
             // GSI
             "_gsi": [ "GSI" ],
             "_gsi8": [ "GSI8" ],

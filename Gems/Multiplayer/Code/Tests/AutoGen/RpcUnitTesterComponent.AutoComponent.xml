@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+
+<Component
+    Name="RpcUnitTesterComponent"
+    Namespace="MultiplayerTest"
+    OverrideComponent="true"
+    OverrideController="true"
+    OverrideInclude="Tests/RpcUnitTesterComponent.h"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+	<RemoteProcedure Name="RPC_AuthorityToClient" InvokeFrom="Authority" HandleOn="Client" IsPublic="true" IsReliable="true" GenerateEventBindings="false" Description="Auth to client test" />
+	<RemoteProcedure Name="RPC_AutonomousToAuthority" InvokeFrom="Autonomous" HandleOn="Authority" IsPublic="true" IsReliable="true" GenerateEventBindings="false" Description="Auto to auth test" />
+	<RemoteProcedure Name="RPC_AuthorityToAutonomous" InvokeFrom="Authority" HandleOn="Autonomous" IsPublic="true" IsReliable="true" GenerateEventBindings="false" Description="Auth to auto test" />
+	<RemoteProcedure Name="RPC_ServerToAuthority" InvokeFrom="Server" HandleOn="Authority" IsPublic="true" IsReliable="true" GenerateEventBindings="false" Description="Server to auth test" />
+</Component>

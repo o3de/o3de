@@ -12,6 +12,8 @@
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
+DECLARE_EBUS_INSTANTIATION(AzToolsFramework::EditorEntityVisibilityNotifications);
+
 namespace AzToolsFramework
 {
     namespace Components
@@ -37,12 +39,12 @@ namespace AzToolsFramework
 
         void EditorVisibilityComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
         {
-            services.push_back(AZ_CRC("EditorVisibilityService", 0x90888caf));
+            services.push_back(AZ_CRC_CE("EditorVisibilityService"));
         }
 
         void EditorVisibilityComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
         {
-            services.push_back(AZ_CRC("EditorVisibilityService", 0x90888caf));
+            services.push_back(AZ_CRC_CE("EditorVisibilityService"));
         }
 
         EditorVisibilityComponent::~EditorVisibilityComponent()

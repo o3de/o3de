@@ -9,7 +9,6 @@
 #pragma once
 
 // include MCore
-#include <MCore/Source/Color.h>
 #include <MCore/Source/CommandGroup.h>
 #include <MCore/Source/CommandManagerCallback.h>
 
@@ -87,7 +86,6 @@ namespace EMStudio
         void SetAutoLoadLastWorkspace(bool autoLoad)                            { m_autoLoadLastWorkspace = autoLoad; }
         bool GetAutoLoadLastWorkspace() const                                   { return m_autoLoadLastWorkspace; }
 
-        const char* ConstructHTMLLink(const char* text, const MCore::RGBAColor& color = MCore::RGBAColor(0.95315f, 0.609375f, 0.109375f));
         void SetWidgetAsInvalidInput(QWidget* widget);
 
         static void MakeTransparentButton(QToolButton* button, const char* iconFileName, const char* toolTipText, uint32 width = 20, uint32 height = 20);
@@ -114,6 +112,15 @@ namespace EMStudio
             return nullptr;
         }
 
+        size_t FindHoveredJointIndex(EMotionFX::ActorInstance* instance) const override
+        {
+            if (instance == m_commandManager->GetCurrentSelection().GetSingleActorInstance())
+            {
+                return m_hoveredJointIndex;
+            }
+            return InvalidIndex;
+        }
+
         Workspace* GetWorkspace()                                                               { return &m_workspace; }
 
         void ClearScene();  // remove animgraphs, animgraph instances and actors
@@ -132,8 +139,9 @@ namespace EMStudio
         NotificationWindowManager*          m_notificationWindowManager;
         CommandSystem::CommandManager*      m_commandManager;
         AZStd::string                       m_compileDate;
-        AZStd::unordered_set<size_t>       m_visibleJointIndices;
-        AZStd::unordered_set<size_t>       m_selectedJointIndices;
+        AZStd::unordered_set<size_t>        m_visibleJointIndices;
+        AZStd::unordered_set<size_t>        m_selectedJointIndices;
+        size_t                              m_hoveredJointIndex = InvalidIndex;
         Workspace                           m_workspace;
         bool                                m_autoLoadLastWorkspace;
         AZStd::string                       m_htmlLinkString;
@@ -144,6 +152,7 @@ namespace EMStudio
 
         // SkeletonOutlinerNotificationBus
         void JointSelectionChanged();
+        void JointHoveredChanged(size_t hoveredJointIndex);
 
         class EMSTUDIO_API EventProcessingCallback
             : public MCore::CommandManagerCallback

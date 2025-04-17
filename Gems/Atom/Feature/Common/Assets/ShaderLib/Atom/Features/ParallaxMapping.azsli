@@ -95,11 +95,11 @@ float GetNormalizedDepth(float startDepth, float stopDepth, float inverseDepthRa
         if(DepthResultCode_Normalized == depthResult.m_resultCode)
         {    
             float minNormalizedDepth = -startDepth * inverseDepthRange;
-            normalizedDepth = max(depthResult.m_depth, minNormalizedDepth);
+            normalizedDepth = max(float(depthResult.m_depth), minNormalizedDepth);
         }
         else if(DepthResultCode_Absolute == depthResult.m_resultCode)
         {
-            float clampedAbsoluteDepth = max(depthResult.m_depth, 0.0);
+            float clampedAbsoluteDepth = max(float(depthResult.m_depth), 0.0);
             normalizedDepth = (clampedAbsoluteDepth - startDepth) * inverseDepthRange;
         }
     }
@@ -129,8 +129,12 @@ struct ParallaxOffset
 ParallaxOffset BasicParallaxMapping(float depthFactor, float2 uv, float3 dirToCameraTS)
 {
     // the amount to shift
+#ifdef CS_SAMPLERS
+    float2 delta = dirToCameraTS.xy * GetNormalizedDepth(0, depthFactor, uv, float2(0, 0), float2(0, 0)) * depthFactor;
+#else
     float2 delta = dirToCameraTS.xy * GetNormalizedDepth(0, depthFactor, uv, ddx_fine(uv), ddy_fine(uv)) * depthFactor;
-    
+#endif
+
     ParallaxOffset result;
 
     result.m_offsetTS = float3(0,0,0);
@@ -155,14 +159,19 @@ ParallaxOffset AdvancedParallaxMapping(float depthFactor, float depthOffset, flo
     result.m_isClipped = false;
 
     float dirToCameraZInverse = 1.0 / dirToCameraTS.z;
-    float step =  1.0 / numSteps;
+    float step =  float(1.0 / numSteps);
     float currentStep = 0.0;
 
     // the amount to shift per step, shift in the inverse direction of dirToCameraTS
     float3 delta = -dirToCameraTS.xyz * depthFactor * dirToCameraZInverse * step;
 
+#ifdef CS_SAMPLERS
+    float2 ddx_uv = float2(0, 0);
+    float2 ddy_uv = float2(0, 0);
+#else
     float2 ddx_uv = ddx_fine(uv);
     float2 ddy_uv = ddy_fine(uv);
+#endif
 
     float depthSearchStart = depthOffset;
     float depthSearchEnd = depthSearchStart + depthFactor;
@@ -223,7 +232,7 @@ ParallaxOffset AdvancedParallaxMapping(float depthFactor, float depthOffset, flo
                 {
                     reliefDelta *= 0.5;
                     reliefStep *= 0.5;
-                    depthSign = sign(currentSample - currentStep);
+                    depthSign = float(sign(currentSample - currentStep));
 
                     parallaxOffset += reliefDelta * depthSign;
                     currentStep += reliefStep * depthSign;
@@ -277,7 +286,7 @@ ParallaxOffset AdvancedParallaxMapping(float depthFactor, float depthOffset, flo
         // The most accurate way to report clipping is to sample the heightmap one last time at the final adjusted UV.
         // (trying to do it based on parallaxOffset.z values just leads to too many edge cases)
 
-        DepthResult depthResult = GetDepth(uv + parallaxOffset.xy, ddx_uv, ddy_uv);
+        DepthResult depthResult = GetDepth(float2(uv + parallaxOffset.xy), ddx_uv, ddy_uv);
         
         if(DepthResultCode_Normalized == depthResult.m_resultCode)
         {
@@ -292,8 +301,8 @@ ParallaxOffset AdvancedParallaxMapping(float depthFactor, float depthOffset, flo
     if(o_parallax_shadow && any(dirToLightTS))
     {
         float2 shadowUV = uv + parallaxOffset.xy;
-        float shadowNumSteps = round(numSteps * currentStep);
-        float shadowStep = 1.0 / shadowNumSteps;
+        float shadowNumSteps = round(float(numSteps) * currentStep);
+        float shadowStep = float(1.0 / shadowNumSteps);
         float dirToLightZInverse = 1.0 / dirToLightTS.z;
         float2 shadowDelta = dirToLightTS.xy * depthFactor * dirToLightZInverse * shadowStep;
 
@@ -302,13 +311,13 @@ ParallaxOffset AdvancedParallaxMapping(float depthFactor, float depthOffset, flo
 
         // Raytrace from found parallax-offsetted point to the light. 
         // parallaxShadowAttenuation represents how much the current point is shadowed.
-        for(int i = 0 ; i < shadowNumSteps; i++)
+        for(int i = 0 ; i < (int)shadowNumSteps; i++)
         {
             // light ray is under surface
             if(currentSample < currentStep)
             {
                 rayUnderSurface = true;
-                partialShadowFactor = max(partialShadowFactor, (currentStep - currentSample) * (1 - (i + 1) * shadowStep));
+                partialShadowFactor = max(partialShadowFactor, (currentStep - currentSample) * ((float)(1 - (i + 1)) * shadowStep));
             }
 
             shadowUV += shadowDelta;
@@ -372,7 +381,7 @@ ParallaxOffset GetParallaxOffset( float depthFactor,
                                   float3 tangentWS,
                                   float3 bitangentWS,
                                   float3 normalWS,
-                                  float3x3 uvMatrix)
+                                  real3x3 uvMatrix)
 {
     // Tangent space eye vector
     float3 dirToCameraTS = normalize(WorldSpaceToTangent(dirToCameraWS, normalWS, tangentWS, bitangentWS));
@@ -424,7 +433,7 @@ PixelDepthOffset CalcPixelDepthOffset(  float depthFactor,
     float scaleZ = length(objectToWorldMatrix[2].xyz);
     worldOffset *= float3(scaleX, scaleY, scaleZ);
 
-    float3 worldOffsetPosition = posWS + worldOffset;
+    float3 worldOffsetPosition = float3(posWS) + worldOffset;
     float4 clipOffsetPosition = mul(viewProjectionMatrix, float4(worldOffsetPosition, 1.0));
 
     PixelDepthOffset pdo;

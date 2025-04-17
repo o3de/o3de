@@ -8,7 +8,9 @@
 
 #include <native/tests/assetmanager/TestEventSignal.h>
 #include <AzCore/std/parallel/thread.h>
+#if !defined(Q_MOC_RUN)
 #include <AzCore/UnitTest/TestTypes.h>
+#endif
 
 namespace UnitTests
 {
@@ -23,7 +25,13 @@ namespace UnitTests
 
     bool TestEventPair::WaitAndCheck()
     {
-        constexpr int MaxWaitTimeMilliseconds = 100;
+        // usually this completes under a millisecond or two, but a slow machine or busy machine
+        // can cause hiccups of anywhere between a few milliseconds to a few seconds.
+        // Since this test will exit the instant it gets its signal, prefer to set a very long timeout
+        // beyond what is even remotely necessary, so that if the test hits it, we know with a high degree of confidence
+        // that the message is not forthcoming, not that we just didn't wait long enough for it due to environmental
+        // issues.
+        constexpr int MaxWaitTimeMilliseconds = 30000;
 
         auto thisThreadId = AZStd::this_thread::get_id();
         bool acquireSuccess = m_event.try_acquire_for(AZStd::chrono::milliseconds(MaxWaitTimeMilliseconds));

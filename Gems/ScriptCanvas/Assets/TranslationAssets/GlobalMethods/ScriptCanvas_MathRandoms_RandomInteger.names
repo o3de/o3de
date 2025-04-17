@@ -12,7 +12,7 @@
                 {
                     "base": "ScriptCanvas_MathRandoms_RandomInteger",
                     "details": {
-                        "name": "Script Canvas_ Math Randoms_ Random Integer",
+                        "name": "Random Integer",
                         "tooltip": "Returns a random integer [Min, Max]."
                     },
                     "params": [

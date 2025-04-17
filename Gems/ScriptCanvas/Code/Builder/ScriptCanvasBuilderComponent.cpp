@@ -13,8 +13,8 @@
 #include <Builder/ScriptCanvasBuilderComponent.h>
 #include <Builder/ScriptCanvasBuilderWorker.h>
 #include <ScriptCanvas/Asset/RuntimeAssetHandler.h>
+#include <ScriptCanvas/Asset/SubgraphInterfaceAsset.h>
 #include <ScriptCanvas/Asset/SubgraphInterfaceAssetHandler.h>
-
 #include <ScriptCanvas/Utils/BehaviorContextUtils.h>
 
 namespace ScriptCanvasBuilder
@@ -59,18 +59,18 @@ namespace ScriptCanvasBuilder
 
     void PluginComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("ScriptCanvasBuilderService", 0x4929ffcd));
+        provided.push_back(AZ_CRC_CE("ScriptCanvasBuilderService"));
     }
     
     void PluginComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("ScriptCanvasService", 0x41fd58f3));
-        required.push_back(AZ_CRC("ScriptCanvasReflectService", 0xb3bfe139));
+        required.push_back(AZ_CRC_CE("ScriptCanvasService"));
+        required.push_back(AZ_CRC_CE("ScriptCanvasReflectService"));
     }
     
     void PluginComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
-        dependent.push_back(AZ_CRC("AssetCatalogService", 0xc68ffc57));
+        dependent.push_back(AZ_CRC_CE("AssetCatalogService"));
     }
     
     void PluginComponent::Activate()
@@ -92,8 +92,12 @@ namespace ScriptCanvasBuilder
             size_t fingerprint = ScriptCanvas::BehaviorContextUtils::GenerateFingerprintForBehaviorContext();
             builderDescriptor.m_analysisFingerprint = AZStd::string(m_scriptCanvasBuilder.GetFingerprintString())
                 .append("|").append(AZStd::to_string(static_cast<AZ::u64>(fingerprint)));
+
+            // Include the base node version in the hash, so when it changes, script canvas jobs are reprocessed.
+            AZStd::hash_combine(fingerprint, ScriptCanvas::Node::GetNodeVersion());
+
             builderDescriptor.AddFlags(AssetBuilderSDK::AssetBuilderDesc::BF_DeleteLastKnownGoodProductOnFailure, s_scriptCanvasProcessJobKey);
-            builderDescriptor.m_productsToKeepOnFailure[s_scriptCanvasProcessJobKey] = { AZ_CRC("SubgraphInterface", 0xdfe6dc72) };
+            builderDescriptor.m_productsToKeepOnFailure[s_scriptCanvasProcessJobKey] = { AZ_CRC_CE("SubgraphInterface") };
             m_scriptCanvasBuilder.BusConnect(builderDescriptor.m_busId);
             AssetBuilderSDK::AssetBuilderBus::Broadcast(&AssetBuilderSDK::AssetBuilderBus::Handler::RegisterBuilderInformation, builderDescriptor);
         }

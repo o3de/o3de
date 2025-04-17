@@ -15,7 +15,6 @@
 
 // Editor
 #include "QtViewPaneManager.h"
-#include "Include/IIconManager.h"
 
 // AzToolsFramework
 #include <AzToolsFramework/PythonTerminal/ScriptTermDialog.h>
@@ -181,11 +180,6 @@ bool CEditorCommandManager::AttachUIInfo(const char* fullCmdName, const CCommand
     }
 
     m_uiCommands.insert(UICommandTable::value_type(pCommand->m_uiInfo.commandId, pCommand));
-
-    if (uiInfo.iconFilename.empty() == false)
-    {
-        GetIEditor()->GetIconManager()->RegisterCommandIcon(uiInfo.iconFilename.c_str(), pCommand->m_uiInfo.commandId);
-    }
 
     return true;
 }
@@ -482,13 +476,6 @@ void CEditorCommandManager::LogCommand(const AZStd::string& fullCmdName, const C
     }
 
     cmdLine += ")";
-
-    // If it's not SandBox main editor (one case is the standalone material editor triggered by 3ds Max exporter),
-    // we should not cast it into main editor for further operation.
-    if (GetIEditor()->IsInMatEditMode())
-    {
-        return;
-    }
 
     // Then, register it to the terminal.
     QtViewPane* scriptTermPane = QtViewPaneManager::instance()->GetPane(SCRIPT_TERM_WINDOW_NAME);

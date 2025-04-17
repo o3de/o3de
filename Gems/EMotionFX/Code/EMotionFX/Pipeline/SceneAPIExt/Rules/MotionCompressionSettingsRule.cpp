@@ -18,7 +18,7 @@ namespace EMotionFX
     {
         namespace Rule
         {
-            AZ_CLASS_ALLOCATOR_IMPL(MotionCompressionSettingsRule, AZ::SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR_IMPL(MotionCompressionSettingsRule, AZ::SystemAllocator)
 
             void MotionCompressionSettingsRule::SetMaxTranslationError(float value)
             {

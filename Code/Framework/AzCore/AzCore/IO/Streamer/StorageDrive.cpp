@@ -41,7 +41,7 @@ namespace AZ::IO
     StorageDrive::StorageDrive(u32 maxFileHandles)
         : StreamStackEntry("Storage drive (generic)")
     {
-        m_fileLastUsed.resize(maxFileHandles, AZStd::chrono::system_clock::time_point::min());
+        m_fileLastUsed.resize(maxFileHandles, AZStd::chrono::steady_clock::time_point::min());
         m_filePaths.resize(maxFileHandles);
         m_fileHandles.resize(maxFileHandles);
 
@@ -156,7 +156,7 @@ namespace AZ::IO
         }
     }
 
-    void StorageDrive::UpdateCompletionEstimates(AZStd::chrono::system_clock::time_point now,
+    void StorageDrive::UpdateCompletionEstimates(AZStd::chrono::steady_clock::time_point now,
         AZStd::vector<FileRequest*>& internalPending, StreamerContext::PreparedQueue::iterator pendingBegin,
         StreamerContext::PreparedQueue::iterator pendingEnd)
     {
@@ -189,7 +189,7 @@ namespace AZ::IO
         }
     }
 
-    void StorageDrive::EstimateCompletionTimeForRequest(FileRequest* request, AZStd::chrono::system_clock::time_point& startTime,
+    void StorageDrive::EstimateCompletionTimeForRequest(FileRequest* request, AZStd::chrono::steady_clock::time_point& startTime,
         const RequestPath*& activeFile, u64& activeOffset) const
     {
         u64 readSize = 0;
@@ -214,13 +214,13 @@ namespace AZ::IO
             else if constexpr (AZStd::is_same_v<Command, Requests::FileExistsCheckData>)
             {
                 readSize = 0;
-                AZStd::chrono::microseconds averageTime = m_getFileExistsTimeAverage.CalculateAverage();
+                AZStd::chrono::microseconds averageTime = AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(m_getFileExistsTimeAverage.CalculateAverage());
                 startTime += averageTime;
             }
             else if constexpr (AZStd::is_same_v<Command, Requests::FileMetaDataRetrievalData>)
             {
                 readSize = 0;
-                AZStd::chrono::microseconds averageTime = m_getFileMetaDataTimeAverage.CalculateAverage();
+                AZStd::chrono::microseconds averageTime = AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(m_getFileMetaDataTimeAverage.CalculateAverage());
                 startTime += averageTime;
             }
         }, request->GetCommand());
@@ -231,7 +231,7 @@ namespace AZ::IO
             {
                 if (FindFileInCache(*targetFile) == s_fileNotFound)
                 {
-                    AZStd::chrono::microseconds fileOpenCloseTimeAverage = m_fileOpenCloseTimeAverage.CalculateAverage();
+                    AZStd::chrono::microseconds fileOpenCloseTimeAverage = AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(m_fileOpenCloseTimeAverage.CalculateAverage());
                     startTime += fileOpenCloseTimeAverage;
                 }
                 startTime += s_averageSeekTime;
@@ -264,14 +264,14 @@ namespace AZ::IO
         if (cacheIndex != s_fileNotFound)
         {
             file = m_fileHandles[cacheIndex].get();
-            m_fileLastUsed[cacheIndex] = AZStd::chrono::high_resolution_clock::now();
+            m_fileLastUsed[cacheIndex] = AZStd::chrono::steady_clock::now();
         }
 
         // If the file is not open, eject the entry from the cache that hasn't been used for the longest time
         // and open the file for reading.
         if (!file)
         {
-            AZStd::chrono::system_clock::time_point oldest = m_fileLastUsed[0];
+            AZStd::chrono::steady_clock::time_point oldest = m_fileLastUsed[0];
             cacheIndex = 0;
             size_t numFiles = m_filePaths.size();
             for (size_t i = 1; i < numFiles; ++i)
@@ -294,7 +294,7 @@ namespace AZ::IO
             }
 
             file = newFile.get();
-            m_fileLastUsed[cacheIndex] = AZStd::chrono::high_resolution_clock::now();
+            m_fileLastUsed[cacheIndex] = AZStd::chrono::steady_clock::now();
             m_fileHandles[cacheIndex] = AZStd::move(newFile);
             m_filePaths[cacheIndex] = data->m_path;
         }
@@ -395,7 +395,7 @@ namespace AZ::IO
         size_t cacheIndex = FindFileInCache(filePath);
         if (cacheIndex != s_fileNotFound)
         {
-            m_fileLastUsed[cacheIndex] = AZStd::chrono::system_clock::time_point();
+            m_fileLastUsed[cacheIndex] = AZStd::chrono::steady_clock::time_point();
             m_fileHandles[cacheIndex].reset();
             m_filePaths[cacheIndex].Clear();
         }
@@ -406,7 +406,7 @@ namespace AZ::IO
         size_t numFiles = m_filePaths.size();
         for (size_t i = 0; i < numFiles; ++i)
         {
-            m_fileLastUsed[i] = AZStd::chrono::system_clock::time_point();
+            m_fileLastUsed[i] = AZStd::chrono::steady_clock::time_point();
             m_fileHandles[i].reset();
             m_filePaths[i].Clear();
         }

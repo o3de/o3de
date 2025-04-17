@@ -19,6 +19,57 @@ namespace AzToolsFramework
     namespace AssetSystem
     {
         //---------------------------------------------------------------------
+        AssetFingerprintClearRequest::AssetFingerprintClearRequest(bool requireFencing /*= true*/)
+            : BaseAssetProcessorMessage(requireFencing)
+        {
+        }
+
+        AssetFingerprintClearRequest::AssetFingerprintClearRequest(const AZ::OSString& searchTerm, bool requireFencing /*= true*/)
+            : BaseAssetProcessorMessage(requireFencing)
+            , m_searchTerm(searchTerm)
+        {
+            AZ_Assert(!searchTerm.empty(), "AssetJobsInfoRequest: Search Term is empty");
+        }
+
+        unsigned int AssetFingerprintClearRequest::GetMessageType() const
+        {
+            return MessageType;
+        }
+
+        void AssetFingerprintClearRequest::Reflect(AZ::ReflectContext* context)
+        {
+            auto serialize = azrtti_cast<AZ::SerializeContext*>(context);
+            if (serialize)
+            {
+                serialize->Class<AssetFingerprintClearRequest, BaseAssetProcessorMessage>()
+                    ->Version(1)
+                    ->Field("SearchTerm", &AssetFingerprintClearRequest::m_searchTerm);
+            }
+        }
+
+        //---------------------------------------------------------------------
+        AssetFingerprintClearResponse::AssetFingerprintClearResponse(bool isSuccess)
+            : m_isSuccess(isSuccess)
+        {
+        }
+
+        unsigned int AssetFingerprintClearResponse::GetMessageType() const
+        {
+            return AssetFingerprintClearRequest::MessageType;
+        }
+
+        void AssetFingerprintClearResponse::Reflect(AZ::ReflectContext* context)
+        {
+            auto serialize = azrtti_cast<AZ::SerializeContext*>(context);
+            if (serialize)
+            {
+                serialize->Class<AssetFingerprintClearResponse, BaseAssetProcessorMessage>()
+                    ->Version(1)
+                    ->Field("Success", &AssetFingerprintClearResponse::m_isSuccess);
+            }
+        }
+
+        //---------------------------------------------------------------------
         AssetJobsInfoRequest::AssetJobsInfoRequest(const AZ::OSString& searchTerm, bool requireFencing /*= true*/)
             : BaseAssetProcessorMessage(requireFencing)
             , m_searchTerm(searchTerm) 
@@ -310,7 +361,7 @@ namespace AzToolsFramework
 
         unsigned FileInfosNotificationMessage::GetMessageType() const
         {
-            static unsigned int messageType = AZ_CRC("FileProcessor::FileInfosNotification", 0x001c43f5);
+            static unsigned int messageType = AZ_CRC_CE("FileProcessor::FileInfosNotification");
             return messageType;
         }
 

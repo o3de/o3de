@@ -36,7 +36,7 @@ namespace UnitTest
         ASSERT_TRUE(prefabInstance);
 
         PrefabDom entityDom;
-        m_instanceToTemplateInterface->GenerateDomForEntity(entityDom, *newEntity);
+        m_instanceToTemplateInterface->GenerateEntityDomBySerializing(entityDom, *newEntity);
 
         auto componentListDom = entityDom.FindMember("Components");
 
@@ -79,7 +79,7 @@ namespace UnitTest
         ASSERT_TRUE(prefabInstance);
 
         PrefabDom instanceDom;
-        m_instanceToTemplateInterface->GenerateDomForInstance(instanceDom, *prefabInstance);
+        m_instanceToTemplateInterface->GenerateInstanceDomBySerializing(instanceDom, *prefabInstance);
 
         // Acquire the entity out of the instanceDom
         auto entitiesDom = instanceDom.FindMember(PrefabDomUtils::EntitiesName);
@@ -141,7 +141,7 @@ namespace UnitTest
 
         //create document with before change snapshot
         PrefabDom entityDomBeforeUpdate;
-        m_instanceToTemplateInterface->GenerateDomForEntity(entityDomBeforeUpdate, *newEntity);
+        m_instanceToTemplateInterface->GenerateEntityDomBySerializing(entityDomBeforeUpdate, *newEntity);
 
         //update values on entity
         const float updatedXValue = 5.0f;
@@ -149,7 +149,7 @@ namespace UnitTest
 
         //create document with after change snapshot
         PrefabDom entityDomAfterUpdate;
-        m_instanceToTemplateInterface->GenerateDomForEntity(entityDomAfterUpdate, *newEntity);
+        m_instanceToTemplateInterface->GenerateEntityDomBySerializing(entityDomAfterUpdate, *newEntity);
 
         //generate patch
         PrefabDom patch;
@@ -192,14 +192,14 @@ namespace UnitTest
 
         //create document with before change snapshot
         PrefabDom instanceDomBeforeUpdate;
-        m_instanceToTemplateInterface->GenerateDomForInstance(instanceDomBeforeUpdate, *firstInstance);
+        m_instanceToTemplateInterface->GenerateInstanceDomBySerializing(instanceDomBeforeUpdate, *firstInstance);
 
         //add entity to instance
         firstInstance->AddEntity(*newEntity);
 
         //create document with after change snapshot
         PrefabDom instanceDomAfterUpdate;
-        m_instanceToTemplateInterface->GenerateDomForInstance(instanceDomAfterUpdate, *firstInstance);
+        m_instanceToTemplateInterface->GenerateInstanceDomBySerializing(instanceDomAfterUpdate, *firstInstance);
 
         //generate patch
         PrefabDom patch;
@@ -243,14 +243,14 @@ namespace UnitTest
 
         //create document with before change snapshot
         PrefabDom instanceDomBeforeUpdate;
-        m_instanceToTemplateInterface->GenerateDomForInstance(instanceDomBeforeUpdate, *firstInstance);
+        m_instanceToTemplateInterface->GenerateInstanceDomBySerializing(instanceDomBeforeUpdate, *firstInstance);
 
         //remove entity from instance
         firstInstance->DetachEntity(entityId);
 
         //create document with after change snapshot
         PrefabDom instanceDomAfterUpdate;
-        m_instanceToTemplateInterface->GenerateDomForInstance(instanceDomAfterUpdate, *firstInstance);
+        m_instanceToTemplateInterface->GenerateInstanceDomBySerializing(instanceDomAfterUpdate, *firstInstance);
 
         //generate patch
         PrefabDom patch;
@@ -288,7 +288,7 @@ namespace UnitTest
 
         //create document with before change snapshot
         PrefabDom instanceDomBeforeUpdate;
-        m_instanceToTemplateInterface->GenerateDomForInstance(instanceDomBeforeUpdate, *firstInstance);
+        m_instanceToTemplateInterface->GenerateInstanceDomBySerializing(instanceDomBeforeUpdate, *firstInstance);
 
         //create new instance and get alias
         AZStd::unique_ptr<Instance> addedInstance = m_prefabSystemComponent->CreatePrefab({}, {}, "test/pathtest");
@@ -299,7 +299,7 @@ namespace UnitTest
 
         //create document with after change snapshot
         PrefabDom instanceDomAfterUpdate;
-        m_instanceToTemplateInterface->GenerateDomForInstance(instanceDomAfterUpdate, *firstInstance);
+        m_instanceToTemplateInterface->GenerateInstanceDomBySerializing(instanceDomAfterUpdate, *firstInstance);
 
         //generate patch
         PrefabDom patch;
@@ -333,7 +333,7 @@ namespace UnitTest
 
         //create document with before change snapshot
         PrefabDom instanceDomBeforeUpdate;
-        m_instanceToTemplateInterface->GenerateDomForInstance(instanceDomBeforeUpdate, *firstInstance);
+        m_instanceToTemplateInterface->GenerateInstanceDomBySerializing(instanceDomBeforeUpdate, *firstInstance);
 
         //remove instance from instance
         AZStd::unique_ptr<Instance> detachedInstance = firstInstance->DetachNestedInstance(addedAlias);
@@ -342,7 +342,7 @@ namespace UnitTest
 
         //create document with after change snapshot
         PrefabDom instanceDomAfterUpdate;
-        m_instanceToTemplateInterface->GenerateDomForInstance(instanceDomAfterUpdate, *firstInstance);
+        m_instanceToTemplateInterface->GenerateInstanceDomBySerializing(instanceDomAfterUpdate, *firstInstance);
 
         //generate patch
         PrefabDom patch;

@@ -7,7 +7,7 @@
     "origin_url": "https://github.com/o3de/o3de",
     "license": "Apache-2.0 or MIT",
     "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
-    "display_name": "PythonToolGem",
+    "display_name": "PythonToolGem Template",
     "summary": "A gem template for a custom tool in Python that gets registered with the Editor.",
     "canonical_tags": [
         "Python",
@@ -48,6 +48,10 @@
         },
         {
             "file": "Code/Include/${Name}/${Name}Bus.h",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Include/${Name}/${Name}TypeIds.h",
             "isTemplated": true
         },
         {
@@ -99,6 +103,10 @@
             "isTemplated": true
         },
         {
+            "file": "Code/Source/${Name}ModuleInterface.cpp",
+            "isTemplated": true
+        },
+        {
             "file": "Code/Source/${Name}ModuleInterface.h",
             "isTemplated": true
         },
@@ -135,7 +143,7 @@
             "isTemplated": true
         },
         {
-            "file": "Editor/Scripts/${NameLower}_dialog.py",
+            "file": "Editor/Scripts/${SanitizedNameLower}_dialog.py",
             "isTemplated": true
         },
         {

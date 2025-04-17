@@ -29,7 +29,7 @@ namespace LandscapeCanvas
         }
     }
 
-    const QString ConstantGradientNode::TITLE = QObject::tr("Constant");
+    const char* ConstantGradientNode::TITLE = "Constant";
 
     ConstantGradientNode::ConstantGradientNode(GraphModel::GraphPtr graph)
         : BaseGradientNode(graph)

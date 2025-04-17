@@ -7,10 +7,10 @@
 #
 
 ly_add_target(
-    NAME CertificateManager.Static STATIC
+    NAME ${gem_name}.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
-        CertificateManager_files.cmake
+        ${gem_name}_files.cmake
     INCLUDE_DIRECTORIES
         PRIVATE
             .
@@ -24,7 +24,7 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME CertificateManager ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME ${gem_name} ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         certificatemanager_shared_files.cmake
@@ -36,9 +36,20 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         PRIVATE
-            Gem::CertificateManager.Static
+            Gem::${gem_name}.Static
 )
 
-# we'll load the above "Gem::CertificateManager" module in Clients and Servers
-ly_create_alias(NAME CertificateManager.Clients NAMESPACE Gem TARGETS Gem::CertificateManager)
-ly_create_alias(NAME CertificateManager.Servers NAMESPACE Gem TARGETS Gem::CertificateManager)
+# Inject the gem name into the Module source file
+ly_add_source_properties(
+    SOURCES
+        Source/CertificateManagerGem.cpp
+    PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_GEM_NAME=${gem_name}
+            O3DE_GEM_VERSION=${gem_version})
+
+
+# we'll load the above "Gem::${gem_name}" module in Clients and Servers
+ly_create_alias(NAME ${gem_name}.Clients NAMESPACE Gem TARGETS Gem::${gem_name})
+ly_create_alias(NAME ${gem_name}.Servers NAMESPACE Gem TARGETS Gem::${gem_name})
+ly_create_alias(NAME ${gem_name}.Unified NAMESPACE Gem TARGETS Gem::${gem_name})

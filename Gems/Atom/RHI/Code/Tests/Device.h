@@ -10,14 +10,18 @@
 #include <AzCore/UnitTest/TestTypes.h>
 #include <Atom/RHI/Device.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <Atom/RHI.Reflect/Limits.h>
 
 namespace UnitTest
 {
+    static constexpr auto DeviceCount{8};
+    static constexpr AZ::RHI::MultiDevice::DeviceMask DeviceMask{AZ::RHI::MultiDevice::AllDevices};
+
     class PhysicalDevice
         : public AZ::RHI::PhysicalDevice
     {
     public:
-        AZ_CLASS_ALLOCATOR(PhysicalDevice, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PhysicalDevice, AZ::SystemAllocator);
 
         static AZ::RHI::PhysicalDeviceList Enumerate();
 
@@ -29,13 +33,14 @@ namespace UnitTest
         : public AZ::RHI::Device
     {
     public:
-        AZ_CLASS_ALLOCATOR(Device, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Device, AZ::SystemAllocator);
 
         Device();
 
     private:
 
         AZ::RHI::ResultCode InitInternal(AZ::RHI::PhysicalDevice&) override { return AZ::RHI::ResultCode::Success; }
+        AZ::RHI::ResultCode InitInternalBindlessSrg([[maybe_unused]] const AZ::RHI::BindlessSrgDescriptor& bindlessSrgDesc) override { return AZ::RHI::ResultCode::Success;}
 
         void ShutdownInternal() override {}
 
@@ -54,6 +59,11 @@ namespace UnitTest
             return AZStd::chrono::microseconds();
         }
 
+        AZStd::pair<uint64_t, uint64_t> GetCalibratedTimestamp([[maybe_unused]] AZ::RHI::HardwareQueueClass queueClass) override
+        {
+            return { 0ull, AZStd::chrono::microseconds().count() };
+        }
+
         void FillFormatsCapabilitiesInternal([[maybe_unused]] FormatCapabilitiesList& formatsCapabilities) override {}
 
         AZ::RHI::ResultCode InitializeLimits() override { return AZ::RHI::ResultCode::Success; }
@@ -65,6 +75,11 @@ namespace UnitTest
         AZ::RHI::ResourceMemoryRequirements GetResourceMemoryRequirements([[maybe_unused]] const AZ::RHI::BufferDescriptor& descriptor) { return AZ::RHI::ResourceMemoryRequirements{}; };
 
         void ObjectCollectionNotify(AZ::RHI::ObjectCollectorNotifyFunction notifyFunction) override {}
+
+        AZ::RHI::ShadingRateImageValue ConvertShadingRate([[maybe_unused]] AZ::RHI::ShadingRate rate) const override
+        {
+            return AZ::RHI::ShadingRateImageValue{};
+        }
     };
 
     AZ::RHI::Ptr<AZ::RHI::Device> MakeTestDevice();

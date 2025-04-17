@@ -20,7 +20,8 @@
 #define AZ_MULTIPLAYER_COMPONENT(ComponentClass, Guid, Base) \
     AZ_RTTI(ComponentClass, Guid, Base)                      \
     AZ_COMPONENT_INTRUSIVE_DESCRIPTOR_TYPE(ComponentClass)   \
-    AZ_COMPONENT_BASE(ComponentClass, Guid, Base)
+    AZ_COMPONENT_BASE(ComponentClass)                        \
+    AZ_CLASS_ALLOCATOR(ComponentClass, AZ::ComponentAllocator)
 
 namespace Multiplayer
 {
@@ -33,13 +34,13 @@ namespace Multiplayer
         : public AZ::Component
     {
     public:
-        AZ_CLASS_ALLOCATOR(MultiplayerComponent, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MultiplayerComponent, AZ::SystemAllocator);
         AZ_RTTI(MultiplayerComponent, "{B7F5B743-CCD3-4981-8F1A-FC2B95CE22D7}", AZ::Component);
 
         static void Reflect(AZ::ReflectContext* context);
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
 
-        MultiplayerComponent() = default;
+        MultiplayerComponent();
         ~MultiplayerComponent() override = default;
 
         //! Returns the NetBindComponent responsible for network binding for this entity.
@@ -67,6 +68,11 @@ namespace Multiplayer
         NetworkEntityHandle GetEntityHandle();
         void MarkDirty();
 
+        //! Override to run component logic when the NetworkEntity has completed network activation
+        //! Invoked when the NetworkEntity is attached and has RPCs bound via m_networkActivatedHandler
+        //! Requires m_networkActivatedHandler be registered via NetBindComponent::AddNetworkActivatedEventHandler 
+        virtual void OnNetworkActivated(){};
+
         virtual void SetOwningConnectionId(AzNetworking::ConnectionId connectionId) = 0;
         virtual NetComponentId GetNetComponentId() const = 0;
 
@@ -85,6 +91,7 @@ namespace Multiplayer
         virtual void NetworkAttach(NetBindComponent* netBindComponent, ReplicationRecord& currentEntityRecord, ReplicationRecord& predictableEntityRecord) = 0;
 
         mutable NetBindComponent* m_netBindComponent = nullptr;
+        AZ::Event<>::Handler m_networkActivatedHandler;
 
         friend class NetworkEntityHandle;
         friend class NetBindComponent;
@@ -174,7 +181,7 @@ namespace Multiplayer
             if (bitset.GetBit(i))
             {
                 serializer.ClearTrackedChangesFlag();
-                serializer.Serialize(value[i], "Element");
+                serializer.Serialize(value[i], AzNetworking::GenerateIndexLabel<SIZE>(i).c_str());
                 if (modifyRecord && !serializer.GetTrackedChangesFlag())
                 {
                     bitset.SetBit(i, false);
@@ -216,7 +223,7 @@ namespace Multiplayer
             if (bitset.GetBit(i))
             {
                 serializer.ClearTrackedChangesFlag();
-                serializer.Serialize(value[i], "Element");
+                serializer.Serialize(value[i], AzNetworking::GenerateIndexLabel<SIZE>(i).c_str());
                 if (modifyRecord && !serializer.GetTrackedChangesFlag())
                 {
                     bitset.SetBit(i, false);

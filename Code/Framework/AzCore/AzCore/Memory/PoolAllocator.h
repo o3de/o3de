@@ -5,130 +5,190 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZCORE_POOL_ALLOCATOR_H
-#define AZCORE_POOL_ALLOCATOR_H
 
+#pragma once
+
+#include <AzCore/Memory/SimpleSchemaAllocator.h>
 #include <AzCore/Memory/SystemAllocator.h>
-#include <AzCore/Memory/PoolSchema.h>
 #include <AzCore/Memory/AllocationRecords.h>
 
 namespace AZ
 {
     template<class Allocator>
     class PoolAllocation;
-    namespace Internal
+
+    /**
+     * Pools allocator schema
+     * Specialized allocation where we pool objects at cost of using more memory (most of the time).
+     * Pool Allocator is NOT thread safe, if you if need a thread safe version
+     * use ThreadPool Schema or do the sync yourself.
+     */
+    class PoolSchema
+        : public IAllocator
     {
-        /*!
-        * Template you can use to create your own thread pool allocators, as you can't inherit from ThreadPoolAllocator.
-        * This is the case because we use tread local storage and we need separate "static" instance for each allocator.
+    public:
+        AZ_TYPE_INFO_WITH_NAME_DECL(PoolSchema);
+
+        PoolSchema();
+        ~PoolSchema();
+
+        bool Create();
+        bool Create(
+            PoolSchema::size_type pageSize, PoolSchema::size_type minAllocationSize, PoolSchema::size_type maxAllocationSize);
+
+        AllocateAddress allocate(size_type byteSize, size_type alignment) override;
+        size_type deallocate(pointer ptr, size_type byteSize, size_type alignment) override;
+        AllocateAddress reallocate(pointer ptr, size_type newSize, size_type newAlignment) override;
+        size_type get_allocated_size(pointer ptr, align_type alignment) const override;
+
+        /// Return unused memory to the OS. Don't call this too often because you will force unnecessary allocations.
+        void GarbageCollect() override;
+
+        size_type NumAllocatedBytes() const override;
+
+    protected:
+        PoolSchema(const PoolSchema&);
+        PoolSchema& operator=(const PoolSchema&);
+
+        class PoolSchemaImpl*             m_impl;
+    };
+
+    struct ThreadPoolData;
+
+    /**
+        * Thread safe pool allocator. For pool details \ref PoolSchema.
+        * IMPORTNAT: Keep in mind the thread pool allocator will create separate pools,
+        * for each thread. So there will be some memory overhead, especially if you use fixed pool sizes.
         */
-        template<class Schema>
-        class PoolAllocatorHelper
-            : public SimpleSchemaAllocator<Schema, typename Schema::Descriptor, /* ProfileAllocations */ true, /* ReportOutOfMemory */ false>
+    class ThreadPoolSchema
+        : public IAllocator
+    {
+    public:
+        // Functions for getting an instance of a ThreadPoolData when using thread local storage
+        typedef ThreadPoolData* (* GetThreadPoolData)();
+        typedef void(* SetThreadPoolData)(ThreadPoolData*);
+
+        ThreadPoolSchema(GetThreadPoolData getThreadPoolData, SetThreadPoolData setThreadPoolData);
+        ~ThreadPoolSchema();
+
+        bool Create();
+        bool Create(PoolSchema::size_type pageSize, PoolSchema::size_type minAllocationSize, PoolSchema::size_type maxAllocationSize);
+
+        AllocateAddress allocate(size_type byteSize, size_type alignment) override;
+        size_type deallocate(pointer ptr, size_type byteSize, size_type alignment) override;
+        AllocateAddress reallocate(pointer ptr, size_type newSize, size_type newAlignment) override;
+        size_type get_allocated_size(pointer ptr, align_type alignment) const override;
+        /// Return unused memory to the OS. Don't call this too often because you will force unnecessary allocations.
+        void GarbageCollect() override;
+
+        size_type NumAllocatedBytes() const override;
+
+    protected:
+        ThreadPoolSchema(const ThreadPoolSchema&);
+        ThreadPoolSchema& operator=(const ThreadPoolSchema&);
+
+        GetThreadPoolData m_threadPoolGetter;
+        SetThreadPoolData m_threadPoolSetter;
+        class ThreadPoolSchemaImpl* m_impl;
+    };
+
+    /**
+     * Helper class to allow multiple instances of ThreadPool that can
+     * operate independent from each other. Your thread pool allocator should inherit from that class.
+     */
+    template<class Allocator>
+    class ThreadPoolSchemaHelper
+        : public ThreadPoolSchema
+    {
+    public:
+        ThreadPoolSchemaHelper()
+            : ThreadPoolSchema(&GetThreadPoolData, &SetThreadPoolData)
         {
-        public:
-            using Base = SimpleSchemaAllocator<Schema, typename Schema::Descriptor, true, false>;
-            using pointer_type = typename Base::pointer_type;
-            using size_type = typename Base::size_type;
-            using difference_type = typename Base::difference_type;
+        }
 
-            PoolAllocatorHelper(const char* name, const char* desc) : Base(name, desc)
-            {
-            }
+        AZ_TYPE_INFO(ThreadPoolSchemaHelper, "{43DFADCF-DE57-4056-88CB-04790A140FB3}")
 
-            struct Descriptor
-                : public Schema::Descriptor
-            {
-                Descriptor()
-                    : m_allocationRecords(true)
-                    , m_isMarkUnallocatedMemory(false)
-                    , m_isMemoryGuards(false)
-                    , m_stackRecordLevels(5)
-                {}
+    protected:
 
-                bool m_allocationRecords; ///< True if we want to track memory allocations, otherwise false.
-                bool m_isMarkUnallocatedMemory; ///< Sets unallocated memory to default values (if m_allocationRecords is true)
-                bool m_isMemoryGuards; ///< Enables memory guards for stomp detection. Keep in mind that this will change the memory "profile" a lot as we usually double every pool allocation.
-                unsigned char m_stackRecordLevels; ///< If stack recording is enabled, how many stack levels to record. (if m_allocationRecords is true)
-            };
+        static ThreadPoolData* GetThreadPoolData()
+        {
+            return m_threadData;
+        }
 
-            bool Create(const Descriptor& descriptor)
-            {
-                AZ_Assert(this->IsReady() == false, "Allocator was already created!");
-                if (this->IsReady())
-                {
-                    return false;
-                }
+        static void SetThreadPoolData(ThreadPoolData* data)
+        {
+            m_threadData = data;
+        }
 
-                m_desc = descriptor;
+        static AZ_THREAD_LOCAL ThreadPoolData*  m_threadData;
+    };
 
-                if (m_desc.m_minAllocationSize < 8)
-                {
-                    m_desc.m_minAllocationSize = 8;
-                }
-                if (m_desc.m_maxAllocationSize < m_desc.m_minAllocationSize)
-                {
-                    m_desc.m_maxAllocationSize = m_desc.m_minAllocationSize;
-                }
+    template<class Allocator>
+    AZ_THREAD_LOCAL ThreadPoolData* ThreadPoolSchemaHelper<Allocator>::m_threadData = 0;
+}
 
-                if (m_desc.m_allocationRecords && m_desc.m_isMemoryGuards)
-                {
-                    m_desc.m_maxAllocationSize = AZ_SIZE_ALIGN_UP(m_desc.m_maxAllocationSize + AZ_SIZE_ALIGN_UP(sizeof(Debug::GuardValue), m_desc.m_minAllocationSize), m_desc.m_minAllocationSize);
-                }
+namespace AZ::Internal
+{
+    template<class Allocator>
+    class PoolAllocation;
+    constexpr const char* PoolAllocatorHelperTemplateId = "{813b4b74-7381-4c62-b475-3f66efbcb615}";
+    template<class Schema>
+    class PoolAllocatorHelper;
 
-                bool isReady = static_cast<Base*>(this)->Create(m_desc);
+    AZ_TYPE_INFO_TEMPLATE_WITH_NAME_DECL(PoolAllocatorHelper, AZ_TYPE_INFO_CLASS);
 
-                if (isReady)
-                {
-                    isReady = static_cast<Schema*>(this->m_schema)->Create(m_desc);
-                }
+    /*!
+    * Template you can use to create your own thread pool allocators, as you can't inherit from ThreadPoolAllocator.
+    * This is the case because we use tread local storage and we need separate "static" instance for each allocator.
+    */
+    template<class Schema>
+    class PoolAllocatorHelper
+        : public SimpleSchemaAllocator<Schema, /* ProfileAllocations */ true, /* ReportOutOfMemory */ false>
+    {
+    public:
+        using Base = SimpleSchemaAllocator<Schema, true, false>;
+        using pointer = typename Base::pointer;
+        using size_type = typename Base::size_type;
+        using difference_type = typename Base::difference_type;
 
-                return isReady;
-            }
+        AZ_RTTI_NO_TYPE_INFO_DECL();
 
-            void Destroy() override
-            {
-                static_cast<Schema*>(this->m_schema)->Destroy();
-                Base::Destroy();
-            }
-                        
-            AllocatorDebugConfig GetDebugConfig() override
-            {
-                return AllocatorDebugConfig()
-                    .ExcludeFromDebugging(!m_desc.m_allocationRecords)
-                    .StackRecordLevels(m_desc.m_stackRecordLevels)
-                    .MarksUnallocatedMemory(m_desc.m_isMarkUnallocatedMemory)
-                    .UsesMemoryGuards(m_desc.m_isMemoryGuards);
-            }
+        PoolAllocatorHelper()
+        {
+            static_cast<Schema*>(this->m_schema)->Create();
+        }
 
-            //////////////////////////////////////////////////////////////////////////
-            // IAllocatorSchema
-            pointer_type ReAllocate(pointer_type ptr, size_type newSize, size_type newAlignment) override
-            {
-                (void)ptr;
-                (void)newSize;
-                (void)newAlignment;
-                AZ_Assert(false, "Not supported!");
-                return nullptr;
-            }
+        PoolAllocatorHelper(size_t pageSize, size_t minAllocationSize, size_t maxAllocationSize)
+        {
+            static_cast<Schema*>(this->m_schema)->Create(pageSize, minAllocationSize, maxAllocationSize);
+        }
 
-            size_type Resize(pointer_type ptr, size_type newSize) override
-            {
-                (void)ptr;
-                (void)newSize;
-                // \todo return the node size
-                return 0;
-            }
+        ~PoolAllocatorHelper() override = default;
 
-            //////////////////////////////////////////////////////////////////////////
+        //////////////////////////////////////////////////////////////////////////
+        // IAllocator
+        AllocateAddress reallocate(pointer ptr, size_type newSize, size_type newAlignment) override
+        {
+            (void)ptr;
+            (void)newSize;
+            (void)newAlignment;
+            AZ_Assert(false, "Not supported!");
+            return AllocateAddress{};
+        }
 
-            PoolAllocatorHelper& operator=(const PoolAllocatorHelper&) = delete;
+        //////////////////////////////////////////////////////////////////////////
 
-        private:
-            Descriptor m_desc;
-        };
-    }
+        PoolAllocatorHelper& operator=(const PoolAllocatorHelper&) = delete;
+    };
 
+    extern template class PoolAllocatorHelper<PoolSchema>;
+}
+
+namespace AZ
+{
+    // Extern the PoolAllocatorHelper<PoolSchema> AZ::AzTypeInfo template to
+    // to reduce instantations
+    extern template struct AzTypeInfo<Internal::PoolAllocatorHelper<PoolSchema>>;
     /*!
      * Pool allocator
      * Specialized allocation for extremely fast small object memory allocations.
@@ -140,19 +200,23 @@ namespace AZ
         : public Internal::PoolAllocatorHelper<PoolSchema>
     {
     public:
-        AZ_CLASS_ALLOCATOR(PoolAllocator, SystemAllocator, 0);
-        AZ_TYPE_INFO(PoolAllocator, "{D3DC61AF-0949-4BFA-87E0-62FA03A4C025}");
+        AZ_CLASS_ALLOCATOR(PoolAllocator, SystemAllocator);
 
         using Base = Internal::PoolAllocatorHelper<PoolSchema>;
 
-        PoolAllocator(const char* name = "PoolAllocator", const char* desc = "Generic pool allocator for small objects")
-            : Base(name, desc)
-        {
-        }
+        AZ_RTTI(PoolAllocator, "{D3DC61AF-0949-4BFA-87E0-62FA03A4C025}", Base);
+
+        AllocatorDebugConfig GetDebugConfig() override;
     };
 
     template<class Allocator>
     using ThreadPoolBase = Internal::PoolAllocatorHelper<ThreadPoolSchemaHelper<Allocator> >;
+
+    class ThreadPoolAllocator;
+    namespace Internal
+    {
+        extern template class PoolAllocatorHelper<ThreadPoolSchemaHelper<ThreadPoolAllocator>>;
+    }
 
     /*!
      * Thread safe pool allocator. If you want to create your own thread pool heap,
@@ -162,21 +226,12 @@ namespace AZ
         : public ThreadPoolBase<ThreadPoolAllocator>
     {
     public:
-        AZ_CLASS_ALLOCATOR(ThreadPoolAllocator, SystemAllocator, 0);
-        AZ_TYPE_INFO(ThreadPoolAllocator, "{05B4857F-CD06-4942-99FD-CA6A7BAE855A}");
+        AZ_CLASS_ALLOCATOR(ThreadPoolAllocator, SystemAllocator);
 
         using Base = ThreadPoolBase<ThreadPoolAllocator>;
 
-        ThreadPoolAllocator()
-            : Base("PoolAllocatorThreadSafe", "Generic thread safe pool allocator for small objects")
-        {
-        }
+        AZ_RTTI(ThreadPoolAllocator, "{05B4857F-CD06-4942-99FD-CA6A7BAE855A}", Base);
 
-        //////////////////////////////////////////////////////////////////////////
+        AllocatorDebugConfig GetDebugConfig() override;
     };
-}
-
-#endif // AZCORE_POOL_ALLOCATOR_H
-#pragma once
-
-
+} // namespace AZ

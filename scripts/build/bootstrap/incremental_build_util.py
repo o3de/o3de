@@ -6,8 +6,8 @@
 
 import argparse
 import boto3
+from botocore.utils import IMDSFetcher
 import datetime
-import urllib.request, urllib.error, urllib.parse
 import os
 import psutil
 import time
@@ -22,7 +22,7 @@ from botocore.config import Config
 
 DEFAULT_REGION = 'us-west-2'
 DEFAULT_DISK_SIZE = 300
-DEFAULT_DISK_TYPE = 'gp2'
+DEFAULT_DISK_TYPE = 'gp3'
 DEFAULT_TIMEOUT = 300
 MAX_EBS_MOUNTING_ATTEMPT = 3
 LOW_EBS_DISK_SPACE_LIMIT = 10240
@@ -198,8 +198,9 @@ def get_ec2_resource(region):
 
 def get_ec2_instance_id():
     try:
-        instance_id = urllib.request.urlopen('http://169.254.169.254/latest/meta-data/instance-id').read()
-        return instance_id.decode("utf-8")
+        token = IMDSFetcher()._fetch_metadata_token()
+        instance_id = IMDSFetcher()._get_request("/latest/meta-data/instance-id", None, token).text
+        return instance_id
     except Exception as e:
         print(e)
         error('No EC2 metadata! Check if you are running this script on an EC2 instance.')
@@ -207,9 +208,9 @@ def get_ec2_instance_id():
 
 def get_availability_zone():
     try:
-        availability_zone = urllib.request.urlopen(
-            'http://169.254.169.254/latest/meta-data/placement/availability-zone').read()
-        return availability_zone.decode("utf-8")
+        token = IMDSFetcher()._fetch_metadata_token()
+        availability_zone = IMDSFetcher()._get_request("/latest/meta-data/placement/availability-zone", None, token).text
+        return availability_zone
     except Exception as e:
         print(e)
         error('No EC2 metadata! Check if you are running this script on an EC2 instance.')

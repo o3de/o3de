@@ -13,6 +13,8 @@ import pytest
 
 import ly_test_tools._internal.managers.abstract_resource_locator as abstract_resource_locator
 
+from ly_test_tools._internal.exceptions import LyTestToolsFrameworkException
+
 pytestmark = pytest.mark.SUITE_smoke
 
 mock_initial_path = "mock_initial_path"
@@ -43,7 +45,7 @@ class TestFindEngineRoot(object):
         mock_path_exists.return_value = False
         mock_abspath.return_value = mock_engine_root
 
-        with pytest.raises(OSError):
+        with pytest.raises(LyTestToolsFrameworkException):
             abstract_resource_locator._find_engine_root(mock_initial_path)
 
 
@@ -178,12 +180,6 @@ class TestAbstractResourceLocator(object):
         expected_path = os.path.join(mock_expanded_path, 'ly_test_tools', 'devices.ini')
 
         assert abstract_resource_locator.AbstractResourceLocator.devices_file() == expected_path
-
-    def test_PlatformConfigFile_NotImplemented_RaisesNotImplementedError(self):
-        mock_abstract_resource_locator = abstract_resource_locator.AbstractResourceLocator(
-            mock_build_directory, mock_project)
-        with pytest.raises(NotImplementedError):
-            mock_abstract_resource_locator.platform_config_file()
 
     def test_PlatformCache_NotImplemented_RaisesNotImplementedError(self):
         mock_abstract_resource_locator = abstract_resource_locator.AbstractResourceLocator(

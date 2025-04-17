@@ -10,6 +10,7 @@
 
 int main(int argc, char** argv)
 {
+    const AZ::Debug::Trace tracer;
     AzQtComponents::AzQtApplication::InitializeDpiScaling();
 
     MaterialEditor::MaterialEditorApplication app(&argc, &argv);

@@ -15,6 +15,7 @@
 #include <AzCore/std/tuple.h>
 
 #include <EMotionFX/Source/EMotionFXConfig.h>
+#include <EMotionFX/Source/TransformSpace.h>
 #include <EventData.h>
 #include <Frame.h>
 
@@ -76,6 +77,9 @@ namespace EMotionFX::MotionMatching
         //! Find the frame index for the given playtime and motion.
         //! NOTE: This is a slow operation and should not be used by the runtime without visual debugging.
         size_t FindFrameIndex(Motion* motion, float playtime) const;
+
+        //! Save every frame as a row to a .csv file.
+        void SaveAsCsv(const char* filename, ActorInstance* actorInstance, const ETransformSpace transformSpace, bool writePositions, bool writeRotations) const;
 
     private:
         void ImportFrame(Motion* motion, float timeValue, bool mirrored);

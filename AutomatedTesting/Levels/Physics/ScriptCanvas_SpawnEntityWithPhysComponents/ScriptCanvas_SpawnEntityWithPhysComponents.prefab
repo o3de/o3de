@@ -37,10 +37,6 @@
                 "$type": "EditorEntityIconComponent",
                 "Id": 5688118765544765547
             },
-            "Component_[6545738857812235305]": {
-                "$type": "SelectionComponent",
-                "Id": 6545738857812235305
-            },
             "Component_[7247035804068349658]": {
                 "$type": "EditorPrefabComponent",
                 "Id": 7247035804068349658
@@ -73,10 +69,6 @@
                         }
                     }
                 },
-                "Component_[11701138785793981042]": {
-                    "$type": "SelectionComponent",
-                    "Id": 11701138785793981042
-                },
                 "Component_[12260880513256986252]": {
                     "$type": "EditorEntityIconComponent",
                     "Id": 12260880513256986252
@@ -90,11 +82,6 @@
                                 {
                                     "Name": "Entire object"
                                 }
-                            ]
-                        },
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
                             ]
                         }
                     },
@@ -147,6 +134,10 @@
                         }
                     }
                 },
+                "Component_[3741021495640157955]": {
+                    "$type": "EditorStaticRigidBodyComponent",
+                    "Id": 3741021495640157955
+                },
                 "Component_[5681893399601237518]": {
                     "$type": "EditorEntitySortComponent",
                     "Id": 5681893399601237518
@@ -169,10 +160,6 @@
             "Id": "Entity_[3721848391988]",
             "Name": "Spawn_Point",
             "Components": {
-                "Component_[10012298246375265627]": {
-                    "$type": "SelectionComponent",
-                    "Id": 10012298246375265627
-                },
                 "Component_[10841247711583713947]": {
                     "$type": "EditorEntityIconComponent",
                     "Id": 10841247711583713947

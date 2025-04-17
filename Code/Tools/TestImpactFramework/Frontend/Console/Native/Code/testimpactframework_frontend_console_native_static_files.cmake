@@ -7,11 +7,7 @@
 #
 
 set(FILES
-    Source/TestImpactNativeRuntimeConfigurationFactory.h
-    Source/TestImpactNativeRuntimeConfigurationFactory.cpp
-    Source/TestImpactConsoleMain.cpp
-    Source/TestImpactConsoleTestSequenceEventHandler.cpp
-    Source/TestImpactConsoleTestSequenceEventHandler.h
+    Source/TestImpactNativeConsoleMain.cpp
     Source/TestImpactNativeCommandLineOptions.cpp
     Source/TestImpactNativeCommandLineOptions.h
 )

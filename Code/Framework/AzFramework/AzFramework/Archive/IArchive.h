@@ -32,60 +32,24 @@ namespace AZ::IO
     using PathString = AZ::IO::FixedMaxPathString;
     using StackString = AZStd::fixed_string<512>;
 
-    struct MemoryBlock;
-    struct MemoryBlockDeleter
-    {
-        void operator()(const AZStd::intrusive_refcount<AZStd::atomic_uint, MemoryBlockDeleter>* ptr) const;
-        AZ::IAllocator* m_allocator{};
-    };
     struct MemoryBlock
-        : AZStd::intrusive_refcount<AZStd::atomic_uint, MemoryBlockDeleter>
+        : AZStd::intrusive_base
     {
+        AZ_CLASS_ALLOCATOR(MemoryBlock, AZ::SystemAllocator);
         MemoryBlock() = default;
-        MemoryBlock(MemoryBlockDeleter deleter)
-            : AZStd::intrusive_refcount<AZStd::atomic_uint, MemoryBlockDeleter>{ deleter }
-        {}
+
         struct AddressDeleter
         {
-            using DeleteFunc = void(*)(uint8_t*);
-            AddressDeleter()
-                : m_deleteFunc{ nullptr }
-            {}
-            AddressDeleter(DeleteFunc deleteFunc)
-                : m_deleteFunc{ deleteFunc }
-            {}
             void operator()(uint8_t* ptr) const
             {
-                if (m_deleteFunc)
-                {
-                    m_deleteFunc(ptr);
-                }
-                else
-                {
-                    delete[] ptr;
-                }
+                azfree(ptr);
             }
-            DeleteFunc m_deleteFunc;
         };
         using AddressPtr = AZStd::unique_ptr<uint8_t[], AddressDeleter>;
 
         AddressPtr m_address;
         size_t m_size{};
     };
-
-    inline void MemoryBlockDeleter::operator()(const AZStd::intrusive_refcount<AZStd::atomic_uint, MemoryBlockDeleter>* ptr) const
-    {
-        auto address = const_cast<MemoryBlock*>(static_cast<const MemoryBlock*>(ptr));
-        if (m_allocator)
-        {
-            address ->~MemoryBlock();
-            m_allocator->DeAllocate(address);
-        }
-        else
-        {
-            delete address;
-        }
-    }
 
     struct IArchiveFileAccessSink
     {
@@ -193,10 +157,6 @@ namespace AZ::IO
         virtual void* PoolMalloc(size_t size) = 0;
         //! Free pool
         virtual void PoolFree(void* p) = 0;
-
-        // Return an interface to the Memory Block allocated on the File Pool memory.
-        // sUsage indicates for what usage this memory was requested.
-        virtual AZStd::intrusive_ptr<AZ::IO::MemoryBlock> PoolAllocMemoryBlock(size_t nSize, const char* sUsage, size_t nAlign = 1) = 0;
 
         // Arguments:
         virtual ArchiveFileIterator FindFirst(AZStd::string_view pDir, FileSearchLocation searchType = FileSearchLocation::InPak) = 0;

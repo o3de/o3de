@@ -45,8 +45,8 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphNode, AnimGraphAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphNode::Port, AnimGraphAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphNode, AnimGraphAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphNode::Port, AnimGraphAllocator)
 
     AnimGraphNode::AnimGraphNode()
         : AnimGraphObject(nullptr)
@@ -55,17 +55,12 @@ namespace EMotionFX
         , m_disabled(false)
         , m_parentNode(nullptr)
         , m_customData(nullptr)
+        , m_visualizeColor(EMotionFX::AnimGraph::RandomGraphColor())
         , m_visEnabled(false)
         , m_isCollapsed(false)
         , m_posX(0)
         , m_posY(0)
     {
-        const AZ::u32 col = MCore::GenerateColor();
-        m_visualizeColor = AZ::Color(
-            MCore::ExtractRed(col)/255.0f,
-            MCore::ExtractGreen(col)/255.0f,
-            MCore::ExtractBlue(col)/255.0f,
-            1.0f);
     }
 
 
@@ -1548,7 +1543,7 @@ namespace EMotionFX
         // top down update all incoming connections
         for (BlendTreeConnection* connection : m_connections)
         {
-            connection->GetSourceNode()->PerformTopDownUpdate(animGraphInstance, timePassedInSeconds);
+            TopDownUpdateIncomingNode(animGraphInstance, connection->GetSourceNode(), timePassedInSeconds);
         }
     }
 
@@ -1611,6 +1606,7 @@ namespace EMotionFX
     // update a specific node
     void AnimGraphNode::UpdateIncomingNode(AnimGraphInstance* animGraphInstance, AnimGraphNode* node, float timePassedInSeconds)
     {
+        EMFX_ANIMGRAPH_PROFILE_INCOMING_NODE(animGraphInstance, ProfileMode::Update);
         if (!node)
         {
             return;
@@ -1622,6 +1618,7 @@ namespace EMotionFX
     // update all incoming nodes
     void AnimGraphNode::UpdateAllIncomingNodes(AnimGraphInstance* animGraphInstance, float timePassedInSeconds)
     {
+        EMFX_ANIMGRAPH_PROFILE_INCOMING_NODE(animGraphInstance, ProfileMode::Update);
         for (const BlendTreeConnection* connection : m_connections)
         {
             AnimGraphNode* sourceNode = connection->GetSourceNode();
@@ -1649,6 +1646,8 @@ namespace EMotionFX
     // output a node
     void AnimGraphNode::OutputIncomingNode(AnimGraphInstance* animGraphInstance, AnimGraphNode* nodeToOutput)
     {
+        EMFX_ANIMGRAPH_PROFILE_INCOMING_NODE(animGraphInstance, ProfileMode::Output);
+
         if (nodeToOutput == nullptr)
         {
             return;
@@ -1684,7 +1683,7 @@ namespace EMotionFX
             AnimGraphNode* sourceNode = connection->GetSourceNode();
 
             // update the node
-            sourceNode->PerformPostUpdate(animGraphInstance, timePassedInSeconds);
+            PostUpdateIncomingNode(animGraphInstance, sourceNode, timePassedInSeconds);
 
             // If the input node has no pose, we can skip to the next connection.
             if (!sourceNode->GetHasOutputPose())
@@ -1743,6 +1742,28 @@ namespace EMotionFX
                 data->ZeroTrajectoryDelta();
             }
         }
+    }
+
+    void AnimGraphNode::PostUpdateIncomingNode(AnimGraphInstance* animGraphInstance, AnimGraphNode* node, float timePassedInSeconds)
+    {
+        EMFX_ANIMGRAPH_PROFILE_INCOMING_NODE(animGraphInstance, ProfileMode::PostUpdate);
+        if (!node)
+        {
+            return;
+        }
+        node->PerformPostUpdate(animGraphInstance, timePassedInSeconds);
+        MarkConnectionVisited(node);
+    }
+
+    void AnimGraphNode::TopDownUpdateIncomingNode(AnimGraphInstance* animGraphInstance, AnimGraphNode* node, float timePassedInSeconds)
+    {
+        EMFX_ANIMGRAPH_PROFILE_INCOMING_NODE(animGraphInstance, ProfileMode::TopDown);
+        if (!node)
+        {
+            return;
+        }
+        node->PerformTopDownUpdate(animGraphInstance, timePassedInSeconds);
+        MarkConnectionVisited(node);
     }
 
     // recursively set object data flag
@@ -2109,6 +2130,8 @@ namespace EMotionFX
     // perform top down update
     void AnimGraphNode::PerformTopDownUpdate(AnimGraphInstance* animGraphInstance, float timePassedInSeconds)
     {
+        EMFX_ANIMGRAPH_PROFILE_NODE(animGraphInstance, ProfileMode::TopDown);
+
         // check if we already did update
         if (animGraphInstance->GetIsTopDownUpdateReady(m_objectIndex))
         {
@@ -2125,6 +2148,8 @@ namespace EMotionFX
     // perform post update
     void AnimGraphNode::PerformPostUpdate(AnimGraphInstance* animGraphInstance, float timePassedInSeconds)
     {
+        EMFX_ANIMGRAPH_PROFILE_NODE(animGraphInstance, ProfileMode::PostUpdate);
+
         // check if we already did update
         if (animGraphInstance->GetIsPostUpdateReady(m_objectIndex))
         {
@@ -2145,6 +2170,8 @@ namespace EMotionFX
     // perform an update
     void AnimGraphNode::PerformUpdate(AnimGraphInstance* animGraphInstance, float timePassedInSeconds)
     {
+        EMFX_ANIMGRAPH_PROFILE_NODE(animGraphInstance, ProfileMode::Update);
+
         // check if we already did update
         if (animGraphInstance->GetIsUpdateReady(m_objectIndex))
         {
@@ -2166,6 +2193,8 @@ namespace EMotionFX
     //
     void AnimGraphNode::PerformOutput(AnimGraphInstance* animGraphInstance)
     {
+        EMFX_ANIMGRAPH_PROFILE_NODE(animGraphInstance, ProfileMode::Output);
+
         // check if we already did output
         if (animGraphInstance->GetIsOutputReady(m_objectIndex))
         {
@@ -2475,7 +2504,7 @@ namespace EMotionFX
         const unsigned int version = classElement.GetVersion();
         if (version < 2)
         {
-            int vizColorIndex = classElement.FindElement(AZ_CRC("visualizeColor", 0x6d52f421));
+            int vizColorIndex = classElement.FindElement(AZ_CRC_CE("visualizeColor"));
             if (vizColorIndex > 0)
             {
                 AZ::u32 oldColor;
@@ -2485,10 +2514,11 @@ namespace EMotionFX
                 {
                     return false;
                 }
+
                 const AZ::Color convertedColor(
-                    MCore::ExtractRed(oldColor)/255.0f,
-                    MCore::ExtractGreen(oldColor)/255.0f,
-                    MCore::ExtractBlue(oldColor)/255.0f,
+                    ((oldColor >> 16) & 0xff)/255.0f,
+                    ((oldColor >> 8)  & 0xff)/255.0f,
+                    (oldColor & 0xff)/255.0f,
                     1.0f
                 );
                 classElement.RemoveElement(vizColorIndex);
@@ -2533,8 +2563,57 @@ namespace EMotionFX
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
             ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
             ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-            ->DataElement(AZ_CRC("AnimGraphNodeName", 0x15120d7d), &AnimGraphNode::m_name, "Name", "Name of the node")
-            ->Attribute(AZ_CRC("AnimGraph", 0x0d53d4b3), &AnimGraphNode::GetAnimGraph)
+            ->DataElement(AZ_CRC_CE("AnimGraphNodeName"), &AnimGraphNode::m_name, "Name", "Name of the node")
+            ->Attribute(AZ_CRC_CE("AnimGraph"), &AnimGraphNode::GetAnimGraph)
         ;
     }
+
+
+#if defined(EMFX_ANIMGRAPH_PROFILER_ENABLED)
+    void AnimGraphNode::ClearProfileTimers(AnimGraphInstance* animGraphInstance)
+    {
+        AnimGraphNodeData* uniqueData = FindOrCreateUniqueNodeData(animGraphInstance);
+        uniqueData->ClearUpdateTimes();
+    }
+
+    AZStd::chrono::microseconds AnimGraphNode::GetTotalUpdateTime(AnimGraphInstance* animGraphInstance) const
+    {
+        AnimGraphNodeData* uniqueData = FindOrCreateUniqueNodeData(animGraphInstance);
+        return AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(uniqueData->GetTotalUpdateTime());
+    }
+
+    AZStd::chrono::microseconds AnimGraphNode::GetUpdateTime(AnimGraphInstance* animGraphInstance) const
+    {
+        AnimGraphNodeData* uniqueData = FindOrCreateUniqueNodeData(animGraphInstance);
+        return AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(uniqueData->GetTotalUpdateTime() - uniqueData->GetInputNodesUpdateTime());
+    }
+
+    AnimGraphNode::ProfileSection::ProfileSection(AnimGraphNode* node, AnimGraphInstance* animGraphInstance, ProfileMode mode, bool incomingNode)
+        : m_node(node)
+        , m_animGraphInstance(animGraphInstance)
+        , m_profileMode(mode)
+        , m_isIncomingNode(incomingNode)
+        , m_startPoint(AZStd::chrono::system_clock::now())
+    {
+    }
+
+    AnimGraphNode::ProfileSection::~ProfileSection()
+    {
+        if (m_node->GetProfileMode() & static_cast<AZ::u8>(m_profileMode))
+        {
+            AZStd::chrono::nanoseconds duration = AZStd::chrono::system_clock::now() - m_startPoint;
+            if (AnimGraphNodeData* uniqueData = m_node->FindOrCreateUniqueNodeData(m_animGraphInstance))
+            {
+                if (m_isIncomingNode)
+                {
+                    uniqueData->mInputNodesUpdateTime += duration;
+                }
+                else
+                {
+                    uniqueData->mTotalUpdateTime += duration;
+                }
+            }
+        }
+    }
+#endif
 } // namespace EMotionFX

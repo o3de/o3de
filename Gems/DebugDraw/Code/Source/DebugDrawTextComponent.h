@@ -22,7 +22,7 @@ namespace DebugDraw
     {
     public:
 
-        AZ_CLASS_ALLOCATOR(DebugDrawTextElement, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DebugDrawTextElement, AZ::SystemAllocator);
         AZ_TYPE_INFO(DebugDrawTextElement, "{A49413DB-0AFC-4D38-BD4B-EDC8FA83B640}");
         static void Reflect(AZ::ReflectContext* context);
 
@@ -34,12 +34,17 @@ namespace DebugDraw
 
         DrawMode m_drawMode = DrawMode::OnScreen;
         float m_duration = 0.0f;
+        float m_size = 1.4f;
         AZStd::string m_text = "";
+        bool m_centered = false;
         AZ::ScriptTimePoint m_activateTime;
         AZ::Color m_color = AZ::Color(1.0f, 1.0f, 1.0f, 1.0f);
         AZ::EntityId m_targetEntityId;
         AZ::Vector3 m_worldLocation = AZ::Vector3::CreateZero();
         AZ::ComponentId m_owningEditorComponent = AZ::InvalidComponentId;
+        float m_fontScale = 1.0f; // Scale factor to default render font
+        bool m_useOnScreenCoordinates = false; // Whether to use m_worldLocation.X and m_worldLocation.Y as OnScreen 2d Coordinates
+        bool m_bCenter = false; // If true, centers drawn text relative to x coordinate
     };
 
 

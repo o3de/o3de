@@ -22,7 +22,7 @@
  // Undo this
 AZ_PUSH_DISABLE_WARNING(4251 4800 4244, "-Wunknown-warning-option")
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
-
+#include <ScriptCanvas/Asset/SubgraphInterfaceAsset.h>
 #include <ScriptCanvas/Components/EditorGraph.h>
 #include <ScriptCanvas/Components/EditorGraphVariableManagerComponent.h>
 AZ_POP_DISABLE_WARNING
@@ -47,14 +47,14 @@ namespace ScriptCanvasEditor
 
     void EditorAssetSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("ScriptCanvasEditorAssetService", 0x4a1c043d));
+        provided.push_back(AZ_CRC_CE("ScriptCanvasEditorAssetService"));
     }
 
     void EditorAssetSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("AssetDatabaseService", 0x3abf5601));
-        required.push_back(AZ_CRC("AssetCatalogService", 0xc68ffc57));
-        required.push_back(AZ_CRC("ScriptCanvasService", 0x41fd58f3));
+        required.push_back(AZ_CRC_CE("AssetDatabaseService"));
+        required.push_back(AZ_CRC_CE("AssetCatalogService"));
+        required.push_back(AZ_CRC_CE("ScriptCanvasService"));
     }
 
     void EditorAssetSystemComponent::Init()

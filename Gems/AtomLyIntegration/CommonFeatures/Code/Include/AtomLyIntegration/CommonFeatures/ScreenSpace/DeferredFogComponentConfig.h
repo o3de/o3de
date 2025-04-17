@@ -36,6 +36,7 @@ namespace AZ
             friend class EditorDeferredFogComponent;
 
         public:
+            AZ_CLASS_ALLOCATOR(DeferredFogComponentConfig, SystemAllocator)
             AZ_RTTI(AZ::Render::DeferredFogComponentConfig, "{3C2671FE-6027-4A1E-907B-F7E2B1B64F7B}", AZ::ComponentConfig );
 
             static void Reflect(ReflectContext* context);
@@ -43,32 +44,13 @@ namespace AZ
             void CopySettingsFrom(DeferredFogSettingsInterface* settings);
             void CopySettingsTo(DeferredFogSettingsInterface* settings);
 
-            // DeferredFogComponentConfigInterface overrides...
-            void SetEnabled(bool value)
+            bool SupportsFogDensity()
             {
-                m_enabled = value;
+                return m_fogMode == FogMode::Exponential || m_fogMode == FogMode::ExponentialSquared;
             }
-            bool GetIsEnabled()
+            bool SupportsFogEnd()
             {
-                return m_enabled;
-            }
-
-            void SetUseNoiseTextureShaderOption(bool value)
-            {
-                m_useNoiseTextureShaderOption = value;
-            }
-            bool GetUseNoiseTextureShaderOption()
-            {
-                return m_useNoiseTextureShaderOption;
-            }
-
-            void SetEnableFogLayerShaderOption(bool value)
-            {
-                m_enableFogLayerShaderOption = value;
-            }
-            bool GetEnableFogLayerShaderOption()
-            {
-                return m_enableFogLayerShaderOption;
+                return m_fogMode == FogMode::Linear;
             }
 
             // Generate Get / Set methods
@@ -90,9 +72,6 @@ namespace AZ
 #include <Atom/Feature/ScreenSpace/DeferredFogParams.inl>
 #include <Atom/Feature/ParamMacros/EndParams.inl>
 
-            bool m_enabled = true;
-            bool m_useNoiseTextureShaderOption = false;
-            bool m_enableFogLayerShaderOption = false;
         };
 
     }

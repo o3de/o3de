@@ -7,7 +7,9 @@
 #
 
 set(FILES
-    Mocks/Terrain/MockTerrainLayerSpawner.h
-    Mocks/Terrain/MockTerrainAreaSurfaceRequestBus.h
     Mocks/Terrain/MockTerrain.h
+    Mocks/Terrain/MockTerrainAreaSurfaceRequestBus.h
+    Mocks/Terrain/MockTerrainLayerSpawner.h
+    Mocks/Terrain/MockTerrainMacroMaterialBus.h
+    Mocks/Terrain/MockTerrainRPISystemComponent.h
 )

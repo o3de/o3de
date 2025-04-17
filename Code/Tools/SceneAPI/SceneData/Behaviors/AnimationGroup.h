@@ -39,14 +39,17 @@ namespace AZ
                 // AssetImportRequest
                 Events::ProcessingResult UpdateManifest(Containers::Scene& scene, ManifestAction action,
                     RequestingApplication requester) override;
-                
+                void GetPolicyName(AZStd::string& result) const override
+                {
+                    result = "AnimationGroup";
+                }
             private:
                 Events::ProcessingResult BuildDefault(Containers::Scene& scene) const;
                 Events::ProcessingResult UpdateAnimationGroups(Containers::Scene& scene) const;
 
                 bool SceneHasAnimationGroup(const Containers::Scene& scene) const;
 
-                static const int s_animationsPreferredTabOrder;
+                static constexpr int s_animationsPreferredTabOrder{ 2 };
             };
         } // namespace Behaviors
     } // namespace SceneAPI

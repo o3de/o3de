@@ -36,11 +36,6 @@ namespace AzNetworking
         return m_serializerValid;
     }
 
-    bool NetworkOutputSerializer::Serialize(char& value, [[maybe_unused]] const char* name, char minValue, char maxValue)
-    {
-        return SerializeBoundedValue<char>(minValue, maxValue, value);
-    }
-
     bool NetworkOutputSerializer::Serialize(int8_t& value, [[maybe_unused]] const char* name, int8_t minValue, int8_t maxValue)
     {
         return SerializeBoundedValue<int8_t>(minValue, maxValue, value);
@@ -56,9 +51,14 @@ namespace AzNetworking
         return SerializeBoundedValue<int32_t>(minValue, maxValue, value);
     }
 
-    bool NetworkOutputSerializer::Serialize(int64_t& value, [[maybe_unused]] const char* name, int64_t minValue, int64_t maxValue)
+    bool NetworkOutputSerializer::Serialize(long& value, [[maybe_unused]] const char* name, long minValue, long maxValue)
     {
-        return SerializeBoundedValue<int64_t>(minValue, maxValue, value);
+        return SerializeBoundedValue<long>(minValue, maxValue, value);
+    }
+
+    bool NetworkOutputSerializer::Serialize(AZ::s64& value, [[maybe_unused]] const char* name, AZ::s64 minValue, AZ::s64 maxValue)
+    {
+        return SerializeBoundedValue<AZ::s64>(minValue, maxValue, value);
     }
 
     bool NetworkOutputSerializer::Serialize(uint8_t& value, [[maybe_unused]] const char* name, uint8_t minValue, uint8_t maxValue)
@@ -76,9 +76,14 @@ namespace AzNetworking
         return SerializeBoundedValue<uint32_t>(minValue, maxValue, value);
     }
 
-    bool NetworkOutputSerializer::Serialize(uint64_t& value, [[maybe_unused]] const char* name, uint64_t minValue, uint64_t maxValue)
+    bool NetworkOutputSerializer::Serialize(unsigned long& value, [[maybe_unused]] const char* name, unsigned long minValue, unsigned long maxValue)
     {
-        return SerializeBoundedValue<uint64_t>(minValue, maxValue, value);
+        return SerializeBoundedValue<unsigned long>(minValue, maxValue, value);
+    }
+
+    bool NetworkOutputSerializer::Serialize(AZ::u64& value, [[maybe_unused]] const char* name, AZ::u64 minValue, AZ::u64 maxValue)
+    {
+        return SerializeBoundedValue<AZ::u64>(minValue, maxValue, value);
     }
 
     bool NetworkOutputSerializer::Serialize(float& value, [[maybe_unused]] const char* name, [[maybe_unused]] float minValue, [[maybe_unused]] float maxValue)
@@ -132,22 +137,22 @@ namespace AzNetworking
     template <typename ORIGINAL_TYPE>
     bool NetworkOutputSerializer::SerializeBoundedValue(ORIGINAL_TYPE minValue, ORIGINAL_TYPE maxValue, ORIGINAL_TYPE& outValue)
     {
-        const uint64_t valueRange = static_cast<uint64_t>(maxValue - minValue);
+        const uint64_t valueRange = static_cast<uint64_t>(maxValue) - static_cast<uint64_t>(minValue);
         if (valueRange <= AZStd::numeric_limits<uint8_t>::max())
         {
-            outValue = static_cast<ORIGINAL_TYPE>(SerializeBoundedValueHelper<uint8_t>(static_cast<uint8_t>(maxValue - minValue))) + minValue;
+            outValue = static_cast<ORIGINAL_TYPE>(SerializeBoundedValueHelper<uint8_t>(static_cast<uint8_t>(valueRange))) + minValue;
         }
         else if (valueRange <= AZStd::numeric_limits<uint16_t>::max())
         {
-            outValue = static_cast<ORIGINAL_TYPE>(SerializeBoundedValueHelper<uint16_t>(static_cast<uint16_t>(maxValue - minValue))) + minValue;
+            outValue = static_cast<ORIGINAL_TYPE>(SerializeBoundedValueHelper<uint16_t>(static_cast<uint16_t>(valueRange))) + minValue;
         }
         else if (valueRange <= AZStd::numeric_limits<uint32_t>::max())
         {
-            outValue = static_cast<ORIGINAL_TYPE>(SerializeBoundedValueHelper<uint32_t>(static_cast<uint32_t>(maxValue - minValue))) + minValue;
+            outValue = static_cast<ORIGINAL_TYPE>(SerializeBoundedValueHelper<uint32_t>(static_cast<uint32_t>(valueRange))) + minValue;
         }
         else
         {
-            outValue = static_cast<ORIGINAL_TYPE>(SerializeBoundedValueHelper<uint64_t>(static_cast<uint64_t>(maxValue - minValue))) + minValue;
+            outValue = static_cast<ORIGINAL_TYPE>(SerializeBoundedValueHelper<uint64_t>(static_cast<uint64_t>(valueRange))) + minValue;
         }
         return m_serializerValid;
     }

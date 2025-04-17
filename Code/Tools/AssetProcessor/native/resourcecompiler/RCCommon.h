@@ -10,6 +10,7 @@
 
 #include <AzCore/std/functional.h>
 #include <QString>
+#include <AssetManager/SourceAssetReference.h>
 
 namespace AssetProcessor
 {
@@ -18,22 +19,19 @@ namespace AssetProcessor
     {
     public:
         QueueElementID() = default;
-        
-        ///! note that inputAssetName is a database name, not a relative path.
-        QueueElementID(QString inputAssetName, QString platform, QString jobDescriptor);
+        QueueElementID(SourceAssetReference sourceAssetReference, QString platform, QString jobDescriptor);
 
-        
-        QString GetInputAssetName() const; ///< This is the database name, with output prefix.
+        SourceAssetReference GetSourceAssetReference() const;
         QString GetPlatform() const;
         QString GetJobDescriptor() const;
-        void SetInputAssetName(QString inputAssetName);
+        void SetSourceAssetReference(SourceAssetReference sourceAssetReference);
         void SetPlatform(QString platform);
         void SetJobDescriptor(QString jobDescriptor);
         bool operator==(const QueueElementID& other) const;
         bool operator<(const QueueElementID& other) const;
 
     protected:
-        QString m_inputAssetName;
+        SourceAssetReference m_sourceAssetReference;
         QString m_platform;
         QString m_jobDescriptor;
     };

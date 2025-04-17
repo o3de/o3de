@@ -11,6 +11,8 @@
 #include "EditorPreferencesPageViewportGeneral.h"
 #include "EditorViewportSettings.h"
 
+#include <AzCore/Serialization/EditContext.h>
+
 #include <AzQtComponents/Components/StyleManager.h>
 
 // Editor
@@ -23,13 +25,14 @@ void CEditorPreferencesPage_ViewportGeneral::Reflect(AZ::SerializeContext& seria
         ->Version(1)
         ->Field("Sync2DViews", &General::m_sync2DViews)
         ->Field("DefaultFOV", &General::m_defaultFOV)
+        ->Field("DefaultNearPlane", &General::m_defaultNearPlane)
+        ->Field("DefaultFarPlane", &General::m_defaultFarPlane)
         ->Field("DefaultAspectRatio", &General::m_defaultAspectRatio)
         ->Field("EnableContextMenu", &General::m_contextMenuEnabled)
         ->Field("StickySelect", &General::m_stickySelectEnabled);
 
     serialize.Class<Display>()
         ->Version(1)
-        ->Field("ShowSafeFrame", &Display::m_showSafeFrame)
         ->Field("HighlightSelGeom", &Display::m_highlightSelGeom)
         ->Field("HighlightSelVegetation", &Display::m_highlightSelVegetation)
         ->Field("HighlightOnMouseOver", &Display::m_highlightOnMouseOver)
@@ -82,9 +85,10 @@ void CEditorPreferencesPage_ViewportGeneral::Reflect(AZ::SerializeContext& seria
         editContext->Class<General>("General Viewport Settings", "")
             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &General::m_sync2DViews, "Synchronize 2D Viewports", "Synchronize 2D Viewports")
             ->DataElement(AZ::Edit::UIHandlers::SpinBox, &General::m_defaultFOV, "Perspective View FOV", "Perspective View FOV")
-            ->Attribute("Multiplier", RAD2DEG(1))
             ->Attribute(AZ::Edit::Attributes::Min, 1.0f)
             ->Attribute(AZ::Edit::Attributes::Max, 120.0f)
+            ->DataElement(AZ::Edit::UIHandlers::SpinBox, &General::m_defaultNearPlane, "Perspective Near Plane", "Perspective Near Plane")
+            ->DataElement(AZ::Edit::UIHandlers::SpinBox, &General::m_defaultFarPlane, "Perspective Far Plane", "Perspective Far Plane")
             ->DataElement(
                 AZ::Edit::UIHandlers::SpinBox, &General::m_defaultAspectRatio, "Perspective View Aspect Ratio",
                 "Perspective View Aspect Ratio")
@@ -94,8 +98,6 @@ void CEditorPreferencesPage_ViewportGeneral::Reflect(AZ::SerializeContext& seria
             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &General::m_stickySelectEnabled, "Enable Sticky Select", "Enable Sticky Select");
 
         editContext->Class<Display>("Viewport Display Settings", "")
-            ->DataElement(
-                AZ::Edit::UIHandlers::CheckBox, &Display::m_showSafeFrame, "Show 4:3 Aspect Ratio Frame", "Show 4:3 Aspect Ratio Frame")
             ->DataElement(
                 AZ::Edit::UIHandlers::CheckBox, &Display::m_highlightSelGeom, "Highlight Selected Geometry", "Highlight Selected Geometry")
             ->DataElement(
@@ -159,7 +161,7 @@ void CEditorPreferencesPage_ViewportGeneral::Reflect(AZ::SerializeContext& seria
 
         editContext->Class<CEditorPreferencesPage_ViewportGeneral>("General Viewport Preferences", "General Viewport Preferences")
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-            ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC("PropertyVisibility_ShowChildrenOnly", 0xef428f20))
+            ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC_CE("PropertyVisibility_ShowChildrenOnly"))
             ->DataElement(
                 AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_ViewportGeneral::m_general, "General Viewport Settings",
                 "General Viewport Settings")
@@ -214,12 +216,14 @@ void CEditorPreferencesPage_ViewportGeneral::OnApply()
     CDisplaySettings* ds = GetIEditor()->GetDisplaySettings();
 
     gSettings.viewports.fDefaultAspectRatio = m_general.m_defaultAspectRatio;
-    gSettings.viewports.fDefaultFov = m_general.m_defaultFOV;
     gSettings.viewports.bEnableContextMenu = m_general.m_contextMenuEnabled;
     gSettings.viewports.bSync2DViews = m_general.m_sync2DViews;
     SandboxEditor::SetStickySelectEnabled(m_general.m_stickySelectEnabled);
 
-    gSettings.viewports.bShowSafeFrame = m_display.m_showSafeFrame;
+    SandboxEditor::SetCameraDefaultFovDegrees(m_general.m_defaultFOV);
+    SandboxEditor::SetCameraDefaultNearPlaneDistance(m_general.m_defaultNearPlane);
+    SandboxEditor::SetCameraDefaultFarPlaneDistance(m_general.m_defaultFarPlane);
+
     gSettings.viewports.bHighlightSelectedGeometry = m_display.m_highlightSelGeom;
     gSettings.viewports.bHighlightSelectedVegetation = m_display.m_highlightSelVegetation;
     gSettings.viewports.bHighlightMouseOverGeometry = m_display.m_highlightOnMouseOver;
@@ -275,12 +279,14 @@ void CEditorPreferencesPage_ViewportGeneral::InitializeSettings()
     CDisplaySettings* ds = GetIEditor()->GetDisplaySettings();
 
     m_general.m_defaultAspectRatio = gSettings.viewports.fDefaultAspectRatio;
-    m_general.m_defaultFOV = gSettings.viewports.fDefaultFov;
+    m_general.m_defaultNearPlane = SandboxEditor::CameraDefaultNearPlaneDistance();
+    m_general.m_defaultFarPlane = SandboxEditor::CameraDefaultFarPlaneDistance();
+    m_general.m_defaultFOV = SandboxEditor::CameraDefaultFovDegrees();
+
     m_general.m_contextMenuEnabled = gSettings.viewports.bEnableContextMenu;
     m_general.m_sync2DViews = gSettings.viewports.bSync2DViews;
     m_general.m_stickySelectEnabled = SandboxEditor::StickySelectEnabled();
 
-    m_display.m_showSafeFrame = gSettings.viewports.bShowSafeFrame;
     m_display.m_highlightSelGeom = gSettings.viewports.bHighlightSelectedGeometry;
     m_display.m_highlightSelVegetation = gSettings.viewports.bHighlightSelectedVegetation;
     m_display.m_highlightOnMouseOver = gSettings.viewports.bHighlightMouseOverGeometry;

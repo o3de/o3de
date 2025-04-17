@@ -20,7 +20,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(DiffuseProbeGridModule, "{72F3860A-0EA6-4C61-9EE0-DF0D690FD53B}", AZ::Module);
-            AZ_CLASS_ALLOCATOR(DiffuseProbeGridModule, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DiffuseProbeGridModule, AZ::SystemAllocator);
 
             DiffuseProbeGridModule();
 
@@ -30,4 +30,8 @@ namespace AZ
     }
 }
 
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME), AZ::Render::DiffuseProbeGridModule)
+#else
 AZ_DECLARE_MODULE_CLASS(Gem_DiffuseProbeGrid, AZ::Render::DiffuseProbeGridModule)
+#endif

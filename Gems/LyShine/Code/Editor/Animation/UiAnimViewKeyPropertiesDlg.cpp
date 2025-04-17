@@ -25,7 +25,7 @@
 void CUiAnimViewKeyUIControls::OnInternalVariableChange(IVariable* pVar)
 {
     CUiAnimViewSequence* pSequence = nullptr;
-    EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
 
     CUiAnimViewSequenceNotificationContext context(pSequence);
     CUiAnimViewKeyBundle keys = pSequence->GetSelectedKeys();
@@ -39,7 +39,7 @@ void CUiAnimViewKeyUIControls::OnInternalVariableChange(IVariable* pVar)
         if (UiAnimUndo::IsRecording())
         {
             CUiAnimViewSequence* pSequence2 = nullptr;
-            EBUS_EVENT_RESULT(pSequence2, UiEditorAnimationBus, GetCurrentSequence);
+            UiEditorAnimationBus::BroadcastResult(pSequence2, &UiEditorAnimationBus::Events::GetCurrentSequence);
             pSequence2->StoreUndoForTracksWithSelectedKeys();
         }
         else
@@ -50,7 +50,7 @@ void CUiAnimViewKeyUIControls::OnInternalVariableChange(IVariable* pVar)
     else
     {
         CUiAnimViewSequence* pSequence2 = nullptr;
-        EBUS_EVENT_RESULT(pSequence2, UiEditorAnimationBus, GetCurrentSequence);
+        UiEditorAnimationBus::BroadcastResult(pSequence2, &UiEditorAnimationBus::Events::GetCurrentSequence);
         pSequence2->StoreUndoForTracksWithSelectedKeys();
     }
 
@@ -73,6 +73,7 @@ CUiAnimViewKeyPropertiesDlg::CUiAnimViewKeyPropertiesDlg(QWidget* hParentWnd)
     m_wndTrackProps = new CUiAnimViewTrackPropsDlg(this);
     l->addWidget(m_wndTrackProps);
     m_wndProps = new ReflectedPropertyControl(this);
+    m_wndProps->setMinimumSize(50, 0);
     m_wndProps->Setup();
     m_wndProps->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
     l->addWidget(m_wndProps);
@@ -279,7 +280,7 @@ CUiAnimViewTrackPropsDlg::~CUiAnimViewTrackPropsDlg()
 void CUiAnimViewTrackPropsDlg::OnSequenceChanged()
 {
     CUiAnimViewSequence* pSequence = nullptr;
-    EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
 
     if (pSequence)
     {
@@ -339,7 +340,7 @@ void CUiAnimViewTrackPropsDlg::OnUpdateTime()
 void CUiAnimViewTrackPropsDlg::SetCurrKey(CUiAnimViewKeyHandle& keyHandle)
 {
     CUiAnimViewSequence* pSequence = nullptr;
-    EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
 
     if (keyHandle.IsValid())
     {

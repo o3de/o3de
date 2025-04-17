@@ -41,7 +41,7 @@ namespace ScriptCanvasEditor
         typedef AZStd::unordered_set< AZ::TypeId > DataTypeSet;
 
     public:        
-        AZ_CLASS_ALLOCATOR(ContainerWizard, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ContainerWizard, AZ::SystemAllocator);
 
         ContainerWizard(QWidget* parent = nullptr);
         ~ContainerWizard() override;

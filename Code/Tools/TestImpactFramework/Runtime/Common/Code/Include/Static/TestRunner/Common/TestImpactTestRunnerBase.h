@@ -21,6 +21,7 @@ namespace TestImpact
     public:
         using TestJobRunner = TestJobRunner<AdditionalInfo, Payload>;
         using TestJobRunner::TestJobRunner;
+        using ResultType = AZStd::pair<ProcessSchedulerResult, AZStd::vector<typename TestJobRunner::Job>>;
 
         //! Executes the specified test run jobs according to the specified job exception policies.
         //! @param jobInfos The test run jobs to execute.
@@ -30,50 +31,63 @@ namespace TestImpact
         //! TestJobExceptionPolicy::OnFailedToExecute to throw on test failures).
         //! @param runTimeout The maximum duration a run may be in-flight for before being forcefully terminated.
         //! @param runnerTimeout The maximum duration the runner may run before forcefully terminating all in-flight runs.
-        //! @param clientCallback The optional client callback to be called whenever a run job changes state.
-        //! @param stdContentCallback 
         //! @return The result of the run sequence and the run jobs with their associated test run payloads.
-        AZStd::pair<ProcessSchedulerResult, AZStd::vector<TestJobRunner::Job>> RunTests(
-            const AZStd::vector<TestJobRunner::JobInfo>& jobInfos,
+        [[nodiscard]] virtual ResultType RunTests(
+            const typename TestJobRunner::JobInfos& jobInfos,
             StdOutputRouting stdOutRouting,
             StdErrorRouting stdErrRouting,
             AZStd::optional<AZStd::chrono::milliseconds> runTimeout,
-            AZStd::optional<AZStd::chrono::milliseconds> runnerTimeout,
-            AZStd::optional<TestJobRunner::JobCallback> clientCallback,
-            AZStd::optional<TestJobRunner::StdContentCallback> stdContentCallback)
-        {
-            const auto payloadGenerator = [](const typename TestJobRunner::JobDataMap& jobDataMap)
-            {
-                typename TestJobRunner::PayloadMap runs;
-                for (const auto& [jobId, jobData] : jobDataMap)
-                {
-                    const auto& [meta, jobInfo] = jobData;
-                    if (meta.m_result == JobResult::ExecutedWithSuccess || meta.m_result == JobResult::ExecutedWithFailure)
-                    {
-                        if (auto outcome = PayloadFactory<AdditionalInfo, Payload>(*jobInfo, meta);
-                            outcome.IsSuccess())
-                        {
-                            runs[jobId] = AZStd::move(outcome.TakeValue());
-                        }
-                        else
-                        {
-                            runs[jobId] = AZStd::nullopt;
-                            AZ_Printf("RunTests", outcome.GetError().c_str());
-                        }
-                    }
-                }
+            AZStd::optional<AZStd::chrono::milliseconds> runnerTimeout);
 
-                return runs;
-            };
+    protected:
+        //! Default implementation of payload producer for test runners.
+        virtual typename TestJobRunner::PayloadMap PayloadMapProducer(const typename TestJobRunner::JobDataMap& jobDataMap);
 
-            return this->m_jobRunner.Execute(
-                jobInfos,
-                payloadGenerator,
-                stdOutRouting,
-                stdErrRouting,
-                runTimeout,
-                runnerTimeout,
-                clientCallback, stdContentCallback);
-        }
+        //! Extracts the payload outcome for a given job payload.
+        virtual typename TestJobRunner::JobPayloadOutcome PayloadExtractor(
+            const typename TestJobRunner::JobInfo& jobData, const JobMeta& jobMeta) = 0;
     };
+
+    template<typename AdditionalInfo, typename Payload>
+    typename TestRunnerBase<AdditionalInfo, Payload>::ResultType
+    TestRunnerBase<AdditionalInfo, Payload>::RunTests(
+        const typename TestJobRunner::JobInfos& jobInfos,
+        StdOutputRouting stdOutRouting,
+        StdErrorRouting stdErrRouting,
+        AZStd::optional<AZStd::chrono::milliseconds> runTimeout,
+        AZStd::optional<AZStd::chrono::milliseconds> runnerTimeout)
+    {
+        const auto payloadGenerator = [this](const typename TestJobRunner::JobDataMap& jobDataMap)
+        {
+            return PayloadMapProducer(jobDataMap);
+        };
+
+        return this->m_jobRunner.Execute(
+            jobInfos, payloadGenerator, stdOutRouting, stdErrRouting, runTimeout, runnerTimeout);
+    }
+
+    template<typename AdditionalInfo, typename Payload>
+    typename TestJobRunner<AdditionalInfo, Payload>::PayloadMap TestRunnerBase<AdditionalInfo, Payload>::PayloadMapProducer(
+        const typename TestJobRunner::JobDataMap& jobDataMap)
+    {
+        typename TestJobRunner::PayloadMap runs;
+        for (const auto& [jobId, jobData] : jobDataMap)
+        {
+            const auto& [meta, jobInfo] = jobData;
+            if (meta.m_result == JobResult::ExecutedWithSuccess || meta.m_result == JobResult::ExecutedWithFailure)
+            {
+                if (auto outcome = PayloadExtractor(*jobInfo, meta); outcome.IsSuccess())
+                {
+                    runs[jobId] = AZStd::move(outcome.TakeValue());
+                }
+                else
+                {
+                    runs[jobId] = AZStd::nullopt;
+                    AZ_Printf("RunTests", outcome.GetError().c_str());
+                }
+            }
+        }
+
+        return runs;
+    }
 } // namespace TestImpact

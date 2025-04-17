@@ -8,6 +8,7 @@
 #pragma once
 
 #include <Atom/RPI.Public/Base.h>
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/GpuQuery/GpuQuerySystemInterface.h>
 #include <Atom/RPI.Public/GpuQuery/Query.h>
 
@@ -29,7 +30,7 @@ namespace AZ
         //! A RPI QueryPool keeps track of all the RPI Query instances that are created with this pool instance. The tracking of RPI Queries is intrusive,
         //! (i.e. each RPI Query has a refrence to the RPI QueryPool which it was created from). Upon removing a RPI Query, it unregisters itself from the RPI QueryPool.
         //! The RPI QueryPool also manages the underlying RHI Query related resources.
-        class QueryPool
+        class ATOM_RPI_PUBLIC_API QueryPool
         {
             friend class RPI::Query;
 
@@ -37,7 +38,7 @@ namespace AZ
 
         public:
             AZ_RTTI(QueryPool, "{9BE78927-35F3-4BFB-9A4C-5B93F570C675}");
-            AZ_CLASS_ALLOCATOR(QueryPool, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(QueryPool, AZ::SystemAllocator);
 
             //! Only use this function to create a new QueryPool object. And force using smart pointer to manage pool's life time.
             static QueryPoolPtr CreateQueryPool(uint32_t queryCount, uint32_t rhiQueriesPerResult, RHI::QueryType queryType, RHI::PipelineStatisticsFlags pipelineStatisticsFlags);
@@ -69,14 +70,14 @@ namespace AZ
             // Returns a span of RHI Queries depending on the indices that are provided.
             AZStd::span<const RHI::Ptr<RHI::Query>> GetRhiQueriesFromInterval(const RHI::Interval& rhiQueryIndices) const;
             // Returns an array of raw RHI Query pointers depending on the indices that are provided.
-            AZStd::vector<RHI::Query*> GetRawRhiQueriesFromInterval(const RHI::Interval& rhiQueryIndices) const;
+            AZStd::vector<AZ::RHI::DeviceQuery*> GetRawRhiQueriesFromInterval(const RHI::Interval& rhiQueryIndices, int deviceIndex) const;
 
             // Readback results from the provided RHI Query indices.
-            QueryResultCode GetQueryResultFromIndices(uint64_t* result, RHI::Interval rhiQueryIndices, RHI::QueryResultFlagBits queryResultFlag);
+            QueryResultCode GetQueryResultFromIndices(uint64_t* result, RHI::Interval rhiQueryIndices, RHI::QueryResultFlagBits queryResultFlag, int deviceIndex);
 
             // Depending on the QueryType, the method to poll data from the queries vary.
-            virtual RHI::ResultCode BeginQueryInternal(RHI::Interval rhiQueryIndices, RHI::CommandList& commandList);
-            virtual RHI::ResultCode EndQueryInternal(RHI::Interval rhiQueryIndices, RHI::CommandList& commandList);
+            virtual RHI::ResultCode BeginQueryInternal(RHI::Interval rhiQueryIndices, const RHI::FrameGraphExecuteContext& context);
+            virtual RHI::ResultCode EndQueryInternal(RHI::Interval rhiQueryIndices, const RHI::FrameGraphExecuteContext& context);
 
             // Calculate the query result size in bytes. The size of the result depends on the QueryType.
             void CalculateResultSize();

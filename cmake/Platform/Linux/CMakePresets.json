@@ -13,31 +13,23 @@
             "name": "linux-default",
             "displayName": "Linux",
             "description": "Linux default configuration",
+            "binaryDir": "${sourceDir}/build/linux",
             "inherits": [
                 "linux-ninja",
                 "linux-unity",
                 "linux-non-monolithic"
-            ],
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Linux"
-            }
+            ]
         },
         {
             "name": "linux-mono-default",
             "displayName": "Linux Monolithic with Unity and Ninja",
-            "description": "Configures Mac to build the Monolithic permutation using Ninja with Unity builds",
+            "description": "Configures Linux to build the Monolithic permutation using Ninja with Unity builds",
+            "binaryDir": "${sourceDir}/build/linux_mono",
             "inherits": [
                 "linux-ninja",
                 "linux-unity",
                 "linux-monolithic"
-            ],
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Linux"
-            }
+            ]
         },
         {
             "name": "linux-clang-default",
@@ -48,12 +40,7 @@
                 "linux-ninja",
                 "linux-clang",
                 "linux-non-monolithic"
-            ],
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Linux"
-            }
+            ]
         },
         {
             "name": "linux-gcc-default",
@@ -64,26 +51,17 @@
                 "linux-ninja",
                 "linux-gcc",
                 "linux-non-monolithic"
-            ],
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Linux"
-            }
+            ]
         },
         {
             "name": "linux-unity",
             "displayName": "Linux Unity",
             "description": "Linux build which uses unity files",
-            "binaryDir": "${sourceDir}/build/linux",
+            "binaryDir": "${sourceDir}/build/linux_unity",
             "inherits": [
-                "unity"
-            ],
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Linux"
-            }
+                "unity",
+                "host-linux"
+            ]
         },
         {
             "name": "linux-no-unity",
@@ -91,26 +69,19 @@
             "description": "Linux build which uses unity files",
             "binaryDir": "${sourceDir}/build/linux_no_unity",
             "inherits": [
-                "no-unity"
-            ],
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Linux"
-            }
+                "no-unity",
+                "host-linux"
+            ]
         },
         {
             "name": "linux-non-monolithic",
             "displayName": "Linux Non-monolithic",
             "description": "Default configuration for non-monolithic builds",
+            "binaryDir": "${sourceDir}/build/linux_non_mono",
             "inherits": [
-                "non-monolithic"
-            ],
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Linux"
-            }
+                "non-monolithic",
+                "host-linux"
+            ]
         },
         {
             "name": "linux-monolithic",
@@ -118,13 +89,9 @@
             "description": "Default configuration for monolithic builds",
             "binaryDir": "${sourceDir}/build/linux_mono",
             "inherits": [
-                "monolithic"
-            ],
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Linux"
-            }
+                "monolithic",
+                "host-linux"
+            ]
         },
         {
             "name": "linux-ninja",
@@ -132,13 +99,9 @@
             "description": "Configure Linux using with the Ninja generator",
             "binaryDir": "${sourceDir}/build/linux_ninja",
             "inherits": [
-                "ninja-multi-config"
-            ],
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Linux"
-            }
+                "ninja-multi-config",
+                "host-linux"
+            ]
         },
         {
             "name": "linux-ninja-unity",
@@ -148,12 +111,7 @@
             "inherits": [
                 "ninja-multi-config",
                 "linux-unity"
-            ],
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Linux"
-            }
+            ]
         },
         {
             "name": "linux-ninja-no-unity",
@@ -163,54 +121,37 @@
             "inherits": [
                 "ninja-multi-config",
                 "linux-no-unity"
-            ],
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Linux"
-            }
+            ]
         },
         {
             "name": "linux-makefiles",
             "displayName": "Linux Unix Makefiles",
             "description": "Configure Linux using with the Unix Makefiles generator",
             "binaryDir": "${sourceDir}/build/linux_makefiles",
-            "generator": "Unix Makefiles",
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Linux"
-            }
+            "inherits": [
+                "makefiles",
+                "host-linux"
+            ]
         },
         {
             "name": "linux-makefiles-unity",
             "displayName": "Linux Unix Makefiles Unity",
             "description": "Configure Linux with the Unix Makefiles generator + Unity Builds",
             "binaryDir": "${sourceDir}/build/linux_makefiles_unity",
-            "generator": "Unix Makefiles",
             "inherits": [
+                "makefiles",
                 "linux-unity"
-            ],
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Linux"
-            }
+            ]
         },
         {
             "name": "linux-makefiles-no-unity",
             "displayName": "Linux Unix Makefiles without Unity",
             "description": "Configure Linux with the Unix Makefiles Generator without unity builds",
             "binaryDir": "${sourceDir}/build/linux_makefiles_no_unity",
-            "generator": "Unix Makefiles",
             "inherits": [
+                "makefiles",
                 "linux-no-unity"
-            ],
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Linux"
-            }
+            ]
         },
         {
             "name": "linux-clang",
@@ -219,12 +160,7 @@
             "binaryDir": "${sourceDir}/build/linux_clang",
             "inherits":[
                 "linux-clang-unity"
-            ],
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Linux"
-            }
+            ]
         },
         {
             "name": "linux-clang-unity",
@@ -243,12 +179,7 @@
             },
             "inherits": [
                 "linux-unity"
-            ],
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Linux"
-            }
+            ]
         },
         {
             "name": "linux-clang-no-unity",
@@ -267,12 +198,7 @@
             },
             "inherits": [
                 "linux-no-unity"
-            ],
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Linux"
-            }
+            ]
         },
         {
             "name": "linux-gcc",
@@ -281,12 +207,7 @@
             "binaryDir": "${sourceDir}/build/linux_gcc",
             "inherits":[
                 "linux-gcc-unity"
-            ],
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Linux"
-            }
+            ]
         },
         {
             "name": "linux-gcc-unity",
@@ -305,12 +226,7 @@
             },
             "inherits": [
                 "linux-unity"
-            ],
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Linux"
-            }
+            ]
         },
         {
             "name": "linux-gcc-no-unity",
@@ -329,12 +245,7 @@
             },
             "inherits": [
                 "linux-no-unity"
-            ],
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Linux"
-            }
+            ]
         }
     ],
     "buildPresets": [
@@ -343,11 +254,9 @@
             "displayName": "Linux",
             "description": "Builds all targets for Linux",
             "configurePreset": "linux-default",
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Linux"
-            }
+            "inherits":[
+                "host-linux"
+            ]
         },
         {
             "name": "linux-install",
@@ -355,24 +264,18 @@
             "description": "Builds the \"install\" target for Linux, which builds all target and runs the CMake --install step",
             "configurePreset": "linux-default",
             "inherits": [
-                "install"
-            ],
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Linux"
-            }
+                "install",
+                "host-linux"
+            ]
         },
         {
             "name": "linux-mono-default",
             "displayName": "Linux Monolithic",
             "description": "Builds all targets for Linux in the monolithic permutation",
             "configurePreset": "linux-mono-default",
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Linux"
-            }
+            "inherits":[
+                "host-linux"
+            ]
         },
         {
             "name": "linux-mono-install",
@@ -380,13 +283,27 @@
             "description": "Builds the \"install\" target for linux monolithic permutation, which builds all target and runs the CMake --install step",
             "configurePreset": "linux-mono-default",
             "inherits": [
-                "install"
-            ],
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Linux"
-            }
+                "install",
+                "host-linux"
+            ]
+        },
+        {
+            "name": "linux-clang-default",
+            "displayName": "Linux",
+            "description": "Builds all targets for Linux using the Clang compiler",
+            "configurePreset": "linux-clang-default",
+            "inherits":[
+                "host-linux"
+            ]
+        },
+        {
+            "name": "linux-gcc-default",
+            "displayName": "Linux",
+            "description": "Builds all targets for Linux using the GCC compiler",
+            "configurePreset": "linux-gcc-default",
+            "inherits":[
+                "host-linux"
+            ]
         },
         {
             "name": "linux-editor",
@@ -394,13 +311,9 @@
             "description": "Builds the Editor application for Linux",
             "configurePreset": "linux-default",
             "inherits": [
-                "editor"
-            ],
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Linux"
-            }
+                "editor",
+                "host-linux"
+            ]
         },
         {
             "name": "linux-assetprocessor",
@@ -408,13 +321,9 @@
             "description": "Builds the AssetProcessor application for Linux",
             "configurePreset": "linux-default",
             "inherits": [
-                "assetprocessor"
-            ],
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Linux"
-            }
+                "assetprocessor",
+                "host-linux"
+            ]
         },
         {
             "name": "linux-test",
@@ -422,13 +331,9 @@
             "description": "Builds the TEST_SUITE_smoke/TEST_SUITE_main custom targets for Linux",
             "configurePreset": "linux-default",
             "inherits": [
-                "test-default"
-            ],
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Linux"
-            }
+                "test-default",
+                "host-linux"
+            ]
         }
     ],
     "testPresets": [
@@ -438,13 +343,9 @@
             "description": "Runs the Smoke + Main Test Suite. Requires the linux-test build preset to have completed successfully",
             "configurePreset": "linux-default",
             "inherits": [
-                "test-default"
-            ],
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Linux"
-            }
+                "test-default",
+                "host-linux"
+            ]
         },
         {
             "name": "linux-test-debug",
@@ -452,13 +353,9 @@
             "description": "Runs the Smoke + Main Test Suite in debug configuration. Requires the linux-test build preset to have completed successfully",
             "configurePreset": "linux-default",
             "inherits": [
-                "test-default-debug"
-            ],
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Linux"
-            }
+                "test-default-debug",
+                "host-linux"
+            ]
         },
         {
             "name": "linux-test-profile",
@@ -466,13 +363,9 @@
             "description": "Runs the Smoke + Main Test Suite in profile configuration. Requires the linux-test build preset to have completed successfully",
             "configurePreset": "linux-default",
             "inherits": [
-                "test-default-profile"
-            ],
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Linux"
-            }
+                "test-default-profile",
+                "host-linux"
+            ]
         }
     ]
 }

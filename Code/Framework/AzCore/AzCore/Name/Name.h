@@ -82,7 +82,7 @@ namespace AZ
         using Hash = Internal::NameData::Hash;
 
         AZ_TYPE_INFO(Name, "{3D2B920C-9EFD-40D5-AAE0-DF131C3D4931}");
-        AZ_CLASS_ALLOCATOR(Name, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Name, AZ::SystemAllocator);
         static void Reflect(AZ::ReflectContext* context);
 
         Name();
@@ -223,7 +223,6 @@ namespace AZ
         //! Pointer to NameData in the NameDictionary. This holds both the hash and string pair.
         AZStd::intrusive_ptr<Internal::NameData> m_data;
 
-        static AZStd::thread::id s_staticNameListThread;
         //! Describes the begin of the static list of Names that were initialized before the NameDictionary was available.
         //! On module initialization, these names are linked into the NameDictionary's static pool and created.
         static Name* s_staticNameBegin;

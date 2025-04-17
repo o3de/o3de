@@ -6,6 +6,7 @@
  *
  */
 
+#include <Atom/RHI.Reflect/Format.h>
 #include <PostProcessing/TaaPass.h>
 
 #include <AzCore/Math/Random.h>
@@ -69,25 +70,28 @@ namespace AZ::Render
 
         m_shaderResourceGroup->SetConstant(m_constantDataIndex, cb);
 
-
         Base::CompileResources(context);
     }
-    
+
     void TaaPass::FrameBeginInternal(FramePrepareParams params)
     {
         RHI::Size inputSize = m_inputColorBinding->GetAttachment()->m_descriptor.m_image.m_size;
         Vector2 rcpInputSize = Vector2(1.0f / inputSize.m_width, 1.0f / inputSize.m_height);
+        RPI::ViewPtr view = GetRenderPipeline()->GetFirstView(GetPipelineViewTag());
+        if (view)
+        {
+            m_offsetIndex = (m_offsetIndex + 1) % m_subPixelOffsets.size();
+            Offset offset = m_subPixelOffsets.at(m_offsetIndex);
+            view->SetClipSpaceOffset(offset.m_xOffset * rcpInputSize.GetX(), offset.m_yOffset * rcpInputSize.GetY());
+        }
 
-        RPI::ViewPtr view = GetRenderPipeline()->GetDefaultView();
-        m_offsetIndex = (m_offsetIndex + 1) % m_subPixelOffsets.size();
-        Offset offset = m_subPixelOffsets.at(m_offsetIndex);
-        view->SetClipSpaceOffset(offset.m_xOffset * rcpInputSize.GetX(), offset.m_yOffset * rcpInputSize.GetY());
-
-        m_lastFrameAccumulationBinding->SetAttachment(m_accumulationAttachments[m_accumulationOuptutIndex]);
-        m_accumulationOuptutIndex ^= 1; // swap which attachment is the output and last frame
-
-        UpdateAttachmentImage(m_accumulationAttachments[m_accumulationOuptutIndex]);
-        m_outputColorBinding->SetAttachment(m_accumulationAttachments[m_accumulationOuptutIndex]);
+        if (!ShouldCopyHistoryBuffer)
+        {
+            m_lastFrameAccumulationBinding->SetAttachment(m_accumulationAttachments[m_accumulationOuptutIndex]);
+            m_accumulationOuptutIndex ^= 1; // swap which attachment is the output and last frame
+            UpdateAttachmentImage(m_accumulationOuptutIndex);
+            m_outputColorBinding->SetAttachment(m_accumulationAttachments[m_accumulationOuptutIndex]);
+        }
         
         Base::FrameBeginInternal(params);
     }
@@ -109,21 +113,32 @@ namespace AZ::Render
         m_accumulationAttachments[0] = FindAttachment(Name("Accumulation1"));
         m_accumulationAttachments[1] = FindAttachment(Name("Accumulation2"));
 
-        bool hasAttachments = m_accumulationAttachments[0] || m_accumulationAttachments[1];
-        AZ_Error("TaaPass", hasAttachments, "TaaPass must have Accumulation1 and Accumulation2 ImageAttachments defined.");
-
-        if (hasAttachments)
+        bool attachmentsValid = true;
+        // Make sure the attachments have images when the pass first loads.
+        for (auto i : { 0, 1 })
         {
-            // Make sure the attachments have images when the pass first loads.
-            for (auto i : { 0, 1 })
+            if (m_accumulationAttachments[i])
             {
-                if (!m_accumulationAttachments[i]->m_importedResource)
+                attachmentsValid = UpdateAttachmentImage(i);
+                if (!attachmentsValid)
                 {
-                    UpdateAttachmentImage(m_accumulationAttachments[i]);
+                    break;
                 }
             }
+            else
+            {
+                attachmentsValid = false;
+                break;
+            }
         }
-        
+        if (!attachmentsValid)
+        {
+            this->SetEnabled(false);
+            AZ_Error(
+                "TaaPass", attachmentsValid, "TaaPass disabled because the ImageAttachments Accumulation1 and Accumulation2 are invalid.");
+            return;
+        }
+
         m_inputColorBinding = FindAttachmentBinding(Name("InputColor"));
         AZ_Error("TaaPass", m_inputColorBinding, "TaaPass requires a slot for InputColor.");
         m_lastFrameAccumulationBinding = FindAttachmentBinding(Name("LastFrameAccumulation"));
@@ -142,47 +157,10 @@ namespace AZ::Render
         Base::BuildInternal();
     }
 
-    void TaaPass::UpdateAttachmentImage(RPI::Ptr<RPI::PassAttachment>& attachment)
+    bool TaaPass::UpdateAttachmentImage(uint32_t attachmentIndex)
     {
-        if (!attachment)
-        {
-            return;
-        }
-
-        // update the image attachment descriptor to sync up size and format
-        attachment->Update(true);
-        RHI::ImageDescriptor& imageDesc = attachment->m_descriptor.m_image;
-        RPI::AttachmentImage* currentImage = azrtti_cast<RPI::AttachmentImage*>(attachment->m_importedResource.get());
-
-        if (attachment->m_importedResource && imageDesc.m_size == currentImage->GetDescriptor().m_size)
-        {
-            // If there's a resource already and the size didn't change, just keep using the old AttachmentImage.
-            return;
-        }
-        
-        Data::Instance<RPI::AttachmentImagePool> pool = RPI::ImageSystemInterface::Get()->GetSystemAttachmentPool();
-
-        // set the bind flags
-        imageDesc.m_bindFlags |= RHI::ImageBindFlags::Color | RHI::ImageBindFlags::ShaderReadWrite;
-        
-        // The ImageViewDescriptor must be specified to make sure the frame graph compiler doesn't treat this as a transient image.
-        RHI::ImageViewDescriptor viewDesc = RHI::ImageViewDescriptor::Create(imageDesc.m_format, 0, 0);
-        viewDesc.m_aspectFlags = RHI::ImageAspectFlags::Color;
-
-        // The full path name is needed for the attachment image so it's not deduplicated from accumulation images in different pipelines.
-        AZStd::string imageName = RPI::ConcatPassString(GetPathName(), attachment->m_path);
-        auto attachmentImage = RPI::AttachmentImage::Create(*pool.get(), imageDesc, Name(imageName), nullptr, &viewDesc);
-
-        if (attachmentImage)
-        {
-            attachment->m_path = attachmentImage->GetAttachmentId();
-            attachment->m_importedResource = attachmentImage;
-        }
-        else
-        {
-            AZ_Error("TaaPass", false, "TaaPass disabled because it is unable to create an attachment image.")
-            this->SetEnabled(false);
-        }
+        RPI::Ptr<RPI::PassAttachment>& attachment = m_accumulationAttachments[attachmentIndex];
+        return UpdateImportedAttachmentImage(attachment);
     }
 
     void TaaPass::SetupSubPixelOffsets(uint32_t haltonX, uint32_t haltonY, uint32_t length)

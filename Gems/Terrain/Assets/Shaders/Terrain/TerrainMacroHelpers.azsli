@@ -9,7 +9,8 @@
 
 #include <Atom/RPI/TangentSpace.azsli>
 
-static const uint InvalidMacroMaterialRef = 0x0000FFFF;
+static const uint InvalidMacroMaterialRef = 0x0000FFFFu;
+static const uint InvalidTextureId = 0xFFFFFFFFu;
 
 void SampleMacroTexture(float2 worldPosition, float2 positionDdx, float2 positionDdy, out float3 macroColor, inout float3 macroNormal, out bool hasNormal)
 {
@@ -20,7 +21,10 @@ void SampleMacroTexture(float2 worldPosition, float2 positionDdx, float2 positio
     int macroGridResolution = TerrainSrg::m_macroMaterialGridInfo.m_tileCount1D;
     float macroTileSize = TerrainSrg::m_macroMaterialGridInfo.m_tileSize;
     int2 macroTileWorldCoord = int2(floor(worldPosition / macroTileSize));
-    uint2 macroLocalCoord = ((macroTileWorldCoord % macroGridResolution) + macroGridResolution) % macroGridResolution;
+
+    // Only do modulus math on positive numbers for platform consistency.
+    int2 macroLocalCoordSigned = (abs(macroTileWorldCoord) % macroGridResolution) * sign(macroTileWorldCoord);
+    uint2 macroLocalCoord = uint2(macroLocalCoordSigned + macroGridResolution) % macroGridResolution;
 
     uint macroTileIndex = macroGridResolution * macroLocalCoord.y + macroLocalCoord.x;
     static const uint NumMacroMaterialsPerTile = 4;
@@ -49,8 +53,8 @@ void SampleMacroTexture(float2 worldPosition, float2 positionDdx, float2 positio
         }
 
         float2 macroUvSize = macroMaterialData.m_boundsMax - macroMaterialData.m_boundsMin;
-        macroUvSize.x = -macroUvSize.x;
-        float2 macroUv = (macroMaterialData.m_boundsMin - worldPosition) / macroUvSize;
+        float2 macroUv = (worldPosition - macroMaterialData.m_boundsMin) / macroUvSize;
+        macroUv.y = 1.0 - macroUv.y;
 
         // The macro uv gradient can vary massively over the quad because different pixels may choose different macro materials with different UVs.
         // To fix, we use the world position scaled by the macro uv scale which should be fairly uniform across macro materials.
@@ -58,13 +62,13 @@ void SampleMacroTexture(float2 worldPosition, float2 positionDdx, float2 positio
         float2 ddx_macroUv = positionDdx / macroUvSize;
         float2 ddy_macroUv = positionDdx / macroUvSize;
 
-        if (macroMaterialData.m_colorMapId != 0xFFFF)
+        if (macroMaterialData.m_colorMapId != InvalidTextureId)
         {
-            macroColor = TerrainSrg::m_textures[macroMaterialData.m_colorMapId].SampleGrad(TerrainMaterialSrg::m_sampler, macroUv, ddx_macroUv, ddy_macroUv).rgb;
+            macroColor = Bindless::GetTexture2D(macroMaterialData.m_colorMapId).SampleGrad(TerrainMaterialSrg::m_macroSampler, macroUv, ddx_macroUv, ddy_macroUv).rgb;
             macroColor = TransformColor(macroColor, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg);
         }
 
-        hasNormal = macroMaterialData.m_normalMapId != 0xFFFF;
+        hasNormal = macroMaterialData.m_normalMapId != InvalidTextureId;
         if (hasNormal)
         {
             bool flipX = macroMaterialData.m_flags & 1;
@@ -73,7 +77,7 @@ void SampleMacroTexture(float2 worldPosition, float2 positionDdx, float2 positio
 
             // Because of lacking derivatives in compute shader, manually sample and convert
             // Equivalent to SampleNormalXY in <../Materials/Types/MaterialInputs/NormalInput.azsli>
-            float2 sampledValue = TerrainSrg::m_textures[macroMaterialData.m_normalMapId].SampleGrad(TerrainMaterialSrg::m_sampler, macroUv, ddx_macroUv, ddy_macroUv).xy;
+            float2 sampledValue = Bindless::GetTexture2D(macroMaterialData.m_normalMapId).SampleGrad(TerrainMaterialSrg::m_macroSampler, macroUv, ddx_macroUv, ddy_macroUv).xy;
 #if AZ_TRAIT_ASTC_COMPRESSION
             //Astc compression is unorm (0 to 1) so we need to accomodate for that. We are using BC5_SNORM (-1 - +1)for other platforms like pc
             //[GFX TODO][ATOM-13435] - Look into moving this offline as part of image processing.

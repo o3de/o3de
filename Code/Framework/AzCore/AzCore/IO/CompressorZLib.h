@@ -45,7 +45,7 @@ namespace AZ
             : public CompressorData
         {
         public:
-            AZ_CLASS_ALLOCATOR(CompressorZLibData, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(CompressorZLibData, AZ::SystemAllocator);
 
             CompressorZLibData(IAllocator* zlibMemAllocator = 0)
                 : m_zlib(zlibMemAllocator)
@@ -82,7 +82,7 @@ namespace AZ
             : public Compressor
         {
         public:
-            AZ_CLASS_ALLOCATOR(CompressorZLib, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(CompressorZLib, AZ::SystemAllocator);
 
             /**
              * \param decompressionCachePerStream cache of decompressed data stored per stream, the more streams you have open the more memory it will use,

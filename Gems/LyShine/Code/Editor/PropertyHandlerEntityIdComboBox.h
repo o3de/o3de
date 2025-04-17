@@ -19,7 +19,7 @@ class PropertyEntityIdComboBoxCtrl
 {
     Q_OBJECT
 public:
-    AZ_CLASS_ALLOCATOR(PropertyEntityIdComboBoxCtrl, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(PropertyEntityIdComboBoxCtrl, AZ::SystemAllocator);
 
     PropertyEntityIdComboBoxCtrl(QWidget *pParent = NULL);
     virtual ~PropertyEntityIdComboBoxCtrl() = default;
@@ -53,7 +53,7 @@ class PropertyHandlerEntityIdComboBox
     // this is a Qt Object purely so it can connect to slots with context.  This is the only reason its in this header.
     Q_OBJECT
 public:
-    AZ_CLASS_ALLOCATOR(PropertyHandlerEntityIdComboBox, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(PropertyHandlerEntityIdComboBox, AZ::SystemAllocator);
 
     virtual void WriteGUIValuesIntoProperty(size_t index, PropertyEntityIdComboBoxCtrl* GUI, property_t& instance, AzToolsFramework::InstanceDataNode* node) override;
     virtual bool ReadValuesIntoGUI(size_t index, PropertyEntityIdComboBoxCtrl* GUI, const property_t& instance, AzToolsFramework::InstanceDataNode* node)  override;

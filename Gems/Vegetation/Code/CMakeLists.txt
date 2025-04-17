@@ -7,7 +7,7 @@
 #
 
 ly_add_target(
-    NAME Vegetation.Static STATIC
+    NAME ${gem_name}.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
         vegetation_files.cmake
@@ -22,17 +22,15 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         PRIVATE
-            Gem::LmbrCentral
-            Gem::SurfaceData
+            Gem::LmbrCentral.API
+            Gem::SurfaceData.Static
             Legacy::CryCommon
         PUBLIC
-            Gem::AtomLyIntegration_CommonFeatures.Static
-    RUNTIME_DEPENDENCIES
-        Gem::GradientSignal
+            Gem::CommonFeaturesAtom.Static
 )
 
 ly_add_target(
-    NAME Vegetation ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME ${gem_name} ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         vegetation_shared_files.cmake
@@ -43,7 +41,7 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         PRIVATE
-            Gem::Vegetation.Static
+            Gem::${gem_name}.Static
             Legacy::CryCommon
     RUNTIME_DEPENDENCIES
         Gem::LmbrCentral
@@ -51,13 +49,23 @@ ly_add_target(
         Gem::SurfaceData
 )
 
+# Inject the gem name into the Module source file
+ly_add_source_properties(
+    SOURCES
+        Source/VegetationModule.cpp
+    PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_GEM_NAME=${gem_name}
+            O3DE_GEM_VERSION=${gem_version})
+
 # the above module is for use in clients and server type applications
-ly_create_alias(NAME Vegetation.Servers NAMESPACE Gem TARGETS Gem::Vegetation)
-ly_create_alias(NAME Vegetation.Clients NAMESPACE Gem TARGETS Gem::Vegetation)
+ly_create_alias(NAME ${gem_name}.Servers NAMESPACE Gem TARGETS Gem::${gem_name})
+ly_create_alias(NAME ${gem_name}.Clients NAMESPACE Gem TARGETS Gem::${gem_name})
+ly_create_alias(NAME ${gem_name}.Unified NAMESPACE Gem TARGETS Gem::${gem_name})
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
-        NAME Vegetation.Editor GEM_MODULE
+        NAME ${gem_name}.Editor GEM_MODULE
 
         NAMESPACE Gem
         FILES_CMAKE
@@ -72,7 +80,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Include
         BUILD_DEPENDENCIES
             PRIVATE
-                Gem::Vegetation.Static
+                Gem::${gem_name}.Static
                 AZ::AzToolsFramework
                 Legacy::CryCommon
     RUNTIME_DEPENDENCIES
@@ -80,9 +88,19 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         Gem::GradientSignal.Editor
         Gem::SurfaceData.Editor
     )
+
+    # Inject the gem name into the Module source file
+    ly_add_source_properties(
+        SOURCES
+            Source/VegetationEditorModule.cpp
+        PROPERTY COMPILE_DEFINITIONS
+            VALUES
+                O3DE_GEM_NAME=${gem_name}
+                O3DE_GEM_VERSION=${gem_version})
+
     # the above module is for use in dev tools
-    ly_create_alias(NAME Vegetation.Builders NAMESPACE Gem TARGETS Gem::Vegetation.Editor)
-    ly_create_alias(NAME Vegetation.Tools    NAMESPACE Gem TARGETS Gem::Vegetation.Editor)
+    ly_create_alias(NAME ${gem_name}.Builders NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
+    ly_create_alias(NAME ${gem_name}.Tools    NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
 
 endif()
 
@@ -91,7 +109,7 @@ endif()
 ################################################################################
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_target(
-        NAME Vegetation.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+        NAME ${gem_name}.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
         NAMESPACE Gem
         FILES_CMAKE
             vegetation_tests_files.cmake
@@ -105,11 +123,12 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             PRIVATE
                 AZ::AzTest
                 AZ::AzFrameworkTestShared
-                Gem::Vegetation.Static
+                Gem::${gem_name}.Static
                 Gem::LmbrCentral.Mocks
                 Legacy::CryCommon
     )
     ly_add_googletest(
-        NAME Gem::Vegetation.Tests
+        NAME Gem::${gem_name}.Tests
+        LABELS REQUIRES_tiaf
     )
 endif()

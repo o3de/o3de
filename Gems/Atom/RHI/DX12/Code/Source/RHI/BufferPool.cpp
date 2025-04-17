@@ -27,7 +27,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(BufferPoolResolver, "{116743AC-5861-4BF8-9ED9-3DDB644AC004}", ResourcePoolResolver);
-            AZ_CLASS_ALLOCATOR(BufferPoolResolver, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(BufferPoolResolver, AZ::SystemAllocator);
 
             BufferPoolResolver(Device& device, const RHI::BufferPoolDescriptor& descriptor)
             {
@@ -51,17 +51,17 @@ namespace AZ
                 }
             }
 
-            CpuVirtualAddress MapBuffer(const RHI::BufferMapRequest& request)
+            CpuVirtualAddress MapBuffer(const RHI::DeviceBufferMapRequest& request)
             {
                 AZ_PROFILE_FUNCTION(RHI);
 
                 MemoryView stagingMemory = m_device->AcquireStagingMemory(request.m_byteCount, Alignment::Buffer);
+                if (!stagingMemory.IsValid())
+                {
+                    return nullptr;
+                }
 
-                m_uploadPacketsLock.lock();
-
-                // Acquire a staging upload packet from the fill queue.
-                m_uploadPackets.emplace_back();
-                BufferUploadPacket& uploadRequest = m_uploadPackets.back();
+                BufferUploadPacket uploadRequest;
                 
                 // Fill the packet with the source and destination regions for copy.
                 Buffer* buffer = static_cast<Buffer*>(request.m_buffer);
@@ -72,9 +72,14 @@ namespace AZ
                 uploadRequest.m_memoryByteOffset    = buffer->GetMemoryView().GetOffset() + request.m_byteOffset;
                 uploadRequest.m_sourceMemory        = stagingMemory;
 
+                auto address = uploadRequest.m_sourceMemory.Map(RHI::HostMemoryAccess::Write);
+
+                // Once the uploadRequest has been processed, add it to the uploadPackets queue.
+                m_uploadPacketsLock.lock();
+                m_uploadPackets.emplace_back(AZStd::move(uploadRequest));
                 m_uploadPacketsLock.unlock();
 
-                return uploadRequest.m_sourceMemory.Map(RHI::HostMemoryAccess::Write);
+                return address;
             }
 
             void Compile(Scope& scope) override
@@ -130,7 +135,7 @@ namespace AZ
                 m_nonAttachmentBufferUnion.clear();
             }
 
-            void OnResourceShutdown(const RHI::Resource& resource) override
+            void OnResourceShutdown(const RHI::DeviceResource& resource) override
             {
                 const Buffer& buffer = static_cast<const Buffer&>(resource);
                 if (!buffer.m_pendingResolves)
@@ -244,7 +249,7 @@ namespace AZ
             Base::OnFrameEnd();
         }
 
-        RHI::ResultCode BufferPool::InitBufferInternal(RHI::Buffer& bufferBase, const RHI::BufferDescriptor& bufferDescriptor)
+        RHI::ResultCode BufferPool::InitBufferInternal(RHI::DeviceBuffer& bufferBase, const RHI::BufferDescriptor& bufferDescriptor)
         {
             AZ_PROFILE_FUNCTION(RHI);
 
@@ -271,7 +276,7 @@ namespace AZ
             return RHI::ResultCode::OutOfMemory;
         }
 
-        void BufferPool::ShutdownResourceInternal(RHI::Resource& resourceBase)
+        void BufferPool::ShutdownResourceInternal(RHI::DeviceResource& resourceBase)
         {
             if (auto* resolver = GetResolver())
             {
@@ -285,7 +290,7 @@ namespace AZ
             buffer.m_pendingResolves = 0;
         }
 
-        RHI::ResultCode BufferPool::OrphanBufferInternal(RHI::Buffer& bufferBase)
+        RHI::ResultCode BufferPool::OrphanBufferInternal(RHI::DeviceBuffer& bufferBase)
         {
             Buffer& buffer = static_cast<Buffer&>(bufferBase);
 
@@ -304,7 +309,7 @@ namespace AZ
             return RHI::ResultCode::OutOfMemory;
         }
 
-        RHI::ResultCode BufferPool::MapBufferInternal(const RHI::BufferMapRequest& request, RHI::BufferMapResponse& response)
+        RHI::ResultCode BufferPool::MapBufferInternal(const RHI::DeviceBufferMapRequest& request, RHI::DeviceBufferMapResponse& response)
         {
             AZ_PROFILE_FUNCTION(RHI);
 
@@ -340,7 +345,7 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
-        void BufferPool::UnmapBufferInternal(RHI::Buffer& bufferBase)
+        void BufferPool::UnmapBufferInternal(RHI::DeviceBuffer& bufferBase)
         {
             const RHI::BufferPoolDescriptor& poolDescriptor = GetDescriptor();
             Buffer& buffer = static_cast<Buffer&>(bufferBase);
@@ -351,7 +356,7 @@ namespace AZ
             }
         }
 
-        RHI::ResultCode BufferPool::StreamBufferInternal(const RHI::BufferStreamRequest& request)
+        RHI::ResultCode BufferPool::StreamBufferInternal(const RHI::DeviceBufferStreamRequest& request)
         {
             GetDevice().GetAsyncUploadQueue().QueueUpload(request);
             return RHI::ResultCode::Success;

@@ -13,8 +13,8 @@ import os, shutil
 
 # the UUID must be unique amongst all the asset builders in Python or otherwise
 busIdString = '{E4DB381B-61A0-4729-ACD9-4C8BDD2D2282}'
-busId = azlmbr.math.Uuid_CreateString(busIdString, 0)
-assetTypeScript = azlmbr.math.Uuid_CreateString('{82557326-4AE3-416C-95D6-C70635AB7588}', 0)
+busId = azlmbr.math.Uuid_CreateString(busIdString)
+assetTypeScript = azlmbr.math.Uuid_CreateString('{82557326-4AE3-416C-95D6-C70635AB7588}')
 handler = None
 jobKeyPrefix = 'Foo Job Key'
 targetAssetFolder = 'foo_scripts'

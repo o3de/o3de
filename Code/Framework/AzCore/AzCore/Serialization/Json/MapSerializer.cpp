@@ -17,9 +17,9 @@
 
 namespace AZ
 {
-    AZ_CLASS_ALLOCATOR_IMPL(JsonMapSerializer, SystemAllocator, 0);
-    AZ_CLASS_ALLOCATOR_IMPL(JsonUnorderedMapSerializer, SystemAllocator, 0);
-    AZ_CLASS_ALLOCATOR_IMPL(JsonUnorderedMultiMapSerializer, SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(JsonMapSerializer, SystemAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(JsonUnorderedMapSerializer, SystemAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(JsonUnorderedMultiMapSerializer, SystemAllocator);
     
     // JsonMapSerializer
 
@@ -193,10 +193,19 @@ namespace AZ
             // mark is with success so the result can at best be partial defaults.
             retVal.Combine(JSR::ResultCode(JSR::Tasks::ReadField, JSR::Outcomes::Success));
         }
-        AZStd::string_view message =
-            addedCount >= maximumSize ? "Successfully read associative container." :
-            addedCount == 0 ? "Unable to read data for the associative container." : 
-            "Partially read data for the associative container.";
+        AZStd::string_view message;
+        if (addedCount >= maximumSize)
+        {
+            message =
+                retVal.GetProcessing() == JSR::Processing::Completed ? "Successfully read associative container." :
+                "Partially read element data for the associative container.";
+        }
+        else
+        {
+            message =
+                addedCount == 0 ? "Unable to read data for the associative container." : 
+                "Partially read data for the associative container.";
+        }
         return context.Report(retVal, message);
     }
 
@@ -297,9 +306,13 @@ namespace AZ
                     "Unable to store the element that was read to the associative container.");
             }
         }
-        
-        return context.Report(JSR::ResultCode::Combine(keyResult, valueResult),
-            "Successfully loaded an entry into the associative container.");
+
+        JSR::ResultCode result = JSR::ResultCode::Combine(keyResult, valueResult);
+
+        AZStd::string_view message = result.GetProcessing() == JSR::Processing::Completed
+            ? "Successfully loaded an entry into the associative container."
+            : "Partially loaded an entry into the associative container.";
+        return context.Report(result, message);
     }
 
     JsonSerializationResult::Result JsonMapSerializer::Store(rapidjson::Value& outputValue, const void* inputValue, const void* defaultValue,

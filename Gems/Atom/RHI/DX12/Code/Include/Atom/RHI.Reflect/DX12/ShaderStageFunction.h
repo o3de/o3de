@@ -12,14 +12,32 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/vector.h>
-#include <AzCore/Serialization/SerializeContext.h>
+
+namespace AZ::Serialize
+{
+    template<class T, bool U, bool A>
+    struct InstanceFactory;
+}
+namespace AZ
+{
+    template<typename ValueType, typename>
+    struct AnyTypeInfoConcept;
+}
 
 namespace AZ
 {
+    class ReflectContext;
+
     namespace DX12
     {
-        using ShaderByteCode = AZStd::vector<uint8_t>;
+        using ShaderByteCode = AZStd::vector<uint8_t, RHI::ShaderStageFunction::Allocator>;
         using ShaderByteCodeView = AZStd::span<const uint8_t>;
+
+        //! Sentinel value used when patching shaders for specialization constants
+        constexpr uint32_t SCSentinelValue = 0x45678900;
+        //! Mask that marks which bytes are used for the sentinel and which
+        //! ones are used for the specialization constant id.
+        constexpr uint64_t SCSentinelMask = 0xffffffffffffff00;
 
         /**
          * A set of indices used to access physical sub-stages within a virtual stage.
@@ -28,10 +46,6 @@ namespace AZ
         {
             /// Used when the sub-stage is 1-to-1 with the virtual stage.
             const uint32_t Default = 0;
-
-            /// Tessellation is composed of two physical stages in HLSL.
-            const uint32_t TessellationHull = 0;
-            const uint32_t TessellationDomain = 1;
         }
 
         const uint32_t ShaderSubStageCountMax = 2;
@@ -41,21 +55,30 @@ namespace AZ
         {
         public:
             AZ_RTTI(ShaderStageFunction, "{1BAEE536-96CA-4AEB-BA73-D5D72EE35B45}", RHI::ShaderStageFunction);
-            AZ_CLASS_ALLOCATOR(ShaderStageFunction, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR_DECL
             static void Reflect(AZ::ReflectContext* context);
 
             static RHI::Ptr<ShaderStageFunction> Create(RHI::ShaderStage shaderStage);
 
             /// Assigns byte code to the function.
-            void SetByteCode(uint32_t subStageIndex, const ShaderByteCode& byteCode);
+            void SetByteCode(uint32_t subStageIndex, const AZStd::vector<uint8_t>& byteCode);
 
             /// Returns the assigned byte code.
             ShaderByteCodeView GetByteCode(uint32_t subStageIndex = 0) const;
 
+            using SpecializationOffsets = AZStd::unordered_map<uint32_t, uint32_t>;
+            void SetSpecializationOffsets(uint32_t subStageIndex, const SpecializationOffsets& offsets);
+            const SpecializationOffsets& GetSpecializationOffsets(uint32_t subStageIndex = 0) const;
+
+            bool UseSpecializationConstants(uint32_t subStageIndex = 0) const;
+
         private:
             ShaderStageFunction() = default;
             ShaderStageFunction(RHI::ShaderStage shaderStage);
-            AZ_SERIALIZE_FRIEND();
+            template <typename, typename>
+            friend struct AnyTypeInfoConcept;
+            template <typename, bool, bool>
+            friend struct Serialize::InstanceFactory;
 
             ///////////////////////////////////////////////////////////////////
             // RHI::ShaderStageFunction
@@ -63,6 +86,7 @@ namespace AZ
             ///////////////////////////////////////////////////////////////////
 
             AZStd::array<ShaderByteCode, ShaderSubStageCountMax> m_byteCodes;
+            AZStd::array<SpecializationOffsets, ShaderSubStageCountMax> m_specializationOffsets;
         };
     }
 }

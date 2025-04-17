@@ -96,18 +96,40 @@ namespace AZ::Debug
             TerminateProcess(GetCurrentProcess(), exitCode);
         }
 
-        void OutputToDebugger([[maybe_unused]] const char* window, const char* message)
+        void OutputToDebugger(AZStd::string_view window, AZStd::string_view message)
         {
             AZStd::fixed_wstring<g_maxMessageLength> tmpW;
-            if(window)
+            // Only print the window if it is not an empty string
+            if(!window.empty())
             {
-                AZStd::to_wstring(tmpW, window);
-                tmpW += L": ";
-                OutputDebugStringW(tmpW.c_str());
+                while (window.size() > tmpW.max_size())
+                {
+                    AZStd::to_wstring(tmpW, window.substr(0, tmpW.max_size()));
+                    window = window.substr(tmpW.max_size());
+                    OutputDebugStringW(tmpW.c_str());
+                }
+
+                if (!window.empty())
+                {
+                    AZStd::to_wstring(tmpW, window);
+                    OutputDebugStringW(tmpW.c_str());
+                }
+                OutputDebugStringW(L": ");
                 tmpW.clear();
             }
-            AZStd::to_wstring(tmpW, message);
-            OutputDebugStringW(tmpW.c_str());
+
+            while (message.size() > tmpW.max_size())
+            {
+                AZStd::to_wstring(tmpW, message.substr(0, tmpW.max_size()));
+                message = message.substr(tmpW.max_size());
+                OutputDebugStringW(tmpW.c_str());
+            }
+
+            if (!message.empty())
+            {
+                AZStd::to_wstring(tmpW, message);
+                OutputDebugStringW(tmpW.c_str());
+            }
         }
     } // namespace Platform
 
@@ -161,8 +183,8 @@ namespace AZ::Debug
         {
             // prevent g_tracer from calling the tracebus:
             DebugInternal::g_suppressEBusCalls = true;
-            Debug::Trace::Instance().Output(nullptr, "Exception handler loop!");
-            Debug::Trace::Instance().PrintCallstack(nullptr, 0, ExceptionInfo->ContextRecord);
+            Debug::Trace::Instance().Output(AZ::Debug::Trace::GetDefaultSystemWindow(), "Exception handler loop!");
+            Debug::Trace::Instance().PrintCallstack(AZ::Debug::Trace::GetDefaultSystemWindow(), 0, ExceptionInfo->ContextRecord);
             DebugInternal::g_suppressEBusCalls = false;
 
             if (Debug::Trace::Instance().IsDebuggerPresent())
@@ -179,23 +201,23 @@ namespace AZ::Debug
         g_exceptionInfo = (void*)ExceptionInfo;
 
         char message[g_maxMessageLength];
-        Debug::Trace::Instance().Output(nullptr, "==================================================================\n");
+        Debug::Trace::Instance().Output(AZ::Debug::Trace::GetDefaultSystemWindow(), "==================================================================\n");
         azsnprintf(message, g_maxMessageLength, "Exception : 0x%lX - '%s' [%p]\n", ExceptionInfo->ExceptionRecord->ExceptionCode, GetExeptionName(ExceptionInfo->ExceptionRecord->ExceptionCode), ExceptionInfo->ExceptionRecord->ExceptionAddress);
-        Debug::Trace::Instance().Output(nullptr, message);
+        Debug::Trace::Instance().Output(AZ::Debug::Trace::GetDefaultSystemWindow(), message);
 
-        Debug::Trace::Instance().PrintCallstack(nullptr, 0, ExceptionInfo->ContextRecord);
+        Debug::Trace::Instance().PrintCallstack(AZ::Debug::Trace::GetDefaultSystemWindow(), 0, ExceptionInfo->ContextRecord);
 
         bool result = false;
-        EBUS_EVENT_RESULT(result, Debug::TraceMessageBus, OnException, message);
+        Debug::TraceMessageBus::BroadcastResult(result, &Debug::TraceMessageBus::Events::OnException, message);
         if (result)
         {
-            Debug::Trace::Instance().Output(nullptr, "==================================================================\n");
+            Debug::Trace::Instance().Output(AZ::Debug::Trace::GetDefaultSystemWindow(), "==================================================================\n");
             g_exceptionInfo = NULL;
             // if someone ever returns TRUE we assume that they somehow handled this exception and continue.
             return EXCEPTION_CONTINUE_EXECUTION;
         }
-        
-        Debug::Trace::Instance().Output(nullptr, "==================================================================\n");
+
+        Debug::Trace::Instance().Output(AZ::Debug::Trace::GetDefaultSystemWindow(), "==================================================================\n");
 
         // allowing continue of execution is not valid here.  This handler gets called for serious exceptions.
         // programs wanting things like a message box can implement them on a case-by-case basis, but we want no such 

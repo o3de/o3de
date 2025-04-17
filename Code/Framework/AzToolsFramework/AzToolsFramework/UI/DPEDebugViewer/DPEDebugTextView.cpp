@@ -18,6 +18,14 @@ namespace AzToolsFramework
     void DPEDebugTextView::SetAdapter(AZ::DocumentPropertyEditor::DocumentAdapterPtr adapter)
     {
         m_adapter = AZStd::move(adapter);
+        if (m_adapter == nullptr)
+        {
+            // Clear out the event handlers when a nullptr DocumentAdapter is suppleid
+            m_resetHandler = {};
+            m_changeHandler = {};
+            return;
+        };
+
         m_resetHandler = AZ::DocumentPropertyEditor::DocumentAdapter::ResetEvent::Handler(
             [this]()
             {

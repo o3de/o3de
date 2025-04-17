@@ -29,7 +29,7 @@ namespace AZ::IO
     {
     public:
         AZ_RTTI(ArchiveFileIO, "{679F8DB8-CC61-4BC8-ADDB-170E3D428B5D}", FileIOBase);
-        AZ_CLASS_ALLOCATOR(ArchiveFileIO, OSAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ArchiveFileIO, OSAllocator);
 
         ArchiveFileIO(IArchive* archive);
         ~ArchiveFileIO();

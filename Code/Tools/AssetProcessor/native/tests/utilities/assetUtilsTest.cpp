@@ -13,6 +13,7 @@
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/std/parallel/thread.h>
 #include <AzTest/AzTest.h>
+#include <tests/UnitTestUtilities.h>
 
 
 using namespace AssetUtilities;
@@ -39,7 +40,7 @@ class AssetUtilitiesTest
             m_localFileIo = nullptr;
             AZ::IO::FileIOBase::SetInstance(nullptr);
         }
-        
+
         AssetProcessorTest::TearDown();
     }
 
@@ -117,11 +118,7 @@ TEST_F(AssetUtilitiesTest, UpdateToCorrectCase_MissingFile_ReturnsFalse)
     EXPECT_FALSE(AssetUtilities::UpdateToCorrectCase(canonicalTempDirPath, fileName));
 }
 
-#if AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
-TEST_F(AssetUtilitiesTest, DISABLED_UpdateToCorrectCase_ExistingFile_ReturnsTrue_CorrectsCase)
-#else
 TEST_F(AssetUtilitiesTest, UpdateToCorrectCase_ExistingFile_ReturnsTrue_CorrectsCase)
-#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
 {
     QTemporaryDir dir;
     QDir tempPath(dir.path());
@@ -151,7 +148,7 @@ TEST_F(AssetUtilitiesTest, UpdateToCorrectCase_ExistingFile_ReturnsTrue_Corrects
     thingsToTry << "specialFileName+.txt";
     thingsToTry << "specialFileName[9].txt";
     thingsToTry << "specialFileName[A-Za-z].txt"; // these should all be treated as literally the name of the file, not a regex!
-    
+
     for (QString triedThing : thingsToTry)
     {
         triedThing = NormalizeFilePath(triedThing);
@@ -159,7 +156,7 @@ TEST_F(AssetUtilitiesTest, UpdateToCorrectCase_ExistingFile_ReturnsTrue_Corrects
 
         QString lowercaseVersion = triedThing.toLower();
         // each one should be found.   If it fails, we'll pipe out the name of the file it fails on for extra context.
-        
+
         EXPECT_TRUE(AssetUtilities::UpdateToCorrectCase(canonicalTempDirPath, lowercaseVersion)) << "File being Examined: " << lowercaseVersion.toUtf8().constData();
         // each one should correct, and return a normalized path.
         EXPECT_STREQ(AssetUtilities::NormalizeFilePath(lowercaseVersion).toUtf8().constData(), AssetUtilities::NormalizeFilePath(triedThing).toUtf8().constData());
@@ -217,7 +214,7 @@ TEST_F(AssetUtilitiesTest, GenerateFingerprint_BasicTest)
     EXPECT_TRUE(UnitTestUtils::CreateDummyFile(absoluteTestFilePath1, "contents new"));
     result1 = AssetUtilities::GenerateFingerprint(jobDetail);
     EXPECT_NE(result1, result2);
-    
+
     // changing the other should also change the hash:
     EXPECT_TRUE(UnitTestUtils::CreateDummyFile(absoluteTestFilePath2, "contents new2"));
     result2 = AssetUtilities::GenerateFingerprint(jobDetail);
@@ -228,7 +225,7 @@ TEST_F(AssetUtilitiesTest, GenerateFingerprint_Empty_Asserts)
 {
     AssetProcessor::JobDetails jobDetail;
     AssetUtilities::GenerateFingerprint(jobDetail);
-    
+
     EXPECT_EQ(m_errorAbsorber->m_numAssertsAbsorbed, 1);
     m_errorAbsorber->Clear();
 }
@@ -242,7 +239,7 @@ TEST_F(AssetUtilitiesTest, GenerateFingerprint_MissingFile_NotSameAsZeroByteFile
     tempPath = QDir(canonicalTempDirPath);
     QString absoluteTestFilePath1 = tempPath.absoluteFilePath("basicfile.txt");
     QString absoluteTestFilePath2 = tempPath.absoluteFilePath("basicfile2.txt");
-    
+
     EXPECT_TRUE(UnitTestUtils::CreateDummyFile(absoluteTestFilePath1, "")); // empty file
     // note:  basicfile1 exists but is empty, whereas basicfile2, 3 are missing entirely.
 
@@ -300,7 +297,7 @@ TEST_F(AssetUtilitiesTest, GenerateFingerprint_OneFile_Differs)
     jobDetail.m_fingerprintFiles.insert(AZStd::make_pair(tempPath.absoluteFilePath("basicfile.txt").toUtf8().constData(), "basicfile.txt"));
 
     AZ::u32 fingerprint1 = AssetUtilities::GenerateFingerprint(jobDetail);
-    
+
     jobDetail.m_fingerprintFiles.clear();
     jobDetail.m_fingerprintFiles.insert(AZStd::make_pair(tempPath.absoluteFilePath("basicfile2.txt").toUtf8().constData(), "basicfile2.txt"));
     AZ::u32 fingerprint2 = AssetUtilities::GenerateFingerprint(jobDetail);
@@ -358,7 +355,7 @@ TEST_F(AssetUtilitiesTest, GenerateFingerprint_MultipleFile_Differs)
     jobDetail.m_fingerprintFiles.insert(AZStd::make_pair(tempPath.absoluteFilePath("basicfile.txt").toUtf8().constData(), "basicfile.txt"));
     jobDetail.m_fingerprintFiles.insert(AZStd::make_pair(tempPath.absoluteFilePath("basicfile2.txt").toUtf8().constData(), "basicfile2.txt"));
     fingerprint1 = AssetUtilities::GenerateFingerprint(jobDetail);
-    
+
     jobDetail.m_fingerprintFiles.clear();
     jobDetail.m_fingerprintFiles.insert(AZStd::make_pair(tempPath.absoluteFilePath("basicfile2.txt").toUtf8().constData(), "basicfile2.txt"));
     jobDetail.m_fingerprintFiles.insert(AZStd::make_pair(tempPath.absoluteFilePath("basicfile3.txt").toUtf8().constData(), "basicfile3.txt"));
@@ -379,6 +376,7 @@ TEST_F(AssetUtilitiesTest, GenerateFingerprint_OrderOnceJobDependency_NoChange)
     // OrderOnce Job dependency should not alter the fingerprint of the job
     QTemporaryDir dir;
     QDir tempPath(dir.path());
+    UnitTests::MockPathConversion mockPathConversion(dir.path().toUtf8().constData());
     QString canonicalTempDirPath = AssetUtilities::NormalizeDirectoryPath(tempPath.canonicalPath());
     UnitTestUtils::ScopedDir changeDir(canonicalTempDirPath);
     tempPath = QDir(canonicalTempDirPath);
@@ -392,10 +390,9 @@ TEST_F(AssetUtilitiesTest, GenerateFingerprint_OrderOnceJobDependency_NoChange)
 
     AssetProcessor::JobDetails jobDetail;
 
-    jobDetail.m_jobEntry.m_databaseSourceName = relFile1Path;
-    jobDetail.m_jobEntry.m_watchFolderPath = tempPath.absolutePath();
+    jobDetail.m_jobEntry.m_sourceAssetReference = AssetProcessor::SourceAssetReference(tempPath.absolutePath(), relFile1Path);
     jobDetail.m_fingerprintFiles.insert(AZStd::make_pair(absoluteTestFile1Path.toUtf8().constData(), relFile1Path));
-  
+
     AZ::u32 fingerprintWithoutOrderOnceJobDependency = AssetUtilities::GenerateFingerprint(jobDetail);
 
     AssetBuilderSDK::SourceFileDependency dep = { relFile2Path, AZ::Uuid::CreateNull() };
@@ -405,6 +402,39 @@ TEST_F(AssetUtilitiesTest, GenerateFingerprint_OrderOnceJobDependency_NoChange)
     AZ::u32 fingerprintWithOrderOnceJobDependency = AssetUtilities::GenerateFingerprint(jobDetail);
 
     EXPECT_EQ(fingerprintWithoutOrderOnceJobDependency, fingerprintWithOrderOnceJobDependency);
+}
+
+TEST_F(AssetUtilitiesTest, GenerateFingerprint_OrderOnlyJobDependency_NoChange)
+{
+    // OrderOnly Job dependency should not alter the fingerprint of the job
+    QTemporaryDir dir;
+    QDir tempPath(dir.path());
+    UnitTests::MockPathConversion mockPathConversion(dir.path().toUtf8().constData());
+    QString canonicalTempDirPath = AssetUtilities::NormalizeDirectoryPath(tempPath.canonicalPath());
+    UnitTestUtils::ScopedDir changeDir(canonicalTempDirPath);
+    tempPath = QDir(canonicalTempDirPath);
+    const char relFile1Path[] = "file.txt";
+    const char relFile2Path[] = "secondFile.txt";
+    QString absoluteTestFile1Path = tempPath.absoluteFilePath(relFile1Path);
+    QString absoluteTestFile2Path = tempPath.absoluteFilePath(relFile2Path);
+
+    EXPECT_TRUE(UnitTestUtils::CreateDummyFile(absoluteTestFile1Path, "contents"));
+    EXPECT_TRUE(UnitTestUtils::CreateDummyFile(absoluteTestFile2Path, "contents"));
+
+    AssetProcessor::JobDetails jobDetail;
+
+    jobDetail.m_jobEntry.m_sourceAssetReference = AssetProcessor::SourceAssetReference(tempPath.absolutePath(), relFile1Path);
+    jobDetail.m_fingerprintFiles.insert(AZStd::make_pair(absoluteTestFile1Path.toUtf8().constData(), relFile1Path));
+
+    AZ::u32 fingerprintWithoutOrderOnlyJobDependency = AssetUtilities::GenerateFingerprint(jobDetail);
+
+    AssetBuilderSDK::SourceFileDependency dep = { relFile2Path, AZ::Uuid::CreateNull() };
+    AssetBuilderSDK::JobDependency jobDep("key", "pc", AssetBuilderSDK::JobDependencyType::OrderOnly, dep);
+    jobDetail.m_jobDependencyList.push_back(AssetProcessor::JobDependencyInternal(jobDep));
+
+    AZ::u32 fingerprintWithOrderOnlyJobDependency = AssetUtilities::GenerateFingerprint(jobDetail);
+
+    EXPECT_EQ(fingerprintWithoutOrderOnlyJobDependency, fingerprintWithOrderOnlyJobDependency);
 }
 
 namespace AssetUtilsTest
@@ -432,6 +462,7 @@ TEST_F(AssetUtilitiesTest, GenerateFingerprint_GivenJobDependencies_AffectsOutco
 
     QTemporaryDir dir;
     QDir tempPath(dir.path());
+    UnitTests::MockPathConversion mockPathConversion(dir.path().toUtf8().constData());
     QString canonicalTempDirPath = AssetUtilities::NormalizeDirectoryPath(tempPath.canonicalPath());
     UnitTestUtils::ScopedDir changeDir(canonicalTempDirPath);
     tempPath = QDir(canonicalTempDirPath);
@@ -442,20 +473,20 @@ TEST_F(AssetUtilitiesTest, GenerateFingerprint_GivenJobDependencies_AffectsOutco
     AZ::u32 fingerprint1 = AssetUtilities::GenerateFingerprint(jobDetail);
 
     // add a job dependency - it should alter the fingerprint, even if the file does not exist.
-    AssetBuilderSDK::JobDependency jobDep("thing", "pc", AssetBuilderSDK::JobDependencyType::Order, AssetBuilderSDK::SourceFileDependency("basicfile2.txt", AZ::Uuid::CreateNull()));
+    AssetBuilderSDK::JobDependency jobDep("thing", "pc", AssetBuilderSDK::JobDependencyType::Order, AssetBuilderSDK::SourceFileDependency(tempPath.absoluteFilePath("basicfile.txt").toUtf8().constData(), AZ::Uuid::CreateNull()));
     AssetProcessor::JobDependencyInternal internalJobDep(jobDep);
     internalJobDep.m_builderUuidList.insert(AZ::Uuid::CreateRandom());
     jobDetail.m_jobDependencyList.push_back(internalJobDep);
 
     EXPECT_CALL(responder, GetJobFingerprint(_))
-        .WillOnce( 
+        .WillOnce(
             Return(0x12341234));
 
     AZ::u32 fingerprint2 = AssetUtilities::GenerateFingerprint(jobDetail);
 
     // different job fingerprint -> different result
     EXPECT_CALL(responder, GetJobFingerprint(_))
-        .WillOnce( 
+        .WillOnce(
             Return(0x11111111));
 
     AZ::u32 fingerprint3 = AssetUtilities::GenerateFingerprint(jobDetail);
@@ -469,6 +500,7 @@ TEST_F(AssetUtilitiesTest, GetFileFingerprint_BasicTest)
 {
     QTemporaryDir dir;
     QDir tempPath(dir.path());
+    UnitTests::MockPathConversion mockPathConversion(dir.path().toUtf8().constData());
     QString canonicalTempDirPath = AssetUtilities::NormalizeDirectoryPath(tempPath.canonicalPath());
     UnitTestUtils::ScopedDir changeDir(canonicalTempDirPath);
     tempPath = QDir(canonicalTempDirPath);
@@ -605,4 +637,3 @@ TEST_F(AssetUtilitiesTest, CreateDir_InvalidDir_Timeout_Valid)
 
     ASSERT_FALSE(dir.exists());
 }
-

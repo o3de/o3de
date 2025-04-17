@@ -20,6 +20,7 @@
 #include <EMotionFX/Source/EventHandler.h>
 #include <EMotionFX/Source/Transform.h>
 #include <EMotionFX/Source/MotionData/MotionDataSampleSettings.h>
+#include <EMotionFX/Source/MotionData/RootMotionExtractionData.h>
 
 namespace MCore
 {
@@ -37,7 +38,7 @@ namespace EMotionFX
     class EMFX_API MotionLinkData
     {
     public:
-        AZ_CLASS_ALLOCATOR(MotionLinkData, MotionAllocator, 0)
+        AZ_CLASS_ALLOCATOR(MotionLinkData, MotionAllocator)
         AZ_RTTI(MotionLinkData, "{4FE3628A-9F8D-4C55-9E9B-DF77405DC4F0}")
 
         MotionLinkData() = default;
@@ -60,7 +61,7 @@ namespace EMotionFX
         : public EventHandler
     {
     public:
-        AZ_CLASS_ALLOCATOR(MotionLinkCache, MotionAllocator, 0)
+        AZ_CLASS_ALLOCATOR(MotionLinkCache, MotionAllocator)
 
         MotionLinkCache();
         MotionLinkCache(const MotionLinkCache&) = delete;
@@ -92,7 +93,7 @@ namespace EMotionFX
     class EMFX_API MotionData
     {
     public:
-        AZ_CLASS_ALLOCATOR(MotionData, MotionAllocator, 0)
+        AZ_CLASS_ALLOCATOR(MotionData, MotionAllocator)
         AZ_RTTI(MotionData, "{3785996B-A523-475A-ADEF-58DDBB5E144B}")
 
         friend class MotionDataFactory;
@@ -277,7 +278,7 @@ namespace EMotionFX
         void SetJointBindPoseScale(size_t jointDataIndex, const AZ::Vector3& scale);
 #endif
 
-        virtual void ExtractMotion(size_t sampleJointDataIndex, size_t targetJointDataIndex, bool transitionZeroXAxis, bool transitionZeroYAxis, bool extractRotation);
+        virtual void ExtractRootMotion(size_t sampleJointDataIndex, size_t rootJointDataIndex, const RootMotionExtractionData& data);
 
         static AZStd::string ReadStringFromStream(MCore::Stream* stream, MCore::Endian::EEndianType sourceEndianType);
 
@@ -317,6 +318,7 @@ namespace EMotionFX
         float m_duration = 0.0f;
         float m_sampleRate = 30.0f;
         bool m_additive = false;
+        bool m_rootMotionExtracted = false;
 
     private:
         void ClearBaseData();

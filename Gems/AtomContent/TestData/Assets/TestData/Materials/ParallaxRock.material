@@ -1,0 +1,17 @@
+{
+    "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardPBR.materialtype",
+    "materialTypeVersion": 5,
+    "parentMaterial": "@gemroot:Atom_Feature_Common@/Assets/Materials/Presets/PBR/default_grid.material",
+    "propertyValues": {
+        "baseColor.textureMap": "../Textures/cc0/Rock030_2K_Color.jpg",
+        "metallic.useTexture": false,
+        "normal.textureMap": "../Textures/cc0/Rock030_2K_Normal.jpg",
+        "occlusion.diffuseTextureMap": "../Textures/cc0/Rock030_2K_AmbientOcclusion.jpg",
+        "parallax.factor": 0.029999999329447746,
+        "parallax.pdo": true,
+        "parallax.quality": "High",
+        "parallax.textureMap": "../Textures/cc0/Rock030_2K_Displacement.jpg",
+        "roughness.textureMap": "../Textures/cc0/Rock030_2K_Roughness.jpg",
+        "specularF0.useTexture": false
+    }
+}

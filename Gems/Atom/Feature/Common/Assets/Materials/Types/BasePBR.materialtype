@@ -16,50 +16,36 @@
                 "$import": "MaterialInputs/BaseColorPropertyGroup.json"
             },
             { 
+                "$import": "MaterialInputs/VertexColorPropertyGroup.json"
+            },
+            {
                 "$import": "MaterialInputs/MetallicPropertyGroup.json"
             },
-            { 
+            {
                 "$import": "MaterialInputs/RoughnessPropertyGroup.json"
             },
-            { 
+            {
                 "$import": "MaterialInputs/SpecularPropertyGroup.json"
             },
-            { 
+            {
                 "$import": "MaterialInputs/NormalPropertyGroup.json"
             },
-            { 
+            {
                 "$import": "MaterialInputs/UvPropertyGroup.json"
             },
-            { 
+            {
                 "$import": "MaterialInputs/IrradiancePropertyGroup.json"
             },
-            { 
+            {
                 "$import": "MaterialInputs/GeneralCommonPropertyGroup.json"
+            },
+            {
+                "$import": "MaterialInputs/SilhouetteBlockerPropertyGroup.json"
             }
         ]
     },
-    "shaders": [
-        {
-            "file": "./BasePBR_ForwardPass.shader",
-            "tag": "ForwardPass_EDS"
-        },
-        {
-            "file": "./BasePBR_LowEndForward.shader",
-            "tag": "LowEndForward_EDS"
-        },
-        {
-            "file": "Shaders/Shadow/Shadowmap.shader",
-            "tag": "Shadowmap"
-        },
-        {
-            "file": "Shaders/Depth/DepthPass.shader",
-            "tag": "DepthPass"
-        },
-        {
-            "file": "Shaders/MotionVector/MeshMotionVector.shader",
-            "tag": "MeshMotionVector"
-        }
-    ],
+    "lightingModel": "Base",
+    "materialShaderCode": "BasePBR.azsli",
     "functors": [
     ],
     "uvNameMap": {

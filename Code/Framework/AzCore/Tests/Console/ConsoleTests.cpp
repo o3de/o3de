@@ -51,12 +51,11 @@ namespace AZ
         ", Option3/6 sets the CVar to the Option3 value");
 
     class ConsoleTests
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         void SetUp() override
         {
-            SetupAllocator();
             m_console = AZStd::make_unique<AZ::Console>();
             m_console->LinkDeferredFunctors(AZ::ConsoleFunctorBase::GetDeferredHead());
             AZ::Interface<AZ::IConsole>::Register(m_console.get());
@@ -66,7 +65,6 @@ namespace AZ
         {
             AZ::Interface<AZ::IConsole>::Unregister(m_console.get());
             m_console = nullptr;
-            TeardownAllocator();
         }
 
         void TestClassFunc(const AZ::ConsoleCommandContainer& someStrings)
@@ -350,7 +348,7 @@ namespace AZ
         // Verify that we can successfully execute a free-standing console functor.
         // The test functor puts the number of arguments into s_consoleFreeFuncArgs.
         s_consoleFreeFuncArgs = 0;
-        bool result = console->PerformCommand("TestFreeFunc arg1 arg2");
+        bool result = static_cast<bool>(console->PerformCommand("TestFreeFunc arg1 arg2"));
         EXPECT_TRUE(result);
         EXPECT_EQ(2, s_consoleFreeFuncArgs);
     }
@@ -363,7 +361,7 @@ namespace AZ
         // Verify that we can successfully execute a class instance console functor.
         // The test functor puts the number of arguments into m_classFuncArgs.
         m_classFuncArgs = 0;
-        bool result = console->PerformCommand("ConsoleTests.TestClassFunc arg1 arg2");
+        bool result = static_cast<bool>(console->PerformCommand("ConsoleTests.TestClassFunc arg1 arg2"));
         EXPECT_TRUE(result);
         EXPECT_EQ(2, m_classFuncArgs);
     }
@@ -391,7 +389,7 @@ namespace AZ
         AZ::IConsole* console = AZ::Interface<AZ::IConsole>::Get();
         ASSERT_TRUE(console);
 
-        bool result = console->PerformCommand("Example.TestClassFunc arg1 arg2");
+        bool result = static_cast<bool>(console->PerformCommand("Example.TestClassFunc arg1 arg2"));
         EXPECT_TRUE(result);
         for (auto& instance : multiInstances)
         {
@@ -410,7 +408,7 @@ namespace ConsoleSettingsRegistryTests
         AZStd::string_view m_testConfigContents;
     };
     class ConsoleSettingsRegistryFixture
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
         , public ::testing::WithParamInterface<ConfigFileParams>
     {
     public:
@@ -426,16 +424,12 @@ namespace ConsoleSettingsRegistryTests
             AZ::SettingsRegistry::Register(m_registry.get());
 
             // Create a TestFile in the Test Directory
-            m_testFolder = AZ::IO::FixedMaxPath(AZ::Utils::GetExecutableDirectory()) / "ConsoleTestFolder";
             auto configFileParams = GetParam();
-            CreateTestFile(m_testFolder / configFileParams.m_testConfigFileName, configFileParams.m_testConfigContents);
+            AZ::Test::CreateTestFile(m_tempDirectory, configFileParams.m_testConfigFileName, configFileParams.m_testConfigContents);
         }
 
         void TearDown() override
         {
-            // Remove the Test Directory
-            DeleteFolderRecursive(m_testFolder);
-
             // Restore the old global settings registry
             AZ::SettingsRegistry::Unregister(m_registry.get());
             if (m_oldSettingsRegistry != nullptr)
@@ -453,53 +447,10 @@ namespace ConsoleSettingsRegistryTests
 
         AZ_CONSOLEFUNC(ConsoleSettingsRegistryFixture, TestClassFunc, AZ::ConsoleFunctorFlags::Null, "");
 
-        static void DeleteFolderRecursive(const AZ::IO::PathView& path)
-        {
-            auto callback = [&path](AZStd::string_view filename, bool isFile) -> bool
-            {
-                if (isFile)
-                {
-                    auto filePath = AZ::IO::FixedMaxPath(path) / filename;
-                    AZ::IO::SystemFile::Delete(filePath.c_str());
-                }
-                else
-                {
-                    if (filename != "." && filename != "..")
-                    {
-                        auto folderPath = AZ::IO::FixedMaxPath(path) / filename;
-                        DeleteFolderRecursive(folderPath);
-                    }
-                }
-                return true;
-            };
-            auto searchPath = AZ::IO::FixedMaxPath(path) / "*";
-            AZ::IO::SystemFile::FindFiles(searchPath.c_str(), callback);
-            AZ::IO::SystemFile::DeleteDir(AZ::IO::FixedMaxPathString(path.Native()).c_str());
-        }
-
-        static bool CreateTestFile(const AZ::IO::FixedMaxPath& testPath, AZStd::string_view content)
-        {
-            AZ::IO::SystemFile file;
-            if (!file.Open(testPath.c_str(), AZ::IO::SystemFile::OpenMode::SF_OPEN_CREATE
-                | AZ::IO::SystemFile::SF_OPEN_CREATE_PATH | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY))
-            {
-                AZ_Assert(false, "Unable to open test file for writing: %s", testPath.c_str());
-                return false;
-            }
-
-            if (file.Write(content.data(), content.size()) != content.size())
-            {
-                AZ_Assert(false, "Unable to write content to test file: %s", testPath.c_str());
-                return false;
-            }
-
-            return true;
-        }
-
     protected:
         size_t m_stringArgCount{};
         AZStd::unique_ptr<AZ::SettingsRegistryInterface> m_registry;
-        AZ::IO::FixedMaxPath m_testFolder;
+        AZ::Test::ScopedAutoTempDirectory m_tempDirectory;
 
     private:
         AZ::SettingsRegistryInterface* m_oldSettingsRegistry{};
@@ -537,7 +488,7 @@ namespace ConsoleSettingsRegistryTests
         AZ::testString = {};
 
         auto configFileParams = GetParam();
-        auto testFilePath = m_testFolder / configFileParams.m_testConfigFileName;
+        auto testFilePath = m_tempDirectory.GetDirectoryAsFixedMaxPath() / configFileParams.m_testConfigFileName;
         EXPECT_TRUE(AZ::IO::SystemFile::Exists(testFilePath.c_str()));
         testConsole.ExecuteConfigFile(testFilePath.Native());
         EXPECT_TRUE(s_consoleFreeFunctionInvoked);
@@ -578,7 +529,7 @@ namespace ConsoleSettingsRegistryTests
 
         // Invoke the Commands for Scoped CVar variables above
         auto configFileParams = GetParam();
-        auto testFilePath = m_testFolder / configFileParams.m_testConfigFileName;
+        auto testFilePath = m_tempDirectory.GetDirectoryAsFixedMaxPath() / configFileParams.m_testConfigFileName;
         EXPECT_TRUE(AZ::IO::SystemFile::Exists(testFilePath.c_str()));
         testConsole.ExecuteConfigFile(testFilePath.Native());
 
@@ -695,7 +646,7 @@ namespace ConsoleSettingsRegistryTests
             ]
         )";
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         ExecuteCommandFromSettingsFile,
         ConsoleSettingsRegistryFixture,
         ::testing::Values(

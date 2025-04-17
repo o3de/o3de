@@ -32,7 +32,7 @@ namespace ScriptCanvas
     {
     public:
         AZ_RTTI(EBusHandler, "{38E3448F-1876-41DF-A26F-EF873AF5EE14}", Nodeable);
-        AZ_CLASS_ALLOCATOR(EBusHandler, AZ::SystemAllocator, 0);      
+        AZ_CLASS_ALLOCATOR(EBusHandler, AZ::SystemAllocator);      
         
         static EBusHandler* Create(ExecutionStateWeakPtr executionState, AZStd::string_view busName);
         

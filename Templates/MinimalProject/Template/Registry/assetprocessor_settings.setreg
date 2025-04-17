@@ -9,14 +9,18 @@
                 },
                 "ScanFolder Project/Shaders": {
                     "watch": "@PROJECTROOT@/Shaders",
-                    "recurisve": 1,
+                    "recursive": 1,
                     "order": 2
                 },
                 "ScanFolder Project/Registry": {
                     "watch": "@PROJECTROOT@/Registry",
                     "recursive": 1,
                     "order": 3
-                }
+                },
+                "Exclude export scripts": {
+                    "pattern": ".*\\\\/ExportScripts\\\\/.*"
+                },
+                "ProjectRelativeGemsScanFolderPriority":"higher"
             }
         }
     }

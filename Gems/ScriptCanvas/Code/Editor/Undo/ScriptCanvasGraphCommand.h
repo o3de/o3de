@@ -36,7 +36,7 @@ namespace ScriptCanvasEditor
     {
     public:
         AZ_RTTI(GraphItemCommand, "{94B50FAC-ACAF-4B9B-BA3C-9F3EE36854BA}", AzToolsFramework::UndoSystem::URSequencePoint);
-        AZ_CLASS_ALLOCATOR(GraphItemCommand, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GraphItemCommand, AZ::SystemAllocator);
 
         explicit GraphItemCommand(AZStd::string_view friendlyName);
         ~GraphItemCommand() override = default;
@@ -67,7 +67,7 @@ namespace ScriptCanvasEditor
     {
     public:
         AZ_RTTI(GraphItemChangeCommand, "{9F8805F7-61CD-40FC-B426-020925F4E3DB}", GraphItemCommand);
-        AZ_CLASS_ALLOCATOR(GraphItemChangeCommand, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GraphItemChangeCommand, AZ::SystemAllocator);
 
         GraphItemChangeCommand(AZStd::string_view friendlyName);
         ~GraphItemChangeCommand() = default;
@@ -93,7 +93,7 @@ namespace ScriptCanvasEditor
     {
     public:
         AZ_RTTI(GraphItemAddCommand, "{01E6BC39-0A2C-4C05-9384-804A63321D62}", GraphItemChangeCommand);
-        AZ_CLASS_ALLOCATOR(GraphItemAddCommand, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GraphItemAddCommand, AZ::SystemAllocator);
 
         explicit GraphItemAddCommand(AZStd::string_view friendlyName);
         ~GraphItemAddCommand() override = default;
@@ -114,7 +114,7 @@ namespace ScriptCanvasEditor
     {
     public:
         AZ_RTTI(GraphItemRemovalCommand, "{6257B3EC-E9E8-4419-AA25-2A768C21B635}", GraphItemChangeCommand);
-        AZ_CLASS_ALLOCATOR(GraphItemRemovalCommand, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GraphItemRemovalCommand, AZ::SystemAllocator);
 
         explicit GraphItemRemovalCommand(AZStd::string_view friendlyName);
         ~GraphItemRemovalCommand() override = default;

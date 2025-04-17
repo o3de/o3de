@@ -6,12 +6,16 @@
  *
  */
 
+#include <Atom/Features/Bindless.azsli>
+#include <Atom/Features/ColorManagement/TransformColor.azsli>
+
 struct TextureData
 {
     float4 m_baseColor;
     float3 m_normal;
     float  m_metallic;
     float  m_roughness;
+    float3 m_emissiveColor;
 };
 
 TextureData GetHitTextureData(RayTracingMaterialSrg::MaterialInfo materialInfo, float2 uv)
@@ -22,22 +26,33 @@ TextureData GetHitTextureData(RayTracingMaterialSrg::MaterialInfo materialInfo, 
     if (materialInfo.m_textureFlags & TEXTURE_FLAG_BASECOLOR)
     {
         // array index of the baseColor texture for this material in the m_materialTextures unbounded array
-        uint baseColorTextureArrayIndex = RayTracingMaterialSrg::m_materialTextureIndices[materialInfo.m_textureStartIndex + MATERIAL_BASECOLOR_TEXTURE_OFFSET];
+        uint baseColorTextureArrayIndex = RayTracingMaterialSrg::m_materialTextureIndices[NonUniformResourceIndex(materialInfo.m_textureStartIndex + MATERIAL_BASECOLOR_TEXTURE_OFFSET)];
 
+#if USE_BINDLESS_SRG
+        textureData.m_baseColor = Bindless::GetTexture2D(baseColorTextureArrayIndex).SampleLevel(RayTracingMaterialSrg::LinearSampler, uv, 0);
+#else
         textureData.m_baseColor = RayTracingMaterialSrg::m_materialTextures[baseColorTextureArrayIndex].SampleLevel(RayTracingMaterialSrg::LinearSampler, uv, 0);
+#endif
     }
     else
     {
         textureData.m_baseColor = materialInfo.m_baseColor;
     }
 
+    // transform the base color to the ACEScg color space
+    textureData.m_baseColor.rgb = TransformColor(textureData.m_baseColor.rgb, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg);
+
     // normal
     if (materialInfo.m_textureFlags & TEXTURE_FLAG_NORMAL)
     {
         // array index of the normal texture for this material in the m_materialTextures unbounded array
-        uint normalTextureArrayIndex = RayTracingMaterialSrg::m_materialTextureIndices[materialInfo.m_textureStartIndex + MATERIAL_NORMAL_TEXTURE_OFFSET];
+        uint normalTextureArrayIndex = RayTracingMaterialSrg::m_materialTextureIndices[NonUniformResourceIndex(materialInfo.m_textureStartIndex + MATERIAL_NORMAL_TEXTURE_OFFSET)];
 
-        textureData.m_normal = RayTracingMaterialSrg::m_materialTextures[normalTextureArrayIndex].SampleLevel(RayTracingMaterialSrg::LinearSampler, uv, 0);
+#if USE_BINDLESS_SRG
+        textureData.m_normal = Bindless::GetTexture2D(normalTextureArrayIndex).SampleLevel(RayTracingMaterialSrg::LinearSampler, uv, 0).rgb;
+#else
+        textureData.m_normal = RayTracingMaterialSrg::m_materialTextures[normalTextureArrayIndex].SampleLevel(RayTracingMaterialSrg::LinearSampler, uv, 0).rgb;
+#endif       
     }
     else
     {
@@ -48,28 +63,53 @@ TextureData GetHitTextureData(RayTracingMaterialSrg::MaterialInfo materialInfo, 
     if (materialInfo.m_textureFlags & TEXTURE_FLAG_METALLIC)
     {
         // array index of the metallic texture for this material in the m_materialTextures unbounded array
-        uint metallicTextureArrayIndex = RayTracingMaterialSrg::m_materialTextureIndices[materialInfo.m_textureStartIndex + MATERIAL_METALLIC_TEXTURE_OFFSET];
+        uint metallicTextureArrayIndex = RayTracingMaterialSrg::m_materialTextureIndices[NonUniformResourceIndex(materialInfo.m_textureStartIndex + MATERIAL_METALLIC_TEXTURE_OFFSET)];
 
-        textureData.m_metallic = RayTracingMaterialSrg::m_materialTextures[metallicTextureArrayIndex].SampleLevel(RayTracingMaterialSrg::LinearSampler, uv, 0);
+#if USE_BINDLESS_SRG
+        textureData.m_metallic = Bindless::GetTexture2D(metallicTextureArrayIndex).SampleLevel(RayTracingMaterialSrg::LinearSampler, uv, 0).r;
+#else
+        textureData.m_metallic = RayTracingMaterialSrg::m_materialTextures[metallicTextureArrayIndex].SampleLevel(RayTracingMaterialSrg::LinearSampler, uv, 0).r;
+#endif
     }
     else
     {
-        textureData.m_metallic = materialInfo.m_metallicFactor;
+        textureData.m_metallic = saturate(materialInfo.m_metallicFactor);
     }
 
     // roughness
     if (materialInfo.m_textureFlags & TEXTURE_FLAG_ROUGHNESS)
     {
         // array index of the roughness texture for this material in the m_materialTextures unbounded array
-        uint roughnessTextureArrayIndex = RayTracingMaterialSrg::m_materialTextureIndices[materialInfo.m_textureStartIndex + MATERIAL_ROUGHNESS_TEXTURE_OFFSET];
+        uint roughnessTextureArrayIndex = RayTracingMaterialSrg::m_materialTextureIndices[NonUniformResourceIndex(materialInfo.m_textureStartIndex + MATERIAL_ROUGHNESS_TEXTURE_OFFSET)];
 
-        textureData.m_roughness = RayTracingMaterialSrg::m_materialTextures[roughnessTextureArrayIndex].SampleLevel(RayTracingMaterialSrg::LinearSampler, uv, 0);
+#if USE_BINDLESS_SRG
+        textureData.m_roughness = Bindless::GetTexture2D(roughnessTextureArrayIndex).SampleLevel(RayTracingMaterialSrg::LinearSampler, uv, 0).r;
+#else
+        textureData.m_roughness = RayTracingMaterialSrg::m_materialTextures[roughnessTextureArrayIndex].SampleLevel(RayTracingMaterialSrg::LinearSampler, uv, 0).r;
+#endif
     }
     else
     {
-        textureData.m_roughness = materialInfo.m_roughnessFactor;
+        textureData.m_roughness = saturate(materialInfo.m_roughnessFactor);
     }
+
+    // emissive
+    textureData.m_emissiveColor = materialInfo.m_emissiveColor;
+
+    if (materialInfo.m_textureFlags & TEXTURE_FLAG_EMISSIVE)
+    {
+        // array index of the emissive texture for this material in the m_materialTextures unbounded array
+        uint emissiveTextureArrayIndex = RayTracingMaterialSrg::m_materialTextureIndices[NonUniformResourceIndex(materialInfo.m_textureStartIndex + MATERIAL_EMISSIVE_TEXTURE_OFFSET)];
+
+#if USE_BINDLESS_SRG
+        textureData.m_emissiveColor *= Bindless::GetTexture2D(emissiveTextureArrayIndex).SampleLevel(RayTracingMaterialSrg::LinearSampler, uv, 0).rgb;
+#else
+        textureData.m_emissiveColor *= RayTracingMaterialSrg::m_materialTextures[emissiveTextureArrayIndex].SampleLevel(RayTracingMaterialSrg::LinearSampler, uv, 0).rgb;
+#endif
+    }
+
+    // transform the emissive color to the ACEScg color space
+    textureData.m_emissiveColor = TransformColor(textureData.m_emissiveColor, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg);
 
     return textureData;
 }
-    

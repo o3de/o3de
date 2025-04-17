@@ -20,7 +20,6 @@
 #include <SceneAPI/SceneData/Rules/CoordinateSystemRule.h>
 
 #include <SceneAPIExt/Rules/LodRule.h>
-#include <SceneAPIExt/Rules/IActorScaleRule.h>
 #include <SceneAPIExt/Rules/SkeletonOptimizationRule.h>
 #include <SceneAPIExt/Groups/ActorGroup.h>
 #include <RCExt/Actor/ActorBuilder.h>
@@ -89,7 +88,7 @@ namespace EMotionFX
             SceneContainers::SceneGraph::NodeIndex rootBoneNodeIndex = graph.Find(rootBoneName);
             if (!rootBoneNodeIndex.IsValid())
             {
-                AZ_TracePrintf(SceneUtil::ErrorWindow, "Root bone cannot be found.\n");
+                AZ_Trace(SceneUtil::ErrorWindow, "Root bone cannot be found.\n");
                 return SceneEvents::ProcessingResult::Failure;
             }
 
@@ -207,37 +206,42 @@ namespace EMotionFX
             if (skeletonOptimizationRule)
             {
                 const SceneData::SceneNodeSelectionList& criticalBonesList = skeletonOptimizationRule->GetCriticalBonesList();
-                const size_t criticalBoneCount = criticalBonesList.GetSelectedNodeCount();
-                
-                for (size_t boneIndex = 0; boneIndex < criticalBoneCount; ++boneIndex)
-                {
-                    const AZStd::string& bonePath = criticalBonesList.GetSelectedNode(boneIndex);
 
-                    // The bone name stores the node path in the scene. We need to convert it to EMotionFX node name.
-                    const SceneContainers::SceneGraph::NodeIndex nodeIndex = graph.Find(bonePath);
-                    if (!nodeIndex.IsValid())
+                criticalBonesList.EnumerateSelectedNodes(
+                    [&](const AZStd::string& bonePath)
                     {
-                        AZ_TracePrintf(SceneUtil::WarningWindow, "Critical bone %s is not stored in the scene. Skipping it.", bonePath.c_str());
-                        continue;
-                    }
+                        // The bone name stores the node path in the scene. We need to convert it to EMotionFX node name.
+                        const SceneContainers::SceneGraph::NodeIndex nodeIndex = graph.Find(bonePath);
+                        if (!nodeIndex.IsValid())
+                        {
+                            AZ_Trace(
+                                SceneUtil::WarningWindow, "Critical bone %s is not stored in the scene. Skipping it.", bonePath.c_str());
+                            return true;
+                        }
 
-                    AZStd::shared_ptr<const SceneDataTypes::IBoneData> boneData = azrtti_cast<const SceneDataTypes::IBoneData*>(graph.GetNodeContent(nodeIndex));
-                    if (!boneData)
-                    {
-                        // Make sure we are dealing with bone here.
-                        continue;
-                    }
+                        AZStd::shared_ptr<const SceneDataTypes::IBoneData> boneData =
+                            azrtti_cast<const SceneDataTypes::IBoneData*>(graph.GetNodeContent(nodeIndex));
+                        if (!boneData)
+                        {
+                            // Make sure we are dealing with bone here.
+                            return true;
+                        }
 
-                    const SceneContainers::SceneGraph::Name& nodeName = graph.GetNodeName(nodeIndex);
-                    EMotionFX::Node* emfxNode = actorSkeleton->FindNodeByName(nodeName.GetName());
-                    if (!emfxNode)
-                    {
-                        AZ_TracePrintf(SceneUtil::WarningWindow, "Critical bone %s is not in the actor skeleton hierarchy. Skipping it.", nodeName.GetName());
-                        continue;
-                    }
-                    // Critical node cannot be optimized out.
-                    emfxNode->SetIsCritical(true);
-                }
+                        const SceneContainers::SceneGraph::Name& nodeName = graph.GetNodeName(nodeIndex);
+                        EMotionFX::Node* emfxNode = actorSkeleton->FindNodeByName(nodeName.GetName());
+                        if (!emfxNode)
+                        {
+                            AZ_Trace(
+                                SceneUtil::WarningWindow,
+                                "Critical bone %s is not in the actor skeleton hierarchy. Skipping it.",
+                                nodeName.GetName());
+                            return true;
+                        }
+                        // Critical node cannot be optimized out.
+                        emfxNode->SetIsCritical(true);
+
+                        return true;
+                    });
 
                 actor->SetOptimizeSkeleton(skeletonOptimizationRule->GetServerSkeletonOptimization());
             }
@@ -268,29 +272,34 @@ namespace EMotionFX
             {
                 AZStd::vector<AZStd::string> criticalJoints;
                 const auto& criticalBonesList = skeletonOptimizeRule->GetCriticalBonesList();
-                const size_t numSelectedBones = criticalBonesList.GetSelectedNodeCount();
-                for (size_t i = 0; i < numSelectedBones; ++i)
-                {
-                    const AZStd::string criticalBonePath = criticalBonesList.GetSelectedNode(i);
-                    SceneContainers::SceneGraph::NodeIndex nodeIndex = graph.Find(criticalBonePath);
-                    if (!nodeIndex.IsValid())
+                criticalBonesList.EnumerateSelectedNodes(
+                    [&](const AZStd::string& criticalBonePath)
                     {
-                        AZ_TracePrintf(SceneUtil::WarningWindow, "Critical bone '%s' is not stored in the scene. Skipping it.", criticalBonePath.c_str());
-                        continue;
-                    }
+                        SceneContainers::SceneGraph::NodeIndex nodeIndex = graph.Find(criticalBonePath);
+                        if (!nodeIndex.IsValid())
+                        {
+                            AZ_Trace(
+                                SceneUtil::WarningWindow,
+                                "Critical bone '%s' is not stored in the scene. Skipping it.",
+                                criticalBonePath.c_str());
+                            return true;
+                        }
 
-                    const AZStd::shared_ptr<const SceneDataTypes::IBoneData> boneData = azrtti_cast<const SceneDataTypes::IBoneData*>(graph.GetNodeContent(nodeIndex));
-                    if (!boneData)
-                    {
-                        continue;
-                    }
+                        const AZStd::shared_ptr<const SceneDataTypes::IBoneData> boneData =
+                            azrtti_cast<const SceneDataTypes::IBoneData*>(graph.GetNodeContent(nodeIndex));
+                        if (!boneData)
+                        {
+                            return true;
+                        }
 
-                    const SceneContainers::SceneGraph::Name& nodeName = graph.GetNodeName(nodeIndex);
-                    if (nodeName.GetNameLength() > 0)
-                    {
-                        criticalJoints.emplace_back(nodeName.GetName());
-                    }
-                }
+                        const SceneContainers::SceneGraph::Name& nodeName = graph.GetNodeName(nodeIndex);
+                        if (nodeName.GetNameLength() > 0)
+                        {
+                            criticalJoints.emplace_back(nodeName.GetName());
+                        }
+
+                        return true;
+                    });
 
                 // Mark all skeletal joints for each LOD to be enabled or disabled, based on the skinning data and critical list.
                 // Also print the results to the log.
@@ -298,10 +307,9 @@ namespace EMotionFX
             }
 
             // Scale the actor
-            AZStd::shared_ptr<Rule::IActorScaleRule> scaleRule = actorGroup.GetRuleContainerConst().FindFirstByType<Rule::IActorScaleRule>();
-            if (scaleRule)
+            if (coordinateSystemRule)
             {
-                const float scaleFactor = scaleRule->GetScaleFactor();
+                const float scaleFactor = coordinateSystemRule->GetScale();
                 if (!AZ::IsClose(scaleFactor, 1.0f, FLT_EPSILON)) // If the scale factor is 1, no need to call Scale
                 {
                     actor->Scale(scaleFactor);

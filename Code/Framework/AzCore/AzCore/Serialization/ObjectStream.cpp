@@ -12,6 +12,7 @@
 #include <AzCore/Serialization/DataOverlayInstanceMsgs.h>
 #include <AzCore/Serialization/DataOverlayProviderMsgs.h>
 #include <AzCore/Serialization/DynamicSerializableField.h>
+#include <AzCore/Serialization/Locale.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Debug/Profiler.h>
@@ -105,7 +106,7 @@ namespace AZ
                 ST_BINARYFLAG_ELEMENT_END       = 0
             };
 
-            AZ_CLASS_ALLOCATOR(ObjectStreamImpl, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ObjectStreamImpl, SystemAllocator);
 
             ObjectStreamImpl(IO::GenericStream* stream, SerializeContext* sc, const ClassReadyCB& readyCB, const CompletionCB& doneCB, const FilterDescriptor& filterDesc = FilterDescriptor(), int flags = 0, const InplaceLoadRootInfoCB& inplaceLoadInfoCB = InplaceLoadRootInfoCB())
                 : ObjectStream(sc)
@@ -118,6 +119,7 @@ namespace AZ
                 , m_pending(0)
                 , m_inStream(&m_buffer1)
                 , m_outStream(&m_buffer2)
+                , m_localeScope(false) // do not automatically activate the locale.
             {
                 // Assign default asset filter if none was provided by the user.
                 m_filterDesc = filterDesc;
@@ -240,6 +242,7 @@ namespace AZ
             // completed successfully to make sure the equivalent amount
             // of CloseElements are called
             AZStd::vector<bool>                           m_writeElementResultStack;
+            Locale::ScopedSerializationLocale             m_localeScope;
         };
 
         //=========================================================================
@@ -248,15 +251,16 @@ namespace AZ
         //=========================================================================
         void ObjectStreamImpl::PreparseOldVersion(SerializeContext& sc, SerializeContext::DataElementNode& elementNode, IO::GenericStream& stream, const SerializeContext::ClassData* elementClass)
         {
-            // whenever tracing is availalble we make error logging available.
+            // whenever tracing is available we make error logging available.
 #if defined(AZ_ENABLE_TRACING) 
             {
-                SerializeContext::DbgStackEntry de;
-                de.m_dataPtr = nullptr;
-                de.m_uuidPtr = &elementClass->m_typeId;
-                de.m_elementName = elementNode.GetNameString();
-                de.m_classData = elementClass;
-                de.m_classElement = nullptr;
+                SerializeContext::DbgStackEntry de {
+                    /*.m_dataPtr =*/ nullptr,
+                    /*.m_uuid =*/ elementClass ? elementClass->m_typeId : AZ::Uuid{},
+                    /*.m_classData =*/ elementClass,
+                    /*.m_elementName =*/ elementNode.GetNameString(),
+                    /*.m_classElement =*/ nullptr,
+                };
                 m_errorLogger.Push(de);
             }
 #endif // AZ_ENABLE_TRACING
@@ -281,7 +285,17 @@ namespace AZ
 
                 if (childClass)
                 {
-                    AZ_Assert(childNode.m_element.m_version <= childClass->m_version, "Serialize was parsing old version class and found newer version element! This should be impossible!");
+                    AZ_Error("Error", childNode.m_element.m_version <= childClass->m_version,
+                        "The current class (%s) version is (%d). The field (%s) of class (%s) with version (%d) is a newer version than the code supports. "
+                        "First, check if you've built latest, your C++ code could be out of date. "
+                        "It is possible that the class version has been reset. Please check if the team provides a conversion tool. "
+                        "To resolve you'll either need to get the latest version of this class, use any provided migration tools or re-sync to an early commit. ",
+                        childClass->m_name,
+                        childClass->m_version,
+                        childNode.m_element.m_name,
+                        childClass->m_name,
+                        childNode.m_element.m_version
+                    );
 
                     // Only proceed if:
                     // * the child node is out of date AND the class does not have a custom serializer
@@ -301,11 +315,6 @@ namespace AZ
                         }
                         continue;
                     }
-                }
-                else
-                {
-                    // output a warning
-                    //AZ_Warning("Serializer",false,"Element '%s' with class ID '%s' found while converting '%s' is not registered with the serializer! You will have to parse this data yourself!",childElement.m_name,childElement.m_id.ToString<AZStd::string>().c_str(), parent->m_name);
                 }
 
                 if (childNode.m_element.m_dataSize > 0) // if we have values to convert
@@ -515,7 +524,8 @@ namespace AZ
                     overlaidNode.m_element.m_stream = &stream;
                     DataOverlayTarget data(&overlaidNode, m_sc, &m_errorLogger);
 
-                    EBUS_EVENT_ID(overlay.m_providerId, DataOverlayProviderBus, FillOverlayData, &data, overlay.m_dataToken);
+                    DataOverlayProviderBus::Event(
+                        overlay.m_providerId, &DataOverlayProviderBus::Events::FillOverlayData, &data, overlay.m_dataToken);
                     if (overlaidNode.GetNumSubElements() > 0)
                     {
                         AZ_Assert(overlaidNode.GetNumSubElements() == 1, "Only one node should ever be returned by the overlay provider!");
@@ -595,7 +605,7 @@ namespace AZ
                             }
                         }
                     }
-                    else if (parentClassInfo->m_typeId == SerializeTypeInfo<DynamicSerializableField>::GetUuid() && element.m_nameCrc == AZ_CRC("m_data", 0x335cc942))   // special case for dynamic-typed fields
+                    else if (parentClassInfo->m_typeId == SerializeTypeInfo<DynamicSerializableField>::GetUuid() && element.m_nameCrc == AZ_CRC_CE("m_data"))   // special case for dynamic-typed fields
                     {
                         DynamicSerializableField* fieldContainer = reinterpret_cast<DynamicSerializableField*>(parentClassPtr);
                         fieldContainer->m_typeId = classData->m_typeId;
@@ -764,12 +774,13 @@ namespace AZ
 
 #if defined(AZ_ENABLE_TRACING)
                 {
-                    SerializeContext::DbgStackEntry de;
-                    de.m_dataPtr = dataAddress;
-                    de.m_uuidPtr = &element.m_id;
-                    de.m_elementName = element.m_name;
-                    de.m_classData = classData;
-                    de.m_classElement = classElement;
+                    SerializeContext::DbgStackEntry de {
+                        /*.m_dataPtr =*/ dataAddress,
+                        /*.m_uuid =*/ element.m_id,
+                        /*.m_classData =*/ classData,
+                        /*.m_elementName =*/ element.m_name,
+                        /*.m_classElement =*/ classElement,
+                    };
                     m_errorLogger.Push(de);
                 }
 #endif // AZ_ENABLE_TRACING
@@ -800,8 +811,6 @@ namespace AZ
                 // Serializable leaf element.
                 else if (classData->m_serializer)
                 {
-                    AZ_PROFILE_SCOPE(AzCore, "ObjectStreamImpl::LoadClass Load");
-
                     // Wrap the stream
                     IO::GenericStream* currentStream = &m_inStream;
                     IO::MemoryStream memStream(m_inStream.GetData()->data(), 0, element.m_dataSize);
@@ -1564,7 +1573,8 @@ namespace AZ
             {
                 // Data overlays are only supported for non-root elements, which means we should have a valid class element.
                 DataOverlayInfo overlay;
-                EBUS_EVENT_ID_RESULT(overlay, DataOverlayInstanceId(objectPtr, classElement->m_typeId), DataOverlayInstanceBus, GetOverlayInfo);
+                DataOverlayInstanceBus::EventResult(
+                    overlay, DataOverlayInstanceId(objectPtr, classElement->m_typeId), &DataOverlayInstanceBus::Events::GetOverlayInfo);
                 if (overlay.m_providerId)
                 {
                     const SerializeContext::ClassData* overlayClassMetadata = m_sc->FindClassData(SerializeTypeInfo<DataOverlayInfo>::GetUuid());
@@ -1742,7 +1752,8 @@ namespace AZ
                     classData->m_serializer->DataToText(memStream, m_outStream, false);
 
                     char* rawText = static_cast<char*>(m_outStream.GetData()->data());
-                    char* xmlString = m_xmlDoc->allocate_string(rawText, static_cast<size_t>(m_outStream.GetCurPos() + 1));
+                    char* xmlString = m_xmlDoc->allocate_string(nullptr, static_cast<size_t>(m_outStream.GetCurPos() + 1));
+                    AZStd::copy(rawText, rawText + m_outStream.GetCurPos(), xmlString);
                     xmlString[m_outStream.GetCurPos()] = 0;
 
                     attr = m_xmlDoc->allocate_attribute(m_xmlDoc->allocate_string("value"), xmlString);
@@ -1951,6 +1962,8 @@ namespace AZ
             ++m_pending;
 
             bool result = true;
+
+            m_localeScope.Activate();
 
             if (m_flags & OPF_SAVING)
             {
@@ -2172,6 +2185,7 @@ namespace AZ
                     m_stream->Write(sizeof(u8), &endTag);
                 }
             }
+            m_localeScope.Deactivate();
             delete this;
             return success;
         }

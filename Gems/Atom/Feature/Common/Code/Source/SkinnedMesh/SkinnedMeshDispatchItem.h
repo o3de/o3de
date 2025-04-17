@@ -13,8 +13,8 @@
 #include <SkinnedMesh/SkinnedMeshShaderOptionsCache.h>
 
 #include <Atom/RHI/DispatchItem.h>
-#include <AtomCore/Instance/Instance.h>
 #include <Atom/RPI.Reflect/Shader/ShaderOptionGroup.h>
+#include <AtomCore/Instance/Instance.h>
 
 namespace AZ
 {
@@ -41,7 +41,7 @@ namespace AZ
             : private SkinnedMeshShaderOptionNotificationBus::Handler
         {
         public:
-            AZ_CLASS_ALLOCATOR(SkinnedMeshDispatchItem, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SkinnedMeshDispatchItem, AZ::SystemAllocator);
 
             SkinnedMeshDispatchItem() = delete;
             //! Create one dispatch item per mesh for each actor instance

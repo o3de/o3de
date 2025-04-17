@@ -22,7 +22,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
     class ComponentRequirementsValidator
     {
     public:
-        AZ_CLASS_ALLOCATOR(ComponentRequirementsValidator, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ComponentRequirementsValidator, AZ::SystemAllocator);
         AZ_RTTI(AzToolsFramework::Prefab::PrefabConversionUtils::ComponentRequirementsValidator, "{1E9CD55D-FFEA-4E71-A316-731E25E6C981}");
 
         virtual ~ComponentRequirementsValidator() = default;

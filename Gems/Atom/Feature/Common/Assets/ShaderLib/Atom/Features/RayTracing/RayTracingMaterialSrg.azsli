@@ -7,6 +7,15 @@
  */
 
 #include <Atom/Features/SrgSemantics.azsli>
+#include <Atom/Features/PBR/Lights/ReflectionProbeData.azsli>
+
+// this define specifies that the mesh buffers and material textures are stored in the Bindless Srg
+// Note1: The previous implementation using separate unbounded arrays is preserved since it demonstrates a TDR caused by
+//        the RHI unbounded array allocation.  This define and the previous codepath can be removed once the TDR is
+//        investigated and resolved.
+// Note2: There are corresponding USE_BINDLESS_SRG defines in the RayTracingSceneSrg.azsli and RayTracingFeatureProcessor.h files
+//        that must match the setting of this define.
+#define USE_BINDLESS_SRG 1
 
 ShaderResourceGroup RayTracingMaterialSrg : SRG_RayTracingMaterial
 {
@@ -24,10 +33,15 @@ ShaderResourceGroup RayTracingMaterialSrg : SRG_RayTracingMaterial
     struct MaterialInfo
     {
         float4 m_baseColor;
-        float m_metallicFactor;
-        float m_roughnessFactor;
-        uint m_textureFlags;
-        uint m_textureStartIndex;
+        float4 m_irradianceColor;
+        float3 m_emissiveColor;
+        float  m_metallicFactor;
+        float  m_roughnessFactor;
+        uint   m_textureFlags;
+        uint   m_textureStartIndex;
+        uint   m_reflectionProbeCubeMapIndex;
+        ReflectionProbeData m_reflectionProbeData;
+        [[pad_to(16)]]
     };
     
     // hit shaders can retrieve the MaterialInfo for a mesh hit using: RayTracingMaterialSrg::m_materialInfo[InstanceIndex()]   
@@ -44,13 +58,17 @@ ShaderResourceGroup RayTracingMaterialSrg : SRG_RayTracingMaterial
     #define MATERIAL_NORMAL_TEXTURE_OFFSET      1
     #define MATERIAL_METALLIC_TEXTURE_OFFSET    2   
     #define MATERIAL_ROUGHNESS_TEXTURE_OFFSET   3
+    #define MATERIAL_EMISSIVE_TEXTURE_OFFSET    4
 
     // texture flag bits indicating if optional textures are present
     #define TEXTURE_FLAG_BASECOLOR      (1 << 0)
     #define TEXTURE_FLAG_NORMAL         (1 << 1)
     #define TEXTURE_FLAG_METALLIC       (1 << 2)
     #define TEXTURE_FLAG_ROUGHNESS      (1 << 3)
+    #define TEXTURE_FLAG_EMISSIVE       (1 << 4)
 
+#if !USE_BINDLESS_SRG
     // unbounded array of Material textures
     Texture2D m_materialTextures[];
+#endif
 }

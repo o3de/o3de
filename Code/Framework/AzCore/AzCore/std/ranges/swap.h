@@ -34,6 +34,9 @@ namespace AZStd
 
 namespace AZStd::ranges::Internal
 {
+    template <class T>
+    void swap(T&, T&) = delete;
+
     template <class T, class U, class = void>
     constexpr bool is_class_or_enum_with_swap_adl = false;
     template <class T, class U>
@@ -43,9 +46,6 @@ namespace AZStd::ranges::Internal
             disjunction<is_class<remove_cvref_t<U>>, is_enum<remove_cvref_t<U>>>>,
         is_void<void_t<decltype(swap(declval<T&>(), declval<U&>()))>>
         >>> = true;
-
-    template <class T>
-    void swap(T&, T&) = delete;
 
     struct swap_fn
     {
@@ -70,7 +70,9 @@ namespace AZStd::ranges::Internal
 
         template <class T>
         constexpr auto operator()(T& t1, T& t2) const noexcept(noexcept(is_nothrow_move_constructible_v<T> && is_nothrow_move_assignable_v<T>))
-            ->enable_if_t<conjunction_v<bool_constant<move_constructible<T>>, bool_constant<assignable_from<T&, T>> >>
+            ->enable_if_t<conjunction_v<bool_constant<!is_class_or_enum_with_swap_adl<T, T>>,
+                bool_constant<move_constructible<T>>,
+                bool_constant<assignable_from<T&, T>> >>
         {
             auto temp(AZStd::move(t1));
             t1 = AZStd::move(t2);

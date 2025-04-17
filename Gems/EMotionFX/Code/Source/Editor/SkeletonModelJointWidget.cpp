@@ -6,70 +6,75 @@
  *
  */
 
+#include <AzCore/EBus/Event.h>
+#include <AzQtComponents/Components/ToastNotification.h>
+#include <AzQtComponents/Components/ToastNotificationConfiguration.h>
+#include <AzQtComponents/Components/Widgets/CardHeader.h>
+#include <UI/Notifications/ToastBus.h>
+#include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
+#include <EMotionFX/Source/ActorInstance.h>
 #include <Editor/ColliderContainerWidget.h>
 #include <Editor/SkeletonModel.h>
 #include <Editor/SkeletonModelJointWidget.h>
 #include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerBus.h>
-#include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
-#include <QLabel>
 #include <QItemSelectionModel>
 #include <QModelIndex>
 #include <QVBoxLayout>
-
+#include <QLabel>
 
 namespace EMotionFX
 {
+    //! A Horizontal Line
+    //! Gives some visual seperation of elements above and below
+    struct HLineLayout : public QVBoxLayout
+    {
+        HLineLayout(QWidget* parent = nullptr)
+        {
+            setContentsMargins(0, 0, 0, 5);
+            auto* frame = new QFrame(parent);
+            frame->setFrameShape(QFrame::HLine);
+            frame->setFrameShadow(QFrame::Sunken);
+            addWidget(frame);
+        }
+    };
+
+
     int SkeletonModelJointWidget::s_jointLabelSpacing = 17;
     int SkeletonModelJointWidget::s_jointNameSpacing = 130;
 
     SkeletonModelJointWidget::SkeletonModelJointWidget(QWidget* parent)
         : QWidget(parent)
         , m_jointNameLabel(nullptr)
-        , m_contentsWidget(nullptr)
-        , m_noSelectionWidget(nullptr)
     {
     }
 
     void SkeletonModelJointWidget::CreateGUI()
     {
         QVBoxLayout* mainLayout = new QVBoxLayout();
-        mainLayout->setAlignment(Qt::AlignTop);
         mainLayout->setMargin(0);
         mainLayout->setSizeConstraint(QLayout::SetMinimumSize);
-        mainLayout->setSizeConstraint(QLayout::SetMinimumSize);
+        auto* separatorLayout = new HLineLayout;
+        auto* separatorLayoutWidget = new QWidget;
+        separatorLayoutWidget->setLayout(separatorLayout);
+        mainLayout->addWidget(separatorLayoutWidget);
 
-        // Contents widget
-        m_contentsWidget = new QWidget();
-        m_contentsWidget->setVisible(false);
-        QVBoxLayout* contentsLayout = new QVBoxLayout();
-        contentsLayout->setSpacing(ColliderContainerWidget::s_layoutSpacing);
+        connect(this, &SkeletonModelJointWidget::WidgetCountChanged, this, [=]() {
+            separatorLayoutWidget->setVisible(WidgetCount() > 0);
+        });
 
-        // Joint name
-        QHBoxLayout* jointNameLayout = new QHBoxLayout();
-        jointNameLayout->setAlignment(Qt::AlignLeft);
-        jointNameLayout->setMargin(0);
-        jointNameLayout->setSpacing(0);
-        contentsLayout->addLayout(jointNameLayout);
+        // Contents Card
+        m_contentCard = new AzQtComponents::Card{this};
+        AzQtComponents::Card::applyContainerStyle(m_contentCard);
+        m_contentCard->setTitle(GetCardTitle());
+        m_contentCard->header()->setHasContextMenu(false);
+        m_contentCard->header()->setUnderlineColor(GetColor());
 
-        jointNameLayout->addSpacerItem(new QSpacerItem(s_jointLabelSpacing, 0, QSizePolicy::Fixed));
-        QLabel* tempLabel = new QLabel("Joint name");
-        tempLabel->setStyleSheet("font-weight: bold;");
-        jointNameLayout->addWidget(tempLabel);
+        m_content = new QWidget{this};
+        m_content->setLayout(new QVBoxLayout);
+        m_content->layout()->addWidget(m_contentCard);
+        m_contentCard->setContentWidget(CreateContentWidget(m_contentCard));
 
-        jointNameLayout->addSpacerItem(new QSpacerItem(s_jointNameSpacing, 0, QSizePolicy::Fixed));
-        m_jointNameLabel = new QLabel();
-        jointNameLayout->addWidget(m_jointNameLabel);
-        jointNameLayout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Ignored, QSizePolicy::Ignored));
-
-        contentsLayout->addWidget(CreateContentWidget(m_contentsWidget));
-
-        m_contentsWidget->setLayout(contentsLayout);
-        mainLayout->addWidget(m_contentsWidget);
-
-        // No selection widget
-        m_noSelectionWidget = CreateNoSelectionWidget(m_contentsWidget);
-        mainLayout->addWidget(m_noSelectionWidget);
-
+        mainLayout->addWidget(m_content);
         setLayout(mainLayout);
 
         Reinit();
@@ -94,41 +99,35 @@ namespace EMotionFX
             return;
         }
 
+        m_content->hide();
+        InternalReinit();
         if (GetActor())
         {
-            if (!selectedModelIndices.isEmpty())
+            bool onlyRootSelected = selectedModelIndices.size() == 1 && SkeletonModel::IndicesContainRootNode(selectedModelIndices);
+            if (!selectedModelIndices.isEmpty() && !onlyRootSelected)
             {
-                if (selectedModelIndices.size() == 1)
-                {
-                    m_jointNameLabel->setText(GetNode()->GetName());
-                }
-                else
-                {
-                    m_jointNameLabel->setText(QString("%1 joints selected").arg(selectedModelIndices.size()));
-                }
+                InternalReinit();
 
-                m_noSelectionWidget->hide();
-                InternalReinit();
-                m_contentsWidget->show();
+                if (m_collidersWidget != nullptr && m_collidersWidget->HasVisibleColliders())
+                {
+                    m_content->show();
+                }
             }
-            else
-            {
-                m_contentsWidget->hide();
-                InternalReinit();
-                m_noSelectionWidget->show();
-            }
-        }
-        else
-        {
-            m_contentsWidget->hide();
-            InternalReinit();
-            m_noSelectionWidget->hide();
         }
     }
 
     void SkeletonModelJointWidget::showEvent(QShowEvent* event)
     {
         QWidget::showEvent(event);
+        Reinit();
+    }
+
+    void SkeletonModelJointWidget::SetFilterString(QString filterString)
+    {
+        if (m_collidersWidget)
+        {
+            m_collidersWidget->SetFilterString(filterString);
+        }
         Reinit();
     }
 
@@ -201,4 +200,20 @@ namespace EMotionFX
 
         return selectedModelIndices;
     }
+    void SkeletonModelJointWidget::ErrorNotification(QString title, QString description)
+    {
+        QTimer::singleShot(
+            0,
+            this,
+            [title, description]
+            {
+                AzToolsFramework::ToastRequestBus::Event(
+                    AZ_CRC_CE("SkeletonOutliner"),
+                    &AzToolsFramework::ToastRequestBus::Events::ShowToastNotification,
+                    AzQtComponents::ToastConfiguration{
+                        AzQtComponents::ToastType::Error,
+                        title, description});
+            });
+    }
+
 } // namespace EMotionFX

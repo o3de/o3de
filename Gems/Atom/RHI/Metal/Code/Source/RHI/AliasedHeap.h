@@ -24,7 +24,7 @@ namespace AZ
         {
             using Base = RHI::AliasedHeap;
         public:
-            AZ_CLASS_ALLOCATOR(AliasedHeap, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AliasedHeap, AZ::SystemAllocator);
             AZ_RTTI(AliasedHeap, "{C181EDE0-2137-4EF4-B350-7B632B1F2302}", Base);
             
             using Descriptor = RHI::AliasedHeapDescriptor;
@@ -38,17 +38,17 @@ namespace AZ
             // RHI::AliasedHeap
             AZStd::unique_ptr<RHI::AliasingBarrierTracker> CreateBarrierTrackerInternal() override;
             RHI::ResultCode InitInternal(RHI::Device& device, const RHI::AliasedHeapDescriptor& descriptor) override;
-            RHI::ResultCode InitImageInternal(const RHI::ImageInitRequest& request, size_t heapOffset) override;
-            RHI::ResultCode InitBufferInternal(const RHI::BufferInitRequest& request, size_t heapOffset) override;
+            RHI::ResultCode InitImageInternal(const RHI::DeviceImageInitRequest& request, size_t heapOffset) override;
+            RHI::ResultCode InitBufferInternal(const RHI::DeviceBufferInitRequest& request, size_t heapOffset) override;
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::ResourcePool
+            // RHI::DeviceResourcePool
             void ShutdownInternal() override;
-            void ShutdownResourceInternal(RHI::Resource& resource) override;
+            void ShutdownResourceInternal(RHI::DeviceResource& resource) override;
             //////////////////////////////////////////////////////////////////////////
 
-            void DeactivateResourceInternal(RHI::Resource& resource, Scope& scope);
+            void DeactivateResourceInternal(RHI::DeviceResource& resource, Scope& scope);
 
             Device& GetMetalRHIDevice() const;        
 

@@ -31,7 +31,7 @@ namespace LmbrCentral
         , public AZ::TransformNotificationBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(BoxShape, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(BoxShape, AZ::SystemAllocator)
         AZ_RTTI(BoxShape, "{36D1BA94-13CF-433F-B1FE-28BEBBFE20AA}")
 
         BoxShape();
@@ -43,18 +43,21 @@ namespace LmbrCentral
         void InvalidateCache(InvalidateShapeCacheReason reason);
 
         // ShapeComponentRequestsBus::Handler
-        AZ::Crc32 GetShapeType() override { return AZ_CRC("Box", 0x08a9483a); }
-        AZ::Aabb GetEncompassingAabb() override;
-        void GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds) override;
-        bool IsPointInside(const AZ::Vector3& point) override;
-        float DistanceSquaredFromPoint(const AZ::Vector3& point) override;
-        AZ::Vector3 GenerateRandomPointInside(AZ::RandomDistributionType randomDistribution) override;
-        bool IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) override;
+        AZ::Crc32 GetShapeType() const override { return AZ_CRC_CE("Box"); }
+        AZ::Aabb GetEncompassingAabb() const override;
+        void GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds) const override;
+        bool IsPointInside(const AZ::Vector3& point) const override;
+        float DistanceSquaredFromPoint(const AZ::Vector3& point) const override;
+        AZ::Vector3 GenerateRandomPointInside(AZ::RandomDistributionType randomDistribution) const override;
+        bool IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) const override;
+        AZ::Vector3 GetTranslationOffset() const override;
+        void SetTranslationOffset(const AZ::Vector3& translationOffset) override;
 
         // BoxShapeComponentRequestBus::Handler
-        BoxShapeConfig GetBoxConfiguration() override { return m_boxShapeConfig; }
-        AZ::Vector3 GetBoxDimensions() override { return m_boxShapeConfig.m_dimensions; }
+       const BoxShapeConfig& GetBoxConfiguration() const override { return m_boxShapeConfig; }
+        AZ::Vector3 GetBoxDimensions() const override { return m_boxShapeConfig.m_dimensions; }
         void SetBoxDimensions(const AZ::Vector3& dimensions) override;
+        bool IsTypeAxisAligned() const override;
 
         // AZ::TransformNotificationBus::Handler
         void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
@@ -62,7 +65,6 @@ namespace LmbrCentral
         void OnNonUniformScaleChanged(const AZ::Vector3& scale);
         const AZ::Vector3& GetCurrentNonUniformScale() const { return m_currentNonUniformScale; }
 
-        const BoxShapeConfig& GetBoxConfiguration() const { return m_boxShapeConfig; }
         void SetBoxConfiguration(const BoxShapeConfig& boxShapeConfig) { m_boxShapeConfig = boxShapeConfig; }
         const AZ::Transform& GetCurrentTransform() const { return m_currentTransform; }
 
@@ -89,7 +91,7 @@ namespace LmbrCentral
             bool m_axisAligned = true; ///< Indicates whether the box is axis or object aligned.
         };
 
-        BoxIntersectionDataCache m_intersectionDataCache; ///< Caches transient intersection data.
+        mutable BoxIntersectionDataCache m_intersectionDataCache; ///< Caches transient intersection data.
         AZ::Transform m_currentTransform; ///< Caches the current transform for the entity on which this component lives.
         AZ::EntityId m_entityId; ///< Id of the entity the box shape is attached to.
         AZ::NonUniformScaleChangedEvent::Handler m_nonUniformScaleChangedHandler; ///< Responds to changes in non-uniform scale.

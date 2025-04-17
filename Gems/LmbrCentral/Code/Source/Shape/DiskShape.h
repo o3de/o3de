@@ -29,7 +29,7 @@ namespace LmbrCentral
         , public AZ::TransformNotificationBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(DiskShape, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(DiskShape, AZ::SystemAllocator)
         AZ_RTTI(DiskShape, "{21E75068-3E05-4DD2-981A-DAEB0B1A9BC4}")
 
         static void Reflect(AZ::ReflectContext* context);
@@ -39,23 +39,22 @@ namespace LmbrCentral
         void InvalidateCache(InvalidateShapeCacheReason reason);
 
         // ShapeComponentRequestsBus
-        AZ::Crc32 GetShapeType() override { return AZ_CRC("DiskShape", 0x8c83427c); }
-        AZ::Aabb GetEncompassingAabb() override;
-        void GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds) override;
-        bool IsPointInside(const AZ::Vector3& point)  override;
-        float DistanceSquaredFromPoint(const AZ::Vector3& point) override;
-        bool IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) override;
+        AZ::Crc32 GetShapeType() const override { return AZ_CRC_CE("DiskShape"); }
+        AZ::Aabb GetEncompassingAabb() const override;
+        void GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds) const override;
+        bool IsPointInside(const AZ::Vector3& point) const  override;
+        float DistanceSquaredFromPoint(const AZ::Vector3& point) const override;
+        bool IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) const override;
 
         // DiskShapeComponentRequestBus
-        DiskShapeConfig GetDiskConfiguration() override;
+        const DiskShapeConfig& GetDiskConfiguration() const override;
         void SetRadius(float radius) override;
-        float GetRadius() override;
-        const AZ::Vector3& GetNormal() override;
+        float GetRadius() const override;
+        const AZ::Vector3& GetNormal() const override;
 
         // AZ::TransformNotificationBus
         void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
 
-        const DiskShapeConfig& GetDiskConfiguration() const;
         void SetDiskConfiguration(const DiskShapeConfig& diskShapeConfig);
         const AZ::Transform& GetCurrentTransform() const;
 
@@ -81,7 +80,7 @@ namespace LmbrCentral
         };
 
         DiskShapeConfig m_diskShapeConfig; ///< Underlying disk configuration.
-        DiskIntersectionDataCache m_intersectionDataCache; ///< Caches transient intersection data.
+        mutable DiskIntersectionDataCache m_intersectionDataCache; ///< Caches transient intersection data.
         AZ::Transform m_currentTransform; ///< Caches the current world transform.
         AZ::EntityId m_entityId; ///< The Id of the entity the shape is attached to.
         mutable AZStd::shared_mutex m_mutex; ///< Mutex to allow multiple readers but single writer for efficient thread safety

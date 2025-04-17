@@ -129,6 +129,11 @@ extern "C" AZ_DLL_EXPORT void ReflectBehavior(AZ::BehaviorContext * context)
     AZ::SceneAPI::SceneData::ReflectBehavior(context);
 }
 
+extern "C" AZ_DLL_EXPORT void CleanUpSceneDataGenericClassInfo()
+{
+    AZ::GetCurrentSerializeContextModule().Cleanup();
+}
+
 extern "C" AZ_DLL_EXPORT void UninitializeDynamicModule()
 {
     if (!g_sceneDataInitialized)
@@ -138,17 +143,6 @@ extern "C" AZ_DLL_EXPORT void UninitializeDynamicModule()
     g_sceneDataInitialized = false;
 
     AZ::SceneAPI::SceneData::Uninitialize();
-
-    // This module does not own these allocators, but must clear its cached EnvironmentVariables
-    // because it is linked into other modules, and thus does not get unloaded from memory always
-    if (AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady())
-    {
-        AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
-    }
-    if (AZ::AllocatorInstance<AZ::OSAllocator>::IsReady())
-    {
-        AZ::AllocatorInstance<AZ::OSAllocator>::Destroy();
-    }
 }
 
 #endif // !defined(AZ_MONOLITHIC_BUILD)

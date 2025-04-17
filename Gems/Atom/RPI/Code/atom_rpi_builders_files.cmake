@@ -13,6 +13,12 @@ set(FILES
     Source/RPI.Builders/Common/AnyAssetBuilder.h
     Source/RPI.Builders/Material/MaterialBuilder.cpp
     Source/RPI.Builders/Material/MaterialBuilder.h
+    Source/RPI.Builders/Material/MaterialBuilderUtils.cpp
+    Source/RPI.Builders/Material/MaterialBuilderUtils.h
+    Source/RPI.Builders/Material/MaterialPipelineScriptRunner.cpp
+    Source/RPI.Builders/Material/MaterialPipelineScriptRunner.h
+    Source/RPI.Builders/Material/MaterialTypeBuilder.cpp
+    Source/RPI.Builders/Material/MaterialTypeBuilder.h
     Source/RPI.Builders/Model/MaterialAssetBuilderComponent.cpp
     Source/RPI.Builders/Model/MaterialAssetBuilderComponent.h
     Source/RPI.Builders/Model/ModelAssetBuilderComponent.cpp
@@ -20,7 +26,7 @@ set(FILES
     Source/RPI.Builders/Model/ModelExporterComponent.cpp
     Source/RPI.Builders/Model/ModelExporterComponent.h
     Source/RPI.Builders/Model/ModelExporterContexts.cpp
-    Source/RPI.Builders/Model/ModelExporterContexts.h
+    Include/Atom/RPI.Builders/Model/ModelExporterContexts.h
     Source/RPI.Builders/Model/MorphTargetExporter.cpp
     Source/RPI.Builders/Model/MorphTargetExporter.h
     Source/RPI.Builders/Pass/PassBuilder.cpp

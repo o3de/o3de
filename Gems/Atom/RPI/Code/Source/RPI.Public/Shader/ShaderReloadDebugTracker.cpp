@@ -7,6 +7,7 @@
  */
 
 #include <Atom/RPI.Public/Shader/ShaderReloadDebugTracker.h>
+#include <AzCore/Math/Crc.h>
 #include <AzCore/Module/Environment.h>
 
 namespace AZ

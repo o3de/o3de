@@ -21,6 +21,8 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 #include <ScriptCanvas/Core/Datum.h>
 #include <ScriptCanvas/Core/Node.h>
 
+#include <ScriptCanvas/AutoGen/ScriptCanvasAutoGenRegistry.h>
+
 {% for xml in dataFiles %}
 {%     for Class in xml.iter('Class') %}
 
@@ -47,9 +49,11 @@ namespace {{attribute_Namespace}}
 {%- set className = Class.attrib['Name'] %}
 
 {%- set baseClass = "ScriptCanvas::Node" %}
-{% if Class.attrib['Base'] is defined and Class.attrib['Base'] %}
-{%    set baseClass = Class.attrib['Base'] %}
+
+{% if Class.attrib['Base'] is defined %}
+{% set baseClass = Class.attrib['Base'] %}
 {% endif %}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////
@@ -63,8 +67,6 @@ namespace {{attribute_Namespace}}
 {% set classUuid = className|createHashGuid %}
 {% endif %}
 
-{% set deprecationUuid = Class.attrib['DeprecationUUID'] %}
-
 // The following will be injected directly into the source header file for which AZ AutoGen is being run.
 // You must #include the generated header into the source header
 #define SCRIPTCANVAS_NODE_{{ className }} \
@@ -74,13 +76,13 @@ public: \
     void ConfigureSlots() override; \
     bool RequiresDynamicSlotOrdering() const override; \
     bool IsDeprecated() const override; \
-{% if deprecationUuid is defined %}    ScriptCanvas::NodeReplacementConfiguration GetReplacementNodeConfiguration() const override; \
-{% endif %}
     using Node::FindDatum; \
 {% if Class.attrib['GraphEntryPoint'] is defined %}    bool IsEntryPoint() const override { return {%if Class.attrib['GraphEntryPoint'] == "True" %}true{%else%}false{%endif%}; } \
 {% endif %}
 public: \
     friend struct {% if attribute_Namespace is not defined %}::{% endif %}{{ className | replace(' ','') }}Property;
+
+
 
 // Helpers for easily accessing properties and slots
 struct {{ className | replace(' ','') }}Property
@@ -158,6 +160,21 @@ struct {{ className | replace(' ','') }}Property
 
 {%         endfor %}
 };
+
+
+
+class {{className}}_Reflection
+{
+public:
+
+    {{className}}_Reflection() = default;
+    virtual ~{{className}}_Reflection() {}
+
+};
+
+SCRIPTCANVAS_REGISTER_EXTERN({{className}}_Reflection);
+
+
 
 {% if attribute_Namespace is defined %}
 }

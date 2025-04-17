@@ -8,11 +8,11 @@
 
 #pragma once
 
-#include <Atom/Feature/Material/MaterialAssignment.h>
 #include <Atom/RPI.Edit/Material/MaterialSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialTypeAsset.h>
+#include <AtomLyIntegration/CommonFeatures/Material/MaterialAssignment.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/std/string/string.h>
 #include <AzToolsFramework/Entity/EntityTypes.h>
@@ -23,6 +23,20 @@ namespace AZ
     {
         namespace EditorMaterialComponentUtil
         {
+            static constexpr AZStd::string_view MaterialExtension("material");
+            static constexpr AZStd::string_view MaterialTypeExtension("materialtype");
+            static constexpr AZStd::string_view MaterialGraphExtension("materialgraph");
+            static constexpr AZStd::string_view MaterialGraphNodeExtension("materialgraphnode");
+            static constexpr AZStd::string_view MaterialGraphTemplateExtension("materialgraphtemplate");
+            static constexpr AZStd::string_view ShaderExtension("shader");
+
+            static constexpr AZStd::string_view MaterialExtensionWithDot(".material");
+            static constexpr AZStd::string_view MaterialTypeExtensionWithDot(".materialtype");
+            static constexpr AZStd::string_view MaterialGraphExtensionWithDot(".materialgraph");
+            static constexpr AZStd::string_view MaterialGraphNodeExtensionWithDot(".materialgraphnode");
+            static constexpr AZStd::string_view MaterialGraphTemplateExtensionWithDot(".materialgraphtemplate");
+            static constexpr AZStd::string_view ShaderExtensionWithDot(".shader");
+
             struct MaterialEditData
             {
                 AZ::Data::AssetId m_materialAssetId = {};
@@ -33,6 +47,7 @@ namespace AZ
                 AZ::RPI::MaterialTypeSourceData m_materialTypeSourceData;
                 AZStd::string m_materialSourcePath;
                 AZStd::string m_materialTypeSourcePath;
+                AZStd::string m_originalMaterialTypeSourcePath;
                 AZStd::string m_materialParentSourcePath;
                 MaterialPropertyOverrideMap m_materialPropertyOverrideMap = {};
             };

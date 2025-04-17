@@ -34,7 +34,7 @@ namespace Vegetation
         : public AreaConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(MeshBlockerConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MeshBlockerConfig, AZ::SystemAllocator);
         AZ_RTTI(MeshBlockerConfig, "{1D00F234-8134-4A42-A357-ADAC865CF63A}", AreaConfig);
         static void Reflect(AZ::ReflectContext* context);
 
@@ -45,7 +45,7 @@ namespace Vegetation
         bool m_blockWhenInvisible = true;
     };
 
-    static const AZ::Uuid MeshBlockerComponentTypeId = "{06A1ABB3-F2CD-47FC-BDE3-A13E37F3D760}";
+    inline constexpr AZ::TypeId MeshBlockerComponentTypeId{ "{06A1ABB3-F2CD-47FC-BDE3-A13E37F3D760}" };
 
     class MeshBlockerComponent
         : public AreaComponentBase

@@ -9,24 +9,21 @@
 
 #include <Atom/RHI/ScopeProducer.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    class ScopeProducerEmpty final
+        : public ScopeProducer
     {
-        class ScopeProducerEmpty final
-            : public ScopeProducer
-        {
-        public:
-            AZ_CLASS_ALLOCATOR(ScopeProducerEmpty, SystemAllocator, 0);
+    public:
+        AZ_CLASS_ALLOCATOR(ScopeProducerEmpty, SystemAllocator);
 
-            ScopeProducerEmpty(const ScopeId& scopeId)
-                : ScopeProducer(scopeId)
-            {}
+        ScopeProducerEmpty(const ScopeId& scopeId, int deviceIndex = MultiDevice::InvalidDeviceIndex)
+            : ScopeProducer(scopeId, deviceIndex)
+        {}
 
-        private:
-            void SetupFrameGraphDependencies(FrameGraphInterface) override {}
-            void CompileResources(const FrameGraphCompileContext&) override {}
-            void BuildCommandList(const FrameGraphExecuteContext&) override {}
-        };
-    }
+    private:
+        void SetupFrameGraphDependencies(FrameGraphInterface) override {}
+        void CompileResources(const FrameGraphCompileContext&) override {}
+        void BuildCommandList(const FrameGraphExecuteContext&) override {}
+    };
 }

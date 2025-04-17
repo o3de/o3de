@@ -27,7 +27,6 @@
 #include <Integration/Components/ActorComponent.h>
 #include <Integration/Components/AnimGraphComponent.h>
 #include <MCore/Source/AttributeFloat.h>
-#include <MCore/Source/AzCoreConversions.h>
 #include <Tests/Integration/EntityComponentFixture.h>
 #include <Tests/TestAssetCode/AnimGraphFactory.h>
 #include <Tests/TestAssetCode/ActorFactory.h>
@@ -104,12 +103,22 @@ namespace EMotionFX
             m_animGraphComponent->OnAssetReady(motionSetAsset);
         }
 
+        void TearDown() override
+        {
+            m_entity.reset();
+            EntityComponentFixture::TearDown();
+        }
+
         void ActivateEntity()
         {
             // Set the actor asset and create the actor instance.
             m_actorComponent->SetActorAsset(m_actorComponent->GetActorAsset());
 
             m_entity->Activate();
+
+            // Run one tick so that the actor asset has time to finish activating.
+            // (Actor initialization is deferred to the next tick after the OnAssetReady call)
+            AZ::TickBus::Broadcast(&AZ::TickEvents::OnTick, 0.0f, AZ::ScriptTimePoint());
 
             m_animGraphInstance = m_animGraphComponent->GetAnimGraphInstance();
             EXPECT_NE(m_animGraphInstance, nullptr) << "Expecting valid anim graph instance.";
@@ -307,9 +316,9 @@ namespace EMotionFX
     TEST_F(AnimGraphComponentBusTests, RotationParameter)
     {
         const AZ::Vector3 firstExpected(AZ::DegToRad(30.0f), AZ::DegToRad(20.0f), 0.0f);
-        const AZ::Quaternion firstExpectedQuat = MCore::AzEulerAnglesToAzQuat(firstExpected);
+        const AZ::Quaternion firstExpectedQuat = AZ::Quaternion::CreateFromEulerRadiansZYX(firstExpected);
         const AZ::Vector3 secondExpected = AZ::Vector3(AZ::DegToRad(45.0f), 0.0f, AZ::DegToRad(30.0f));
-        const AZ::Quaternion secondExpectedQuat = MCore::AzEulerAnglesToAzQuat(secondExpected);
+        const AZ::Quaternion secondExpectedQuat = AZ::Quaternion::CreateFromEulerRadiansZYX(secondExpected);
 
 
         AnimGraphComponentNotificationTestBus testBus(m_entityId);

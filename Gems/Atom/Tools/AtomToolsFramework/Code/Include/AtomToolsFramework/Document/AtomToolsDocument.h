@@ -9,8 +9,14 @@
 #pragma once
 
 #include <AtomToolsFramework/Document/AtomToolsDocumentRequestBus.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
+
+namespace AZ::RPI::MaterialUtils
+{
+    using ImportedJsonFiles = AZStd::unordered_set<AZ::IO::Path>;
+}
 
 namespace AtomToolsFramework
 {
@@ -25,7 +31,7 @@ namespace AtomToolsFramework
     {
     public:
         AZ_RTTI(AtomToolsDocument, "{7E6CA0C4-077C-4849-B24C-6796AF3B640B}");
-        AZ_CLASS_ALLOCATOR(AtomToolsDocument, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AtomToolsDocument, AZ::SystemAllocator);
         AZ_DISABLE_COPY_MOVE(AtomToolsDocument);
 
         static void Reflect(AZ::ReflectContext* context);
@@ -48,7 +54,7 @@ namespace AtomToolsFramework
         void Clear() override;
         bool IsOpen() const override;
         bool IsModified() const override;
-        bool CanSave() const override;
+        bool CanSaveAsChild() const override;
         bool CanUndo() const override;
         bool CanRedo() const override;
         bool Undo() override;
@@ -86,7 +92,7 @@ namespace AtomToolsFramework
 
         //! This contains absolute paths of other source files that affect this document.
         //! If any of the source files in this container are modified, the document system is notified to reload this document.
-        AZStd::unordered_set<AZStd::string> m_sourceDependencies;
+        AZ::RPI::MaterialUtils::ImportedJsonFiles m_sourceDependencies;
 
         //! If this flag is true then the next source file change notification for this document will be ignored.
         bool m_ignoreSourceFileChangeToSelf = false;

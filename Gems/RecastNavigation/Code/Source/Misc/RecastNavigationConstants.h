@@ -8,11 +8,13 @@
 
 #pragma once
 
+#include <AzCore/RTTI/TypeInfo.h>
+
 namespace RecastNavigation
 {
-    inline constexpr const char* const RecastNavigationMeshComponentTypeId = "{a281f314-a525-4c05-876d-17eb632f14b4}";
-    inline constexpr const char* const EditorRecastNavigationMeshComponentTypeId = "{22D516D4-C98D-4783-85A4-1ABE23CAB4D4}";
+    inline constexpr AZ::TypeId RecastNavigationMeshComponentTypeId{ "{a281f314-a525-4c05-876d-17eb632f14b4}" };
+    inline constexpr AZ::TypeId EditorRecastNavigationMeshComponentTypeId{ "{22D516D4-C98D-4783-85A4-1ABE23CAB4D4}" };
 
-    inline constexpr const char* const RecastNavigationPhysXProviderComponentTypeId = "{4bc92ce5-e179-4985-b0b1-f22bff6006dd}";
-    inline constexpr const char* const EditorRecastNavigationPhysXProviderComponentTypeId = "{F1E57D0B-11A1-46C2-876D-720DD40CB14D}";
+    inline constexpr AZ::TypeId RecastNavigationPhysXProviderComponentTypeId{ "{4bc92ce5-e179-4985-b0b1-f22bff6006dd}" };
+    inline constexpr AZ::TypeId EditorRecastNavigationPhysXProviderComponentTypeId{ "{F1E57D0B-11A1-46C2-876D-720DD40CB14D}" };
 } // namespace RecastNavigation

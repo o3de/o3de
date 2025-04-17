@@ -1,7 +1,10 @@
 {
-    "DCCSI_LOCAL_SETTINGS": "True",
-    "DCCSI_DEV_MODE": "True",
-    "DCCSI_GDEBUG": "True",
-    "DCCSI_LOGLEVEL": 10,
-    "DCCSI_LOG_PATH": "{your_path}/user/log/DCCsi"
+	"DCCSI_LOCAL_SETTINGS": "True",
+	"DCCSI_DEV_MODE": "True",
+	"DCCSI_GDEBUG": "True",
+	"DCCSI_LOGLEVEL": 10,
+	"O3DE_DEV": "C:\\depot\\o3de-dev",
+	"PATH_O3DE_3RDPARTY": "C:\\depot\\3rdParty",
+	"PATH_O3DE_BIN": "C:\\depot\\o3de-dev\\build\\\windows_vs2019\\bin\\profile",
+    "DCCSI_LOG_PATH": "{your_path}\\user\\log\\DCCsi"
 }

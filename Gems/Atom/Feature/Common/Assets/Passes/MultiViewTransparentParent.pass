@@ -1,0 +1,55 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "MultiViewTransparentParentTemplate",
+            "PassClass": "ParentPass",
+            "Slots": [
+                // Input/Outputs...
+                {
+                    "Name": "DepthStencil",
+                    "SlotType": "InputOutput"
+                },
+                {
+                    "Name": "InputOutput",
+                    "SlotType": "InputOutput"
+                }
+            ],
+            "PassRequests": [
+                {
+                    "Name": "MultiViewTransparentPass",
+                    "TemplateName": "MultiViewTransparentPassTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        // Input/Outputs...
+                        {
+                            "LocalSlot": "DepthStencil",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DepthStencil"
+                            }
+                        },
+                        {
+                            "LocalSlot": "InputOutput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "InputOutput"
+                            }
+                        }
+                    ],
+                    "PassData": {
+                        "$type": "RasterPassData",
+                        "DrawListTag": "multiviewTransparent",
+                        "DrawListSortType": "KeyThenReverseDepth",
+                        "BindViewSrg": true,
+                        "PassSrgShaderAsset": {
+                            "FilePath": "Shaders/ForwardPassSrg.shader"
+                        }
+                    }
+                }
+            ]
+        }
+    }
+}

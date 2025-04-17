@@ -24,6 +24,7 @@ namespace ScriptCanvas::Developer
         : public NamedAutomationState
     {
     public:
+        AZ_CLASS_ALLOCATOR(SceneMouseMoveState, AZ::SystemAllocator)
         SceneMouseMoveState(AutomationStateModelId targetPoint);
         ~SceneMouseMoveState() override = default;
 
@@ -44,6 +45,7 @@ namespace ScriptCanvas::Developer
         : public NamedAutomationState
     {
     public:
+        AZ_CLASS_ALLOCATOR(SceneMouseDragState, AZ::SystemAllocator)
         SceneMouseDragState(AutomationStateModelId startPoint, AutomationStateModelId endPoint, Qt::MouseButton mouseButton = Qt::MouseButton::LeftButton);
         ~SceneMouseDragState() override = default;
 
@@ -67,6 +69,7 @@ namespace ScriptCanvas::Developer
         : public CustomActionState
     {
     public:
+        AZ_CLASS_ALLOCATOR(FindViewCenterState, AZ::SystemAllocator)
         FindViewCenterState(AutomationStateModelId outputId);
         ~FindViewCenterState() override = default;
 

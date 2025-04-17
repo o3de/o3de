@@ -11,7 +11,7 @@
 #include <TerrainSystem/TerrainSystem.h>
 #include <Components/TerrainSurfaceGradientListComponent.h>
 
-#include <Atom/RPI.Public/RPISystem.h>
+#include <Atom/RPI.Public/Image/ImageSystem.h>
 #include <Common/RHI/Factory.h>
 #include <Common/RHI/Stubs.h>
 
@@ -134,7 +134,6 @@ namespace UnitTest
 
     private:
         AZStd::unique_ptr<UnitTest::StubRHI::Factory> m_rhiFactory;
-        AZStd::unique_ptr<AZ::RPI::RPISystem> m_rpiSystem;
 
         UnitTest::SetRestoreFileIOBaseRAII m_restoreFileIO;
         ::testing::NiceMock<AZ::IO::MockFileIOBase> m_fileIOMock;

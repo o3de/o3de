@@ -18,7 +18,7 @@ namespace DebugDraw
     class DebugDrawSphereElement
     {
     public:
-        AZ_CLASS_ALLOCATOR(DebugDrawSphereElement, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DebugDrawSphereElement, AZ::SystemAllocator);
         AZ_TYPE_INFO(DebugDrawSphereElement, "{CB6F2781-DC26-4A10-8C5F-E07032574087}");
         static void Reflect(AZ::ReflectContext* context);
 
@@ -30,6 +30,8 @@ namespace DebugDraw
 
         AZ::Vector3             m_worldLocation;
         float                   m_radius;
+
+        bool                    m_isRayTracingEnabled = false;
 
         AZ::ComponentId         m_owningEditorComponent;
 

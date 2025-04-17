@@ -86,7 +86,7 @@
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "AssetProcessorBatch",
       "ASSET_PROCESSOR_BINARY": "bin/profile/AssetProcessorBatch",
-      "ASSET_PROCESSOR_OPTIONS": "/zeroAnalysisMode",
+      "ASSET_PROCESSOR_OPTIONS": "--zeroAnalysisMode --ignoreFutureAssetDatabaseVersionError",
       "ASSET_PROCESSOR_PLATFORMS": "mac"
     }
   },

@@ -27,7 +27,7 @@ namespace ScriptCanvas
     {
     public:
         AZ_RTTI(InvalidReferenceEvent, "{FF4F66BD-E232-4875-92C8-298F61DF7907}", ValidationEvent, HighlightEntityEffect, FocusOnEntityEffect);
-        AZ_CLASS_ALLOCATOR(InvalidReferenceEvent, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(InvalidReferenceEvent, AZ::SystemAllocator);
 
         InvalidReferenceEvent(const AZ::EntityId& nodeId, const AZStd::vector<SlotId>& slots)
             : ValidationEvent(ValidationSeverity::Error)

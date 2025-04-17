@@ -13,7 +13,6 @@
 
 #include "EditorModularViewportCameraComposer.h"
 #include "EditorViewportSettings.h"
-#include "Objects/DisplayContext.h"
 #include "Undo/Undo.h"
 #include "Util/PredefinedAspectRatios.h"
 #include "Viewport.h"
@@ -38,7 +37,6 @@
 #endif
 
 // forward declarations.
-class CBaseObject;
 class QMenu;
 class QKeyEvent;
 struct ray_hit;
@@ -80,6 +78,7 @@ struct EditorViewportSettings : public AzToolsFramework::ViewportInteraction::Vi
     AZ::Vector2 DefaultEditorCameraOrientation() const override;
     bool IconsVisible() const override;
     bool HelpersVisible() const override;
+    bool OnlyShowHelpersForSelectedEntities() const override;
 };
 
 //! EditorViewportWidget window
@@ -131,18 +130,12 @@ private:
     ////////////////////////////////////////////////////////////////////////
     // Private types ...
 
-    enum class ViewSourceType
-    {
-        None,
-        CameraComponent,
-        ViewSourceTypesCount,
-    };
-
     enum class PlayInEditorState
     {
         Editor,
         Starting,
-        Started
+        Started,
+        Stopping
     };
 
     enum class KeyPressedState
@@ -192,9 +185,7 @@ private:
     float GetAspectRatio() const override;
     bool HitTest(const QPoint& point, HitContext& hitInfo) override;
     bool IsBoundsVisible(const AABB& box) const override;
-    void CenterOnSelection() override;
     void CenterOnAABB(const AABB& aabb) override;
-    void CenterOnSliceInstance() override;
     void OnTitleMenu(QMenu* menu) override;
     void SetViewTM(const Matrix34& tm) override;
     const Matrix34& GetViewTM() const override;
@@ -209,6 +200,9 @@ private:
 
     // IEditorEventListener overrides ...
     void OnEditorNotifyEvent(EEditorNotifyEvent event) override;
+
+    // Callback for setting modification
+    void OnDefaultCameraNearFarChanged();
 
     // AzToolsFramework::EditorEntityContextNotificationBus overrides ...
     // note: handler moved to cpp to resolve link issues in unity builds
@@ -232,7 +226,6 @@ private:
 
     // Camera::EditorCameraRequestBus overrides ...
     void SetViewFromEntityPerspective(const AZ::EntityId& entityId) override;
-    void SetViewAndMovementLockFromEntityPerspective(const AZ::EntityId& entityId, bool lockCameraMovement) override;
     AZ::EntityId GetCurrentViewEntityId() override;
     bool GetActiveCameraPosition(AZ::Vector3& cameraPos) override;
     AZStd::optional<AZ::Transform> GetActiveCameraTransform() override;
@@ -244,22 +237,8 @@ private:
 
     ////////////////////////////////////////////////////////////////////////
     // Private helpers...
-    void SetViewTM(const Matrix34& tm, bool bMoveOnly);
-    void RenderSnapMarker();
+    void SetDefaultCameraNearFar();
     void RenderAll();
-
-    // Update the safe frame, safe action, safe title, and borders rectangles based on
-    // viewport size and target aspect ratio.
-    void UpdateSafeFrame();
-
-    // Draw safe frame, safe action, safe title rectangles and borders.
-    void RenderSafeFrame();
-
-    // Draw one of the safe frame rectangles with the desired color.
-    void RenderSafeFrame(const QRect& frame, float r, float g, float b, float a);
-
-    // Draw a selected region if it has been selected
-    void RenderSelectedRegion();
 
     bool RayRenderMeshIntersection(IRenderMesh* pRenderMesh, const Vec3& vInPos, const Vec3& vInDir, Vec3& vOutPos, Vec3& vOutNormal) const;
 
@@ -275,9 +254,7 @@ private:
     void StartFullscreenPreview();
     void StopFullscreenPreview();
 
-    void OnMenuResolutionCustom();
     void OnMenuCreateCameraEntityFromCurrentView();
-    void OnMenuSelectCurrentCamera();
 
     // From a series of input primitives, compose a complete mouse interaction.
     AzToolsFramework::ViewportInteraction::MouseInteraction BuildMouseInteractionInternal(
@@ -308,8 +285,7 @@ private:
     void SetDefaultCamera();
     void SetSelectedCamera();
     bool IsSelectedCamera() const;
-    void SetComponentCamera(const AZ::EntityId& entityId);
-    void SetEntityAsCamera(const AZ::EntityId& entityId, bool lockCameraMovement = false);
+    void SetEntityAsCamera(const AZ::EntityId& entityId);
     void SetFirstComponentCamera();
     void PostCameraSet();
     // This switches the active camera to the next one in the list of (default, all custom cams).
@@ -318,13 +294,6 @@ private:
     QPoint WidgetToViewport(const QPoint& point) const;
     QPoint ViewportToWidget(const QPoint& point) const;
     QSize WidgetToViewport(const QSize& size) const;
-
-    const DisplayContext& GetDisplayContext() const
-    {
-        return m_displayContext;
-    }
-
-    CBaseObject* GetCameraObject() const;
 
     void UnProjectFromScreen(float sx, float sy, float* px, float* py, float* pz) const;
     void ProjectToScreen(float ptx, float pty, float ptz, float* sx, float* sy) const;
@@ -349,9 +318,6 @@ private:
     // The entity ID of the current camera for this viewport, or invalid if the default editor camera
     AZ::EntityId m_viewEntityId;
 
-    // Determines also if the current camera for this viewport is default editor camera
-    ViewSourceType m_viewSourceType = ViewSourceType::None;
-
     // During play game in editor, holds the editor entity ID of the last
     AZ::EntityId m_viewEntityIdCachedForEditMode;
 
@@ -370,22 +336,14 @@ private:
     // Legacy...
     KeyPressedState m_pressedKeyState = KeyPressedState::AllUp;
 
-    // The last camera matrix of the default editor camera, used when switching back to editor camera to restore the right TM
-    Matrix34 m_defaultViewTM;
-
     // The name to use for the default editor camera
     const QString m_defaultViewName;
-
-    // Note that any attempts to draw anything with this object will crash. Exists here for legacy "reasons"
-    DisplayContext m_displayContext;
 
     // Reentrancy guard for on paint events
     bool m_isOnPaint = false;
 
-    // Shapes of various safe frame helpers which can be displayed in the editor
-    QRect m_safeFrame;
-    QRect m_safeAction;
-    QRect m_safeTitle;
+    // Guard against calling UpdateVisibility multiple times a frame
+    bool m_hasUpdatedVisibility = false;
 
     // Aspect ratios available in the title bar
     CPredefinedAspectRatios m_predefinedAspectRatios;
@@ -399,7 +357,12 @@ private:
 
     // Handlers for snapping/editor event callbacks
     SandboxEditor::AngleSnappingChangedEvent::Handler m_angleSnappingHandler;
+    SandboxEditor::CameraSpeedScaleChangedEvent::Handler m_cameraSpeedScaleHandler;
+    SandboxEditor::GridShowingChangedEvent::Handler m_gridShowingHandler;
     SandboxEditor::GridSnappingChangedEvent::Handler m_gridSnappingHandler;
+    SandboxEditor::NearFarPlaneChangedEvent::Handler m_nearPlaneDistanceHandler;
+    SandboxEditor::NearFarPlaneChangedEvent::Handler m_farPlaneDistanceHandler;
+    SandboxEditor::PerspectiveChangedEvent::Handler m_perspectiveChangeHandler;
     AZStd::unique_ptr<SandboxEditor::EditorViewportSettingsCallbacks> m_editorViewportSettingsCallbacks;
 
     // Used for some legacy logic which lets the widget release a grabbed keyboard at the right times
@@ -422,12 +385,6 @@ private:
 
     // Type to return current state of editor viewport settings
     EditorViewportSettings m_editorViewportSettings;
-
-    // The default view created for the viewport context, which is used as the "Editor Camera"
-    AZ::RPI::ViewPtr m_defaultView;
-
-    // The name to set on the viewport context when this viewport widget is set as the active one
-    AZ::Name m_defaultViewportContextName;
 
     // DO NOT USE THIS! It exists only to satisfy the signature of the base class method GetViewTm
     mutable Matrix34 m_viewTmStorage;

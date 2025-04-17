@@ -268,6 +268,7 @@ namespace AzFramework
 
             //! Show the AssetProcessor App
             virtual void ShowAssetProcessor() = 0;
+            virtual void UpdateSourceControlStatus(bool newStatus) = 0;
             //! Show an asset in the AssetProcessor App
             virtual void ShowInAssetProcessor(const AZStd::string& assetPath) = 0;
 
@@ -325,6 +326,10 @@ namespace AzFramework
             virtual void AssetSystemAvailable() {}
             //! Notifies listeners Asset System turns not available
             virtual void AssetSystemUnavailable() {}
+            //! Notifies listeners Asset System is still waiting.
+            //! This will get called every N milliseconds during the Asset System startup
+            //! until the Asset System becomes available.
+            virtual void AssetSystemWaiting() {}
         };
 
     } // namespace AssetSystem
@@ -338,3 +343,5 @@ namespace AzFramework
     using AssetSystemConnectionNotificationsBus = AZ::EBus<AssetSystem::AssetSystemConnectionNotifications>;
     using AssetSystemStatusBus = AZ::EBus<AssetSystem::AssetSystemStatus>;
 } // namespace AzFramework
+
+DECLARE_EBUS_EXTERN(AzFramework::AssetSystem::AssetSystemRequests);

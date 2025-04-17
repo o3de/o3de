@@ -12,6 +12,27 @@
 
 namespace AZ
 {
+    // Definitions for TypeInfo and RTTI functions
+    AZ_TYPE_INFO_WITH_NAME_IMPL(BehaviorContext, "BehaviorContext", "{ED75FE05-9196-4F69-A3E5-1BDF5FF034CF}");
+    AZ_RTTI_NO_TYPE_INFO_IMPL(BehaviorContext, ReflectContext);
+
+    AZ_TYPE_INFO_WITH_NAME_IMPL(BehaviorEBusHandler, "BehaviorEBusHandler", "{10FBCB9D-8A0D-47E9-8A51-CBD9BFBBF60D}");
+    AZ_RTTI_NO_TYPE_INFO_IMPL(BehaviorEBusHandler);
+
+    AZ_TYPE_INFO_WITH_NAME_IMPL(BehaviorObject, "BehaviorObject", "{2813CDFB-0A4A-411C-9216-72A7B644D1DD}");
+    AZ_TYPE_INFO_WITH_NAME_IMPL(BehaviorParameter, "BehaviorParameter", "{BD7B664E-5B8C-4B51-84F3-DE89B271E075}");
+    AZ_TYPE_INFO_WITH_NAME_IMPL(BehaviorArgument, "BehaviorArgument", "{B1680AE9-4DBE-4803-B12F-1E99A32990B7}");
+
+    AZ_TYPE_INFO_WITH_NAME_IMPL(BehaviorAzEventDescription, "BehaviorAzEventDescription", "{B5D95E87-FA17-41C7-AC90-7258A520FE82}");
+
+    AZ_TYPE_INFO_WITH_NAME_IMPL(InputRestriction, "InputRestriction", "{9DF4DDBE-63BE-4749-9921-52C82BF5E307}");
+    AZ_TYPE_INFO_WITH_NAME_IMPL(BranchOnResultInfo, "BranchOnResultInfo", "{C063AB6F-462F-485F-A911-DE3A8946A019}");
+    AZ_TYPE_INFO_WITH_NAME_IMPL(CheckedOperationInfo, "CheckedOperationInfo", "{9CE9560F-ECAB-46EF-B341-3A86973E71CD}");
+    AZ_TYPE_INFO_WITH_NAME_IMPL(OverloadArgumentGroupInfo, "OverloadArgumentGroupInfo", "{AEFEFC42-3ED8-43A9-AE1F-6D8F32A280D2}");
+    AZ_TYPE_INFO_WITH_NAME_IMPL(ExplicitOverloadInfo, "ExplicitOverloadInfo", "{B6064A17-E907-4CB5-8EAE-C4888E468CD5}");
+
+    AZ_TYPE_INFO_WITH_NAME_IMPL(EventHandlerCreationFunctionHolder, "EventHandlerCreationFunctionHolder", "{40F7C5D8-8DA0-4979-BC8C-0A52EDA80633}");
+
     bool MethodReturnsAzEventByReferenceOrPointer(const AZ::BehaviorMethod& method)
     {
         const AZ::BehaviorParameter* resultParameter = method.GetResult();
@@ -87,7 +108,7 @@ namespace AZ
                     azEventDescValid = false;
                 }
 
-                size_t parameterIndex = 0;
+                [[maybe_unused]] size_t parameterIndex = 0;
                 for (AZStd::string_view parameterName : behaviorAzEventDesc.m_parameterNames)
                 {
                     if (parameterName.empty())
@@ -102,6 +123,153 @@ namespace AZ
         }
 
         return azEventDescValid;
+    }
+
+    // BehaviorParameterOverrides member definitions
+    BehaviorParameterOverrides::BehaviorParameterOverrides(AZStd::string_view name, AZStd::string_view toolTip, BehaviorDefaultValuePtr defaultValue,
+        u32 addTraits, u32 removeTraits)
+        : m_name(name)
+        , m_toolTip(toolTip)
+        , m_defaultValue(defaultValue)
+        , m_addTraits(addTraits)
+        , m_removeTraits(removeTraits)
+    {}
+
+    // BehaviorDefaultValue member definitions
+    BehaviorDefaultValue::~BehaviorDefaultValue()
+    {
+        if (m_value.m_value && m_destructor)
+        {
+            m_destructor(m_value.m_value);
+        }
+    }
+
+    const BehaviorArgument& BehaviorDefaultValue::GetValue() const
+    {
+        return m_value;
+    }
+
+    // BehaviorObject member functions
+    BehaviorObject::BehaviorObject()
+        : m_address(nullptr)
+        , m_typeId(AZ::Uuid::CreateNull())
+    {
+    }
+
+    BehaviorObject::BehaviorObject(void* address, const Uuid& typeId)
+        : m_address(address)
+        , m_typeId(typeId)
+    {
+    }
+
+    BehaviorObject::BehaviorObject(void* address, IRttiHelper* rttiHelper)
+        : m_address(address)
+        , m_rttiHelper(rttiHelper)
+    {
+        m_typeId = rttiHelper ? rttiHelper->GetTypeId() : AZ::Uuid::CreateNull();
+    }
+
+    bool BehaviorObject::IsValid() const
+    {
+        return m_address && !m_typeId.IsNull();
+    }
+
+
+    // BehaviorArgument member functions
+    BehaviorArgument::BehaviorArgument()
+        : m_value(nullptr)
+    {
+        m_name = nullptr;
+        m_typeId = Uuid::CreateNull();
+        m_azRtti = nullptr;
+        m_traits = 0;
+    }
+
+    BehaviorArgument::BehaviorArgument(BehaviorArgument&& other)
+        : BehaviorParameter(AZStd::move(other))
+        , m_value(AZStd::move(other.m_value))
+        , m_onAssignedResult(AZStd::move(other.m_onAssignedResult))
+        , m_tempData(AZStd::move(other.m_tempData))
+    {
+    }
+
+    BehaviorArgument::BehaviorArgument(BehaviorObject* value)
+    {
+        Set(value);
+    }
+
+    BehaviorArgument::BehaviorArgument(BehaviorArgumentValueTypeTag_t, BehaviorObject* value)
+    {
+        Set(BehaviorArgumentValueTypeTag, value);
+    }
+
+    void BehaviorArgument::Set(BehaviorObject* value)
+    {
+        m_value = &value->m_address;
+        m_typeId = value->m_typeId;
+        m_traits = BehaviorParameter::TR_POINTER;
+        m_name = value->m_rttiHelper ? value->m_rttiHelper->GetActualTypeName(value->m_address) : nullptr;
+        m_azRtti = value->m_rttiHelper;
+    }
+
+    void BehaviorArgument::Set(BehaviorArgumentValueTypeTag_t, BehaviorObject* value)
+    {
+        m_value = value->m_address;
+        m_typeId = value->m_typeId;
+        m_traits = BehaviorParameter::TR_NONE;
+        m_name = value->m_rttiHelper ? value->m_rttiHelper->GetActualTypeName(value->m_address) : nullptr;
+        m_azRtti = value->m_rttiHelper;
+    }
+
+    void BehaviorArgument::Set(const BehaviorParameter& param)
+    {
+        *static_cast<BehaviorParameter*>(this) = param;
+    }
+
+    void BehaviorArgument::Set(const BehaviorArgument& param)
+    {
+        *static_cast<BehaviorParameter*>(this) = static_cast<const BehaviorParameter&>(param);
+        m_value = param.m_value;
+        m_onAssignedResult = param.m_onAssignedResult;
+        m_tempData = param.m_tempData;
+    }
+
+    void* BehaviorArgument::GetValueAddress() const
+    {
+        void* valueAddress = m_value;
+        if (m_traits & BehaviorParameter::TR_POINTER)
+        {
+            valueAddress = *reinterpret_cast<void**>(valueAddress); // pointer to a pointer
+        }
+        return valueAddress;
+    }
+
+
+    bool BehaviorArgument::ConvertTo(const AZ::Uuid& typeId)
+    {
+        if (m_azRtti)
+        {
+            void* valueAddress = GetValueAddress();
+            if (valueAddress) // should we make null value to convert to anything?
+            {
+                return AZ::Internal::ConvertValueTo(valueAddress, m_azRtti, typeId, m_value, m_tempData);
+            }
+        }
+        return m_typeId == typeId;
+    }
+
+    BehaviorArgument::operator BehaviorObject() const
+    {
+        return BehaviorObject(m_value, m_azRtti);
+    }
+
+    BehaviorArgument& BehaviorArgument::operator=(BehaviorArgument&& other)
+    {
+        *static_cast<BehaviorParameter*>(this) = AZStd::move(static_cast<BehaviorParameter&&>(other));
+        m_value = AZStd::move(other.m_value);
+        m_onAssignedResult = AZStd::move(other.m_onAssignedResult);
+        m_tempData = AZStd::move(other.m_tempData);
+        return *this;
     }
 
     //=========================================================================
@@ -130,6 +298,21 @@ namespace AZ
         m_attributes.clear();
     }
 
+    void BehaviorMethod::SetDeprecatedName(AZStd::string name)
+    {
+        m_deprecatedName = AZStd::move(name);
+    }
+    const AZStd::string& BehaviorMethod::GetDeprecatedName() const
+    {
+        return m_deprecatedName;
+    }
+
+    //////////////////////////////////////////////////////////////////////////
+    bool BehaviorMethod::Invoke() const
+    {
+        return Call(nullptr, 0, nullptr);
+    }
+
     //=========================================================================
     // BehaviorProperty
     //=========================================================================
@@ -152,6 +335,158 @@ namespace AZ
         {
             delete attrIt.second;
         }
+    }
+
+    bool BehaviorProperty::SetGetterImpl(bool isClassType, BehaviorClass* currentClass)
+    {
+        if (isClassType)
+        {
+            AZ_Assert(currentClass, "We should declare class property with in the class!");
+
+            // check getter to have only return value (and this pointer)
+            if (m_getter->GetNumArguments() != 1 || m_getter->GetArgument(0)->m_typeId != currentClass->m_typeId)
+            {
+                AZ_Assert(false, "Member Getter can't have any argument but thisPointer and just return type!");
+                delete m_getter;
+                m_getter = nullptr;
+                return false;
+            }
+
+            // assure that TR_THIS_PTR is set on the first parameter
+            m_getter->OverrideParameterTraits(0, AZ::BehaviorParameter::TR_THIS_PTR, 0);
+        }
+        else
+        {
+            // check getter to have only return value
+            if (m_getter->GetNumArguments() > 0)
+            {
+                bool isValidSignature = false;
+                if (currentClass && m_getter->GetNumArguments() == 1)
+                {
+                    AZ::TypeId thisPtrType = m_getter->GetArgument(0)->m_typeId;
+                    // Check that the class is either the same as the first argument, or they are convertible
+                    if (currentClass->m_azRtti)
+                    {
+                        isValidSignature = currentClass->m_azRtti->IsTypeOf(thisPtrType);
+                    }
+                    else
+                    {
+                        // No rtti, need to ensure types are the same
+                        isValidSignature = thisPtrType == currentClass->m_typeId;
+                    }
+                }
+
+                // assure that TR_THIS_PTR is set on the first parameter
+                m_getter->OverrideParameterTraits(0, AZ::BehaviorParameter::TR_THIS_PTR, 0);
+
+                if (!isValidSignature)
+                {
+                    AZ_Assert(false, "Getter can't have any argument just return type: %s!", currentClass->m_name.c_str());
+                    delete m_getter;
+                    m_getter = nullptr;
+                    return false;
+                }
+
+                // assure that TR_THIS_PTR is set on the first parameter
+                m_getter->OverrideParameterTraits(0, AZ::BehaviorParameter::TR_THIS_PTR, 0);
+            }
+        }
+        return true;
+    }
+
+    bool BehaviorProperty::SetSetterImpl(bool isClassType, BehaviorClass* currentClass)
+    {
+        if (isClassType)
+        {
+            AZ_Assert(currentClass, "We should declare class property with in the class!");
+
+            // check setter have only 1 argument + 1 this pointer
+            if (m_setter->GetNumArguments() != 2 || m_setter->GetArgument(0)->m_typeId != currentClass->m_typeId)
+            {
+                AZ_Assert(false, "Member Setter should have 2 arguments, thisPointer and dataValue to be set!");
+                delete m_setter;
+                m_setter = nullptr;
+                return false;
+            }
+            // check getter result type is equal to setter input type
+            if (m_getter && m_getter->GetResult()->m_typeId != m_setter->GetArgument(1)->m_typeId)
+            {
+                AZStd::string getterType, setterType;
+                m_getter->GetResult()->m_typeId.ToString(getterType);
+                m_setter->GetArgument(1)->m_typeId.ToString(setterType);
+                AZ_Assert(
+                    false,
+                    "Getter return type and Setter input argument should be the same type! (getter: %s, setter: %s)",
+                    getterType.c_str(),
+                    setterType.c_str());
+                delete m_setter;
+                m_setter = nullptr;
+                return false;
+            }
+
+            // assure that TR_THIS_PTR is set on the first parameter
+            m_setter->OverrideParameterTraits(0, AZ::BehaviorParameter::TR_THIS_PTR, 0);
+        }
+        else
+        {
+            size_t valueIndex = 0;
+            // check setter have only 1 argument
+            if (m_setter->GetNumArguments() != 1)
+            {
+                bool isValidSignature = false;
+                if (currentClass && m_setter->GetNumArguments() == 2)
+                {
+                    AZ::TypeId thisPtrType = m_setter->GetArgument(0)->m_typeId;
+                    // Check that the class is either the same as the first argument, or they are convertible
+                    if (currentClass->m_azRtti)
+                    {
+                        isValidSignature = currentClass->m_azRtti->IsTypeOf(thisPtrType);
+                    }
+                    else
+                    {
+                        // No rtti, need to ensure types are the same
+                        isValidSignature = thisPtrType == currentClass->m_typeId;
+                    }
+                }
+
+                if (!isValidSignature)
+                {
+                    AZ_Assert(false, "Setter should have 1 argument, data value to be set!");
+                    delete m_setter;
+                    m_setter = nullptr;
+                    return false;
+                }
+
+                // it's ok as this is a different way to represent a member function
+                valueIndex = 1; // since this pointer is at 0
+
+                // assure that TR_THIS_PTR is set on the first parameter
+                m_setter->OverrideParameterTraits(0, AZ::BehaviorParameter::TR_THIS_PTR, 0);
+            }
+
+            // check getter result type is equal to setter input type
+            if (m_getter && m_getter->GetResult()->m_typeId != m_setter->GetArgument(valueIndex)->m_typeId)
+            {
+                AZStd::string getterType, setterType;
+                m_getter->GetResult()->m_typeId.ToString(getterType);
+                m_setter->GetArgument(valueIndex)->m_typeId.ToString(setterType);
+                AZ_Assert(
+                    false,
+                    "Getter return type and Setter input argument should be the same type! (getter: %s, setter: %s)",
+                    getterType.c_str(),
+                    setterType.c_str());
+                delete m_setter;
+                m_setter = nullptr;
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // BehaviorMethod legacy Call forwarder
+    bool BehaviorMethod::Call(BehaviorArgument* arguments, unsigned int numArguments, BehaviorArgument* result) const
+    {
+        return Call(AZStd::span(arguments, numArguments), result);
     }
 
     bool BehaviorMethod::AddOverload(BehaviorMethod* overload)
@@ -270,7 +605,7 @@ namespace AZ
     //=========================================================================
     // GetTypeId
     //=========================================================================
-    const AZ::Uuid& BehaviorProperty::GetTypeId() const
+    AZ::TypeId BehaviorProperty::GetTypeId() const
     {
         if (m_getter)
         {
@@ -289,9 +624,15 @@ namespace AZ
     {
     }
 
+
     //=========================================================================
     // BehaviorEBus
     //=========================================================================
+    BehaviorEBus::VirtualProperty::VirtualProperty(BehaviorEBusEventSender* getter, BehaviorEBusEventSender* setter)
+        : m_getter(getter)
+        , m_setter(setter)
+    {}
+
     BehaviorEBus::BehaviorEBus()
         : m_createHandler(nullptr)
         , m_destroyHandler(nullptr)
@@ -421,10 +762,18 @@ namespace AZ
         return this;
     }
 
-    //=========================================================================
-    // BehaviorContext
-    //=========================================================================
-    BehaviorContext::BehaviorContext() = default;
+    // Reflect the following types by default
+    // AZStd::string
+    // AZStd::string_view
+    // AZStd::fixed_string<1024>
+    // This skips over the need to reflect the type via OnDemandReflection system
+    // saving build time across the board
+    BehaviorContext::BehaviorContext()
+    {
+        CommonOnDemandReflections::ReflectCommonString(this);
+        CommonOnDemandReflections::ReflectCommonFixedString(this);
+        CommonOnDemandReflections::ReflectCommonStringView(this);
+    }
 
     //=========================================================================
     // ~BehaviorContext
@@ -468,6 +817,237 @@ namespace AZ
         return (classTypeIt != m_typeToClassMap.end());
     }
 
+    // BehaviorContext bound objects query functions
+    const BehaviorMethod* BehaviorContext::FindMethodByReflectedName(AZStd::string_view reflectedName) const
+    {
+        auto methodIt = m_methods.find(reflectedName);
+        return methodIt != m_methods.end() ? methodIt->second : nullptr;
+    }
+    const BehaviorProperty* BehaviorContext::FindPropertyByReflectedName(AZStd::string_view reflectedName) const
+    {
+        auto propertyIt = m_properties.find(reflectedName);
+        return propertyIt != m_properties.end() ? propertyIt->second : nullptr;
+    }
+    const BehaviorMethod* BehaviorContext::FindGetterByReflectedName(AZStd::string_view reflectedName) const
+    {
+        auto propertyIt = m_properties.find(reflectedName);
+        return propertyIt != m_properties.end() && propertyIt->second != nullptr ? propertyIt->second->m_getter : nullptr;
+    }
+    const BehaviorMethod* BehaviorContext::FindSetterByReflectedName(AZStd::string_view reflectedName) const
+    {
+        auto propertyIt = m_properties.find(reflectedName);
+        return propertyIt != m_properties.end() && propertyIt->second != nullptr ? propertyIt->second->m_setter : nullptr;
+    }
+    const BehaviorClass* BehaviorContext::FindClassByReflectedName(AZStd::string_view reflectedName) const
+    {
+        auto classIt = m_classes.find(reflectedName);
+        return classIt != m_classes.end() ? classIt->second : nullptr;
+    }
+    const BehaviorClass* BehaviorContext::FindClassByTypeId(const AZ::TypeId& typeId) const
+    {
+        auto classTypeIt = m_typeToClassMap.find(typeId);
+        return classTypeIt != m_typeToClassMap.end() ? classTypeIt->second : nullptr;
+    }
+    const BehaviorEBus* BehaviorContext::FindEBusByReflectedName(AZStd::string_view reflectedName) const
+    {
+        auto ebusIt = m_ebuses.find(reflectedName);
+        return ebusIt != m_ebuses.end() ? ebusIt->second: nullptr;
+    }
+    BehaviorClass* BehaviorContext::ClassImpl(
+        const char* name, const AZ::TypeId& typeUuid, AZ::IRttiHelper* rttiHelper, size_t alignment, size_t size)
+    {
+        AZ_Assert(!typeUuid.IsNull(), "Type %s has no AZ_TYPE_INFO or AZ_RTTI.  Please use an AZ_RTTI or AZ_TYPE_INFO declaration before trying to use it in reflection contexts.", name ? name : "<Unknown class>");
+        if (typeUuid.IsNull())
+        {
+            return nullptr;
+        }
+
+        auto classTypeIt = m_typeToClassMap.find(typeUuid);
+        if (IsRemovingReflection())
+        {
+            if (classTypeIt != m_typeToClassMap.end())
+            {
+                // find it in the name category
+                auto nameIt = m_classes.find(name);
+                while (nameIt != m_classes.end())
+                {
+                    if (nameIt->second == classTypeIt->second)
+                    {
+                        m_classes.erase(nameIt);
+                        break;
+                    }
+                }
+                BehaviorContextBus::Event(this, &BehaviorContextBus::Events::OnRemoveClass, name, classTypeIt->second);
+                delete classTypeIt->second;
+                m_typeToClassMap.erase(classTypeIt);
+            }
+            return nullptr;
+        }
+        else
+        {
+            if (classTypeIt != m_typeToClassMap.end())
+            {
+                AZ_Error("Reflection", false, "Class '%s' is already registered using Uuid: %s!", name, classTypeIt->first.ToFixedString().c_str());
+                return nullptr;
+            }
+
+            // TODO: make it a set and use the name inside the class
+            if (m_classes.find(name) != m_classes.end())
+            {
+                AZ_Error("Reflection", false, "A class with name '%s' is already registered!", name);
+                return nullptr;
+            }
+
+            BehaviorClass* behaviorClass = aznew BehaviorClass();
+            behaviorClass->m_typeId = typeUuid;
+            behaviorClass->m_azRtti = rttiHelper;
+            behaviorClass->m_alignment = alignment;
+            behaviorClass->m_size = size;
+            behaviorClass->m_name = name;
+
+            // Switch to Set (we store the name in the class)
+            m_classes.emplace(behaviorClass->m_name, behaviorClass);
+            m_typeToClassMap.emplace(behaviorClass->m_typeId, behaviorClass);
+            return behaviorClass;
+        }
+    }
+
+    bool BehaviorContext::MethodImpl(BehaviorMethod* method, const char* name, const BehaviorParameterOverrides* args, size_t argsSize, const char* deprecatedName)
+    {
+        /*
+        ** check to see if the deprecated name is used, and ensure its not duplicated.
+        */
+        if (deprecatedName != nullptr)
+        {
+            auto itr = m_methods.find(name);
+            if (itr != m_methods.end())
+            {
+                // now check to make sure that the deprecated name is not being used as a identical deprecated name for another method.
+                bool isDuplicate = false;
+                for (const auto& i : m_methods)
+                {
+                    if (i.second->GetDeprecatedName() == deprecatedName)
+                    {
+                        AZ_Warning("BehaviorContext", false, "Method %s is attempting to use a deprecated name of %s which is already in use for method %s! Deprecated name is ignored!", name, deprecatedName, i.first.c_str());
+                        isDuplicate = true;
+                        break;
+                    }
+                }
+
+                if (!isDuplicate)
+                {
+                    itr->second->SetDeprecatedName(deprecatedName);
+                }
+            }
+            else
+            {
+                AZ_Warning("BehaviorContext", false, "Method %s does not exist, so the deprecated name is ignored!", name, deprecatedName);
+            }
+        }
+
+        // global method
+        if (!m_methods.insert(AZStd::make_pair(name, method)).second)
+        {
+            delete method;
+            return false;
+        }
+
+        size_t classPtrIndex = method->IsMember() ? 1 : 0;
+        for (size_t i = 0; i < argsSize; ++i)
+        {
+            method->SetArgumentName(i + classPtrIndex, args[i].m_name);
+            method->SetArgumentToolTip(i + classPtrIndex, args[i].m_toolTip);
+            method->SetDefaultValue(i + classPtrIndex, args[i].m_defaultValue);
+            method->OverrideParameterTraits(i + classPtrIndex, args[i].m_addTraits, args[i].m_removeTraits);
+        }
+        return true;
+    }
+
+    void BehaviorContext::InitializeParameterOverrides(BehaviorValues* defaultValues, BehaviorParameterOverrides* paramOverrides, size_t 
+            paramOverridesCount)
+    {
+        if (defaultValues)
+        {
+            AZ_Assert(defaultValues->GetNumValues() <= paramOverridesCount,
+                "You can't have more default values than the number of function arguments");
+            // Copy default values to parameter override structure
+            size_t startArgumentIndex = paramOverridesCount - defaultValues->GetNumValues();
+            for (size_t i = 0; i < defaultValues->GetNumValues(); ++i)
+            {
+                paramOverrides[startArgumentIndex + i].m_defaultValue = defaultValues->GetDefaultValue(i);
+            }
+            delete defaultValues;
+        }
+    }
+
+    BehaviorEBus* BehaviorContext::BuildBehaviorEBus(const char* name, const char* deprecatedName, const char* toolTip)
+    {
+        // should we require AzTypeInfo for EBus, technically we should if we want to work around the compiler issue that made us to do it
+        // in first place
+        if (IsRemovingReflection())
+        {
+            auto ebusIt = m_ebuses.find(name);
+            if (ebusIt != m_ebuses.end())
+            {
+                BehaviorContextBus::Event(this, &BehaviorContextBus::Events::OnRemoveEBus, name, ebusIt->second);
+
+                // Erase the deprecated name as well
+                auto deprecatedIt = m_ebuses.find(ebusIt->second->m_deprecatedName);
+                if (deprecatedIt != m_ebuses.end())
+                {
+                    m_ebuses.erase(deprecatedIt);
+                }
+
+                delete ebusIt->second;
+                m_ebuses.erase(ebusIt);
+            }
+
+            return nullptr;
+        }
+        else
+        {
+            AZ_Error(
+                "BehaviorContext",
+                m_ebuses.find(name) == m_ebuses.end(),
+                "You shouldn't reflect an EBus multiple times (%s), subsequent reflections will not be registered!",
+                name);
+
+            BehaviorEBus* behaviorEBus = aznew BehaviorEBus();
+            behaviorEBus->m_name = name;
+
+            if (toolTip != nullptr)
+            {
+                behaviorEBus->m_toolTip = toolTip;
+            }
+
+            /*
+            ** If we have a deprecated name, lets make sure the its not in use as an existing bus.
+            */
+
+            if (deprecatedName != nullptr)
+            {
+                if (*deprecatedName == '\0')
+                {
+                    AZ_Warning("BehaviorContext", false, "Deprecated name can't be a empty string!", deprecatedName);
+                }
+                else if (m_ebuses.find(deprecatedName) != m_ebuses.end())
+                {
+                    AZ_Warning(
+                        "BehaviorContext",
+                        false,
+                        "EBus %s is attempting to use the deprecated name (%s) that is already used! Ignored!",
+                        name,
+                        deprecatedName);
+                }
+                else
+                {
+                    behaviorEBus->m_deprecatedName = deprecatedName;
+                }
+            }
+            return behaviorEBus;
+        }
+    }
+
     //=========================================================================
     // BehaviorClass
     //=========================================================================
@@ -483,7 +1063,6 @@ namespace AZ
         , m_alignment(0)
         , m_size(0)
         , m_unwrapper(nullptr)
-        , m_unwrapperUserData(nullptr)
         , m_wrappedTypeId(Uuid::CreateNull())
     {
     }
@@ -538,6 +1117,132 @@ namespace AZ
         }
 
         return BehaviorObject(address, m_azRtti);
+    }
+
+
+
+    // ScopedBehaviorObject class constructor/destructor definition
+    BehaviorClass::ScopedBehaviorObject::ScopedBehaviorObject() = default;
+    BehaviorClass::ScopedBehaviorObject::ScopedBehaviorObject(AZ::BehaviorObject&& behaviorObject, CleanupFunction cleanupFunction)
+        : m_behaviorObject(behaviorObject)
+        , m_cleanupFunction(AZStd::move(cleanupFunction))
+    {
+
+    }
+
+    // Move assignment needs to deallocate the previous scoped object
+    auto BehaviorClass::ScopedBehaviorObject::operator=(ScopedBehaviorObject&& other) ->ScopedBehaviorObject&
+    {
+        if (this != &other)
+        {
+            // Swap with the other scoped behavior object
+            // When the other object goes out of scope it will cleanup the old BehaviorObject instance.
+            AZStd::swap(m_behaviorObject, other.m_behaviorObject);
+            AZStd::swap(m_cleanupFunction, other.m_cleanupFunction);
+        }
+        return *this;
+    }
+
+    BehaviorClass::ScopedBehaviorObject::~ScopedBehaviorObject()
+    {
+        if (m_cleanupFunction)
+        {
+            m_cleanupFunction(m_behaviorObject);
+        }
+    }
+
+    bool BehaviorClass::ScopedBehaviorObject::IsValid() const
+    {
+        return m_behaviorObject.IsValid();
+    }
+
+    auto BehaviorClass::CreateWithScope() const -> ScopedBehaviorObject
+    {
+        return ScopedBehaviorObject(Create(Allocate()), [this](const AZ::BehaviorObject& behaviorObject)
+            {
+                this->Destroy(behaviorObject);
+            });
+    }
+
+    auto BehaviorClass::CreateWithScope(void* address) const -> ScopedBehaviorObject
+    {
+        return ScopedBehaviorObject(Create(address), [this](const AZ::BehaviorObject& behaviorObject)
+            {
+                if (behaviorObject.m_typeId == m_typeId && this->m_destructor && behaviorObject.m_address)
+                {
+                    this->m_destructor(behaviorObject.m_address, m_userData);
+                }
+            });
+    }
+
+    auto BehaviorClass::CreateWithScope(AZStd::span<BehaviorArgument> arguments) const -> ScopedBehaviorObject
+    {
+        // If the arguments list is empty fallback to using the default constructor overload
+        if (arguments.empty())
+        {
+            return CreateWithScope();
+        }
+
+        AZ::BehaviorObject selfObject(Allocate(), m_azRtti);
+        AZStd::fixed_vector<AZ::BehaviorArgument, 64> addressPlusArguments{ AZ::BehaviorArgument{&selfObject} };
+        addressPlusArguments.append_range(arguments);
+
+        bool constructorInvoked{};
+        for (AZ::BehaviorMethod* constructor : m_constructors)
+        {
+            if (constructor->IsCallable(addressPlusArguments) && constructor->Call(addressPlusArguments))
+            {
+                constructorInvoked = true;
+                break;
+            }
+        }
+
+        if (constructorInvoked)
+        {
+            return ScopedBehaviorObject(AZStd::move(selfObject), [this](const AZ::BehaviorObject& behaviorObject)
+                {
+                    this->Destroy(behaviorObject);
+                });
+        }
+
+        // No the constructor has been invoked, so deallocate the new object instance created in this function
+        Deallocate(selfObject.m_address);
+
+        return {};
+    }
+
+    auto BehaviorClass::CreateWithScope(void* address, AZStd::span<BehaviorArgument> arguments) const -> ScopedBehaviorObject
+    {
+        // If the arguments list is empty fallback to using the default constructor overload with the supplied memory address
+        if (arguments.empty())
+        {
+            return CreateWithScope(address);
+        }
+
+        // Use the supplied memory address to create a new object instance
+        AZ::BehaviorObject selfObject(address, m_azRtti);
+        AZStd::fixed_vector<AZ::BehaviorArgument, 64> addressPlusArguments{ AZ::BehaviorArgument{&selfObject} };
+        addressPlusArguments.append_range(arguments);
+
+        bool constructorInvoked{};
+        for (AZ::BehaviorMethod* constructor : m_constructors)
+        {
+            if (constructor->IsCallable(addressPlusArguments) && constructor->Call(addressPlusArguments))
+            {
+                constructorInvoked = true;
+                break;
+            }
+        }
+
+        if (constructorInvoked)
+        {
+            return ScopedBehaviorObject(AZStd::move(selfObject), [this](const AZ::BehaviorObject& behaviorObject)
+                {
+                    this->Destroy(behaviorObject);
+                });
+        }
+
+        return {};
     }
 
     //=========================================================================
@@ -672,6 +1377,25 @@ namespace AZ
         return methodIter != m_methods.end() && methodIter->second->m_overload != nullptr;
     }
 
+    // Property method query functions implementations
+    const BehaviorProperty* BehaviorClass::FindPropertyByReflectedName(AZStd::string_view reflectedName) const
+    {
+        auto propertyIter = m_properties.find(reflectedName);
+        return propertyIter != m_properties.end() ? propertyIter->second : nullptr;
+    }
+
+    const BehaviorMethod* BehaviorClass::FindGetterByReflectedName(AZStd::string_view reflectedName) const
+    {
+        const BehaviorProperty* behaviorProperty = FindPropertyByReflectedName(reflectedName);
+        return behaviorProperty != nullptr ? behaviorProperty->m_getter : nullptr;
+    }
+
+    const BehaviorMethod* BehaviorClass::FindSetterByReflectedName(AZStd::string_view reflectedName) const
+    {
+        const BehaviorProperty* behaviorProperty = FindPropertyByReflectedName(reflectedName);
+        return behaviorProperty != nullptr ? behaviorProperty->m_setter : nullptr;
+    }
+
     //=========================================================================
     // Move
     //=========================================================================
@@ -715,7 +1439,7 @@ namespace AZ
         }
         else
         {
-            return azmalloc(m_size, m_alignment, AZ::SystemAllocator, m_name.c_str());
+            return azmalloc(m_size, m_alignment, AZ::SystemAllocator);
         }
     }
 
@@ -755,47 +1479,38 @@ namespace AZ
         return FindAttribute(attributeId) != nullptr;
     }
 
-    //////////////////////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////////////////////
-
-    //=========================================================================
-    // InstallGenericHook
-    //=========================================================================
-    bool BehaviorEBusHandler::InstallGenericHook(int index, GenericHookType hook, void* userData)
+    // Deleter operator for the unwrapper unique_ptr deleter
+    void UnwrapperFuncDeleter::operator()(void* ptr) const
     {
-        if (index != -1)
+        if (m_deleter && ptr)
         {
-            // Check parameters
-            m_events[index].m_isFunctionGeneric = true;
-            m_events[index].m_function = reinterpret_cast<void*>(hook);
-            m_events[index].m_userData = userData;
-            return true;
+            m_deleter(ptr);
         }
-
-        return false;
     }
 
-    //=========================================================================
-    // InstallGenericHook
-    //=========================================================================
-    bool BehaviorEBusHandler::InstallGenericHook(const char* name, GenericHookType hook, void* userData)
-    {
-        return InstallGenericHook(GetFunctionIndex(name), hook, userData);
-    }
+    UnwrapperUserData::UnwrapperUserData() = default;
+    UnwrapperUserData::UnwrapperUserData(UnwrapperUserData&& other) = default;
+    UnwrapperUserData& UnwrapperUserData::operator=(UnwrapperUserData&& other) = default;
+    UnwrapperUserData::~UnwrapperUserData() = default;
 
-    //=========================================================================
-    // GetEvents
-    //=========================================================================
-    const BehaviorEBusHandler::EventArray& BehaviorEBusHandler::GetEvents() const
-    {
-        return m_events;
-    }
 
-    bool BehaviorEBusHandler::BusForwarderEvent::HasResult() const
-    {
-        return !m_parameters.empty() && !m_parameters.front().m_typeId.IsNull() && m_parameters.front().m_typeId != azrtti_typeid<void>();
-    }
+    //////////////////////////////////////////////////////////////////////////
+    void BehaviorContextEvents::OnAddGlobalMethod(const char*, BehaviorMethod*) {}
+    void BehaviorContextEvents::OnRemoveGlobalMethod(const char*, BehaviorMethod*) {}
+
+    /// Called when a new global property is reflected in behavior context or remove from it
+    void BehaviorContextEvents::OnAddGlobalProperty(const char*, BehaviorProperty*) {}
+    void BehaviorContextEvents::OnRemoveGlobalProperty(const char*, BehaviorProperty*) {}
+
+    /// Called when a class is added or removed
+    void BehaviorContextEvents::OnAddClass(const char*, BehaviorClass*) {}
+    void BehaviorContextEvents::OnRemoveClass(const char*, BehaviorClass*) {}
+
+    /// Called when a ebus is added or removed
+    void BehaviorContextEvents::OnAddEBus(const char*, BehaviorEBus*) {}
+    void BehaviorContextEvents::OnRemoveEBus(const char*, BehaviorEBus*) {}
+    //////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
 
     CheckedOperationInfo::CheckedOperationInfo
         ( AZStd::string_view safetyCheckName
@@ -960,7 +1675,7 @@ namespace AZ
             return ((static_cast<AZ::u64>(scopeType) & static_cast<AZ::u64>(scope)) == static_cast<AZ::u64>(scope));
         }
 
-        const AZ::TypeId& GetUnderlyingTypeId(const IRttiHelper& enumRttiHelper)
+        AZ::TypeId GetUnderlyingTypeId(const IRttiHelper& enumRttiHelper)
         {
             const size_t underlyingTypeSize = enumRttiHelper.GetTypeSize();
             const TypeTraits underlyingTypeTraits = enumRttiHelper.GetTypeTraits();
@@ -1014,6 +1729,23 @@ namespace AZ
             }
             return enumRttiHelper.GetTypeId();
         }
-    }
 
+        bool ConvertValueTo(void* sourceAddress, const IRttiHelper* sourceRtti, const AZ::Uuid& targetType, void*& targetAddress, BehaviorParameter::TempValueParameterAllocator& tempAllocator)
+        {
+            // Check see if the underlying typeid is an enum whose typeIds match
+            if (GetUnderlyingTypeId(*sourceRtti) == targetType)
+            {
+                return true;
+            }
+            // convert
+            void* convertedAddress = sourceRtti->Cast(sourceAddress, targetType);
+            if (convertedAddress && convertedAddress != sourceAddress) // if we converted as we have a different address
+            {
+                // allocate temp storage and store it
+                targetAddress = tempAllocator.allocate(sizeof(void*), AZStd::alignment_of<void*>::value, 0);
+                *reinterpret_cast<void**>(targetAddress) = convertedAddress;
+            }
+            return convertedAddress != nullptr;
+        }
+    }
 } // namespace AZ

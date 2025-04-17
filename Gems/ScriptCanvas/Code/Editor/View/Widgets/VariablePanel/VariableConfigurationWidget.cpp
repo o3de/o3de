@@ -63,7 +63,6 @@ namespace ScriptCanvasEditor
         , const VariablePaletteRequests::VariableConfigurationInput& input
         , QWidget* parent)
         : AzQtComponents::StyledDialog(parent)
-        , m_manipulatingSelection(false)
         , ui(new Ui::VariableConfigurationWidget())
         , m_scriptCanvasId(scriptCanvasId)
         , m_input(input)
@@ -92,7 +91,6 @@ namespace ScriptCanvasEditor
                 // only emitted on container types
                 OnCreateVariable(variableType);
                 OnNameChanged(variableName.c_str());
-                accept();
             });
 
         // Tell the widget to auto create our context menu, for now

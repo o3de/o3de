@@ -21,7 +21,7 @@ namespace AZ
         : public EntityId
     {
     public: 
-        AZ_CLASS_ALLOCATOR(NamedEntityId, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(NamedEntityId, EntityAllocator);
         AZ_RTTI(NamedEntityId, "{27F37921-4B40-4BE6-B47B-7D3AB8682D58}", EntityId);
 
         static void Reflect(AZ::ReflectContext* context);

@@ -18,14 +18,14 @@
 #include <AzCore/std/smart_ptr/make_shared.h>
 
 // AzToolsFramework
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
+#include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
 
 // Editor
 #include "Settings.h"
 #include "MainWindow.h"
 #include "LayoutWnd.h"
-#include "2DViewport.h"
-#include "TopRendererWnd.h"
 #include "EditorViewportWidget.h"
 #include "CryEditDoc.h"
 
@@ -56,8 +56,6 @@ CViewManager::CViewManager()
     m_origin2D(0, 0, 0);
     m_zoom2D = 1.0f;
 
-    m_cameraObjectId = GUID_NULL;
-
     m_updateRegion.min = Vec3(-100000, -100000, -100000);
     m_updateRegion.max = Vec3(100000, 100000, 100000);
 
@@ -70,20 +68,8 @@ CViewManager::CViewManager()
     viewportOptions.paneRect = QRect(0, 0, 400, 400);
     viewportOptions.canHaveMultipleInstances = true;
 
-    viewportOptions.viewportType = ET_ViewportXY;
-    RegisterQtViewPane<C2DViewport_XY>(GetIEditor(), "Top", LyViewPane::CategoryViewport, viewportOptions);
-
-    viewportOptions.viewportType = ET_ViewportXZ;
-    RegisterQtViewPane<C2DViewport_XZ>(GetIEditor(), "Front", LyViewPane::CategoryViewport, viewportOptions);
-
-    viewportOptions.viewportType = ET_ViewportYZ;
-    RegisterQtViewPane<C2DViewport_YZ>(GetIEditor(), "Left", LyViewPane::CategoryViewport, viewportOptions);
-
     viewportOptions.viewportType = ET_ViewportCamera;
     RegisterQtViewPaneWithName<EditorViewportWidget>(GetIEditor(), "Perspective", LyViewPane::CategoryViewport, viewportOptions);
-
-    viewportOptions.viewportType = ET_ViewportMap;
-    RegisterQtViewPane<QTopRendererWnd>(GetIEditor(), "Map", LyViewPane::CategoryViewport, viewportOptions);
 
     GetIEditor()->RegisterNotifyListener(this);
 }
@@ -224,8 +210,48 @@ void CViewManager::Cycle2DViewport()
 //////////////////////////////////////////////////////////////////////////
 CViewport* CViewManager::GetViewportAtPoint(const QPoint& point) const
 {
-    QWidget* widget = QApplication::widgetAt(point);
-    return qobject_cast<QtViewport*>(widget);
+    const auto viewportIter = AZStd::find_if(
+        m_viewports.begin(),
+        m_viewports.end(),
+        [&point](CViewport* viewport) -> bool
+        {
+            auto* widget = viewport->widget();
+            return widget && widget->rect().contains(widget->mapFromGlobal(point));
+        }
+    );
+
+    return (viewportIter == m_viewports.end()) ? nullptr : *viewportIter;
+}
+
+//////////////////////////////////////////////////////////////////////////
+AZ::Vector3 CViewManager::GetClickPositionInViewportSpace() const
+{
+    // Retrieve click position.
+    QPoint clickPos = QCursor::pos();
+
+    // If a context menu is active, get its position as the click position.
+    if (auto menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get())
+    {
+        auto outcome = menuManagerInterface->GetLastContextMenuPosition();
+        if (outcome.IsSuccess())
+        {
+            clickPos = outcome.GetValue();
+        }
+    }
+
+    // If the click position was on a viewport, retrieve the position in world coordinates.
+    AZ::Vector3 worldPosition = AZ::Vector3::CreateZero();
+    if (CViewport* view = GetViewportAtPoint(clickPos))
+    {
+        QPoint relativeCursor = view->widget()->mapFromGlobal(clickPos);
+        worldPosition = AzToolsFramework::FindClosestPickIntersection(
+            view->GetViewportId(),
+            AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(relativeCursor),
+            AzToolsFramework::EditorPickRayLength,
+            AzToolsFramework::GetDefaultEntityPlacementDistance());
+    }
+
+    return worldPosition;
 }
 
 //////////////////////////////////////////////////////////////////////////

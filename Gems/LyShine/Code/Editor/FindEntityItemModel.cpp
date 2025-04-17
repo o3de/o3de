@@ -42,12 +42,12 @@ int FindEntityItemModel::rowCount(const QModelIndex& parent) const
     auto parentId = GetEntityFromIndex(parent);
     if (parentId.IsValid())
     {
-        EBUS_EVENT_ID_RESULT(childCount, parentId, UiElementBus, GetNumChildElements);
+        UiElementBus::EventResult(childCount, parentId, &UiElementBus::Events::GetNumChildElements);
     }
     else
     {
         // Root element
-        EBUS_EVENT_ID_RESULT(childCount, m_canvasEntityId, UiCanvasBus, GetNumChildElements);
+        UiCanvasBus::EventResult(childCount, m_canvasEntityId, &UiCanvasBus::Events::GetNumChildElements);
     }
 
     return childCount;
@@ -71,12 +71,12 @@ QModelIndex FindEntityItemModel::index(int row, int column, const QModelIndex& p
     AZ::EntityId childId;
     if (parentId.IsValid())
     {
-        EBUS_EVENT_ID_RESULT(childId, parentId, UiElementBus, GetChildEntityId, row);
+        UiElementBus::EventResult(childId, parentId, &UiElementBus::Events::GetChildEntityId, row);
     }
     else
     {
         // Root element
-        EBUS_EVENT_ID_RESULT(childId, m_canvasEntityId, UiCanvasBus, GetChildElementEntityId, row);
+        UiCanvasBus::EventResult(childId, m_canvasEntityId, &UiCanvasBus::Events::GetChildElementEntityId, row);
     }
 
     return createIndex(row, column, static_cast<AZ::u64>(childId));
@@ -103,7 +103,7 @@ QModelIndex FindEntityItemModel::parent(const QModelIndex& index) const
     if (id.IsValid())
     {
         AZ::EntityId parentId;
-        EBUS_EVENT_ID_RESULT(parentId, id, UiElementBus, GetParentEntityId);
+        UiElementBus::EventResult(parentId, id, &UiElementBus::Events::GetParentEntityId);
         return GetIndexFromEntity(parentId, index.column());
     }
     return QModelIndex();
@@ -114,12 +114,12 @@ QModelIndex FindEntityItemModel::GetIndexFromEntity(const AZ::EntityId& entityId
     if (entityId.IsValid())
     {
         AZ::EntityId parentId;
-        EBUS_EVENT_ID_RESULT(parentId, entityId, UiElementBus, GetParentEntityId);
+        UiElementBus::EventResult(parentId, entityId, &UiElementBus::Events::GetParentEntityId);
 
         if (parentId.IsValid())
         {
             AZStd::size_t row = 0;
-            EBUS_EVENT_ID_RESULT(row, parentId, UiElementBus, GetIndexOfChildByEntityId, entityId);
+            UiElementBus::EventResult(row, parentId, &UiElementBus::Events::GetIndexOfChildByEntityId, entityId);
             return createIndex(static_cast<int>(row), column, static_cast<AZ::u64>(entityId));
         }
     }
@@ -153,7 +153,7 @@ QVariant FindEntityItemModel::DataForName(const QModelIndex& index, int role) co
     case Qt::EditRole:
     {
         AZStd::string name;
-        EBUS_EVENT_ID_RESULT(name, id, UiElementBus, GetName);
+        UiElementBus::EventResult(name, id, &UiElementBus::Events::GetName);
         return QString(name.data());
     }
 
@@ -189,7 +189,7 @@ bool FindEntityItemModel::FilterEntity(const AZ::EntityId& entityId)
         if (entityId.IsValid())
         {
             AZStd::string name;
-            EBUS_EVENT_ID_RESULT(name, entityId, UiElementBus, GetName);
+            UiElementBus::EventResult(name, entityId, &UiElementBus::Events::GetName);
 
             if (AzFramework::StringFunc::Find(name.c_str(), m_filterString.c_str()) == AZStd::string::npos)
             {
@@ -221,12 +221,12 @@ bool FindEntityItemModel::FilterEntity(const AZ::EntityId& entityId)
     AzToolsFramework::EntityIdList children;
     if (entityId.IsValid())
     {
-        EBUS_EVENT_ID_RESULT(children, entityId, UiElementBus, GetChildEntityIds);
+        UiElementBus::EventResult(children, entityId, &UiElementBus::Events::GetChildEntityIds);
     }
     else
     {
         // Root element
-        EBUS_EVENT_ID_RESULT(children, m_canvasEntityId, UiCanvasBus, GetChildElementEntityIds);
+        UiCanvasBus::EventResult(children, m_canvasEntityId, &UiCanvasBus::Events::GetChildElementEntityIds);
     }
 
     m_entityMatchState[entityId] = isFilterMatch;

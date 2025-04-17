@@ -35,6 +35,11 @@ namespace AZ
             template<typename ObjectType>
             bool SaveObjectToFile(const AZStd::string& path, const ObjectType& objectData);
 
+            //! Saves serialized object data to a json string
+            //! Errors will be reported using AZ trace
+            template<typename ObjectType>
+            bool SaveObjectToString(AZStd::string& output, const ObjectType& objectData);
+
             // Definitions...
 
             template<typename ObjectType>
@@ -86,6 +91,33 @@ namespace AZ
                 if (reportingHelper.ErrorsReported())
                 {
                     AZ_Error("AZ::RPI::JsonUtils", false, "Failed to write JSON document to file: %s", path.c_str());
+                    return false;
+                }
+
+                return true;
+            }
+
+            template<typename ObjectType>
+            bool SaveObjectToString(AZStd::string& output, const ObjectType& objectData)
+            {
+                rapidjson::Document document;
+                document.SetObject();
+
+                AZ::JsonSerializerSettings settings;
+                AZ::RPI::JsonReportingHelper reportingHelper;
+                reportingHelper.Attach(settings);
+
+                AZ::JsonSerialization::Store(document, document.GetAllocator(), objectData, settings);
+                if (reportingHelper.ErrorsReported())
+                {
+                    AZ_Error("AZ::RPI::JsonUtils", false, "Failed to write object data to string");
+                    return false;
+                }
+
+                AZ::JsonSerializationUtils::WriteJsonString(document, output);
+                if (reportingHelper.ErrorsReported())
+                {
+                    AZ_Error("AZ::RPI::JsonUtils", false, "Failed to write JSON document to string");
                     return false;
                 }
 

@@ -10,13 +10,15 @@ set(FILES
     Include/EditorPythonBindings/CustomTypeBindingBus.h
     Include/EditorPythonBindings/EditorPythonBindingsBus.h
     Include/EditorPythonBindings/EditorPythonBindingsSymbols.h
+    Include/EditorPythonBindings/PythonUtility.h
+    Include/EditorPythonBindings/PythonCommon.h
     Source/ActionManager/ActionManagerBus.h
     Source/ActionManager/MenuManagerBus.h
     Source/ActionManager/PythonActionManagerHandler.cpp
     Source/ActionManager/PythonActionManagerHandler.h
     Source/ActionManager/PythonEditorAction.cpp
     Source/ActionManager/PythonEditorAction.h
-    Source/PythonCommon.h
+    Source/ActionManager/ToolBarManagerBus.h
     Source/PythonLogSymbolsComponent.cpp
     Source/PythonLogSymbolsComponent.h
     Source/PythonMarshalComponent.cpp
@@ -34,5 +36,4 @@ set(FILES
     Source/PythonSystemComponent.h
     Source/PythonTypeCasters.h
     Source/PythonUtility.cpp
-    Source/PythonUtility.h
 )

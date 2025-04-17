@@ -66,6 +66,7 @@ CLevelFileDialog::CLevelFileDialog(bool openDialog, QWidget* parent)
     if (m_bOpenDialog)
     {
         setWindowTitle(tr("Open Level"));
+        ui->treeView->expandToDepth(1);
         ui->newFolderButton->setVisible(false);
         ui->buttonBox->button(QDialogButtonBox::Ok)->setText(tr("Open"));
     }
@@ -106,6 +107,13 @@ void CLevelFileDialog::OnCancel()
 
 void CLevelFileDialog::OnOK()
 {
+    QString errorMessage;
+    if (!ValidateSaveLevelPath(errorMessage))
+    {
+        QMessageBox::warning(this, tr("Error"), errorMessage);
+        return;
+    }
+
     if (m_bOpenDialog)
     {
         // For Open button
@@ -120,13 +128,6 @@ void CLevelFileDialog::OnOK()
     }
     else
     {
-        QString errorMessage;
-        if (!ValidateSaveLevelPath(errorMessage))
-        {
-            QMessageBox::warning(this, tr("Error"), errorMessage);
-            return;
-        }
-
         QString levelPath = GetLevelPath();
         if (CFileUtil::PathExists(levelPath) && CheckLevelFolder(levelPath))
         {
@@ -429,6 +430,13 @@ bool CLevelFileDialog::ValidateSaveLevelPath(QString& errorMessage) const
     if (CFileUtil::PathExists(levelPath) && !CheckLevelFolder(levelPath))
     {
         errorMessage = tr("Please enter a level name");
+        return false;
+    }
+
+    if (!ui->nameLineEdit->hasAcceptableInput())
+    {
+        QString message = tr("The level name %1 contains illegal characters.");
+        errorMessage = message.arg(enteredPath);
         return false;
     }
 

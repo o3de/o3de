@@ -20,6 +20,7 @@ set(FILES
     Include/Headers/TestImpactFramework/TestImpactClientTestSelection.h
     Include/Headers/TestImpactFramework/TestImpactClientTestRun.h
     Include/Headers/TestImpactFramework/TestImpactClientSequenceReport.h
+    Include/Headers/TestImpactFramework/TestImpactTestSequenceBus.h
     Include/Headers/TestImpactFramework/TestImpactUtils.h
     Include/Headers/TestImpactFramework/TestImpactClientSequenceReportSerializer.h
     Include/Headers/TestImpactFramework/TestImpactSequenceReportException.h

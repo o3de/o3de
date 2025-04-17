@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <Atom/Feature/Material/MaterialAssignmentId.h>
+#include <AtomLyIntegration/CommonFeatures/Material/MaterialAssignmentId.h>
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/std/string/string.h>
@@ -28,8 +28,11 @@ namespace AZ
             static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
             static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
 
-            //! Open source material in material editor
+            //! Open document in material editor
             virtual void OpenMaterialEditor(const AZStd::string& sourcePath) = 0;
+
+            //! Open document in material canvas
+            virtual void OpenMaterialCanvas(const AZStd::string& sourcePath) = 0;
 
             //! Open the material instance editor to preview and edit material property overrides for the primary entity while applying
             //! changes to all entities in the editable set

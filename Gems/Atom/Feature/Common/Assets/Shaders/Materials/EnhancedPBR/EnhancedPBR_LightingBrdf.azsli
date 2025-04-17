@@ -1,0 +1,86 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+// This #define magic lets you use the GetDiffuseLighting & GetSpecularLighting functions in this file without making them the final functions
+// used in your shader. Simply #define GetDiffuseLighting & GetSpecularLighting to your custom definition before including this file
+//
+#ifndef GetDiffuseLighting
+#define GetDiffuseLighting(surface, lightingData, lightIntensity, dirToLight)       GetDiffuseLighting_EnhancedPBR(surface, lightingData, lightIntensity, dirToLight)
+#endif
+
+#ifndef GetSpecularLighting
+#define GetSpecularLighting(surface, lightingData, lightIntensity, dirToLight)      GetSpecularLighting_EnhancedPBR(surface, lightingData, lightIntensity, dirToLight)
+#endif
+
+#include <Atom/Features/PBR/Microfacet/Brdf.azsli>
+#include <Atom/Features/PBR/LightingOptions.azsli>
+
+#ifndef LightingData
+#error LightingData must be defined before including this file.
+#endif
+
+#ifndef Surface
+#error Surface must be defined before including this file.
+#endif
+
+// Then define the Diffuse and Specular lighting functions
+real3 GetDiffuseLighting_EnhancedPBR(Surface surface, LightingData lightingData, real3 lightIntensity, real3 dirToLight)
+{
+    real3 diffuse;
+    if(o_enableSubsurfaceScattering)
+    {
+        // Use diffuse brdf contains double Fresnel (enter/exit surface) terms if subsurface scattering is enabled
+        diffuse = NormalizedDisneyDiffuse(surface.albedo, surface.GetDiffuseNormal(), lightingData.dirToCamera, dirToLight, surface.roughnessLinear);
+    }
+    else
+    {
+        diffuse = DiffuseLambertian(surface.albedo, surface.GetDiffuseNormal(), dirToLight, lightingData.diffuseResponse);
+    }
+
+#if ENABLE_CLEAR_COAT
+    if(o_clearCoat_feature_enabled)
+    {
+        // Attenuate diffuse term by clear coat's fresnel term to account for energy loss
+        real HdotV = saturate(dot(normalize(dirToLight + lightingData.dirToCamera), lightingData.dirToCamera));
+        diffuse *= 1.0 - (FresnelSchlick(HdotV, 0.04) * surface.clearCoat.factor);
+    }
+#endif
+
+    diffuse *= lightIntensity;
+    return diffuse;
+}
+
+real3 GetSpecularLighting_EnhancedPBR(Surface surface, LightingData lightingData, const real3 lightIntensity, const real3 dirToLight)
+{
+    real3 specular;
+    if (o_enableAnisotropy)
+    {
+        specular = AnisotropicGGX( lightingData.dirToCamera, dirToLight, surface.GetSpecularNormal(), surface.anisotropy.tangent, surface.anisotropy.bitangent, surface.anisotropy.anisotropyFactors,
+                       surface.GetSpecularF0(), lightingData.GetSpecularNdotV(), lightingData.multiScatterCompensation );
+    }
+    else
+    {
+#if ENABLE_MOBILEBRDF
+        specular = SpecularGGXMobile(lightingData.dirToCamera, dirToLight, surface.GetSpecularNormal(), surface.GetSpecularF0(), surface.roughnessA2, surface.roughnessA, surface.roughnessLinear);
+#else
+        specular = SpecularGGX(lightingData.dirToCamera, dirToLight, surface.GetSpecularNormal(), surface.GetSpecularF0(), lightingData.GetSpecularNdotV(), surface.roughnessA2, lightingData.multiScatterCompensation);
+#endif
+    }
+
+#if ENABLE_CLEAR_COAT
+    if(o_clearCoat_feature_enabled)
+    {
+        specular = ClearCoatSpecular(dirToLight, lightingData.dirToCamera, surface.clearCoat.normal, surface.clearCoat.factor, surface.clearCoat.roughness, specular);
+    }
+#endif
+    
+    specular *= lightIntensity;
+    return specular;
+}

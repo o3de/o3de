@@ -7,13 +7,17 @@
  */
 #pragma once
 
-#include <AzCore/RTTI/RTTI.h>
-#include <AzCore/RTTI/ReflectContext.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
+#include <AzCore/RTTI/RTTIMacros.h>
 #include <AzCore/std/string/string_view.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Component/EntityId.h>
 #include <Vegetation/Ebuses/DescriptorNotificationBus.h>
+
+namespace AZ
+{
+    class ReflectContext;
+}
 
 namespace Vegetation
 {
@@ -32,18 +36,9 @@ namespace Vegetation
     {
     public:
         AZ_RTTI(InstanceSpawner, "{01AD0758-B04A-4B43-BC2B-BDCD77F4EF6A}");
-        AZ_CLASS_ALLOCATOR(InstanceSpawner, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(InstanceSpawner, AZ::SystemAllocator);
 
-        static void Reflect(AZ::ReflectContext* context)
-        {
-            AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context);
-            if (serialize)
-            {
-                serialize->Class<InstanceSpawner>()
-                    ->Version(0)
-                    ;
-            }
-        }
+        static void Reflect(AZ::ReflectContext* context);
 
         InstanceSpawner() = default;
         virtual ~InstanceSpawner() = default;

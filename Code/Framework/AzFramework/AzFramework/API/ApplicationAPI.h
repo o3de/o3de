@@ -6,9 +6,6 @@
  *
  */
 
-#ifndef AZFRAMEWORK_APPLICATIONAPI_H
-#define AZFRAMEWORK_APPLICATIONAPI_H
-
 #pragma once
 
 #include <AzCore/base.h>
@@ -102,10 +99,11 @@ namespace AzFramework
         /// Calculate the branch token from the current application's engine root
         virtual void CalculateBranchTokenForEngineRoot(AZStd::string& token) const = 0;
 
-        /// Returns true if Prefab System is enabled, false if Legacy Slice System is enabled
+        /// Returns true if Editor Mode Feedback is enabled
         virtual bool IsEditorModeFeedbackEnabled() const { return false; }
 
         /// Returns true if Prefab System is enabled, false if Legacy Slice System is enabled
+        /// @deprecated the Legacy Slice System for level editing has been deprecated.
         virtual bool IsPrefabSystemEnabled() const { return true; }
 
         /// Returns true if the additional work in progress Prefab features are enabled, false otherwise
@@ -188,6 +186,68 @@ namespace AzFramework
         // This is useful to unload certain resources before any entities are destroyed.
         virtual void OnApplicationAboutToStop() {}
     };
+
+    class LevelLoadBlockerRequests
+        : public AZ::EBusTraits
+    {
+    public:
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
+
+        //! Gives handlers the opportunity to block the loadlevel command.
+        //! There can be multiple handlers for this bus; if any one of them return true the loadlevel command will be stopped.
+        //! @return Return true to stop loading.
+        virtual bool ShouldBlockLevelLoading([[maybe_unused]]const char* levelName) { return false; }
+    };
+    using LevelLoadBlockerBus = AZ::EBus<LevelLoadBlockerRequests>;
+
+    class ILevelSystemLifecycle
+    {
+    public:
+        AZ_TYPE_INFO(ILevelSystemLifecycle, "{BDF3616A-4725-4B5D-AB71-34DFCDF9C5B0}");
+        virtual ~ILevelSystemLifecycle() = default;
+
+        //! Returns the name of the currently loaded level.
+        //! Note: for spawnable level system, this is the cache folder path to the level asset. Example: levels/mylevel/mylevel.spawnable
+        //! @return Level name or empty string if no level loaded.
+        virtual const char* GetCurrentLevelName() const = 0;
+
+        //! Checks if a level is loaded
+        //! @return true if a level is loaded; otherwise false.
+        virtual bool IsLevelLoaded() const = 0;
+    };
+    using LevelSystemLifecycleInterface = AZ::Interface<ILevelSystemLifecycle>;
+
+    class LevelSystemLifecycleNotifications
+        : public AZ::EBusTraits
+    {
+    public:
+        // Bus Configuration
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
+
+        // Called when loading a level fails due to it not being found.
+        virtual void OnLevelNotFound([[maybe_unused]] const char* levelName) {}
+
+        // Called after ILevelSystem::PrepareNextLevel() completes.
+        virtual void OnPrepareNextLevel([[maybe_unused]] const char* levelName) {}
+
+        // Called after ILevelSystem::OnLoadingStart() completes, before the level actually starts loading.
+        virtual void OnLoadingStart([[maybe_unused]] const char* levelName) {}
+
+        // Called after the level finished
+        virtual void OnLoadingComplete([[maybe_unused]] const char* levelName) {}
+
+        // Called when there's an error loading a level, with the level info and a description of the error.
+        virtual void OnLoadingError([[maybe_unused]] const char* levelName, [[maybe_unused]] const char* error) {}
+
+        // Called whenever the loading status of a level changes. progressAmount goes from 0->100.
+        virtual void OnLoadingProgress([[maybe_unused]] const char* levelName, [[maybe_unused]] int progressAmount) {}
+
+        // Called after a level is unloaded, before the data is freed.
+        virtual void OnUnloadComplete([[maybe_unused]] const char* levelName) {}
+    };
+    using LevelSystemLifecycleNotificationBus = AZ::EBus<LevelSystemLifecycleNotifications>;
 } // namespace AzFramework
 
-#endif // AZFRAMEWORK_APPLICATIONAPI_H
+DECLARE_EBUS_EXTERN(AzFramework::ApplicationRequests);

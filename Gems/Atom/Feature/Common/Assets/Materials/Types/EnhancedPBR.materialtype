@@ -34,6 +34,9 @@
                 "$import": "MaterialInputs/BaseColorPropertyGroup.json"
             },
             { 
+                "$import": "MaterialInputs/VertexColorPropertyGroup.json"
+            },
+            { 
                 "$import": "MaterialInputs/MetallicPropertyGroup.json"
             },
             { 
@@ -95,7 +98,8 @@
                     {
                         "type": "Lua",
                         "args": {
-                            "file": "EnhancedPBR_Anisotropy.lua"
+                            //TODO(MaterialPipeline): Make the builder touch up this path so it can be relative to the .materialtype file
+                            "file": "Materials/Types/EnhancedPBR_Anisotropy.lua"
                         }
                     }
                 ]
@@ -129,52 +133,9 @@
             }
         ]
     },
-    "shaders": [
-        {
-            "file": "./EnhancedPBR_ForwardPass.shader",
-            "tag": "ForwardPass"
-        },
-        {
-            "file": "./EnhancedPBR_ForwardPass_EDS.shader",
-            "tag": "ForwardPass_EDS"
-        },
-        {
-            "file": "Shaders/Shadow/Shadowmap.shader",
-            "tag": "Shadowmap"
-        },
-        {
-            "file": "./EnhancedPBR_Shadowmap_WithPS.shader",
-            "tag": "Shadowmap_WithPS"
-        },
-        {
-            "file": "Shaders/Depth/DepthPass.shader",
-            "tag": "DepthPass"
-        },
-        {
-            "file": "./EnhancedPBR_DepthPass_WithPS.shader",
-            "tag": "DepthPass_WithPS"
-        },
-        {
-            "file": "Shaders/MotionVector/MeshMotionVector.shader",
-            "tag": "MeshMotionVector"
-        },
-        // Used by the light culling system to produce accurate depth bounds for this object when it uses blended transparency
-        {
-            "file": "Shaders/Depth/DepthPassTransparentMin.shader",
-            "tag": "DepthPassTransparentMin"
-        },
-        {
-            "file": "Shaders/Depth/DepthPassTransparentMax.shader",
-            "tag": "DepthPassTransparentMax"
-        }        
-    ],
+    "lightingModel": "Enhanced",
+    "materialShaderCode": "EnhancedPBR.azsli",
     "functors": [
-        {
-            "type": "Lua",
-            "args": {
-                "file": "Materials/Types/StandardPBR_ShaderEnable.lua"
-            }
-        }
     ],
     "uvNameMap": {
         "UV0": "Tiled",

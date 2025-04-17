@@ -77,7 +77,10 @@ namespace AzToolsFramework
             auto writeOutcome = AZ::Dom::Utils::SerializedStringToValue(jsonBackend, stringBuffer, AZ::Dom::Lifetime::Temporary);
 
             // invoke the actual change on the Dom, it will come back to us as an update
-            AZ::DocumentPropertyEditor::Nodes::PropertyEditor::OnChanged.InvokeOnDomNode(GetValueFromDom(), writeOutcome.GetValue(), AZ::DocumentPropertyEditor::Nodes::PropertyEditor::ValueChangeType::FinishedEdit);
+            AZ::DocumentPropertyEditor::Nodes::PropertyEditor::OnChanged.InvokeOnDomNode(
+                GetValueFromDom(),
+                writeOutcome.GetValue(),
+                AZ::DocumentPropertyEditor::Nodes::ValueChangeType::FinishedEdit);
         }
         return succeeded;
     }
@@ -323,6 +326,13 @@ namespace AzToolsFramework
     void DPEDebugModel::SetAdapter(AZ::DocumentPropertyEditor::DocumentAdapterPtr theAdapter)
     {
         m_adapter = theAdapter;
+        if (m_adapter == nullptr)
+        {
+            // Clear out the event handlers when a nullptr DocumentAdapter is suppleid
+            m_resetHandler = {};
+            m_changedHandler = {};
+            return;
+        };
         m_resetHandler = AZ::DocumentPropertyEditor::DocumentAdapter::ResetEvent::Handler(
             [this]()
             {
@@ -391,13 +401,12 @@ namespace AzToolsFramework
     DPEModelNode* DPEDebugModel::GetNodeFromPath(const AZ::Dom::Path& thePath) const
     {
         DPEModelNode* returnedNode = m_rootNode;
-        for (auto pathIter = thePath.begin(), endIter = thePath.end(); pathIter != endIter && returnedNode != nullptr; ++pathIter)
+        for (auto pathIter = thePath.begin(), endIter = thePath.end();
+             pathIter != endIter && returnedNode != nullptr && pathIter->IsIndex();
+             ++pathIter)
         {
-            // non-index subpaths are for properties not nodes, so only handle the index paths
-            if (pathIter->IsIndex())
-            {
-                returnedNode = returnedNode->GetChildFromDomIndex(pathIter->GetIndex());
-            }
+            // non-index sub-paths are for properties not nodes, so only handle the index paths
+            returnedNode = returnedNode->GetChildFromDomIndex(pathIter->GetIndex());
         }
         return returnedNode;
     }
@@ -518,6 +527,7 @@ namespace AzToolsFramework
                 // replace operations on a DOM can be surprisingly complicated, like if a column is replaced by a row, or vice versa
                 // the safest method is to get the full row of the node, remove it, update it, and put it back into place
                 auto* destinationNode = GetNodeFromPath(operationIterator->GetDestinationPath());
+                AZ_Assert(destinationNode, "received patch for non-existent node!");
                 auto* owningRow = destinationNode->GetParentNode();
                 if (owningRow && owningRow != m_rootNode)
                 {

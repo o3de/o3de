@@ -10,15 +10,16 @@
 #include "MorphSetupInstance.h"
 #include "MorphSetup.h"
 #include <EMotionFX/Source/Allocators.h>
+#include <MCore/Source/RefCounted.h>
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(MorphSetupInstance, DeformerAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(MorphSetupInstance, DeformerAllocator)
 
 
     // default constructor
     MorphSetupInstance::MorphSetupInstance()
-        : BaseObject()
+        : MCore::RefCounted()
     {
         Init(nullptr);
     }

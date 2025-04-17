@@ -21,6 +21,8 @@ namespace AZ
 {
     namespace Render
     {
+        constexpr uint32_t MaxRecursionDepth = 16;
+
         //! Ray tracing shader that generates probe radiance values.
         class DiffuseProbeGridRayTracingPass final
             : public RPI::RenderPass
@@ -29,7 +31,7 @@ namespace AZ
             AZ_RPI_PASS(DiffuseProbeGridRayTracingPass);
 
             AZ_RTTI(DiffuseProbeGridRayTracingPass, "{CB0DF817-3D07-4AC7-8574-F5EE529B8DCA}", RPI::RenderPass);
-            AZ_CLASS_ALLOCATOR(DiffuseProbeGridRayTracingPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DiffuseProbeGridRayTracingPass, SystemAllocator);
 
             //! Creates a DiffuseProbeGridRayTracingPass
             static RPI::Ptr<DiffuseProbeGridRayTracingPass> Create(const RPI::PassDescriptor& descriptor);
@@ -46,6 +48,7 @@ namespace AZ
 
             // Pass overrides
             bool IsEnabled() const override;
+            void BuildInternal() override;
             void FrameBeginInternal(FramePrepareParams params) override;
 
             // revision number of the ray tracing TLAS when the shader table was built
@@ -53,8 +56,8 @@ namespace AZ
 
             // ray tracing shader and pipeline state
             Data::Instance<RPI::Shader> m_rayTracingShader;
-            Data::Instance<RPI::Shader> m_missShader;
             Data::Instance<RPI::Shader> m_closestHitShader;
+            Data::Instance<RPI::Shader> m_missShader;
             RHI::Ptr<RHI::RayTracingPipelineState> m_rayTracingPipelineState;
 
             // ray tracing shader table
@@ -62,10 +65,9 @@ namespace AZ
 
             // ray tracing global shader resource group layout and pipeline state
             RHI::Ptr<RHI::ShaderResourceGroupLayout> m_globalSrgLayout;
-
             RHI::ConstPtr<RHI::PipelineState> m_globalPipelineState;
 
-            bool m_initialized = false;
+            RHI::ShaderInputNameIndex m_maxRecursionDepthNameIndex = "m_maxRecursionDepth";
         };
     }   // namespace RPI
 }   // namespace AZ

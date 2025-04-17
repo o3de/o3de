@@ -9,10 +9,12 @@
 #pragma once
 
 #include <Atom/RPI.Public/Buffer/Buffer.h>
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/Material/Material.h>
 #include <Atom/RPI.Public/Model/UvStreamTangentBitmask.h>
 
 #include <Atom/RHI/DrawItem.h>
+#include <Atom/RHI/GeometryView.h>
 
 #include <Atom/RHI.Reflect/Base.h>
 #include <Atom/RHI.Reflect/Limits.h>
@@ -32,11 +34,15 @@ namespace AZ
         //! A map matches the UV shader inputs of this material to the custom UV names from the model.
         using MaterialModelUvOverrideMap = AZStd::unordered_map<RHI::ShaderSemantic, AZ::Name>;
 
-        class ModelLod final
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+        class ATOM_RPI_PUBLIC_API ModelLod final
             : public Data::InstanceData
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             friend class ModelSystem;
+
         public:
+
             //! Describes a single stream buffer/channel in a single mesh. For example position, normal, or UV.
             //! ModelLod always uses a separate stream buffer for each stream channel (no interleaving) so
             //! this struct contains information about both the stream buffer and the stream channel.
@@ -55,26 +61,17 @@ namespace AZ
                 
                 //! Indicates a ModelLod::m_buffers entry
                 uint32_t m_bufferIndex;
-                
-                //! Indicates a range within the ModelLod::m_buffers entry (because each buffer contains vertex data for all meshes in the LOD)
-                uint32_t m_byteOffset;           
-                uint32_t m_byteCount;
-                
-                //! Number of bytes in one element of the stream. This corresponds to m_format.
-                uint32_t m_stride;
             };
 
             using StreamInfoList = AZStd::fixed_vector<StreamBufferInfo, RHI::Limits::Pipeline::StreamCountMax>;
 
             //! Mesh data associated with a specific material.
-            struct Mesh final
+            struct Mesh final : public RHI::GeometryView
             {
-                RHI::DrawArguments m_drawArguments;
-                RHI::IndexBufferView m_indexBufferView;
-
                 StreamInfoList m_streamInfo;
 
                 ModelMaterialSlot::StableId m_materialSlotStableId = ModelMaterialSlot::InvalidStableId;
+                AZ::Name m_materialSlotName;
                 
                 //! The default material assigned to the mesh by the asset.
                 Data::Instance<Material> m_material;
@@ -83,7 +80,7 @@ namespace AZ
             using StreamBufferViewList = AZStd::fixed_vector<RHI::StreamBufferView, RHI::Limits::Pipeline::StreamCountMax>;
 
             AZ_INSTANCE_DATA(ModelLod, "{3C796FC9-2067-4E0F-A660-269F8254D1D5}");
-            AZ_CLASS_ALLOCATOR(ModelLod, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ModelLod, AZ::SystemAllocator);
 
             static Data::Instance<ModelLod> FindOrCreate(const Data::Asset<ModelLodAsset>& lodAsset, const Data::Asset<ModelAsset>& modelAsset);
 
@@ -92,7 +89,7 @@ namespace AZ
             //! Blocks the CPU until pending buffer uploads have completed.
             void WaitForUpload();
 
-            AZStd::span<const Mesh> GetMeshes() const;
+            AZStd::span<Mesh> GetMeshes();
 
             //! Compares a ShaderInputContract to the mesh's available streams, and if any of them are optional, sets the corresponding "*_isBound" shader option.
             //! Call this function to update the ShaderOptionKey before fetching a ShaderVariant, to find a variant that is compatible with this mesh's streams.
@@ -115,12 +112,15 @@ namespace AZ
             // @param materialUvNameMap the UV name map that came from a MaterialTypeAsset, which defines the default set of material shader stream names.
             bool GetStreamsForMesh(
                 RHI::InputStreamLayout& layoutOut,
-                ModelLod::StreamBufferViewList& streamBufferViewsOut,
+                RHI::StreamBufferIndices& streamIndicesOut,
                 UvStreamTangentBitmask* uvStreamTangentBitmaskOut,
                 const ShaderInputContract& contract,
                 size_t meshIndex,
                 const MaterialModelUvOverrideMap& materialModelUvMap = {},
-                const MaterialUvNameMap& materialUvNameMap = {}) const;
+                const MaterialUvNameMap& materialUvNameMap = {});
+
+            // Releases all the buffer dependencies that were added through TrackBuffer
+            void ReleaseTrackedBuffers();
 
         private:
             ModelLod() = default;
@@ -165,8 +165,6 @@ namespace AZ
 
             // The buffer instances loaded by this ModelLod
             AZStd::vector<Data::Instance<Buffer>> m_buffers;
-
-            uint32_t m_loadedBuffersCount = 0;
 
             // Tracks whether buffers have all been streamed up to the GPU.
             bool m_isUploadPending = false;

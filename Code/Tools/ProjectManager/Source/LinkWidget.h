@@ -9,6 +9,7 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
+#include <AzQtComponents/Components/Widgets/ElidingLabel.h>
 #include <QLabel>
 #include <QUrl>
 #endif
@@ -20,13 +21,14 @@ QT_FORWARD_DECLARE_CLASS(QWidget)
 namespace O3DE::ProjectManager
 {
     class LinkLabel
-        : public QLabel
+        : public AzQtComponents::ElidingLabel
     {
         Q_OBJECT
 
     public:
         LinkLabel(const QString& text = {}, const QUrl& url = {}, int fontSize = 10, QWidget* parent = nullptr);
 
+        QUrl GetUrl() const;
         void SetUrl(const QUrl& url);
 
     signals:

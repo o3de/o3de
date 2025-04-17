@@ -11,7 +11,7 @@
 // are defined prior to the inclusion of the pix3 runtime.
 #include <RHI/DX12.h>
 
-#include <Atom/RHI/Fence.h>
+#include <Atom/RHI/DeviceFence.h>
 #include <Atom/RHI/Scope.h>
 #include <AzCore/Memory/PoolAllocator.h>
 #include <AzCore/std/containers/array.h>
@@ -49,7 +49,7 @@ namespace AZ
         class Fence final
         {
         public:
-            AZ_CLASS_ALLOCATOR(Fence, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Fence, AZ::SystemAllocator);
 
             RHI::ResultCode Init(ID3D12DeviceX* dx12Device, RHI::FenceState initialState);
 
@@ -102,17 +102,18 @@ namespace AZ
 
         /**
          * The RHI fence implementation for DX12. This exists separately from Fence to decouple
-         * the RHI::Device instance from low-level queue management. This is because RHI::Fence holds
+         * the RHI::Device instance from low-level queue management. This is because RHI::DeviceFence holds
          * a reference to the RHI device, which would create circular dependency issues if the device
          * indirectly held a reference to one. Therefore, this implementation is only used when passing
          * fences back and forth between the user and the RHI interface. Low-level systems will use
          * the internal Fence instance instead.
          */
         class FenceImpl final
-            : public RHI::Fence
+            : public RHI::DeviceFence
         {
         public:
-            AZ_CLASS_ALLOCATOR(FenceImpl, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FenceImpl, AZ::SystemAllocator);
+            AZ_RTTI(FenceImpl, "{6CD62A6F-FF00-4F6D-990B-59E220083939}", RHI::DeviceFence);
 
             static RHI::Ptr<FenceImpl> Create();
 
@@ -125,8 +126,8 @@ namespace AZ
             FenceImpl() = default;
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::Fence
-            RHI::ResultCode InitInternal(RHI::Device& device, RHI::FenceState initialState) override;
+            // RHI::DeviceFence
+            RHI::ResultCode InitInternal(RHI::Device& device, RHI::FenceState initialState, bool usedForWaitingOnDevice) override;
             void ShutdownInternal() override;
             void SignalOnCpuInternal() override;
             void WaitOnCpuInternal() const override;

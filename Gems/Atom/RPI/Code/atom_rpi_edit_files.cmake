@@ -7,6 +7,7 @@
 #
 
 set(FILES
+    Include/Atom/RPI.Edit/Configuration.h
     Include/Atom/RPI.Edit/Common/AssetUtils.h
     Include/Atom/RPI.Edit/Common/AssetAliasesSourceData.h
     Include/Atom/RPI.Edit/Common/ColorUtils.h
@@ -20,15 +21,19 @@ set(FILES
     Include/Atom/RPI.Edit/Material/MaterialPropertyConnectionSerializer.h
     Include/Atom/RPI.Edit/Material/MaterialPropertyGroupSerializer.h
     Include/Atom/RPI.Edit/Material/MaterialPropertySerializer.h
+    Include/Atom/RPI.Edit/Material/MaterialPropertySourceData.h
     Include/Atom/RPI.Edit/Material/MaterialPropertyValueSerializer.h
     Include/Atom/RPI.Edit/Material/MaterialPropertyValueSourceData.h
     Include/Atom/RPI.Edit/Material/MaterialPropertyValueSourceDataSerializer.h
     Include/Atom/RPI.Edit/Material/MaterialSourceData.h
     Include/Atom/RPI.Edit/Material/MaterialFunctorSourceData.h
+    Include/Atom/RPI.Edit/Material/MaterialFunctorSourceDataHolder.h
     Include/Atom/RPI.Edit/Material/MaterialFunctorSourceDataSerializer.h
     Include/Atom/RPI.Edit/Material/MaterialFunctorSourceDataRegistration.h
+    Include/Atom/RPI.Edit/Material/MaterialPipelineSourceData.h
     Include/Atom/RPI.Edit/Material/MaterialUtils.h
     Include/Atom/RPI.Edit/ResourcePool/ResourcePoolSourceData.h
+    Include/Atom/RPI.Edit/Shader/ShaderOptionValuesSourceData.h
     Include/Atom/RPI.Edit/Shader/ShaderSourceData.h
     Include/Atom/RPI.Edit/Shader/ShaderVariantListSourceData.h
     Include/Atom/RPI.Edit/Shader/ShaderVariantAssetCreator.h
@@ -39,14 +44,18 @@ set(FILES
     Source/RPI.Edit/Material/MaterialPropertyGroupSerializer.cpp
     Source/RPI.Edit/Material/MaterialPropertyConnectionSerializer.cpp
     Source/RPI.Edit/Material/MaterialPropertySerializer.cpp
+    Source/RPI.Edit/Material/MaterialPropertySourceData.cpp
     Source/RPI.Edit/Material/MaterialPropertyValueSerializer.cpp
     Source/RPI.Edit/Material/MaterialPropertyValueSourceData.cpp
     Source/RPI.Edit/Material/MaterialPropertyValueSourceDataSerializer.cpp
     Source/RPI.Edit/Material/MaterialSourceData.cpp
     Source/RPI.Edit/Material/MaterialFunctorSourceData.cpp
+    Source/RPI.Edit/Material/MaterialFunctorSourceDataHolder.cpp
     Source/RPI.Edit/Material/MaterialFunctorSourceDataSerializer.cpp
     Source/RPI.Edit/Material/MaterialFunctorSourceDataRegistration.cpp
+    Source/RPI.Edit/Material/MaterialPipelineSourceData.cpp
     Source/RPI.Edit/Material/MaterialUtils.cpp
+    Source/RPI.Edit/ResourcePool/ResourcePoolSourceData.cpp
     Source/RPI.Edit/Shader/ShaderSourceData.cpp
     Source/RPI.Edit/Shader/ShaderVariantListSourceData.cpp
     Source/RPI.Edit/Shader/ShaderVariantAssetCreator.cpp
@@ -55,6 +64,7 @@ set(FILES
     Source/RPI.Edit/Common/AssetAliasesSourceData.cpp
     Source/RPI.Edit/Common/ColorUtils.cpp
     Source/RPI.Edit/Common/ConvertibleSource.cpp
+    Source/RPI.Edit/Common/DllMain.cpp
     Source/RPI.Edit/Common/JsonReportingHelper.cpp
     Source/RPI.Edit/Common/JsonUtils.cpp
 )

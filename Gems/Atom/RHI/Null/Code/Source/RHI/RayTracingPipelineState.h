@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/RayTracingPipelineState.h>
+#include <Atom/RHI/DeviceRayTracingPipelineState.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
@@ -16,10 +16,10 @@ namespace AZ
     namespace Null
     {
         class RayTracingPipelineState final
-            : public RHI::RayTracingPipelineState
+            : public RHI::DeviceRayTracingPipelineState
         {
         public:
-            AZ_CLASS_ALLOCATOR(RayTracingPipelineState, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(RayTracingPipelineState, AZ::SystemAllocator);
 
             static RHI::Ptr<RayTracingPipelineState> Create();
 
@@ -27,8 +27,8 @@ namespace AZ
             RayTracingPipelineState() = default;
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::PipelineState
-            RHI::ResultCode InitInternal([[maybe_unused]] RHI::Device& deviceBase, [[maybe_unused]] const RHI::RayTracingPipelineStateDescriptor* descriptor) override { return RHI::ResultCode::Success;}
+            // RHI::DevicePipelineState
+            RHI::ResultCode InitInternal([[maybe_unused]] RHI::Device& deviceBase, [[maybe_unused]] const RHI::DeviceRayTracingPipelineStateDescriptor* descriptor) override { return RHI::ResultCode::Success;}
             void ShutdownInternal() override {}
             //////////////////////////////////////////////////////////////////////////
         };

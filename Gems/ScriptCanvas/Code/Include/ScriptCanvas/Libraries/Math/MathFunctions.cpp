@@ -12,6 +12,8 @@
 #include <AzCore/Math/Vector4.h>
 #include <ScriptCanvas/Libraries/Math/MathNodeUtilities.h>
 
+#include <Include/ScriptCanvas/Libraries/Math/MathFunctions.generated.h>
+
 namespace ScriptCanvas
 {
     namespace MathFunctions

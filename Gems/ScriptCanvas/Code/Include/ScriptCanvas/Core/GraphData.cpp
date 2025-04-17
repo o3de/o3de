@@ -62,7 +62,7 @@ namespace ScriptCanvas
 
         if (rootElement.GetVersion() == 0)
         {
-            int connectionsIndex = rootElement.FindElement(AZ_CRC("m_connections", 0xdc357426));
+            int connectionsIndex = rootElement.FindElement(AZ_CRC_CE("m_connections"));
             if (connectionsIndex < 0)
             {
                 return false;
@@ -92,7 +92,7 @@ namespace ScriptCanvas
         {
             using DependentAssetSet = AZStd::unordered_set<AZStd::tuple<AZ::EntityId, AZ::TypeId, AZ::Data::AssetId>>;
 
-            int dependentAssetsIndex = rootElement.FindElement(AZ_CRC("m_dependentAssets", 0xfd314be4));
+            int dependentAssetsIndex = rootElement.FindElement(AZ_CRC_CE("m_dependentAssets"));
             if (dependentAssetsIndex < 0)
             {
                 return true;

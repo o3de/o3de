@@ -51,7 +51,7 @@ namespace Audio
                                            , public MicrophoneSystemEventsAndroidBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(MicrophoneSystemComponentAndroid, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MicrophoneSystemComponentAndroid, AZ::SystemAllocator);
 
         bool InitializeDevice() override
         {

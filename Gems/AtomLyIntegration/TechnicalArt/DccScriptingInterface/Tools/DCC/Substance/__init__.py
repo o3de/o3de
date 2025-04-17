@@ -8,10 +8,15 @@
 #
 #
 # -------------------------------------------------------------------------
-"""! @brief
-DCCsi/Tools/DCC/Substance/__init__.py
+"""Treat Adobe Substance3D Deisgner, DCC app integration as a package
 
-This init allows us to treat Substance setup as a DCCsi tools python package
+    < DCCsi >/Tools/DCC/Substance/__init__.py
+
+:Status: Prototype
+:Version: 0.0.2
+:Substance3D Version: Adobe ver 12.x+
+
+Note: other versions may work but have not been tested.
 """
 # -------------------------------------------------------------------------
 # standard imports
@@ -28,7 +33,6 @@ _PACKAGENAME = 'Tools.DCC.Substance'
 
 __all__ = ['config',
            'constants',
-           'setup',
            'start']
 
 _LOGGER = _logging.getLogger(_PACKAGENAME)
@@ -36,27 +40,16 @@ _LOGGER = _logging.getLogger(_PACKAGENAME)
 
 
 # -------------------------------------------------------------------------
+# This boilerplate code is here as a developer convenience, simply so I
+# can run this module as an entrypoint, perform some local tests, and/or
+# propogate values easily into sub-modules with less boilerplate.
+
 # set up access to this Substance folder as a pkg
-_MODULE_PATH = Path(__file__)  # To Do: what if frozen?
+_MODULE_PATH = Path(__file__)
 _DCCSI_TOOLS_SUBSTANCE_PATH = Path(_MODULE_PATH.parent)
 
-# we need to set up basic access to the DCCsi
-_PATH_DCCSI_TOOLS_DCC = Path(_DCCSI_TOOLS_SUBSTANCE_PATH.parent)
-_PATH_DCCSI_TOOLS_DCC = Path(os.getenv('PATH_DCCSI_TOOLS_DCC', _PATH_DCCSI_TOOLS_DCC.as_posix()))
-site.addsitedir(_PATH_DCCSI_TOOLS_DCC.as_posix())
+from Tools import PATH_DCCSIG
 
-# we need to set up basic access to the DCCsi
-_PATH_DCCSI_TOOLS = Path(_PATH_DCCSI_TOOLS_DCC.parent)
-_PATH_DCCSI_TOOLS = Path(os.getenv('PATH_DCCSI_TOOLS', _PATH_DCCSI_TOOLS.as_posix()))
-
-# we need to set up basic access to the DCCsi
-_PATH_DCCSIG = Path.joinpath(_DCCSI_TOOLS_SUBSTANCE_PATH, '../../..').resolve()
-_PATH_DCCSIG = Path(os.getenv('PATH_DCCSIG', _PATH_DCCSIG.as_posix()))
-site.addsitedir(_PATH_DCCSIG.as_posix())
-# -------------------------------------------------------------------------
-
-
-# -------------------------------------------------------------------------
 # now we have access to the DCCsi code and azpy
 from azpy.env_bool import env_bool
 from azpy.constants import ENVAR_DCCSI_GDEBUG
@@ -64,8 +57,20 @@ from azpy.constants import ENVAR_DCCSI_DEV_MODE
 from azpy.constants import ENVAR_DCCSI_LOGLEVEL
 from azpy.constants import ENVAR_DCCSI_GDEBUGGER
 from azpy.constants import FRMT_LOG_LONG
+from azpy.config_utils import attach_debugger
 
-#  global space
+from Tools import PATH_DCCSI_TOOLS
+from Tools.DCC import PATH_DCCSI_TOOLS_DCC
+
+_DCCSI_TOOLS_SUBSTANCE = Path(_MODULE_PATH.parent)
+_DCCSI_TOOLS_SUBSTANCE = Path(os.getenv('DCCSI_TOOLS_SUBSTANCE',
+                                        _DCCSI_TOOLS_SUBSTANCE.as_posix()))
+site.addsitedir(PATH_DCCSI_TOOLS_DCC.as_posix())
+# -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
+# reconfigure for debug and dev mode
 _DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
 _DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
 _DCCSI_GDEBUGGER = env_bool(ENVAR_DCCSI_GDEBUGGER, 'WING')
@@ -81,21 +86,19 @@ if _DCCSI_GDEBUG:
     _LOGGER = _logging.getLogger(_PACKAGENAME)
 # -------------------------------------------------------------------------
 
-from azpy.config_utils import attach_debugger
 
 # -------------------------------------------------------------------------
 # message collection
 _LOGGER.debug(f'Initializing: {_PACKAGENAME}')
 _LOGGER.debug(f'_MODULE_PATH: {_MODULE_PATH}')
-_LOGGER.debug(f'PATH_DCCSIG: {_PATH_DCCSIG}')
-_LOGGER.debug(f'PATH_DCCSI_TOOLS: {_PATH_DCCSI_TOOLS}')
-_LOGGER.debug(f'PATH_DCCSI_TOOLS_DCC: {_PATH_DCCSI_TOOLS_DCC}')
 _LOGGER.debug(f'DCCSI_TOOLS_SUBSTANCE_PATH: {_DCCSI_TOOLS_SUBSTANCE_PATH}')
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
 if _DCCSI_DEV_MODE:
+    attach_debugger(debugger_type=_DCCSI_GDEBUGGER)
+
     from azpy.shared.utils.init import test_imports
     # If in dev mode this will test imports of __all__
     _LOGGER.debug(f'Testing Imports from {_PACKAGENAME}')

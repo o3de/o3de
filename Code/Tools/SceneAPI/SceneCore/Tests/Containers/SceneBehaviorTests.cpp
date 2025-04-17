@@ -22,6 +22,7 @@
 #include <SceneAPI/SceneCore/Containers/SceneGraph.h>
 #include <SceneAPI/SceneCore/DataTypes/IGraphObject.h>
 #include <SceneAPI/SceneCore/Mocks/DataTypes/MockIGraphObject.h>
+#include <SceneAPI/SceneCore/Mocks/MockBehaviorUtils.h>
 
 // the DLL entry point for SceneCore to reflect its behavior context
 extern "C" AZ_DLL_EXPORT void ReflectBehavior(AZ::BehaviorContext* context);
@@ -29,13 +30,15 @@ extern "C" AZ_DLL_EXPORT void ReflectBehavior(AZ::BehaviorContext* context);
 // the DLL entry point for SceneCore to reflect its serialize context
 extern "C" AZ_DLL_EXPORT void ReflectTypes(AZ::SerializeContext* context);
 
+extern "C" AZ_DLL_EXPORT void CleanUpSceneCoreGenericClassInfo();
+
 namespace AZ::SceneAPI::Containers
 {
     class MockManifestRule : public DataTypes::IManifestObject
     {
     public:
         AZ_RTTI(MockManifestRule, "{D6F96B48-4E6F-4EE8-A5A3-959B76F90DA8}", IManifestObject);
-        AZ_CLASS_ALLOCATOR(MockManifestRule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MockManifestRule, AZ::SystemAllocator);
 
         MockManifestRule() = default;
 
@@ -154,6 +157,7 @@ namespace AZ::SceneAPI::Containers
                     {
                         return self.m_scene.get();
                     });
+
             }
         }
     };
@@ -410,7 +414,7 @@ namespace AZ::SceneAPI::Containers
     // SceneGraphBehaviorScriptTest
     //
     class SceneGraphBehaviorScriptTest
-        : public UnitTest::AllocatorsFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         AZStd::unique_ptr<MockSceneComponentApplication> m_componentApplication;
@@ -448,7 +452,8 @@ namespace AZ::SceneAPI::Containers
                     ->Method("AddAndSet", [](DataTypes::MockIGraphObject& self, int lhs, int rhs)
                     {
                         self.m_id = lhs + rhs;
-                    });
+                    })
+                    ->Property("id", BehaviorValueProperty(&AZ::SceneAPI::DataTypes::MockIGraphObject::m_id));
 
                 behaviorContext->Class<MockIGraphObjectTester>("MockIGraphObjectTester")
                     ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
@@ -474,7 +479,7 @@ namespace AZ::SceneAPI::Containers
 
         void SetUp() override
         {
-            UnitTest::AllocatorsFixture::SetUp();
+            UnitTest::LeakDetectionFixture::SetUp();
 
             m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
             m_serializeContext->RegisterGenericType<AZStd::string>();
@@ -487,6 +492,11 @@ namespace AZ::SceneAPI::Containers
             ReflectBehavior(m_behaviorContext.get());
             ReflectTestTypes(m_behaviorContext.get());
             MockBuilder::Reflect(m_behaviorContext.get());
+            UnitTest::ScopeForUnitTest(m_behaviorContext->m_classes.find("Scene")->second->m_attributes);
+            UnitTest::ScopeForUnitTest(m_behaviorContext->m_classes.find("ExportProduct")->second->m_attributes);
+            UnitTest::ScopeForUnitTest(m_behaviorContext->m_classes.find("ExportProductList")->second->m_attributes);
+            UnitTest::ScopeForUnitTest(m_behaviorContext->m_classes.find("GraphObjectProxy")->second->m_attributes);
+            UnitTest::ScopeForUnitTest(m_behaviorContext->m_classes.find("PythonBehaviorInfo")->second->m_attributes);
 
             m_scriptContext = AZStd::make_unique<AZ::ScriptContext>();
             m_scriptContext->BindTo(m_behaviorContext.get());
@@ -511,7 +521,7 @@ namespace AZ::SceneAPI::Containers
         void SetupEditorPythonConsoleInterface()
         {
             EXPECT_CALL(*m_editorPythonConsoleInterface, FetchPythonTypeName(::testing::_))
-                .Times(4)
+                .Times(6)
                 .WillRepeatedly(::testing::Invoke([](const AZ::BehaviorParameter&) {return "int"; }));
         }
 
@@ -521,7 +531,7 @@ namespace AZ::SceneAPI::Containers
             m_serializeContext.reset();
             m_behaviorContext.reset();
 
-            UnitTest::AllocatorsFixture::TearDown();
+            UnitTest::LeakDetectionFixture::TearDown();
         }
 
         void ExpectExecute(AZStd::string_view script)
@@ -708,7 +718,7 @@ namespace AZ::SceneAPI::Containers
         ExpectExecute("mockAssetType = Uuid.CreateString('{B7AD6A54-963F-4F0F-A70E-1CFC0364BE6B}')");
         ExpectExecute("exportProduct = ExportProduct()");
         ExpectExecute("exportProduct.filename = 'some/file.name'");
-        ExpectExecute("exportProduct.sourceId = Uuid.CreateString('{A19F5FDB-C5FB-478F-A0B0-B697D2C10DB5}', 0)");
+        ExpectExecute("exportProduct.sourceId = Uuid.CreateString('{A19F5FDB-C5FB-478F-A0B0-B697D2C10DB5}')");
         ExpectExecute("exportProduct.assetType = mockAssetType");
         ExpectExecute("exportProduct.subId = 10101");
         ExpectExecute("TestExpectEquals(exportProduct.subId, 10101)");
@@ -716,7 +726,7 @@ namespace AZ::SceneAPI::Containers
 
         ExpectExecute("exportProductDep = ExportProduct()");
         ExpectExecute("exportProductDep.filename = 'some/file.dep'");
-        ExpectExecute("exportProductDep.sourceId = Uuid.CreateString('{A19F5FDB-C5FB-478F-A0B0-B697D2C10DB5}', 0)");
+        ExpectExecute("exportProductDep.sourceId = Uuid.CreateString('{A19F5FDB-C5FB-478F-A0B0-B697D2C10DB5}')");
         ExpectExecute("exportProductDep.assetType = mockAssetType");
         ExpectExecute("exportProductDep.subId = 2");
 
@@ -729,11 +739,37 @@ namespace AZ::SceneAPI::Containers
         ExpectExecute("TestExpectEquals(productList:Front().productDependencies:GetSize(), 1)");
     }
 
+    TEST_F(SceneGraphBehaviorScriptTest, GraphObjectProxy_Fetch_GetsValue)
+    {
+        ExpectExecute("builder = MockBuilder()");
+        ExpectExecute("builder:BuildSceneGraph()");
+        ExpectExecute("scene = builder:GetScene()");
+        ExpectExecute("nodeG = scene.graph:FindWithPath('A.C.E.G')");
+        ExpectExecute("proxy = scene.graph:GetNodeContent(nodeG)");
+        ExpectExecute("TestExpectTrue(proxy:CastWithTypeName('MockIGraphObject'))");
+        ExpectExecute("id = proxy:Fetch('id')");
+        ExpectExecute("TestExpectEquals(id, 7)");
+    }
+
+    TEST_F(SceneGraphBehaviorScriptTest, GraphObjectProxy_GetClassInfo_HasProperties)
+    {
+        SetupEditorPythonConsoleInterface();
+
+        ExpectExecute("builder = MockBuilder()");
+        ExpectExecute("builder:BuildSceneGraph()");
+        ExpectExecute("scene = builder:GetScene()");
+        ExpectExecute("nodeG = scene.graph:FindWithPath('A.C.E.G')");
+        ExpectExecute("proxy = scene.graph:GetNodeContent(nodeG)");
+        ExpectExecute("TestExpectTrue(proxy:CastWithTypeName('MockIGraphObject'))");
+        ExpectExecute("info = proxy:GetClassInfo()");
+        ExpectExecute("TestExpectTrue(info.propertyList[1] == 'id(int)->int')");
+    }
+
     //
     // SceneManifestBehaviorScriptTest is meant to test the script abilities of the SceneManifest
     //
     class SceneManifestBehaviorScriptTest
-        : public UnitTest::AllocatorsFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         AZStd::unique_ptr<MockSceneComponentApplication> m_componentApplication;
@@ -750,7 +786,7 @@ namespace AZ::SceneAPI::Containers
 
         void SetUp() override
         {
-            UnitTest::AllocatorsFixture::SetUp();
+            UnitTest::LeakDetectionFixture::SetUp();
 
             m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
             MockBuilder::Reflect(m_serializeContext.get());
@@ -763,6 +799,9 @@ namespace AZ::SceneAPI::Containers
             MockBuilder::Reflect(m_behaviorContext.get());
             MockManifestRule::Reflect(m_behaviorContext.get());
             ReflectBehavior(m_behaviorContext.get());
+            UnitTest::ScopeForUnitTest(m_behaviorContext->m_classes.find("Scene")->second->m_attributes);
+            UnitTest::ScopeForUnitTest(m_behaviorContext->m_classes.find("ExportProduct")->second->m_attributes);
+            UnitTest::ScopeForUnitTest(m_behaviorContext->m_classes.find("ExportProductList")->second->m_attributes);
 
             m_jsonRegistrationContext = AZStd::make_unique<AZ::JsonRegistrationContext>();
             AZ::JsonSystemComponent::Reflect(m_jsonRegistrationContext.get());
@@ -799,7 +838,10 @@ namespace AZ::SceneAPI::Containers
             m_scriptContext.reset();
             m_behaviorContext.reset();
             m_componentApplication.reset();
-            UnitTest::AllocatorsFixture::TearDown();
+
+            CleanUpSceneCoreGenericClassInfo();
+
+            UnitTest::LeakDetectionFixture::TearDown();
         }
 
         void ExpectExecute(AZStd::string_view script)

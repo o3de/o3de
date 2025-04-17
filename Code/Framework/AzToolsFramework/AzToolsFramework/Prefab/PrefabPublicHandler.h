@@ -18,6 +18,7 @@
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/PrefabUndoCache.h>
+#include <AzCore/Math/Transform.h>
 
 class QString;
 
@@ -28,6 +29,7 @@ namespace AzToolsFramework
         class Instance;
         class InstanceEntityMapperInterface;
         class InstanceToTemplateInterface;
+        class InstanceDomGeneratorInterface;
         class PrefabLoaderInterface;
         class PrefabSystemComponentInterface;
 
@@ -35,41 +37,47 @@ namespace AzToolsFramework
             : public PrefabPublicInterface
         {
         public:
-            AZ_CLASS_ALLOCATOR(PrefabPublicHandler, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PrefabPublicHandler, AZ::SystemAllocator);
             AZ_RTTI(PrefabPublicHandler, "{35802943-6B60-430F-9DED-075E3A576A25}", PrefabPublicInterface);
+
+            PrefabPublicHandler();
 
             void RegisterPrefabPublicHandlerInterface();
             void UnregisterPrefabPublicHandlerInterface();
 
             // PrefabPublicInterface...
-            CreatePrefabResult CreatePrefabInDisk(
-                const EntityIdList& entityIds, AZ::IO::PathView filePath) override;
-            CreatePrefabResult CreatePrefabInMemory(
-                const EntityIdList& entityIds, AZ::IO::PathView filePath) override;
+            CreatePrefabResult CreatePrefabInDisk(const EntityIdList& entityIds, AZ::IO::PathView filePath) override;
+            CreatePrefabResult CreatePrefabAndSaveToDisk(const EntityIdList& entityIds, AZ::IO::PathView filePath) override;
+            CreatePrefabResult CreatePrefabInMemory(const EntityIdList& entityIds, AZ::IO::PathView filePath) override;
             InstantiatePrefabResult InstantiatePrefab(
-                AZStd::string_view filePath, AZ::EntityId parent, const AZ::Vector3& position) override;
+                AZStd::string_view filePath, AZ::EntityId parentId, const AZ::Transform& transform) override;
+            InstantiatePrefabResult InstantiatePrefab(
+                AZStd::string_view filePath, AZ::EntityId parentId, const AZ::Vector3& position) override;
+
             PrefabOperationResult SavePrefab(AZ::IO::Path filePath) override;
             PrefabEntityResult CreateEntity(AZ::EntityId parentId, const AZ::Vector3& position) override;
             
             PrefabOperationResult GenerateUndoNodesForEntityChangeAndUpdateCache(AZ::EntityId entityId, UndoSystem::URSequencePoint* parentUndoBatch) override;
 
+            bool IsOwnedByPrefabInstance(AZ::EntityId entityId) const override;
             bool IsOwnedByProceduralPrefabInstance(AZ::EntityId entityId) const override;
             bool IsInstanceContainerEntity(AZ::EntityId entityId) const override;
             bool IsLevelInstanceContainerEntity(AZ::EntityId entityId) const override;
+            bool EntitiesBelongToSameInstance(const EntityIdList& entityIds) const;
             AZ::EntityId GetInstanceContainerEntityId(AZ::EntityId entityId) const override;
             AZ::EntityId GetLevelInstanceContainerEntityId() const override;
             AZ::IO::Path GetOwningInstancePrefabPath(AZ::EntityId entityId) const override;
             PrefabRequestResult HasUnsavedChanges(AZ::IO::Path prefabFilePath) const override;
 
-            //! [DEPRECATION]--This function is marked for deprecation. Please use DeleteEntitiesAndAllDescendantsInInstance instead.
-            PrefabOperationResult DeleteEntitiesInInstance(const EntityIdList& entityIds) override;
-
             PrefabOperationResult DeleteEntitiesAndAllDescendantsInInstance(const EntityIdList& entityIds) override;
             DuplicatePrefabResult DuplicateEntitiesInInstance(const EntityIdList& entityIds) override;
 
             PrefabOperationResult DetachPrefab(const AZ::EntityId& containerEntityId) override;
+            PrefabOperationResult DetachPrefabAndRemoveContainerEntity(const AZ::EntityId& containerEntityId) override;
 
         private:
+            PrefabOperationResult DetachPrefabImpl(const AZ::EntityId& containerEntityId, bool keepContainerEntity);
+
             PrefabOperationResult DeleteFromInstance(const EntityIdList& entityIds);
             PrefabOperationResult RetrieveAndSortPrefabEntitiesAndInstances(
                 const EntityList& inputEntities,
@@ -82,7 +90,6 @@ namespace AzToolsFramework
             EntityIdList SanitizeEntityIdList(const EntityIdList& entityIds) const;
 
             InstanceOptionalReference GetOwnerInstanceByEntityId(AZ::EntityId entityId) const;
-            bool EntitiesBelongToSameInstance(const EntityIdList& entityIds) const;
             void AddNewEntityToSortOrder(Instance& owningInstance, PrefabDom& domToAddEntityUnder,
                 const EntityAlias& parentEntityAlias, const EntityAlias& entityToAddAlias);
 
@@ -112,19 +119,20 @@ namespace AzToolsFramework
             void DuplicateNestedInstancesInInstance(Instance& commonOwningInstance,
                 const AZStd::vector<Instance*>& instances, PrefabDom& domToAddDuplicatedInstancesUnder,
                 EntityIdList& duplicatedEntityIds, AZStd::unordered_map<InstanceAlias, Instance*>& newInstanceAliasToOldInstanceMap);
-            
+
             /**
-             * Applies the correct transform changes to the container entity based on the parent and child entities provided, and returns an appropriate patch.
-             * The container will be parented to parentId, moved to the average transform of the future direct children and its cache will be updated.
-             * This helper function won't support undo/redo, update the templates or create any links. All that needs to be done by the caller.
-             * 
+             * Applies the correct transform to the container entity, and returns an appropriate patch.
+             * This helper function won't support undo/redo, update the templates or create any links.
+             * All that needs to be done by the caller.
+             *
              * \param containerEntityId The container to apply the changes to.
              * \param parentEntityId The id of the entity the container should be parented to.
-             * \param childEntities A list of entities that will subsequently be parented to this container.
+             * \param translation New translation for the container entity.
+             * \param rotation New rotation for the container entity.
              * \return The PrefabDom containing the patches that should be stored in the parent link.
              */
-            PrefabDom ApplyContainerTransformAndGeneratePatch(
-                AZ::EntityId containerEntityId, AZ::EntityId parentEntityId, const EntityList& childEntities);
+            PrefabDom ApplyContainerTransformAndGeneratePatch(AZ::EntityId containerEntityId, AZ::EntityId parentEntityId,
+                const AZ::Vector3& translation, const AZ::Quaternion& rotation);
 
             /**
              * Creates a link between the templates of an instance and its parent.
@@ -176,9 +184,14 @@ namespace AzToolsFramework
             static void Internal_HandleContainerOverride(
                 UndoSystem::URSequencePoint* undoBatch, AZ::EntityId entityId, const PrefabDom& patch,
                 const LinkId linkId);
+
+            // if a non-nullopt const reference is sent to HandleEntityChange, it essentially means that the instance in question
+            // will be fully updated by this function (as in, the template it came from will be updated, as well as the instance in question)
+            // and thus, it can skip the instance update queue that happens later.
             static void Internal_HandleEntityChange(
                 UndoSystem::URSequencePoint* undoBatch, AZ::EntityId entityId, PrefabDom& beforeState,
-                PrefabDom& afterState);
+                PrefabDom& afterState, InstanceOptionalConstReference instanceToSkipUpdateQueue = AZStd::nullopt);
+
             void Internal_HandleInstanceChange(UndoSystem::URSequencePoint* undoBatch, AZ::Entity* entity, AZ::EntityId beforeParentId, AZ::EntityId afterParentId);
 
             void UpdateLinkPatchesWithNewEntityAliases(
@@ -190,22 +203,31 @@ namespace AzToolsFramework
 
             static Instance* GetParentInstance(Instance* instance);
             static Instance* GetAncestorOfInstanceThatIsChildOfRoot(const Instance* ancestor, Instance* descendant);
+
+            //! Generates the transform based on the input list of entities.
+            //! The transform will be based on the average transform of the direct children.
+            //! \param topLevelEntities The direct children entities provided to calculate the average transform.
+            //! \param[out] translation The output translation.
+            //! \param[out] rotation The output rotation.
             static void GenerateContainerEntityTransform(const EntityList& topLevelEntities, AZ::Vector3& translation, AZ::Quaternion& rotation);
 
             InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
             InstanceToTemplateInterface* m_instanceToTemplateInterface = nullptr;
+            InstanceDomGeneratorInterface* m_instanceDomGeneratorInterface = nullptr;
             PrefabFocusInterface* m_prefabFocusInterface = nullptr;
             PrefabFocusPublicInterface* m_prefabFocusPublicInterface = nullptr;
             PrefabLoaderInterface* m_prefabLoaderInterface = nullptr;
             PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
 
-            // Handles the Prefab Focus API that determines what prefab is being edited.
-            PrefabFocusHandler m_prefabFocusHandler;
-
-            // Caches entity states for undo/redo purposes
+            //! Caches entity states for undo/redo purposes.
             PrefabUndoCache m_prefabUndoCache;
 
+            //! Handles the Prefab Focus API that determines what prefab is being edited.
+            PrefabFocusHandler m_prefabFocusHandler;
+
             uint64_t m_newEntityCounter = 1;
+
+            bool m_isRunningInEditor = true;
         };
     } // namespace Prefab
 } // namespace AzToolsFramework

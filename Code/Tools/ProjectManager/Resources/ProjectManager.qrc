@@ -1,6 +1,10 @@
 <RCC>
     <qresource prefix="/ProjectManager/style">
         <file>ProjectManager.qss</file>
+        <file>ProjectManagerCompleterPopup.qss</file>
+    </qresource>
+    <qresource prefix="/ProjectManager/text">
+        <file>ProjectManagerCompletionTags.txt</file>
     </qresource>
     <qresource prefix="/">
         <file>Add.svg</file>
@@ -27,8 +31,6 @@
         <file>o3de.svg</file>
         <file>menu.svg</file>
         <file>menu_hover.svg</file>
-        <file>ArrowDownLine.svg</file>
-        <file>ArrowUpLine.svg</file>
         <file>CarrotArrowDown.svg</file>
         <file>Summary.svg</file>
         <file>WindowClose.svg</file>
@@ -41,11 +43,19 @@
         <file>Edit.svg</file>
         <file>Delete.svg</file>
         <file>Download.svg</file>
+        <file>Downloaded.svg</file>
+        <file>Update.svg</file>
         <file>in_progress.gif</file>
+        <file>Info.svg</file>
         <file>gem.svg</file>
         <file>checkmark.svg</file>
         <file>SpinningGears.webp</file>
         <file>Cloud.svg</file>
         <file>Cloud_Hover.svg</file>
+        <file>error.svg</file>
+        <file>Visible.svg</file>
+        <file>Hidden.svg</file>
+        <file>BannerBlue.svg</file>
+        <file>BannerGreen.svg</file>
     </qresource>
 </RCC>

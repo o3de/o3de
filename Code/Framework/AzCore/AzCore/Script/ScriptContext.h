@@ -37,7 +37,7 @@ struct lua_Debug;
 //#define AZ_LUA_VALIDATE_STACK
 
 // Uncomment to throw Lua errors on unacceptable number conversions from Lua to C++ numerical targets
-//#AZ_LUA_RESTRICT_NUMBER_CONVERSIONS_TO_CPP 
+//#AZ_LUA_RESTRICT_NUMBER_CONVERSIONS_TO_CPP
 
 // Always validate stacks when running tests
 #if defined(AZ_TESTS_ENABLED)
@@ -138,7 +138,7 @@ namespace AZ
      * the constructor and destructor are private.
      */
     class ScriptDataContext
-    {       
+    {
         friend ScriptContext;
         friend ScriptContextDebug;
         friend class LuaGenericCaller;
@@ -152,7 +152,7 @@ namespace AZ
             MD_INSPECT,     // allow to access next element function
             MD_CALLER_EXECUTED, // was in caller mode and executed the call
             MD_READ_STACK   // used to read a value from the stack, and not pop off results.
-        };        
+        };
 
         lua_State* m_nativeContext;
         int m_numArguments;
@@ -168,7 +168,7 @@ namespace AZ
             , m_mode(MD_CALLEE)
         {
         }
-        
+
         void Reset();
 
         /// Assumes that the called function is on the top of the stack. It will be poped when the context is destroyed or Reset
@@ -183,7 +183,7 @@ namespace AZ
         {
             m_nativeContext = c;
             m_mode = MD_INSPECT;
-            m_startVariableIndex = startStackIndex;            
+            m_startVariableIndex = startStackIndex;
         }
 
         void ReadStack(lua_State* c)
@@ -195,11 +195,11 @@ namespace AZ
 
     public:
         // DesignNote: Would probably add a new public method here called
-        // ReadStack(lua_State* c, int startStackIndex)        
+        // ReadStack(lua_State* c, int startStackIndex)
         // or something similar that will basically mimic inspect, but not destructively pop things
 
         /// Assumes that the inspected value is on the top of the stack. It will be poped when the context is destroyed or Reset.
-    
+
         AZ_TYPE_INFO(ScriptDataContext, "{7ec9e09e-6559-49bd-8826-5eef8880d970}");
 
         ScriptDataContext()
@@ -208,7 +208,7 @@ namespace AZ
             , m_numResults(0)
             , m_startVariableIndex(0)
             , m_mode(MD_INVALID)
-        {}        
+        {}
 
         ~ScriptDataContext() { Reset(); }
 
@@ -256,7 +256,7 @@ namespace AZ
         void    PushArg(const T& value);
         template<class Arg, class... Args>
         void    PushArgs(Arg& value, Args&&... args);
-        
+
         void    PushArgs() {}
         /// Push value from the lua registery for the script call.
         void    PushArgFromRegistryIndex(int cachedIndex);
@@ -316,7 +316,7 @@ namespace AZ
         /// Inspect a table and return true if the table is a table and data context is set, otherwise false.
         bool    InspectTable(int tableIndex, ScriptDataContext& dc);
         /// Inspects a metatable to the value on the stack. If the value has no metatable we return false, otherwise true.
-        bool    InspectMetaTable(int index, ScriptDataContext& dc);        
+        bool    InspectMetaTable(int index, ScriptDataContext& dc);
 
         /**
          * Inspect next table element.
@@ -346,7 +346,7 @@ namespace AZ
 
     using ScriptTypeId = Uuid;
     using ScriptShortTypeId = size_t;
-        
+
     namespace Internal
     {
         // Cache the value at the given index using a weak reference. Returns an index that can be used to access the value quicker.
@@ -378,7 +378,7 @@ namespace AZ
         bool LuaSafeCall(lua_State* lua, int numParams, int numResults);
 
         //////////////////////////////////////////////////////////////////////////
-        // AzLUA wrappers so we don't need to pull lua directly, keep in mind this only 
+        // AzLUA wrappers so we don't need to pull lua directly, keep in mind this only
         // so we don't pull lua into script context (as lots code includes it)
         // If you want to work with LUA directly in specific places feel free to do so!
 
@@ -633,7 +633,8 @@ namespace AZ
     template<class T>
     inline bool ScriptDataContext::IsClass(int index) const
     {
-        return AZ::Internal::LuaIsClass(m_nativeContext, m_startVariableIndex + index, &AzTypeInfo<T>::Uuid());
+        const auto uuidValue{ AzTypeInfo<T>::Uuid() };
+        return AZ::Internal::LuaIsClass(m_nativeContext, m_startVariableIndex + index, &uuidValue);
     }
     template<class T>
     inline bool ScriptDataContext::ReadArg(int index, T& valueRef) const
@@ -786,7 +787,7 @@ namespace AZ
     class ScriptContext
     {
     public:
-        AZ_CLASS_ALLOCATOR(ScriptContext, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptContext, AZ::SystemAllocator);
 
         static const int m_maxDbgName = 512; ///< Max debug name length.
 
@@ -802,7 +803,7 @@ namespace AZ
 
         using StackVariableAllocator = AZ::StackVariableAllocator;
         /// Stack temporary memory
-        
+
         /**
          * Class that provides custom reader/write to the Lua VM
          */
@@ -862,9 +863,9 @@ namespace AZ
         size_t GetMemoryUsage() const;
 
         /**
-         *  Step the garbage collector. There is no exact number that works in all cases, tune this number for optimal 
+         *  Step the garbage collector. There is no exact number that works in all cases, tune this number for optimal
          * performance in your app.
-         */ 
+         */
         void GarbageCollectStep(int numberOfSteps = 2);
 
         lua_State* NativeContext();
@@ -907,15 +908,15 @@ namespace AZ
         /**
          * Make sure that the Lua EBus handlers are not called from background threads.
          * By default the thread that creates the script context is the owner.
-         * This method allows to override this default behaviour.                                                                      
-        */        
-        void DebugSetOwnerThread(AZStd::thread::id ownerThreadId); 
-        
+         * This method allows to override this default behaviour.
+        */
+        void DebugSetOwnerThread(AZStd::thread::id ownerThreadId);
+
         /**
          * Make sure that the Lua EBus handlers are not called from background threads.
          * Use this to make sure the calling thread is the thread that owns the script context.
-        */        
-        bool DebugIsCallingThreadTheOwner() const;                 
+        */
+        bool DebugIsCallingThreadTheOwner() const;
 
         void SetErrorHook(ErrorHook cb);
         ErrorHook GetErrorHook() const;
@@ -950,7 +951,7 @@ namespace AZ
     using LuaPushToStack = void(*)(lua_State*, AZ::BehaviorArgument&);
     using LuaPrepareValue = bool(*)(AZ::BehaviorArgument&, AZ::BehaviorClass*, AZ::StackVariableAllocator&, AZStd::allocator* backupAllocator);
 
-    // returns a function that allows the caller to push the parameter into the 
+    // returns a function that allows the caller to push the parameter into the
     LuaLoadFromStack FromLuaStack(AZ::BehaviorContext* context, const AZ::BehaviorParameter* param, AZ::BehaviorClass*& behaviorClass);
     LuaPushToStack ToLuaStack(AZ::BehaviorContext* context, const AZ::BehaviorParameter* param, LuaPrepareValue* prepareParamOut, AZ::BehaviorClass*& behaviorClass);
 

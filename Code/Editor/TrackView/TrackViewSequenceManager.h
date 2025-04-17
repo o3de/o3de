@@ -6,15 +6,15 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_TRACKVIEW_TRACKVIEWSEQUENCEMANAGER_H
-#define CRYINCLUDE_EDITOR_TRACKVIEW_TRACKVIEWSEQUENCEMANAGER_H
 #pragma once
-
 
 #include "TrackViewSequence.h"
 
 #include <AzCore/Component/EntityBus.h>
+#include <AzCore/std/containers/set.h>
+#include <AzCore/std/containers/unordered_map.h>
+#include <AzCore/std/containers/vector.h>
+
 
 class CTrackViewSequenceManager
     : public IEditorNotifyListener
@@ -27,7 +27,7 @@ public:
 
     void OnEditorNotifyEvent(EEditorNotifyEvent event) override;
 
-    unsigned int GetCount() const { return static_cast<int>(m_sequences.size()); }
+    unsigned int GetCount() const { return static_cast<unsigned int>(m_sequences.size()); }
 
     void CreateSequence(QString name, SequenceType sequenceType);
     void DeleteSequence(CTrackViewSequence* pSequence);
@@ -51,6 +51,7 @@ public:
     void OnDeleteSequenceEntity(const AZ::EntityId& entityId) override;
     void OnCreateSequenceComponent(AZStd::intrusive_ptr<IAnimSequence>& sequence) override;
     void OnSequenceActivated(const AZ::EntityId& entityId) override;
+    void OnSequenceDeactivated(const AZ::EntityId& entityId) override;
     //~ ITrackViewSequenceManager Overrides
 
 private:
@@ -67,15 +68,14 @@ private:
     void OnEntityNameChanged(const AZ::EntityId& entityId, const AZStd::string& name) override;
     void OnEntityDestruction(const AZ::EntityId& entityId) override;
 
-    std::vector<ITrackViewSequenceManagerListener*> m_listeners;
-    std::vector<std::unique_ptr<CTrackViewSequence> > m_sequences;
+    AZStd::vector<ITrackViewSequenceManagerListener*> m_listeners;
+    AZStd::vector<AZStd::unique_ptr<CTrackViewSequence>> m_sequences;
 
     // Set to hold sequences that existed when undo transaction began
-    std::set<CTrackViewSequence*> m_transactionSequences;
+    AZStd::set<CTrackViewSequence*> m_transactionSequences;
 
     bool m_bUnloadingLevel;
 
     // Used to handle object attach/detach
-    std::unordered_map<CTrackViewNode*, Matrix34> m_prevTransforms;
+    AZStd::unordered_map<CTrackViewNode*, Matrix34> m_prevTransforms;
 };
-#endif // CRYINCLUDE_EDITOR_TRACKVIEW_TRACKVIEWSEQUENCEMANAGER_H

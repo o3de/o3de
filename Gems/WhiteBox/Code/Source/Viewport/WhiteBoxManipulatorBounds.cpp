@@ -13,10 +13,10 @@
 
 namespace WhiteBox
 {
-    AZ_CLASS_ALLOCATOR_IMPL(ManipulatorBoundPolygon, AZ::SystemAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(ManipulatorBoundEdge, AZ::SystemAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(BoundShapePolygon, AZ::SystemAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(BoundShapeEdge, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(ManipulatorBoundPolygon, AZ::SystemAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(ManipulatorBoundEdge, AZ::SystemAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(BoundShapePolygon, AZ::SystemAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(BoundShapeEdge, AZ::SystemAllocator)
 
     bool IntersectRayVertex(
         const VertexBound& vertexBound, const float vertexScreenRadius, const AZ::Vector3& rayOrigin,
@@ -64,7 +64,7 @@ namespace WhiteBox
     }
 
     bool ManipulatorBoundPolygon::IntersectRay(
-        const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDirection, float& rayIntersectionDistance)
+        const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDirection, float& rayIntersectionDistance) const
     {
         int64_t intersectedTriangleIndex = 0;
         return IntersectRayPolygon(
@@ -111,7 +111,7 @@ namespace WhiteBox
     }
 
     bool ManipulatorBoundEdge::IntersectRay(
-        const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDirection, float& rayIntersectionDistance)
+        const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDirection, float& rayIntersectionDistance) const
     {
         return IntersectRayEdge(m_edgeBound, m_edgeBound.m_radius, rayOrigin, rayDirection, rayIntersectionDistance);
     }

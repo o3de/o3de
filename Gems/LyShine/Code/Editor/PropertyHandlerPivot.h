@@ -27,7 +27,7 @@ class PropertyPivotCtrl
 
 public:
 
-    AZ_CLASS_ALLOCATOR(PropertyPivotCtrl, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(PropertyPivotCtrl, AZ::SystemAllocator);
 
     PropertyPivotCtrl(QWidget* parent = nullptr);
 
@@ -49,9 +49,9 @@ class PropertyHandlerPivot
     : public AzToolsFramework::PropertyHandler < AZ::Vector2, PropertyPivotCtrl >
 {
 public:
-    AZ_CLASS_ALLOCATOR(PropertyHandlerPivot, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(PropertyHandlerPivot, AZ::SystemAllocator);
 
-    AZ::u32 GetHandlerName(void) const override  { return AZ_CRC("Pivot", 0x9caf79f4); }
+    AZ::u32 GetHandlerName(void) const override  { return AZ_CRC_CE("Pivot"); }
 
     QWidget* CreateGUI(QWidget* pParent) override;
     void ConsumeAttribute(PropertyPivotCtrl* GUI, AZ::u32 attrib, AzToolsFramework::PropertyAttributeReader* attrValue, const char* debugName) override;

@@ -51,14 +51,14 @@ namespace AZ
             UpdatePasses();
         }
 
-        void DiffuseGlobalIlluminationFeatureProcessor::OnRenderPipelinePassesChanged([[maybe_unused]] RPI::RenderPipeline* renderPipeline)
+        void DiffuseGlobalIlluminationFeatureProcessor::OnRenderPipelineChanged([[maybe_unused]] RPI::RenderPipeline* renderPipeline,
+                RPI::SceneNotification::RenderPipelineChangeType changeType)
         {
-            UpdatePasses();
-        }
-
-        void DiffuseGlobalIlluminationFeatureProcessor::OnRenderPipelineAdded([[maybe_unused]] RPI::RenderPipelinePtr pipeline)
-        {
-            UpdatePasses();
+            if (changeType == RPI::SceneNotification::RenderPipelineChangeType::Added
+                || changeType == RPI::SceneNotification::RenderPipelineChangeType::PassChanged)
+            {
+                UpdatePasses();
+            }
         }
 
         void DiffuseGlobalIlluminationFeatureProcessor::UpdatePasses()

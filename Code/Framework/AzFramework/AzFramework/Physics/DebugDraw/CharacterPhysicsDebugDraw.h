@@ -28,6 +28,7 @@ namespace Physics
             AZ::Transform m_worldTransform = AZ::Transform::CreateIdentity();
             AZ::Vector3 m_scale = AZ::Vector3::CreateOne();
             bool m_selected = false;
+            bool m_hovered = false;
             bool m_valid = false;
         };
 
@@ -59,6 +60,7 @@ namespace Physics
         {
             AZ::Color m_defaultColor;
             AZ::Color m_selectedColor;
+            AZ::Color m_hoveredColor;
             AZ::Color m_errorColor;
         };
 

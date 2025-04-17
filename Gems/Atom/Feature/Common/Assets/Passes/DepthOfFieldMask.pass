@@ -49,7 +49,7 @@
                 "ShaderAsset": {
                     "FilePath": "Shaders/PostProcessing/DepthOfFieldMask.shader"
                 },
-                "PipelineViewTag": "MainCamera"
+                "BindViewSrg": true
             }
         }
     }

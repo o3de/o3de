@@ -19,7 +19,8 @@ QWidget* MotionPropertyWidgetHandler::CreateGUI(QWidget* pParent)
     AzToolsFramework::PropertyAssetCtrl* newCtrl = aznew AzToolsFramework::PropertyAssetCtrl(pParent);
     connect(
         newCtrl, &AzToolsFramework::PropertyAssetCtrl::OnAssetIDChanged, this, [newCtrl]([[maybe_unused]] AZ::Data::AssetId newAssetId) {
-            EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, newCtrl);
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, newCtrl);
             AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
                 &AzToolsFramework::PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, newCtrl);
         });

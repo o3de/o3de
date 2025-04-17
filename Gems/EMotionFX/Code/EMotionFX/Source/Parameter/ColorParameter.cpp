@@ -16,8 +16,8 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(ColorParameter, AnimGraphAllocator, 0)
-
+    AZ_CLASS_ALLOCATOR_IMPL(ColorParameter, AnimGraphAllocator);
+    AZ_RTTI_NO_TYPE_INFO_IMPL(ColorParameter, BaseType);
 
     void ColorParameter::Reflect(AZ::ReflectContext* context)
     {

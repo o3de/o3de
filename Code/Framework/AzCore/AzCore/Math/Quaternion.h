@@ -61,6 +61,14 @@ namespace AZ
         static Quaternion CreateRotationZ(float angleInRadians);
         //! @}
 
+        static Quaternion CreateFromEulerRadiansXYZ(const Vector3& eulerRadians);
+        static Quaternion CreateFromEulerRadiansYXZ(const Vector3& eulerRadians);
+        static Quaternion CreateFromEulerRadiansZYX(const Vector3& eulerRadians);
+
+        static Quaternion CreateFromEulerDegreesXYZ(const Vector3& eulerDegrees);
+        static Quaternion CreateFromEulerDegreesYXZ(const Vector3& eulerDegrees);
+        static Quaternion CreateFromEulerDegreesZYX(const Vector3& eulerDegrees);
+
         //! Creates a quaternion from a Matrix3x3
         static Quaternion CreateFromMatrix3x3(const class Matrix3x3& m);
 
@@ -82,9 +90,13 @@ namespace AZ
 
         static Quaternion CreateShortestArc(const Vector3& v1, const Vector3& v2);
 
+        //! O3DE_DEPRECATION_NOTICE(GHI-10929)
+        //! @deprecated use CreateFromEulerDegreesXYZ()
         //! Creates a quaternion using rotation in degrees about the axes. First rotated about the X axis, followed by the Y axis, then the Z axis.
         static const Quaternion CreateFromEulerAnglesDegrees(const Vector3& anglesInDegrees);
 
+        //! O3DE_DEPRECATION_NOTICE(GHI-10929)
+        //! @deprecated use CreateFromEulerRadiansXYZ()
         //! Creates a quaternion using rotation in radians about the axes. First rotated about the X axis, followed by the Y axis, then the Z axis.
         static const Quaternion CreateFromEulerAnglesRadians(const Vector3& anglesInRadians);
 
@@ -223,18 +235,72 @@ namespace AZ
         //! Transforms a vector using the rotation described by this quaternion
         Vector3 TransformVector(const Vector3& v) const;
 
-        //! Create, from the quaternion, a set of Euler angles of rotations around first z-axis, then y-axis and then x-axis.
+        //! Create, from the quaternion, a set of Euler (actually Tait-Bryan) angles of rotations around:
+        //!  first x-axis, then y-axis and then z-axis.
         //! @return Vector3 A vector containing component-wise rotation angles in degrees.
+        //! O3DE_DEPRECATION_NOTICE(GHI-10929)
+        //! @deprecated use GetEulerDegreesXYZ()
         Vector3 GetEulerDegrees() const;
 
-        //! Create, from the quaternion, a set of Euler angles of rotations around first z-axis, then y-axis and then x-axis.
+        //! Create, from the quaternion, a set of Euler (actually Tait-Bryan) angles of rotations around:
+        //!  first x-axis, then y-axis and then z-axis.
         //! @return Vector3 A vector containing component-wise rotation angles in radians.
+        //! O3DE_DEPRECATION_NOTICE(GHI-10929)
+        //! @deprecated use GetEulerRadiansXYZ()
         Vector3 GetEulerRadians() const;
 
+        //! Compute, from the quaternion, a set of Euler (actually Tait-Bryan) angles of rotations around:
+        //!  first x-axis (roll), then y-axis (pitch) and then z-axis (yaw).
+        //! The quaternion us supposed to be created with CreateFromEulerRadiansXYZ() or CreateFromEulerDegreesXYZ().
+        //! Note that a gimbal lock occurs with the y-axis rotation equal to +-90 degrees, loosing information
+        //!  on initial yaw and roll, and then roll is deliberately zeroed.
+        //! @return Vector3 A vector containing component-wise rotation angles in degrees.
+        Vector3 GetEulerDegreesXYZ() const;
+
+        //! Compute, from the quaternion, a set of Euler (actually Tait-Bryan) angles of rotations around:
+        //!  first x-axis (roll), then y-axis (pitch) and then z-axis (yaw).
+        //! The quaternion us supposed to be created with CreateFromEulerRadiansXYZ() or CreateFromEulerDegreesXYZ().
+        //! Note that a gimbal lock occurs with the y-axis rotation equal to +-90 degrees, loosing information
+        //!  on initial yaw and roll, and then roll is deliberately zeroed.
+        //! @return Vector3 A vector containing component-wise rotation angles in radians.
+        Vector3 GetEulerRadiansXYZ() const;
+
+        //! Compute, from the quaternion, a set of Euler (actually Tait-Bryan) angles of rotations around:
+        //!  first y-axis (pitch), then x-axis (roll) and then z-axis (yaw).
+        //! The quaternion us supposed to be created with CreateFromEulerRadiansYXZ() or CreateFromEulerDegreesYXZ().
+        //! @return Vector3 A vector containing component-wise rotation angles in degrees.
+        Vector3 GetEulerDegreesYXZ() const;
+
+        //! Compute, from the quaternion, a set of Euler (actually Tait-Bryan) angles of rotations around:
+        //!  first y-axis (pitch), then x-axis (roll) and then z-axis (yaw).
+        //! The quaternion us supposed to be created with CreateFromEulerRadiansYXZ() or CreateFromEulerDegreesYXZ().
+        //! @return Vector3 A vector containing component-wise rotation angles in radians.
+        Vector3 GetEulerRadiansYXZ() const;
+
+        //! Compute, from the quaternion, a set of Euler (actually Tait-Bryan) angles of rotations around:
+        //!  first z-axis (yaw), then y-axis (pitch) and then x-axis (roll).
+        //! The quaternion us supposed to be created with CreateFromEulerRadiansZYX() or CreateFromEulerDegreesZYX().
+        //! Note that a gimbal lock occurs with the y-axis rotation equal to +-90 degrees, loosing information
+        //!  on initial yaw and roll, and then roll is deliberately zeroed.
+        //! @return Vector3 A vector containing component-wise rotation angles in degrees.
+        Vector3 GetEulerDegreesZYX() const;
+
+        //! Compute, from the quaternion, a set of Euler (actually Tait-Bryan) angles of rotations around:
+        //!  first z-axis (yaw), then y-axis (pitch) and then x-axis (roll).
+        //! The quaternion us supposed to be created with CreateFromEulerRadiansZYX() or CreateFromEulerDegreesZYX().
+        //! Note that a gimbal lock occurs with the y-axis rotation equal to +-90 degrees, loosing information
+        //!  on initial yaw and roll, and then roll is deliberately zeroed.
+        //! @return Vector3 A vector containing component-wise rotation angles in radians.
+        Vector3 GetEulerRadiansZYX() const;
+
         //! @param eulerRadians A vector containing component-wise rotation angles in radians.
+        //! O3DE_DEPRECATION_NOTICE(GHI-10929)
+        //! @deprecated use CreateFromEulerRadiansXYZ()
         void SetFromEulerRadians(const Vector3& eulerRadians);
 
         //! @param eulerDegrees A vector containing component-wise rotation angles in degrees.
+        //! O3DE_DEPRECATION_NOTICE(GHI-10929)
+        //! @deprecated use CreateFromEulerDegreesXYZ()
         void SetFromEulerDegrees(const Vector3& eulerDegrees);
 
         //! Populate axis and angle of rotation from Quaternion
@@ -277,20 +343,28 @@ namespace AZ
 
     //! Non-member functionality belonging to the AZ namespace
 
+    //! O3DE_DEPRECATION_NOTICE(GHI-10929)
+    //! @deprecated use GetEulerDegreesXYZ()
     //! Create, from a quaternion, a set of Euler angles of rotations around first z-axis, then y-axis and then x-axis.
     //! @param q a quaternion representing the rotation
     //! @return A vector containing component-wise rotation angles in degrees.
     Vector3 ConvertQuaternionToEulerDegrees(const Quaternion& q);
 
+    //! O3DE_DEPRECATION_NOTICE(GHI-10929)
+    //! @deprecated use GetEulerRadiansXYZ()
     //! Create, from a quaternion, a set of Euler angles of rotations around first z-axis, then y-axis and then x-axis.
     //! @param q a quaternion representing the rotation
     //! @return A vector containing component-wise rotation angles in radians.
     Vector3 ConvertQuaternionToEulerRadians(const Quaternion& q);
 
+    //! O3DE_DEPRECATION_NOTICE(GHI-10929)
+    //! @deprecated use Quaternion::CreateFromEulerRadiansXYZ()
     //! @param eulerRadians A vector containing component-wise rotation angles in radians.
     //! @return a quaternion made from composition of rotations around principle axes.
     Quaternion ConvertEulerRadiansToQuaternion(const Vector3& eulerRadians);
 
+    //! O3DE_DEPRECATION_NOTICE(GHI-10929)
+    //! @deprecated use Quaternion::CreateFromEulerDegreesXYZ()
     //! @param eulerDegrees A vector containing component-wise rotation angles in degrees.
     //! @return a quaternion made from composition of rotations around principle axes.
     Quaternion ConvertEulerDegreesToQuaternion(const Vector3& eulerDegrees);

@@ -9,10 +9,12 @@
 #include <ScriptAutomationSystemComponent.h>
 
 #include <ScriptAutomationScriptBindings.h>
+#include <ImageComparisonConfig.h>
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Component/ComponentApplication.h>
+#include <AzCore/Console/IConsole.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Script/ScriptAsset.h>
@@ -23,10 +25,10 @@
 #include <AzCore/Serialization/SerializeContext.h>
 
 #include <AzFramework/API/ApplicationAPI.h>
-#include <AzFramework/Asset/AssetSystemBus.h>
+#include <AzFramework/Components/ConsoleBus.h>
 #include <AzFramework/Script/ScriptComponent.h>
 
-namespace ScriptAutomation
+namespace AZ::ScriptAutomation
 {
     namespace
     {
@@ -65,7 +67,61 @@ namespace ScriptAutomation
                 return {};
             }
         }
+
+        void LuaErrorLog([[maybe_unused]] ScriptContext* context, ScriptContext::ErrorType error, [[maybe_unused]] const char* message)
+        {
+            switch(error)
+            {
+                case ScriptContext::ErrorType::Log:
+                    AZ_Info("ScriptAutomation", "Lua log: %s", message);
+                    break;
+                case ScriptContext::ErrorType::Warning:
+                    AZ_Warning("ScriptAutomation", false, "Lua warning: %s", message);
+                    break;
+                case ScriptContext::ErrorType::Error:
+                    AZ_Error("ScriptAutomation", false, "Lua error: %s", message);
+                    break;
+            }
+        }
     } // namespace
+
+    void ExecuteLuaScript(const AZ::ConsoleCommandContainer& arguments)
+    {
+        auto scriptAuto = ScriptAutomationInterface::Get();
+
+        if (!scriptAuto)
+        {
+            AZ_Error("ScriptAutomation", false, "There is no ScriptAutomation instance registered to the interface.");
+            return;
+        }
+
+        const char* scriptPath = arguments[0].data();
+
+        scriptAuto->ActivateScript(scriptPath);
+    }
+
+    AZ_CONSOLEFREEFUNC(ExecuteLuaScript, AZ::ConsoleFunctorFlags::Null, "Execute a Lua script");
+
+    void ScriptAutomationSystemComponent::ActivateScript(const char* scriptPath)
+    {
+        m_isStarted = false;
+        m_automationScript = scriptPath;
+
+        AZ::TickBus::Handler::BusConnect();
+    }
+
+    void ScriptAutomationSystemComponent::DeactivateScripts()
+    {
+        m_isStarted = false;
+        m_automationScript = "";
+        AZStd::queue<ScriptAutomationRequests::ScriptOperation> empty;
+        empty.swap(m_scriptOperations); // clear the script operations
+        m_scriptPaused = false;
+        m_scriptIdleFrames = 0;
+        m_scriptIdleSeconds = 0.0f;
+        m_scriptPauseTimeout = 0.0f;
+        // continue to tick so end of script is handled
+    }
 
     void ScriptAutomationSystemComponent::Reflect(AZ::ReflectContext* context)
     {
@@ -78,10 +134,11 @@ namespace ScriptAutomation
             {
                 ec->Class<ScriptAutomationSystemComponent>("ScriptAutomation", "Provides a mechanism for automating various tasks through Lua scripting in the game launchers")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("System"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
             }
         }
+
+        ScriptAutomation::ImageComparisonConfig::Reflect(context);
     }
 
     void ScriptAutomationSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
@@ -120,19 +177,22 @@ namespace ScriptAutomation
 
     void ScriptAutomationSystemComponent::SetIdleFrames(int numFrames)
     {
-        AZ_Assert(m_scriptIdleSeconds == 0, "m_scriptIdleFrames is being stomped");
+        AZ_Assert(m_scriptIdleFrames <= 0, "m_scriptIdleFrames is being stomped");
         m_scriptIdleFrames = numFrames;
     }
 
     void ScriptAutomationSystemComponent::SetIdleSeconds(float numSeconds)
     {
+        AZ_Assert(m_scriptIdleSeconds <= 0, "m_scriptIdleSeconds is being stomped");
         m_scriptIdleSeconds = numSeconds;
     }
 
-    void ScriptAutomationSystemComponent::SetFrameCaptureId(uint32_t frameCaptureId)
+    void ScriptAutomationSystemComponent::SetFrameCaptureId(AZ::Render::FrameCaptureId frameCaptureId)
     {
+         // FrameCapture system supports multiple active frame captures, Script Automation would need changes to support more than 1 active at a time.
+        AZ_Assert(m_scriptFrameCaptureId == AZ::Render::InvalidFrameCaptureId, "Attempting to start a frame capture while one is in progress");
         m_scriptFrameCaptureId = frameCaptureId;
-        AZ::Render::FrameCaptureNotificationBus::Handler::BusConnect();
+        AZ::Render::FrameCaptureNotificationBus::Handler::BusConnect(frameCaptureId);
     }
 
     void ScriptAutomationSystemComponent::StartProfilingCapture()
@@ -149,6 +209,7 @@ namespace ScriptAutomation
 
         ReflectScriptBindings(m_scriptBehaviorContext.get());
         m_scriptContext->BindTo(m_scriptBehaviorContext.get());
+        m_scriptContext->SetErrorHook(LuaErrorLog);
 
         AZ::ComponentApplication* application = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(application, &AZ::ComponentApplicationBus::Events::GetApplication);
@@ -160,24 +221,18 @@ namespace ScriptAutomation
             auto commandLine = application->GetAzCommandLine();
             if (commandLine->HasSwitch(automationSuiteSwitch))
             {
-                m_isStarted = false;
-                m_automationScript = commandLine->GetSwitchValue(automationSuiteSwitch, 0);
                 m_exitOnFinish = commandLine->HasSwitch(automationExitSwitch);
-
-                AZ::TickBus::Handler::BusConnect();
+                ActivateScript(commandLine->GetSwitchValue(automationSuiteSwitch, 0).c_str());
             }
         }
     }
 
     void ScriptAutomationSystemComponent::Deactivate()
     {
-        m_scriptContext = nullptr;
-        m_scriptBehaviorContext = nullptr;
+        DeactivateScripts();
 
-        if (AZ::TickBus::Handler::BusIsConnected())
-        {
-            AZ::TickBus::Handler::BusDisconnect();
-        }
+        m_scriptBehaviorContext = nullptr;
+        m_scriptContext = nullptr;
 
         ScriptAutomationRequestBus::Handler::BusDisconnect();
     }
@@ -232,6 +287,8 @@ namespace ScriptAutomation
             {
                 if(!m_scriptPaused) // final operation may have paused, wait for it to complete or time out
                 {
+                    DeactivateScripts();
+
                     ScriptAutomationNotificationBus::Broadcast(&ScriptAutomationNotificationBus::Events::OnAutomationFinished);
 
                     if (m_exitOnFinish)
@@ -266,44 +323,51 @@ namespace ScriptAutomation
         m_scriptOperations.push(AZStd::move(operation));
     }
 
-    void ScriptAutomationSystemComponent::ExecuteScript(const char* scriptFilePath [[maybe_unused]])
+    void ScriptAutomationSystemComponent::ExecuteScript(const char* scriptFilePath)
     {
         AZ::Data::Asset<AZ::ScriptAsset> scriptAsset = LoadScriptAssetFromPath(scriptFilePath, *m_scriptContext.get());
+        AZStd::string localScriptFilePath = scriptFilePath;
         if (!scriptAsset)
         {
-#ifndef _RELEASE // AZ_Error is a no-op in release builds
+#if AZ_ENABLE_TRACING
             // Push an error operation on the back of the queue instead of reporting it immediately so it doesn't get lost
             // in front of a bunch of queued m_scriptOperations.
-            QueueScriptOperation([scriptFilePath]()
+            QueueScriptOperation([localScriptFilePath]()
                 {
-                    AZ_Error("ScriptAutomation", false, "Script: Could not find or load script asset '%s'.", scriptFilePath);
+                    AZ_Error("ScriptAutomation", false, "Script: Could not find or load script asset '%s'.", localScriptFilePath.c_str());
                 }
             );
-#endif
+#endif // AZ_ENABLE_TRACING
             return;
         }
 
-#ifndef _RELEASE // AZ_Error is a no-op in release builds
-        QueueScriptOperation([scriptFilePath]()
+#if AZ_ENABLE_TRACING
+        QueueScriptOperation([localScriptFilePath]()
             {
-                AZ_Printf("ScriptAutomation", "Running script '%s'...\n", scriptFilePath);
+                AZ_Printf("ScriptAutomation", "Running script '%s'...\n", localScriptFilePath.c_str());
             }
         );
-#endif
+#endif // AZ_ENABLE_TRACING
 
-        if (!m_scriptContext->Execute(scriptAsset->m_data.GetScriptBuffer().data(), scriptFilePath, scriptAsset->m_data.GetScriptBuffer().size()))
+        if (!m_scriptContext->Execute(scriptAsset->m_data.GetScriptBuffer().data(), localScriptFilePath.c_str(), scriptAsset->m_data.GetScriptBuffer().size()))
         {
-#ifndef _RELEASE // AZ_Error is a no-op in release builds
+#if AZ_ENABLE_TRACING
             // Push an error operation on the back of the queue instead of reporting it immediately so it doesn't get lost
             // in front of a bunch of queued m_scriptOperations.
-            QueueScriptOperation([scriptFilePath]()
+            QueueScriptOperation([localScriptFilePath]()
                 {
-                    AZ_Error("ScriptAutomation", false, "Script: Error running script '%s'.", scriptFilePath);
+                    AZ_Error("ScriptAutomation", false, "Script: Error running script '%s'.", localScriptFilePath.c_str());
                 }
             );
-#endif
+#endif // AZ_ENABLE_TRACING
         }
     }
+
+    const ImageComparisonToleranceLevel* ScriptAutomationSystemComponent::FindToleranceLevel(const AZStd::string& name)
+    {
+        return m_imageComparisonSettings.FindToleranceLevel(name);
+    }
+
 
     void ScriptAutomationSystemComponent::OnCaptureQueryTimestampFinished([[maybe_unused]] bool result, [[maybe_unused]] const AZStd::string& info)
     {
@@ -329,14 +393,9 @@ namespace ScriptAutomation
         ResumeAutomation();
     }
 
-    void ScriptAutomationSystemComponent::OnCaptureFinished(uint32_t frameCaptureId, AZ::Render::FrameCaptureResult result, const AZStd::string &info)
+    void ScriptAutomationSystemComponent::OnFrameCaptureFinished(AZ::Render::FrameCaptureResult result, const AZStd::string &info)
     {
-         // ignore captures that are not triggered by the script manager
-        if (m_scriptFrameCaptureId == AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId || frameCaptureId != m_scriptFrameCaptureId)
-        {
-            return;
-        }
-        m_scriptFrameCaptureId = AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId;
+        m_scriptFrameCaptureId = AZ::Render::InvalidFrameCaptureId;
         AZ::Render::FrameCaptureNotificationBus::Handler::BusDisconnect();
         ResumeAutomation();
 
@@ -349,4 +408,54 @@ namespace ScriptAutomation
         }
     }
 
-} // namespace ScriptAutomation
+    void ScriptAutomationSystemComponent::LoadLevel(const char* levelName)
+    {
+        AZ_Assert(!m_levelLoading, "Attempting to load a level while still waiting for a level to load");
+        m_levelLoading = true;
+        m_levelName = levelName;
+        AzFramework::LevelSystemLifecycleNotificationBus::Handler::BusConnect();
+        PauseAutomation();
+
+        auto loadLevelString = AZStd::string::format("LoadLevel %s", levelName);
+
+        AzFramework::ConsoleRequestBus::Broadcast(
+            &AzFramework::ConsoleRequests::ExecuteConsoleCommand, loadLevelString.c_str());
+
+    }
+
+    void ScriptAutomationSystemComponent::OnLevelNotFound(const char* levelName)
+    {
+        if (m_levelName == levelName)
+        {
+            m_levelLoading = false;
+            m_levelName = "";
+            AZ_Error("ScriptAutomation", false, "Level not found \"%s\"", levelName);
+            AzFramework::LevelSystemLifecycleNotificationBus::Handler::BusDisconnect();
+            DeactivateScripts();
+        }
+    }
+
+    void ScriptAutomationSystemComponent::OnLoadingComplete(const char* levelName)
+    {
+        if (m_levelName == levelName)
+        {
+            m_levelLoading = false;
+            AzFramework::LevelSystemLifecycleNotificationBus::Handler::BusDisconnect();
+            ResumeAutomation();
+        }
+    }
+
+    void ScriptAutomationSystemComponent::OnLoadingError(const char* levelName, [[maybe_unused]] const char* error)
+    {
+        if (m_levelName == levelName)
+        {
+            m_levelLoading = false;
+            m_levelName = "";
+            AZ_Error("ScriptAutomation", false, "Failed to load level \"%s\", error \"%s\"", levelName, error);
+            AzFramework::LevelSystemLifecycleNotificationBus::Handler::BusDisconnect();
+            DeactivateScripts();
+        }
+    }
+
+
+} // namespace AZ::ScriptAutomation

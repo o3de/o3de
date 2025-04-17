@@ -7,7 +7,7 @@
             "details": {
                 "name": "Multiply (*)",
                 "category": "Math",
-                "tooltip": "Multiplies two of more values"
+                "tooltip": "Multiplies two or more values"
             },
             "slots": [
                 {

@@ -378,21 +378,20 @@ namespace ScriptCanvasEditor::Nodes
         GraphCanvas::TranslationRequests::Details methodDetails;
         methodDetails.m_name = methodName; // fallback
         key << "methods";
-        AZStd::string updatedMethodName = methodName;
-        if (isAccessor)
+
+        AZStd::string updatedMethodName = "";
+        if (methodNode->GetMethodType() == ScriptCanvas::MethodType::Getter || isAccessor)
         {
-            if (methodNode->GetMethodType() == ScriptCanvas::MethodType::Getter || isFreeMethod)
-            {
-                updatedMethodName = "Get";
-                methodContext = "Getter";
-            }
-            else
-            {
-                updatedMethodName = "Set";
-                methodContext = "Setter";
-            }
-            updatedMethodName.append(methodName);
+            updatedMethodName = "Get";
+            methodContext = "Getter";
         }
+        else if (methodNode->GetMethodType() == ScriptCanvas::MethodType::Setter)
+        {
+            updatedMethodName = "Set";
+            methodContext = "Setter";
+        }
+        updatedMethodName.append(methodName);
+
         key << updatedMethodName << methodContext;
         GraphCanvas::TranslationRequestBus::BroadcastResult(methodDetails, &GraphCanvas::TranslationRequests::GetDetails, key + ".details", methodDetails);
 
@@ -443,16 +442,13 @@ namespace ScriptCanvasEditor::Nodes
                     key.clear();
                     key << context << className << "methods" << updatedMethodName;
 
-                    if (isAccessor)
+                    if (methodNode->GetMethodType() == ScriptCanvas::MethodType::Getter || isAccessor)
                     {
-                        if (methodNode->GetMethodType() == ScriptCanvas::MethodType::Getter || isFreeMethod)
-                        {
-                            key << "Getter";
-                        }
-                        else
-                        {
-                            key << "Setter";
-                        }
+                        key << "Getter";
+                    }
+                    else if (methodNode->GetMethodType() == ScriptCanvas::MethodType::Setter)
+                    {
+                        key << "Setter";
                     }
 
                     if (slot.IsInput())
@@ -467,6 +463,32 @@ namespace ScriptCanvasEditor::Nodes
 
                     GraphCanvas::TranslationRequestBus::BroadcastResult(
                         details, &GraphCanvas::TranslationRequests::GetDetails, key + ".details", details);
+                }
+                else
+                {
+                    AZStd::string direction = (slot.IsInput()) ? "entry" : "exit";
+
+                    // Get the translated value for the execution slot
+                    key.clear();
+                    key << context << className << "methods" << updatedMethodName << direction << "name";
+
+                    bool success = false;
+                    AZStd::string result;
+                    GraphCanvas::TranslationRequestBus::BroadcastResult(success, &GraphCanvas::TranslationRequests::Get, key, result);
+                    if (success)
+                    {
+                        details.m_name = result;
+                    }
+
+                    key.clear();
+                    key << context << className << "methods" << updatedMethodName << direction << "tooltip";
+
+                    GraphCanvas::TranslationRequestBus::BroadcastResult(success, &GraphCanvas::TranslationRequests::Get, key, result);
+                    if (success)
+                    {
+                        details.m_tooltip = result;
+                    }
+
                 }
 
                 GraphCanvas::SlotRequestBus::Event(
@@ -1249,6 +1271,8 @@ namespace ScriptCanvasEditor::Nodes
             executionConfiguration.m_tooltip = slot.GetToolTip();
             executionConfiguration.m_slotGroup = slotGroup;
 
+            executionConfiguration.m_isNameHidden = slot.IsNameHidden();
+
             if (slot.IsLatent())
             {
                 executionConfiguration.m_textDecoration = u8"\U0001f552";
@@ -1273,6 +1297,8 @@ namespace ScriptCanvasEditor::Nodes
             dataSlotConfiguration.m_name = slot.GetName();
             dataSlotConfiguration.m_tooltip = slot.GetToolTip();
             dataSlotConfiguration.m_slotGroup = slotGroup;
+
+            dataSlotConfiguration.m_isNameHidden = slot.IsNameHidden();
 
             if (slot.IsLatent())
             {

@@ -8,6 +8,7 @@
 #include <RHI/Device.h>
 #include <RHI/PipelineLibrary.h>
 #include <Atom/RHI/Factory.h>
+#include <Atom/RHI.Profiler/GraphicsProfilerBus.h>
 
 namespace AZ
 {
@@ -42,7 +43,7 @@ namespace AZ
             return aznew PipelineLibrary;
         }
 
-        RHI::ResultCode PipelineLibrary::InitInternal(RHI::Device& deviceBase, [[maybe_unused]] const RHI::PipelineLibraryDescriptor& descriptor)
+        RHI::ResultCode PipelineLibrary::InitInternal(RHI::Device& deviceBase, [[maybe_unused]] const RHI::DevicePipelineLibraryDescriptor& descriptor)
         {
             Device& device = static_cast<Device&>(deviceBase);
             ID3D12DeviceX* dx12Device = device.GetDevice();
@@ -51,8 +52,7 @@ namespace AZ
             AZStd::span<const uint8_t> bytes;
 
             bool shouldCreateLibFromSerializedData = true;
-            if (RHI::Factory::Get().IsRenderDocModuleLoaded() ||
-                RHI::Factory::Get().IsPixModuleLoaded())
+            if (RHI::GraphicsProfilerBus::HasHandlers())
             {
                 // CreatePipelineLibrary api does not function properly if Renderdoc or Pix is enabled
                 shouldCreateLibFromSerializedData = false;
@@ -215,10 +215,9 @@ namespace AZ
 #endif
         }
 
-        RHI::ResultCode PipelineLibrary::MergeIntoInternal([[maybe_unused]] AZStd::span<const RHI::PipelineLibrary* const> pipelineLibraries)
+        RHI::ResultCode PipelineLibrary::MergeIntoInternal([[maybe_unused]] AZStd::span<const RHI::DevicePipelineLibrary* const> pipelineLibraries)
         {
-            if (RHI::Factory::Get().IsRenderDocModuleLoaded() ||
-                RHI::Factory::Get().IsPixModuleLoaded())
+            if (RHI::GraphicsProfilerBus::HasHandlers())
             {
                 // StorePipeline api does not function properly if RenderDoc or Pix is enabled
                 return RHI::ResultCode::Fail;
@@ -226,7 +225,7 @@ namespace AZ
 
 #if defined (AZ_DX12_USE_PIPELINE_LIBRARY)
             AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
-            for (const RHI::PipelineLibrary* libraryBase : pipelineLibraries)
+            for (const RHI::DevicePipelineLibrary* libraryBase : pipelineLibraries)
             {
                 const PipelineLibrary* library = static_cast<const PipelineLibrary*>(libraryBase);
                 for (const auto& pipelineStateEntry : library->m_pipelineStates)

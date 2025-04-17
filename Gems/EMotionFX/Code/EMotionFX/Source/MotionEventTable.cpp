@@ -17,7 +17,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(MotionEventTable, MotionEventAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(MotionEventTable, MotionEventAllocator)
 
     MotionEventTable::~MotionEventTable()
     {

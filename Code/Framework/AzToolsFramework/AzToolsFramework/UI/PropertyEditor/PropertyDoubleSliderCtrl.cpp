@@ -72,36 +72,43 @@ namespace AzToolsFramework
 
     void PropertyDoubleSliderCtrl::setSoftMinimum(double val)
     {
+        QSignalBlocker block(m_sliderCombo);
         m_sliderCombo->setSoftMinimum(val);
     }
 
     void PropertyDoubleSliderCtrl::setSoftMaximum(double val)
     {
+        QSignalBlocker block(m_sliderCombo);
         m_sliderCombo->setSoftMaximum(val);
     }
 
     void PropertyDoubleSliderCtrl::setPrefix(QString val)
     {
+        QSignalBlocker block(m_sliderCombo);
         m_sliderCombo->spinbox()->setPrefix(val);
     }
 
     void PropertyDoubleSliderCtrl::setSuffix(QString val)
     {
+        QSignalBlocker block(m_sliderCombo);
         m_sliderCombo->spinbox()->setSuffix(val);
     }
 
     void PropertyDoubleSliderCtrl::setDecimals(int decimals)
     {
+        QSignalBlocker block(m_sliderCombo);
         m_sliderCombo->setDecimals(decimals);
     }
 
     void PropertyDoubleSliderCtrl::setDisplayDecimals(int displayDecimals)
     {
+        QSignalBlocker block(m_sliderCombo);
         m_sliderCombo->spinbox()->setDisplayDecimals(displayDecimals);
     }
 
     void PropertyDoubleSliderCtrl::setCurveMidpoint(double midpoint)
     {
+        QSignalBlocker block(m_sliderCombo);
         m_sliderCombo->setCurveMidpoint(midpoint);
     }
 
@@ -147,6 +154,11 @@ namespace AzToolsFramework
     void PropertyDoubleSliderCtrl::UpdateTabOrder()
     {
         setTabOrder(GetFirstInTabOrder(), GetLastInTabOrder());
+    }
+
+    void PropertyDoubleSliderCtrl::ClearSavedState()
+    {
+        m_sliderCombo->resetLimits();
     }
 
     // a common function to eat attribs, for all int handlers:
@@ -230,6 +242,19 @@ namespace AzToolsFramework
                 AZ_WarningOnce("AzToolsFramework", false, "Failed to read 'DisplayDecimals' attribute from property '%s' into Slider", debugName);
             }
         }
+        else if (attrib == AZ::Edit::Attributes::Suffix)
+        {
+            AZStd::string result;
+            if (attrValue->Read<AZStd::string>(result))
+            {
+                GUI->setSuffix(result.c_str());
+            }
+            else
+            {
+                AZ_WarningOnce("AzToolsFramework", false, "Failed to read 'Suffix' attribute from property '%s' into Slider", debugName);
+            }
+            return;
+        }
         else if (attrib == AZ::Edit::Attributes::SliderCurveMidpoint)
         {
             double midpointValue = 0;
@@ -259,7 +284,7 @@ namespace AzToolsFramework
         PropertyDoubleSliderCtrl* newCtrl = aznew PropertyDoubleSliderCtrl(pParent);
         connect(newCtrl, &PropertyDoubleSliderCtrl::valueChanged, this, [newCtrl]()
             {
-                EBUS_EVENT(PropertyEditorGUIMessages::Bus, RequestWrite, newCtrl);
+                PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Events::RequestWrite, newCtrl);
             });
         connect(newCtrl, &PropertyDoubleSliderCtrl::editingFinished, this, [newCtrl]()
         {
@@ -278,7 +303,7 @@ namespace AzToolsFramework
         PropertyDoubleSliderCtrl* newCtrl = aznew PropertyDoubleSliderCtrl(pParent);
         connect(newCtrl, &PropertyDoubleSliderCtrl::valueChanged, this, [newCtrl]()
             {
-                EBUS_EVENT(PropertyEditorGUIMessages::Bus, RequestWrite, newCtrl);
+                PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Events::RequestWrite, newCtrl);
             });
         connect(newCtrl, &PropertyDoubleSliderCtrl::editingFinished, this, [newCtrl]()
         {
@@ -408,8 +433,10 @@ namespace AzToolsFramework
 
     void RegisterDoubleSliderHandlers()
     {
-        EBUS_EVENT(PropertyTypeRegistrationMessages::Bus, RegisterPropertyType, aznew doublePropertySliderHandler());
-        EBUS_EVENT(PropertyTypeRegistrationMessages::Bus, RegisterPropertyType, aznew floatPropertySliderHandler());
+        PropertyTypeRegistrationMessages::Bus::Broadcast(
+            &PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew doublePropertySliderHandler());
+        PropertyTypeRegistrationMessages::Bus::Broadcast(
+            &PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew floatPropertySliderHandler());
     }
 
 }

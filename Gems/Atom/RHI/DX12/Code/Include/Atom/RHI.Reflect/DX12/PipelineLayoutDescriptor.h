@@ -11,6 +11,17 @@
 #include <Atom/RHI.Reflect/Handle.h>
 #include <AzCore/Memory/SystemAllocator.h>
 
+namespace AZ::Serialize
+{
+    template<class T, bool U, bool A>
+    struct InstanceFactory;
+}
+namespace AZ
+{
+    template<typename ValueType, typename>
+    struct AnyTypeInfoConcept;
+}
+
 namespace AZ
 {
     class ReflectContext;
@@ -38,9 +49,12 @@ namespace AZ
             RootParameterIndex m_resourceTable;
 
             /// The root indices of the SRG unbounded array resource descriptor tables (if any).
-            /// Note that on DX12 we support at most one SRV and one UAV in a Srg.
+            /// TODO: This restriction should be lifted
             static const uint32_t MaxUnboundedArrays = 2;
             RootParameterIndex m_unboundedArrayResourceTables[MaxUnboundedArrays];
+
+            /// If unbounded arrays are present, the bindless parameter index refers to the root argument designated for the bindless table
+            RootParameterIndex m_bindlessTable;
 
             /// The root index of the SRG sampler descriptor table (if it exists).
             RootParameterIndex m_samplerTable;
@@ -94,7 +108,7 @@ namespace AZ
             using Base = RHI::PipelineLayoutDescriptor;
         public:
             AZ_RTTI(PipelineLayoutDescriptor, "{A10B0F03-F43D-4462-9306-66195B4EFC46}", Base);
-            AZ_CLASS_ALLOCATOR(PipelineLayoutDescriptor, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PipelineLayoutDescriptor, AZ::SystemAllocator);
             static void Reflect(AZ::ReflectContext* context);
 
             static RHI::Ptr<PipelineLayoutDescriptor> Create();
@@ -115,7 +129,10 @@ namespace AZ
             HashValue64 GetHashInternal(HashValue64 seed) const override;
             //////////////////////////////////////////////////////////////////////////
 
-            AZ_SERIALIZE_FRIEND();
+            template <typename, typename>
+            friend struct AnyTypeInfoConcept;
+            template <typename, bool, bool>
+            friend struct Serialize::InstanceFactory;
 
             RootConstantBinding m_rootConstantBinding;
             AZStd::fixed_vector<ShaderResourceGroupVisibility, RHI::Limits::Pipeline::ShaderResourceGroupCountMax> m_shaderResourceGroupVisibilities;

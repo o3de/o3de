@@ -19,11 +19,11 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(ActorManager, ActorManagerAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(ActorManager, ActorManagerAllocator)
 
     // constructor
     ActorManager::ActorManager()
-        : BaseObject()
+        : MCore::RefCounted()
     {
         m_scheduler  = nullptr;
 

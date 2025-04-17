@@ -20,6 +20,8 @@
 #include <Atom/RHI/FactoryManagerBus.h>
 #include <comdef.h>
 
+#include <dx12ma/D3D12MemAlloc.h>
+
 namespace AZ
 {
     namespace DX12
@@ -35,8 +37,8 @@ namespace AZ
                     RHI::MemoryStatistics::Heap* heapStats = builder.AddHeap();
                     heapStats->m_name = Name("Device");
                     heapStats->m_memoryUsage.m_budgetInBytes = memoryInfo.Budget;
-                    heapStats->m_memoryUsage.m_reservedInBytes = memoryInfo.CurrentReservation;
-                    heapStats->m_memoryUsage.m_residentInBytes = memoryInfo.CurrentUsage;
+                    heapStats->m_memoryUsage.m_totalResidentInBytes = memoryInfo.CurrentReservation;
+                    heapStats->m_memoryUsage.m_usedResidentInBytes = memoryInfo.CurrentUsage;
                 }
 
                 if (S_OK == dxgiAdapter->QueryVideoMemoryInfo(0, DXGI_MEMORY_SEGMENT_GROUP_NON_LOCAL, &memoryInfo))
@@ -44,8 +46,8 @@ namespace AZ
                     RHI::MemoryStatistics::Heap* heapStats = builder.AddHeap();
                     heapStats->m_name = Name("Host");
                     heapStats->m_memoryUsage.m_budgetInBytes = memoryInfo.Budget;
-                    heapStats->m_memoryUsage.m_reservedInBytes = memoryInfo.CurrentReservation;
-                    heapStats->m_memoryUsage.m_residentInBytes = memoryInfo.CurrentUsage;
+                    heapStats->m_memoryUsage.m_totalResidentInBytes = memoryInfo.CurrentReservation;
+                    heapStats->m_memoryUsage.m_usedResidentInBytes = memoryInfo.CurrentUsage;
                 }
             }
 
@@ -82,10 +84,13 @@ namespace AZ
 
         void EnableDebugDeviceFeatures(Microsoft::WRL::ComPtr<ID3D12DeviceX>& dx12Device)
         {
-            Microsoft::WRL::ComPtr<ID3D12DebugDevice> debugDevice;
+            Microsoft::WRL::ComPtr<ID3D12DebugDevice2> debugDevice;
             if (SUCCEEDED(dx12Device->QueryInterface(debugDevice.GetAddressOf())))
             {
-                debugDevice->SetFeatureMask(D3D12_DEBUG_FEATURE_ALLOW_BEHAVIOR_CHANGING_DEBUG_AIDS | D3D12_DEBUG_FEATURE_CONSERVATIVE_RESOURCE_STATE_TRACKING);
+                D3D12_DEBUG_FEATURE featureFlags{ D3D12_DEBUG_FEATURE_ALLOW_BEHAVIOR_CHANGING_DEBUG_AIDS };
+                debugDevice->SetDebugParameter(D3D12_DEBUG_DEVICE_PARAMETER_FEATURE_FLAGS, &featureFlags, sizeof(featureFlags));
+                featureFlags = D3D12_DEBUG_FEATURE_CONSERVATIVE_RESOURCE_STATE_TRACKING;
+                debugDevice->SetDebugParameter(D3D12_DEBUG_DEVICE_PARAMETER_FEATURE_FLAGS, &featureFlags, sizeof(featureFlags));
             }
         }
 
@@ -133,6 +138,14 @@ namespace AZ
             // different region. We should add validation elsewhere to make sure that multi-threaded access continues to
             // be valid and possibly find a way to restore this warning to catch other cases that could be invalid.
             disabledMessages.push_back(D3D12_MESSAGE_ID_EXECUTECOMMANDLISTS_GPU_WRITTEN_READBACK_RESOURCE_MAPPED);
+
+            // Disabling this message because it is harmless, yet it overwhelms the Editor log when the D3D Debug Layer is enabled.
+            // D3D12 WARNING: ID3D12CommandList::DrawIndexedInstanced: Element [6] in the current Input Layout's declaration references input slot 6,
+            //                but there is no Buffer bound to this slot. This is OK, as reads from an empty slot are defined to return 0.
+            //                It is also possible the developer knows the data will not be used anyway.
+            //                This is only a problem if the developer actually intended to bind an input Buffer here.
+            //                [ EXECUTION WARNING #202: COMMAND_LIST_DRAW_VERTEX_BUFFER_NOT_SET]
+            disabledMessages.push_back(D3D12_MESSAGE_ID_COMMAND_LIST_DRAW_VERTEX_BUFFER_NOT_SET);
 
             // Windows build 10.0.17763 (AKA version 1809) has a bug where the D3D Debug layer throws the error COPY_DESCRIPTORS_INVALID_RANGES when it shouldn't.
             // This was fixed in subsequent builds, however, Amazon IT is still deploying this version to new machines as of the time this comment was written.
@@ -193,21 +206,22 @@ namespace AZ
                 {
                     EnableGPUBasedValidation();
                 }
-            }
 
+                // DRED has a perf cost on some drivers/hw so only enable it if RHI validation is enabled.
 #ifdef __ID3D12DeviceRemovedExtendedDataSettings1_INTERFACE_DEFINED__
-            Microsoft::WRL::ComPtr<ID3D12DeviceRemovedExtendedDataSettings1> pDredSettings;
+                Microsoft::WRL::ComPtr<ID3D12DeviceRemovedExtendedDataSettings1> pDredSettings;
 #else
-            Microsoft::WRL::ComPtr<ID3D12DeviceRemovedExtendedDataSettings> pDredSettings;
+                Microsoft::WRL::ComPtr<ID3D12DeviceRemovedExtendedDataSettings> pDredSettings;
 #endif
-            if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&pDredSettings))))
-            {
-                // Turn on auto-breadcrumbs and page fault reporting.
-                pDredSettings->SetAutoBreadcrumbsEnablement(D3D12_DRED_ENABLEMENT_FORCED_ON);
-                pDredSettings->SetPageFaultEnablement(D3D12_DRED_ENABLEMENT_FORCED_ON);
+                if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&pDredSettings))))
+                {
+                    // Turn on auto-breadcrumbs and page fault reporting.
+                    pDredSettings->SetAutoBreadcrumbsEnablement(D3D12_DRED_ENABLEMENT_FORCED_ON);
+                    pDredSettings->SetPageFaultEnablement(D3D12_DRED_ENABLEMENT_FORCED_ON);
 #ifdef __ID3D12DeviceRemovedExtendedDataSettings1_INTERFACE_DEFINED__
-                pDredSettings->SetBreadcrumbContextEnablement(D3D12_DRED_ENABLEMENT_FORCED_ON);
+                    pDredSettings->SetBreadcrumbContextEnablement(D3D12_DRED_ENABLEMENT_FORCED_ON);
 #endif
+                }
             }
 
             Microsoft::WRL::ComPtr<ID3D12DeviceX> dx12Device;
@@ -420,14 +434,7 @@ namespace AZ
 
         bool Device::AssertSuccess(HRESULT hr)
         {
-            if (hr == DXGI_ERROR_DEVICE_REMOVED)
-            {
-                OnDeviceRemoved();
-            }
-
-            bool success = SUCCEEDED(hr);
-            AZ_Assert(success, "HRESULT not a success %x", hr);
-            return success;
+            return DX12::AssertSuccess(hr);
         }
 
         void Device::OnDeviceRemoved()
@@ -551,10 +558,10 @@ namespace AZ
                     AZ::IO::SystemFile dredLog;
                     if (!dredLog.Open(filename.c_str(), AZ::IO::SystemFile::SF_OPEN_CREATE | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY))
                     {
-                        AZ_TracePrintf("DRED", "Failed to open file %s for writing", filename.c_str());
+                        AZ_TracePrintf("DRED", "Failed to open file %s for writing\n", filename.c_str());
                         return;
                     }
-                    AZ_TracePrintf("DRED", "Device removed! Writing DRED log to %s", filename.c_str());
+                    AZ_TracePrintf("DRED", "Device removed! Writing DRED log to %s\n", filename.c_str());
 
                     AZStd::string line = AZStd::string::format("===BEGIN DRED LOG===\n"
                         "\nRemoval reason: %s\n", removedReasonString);
@@ -683,7 +690,7 @@ namespace AZ
                         const auto* node = pageFaultOutput.pHeadExistingAllocationNode;
                         while (node)
                         {
-                            line = AZStd::string::format("    0x%zx (%S) %s\n",
+                            line = AZStd::string::format("    0x%p (%S) %s\n",
 #ifdef __ID3D12DeviceRemovedExtendedDataSettings1_INTERFACE_DEFINED__
                                 node->pObject,
 #else
@@ -699,7 +706,7 @@ namespace AZ
                         node = pageFaultOutput.pHeadRecentFreedAllocationNode;
                         while (node)
                         {
-                            line = AZStd::string::format("    0x%zx (%S) %s\n",
+                            line = AZStd::string::format("    0x%p (%S) %s\n",
 #ifdef __ID3D12DeviceRemovedExtendedDataSettings1_INTERFACE_DEFINED__
                                 node->pObject,
 #else
@@ -721,23 +728,23 @@ namespace AZ
                     line = "===END DRED LOG===\n";
                     dredLog.Write(line.data(), line.size());
                     dredLog.Close();
-                    AZ_TracePrintf("DRED", "Finished writing DRED log to %s", filename.c_str());
+                    AZ_TracePrintf("DRED", "Finished writing DRED log to %s\n", filename.c_str());
                 }
                 else
                 {
                     switch (hr)
                     {
                     case DXGI_ERROR_NOT_CURRENTLY_AVAILABLE:
-                        AZ_TracePrintf("Device", "Could not retrieve DRED bread crumbs: DXGI_ERROR_NOT_CURRENTLY_AVAILABLE");
+                        AZ_TracePrintf("Device", "Could not retrieve DRED bread crumbs: DXGI_ERROR_NOT_CURRENTLY_AVAILABLE\n");
                         break;
 
                     case DXGI_ERROR_UNSUPPORTED:
                         AZ_TracePrintf(
-                            "Device", "Could not retrieve DRED bread crumbs (auto-breadcrumbs not enabled): DXGI_ERROR_UNSUPPORTED");
+                            "Device", "Could not retrieve DRED bread crumbs (auto-breadcrumbs not enabled): DXGI_ERROR_UNSUPPORTED\n");
                         break;
 
                     default:
-                        AZ_TracePrintf("Device", "Could not retrieve DRED bread crumbs (reason unknown)");
+                        AZ_TracePrintf("Device", "Could not retrieve DRED bread crumbs (reason unknown)\n");
                         break;
                     }
                 }
@@ -885,6 +892,13 @@ namespace AZ
 
         RHI::ResultCode Device::BeginFrameInternal()
         {
+#ifdef USE_AMD_D3D12MA
+            static uint32_t frameIndex = 0;
+            if (m_dx12MemAlloc)
+            {
+                m_dx12MemAlloc->SetCurrentFrameIndex(++frameIndex);
+            }
+#endif
             m_commandQueueContext.Begin();
             return RHI::ResultCode::Success;
         }

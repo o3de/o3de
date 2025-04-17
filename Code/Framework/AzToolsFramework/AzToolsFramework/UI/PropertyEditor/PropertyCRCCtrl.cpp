@@ -7,14 +7,15 @@
  */
 #include "PropertyCRCCtrl.h"
 #include "PropertyQTConstants.h"
+
+#include <AzCore/Math/Crc.h>
+
 #include <QRegExp>
 #include <QRegExpValidator>
 #include <QLineEdit>
-AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: 'QLayoutItem::align': class 'QFlags<Qt::AlignmentFlag>' needs to have dll-interface to be used by clients of class 'QLayoutItem'
 #include <QHBoxLayout>
-AZ_POP_DISABLE_WARNING
 #include <QString>
-#include <QtCore/QEvent>
+#include <QEvent>
 
 namespace AzToolsFramework
 {
@@ -32,7 +33,7 @@ namespace AzToolsFramework
         m_lineEdit->setFixedHeight(PropertyQTConstant_DefaultHeight);
         m_lineEdit->setFocusPolicy(Qt::StrongFocus);
         m_lineEdit->setValidator(validator);
-        connect(m_lineEdit, SIGNAL(textChanged(QString)), this, SLOT(onLineEditChange(QString)));
+        connect(m_lineEdit, &QLineEdit::textChanged, this, &PropertyCRCCtrl::onLineEditChange);
 
         QHBoxLayout* pLayout = new QHBoxLayout(this);
         pLayout->setSpacing(4);
@@ -48,13 +49,19 @@ namespace AzToolsFramework
     {
         if (target == m_lineEdit)
         {
-            if (event->type() == QEvent::FocusIn)
-            {
-                FocusChangedEdit(true);
-            }
-            else if (event->type() == QEvent::FocusOut)
-            {
-                FocusChangedEdit(false);
+            switch(event->type()) {
+                case QEvent::FocusIn:
+                    m_lineEdit->selectAll();
+                    break;
+                case QEvent::FocusOut: 
+                {
+                    QSignalBlocker sb(m_lineEdit);
+                    UpdateValueText();
+                    Q_EMIT finishedEditing(m_currentValue);
+                    break;
+                }
+                default:
+                    break;
             }
         }
         return QWidget::eventFilter(target, event);
@@ -76,30 +83,14 @@ namespace AzToolsFramework
 
     void PropertyCRCCtrl::setValue(AZ::u32 value)
     {
-        m_lineEdit->blockSignals(true);
+        QSignalBlocker sb(m_lineEdit);
         m_currentValue = value;
         UpdateValueText();
-        m_lineEdit->blockSignals(false);
     }
 
     void PropertyCRCCtrl::UpdateValueText()
     {
-        QString textRepresentation = QString("0x%1").arg(m_currentValue, 8, 16, QChar('0'));
-        m_lineEdit->setText(textRepresentation);
-    }
-
-    void PropertyCRCCtrl::FocusChangedEdit(bool hasFocusNow)
-    {
-        if (hasFocusNow)
-        {
-            m_lineEdit->selectAll();
-        }
-        else
-        {
-            m_lineEdit->blockSignals(true);
-            UpdateValueText();
-            m_lineEdit->blockSignals(false);
-        }
+        m_lineEdit->setText(QString("0x%1").arg(m_currentValue, 8, 16, QChar('0')));
     }
 
     AZ::u32 PropertyCRCCtrl::value() const
@@ -111,13 +102,13 @@ namespace AzToolsFramework
     {
         // parse newText.
         QRegExp hexes("(0x)?([0-9a-fA-F]{1,8})", Qt::CaseInsensitive);
-        if ((hexes.exactMatch(newText) && hexes.captureCount() > 1))
+        if (hexes.exactMatch(newText) && hexes.captureCount() > 1)
         {
             QString actualCap = hexes.cap(2);
             // this will be a string like FF11BB
             bool ok = false;
             AZ::u32 newValue = actualCap.toUInt(&ok, 16);
-            if ((ok) && (m_currentValue != newValue))
+            if (ok && m_currentValue != newValue)
             {
                 m_currentValue = newValue;
                 Q_EMIT valueChanged(m_currentValue);
@@ -137,41 +128,29 @@ namespace AzToolsFramework
         Q_UNUSED(debugName)
     }
 
-    AZ::u32 U32CRCHandler::GetHandlerName() const
-    {
-        return AZ::Edit::UIHandlers::Crc;
-    }
-
-    QWidget* U32CRCHandler::GetFirstInTabOrder(PropertyCRCCtrl* widget)
-    {
-        return widget->GetFirstInTabOrder();
-    }
-    QWidget* U32CRCHandler::GetLastInTabOrder(PropertyCRCCtrl* widget)
-    {
-        return widget->GetLastInTabOrder();
-    }
-
-    void U32CRCHandler::UpdateWidgetInternalTabbing(PropertyCRCCtrl* widget)
-    {
-        widget->UpdateTabOrder();
-    }
-
     QWidget* U32CRCHandler::CreateGUI(QWidget* pParent)
     {
         PropertyCRCCtrl* newCtrl = aznew PropertyCRCCtrl(pParent);
 
-        auto requestWriteCall = [newCtrl](AZ::u32)
-        {
-            EBUS_EVENT(PropertyEditorGUIMessages::Bus, RequestWrite, newCtrl);
-            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, newCtrl);
-        };
-
-        QObject::connect(newCtrl, &PropertyCRCCtrl::valueChanged, this, requestWriteCall);
+        QObject::connect(
+            newCtrl,
+            &PropertyCRCCtrl::finishedEditing,
+            this,
+            [newCtrl](AZ::u32)
+            {
+                PropertyEditorGUIMessagesBus::Broadcast(
+                    [](PropertyEditorGUIMessages* editorGuiMessages, QWidget* editorGUI)
+                    {
+                        editorGuiMessages->RequestWrite(editorGUI);
+                        editorGuiMessages->OnEditingFinished(editorGUI);
+                    },
+                    newCtrl);
+            });
 
         return newCtrl;
     }
 
-    void U32CRCHandler::WriteGUIValuesIntoProperty(size_t index, PropertyCRCCtrl* GUI, AZ::u32& instance, InstanceDataNode* node)
+    void U32CRCHandler::WriteGUIValuesIntoProperty(size_t index, PropertyCRCCtrl* GUI, property_t& instance, InstanceDataNode* node)
     {
         AZ_UNUSED(index);
         AZ_UNUSED(node);
@@ -179,7 +158,7 @@ namespace AzToolsFramework
         instance = static_cast<property_t>(val);
     }
 
-    bool U32CRCHandler::ReadValuesIntoGUI(size_t index, PropertyCRCCtrl* GUI, const AZ::u32& instance, InstanceDataNode* node)
+    bool U32CRCHandler::ReadValuesIntoGUI(size_t index, PropertyCRCCtrl* GUI, const property_t& instance, InstanceDataNode* node)
     {
         AZ_UNUSED(index);
         AZ_UNUSED(node);
@@ -187,9 +166,57 @@ namespace AzToolsFramework
         return false;
     }
 
+    void CRC32Handler::ConsumeAttribute(PropertyCRCCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName)
+    {
+        Q_UNUSED(GUI)
+        Q_UNUSED(attrib)
+        Q_UNUSED(attrValue)
+        Q_UNUSED(debugName)
+    }
+
+    QWidget* CRC32Handler::CreateGUI(QWidget* pParent)
+    {
+        PropertyCRCCtrl* newCtrl = aznew PropertyCRCCtrl(pParent);
+
+        QObject::connect(
+            newCtrl,
+            &PropertyCRCCtrl::finishedEditing,
+            this,
+            [newCtrl](AZ::u32)
+            {
+                PropertyEditorGUIMessagesBus::Broadcast(
+                    [](PropertyEditorGUIMessages* editorGuiMessages, QWidget* editorGUI)
+                    {
+                        editorGuiMessages->RequestWrite(editorGUI);
+                        editorGuiMessages->OnEditingFinished(editorGUI);
+                    },
+                    newCtrl);
+            });
+
+        return newCtrl;
+    }
+
+    void CRC32Handler::WriteGUIValuesIntoProperty(size_t index, PropertyCRCCtrl* GUI, property_t& instance, InstanceDataNode* node)
+    {
+        AZ_UNUSED(index);
+        AZ_UNUSED(node);
+        AZ::u32 val = GUI->value();
+        instance = static_cast<property_t>(AZ::Crc32(val));
+    }
+
+    bool CRC32Handler::ReadValuesIntoGUI(size_t index, PropertyCRCCtrl* GUI, const property_t& instance, InstanceDataNode* node)
+    {
+        AZ_UNUSED(index);
+        AZ_UNUSED(node);
+        GUI->setValue(static_cast<property_t>(instance));
+        return false;
+    }
+
+
     void RegisterCrcHandler()
     {
-        EBUS_EVENT(PropertyTypeRegistrationMessages::Bus, RegisterPropertyType, aznew U32CRCHandler());
+        PropertyTypeRegistrationMessageBus::Broadcast(&PropertyTypeRegistrationMessages::RegisterPropertyType, aznew U32CRCHandler());
+        PropertyTypeRegistrationMessageBus::Broadcast(&PropertyTypeRegistrationMessages::RegisterPropertyType, aznew CRC32Handler());
     }
 }
 

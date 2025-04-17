@@ -20,12 +20,8 @@
 
 namespace WhiteBox
 {
-
-    AZ_CVAR(
-        float, ed_whiteBoxPolygonViewOverlapOffset, 0.004f, nullptr, AZ::ConsoleFunctorFlags::Null,
-        "The offset highlighted polygon");
     
-    AZ_CLASS_ALLOCATOR_IMPL(PolygonTranslationModifier, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(PolygonTranslationModifier, AZ::SystemAllocator)
 
     PolygonTranslationModifier::PolygonTranslationModifier(
         const AZ::EntityComponentIdPair& entityComponentIdPair, const Api::PolygonHandle& polygonHandle,

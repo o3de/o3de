@@ -23,7 +23,6 @@ namespace AZ::Render
             {
                 ec->Class<StarsSystemComponent>("Stars", "Stars system component")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }

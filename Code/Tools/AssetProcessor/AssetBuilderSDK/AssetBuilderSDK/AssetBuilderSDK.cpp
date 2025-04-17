@@ -19,15 +19,19 @@
 #include <AzCore/Component/Entity.h> // so we can have the entity UUID type.
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/Slice/SliceAsset.h> // For slice asset sub ids
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzToolsFramework/AssetDatabase/AssetDatabaseConnection.h>
 //////////////////////////////////////////////////////////////////////////
 
-#include <xxhash/xxhash.h>
-
 namespace AssetBuilderSDK
 {
+    // Defined XXH_INLINE_ALL and include <xxhash/xxhash.h> inside the AssetBuilderSDK namespace to prevent any possible
+    // symbol collision outside of this module
+    #define XXH_INLINE_ALL
+    #include <xxhash/xxhash.h>
+
     const char* const ErrorWindow = "Error"; //Use this window name to log error messages.
     const char* const WarningWindow = "Warning"; //Use this window name to log warning messages.
     const char* const InfoWindow = "Info"; //Use this window name to log info messages.
@@ -42,6 +46,7 @@ namespace AssetBuilderSDK
     const AZ::u32 SUBID_LOD_LEVEL_SHIFT = 16; // shift 16 bits to the left to get 0x000F0000
     const AZ::u32 SUBID_FLAG_DIFF       = 0x00100000;
     const AZ::u32 SUBID_FLAG_ALPHA      = 0x00200000;
+    const AZ::u32 SUBID_FLAG_ABDATA     = 0x00400000;
 
     AZ::u32 GetSubID_ID(AZ::u32 packedSubId)
     {
@@ -141,9 +146,27 @@ namespace AssetBuilderSDK
     {
         va_list args;
         va_start(args, message);
-        EBUS_EVENT(AssetBuilderSDK::AssetBuilderBus, BuilderLog, builderId, message, args);
+        AssetBuilderSDK::AssetBuilderBus::Broadcast(&AssetBuilderSDK::AssetBuilderBus::Events::BuilderLog, builderId, message, args);
         va_end(args);
     }
+
+    void CreateABDataFile(AZStd::string& folder, AZStd::function<void(rapidjson::PrettyWriter<rapidjson::StringBuffer>&)> body)
+    {
+        rapidjson::StringBuffer s;
+        rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(s);
+        writer.StartObject();
+        writer.Key("metadata");
+        writer.StartObject();
+        body(writer);
+
+        writer.EndObject();
+        writer.EndObject();
+        rapidjson::Document doc;
+        doc.Parse(s.GetString());
+        AZ::JsonSerializationUtils::WriteJsonFile(doc, folder.c_str());
+    }
+
+
 
     AssetBuilderPattern::AssetBuilderPattern(const AZStd::string& pattern, PatternType type)
         : m_pattern(pattern)
@@ -622,7 +645,7 @@ namespace AssetBuilderSDK
 
     bool ProductPathDependency::operator==(const ProductPathDependency& rhs) const
     {
-        return m_dependencyPath == rhs.m_dependencyPath
+        return AZ::IO::PathView(m_dependencyPath) == AZ::IO::PathView(rhs.m_dependencyPath)
             && m_dependencyType == rhs.m_dependencyType;
     }
 
@@ -708,37 +731,39 @@ namespace AssetBuilderSDK
     static const char* xmlExtensions = ".xml";
     static const char* skeletonExtensions = ".chr";
 
-    static AZ::Data::AssetType unknownAssetType = AZ::Data::AssetType::CreateNull();
+    static constexpr AZ::Data::AssetType unknownAssetType;
 
     // as real BuilderSDK builders are created for these types, they will no longer need to be matched by extension
     // and can be emitted by the builder itself, which has knowledge of the type.
     // first, we'll do the ones which are randomly assigned because they did not actually have an asset type or handler in the main engine yet
-    static AZ::Data::AssetType textureMipsAssetType("{3918728C-D3CA-4D9E-813E-A5ED20C6821E}");
-    static AZ::Data::AssetType skinnedMeshLodsAssetType("{58E5824F-C27B-46FD-AD48-865BA41B7A51}");
-    static AZ::Data::AssetType staticMeshLodsAssetType("{9AAE4926-CB6A-4C60-9948-A1A22F51DB23}");
-    static AZ::Data::AssetType skeletonAssetType("{60161B46-21F0-4396-A4F0-F2CCF0664CDE}");
-    static AZ::Data::AssetType entityIconAssetType("{3436C30E-E2C5-4C3B-A7B9-66C94A28701B}");
+    static constexpr AZ::Data::AssetType textureMipsAssetType("{3918728C-D3CA-4D9E-813E-A5ED20C6821E}");
+    static constexpr AZ::Data::AssetType skinnedMeshLodsAssetType("{58E5824F-C27B-46FD-AD48-865BA41B7A51}");
+    static constexpr AZ::Data::AssetType staticMeshLodsAssetType("{9AAE4926-CB6A-4C60-9948-A1A22F51DB23}");
+    static constexpr AZ::Data::AssetType skeletonAssetType("{60161B46-21F0-4396-A4F0-F2CCF0664CDE}");
+    static constexpr AZ::Data::AssetType entityIconAssetType("{3436C30E-E2C5-4C3B-A7B9-66C94A28701B}");
 
     // now the ones that are actual asset types that already have an AssetData-derived class in the engine
     // note that ideally, all NEW asset types beyond this point are instead built by an actual specific builder-SDK derived builder
     // and thus can emit their own asset types, but for legacy compatibility, this is an alternate means to do this.
-    static AZ::Data::AssetType textureAssetType("{59D5E20B-34DB-4D8E-B867-D33CC2556355}"); // from MaterialAsset.h
-    static AZ::Data::AssetType materialAssetType("{F46985B5-F7FF-4FCB-8E8C-DC240D701841}"); // from MaterialAsset.h
-    static AZ::Data::AssetType meshAssetType("{C2869E3B-DDA0-4E01-8FE3-6770D788866B}"); // from MeshAsset.h
-    static AZ::Data::AssetType skinnedMeshAssetType("{C5D443E1-41FF-4263-8654-9438BC888CB7}"); // from MeshAsset.h
-    static AZ::Data::AssetType sliceAssetType("{C62C7A87-9C09-4148-A985-12F2C99C0A45}"); // from SliceAsset.h
-    static AZ::Data::AssetType dynamicSliceAssetType("{78802ABF-9595-463A-8D2B-D022F906F9B1}"); // from SliceAsset.h
+    static constexpr AZ::Data::AssetType textureAssetType("{59D5E20B-34DB-4D8E-B867-D33CC2556355}"); // from MaterialAsset.h
+    static constexpr AZ::Data::AssetType meshAssetType("{C2869E3B-DDA0-4E01-8FE3-6770D788866B}"); // from MeshAsset.h
+    static constexpr AZ::Data::AssetType skinnedMeshAssetType("{C5D443E1-41FF-4263-8654-9438BC888CB7}"); // from MeshAsset.h
+    static constexpr AZ::Data::AssetType sliceAssetType("{C62C7A87-9C09-4148-A985-12F2C99C0A45}"); // from SliceAsset.h
+    static constexpr AZ::Data::AssetType dynamicSliceAssetType("{78802ABF-9595-463A-8D2B-D022F906F9B1}"); // from SliceAsset.h
 
     // the following Asset Types are discovered in generic XMLs.  in the future, these need to be custom file extensions
     // and this data can move from here to the INI file, or into a custom builder.
-    static AZ::Data::AssetType prefabsLibraryAssetType("{2DC3C556-9461-4729-8313-2BA0CB64EF52}"); // from PrefabsLibraryAssetTypeInfo.cpp
-    static AZ::Data::AssetType entityPrototypeLibraryAssetType("{B034F8AB-D881-4A35-A408-184E3FDEB2FE}"); // from EntityPrototypeLibraryAssetTypeInfo.cpp
-    static AZ::Data::AssetType gameTokenAssetType("{1D4B56F8-366A-4040-B645-AE87E3A00DAB}"); // from GameTokenAssetTypeInfo.cpp
-    static AZ::Data::AssetType particleLibraryAssetType("{99542BB9-2870-4DD0-AA0A-57B5541CD196}");
-    static AZ::Data::AssetType particleAssetType("{6EB56B55-1B58-4EE3-A268-27680338AE56}"); // from ParticleAsset.h
-    static AZ::Data::AssetType lensFlareAssetType("{CF44D1F0-F178-4A3D-A9E6-D44721F50C20}"); // from LensFlareAsset.h
-    static AZ::Data::AssetType fontAssetType("{57767D37-0EBE-43BE-8F60-AB36D2056EF8}"); // form UiAssetTypes.h
-    static AZ::Data::AssetType uiCanvasAssetType("{E48DDAC8-1F1E-4183-AAAB-37424BCC254B}"); // from UiAssetTypes.h
+    static constexpr AZ::Data::AssetType prefabsLibraryAssetType("{2DC3C556-9461-4729-8313-2BA0CB64EF52}"); // from PrefabsLibraryAssetTypeInfo.cpp
+    static constexpr AZ::Data::AssetType entityPrototypeLibraryAssetType("{B034F8AB-D881-4A35-A408-184E3FDEB2FE}"); // from EntityPrototypeLibraryAssetTypeInfo.cpp
+    static constexpr AZ::Data::AssetType gameTokenAssetType("{1D4B56F8-366A-4040-B645-AE87E3A00DAB}"); // from GameTokenAssetTypeInfo.cpp
+    static constexpr AZ::Data::AssetType particleAssetType("{6EB56B55-1B58-4EE3-A268-27680338AE56}"); // from ParticleAsset.h
+    static constexpr AZ::Data::AssetType lensFlareAssetType("{CF44D1F0-F178-4A3D-A9E6-D44721F50C20}"); // from LensFlareAsset.h
+    static constexpr AZ::Data::AssetType fontAssetType("{57767D37-0EBE-43BE-8F60-AB36D2056EF8}"); // form UiAssetTypes.h
+    static constexpr AZ::Data::AssetType uiCanvasAssetType("{E48DDAC8-1F1E-4183-AAAB-37424BCC254B}"); // from UiAssetTypes.h
+
+    // AssetBrowser metadata file type
+    static const char* abdataExtension = ".abdata.json";
+    static constexpr AZ::Data::AssetType abdataAssetType("{D0A5E84E-9866-4AD7-A6A1-4D28FE7871C5}");
 
     // EMotionFX Gem types
     // If we have a way to register gem specific asset type in the future, we can remove this.
@@ -746,10 +771,10 @@ namespace AssetBuilderSDK
     static const char* emotionFXMotionExtension = ".motion";
     static const char* emotionFXMotionSetExtension = ".motionset";
     static const char* emotionFXAnimGraphExtension = ".animgraph";
-    static AZ::Data::AssetType emotionFXActorAssetType("{F67CC648-EA51-464C-9F5D-4A9CE41A7F86}"); // from ActorAsset.h in EMotionFX Gem
-    static AZ::Data::AssetType emotionFXMotionAssetType("{00494B8E-7578-4BA2-8B28-272E90680787}"); // from MotionAsset.h in EMotionFX Gem
-    static AZ::Data::AssetType emotionFXMotionSetAssetType("{1DA936A0-F766-4B2F-B89C-9F4C8E1310F9}"); // from MotionSetAsset.h in EMotionFX Gem
-    static AZ::Data::AssetType emotionFXAnimGraphAssetType("{28003359-4A29-41AE-8198-0AEFE9FF5263}"); // from AnimGraphAsset.h in EMotionFX Gem
+    static constexpr AZ::Data::AssetType emotionFXActorAssetType("{F67CC648-EA51-464C-9F5D-4A9CE41A7F86}"); // from ActorAsset.h in EMotionFX Gem
+    static constexpr AZ::Data::AssetType emotionFXMotionAssetType("{00494B8E-7578-4BA2-8B28-272E90680787}"); // from MotionAsset.h in EMotionFX Gem
+    static constexpr AZ::Data::AssetType emotionFXMotionSetAssetType("{1DA936A0-F766-4B2F-B89C-9F4C8E1310F9}"); // from MotionSetAsset.h in EMotionFX Gem
+    static constexpr AZ::Data::AssetType emotionFXAnimGraphAssetType("{28003359-4A29-41AE-8198-0AEFE9FF5263}"); // from AnimGraphAsset.h in EMotionFX Gem
 
     AZ::Data::AssetType JobProduct::InferAssetTypeByProductFileName(const char* productFile)
     {
@@ -759,6 +784,12 @@ namespace AssetBuilderSDK
         {
             // files which have no extension at all are not currently supported
             return unknownAssetType;
+        }
+
+        // Look for the abdata double extension
+        if (AzFramework::StringFunc::EndsWith(productFile, abdataExtension))
+        {
+            return abdataAssetType;
         }
 
         // intercept texture mips and mesh lods first
@@ -876,7 +907,7 @@ namespace AssetBuilderSDK
 
             // this is why new asset types REALLY need to have an extension (or other indicator) on their source or product that are different and can easily determine their
             // intended usage.
-            AZ::rapidxml::xml_document<char>* xmlDoc = azcreate(AZ::rapidxml::xml_document<char>, (), AZ::SystemAllocator, "BuilderSDK Temp XML Reader");
+            AZ::rapidxml::xml_document<char>* xmlDoc = azcreate(AZ::rapidxml::xml_document<char>, (), AZ::SystemAllocator);
             if (xmlDoc->parse<AZ::rapidxml::parse_no_data_nodes>(buffer.data()))
             {
                 // note that PARSE_FASTEST does not null-terminate strings, instead we just PARSE_NO_DATA_NODES so that xdata and other such blobs are ignored since they don't matter
@@ -975,7 +1006,13 @@ namespace AssetBuilderSDK
             return AZ::DynamicSliceAsset::GetAssetSubId();
         }
 
-        //get the extension
+        // Look for the abdata double extension
+        if (AzFramework::StringFunc::EndsWith(productFile, abdataExtension))
+        {
+            return SUBID_FLAG_ABDATA;
+        }
+
+        // get the extension
         AZStd::string extension;
         if (!AzFramework::StringFunc::Path::GetExtension(productFile, extension, true))
         {
@@ -1145,11 +1182,12 @@ namespace AssetBuilderSDK
         if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<ProcessJobResponse>()->
-                Version(2)->
+                Version(3)->
                 Field("Output Products", &ProcessJobResponse::m_outputProducts)->
                 Field("Result Code", &ProcessJobResponse::m_resultCode)->
                 Field("Requires SubId Generation", &ProcessJobResponse::m_requiresSubIdGeneration)->
-                Field("Source To Reprocess", &ProcessJobResponse::m_sourcesToReprocess);
+                Field("Source To Reprocess", &ProcessJobResponse::m_sourcesToReprocess)->
+                Field("Keep Temp Folder", &ProcessJobResponse::m_keepTempFolder);
         }
 
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
@@ -1161,6 +1199,7 @@ namespace AssetBuilderSDK
                 ->Property("resultCode", BehaviorValueProperty(&ProcessJobResponse::m_resultCode))
                 ->Property("requiresSubIdGeneration", BehaviorValueProperty(&ProcessJobResponse::m_requiresSubIdGeneration))
                 ->Property("sourcesToReprocess", BehaviorValueProperty(&ProcessJobResponse::m_sourcesToReprocess))
+                ->Property("keepTempFolder", BehaviorValueProperty(&ProcessJobResponse::m_keepTempFolder))
                 ->Enum<aznumeric_cast<int>(ProcessJobResultCode::ProcessJobResult_Success)>("Success")
                 ->Enum<aznumeric_cast<int>(ProcessJobResultCode::ProcessJobResult_Failed)>("Failed")
                 ->Enum<aznumeric_cast<int>(ProcessJobResultCode::ProcessJobResult_Crashed)>("Crashed")
@@ -1215,7 +1254,7 @@ namespace AssetBuilderSDK
     {
         AZ::SerializeContext* serializeContext = nullptr;
 
-        EBUS_EVENT_RESULT(serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
         AZ_Assert(serializeContext, "Unable to retrieve serialize context.");
 
         InitializeReflectContext(serializeContext);
@@ -1225,7 +1264,7 @@ namespace AssetBuilderSDK
     {
         AZ::BehaviorContext* behaviorContext = nullptr;
 
-        EBUS_EVENT_RESULT(behaviorContext, AZ::ComponentApplicationBus, GetBehaviorContext);
+        AZ::ComponentApplicationBus::BroadcastResult(behaviorContext, &AZ::ComponentApplicationBus::Events::GetBehaviorContext);
         AZ_Error("asset", behaviorContext, "Unable to retrieve behavior context.");
         if (behaviorContext)
         {
@@ -1416,7 +1455,8 @@ namespace AssetBuilderSDK
                 ->Property("type", BehaviorValueProperty(&JobDependency::m_type))
                 ->Enum<aznumeric_cast<int>(JobDependencyType::Fingerprint)>("Fingerprint")
                 ->Enum<aznumeric_cast<int>(JobDependencyType::Order)>("Order")
-                ->Enum<aznumeric_cast<int>(JobDependencyType::OrderOnce)>("OrderOnce");
+                ->Enum<aznumeric_cast<int>(JobDependencyType::OrderOnce)>("OrderOnce")
+                ->Enum<aznumeric_cast<int>(JobDependencyType::OrderOnly)>("OrderOnly");
         }
     }
 

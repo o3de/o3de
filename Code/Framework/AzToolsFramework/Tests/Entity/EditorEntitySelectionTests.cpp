@@ -17,7 +17,7 @@ namespace UnitTest
     using namespace AzToolsFramework;
 
     class EditorEntitySelectionTest
-        : public ToolsApplicationFixture
+        : public ToolsApplicationFixture<>
     {
         void SetUpEditorFixtureImpl() override
         {

@@ -1,0 +1,54 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+ /*
+    This is a dummy shader used to validate detection of "#included files"
+ */
+
+#include <Atom/Features/SrgSemantics.azsli>
+
+option bool o_test_option = false;
+
+ShaderResourceGroup DummySrg : SRG_PerDraw
+{
+    float4 m_color;
+}
+
+struct VSInput
+{
+    float3 m_position : POSITION;
+    float4 m_color : COLOR0;
+};
+
+struct VSOutput
+{
+    float4 m_position : SV_Position;
+    float4 m_color : COLOR0;
+};
+
+VSOutput MainVS(VSInput vsInput)
+{
+    VSOutput OUT;
+    OUT.m_position = float4(vsInput.m_position, 1.0);
+    OUT.m_color = vsInput.m_color;
+    return OUT;
+}
+
+struct PSOutput
+{
+    float4 m_color : SV_Target0;
+};
+
+PSOutput MainPS(VSOutput vsOutput)
+{
+    PSOutput OUT;
+
+    OUT.m_color = DummySrg::m_color;
+
+    return OUT;
+}

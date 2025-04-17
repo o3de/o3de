@@ -9,7 +9,6 @@
 
 #include <AtomToolsFramework/Communication/LocalServer.h>
 #include <AtomToolsFramework/Communication/LocalSocket.h>
-#include <AtomToolsFramework/Window/AtomToolsMainWindowNotificationBus.h>
 #include <AtomToolsFramework/AssetBrowser/AtomToolsAssetBrowserInteractions.h>
 
 #include <AzCore/IO/FileIO.h>
@@ -32,20 +31,21 @@ namespace AtomToolsFramework
 {
     //! Base class for Atom tools to inherit from
     class AtomToolsApplication
-        : public AzFramework::Application
-        , public AzQtComponents::AzQtApplication
+        : public AzQtComponents::AzQtApplication
+        , public AzFramework::Application
         , protected AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler
         , protected AzToolsFramework::EditorPythonConsoleNotificationBus::Handler
         , protected AZ::UserSettingsOwnerRequestBus::Handler
-        , protected AtomToolsMainWindowNotificationBus::Handler
     {
     public:
-        AZ_TYPE_INFO(AtomTools::AtomToolsApplication, "{A0DF25BA-6F74-4F11-9F85-0F99278D5986}");
+        AZ_CLASS_ALLOCATOR(AtomToolsApplication, AZ::SystemAllocator)
+        AZ_TYPE_INFO(AtomToolsApplication, "{A0DF25BA-6F74-4F11-9F85-0F99278D5986}");
         AZ_DISABLE_COPY_MOVE(AtomToolsApplication);
 
         using Base = AzFramework::Application;
 
         AtomToolsApplication(const char* targetName, int* argc, char*** argv);
+        AtomToolsApplication(const char* targetName, int* argc, char*** argv, AZ::ComponentApplicationSettings componentAppSettings);
         ~AtomToolsApplication();
 
         virtual bool LaunchLocalServer();
@@ -63,9 +63,6 @@ namespace AtomToolsFramework
 
     protected:
         void OnIdle();
-
-        // AtomsToolMainWindowNotificationBus::Handler overrides...
-        void OnMainWindowClosing() override;
 
         // AssetDatabaseRequestsBus::Handler overrides...
         bool GetAssetDatabaseLocation(AZStd::string& result) override;
@@ -95,6 +92,7 @@ namespace AtomToolsFramework
 
         static void PyIdleWaitFrames(uint32_t frames);
         static void PyExit();
+        static void PyCrash();
         static void PyTestOutput(const AZStd::string& output);
 
         // Adding static instance access for static Python methods

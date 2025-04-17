@@ -27,8 +27,11 @@ namespace AtomToolsFramework
             RenderViewportWidget* widget,
             AZStd::shared_ptr<AzFramework::EntityContext> entityContext,
             const AZStd::string& sceneName = "EntityPreviewViewportScene",
-            const AZStd::string& pipelineAssetPath = "passes/MainRenderPipeline.azasset");
+            const AZStd::string& defaultRenderPipelineAssetPath = "passes/mainrenderpipeline.azasset");
         ~EntityPreviewViewportScene();
+
+        bool ActivateRenderPipeline(const AZStd::string& pipelineAssetPath);
+        bool ActivateRenderPipeline(const AZ::Data::AssetId& pipelineAssetId);
 
         //! Returns a pointer to the scene used for rendering the viewport content
         AZ::RPI::ScenePtr GetScene() const;
@@ -36,11 +39,24 @@ namespace AtomToolsFramework
         //! Returns a pointer to the pipeline used for rendering the viewport content
         AZ::RPI::RenderPipelinePtr GetPipeline() const;
 
+        //! Returns the AssetId of the active render pipeline 
+        AZ::Data::AssetId GetPipelineAssetId() const;
+
     private:
+        using RenderPipelineMap = AZStd::unordered_map<AZ::Data::AssetId, AZ::RPI::RenderPipelinePtr>;
+
+        RenderPipelineMap::iterator AddRenderPipeline(const AZ::Data::AssetId& pipelineAssetId);
+
         const AZ::Crc32 m_toolId = {};
         AZ::RPI::ScenePtr m_scene;
         AZStd::shared_ptr<AzFramework::Scene> m_frameworkScene;
-        AZ::RPI::RenderPipelinePtr m_renderPipeline;
+
+        RenderPipelineMap m_renderPipelines;
+        AZ::Data::AssetId m_activeRenderPipelineId;
+        AZ::RPI::RenderPipelinePtr m_activeRenderPipeline;
+        AZStd::string m_viewportIdSuffix;
+        AZ::RPI::WindowContextSharedPtr m_windowContext;
+
         AZ::Data::Instance<AZ::RPI::SwapChainPass> m_swapChainPass;
         AZStd::shared_ptr<AzFramework::EntityContext> m_entityContext;
     };

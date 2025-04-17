@@ -11,7 +11,6 @@
 #include <AzCore/Component/Component.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <IAudioSystem.h>
-#include <ISystem.h>
 
 #if defined(AUDIO_SYSTEM_EDITOR)
     #include <AzCore/std/smart_ptr/unique_ptr.h>
@@ -26,9 +25,9 @@ namespace AudioSystemGem
 {
     class AudioSystemGemSystemComponent
         : public AZ::Component
-        , public ISystemEventListener
-        , public AzFramework::ApplicationLifecycleEvents::Bus::Handler
-        , protected Audio::Gem::AudioSystemGemRequestBus::Handler
+        , protected AzFramework::LevelSystemLifecycleNotificationBus::Handler
+        , protected AzFramework::ApplicationLifecycleEvents::Bus::Handler
+        , protected Audio::Gem::SystemRequestBus::Handler
     #if defined(AUDIO_SYSTEM_EDITOR)
         , private AzToolsFramework::EditorEvents::Bus::Handler
         , public AZ::RPI::ViewportContextNotificationBus::Handler
@@ -55,14 +54,15 @@ namespace AudioSystemGem
         ////////////////////////////////////////////////////////////////////////
 
         ////////////////////////////////////////////////////////////////////////
-        // Audio::Gem::AudioSystemGemRequestBus interface implementation
-        bool Initialize(const SSystemInitParams* initParams) override;
+        // Audio::Gem::SystemRequestBus interface implementation
+        bool Initialize() override;
         void Release() override;
         ////////////////////////////////////////////////////////////////////////
 
         ////////////////////////////////////////////////////////////////////////
-        // ISystemEventListener
-        void OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR lparam) override;
+        // AzFramework::LevelSystemLifecycleNotifications interface implementation
+        void OnLoadingStart(const char* levelName) override;
+        void OnUnloadComplete(const char* levelName) override;
         ////////////////////////////////////////////////////////////////////////
 
         ////////////////////////////////////////////////////////////////////////
@@ -86,8 +86,7 @@ namespace AudioSystemGem
 
     private:
         ////////////////////////////////////////////////////////////////////////
-        bool CreateAudioSystem();
-        bool CreateNullAudioSystem();
+        void CreateAudioSystem();
         void PrepareAudioSystem();
 
         /// This is here to express ownership

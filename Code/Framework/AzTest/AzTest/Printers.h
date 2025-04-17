@@ -41,8 +41,11 @@ namespace AZ::IO
 namespace AZ
 {
     class EntityId;
+    struct Uuid;
 
     void PrintTo(AZ::EntityId entityId, ::std::ostream* os);
+
+    void PrintTo(AZ::Uuid& uuid, ::std::ostream* os);
 }
 
 #include <AzTest/Printers.inl>

@@ -14,14 +14,6 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/Math/Color.h>
 
-namespace AZ
-{
-    namespace IO
-    {
-        class SystemFileStream;
-    }
-}
-
 namespace ImageProcessingAtom
 {
     class IImageObject;
@@ -49,12 +41,15 @@ namespace ImageProcessingAtom
         eAlphaContent_Greyscale           // alpha contains grey tones
     };
 
-    //interface for image object. The image object may have mipmaps.
+    // Interface for image object. The image object may have mipmaps.
+    // The image may be a Volume Texture (3D Image), the 3rd dimension is named Depth.
+    // For 2D Images, Depth == 1.
     class IImageObject
     {
     public:
         //static functions
         static IImageObject* CreateImage(AZ::u32 width, AZ::u32 height, AZ::u32 maxMipCount, EPixelFormat pixelFormat);
+        static IImageObject* CreateImage(AZ::u32 width, AZ::u32 height, AZ::u32 depth, AZ::u32 maxMipCount, EPixelFormat pixelFormat);
 
         virtual ~IImageObject() {};
     public:
@@ -70,6 +65,7 @@ namespace ImageProcessingAtom
         virtual AZ::u32 GetPixelCount(AZ::u32 mip) const = 0;
         virtual AZ::u32 GetWidth(AZ::u32 mip) const = 0;
         virtual AZ::u32 GetHeight(AZ::u32 mip) const = 0;
+        virtual AZ::u32 GetDepth(AZ::u32 /*mip*/) const { return 1; }
         virtual AZ::u32 GetMipCount() const = 0;
 
         //get pixel data buffer

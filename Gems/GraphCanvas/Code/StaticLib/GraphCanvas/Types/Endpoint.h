@@ -9,17 +9,21 @@
 #pragma once
 
 #include <AzCore/Component/EntityId.h>
-#include <AzCore/std/hash.h>
-#include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Memory/Memory.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
+
+namespace AZ
+{
+    class ReflectContext;
+}
 
 namespace GraphCanvas
 {
     struct Endpoint
     {
     public:
-        AZ_CLASS_ALLOCATOR(Endpoint, AZ::SystemAllocator, 0);
-        AZ_TYPE_INFO(Endpoint, "{4AF80E61-8E0A-43F3-A560-769C925A113B}");
+        AZ_CLASS_ALLOCATOR_DECL
+        AZ_TYPE_INFO_WITH_NAME_DECL(Endpoint);
 
         Endpoint() = default;
         Endpoint(const AZ::EntityId& nodeId, const AZ::EntityId& slotId)
@@ -39,32 +43,19 @@ namespace GraphCanvas
             return !(this->operator==(other));
         }
 
-        static void Reflect(AZ::ReflectContext* reflection)
-        {
-            AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(reflection);
-            if (serializeContext)
-            {
-                serializeContext->Class<Endpoint>()
-                    ->Version(1)
-                    ->Field("nodeId", &Endpoint::m_nodeId)
-                    ->Field("slotId", &Endpoint::m_slotId)
-                    ;
-
-                if (auto editContext = serializeContext->GetEditContext())
-                {
-                    editContext->Class<Endpoint>("Endpoint", "Endpoint")
-                        ->DataElement(0, &Endpoint::m_nodeId, "Node Id", "Node Id portion of endpoint")
-                        ->Attribute(AZ::Edit::Attributes::SliceFlags, AZ::Edit::SliceFlags::DontGatherReference | AZ::Edit::SliceFlags::NotPushable)
-                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Hide)
-                        ;
-                }
-            }
-        }
-
+        static void Reflect(AZ::ReflectContext* reflection);
         bool IsValid() const { return m_nodeId.IsValid() && m_slotId.IsValid(); }
 
-        const AZ::EntityId& GetNodeId() const { return m_nodeId; }
-        const AZ::EntityId& GetSlotId() const { return m_slotId; }
+        constexpr const AZ::EntityId& GetNodeId() const { return m_nodeId; }
+        constexpr const AZ::EntityId& GetSlotId() const { return m_slotId; }
+
+        constexpr operator size_t() const
+        {
+            size_t seed = 0;
+            AZStd::hash_combine(seed, GetNodeId());
+            AZStd::hash_combine(seed, GetSlotId());
+            return seed;
+        }
 
         void Clear()
         {
@@ -74,23 +65,5 @@ namespace GraphCanvas
 
         AZ::EntityId m_nodeId;
         AZ::EntityId m_slotId;
-    };
-}
-
-namespace AZStd
-{
-    template<>
-    struct hash<GraphCanvas::Endpoint>
-    {
-        using argument_type = GraphCanvas::Endpoint;
-        using result_type = AZStd::size_t;
-        AZ_FORCE_INLINE size_t operator()(const argument_type& ref) const
-        {
-            result_type seed = 0;
-            hash_combine(seed, ref.GetNodeId());
-            hash_combine(seed, ref.GetSlotId());
-            return seed;
-        }
-
     };
 }

@@ -29,7 +29,7 @@ namespace AzToolsFramework
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(ClickableLabel, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ClickableLabel, AZ::SystemAllocator);
         explicit ClickableLabel(QWidget* parent = nullptr);
         ~ClickableLabel();
 

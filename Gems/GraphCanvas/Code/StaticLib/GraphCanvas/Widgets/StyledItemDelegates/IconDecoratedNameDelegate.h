@@ -22,7 +22,7 @@ namespace GraphCanvas
         : public QStyledItemDelegate
     {
     public:
-        AZ_CLASS_ALLOCATOR(IconDecoratedNameDelegate, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(IconDecoratedNameDelegate, AZ::SystemAllocator);
         
         IconDecoratedNameDelegate(QWidget* parent);
 

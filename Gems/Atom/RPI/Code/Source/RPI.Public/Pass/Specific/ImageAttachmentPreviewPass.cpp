@@ -74,7 +74,10 @@ namespace AZ
                 RHI::ImageDescriptor imageDesc = attachmentDatabase.GetImageDescriptor(m_srcAttachmentId);
                 // add read flag since the image will always be read by ImageAttachmentPreviewPass
                 imageDesc.m_bindFlags |= RHI::ImageBindFlags::ShaderRead;
-                m_destImage = AttachmentImage::Create(*pool.get(), imageDesc, m_srcAttachmentId, nullptr, nullptr);
+                imageDesc.m_arraySize = 1;
+
+                Name copyName = Name( AZStd::string::format("%s_%s", m_srcAttachmentId.GetCStr(), "Copy") );
+                m_destImage = AttachmentImage::Create(*pool.get(), imageDesc, copyName, nullptr, nullptr);
             }
 
             if (!m_destImage)
@@ -105,6 +108,7 @@ namespace AZ
             const AZ::RHI::Image* image = context.GetImage(m_srcAttachmentId);
             copyImage.m_sourceImage = image;
             copyImage.m_sourceSize = image->GetDescriptor().m_size;
+            copyImage.m_sourceSubresource.m_arraySlice = m_sourceArraySlice;
             copyImage.m_destinationImage = context.GetImage(m_destAttachmentId);
             
             m_copyItem = copyImage;
@@ -112,7 +116,7 @@ namespace AZ
 
         void ImageAttachmentCopy::BuildCommandList(const RHI::FrameGraphExecuteContext& context)
         {
-            context.GetCommandList()->Submit(m_copyItem);
+            context.GetCommandList()->Submit(m_copyItem.GetDeviceCopyItem(context.GetDeviceIndex()));
         }
 
         Ptr<ImageAttachmentPreviewPass> ImageAttachmentPreviewPass::Create(const PassDescriptor& descriptor)
@@ -132,7 +136,7 @@ namespace AZ
             Data::AssetBus::Handler::BusDisconnect();
         }
 
-        void ImageAttachmentPreviewPass::PreviewImageAttachmentForPass(Pass* pass, const PassAttachment* passAttachment)
+        void ImageAttachmentPreviewPass::PreviewImageAttachmentForPass(Pass* pass, const PassAttachment* passAttachment, RenderPipeline* previewOutputPipeline, u32 imageArraySlice)
         {
             if (passAttachment->GetAttachmentType() != RHI::AttachmentType::Image)
             {
@@ -169,11 +173,12 @@ namespace AZ
 
             m_updateDrawData = true;
             m_imageAttachmentId = m_attachmentCopy->m_destAttachmentId;
+            m_attachmentCopy->m_sourceArraySlice = u16(imageArraySlice);
 
             // Set the output of this pass to write to the pipeline output
             if (!m_outputColorAttachment)
             {
-                RenderPipeline* pipeline = pass->GetRenderPipeline();
+                RenderPipeline* pipeline = previewOutputPipeline ? previewOutputPipeline : pass->GetRenderPipeline();
                 if (pipeline)
                 {
                     Pass* pipelinePass = pipeline->GetRootPass().get();
@@ -229,7 +234,7 @@ namespace AZ
                 // unbind previous binded image views
                 m_passSrg->SetImageView(previewInfo.m_imageInput, nullptr, 0);
 
-                previewInfo.m_item.m_pipelineState = nullptr;
+                previewInfo.m_item.SetPipelineState(nullptr);
                 previewInfo.m_imageCount = 0;
             }
             m_passSrgChanged = true;
@@ -256,12 +261,18 @@ namespace AZ
             m_needsShaderLoad = false;
 
             // Load Shader
-            const char* ShaderPath = "shaders/imagepreview.azshader";
+            constexpr const char* ShaderPath = "shaders/imagepreview.azshader";
             Data::Asset<ShaderAsset> shaderAsset = RPI::FindShaderAsset(ShaderPath);
+            if (!shaderAsset.IsReady())
+            {
+                AZ_Error("PassSystem", false, "[ImageAttachmentsPreviewPass]: Failed to load shader '%s'!", GetPathName().GetCStr(), ShaderPath);
+                return;
+            }
+
             m_shader = Shader::FindOrCreate(shaderAsset);
             if (m_shader == nullptr)
             {
-                AZ_Error("PassSystem", false, "[ImageAttachmentsPreviewPass]: Failed to load shader '%s'!", ShaderPath);
+                AZ_Error("PassSystem", false, "[ImageAttachmentsPreviewPass]: Failed to create shader instance from asset '%s'!", ShaderPath);
                 return;
             }
 
@@ -313,7 +324,7 @@ namespace AZ
 
                 shaderOption.SetValue(AZ::Name(optionName), AZ::Name(optionValues[index]));
 
-                m_shader->GetVariant(shaderOption.GetShaderVariantId()).ConfigurePipelineState(pipelineDesc);
+                m_shader->GetVariant(shaderOption.GetShaderVariantId()).ConfigurePipelineState(pipelineDesc, shaderOption);
                 pipelineDesc.m_renderAttachmentConfiguration.m_renderAttachmentLayout = attachmentsLayout;
                 pipelineDesc.m_inputStreamLayout = inputStreamLayout;
                 previewInfo.m_shaderVariantKeyFallback = shaderOption.GetShaderVariantKeyFallbackValue();
@@ -406,7 +417,7 @@ namespace AZ
                 RHI::ImageAspectFlags::Depth : RHI::ImageAspectFlags::Color;
 
             auto scopeAttachmentDesc = RHI::ImageScopeAttachmentDescriptor{ m_imageAttachmentId, imageViewDesc};
-            frameGraph.UseAttachment(scopeAttachmentDesc, RHI::ScopeAttachmentAccess::Read, RHI::ScopeAttachmentUsage::Shader);
+            frameGraph.UseAttachment(scopeAttachmentDesc, RHI::ScopeAttachmentAccess::Read, RHI::ScopeAttachmentUsage::Shader, RHI::ScopeAttachmentStage::FragmentShader);
 
             // output attachment
             frameGraph.UseColorAttachment(RHI::ImageScopeAttachmentDescriptor{ m_outputColorAttachment->GetAttachmentId() });
@@ -434,7 +445,7 @@ namespace AZ
                 }
                 else
                 {
-                    const RHI::ImageDescriptor& desc = inputImageView->GetImage().GetDescriptor();
+                    const RHI::ImageDescriptor& desc = inputImageView->GetImage()->GetDescriptor();
                     aspectRatio = desc.m_size.m_width / static_cast<float>(desc.m_size.m_height);
 
                     if (desc.m_dimension == RHI::ImageDimension::Image2D)
@@ -471,11 +482,11 @@ namespace AZ
                 RHI::Format outputFormat = outputImageView->GetDescriptor().m_overrideFormat;
                 if (outputFormat == RHI::Format::Unknown)
                 {
-                    outputFormat = outputImageView->GetImage().GetDescriptor().m_format;
+                    outputFormat = outputImageView->GetImage()->GetDescriptor().m_format;
                 }
                 
                 // Base viewport and scissor off of output attachment
-                RHI::Size targetImageSize = outputImageView->GetImage().GetDescriptor().m_size;
+                RHI::Size targetImageSize = outputImageView->GetImage()->GetDescriptor().m_size;
 
                 float width = m_size.GetX() * targetImageSize.m_width;
                 float height = m_size.GetY() * targetImageSize.m_height;
@@ -513,14 +524,16 @@ namespace AZ
                         continue;
                     }
                     previewInfo.m_pipelineStateDescriptor.m_renderAttachmentConfiguration.m_renderAttachmentLayout.m_attachmentFormats[0] = outputFormat;
-                    previewInfo.m_pipelineStateDescriptor.m_renderStates.m_multisampleState = outputImageView->GetImage().GetDescriptor().m_multisampleState;
+                    previewInfo.m_pipelineStateDescriptor.m_renderStates.m_multisampleState = outputImageView->GetImage()->GetDescriptor().m_multisampleState;
 
                     // draw each image by using instancing
-                    RHI::DrawLinear drawLinear;
-                    drawLinear.m_vertexCount = 4;
-                    drawLinear.m_instanceCount = previewInfo.m_imageCount;
-                    previewInfo.m_item.m_arguments = RHI::DrawArguments(drawLinear);
-                    previewInfo.m_item.m_pipelineState = m_shader->AcquirePipelineState(previewInfo.m_pipelineStateDescriptor);
+                    RHI::DrawInstanceArguments drawInstanceArgs(previewInfo.m_imageCount, 0);
+                    RHI::DrawLinear drawLinear(4, 0);
+
+                    previewInfo.m_geometryView.SetDrawArguments(drawLinear);
+                    previewInfo.m_item.SetDrawInstanceArgs(drawInstanceArgs);
+                    previewInfo.m_item.SetGeometryView(&previewInfo.m_geometryView);
+                    previewInfo.m_item.SetPipelineState(m_shader->AcquirePipelineState(previewInfo.m_pipelineStateDescriptor));
                 }
             }
         }
@@ -533,7 +546,7 @@ namespace AZ
             commandList->SetScissor(m_scissor);
 
             // submit srg
-            commandList->SetShaderResourceGroupForDraw(*m_passSrg->GetRHIShaderResourceGroup());
+            commandList->SetShaderResourceGroupForDraw(*m_passSrg->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(context.GetDeviceIndex()));
 
             // submit draw call
             for (uint32_t index = context.GetSubmitRange().m_startIndex; index < context.GetSubmitRange().m_endIndex; ++index)
@@ -541,7 +554,7 @@ namespace AZ
                 const ImageTypePreviewInfo& previewInfo = m_imageTypePreviewInfo[index];
                 if (previewInfo.m_imageCount > 0)
                 {
-                    commandList->Submit(previewInfo.m_item, index);
+                    commandList->Submit(previewInfo.m_item.GetDeviceDrawItem(context.GetDeviceIndex()), index);
                 }
             }
         }

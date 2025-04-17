@@ -125,7 +125,7 @@
                     "PassData": {
                         "$type": "RasterPassData",
                         "DrawListTag": "forward",
-                        "PipelineViewTag": "MainCamera",
+                        "BindViewSrg": true,
                         "PassSrgShaderAsset": {
                             "FilePath": "Shaders/ForwardPassSrg.shader"
                         }
@@ -225,7 +225,7 @@
                     "PassData": {
                         "$type": "RasterPassData",
                         "DrawListTag": "forwardWithSubsurfaceOutput",
-                        "PipelineViewTag": "MainCamera",
+                        "BindViewSrg": true,
                         "PassSrgShaderAsset": {
                             "FilePath": "Shaders/ForwardPassSrg.shader"
                         }
@@ -306,6 +306,13 @@
                             }
                         },
                         {
+                            "LocalSlot": "DepthLinear",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DepthLinear"
+                            }
+                        },
+                        {
                             "LocalSlot": "SpecularInputOutput",
                             "AttachmentRef": {
                                 "Pass": "Forward",
@@ -343,20 +350,62 @@
                     ]
                 },
                 {
-                    "Name": "ReflectionCompositePass",
-                    "TemplateName": "ReflectionCompositePassTemplate",
+                    "Name": "SkyAtmosphereParentPass",
+                    "TemplateName": "SkyAtmosphereParentTemplate",
+                    "Enabled": true,
                     "Connections": [
                         {
-                            "LocalSlot": "ReflectionInput",
+                            "LocalSlot": "SpecularInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "SkyBoxPass",
+                                "Attachment": "SpecularInputOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "ReflectionInputOutput",
                             "AttachmentRef": {
                                 "Pass": "SkyBoxPass",
                                 "Attachment": "ReflectionInputOutput"
                             }
                         },
                         {
-                            "LocalSlot": "SpecularInputOutput",
+                            "LocalSlot": "SkyBoxDepth",
                             "AttachmentRef": {
                                 "Pass": "SkyBoxPass",
+                                "Attachment": "SkyBoxDepth"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DirectionalShadowmap",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DirectionalShadowmap"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DirectionalESM",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DirectionalESM"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "ReflectionCompositePass",
+                    "TemplateName": "ReflectionCompositePassTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "ReflectionInput",
+                            "AttachmentRef": {
+                                "Pass": "SkyAtmosphereParentPass",
+                                "Attachment": "ReflectionInputOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "SpecularInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "SkyAtmosphereParentPass",
                                 "Attachment": "SpecularInputOutput"
                             }
                         },
@@ -374,7 +423,7 @@
                             "FilePath": "Shaders/Reflections/ReflectionComposite.shader"
                         },
                         "StencilRef": 1, // See RenderCommon.h and ReflectionComposite.shader
-                        "PipelineViewTag": "MainCamera"
+                        "BindViewSrg": true
                     }
                 },
                 {
@@ -407,7 +456,7 @@
                         "ShaderAsset": {
                             "FilePath": "Shaders/PostProcessing/MSAAResolveCustom.shader"
                         },
-                        "PipelineViewTag": "MainCamera",
+                        "BindViewSrg": true,
                         "ShaderDataMappings": {
                             "UintMappings": [
                                 {
@@ -469,8 +518,8 @@
                         "ShaderAsset": {
                             "FilePath": "Shaders/PostProcessing/ScreenSpaceSubsurfaceScatteringCS.shader"
                         },
-                        "Make Fullscreen Pass": true,
-                        "PipelineViewTag": "MainCamera"
+                        "FullscreenDispatch": true,
+                        "BindViewSrg": true
                     }
                 },
                 {

@@ -9,9 +9,9 @@
 
 #include <Atom/RPI.Public/Base.h>
 #include <Atom/RPI.Public/Buffer/Buffer.h>
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/GpuQuery/GpuQuerySystemInterface.h>
 #include <Atom/RPI.Reflect/Image/Image.h>
-#include <Atom/RPI.Public/Image/AttachmentImage.h>
 #include <Atom/RPI.Public/Image/AttachmentImage.h>
 #include <Atom/RPI.Public/Pass/PassAttachment.h>
 #include <Atom/RPI.Public/Pass/PassDefines.h>
@@ -29,6 +29,7 @@
 #include <AzCore/std/containers/span.h>
 
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/std/containers/deque.h>
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
@@ -52,6 +53,7 @@ namespace AZ
     {
         class FrameGraphBuilder;
         class FrameGraphAttachmentInterface;
+        class FrameGraphInterface;
     }
 
     namespace RPI
@@ -64,18 +66,20 @@ namespace AZ
         class AttachmentReadback;
         class ImageAttachmentCopy;
 
-        using SortedPipelineViewTags = AZStd::set<PipelineViewTag, AZNameSortAscending>;
         using PassesByDrawList = AZStd::map<RHI::DrawListTag, const Pass*>;
 
-        const uint32_t PassAttachmentBindingCountMax = 32;
-        const uint32_t PassInputBindingCountMax = 16;
-        const uint32_t PassInputOutputBindingCountMax = PassInputBindingCountMax;
-        const uint32_t PassOutputBindingCountMax = PassInputBindingCountMax;
-                
         enum class PassAttachmentReadbackOption : uint8_t
         {
             Input = 0,
             Output
+        };
+
+        // Type of changes done by a descendant.
+        enum class PassDescendantChangeFlags : uint16_t
+        {
+            None = 0,
+            Build = AZ_BIT(0),          // A descendant has rebuilt itself
+            Hierarchy = AZ_BIT(1)       // A descendant has change his hierarchy
         };
 
         //! Atom's base pass class (every pass class in Atom must derive from this class).
@@ -93,7 +97,7 @@ namespace AZ
         //! a PassTemplate, or a PassRequest. To register your pass class with the PassFactory,
         //! you'll need to write a static create method (see ParentPass and RenderPass for examples)
         //! and register this create method with the PassFactory.
-        class Pass
+        class ATOM_RPI_PUBLIC_API Pass
             : public AZStd::intrusive_base
         {
             AZ_RPI_PASS(Pass);
@@ -112,16 +116,12 @@ namespace AZ
 
                 RHI::FrameGraphBuilder* m_frameGraphBuilder = nullptr;
 
-                // This should include SRGs that are higher level than
-                // the Pass, like per-frame and per-scene SRGs.
-                const ShaderResourceGroupList* m_shaderResourceGroupsToBind = nullptr;
-
                 RHI::Scissor m_scissorState;
                 RHI::Viewport m_viewportState;
             };
 
             AZ_RTTI(Pass, "{EA34FF66-631D-433B-B449-71F5647E7BB5}", AZStd::intrusive_base);
-            AZ_CLASS_ALLOCATOR(Pass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Pass, SystemAllocator);
 
             virtual ~Pass();
 
@@ -152,13 +152,27 @@ namespace AZ
             //! It may return nullptr if the pass wasn't create from a template
             const PassTemplate* GetPassTemplate() const { return m_template.get(); }
 
+            //! Get the device index of this pass
+            int GetDeviceIndex() const;
+
+            //! Set the device index of this pass (and potentially affects its child's)
+            bool SetDeviceIndex(int deviceIndex);
+
             //! Enable/disable this pass
             //! If the pass is disabled, it (and any children if it's a ParentPass) won't be rendered.  
             void SetEnabled(bool enabled);
             virtual bool IsEnabled() const { return m_flags.m_enabled; }
 
             bool HasDrawListTag() const { return m_flags.m_hasDrawListTag; }
-            bool HasPipelineViewTag() const { return m_flags.m_hasPipelineViewTag; }
+            
+            [[deprecated( "Use BindViewSrg() instead." )]]
+            bool HasPipelineViewTag() const { return BindViewSrg(); }
+            
+            // The shader needs a View-Srg. Use GetPipelineViewTag() to find out which one.
+            bool BindViewSrg() const
+            {
+                return m_flags.m_bindViewSrg;
+            }
 
             // Searches this pass's attachment bindings for one with the provided Name (nullptr if none found)
             PassAttachmentBinding* FindAttachmentBinding(const Name& slotName);
@@ -190,6 +204,12 @@ namespace AZ
             //! Adds an attachment binding to the list of this Pass' attachment bindings
             void AddAttachmentBinding(PassAttachmentBinding attachmentBinding);
 
+            // Binds all attachments from the pass
+            void DeclareAttachmentsToFrameGraph(
+                RHI::FrameGraphInterface frameGraph,
+                PassSlotType slotType = PassSlotType::Uninitialized,
+                RHI::ScopeAttachmentAccess accessMask = RHI::ScopeAttachmentAccess::ReadWrite) const;
+
             // Returns a reference to the N-th input binding, where N is the index passed to the function
             PassAttachmentBinding& GetInputBinding(uint32_t index);
 
@@ -210,7 +230,7 @@ namespace AZ
             // --- Virtual functions which may need to be override by derived classes ---
 
             //! Collect all different view tags from this pass 
-            virtual void GetPipelineViewTags(SortedPipelineViewTags& outTags) const;
+            virtual void GetPipelineViewTags(PipelineViewTags& outTags) const;
 
             //! Adds this pass' DrawListTags to the outDrawListMask.
             virtual void GetViewDrawListInfo(RHI::DrawListMask& outDrawListMask, PassesByDrawList& outPassesByDrawList, const PipelineViewTag& viewTag) const;
@@ -251,14 +271,23 @@ namespace AZ
             //! Enables/Disables PipelineStatistics queries for this pass
             virtual void SetPipelineStatisticsQueryEnabled(bool enable) { m_flags.m_pipelineStatisticsQueryEnabled = enable; }
 
-            //! Readback an attachment attached to the specified slot name
+            //! For an image attachment, attached to a specific slot name, reads back, from GPU to CPU memory, one or more mip levels.
+            //! For a buffer attachment, attached to a specific slot name, reads it back from GPU memory to CPU memory. 
             //! @param readback The AttachmentReadback object which is used for readback. Its callback function will be called when readback is finished.
-            //! @param readbackIndex index from the frame capture system to identify which capture is in progress
-            //! @param slotName The attachment bind to the slot with this slotName is to be readback
+            //! @param readbackIndex index from the frame capture system to identify which capture is in progress.
+            //! @param slotName The attachment bound to the slot with this slotName is to be read back.
             //! @param option The option is used for choosing input or output state when readback an InputOutput attachment.
-            //!               It's ignored if the attachment isn't an InputOutput attachment.
+            //!        It's ignored if the attachment isn't an InputOutput attachment.
+            //!        This means that if @option == PassAttachmentReadbackOption::Input, then we'll read the attachment mips
+            //!        BEFORE the Pass runs its main shader.
+            //!        if @option ==  PassAttachmentReadbackOption::Output, then we'll read the attachment mips
+            //!        AFTER the Pass runs its main shader.
+            //! @param mipsRange Applicable ONLY to Image Attachments.
+            //!        If NOT null, defines the list of mip levels that will be read back.
+            //!        If null, only mip level 0 will be read back.
             //! Return true if the readback request was successful. User may expect the AttachmentReadback's callback function would be called. 
-            bool ReadbackAttachment(AZStd::shared_ptr<AttachmentReadback> readback, uint32_t readbackIndex, const Name& slotName, PassAttachmentReadbackOption option = PassAttachmentReadbackOption::Output);
+            bool ReadbackAttachment(AZStd::shared_ptr<AttachmentReadback> readback, uint32_t readbackIndex, const Name& slotName
+                , PassAttachmentReadbackOption option = PassAttachmentReadbackOption::Output, const RHI::ImageSubresourceRange* mipsRange = nullptr);
 
             //! Returns whether the Timestamp queries is enabled/disabled for this pass
             bool IsTimestampQueryEnabled() const { return m_flags.m_timestampQueryEnabled; }
@@ -295,8 +324,14 @@ namespace AZ
 
             PassState GetPassState() const { return m_state; }
 
+            //! Alter the connection of an Input or InputOutput attachment
+            void ChangeConnection(const Name& localSlot, const Name& passName, const Name& attachment, RenderPipeline* pipeline);
+
+            //! Alter the connection of an Input or InputOutput attachment
+            void ChangeConnection(const Name& localSlot, Pass* pass, const Name& attachment);
+
             // Update all bindings on this pass that are connected to bindings on other passes
-            void UpdateConnectedBindings();
+            virtual void UpdateConnectedBindings();
 
             // Update input and input/output bindings on this pass that are connected to bindings on other passes
             void UpdateConnectedInputBindings();
@@ -304,11 +339,11 @@ namespace AZ
             // Update output bindings on this pass that are connected to bindings on other passes
             void UpdateConnectedOutputBindings();
 
-        protected:
-            explicit Pass(const PassDescriptor& descriptor);
-
             // Creates a pass descriptor for creating a duplicate pass. Used for hot reloading.
             PassDescriptor GetPassDescriptor() const;
+
+        protected:
+            explicit Pass(const PassDescriptor& descriptor);
 
             // Imports owned imported attachments into the FrameGraph
             // Called in pass's frame prepare function
@@ -334,7 +369,7 @@ namespace AZ
 
             // Searches adjacent passes for an attachment binding matching the PassAttachmentRef. An adjacent pass is either:
             // a parent pass, a child pass, a sibling pass or the pass itself (this).
-            const PassAttachmentBinding* FindAdjacentBinding(const PassAttachmentRef& attachmentRef);
+            const PassAttachmentBinding* FindAdjacentBinding(const PassAttachmentRef& attachmentRef, const char* attachmentSourceTypeDebugName = "attachment");
 
             // --- Template related setup ---
 
@@ -372,6 +407,11 @@ namespace AZ
             void OnInitializationFinished();
             virtual void OnInitializationFinishedInternal() { };
 
+            // Called after the pass has finished building. Allows passes to do operations that involve all attachments being added
+            // or all children being built (e.g. creating a RenderAttachmentConfiguration that includes the children).
+            void OnBuildFinished();
+            virtual void OnBuildFinishedInternal() { };
+
             // The Pass's 'Render' function. Called every frame, here the pass sets up it's rendering logic with
             // the FrameGraphBuilder. This is where your derived pass needs to call ImportScopeProducer on
             // the FrameGraphBuilder if it's a ScopeProducer (see ForwardPass::FrameBeginInternal for example).
@@ -388,6 +428,18 @@ namespace AZ
             // Setup ImageAttachmentCopy
             void UpdateAttachmentCopy(FramePrepareParams params);
 
+            // Update Imported Attachment
+            bool UpdateImportedAttachmentImage(Ptr<PassAttachment>& attachment, 
+                RHI::ImageBindFlags bindFlags = RHI::ImageBindFlags::Color | RHI::ImageBindFlags::ShaderReadWrite,
+                RHI::ImageAspectFlags aspectFlags = RHI::ImageAspectFlags::Color);
+
+            // Returns the super variant name that this pass should be using.
+            AZ::Name GetSuperVariantName() const;
+
+            // Replaces all SubpassInput attachment for Shader attachments.
+            // @param supportedTypes The subpass input supported types by the device
+            void ReplaceSubpassInputs(RHI::SubpassInputSupportType supportedTypes);
+
             // --- Protected Members ---
 
             const Name PassNameThis{"This"};
@@ -396,9 +448,8 @@ namespace AZ
             const Name PipelineGlobalKeyword{"PipelineGlobal"};
 
             // List of input, output and input/output attachment bindings
-            // Fixed size for performance and so we can hold pointers to the bindings for connections
-            AZStd::fixed_vector<PassAttachmentBinding, PassAttachmentBindingCountMax> m_attachmentBindings;
-            
+            PassAttachmentBindingList m_attachmentBindings;
+
             // List of attachments owned by this pass.
             // It includes both transient attachments and imported attachments
             AZStd::vector<Ptr<PassAttachment>> m_ownedAttachments;
@@ -426,6 +477,9 @@ namespace AZ
 
             // Pointer to the parent pass if this pass is a child pass
             ParentPass* m_parent = nullptr;
+
+            // View tag used to associate a pipeline view for this pass or its child-passes.
+            PipelineViewTag m_viewTag;
 
             struct
             {
@@ -456,7 +510,7 @@ namespace AZ
                         uint64_t m_hasDrawListTag : 1;
 
                         // Whether this pass has a PipelineViewTag
-                        uint64_t m_hasPipelineViewTag : 1;
+                        uint64_t m_bindViewSrg : 1;
 
                         // Whether the pass should gather timestamp query metrics
                         uint64_t m_timestampQueryEnabled : 1;
@@ -469,6 +523,22 @@ namespace AZ
 
                         // Whether this pass contains a binding that is referenced globally through the pipeline
                         uint64_t m_containsGlobalReference : 1;
+                        
+                        // Whether this pass already cached parent pass's device index
+                        uint64_t m_parentDeviceIndexCached : 1;
+
+                        // If this is a parent pass, indicates whether the child passes should be merged as subpasses.
+                        // Please read about PassData::m_mergeChildrenAsSubpasses for more details.
+                        uint64_t m_mergeChildrenAsSubpasses : 1;
+
+                        // If the pass can be included as a subpass.
+                        uint64_t m_canBecomeASubpass : 1;
+
+                        // If the pass is using a subpass input attachment.
+                        uint64_t m_hasSubpassInput : 1;
+
+                        // Whether the pass was enabled last frame
+                        uint64_t m_lastFrameEnabled : 1;
                     };
                     uint64_t m_allFlags = 0;
                 };
@@ -490,13 +560,19 @@ namespace AZ
             
             // For read back attachment
             AZStd::shared_ptr<AttachmentReadback> m_attachmentReadback;
-            PassAttachmentReadbackOption m_readbackOption;
+            PassAttachmentReadbackOption m_readbackOption = PassAttachmentReadbackOption::Input;
 
             // For image attachment preview
             AZStd::weak_ptr<ImageAttachmentCopy> m_attachmentCopy;
 
             //! Optional data used during pass initialization
             AZStd::shared_ptr<PassData> m_passData = nullptr;
+
+            //! Default RHI::ScopeAttachmentStage value for all pass attachments of usage RHI::ScopeAttachmentUsage::Shader
+            RHI::ScopeAttachmentStage m_defaultShaderAttachmentStage = RHI::ScopeAttachmentStage::AnyGraphics;
+
+            // The device index the pass should run on. Can be invalid if it doesn't matter.
+            int m_deviceIndex = AZ::RHI::MultiDevice::InvalidDeviceIndex;
 
         private:
             // Return the Timestamp result of this pass
@@ -526,6 +602,12 @@ namespace AZ
 
             // The pass removes itself from its parent.
             void RemoveFromParent();
+
+            // -- Descendant related functions ---
+
+            // Called when any of the descendant has changed. The "flags" attribute describes the type of change.
+            // Usefull for detecting changes for rebuilds (e.g. subpass groups).
+            virtual void OnDescendantChange(PassDescendantChangeFlags flags);
 
             // --- Template related setup ---
 
@@ -580,13 +662,13 @@ namespace AZ
             // --- Private Members ---
 
             // List of attachment binding indices for all the input bindings
-            AZStd::fixed_vector<uint8_t, PassInputBindingCountMax> m_inputBindingIndices;
+            AZStd::vector<uint8_t> m_inputBindingIndices;
 
             // List of attachment binding indices for all the input/output bindings
-            AZStd::fixed_vector<uint8_t, PassInputOutputBindingCountMax> m_inputOutputBindingIndices;
+            AZStd::vector<uint8_t> m_inputOutputBindingIndices;
 
             // List of attachment binding indices for all the output bindings
-            AZStd::fixed_vector<uint8_t, PassOutputBindingCountMax> m_outputBindingIndices;
+            AZStd::vector<uint8_t> m_outputBindingIndices;
 
             // Used to maintain references to imported attachments so they're underlying
             // buffers and images don't get deleted during attachment build phase
@@ -614,10 +696,13 @@ namespace AZ
 
             // Used to track what phases of build/initialization the pass is queued for
             PassQueueState m_queueState = PassQueueState::NoQueue;
+
+            // Cache the parent pass's device index to prevent recursively fetching it every time
+            int m_parentDeviceIndex = AZ::RHI::MultiDevice::InvalidDeviceIndex;
         };
 
         //! Struct used to return results from Pass hierarchy validation
-        struct PassValidationResults
+        struct ATOM_RPI_PUBLIC_API PassValidationResults
         {
             bool IsValid();
             void PrintValidationIfError();

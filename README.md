@@ -5,6 +5,9 @@ O3DE (Open 3D Engine) is an open-source, real-time, multi-platform 3D engine tha
 ## Contribute
 For information about contributing to Open 3D Engine, visit [https://o3de.org/docs/contributing/](https://o3de.org/docs/contributing/).
 
+## Roadmap
+For information about upcoming work and features, please visit [https://o3de.org/roadmap](https://o3de.org/roadmap). Progress against the roadmap is tracked [here](https://github.com/orgs/o3de/projects/56/views/2).
+
 ## Download and Install
 
 This repository uses Git LFS for storing large binary files.  
@@ -42,7 +45,7 @@ For the latest details and system requirements, refer to [System Requirements](h
         *   Game Development with C++
         *   MSVC v142 - VS 2019 C++ x64/x86
         *   C++ 2019 redistributable update
-*   CMake 3.20.5 minimum: [https://cmake.org/download/#latest](https://cmake.org/download/#latest) (Release Candidate versions are not supported)
+*   CMake 3.22.0 minimum: [https://cmake.org/download/#latest](https://cmake.org/download/#latest) (Release Candidate versions are not supported)
 
 #### Optional
 
@@ -122,6 +125,12 @@ For more details on the steps above, refer to [Setting up O3DE from GitHub](http
 This will compile after some time and binaries will be available in the project build path you've specified, under `bin/profile`.
 
 For a complete tutorial on project configuration, see [Creating Projects Using the Command Line Interface](https://o3de.org/docs/welcome-guide/create/creating-projects-using-cli/) in the documentation.
+
+## Code Contributors
+
+This project exists thanks to all the people who contribute. [[Contribute](CONTRIBUTING.md)].
+
+<a href="https://github.com/o3de/o3de/graphs/contributors"><img src="https://contrib.rocks/image?repo=o3de/o3de&max=200&columns=24" width=850px /></a>
 
 ## License
 

@@ -17,11 +17,6 @@
 #include <AzCore/Component/Component.h>
 
 #include <AzFramework/Asset/GenericAssetHandler.h>
-#include <AutoGenNodeableRegistry.generated.h>
-#include <AutoGenGrammarRegistry.generated.h>
-
-REGISTER_SCRIPTCANVAS_AUTOGEN_NODEABLE(StartingPointInputStatic);
-REGISTER_SCRIPTCANVAS_AUTOGEN_GRAMMAR(StartingPointInputStatic);
 
 namespace StartingPointInput
 {
@@ -109,8 +104,8 @@ namespace StartingPointInput
 
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC("AssetDatabaseService"));
-            required.push_back(AZ_CRC("AssetCatalogService"));
+            required.push_back(AZ_CRC_CE("AssetDatabaseService"));
+            required.push_back(AZ_CRC_CE("AssetCatalogService"));
         }
 
         static void Reflect(AZ::ReflectContext* context)
@@ -126,7 +121,7 @@ namespace StartingPointInput
                 serializeContext->Class<StartingPointInputSystemComponent, AZ::Component>()
                     ->Version(1)
                     ;
-                serializeContext->ClassDeprecate("Input", "{546C9EBC-90EF-4F03-891A-0736BE2A487E}", &ConvertToInputEventMap);
+                serializeContext->ClassDeprecate("Input", AZ::Uuid("{546C9EBC-90EF-4F03-891A-0736BE2A487E}"), &ConvertToInputEventMap);
 
                 serializeContext->Class<InputEventNotificationId>()
                     ->Version(1)
@@ -140,7 +135,6 @@ namespace StartingPointInput
                         "Starting point input", "Manages input bindings and events")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Editor")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
                         ;
                 }
             }
@@ -217,7 +211,8 @@ namespace StartingPointInput
     };
 }
 
-// DO NOT MODIFY THIS LINE UNLESS YOU RENAME THE GEM
-// The first parameter should be GemName_GemIdLower
-// The second should be the fully qualified name of the class above
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME), StartingPointInput::StartingPointInputModule)
+#else
 AZ_DECLARE_MODULE_CLASS(Gem_StartingPointInput, StartingPointInput::StartingPointInputModule)
+#endif

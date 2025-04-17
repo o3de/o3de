@@ -64,7 +64,7 @@ namespace EMotionFX
 
     }
 
-    INSTANTIATE_TEST_CASE_P(CanDeleteAnimGraphNode_AnimGraphModelUpdates, CanDeleteAnimGraphNode,
+    INSTANTIATE_TEST_SUITE_P(CanDeleteAnimGraphNode_AnimGraphModelUpdates, CanDeleteAnimGraphNode,
         ::testing::Values(std::vector<std::string> {
             R"str(CreateAnimGraph -animGraphID 100)str",
             R"str(Select -animGraphID 100)str",

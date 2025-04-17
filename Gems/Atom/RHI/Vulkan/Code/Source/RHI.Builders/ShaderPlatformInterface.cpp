@@ -25,11 +25,7 @@ namespace AZ
     namespace Vulkan
     {
         [[maybe_unused]] static const char* VulkanShaderPlatformName = "VulkanShaderPlatform";
-        static const char* WindowsPlatformShaderHeader = "Builders/ShaderHeaders/Platform/Windows/Vulkan/PlatformHeader.hlsli";
-        static const char* AndroidPlatformShaderHeader = "Builders/ShaderHeaders/Platform/Android/Vulkan/PlatformHeader.hlsli";
-        static const char* WindowsAzslShaderHeader = "Builders/ShaderHeaders/Platform/Windows/Vulkan/AzslcHeader.azsli";
-        static const char* AndroidAzslShaderHeader = "Builders/ShaderHeaders/Platform/Android/Vulkan/AzslcHeader.azsli";
-    
+
         RHI::APIType ShaderPlatformInterface::GetAPIType() const
         {
             return Vulkan::RHIType;
@@ -44,9 +40,9 @@ namespace AZ
         {
             RHI::Ptr<ShaderStageFunction> newShaderStageFunction = ShaderStageFunction::Create(RHI::ToRHIShaderStage(stageDescriptor.m_stageType));
 
-            const Vulkan::ShaderByteCode& byteCode = stageDescriptor.m_byteCode;
+            const auto& byteCode = stageDescriptor.m_byteCode;
             const AZStd::string& entryFunctionName = stageDescriptor.m_entryFunctionName;
-            const int byteCodeIndex = (stageDescriptor.m_stageType == RHI::ShaderHardwareStage::TessellationEvaluation) ? 1 : 0;
+            const int byteCodeIndex = 0;
             newShaderStageFunction->SetByteCode(byteCodeIndex, byteCode, entryFunctionName);
 
             newShaderStageFunction->Finalize();
@@ -59,9 +55,8 @@ namespace AZ
             bool hasRasterProgram = false;
 
             hasRasterProgram |= shaderStageType == RHI::ShaderHardwareStage::Vertex;
+            hasRasterProgram |= shaderStageType == RHI::ShaderHardwareStage::Geometry;
             hasRasterProgram |= shaderStageType == RHI::ShaderHardwareStage::Fragment;
-            hasRasterProgram |= shaderStageType == RHI::ShaderHardwareStage::TessellationControl;
-            hasRasterProgram |= shaderStageType == RHI::ShaderHardwareStage::TessellationEvaluation;
 
             return hasRasterProgram;
         }
@@ -96,15 +91,15 @@ namespace AZ
             return pipelineLayoutDescriptor->Finalize() == RHI::ResultCode::Success;
         }
 
-        const char* ShaderPlatformInterface::GetAzslHeader(const AssetBuilderSDK::PlatformInfo& platform) const
+        const char* ShaderPlatformInterface::GetAzslHeader([[maybe_unused]] const AssetBuilderSDK::PlatformInfo& platform) const
         {
-            if(platform.HasTag("mobile"))
+            if (platform.HasTag("mobile"))
             {
-                return AndroidAzslShaderHeader;
+                return AZ_TRAIT_ATOM_MOBILE_AZSL_SHADER_HEADER;
             }
             else
             {
-                return WindowsAzslShaderHeader;
+                return AZ_TRAIT_ATOM_AZSL_SHADER_HEADER;
             }
         }
 
@@ -117,7 +112,8 @@ namespace AZ
             RHI::ShaderHardwareStage shaderAssetType,
             const AZStd::string& tempFolderPath,
             StageDescriptor& outputDescriptor,
-            const RHI::ShaderBuildArguments& shaderBuildArguments) const
+            const RHI::ShaderBuildArguments& shaderBuildArguments,
+            [[maybe_unused]] const bool useSpecializationConstants) const
         {
             AZStd::vector<uint8_t> shaderByteCode;
 
@@ -161,11 +157,11 @@ namespace AZ
             const RHI::ShaderHardwareStage shaderStageType,
             const RHI::ShaderBuildArguments& shaderBuildArguments,
             AZStd::vector<uint8_t>& compiledShader,
-            const AssetBuilderSDK::PlatformInfo& platform,
+            [[maybe_unused]] const AssetBuilderSDK::PlatformInfo& platform,
             ByProducts& byProducts) const
         {
             // Shader compiler executable
-            static const char* dxcRelativePath = AZ_TRAIT_ATOM_SHADERBUILDER_DXC;
+            const auto dxcRelativePath = RHI::GetDirectXShaderCompilerPath(AZ_TRAIT_ATOM_SHADERBUILDER_DXC);
 
             // -Fo "Output file"
             AZStd::string shaderOutputFile;
@@ -189,8 +185,6 @@ namespace AZ
                 {RHI::ShaderHardwareStage::Fragment,               "ps_" + shaderModelVersion},
                 {RHI::ShaderHardwareStage::Compute,                "cs_" + shaderModelVersion},
                 {RHI::ShaderHardwareStage::Geometry,               "gs_" + shaderModelVersion},
-                {RHI::ShaderHardwareStage::TessellationControl,    "hs_" + shaderModelVersion},
-                {RHI::ShaderHardwareStage::TessellationEvaluation, "ds_" + shaderModelVersion},
                 {RHI::ShaderHardwareStage::RayTracing,             "lib_6_3"}
             };
             auto profileIt = stageToProfileName.find(shaderStageType);
@@ -208,19 +202,31 @@ namespace AZ
             // If, in the future, the need arises across other RHIs and platforms
             // We can revisit these hard coded parameters.
             auto dxcArguments = shaderBuildArguments.m_dxcArguments;
+
+            //Add debug symbols within spirv
+            const bool graphicsDevMode = RHI::IsGraphicsDevModeEnabled();
+            if (graphicsDevMode || BuildHasDebugInfo(shaderBuildArguments))
+            {
+                // Remark: Ideally we'd use "-fspv-debug=vulkan-with-source", but
+                // - DXC 1.6.2106 crashes with this error when compiling large shaders (small shaders works fine).
+                //     dxc failed : unknown SPIR-V debug info control parameter: vulkan-with-source
+                // - DXC 1.7.2212.1 crashes with the following error when compiling large shaders:
+                //     fatal error: generated SPIR-V is invalid: ID '2123[%2123]' has not been defined
+                //        %2122 = OpExtInst %void %2 DebugTypeFunction %uint_3 %void %2123 %1415
+                // 
+                // There are already several bug reports like this one: https://github.com/microsoft/DirectXShaderCompiler/issues/4767
+                RHI::ShaderBuildArguments::AppendArguments(dxcArguments, { "-fspv-debug=line" });
+            }
+
             switch (shaderStageType)
             {
             case RHI::ShaderHardwareStage::Vertex:
             case RHI::ShaderHardwareStage::Geometry:
-            case RHI::ShaderHardwareStage::TessellationEvaluation:
                 RHI::ShaderBuildArguments::AppendArguments(dxcArguments, { "-fvk-invert-y" });
                 break;
             case RHI::ShaderHardwareStage::Fragment:
-                // Enable the use of subpass input. DXC doesn't compile if a SubpassInput is present
-                // when compiling a shader stage that is not the fragment shader (even if it's not being used).
-                RHI::ShaderBuildArguments::AppendArguments(dxcArguments, { "-DAZ_USE_SUBPASSINPUT", "-fvk-use-dx-position-w"});
+                RHI::ShaderBuildArguments::AppendArguments(dxcArguments, { "-fvk-use-dx-position-w"});
                 break;
-            case RHI::ShaderHardwareStage::TessellationControl:
             case RHI::ShaderHardwareStage::Compute:
             case RHI::ShaderHardwareStage::RayTracing:
                 break;
@@ -229,13 +235,13 @@ namespace AZ
             }
 
             AZStd::string prependFile;
-            if(platform.HasTag("mobile"))
+            if (platform.HasTag("mobile"))
             {
-                prependFile = AndroidPlatformShaderHeader;
+                prependFile = AZ_TRAIT_ATOM_MOBILE_AZSL_PLATFORM_HEADER;
             }
             else
             {
-                prependFile = WindowsPlatformShaderHeader;
+                prependFile = AZ_TRAIT_ATOM_AZSL_PLATFORM_HEADER;
             }
 
             RHI::PrependArguments args;
@@ -244,7 +250,6 @@ namespace AZ
             args.m_destinationFolder = tempFolder.c_str();
 
             const auto dxcInputFile = RHI::PrependFile(args);  // Prepend header
-            const bool graphicsDevMode = RHI::IsGraphicsDevModeEnabled();
 
             if (graphicsDevMode || BuildHasDebugInfo(shaderBuildArguments))
             {
@@ -268,7 +273,7 @@ namespace AZ
             //       therefore, the debug data is probably embedded in the spirv blob.
 
             // Run Shader Compiler
-            if (!RHI::ExecuteShaderCompiler(dxcRelativePath, dxcCommandOptions, shaderSourceFile, "DXC"))
+            if (!RHI::ExecuteShaderCompiler(dxcRelativePath, dxcCommandOptions, shaderSourceFile, tempFolder, "DXC"))
             {
                 return false;
             }

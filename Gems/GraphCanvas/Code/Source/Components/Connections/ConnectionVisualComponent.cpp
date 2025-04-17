@@ -74,7 +74,7 @@ namespace GraphCanvas
     {
         return m_connectionGraphicsItem.get();
     }
-    
+
     bool ConnectionVisualComponent::Contains(const AZ::Vector2&) const
     {
         return false;
@@ -201,7 +201,7 @@ namespace GraphCanvas
 
     void ConnectionGraphicsItem::UpdateOffset()
     {
-        auto currentTime = AZStd::chrono::system_clock::now();
+        auto currentTime = AZStd::chrono::steady_clock::now();
         auto currentDuration = currentTime.time_since_epoch();
         AZStd::chrono::milliseconds currentUpdate = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(currentDuration);
 
@@ -276,7 +276,7 @@ namespace GraphCanvas
         {
             if (!AZ::SystemTickBus::Handler::BusIsConnected())
             {
-                auto currentTime = AZStd::chrono::system_clock::now();
+                auto currentTime = AZStd::chrono::steady_clock::now();
                 auto currentDuration = currentTime.time_since_epoch();
                 m_lastUpdate = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(currentDuration);
 
@@ -328,7 +328,7 @@ namespace GraphCanvas
         ConnectionRequestBus::EventResult(end, GetEntityId(), &ConnectionRequests::GetTargetPosition);
 
         QPointF endJutDirection;
-        SlotUIRequestBus::EventResult(endJutDirection, targetId, &SlotUIRequests::GetJutDirection);            
+        SlotUIRequestBus::EventResult(endJutDirection, targetId, &SlotUIRequests::GetJutDirection);
 
         if (!sourceId.IsValid())
         {
@@ -394,7 +394,7 @@ namespace GraphCanvas
             {
                 magnitude = AZ::GetMax(qSqrt(VectorLength(offset)) * 5, offset.x() * 0.5f);
             }
-            magnitude = AZ::GetClamp(magnitude, (qreal) 10.0f, qMax(VectorLength(midVector), (qreal) 10.0f));            
+            magnitude = AZ::GetClamp(magnitude, (qreal) 10.0f, qMax(VectorLength(midVector), (qreal) 10.0f));
 
             // Makes the line come out horizontally from the start and end points
             QPointF offsetStart = start + startJutDirection * magnitude;
@@ -479,7 +479,7 @@ namespace GraphCanvas
     }
 
     void ConnectionGraphicsItem::OnSettingsChanged()
-    {        
+    {
         UpdateCurveStyle();
     }
 
@@ -555,7 +555,7 @@ namespace GraphCanvas
         stroker.setWidth(padding);
         return stroker.createStroke(path());
     }
- 
+
     void ConnectionGraphicsItem::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
     {
         if (mouseEvent->button() == Qt::MouseButton::LeftButton)
@@ -647,7 +647,7 @@ namespace GraphCanvas
             {
                 setSelected(!isSelected());
             }
-            
+
             m_trackMove = false;
         }
         else
@@ -662,7 +662,7 @@ namespace GraphCanvas
         {
             m_trackMove = false;
         }
-        
+
         RootGraphicsItem<QGraphicsPathItem>::focusOutEvent(focusEvent);
     }
 
@@ -681,6 +681,6 @@ namespace GraphCanvas
         {
             QGraphicsPathItem::paint(painter, option, widget);
         }
-    }    
+    }
 
 }

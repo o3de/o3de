@@ -8,38 +8,14 @@
 
 #pragma once
 
-#include <AzCore/Settings/SettingsRegistry.h>
+#include <AzToolsFramework/Viewport/ViewportTypes.h>
 
 namespace AzToolsFramework
 {
-    template<typename T>
-    void SetRegistry(const AZStd::string_view setting, T&& value)
-    {
-        if (auto* registry = AZ::SettingsRegistry::Get())
-        {
-            registry->Set(setting, AZStd::forward<T>(value));
-        }
-    }
-
-    template<typename T>
-    AZStd::remove_cvref_t<T> GetRegistry(const AZStd::string_view setting, T&& defaultValue)
-    {
-        AZStd::remove_cvref_t<T> value = AZStd::forward<T>(defaultValue);
-        if (const auto* registry = AZ::SettingsRegistry::Get())
-        {
-            T potentialValue;
-            if (registry->Get(potentialValue, setting))
-            {
-                value = AZStd::move(potentialValue);
-            }
-        }
-
-        return value;
-    }
-
     inline constexpr float DefaultManipulatorViewBaseScale = 1.0f;
     inline constexpr float MinManipulatorViewBaseScale = 0.25f;
     inline constexpr float MaxManipulatorViewBaseScale = 2.0f;
+    inline constexpr ViewportInteraction::KeyboardModifier DefaultSymmetricalEditingModifier = ViewportInteraction::KeyboardModifier::Shift;
 
     bool FlipManipulatorAxesTowardsView();
     void SetFlipManipulatorAxesTowardsView(bool enabled);
@@ -77,6 +53,12 @@ namespace AzToolsFramework
     bool HelpersVisible();
     void SetHelpersVisible(bool visible);
 
+    bool OnlyShowHelpersForSelectedEntities();
+    void SetOnlyShowHelpersForSelectedEntities(bool visible);
+
     bool ComponentSwitcherEnabled();
+
+    bool PrefabEditModeEffectEnabled();
+    void SetPrefabEditModeEffectEnabled(bool enabled);
 
 } // namespace AzToolsFramework

@@ -6,13 +6,10 @@
  *
  */
 
+#include <AzCore/Math/IntersectSegment.h>
+
 namespace AZ
 {
-    AZ_MATH_INLINE Capsule Capsule::CreateUninitialized()
-    {
-        return Capsule();
-    }
-
     AZ_MATH_INLINE Capsule::Capsule(const Vector3& firstHemisphereCenter, const Vector3& secondHemisphereCenter, float radius)
         : m_firstHemisphereCenter(firstHemisphereCenter)
         , m_secondHemisphereCenter(secondHemisphereCenter)
@@ -82,6 +79,11 @@ namespace AZ
               m_secondHemisphereCenter.IsClose(rhs.m_secondHemisphereCenter, tolerance)) ||
              (m_firstHemisphereCenter.IsClose(rhs.m_secondHemisphereCenter, tolerance) &&
               m_secondHemisphereCenter.IsClose(rhs.m_firstHemisphereCenter, tolerance)));
+    }
+
+    AZ_MATH_INLINE bool Capsule::Contains(const AZ::Vector3& point) const
+    {
+        return Intersect::PointSegmentDistanceSq(point, m_firstHemisphereCenter, m_secondHemisphereCenter) <= m_radius * m_radius;
     }
 } // namespace AZ
 

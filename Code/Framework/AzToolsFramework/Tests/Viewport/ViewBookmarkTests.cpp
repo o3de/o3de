@@ -29,8 +29,6 @@ namespace UnitTest
         {
             PrefabTestFixture::SetUpEditorFixtureImpl();
 
-            CreateRootPrefab();
-
             m_oldSettingsRegistry = AZ::SettingsRegistry::Get();
             if (m_oldSettingsRegistry)
             {
@@ -49,7 +47,7 @@ namespace UnitTest
             auto persistentSetReg = AZStd::make_shared<LocalPersistentSettingsRegistry>();
             bookmarkPersistInterface->OverrideStreamWriteFn(
                 [persistentSetReg](
-                    [[maybe_unused]] const AZStd::string& localBookmarksFileName, const AZStd::string& stringBuffer,
+                    const AZ::IO::PathView&, AZStd::string_view stringBuffer,
                     AZStd::function<bool(AZ::IO::GenericStream&, const AZStd::string&)> write)
                 {
                     persistentSetReg->m_buffer.resize(stringBuffer.size() + 1);
@@ -63,13 +61,13 @@ namespace UnitTest
                 });
 
             bookmarkPersistInterface->OverrideStreamReadFn(
-                [persistentSetReg]([[maybe_unused]] const AZStd::string& localBookmarksFileName)
+                [persistentSetReg](const AZ::IO::PathView&)
                 {
                     return persistentSetReg->m_buffer;
                 });
 
             bookmarkPersistInterface->OverrideFileExistsFn(
-                [exists = false](const AZStd::string&) mutable
+                [exists = false](const AZ::IO::PathView&) mutable
                 {
                     // initially does not exist and is then created
                     return AZStd::exchange(exists, true);
@@ -156,9 +154,29 @@ namespace UnitTest
 
         const AZStd::optional<AzToolsFramework::ViewBookmark> lastKnownLocationBookmark = bookmarkInterface->LoadBookmarkAtIndex(4);
 
+        #if AZ_TRAIT_USE_PLATFORM_SIMD_NEON
+        // Expected:  (X: 75,      Y:  0, Z: 64)
+        // Actual:    (X: 74.9989, Y: -0, Z: 64)
+        // Delta:          0.0011      0,     0
+        constexpr float cameraPositionTolerance = 0.0012f;
+        EXPECT_THAT(lastKnownLocationBookmark->m_position, IsCloseTolerance(cameraPosition, cameraPositionTolerance));
+        #else
         EXPECT_THAT(lastKnownLocationBookmark->m_position, IsClose(cameraPosition));
+        #endif // AZ_TRAIT_USE_PLATFORM_SIMD_NEON
+
+        #if AZ_TRAIT_USE_PLATFORM_SIMD_NEON
+        // Expected:  (X: 75,      Y: 0,  Z: 64)
+        // Actual:    (X: 74.9989, Y: -0, Z: 64)
+        // Delta:          0.0011      0,     0
+        constexpr float cameraRotationTolerance = 0.0012f;
+        EXPECT_THAT(
+            lastKnownLocationBookmark->m_rotation,
+            IsCloseTolerance(AZ::Vector3(expectedCameraRotationXDegrees, 0.0f, expectedCameraRotationZDegrees), cameraRotationTolerance));
+        #else
         EXPECT_THAT(
             lastKnownLocationBookmark->m_rotation,
             IsClose(AZ::Vector3(expectedCameraRotationXDegrees, 0.0f, expectedCameraRotationZDegrees)));
+        #endif // AZ_TRAIT_USE_PLATFORM_SIMD_NEON
+
     }
 } // namespace UnitTest

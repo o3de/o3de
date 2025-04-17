@@ -12,8 +12,6 @@
 
 #include <Pipeline/SceneAPIExt/ClothRule.h>
 
-#include <SceneAPI/SceneCore/SceneCoreStandaloneAllocator.h>
-
 #include <UnitTestHelper.h>
 #include <MeshVertexColorDataStub.h>
 
@@ -23,9 +21,6 @@ namespace UnitTest
         : public ::testing::Test
     {
     public:
-        static void SetUpTestCase();
-        static void TearDownTestCase();
-        
         // [inverse mass, motion constrain radius, backstop offset, backstop radius]
         const AZ::Color DefaultClothVertexData = AZ::Color(1.0f, 1.0f, 0.5f, 0.0f);
 
@@ -35,16 +30,6 @@ namespace UnitTest
             AZ::Color(0.25f, 1.0f, 0.9f, 0.5f)
         }};
     };
-
-    void NvClothRule::SetUpTestCase()
-    {
-        AZ::SceneAPI::SceneCoreStandaloneAllocator::Initialize(); // Allocator needed by SceneCore
-    }
-
-    void NvClothRule::TearDownTestCase()
-    {
-        AZ::SceneAPI::SceneCoreStandaloneAllocator::TearDown();
-    }
 
     TEST_F(NvClothRule, ClothRule_ExtractClothDataNoSceneGraph_ReturnsEmptyData)
     {

@@ -11,15 +11,11 @@
 from __future__ import unicode_literals
 
 # -------------------------------------------------------------------------
-'''
-Module: <DCCsi>\\azpy\\shared\\common\\config_utils.py
+'''! A set of utility functions for enavrs
 
-    A set of utility functions
-
-    <to do: further document this module>
-    
-    To Do:
-        ATOM-5859
+:file: < DCCsi >/azpy/shared/common/envar_utils.py
+:Status: Prototype
+:Version: 0.0.1
 '''
 # -------------------------------------------------------------------------
 
@@ -38,26 +34,12 @@ from unipath import Path
 
 # -------------------------------------------------------------------------
 #  global space
-import azpy.env_bool as env_bool
-from azpy.constants import ENVAR_O3DE_DEV
-from azpy.constants import ENVAR_O3DE_PROJECT
-from azpy.constants import ENVAR_DCCSI_GDEBUG
-from azpy.constants import ENVAR_DCCSI_DEV_MODE
-from azpy.constants import FRMT_LOG_LONG
+from DccScriptingInterface.azpy.shared import _PACKAGENAME
+_PACKAGENAME = f'{_PACKAGENAME}.envar_utils'
+_LOGGER = _logging.getLogger(_PACKAGENAME)
+_LOGGER.debug('Initializing: {0}.'.format({_PACKAGENAME}))
 
-_DCCSI_GDEBUG = env_bool.env_bool(ENVAR_DCCSI_GDEBUG, False)
-_DCCSI_DEV_MODE = env_bool.env_bool(ENVAR_DCCSI_DEV_MODE, False)
-
-_MODULENAME = __name__
-if _MODULENAME is '__main__':
-    _MODULENAME = 'azpy.shared.common.envar_utils'
-
-# set up module logging
-for handler in _logging.root.handlers[:]:
-    _logging.root.removeHandler(handler)
-_LOGGER = _logging.getLogger(_MODULENAME)
-_logging.basicConfig(format=FRMT_LOG_LONG)
-_LOGGER.debug('Initializing: {0}.'.format({_MODULENAME}))
+from DccScriptingInterface.globals import *
 # -------------------------------------------------------------------------
 
 
@@ -80,9 +62,9 @@ def get_envar_default(envar, envar_default=None, envar_set=Box(ordered_box=True)
     :param var:
     :return: Some value for the variable, current or default.
     '''
-    
+
     from pathlib import Path
-    
+
     envar = str(envar)
     value = os.getenv(envar, envar_default)
     if not value:
@@ -100,9 +82,9 @@ def set_envar_defaults(envar_set, env_root=get_envar_default(ENVAR_O3DE_DEV)):
     Must be safe, will not over-write existing.
     :return: envarSet
     """
-    
+
     from pathlib import Path
-    
+
     if env_root:
         env_root = Path(env_root)
 
@@ -116,7 +98,7 @@ def set_envar_defaults(envar_set, env_root=get_envar_default(ENVAR_O3DE_DEV)):
         envar = str(envar)
         value = os.getenv(envar)
 
-        if _DCCSI_GDEBUG:
+        if DCCSI_GDEBUG:
             if not value:
                 _LOGGER.debug('~ EnVar value NOT found: {0}\r'.format(envar))
 
@@ -182,7 +164,7 @@ class Validate_Envar(object):
 if __name__ == '__main__':
     # imports for local testing
     import json
-    
+
     # srun simple tests?
     test = True
 
@@ -205,7 +187,7 @@ if __name__ == '__main__':
     #  try to fetch and set the base values from the environment
     #  this makes sure all envars set, are resolved on import
     TEST_ENV_VALUES = set_envar_defaults(TEST_ENV_VALUES)
-    
+
     _LOGGER.info('Pretty print: TEST_ENV_VALUES')
     print(json.dumps(TEST_ENV_VALUES,
                      indent=4, sort_keys=False,

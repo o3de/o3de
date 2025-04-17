@@ -301,11 +301,11 @@ namespace AZStd::ranges
         {
             if (i.m_innerIter.index() == 0)
             {
-                m_innerIter.template emplace<0>(AZStd::get<0>(AZStd::move(i.m_innerIter)));
+                m_innerIter.template emplace<0>(get<0>(AZStd::move(i.m_innerIter)));
             }
             else
             {
-                m_innerIter.template emplace<1>(AZStd::get<1>(AZStd::move(i.m_innerIter)));
+                m_innerIter.template emplace<1>(get<1>(AZStd::move(i.m_innerIter)));
             }
         }
 
@@ -313,13 +313,13 @@ namespace AZStd::ranges
         {
             using reference = common_reference_t<iter_reference_t<InnerIter>, iter_reference_t<PatternIter>>;
             auto get_reference = [](auto& it) -> reference { return *it; };
-            return AZStd::visit(AZStd::move(get_reference), m_innerIter);
+            return visit(AZStd::move(get_reference), m_innerIter);
         }
 
         constexpr iterator& operator++()
         {
             auto increment = [](auto& it) { ++it; };
-            AZStd::visit(increment, m_innerIter);
+            visit(increment, m_innerIter);
             satisfy();
             return *this;
         }
@@ -355,7 +355,7 @@ namespace AZStd::ranges
                 if (m_innerIter.index() == 0)
                 {
                     // The current iterator is pointing within the pattern
-                    auto& it = AZStd::get<0>(m_innerIter);
+                    auto& it = get<0>(m_innerIter);
                     if (it == ranges::begin(m_parent->m_pattern))
                     {
                         // swap iterator to point at the end of the input value
@@ -370,7 +370,7 @@ namespace AZStd::ranges
                 else
                 {
                     // The current iterator is pointing within an input value
-                    auto& it = AZStd::get<1>(m_innerIter);
+                    auto& it = get<1>(m_innerIter);
                     auto&& inner = *m_outerIter;
                     if (it == ranges::begin(inner))
                     {
@@ -386,7 +386,7 @@ namespace AZStd::ranges
 
             // Move inner iterator backwards to the previous element of the value being viewed
             auto decrement = [](auto& it) { --it; };
-            AZStd::visit(decrement, m_innerIter);
+            visit(decrement, m_innerIter);
             return *this;
         }
 
@@ -422,13 +422,13 @@ namespace AZStd::ranges
             using rvalue_reference = common_reference_t<
                 iter_rvalue_reference_t<InnerIter>,
                 iter_rvalue_reference_t<PatternIter>>;
-            return AZStd::visit<rvalue_reference>(ranges::iter_move, x.m_innerIter);
+            return visit<rvalue_reference>(ranges::iter_move, x.m_innerIter);
         }
 
 
-        friend constexpr void iter_swap(iterator& x, iterator& y)
+        friend constexpr void iter_swap(const iterator& x, const iterator& y)
         {
-            return AZStd::visit(ranges::iter_swap, x.m_innerIter, y.m_innerIter);
+            visit(ranges::iter_swap, x.m_innerIter, y.m_innerIter);
         }
 
     private:
@@ -496,7 +496,7 @@ namespace AZStd::ranges
                 if (m_innerIter.index() == 0)
                 {
                     // If Currently iterating over the pattern break out the for loop
-                    if (AZStd::get<0>(m_innerIter) != ranges::end(m_parent->m_pattern))
+                    if (get<0>(m_innerIter) != ranges::end(m_parent->m_pattern))
                     {
                         break;
                     }
@@ -509,7 +509,7 @@ namespace AZStd::ranges
                 else
                 {
                     auto&& inner = get_inner(m_outerIter);
-                    if (AZStd::get<1>(m_innerIter) != ranges::end(inner))
+                    if (get<1>(m_innerIter) != ranges::end(inner))
                     {
                         break;
                     }
@@ -534,9 +534,159 @@ namespace AZStd::ranges
 
         //! iterator to the outer view element of the view wrapped by the join_with_view
         OuterIter m_outerIter{};
-        //! iterator to the range element which is wrapped by the view
-        //! or the pattern
+        //! iterator to the range element which is wrapped by the view or the pattern
+        //! placement new and destructor calls aren't constexpr until C++20
+        //! Because AZStd::variant under the hood invokes AZStd::construct_at, which uses placement new
+        //! this makes the emplace calls in this class non-constexpr
+        //! fallback to use a struct in C++17 with a bool, since it is simple to deal with than a union
+#if __cpp_constexpr_dynamic_alloc >= 201907L
         variant<PatternIter, InnerIter> m_innerIter{};
+#else
+        struct ElementIter
+        {
+            constexpr bool operator==(const ElementIter& other) const
+            {
+                return m_elementIndex != other.m_elementIndex ? false
+                    : m_elementIndex == 0
+                    ? m_pattern == other.m_pattern
+                    : m_inner == other.m_inner;
+            }
+            constexpr bool operator!=(const ElementIter& other) const
+            {
+                return !operator==(other);
+            }
+            template<size_t Index, class... Args>
+            constexpr auto& emplace(Args&&... args)
+            {
+                m_elementIndex = Index;
+                if constexpr (Index == 0)
+                {
+                    m_pattern = PatternIter(AZStd::forward<Args>(args)...);
+                    return m_pattern;
+                }
+                else
+                {
+                    m_inner = InnerIter(AZStd::forward<Args>(args)...);
+                    return m_inner;
+                }
+            }
+
+            constexpr size_t index() const
+            {
+                return m_elementIndex;
+            }
+
+            PatternIter m_pattern{};
+            InnerIter m_inner{};
+            uint8_t m_elementIndex{};
+        } m_innerIter;
+
+        template<size_t Index>
+        static constexpr auto& get(ElementIter& elementIter)
+        {
+            if constexpr (Index == 0)
+            {
+                return elementIter.m_pattern;
+            }
+            else
+            {
+                return elementIter.m_inner;
+            }
+        }
+        template<size_t Index>
+        static constexpr const auto& get(const ElementIter& elementIter)
+        {
+            if constexpr (Index == 0)
+            {
+                return elementIter.m_pattern;
+            }
+            else
+            {
+                return elementIter.m_inner;
+            }
+        }
+        template<size_t Index>
+        static constexpr auto&& get(ElementIter&& elementIter)
+        {
+            if constexpr (Index == 0)
+            {
+                return AZStd::move(elementIter.m_pattern);
+            }
+            else
+            {
+                return AZStd::move(elementIter.m_inner);
+            }
+        }
+        template<size_t Index>
+        static constexpr const auto&& get(const ElementIter&& elementIter)
+        {
+            if constexpr (Index == 0)
+            {
+                return AZStd::move(elementIter.m_pattern);
+            }
+            else
+            {
+                return AZStd::move(elementIter.m_inner);
+            }
+        }
+
+        template<class Fn, class ElementIter1>
+        static constexpr decltype(auto) visit(Fn&& fn, ElementIter1&& elementIter1)
+        {
+            if (elementIter1.m_elementIndex == 0)
+            {
+                return AZStd::forward<Fn>(fn)(AZStd::forward<ElementIter1>(elementIter1).m_pattern);
+            }
+            else
+            {
+                return AZStd::forward<Fn>(fn)(AZStd::forward<ElementIter1>(elementIter1).m_inner);
+            }
+        }
+
+        template<class R, class Fn, class ElementIter1>
+        static constexpr R visit(Fn&& fn, ElementIter1&& elementIter1)
+        {
+            if (elementIter1.m_elementIndex == 0)
+            {
+                return R(AZStd::forward<Fn>(fn)(AZStd::forward<ElementIter1>(elementIter1).m_pattern));
+            }
+            else
+            {
+                return R(AZStd::forward<Fn>(fn)(AZStd::forward<ElementIter1>(elementIter1).m_inner));
+            }
+        }
+
+        template<class Fn, class ElementIter1, class ElementIter2>
+        constexpr decltype(auto) visit(Fn&& fn, ElementIter1&& elementIter1, ElementIter2&& elementIter2)
+        {
+            if (elementIter1.m_elementIndex == 0)
+            {
+                if (elementIter2.m_elementIndex == 0)
+                {
+                    return AZStd::forward<Fn>(fn)(AZStd::forward<ElementIter1>(elementIter1).m_pattern,
+                        AZStd::forward<ElementIter2>(elementIter2).m_pattern);
+                }
+                else
+                {
+                    return AZStd::forward<Fn>(fn)(AZStd::forward<ElementIter1>(elementIter1).m_pattern,
+                        AZStd::forward<ElementIter2>(elementIter2).m_inner);
+                }
+            }
+            else
+            {
+                if (elementIter2.m_elementIndex == 0)
+                {
+                    return AZStd::forward<Fn>(fn)(AZStd::forward<ElementIter1>(elementIter1).m_inner,
+                        AZStd::forward<ElementIter2>(elementIter2).m_pattern);
+                }
+                else
+                {
+                    return AZStd::forward<Fn>(fn)(AZStd::forward<ElementIter1>(elementIter1).m_inner,
+                        AZStd::forward<ElementIter2>(elementIter2).m_inner);
+                }
+            }
+        }
+#endif
         //! reference to parent join_with_view
         Parent* m_parent{};
     };

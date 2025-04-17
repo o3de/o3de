@@ -22,11 +22,13 @@ namespace ScriptCanvas
 
         TransformType FromRotation(QuaternionType rotation);
 
-        TransformType FromRotationAndTranslation(QuaternionType rotation, Vector3Type translation);
-
         TransformType FromScale(NumberType scale);
 
         TransformType FromTranslation(Vector3Type translation);
+
+        TransformType FromRotationAndTranslation(QuaternionType rotation, Vector3Type translation);
+
+        TransformType FromRotationScaleAndTranslation(QuaternionType rotation, NumberType scale, Vector3Type translation);
 
         Vector3Type GetRight(const TransformType& source, NumberType scale);
 
@@ -59,3 +61,5 @@ namespace ScriptCanvas
         NumberType ToScale(const TransformType& source);
     } // namespace TransformFunctions
 } // namespace ScriptCanvas
+
+#include <Include/ScriptCanvas/Libraries/Math/Transform.generated.h>

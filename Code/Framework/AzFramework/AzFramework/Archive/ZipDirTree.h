@@ -20,7 +20,7 @@ namespace AZ::IO::ZipDir
     class FileEntryTree
     {
     public:
-        AZ_CLASS_ALLOCATOR(FileEntryTree, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(FileEntryTree, AZ::SystemAllocator);
         ~FileEntryTree () {Clear(); }
 
         // adds a file to this directory

@@ -26,7 +26,7 @@ namespace O3DE::ProjectManager
 
         m_header = new ScreenHeader(this);
         m_header->setTitle(tr(""));
-        m_header->setSubTitle(tr("Gem Repositories"));
+        m_header->setSubTitle(tr("Remote Sources"));
         connect(m_header->backButton(), &QPushButton::clicked, this, &GemsGemRepoScreen::HandleBackButton);
         vLayout->addWidget(m_header);
 

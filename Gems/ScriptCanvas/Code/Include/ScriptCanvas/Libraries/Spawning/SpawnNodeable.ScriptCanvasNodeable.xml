@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<ScriptCanvas Include="Include/ScriptCanvas/Libraries/Spawning/SpawnNodeable.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<ScriptCanvas Include="Include/ScriptCanvas/Libraries/Spawning/SpawnNodeable.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+			  xsi:noNamespaceSchemaLocation="../../AutoGen/ScriptCanvasNodeable.xsd">
     <Class Name="SpawnNodeable"
         QualifiedName="Nodeables::Spawning::SpawnNodeable"
         PreferredClassName="Spawn"
@@ -8,7 +9,7 @@
         Namespace="ScriptCanvas"
         Description="Spawns a selected prefab">
 
-        <Input Name="Request Spawn" OutputName="Spawn Requested">
+        <Input Name="Request Spawn" OutputName="Spawn Requested" Description="">
             <Parameter Name="SpawnTicket" Type="AzFramework::EntitySpawnTicket" Description="Ticket instance assosiated with spawnable asset."/>
             <Parameter Name="ParentId" Type="AZ::EntityId" Description="Optional parent to assign spawned container entity to."/>
             <Parameter Name="Local Translation" Type="Data::Vector3Type" Description="Position to spawn."/>

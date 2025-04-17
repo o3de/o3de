@@ -68,7 +68,7 @@ namespace GraphCanvas
             : public QGraphicsWidget
         {
         public:
-            AZ_CLASS_ALLOCATOR(WrappedNodeLayout, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(WrappedNodeLayout, AZ::SystemAllocator);
             WrappedNodeLayout(WrapperNodeLayoutComponent& wrapperLayoutComponent);
             ~WrappedNodeLayout();
             
@@ -96,7 +96,7 @@ namespace GraphCanvas
                 HasElements,
             };
 
-            AZ_CLASS_ALLOCATOR(WrappedNodeActionGraphicsWidget, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(WrappedNodeActionGraphicsWidget, AZ::SystemAllocator);
             WrappedNodeActionGraphicsWidget(WrapperNodeLayoutComponent& wrapperLayoutComponent);
 
             void OnAddedToScene();
@@ -144,15 +144,15 @@ namespace GraphCanvas
 
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
         {
-            dependent.push_back(AZ_CRC("GraphCanvas_NodeLayoutSupportService", 0xa8b639be));
-            dependent.push_back(AZ_CRC("GraphCanvas_TitleService", 0xfe6d63bc));
-            dependent.push_back(AZ_CRC("GraphCanvas_SlotsContainerService", 0x948b6696));
+            dependent.push_back(AZ_CRC_CE("GraphCanvas_NodeLayoutSupportService"));
+            dependent.push_back(AZ_CRC_CE("GraphCanvas_TitleService"));
+            dependent.push_back(AZ_CRC_CE("GraphCanvas_SlotsContainerService"));
         }
 
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC("GraphCanvas_NodeService", 0xcc0f32cc));
-            required.push_back(AZ_CRC("GraphCanvas_StyledGraphicItemService", 0xeae4cdf4));
+            required.push_back(AZ_CRC_CE("GraphCanvas_NodeService"));
+            required.push_back(AZ_CRC_CE("GraphCanvas_StyledGraphicItemService"));
         }
 
         void Init() override;

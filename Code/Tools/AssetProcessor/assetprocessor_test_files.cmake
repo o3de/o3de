@@ -17,7 +17,6 @@ set(FILES
     testdata/EmptyDummyProject/AssetProcessorGamePlatformConfig.setreg
     testdata/DummyProject/AssetProcessorGamePlatformConfig.setreg
     native/tests/AssetProcessorTest.h
-    native/tests/AssetProcessorTest.cpp
     native/tests/BaseAssetProcessorTest.h
     native/tests/assetdatabase/AssetDatabaseTest.cpp
     native/tests/resourcecompiler/RCControllerTest.cpp
@@ -43,6 +42,13 @@ set(FILES
     native/tests/assetmanager/AssetManagerTestingBase.h
     native/tests/assetmanager/IntermediateAssetTests.cpp
     native/tests/assetmanager/IntermediateAssetTests.h
+    native/tests/assetmanager/DelayRelocationTests.cpp
+    native/tests/assetmanager/DelayRelocationTests.h
+    native/tests/assetmanager/SourceDependencyTests.cpp
+    native/tests/assetmanager/SourceDependencyTests.h
+    native/tests/assetmanager/InitialScanSkippingTests.cpp
+    native/tests/assetmanager/Validators/LfsPointerFileValidatorTests.cpp
+    native/tests/assetmanager/Validators/LfsPointerFileValidatorTests.h
     native/tests/utilities/assetUtilsTest.cpp
     native/tests/platformconfiguration/platformconfigurationtests.cpp
     native/tests/platformconfiguration/platformconfigurationtests.h
@@ -66,9 +72,13 @@ set(FILES
     native/tests/ApplicationManagerTests.h
     native/tests/BuilderManagerTests.cpp
     native/tests/BuilderManagerTests.h
+    native/tests/MockAssetDatabaseRequestsHandler.h
+    native/tests/SourceAssetReferenceTests.cpp
+    native/tests/UuidManagerTests.cpp
     native/unittests/AssetCacheServerUnitTests.cpp
     native/unittests/AssetProcessingStateDataUnitTests.cpp
-    native/unittests/AssetProcessingStateDataUnitTests.h
+    native/unittests/AssetProcessorUnitTests.h
+    native/unittests/AssetProcessorUnitTests.cpp
     native/unittests/AssetProcessorManagerUnitTests.cpp
     native/unittests/AssetProcessorManagerUnitTests.h
     native/unittests/AssetProcessorServerUnitTests.cpp
@@ -76,19 +86,14 @@ set(FILES
     native/unittests/AssetScannerUnitTests.cpp
     native/unittests/AssetScannerUnitTests.h
     native/unittests/ConnectionUnitTests.cpp
-    native/unittests/ConnectionUnitTests.h
     native/unittests/ConnectionManagerUnitTests.cpp
-    native/unittests/ConnectionManagerUnitTests.h
     native/unittests/FileWatcherUnitTests.cpp
-    native/unittests/FileWatcherUnitTests.h
     native/unittests/PlatformConfigurationUnitTests.cpp
-    native/unittests/PlatformConfigurationUnitTests.h
     native/unittests/RCcontrollerUnitTests.cpp
     native/unittests/RCcontrollerUnitTests.h
-    native/unittests/UnitTestRunner.cpp
-    native/unittests/UnitTestRunner.h
+    native/unittests/UnitTestUtils.cpp
+    native/unittests/UnitTestUtils.h
     native/unittests/UtilitiesUnitTests.cpp
-    native/unittests/UtilitiesUnitTests.h
     native/unittests/AssetRequestHandlerUnitTests.cpp
     native/unittests/AssetRequestHandlerUnitTests.h
     native/unittests/MockConnectionHandler.h

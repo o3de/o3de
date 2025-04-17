@@ -11,6 +11,7 @@
 
 // AZ
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 
 // Graph Model
 #include <GraphModel/Model/Slot.h>
@@ -32,7 +33,7 @@ namespace LandscapeCanvas
         }
     }
 
-    const QString DistributionFilterNode::TITLE = QObject::tr("Distribution Filter");
+    const char* DistributionFilterNode::TITLE = "Distribution Filter";
 
     DistributionFilterNode::DistributionFilterNode(GraphModel::GraphPtr graph)
         : BaseAreaFilterNode(graph)
@@ -45,11 +46,13 @@ namespace LandscapeCanvas
     {
         GraphModel::DataTypePtr gradientDataType = GetGraphContext()->GetDataType(LandscapeCanvasDataTypeEnum::Gradient);
 
-        RegisterSlot(GraphModel::SlotDefinition::CreateInputData(
+        RegisterSlot(AZStd::make_shared<GraphModel::SlotDefinition>(
+            GraphModel::SlotDirection::Input,
+            GraphModel::SlotType::Data,
             INBOUND_GRADIENT_SLOT_ID,
             INBOUND_GRADIENT_SLOT_LABEL.toUtf8().constData(),
-            { gradientDataType },
-            AZStd::any(AZ::EntityId()),
-            INBOUND_GRADIENT_INPUT_SLOT_DESCRIPTION.toUtf8().constData()));
+            INBOUND_GRADIENT_INPUT_SLOT_DESCRIPTION.toUtf8().constData(),
+            GraphModel::DataTypeList{ gradientDataType },
+            AZStd::any(AZ::EntityId())));
     }
 } // namespace LandscapeCanvas

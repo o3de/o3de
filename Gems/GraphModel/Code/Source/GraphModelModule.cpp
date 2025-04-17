@@ -20,7 +20,7 @@ namespace GraphModel
     {
     public:
         AZ_RTTI(GraphModelModule, "{217B9E5D-C0FC-4D9D-AD75-AA3B23566A96}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(GraphModelModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GraphModelModule, AZ::SystemAllocator);
 
         GraphModelModule()
             : AZ::Module()
@@ -46,7 +46,8 @@ namespace GraphModel
     };
 }
 
-// DO NOT MODIFY THIS LINE UNLESS YOU RENAME THE GEM
-// The first parameter should be GemName_GemIdLower
-// The second should be the fully qualified name of the class above
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME), GraphModel::GraphModelModule)
+#else
 AZ_DECLARE_MODULE_CLASS(Gem_GraphModel, GraphModel::GraphModelModule)
+#endif

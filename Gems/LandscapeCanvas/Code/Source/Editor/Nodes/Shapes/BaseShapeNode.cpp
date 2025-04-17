@@ -12,6 +12,7 @@
 // AZ
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 
 // Graph Model
 #include <GraphModel/Integration/Helpers.h>
@@ -23,7 +24,7 @@
 
 namespace LandscapeCanvas
 {
-    const QString BaseShapeNode::SHAPE_CATEGORY_TITLE = QObject::tr("Shape");
+    const char* BaseShapeNode::SHAPE_CATEGORY_TITLE = "Shape";
     const QString BaseShapeNode::BOUNDS_SLOT_LABEL = QObject::tr("Bounds");
     const QString BaseShapeNode::BOUNDS_OUTPUT_SLOT_DESCRIPTION = QObject::tr("Bounds output slot");
     const char* BaseShapeNode::BOUNDS_SLOT_ID = "Bounds";
@@ -59,10 +60,13 @@ namespace LandscapeCanvas
         CreateEntityNameSlot();
 
         GraphModel::DataTypePtr dataType = GetGraphContext()->GetDataType(LandscapeCanvasDataTypeEnum::Bounds);
-        RegisterSlot(GraphModel::SlotDefinition::CreateOutputData(
+
+        RegisterSlot(AZStd::make_shared<GraphModel::SlotDefinition>(
+            GraphModel::SlotDirection::Output,
+            GraphModel::SlotType::Data,
             BOUNDS_SLOT_ID,
             BOUNDS_SLOT_LABEL.toUtf8().constData(),
-            dataType,
-            BOUNDS_OUTPUT_SLOT_DESCRIPTION.toUtf8().constData()));
+            BOUNDS_OUTPUT_SLOT_DESCRIPTION.toUtf8().constData(),
+            GraphModel::DataTypeList{ dataType }));
     }
 } // namespace LandscapeCanvas

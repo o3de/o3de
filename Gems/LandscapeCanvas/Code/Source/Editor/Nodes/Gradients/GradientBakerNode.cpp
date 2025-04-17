@@ -12,6 +12,8 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 
+#include <AzCore/std/smart_ptr/make_shared.h>
+
 #include <GraphModel/Model/Slot.h>
 
 #include <Editor/Core/GraphContext.h>
@@ -29,7 +31,7 @@ namespace LandscapeCanvas
         }
     }
 
-    const QString GradientBakerNode::TITLE = QObject::tr("Gradient Baker");
+    const char* GradientBakerNode::TITLE = "Gradient Baker";
 
     GradientBakerNode::GradientBakerNode(GraphModel::GraphPtr graph)
         : BaseGradientNode(graph)
@@ -40,12 +42,12 @@ namespace LandscapeCanvas
 
     const char* GradientBakerNode::GetTitle() const
     {
-        return TITLE.toUtf8().constData();
+        return TITLE;
     }
 
     const char* GradientBakerNode::GetSubTitle() const
     {
-        return GRADIENT_GENERATOR_TITLE.toUtf8().constData();
+        return GRADIENT_GENERATOR_TITLE;
     }
 
     const BaseNode::BaseNodeType GradientBakerNode::GetBaseNodeType() const
@@ -61,24 +63,30 @@ namespace LandscapeCanvas
         GraphModel::DataTypePtr gradientDataType = GraphContext::GetInstance()->GetDataType(LandscapeCanvasDataTypeEnum::Gradient);
         GraphModel::DataTypePtr pathDataType = GraphContext::GetInstance()->GetDataType(LandscapeCanvasDataTypeEnum::Path);
 
-        RegisterSlot(GraphModel::SlotDefinition::CreateInputData(
+        RegisterSlot(AZStd::make_shared<GraphModel::SlotDefinition>(
+            GraphModel::SlotDirection::Input,
+            GraphModel::SlotType::Data,
             INPUT_BOUNDS_SLOT_ID,
             INPUT_BOUNDS_SLOT_LABEL.toUtf8().constData(),
-            { boundsDataType },
-            AZStd::any(AZ::EntityId()),
-            INPUT_BOUNDS_INPUT_SLOT_DESCRIPTION.toUtf8().constData()));
+            INPUT_BOUNDS_INPUT_SLOT_DESCRIPTION.toUtf8().constData(),
+            GraphModel::DataTypeList{ boundsDataType },
+            AZStd::any(AZ::EntityId())));
 
-        RegisterSlot(GraphModel::SlotDefinition::CreateInputData(
+        RegisterSlot(AZStd::make_shared<GraphModel::SlotDefinition>(
+            GraphModel::SlotDirection::Input,
+            GraphModel::SlotType::Data,
             INBOUND_GRADIENT_SLOT_ID,
             INBOUND_GRADIENT_SLOT_LABEL.toUtf8().constData(),
-            { gradientDataType },
-            AZStd::any(AZ::EntityId()),
-            INBOUND_GRADIENT_INPUT_SLOT_DESCRIPTION.toUtf8().constData()));
+            INBOUND_GRADIENT_INPUT_SLOT_DESCRIPTION.toUtf8().constData(),
+            GraphModel::DataTypeList{ gradientDataType },
+            AZStd::any(AZ::EntityId())));
 
-        RegisterSlot(GraphModel::SlotDefinition::CreateOutputData(
+        RegisterSlot(AZStd::make_shared<GraphModel::SlotDefinition>(
+            GraphModel::SlotDirection::Output,
+            GraphModel::SlotType::Data,
             OUTPUT_IMAGE_SLOT_ID,
             OUTPUT_IMAGE_SLOT_LABEL.toUtf8().constData(),
-            pathDataType,
-            OUTPUT_IMAGE_SLOT_DESCRIPTION.toUtf8().constData()));
+            OUTPUT_IMAGE_SLOT_DESCRIPTION.toUtf8().constData(),
+            GraphModel::DataTypeList{ pathDataType }));
     }
 } // namespace LandscapeCanvas

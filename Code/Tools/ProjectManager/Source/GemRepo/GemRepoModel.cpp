@@ -11,6 +11,7 @@
 
 #include <QItemSelectionModel>
 #include <QMessageBox>
+#include <QSortFilterProxyModel>
 
 namespace O3DE::ProjectManager
 {
@@ -18,12 +19,18 @@ namespace O3DE::ProjectManager
         : QStandardItemModel(parent)
     {
         m_selectionModel = new QItemSelectionModel(this, parent);
-        m_gemModel = new GemModel(this);
     }
 
     QItemSelectionModel* GemRepoModel::GetSelectionModel() const
     {
         return m_selectionModel;
+    }
+
+    void SetItemDataSorted(QStandardItem* item, const QSet<QString>& stringSet, int role)
+    {
+        auto stringList = QStringList(stringSet.values());
+        stringList.sort(Qt::CaseInsensitive);
+        item->setData(stringList, role);
     }
 
     void GemRepoModel::AddGemRepo(const GemRepoInfo& gemRepoInfo)
@@ -33,7 +40,7 @@ namespace O3DE::ProjectManager
         item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
 
         item->setData(gemRepoInfo.m_name, RoleName);
-        item->setData(gemRepoInfo.m_creator, RoleCreator);
+        item->setData(gemRepoInfo.m_origin, RoleCreator);
         item->setData(gemRepoInfo.m_summary, RoleSummary);
         item->setData(gemRepoInfo.m_isEnabled, RoleIsEnabled);
         item->setData(gemRepoInfo.m_directoryLink, RoleDirectoryLink);
@@ -41,15 +48,75 @@ namespace O3DE::ProjectManager
         item->setData(gemRepoInfo.m_lastUpdated, RoleLastUpdated);
         item->setData(gemRepoInfo.m_path, RolePath);
         item->setData(gemRepoInfo.m_additionalInfo, RoleAdditionalInfo);
-        item->setData(gemRepoInfo.m_includedGemUris, RoleIncludedGems);
+        item->setData(static_cast<int>(gemRepoInfo.m_badgeType), RoleBadgeType);
 
         appendRow(item);
 
-        QVector<GemInfo> includedGemInfos = GetIncludedGemInfos(item->index());
-
-        for (const GemInfo& gemInfo : includedGemInfos)
+        if (!gemRepoInfo.m_repoUri.isEmpty())
         {
-            m_gemModel->AddGem(gemInfo);
+            // gems - including gems from deactivated repos
+            const auto& gemInfosResult = PythonBindingsInterface::Get()->GetGemInfosForRepo(gemRepoInfo.m_repoUri, /*enabledOnly*/false);
+            if (gemInfosResult.IsSuccess())
+            {
+                const QVector<GemInfo>& gemInfos = gemInfosResult.GetValue();
+                if (!gemInfos.isEmpty())
+                {
+                    // use a set to not include duplicate names because there are multiple versions of a gem
+                    QSet<QString> includedGems;
+                    for (const auto& gemInfo : gemInfos)
+                    {
+                        includedGems.insert(gemInfo.m_displayName.isEmpty() ? gemInfo.m_name : gemInfo.m_displayName);
+                    }
+                    SetItemDataSorted(item, includedGems, RoleIncludedGems);
+                }
+            }
+            else
+            {
+                QMessageBox::critical(nullptr, tr("Gems not found"), tr("Cannot find info for gems from repo %1").arg(gemRepoInfo.m_name));
+            }
+
+            // projects - including projects from deactivated repos
+            const auto& projectInfosResult = PythonBindingsInterface::Get()->GetProjectsForRepo(gemRepoInfo.m_repoUri, /*enabledOnly*/false);
+            if (projectInfosResult.IsSuccess())
+            {
+                const QVector<ProjectInfo>& projectInfos = projectInfosResult.GetValue();
+                if (!projectInfos.isEmpty())
+                {
+                    // use a set to not include duplicate names because there are multiple versions of a gem
+                    QSet<QString> includedProjects;
+                    for (const auto& projectInfo : projectInfos)
+                    {
+                        includedProjects.insert(projectInfo.m_displayName.isEmpty() ? projectInfo.m_projectName : projectInfo.m_displayName);
+                    }
+                    SetItemDataSorted(item, includedProjects, RoleIncludedProjects);
+                }
+            }
+            else
+            {
+                QMessageBox::critical(nullptr, tr("Projects not found"), tr("Cannot find info for projects from repo %1").arg(gemRepoInfo.m_name));
+            }
+
+            // project templates - including projects from deactivated repos
+            const auto& projectTemplateInfosResult =
+                PythonBindingsInterface::Get()->GetProjectTemplatesForRepo(gemRepoInfo.m_repoUri, /*enabledOnly*/false);
+            if (projectTemplateInfosResult.IsSuccess())
+            {
+                const QVector<ProjectTemplateInfo>& projectTemplateInfos = projectTemplateInfosResult.GetValue();
+                if (!projectTemplateInfos.isEmpty())
+                {
+                    // use a set to not include duplicate names because there are multiple versions of a gem
+                    QSet<QString> includedProjectTemplates;
+                    for (const auto& projectTemplateInfo : projectTemplateInfos)
+                    {
+                        includedProjectTemplates.insert(projectTemplateInfo.m_displayName.isEmpty() ? projectTemplateInfo.m_name : projectTemplateInfo.m_displayName);
+                    }
+                    SetItemDataSorted(item, includedProjectTemplates, RoleIncludedProjectTemplates);
+                }
+            }
+            else
+            {
+                QMessageBox::critical(nullptr, tr("Project templates not found"), tr("Cannot find info for project templates from repo %1").arg(gemRepoInfo.m_name));
+            }
         }
     }
 
@@ -98,41 +165,41 @@ namespace O3DE::ProjectManager
         return modelIndex.data(RolePath).toString();
     }
 
-    QStringList GemRepoModel::GetIncludedGemUris(const QModelIndex& modelIndex)
+    GemRepoInfo::BadgeType GemRepoModel::GetBadgeType(const QModelIndex& modelIndex)
     {
-        return modelIndex.data(RoleIncludedGems).toStringList();
+        return static_cast<GemRepoInfo::BadgeType>(modelIndex.data(RoleBadgeType).toInt());
     }
 
-    QVector<Tag> GemRepoModel::GetIncludedGemTags(const QModelIndex& modelIndex)
+    QVector<Tag> TagsFromStringList(const QStringList& stringList)
     {
-        QVector<Tag> tags;
-        const QVector<GemInfo>& gemInfos = GetIncludedGemInfos(modelIndex);
-        tags.reserve(gemInfos.size());
-        for (const GemInfo& gemInfo : gemInfos)
+        if (stringList.isEmpty())
         {
-            tags.append({ gemInfo.m_displayName, gemInfo.m_name });
+            return {};
+        }
+
+        QVector<Tag> tags;
+        tags.reserve(stringList.size());
+        for (const QString& tagName : stringList)
+        {
+            tags.append({ tagName, tagName });
         }
 
         return tags;
     }
 
-    QVector<GemInfo> GemRepoModel::GetIncludedGemInfos(const QModelIndex& modelIndex)
+    QVector<Tag> GemRepoModel::GetIncludedGemTags(const QModelIndex& modelIndex)
     {
-        QString repoUri = GetRepoUri(modelIndex);
-        if (!repoUri.isEmpty())
-        {
-            const AZ::Outcome<QVector<GemInfo>, AZStd::string>& gemInfosResult = PythonBindingsInterface::Get()->GetGemInfosForRepo(repoUri);
-            if (gemInfosResult.IsSuccess())
-            {
-                return gemInfosResult.GetValue();
-            }
-            else
-            {
-                QMessageBox::critical(nullptr, tr("Gems not found"), tr("Cannot find info for gems from repo %1").arg(GetName(modelIndex)));
-            }
-        }
+        return TagsFromStringList(modelIndex.data(RoleIncludedGems).toStringList());
+    }
 
-        return QVector<GemInfo>();
+    QVector<Tag> GemRepoModel::GetIncludedProjectTags(const QModelIndex& modelIndex)
+    {
+        return TagsFromStringList(modelIndex.data(RoleIncludedProjects).toStringList());
+    }
+
+    QVector<Tag> GemRepoModel::GetIncludedProjectTemplateTags(const QModelIndex& modelIndex)
+    {
+        return TagsFromStringList(modelIndex.data(RoleIncludedProjectTemplates).toStringList());
     }
 
     bool GemRepoModel::IsEnabled(const QModelIndex& modelIndex)
@@ -142,12 +209,59 @@ namespace O3DE::ProjectManager
 
     void GemRepoModel::SetEnabled(QAbstractItemModel& model, const QModelIndex& modelIndex, bool isEnabled)
     {
-        model.setData(modelIndex, isEnabled, RoleIsEnabled);
+        QSortFilterProxyModel* proxyModel = qobject_cast<QSortFilterProxyModel*>(&model);
+        if (proxyModel)
+        {
+            GemRepoModel* repoModel = qobject_cast<GemRepoModel*>(proxyModel->sourceModel());
+            if (repoModel)
+            {
+                repoModel->SetRepoEnabled(proxyModel->mapToSource(modelIndex), isEnabled);
+            }
+        }
+    }
+
+    void GemRepoModel::SetRepoEnabled(const QModelIndex& modelIndex, bool isEnabled)
+    {
+        const QString repoUri = GetRepoUri(modelIndex);
+        const QString repoName = GetName(modelIndex);
+        if(PythonBindingsInterface::Get()->SetRepoEnabled(repoUri, isEnabled))
+        {
+            if (isEnabled)
+            {
+                emit ShowToastNotification(tr("%1 activated").arg(repoName));
+            }
+            else
+            {
+                emit ShowToastNotification(tr("%1 deactivated").arg(repoName));
+            }
+
+            setData(modelIndex, isEnabled, RoleIsEnabled);
+        }
+        else
+        {
+            QMessageBox::critical(nullptr, tr("Failed to change repo status"), tr("Failed to change the repo status for %1.  The local repo.json cache file could be corrupt or the repo.json was not downloaded").arg(repoName));
+        }
     }
 
     bool GemRepoModel::HasAdditionalInfo(const QModelIndex& modelIndex)
     {
         return !modelIndex.data(RoleAdditionalInfo).toString().isEmpty();
     }
+
+    QPersistentModelIndex GemRepoModel::FindModelIndexByRepoUri(const QString& repoUri)
+    {
+        // the number of repos should be small enough that we don't need a hash
+        for (int row = 0; row < rowCount(); ++row)
+        {
+            QModelIndex modelIndex = index(row, /*column*/ 0);
+            if (modelIndex.isValid() && modelIndex.data(RoleRepoUri).toString() == repoUri)
+            {
+                return modelIndex;
+            }
+        }
+
+        return {};
+    }
+
 
 } // namespace O3DE::ProjectManager

@@ -5,14 +5,14 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#include <Atom/RHI/Factory.h>
+#include <Atom/RHI/ImagePool.h>
+#include <Atom/RHI/RHISystemInterface.h>
+#include <Atom/RHI/RHIUtils.h>
 #include <AzCore/Jobs/JobCompletion.h>
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <Atom/RHI/Factory.h>
-#include <Atom/RHI/RHIUtils.h>
-#include <Atom/RHI/ImagePool.h>
-#include <Atom/RHI/RHISystemInterface.h>
 
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Public/Scene.h>
@@ -106,7 +106,7 @@ namespace AZ
                 HairGlobalSettingsRequestBus::Handler::BusDisconnect();
             }
 
-            void HairFeatureProcessor::ApplyRenderPipelineChange(RPI::RenderPipeline* renderPipeline)
+            void HairFeatureProcessor::AddRenderPasses(RPI::RenderPipeline* renderPipeline)
             {
                 AddHairParentPass(renderPipeline);
             }
@@ -329,6 +329,14 @@ namespace AZ
                     CreatePerPassResources();
                     return true;
                 }
+                // check if the reference pass of insert position exist
+                Name opaquePassName = Name("OpaquePass");
+                if (renderPipeline->FindFirstPass(opaquePassName) == nullptr)
+                {
+                    AZ_Warning("HairFeatureProcessor", false, "Can't find %s in the render pipeline. Atom TressFX won't be rendered", opaquePassName.GetCStr());
+                    return false;
+                }
+
                 const char* passRequestAssetFilePath = "Passes/AtomTressFX_PassRequest.azasset";
                 m_hairPassRequestAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(
                     passRequestAssetFilePath, AZ::RPI::AssetUtils::TraceLevel::Warning);
@@ -369,21 +377,8 @@ namespace AZ
                 return success;
             }
 
-            void HairFeatureProcessor::OnRenderPipelineAdded(RPI::RenderPipelinePtr renderPipeline)
-            {
-                // Proceed only if this is the main pipeline that contains the parent pass
-                if (!HasHairParentPass(renderPipeline.get()))
-                {
-                    return;
-                }
-
-                Init(renderPipeline.get());
-
-                // Mark for all passes to evacuate their render data and recreate it.
-                m_forceRebuildRenderData = true;
-            }
-
-            void HairFeatureProcessor::OnRenderPipelineRemoved([[maybe_unused]] RPI::RenderPipeline* renderPipeline)
+            void HairFeatureProcessor::OnRenderPipelineChanged(RPI::RenderPipeline* renderPipeline,
+                RPI::SceneNotification::RenderPipelineChangeType changeType)
             {
                 // Proceed only if this is the main pipeline that contains the parent pass
                 if (!HasHairParentPass(renderPipeline))
@@ -391,22 +386,19 @@ namespace AZ
                     return;
                 }
 
-                m_renderPipeline = nullptr;
-                ClearPasses();
-            }
-
-            void HairFeatureProcessor::OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline)
-            {
-                // Proceed only if this is the main pipeline that contains the parent pass
-                if (!HasHairParentPass(renderPipeline))
+                if (changeType == RPI::SceneNotification::RenderPipelineChangeType::Added
+                    || changeType == RPI::SceneNotification::RenderPipelineChangeType::PassChanged)
                 {
-                    return;
+                    Init(renderPipeline);
+
+                    // Mark for all passes to evacuate their render data and recreate it.
+                    m_forceRebuildRenderData = true;
                 }
-
-                Init(renderPipeline);
-
-                // Mark for all passes to evacuate their render data and recreate it.
-                m_forceRebuildRenderData = true;
+                else if (changeType == RPI::SceneNotification::RenderPipelineChangeType::Removed)
+                {
+                    m_renderPipeline = nullptr;
+                    ClearPasses();
+                }
             }
 
             bool HairFeatureProcessor::Init(RPI::RenderPipeline* renderPipeline)

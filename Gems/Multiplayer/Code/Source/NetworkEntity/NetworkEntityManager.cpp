@@ -117,6 +117,11 @@ namespace Multiplayer
         return NetworkEntityHandle(entity, &m_networkEntityTracker);
     }
 
+    void NetworkEntityManager::RemoveEntityFromEntityMap(NetEntityId netEntityId)
+    {
+        m_networkEntityTracker.erase(netEntityId);
+    }
+
     void NetworkEntityManager::MarkForRemoval(const ConstNetworkEntityHandle& entityHandle)
     {
         if (entityHandle.Exists())
@@ -231,8 +236,7 @@ namespace Multiplayer
 
     void NetworkEntityManager::HandleLocalRpcMessage(NetworkEntityRpcMessage& message)
     {
-        AZ_Assert(message.GetRpcDeliveryType() == RpcDeliveryType::ServerToAuthority, "Only ServerToAuthority rpc messages can be locally deferred");
-        m_localDeferredRpcMessages.emplace_back(AZStd::move(message));
+        m_localDeferredRpcMessages.emplace_back(message);
     }
 
     void NetworkEntityManager::HandleEntitiesExitDomain(const NetEntityIdSet& entitiesNotInDomain)
@@ -241,7 +245,7 @@ namespace Multiplayer
         {
             NetworkEntityHandle entityHandle = m_networkEntityTracker.Get(exitingId);
 
-            bool safeToExit = IsHierarchySafeToExit(entityHandle, entitiesNotInDomain);;
+            bool safeToExit = IsHierarchySafeToExit(entityHandle, entitiesNotInDomain);
 
             // Validate that we aren't already planning to remove this entity
             if (safeToExit)
@@ -276,6 +280,7 @@ namespace Multiplayer
     {
         if (alwaysRelevant)
         {
+            AZ_Assert(entityHandle.GetNetBindComponent()->IsNetEntityRoleAuthority(), "Marking an entity always relevant can only be done on an authoritative entity");
             m_alwaysRelevantToClients.emplace(entityHandle);
         }
         else
@@ -288,6 +293,7 @@ namespace Multiplayer
     {
         if (alwaysRelevant)
         {
+            AZ_Assert(entityHandle.GetNetBindComponent()->IsNetEntityRoleAuthority(), "Marking an entity always relevant can only be done on an authoritative entity");
             m_alwaysRelevantToServers.emplace(entityHandle);
         }
         else
@@ -350,17 +356,36 @@ namespace Multiplayer
 
     void NetworkEntityManager::DispatchLocalDeferredRpcMessages()
     {
-        for (NetworkEntityRpcMessage& rpcMessage : m_localDeferredRpcMessages)
+        // Local messages may get queued up while we process other local messages,
+        // so let @m_localDeferredRpcMessages accumulate,
+        // while we work on the current messages.
+        AZStd::deque<NetworkEntityRpcMessage> copy;
+        copy.swap(m_localDeferredRpcMessages);
+
+        for (NetworkEntityRpcMessage& rpcMessage : copy)
         {
             AZ::Entity* entity = m_networkEntityTracker.GetRaw(rpcMessage.GetEntityId());
             if (entity != nullptr)
             {
                 NetBindComponent* netBindComponent = m_networkEntityTracker.GetNetBindComponent(entity);
                 AZ_Assert(netBindComponent != nullptr, "Attempting to send an RPC to an entity with no NetBindComponent");
-                netBindComponent->HandleRpcMessage(nullptr, NetEntityRole::Server, rpcMessage);
+                switch(rpcMessage.GetRpcDeliveryType())
+                {
+                case RpcDeliveryType::AuthorityToClient:
+                case RpcDeliveryType::AuthorityToAutonomous:
+                    netBindComponent->HandleRpcMessage(nullptr, NetEntityRole::Authority, rpcMessage);
+                    break;
+                case RpcDeliveryType::AutonomousToAuthority:
+                    netBindComponent->HandleRpcMessage(nullptr, NetEntityRole::Autonomous, rpcMessage);
+                    break;
+                case RpcDeliveryType::ServerToAuthority:
+                    netBindComponent->HandleRpcMessage(nullptr, NetEntityRole::Server, rpcMessage);
+                    break;
+                case RpcDeliveryType::None:
+                    break;
+                }
             }
         }
-        m_localDeferredRpcMessages.clear();
     }
 
     void NetworkEntityManager::Reset()
@@ -386,20 +411,15 @@ namespace Multiplayer
 
             if (removeEntity != nullptr)
             {
-                // We need to notify out that our entity is about to deactivate so that other entities can read state before we clean up
-                NetBindComponent* netBindComponent = removeEntity.GetNetBindComponent();
-                AZ_Assert(netBindComponent != nullptr, "NetBindComponent not found on networked entity");
-                netBindComponent->StopEntity();
-
-                // At the moment, we spawn one entity at a time and avoid Prefab API calls and never get a spawn ticket,
-                // so this is the right way for now. Once we support prefabs we can use AzFramework::SpawnableEntitiesContainer
-                // Additionally, prefabs spawning is async! Whereas we currently create entities immediately, see:
-                // @NetworkEntityManager::CreateEntitiesImmediate
+                // If we've spawned entities through @NetworkEntityManager::CreateEntitiesImmediate
+                // then we destroy those entities here by processing the removal list.
+                // Note that if we've spawned entities through @NetworkPrefabSpawnerComponent::SpawnPrefab
+                // we should instead use the SpawnableEntitiesManager to destroy them.
                 AzFramework::GameEntityContextRequestBus::Broadcast(
-                    &AzFramework::GameEntityContextRequestBus::Events::DestroyGameEntity, netBindComponent->GetEntityId());
-            }
+                    &AzFramework::GameEntityContextRequestBus::Events::DestroyGameEntity, removeEntity.GetEntity()->GetId());
 
-            m_networkEntityTracker.erase(entityId);
+                m_networkEntityTracker.erase(entityId);
+            }
         }
     }
 
@@ -444,6 +464,12 @@ namespace Multiplayer
                 auto it = originalToCloneIdMap.find(parentId);
                 if (it != originalToCloneIdMap.end())
                 {
+                    // Note: The need to remove and readd the transform component parent will go away once this method replaces serializeContext->CloneObject
+                    //    with the standard AzFramework::SpawnableEntitiesInterface::SpawnEntities
+                    // This stops SetParentRelative() from printing distracting warnings, due to the cloned component m_entity being null.
+                    // AddComponent properly sets the component's m_entity. 
+                    clone->RemoveComponent(cloneTransformComponent);
+                    clone->AddComponent(cloneTransformComponent);
                     cloneTransformComponent->SetParentRelative(it->second);
                 }
                 else
@@ -462,7 +488,12 @@ namespace Multiplayer
 
             const NetEntityId netEntityId = NextId();
             cloneNetBindComponent->PreInit(clone, prefabEntityId, netEntityId, netEntityRole);
-            cloneTransformComponent->SetWorldTM(transform);
+
+            // Set the transform if we're a root entity (have no parent); otherwise, keep the local transform
+            if (!parentId.IsValid() || removeParent)
+            {
+                cloneTransformComponent->SetWorldTM(transform);
+            }
 
             if (autoActivate == AutoActivate::DoNotActivate)
             {

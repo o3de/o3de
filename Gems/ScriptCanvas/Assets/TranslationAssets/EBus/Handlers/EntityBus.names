@@ -15,6 +15,10 @@
                         "name": "On Entity Activated",
                         "tooltip": "Signals that an entity was activated"
                     },
+                    "exit": {
+                        "name": "On Entity Activated",
+                        "tooltip": "Signaled after Get Body 1 Entity Id is invoked"
+                    },
                     "params": [
                         {
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
@@ -31,6 +35,10 @@
                         "name": "On Entity Deactivated",
                         "tooltip": "Signals that an entity is being deactivated"
                     },
+                    "exit": {
+                        "name": "On Entity Deactivated",
+                        "tooltip": "Signaled after Get Body 1 Entity Id is invoked"
+                    },                    
                     "params": [
                         {
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",

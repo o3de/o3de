@@ -37,13 +37,6 @@ namespace Camera
         virtual void SetViewFromEntityPerspective(const AZ::EntityId& /*entityId*/) {}
 
         /**
-         * Sets the view from the entity's perspective
-         * @param entityId the id of the entity whose perspective is to be used
-         * @param lockCameraMovement disallow camera movement from user input in the editor render viewport.
-         */
-        virtual void SetViewAndMovementLockFromEntityPerspective(const AZ::EntityId& /*entityId*/, bool /*lockCameraMovement*/) {}
-
-        /**
          * Gets the id of the current view entity. Invalid EntityId is returned for the default editor camera
          * @return the entityId of the entity currently being used as the view.  The Invalid entity id is returned for the default editor camera
          */

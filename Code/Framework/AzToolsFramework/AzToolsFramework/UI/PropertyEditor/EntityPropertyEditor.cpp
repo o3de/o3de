@@ -18,27 +18,30 @@ AZ_POP_DISABLE_WARNING
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Component/TransformBus.h>
+#include <AzCore/Console/IConsole.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Utils.h>
-#include <AzCore/Slice/SliceComponent.h>
 #include <AzCore/UserSettings/UserSettings.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/sort.h>
 
-#include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzQtComponents/Components/Style.h>
+#include <AzQtComponents/Components/StyleHelpers.h>
 #include <AzQtComponents/Components/Widgets/DragAndDrop.h>
 #include <AzQtComponents/Components/Widgets/LineEdit.h>
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 #include <AzToolsFramework/API/ComponentModeCollectionInterface.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorMenuIdentifiers.h>
+#include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Entity/EditorEntityRuntimeActivationBus.h>
-#include <AzToolsFramework/Entity/SliceEditorEntityOwnershipServiceBus.h>
 #include <AzToolsFramework/FocusMode/FocusModeInterface.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
@@ -47,12 +50,13 @@ AZ_POP_DISABLE_WARNING
 #include <AzToolsFramework/ComponentMode/ComponentModeDelegate.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
+#include <AzToolsFramework/Prefab/DocumentPropertyEditor/PrefabComponentAdapter.h>
+#include <AzToolsFramework/Prefab/DocumentPropertyEditor/PrefabOverrideLabelHandler.h>
+#include <AzToolsFramework/Prefab/Overrides/PrefabOverridePublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
+#include <AzToolsFramework/Prefab/PrefabEditorPreferences.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceUpdateExecutorInterface.h>
-#include <AzToolsFramework/Slice/SliceDataFlagsCommand.h>
-#include <AzToolsFramework/Slice/SliceMetadataEntityContextBus.h>
-#include <AzToolsFramework/Slice/SliceUtilities.h>
 #include <AzToolsFramework/ToolsComponents/ComponentAssetMimeDataContainer.h>
 #include <AzToolsFramework/ToolsComponents/ComponentMimeData.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
@@ -63,11 +67,11 @@ AZ_POP_DISABLE_WARNING
 #include <AzToolsFramework/ToolsComponents/GenericComponentWrapper.h>
 #include <AzToolsFramework/ToolsComponents/EditorOnlyEntityComponentBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorOnlyEntityComponent.h>
-#include <AzToolsFramework/ToolsComponents/EditorLayerComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorNonUniformScaleComponent.h>
 #include <AzToolsFramework/ToolsMessaging/EntityHighlightBus.h>
 #include <AzToolsFramework/UI/ComponentPalette/ComponentPaletteUtil.hxx>
 #include <AzToolsFramework/UI/ComponentPalette/ComponentPaletteWidget.hxx>
+#include <AzToolsFramework/UI/DocumentPropertyEditor/DocumentPropertyEditor.h>
 #include <AzToolsFramework/UI/PropertyEditor/ComponentEditor.hxx>
 #include <AzToolsFramework/UI/PropertyEditor/ComponentEditorHeader.hxx>
 #include <AzToolsFramework/UI/PropertyEditor/InstanceDataHierarchy.h>
@@ -108,6 +112,7 @@ AZ_POP_DISABLE_WARNING
 void initEntityPropertyEditorResources()
 {
     Q_INIT_RESOURCE(Icons);
+    Q_INIT_RESOURCE(OverrideResources);
 }
 
 namespace AzToolsFramework
@@ -117,6 +122,26 @@ namespace AzToolsFramework
 
     constexpr const char* kPropertyEditorMenuActionMoveUp("editor/propertyEditorMoveUp");
     constexpr const char* kPropertyEditorMenuActionMoveDown("editor/propertyEditorMoveDown");
+
+    static constexpr const char* enableDPECVarName = "ed_enableDPEInspector";
+
+    AZ_CVAR(
+        bool,
+        ed_enableDPEInspector,
+        true,
+        nullptr,
+        AZ::ConsoleFunctorFlags::DontReplicate | AZ::ConsoleFunctorFlags::DontDuplicate,
+        "If set, enables experimental Document Property Editor support for the Entity Inspector");
+
+    static bool ShouldUseDPE()
+    {
+        bool dpeEnabled = true;
+        if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
+        {
+            console->GetCvarValue(enableDPECVarName, dpeEnabled);
+        }
+        return dpeEnabled;
+    }
 
     //since component editors are spaced apart to make room for drop indicator,
     //giving drop logic simple buffer so drops between editors don't go to the bottom
@@ -195,7 +220,13 @@ namespace AzToolsFramework
                     continue;
                 }
 
-                for (auto& [dataNode, rowWidget] : componentEditor->GetPropertyEditor()->GetWidgets())
+                IPropertyEditor* editor = componentEditor->GetPropertyEditor();
+                auto reflectedPropertyEditor = azdynamic_cast<ReflectedPropertyEditor*>(editor);
+                if (!reflectedPropertyEditor)
+                {
+                    continue;
+                }
+                for (auto& [dataNode, rowWidget] : reflectedPropertyEditor->GetWidgets())
                 {
                     if (!rowWidget->isVisible())
                     {
@@ -469,8 +500,7 @@ namespace AzToolsFramework
         int m_dropIndicatorRowWidgetOffset;
     };
 
-    EntityPropertyEditor::SharedComponentInfo::SharedComponentInfo(AZ::Component* component, AZ::Component* sliceReferenceComponent)
-        : m_sliceReferenceComponent(sliceReferenceComponent)
+    EntityPropertyEditor::SharedComponentInfo::SharedComponentInfo(AZ::Component* component)
     {
         m_instances.push_back(component);
     }
@@ -490,12 +520,31 @@ namespace AzToolsFramework
         , m_autoScrollQueued(false)
         , m_isSystemEntityEditor(false)
         , m_isLevelEntityEditor(isLevelEntityEditor)
+        , m_commandInvokedHandler(
+              [this](AZStd::string_view command, const AZ::ConsoleCommandContainer&, AZ::ConsoleFunctorFlags, AZ::ConsoleInvokedFrom)
+              {
+                  if (command == enableDPECVarName)
+                  {
+                      ClearInstances();
+                      for (auto componentEditor : m_componentEditors)
+                      {
+                          componentEditor->deleteLater();
+                      }
+                      m_componentEditors.clear();
+                      UpdateContents();
+                  }
+              })
     {
-
+        m_commandInvokedHandler.Connect(AZ::Interface<AZ::IConsole>::Get()->GetConsoleCommandInvokedEvent());
         initEntityPropertyEditorResources();
 
-        m_componentModeCollection = AZ::Interface<ComponentModeCollectionInterface>::Get();
-        AZ_Assert(m_componentModeCollection, "Could not retrieve component mode collection.");
+        if (Prefab::IsInspectorOverrideManagementEnabled())
+        {
+            auto* propertyEditorToolsSystemInterface = AZ::Interface<PropertyEditorToolsSystemInterface>::Get();
+            AZ_Assert(propertyEditorToolsSystemInterface != nullptr, "EntityPropertyEditor - "
+                "PropertyEditorToolsSystemInterface is not available for registering prefab override label handler.");
+            propertyEditorToolsSystemInterface->RegisterHandler<Prefab::PrefabOverrideLabelHandler>();
+        }
 
         m_prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get();
         AZ_Assert(m_prefabPublicInterface != nullptr, "EntityPropertyEditor requires a PrefabPublicInterface instance on Initialize.");
@@ -535,11 +584,7 @@ namespace AzToolsFramework
         m_gui->m_entitySearchBox->setClearButtonEnabled(true);
         AzQtComponents::LineEdit::applySearchStyle(m_gui->m_entitySearchBox);
 
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(
-            m_prefabsAreEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-
-        m_itemNames =
-            m_prefabsAreEnabled ? QStringList{"Universal", "Editor only"} : QStringList{"Start active", "Start inactive", "Editor only"};
+        m_itemNames = QStringList{"Universal", "Editor only"};
         int itemNameCount = m_itemNames.size();
         QStandardItemModel* model = new QStandardItemModel(itemNameCount, 1);
         for (int row = 0; row < itemNameCount; ++row)
@@ -573,6 +618,7 @@ namespace AzToolsFramework
 
         ToolsApplicationEvents::Bus::Handler::BusConnect();
         AZ::EntitySystemBus::Handler::BusConnect();
+        EntityPropertyEditorNotificationBus::Handler::BusConnect();
         EntityPropertyEditorRequestBus::Handler::BusConnect();
         EditorWindowUIRequestBus::Handler::BusConnect();
 
@@ -621,23 +667,33 @@ namespace AzToolsFramework
         //this is the way to do it without overriding or registering with all child widgets
         qApp->installEventFilter(this);
 
-        AzToolsFramework::ComponentModeFramework::EditorComponentModeNotificationBus::Handler::BusConnect(
-            AzToolsFramework::GetEntityContextId());
+        ComponentModeFramework::EditorComponentModeNotificationBus::Handler::BusConnect(
+            GetEntityContextId());
         ViewportEditorModeNotificationsBus::Handler::BusConnect(GetEntityContextId());
+
+        m_menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
+
+        // Assign this widget to the Editor Entity Property Editor Action Context.
+        AssignWidgetToActionContextHelper(
+                EditorIdentifiers::EditorEntityPropertyEditorActionContextIdentifier, this);
     }
 
     EntityPropertyEditor::~EntityPropertyEditor()
     {
+        RemoveWidgetFromActionContextHelper(
+                EditorIdentifiers::EditorEntityPropertyEditorActionContextIdentifier, this);
+
         qApp->removeEventFilter(this);
 
+        ViewportEditorModeNotificationsBus::Handler::BusDisconnect();
+        ComponentModeFramework::EditorComponentModeNotificationBus::Handler::BusDisconnect();
+        EditorEntityContextNotificationBus::Handler::BusDisconnect();
         ReadOnlyEntityPublicNotificationBus::Handler::BusDisconnect();
         EditorWindowUIRequestBus::Handler::BusDisconnect();
         EntityPropertyEditorRequestBus::Handler::BusDisconnect();
-        ToolsApplicationEvents::Bus::Handler::BusDisconnect();
+        EntityPropertyEditorNotificationBus::Handler::BusDisconnect();
         AZ::EntitySystemBus::Handler::BusDisconnect();
-        EditorEntityContextNotificationBus::Handler::BusDisconnect();
-        AzToolsFramework::ComponentModeFramework::EditorComponentModeNotificationBus::Handler::BusDisconnect();
-        ViewportEditorModeNotificationsBus::Handler::BusDisconnect();
+        ToolsApplicationEvents::Bus::Handler::BusDisconnect();
         
         for (auto& entityId : m_overrideSelectedEntityIds)
         {
@@ -703,9 +759,40 @@ namespace AzToolsFramework
         }
     }
 
+    void EntityPropertyEditor::GetSelectedComponents(AZStd::unordered_set<AZ::EntityComponentIdPair>& selectedComponentEntityIds)
+    {
+        selectedComponentEntityIds.insert(m_selectedEntityComponentIds.begin(), m_selectedEntityComponentIds.end());
+    }
+
     void EntityPropertyEditor::SetNewComponentId(AZ::ComponentId componentId)
     {
         m_newComponentId = componentId;
+    }
+
+    void EntityPropertyEditor::VisitComponentEditors(const VisitComponentEditorsCallback& callback) const
+    {
+        for (const ComponentEditor* componentEditor : m_componentEditors)
+        {
+            if (!componentEditor)
+            {
+                continue;
+            }
+
+            if (!callback(componentEditor))
+            {
+                return;
+            }
+        }
+    }
+
+    void EntityPropertyEditor::OnComponentSelectionChanged(
+        EntityPropertyEditor* entityPropertyEditor,
+        [[maybe_unused]] const AZStd::unordered_set<AZ::EntityComponentIdPair>& selectedEntityComponentIds)
+    {
+        if (entityPropertyEditor != this)
+        {
+            ClearComponentEditorSelection();
+        }
     }
 
     void EntityPropertyEditor::SetOverrideEntityIds(const AzToolsFramework::EntityIdSet& entities)
@@ -847,17 +934,6 @@ namespace AzToolsFramework
             m_gui->m_entityNameEditor->setText(QString(name.c_str()));
             SelectedEntityNameChanged(entityId, name);
         }
-        bool isLayerEntity = false;
-        AzToolsFramework::Layers::EditorLayerComponentRequestBus::EventResult(
-            isLayerEntity,
-            entityId,
-            &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::HasLayer);
-        if (isLayerEntity)
-        {
-            AzToolsFramework::Layers::EditorLayerComponentRequestBus::Event(
-                entityId,
-                &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::SetOverwriteFlag, true);
-        }
     }
 
     void EntityPropertyEditor::OnEntityStartStatusChanged(const AZ::EntityId& entityId)
@@ -866,6 +942,11 @@ namespace AzToolsFramework
         {
             UpdateStatusComboBox();
         }
+    }
+
+    void EntityPropertyEditor::OnComponentOverrideContextMenu(const QPoint& position)
+    {
+        m_menuManagerInterface->DisplayMenuAtScreenPosition(EditorIdentifiers::InspectorEntityComponentContextMenuIdentifier, position);
     }
 
     bool EntityPropertyEditor::IsEntitySelected(const AZ::EntityId& id) const
@@ -923,11 +1004,6 @@ namespace AzToolsFramework
 
     EntityPropertyEditor::InspectorLayout EntityPropertyEditor::GetCurrentInspectorLayout() const
     {
-        if (!m_prefabsAreEnabled)
-        {
-            return m_isLevelEntityEditor ? InspectorLayout::Level : InspectorLayout::Entity;
-        }
-
         // Prefabs layout logic
 
         // If this is the container entity for the root instance, treat it like a level entity.
@@ -959,11 +1035,37 @@ namespace AzToolsFramework
                 {
                     if (m_selectedEntityIds.size() > 1)
                     {
-                        return InspectorLayout::Invalid;
+                        return InspectorLayout::Invalid; // we have somehow selected both the container and something else.
                     }
                     else
                     {
                         return InspectorLayout::ContainerEntityOfFocusedPrefab;
+                    }
+                }
+                else
+                {
+                    // we have not selected THE container entity of the focused container,
+                    // but we could potentially have selected one or more container entities.
+                    bool anyContainerEntitySelected = false;
+                    bool anyNonContainerEntitySelected = false;
+                    for (const auto& selectedEntityId : m_selectedEntityIds)
+                    {
+                        if (m_prefabPublicInterface->IsInstanceContainerEntity(selectedEntityId))
+                        {
+                            anyContainerEntitySelected = true;
+                        }
+                        else
+                        {
+                            anyNonContainerEntitySelected = true;
+                        }
+                    }
+                    if (anyContainerEntitySelected && anyNonContainerEntitySelected)
+                    {
+                        return InspectorLayout::Invalid; // we have somehow selected both a container and something else.
+                    }
+                    else if (anyContainerEntitySelected && !anyNonContainerEntitySelected)
+                    {
+                        return InspectorLayout::ContainerEntity;
                     }
                 }
             }
@@ -976,16 +1078,7 @@ namespace AzToolsFramework
     {
         UpdateStatusComboBox();
 
-        InspectorLayout layout = GetCurrentInspectorLayout();
-
-        if (!m_prefabsAreEnabled && layout == InspectorLayout::Level)
-        {
-            AZStd::string levelName;
-            AzToolsFramework::EditorRequestBus::BroadcastResult(levelName, &AzToolsFramework::EditorRequests::GetLevelName);
-            m_gui->m_entityNameEditor->setText(levelName.c_str());
-            m_gui->m_entityNameEditor->setReadOnly(true);
-        }
-        else if (m_selectedEntityIds.size() > 1)
+        if (m_selectedEntityIds.size() > 1)
         {
             // Generic text for multiple entities selected
             m_gui->m_entityDetailsLabel->setVisible(true);
@@ -994,6 +1087,7 @@ namespace AzToolsFramework
             m_gui->m_entityNameEditor->setReadOnly(true);
 
             m_gui->m_entityIdText->setText(tr("multiple selected"));
+            m_gui->m_prefabContainerText->setText(tr("multiple prefab containers selected"));
         }
         else if (!m_selectedEntityIds.empty())
         {
@@ -1010,6 +1104,17 @@ namespace AzToolsFramework
             m_gui->m_entityNameEditor->setText(entity ? entity->GetName().data() : "Entity Not Found");
 
             m_gui->m_entityIdText->setText(QString::number(static_cast<AZ::u64>(entityId)));
+
+            if (m_prefabPublicInterface->IsInstanceContainerEntity(entityId))
+            {
+                // If the entity is a container entity, display the owning prefab path.
+                AZ::IO::Path prefabPath = m_prefabPublicInterface->GetOwningInstancePrefabPath(entityId);
+                m_gui->m_prefabContainerText->setText(QString::fromUtf8(prefabPath.c_str()));
+            }
+            else
+            {
+                m_gui->m_prefabContainerText->setText("");
+            }
         }
     }
 
@@ -1037,30 +1142,16 @@ namespace AzToolsFramework
             return SelectionEntityTypeInfo::Mixed;
         }
 
+        if (layout == InspectorLayout::ContainerEntity)
+        {
+            return SelectionEntityTypeInfo::OnlyPrefabEntities;
+        }
+
         for (AZ::EntityId selectedEntityId : selection)
         {
-            bool isLayerEntity = false;
-            AzToolsFramework::Layers::EditorLayerComponentRequestBus::EventResult(
-                isLayerEntity,
-                selectedEntityId,
-                &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::HasLayer);
-
             bool isPrefabEntity = (m_prefabPublicInterface) ? m_prefabPublicInterface->IsInstanceContainerEntity(selectedEntityId) : false;
 
-            if (isLayerEntity)
-            {
-                if (result == SelectionEntityTypeInfo::None)
-                {
-                    result = SelectionEntityTypeInfo::OnlyLayerEntities;
-                }
-                else if (result == SelectionEntityTypeInfo::OnlyStandardEntities)
-                {
-                    result = SelectionEntityTypeInfo::Mixed;
-                    // An entity of both layer and non-layer type have been found, so break out of the loop.
-                    break;
-                }
-            }
-            else if (isPrefabEntity)
+            if (isPrefabEntity)
             {
                 if (result == SelectionEntityTypeInfo::None)
                 {
@@ -1099,14 +1190,16 @@ namespace AzToolsFramework
         }
 
         if (selectionEntityTypeInfo == SelectionEntityTypeInfo::Mixed ||
-            selectionEntityTypeInfo == SelectionEntityTypeInfo::None)
+            selectionEntityTypeInfo == SelectionEntityTypeInfo::None ||
+            selectionEntityTypeInfo == SelectionEntityTypeInfo::OnlyPrefabEntities ||
+            selectionEntityTypeInfo == SelectionEntityTypeInfo::ContainerEntityOfFocusedPrefab)
         {
-            // Can't add components in mixed selection, or if nothing is selected.
+            // Can't add components in mixed selection, or if nothing is selected, or if in prefab containers
             return false;
         }
 
         // This follows the pattern in OnAddComponent, which also uses an empty filter.
-        AZStd::vector<AZ::ComponentServiceType> serviceFilter;
+        AZ::ComponentDescriptor::DependencyArrayType serviceFilter;
         // Components can't be added if there are none available to be added.
         return ComponentPaletteUtil::ContainsEditableComponents(m_serializeContext, m_componentFilter, serviceFilter);
     }
@@ -1148,10 +1241,6 @@ namespace AzToolsFramework
         setUpdatesEnabled(false);
 
         m_isBuildingProperties = true;
-        m_sliceCompareToEntity.reset();
-
-        // Wait to clear this until after the reset(), just in case any components try to call RefreshTree when we clear
-        // the m_sliceCompareToEntity entity.
         m_isAlreadyQueuedRefresh = false;
 
         HideComponentPalette();
@@ -1193,7 +1282,7 @@ namespace AzToolsFramework
             entityDetailsVisible = true;
             entityDetailsLabelText = GetEntityDetailsLabelText();
         }
-        else if (selectionEntityTypeInfo == SelectionEntityTypeInfo::OnlyLayerEntities || selectionEntityTypeInfo == SelectionEntityTypeInfo::OnlyPrefabEntities)
+        else if (selectionEntityTypeInfo == SelectionEntityTypeInfo::OnlyLayerEntities)
         {
             // If a customer filter is not already in use, only show layer components.
             if (!m_customFilterSet)
@@ -1219,8 +1308,11 @@ namespace AzToolsFramework
             }
         }
 
-        bool isLevelLayout = GetCurrentInspectorLayout() == InspectorLayout::Level;
-        bool isContainerOfFocusedPrefabLayout = GetCurrentInspectorLayout() == InspectorLayout::ContainerEntityOfFocusedPrefab;
+        InspectorLayout currentLayout = GetCurrentInspectorLayout();
+
+        bool isLevelLayout = currentLayout == InspectorLayout::Level;
+        bool isContainerOfFocusedPrefabLayout = currentLayout == InspectorLayout::ContainerEntityOfFocusedPrefab;
+        bool isPrefabLayout = currentLayout == InspectorLayout::ContainerEntity || isContainerOfFocusedPrefabLayout;
 
         m_gui->m_entityDetailsLabel->setText(entityDetailsLabelText);
         m_gui->m_entityDetailsLabel->setVisible(entityDetailsVisible);
@@ -1244,8 +1336,8 @@ namespace AzToolsFramework
             SharedComponentArray sharedComponentArray;
             BuildSharedComponentArray(sharedComponentArray,
                 !(selectionEntityTypeInfo == SelectionEntityTypeInfo::OnlyStandardEntities ||
-                  selectionEntityTypeInfo == SelectionEntityTypeInfo::OnlyPrefabEntities) ||
-                  selectionEntityTypeInfo == SelectionEntityTypeInfo::ContainerEntityOfFocusedPrefab);
+                    selectionEntityTypeInfo == SelectionEntityTypeInfo::OnlyPrefabEntities) ||
+                selectionEntityTypeInfo == SelectionEntityTypeInfo::ContainerEntityOfFocusedPrefab);
 
             if (sharedComponentArray.size() == 0)
             {
@@ -1257,18 +1349,34 @@ namespace AzToolsFramework
                 BuildSharedComponentUI(sharedComponentArray);
             }
 
+
             UpdateEntityIcon();
             UpdateEntityDisplay();
         }
 
-        m_gui->m_darkBox->setVisible(
-            displayComponentSearchBox && !m_isSystemEntityEditor && !isLevelLayout && !isContainerOfFocusedPrefabLayout);
+        m_gui->m_darkBox->setVisible(displayComponentSearchBox && !m_isSystemEntityEditor && !isLevelLayout || isPrefabLayout);
         m_gui->m_entitySearchBox->setVisible(displayComponentSearchBox);
 
-        bool displayAddComponentMenu = CanAddComponentsToSelection(selectionEntityTypeInfo);
+        bool isEditingPrefabContainer = isContainerOfFocusedPrefabLayout;
+        
+        m_gui->m_entityIdWidget->setVisible(!isEditingPrefabContainer);
+        m_gui->m_prefabContainerWidget->setVisible(isPrefabLayout);
+
+        bool displayAddComponentMenu = !isPrefabLayout && CanAddComponentsToSelection(selectionEntityTypeInfo);
         m_gui->m_addComponentButton->setVisible(displayAddComponentMenu);
 
-        QueueScrollToNewComponent();
+        if (m_shouldScrollToNewComponents)
+        {
+            QueueScrollToNewComponent();
+        }
+        else if (!m_shouldScrollToNewComponentsQueued)
+        {
+            // if we are not going to scroll to new components, then
+            // immediately execute a scroll to restore the saved scroll position.
+            QTimer::singleShot(0, this, &EntityPropertyEditor::ScrollToNewComponent);
+            m_shouldScrollToNewComponentsQueued = true;
+        }
+
         LoadComponentEditorState();
         UpdateInternalState();
 
@@ -1307,89 +1415,10 @@ namespace AzToolsFramework
             RemoveHiddenComponents(componentsOnEntity);
             SortComponentsByOrder(entityId, componentsOnEntity);
             SortComponentsByPriority(componentsOnEntity);
-            SaveComponentOrder(entityId, componentsOnEntity);
         }
     }
 
-    void EntityPropertyEditor::SortComponentsByPriority(AZ::Entity::ComponentArrayType& componentsOnEntity)
-    {
-        // Create list of components with their current order. AZStd::sort isn't guaranteed to maintain order for equivalent entities.
-
-        AZStd::vector< OrderedSortComponentEntry> sortedComponents;
-        int index = 0;
-        for (AZ::Component* component : componentsOnEntity)
-        {
-            sortedComponents.push_back(OrderedSortComponentEntry(component, index++));
-        }
-
-        // shuffle immovable components back to the front
-        AZStd::sort(
-            sortedComponents.begin(),
-            sortedComponents.end(),
-            [=](const OrderedSortComponentEntry& component1, const OrderedSortComponentEntry& component2)
-            {
-                AZStd::optional<int> fixedComponentListIndex1 = GetFixedComponentListIndex(component1.m_component);
-                AZStd::optional<int> fixedComponentListIndex2 = GetFixedComponentListIndex(component2.m_component);
-
-                // If both components have fixed list indices, sort based on those indices
-                if (fixedComponentListIndex1.has_value() && fixedComponentListIndex2.has_value())
-                {
-                    return fixedComponentListIndex1.value() < fixedComponentListIndex2.value();
-                }
-
-                // If component 1 has a fixed list index, sort it first
-                if (fixedComponentListIndex1.has_value())
-                {
-                    return true;
-                }
-
-                // If component 2 has a fixed list index, component 1 should not be sorted before it
-                if (fixedComponentListIndex2.has_value())
-                {
-                    return false;
-                }
-
-                if (!IsComponentRemovable(component1.m_component) && IsComponentRemovable(component2.m_component))
-                {
-                    return true;
-                }
-
-                if (IsComponentRemovable(component1.m_component) && !IsComponentRemovable(component2.m_component))
-                {
-                    return false;
-                }
-
-                //maintain original order if they don't need swapping
-                return component1.m_originalOrder < component2.m_originalOrder;
-            });
-
-        //create new order array from sorted structure
-        componentsOnEntity.clear();
-        for (OrderedSortComponentEntry& component : sortedComponents)
-        {
-            componentsOnEntity.push_back(component.m_component);
-        }
-    }
-
-    void SortComponentsByOrder(const AZ::EntityId entityId, AZ::Entity::ComponentArrayType& componentsOnEntity)
-    {
-        // sort by component order, shuffling anything not found in component order to the end
-        ComponentOrderArray componentOrder;
-        EditorInspectorComponentRequestBus::EventResult(
-            componentOrder, entityId, &EditorInspectorComponentRequests::GetComponentOrderArray);
-
-        AZStd::sort(
-            componentsOnEntity.begin(),
-            componentsOnEntity.end(),
-            [&componentOrder](const AZ::Component* component1, const AZ::Component* component2)
-            {
-                return
-                    AZStd::find(componentOrder.begin(), componentOrder.end(), component1->GetId()) <
-                    AZStd::find(componentOrder.begin(), componentOrder.end(), component2->GetId());
-            });
-    }
-
-    void SaveComponentOrder(const AZ::EntityId entityId, const AZ::Entity::ComponentArrayType& componentsInOrder)
+    void SaveComponentOrder(const AZ::EntityId entityId, AZStd::span<AZ::Component* const> componentsInOrder)
     {
         ComponentOrderArray componentOrder;
         componentOrder.clear();
@@ -1413,42 +1442,7 @@ namespace AzToolsFramework
         return componentClassData && filter(*componentClassData);
     }
 
-    bool EntityPropertyEditor::IsComponentRemovable(const AZ::Component* component)
-    {
-        // Determine if this component can be removed.
-        auto componentClassData = component ? GetComponentClassData(component) : nullptr;
-        if (componentClassData && componentClassData->m_editData)
-        {
-            if (auto editorDataElement = componentClassData->m_editData->FindElementData(AZ::Edit::ClassElements::EditorData))
-            {
-                if (auto attribute = editorDataElement->FindAttribute(AZ::Edit::Attributes::RemoveableByUser))
-                {
-                    if (auto attributeData = azdynamic_cast<AZ::Edit::AttributeData<bool>*>(attribute))
-                    {
-                        return attributeData->Get(nullptr);
-                    }
-                }
-            }
-        }
-
-        if (componentClassData && AppearsInAnyComponentMenu(*componentClassData))
-        {
-            return true;
-        }
-
-        // If this is a GenericComponentWrapper which wraps a nullptr, let the user remove it
-        if (auto genericComponentWrapper = azrtti_cast<const Components::GenericComponentWrapper*>(component))
-        {
-            if (!genericComponentWrapper->GetTemplate())
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    bool EntityPropertyEditor::AreComponentsRemovable(const AZ::Entity::ComponentArrayType& components) const
+   bool EntityPropertyEditor::AreComponentsRemovable(AZStd::span<AZ::Component* const> components) const
     {
         for (auto component : components)
         {
@@ -1460,49 +1454,34 @@ namespace AzToolsFramework
         return true;
     }
 
-    AZStd::optional<int> EntityPropertyEditor::GetFixedComponentListIndex(const AZ::Component* component)
+
+    bool EntityPropertyEditor::AllowAnyComponentModification() const
     {
-        auto componentClassData = component ? GetComponentClassData(component) : nullptr;
-        if (componentClassData && componentClassData->m_editData)
+        const InspectorLayout currentLayout = GetCurrentInspectorLayout();
+        return currentLayout != InspectorLayout::ContainerEntityOfFocusedPrefab &&
+               currentLayout != InspectorLayout::ContainerEntity;
+    }
+
+    bool EntityPropertyEditor::AreComponentsDraggable(AZStd::span<AZ::Component* const> components) const
+    {
+        if (!AllowAnyComponentModification())
         {
-            if (auto editorDataElement = componentClassData->m_editData->FindElementData(AZ::Edit::ClassElements::EditorData))
-            {
-                if (auto attribute = editorDataElement->FindAttribute(AZ::Edit::Attributes::FixedComponentListIndex))
-                {
-                    if (auto attributeData = azdynamic_cast<AZ::Edit::AttributeData<int>*>(attribute))
-                    {
-                        return { attributeData->Get(nullptr) };
-                    }
-                }
-            }
+            return false;
         }
-        return {};
-    }
 
-    bool EntityPropertyEditor::IsComponentDraggable(const AZ::Component* component)
-    {
-        return !GetFixedComponentListIndex(component).has_value();
-    }
-
-    bool EntityPropertyEditor::AreComponentsDraggable(const AZ::Entity::ComponentArrayType& components) const
-    {
         return AZStd::all_of(
             components.begin(), components.end(), [](AZ::Component* component) { return IsComponentDraggable(component); });
     }
 
-    bool EntityPropertyEditor::AreComponentsCopyable(const AZ::Entity::ComponentArrayType& components) const
+    bool EntityPropertyEditor::AreComponentsCopyable(AZStd::span<AZ::Component* const> components) const
     {
         return AreComponentsCopyable(components, m_componentFilter);
     }
 
-    bool EntityPropertyEditor::AreComponentsCopyable(const AZ::Entity::ComponentArrayType& components, const ComponentFilter& filter)
+    bool EntityPropertyEditor::AreComponentsCopyable(AZStd::span<AZ::Component* const> components, const ComponentFilter& filter)
     {
         for (auto component : components)
         {
-            if (component->RTTI_IsTypeOf(Layers::EditorLayerComponent::RTTI_Type()))
-            {
-                return false;
-            }
             if (!DoesComponentPassFilter(component, filter))
             {
                 auto editorComponentDescriptor = GetEditorComponentDescriptor(component);
@@ -1543,43 +1522,6 @@ namespace AzToolsFramework
         return nullptr;
     }
 
-    bool EntityPropertyEditor::SelectedEntitiesAreFromSameSourceSliceEntity() const
-    {
-        AZ::EntityId commonAncestorId;
-
-        for (AZ::EntityId id : m_selectedEntityIds)
-        {
-            AZ::SliceComponent::SliceInstanceAddress sliceInstanceAddress;
-            AzFramework::SliceEntityRequestBus::EventResult(sliceInstanceAddress, id,
-                &AzFramework::SliceEntityRequests::GetOwningSlice);
-            auto sliceReference = sliceInstanceAddress.GetReference();
-            if (!sliceReference)
-            {
-                return false;
-            }
-            else
-            {
-                AZ::SliceComponent::EntityAncestorList ancestors;
-                sliceReference->GetInstanceEntityAncestry(id, ancestors, 1);
-                if ( ancestors.empty() || !ancestors[0].m_entity)
-                {
-                    return false;
-                }
-
-                if (!commonAncestorId.IsValid())
-                {
-                    commonAncestorId = ancestors[0].m_entity->GetId();
-                }
-                else if (ancestors[0].m_entity->GetId() != commonAncestorId)
-                {
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
-
     void EntityPropertyEditor::BuildSharedComponentArray(SharedComponentArray& sharedComponentArray, bool containsLayerEntity)
     {
         AZ_Assert(!m_selectedEntityIds.empty(), "BuildSharedComponentArray should only be called if there are entities being displayed");
@@ -1593,31 +1535,7 @@ namespace AzToolsFramework
             return;
         }
 
-        // For single selection of a slice-instanced entity, gather the direct slice ancestor
-        // so we can visualize per-component differences.
-        m_sliceCompareToEntity.reset();
-        if (SelectedEntitiesAreFromSameSourceSliceEntity())
-        {
-            AZ::SliceComponent::SliceInstanceAddress sliceInstanceAddress;
-
-            AzFramework::SliceEntityRequestBus::EventResult(sliceInstanceAddress, entityId,
-                &AzFramework::SliceEntityRequests::GetOwningSlice);
-            auto sliceReference = sliceInstanceAddress.GetReference();
-            auto sliceInstance = sliceInstanceAddress.GetInstance();
-            if (sliceReference)
-            {
-                AZ::SliceComponent::EntityAncestorList ancestors;
-                sliceReference->GetInstanceEntityAncestry(entityId, ancestors, 1);
-
-                if (!ancestors.empty())
-                {
-                    m_sliceCompareToEntity = SliceUtilities::CloneSliceEntityForComparison(*ancestors[0].m_entity, *sliceInstance, *m_serializeContext);
-                }
-            }
-        }
-
         // Gather initial list of eligible display components from the first entity
-
         AZ::Entity::ComponentArrayType entityComponents;
         GetAllComponentsForEntityInOrder(entity, entityComponents);
 
@@ -1641,10 +1559,7 @@ namespace AzToolsFramework
                 }
             }
 
-            // Grab the slice reference component, if we have a slice compare entity
-            auto sliceReferenceComponent = m_sliceCompareToEntity ? m_sliceCompareToEntity->FindComponent(component->GetId()) : nullptr;
-
-            sharedComponentArray.push_back(SharedComponentInfo(component, sliceReferenceComponent));
+            sharedComponentArray.push_back(SharedComponentInfo(component));
         }
 
         // Now loop over the other entities
@@ -1719,9 +1634,14 @@ namespace AzToolsFramework
                 // non-first instances are aggregated under the first instance
                 AZ::Component* aggregateInstance = componentInstance != componentInstances.front() ? componentInstances.front() : nullptr;
 
-                // Reference the slice entity if we are a slice so we can indicate differences from base
-                AZ::Component* referenceComponentInstance = sharedComponentInfo.m_sliceReferenceComponent;
-                componentEditor->AddInstance(componentInstance, aggregateInstance, referenceComponentInstance);
+                componentEditor->AddInstance(componentInstance, aggregateInstance, nullptr);
+            }
+
+            // Set up other entity property editor customization
+            if (ShouldUseDPE() && Prefab::IsInspectorOverrideManagementEnabled())
+            {
+                // Set up visualization for overrides on the component
+                UpdateOverrideVisualization(*componentEditor);
             }
 
             // Set tab order for editor
@@ -1739,7 +1659,7 @@ namespace AzToolsFramework
                 componentEditor->mockDisabledState(true);
             }
 
-            if (!componentEditor->GetPropertyEditor()->HasFilteredOutNodes() || componentEditor->GetPropertyEditor()->HasVisibleNodes())
+            if (componentEditor->HasContents())
             {
                 for (AZ::Component* componentInstance : componentInstances)
                 {
@@ -1756,13 +1676,68 @@ namespace AzToolsFramework
         }
     }
 
+    void EntityPropertyEditor::UpdateOverrideVisualization(ComponentEditor& componentEditor)
+    {
+        if (auto prefabOverridePublicInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabOverridePublicInterface>::Get())
+        {
+            AZStd::span<AZ::Component* const> components = componentEditor.GetComponents();
+            AZ_Assert(!components.empty() && components[0], "ComponentEditor should have at least one component.");
+
+            // Overrides on container entities are for internal use only and should not be exposed
+            AZ::EntityId entityId = components[0]->GetEntityId();
+            if (m_prefabPublicInterface->IsInstanceContainerEntity(entityId))
+            {
+                return;
+            }
+
+            // Get icon path based on current component override state
+            AZStd::string iconOverlayPath;
+            AZ::EntityComponentIdPair entityComponentIdPair(components[0]->GetEntityId(), components[0]->GetId());
+            if (auto overrideType = prefabOverridePublicInterface->GetComponentOverrideType(entityComponentIdPair);
+                overrideType.has_value())
+            {
+                if (overrideType == AzToolsFramework::Prefab::OverrideType::AddComponent)
+                {
+                    iconOverlayPath = ":/OverrideResources/component_added_as_override.svg";
+                }
+                else if (overrideType == AzToolsFramework::Prefab::OverrideType::EditComponent)
+                {
+                    iconOverlayPath = ":/OverrideResources/component_modified_as_override.svg";
+                }
+            }
+
+            AZStd::string prevIconOverlayPath(componentEditor.property("IconOverlayPath").toString().toUtf8());
+            if (prevIconOverlayPath != iconOverlayPath)
+            {
+                componentEditor.setProperty("IconOverlayPath", iconOverlayPath.c_str());
+                componentEditor.GetHeader()->SetIconOverlay(QIcon(iconOverlayPath.c_str()));
+                componentEditor.GetHeader()->SetComponentIconClickable(!iconOverlayPath.empty());
+            }
+        }
+    }
+
     ComponentEditor* EntityPropertyEditor::CreateComponentEditor()
     {
         //caching allocated component editors for reuse and to preserve order
         if (m_componentEditorsUsed >= m_componentEditors.size())
         {
-            //create a new component editor since cache has been exceeded
-            auto componentEditor = new ComponentEditor(m_serializeContext, this, this);
+            // create a new component editor since cache has been exceeded
+
+            /* create a factory for component adapters
+             * depending on the preferences state, create the correct type of adapter, or none at all */
+            ComponentEditor::ComponentAdapterFactory adapterFactory =
+                [&]() -> AZStd::shared_ptr<AZ::DocumentPropertyEditor::ComponentAdapter>
+                {
+                    if (ShouldUseDPE())
+                    {
+                        return (
+                            Prefab::IsInspectorOverrideManagementEnabled()
+                            ? AZStd::make_shared<Prefab::PrefabComponentAdapter>()
+                            : AZStd::make_shared<AZ::DocumentPropertyEditor::ComponentAdapter>());
+                    }
+                    return nullptr;
+                };
+            auto componentEditor = new ComponentEditor(m_serializeContext, this, this, adapterFactory);
             componentEditor->setAcceptDrops(true);
 
             connect(componentEditor, &ComponentEditor::OnExpansionContractionDone, this, [this]()
@@ -1772,14 +1747,41 @@ namespace AzToolsFramework
                     layout()->activate();
                     setUpdatesEnabled(true);
                 });
+
+            // force Card resize when expansion state changes or when explicitly requested by OnSizeUpdateRequested
+            AzQtComponents::StyleHelpers::repolishWhenPropertyChanges(componentEditor, &ComponentEditor::OnExpansionContractionDone);
+            AzQtComponents::StyleHelpers::repolishWhenPropertyChanges(componentEditor, &ComponentEditor::OnSizeUpdateRequested);
+
             connect(componentEditor, &ComponentEditor::OnDisplayComponentEditorMenu, this, &EntityPropertyEditor::OnDisplayComponentEditorMenu);
             connect(componentEditor, &ComponentEditor::OnRequestRequiredComponents, this, &EntityPropertyEditor::OnRequestRequiredComponents);
-            connect(componentEditor, &ComponentEditor::OnRequestRemoveComponents, this, [this](const AZ::Entity::ComponentArrayType& components) {DeleteComponents(components); });
-            connect(componentEditor, &ComponentEditor::OnRequestDisableComponents, this, [this](const AZ::Entity::ComponentArrayType& components) {DisableComponents(components); });
-            componentEditor->GetPropertyEditor()->SetValueComparisonFunction([this](const InstanceDataNode* source, const InstanceDataNode* target) { return InstanceNodeValueHasNoPushableChange(source, target); });
+            connect(componentEditor, &ComponentEditor::OnRequestRemoveComponents, this, [this](AZStd::span<AZ::Component* const> components) {DeleteComponents(components); });
+            connect(componentEditor, &ComponentEditor::OnRequestDisableComponents, this, [this](AZStd::span<AZ::Component* const> components) {DisableComponents(components); });
             componentEditor->GetPropertyEditor()->SetReadOnlyQueryFunction([this](const InstanceDataNode* node) { return QueryInstanceDataNodeReadOnlyStatus(node); });
             componentEditor->GetPropertyEditor()->SetHiddenQueryFunction([this](const InstanceDataNode* node) { return QueryInstanceDataNodeHiddenStatus(node); });
             componentEditor->GetPropertyEditor()->SetIndicatorQueryFunction([this](const InstanceDataNode* node) { return GetAppropriateIndicator(node); });
+
+            if (ShouldUseDPE() && Prefab::IsInspectorOverrideManagementEnabled())
+            {
+                // Connect to the component icon's click event to display override context menu
+                connect(
+                    componentEditor,
+                    &ComponentEditor::OnComponentIconClicked,
+                    this,
+                    &EntityPropertyEditor::OnComponentOverrideContextMenu);
+
+                // Subscribe to DPE property changes to keep the component icon updated based on override state
+                auto propertyChanged =
+                    [this, componentEditor](const AZ::DocumentPropertyEditor::ReflectionAdapter::PropertyChangeInfo& changeInfo)
+                    {
+                        // Check if the component editor is currently in use
+                        if (componentEditor->isVisible() &&
+                            changeInfo.changeType == AZ::DocumentPropertyEditor::Nodes::ValueChangeType::FinishedEdit)
+                        {
+                            UpdateOverrideVisualization(*componentEditor);
+                        }
+                    };
+                componentEditor->ConnectPropertyChangeHandler(propertyChanged);
+            }
 
             //move spacer to bottom of editors
             m_gui->m_componentListContents->layout()->removeItem(m_spacer);
@@ -1810,6 +1812,7 @@ namespace AzToolsFramework
 
         if (level == Refresh_EntireTree_NewContent)
         {
+             // this should ONLY happen for when new content is added to the bottom of the view, like when Add Component occurs.
             QueuePropertyRefresh();
             m_shouldScrollToNewComponents = true;
             return;
@@ -1826,6 +1829,32 @@ namespace AzToolsFramework
                 {
                     componentEditor->QueuePropertyEditorInvalidation(level);
                 }
+            }
+        }
+    }
+
+    void EntityPropertyEditor::InvalidatePropertyDisplayForComponent(AZ::EntityComponentIdPair entityComponentIdPair, PropertyModificationRefreshLevel level)
+    {
+        if (level == Refresh_None)
+        {
+            return;
+        }
+
+        if (m_isAlreadyQueuedRefresh)
+        {
+            return;
+        }
+
+        if (m_selectedEntityComponentIds.find(entityComponentIdPair) == m_selectedEntityComponentIds.end())
+        {
+            return;
+        }
+
+        for (auto componentEditor : m_componentEditors)
+        {
+            if (componentEditor->isVisible())
+            {
+                componentEditor->QueuePropertyEditorInvalidationForComponent(entityComponentIdPair, level);
             }
         }
     }
@@ -1937,7 +1966,7 @@ namespace AzToolsFramework
         for (size_t instanceIdx = 0; instanceIdx < componentNode->GetNumInstances(); ++instanceIdx)
         {
             AZ::Component* componentInstance = m_serializeContext->Cast<AZ::Component*>(
-                    componentNode->GetInstance(instanceIdx), componentNode->GetClassMetadata()->m_typeId);
+                componentNode->GetInstance(instanceIdx), componentNode->GetClassMetadata()->m_typeId);
             if (componentInstance)
             {
                 PropertyEditorEntityChangeNotificationBus::Event(
@@ -2062,6 +2091,7 @@ namespace AzToolsFramework
             // refresh state and effectively restore the previously-queued request, which would still execute before the
             // EPE's full refresh.
             // (In UpdateContents(), after the full refresh occurs, we stop preventing RPE refreshes from getting queued)
+            bool ownedFocus = DoesOwnFocus();
             for (auto componentEditor : m_componentEditors)
             {
                 // Cancel any refreshes that were queued prior to this point, since they are no longer guaranteed to
@@ -2071,21 +2101,43 @@ namespace AzToolsFramework
                 componentEditor->PreventRefresh(true);
             }
 
+            // If the EntityPropertyEditor or any of its children were the application's focused widget before
+            // the above call to: componentEditor->PreventRefresh(true);
+            // Then that call could result in that widget being disabled, which will clear the focus and leave
+            // the application with no focused widget, which means it won't be able to receive key/shortcut events.
+            // So if we owned the focus and the focusWidget is now nullptr, then reset the focus to the EntityPropertyEditor.
+            // This happens anytime QueuePropertyRefresh is invoked (e.g. when switching between component modes, or triggering a full tree
+            // rebuild)
+            if (ownedFocus && !QApplication::focusWidget())
+            {
+                setFocus();
+            }
+
             // Refresh the properties using a singleShot
             // this makes sure that the properties aren't refreshed while processing
             // other events, and instead runs after the current events are processed
+
+            // note that if we're getting here, we're actually clearing and rebuilding the entire
+            // tree, not just refreshing values (that is taken care of elsewhere).
+            // Sometimes, these events cause it to repeatedly refresh, so instead, give it a delay of more than 0 so that
+            // tick can happen first.
             QTimer::singleShot(0, this, &EntityPropertyEditor::UpdateContents);
 
             //saving state any time refresh gets queued because requires valid components
             //attempting to call directly anywhere state needed to be preserved always occurred with QueuePropertyRefresh
             SaveComponentEditorState();
+
+            QScrollBar* verticalScroll = m_gui->m_componentList->verticalScrollBar();
+            QScrollBar* horizontalScroll = m_gui->m_componentList->horizontalScrollBar();
+            m_savedVerticalScroll = verticalScroll->value();
+            m_savedHorizontalScroll = horizontalScroll->value();
         }
     }
 
     void EntityPropertyEditor::OnAddComponent()
     {
-        AZStd::vector<AZ::ComponentServiceType> serviceFilter;
-        AZStd::vector<AZ::ComponentServiceType> incompatibleServiceFilter;
+        AZ::ComponentDescriptor::DependencyArrayType serviceFilter;
+        AZ::ComponentDescriptor::DependencyArrayType incompatibleServiceFilter;
         QRect globalRect = GetWidgetGlobalRect(m_gui->m_addComponentButton) | GetWidgetGlobalRect(m_gui->m_componentList);
         ShowComponentPalette(m_componentPalette, globalRect.topLeft(), globalRect.size(), serviceFilter, incompatibleServiceFilter);
     }
@@ -2148,7 +2200,7 @@ namespace AzToolsFramework
 
             if (entityList.size())
             {
-                ScopedUndoBatch undoBatch("ModifyEntityName");
+                ScopedUndoBatch undoBatch("Modify Entity Name");
 
                 for (AZ::Entity* entity : entityList)
                 {
@@ -2183,7 +2235,7 @@ namespace AzToolsFramework
 
         // Get inner class data for the clicked component.
         AZ::Component* component = m_serializeContext->Cast<AZ::Component*>(
-                componentNode->FirstInstance(), componentNode->GetClassMetadata()->m_typeId);
+            componentNode->FirstInstance(), componentNode->GetClassMetadata()->m_typeId);
         if (component)
         {
             auto componentClassData = GetComponentClassData(component);
@@ -2200,8 +2252,6 @@ namespace AzToolsFramework
                 }
 
                 AddMenuOptionsForFields(node, componentNode, componentClassData, menu);
-
-                AddMenuOptionsForRevert(node, componentNode, componentClassData, menu);
 
                 AzToolsFramework::Components::EditorComponentBase* editorComponent = static_cast<AzToolsFramework::Components::EditorComponentBase*>(component);
 
@@ -2246,157 +2296,10 @@ namespace AzToolsFramework
             fieldNode = fieldNode->GetParent();
             AZ_Assert(fieldNode && fieldNode->GetClassMetadata() && fieldNode->GetClassMetadata()->m_container, "New element should be a child of a container.");
         }
-
-        // Generate slice data push/pull options.
-        AZ::Component* componentInstance = m_serializeContext->Cast<AZ::Component*>(
-                componentNode->FirstInstance(), componentClassData->m_typeId);
+        
+        AZ::Component* componentInstance =
+            m_serializeContext->Cast<AZ::Component*>(componentNode->FirstInstance(), componentClassData->m_typeId);
         AZ_Assert(componentInstance, "Failed to cast component instance.");
-
-        // With the entity the property ultimately belongs to, we can look up slice ancestry for push/pull options.
-        AZ::Entity* entity = componentInstance->GetEntity();
-
-        AzFramework::EntityContextId contextId = AzFramework::EntityContextId::CreateNull();
-        AzFramework::EntityIdContextQueryBus::EventResult(contextId, entity->GetId(), &AzFramework::EntityIdContextQueryBus::Events::GetOwningContextId);
-        if (contextId.IsNull())
-        {
-            AZ_Error("PropertyEditor", false, "Entity \"%s\" does not belong to any context.", entity->GetName().c_str());
-            return;
-        }
-
-        // If prefabs are enabled, there will be no root slice so bail out here since we don't need
-        // to show any slice options in the menu
-        AZ::SliceComponent* rootSlice = nullptr;
-        AzFramework::SliceEntityOwnershipServiceRequestBus::EventResult(rootSlice, contextId,
-            &AzFramework::SliceEntityOwnershipServiceRequestBus::Events::GetRootSlice);
-        if (rootSlice)
-        {
-            AZ::SliceComponent::SliceInstanceAddress address;
-            AzFramework::SliceEntityRequestBus::EventResult(address, entity->GetId(), &AzFramework::SliceEntityRequests::GetOwningSlice);
-            AZ::SliceComponent::SliceReference* sliceReference = address.GetReference();
-            if (sliceReference)
-            {
-                // This entity is instanced from a slice, so show data push/pull options
-                AZ::SliceComponent::EntityAncestorList ancestors;
-                sliceReference->GetInstanceEntityAncestry(entity->GetId(), ancestors);
-
-                AZ_Error(
-                    "PropertyEditor", !ancestors.empty(), "Entity \"%s\" belongs to a slice, but its source entity could not be located.",
-                    entity->GetName().c_str());
-                if (!ancestors.empty())
-                {
-                    menu.addSeparator();
-
-                    // Populate slice push options.
-                    // Address should start with the fully-addressable component Id to resolve within the target entity.
-                    InstanceDataHierarchy::Address pushFieldAddress;
-                    CalculateAndAdjustNodeAddress(*fieldNode, AddressRootType::RootAtEntity, pushFieldAddress);
-                    if (!pushFieldAddress.empty())
-                    {
-                        SliceUtilities::PopulateQuickPushMenu(
-                            menu, entity->GetId(), pushFieldAddress,
-                            SliceUtilities::QuickPushMenuOptions(
-                                "Save field override",
-                                SliceUtilities::QuickPushMenuOverrideDisplayCount::ShowOverrideCountOnlyWhenMultiple));
-                    }
-                }
-            }
-
-            menu.addSeparator();
-
-            // by leaf node, we mean a visual leaf node in the property editor (ie, we do not have any visible children)
-            bool isLeafNode = !fieldNode->GetClassMetadata() || !fieldNode->GetClassMetadata()->m_container;
-
-            if (isLeafNode)
-            {
-                for (const InstanceDataNode& childNode : fieldNode->GetChildren())
-                {
-                    if (HasAnyVisibleElements(childNode))
-                    {
-                        // If we have any visible children, we must not be a leaf node
-                        isLeafNode = false;
-                        break;
-                    }
-                }
-            }
-
-#ifdef ENABLE_SLICE_EDITOR
-            // Show PreventOverride & HideProperty options
-            if (GetEntityDataPatchAddress(fieldNode, m_dataPatchAddressBuffer))
-            {
-                AZ::DataPatch::Flags nodeFlags = rootSlice->GetEntityDataFlagsAtAddress(entity->GetId(), m_dataPatchAddressBuffer);
-
-                if (nodeFlags & AZ::DataPatch::Flag::PreventOverrideSet)
-                {
-                    QAction* PreventOverrideAction = menu.addAction(tr("Allow property override"));
-                    PreventOverrideAction->setEnabled(isLeafNode);
-                    connect(
-                        PreventOverrideAction, &QAction::triggered, this,
-                        [this, fieldNode]
-                        {
-                            ContextMenuActionSetDataFlag(fieldNode, AZ::DataPatch::Flag::PreventOverrideSet, false);
-                            InvalidatePropertyDisplay(Refresh_AttributesAndValues);
-                        });
-                }
-                else
-                {
-                    QAction* PreventOverrideAction = menu.addAction(tr("Prevent property override"));
-                    PreventOverrideAction->setEnabled(isLeafNode);
-                    connect(
-                        PreventOverrideAction, &QAction::triggered, this,
-                        [this, fieldNode]
-                        {
-                            ContextMenuActionSetDataFlag(fieldNode, AZ::DataPatch::Flag::PreventOverrideSet, true);
-                            InvalidatePropertyDisplay(Refresh_AttributesAndValues);
-                        });
-                }
-
-                if (nodeFlags & AZ::DataPatch::Flag::HidePropertySet)
-                {
-                    QAction* HideProperyAction = menu.addAction(tr("Show property on instances"));
-                    HideProperyAction->setEnabled(isLeafNode);
-                    connect(
-                        HideProperyAction, &QAction::triggered, this,
-                        [this, fieldNode]
-                        {
-                            ContextMenuActionSetDataFlag(fieldNode, AZ::DataPatch::Flag::HidePropertySet, false);
-                            InvalidatePropertyDisplay(Refresh_AttributesAndValues);
-                        });
-                }
-                else
-                {
-                    QAction* HideProperyAction = menu.addAction(tr("Hide property on instances"));
-                    HideProperyAction->setEnabled(isLeafNode);
-                    connect(
-                        HideProperyAction, &QAction::triggered, this,
-                        [this, fieldNode]
-                        {
-                            ContextMenuActionSetDataFlag(fieldNode, AZ::DataPatch::Flag::HidePropertySet, true);
-                            InvalidatePropertyDisplay(Refresh_AttributesAndValues);
-                        });
-                }
-            }
-#endif
-
-            if (sliceReference)
-            {
-                // This entity is referenced from a slice, so show property override options
-                bool hasChanges = fieldNode->HasChangesVersusComparison(false);
-
-                if (!hasChanges && isLeafNode)
-                {
-                    // Add an option to set the ForceOverride flag for this field
-                    menu.setToolTipsVisible(true);
-                    QAction* forceOverrideAction = menu.addAction(tr("Force property override"));
-                    forceOverrideAction->setToolTip(tr("Prevents a property from inheriting from its source slice"));
-                    connect(
-                        forceOverrideAction, &QAction::triggered, this,
-                        [this, fieldNode]()
-                        {
-                            ContextMenuActionSetDataFlag(fieldNode, AZ::DataPatch::Flag::ForceOverrideSet, true);
-                        });
-                }
-            }
-        }
 
         m_reorderRowWidget = nullptr;
         // Add move up/down actions if appropriate
@@ -2462,301 +2365,6 @@ namespace AzToolsFramework
 
 
         return false;
-    }
-
-    void EntityPropertyEditor::AddMenuOptionsForRevert(InstanceDataNode* fieldNode, InstanceDataNode* componentNode, const AZ::SerializeContext::ClassData* componentClassData, QMenu& menu)
-    {
-        QMenu* revertMenu = nullptr;
-
-        auto addRevertMenu = [&menu]()
-        {
-            QMenu* revertOverridesMenu = menu.addMenu(tr("Revert overrides"));
-            revertOverridesMenu->setToolTipsVisible(true);
-            return revertOverridesMenu;
-        };
-
-        //check for changes on selected property
-        if (componentClassData)
-        {
-            AZ::SliceComponent::SliceInstanceAddress address;
-
-            AZ::Component* componentInstance = m_serializeContext->Cast<AZ::Component*>(
-                componentNode->FirstInstance(), componentClassData->m_typeId);
-            AZ_Assert(componentInstance, "Failed to cast component instance.");
-            AZ::Entity* entity = componentInstance->GetEntity();
-
-            AzFramework::SliceEntityRequestBus::EventResult(address, entity->GetId(),
-                &AzFramework::SliceEntityRequests::GetOwningSlice);
-            AZ::SliceComponent::SliceReference* sliceReference = address.GetReference();
-
-            if (!sliceReference)
-            {
-                return;
-            }
-
-            // Only add the "Revert overrides" menu option if it belongs to a slice
-            revertMenu = addRevertMenu();
-            revertMenu->setEnabled(false);
-
-            if (fieldNode)
-            {
-                bool hasChanges = fieldNode->HasChangesVersusComparison(false);
-
-                if (hasChanges)
-                {
-                    bool isLeafNode = !fieldNode->GetClassMetadata()->m_container;
-
-                    if (isLeafNode)
-                    {
-                        for (const InstanceDataNode& childNode : fieldNode->GetChildren())
-                        {
-                            if (HasAnyVisibleElements(childNode))
-                            {
-                                // If we have any visible children, we must not be a leaf node
-                                isLeafNode = false;
-                                break;
-                            }
-                        }
-
-                        if (isLeafNode)
-                        {
-                            revertMenu->setEnabled(true);
-
-                            // Add an option to pull data from the first level of the slice (clear the override).
-                            QAction* revertAction = revertMenu->addAction(tr("Property"));
-                            revertAction->setToolTip(tr("Revert the value for this property to the last saved state."));
-                            revertAction->setEnabled(true);
-                            connect(revertAction, &QAction::triggered, this, [this, componentInstance, fieldNode]()
-                            {
-                                ContextMenuActionPullFieldData(componentInstance, fieldNode);
-                            }
-                            );
-                        }
-                    }
-                }
-            }
-        }
-
-        //check for changes on selected component(s)
-        bool hasSliceChanges = false;
-        bool isPartOfSlice = false;
-
-        const auto& componentsToEdit = GetSelectedComponents();
-
-        for (auto component : componentsToEdit)
-        {
-            AZ_Assert(component, "Parent component is invalid.");
-            auto componentEditorIterator = m_componentToEditorMap.find(component);
-            AZ_Assert(componentEditorIterator != m_componentToEditorMap.end(), "Unable to find a component editor for the given component");
-            if (componentEditorIterator != m_componentToEditorMap.end())
-            {
-                auto componentEditor = componentEditorIterator->second;
-                componentEditor->GetPropertyEditor()->EnumerateInstances(
-                    [&hasSliceChanges, &isPartOfSlice](InstanceDataHierarchy& hierarchy)
-                    {
-                        InstanceDataNode* root = hierarchy.GetRootNode();
-                        if (root && root->GetComparisonNode())
-                        {
-                            isPartOfSlice = true;
-                            if (root->HasChangesVersusComparison(true))
-                            {
-                                hasSliceChanges = true;
-                            }
-                        }
-                    });
-            }
-        }
-
-        if (isPartOfSlice && hasSliceChanges)
-        {
-            if (!revertMenu)
-            {
-                revertMenu = addRevertMenu();
-            }
-            revertMenu->setEnabled(true);
-
-            QAction* revertComponentAction = revertMenu->addAction(tr("Component"));
-            revertComponentAction->setToolTip(tr("Revert all properties for this component to their last saved state."));
-            connect(revertComponentAction, &QAction::triggered, this, [this]()
-            {
-                ResetToSlice();
-            });
-        }
-
-        //check for changes on selected entities
-        EntityIdList selectedEntityIds;
-        GetSelectedEntities(selectedEntityIds);
-
-        bool canRevert = false;
-
-        for (AZ::EntityId id : m_selectedEntityIds)
-        {
-            bool entityHasOverrides = false;
-            AzToolsFramework::EditorEntityInfoRequestBus::EventResult(entityHasOverrides, id, &AzToolsFramework::EditorEntityInfoRequestBus::Events::HasSliceEntityOverrides);
-            if (entityHasOverrides)
-            {
-                canRevert = true;
-                break;
-            }
-        }
-
-        if (canRevert && !selectedEntityIds.empty())
-        {
-            //check for changes in the slice
-            EntityIdSet relevantEntitiesSet;
-            ToolsApplicationRequestBus::BroadcastResult(relevantEntitiesSet, &ToolsApplicationRequestBus::Events::GatherEntitiesAndAllDescendents, selectedEntityIds);
-
-            EntityIdList relevantEntities;
-            relevantEntities.reserve(relevantEntitiesSet.size());
-            for (AZ::EntityId& id : relevantEntitiesSet)
-            {
-                relevantEntities.push_back(id);
-            }
-
-            if (!revertMenu)
-            {
-                revertMenu = addRevertMenu();
-            }
-            revertMenu->setEnabled(true);
-            QAction* revertAction = revertMenu->addAction(QObject::tr("Entity"));
-            revertAction->setToolTip(QObject::tr("This will revert all component properties on this entity to the last saved."));
-
-            QObject::connect(revertAction, &QAction::triggered, [relevantEntities]
-            {
-                SliceEditorEntityOwnershipServiceRequestBus::Broadcast(
-                    &SliceEditorEntityOwnershipServiceRequests::ResetEntitiesToSliceDefaults, relevantEntities);
-            });
-        }
-    }
-
-
-    void EntityPropertyEditor::ContextMenuActionPullFieldData(AZ::Component* parentComponent, InstanceDataNode* fieldNode)
-    {
-        AZ_Assert(fieldNode && fieldNode->GetComparisonNode(), "Invalid node for slice data pull.");
-        if (!fieldNode->GetComparisonNode())
-        {
-            return;
-        }
-
-        BeforePropertyModified(fieldNode);
-
-        // Clear any slice data flags for this field
-        if (GetEntityDataPatchAddress(fieldNode, m_dataPatchAddressBuffer))
-        {
-            auto clearDataFlagsCommand = aznew ClearSliceDataFlagsBelowAddressCommand(parentComponent->GetEntityId(), m_dataPatchAddressBuffer, "Clear data flags");
-            clearDataFlagsCommand->SetParent(m_currentUndoOperation);
-        }
-
-        AZStd::unordered_set<InstanceDataNode*> targetContainerNodesWithNewElements;
-        InstanceDataHierarchy::CopyInstanceData(fieldNode->GetComparisonNode(), fieldNode, m_serializeContext,
-            // Target container child node being removed callback
-            nullptr,
-
-            // Source container child node being created callback
-            [&targetContainerNodesWithNewElements](const InstanceDataNode* sourceNode, InstanceDataNode* targetNodeParent)
-            {
-                (void)sourceNode;
-
-                targetContainerNodesWithNewElements.insert(targetNodeParent);
-            }
-            );
-
-        // Invoke Add notifiers
-        for (InstanceDataNode* targetContainerNode : targetContainerNodesWithNewElements)
-        {
-            AZ_Assert(targetContainerNode->GetClassMetadata()->m_container, "Target container node isn't a container!");
-            for (const AZ::Edit::AttributePair& attribute : targetContainerNode->GetElementEditMetadata()->m_attributes)
-            {
-                if (attribute.first == AZ::Edit::Attributes::AddNotify)
-                {
-                    AZ::Edit::AttributeFunction<void()>* func = azdynamic_cast<AZ::Edit::AttributeFunction<void()>*>(attribute.second);
-                    if (func)
-                    {
-                        InstanceDataNode* parentNode = targetContainerNode->GetParent();
-                        if (parentNode)
-                        {
-                            for (size_t idx = 0; idx < parentNode->GetNumInstances(); ++idx)
-                            {
-                                func->Invoke(parentNode->GetInstance(idx));
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        // Make sure change notifiers are invoked for the change across any changed nodes in sub-hierarchy
-        // under the affected node.
-        AZ_Assert(parentComponent, "Parent component is invalid.");
-        auto componentEditorIterator = m_componentToEditorMap.find(parentComponent);
-        AZ_Assert(componentEditorIterator != m_componentToEditorMap.end(), "Unable to find a component editor for the given component");
-        if (componentEditorIterator != m_componentToEditorMap.end())
-        {
-            AZStd::vector<PropertyRowWidget*> widgetStack;
-            AZStd::vector<PropertyRowWidget*> widgetsToNotify;
-            widgetStack.reserve(64);
-            widgetsToNotify.reserve(64);
-
-            auto componentEditor = componentEditorIterator->second;
-            PropertyRowWidget* widget = componentEditor->GetPropertyEditor()->GetWidgetFromNode(fieldNode);
-            if (widget)
-            {
-                widgetStack.push_back(widget);
-
-                while (!widgetStack.empty())
-                {
-                    PropertyRowWidget* top = widgetStack.back();
-                    widgetStack.pop_back();
-
-                    InstanceDataNode* topWidgetNode = top->GetNode();
-                    if (topWidgetNode && topWidgetNode->HasChangesVersusComparison(false))
-                    {
-                        widgetsToNotify.push_back(top);
-                    }
-
-                    // Only add children widgets for notification if the newly updated parent has children
-                    // otherwise the instance data nodes will have disappeared out from under the widgets
-                    // They will be cleaned up when we refresh the entire tree after the notifications go out
-                    if (!topWidgetNode || topWidgetNode->GetChildren().size() > 0)
-                    {
-                        for (auto* childWidget : top->GetChildrenRows())
-                        {
-                            widgetStack.push_back(childWidget);
-                        }
-                    }
-                }
-
-                // Issue property notifications, starting with leaf widgets first.
-                for (auto iter = widgetsToNotify.rbegin(); iter != widgetsToNotify.rend(); ++iter)
-                {
-                    (*iter)->DoPropertyNotify();
-                }
-            }
-        }
-
-        AfterPropertyModified(fieldNode);
-        SetPropertyEditingComplete(fieldNode);
-
-        // We must refresh the entire tree, because restoring previous entity state may've had major structural effects.
-        InvalidatePropertyDisplay(Refresh_EntireTree);
-    }
-
-    void EntityPropertyEditor::ContextMenuActionSetDataFlag(InstanceDataNode* node, AZ::DataPatch::Flag flag, bool additive)
-    {
-        // Attempt to get Entity and DataPatch address from this node.
-        AZ::EntityId entityId;
-        if (GetEntityDataPatchAddress(node, m_dataPatchAddressBuffer, &entityId))
-        {
-            BeforePropertyModified(node);
-
-            auto command = aznew SliceDataFlagsCommand(entityId, m_dataPatchAddressBuffer, flag, additive, "Set slice data flag");
-            command->SetParent(m_currentUndoOperation);
-
-            AfterPropertyModified(node);
-            SetPropertyEditingComplete(node);
-
-            InvalidatePropertyDisplay(Refresh_AttributesAndValues);
-        }
     }
 
     void EntityPropertyEditor::BeginMoveRowWidgetFade()
@@ -2868,19 +2476,19 @@ namespace AzToolsFramework
 
             switch (rootType)
             {
-                case AddressRootType::RootAtComponentsContainer:
-                {
-                    // Insert a node to represent the Components container.
-                    outAddress.push_back(AZ_CRC("Components", 0xee48f5fd));
-                }
-                break;
-                case AddressRootType::RootAtEntity:
-                {
-                    // Insert a node to represent the Components container, and another to represent the entity root.
-                    outAddress.push_back(AZ_CRC("Components", 0xee48f5fd));
-                    outAddress.push_back(AZ_CRC("AZ::Entity", 0x1fd61e11));
-                }
-                break;
+            case AddressRootType::RootAtComponentsContainer:
+            {
+                // Insert a node to represent the Components container.
+                outAddress.push_back(AZ_CRC_CE("Components"));
+            }
+            break;
+            case AddressRootType::RootAtEntity:
+            {
+                // Insert a node to represent the Components container, and another to represent the entity root.
+                outAddress.push_back(AZ_CRC_CE("Components"));
+                outAddress.push_back(AZ_CRC_CE("AZ::Entity"));
+            }
+            break;
             }
         }
     }
@@ -2890,7 +2498,7 @@ namespace AzToolsFramework
         if (InstanceDataNode* componentNode = componentFieldNode ? componentFieldNode->GetRoot() : nullptr)
         {
             AZ::Component* component = m_serializeContext->Cast<AZ::Component*>(
-                    componentNode->FirstInstance(), componentNode->GetClassMetadata()->m_typeId);
+                componentNode->FirstInstance(), componentNode->GetClassMetadata()->m_typeId);
             if (component)
             {
                 AZ::EntityId entityId = component->GetEntityId();
@@ -2927,48 +2535,6 @@ namespace AzToolsFramework
         }
 
         return false;
-    }
-
-    bool EntityPropertyEditor::InstanceNodeValueHasNoPushableChange(const InstanceDataNode* sourceNode, const InstanceDataNode* targetNode)
-    {
-        if (targetNode == nullptr)
-        {
-            return sourceNode == nullptr;
-        }
-        // If target node is affected by ForceOverride flag, consider it different from source.
-        AZ::EntityId entityId;
-        if (GetEntityDataPatchAddress(targetNode, m_dataPatchAddressBuffer, &entityId))
-        {
-            if (AZ::SliceComponent* rootSlice = GetEntityRootSlice(entityId))
-            {
-                AZ::DataPatch::Flags flags = rootSlice->GetEntityDataFlagsAtAddress(entityId, m_dataPatchAddressBuffer);
-                if (flags & AZ::DataPatch::Flag::ForceOverrideSet)
-                {
-                    return false;
-                }
-            }
-        }
-
-        // Verify that this is a field that can be pushed into the slice.
-        if (InstanceDataNode* componentNode = targetNode->GetRoot())
-        {
-            AZ::Component* component = m_serializeContext->Cast<AZ::Component*>(
-                componentNode->FirstInstance(), componentNode->GetClassMetadata()->m_typeId);
-            if (component)
-            {
-                AZ::Entity* entity = component->GetEntity();
-                bool isRootEntity = entity ? SliceUtilities::IsRootEntity(*entity) : false;
-                if (!SliceUtilities::IsNodePushable(*targetNode, isRootEntity))
-                {
-                    // If this field is one that can't be pushed into the slice, then
-                    // return true to signify that here is no pushable change on this field.
-                    return true;
-                }
-            }
-        }
-
-        // Otherwise, do the default value comparison.
-        return InstanceDataHierarchy::DefaultValueComparisonFunction(sourceNode, targetNode);
     }
 
     bool EntityPropertyEditor::QueryInstanceDataNodeReadOnlyStatus(const InstanceDataNode* node)
@@ -3054,7 +2620,7 @@ namespace AzToolsFramework
         }
 
         size_t comboItemCount = StatusTypeToIndex(StatusItems);
-        for (size_t i=0; i<comboItemCount; ++i)
+        for (size_t i = 0; i < comboItemCount; ++i)
         {
             m_comboItems[i]->setCheckState(Qt::Unchecked);
         }
@@ -3096,19 +2662,16 @@ namespace AzToolsFramework
             }
         }
 
-        if (m_prefabsAreEnabled)
+        if (allInactive)
         {
-            if (allInactive)
-            {
-                AZ_Warning("Prefab", false, "All entities found to be inactive. This is an option that's not supported with Prefabs.");
-                allInactive = false;
-                allEditorOnly = true;
-            }
-            if (someInactive)
-            {
-                AZ_Warning("Prefab", false, "Some inactive entities found. This is an option that's not supported with Prefabs.");
-                someInactive = false;
-            }
+            AZ_Warning("Prefab", false, "All entities found to be inactive. This is an option that's not supported with Prefabs.");
+            allInactive = false;
+            allEditorOnly = true;
+        }
+        if (someInactive)
+        {
+            AZ_Warning("Prefab", false, "Some inactive entities found. This is an option that's not supported with Prefabs.");
+            someInactive = false;
         }
 
         m_gui->m_statusComboBox->setItalic(false);
@@ -3119,36 +2682,36 @@ namespace AzToolsFramework
             m_comboItems[StatusTypeToIndex(StatusType::StatusStartActive)]->setCheckState(Qt::Checked);
         }
         else
-        if (allInactive)
-        {
-            m_gui->m_statusComboBox->setHeaderOverride(m_itemNames[static_cast<int>(StatusTypeToIndex(StatusType::StatusStartInactive))]);
-            m_gui->m_statusComboBox->setCurrentIndex(static_cast<int>(StatusTypeToIndex(StatusType::StatusStartInactive)));
-            m_comboItems[StatusTypeToIndex(StatusType::StatusStartInactive)]->setCheckState(Qt::Checked);
-        }
-        else
-        if (allEditorOnly)
-        {
-            m_gui->m_statusComboBox->setHeaderOverride(m_itemNames[static_cast<int>(StatusTypeToIndex(StatusType::StatusEditorOnly))]);
-            m_gui->m_statusComboBox->setCurrentIndex(static_cast<int>(StatusTypeToIndex(StatusType::StatusEditorOnly)));
-            m_comboItems[StatusTypeToIndex(StatusType::StatusEditorOnly)]->setCheckState(Qt::Checked);
-        }
-        else // Some marked active, some not
-        {
-            m_gui->m_statusComboBox->setItalic(true);
-            m_gui->m_statusComboBox->setHeaderOverride("- Multiple selected -");
-            if (someActive)
+            if (allInactive)
             {
-                m_comboItems[StatusTypeToIndex(StatusType::StatusStartActive)]->setCheckState(Qt::PartiallyChecked);
+                m_gui->m_statusComboBox->setHeaderOverride(m_itemNames[static_cast<int>(StatusTypeToIndex(StatusType::StatusStartInactive))]);
+                m_gui->m_statusComboBox->setCurrentIndex(static_cast<int>(StatusTypeToIndex(StatusType::StatusStartInactive)));
+                m_comboItems[StatusTypeToIndex(StatusType::StatusStartInactive)]->setCheckState(Qt::Checked);
             }
-            if (someInactive)
-            {
-                m_comboItems[StatusTypeToIndex(StatusType::StatusStartInactive)]->setCheckState(Qt::PartiallyChecked);
-            }
-            if (someEditorOnly)
-            {
-                m_comboItems[StatusTypeToIndex(StatusType::StatusEditorOnly)]->setCheckState(Qt::PartiallyChecked);
-            }
-        }
+            else
+                if (allEditorOnly)
+                {
+                    m_gui->m_statusComboBox->setHeaderOverride(m_itemNames[static_cast<int>(StatusTypeToIndex(StatusType::StatusEditorOnly))]);
+                    m_gui->m_statusComboBox->setCurrentIndex(static_cast<int>(StatusTypeToIndex(StatusType::StatusEditorOnly)));
+                    m_comboItems[StatusTypeToIndex(StatusType::StatusEditorOnly)]->setCheckState(Qt::Checked);
+                }
+                else // Some marked active, some not
+                {
+                    m_gui->m_statusComboBox->setItalic(true);
+                    m_gui->m_statusComboBox->setHeaderOverride("- Multiple selected -");
+                    if (someActive)
+                    {
+                        m_comboItems[StatusTypeToIndex(StatusType::StatusStartActive)]->setCheckState(Qt::PartiallyChecked);
+                    }
+                    if (someInactive)
+                    {
+                        m_comboItems[StatusTypeToIndex(StatusType::StatusStartInactive)]->setCheckState(Qt::PartiallyChecked);
+                    }
+                    if (someEditorOnly)
+                    {
+                        m_comboItems[StatusTypeToIndex(StatusType::StatusEditorOnly)]->setCheckState(Qt::PartiallyChecked);
+                    }
+                }
 
         m_gui->m_statusComboBox->setDisabled(m_selectionContainsReadOnlyEntity);
         m_gui->m_statusComboBox->setVisible(!m_isSystemEntityEditor && !m_isLevelEntityEditor);
@@ -3158,49 +2721,34 @@ namespace AzToolsFramework
 
     size_t EntityPropertyEditor::StatusTypeToIndex(StatusType statusType) const
     {
-        if (m_prefabsAreEnabled)
+        switch (statusType)
         {
-            switch (statusType)
-            {
-            case StatusStartActive:
-                return 0;
-            case StatusStartInactive:
-                AZ_Assert(false, "StatusStartInactive is not supported when Prefabs are enabled.");
-                return 0;
-            case StatusEditorOnly:
-                return 1;
-            case StatusItems:
-                return 2;
-            default:
-                AZ_Assert(false, "StatusType for EntityPropertyEditor is out of bounds.");
-                return 1;
-            }
-        }
-        else
-        {
-            return statusType;
+        case StatusStartActive:
+            return 0;
+        case StatusStartInactive:
+            AZ_Assert(false, "StatusStartInactive is not supported when Prefabs are enabled.");
+            return 0;
+        case StatusEditorOnly:
+            return 1;
+        case StatusItems:
+            return 2;
+        default:
+            AZ_Assert(false, "StatusType for EntityPropertyEditor is out of bounds.");
+            return 1;
         }
     }
 
     EntityPropertyEditor::StatusType EntityPropertyEditor::IndexToStatusType(size_t index) const
     {
-        if (m_prefabsAreEnabled)
+        switch (index)
         {
-            switch (index)
-            {
-            case 0:
-                return StatusStartActive;
-            case 1:
-                return StatusEditorOnly;
-            default:
-                AZ_Assert(index < StatusType::StatusItems, "Index for EntityPropertyEditor::IndexToStatusType is out of bounds");
-                return StatusEditorOnly;
-            }
-        }
-        else
-        {
+        case 0:
+            return StatusStartActive;
+        case 1:
+            return StatusEditorOnly;
+        default:
             AZ_Assert(index < StatusType::StatusItems, "Index for EntityPropertyEditor::IndexToStatusType is out of bounds");
-            return aznumeric_cast<StatusType>(index);
+            return StatusEditorOnly;
         }
     }
 
@@ -3220,8 +2768,6 @@ namespace AzToolsFramework
             menu.addSeparator();
         }
 
-        AddMenuOptionsForRevert(nullptr, nullptr, nullptr, menu);
-
         const auto& componentsToEdit = GetSelectedComponents();
         if (componentsToEdit.size() > 0)
         {
@@ -3240,10 +2786,10 @@ namespace AzToolsFramework
     }
 
     void EntityPropertyEditor::OnRequestRequiredComponents(
-        const QPoint& position, 
-        const QSize& size, 
-        const AZStd::vector<AZ::ComponentServiceType>& services, 
-        const AZStd::vector<AZ::ComponentServiceType>& incompatibleServices)
+        const QPoint& position,
+        const QSize& size,
+        AZStd::span<const AZ::ComponentServiceType> services,
+        AZStd::span<const AZ::ComponentServiceType> incompatibleServices)
     {
         ShowComponentPalette(m_componentPalette, position, size, services, incompatibleServices);
     }
@@ -3258,8 +2804,8 @@ namespace AzToolsFramework
         ComponentPaletteWidget* componentPalette,
         const QPoint& position,
         const QSize& size,
-        const AZStd::vector<AZ::ComponentServiceType>& serviceFilter,
-        const AZStd::vector<AZ::ComponentServiceType>& incompatibleServiceFilter)
+        AZStd::span<const AZ::ComponentServiceType> serviceFilter,
+        AZStd::span<const AZ::ComponentServiceType> incompatibleServiceFilter)
     {
         HideComponentPalette();
 
@@ -3377,15 +2923,18 @@ namespace AzToolsFramework
 
         const auto& componentsToEdit = GetSelectedComponents();
 
+        // you can use this to veto any ability to modify components present:
+        const bool allowAnyComponentModification = AllowAnyComponentModification();
+
         const bool hasComponents = !m_selectedEntityIds.empty() && !componentsToEdit.empty();
         // Don't allow components to be removed/cut/enabled/disabled if read only
-        const bool allowRemove = hasComponents && AreComponentsRemovable(componentsToEdit) && !m_selectionContainsReadOnlyEntity;
-        const bool allowCopy = hasComponents && AreComponentsCopyable(componentsToEdit);
+        const bool allowRemove = allowAnyComponentModification && hasComponents && AreComponentsRemovable(componentsToEdit) && !m_selectionContainsReadOnlyEntity;
+        const bool allowCopy = allowAnyComponentModification && hasComponents && AreComponentsCopyable(componentsToEdit);
 
         m_actionToDeleteComponents->setEnabled(allowRemove);
         m_actionToCutComponents->setEnabled(allowRemove && allowCopy);
         m_actionToCopyComponents->setEnabled(allowCopy);
-        m_actionToPasteComponents->setEnabled(!m_selectedEntityIds.empty() && CanPasteComponentsOnSelectedEntities());
+        m_actionToPasteComponents->setEnabled(allowAnyComponentModification && !m_selectedEntityIds.empty() && CanPasteComponentsOnSelectedEntities());
         m_actionToMoveComponentsUp->setEnabled(allowRemove && IsMoveComponentsUpAllowed());
         m_actionToMoveComponentsDown->setEnabled(allowRemove && IsMoveComponentsDownAllowed());
         m_actionToMoveComponentsTop->setEnabled(allowRemove && IsMoveComponentsUpAllowed());
@@ -3436,6 +2985,11 @@ namespace AzToolsFramework
 
     bool EntityPropertyEditor::CanPasteComponentsOnSelectedEntities() const
     {
+        if (!AllowAnyComponentModification())
+        {
+            return false;
+        }
+
         if (m_selectedEntityIds.empty())
         {
             return false;
@@ -3489,6 +3043,11 @@ namespace AzToolsFramework
 
     bool EntityPropertyEditor::CanPasteComponentsOnEntity(const ComponentTypeMimeData::ClassDataContainer& classDataForComponentsToPaste, const AZ::Entity* entity) const
     {
+        if (!AllowAnyComponentModification())
+        {
+            return false;
+        }
+
         if (!entity || classDataForComponentsToPaste.empty())
         {
             return false;
@@ -3530,14 +3089,14 @@ namespace AzToolsFramework
         return copyableComponents;
     }
 
-    void EntityPropertyEditor::DeleteComponents(const AZ::Entity::ComponentArrayType& components)
+    void EntityPropertyEditor::DeleteComponents(AZStd::span<AZ::Component* const> components)
     {
         if (!components.empty() && AreComponentsRemovable(components))
         {
             // Need to queue an update for all inspectors in case multiples are viewing the same entity and the removal of a component internally triggers an invalidate call
             AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(&AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree);
 
-            ScopedUndoBatch undoBatch("Removing components.");
+            ScopedUndoBatch undoBatch("Remove Component(s)");
 
             AzToolsFramework::RemoveComponents(components);
         }
@@ -3550,13 +3109,18 @@ namespace AzToolsFramework
 
     void EntityPropertyEditor::CutComponents()
     {
+        if (!AllowAnyComponentModification())
+        {
+            return;
+        }
+
         const auto& componentsToEdit = GetSelectedComponents();
         if (!componentsToEdit.empty() && AreComponentsRemovable(componentsToEdit))
         {
             QueuePropertyRefresh();
 
             //intentionally not using EntityCompositionRequests::CutComponents because we only want to copy components from first selected entity
-            ScopedUndoBatch undoBatch("Cut components.");
+            ScopedUndoBatch undoBatch("Cut Component(s)");
             CopyComponents();
             DeleteComponents();
         }
@@ -3575,9 +3139,9 @@ namespace AzToolsFramework
     {
         if (!m_selectedEntityIds.empty() && CanPasteComponentsOnSelectedEntities())
         {
-            ScopedUndoBatch undoBatch("Paste components.");
+            ScopedUndoBatch undoBatch("Paste Component(s)");
 
-            AZ::Entity::ComponentArrayType selectedComponents = GetSelectedComponents();
+            AZStd::span<AZ::Component* const> selectedComponents = GetSelectedComponents();
 
             AZ::Entity::ComponentArrayType componentsAfterPaste;
             AZ::Entity::ComponentArrayType componentsInOrder;
@@ -3623,7 +3187,7 @@ namespace AzToolsFramework
         }
     }
 
-    void EntityPropertyEditor::EnableComponents(const AZ::Entity::ComponentArrayType& components)
+    void EntityPropertyEditor::EnableComponents(AZStd::span<AZ::Component* const> components)
     {
         EntityCompositionRequestBus::Broadcast(&EntityCompositionRequests::EnableComponents, components);
         QueuePropertyRefresh();
@@ -3634,7 +3198,7 @@ namespace AzToolsFramework
         EnableComponents(GetSelectedComponents());
     }
 
-    void EntityPropertyEditor::DisableComponents(const AZ::Entity::ComponentArrayType& components)
+    void EntityPropertyEditor::DisableComponents(AZStd::span<AZ::Component* const> components)
     {
         EntityCompositionRequestBus::Broadcast(&EntityCompositionRequests::DisableComponents, components);
         QueuePropertyRefresh();
@@ -3653,7 +3217,7 @@ namespace AzToolsFramework
             return;
         }
 
-        ScopedUndoBatch undoBatch("Move components up.");
+        ScopedUndoBatch undoBatch("Move Component(s) Up");
 
         ComponentEditorVector componentEditors = m_componentEditors;
         for (size_t sourceComponentEditorIndex = 1; sourceComponentEditorIndex < componentEditors.size(); ++sourceComponentEditorIndex)
@@ -3681,7 +3245,7 @@ namespace AzToolsFramework
             return;
         }
 
-        ScopedUndoBatch undoBatch("Move components down.");
+        ScopedUndoBatch undoBatch("Move Component(s) Down");
 
         ComponentEditorVector componentEditors = m_componentEditors;
         for (size_t targetComponentEditorIndex = componentEditors.size() - 1; targetComponentEditorIndex > 0; --targetComponentEditorIndex)
@@ -3709,7 +3273,7 @@ namespace AzToolsFramework
             return;
         }
 
-        ScopedUndoBatch undoBatch("Move components to top.");
+        ScopedUndoBatch undoBatch("Move Component(s) to Top");
 
         AZ::Entity::ComponentArrayType componentsOnEntity;
 
@@ -3724,7 +3288,7 @@ namespace AzToolsFramework
                 componentsOnEntity.clear();
                 GetAllComponentsForEntityInOrder(AzToolsFramework::GetEntity(entityId), componentsOnEntity);
 
-                const AZ::Entity::ComponentArrayType& componentsToMove = componentsToEditByEntityIdItr->second;
+                AZStd::span<AZ::Component* const> componentsToMove = componentsToEditByEntityIdItr->second;
                 AZStd::sort(
                     componentsOnEntity.begin(),
                     componentsOnEntity.end(),
@@ -3751,7 +3315,7 @@ namespace AzToolsFramework
             return;
         }
 
-        ScopedUndoBatch undoBatch("Move components to bottom.");
+        ScopedUndoBatch undoBatch("Move Component(s) to Bottom");
 
         AZ::Entity::ComponentArrayType componentsOnEntity;
 
@@ -3766,7 +3330,7 @@ namespace AzToolsFramework
                 componentsOnEntity.clear();
                 GetAllComponentsForEntityInOrder(AzToolsFramework::GetEntity(entityId), componentsOnEntity);
 
-                const AZ::Entity::ComponentArrayType& componentsToMove = componentsToEditByEntityIdItr->second;
+                AZStd::span<AZ::Component* const> componentsToMove = componentsToEditByEntityIdItr->second;
                 AZStd::sort(
                     componentsOnEntity.begin(),
                     componentsOnEntity.end(),
@@ -3830,7 +3394,7 @@ namespace AzToolsFramework
         }
     }
 
-    void EntityPropertyEditor::MoveComponentRowBefore(const AZ::Entity::ComponentArrayType& sourceComponents, const AZ::Entity::ComponentArrayType& targetComponents, ScopedUndoBatch& undo)
+    void EntityPropertyEditor::MoveComponentRowBefore(AZStd::span<AZ::Component* const> sourceComponents, AZStd::span<AZ::Component* const> targetComponents, ScopedUndoBatch& undo)
     {
         //determine if both sets of components have the same number of elements
         //this should always be the case because component editors are only shown for components with equivalents on all selected entities
@@ -3848,7 +3412,7 @@ namespace AzToolsFramework
         }
     }
 
-    void EntityPropertyEditor::MoveComponentRowAfter(const AZ::Entity::ComponentArrayType& sourceComponents, const AZ::Entity::ComponentArrayType& targetComponents, ScopedUndoBatch& undo)
+    void EntityPropertyEditor::MoveComponentRowAfter(AZStd::span<AZ::Component* const> sourceComponents, AZStd::span<AZ::Component* const> targetComponents, ScopedUndoBatch& undo)
     {
         //determine if both sets of components have the same number of elements
         //this should always be the case because component editors are only shown for components with equivalents on all selected entities
@@ -3908,37 +3472,6 @@ namespace AzToolsFramework
         ComponentEditorVector componentEditors = m_componentEditors;
         AZStd::reverse(componentEditors.begin(), componentEditors.end());
         return IsMoveAllowed(componentEditors);
-    }
-
-    void EntityPropertyEditor::ResetToSlice()
-    {
-        // Reset selected components to slice values
-        const auto& componentsToEdit = GetSelectedComponents();
-
-        if (!componentsToEdit.empty())
-        {
-            ScopedUndoBatch undoBatch("Resetting components to slice defaults.");
-
-            for (auto component : componentsToEdit)
-            {
-                AZ_Assert(component, "Component is invalid.");
-                auto componentEditorIterator = m_componentToEditorMap.find(component);
-                AZ_Assert(componentEditorIterator != m_componentToEditorMap.end(), "Unable to find a component editor for the given component");
-                if (componentEditorIterator != m_componentToEditorMap.end())
-                {
-                    auto componentEditor = componentEditorIterator->second;
-                    componentEditor->GetPropertyEditor()->EnumerateInstances(
-                        [this, &component](InstanceDataHierarchy& hierarchy)
-                        {
-                            InstanceDataNode* root = hierarchy.GetRootNode();
-                            ContextMenuActionPullFieldData(component, root);
-                        }
-                        );
-                }
-            }
-
-            QueuePropertyRefresh();
-        }
     }
 
     bool EntityPropertyEditor::DoesOwnFocus() const
@@ -4089,6 +3622,7 @@ namespace AzToolsFramework
         }
         SaveComponentEditorState();
         UpdateInternalState();
+        NotifySelectionChanges();
     }
 
     void EntityPropertyEditor::SelectIntersectingComponentEditors(const QRect& globalRect, bool selected)
@@ -4100,6 +3634,7 @@ namespace AzToolsFramework
         }
         SaveComponentEditorState();
         UpdateInternalState();
+        NotifySelectionChanges();
     }
 
     bool EntityPropertyEditor::SelectIntersectingComponentEditorsSafe(const QRect& globalRect)
@@ -4117,6 +3652,7 @@ namespace AzToolsFramework
         }
         SaveComponentEditorState();
         UpdateInternalState();
+        NotifySelectionChanges();
 
         return selectedChanged;
     }
@@ -4130,6 +3666,7 @@ namespace AzToolsFramework
         }
         SaveComponentEditorState();
         UpdateInternalState();
+        NotifySelectionChanges();
     }
 
     AZ::s32 EntityPropertyEditor::GetComponentEditorIndex(const ComponentEditor* componentEditor) const
@@ -4179,7 +3716,7 @@ namespace AzToolsFramework
         return m_selectedComponentEditors;
     }
 
-    const AZ::Entity::ComponentArrayType& EntityPropertyEditor::GetSelectedComponents() const
+    AZStd::span<AZ::Component* const> EntityPropertyEditor::GetSelectedComponents() const
     {
         return m_selectedComponents;
     }
@@ -4209,11 +3746,19 @@ namespace AzToolsFramework
             m_selectedComponents.insert(m_selectedComponents.end(), components.begin(), components.end());
         }
 
+        m_selectedEntityComponentIds.clear();
         m_selectedComponentsByEntityId.clear();
         for (auto component : m_selectedComponents)
         {
             m_selectedComponentsByEntityId[component->GetEntityId()].push_back(component);
+            m_selectedEntityComponentIds.insert(AZ::EntityComponentIdPair(component->GetEntityId(), component->GetId()));
         }
+    }
+
+    void EntityPropertyEditor::NotifySelectionChanges()
+    {
+        EntityPropertyEditorNotificationBus::Broadcast(
+            &EntityPropertyEditorNotifications::OnComponentSelectionChanged, this, m_selectedEntityComponentIds);
     }
 
     void EntityPropertyEditor::SaveComponentEditorState()
@@ -4279,6 +3824,24 @@ namespace AzToolsFramework
 
     void EntityPropertyEditor::ScrollToNewComponent()
     {
+        m_shouldScrollToNewComponentsQueued = false;
+
+        if (!m_shouldScrollToNewComponents)
+        {
+            // if we get here, we should just restore the scroll.
+            if (m_savedVerticalScroll >= 0)
+            {
+                m_gui->m_componentList->verticalScrollBar()->setValue(m_savedVerticalScroll);
+            }
+
+            if (m_savedHorizontalScroll >= 0)
+            {
+                m_gui->m_componentList->horizontalScrollBar()->setValue(m_savedHorizontalScroll);
+            }
+            return;
+        }
+        m_shouldScrollToNewComponents = false;
+        
         // force new components to be visible
         // if no component has been explicitly set at the most recently added,
         // assume new components are added to the end of the list and layout
@@ -4308,8 +3871,6 @@ namespace AzToolsFramework
         {
             m_gui->m_componentList->ensureWidgetVisible(componentEditor);
         }
-        m_shouldScrollToNewComponents = false;
-        m_shouldScrollToNewComponentsQueued = false;
         m_newComponentId.reset();
 
         HighlightMovedRowWidget();
@@ -4317,9 +3878,13 @@ namespace AzToolsFramework
 
     void EntityPropertyEditor::QueueScrollToNewComponent()
     {
-        if (m_shouldScrollToNewComponents && !m_shouldScrollToNewComponentsQueued)
+        if (!m_shouldScrollToNewComponentsQueued)
         {
-            QTimer::singleShot(100, this, &EntityPropertyEditor::ScrollToNewComponent);
+            // this delay cannot be zero but still should be as short as possible to avoid jiggling in the display
+            // it cannot be zero, because other immediate updates are likely scheduled
+            // and it cannot be 1 since other cascading updates are likely to be scheduled.
+            // In windows, a timer of less than about 20ms will actually turn into a busy loop, so 30ms is a good value
+            QTimer::singleShot(30, this, &EntityPropertyEditor::ScrollToNewComponent);
             m_shouldScrollToNewComponentsQueued = true;
         }
     }
@@ -4560,6 +4125,12 @@ namespace AzToolsFramework
 
     void EntityPropertyEditor::dragEnterEvent(QDragEnterEvent* event)
     {
+        if (m_selectionContainsReadOnlyEntity)
+        {
+            event->ignore();
+            return;
+        }
+
         if (UpdateDrag(event->pos(), event->mouseButtons(), event->mimeData()))
         {
             event->accept();
@@ -4572,6 +4143,12 @@ namespace AzToolsFramework
 
     void EntityPropertyEditor::dragMoveEvent(QDragMoveEvent* event)
     {
+        if (m_selectionContainsReadOnlyEntity)
+        {
+            event->ignore();
+            return;
+        }
+
         if (UpdateDrag(event->pos(), event->mouseButtons(), event->mimeData()))
         {
             event->accept();
@@ -4768,6 +4345,11 @@ namespace AzToolsFramework
 
     bool EntityPropertyEditor::IsDragAllowed(const ComponentEditorVector& componentEditors) const
     {
+        if (!AllowAnyComponentModification())
+        {
+            return false;
+        }
+
         if (m_dragStarted || m_selectedEntityIds.empty() || componentEditors.empty() || !DoesOwnFocus())
         {
             return false;
@@ -4814,6 +4396,11 @@ namespace AzToolsFramework
         if (m_isAlreadyQueuedRefresh)
         {
             return false; // can't drop while tree is rebuilding itself!
+        }
+
+        if (m_selectionContainsReadOnlyEntity)
+        {
+            return false;
         }
 
         const QRect globalRect(globalPos, globalPos);
@@ -4944,43 +4531,25 @@ namespace AzToolsFramework
 
         AZ_Assert(m_reorderRowWidgetEditor, "Missing editor for row widget drag.");
 
-        AzToolsFramework::ReflectedPropertyEditor::WidgetList widgets = m_reorderRowWidgetEditor->GetPropertyEditor()->GetWidgets();
-        for (auto widgetPair : widgets)
+        IPropertyEditor* editor = m_reorderRowWidgetEditor->GetPropertyEditor();
+        if (auto reflectedPropertyEditor = azdynamic_cast<ReflectedPropertyEditor*>(editor))
         {
-            PropertyRowWidget* widget = widgetPair.second;
-            if (!widget)
+            AzToolsFramework::ReflectedPropertyEditor::WidgetList widgets = reflectedPropertyEditor->GetWidgets();
+            for (auto widgetPair : widgets)
             {
-                continue;
-            }
-
-            if (DoesIntersectWidget(globalRect, reinterpret_cast<QWidget*>(widget)))
-            {
-                if (widget->CanBeReordered() && widget->GetParentRow() == m_reorderRowWidget->GetParentRow())
+                PropertyRowWidget* widget = widgetPair.second;
+                if (!widget)
                 {
-                    m_reorderDropTarget = widget;
-
-                    QRect widgetRect = GetWidgetAndVisibleChildrenGlobalRect(widget);
-                    if (globalPos.y() < widgetRect.center().y())
-                    {
-                        m_reorderDropArea = EntityPropertyEditor::DropArea::Above;
-                    }
-                    else
-                    {
-                        m_reorderDropArea = EntityPropertyEditor::DropArea::Below;
-                    }
-
-                    return true;
+                    continue;
                 }
 
-                // We're hovering over a child of a reorderable ancestor, use the ancestor as the drop target.
-                PropertyRowWidget* parent = widget->GetParentRow();
-                while (parent)
+                if (DoesIntersectWidget(globalRect, reinterpret_cast<QWidget*>(widget)))
                 {
-                    if (parent->CanBeReordered() && parent->GetParentRow() == m_reorderRowWidget->GetParentRow())
+                    if (widget->CanBeReordered() && widget->GetParentRow() == m_reorderRowWidget->GetParentRow())
                     {
-                        m_reorderDropTarget = parent;
+                        m_reorderDropTarget = widget;
 
-                        QRect widgetRect = GetWidgetAndVisibleChildrenGlobalRect(parent);
+                        QRect widgetRect = GetWidgetAndVisibleChildrenGlobalRect(widget);
                         if (globalPos.y() < widgetRect.center().y())
                         {
                             m_reorderDropArea = EntityPropertyEditor::DropArea::Above;
@@ -4992,7 +4561,29 @@ namespace AzToolsFramework
 
                         return true;
                     }
-                    parent = parent->GetParentRow();
+
+                    // We're hovering over a child of a reorderable ancestor, use the ancestor as the drop target.
+                    PropertyRowWidget* parent = widget->GetParentRow();
+                    while (parent)
+                    {
+                        if (parent->CanBeReordered() && parent->GetParentRow() == m_reorderRowWidget->GetParentRow())
+                        {
+                            m_reorderDropTarget = parent;
+
+                            QRect widgetRect = GetWidgetAndVisibleChildrenGlobalRect(parent);
+                            if (globalPos.y() < widgetRect.center().y())
+                            {
+                                m_reorderDropArea = EntityPropertyEditor::DropArea::Above;
+                            }
+                            else
+                            {
+                                m_reorderDropArea = EntityPropertyEditor::DropArea::Below;
+                            }
+
+                            return true;
+                        }
+                        parent = parent->GetParentRow();
+                    }
                 }
             }
         }
@@ -5084,12 +4675,16 @@ namespace AzToolsFramework
 
         for (auto componentEditor : componentEditors)
         {
-            AzToolsFramework::ReflectedPropertyEditor::WidgetList widgets = componentEditor->GetPropertyEditor()->GetWidgets();
-            for (auto& [dataNode, rowWidget] : widgets)
+            IPropertyEditor* editor = componentEditor->GetPropertyEditor();
+            if (auto reflectedPropertyEditor = azdynamic_cast<ReflectedPropertyEditor*>(editor))
             {
-                if (DoesIntersectWidget(globalRect, reinterpret_cast<QWidget*>(rowWidget)) && rowWidget->CanBeReordered())
+                AzToolsFramework::ReflectedPropertyEditor::WidgetList widgets = reflectedPropertyEditor->GetWidgets();
+                for (auto& [dataNode, rowWidget] : widgets)
                 {
-                    return rowWidget;
+                    if (DoesIntersectWidget(globalRect, reinterpret_cast<QWidget*>(rowWidget)) && rowWidget->CanBeReordered())
+                    {
+                        return rowWidget;
+                    }
                 }
             }
         }
@@ -5144,21 +4739,25 @@ namespace AzToolsFramework
         {
             for (auto componentEditor : componentEditors)
             {
-                AzToolsFramework::ReflectedPropertyEditor::WidgetList widgets = componentEditor->GetPropertyEditor()->GetWidgets();
-                for (AZStd::pair<InstanceDataNode*, PropertyRowWidget*> w : widgets)
+                IPropertyEditor* editor = componentEditor->GetPropertyEditor();
+                if (auto reflectedPropertyEditor = azdynamic_cast<ReflectedPropertyEditor*>(editor))
                 {
-                    if (w.second)
+                    AzToolsFramework::ReflectedPropertyEditor::WidgetList widgets = reflectedPropertyEditor->GetWidgets();
+                    for (AZStd::pair<InstanceDataNode*, PropertyRowWidget*> w : widgets)
                     {
-                        if (DoesIntersectWidget(dragRect, reinterpret_cast<QWidget*>(w.second)) && w.second->CanBeReordered())
+                        if (w.second)
                         {
-                            m_currentReorderState = EntityPropertyEditor::ReorderState::DraggingRowWidget;
-                            m_reorderRowWidget = w.second;
-                            m_reorderRowWidgetEditor = componentEditor;
-                            if (m_reorderDropTarget)
+                            if (DoesIntersectWidget(dragRect, reinterpret_cast<QWidget*>(w.second)) && w.second->CanBeReordered())
                             {
-                                m_reorderDropTarget = nullptr;
+                                m_currentReorderState = EntityPropertyEditor::ReorderState::DraggingRowWidget;
+                                m_reorderRowWidget = w.second;
+                                m_reorderRowWidgetEditor = componentEditor;
+                                if (m_reorderDropTarget)
+                                {
+                                    m_reorderDropTarget = nullptr;
+                                }
+                                break;
                             }
-                            break;
                         }
                     }
                 }
@@ -5520,7 +5119,7 @@ namespace AzToolsFramework
 
             for (const ComponentEditor* sourceComponentEditor : sourceComponentEditors)
             {
-                const AZ::Entity::ComponentArrayType& sourceComponents = sourceComponentEditor->GetComponents();
+                AZStd::span<AZ::Component* const> sourceComponents = sourceComponentEditor->GetComponents();
                 MoveComponentRowBefore(sourceComponents, targetComponents, undo);
             }
 
@@ -5642,8 +5241,7 @@ namespace AzToolsFramework
 
         for (auto componentEditor : m_componentEditors)
         {
-            componentEditor->GetPropertyEditor()->SetFilterString(m_filterString);
-            componentEditor->GetHeader()->SetFilterString(m_filterString);
+            componentEditor->SetFilterString(m_filterString);
         }
 
         UpdateContents();
@@ -5663,7 +5261,7 @@ namespace AzToolsFramework
         AzToolsFramework::EditorRequestBus::Broadcast(&AzToolsFramework::EditorRequests::OpenPinnedInspector, pinnedEntities);
     }
 
-    void EntityPropertyEditor::OnContextReset()
+    void EntityPropertyEditor::OnPrepareForContextReset()
     {
         if (IsLockedToSpecificEntities() && !m_isLevelEntityEditor)
         {
@@ -5677,7 +5275,7 @@ namespace AzToolsFramework
         {
             DisconnectFromEntityBuses(entityId);
         }
-        EBUS_EVENT(AzToolsFramework::EditorRequests::Bus, ClosePinnedInspector, this);
+        AzToolsFramework::EditorRequests::Bus::Broadcast(&AzToolsFramework::EditorRequests::Bus::Events::ClosePinnedInspector, this);
     }
 
     void EntityPropertyEditor::SetSystemEntityEditor(bool isSystemEntityEditor)
@@ -5707,6 +5305,11 @@ namespace AzToolsFramework
 
     void EntityPropertyEditor::OnComponentOrderChanged()
     {
+        if (m_isBuildingProperties)
+        {
+            return;
+        }
+
         QueuePropertyRefresh();
         m_shouldScrollToNewComponents = true;
     }
@@ -5764,6 +5367,7 @@ namespace AzToolsFramework
 
         AzQtComponents::SetWidgetInteractEnabled(propertyEditorUi->m_entityIdLabel, on);
         AzQtComponents::SetWidgetInteractEnabled(propertyEditorUi->m_entityIdText, on);
+        AzQtComponents::SetWidgetInteractEnabled(propertyEditorUi->m_prefabContainerText, on);
 
         AzQtComponents::SetWidgetInteractEnabled(propertyEditorUi->m_addComponentButton, on);
 
@@ -5772,13 +5376,6 @@ namespace AzToolsFramework
 
     AZ::Entity* EntityPropertyEditor::GetSelectedEntityById(AZ::EntityId& entityId) const
     {
-        if (m_isLevelEntityEditor)
-        {
-            AZ::Entity* entity = nullptr;
-            SliceMetadataEntityContextRequestBus::BroadcastResult(entity, &SliceMetadataEntityContextRequestBus::Events::GetMetadataEntity, entityId);
-            return entity;
-        }
-
         return GetEntityById(entityId);
     }
 
@@ -5855,8 +5452,11 @@ namespace AzToolsFramework
         {
             DisableComponentActions(this, m_entityComponentActions);
             SetPropertyEditorState(m_gui, false);
-            const auto componentModeTypes = m_componentModeCollection->GetComponentTypes();
             m_disabled = true;
+
+            // note: ComponentModeCollectionInterface cannot be cached as it may change during the lifetime of the application
+            const auto componentModeTypes = AZ::Interface<ComponentModeCollectionInterface>::Get()->GetComponentTypes();
+
             
             if (!componentModeTypes.empty())
             {
@@ -5866,6 +5466,13 @@ namespace AzToolsFramework
             for (auto componentEditor : m_componentEditors)
             {
                 componentEditor->EnteredComponentMode(componentModeTypes);
+
+                // if this component editor is active and editable during component mode
+                if (componentEditor->IsSelected())
+                {
+                    // scroll to the relevant component card
+                    m_gui->m_componentList->ensureWidgetVisible(componentEditor);
+                }
             }
 
             // record the selected state after entering component mode
@@ -5880,7 +5487,7 @@ namespace AzToolsFramework
         {
             EnableComponentActions(this, m_entityComponentActions);
             SetPropertyEditorState(m_gui, true);
-            const auto componentModeTypes = m_componentModeCollection->GetComponentTypes();
+            const auto componentModeTypes = AZ::Interface<ComponentModeCollectionInterface>::Get()->GetComponentTypes();
             m_disabled = false;
 
             for (auto componentEditor : m_componentEditors)
@@ -5898,6 +5505,13 @@ namespace AzToolsFramework
         for (auto componentEditor : m_componentEditors)
         {
             componentEditor->ActiveComponentModeChanged(componentType);
+
+            // if this component editor has been changed to during component mode
+            if (componentEditor->IsSelected())
+            {
+                // scroll to the relevant component card
+                m_gui->m_componentList->ensureWidgetVisible(componentEditor);
+            }
         }
     }
 
@@ -6020,7 +5634,5 @@ void StatusComboBox::wheelEvent(QWheelEvent* e)
         QComboBox::wheelEvent(e);
     }
 }
-
-
 
 #include "UI/PropertyEditor/moc_EntityPropertyEditor.cpp"

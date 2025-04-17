@@ -11,7 +11,6 @@
 #include <AzFramework/Physics/ShapeConfiguration.h>
 #include <AzFramework/Physics/Material/PhysicsMaterial.h>
 #include <AzFramework/Physics/Material/PhysicsMaterialSlots.h>
-#include <AzFramework/Physics/Material/Legacy/LegacyPhysicsMaterialSelection.h>
 #include <AzFramework/Physics/Collision/CollisionGroups.h>
 #include <AzFramework/Physics/Collision/CollisionLayers.h>
 #include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
@@ -26,7 +25,7 @@ namespace Physics
     class ColliderConfiguration
     {
     public:
-        AZ_CLASS_ALLOCATOR(ColliderConfiguration, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ColliderConfiguration, AZ::SystemAllocator);
         AZ_RTTI(ColliderConfiguration, "{16206828-F867-4DA9-9E4E-549B7B2C6174}");
         static void Reflect(AZ::ReflectContext* context);
 
@@ -63,7 +62,6 @@ namespace Physics
         AZ::Vector3 m_position = AZ::Vector3::CreateZero(); /// Shape offset relative to the connected rigid body.
         AZ::Quaternion m_rotation = AZ::Quaternion::CreateIdentity(); ///< Shape rotation relative to the connected rigid body.
         MaterialSlots m_materialSlots; ///< Material slots for the collider.
-        PhysicsLegacy::MaterialSelection m_legacyMaterialSelection; ///< Kept to convert old physics material assets.
         AZ::u8 m_propertyVisibilityFlags = (std::numeric_limits<AZ::u8>::max)(); ///< Visibility flags for collider.
                                                                                  ///< Note: added parenthesis for std::numeric_limits is
                                                                                  ///< to avoid collision with `max` macro in uber builds.
@@ -74,6 +72,13 @@ namespace Physics
     private:
         void OnRestOffsetChanged();
         void OnContactOffsetChanged();
+
+        // m_dummyIsSimulated is used for EditContext only, it will always be false and read-only.
+        // It will be shown instead of the real m_isSimulated property when m_isTrigger is enabled,
+        // this way it'll be clear that when the collider is a trigger it won't be simulated.
+        bool m_dummyIsSimulated = false;
+        AZ::Crc32 GetSimulatedPropertyVisibility() const;
+        AZ::Crc32 GetDummySimulatedPropertyVisibility() const;
     };
 
     struct RayCastRequest;
@@ -81,12 +86,13 @@ namespace Physics
     class Shape
     {
     public:
-        AZ_CLASS_ALLOCATOR(Shape, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Shape, AZ::SystemAllocator);
         AZ_RTTI(Shape, "{0A47DDD6-2BD7-43B3-BF0D-2E12CC395C13}");
         virtual ~Shape() = default;
 
         virtual void SetMaterial(const AZStd::shared_ptr<Material>& material) = 0;
         virtual AZStd::shared_ptr<Material> GetMaterial() const = 0;
+        virtual Physics::MaterialId GetMaterialId() const = 0;
 
         virtual void SetCollisionLayer(const AzPhysics::CollisionLayer& layer) = 0;
         virtual AzPhysics::CollisionLayer GetCollisionLayer() const = 0;
@@ -105,6 +111,7 @@ namespace Physics
         virtual void SetContactOffset(float contactOffset) = 0;
 
         virtual void* GetNativePointer() = 0;
+        virtual const void* GetNativePointer() const = 0;
 
         virtual AZ::Crc32 GetTag() const = 0;
 

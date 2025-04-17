@@ -59,6 +59,23 @@ namespace AZ
                 }
 
                 return outTransform;
+            }            
+
+            Containers::SceneGraph::NodeIndex GetImmediateChildOfType(
+                const Containers::SceneGraph& graph, const Containers::SceneGraph::NodeIndex& nodeIndex, const AZ::TypeId& typeId)
+            {
+                auto childIndex = graph.GetNodeChild(nodeIndex);
+                while (childIndex.IsValid())
+                {
+                    const auto nodeContent = graph.GetNodeContent(childIndex);
+                    if (nodeContent && azrtti_istypeof(typeId, nodeContent.get()))
+                    {
+                        break;
+                    }
+                    childIndex = graph.GetNodeSibling(childIndex);
+                }
+
+                return childIndex;
             }
         } // Utilities
     } // SceneAPI

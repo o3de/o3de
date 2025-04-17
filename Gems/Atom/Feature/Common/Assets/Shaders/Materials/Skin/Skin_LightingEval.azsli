@@ -1,0 +1,36 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+// This #define magic lets you use the EvaluateLighting function in this file without making it the final EvaluateLighting
+// used in your shader. Simply #define EvaluateLighting to your custom definition before including this file
+//
+#ifndef EvaluateLighting
+#define EvaluateLighting EvaluateLighting_SkinPBR
+#endif
+
+#include "../BasePBR/BasePBR_LightingEval.azsli"
+
+void InitializeLightingData_SkinPBR(inout Surface surface, float4 screenPosition, float3 viewPosition, inout LightingData lightingData)
+{
+    // --- Base PBR ---
+    InitializeLightingData_BasePBR(surface, screenPosition, viewPosition, lightingData);
+
+    // --- Skin PBR ---
+    lightingData.diffuseAmbientOcclusion = surface.diffuseAmbientOcclusion;
+    lightingData.specularOcclusion = surface.specularOcclusion;
+}
+
+LightingData EvaluateLighting_SkinPBR(inout Surface surface, float4 screenPosition, float3 viewPosition)
+{
+    LightingData lightingData;
+    InitializeLightingData_SkinPBR(surface, screenPosition, viewPosition, lightingData);
+    CalculateLighting_BasePBR(surface, screenPosition, lightingData);
+    return lightingData;
+}

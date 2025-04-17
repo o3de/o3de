@@ -1,17 +1,14 @@
 {
-    "description": "",
-    "parentMaterial": "00_illuminant.material",
     "materialType": "../../Types/StandardPBR.materialtype",
     "materialTypeVersion": 5,
-    "properties": {
-        "baseColor": {
-            "color": [
-                0.43244872157,
-                0.0297351510059,
-                0.0399429307193,
-                1.0
-            ],
-            "useTexture": false
-        }
+    "parentMaterial": "00_illuminant.material",
+    "propertyValues": {
+        "baseColor.color": [
+            0.43244871497154236,
+            0.029735151678323746,
+            0.03994293138384819,
+            1.0
+        ],
+        "baseColor.useTexture": false
     }
 }

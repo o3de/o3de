@@ -23,7 +23,7 @@ namespace LandscapeCanvas
     class GradientBakerNode : public BaseGradientNode
     {
     public:
-        AZ_CLASS_ALLOCATOR(GradientBakerNode, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GradientBakerNode, AZ::SystemAllocator);
         AZ_RTTI(GradientBakerNode, "{29C0697B-068E-49DF-8D44-36DD98599C30}", BaseGradientNode);
 
         static void Reflect(AZ::ReflectContext* context);
@@ -31,7 +31,7 @@ namespace LandscapeCanvas
         GradientBakerNode() = default;
         explicit GradientBakerNode(GraphModel::GraphPtr graph);
 
-        static const QString TITLE;
+        static const char* TITLE;
         const char* GetTitle() const override;
         const char* GetSubTitle() const override;
         const BaseNodeType GetBaseNodeType() const override;

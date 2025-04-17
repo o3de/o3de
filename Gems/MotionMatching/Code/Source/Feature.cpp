@@ -19,14 +19,13 @@
 #include <EMotionFX/Source/Velocity.h>
 
 #include <MCore/Source/AzCoreConversions.h>
-#include <MCore/Source/Color.h>
 
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
 namespace EMotionFX::MotionMatching
 {
-    AZ_CLASS_ALLOCATOR_IMPL(Feature, MotionMatchAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(Feature, MotionMatchAllocator)
 
     Feature::ExtractFeatureContext::ExtractFeatureContext(FeatureMatrix& featureMatrix, AnimGraphPosePool& posePool)
         : m_featureMatrix(featureMatrix)

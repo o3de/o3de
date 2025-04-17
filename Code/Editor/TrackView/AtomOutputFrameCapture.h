@@ -31,6 +31,8 @@ namespace TrackView
         //! @note scene must be the same scene used to create the pipeline.
         void DestroyPipeline(AZ::RPI::Scene& scene);
 
+        bool IsCreated() const { return m_pipelineCreated; }
+
         //! Request a capture to start.
         //! @param attachmentReadbackCallback Handles the returned attachment (image data returned by the renderer).
         //! @param captureFinishedCallback Logic to run once the capture has completed fully.
@@ -47,10 +49,11 @@ namespace TrackView
         AZ::RPI::ViewPtr m_targetView; //!< The view that this render pipeline will mimic.
         AZStd::vector<AZStd::string> m_passHierarchy; //!< Pass hierarchy (includes pipelineName and CopyToSwapChain).
         CaptureFinishedCallback m_captureFinishedCallback; //!< Stored callback called from OnCaptureFinished.
-        uint32_t m_frameCaptureId = AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId;
+
+        bool m_pipelineCreated{};
 
         // FrameCaptureNotificationBus overrides ...
-        void OnCaptureFinished(uint32_t frameCaptureId, AZ::Render::FrameCaptureResult result, const AZStd::string& info) override;
+        void OnFrameCaptureFinished(AZ::Render::FrameCaptureResult result, const AZStd::string& info) override;
     };
 
     inline AZ::EntityId ActiveCameraEntityId()

@@ -53,7 +53,7 @@ namespace AZ { namespace Android
                 typedef AZStd::vector<JNINativeMethod, AZStdAllocator> vector_type;
 
 
-                AZ_CLASS_ALLOCATOR(Object<Allocator>, Allocator, 0);
+                AZ_CLASS_ALLOCATOR(Object<Allocator>, Allocator);
 
 
                 //! Creates a custom jni object wrapper from a java class path.  This JNI object

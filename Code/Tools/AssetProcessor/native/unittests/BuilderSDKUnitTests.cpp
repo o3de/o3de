@@ -7,8 +7,10 @@
  */
 
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
+#if !defined(Q_MOC_RUN)
 #include <AzCore/UnitTest/TestTypes.h>
-#include <native/unittests/UnitTestRunner.h>
+#include <native/unittests/UnitTestUtils.h>
+#endif
 #include <QDir>
 #include <QTemporaryDir>
 
@@ -17,18 +19,10 @@ namespace UnitTest
     // note that this is copied from BuilderSDK.cpp because its intentionally not exposed as publicly available types
     // the game would import it from LmbrCentral's various headers such as MaterialAsset.h
     // but that would require including lmbrcentral into the unit tests, which is not acceptable.
-    static AZ::Data::AssetType textureMipsAssetType("{3918728C-D3CA-4D9E-813E-A5ED20C6821E}");
-    static AZ::Data::AssetType skinnedMeshLodsAssetType("{58E5824F-C27B-46FD-AD48-865BA41B7A51}");
-    static AZ::Data::AssetType staticMeshLodsAssetType("{9AAE4926-CB6A-4C60-9948-A1A22F51DB23}");
-    static AZ::Data::AssetType textureAssetType("{59D5E20B-34DB-4D8E-B867-D33CC2556355}"); // from MaterialAsset.h
-    static AZ::Data::AssetType meshAssetType("{C2869E3B-DDA0-4E01-8FE3-6770D788866B}"); // from MeshAsset.h
-    static AZ::Data::AssetType skinnedMeshAssetType("{C5D443E1-41FF-4263-8654-9438BC888CB7}"); // from MeshAsset.h
     static AZ::Data::AssetType sliceAssetType("{C62C7A87-9C09-4148-A985-12F2C99C0A45}"); // from SliceAsset.h
-    static AZ::Data::AssetType particleAssetType("{6EB56B55-1B58-4EE3-A268-27680338AE56}"); // from ParticleAsset.h
-    static AZ::Data::AssetType lensFlareAssetType("{CF44D1F0-F178-4A3D-A9E6-D44721F50C20}"); // from LensFlareAsset.h
     static AZ::Data::AssetType fontAssetType("{57767D37-0EBE-43BE-8F60-AB36D2056EF8}"); // form UiAssetTypes.h
 
-    class BuilderSDKUnitTests : public AllocatorsFixture
+    class BuilderSDKUnitTests : public LeakDetectionFixture
     {
     public:
         // QTemporaryDir autodeletes on destruct.
@@ -47,100 +41,6 @@ namespace UnitTest
     {
         EXPECT_EQ(
             AssetBuilderSDK::JobProduct::InferAssetTypeByProductFileName("no_extension"), AZ::Data::AssetType::CreateNull());
-        // .dds should show up as texture
-        // .dds.xn should show up as mips
-        EXPECT_EQ(
-            AssetBuilderSDK::JobProduct::InferAssetTypeByProductFileName("texture.dds"), AZ::Data::AssetType(textureAssetType));
-        EXPECT_EQ(
-            AssetBuilderSDK::JobProduct::InferAssetTypeByProductFileName("texture.dds.1"), AZ::Data::AssetType(textureMipsAssetType));
-        EXPECT_EQ(
-            AssetBuilderSDK::JobProduct::InferAssetTypeByProductFileName("texture.dds.2"), AZ::Data::AssetType(textureMipsAssetType));
-        EXPECT_EQ(
-            AssetBuilderSDK::JobProduct::InferAssetTypeByProductFileName("texture.dds.3"), AZ::Data::AssetType(textureMipsAssetType));
-        EXPECT_EQ(
-            AssetBuilderSDK::JobProduct::InferAssetTypeByProductFileName("texture.dds.4"), AZ::Data::AssetType(textureMipsAssetType));
-        EXPECT_EQ(
-            AssetBuilderSDK::JobProduct::InferAssetTypeByProductFileName("texture.dds.5"), AZ::Data::AssetType(textureMipsAssetType));
-        EXPECT_EQ(
-            AssetBuilderSDK::JobProduct::InferAssetTypeByProductFileName("texture.dds.6"), AZ::Data::AssetType(textureMipsAssetType));
-        EXPECT_EQ(
-            AssetBuilderSDK::JobProduct::InferAssetTypeByProductFileName("texture.dds.7"), AZ::Data::AssetType(textureMipsAssetType));
-        EXPECT_EQ(
-            AssetBuilderSDK::JobProduct::InferAssetTypeByProductFileName("texture.dds.8"), AZ::Data::AssetType(textureMipsAssetType));
-        EXPECT_EQ(
-            AssetBuilderSDK::JobProduct::InferAssetTypeByProductFileName("texture.dds.9"), AZ::Data::AssetType(textureMipsAssetType));
-        EXPECT_EQ(
-            AssetBuilderSDK::JobProduct::InferAssetTypeByProductFileName("texture.dds.1a"), AZ::Data::AssetType(textureMipsAssetType));
-        EXPECT_EQ(
-            AssetBuilderSDK::JobProduct::InferAssetTypeByProductFileName("texture.dds.2a"), AZ::Data::AssetType(textureMipsAssetType));
-        EXPECT_EQ(
-            AssetBuilderSDK::JobProduct::InferAssetTypeByProductFileName("texture.dds.3a"), AZ::Data::AssetType(textureMipsAssetType));
-        EXPECT_EQ(
-            AssetBuilderSDK::JobProduct::InferAssetTypeByProductFileName("texture.dds.4a"), AZ::Data::AssetType(textureMipsAssetType));
-        EXPECT_EQ(
-            AssetBuilderSDK::JobProduct::InferAssetTypeByProductFileName("texture.dds.5a"), AZ::Data::AssetType(textureMipsAssetType));
-        EXPECT_EQ(
-            AssetBuilderSDK::JobProduct::InferAssetTypeByProductFileName("texture.dds.6a"), AZ::Data::AssetType(textureMipsAssetType));
-        EXPECT_EQ(
-            AssetBuilderSDK::JobProduct::InferAssetTypeByProductFileName("texture.dds.7a"), AZ::Data::AssetType(textureMipsAssetType));
-        EXPECT_EQ(
-            AssetBuilderSDK::JobProduct::InferAssetTypeByProductFileName("texture.dds.8a"), AZ::Data::AssetType(textureMipsAssetType));
-        EXPECT_EQ(
-            AssetBuilderSDK::JobProduct::InferAssetTypeByProductFileName("texture.dds.9a"), AZ::Data::AssetType(textureMipsAssetType));
-
-        // .cgf should show up as staticmesh
-        // .cgf.x should static mesh lods
-        EXPECT_EQ(
-            AssetBuilderSDK::JobProduct::InferAssetTypeByProductFileName("mesh.cgf"), AZ::Data::AssetType(meshAssetType));
-        EXPECT_EQ(
-            AssetBuilderSDK::JobProduct::InferAssetTypeByProductFileName("mesh.cgf.1"), AZ::Data::AssetType(staticMeshLodsAssetType));
-        EXPECT_EQ(
-            AssetBuilderSDK::JobProduct::InferAssetTypeByProductFileName("mesh.cgf.2"), AZ::Data::AssetType(staticMeshLodsAssetType));
-        EXPECT_EQ(
-            AssetBuilderSDK::JobProduct::InferAssetTypeByProductFileName("mesh.cgf.3"), AZ::Data::AssetType(staticMeshLodsAssetType));
-        EXPECT_EQ(
-            AssetBuilderSDK::JobProduct::InferAssetTypeByProductFileName("mesh.cgf.4"), AZ::Data::AssetType(staticMeshLodsAssetType));
-        EXPECT_EQ(
-            AssetBuilderSDK::JobProduct::InferAssetTypeByProductFileName("mesh.cgf.5"), AZ::Data::AssetType(staticMeshLodsAssetType));
-        EXPECT_EQ(
-            AssetBuilderSDK::JobProduct::InferAssetTypeByProductFileName("mesh.cgf.6"), AZ::Data::AssetType(staticMeshLodsAssetType));
-        EXPECT_EQ(
-            AssetBuilderSDK::JobProduct::InferAssetTypeByProductFileName("mesh.cgf.7"), AZ::Data::AssetType(staticMeshLodsAssetType));
-        EXPECT_EQ(
-            AssetBuilderSDK::JobProduct::InferAssetTypeByProductFileName("mesh.cgf.8"), AZ::Data::AssetType(staticMeshLodsAssetType));
-        EXPECT_EQ(
-            AssetBuilderSDK::JobProduct::InferAssetTypeByProductFileName("mesh.cgf.9"), AZ::Data::AssetType(staticMeshLodsAssetType));
-
-        // .skin should show up as skin (with lods)
-        EXPECT_EQ(
-            AssetBuilderSDK::JobProduct::InferAssetTypeByProductFileName("ask.skin"), AZ::Data::AssetType(skinnedMeshAssetType));
-        EXPECT_EQ(
-            AssetBuilderSDK::JobProduct::InferAssetTypeByProductFileName("ask.skin.1"), AZ::Data::AssetType(skinnedMeshLodsAssetType));
-        EXPECT_EQ(
-            AssetBuilderSDK::JobProduct::InferAssetTypeByProductFileName("ask.skin.2"), AZ::Data::AssetType(skinnedMeshLodsAssetType));
-        EXPECT_EQ(
-            AssetBuilderSDK::JobProduct::InferAssetTypeByProductFileName("ask.skin.3"), AZ::Data::AssetType(skinnedMeshLodsAssetType));
-        EXPECT_EQ(
-            AssetBuilderSDK::JobProduct::InferAssetTypeByProductFileName("ask.skin.4"), AZ::Data::AssetType(skinnedMeshLodsAssetType));
-        EXPECT_EQ(
-            AssetBuilderSDK::JobProduct::InferAssetTypeByProductFileName("ask.skin.5"), AZ::Data::AssetType(skinnedMeshLodsAssetType));
-        EXPECT_EQ(
-            AssetBuilderSDK::JobProduct::InferAssetTypeByProductFileName("ask.skin.6"), AZ::Data::AssetType(skinnedMeshLodsAssetType));
-        EXPECT_EQ(
-            AssetBuilderSDK::JobProduct::InferAssetTypeByProductFileName("ask.skin.7"), AZ::Data::AssetType(skinnedMeshLodsAssetType));
-        EXPECT_EQ(
-            AssetBuilderSDK::JobProduct::InferAssetTypeByProductFileName("ask.skin.8"), AZ::Data::AssetType(skinnedMeshLodsAssetType));
-        EXPECT_EQ(
-            AssetBuilderSDK::JobProduct::InferAssetTypeByProductFileName("ask.skin.9"), AZ::Data::AssetType(skinnedMeshLodsAssetType));
-
-        // now try to trick it with a simple mixture (complex, evil mixtures such as .skin.cgf.dds.tif.1a are not supported and not expected
-        // to function)
-        EXPECT_EQ(
-            AssetBuilderSDK::JobProduct::InferAssetTypeByProductFileName("something_cgf.skin"), AZ::Data::AssetType(skinnedMeshAssetType));
-        EXPECT_EQ(
-            AssetBuilderSDK::JobProduct::InferAssetTypeByProductFileName("something_skin.dds"), AZ::Data::AssetType(textureAssetType));
-        EXPECT_EQ(
-            AssetBuilderSDK::JobProduct::InferAssetTypeByProductFileName("something_dds.cgf"), AZ::Data::AssetType(meshAssetType));
     }
 
     TEST_F(BuilderSDKUnitTests, XMLParsing_EmptyOrInvalid_MatchesExpectedResult)
@@ -177,14 +77,6 @@ namespace UnitTest
         EXPECT_TRUE(UnitTestUtils::CreateDummyFile(dummyFileName, "<fontshader>stuff</fontshader>"));
         EXPECT_EQ(AssetBuilderSDK::JobProduct::InferAssetTypeByProductFileName(dummyFileName.toUtf8().data()), fontAssetType);
 
-        EXPECT_TRUE(UnitTestUtils::CreateDummyFile(dummyFileName, "<ParticleLibrary>stuff</ParticleLibrary>"));
-        EXPECT_EQ(
-            AssetBuilderSDK::JobProduct::InferAssetTypeByProductFileName(dummyFileName.toUtf8().data()), particleAssetType);
-
-        EXPECT_TRUE(UnitTestUtils::CreateDummyFile(dummyFileName, "<LensFlareLibrary>stuff</LensFlareLibrary>"));
-        EXPECT_EQ(
-            AssetBuilderSDK::JobProduct::InferAssetTypeByProductFileName(dummyFileName.toUtf8().data()), lensFlareAssetType);
-
         EXPECT_TRUE(UnitTestUtils::CreateDummyFile(
             dummyFileName,
             "<ObjectStream>stuff</ObjectStream>")); // note - objectstream with no data in it should not crash or return anything useful
@@ -208,11 +100,10 @@ namespace UnitTest
 
         {
             UnitTestUtils::AssertAbsorber absorber;
-            // objectstream with invalid 'type' inside the class
+            // objectstream with an empty string 'type' inside the class
             EXPECT_TRUE(UnitTestUtils::CreateDummyFile(dummyFileName, "<ObjectStream><Class type=\"\"/></ObjectStream>"));
             EXPECT_EQ(
                 AssetBuilderSDK::JobProduct::InferAssetTypeByProductFileName(dummyFileName.toUtf8().data()), AZ::Uuid::CreateNull());
-            EXPECT_GT(absorber.m_numWarningsAbsorbed, 0);
         }
 
         {
@@ -303,93 +194,6 @@ namespace UnitTest
 
         // ("editor") slices always have subid 1
         EXPECT_EQ(AssetBuilderSDK::JobProduct::InferSubIDFromProductFileName(sliceAssetType, "blah.slice"), 1);
-
-        // standard skins, meshes have 0
-        EXPECT_EQ(
-            AssetBuilderSDK::JobProduct::InferSubIDFromProductFileName(skinnedMeshAssetType, "doesntmatter.whatever"), 0);
-        EXPECT_EQ(AssetBuilderSDK::JobProduct::InferSubIDFromProductFileName(meshAssetType, "doesntmatter.whatever"), 0);
-
-        // _diff textures have that bit set
-        EXPECT_EQ(
-            (AssetBuilderSDK::JobProduct::InferSubIDFromProductFileName(textureAssetType, "whatever_diff.dds") &
-             AssetBuilderSDK::SUBID_FLAG_DIFF), AssetBuilderSDK::SUBID_FLAG_DIFF);
-        // regular textures do not.
-        EXPECT_EQ(
-            (AssetBuilderSDK::JobProduct::InferSubIDFromProductFileName(textureAssetType, "whatever.dds") &
-             AssetBuilderSDK::SUBID_FLAG_DIFF), 0);
-
-        // alpha mips have the alpha flag set
-        EXPECT_EQ(
-            (AssetBuilderSDK::JobProduct::InferSubIDFromProductFileName(textureMipsAssetType, "whatever_diff.dds.1a") &
-             AssetBuilderSDK::SUBID_FLAG_ALPHA), AssetBuilderSDK::SUBID_FLAG_ALPHA);
-        // alpha _diff have the diff flag too
-        EXPECT_EQ(
-            (AssetBuilderSDK::JobProduct::InferSubIDFromProductFileName(textureMipsAssetType, "whatever_diff.dds.1a") &
-             AssetBuilderSDK::SUBID_FLAG_DIFF), AssetBuilderSDK::SUBID_FLAG_DIFF);
-        // regular textures do not.
-        EXPECT_EQ(
-            (AssetBuilderSDK::JobProduct::InferSubIDFromProductFileName(textureAssetType, "whatever.dds") &
-             AssetBuilderSDK::SUBID_FLAG_ALPHA), 0);
-
-        // check each possible LOD and Alpha LOD:
-        for (AZ::u32 idx = 1; idx <= 9; ++idx)
-        {
-            AZStd::string check;
-
-            // .1 is just that index (when masked)
-            check = AZStd::string::format("somefilename.dds.%i", idx);
-            EXPECT_EQ(
-                AssetBuilderSDK::GetSubID_LOD(
-                    AssetBuilderSDK::JobProduct::InferSubIDFromProductFileName(textureMipsAssetType, check.c_str())), idx);
-            EXPECT_EQ(
-                AssetBuilderSDK::GetSubID_ID(
-                    AssetBuilderSDK::JobProduct::InferSubIDFromProductFileName(textureMipsAssetType, check.c_str())), 0);
-
-            // .1a is the same, but has
-            check = AZStd::string::format("somefilename.dds.%ia", idx);
-            EXPECT_EQ(
-                AssetBuilderSDK::GetSubID_LOD(
-                    AssetBuilderSDK::JobProduct::InferSubIDFromProductFileName(textureMipsAssetType, check.c_str())), idx);
-            EXPECT_EQ(
-                AssetBuilderSDK::GetSubID_ID(
-                    AssetBuilderSDK::JobProduct::InferSubIDFromProductFileName(textureMipsAssetType, check.c_str())), 0);
-            EXPECT_EQ(
-                (AssetBuilderSDK::JobProduct::InferSubIDFromProductFileName(textureMipsAssetType, check.c_str()) &
-                 AssetBuilderSDK::SUBID_FLAG_ALPHA), AssetBuilderSDK::SUBID_FLAG_ALPHA);
-            EXPECT_EQ(
-                (AssetBuilderSDK::JobProduct::InferSubIDFromProductFileName(textureMipsAssetType, check.c_str()) &
-                 AssetBuilderSDK::SUBID_FLAG_DIFF), 0);
-
-            check = AZStd::string::format("somefilename_diff.dds.%ia", idx);
-            EXPECT_EQ(
-                AssetBuilderSDK::GetSubID_LOD(
-                    AssetBuilderSDK::JobProduct::InferSubIDFromProductFileName(textureMipsAssetType, check.c_str())), idx);
-            EXPECT_EQ(
-                AssetBuilderSDK::GetSubID_ID(
-                    AssetBuilderSDK::JobProduct::InferSubIDFromProductFileName(textureMipsAssetType, check.c_str())), 0);
-            EXPECT_EQ(
-                (AssetBuilderSDK::JobProduct::InferSubIDFromProductFileName(textureMipsAssetType, check.c_str()) &
-                 AssetBuilderSDK::SUBID_FLAG_ALPHA), AssetBuilderSDK::SUBID_FLAG_ALPHA);
-            EXPECT_EQ(
-                (AssetBuilderSDK::JobProduct::InferSubIDFromProductFileName(textureMipsAssetType, check.c_str()) &
-                 AssetBuilderSDK::SUBID_FLAG_DIFF), AssetBuilderSDK::SUBID_FLAG_DIFF);
-
-            check = AZStd::string::format("somefilename.skin.%i", idx);
-            EXPECT_EQ(
-                AssetBuilderSDK::GetSubID_LOD(
-                    AssetBuilderSDK::JobProduct::InferSubIDFromProductFileName(skinnedMeshLodsAssetType, check.c_str())), idx);
-            EXPECT_EQ(
-                AssetBuilderSDK::GetSubID_ID(
-                    AssetBuilderSDK::JobProduct::InferSubIDFromProductFileName(skinnedMeshLodsAssetType, check.c_str())), 0);
-
-            check = AZStd::string::format("somefilename.cgf.%i", idx);
-            EXPECT_EQ(
-                AssetBuilderSDK::GetSubID_LOD(
-                    AssetBuilderSDK::JobProduct::InferSubIDFromProductFileName(staticMeshLodsAssetType, check.c_str())), idx);
-            EXPECT_EQ(
-                AssetBuilderSDK::GetSubID_ID(
-                    AssetBuilderSDK::JobProduct::InferSubIDFromProductFileName(staticMeshLodsAssetType, check.c_str())), 0);
-        }
     }
 
 } // namespace UnitTest

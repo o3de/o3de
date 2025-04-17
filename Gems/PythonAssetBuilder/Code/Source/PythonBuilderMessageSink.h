@@ -16,7 +16,7 @@ namespace PythonAssetBuilder
         : public AzToolsFramework::EditorPythonConsoleNotificationBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(PythonBuilderMessageSink, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PythonBuilderMessageSink, AZ::SystemAllocator);
 
         PythonBuilderMessageSink();
         ~PythonBuilderMessageSink();

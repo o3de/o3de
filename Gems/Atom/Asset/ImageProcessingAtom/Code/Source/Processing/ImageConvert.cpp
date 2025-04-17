@@ -20,7 +20,9 @@
 #include <BuilderSettings/BuilderSettingManager.h>
 #include <BuilderSettings/PresetSettings.h>
 
-#include <AzFramework/StringFunc/StringFunc.h>
+
+#include <AzCore/std/time.h>
+#include <AzCore/StringFunc/StringFunc.h>
 
 #include <Atom/RHI.Reflect/Format.h>
 
@@ -163,6 +165,17 @@ namespace ImageProcessingAtom
 
             // set start time
             m_startTime = AZStd::GetTimeUTCMilliSecond();
+
+            // Volume Textures are special. They are saved in the asset catalog
+            // as-is. They are expected to have the mipmaps precalculated and we don't do any kind
+            // of processing on them.
+            if (m_input->m_inputImage->HasImageFlags(EIF_Volumetexture))
+            {
+                m_image = new ImageToProcess(m_input->m_inputImage);
+                // And go straight into the final step next time UpdateProcess() is called.
+                m_progressStep = StepSaveToFile - 1;
+                break;
+            }
 
             // identify the alpha content of input image if gloss from normal wasn't set
             m_alphaContent = m_input->m_inputImage->GetAlphaContent();
@@ -813,7 +826,9 @@ namespace ImageProcessingAtom
             m_input->m_sourceAssetId,
             m_input->m_imageName,
             m_input->m_presetSetting.m_numResidentMips,
-            subId);
+            subId,
+            m_input->m_textureSetting.m_tags
+            );
 
         if (assetProducer.BuildImageAssets())
         {
@@ -891,7 +906,7 @@ namespace ImageProcessingAtom
         desc->m_isStreaming = BuilderSettingManager::Instance()->GetBuilderSetting(platformName)->m_enableStreaming;
         desc->m_outputFolder = exportDir;
         desc->m_jobProducts = &jobProducts;
-        AzFramework::StringFunc::Path::GetFullFileName(imageFilePath.c_str(), desc->m_imageName);
+        AZ::StringFunc::Path::GetFullFileName(imageFilePath.c_str(), desc->m_imageName);
 
         // Get source asset id. Create random id if it's not found which is useful if this functions wasn't called under asset builder environment. For example, unit test.
         AZStd::string watchFolder;
@@ -920,15 +935,15 @@ namespace ImageProcessingAtom
 
         // generate export file name
         AZStd::string fileName;
-        AzFramework::StringFunc::Path::GetFileName(m_input->m_imageName.c_str(), fileName);
+        AZ::StringFunc::Path::GetFileName(m_input->m_imageName.c_str(), fileName);
         fileName += fileNameSuffix;
 
         AZStd::string extension;
-        AzFramework::StringFunc::Path::GetExtension(m_input->m_imageName.c_str(), extension);
+        AZ::StringFunc::Path::GetExtension(m_input->m_imageName.c_str(), extension);
         fileName += extension;
 
         AZStd::string outProductPath;
-        AzFramework::StringFunc::Path::Join(m_input->m_outputFolder.c_str(), fileName.c_str(), outProductPath, true, true);
+        AZ::StringFunc::Path::Join(m_input->m_outputFolder.c_str(), fileName.c_str(), outProductPath, true, true);
 
         // the diffuse irradiance cubemap is generated with a separate ImageConvertProcess
         TextureSettings textureSettings = m_input->m_textureSetting;

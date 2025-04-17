@@ -8,13 +8,14 @@
 #pragma once
 
 #include <AzCore/base.h>
+#include <AzCore/IO/OpenMode.h>
+#include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/string/string.h>
 
 namespace AZ::IO
 {
     using SizeType = AZ::u64;
     using OffsetType = AZ::s64;
-    enum class OpenMode : AZ::u32;
 
     /*
      * Base Class interface for implementing AZ::IO streams
@@ -61,38 +62,51 @@ namespace AZ::IO
     /*
      * Wraps around a SystemFile
      */
-    class SystemFile;
     class SystemFileStream
         : public GenericStream
     {
     public:
-        SystemFileStream(SystemFile* file, bool isOwner, SizeType baseOffset = 0, SizeType fakeLen = static_cast<SizeType>(-1));
+        //! Creates a SystemFile stream with an underlying SystemFile which is not open
+        //! The Open() function can be used to Open the SystemFile
+        SystemFileStream();
+        //! Opens a SystemFile stream using the specific path and OpenMode
+        SystemFileStream(const char* path, OpenMode mode);
+        //! SystemFiles are only movable and only one instance is available at a time.
+        SystemFileStream(SystemFile&& file);
+        //! For this overload, the mode parameter
+        //! is for passing the mode flags used to open the supplied SystemFile
+        //! This purpose of the mmode parameter is only for use in the ReOpen() function
+        //! to determine how to reopen the SystemFile
+        SystemFileStream(SystemFile&& file, OpenMode mode);
         ~SystemFileStream() override;
+
+        //! Move constructor and assignment which is defaulted in the cpp file
+        SystemFileStream(SystemFileStream&&);
+        SystemFileStream& operator=(SystemFileStream&&);
 
         bool Open(const char* path, OpenMode mode);
 
         void Close() override;
 
         bool        IsOpen() const override;
-        bool        CanSeek() const override { return true; }
+        bool        CanSeek() const override;
         bool        CanRead() const override;
         bool        CanWrite() const override;
         void        Seek(OffsetType bytes, SeekMode mode) override;
         SizeType    Read(SizeType bytes, void* oBuffer) override;
         SizeType    Write(SizeType bytes, const void* iBuffer) override;
-        SizeType    GetCurPos() const override { return m_curPos; }
+        SizeType    GetCurPos() const override;
         SizeType    GetLength() const override;
         const char* GetFilename() const override;
-        OpenMode    GetModeFlags() const override { return m_mode; }
+        OpenMode    GetModeFlags() const override;
         bool        ReOpen() override;
 
+        //! Moves a SystemFile instance from an rvalue or xvalue SystemFileStream
+        SystemFile MoveSystemFile() &&;
+
     private:
-        SystemFile* m_file;
-        SizeType    m_baseOffset;
-        SizeType    m_curPos;
-        SizeType    m_fakeLen;
-        bool        m_isFileOwner;
-        OpenMode    m_mode;
+        SystemFile m_file;
+        OpenMode   m_mode;
     };
 
     /*

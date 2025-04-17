@@ -62,9 +62,9 @@ namespace Camera
             using namespace AZ::RPI;
             if (auto viewSystem = ViewportContextRequests::Get())
             {
-                if (auto view = viewSystem->GetCurrentView(viewSystem->GetDefaultViewportContextName()))
+                if (auto viewGroup = viewSystem->GetCurrentViewGroup(viewSystem->GetDefaultViewportContextName()))
                 {
-                    m_activeViewProperties.transform = view->GetCameraTransform();
+                    m_activeViewProperties.transform = viewGroup->GetView()->GetCameraTransform();
                 }
             }
         }
@@ -88,10 +88,10 @@ namespace Camera
             using namespace AZ::RPI;
             if (auto viewSystem = ViewportContextRequests::Get())
             {
-                if (auto view = viewSystem->GetCurrentView(viewSystem->GetDefaultViewportContextName()))
+                if (auto viewGroup = viewSystem->GetCurrentViewGroup(viewSystem->GetDefaultViewportContextName()))
                 {
                     AzFramework::CameraState cam;
-                    AzFramework::SetCameraClippingVolumeFromPerspectiveFovMatrixRH(cam, view->GetViewToClipMatrix());
+                    AzFramework::SetCameraClippingVolumeFromPerspectiveFovMatrixRH(cam, viewGroup->GetView()->GetViewToClipMatrix());
 
                     cfg.m_fovRadians = cam.m_fovOrZoom;
                     cfg.m_nearClipDistance = cam.m_nearClip;

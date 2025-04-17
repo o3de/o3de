@@ -53,8 +53,11 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/sort.h>
 #include <AzFramework/API/ApplicationAPI.h>
+
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryUtils.h>
+#include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 #include <EMotionFX/CommandSystem/Source/ActorCommands.h>
 #include <EMotionFX/CommandSystem/Source/AnimGraphCommands.h>
@@ -149,6 +152,8 @@ namespace EMStudio
         m_textEdit->setText(text.c_str());
     }
 
+    constexpr AZStd::string_view AnimationEditorActionContextIdentifier = "o3de.context.animationEditor";
+
     MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
         : AzQtComponents::DockMainWindow(parent, flags)
         , m_prevSelectedActor(nullptr)
@@ -179,10 +184,16 @@ namespace EMStudio
         m_unselectCallback               = nullptr;
         m_clearSelectionCallback        = nullptr;
         m_saveWorkspaceCallback          = nullptr;
+
+        // Register this window as the widget for the Animation Editor Action Context.
+        AzToolsFramework::AssignWidgetToActionContextHelper(AnimationEditorActionContextIdentifier, this);
     }
 
     MainWindow::~MainWindow()
     {
+        // Unregister this window as the widget for the Animation Editor Action Context.
+        AzToolsFramework::RemoveWidgetFromActionContextHelper(AnimationEditorActionContextIdentifier, this);
+
         DisableUpdatingPlugins();
 
         if (m_nativeEventFilter)
@@ -388,12 +399,12 @@ namespace EMStudio
 
         menu->addAction("Documentation", this, []
         {
-            QDesktopServices::openUrl(QUrl("https://o3de.org/docs/user-guide/visualization/animation/"));
+            QDesktopServices::openUrl(QUrl("https://www.o3de.org/docs/user-guide/visualization/animation/"));
         });
 
         menu->addAction("Forums", this, []
         {
-            QDesktopServices::openUrl(QUrl("https://o3de.org/community/"));
+            QDesktopServices::openUrl(QUrl("https://www.o3de.org/community/"));
         });
 
         menu->addSeparator();
@@ -1297,16 +1308,23 @@ namespace EMStudio
         AzFramework::StringFunc::AssetDatabasePath::Normalize(cachePath);
 
         AZStd::string actorFilename;
-        EBUS_EVENT_RESULT(actorFilename, AZ::Data::AssetCatalogRequestBus, GetAssetPathById, actorAssetId);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+            actorFilename, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, actorAssetId);
         AzFramework::StringFunc::AssetDatabasePath::Join(cachePath.c_str(), actorFilename.c_str(), filename);
         actorFilename = filename;
 
         AZStd::string animgraphFilename;
-        EBUS_EVENT_RESULT(animgraphFilename, AZ::Data::AssetCatalogRequestBus, GetAssetPathById, animgraphId);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+            animgraphFilename, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, animgraphId);
         bool found;
         if (!animgraphFilename.empty())
         {
-            EBUS_EVENT_RESULT(found, AzToolsFramework::AssetSystemRequestBus, GetFullSourcePathFromRelativeProductPath, animgraphFilename.c_str(), filename);
+            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+                found,
+                &AzToolsFramework::AssetSystemRequestBus::Events::GetFullSourcePathFromRelativeProductPath,
+                animgraphFilename.c_str(),
+                filename);
+
             if (found)
             {
                 animgraphFilename = filename;
@@ -1314,10 +1332,16 @@ namespace EMStudio
         }
 
         AZStd::string motionSetFilename;
-        EBUS_EVENT_RESULT(motionSetFilename, AZ::Data::AssetCatalogRequestBus, GetAssetPathById, motionSetId);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+            motionSetFilename, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, motionSetId);
         if (!motionSetFilename.empty())
         {
-            EBUS_EVENT_RESULT(found, AzToolsFramework::AssetSystemRequestBus, GetFullSourcePathFromRelativeProductPath, motionSetFilename.c_str(), filename);
+            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+                found,
+                &AzToolsFramework::AssetSystemRequestBus::Events::GetFullSourcePathFromRelativeProductPath,
+                motionSetFilename.c_str(),
+                filename);
+
             if (found)
             {
                 motionSetFilename = filename;
@@ -2249,7 +2273,8 @@ namespace EMStudio
         AzFramework::StringFunc::AssetDatabasePath::Normalize(cachePath);
 
         AZStd::string actorFilename;
-        EBUS_EVENT_RESULT(actorFilename, AZ::Data::AssetCatalogRequestBus, GetAssetPathById, actorAssetId);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+            actorFilename, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, actorAssetId);
         AzFramework::StringFunc::AssetDatabasePath::Join(cachePath.c_str(), actorFilename.c_str(), filename);
         actorFilename = filename;
 
@@ -2449,24 +2474,24 @@ namespace EMStudio
         // check if we dropped any files to the application
         const QMimeData* mimeData = event->mimeData();
 
-        AZStd::vector<AzToolsFramework::AssetBrowser::AssetBrowserEntry*> entries;
-        AzToolsFramework::AssetBrowser::AssetBrowserEntry::FromMimeData(mimeData, entries);
-
-        AZStd::vector<AZStd::string> fileNames;
-        for (const auto& entry : entries)
+        AZStd::vector<const AzToolsFramework::AssetBrowser::AssetBrowserEntry*> entries;
+        if (AzToolsFramework::AssetBrowser::Utils::FromMimeData(mimeData, entries))
         {
-            AZStd::vector<const AzToolsFramework::AssetBrowser::ProductAssetBrowserEntry*> productEntries;
-            entry->GetChildrenRecursively<AzToolsFramework::AssetBrowser::ProductAssetBrowserEntry>(productEntries);
-            for (const auto& productEntry : productEntries)
+            AZStd::vector<AZStd::string> fileNames;
+            for (const auto& entry : entries)
             {
-                fileNames.emplace_back(FileManager::GetAssetFilenameFromAssetId(productEntry->GetAssetId()));
+                AZStd::vector<const AzToolsFramework::AssetBrowser::ProductAssetBrowserEntry*> productEntries;
+                entry->GetChildrenRecursively<AzToolsFramework::AssetBrowser::ProductAssetBrowserEntry>(productEntries);
+                for (const auto& productEntry : productEntries)
+                {
+                    fileNames.emplace_back(FileManager::GetAssetFilenameFromAssetId(productEntry->GetAssetId()));
+                }
             }
+            LoadFiles(fileNames, event->pos().x(), event->pos().y());
+            event->acceptProposedAction();
+
         }
-        LoadFiles(fileNames, event->pos().x(), event->pos().y());
-
-        event->acceptProposedAction();
     }
-
 
     void MainWindow::closeEvent(QCloseEvent* event)
     {

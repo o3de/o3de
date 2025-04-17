@@ -67,6 +67,7 @@ namespace AzToolsFramework
         void Refresh(const AZ::EntityComponentIdPair& entityComponentIdPair) override;
         bool AddedToComponentMode(const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid& componentType) override;
         void AddSelectedComponentModesOfType(const AZ::Uuid& componentType) override;
+        void ChangeComponentMode(const AZ::Uuid& componentType) override;
         bool SelectNextActiveComponentMode() override;
         bool SelectPreviousActiveComponentMode() override;
         bool SelectActiveComponentMode(const AZ::Uuid& componentType) override;

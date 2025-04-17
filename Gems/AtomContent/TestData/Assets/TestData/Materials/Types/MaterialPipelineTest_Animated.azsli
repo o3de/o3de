@@ -1,0 +1,163 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+ 
+#include <scenesrg_all.srgi>
+#include <viewsrg_all.srgi>
+#include <Atom/Features/PBR/DefaultObjectSrg.azsli>
+#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
+#include <Atom/Features/VertexUtility.azsli>
+
+ShaderResourceGroup MaterialSrg : SRG_PerMaterial
+{
+    float3 m_baseColor;
+    float m_metallic;
+    float m_roughness;
+    float m_animationSpeed;
+    float m_amplitude;
+    float m_frequency;
+}
+
+void CalcPositions(float3 inPosition, uint instanceId, out float3 worldPos, out float4 clipPos)
+{        
+    float amount = sin(3.14159 * 2 * (SceneSrg::m_time * MaterialSrg::m_animationSpeed + (inPosition.x + inPosition.y + inPosition.z) * MaterialSrg::m_frequency)) * MaterialSrg::m_amplitude;
+    float3 dir = normalize(inPosition);
+    worldPos = LocalSpaceToWorldSpace(inPosition + dir * amount, instanceId);
+    clipPos = WorldSpaceToClipSpace(worldPos);
+}
+
+#if MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE
+
+#define MATERIAL_HAS_UVS 0
+
+    struct VsInput
+    {
+        float3 position : POSITION;
+        float3 normal : NORMAL;
+        float4 tangent : TANGENT; 
+    };
+
+    struct VsOutput
+    {
+        precise linear centroid float4 position : SV_Position;
+        float3 normal: NORMAL;
+        float4 tangent : TANGENT; 
+        float3 worldPosition : UV0;
+    };
+
+    struct VsSystemValues
+    {
+        uint m_instanceId;
+    };
+
+    VsOutput EvaluateVertexGeometry(VsInput IN, VsSystemValues SV)
+    {        
+
+        VsOutput output;
+
+        CalcPositions(IN.position, SV.m_instanceId, output.worldPosition, output.position);
+
+        output.normal = IN.normal;
+        output.tangent = IN.tangent;
+
+        return output;
+    }
+
+    class PixelGeometryData
+    {
+        float3 positionWS;
+        float3 vertexNormal;
+
+        //TODO(MaterialPipeline): use these or remove them
+        float3 tangents[1];
+        float3 bitangents[1];
+    };
+
+    PixelGeometryData EvaluatePixelGeometry(VsOutput IN, bool isFrontFace)
+    {
+        PixelGeometryData pgd;
+        pgd.positionWS = IN.worldPosition;
+        pgd.vertexNormal = IN.normal;
+        return pgd;
+    }
+
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_SurfaceData.azsli>
+
+    Surface EvaluateSurface(VsOutput IN, PixelGeometryData geoData)
+    {
+        Surface surface;
+        surface.position = geoData.positionWS.xyz;
+        surface.vertexNormal = geoData.vertexNormal;
+        surface.normal = geoData.vertexNormal;
+        surface.roughnessLinear = MaterialSrg::m_roughness;
+
+        float3 baseColor = MaterialSrg::m_baseColor;
+        float metallic = MaterialSrg::m_metallic;
+        float specularF0Factor = 0.5f;
+        surface.SetAlbedoAndSpecularF0(baseColor, specularF0Factor, metallic);
+    
+        surface.CalculateRoughnessA();
+
+        return surface;
+    }
+
+#else
+
+    struct VsInput
+    {
+        float3 m_position : POSITION;
+        
+#if MATERIALPIPELINE_USES_PREV_VERTEX_POSITION
+        float3 m_optional_prevPosition : POSITIONT;
+#endif
+    };
+    
+#if MATERIALPIPELINE_USES_PREV_VERTEX_POSITION
+    option bool o_prevPosition_isBound;
+#endif
+
+    struct VsOutput
+    {
+        precise linear centroid float4 m_position : SV_Position;
+
+#if MATERIALPIPELINE_USES_PREV_VERTEX_POSITION
+        float3 m_worldPos : TEXCOORD0;
+        float3 m_worldPosPrev: TEXCOORD1;
+#endif
+    };
+
+    struct VsSystemValues
+    {
+        uint m_instanceId;
+    };
+    
+    VsOutput EvaluateVertexGeometry(VsInput IN, VsSystemValues SV)
+    {
+        float3 worldPosition;
+
+        VsOutput output;
+        CalcPositions(IN.m_position, SV.m_instanceId, worldPosition, output.m_position);
+        
+#if MATERIALPIPELINE_USES_PREV_VERTEX_POSITION
+        output.m_worldPos = worldPosition;
+
+        if (o_prevPosition_isBound)
+        {
+            output.m_worldPosPrev = mul(GetObjectToWorldMatrixPrev(SV.m_instanceId), float4(IN.m_optional_prevPosition, 1.0)).xyz;
+        }
+        else
+        {
+            output.m_worldPosPrev = mul(GetObjectToWorldMatrixPrev(SV.m_instanceId), float4(IN.m_position, 1.0)).xyz;
+        }
+#endif
+
+
+        return output;
+    }
+
+#endif

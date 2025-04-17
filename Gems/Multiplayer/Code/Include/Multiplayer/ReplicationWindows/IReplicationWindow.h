@@ -50,6 +50,15 @@ namespace Multiplayer
         //! @param outNetworkRole output containing the network role of the requested entity if found
         virtual bool IsInWindow(const ConstNetworkEntityHandle& entityPtr, NetEntityRole& outNetworkRole) const = 0;
 
+        //! Adds an entity to the replication window's set
+        //! @param entity The entity to try adding
+        //! @return Whether the entity was able to be added
+        virtual bool AddEntity(AZ::Entity* entity) = 0;
+
+        //! Removes an entity from the replication window's set, if present
+        //! @param entity The entity to remove
+        virtual void RemoveEntity(AZ::Entity* entity) = 0;
+
         //! This updates the replication set, ensuring all relevant entities are included.
         virtual void UpdateWindow() = 0;
 

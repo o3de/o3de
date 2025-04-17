@@ -61,7 +61,6 @@ namespace UnitTest
         }
 
         void BrowseForAssets(AssetBrowser::AssetSelectionModel& /*selection*/) override {}
-        int GetIconTextureIdFromEntityIconPath(const AZStd::string& entityIconPath) override { AZ_UNUSED(entityIconPath);  return 0; }
 
         void GoToSelectedEntitiesInViewports() override 
         {
@@ -74,12 +73,14 @@ namespace UnitTest
 
     // Fixture to support testing EntityIdQLabel functionality
     class EntityIdQLabelTest
-        : public AllocatorsTestFixture
+        : public LeakDetectionFixture
     {
     public:
         void SetUp() override
         {
-            m_app.Start(AzFramework::Application::Descriptor());
+            AZ::ComponentApplication::StartupParameters startupParameters;
+            startupParameters.m_loadSettingsRegistry = false;
+            m_app.Start(AzFramework::Application::Descriptor(), startupParameters);
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
             // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
             // in the unit tests.

@@ -13,28 +13,28 @@
 #include "EditorDefs.h"
 
 #include "SequenceBatchRenderDialog.h"
+#include "TrackViewMessageBox.h"
 
+#include <Atom/RPI.Public/ViewProviderBus.h>
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzFramework/Windowing/WindowBus.h>
-#include <Atom/RPI.Public/ViewProviderBus.h>
-
+#include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 // Qt
-#include <QAction>
-#include <QFileDialog>
-#include <QMessageBox>
-#include <QStringListModel>
 #include <QtConcurrent>
+#include <QStringListModel>
+#include <QFileDialog>
+#include <QAction>
 
 // CryCommon
 #include <CryCommon/Maestro/Types/AnimNodeType.h>
 
 // Editor
-#include "MainWindow.h"
+#include "CryEdit.h"
 #include "CustomResolutionDlg.h"
-#include "ViewPane.h"
 #include "GameEngine.h"
 #include "Include/ICommandManager.h"
-#include "CryEdit.h"
+#include "MainWindow.h"
+#include "ViewPane.h"
 #include "Viewport.h"
 
 AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
@@ -74,6 +74,8 @@ namespace
 
     const char customResFormat[] = "Custom(%1 x %2)...";
 
+    const char debugInfo[] = "debuginfo";
+
     const int kBatchRenderFileVersion = 2; // This version number should be incremented every time available options like the list of formats,
     // the list of buffers change.
 
@@ -89,16 +91,17 @@ namespace
     }
 }
 
-static void UpdateAtomOutputFrameCaptureView(TrackView::AtomOutputFrameCapture& atomOutputFrameCapture, const int width, const int height)
+namespace TrackView
 {
-    const AZ::EntityId activeCameraEntityId = TrackView::ActiveCameraEntityId();
-    AZ::RPI::ViewPtr view = nullptr;
-    AZ::RPI::ViewProviderBus::EventResult(view, activeCameraEntityId, &AZ::RPI::ViewProvider::GetView);
-    atomOutputFrameCapture.UpdateView(
-        TrackView::TransformFromEntityId(activeCameraEntityId),
-        TrackView::ProjectionFromCameraEntityId(activeCameraEntityId, aznumeric_cast<float>(width), aznumeric_cast<float>(height)),
-        view);
-}
+    AZ_CVAR(
+        int,
+        tv_SkipFramesCount,
+        30,
+        nullptr,
+        AZ::ConsoleFunctorFlags::Null,
+        "Set the number of frames to skip during the warm up and switching to the Game Mode.");
+}; // namespace TrackView
+
 
 CSequenceBatchRenderDialog::CSequenceBatchRenderDialog(float fps, QWidget* pParent /* = nullptr */)
     : QDialog(pParent)
@@ -110,6 +113,7 @@ CSequenceBatchRenderDialog::CSequenceBatchRenderDialog(float fps, QWidget* pPare
     , m_ui(new Ui::SequenceBatchRenderDialog)
     , m_renderListModel(new QStringListModel(this))
     , CV_TrackViewRenderOutputCapturing(0)
+    , m_editorIdleProcessingEnabled(true)
     , m_prefixValidator(new CPrefixValidator(this))
 {
     m_ui->setupUi(this);
@@ -155,6 +159,7 @@ void CSequenceBatchRenderDialog::OnInitDialog()
     void(QComboBox::* activated)(int) = &QComboBox::activated;
     void(QSpinBox::* editingFinished)() = &QSpinBox::editingFinished;
 
+    connect(m_ui->m_shotCombo, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &CSequenceBatchRenderDialog::OnDirectorChange);
     connect(m_ui->BATCH_RENDER_ADD_SEQ, &QPushButton::clicked, this, &CSequenceBatchRenderDialog::OnAddRenderItem);
     connect(m_ui->BATCH_RENDER_REMOVE_SEQ, &QPushButton::clicked, this, &CSequenceBatchRenderDialog::OnRemoveRenderItem);
     connect(m_ui->BATCH_RENDER_CLEAR_SEQ, &QPushButton::clicked, this, &CSequenceBatchRenderDialog::OnClearRenderItems);
@@ -173,6 +178,10 @@ void CSequenceBatchRenderDialog::OnInitDialog()
     connect(m_ui->m_startFrame, editingFinished, this, &CSequenceBatchRenderDialog::OnStartFrameChange);
     connect(m_ui->m_endFrame, editingFinished, this, &CSequenceBatchRenderDialog::OnEndFrameChange);
     connect(m_ui->m_imageFormatCombo, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &CSequenceBatchRenderDialog::OnImageFormatChange);
+    connect(m_ui->m_cvarsEdit,&QTextEdit::textChanged, this, &CSequenceBatchRenderDialog::OnVarsChange);
+    connect(m_ui->BATCH_RENDER_FILE_PREFIX, &QLineEdit::textChanged, this, &CSequenceBatchRenderDialog::OnPrefixChange);
+    connect(m_ui->m_disableDebugInfoCheckBox, &QCheckBox::toggled, this, &CSequenceBatchRenderDialog::OnDisableDebugInfoChange);
+    connect(m_ui->m_createVideoCheckBox, &QCheckBox::toggled, this, &CSequenceBatchRenderDialog::OnCreateVideoChange);
 
     const int bigEnoughNumber = 1000000;
     m_ui->m_startFrame->setRange(0, bigEnoughNumber);
@@ -181,14 +190,19 @@ void CSequenceBatchRenderDialog::OnInitDialog()
 
     // Fill the sequence combo box.
     bool activeSequenceWasSet = false;
-    for (int k = 0; k < GetIEditor()->GetMovieSystem()->GetNumSequences(); ++k)
+
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+    if (movieSystem)
     {
-        IAnimSequence* pSequence = GetIEditor()->GetMovieSystem()->GetSequence(k);
-        m_ui->m_sequenceCombo->addItem(pSequence->GetName());
-        if (pSequence->IsActivated())
+        for (int k = 0; k < movieSystem->GetNumSequences(); ++k)
         {
-            m_ui->m_sequenceCombo->setCurrentIndex(k);
-            activeSequenceWasSet = true;
+            IAnimSequence* pSequence = movieSystem->GetSequence(k);
+            m_ui->m_sequenceCombo->addItem(pSequence->GetName());
+            if (pSequence->IsActivated())
+            {
+                m_ui->m_sequenceCombo->setCurrentIndex(k);
+                activeSequenceWasSet = true;
+            }
         }
     }
     if (!activeSequenceWasSet)
@@ -207,7 +221,7 @@ void CSequenceBatchRenderDialog::OnInitDialog()
         if (resolutions[i][0] == g_useActiveViewportResolution  && resolutions[i][1] == g_useActiveViewportResolution)
         {
             m_ui->m_resolutionCombo->addItem(tr("Active View Resolution"));
-            stashActiveViewportResolution();    // render dialog is modal, so we can stash the viewport res on init
+            StashActiveViewportResolution();    // render dialog is modal, so we can stash the viewport res on init
         }
         else
         {
@@ -325,6 +339,8 @@ void CSequenceBatchRenderDialog::OnRenderItemSelChange()
         m_customFPS = item.fps;
         m_ui->m_fpsCombo->setCurrentText(QString::number(item.fps));
     }
+    // format
+    m_ui->m_imageFormatCombo->setCurrentText(item.imageFormat);
     // prefix
     m_ui->BATCH_RENDER_FILE_PREFIX->setText(item.prefix);
 
@@ -378,8 +394,8 @@ void CSequenceBatchRenderDialog::CheckForEnableUpdateButton()
         SRenderItem item;
         if (SetUpNewRenderItem(item))
         {
-            int index = m_ui->m_renderList->currentIndex().row();
-            assert(index >= 0 && index < m_renderItems.size());
+            const int index = m_ui->m_renderList->currentIndex().row();
+            AZ_Assert(index >= 0 && index < m_renderItems.size(), "Render item row index %i is out of range", index);
             enable = !(m_renderItems[index] == item);
         }
     }
@@ -418,8 +434,9 @@ void CSequenceBatchRenderDialog::OnAddRenderItem()
 
 void CSequenceBatchRenderDialog::OnRemoveRenderItem()
 {
-    int index = m_ui->m_renderList->currentIndex().row();
-    assert(index != CB_ERR);
+    const int index = m_ui->m_renderList->currentIndex().row();
+    AZ_Assert(index != CB_ERR, "Invalid row index");
+
     m_ui->m_renderList->model()->removeRow(index);
     m_renderItems.erase(m_renderItems.begin() + index);
 
@@ -450,12 +467,15 @@ void CSequenceBatchRenderDialog::OnClearRenderItems()
 
 void CSequenceBatchRenderDialog::OnUpdateRenderItem()
 {
-    int index = m_ui->m_renderList->currentIndex().row();
-    assert(index != -1);
+    const int index = m_ui->m_renderList->currentIndex().row();
+    AZ_Assert(index != CB_ERR, "Invalid row index");
 
     // Set up a new render item.
     SRenderItem item;
-    SetUpNewRenderItem(item);
+    if (!SetUpNewRenderItem(item))
+    {
+        return;
+    }
 
     // Check a duplication before updating.
     for (size_t i = 0; i < m_renderItems.size(); ++i)
@@ -497,7 +517,7 @@ void CSequenceBatchRenderDialog::OnSavePreset()
     }
 }
 
-void CSequenceBatchRenderDialog::stashActiveViewportResolution()
+void CSequenceBatchRenderDialog::StashActiveViewportResolution()
 {
     // stash active resolution in global vars
     activeViewportWidth = resolutions[0][0];
@@ -521,7 +541,12 @@ void CSequenceBatchRenderDialog::OnGo()
         m_ui->m_pGoBtn->setText("Cancel");
         m_ui->m_pGoBtn->setIcon(QPixmap(":/Trackview/clapperboard_cancel.png"));
         // Inform the movie system that it soon will be in a batch-rendering mode.
-        GetIEditor()->GetMovieSystem()->EnableBatchRenderMode(true);
+
+        IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+        if (movieSystem)
+        {
+            movieSystem->EnableBatchRenderMode(true);
+        }
 
         // Initialize the context.
         InitializeContext();
@@ -579,27 +604,32 @@ void CSequenceBatchRenderDialog::OnSequenceSelected()
 {
     // Get the selected sequence.
     const QString seqName = m_ui->m_sequenceCombo->currentText();
-    IAnimSequence* pSequence = GetIEditor()->GetMovieSystem()->FindLegacySequenceByName(seqName.toUtf8().data());
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
 
-    // Adjust the frame range.
-    float sFrame = pSequence->GetTimeRange().start * m_fpsForTimeToFrameConversion;
-    float eFrame = pSequence->GetTimeRange().end * m_fpsForTimeToFrameConversion;
-    m_ui->m_startFrame->setRange(0, static_cast<int>(eFrame));
-    m_ui->m_endFrame->setRange(0, static_cast<int>(eFrame));
-
-    // Set the default start/end frames properly.
-    m_ui->m_startFrame->setValue(static_cast<int>(sFrame));
-    m_ui->m_endFrame->setValue(static_cast<int>(eFrame));
-
-    m_ui->m_shotCombo->clear();
-    // Fill the shot combo box with the names of director nodes.
-    for (int i = 0; i < pSequence->GetNodeCount(); ++i)
+    IAnimSequence* pSequence = movieSystem ? movieSystem->FindLegacySequenceByName(seqName.toUtf8().data()) : nullptr;
+    if (pSequence)
     {
-        if (pSequence->GetNode(i)->GetType() == AnimNodeType::Director)
+        // Adjust the frame range.
+        float sFrame = pSequence->GetTimeRange().start * m_fpsForTimeToFrameConversion;
+        float eFrame = pSequence->GetTimeRange().end * m_fpsForTimeToFrameConversion;
+        m_ui->m_startFrame->setRange(0, static_cast<int>(eFrame));
+        m_ui->m_endFrame->setRange(0, static_cast<int>(eFrame));
+
+        // Set the default start/end frames properly.
+        m_ui->m_startFrame->setValue(static_cast<int>(sFrame));
+        m_ui->m_endFrame->setValue(static_cast<int>(eFrame));
+
+        m_ui->m_shotCombo->clear();
+        // Fill the shot combo box with the names of director nodes.
+        for (int i = 0; i < pSequence->GetNodeCount(); ++i)
         {
-            m_ui->m_shotCombo->addItem(pSequence->GetNode(i)->GetName());
+            if (pSequence->GetNode(i)->GetType() == AnimNodeType::Director)
+            {
+                m_ui->m_shotCombo->addItem(pSequence->GetNode(i)->GetName());
+            }
         }
     }
+
     m_ui->m_shotCombo->setCurrentIndex(0);
 
     CheckForEnableUpdateButton();
@@ -627,6 +657,11 @@ void CSequenceBatchRenderDialog::OnFPSEditChange()
 void CSequenceBatchRenderDialog::OnFPSChange(int itemIndex)
 {
     m_customFPS = fpsOptions[itemIndex].fps;
+    CheckForEnableUpdateButton();
+}
+
+void CSequenceBatchRenderDialog::OnDirectorChange([[maybe_unused]] int itemIndex)
+{
     CheckForEnableUpdateButton();
 }
 
@@ -863,6 +898,55 @@ void CSequenceBatchRenderDialog::InitializeContext()
 
 void CSequenceBatchRenderDialog::CaptureItemStart()
 {
+    const SRenderItem& renderItem = m_renderItems[m_renderContext.currentItemIndex];
+
+    const QString renderListName =
+        m_ui->m_renderList->model()->index(m_renderContext.currentItemIndex, 0).data().toString();
+
+    static const QString reservedCharacters("/\\:*?\"<>|");
+
+    QString renderListNameSanitized;
+    for (auto chr : renderListName)
+    {
+        const bool isReserved = reservedCharacters.contains(chr);
+        renderListNameSanitized.append(isReserved ? '-' : chr);
+    }
+
+    AZStd::string folderName;
+    AzFramework::StringFunc::Path::Join(renderItem.folder.toUtf8().data(), renderListNameSanitized.toUtf8().data(), folderName);
+
+    // If this is a relative path, prepend the @products@ folder to match where the Renderer is going
+    // to dump the frame buffer image captures.
+    if (AzFramework::StringFunc::Path::IsRelative(folderName.c_str()))
+    {
+        AZStd::string absolutePath;
+        const AZStd::string assetsRoot = AZ::IO::FileIOBase::GetInstance()->GetAlias("@products@");
+        AzFramework::StringFunc::Path::Join(assetsRoot.c_str(), folderName.c_str(), absolutePath);
+        folderName = absolutePath;
+    }
+
+    QString finalFolder = folderName.c_str();
+    int numProbeIndex = 2;
+    QString probeName = finalFolder;
+    while (QFileInfo::exists(probeName))
+    {
+        probeName = QObject::tr("%1_v%2").arg(finalFolder).arg(numProbeIndex++);
+    }
+    finalFolder = probeName;
+
+    // Create a new folder before writing any files
+    const bool mkdirResult = QDir().mkdir(finalFolder);
+    if (!mkdirResult)
+    {
+        TrackViewMessageBox::Critical(
+            AzToolsFramework::GetActiveWindow(),
+            QString(),
+            QObject::tr("Cannot create directory %1 for output frames").arg(finalFolder));
+
+        OnUpdateFinalize();
+        return;
+    }
+
     // Disable most of the UI in group chunks.
     // (Leave the start/cancel button and feedback elements).
     m_ui->BATCH_RENDER_LIST_GROUP_BOX->setEnabled(false);
@@ -872,93 +956,39 @@ void CSequenceBatchRenderDialog::CaptureItemStart()
     m_renderContext.canceled = false;
 
     CV_TrackViewRenderOutputCapturing = 1;
-
-    SRenderItem renderItem = m_renderItems[m_renderContext.currentItemIndex];
-    IAnimSequence* nextSequence = renderItem.pSequence;
-    // Initialize the next one for the batch rendering.
-    // Set the active shot.
-    m_renderContext.pActiveDirectorBU = nextSequence->GetActiveDirector();
-    nextSequence->SetActiveDirector(renderItem.pDirectorNode);
-
-    // Back up flags and range of the sequence.
-    m_renderContext.flagBU = nextSequence->GetFlags();
-    m_renderContext.rangeBU = nextSequence->GetTimeRange();
-
-    // Change flags and range of the sequence so that it automatically starts
-    // once the game mode kicks in with the specified range.
-    nextSequence->SetFlags(m_renderContext.flagBU | IAnimSequence::eSeqFlags_PlayOnReset);
-
+    
     m_renderContext.captureOptions.timeStep = 1.0f / renderItem.fps;
-
-    Range newRange = renderItem.frameRange;
-    newRange.start -= m_renderContext.captureOptions.timeStep;
-    renderItem.pSequence->SetTimeRange(newRange);
-
+  
     // Set up the custom config cvars for this item.
-    for (size_t i = 0; i < renderItem.cvars.size(); ++i)
+    AZ::IConsole* console = AZ::Interface<AZ::IConsole>::Get();
+    AZ_Assert(console, "CSequenceBatchRenderDialog requires an IConsole interface but no instance has been created.");
+    if (console)
     {
-        GetIEditor()->GetSystem()->GetIConsole()->ExecuteString(renderItem.cvars[static_cast<int>(i)].toUtf8().data());
+        for (const auto& cvar : renderItem.cvars)
+        {
+            console->PerformCommand(cvar.toUtf8().data());
+        }
     }
 
     // Set specific capture options for this item.
     m_renderContext.captureOptions.prefix = renderItem.prefix.toUtf8().data();
 
-    Range rng = nextSequence->GetTimeRange();
-    m_renderContext.captureOptions.duration = rng.end - rng.start;
-    QString folder = renderItem.folder;
-    QString itemText = m_ui->m_renderList->model()->index(m_renderContext.currentItemIndex, 0).data().toString();
-    itemText.replace('/', '-'); // A full sequence name can have slash characters which aren't suitable for a file name.
-    folder += "/";
-    folder += itemText;
-
-    // If this is a relative path, prepend the @products@ folder to match where the Renderer is going
-    // to dump the frame buffer image captures.
-    if (AzFramework::StringFunc::Path::IsRelative(folder.toUtf8().data()))
-    {
-        AZStd::string absolutePath;
-        AZStd::string assetsRoot = AZ::IO::FileIOBase::GetInstance()->GetAlias("@products@");
-        AzFramework::StringFunc::Path::Join(assetsRoot.c_str(), folder.toUtf8().data(), absolutePath);
-        folder = absolutePath.c_str();
-    }
-
-    QString finalFolder = folder;
-    int i = 2;
-    while (QFileInfo::exists(finalFolder))
-    {
-        finalFolder = folder;
-        const QString suffix = QString::fromLatin1("_v%1").arg(i);
-        finalFolder += suffix;
-        ++i;
-    }
-
-    // create a new folder before writing any files
-    QDir().mkdir(finalFolder);
-
     m_renderContext.captureOptions.folder = finalFolder.toUtf8().data();
 
-    // Change the resolution.
-    const int renderWidth = getResWidth(renderItem.resW);
-    const int renderHeight = getResHeight(renderItem.resH);
-    ICVar* pCVarCustomResWidth = gEnv->pConsole->GetCVar("r_CustomResWidth");
-    ICVar* pCVarCustomResHeight = gEnv->pConsole->GetCVar("r_CustomResHeight");
-    if (pCVarCustomResWidth && pCVarCustomResHeight)
+    // Adjust the viewport resolution
+    if (CLayoutViewPane* viewPane = MainWindow::instance()->GetActiveView())
     {
-        // If available, use the custom resolution cvars.
-        m_renderContext.cvarCustomResWidthBU = pCVarCustomResWidth->GetIVal();
-        m_renderContext.cvarCustomResHeightBU = pCVarCustomResHeight->GetIVal();
-        pCVarCustomResWidth->Set(renderWidth);
-        pCVarCustomResHeight->Set(renderHeight);
-    }
-    else
-    {
-        // Otherwise, try to adjust the viewport resolution accordingly.
-        if (CLayoutViewPane* viewPane = MainWindow::instance()->GetActiveView())
-        {
-            viewPane->ResizeViewport(renderWidth, renderHeight);
-        }
+        const QRect& viewportRect = viewPane->GetViewport()->rect();
+        activeViewportWidth = viewportRect.width();
+        activeViewportHeight = viewportRect.height();
+
+        const int renderWidth = getResWidth(renderItem.resW);
+        const int renderHeight = getResHeight(renderItem.resH);
+
+        viewPane->ResizeViewport(renderWidth, renderHeight);
     }
 
-    // turn off debug info if requested
+    // Turn off debug info if requested
     ICVar* cvarDebugInfo = gEnv->pConsole->GetCVar("r_DisplayInfo");
     if (cvarDebugInfo)
     {
@@ -971,12 +1001,11 @@ void CSequenceBatchRenderDialog::CaptureItemStart()
         }
     }
 
-    // create a new atom pipeline to capture the frames of the current sequence
-    m_atomOutputFrameCapture.CreatePipeline(
-        *TrackView::SceneFromGameEntityContext(), "TrackViewSequencePipeline", renderItem.resW, renderItem.resH);
-    UpdateAtomOutputFrameCaptureView(m_atomOutputFrameCapture, renderItem.resW, renderItem.resH);
-
-    GetIEditor()->GetMovieSystem()->EnableFixedStepForCapture(m_renderContext.captureOptions.timeStep);
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+    if (movieSystem)
+    {
+        movieSystem->EnableFixedStepForCapture(m_renderContext.captureOptions.timeStep);
+    }
 
     // The capturing doesn't actually start here. It just flags the warming-up and
     // once it's done, then the capturing really begins.
@@ -990,8 +1019,8 @@ void CSequenceBatchRenderDialog::OnUpdateWarmingUpAfterResChange()
 {
     UpdateSpinnerProgressMessage("Warming up");
 
-    // Spend 30 frames warming up after frame buffer resolution change
-    if (m_renderContext.framesSpentInCurrentPhase++ >= 30)
+    // Spend the given frames warming up after frame buffer resolution change
+    if (m_renderContext.framesSpentInCurrentPhase++ >= TrackView::tv_SkipFramesCount)
     {
         // We will handle the idle tick manually now because calling Game Update directly.
         SetEnableEditorIdleProcessing(false);
@@ -1011,10 +1040,14 @@ void CSequenceBatchRenderDialog::OnUpdateEnteringGameMode()
     // Pause the movie player on the first frame
     if (m_renderContext.framesSpentInCurrentPhase++ == 0)
     {
-        GetIEditor()->GetMovieSystem()->Pause();
+        IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+        if (movieSystem)
+        {
+            movieSystem->Pause();
+        }
     }
-    // Spend 30 frames warming up after changing to game mode.
-    else if (m_renderContext.framesSpentInCurrentPhase++ > 30)
+    // Spend the given frames warming up after changing to game mode.
+    else if (m_renderContext.framesSpentInCurrentPhase++ > TrackView::tv_SkipFramesCount)
     {
         EnterCaptureState(CaptureState::BeginPlayingSequence);
     }
@@ -1024,11 +1057,26 @@ void CSequenceBatchRenderDialog::OnUpdateBeginPlayingSequence()
 {
     UpdateSpinnerProgressMessage("Begin Playing Sequence");
 
-    SRenderItem renderItem = m_renderItems[m_renderContext.currentItemIndex];
+    SRenderItem& renderItem = m_renderItems[m_renderContext.currentItemIndex];
+    const AZStd::string seqName = renderItem.seqName.toUtf8().data();
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+    AZ_Assert(movieSystem, "Cannot get IMovieSystem");
+    
+    renderItem.pSequence = movieSystem->FindLegacySequenceByName(seqName.c_str());
+    AZ_Assert(renderItem.pSequence, "Cannot find sequence by name %s", seqName.c_str());
 
-    GetIEditor()->GetMovieSystem()->AddMovieListener(renderItem.pSequence, this);
+    // Initialize the next one for the batch rendering.
+    // Set the active shot.
+    m_renderContext.pActiveDirectorBU = renderItem.pSequence->GetActiveDirector();
+    renderItem.pSequence->SetActiveDirector(renderItem.pDirectorNode);
 
-    GetIEditor()->GetMovieSystem()->Resume();
+    // Back up flags and range of the sequence.
+    m_renderContext.flagBU = renderItem.pSequence->GetFlags();
+    m_renderContext.rangeBU = renderItem.pSequence->GetTimeRange();
+
+    // Change flags and range of the sequence so that it automatically starts
+    // once the game mode kicks in with the specified range.
+    renderItem.pSequence->SetFlags(m_renderContext.flagBU | IAnimSequence::eSeqFlags_PlayOnReset);
 
     // Set the time range for this render, back it up 1 frame so the capture will start
     // exactly on the first frame.
@@ -1036,30 +1084,50 @@ void CSequenceBatchRenderDialog::OnUpdateBeginPlayingSequence()
     newRange.start -= m_renderContext.captureOptions.timeStep;
     renderItem.pSequence->SetTimeRange(newRange);
 
+    m_renderContext.captureOptions.duration = newRange.end - newRange.start;
+
+    if (movieSystem)
+    {
+        movieSystem->AddSequence(renderItem.pSequence);
+
+        [[maybe_unused]] const bool listenerAdded = movieSystem->AddMovieListener(renderItem.pSequence, this);
+        AZ_Assert(
+            listenerAdded, "Failed to add movie listener for sequence %s", renderItem.pSequence->GetSequenceEntityId().ToString().c_str());
+
+        movieSystem->Reset(true, false);
+    }
+
     // Start the sequence playing
-    GetIEditor()->GetMovieSystem()->SetPlayingTime(renderItem.pSequence, newRange.start);
+    if (movieSystem)
+    {
+        movieSystem->SetPlayingTime(renderItem.pSequence, newRange.start);
+    }
 
     EnterCaptureState(CaptureState::Capturing);
 }
 
 void CSequenceBatchRenderDialog::OnUpdateCapturing()
 {
+    IAnimSequence* pCurSeq = m_renderItems[m_renderContext.currentItemIndex].pSequence;
+
     // Make sure we are still in game mode if we are capturing, so we can never
     // get soft locked if we somehow leave game mode without this module knowing about it.
     if (!GetIEditor()->IsInGameMode())
     {
-        m_renderContext.endingSequence = m_renderItems[m_renderContext.currentItemIndex].pSequence;
+        m_renderContext.endingSequence = pCurSeq;
         m_renderContext.canceled = true;
         EnterCaptureState(CaptureState::End);
         return;
     }
 
     // Progress bar
-    IAnimSequence* pCurSeq = m_renderItems[m_renderContext.currentItemIndex].pSequence;
     Range rng = pCurSeq->GetTimeRange();
-    float elapsedTime = GetIEditor()->GetMovieSystem()->GetPlayingTime(pCurSeq) - rng.start;
-    int percentage
-        = int(100.0f * (m_renderContext.spentTime + elapsedTime) / m_renderContext.expectedTotalTime);
+
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+    
+    float elapsedTime = movieSystem ? movieSystem->GetPlayingTime(pCurSeq) - rng.start : 0.f;
+    const int percentage
+        = static_cast<int>(100.0f * (m_renderContext.spentTime + elapsedTime) / m_renderContext.expectedTotalTime);
     m_ui->m_progressBar->setValue(percentage);
 
     // Progress message
@@ -1072,23 +1140,29 @@ void CSequenceBatchRenderDialog::OnUpdateCapturing()
 
 void CSequenceBatchRenderDialog::OnUpdateEnd(IAnimSequence* sequence)
 {
-    GetIEditor()->GetMovieSystem()->DisableFixedStepForCapture();
+    // Restore flags, range and the active director of the sequence.
+    sequence->SetFlags(m_renderContext.flagBU);
+    sequence->SetTimeRange(m_renderContext.rangeBU);
+    sequence->SetActiveDirector(m_renderContext.pActiveDirectorBU);
 
-    // Important: End batch render mode BEFORE leaving Game Mode.
-    // Otherwise track view will set the active camera based on the directors in the current sequence while leaving game mode
-    GetIEditor()->GetMovieSystem()->EnableBatchRenderMode(false);
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+    if (movieSystem)
+    {
+        movieSystem->DisableFixedStepForCapture();
 
-    GetIEditor()->GetMovieSystem()->RemoveMovieListener(sequence, this);
+        // Important: End batch render mode BEFORE leaving Game Mode.
+        // Otherwise track view will set the active camera based on the directors in the current sequence while leaving game mode
+        movieSystem->EnableBatchRenderMode(false);
+
+        movieSystem->RemoveMovieListener(sequence, this);
+
+    }
     GetIEditor()->SetInGameMode(false);
     GetIEditor()->GetGameEngine()->Update();        // Update is needed because SetInGameMode() queues game mode, Update() executes it.
 
-    ICVar* pCVarCustomResWidth = gEnv->pConsole->GetCVar("r_CustomResWidth");
-    ICVar* pCVarCustomResHeight = gEnv->pConsole->GetCVar("r_CustomResHeight");
-    if (pCVarCustomResWidth && pCVarCustomResHeight)
+    if (CLayoutViewPane* viewPane = MainWindow::instance()->GetActiveView())
     {
-        // Restore the custom resolution cvars.
-        pCVarCustomResWidth->Set(m_renderContext.cvarCustomResWidthBU);
-        pCVarCustomResHeight->Set(m_renderContext.cvarCustomResHeightBU);
+        viewPane->ResizeViewport(activeViewportWidth, activeViewportHeight);
     }
 
     // Restore display debug info
@@ -1098,48 +1172,43 @@ void CSequenceBatchRenderDialog::OnUpdateEnd(IAnimSequence* sequence)
         cvarDebugInfo->Set(m_renderContext.cvarDisplayInfoBU);
     }
 
-    // Restore flags, range and the active director of the sequence.
-    sequence->SetFlags(m_renderContext.flagBU);
-    sequence->SetTimeRange(m_renderContext.rangeBU);
-    sequence->SetActiveDirector(m_renderContext.pActiveDirectorBU);
-
-    const auto imageFormat = m_ui->m_imageFormatCombo->currentText();
-
-    SRenderItem renderItem = m_renderItems[m_renderContext.currentItemIndex];
+    const SRenderItem& renderItem = m_renderItems[m_renderContext.currentItemIndex];
     if (m_bFFMPEGCommandAvailable && renderItem.bCreateVideo)
     {
         // Create a video using the ffmpeg plug-in from captured images.
         m_renderContext.processingFFMPEG = true;
 
-        AZStd::string outputFolder = m_renderContext.captureOptions.folder;
-        auto future = QtConcurrent::run(
-            [renderItem, outputFolder, imageFormat]
+        const AZStd::string outputFolder = m_renderContext.captureOptions.folder;
+        const AZStd::string imageFormat = m_ui->m_imageFormatCombo->currentText().toStdString().c_str();
+        AZStd::string outputFile;
+        AzFramework::StringFunc::Path::Join(outputFolder.c_str(), renderItem.prefix.toUtf8().data(), outputFile);
+
+        // Create the input file string, leave the %06d unexpanded for the ffmpeg tool.
+        const AZStd::string inputFile = outputFile + "_%06d." + imageFormat;
+
+        outputFile += ".webm";
+
+        static const char* filePattern = "__input_file__";
+
+        QString command = AZStd::string::format(
+            "plugin.ffmpeg_encode '%s' '%s' '%s' %i %i 'crop=%i:%i:0:0'",
+            filePattern,
+            outputFile.c_str(),
+            "libvpx-vp9",
+            10240,
+            renderItem.fps,
+            getResWidth(renderItem.resW),
+            getResHeight(renderItem.resH)).c_str();
+
+        command = command.replace(filePattern, inputFile.c_str());
+
+        auto future = QtConcurrent::run([command]
         {
-            AZStd::string outputFile;
-            AzFramework::StringFunc::Path::Join(outputFolder.c_str(), renderItem.prefix.toUtf8().data(), outputFile);
-
-            QString inputFile = outputFile.c_str();
-            outputFile += ".webm";
-
-            // Use a placeholder for the input file, will expand it with replace.
-            QString inputFileDefine = "__input_file__";
-
-            QString command = QStringLiteral("plugin.ffmpeg_encode '%1' '%2' '%3' %4 %5 '-vf crop=%6:%7:0:0'")
-                .arg(inputFileDefine).arg(outputFile.c_str()).arg("libvpx-vp9")
-                .arg(10240).arg(renderItem.fps).arg(getResWidth(renderItem.resW)).arg(getResHeight(renderItem.resH));
-
-            // Create the input file string, leave the %06d unexpanded for the mpeg tool.
-            inputFile += "%06d.";
-            inputFile += imageFormat;
-
-            // Replace the input file
-            command = command.replace(inputFileDefine, inputFile);
-
             // Run the command
             GetIEditor()->ExecuteCommand(command);
         });
 
-        // Use a watcher to set a flag when the mpeg processing is complete.
+        // Use a watcher to set a flag when the ffmpeg processing is complete.
         connect(&m_renderContext.processingFFMPEGWatcher, &QFutureWatcher<void>::finished, this, [this]()
         {
             m_renderContext.processingFFMPEG = false;
@@ -1301,12 +1370,16 @@ void CSequenceBatchRenderDialog::OnKickIdle()
 
         if (canBeginFrameCapture())
         {
-            // update the time so the frame number can be calculated in StartCapture()
-            IAnimSequence* sequence = m_renderItems[m_renderContext.currentItemIndex].pSequence;
-            m_renderContext.captureOptions.time = GetIEditor()->GetMovieSystem()->GetPlayingTime(sequence);
+            IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+            if (movieSystem)
+            {
+                // update the time so the frame number can be calculated in StartCapture()
+                IAnimSequence* sequence = m_renderItems[m_renderContext.currentItemIndex].pSequence;
+                m_renderContext.captureOptions.time = movieSystem->GetPlayingTime(sequence);
 
-            GetIEditor()->GetMovieSystem()->StartCapture(m_renderContext.captureOptions, ++m_renderContext.frameNumber);
-            GetIEditor()->GetMovieSystem()->ControlCapture();
+                movieSystem->StartCapture(m_renderContext.captureOptions, ++m_renderContext.frameNumber);
+                movieSystem->ControlCapture();
+            }
         }
 
         // if we're not capturing or we're not currently waiting for the current frame to finish
@@ -1315,24 +1388,38 @@ void CSequenceBatchRenderDialog::OnKickIdle()
         {
             const auto& renderItem = m_renderItems[m_renderContext.currentItemIndex];
             // update the view given the current camera transform and projection
-            UpdateAtomOutputFrameCaptureView(m_atomOutputFrameCapture, renderItem.resW, renderItem.resH);
+
+            if (!m_atomOutputFrameCapture.IsCreated())
+            {
+                // create a new atom pipeline to capture the frames of the current sequence
+                m_atomOutputFrameCapture.CreatePipeline(
+                    *TrackView::SceneFromGameEntityContext(), "TrackViewSequencePipeline", renderItem.resW, renderItem.resH);
+            }
+
+            UpdateAtomOutputFrameCaptureView(renderItem.resW, renderItem.resH);
             GetIEditor()->GetGameEngine()->Update(); // step update (original frame capture)
         }
 
         if (canBeginFrameCapture())
         {
-            const AZStd::string fileName = AZStd::string::format("Frame_%06d", m_renderContext.frameNumber);
+            const AZStd::string fileName = AZStd::string::format("%s_%06d", m_renderContext.captureOptions.prefix.c_str(), m_renderContext.frameNumber);
 
             AZStd::string filePath;
             AzFramework::StringFunc::Path::Join(
                 m_renderContext.captureOptions.folder.c_str(), fileName.c_str(), filePath, /*caseInsensitive=*/true,
                 /*normalize=*/false);
 
+            IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+
             // track view callback after each frame is captured
-            const auto captureFinishedCallback = [this]() {
+            const auto captureFinishedCallback = [this, movieSystem]()
+            {
                 m_renderContext.capturingFrame = false;
-                GetIEditor()->GetMovieSystem()->EndCapture();
-                GetIEditor()->GetMovieSystem()->ControlCapture();
+                if (movieSystem)
+                {
+                    movieSystem->EndCapture();
+                    movieSystem->ControlCapture();
+                }
             };
 
             const auto imageFormatExtension = m_ui->m_imageFormatCombo->currentText();
@@ -1382,7 +1469,11 @@ void CSequenceBatchRenderDialog::OnCancelRender()
     {
         // In the capturing state, abort the sequence, OnMovieEvent with an abort will fire and cause
         // the transition to CaptureState::End.
-        GetIEditor()->GetMovieSystem()->AbortSequence(m_renderItems[m_renderContext.currentItemIndex].pSequence);
+        IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+        if (movieSystem)
+        {
+            movieSystem->AbortSequence(m_renderItems[m_renderContext.currentItemIndex].pSequence);
+        }
     }
     else if (m_renderContext.captureState == CaptureState::EnteringGameMode)
     {
@@ -1392,6 +1483,31 @@ void CSequenceBatchRenderDialog::OnCancelRender()
         m_renderContext.canceled = true;
         EnterCaptureState(CaptureState::End);
     }
+}
+
+void CSequenceBatchRenderDialog::OnVarsChange()
+{
+    CheckForEnableUpdateButton();
+}
+
+void CSequenceBatchRenderDialog::OnFormatChange()
+{
+    CheckForEnableUpdateButton();
+}
+
+void CSequenceBatchRenderDialog::OnPrefixChange()
+{
+    CheckForEnableUpdateButton();
+}
+
+void CSequenceBatchRenderDialog::OnDisableDebugInfoChange()
+{
+    CheckForEnableUpdateButton();
+}
+
+void CSequenceBatchRenderDialog::OnCreateVideoChange()
+{
+    CheckForEnableUpdateButton();
 }
 
 void CSequenceBatchRenderDialog::OnLoadBatch()
@@ -1415,6 +1531,8 @@ void CSequenceBatchRenderDialog::OnLoadBatch()
 
         OnClearRenderItems();
 
+        IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+
         for (int i = 0; i < batchRenderListNode->getChildCount(); ++i)
         {
             // Get an item.
@@ -1423,7 +1541,7 @@ void CSequenceBatchRenderDialog::OnLoadBatch()
 
             // sequence
             const QString seqName = itemNode->getAttr("sequence");
-            item.pSequence = GetIEditor()->GetMovieSystem()->FindLegacySequenceByName(seqName.toUtf8().data());
+            item.pSequence = movieSystem ? movieSystem->FindLegacySequenceByName(seqName.toUtf8().data()) : nullptr;
             if (item.pSequence == nullptr)
             {
                 QMessageBox::warning(this, tr("Sequence not found"), tr("A sequence of '%1' not found! This'll be skipped.").arg(seqName));
@@ -1466,6 +1584,10 @@ void CSequenceBatchRenderDialog::OnLoadBatch()
 
             // folder
             item.folder = itemNode->getAttr("folder");
+
+            itemNode->getAttr(debugInfo, item.disableDebugInfo);
+
+            item.imageFormat = itemNode->getAttr("format");
 
             // cvars
             for (int k = 0; k < itemNode->getChildCount(); ++k)
@@ -1519,6 +1641,10 @@ void CSequenceBatchRenderDialog::OnSaveBatch()
             // folder
             itemNode->setAttr("folder", item.folder.toUtf8().data());
 
+            itemNode->setAttr(debugInfo, item.disableDebugInfo);
+
+            itemNode->setAttr("format", item.imageFormat.toUtf8().data());
+
             // cvars
             for (size_t k = 0; k < item.cvars.size(); ++k)
             {
@@ -1532,7 +1658,7 @@ void CSequenceBatchRenderDialog::OnSaveBatch()
 
 bool CSequenceBatchRenderDialog::SetUpNewRenderItem(SRenderItem& item)
 {
-    const QString seqName = m_ui->m_sequenceCombo->currentText();
+    item.seqName = m_ui->m_sequenceCombo->currentText();
     const QString shotName = m_ui->m_shotCombo->currentText();
     // folder
     item.folder = m_ui->m_destinationEdit->text();
@@ -1542,8 +1668,10 @@ bool CSequenceBatchRenderDialog::SetUpNewRenderItem(SRenderItem& item)
         return false;
     }
     // sequence
-    item.pSequence = GetIEditor()->GetMovieSystem()->FindLegacySequenceByName(seqName.toUtf8().data());
-    assert(item.pSequence);
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+
+    item.pSequence = movieSystem ? movieSystem->FindLegacySequenceByName(item.seqName.toUtf8().data()) : nullptr;
+    AZ_Assert(item.pSequence, "Cannot find sequence by name %s", item.seqName.toUtf8().data());
     // director
     for (int i = 0; i < item.pSequence->GetNodeCount(); ++i)
     {
@@ -1570,6 +1698,9 @@ bool CSequenceBatchRenderDialog::SetUpNewRenderItem(SRenderItem& item)
     {
         item.fps = fpsOptions[m_ui->m_fpsCombo->currentIndex()].fps;
     }
+    // format
+    item.imageFormat = m_ui->m_imageFormatCombo->currentText();
+
     // prefix
     item.prefix = m_ui->BATCH_RENDER_FILE_PREFIX->text();
     // disable debug info
@@ -1652,3 +1783,14 @@ void CSequenceBatchRenderDialog::SetEnableEditorIdleProcessing(bool enabled)
     }
 }
 
+void CSequenceBatchRenderDialog::UpdateAtomOutputFrameCaptureView(const int width, const int height)
+{
+    const AZ::EntityId activeCameraEntityId = TrackView::ActiveCameraEntityId();
+    AZ_Assert(activeCameraEntityId.IsValid(), "Active camera Entity Id is invalid");
+    AZ::RPI::ViewPtr view = nullptr;
+    AZ::RPI::ViewProviderBus::EventResult(view, activeCameraEntityId, &AZ::RPI::ViewProvider::GetView);
+    m_atomOutputFrameCapture.UpdateView(
+        TrackView::TransformFromEntityId(activeCameraEntityId),
+        TrackView::ProjectionFromCameraEntityId(activeCameraEntityId, aznumeric_cast<float>(width), aznumeric_cast<float>(height)),
+        view);
+}

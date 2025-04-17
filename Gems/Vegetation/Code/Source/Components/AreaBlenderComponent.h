@@ -29,7 +29,7 @@ namespace Vegetation
         : public AreaConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(AreaBlenderConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AreaBlenderConfig, AZ::SystemAllocator);
         AZ_RTTI(AreaBlenderConfig, "{ED57731E-2821-4AA6-9BD6-9203ED0B6AB0}", AreaConfig);
         static void Reflect(AZ::ReflectContext* context);
         bool m_inheritBehavior = true;
@@ -42,7 +42,7 @@ namespace Vegetation
         void AddAreaEntityId(AZ::EntityId entityId);
     };
 
-    static const AZ::Uuid AreaBlenderComponentTypeId = "{899AA751-BC3F-45D8-9D66-07CE72FDC86D}";
+    inline constexpr AZ::TypeId AreaBlenderComponentTypeId{ "{899AA751-BC3F-45D8-9D66-07CE72FDC86D}" };
 
     /**
     * Placement logic for combined vegetation areas

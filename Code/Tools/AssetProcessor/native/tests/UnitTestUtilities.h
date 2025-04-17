@@ -13,9 +13,33 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Interface/Interface.h>
 #include <gmock/gmock.h>
+#include <AzCore/UnitTest/Mocks/MockFileIOBase.h>
+#include <AssetManager/FileStateCache.h>
+#include <AzToolsFramework/Asset/AssetUtils.h>
 
 namespace UnitTests
 {
+    //! Utility class meant to check that a specific number of errors occur - will cause a test failure if any unexpected errors occur
+    //! This does not suppress anything unless Begin has been called
+    struct TraceBusErrorChecker : AZ::Debug::TraceMessageBus::Handler
+    {
+        TraceBusErrorChecker();
+        virtual ~TraceBusErrorChecker();
+
+        void Begin();
+        void End(int expectedCount);
+
+    private:
+        bool OnPreAssert(const char* fileName, int line, const char* func, const char* message) override;
+        bool OnPreError(const char* window, const char* fileName, int line, const char* func, const char* message) override;
+        bool OnPreWarning(const char* window, const char* fileName, int line, const char* func, const char* message) override;
+
+        void RecordError(const char* fileName, int line, const char* func, const char* message);
+
+        bool m_expectingFailure = false;
+        AZStd::vector<AZStd::string> m_suppressedMessages;
+    };
+
     struct MockMultiBuilderInfoHandler : public AssetProcessor::AssetBuilderInfoBus::Handler
     {
         ~MockMultiBuilderInfoHandler() override;
@@ -73,17 +97,8 @@ namespace UnitTests
         : public AZ::ComponentApplicationBus::Handler
     {
     public:
-        MockComponentApplication()
-        {
-            AZ::ComponentApplicationBus::Handler::BusConnect();
-            AZ::Interface<AZ::ComponentApplicationRequests>::Register(this);
-        }
-
-        ~MockComponentApplication()
-        {
-            AZ::Interface<AZ::ComponentApplicationRequests>::Unregister(this);
-            AZ::ComponentApplicationBus::Handler::BusDisconnect();
-        }
+        MockComponentApplication();
+        ~MockComponentApplication();
 
     public:
         MOCK_METHOD1(FindEntity, AZ::Entity* (const AZ::EntityId&));
@@ -108,5 +123,51 @@ namespace UnitTests
         MOCK_CONST_METHOD0(GetEngineRoot, const char* ());
         MOCK_CONST_METHOD0(GetExecutableFolder, const char* ());
         MOCK_CONST_METHOD1(QueryApplicationType, void(AZ::ApplicationTypeQuery&));
+    };
+
+    struct MockPathConversion : AZ::Interface<AssetProcessor::IPathConversion>::Registrar
+    {
+        MockPathConversion(const char* scanfolder = "c:/somepath");
+        bool ConvertToRelativePath(QString fullFileName, QString& databaseSourceName, QString& scanFolderName) const override;
+        const AssetProcessor::ScanFolderInfo* GetScanFolderForFile(const QString& /*fullFileName*/) const override;
+        const AssetProcessor::ScanFolderInfo* GetScanFolderById(AZ::s64 /*id*/) const override;
+        void SetScanFolder(const AssetProcessor::ScanFolderInfo& scanFolderInfo);
+
+    private:
+        AssetProcessor::ScanFolderInfo m_scanFolderInfo;
+    };
+
+    struct MockMultiPathConversion : AZ::Interface<AssetProcessor::IPathConversion>::Registrar
+    {
+        bool ConvertToRelativePath(QString fullFileName, QString& databaseSourceName, QString& scanFolderName) const override;
+        const AssetProcessor::ScanFolderInfo* GetScanFolderForFile(const QString& fullFileName) const override;
+        const AssetProcessor::ScanFolderInfo* GetScanFolderById(AZ::s64 id) const override;
+        void AddScanfolder(QString path, QString name);
+
+    private:
+        AZStd::vector<AssetProcessor::ScanFolderInfo> m_scanFolderInfo;
+    };
+
+    struct MockVirtualFileIO
+    {
+        static constexpr AZ::u32 ComputeHandle(AZ::IO::PathView path);
+
+        MockVirtualFileIO();
+        ~MockVirtualFileIO();
+
+        AZ::IO::FileIOBase* m_priorFileIO = nullptr;
+        AZStd::unordered_map<AZ::IO::HandleType, AZStd::pair<AZStd::string, AZStd::string>> m_mockFiles;
+        AZStd::unique_ptr<testing::NiceMock<AZ::IO::MockFileIOBase>> m_fileIOMock;
+    };
+
+    struct MockFileStateCache : AssetProcessor::FileStateBase
+    {
+        bool GetFileInfo(const QString& absolutePath, AssetProcessor::FileStateInfo* foundFileInfo) const override;
+        bool Exists(const QString& absolutePath) const override;
+
+        bool GetHash(const QString& absolutePath, FileHash* foundHash) override;
+        void RegisterForDeleteEvent(AZ::Event<AssetProcessor::FileStateInfo>::Handler& handler) override;
+
+        AZ::Event<AssetProcessor::FileStateInfo> m_deleteEvent;
     };
 }

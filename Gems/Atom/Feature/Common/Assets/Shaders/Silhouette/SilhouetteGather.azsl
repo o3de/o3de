@@ -1,0 +1,57 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include <viewsrg_all.srgi>
+
+#include <Atom/Features/PBR/DefaultObjectSrg.azsli>
+#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
+#include <Atom/Feature/Common/Assets/Shaders/Materials/Silhouette/SilhouetteGather_MaterialSrg.azsli>
+#include <Atom/Feature/Common/Assets/Shaders/Materials/MaterialInputs/UvSetCount.azsli>
+#include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_VertexData.azsli>
+#include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_VertexEval.azsli>
+#include <Atom/Features/ColorManagement/TransformColor.azsli>
+
+VsOutput MainVS(VsInput IN, uint instanceId : SV_InstanceID)
+{
+    VsSystemValues SV;
+    SV.m_instanceId = instanceId;
+
+    VsOutput OUT = EvaluateVertexGeometry(IN, SV);
+
+    // this depth bias helps prevent silhouettes appearing where there are small intersections
+    // like the player feet with the ground
+    real distanceScale = 1.0 - OUT.position.z / OUT.position.w;
+    OUT.position.z += MaterialSrg::m_depthBias * distanceScale;
+
+    if(MaterialSrg::m_outlineSize > EPSILON)
+    {
+        real3 worldNormal = normalize(mul(GetObjectToWorldMatrixInverseTranspose(instanceId), IN.normal));
+        real4 screenSpaceNormal = mul(ViewSrg::m_viewProjectionMatrix, real4(worldNormal, 0.0));
+
+        // use a size scale so input m_outlineSize can be in range 0..100
+        const real sizeScale = 1.0 / 400.0;
+        OUT.position.xy += screenSpaceNormal.xy * (MaterialSrg::m_outlineSize * OUT.position.w * sizeScale) * distanceScale;
+    }
+
+    return OUT;
+}
+
+struct PSOutput
+{
+    float4 m_color : SV_Target0;
+};
+
+PSOutput MainPS(VsOutput IN)
+{
+    PSOutput OUT;
+
+    // write at least something in the alpha to distinguish between silhouette and background
+    OUT.m_color = float4(TransformColor(MaterialSrg::m_color, ColorSpaceId::ACEScg,ColorSpaceId::SRGB), max(0.01, MaterialSrg::m_alpha));
+
+    return OUT;
+}

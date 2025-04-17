@@ -11,6 +11,7 @@
 #include <Atom/RHI/DrawListContext.h>
 
 #include <Atom/RPI.Public/Base.h>
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/SceneBus.h>
 
 #include <Atom/RPI.Reflect/FeatureProcessorDescriptor.h>
@@ -42,15 +43,17 @@ namespace AZ
         //! 
         //!         It is recommended that each feature processor maintain a data buffer that is buffered N times for the data that is
         //!         expected to be delivered via an Ebus.
-        class FeatureProcessor
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+        class ATOM_RPI_PUBLIC_API FeatureProcessor
             : public SceneNotificationBus::Handler
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             friend class Scene;
-        public:
 
-            // [GFX TODO]: now these structure are empty, but we will clean up them later when we are sure we won't have any members in them.
+        public:
             struct PrepareViewsPacket
             {
+                AZStd::map<ViewPtr, RHI::DrawListMask> m_persistentViews;
             };
 
             struct SimulatePacket
@@ -75,7 +78,7 @@ namespace AZ
             };            
 
             AZ_RTTI(FeatureProcessor, "{B8027170-C65C-4237-964D-B557FC9D7575}");
-            AZ_CLASS_ALLOCATOR(FeatureProcessor, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FeatureProcessor, AZ::SystemAllocator);
 
             FeatureProcessor() = default;
             virtual ~FeatureProcessor() = default;
@@ -88,9 +91,16 @@ namespace AZ
 
             //! Perform any necessary deactivation.
             virtual void Deactivate() {}
-
+            
+            //! O3DE_DEPRECATION_NOTICE(GHI-12687)
+            //! @deprecated use AddRenderPasses(RenderPipeline*)
             //! Apply changes and add additional render passes to the render pipeline from the feature processors
-            virtual void ApplyRenderPipelineChange(RenderPipeline* ) {}
+            virtual void ApplyRenderPipelineChange([[maybe_unused]] RenderPipeline* pipeline) {}
+
+            //! Add additional render passes to the render pipeline before it's finalized
+            //! The render pipeline must have m_allowModification set to true (see Scene::TryApplyRenderPipelineChanges() function)
+            //! This function is called when the render pipeline is added or rebuilt
+            virtual void AddRenderPasses([[maybe_unused]] RenderPipeline* pipeline) {}
 
             //! Allows the feature processor to expose supporting views based on
             //! the main views passed in. Main views (persistent views) are views that must be 
@@ -98,7 +108,8 @@ namespace AZ
             //! views (transient views) are views that must be rendered only to correctly render 
             //! the main views. This function is called per frame and it happens on main thread.
             //! Support views should be added to outViews with their associated pipeline view tags.
-            virtual void PrepareViews(const PrepareViewsPacket&, AZStd::vector<AZStd::pair<PipelineViewTag, ViewPtr>>& /* outViews*/) {}
+            virtual void PrepareViews(
+                const PrepareViewsPacket& /*prepareViewPacket*/, AZStd::vector<AZStd::pair<PipelineViewTag, ViewPtr>>& /*outViews*/) {}
 
             //! The feature processor should perform any internal simulation at this point - For 
             //! instance, updating a particle system or animation. Not every feature processor
@@ -112,7 +123,13 @@ namespace AZ
             //! 
             //!  - This is called every frame.
             //!  - This may be called in parallel with other feature processors.
+            //!  - This may be called in parallel with culling
             virtual void Render(const RenderPacket&) {}
+            
+            //! Notifies when culling is finished, but draw lists have not been finalized or sorted
+            //! If a feature processor uses visibility lists instead of letting the culling system submit draw items
+            //! it should access the visibility lists here
+            virtual void OnEndCulling(const RenderPacket&) {}
 
             //! The feature processor may do clean up when the current render frame is finished
             //!  - This is called every RPI::RenderTick.

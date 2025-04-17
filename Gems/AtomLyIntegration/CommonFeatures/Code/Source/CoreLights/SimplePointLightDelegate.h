@@ -8,34 +8,38 @@
 
 #pragma once
 
-#include <CoreLights/LightDelegateBase.h>
 #include <AzCore/Component/TransformBus.h>
+#include <CoreLights/LightDelegateBase.h>
 
-#include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <Atom/Feature/CoreLights/SimplePointLightFeatureProcessorInterface.h>
+#include <AzFramework/Entity/EntityDebugDisplayBus.h>
 
-namespace AZ
+namespace AZ::Render
 {
-    namespace Render
+    class SimplePointLightDelegate final : public LightDelegateBase<SimplePointLightFeatureProcessorInterface>
     {
-        class SimplePointLightDelegate final
-            : public LightDelegateBase<SimplePointLightFeatureProcessorInterface>
-        {
-        public:
-            SimplePointLightDelegate(EntityId entityId, bool isVisible);
+    public:
+        SimplePointLightDelegate(EntityId entityId, bool isVisible);
 
-            // LightDelegateBase overrides...
-            float CalculateAttenuationRadius(float lightThreshold) const override;
-            void DrawDebugDisplay(const Transform& transform, const Color& color, AzFramework::DebugDisplayRequests& debugDisplay, bool isSelected) const override;
-            float GetSurfaceArea() const override;
-            float GetEffectiveSolidAngle() const override { return PhotometricValue::OmnidirectionalSteradians; }
-            void SetAffectsGI(bool affectsGI) override;
-            void SetAffectsGIFactor(float affectsGIFactor) override;
+        // LightDelegateBase overrides...
+        float CalculateAttenuationRadius(float lightThreshold) const override;
+        void DrawDebugDisplay(
+            const Transform& transform,
+            const Color& color,
+            AzFramework::DebugDisplayRequests& debugDisplay,
+            bool isSelected) const override;
+        float GetSurfaceArea() const override;
+        float GetEffectiveSolidAngle() const override;
+        void SetAffectsGI(bool affectsGI) override;
+        void SetAffectsGIFactor(float affectsGIFactor) override;
+        Aabb GetLocalVisualizationBounds() const override;
 
-        private:
-            void HandleShapeChanged() override;
-        };
+    private:
+        void HandleShapeChanged() override;
+    };
 
-    } // namespace Render
-} // namespace AZ
-
+    inline float SimplePointLightDelegate::GetEffectiveSolidAngle() const
+    {
+        return PhotometricValue::OmnidirectionalSteradians;
+    }
+} // namespace AZ::Render

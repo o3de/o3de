@@ -1,0 +1,12 @@
+{
+    "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/EnhancedPBR.materialtype",
+    "materialTypeVersion": 6,
+    "parentMaterial": "101_DetailMaps_BaseNoDetailMaps.material",
+    "propertyValues": {
+        "detailLayerGroup.baseColorDetailBlend": 0.800000011920929,
+        "detailLayerGroup.baseColorDetailMap": "../../Textures/cc0/Concrete019_1K_Color.jpg",
+        "detailLayerGroup.detailUV.scale": 20.0,
+        "detailLayerGroup.enableBaseColor": true,
+        "detailLayerGroup.enableDetailLayer": true
+    }
+}

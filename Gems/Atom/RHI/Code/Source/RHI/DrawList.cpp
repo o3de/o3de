@@ -9,75 +9,88 @@
 
 #include <AzCore/std/sort.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    DrawListView GetDrawListPartition(DrawListView drawList, size_t partitionIndex, size_t partitionCount)
     {
-        DrawListView GetDrawListPartition(DrawListView drawList, size_t partitionIndex, size_t partitionCount)
+        if (drawList.empty())
         {
-            if (drawList.empty())
-            {
-                return DrawListView{};
-            }
-
-            const size_t itemsPerPartition = AZ::DivideAndRoundUp(drawList.size(), partitionCount);
-            const size_t itemOffset = partitionIndex * itemsPerPartition;
-            const size_t itemCount = AZStd::min(drawList.size() - itemOffset, itemsPerPartition);
-            return DrawListView(&drawList[itemOffset], itemCount);
+            return DrawListView{};
         }
 
-        void SortDrawList(DrawList& drawList, DrawListSortType sortType)
+        const size_t itemsPerPartition = AZ::DivideAndRoundUp(drawList.size(), partitionCount);
+        const size_t itemOffset = partitionIndex * itemsPerPartition;
+        const size_t itemCount = AZStd::min(drawList.size() - itemOffset, itemsPerPartition);
+        return DrawListView(&drawList[itemOffset], itemCount);
+    }
+
+    void SortDrawList(DrawList& drawList, DrawListSortType sortType)
+    {
+        switch (sortType)
         {
-            switch (sortType)
-            {
-            case DrawListSortType::KeyThenDepth:
-                AZStd::sort(drawList.begin(), drawList.end(), [](const DrawItemProperties& a, const DrawItemProperties& b)
+        case DrawListSortType::KeyThenDepth:
+            AZStd::sort(drawList.begin(), drawList.end(), [](const DrawItemProperties& a, const DrawItemProperties& b)
+                {
+                    if (a.m_sortKey != b.m_sortKey)
                     {
-                        if (a.m_sortKey != b.m_sortKey)
-                        {
-                            return a.m_sortKey < b.m_sortKey;
-                        }
+                        return a.m_sortKey < b.m_sortKey;
+                    }
+                    if (a.m_depth != b.m_depth)
+                    {
                         return a.m_depth < b.m_depth;
                     }
-                );
-                break;
+                    return a.m_item < b.m_item;
+                }
+            );
+            break;
 
-            case DrawListSortType::KeyThenReverseDepth:
-                AZStd::sort(drawList.begin(), drawList.end(), [](const DrawItemProperties& a, const DrawItemProperties& b)
+        case DrawListSortType::KeyThenReverseDepth:
+            AZStd::sort(drawList.begin(), drawList.end(), [](const DrawItemProperties& a, const DrawItemProperties& b)
+                {
+                    if (a.m_sortKey != b.m_sortKey)
                     {
-                        if (a.m_sortKey != b.m_sortKey)
-                        {
-                            return a.m_sortKey < b.m_sortKey;
-                        }
+                        return a.m_sortKey < b.m_sortKey;
+                    }
+                    if (a.m_depth != b.m_depth)
+                    {
                         return a.m_depth > b.m_depth;
                     }
-                );
-                break;
+                    return a.m_item < b.m_item;
+                }
+            );
+            break;
 
-            case DrawListSortType::DepthThenKey:
-                AZStd::sort(drawList.begin(), drawList.end(), [](const DrawItemProperties& a, const DrawItemProperties& b)
+        case DrawListSortType::DepthThenKey:
+            AZStd::sort(drawList.begin(), drawList.end(), [](const DrawItemProperties& a, const DrawItemProperties& b)
+                {
+                    if (a.m_depth != b.m_depth)
                     {
-                        if (a.m_depth != b.m_depth)
-                        {
-                            return a.m_depth < b.m_depth;
-                        }
+                        return a.m_depth < b.m_depth;
+                    }
+                    if (a.m_sortKey != b.m_sortKey)
+                    {
                         return a.m_sortKey < b.m_sortKey;
                     }
-                );
-                break;
+                    return a.m_item < b.m_item;
+                }
+            );
+            break;
 
-            case DrawListSortType::ReverseDepthThenKey:
-                AZStd::sort(drawList.begin(), drawList.end(), [](const DrawItemProperties& a, const DrawItemProperties& b)
+        case DrawListSortType::ReverseDepthThenKey:
+            AZStd::sort(drawList.begin(), drawList.end(), [](const DrawItemProperties& a, const DrawItemProperties& b)
+                {
+                    if (a.m_depth != b.m_depth)
                     {
-                        if (a.m_depth != b.m_depth)
-                        {
-                            return a.m_depth > b.m_depth;
-                        }
+                        return a.m_depth > b.m_depth;
+                    }
+                    if (a.m_sortKey != b.m_sortKey)
+                    {
                         return a.m_sortKey < b.m_sortKey;
                     }
-                );
-                break;
-            }
+                    return a.m_item < b.m_item;
+                }
+            );
+            break;
         }
     }
 }

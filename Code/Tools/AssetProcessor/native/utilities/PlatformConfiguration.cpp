@@ -7,6 +7,7 @@
  */
 #include "native/utilities/PlatformConfiguration.h"
 #include "native/AssetManager/FileStateCache.h"
+#include "native/assetprocessor.h"
 
 #include <QDirIterator>
 
@@ -20,87 +21,124 @@
 #include <AzToolsFramework/Asset/AssetUtils.h>
 
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzToolsFramework/Metadata/MetadataManager.h>
 
-namespace
-{
-    // the starting order in the file for gems.
-    const int g_gemStartingOrder = 100;
-}
 
 namespace AssetProcessor
 {
-
-    void AssetImporterPathsVisitor::Visit([[maybe_unused]] AZStd::string_view path, AZStd::string_view, AZ::SettingsRegistryInterface::Type,
-        AZStd::string_view value)
-    {
-        auto found = value.find('.');
-        if (found != AZStd::string::npos)
-        {
-            m_supportedFileExtensions.emplace_back(value.substr(found + 1));
-        }
-        else
-        {
-            m_supportedFileExtensions.emplace_back(value);
-        }
-    }
-
-    struct PlatformsInfoVisitor
+    struct AssetImporterPathsVisitor
         : AZ::SettingsRegistryInterface::Visitor
     {
-        AZ::SettingsRegistryInterface::VisitResponse Traverse(AZStd::string_view jsonPath, AZStd::string_view valueName,
-            AZ::SettingsRegistryInterface::VisitAction action, AZ::SettingsRegistryInterface::Type) override
+        AssetImporterPathsVisitor(AZ::SettingsRegistryInterface* settingsRegistry, AZStd::vector<AZStd::string>& supportedExtension)
+            : m_settingsRegistry(settingsRegistry)
+            , m_supportedFileExtensions(supportedExtension)
         {
-            constexpr AZStd::string_view PlatformInfoPrefix = "Platform ";
-            switch (action)
-            {
-            case AZ::SettingsRegistryInterface::VisitAction::Begin:
-            {
-                // Only continue traversal if the path is exactly the AssetProcessorSettingsKey (which indicates the start of traversal)
-                // or if a "Platform *" object and it's children are being traversed
-                if (jsonPath == AssetProcessorSettingsKey)
-                {
-                    return AZ::SettingsRegistryInterface::VisitResponse::Continue;
-                }
-                if (valueName.starts_with(PlatformInfoPrefix))
-                {
-                    // Retrieve the platform name from the rest of valueName portion of the key "Platform (.*)"
-                    AZStd::string platformIdentifier = valueName.substr(PlatformInfoPrefix.size());
-                    // Lowercase the platformIdentifier and store it in the stack
-                    AZStd::to_lower(platformIdentifier.begin(), platformIdentifier.end());
-
-                    m_platformIdentifierStack.push(AZStd::move(platformIdentifier));
-                }
-            }
-            break;
-            case AZ::SettingsRegistryInterface::VisitAction::End:
-            {
-                if (valueName.starts_with(PlatformInfoPrefix))
-                {
-                    AZ_Assert(!m_platformIdentifierStack.empty(), "PlatformInfo stack should not be empty. More stack pops, than pushes");
-                    m_platformIdentifierStack.pop();
-                }
-            }
-            break;
-
-            default:
-                break;
-            }
-
-            return !m_platformIdentifierStack.empty() ? AZ::SettingsRegistryInterface::VisitResponse::Continue
-                : AZ::SettingsRegistryInterface::VisitResponse::Skip;
         }
 
         using AZ::SettingsRegistryInterface::Visitor::Visit;
-        void Visit([[maybe_unused]] AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZStd::string_view value) override
+        void Visit(const AZ::SettingsRegistryInterface::VisitArgs&, AZStd::string_view value) override
         {
-            if (m_platformIdentifierStack.empty())
+            if (auto found = value.find('.'); found != AZStd::string::npos)
             {
-                return;
+                m_supportedFileExtensions.emplace_back(value.substr(found + 1));
+            }
+            else
+            {
+                m_supportedFileExtensions.emplace_back(value);
+            }
+        }
+
+        AZ::SettingsRegistryInterface* m_settingsRegistry;
+        AZStd::vector<AZStd::string> m_supportedFileExtensions;
+    };
+
+    //! Visitor for reading the "/Amazon/AssetProcessor/Settings/ScanFolder *" entries from the Settings Registry
+    //! Expects the key to path to the visitor to be "/Amazon/AssetProcessor/Settings"
+    struct ScanFolderVisitor
+        : AZ::SettingsRegistryVisitorUtils::ObjectVisitor
+    {
+        using AZ::SettingsRegistryInterface::Visitor::Visit;
+        AZ::SettingsRegistryInterface::VisitResponse Visit(const AZ::SettingsRegistryInterface::VisitArgs& visitArgs) override;
+
+        struct ScanFolderInfo
+        {
+            AZStd::string m_scanFolderIdentifier;
+            AZStd::string m_scanFolderDisplayName;
+            AZ::IO::Path m_watchPath{ AZ::IO::PosixPathSeparator };
+            AZStd::vector<AZStd::string> m_includeIdentifiers;
+            AZStd::vector<AZStd::string> m_excludeIdentifiers;
+            int m_scanOrder{};
+            bool m_isRecursive{};
+        };
+        AZStd::vector<ScanFolderInfo> m_scanFolderInfos;
+    };
+
+    struct ExcludeVisitor
+        : AZ::SettingsRegistryVisitorUtils::ObjectVisitor
+    {
+        using AZ::SettingsRegistryInterface::Visitor::Visit;
+        AZ::SettingsRegistryInterface::VisitResponse Visit(const AZ::SettingsRegistryInterface::VisitArgs& visitArgs) override;
+
+        AZStd::vector<ExcludeAssetRecognizer> m_excludeAssetRecognizers;
+    };
+
+    struct SimpleJobVisitor
+        : AZ::SettingsRegistryVisitorUtils::ObjectVisitor
+    {
+        SimpleJobVisitor(const AZStd::vector<AssetBuilderSDK::PlatformInfo>& enabledPlatforms)
+            : m_enabledPlatforms(enabledPlatforms)
+        {
+        }
+        using AZ::SettingsRegistryInterface::Visitor::Visit;
+        AZ::SettingsRegistryInterface::VisitResponse Visit(const AZ::SettingsRegistryInterface::VisitArgs& visitArgs) override;
+
+        struct SimpleJobAssetRecognizer
+        {
+            AssetRecognizer m_recognizer;
+            AZStd::string m_defaultParams;
+            bool m_ignore{};
+        };
+        AZStd::vector<SimpleJobAssetRecognizer> m_assetRecognizers;
+    private:
+        void ApplyParamsOverrides(const AZ::SettingsRegistryInterface::VisitArgs& visitArgs,
+            SimpleJobAssetRecognizer& assetRecognizer);
+
+        const AZStd::vector<AssetBuilderSDK::PlatformInfo>& m_enabledPlatforms;
+    };
+
+    //! This vistor reads in the Asset Cache Server configuration elements from the settings registry
+    struct ACSVisitor
+        : AZ::SettingsRegistryVisitorUtils::ObjectVisitor
+    {
+        using AZ::SettingsRegistryInterface::Visitor::Visit;
+        AZ::SettingsRegistryInterface::VisitResponse Visit(const AZ::SettingsRegistryInterface::VisitArgs& visitArgs) override;
+
+        AZStd::vector<AssetRecognizer> m_assetRecognizers;
+    };
+
+    struct PlatformsInfoVisitor
+        : AZ::SettingsRegistryVisitorUtils::ObjectVisitor
+    {
+        using AZ::SettingsRegistryInterface::Visitor::Visit;
+        AZ::SettingsRegistryInterface::VisitResponse Visit(const AZ::SettingsRegistryInterface::VisitArgs& visitArgs) override
+        {
+            // Visit any each "Platform *" field that is a direct child of the object at the AssetProcessorSettingsKey
+            constexpr AZStd::string_view PlatformInfoPrefix = "Platform ";
+            if (!visitArgs.m_fieldName.starts_with(PlatformInfoPrefix))
+            {
+                return AZ::SettingsRegistryInterface::VisitResponse::Skip;
             }
 
-            if (valueName == "tags")
+            // Retrieve the platform name from the rest of valueName portion of the key "Platform (.*)"
+            AZStd::string platformIdentifier = visitArgs.m_fieldName.substr(PlatformInfoPrefix.size());
+            // Lowercase the platformIdentifier
+            AZStd::to_lower(platformIdentifier.begin(), platformIdentifier.end());
+
+            // Look up the "tags" field that is child of the "Platform (.*)" field
+            using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
+            const auto tagKeyPath = FixedValueString(visitArgs.m_jsonKeyPath) + "/tags";
+            if (AZStd::string tagValue; visitArgs.m_registry.Get(tagValue, tagKeyPath))
             {
-                AZStd::string_view platformIdentifier = m_platformIdentifierStack.top();
                 AZStd::unordered_set<AZStd::string> platformTags;
                 auto JoinTags = [&platformTags](AZStd::string_view token)
                 {
@@ -108,23 +146,23 @@ namespace AssetProcessor
                     AZStd::to_lower(cleanedTag.begin(), cleanedTag.end());
                     platformTags.insert(AZStd::move(cleanedTag));
                 };
-                AZ::StringFunc::TokenizeVisitor(value, JoinTags, ',');
+                AZ::StringFunc::TokenizeVisitor(tagValue, JoinTags, ',');
                 m_platformInfos.emplace_back(platformIdentifier, platformTags);
             }
+
+            return AZ::SettingsRegistryInterface::VisitResponse::Skip;
         }
 
         AZStd::vector<AssetBuilderSDK::PlatformInfo> m_platformInfos;
-    private:
-        AZStd::stack<AZStd::string> m_platformIdentifierStack;
     };
 
     struct MetaDataTypesVisitor
         : AZ::SettingsRegistryInterface::Visitor
     {
         using AZ::SettingsRegistryInterface::Visitor::Visit;
-        void Visit([[maybe_unused]] AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZStd::string_view value) override
+        void Visit(const AZ::SettingsRegistryInterface::VisitArgs& visitArgs, AZStd::string_view value) override
         {
-            m_metaDataTypes.push_back({ AZ::IO::PathView(valueName, AZ::IO::PosixPathSeparator).LexicallyNormal().String(), value });
+            m_metaDataTypes.push_back({ AZ::IO::PathView(visitArgs.m_fieldName, AZ::IO::PosixPathSeparator).LexicallyNormal().String(), value });
         }
 
         struct MetaDataType
@@ -135,193 +173,79 @@ namespace AssetProcessor
         AZStd::vector<MetaDataType> m_metaDataTypes;
     };
 
-    AZ::SettingsRegistryInterface::VisitResponse ScanFolderVisitor::Traverse(AZStd::string_view jsonPath, AZStd::string_view valueName,
-        AZ::SettingsRegistryInterface::VisitAction action, AZ::SettingsRegistryInterface::Type)
+
+    AZ::SettingsRegistryInterface::VisitResponse ScanFolderVisitor::Visit(const AZ::SettingsRegistryInterface::VisitArgs& visitArgs)
     {
         constexpr AZStd::string_view ScanFolderInfoPrefix = "ScanFolder ";
-        switch (action)
-        {
-        case AZ::SettingsRegistryInterface::VisitAction::Begin:
-        {
-            if (jsonPath == AssetProcessorSettingsKey)
-            {
-                return AZ::SettingsRegistryInterface::VisitResponse::Continue;
-            }
-            if (valueName.starts_with(ScanFolderInfoPrefix))
-            {
-                // Retrieve the ScanFolder identifier from "Scan Folder *"
-                AZStd::string scanFolderDisplayName = valueName.substr(ScanFolderInfoPrefix.size());
-                m_scanFolderStack.push(scanFolderDisplayName);
-
-                ScanFolderInfo& scanFolderInfo = m_scanFolderInfos.emplace_back();
-                scanFolderInfo.m_scanFolderIdentifier = scanFolderDisplayName;
-                scanFolderInfo.m_scanFolderDisplayName = AZStd::move(scanFolderDisplayName);
-            }
-        }
-        break;
-        case AZ::SettingsRegistryInterface::VisitAction::End:
-        {
-            if (valueName.starts_with(ScanFolderInfoPrefix))
-            {
-                AZ_Assert(!m_scanFolderStack.empty(), "ScanFolder identifier stack should not be empty. More stack pops, than pushes");
-                m_scanFolderStack.pop();
-            }
-        }
-        break;
-
-        default:
-            break;
-        }
-
-        return !m_scanFolderStack.empty() ? AZ::SettingsRegistryInterface::VisitResponse::Continue
-            : AZ::SettingsRegistryInterface::VisitResponse::Skip;
-    }
-    void ScanFolderVisitor::Visit([[maybe_unused]] AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZ::s64 value)
-    {
         // Check if a "ScanFolder *" element is being traversed
-        if (m_scanFolderStack.empty())
+        if (!visitArgs.m_fieldName.starts_with(ScanFolderInfoPrefix))
         {
-            return;
+            return AZ::SettingsRegistryInterface::VisitResponse::Skip;
         }
 
-        AZStd::string_view currentScanFolderIdentifier = m_scanFolderStack.top();
+        AZStd::string_view currentScanFolderIdentifier = visitArgs.m_fieldName.substr(ScanFolderInfoPrefix.size());
 
-        // Find ScanFolder element being iterated over.
-        // It should be the last element in ScanFolderInfo vector
-        auto scanFolderEntryIt = AZStd::find_if(m_scanFolderInfos.rbegin(), m_scanFolderInfos.rend(),
-            [&currentScanFolderIdentifier](const ScanFolderInfo& scanFolderInfo)
-        {
-            return scanFolderInfo.m_scanFolderIdentifier == currentScanFolderIdentifier;
-        });
-        if (scanFolderEntryIt == m_scanFolderInfos.rend())
-        {
-            return;
-        }
+        ScanFolderInfo& scanFolderInfo = m_scanFolderInfos.emplace_back();
+        scanFolderInfo.m_scanFolderIdentifier = currentScanFolderIdentifier;
+        scanFolderInfo.m_scanFolderDisplayName = currentScanFolderIdentifier;
 
-        ScanFolderInfo& scanFolderEntry = *scanFolderEntryIt;
-        if (valueName == "recursive")
+        using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
+        if (AZ::s64 value;
+            visitArgs.m_registry.Get(value, FixedValueString(visitArgs.m_jsonKeyPath) + "/recursive"))
         {
-            scanFolderEntry.m_isRecursive = value != 0;
+            scanFolderInfo.m_isRecursive = value != 0;
         }
-        else if (valueName == "order")
+        if (AZ::s64 value;
+            visitArgs.m_registry.Get(value, FixedValueString(visitArgs.m_jsonKeyPath) + "/order"))
         {
-            scanFolderEntry.m_scanOrder = static_cast<int>(value);
-        }
-    }
-
-    void ScanFolderVisitor::Visit([[maybe_unused]] AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZStd::string_view value)
-    {
-        // Check if a "ScanFolder *" element is being traversed
-        if (m_scanFolderStack.empty())
-        {
-            return;
+            scanFolderInfo.m_scanOrder = static_cast<int>(value);
         }
 
-        AZStd::string_view currentScanFolderIdentifier = m_scanFolderStack.top();
-
-        // Find ScanFolder element being iterated over.
-        // It should be the last element in ScanFolderInfo vector
-        auto scanFolderEntryIt = AZStd::find_if(m_scanFolderInfos.rbegin(), m_scanFolderInfos.rend(),
-            [&currentScanFolderIdentifier](const ScanFolderInfo& scanFolderInfo)
+        if (AZStd::string value;
+            visitArgs.m_registry.Get(value, FixedValueString(visitArgs.m_jsonKeyPath) + "/watch"))
         {
-            return scanFolderInfo.m_scanFolderIdentifier == currentScanFolderIdentifier;
-        });
-        if (scanFolderEntryIt == m_scanFolderInfos.rend())
-        {
-            return;
+            scanFolderInfo.m_watchPath = value;
         }
-
-        ScanFolderInfo& scanFolderEntry = *scanFolderEntryIt;
-        if (valueName == "watch")
+        if (AZStd::string value;
+            visitArgs.m_registry.Get(value, FixedValueString(visitArgs.m_jsonKeyPath) + "/display")
+            && !value.empty())
         {
-            scanFolderEntry.m_watchPath = value;
+            scanFolderInfo.m_scanFolderDisplayName = value;
         }
-        else if (valueName == "display" && !value.empty())
+        if (AZStd::string value;
+            visitArgs.m_registry.Get(value, FixedValueString(visitArgs.m_jsonKeyPath) + "/include"))
         {
-            scanFolderEntry.m_scanFolderDisplayName = value;
-        }
-        else if (valueName == "include")
-        {
-            auto JoinTags = [&scanFolderEntry](AZStd::string_view token)
+            auto JoinTags = [&scanFolderInfo](AZStd::string_view token)
             {
-                scanFolderEntry.m_includeIdentifiers.push_back(token);
+                scanFolderInfo.m_includeIdentifiers.push_back(token);
             };
             AZ::StringFunc::TokenizeVisitor(value, JoinTags, ',');
         }
-        else if (valueName == "exclude")
+        if (AZStd::string value;
+            visitArgs.m_registry.Get(value, FixedValueString(visitArgs.m_jsonKeyPath) + "/exclude"))
         {
-            auto JoinTags = [&scanFolderEntry](AZStd::string_view token)
+            auto JoinTags = [&scanFolderInfo](AZStd::string_view token)
             {
-                scanFolderEntry.m_excludeIdentifiers.push_back(token);
+                scanFolderInfo.m_excludeIdentifiers.push_back(token);
             };
             AZ::StringFunc::TokenizeVisitor(value, JoinTags, ',');
         }
+
+        return AZ::SettingsRegistryInterface::VisitResponse::Skip;
     }
 
-    AZ::SettingsRegistryInterface::VisitResponse ExcludeVisitor::Traverse(AZStd::string_view jsonPath, AZStd::string_view valueName,
-        AZ::SettingsRegistryInterface::VisitAction action, AZ::SettingsRegistryInterface::Type)
+    AZ::SettingsRegistryInterface::VisitResponse ExcludeVisitor::Visit(const AZ::SettingsRegistryInterface::VisitArgs& visitArgs)
     {
         constexpr AZStd::string_view ExcludeNamePrefix = "Exclude ";
-        switch (action)
+        if (!visitArgs.m_fieldName.starts_with(ExcludeNamePrefix))
         {
-        case AZ::SettingsRegistryInterface::VisitAction::Begin:
-        {
-            if (jsonPath == AssetProcessorSettingsKey)
-            {
-                return AZ::SettingsRegistryInterface::VisitResponse::Continue;
-            }
-            if (valueName.starts_with(ExcludeNamePrefix))
-            {
-                // Extract the substr that is part of the valueName "Exclude *"
-                AZStd::string excludeName = valueName.substr(ExcludeNamePrefix.size());
-                m_excludeNameStack.push(excludeName);
-
-                ExcludeAssetRecognizer& excludeAssetRecognizer = m_excludeAssetRecognizers.emplace_back();
-                excludeAssetRecognizer.m_name = QString::fromUtf8(excludeName.c_str(), aznumeric_cast<int>(excludeName.size()));
-            }
-        }
-        break;
-        case AZ::SettingsRegistryInterface::VisitAction::End:
-        {
-            if (valueName.starts_with(ExcludeNamePrefix))
-            {
-                AZ_Assert(!m_excludeNameStack.empty(), "Exclude stack should not be empty. More stack pops, than pushes");
-                m_excludeNameStack.pop();
-            }
-        }
-        break;
-
-        default:
-            break;
+            return AZ::SettingsRegistryInterface::VisitResponse::Skip;
         }
 
-        return !m_excludeNameStack.empty() ? AZ::SettingsRegistryInterface::VisitResponse::Continue
-            : AZ::SettingsRegistryInterface::VisitResponse::Skip;
-    }
+        AZStd::string_view excludeName = visitArgs.m_fieldName.substr(ExcludeNamePrefix.size());
+        ExcludeAssetRecognizer& excludeAssetRecognizer = m_excludeAssetRecognizers.emplace_back();
+        excludeAssetRecognizer.m_name = QString::fromUtf8(excludeName.data(), aznumeric_cast<int>(excludeName.size()));
 
-    void ExcludeVisitor::Visit([[maybe_unused]] AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZStd::string_view value)
-    {
-        if (m_excludeNameStack.empty())
-        {
-            return;
-        }
-
-        AZStd::string_view excludeNameView = m_excludeNameStack.top();
-        auto excludeName = QString::fromUtf8(excludeNameView.data(), aznumeric_cast<int>(excludeNameView.size()));
-
-        // Find ScanFolder element being iterated over.
-        // It should be the last element in ScanFolderInfo vector
-        auto excludeAssetRecognizerEntryIt = AZStd::find_if(m_excludeAssetRecognizers.rbegin(), m_excludeAssetRecognizers.rend(),
-            [&excludeName](const ExcludeAssetRecognizer& excludeAssetRecognizer)
-        {
-            return excludeAssetRecognizer.m_name == excludeName;
-        });
-        if (excludeAssetRecognizerEntryIt == m_excludeAssetRecognizers.rend())
-        {
-            return;
-        }
-
-        ExcludeAssetRecognizer& excludeAssetRecognizer = *excludeAssetRecognizerEntryIt;
 
         // The "pattern" and "glob" entries were previously parsed by QSettings which un-escapes the values
         // To compensate for it the AssetProcessorPlatformConfig.ini was escaping the
@@ -351,7 +275,9 @@ namespace AssetProcessor
             return unescapedResult;
         };
 
-        if (valueName == "pattern")
+        using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
+        if (AZStd::string value;
+            visitArgs.m_registry.Get(value, FixedValueString(visitArgs.m_jsonKeyPath) + "/pattern"))
         {
             if (!value.empty())
             {
@@ -359,7 +285,8 @@ namespace AssetProcessor
                 excludeAssetRecognizer.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher(UnescapePattern(value), patternType);
             }
         }
-        else if (valueName == "glob")
+        if (AZStd::string value;
+            visitArgs.m_registry.Get(value, FixedValueString(visitArgs.m_jsonKeyPath) + "/glob"))
         {
             if (!excludeAssetRecognizer.m_patternMatcher.IsValid())
             {
@@ -367,147 +294,63 @@ namespace AssetProcessor
                 excludeAssetRecognizer.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher(UnescapePattern(value), patternType);
             }
         }
+
+        return AZ::SettingsRegistryInterface::VisitResponse::Skip;
     }
 
-    AZ::SettingsRegistryInterface::VisitResponse SimpleJobVisitor::Traverse(AZStd::string_view jsonPath, AZStd::string_view valueName,
-        AZ::SettingsRegistryInterface::VisitAction action, AZ::SettingsRegistryInterface::Type)
+    AZ::SettingsRegistryInterface::VisitResponse SimpleJobVisitor::Visit(const AZ::SettingsRegistryInterface::VisitArgs& visitArgs)
     {
         constexpr AZStd::string_view RCNamePrefix = "RC "; // RC = Resource Compiler
         constexpr AZStd::string_view SJNamePrefix = "SJ "; // SJ = Simple Job
-        switch (action)
-        {
-        case AZ::SettingsRegistryInterface::VisitAction::Begin:
-        {
-            if (jsonPath == AssetProcessorSettingsKey)
-            {
-                return AZ::SettingsRegistryInterface::VisitResponse::Continue;
-            }
-            if (valueName.starts_with(RCNamePrefix) || valueName.starts_with(SJNamePrefix))
-            {
-                // Extract the substr that is part of the valueName "Exclude *"
-                AZStd::string rcName = valueName.substr(SJNamePrefix.size());
-                m_simpleJobNameStack.push(rcName);
 
-                auto& assetRecognizer = m_assetRecognizers.emplace_back();
-                assetRecognizer.m_recognizer.m_name = rcName;
-            }
-        }
-        break;
-        case AZ::SettingsRegistryInterface::VisitAction::End:
+        if (!visitArgs.m_fieldName.starts_with(RCNamePrefix) && !visitArgs.m_fieldName.starts_with(SJNamePrefix))
         {
-            if (valueName.starts_with(RCNamePrefix) || valueName.starts_with(SJNamePrefix))
-            {
-                AZ_Assert(!m_simpleJobNameStack.empty(), "SimpleJob name stack should not be empty. More stack pops, than pushes");
-                ApplyParamsOverrides(jsonPath);
-                m_simpleJobNameStack.pop();
-            }
-        }
-        break;
-
-        default:
-            break;
+            return AZ::SettingsRegistryInterface::VisitResponse::Skip;
         }
 
-        return !m_simpleJobNameStack.empty() ? AZ::SettingsRegistryInterface::VisitResponse::Continue
-            : AZ::SettingsRegistryInterface::VisitResponse::Skip;
-    }
+        AZStd::string_view sjNameView = visitArgs.m_fieldName.starts_with(SJNamePrefix)
+            ? visitArgs.m_fieldName.substr(SJNamePrefix.size())
+            : visitArgs.m_fieldName.substr(RCNamePrefix.size());
 
-    void SimpleJobVisitor::Visit([[maybe_unused]] AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, bool value)
-    {
-        if (m_simpleJobNameStack.empty())
-        {
-            return;
-        }
+        auto& assetRecognizer = m_assetRecognizers.emplace_back();
+        assetRecognizer.m_recognizer.m_name = sjNameView;
 
-        AZStd::string_view sjNameView = m_simpleJobNameStack.top();
-
-        // Find AssetRecognizer identified by the top entry in the name stack
-        auto assetRecognizerEntryIt = AZStd::find_if(m_assetRecognizers.rbegin(), m_assetRecognizers.rend(),
-            [&sjNameView](const auto& assetRecognizer)
-        {
-            return assetRecognizer.m_recognizer.m_name == sjNameView;
-        });
-        if (assetRecognizerEntryIt == m_assetRecognizers.rend())
-        {
-            return;
-        }
-
-        auto& assetRecognizer = *assetRecognizerEntryIt;
-        if (valueName == "ignore")
+        using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
+        if (bool value;
+            visitArgs.m_registry.Get(value, FixedValueString(visitArgs.m_jsonKeyPath) + "/ignore"))
         {
             assetRecognizer.m_ignore = value;
         }
-        else if (valueName == "lockSource")
+        if (bool value;
+            visitArgs.m_registry.Get(value, FixedValueString(visitArgs.m_jsonKeyPath) + "/lockSource"))
         {
             assetRecognizer.m_recognizer.m_testLockSource = value;
         }
-        else if (valueName == "critical")
+        if (bool value;
+            visitArgs.m_registry.Get(value, FixedValueString(visitArgs.m_jsonKeyPath) + "/critical"))
         {
             assetRecognizer.m_recognizer.m_isCritical = value;
         }
-        else if (valueName == "checkServer")
+        if (bool value;
+            visitArgs.m_registry.Get(value, FixedValueString(visitArgs.m_jsonKeyPath) + "/checkServer"))
         {
             assetRecognizer.m_recognizer.m_checkServer = value;
         }
-        else if (valueName == "supportsCreateJobs")
+        if (bool value;
+            visitArgs.m_registry.Get(value, FixedValueString(visitArgs.m_jsonKeyPath) + "/supportsCreateJobs"))
         {
             assetRecognizer.m_recognizer.m_supportsCreateJobs = value;
         }
-        else if (valueName == "outputProductDependencies")
+        if (bool value;
+            visitArgs.m_registry.Get(value, FixedValueString(visitArgs.m_jsonKeyPath) + "/outputProductDependencies"))
         {
             assetRecognizer.m_recognizer.m_outputProductDependencies = value;
         }
-    }
-
-    void SimpleJobVisitor::Visit([[maybe_unused]] AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZ::s64 value)
-    {
-        if (m_simpleJobNameStack.empty())
-        {
-            return;
-        }
-
-        AZStd::string_view sjNameView = m_simpleJobNameStack.top();
-
-        // Find AssetRecognizer identified by the top entry in the name stack
-        auto assetRecognizerEntryIt = AZStd::find_if(m_assetRecognizers.rbegin(), m_assetRecognizers.rend(),
-            [&sjNameView](const auto& assetRecognizer)
-            {
-            return assetRecognizer.m_recognizer.m_name == sjNameView;
-            });
-        if (assetRecognizerEntryIt == m_assetRecognizers.rend())
-        {
-            return;
-        }
-
-        auto& assetRecognizer = *assetRecognizerEntryIt;
-        if (valueName == "priority")
+        if (AZ::s64 value;
+            visitArgs.m_registry.Get(value, FixedValueString(visitArgs.m_jsonKeyPath) + "/priority"))
         {
             assetRecognizer.m_recognizer.m_priority = static_cast<int>(value);
         }
-    }
-
-    void SimpleJobVisitor::Visit([[maybe_unused]] AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZStd::string_view value)
-    {
-        if (m_simpleJobNameStack.empty())
-        {
-            return;
-        }
-
-        AZStd::string_view sjNameView = m_simpleJobNameStack.top();
-        
-
-        // Find AssetRecognizer identified by the top entry in the name stack
-        auto assetRecognizerEntryIt = AZStd::find_if(m_assetRecognizers.rbegin(), m_assetRecognizers.rend(),
-            [&sjNameView](const SimpleJobAssetRecognizer& assetRecognizer)
-            {
-                return assetRecognizer.m_recognizer.m_name == sjNameView;
-            });
-        if (assetRecognizerEntryIt == m_assetRecognizers.rend())
-        {
-            return;
-        }
-
-        auto& assetRecognizer = *assetRecognizerEntryIt;
 
         // The "pattern" and "glob" entries were previously parsed by QSettings which un-escapes the values
         // To compensate for it the AssetProcessorPlatformConfig.ini was escaping the
@@ -537,7 +380,8 @@ namespace AssetProcessor
             return unescapedResult;
         };
 
-        if (valueName == "pattern")
+        if (AZStd::string value;
+            visitArgs.m_registry.Get(value, FixedValueString(visitArgs.m_jsonKeyPath) + "/pattern"))
         {
             if (!value.empty())
             {
@@ -545,7 +389,8 @@ namespace AssetProcessor
                 assetRecognizer.m_recognizer.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher(UnescapePattern(value), patternType);
             }
         }
-        else if (valueName == "glob")
+        if (AZStd::string value;
+            visitArgs.m_registry.Get(value, FixedValueString(visitArgs.m_jsonKeyPath) + "/glob"))
         {
             // Add the glob pattern if it the matter matcher doesn't already contain a valid regex pattern
             if (!assetRecognizer.m_recognizer.m_patternMatcher.IsValid())
@@ -554,11 +399,13 @@ namespace AssetProcessor
                 assetRecognizer.m_recognizer.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher(UnescapePattern(value), patternType);
             }
         }
-        else if (valueName == "version")
+        if (AZStd::string value;
+            visitArgs.m_registry.Get(value, FixedValueString(visitArgs.m_jsonKeyPath) + "/version"))
         {
             assetRecognizer.m_recognizer.m_version = value;
         }
-        else if (valueName == "productAssetType")
+        if (AZStd::string value;
+            visitArgs.m_registry.Get(value, FixedValueString(visitArgs.m_jsonKeyPath) + "/productAssetType"))
         {
             if (!value.empty())
             {
@@ -569,35 +416,18 @@ namespace AssetProcessor
                 }
             }
         }
-        else if (valueName == "params")
+        if (AZStd::string value;
+            visitArgs.m_registry.Get(value, FixedValueString(visitArgs.m_jsonKeyPath) + "/params"))
         {
             assetRecognizer.m_defaultParams = value;
         }
+
+        ApplyParamsOverrides(visitArgs, assetRecognizer);
+        return AZ::SettingsRegistryInterface::VisitResponse::Skip;
     }
 
-    void SimpleJobVisitor::ApplyParamsOverrides(AZStd::string_view path)
+    void SimpleJobVisitor::ApplyParamsOverrides(const AZ::SettingsRegistryInterface::VisitArgs& visitArgs, SimpleJobAssetRecognizer& assetRecognizer)
     {
-        if (m_simpleJobNameStack.empty())
-        {
-            return;
-        }
-
-        AZStd::string_view sjNameView = m_simpleJobNameStack.top();
-
-
-        // Find AssetRecognizer identified by the top entry in the name stack
-        auto assetRecognizerEntryIt = AZStd::find_if(m_assetRecognizers.rbegin(), m_assetRecognizers.rend(),
-            [&sjNameView](const SimpleJobAssetRecognizer& assetRecognizer)
-        {
-            return assetRecognizer.m_recognizer.m_name == sjNameView;
-        });
-        if (assetRecognizerEntryIt == m_assetRecognizers.rend())
-        {
-            return;
-        }
-
-        auto& assetRecognizer = *assetRecognizerEntryIt;
-
         /* so in this particular case we want to end up with an AssetPlatformSpec struct that
             has only got the platforms that 'matter' in it
             so for example, if you have the following enabled platforms
@@ -643,12 +473,12 @@ namespace AssetProcessor
             AZStd::string_view currentParams = assetRecognizer.m_defaultParams;
             // The "/Amazon/AssetProcessor/Settings/SJ */<platform>" entry will be queried
             AZ::IO::Path overrideParamsKey = AZ::IO::Path(AZ::IO::PosixPathSeparator);
-            overrideParamsKey /= path;
+            overrideParamsKey /= visitArgs.m_jsonKeyPath;
             overrideParamsKey /= platform.m_identifier;
 
             AZ::SettingsRegistryInterface::FixedValueString overrideParamsValue;
             // Check if the enabled platform identifier matches a key within the "SJ *" object
-            if (m_registry.Get(overrideParamsValue, overrideParamsKey.Native()))
+            if (visitArgs.m_registry.Get(overrideParamsValue, overrideParamsKey.Native()))
             {
                 currentParams = overrideParamsValue;
             }
@@ -658,7 +488,7 @@ namespace AssetProcessor
                 for (const AZStd::string& tag : platform.m_tags)
                 {
                     overrideParamsKey.ReplaceFilename(AZ::IO::PathView(tag));
-                    if (m_registry.Get(overrideParamsValue, overrideParamsKey.Native()))
+                    if (visitArgs.m_registry.Get(overrideParamsValue, overrideParamsKey.Native()))
                     {
                         // if we get here it means we found a tag that applies to this platform
                         currentParams = overrideParamsValue;
@@ -675,115 +505,50 @@ namespace AssetProcessor
         }
     }
 
-    // Find the current AssetRecognizer identified by the top entry in the name stack
-    AssetRecognizer* ACSVisitor::CurrentAssetRecognizer()
-    {
-        if (m_nameStack.empty())
-        {
-            return nullptr;
-        }
-
-        auto& nameView = m_nameStack.top();
-
-        auto assetRecognizerEntryIt = AZStd::find_if(m_assetRecognizers.rbegin(), m_assetRecognizers.rend(),
-            [&nameView](const AssetRecognizer& assetRecognizer)
-            {
-                return assetRecognizer.m_name == nameView;
-            });
-        if (assetRecognizerEntryIt == m_assetRecognizers.rend())
-        {
-            return nullptr;
-        }
-        return &(*assetRecognizerEntryIt);
-    }
-
-    AZ::SettingsRegistryInterface::VisitResponse ACSVisitor::Traverse(AZStd::string_view jsonPath, AZStd::string_view valueName,
-        AZ::SettingsRegistryInterface::VisitAction action, AZ::SettingsRegistryInterface::Type)
+    AZ::SettingsRegistryInterface::VisitResponse ACSVisitor::Visit(const AZ::SettingsRegistryInterface::VisitArgs& visitArgs)
     {
         constexpr AZStd::string_view ACSNamePrefix = "ACS ";
-        switch (action)
+        if (!visitArgs.m_fieldName.starts_with(ACSNamePrefix))
         {
-        case AZ::SettingsRegistryInterface::VisitAction::Begin:
-        {
-            if (jsonPath == AssetProcessorServerKey)
-            {
-                return AZ::SettingsRegistryInterface::VisitResponse::Continue;
-            }
-            if (valueName.starts_with(ACSNamePrefix))
-            {
-                AZStd::string name = valueName.substr(ACSNamePrefix.size());
-                m_nameStack.push(name);
-
-                AssetRecognizer& assetRecognizer = m_assetRecognizers.emplace_back();
-                assetRecognizer.m_name = name;
-            }
-        }
-        break;
-        case AZ::SettingsRegistryInterface::VisitAction::End:
-        {
-            if (valueName.starts_with(ACSNamePrefix))
-            {
-                AZ_Assert(!m_nameStack.empty(), "Name stack should not be empty. More stack pops, than pushes");
-                m_nameStack.pop();
-            }
-        }
-        break;
-
-        default:
-            break;
+            return AZ::SettingsRegistryInterface::VisitResponse::Skip;
         }
 
-        return AZ::SettingsRegistryInterface::VisitResponse::Continue;
-    }
+        AZStd::string name = visitArgs.m_fieldName.substr(ACSNamePrefix.size());
 
-    void ACSVisitor::Visit([[maybe_unused]] AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, bool value)
-    {
-        auto* assetRecognizer = CurrentAssetRecognizer();
-        if (!assetRecognizer)
-        {
-            return;
-        }
-        else if (valueName == "lockSource")
-        {
-            assetRecognizer->m_testLockSource = value;
-        }
-        else if (valueName == "critical")
-        {
-            assetRecognizer->m_isCritical = value;
-        }
-        else if (valueName == "checkServer")
-        {
-            assetRecognizer->m_checkServer = value;
-        }
-        else if (valueName == "supportsCreateJobs")
-        {
-            assetRecognizer->m_supportsCreateJobs = value;
-        }
-        else if (valueName == "outputProductDependencies")
-        {
-            assetRecognizer->m_outputProductDependencies = value;
-        }
-    }
+        AssetRecognizer& assetRecognizer = m_assetRecognizers.emplace_back();
+        assetRecognizer.m_name = name;
 
-    void ACSVisitor::Visit([[maybe_unused]] AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZ::s64 value)
-    {
-        auto* assetRecognizer = CurrentAssetRecognizer();
-        if (!assetRecognizer)
+        using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
+        if (bool value;
+            visitArgs.m_registry.Get(value, FixedValueString(visitArgs.m_jsonKeyPath) + "/lockSource"))
         {
-            return;
+            assetRecognizer.m_testLockSource = value;
         }
-        else if (valueName == "priority")
+        if (bool value;
+            visitArgs.m_registry.Get(value, FixedValueString(visitArgs.m_jsonKeyPath) + "/critical"))
         {
-            assetRecognizer->m_priority = aznumeric_cast<int>(value);
+            assetRecognizer.m_isCritical = value;
         }
-    }
+        if (bool value;
+            visitArgs.m_registry.Get(value, FixedValueString(visitArgs.m_jsonKeyPath) + "/checkServer"))
+        {
+            assetRecognizer.m_checkServer = value;
+        }
+        if (bool value;
+            visitArgs.m_registry.Get(value, FixedValueString(visitArgs.m_jsonKeyPath) + "/supportsCreateJobs"))
+        {
+            assetRecognizer.m_supportsCreateJobs = value;
+        }
+        if (bool value;
+            visitArgs.m_registry.Get(value, FixedValueString(visitArgs.m_jsonKeyPath) + "/outputProductDependencies"))
+        {
+            assetRecognizer.m_outputProductDependencies = value;
+        }
 
-    void ACSVisitor::Visit([[maybe_unused]] AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZStd::string_view value)
-    {
-        auto* assetRecognizer = CurrentAssetRecognizer();
-        if (!assetRecognizer)
+        if (AZ::s64 value;
+            visitArgs.m_registry.Get(value, FixedValueString(visitArgs.m_jsonKeyPath) + "/priority"))
         {
-            return;
+            assetRecognizer.m_priority = aznumeric_cast<int>(value);
         }
 
         // The "pattern" and "glob" entries were previously parsed by QSettings which un-escapes the values
@@ -814,42 +579,51 @@ namespace AssetProcessor
             return unescapedResult;
         };
 
-        if (valueName == "pattern")
+        if (AZStd::string value;
+            visitArgs.m_registry.Get(value, FixedValueString(visitArgs.m_jsonKeyPath) + "/pattern"))
         {
             if (!value.empty())
             {
                 const auto patternType = AssetBuilderSDK::AssetBuilderPattern::Regex;
-                assetRecognizer->m_patternMatcher = AssetBuilderSDK::FilePatternMatcher(UnescapePattern(value), patternType);
+                assetRecognizer.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher(UnescapePattern(value), patternType);
             }
         }
-        else if (valueName == "glob")
+        if (AZStd::string value;
+            visitArgs.m_registry.Get(value, FixedValueString(visitArgs.m_jsonKeyPath) + "/glob"))
         {
             // Add the glob pattern if it the matter matcher doesn't already contain a valid regex pattern
-            if (!assetRecognizer->m_patternMatcher.IsValid())
+            if (!assetRecognizer.m_patternMatcher.IsValid())
             {
                 const auto patternType = AssetBuilderSDK::AssetBuilderPattern::Wildcard;
-                assetRecognizer->m_patternMatcher = AssetBuilderSDK::FilePatternMatcher(UnescapePattern(value), patternType);
+                assetRecognizer.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher(UnescapePattern(value), patternType);
             }
         }
-        else if (valueName == "version")
+        if (AZStd::string value;
+            visitArgs.m_registry.Get(value, FixedValueString(visitArgs.m_jsonKeyPath) + "/version"))
         {
-            assetRecognizer->m_version = value;
+            assetRecognizer.m_version = value;
         }
-        else if (valueName == "productAssetType")
+        if (AZStd::string value;
+            visitArgs.m_registry.Get(value, FixedValueString(visitArgs.m_jsonKeyPath) + "/productAssetType"))
         {
             if (!value.empty())
             {
                 AZ::Uuid productAssetType{ value.data(), value.size() };
                 if (!productAssetType.IsNull())
                 {
-                    assetRecognizer->m_productAssetType = productAssetType;
+                    assetRecognizer.m_productAssetType = productAssetType;
                 }
             }
         }
+
+        return AZ::SettingsRegistryInterface::VisitResponse::Skip;
     }
- 
+
     const char AssetConfigPlatformDir[] = "AssetProcessorConfig/";
     const char AssetProcessorPlatformConfigFileName[] = "AssetProcessorPlatformConfig.ini";
+    constexpr const char* ProjectScanFolderKey = "Project/Assets";
+    constexpr const char* GemStartingPriorityOrderKey = "/GemScanFolderStartingPriorityOrder";
+    constexpr const char* ProjectRelativeGemPriorityKey = "/ProjectRelativeGemsScanFolderPriority";
 
     PlatformConfiguration::PlatformConfiguration(QObject* pParent)
         : QObject(pParent)
@@ -932,7 +706,7 @@ namespace AssetProcessor
     #if defined(AZ_DEBUG_BUILD) || defined(AZ_PROFILE_BUILD)
         if (commandLine)
         {
-            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(*settingsRegistry, *commandLine, true);
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(*settingsRegistry, *commandLine, {});
         }
     #endif
 
@@ -1203,11 +977,11 @@ namespace AssetProcessor
         }
     }
 
-    void PlatformConfiguration::CacheIntermediateAssetsScanFolderId()
+    void PlatformConfiguration::CacheIntermediateAssetsScanFolderId() const
     {
         for (const auto& scanfolder : m_scanFolders)
         {
-            if (scanfolder.GetPortableKey() == IntermediateAssetsFolderName)
+            if (scanfolder.GetPortableKey() == AssetProcessor::IntermediateAssetsFolderName)
             {
                 m_intermediateAssetScanFolderId = scanfolder.ScanFolderID();
                 return;
@@ -1232,7 +1006,7 @@ namespace AssetProcessor
     // used to save our the AssetCacheServer settings to a remote location
     struct AssetCacheServerMatcher
     {
-        AZ_CLASS_ALLOCATOR(AssetCacheServerMatcher, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AssetCacheServerMatcher, AZ::SystemAllocator);
         AZ_TYPE_INFO(AssetCacheServerMatcher, "{329A59C9-755E-4FA9-AADB-05C50AC62FD5}");
 
         static void Reflect(AZ::SerializeContext* serializeContext)
@@ -1257,7 +1031,7 @@ namespace AssetProcessor
     bool PlatformConfiguration::ConvertToJson(const RecognizerContainer& recognizerContainer, AZStd::string& jsonText)
     {
         AZStd::unordered_map<AZStd::string, AssetCacheServerMatcher> assetCacheServerMatcherMap;
-        
+
         for (const auto& recognizer : recognizerContainer)
         {
             AssetCacheServerMatcher matcher;
@@ -1353,6 +1127,7 @@ namespace AssetProcessor
 
         AZ::IO::FixedMaxPath projectPath = AZ::Utils::GetProjectPath();
         AZ::IO::FixedMaxPathString projectName = AZ::Utils::GetProjectName();
+        AZ::IO::FixedMaxPathString executableDirectory = AZ::Utils::GetExecutableDirectory();
 
         AZ::IO::FixedMaxPath engineRoot(AZ::IO::PosixPathSeparator);
         settingsRegistry->Get(engineRoot.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
@@ -1428,6 +1203,7 @@ namespace AssetProcessor
                 AZ::StringFunc::Replace(scanFolderEntry.m_watchPath.Native(), "@ROOT@", assetRootPath.c_str());
                 AZ::StringFunc::Replace(scanFolderEntry.m_watchPath.Native(), "@PROJECTROOT@", projectPath.c_str());
                 AZ::StringFunc::Replace(scanFolderEntry.m_watchPath.Native(), "@ENGINEROOT@", engineRoot.c_str());
+                AZ::StringFunc::Replace(scanFolderEntry.m_watchPath.Native(), "@EXEFOLDER@", executableDirectory.c_str());
                 // Normalize path make sure it is using posix slashes
                 scanFolderEntry.m_watchPath = scanFolderEntry.m_watchPath.LexicallyNormal();
 
@@ -1467,8 +1243,11 @@ namespace AssetProcessor
 
                 // New assets can be saved in any scan folder defined except for the engine root.
                 const bool canSaveNewAssets = !isEngineRoot;
+
+                QString watchFolderPath = QString::fromUtf8(scanFolderEntry.m_watchPath.c_str(), static_cast<int>(scanFolderEntry.m_watchPath.Native().size()));
+                watchFolderPath = AssetUtilities::NormalizeDirectoryPath(watchFolderPath);
                 AddScanFolder(ScanFolderInfo(
-                    QString::fromUtf8(scanFolderEntry.m_watchPath.c_str(), aznumeric_cast<int>(scanFolderEntry.m_watchPath.Native().size())),
+                    watchFolderPath,
                     QString::fromUtf8(scanFolderEntry.m_scanFolderDisplayName.c_str(), aznumeric_cast<int>(scanFolderEntry.m_scanFolderDisplayName.size())),
                     QString::fromUtf8(scanFolderEntry.m_scanFolderIdentifier.c_str(), aznumeric_cast<int>(scanFolderEntry.m_scanFolderIdentifier.size())),
                     isEngineRoot,
@@ -1488,7 +1267,7 @@ namespace AssetProcessor
             m_excludeAssetRecognizers[excludeRecognizer.m_name] = AZStd::move(excludeRecognizer);
         }
 
-        SimpleJobVisitor simpleJobVisitor(*settingsRegistry, m_enabledPlatforms);
+        SimpleJobVisitor simpleJobVisitor(m_enabledPlatforms);
         settingsRegistry->Visit(simpleJobVisitor, AssetProcessorSettingsKey);
         for (auto&& sjRecognizer : simpleJobVisitor.m_assetRecognizers)
         {
@@ -1531,6 +1310,8 @@ namespace AssetProcessor
             visitor.m_metaDataTypes.push_back({ AZStd::string::format("%s.assetinfo", entry.c_str()), entry });
         }
 
+        AddMetaDataType(AzToolsFramework::MetadataManager::MetadataFileExtensionNoDot, "");
+
         for (const auto& metaDataType : visitor.m_metaDataTypes)
         {
             QString fileType = AssetUtilities::NormalizeFilePath(QString::fromUtf8(metaDataType.m_fileType.c_str(),
@@ -1549,6 +1330,19 @@ namespace AssetProcessor
         }
     }
 
+    int PlatformConfiguration::GetProjectScanFolderOrder() const
+    {
+        auto mainProjectScanFolder = FindScanFolder([](const AssetProcessor::ScanFolderInfo& scanFolderInfo) -> bool
+            {
+                return scanFolderInfo.GetPortableKey() == ProjectScanFolderKey;
+            });
+        if (mainProjectScanFolder)
+        {
+            return mainProjectScanFolder->GetOrder();
+        }
+        return 0;
+    }
+
     bool PlatformConfiguration::MergeConfigFileToSettingsRegistry(AZ::SettingsRegistryInterface& settingsRegistry, const AZ::IO::PathView& configFile)
     {
         // If the config file is a settings registry file use the SettingsRegistryInterface MergeSettingsFile function
@@ -1556,7 +1350,7 @@ namespace AssetProcessor
         // file to the settings registry
         if (configFile.Extension() == ".setreg")
         {
-            return settingsRegistry.MergeSettingsFile(configFile.Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch);
+            return static_cast<bool>(settingsRegistry.MergeSettingsFile(configFile.Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch));
         }
 
         AZ::SettingsRegistryMergeUtils::ConfigParserSettings configParserSettings;
@@ -1669,12 +1463,38 @@ namespace AssetProcessor
         return m_scanFolders[index];
     }
 
+    const AssetProcessor::ScanFolderInfo* PlatformConfiguration::FindScanFolder(
+        AZStd::function<bool(const AssetProcessor::ScanFolderInfo&)> predicate) const
+    {
+        auto resultIt = AZStd::ranges::find_if(m_scanFolders, predicate);
+        return resultIt != m_scanFolders.end() ? &(*resultIt) : nullptr;
+    }
+
+    const AssetProcessor::ScanFolderInfo* PlatformConfiguration::GetScanFolderById(AZ::s64 id) const
+    {
+        return FindScanFolder([id](const ScanFolderInfo& scanFolder)
+            {
+                return scanFolder.ScanFolderID() == id;
+            });
+    }
+
+    const AZ::s64 PlatformConfiguration::GetIntermediateAssetScanFolderId() const
+    {
+        return m_intermediateAssetScanFolderId;
+    }
+
     void PlatformConfiguration::AddScanFolder(const AssetProcessor::ScanFolderInfo& source, bool isUnitTesting)
     {
         if (isUnitTesting)
         {
             //using a bool instead of using #define UNIT_TEST because the user can also run batch processing in unittest
             m_scanFolders.push_back(source);
+
+            // since we're synthesizing folder adds, assign ascending folder ids if not provided.
+            if (source.ScanFolderID() == 0)
+            {
+                m_scanFolders.back().SetScanFolderID(m_scanFolders.size() - 1);
+            }
             return;
         }
 
@@ -1786,7 +1606,10 @@ namespace AssetProcessor
         return QString();
     }
 
-    QString PlatformConfiguration::FindFirstMatchingFile(QString relativeName, bool skipIntermediateScanFolder) const
+    // This function is one of the most frequently called ones in the entire application
+    // and is invoked several times per file.  It can frequently become a bottleneck, so
+    // avoid doing expensive operations here, especially memory or IO operations.
+    QString PlatformConfiguration::FindFirstMatchingFile(QString relativeName, bool skipIntermediateScanFolder, const ScanFolderInfo** outScanFolderInfo) const
     {
         if (relativeName.isEmpty())
         {
@@ -1795,35 +1618,67 @@ namespace AssetProcessor
 
         auto* fileStateInterface = AZ::Interface<AssetProcessor::IFileStateRequests>::Get();
 
-        QDir cacheRoot;
-        AssetUtilities::ComputeProjectCacheRoot(cacheRoot);
+        // Only compute the intermediate assets folder path if we are going to search for and skip it.
+
+        if (skipIntermediateScanFolder)
+        {
+            if (m_intermediateAssetScanFolderId == -1)
+            {
+                CacheIntermediateAssetsScanFolderId();
+            }
+        }
+
+        QString absolutePath; // avoid allocating memory repeatedly here by reusing absolutePath each scan folder.
+        absolutePath.reserve(AZ_MAX_PATH_LEN);
+
+        QFileInfo details(relativeName); // note that this does not actually hit the actual storage medium until you query something
+        bool isAbsolute = details.isAbsolute(); // note that this looks at the file name string only, it does not hit storage.
 
         for (int pathIdx = 0; pathIdx < m_scanFolders.size(); ++pathIdx)
         {
-            AssetProcessor::ScanFolderInfo scanFolderInfo = m_scanFolders[pathIdx];
+            const AssetProcessor::ScanFolderInfo& scanFolderInfo = m_scanFolders[pathIdx];
 
-            if (skipIntermediateScanFolder && AssetUtilities::GetIntermediateAssetsFolder(cacheRoot.absolutePath().toUtf8().constData()) == AZ::IO::PathView(scanFolderInfo.ScanPath().toUtf8().constData()))
+            if ((skipIntermediateScanFolder) && (scanFolderInfo.ScanFolderID() == m_intermediateAssetScanFolderId))
             {
                 // There's only 1 intermediate assets folder, if we've skipped it, theres no point continuing to check every folder afterwards
                 skipIntermediateScanFolder = false;
                 continue;
             }
 
-            QString tempRelativeName(relativeName);
-
-            if ((!scanFolderInfo.RecurseSubFolders()) && (tempRelativeName.contains('/')))
+            if ((!scanFolderInfo.RecurseSubFolders()) && (relativeName.contains('/')))
             {
                 // the name is a deeper relative path, but we don't recurse this scan folder, so it can't win
                 continue;
             }
-            QDir rooted(scanFolderInfo.ScanPath());
-            QString absolutePath = rooted.absoluteFilePath(tempRelativeName);
+
+            if (isAbsolute)
+            {
+                if (!relativeName.startsWith(scanFolderInfo.ScanPath()))
+                {
+                    continue; // its not this scanfolder.
+                }
+                absolutePath = relativeName;
+            }
+            else
+            {
+                // scanfolders are always absolute paths and already normalized.  We can just concatenate.
+                // Do so with minimal allocation by using resize/append, instead of operator+
+                absolutePath.resize(0);
+                absolutePath.append(scanFolderInfo.ScanPath());
+                absolutePath.append('/');
+                absolutePath.append(relativeName);
+            }
             AssetProcessor::FileStateInfo fileStateInfo;
 
             if (fileStateInterface)
             {
                 if (fileStateInterface->GetFileInfo(absolutePath, &fileStateInfo))
                 {
+                    if (outScanFolderInfo)
+                    {
+                        *outScanFolderInfo = &scanFolderInfo;
+                    }
+
                     return AssetUtilities::NormalizeFilePath(fileStateInfo.m_absolutePath);
                 }
             }
@@ -1935,13 +1790,18 @@ namespace AssetProcessor
 
         // first, check for an EXACT match.  If there's an exact match, this must be the one returned!
         // this is to catch the case where the actual path of a scan folder is fed in to this.
+
+        // because exact matches are preferred over less exact, we first check exact matches:
         for (int pathIdx = 0; pathIdx < m_scanFolders.size(); ++pathIdx)
         {
             QString scanFolderName = m_scanFolders[pathIdx].ScanPath();
-            if (normalized.compare(scanFolderName, Qt::CaseInsensitive) == 0)
+            if (scanFolderName.length() == normalized.length())
             {
-                // if its an exact match, we're basically done
-                return &m_scanFolders[pathIdx];
+                if (normalized.compare(scanFolderName, Qt::CaseInsensitive) == 0)
+                {
+                    // if its an exact match, we're basically done
+                    return &m_scanFolders[pathIdx];
+                }
             }
         }
 
@@ -1976,15 +1836,10 @@ namespace AssetProcessor
     //! Given a scan folder path, get its complete info
     const AssetProcessor::ScanFolderInfo* PlatformConfiguration::GetScanFolderByPath(const QString& scanFolderPath) const
     {
-        AZ::IO::Path scanFolderPathView(scanFolderPath.toUtf8().constData());
-        for (int pathIdx = 0; pathIdx < m_scanFolders.size(); ++pathIdx)
-        {
-            if (AZ::IO::PathView(m_scanFolders[pathIdx].ScanPath().toUtf8().constData()) == scanFolderPathView)
+        return FindScanFolder([&scanFolderPath](const AssetProcessor::ScanFolderInfo& scanFolder)
             {
-                return &m_scanFolders[pathIdx];
-            }
-        }
-        return nullptr;
+                return scanFolder.ScanPath() == scanFolderPath;
+            });
     }
 
     int PlatformConfiguration::GetMinJobs() const
@@ -2009,10 +1864,12 @@ namespace AssetProcessor
         settingsRegistry->Get(cacheRootFolder, AZ::SettingsRegistryMergeUtils::FilePathKey_CacheProjectRootFolder);
 
         AZ::IO::Path scanfolderPath = cacheRootFolder.c_str();
-        scanfolderPath /= IntermediateAssetsFolderName;
+        scanfolderPath /= AssetProcessor::IntermediateAssetsFolderName;
 
         AZStd::vector<AssetBuilderSDK::PlatformInfo> platforms;
         PopulatePlatformsForScanFolder(platforms);
+
+        scanfolderPath = AssetUtilities::NormalizeDirectoryPath(QString::fromUtf8(scanfolderPath.c_str())).toUtf8().constData();
 
         // By default the project scanfolder is recursive with an order of 0
         // The intermediate assets folder needs to be higher priority since its a subfolder (otherwise GetScanFolderForFile won't pick the right scanfolder)
@@ -2020,8 +1877,8 @@ namespace AssetProcessor
 
         AddScanFolder(ScanFolderInfo{
             scanfolderPath.c_str(),
-            IntermediateAssetsFolderName,
-            IntermediateAssetsFolderName,
+            AssetProcessor::IntermediateAssetsFolderName,
+            AssetProcessor::IntermediateAssetsFolderName,
             false,
             true,
             platforms,
@@ -2031,7 +1888,48 @@ namespace AssetProcessor
 
     void PlatformConfiguration::AddGemScanFolders(const AZStd::vector<AzFramework::GemInfo>& gemInfoList)
     {
-        int gemOrder = g_gemStartingOrder;
+        // If the gem is project-relative, make adjustments to its priority order based on registry settings:
+        // /Amazon/AssetProcessor/Settings/GemScanFolderStartingPriorityOrder
+        // /Amazon/AssetProcessor/Settings/ProjectRelativeGemsScanFolderPriority
+        // See <o3de-root>/Registry/AssetProcessorPlatformConfig.setreg for more information.
+
+        AZ::s64 gemStartingOrder = 100;
+        AZStd::string projectGemPrioritySetting{};
+        const AZ::IO::FixedMaxPath projectPath = AZ::Utils::GetProjectPath();
+        int pathCount = 0;
+
+        const int projectScanOrder = GetProjectScanFolderOrder();
+
+        if (auto const settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+        {
+            settingsRegistry->Get(gemStartingOrder,
+                AZ::SettingsRegistryInterface::FixedValueString(AssetProcessorSettingsKey) + GemStartingPriorityOrderKey);
+
+            settingsRegistry->Get(projectGemPrioritySetting,
+                AZ::SettingsRegistryInterface::FixedValueString(AssetProcessorSettingsKey) + ProjectRelativeGemPriorityKey);
+            AZStd::to_lower(projectGemPrioritySetting.begin(), projectGemPrioritySetting.end());
+        }
+
+        auto GetGemFolderOrder = [&](bool isProjectRelativeGem) -> int
+        {
+            ++pathCount;
+            int currentGemOrder = aznumeric_cast<int>(gemStartingOrder) + pathCount;
+            if (isProjectRelativeGem)
+            {
+                if (projectGemPrioritySetting == "higher")
+                {
+                    currentGemOrder = projectScanOrder - pathCount;
+                }
+                else if (projectGemPrioritySetting == "lower")
+                {
+                    currentGemOrder = projectScanOrder + pathCount;
+                }
+            }
+            return currentGemOrder;
+        };
+
+        int gemOrder = aznumeric_cast<int>(gemStartingOrder);
+
         AZStd::vector<AssetBuilderSDK::PlatformInfo> platforms;
         PopulatePlatformsForScanFolder(platforms);
 
@@ -2041,6 +1939,9 @@ namespace AssetProcessor
             {
                 const AZ::IO::Path& absoluteSourcePath = gemElement.m_absoluteSourcePaths[sourcePathIndex];
                 QString gemAbsolutePath = QString::fromUtf8(absoluteSourcePath.c_str(), aznumeric_cast<int>(absoluteSourcePath.Native().size())); // this is an absolute path!
+
+                const bool isProjectGem = absoluteSourcePath.IsRelativeTo(projectPath);
+
                 // Append the index of the source path array element to make a unique portable key is created for each path of a gem
                 AZ::Uuid gemNameUuid = AZ::Uuid::CreateName((gemElement.m_gemName + AZStd::to_string(sourcePathIndex)).c_str());
                 QString gemNameAsUuid(gemNameUuid.ToFixedString().c_str());
@@ -2062,7 +1963,7 @@ namespace AssetProcessor
                 QString portableKey = QString("gemassets-%1").arg(gemNameAsUuid);
                 bool isRoot = false;
                 bool isRecursive = true;
-                gemOrder++;
+                gemOrder = GetGemFolderOrder(isProjectGem);
 
                 AZ_TracePrintf(AssetProcessor::DebugChannel, "Adding GEM assets folder for monitoring / scanning: %s.\n", gemFolder.toUtf8().data());
                 AddScanFolder(ScanFolderInfo(
@@ -2082,7 +1983,7 @@ namespace AssetProcessor
 
                 assetBrowserDisplayName = AzFramework::GemInfo::GetGemRegistryFolder();
                 portableKey = QString("gemregistry-%1").arg(gemNameAsUuid);
-                gemOrder++;
+                gemOrder = GetGemFolderOrder(isProjectGem);
 
                 AZ_TracePrintf(AssetProcessor::DebugChannel, "Adding GEM registry folder for monitoring / scanning: %s.\n", gemFolder.toUtf8().data());
                 AddScanFolder(ScanFolderInfo(
@@ -2148,12 +2049,20 @@ namespace AssetProcessor
         QString relPath, scanFolderName;
         if (ConvertToRelativePath(fileName, relPath, scanFolderName))
         {
-            for (const ExcludeAssetRecognizer& excludeRecognizer : m_excludeAssetRecognizers)
+            return IsFileExcludedRelPath(relPath);
+        }
+
+        return false;
+    }
+
+    bool AssetProcessor::PlatformConfiguration::IsFileExcludedRelPath(QString relPath) const
+    {
+        AZ::IO::FixedMaxPathString encoded = relPath.toUtf8().constData();
+        for (const ExcludeAssetRecognizer& excludeRecognizer : m_excludeAssetRecognizers)
+        {
+            if (excludeRecognizer.m_patternMatcher.MatchesPath(encoded.c_str()))
             {
-                if (excludeRecognizer.m_patternMatcher.MatchesPath(relPath.toUtf8().constData()))
-                {
-                    return true;
-                }
+                return true;
             }
         }
 

@@ -60,7 +60,7 @@ namespace EMotionFX
         const QAbstractItemModel* skeletonModel = skeletonTreeView->model();
 
         QModelIndexList indexList;
-        skeletonTreeView->RecursiveGetAllChildren(skeletonModel->index(0, 0), indexList);
+        skeletonTreeView->RecursiveGetAllChildren(skeletonModel->index(0, 0, skeletonModel->index(0, 0)), indexList);
         EXPECT_EQ(indexList.size(), 7);
 
         SelectIndexes(indexList, skeletonTreeView, 2, 4);

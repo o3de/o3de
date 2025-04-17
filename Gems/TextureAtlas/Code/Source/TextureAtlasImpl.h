@@ -44,7 +44,7 @@ namespace TextureAtlasNamespace
     class TextureAtlasImpl: public TextureAtlas
     {
     public:
-        AZ_CLASS_ALLOCATOR(TextureAtlasImpl, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TextureAtlasImpl, AZ::SystemAllocator);
         AZ_TYPE_INFO(TextureAtlasImpl, "{2CA51C61-1B5F-4480-A257-F28D8944AA35}");
 
         TextureAtlasImpl();

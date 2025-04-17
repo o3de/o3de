@@ -25,16 +25,4 @@ namespace TestImpact
 
     //! Serializes a safe impact analysis sequence report to Json format.
     AZStd::string SerializeSequenceReport(const Client::SafeImpactAnalysisSequenceReport& sequenceReport);
-
-    //! Deserialize a regular sequence report from Json format.
-    Client::RegularSequenceReport DeserializeRegularSequenceReport(const AZStd::string& sequenceReportJson);
-
-    //! Deserialize a seed sequence report from Json format.
-    Client::SeedSequenceReport DeserializeSeedSequenceReport(const AZStd::string& sequenceReportJson);
-
-    //! Deserialize an impact analysis sequence report from Json format.
-    Client::ImpactAnalysisSequenceReport DeserializeImpactAnalysisSequenceReport(const AZStd::string& sequenceReportJson);
-
-    //! Deserialize a safe impact analysis sequence report from Json format.
-    Client::SafeImpactAnalysisSequenceReport DeserializeSafeImpactAnalysisSequenceReport(const AZStd::string& sequenceReportJson);
 } // namespace TestImpact

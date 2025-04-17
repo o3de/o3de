@@ -6,8 +6,10 @@
  *
  */
 
-#include <Pass/PassBuilder.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
+#include <Atom/RPI.Reflect/Pass/PassTemplate.h>
+#include <Atom/RPI.Reflect/Pass/RenderPassData.h>
+#include <Pass/PassBuilder.h>
 
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Serialization/Json/JsonUtils.h>
@@ -53,7 +55,7 @@ namespace AZ
         {
             AssetBuilderSDK::AssetBuilderDesc builder;
             builder.m_name = PassBuilderJobKey;
-            builder.m_version = 15; // Changed dependency type to OrderOnce
+            builder.m_version = 18; // Add Allocator to ShaderStageFunction
             builder.m_busId = azrtti_typeid<PassBuilder>();
             builder.m_createJobFunction = AZStd::bind(&PassBuilder::CreateJobs, this, AZStd::placeholders::_1, AZStd::placeholders::_2);
             builder.m_processJobFunction = AZStd::bind(&PassBuilder::ProcessJob, this, AZStd::placeholders::_1, AZStd::placeholders::_2);
@@ -328,6 +330,37 @@ namespace AZ
             AZStd::string destPath;
             AzFramework::StringFunc::Path::GetFullFileName(request.m_fullPath.c_str(), destFileName);
             AzFramework::StringFunc::Path::ConstructFull(request.m_tempDirPath.c_str(), destFileName.c_str(), destPath, true);
+
+            // --- Ensure the BindPassSrg - flag is set if the pass-data has a PipelineViewTag set
+            auto& passTemplate{ passAsset.GetPassTemplate() };
+            if (passTemplate && passTemplate->m_passData)
+            {
+                auto* passData = azrtti_cast<RenderPassData*>(passTemplate->m_passData.get());
+                if (passData && !passData->m_pipelineViewTag.IsEmpty())
+                {
+                    // "PipelineViewTag": "MainCamera" is deprecated, discard the view-tag and set BindViewSrg to true
+                    if (passData->m_pipelineViewTag == AZ::Name("MainCamera"))
+                    {
+                        AZ_Warning(
+                            PassBuilderName,
+                            false,
+                            "Asset %s: '\"PipelineViewTag\": \"MainCamera\"' is deprecated, use '\"BindViewSrg\": true' instead",
+                            request.m_fullPath.c_str());
+                        passData->m_pipelineViewTag = AZ::Name();
+                        passData->m_bindViewSrg = true;
+                    }
+                    else if (!passData->m_bindViewSrg)
+                    {
+                        // Explicitly set "PipelineViewTag": implicitly set BindViewSrg to true as well, if it isn't yet.
+                        AZ_Info(
+                            PassBuilderName,
+                            "Asset %s: Pass has explicit PipelineViewTag '%s' -> setting \"BindViewSrg\" to true as well.",
+                            request.m_fullPath.c_str(),
+                            passData->m_pipelineViewTag.GetCStr());
+                        passData->m_bindViewSrg = true;
+                    }
+                }
+            }
 
             // --- Save the asset to binary format for production ---
 

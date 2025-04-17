@@ -16,7 +16,7 @@ namespace AZ
     {
     public:
         AZ_RTTI(AzCoreModule, "{898CE9C5-B4CC-4331-811E-3B44B967A1C1}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(AzCoreModule, AZ::OSAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AzCoreModule, AZ::OSAllocator);
 
         AzCoreModule();
         ~AzCoreModule() override = default;

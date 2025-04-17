@@ -8,6 +8,7 @@
 
 #include <Tests/GradientSignalTestFixtures.h>
 #include <GradientSignal/Editor/EditorGradientPreviewRenderer.h>
+#include <Editor/EditorConstantGradientComponent.h>
 
 #include <AzTest/AzTest.h>
 #include <AzCore/Memory/Memory.h>
@@ -18,6 +19,22 @@
 
 namespace UnitTest
 {
+    // Extend the GradientSignalTestEnvironment to include any editor-specific component descriptors that we might need.
+    class GradientSignalEditorTestEnvironment : public GradientSignalTestEnvironment
+    {
+    public:
+
+        void AddGemsAndComponents() override
+        {
+            GradientSignalTestEnvironment::AddGemsAndComponents();
+
+            AddComponentDescriptors({
+                GradientSignal::EditorConstantGradientComponent::CreateDescriptor(),
+            });
+        }
+    };
+
+
     struct EditorGradientSignalPreviewTestsFixture
         : public GradientSignalTest
     {
@@ -191,7 +208,27 @@ namespace UnitTest
 
         TestPreviewImage(1100, interlaceOrder);
     }
-}
+
+    TEST_F(EditorGradientSignalPreviewTestsFixture, GradientPreviewImage_DefaultsToPinningItself)
+    {
+        // Verify that the GradientPreviewer will automatically set itself to preview against its own entity's bounds if it
+        // hasn't already been pinned to preview with a different entity.
+
+        float shapeHalfBounds = 20.0f;
+
+        // Create an Editor Constant Gradient Component with arbitrary parameters. We need the Editor version so that it has
+        // a gradient previewer.
+        auto entity = CreateTestEntity(shapeHalfBounds);
+        entity->CreateComponent<GradientSignal::EditorConstantGradientComponent>();
+        ActivateEntity(entity.get());
+
+        // Verify that by default, the gradient previewer is hooked up to the entity that it exists on.
+        AZ::EntityId previewEntityId;
+        GradientSignal::GradientPreviewContextRequestBus::EventResult(
+            previewEntityId, entity->GetId(), &GradientSignal::GradientPreviewContextRequestBus::Events::GetPreviewEntity);
+        EXPECT_EQ(entity->GetId(), previewEntityId);
+    }
+} // namespace UnitTest
 
 // This uses a custom test hook so that we can load LmbrCentral and use Shape components in our unit tests.
-AZ_UNIT_TEST_HOOK(new UnitTest::GradientSignalTestEnvironment);
+AZ_UNIT_TEST_HOOK(new UnitTest::GradientSignalEditorTestEnvironment);

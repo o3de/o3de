@@ -14,7 +14,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeConnection, AnimGraphAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeConnection, AnimGraphAllocator)
 
     BlendTreeConnection::BlendTreeConnection()
         : m_animGraph(nullptr)

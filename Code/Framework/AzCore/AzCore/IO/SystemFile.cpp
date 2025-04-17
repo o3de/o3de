@@ -66,9 +66,15 @@ namespace AZ::IO
     {
     }
 
+    SystemFile::SystemFile(const char* fileName, int mode, int platformFlags)
+        : SystemFile()
+    {
+        Open(fileName, mode, platformFlags);
+    }
+
     SystemFile::~SystemFile()
     {
-        if (IsOpen())
+        if (IsOpen() && m_closeOnDestruction)
         {
             Close();
         }
@@ -79,6 +85,7 @@ namespace AZ::IO
     {
         AZStd::swap(m_fileName, other.m_fileName);
         AZStd::swap(m_handle, other.m_handle);
+        AZStd::swap(m_closeOnDestruction, other.m_closeOnDestruction);
     }
 
     SystemFile& SystemFile::operator=(SystemFile&& other)
@@ -87,8 +94,10 @@ namespace AZ::IO
         Close();
         m_fileName = AZStd::move(other.m_fileName);
         m_handle = AZStd::move(other.m_handle);
+        m_closeOnDestruction = other.m_closeOnDestruction;
         other.m_fileName = {};
         other.m_handle = AZ_TRAIT_SYSTEMFILE_INVALID_HANDLE;
+        other.m_closeOnDestruction = true;
 
         return *this;
     }
@@ -107,6 +116,10 @@ namespace AZ::IO
         }
 
         AZ_Assert(!IsOpen(), "This file (%s) is already open!", m_fileName.c_str());
+
+        // Sets the close on destruction option if
+        // the skip close on destruction mode is set
+        m_closeOnDestruction = (mode & OpenMode::SF_SKIP_CLOSE_ON_DESTRUCTION) == 0;
 
         return PlatformOpen(mode, platformFlags);
     }
@@ -374,46 +387,20 @@ namespace AZ::IO
         }
         AZ::IO::PosixInternal::Write(targetFileDescriptor, data, size);
     }
+} // namespace AZ::IO
 
-
+namespace AZ::IO
+{
     // Captures File Descriptor output through a pipe
-    FileDescriptorCapturer::FileDescriptorCapturer(int sourceDescriptor)
-        : m_sourceDescriptor(sourceDescriptor)
-    {
-    }
-
     FileDescriptorCapturer::~FileDescriptorCapturer()
     {
         Reset();
     }
 
-    void FileDescriptorCapturer::Reset()
+    void FileDescriptorCapturer::Stop()
     {
-        if (m_redirectToPipe)
-        {
-            // Close the write end of the pipe first
-            if (m_pipe[WriteEnd] != -1)
-            {
-                PosixInternal::Close(m_pipe[WriteEnd]);
-                m_pipe[WriteEnd] = -1;
-            }
-            // Close the read end of the pipe after the write end is closed
-            if (m_pipe[ReadEnd] != -1)
-            {
-                PosixInternal::Close(m_pipe[ReadEnd]);
-                m_pipe[ReadEnd] = -1;
-            }
-            // Take the duplicate of the original source descriptor and restore it
-            // Afterwards close the duplicate descriptor
-            if (m_dupSourceDescriptor != -1)
-            {
-                PosixInternal::Dup2(m_dupSourceDescriptor, m_sourceDescriptor);
-                PosixInternal::Close(m_dupSourceDescriptor);
-                m_dupSourceDescriptor = -1;
-            }
-
-            m_redirectToPipe = false;
-        }
+        // Closes the pipe and resets the descriptor
+        Reset();
     }
 
     int FileDescriptorCapturer::WriteBypassingCapture(const void* data, unsigned int size)

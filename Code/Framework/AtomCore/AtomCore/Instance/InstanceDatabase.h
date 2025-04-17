@@ -17,6 +17,7 @@
 #include <AzCore/Module/Environment.h>
 #include <AzCore/std/parallel/shared_mutex.h>
 
+
 namespace AZStd
 {
     class any;
@@ -74,7 +75,7 @@ namespace AZ
         {
             friend class InstanceData;
         protected:
-            virtual void ReleaseInstance(InstanceData* instance, const InstanceId& instanceId) = 0;
+            virtual void ReleaseInstance(InstanceData* instance) = 0;
         };
 
         /**
@@ -158,7 +159,7 @@ namespace AZ
         {
             static_assert(AZStd::is_base_of<InstanceData, Type>::value, "Type must inherit from Data::Instance to be used in Data::InstanceDatabase.");
         public:
-            AZ_CLASS_ALLOCATOR(InstanceDatabase, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(InstanceDatabase, AZ::SystemAllocator);
 
             /**
              * Create the InstanceDatabase with a single handler.
@@ -175,7 +176,7 @@ namespace AZ
 
             /**
              * Attempts to find an instance associated with the provided id. If the instance exists, it
-             * is returned. If no instance is found, nullptr is returned. If is safe to call this from
+             * is returned. If no instance is found, nullptr is returned. It is safe to call this from
              * multiple threads.
              *
              * @param id The id used to find an instance in the database.
@@ -218,6 +219,11 @@ namespace AZ
              */
             void TEMPOrphan(const InstanceId& id);
 
+            //! A helper function to visit every instance in the database and calls the provided callback method.
+            //! Note: this function can be slow depending on how many instances in the database
+            void ForEach(AZStd::function<void(Type&)> callback);
+            void ForEach(AZStd::function<void(const Type&)> callback) const;
+
         private:
             InstanceDatabase(const AssetType& assetType);
             ~InstanceDatabase();
@@ -225,9 +231,12 @@ namespace AZ
             bool m_checkAssetIds = true;
             //useAssetTypeAsKeyForHandlers;
             static const char* GetEnvironmentName();
+            
+            Data::Asset<Data::AssetData> LoadAsset(const Data::Asset<AssetData>& asset) const;
+            Data::Instance<Type> EmplaceInstance(const InstanceId& id, const Data::Asset<AssetData>& asset, const AZStd::any* param);
 
             // Utility function called by InstanceData to remove the instance from the database.
-            void ReleaseInstance(InstanceData* instance, const InstanceId& instanceId) override;
+            void ReleaseInstance(InstanceData* instance) override;
 
             void ValidateSameAsset(InstanceData* instance, const Data::Asset<AssetData>& asset) const;
 
@@ -237,6 +246,12 @@ namespace AZ
             // create or destroy instances on the same thread while in the midst of creating or destroying an instance.
             mutable AZStd::recursive_mutex m_databaseMutex;
             AZStd::unordered_map<InstanceId, Type*> m_database;
+
+            // There are several classes in Atom, like ShaderResourceGroup, that are not threadsafe
+            // because they share the same ShaderResourceGroupPool, so it is important that for each
+            // InstanceType there's a mutex that prevents several of those classes from being instantiated
+            // simultaneously.
+            AZStd::recursive_mutex m_instanceCreationMutex;
 
             // All instances created by this InstanceDatabase will be for assets derived from this type.
             AssetType m_baseAssetType;
@@ -300,75 +315,37 @@ namespace AZ
             }
 
             // Take a reference so we can mutate it.
-            Data::Asset<Data::AssetData> assetLocal = asset;
+            Data::Asset<Data::AssetData> assetLocal = LoadAsset(asset);
 
+            // Failed to load the asset
             if (!assetLocal.IsReady())
             {
-                assetLocal.QueueLoad();
-
-                if (assetLocal.IsLoading())
-                {
-                    assetLocal.BlockUntilLoadComplete();
-                }
-
-                // Failed to load the asset
-                if (!assetLocal.IsReady())
-                {
-                    return nullptr;
-                }
+                return nullptr;
             }
 
-            // Take a lock to guard the insertion.  Note that this will not guard against recursive insertions on the same thread.
-            AZStd::scoped_lock<AZStd::recursive_mutex> lock(m_databaseMutex);
-
-            // Search again in case someone else got here first.
-            auto iter = m_database.find(id);
-            if (iter != m_database.end())
-            {
-                InstanceData* data = static_cast<InstanceData*>(iter->second);
-                ValidateSameAsset(data, asset);
-
-                return iter->second;
-            }
-
-            // Emplace a new instance and return it.
-            // It's possible for the m_createFunction call to recursively trigger another FindOrCreate call, so be aware that
-            // the contents of m_database may change within this call.
-            Data::Instance<Type> instance = nullptr;
-            if (!param)
-            {
-                instance = m_instanceHandler.m_createFunction(assetLocal.Get());
-            }
-            else
-            {
-                instance = m_instanceHandler.m_createFunctionWithParam(assetLocal.Get(), param);
-            }
-
-            if (instance)
-            {
-                AZ_Assert(m_database.find(id) == m_database.end(),
-                    "Instance creation for asset id %s resulted in a recursive creation of that asset, which was unexpected. "
-                    "This asset might be erroneously referencing itself as a dependent asset.", id.ToString<AZStd::string>().c_str());
-
-                instance->m_id = id;
-                instance->m_parentDatabase = this;
-                instance->m_assetId = assetLocal.GetId();
-                instance->m_assetType = assetLocal.GetType();
-                m_database.emplace(id, instance.get());
-            }
-            return AZStd::move(instance);
+            return EmplaceInstance(id, assetLocal, param);
         }
 
         template<typename Type>
         Data::Instance<Type> InstanceDatabase<Type>::FindOrCreate(const Asset<AssetData>& asset, const AZStd::any* param)
         {
-            return FindOrCreate(Data::InstanceId::CreateFromAssetId(asset.GetId()), asset, param);
+            return FindOrCreate(Data::InstanceId::CreateFromAsset(asset), asset, param);
         }
 
         template<typename Type>
         Data::Instance<Type> InstanceDatabase<Type>::Create(const Asset<AssetData>& asset, const AZStd::any* param)
         {
-            return FindOrCreate(Data::InstanceId::CreateRandom(), asset, param);
+            const InstanceId id = InstanceId::CreateRandom();
+
+            Data::Asset<AssetData> assetLocal = LoadAsset(asset);
+
+            // Failed to load the asset
+            if (!assetLocal.IsReady())
+            {
+                return nullptr;
+            }
+
+            return EmplaceInstance(id, assetLocal, param);
         }
 
         template<typename Type>
@@ -386,21 +363,104 @@ namespace AZ
         }
 
         template<typename Type>
-        void InstanceDatabase<Type>::ReleaseInstance(InstanceData* instance, const InstanceId& instanceId)
+        Data::Asset<Data::AssetData> InstanceDatabase<Type>::LoadAsset(const Data::Asset<AssetData>& asset) const
+        {
+            // Take a reference so we can mutate it.
+            Data::Asset<Data::AssetData> assetLocal = asset;
+            if (!assetLocal.IsReady())
+            {
+                assetLocal.QueueLoad();
+
+                if (assetLocal.IsLoading())
+                {
+                    assetLocal.BlockUntilLoadComplete();
+                }
+            }
+            return assetLocal;
+        }
+
+        template<typename Type>
+        Data::Instance<Type> InstanceDatabase<Type>::EmplaceInstance(
+            const InstanceId& id, const Data::Asset<AssetData>& asset, const AZStd::any* param)
+        {
+            // It's very important to have m_databaseMutex unlocked while an instance is being created because
+            // there can be cases like in StreamingImage(s), where multiple threads are involved and some of those threads
+            // attempt to release a StreamingImage, which in turn will lock m_databaseMutex and it could incurr
+            // in potential deadlocks.
+
+            // If the instance was created redundantly, it will be temporarily stored here for destruction
+            // before this function returns.
+            Data::Instance<Type> redundantInstance = nullptr;
+
+            // It's possible for the m_createFunction call to recursively trigger another FindOrCreate call, so be aware that
+            // the contents of m_database may change within this call.
+            Data::Instance<Type> instance = nullptr;
+
+            {
+                AZStd::scoped_lock<decltype(m_instanceCreationMutex)> lock(m_instanceCreationMutex);
+                if (!param)
+                {
+                    instance = m_instanceHandler.m_createFunction(asset.Get());
+                }
+                else
+                {
+                    instance = m_instanceHandler.m_createFunctionWithParam(asset.Get(), param);
+                }
+            }
+
+            // Lock the database. There's still a chance that the same instance was created in parallel.
+            // in such case we return the first one that made it into the database and gracefully release the
+            // redundant one.
+            if (instance)
+            {
+                AZStd::scoped_lock<AZStd::recursive_mutex> lock(m_databaseMutex);
+                auto iter = m_database.find(id);
+                if (iter != m_database.end())
+                {
+                    InstanceData* data = static_cast<InstanceData*>(iter->second);
+                    ValidateSameAsset(data, asset);
+                    redundantInstance = instance; // Will be destroyed as soon as we return from this function.
+                    instance = iter->second;
+                }
+                else
+                {
+                    instance->m_id = id;
+                    instance->m_parentDatabase = this;
+                    instance->m_assetId = asset.GetId();
+                    instance->m_assetType = asset.GetType();
+                    m_database.emplace(id, instance.get());
+                }
+            }
+
+            return instance;
+        }
+
+        template<typename Type>
+        void InstanceDatabase<Type>::ReleaseInstance(InstanceData* instance)
         {
             AZStd::scoped_lock<AZStd::recursive_mutex> lock(m_databaseMutex);
             
+            const int prevUseCount = instance->m_useCount.fetch_sub(1);
+            AZ_Assert(prevUseCount >= 1, "m_useCount is negative");
+            if (prevUseCount > 1)
+            {
+                // This instance is still being used.
+                return;
+            }
+        
             // If instanceId doesn't exist in m_database that means the instance was already deleted on another thread.
             // We check and make sure the pointers match before erasing, just in case some other InstanceData was created with the same ID.
             // We re-check the m_useCount in case some other thread requested an instance from the database after we decremented m_useCount.
-            // We change m_useCount to -1 to be sure another thread doesn't try to clean up the instance (though the other checks probably cover that).
+            // We change m_useCount to -1 to be sure another thread doesn't try to clean up the instance (though the other checks
+            // probably cover that).
+            auto instanceId = instance->GetId();
             auto instanceItr = m_database.find(instanceId);
             int32_t expectedRefCount = 0;
             if (instanceItr != m_database.end() &&
                 instanceItr->second == instance &&
                 instance->m_useCount.compare_exchange_strong(expectedRefCount, -1))
             {
-                m_database.erase(instance->GetId());
+                m_database.erase(instanceId);
                 m_instanceHandler.m_deleteFunction(static_cast<Type*>(instance));
             }
             else if (instance->m_isOrphaned && instance->m_useCount.compare_exchange_strong(expectedRefCount, -1))
@@ -505,6 +565,26 @@ namespace AZ
                 HasInstanceDatabaseName<Type>::value,
                 "All classes used as instances in an InstanceDatabase need to define AZ_INSTANCE_DATA in the class.");
             return Type::GetDatabaseName();
+        }
+                
+        template <typename Type>
+        void InstanceDatabase<Type>::ForEach(AZStd::function<void(Type&)> callback)
+        {
+            AZStd::scoped_lock<AZStd::recursive_mutex> lock(m_databaseMutex);
+            for (auto element : m_database)
+            {
+                callback(*element.second);
+            }
+        }
+        
+        template <typename Type>
+        void InstanceDatabase<Type>::ForEach(AZStd::function<void(const Type&)> callback) const
+        {
+            AZStd::scoped_lock<AZStd::recursive_mutex> lock(m_databaseMutex);
+            for (auto element : m_database)
+            {
+                callback(*element.second);
+            }
         }
     }
 }

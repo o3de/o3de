@@ -76,7 +76,8 @@ namespace EMStudio
         AzFramework::StringFunc::AssetDatabasePath::Normalize(assetCachePath);
 
         AZStd::string relativePath;
-        EBUS_EVENT_RESULT(relativePath, AZ::Data::AssetCatalogRequestBus, GetAssetPathById, assetId);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+            relativePath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, assetId);
         AzFramework::StringFunc::AssetDatabasePath::Join(assetCachePath.c_str(), relativePath.c_str(), filename);
 
         return filename;
@@ -280,7 +281,11 @@ namespace EMStudio
             EMotionFX::GetEMotionFX().GetFilenameRelativeTo(&relativeFilename, assetCacheFolder.c_str());
 
             bool found = false;
-            EBUS_EVENT_RESULT(found, AzToolsFramework::AssetSystemRequestBus, GetFullSourcePathFromRelativeProductPath, relativeFilename.c_str(), filename);
+            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+                found,
+                &AzToolsFramework::AssetSystemRequestBus::Events::GetFullSourcePathFromRelativeProductPath,
+                relativeFilename.c_str(),
+                filename);
             return found;
         }
         return true;

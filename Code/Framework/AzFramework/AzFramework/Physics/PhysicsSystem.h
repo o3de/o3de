@@ -87,7 +87,7 @@ namespace AzPhysics
 
         //! Get the Scene of the requested SceneHandle.
         //! @param handle The SceneHandle of the requested scene.
-        //! @return Returns a SceneInterface pointer if found, otherwise nullptr.
+        //! @return Returns a Scene pointer if found, otherwise nullptr.
         virtual Scene* GetScene(SceneHandle handle) = 0;
 
         //! Get multiple Scenes.
@@ -153,7 +153,7 @@ namespace AzPhysics
         void RegisterSceneAddedEvent(SystemEvents::OnSceneAddedEvent::Handler& handler) { handler.Connect(m_sceneAddedEvent); }
         //! Register to receive notifications when the a Scene is removed from the simulation.
         //! @param handler The handler to receive the event.
-        void RegisterSceneRemovedEvent(SystemEvents::OnSceneAddedEvent::Handler& handler) { handler.Connect(m_sceneRemovedEvent); }
+        void RegisterSceneRemovedEvent(SystemEvents::OnSceneRemovedEvent::Handler& handler) { handler.Connect(m_sceneRemovedEvent); }
         //! Register to receive notifications when the SystemConfiguration changes.
         //! @param handler The handler to receive the event.
         void RegisterSystemConfigurationChangedEvent(SystemEvents::OnConfigurationChangedEvent::Handler& handler) { handler.Connect(m_configChangeEvent); }

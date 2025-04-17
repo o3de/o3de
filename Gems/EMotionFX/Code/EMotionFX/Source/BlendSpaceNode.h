@@ -112,7 +112,7 @@ namespace EMotionFX
         {
             MotionInstance*     m_motionInstance;
             AnimGraphSyncTrack* m_syncTrack;
-            uint32              m_syncIndex;
+            size_t              m_syncIndex;
             float               m_playSpeed;
             float               m_currentTime; // current play time (NOT normalized)
             float               m_preSyncTime;

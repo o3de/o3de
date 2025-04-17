@@ -10,17 +10,25 @@
 
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Interface/Interface.h>
-#include <AzCore/std/string/string_view.h>
+#include <AzCore/std/string/string.h>
 
 
 namespace AZ
 {
     class BehaviorContext;
+    namespace Render
+    {
+        using FrameCaptureId = uint32_t;
+    }
 } // namespace AZ
 
-namespace ScriptAutomation
+namespace AZ::ScriptAutomation
 {
-    static constexpr float DefaultPauseTimeout = 5.0f;
+    // Forward declare
+    struct ImageComparisonToleranceLevel;
+
+    // Constants
+    static constexpr float DefaultPauseTimeout = 10.0f;
     static constexpr AZ::Crc32 AutomationServiceCrc = AZ_CRC_CE("AutomationService");
 
     class ScriptAutomationRequests
@@ -34,6 +42,12 @@ namespace ScriptAutomation
         //! Retrieve the specialized behaviour context used for automation purposes
         virtual AZ::BehaviorContext* GetAutomationContext() = 0;
 
+        //! Load and activate the script, and connect to the tick bus.
+        virtual void ActivateScript(const char* scriptPath) = 0;
+
+        //! Deactivate all scripts and disconnect from the tick bus.
+        virtual void DeactivateScripts() = 0;
+
         //! Can be used by sample components to temporarily pause script processing, for
         //! example to delay until some required resources are loaded and initialized.
         virtual void PauseAutomation(float timeout = DefaultPauseTimeout) = 0;
@@ -46,13 +60,22 @@ namespace ScriptAutomation
         virtual void SetIdleSeconds(float numSeconds) = 0;
 
         //! pass the frame capture id to the automation system so it can listen for capture completion
-        virtual void SetFrameCaptureId(uint32_t frameCaptureId) = 0;
+        virtual void SetFrameCaptureId(AZ::Render::FrameCaptureId frameCaptureId) = 0;
 
         //! tell the automation system that a profiling capture has started
         virtual void StartProfilingCapture() = 0;
 
+        //! Call out to another script and put it in the operation queue
+        virtual void ExecuteScript(const char* scriptPath) = 0;
+
         //! Add an operation into the queue for processing later
         virtual void QueueScriptOperation(ScriptOperation&& action) = 0;
+
+        //! Find the named tolerance level
+        virtual const ImageComparisonToleranceLevel* FindToleranceLevel(const AZStd::string& name) = 0;
+
+        virtual void LoadLevel(const char* levelName) = 0;
+
     };
 
     class ScriptAutomationRequestsBusTraits
@@ -77,4 +100,4 @@ namespace ScriptAutomation
         virtual void OnAutomationFinished() = 0;
     };
     using ScriptAutomationNotificationBus = AZ::EBus<ScriptAutomationNotifications>;
-} // namespace ScriptAutomation
+} // namespace AZ::ScriptAutomation

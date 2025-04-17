@@ -38,9 +38,9 @@ namespace AZ
             static Vec1::FloatType ToVec1(FloatArgType value);
             static Vec2::FloatType ToVec2(FloatArgType value);
             static Vec3::FloatType ToVec3(FloatArgType value);
-            static FloatType FromVec1(Vec1::FloatArgType value);
-            static FloatType FromVec2(Vec2::FloatArgType value);
-            static FloatType FromVec3(Vec3::FloatArgType value);
+            static FloatType FromVec1(Vec1::FloatArgType value); // Generates Vec4 {Vec1.x, Vec1.x, Vec1.x, Vec1.x}
+            static FloatType FromVec2(Vec2::FloatArgType value); // Generates Vec4 {Vec2.x, Vec2.y, 0.0f, 0.0f}
+            static FloatType FromVec3(Vec3::FloatArgType value); // Generates Vec4 {Vec3.x, Vec3.y, Vec3.z, 0.0f}
 
             static FloatType LoadAligned(const float* __restrict addr); // addr *must* be 16-byte aligned
             static Int32Type LoadAligned(const int32_t* __restrict addr); // addr *must* be 16-byte aligned
@@ -55,27 +55,43 @@ namespace AZ
             static void StreamAligned(float* __restrict addr, FloatArgType value); // addr *must* be 16-byte aligned
             static void StreamAligned(int32_t* __restrict addr, Int32ArgType value); // addr *must* be 16-byte aligned
 
-            static float SelectFirst(FloatArgType value);
-            static float SelectSecond(FloatArgType value);
-            static float SelectThird(FloatArgType value);
-            static float SelectFourth(FloatArgType value);
+            static float SelectIndex0(FloatArgType value);
+            static float SelectIndex1(FloatArgType value);
+            static float SelectIndex2(FloatArgType value);
+            static float SelectIndex3(FloatArgType value);
+            static float AZ_MATH_INLINE SelectFirst (FloatArgType value) { return SelectIndex0(value); } // O3DE_DEPRECATION_NOTICE(PR-16251)
+            static float AZ_MATH_INLINE SelectSecond(FloatArgType value) { return SelectIndex1(value); } // O3DE_DEPRECATION_NOTICE(PR-16251)
+            static float AZ_MATH_INLINE SelectThird (FloatArgType value) { return SelectIndex2(value); } // O3DE_DEPRECATION_NOTICE(PR-16251)
+            static float AZ_MATH_INLINE SelectFourth(FloatArgType value) { return SelectIndex3(value); } // O3DE_DEPRECATION_NOTICE(PR-16251)
 
             static FloatType Splat(float value);
             static Int32Type Splat(int32_t value);
 
-            static FloatType SplatFirst(FloatArgType value);
-            static FloatType SplatSecond(FloatArgType value);
-            static FloatType SplatThird(FloatArgType value);
-            static FloatType SplatFourth(FloatArgType value);
+            static FloatType SplatIndex0(FloatArgType value);
+            static FloatType SplatIndex1(FloatArgType value);
+            static FloatType SplatIndex2(FloatArgType value);
+            static FloatType SplatIndex3(FloatArgType value);
+            static FloatType AZ_MATH_INLINE SplatFirst (FloatArgType value) { return SplatIndex0(value); } // O3DE_DEPRECATION_NOTICE(PR-16251)
+            static FloatType AZ_MATH_INLINE SplatSecond(FloatArgType value) { return SplatIndex1(value); } // O3DE_DEPRECATION_NOTICE(PR-16251)
+            static FloatType AZ_MATH_INLINE SplatThird (FloatArgType value) { return SplatIndex2(value); } // O3DE_DEPRECATION_NOTICE(PR-16251)
+            static FloatType AZ_MATH_INLINE SplatFourth(FloatArgType value) { return SplatIndex3(value); } // O3DE_DEPRECATION_NOTICE(PR-16251)
 
-            static FloatType ReplaceFirst(FloatArgType a, float b);
-            static FloatType ReplaceFirst(FloatArgType a, FloatArgType b);
-            static FloatType ReplaceSecond(FloatArgType a, float b);
-            static FloatType ReplaceSecond(FloatArgType a, FloatArgType b);
-            static FloatType ReplaceThird(FloatArgType a, float b);
-            static FloatType ReplaceThird(FloatArgType a, FloatArgType b);
-            static FloatType ReplaceFourth(FloatArgType a, float b);
-            static FloatType ReplaceFourth(FloatArgType a, FloatArgType b);
+            static FloatType ReplaceIndex0(FloatArgType a, float b);
+            static FloatType ReplaceIndex0(FloatArgType a, FloatArgType b);
+            static FloatType ReplaceIndex1(FloatArgType a, float b);
+            static FloatType ReplaceIndex1(FloatArgType a, FloatArgType b);
+            static FloatType ReplaceIndex2(FloatArgType a, float b);
+            static FloatType ReplaceIndex2(FloatArgType a, FloatArgType b);
+            static FloatType ReplaceIndex3(FloatArgType a, float b);
+            static FloatType ReplaceIndex3(FloatArgType a, FloatArgType b);
+            static FloatType AZ_MATH_INLINE ReplaceFirst (FloatArgType a,        float b) { return ReplaceIndex0(a, b); } // O3DE_DEPRECATION_NOTICE(PR-16251)
+            static FloatType AZ_MATH_INLINE ReplaceFirst (FloatArgType a, FloatArgType b) { return ReplaceIndex0(a, b); } // O3DE_DEPRECATION_NOTICE(PR-16251)
+            static FloatType AZ_MATH_INLINE ReplaceSecond(FloatArgType a,        float b) { return ReplaceIndex1(a, b); } // O3DE_DEPRECATION_NOTICE(PR-16251)
+            static FloatType AZ_MATH_INLINE ReplaceSecond(FloatArgType a, FloatArgType b) { return ReplaceIndex1(a, b); } // O3DE_DEPRECATION_NOTICE(PR-16251)
+            static FloatType AZ_MATH_INLINE ReplaceThird (FloatArgType a,        float b) { return ReplaceIndex2(a, b); } // O3DE_DEPRECATION_NOTICE(PR-16251)
+            static FloatType AZ_MATH_INLINE ReplaceThird (FloatArgType a, FloatArgType b) { return ReplaceIndex2(a, b); } // O3DE_DEPRECATION_NOTICE(PR-16251)
+            static FloatType AZ_MATH_INLINE ReplaceFourth(FloatArgType a,        float b) { return ReplaceIndex3(a, b); } // O3DE_DEPRECATION_NOTICE(PR-16251)
+            static FloatType AZ_MATH_INLINE ReplaceFourth(FloatArgType a, FloatArgType b) { return ReplaceIndex3(a, b); } // O3DE_DEPRECATION_NOTICE(PR-16251)
 
             static FloatType LoadImmediate(float x, float y, float z, float w);
             static Int32Type LoadImmediate(int32_t x, int32_t y, int32_t z, int32_t w);
@@ -161,6 +177,7 @@ namespace AZ
             static FloatType Acos(FloatArgType value);
             static FloatType Atan(FloatArgType value);
             static FloatType Atan2(FloatArgType y, FloatArgType x);
+            static FloatType ExpEstimate(FloatArgType value);
 
             // Vector ops
             static Vec1::FloatType Dot(FloatArgType arg1, FloatArgType arg2);
@@ -185,8 +202,9 @@ namespace AZ
 
             static void Mat4x4InverseFast(const FloatType* __restrict rows, FloatType* __restrict out);
             static void Mat4x4Transpose(const FloatType* __restrict rows, FloatType* __restrict out);
-            static void Mat4x4Multiply(const FloatType* __restrict rowsA, const FloatType* __restrict rowsB, FloatType* __restrict out);
-            static void Mat4x4TransposeMultiply(const FloatType* __restrict rowsA, const FloatType* __restrict rowsB, FloatType* __restrict out);
+            static void Mat4x4Multiply(const FloatType* __restrict rowsA, const FloatType* __restrict rowsB, FloatType* __restrict out); // Basic 4x4 matrix multiplication
+            static void Mat4x4MultiplyAdd(const FloatType* __restrict rowsA, const FloatType* __restrict rowsB, const FloatType* __restrict add, FloatType* __restrict out); // Same as Mat4x4Multiply, but adds the input add into the results
+            static void Mat4x4TransposeMultiply(const FloatType* __restrict rowsA, const FloatType* __restrict rowsB, FloatType* __restrict out); // Multiplies two four by four matrices, assuming they are transposed to column major
             static FloatType Mat4x4TransformVector(const FloatType* __restrict rows, FloatArgType vector);
             static FloatType Mat4x4TransposeTransformVector(const FloatType* __restrict rows, FloatArgType vector);
             static Vec3::FloatType Mat4x4TransformPoint3(const FloatType* __restrict rows, Vec3::FloatArgType vector);

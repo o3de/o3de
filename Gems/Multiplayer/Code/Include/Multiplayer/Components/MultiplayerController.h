@@ -45,11 +45,11 @@ namespace Multiplayer
 
         //! Returns true if this controller has authority.
         //! @return boolean true if this controller has authority
-        bool IsAuthority() const;
+        bool IsNetEntityRoleAuthority() const;
 
         //! Returns true if this controller has autonomy (can locally predict).
         //! @return boolean true if this controller has autonomy
-        bool IsAutonomous() const;
+        bool IsNetEntityRoleAutonomous() const;
 
         //! Returns the raw AZ::Entity pointer for the entity that owns this controller.
         //! @return the raw AZ::Entity pointer for the entity that owns this controller

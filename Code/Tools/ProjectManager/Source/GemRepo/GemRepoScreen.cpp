@@ -12,6 +12,7 @@
 #include <GemRepo/GemRepoModel.h>
 #include <GemRepo/GemRepoAddDialog.h>
 #include <GemRepo/GemRepoInspector.h>
+#include <GemRepo/GemRepoProxyModel.h>
 #include <PythonBindingsInterface.h>
 #include <ProjectManagerDefs.h>
 #include <ProjectUtils.h>
@@ -29,6 +30,7 @@
 #include <QFrame>
 #include <QStackedWidget>
 #include <QMessageBox>
+#include <QItemSelectionModel>
 
 namespace O3DE::ProjectManager
 {
@@ -36,6 +38,8 @@ namespace O3DE::ProjectManager
         : ScreenWidget(parent)
     {
         m_gemRepoModel = new GemRepoModel(this);
+        m_gemRepoModel->setSortRole(GemRepoModel::UserRole::RoleName);
+        connect(m_gemRepoModel, &GemRepoModel::ShowToastNotification, this, &GemRepoScreen::ShowStandardToastNotification);
 
         QVBoxLayout* vLayout = new QVBoxLayout();
         vLayout->setMargin(0);
@@ -52,34 +56,70 @@ namespace O3DE::ProjectManager
 
         vLayout->addWidget(m_contentStack);
 
-        Reinit();
+        m_notificationsView = AZStd::make_unique<AzToolsFramework::ToastNotificationsView>(this, AZ_CRC_CE("ReposNotificationsView"));
+        m_notificationsView->SetOffset(QPoint(10, 10));
+        m_notificationsView->SetMaxQueuedNotifications(1);
+        m_notificationsView->SetRejectDuplicates(false); // we want to show notifications if a user repeats actions
+
+        ScreensCtrl* screensCtrl = GetScreensCtrl(this);
+        if (screensCtrl)
+        {
+            connect(this, &GemRepoScreen::NotifyRemoteContentRefreshed, screensCtrl, &ScreensCtrl::NotifyRemoteContentRefreshed);
+        }
     }
 
     void GemRepoScreen::NotifyCurrentScreen()
     {
+        constexpr bool downloadMissingOnly = true;
+        PythonBindingsInterface::Get()->RefreshAllGemRepos(downloadMissingOnly);
         Reinit();
+
+        // we might have downloading missing data so make sure to update the GemCatalog
+        emit NotifyRemoteContentRefreshed();
     }
 
     void GemRepoScreen::Reinit()
     {
+        QString selectedRepoUri;
+        QPersistentModelIndex selectedIndex = m_selectionModel->currentIndex();
+        if (selectedIndex.isValid())
+        {
+            selectedIndex = m_sortProxyModel->mapToSource(selectedIndex);
+            selectedRepoUri = GemRepoModel::GetRepoUri(selectedIndex);
+        }
+
+        disconnect(m_gemRepoModel, &GemRepoModel::dataChanged, this, &GemRepoScreen::OnModelDataChanged);
+
         m_gemRepoModel->clear();
         FillModel();
+
+        connect(m_gemRepoModel, &GemRepoModel::dataChanged, this, &GemRepoScreen::OnModelDataChanged);
 
         // If model contains any data show the repos
         if (m_gemRepoModel->rowCount())
         {
             m_contentStack->setCurrentWidget(m_repoContent);
+
+            QPersistentModelIndex modelIndex;
+            if (!selectedRepoUri.isEmpty())
+            {
+                // attempt to re-select the row with the unique RepoURI if it still exists
+                modelIndex = m_gemRepoModel->FindModelIndexByRepoUri(selectedRepoUri);
+                modelIndex = m_sortProxyModel->mapFromSource(modelIndex);
+            }
+
+            if (!modelIndex.isValid())
+            {
+                // fallback to selecting the first item in the list
+                modelIndex = m_sortProxyModel->index(0, 0);
+            }
+
+            m_gemRepoListView->selectionModel()->setCurrentIndex(modelIndex, QItemSelectionModel::ClearAndSelect);
         }
         else
         {
             m_contentStack->setCurrentWidget(m_noRepoContent);
         }
-
-        // Select the first entry after everything got correctly sized
-        QTimer::singleShot(200, [=]{
-            QModelIndex firstModelIndex = m_gemRepoListView->model()->index(0,0);
-            m_gemRepoListView->selectionModel()->setCurrentIndex(firstModelIndex, QItemSelectionModel::ClearAndSelect);
-        });
     }
 
     void GemRepoScreen::HandleAddRepoButton()
@@ -98,8 +138,10 @@ namespace O3DE::ProjectManager
             auto addGemRepoResult = PythonBindingsInterface::Get()->AddGemRepo(repoUri);
             if (addGemRepoResult.IsSuccess())
             {
+                ShowStandardToastNotification(tr("Repo added successfully!"));
+
                 Reinit();
-                emit OnRefresh();
+                emit NotifyRemoteContentRefreshed();
             }
             else
             {
@@ -124,8 +166,10 @@ namespace O3DE::ProjectManager
             bool removeGemRepoResult = PythonBindingsInterface::Get()->RemoveGemRepo(repoUri);
             if (removeGemRepoResult)
             {
+                ShowStandardToastNotification(tr("Repo removed"));
+
                 Reinit();
-                emit OnRefresh();
+                emit NotifyRemoteContentRefreshed();
             }
             else
             {
@@ -138,11 +182,17 @@ namespace O3DE::ProjectManager
 
     void GemRepoScreen::HandleRefreshAllButton()
     {
-        bool refreshResult = PythonBindingsInterface::Get()->RefreshAllGemRepos();
+        // re-download everything when the user presses the refresh all button
+        constexpr bool downloadMissingOnly = false;
+        bool refreshResult = PythonBindingsInterface::Get()->RefreshAllGemRepos(downloadMissingOnly);
         Reinit();
-        emit OnRefresh();
+        emit NotifyRemoteContentRefreshed();
 
-        if (!refreshResult)
+        if (refreshResult)
+        {
+            ShowStandardToastNotification(tr("Repos updated"));
+        }
+        else
         {
             QMessageBox::critical(
                 this, tr("Operation failed"), QString("Some repos failed to refresh."));
@@ -152,12 +202,17 @@ namespace O3DE::ProjectManager
     void GemRepoScreen::HandleRefreshRepoButton(const QModelIndex& modelIndex)
     {
         const QString repoUri = m_gemRepoModel->GetRepoUri(modelIndex);
+        const QString repoName = m_gemRepoModel->GetName(modelIndex);
 
-        AZ::Outcome<void, AZStd::string> refreshResult = PythonBindingsInterface::Get()->RefreshGemRepo(repoUri);
+        // re-download everything when the user presses the refresh all button
+        constexpr bool downloadMissingOnly = false;
+        AZ::Outcome<void, AZStd::string> refreshResult = PythonBindingsInterface::Get()->RefreshGemRepo(repoUri, downloadMissingOnly);
         if (refreshResult.IsSuccess())
         {
             Reinit();
-            emit OnRefresh();
+            emit NotifyRemoteContentRefreshed();
+
+            ShowStandardToastNotification(tr("%1 updated").arg(repoName));
         }
         else
         {
@@ -193,16 +248,50 @@ namespace O3DE::ProjectManager
 
             if (!allGemRepoInfos.isEmpty())
             {
-                m_lastAllUpdateLabel->setText(tr("Last Updated: %1").arg(oldestRepoUpdate.toString(RepoTimeFormat)));
+                // get the month day and year in the preferred locale's format (QLocale defaults to the OS locale)
+                QString monthDayYear = oldestRepoUpdate.toString(QLocale().dateFormat(QLocale::ShortFormat));
+
+                // always show 12 hour + minutes + am/pm
+                QString hourMinuteAMPM = oldestRepoUpdate.toString("h:mmap");
+
+                QString repoUpdatedDate = QString("%1 %2").arg(monthDayYear, hourMinuteAMPM);
+
+                m_lastAllUpdateLabel->setText(tr("Last Updated: %1").arg(repoUpdatedDate));
             }
             else
             {
                 m_lastAllUpdateLabel->setText(tr("Last Updated: Never"));
             }
+
+            m_sortProxyModel->sort(/*column*/0);
         }
         else
         {
             QMessageBox::critical(this, tr("Operation failed"), QString("Cannot retrieve gem repos for engine.<br>Error:<br>%2").arg(allGemRepoInfosResult.GetError().c_str()));
+        }
+    }
+
+    void GemRepoScreen::OnModelDataChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int>& roles)
+    {
+        if (roles.isEmpty() || roles.at(0) == GemRepoModel::UserRole::RoleIsEnabled)
+        {
+            QItemSelection updatedItems(topLeft, bottomRight);
+            for (const QModelIndex& modelIndex : updatedItems.indexes())
+            {
+                const bool isEnabled = GemRepoModel::IsEnabled(modelIndex);
+                QString repoUri = GemRepoModel::GetRepoUri(modelIndex);
+                PythonBindingsInterface::Get()->SetRepoEnabled(repoUri, isEnabled);
+
+                const QString repoName = m_gemRepoModel->GetName(modelIndex);
+                if (isEnabled)
+                {
+                    ShowStandardToastNotification(tr("%1 activated").arg(repoName));
+                }
+                else
+                {
+                    ShowStandardToastNotification(tr("%1 deactivated").arg(repoName));
+                }
+            }
         }
     }
 
@@ -234,6 +323,7 @@ namespace O3DE::ProjectManager
 
         QPushButton* addRepoButton = new QPushButton(tr("Add Repository"), this);
         addRepoButton->setObjectName("gemRepoAddButton");
+        addRepoButton->setProperty("secondary", true);
         addRepoButton->setMinimumWidth(120);
         hLayout->addWidget(addRepoButton);
 
@@ -276,18 +366,19 @@ namespace O3DE::ProjectManager
         m_lastAllUpdateLabel->setObjectName("gemRepoHeaderLabel");
         topMiddleHLayout->addWidget(m_lastAllUpdateLabel);
 
-        topMiddleHLayout->addSpacing(20);
-
-        m_AllUpdateButton = new QPushButton(QIcon(":/Refresh.svg"), tr("Update All"), this);
-        m_AllUpdateButton->setObjectName("gemRepoHeaderRefreshButton");
-        topMiddleHLayout->addWidget(m_AllUpdateButton);
-
-        connect(m_AllUpdateButton, &QPushButton::clicked, this, &GemRepoScreen::HandleRefreshAllButton);
-
         topMiddleHLayout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum));
+
+        QPushButton* updateAllButton = new QPushButton(QIcon(":/Refresh.svg").pixmap(16, 16), tr("Update All"), this);
+        updateAllButton->setObjectName("gemRepoAddButton");
+        updateAllButton->setProperty("secondary", true);
+        topMiddleHLayout->addWidget(updateAllButton);
+        connect(updateAllButton, &QPushButton::clicked, this, &GemRepoScreen::HandleRefreshAllButton);
+
+        topMiddleHLayout->addSpacing(10);
 
         QPushButton* addRepoButton = new QPushButton(tr("Add Repository"), this);
         addRepoButton->setObjectName("gemRepoAddButton");
+        addRepoButton->setProperty("secondary", true);
         topMiddleHLayout->addWidget(addRepoButton);
 
         connect(addRepoButton, &QPushButton::clicked, this, &GemRepoScreen::HandleAddRepoButton);
@@ -296,16 +387,17 @@ namespace O3DE::ProjectManager
 
         middleVLayout->addSpacing(30);
 
-        constexpr int minHeaderSectionWidth = 120;
+        constexpr int minHeaderSectionWidth = 80;
 
         m_gemRepoHeaderTable = new AdjustableHeaderWidget(
-            QStringList{ tr("Repository Name"), tr("Creator"), tr("Updated"), "" },
+            QStringList{ tr("Repository Name"), tr("Creator"), "", tr("Updated Date"), tr("Status") },
             QVector<int>{
-                GemRepoItemDelegate::s_nameDefaultWidth,
+                GemRepoItemDelegate::s_nameDefaultWidth + GemRepoItemDelegate::s_contentMargins.left(),
                 GemRepoItemDelegate::s_creatorDefaultWidth,
-                GemRepoItemDelegate::s_updatedDefaultWidth + GemRepoItemDelegate::s_refreshIconSpacing + GemRepoItemDelegate::s_refreshIconSize,
+                GemRepoItemDelegate::s_badgeDefaultWidth,
+                GemRepoItemDelegate::s_updatedDefaultWidth,
                 // Include invisible header for delete button 
-                GemRepoItemDelegate::s_iconSize + GemRepoItemDelegate::s_contentMargins.right()
+                GemRepoItemDelegate::s_buttonsDefaultWidth + GemRepoItemDelegate::s_contentMargins.right()
             },
             minHeaderSectionWidth,
             QVector<QHeaderView::ResizeMode>
@@ -313,27 +405,42 @@ namespace O3DE::ProjectManager
                 QHeaderView::ResizeMode::Interactive,
                 QHeaderView::ResizeMode::Stretch,
                 QHeaderView::ResizeMode::Fixed,
+                QHeaderView::ResizeMode::Fixed,
                 QHeaderView::ResizeMode::Fixed
             },
             this);
 
         middleVLayout->addWidget(m_gemRepoHeaderTable);
 
-        m_gemRepoListView = new GemRepoListView(m_gemRepoModel, m_gemRepoModel->GetSelectionModel(), m_gemRepoHeaderTable, this);
+        m_sortProxyModel = new GemRepoProxyModel(this);
+        m_sortProxyModel->setSourceModel(m_gemRepoModel);
+        m_sortProxyModel->setSortCaseSensitivity(Qt::CaseInsensitive);
+        m_sortProxyModel->setSortRole(GemRepoModel::UserRole::RoleName);
+
+        m_selectionModel = new QItemSelectionModel(m_sortProxyModel, this);
+        m_gemRepoListView = new GemRepoListView(m_sortProxyModel, m_selectionModel, m_gemRepoHeaderTable, this);
+        connect(m_gemRepoListView, &GemRepoListView::RefreshRepo, this, &GemRepoScreen::HandleRefreshRepoButton);
         middleVLayout->addWidget(m_gemRepoListView);
 
-        connect(m_gemRepoListView, &GemRepoListView::RemoveRepo, this, &GemRepoScreen::HandleRemoveRepoButton);
-        connect(m_gemRepoListView, &GemRepoListView::RefreshRepo, this, &GemRepoScreen::HandleRefreshRepoButton);
-
         hLayout->addLayout(middleVLayout);
-
         hLayout->addSpacing(middleLayoutIndent);
 
-        m_gemRepoInspector = new GemRepoInspector(m_gemRepoModel, this);
+        m_gemRepoInspector = new GemRepoInspector(m_gemRepoModel, m_selectionModel, this);
+        connect(m_gemRepoInspector, &GemRepoInspector::RemoveRepo, this, &GemRepoScreen::HandleRemoveRepoButton);
+        connect(m_gemRepoInspector, &GemRepoInspector::ShowToastNotification, this, &GemRepoScreen::ShowStandardToastNotification);
         m_gemRepoInspector->setFixedWidth(inspectorWidth);
         hLayout->addWidget(m_gemRepoInspector);
 
         return contentFrame;
+    }
+
+    void GemRepoScreen::ShowStandardToastNotification(const QString& notification)
+    {
+        AzQtComponents::ToastConfiguration toastConfiguration(AzQtComponents::ToastType::Custom, notification, "");
+        toastConfiguration.m_customIconImage = ":/Info.svg";
+        toastConfiguration.m_borderRadius = 4;
+        toastConfiguration.m_duration = AZStd::chrono::milliseconds(3000);
+        m_notificationsView->ShowToastNotification(toastConfiguration);
     }
 
     ProjectManagerScreen GemRepoScreen::GetScreenEnum()

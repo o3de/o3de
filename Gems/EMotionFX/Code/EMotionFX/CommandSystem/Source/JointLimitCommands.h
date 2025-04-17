@@ -33,7 +33,7 @@ namespace EMotionFX
         , public ParameterMixinJointName
     {
     public:
-        AZ_RTTI(ParameterMixinJointName, "{D9569517-8AE0-4CDA-8DE9-1B20E6A4A267}");
+        AZ_RTTI(ParameterMixinActorIdJointName, "{D9569517-8AE0-4CDA-8DE9-1B20E6A4A267}");
         AZ_CLASS_ALLOCATOR_DECL;
 
         ParameterMixinActorIdJointName() = default;

@@ -131,8 +131,9 @@ namespace ScriptEvents
         return true;
     }
 
-    void DefaultBehaviorHandler::Disconnect()
+    void DefaultBehaviorHandler::Disconnect(AZ::BehaviorArgument* address [[maybe_unused]])
     {
+        // script doesn't support multihandler buses, ignore the optional address parameter
         Internal::BindingRequestBus::Event(m_busNameId, &Internal::BindingRequest::Disconnect, &m_address, this);
 
         if (m_address.m_value)

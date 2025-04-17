@@ -56,6 +56,11 @@ AZ_POP_DISABLE_WARNING
 // This define is used to initialize the D3D12_ROOT_SIGNATURE_DESC::Flags property.
 #define AZ_DX12_ROOT_SIGNATURE_FLAGS D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT
 
+#ifdef __ID3D12GraphicsCommandList5_INTERFACE_DEFINED__
+    // This define controls whether VRS support is available on the platform
+    #define O3DE_DX12_VRS_SUPPORT
+#endif
+
 using ID3D12CommandAllocatorX = ID3D12CommandAllocator;
 using ID3D12CommandQueueX = ID3D12CommandQueue;
 using ID3D12DeviceX = ID3D12Device5;
@@ -80,6 +85,9 @@ AZ_DX12_REFCOUNTED(ID3D12Device5)
 AZ_DX12_REFCOUNTED(ID3D12Fence)
 AZ_DX12_REFCOUNTED(ID3D12GraphicsCommandList)
 AZ_DX12_REFCOUNTED(ID3D12GraphicsCommandList1)
+#ifdef __ID3D12GraphicsCommandList5_INTERFACE_DEFINED__
+AZ_DX12_REFCOUNTED(ID3D12GraphicsCommandList5)
+#endif
 AZ_DX12_REFCOUNTED(ID3D12Heap)
 AZ_DX12_REFCOUNTED(ID3D12Object)
 AZ_DX12_REFCOUNTED(ID3D12PipelineState)

@@ -34,7 +34,7 @@ namespace Profiler
             GroupRegionName(const char* const group, const char* const region);
 
             const char* m_groupName = nullptr;
-            const char* m_regionName = nullptr;
+            AZ::Name m_regionName;
 
             struct Hash
             {
@@ -47,7 +47,7 @@ namespace Profiler
         explicit CachedTimeRegion(const GroupRegionName& groupRegionName);
         CachedTimeRegion(const GroupRegionName& groupRegionName, uint16_t stackDepth, uint64_t startTick, uint64_t endTick);
 
-        GroupRegionName m_groupRegionName{nullptr, nullptr};
+        GroupRegionName m_groupRegionName{nullptr, ""};
 
         uint16_t m_stackDepth = 0u;
         AZStd::sys_time_t m_startTick = 0;
@@ -66,7 +66,7 @@ namespace Profiler
         friend class CpuProfiler;
 
     public:
-        AZ_CLASS_ALLOCATOR(CpuTimingLocalStorage, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CpuTimingLocalStorage, AZ::SystemAllocator);
 
         CpuTimingLocalStorage();
         ~CpuTimingLocalStorage();
@@ -131,7 +131,7 @@ namespace Profiler
 
     public:
         AZ_RTTI(CpuProfiler, "{10E9D394-FC83-4B45-B2B8-807C6BF07BF0}", AZ::Debug::Profiler);
-        AZ_CLASS_ALLOCATOR(CpuProfiler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CpuProfiler, AZ::SystemAllocator);
 
         CpuProfiler() = default;
         ~CpuProfiler() = default;
@@ -141,7 +141,7 @@ namespace Profiler
         void Shutdown();
 
         //! AZ::Debug::Profiler overrides...
-        void BeginRegion(const AZ::Debug::Budget* budget, const char* eventName, size_t eventNameArgCount, ...) final override;
+        void BeginRegion(const AZ::Debug::Budget* budget, const char* eventName, ...) final override;
         void EndRegion(const AZ::Debug::Budget* budget) final override;
 
         //! Get the last frame's TimeRegionMap
@@ -227,5 +227,6 @@ namespace Profiler
         CpuProfilingStatisticsSerializer(const AZStd::ring_buffer<TimeRegionMap>& continuousData);
 
         AZStd::vector<CpuProfilingStatisticsSerializerEntry> m_cpuProfilingStatisticsSerializerEntries;
+        AZStd::sys_time_t m_timeTicksPerSecond = 0;
     };
 } // namespace Profiler

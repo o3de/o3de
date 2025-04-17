@@ -33,7 +33,6 @@
                 },
                 {
                     "base": "GetUseRoughnessMap",
-                    "context": "MaterialData",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Use Roughness Map"
@@ -56,7 +55,6 @@
                 },
                 {
                     "base": "GetShininess",
-                    "context": "MaterialData",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Shininess"
@@ -79,7 +77,6 @@
                 },
                 {
                     "base": "GetUseEmissiveMap",
-                    "context": "MaterialData",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Use Emissive Map"
@@ -102,7 +99,6 @@
                 },
                 {
                     "base": "GetEmissiveColor",
-                    "context": "MaterialData",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Emissive Color"
@@ -125,7 +121,6 @@
                 },
                 {
                     "base": "GetSpecularColor",
-                    "context": "MaterialData",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Specular Color"
@@ -148,7 +143,6 @@
                 },
                 {
                     "base": "GetUniqueId",
-                    "context": "MaterialData",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Unique Id"
@@ -171,7 +165,6 @@
                 },
                 {
                     "base": "GetDiffuseColor",
-                    "context": "MaterialData",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Diffuse Color"
@@ -194,7 +187,6 @@
                 },
                 {
                     "base": "GetEmissiveIntensity",
-                    "context": "MaterialData",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Emissive Intensity"
@@ -217,7 +209,6 @@
                 },
                 {
                     "base": "GetMaterialName",
-                    "context": "MaterialData",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Material Name"
@@ -240,7 +231,6 @@
                 },
                 {
                     "base": "GetUseMetallicMap",
-                    "context": "MaterialData",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Use Metallic Map"
@@ -263,7 +253,6 @@
                 },
                 {
                     "base": "GetMetallicFactor",
-                    "context": "MaterialData",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Metallic Factor"
@@ -286,7 +275,6 @@
                 },
                 {
                     "base": "GetRoughnessFactor",
-                    "context": "MaterialData",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Roughness Factor"
@@ -309,7 +297,6 @@
                 },
                 {
                     "base": "GetUseAOMap",
-                    "context": "MaterialData",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get UseAO Map"
@@ -332,7 +319,6 @@
                 },
                 {
                     "base": "GetTexture",
-                    "context": "MaterialData",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Texture"
@@ -363,7 +349,6 @@
                 },
                 {
                     "base": "IsNoDraw",
-                    "context": "MaterialData",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Is No Draw"
@@ -386,7 +371,6 @@
                 },
                 {
                     "base": "GetOpacity",
-                    "context": "MaterialData",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Opacity"
@@ -409,7 +393,6 @@
                 },
                 {
                     "base": "GetUseColorMap",
-                    "context": "MaterialData",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Use Color Map"

@@ -6,10 +6,12 @@
  *
  */
 #pragma once
-#include <IMovieSystem.h>
 
 #include <AzCore/Component/Component.h>
 #include <Maestro/Bus/SequenceComponentBus.h>
+
+struct IMovieSystem;
+struct IAnimSequence;
 
 namespace Maestro
 {
@@ -22,7 +24,7 @@ namespace Maestro
         {
         public:
             virtual ~AnimationData() { }
-            AZ_CLASS_ALLOCATOR(AnimationData, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AnimationData, AZ::SystemAllocator);
             AZ_RTTI(AnimationData, "{1CC687A8-9331-4314-A0F9-C75C50C10268}");
             AZStd::string m_serializedData;
         };
@@ -30,7 +32,7 @@ namespace Maestro
 
     class SequenceComponent
         : public AZ::Component
-        , public Maestro::SequenceComponentRequestBus::Handler
+        , public SequenceComponentRequestBus::Handler
     {
         friend class EditorSequenceComponent;
 
@@ -38,6 +40,7 @@ namespace Maestro
         AZ_COMPONENT(SequenceComponent, "{027CE988-CF48-4589-A73A-73CD8D02F783}");
 
         SequenceComponent();
+        ~SequenceComponent();
         
         //////////////////////////////////////////////////////////////////////////
         // AZ::Component interface implementation
@@ -64,12 +67,12 @@ namespace Maestro
         * @param animatedEntityId the entity Id of the entity containing the animatedAddress
         * @param animatedAddress identifies the component and property to be set
         */
-        void GetAnimatedPropertyValue(AnimatedValue& returnValue, const AZ::EntityId& animatedEntityId, const AnimatablePropertyAddress& animatableAddress) override;
+        bool GetAnimatedPropertyValue(AnimatedValue& returnValue, const AZ::EntityId& animatedEntityId, const AnimatablePropertyAddress& animatableAddress) override;
 
-        AZ::Uuid GetAnimatedAddressTypeId(const AZ::EntityId& animatedEntityId, const Maestro::SequenceComponentRequests::AnimatablePropertyAddress& animatableAddress) override;
+        AZ::Uuid GetAnimatedAddressTypeId(const AZ::EntityId& animatedEntityId, const SequenceComponentRequests::AnimatablePropertyAddress& animatableAddress) override;
 
         //! Track View will expect some components (those using AZ::Data::AssetBlends as a virtual property) to supply a GetAssetDuration event
-        //! so Track View can query the duration of an asset (like a motion) without having any knowledge of that that asset is.
+        //! so Track View can query the duration of an asset (like a motion) without having any knowledge of that asset is.
         void GetAssetDuration(AnimatedValue& returnValue, const AZ::EntityId& animatedEntityId, AZ::ComponentId componentId, const AZ::Data::AssetId& assetId)  override;
 
         /////////////////////////////////////////
@@ -90,7 +93,7 @@ namespace Maestro
     protected:
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("SequenceService", 0x7cbe5938));
+            provided.push_back(AZ_CRC_CE("SequenceService"));
         }
 
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
@@ -98,11 +101,13 @@ namespace Maestro
         // Required Reflect function.
         static void Reflect(AZ::ReflectContext* context);
     private:
-        // pointer and id of the CryMovie anim sequence responsible for playback/recording
+        // pointer and id of the CryMovie animation sequence responsible for playback/recording
         AZStd::intrusive_ptr<IAnimSequence> m_sequence;
 
         // Reflects the entire CryMovie library
         static void ReflectCinematicsLib(AZ::ReflectContext* context);
+
+        IMovieSystem* m_movieSystem;
     };
 
 } // namespace Maestro

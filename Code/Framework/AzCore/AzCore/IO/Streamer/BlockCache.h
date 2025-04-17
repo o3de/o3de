@@ -14,7 +14,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Statistics/RunningStatistic.h>
 #include <AzCore/std/limits.h>
-#include <AzCore/std/chrono/clocks.h>
+#include <AzCore/std/chrono/chrono.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/deque.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
@@ -32,7 +32,7 @@ namespace AZ::IO
         public IStreamerStackConfig
     {
         AZ_RTTI(AZ::IO::BlockCacheConfig, "{70120525-88A4-40B6-A75B-BAA7E8FD77F3}", IStreamerStackConfig);
-        AZ_CLASS_ALLOCATOR(BlockCacheConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BlockCacheConfig, AZ::SystemAllocator);
 
         ~BlockCacheConfig() override = default;
         AZStd::shared_ptr<StreamStackEntry> AddStreamStackEntry(
@@ -73,7 +73,7 @@ namespace AZ::IO
         bool ExecuteRequests() override;
 
         void UpdateStatus(Status& status) const override;
-        void UpdateCompletionEstimates(AZStd::chrono::system_clock::time_point now, AZStd::vector<FileRequest*>& internalPending,
+        void UpdateCompletionEstimates(AZStd::chrono::steady_clock::time_point now, AZStd::vector<FileRequest*>& internalPending,
             StreamerContext::PreparedQueue::iterator pendingBegin, StreamerContext::PreparedQueue::iterator pendingEnd) override;
         void AddDelayedRequests(AZStd::vector<FileRequest*>& internalPending);
         void UpdatePendingRequestEstimations();
@@ -114,7 +114,7 @@ namespace AZ::IO
             void Prefix(const Section& section);
         };
 
-        using TimePoint = AZStd::chrono::system_clock::time_point;
+        using TimePoint = AZStd::chrono::steady_clock::time_point;
 
         void ReadFile(FileRequest* request, Requests::ReadData& data);
         void ContinueReadFile(FileRequest* request, u64 fileLength);

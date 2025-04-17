@@ -7,9 +7,12 @@
  */
 
 #include "WatchesPanel.hxx"
-#include <Source/LUA/moc_WatchesPanel.cpp>
+
+#include "AzCore/Debug/Trace.h"
 #include "LUAEditorDebuggerMessages.h"
+#include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Script/lua/lua.h>
+#include <Source/LUA/moc_WatchesPanel.cpp>
 
 #include <QSortFilterProxyModel>
 #include <QMenu>
@@ -18,18 +21,16 @@
 
 namespace WatchesPanel
 {
-    const char* typeStringLUT[] =
-    {
-        "NIL",
-        "BOOLEAN",
-        "LIGHTUSERDATA",
-        "NUMBER",
-        "STRING",
-        "TABLE",
-        "FUNCTION",
-        "USERDATA",
-        "THREAD",
-        NULL
+    static constexpr AZStd::array typeStringLUT {
+        "NIL",           // LUA_TNIL
+        "BOOLEAN",       // LUA_TBOOLEAN
+        "LIGHTUSERDATA", // LUA_TLIGHTUSERDATA
+        "NUMBER",        // LUA_TNUMBER
+        "STRING",        // LUA_TSTRING
+        "TABLE",         // LUA_TTABLE
+        "FUNCTION",      // LUA_TFUNCTION
+        "USERDATA",      // LUA_TUSERDATA
+        "THREAD",        // LUA_TTHREAD
     };
 }
 
@@ -38,7 +39,7 @@ class WatchesFilterModel
     : public QSortFilterProxyModel
 {
 public:
-    AZ_CLASS_ALLOCATOR(WatchesFilterModel, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(WatchesFilterModel, AZ::SystemAllocator);
     WatchesFilterModel(QObject* pParent)
         : QSortFilterProxyModel(pParent)
     {
@@ -74,9 +75,8 @@ DHWatchesWidget::DHWatchesWidget(QWidget* parent)
     LUAEditor::LUALocalsTrackerMessages::Handler::BusConnect();
     LUAEditor::LUABreakpointTrackerMessages::Handler::BusConnect();
 
-    connect(&m_DM, SIGNAL(dataChanged (const QModelIndex &, const QModelIndex &)), this, SLOT(OnItemChanged()));
-    connect(&m_DM, SIGNAL(modelReset()), this, SLOT(OnItemChanged()));
-    connect(this, SIGNAL(doubleClicked(const QModelIndex &)), this, SLOT(OnDoubleClicked(const QModelIndex &)));
+    connectDataModelUpdate();
+    connect(this, &DHWatchesWidget::doubleClicked, this, &DHWatchesWidget::OnDoubleClicked);
 
     auto crc = AZ::Crc32("StandaloneToolsWatchesPanel");
     InitializeTreeViewSaving(crc);
@@ -84,6 +84,17 @@ DHWatchesWidget::DHWatchesWidget(QWidget* parent)
     ForceSelectNewWatch();
 }
 
+void DHWatchesWidget::disconnectDataModelUpdate()
+{
+    disconnect(m_dataModelDataChangedConnection);
+    disconnect(m_dataModelRestConnection);
+}
+
+void DHWatchesWidget::connectDataModelUpdate()
+{
+    m_dataModelDataChangedConnection = connect(&m_DM, &WatchesDataModel::dataChanged, this, &DHWatchesWidget::OnItemChanged);
+    m_dataModelRestConnection = connect(&m_DM, &WatchesDataModel::modelReset, this, &DHWatchesWidget::OnItemChanged);
+}
 
 DHWatchesWidget::~DHWatchesWidget()
 {
@@ -137,7 +148,7 @@ void DHWatchesWidget::CaptureVariables()
                 QString name;
                 name = m_DM.data(indexChild).toString();
                 //AZ_TracePrintf("LUA Editor", "  - RequestWatchedVariable( %s )\n", AZStd::string(name.toAscii()));
-                EBUS_EVENT(LUAEditor::LUAWatchesRequestMessages::Bus, RequestWatchedVariable, AZStd::string(name.toUtf8().data()));
+                LUAEditor::LUAWatchesRequestMessagesRequestBus::Broadcast(&LUAEditor::LUAWatchesRequestMessages::RequestWatchedVariable, AZStd::string(name.toUtf8().data()));
                 // results will return via WatchesUpdate() values asynchronously
                 // NB: not recursive, only top-level variable names are requested
             }
@@ -156,7 +167,7 @@ void DHWatchesWidget::BreakpointHit(const LUAEditor::Breakpoint& bp)
     {
         if (isVisible())
         {
-            EBUS_EVENT(LUAEditor::LUAEditorDebuggerMessages::Bus, EnumLocals);
+            LUAEditor::LUAEditorDebuggerMessagesRequestBus::Broadcast(&LUAEditor::LUAEditorDebuggerMessages::EnumLocals);
         }
     }
 }
@@ -164,11 +175,9 @@ void DHWatchesWidget::BreakpointHit(const LUAEditor::Breakpoint& bp)
 void DHWatchesWidget::WatchesUpdate(const AZ::ScriptContextDebug::DebugValue& topmostDebugReference)
 {
     //AZ_TracePrintf("LUA Editor", "incoming WatchesUpdate( %s )\n", topmostDebugReference.m_name);
-    disconnect(&m_DM, SIGNAL(dataChanged (const QModelIndex &, const QModelIndex &)), this, SLOT(OnItemChanged()));
-    disconnect(&m_DM, SIGNAL(modelReset()), this, SLOT(OnItemChanged()));
+    disconnectDataModelUpdate();
     m_DM.UpdateMatchingDVs(topmostDebugReference);
-    connect(&m_DM, SIGNAL(dataChanged (const QModelIndex &, const QModelIndex &)), this, SLOT(OnItemChanged()));
-    connect(&m_DM, SIGNAL(modelReset()), this, SLOT(OnItemChanged()));
+    connectDataModelUpdate();
     ApplyTreeViewSnapshot();
 }
 
@@ -228,9 +237,7 @@ void DHWatchesWidget::OnDoubleClicked(const QModelIndex& index)
 
 void DHWatchesWidget::LocalsUpdate(const AZStd::vector<AZStd::string>& vars)
 {
-    disconnect(&m_DM, SIGNAL(dataChanged (const QModelIndex &, const QModelIndex &)), this, SLOT(OnItemChanged()));
-    disconnect(&m_DM, SIGNAL(modelReset()), this, SLOT(OnItemChanged()));
-
+    disconnectDataModelUpdate();
     if (m_OperatingMode == WATCHES_MODE_LOCALS)
     {
         LocalsClear();
@@ -243,16 +250,13 @@ void DHWatchesWidget::LocalsUpdate(const AZStd::vector<AZStd::string>& vars)
             m_DM.AddWatch(it->c_str());
         }
     }
-    connect(&m_DM, SIGNAL(dataChanged (const QModelIndex &, const QModelIndex &)), this, SLOT(OnItemChanged()));
-    connect(&m_DM, SIGNAL(modelReset()), this, SLOT(OnItemChanged()));
+    connectDataModelUpdate();
 }
 
 void DHWatchesWidget::LocalsClear()
 {
     //AZ_TracePrintf("LUA Editor", "LOCALS Clear\n");
-
-    disconnect(&m_DM, SIGNAL(dataChanged (const QModelIndex &, const QModelIndex &)), this, SLOT(OnItemChanged()));
-    disconnect(&m_DM, SIGNAL(modelReset()), this, SLOT(OnItemChanged()));
+    disconnectDataModelUpdate();
     if (m_OperatingMode == WATCHES_MODE_LOCALS)
     {
         if (m_DM.rowCount())
@@ -261,8 +265,7 @@ void DHWatchesWidget::LocalsClear()
             m_DM.removeRows(0, m_DM.rowCount());
         }
     }
-    connect(&m_DM, SIGNAL(modelReset()), this, SLOT(OnItemChanged()));
-    connect(&m_DM, SIGNAL(dataChanged (const QModelIndex &, const QModelIndex &)), this, SLOT(OnItemChanged()));
+    connectDataModelUpdate();
 }
 
 void DHWatchesWidget::keyPressEvent(QKeyEvent* event)
@@ -361,7 +364,7 @@ void WatchesDataModel::AddWatch(AZStd::string newName)
     dv.m_name = newName;
     dv.m_value = "<invalid>";
     dv.m_type = LUA_TNONE;
-    dv.m_typeId = 0;
+    dv.m_typeId = AZ::ScriptTypeId{};
     dv.m_flags = 0;
 
     AddWatch(dv);
@@ -566,7 +569,7 @@ Qt::ItemFlags WatchesDataModel::flags (const QModelIndex& index) const
         bool RO =
             (dv == NULL)
             || (dv->m_type == LUA_TFUNCTION)
-            || (dv->m_type == LUA_TNONE)
+            || (static_cast<int>(dv->m_type) == LUA_TNONE)
                 || (dv->m_flags & AZ::ScriptContextDebug::DebugValue::FLAG_READ_ONLY);
 
         if (IsRealIndex(index) && !RO)
@@ -815,8 +818,7 @@ bool WatchesDataModel::setData (const QModelIndex& index, const QVariant& value,
 
                 const QModelIndex qmi = GetTopmostIndex(index);
                 const AZ::ScriptContextDebug::DebugValue *cdv = GetDV(qmi);
-
-                EBUS_EVENT(LUAEditor::LUAEditorDebuggerMessages::Bus, SetValue, *cdv);
+                LUAEditor::LUAEditorDebuggerMessagesRequestBus::Broadcast(&LUAEditor::LUAEditorDebuggerMessages::SetValue, *cdv);
 
                 emit dataChanged(index, index);
             }
@@ -829,12 +831,12 @@ bool WatchesDataModel::setData (const QModelIndex& index, const QVariant& value,
 
 const char* WatchesDataModel::SafetyType(char c) const
 {
-    if (c <= LUA_TNONE || c > LUA_NUMTAGS)
+    if (static_cast<int>(c) <= LUA_TNONE || c > LUA_NUMTAGS)
     {
         return "<invalid>";
     }
-
-    return WatchesPanel::typeStringLUT[static_cast<int>(c)];
+    static_assert(WatchesPanel::typeStringLUT.size() == LUA_NUMTAGS, "number of lua tags does not match the number of typeStringLUT");
+    return WatchesPanel::typeStringLUT[aznumeric_cast<int>(c)];
 }
 
 const bool WatchesDataModel::IsRealIndex(const QModelIndex& index) const
@@ -867,7 +869,7 @@ void WatchesDataModel::SetType(const QModelIndex& index, char newType)
 
         const QModelIndex qmi = GetTopmostIndex(index);
         const AZ::ScriptContextDebug::DebugValue *cdv = GetDV(qmi);
-        EBUS_EVENT(LUAEditor::LUAEditorDebuggerMessages::Bus, SetValue, *cdv);
+        LUAEditor::LUAEditorDebuggerMessagesRequestBus::Broadcast(&LUAEditor::LUAEditorDebuggerMessages::SetValue, *cdv);
 
         emit dataChanged(index, index);
     }

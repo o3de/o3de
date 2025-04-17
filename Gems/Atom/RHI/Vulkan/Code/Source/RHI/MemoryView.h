@@ -7,20 +7,17 @@
  */
 #pragma once
 
-#include <Atom/RHI/MemoryAllocation.h>
-#include <RHI/Memory.h>
+#include <RHI/VulkanMemoryAllocation.h>
 #include <RHI/MemoryTypeView.h>
 
 namespace AZ
 {
     namespace Vulkan
     {
-        using MemoryAllocation = RHI::MemoryAllocation<Memory>;
-
         class MemoryView :
-            public MemoryTypeView<Memory>
+            public MemoryTypeView<VulkanMemoryAllocation>
         {
-            using Base = MemoryTypeView<Memory>;
+            using Base = MemoryTypeView<VulkanMemoryAllocation>;
 
         public:
             MemoryView() = default;
@@ -29,11 +26,19 @@ namespace AZ
                 : Base(memoryView)
             {}
 
-            MemoryView(RHI::Ptr<Memory> memory, size_t offset, size_t size, size_t alignment, MemoryAllocationType memoryType)
-                : Base(memory, offset, size, alignment, memoryType)
+            MemoryView(RHI::Ptr<VulkanMemoryAllocation> memory, size_t offset, size_t size)
+                : Base(memory, offset, size)
             {}
 
-            Memory* GetMemory() const { return GetAllocation().m_memory.get(); }
+            size_t GetVKMemoryOffset() const
+            {
+                return GetAllocation()->GetOffset() + GetOffset();
+            }
+
+            VkDeviceMemory GetNativeDeviceMemory() const
+            {
+                return GetAllocation()->GetNativeDeviceMemory();
+            }
         };
     }
 }

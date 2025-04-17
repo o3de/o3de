@@ -19,7 +19,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(EditorModeTintPass, "{3E4FEFCB-9416-4CAE-8918-72D31AA482C5}", EditorModeFeedbackChildPassBase);
-            AZ_CLASS_ALLOCATOR(EditorModeTintPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(EditorModeTintPass, SystemAllocator);
 
             virtual ~EditorModeTintPass() = default;
 

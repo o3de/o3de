@@ -13,7 +13,6 @@
 #include <Core/SlotConfigurationDefaults.h> 
 #include <Core/SlotExecutionMap.h>
 #include <ScriptCanvas/Utils/BehaviorContextUtils.h>
-#include <ScriptCanvas/Utils/ReplacementUtils.h>
 #include <AzCore/StringFunc/StringFunc.h>
 
 namespace MethodCPP
@@ -37,14 +36,14 @@ namespace MethodCPP
         if (rootElementNode.GetVersion() < MethodCPP::eVersion::PluralizeResults)
         {
             SlotId resultSlotId;
-            if (!rootElementNode.GetChildData(AZ_CRC("resultSlotID", 0xb527ade6), resultSlotId))
+            if (!rootElementNode.GetChildData(AZ_CRC_CE("resultSlotID"), resultSlotId))
             {
                 AZ_Error("ScriptCanvas", false, "Failed to read resultSlotID from Method node data");
                 return false;
             }
 
             rootElementNode.AddElementWithData(context, "resultSlotIDs", AZStd::vector<SlotId> { resultSlotId });
-            rootElementNode.RemoveElementByName(AZ_CRC("resultSlotID", 0xb527ade6));
+            rootElementNode.RemoveElementByName(AZ_CRC_CE("resultSlotID"));
         }
 
         return true;
@@ -230,15 +229,6 @@ namespace ScriptCanvas
                 default:
                     return PropertyStatus::None;
                 }
-            }
-
-            NodeReplacementConfiguration Method::GetReplacementNodeConfiguration() const
-            {
-                if (m_method)
-                {
-                    return ReplacementUtils::GetReplacementMethodNode(m_className.c_str(), m_lookupName.c_str());
-                }
-                return NodeReplacementConfiguration{};
             }
 
             void Method::InitializeMethod(const MethodConfiguration& config)

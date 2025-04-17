@@ -50,7 +50,7 @@ namespace Multiplayer
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 
         NetBindComponent();
-        ~NetBindComponent() override = default;
+        ~NetBindComponent() override;
 
         //! AZ::Component overrides.
         //! @{
@@ -87,18 +87,71 @@ namespace Multiplayer
         //! @return EntityMigration::Enabled if the entity is allowed to migrate, EntityMigration::Disabled otherwise
         EntityMigration GetAllowEntityMigration() const;
 
+        //! This is a helper that validates the owning entity is in the correct role to read from a network property that matches the relicateFrom and replicateTo parameters.
+        //! @param propertyName  the name of the property, for logging and debugging purposes
+        //! @param replicateFrom the network entity role that the property replicates from
+        //! @param replicateTo   the network entity role that the property replicates to
+        //! @return boolean true if the read is valid, false if nothing is replicated to the target and invalid data will be read
+        bool ValidatePropertyRead(const char* propertyName, NetEntityRole replicateFrom, NetEntityRole replicateTo) const;
+
+        //! This is a helper that validates the owning entity is in the correct role to write to a network property that matches the relicateFrom, replicateTo parameters, and isPredictable parameters.
+        //! @param propertyName  the name of the property, for logging and debugging purposes
+        //! @param replicateFrom the network entity role that the property replicates from
+        //! @param replicateTo   the network entity role that the property replicates to
+        //! @param isPredictable true if the property is predictable, false otherwise
+        //! @return boolean true if the write is valid, false if the write will desync the network property
+        bool ValidatePropertyWrite(const char* propertyName, NetEntityRole replicateFrom, NetEntityRole replicateTo, bool isPredictable) const;
+
+        //! Returns whether or not a controller exists for the bound network entity.
+        //! Warning, this function is dangerous to use in game code as it makes it easy to write logic that will function incorrectly within multihost environments. Use carefully.
+        //! The recommended solution for communicating from proxy level to a controller is to use a Server to Authority RPC, as the network layer can route the RPC appropriately.
+        //! @return boolean true if a controller exists, false otherwise
         bool HasController() const;
+
+        //! Returns the bound NetworkEntityId that represents this entity.
+        //! @return the bound NetworkEntityId that represents this entity
         NetEntityId GetNetEntityId() const;
+
+        //! Returns the PrefabEntityId that this entity was loaded from.
+        //! @return the PrefabEntityId that this entity was loaded from
         const PrefabEntityId& GetPrefabEntityId() const;
+
+        //! Sets the PrefabEntityId that this entity was loaded from.
+        //! @param prefabEntityId the PrefabEntityId to mark as bound to this entity
         void SetPrefabEntityId(const PrefabEntityId& prefabEntityId);
+
+        //! Returns the PrefabAssetId of the prefab this entity was loaded from.
+        //! @return the PrefabAssetId of the prefab this entity was loaded from
         const AZ::Data::AssetId& GetPrefabAssetId() const;
+
+        //! Sets the PrefabAssetId of the prefab that this entity was loaded from.
+        //! @param val the PrefabAssetId to mark as bound to this entity
         void SetPrefabAssetId(const AZ::Data::AssetId& val);
+
+        //! Returns a const network entity handle to this entity.
+        //! @return a const network entity handle to this entity
         ConstNetworkEntityHandle GetEntityHandle() const;
+
+        //! Returns a non-const network entity handle for this entity, this allows controller access so use it with great caution.
+        //! Warning, this function is dangerous to use in game code as it makes it easy to write logic that will function incorrectly within multihost environments. Use carefully.
+        //! @return a non-const network entity handle to this entity
         NetworkEntityHandle GetEntityHandle();
 
+        //! Sets the AzNetworking::ConnectionId that 'owns' this entity from a local prediction standpoint.
+        //! This is important for correct rewind operation during backward reconciliation, as we shouldn't rewind anything owned by the autonomous entity itself.
+        //! @param connectionId the AzNetworking::ConnectionId to mark as the owner of this entity
         void SetOwningConnectionId(AzNetworking::ConnectionId connectionId);
+
+        //! Returns the AzNetworking::ConnectionId of the connection that owns this entity form a local prediction standpoint.
+        //! @return the AzNetworking::ConnectionId of the connection that owns this entity form a local prediction standpoint
         AzNetworking::ConnectionId GetOwningConnectionId() const;
-        void SetAllowAutonomy(bool value);
+
+        //! Allows a player host to autonomously control their player entity, even though the entity is in an authority role.
+        //! Note: If this entity is already activated this will reactivate all of the multiplayer component controllers in order for them to reactivate under autonomous control.
+        void EnablePlayerHostAutonomy(bool enabled);
+
+        //! This allocates and returns an appropriate MultiplayerComponentInputVector for the components bound to this entity.
+        //! @return a MultiplayerComponentInputVector suitable for this entity
         MultiplayerComponentInputVector AllocateComponentInputs();
 
         //! Return true if we're currently processing inputs.
@@ -130,6 +183,7 @@ namespace Multiplayer
         void NotifyServerMigration(const HostId& remoteHostId);
         void NotifyPreRender(float deltaTime);
         void NotifyCorrection();
+        void NetworkActivated();
 
         void AddEntityStopEventHandler(EntityStopEvent::Handler& eventHandler);
         void AddEntityDirtiedEventHandler(EntityDirtiedEvent::Handler& eventHandler);
@@ -137,6 +191,7 @@ namespace Multiplayer
         void AddEntityServerMigrationEventHandler(EntityServerMigrationEvent::Handler& eventHandler);
         void AddEntityPreRenderEventHandler(EntityPreRenderEvent::Handler& eventHandler);
         void AddEntityCorrectionEventHandler(EntityCorrectionEvent::Handler& handler);
+        void AddNetworkActivatedEventHandler(AZ::Event<>::Handler& handler);
 
         bool SerializeEntityCorrection(AzNetworking::ISerializer& serializer);
 
@@ -160,10 +215,16 @@ namespace Multiplayer
 
         void HandleMarkedDirty();
         void HandleLocalServerRpcMessage(NetworkEntityRpcMessage& message);
+        void HandleLocalAutonomousToAuthorityRpcMessage(NetworkEntityRpcMessage& message);
+        void HandleLocalAuthorityToAutonomousRpcMessage(NetworkEntityRpcMessage& message);
+        void HandleLocalAuthorityToClientRpcMessage(NetworkEntityRpcMessage& message);
 
         void DetermineInputOrdering();
 
         void StopEntity();
+
+        void Register(AZ::Entity* entity);
+        void Unregister();
 
         ReplicationRecord m_currentRecord = NetEntityRole::InvalidRole;
         ReplicationRecord m_totalRecord = NetEntityRole::InvalidRole;
@@ -178,7 +239,7 @@ namespace Multiplayer
 
         RpcSendEvent m_sendAuthorityToClientRpcEvent;
         RpcSendEvent m_sendAuthorityToAutonomousRpcEvent;
-        RpcSendEvent m_sendServertoAuthorityRpcEvent;
+        RpcSendEvent m_sendServerToAuthorityRpcEvent;
         RpcSendEvent m_sendAutonomousToAuthorityRpcEvent;
 
         EntityStopEvent       m_entityStopEvent;
@@ -188,7 +249,11 @@ namespace Multiplayer
         EntityPreRenderEvent  m_entityPreRenderEvent;
         EntityCorrectionEvent m_entityCorrectionEvent;
         AZ::Event<>           m_onRemove;
+        AZ::Event<>           m_onNetworkActivated;
         RpcSendEvent::Handler m_handleLocalServerRpcMessageEventHandle;
+        RpcSendEvent::Handler m_handleLocalAutonomousToAuthorityRpcMessageEventHandle;
+        RpcSendEvent::Handler m_handleLocalAuthorityToAutonomousRpcMessageEventHandle;
+        RpcSendEvent::Handler m_handleLocalAuthorityToClientRpcMessageEventHandle;
         AZ::Event<>::Handler  m_handleMarkedDirty;
         AZ::Event<>::Handler  m_handleNotifyChanges;
         AZ::Entity::EntityStateEvent::Handler m_handleEntityStateEvent;
@@ -204,13 +269,17 @@ namespace Multiplayer
         bool m_isReprocessingInput  = false; // Set to true when we are reprocessing input (during a correction)
         bool m_isMigrationDataValid = false;
         bool m_needsToBeStopped     = false;
-        bool m_allowAutonomy        = false; // Set to true for the hosts controlled entity
+        bool m_playerHostAutonomyEnabled = false; // Set to true for the host's controlled entity
+        bool m_isRegistered = false;
 
         friend class NetworkEntityManager;
         friend class EntityReplicationManager;
 
         friend class HierarchyTests;
         friend class HierarchyBenchmarkBase;
+        friend class MultiplayerSystemTests;
+        friend class NetworkEntityTests;
+        friend class LocalPredictionPlayerInputTests;
     };
 
     bool NetworkRoleHasController(NetEntityRole networkRole);

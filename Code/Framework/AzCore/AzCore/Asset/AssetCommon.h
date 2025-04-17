@@ -58,6 +58,7 @@ namespace AZ
 
             /// Create asset id in invalid state
             AssetId();
+            explicit AssetId(AZStd::string_view guidString, u32 subId = 0);
             AssetId(const Uuid& guid, u32 subId = 0);
 
             bool IsValid() const;
@@ -128,7 +129,7 @@ namespace AZ
                 Error,              ///< Asset attempted to load, but it or a strict dependency failed.
             };
 
-            AZ_CLASS_ALLOCATOR(AssetData, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AssetData, SystemAllocator);
             AZ_RTTI(AssetData, "{AF3F7D32-1536-422A-89F3-A11E1F5B5A9C}");
 
             AssetData(const AssetId& assetId = AssetId(), AssetStatus status = AssetStatus::NotLoaded)
@@ -160,7 +161,7 @@ namespace AZ
             bool IsLoading(bool includeQueued = true) const;
             AssetStatus GetStatus() const { return m_status.load(); }
             const AssetId& GetId() const { return m_assetId; }
-            const AssetType& GetType() const { return RTTI_GetType(); }
+            AssetType GetType() const { return RTTI_GetType(); }
             int GetUseCount() const { return m_useCount.load(); }
             int GetCreationToken() const { return m_creationToken; }
 
@@ -219,10 +220,9 @@ namespace AZ
          * Setting for each reference (Asset<T>) to control loading of referenced assets during serialization.
          */
         AZ_ENUM_WITH_UNDERLYING_TYPE(AssetLoadBehavior, u8,
-            (PreLoad, 0),          ///< Serializer will "Pre load" dependencies, asset containers may load in parallel but will not signal AssetReady
-            (QueueLoad, 1),        ///< Serializer will queue an asynchronous load of the referenced asset and return the object to the user. User code should use the \ref AZ::Data::AssetBus to monitor for when it's ready.
-            (NoLoad, 2),           ///< Serializer will load reference information, but asset loading will be left to the user. User code should call Asset<T>::QueueLoad and use the \ref AZ::Data::AssetBus to monitor for when it's ready.
-                                   ///< AssetContainers will skip NoLoad dependencies
+            (PreLoad, 0),          ///< Specifies the asset should be loaded automatically and that it will be required to finish loading before the parent (asset depending on this asset) can be considered "ready" (OnReady only fires when the asset and all it's PreLoad dependencies are loaded)
+            (QueueLoad, 1),        ///< Specifies the asset should be loaded automatically but the parent (asset depending on this asset) will not wait for it and can be considered ready without this asset. User code should use the \ref AZ::Data::AssetBus to monitor for when it's ready.
+            (NoLoad, 2),           ///< Specifies the asset should not be loaded automatically. User code should call Asset<T>::QueueLoad and use the \ref AZ::Data::AssetBus to monitor for when it's ready.
             Count,
             (Default, QueueLoad)
         );
@@ -635,7 +635,7 @@ namespace AZ
             : public AssetBus::Handler
         {
         public:
-            AZ_CLASS_ALLOCATOR(AssetBusCallbacks, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AssetBusCallbacks, AZ::SystemAllocator);
 
             using AssetReadyCB = AZStd::function<void (Asset<AssetData> /*asset*/, AssetBusCallbacks& /*callbacks*/)>;
             using AssetMovedCB = AZStd::function<void (Asset<AssetData> /*asset*/, void* /*oldDataPointer*/, AssetBusCallbacks& /*callbacks*/)>;
@@ -697,6 +697,10 @@ namespace AZ
         }
 
         //=========================================================================
+        inline AssetId::AssetId(AZStd::string_view guidString, u32 subId)
+            : AssetId(AZ::Uuid(guidString), subId)
+        {
+        }
         inline AssetId::AssetId(const Uuid& guid, u32 subId)
             : m_guid(guid)
             , m_subId(subId)
@@ -722,7 +726,7 @@ namespace AZ
                 result = StringType::format("%s:%x", m_guid.ToString<StringType>().c_str(), m_subId);
                 break;
             case SubIdDisplayType::Decimal:
-                result = StringType::format("%s:%d", m_guid.ToString<StringType>().c_str(), m_subId);
+                result = StringType::format("%s:%u", m_guid.ToString<StringType>().c_str(), m_subId);
                 break;
             }
         }
@@ -1262,3 +1266,4 @@ namespace AZStd
     };
 }
 
+DECLARE_EBUS_EXTERN_DLL_MULTI_ADDRESS(Data::AssetEvents);

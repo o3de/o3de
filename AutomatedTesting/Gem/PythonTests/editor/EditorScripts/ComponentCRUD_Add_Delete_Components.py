@@ -81,11 +81,26 @@ def ComponentCRUD_Add_Delete_Components():
             popup = await pyside_utils.wait_for_popup_widget()
             tree = popup.findChild(QtWidgets.QTreeView, "Tree")
             component_index = pyside_utils.find_child_by_pattern(tree, component_name)
+            # Handle Mesh component which has both a named section of components along with a named Mesh component
+            if component_name == "Mesh":
+                mesh_component_index = pyside_utils.find_child_by_pattern(component_index, component_name)
+                if mesh_component_index.isValid():
+                    Report.info(f"{component_name} found")
+                tree.expand(mesh_component_index)
+                tree.setCurrentIndex(mesh_component_index)
+                QtTest.QTest.keyClick(tree, Qt.Key_Enter, Qt.NoModifier)
+            # Handle other components
             if component_index.isValid():
                 Report.info(f"{component_name} found")
             tree.expand(component_index)
             tree.setCurrentIndex(component_index)
             QtTest.QTest.keyClick(tree, Qt.Key_Enter, Qt.NoModifier)
+        
+        def select_entity_by_name(entity_name):
+            searchFilter = entity.SearchFilter()
+            searchFilter.names = [entity_name]
+            entities = entity.SearchBus(bus.Broadcast, 'SearchEntities', searchFilter)
+            editor.ToolsApplicationRequestBus(bus.Broadcast, 'MarkEntitySelected', entities[0])
 
         # 1) Open an existing simple level
         hydra.open_base_level()
@@ -98,14 +113,14 @@ def ComponentCRUD_Add_Delete_Components():
         Report.critical_result(Tests.entity_created, entity_id.IsValid())
 
         # 3) Select the newly created entity
-        general.select_object("Entity1")
+        select_entity_by_name("Entity1")
 
         # Give the Entity Inspector time to fully create its contents
         general.idle_wait_frames(3)
 
         # 4) Add/verify Box Shape Component
         editor_window = pyside_utils.get_editor_main_window()
-        entity_inspector = editor_window.findChild(QtWidgets.QDockWidget, "Entity Inspector")
+        entity_inspector = editor_window.findChild(QtWidgets.QDockWidget, "Inspector")
         add_comp_btn = entity_inspector.findChild(QtWidgets.QPushButton, "m_addComponentButton")
         await add_component("Box Shape")
         Report.result(Tests.box_component_added, hydra.has_components(entity_id, ['Box Shape']))
@@ -121,6 +136,8 @@ def ComponentCRUD_Add_Delete_Components():
         # Mesh Component is the 3rd component added to the entity including the default Transform component
         # There is one QVBoxLayout child before the QFrames, making the Mesh component the 4th child in the list
         mesh_frame = comp_list_contents.children()[3]
+        mesh_frame.activateWindow()
+        mesh_frame.setFocus()
         QtTest.QTest.mouseClick(mesh_frame, Qt.LeftButton, Qt.NoModifier)
         QtTest.QTest.keyClick(mesh_frame, Qt.Key_Delete, Qt.NoModifier)
         general.idle_wait_frames(3)  # Wait for Inspector to refresh

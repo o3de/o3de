@@ -14,6 +14,7 @@
 #include <AzCore/std/parallel/semaphore.h>
 #include <AzToolsFramework/API/EditorPythonConsoleBus.h>
 #include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
+#include <AzToolsFramework/API/PythonLoader.h>
 
 #include <Source/ActionManager/PythonActionManagerHandler.h>
 
@@ -56,8 +57,8 @@ namespace EditorPythonBindings
         ////////////////////////////////////////////////////////////////////////
         // AzToolsFramework::EditorPythonRunnerRequestBus::Handler interface implementation
         void ExecuteByString(AZStd::string_view script, bool printResult) override;
-        void ExecuteByFilename(AZStd::string_view filename) override;
-        void ExecuteByFilenameWithArgs(AZStd::string_view filename, const AZStd::vector<AZStd::string_view>& args) override;
+        bool ExecuteByFilename(AZStd::string_view filename) override;
+        bool ExecuteByFilenameWithArgs(AZStd::string_view filename, const AZStd::vector<AZStd::string_view>& args) override;
         bool ExecuteByFilenameAsTest(AZStd::string_view filename, AZStd::string_view testCase, const AZStd::vector<AZStd::string_view>& args) override;
         ////////////////////////////////////////////////////////////////////////
         
@@ -72,6 +73,7 @@ namespace EditorPythonBindings
         int m_lockRecursiveCounter = 0;
         AZStd::shared_ptr<SymbolLogHelper> m_symbolLogHelper;
         PythonActionManagerHandler m_pythonActionManagerHandler;
+        AzToolsFramework::EmbeddedPython::PythonLoader m_pythonLoader;
     
         enum class Result
         {

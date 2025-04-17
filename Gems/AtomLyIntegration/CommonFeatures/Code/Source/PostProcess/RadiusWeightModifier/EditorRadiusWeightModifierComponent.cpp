@@ -27,12 +27,12 @@ namespace AZ
                     editContext->Class<EditorRadiusWeightModifierComponent>(
                         "PostFX Radius Weight Modifier", "Modifies PostFX override factor based on proximity of an influencer against this entity's bounding sphere")
                         ->ClassElement(Edit::ClassElements::EditorData, "")
-                        ->Attribute(Edit::Attributes::Category, "Atom")
+                        ->Attribute(Edit::Attributes::Category, "Graphics/PostFX")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Component_Placeholder.svg")
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Component_Placeholder.svg")
-                        ->Attribute(Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
+                        ->Attribute(Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                         ->Attribute(Edit::Attributes::AutoExpand, true)
-                        ->Attribute(Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/atom/postfx-radius-weight-modifier/")
+                        ->Attribute(Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/components/reference/atom/postfx-radius-weight-modifier/")
                         ;
 
                     editContext->Class<RadiusWeightModifierComponentController>("RadiusWeightModifierComponentController", "")

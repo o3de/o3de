@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
+#include <Atom/RPI.Edit/Configuration.h>
 #include <AzCore/Serialization/Json/BaseJsonSerializer.h>
 
 namespace AZ
@@ -17,13 +17,18 @@ namespace AZ
 
     namespace RPI
     {
-        class JsonMaterialPropertySerializer
+        struct MaterialPropertySourceData;
+        class MaterialPropertyValue;
+
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+        class ATOM_RPI_EDIT_API JsonMaterialPropertySerializer
             : public BaseJsonSerializer
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+
         public:
             AZ_RTTI(JsonMaterialPropertySerializer, "{1AFEC5BD-AB2E-4BDB-911B-80727EDA0C26}", BaseJsonSerializer);
             AZ_CLASS_ALLOCATOR_DECL;
-
             JsonSerializationResult::Result Load(void* outputValue, const Uuid& outputValueTypeId, const rapidjson::Value& inputValue,
                 JsonDeserializerContext& context) override;
 
@@ -39,29 +44,29 @@ namespace AZ
 
             //! Loads a property's value fields from JSON, for use with numeric types like int and float, which support range limits.
             template<typename T>
-            JsonSerializationResult::ResultCode LoadNumericValues(MaterialTypeSourceData::PropertyDefinition* intoProperty, const T& defaultValue,
+            JsonSerializationResult::ResultCode LoadNumericValues(MaterialPropertySourceData* intoProperty, const T& defaultValue,
                 const rapidjson::Value& inputValue, JsonDeserializerContext& context);
 
             //! Loads a property's value fields from JSON, for use with non-numeric types like Vector and Color, which don't support range limits.
             template<typename T>
-            JsonSerializationResult::ResultCode LoadNonNumericValues(MaterialTypeSourceData::PropertyDefinition* intoProperty, const T& defaultValue,
+            JsonSerializationResult::ResultCode LoadNonNumericValues(MaterialPropertySourceData* intoProperty, const T& defaultValue,
                 const rapidjson::Value& inputValue, JsonDeserializerContext& context);
 
-            JsonSerializationResult::ResultCode LoadVectorLabels(MaterialTypeSourceData::PropertyDefinition* intoProperty,
+            JsonSerializationResult::ResultCode LoadVectorLabels(MaterialPropertySourceData* intoProperty,
                 const rapidjson::Value& inputValue, JsonDeserializerContext& context);
 
             //! Stores a property's value fields to JSON, for use with numeric types like int and float, which support range limits.
             template<typename T>
             JsonSerializationResult::ResultCode StoreNumericValues(rapidjson::Value& outputValue,
-                const MaterialTypeSourceData::PropertyDefinition* property, const T& defaultValue, JsonSerializerContext& context);
+                const MaterialPropertySourceData* property, const T& defaultValue, JsonSerializerContext& context);
 
             //! Stores a property's value fields to JSON, for use with non-numeric types like Vector and Color, which don't support range limits.
             template<typename T>
             JsonSerializationResult::ResultCode StoreNonNumericValues(rapidjson::Value& outputValue,
-                const MaterialTypeSourceData::PropertyDefinition* property, const T& defaultValue, JsonSerializerContext& context);
+                const MaterialPropertySourceData* property, const T& defaultValue, JsonSerializerContext& context);
 
             JsonSerializationResult::ResultCode StoreVectorLabels(rapidjson::Value& outputValue,
-                const MaterialTypeSourceData::PropertyDefinition* property, JsonSerializerContext& context);
+                const MaterialPropertySourceData* property, JsonSerializerContext& context);
         };
 
     } // namespace RPI

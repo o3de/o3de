@@ -8,9 +8,9 @@
 
 #pragma once
 
-// This file translates quality option macros like QUALITY_LOW_END to their relevant settings
+// This file translates quality option macros like QUALITY_LOW_END tiers to their relevant settings
 
-#ifdef QUALITY_LOW_END
+#if QUALITY_LOW_END_TIER1
 
     // Unifies the forward output into a single lighting buffer instead of splitting it into a GBuffer
     #ifndef UNIFIED_FORWARD_OUTPUT
@@ -26,10 +26,48 @@
     #ifndef ENABLE_AREA_LIGHT_VALIDATION
     #define ENABLE_AREA_LIGHT_VALIDATION    0
     #endif
+#endif
 
-    // Uncomment to disable all area light calcuation
-    // #ifndef ENABLE_AREA_LIGHTS
-    // #define ENABLE_AREA_LIGHTS           0
-    // #endif
+#if QUALITY_LOW_END_TIER2
+
+    //Disable shadow related calculations as shadow map passes are not part of the pipeline
+    #ifndef ENABLE_SHADOWS
+    #define ENABLE_SHADOWS               0
+    #endif
+
+    //Disable Light culling related processing
+    #ifndef ENABLE_LIGHT_CULLING
+    #define ENABLE_LIGHT_CULLING          0
+    #endif
+
+    //Disable all differnt types of area lights
+    #ifndef ENABLE_AREA_LIGHTS
+    #define ENABLE_AREA_LIGHTS           0
+    #endif
+
+    //Enable merging of tonemap to the forward pass and use filmic curve tonemap implementation
+    #ifndef ENABLE_MERGE_FILMIC_TONEMAP
+    #define ENABLE_MERGE_FILMIC_TONEMAP           1
+    #endif
+
+    #ifndef ENABLE_DECALS
+    #define ENABLE_DECALS              0
+    #endif
+
+    #ifndef ENABLE_SHADER_DEBUGGING
+    #define ENABLE_SHADER_DEBUGGING           0
+    #endif
+
+    #ifndef ENABLE_REFLECTIONPROBE_PARALLAXCORRECTION
+    #define ENABLE_REFLECTIONPROBE_PARALLAXCORRECTION 0
+    #endif
+
+    #ifndef ENABLE_REFLECTIONPROBE_BLENDING
+    #define ENABLE_REFLECTIONPROBE_BLENDING 0
+    #endif
+
+    #ifndef ENABLE_SPECULARAA
+    #define ENABLE_SPECULARAA 0
+    #endif
 
 #endif

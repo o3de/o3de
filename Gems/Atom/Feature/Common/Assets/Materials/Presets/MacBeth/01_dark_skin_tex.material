@@ -1,19 +1,16 @@
 {
-    "description": "",
-    "parentMaterial": "01_dark_skin.material",
     "materialType": "../../Types/StandardPBR.materialtype",
     "materialTypeVersion": 5,
-    "properties": {
-        "baseColor": {
-            "color": [
-                1.0,
-                1.0,
-                1.0,
-                1.0
-            ],
-            "textureBlendMode": "Lerp",
-            "textureMap": "01_dark_skin_sRGB.tif",
-            "useTexture": true
-        }
+    "parentMaterial": "01_dark_skin.material",
+    "propertyValues": {
+        "baseColor.color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "baseColor.textureBlendMode": "Lerp",
+        "baseColor.textureMap": "01_dark_skin_sRGB.tif",
+        "baseColor.useTexture": true
     }
 }

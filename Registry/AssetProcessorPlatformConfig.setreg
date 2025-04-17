@@ -1,5 +1,5 @@
 {
-    // ---- Enable/Disable platforms for the entire project. AssetProcessor will automatically add the current platform by default. 
+    // ---- Enable/Disable platforms for the entire project. AssetProcessor will automatically add the current platform by default.
 
     // PLATFORM DEFINITIONS
     // [Platform (unique identifier)]
@@ -53,10 +53,10 @@
                 "Platform mac": {
                     "tags": "tools,renderer,metal,null"
                 },
-                // this is an example of a headless platform that has no renderer.   
+                // this is an example of a headless platform that has no renderer.
                 // To use this you would still need to make sure 'assetplatform' in your startup params in your main() chooses this 'server' platform as your server 'assets' flavor
                 "Platform server": {
-                    "tags": "server,dx12,vulkan"
+                    "tags": "server,dx12,vulkan,null"
                 },
                 // this section allows you to turn on various platforms in addition to the host platform you're running on
                 // 'enabled' is AUTOMATICALLY TRUE for the current platform that you are running on, so it is not necessary to force it to true for that platform
@@ -89,7 +89,7 @@
                 // however if your metafile REPLACES the extension (for example, if you have the file blah.i_caf and its metafile is blah.exportsettings)
                 // then you specify the original extension here to narrow the scope.
                 // If a relative path to a specific file is provided instead of an extension, a change to the file will change all files
-                // with the associated extension (e.g. Animations/SkeletonList.xml=i_caf will cause all i_caf files to recompile when 
+                // with the associated extension (e.g. Animations/SkeletonList.xml=i_caf will cause all i_caf files to recompile when
                 // Animations/SkeletonList.xml within the current game project changes)
 
                 "MetaDataTypes": {
@@ -99,26 +99,27 @@
                     "fbx.assetinfo": "fbx",
                     "stl.assetinfo": "stl",
                     "gltf.assetinfo": "gltf",
-                    "glb.assetinfo": "glb"
+                    "glb.assetinfo": "glb",
+                    "usd.assetinfo": "usd"
 
                 },
 
                 // ---- add any folders to scan here.  The priority order is the order they appear here
-                // available macros are 
+                // available macros are
                 // @ROOT@ - the location of asset root
-                // @PROJECTROOT@ - the location of the project root, for example 'Q:\MyProjects\RPGSample' 
+                // @PROJECTROOT@ - the location of the project root, for example 'Q:\MyProjects\RPGSample'
                 // note that they are sorted by their 'order' value, and the lower the order the more important an asset is
                 // lower order numbers override higher ones.
                 // If specified, output will be prepended to every path found in that recognizer's watch folder.
                 // Note that you can also make the scan folder platform specific by using the keywords include and exclude.
                 // Both include and exclude can contain either platform tags, platform identifiers or both.
                 // if no include is specified, all currently enabled platforms are included by default.
-                // If includes ARE specified, it will be filtered down by the list of currently enabled platforms. 
+                // If includes ARE specified, it will be filtered down by the list of currently enabled platforms.
                 // "ScanFolder (unique identifier)": {
                 //  "include": "(comma seperated platform tags or identifiers)",
                 //  "exclude": "(comma seperated platform tags or identifiers)"
                 // }
-                // For example if you want to include a scan folder only for platforms that have the platform tags tools and renderer 
+                // For example if you want to include a scan folder only for platforms that have the platform tags tools and renderer
                 // but omit it for platform mac, you will have a scanfolder rule like
                 // "ScanFolder (unique identifier)": {
                 // "watch": "@ROOT@/foo",
@@ -132,7 +133,6 @@
                     "recursive": 1,
                     "order": 0
                 },
-                // gems will be auto-added from 100 onwards
                 "ScanFolder Root": {
                     "watch": "@ROOT@",
                     "recursive": 0,
@@ -155,69 +155,70 @@
                     "order": 40000
                 },
 
-                // Excludes files that match the pattern or glob 
+                // Configurable starting priority for all Gem scan folders to use.
+                // Each Gem scan folder added will increment this.
+                // NOTE: Each successive gem priority will be lower than the last.
+                "GemScanFolderStartingPriorityOrder": 100,
+
+                // Control how project-relative Gem scan folders are prioritized against the project's main scan folder (key: "Project/Assets", alias: @PROJECTROOT@).
+                //  "none" - any project Gem scan folder priority will be incremented from the "GemScanFolderStartingPriorityOrder" value (default behavior).
+                //  "lower" - each project Gem scan folder will be set to lower priority (higher numeric value) than the project scan folder.
+                //  "higher" - each project Gem scan folder will be set to higher priority (lower numeric value) than the project scan folder.
+                "ProjectRelativeGemsScanFolderPriority": "none",
+
+                // Excludes files that match the pattern or glob.
+                // the input string will be the relative path from the scan folder the file was found in.
+                // patterns are case sensitive regular expressions, while globs are simple wildcard matches (non-case-sensitive)
                 // if you use a pattern, remember to escape your backslashes (\\)
-                // The patterns are checked against a path relative to the entry's
-                // root scan folder.
                 "Exclude _LevelBackups": {
-                    "pattern": "(^|.+/)Levels/.*/_savebackup(/.*)?$"
+                    "glob": "*/_savebackup/*"
                 },
                 "Exclude _LevelAutoBackups": {
-                    "pattern": "(^|.+/)Levels/.*/_autobackup(/.*)?$"
-                },
-                "Exclude HoldFiles": {
-                    "pattern": "(^|.+/)Levels/.*_hold(/.*)?$"
+                    "glob": "*/_autobackup/*"
                 },
                 // note that $ has meaning to regex, so we escape it.
                 "Exclude TempFiles": {
                     "pattern": "(^|.+/)\\\\$tmp[0-9]*_.*"
                 },
-                "Exclude TmpAnimationCompression": {
-                    "pattern": "(^|.+/)Editor/Tmp/AnimationCompression(/.*)?$"
-                },
                 "Exclude EventLog": {
-                    "pattern": "(^|.+/)Editor/.*eventlog\\\\.xml"
+                    "glob": "*eventlog.xml"
                 },
                 "Exclude GameGemsCode": {
-                    "pattern": "(^|.+/)Gem/Code(/.*)?$"
+                    "glob": "Gem/Code/*"
                 },
                 "Exclude GameGemsResources": {
-                    "pattern": "(^|.+/)Gem/Resources(/.*)?$"
+                    "glob": "Gem/Resources/*"
                 },
                 "Exclude Private Certs": {
-                    "pattern": "(^|.+/)DynamicContent/Certificates/Private(/.*)?$"
+                    "glob": "*DynamicContent/Certificates/Private*"
                 },
                 "Exclude CMakeLists": {
-                    "pattern": "(^|.+/)CMakeLists\\\\.txt"
+                    "glob": "*CMakeLists.txt"
                 },
                 "Exclude CMakeFiles": {
-                    "pattern": "(^|.+/).+\\\\.cmake"
+                    "glob": "*.cmake"
                 },
                 "Exclude User": {
-                    "pattern": "^[Uu]ser(/.*)?$"
+                    "glob": "user/*"
                 },
                 "Exclude Build": {
-                    "pattern": "^[Bb]uild(/.*)?$"
+                    "glob": "build/*"
                 },
                 "Exclude Install": {
-                    "pattern": "^[Ii]nstall(/.*)?$"
+                    "glob": "install/*"
                 },
-                "Exclude UserSettings": {
-                    "pattern": "(^|[^/]+/)UserSettings\\\\.xml"
+                "Exclude ProjectPackages": {
+                    "glob": "ProjectPackages/*"
+                },
+                // Exclude Gems inside Projects, their Assets folders will still be included
+                "Exclude Gems": {
+                    "glob": "Gems/*"
+                },
+                // Exclude the .git folder which is commonly found in projects
+                "Exclude Git": {
+                    "glob": ".git/*"
                 },
 
-                // ------------------------------------------------------------------------------
-                // Large Worlds Test
-                // ------------------------------------------------------------------------------
-                "Exclude Work In Progress Folders": {
-                    "pattern": "(^|[^/]+/)WIP(/.*)?"
-                },
-                "Exclude Content Source Folders": {
-                    "pattern": "(^|[^/]+/)CONTENT_SOURCE(/.*)?"
-                },
-                "Exclude Art Source Folders": {
-                    "pattern": "(^|[^/]+/)ArtSource(/.*)?"
-                },
                 //------------------------------------------------------------------------------
                 // Copying Files Automatically Into the Cache
                 //------------------------------------------------------------------------------
@@ -228,6 +229,8 @@
                 // note that productAssetType is a means of setting the output asset Type (as in AZ::Data::AssetType) of a simple job
                 // and is the recommended way to specify that a certain kind of file (such as '*.myextension') becomes registered as the
                 // actual UUID of that type in the engine itself.
+
+                // globs ("*.txt") are usually faster to match (CPU wise) and easier for humans to understand than patterns.
 
                 // Use a regex for matching files, same params for all platforms
                 // "RC TGAs": {
@@ -258,14 +261,14 @@
                 // so ensure start your patterns with .* or as appropriate.
                 // Also, any rules which match will apply - so if you have two rules which both apply to PNG files for example
                 // but you only want one, you might want to use exclusion patterns:
-                 
+
                 //Example: copy everything EXCEPT the ones in the libs/ui
                 // "RC png-normal": {
                 //  "pattern": "(?!.*libs\\\\/ui\\\\/).*\\.png",
                 //  "params": "copy"
                 //}
 
-                //Example:  Process everything in the libs/ui folder 
+                //Example:  Process everything in the libs/ui folder
                 // "RC png-ui": {
                 //  "pattern": "(.*libs\\\\/ui\\\\/).*\\.png",
                 //  "params": "copy"
@@ -319,7 +322,7 @@
                     "productAssetType": "{B36FEB5C-41B6-4B58-A212-21EF5AEF523C}"
                 },
                 "RC png-entityicon": {
-                    "pattern": "(.*EntityIcons\\\\/).*\\\\.png",
+                    "pattern": "(.*(EntityIcons|Editor\\\\/Icons)\\\\/).*\\\\.(png|svg)",
                     "productAssetType": "{3436C30E-E2C5-4C3B-A7B9-66C94A28701B}",
                     "params": "skip",
                     "tools": "copy"
@@ -338,11 +341,6 @@
                 "RC bspace": {
                     "glob": "*.bspace",
                     "params": "copy"
-                },
-                "RC cdf": {
-                    "glob": "*.cdf",
-                    "params": "copy",
-                    "productAssetType": "{DF036C63-9AE6-4AC3-A6AC-8A1D76126C01}"
                 },
                 "RC comb": {
                     "glob": "*.comb",

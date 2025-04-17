@@ -21,7 +21,7 @@ namespace NvCloth
     {
         // It's necessary for the rule to specify the system allocator, otherwise
         // the editor crashes when deleting the cloth modifier from Scene Settings.
-        AZ_CLASS_ALLOCATOR_IMPL(ClothRule, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR_IMPL(ClothRule, AZ::SystemAllocator)
 
         const char* const ClothRule::DefaultChooseNodeName = "Choose a node";
         const char* const ClothRule::DefaultInverseMassesString = "Default: 1.0";
@@ -39,11 +39,9 @@ namespace NvCloth
         {
             const AZ::SceneAPI::Containers::SceneGraph::NodeIndex meshNodeIndex = [this, &graph]()
             {
-                if (const auto index = graph.Find(GetMeshNodeName() + AZStd::string(AZ::SceneAPI::Utilities::OptimizedMeshSuffix)); index.IsValid())
-                {
-                    return index;
-                }
-                return graph.Find(GetMeshNodeName());
+                const auto originalMeshIndex = graph.Find(GetMeshNodeName());
+                return AZ::SceneAPI::Utilities::SceneGraphSelector::RemapToOptimizedMesh(
+                    graph, originalMeshIndex);
             }();
 
             if (!meshNodeIndex.IsValid())

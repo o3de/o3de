@@ -15,6 +15,8 @@
 
 namespace AZ
 {
+    class Aabb;
+
     namespace Render
     {
         class AreaLightRequests
@@ -28,13 +30,13 @@ namespace AZ
 
             virtual ~AreaLightRequests() {}
 
-            //! Gets an area light's color. This value is indepedent from its intensity.
+            //! Gets an area light's color. This value is independent from its intensity.
             virtual const Color& GetColor() const = 0;
 
-            //! Sets an area light's color. This value is indepedent from its intensity.
+            //! Sets an area light's color. This value is independent from its intensity.
             virtual void SetColor(const Color& color) = 0;
 
-            //! Gets an area light's intensity. This value is indepedent from its color.
+            //! Gets an area light's intensity. This value is independent from its color.
             virtual float GetIntensity() const = 0;
 
             //! Gets whether an area light emits light in both directions from a 2D surface. Only applies to 2D shape types.
@@ -52,17 +54,21 @@ namespace AZ
             //! Gets an area light's photometric type.
             virtual PhotometricUnit GetIntensityMode() const = 0;
 
-            //! Sets an area light's intensity and intensity mode. This value is indepedent from its color.
+            //! Sets an area light's intensity and intensity mode. This value is independent from its color.
+            virtual void SetIntensityAndMode(float intensity, PhotometricUnit intensityMode) = 0;
+            
+            //! Sets an area light's intensity and intensity mode. This value is independent from its color.
+            //! O3DE_DEPRECATION_NOTICE(GHI-16553)
             virtual void SetIntensity(float intensity, PhotometricUnit intensityMode) = 0;
 
-            //! Sets an area light's intensity. This value is indepedent from its color.
+            //! Sets an area light's intensity. This value is independent from its color.
             //! Assumes no change in the current photometric unit of the intensity.
             virtual void SetIntensity(float intensity) = 0;
 
             //! Gets the distance at which the area light will no longer affect lighting.
             virtual float GetAttenuationRadius() const = 0;
 
-            //! Set the distance and which an area light will no longer affect lighitng. Setting this forces the RadiusCalculation to Explicit mode.
+            //! Set the distance and which an area light will no longer affect lighting. Setting this forces the RadiusCalculation to Explicit mode.
             virtual void SetAttenuationRadius(float radius) = 0;
 
             /*
@@ -73,6 +79,9 @@ namespace AZ
 
             //! Sets the photometric unit to the one provided and converts the intensity to the photometric unit so actual light intensity remains constant.
             virtual void ConvertToIntensityMode(PhotometricUnit intensityMode) = 0;
+
+            //! Gets the surface area of the shape.
+            virtual float GetSurfaceArea() const = 0;
 
             // Shutters
 
@@ -140,19 +149,37 @@ namespace AZ
             //! @param normalShadowBias Sets the amount of normal shadow bias to apply.
             virtual void SetNormalShadowBias(float normalShadowBias) = 0;
 
+            //! Gets the current shadow caching mode. Cached shadows use persistent textures and only update
+            //! when they detect a change. Regular shadows use transient textures but re-render every frame.
+            virtual AreaLightComponentConfig::ShadowCachingMode GetShadowCachingMode() const = 0;
+
+            //! Sets the current shadow caching mode. Cached shadows use persistent textures and only update
+            //! when they detect a change. Regular shadows use transient textures but re-render every frame.
+            virtual void SetShadowCachingMode(AreaLightComponentConfig::ShadowCachingMode cachingMode) = 0;
+
             // Global Illumination
 
-            //! Returns true if this light affects global illumination
+            //! Returns true if this light affects global illumination.
             virtual bool GetAffectsGI() const = 0;
 
-            //! Set whether this light affects global illumination
+            //! Set whether this light affects global illumination.
             virtual void SetAffectsGI(bool affectsGI) const = 0;
 
-            //! Returns the contribution multiplier for global illumination
+            //! Returns the contribution multiplier for global illumination.
             virtual float GetAffectsGIFactor() const = 0;
 
-            //! Sets the contribution multiplier for global illumination
+            //! Sets the contribution multiplier for global illumination.
             virtual void SetAffectsGIFactor(float affectsGIFactor) const = 0;
+
+            //! Gets lighting channel mask of Area Light.
+            virtual uint32_t GetLightingChannelMask() const = 0;
+
+            //! Gets lighting channel mask of Area Light
+            virtual void SetLightingChannelMask(uint32_t lightingChannelMask) = 0;
+            // Debug Visualization
+
+            //! Returns the Aabb for the debug visualization of the light.
+            virtual AZ::Aabb GetLocalVisualizationBounds() const = 0;
         };
 
         //! The EBus for requests to for setting and getting light component properties.

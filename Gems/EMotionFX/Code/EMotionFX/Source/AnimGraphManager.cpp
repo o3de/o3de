@@ -24,10 +24,10 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphManager, AnimGraphManagerAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphManager, AnimGraphManagerAllocator)
 
     AnimGraphManager::AnimGraphManager()
-        : BaseObject()
+        : MCore::RefCounted()
         , m_blendSpaceManager(nullptr)
     {
     }
@@ -84,7 +84,7 @@ namespace EMotionFX
             RemoveAnimGraphInstance(m_animGraphInstances.size() - 1, delFromMemory);
         }
     }
-    
+
 
     void AnimGraphManager::AddAnimGraph(AnimGraph* setup)
     {

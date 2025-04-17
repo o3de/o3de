@@ -24,7 +24,7 @@ namespace ScriptCanvas::Developer
         : public EditorAutomationAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(SimulateKeyAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SimulateKeyAction, AZ::SystemAllocator);
         AZ_RTTI(SimulateKeyAction, "{07259AB5-E5B1-4A4E-8966-610CA3E5F5E3}", EditorAutomationAction);
 
         enum class KeyAction
@@ -40,8 +40,8 @@ namespace ScriptCanvas::Developer
         
     private:
     
-        AZ::u32 m_keyValue;
-        KeyAction m_keyAction;
+        [[maybe_unused]] AZ::u32 m_keyValue;
+        [[maybe_unused]] KeyAction m_keyAction;
     };
 
     /**
@@ -51,7 +51,7 @@ namespace ScriptCanvas::Developer
         : public SimulateKeyAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(KeyPressAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(KeyPressAction, AZ::SystemAllocator);
         AZ_RTTI(KeyPressAction, "{20F93C69-993C-4658-974B-06F1EE9AFBAC}", SimulateKeyAction);
 
         explicit KeyPressAction(AZ::u32 keyValue = 0)
@@ -67,7 +67,7 @@ namespace ScriptCanvas::Developer
         : public SimulateKeyAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(KeyReleaseAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(KeyReleaseAction, AZ::SystemAllocator);
         AZ_RTTI(KeyReleaseAction, "{B4000C12-03F9-4AC1-B1BA-88D8B7FC4CB1}", SimulateKeyAction);
 
         explicit KeyReleaseAction(AZ::u32 keyValue = 0)
@@ -83,7 +83,7 @@ namespace ScriptCanvas::Developer
         : public CompoundAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(TypeCharAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TypeCharAction, AZ::SystemAllocator);
         AZ_RTTI(TypeCharAction, "{67FBD994-18BB-4434-AD8E-70F446A9B185}", CompoundAction);
 
         explicit TypeCharAction(QChar qChar);
@@ -97,7 +97,7 @@ namespace ScriptCanvas::Developer
         : public CompoundAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(TypeStringAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TypeStringAction, AZ::SystemAllocator);
         AZ_RTTI(TypeStringAction, "{51D701B1-6386-420C-A1BD-D72272BBBBD5}", CompoundAction);
 
         explicit TypeStringAction(QString targetString);

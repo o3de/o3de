@@ -6,11 +6,11 @@
  *
  */
 
-#include <AudioSystemGemSystemComponent.h>
+#include "AudioSystemGemSystemComponent.h"
 
+#include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ILogger.h>
 #include <AzCore/Interface/Interface.h>
-#include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/Module/Environment.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -57,7 +57,6 @@ namespace AudioSystemGem
             {
                 ec->Class<AudioSystemGemSystemComponent>("Audio System Gem", "Audio System handles requests and managages data related to the audio sub-system")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }
@@ -66,12 +65,12 @@ namespace AudioSystemGem
 
     void AudioSystemGemSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("AudioSystemGemService"));
+        provided.push_back(AZ_CRC_CE("AudioSystemGemService"));
     }
 
     void AudioSystemGemSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("AudioSystemGemService"));
+        incompatible.push_back(AZ_CRC_CE("AudioSystemGemService"));
     }
 
     void AudioSystemGemSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
@@ -87,6 +86,7 @@ namespace AudioSystemGem
     AudioSystemGemSystemComponent::AudioSystemGemSystemComponent()
     {
         Audio::Platform::InitializeAudioAllocators();
+        CreateAudioSystem();
     }
 
     AudioSystemGemSystemComponent::~AudioSystemGemSystemComponent()
@@ -119,8 +119,9 @@ namespace AudioSystemGem
 
     void AudioSystemGemSystemComponent::Activate()
     {
-        Audio::Gem::AudioSystemGemRequestBus::Handler::BusConnect();
+        Audio::Gem::SystemRequestBus::Handler::BusConnect();
         AzFramework::ApplicationLifecycleEvents::Bus::Handler::BusConnect();
+        AzFramework::LevelSystemLifecycleNotificationBus::Handler::BusConnect();
 
     #if defined(AUDIO_SYSTEM_EDITOR)
         AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
@@ -133,8 +134,9 @@ namespace AudioSystemGem
 
     void AudioSystemGemSystemComponent::Deactivate()
     {
-        Audio::Gem::AudioSystemGemRequestBus::Handler::BusDisconnect();
+        Audio::Gem::SystemRequestBus::Handler::BusDisconnect();
         AzFramework::ApplicationLifecycleEvents::Bus::Handler::BusDisconnect();
+        AzFramework::LevelSystemLifecycleNotificationBus::Handler::BusDisconnect();
 
     #if defined(AUDIO_SYSTEM_EDITOR)
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
@@ -144,41 +146,30 @@ namespace AudioSystemGem
     #endif // AUDIO_SYSTEM_EDITOR
     }
 
-    bool AudioSystemGemSystemComponent::Initialize(const SSystemInitParams* initParams)
+    bool AudioSystemGemSystemComponent::Initialize()
     {
         using namespace Audio;
 
-        // When nullptr is passed, create a NullAudioSystem instead of the real thing.
-        if (!initParams)
+        bool success = AZ::Interface<Audio::IAudioSystem>::Get()->Initialize();
+        if (success)
         {
-            return CreateNullAudioSystem();
-        }
-
-        bool success = false;
-
-        if (CreateAudioSystem())
-        {
-            AZLOG_INFO("AudioSystem created!");
-
             // Initialize the implementation module...
             bool initImplSuccess = false;
-            Gem::AudioEngineGemRequestBus::BroadcastResult(initImplSuccess, &Gem::AudioEngineGemRequestBus::Events::Initialize);
+            Gem::EngineRequestBus::BroadcastResult(initImplSuccess, &Gem::EngineRequestBus::Events::Initialize);
 
             if (initImplSuccess)
             {
                 PrepareAudioSystem();
-
-                GetISystem()->GetISystemEventDispatcher()->RegisterListener(this);
             }
             else
             {
-                if (Gem::AudioEngineGemRequestBus::HasHandlers())
+                if (Gem::EngineRequestBus::HasHandlers())
                 {
-                    AZLOG_ERROR("The Audio Engine did not initialize correctly!");
+                    AZLOG_ERROR("%s", "The Audio Engine did not initialize correctly!");
                 }
                 else
                 {
-                    AZLOG_NOTICE("Running without any Audio Engine!");
+                    AZLOG_NOTICE("%s", "Running without any Audio Engine!");
                 }
             }
 
@@ -188,44 +179,22 @@ namespace AudioSystemGem
         return success;
     }
 
-    bool AudioSystemGemSystemComponent::CreateNullAudioSystem()
-    {
-        AZ_Assert(!AZ::Interface<Audio::IAudioSystem>::Get(), "The IAudioSystem interface is already registered!");
-
-        m_audioSystem = AZStd::make_unique<Audio::NullAudioSystem>();
-
-        return (m_audioSystem != nullptr);
-    }
-
     void AudioSystemGemSystemComponent::Release()
     {
         AZ_Assert(AZ::Interface<Audio::IAudioSystem>::Get() != nullptr, "The IAudioSystem interface has already been unregistered!");
         AZ::Interface<Audio::IAudioSystem>::Get()->Release();
 
-        Audio::Gem::AudioEngineGemRequestBus::Broadcast(&Audio::Gem::AudioEngineGemRequestBus::Events::Release);
-
-        // Delete the Audio System
-        // It should be the last object that is freed from the audio system memory pool before the allocator is destroyed.
-        m_audioSystem.reset();
-
-        GetISystem()->GetISystemEventDispatcher()->RemoveListener(this);
+        Audio::Gem::EngineRequestBus::Broadcast(&Audio::Gem::EngineRequestBus::Events::Release);
     }
 
-    void AudioSystemGemSystemComponent::OnSystemEvent(ESystemEvent event, [[maybe_unused]] UINT_PTR wparam, [[maybe_unused]] UINT_PTR lparam)
+    void AudioSystemGemSystemComponent::OnLoadingStart([[maybe_unused]] const char* levelName)
     {
-        switch (event)
-        {
-            case ESYSTEM_EVENT_LEVEL_LOAD_START:
-            {
-                AZ::AllocatorInstance<Audio::AudioSystemAllocator>::Get().GarbageCollect();
-                break;
-            }
-            case ESYSTEM_EVENT_LEVEL_POST_UNLOAD:
-            {
-                AZ::AllocatorInstance<Audio::AudioSystemAllocator>::Get().GarbageCollect();
-                break;
-            }
-        }
+        AZ::AllocatorInstance<Audio::AudioSystemAllocator>::Get().GarbageCollect();
+    }
+
+    void AudioSystemGemSystemComponent::OnUnloadComplete([[maybe_unused]] const char* levelName)
+    {
+        AZ::AllocatorInstance<Audio::AudioSystemAllocator>::Get().GarbageCollect();
     }
 
     void AudioSystemGemSystemComponent::OnApplicationConstrained(Event)
@@ -278,28 +247,31 @@ namespace AudioSystemGem
     }
 #endif // AUDIO_SYSTEM_EDITOR
 
-    bool AudioSystemGemSystemComponent::CreateAudioSystem()
+    void AudioSystemGemSystemComponent::CreateAudioSystem()
     {
-        AZ_Assert(!AZ::Interface<Audio::IAudioSystem>::Get(), "CreateAudioSystem - The IAudioSystem interface is already registered!");
-
-        bool success = false;
-        m_audioSystem = AZStd::make_unique<Audio::CAudioSystem>();
-        if (m_audioSystem)
+        int audioIsDisabled = 0;
+        if (auto console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
         {
-            success = AZ::Interface<Audio::IAudioSystem>::Get()->Initialize();
+            [[maybe_unused]] auto result = console->GetCvarValue("sys_audio_disable", audioIsDisabled);
+            AZ_Warning("AudioSystem", result == AZ::GetValueResult::Success,
+                "Failed to get the 's_AudioDisable' Cvar, result is %d\n", static_cast<int>(result));
+        }
+
+        if (audioIsDisabled)
+        {
+            m_audioSystem = AZStd::make_unique<Audio::NullAudioSystem>();
+            AZLOG_INFO("%s", "Null AudioSystem created!");
         }
         else
         {
-            AZLOG_ERROR("Could not create AudioSystem!");
+            m_audioSystem = AZStd::make_unique<Audio::CAudioSystem>();
+            AZLOG_INFO("%s", "AudioSystem created!");
         }
-
-        return success;
     }
 
     void AudioSystemGemSystemComponent::PrepareAudioSystem()
     {
         using namespace Audio;
-
         if (auto audioSystem = AZ::Interface<IAudioSystem>::Get(); audioSystem != nullptr)
         {
             // This is called when a new audio implementation has been set,

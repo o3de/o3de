@@ -15,7 +15,7 @@
 namespace O3DE::ProjectManager
 {
     class ProjectManagerApplicationTests 
-        : public ::UnitTest::ScopedAllocatorSetupFixture
+        : public ::UnitTest::LeakDetectionFixture
     {
     public:
         void SetUp() override

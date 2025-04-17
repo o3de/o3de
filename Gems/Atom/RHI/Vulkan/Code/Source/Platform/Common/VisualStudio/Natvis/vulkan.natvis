@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+  <Type Name="AZ::Vulkan::CommandList">
+    <DisplayString Condition="m_validator.m_scope != nullptr">Scope=[{m_validator.m_scope->m_name}]</DisplayString>
+    <Expand>
+      <Item Name="[current_scope]">m_validator.m_scope</Item>
+      <Synthetic Name="[draw_state]" ExcludeView="compute">
+        <DisplayString>State for draw operations</DisplayString>
+        <Expand>
+          <Item Name="[current_renderpass]" Optional="true">m_state.m_framebuffer->m_renderPass.px</Item>
+          <Item Name="[current_framebuffer]" Optional="true">m_state.m_framebuffer</Item>
+          <Item Name="[current_pipeline]">m_state.m_bindingsByPipe[0].m_pipelineState</Item>
+          <Item Name="[current_pipeline_layout]" Optional="true">m_state.m_bindingsByPipe[0].m_pipelineState->m_pipeline.px->m_pipelineLayout.px</Item>
+          <Item Name="[current_scissors]">m_state.m_scissorState.m_states</Item>
+          <Item Name="[current_viewports]">m_state.m_viewportState.m_states</Item>
+          <Item Name="[current_shading_rate]">m_state.m_shadingRateState</Item>
+          <Item Name="[srgs_by_azsl_slot]">m_state.m_bindingsByPipe[0].m_SRGByAzslBindingSlot</Item>
+          <Item Name="[srgs_by_vulkan_index]">m_state.m_bindingsByPipe[0].m_SRGByVulkanBindingIndex</Item>
+        </Expand>
+      </Synthetic>
+      <Synthetic Name="[compute_state]" ExcludeView="draw">
+        <DisplayString>State for compute operations</DisplayString>
+        <Expand>
+          <Item Name="[current_pipeline]">m_state.m_bindingsByPipe[1].m_pipelineState</Item>
+          <Item Name="[current_pipeline_layout]" Optional="true">m_state.m_bindingsByPipe[1].m_pipelineState->m_pipeline.px->m_pipelineLayout.px</Item>
+          <Item Name="[srgs_by_azsl_slot]">m_state.m_bindingsByPipe[1].m_SRGByAzslBindingSlot</Item>
+          <Item Name="[srgs_by_vulkan_index]">m_state.m_bindingsByPipe[1].m_SRGByVulkanBindingIndex</Item>
+        </Expand>
+      </Synthetic>
+    </Expand>
+  </Type>
+  <Type Name="AZ::Vulkan::ShaderResourceGroup">
+    <DisplayString>{m_pool->m_name.m_view}</DisplayString>
+    <Expand>
+      <Item Name="m_bindingSlot">m_bindingSlot</Item>
+      <Item Name="[current_compiled_data]">m_compiledData[m_lastCompileFrameIteration]</Item>
+      <Item Name="[layout]">((AZ::Vulkan::ShaderResourceGroupPool*)(m_pool))->m_descriptorSetLayout.px</Item>
+    </Expand>
+  </Type>
+  <Type Name="AZ::Vulkan::Scope">
+    <DisplayString>{m_id}</DisplayString>
+  </Type>
+  <Type Name="AZ::Vulkan::RenderPass">
+    <DisplayString>{m_name}</DisplayString>
+  </Type>
+  <Type Name="AZ::Vulkan::Pipeline">
+    <DisplayString>{m_name}</DisplayString>
+  </Type>
+  <Type Name="AZ::Vulkan::PipelineState">
+    <DisplayString>{m_name}</DisplayString>
+  </Type>
+  <Type Name="AZ::Vulkan::PipelineLayout">
+    <DisplayString>{m_name}</DisplayString>
+  </Type>
+</AutoVisualizer>

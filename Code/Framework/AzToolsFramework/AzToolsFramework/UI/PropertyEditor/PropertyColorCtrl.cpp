@@ -9,6 +9,7 @@
 #include "PropertyQTConstants.h"
 #include <AzQtComponents/Components/Widgets/ColorPicker.h>
 #include <AzQtComponents/Utilities/Conversions.h>
+#include <AzQtComponents/Utilities/ColorUtilities.h>
 #include <QtWidgets/QSlider>
 #include <QtWidgets/QLineEdit>
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option")
@@ -128,13 +129,7 @@ namespace AzToolsFramework
                 m_pColorDialog->setCurrentColor(azColor);
             }
 
-            int R, G, B, A;
-            m_color.getRgb(&R, &G, &B, &A);
-            auto colorStr =
-                m_alphaChannelEnabled
-                ? QStringLiteral("%1,%2,%3,%4").arg(R).arg(G).arg(B).arg(A)
-                : QStringLiteral("%1,%2,%3").arg(R).arg(G).arg(B)
-                ;
+            auto colorStr = AzQtComponents::MakePropertyDisplayStringInts(m_color, m_alphaChannelEnabled);
             m_colorEdit->setText(colorStr);
         }
     }
@@ -196,6 +191,8 @@ namespace AzToolsFramework
 
         if (m_config.m_propertyColorSpaceId != m_config.m_colorPickerDialogColorSpaceId)
         {
+            m_pColorDialog->setAlternateColorspaceEnabled(true);
+
             AZStd::string propertyColorSpaceName = m_config.m_colorSpaceNames[m_config.m_propertyColorSpaceId];
             AZStd::string dialogColorSpaceName = m_config.m_colorSpaceNames[m_config.m_colorPickerDialogColorSpaceId];
             if (!propertyColorSpaceName.empty() && !dialogColorSpaceName.empty())
@@ -203,12 +200,22 @@ namespace AzToolsFramework
                 QString comment = AZStd::string::format("Mixing space: %s | Final space: %s", dialogColorSpaceName.c_str(), propertyColorSpaceName.c_str()).c_str();
                 m_pColorDialog->setComment(comment);
             }
+
+            if (!propertyColorSpaceName.empty())
+            {
+                m_pColorDialog->setAlternateColorspaceName(propertyColorSpaceName.c_str());
+            }
+            else
+            {
+                m_pColorDialog->setAlternateColorspaceName("Output");
+            }
         }
 
         connect(m_pColorDialog, &AzQtComponents::ColorPicker::currentColorChanged, this, 
             [=](AZ::Color color)
         {
             color = TransformColor(color, m_config.m_colorPickerDialogColorSpaceId, m_config.m_propertyColorSpaceId);
+            m_pColorDialog->setAlternateColorspaceValue(color);
             onSelected(AzQtComponents::toQColor(color));
         });
 
@@ -239,9 +246,11 @@ namespace AzToolsFramework
     {
         // Update the color but don't need to update the dialog color since
         // this signal came from the dialog
-        SetColor(color, false);
-
-        emit valueChanged(m_color);
+        if (m_color != color)
+        {
+            SetColor(color, false);
+            emit valueChanged(m_color);
+        }
     }
 
     QColor PropertyColorCtrl::convertFromString(const QString& string)
@@ -321,7 +330,7 @@ namespace AzToolsFramework
 
     void AZColorPropertyHandler::ConsumeAttribute(PropertyColorCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName)
     {
-        if (attrib == AZ_CRC("AlphaChannel", 0xa0cab5cf))
+        if (attrib == AZ_CRC_CE("AlphaChannel"))
         {
             bool alphaChannel;
             if (attrValue->Read<bool>(alphaChannel))
@@ -337,7 +346,7 @@ namespace AzToolsFramework
         // Unlike other property editors that are configured through a collection of attributes attributes, PropertyColorCtrl uses a single ColorEditorConfiguration
         // attribute that encompasses many settings. This is because ColorEditorConfiguration's settings are closely related to each other, and if a widget needs
         // to set one of these settings, it likely needs to set all of the settings. So it's less cumbersome to just group them all together.
-        else if (attrib == AZ_CRC("ColorEditorConfiguration", 0xc8b9510e))
+        else if (attrib == AZ_CRC_CE("ColorEditorConfiguration"))
         {
             ColorEditorConfiguration config;
             if (attrValue->Read<ColorEditorConfiguration>(config))
@@ -351,6 +360,7 @@ namespace AzToolsFramework
     void PropertyColorCtrl::SetColorEditorConfiguration(const ColorEditorConfiguration& configuration)
     {
         m_config = configuration;
+        setAlphaChannelEnabled(m_config.m_colorPickerDialogConfiguration == AzQtComponents::ColorPicker::Configuration::RGBA);
     }
 
     QColor PropertyColorCtrl::TransformColor(const QColor& color, uint32_t fromColorSpaceId, uint32_t toColorSpaceId) const
@@ -398,7 +408,7 @@ namespace AzToolsFramework
         PropertyColorCtrl* newCtrl = aznew PropertyColorCtrl(pParent);
         connect(newCtrl, &PropertyColorCtrl::valueChanged, this, [newCtrl]()
             {
-                EBUS_EVENT(PropertyEditorGUIMessages::Bus, RequestWrite, newCtrl);
+                PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Events::RequestWrite, newCtrl);
             });
         connect(newCtrl, &PropertyColorCtrl::editingFinished, this, [newCtrl]()
             {
@@ -437,8 +447,10 @@ namespace AzToolsFramework
     ////////////////////////////////////////////////////////////////
     void RegisterColorPropertyHandlers()
     {
-        EBUS_EVENT(PropertyTypeRegistrationMessages::Bus, RegisterPropertyType, aznew Vector3ColorPropertyHandler());
-        EBUS_EVENT(PropertyTypeRegistrationMessages::Bus, RegisterPropertyType, aznew AZColorPropertyHandler());
+        PropertyTypeRegistrationMessages::Bus::Broadcast(
+            &PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew Vector3ColorPropertyHandler());
+        PropertyTypeRegistrationMessages::Bus::Broadcast(
+            &PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew AZColorPropertyHandler());
     }
 
 }

@@ -8,6 +8,7 @@
 
 #include <AzCore/IO/Streamer/Statistics.h>
 #include <AzCore/Debug/Profiler.h>
+#include <AzCore/std/string/conversions.h>
 
 namespace AZ::IO
 {
@@ -139,10 +140,17 @@ namespace AZ::IO
         [[maybe_unused]] AZStd::string_view name,
         [[maybe_unused]] double value)
     {
-        AZ_PROFILE_DATAPOINT(AzCore, value,
-            "Streamer/%.*s/%.*s (Raw)",
-            aznumeric_cast<int>(owner.size()), owner.data(),
-            aznumeric_cast<int>(name.size()), name.data());
+        // AZ_PROFILE_DATAPOINT requires a wstring as input, but you can't feed non-wstring parameters to wstring::format.
+        const size_t MaxStatNameLength = 256;
+        wchar_t statBufferStack[MaxStatNameLength];
+        statBufferStack[MaxStatNameLength - 1] = 0; // make sure it is null terminated
+
+        AZStd::to_wstring(statBufferStack, MaxStatNameLength - 1,
+            AZStd::string::format("Streamer/%.*s/%.*s (Raw)",
+                aznumeric_cast<int>(owner.size()), owner.data(),
+                aznumeric_cast<int>(name.size()), name.data()));
+        
+        AZ_PROFILE_DATAPOINT(AzCore, value,statBufferStack);
     }
 
     AZStd::string_view Statistic::GetOwner() const

@@ -1,5 +1,6 @@
 {
     "project_name": "${Name}",
+    "version": "${Version}",
     "project_id": "${ProjectId}",
     "origin": "The primary repo for ${Name} goes here: i.e. http://www.mydomain.com",
     "license": "What license ${Name} uses goes here: i.e. https://opensource.org/licenses/Apache-2.0 Or https://opensource.org/licenses/MIT etc.",
@@ -15,5 +16,11 @@
     "engine": "o3de",
     "external_subdirectories": [
         "Gem"
+    ],
+    "gem_names": [
+        "${Name}",
+        "Atom",
+        "CameraFramework",
+        "ImGui"
     ]
 }

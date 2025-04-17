@@ -35,7 +35,7 @@ namespace ContainerTypeReflection
 
     public:
         AZ_TYPE_INFO(ReflectOnDemandTargets, "{FE658DB8-8F68-4E05-971A-97F398453B92}");
-        AZ_CLASS_ALLOCATOR(ReflectOnDemandTargets, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ReflectOnDemandTargets, AZ::SystemAllocator);
 
         ReflectOnDemandTargets() = default;
         ~ReflectOnDemandTargets() = default;

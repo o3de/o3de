@@ -15,16 +15,22 @@ namespace TestImpact
     namespace Client
     {
         TestRunBase::TestRunBase(
+            const AZStd::string& testNamespace,
             const AZStd::string& name,
             const AZStd::string& commandString,
-            AZStd::chrono::high_resolution_clock::time_point startTime,
+            const AZStd::string& stdOutput,
+            const AZStd::string& stdError,
+            AZStd::chrono::steady_clock::time_point startTime,
             AZStd::chrono::milliseconds duration,
             TestRunResult result)
             : m_targetName(name)
             , m_commandString(commandString)
+            , m_stdOutput(stdOutput)
+            , m_stdError(stdError)
             , m_startTime(startTime)
             , m_duration(duration)
             , m_result(result)
+            , m_testNamespace(testNamespace)
         {
         }
 
@@ -38,12 +44,12 @@ namespace TestImpact
             return m_commandString;
         }
 
-        AZStd::chrono::high_resolution_clock::time_point TestRunBase::GetStartTime() const
+        AZStd::chrono::steady_clock::time_point TestRunBase::GetStartTime() const
         {
             return m_startTime;
         }
 
-        AZStd::chrono::high_resolution_clock::time_point TestRunBase::GetEndTime() const
+        AZStd::chrono::steady_clock::time_point TestRunBase::GetEndTime() const
         {
             return m_startTime + m_duration;
         }
@@ -53,9 +59,24 @@ namespace TestImpact
             return m_duration;
         }
 
+        const AZStd::string& TestRunBase::GetTestNamespace() const
+        {
+            return m_testNamespace;
+        }
+
         TestRunResult TestRunBase::GetResult() const
         {
             return m_result;
+        }
+
+        const AZStd::string& TestRunBase::GetStdOutput() const
+        {
+            return m_stdOutput;
+        }
+
+        const AZStd::string& TestRunBase::GetStdError() const
+        {
+            return m_stdError;
         }
 
         TestRunWithExecutionFailure::TestRunWithExecutionFailure(TestRunBase&& testRun)
@@ -117,11 +138,14 @@ namespace TestImpact
         CompletedTestRun::CompletedTestRun(
             const AZStd::string& name,
             const AZStd::string& commandString,
-            AZStd::chrono::high_resolution_clock::time_point startTime,
+            const AZStd::string& stdOutput,
+            const AZStd::string& stdError,
+            AZStd::chrono::steady_clock::time_point startTime,
             AZStd::chrono::milliseconds duration,
             TestRunResult result,
-            AZStd::vector<Test>&& tests)
-            : TestRunBase(name, commandString, startTime, duration, result)
+            AZStd::vector<Test>&& tests,
+            const AZStd::string& testNamespace)
+            : TestRunBase(testNamespace, name, commandString, stdOutput, stdError, startTime, duration, result)
             , m_tests(AZStd::move(tests))
         {
             AZStd::tie(m_totalNumPassingTests, m_totalNumFailingTests, m_totalNumDisabledTests) = CalculateTestCaseMetrics(m_tests);

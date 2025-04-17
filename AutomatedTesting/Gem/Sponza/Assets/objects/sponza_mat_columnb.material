@@ -1,19 +1,20 @@
 {
-    "materialType": "Materials/Types/StandardPBR.materialtype",
-    "materialTypeVersion": 4,
+    "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardPBR.materialtype",
+    "materialTypeVersion": 5,
     "propertyValues": {
         "baseColor.textureMap": "../Textures/columnB_1k_basecolor.png",
         "clearCoat.factor": 0.5,
         "clearCoat.normalMap": "../Textures/columnB_1k_normal.jpg",
         "clearCoat.roughness": 0.30000001192092896,
         "general.applySpecularAA": true,
-        "irradiance.color": [
+        "irradiance.manualColor": [
             0.41788357496261597,
             0.40723279118537903,
             0.4286869466304779,
             1.0
         ],
         "normal.textureMap": "../Textures/columnB_1k_normal.jpg",
+        "normal.flipY": true,
         "occlusion.diffuseTextureMap": "../Textures/columnB_1k_ao.png",
         "opacity.factor": 1.0,
         "parallax.factor": 0.020999999716877937,

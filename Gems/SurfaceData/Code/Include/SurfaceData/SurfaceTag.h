@@ -18,7 +18,7 @@ namespace SurfaceData
     class SurfaceTag final
     {
     public:
-        AZ_CLASS_ALLOCATOR(SurfaceTag, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SurfaceTag, AZ::SystemAllocator);
         AZ_TYPE_INFO(SurfaceTag, "{67C8C6ED-F32A-443E-A777-1CAE48B22CD7}");
 
         static void Reflect(AZ::ReflectContext* context);

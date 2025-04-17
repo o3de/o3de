@@ -77,6 +77,9 @@ namespace AZ
             AZStd::string m_bakedCubeMapRelativePath;
             Data::Asset<RPI::StreamingImageAsset> m_authoredCubeMapAsset;
             float m_bakeExposure = 0.0f;
+
+            // handler for the inner extents being updated
+            AZ::Event<bool>::Handler m_innerExtentsChangedHandler;
         };
 
     } // namespace Render

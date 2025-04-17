@@ -29,8 +29,13 @@ namespace UnitTest
         // AzFramework::WindowRequestBus overrides ...
         MOCK_METHOD1(SetWindowTitle, void(const AZStd::string&));
         MOCK_CONST_METHOD0(GetClientAreaSize, AzFramework::WindowSize());
-        MOCK_METHOD1(ResizeClientArea, void(AzFramework::WindowSize clientAreaSize));
+        MOCK_CONST_METHOD0(GetMaximumClientAreaSize, AzFramework::WindowSize());
+        MOCK_METHOD2(ResizeClientArea, void(AzFramework::WindowSize clientAreaSize, const AzFramework::WindowPosOptions& options));
         MOCK_CONST_METHOD0(SupportsClientAreaResize, bool());
+        MOCK_METHOD1(SetRenderResolution, void(AzFramework::WindowSize resolution));
+        MOCK_CONST_METHOD0(GetRenderResolution, AzFramework::WindowSize());
+        MOCK_CONST_METHOD0(IsCustomizedResolutionEnabled, bool());
+        MOCK_METHOD1(SetEnableCustomizedResolution, void(bool));
         MOCK_CONST_METHOD0(GetFullScreenState, bool());
         MOCK_METHOD1(SetFullScreenState, void(bool));
         MOCK_CONST_METHOD0(CanToggleFullScreenState, bool());

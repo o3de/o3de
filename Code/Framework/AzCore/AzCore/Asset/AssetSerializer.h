@@ -152,18 +152,18 @@ namespace AZ {
                 return 1;
             }
 
-            const Uuid& GetTemplatedTypeId(size_t element) override
+            AZ::TypeId GetTemplatedTypeId(size_t element) override
             {
                 (void)element;
                 return SerializeGenericTypeInfo<T>::GetClassTypeId();
             }
 
-            const Uuid& GetSpecializedTypeId() const override
+            AZ::TypeId GetSpecializedTypeId() const override
             {
                 return azrtti_typeid<ThisType>();
             }
 
-            const Uuid& GetGenericTypeId() const override
+            AZ::TypeId GetGenericTypeId() const override
             {
                 return GetAssetClassId();
             }
@@ -200,7 +200,7 @@ namespace AZ {
             return GetCurrentSerializeContextModule().CreateGenericClassInfo<ThisType>();
         }
 
-        static const Uuid& GetClassTypeId()
+        static AZ::TypeId GetClassTypeId()
         {
             return GetGenericInfo()->m_classData.m_typeId;
         }

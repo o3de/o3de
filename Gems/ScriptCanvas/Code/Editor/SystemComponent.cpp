@@ -14,7 +14,9 @@
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/std/string/wildcard.h>
 #include <AzFramework/Entity/EntityContextBus.h>
+#include <AzFramework/Network/IRemoteTools.h>
 #include <AzFramework/IO/FileOperations.h>
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/API/ViewPaneOptions.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/UI/PropertyEditor/GenericComboBoxCtrl.h>
@@ -30,6 +32,7 @@
 #include <QFileInfo>
 #include <QDir>
 #include <QMenu>
+#include <ScriptCanvasContextIdentifiers.h>
 #include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
 #include <ScriptCanvas/Components/EditorGraph.h>
 #include <ScriptCanvas/Components/EditorGraphVariableManagerComponent.h>
@@ -37,6 +40,7 @@
 #include <ScriptCanvas/Data/DataRegistry.h>
 #include <ScriptCanvas/Libraries/Libraries.h>
 #include <ScriptCanvas/PerformanceStatisticsBus.h>
+#include <ScriptCanvas/Utils/ScriptCanvasConstants.h>
 #include <ScriptCanvas/Variable/VariableCore.h>
 
 namespace ScriptCanvasEditor
@@ -73,7 +77,6 @@ namespace ScriptCanvasEditor
                 ec->Class<SystemComponent>("Script Canvas Editor", "Script Canvas Editor System Component")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Scripting")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }
@@ -82,7 +85,7 @@ namespace ScriptCanvasEditor
 
     void SystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("ScriptCanvasEditorService", 0x4fe2af98));
+        provided.push_back(AZ_CRC_CE("ScriptCanvasEditorService"));
     }
 
     void SystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
@@ -92,10 +95,9 @@ namespace ScriptCanvasEditor
 
     void SystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("MemoryService", 0x5c4d473c)); // AZ::JobManager needs the thread pool allocator
-        required.push_back(AZ_CRC("ScriptCanvasService", 0x41fd58f3));
+        required.push_back(AZ_CRC_CE("ScriptCanvasService"));
         required.push_back(GraphCanvas::GraphCanvasRequestsServiceId);
-        required.push_back(AZ_CRC("ScriptCanvasReflectService", 0xb3bfe139));
+        required.push_back(AZ_CRC_CE("ScriptCanvasReflectService"));
     }
 
     void SystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
@@ -110,6 +112,14 @@ namespace ScriptCanvasEditor
 
     void SystemComponent::Activate()
     {
+#if defined(ENABLE_REMOTE_TOOLS)
+        if (auto* remoteToolsInterface = AzFramework::RemoteToolsInterface::Get())
+        {
+            remoteToolsInterface->RegisterToolingServiceHost(
+                ScriptCanvas::RemoteToolsKey, ScriptCanvas::RemoteToolsName, ScriptCanvas::RemoteToolsPort);
+        }
+#endif
+
         AZ::JobManagerDesc jobDesc;
         for (size_t i = 0; i < cs_jobThreads; ++i)
         {
@@ -131,8 +141,9 @@ namespace ScriptCanvasEditor
         AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
         AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusConnect();
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
+        AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusConnect();
 
-        auto userSettings = AZ::UserSettings::CreateFind<EditorSettings::ScriptCanvasEditorSettings>(AZ_CRC("ScriptCanvasPreviewSettings", 0x1c5a2965), AZ::UserSettings::CT_LOCAL);
+        auto userSettings = AZ::UserSettings::CreateFind<EditorSettings::ScriptCanvasEditorSettings>(AZ_CRC_CE("ScriptCanvasPreviewSettings"), AZ::UserSettings::CT_LOCAL);
         if (userSettings)
         {
             if (userSettings->m_showUpgradeDialog)
@@ -143,6 +154,8 @@ namespace ScriptCanvasEditor
                 m_upgradeDisabled = true;
             }
         }
+
+        m_nodeReplacementSystem.LoadReplacementMetadata();
     }
 
     void SystemComponent::NotifyRegisterViews()
@@ -159,6 +172,8 @@ namespace ScriptCanvasEditor
 
     void SystemComponent::Deactivate()
     {
+        AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
+        m_nodeReplacementSystem.UnloadReplacementMetadata();
         AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
         ScriptCanvasExecutionBus::Handler::BusDisconnect();
@@ -192,7 +207,7 @@ namespace ScriptCanvasEditor
     {
         if (AZStd::wildcard_match("*.scriptcanvas", fullSourceFileName))
         {
-            return AzToolsFramework::AssetBrowser::SourceFileDetails("Editor/Icons/AssetBrowser/ScriptCanvas_16.png");
+            return AzToolsFramework::AssetBrowser::SourceFileDetails("../Editor/Icons/AssetBrowser/ScriptCanvas_80.svg");
         }
 
         // not one of our types.
@@ -243,10 +258,11 @@ namespace ScriptCanvasEditor
                 else
                 {
                     AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotificationBus::Event(
-                        AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications::FileCreationNotificationBusId
-                        , &AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications::HandleAssetCreatedInEditor
-                        , source.AbsolutePath().Native()
-                        , AZ::Crc32());
+                        AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications::FileCreationNotificationBusId,
+                        &AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications::HandleAssetCreatedInEditor,
+                        source.AbsolutePath().Native(),
+                        AZ::Crc32(),
+                        true);
                 }
 
                 fileStream.Close();
@@ -378,6 +394,19 @@ namespace ScriptCanvasEditor
             { "scriptcanvas", "scriptcanvas_compiled" },
             { "scriptcanvas_fn", "scriptcanvas_fn_compiled" }
         };
+    }
+
+    void SystemComponent::OnActionContextRegistrationHook()
+    {
+        if (auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get())
+        {
+            AzToolsFramework::ActionContextProperties contextProperties;
+            contextProperties.m_name = "O3DE Script Canvas";
+
+            // Register custom action contexts to allow duplicated shortcut hotkeys to work
+            actionManagerInterface->RegisterActionContext(ScriptCanvasIdentifiers::ScriptCanvasActionContextIdentifier, contextProperties);
+            actionManagerInterface->RegisterActionContext(ScriptCanvasIdentifiers::ScriptCanvasVariablesActionContextIdentifier, contextProperties);
+        }
     }
 
 }

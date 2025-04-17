@@ -123,7 +123,7 @@ namespace O3DE::ProjectManager
         }
 
         auto cmakeGenerateArguments = cmakeGenerateArgumentsResult.GetValue();
-        logStream << cmakeGenerateArguments.join(' ') << '\n'; 
+        logStream << cmakeGenerateArguments.join(' ') << '\n';
 
         m_configProjectProcess->start(cmakeGenerateArguments.front(), cmakeGenerateArguments.mid(1));
         if (!m_configProjectProcess->waitForStarted())
@@ -145,8 +145,12 @@ namespace O3DE::ProjectManager
             logStream << configOutput;
             logStream.flush();
 
-            // Show last line of output
-            UpdateProgress(configOutput.split('\n', Qt::SkipEmptyParts).last());
+            // Show last line of output if any
+            auto configOutputLines = configOutput.split('\n', Qt::SkipEmptyParts);
+            if (configOutputLines.length() > 0)
+            {
+                UpdateProgress(configOutputLines.last());
+            }
 
             if (QThread::currentThread()->isInterruptionRequested())
             {
@@ -195,7 +199,11 @@ namespace O3DE::ProjectManager
             logStream.flush();
 
             // Show last line of output
-            UpdateProgress(buildOutput.split('\n', Qt::SkipEmptyParts).last());
+            if (QStringList strs = buildOutput.split('\n', Qt::SkipEmptyParts);
+                !strs.empty())
+            {
+                UpdateProgress(strs.last());
+            }
 
             if (QThread::currentThread()->isInterruptionRequested())
             {

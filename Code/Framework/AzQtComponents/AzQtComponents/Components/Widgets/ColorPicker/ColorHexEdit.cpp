@@ -58,10 +58,10 @@ ColorHexEdit::ParsedColor ColorHexEdit::convertTextToColorValues(const QString& 
 
 ColorHexEdit::ColorHexEdit(QWidget* parent)
     : QWidget(parent)
-    , m_red(0)
-    , m_green(0)
-    , m_blue(0)
-    , m_alpha(0)
+    , m_red(0.0)
+    , m_green(0.0)
+    , m_blue(0.0)
+    , m_alpha(1.0)
 {
     auto layout = new QHBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);

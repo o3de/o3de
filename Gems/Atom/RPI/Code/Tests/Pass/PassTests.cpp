@@ -35,7 +35,7 @@ namespace UnitTest
     // name dictionary fails because we have remaining names in the PassTemplates
     struct PassTestData
     {
-        AZ_CLASS_ALLOCATOR(PassTestData, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PassTestData, SystemAllocator);
 
         PassTemplate m_parentPass;
 
@@ -510,6 +510,27 @@ namespace UnitTest
             EXPECT_TRUE(pass != nullptr);
         }
 
+        void TestChangeConnection()
+        {
+            m_data->AddPassTemplatesToLibrary();
+
+            // create a pass tree
+
+            Ptr<Pass> pass, parent1, parent2, parent3;
+            CreatePassTestTree(pass, parent1, parent2, parent3);
+
+            EXPECT_TRUE(pass->m_request.m_connections.size() == 0);
+
+            pass->ChangeConnection(Name("Input"), parent1.get(), Name("Input1"));
+            EXPECT_TRUE(pass->m_request.m_connections.size() == 1);
+
+            pass->ChangeConnection(Name("Input"), parent1.get(), Name("Input2"));
+            EXPECT_TRUE(pass->m_request.m_connections.size() == 1);
+
+            parent1->ChangeConnection(Name("Output"), pass.get(), Name("Output"));
+            EXPECT_TRUE(pass->m_request.m_connections.size() == 1);
+        }
+
         void TestPassFilter_PassHierarchy()
         {
             m_data->AddPassTemplatesToLibrary();
@@ -697,7 +718,6 @@ namespace UnitTest
             // only the ParentPass in the render pipeline was found
             EXPECT_TRUE(count == 1);
         }
-
     };
 
     TEST_F(PassTests, ConstructionAndValidation)
@@ -743,6 +763,11 @@ namespace UnitTest
     TEST_F(PassTests, CreationMethodsSuccess)
     {
         TestCreationMethodsSuccess();
+    }
+
+    TEST_F(PassTests, ChangeConnection)
+    {
+        TestChangeConnection();
     }
 
     TEST_F(PassTests, PassFilter_PassHierarchy)

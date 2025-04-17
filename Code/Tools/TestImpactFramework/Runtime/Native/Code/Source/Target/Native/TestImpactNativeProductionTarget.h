@@ -8,8 +8,7 @@
 
 #pragma once
 
-#include <Artifact/Static/TestImpactNativeProductionTargetDescriptor.h>
-#include <Target/native/TestImpactNativeTarget.h>
+#include <Target/Common/TestImpactTarget.h>
 
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
@@ -17,13 +16,9 @@ namespace TestImpact
 {
     //! Build target specialization for production targets (build targets containing production code and no test code).
     class NativeProductionTarget
-        : public NativeTarget
+        : public Target
     {
     public:
-        using Descriptor = NativeProductionTargetDescriptor;
-        NativeProductionTarget(AZStd::unique_ptr<Descriptor> descriptor);
-
-    private:
-        AZStd::unique_ptr<Descriptor> m_descriptor;
+        using Target::Target;
     };
 } // namespace TestImpact

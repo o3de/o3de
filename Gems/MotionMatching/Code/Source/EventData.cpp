@@ -15,7 +15,7 @@
 
 namespace EMotionFX::MotionMatching
 {
-    AZ_CLASS_ALLOCATOR_IMPL(DiscardFrameEventData, MotionEventAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(DiscardFrameEventData, MotionEventAllocator)
 
     bool DiscardFrameEventData::Equal([[maybe_unused]]const EventData& rhs, [[maybe_unused]] bool ignoreEmptyFields) const
     {
@@ -50,7 +50,7 @@ namespace EMotionFX::MotionMatching
 
     ///////////////////////////////////////////////////////////////////////////
 
-    AZ_CLASS_ALLOCATOR_IMPL(TagEventData, MotionEventAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(TagEventData, MotionEventAllocator)
 
     bool TagEventData::Equal(const EventData& rhs, [[maybe_unused]] bool ignoreEmptyFields) const
     {

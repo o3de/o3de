@@ -8,6 +8,146 @@
 
 #include <AzCore/Serialization/EditContext.h>
 
+#include <AzCore/Console/IConsole.h>
+#include <AzCore/Console/IConsoleTypes.h>
+
+namespace AZ
+{
+    static void LogAssociativeContainerFields(const EditContext& editContext, const AZ::ConsoleCommandContainer&)
+    {
+        AZStd::string logString = "\nParent Reflected Class, Associative Element Name, Associative Type\n";
+        Edit::TypeVisitor logFieldVisitor;
+        logFieldVisitor.m_classDataVisitor = [&logString, &editContext](const Edit::ClassData& classData) -> bool
+        {
+            // Iterate over each reflected Edit::ElementData field
+            // and check if it has an associated SerializeContext class element which
+            // provides a DataContainer as part of its SerializeContext ClassData which inherits
+            // from IAssociativeDataContainer
+            for (const AZ::Edit::ElementData& syntheticElement : classData.m_elements)
+            {
+                if (syntheticElement.m_serializeClassElement != nullptr)
+                {
+                    // The edit element data is backed by a serialize context field
+                    // so query its class data
+                    auto elementClassData =
+                        editContext.GetSerializeContext().FindClassData(syntheticElement.m_serializeClassElement->m_typeId);
+                    if (elementClassData == nullptr)
+                    {
+                        continue;
+                    }
+
+                    // Check if the type contains an AssociativeContainer
+                    using IAssociativeContainer = Serialize::IDataContainer::IAssociativeDataContainer;
+                    const IAssociativeContainer* associativeContainer = elementClassData->m_container != nullptr
+                        ? elementClassData->m_container->GetAssociativeContainerInterface()
+                        : nullptr;
+                    if (associativeContainer == nullptr)
+                    {
+                        continue;
+                    }
+
+                    // Once this point has been reached, the reflected element corresponds to an associative container
+                    // So log the name of the containing class
+                    logString += AZStd::string::format(R"("%s", "%s", "%s")" "\n", classData.m_name, syntheticElement.m_name, elementClassData->m_name);
+                }
+            }
+            return true;
+        };
+
+        editContext.EnumerateAll(logFieldVisitor);
+        AZ::Debug::Trace::Instance().Output("EditContext", logString.c_str());
+    }
+
+    static void LogSequenceContainerFields(const EditContext& editContext, const AZ::ConsoleCommandContainer&)
+    {
+        AZStd::string logString = "\nParent Reflected Class, Sequence Element Name, Sequence Type\n";
+        Edit::TypeVisitor logFieldVisitor;
+        logFieldVisitor.m_classDataVisitor = [&logString, &editContext](const Edit::ClassData& classData) -> bool
+        {
+            // Iterate over each reflected Edit::ElementData field
+            // and check if it has an associated SerializeContext class element which
+            // provides a IDataContainer which is a sequence container
+            for (const AZ::Edit::ElementData& syntheticElement : classData.m_elements)
+            {
+                if (syntheticElement.m_serializeClassElement != nullptr)
+                {
+                    // The edit element data is backed by a serialize context field
+                    // so query its class data
+                    auto elementClassData =
+                        editContext.GetSerializeContext().FindClassData(syntheticElement.m_serializeClassElement->m_typeId);
+
+                    // If the class element doesn't have an IDataContainer that is a sequence then continue to the next element
+                    if (elementClassData == nullptr || elementClassData->m_container == nullptr ||
+                        !elementClassData->m_container->IsSequenceContainer())
+                    {
+                        continue;
+                    }
+
+                    logString += AZStd::string::format(R"("%s", "%s", "%s")" "\n", classData.m_name, syntheticElement.m_name, elementClassData->m_name);
+                }
+            }
+            return true;
+        };
+
+        editContext.EnumerateAll(logFieldVisitor);
+        AZ::Debug::Trace::Instance().Output("EditContext", logString.c_str());
+    }
+
+    static void RegisterEditContextLoggingConsoleCommand(
+        Edit::Internal::ConsoleFunctorHandle& consoleFunctorHandle, AZ::IConsole* console, const EditContext& editContext)
+    {
+        if (console == nullptr)
+        {
+            return;
+        }
+
+        consoleFunctorHandle.m_consoleFunctors.emplace_back(
+            *console,
+            "ed_logReflectedAssociativeContainerFields",
+            "Logs all associative container fields (map, set, unordered_map, unordered_set) that have been reflected to the Edit Context.\n"
+            "The name of the field is output along with the name of the class where the field is reflected.\n"
+            "Also output are the names of the types that were reflected.",
+            AZ::ConsoleFunctorFlags::DontReplicate,
+            AZ::TypeId{},
+            editContext,
+            &LogAssociativeContainerFields);
+
+        consoleFunctorHandle.m_consoleFunctors.emplace_back(
+            *console,
+            "ed_logReflectedSequenceContainerFields",
+            "Logs all sequence container fields (array, vector, fixed_vector, list, forward_list) that have been reflected to the Edit Context.\n"
+            "The name of the field is output along with the name of the class where the field is reflected.\n"
+            "Also output are the names of the types that were reflected.\n"
+            "NOTE: The deque container is not supported for reflection in the SerializeContext at this time.",
+            AZ::ConsoleFunctorFlags::DontReplicate,
+            AZ::TypeId{},
+            editContext,
+            &LogSequenceContainerFields);
+    }
+}
+
+namespace AZ::Edit
+{
+    TypeVisitor::TypeVisitor()
+    {
+        m_classDataVisitor = [](const Edit::ClassData&) -> bool
+        {
+            return false;
+        };
+
+        m_enumDataVisitor = [](const TypeId&, const Edit::ElementData&) -> bool
+        {
+            return false;
+        };
+    }
+}
+
+namespace AZ::Edit::Internal
+{
+    ConsoleFunctorHandle::ConsoleFunctorHandle() = default;
+    ConsoleFunctorHandle::~ConsoleFunctorHandle() = default;
+}
+
 namespace AZ
 {
     //=========================================================================
@@ -17,6 +157,7 @@ namespace AZ
     EditContext::EditContext(SerializeContext& serializeContext)
         : m_serializeContext(serializeContext)
     {
+        RegisterEditContextLoggingConsoleCommand(m_consoleCommandHandle, AZ::Interface<AZ::IConsole>::Get(), *this);
     }
 
     //=========================================================================
@@ -96,6 +237,15 @@ namespace AZ
             data = &enumIt->second;
         }
         return data;
+    }
+
+    SerializeContext& EditContext::GetSerializeContext()
+    {
+        return m_serializeContext;
+    }
+    const SerializeContext& EditContext::GetSerializeContext() const
+    {
+        return m_serializeContext;
     }
 
     //=========================================================================
@@ -334,6 +484,31 @@ namespace AZ
         return keepEnumeratingSiblings;
     }
 
+    void EditContext::EnumerateAll(const Edit::TypeVisitor& typeVisitor, Edit::VisitFlags visitFlags) const
+    {
+        if (typeVisitor.m_classDataVisitor && (visitFlags & Edit::VisitFlags::Classes) == Edit::VisitFlags::Classes)
+        {
+            for (const Edit::ClassData& editClassData : m_classData)
+            {
+                if (!typeVisitor.m_classDataVisitor(editClassData))
+                {
+                    break;
+                }
+            }
+        }
+
+        if (typeVisitor.m_enumDataVisitor && (visitFlags & Edit::VisitFlags::Enums) == Edit::VisitFlags::Enums)
+        {
+            for (const auto& [enumTypeId, enumElementData] : m_enumData)
+            {
+                if (!typeVisitor.m_enumDataVisitor(enumTypeId, enumElementData))
+                {
+                    break;
+                }
+            }
+        }
+    }
+
     namespace Edit
     {
         void GetComponentUuidsWithSystemComponentTag(
@@ -387,7 +562,7 @@ namespace AZ
         //=========================================================================
         void ClassData::ClearElements()
         {
-            for (auto element : m_elements)
+            for (ElementData& element : m_elements)
             {
                 if (element.m_serializeClassElement)
                 {
@@ -414,4 +589,18 @@ namespace AZ
             return nullptr;
         }
     } // namespace Edit
+
 } // namespace AZ
+
+namespace AZ::Edit
+{
+    AZ::TemplateId GetO3deTemplateId(AZ::Adl, AZ::AzGenericTypeInfo::Internal::TemplateIdentityTypes<EnumConstant>)
+    {
+        return AZ::TemplateId(EnumConstantTypeId);
+    }
+}
+
+
+// pre-instantiate the extremely common ones
+template AZ::EditContext::ClassBuilder* AZ::EditContext::ClassBuilder::Attribute<AZ::Crc32>(const char *, AZ::Crc32);
+template AZ::EditContext::ClassBuilder* AZ::EditContext::ClassBuilder::Attribute<AZ::Crc32>(AZ::Crc32, AZ::Crc32);

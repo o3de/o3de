@@ -54,6 +54,9 @@ public: // member functions
     ScaleToDeviceMode GetScaleToDeviceMode() override;
     void SetScaleToDeviceMode(ScaleToDeviceMode scaleToDeviceMode) override;
 
+    bool GetIsFlooringOffsets() override;
+    void SetIsFlooringOffsets(bool isFlooringOffsets) override;
+
     void GetViewportSpacePoints(RectPoints& points) final;
     AZ::Vector2 GetViewportSpacePivot() final;
     void GetTransformToViewport(AZ::Matrix4x4& mat) final;
@@ -126,12 +129,12 @@ public:  // static member functions
 
     static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("UiTransformService", 0x3a838e34));
+        provided.push_back(AZ_CRC_CE("UiTransformService"));
     }
 
     static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("UiTransformService", 0x3a838e34));
+        incompatible.push_back(AZ_CRC_CE("UiTransformService"));
     }
 
     static void GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
@@ -246,6 +249,8 @@ private: // data
     AZ::Vector2 m_pivot;
     float m_rotation;
     AZ::Vector2 m_scale;
+
+    bool m_isFlooringOffsets = false;
 
     //! Cached transform to viewport space. Gets recalculated if the m_recomputeTransformToViewport dirty flag is set
     AZ::Matrix4x4 m_transformToViewport;

@@ -34,6 +34,8 @@ namespace AzToolsFramework
     constexpr inline AZ::Crc32 ViewportUiVisible = AZ_CRC_CE("org.o3de.action.editortransform.viewportuivisible");
     constexpr inline AZ::Crc32 Helpers = AZ_CRC_CE("org.o3de.action.editor.helpers");
     constexpr inline AZ::Crc32 Icons = AZ_CRC_CE("org.o3de.action.editor.icons");
+    constexpr inline AZ::Crc32 OnlyShowHelpersForSelectedEntitiesAction = AZ_CRC_CE("org.o3de.action.editor.onlyshowselectedentitieshelpers");
+    constexpr inline AZ::Crc32 HideHelpers = AZ_CRC_CE("org.o3de.action.editor.hidehelpers");
     //@}
 
     namespace ComponentModeFramework
@@ -132,6 +134,9 @@ namespace AzToolsFramework
 
         //! Replace ComponentModeSwitcher with overridden ComponentModeSwitcher
         virtual void OverrideComponentModeSwitcher(AZStd::shared_ptr<ComponentModeFramework::ComponentModeSwitcher>) = 0;
+
+        //! Deselect all entities
+        virtual void DeselectEntities() = 0;
 
     protected:
         ~EditorTransformComponentSelectionRequests() = default;

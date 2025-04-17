@@ -36,17 +36,17 @@ namespace AZ
     public:
 
         //! Specifies that this class should use AZ::SystemAllocator for memory management by default.
-        AZ_CLASS_ALLOCATOR(Entity, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Entity, EntityAllocator);
 
         //! Adds run-time type information to this class.
         AZ_RTTI(AZ::Entity, "{75651658-8663-478D-9090-2432DFCAFA44}");
 
         //! The type of array that contains the entity's components. 
         //! Used when iterating over components.
-        typedef AZStd::vector<Component*> ComponentArrayType;
+        using ComponentArrayType = AZStd::vector<Component*>;
 
         //! This type of array is used by the warning
-        typedef AZStd::vector<AZStd::string> StringWarningArray;
+        using StringWarningArray = AZStd::vector<AZStd::string>;
 
         //! The state of the entity and its components.
         //! @note An entity is only initialized once. It can be activated and deactivated multiple times.

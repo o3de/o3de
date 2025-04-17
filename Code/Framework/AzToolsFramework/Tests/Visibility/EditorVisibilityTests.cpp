@@ -17,7 +17,7 @@ namespace UnitTest
 {
     static auto ScreenDimensions = AzFramework::ScreenSize(1280, 720);
 
-    class EditorVisibilityFixture : public ToolsApplicationFixture
+    class EditorVisibilityFixture : public ToolsApplicationFixture<>
     {
     public:
         void SetUpEditorFixtureImpl() override {}
@@ -187,8 +187,8 @@ namespace UnitTest
         TestBoundComponent() = default;
 
         // BoundsRequestBus overrides
-        AZ::Aabb GetWorldBounds() override;
-        AZ::Aabb GetLocalBounds() override;
+        AZ::Aabb GetWorldBounds() const override;
+        AZ::Aabb GetLocalBounds() const override;
 
         void ChangeBounds(const AZ::Aabb& localAabb);
 
@@ -221,14 +221,14 @@ namespace UnitTest
         AzFramework::BoundsRequestBus::Handler::BusDisconnect();
     }
 
-    AZ::Aabb TestBoundComponent::GetWorldBounds()
+    AZ::Aabb TestBoundComponent::GetWorldBounds() const
     {
         AZ::Transform worldFromLocal = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(worldFromLocal, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
         return m_localAabb.GetTransformedAabb(worldFromLocal);
     }
 
-    AZ::Aabb TestBoundComponent::GetLocalBounds()
+    AZ::Aabb TestBoundComponent::GetLocalBounds() const
     {
         return m_localAabb;
     }

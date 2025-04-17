@@ -59,7 +59,7 @@ namespace AzToolsFramework
         Q_OBJECT
 
     public:
-        AZ_CLASS_ALLOCATOR(AudioControlSelectorWidget, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AudioControlSelectorWidget, AZ::SystemAllocator);
         AudioControlSelectorWidget(QWidget* parent = nullptr);
 
         void SetControlName(const QString& controlName);
@@ -109,11 +109,11 @@ namespace AzToolsFramework
         Q_OBJECT
 
     public:
-        AZ_CLASS_ALLOCATOR(AudioControlSelectorWidgetHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AudioControlSelectorWidgetHandler, AZ::SystemAllocator);
 
         AZ::u32 GetHandlerName() const override
         {
-            return AZ_CRC("AudioControl", 0x16e7ca6e);
+            return AZ_CRC_CE("AudioControl");
         }
 
         bool IsDefaultHandler() const override

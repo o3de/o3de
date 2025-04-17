@@ -33,12 +33,13 @@ namespace AtomToolsFramework
     PreviewRenderer::PreviewRenderer(const AZStd::string& sceneName, const AZStd::string& pipelineName)
     {
         PreviewerFeatureProcessorProviderBus::Handler::BusConnect();
+        AZ::SystemTickBus::Handler::BusConnect();
 
         m_entityContext = AZStd::make_unique<AzFramework::EntityContext>();
         m_entityContext->InitContext();
 
         // Create and register a scene with all required feature processors
-        AZStd::unordered_set<AZStd::string> featureProcessors;
+        AZStd::vector<AZStd::string> featureProcessors;
         PreviewerFeatureProcessorProviderBus::Broadcast(
             &PreviewerFeatureProcessorProviderBus::Handler::GetRequiredFeatureProcessors, featureProcessors);
 
@@ -63,8 +64,19 @@ namespace AtomToolsFramework
         pipelineDesc.m_mainViewTagName = "MainCamera";
         pipelineDesc.m_name = pipelineName;
         pipelineDesc.m_rootPassTemplate = "ToolsPipelineRenderToTexture";
-        pipelineDesc.m_renderSettings.m_multisampleState = AZ::RPI::RPISystemInterface::Get()->GetApplicationMultisampleState();
-
+        
+        uint32_t numRegisteredScenes = AZ::RPI::RPISystemInterface::Get()->GetNumScenes();
+        //If there are existing registered scenes use the msaa settings set by them
+        //otherwise broadcast default settings.
+        if (numRegisteredScenes > 0)
+        {
+            pipelineDesc.m_renderSettings.m_multisampleState = AZ::RPI::RPISystemInterface::Get()->GetApplicationMultisampleState();
+        }
+        else
+        {
+            AZ::RPI::RPISystemInterface::Get()->SetApplicationMultisampleState(pipelineDesc.m_renderSettings.m_multisampleState);
+        }
+        
         m_renderPipeline = AZ::RPI::RenderPipeline::CreateRenderPipeline(pipelineDesc);
         m_scene->AddRenderPipeline(m_renderPipeline);
         m_scene->Activate();
@@ -86,6 +98,7 @@ namespace AtomToolsFramework
 
     PreviewRenderer::~PreviewRenderer()
     {
+        AZ::SystemTickBus::Handler::BusDisconnect();
         PreviewerFeatureProcessorProviderBus::Handler::BusDisconnect();
 
         m_state.reset();
@@ -130,8 +143,19 @@ namespace AtomToolsFramework
             m_currentCaptureRequest = m_captureRequestQueue.front();
             m_captureRequestQueue.pop();
 
-            m_state.reset();
-            m_state.reset(new PreviewRendererLoadState(this));
+            bool canCapture = false;
+            AZ::Render::FrameCaptureRequestBus::BroadcastResult(canCapture, &AZ::Render::FrameCaptureRequestBus::Events::CanCapture);
+
+            // if we're not on a device that can capture, immediately trigger the "failed" state.
+            if (!canCapture)
+            {
+                CancelCaptureRequest();
+            }
+            else
+            {
+                m_state.reset();
+                m_state.reset(new PreviewRendererLoadState(this));
+            }
         }
     }
 
@@ -141,12 +165,14 @@ namespace AtomToolsFramework
         {
             m_currentCaptureRequest.m_captureFailedCallback();
         }
+        EndCapture();
         m_state.reset();
         m_state.reset(new PreviewRendererIdleState(this));
     }
 
     void PreviewRenderer::CompleteCaptureRequest()
     {
+        EndCapture();
         m_state.reset();
         m_state.reset(new PreviewRendererIdleState(this));
     }
@@ -183,11 +209,17 @@ namespace AtomToolsFramework
         m_currentCaptureRequest.m_content->Update();
     }
 
-    uint32_t PreviewRenderer::StartCapture()
+    bool PreviewRenderer::IsContentReadyToRender()
+    {
+        return m_currentCaptureRequest.m_content->IsReadyToRender();
+    }
+
+    AZ::Render::FrameCaptureId PreviewRenderer::StartCapture()
     {
         auto captureCompleteCallback = m_currentCaptureRequest.m_captureCompleteCallback;
         auto captureFailedCallback = m_currentCaptureRequest.m_captureFailedCallback;
-        auto captureCallback = [captureCompleteCallback, captureFailedCallback](const AZ::RPI::AttachmentReadback::ReadbackResult& result)
+        auto captureCallback =
+            [captureCompleteCallback, captureFailedCallback](const AZ::RPI::AttachmentReadback::ReadbackResult& result)
         {
             if (result.m_dataBuffer)
             {
@@ -216,10 +248,20 @@ namespace AtomToolsFramework
 
         m_renderPipeline->AddToRenderTickOnce();
 
-        uint32_t frameCaptureId = AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId;
+        AZ::Render::FrameCaptureOutcome captureOutcome;
         AZ::Render::FrameCaptureRequestBus::BroadcastResult(
-            frameCaptureId, &AZ::Render::FrameCaptureRequestBus::Events::CapturePassAttachmentWithCallback, m_passHierarchy,
-            AZStd::string("Output"), captureCallback, AZ::RPI::PassAttachmentReadbackOption::Output);
+            captureOutcome,
+            &AZ::Render::FrameCaptureRequestBus::Events::CapturePassAttachmentWithCallback,
+            captureCallback,
+            m_passHierarchy,
+            AZStd::string("Output"), AZ::RPI::PassAttachmentReadbackOption::Output);
+
+        AZ_Error("PreviewRenderer", captureOutcome.IsSuccess(),
+            "Frame capture initialization failed. %s", captureOutcome.GetError().m_errorMessage.c_str());
+
+        AZ::Render::FrameCaptureId frameCaptureId = captureOutcome.IsSuccess() ?
+            captureOutcome.GetValue() : AZ::Render::InvalidFrameCaptureId;
+
         return frameCaptureId;
     }
 
@@ -229,9 +271,17 @@ namespace AtomToolsFramework
         m_renderPipeline->RemoveFromRenderTick();
     }
 
-    void PreviewRenderer::GetRequiredFeatureProcessors(AZStd::unordered_set<AZStd::string>& featureProcessors) const
+    void PreviewRenderer::OnSystemTick()
     {
-        featureProcessors.insert({
+        if (m_state)
+        {
+            m_state->Update();
+        }
+    }
+
+    void PreviewRenderer::GetRequiredFeatureProcessors(AZStd::vector<AZStd::string>& featureProcessors) const
+    {
+        featureProcessors.insert(featureProcessors.end(),  {
             "AZ::Render::TransformServiceFeatureProcessor",
             "AZ::Render::MeshFeatureProcessor",
             "AZ::Render::SimplePointLightFeatureProcessor",

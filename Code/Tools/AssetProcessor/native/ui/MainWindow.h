@@ -52,6 +52,7 @@ namespace AssetProcessor
     class BuilderInfoPatternsModel;
     class BuilderInfoMetricsModel;
     class BuilderInfoMetricsSortModel;
+    class EnabledRelocationTypesModel;
 }
 
 class MainWindow
@@ -73,12 +74,14 @@ public:
     // If the order is changed in the UI file, it should be changed here, too.
     enum class DialogStackIndex
     {
+        Welcome, // The welcome screen provides some basic info on the Asset Processor.
         Jobs,
         Assets,
         Logs,
         Connections,
         Builders,
-        Tools
+        Tools,
+        AssetRelocation
     };
 
     struct Config
@@ -95,6 +98,9 @@ public:
 
         // Event Log Details
         int logTypeColumnWidth = -1;
+
+        // Event Log Line Details
+        int contextDetailsTableMaximumRows = -1;
     };
 
     /*!
@@ -109,7 +115,7 @@ public:
 
     explicit MainWindow(GUIApplicationManager* guiApplicationManager, QWidget* parent = 0);
     void Activate();
-    ~MainWindow();
+    ~MainWindow() override;
 
 public Q_SLOTS:
     void ShowWindow();
@@ -168,7 +174,8 @@ private:
     AssetProcessor::BuilderInfoMetricsSortModel* m_builderInfoMetricsSort = nullptr;
     AssetProcessor::CacheServerData m_cacheServerData;
 
-    void SetContextLogDetailsVisible(bool visible);
+    AssetProcessor::EnabledRelocationTypesModel* m_enabledRelocationTypesModel = nullptr;
+
     void SetContextLogDetails(const QMap<QString, QString>& details);
     void ClearContextLogDetails();
 
@@ -252,7 +259,8 @@ private:
 
     AZStd::shared_ptr<AzToolsFramework::AssetDatabase::AssetDatabaseConnection> m_sharedDbConnection;
 
-    AZStd::string m_cachedSourceAssetSelection;
+    AssetProcessor::SourceAndScanID m_cachedSourceAssetSelection;
     AZStd::string m_cachedProductAssetSelection;
+    QMetaObject::Connection m_connectionForResettingAssetsView;
 };
 

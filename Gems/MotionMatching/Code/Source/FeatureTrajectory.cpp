@@ -14,9 +14,9 @@
 #include <EMotionFX/Source/Pose.h>
 #include <EMotionFX/Source/Transform.h>
 #include <EMotionFX/Source/TransformData.h>
+#include <FeatureMatrixTransformer.h>
 #include <FeatureTrajectory.h>
 #include <FrameDatabase.h>
-#include <MotionMatchingData.h>
 #include <MotionMatchingInstance.h>
 
 #include <AzCore/Serialization/EditContext.h>
@@ -24,7 +24,7 @@
 
 namespace EMotionFX::MotionMatching
 {
-    AZ_CLASS_ALLOCATOR_IMPL(FeatureTrajectory, MotionMatchAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(FeatureTrajectory, MotionMatchAllocator)
 
     bool FeatureTrajectory::Init(const InitSettings& settings)
     {

@@ -56,13 +56,16 @@ namespace GraphCanvas
     
     using PersistentMemberRequestBus = AZ::EBus<PersistentMemberRequests>;
 
+    class PersistentIdComponentSaveData;
+    AZ_TYPE_INFO_SPECIALIZE(PersistentIdComponentSaveData, "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}");
+
     class PersistentIdComponentSaveData
         : public SceneMemberComponentSaveData<PersistentIdComponentSaveData>
     {
         friend class PersistentIdComponent;
     public:
-        AZ_RTTI(PersistentIdComponentSaveData, "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}", SceneMemberComponentSaveData<PersistentIdComponentSaveData>);
-        AZ_CLASS_ALLOCATOR(PersistentIdComponentSaveData, AZ::SystemAllocator, 0);
+        AZ_RTTI_NO_TYPE_INFO_DECL();
+        AZ_CLASS_ALLOCATOR(PersistentIdComponentSaveData, AZ::SystemAllocator);
 
         PersistentIdComponentSaveData()
             : m_persistentId(PersistentGraphMemberId::CreateRandom())

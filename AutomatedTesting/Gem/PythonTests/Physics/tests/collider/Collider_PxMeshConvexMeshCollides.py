@@ -14,9 +14,8 @@ Test Case Title : Verify that when the shape Physics Asset is selected,
 class Tests():
     create_collider_entity   = ("Entity created successfully",         "Failed to create Entity")
     mesh_added               = ("Added Mesh component",                "Failed to add Mesh component")
-    physx_collider_added     = ("Added PhysX Collider component",      "Failed to add PhysX Collider component")
+    physx_collider_added     = ("Added PhysX Mesh Collider component", "Failed to add PhysX Mesh Collider component")
     physx_rigid_body_added   = ("Added PhysX Rigid Body component",    "Failed to add PhysX Rigid Body component")
-    add_physics_asset_shape  = ("Added shape as physics asset",        "Failed to add shape ")
     assign_fbx_mesh          = ("Assigned fbx mesh",                   "Failed to assign fbx mesh") 
     create_terrain           = ("Terrain entity created successfully", "Failed to create Terrain Entity")
     add_physx_shape_collider = ("Added PhysX Shape Collider",          "Failed to add PhysX Shape Collider")
@@ -30,7 +29,7 @@ class Tests():
 def Collider_PxMeshConvexMeshCollides():
     """
     Summary:
-    Load level with Entity above ground having PhysX Collider, PhysX Rigid Body and Mesh components.
+    Load level with Entity above ground having PhysX Mesh Collider, PhysX Rigid Body and Mesh components.
     Verify that the entity falls on the ground and collides with the terrain when fbx convex mesh is added to collider.
 
     Expected Behavior:
@@ -39,8 +38,8 @@ def Collider_PxMeshConvexMeshCollides():
     Test Steps:
      1) Load the level
      2) Create test entity above the ground
-     3) Add PhysX Collider, PhysX Rigid Body and Mesh components.
-     4) Add the Shape as PhysicsAsset and select fbx convex mesh in PhysX Collider component.
+     3) Add PhysX Mesh Collider, PhysX Rigid Body and Mesh components.
+     4) Select fbx convex mesh in PhysX Mesh Collider component.
      5) Create terrain entity with physx terrain
      6) Enter game mode
      7) Verify that the entity falls on the ground and collides with the terrain.
@@ -62,6 +61,8 @@ def Collider_PxMeshConvexMeshCollides():
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
     from editor_python_test_tools.asset_utils import Asset
+    from consts.physics import PHYSX_SHAPE_COLLIDER
+    from consts.physics import PHYSX_MESH_COLLIDER
 
     import azlmbr.math as math
     import editor_python_test_tools.hydra_editor_utils as hydra
@@ -71,8 +72,7 @@ def Collider_PxMeshConvexMeshCollides():
     import azlmbr.legacy.general as general
 
     # Constants
-    PHYSICS_ASSET_INDEX = 7  # Hardcoded enum index value for Shape property
-    MESH_ASSET_PATH = os.path.join("assets", "Physics", "Collider_PxMeshConvexMeshCollides", "spherebot", "r0-b_body.pxmesh")
+    MESH_ASSET_PATH = os.path.join("assets", "Physics", "Collider_PxMeshConvexMeshCollides", "spherebot", "r0-b_body.fbx.pxmesh")
     TIMEOUT = 2.0
 
     # 1) Load the level
@@ -82,21 +82,17 @@ def Collider_PxMeshConvexMeshCollides():
     collider = EditorEntity.create_editor_entity_at([512.0, 512.0, 33.0], "Collider")
     Report.result(Tests.create_collider_entity, collider.id.IsValid())
 
-    # 3) Add PhysX Collider, PhysX Rigid Body and Mesh components.
-    collider_component = collider.add_component("PhysX Collider")
-    Report.result(Tests.physx_collider_added, collider.has_component("PhysX Collider"))
+    # 3) Add PhysX Mesh Collider, PhysX Rigid Body and Mesh components.
+    collider_component = collider.add_component(PHYSX_MESH_COLLIDER)
+    Report.result(Tests.physx_collider_added, collider.has_component(PHYSX_MESH_COLLIDER))
 
-    collider.add_component("PhysX Rigid Body")
-    Report.result(Tests.physx_rigid_body_added, collider.has_component("PhysX Rigid Body"))
+    collider.add_component("PhysX Dynamic Rigid Body")
+    Report.result(Tests.physx_rigid_body_added, collider.has_component("PhysX Dynamic Rigid Body"))
 
     collider.add_component("Mesh")
     Report.result(Tests.mesh_added, collider.has_component("Mesh"))
 
-    # 4) Add the Shape as PhysicsAsset and select fbx convex mesh in PhysX Collider component.
-    collider_component.set_component_property_value("Shape Configuration|Shape", PHYSICS_ASSET_INDEX)
-    value_to_test = collider_component.get_component_property_value("Shape Configuration|Shape")
-    Report.result(Tests.add_physics_asset_shape, value_to_test == PHYSICS_ASSET_INDEX)
-
+    # 4) Select fbx convex mesh in PhysX Mesh Collider component.
     mesh_asset = Asset.find_asset_by_path(MESH_ASSET_PATH)
     collider_component.set_component_property_value("Shape Configuration|Asset|PhysX Mesh", mesh_asset.id)
     mesh_asset.id = collider_component.get_component_property_value("Shape Configuration|Asset|PhysX Mesh")
@@ -104,10 +100,11 @@ def Collider_PxMeshConvexMeshCollides():
 
     # 5) Create terrain entity with physx terrain
     terrain = EditorEntity.create_editor_entity_at([512.0, 512.0, 31.0], "Terrain")
+    terrain.add_component("PhysX Static Rigid Body")
     Report.result(Tests.create_terrain, terrain.id.IsValid())
 
-    terrain.add_component("PhysX Shape Collider")
-    Report.result(Tests.add_physx_shape_collider, terrain.has_component("PhysX Shape Collider"))
+    terrain.add_component(PHYSX_SHAPE_COLLIDER)
+    Report.result(Tests.add_physx_shape_collider, terrain.has_component(PHYSX_SHAPE_COLLIDER))
 
     box_shape_component = terrain.add_component("Box Shape")
     Report.result(Tests.add_box_shape, terrain.has_component("Box Shape"))

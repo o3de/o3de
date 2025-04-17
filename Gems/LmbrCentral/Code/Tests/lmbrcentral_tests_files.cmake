@@ -20,14 +20,13 @@ set(FILES
     LmbrCentralReflectionTest.h
     LmbrCentralTest.cpp
     ShapeGeometryUtilTest.cpp
-    SpawnerComponentTest.cpp
     SplineComponentTests.cpp
     DiskShapeTest.cpp
     ReferenceShapeTests.cpp
     ShapeThreadsafeTest.cpp
     ShapeThreadsafeTest.h
+    ShapeTestUtils.cpp
+    ShapeTestUtils.h
     ../Source/LmbrCentral.cpp
-    ../Source/Ai/NavigationComponent.cpp
-    ../Source/Scripting/SpawnerComponent.cpp
     ../Source/Shape/TubeShape.cpp
 )

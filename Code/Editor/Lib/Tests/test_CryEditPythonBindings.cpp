@@ -25,7 +25,7 @@ namespace CryEditPythonBindingsUnitTests
 {
 
     class CryEditPythonBindingsFixture
-        : public ::UnitTest::ScopedAllocatorSetupFixture
+        : public ::UnitTest::LeakDetectionFixture
     {
     public:
         AzToolsFramework::ToolsApplication m_app;
@@ -33,8 +33,9 @@ namespace CryEditPythonBindingsUnitTests
         void SetUp() override
         {
             AzFramework::Application::Descriptor appDesc;
-
-            m_app.Start(appDesc);
+            AZ::ComponentApplication::StartupParameters startupParameters;
+            startupParameters.m_loadSettingsRegistry = false;
+            m_app.Start(appDesc, startupParameters);
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
             // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash
             // in the unit tests.
@@ -96,7 +97,7 @@ namespace CryEditPythonBindingsUnitTests
         QTimer timer;
         loop.connect(&timer, &QTimer::timeout, [&numTicks]()
         {
-            AZ::TickBus::Broadcast(&AZ::TickEvents::OnTick, 0.01f, AZ::ScriptTimePoint(AZStd::chrono::system_clock().now()));
+            AZ::TickBus::Broadcast(&AZ::TickEvents::OnTick, 0.01f, AZ::ScriptTimePoint(AZStd::chrono::steady_clock::now()));
             ++numTicks;
         });
         timer.start(100);

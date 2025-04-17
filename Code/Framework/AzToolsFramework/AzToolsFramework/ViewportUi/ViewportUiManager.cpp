@@ -50,6 +50,16 @@ namespace AzToolsFramework::ViewportUi
         }
     }
 
+    void ViewportUiManager::SetClusterDisableButton(ClusterId clusterId, ButtonId buttonId, bool disabled)
+    {
+        if (auto clusterIt = m_clusterButtonGroups.find(clusterId); clusterIt != m_clusterButtonGroups.end())
+        {
+            auto& cluster = clusterIt->second;
+            cluster->SetDisabledButton(buttonId, disabled);
+            UpdateButtonGroupUi(cluster.get());
+        }
+    }
+
     void ViewportUiManager::ClearClusterActiveButton(ClusterId clusterId)
     {
         if (auto clusterIt = m_clusterButtonGroups.find(clusterId); clusterIt != m_clusterButtonGroups.end())
@@ -67,6 +77,16 @@ namespace AzToolsFramework::ViewportUi
             auto switcher = switcherIt->second;
             switcher->SetHighlightedButton(buttonId);
             m_viewportUi->SetSwitcherActiveButton(switcher->GetViewportUiElementId(), buttonId);
+            UpdateSwitcherButtonGroupUi(switcher.get());
+        }
+    }
+
+    void ViewportUiManager::SetSwitcherDisableButton(SwitcherId switcherId, ButtonId buttonId, bool disabled)
+    {
+        if (auto switcherIt = m_switcherButtonGroups.find(switcherId); switcherIt != m_switcherButtonGroups.end())
+        {
+            auto switcher = switcherIt->second;
+            switcher->SetDisabledButton(buttonId, disabled);
             UpdateSwitcherButtonGroupUi(switcher.get());
         }
     }
@@ -152,8 +172,8 @@ namespace AzToolsFramework::ViewportUi
     {
         if (auto clusterIt = m_clusterButtonGroups.find(clusterId); clusterIt != m_clusterButtonGroups.end())
         {
-            m_clusterButtonGroups.erase(clusterIt);
             m_viewportUi->RemoveViewportUiElement(clusterIt->second->GetViewportUiElementId());
+            m_clusterButtonGroups.erase(clusterIt);
         }
     }
 
@@ -161,8 +181,8 @@ namespace AzToolsFramework::ViewportUi
     {
         if (auto switcherIt = m_switcherButtonGroups.find(switcherId); switcherIt != m_switcherButtonGroups.end())
         {
-            m_switcherButtonGroups.erase(switcherIt);
             m_viewportUi->RemoveViewportUiElement(switcherIt->second->GetViewportUiElementId());
+            m_switcherButtonGroups.erase(switcherIt);
         }
     }
 
@@ -172,6 +192,7 @@ namespace AzToolsFramework::ViewportUi
         {
             auto switcher = switcherIt->second;
             m_viewportUi->RemoveSwitcherButton(switcher->GetViewportUiElementId(), buttonId);
+            m_viewportUi->UpdateSwitcher(switcher->GetViewportUiElementId());
         }
     }
 
@@ -245,8 +266,8 @@ namespace AzToolsFramework::ViewportUi
     {
         if (auto textFieldIt = m_textFields.find(textFieldId); textFieldIt != m_textFields.end())
         {
-            m_textFields.erase(textFieldIt);
             m_viewportUi->RemoveViewportUiElement(textFieldIt->second->m_viewportId);
+            m_textFields.erase(textFieldIt);
         }
     }
 
@@ -263,6 +284,16 @@ namespace AzToolsFramework::ViewportUi
         const AZStd::string& borderTitle, AZStd::optional<ViewportUiBackButtonCallback> backButtonCallback)
     {
         m_viewportUi->CreateViewportBorder(borderTitle, backButtonCallback);
+    }
+
+    bool ViewportUiManager::GetViewportBorderVisible() const
+    {
+        return m_viewportUi->GetViewportBorderVisible();
+    }
+
+    void ViewportUiManager::ChangeViewportBorderText(const AZStd::string& borderTitle)
+    {
+        m_viewportUi->ChangeViewportBorderText(borderTitle.c_str());
     }
 
     void ViewportUiManager::RemoveViewportBorder()
@@ -320,7 +351,7 @@ namespace AzToolsFramework::ViewportUi
 
     ClusterId ViewportUiManager::RegisterNewCluster(AZStd::shared_ptr<Internal::ButtonGroup>& buttonGroup)
     {
-        ClusterId newId = ClusterId(m_clusterButtonGroups.size() + 1);
+        ClusterId newId = ClusterId(++m_nextViewportUiElementId);
         m_clusterButtonGroups.insert({ newId, buttonGroup });
 
         return newId;
@@ -328,7 +359,7 @@ namespace AzToolsFramework::ViewportUi
 
     SwitcherId ViewportUiManager::RegisterNewSwitcher(AZStd::shared_ptr<Internal::ButtonGroup>& buttonGroup)
     {
-        SwitcherId newId = SwitcherId(m_switcherButtonGroups.size() + 1);
+        SwitcherId newId = SwitcherId(++m_nextViewportUiElementId);
         m_switcherButtonGroups.insert({ newId, buttonGroup });
 
         return newId;
@@ -336,7 +367,7 @@ namespace AzToolsFramework::ViewportUi
 
     TextFieldId ViewportUiManager::RegisterNewTextField(AZStd::shared_ptr<Internal::TextField>& textField)
     {
-        TextFieldId newId = TextFieldId(m_textFields.size() + 1);
+        TextFieldId newId = TextFieldId(++m_nextViewportUiElementId);
         textField->m_textFieldId = newId;
         m_textFields.insert({ newId, textField });
 

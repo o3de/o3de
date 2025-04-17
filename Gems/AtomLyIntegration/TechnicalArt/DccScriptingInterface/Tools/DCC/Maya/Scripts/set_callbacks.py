@@ -19,36 +19,35 @@ This module manages a set of predefined callbacks for maya
 import os
 import sys
 import logging as _logging
+
 # -- External Python modules
 from box import Box
 # maya imports
 import maya.cmds as mc
 import maya.api.OpenMaya as om
+
 # -- DCCsi Extension Modules
-from azpy.constants import *
-import azpy.dcc.maya
-azpy.dcc.maya.init()  # <-- should have already run?
-import azpy.dcc.maya.callbacks.event_callback_handler as azEvCbH
-import azpy.dcc.maya.callbacks.node_message_callback_handler as azNdMsH
+from DccScriptingInterface.azpy.constants import *
+import DccScriptingInterface.azpy.dcc.maya
+DccScriptingInterface.azpy.dcc.maya.init()  # <-- should have already run?
+
+import DccScriptingInterface.azpy.dcc.maya.callbacks.event_callback_handler as azEvCbH
+import DccScriptingInterface.azpy.dcc.maya.callbacks.node_message_callback_handler as azNdMsH
+
 # Node Message Callback Setup
-import azpy.dcc.maya.callbacks.on_shader_rename as oSR
-from set_defaults import set_defaults
+import DccScriptingInterface.azpy.dcc.maya.callbacks.on_shader_rename as oSR
+from DccScriptingInterface.Tools.DCC.Maya.Scripts.set_defaults import set_defaults
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
-from azpy.env_bool import env_bool
-from azpy.constants import ENVAR_DCCSI_GDEBUG
-from azpy.constants import ENVAR_DCCSI_DEV_MODE
+#  global scope
+from DccScriptingInterface.Tools.DCC.Maya import _PACKAGENAME
+_MODULENAME = f'{_PACKAGENAME}.set_callbacks'
+_LOGGER = _logging.getLogger(_MODULENAME)
+_LOGGER.info(f'Initializing: {_MODULENAME}')
 
-#  global space
-_DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, True)
-_DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, True)
-
-_MODULENAME = r'DCCsi.SDK.Maya.Scripts.set_callbacks'
-
-_LOGGER = azpy.initialize_logger(_MODULENAME, default_log_level=int(20))
-_LOGGER.debug('Invoking:: {0}.'.format({_MODULENAME}))
+from DccScriptingInterface.globals import *
 # -------------------------------------------------------------------------
 
 
@@ -68,14 +67,14 @@ _G_CALLBACKS[_G_PRIMEKEY] = True  # required prime key
 def init_callbacks(_callbacks=_G_CALLBACKS):
     # store as a dict (Box is a fancy dict)
     _callbacks[_G_PRIMEKEY] = True  # required prime key
-    
+
     # signature dict['callback key'] = ('CallBack'(type), func, callbackObj)
     _callbacks['on_new_file'] = ['NewSceneOpened', set_defaults, None]
     _callbacks['new_scene_fix_paths'] = ['NewSceneOpened', install_fix_paths, None]
     _callbacks['post_scene_fix_paths'] = ['PostSceneRead', install_fix_paths, None]
     _callbacks['workspace_changed'] = ['workspaceChanged', update_workspace, None]
     _callbacks['quit_app'] = ['quitApplication', uninstall_callbacks, None]
-    
+
     # nodeMessage style callbacks
     # fire a function
     _func_00 = oSR.on_shader_rename_rename_shading_group
@@ -113,9 +112,9 @@ def uninstall_callbacks():
 def install_callbacks(_callbacks=_G_CALLBACKS):
     """Bulk installs the globally defined set of callbacks:
     _G_callbacks"""
-    
+
     _LOGGER.debug('install_callback_set() fired')
-    
+
     _callbacks = init_callbacks(_callbacks)
 
     # we initialized the box with this so pop it

@@ -16,7 +16,7 @@
 #include <AzCore/std/any.h>
 #include <AzCore/std/functional.h>
 #include <AzCore/std/containers/variant.h>
-#include <AzCore/std/chrono/clocks.h>
+#include <AzCore/std/chrono/chrono.h>
 #include <AzCore/std/parallel/atomic.h>
 #include <AzCore/std/smart_ptr/intrusive_ptr.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
@@ -62,20 +62,20 @@ namespace AZ::IO::Requests
             u64 outputSize,
             u64 offset,
             u64 size,
-            AZStd::chrono::system_clock::time_point deadline,
+            AZStd::chrono::steady_clock::time_point deadline,
             IStreamerTypes::Priority priority);
         ReadRequestData(
             RequestPath path,
             IStreamerTypes::RequestMemoryAllocator* allocator,
             u64 offset,
             u64 size,
-            AZStd::chrono::system_clock::time_point deadline,
+            AZStd::chrono::steady_clock::time_point deadline,
             IStreamerTypes::Priority priority);
         ~ReadRequestData();
 
         RequestPath m_path; //!< Relative path to the target file.
         IStreamerTypes::RequestMemoryAllocator* m_allocator; //!< Allocator used to manage the memory for this request.
-        AZStd::chrono::system_clock::time_point m_deadline; //!< Time by which this request should have been completed.
+        AZStd::chrono::steady_clock::time_point m_deadline; //!< Time by which this request should have been completed.
         void* m_output; //!< The memory address assigned (during processing) to store the read data to.
         u64 m_outputSize; //!< The memory size of the addressed used to store the read data.
         u64 m_offset; //!< The offset in bytes into the file.
@@ -211,10 +211,10 @@ namespace AZ::IO::Requests
         inline constexpr static IStreamerTypes::Priority s_orderPriority = IStreamerTypes::s_priorityHigh;
         inline constexpr static bool s_failWhenUnhandled = false;
 
-        RescheduleData(FileRequestPtr target, AZStd::chrono::system_clock::time_point newDeadline, IStreamerTypes::Priority newPriority);
+        RescheduleData(FileRequestPtr target, AZStd::chrono::steady_clock::time_point newDeadline, IStreamerTypes::Priority newPriority);
 
         FileRequestPtr m_target; //!< The request that will be rescheduled.
-        AZStd::chrono::system_clock::time_point m_newDeadline; //!< The new deadline for the request.
+        AZStd::chrono::steady_clock::time_point m_newDeadline; //!< The new deadline for the request.
         IStreamerTypes::Priority m_newPriority; //!< The new priority for the request.
     };
 
@@ -270,10 +270,29 @@ namespace AZ::IO::Requests
 
 namespace AZ::IO
 {
+    class Streamer_SchedulerTest_RequestSorting_Test;
+
+    // Note to API Callers
+    // The FileRequest class is used to create requests that are processed by the Streamer, 
+    // If you do use this class, note that the read requests are hierarchical, and in general, a "Parent" high level request is created to
+    // for example read the entire contents of a file into a buffer, and the system then internally creates child requests with that parent
+    // to split reads up and to queue them and sort them, with one parent potentially having several child requests pointed at the same file name
+    // but potentially different sizes and offsets.
+    // To avoid copying strings all over the place, the child requests usually take the file name by const FilePath& reference, and establish a reference
+    // to the given memory instead of a copy.
+    //
+    // If you write code that exercises the low level child request APIs directly
+    // (For example, by using CreateRead instead of CreateReadRequest), be aware that input parameters such as `const RequestPath& path` 
+    // expect the given memory to be valid until the child request is complete as it is usually owned by the parent request.
+    // Be especially careful if writing tests that the memory is not from a temporary object that is going to be destroyed before the streamer
+    // system is exercised.
+
     class FileRequest final
     {
+        friend Streamer_SchedulerTest_RequestSorting_Test;
+
     public:
-        inline constexpr static AZStd::chrono::system_clock::time_point s_noDeadlineTime = AZStd::chrono::system_clock::time_point::max();
+        inline constexpr static AZStd::chrono::steady_clock::time_point s_noDeadlineTime = AZStd::chrono::steady_clock::time_point::max();
 
         friend class StreamerContext;
         friend class ExternalFileRequest;
@@ -281,7 +300,7 @@ namespace AZ::IO
         using CommandVariant = Requests::CommandVariant;
         using OnCompletionCallback = AZStd::function<void(FileRequest& request)>;
 
-        AZ_CLASS_ALLOCATOR(FileRequest, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(FileRequest, SystemAllocator);
 
         enum class Usage : u8
         {
@@ -291,24 +310,35 @@ namespace AZ::IO
 
         void CreateRequestLink(FileRequestPtr&& request);
         void CreateRequestPathStore(FileRequest* parent, RequestPath path);
+
+        // Public-facing API - creates a root request and stores the path and desired offset and size to be processed by the streamer.
         void CreateReadRequest(RequestPath path, void* output, u64 outputSize, u64 offset, u64 size,
-            AZStd::chrono::system_clock::time_point deadline, IStreamerTypes::Priority priority);
+            AZStd::chrono::steady_clock::time_point deadline, IStreamerTypes::Priority priority);
         void CreateReadRequest(RequestPath path, IStreamerTypes::RequestMemoryAllocator* allocator, u64 offset, u64 size,
-            AZStd::chrono::system_clock::time_point deadline, IStreamerTypes::Priority priority);
+            AZStd::chrono::steady_clock::time_point deadline, IStreamerTypes::Priority priority);
+
+        // Internal API.   The above internally creates the below individual child requests.  See note at the top of this class.
         void CreateRead(FileRequest* parent, void* output, u64 outputSize, const RequestPath& path, u64 offset, u64 size, bool sharedRead = false);
-        void CreateCompressedRead(FileRequest* parent, const CompressionInfo& compressionInfo, void* output,
-            u64 readOffset, u64 readSize);
-        void CreateCompressedRead(FileRequest* parent, CompressionInfo&& compressionInfo, void* output,
-            u64 readOffset, u64 readSize);
+
+        // Ensure compressionInfo& outlives the request if you call this API. 
+        void CreateCompressedRead(FileRequest* parent, const CompressionInfo& compressionInfo, void* output, u64 readOffset, u64 readSize);
+        void CreateCompressedRead(FileRequest* parent, CompressionInfo&& compressionInfo, void* output, u64 readOffset, u64 readSize);
+
         void CreateWait(FileRequest* parent);
+
+        // See the note at the top of this class about const & references to RequestPath.
         void CreateFileExistsCheck(const RequestPath& path);
         void CreateFileMetaDataRetrieval(const RequestPath& path);
+
         void CreateCancel(FileRequestPtr target);
-        void CreateReschedule(FileRequestPtr target, AZStd::chrono::system_clock::time_point newDeadline, IStreamerTypes::Priority newPriority);
+        void CreateReschedule(FileRequestPtr target, AZStd::chrono::steady_clock::time_point newDeadline, IStreamerTypes::Priority newPriority);
         void CreateFlush(RequestPath path);
         void CreateFlushAll();
+
+        // The following copy the FileRange, so it does not need to exist beyond the call to this function.
         void CreateDedicatedCacheCreation(RequestPath path, const FileRange& range = {}, FileRequest* parent = nullptr);
         void CreateDedicatedCacheDestruction(RequestPath path, const FileRange& range = {}, FileRequest* parent = nullptr);
+
         void CreateReport(AZStd::vector<AZ::IO::Statistic>& output, IStreamerTypes::ReportType reportType);
         void CreateCustom(AZStd::any data, bool failWhenUnhandled = true, FileRequest* parent = nullptr);
 
@@ -341,8 +371,8 @@ namespace AZ::IO
         //! Set the estimated completion time for this request and it's immediate parent. The general approach
         //! to getting the final estimation is to bubble up the estimation, with ever entry in the stack adding
         //! it's own additional delay.
-        void SetEstimatedCompletion(AZStd::chrono::system_clock::time_point time);
-        AZStd::chrono::system_clock::time_point GetEstimatedCompletion() const;
+        void SetEstimatedCompletion(AZStd::chrono::steady_clock::time_point time);
+        AZStd::chrono::steady_clock::time_point GetEstimatedCompletion() const;
 
     private:
         explicit FileRequest(Usage usage = Usage::Internal);
@@ -358,7 +388,7 @@ namespace AZ::IO
 
         //! Estimated time this request will complete. This is an estimation and depends on many
         //! factors which can cause it to change drastically from moment to moment.
-        AZStd::chrono::system_clock::time_point m_estimatedCompletion;
+        AZStd::chrono::steady_clock::time_point m_estimatedCompletion;
 
         //! The file request that has a dependency on this one. This can be null if there are no
         //! other request depending on this one to complete.
@@ -407,10 +437,11 @@ namespace AZ::IO
         friend class StreamerContext;
         friend class Scheduler;
         friend class Device;
+        friend class Streamer_SchedulerTest_RequestSorting_Test;
         friend bool operator==(const FileRequestHandle& lhs, const FileRequestPtr& rhs);
 
     public:
-        AZ_CLASS_ALLOCATOR(ExternalFileRequest, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ExternalFileRequest, SystemAllocator);
 
         explicit ExternalFileRequest(StreamerContext* owner);
 

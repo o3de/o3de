@@ -15,6 +15,7 @@
 #include <RHI/CommandList.h>
 #include <RHI/Metal.h>
 #include <RHI/Scope.h>
+#include <RHI/FrameGraphExecuteGroupHandler.h>
 #include <Atom/RHI.Reflect/Metal/PlatformLimitsDescriptor.h>
 
 namespace AZ
@@ -26,11 +27,9 @@ namespace AZ
         {
             using Base = RHI::FrameGraphExecuter;
         public:
-            AZ_CLASS_ALLOCATOR(FrameGraphExecuter, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FrameGraphExecuter, AZ::SystemAllocator);
 
             static RHI::Ptr<FrameGraphExecuter> Create();
-
-            Device& GetDevice() const;
         private:
             FrameGraphExecuter();
 
@@ -40,10 +39,14 @@ namespace AZ
             void ShutdownInternal() override;
             void BeginInternal(const RHI::FrameGraph& frameGraph) override;
             void ExecuteGroupInternal(RHI::FrameGraphExecuteGroup& group) override;
-            void EndInternal() override {}
+            void EndInternal() override;
             
-            CommandQueueContext* m_commandQueueContext = nullptr;
-            FrameGraphExecuterData m_frameGraphExecuterData;
+            // Adds a handler for a list of execute groups.
+            void AddExecuteGroupHandler(const RHI::GraphGroupId& groupId, const AZStd::vector<RHI::FrameGraphExecuteGroup*>& groups);
+
+            // List of handlers for execute groups.
+            AZStd::unordered_map<RHI::GraphGroupId, AZStd::unique_ptr<FrameGraphExecuteGroupHandler>> m_groupHandlers;
+            AZStd::unordered_map<int, FrameGraphExecuterData> m_frameGraphExecuterData;
 
         };
     }

@@ -42,7 +42,7 @@ namespace LmbrCentral
         , private AZ::TransformNotificationBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(PolygonPrismShape, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(PolygonPrismShape, AZ::SystemAllocator)
         AZ_RTTI(PolygonPrismShape, "{BDB453DE-8A51-42D0-9237-13A9193BE724}")
 
         PolygonPrismShape();
@@ -58,12 +58,12 @@ namespace LmbrCentral
         void InvalidateCache(InvalidateShapeCacheReason reason);
 
         // ShapeComponent::Handler
-        AZ::Crc32 GetShapeType() override { return AZ_CRC("PolygonPrism", 0xd6b50036); }
-        AZ::Aabb GetEncompassingAabb() override;
-        void GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds) override;
-        bool IsPointInside(const AZ::Vector3& point) override;
-        float DistanceSquaredFromPoint(const AZ::Vector3& point) override;
-        bool IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) override;
+        AZ::Crc32 GetShapeType() const override { return AZ_CRC_CE("PolygonPrism"); }
+        AZ::Aabb GetEncompassingAabb() const override;
+        void GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds) const override;
+        bool IsPointInside(const AZ::Vector3& point) const override;
+        float DistanceSquaredFromPoint(const AZ::Vector3& point) const override;
+        bool IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) const override;
 
         // PolygonShapeShapeComponentRequestBus::Handler
         AZ::PolygonPrismPtr GetPolygonPrism() override;
@@ -136,12 +136,24 @@ namespace LmbrCentral
                 }
             }
 
+            // The handling of the intersection data cache within this shape is especially complex. It gets passed a pointer
+            // to a shared mutex that will get promoted to a unique lock only if the the cache is actually getting updated.
+            // However, we're managing our shared lock in a way where it might already be a unique lock, so we do the following:
+            // - If our shared mutex has a shared lock, we'll pass it down to the intersection data cache as-is.
+            // - If our shared mutex already has a unique lock, pass down a null pointer to the intersection data cache.
+            AZStd::shared_mutex* GetMutexForIntersectionDataCache()
+            {
+                // If unlockOnDestroy is set, it's because we have a shared lock, so we'll pass our shared mutex
+                // to the intersection data cache. Otherwise, we already have a unique, so pass down a nullptr to prevent
+                // the intersection data cache from trying to manage it.
+                return (m_unlockOnDestroy) ? &m_mutex : nullptr;
+            }
+
         private:
             PolygonPrismSharedLockGuard(const PolygonPrismSharedLockGuard&) = delete;
             PolygonPrismSharedLockGuard& operator=(const PolygonPrismSharedLockGuard&) = delete;
             AZStd::shared_mutex& m_mutex;
             bool m_unlockOnDestroy = false;
-
         };
 
         class PolygonPrismUniqueLockGuard
@@ -169,7 +181,7 @@ namespace LmbrCentral
         };
 
         AZ::PolygonPrismPtr m_polygonPrism; ///< Reference to the underlying polygon prism data.
-        PolygonPrismIntersectionDataCache m_intersectionDataCache; ///< Caches transient intersection data.
+        mutable PolygonPrismIntersectionDataCache m_intersectionDataCache; ///< Caches transient intersection data.
         AZ::Transform m_currentTransform = AZ::Transform::CreateIdentity(); ///< Caches the current transform for this shape.
         AZ::EntityId m_entityId; ///< Id of the entity the box shape is attached to.
         AZ::NonUniformScaleChangedEvent::Handler m_nonUniformScaleChangedHandler; ///< Responds to changes in non-uniform scale.

@@ -10,6 +10,8 @@
 #include <Atom/RHI.Reflect/DX12/ShaderStageFunction.h>
 #include <RHI/Conversions.h>
 #include <RHI/Device.h>
+#include <RHI/ShaderUtils.h>
+
 namespace AZ
 {
     namespace DX12
@@ -26,7 +28,7 @@ namespace AZ
         }
 #endif
 
-        RHI::ResultCode RayTracingPipelineState::InitInternal([[maybe_unused]]RHI::Device& deviceBase, [[maybe_unused]]const RHI::RayTracingPipelineStateDescriptor* descriptor)
+        RHI::ResultCode RayTracingPipelineState::InitInternal([[maybe_unused]]RHI::Device& deviceBase, [[maybe_unused]]const RHI::DeviceRayTracingPipelineStateDescriptor* descriptor)
         {
 #ifdef AZ_DX12_DXR_SUPPORT
             Device& device = static_cast<Device&>(deviceBase);
@@ -53,12 +55,15 @@ namespace AZ
             // add DXIL Libraries
             AZStd::vector<D3D12_DXIL_LIBRARY_DESC> libraryDescs;
             libraryDescs.reserve(dxilLibraryCount);
+            AZStd::vector<ShaderByteCode> patchedShaderCache;
             for (const RHI::RayTracingShaderLibrary& shaderLibrary : descriptor->GetShaderLibraries())
             {
                 const ShaderStageFunction* rayTracingFunction = azrtti_cast<const ShaderStageFunction*>(shaderLibrary.m_descriptor.m_rayTracingFunction.get());
-        
+                ShaderByteCodeView byteCode =
+                    ShaderUtils::PatchShaderFunction(*rayTracingFunction, shaderLibrary.m_descriptor, patchedShaderCache);
+
                 D3D12_DXIL_LIBRARY_DESC libraryDesc = {};
-                libraryDesc.DXILLibrary = D3D12_SHADER_BYTECODE{ rayTracingFunction->GetByteCode().data(), rayTracingFunction->GetByteCode().size() };
+                libraryDesc.DXILLibrary = D3D12_SHADER_BYTECODE{ byteCode.data(), byteCode.size() };
                 libraryDesc.NumExports = 0; // all shaders
                 libraryDesc.pExports = nullptr;
                 libraryDescs.push_back(libraryDesc);
@@ -78,6 +83,8 @@ namespace AZ
             closestHitShaderNameWstrings.reserve(hitGroupCount);
             AZStd::vector<AZStd::wstring> anyHitShaderNameWstrings;
             anyHitShaderNameWstrings.reserve(hitGroupCount);
+            AZStd::vector<AZStd::wstring> intersectionShaderNameWstrings;
+            intersectionShaderNameWstrings.reserve(hitGroupCount);
 
             for (const RHI::RayTracingHitGroup& hitGroup : descriptor->GetHitGroups())
             {
@@ -93,12 +100,16 @@ namespace AZ
                 AZStd::to_wstring(anyHitShaderNameWstring, hitGroup.m_anyHitShaderName.GetStringView());
                 anyHitShaderNameWstrings.push_back(anyHitShaderNameWstring);
 
+                AZStd::wstring intersectionShaderNameWstring;
+                AZStd::to_wstring(intersectionShaderNameWstring, hitGroup.m_intersectionShaderName.GetStringView());
+                intersectionShaderNameWstrings.push_back(intersectionShaderNameWstring);
+
                 D3D12_HIT_GROUP_DESC hitGroupDesc = {};
-                hitGroupDesc.Type = D3D12_HIT_GROUP_TYPE_TRIANGLES;
+                hitGroupDesc.Type = intersectionShaderNameWstring.empty() ? D3D12_HIT_GROUP_TYPE_TRIANGLES : D3D12_HIT_GROUP_TYPE_PROCEDURAL_PRIMITIVE;
                 hitGroupDesc.HitGroupExport = hitGroupNameWstrings.back().c_str();
                 hitGroupDesc.ClosestHitShaderImport = closestHitShaderNameWstring.empty() ? nullptr : closestHitShaderNameWstrings.back().c_str();
                 hitGroupDesc.AnyHitShaderImport = anyHitShaderNameWstring.empty() ? nullptr : anyHitShaderNameWstrings.back().c_str();
-                hitGroupDesc.IntersectionShaderImport = nullptr; // only triangle geometry is supported at this time
+                hitGroupDesc.IntersectionShaderImport = intersectionShaderNameWstring.empty() ? nullptr : intersectionShaderNameWstrings.back().c_str();
                 hitGroupDescs.push_back(hitGroupDesc);
         
                 D3D12_STATE_SUBOBJECT hitGroupSubObject = {};
@@ -118,8 +129,8 @@ namespace AZ
             subObjects[currentIndex++] = shaderConfigSubObject;
 
             // add global root signature
-            const PipelineLayout& pipelineLayout = static_cast<const PipelineState*>(descriptor->GetPipelineState())->GetPipelineLayout();
-            m_globalRootSignature = pipelineLayout.Get();
+            const PipelineLayout* pipelineLayout = static_cast<const PipelineState*>(descriptor->GetPipelineState())->GetPipelineLayout();
+            m_globalRootSignature = pipelineLayout->Get();
             D3D12_STATE_SUBOBJECT globalRootSignatureSubObject = {};
             globalRootSignatureSubObject.Type = D3D12_STATE_SUBOBJECT_TYPE_GLOBAL_ROOT_SIGNATURE;
             globalRootSignatureSubObject.pDesc = &m_globalRootSignature;

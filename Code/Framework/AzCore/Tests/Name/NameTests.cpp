@@ -20,11 +20,11 @@
 #include <AzCore/Name/Name.h>
 #include <AzCore/Name/Internal/NameData.h>
 #include <AzCore/Component/ComponentApplication.h>
-#include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Serialization/ObjectStream.h>
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/Math/Random.h>
+#include <AzCore/std/time.h>
 
 #include <thread>
 #include <stdlib.h>
@@ -156,7 +156,7 @@ namespace UnitTest
         {
             m_azName = AZ::Name(m_originalName);
 
-            for (int i = 0; i < N; ++i)
+            for (size_t i = 0; i < N; ++i)
             {
                 m_azName = AZ::Name();
                 m_azName = AZ::Name(m_originalName);
@@ -170,19 +170,19 @@ namespace UnitTest
         AZStd::string m_originalName;
     };
 
-    class NameTest : public AllocatorsFixture
+    class NameTest : public LeakDetectionFixture
     {
     protected:
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
             NameDictionaryTester::Create();
         }
 
         void TearDown() override
         {
             NameDictionaryTester::Destroy();
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         static constexpr int RandomStringBufferSize = 16;
@@ -209,7 +209,7 @@ namespace UnitTest
     // Implemented in script.cpp
     void AZTestAssert(bool check);
 
-    class NameScriptingTest : public AllocatorsFixture
+    class NameScriptingTest : public LeakDetectionFixture
     {
     public:
         void run()
@@ -250,48 +250,44 @@ namespace UnitTest
         run();
     }
 
-    template<class ConcurrentcyTestThreadT>
+    template<class ConcurrencyTestThreadT>
     void RunConcurrencyTest(uint32_t nameCount, uint32_t threadsPerName)
     {        
-        AZStd::vector<ConcurrentcyTestThreadT> threads;
-        AZStd::set<AZStd::string> localDictionary;
-
         EXPECT_EQ(NameDictionaryTester::GetEntryCount(), 0);
 
         // Use a fixed seed.
         srand(123456);
-        
+
+        AZStd::set<AZStd::string> localDictionary;
         for (uint32_t i = 0; i < nameCount; i++)
         {
-            int length = rand() % 5 + 10;
-            char* name = new char[length + 1];
-            memset(name, 0, length + 1);
-            for (int strIndex = 0; strIndex < length; strIndex++)
-            {
-                char asciiBase = ((rand() % 2) ? 'a' : 'A');
+            const int length = rand() % 5 + 10;
+            AZStd::string name(length, '\0');
+            AZStd::generate(name.begin(), name.end(), [] {
+                const char asciiBase = ((rand() % 2) ? 'a' : 'A');
 
                 // Generate random Ascii values.
-                name[strIndex] = rand() % 26 + asciiBase;
-            }
+                return static_cast<char>(rand() % 26 + asciiBase);
+            });
 
-            localDictionary.emplace(name);
-            delete[] name;
+            localDictionary.emplace(AZStd::move(name));
         }
 
-        for (const AZStd::string& nameString: localDictionary)
+        AZStd::vector<ConcurrencyTestThreadT> threads;
+        for (const AZStd::string& nameString : localDictionary)
         {
             for (uint32_t i = 0; i < threadsPerName; ++i)
             {
-                threads.push_back(ConcurrentcyTestThreadT(nameString));
+                threads.push_back(ConcurrencyTestThreadT(nameString));
             }
         }
 
-        for (ConcurrentcyTestThreadT& th : threads)
+        for (ConcurrencyTestThreadT& th : threads)
         {
             th.Start();
         }
 
-        for (ConcurrentcyTestThreadT& th : threads)
+        for (ConcurrencyTestThreadT& th : threads)
         {
             th.Join();
         }
@@ -311,7 +307,7 @@ namespace UnitTest
         }
 
         // Make sure all the threads got an accurate Name object
-        for (ConcurrentcyTestThreadT& th : threads)
+        for (ConcurrencyTestThreadT& th : threads)
         {
             AZ::Name lookupName = AZ::NameDictionary::Instance().FindName(th.GetAzName().GetHash());
             EXPECT_EQ(th.GetAzName().GetStringView(), lookupName.GetStringView());
@@ -601,7 +597,7 @@ namespace UnitTest
         delete serializeContext;
     }
     
-    TEST_F(NameTest, NameContanerTest)
+    TEST_F(NameTest, NameContainerTest)
     {
         AZStd::unordered_set<AZ::Name> nameSet;
         nameSet.insert(AZ::Name{ "c" });
@@ -652,11 +648,29 @@ namespace UnitTest
     TEST_F(NameTest, ConcurrencyDataTest_EachThreadRepeatedlyCreatesAndReleasesOneName_HighCollisions)
     {
         AZ::NameDictionary::Destroy();
-        AZ::NameDictionary::Create();
+
+        // Create an instance of the NameDictionary with the max hash slots set to 1
+        // to produce collisions on every name.
+        ASSERT_EQ(nullptr, AZ::Interface<AZ::NameDictionary>::Get());
+        constexpr AZ::u64 maxHashSlots = 1;
+        AZStd::unique_ptr<AZ::NameDictionary> nameDictionary = AZStd::make_unique<AZ::NameDictionary>(maxHashSlots);
+        AZ::Interface<AZ::NameDictionary>::Register(nameDictionary.get());
 
         // We use only 2 threads for each name to try and maximize how much names are added and removed,
         // instead of letting shared references cause the name to stay in the dictionary.
         RunConcurrencyTest<ThreadRepeatedlyCreatesAndReleasesOneName<100>>(100, 2);
+
+        AZ::Interface<AZ::NameDictionary>::Unregister(nameDictionary.get());
+    }
+
+    TEST_F(NameTest, ConcurrencyDataTest_EachThreadRepeatedlyCreatesAndReleasesOneName_AndAccessItOnManyThread)
+    {
+        AZ::NameDictionary::Destroy();
+        AZ::NameDictionary::Create();
+
+        // We use only 1 name, but 200 threads to catch any race condtions in the NameData::release function
+        // Once that function decrements the m_useCount to 0, it should never be incremented again.
+        RunConcurrencyTest<ThreadRepeatedlyCreatesAndReleasesOneName<100>>(1, 2);
     }
 
     TEST_F(NameTest, NameRef)
@@ -901,7 +915,7 @@ namespace UnitTest
 
     // Fixture for validating that multiple NameDictionarys can exist at once.
     class MultiNameDictionaryFixture
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
     public:
         MultiNameDictionaryFixture()

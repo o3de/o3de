@@ -119,6 +119,24 @@ namespace AZ
         friend class Console;
     };
 
+    template<class T, class = void>
+    struct ConsoleCommandMemberFunctorSignature
+    {
+        using type = void (*)(T&, const ConsoleCommandContainer&);
+    };
+
+    template<class T>
+    struct ConsoleCommandMemberFunctorSignature<T, AZStd::enable_if_t<AZStd::is_class_v<T> && !AZStd::is_const_v<T>>>
+    {
+        using type = void (T::*)(const ConsoleCommandContainer&);
+    };
+
+    template<class T>
+    struct ConsoleCommandMemberFunctorSignature <T, AZStd::enable_if_t<AZStd::is_class_v<T> && AZStd::is_const_v<T>>>
+    {
+        using type = void (T::*)(const ConsoleCommandContainer&) const;
+    };
+
     //! @class ConsoleFunctor
     //! @brief Console functor which wraps a function call into an object instance.
     template <typename _TYPE, bool _REPLICATES_VALUE>
@@ -127,9 +145,16 @@ namespace AZ
     {
     public:
 
-        using MemberFunctorSignature = void(_TYPE::*)(const ConsoleCommandContainer&);
+        using MemberFunctorSignature = typename ConsoleCommandMemberFunctorSignature<_TYPE>::type;
         using RawFunctorSignature = void(*)(_TYPE&, const ConsoleCommandContainer&);
-        using FunctorUnion = AZStd::variant<RawFunctorSignature, MemberFunctorSignature>;
+
+        // This alias avoids the issue with two of the exact same types being added as alternatives to a variant,
+        // which would cause ambiguity errors when initializing the variants without using the explicit index.
+        // The solution is to collapse the variant to a single option as there isn't a need to have two alternatives in this case.
+        using FunctorUnion = AZStd::conditional_t<
+            AZStd::is_same_v<RawFunctorSignature, MemberFunctorSignature>,
+            AZStd::variant<RawFunctorSignature>,
+            AZStd::variant<RawFunctorSignature, MemberFunctorSignature>>;
 
         //! Constructors.
         //! @param name   the string name of the functor, used to identify and invoke the functor through the console interface

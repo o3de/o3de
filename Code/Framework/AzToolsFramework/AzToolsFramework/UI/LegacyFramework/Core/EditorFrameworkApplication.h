@@ -51,11 +51,14 @@ namespace LegacyFramework
     {
         /// Create application, if systemEntityFileName is NULL, we will create with default settings.
     public:
+        AZ_CLASS_ALLOCATOR(Application, AZ::SystemAllocator)
 
         using CoreMessageBus::Handler::Run;
         virtual int Run(const ApplicationDesc& desc);
         Application();
         Application(int argc, char** argv);
+        explicit Application(AZ::ComponentApplicationSettings componentAppSettings);
+        Application(int argc, char** argv, AZ::ComponentApplicationSettings componentAppSettings);
 
         void CreateReflectionManager() override;
 

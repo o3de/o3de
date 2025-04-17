@@ -22,13 +22,12 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(DualQuatSkinDeformer, DeformerAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(DualQuatSkinDeformer, DeformerAllocator)
 
     DualQuatSkinDeformer::DualQuatSkinDeformer(Mesh* mesh)
         : MeshDeformer(mesh)
     {
-        AZ::TaskGraphActiveInterface* taskGraphActiveInterface = AZ::Interface<AZ::TaskGraphActiveInterface>::Get();
-        m_useTaskGraph = taskGraphActiveInterface && taskGraphActiveInterface->IsTaskGraphActive();
+        m_useTaskGraph = false;
     }
 
     DualQuatSkinDeformer::~DualQuatSkinDeformer()

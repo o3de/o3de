@@ -5,11 +5,11 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <Source/PythonCommon.h>
-#include <pybind11/pybind11.h>
-#include <pybind11/embed.h>
-#include "PythonTraceMessageSink.h"
 #include "PythonTestingUtility.h"
+#include "PythonTraceMessageSink.h"
+#include <EditorPythonBindings/PythonCommon.h>
+#include <pybind11/embed.h>
+#include <pybind11/pybind11.h>
 
 #include <Source/PythonSystemComponent.h>
 #include <Source/PythonReflectionComponent.h>
@@ -176,7 +176,7 @@ namespace UnitTest
         : public AZ::EntityId 
     {
         AZ_TYPE_INFO(EntityIdByValueTester, "{DE8A9968-B6E1-49D1-86B4-8DC946AC3FC7}");
-        AZ_CLASS_ALLOCATOR(EntityIdByValueTester, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EntityIdByValueTester, AZ::SystemAllocator);
 
         EntityIdByValueTester() = default;
 
@@ -208,7 +208,7 @@ namespace UnitTest
 
     public:
         AZ_TYPE_INFO(PythonObjectBaseTester, "{99978809-BB9F-4915-81B2-E44DF0C59A9E}");
-        AZ_CLASS_ALLOCATOR(PythonObjectBaseTester, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PythonObjectBaseTester, AZ::SystemAllocator);
 
         PythonObjectBaseTester()
         {
@@ -286,7 +286,7 @@ namespace UnitTest
 
     public:
         AZ_TYPE_INFO(PythonObjectConstructionTester, "{35F7EE10-CA36-4F77-95B5-8001BA384E5A}");
-        AZ_CLASS_ALLOCATOR(PythonObjectConstructionTester, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PythonObjectConstructionTester, AZ::SystemAllocator);
 
         PythonObjectConstructionTester()
         {
@@ -339,7 +339,7 @@ namespace UnitTest
 
     public:
         AZ_TYPE_INFO(PythonObjectLambdaTester, "{E423E0ED-038F-4496-97D3-00932289AF72}");
-        AZ_CLASS_ALLOCATOR(PythonObjectLambdaTester, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PythonObjectLambdaTester, AZ::SystemAllocator);
 
         void Reflect(AZ::ReflectContext* context)
         {

@@ -27,7 +27,7 @@ namespace AZ
             , public SystemTickBus::Handler
         {
         public:
-            AZ_CLASS_ALLOCATOR(SharedThumbnailRenderer, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SharedThumbnailRenderer, AZ::SystemAllocator);
 
             SharedThumbnailRenderer();
             ~SharedThumbnailRenderer();
@@ -51,14 +51,10 @@ namespace AZ
             void OnSystemTick() override;
 
             // Default assets to be kept loaded and used for rendering if not overridden
-            static constexpr const char* DefaultLightingPresetPath = "lightingpresets/thumbnail.lightingpreset.azasset";
             Data::Asset<RPI::AnyAsset> m_defaultLightingPresetAsset;
-
-            static constexpr const char* DefaultModelPath = "models/sphere.azmodel";
             Data::Asset<RPI::ModelAsset> m_defaultModelAsset;
-
-            static constexpr const char* DefaultMaterialPath = "";
             Data::Asset<RPI::MaterialAsset> m_defaultMaterialAsset;
+            Data::Asset<RPI::MaterialAsset> m_reflectionMaterialAsset;
         };
     } // namespace LyIntegration
 } // namespace AZ

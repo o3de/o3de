@@ -26,6 +26,7 @@ namespace AZ::Render
         , protected Data::AssetBus::Handler
     {
     public:
+        AZ_CLASS_ALLOCATOR(StarsFeatureProcessor, AZ::SystemAllocator)
         AZ_RTTI(AZ::Render::StarsFeatureProcessor, "{34B9EE52-2893-4D02-AC19-8C5DCAFFE608}", AZ::Render::StarsFeatureProcessorInterface);
 
         static void Reflect(AZ::ReflectContext* context);
@@ -48,8 +49,7 @@ namespace AZ::Render
 
     protected:
         //! RPI::SceneNotificationBus
-        void OnRenderPipelineAdded(RPI::RenderPipelinePtr renderPipeline) override;
-        void OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline) override;
+        void OnRenderPipelineChanged(RPI::RenderPipeline* pipeline, RPI::SceneNotification::RenderPipelineChangeType changeType) override;
 
         //! RPI::ViewportContextIdNotificationBus
         void OnViewportSizeChanged(AzFramework::WindowSize size) override;
@@ -67,15 +67,10 @@ namespace AZ::Render
         void UpdateBackgroundClearColor();
 
         //! build a draw packet to draw the star mesh
-        RHI::ConstPtr<RHI::DrawPacket> BuildDrawPacket(
-            const Data::Instance<RPI::ShaderResourceGroup>& srg,
-            const RPI::Ptr<RPI::PipelineStateForDraw>& pipelineState,
-            const RHI::DrawListTag& drawListTag,
-            const AZStd::span<const AZ::RHI::StreamBufferView>& streamBufferViews,
-            uint32_t vertexCount);
+        RHI::ConstPtr<RHI::DrawPacket> BuildDrawPacket();
 
         RPI::Ptr<RPI::PipelineStateForDraw> m_meshPipelineState;
-        AZStd::array<AZ::RHI::StreamBufferView, 1> m_meshStreamBufferViews;
+        RHI::GeometryView m_geometryView;
 
         Data::Instance<RPI::ShaderResourceGroup> m_drawSrg = nullptr;
         Data::Instance<RPI::Shader> m_shader = nullptr;

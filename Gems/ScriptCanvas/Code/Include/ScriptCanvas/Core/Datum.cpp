@@ -17,8 +17,9 @@
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/Math/Transform.h>
 
-#include <ScriptCanvas/Data/DataRegistry.h>
 #include <ScriptCanvas/Core/GraphScopedTypes.h>
+#include <ScriptCanvas/Data/DataRegistry.h>
+#include <ScriptCanvas/Execution/ExecutionStateDeclarations.h>
 
 #include "DatumBus.h"
 
@@ -1291,15 +1292,19 @@ namespace ScriptCanvas
         const_cast<bool&>(m_isOverloadedStorage) = isOverloadedStorage;
     }
 
-    void Datum::DeepCopyDatum(const Datum& source)
+    void Datum::CopyDatumTypeAndValue(const Datum& source)
     {
         if (this != &source)
         {
-            m_originality = eOriginality::Original;
-            InitializeOverloadedStorage(source.m_type, m_originality);
-            m_class = source.m_class;
-            m_type = source.m_type;
+            SetType(source.m_type);
+            CopyDatumStorage(source);
+        }
+    }
 
+    void Datum::CopyDatumStorage(const Datum& source)
+    {
+        if (this != &source)
+        {
             if (!Data::IsValueType(m_type))
             {
                 AZ::BehaviorContext* behaviorContext = nullptr;
@@ -1320,6 +1325,19 @@ namespace ScriptCanvas
                 m_storage.value = source.m_storage.value;
                 m_conversionStorage = source.m_conversionStorage;
             }
+        }
+    }
+
+    void Datum::DeepCopyDatum(const Datum& source)
+    {
+        if (this != &source)
+        {
+            m_originality = eOriginality::Original;
+            InitializeOverloadedStorage(source.m_type, m_originality);
+            m_class = source.m_class;
+            m_type = source.m_type;
+
+            CopyDatumStorage(source);
 
             m_notificationId = source.m_notificationId;
 
@@ -2057,7 +2075,7 @@ namespace ScriptCanvas
             {
                 m_class = classIter->second;
             }
-            else
+            else if (m_type.GetAZType() != AZ::Uuid::CreateString(k_ExecutionStateAzTypeIdString))
             {
                 AZ_Error("ScriptCanvas", false, AZStd::string::format("Datum type (%s) de-serialized, but no such class found in the behavior context", m_type.GetAZType().ToString<AZStd::string>().c_str()).c_str());
             }
@@ -2091,6 +2109,8 @@ namespace ScriptCanvas
             {
                 editContext->Class<Datum>("Datum", "Datum")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "Datum")
+                    ->Attribute(AZ::Edit::Attributes::ChildNameLabelOverride, &Datum::GetLabel)
+                    ->Attribute(AZ::Edit::Attributes::NameLabelOverride, &Datum::GetLabel)
                     ->Attribute(AZ::Edit::Attributes::Visibility, &Datum::GetVisibility)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &Datum::m_storage, "Datum", "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &Datum::GetDatumVisibility)
@@ -2159,14 +2179,7 @@ namespace ScriptCanvas
 
     AZ::Crc32 Datum::GetDatumVisibility() const
     {
-        if (IS_A<Data::QuaternionType>())
-        {
-            return AZ::Edit::PropertyVisibility::Hide;
-        }
-        else
-        {
-            return AZ::Edit::PropertyVisibility::ShowChildrenOnly;
-        }
+        return AZ::Edit::PropertyVisibility::ShowChildrenOnly;
     }
 
     void Datum::SetNotificationsTarget(AZ::EntityId notificationId)
@@ -2230,7 +2243,7 @@ namespace ScriptCanvas
 
         if (!Data::IsValueType(m_type) && !SatisfiesTraits(static_cast<AZ::u8>(description.m_traits)))
         {
-            return AZ::Failure(AZStd::string("Attempting to convert null value to BehaviorArgument that expects reference or value"));
+            return AZ::Failure(AZStd::string::format("Attempting to convert null value %s to BehaviorArgument that expects reference or value", description.m_name));
         }
 
         if (IS_A(Data::Type::Number()))
@@ -2428,9 +2441,11 @@ namespace ScriptCanvas
             return true;
 
         case Data::eType::Number:
+        {
+            AZ::Locale::ScopedSerializationLocale scopedLocale; // Ensures that %f uses "." as decimal separator
             result = AZStd::string::format("%f", *GetAs<Data::NumberType>());
             return true;
-
+        }
         case Data::eType::OBB:
             result = ToStringOBB(*GetAs<Data::OBBType>());
             return true;
@@ -2543,6 +2558,7 @@ namespace ScriptCanvas
 
     AZStd::string Datum::ToStringOBB(const Data::OBBType& obb) const
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale; // Ensures that %f uses "." as decimal separator
         return AZStd::string::format
         ("(Position: %s, AxisX: %s, AxisY: %s, AxisZ: %s, halfLengthX: %.7f, halfLengthY: %.7f, halfLengthZ: %.7f)"
             , ToStringVector3(obb.GetPosition()).c_str()
@@ -2561,6 +2577,7 @@ namespace ScriptCanvas
 
     AZStd::string Datum::ToStringQuaternion(const Data::QuaternionType& source) const
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale; // Ensures that %f uses "." as decimal separator
         AZ::Vector3 eulerRotation = AZ::ConvertTransformToEulerDegrees(AZ::Transform::CreateFromQuaternion(source));
         return AZStd::string::format
         ("(Pitch: %5.2f, Roll: %5.2f, Yaw: %5.2f)"
@@ -2571,6 +2588,8 @@ namespace ScriptCanvas
 
     AZStd::string Datum::ToStringTransform(const Data::TransformType& source) const
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale; // Ensures that %f uses "." as decimal separator
+
         Data::TransformType copy(source);
         AZ::Vector3 pos = copy.GetTranslation();
         float scale = copy.ExtractUniformScale();
@@ -2586,6 +2605,7 @@ namespace ScriptCanvas
 
     AZStd::string Datum::ToStringVector2(const AZ::Vector2& source) const
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale; // Ensures that %f uses "." as decimal separator
         return AZStd::string::format
         ("(X: %f, Y: %f)"
             , source.GetX()
@@ -2594,6 +2614,7 @@ namespace ScriptCanvas
 
     AZStd::string Datum::ToStringVector3(const AZ::Vector3& source) const
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale; // Ensures that %f uses "." as decimal separator
         return AZStd::string::format
         ("(X: %f, Y: %f, Z: %f)"
             , (source.GetX())
@@ -2603,6 +2624,7 @@ namespace ScriptCanvas
 
     AZStd::string Datum::ToStringVector4(const AZ::Vector4& source) const
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale; // Ensures that %f uses "." as decimal separator
         return AZStd::string::format
         ("(X: %f, Y: %f, Z: %f, W: %f)"
             , (source.GetX())

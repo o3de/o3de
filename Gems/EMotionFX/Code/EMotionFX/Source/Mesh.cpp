@@ -24,10 +24,10 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(Mesh, MeshAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(Mesh, MeshAllocator)
 
     Mesh::Mesh()
-        : BaseObject()
+        : MCore::RefCounted()
     {
         m_numVertices        = 0;
         m_numIndices         = 0;
@@ -40,6 +40,7 @@ namespace EMotionFX
 
     // allocation constructor
     Mesh::Mesh(uint32 numVerts, uint32 numIndices, uint32 numPolygons, uint32 numOrgVerts, bool isCollisionMesh)
+        : MCore::RefCounted()
     {
         m_numVertices        = 0;
         m_numIndices         = 0;
@@ -171,8 +172,9 @@ namespace EMotionFX
     {
         AZ::u32 modelVertexCount = 0;
         AZ::u32 modelIndexCount = 0;
-        
+
         // Find the maximum skin influences across all meshes to use when pre-allocating memory
+        bool hasSkinInfluence = false;
         AZ::u32 maxSkinInfluences = 0;
         for (const AZ::RPI::ModelLodAsset::Mesh& mesh : sourceModelLod->GetMeshes())
         {
@@ -183,9 +185,15 @@ namespace EMotionFX
             {
                 const AZ::u32 meshInfluenceCount = weightView->GetBufferViewDescriptor().m_elementCount / mesh.GetVertexCount();
                 maxSkinInfluences = AZStd::max(maxSkinInfluences, meshInfluenceCount);
+                hasSkinInfluence = true;
             }
         }
-        AZ_Assert(maxSkinInfluences > 0 && maxSkinInfluences < 100, "Expect max skin influences in a reasonable value range.");
+
+        // Assert the skin influence range only if the model has skin influence data
+        if (hasSkinInfluence)
+        {
+            AZ_Assert(maxSkinInfluences > 0 && maxSkinInfluences < 100, "Expect max skin influences in a reasonable value range.");
+        }
 
         // IndicesPerFace defined in atom is 3.
         const AZ::u32 numPolygons = modelIndexCount / 3;
@@ -194,7 +202,8 @@ namespace EMotionFX
         // The lod has shared buffers that combine the data from each submesh.
         // These buffers can be accessed through the first submesh in their entirety
         // by using the BufferViewDescriptor from the Buffer instead of the one from the sub-mesh's BufferAssetView
-        const AZ::RPI::ModelLodAsset::Mesh& sourceMesh0 = sourceModelLod->GetMeshes()[0];
+        const auto sourceLodMeshes = sourceModelLod->GetMeshes();
+        const AZ::RPI::ModelLodAsset::Mesh& sourceMesh0 = sourceLodMeshes[0];
 
         // Copy the index buffer for the entire lod
         AZStd::span<const uint8_t> indexBuffer = sourceMesh0.GetIndexBufferAssetView().GetBufferAsset()->GetBuffer();
@@ -259,7 +268,7 @@ namespace EMotionFX
             else if (name == AZ::Name("SKIN_JOINTINDICES"))
             {
                 // Atom stores the skin indices as uint16, but the buffer itself is a buffer of uint32 with two id's per element
-                AZ_Assert(bufferAssetViewDescriptor.m_elementSize == 4, "Expect skin joint indices to be stored in a raw 32-bit per element buffer"); 
+                AZ_Assert(bufferAssetViewDescriptor.m_elementSize == 4, "Expect skin joint indices to be stored in a raw 32-bit per element buffer");
 
                 // Multiply element offset by 2 here since m_elementOffset is referring to 32-bit elements
                 // and the pointer we're offsetting is pointing to 16-bit data
@@ -300,7 +309,7 @@ namespace EMotionFX
                 const AZ::RPI::BufferAssetView* weightView = sourceMesh.GetSemanticBufferAssetView(AZ::Name{"SKIN_WEIGHTS"});
                 const AZ::RPI::BufferAssetView* jointIdView = sourceMesh.GetSemanticBufferAssetView(AZ::Name{"SKIN_JOINTINDICES"});
                 if (weightView && jointIdView)
-                {                    
+                {
                     const AZ::u32 meshInfluenceCount = weightView->GetBufferViewDescriptor().m_elementCount / meshVertexCount;
                     const AZ::u32 weightOffsetInElements = weightView->GetBufferViewDescriptor().m_elementOffset;
                     // We multiply by two here since there are two jointId's packed per-element
@@ -323,7 +332,7 @@ namespace EMotionFX
 
                                 const AZ::u16 skeletonJointIndex = skinToSkeletonIndexMap.at(skinJointIndex);
                                 skinningLayer->AddInfluence(currentVertex, skeletonJointIndex, weight, 0);
-                                
+
                                 usedJoints.set(skeletonJointIndex);
                                 highestJointIndex = AZStd::max(highestJointIndex, skeletonJointIndex);
                             }
@@ -1107,7 +1116,7 @@ namespace EMotionFX
         //------------------------------------------------------------------------
         // Fix the submesh number of vertices and start vertex offset values
         //------------------------------------------------------------------------
-        uint32 numRemoved = 0;
+        [[maybe_unused]] uint32 numRemoved = 0;
         const uint32 v = startVertexNr;
         for (uint32 w = 0; w < numVertsToRemove; ++w)
         {

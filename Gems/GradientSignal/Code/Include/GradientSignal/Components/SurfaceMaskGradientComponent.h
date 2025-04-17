@@ -31,7 +31,7 @@ namespace GradientSignal
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(SurfaceMaskGradientConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SurfaceMaskGradientConfig, AZ::SystemAllocator);
         AZ_RTTI(SurfaceMaskGradientConfig, "{E59D0A4C-BA3D-4288-B409-A00B7D5566AA}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
         SurfaceData::SurfaceTagVector m_surfaceTagList;
@@ -42,7 +42,7 @@ namespace GradientSignal
         void AddTag(AZStd::string tag);
     };
 
-    static const AZ::Uuid SurfaceMaskGradientComponentTypeId = "{4661F063-7126-4BE1-886F-5A6FFC6DAC71}";
+    inline constexpr AZ::TypeId SurfaceMaskGradientComponentTypeId{ "{4661F063-7126-4BE1-886F-5A6FFC6DAC71}" };
 
     /**
     * calculates a gradient value based on percent contribution from surface tags

@@ -25,6 +25,7 @@
 #include <AzCore/Task/TaskGraph.h>
 
 #include <AzFramework/Entity/EntityContext.h>
+#include <AzFramework/Visibility/IVisibilitySystem.h>
 
 
 namespace AZ
@@ -34,6 +35,11 @@ namespace AZ
         ScenePtr Scene::CreateScene(const SceneDescriptor& sceneDescriptor)
         {
             Scene* scene = aznew Scene();
+            scene->m_name = sceneDescriptor.m_nameId;
+
+            AZ::Name visSceneName(AZStd::string::format("RenderCullScene[%s]", scene->m_name.GetCStr()));
+            scene->m_visibilityScene = AZ::Interface<AzFramework::IVisibilitySystem>::Get()->CreateVisibilityScene(visSceneName);
+
             for (const auto& fpId : sceneDescriptor.m_featureProcessorNames)
             {
                 scene->EnableFeatureProcessor(FeatureProcessorId{ fpId });
@@ -45,8 +51,6 @@ namespace AZ
                 auto shaderAsset = RPISystemInterface::Get()->GetCommonShaderAssetForSrgs();
                 scene->m_srg = ShaderResourceGroup::Create(shaderAsset, sceneSrgLayout->GetName());
             }
-
-            scene->m_name = sceneDescriptor.m_nameId;
 
             return ScenePtr(scene);
         }
@@ -129,6 +133,7 @@ namespace AZ
 
             Deactivate();
 
+            AZ::Interface<AzFramework::IVisibilitySystem>::Get()->DestroyVisibilityScene(m_visibilityScene);
             delete m_cullingScene;
         }
 
@@ -323,7 +328,7 @@ namespace AZ
 
         void Scene::TryApplyRenderPipelineChanges(RenderPipeline* pipeline)
         {
-            // return directly if the pipeline doesn't allow modification or it was already modifed by scene
+            // return directly if the pipeline doesn't allow modification or it was already modified by scene
             if (!pipeline->m_descriptor.m_allowModification || pipeline->m_wasModifiedByScene)
             {
                 return;
@@ -332,6 +337,7 @@ namespace AZ
             pipeline->m_wasModifiedByScene = true;
             for (auto& fp : m_featureProcessors)
             {
+                fp->AddRenderPasses(pipeline);
                 fp->ApplyRenderPipelineChange(pipeline);
             }
             pipeline->ProcessQueuedPassChanges();
@@ -352,7 +358,7 @@ namespace AZ
                 return;
             }
 
-            pipeline->SetDrawFilterTag(m_drawFilterTagRegistry->AcquireTag(pipelineId));
+            pipeline->SetDrawFilterTags(m_drawFilterTagRegistry.get());
 
             m_pipelines.push_back(pipeline);
 
@@ -363,6 +369,7 @@ namespace AZ
             }
 
             pipeline->OnAddedToScene(this);
+            pipeline->ProcessQueuedPassChanges();
 
             TryApplyRenderPipelineChanges(pipeline.get());
 
@@ -373,6 +380,7 @@ namespace AZ
             RebuildPipelineStatesLookup();
 
             SceneNotificationBus::Event(m_id, &SceneNotification::OnRenderPipelineAdded, pipeline);
+            SceneNotificationBus::Event(m_id, &SceneNotification::OnRenderPipelineChanged, pipeline.get(), SceneNotification::RenderPipelineChangeType::Added);
         }
         
         void Scene::RemoveRenderPipeline(const RenderPipelineId& pipelineId)
@@ -389,12 +397,17 @@ namespace AZ
                         m_defaultPipeline = nullptr;
                     }
 
-                    m_drawFilterTagRegistry->ReleaseTag(pipelineToRemove->GetDrawFilterTag());
+                    pipelineToRemove->ReleaseDrawFilterTags(m_drawFilterTagRegistry.get());
 
                     pipelineToRemove->OnRemovedFromScene(this);
                     m_pipelines.erase(it);
                     
                     SceneNotificationBus::Event(m_id, &SceneNotification::OnRenderPipelineRemoved, pipelineToRemove.get());
+                    SceneNotificationBus::Event(
+                        m_id,
+                        &SceneNotification::OnRenderPipelineChanged,
+                        pipelineToRemove.get(),
+                        SceneNotification::RenderPipelineChangeType::Removed);
 
                     // If the default pipeline was removed, set to the first one in the list
                     if (m_defaultPipeline == nullptr && m_pipelines.size() > 0)
@@ -471,6 +484,11 @@ namespace AZ
         void Scene::Simulate(RHI::JobPolicy jobPolicy, float simulationTime)
         {
             AZ_PROFILE_SCOPE(RPI, "Scene: Simulate");
+
+            if (!m_activated)
+            {
+                return;
+            }
 
             m_prevSimulationTime = m_simulationTime;
             m_simulationTime = simulationTime;
@@ -571,7 +589,7 @@ namespace AZ
 
             // Launch CullingSystem::ProcessCullables() jobs (will run concurrently with FeatureProcessor::Render() jobs if m_parallelOctreeTraversal)
             const bool parallelOctreeTraversal = m_cullingScene->GetDebugContext().m_parallelOctreeTraversal;
-            m_cullingScene->BeginCulling(m_renderPacket.m_views);
+            m_cullingScene->BeginCulling(*this, m_renderPacket.m_views);
             static const AZ::TaskDescriptor processCullablesDescriptor{"AZ::RPI::Scene::ProcessCullables", "Graphics"};
             AZ::TaskGraphEvent processCullablesTGEvent{ "ProcessCullables Wait" };
             AZ::TaskGraph processCullablesTG{ "ProcessCullables" };
@@ -582,7 +600,7 @@ namespace AZ
                     processCullablesTG.AddTask(processCullablesDescriptor, [this, &viewPtr, &processCullablesTGEvent]()
                         {
                             AZ::TaskGraph subTaskGraph{ "ProcessCullables Subgraph" };
-                            m_cullingScene->ProcessCullablesTG(*this, *viewPtr, subTaskGraph);
+                            m_cullingScene->ProcessCullablesTG(*this, *viewPtr, subTaskGraph, processCullablesTGEvent);
                             if (!subTaskGraph.IsEmpty())
                             {
                                 subTaskGraph.Detach();
@@ -595,7 +613,7 @@ namespace AZ
             {
                 for (ViewPtr& viewPtr : m_renderPacket.m_views)
                 {
-                    m_cullingScene->ProcessCullablesTG(*this, *viewPtr, processCullablesTG);
+                    m_cullingScene->ProcessCullablesTG(*this, *viewPtr, processCullablesTG, processCullablesTGEvent);
                 }
             }
             bool processCullablesHasWork = !processCullablesTG.IsEmpty();
@@ -631,7 +649,7 @@ namespace AZ
 
             // Launch CullingSystem::ProcessCullables() jobs (will run concurrently with FeatureProcessor::Render() jobs)
             const bool parallelOctreeTraversal = m_cullingScene->GetDebugContext().m_parallelOctreeTraversal;
-            m_cullingScene->BeginCulling(m_renderPacket.m_views);
+            m_cullingScene->BeginCulling(*this, m_renderPacket.m_views);
             for (ViewPtr& viewPtr : m_renderPacket.m_views)
             {
                 AZ::Job* processCullablesJob = AZ::CreateJobFunction([this, &viewPtr](AZ::Job& thisJob)
@@ -693,6 +711,11 @@ namespace AZ
         {
             AZ_PROFILE_SCOPE(RPI, "Scene: PrepareRender");
 
+            if (!m_activated)
+            {
+                return;
+            }
+
             if (m_taskGraphActive)
             {
                 WaitAndCleanTGEvent();
@@ -702,7 +725,10 @@ namespace AZ
                 WaitAndCleanCompletionJob(m_simulationCompletion);
             }
 
-            SceneNotificationBus::Event(GetId(), &SceneNotification::OnBeginPrepareRender);
+            {
+                AZ_PROFILE_SCOPE(RPI, "Scene: OnBeginPrepareRender");
+                SceneNotificationBus::Event(GetId(), &SceneNotification::OnBeginPrepareRender);
+            }
 
             // Get active pipelines which need to be rendered and notify them frame started
             AZStd::vector<RenderPipelinePtr> activePipelines;
@@ -717,6 +743,8 @@ namespace AZ
                     }
                 }
             }
+
+            m_numActiveRenderPipelines = aznumeric_cast<uint16_t>(activePipelines.size());
 
             // the pipeline states might have changed during the OnStartFrame, rebuild the lookup
             if (m_pipelineStatesLookupNeedsRebuild)
@@ -758,6 +786,7 @@ namespace AZ
             
                 // Collect transient views from each feature processor
                 FeatureProcessor::PrepareViewsPacket prepareViewPacket;
+                prepareViewPacket.m_persistentViews = persistentViews;
                 AZStd::vector<AZStd::pair<PipelineViewTag, ViewPtr>> transientViews;
                 for (auto& fp : m_featureProcessors)
                 {
@@ -787,12 +816,29 @@ namespace AZ
                     CollectDrawPacketsJobs();
                 }
 
-                m_cullingScene->EndCulling();
+                m_cullingScene->EndCulling(*this, m_renderPacket.m_views);
 
                 // Add dynamic draw data for all the views
                 if (m_dynamicDrawSystem)
                 {
                     m_dynamicDrawSystem->SubmitDrawData(this, m_renderPacket.m_views);
+                }
+            }
+
+            {
+                AZ_PROFILE_SCOPE(RPI, "Scene FinalizeVisibleObjectLists");
+
+                for (auto& view : m_renderPacket.m_views)
+                {
+                    view->FinalizeVisibleObjectList();
+                }
+            }
+
+            {
+                AZ_PROFILE_SCOPE(RPI, "Scene OnEndCulling");
+                for (auto& fp : m_featureProcessors)
+                {
+                    fp->OnEndCulling(m_renderPacket);
                 }
             }
 
@@ -839,10 +885,45 @@ namespace AZ
             {
                 fp->OnRenderEnd();
             }
+
+            for (auto& pipeline : m_pipelines)
+            {
+                for (auto& pipelineView : pipeline->GetPipelineViews())
+                {
+                    for (auto& view : pipelineView.second.m_views)
+                    {
+                        view->ClearAllFlags();
+                    }
+                }
+            }
+        }
+
+        RHI::TagBitRegistry<uint32_t>& Scene::GetViewTagBitRegistry()
+        {
+            if (m_viewTagBitRegistry == nullptr)
+            {
+                m_viewTagBitRegistry = RHI::TagBitRegistry<uint32_t>::Create();
+            }
+            return *m_viewTagBitRegistry;
+        }
+
+        RHI::Ptr<RHI::DrawFilterTagRegistry> Scene::GetDrawFilterTagRegistry() const
+        {
+            return m_drawFilterTagRegistry;
+        }
+
+        uint16_t Scene::GetActiveRenderPipelines() const
+        {
+            return m_numActiveRenderPipelines;
         }
 
         void Scene::UpdateSrgs()
         {
+            if (!m_activated)
+            {
+                return;
+            }
+
             PrepareSceneSrg();
 
             for (auto& view : m_renderPacket.m_views)
@@ -899,11 +980,12 @@ namespace AZ
             return m_pipelines;
         }
         
-        void Scene::OnSceneNotifictaionHandlerConnected(SceneNotification* handler)
+        void Scene::OnSceneNotificationHandlerConnected(SceneNotification* handler)
         {
             for (auto renderPipeline : m_pipelines)
             {
                 handler->OnRenderPipelineAdded(renderPipeline);
+                handler->OnRenderPipelineChanged(renderPipeline.get(), SceneNotification::RenderPipelineChangeType::Added);
                 const RenderPipeline::PipelineViewMap& viewsInfo = renderPipeline->GetPipelineViews();
                 for (RenderPipeline::PipelineViewMap::const_iterator itr = viewsInfo.begin(); itr != viewsInfo.end(); itr++)
                 {
@@ -964,6 +1046,16 @@ namespace AZ
         bool Scene::HasOutputForPipelineState(RHI::DrawListTag drawListTag) const
         {
             return m_pipelineStatesLookup.find(drawListTag) != m_pipelineStatesLookup.end();
+        }
+
+        AzFramework::IVisibilityScene* Scene::GetVisibilityScene() const
+        {
+            return m_visibilityScene;
+        }
+
+        AZ::RPI::CullingScene* Scene::GetCullingScene() const
+        {
+            return m_cullingScene;
         }
 
         void Scene::RebuildPipelineStatesLookup()
@@ -1050,13 +1142,14 @@ namespace AZ
                 }
             }
             m_pipelineStatesLookupNeedsRebuild = false;
+            SceneNotificationBus::Event(m_id, &SceneNotification::OnPipelineStateLookupRebuilt);
         }
 
-        RenderPipelinePtr Scene::FindRenderPipelineForWindow(AzFramework::NativeWindowHandle windowHandle)
+        RenderPipelinePtr Scene::FindRenderPipelineForWindow(AzFramework::NativeWindowHandle windowHandle, ViewType viewType)
         {
             for (auto renderPipeline : m_pipelines)
             {
-                if (renderPipeline->GetWindowHandle() == windowHandle)
+                if (renderPipeline->GetWindowHandle() == windowHandle && renderPipeline->GetViewType() == viewType)
                 {
                     return renderPipeline;
                 }

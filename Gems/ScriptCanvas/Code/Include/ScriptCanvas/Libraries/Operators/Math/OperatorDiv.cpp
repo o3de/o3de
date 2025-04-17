@@ -104,6 +104,30 @@ namespace ScriptCanvas
             };
 
             template <>
+            struct OperatorDivImpl<Data::VectorNType>
+            {
+                OperatorDivImpl(Node* node)
+                    : m_node(node)
+                {}
+
+                Data::VectorNType operator()(const Data::VectorNType& a, const Datum& b)
+                {
+                    const Data::VectorNType* divisor = b.GetAs<Data::VectorNType>();
+                    if (!divisor || divisor->IsZero())
+                    {
+                        // Divide by zero
+                        SCRIPTCANVAS_REPORT_ERROR((*m_node), "Divide by Zero");
+                        return Data::VectorNType(0);
+                    }
+
+                    return a / (*divisor);
+                }
+
+            private:
+                Node* m_node;
+            };
+
+            template <>
             struct OperatorDivImpl<Data::ColorType>
             {
                 OperatorDivImpl(Node* node)
@@ -170,7 +194,11 @@ namespace ScriptCanvas
             AZStd::unordered_set< Data::Type > OperatorDiv::GetSupportedNativeDataTypes() const
             {
                 return{
-                    Data::Type::Number()
+                    Data::Type::Number(),
+                    Data::Type::Vector2(),
+                    Data::Type::Vector3(),
+                    Data::Type::Vector4(),
+                    Data::Type::VectorN()
                 };
             }
 
@@ -181,18 +209,22 @@ namespace ScriptCanvas
                 case Data::eType::Number:
                     OperatorEvaluator::Evaluate<Data::NumberType>(OperatorDivImpl<Data::NumberType>(this), operands, result);
                     break;
+                case Data::eType::Vector2:
+                    OperatorEvaluator::Evaluate<Data::Vector2Type>(OperatorDivImpl<Data::Vector2Type>(this), operands, result);
+                    break;
+                case Data::eType::Vector3:
+                    OperatorEvaluator::Evaluate<Data::Vector3Type>(OperatorDivImpl<Data::Vector3Type>(this), operands, result);
+                    break;
+                case Data::eType::Vector4:
+                    OperatorEvaluator::Evaluate<Data::Vector4Type>(OperatorDivImpl<Data::Vector4Type>(this), operands, result);
+                    break;
+                case Data::eType::VectorN:
+                    OperatorEvaluator::Evaluate<Data::VectorNType>(OperatorDivImpl<Data::VectorNType>(this), operands, result);
+                    break;
                 default:
                     AZ_Assert(false, "Division operator not defined for type: %s", Data::ToAZType(type).ToString<AZStd::string>().c_str());
                     break;
                 }
-            }
-
-            void OperatorDiv::InitializeSlot(const SlotId& slotId, [[maybe_unused]] const ScriptCanvas::Data::Type& dataType)
-            {
-                ModifiableDatumView datumView;
-                FindModifiableDatumView(slotId, datumView);
-
-                OnResetDatumToDefaultValue(datumView);
             }
 
             bool OperatorDiv::IsValidArithmeticSlot(const SlotId& slotId) const
@@ -202,41 +234,6 @@ namespace ScriptCanvas
                 // We could do some introspection here to drops 1s, but for now just going to let it perform the pointless math
                 // But it gets a bit messy(since x/1 is invalid, but 1/x is very valid).
                 return datum != nullptr;
-            }
-
-            void OperatorDiv::OnResetDatumToDefaultValue(ModifiableDatumView& datumView)
-            {
-                Data::Type displayType = GetDisplayType(GetArithmeticDynamicTypeGroup());
-
-                if (datumView.IsValid() && displayType.IsValid())
-                {
-                    switch (displayType.GetType())
-                    {
-                    case Data::eType::Number:
-                        datumView.SetAs(ScriptCanvas::Data::One());
-                        break;
-                    case Data::eType::Vector2:
-                        datumView.SetAs(ScriptCanvas::Data::Vector2Type::CreateOne());
-                        break;
-                    case Data::eType::Vector3:
-                        datumView.SetAs(ScriptCanvas::Data::Vector3Type::CreateOne());
-                        break;
-                    case Data::eType::Vector4:
-                        datumView.SetAs(ScriptCanvas::Data::Vector4Type::CreateOne());
-                        break;
-                    case Data::eType::Quaternion:
-                        datumView.SetAs(ScriptCanvas::Data::QuaternionType::CreateIdentity());
-                        break;
-                    case Data::eType::Matrix3x3:
-                        datumView.SetAs(ScriptCanvas::Data::Matrix3x3Type::CreateIdentity());
-                        break;
-                    case Data::eType::Matrix4x4:
-                        datumView.SetAs(ScriptCanvas::Data::Matrix4x4Type::CreateIdentity());
-                        break;
-                    default:
-                        break;
-                    };
-                }
             }
         }
     }

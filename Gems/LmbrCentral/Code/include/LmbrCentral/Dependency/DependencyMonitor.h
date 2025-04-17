@@ -40,7 +40,7 @@ namespace LmbrCentral
         , private DependencyNotificationBus::MultiHandler
     {
     public:
-        AZ_CLASS_ALLOCATOR(DependencyMonitor, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DependencyMonitor, AZ::SystemAllocator);
         AZ_RTTI(DependencyMonitor, "{C7756A84-58D2-4171-A448-F8D3B84DF2F0}");
 
         DependencyMonitor() = default;

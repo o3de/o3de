@@ -11,11 +11,11 @@
 
 #include <Atom/RHI/CommandList.h>
 #include <Atom/RHI/ScopeProducerFunction.h>
-#include <Atom/RHI/ShaderResourceGroup.h>
 
 #include <Atom/RHI.Reflect/Format.h>
 #include <Atom/RHI.Reflect/SwapChainDescriptor.h>
 
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/Pass/ParentPass.h>
 #include <Atom/RPI.Public/WindowContext.h>
 
@@ -25,17 +25,21 @@ namespace AZ
 {
     namespace RPI
     {
-        //! Pass that outputs to a SwapChain
-        //! Holds all the passes needed to render a frame like depth, forward, post effects etc.
-        class SwapChainPass final
+        //! SwapChainPass is the root pass for a render pipeline which outputs to a swapchain.
+        //! It creates a swapchain attachment and uses it for the PipelineOutput binding of the RenderPipeline
+        //! Restrictions:
+        //! - The pass template should have a slot name "PipelineOutput"
+        //! - To support explicit render resolution ( swapchain has different size than the render pipeline's resolution),
+        //!     the pass template should have a pass request which creates the "CopyToSwapChain" pass
+        class ATOM_RPI_PUBLIC_API SwapChainPass final
             : public ParentPass
             , public AzFramework::WindowNotificationBus::Handler
         {
         public:
             AZ_RTTI(SwapChainPass, "{551AD61F-8603-4998-A7D1-226F03022295}", ParentPass);
-            AZ_CLASS_ALLOCATOR(SwapChainPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SwapChainPass, SystemAllocator);
 
-            SwapChainPass(const PassDescriptor& descriptor, const WindowContext* windowContext, const WindowContext::SwapChainMode swapChainMode);
+            SwapChainPass(const PassDescriptor& descriptor, const WindowContext* windowContext, const ViewType viewType);
             ~SwapChainPass();
 
             Ptr<ParentPass> Recreate() const override;
@@ -55,6 +59,9 @@ namespace AZ
             void FrameBeginInternal(FramePrepareParams params) override final;
             
             // WindowNotificationBus::Handler overrides ...
+            // The m_pipelinOutputAttachment need to be recreated when render resolution changed
+            void OnResolutionChanged(uint32_t width, uint32_t height) override;
+            // Swapchain may get resized when window is resized
             void OnWindowResized(uint32_t width, uint32_t height) override;
 
         private:
@@ -67,11 +74,15 @@ namespace AZ
             // The SwapChain used when rendering this pass
             Ptr<PassAttachment> m_swapChainAttachment;
 
-            RHI::SwapChainDimensions m_swapChainDimensions;
+            // The intermediate attachment used for render pipeline's output
+            Ptr<PassAttachment> m_pipelinOutputAttachment;
+
+            // The swapchain pass need to do resize from pipeline output to device swapchain
+            bool m_needResize = false;
 
             RHI::Scissor m_scissorState;
             RHI::Viewport m_viewportState;
-            WindowContext::SwapChainMode m_swapChainMode = WindowContext::SwapChainMode::Default;
+            ViewType m_viewType = ViewType::Default;
         };
 
     }   // namespace RPI

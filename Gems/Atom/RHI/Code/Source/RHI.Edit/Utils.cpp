@@ -19,523 +19,558 @@
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/optional.h>
 #include <AzCore/std/string/regex.h>
+#include <AzCore/Math/Sha1.h>
 #include <AzCore/Platform.h>
+#include <AzCore/std/time.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 
 #include <AzFramework/StringFunc/StringFunc.h>
 
-#include <md5.h>
-
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    static AZStd::mutex s_profilingMutex;
+    [[maybe_unused]] static constexpr char ShaderPlatformInterfaceName[] = "ShaderPlatformInterface";
+
+    void ShaderCompilerProfiling::Entry::Reflect(ReflectContext* context)
     {
-        static AZStd::mutex s_profilingMutex;
-        [[maybe_unused]] static constexpr char ShaderPlatformInterfaceName[] = "ShaderPlatformInterface";
-
-        void ShaderCompilerProfiling::Entry::Reflect(ReflectContext* context)
+        if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
         {
-            if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
+            serializeContext->Class<Entry>()
+                ->Version(0)
+                ->Field("ExecutablePath", &Entry::m_executablePath)
+                ->Field("Parameters", &Entry::m_parameters)
+                ->Field("ElapsedTimeSeconds", &Entry::m_elapsedTimeSeconds)
+                ;
+        }
+    }
+
+    void ShaderCompilerProfiling::Reflect(ReflectContext* context)
+    {
+        if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
+        {
+            serializeContext->Class<ShaderCompilerProfiling>()
+                ->Version(0)
+                ->Field("Entries", &ShaderCompilerProfiling::m_entries)
+                ;
+        }
+
+        Entry::Reflect(context);
+    }
+
+    //! Helper function to write a new entry in the shader compilation profiling data (see the ShaderCompilerProfiling struct).
+    //! The function tries to read the existing JSON file if it exists, and appends a new entry for a compilation request.
+    //! The profiling data consists of the compiler executable, the parameters used to call it and the elapsed time for that call.
+    bool WriteProfilingEntryToLog(const AZStd::string& shaderPath, const ShaderCompilerProfiling::Entry& profilingEntry)
+    {
+        AZStd::lock_guard<AZStd::mutex> lock(s_profilingMutex);
+
+        AZStd::string folderPath;
+        AzFramework::StringFunc::Path::GetFullPath(shaderPath.data(), folderPath);
+
+        AZStd::string fileName;
+        AzFramework::StringFunc::Path::GetFileName(shaderPath.data(), fileName);
+        AzFramework::StringFunc::Path::ReplaceExtension(fileName, "");
+
+        const AZ::Platform::ProcessId processId = AZ::Platform::GetCurrentProcessId();
+
+        AZStd::string filePath = shaderPath;
+        AZStd::string logName = AZStd::string::format("%s.%d.profiling", fileName.data(), processId);
+        AzFramework::StringFunc::Path::Join(folderPath.data(), logName.data(), filePath);
+
+        RHI::ShaderCompilerProfiling profiling;
+
+        if (IO::FileIOBase::GetInstance()->Exists(filePath.data()))
+        {
+            auto loadResult = AZ::JsonSerializationUtils::LoadObjectFromFile<RHI::ShaderCompilerProfiling>(profiling, filePath);
+
+            if (!loadResult.IsSuccess())
             {
-                serializeContext->Class<Entry>()
-                    ->Version(0)
-                    ->Field("ExecutablePath", &Entry::m_executablePath)
-                    ->Field("Parameters", &Entry::m_parameters)
-                    ->Field("ElapsedTimeSeconds", &Entry::m_elapsedTimeSeconds)
-                    ;
+                AZ_Error(ShaderPlatformInterfaceName, false, "Failed to load shader compiler profiling from file [%s]", filePath.data());
+                AZ_Error(ShaderPlatformInterfaceName, false, "Loading issues: %s", loadResult.GetError().data());
+                return false;
             }
         }
 
-        void ShaderCompilerProfiling::Reflect(ReflectContext* context)
-        {
-            if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
-            {
-                serializeContext->Class<ShaderCompilerProfiling>()
-                    ->Version(0)
-                    ->Field("Entries", &ShaderCompilerProfiling::m_entries)
-                    ;
-            }
+        profiling.m_entries.push_back(profilingEntry);
 
-            Entry::Reflect(context);
+        auto saveResult = AZ::JsonSerializationUtils::SaveObjectToFile<RHI::ShaderCompilerProfiling>(&profiling, filePath);
+        if (!(saveResult.IsSuccess()))
+        {
+            AZ_Error(ShaderPlatformInterfaceName, false, "Failed to save shader compiler profiling to file %s", filePath.data());
+            AZ_Error(ShaderPlatformInterfaceName, false, "Saving issues: %s", saveResult.GetError().data());
+            return false;
         }
 
-        //! Helper function to write a new entry in the shader compilation profiling data (see the ShaderCompilerProfiling struct).
-        //! The function tries to read the existing JSON file if it exists, and appends a new entry for a compilation request.
-        //! The profiling data consists of the compiler executable, the parameters used to call it and the elapsed time for that call.
-        bool WriteProfilingEntryToLog(const AZStd::string& shaderPath, const ShaderCompilerProfiling::Entry& profilingEntry)
+        return true;
+    }
+
+    AZStd::string PrependFile(PrependArguments& arguments)
+    {
+        static const char* executableFolder = nullptr;
+        const auto AsAbsolute = [](const AZStd::string& localFile) -> AZStd::optional<AZStd::string>
         {
-            AZStd::lock_guard<AZStd::mutex> lock(s_profilingMutex);
-
-            AZStd::string folderPath;
-            AzFramework::StringFunc::Path::GetFullPath(shaderPath.data(), folderPath);
-
-            AZStd::string fileName;
-            AzFramework::StringFunc::Path::GetFileName(shaderPath.data(), fileName);
-            AzFramework::StringFunc::Path::ReplaceExtension(fileName, "");
-
-            const AZ::Platform::ProcessId processId = AZ::Platform::GetCurrentProcessId();
-
-            AZStd::string filePath = shaderPath;
-            AZStd::string logName = AZStd::string::format("%s.%d.profiling", fileName.data(), processId);
-            AzFramework::StringFunc::Path::Join(folderPath.data(), logName.data(), filePath);
-
-            RHI::ShaderCompilerProfiling profiling;
-
-            if (IO::FileIOBase::GetInstance()->Exists(filePath.data()))
+            if (!AzFramework::StringFunc::Path::IsRelative(localFile.c_str()))
             {
-                auto loadResult = AZ::JsonSerializationUtils::LoadObjectFromFile<RHI::ShaderCompilerProfiling>(profiling, filePath);
+                return localFile;
+            }
 
-                if (!loadResult.IsSuccess())
+            if (!executableFolder)
+            {
+                AZ::ComponentApplicationBus::BroadcastResult(executableFolder, &AZ::ComponentApplicationBus::Events::GetExecutableFolder);
+                if (!executableFolder)
                 {
-                    AZ_Error(ShaderPlatformInterfaceName, false, "Failed to load shader compiler profiling from file [%s]", filePath.data());
-                    AZ_Error(ShaderPlatformInterfaceName, false, "Loading issues: %s", loadResult.GetError().data());
+                    AZ_Error(ShaderPlatformInterfaceName, false, "Unable to determine application root.");
+                    return AZStd::nullopt;
+                }
+            }
+
+            AZStd::string fileAbsolutePath;
+            AzFramework::StringFunc::Path::Join(executableFolder, localFile.c_str(), fileAbsolutePath);
+            return fileAbsolutePath;
+        };
+
+        // If either file path is empty there is nothing to prepend. Return the original source file path (even if empty).
+        if (!arguments.m_prependFile || !arguments.m_sourceFile)
+        {
+            return arguments.m_sourceFile;
+        }
+
+        // Read the prepended file
+        auto prependFileAbsolutePath = AsAbsolute(arguments.m_prependFile);
+        if (!prependFileAbsolutePath)
+        {
+            return arguments.m_sourceFile;
+        }
+
+        if (!AZ::IO::SystemFile::Exists(prependFileAbsolutePath->c_str()))
+        {
+            AZ_Warning(ShaderPlatformInterfaceName, false, "Missing prepend file: '%s'. Will continue without prepending.", prependFileAbsolutePath->c_str());
+            return arguments.m_sourceFile;
+        }
+
+        auto prependFileLoadResult = LoadFileString(prependFileAbsolutePath->c_str());
+        if (!prependFileLoadResult)
+        {
+            AZ_Error(ShaderPlatformInterfaceName, false, "%s", prependFileLoadResult.GetError().c_str());
+            return arguments.m_sourceFile;
+        }
+        else if (!prependFileLoadResult.GetValue().ends_with("\n"))
+        {
+            // Add new line to prepend file if not present
+            prependFileLoadResult.GetValue() += "\n";
+        }
+
+        auto sourceFileAbsolutePath = AsAbsolute(arguments.m_sourceFile);
+        if (!sourceFileAbsolutePath)
+        {
+            return arguments.m_sourceFile;
+        }
+
+        auto sourceFileLoadResult = LoadFileString(sourceFileAbsolutePath->c_str());
+        if (!sourceFileLoadResult)
+        {
+            AZ_Error(ShaderPlatformInterfaceName, false, "%s", sourceFileLoadResult.GetError().c_str());
+            return *sourceFileAbsolutePath;
+        }
+
+        AZStd::string combinedFile;
+        if (arguments.m_destinationFolder)
+        {
+            AZStd::string filename;
+            if(AzFramework::StringFunc::Path::GetFullFileName(sourceFileAbsolutePath->c_str(), filename))
+            {
+                combinedFile = AZStd::string::format("%s/%s", arguments.m_destinationFolder, filename.c_str());
+            }
+            else
+            {
+                AZ_Error(ShaderPlatformInterfaceName, false, "GetFullFileName('%s') failed", sourceFileAbsolutePath->c_str());
+                return *sourceFileAbsolutePath;
+            }
+        }
+        else
+        {
+            combinedFile = *sourceFileAbsolutePath;
+        }
+        combinedFile += (arguments.m_addSuffixToFileName ? "." + AZStd::string{ arguments.m_addSuffixToFileName } : "") + ".prepend";
+
+        // Make sure the slashes face the right way, so when this command line shows up in a log, the user can easily copy and paste the path.
+        AzFramework::StringFunc::Path::Normalize(combinedFile);
+
+        if (arguments.m_destinationStringOpt)
+        {
+            *arguments.m_destinationStringOpt = prependFileLoadResult.GetValue().c_str();
+            *arguments.m_destinationStringOpt += sourceFileLoadResult.GetValue().c_str();
+        }
+        else
+        {
+            // Write the file back to disk (if requested) so the native shader compiler can read it.
+            AZ::IO::FileIOStream combinedFileStream(combinedFile.c_str(), AZ::IO::OpenMode::ModeWrite);
+            if (!combinedFileStream.IsOpen())
+            {
+                AZ_Error(ShaderPlatformInterfaceName, false, "Failed to open output file %s", combinedFile.c_str());
+                return *sourceFileAbsolutePath;
+            }
+
+            combinedFileStream.Write(prependFileLoadResult.GetValue().size(), prependFileLoadResult.GetValue().data());
+            combinedFileStream.Write(sourceFileLoadResult.GetValue().size(), sourceFileLoadResult.GetValue().data());
+            combinedFileStream.Close();
+        }
+
+        if (arguments.m_digest)  // if the function's caller requested to compute a digest, let's hash the content and store it in the digest array.
+        {            // this is useful for lld/pdb file naming (shader debug symbols) because it's the automatically recognized scheme by PIX and alike.
+                
+            AZ::Sha1 hasher;
+            hasher.ProcessBytes(reinterpret_cast<AZStd::byte*>(prependFileLoadResult.GetValue().data()), aznumeric_cast<unsigned>(prependFileLoadResult.GetValue().size()));
+            hasher.ProcessBytes(reinterpret_cast<AZStd::byte*>(sourceFileLoadResult.GetValue().data()), aznumeric_cast<unsigned>(sourceFileLoadResult.GetValue().size()));
+            hasher.GetDigest((reinterpret_cast<AZ::Sha1::DigestType>(*arguments.m_digest)));
+        }
+
+        return combinedFile;
+    }
+
+    bool ExecuteShaderCompiler(const AZStd::string& executablePath,
+                               const AZStd::string& parameters,
+                               const AZStd::string& shaderSourcePathForDebug,
+                               const AZStd::string& tempFolder,
+                               const char* toolNameForLog)
+    {
+        AZStd::string executableAbsolutePath;
+        if (AzFramework::StringFunc::Path::IsRelative(executablePath.c_str()))
+        {
+            static const char* executableFolder = nullptr;
+            if (!executableFolder)
+            {
+                AZ::ComponentApplicationBus::BroadcastResult(executableFolder, &AZ::ComponentApplicationBus::Events::GetExecutableFolder);
+                if (!executableFolder)
+                {
+                    AZ_Error(ShaderPlatformInterfaceName, false, "Unable to determine application root.");
                     return false;
                 }
             }
 
-            profiling.m_entries.push_back(profilingEntry);
-
-            auto saveResult = AZ::JsonSerializationUtils::SaveObjectToFile<RHI::ShaderCompilerProfiling>(&profiling, filePath);
-            if (!(saveResult.IsSuccess()))
-            {
-                AZ_Error(ShaderPlatformInterfaceName, false, "Failed to save shader compiler profiling to file %s", filePath.data());
-                AZ_Error(ShaderPlatformInterfaceName, false, "Saving issues: %s", saveResult.GetError().data());
-                return false;
-            }
-
-            return true;
+            AzFramework::StringFunc::Path::Join(executableFolder, executablePath.c_str(), executableAbsolutePath);
+        }
+        else
+        {
+            executableAbsolutePath = executablePath;
         }
 
-        AZStd::string PrependFile(PrependArguments& arguments)
+        if (!AZ::IO::SystemFile::Exists(executableAbsolutePath.c_str()))
         {
-            static const char* executableFolder = nullptr;
-            const auto AsAbsolute = [](const AZStd::string& localFile) -> AZStd::optional<AZStd::string> 
+            AZ_Error(ShaderPlatformInterfaceName, false, "Executable not found: '%s'", executableAbsolutePath.c_str());
+            return false;
+        }
+
+        AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
+        processLaunchInfo.m_commandlineParameters = AZStd::string::format("\"%s\" %s", executableAbsolutePath.c_str(), parameters.c_str());
+        processLaunchInfo.m_showWindow = true;
+        processLaunchInfo.m_processPriority = AzFramework::ProcessPriority::PROCESSPRIORITY_NORMAL;
+
+        {
+            AZStd::string contextKey = toolNameForLog + AZStd::string(" Input File");
+            AZ_TraceContext(contextKey, shaderSourcePathForDebug);
+        }
+        {
+            AZStd::string contextKey = toolNameForLog + AZStd::string(" Command Line");
+            AZ_TraceContext(contextKey, processLaunchInfo.GetCommandLineParametersAsString());
+        }
+        AZ_TracePrintf(ShaderPlatformInterfaceName, "Executing '%s' ...", processLaunchInfo.GetCommandLineParametersAsString().c_str());
+
+        AzFramework::ProcessWatcher* watcher = AzFramework::ProcessWatcher::LaunchProcess(processLaunchInfo, AzFramework::COMMUNICATOR_TYPE_STDINOUT);
+        if (!watcher)
+        {
+            AZ_Error(ShaderPlatformInterfaceName, false, "Shader compiler could not be launched");
+            return false;
+        }
+
+        AZStd::unique_ptr<AzFramework::ProcessWatcher> watcherPtr = AZStd::unique_ptr<AzFramework::ProcessWatcher>(watcher);
+
+        AZStd::string errorMessages;
+        auto pumpOuputStreams = [&watcherPtr, &errorMessages]()
+        {
+            auto communicator = watcherPtr->GetCommunicator();
+
+            // Instead of collecting all the output in a giant string, it would be better to report
+            // the chunks of messages as they arrive, but this should be good enough for now.
+            if (auto byteCount = communicator->PeekError())
             {
-                if (!AzFramework::StringFunc::Path::IsRelative(localFile.c_str()))
-                {
-                    return localFile;
-                }
-
-                if (!executableFolder)
-                {
-                    AZ::ComponentApplicationBus::BroadcastResult(executableFolder, &AZ::ComponentApplicationBus::Events::GetExecutableFolder);
-                    if (!executableFolder)
-                    {
-                        AZ_Error(ShaderPlatformInterfaceName, false, "Unable to determine application root.");
-                        return AZStd::nullopt;
-                    }
-                }
-
-                AZStd::string fileAbsolutePath;
-                AzFramework::StringFunc::Path::Join(executableFolder, localFile.c_str(), fileAbsolutePath);
-                return fileAbsolutePath;
-            };
-
-            // If either file path is empty there is nothing to prepend. Return the original source file path (even if empty).
-            if (!arguments.m_prependFile || !arguments.m_sourceFile)
-            {
-                return arguments.m_sourceFile;
+                AZStd::string chunk;
+                chunk.resize(byteCount);
+                communicator->ReadError(chunk.data(), byteCount);
+                errorMessages += chunk;
             }
 
-            // Read the prepended file
-            auto prependFileAbsolutePath = AsAbsolute(arguments.m_prependFile);
-            if (!prependFileAbsolutePath)
+            // Even though we don't use the stdout stream, we have to read it or the process will hang
+            if (auto byteCount = communicator->PeekOutput())
             {
-                return arguments.m_sourceFile;
+                AZStd::string chunk;
+                chunk.resize(byteCount);
+                communicator->ReadOutput(chunk.data(), byteCount);
             }
+        };
 
-            if (!AZ::IO::SystemFile::Exists(prependFileAbsolutePath->c_str()))
-            {
-                AZ_Warning(ShaderPlatformInterfaceName, false, "Missing prepend file: '%s'. Will continue without prepending.", prependFileAbsolutePath->c_str());
-                return arguments.m_sourceFile;
-            }
+        uint32_t exitCode = 0;
+        bool timedOut = false;
 
-            auto prependFileLoadResult = LoadFileString(prependFileAbsolutePath->c_str());
-            if (!prependFileLoadResult)
-            {
-                AZ_Error(ShaderPlatformInterfaceName, false, "%s", prependFileLoadResult.GetError().c_str());
-                return arguments.m_sourceFile;
-            }
-            
-            auto sourceFileAbsolutePath = AsAbsolute(arguments.m_sourceFile);
-            if (!sourceFileAbsolutePath)
-            {
-                return arguments.m_sourceFile;
-            }
+        const AZStd::sys_time_t maxWaitTimeSeconds = 300;
+        const AZStd::sys_time_t startTimeSeconds = AZStd::GetTimeNowSecond();
+        const AZStd::sys_time_t startTime = AZStd::GetTimeNowTicks();
 
-            auto sourceFileLoadResult = LoadFileString(sourceFileAbsolutePath->c_str());
-            if (!sourceFileLoadResult)
+        while (watcherPtr->IsProcessRunning(&exitCode))
+        {
+            const AZStd::sys_time_t currentTimeSeconds = AZStd::GetTimeNowSecond();
+            if (currentTimeSeconds - startTimeSeconds > maxWaitTimeSeconds)
             {
-                AZ_Error(ShaderPlatformInterfaceName, false, "%s", sourceFileLoadResult.GetError().c_str());
-                return *sourceFileAbsolutePath;
-            }
-
-            AZStd::string combinedFile;
-            if (arguments.m_destinationFolder)
-            {
-                AZStd::string filename;
-                if(AzFramework::StringFunc::Path::GetFullFileName(sourceFileAbsolutePath->c_str(), filename))
-                {
-                    combinedFile = AZStd::string::format("%s/%s", arguments.m_destinationFolder, filename.c_str());
-                }
-                else
-                {
-                    AZ_Error(ShaderPlatformInterfaceName, false, "GetFullFileName('%s') failed", sourceFileAbsolutePath->c_str());
-                    return *sourceFileAbsolutePath;
-                }
+                timedOut = true;
+                static const uint32_t TimeOutExitCode = 121;
+                exitCode = TimeOutExitCode;
+                watcherPtr->TerminateProcess(TimeOutExitCode);
+                break;
             }
             else
             {
-                combinedFile = *sourceFileAbsolutePath;
+                pumpOuputStreams();
             }
-            combinedFile += (arguments.m_addSuffixToFileName ? "." + AZStd::string{ arguments.m_addSuffixToFileName } : "") + ".prepend";
+        }
 
-            if (arguments.m_destinationStringOpt)
+        AZ_Assert(!watcherPtr->IsProcessRunning(), "Shader compiler execution failed to terminate");
+
+        // Pump one last time to make sure the streams have been flushed
+        pumpOuputStreams();
+
+        const bool reportedErrors = ReportMessages(toolNameForLog, errorMessages, exitCode != 0);
+
+        if (timedOut)
+        {
+            AZ_Error(ShaderPlatformInterfaceName, false, "%s execution timed out after %d seconds", toolNameForLog, maxWaitTimeSeconds);
+            return false;
+        }
+
+        if (exitCode != 0)
+        {
+            AZ_Error(ShaderPlatformInterfaceName, false, "%s has exited with error code %d", toolNameForLog, exitCode);
+            return false;
+        }
+
+        if (reportedErrors)
+        {
+            AZ_Error(ShaderPlatformInterfaceName, false, "%s returned successfully, but errors were detected.", toolNameForLog);
+            return false;
+        }
+
+        // Write the shader compiler profiling data in distinct JSON files.
+        // We cannot use a shared data structure because distinct builder processes are running in parallel.
+        const AZStd::sys_time_t endTime = AZStd::GetTimeNowTicks();
+        const AZStd::sys_time_t deltaTime = endTime - startTime;
+        const float elapsedTimeSeconds = (float)(deltaTime) / (float)AZStd::GetTimeTicksPerSecond();
+
+        AZ_TracePrintf(ShaderPlatformInterfaceName, "%s elapsedTimeMillis: %d", __FUNCTION__, aznumeric_cast<int>(elapsedTimeSeconds * 1000.0f));
+
+        ShaderCompilerProfiling::Entry profilingEntry;
+        profilingEntry.m_executablePath = executablePath;
+        profilingEntry.m_parameters = parameters;
+        profilingEntry.m_elapsedTimeSeconds = elapsedTimeSeconds;
+        AZStd::string shaderSourceArg = shaderSourcePathForDebug;
+        AZStd::string shaderSourceFolder;
+        StringFunc::Path::GetFileName(shaderSourceArg.c_str(), shaderSourceFolder);
+        if (StringFunc::Contains(shaderSourceFolder, "Cache"))
+        {
+            AZStd::string shaderFileNameWithMutatedFolder = BuildFileNameWithExtension(shaderSourcePathForDebug, tempFolder, "");
+            shaderSourceArg = shaderFileNameWithMutatedFolder;
+        }
+        WriteProfilingEntryToLog(shaderSourceArg, profilingEntry);
+
+        return true;
+    }
+
+    bool ReportMessages([[maybe_unused]] AZStd::string_view window, AZStd::string_view errorMessages, bool reportAsErrors)
+    {
+        if (errorMessages.empty())
+        {
+            return false;
+        }
+
+        if (reportAsErrors)
+        {
+            AZ_Error(window.data(), false, "%.*s", aznumeric_cast<int>(errorMessages.size()), errorMessages.data());
+        }
+        else
+        {
+            // Using AZ_Warning instead of AZ_TracePrintf because this function is commonly
+            // used to report messages from stderr when executing applications. Applications
+            // when ran successfully, only output to stderr for errors or warnings.
+            AZ_Warning(window.data(), false, "%.*s", aznumeric_cast<int>(errorMessages.size()), errorMessages.data());
+        }
+        return AZStd::string::npos != AzFramework::StringFunc::Find(errorMessages, "error");
+    }
+
+    ShaderStage ToRHIShaderStage(ShaderHardwareStage stageType)
+    {
+        switch (stageType)
+        {
+        case ShaderHardwareStage::Compute:
+            return RHI::ShaderStage::Compute;
+        case ShaderHardwareStage::Fragment:
+            return RHI::ShaderStage::Fragment;
+        case ShaderHardwareStage::Geometry:
+            return RHI::ShaderStage::Geometry;
+        case ShaderHardwareStage::Vertex:
+            return RHI::ShaderStage::Vertex;
+        case ShaderHardwareStage::RayTracing:
+            return RHI::ShaderStage::RayTracing;
+        }
+        AZ_Assert(false, "Unable to find RHI Shader stage given RPI ShaderStageType %d", stageType);
+        return RHI::ShaderStage::Unknown;
+    }
+
+    Outcome<AZStd::string, AZStd::string> LoadFileString(const char* path)
+    {
+        AZ::IO::FileIOStream fileStream(path, AZ::IO::OpenMode::ModeRead);
+        if (!fileStream.IsOpen())
+        {
+            return AZ::Failure(AZStd::string::format("Could not open file '%s'.", path));
+        }
+
+        AZStd::string text;
+        text.resize(fileStream.GetLength());
+
+        auto bytesRead = fileStream.Read(text.size(), text.data());
+        if (bytesRead != fileStream.GetLength())
+        {
+            return AZ::Failure(AZStd::string::format("Failed to load file '%s'.", path));
+        }
+
+        return AZ::Success(AZStd::move(text));
+    }
+
+    Outcome<AZStd::vector<uint8_t>, AZStd::string> LoadFileBytes(const char* path)
+    {
+        AZ::IO::FileIOStream fileStream(path, AZ::IO::OpenMode::ModeRead | AZ::IO::OpenMode::ModeBinary);
+        if (!fileStream.IsOpen())
+        {
+            return AZ::Failure(AZStd::string::format("Could not open file '%s'.", path));
+        }
+
+        AZStd::vector<uint8_t> bytes;
+        bytes.resize(fileStream.GetLength());
+
+        auto bytesRead = fileStream.Read(bytes.size(), bytes.data());
+        if (bytesRead != fileStream.GetLength())
+        {
+            return AZ::Failure(AZStd::string::format("Failed to load file '%s'.", path));
+        }
+
+        return AZ::Success(AZStd::move(bytes));
+    }
+
+    size_t RegexCount(AZStd::string_view text, const char* regex)
+    {
+        size_t count = 0;
+        AZStd::regex expression(regex);
+        // Note this could be done much more simply using sregex_iterator, but AZStd::regex_iterator appears to be broken and doesn't compile. (LY-116293)
+        AZStd::match_results<AZStd::string::const_iterator> results;
+        AZStd::string::const_iterator searchFrom = text.begin();
+        do
+        {
+            if (AZStd::regex_search<AZStd::string::const_iterator>(searchFrom, text.end(), results, expression))
             {
-                *arguments.m_destinationStringOpt = prependFileLoadResult.GetValue().c_str();
-                *arguments.m_destinationStringOpt += sourceFileLoadResult.GetValue().c_str();
+                count++;
+                searchFrom = results[0].second;
             }
             else
             {
-                // Write the file back to disk (if requested) so the native shader compiler can read it.
-                AZ::IO::FileIOStream combinedFileStream(combinedFile.c_str(), AZ::IO::OpenMode::ModeWrite);
-                if (!combinedFileStream.IsOpen())
-                {
-                    AZ_Error(ShaderPlatformInterfaceName, false, "Failed to open output file %s", combinedFile.c_str());
-                    return *sourceFileAbsolutePath;
-                }
-
-                combinedFileStream.Write(prependFileLoadResult.GetValue().size(), prependFileLoadResult.GetValue().data());
-                combinedFileStream.Write(sourceFileLoadResult.GetValue().size(), sourceFileLoadResult.GetValue().data());
-                combinedFileStream.Close();
+                searchFrom = text.end();
             }
+        } while (searchFrom != text.end());
+        return count;
+    }
 
-            if (arguments.m_digest)  // if the function's caller requested to compute a digest, let's hash the content and store it in the digest array.
-            {            // this is useful for lld/pdb file naming (shader debug symbols) because it's the automatically recognized scheme by PIX and alike.
-                MD5Context md5;
-                MD5Init(&md5);
-                MD5Update(&md5, reinterpret_cast<unsigned char*>(prependFileLoadResult.GetValue().data()), aznumeric_cast<unsigned>(prependFileLoadResult.GetValue().size()));
-                MD5Update(&md5, reinterpret_cast<unsigned char*>(sourceFileLoadResult.GetValue().data()), aznumeric_cast<unsigned>(sourceFileLoadResult.GetValue().size()));
-                MD5Final(*arguments.m_digest, &md5);
+    AZStd::string BuildFileNameWithExtension(const AZStd::string& shaderSourceFile,
+                                             const AZStd::string& tempFolder,
+                                             const char* outputExtension)
+    {
+        AZStd::string outputFile;
+        AzFramework::StringFunc::Path::GetFileName(shaderSourceFile.c_str(), outputFile);
+        AzFramework::StringFunc::Path::Join(tempFolder.c_str(), outputFile.c_str(), outputFile);
+        AzFramework::StringFunc::Path::ReplaceExtension(outputFile, outputExtension);
+        return outputFile;
+    }
+
+    AZStd::string GetDirectXShaderCompilerPath(const char* defaultPathToDxc)
+    {
+        // To quickly test changes to the DXC compiler or as a workaround to the default.
+        static constexpr char DxcOverridePathKey[] = "/O3DE/Atom/DxcOverridePath";
+
+        if (auto setReg = AZ::Interface<SettingsRegistryInterface>::Get())
+        {
+            AZStd::string overridePath;
+            if (setReg->Get(overridePath, DxcOverridePathKey))
+            {
+                AZ_TraceOnce("CustomDxc", "DXC executable override specified, using %s.\n", overridePath.c_str());
+                return overridePath;
             }
-
-            return combinedFile;
         }
 
-        bool ExecuteShaderCompiler(const AZStd::string& executablePath,
-                                   const AZStd::string& parameters,
-                                   const AZStd::string& shaderSourcePathForDebug,
-                                   const char* toolNameForLog)
+        AZ_Assert(defaultPathToDxc != nullptr, "Invalid default path to DXC.");
+        return AZStd::string(defaultPathToDxc);
+    }
+
+    namespace CommandLineArgumentUtils
+    {
+        AZStd::vector<AZStd::string> GetListOfArgumentNames(AZStd::string_view commandLineString)
         {
-            AZStd::string executableAbsolutePath;
-            if (AzFramework::StringFunc::Path::IsRelative(executablePath.c_str()))
+            AZStd::vector<AZStd::string> listOfTokens;
+            AzFramework::StringFunc::Tokenize(commandLineString, listOfTokens, " \t\n");
+            AZStd::vector<AZStd::string> listOfArguments;
+            for (const AZStd::string& token : listOfTokens)
             {
-                static const char* executableFolder = nullptr;
-                if (!executableFolder)
-                {
-                    AZ::ComponentApplicationBus::BroadcastResult(executableFolder, &AZ::ComponentApplicationBus::Events::GetExecutableFolder);
-                    if (!executableFolder)
-                    {
-                        AZ_Error(ShaderPlatformInterfaceName, false, "Unable to determine application root.");
-                        return false;
-                    }
-                }
-
-                AzFramework::StringFunc::Path::Join(executableFolder, executablePath.c_str(), executableAbsolutePath);
+                AZStd::vector<AZStd::string> splitArguments;
+                AzFramework::StringFunc::Tokenize(token, splitArguments, "=");
+                listOfArguments.push_back(splitArguments[0]);
             }
-            else
-            {
-                executableAbsolutePath = executablePath;
-            }
-
-            if (!AZ::IO::SystemFile::Exists(executableAbsolutePath.c_str()))
-            {
-                AZ_Error(ShaderPlatformInterfaceName, false, "Executable not found: '%s'", executableAbsolutePath.c_str());
-                return false;
-            }
-
-            AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
-            processLaunchInfo.m_commandlineParameters = AZStd::string::format("\"%s\" %s", executableAbsolutePath.c_str(), parameters.c_str());
-            processLaunchInfo.m_showWindow = true;
-            processLaunchInfo.m_processPriority = AzFramework::ProcessPriority::PROCESSPRIORITY_NORMAL;
-
-            {
-                AZStd::string contextKey = toolNameForLog + AZStd::string(" Input File");
-                AZ_TraceContext(contextKey, shaderSourcePathForDebug);
-            }
-            {
-                AZStd::string contextKey = toolNameForLog + AZStd::string(" Command Line");
-                AZ_TraceContext(contextKey, processLaunchInfo.GetCommandLineParametersAsString());
-            }
-            AZ_TracePrintf(ShaderPlatformInterfaceName, "Executing '%s' ...", processLaunchInfo.GetCommandLineParametersAsString().c_str());
-
-            AzFramework::ProcessWatcher* watcher = AzFramework::ProcessWatcher::LaunchProcess(processLaunchInfo, AzFramework::COMMUNICATOR_TYPE_STDINOUT);
-            if (!watcher)
-            {
-                AZ_Error(ShaderPlatformInterfaceName, false, "Shader compiler could not be launched");
-                return false;
-            }
-
-            AZStd::unique_ptr<AzFramework::ProcessWatcher> watcherPtr = AZStd::unique_ptr<AzFramework::ProcessWatcher>(watcher);
-
-            AZStd::string errorMessages;
-            auto pumpOuputStreams = [&watcherPtr, &errorMessages]()
-            {
-                auto communicator = watcherPtr->GetCommunicator();
-                
-                // Instead of collecting all the output in a giant string, it would be better to report 
-                // the chunks of messages as they arrive, but this should be good enough for now.
-                if (auto byteCount = communicator->PeekError())
-                {
-                    AZStd::string chunk;
-                    chunk.resize(byteCount);
-                    communicator->ReadError(chunk.data(), byteCount);
-                    errorMessages += chunk;
-                }
-
-                // Even though we don't use the stdout stream, we have to read it or the process will hang
-                if (auto byteCount = communicator->PeekOutput())
-                {
-                    AZStd::string chunk;
-                    chunk.resize(byteCount);
-                    communicator->ReadOutput(chunk.data(), byteCount);
-                }
-            };
-
-            uint32_t exitCode = 0;
-            bool timedOut = false;
-
-            const AZStd::sys_time_t maxWaitTimeSeconds = 300;
-            const AZStd::sys_time_t startTimeSeconds = AZStd::GetTimeNowSecond();
-            const AZStd::sys_time_t startTime = AZStd::GetTimeNowTicks();
-
-            while (watcherPtr->IsProcessRunning(&exitCode))
-            {
-                const AZStd::sys_time_t currentTimeSeconds = AZStd::GetTimeNowSecond();
-                if (currentTimeSeconds - startTimeSeconds > maxWaitTimeSeconds)
-                {
-                    timedOut = true;
-                    static const uint32_t TimeOutExitCode = 121;
-                    exitCode = TimeOutExitCode;
-                    watcherPtr->TerminateProcess(TimeOutExitCode);
-                    break;
-                }
-                else
-                {
-                    pumpOuputStreams();
-                }
-            }
-
-            AZ_Assert(!watcherPtr->IsProcessRunning(), "Shader compiler execution failed to terminate");
-
-            // Pump one last time to make sure the streams have been flushed
-            pumpOuputStreams();
-
-            const bool reportedErrors = ReportMessages(toolNameForLog, errorMessages, exitCode != 0);
-
-            if (timedOut)
-            {
-                AZ_Error(ShaderPlatformInterfaceName, false, "%s execution timed out after %d seconds", toolNameForLog, maxWaitTimeSeconds);
-                return false;
-            }
-
-            if (exitCode != 0)
-            {
-                AZ_Error(ShaderPlatformInterfaceName, false, "%s has exited with error code %d", toolNameForLog, exitCode);
-                return false;
-            }
-
-            if (reportedErrors)
-            {
-                AZ_Error(ShaderPlatformInterfaceName, false, "%s returned successfully, but errors were detected.", toolNameForLog);
-                return false;
-            }
-
-            // Write the shader compiler profiling data in distinct JSON files.
-            // We cannot use a shared data structure because distinct builder processes are running in parallel.
-            const AZStd::sys_time_t endTime = AZStd::GetTimeNowTicks();
-            const AZStd::sys_time_t deltaTime = endTime - startTime;
-            const float elapsedTimeSeconds = (float)(deltaTime) / (float)AZStd::GetTimeTicksPerSecond();
-
-            AZ_TracePrintf(ShaderPlatformInterfaceName, "%s elapsedTimeMillis: %d", __FUNCTION__, aznumeric_cast<int>(elapsedTimeSeconds * 1000.0f));
-
-            ShaderCompilerProfiling::Entry profilingEntry;
-            profilingEntry.m_executablePath = executablePath;
-            profilingEntry.m_parameters = parameters;
-            profilingEntry.m_elapsedTimeSeconds = elapsedTimeSeconds;
-            WriteProfilingEntryToLog(shaderSourcePathForDebug, profilingEntry);
-
-            return true;
+            return listOfArguments;
         }
 
-        bool ReportMessages([[maybe_unused]] AZStd::string_view window, AZStd::string_view errorMessages, bool reportAsErrors)
+        AZStd::string RemoveArgumentsFromCommandLineString(
+            AZStd::span<const AZStd::string> listOfArgumentsToRemove, AZStd::string_view commandLineString)
         {
-            if (reportAsErrors)
+            AZStd::string customizedArguments = commandLineString;
+            for (const AZStd::string& azslcArgumentName : listOfArgumentsToRemove)
             {
-                AZ_Error(window.data(), false, "%.*s", aznumeric_cast<int>(errorMessages.size()), errorMessages.data());
+                AZStd::string regexStr = AZStd::string::format("%s(=\\S+)?", azslcArgumentName.c_str());
+                AZStd::regex replaceRegex(regexStr, AZStd::regex::ECMAScript);
+                customizedArguments = AZStd::regex_replace(customizedArguments, replaceRegex, "");
             }
-            else
-            {
-                // Using AZ_Warning instead of AZ_TracePrintf because this function is commonly
-                // used to report messages from stderr when executing applications. Applications
-                // when ran successfully, only output to stderr for errors or warnings.
-                AZ_Warning(window.data(), false, "%.*s", aznumeric_cast<int>(errorMessages.size()), errorMessages.data());
-            }
-            return AZStd::string::npos != AzFramework::StringFunc::Find(errorMessages, "error");
+            return customizedArguments;
         }
 
-        ShaderStage ToRHIShaderStage(ShaderHardwareStage stageType)
+        AZStd::string RemoveExtraSpaces(AZStd::string_view commandLineString)
         {
-            switch (stageType)
-            {
-            case ShaderHardwareStage::Compute:
-                return RHI::ShaderStage::Compute;
-            case ShaderHardwareStage::Fragment:
-                return RHI::ShaderStage::Fragment;
-            case ShaderHardwareStage::Geometry:
-                AZ_Assert(false, "RHI currently does not support geometry shaders");
-                return RHI::ShaderStage::Unknown;
-            case ShaderHardwareStage::TessellationControl:
-            case ShaderHardwareStage::TessellationEvaluation:
-                return RHI::ShaderStage::Tessellation;
-            case ShaderHardwareStage::Vertex:
-                return RHI::ShaderStage::Vertex;
-            case ShaderHardwareStage::RayTracing:
-                return RHI::ShaderStage::RayTracing;
-            }
-            AZ_Assert(false, "Unable to find RHI Shader stage given RPI ShaderStageType %d", stageType);
-            return RHI::ShaderStage::Unknown;
+            AZStd::vector<AZStd::string> argumentList;
+            AzFramework::StringFunc::Tokenize(commandLineString, argumentList, " \t\n");
+            AZStd::string cleanStringWithArguments;
+            AzFramework::StringFunc::Join(cleanStringWithArguments, argumentList.begin(), argumentList.end(), " ");
+            return cleanStringWithArguments;
         }
 
-        Outcome<AZStd::string, AZStd::string> LoadFileString(const char* path)
+        AZStd::string MergeCommandLineArguments(AZStd::string_view left, AZStd::string_view right)
         {
-            AZ::IO::FileIOStream fileStream(path, AZ::IO::OpenMode::ModeRead);
-            if (!fileStream.IsOpen())
-            {
-                return AZ::Failure(AZStd::string::format("Could not open file '%s'.", path));
-            }
-
-            AZStd::string text;
-            text.resize(fileStream.GetLength());
-
-            auto bytesRead = fileStream.Read(text.size(), text.data());
-            if (bytesRead != fileStream.GetLength())
-            {
-                return AZ::Failure(AZStd::string::format("Failed to load file '%s'.", path));
-            }
-            
-            return AZ::Success(AZStd::move(text));
+            auto listOfArgumentNamesFromRight = GetListOfArgumentNames(right);
+            auto leftWithRightArgumentsRemoved = RemoveArgumentsFromCommandLineString(listOfArgumentNamesFromRight, left);
+            AZStd::string combinedArguments = AZStd::string::format("%s %s", leftWithRightArgumentsRemoved.c_str(), right.data());
+            return RemoveExtraSpaces(combinedArguments);
         }
 
-        Outcome<AZStd::vector<uint8_t>, AZStd::string> LoadFileBytes(const char* path)
+        bool HasMacroDefinitions(AZStd::string_view commandLineString)
         {
-            AZ::IO::FileIOStream fileStream(path, AZ::IO::OpenMode::ModeRead | AZ::IO::OpenMode::ModeBinary);
-            if (!fileStream.IsOpen())
-            {
-                return AZ::Failure(AZStd::string::format("Could not open file '%s'.", path));
-            }
+            const AZStd::regex macroRegex(R"((^-D\s*(\w+))|(\s+-D\s*(\w+)))", AZStd::regex::ECMAScript);
 
-            AZStd::vector<uint8_t> bytes;
-            bytes.resize(fileStream.GetLength());
-
-            auto bytesRead = fileStream.Read(bytes.size(), bytes.data());
-            if (bytesRead != fileStream.GetLength())
+            AZStd::smatch match;
+            if (AZStd::regex_search(commandLineString.data(), match, macroRegex))
             {
-                return AZ::Failure(AZStd::string::format("Failed to load file '%s'.", path));
+                return (match.size() >= 1);
             }
-            
-            return AZ::Success(AZStd::move(bytes));
+            return false;
         }
-
-        size_t RegexCount(AZStd::string_view text, const char* regex)
-        {
-            size_t count = 0;
-            AZStd::regex expression(regex);
-            // Note this could be done much more simply using sregex_iterator, but AZStd::regex_iterator appears to be broken and doesn't compile. (LY-116293)
-            AZStd::match_results<AZStd::string::const_iterator> results;
-            AZStd::string::const_iterator searchFrom = text.begin();
-            do
-            {
-                if (AZStd::regex_search<AZStd::string::const_iterator>(searchFrom, text.end(), results, expression))
-                {
-                    count++;
-                    searchFrom = results[0].second;
-                }
-                else
-                {
-                    searchFrom = text.end();
-                }
-            } while (searchFrom != text.end());
-            return count;
-        }
-    
-        AZStd::string BuildFileNameWithExtension(const AZStd::string& shaderSourceFile,
-                                                                   const AZStd::string& tempFolder,
-                                                                   const char* outputExtension)
-        {
-            AZStd::string outputFile;
-            AzFramework::StringFunc::Path::GetFileName(shaderSourceFile.c_str(), outputFile);
-            AzFramework::StringFunc::Path::Join(tempFolder.c_str(), outputFile.c_str(), outputFile);
-            AzFramework::StringFunc::Path::ReplaceExtension(outputFile, outputExtension);
-            return outputFile;
-        }
-
-        namespace CommandLineArgumentUtils
-        {
-            AZStd::vector<AZStd::string> GetListOfArgumentNames(AZStd::string_view commandLineString)
-            {
-                AZStd::vector<AZStd::string> listOfTokens;
-                AzFramework::StringFunc::Tokenize(commandLineString, listOfTokens, " \t\n");
-                AZStd::vector<AZStd::string> listOfArguments;
-                for (const AZStd::string& token : listOfTokens)
-                {
-                    AZStd::vector<AZStd::string> splitArguments;
-                    AzFramework::StringFunc::Tokenize(token, splitArguments, "=");
-                    listOfArguments.push_back(splitArguments[0]);
-                }
-                return listOfArguments;
-            }
-
-            AZStd::string RemoveArgumentsFromCommandLineString(
-                AZStd::span<const AZStd::string> listOfArgumentsToRemove, AZStd::string_view commandLineString)
-            {
-                AZStd::string customizedArguments = commandLineString;
-                for (const AZStd::string& azslcArgumentName : listOfArgumentsToRemove)
-                {
-                    AZStd::string regexStr = AZStd::string::format("%s(=\\S+)?", azslcArgumentName.c_str());
-                    AZStd::regex replaceRegex(regexStr, AZStd::regex::ECMAScript);
-                    customizedArguments = AZStd::regex_replace(customizedArguments, replaceRegex, "");
-                }
-                return customizedArguments;
-            }
-
-            AZStd::string RemoveExtraSpaces(AZStd::string_view commandLineString)
-            {
-                AZStd::vector<AZStd::string> argumentList;
-                AzFramework::StringFunc::Tokenize(commandLineString, argumentList, " \t\n");
-                AZStd::string cleanStringWithArguments;
-                AzFramework::StringFunc::Join(cleanStringWithArguments, argumentList.begin(), argumentList.end(), " ");
-                return cleanStringWithArguments;
-            }
-
-            AZStd::string MergeCommandLineArguments(AZStd::string_view left, AZStd::string_view right)
-            {
-                auto listOfArgumentNamesFromRight = GetListOfArgumentNames(right);
-                auto leftWithRightArgumentsRemoved = RemoveArgumentsFromCommandLineString(listOfArgumentNamesFromRight, left);
-                AZStd::string combinedArguments = AZStd::string::format("%s %s", leftWithRightArgumentsRemoved.c_str(), right.data());
-                return RemoveExtraSpaces(combinedArguments);
-            }
-
-            bool HasMacroDefinitions(AZStd::string_view commandLineString)
-            {
-                const AZStd::regex macroRegex(R"((^-D\s*(\w+))|(\s+-D\s*(\w+)))", AZStd::regex::ECMAScript);
-
-                AZStd::smatch match;
-                if (AZStd::regex_search(commandLineString.data(), match, macroRegex))
-                {
-                    return (match.size() >= 1);
-                }
-                return false;
-            }
-        } //namespace CommandLineArgumentUtils
-    } // namespace RHI
-} // namespace AZ
+    } //namespace CommandLineArgumentUtils
+}

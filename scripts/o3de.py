@@ -13,7 +13,6 @@ import sys
 
 logger = logging.getLogger('o3de')
 
-
 def add_args(parser: argparse.ArgumentParser) -> None:
     """
     add_args is called to add expected parser arguments and subparsers arguments to each command such that it can be
@@ -33,9 +32,10 @@ def add_args(parser: argparse.ArgumentParser) -> None:
     o3de_package_dir = (script_dir / 'o3de').resolve()
     # add the scripts/o3de directory to the front of the sys.path
     sys.path.insert(0, str(o3de_package_dir))
-    from o3de import engine_properties, engine_template, gem_properties, \
+    from o3de import android, engine_properties, engine_template, gem_properties, \
         global_project, register, print_registration, get_registration, \
-        enable_gem, disable_gem, project_properties, sha256, download
+        enable_gem, disable_gem, project_properties, sha256, download, \
+        export_project, repo, repo_properties
     # Remove the temporarily added path
     sys.path = sys.path[1:]
 
@@ -75,6 +75,18 @@ def add_args(parser: argparse.ArgumentParser) -> None:
     # download
     download.add_args(subparsers)
 
+    # export_project
+    export_project.add_args(subparsers)
+    
+    # repo
+    repo.add_args(subparsers)
+
+    # modify remote repo
+    repo_properties.add_args(subparsers)
+
+    # Android
+    android.add_args(subparsers)
+
 
 if __name__ == "__main__":
     # parse the command line args
@@ -83,16 +95,28 @@ if __name__ == "__main__":
     # add args to the parser
     add_args(the_parser)
 
-    # parse args
-    the_args = the_parser.parse_args()
-
     # if empty print help
     if len(sys.argv) == 1:
         the_parser.print_help(sys.stderr)
         sys.exit(1)
 
+    # parse args
+    # argparse stores unknown arguments separately as a tuple,
+    # not packed in the same NameSpace as known arguments
+    known_args, unknown_args = the_parser.parse_known_args()
+    if hasattr(known_args, 'accepts_partial_args'):
+        ret = known_args.func(known_args, unknown_args) if hasattr(known_args, 'func') else 1
+    
+    elif unknown_args:
+        # since we expect every command which doesn't accept partial args to process only known args,
+        # if we face unknown args in such cases, we should throw an error.
+        # parse_args() calls parse_known_args() and will issue an error 
+        # https://hg.python.org/cpython/file/bb9fc884a838/Lib/argparse.py#l1725
+        the_parser.parse_args()
+    else:
+        ret = known_args.func(known_args) if hasattr(known_args, 'func') else 1
+
     # run
-    ret = the_args.func(the_args) if hasattr(the_args, 'func') else 1
     logger.info('Success!' if ret == 0 else 'Completed with issues: result {}'.format(ret))
 
     # return

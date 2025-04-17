@@ -10,21 +10,24 @@
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInternalInterface.h>
 
+#include <AzCore/Serialization/SerializeContext.h>
+
+#include <QMainWindow>
 #include <QMenuBar>
 
 namespace AzToolsFramework
 {
-    EditorMenuBar::EditorMenuBar()
-        : m_menuBar(new QMenuBar(m_defaultParentWidget))
+    EditorMenuBar::EditorMenuBar(QMainWindow* mainWindow)
+        : m_mainWindow(mainWindow)
     {
     }
-    
+
     void EditorMenuBar::AddMenu(int sortKey, AZStd::string menuIdentifier)
     {
         m_menuToSortKeyMap.insert(AZStd::make_pair(menuIdentifier, sortKey));
         m_menus[sortKey].push_back(AZStd::move(menuIdentifier));
     }
-    
+
     bool EditorMenuBar::ContainsMenu(const AZStd::string& menuIdentifier) const
     {
         return m_menuToSortKeyMap.contains(menuIdentifier);
@@ -41,19 +44,14 @@ namespace AzToolsFramework
         return menuIterator->second;
     }
 
-    QMenuBar* EditorMenuBar::GetMenuBar()
-    {
-        return m_menuBar;
-    }
-
-    const QMenuBar* EditorMenuBar::GetMenuBar() const
-    {
-        return m_menuBar;
-    }
-
     void EditorMenuBar::RefreshMenuBar()
     {
-        m_menuBar->clear();
+        if (!m_mainWindow)
+        {
+            return;
+        }
+
+        m_mainWindow->menuBar()->clear();
 
         for (const auto& vectorIterator : m_menus)
         {
@@ -61,16 +59,14 @@ namespace AzToolsFramework
             {
                 if (QMenu* menu = m_menuManagerInternalInterface->GetMenu(menuIdentifier))
                 {
-                    m_menuBar->addMenu(menu);
+                    m_mainWindow->menuBar()->addMenu(menu);
                 }
             }
         }
     }
 
-    void EditorMenuBar::Initialize(QWidget* defaultParentWidget)
+    void EditorMenuBar::Initialize()
     {
-        m_defaultParentWidget = defaultParentWidget;
-
         m_menuManagerInterface = AZ::Interface<MenuManagerInterface>::Get();
         AZ_Assert(m_menuManagerInterface, "EditorMenuBar - Could not retrieve instance of MenuManagerInterface");
 

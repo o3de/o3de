@@ -26,7 +26,7 @@ namespace Gestures
 
         struct Config
         {
-            AZ_CLASS_ALLOCATOR(Config, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Config, AZ::SystemAllocator);
             AZ_RTTI(Config, "{DD3CAAB0-4D81-4CCD-87E3-3AB120B080C6}");
             static void Reflect(AZ::ReflectContext* context);
 
@@ -43,7 +43,7 @@ namespace Gestures
         };
         static const Config& GetDefaultConfig() { static Config s_cfg; return s_cfg; }
 
-        AZ_CLASS_ALLOCATOR(RecognizerPinch, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(RecognizerPinch, AZ::SystemAllocator);
         AZ_RTTI(RecognizerPinch, "{C44DE7E3-1DBE-48CA-BD60-AD2633E11137}", RecognizerContinuous);
 
         explicit RecognizerPinch(const Config& config = GetDefaultConfig());

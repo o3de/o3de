@@ -20,6 +20,8 @@
 #include <Render/DiffuseProbeGridDownsamplePass.h>
 #include <Render/DiffuseProbeGridPreparePass.h>
 #include <Render/DiffuseProbeGridQueryPass.h>
+#include <Render/DiffuseProbeGridQueryFullscreenPass.h>
+#include <Render/DiffuseProbeGridQueryFullscreenPassData.h>
 #include <Render/DiffuseProbeGridRayTracingPass.h>
 #include <Render/DiffuseProbeGridRelocationPass.h>
 #include <Render/DiffuseProbeGridRenderPass.h>
@@ -43,6 +45,7 @@ namespace AZ
 
             DiffuseProbeGridFeatureProcessor::Reflect(context);
             DiffuseGlobalIlluminationFeatureProcessor::Reflect(context);
+            DiffuseProbeGridQueryFullscreenPassData::Reflect(context);
         }
 
         void DiffuseProbeGridSystemComponent::GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided)
@@ -57,8 +60,9 @@ namespace AZ
             incompatible.push_back(AZ_CRC_CE("DiffuseGlobalIllumination"));
         }
 
-        void DiffuseProbeGridSystemComponent::GetRequiredServices([[maybe_unused]] ComponentDescriptor::DependencyArrayType& required)
+        void DiffuseProbeGridSystemComponent::GetRequiredServices(ComponentDescriptor::DependencyArrayType& required)
         {
+            required.push_back(AZ_CRC_CE("RPISystem"));
         }
 
         void DiffuseProbeGridSystemComponent::LoadPassTemplateMappings()
@@ -98,6 +102,7 @@ namespace AZ
             passSystem->AddPassCreator(Name("DiffuseProbeGridVisualizationRayTracingPass"), &DiffuseProbeGridVisualizationRayTracingPass::Create);
             passSystem->AddPassCreator(Name("DiffuseProbeGridVisualizationCompositePass"), &DiffuseProbeGridVisualizationCompositePass::Create);
             passSystem->AddPassCreator(Name("DiffuseProbeGridQueryPass"), &DiffuseProbeGridQueryPass::Create);
+            passSystem->AddPassCreator(Name("DiffuseProbeGridQueryFullscreenPass"), &DiffuseProbeGridQueryFullscreenPass::Create);
         }
 
         void DiffuseProbeGridSystemComponent::Deactivate()

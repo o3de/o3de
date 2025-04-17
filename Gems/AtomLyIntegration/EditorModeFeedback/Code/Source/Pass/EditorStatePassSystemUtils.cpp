@@ -38,8 +38,15 @@ namespace AZ::Render
 
     void CreateAndAddStateParentPassTemplate(const EditorStateBase& state)
     {
+        const auto templateName = state.GetPassTemplateName();
+        if (RPI::PassSystemInterface::Get()->GetPassTemplate(templateName))
+        {
+            // Template was created by another pipeline, do not to create again
+            return;
+        }
+
         auto stateParentPassTemplate = AZStd::make_shared<RPI::PassTemplate>();
-        stateParentPassTemplate->m_name = state.GetPassTemplateName();
+        stateParentPassTemplate->m_name = templateName;
         stateParentPassTemplate->m_passClass = StatePassTemplatePassClassName;
 
          // Input depth slot
@@ -90,7 +97,7 @@ namespace AZ::Render
         }
 
         // Child passes
-        auto previousOutput = AZStd::make_pair<Name, Name>(Name("Parent"), Name("InputColor"));
+        auto previousOutput = AZStd::make_pair(Name("Parent"), Name("InputColor"));
         AZ::u32 passCount = 0;
         for (const auto& childPassTemplate : state.GetChildPassNameList())
         {
@@ -142,8 +149,15 @@ namespace AZ::Render
 
     void CreateAndAddBufferCopyPassTemplate(const EditorStateBase& state)
     {
+        const auto templateName = GetBufferCopyPassTemplateName(state);
+        if (RPI::PassSystemInterface::Get()->GetPassTemplate(templateName))
+        {
+            // Template was created by another pipeline, do not to create again
+            return;
+        }
+
         auto passTemplate = AZStd::make_shared<RPI::PassTemplate>();
-        passTemplate->m_name = GetBufferCopyPassTemplateName(state);
+        passTemplate->m_name = templateName;
         passTemplate->m_passClass = BufferCopyStatePassTemplatePassClassName;
     
         // Input color slot
@@ -207,8 +221,15 @@ namespace AZ::Render
 
     void CreateAndAddMaskPassTemplate(const Name& drawList)
     {
+        const auto templateName = GetMaskPassTemplateNameForDrawList(drawList);
+        if (RPI::PassSystemInterface::Get()->GetPassTemplate(templateName))
+        {
+            // Template was created by another pipeline, do not to create again
+            return;
+        }
+
         auto maskPassTemplate = AZStd::make_shared<RPI::PassTemplate>();
-        maskPassTemplate->m_name = GetMaskPassTemplateNameForDrawList(drawList);
+        maskPassTemplate->m_name = templateName;
         maskPassTemplate->m_passClass = Name("RasterPass");
 
         // Input depth slot
@@ -219,6 +240,8 @@ namespace AZ::Render
             slot.m_shaderInputName = Name("m_existingDepth");
             slot.m_scopeAttachmentUsage = RHI::ScopeAttachmentUsage::Shader;
             slot.m_shaderImageDimensionsName = Name("m_existingDepthDimensions");
+            slot.m_imageViewDesc = AZStd::make_shared<RHI::ImageViewDescriptor>();
+            slot.m_imageViewDesc->m_aspectFlags = RHI::ImageAspectFlags::Depth;
             maskPassTemplate->AddSlot(slot);
         }
 

@@ -24,6 +24,7 @@
 #include <AzToolsFramework/Entity/EditorEntitySortComponent.h>
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntitySystemComponent.h>
 #include <AzToolsFramework/FocusMode/FocusModeSystemComponent.h>
+#include <AzToolsFramework/PaintBrush/GlobalPaintBrushSettingsSystemComponent.h>
 #include <AzToolsFramework/PropertyTreeEditor/PropertyTreeEditorComponent.h>
 #include <AzToolsFramework/Render/EditorIntersectorComponent.h>
 #include <AzToolsFramework/Slice/SliceDependencyBrowserComponent.h>
@@ -38,7 +39,6 @@
 #include <AzToolsFramework/ToolsComponents/EditorOnlyEntityComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorEntityIconComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorInspectorComponent.h>
-#include <AzToolsFramework/ToolsComponents/EditorLayerComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorLockComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorPendingCompositionComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorSelectionAccentSystemComponent.h>
@@ -59,7 +59,9 @@
 #include <AzToolsFramework/Viewport/SharedViewBookmarkComponent.h>
 #include <AzToolsFramework/Viewport/LocalViewBookmarkComponent.h>
 #include <AzToolsFramework/Viewport/ViewBookmarkSystemComponent.h>
+#include <Metadata/MetadataManager.h>
 #include <Prefab/ProceduralPrefabSystemComponent.h>
+#include <AzToolsFramework/Metadata/UuidUtils.h>
 
 AZ_DEFINE_BUDGET(AzToolsFramework);
 
@@ -93,7 +95,6 @@ namespace AzToolsFramework
             Components::EditorEntityActionComponent::CreateDescriptor(),
             Components::EditorEntityIconComponent::CreateDescriptor(),
             Components::EditorInspectorComponent::CreateDescriptor(),
-            Layers::EditorLayerComponent::CreateDescriptor(),
             Components::EditorLockComponent::CreateDescriptor(),
             Components::EditorPendingCompositionComponent::CreateDescriptor(),
             Components::EditorVisibilityComponent::CreateDescriptor(),
@@ -119,6 +120,9 @@ namespace AzToolsFramework
             AzToolsFramework::Components::EditorEntityUiSystemComponent::CreateDescriptor(),
             AzToolsFramework::Script::LuaSymbolsReporterSystemComponent::CreateDescriptor(),
             AzToolsFramework::Script::LuaEditorSystemComponent::CreateDescriptor(),
+            AzToolsFramework::GlobalPaintBrushSettingsSystemComponent::CreateDescriptor(),
+            AzToolsFramework::MetadataManager::CreateDescriptor(),
+            AzToolsFramework::UuidUtilComponent::CreateDescriptor(),
         });
     }
 }

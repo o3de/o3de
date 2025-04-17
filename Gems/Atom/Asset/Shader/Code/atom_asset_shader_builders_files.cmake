@@ -29,4 +29,7 @@ set(FILES
     Source/Editor/SrgLayoutUtility.h
     Source/Editor/ShaderBuildArgumentsManager.cpp
     Source/Editor/ShaderBuildArgumentsManager.h
+    Source/Editor/ShaderVariantListBuilder.cpp
+    Source/Editor/ShaderVariantListBuilder.h
+    Source/Editor/HashedVariantListSourceData.h
 )

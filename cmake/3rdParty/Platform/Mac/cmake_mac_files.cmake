@@ -10,4 +10,5 @@ set(FILES
     BuiltInPackages_mac.cmake
     OpenGLInterface_mac.cmake
     Wwise_mac.cmake
+    Python_mac.cmake
 )

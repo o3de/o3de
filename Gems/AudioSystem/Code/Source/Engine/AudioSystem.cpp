@@ -190,7 +190,7 @@ namespace Audio
         AZ_Assert(g_audioThreadId == AZStd::this_thread::get_id(), "AudioSystem::InternalUpdate - called from non-Audio thread!");
         AZ_PROFILE_FUNCTION(Audio);
 
-        auto startUpdateTime = AZStd::chrono::system_clock::now();        // stamp the start time
+        auto startUpdateTime = AZStd::chrono::steady_clock::now();        // stamp the start time
 
         // Process a single blocking request, if any, and release the semaphore the main thread is trying to acquire.
         // This ensures that main thread will become unblocked quickly.
@@ -239,8 +239,8 @@ namespace Audio
 
         if (!handleBlockingRequest)
         {
-            auto endUpdateTime = AZStd::chrono::system_clock::now();      // stamp the end time
-            auto elapsedUpdateTime = AZStd::chrono::duration_cast<duration_ms>(endUpdateTime - startUpdateTime);
+            auto endUpdateTime = AZStd::chrono::steady_clock::now();      // stamp the end time
+            auto elapsedUpdateTime = AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(endUpdateTime - startUpdateTime);
             if (elapsedUpdateTime < m_targetUpdatePeriod)
             {
                 AZ_PROFILE_SCOPE(Audio, "Wait Remaining Time in Update Period");
@@ -262,7 +262,7 @@ namespace Audio
 
             for (AZ::u64 i = 0; i < Audio::CVars::s_AudioObjectPoolSize; ++i)
             {
-                auto audioProxy = azcreate(CAudioProxy, (), Audio::AudioSystemAllocator, "AudioProxy");
+                auto audioProxy = azcreate(CAudioProxy, (), Audio::AudioSystemAllocator);
                 m_apAudioProxies.push_back(audioProxy);
             }
 
@@ -276,6 +276,10 @@ namespace Audio
     void CAudioSystem::Release()
     {
         AZ_Assert(g_mainThreadId == AZStd::this_thread::get_id(), "AudioSystem::Release - called from a non-Main thread!");
+
+        // Mark the system as uninitialized before we destroy the audio proxies so that we can avoid
+        // recycling them on system shutdown.
+        m_bSystemInitialized = false;
 
         for (auto audioProxy : m_apAudioProxies)
         {
@@ -296,7 +300,6 @@ namespace Audio
 
         m_audioSystemThread.Deactivate();
         m_oATL.ShutDown();
-        m_bSystemInitialized = false;
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -419,7 +422,7 @@ namespace Audio
         }
         else
         {
-            audioProxy = azcreate(CAudioProxy, (), Audio::AudioSystemAllocator, "AudioProxyEx");
+            audioProxy = azcreate(CAudioProxy, (), Audio::AudioSystemAllocator);
             AZ_Assert(audioProxy != nullptr, "AudioSystem::GetAudioProxy - failed to create new AudioProxy instance!");
         }
 
@@ -431,6 +434,12 @@ namespace Audio
     {
         AZ_Assert(g_mainThreadId == AZStd::this_thread::get_id(), "AudioSystem::RecycleAudioProxy - called from a non-Main thread!");
         auto const audioProxy = static_cast<CAudioProxy*>(audioProxyI);
+
+        // If the system is shutting down, don't recycle the audio proxies.
+        if (!m_bSystemInitialized)
+        {
+            return;
+        }
 
         if (AZStd::find(m_apAudioProxiesToBeFreed.begin(), m_apAudioProxiesToBeFreed.end(), audioProxy) != m_apAudioProxiesToBeFreed.end()
             || AZStd::find(m_apAudioProxies.begin(), m_apAudioProxies.end(), audioProxy) != m_apAudioProxies.end())

@@ -45,6 +45,17 @@
             }
         },
         {
+            "name": "compile-commands-json",
+            "description": "Generate compile_commands.json file when used with a Makefile or Ninja Generator",
+            "hidden": true,
+            "cacheVariables": {
+                "CMAKE_EXPORT_COMPILE_COMMANDS": {
+                    "type": "BOOL",
+                    "value": "ON"
+                }
+            }
+        },
+        {
             "name": "no-unity",
             "description": "unity: off",
             "hidden": true,
@@ -89,11 +100,102 @@
             }
         },
         {
+            "name": "makefiles",
+            "displayName": "Unix Makefiles",
+            "description": "Configure using Unix Makefile generator",
+            "generator": "Unix Makefiles",
+            "hidden": true,
+            "inherits":[
+                "compile-commands-json"
+            ]
+        },
+        {
             "name": "ninja-multi-config",
             "displayName": "Ninja Multi-Config",
-            "description": "Default build using Ninja Multi-Config generator",
+            "description": "Configure using Ninja Multi-Config generator",
             "hidden": true,
-            "generator": "Ninja Multi-Config"
+            "generator": "Ninja Multi-Config",
+            "inherits":[
+                "compile-commands-json"
+            ]
+        },
+        {
+            "name": "vs2022",
+            "displayName": "Visual Studio 2022",
+            "description": "Configure using VS2022 generator",
+            "generator": "Visual Studio 17 2022",
+            "hidden": true,
+            "inherits": [
+                "host-windows"
+            ]
+        },
+        {
+            "name": "vs2019",
+            "displayName": "Visual Studio 2019",
+            "description": "Configure using VS2019 generator",
+            "generator": "Visual Studio 16 2019",
+            "hidden": true,
+            "inherits": [
+                "host-windows"
+            ]
+        },
+        {
+            "name": "xcode",
+            "displayName": "Xcode",
+            "description": "Configure using Xcode generator",
+            "generator": "Xcode",
+            "hidden": true,
+            "inherits": [
+                "host-mac"
+            ]
+        },
+        {
+            "name": "host-windows",
+            "displayName": "Host OS - Windows",
+            "description": "Specifies Windows host condition for configure preset",
+            "hidden": true,
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            }
+        },
+        {
+            "name": "host-linux",
+            "displayName": "Host OS - Linux",
+            "description": "Specifies Linux host condition for configure preset",
+            "hidden": true,
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Linux"
+            }
+        },
+        {
+            "name": "host-mac",
+            "displayName": "Host OS - Mac",
+            "description": "Specifies Mac host condition for configure preset",
+            "hidden": true,
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Darwin"
+            }
+        },
+        {
+            "name": "host-windows-linux-mac",
+            "displayName": "Host OS - Any",
+            "description": "Allows Windows, Linux or Mac to be used for host condition for configure preset",
+            "hidden": true,
+            "condition": {
+                "type": "inList",
+                "string": "${hostSystemName}",
+                "list": [
+                  "Darwin",
+                  "Linux",
+                  "Windows"
+                ]
+              }
         }
     ],
     "buildPresets": [
@@ -149,6 +251,58 @@
             "configurePreset": "default",
             "inherits": [ "profile"],
             "targets": ["TEST_SUITE_main", "TEST_SUITE_smoke"]
+        },
+        {
+            "name": "host-windows",
+            "displayName": "Host OS - Windows",
+            "description": "Specifies Windows host condition for build preset",
+            "hidden": true,
+            "configurePreset": "default",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            }
+        },
+        {
+            "name": "host-linux",
+            "displayName": "Host OS - Linux",
+            "description": "Specifies Linux host condition for build preset",
+            "hidden": true,
+            "configurePreset": "default",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Linux"
+            }
+        },
+        {
+            "name": "host-mac",
+            "displayName": "Host OS - Mac",
+            "description": "Specifies Mac host condition for build preset",
+            "hidden": true,
+            "configurePreset": "default",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Darwin"
+            }
+        },
+        {
+            "name": "host-windows-linux-mac",
+            "displayName": "Host OS - Any",
+            "description": "Allows Windows, Linux or Mac to be used for host condition for build preset",
+            "hidden": true,
+            "configurePreset": "default",
+            "condition": {
+                "type": "inList",
+                "string": "${hostSystemName}",
+                "list": [
+                  "Darwin",
+                  "Linux",
+                  "Windows"
+                ]
+              }
         }
     ],
     "testPresets": [
@@ -193,6 +347,42 @@
             "configuration": "profile",
             "output": {
                 "outputLogFile": "Ctest-${presetName}-profile.log"
+            }
+        },
+        {
+            "name": "host-windows",
+            "displayName": "Host OS - Windows",
+            "description": "Specifies Windows host condition for test preset",
+            "hidden": true,
+            "configurePreset": "default",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            }
+        },
+        {
+            "name": "host-linux",
+            "displayName": "Host OS - Linux",
+            "description": "Specifies Linux host condition for test preset",
+            "hidden": true,
+            "configurePreset": "default",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Linux"
+            }
+        },
+        {
+            "name": "host-mac",
+            "displayName": "Host OS - Mac",
+            "description": "Specifies Mac host condition for test preset",
+            "hidden": true,
+            "configurePreset": "default",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Darwin"
             }
         }
     ]

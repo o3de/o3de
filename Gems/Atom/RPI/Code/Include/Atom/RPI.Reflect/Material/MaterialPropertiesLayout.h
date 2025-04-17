@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertyDescriptor.h>
 #include <Atom/RHI.Reflect/NameIdReflectionMap.h>
 #include <AzCore/std/containers/unordered_map.h>
@@ -19,13 +20,13 @@ namespace AZ
     namespace RPI
     {
         //! Provides a set of MaterialPropertyDescriptors which define the topology for a material.
-        class MaterialPropertiesLayout
+        class ATOM_RPI_REFLECT_API MaterialPropertiesLayout
             : public AZStd::intrusive_base
         {
             friend class MaterialTypeAssetCreator;
         public:
             AZ_TYPE_INFO(MaterialPropertiesLayout, "{0CBBC21F-700A-45AD-84FF-67B0210E79CA}");
-            AZ_CLASS_ALLOCATOR(MaterialPropertiesLayout, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(MaterialPropertiesLayout, SystemAllocator);
 
             using PropertyList = AZStd::vector<MaterialPropertyDescriptor>;
 

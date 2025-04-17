@@ -69,10 +69,17 @@ namespace AzToolsFramework
         auto* pLayout = new QHBoxLayout(this);
         m_pComboBox = aznew AzToolsFramework::DHQComboBox(this);
 
+        m_editButton = new QToolButton();
+        m_editButton->setAutoRaise(true);
+        m_editButton->setToolTip(QString("Edit"));
+        m_editButton->setIcon(QIcon(":/stylesheet/img/UI20/open-in-internal-app.svg"));
+        m_editButton->setVisible(false);
+
         pLayout->setSpacing(4);
         pLayout->setContentsMargins(1, 0, 1, 0);
 
         pLayout->addWidget(m_pComboBox);
+        pLayout->addWidget(m_editButton);
 
         m_pComboBox->setMinimumWidth(AzToolsFramework::PropertyQTConstant_MinimumWidth);
         m_pComboBox->setFixedHeight(AzToolsFramework::PropertyQTConstant_DefaultHeight);
@@ -84,6 +91,7 @@ namespace AzToolsFramework
         setFocusPolicy(m_pComboBox->focusPolicy());
 
         connect(m_pComboBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &GenericComboBoxCtrl<T>::onChildComboBoxValueChange);
+        connect(m_editButton, &QToolButton::clicked, this, &GenericComboBoxCtrl<T>::OnEditButtonClicked);
     }
 
     template<typename T>
@@ -159,6 +167,14 @@ namespace AzToolsFramework
     }
 
     template<typename T>
+    void GenericComboBoxCtrl<T>::clearElements()
+    {
+        QSignalBlocker signalBlocker(m_pComboBox);
+        m_values.clear();
+        m_pComboBox->clear();
+    }
+
+    template<typename T>
     inline void GenericComboBoxCtrl<T>::onChildComboBoxValueChange(int comboBoxIndex)
     {
         if (comboBoxIndex < 0)
@@ -203,6 +219,39 @@ namespace AzToolsFramework
     }
 
     template<typename T>
+    QComboBox* GenericComboBoxCtrl<T>::GetComboBox()
+    {
+        return m_pComboBox;
+    }
+
+    template<typename T>
+    QToolButton* GenericComboBoxCtrl<T>::GetEditButton()
+    {
+        return m_editButton;
+    }
+
+    template<typename T>
+    void GenericComboBoxCtrl<T>::SetEditButtonCallBack(GenericEditButtonCallback<T> function)
+    {
+        m_editButtonCallback = AZStd::move(function);
+    }
+
+    template<typename T>
+    void GenericComboBoxCtrl<T>::OnEditButtonClicked()
+    {
+        if (m_editButtonCallback)
+        {
+            // A successful outcome returns the new value of the comboBox
+            GenericEditResultOutcome<T> outcome = m_editButtonCallback(value());
+            if (outcome.IsSuccess())
+            {
+                setValue(outcome.GetValue());
+                emit valueChanged(m_values[m_pComboBox->currentIndex()].second);
+            }
+        }
+    }
+
+    template<typename T>
     inline QWidget* GenericComboBoxCtrl<T>::GetFirstInTabOrder()
     {
         return m_pComboBox;
@@ -211,17 +260,15 @@ namespace AzToolsFramework
     template<typename T>
     inline QWidget* GenericComboBoxCtrl<T>::GetLastInTabOrder()
     {
-        return GetFirstInTabOrder();
+        return m_editButton->isVisible() ? m_editButton : GetFirstInTabOrder();
     }
 
     template<typename T>
     inline void GenericComboBoxCtrl<T>::UpdateTabOrder()
     {
-        // There's only one QT widget on this property.
     }
 
     // Property handler
-
     template<typename T>
     QWidget* GenericComboBoxHandler<T>::CreateGUI(QWidget* pParent)
     {
@@ -264,13 +311,69 @@ namespace AzToolsFramework
         else if (attrib == AZ::Edit::Attributes::GenericValueList)
         {
             ValueTypeContainer values;
-            if (attrReader->Read<ValueTypeContainer>(values))
+            bool readSuccess = attrReader->Read<ValueTypeContainer>(values);
+
+            if (!readSuccess)
+            {
+                // If the type is integral type
+                // try different combinations of pair<integral type, string>
+                if constexpr (AZStd::is_integral_v<T>)
+                {
+                    auto ReadIntegralStringVectorPair = [&values, attrReader](auto typeIdentity)
+                    {
+                        using IntegralType = typename decltype(typeIdentity)::type;
+
+                        // The AZStd::vector<T, AZStd::string> has been read in before the lambda was called and failed
+                        // so skip re-reading it again
+                        if constexpr (AZStd::is_same_v<T, IntegralType>)
+                        {
+                            return false;
+                        }
+                        else
+                        {
+                            using IntegralValueType = AZStd::pair<IntegralType, AZStd::string>;
+                            using IntegralValueTypeContainer = AZStd::vector<IntegralValueType>;
+                            IntegralValueTypeContainer integralValues;
+                            bool readContainer{};
+                            if (readContainer = attrReader->Read<IntegralValueTypeContainer>(integralValues); readContainer)
+                            {
+                                for (auto&& [value, description] : integralValues)
+                                {
+                                    values.emplace_back(static_cast<T>(value), AZStd::move(description));
+                                }
+                            }
+
+                            return readContainer;
+                        }
+                    };
+
+                    readSuccess = readSuccess || ReadIntegralStringVectorPair(AZStd::type_identity<char>{});
+                    readSuccess = readSuccess || ReadIntegralStringVectorPair(AZStd::type_identity<unsigned char>{});
+                    readSuccess = readSuccess || ReadIntegralStringVectorPair(AZStd::type_identity<signed char>{});
+                    readSuccess = readSuccess || ReadIntegralStringVectorPair(AZStd::type_identity<short>{});
+                    readSuccess = readSuccess || ReadIntegralStringVectorPair(AZStd::type_identity<unsigned short>{});
+                    readSuccess = readSuccess || ReadIntegralStringVectorPair(AZStd::type_identity<int>{});
+                    readSuccess = readSuccess || ReadIntegralStringVectorPair(AZStd::type_identity<unsigned int>{});
+                    readSuccess = readSuccess || ReadIntegralStringVectorPair(AZStd::type_identity<long>{});
+                    readSuccess = readSuccess || ReadIntegralStringVectorPair(AZStd::type_identity<unsigned long>{});
+                    readSuccess = readSuccess || ReadIntegralStringVectorPair(AZStd::type_identity<AZ::s64>{});
+                    readSuccess = readSuccess || ReadIntegralStringVectorPair(AZStd::type_identity<AZ::u64>{});
+                }
+            }
+
+            if (readSuccess)
             {
                 genericGUI->setElements(values);
             }
             else
             {
-                AZ_WarningOnce("AzToolsFramework", false, "Failed to read 'GenericValueList' attribute from property '%s' into generic combo box. Expected a vector of pair<%s, string>.", debugName, AZ::AzTypeInfo<typename GenericComboBoxHandler::property_t>::Name());
+                AZ_WarningOnce(
+                    "AzToolsFramework",
+                    false,
+                    "Failed to read 'GenericValueList' attribute from property '%s' into generic combo box. Expected a vector of pair<%s, "
+                    "string>.",
+                    debugName,
+                    AZ::AzTypeInfo<typename GenericComboBoxHandler::property_t>::Name());
             }
         }
         else if (attrib == AZ::Edit::Attributes::PostChangeNotify)
@@ -297,12 +400,35 @@ namespace AzToolsFramework
                 AZ_WarningOnce("AzToolsFramework", false, "Failed to read 'ComboBoxEditable' attribute from property '%s' into generic combo box", debugName);
             }
         }
-        else if (attrib == AZ_CRC("Warning", 0x404e9cc6))
+        else if (attrib == AZ_CRC_CE("Warning"))
         {
             AZStd::string warningText;
             if (attrReader->Read<AZStd::string>(warningText))
             {
                 genericGUI->SetWarning(warningText);
+            }
+        }
+        else if (attrib == AZ_CRC_CE("EditButtonVisible"))
+        {
+            bool visible = false;
+            if (attrReader->Read<bool>(visible))
+            {
+                genericGUI->GetEditButton()->setVisible(visible);
+            }
+        }
+        else if (attrib == AZ_CRC_CE("EditButtonCallback"))
+        {
+            if (auto* editButtonInvokable = azrtti_cast<AZ::AttributeInvocable<GenericEditResultOutcome<T>(T)>*>(attrReader->GetAttribute()))
+            {
+                genericGUI->SetEditButtonCallBack(editButtonInvokable->GetCallable());
+            };
+        }
+        else if (attrib == AZ_CRC_CE("EditButtonToolTip"))
+        {
+            AZStd::string toolTip;
+            if (attrReader->Read<AZStd::string>(toolTip))
+            {
+                genericGUI->GetEditButton()->setToolTip(toolTip.c_str());
             }
         }
     }
@@ -341,6 +467,15 @@ namespace AzToolsFramework
     }
 
     template<typename T>
+    void GenericComboBoxHandler<T>::RegisterWithPropertySystem(AZ::DocumentPropertyEditor::PropertyEditorSystemInterface* system)
+    {
+        system->RegisterNodeAttribute<AZ::DocumentPropertyEditor::Nodes::PropertyEditor>(
+            AZ::DocumentPropertyEditor::Nodes::PropertyEditor::PropertyEditor::GenericValueList<T>);
+        system->RegisterNodeAttribute<AZ::DocumentPropertyEditor::Nodes::PropertyEditor>(
+            AZ::DocumentPropertyEditor::Nodes::PropertyEditor::PropertyEditor::GenericValue<T>);
+    }
+
+    template<typename T>
     void GenericComboBoxHandler<T>::InvokePostChangeNotify(size_t index, GenericComboBoxCtrl<T>* genericGUI, const typename GenericComboBoxHandler::property_t& oldValue, AzToolsFramework::InstanceDataNode* node) const
     {
         if (genericGUI->m_postChangeNotifyCB)
@@ -363,4 +498,4 @@ namespace AzToolsFramework
             genericGUI->m_postChangeNotifyCB->Invoke(notifyInstance, oldValue);
         }
     }
-}
+} // namespace AzToolsFramework

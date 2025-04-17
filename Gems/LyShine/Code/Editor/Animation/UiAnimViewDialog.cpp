@@ -20,7 +20,6 @@
 #include "UiAnimViewDialog.h"
 
 #include "ViewPane.h"
-#include "StringDlg.h"
 #include "UiAVSequenceProps.h"
 #include "ViewManager.h"
 #include "AnimationContext.h"
@@ -35,8 +34,6 @@
 #include <AzQtComponents/Components/StyledDockWidget.h>
 #include <AzQtComponents/Components/Widgets/ToolBar.h>
 
-#include "Objects/EntityObject.h"
-
 #include "PluginManager.h"
 #include "Util/3DConnexionDriver.h"
 #include "UiAnimViewNewSequenceDialog.h"
@@ -49,10 +46,9 @@
 
 #include "EditorCommon.h"
 
-#include <QtViewPane.h>
-
 #include <QAction>
 #include <QComboBox>
+#include <QInputDialog>
 #include <QKeyEvent>
 #include <QLabel>
 #include <QMenu>
@@ -188,7 +184,6 @@ CUiAnimViewDialog::CUiAnimViewDialog(QWidget* pParent /*=NULL*/)
 
 CUiAnimViewDialog::~CUiAnimViewDialog()
 {
-    SaveLayouts();
     SaveMiscSettings();
     SaveTrackColors();
 
@@ -214,10 +209,6 @@ CUiAnimViewDialog::~CUiAnimViewDialog()
     CUiAnimViewSequenceManager::GetSequenceManager()->RemoveListener(this);
     m_animationContext->RemoveListener(this);
     GetIEditor()->UnregisterNotifyListener(this);
-
-    // UI_ANIMATION_REVISIT it seems something should be deleting these
-    delete m_wndCurveEditor;
-    delete m_wndCurveEditorDock;
 
     UiEditorAnimationStateBus::Handler::BusDisconnect();
     UiEditorAnimListenerBus::Handler::BusDisconnect();
@@ -262,11 +253,11 @@ BOOL CUiAnimViewDialog::OnInitDialog()
     setCentralWidget(w);
 
     m_wndKeyProperties = new CUiAnimViewKeyPropertiesDlg(this);
-    QDockWidget* dw = new AzQtComponents::StyledDockWidget(this);
-    dw->setObjectName("m_wndKeyProperties");
-    dw->setWindowTitle("Key");
-    dw->setWidget(m_wndKeyProperties);
-    addDockWidget(Qt::RightDockWidgetArea, dw);
+    m_wndKeyPropertiesDock = new AzQtComponents::StyledDockWidget(this);
+    m_wndKeyPropertiesDock->setObjectName("m_wndKeyProperties");
+    m_wndKeyPropertiesDock->setWindowTitle("Key");
+    m_wndKeyPropertiesDock->setWidget(m_wndKeyProperties);
+    addDockWidget(Qt::RightDockWidgetArea, m_wndKeyPropertiesDock);
     m_wndKeyProperties->PopulateVariables();
     m_wndKeyProperties->SetKeysCtrl(m_wndDopeSheet);
 
@@ -279,10 +270,6 @@ BOOL CUiAnimViewDialog::OnInitDialog()
     m_wndCurveEditor->SetPlayCallback([this] { OnPlay();
         });
 
-    // Close/hide by default to avoid the pane to show up as a standalone, white window when not displayed in a layout.
-    m_wndCurveEditorDock->setVisible(false);
-    m_wndCurveEditorDock->setEnabled(false);
-
     // In order to prevent the track editor view from collapsing and becoming invisible, we use the
     // minimum size of the curve editor for the track editor as well. Since both editors use the same
     // view widget in the UI animation editor when not in 'Both' mode, the sizes can be identical.
@@ -292,6 +279,7 @@ BOOL CUiAnimViewDialog::OnInitDialog()
 
     m_lazyInitDone = false;
 
+    SetViewMode(ViewMode::TrackView);
     QTimer::singleShot(0, this, SLOT(ReadLayouts()));
     //  ReadLayouts();
     ReadMiscSettings();
@@ -861,26 +849,6 @@ void CUiAnimViewDialog::OnScaleKey()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CUiAnimViewDialog::OnSyncSelectedTracksToBase()
-{
-    CUiAnimViewSequence* pSequence = m_animationContext->GetSequence();
-    if (pSequence)
-    {
-        pSequence->SyncSelectedTracksToBase();
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CUiAnimViewDialog::OnSyncSelectedTracksFromBase()
-{
-    CUiAnimViewSequence* pSequence = m_animationContext->GetSequence();
-    if (pSequence)
-    {
-        pSequence->SyncSelectedTracksFromBase();
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CUiAnimViewDialog::OnAddSequence()
 {
     if (!m_animationSystem)
@@ -1208,7 +1176,7 @@ void CUiAnimViewDialog::OnPlay()
         {
             {
                 CUiAnimationContext* pAnimationContext2 = nullptr;
-                EBUS_EVENT_RESULT(pAnimationContext2, UiEditorAnimationBus, GetAnimationContext);
+                UiEditorAnimationBus::BroadcastResult(pAnimationContext2, &UiEditorAnimationBus::Events::GetAnimationContext);
                 if (pAnimationContext2->IsPlaying())
                 {
                     AZ_Error("UiAnimViewDialog", false, "A sequence is already playing");
@@ -1223,7 +1191,7 @@ void CUiAnimViewDialog::OnPlay()
     {
         {
             CUiAnimationContext* pAnimationContext2 = nullptr;
-            EBUS_EVENT_RESULT(pAnimationContext2, UiEditorAnimationBus, GetAnimationContext);
+            UiEditorAnimationBus::BroadcastResult(pAnimationContext2, &UiEditorAnimationBus::Events::GetAnimationContext);
             if (!pAnimationContext2->IsPlaying())
             {
                 AZ_Error("UiAnimViewDialog", false, "A sequence is playing");
@@ -1386,6 +1354,22 @@ void CUiAnimViewDialog::keyPressEvent(QKeyEvent* event)
 }
 
 //////////////////////////////////////////////////////////////////////////
+void CUiAnimViewDialog::closeEvent([[maybe_unused]] QCloseEvent* event)
+{
+    m_wndKeyPropertiesDock->hide();
+    m_wndCurveEditorDock->hide();
+}
+
+void CUiAnimViewDialog::showEvent([[maybe_unused]] QShowEvent* event)
+{
+    m_wndKeyPropertiesDock->show();
+    if (m_lastMode == ViewMode::Both)
+    {
+        m_wndCurveEditorDock->show();
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////
 void CUiAnimViewDialog::OnModeDopeSheet()
 {
     auto sizes = m_wndSplitter->sizes();
@@ -1400,6 +1384,7 @@ void CUiAnimViewDialog::OnModeDopeSheet()
     m_actions[ID_TV_MODE_DOPESHEET]->setChecked(true);
     m_actions[ID_TV_MODE_CURVEEDITOR]->setChecked(false);
     m_wndCurveEditor->OnSequenceChanged(m_animationContext->GetSequence());
+    m_lastMode = ViewMode::TrackView;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1417,6 +1402,7 @@ void CUiAnimViewDialog::OnModeCurveEditor()
     m_actions[ID_TV_MODE_DOPESHEET]->setChecked(false);
     m_actions[ID_TV_MODE_CURVEEDITOR]->setChecked(true);
     m_wndCurveEditor->OnSequenceChanged(m_animationContext->GetSequence());
+    m_lastMode = ViewMode::CurveEditor;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1428,6 +1414,7 @@ void CUiAnimViewDialog::OnOpenCurveEditor()
     m_actions[ID_TV_MODE_DOPESHEET]->setChecked(true);
     m_actions[ID_TV_MODE_CURVEEDITOR]->setChecked(true);
     m_wndCurveEditor->OnSequenceChanged(m_animationContext->GetSequence());
+    m_lastMode = ViewMode::Both;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1551,6 +1538,7 @@ void CUiAnimViewDialog::SaveLayouts()
     settings.beginGroup("UiAnimView");
     QByteArray stateData = this->saveState();
     settings.setValue("layout", stateData);
+    settings.setValue("lastViewMode", static_cast<int>(m_lastMode));
     QStringList sl;
     foreach(int i, m_wndSplitter->sizes())
     sl << QString::number(i);
@@ -1576,12 +1564,34 @@ void CUiAnimViewDialog::ReadLayouts()
     {
         QStringList sl = settings.value("splitter").toString().split(",");
         QList<int> szl;
-        foreach(QString s, sl)
-        szl << s.toInt();
+        foreach (QString s, sl)
+        {
+            szl << s.toInt();
+        }
         if (!sl.isEmpty())
         {
             m_wndSplitter->setSizes(szl);
         }
+    }
+
+    QVariant defaultMode(static_cast<int>(m_lastMode));
+    SetViewMode(static_cast<ViewMode>(settings.value("lastViewMode", defaultMode).toInt()));
+}
+
+//////////////////////////////////////////////////////////////////////////
+void CUiAnimViewDialog::SetViewMode(ViewMode mode)
+{
+    switch (mode)
+    {
+    case ViewMode::TrackView:
+        OnModeDopeSheet();
+        break;
+    case ViewMode::CurveEditor:
+        OnModeCurveEditor();
+        break;
+    case ViewMode::Both:
+        OnOpenCurveEditor();
+        break;
     }
 }
 
@@ -1741,6 +1751,14 @@ void CUiAnimViewDialog::UpdateDopeSheetTime(CUiAnimViewSequence* pSequence)
     m_wndDopeSheet->SetStartMarker(timeRange.start);
     m_wndDopeSheet->SetEndMarker(timeRange.end);
     m_wndDopeSheet->SetTimeScale(m_wndDopeSheet->GetTimeScale(), 0);
+}
+
+//////////////////////////////////////////////////////////////////////////
+void CUiAnimViewDialog::EditorAboutToClose()
+{
+    m_wndCurveEditorDock->setFloating(false);
+    m_wndKeyPropertiesDock->setFloating(false);
+    SaveLayouts();
 }
 
 //////////////////////////////////////////////////////////////////////////

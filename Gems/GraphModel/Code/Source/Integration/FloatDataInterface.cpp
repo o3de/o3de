@@ -6,6 +6,7 @@
  *
  */
 
+#include <GraphModel/GraphModelBus.h>
 #include <GraphModel/Integration/FloatDataInterface.h>
 #include <GraphModel/Integration/IntegrationBus.h>
 
@@ -18,45 +19,32 @@ namespace GraphModelIntegration
 
     double FloatDataInterface::GetNumber() const
     {
-        if (GraphModel::SlotPtr slot = m_slot.lock())
-        {
-            return slot->GetValue<float>();
-        }
-        else
-        {
-            return 0.0;
-        }
+        GraphModel::SlotPtr slot = m_slot.lock();
+        return slot ? slot->GetValue<float>() : 0.0;
     }
+
     void FloatDataInterface::SetNumber(double value)
     {
-        if (GraphModel::SlotPtr slot = m_slot.lock())
+        GraphModel::SlotPtr slot = m_slot.lock();
+        if (slot && slot->GetValue<float>() != static_cast<float>(value))
         {
-            if (static_cast<float>(value) != slot->GetValue<float>())
-            {
-                GraphCanvas::GraphId graphCanvasSceneId;
-                IntegrationBus::BroadcastResult(graphCanvasSceneId, &IntegrationBusInterface::GetActiveGraphCanvasSceneId);
-                GraphCanvas::ScopedGraphUndoBatch undoBatch(graphCanvasSceneId);
+            const GraphCanvas::GraphId graphCanvasSceneId = GetDisplay()->GetSceneId();
+            GraphCanvas::ScopedGraphUndoBatch undoBatch(graphCanvasSceneId);
 
-                slot->SetValue(static_cast<float>(value));
-            }
+            slot->SetValue(static_cast<float>(value));
+            GraphControllerNotificationBus::Event(graphCanvasSceneId, &GraphControllerNotifications::OnGraphModelSlotModified, slot);
+            GraphControllerNotificationBus::Event(
+                graphCanvasSceneId, &GraphControllerNotifications::OnGraphModelGraphModified, slot->GetParentNode());
         }
-    }
-
-    int FloatDataInterface::GetDecimalPlaces() const
-    {
-        return 7;
-    }
-    int FloatDataInterface::GetDisplayDecimalPlaces() const
-    {
-        return 4;
     }
 
     double FloatDataInterface::GetMin() const
     {
         return std::numeric_limits<float>::lowest();
     }
+
     double FloatDataInterface::GetMax() const
     {
         return std::numeric_limits<float>::max();
     }
-}
+} // namespace GraphModelIntegration

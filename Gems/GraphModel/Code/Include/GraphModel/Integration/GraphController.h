@@ -15,9 +15,10 @@
 #include <QPixmap>
 
 // Graph Canvas
-#include <GraphCanvas/Editor/GraphModelBus.h>
-#include <GraphCanvas/Components/Slots/SlotBus.h>
+#include <GraphCanvas/Components/EntitySaveDataBus.h>
 #include <GraphCanvas/Components/SceneBus.h>
+#include <GraphCanvas/Components/Slots/SlotBus.h>
+#include <GraphCanvas/Editor/GraphModelBus.h>
 
 // Graph Model
 #include <GraphModel/GraphModelBus.h>
@@ -35,6 +36,7 @@ namespace GraphModelIntegration
     class GraphController
         : private GraphCanvas::GraphModelRequestBus::Handler
         , private GraphCanvas::SceneNotificationBus::Handler
+        , public GraphCanvas::EntitySaveDataRequestBus::Router
         , public GraphControllerRequestBus::Handler
     {
     public:
@@ -45,9 +47,9 @@ namespace GraphModelIntegration
 
         GraphController(const GraphController&) = delete;
 
-        GraphModel::GraphPtr GetGraph() { return m_graph; }
-        const GraphModel::GraphPtr GetGraph() const { return m_graph; }
-        const AZ::EntityId GetGraphCanvasSceneId() const { return m_graphCanvasSceneId; }
+        GraphModel::GraphPtr GetGraph();
+        const GraphModel::GraphPtr GetGraph() const;
+        const AZ::EntityId GetGraphCanvasSceneId() const;
 
         ////////////////////////////////////////////////////////////////////////////////////
         // GraphModel::GraphControllerRequestBus, connections
@@ -62,12 +64,26 @@ namespace GraphModelIntegration
         void WrapNode(GraphModel::NodePtr wrapperNode, GraphModel::NodePtr node) override;
         void WrapNodeOrdered(GraphModel::NodePtr wrapperNode, GraphModel::NodePtr node, AZ::u32 layoutOrder) override;
         void UnwrapNode(GraphModel::NodePtr wrapperNode, GraphModel::NodePtr node) override;
+        bool IsNodeWrapped(GraphModel::NodePtr node) const override;
         void SetWrapperNodeActionString(GraphModel::NodePtr node, const char* actionString) override;
 
         GraphModel::ConnectionPtr AddConnection(GraphModel::SlotPtr sourceSlot, GraphModel::SlotPtr targetSlot) override;
-        GraphModel::ConnectionPtr AddConnectionBySlotId(GraphModel::NodePtr sourceNode, GraphModel::SlotId sourceSlotId, GraphModel::NodePtr targetNode, GraphModel::SlotId targetSlotId) override;
+
+        GraphModel::ConnectionPtr AddConnectionBySlotId(
+            GraphModel::NodePtr sourceNode,
+            const GraphModel::SlotId& sourceSlotId,
+            GraphModel::NodePtr targetNode,
+            const GraphModel::SlotId& targetSlotId) override;
+
+        bool AreSlotsConnected(
+            GraphModel::NodePtr sourceNode,
+            const GraphModel::SlotId& sourceSlotId,
+            GraphModel::NodePtr targetNode,
+            const GraphModel::SlotId& targetSlotId) const override;
+
         bool RemoveConnection(GraphModel::ConnectionPtr connection) override;
-        GraphModel::SlotId ExtendSlot(GraphModel::NodePtr node, GraphModel::SlotName slotName) override;
+
+        GraphModel::SlotId ExtendSlot(GraphModel::NodePtr node, const GraphModel::SlotName& slotName) override;
 
         GraphModel::NodePtr GetNodeById(const GraphCanvas::NodeId& nodeId) override;
         GraphModel::NodePtrList GetNodesFromGraphNodeIds(const AZStd::vector<GraphCanvas::NodeId>& nodeIds) override;
@@ -112,11 +128,8 @@ namespace GraphModelIntegration
         AZ::Entity* CreateSlotUi(GraphModel::SlotPtr slot, AZ::EntityId nodeUiId);
 
         //! Creates the GraphCanvas node UI represeting a given Node
-        //! \param scenePosition  Pass in a lambda function that provides the node's position given it's GraphCanvas node EntityId.
-        AZ::EntityId CreateNodeUi(GraphModel::NodeId nodeId, GraphModel::NodePtr node, AZStd::function<AZ::Vector2(AZ::EntityId/*nodeUiId*/)> getScenePosition);
-
-        //! Utility function for adding a Graph Canvas node to a Graph Canvas scene
-        void AddNodeUiToScene(AZ::EntityId graphCanvasNodeId, const AZ::Vector2& scenePosition);
+        //! \param scenePosition The node's position
+        AZ::EntityId CreateNodeUi(GraphModel::NodeId nodeId, GraphModel::NodePtr node, const AZ::Vector2& scenePosition);
 
         //! Creates the GraphCanvas UI represeting a given Connection
         void CreateConnectionUi(GraphModel::ConnectionPtr connection);
@@ -135,24 +148,27 @@ namespace GraphModelIntegration
         // GraphCanvas::SceneNotificationBus, connections
         void OnNodeAdded(const AZ::EntityId& nodeUiId, bool isPaste) override;
         void OnNodeRemoved(const AZ::EntityId& nodeUiId) override;
-        void PreOnNodeRemoved(const AZ::EntityId& nodeUiId) override;
+        void OnConnectionAdded(const AZ::EntityId& connectionUiId) override;
         void OnConnectionRemoved(const AZ::EntityId& connectionUiId) override;
         void OnEntitiesSerialized(GraphCanvas::GraphSerialization& serializationTarget) override;
         void OnEntitiesDeserialized(const GraphCanvas::GraphSerialization& serializationSource) override;
         void OnEntitiesDeserializationComplete(const GraphCanvas::GraphSerialization& serializationSource) override;
         void OnNodeIsBeingEdited(bool isBeingEditeed) override;
+        void OnSelectionChanged() override;
+
+        ////////////////////////////////////////////////////////////////////////////////////
+        // GraphCanvas::EntitySaveDataRequestBus::Router
+        void WriteSaveData(GraphCanvas::EntitySaveDataContainer& saveDataContainer) const override;
+        void ReadSaveData(const GraphCanvas::EntitySaveDataContainer& saveDataContainer) override;
 
         ////////////////////////////////////////////////////////////////////////////////////
         // GraphCanvas::GraphModelRequestBus, connections
-
         void DisconnectConnection([[maybe_unused]] const AZ::EntityId& connectionUiId) override {}
         bool CreateConnection(const AZ::EntityId& connectionUiId, const GraphCanvas::Endpoint& sourcePoint, const GraphCanvas::Endpoint& targetPoint) override;
-
         bool IsValidConnection(const GraphCanvas::Endpoint& sourcePoint, const GraphCanvas::Endpoint& targetPoint) const override;
 
         ////////////////////////////////////////////////////////////////////////////////////
         // GraphCanvas::GraphModelRequestBus, undo
-
         void RequestUndoPoint() override;
         void RequestPushPreventUndoStateUpdate() override;
         void RequestPopPreventUndoStateUpdate() override;
@@ -161,14 +177,12 @@ namespace GraphModelIntegration
 
         ////////////////////////////////////////////////////////////////////////////////////
         // GraphCanvas::GraphModelRequestBus, other
-
         void EnableNodes(const AZStd::unordered_set<GraphCanvas::NodeId>& nodeIds) override;
         void DisableNodes(const AZStd::unordered_set<GraphCanvas::NodeId>& nodeIds) override;
 
         AZStd::string GetDataTypeString(const AZ::Uuid& typeId) override;
 
         //! This is where we find all of the graph metadata (like node positions, comments, etc) and store it in the node graph for serialization
-        // CJS TODO: Use this instead of the above undo functions
         void OnSaveDataDirtied(const AZ::EntityId& savedElement) override;
 
         void OnRemoveUnusedNodes() override {}
@@ -179,7 +193,10 @@ namespace GraphModelIntegration
         /// Extendable slot handlers
         void RemoveSlot(const GraphCanvas::Endpoint& endpoint) override;
         bool IsSlotRemovable(const GraphCanvas::Endpoint& endpoint) const override;
-        GraphCanvas::SlotId RequestExtension(const GraphCanvas::NodeId& nodeId, const GraphCanvas::ExtenderId& extenderId, GraphModelRequests::ExtensionRequestReason) override;
+        GraphCanvas::SlotId RequestExtension(
+            const GraphCanvas::NodeId& nodeId,
+            const GraphCanvas::ExtenderId& extenderId,
+            GraphModelRequests::ExtensionRequestReason) override;
 
         bool ShouldWrapperAcceptDrop(const GraphCanvas::NodeId& wrapperNode, const QMimeData* mimeData) const override;
         void AddWrapperDropTarget(const GraphCanvas::NodeId& wrapperNode) override;
@@ -189,8 +206,10 @@ namespace GraphModelIntegration
         // GraphCanvas::GraphModelRequestBus, node properties
 
         //! Creates a GraphCanvas::NodePropertyDisplay and a data interface for editing input values
-        GraphCanvas::NodePropertyDisplay* CreateDataSlotPropertyDisplay(const AZ::Uuid& dataType, const GraphCanvas::NodeId& nodeId, const GraphCanvas::SlotId& slotId) const override;
-        GraphCanvas::NodePropertyDisplay* CreatePropertySlotPropertyDisplay(const AZ::Crc32& propertyId, const GraphCanvas::NodeId& nodeUiId, const GraphCanvas::SlotId& slotUiId) const override;
+        GraphCanvas::NodePropertyDisplay* CreateDataSlotPropertyDisplay(
+            const AZ::Uuid& dataType, const GraphCanvas::NodeId& nodeId, const GraphCanvas::SlotId& slotId) const override;
+        GraphCanvas::NodePropertyDisplay* CreatePropertySlotPropertyDisplay(
+            const AZ::Crc32& propertyId, const GraphCanvas::NodeId& nodeUiId, const GraphCanvas::SlotId& slotUiId) const override;
 
         //! Common implementation for CreateDataSlotPropertyDisplay and CreatePropertySlotPropertyDisplay
         GraphCanvas::NodePropertyDisplay* CreateSlotPropertyDisplay(GraphModel::SlotPtr inputSlot) const;

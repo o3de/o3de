@@ -34,7 +34,7 @@ namespace GradientSignal
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(PerlinGradientConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PerlinGradientConfig, AZ::SystemAllocator);
         AZ_RTTI(PerlinGradientConfig, "{A746CFD0-7288-42F4-837D-1CDE2EAA6923}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
         int m_randomSeed = 1;
@@ -43,7 +43,7 @@ namespace GradientSignal
         float m_frequency = 1.0f;
     };
 
-    static const AZ::Uuid PerlinGradientComponentTypeId = "{A293D617-C0F2-4D96-9DA0-791A5564878C}";
+    inline constexpr AZ::TypeId PerlinGradientComponentTypeId{ "{A293D617-C0F2-4D96-9DA0-791A5564878C}" };
 
     class PerlinGradientComponent
         : public AZ::Component
@@ -73,9 +73,10 @@ namespace GradientSignal
         float GetValue(const GradientSampleParams& sampleParams) const override;
         void GetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const override;
 
-    private:
+    protected:
         PerlinGradientConfig m_configuration;
         AZStd::unique_ptr<PerlinImprovedNoise> m_perlinImprovedNoise;
+    private:
         GradientTransform m_gradientTransform;
         mutable AZStd::shared_mutex m_queryMutex;
 

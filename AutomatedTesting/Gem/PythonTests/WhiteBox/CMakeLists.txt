@@ -22,5 +22,6 @@ if(PAL_TRAIT_WHITEBOX_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PA
             AutomatedTesting.Assets
         COMPONENT
             WhiteBox
+        LABELS REQUIRES_tiaf
     )
 endif()

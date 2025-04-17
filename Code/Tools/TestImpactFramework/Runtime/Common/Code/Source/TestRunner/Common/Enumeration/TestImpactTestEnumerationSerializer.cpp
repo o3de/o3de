@@ -16,7 +16,7 @@
 
 namespace TestImpact
 {
-    namespace TestEnumFields
+    namespace TestEnumerationSerializer
     {
         // Keys for pertinent JSON node and attribute names
         constexpr const char* Keys[] =
@@ -27,38 +27,41 @@ namespace TestImpact
             "tests"
         };
 
-        enum
+        enum Fields
         {
             SuitesKey,
             NameKey,
             EnabledKey,
-            TestsKey
+            TestsKey,
+            // Checksum
+            _CHECKSUM_
         };
-    } // namespace
+    } // namespace TestEnumerationSerializer
 
     AZStd::string SerializeTestEnumeration(const TestEnumeration& testEnum)
     {
+        static_assert(TestEnumerationSerializer::Fields::_CHECKSUM_ == AZStd::size(TestEnumerationSerializer::Keys));
         rapidjson::StringBuffer stringBuffer;
         rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(stringBuffer);
 
         writer.StartObject();
-        writer.Key(TestEnumFields::Keys[TestEnumFields::SuitesKey]);
+        writer.Key(TestEnumerationSerializer::Keys[TestEnumerationSerializer::Fields::SuitesKey]);
         writer.StartArray();
         for (const auto& suite : testEnum.GetTestSuites())
         {
             writer.StartObject();
-            writer.Key(TestEnumFields::Keys[TestEnumFields::NameKey]);
+            writer.Key(TestEnumerationSerializer::Keys[TestEnumerationSerializer::Fields::NameKey]);
             writer.String(suite.m_name.c_str());
-            writer.Key(TestEnumFields::Keys[TestEnumFields::EnabledKey]);
+            writer.Key(TestEnumerationSerializer::Keys[TestEnumerationSerializer::Fields::EnabledKey]);
             writer.Bool(suite.m_enabled);
-            writer.Key(TestEnumFields::Keys[TestEnumFields::TestsKey]);
+            writer.Key(TestEnumerationSerializer::Keys[TestEnumerationSerializer::Fields::TestsKey]);
             writer.StartArray();
             for (const auto& test : suite.m_tests)
             {
                 writer.StartObject();
-                writer.Key(TestEnumFields::Keys[TestEnumFields::NameKey]);
+                writer.Key(TestEnumerationSerializer::Keys[TestEnumerationSerializer::Fields::NameKey]);
                 writer.String(test.m_name.c_str());
-                writer.Key(TestEnumFields::Keys[TestEnumFields::EnabledKey]);
+                writer.Key(TestEnumerationSerializer::Keys[TestEnumerationSerializer::Fields::EnabledKey]);
                 writer.Bool(test.m_enabled);
                 writer.EndObject();
             }
@@ -81,13 +84,13 @@ namespace TestImpact
             throw TestRunnerException("Could not parse enumeration data");
         }
 
-        for (const auto& suite : doc[TestEnumFields::Keys[TestEnumFields::SuitesKey]].GetArray())
+        for (const auto& suite : doc[TestEnumerationSerializer::Keys[TestEnumerationSerializer::Fields::SuitesKey]].GetArray())
         {
-            testSuites.emplace_back(TestEnumerationSuite{suite[TestEnumFields::Keys[TestEnumFields::NameKey]].GetString(), suite[TestEnumFields::Keys[TestEnumFields::EnabledKey]].GetBool(), {}});
-            for (const auto& test : suite[TestEnumFields::Keys[TestEnumFields::TestsKey]].GetArray())
+            testSuites.emplace_back(TestEnumerationSuite{suite[TestEnumerationSerializer::Keys[TestEnumerationSerializer::Fields::NameKey]].GetString(), suite[TestEnumerationSerializer::Keys[TestEnumerationSerializer::Fields::EnabledKey]].GetBool(), {}});
+            for (const auto& test : suite[TestEnumerationSerializer::Keys[TestEnumerationSerializer::Fields::TestsKey]].GetArray())
             {
                 testSuites.back().m_tests.emplace_back(
-                    TestEnumerationCase{test[TestEnumFields::Keys[TestEnumFields::NameKey]].GetString(), test[TestEnumFields::Keys[TestEnumFields::EnabledKey]].GetBool()});
+                    TestEnumerationCase{test[TestEnumerationSerializer::Keys[TestEnumerationSerializer::Fields::NameKey]].GetString(), test[TestEnumerationSerializer::Keys[TestEnumerationSerializer::Fields::EnabledKey]].GetBool()});
             }
         }
 

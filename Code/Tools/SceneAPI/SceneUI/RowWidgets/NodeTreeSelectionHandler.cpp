@@ -17,7 +17,7 @@ namespace AZ
     {
         namespace UI
         {
-            AZ_CLASS_ALLOCATOR_IMPL(NodeTreeSelectionHandler, SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR_IMPL(NodeTreeSelectionHandler, SystemAllocator);
 
             NodeTreeSelectionHandler* NodeTreeSelectionHandler::s_instance = nullptr;
 
@@ -34,7 +34,7 @@ namespace AZ
 
             u32 NodeTreeSelectionHandler::GetHandlerName() const
             {
-                return AZ_CRC("NodeTreeSelection", 0x58649112);
+                return AZ_CRC_CE("NodeTreeSelection");
             }
 
             bool NodeTreeSelectionHandler::AutoDelete() const
@@ -52,19 +52,19 @@ namespace AZ
             {
                 AZ_TraceContext("Attribute name", debugName);
 
-                if (attrib == AZ_CRC("FilterName", 0xf49ce62e))
+                if (attrib == AZ_CRC_CE("FilterName"))
                 {
                     ConsumeFilterNameAttribute(widget, attrValue);
                 }
-                else if (attrib == AZ_CRC("FilterType", 0x2661cf01))
+                else if (attrib == AZ_CRC_CE("FilterType"))
                 {
                     ConsumeFilterTypeAttribute(widget, attrValue);
                 }
-                else if (attrib == AZ_CRC("FilterVirtualType", 0x972bc6a4))
+                else if (attrib == AZ_CRC_CE("FilterVirtualType"))
                 {
                     ConsumeFilterVirtualTypeAttribute(widget, attrValue);
                 }
-                else if (attrib == AZ_CRC("NarrowSelection", 0xdc8002ec))
+                else if (attrib == AZ_CRC_CE("NarrowSelection"))
                 {
                     ConsumeNarrowSelectionAttribute(widget, attrValue);
                 }

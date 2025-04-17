@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
@@ -48,7 +49,7 @@ namespace AzToolsFramework
                 TemplateId linkTargetId, TemplateId linkSourceId, const InstanceAlias& instanceAlias,
                 const PrefabDomConstReference linkPatches, const LinkId& linkId = InvalidLinkId) = 0;
 
-            virtual void RemoveLink(const LinkId& linkId) = 0;
+            virtual bool RemoveLink(const LinkId& linkId) = 0;
 
             virtual TemplateId GetTemplateIdFromFilePath(AZ::IO::PathView filePath) const = 0;
 
@@ -81,8 +82,23 @@ namespace AzToolsFramework
                 InstanceOptionalReference parent = AZStd::nullopt,
                 const InstantiatedEntitiesCallback& instantiatedEntitiesCallback = {}) = 0;
             virtual AZStd::unique_ptr<Instance> CreatePrefab(const AZStd::vector<AZ::Entity*>& entities,
-                AZStd::vector<AZStd::unique_ptr<Instance>>&& instancesToConsume, AZ::IO::PathView filePath,
+                AZStd::vector<AZStd::unique_ptr<Instance>>&& nestedInstances, AZ::IO::PathView filePath,
                 AZStd::unique_ptr<AZ::Entity> containerEntity = nullptr, InstanceOptionalReference parent = AZStd::nullopt,
+                bool shouldCreateLinks = true) = 0;
+
+            //! Creates a prefab instance using the entities and nested instances provided.
+            //! @param entities The map of entities to add to the instance. Map ensures insertion order.
+            //! @param nestedInstances The instances to add to the newly created instance.
+            //! @param filePath The path at which the prefab should be created.
+            //! @param containerEntity The container entity for the new instance.
+            //! @param parent The parent instance of the newly created instance.
+            //! @return The new instance created.
+            virtual AZStd::unique_ptr<Instance> CreatePrefabWithCustomEntityAliases(
+                const AZStd::map<EntityAlias, AZ::Entity*>& entities,
+                AZStd::vector<AZStd::unique_ptr<Instance>>&& nestedInstances,
+                AZ::IO::PathView filePath,
+                AZStd::unique_ptr<AZ::Entity> containerEntity = nullptr,
+                InstanceOptionalReference parent = AZStd::nullopt,
                 bool shouldCreateLinks = true) = 0;
         };
         

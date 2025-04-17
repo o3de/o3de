@@ -28,7 +28,6 @@ namespace AZ
                 m_drawListTagName = passData->m_drawListTag;
                 auto* rhiSystem = RHI::RHISystemInterface::Get();
                 m_drawListTag = rhiSystem->GetDrawListTagRegistry()->AcquireTag(passData->m_drawListTag);
-                m_basePipelineViewTag = passData->m_pipelineViewTag;
             }
 
             SetShadowmapSize(ShadowmapSize::None, 1);
@@ -56,6 +55,7 @@ namespace AZ
             auto passData = AZStd::make_shared<RPI::RasterPassData>();
             passData->m_drawListTag = m_drawListTagName;
             passData->m_pipelineViewTag = GetPipelineViewTags()[cascadeIndex];
+            passData->m_bindViewSrg = true;
 
             auto pass = ShadowmapPass::CreateWithPassRequest(passName, passData);
 
@@ -144,17 +144,19 @@ namespace AZ
         {
             if (m_childrenPipelineViewTags.size() != Shadow::MaxNumberOfCascades)
             {
+                auto basePipelineViewTag{ GetPipelineViewTag() };
                 m_childrenPipelineViewTags.resize(Shadow::MaxNumberOfCascades);
                 for (uint16_t cascadeIndex = 0; cascadeIndex < Shadow::MaxNumberOfCascades; ++cascadeIndex)
                 {
                     // These pipeline view tags are used to distinguish transient views, so we offer distinct tag for each cascade index and for each camera view.
-                    m_childrenPipelineViewTags[cascadeIndex] = AZStd::string::format("%s_%d_%s", m_basePipelineViewTag.GetCStr(), cascadeIndex, m_cameraViewName.c_str());
+                    m_childrenPipelineViewTags[cascadeIndex] =
+                        AZStd::string::format("%s_%d_%s", basePipelineViewTag.GetCStr(), cascadeIndex, m_cameraViewName.c_str());
                 }
             }
             return m_childrenPipelineViewTags;
         }
 
-        void CascadedShadowmapsPass::GetPipelineViewTags(RPI::SortedPipelineViewTags& outTags) const
+        void CascadedShadowmapsPass::GetPipelineViewTags(RPI::PipelineViewTags& outTags) const
         {
             for (size_t childIndex = 0; childIndex < m_numCascades; ++childIndex)
             {

@@ -1,19 +1,16 @@
 {
-    "description": "",
-    "parentMaterial": "18_cyan.material",
     "materialType": "../../Types/StandardPBR.materialtype",
     "materialTypeVersion": 5,
-    "properties": {
-        "baseColor": {
-            "color": [
-                1.0,
-                1.0,
-                1.0,
-                1.0
-            ],
-            "textureBlendMode": "Lerp",
-            "textureMap": "18_cyan_sRGB.tif",
-            "useTexture": true
-        }
+    "parentMaterial": "18_cyan.material",
+    "propertyValues": {
+        "baseColor.color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "baseColor.textureBlendMode": "Lerp",
+        "baseColor.textureMap": "18_cyan_sRGB.tif",
+        "baseColor.useTexture": true
     }
 }

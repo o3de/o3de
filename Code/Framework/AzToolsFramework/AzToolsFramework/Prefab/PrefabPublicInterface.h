@@ -11,7 +11,7 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Math/Vector3.h>
-#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Math/Transform.h>
 
 #include <AzToolsFramework/Entity/EntityTypes.h>
 
@@ -41,37 +41,51 @@ namespace AzToolsFramework
         public:
             AZ_RTTI(PrefabPublicInterface, "{931AAE9D-C775-4818-9070-A2DA69489CBE}");
 
+            //! O3DE_DEPRECATION_NOTICE(GHI-12956)
+            //! This function is marked for deprecation. Please use CreatePrefabAndSaveToDisk instead.
+            virtual CreatePrefabResult CreatePrefabInDisk(const EntityIdList& entityIds, AZ::IO::PathView filePath) = 0;
+
             /**
              * Create a prefab out of the entities provided, at the path provided, and save it in disk immediately.
              * Automatically detects descendants of entities, and discerns between entities and child instances.
+             * Note: It calls CreatePrefabInMemory internally and then saves the new template in disk.
              * @param entityIds The entities that should form the new prefab (along with their descendants).
              * @param filePath The absolute path for the new prefab file.
              * @return An outcome object with an entityId of the new prefab's container entity;
              *  on failure, it comes with an error message detailing the cause of the error.
              */
-            virtual CreatePrefabResult CreatePrefabInDisk(
-                const EntityIdList& entityIds, AZ::IO::PathView filePath) = 0;
+            virtual CreatePrefabResult CreatePrefabAndSaveToDisk(const EntityIdList& entityIds, AZ::IO::PathView filePath) = 0;
 
             /**
              * Create a prefab out of the entities provided, at the path provided, and keep it in memory.
              * Automatically detects descendants of entities, and discerns between entities and child instances.
+             * Note: The newly created prefab template cannot be undo/redo. Undo will not remove the templace in system.
              * @param entityIds The entities that should form the new prefab (along with their descendants).
              * @param filePath The absolute path for the new prefab file.
              * @return An outcome object with an entityId of the new prefab's container entity;
              *  on failure, it comes with an error message detailing the cause of the error.
              */
-            virtual CreatePrefabResult CreatePrefabInMemory(
-                const EntityIdList& entityIds, AZ::IO::PathView filePath) = 0;
+            virtual CreatePrefabResult CreatePrefabInMemory(const EntityIdList& entityIds, AZ::IO::PathView filePath) = 0;
 
             /**
              * Instantiate a prefab from a prefab file.
              * @param filePath The path to the prefab file to instantiate.
-             * @param parent The entity the prefab should be a child of in the transform hierarchy.
+             * @param parentId The entity id the prefab should be a child of in the transform hierarchy.
+             * @param transform The transform in world space the prefab should be instantiated in.
+             * @return An outcome object with an entityId of the new prefab's container entity;
+             *  on failure, it comes with an error message detailing the cause of the error.
+             */
+            virtual InstantiatePrefabResult InstantiatePrefab(AZStd::string_view filePath, AZ::EntityId parentId, const AZ::Transform& transform) = 0;
+
+            /**
+             * Instantiate a prefab from a prefab file.
+             * @param filePath The path to the prefab file to instantiate.
+             * @param parentId The entity id the prefab should be a child of in the transform hierarchy.
              * @param position The position in world space the prefab should be instantiated in.
              * @return An outcome object with an entityId of the new prefab's container entity;
              *  on failure, it comes with an error message detailing the cause of the error.
              */
-            virtual InstantiatePrefabResult InstantiatePrefab(AZStd::string_view filePath, AZ::EntityId parent, const AZ::Vector3& position) = 0;
+            virtual InstantiatePrefabResult InstantiatePrefab(AZStd::string_view filePath, AZ::EntityId parentId, const AZ::Vector3& position) = 0;
 
             /**
              * Saves changes to prefab to disk.
@@ -94,7 +108,7 @@ namespace AzToolsFramework
              * Store the changes between the current entity state and its last cached state into undo/redo commands.
              * These changes are stored as patches to the owning prefab instance template, as appropriate.
              * The function also triggers the redo() of the nodes it creates, triggering propagation on the next tick.
-             * 
+             *
              * @param entityId The entity to patch.
              * @param parentUndoBatch The undo batch the undo nodes should be parented to.
              * @return Returns Success if the node was generated correctly, or an error message otherwise.
@@ -103,33 +117,48 @@ namespace AzToolsFramework
                 AZ::EntityId entityId, UndoSystem::URSequencePoint* parentUndoBatch) = 0;
 
             /**
+             * Detects if an entity is owned by a prefab.
+             * @param entityId The entity to query.
+             * @return True if the entity is owned by a prefab instance, false otherwise.
+             */
+            virtual bool IsOwnedByPrefabInstance(AZ::EntityId entityId) const = 0;
+
+            /**
              * Detects if an entity is owned by a procedural prefab.
              * @param entityId The entity to query.
              * @return True if the entity is owned by a procedural prefab instance, false otherwise.
              */
             virtual bool IsOwnedByProceduralPrefabInstance(AZ::EntityId entityId) const = 0;
-            
+
             /**
              * Detects if an entity is the container entity for its owning prefab instance.
              * @param entityId The entity to query.
              * @return True if the entity is the container entity for its owning prefab instance, false otherwise.
              */
             virtual bool IsInstanceContainerEntity(AZ::EntityId entityId) const = 0;
-            
+
             /**
              * Detects if an entity is the container entity for the level prefab instance.
              * @param entityId The entity to query.
              * @return True if the entity is the container entity for the level prefab instance, false otherwise.
              */
             virtual bool IsLevelInstanceContainerEntity(AZ::EntityId entityId) const = 0;
-            
+
+            /**
+             * Detects if a list of entities are under the same instance. The instance of
+             * a container entity is special cased to be the parent instance of its instance.
+             * @param entityIds The list of entities to query.
+             * @return True if all entities in the list have the same instance, false otherwise.
+             */
+            virtual bool EntitiesBelongToSameInstance(const EntityIdList& entityIds) const = 0;
+
             /**
              * Gets the entity id for the instance container of the owning instance.
              * @param entityId The id of the entity to query.
              * @return The entity id of the instance container owning the queried entity.
              */
             virtual AZ::EntityId GetInstanceContainerEntityId(AZ::EntityId entityId) const = 0;
-            
+
             /**
              * Gets the entity id for the instance container of the level instance.
              * @return The entity id of the instance container for the currently loaded level.
@@ -151,14 +180,6 @@ namespace AzToolsFramework
             virtual PrefabRequestResult HasUnsavedChanges(AZ::IO::Path prefabFilePath) const = 0;
 
             /**
-             * [DEPRECATION]--This function is marked for deprecation. Please use DeleteEntitiesAndAllDescendantsInInstance instead.
-             * Deletes all entities from the owning instance. Bails if the entities don't all belong to the same instance.
-             * @param entities The entities to delete.
-             * @return An outcome object; on failure, it comes with an error message detailing the cause of the error.
-             */
-            virtual PrefabOperationResult DeleteEntitiesInInstance(const EntityIdList& entityIds) = 0;
-            
-            /**
              * Deletes all entities and their descendants from the owning instance. Bails if the entities don't all belong to the same
              * instance.
              * @param entities The entities to delete. Their descendants will be discovered by this function.
@@ -177,13 +198,26 @@ namespace AzToolsFramework
             /**
               * If the entity id is a container entity id, detaches the prefab instance corresponding to it. This includes converting
               * the container entity into a regular entity and putting it under the parent prefab, removing the link between this
-              * instance and the parent, removing links between this instance and its nested instances, and adding entities directly 
+              * instance and the parent, removing links between this instance and its nested instances, and adding entities directly
               * owned by this instance under the parent instance.
               * Bails if the entity is not a container entity or belongs to the level prefab instance.
+              * Note that this function retains the container entities, unlike the below function
+              * @ref DetachPrefabAndRemoveContainerEntity.
               * @param containerEntityId The container entity id of the instance to detach.
               * @return An outcome object; on failure, it comes with an error message detailing the cause of the error.
               */
             virtual PrefabOperationResult DetachPrefab(const AZ::EntityId& containerEntityId) = 0;
+
+            /**
+              * Does the same thing as @ref DetachPrefab, but also removes the container entity representing the prefab instance.
+              * This re-parents anything that used to be a child of the container entity to the container entity's parent.
+              * This operation is essentially the reverse of what happens when you create a prefab (which creates a new 
+              * container entity and re-parents the entities under it.
+              * Note that the previous API only had "DetachPrefab", which kept the container entities, 
+              * and by way of introducing as little risk a possible in an API change, the old function
+              * retains its original behavior and name.
+              */
+            virtual PrefabOperationResult DetachPrefabAndRemoveContainerEntity(const AZ::EntityId& containerEntityId) = 0;
         };
 
     } // namespace Prefab

@@ -12,17 +12,15 @@
 namespace ScriptCanvasUnitTest
 {
     class ScriptCanvasUnitTestFixture
-        : public UnitTest::AllocatorsFixture
+        : public UnitTest::LeakDetectionFixture
     {
-    protected:
-        void SetUp() override
-        {
-            UnitTest::AllocatorsFixture::SetUp();
-        };
-
-        void TearDown() override
-        {
-            UnitTest::AllocatorsFixture::TearDown();
-        };
     };
+
+    #if AZ_TRAIT_USE_PLATFORM_SIMD_NEON
+    MATCHER_P(IsClose, expected, "")
+    {
+        constexpr float tolerance = 0.001f;
+        return arg.IsClose(expected, tolerance);
+    }
+    #endif // AZ_TRAIT_USE_PLATFORM_SIMD_NEON
 }

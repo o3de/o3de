@@ -61,7 +61,7 @@
 #include <GraphCanvas/Widgets/NodePalette/NodePaletteWidget.h>
 #include <GraphCanvas/Widgets/NodePalette/TreeItems/NodePaletteTreeItem.h>
 
-#include <ScriptCanvas/Asset/RuntimeAsset.h>
+#include <ScriptCanvas/Asset/SubgraphInterfaceAsset.h>
 #include <ScriptCanvas/Core/Attributes.h>
 #include <ScriptCanvas/Core/SubgraphInterfaceUtility.h>
 #include <ScriptCanvas/Data/DataRegistry.h>
@@ -135,11 +135,6 @@ namespace ScriptCanvasEditor
                         createdItem = parentItem->CreateChildNode<ScriptCanvasEditor::EBusSendEventPaletteTreeItem>(ebusSenderNodeModelInformation->m_busName, ebusSenderNodeModelInformation->m_eventName, ebusSenderNodeModelInformation->m_busId, ebusSenderNodeModelInformation->m_eventId, ebusSenderNodeModelInformation->m_isOverload, ebusSenderNodeModelInformation->m_propertyStatus);
                     }
                 }
-                else if (auto dataDrivenModelInformation = azrtti_cast<const DataDrivenNodeModelInformation*>(modelInformation))
-                {
-                    createdItem = parentItem->CreateChildNode<DataDrivenNodePaletteTreeItem>(*dataDrivenModelInformation);
-                    createdItem->SetToolTip(QString(dataDrivenModelInformation->m_toolTip.c_str()));
-                }
 
                 if (createdItem)
                 {
@@ -158,7 +153,6 @@ namespace ScriptCanvasEditor
 
         ScriptCanvasRootPaletteTreeItem::ScriptCanvasRootPaletteTreeItem(const NodePaletteModel& nodePaletteModel, AzToolsFramework::AssetBrowser::AssetBrowserFilterModel* assetModel)
             : GraphCanvas::NodePaletteTreeItem("root", ScriptCanvasEditor::AssetEditorId)
-            , m_nodePaletteModel(nodePaletteModel)
             , m_assetModel(assetModel)
             , m_categorizer(nodePaletteModel)
         {
@@ -575,8 +569,8 @@ namespace ScriptCanvasEditor
 
             if (graphInterface.IsUserNodeable())
             {
-                auto name = functionCategory->GetName().toUtf8().constData();
-                parent = parent->CreateChildNode<FunctionPaletteTreeItem>(AZStd::string::format("%s Node", name).c_str(), ScriptCanvas::Grammar::MakeFunctionSourceIdNodeable(), asset);
+                AZStd::string name = functionCategory->GetName().toUtf8().constData();
+                parent = parent->CreateChildNode<FunctionPaletteTreeItem>(name.c_str(), ScriptCanvas::Grammar::MakeFunctionSourceIdNodeable(), asset);
                 parent->SetEnabled(true);
             }
 
@@ -745,7 +739,7 @@ namespace ScriptCanvasEditor
 
         void NodePaletteDockWidget::OnNewCustomEvent()
         {
-            AzToolsFramework::AssetEditor::AssetEditorRequestsBus::Broadcast(&AzToolsFramework::AssetEditor::AssetEditorRequests::CreateNewAsset, azrtti_typeid<ScriptEvents::ScriptEventsAsset>());
+            AzToolsFramework::AssetEditor::AssetEditorRequestsBus::Broadcast(&AzToolsFramework::AssetEditor::AssetEditorRequests::CreateNewAsset, azrtti_typeid<ScriptEvents::ScriptEventsAsset>(), AZ::Uuid::CreateNull());
         }
 
         void NodePaletteDockWidget::OnActiveGraphChanged(const GraphCanvas::GraphId& graphCanvasGraphId)

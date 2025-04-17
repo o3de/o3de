@@ -10,38 +10,72 @@
 
 #include <Atom/Features/PBR/Lights/LightTypesCommon.azsli>
 
-void ApplySimpleSpotLight(ViewSrg::SimpleSpotLight light, Surface surface, inout LightingData lightingData)
+#if ENABLE_SHADOWS
+#include <Atom/Features/Shadow/ProjectedShadow.azsli>
+#endif
+
+void ApplySimpleSpotLight(SimpleSpotLight light, Surface surface, inout LightingData lightingData)
 {
-    float3 posToLight = light.m_position - surface.position;
+    real3 posToLight = real3(light.m_position - surface.position);
     
-    float3 dirToLight = normalize(posToLight);
-    float dotWithDirection = dot(dirToLight, -normalize(light.m_direction));
+    real3 dirToLight = normalize(posToLight);
+    real dotWithDirection = dot(dirToLight, -real3(light.m_direction));
 
     // If outside the outer cone angle return.
-    if (dotWithDirection < light.m_cosOuterConeAngle)
+    if (dotWithDirection < real(light.m_cosOuterConeAngle))
     {
         return;
     }
 
-    float d2 = dot(posToLight, posToLight); // light distance squared
-    float falloff = d2 * light.m_invAttenuationRadiusSquared;
+    real d2 = dot(posToLight, posToLight); // light distance squared
+    real falloff = d2 * real(light.m_invAttenuationRadiusSquared);
+    real cosInnerConeAngle = real(light.m_cosInnerConeAngle);
 
     // Only calculate shading if light is in range
-    if (falloff < 1.0f)
+    if (falloff < 1.0)
     {
         // Smoothly adjusts the light intensity so it reaches 0 at light.m_attenuationRadius distance
-        float radiusAttenuation = 1.0 - (falloff * falloff);
+        real radiusAttenuation = 1.0 - (falloff * falloff);
         radiusAttenuation = radiusAttenuation * radiusAttenuation;
         
         // Standard quadratic falloff
         d2 = max(0.001 * 0.001, d2); // clamp the light to at least 1mm away to avoid extreme values.
-        float3 lightIntensity = (light.m_rgbIntensityCandelas / d2) * radiusAttenuation;
-        float3 posToLightDir = normalize(posToLight);
+        real3 lightIntensity = (real3(light.m_rgbIntensityCandelas) / d2) * radiusAttenuation;
+        real3 posToLightDir = normalize(posToLight);
 
-        if (dotWithDirection < light.m_cosInnerConeAngle) // in penumbra
+        // shadow
+        float litRatio = 1.0;
+
+#if ENABLE_SHADOWS
+        if (o_enableShadows && o_enableSimpleSpotLightShadows)
+        {
+            const float3 lightDir = normalize(light.m_position - surface.position);
+            litRatio = ProjectedShadow::GetVisibility(
+                light.m_shadowIndex,
+                light.m_position,
+                surface.position,
+                lightDir,
+                surface.vertexNormal);
+        }
+#endif
+
+        // apply gobo texture
+        if (light.m_goboTexIndex < ViewSrg::MaxGoboTextureCount)
+        {
+            float4 positionInView = mul(light.m_viewProjectionMatrix, float4(surface.position, 1.0));
+            positionInView /= positionInView.w;
+            float2 goboUv = float2((positionInView.x + 1.0)/2.0, (positionInView.y + 1.0)/2.0);
+            #ifdef CS_SAMPLERS
+            lightIntensity *= ViewSrg::m_goboTextures[light.m_goboTexIndex].SampleLevel(PassSrg::LinearSampler, goboUv, 0);
+            #else
+            lightIntensity *= ViewSrg::m_goboTextures[light.m_goboTexIndex].Sample(PassSrg::LinearSampler, goboUv);
+            #endif
+        }
+
+        if (dotWithDirection < cosInnerConeAngle) // in penumbra
         {   
             // Normalize into 0.0 - 1.0 space.
-            float penumbraMask = (dotWithDirection - light.m_cosOuterConeAngle) / (light.m_cosInnerConeAngle - light.m_cosOuterConeAngle);
+            real penumbraMask = (dotWithDirection - real(light.m_cosOuterConeAngle)) / (cosInnerConeAngle - real(light.m_cosOuterConeAngle));
             
             // Apply smoothstep
             penumbraMask = penumbraMask * penumbraMask * (3.0 - 2.0 * penumbraMask);
@@ -50,15 +84,29 @@ void ApplySimpleSpotLight(ViewSrg::SimpleSpotLight light, Surface surface, inout
         }
 
         // Diffuse contribution
-        lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, lightIntensity, posToLightDir);
+        lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, lightIntensity, posToLightDir) * litRatio;
 
         // Specular contribution
         lightingData.specularLighting += GetSpecularLighting(surface, lightingData, lightIntensity, posToLightDir);
     }
 }
 
+void ApplySimpleSpotLightInternal(uint lightIndex, Surface surface, inout LightingData lightingData)
+{
+    if (o_enableSimpleSpotLights)
+    {
+        SimpleSpotLight light = ViewSrg::m_simpleSpotLights[lightIndex];
+        if(!IsSameLightChannel(lightingData.lightingChannels, light.m_lightingChannelMask))
+        {
+            return;
+        }
+        ApplySimpleSpotLight(light, surface, lightingData);
+    }
+}
+
 void ApplySimpleSpotLights(Surface surface, inout LightingData lightingData)
 {
+#if ENABLE_LIGHT_CULLING
     lightingData.tileIterator.LoadAdvance();
                 
     while( !lightingData.tileIterator.IsDone() ) 
@@ -66,7 +114,21 @@ void ApplySimpleSpotLights(Surface surface, inout LightingData lightingData)
         uint currLightIndex = lightingData.tileIterator.GetValue(); 
         lightingData.tileIterator.LoadAdvance();
     
-        ViewSrg::SimpleSpotLight light = ViewSrg::m_simpleSpotLights[currLightIndex];
-        ApplySimpleSpotLight(light, surface, lightingData);
+        ApplySimpleSpotLightInternal(currLightIndex, surface, lightingData);
     }
+#else
+
+    // For perf we cap light count. If it was not set by the pipeline it will use the value specified below
+    // This is only applicable if ENABLE_LIGHT_CULLING is disabled (i.e no gpu culling)
+    #ifndef ENABLE_SIMPLE_SPOTLIGHTS_CAP
+        #define ENABLE_SIMPLE_SPOTLIGHTS_CAP 20 
+    #endif
+
+    // Since there's no GPU culling for simple spot lights, we rely on culling done by CPU
+    // Only apply visible spot lights
+    for(uint lightIndex = 0; (lightIndex < ENABLE_SIMPLE_SPOTLIGHTS_CAP && lightIndex < ViewSrg::m_visibleSimpleSpotLightCount); lightIndex++)
+    {
+        ApplySimpleSpotLightInternal(ViewSrg::m_visibleSimpleSpotLightIndices[lightIndex], surface, lightingData);
+    }
+#endif
 }

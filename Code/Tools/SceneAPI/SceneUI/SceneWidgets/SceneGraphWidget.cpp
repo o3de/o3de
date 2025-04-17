@@ -26,7 +26,7 @@ namespace AZ
     {
         namespace UI
         {
-            AZ_CLASS_ALLOCATOR_IMPL(SceneGraphWidget, SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR_IMPL(SceneGraphWidget, SystemAllocator);
 
             SceneGraphWidget::SceneGraphWidget(const Containers::Scene& scene, QWidget* parent)
                 : QWidget(parent)
@@ -229,7 +229,7 @@ namespace AZ
 
                 if (!m_filterVirtualTypes.empty())
                 {
-                    AZStd::set<Crc32> virtualTypes;
+                    Events::GraphMetaInfo::VirtualTypesSet virtualTypes;
                     EBUS_EVENT(Events::GraphMetaInfoBus, GetVirtualTypes, virtualTypes, m_scene, index);
 
                     for (Crc32 name : virtualTypes)
@@ -450,15 +450,7 @@ namespace AZ
 
             bool SceneGraphWidget::IsSelectedInSelectionList(const Containers::SceneGraph::Name& name, const DataTypes::ISceneNodeSelectionList& targetList) const
             {
-                size_t count = targetList.GetSelectedNodeCount();
-                for (size_t selectedNodeIndex = 0; selectedNodeIndex < count; ++selectedNodeIndex)
-                {
-                    if (targetList.GetSelectedNode(selectedNodeIndex) == name.GetPath())
-                    {
-                        return true;
-                    }
-                }
-                return false;
+                return targetList.IsSelectedNode(name.GetPath());
             }
 
             bool SceneGraphWidget::AddSelection(const QStandardItem* item)

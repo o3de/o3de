@@ -56,7 +56,7 @@ namespace AzFramework
     {
     public:
         AZ_RTTI(BenchmarkSettingsAsset, "{D570D0DD-CE8D-4DF3-BC3E-77DB92D72626}", AZ::Data::AssetData);
-        AZ_CLASS_ALLOCATOR(BenchmarkSettingsAsset, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BenchmarkSettingsAsset, AZ::SystemAllocator);
         static void Reflect(AZ::ReflectContext* context);
 
         uint64_t m_primaryAssetByteSize = 1024;

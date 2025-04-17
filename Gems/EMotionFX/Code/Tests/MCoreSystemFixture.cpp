@@ -13,13 +13,13 @@ namespace EMotionFX
 {
     void MCoreSystemFixture::SetUp()
     {
-        UnitTest::AllocatorsTestFixture::SetUp();
+        UnitTest::LeakDetectionFixture::SetUp();
         MCore::Initializer::Init();
     }
 
     void MCoreSystemFixture::TearDown()
     {
         MCore::Initializer::Shutdown();
-        UnitTest::AllocatorsTestFixture::TearDown();
+        UnitTest::LeakDetectionFixture::TearDown();
     }
 }

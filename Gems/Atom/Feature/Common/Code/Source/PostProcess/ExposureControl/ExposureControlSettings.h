@@ -37,7 +37,7 @@ namespace AZ
 
         public:
             AZ_RTTI(ExposureControlSettings, "{51DAEA8B-0744-41C4-B494-387D78E7E7C0}", ExposureControlSettingsInterface, PostProcessBase);
-            AZ_CLASS_ALLOCATOR(ExposureControlSettings, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ExposureControlSettings, SystemAllocator);
 
             ExposureControlSettings(PostProcessFeatureProcessor* featureProcessor);
             ~ExposureControlSettings() = default;

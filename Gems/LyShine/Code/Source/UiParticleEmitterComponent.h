@@ -14,6 +14,7 @@
 #include <LyShine/Bus/UiRenderBus.h>
 #include <LyShine/Bus/UiCanvasUpdateNotificationBus.h>
 #include <LyShine/Bus/UiVisualBus.h>
+#include <LyShine/Bus/UiIndexableImageBus.h>
 #include <LyShine/UiComponentTypes.h>
 #include <LyShine/IRenderGraph.h>
 
@@ -21,7 +22,7 @@
 #include <AzCore/Math/Color.h>
 #include <AzCore/Math/Random.h>
 
-#include <LmbrCentral/Rendering/MaterialAsset.h>
+#include <LmbrCentral/Rendering/TextureAsset.h>
 
 #include <Particle/UiParticle.h>
 
@@ -35,6 +36,7 @@ class UiParticleEmitterComponent
     , public UiCanvasUpdateNotificationBus::Handler
     , public UiElementNotificationBus::Handler
     , public UiVisualBus::Handler
+    , public UiIndexableImageBus::Handler
 {
 public: // member functions
 
@@ -179,22 +181,30 @@ public: // member functions
     void SetOverrideAlpha(float alpha) override;
     // ~UiVisualInterface
 
+    // UiIndexableImageBus
+    void SetImageIndex(AZ::u32 index) override;
+    const AZ::u32 GetImageIndex() override;
+    const AZ::u32 GetImageIndexCount() override;
+    AZStd::string GetImageIndexAlias(AZ::u32 index) override;
+    void SetImageIndexAlias(AZ::u32 index, const AZStd::string& alias) override;
+    AZ::u32 GetImageIndexFromAlias(const AZStd::string& alias) override;
+    // ~UiIndexableImageBus
 public:  // static member functions
 
     static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("UiParticleEmitterService"));
-        provided.push_back(AZ_CRC("UiVisualService", 0xa864fdf8));
+        provided.push_back(AZ_CRC_CE("UiParticleEmitterService"));
+        provided.push_back(AZ_CRC_CE("UiVisualService"));
     }
 
     static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("UiTransformService", 0x3a838e34));
+        required.push_back(AZ_CRC_CE("UiTransformService"));
     }
 
     static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("UiVisualService", 0xa864fdf8));
+        incompatible.push_back(AZ_CRC_CE("UiVisualService"));
     }
 
     static void Reflect(AZ::ReflectContext* context);

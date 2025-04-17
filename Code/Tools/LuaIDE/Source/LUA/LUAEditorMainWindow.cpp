@@ -18,20 +18,25 @@
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzFramework/Script/ScriptRemoteDebuggingConstants.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
+#include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
+#include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h>
 #include <AzToolsFramework/UI/UICore/ProgressShield.hxx>
 #include <AzToolsFramework/UI/UICore/SaveChangesDialog.hxx>
 #include <AzToolsFramework/UI/LegacyFramework/Core/EditorFrameworkAPI.h>
 #include <AzToolsFramework/UI/LegacyFramework/MainWindowSavedState.h>
 #include <AzToolsFramework/UI/UICore/TargetSelectorButton.hxx>
+#include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 #include <AzToolsFramework/UI/LegacyFramework/CustomMenus/CustomMenusAPI.h>
 #include <Source/LUA/TargetContextButton.hxx>
 #include <Source/LUA/LUAEditorDebuggerMessages.h>
+
 #include "DebugAttachmentButton.hxx"
 #include "ClassReferenceFilter.hxx"
 #include "WatchesPanel.hxx"
@@ -40,6 +45,7 @@
 #include "LUAEditorContextMessages.h"
 #include "LUABreakpointTrackerMessages.h"
 #include "LUAEditorSettingsDialog.hxx"
+#include "RecentFiles.h"
 
 #include <Source/AssetDatabaseLocationListener.h>
 #include <Source/LUA/ui_LUAEditorMainWindow.h>
@@ -77,6 +83,7 @@ namespace LUAEditor
         , m_lastFocusedAssetId()
         , m_ptrFindDialog(nullptr)
         , m_settingsDialog(nullptr)
+        , m_actionClearRecentFiles(nullptr)
     {
         initSharedResources();
         auto settingsRegistry = AZ::SettingsRegistry::Get();
@@ -102,7 +109,8 @@ namespace LUAEditor
             QKeySequence("Alt+F4")
             );
 
-        EBUS_EVENT(AzToolsFramework::FrameworkMessages::Bus, PopulateApplicationMenu, theMenu);
+        AzToolsFramework::FrameworkMessages::Bus::Broadcast(
+            &AzToolsFramework::FrameworkMessages::Bus::Events::PopulateApplicationMenu, theMenu);
         menuBar()->insertMenu(m_gui->menuFile->menuAction(), theMenu);
 
         m_ptrFindDialog = aznew LUAEditorFindDialog(this);
@@ -132,7 +140,7 @@ namespace LUAEditor
 
         m_gui->localsTreeView->SetOperatingMode(WATCHES_MODE_LOCALS);
 
-        m_gui->m_logPanel->SetStorageID(AZ_CRC("LUA Editor Log Panel", 0x6d7ea8a5));
+        m_gui->m_logPanel->SetStorageID(AZ_CRC_CE("LUA Editor Log Panel"));
         connect(m_gui->m_logPanel, &AzToolsFramework::LogPanel::BaseLogPanel::TabsReset, this, &LUAEditorMainWindow::OnLogTabsReset);
 
         //m_lastProgramCounterAssetId = "";
@@ -194,7 +202,7 @@ namespace LUAEditor
 
         LUABreakpointTrackerMessages::Handler::BusConnect();
 
-        EBUS_EVENT(Context_DebuggerManagement::Bus, CleanUpBreakpoints);
+        Context_DebuggerManagement::Bus::Broadcast(&Context_DebuggerManagement::Bus::Events::CleanUpBreakpoints);
 
         SetDebugControlsToInitial();
         SetEditContolsToNoFilesOpen();
@@ -207,20 +215,29 @@ namespace LUAEditor
 
         connect(m_gui->m_searchWidget, &AzQtComponents::FilteredSearchWidget::TextFilterChanged, this, &LUAEditorMainWindow::luaClassFilterTextChanged);
 
-        connect(m_gui->actionAssetBrowser, SIGNAL(triggered(bool)), this, SLOT(assetBrowserPressed()));
+        connect(m_gui->actionOpen, SIGNAL(triggered(bool)), this, SLOT(OnFileMenuOpen()));
+
+        UpdateOpenRecentMenu();
 
         connect(m_gui->actionAutocomplete, SIGNAL(triggered(bool)), this, SLOT(OnAutocompleteChanged(bool)));
 
-        auto newState = AZ::UserSettings::CreateFind<LUAEditorMainWindowSavedState>(AZ_CRC("LUA EDITOR MAIN WINDOW STATE", 0xa181bc4a), AZ::UserSettings::CT_LOCAL);
+        auto newState = AZ::UserSettings::CreateFind<LUAEditorMainWindowSavedState>(AZ_CRC_CE("LUA EDITOR MAIN WINDOW STATE"), AZ::UserSettings::CT_LOCAL);
         m_gui->actionAutoReloadUnmodifiedFiles->setChecked(newState->m_bAutoReloadUnmodifiedFiles);
 
         connect(m_gui->actionAutoReloadUnmodifiedFiles, &QAction::triggered, this, [](bool newValue)
         {
-            auto newState = AZ::UserSettings::CreateFind<LUAEditorMainWindowSavedState>(AZ_CRC("LUA EDITOR MAIN WINDOW STATE", 0xa181bc4a), AZ::UserSettings::CT_LOCAL);
+            auto newState = AZ::UserSettings::CreateFind<LUAEditorMainWindowSavedState>(AZ_CRC_CE("LUA EDITOR MAIN WINDOW STATE"), AZ::UserSettings::CT_LOCAL);
             newState->m_bAutoReloadUnmodifiedFiles = newValue;
         });
 
-        connect(this, &LUAEditorMainWindow::OnReferenceDataChanged, this, [this]() { luaClassFilterTextChanged(m_ClassReferenceFilter->GetFilter()); });
+        connect(this, &LUAEditorMainWindow::OnReferenceDataChanged, this, [this]() {
+            luaClassFilterTextChanged(m_ClassReferenceFilter->GetFilter());
+            if (auto* view = GetCurrentView())
+            {
+                // Update syntax highlighting now that the project libraries are loaded
+                view->UpdateFont();
+            }
+         });
 
         // preset our running state based on outside conditions when we are created
         if (connectedState)
@@ -237,35 +254,35 @@ namespace LUAEditor
             using namespace AzToolsFramework;
             typedef FrameworkMessages::Bus HotkeyBus;
 
-            EBUS_EVENT(HotkeyBus, RegisterActionToHotkey, AZ_CRC("LUALinesUpTranspose", 0xafc899ef), m_gui->actionLinesUpTranspose);
-            EBUS_EVENT(HotkeyBus, RegisterActionToHotkey, AZ_CRC("LUALinesDnTranspose", 0xf9d733bf), m_gui->actionLinesDnTranspose);
-            EBUS_EVENT(HotkeyBus, RegisterActionToHotkey, AZ_CRC("GeneralOpenAssetBrowser", 0xa15ceb44), m_gui->actionAssetBrowser);
-            EBUS_EVENT(HotkeyBus, RegisterActionToHotkey, AZ_CRC("LUAFind", 0xc62d8078), m_gui->actionFind);
-            EBUS_EVENT(HotkeyBus, RegisterActionToHotkey, AZ_CRC("LUAQuickFindLocal", 0x115cbcda), m_gui->actionFindLocal);
-            EBUS_EVENT(HotkeyBus, RegisterActionToHotkey, AZ_CRC("LUAQuickFindLocalReverse", 0xdd8a0c22), m_gui->actionFindLocalReverse);
-            EBUS_EVENT(HotkeyBus, RegisterActionToHotkey, AZ_CRC("LUAFindInFiles", 0xdaebdfdd), m_gui->actionFindInAllOpen);
-            EBUS_EVENT(HotkeyBus, RegisterActionToHotkey, AZ_CRC("LUAReplace", 0x1fd5510c), m_gui->actionReplace);
-            EBUS_EVENT(HotkeyBus, RegisterActionToHotkey, AZ_CRC("LUAReplaceInFiles", 0x38b609e0), m_gui->actionReplaceInAllOpen);
-            EBUS_EVENT(HotkeyBus, RegisterActionToHotkey, AZ_CRC("LUAGoToLine", 0xb6603f27), m_gui->actionGoToLine);
-            EBUS_EVENT(HotkeyBus, RegisterActionToHotkey, AZ_CRC("LUAFold", 0xf0969e48), m_gui->actionFoldAll);
-            EBUS_EVENT(HotkeyBus, RegisterActionToHotkey, AZ_CRC("LUAUnfold", 0x36934ecd), m_gui->actionUnfoldAll);
-            EBUS_EVENT(HotkeyBus, RegisterActionToHotkey, AZ_CRC("LUACloseAllExceptCurrent", 0x0076409a), m_gui->actionCloseAllExcept);
-            EBUS_EVENT(HotkeyBus, RegisterActionToHotkey, AZ_CRC("LUACloseAll", 0xf732678f), m_gui->actionCloseAll);
-            EBUS_EVENT(HotkeyBus, RegisterActionToHotkey, AZ_CRC("LUAComment", 0x873c2725), m_gui->actionComment_Selected_Block);
-            EBUS_EVENT(HotkeyBus, RegisterActionToHotkey, AZ_CRC("LUAUncomment", 0x9190cf18), m_gui->actionUnComment_Selected_Block);
-            EBUS_EVENT(HotkeyBus, RegisterActionToHotkey, AZ_CRC("LUAResetZoom", 0xbe0787ad), m_gui->actionResetZoom);
+            HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterActionToHotkey, AZ_CRC_CE("LUALinesUpTranspose"), m_gui->actionLinesUpTranspose);
+            HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterActionToHotkey, AZ_CRC_CE("LUALinesDnTranspose"), m_gui->actionLinesDnTranspose);
+            HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterActionToHotkey, AZ_CRC_CE("GeneralOpenAssetBrowser"), m_gui->actionOpen);
+            HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterActionToHotkey, AZ_CRC_CE("LUAFind"), m_gui->actionFind);
+            HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterActionToHotkey, AZ_CRC_CE("LUAQuickFindLocal"), m_gui->actionFindLocal);
+            HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterActionToHotkey, AZ_CRC_CE("LUAQuickFindLocalReverse"), m_gui->actionFindLocalReverse);
+            HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterActionToHotkey, AZ_CRC_CE("LUAFindInFiles"), m_gui->actionFindInAllOpen);
+            HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterActionToHotkey, AZ_CRC_CE("LUAReplace"), m_gui->actionReplace);
+            HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterActionToHotkey, AZ_CRC_CE("LUAReplaceInFiles"), m_gui->actionReplaceInAllOpen);
+            HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterActionToHotkey, AZ_CRC_CE("LUAGoToLine"), m_gui->actionGoToLine);
+            HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterActionToHotkey, AZ_CRC_CE("LUAFold"), m_gui->actionFoldAll);
+            HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterActionToHotkey, AZ_CRC_CE("LUAUnfold"), m_gui->actionUnfoldAll);
+            HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterActionToHotkey, AZ_CRC_CE("LUACloseAllExceptCurrent"), m_gui->actionCloseAllExcept);
+            HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterActionToHotkey, AZ_CRC_CE("LUACloseAll"), m_gui->actionCloseAll);
+            HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterActionToHotkey, AZ_CRC_CE("LUAComment"), m_gui->actionComment_Selected_Block);
+            HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterActionToHotkey, AZ_CRC_CE("LUAUncomment"), m_gui->actionUnComment_Selected_Block);
+            HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterActionToHotkey, AZ_CRC_CE("LUAResetZoom"), m_gui->actionResetZoom);
         }
 
         //m_StoredTabAssetId = AZ::Uuid::CreateNull();
         installEventFilter(this);
 
-        EBUS_EVENT(LegacyFramework::CustomMenusMessages::Bus, RegisterMenu, LegacyFramework::CustomMenusCommon::LUAEditor::Application, theMenu);
-        EBUS_EVENT(LegacyFramework::CustomMenusMessages::Bus, RegisterMenu, LegacyFramework::CustomMenusCommon::LUAEditor::File, m_gui->menuFile);
-        EBUS_EVENT(LegacyFramework::CustomMenusMessages::Bus, RegisterMenu, LegacyFramework::CustomMenusCommon::LUAEditor::Edit, m_gui->menuEdit);
-        EBUS_EVENT(LegacyFramework::CustomMenusMessages::Bus, RegisterMenu, LegacyFramework::CustomMenusCommon::LUAEditor::View, m_gui->menuView);
-        EBUS_EVENT(LegacyFramework::CustomMenusMessages::Bus, RegisterMenu, LegacyFramework::CustomMenusCommon::LUAEditor::Debug, m_gui->menuDebug);
-        EBUS_EVENT(LegacyFramework::CustomMenusMessages::Bus, RegisterMenu, LegacyFramework::CustomMenusCommon::LUAEditor::SourceControl, m_gui->menuSource_Control);
-        EBUS_EVENT(LegacyFramework::CustomMenusMessages::Bus, RegisterMenu, LegacyFramework::CustomMenusCommon::LUAEditor::Options, m_gui->menu_Options);
+        LegacyFramework::CustomMenusMessages::Bus::Broadcast(&LegacyFramework::CustomMenusMessages::Bus::Events::RegisterMenu, LegacyFramework::CustomMenusCommon::LUAEditor::Application, theMenu);
+        LegacyFramework::CustomMenusMessages::Bus::Broadcast(&LegacyFramework::CustomMenusMessages::Bus::Events::RegisterMenu, LegacyFramework::CustomMenusCommon::LUAEditor::File, m_gui->menuFile);
+        LegacyFramework::CustomMenusMessages::Bus::Broadcast(&LegacyFramework::CustomMenusMessages::Bus::Events::RegisterMenu, LegacyFramework::CustomMenusCommon::LUAEditor::Edit, m_gui->menuEdit);
+        LegacyFramework::CustomMenusMessages::Bus::Broadcast(&LegacyFramework::CustomMenusMessages::Bus::Events::RegisterMenu, LegacyFramework::CustomMenusCommon::LUAEditor::View, m_gui->menuView);
+        LegacyFramework::CustomMenusMessages::Bus::Broadcast(&LegacyFramework::CustomMenusMessages::Bus::Events::RegisterMenu, LegacyFramework::CustomMenusCommon::LUAEditor::Debug, m_gui->menuDebug);
+        LegacyFramework::CustomMenusMessages::Bus::Broadcast(&LegacyFramework::CustomMenusMessages::Bus::Events::RegisterMenu, LegacyFramework::CustomMenusCommon::LUAEditor::SourceControl, m_gui->menuSource_Control);
+        LegacyFramework::CustomMenusMessages::Bus::Broadcast(&LegacyFramework::CustomMenusMessages::Bus::Events::RegisterMenu, LegacyFramework::CustomMenusCommon::LUAEditor::Options, m_gui->menu_Options);
 
         QObject::connect(m_gui->menu_Options, &QMenu::aboutToShow, this, &LUAEditorMainWindow::OnOptionsMenuRequested);
 
@@ -279,6 +296,53 @@ namespace LUAEditor
         m_gui->actionAutocomplete->setCheckable(true);
         m_gui->actionAutocomplete->setChecked(m_bAutocompleteEnabled);
         m_gui->actionAutocomplete->blockSignals(false);
+    }
+
+    void LUAEditorMainWindow::UpdateOpenRecentMenu()
+    {
+        const QStringList recentFiles = ReadRecentFiles();
+
+        QList<QAction*> actions = m_gui->menuOpenRecent->actions();
+
+        for (int i = actions.size() - 1; i >= 0; i--)
+        {
+            m_gui->menuOpenRecent->removeAction(actions[i]);
+        }
+
+        for (auto& fileName : recentFiles)
+        {
+            QAction* action = new QAction(fileName, this);
+            connect(
+                action,
+                &QAction::triggered,
+                this,
+                [fileName]([[maybe_unused]] bool checked)
+                {
+                    constexpr bool errorOnNotFound = true;
+                    Context_DocumentManagement::Bus::Broadcast(
+                        &Context_DocumentManagement::Bus::Events::OnLoadDocument, fileName.toStdString().c_str(), errorOnNotFound);
+                });
+            m_gui->menuOpenRecent->addAction(action);
+        }
+
+        m_gui->menuOpenRecent->addSeparator();
+
+        m_actionClearRecentFiles = new QAction("Clear Recent Files", this);
+
+        connect(
+            m_actionClearRecentFiles,
+            &QAction::triggered,
+            this,
+            [this]([[maybe_unused]] bool checked)
+            {
+                ClearRecentFile();
+                UpdateOpenRecentMenu();
+            });
+
+        m_gui->menuOpenRecent->addAction(m_actionClearRecentFiles);
+
+        m_gui->menuOpenRecent->setEnabled(!recentFiles.isEmpty());
+        m_actionClearRecentFiles->setEnabled(!recentFiles.isEmpty());
     }
 
     LUAEditorMainWindow::~LUAEditorMainWindow(void)
@@ -350,7 +414,7 @@ namespace LUAEditor
                 auto entryType = selectedAsset->GetEntryType();
                 if (entryType == AzToolsFramework::AssetBrowser::AssetBrowserEntry::AssetEntryType::Source)
                 {
-                    EBUS_EVENT(Context_DocumentManagement::Bus, OnLoadDocument, filePath, true);
+                    Context_DocumentManagement::Bus::Broadcast(&Context_DocumentManagement::Bus::Events::OnLoadDocument, filePath, true);
                 }                    
             }
         });
@@ -373,7 +437,6 @@ namespace LUAEditor
         entryTypeFilter->SetFilterPropagation(AssetTypeFilter::PropagateDirection::None);
 
         // Add in a string filter that comes from user input
-        // Propagate this up so that if we match a folder, it will show everything under that folder
         StringFilter* stringFilter = new StringFilter();
         stringFilter->SetFilterPropagation(AssetTypeFilter::PropagateDirection::Up);
 
@@ -413,7 +476,8 @@ namespace LUAEditor
 
     void LUAEditorMainWindow::OnMenuCloseCurrentWindow()
     {
-        EBUS_EVENT(AzToolsFramework::FrameworkMessages::Bus, RequestMainWindowClose, ContextID);
+        AzToolsFramework::FrameworkMessages::Bus::Broadcast(
+            &AzToolsFramework::FrameworkMessages::Bus::Events::RequestMainWindowClose, ContextID);
     }
 
     void LUAEditorMainWindow::OnAutocompleteChanged(bool change)
@@ -514,7 +578,7 @@ namespace LUAEditor
             QApplication::processEvents();
         }
 
-        EBUS_QUEUE_FUNCTION(AZ::SystemTickBus, &LUAEditorMainWindow::OnDockWidgetLocationChanged, this, docInfo.m_assetId);
+        AZ::SystemTickBus::QueueFunction(&LUAEditorMainWindow::OnDockWidgetLocationChanged, this, docInfo.m_assetId);
 
         luaDockWidget->show();
         luaDockWidget->raise();
@@ -557,7 +621,7 @@ namespace LUAEditor
             connect(pBar, &QTabBar::tabCloseRequested, this,
                 [assetId, this]()
                 {
-                    EBUS_QUEUE_FUNCTION(AZ::SystemTickBus, &LUAEditorMainWindow::RequestCloseDocument, this, assetId);
+                    AZ::SystemTickBus::QueueFunction(&LUAEditorMainWindow::RequestCloseDocument, this, assetId);
                 });
 
             pBar->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -609,7 +673,7 @@ namespace LUAEditor
         {
             if (it->first != m_currentTabContextMenuUUID)
             {
-                EBUS_QUEUE_FUNCTION(AZ::SystemTickBus, &LUAEditorMainWindow::RequestCloseDocument, this, it->first);
+                AZ::SystemTickBus::QueueFunction(&LUAEditorMainWindow::RequestCloseDocument, this, it->first);
             }
         }
         m_currentTabContextMenuUUID = "";
@@ -730,7 +794,8 @@ namespace LUAEditor
         }
         if (SyncDocumentToContext(m_lastFocusedAssetId))
         {
-            EBUS_EVENT(Context_DebuggerManagement::Bus, ExecuteScriptBlob, m_lastFocusedAssetId, executeLocally);
+            Context_DebuggerManagement::Bus::Broadcast(
+                &Context_DebuggerManagement::Bus::Events::ExecuteScriptBlob, m_lastFocusedAssetId, executeLocally);
         }
     }
 
@@ -786,48 +851,60 @@ namespace LUAEditor
 
     void LUAEditorMainWindow::OnDebugContinueRunning()
     {
-        EBUS_EVENT(LUAEditorDebuggerMessages::Bus, DebugRunContinue);
+        LUAEditorDebuggerMessages::Bus::Broadcast(&LUAEditorDebuggerMessages::Bus::Events::DebugRunContinue);
     }
 
     void LUAEditorMainWindow::OnDebugStepOver()
     {
-        EBUS_EVENT(LUAEditorDebuggerMessages::Bus, DebugRunStepOver);
+        LUAEditorDebuggerMessages::Bus::Broadcast(&LUAEditorDebuggerMessages::Bus::Events::DebugRunStepOver);
     }
 
     void LUAEditorMainWindow::OnDebugStepIn()
     {
-        EBUS_EVENT(LUAEditorDebuggerMessages::Bus, DebugRunStepIn);
+        LUAEditorDebuggerMessages::Bus::Broadcast(&LUAEditorDebuggerMessages::Bus::Events::DebugRunStepIn);
     }
 
     void LUAEditorMainWindow::OnDebugStepOut()
     {
-        EBUS_EVENT(LUAEditorDebuggerMessages::Bus, DebugRunStepOut);
+        LUAEditorDebuggerMessages::Bus::Broadcast(&LUAEditorDebuggerMessages::Bus::Events::DebugRunStepOut);
     }
 
     //file menu
 
-    void LUAEditorMainWindow::assetBrowserPressed()
+    void LUAEditorMainWindow::OnFileMenuOpen()
     {
-        // w/out pulling in headers, AssetBrowserUI::AB_DEFAULT_CRC := 0
-        //EditorFramework::ShowAssetBrowserView( AZ::ScriptAsset::StaticAssetType(), AZ_CRC("LUA CONTEXT", 0xec76567e) );
-        //AZ_Assert(false, "No asset browser yet!");
-        const char* rootDirString;
-        AZ::ComponentApplicationBus::BroadcastResult(rootDirString, &AZ::ComponentApplicationBus::Events::GetExecutableFolder);
+        AssetSelectionModel selection;
 
-        QDir rootDir;
-        rootDir.setPath(rootDirString);
-        rootDir.cdUp();
+        StringFilter* stringFilter = new StringFilter();
+        stringFilter->SetName("Lua file (*.lua)");
+        stringFilter->SetFilterString(".lua");
+        stringFilter->SetFilterPropagation(AssetBrowserEntryFilter::PropagateDirection::Down);
+        auto stringFilterPtr = FilterConstType(stringFilter);
 
-        QString name = QFileDialog::getOpenFileName(this, "Open lua file", m_lastOpenFilePath.size() > 0 ? m_lastOpenFilePath.c_str() : rootDir.absolutePath(), "Lua files (*.lua)");
-        if (name.isEmpty())
+        selection.SetDisplayFilter(stringFilterPtr);
+        selection.SetSelectionFilter(stringFilterPtr);
+
+        AssetBrowserComponentRequestBus::Broadcast(
+            &AssetBrowserComponentRequests::PickAssets, selection, AzToolsFramework::GetActiveWindow());
+
+        if (!selection.IsValid())
         {
             return;
         }
 
-        AZStd::string assetId(name.toUtf8().data());
-        EBUS_EVENT(Context_DocumentManagement::Bus, OnLoadDocument, assetId, true);
+        auto* result = selection.GetResult();
 
+        if (!result)
+        {
+            AZ_Assert(false, "Lua script - Incorrect entry type selected during script instantiation.");
+            return;
+        }
+
+        const AZStd::string assetId(result->GetFullPath().data());
+        Context_DocumentManagement::Bus::Broadcast(&Context_DocumentManagement::Bus::Events::OnLoadDocument, assetId, true);
         AzFramework::StringFunc::Path::Split(assetId.c_str(), nullptr, &m_lastOpenFilePath);
+        AddRecentFile(result->GetFullPath().c_str());
+        UpdateOpenRecentMenu();
     }
 
     void LUAEditorMainWindow::OnFileMenuNew()
@@ -843,7 +920,7 @@ namespace LUAEditor
             assetId += ".lua";
         }
 
-        EBUS_EVENT(Context_DocumentManagement::Bus, OnNewDocument, assetId);
+        Context_DocumentManagement::Bus::Broadcast(&Context_DocumentManagement::Bus::Events::OnNewDocument, assetId);
         SetEditContolsToAtLeastOneFileOpen();
     }
 
@@ -860,7 +937,8 @@ namespace LUAEditor
         QByteArray viewBuffer = viewInfo.luaViewWidget()->GetText().toUtf8();
         AZStd::size_t viewSize = viewBuffer.size();
 
-        EBUS_EVENT(Context_DocumentManagement::Bus, UpdateDocumentData, assetId, viewBuffer.data(), viewSize);
+        Context_DocumentManagement::Bus::Broadcast(
+            &Context_DocumentManagement::Bus::Events::UpdateDocumentData, assetId, viewBuffer.data(), viewSize);
         return true;
     }
 
@@ -884,7 +962,8 @@ namespace LUAEditor
 
         if (SyncDocumentToContext(m_lastFocusedAssetId))
         {
-            EBUS_EVENT(Context_DocumentManagement::Bus, OnSaveDocument, m_lastFocusedAssetId, false, false);
+            Context_DocumentManagement::Bus::Broadcast(
+                &Context_DocumentManagement::Bus::Events::OnSaveDocument, m_lastFocusedAssetId, false, false);
         }
     }
 
@@ -898,7 +977,8 @@ namespace LUAEditor
         if (SyncDocumentToContext(m_lastFocusedAssetId))
         {
             bool saveSuccess = false;
-            EBUS_EVENT_RESULT(saveSuccess, Context_DocumentManagement::Bus, OnSaveDocumentAs, m_lastFocusedAssetId, false);
+            Context_DocumentManagement::Bus::BroadcastResult(
+                saveSuccess, &Context_DocumentManagement::Bus::Events::OnSaveDocumentAs, m_lastFocusedAssetId, false);
         }
     }
 
@@ -916,7 +996,8 @@ namespace LUAEditor
 
             if (SyncDocumentToContext(viewInfo.luaViewWidget()->m_Info.m_assetId))
             {
-                EBUS_EVENT(Context_DocumentManagement::Bus, OnSaveDocument, viewInfo.luaViewWidget()->m_Info.m_assetId, false, false);
+                Context_DocumentManagement::Bus::Broadcast(
+                    &Context_DocumentManagement::Bus::Events::OnSaveDocument, viewInfo.luaViewWidget()->m_Info.m_assetId, false, false);
             }
         }
     }
@@ -962,8 +1043,8 @@ namespace LUAEditor
         // Need to store this off for use on the reload since it will be cleared out/changed as part of the OnCloseDocument call
         AZStd::string asset = m_lastFocusedAssetId;
 
-        EBUS_EVENT(Context_DocumentManagement::Bus, OnCloseDocument, m_lastFocusedAssetId);
-        EBUS_EVENT(Context_DocumentManagement::Bus, OnLoadDocument, asset, true);
+        Context_DocumentManagement::Bus::Broadcast(&Context_DocumentManagement::Bus::Events::OnCloseDocument, m_lastFocusedAssetId);
+        Context_DocumentManagement::Bus::Broadcast(&Context_DocumentManagement::Bus::Events::OnLoadDocument, asset, true);
 
         //not sure about this... looks like legacy, may need to be removed?
         // instate the topmost tab as the current asset ID
@@ -989,7 +1070,7 @@ namespace LUAEditor
     {
         for (TrackedLUAViewMap::iterator it = m_dOpenLUAView.begin(); it != m_dOpenLUAView.end(); ++it)
         {
-            EBUS_QUEUE_FUNCTION(AZ::SystemTickBus, &LUAEditorMainWindow::RequestCloseDocument, this, it->first);
+            AZ::SystemTickBus::QueueFunction(&LUAEditorMainWindow::RequestCloseDocument, this, it->first);
         }
     }
 
@@ -999,7 +1080,7 @@ namespace LUAEditor
         {
             if (it->first != m_lastFocusedAssetId)
             {
-                EBUS_QUEUE_FUNCTION(AZ::SystemTickBus, &LUAEditorMainWindow::RequestCloseDocument, this, it->first);
+                AZ::SystemTickBus::QueueFunction(&LUAEditorMainWindow::RequestCloseDocument, this, it->first);
             }
         }
     }
@@ -1031,13 +1112,13 @@ namespace LUAEditor
                     return false;
                 }
 
-                EBUS_EVENT(Context_DocumentManagement::Bus, OnSaveDocument, assetId, true, false);
+                Context_DocumentManagement::Bus::Broadcast(&Context_DocumentManagement::Bus::Events::OnSaveDocument, assetId, true, false);
                 return true;
             }
             else if (dr == AzToolsFramework::SCDR_DiscardAndContinue)
             {
                 //the user has chosen to continue to close the document and lose changes
-                EBUS_EVENT(Context_DocumentManagement::Bus, OnCloseDocument, assetId);
+                Context_DocumentManagement::Bus::Broadcast(&Context_DocumentManagement::Bus::Events::OnCloseDocument, assetId);
                 return true;
             }
             else
@@ -1049,7 +1130,7 @@ namespace LUAEditor
         else
         {
             //no changes, just close the document
-            EBUS_EVENT(Context_DocumentManagement::Bus, OnCloseDocument, assetId);
+            Context_DocumentManagement::Bus::Broadcast(&Context_DocumentManagement::Bus::Events::OnCloseDocument, assetId);
             return true;
         }
     }
@@ -1061,7 +1142,7 @@ namespace LUAEditor
         TrackedLUAViewMap::iterator viewIter = m_dOpenLUAView.find(assetId);
         if (viewIter != m_dOpenLUAView.end())
         {
-            delete viewIter->second.luaDockWidget();
+            viewIter->second.luaDockWidget()->deleteLater();
             m_dOpenLUAView.erase(viewIter);
             TrackedLUACtrlTabOrder::iterator tabIter = m_CtrlTabOrder.begin();
             while (tabIter != m_CtrlTabOrder.end())
@@ -1477,7 +1558,7 @@ namespace LUAEditor
             return;
         }
 
-        EBUS_EVENT(Context_DocumentManagement::Bus, RefreshAllDocumentPerforceStat);
+        Context_DocumentManagement::Bus::Broadcast(&Context_DocumentManagement::Bus::Events::RefreshAllDocumentPerforceStat);
 
         if (!SyncDocumentToContext(m_lastFocusedAssetId))
         {
@@ -1486,7 +1567,8 @@ namespace LUAEditor
             return;
         }
 
-        EBUS_EVENT(Context_DocumentManagement::Bus, DocumentCheckOutRequested, m_lastFocusedAssetId);
+        Context_DocumentManagement::Bus::Broadcast(
+            &Context_DocumentManagement::Bus::Events::DocumentCheckOutRequested, m_lastFocusedAssetId);
     }
 
     //tools menu
@@ -1535,7 +1617,8 @@ namespace LUAEditor
 
                     AZ_TracePrintf(LUAEditorDebugName, "LUAEditorMainWindow::OnGetPermissionToShutDown() SAVING %s\n", viewInfo.luaViewWidget()->m_Info.m_assetName.c_str());
 
-                    EBUS_EVENT(Context_DocumentManagement::Bus, OnSaveDocument, viewInfo.luaViewWidget()->m_Info.m_assetId, false, false);
+                    Context_DocumentManagement::Bus::Broadcast(
+                        &Context_DocumentManagement::Bus::Events::OnSaveDocument, viewInfo.luaViewWidget()->m_Info.m_assetId, false, false);
                 }
                 else if (dr == AzToolsFramework::SCDR_DiscardAndContinue)
                 {
@@ -1545,14 +1628,16 @@ namespace LUAEditor
                         AZ_TracePrintf(LUAEditorDebugName, "                            Forced close\n");
 
                         // all untitled documents are force closed to clear any tracked states that will be serialized by their trackers
-                        EBUS_EVENT(Context_DocumentManagement::Bus, OnCloseDocument, viewInfo.luaViewWidget()->m_Info.m_assetId);
+                        Context_DocumentManagement::Bus::Broadcast(
+                            &Context_DocumentManagement::Bus::Events::OnCloseDocument, viewInfo.luaViewWidget()->m_Info.m_assetId);
                         viewInfoIter = m_dOpenLUAView.begin();
                     }
                     else // all titled (i.e. preexisting or saved files, simply reload
                     {
                         AZ_TracePrintf(LUAEditorDebugName, "                            Forced reload\n");
 
-                        EBUS_EVENT(Context_DocumentManagement::Bus, OnReloadDocument, viewInfo.luaViewWidget()->m_Info.m_assetId);
+                        Context_DocumentManagement::Bus::Broadcast(
+                            &Context_DocumentManagement::Bus::Events::OnReloadDocument, viewInfo.luaViewWidget()->m_Info.m_assetId);
                         viewInfoIter = m_dOpenLUAView.begin();
                     }
                 }
@@ -1572,7 +1657,7 @@ namespace LUAEditor
     {
         // build state and store it.
 
-        auto newState = AZ::UserSettings::CreateFind<LUAEditorMainWindowSavedState>(AZ_CRC("LUA EDITOR MAIN WINDOW STATE", 0xa181bc4a), AZ::UserSettings::CT_LOCAL);
+        auto newState = AZ::UserSettings::CreateFind<LUAEditorMainWindowSavedState>(AZ_CRC_CE("LUA EDITOR MAIN WINDOW STATE"), AZ::UserSettings::CT_LOCAL);
         newState->Init(saveState(), saveGeometry());
 
         newState->m_bAutocompleteEnabled = m_bAutocompleteEnabled;
@@ -1602,7 +1687,7 @@ namespace LUAEditor
 
         m_gui->m_logPanel->SaveState();
 
-        auto savedState = AZ::UserSettings::CreateFind<AzToolsFramework::MainWindowSavedState>(AZ_CRC("INNER_LUA_WINDOW", 0x52741396), AZ::UserSettings::CT_LOCAL);
+        auto savedState = AZ::UserSettings::CreateFind<AzToolsFramework::MainWindowSavedState>(AZ_CRC_CE("INNER_LUA_WINDOW"), AZ::UserSettings::CT_LOCAL);
         if (savedState)
         {
             // restore state.
@@ -1624,7 +1709,7 @@ namespace LUAEditor
         }
 
         // load the state from our state block:
-        auto pEditorMainSavedState = AZ::UserSettings::Find<LUAEditorMainWindowSavedState>(AZ_CRC("LUA EDITOR MAIN WINDOW STATE", 0xa181bc4a), AZ::UserSettings::CT_LOCAL);
+        auto pEditorMainSavedState = AZ::UserSettings::Find<LUAEditorMainWindowSavedState>(AZ_CRC_CE("LUA EDITOR MAIN WINDOW STATE"), AZ::UserSettings::CT_LOCAL);
         if (pEditorMainSavedState)
         {
             QByteArray editorGeomData((const char*)pEditorMainSavedState->m_windowGeometry.data(), (int)pEditorMainSavedState->m_windowGeometry.size());
@@ -1632,7 +1717,7 @@ namespace LUAEditor
 
             for (const auto& assetId : pEditorMainSavedState->m_openAssetIds)
             {
-                EBUS_EVENT(Context_DocumentManagement::Bus, OnLoadDocument, assetId, false);
+                Context_DocumentManagement::Bus::Broadcast(&Context_DocumentManagement::Bus::Events::OnLoadDocument, assetId, false);
             }
 
             restoreGeometry(editorGeomData);
@@ -1646,7 +1731,7 @@ namespace LUAEditor
             m_bAutocompleteEnabled = pEditorMainSavedState->m_bAutocompleteEnabled;
             OnAutocompleteChanged(m_bAutocompleteEnabled);
 
-            auto pWindowSavedState = AZ::UserSettings::Find<AzToolsFramework::MainWindowSavedState>(AZ_CRC("INNER_LUA_WINDOW", 0x52741396), AZ::UserSettings::CT_LOCAL);
+            auto pWindowSavedState = AZ::UserSettings::Find<AzToolsFramework::MainWindowSavedState>(AZ_CRC_CE("INNER_LUA_WINDOW"), AZ::UserSettings::CT_LOCAL);
             if (pWindowSavedState)
             {
                 // restore state.
@@ -1725,11 +1810,6 @@ namespace LUAEditor
         {
             // the document was probably closed, request it be reopened
             m_dProcessFindListClicked.push_back(result);
-            /*EBUS_EVENT_ID(    LUAEditor::ContextID,
-                            EditorFramework::AssetManagementMessages::Bus,
-                            AssetOpenRequested,
-                            result.m_assetId,
-                            AZ::ScriptAsset::StaticAssetType());*/
             AZ_Assert(false, "Fix assets!");
         }
     }
@@ -1744,7 +1824,7 @@ namespace LUAEditor
                 iter->m_assetId = pLUAViewWidget->m_Info.m_assetId;
                 iter->m_assignAssetId(info.m_assetName, pLUAViewWidget->m_Info.m_assetId);
 
-                EBUS_QUEUE_FUNCTION(AZ::SystemTickBus, &LUAEditorMainWindow::OnFindResultClicked, this, *iter);
+                AZ::SystemTickBus::QueueFunction(&LUAEditorMainWindow::OnFindResultClicked, this, *iter);
                 m_dProcessFindListClicked.erase(iter);
                 return;
             }
@@ -1753,12 +1833,7 @@ namespace LUAEditor
 
     bool LUAEditorMainWindow::OnFileSaveDialog(const AZStd::string& assetName, AZStd::string& newAssetName)
     {
-        const char* rootDirString;
-        AZ::ComponentApplicationBus::BroadcastResult(rootDirString, &AZ::ComponentApplicationBus::Events::GetExecutableFolder);
-
-        QDir rootDir;
-        rootDir.setPath(rootDirString);
-        rootDir.cdUp();
+        const QDir rootDir { AZ::Utils::GetProjectPath().c_str() };
 
         QString name = QFileDialog::getSaveFileName(this, QString(AZStd::string::format("Save File {%s}", assetName.c_str()).c_str()), m_lastOpenFilePath.size() > 0 ? m_lastOpenFilePath.c_str() : rootDir.absolutePath(), QString("*.lua"));
         if (name.isEmpty())
@@ -1806,18 +1881,14 @@ namespace LUAEditor
     {
         m_lastFocusedAssetId = assetId;
 
-        //AZ_TracePrintf(LUAEditorDebugName, AZStd::string::format("OnFocusInEvent, %s\n", assetId.c_str()).c_str());
-
         if (!m_bIgnoreFocusRequests)
         {
             SetGUIToMatch(m_StateTrack);
         }
     }
 
-    void LUAEditorMainWindow::OnFocusOutEvent(const AZStd::string& assetId)
+    void LUAEditorMainWindow::OnFocusOutEvent(const AZStd::string&)
     {
-        (void)assetId;
-        //AZ_Assert(m_dOpenLUAView.find(documentID) != m_dOpenLUAView.end(), "LUAEditorMainWindow::OnFocusInEvent() : DocumentID does not exist");
     }
 
     void LUAEditorMainWindow::OnRequestCheckOut(const AZStd::string& assetId)
@@ -1876,8 +1947,6 @@ namespace LUAEditor
     // externally driven context sensitive widget states
     void LUAEditorMainWindow::SetDebugControlsToInitial()
     {
-        //AZ_TracePrintf(LUAEditorDebugName, "SetDebugControlsToInitial()\n");
-
         m_StateTrack.Init();
         SetGUIToMatch(m_StateTrack);
     }
@@ -1898,7 +1967,7 @@ namespace LUAEditor
             viewInfo.luaViewWidget()->UpdateCurrentExecutingLine(-1);
         }
 
-        EBUS_EVENT(LUAEditor::LUAStackTrackerMessages::Bus, StackClear);
+        LUAEditor::LUAStackTrackerMessages::Bus::Broadcast(&LUAEditor::LUAStackTrackerMessages::Bus::Events::StackClear);
     }
     void LUAEditorMainWindow::SetDebugControlsToAtBreak()
     {
@@ -1911,15 +1980,11 @@ namespace LUAEditor
     }
     void LUAEditorMainWindow::SetEditContolsToNoFilesOpen()
     {
-        //AZ_TracePrintf(LUAEditorDebugName, "SetDebugControlsToNoFilesOpen()\n");
-
         m_StateTrack.atLeastOneFileOpen = false;
         SetGUIToMatch(m_StateTrack);
     }
     void LUAEditorMainWindow::SetEditContolsToAtLeastOneFileOpen()
     {
-        //AZ_TracePrintf(LUAEditorDebugName, "SetDebugControlsToAtLeastOneFileOpen()\n");
-
         m_StateTrack.atLeastOneFileOpen = true;
         SetGUIToMatch(m_StateTrack);
     }
@@ -2001,9 +2066,6 @@ namespace LUAEditor
 
     void LUAEditorMainWindow::SetGUIToMatch(StateTrack& track)
     {
-        //AZ_TracePrintf(LUAEditorDebugName, "conn(%d) attach(%d) running(%d) atbreak(%d) hasexecuted(%d)  \n",
-        //  track.targetConnected, track.debuggerAttached, track.scriptRunning, track.atBreak, track.hasExecuted);
-
         if (track.atLeastOneFileOpen)
         {
             m_gui->actionSave->setEnabled(true);
@@ -2139,6 +2201,11 @@ namespace LUAEditor
         }
     }
 
+    bool LUAEditorMainWindow::HasAtLeastOneFileOpen() const
+    {
+        return m_StateTrack.atLeastOneFileOpen;
+    }
+
     bool LUAEditorMainWindow::eventFilter(QObject* obj, QEvent* event)
     {
         (void)obj;
@@ -2264,7 +2331,7 @@ namespace LUAEditor
             AZ_TracePrintf("Debug", "URL: %s\n", path.toUtf8().data());
 
             AZStd::string assetId(path.toUtf8().data());
-            EBUS_EVENT(Context_DocumentManagement::Bus, OnLoadDocument, assetId, true);
+            Context_DocumentManagement::Bus::Broadcast(&Context_DocumentManagement::Bus::Events::OnLoadDocument, assetId, true);
         }
     }
 

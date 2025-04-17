@@ -10,6 +10,11 @@
 
 #include <AzCore/EBus/EBus.h>
 
+namespace AzNetworking
+{
+    class IConnection;
+}
+
 namespace Multiplayer
 {
     class MultiplayerEditorServerRequests : public AZ::EBusTraits
@@ -48,7 +53,13 @@ namespace Multiplayer
         virtual void OnEditorConnectionAttemptsFailed([[maybe_unused]]uint16_t failedAttempts) {}
 
         //! Notification when the Editor starts sending the current level data (spawnable) to the server.
-        virtual void OnEditorSendingLevelData() {}
+        virtual void OnEditorSendingLevelData([[maybe_unused]] uint32_t bytesSent, [[maybe_unused]] uint32_t bytesTotal) {}
+
+        //! Notification when the Editor has failed to send the current level data to the server.
+        virtual void OnEditorSendingLevelDataFailed() {}
+
+        //! Notification when the Editor has successfully finished sending the current level data to the server.
+        virtual void OnEditorSendingLevelDataSuccess() {}
 
         //! Notification when the Editor has sent all the level data successful and is now fully connected to the multiplayer simulation.
         virtual void OnConnectToSimulationSuccess() {}

@@ -14,7 +14,7 @@
 
 namespace AZ
 {
-    AZ_CLASS_ALLOCATOR_IMPL(JsonConfigurableStackSerializer, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(JsonConfigurableStackSerializer, AZ::SystemAllocator);
 
     JsonSerializationResult::Result JsonConfigurableStackSerializer::Load(
         void* outputValue,

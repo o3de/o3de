@@ -21,7 +21,7 @@ namespace AZ
     {
         namespace UI
         {
-            AZ_CLASS_ALLOCATOR_IMPL(SceneGraphInspectWidget, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR_IMPL(SceneGraphInspectWidget, SystemAllocator);
 
             SceneGraphInspectWidget::SceneGraphInspectWidget(const Containers::Scene& scene, QWidget* parent, SerializeContext* context)
                 : QWidget(parent)

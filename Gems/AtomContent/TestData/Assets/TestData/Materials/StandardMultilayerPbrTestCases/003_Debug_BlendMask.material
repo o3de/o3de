@@ -1,0 +1,8 @@
+{
+    "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardMultilayerPBR.materialtype",
+    "materialTypeVersion": 3,
+    "parentMaterial": "002_ParallaxPdo.material",
+    "propertyValues": {
+        "blend.debugDrawMode": "BlendMask"
+    }
+}

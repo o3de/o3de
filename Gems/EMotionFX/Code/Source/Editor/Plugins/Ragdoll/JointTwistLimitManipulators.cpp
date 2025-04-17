@@ -84,7 +84,7 @@ namespace EMotionFX
         m_twistLimitLowerManipulator->InstallLeftMouseUpCallback(
             [this]([[maybe_unused]] const AzToolsFramework::AngularManipulator::Action& action)
             {
-                FinishEditing();
+                EndEditing();
             });
 
         m_twistLimitLowerManipulator->Register(EMStudio::g_animManipulatorManagerId);
@@ -121,7 +121,7 @@ namespace EMotionFX
         m_twistLimitUpperManipulator->InstallLeftMouseUpCallback(
             [this]([[maybe_unused]] const AzToolsFramework::AngularManipulator::Action& action)
             {
-                FinishEditing();
+                EndEditing();
             });
 
         m_twistLimitUpperManipulator->Register(EMStudio::g_animManipulatorManagerId);
@@ -168,7 +168,7 @@ namespace EMotionFX
             BeginEditing();
             m_physicsSetupManipulatorData.m_jointConfiguration->SetPropertyValue(AZ::Name("TwistLimitLower"), -45.0f);
             m_physicsSetupManipulatorData.m_jointConfiguration->SetPropertyValue(AZ::Name("TwistLimitUpper"), 45.0f);
-            FinishEditing();
+            EndEditing();
             Refresh();
         }
     }
@@ -243,7 +243,7 @@ namespace EMotionFX
         CreateCommandAdjustJointLimit(m_commandGroup, m_physicsSetupManipulatorData);
     }
 
-    void JointTwistLimitManipulators::FinishEditing()
+    void JointTwistLimitManipulators::EndEditing()
     {
         ExecuteCommandAdjustJointLimit(m_commandGroup, m_physicsSetupManipulatorData);
     }

@@ -10,7 +10,9 @@
 
 #include <Atom/RHI.Reflect/Base.h> // for AZ_BITS and AZ_DEFINE_ENUM_BITWISE_OPERATORS
 
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/PipelineState.h>
+#include <Atom/RPI.Public/SceneBus.h>
 
 #include <AzCore/std/smart_ptr/intrusive_base.h>
 
@@ -28,15 +30,16 @@ namespace AZ
         //!     * One shader.
         //!     * One draw list tag which is initialized from shader but can be overwritten.
         //! DynamicDrawContext may allow some render states change or few other changes which are defined in DynamicDrawContext::DrawVariation
-        class DynamicDrawContext
+        class ATOM_RPI_PUBLIC_API DynamicDrawContext
             : public AZStd::intrusive_base
+            , public SceneNotificationBus::Handler
         {
             friend class DynamicDrawSystem;
-            AZ_RTTI(AZ::RPI::DynamicDrawContext, "{9F6645D7-2C64-4963-BAAB-5144E92F61E2}");
-            AZ_CLASS_ALLOCATOR(DynamicDrawContext, AZ::SystemAllocator, 0);
 
         public:
-            virtual ~DynamicDrawContext() = default;
+            AZ_RTTI(AZ::RPI::DynamicDrawContext, "{9F6645D7-2C64-4963-BAAB-5144E92F61E2}");
+            AZ_CLASS_ALLOCATOR(DynamicDrawContext, AZ::SystemAllocator);
+            virtual ~DynamicDrawContext();
 
             // Type of render state which can be changed for dynamic draw context
             enum class DrawStateOptions : uint32_t
@@ -45,7 +48,8 @@ namespace AZ
                 DepthState = AZ_BIT(1),
                 StencilState = AZ_BIT(2),
                 FaceCullMode = AZ_BIT(3),
-                BlendMode = AZ_BIT(4)
+                BlendMode = AZ_BIT(4),
+                ShaderVariant = AZ_BIT(5)
             };
 
             struct VertexChannel
@@ -199,7 +203,10 @@ namespace AZ
 
             // Get rhi pipeline state which matches current states
             const RHI::PipelineState* GetCurrentPipelineState();
-                        
+
+            // RPI::SceneNotificationBus::Handler overrides...
+            void OnPipelineStateLookupRebuilt() override;
+
             struct MultiStates
             {
                 // states available for change 
@@ -208,6 +215,7 @@ namespace AZ
                 RHI::StencilState m_stencilState;
                 RHI::PrimitiveTopology m_topology;
                 RHI::TargetBlendState m_blendState0;
+                RPI::ShaderVariantId m_shaderVariantId;
 
                 HashValue64 m_hash = HashValue64{ 0 };
                 bool m_isDirty = false;
@@ -266,21 +274,18 @@ namespace AZ
             RHI::DrawFilterMask m_drawFilter = RHI::DrawFilterMaskDefaultValue;
 
             // Cached draw data
-            AZStd::vector<RHI::StreamBufferView> m_cachedStreamBufferViews;
-            AZStd::vector<RHI::IndexBufferView> m_cachedIndexBufferViews;
+            AZStd::vector<RHI::GeometryView> m_cachedGeometryViews;
             AZStd::vector<Data::Instance<ShaderResourceGroup>> m_cachedDrawSrg;
 
             uint32_t m_nextDrawSrgIdx = 0;
             
             // structure includes DrawItem and stream and index buffer index
-            using BufferViewIndexType = uint32_t;
-            static const BufferViewIndexType InvalidIndex = static_cast<BufferViewIndexType>(-1);
+            static constexpr u32 InvalidIndex = static_cast<u32>(-1);
             struct DrawItemInfo
             {
                 RHI::DrawItem m_drawItem;
-                RHI::DrawItemSortKey m_sortKey;
-                BufferViewIndexType m_vertexBufferViewIndex = InvalidIndex;
-                BufferViewIndexType m_indexBufferViewIndex = InvalidIndex;
+                RHI::DrawItemSortKey m_sortKey = 0;
+                u32 m_cachedIndex = InvalidIndex;
             };
             AZStd::vector<DrawItemInfo> m_cachedDrawItems;
 
@@ -289,7 +294,6 @@ namespace AZ
 
             // Flags if this DynamicDrawContext can change shader variants
             bool m_supportShaderVariants = false;
-            ShaderVariantId m_currentShaderVariantId;
 
             Data::Instance<Shader> m_shader;
 

@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzFramework/Components/NativeUISystemComponent.h>
 #include <AzFramework/Input/Devices/Motion/InputDeviceMotion.h>
 
 #include <CoreMotion/CoreMotion.h>
@@ -22,7 +23,7 @@ namespace AzFramework
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Allocator
-        AZ_CLASS_ALLOCATOR(InputDeviceMotionIos, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(InputDeviceMotionIos, AZ::SystemAllocator);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Constructor
@@ -107,13 +108,6 @@ namespace AzFramework
         //! Variables
         CMMotionManager* m_motionManager; //!< Reference to the motion manager
     };
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    InputDeviceMotion::Implementation* InputDeviceMotion::Implementation::Create(
-        InputDeviceMotion& inputDevice)
-    {
-        return aznew InputDeviceMotionIos(inputDevice);
-    }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     InputDeviceMotionIos::InputDeviceMotionIos(InputDeviceMotion& inputDevice)
@@ -428,5 +422,23 @@ namespace AzFramework
             default: break;
         }
         return quaternion;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    class IosDeviceMotionImplFactory
+        : public InputDeviceMotion::ImplementationFactory
+    {
+    public:
+        AZStd::unique_ptr<InputDeviceMotion::Implementation> Create(InputDeviceMotion& inputDevice) override
+        {
+            return AZStd::make_unique<InputDeviceMotionIos>(inputDevice);
+        }
+    };
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    void NativeUISystemComponent::InitializeDeviceMotionImplentationFactory()
+    {
+        m_deviceMotionImplFactory = AZStd::make_unique<IosDeviceMotionImplFactory>();
+        AZ::Interface<InputDeviceMotion::ImplementationFactory>::Register(m_deviceMotionImplFactory.get());
     }
 } // namespace AzFramework

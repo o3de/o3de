@@ -14,8 +14,26 @@ import time
 
 import ly_test_tools.environment.process_utils as process_utils
 import ly_test_tools.environment.waiter as waiter
+from ly_test_tools._internal.exceptions import EditorToolsFrameworkException
+from ly_test_tools.o3de.asset_processor import AssetProcessor
 
 logger = logging.getLogger(__name__)
+
+
+def compile_test_case_name_from_request(request):
+    """
+    Compile a test case name for consumption by the TIAF python coverage listener gem.
+    @param request: The fixture request.
+    """
+    try:
+        test_case_prefix = "::".join(str.split(request.node.nodeid, "::")[:2])
+        test_case_name = "::".join([test_case_prefix, request.node.originalname])
+        callspec = request.node.callspec.id
+        compiled_test_case_name = f"{test_case_name}[{callspec}]"
+    except Exception as e:
+        logging.warning(f"Error reading test case name for TIAF. {e}")
+        compiled_test_case_name = "ERROR"
+    return compiled_test_case_name
 
 
 def kill_all_ly_processes(include_asset_processor: bool = True) -> None:
@@ -26,7 +44,8 @@ def kill_all_ly_processes(include_asset_processor: bool = True) -> None:
     :return: None
     """
     ly_processes = [
-        'Editor', 'Profiler', 'RemoteConsole', 'o3de', 'AutomatedTesting.ServerLauncher'
+        'Editor', 'Profiler', 'RemoteConsole', 'o3de', 'AutomatedTesting.ServerLauncher', 'MaterialEditor',
+        'MaterialCanvas'
     ]
     ap_processes = [
         'AssetProcessor', 'AssetProcessorBatch', 'AssetBuilder'
@@ -68,6 +87,17 @@ def retrieve_log_path(run_id: int, workspace: ly_test_tools._internal.managers.w
     return os.path.join(workspace.paths.project(), "user", f"log_test_{run_id}")
 
 
+def atom_tools_log_path(
+        run_id: int, workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager) -> str:
+    """
+    return the log path for Atom tools test runs
+    :param run_id: executable id that will be used for differentiating paths
+    :param workspace: Workspace fixture
+    :return: str: The full path to the given executable log
+    """
+    return os.path.join(workspace.paths.project(), "user", "log", f"log_test_{run_id}")
+
+
 def retrieve_crash_output(run_id: int, workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager,
                           timeout: float = 10) -> str:
     """
@@ -85,12 +115,11 @@ def retrieve_crash_output(run_id: int, workspace: ly_test_tools._internal.manage
         waiter.wait_for(lambda: os.path.exists(crash_log), timeout=timeout)
     except AssertionError:                    
         pass
-        
-    # Even if the path didn't exist, we are interested on the exact reason why it couldn't be read
+
     try:
         with open(crash_log) as f:
             crash_info = f.read()
-    except Exception as ex:
+    except Exception as ex:  # Even if the path didn't exist, we are interested on the exact reason why it couldn't be read
         crash_info += f"\n{str(ex)}"
     return crash_info
 
@@ -116,29 +145,58 @@ def cycle_crash_report(run_id: int, workspace: ly_test_tools._internal.managers.
                 logger.warning(f"Couldn't cycle file {filepath}. Error: {str(ex)}")
 
 
-def retrieve_editor_log_content(run_id: int, log_name: str,
+def retrieve_editor_log_content(run_id: int,
+                                log_name: str,
                                 workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager,
                                 timeout: int = 10) -> str:
     """
     Retrieves the contents of the given editor log file.
     :param run_id: editor id that will be used for differentiating paths
-    :log_name: The name of the editor log to retrieve
+    :param log_name: The name of the editor log to retrieve
     :param workspace: Workspace fixture
     :param timeout: Maximum time to wait for the log file to appear
     :return str: The contents of the log
     """
-    editor_info = "-- No editor log available --"
+    editor_info = "-- No Editor log available --"
     editor_log = os.path.join(retrieve_log_path(run_id, workspace), log_name)
     try:
         waiter.wait_for(lambda: os.path.exists(editor_log), timeout=timeout)
     except AssertionError:              
         pass
-        
+
     # Even if the path didn't exist, we are interested on the exact reason why it couldn't be read
     try:
-        with open(editor_log) as f:
+        with open(editor_log) as opened_log:
             editor_info = ""
-            for line in f:
+            for line in opened_log:
+                editor_info += f"[{log_name}]  {line}"
+    except Exception as ex:
+        editor_info = f"-- Error reading {log_name}: {str(ex)} --"
+    return editor_info
+
+
+def retrieve_non_editor_log_content(run_id: int,
+                                    log_name: str,
+                                    workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager,
+                                    timeout: int = 10) -> str:
+    """
+    Retrieves the contents of the given path to the executable log file.
+    :param run_id: executable id that will be used for differentiating paths
+    :param log_name: The name of the executable log being retrieved
+    :param workspace: Workspace fixture
+    :param timeout: Maximum time to wait for the log file to appear
+    :return str: The contents of the log
+    """
+    atom_tools_log = os.path.join(atom_tools_log_path(run_id, workspace), log_name)
+    try:
+        waiter.wait_for(lambda: os.path.exists(atom_tools_log), timeout=timeout)
+    except AssertionError:
+        pass  # Even if the path didn't exist, we are interested on the exact reason why it couldn't be read
+
+    try:
+        with open(atom_tools_log) as opened_log:
+            editor_info = ""
+            for line in opened_log:
                 editor_info += f"[{log_name}]  {line}"
     except Exception as ex:
         editor_info = f"-- Error reading {log_name}: {str(ex)} --"
@@ -179,9 +237,29 @@ def save_failed_asset_joblogs(workspace: ly_test_tools._internal.managers.worksp
             # Only save asset logs that contain errors or warnings
             if _check_log_errors_warnings(full_log_path):
                 try:
-                    workspace.artifact_manager.save_artifact(full_log_path)
+                    workspace.artifact_manager.save_artifact(
+                        full_log_path, os.path.join("assets_logs", os.path.basename(full_log_path)))
                 except Exception as e:  # Purposefully broad
                     logger.warning(f"Error when saving log at path: {full_log_path}\n{e}")
+
+
+def compile_test_case_name(request, test_spec):
+    """
+    Compile a test case name for consumption by the TIAF python coverage listener gem.
+    :param request: The fixture request.
+    :param test_spec: The test spec for this test case.
+    """
+    test_case_prefix = "::".join(str.split(str(request.node.nodeid), "::")[:2])
+    regex_result = re.search("\<class \'(.*)\'\>", str(test_spec))
+    try:
+        class_name = str.split(regex_result.group(1), ".")[-1:]
+        test_case_name = f"{'::'.join([test_case_prefix, class_name[0]])}"
+        callspec = request.node.callspec.id
+        compiled_test_case_name = f"{test_case_name}[{callspec}]"
+    except Exception as e:
+        logging.warning(f"Error reading test case name for TIAF. {e}")
+        compiled_test_case_name = "ERROR"
+    return compiled_test_case_name
 
 
 def _check_log_errors_warnings(log_path: str) -> bool:
@@ -207,3 +285,27 @@ def _check_log_errors_warnings(log_path: str) -> bool:
     if regex_match is None or int(regex_match.group(1)) != 0 or int(regex_match.group(2)) != 0:
         return True
     return False
+
+
+def prepare_asset_processor(workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager,
+                            collected_test_data: TestData) -> None:
+    """
+    Prepares the asset processor for the test depending on whether the process is open and if the current test owns it.
+    :param workspace: The workspace object in case an AssetProcessor object needs to be created
+    :param collected_test_data: The test data from calling collected_test_data()
+    :return: None
+    """
+    try:
+        # Start-up an asset processor if we are not already managing one
+        if collected_test_data.asset_processor is None:
+            if not process_utils.process_exists("AssetProcessor", ignore_extensions=True):
+                kill_all_ly_processes(include_asset_processor=True)
+                collected_test_data.asset_processor = AssetProcessor(workspace)
+                collected_test_data.asset_processor.start()
+            else:  # If another AP process already exists, do not kill it as we do not manage it
+                kill_all_ly_processes(include_asset_processor=False)
+        else:  # Make sure existing asset processor wasn't closed by accident
+            collected_test_data.asset_processor.start()
+    except Exception as ex:
+        collected_test_data.asset_processor = None
+        raise EditorToolsFrameworkException from ex

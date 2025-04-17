@@ -47,7 +47,7 @@ namespace AZ::IO
     {
     public:
         AZ_RTTI(AZ::IO::IStreamerStackConfig, "{97266736-E55E-4BF4-9E4A-9D5A9FF4D230}");
-        AZ_CLASS_ALLOCATOR(IStreamerStackConfig, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(IStreamerStackConfig, SystemAllocator);
 
         virtual ~IStreamerStackConfig() = default;
         virtual AZStd::shared_ptr<StreamStackEntry> AddStreamStackEntry(
@@ -59,7 +59,7 @@ namespace AZ::IO
     {
     public:
         AZ_RTTI(AZ::IO::StreamerConfig, "{B20540CB-A75C-45F9-A891-7ABFD9192E9F}");
-        AZ_CLASS_ALLOCATOR(StreamerConfig, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(StreamerConfig, SystemAllocator);
 
         ConfigurableStack<AZ::IO::IStreamerStackConfig> m_stackConfig;
         static void Reflect(ReflectContext* context);

@@ -24,6 +24,7 @@ def DuplicatePrefab_ContainingNestedEntitiesAndNestedPrefabs():
     from editor_python_test_tools.editor_entity_utils import EditorEntity
     from editor_python_test_tools.prefab_utils import Prefab
     from editor_python_test_tools.wait_utils import PrefabWaiter
+    from consts.physics import PHYSX_PRIMITIVE_COLLIDER as PHYSX_PRIMITIVE_COLLIDER_NAME
     import Prefab.tests.PrefabTestUtils as prefab_test_utils
 
     NESTED_ENTITIES_PREFAB_FILE_NAME = Path(__file__).stem + '_' + 'nested_entities_prefab'
@@ -32,7 +33,6 @@ def DuplicatePrefab_ContainingNestedEntitiesAndNestedPrefabs():
     NESTED_PREFABS_NAME_PREFIX = 'NestedPrefabs_Prefab_'
     FILE_NAME_OF_PREFAB_WITH_NESTED_ENTITIES_AND_NESTED_PREFABS = Path(__file__).stem + '_' + 'new_prefab'
     NESTED_PREFABS_TEST_ENTITY_NAME = 'TestEntity'
-    PHYSX_COLLIDER_NAME = 'PhysX Collider'
     CREATION_POSITION = azlmbr.math.Vector3(100.0, 100.0, 100.0)
     NUM_NESTED_ENTITIES_LEVELS = 3
     NUM_NESTED_PREFABS_LEVELS = 3
@@ -51,8 +51,8 @@ def DuplicatePrefab_ContainingNestedEntitiesAndNestedPrefabs():
     # Asserts if creation didn't succeed
     entity_to_nest = EditorEntity.create_editor_entity_at(CREATION_POSITION, name=NESTED_PREFABS_TEST_ENTITY_NAME)
     assert entity_to_nest.id.IsValid(), "Couldn't create TestEntity"
-    entity_to_nest.add_component(PHYSX_COLLIDER_NAME)
-    assert entity_to_nest.has_component(PHYSX_COLLIDER_NAME), f"Failed to add a {PHYSX_COLLIDER_NAME}"
+    entity_to_nest.add_component(PHYSX_PRIMITIVE_COLLIDER_NAME)
+    assert entity_to_nest.has_component(PHYSX_PRIMITIVE_COLLIDER_NAME), f"Failed to add a {PHYSX_PRIMITIVE_COLLIDER_NAME}"
     _, nested_prefab_instances = prefab_test_utils.create_linear_nested_prefabs(
         [entity_to_nest], NESTED_PREFABS_FILE_NAME_PREFIX, NESTED_PREFABS_NAME_PREFIX, NUM_NESTED_PREFABS_LEVELS)
     prefab_test_utils.validate_linear_nested_prefab_instances_hierarchy(nested_prefab_instances)

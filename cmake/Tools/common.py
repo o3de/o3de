@@ -20,7 +20,7 @@ import pathlib
 import platform
 
 from subprocess import CalledProcessError
-from distutils.version import LooseVersion
+from packaging.version import Version
 from cmake.Tools import layout_tool
 
 # Text encoding Constants for reading/writing to files.
@@ -72,7 +72,7 @@ class LmbrCmdError(Exception):
         """
         self.msg = msg
         self.code = code
-    
+
     def __str__(self):
         return str(self.msg)
 
@@ -101,11 +101,11 @@ def determine_engine_root(starting_path=None):
     :param starting_path:    Optional starting path to look for the engine.json marker file, otherwise use the current working path
     :return: The root path that is validated to contain engine.json if found, None if not found
     """
-    
+
     current_path = os.path.normpath(starting_path or os.getcwd())
-    
+
     check_file = os.path.join(current_path, ENGINE_ROOT_CHECK_FILE)
-    
+
     while not os.path.isfile(check_file):
         next_path = os.path.dirname(current_path)
         if next_path == current_path:
@@ -113,10 +113,10 @@ def determine_engine_root(starting_path=None):
             break
         check_file = os.path.join(next_path, ENGINE_ROOT_CHECK_FILE)
         current_path = next_path
-    
+
     if not os.path.isfile(check_file):
         return None
-    
+
     return current_path
 
 
@@ -151,7 +151,7 @@ def get_bootstrap_values(bootstrap_dir, keys_to_extract):
     bootstrap_file = os.path.join(bootstrap_dir, 'bootstrap.setreg')
     if not os.path.isfile(bootstrap_file):
         raise logging.error(f'Bootstrap.setreg file {bootstrap_file} does not exist.')
-    
+
     result_map = {}
     with open(bootstrap_file, 'r') as f:
         try:
@@ -166,7 +166,7 @@ def get_bootstrap_values(bootstrap_dir, keys_to_extract):
                     logging.warning(f'Bootstrap.setreg cannot find /Amazon/AzCore/Bootstrap/{search_key}: {str(e)}')
                 else:
                     result_map[search_key] = search_result
-    
+
     return result_map
 
 
@@ -178,12 +178,12 @@ def validate_ap_config_asset_type_enabled(engine_root, bootstrap_asset_type):
     :param bootstrap_asset_type:    The asset type to validate
     :return:    True if the asset type was enabled, false if not
     """
-    
+
     ap_config_file = os.path.join(engine_root, 'Registry', 'AssetProcessorPlatformConfig.setreg')
     if not os.path.isfile(ap_config_file):
         raise LmbrCmdError("Missing required asset processor configuration file at '{}'".format(engine_root),
                            ERROR_CODE_FILE_NOT_FOUND)
-    
+
     parser = configparser.ConfigParser()
     parser.read([ap_config_file])
     if parser.has_option('Platforms', bootstrap_asset_type):
@@ -191,14 +191,14 @@ def validate_ap_config_asset_type_enabled(engine_root, bootstrap_asset_type):
     else:
         # If 'pc' is not set, then default it to 'disable'. For other platforms, their default is 'disabled'
         enabled_value = 'disabled' if bootstrap_asset_type != 'pc' else 'enabled'
-    
+
     return enabled_value == 'enabled'
 
 
 def file_fingerprint(path, deep_check=False):
     """
     Calculate a file hash for for a file from either its metadata or its content (deep_check=True)
-    
+
     :param path:        The absolute path to the file to check its fingerprint. (Does not work on directories)
     :param deep_check:  Flag to use a deep check (hash of the entire file content) or just its metadata (timestamp+size)
     :return: The hash
@@ -213,7 +213,7 @@ def file_fingerprint(path, deep_check=False):
     path_file_stat = os.stat(path)
     hasher.update(str(path_file_stat.st_mtime).encode('UTF-8'))
     hasher.update(str(path_file_stat.st_size).encode('UTF-8'))
-    
+
     # If doing a deep check, also include the contents
     if deep_check:
         with open(path, 'rb') as file_to_hash:
@@ -222,7 +222,7 @@ def file_fingerprint(path, deep_check=False):
                 hasher.update(content)
                 if not content:
                     break
-    
+
     return hasher.hexdigest()
 
 
@@ -322,9 +322,9 @@ def verify_tool(override_tool_path, tool_name, tool_filename, argument_name, too
         if not version_match:
             raise RuntimeError()
 
-        # Since we are doing a compare, strip out any non-numeric and non . character from the version otherwise we will get a TypeError on the LooseVersion comparison
+        # Since we are doing a compare, strip out any non-numeric and non . character from the version otherwise we will get a TypeError on the Version comparison
         result_version_str = re.sub(r"[^\.0-9]", "", str(version_match.group(1)).strip())
-        result_version = LooseVersion(result_version_str)
+        result_version = Version(result_version_str)
 
         if min_version and result_version < min_version:
             raise LmbrCmdError(f"The {tool_desc} does not meet the minimum version of {tool_name} required ({str(min_version)}).",
@@ -336,7 +336,7 @@ def verify_tool(override_tool_path, tool_name, tool_filename, argument_name, too
         return result_version, resolved_override_tool_path
 
     except CalledProcessError as e:
-        error_msg = e.stderr.decode(DEFAULT_TEXT_READ_ENCODING,
+        error_msg = e.output.decode(DEFAULT_TEXT_READ_ENCODING,
                                     ENCODING_ERROR_HANDLINGS)
         raise LmbrCmdError(f"{tool_name} cannot be resolved or there was a problem determining its version number. "
                            f"Either make sure its in the system path environment or a valid path is passed in "
@@ -694,7 +694,7 @@ def get_test_module_registry(build_dir_path):
 def get_validated_test_modules(test_modules, build_dir_path):
     """
     Validatate the provided test modules against all test modules
-    
+
     :param test_modules: List of test target names
     :param build_dir_path: The target build directory (Pathlib) base directory
     :return: List of valid test modules that match the input test modules. If the input test modules is an empty list, return all valid test modules
@@ -703,7 +703,7 @@ def get_validated_test_modules(test_modules, build_dir_path):
     # Collect the test modules that can be launched
     all_test_modules = get_test_module_registry(build_dir_path=build_dir_path)
     validated_test_modules = []
-    
+
     # Validate input test targets or use all test modules if no specific test target is supplied
     if test_modules:
         assert isinstance(test_modules, list)
@@ -711,7 +711,7 @@ def get_validated_test_modules(test_modules, build_dir_path):
             if test_target_check not in all_test_modules:
                 raise LmbrCmdError(f"Invalid test module {test_target_check}")
             if isinstance(test_target_check, list):
-                validated_test_modules.extend(test_target_check)    
+                validated_test_modules.extend(test_target_check)
             else:
                 validated_test_modules.append(test_target_check)
     else:

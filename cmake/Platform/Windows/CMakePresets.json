@@ -15,26 +15,17 @@
             "description": "Default Windows",
             "inherits": [
                 "windows-unity"
-            ],
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Windows"
-            }
+            ]
         },
         {
             "name": "windows-mono-default",
             "displayName": "Windows Monolithic with Unity and Visual Studio",
             "description": "Configures Windows to build the Monolithic permutation using Visual Studio with Unity builds",
+            "binaryDir": "${sourceDir}/build/windows_mono",
             "inherits": [
                 "windows-unity",
                 "windows-monolithic"
-            ],
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Windows"
-            }
+            ]
         },
         {
             "name": "windows-unity",
@@ -42,13 +33,9 @@
             "description": "Windows build which uses unity files",
             "binaryDir": "${sourceDir}/build/windows",
             "inherits": [
-                "unity"
-            ],
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Windows"
-            }
+                "unity",
+                "host-windows"
+            ]
         },
         {
             "name": "windows-no-unity",
@@ -56,26 +43,18 @@
             "description": "Windows build which uses unity files",
             "binaryDir": "${sourceDir}/build/windows",
             "inherits": [
-                "no-unity"
-            ],
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Windows"
-            }
+                "no-unity",
+                "host-windows"
+            ]
         },
         {
             "name": "windows-non-monolithic",
             "displayName": "Windows Non-Monolithic",
             "description": "Default configuration for non-monolithic builds",
             "inherits": [
-                "non-monolithic"
-            ],
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Windows"
-            }
+                "non-monolithic",
+                "host-windows"
+            ]
         },
         {
             "name": "windows-monolithic",
@@ -83,13 +62,9 @@
             "description": "Default configuration for monolithic builds",
             "binaryDir": "${sourceDir}/build/windows_mono",
             "inherits": [
-                "monolithic"
-            ],
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Windows"
-            }
+                "monolithic",
+                "host-windows"
+            ]
         },
         {
             "name": "windows-vs",
@@ -97,77 +72,84 @@
             "description": "Configure Windows with the Visual Studio IDE",
             "inherits": [
                 "windows-vs-unity"
-            ],
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Windows"
-            }
+            ]
         },
         {
             "name": "windows-vs-unity",
             "displayName": "Windows Visual Studio Unity",
             "description": "Configure Windows with the Visual Studio IDE + Unity Builds",
             "inherits": [
-                "windows-vs2019",
-                "windows-unity"
-            ],
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Windows"
-            }
+                "windows-vs2022",
+                "unity"
+            ]
         },
         {
             "name": "windows-vs-no-unity",
             "displayName": "Windows Visual Studio without Unity",
             "description": "Configure Windows with the Visual Studio IDE without unity builds",
             "inherits": [
-                "windows-vs2019",
-                "windows-no-unity"
-            ],
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Windows"
-            }
+                "windows-vs2022",
+                "no-unity"
+            ]
         },
         {
             "name": "windows-vs2019",
             "displayName": "Windows Visual Studio 2019",
             "description": "Configure Windows to use the VS2019 generator",
             "binaryDir": "${sourceDir}/build/windows_vs2019",
-            "generator": "Visual Studio 16",
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Windows"
-            }
+            "inherits": [
+                "vs2019"
+            ]
         },
         {
             "name": "windows-vs2022",
             "displayName": "Windows Visual Studio 2022",
             "description": "Configure Windows to use the VS2022 generator",
             "binaryDir": "${sourceDir}/build/windows_vs2022",
-            "generator": "Visual Studio 17",
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Windows"
+            "inherits": [
+                "vs2022"
+            ]
+        },
+        {
+            "name": "windows-ninja-clang-cl",
+            "displayName": "Windows Visual Studio 2022 + ClangCl",
+            "description": "Configure Windows to use the VS2022 generator and the clang-cl compiler",
+            "binaryDir": "${sourceDir}/build/windows_clangcl",
+            "inherits": [
+                "windows-vs2022",
+                "unity"
+            ],
+            "toolset": {
+                "value": "ClangCl"
             }
         },
         {
             "name": "windows-ninja",
             "displayName": "Windows Ninja",
-            "description": "Configure Windows using the Ninja Multi-Config genrator",
+            "description": "Configure Windows using the Ninja Multi-Config generator",
             "binaryDir": "${sourceDir}/build/windows_ninja",
             "inherits": [
-                "ninja-multi-config"
+                "ninja-multi-config",
+                "host-windows"
+            ]
+        },
+        {
+            "name": "windows-ninja-clang",
+            "displayName": "Windows Ninja + Clang",
+            "description": "Configure Windows using the Ninja Multi-Config generator and the clang compiler. ninja and clang must be in the path",
+            "binaryDir": "${sourceDir}/build/windows_clang",
+            "inherits": [
+                "windows-ninja"
             ],
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Windows"
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": {
+                    "type": "STRING",
+                    "value": "clang"
+                },
+                "CMAKE_CXX_COMPILER": {
+                    "type": "STRING",
+                    "value": "clang++"
+                }
             }
         }
     ],
@@ -177,11 +159,9 @@
             "displayName": "Windows",
             "description": "Builds all targets for Windows",
             "configurePreset": "windows-default",
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Windows"
-            }
+            "inherits": [
+                "host-windows"
+            ]
         },
         {
             "name": "windows-install",
@@ -189,24 +169,18 @@
             "description": "Builds the \"install\" target for windows, which builds all target and runs the CMake --install step",
             "configurePreset": "windows-default",
             "inherits": [
-                "install"
-            ],
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Windows"
-            }
+                "install",
+                "host-windows"
+            ]
         },
         {
             "name": "windows-mono-default",
             "displayName": "Windows Monolithic",
             "description": "Builds all targets for Windows in the monolithic permutation",
             "configurePreset": "windows-mono-default",
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Windows"
-            }
+            "inherits": [
+                "host-windows"
+            ]
         },
         {
             "name": "windows-mono-install",
@@ -214,13 +188,9 @@
             "description": "Builds the \"install\" target for windows monolithic permutation, which builds all target and runs the CMake --install step",
             "configurePreset": "windows-mono-default",
             "inherits": [
-                "install"
-            ],
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Windows"
-            }
+                "install",
+                "host-windows"
+            ]
         },
         {
             "name": "windows-editor",
@@ -228,13 +198,9 @@
             "description": "Builds the Editor application for Windows",
             "configurePreset": "windows-default",
             "inherits": [
-                "editor"
-            ],
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Windows"
-            }
+                "editor",
+                "host-windows"
+            ]
         },
         {
             "name": "windows-assetprocessor",
@@ -242,13 +208,9 @@
             "description": "Builds the AssetProcessor application for windows",
             "configurePreset": "windows-default",
             "inherits": [
-                "assetprocessor"
-            ],
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Windows"
-            }
+                "assetprocessor",
+                "host-windows"
+            ]
         },
         {
             "name": "windows-test",
@@ -256,13 +218,9 @@
             "description": "Builds the TEST_SUITE_smoke/TEST_SUITE_main custom targets for Windows",
             "configurePreset": "windows-default",
             "inherits": [
-                "test-default"
-            ],
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Windows"
-            }
+                "test-default",
+                "host-windows"
+            ]
         }
     ],
     "testPresets": [
@@ -272,13 +230,9 @@
             "description": "Runs the Smoke + Main Test Suite. Requires the windows-test build preset to have completed successfully",
             "configurePreset": "windows-default",
             "inherits": [
-                "test-default"
-            ],
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Windows"
-            }
+                "test-default",
+                "host-windows"
+            ]
         },
         {
             "name": "windows-test-debug",
@@ -286,27 +240,19 @@
             "description": "Runs the Smoke + Main Test Suite in debug configuration. Requires the windows-test build preset to have completed successfully",
             "configurePreset": "windows-default",
             "inherits": [
-                "test-default-debug"
-            ],
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Windows"
-            }
+                "test-default-debug",
+                "host-windows"
+            ]
         },
         {
-            "name": "Windows-test-profile",
+            "name": "windows-test-profile",
             "displayName": "Windows CTest profile",
             "description": "Runs the Smoke + Main Test Suite in profile configuration. Requires the windows test build preset to have completed successfully",
             "configurePreset": "windows-default",
             "inherits": [
-                "test-default-profile"
-            ],
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Windows"
-            }
+                "test-default-profile",
+                "host-windows"
+            ]
         }
     ]
 }

@@ -21,8 +21,8 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeTwoLinkIKNode, AnimGraphAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeTwoLinkIKNode::UniqueData, AnimGraphObjectUniqueDataAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeTwoLinkIKNode, AnimGraphAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeTwoLinkIKNode::UniqueData, AnimGraphObjectUniqueDataAllocator)
 
     BlendTreeTwoLinkIKNode::UniqueData::UniqueData(AnimGraphNode* node, AnimGraphInstance* animGraphInstance)
         : AnimGraphNodeData(node, animGraphInstance)
@@ -477,8 +477,11 @@ namespace EMotionFX
         float dotProduct = oldForward.Dot(newForward);
         float deltaAngle = MCore::Math::ACos(MCore::Clamp<float>(dotProduct, -1.0f, 1.0f));
         AZ::Vector3 axis = oldForward.Cross(newForward);
-        AZ::Quaternion deltaRot = MCore::CreateFromAxisAndAngle(axis, deltaAngle);
-        globalTransformA.m_rotation = deltaRot * globalTransformA.m_rotation;
+        if (axis.GetLengthSq() > 0.0f)
+        {
+            globalTransformA.m_rotation = AZ::Quaternion::CreateFromAxisAngle(
+                axis.GetNormalized(), deltaAngle) * globalTransformA.m_rotation;
+        }
         outTransformPose.SetWorldSpaceTransform(nodeIndexA, globalTransformA);
 
         // globalTransformA = outTransformPose.GetGlobalTransformIncludingActorInstanceTransform(nodeIndexA);
@@ -508,14 +511,13 @@ namespace EMotionFX
         {
             deltaAngle = MCore::Math::ACos(MCore::Clamp<float>(dotProduct, -1.0f, 1.0f));
             axis = oldForward.Cross(newForward);
-            deltaRot = MCore::CreateFromAxisAndAngle(axis, deltaAngle);
-        }
-        else
-        {
-            deltaRot = AZ::Quaternion::CreateIdentity();
+            if (axis.GetLengthSq() > 0.0f)
+            {
+                globalTransformB.m_rotation = AZ::Quaternion::CreateFromAxisAngle(
+                    axis.GetNormalized(), deltaAngle) * globalTransformB.m_rotation;
+            }
         }
 
-        globalTransformB.m_rotation = deltaRot * globalTransformB.m_rotation;
         globalTransformB.m_position = midPos;
         outTransformPose.SetWorldSpaceTransform(nodeIndexB, globalTransformB);
 
@@ -629,17 +631,17 @@ namespace EMotionFX
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
             ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
             ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-            ->DataElement(AZ_CRC("ActorNode", 0x35d9eb50), &BlendTreeTwoLinkIKNode::m_endNodeName, "End Node", "The end node name of the chain, for example the foot, or hand.")
+            ->DataElement(AZ_CRC_CE("ActorNode"), &BlendTreeTwoLinkIKNode::m_endNodeName, "End Node", "The end node name of the chain, for example the foot, or hand.")
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeTwoLinkIKNode::Reinit)
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
-            ->DataElement(AZ_CRC("ActorNode", 0x35d9eb50), &BlendTreeTwoLinkIKNode::m_endEffectorNodeName, "End Effector", "The end effector node, which represents the node that actually tries to reach the goal. This is probably also the hand, or a child node of it for example. If not set, the end node is used.")
+            ->DataElement(AZ_CRC_CE("ActorNode"), &BlendTreeTwoLinkIKNode::m_endEffectorNodeName, "End Effector", "The end effector node, which represents the node that actually tries to reach the goal. This is probably also the hand, or a child node of it for example. If not set, the end node is used.")
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeTwoLinkIKNode::Reinit)
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
-            ->DataElement(AZ_CRC("ActorGoalNode", 0xaf1e8a3a), &BlendTreeTwoLinkIKNode::m_alignToNode, "Align To", "The node to align the end node to. This basically sets the goal to this node.")
+            ->DataElement(AZ_CRC_CE("ActorGoalNode"), &BlendTreeTwoLinkIKNode::m_alignToNode, "Align To", "The node to align the end node to. This basically sets the goal to this node.")
             ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::HideChildren)
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeTwoLinkIKNode::Reinit)
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
-            ->DataElement(AZ_CRC("ActorNode", 0x35d9eb50), &BlendTreeTwoLinkIKNode::m_bendDirNodeName, "Bend Dir Node", "The optional node to control the bend direction. The vector from the start node to the bend dir node will be used as bend direction.")
+            ->DataElement(AZ_CRC_CE("ActorNode"), &BlendTreeTwoLinkIKNode::m_bendDirNodeName, "Bend Dir Node", "The optional node to control the bend direction. The vector from the start node to the bend dir node will be used as bend direction.")
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeTwoLinkIKNode::Reinit)
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
             ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeTwoLinkIKNode::m_rotationEnabled, "Enable Rotation Goal", "Enable the goal orientation?")

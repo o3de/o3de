@@ -12,11 +12,12 @@
 #include <AzFramework/Entity/GameEntityContextBus.h>
 
 // some fake components to test with
-static const AZ::TypeId HatComponentTypeId = "{EADEF936-E987-4BF3-9651-A42251827628}";
+static constexpr AZ::TypeId HatComponentTypeId{ "{EADEF936-E987-4BF3-9651-A42251827628}" };
 
 class HatConfig : public AZ::ComponentConfig
 {
 public:
+    AZ_CLASS_ALLOCATOR(HatConfig, AZ::SystemAllocator)
     AZ_RTTI(HatConfig, "{A3129800-43DF-48CA-9BC3-77632241B8ED}", ComponentConfig);
     float m_brimWidth = 1.f;
 };
@@ -52,7 +53,7 @@ public:
     HatConfig m_config;
 };
 
-static const AZ::TypeId EarComponentTypeId = "{1F741BC1-451F-445F-891B-1204D6A434D0}";
+static constexpr AZ::TypeId EarComponentTypeId{ "{1F741BC1-451F-445F-891B-1204D6A434D0}" };
 class EarComponent : public AZ::Component
 {
 public:
@@ -64,7 +65,7 @@ public:
     void Deactivate() override {}
 };
 
-static const AZ::TypeId DeactivateDuringActivationComponentTypeId = "{E18A3FFE-FA61-4682-A6C2-FB065D5DDDD2}";
+static constexpr AZ::TypeId DeactivateDuringActivationComponentTypeId{ "{E18A3FFE-FA61-4682-A6C2-FB065D5DDDD2}" };
 class DeactivateDuringActivationComponent : public AZ::Component
 {
 public:

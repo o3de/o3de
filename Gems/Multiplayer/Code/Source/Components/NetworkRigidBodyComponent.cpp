@@ -29,7 +29,7 @@ namespace Multiplayer
     void NetworkRigidBodyComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
         NetworkRigidBodyComponentBase::GetRequiredServices(required);
-        required.push_back(AZ_CRC_CE("PhysicsRigidBodyService"));
+        required.push_back(AZ_CRC_CE("PhysicsDynamicRigidBodyService"));
     }
 
     NetworkRigidBodyComponent::NetworkRigidBodyComponent()
@@ -44,21 +44,36 @@ namespace Multiplayer
 
     void NetworkRigidBodyComponent::OnActivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
     {
+        // During activation the simulated bodies are not created yet.
+        // Connect to RigidBodyNotificationBus to listen when it's enabled after creation.
+        Physics::RigidBodyNotificationBus::Handler::BusConnect(GetEntityId());
+    }
+
+    void NetworkRigidBodyComponent::OnPhysicsEnabled(const AZ::EntityId& entityId)
+    {
+        Physics::RigidBodyNotificationBus::Handler::BusDisconnect();
+
+        m_physicsRigidBodyComponent = Physics::RigidBodyRequestBus::FindFirstHandler(entityId);
+        AZ_Assert(m_physicsRigidBodyComponent, "Physics Rigid Body is required on entity %s", GetEntity()->GetName().c_str());
+
+        // By default we're kinematic unless there is a controller, in which case the controller will handle it.
+        if (!HasController())
+        {
+            m_physicsRigidBodyComponent->SetKinematic(true);
+        }
+
         NetworkRigidBodyRequestBus::Handler::BusConnect(GetEntityId());
 
         GetNetBindComponent()->AddEntitySyncRewindEventHandler(m_syncRewindHandler);
         GetEntity()->GetTransform()->BindTransformChangedEventHandler(m_transformChangedHandler);
-
-        m_physicsRigidBodyComponent =
-            Physics::RigidBodyRequestBus::FindFirstHandler(GetEntity()->GetId());
-        AZ_Assert(m_physicsRigidBodyComponent, "PhysX Rigid Body Component is required on entity %s", GetEntity()->GetName().c_str());
-        // By default we're kinematic, activating a controller will allow us to simulate
-        m_physicsRigidBodyComponent->SetKinematic(true);
     }
 
     void NetworkRigidBodyComponent::OnDeactivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
     {
+        Physics::RigidBodyNotificationBus::Handler::BusDisconnect();
         NetworkRigidBodyRequestBus::Handler::BusDisconnect();
+
+        m_physicsRigidBodyComponent = nullptr;
     }
 
     void NetworkRigidBodyComponent::OnTransformUpdate(const AZ::Transform& worldTm)
@@ -75,61 +90,90 @@ namespace Multiplayer
     {
         uint32_t frameId = static_cast<uint32_t>(Multiplayer::GetNetworkTime()->GetHostFrameId());
 
-        AzPhysics::RigidBody* rigidBody = m_physicsRigidBodyComponent->GetRigidBody();
-        rigidBody->SetFrameId(frameId);
-
-        AZ::Transform rewoundTransform;
-        const AZ::Transform& targetTransform = m_transform.Get();
-        const float blendFactor = Multiplayer::GetNetworkTime()->GetHostBlendFactor();
-        if (blendFactor < 1.f)
+        if (AzPhysics::RigidBody* rigidBody = m_physicsRigidBodyComponent->GetRigidBody())
         {
-            // If a blend factor was supplied, interpolate the transform appropriately
-            const AZ::Transform& previousTransform = m_transform.GetPrevious();
-            rewoundTransform.SetRotation(previousTransform.GetRotation().Slerp(targetTransform.GetRotation(), blendFactor));
-            rewoundTransform.SetTranslation(previousTransform.GetTranslation().Lerp(targetTransform.GetTranslation(), blendFactor));
-            rewoundTransform.SetUniformScale(AZ::Lerp(previousTransform.GetUniformScale(), targetTransform.GetUniformScale(), blendFactor));
-        }
-        else
-        {
-            rewoundTransform = m_transform.Get();
-        }
-        const AZ::Transform& physicsTransform = rigidBody->GetTransform();
+            rigidBody->SetFrameId(frameId);
 
-        // Don't call SetLocalPose unless the transforms are actually different
-        const AZ::Vector3 positionDelta = physicsTransform.GetTranslation() - rewoundTransform.GetTranslation();
-        const AZ::Quaternion orientationDelta = physicsTransform.GetRotation() - rewoundTransform.GetRotation();
+            AZ::Transform rewoundTransform;
+            const AZ::Transform& targetTransform = m_transform.Get();
+            const float blendFactor = Multiplayer::GetNetworkTime()->GetHostBlendFactor();
+            if (blendFactor < 1.f)
+            {
+                // If a blend factor was supplied, interpolate the transform appropriately
+                const AZ::Transform& previousTransform = m_transform.GetPrevious();
+                rewoundTransform.SetRotation(previousTransform.GetRotation().Slerp(targetTransform.GetRotation(), blendFactor));
+                rewoundTransform.SetTranslation(previousTransform.GetTranslation().Lerp(targetTransform.GetTranslation(), blendFactor));
+                rewoundTransform.SetUniformScale(AZ::Lerp(previousTransform.GetUniformScale(), targetTransform.GetUniformScale(), blendFactor));
+            }
+            else
+            {
+                rewoundTransform = m_transform.Get();
+            }
+            const AZ::Transform& physicsTransform = rigidBody->GetTransform();
 
-        if ((positionDelta.GetLengthSq() >= bg_RewindPositionTolerance) ||
-            (orientationDelta.GetLengthSq() >= bg_RewindOrientationTolerance))
-        {
-            rigidBody->SetTransform(rewoundTransform);
+            // Don't call SetLocalPose unless the transforms are actually different
+            const AZ::Vector3 positionDelta = physicsTransform.GetTranslation() - rewoundTransform.GetTranslation();
+            const AZ::Quaternion orientationDelta = physicsTransform.GetRotation() - rewoundTransform.GetRotation();
+
+            if ((positionDelta.GetLengthSq() >= bg_RewindPositionTolerance) ||
+                (orientationDelta.GetLengthSq() >= bg_RewindOrientationTolerance))
+            {
+                rigidBody->SetTransform(rewoundTransform);
+            }
         }
     }
 
     NetworkRigidBodyComponentController::NetworkRigidBodyComponentController(NetworkRigidBodyComponent& parent)
         : NetworkRigidBodyComponentControllerBase(parent)
+#if AZ_TRAIT_SERVER
         , m_transformChangedHandler([this](const AZ::Transform&, const AZ::Transform&) { OnTransformUpdate(); })
+#endif
     {
         ;
     }
 
     void NetworkRigidBodyComponentController::OnActivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
     {
-        GetParent().m_physicsRigidBodyComponent->SetKinematic(false);
-        if (IsAuthority())
+        // During activation the simulated bodies are not created yet.
+        // Connect to RigidBodyNotificationBus to listen when it's enabled after creation.
+        Physics::RigidBodyNotificationBus::Handler::BusConnect(GetEntityId());
+    }
+
+    void NetworkRigidBodyComponentController::OnPhysicsEnabled(const AZ::EntityId& entityId)
+    {
+        Physics::RigidBodyNotificationBus::Handler::BusDisconnect();
+
+        m_physicsRigidBodyComponent = Physics::RigidBodyRequestBus::FindFirstHandler(entityId);
+        AZ_Assert(m_physicsRigidBodyComponent, "Physics Rigid Body is required on entity %s", GetEntity()->GetName().c_str());
+
+        m_physicsRigidBodyComponent->SetKinematic(false);
+
+#if AZ_TRAIT_SERVER
+        if (IsNetEntityRoleAuthority())
         {
-            AzPhysics::RigidBody* rigidBody = GetParent().m_physicsRigidBodyComponent->GetRigidBody();
-            rigidBody->SetLinearVelocity(GetLinearVelocity());
-            rigidBody->SetAngularVelocity(GetAngularVelocity());
-            GetEntity()->GetTransform()->BindTransformChangedEventHandler(m_transformChangedHandler);
+            if (AzPhysics::RigidBody* rigidBody = m_physicsRigidBodyComponent->GetRigidBody())
+            {
+                rigidBody->SetLinearVelocity(GetLinearVelocity());
+                rigidBody->SetAngularVelocity(GetAngularVelocity());
+                GetEntity()->GetTransform()->BindTransformChangedEventHandler(m_transformChangedHandler);
+            }
         }
+#endif
     }
 
     void NetworkRigidBodyComponentController::OnDeactivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
     {
-        GetParent().m_physicsRigidBodyComponent->SetKinematic(true);
+#if AZ_TRAIT_SERVER
+        m_transformChangedHandler.Disconnect();
+#endif
+        if (m_physicsRigidBodyComponent)
+        {
+            m_physicsRigidBodyComponent->SetKinematic(true);
+            m_physicsRigidBodyComponent = nullptr;
+        }
     }
 
+#if AZ_TRAIT_SERVER
     void NetworkRigidBodyComponentController::HandleSendApplyImpulse
     (
         [[maybe_unused]] AzNetworking::IConnection* invokingConnection,
@@ -137,14 +181,19 @@ namespace Multiplayer
         const AZ::Vector3& worldPoint
     )
     {
-        AzPhysics::RigidBody* rigidBody = GetParent().m_physicsRigidBodyComponent->GetRigidBody();
-        rigidBody->ApplyLinearImpulseAtWorldPoint(impulse, worldPoint);
+        if (AzPhysics::RigidBody* rigidBody = m_physicsRigidBodyComponent->GetRigidBody())
+        {
+            rigidBody->ApplyLinearImpulseAtWorldPoint(impulse, worldPoint);
+        }
     }
 
     void NetworkRigidBodyComponentController::OnTransformUpdate()
     {
-        AzPhysics::RigidBody* rigidBody = GetParent().m_physicsRigidBodyComponent->GetRigidBody();
-        SetLinearVelocity(rigidBody->GetLinearVelocity());
-        SetAngularVelocity(rigidBody->GetAngularVelocity());
+        if (AzPhysics::RigidBody* rigidBody = m_physicsRigidBodyComponent->GetRigidBody())
+        {
+            SetLinearVelocity(rigidBody->GetLinearVelocity());
+            SetAngularVelocity(rigidBody->GetAngularVelocity());
+        }
     }
+#endif
 } // namespace Multiplayer

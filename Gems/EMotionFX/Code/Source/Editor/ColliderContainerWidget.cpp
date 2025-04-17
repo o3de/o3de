@@ -85,23 +85,23 @@ namespace EMotionFX
             {
                 const Physics::ColliderConfiguration* colliderConfig = static_cast<Physics::ColliderConfiguration*>(parentDataNode->GetInstance(instanceIndex));
 
-                if (elementData->m_nameCrc == AZ_CRC("CollisionLayer", 0x39931633))
+                if (elementData->m_nameCrc == AZ_CRC_CE("CollisionLayer"))
                 {
                     command->SetOldCollisionLayer(colliderConfig->m_collisionLayer);
                 }
-                if (elementData->m_nameCrc == AZ_CRC("CollisionGroupId", 0x84fe4bbe))
+                if (elementData->m_nameCrc == AZ_CRC_CE("CollisionGroupId"))
                 {
                     command->SetOldCollisionGroupId(colliderConfig->m_collisionGroupId);
                 }
-                if (elementData->m_nameCrc == AZ_CRC("Trigger", 0x1a6b0f5d))
+                if (elementData->m_nameCrc == AZ_CRC_CE("Trigger"))
                 {
                     command->SetOldIsTrigger(colliderConfig->m_isTrigger);
                 }
-                if (elementData->m_nameCrc == AZ_CRC("Position", 0x462ce4f5))
+                if (elementData->m_nameCrc == AZ_CRC_CE("Position"))
                 {
                     command->SetOldPosition(colliderConfig->m_position);
                 }
-                if (elementData->m_nameCrc == AZ_CRC("Rotation", 0x297c98f1))
+                if (elementData->m_nameCrc == AZ_CRC_CE("Rotation"))
                 {
                     command->SetOldRotation(colliderConfig->m_rotation);
                 }
@@ -109,7 +109,7 @@ namespace EMotionFX
                 {
                     command->SetOldMaterialSlots(colliderConfig->m_materialSlots);
                 }
-                if (elementData->m_nameCrc == AZ_CRC("ColliderTag", 0x5e2963ad))
+                if (elementData->m_nameCrc == AZ_CRC_CE("ColliderTag"))
                 {
                     command->SetOldTag(colliderConfig->m_tag);
                 }
@@ -118,7 +118,7 @@ namespace EMotionFX
             else if (serializeContext->CanDowncast(classData->m_typeId, azrtti_typeid<Physics::BoxShapeConfiguration>(), classData->m_azRtti, nullptr))
             {
                 const Physics::BoxShapeConfiguration* boxShapeConfig = static_cast<Physics::BoxShapeConfiguration*>(parentDataNode->GetInstance(instanceIndex));
-                if (elementData->m_nameCrc == AZ_CRC("Configuration", 0xa5e2a5d7))
+                if (elementData->m_nameCrc == AZ_CRC_CE("Configuration"))
                 {
                     command->SetOldDimensions(boxShapeConfig->m_dimensions);
                 }
@@ -127,11 +127,11 @@ namespace EMotionFX
             else if (serializeContext->CanDowncast(classData->m_typeId, azrtti_typeid<Physics::CapsuleShapeConfiguration>(), classData->m_azRtti, nullptr))
             {
                 const Physics::CapsuleShapeConfiguration* capsuleShapeConfig = static_cast<Physics::CapsuleShapeConfiguration*>(parentDataNode->GetInstance(instanceIndex));
-                if (elementData->m_nameCrc == AZ_CRC("Radius", 0x3b7c6e5a))
+                if (elementData->m_nameCrc == AZ_CRC_CE("Radius"))
                 {
                     command->SetOldRadius(capsuleShapeConfig->m_radius);
                 }
-                if (elementData->m_nameCrc == AZ_CRC("Height", 0xf54de50f))
+                if (elementData->m_nameCrc == AZ_CRC_CE("Height"))
                 {
                     command->SetOldHeight(capsuleShapeConfig->m_height);
                 }
@@ -140,7 +140,7 @@ namespace EMotionFX
             else if (serializeContext->CanDowncast(classData->m_typeId, azrtti_typeid<Physics::SphereShapeConfiguration>(), classData->m_azRtti, nullptr))
             {
                 const Physics::SphereShapeConfiguration* sphereShapeConfig = static_cast<Physics::SphereShapeConfiguration*>(parentDataNode->GetInstance(instanceIndex));
-                if (elementData->m_nameCrc == AZ_CRC("Radius", 0x3b7c6e5a))
+                if (elementData->m_nameCrc == AZ_CRC_CE("Radius"))
                 {
                     command->SetOldRadius(sphereShapeConfig->m_radius);
                 }
@@ -188,23 +188,23 @@ namespace EMotionFX
             {
                 const Physics::ColliderConfiguration* colliderConfig = static_cast<Physics::ColliderConfiguration*>(parentDataNode->GetInstance(instanceIndex));
 
-                if (elementData->m_nameCrc == AZ_CRC("CollisionLayer", 0x39931633))
+                if (elementData->m_nameCrc == AZ_CRC_CE("CollisionLayer"))
                 {
                     command->SetCollisionLayer(colliderConfig->m_collisionLayer);
                 }
-                if (elementData->m_nameCrc == AZ_CRC("CollisionGroupId", 0x84fe4bbe))
+                if (elementData->m_nameCrc == AZ_CRC_CE("CollisionGroupId"))
                 {
                     command->SetCollisionGroupId(colliderConfig->m_collisionGroupId);
                 }
-                if (elementData->m_nameCrc == AZ_CRC("Trigger", 0x1a6b0f5d))
+                if (elementData->m_nameCrc == AZ_CRC_CE("Trigger"))
                 {
                     command->SetIsTrigger(colliderConfig->m_isTrigger);
                 }
-                if (elementData->m_nameCrc == AZ_CRC("Position", 0x462ce4f5))
+                if (elementData->m_nameCrc == AZ_CRC_CE("Position"))
                 {
                     command->SetPosition(colliderConfig->m_position);
                 }
-                if (elementData->m_nameCrc == AZ_CRC("Rotation", 0x297c98f1))
+                if (elementData->m_nameCrc == AZ_CRC_CE("Rotation"))
                 {
                     command->SetRotation(colliderConfig->m_rotation);
                 }
@@ -212,7 +212,7 @@ namespace EMotionFX
                 {
                     command->SetMaterialSlots(colliderConfig->m_materialSlots);
                 }
-                if (elementData->m_nameCrc == AZ_CRC("ColliderTag", 0x5e2963ad))
+                if (elementData->m_nameCrc == AZ_CRC_CE("ColliderTag"))
                 {
                     command->SetTag(colliderConfig->m_tag);
                     CommandSimulatedObjectHelpers::ReplaceTag(actor, colliderType, /*oldTag=*/command->GetOldTag().value(), /*newTag=*/colliderConfig->m_tag, m_commandGroup);
@@ -222,7 +222,7 @@ namespace EMotionFX
             else if (serializeContext->CanDowncast(classData->m_typeId, azrtti_typeid<Physics::BoxShapeConfiguration>(), classData->m_azRtti, nullptr))
             {
                 const Physics::BoxShapeConfiguration* boxShapeConfig = static_cast<Physics::BoxShapeConfiguration*>(parentDataNode->GetInstance(instanceIndex));
-                if (elementData->m_nameCrc == AZ_CRC("Configuration", 0xa5e2a5d7))
+                if (elementData->m_nameCrc == AZ_CRC_CE("Configuration"))
                 {
                     command->SetDimensions(boxShapeConfig->m_dimensions);
                 }
@@ -231,11 +231,11 @@ namespace EMotionFX
             else if (serializeContext->CanDowncast(classData->m_typeId, azrtti_typeid<Physics::CapsuleShapeConfiguration>(), classData->m_azRtti, nullptr))
             {
                 const Physics::CapsuleShapeConfiguration* capsuleShapeConfig = static_cast<Physics::CapsuleShapeConfiguration*>(parentDataNode->GetInstance(instanceIndex));
-                if (elementData->m_nameCrc == AZ_CRC("Radius", 0x3b7c6e5a))
+                if (elementData->m_nameCrc == AZ_CRC_CE("Radius"))
                 {
                     command->SetRadius(capsuleShapeConfig->m_radius);
                 }
-                if (elementData->m_nameCrc == AZ_CRC("Height", 0xf54de50f))
+                if (elementData->m_nameCrc == AZ_CRC_CE("Height"))
                 {
                     command->SetHeight(capsuleShapeConfig->m_height);
                 }
@@ -244,7 +244,7 @@ namespace EMotionFX
             else if (serializeContext->CanDowncast(classData->m_typeId, azrtti_typeid<Physics::SphereShapeConfiguration>(), classData->m_azRtti, nullptr))
             {
                 const Physics::SphereShapeConfiguration* sphereShapeConfig = static_cast<Physics::SphereShapeConfiguration*>(parentDataNode->GetInstance(instanceIndex));
-                if (elementData->m_nameCrc == AZ_CRC("Radius", 0x3b7c6e5a))
+                if (elementData->m_nameCrc == AZ_CRC_CE("Radius"))
                 {
                     command->SetRadius(sphereShapeConfig->m_radius);
                 }
@@ -256,7 +256,7 @@ namespace EMotionFX
         m_commandGroup.Clear();
     }
 
-    ///////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     ColliderWidget::ColliderWidget(QIcon* icon, QWidget* parent, AZ::SerializeContext* serializeContext)
         : AzQtComponents::Card(parent)
@@ -326,8 +326,19 @@ namespace EMotionFX
         {
             return;
         }
+        setVisible(HasDisplayedNodes());
+    }
 
-        m_editor->InvalidateValues();
+    void ColliderWidget::SetFilterString(QString filterString)
+    {
+        m_editor->SetFilterString(filterString);
+
+        Update();
+    }
+
+    bool ColliderWidget::HasDisplayedNodes() const
+    {
+        return m_editor->HasDisplayedNodes();
     }
 
     void ColliderWidget::OnCardContextMenu(const QPoint& position)
@@ -469,7 +480,7 @@ namespace EMotionFX
 
     void AddColliderButton::OnCopyColliderActionTriggered()
     {
-        AZ::Outcome<const QModelIndexList&> selectedRowIndicesOutcome;
+        AZ::Outcome<QModelIndexList> selectedRowIndicesOutcome;
         SkeletonOutlinerRequestBus::BroadcastResult(selectedRowIndicesOutcome, &SkeletonOutlinerRequests::GetSelectedRowIndices);
         if (!selectedRowIndicesOutcome.IsSuccess())
         {
@@ -506,7 +517,7 @@ namespace EMotionFX
         return colliderType.ToString<AZStd::string>();
     }
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Align the layout spacing with the entity inspector.
     int ColliderContainerWidget::s_layoutSpacing = 13;
@@ -515,10 +526,10 @@ namespace EMotionFX
         : QWidget(parent)
         , m_colliderIcon(colliderIcon)
     {
-        m_layout = new QVBoxLayout(this);
-        m_layout->setAlignment(Qt::AlignTop);
+        m_layout = new QVBoxLayout();
         m_layout->setMargin(0);
         m_layout->setSpacing(s_layoutSpacing);
+        setLayout(m_layout);
 
         m_commandCallback = new ColliderEditedCallback(this, /*executePreUndo*/false);
         CommandSystem::GetCommandManager()->RegisterCommandCallback(CommandAdjustCollider::s_commandName, m_commandCallback);
@@ -538,6 +549,8 @@ namespace EMotionFX
         const size_t numColliders = colliders.size();
         size_t numAvailableColliderWidgets = m_colliderWidgets.size();
 
+        setVisible(numColliders > 0);
+
         // Create new collider widgets in case we don't have enough.
         if (numColliders > numAvailableColliderWidgets)
         {
@@ -549,11 +562,11 @@ namespace EMotionFX
                 connect(colliderWidget, &ColliderWidget::CopyCollider, this, &ColliderContainerWidget::CopyCollider);
                 connect(colliderWidget, &ColliderWidget::PasteCollider, this, [this](size_t index) { PasteCollider(index, true); } );
                 m_colliderWidgets.emplace_back(colliderWidget);
-                m_layout->addWidget(colliderWidget, 0, Qt::AlignTop);
+                m_layout->addWidget(colliderWidget, 0);
             }
             numAvailableColliderWidgets = m_colliderWidgets.size();
         }
-        AZ_Assert(numAvailableColliderWidgets >= numColliders, "Not enough collider widgets available. Something went one with creating new ones.");
+        AZ_Assert(numAvailableColliderWidgets >= numColliders, "Not enough collider widgets available. Something went wrong with creating new ones.");
 
         for (size_t i = 0; i < numColliders; ++i)
         {
@@ -582,6 +595,25 @@ namespace EMotionFX
     void ColliderContainerWidget::Reset()
     {
         Update(nullptr, nullptr, PhysicsSetup::ColliderConfigType::Unknown, AzPhysics::ShapeColliderPairList(), nullptr);
+    }
+
+    void ColliderContainerWidget::SetFilterString(QString filterString)
+    {
+        for (auto* widget : m_colliderWidgets)
+        {
+            widget->SetFilterString(filterString);
+        }
+    }
+
+    bool ColliderContainerWidget::HasVisibleColliders() const
+    {
+        return AZStd::any_of(
+                   m_colliderWidgets.begin(),
+                   m_colliderWidgets.end(),
+                   [](auto w)
+                   {
+                       return !w->isHidden();
+                   });
     }
 
     void ColliderContainerWidget::contextMenuEvent(QContextMenuEvent* event)
@@ -619,12 +651,7 @@ namespace EMotionFX
         event->accept();
     }
 
-    QSize ColliderContainerWidget::sizeHint() const
-    {
-        return QWidget::sizeHint() + QSize(0, s_layoutSpacing);
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     ColliderContainerWidget::ColliderEditedCallback::ColliderEditedCallback(ColliderContainerWidget* parent, bool executePreUndo, bool executePreCommand)
         : MCore::Command::Callback(executePreUndo, executePreCommand)

@@ -27,7 +27,7 @@ namespace AZ
 
         public:
             AZ_RTTI(HairParentPass, "80C7E869-2513-4201-8C1E-D2E39DDE1244", Base);
-            AZ_CLASS_ALLOCATOR(HairParentPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(HairParentPass, SystemAllocator);
 
             virtual ~HairParentPass();
             static RPI::Ptr<HairParentPass> Create(const RPI::PassDescriptor& descriptor);

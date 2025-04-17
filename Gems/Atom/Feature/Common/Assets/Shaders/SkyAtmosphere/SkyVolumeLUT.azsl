@@ -1,0 +1,104 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+ // Based on https://github.com/sebh/UnrealEngineSkyAtmosphere by Sébastien Hillaire
+
+#define ENABLE_ATMOSPHERE_SHADOWS 0
+#include <viewsrg_all.srgi>
+#include <Atom/Features/SrgSemantics.azsli>
+#include <SkyAtmosphereCommon.azsli>
+
+float4 GetSkyVolumeAtPosition(uint3 position)
+{
+    AtmosphereParameters Atmosphere = GetAtmosphereParameters();
+
+    const float worldScale = 0.001f;
+    const float lutSize = float(SKY_VOLUME_SLICE_COUNT - 1);
+    float2 uv = float2(position.x, position.y) / lutSize;
+    float2 ndcPos = float2(uv.x , 1.0 - uv.y) * 2.0 - 1.0;
+    float4 projectedPos = float4(ndcPos, 0.0, 1.0);
+    float4 positionWS = mul(ViewSrg::m_viewProjectionInverseMatrix, projectedPos);
+    float3 viewToPosition =  positionWS.xyz / positionWS.w - ViewSrg::m_worldPosition;
+    float3 worldDir = normalize(viewToPosition);
+
+    // Atmosphere.PlanetOrigin is in KM already
+    // cameraPlanetPosKm is relative to the planet origin
+    float3 cameraPlanetPosKm = ViewSrg::m_worldPosition * worldScale - Atmosphere.PlanetOrigin;
+
+    float slice = (float(position.z) + 0.5f) / SKY_VOLUME_SLICE_COUNT;
+    slice *= slice;    // squared distribution
+    slice *= SKY_VOLUME_SLICE_COUNT;
+
+    float froxelDepthKm = AerialPerspectiveSliceToDepth(slice);
+
+    // get position relative to planet surface
+    float3 froxelPosition = cameraPlanetPosKm + froxelDepthKm * worldDir;
+
+    // if the froxel is under the ground, make sure to offset it out on the ground.
+    float froxelHeightKm = length(froxelPosition);
+    if (froxelHeightKm <= (Atmosphere.BottomRadius + PLANET_RADIUS_OFFSET_KM))
+    {
+        // Apply a position offset to make sure no artefact are visible close to the earth boundaries for large voxel.
+        froxelHeightKm = Atmosphere.BottomRadius + PLANET_RADIUS_OFFSET_KM + 0.001f;
+        froxelPosition = normalize(froxelPosition) * froxelHeightKm;
+        worldDir = normalize(froxelPosition - cameraPlanetPosKm);
+        froxelDepthKm = length(froxelPosition - cameraPlanetPosKm);
+    }
+
+    float maxTraceDepthKm = froxelDepthKm;
+    float cameraHeightKm = length(cameraPlanetPosKm);
+    if (cameraHeightKm > Atmosphere.TopRadius)
+    {
+        // move ray marching start up to top atmosphere.
+        float distanceToAtmosphereKm = 0.0;
+        const float largeDepth = cameraHeightKm + Atmosphere.TopRadius + SKY_VOLUME_KM_PER_SLICE * SKY_VOLUME_SLICE_COUNT;
+        if (!MoveToAtmosphere(Atmosphere, cameraPlanetPosKm, distanceToAtmosphereKm, worldDir, largeDepth))
+        {
+            // ray is not intersecting the atmosphere
+            return float4(0.0, 0.0, 0.0, 1.0);
+        }
+
+        // Avoid changing trace depth for small atmospheres 
+        // eventually we should adjust the volume based on the frustum and atmosphere size
+        if (Atmosphere.TopRadius > SKY_VOLUME_KM_PER_SLICE * SKY_VOLUME_SLICE_COUNT)
+        {
+            if (maxTraceDepthKm < distanceToAtmosphereKm)
+            {
+                // maxTraceDepth for this voxel is not within earth atmosphere
+                return float4(0.0, 0.0, 0.0, 1.0);
+            }
+
+            // world position has been moved to the atmosphere boundary: we need to reduce maxTraceDepth accordingly.
+            maxTraceDepthKm = max(0.0, maxTraceDepthKm - distanceToAtmosphereKm);
+        }
+    }
+
+    const bool ground = false;
+
+    // setting variableSampleCount false may improve performance, but atmosphere will look thinner 
+    // so you may need to increase sampleCountIni
+    const float sampleCountIni = max(1.0, float(position.z + 1.0) * 2.0);
+    const bool variableSampleCount = true;
+    const bool mieRayPhase = true;
+    const float2 screenCoords = float2(0,0); // unused
+    SingleScatteringResult ss = IntegrateScatteredLuminance(screenCoords, cameraPlanetPosKm, worldDir, PassSrg::m_constants.m_sunDirection, Atmosphere, ground, sampleCountIni, froxelDepthKm, variableSampleCount, mieRayPhase, maxTraceDepthKm);
+
+    const float transmittance = dot(ss.Transmittance, float3(1.0 / 3.0, 1.0 / 3.0, 1.0 / 3.0));
+    return float4(ss.L, 1.0 - transmittance);
+}
+
+// total thread count is based on the "ThreadCountX/Y/Z" in the SkyVolumeLUT.pass file
+// and the number of threads per group specified in numthreads() below.
+// given a volume texture size is 32x32x32, with 1 thread per froxel
+// the following values are based on intention to improve locality when accessing 
+// the transmission LUT
+[numthreads(1, 8, 32)]
+void SkyVolumeLUTCS(uint3 dispatchID : SV_DispatchThreadID)
+{
+    PassSrg::m_skyVolumeLUTOutput[dispatchID] = GetSkyVolumeAtPosition(dispatchID); 
+}

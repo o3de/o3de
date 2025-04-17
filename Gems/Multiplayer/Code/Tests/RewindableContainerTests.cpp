@@ -18,7 +18,7 @@
 namespace UnitTest
 {
     class RewindableContainerTests
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         Multiplayer::NetworkTime m_networkTime;

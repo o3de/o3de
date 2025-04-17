@@ -9,25 +9,28 @@
 
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/fixed_string.h>
+#include <AzCore/Serialization/Locale.h>
 
 #include <ctype.h>
 #include <wctype.h>
+#include <locale>
 
 //////////////////////////////////////////////////////////////////////////
 // utf8 cpp lib
 #include <AzCore/std/string/utf8/unchecked.h>
 //////////////////////////////////////////////////////////////////////////
 
-# define AZSTD_USE_OLD_RW_STL
 
-#if !defined(AZSTD_USE_OLD_RW_STL)
-#   include <locale>
-#endif
 
 namespace AZStd
 {
     namespace Internal
     {
+        inline bool IsValidUtf8(const char* str, size_t length)
+        {
+            return Utf8::is_valid(str, str + length);
+        }
+
         template<size_t Size = sizeof(wchar_t)>
         struct WCharTPlatformConverter
         {
@@ -84,28 +87,43 @@ namespace AZStd
             }
 
             template<class Allocator>
-            static inline void to_wstring(AZStd::basic_string<wstring::value_type, wstring::traits_type, Allocator>& dest, AZStd::string_view src)
+            static inline bool to_wstring(AZStd::basic_string<wstring::value_type, wstring::traits_type, Allocator>& dest, AZStd::string_view src)
             {
+                if (!IsValidUtf8(src.begin(), src.size()))
+                {
+                    return false;
+                }
+
                 if constexpr (Size == 2)
                 {
                     Utf8::Unchecked::utf8to16(src.begin(), src.end(), AZStd::back_inserter(dest), dest.max_size());
+                    return true;
                 }
                 else if constexpr (Size == 4)
                 {
                     Utf8::Unchecked::utf8to32(src.begin(), src.end(), AZStd::back_inserter(dest), dest.max_size());
+                    return true;
                 }
             }
 
+            // note that this template is only ever instantiated on size 2 and 4 so adding anything after the if statements will result in unreachable code.
             template<size_t MaxElementCount>
-            static inline void to_wstring(AZStd::basic_fixed_string<wstring::value_type, MaxElementCount, wstring::traits_type>& dest, AZStd::string_view src)
+            static inline bool to_wstring(AZStd::basic_fixed_string<wstring::value_type, MaxElementCount, wstring::traits_type>& dest, AZStd::string_view src)
             {
+                if (!IsValidUtf8(src.begin(), src.size()))
+                {
+                    return false;
+                }
+
                 if constexpr (Size == 2)
                 {
                     Utf8::Unchecked::utf8to16(src.begin(), src.end(), AZStd::back_inserter(dest), dest.max_size());
+                    return true;
                 }
                 else if constexpr (Size == 4)
                 {
                     Utf8::Unchecked::utf8to32(src.begin(), src.end(), AZStd::back_inserter(dest), dest.max_size());
+                    return true;
                 }
             }
 
@@ -187,6 +205,8 @@ namespace AZStd
     template<class Allocator>
     float stof(const AZStd::basic_string<AZStd::string::value_type, AZStd::string::traits_type, Allocator>& str, AZStd::size_t* idx = 0)
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale; // invariant locale for converting strings to values.
+
         char* ptr;
         const char* sChar = str.c_str();
         float result = (float)strtod(sChar, &ptr);
@@ -199,6 +219,7 @@ namespace AZStd
     template<class Allocator>
     double stod(const AZStd::basic_string<AZStd::string::value_type, AZStd::string::traits_type, Allocator>& str, AZStd::size_t* idx = 0)
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale; // invariant locale for converting strings to values.
         char* ptr;
         const char* sChar = str.c_str();
         double result = strtod(sChar, &ptr);
@@ -208,17 +229,6 @@ namespace AZStd
         }
         return result;
     }
-    /*
-    template<class Allocator>
-    long double stold(const AZStd::basic_string<string::value_type,string::traits_type,Allocator>& str, size_t *idx = 0)
-    {
-        char* ptr;
-        const char * sChar = str.c_str();
-        long double result = strtold(sChar,&ptr);
-        if(idx)
-            *idx = ptr - sChar;
-        return result;
-    }*/
 
     // Standard is messy when it comes to custom string. Let's say we have a string with different allocator ???
     // so we have our (custom) implementations here and wrappers so we are compatible with the standard.
@@ -436,48 +446,43 @@ namespace AZStd
     inline AZStd::wstring to_wstring(long double val)           { AZStd::wstring wstr; to_wstring(wstr, val); return wstr; }
 
     template<class Allocator>
-    void to_wstring(AZStd::basic_string<wstring::value_type, wstring::traits_type, Allocator>& dest, AZStd::string_view src)
+    bool to_wstring(AZStd::basic_string<wstring::value_type, wstring::traits_type, Allocator>& dest, AZStd::string_view src)
     {
         dest.clear();
+        if (!Internal::IsValidUtf8(src.begin(), src.size()))
+        {
+            return false;
+        }
         Internal::WCharTPlatformConverter<>::to_wstring(dest, src);
+        return true;
     }
 
     template<size_t MaxElementCount>
-    void to_wstring(AZStd::basic_fixed_string<wstring::value_type, MaxElementCount, wstring::traits_type>& dest, AZStd::string_view src)
+    bool to_wstring(AZStd::basic_fixed_string<wstring::value_type, MaxElementCount, wstring::traits_type>& dest, AZStd::string_view src)
     {
         dest.clear();
+        if (!Internal::IsValidUtf8(src.begin(), src.size()))
+        {
+            return false;
+        }
         Internal::WCharTPlatformConverter<>::to_wstring(dest, src);
+        return true;
     }
 
-    inline void to_wstring(wchar_t* dest, size_t destSize, AZStd::string_view src)
+    inline bool to_wstring(wchar_t* dest, size_t destSize, AZStd::string_view src)
     {
+        if (!Internal::IsValidUtf8(src.begin(), src.size()))
+        {
+            return false;
+        }
         wchar_t* endWStr = Internal::WCharTPlatformConverter<>::to_wstring(dest, destSize, src);
         if (endWStr < (dest + destSize))
         {
             *endWStr = '\0'; // null terminator
         }
+        return true;
     }
 
-    // Convert a range of chars to lower case
-#if defined(AZSTD_USE_OLD_RW_STL)
-    template<class Iterator>
-    void to_lower(Iterator first, Iterator last)
-    {
-        for (; first != last; ++first)
-        {
-            *first = static_cast<typename AZStd::iterator_traits<Iterator>::value_type>(tolower(*first));
-        }
-    }
-
-    // Convert a range of chars to upper case
-    template<class Iterator>
-    void to_upper(Iterator first, Iterator last)
-    {
-        for (; first != last; ++first)
-        {
-            *first = static_cast<typename AZStd::iterator_traits<Iterator>::value_type>(toupper(*first));
-        }
-    }
 
     AZ_FORCE_INLINE size_t str_transform(char* destination, const char* source, size_t count)
     {
@@ -489,37 +494,49 @@ namespace AZStd
         return wcsxfrm(destination, source, count);
     }
 
-    // C standard requires that is_alpha and all the other below functions should be passed a positive integer
-    // (it will error if a negative value is passed in such as -128), which is what happens if you pass a char
-    // from the extended character set, without first converting it to an unsigned char, because it will
-    // automatically convert it to an int (-128) instead of to its ascii value (127), which is what these functions expect.
-    AZ_FORCE_INLINE bool is_alnum(char ch)          { return isalnum((unsigned char)ch) != 0; }
-    AZ_FORCE_INLINE bool is_alpha(char ch)          { return isalpha((unsigned char)ch) != 0; }
-    AZ_FORCE_INLINE bool is_cntrl(char ch)          { return iscntrl((unsigned char)ch) != 0; }
-    AZ_FORCE_INLINE bool is_digit(char ch)          { return isdigit((unsigned char)ch) != 0; }
-    AZ_FORCE_INLINE bool is_graph(char ch)          { return isgraph((unsigned char)ch) != 0; }
-    AZ_FORCE_INLINE bool is_lower(char ch)          { return islower((unsigned char)ch) != 0; }
-    AZ_FORCE_INLINE bool is_print(char ch)          { return isprint((unsigned char)ch) != 0; }
-    AZ_FORCE_INLINE bool is_punct(char ch)          { return ispunct((unsigned char)ch) != 0; }
-    AZ_FORCE_INLINE bool is_space(char ch)          { return isspace((unsigned char)ch) != 0; }
-    AZ_FORCE_INLINE bool is_upper(char ch)          { return isupper((unsigned char)ch) != 0; }
-    AZ_FORCE_INLINE bool is_xdigit(char ch)         { return isxdigit((unsigned char)ch) != 0; }
+    // Use the C++ standard character classification functions and avoid the issue with negative integer values
+    template<class CharT> bool isalnum(CharT ch, const std::locale& loc = {})  { return std::isalnum(ch, loc); }
+    template<class CharT> bool isalpha(CharT ch, const std::locale& loc = {})  { return std::isalpha(ch, loc); }
+    template<class CharT> bool isblank(CharT ch, const std::locale& loc = {})  { return std::isalnum(ch, loc); }
+    template<class CharT> bool iscntrl(CharT ch, const std::locale& loc = {})  { return std::iscntrl(ch, loc); }
+    template<class CharT> bool isdigit(CharT ch, const std::locale& loc = {})  { return std::isdigit(ch, loc); }
+    template<class CharT> bool isgraph(CharT ch, const std::locale& loc = {})  { return std::isgraph(ch, loc); }
+    template<class CharT> bool islower(CharT ch, const std::locale& loc = {})  { return std::islower(ch, loc); }
+    template<class CharT> bool isprint(CharT ch, const std::locale& loc = {})  { return std::isprint(ch, loc); }
+    template<class CharT> bool ispunct(CharT ch, const std::locale& loc = {})  { return std::ispunct(ch, loc); }
+    template<class CharT> bool isspace(CharT ch, const std::locale& loc = {})  { return std::isspace(ch, loc); }
+    template<class CharT> bool isupper(CharT ch, const std::locale& loc = {})  { return std::isupper(ch, loc); }
+    template<class CharT> bool isxdigit(CharT ch, const std::locale& loc = {}) { return std::isxdigit(ch, loc); }
 
-    AZ_FORCE_INLINE bool is_alnum(wchar_t ch)       { return iswalnum(ch) != 0; }
-    AZ_FORCE_INLINE bool is_alpha(wchar_t ch)       { return iswalpha(ch) != 0; }
-    AZ_FORCE_INLINE bool is_cntrl(wchar_t ch)       { return iswcntrl(ch) != 0; }
-    AZ_FORCE_INLINE bool is_digit(wchar_t ch)       { return iswdigit(ch) != 0; }
-    AZ_FORCE_INLINE bool is_graph(wchar_t ch)       { return iswgraph(ch) != 0; }
-    AZ_FORCE_INLINE bool is_lower(wchar_t ch)       { return iswlower(ch) != 0; }
-    AZ_FORCE_INLINE bool is_print(wchar_t ch)       { return iswprint(ch) != 0; }
-    AZ_FORCE_INLINE bool is_punct(wchar_t ch)       { return iswpunct(ch) != 0; }
-    AZ_FORCE_INLINE bool is_space(wchar_t ch)       { return iswspace(ch) != 0; }
-    AZ_FORCE_INLINE bool is_upper(wchar_t ch)       { return iswupper(ch) != 0; }
-    AZ_FORCE_INLINE bool is_xdigit(wchar_t ch)      { return iswxdigit(ch) != 0; }
+    template<class CharT> bool is_alnum(CharT ch, const std::locale& loc = {})  { return std::isalnum(ch, loc); }
+    template<class CharT> bool is_alpha(CharT ch, const std::locale& loc = {})  { return std::isalpha(ch, loc); }
+    template<class CharT> bool is_blank(CharT ch, const std::locale& loc = {})  { return std::isalnum(ch, loc); }
+    template<class CharT> bool is_cntrl(CharT ch, const std::locale& loc = {})  { return std::iscntrl(ch, loc); }
+    template<class CharT> bool is_digit(CharT ch, const std::locale& loc = {})  { return std::isdigit(ch, loc); }
+    template<class CharT> bool is_graph(CharT ch, const std::locale& loc = {})  { return std::isgraph(ch, loc); }
+    template<class CharT> bool is_lower(CharT ch, const std::locale& loc = {})  { return std::islower(ch, loc); }
+    template<class CharT> bool is_print(CharT ch, const std::locale& loc = {})  { return std::isprint(ch, loc); }
+    template<class CharT> bool is_punct(CharT ch, const std::locale& loc = {})  { return std::ispunct(ch, loc); }
+    template<class CharT> bool is_space(CharT ch, const std::locale& loc = {})  { return std::isspace(ch, loc); }
+    template<class CharT> bool is_upper(CharT ch, const std::locale& loc = {})  { return std::isupper(ch, loc); }
+    template<class CharT> bool is_xdigit(CharT ch, const std::locale& loc = {}) { return std::isxdigit(ch, loc); }
+    // Wrap the std::locale tolower and toupper functions with a default std::locale argument
+    template<class charT>
+    charT tolower(charT ch, const std::locale& loc = {})
+    {
+        return std::tolower(ch , loc);
+    }
 
-#else // default standard implementation
+    template<class charT>
+    charT toupper(charT ch, const std::locale& loc = {})
+    {
+        return std::toupper(ch , loc);
+    }
+
+
+    // Convert a range of chars to lower case
     template<class Iterator>
-    void to_lower(Iterator first, Iterator last, const std::locale& loc = std::locale())
+    void to_lower(Iterator first, Iterator last, const std::locale& loc = {})
     {
         for (; first != last; ++first)
         {
@@ -527,15 +544,29 @@ namespace AZStd
         }
     }
 
+    template<class Range>
+    auto to_lower(Range&& r, const std::locale& loc = {})
+        -> enable_if_t<ranges::range<Range>
+            && indirectly_copyable<ranges::iterator_t<Range>, ranges::iterator_t<Range>>>
+    {
+        to_lower(ranges::begin(r), ranges::end(r), loc);
+    }
+
     // Convert a range of chars to upper case
     template<class Iterator>
-    void to_upper(Iterator first, Iterator last, const std::locale& loc = std::locale())
+    void to_upper(Iterator first, Iterator last, const std::locale& loc = {})
     {
         for (; first != last; ++first)
         {
             *first = std::toupper(*first, loc);
         }
     }
-#endif
-    // Add case insensitive compares
+
+    template<class Range>
+    auto to_upper(Range&& r, const std::locale& loc = {})
+        -> enable_if_t<ranges::range<Range>
+            && indirectly_copyable<ranges::iterator_t<Range>, ranges::iterator_t<Range>>>
+    {
+        to_upper(ranges::begin(r), ranges::end(r), loc);
+    }
 }

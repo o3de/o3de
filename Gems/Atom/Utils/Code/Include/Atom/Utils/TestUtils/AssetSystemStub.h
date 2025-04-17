@@ -70,5 +70,6 @@ namespace UnitTest
         bool IsAssetPlatformEnabled(const char* platform) override;
         int GetPendingAssetsForPlatform(const char* platform) override;
         bool GetAssetsProducedBySourceUUID(const AZ::Uuid& sourceUuid, AZStd::vector<AZ::Data::AssetInfo>& productsAssetInfo) override;
+        bool ClearFingerprintForAsset([[maybe_unused]] const AZStd::string& sourcePath) override { return false; }
     };
 } // namespace UnitTest

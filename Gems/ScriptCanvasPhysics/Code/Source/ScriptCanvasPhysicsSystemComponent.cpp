@@ -11,9 +11,8 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 
 #include "ScriptCanvasPhysicsSystemComponent.h"
-#include <AutoGenFunctionRegistry.generated.h>
 
-REGISTER_SCRIPTCANVAS_AUTOGEN_FUNCTION(ScriptCanvasPhysicsStatic);
+#include "World.h"
 
 namespace ScriptCanvasPhysics
 {
@@ -28,7 +27,6 @@ namespace ScriptCanvasPhysics
             {
                 ec->Class<ScriptCanvasPhysicsSystemComponent>("ScriptCanvasPhysics", "Exposes legacy physics features to scripting through the Behavior Context to Lua and Script Canvas.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                     ->Attribute(AZ::Script::Attributes::Category, "Physics")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
@@ -39,17 +37,17 @@ namespace ScriptCanvasPhysics
 
     void ScriptCanvasPhysicsSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("ScriptCanvasPhysicsService", 0x4686eefd));
+        provided.push_back(AZ_CRC_CE("ScriptCanvasPhysicsService"));
     }
 
     void ScriptCanvasPhysicsSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("ScriptCanvasPhysicsService", 0x4686eefd));
+        incompatible.push_back(AZ_CRC_CE("ScriptCanvasPhysicsService"));
     }
 
     void ScriptCanvasPhysicsSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("LmbrCentralService", 0xc3a02410));
+        required.push_back(AZ_CRC_CE("LmbrCentralService"));
     }
 
     void ScriptCanvasPhysicsSystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)

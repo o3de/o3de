@@ -21,6 +21,8 @@
 #include <AzCore/std/parallel/binary_semaphore.h>
 #include <AzCore/std/parallel/thread.h>
 
+// #define JOBMANAGER_ENABLE_STATS
+
 namespace AZ
 {
     class Job;
@@ -86,7 +88,7 @@ namespace AZ
 
             struct ThreadInfo
             {
-                AZ_CLASS_ALLOCATOR(ThreadInfo, ThreadPoolAllocator, 0)
+                AZ_CLASS_ALLOCATOR(ThreadInfo, ThreadPoolAllocator);
 
                 AZStd::thread::id m_threadId;
                 bool m_isWorker = false;
@@ -105,8 +107,8 @@ namespace AZ
                 unsigned int m_jobsForked = 0;
                 unsigned int m_jobsDone = 0;
                 unsigned int m_jobsStolen = 0;
-                u64 m_jobTime = 0;
-                u64 m_stealTime = 0;
+                AZStd::chrono::milliseconds m_jobTime;
+                AZStd::chrono::milliseconds m_stealTime;
 #endif
             };
             using ThreadList = AZStd::vector<ThreadInfo*>;

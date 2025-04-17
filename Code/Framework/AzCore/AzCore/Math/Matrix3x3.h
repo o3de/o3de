@@ -37,11 +37,11 @@ namespace AZ
 
         //! Default constructor does not initialize the matrix.
         Matrix3x3() = default;
+        Matrix3x3(const Matrix3x3& rhs) = default;
+
+        Matrix3x3(Simd::Vec3::FloatArgType row0, Simd::Vec3::FloatArgType row1, Simd::Vec3::FloatArgType row2);
 
         explicit Matrix3x3(const Quaternion& quaternion);
-
-        Matrix3x3(const Matrix3x3& rhs);
-        Matrix3x3(Simd::Vec3::FloatArgType row0, Simd::Vec3::FloatArgType row1, Simd::Vec3::FloatArgType row2);
 
         static Matrix3x3 CreateIdentity();
         static Matrix3x3 CreateZero();
@@ -89,6 +89,22 @@ namespace AZ
         //! The floats need only be 4 byte aligned, 16 byte alignment is not required.
         void StoreToRowMajorFloat9(float* values) const;
 
+        //! Stores the matrix into to an array of 2 float4 and 1 float3.
+        //! Useful for GPU constant buffer packing rules, which pack a float3x3 as such:
+        //!    [0, 0], [0, 1], [0, 2], <padding>,
+        //!    [1, 0], [1, 1], [1, 2], <padding>,
+        //!    [2, 0], [2, 1], [2, 2]
+        //! Note that the last row is stored in 3 floats, not 4.
+        void StoreToRowMajorFloat11(float* values) const;
+
+        //! Stores the matrix into to an array of 2 float4 and 1 float3.
+        //! Useful for GPU constant buffer packing rules, which pack a float3x3 as such:
+        //!    [0, 0], [1, 0], [2, 0], <padding>,
+        //!    [0, 1], [1, 1], [2, 1], <padding>,
+        //!    [0, 2], [1, 2], [2, 2]
+        //! Note that the last row is stored in 3 floats, not 4.
+        void StoreToColumnMajorFloat11(float* values) const;
+
         //! Stores the matrix into to an array of 9 floats.
         //! The floats need only be 4 byte aligned, 16 byte alignment is not required.
         void StoreToColumnMajorFloat9(float* values) const;
@@ -98,9 +114,6 @@ namespace AZ
         float GetElement(int32_t row, int32_t col) const;
         void SetElement(int32_t row, int32_t col, float value);
         //! @}
-
-        //! Assignment operator.
-        Matrix3x3& operator=(const Matrix3x3& rhs);
 
         //! Indexed access using operator().
         float operator()(int32_t row, int32_t col) const;

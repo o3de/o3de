@@ -8,8 +8,8 @@
 # Get the platform specific folder ${pal_dir} for the current folder: ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME}
 # Note: o3de_pal_dir will take care of the details for us, as this may be a restricted platform
 #       in which case it will see if that platform is present here or in the restricted folder.
-#       i.e. It could here in our gem : Gems/Compression/Code/Platform/<platorm_name>  or
-#            <restricted_folder>/<platform_name>/Gems/Compression/Code
+#       i.e. It could here in our gem : Gems/${gem_name}/Code/Platform/<platorm_name>  or
+#            <restricted_folder>/<platform_name>/Gems/${gem_name}/Code
 o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 
 # Now that we have the platform abstraction layer (PAL) folder for this folder, thats where we will find the
@@ -17,9 +17,9 @@ o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} "${
 # is supported by this platform.
 include(${pal_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
 
-# The Compression.API target declares the common interface that users of this gem should depend on in their targets
+# The ${gem_name}.API target declares the common interface that users of this gem should depend on in their targets
 ly_add_target(
-    NAME Compression.API INTERFACE
+    NAME ${gem_name}.API INTERFACE
     NAMESPACE Gem
     FILES_CMAKE
         compression_api_files.cmake
@@ -32,12 +32,12 @@ ly_add_target(
            AZ::AzCore
 )
 
-# Add the Compression.Private.Object target
+# Add the ${gem_name}.Private.Object target
 # Note: We include the common files and the platform specific files which are set in
 # 1.compression_private_files.cmake
 # 2.${pal_dir}/compression_private_files.cmake
 ly_add_target(
-    NAME Compression.Private.Object STATIC
+    NAME ${gem_name}.Private.Object STATIC
     NAMESPACE Gem
     FILES_CMAKE
         compression_private_files.cmake
@@ -52,9 +52,9 @@ ly_add_target(
             AZ::AzFramework
 )
 
-# Here add Compression target, it depends on the Private Object library and Public API interface
+# Here add ${gem_name} target, it depends on the Private Object library and Public API interface
 ly_add_target(
-    NAME Compression ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME ${gem_name} ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         compression_shared_files.cmake
@@ -66,26 +66,37 @@ ly_add_target(
             Source
     BUILD_DEPENDENCIES
         PUBLIC
-            Gem::Compression.API
+            Gem::${gem_name}.API
         PRIVATE
-            Gem::Compression.Private.Object
+            Gem::${gem_name}.Private.Object
 )
 
-# By default, we will specify that the above target Compression would be used by
+# Inject the gem name into the Module source file
+ly_add_source_properties(
+    SOURCES
+        Source/Clients/CompressionModule.cpp
+    PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_GEM_NAME=${gem_name}
+            O3DE_GEM_VERSION=${gem_version})
+
+# By default, we will specify that the above target ${gem_name} would be used by
 # Client and Server type targets when this gem is enabled.  If you don't want it
 # active in Clients or Servers by default, delete one of both of the following lines:
-ly_create_alias(NAME Compression.Clients NAMESPACE Gem TARGETS Gem::Compression)
-ly_create_alias(NAME Compression.Servers NAMESPACE Gem TARGETS Gem::Compression)
+ly_create_alias(NAME ${gem_name}.Clients NAMESPACE Gem TARGETS Gem::${gem_name})
+ly_create_alias(NAME ${gem_name}.Servers NAMESPACE Gem TARGETS Gem::${gem_name})
+ly_create_alias(NAME ${gem_name}.Unified NAMESPACE Gem TARGETS Gem::${gem_name})
 
-# For the Client and Server variants of Compression Gem, an alias to the Compression.API target will be made
-ly_create_alias(NAME Compression.Clients.API NAMESPACE Gem TARGETS Gem::Compression.API)
-ly_create_alias(NAME Compression.Servers.API NAMESPACE Gem TARGETS Gem::Compression.API)
+# For the Client and Server variants of ${gem_name} Gem, an alias to the ${gem_name}.API target will be made
+ly_create_alias(NAME ${gem_name}.Clients.API NAMESPACE Gem TARGETS Gem::${gem_name}.API)
+ly_create_alias(NAME ${gem_name}.Servers.API NAMESPACE Gem TARGETS Gem::${gem_name}.API)
+ly_create_alias(NAME ${gem_name}.Unified.API NAMESPACE Gem TARGETS Gem::${gem_name}.API)
 
-# If we are on a host platform, we want to add the host tools targets like the Compression.Editor MODULE target
+# If we are on a host platform, we want to add the host tools targets like the ${gem_name}.Editor MODULE target
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
-    # The Compression.Editor.API target can be used by other gems that want to interact with the Compression.Editor module
+    # The ${gem_name}.Editor.API target can be used by other gems that want to interact with the ${gem_name}.Editor module
     ly_add_target(
-        NAME Compression.Editor.API INTERFACE
+        NAME ${gem_name}.Editor.API INTERFACE
         NAMESPACE Gem
         FILES_CMAKE
             compression_editor_api_files.cmake
@@ -98,11 +109,11 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AzToolsFramework
     )
 
-    # The Compression.Editor.Private.Object target is an internal target
+    # The ${gem_name}.Editor.Private.Object target is an internal target
     # which is only to be used by this Gem's CMakeLists.txt and any Subdirectories
     # Other Gems should not use this target
     ly_add_target(
-        NAME Compression.Editor.Private.Object STATIC
+        NAME ${gem_name}.Editor.Private.Object STATIC
         NAMESPACE Gem
         FILES_CMAKE
             compression_editor_private_files.cmake
@@ -113,11 +124,11 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         BUILD_DEPENDENCIES
             PUBLIC
                 AZ::AzToolsFramework
-                $<TARGET_OBJECTS:Gem::Compression.Private.Object>
+                ${gem_name}.Private.Object
     )
 
     ly_add_target(
-        NAME Compression.Editor GEM_MODULE
+        NAME ${gem_name}.Editor GEM_MODULE
         NAMESPACE Gem
         AUTOMOC
         FILES_CMAKE
@@ -129,20 +140,29 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Include
         BUILD_DEPENDENCIES
             PUBLIC
-                Gem::Compression.Editor.API
+                Gem::${gem_name}.Editor.API
             PRIVATE
-                Gem::Compression.Editor.Private.Object
+                Gem::${gem_name}.Editor.Private.Object
     )
 
-    # By default, we will specify that the above target Compression would be used by
+    # Inject the gem name into the Module source file
+    ly_add_source_properties(
+        SOURCES
+            Source/Tools/CompressionEditorModule.cpp
+        PROPERTY COMPILE_DEFINITIONS
+            VALUES
+                O3DE_GEM_NAME=${gem_name}
+                O3DE_GEM_VERSION=${gem_version})
+
+    # By default, we will specify that the above target ${gem_name} would be used by
     # Tool and Builder type targets when this gem is enabled.  If you don't want it
     # active in Tools or Builders by default, delete one of both of the following lines:
-    ly_create_alias(NAME Compression.Tools    NAMESPACE Gem TARGETS Gem::Compression.Editor)
-    ly_create_alias(NAME Compression.Builders NAMESPACE Gem TARGETS Gem::Compression.Editor)
+    ly_create_alias(NAME ${gem_name}.Tools    NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
+    ly_create_alias(NAME ${gem_name}.Builders NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
 
-    # For the Tools and Builders variants of Compression Gem, an alias to the Compression.Editor API target will be made
-    ly_create_alias(NAME Compression.Tools.API NAMESPACE Gem TARGETS Gem::Compression.Editor.API)
-    ly_create_alias(NAME Compression.Builders.API NAMESPACE Gem TARGETS Gem::Compression.Editor.API)
+    # For the Tools and Builders variants of ${gem_name} Gem, an alias to the ${gem_name}.Editor API target will be made
+    ly_create_alias(NAME ${gem_name}.Tools.API NAMESPACE Gem TARGETS Gem::${gem_name}.Editor.API)
+    ly_create_alias(NAME ${gem_name}.Builders.API NAMESPACE Gem TARGETS Gem::${gem_name}.Editor.API)
 
 endif()
 
@@ -151,11 +171,11 @@ endif()
 ################################################################################
 # See if globally, tests are supported
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
-    # We globally support tests, see if we support tests on this platform for Compression.Tests
+    # We globally support tests, see if we support tests on this platform for ${gem_name}.Tests
     if(PAL_TRAIT_COMPRESSION_TEST_SUPPORTED)
-        # We support Compression.Tests on this platform, add dependency on the Private Object target
+        # We support ${gem_name}.Tests on this platform, add dependency on the Private Object target
         ly_add_target(
-            NAME Compression.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+            NAME ${gem_name}.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
             NAMESPACE Gem
             FILES_CMAKE
                 compression_tests_files.cmake
@@ -163,16 +183,16 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 PRIVATE
                     Tests
                     Source
+                    Include
             BUILD_DEPENDENCIES
                 PRIVATE
                     AZ::AzTest
                     AZ::AzFramework
-                    Gem::Compression.Private.Object
+                    Gem::${gem_name}.Private.Object
         )
 
-        # Add Compression.Tests to googletest
         ly_add_googletest(
-            NAME Gem::Compression.Tests
+            NAME Gem::${gem_name}.Tests
         )
     endif()
 
@@ -180,10 +200,10 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     if(PAL_TRAIT_BUILD_HOST_TOOLS)
         # We are a host platform, see if Editor tests are supported on this platform
         if(PAL_TRAIT_COMPRESSION_EDITOR_TEST_SUPPORTED)
-            # We support Compression.Editor.Tests on this platform, add Compression.Editor.Tests target which depends on
-            # private Compression.Editor.Private.Object target
+            # We support ${gem_name}.Editor.Tests on this platform, add ${gem_name}.Editor.Tests target which depends on
+            # private ${gem_name}.Editor.Private.Object target
             ly_add_target(
-                NAME Compression.Editor.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+                NAME ${gem_name}.Editor.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
                 NAMESPACE Gem
                 FILES_CMAKE
                     compression_editor_tests_files.cmake
@@ -191,15 +211,15 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     PRIVATE
                         Tests
                         Source
+                        Include
                 BUILD_DEPENDENCIES
                     PRIVATE
                         AZ::AzTest
-                        Gem::Compression.Private.Object
+                        Gem::${gem_name}.Editor.Private.Object
             )
 
-            # Add Compression.Editor.Tests to googletest
             ly_add_googletest(
-                NAME Gem::Compression.Editor.Tests
+                NAME Gem::${gem_name}.Editor.Tests
             )
         endif()
     endif()

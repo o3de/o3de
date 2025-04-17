@@ -28,9 +28,9 @@ namespace ScriptCanvasEditor
         };
 
     public:
-        AZ_CLASS_ALLOCATOR(LiveLoggingDataAggregator, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(LiveLoggingDataAggregator, AZ::SystemAllocator);
         LiveLoggingDataAggregator();
-        ~LiveLoggingDataAggregator();
+        ~LiveLoggingDataAggregator() override;
 
         // ClientUINotificationBus
         void OnCurrentTargetChanged() override;
@@ -50,7 +50,7 @@ namespace ScriptCanvasEditor
 
         // ServiceNotifications
         //// Logging Notifications
-        void Connected(const ScriptCanvas::Debugger::Target& target) override;
+        void Connected(ScriptCanvas::Debugger::Target& target) override;
         void GraphActivated(const ScriptCanvas::GraphActivation& activatedSignal) override;
         void GraphDeactivated(const ScriptCanvas::GraphDeactivation& deactivatedSignal) override;
         

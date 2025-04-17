@@ -55,7 +55,6 @@ struct INameTable;
 struct ILevelSystem;
 class IXMLBinarySerializer;
 struct IAVI_Reader;
-class CPNoise3;
 struct ILocalizationManager;
 struct IOutputPrintSink;
 struct IWindowMessageHandler;
@@ -591,7 +590,6 @@ struct SSystemGlobalEnvironment
     ::IConsole*                  pConsole;
     ISystem*                   pSystem = nullptr;
     ILog*                      pLog;
-    IMovieSystem*              pMovieSystem;
 
 #if defined(AZ_RESTRICTED_PLATFORM)
     #define AZ_RESTRICTED_SECTION ISYSTEM_H_SECTION_4
@@ -887,9 +885,6 @@ struct ISystem
     //   Retrieves localized strings manager interface.
     virtual ILocalizationManager* GetLocalizationManager() = 0;
 
-    // Summary:
-    //   Retrieves the perlin noise singleton instance.
-    virtual CPNoise3* GetNoiseGen() = 0;
 
     //////////////////////////////////////////////////////////////////////////
     // Error callback handling
@@ -1208,7 +1203,10 @@ namespace Detail
         const char* GetHelp() { return NULL; }
         bool IsConstCVar() const { return true; }
         void SetOnChangeCallback(ConsoleVarFunc pChangeFunc) { (void)pChangeFunc; }
-        uint64 AddOnChangeFunctor(const AZStd::function<void()>& pChangeFunctor) { (void)pChangeFunctor; return 0; }
+        bool AddOnChangeFunctor(AZ::Name, const AZStd::function<void()>&)
+        {
+            return false;
+        }
         ConsoleVarFunc GetOnChangeCallback() const { InvalidAccess(); return NULL; }
         int GetRealIVal() const { return GetIVal(); }
         void SetLimits([[maybe_unused]] float min, [[maybe_unused]] float max) { return; }
@@ -1229,7 +1227,7 @@ namespace Detail
         } DummyStaticInstance;                                                           \
         if (!(gEnv->pConsole != 0 ? gEnv->pConsole->Register(&DummyStaticInstance) : 0)) \
         {                                                                                \
-            AZ::Debug::Trace::Break();                                                   \
+            AZ::Debug::Trace::Instance().Break();                                        \
             CryFatalError("Can not register dummy CVar");                                \
         }                                                                                \
     } while (0)
@@ -1426,6 +1424,7 @@ namespace Detail
 #define CryLog(...) ((void)0)
 #define CryComment(...) ((void)0)
 #define CryLogAlways(...) ((void)0)
+#define CryOutputToCallback(...) ((void)0)
 
 #else // EXCLUDE_NORMAL_LOG
 
@@ -1478,5 +1477,19 @@ inline void CryLogAlways(const char* format, ...)
         va_end(args);
     }
 }
+
+//! Writes to CLog via a callback function
+//! Any formatting is the responsiblity of the callback function
+//! The callback function should write to the supplied stream argument
+inline void CryOutputToCallback(ILog::ELogType logType, const ILog::LogWriteCallback& messageCallback)
+{
+    // writes directly to the log without formatting
+    // This is able to bypase the format limits of 4096 + 32 characters for output
+    if (gEnv && gEnv->pLog)
+    {
+        gEnv->pLog->LogWithCallback(logType, messageCallback);
+    }
+}
+
 
 #endif // EXCLUDE_NORMAL_LOG

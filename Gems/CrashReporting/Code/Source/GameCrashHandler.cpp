@@ -75,7 +75,7 @@ namespace CrashHandler
         else
         {
             AZStd::string enginePath;
-            EBUS_EVENT_RESULT(enginePath, AZ::ComponentApplicationBus, GetExecutableFolder);
+            AZ::ComponentApplicationBus::BroadcastResult(enginePath, &AZ::ComponentApplicationBus::Events::GetExecutableFolder);
 
             if (enginePath.length())
             {
@@ -92,4 +92,8 @@ namespace CrashHandler
     }
 }
 
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME), AZ::Module)
+#else
 AZ_DECLARE_MODULE_CLASS(Gem_CrashReporting, AZ::Module)
+#endif

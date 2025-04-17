@@ -133,7 +133,7 @@ namespace AZ
             AZ_Error(Debug::Trace::GetDefaultSystemWindow(), false, "%s", buffer.c_str());
             break;
         default:
-            AZ::Debug::Trace::Printf(Debug::Trace::GetDefaultSystemWindow(), "%s", buffer.c_str());
+            AZ::Debug::Trace::Instance().Printf(Debug::Trace::GetDefaultSystemWindow(), "%s", buffer.c_str());
             break;
         }
     }

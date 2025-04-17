@@ -25,7 +25,7 @@ namespace StartingPointMovement
         {
             if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
-                serializeContext->ClassDeprecate("Event Action Bindings", "{2BB79CFC-7EBC-4EF4-A62E-5D64CB45CDBD}");
+                serializeContext->ClassDeprecate("Event Action Bindings", AZ::Uuid("{2BB79CFC-7EBC-4EF4-A62E-5D64CB45CDBD}"));
 
                 serializeContext->Class<StartingPointMovementDummyComponent, AZ::Component>()
                     ->Version(0)
@@ -58,12 +58,14 @@ namespace StartingPointMovement
             {
                 typeIds.emplace_back(descriptor->GetUuid());
             }
-            EBUS_EVENT(AzFramework::MetricsPlainTextNameRegistrationBus, RegisterForNameSending, typeIds);
+            AzFramework::MetricsPlainTextNameRegistrationBus::Broadcast(
+                &AzFramework::MetricsPlainTextNameRegistrationBus::Events::RegisterForNameSending, typeIds);
         }
     };
 }
 
-// DO NOT MODIFY THIS LINE UNLESS YOU RENAME THE GEM
-// The first parameter should be GemName_GemIdLower
-// The second should be the fully qualified name of the class above
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME), StartingPointMovement::StartingPointMovementModule)
+#else
 AZ_DECLARE_MODULE_CLASS(Gem_StartingPointMovement, StartingPointMovement::StartingPointMovementModule)
+#endif

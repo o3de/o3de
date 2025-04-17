@@ -13,7 +13,7 @@ namespace AZ
 {
     namespace Render
     {
-        AZ_CLASS_ALLOCATOR_IMPL(JsonEditorMeshStatsSerializer, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR_IMPL(JsonEditorMeshStatsSerializer, AZ::SystemAllocator);
 
         JsonSerializationResult::Result JsonEditorMeshStatsSerializer::Load(
             [[maybe_unused]] void* outputValue,

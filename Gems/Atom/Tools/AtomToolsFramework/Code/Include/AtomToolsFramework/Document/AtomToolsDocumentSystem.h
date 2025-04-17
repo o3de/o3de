@@ -25,7 +25,7 @@ namespace AtomToolsFramework
         , public AtomToolsDocumentSystemRequestBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(AtomToolsFramework::AtomToolsDocumentSystem, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AtomToolsFramework::AtomToolsDocumentSystem, AZ::SystemAllocator);
         AZ_RTTI(AtomToolsFramework::AtomToolsDocumentSystem, "{9D31F309-6B20-40C5-813C-F1226180E1F8}");
         AZ_DISABLE_COPY_MOVE(AtomToolsDocumentSystem);
 
@@ -52,6 +52,8 @@ namespace AtomToolsFramework
         bool SaveDocumentAsChild(const AZ::Uuid& documentId, const AZStd::string& targetPath) override;
         bool SaveAllDocuments() override;
         bool SaveAllModifiedDocuments() override;
+        bool QueueReopenModifiedDocuments() override;
+        bool ReopenModifiedDocuments() override;
         AZ::u32 GetDocumentCount() const override;
         bool IsDocumentOpen(const AZ::Uuid& documentId) const override;
         void AddRecentFilePath(const AZStd::string& absolutePath) override;
@@ -65,15 +67,12 @@ namespace AtomToolsFramework
         void OnDocumentDependencyModified(const AZ::Uuid& documentId) override;
         void OnDocumentExternallyModified(const AZ::Uuid& documentId) override;
 
-        void QueueReopenDocuments();
-        void ReopenDocuments();
-
         const AZ::Crc32 m_toolId = {};
         DocumentTypeInfoVector m_documentTypes;
         AZStd::unordered_map<AZ::Uuid, AZStd::shared_ptr<AtomToolsDocumentRequests>> m_documentMap;
         AZStd::unordered_set<AZ::Uuid> m_documentIdsWithExternalChanges;
         AZStd::unordered_set<AZ::Uuid> m_documentIdsWithDependencyChanges;
-        bool m_queueReopenDocuments = false;
+        bool m_queueReopenModifiedDocuments = false;
         bool m_queueSaveAllModifiedDocuments = false;
         const size_t m_maxMessageBoxLineCount = 15;
     };

@@ -24,6 +24,7 @@
 namespace AZ::IO
 {
     class FileRequest;
+    class Streamer_SchedulerTest_RequestSorting_Test;
 
     namespace Requests
     {
@@ -65,6 +66,7 @@ namespace AZ::IO
         void GetRecommendations(IStreamerTypes::Recommendations& recommendations) const;
 
     private:
+        friend class Streamer_SchedulerTest_RequestSorting_Test;
         inline static constexpr u32 ProfilerColor = 0x0080ffff; //!< A lite shade of blue. (See https://www.color-hex.com/color/0080ff).
 
         void Thread_MainLoop();
@@ -102,7 +104,7 @@ namespace AZ::IO
 
         StreamStackEntry::Status m_stackStatus;
 #if AZ_STREAMER_ADD_EXTRA_PROFILING_INFO
-        AZStd::chrono::system_clock::time_point m_processingStartTime;
+        AZStd::chrono::steady_clock::time_point m_processingStartTime;
         size_t m_processingSize{ 0 };
         //! Indication of how efficient the scheduler works. For loose files a large gap with the read speed of
         //! the storage drive means that the scheduler is having to spend too much time between requests. For archived

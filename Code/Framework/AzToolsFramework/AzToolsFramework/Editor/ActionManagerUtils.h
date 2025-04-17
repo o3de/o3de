@@ -8,8 +8,15 @@
 
 #pragma once
 
+#include <AzCore/std/string/string.h>
+
+class QWidget;
+
 namespace AzToolsFramework
 {
     bool IsNewActionManagerEnabled();
+
+    void AssignWidgetToActionContextHelper(const AZStd::string& actionContextIdentifier, QWidget* widget);
+    void RemoveWidgetFromActionContextHelper(const AZStd::string& actionContextIdentifier, QWidget* widget);
 
 } // namespace AzToolsFramework

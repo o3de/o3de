@@ -47,6 +47,7 @@
 void initUiCanvasEditorResources()
 {
     Q_INIT_RESOURCE(UiCanvasEditor);
+    Q_INIT_RESOURCE(UiAnimViewDialog);
 }
 
 namespace
@@ -310,7 +311,7 @@ EditorWindow::~EditorWindow()
 
     m_activeCanvasEntityId.SetInvalid();
     // Tell the UI animation system that the active canvas has changed
-    EBUS_EVENT(UiEditorAnimationBus, ActiveCanvasChanged);
+    UiEditorAnimationBus::Broadcast(&UiEditorAnimationBus::Events::ActiveCanvasChanged);
 
     // unload the preview mode canvas if it exists (e.g. if we close the editor window while in preview mode)
     if (m_previewModeCanvasEntityId.IsValid())
@@ -469,7 +470,7 @@ void EditorWindow::OnSliceInstantiated(const AZ::Data::AssetId& sliceAssetId, [[
 
             // Get the entityId of the top level element we have instantiated into the canvas and store it
             AZ::EntityId sliceEntityId;
-            EBUS_EVENT_ID_RESULT(sliceEntityId, canvasMetadata->m_canvasEntityId, UiCanvasBus, GetChildElementEntityId, 0);
+            UiCanvasBus::EventResult(sliceEntityId, canvasMetadata->m_canvasEntityId, &UiCanvasBus::Events::GetChildElementEntityId, 0);
             canvasMetadata->m_sliceEntityId = sliceEntityId;
         
             // we don't want an asterisk to show as we haven't made any changes to the slice yet
@@ -732,8 +733,7 @@ bool EditorWindow::SaveCanvasToXml(UiCanvasMetadata& canvasMetadata, bool forceA
             QString(),
             dir,
             "*." UICANVASEDITOR_CANVAS_EXTENSION,
-            nullptr,
-            QFileDialog::DontConfirmOverwrite);
+            nullptr);
         if (filename.isEmpty())
         {
             return false;
@@ -769,14 +769,18 @@ bool EditorWindow::SaveCanvasToXml(UiCanvasMetadata& canvasMetadata, bool forceA
     else
     {
         sourceAssetPathName = canvasMetadata.m_canvasSourceAssetPathname;
-        EBUS_EVENT_ID_RESULT(assetIdPathname, canvasMetadata.m_canvasEntityId, UiCanvasBus, GetPathname);
+        UiCanvasBus::EventResult(assetIdPathname, canvasMetadata.m_canvasEntityId, &UiCanvasBus::Events::GetPathname);
     }
 
     FileHelpers::SourceControlAddOrEdit(sourceAssetPathName.c_str(), this);
 
     bool saveSuccessful = false;
-    EBUS_EVENT_ID_RESULT(saveSuccessful, canvasMetadata.m_canvasEntityId, UiCanvasBus, SaveToXml,
-        assetIdPathname.c_str(), sourceAssetPathName.c_str());
+    UiCanvasBus::EventResult(
+        saveSuccessful,
+        canvasMetadata.m_canvasEntityId,
+        &UiCanvasBus::Events::SaveToXml,
+        assetIdPathname.c_str(),
+        sourceAssetPathName.c_str());
 
     if (saveSuccessful)
     {
@@ -818,7 +822,7 @@ bool EditorWindow::SaveSlice(UiCanvasMetadata& canvasMetadata)
     // as a safeguard check that the entity still exists
     AZ::EntityId sliceEntityId = canvasMetadata.m_sliceEntityId;
     AZ::Entity* sliceEntity = nullptr;
-    EBUS_EVENT_RESULT(sliceEntity, AZ::ComponentApplicationBus, FindEntity, sliceEntityId);
+    AZ::ComponentApplicationBus::BroadcastResult(sliceEntity, &AZ::ComponentApplicationBus::Events::FindEntity, sliceEntityId);
     if (!sliceEntity)
     {
         QMessageBox::critical(this, QObject::tr("Slice Push Failed"), "Slice entity not found in canvas.");
@@ -839,12 +843,13 @@ bool EditorWindow::SaveSlice(UiCanvasMetadata& canvasMetadata)
     // make a list that contains the top-level instanced entity plus all of its descendants
     AzToolsFramework::EntityIdList allEntitiesInLocalInstance;
     allEntitiesInLocalInstance.push_back(sliceEntityId);
-    EBUS_EVENT_ID(sliceEntityId, UiElementBus, CallOnDescendantElements,
+    UiElementBus::Event(
+        sliceEntityId,
+        &UiElementBus::Events::CallOnDescendantElements,
         [&allEntitiesInLocalInstance](const AZ::EntityId id)
         {
             allEntitiesInLocalInstance.push_back(id);
-        }
-    );
+        });
 
     const AZ::Outcome<void, AZStd::string> outcome = GetSliceManager()->QuickPushSliceInstance(sliceAddress, allEntitiesInLocalInstance);
 
@@ -1262,7 +1267,7 @@ void EditorWindow::SetActiveCanvas(AZ::EntityId canvasEntityId)
     m_sliceManager->SetEntityContextId(canvasMetadata ? canvasMetadata->m_entityContext->GetContextId() : AzFramework::EntityContextId::CreateNull());
 
     // Tell the UI animation system that the active canvas has changed
-    EBUS_EVENT(UiEditorAnimationBus, ActiveCanvasChanged);
+    UiEditorAnimationBus::Broadcast(&UiEditorAnimationBus::Events::ActiveCanvasChanged);
 
     // Clear the hierarchy pane
     m_hierarchy->ClearItems();
@@ -1271,7 +1276,7 @@ void EditorWindow::SetActiveCanvas(AZ::EntityId canvasEntityId)
     {
         // create the hierarchy tree from the loaded canvas
         LyShine::EntityArray childElements;
-        EBUS_EVENT_ID_RESULT(childElements, m_activeCanvasEntityId, UiCanvasBus, GetChildElements);
+        UiCanvasBus::EventResult(childElements, m_activeCanvasEntityId, &UiCanvasBus::Events::GetChildElements);
         m_hierarchy->CreateItems(childElements);
     }
 
@@ -1319,7 +1324,8 @@ void EditorWindow::SaveActiveCanvasEditState()
         canvasEditState.m_uiAnimationEditState.m_time = 0.0f;
         canvasEditState.m_uiAnimationEditState.m_timelineScale = 1.0f;
         canvasEditState.m_uiAnimationEditState.m_timelineScrollOffset = 0;
-        EBUS_EVENT_RESULT(canvasEditState.m_uiAnimationEditState, UiEditorAnimationStateBus, GetCurrentEditState);
+        UiEditorAnimationStateBus::BroadcastResult(
+            canvasEditState.m_uiAnimationEditState, &UiEditorAnimationStateBus::Events::GetCurrentEditState);
 
         canvasEditState.m_inited = true;
     }
@@ -1346,7 +1352,8 @@ void EditorWindow::RestoreActiveCanvasEditState()
             HierarchyHelpers::SetSelectedItems(m_hierarchy, &canvasEditState.m_selectedElements);
 
             // Restore animation state
-            EBUS_EVENT(UiEditorAnimationStateBus, RestoreCurrentEditState, canvasEditState.m_uiAnimationEditState);
+            UiEditorAnimationStateBus::Broadcast(
+                &UiEditorAnimationStateBus::Events::RestoreCurrentEditState, canvasEditState.m_uiAnimationEditState);
         }
     }
 }
@@ -1600,7 +1607,8 @@ void EditorWindow::ToggleEditorMode()
             m_previewAnimationList->Deactivate();
 
             AZ::Entity* entity = nullptr;
-            EBUS_EVENT_RESULT(entity, AZ::ComponentApplicationBus, FindEntity, m_previewModeCanvasEntityId);
+            AZ::ComponentApplicationBus::BroadcastResult(
+                entity, &AZ::ComponentApplicationBus::Events::FindEntity, m_previewModeCanvasEntityId);
             if (entity)
             {
                 AZ::Interface<ILyShine>::Get()->ReleaseCanvas(m_previewModeCanvasEntityId, false);
@@ -1640,7 +1648,7 @@ void EditorWindow::ToggleEditorMode()
             }
 
             AZ::Entity* clonedCanvas = nullptr;
-            EBUS_EVENT_ID_RESULT(clonedCanvas, m_activeCanvasEntityId, UiCanvasBus, CloneCanvas, canvasSize);
+            UiCanvasBus::EventResult(clonedCanvas, m_activeCanvasEntityId, &UiCanvasBus::Events::CloneCanvas, canvasSize);
 
             if (clonedCanvas)
             {
@@ -1822,7 +1830,8 @@ void EditorWindow::EditSliceInNewTab(AZ::Data::AssetId sliceAssetId)
     }
 
     AZStd::string assetIdPathname;
-    EBUS_EVENT_RESULT(assetIdPathname, AZ::Data::AssetCatalogRequestBus, GetAssetPathById, sliceAssetId);
+    AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+        assetIdPathname, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, sliceAssetId);
 
     AZStd::string sourceAssetPathName;
     bool fullPathfound = false;
@@ -1853,7 +1862,8 @@ void EditorWindow::EditSliceInNewTab(AZ::Data::AssetId sliceAssetId)
     const AzFramework::EntityContextId& entityContextId = canvasMetadata->m_entityContext->GetContextId();
 
     AzFramework::SliceInstantiationTicket ticket;
-    EBUS_EVENT_ID_RESULT(ticket, entityContextId, UiEditorEntityContextRequestBus, InstantiateEditorSlice, sliceAsset, viewportPosition);
+    UiEditorEntityContextRequestBus::EventResult(
+        ticket, entityContextId, &UiEditorEntityContextRequestBus::Events::InstantiateEditorSlice, sliceAsset, viewportPosition);
 
     if (ticket.IsValid())
     {
@@ -1889,7 +1899,7 @@ void EditorWindow::UpdateChangedStatusOnAssetChange(const AzFramework::EntityCon
         // as a safeguard check that the entity still exists
         AZ::EntityId sliceEntityId = canvasMetadata->m_sliceEntityId;
         AZ::Entity* sliceEntity = nullptr;
-        EBUS_EVENT_RESULT(sliceEntity, AZ::ComponentApplicationBus, FindEntity, sliceEntityId);
+        AZ::ComponentApplicationBus::BroadcastResult(sliceEntity, &AZ::ComponentApplicationBus::Events::FindEntity, sliceEntityId);
         if (!sliceEntity)
         {
             return;
@@ -1900,12 +1910,13 @@ void EditorWindow::UpdateChangedStatusOnAssetChange(const AzFramework::EntityCon
         // m_children member of the parent will have changed.
         AzToolsFramework::EntityIdList allEntitiesInLocalInstance;
         allEntitiesInLocalInstance.push_back(sliceEntityId);
-        EBUS_EVENT_ID(sliceEntityId, UiElementBus, CallOnDescendantElements,
+        UiElementBus::Event(
+            sliceEntityId,
+            &UiElementBus::Events::CallOnDescendantElements,
             [&allEntitiesInLocalInstance](const AZ::EntityId id)
             {
                 allEntitiesInLocalInstance.push_back(id);
-            }
-        );
+            });
 
         // test if there are any overrides for the slice instance
         bool hasOverrides = AzToolsFramework::SliceUtilities::DoEntitiesHaveOverrides( allEntitiesInLocalInstance );
@@ -1938,12 +1949,14 @@ void EditorWindow::FontTextureHasChanged()
     for (auto mapItem : m_canvasMetadataMap)
     {
         auto canvasMetadata = mapItem.second;
-        EBUS_EVENT_ID(canvasMetadata->m_canvasEntityId, UiCanvasComponentImplementationBus, MarkRenderGraphDirty);
+        UiCanvasComponentImplementationBus::Event(
+            canvasMetadata->m_canvasEntityId, &UiCanvasComponentImplementationBus::Events::MarkRenderGraphDirty);
     }
 
     if (GetEditorMode() == UiEditorMode::Preview)
     {
-        EBUS_EVENT_ID(GetPreviewModeCanvas(), UiCanvasComponentImplementationBus, MarkRenderGraphDirty);
+        UiCanvasComponentImplementationBus::Event(
+            GetPreviewModeCanvas(), &UiCanvasComponentImplementationBus::Events::MarkRenderGraphDirty);
     }
 }
 
@@ -2142,7 +2155,7 @@ int EditorWindow::GetCanvasMaxHierarchyDepth(const LyShine::EntityArray& rootChi
         auto& entity = elementList.front();
 
         LyShine::EntityArray childElements;
-        EBUS_EVENT_ID_RESULT(childElements, entity->GetId(), UiElementBus, GetChildElements);
+        UiElementBus::EventResult(childElements, entity->GetId(), &UiElementBus::Events::GetChildElements);
         if (!childElements.empty())
         {
             elementList.insert(elementList.end(), childElements.begin(), childElements.end());
@@ -2195,16 +2208,9 @@ void EditorWindow::closeEvent(QCloseEvent* closeEvent)
     // Save the current window state
     SaveEditorWindowSettings();
 
-#if defined(AZ_PLATFORM_LINUX)
-    // Work-around for issue on Linux where closing (and destroying) the window an re-opening causes the Editor
-    // to hang or crash. So instead of closing this window, replicate the action of unchecking UI Editor from the
-    //  Editor toolbar by hiding the parent view pane instead
-    nativeParentWidget()->hide();
-    closeEvent->ignore();
-#else
-    QMainWindow::closeEvent(closeEvent);
-#endif
+    m_animationWidget->EditorAboutToClose();
 
+    QMainWindow::closeEvent(closeEvent);
 }
 
 void EditorWindow::dragEnterEvent(QDragEnterEvent* event)
@@ -2319,7 +2325,7 @@ void EditorWindow::SetupTabbedViewportWidget(QWidget* parent)
 void EditorWindow::CheckForOrphanedChildren(AZ::EntityId canvasEntityId)
 {
     bool result = false;
-    EBUS_EVENT_ID_RESULT(result, canvasEntityId, UiEditorCanvasBus, CheckForOrphanedElements);
+    UiEditorCanvasBus::EventResult(result, canvasEntityId, &UiEditorCanvasBus::Events::CheckForOrphanedElements);
 
     if (result)
     {
@@ -2334,11 +2340,11 @@ void EditorWindow::CheckForOrphanedChildren(AZ::EntityId canvasEntityId)
 
         if (result2 == QMessageBox::Yes)
         {
-            EBUS_EVENT_ID(canvasEntityId, UiEditorCanvasBus, RecoverOrphanedElements);
+            UiEditorCanvasBus::Event(canvasEntityId, &UiEditorCanvasBus::Events::RecoverOrphanedElements);
         }
         else
         {
-            EBUS_EVENT_ID(canvasEntityId, UiEditorCanvasBus, RemoveOrphanedElements);
+            UiEditorCanvasBus::Event(canvasEntityId, &UiEditorCanvasBus::Events::RemoveOrphanedElements);
         }
     }
 }

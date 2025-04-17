@@ -35,6 +35,7 @@ namespace AzToolsFramework
                     ->Event("InstantiatePrefab", &PrefabPublicRequests::InstantiatePrefab)
                     ->Event("DeleteEntitiesAndAllDescendantsInInstance", &PrefabPublicRequests::DeleteEntitiesAndAllDescendantsInInstance)
                     ->Event("DetachPrefab", &PrefabPublicRequests::DetachPrefab)
+                    ->Event("DetachPrefabAndRemoveContainerEntity", &PrefabPublicRequests::DetachPrefabAndRemoveContainerEntity)
                     ->Event("DuplicateEntitiesInInstance", &PrefabPublicRequests::DuplicateEntitiesInInstance)
                     ->Event("GetOwningInstancePrefabPath", &PrefabPublicRequests::GetOwningInstancePrefabPath)
                     ->Event("CreateInMemorySpawnableAsset", &PrefabPublicRequests::CreateInMemorySpawnableAsset)
@@ -81,6 +82,11 @@ namespace AzToolsFramework
             return m_prefabPublicInterface->DetachPrefab(containerEntityId);
         }
 
+        PrefabOperationResult PrefabPublicRequestHandler::DetachPrefabAndRemoveContainerEntity(const AZ::EntityId& containerEntityId)
+        {
+            return m_prefabPublicInterface->DetachPrefabAndRemoveContainerEntity(containerEntityId);
+        }
+
         DuplicatePrefabResult PrefabPublicRequestHandler::DuplicateEntitiesInInstance(const EntityIdList& entityIds)
         {
             return m_prefabPublicInterface->DuplicateEntitiesInInstance(entityIds);
@@ -112,7 +118,7 @@ namespace AzToolsFramework
             auto result = m_spawnableAssetContainer.CreateInMemorySpawnableAsset(prefabFilePath, spawnableName);
             if (result.IsSuccess())
             {
-                return AZ::Success(result.GetValue().GetId());
+                return AZ::Success(result.GetValue().get().GetId());
             }
             else
             {

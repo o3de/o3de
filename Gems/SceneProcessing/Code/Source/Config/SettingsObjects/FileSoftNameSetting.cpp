@@ -163,6 +163,11 @@ namespace AZ
             }
         }
 
+        const AZ::Uuid FileSoftNameSetting::GetTypeId() const
+        {
+            return azrtti_typeid<FileSoftNameSetting>();
+        }
+
         void FileSoftNameSetting::Reflect(ReflectContext* context)
         {
             GraphType::Reflect(context);
@@ -176,13 +181,15 @@ namespace AZ
                     ->Field("graphTypes", &FileSoftNameSetting::m_graphTypes)
                     ->Field("inclusiveList", &FileSoftNameSetting::m_inclusiveList);
 
+                serialize->RegisterGenericType<AZStd::vector<AZStd::unique_ptr<FileSoftNameSetting>>>();
+
                 EditContext* editContext = serialize->GetEditContext();
                 if (editContext)
                 {
                     editContext->Class<FileSoftNameSetting>("File name setting", "Applies the pattern to the name of the scene file.")
                         ->ClassElement(Edit::ClassElements::EditorData, "")
                             ->Attribute(Edit::Attributes::AutoExpand, true)
-                        ->DataElement(AZ_CRC("GraphTypeSelector", 0x362ac245), &FileSoftNameSetting::m_graphTypes, "Graph type",
+                        ->DataElement(AZ_CRC_CE("GraphTypeSelector"), &FileSoftNameSetting::m_graphTypes, "Graph type",
                             "The graph types that are the soft name applies to.")
                             ->Attribute(Edit::Attributes::AutoExpand, true)
                         ->DataElement(Edit::UIHandlers::Default, &FileSoftNameSetting::m_inclusiveList, "Inclusive", 

@@ -16,6 +16,7 @@
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
+#include <Atom/RPI.Edit/Material/MaterialUtils.h>
 
 namespace AZ
 {
@@ -74,7 +75,7 @@ namespace AZ
         
         AZStd::string MaterialConverterSystemComponent::GetFingerprintInfo() const
         {
-            static constexpr int Version = 1; // Bump this version whenever changes are made to the material conversion code to force the AP to reprocess scene files
+            static constexpr int Version = 2; // Bump this version whenever changes are made to the material conversion code to force the AP to reprocess scene files
 
             AZStd::string fingerprintInfo = AZStd::string::format("[MaterialConverter version=%d enabled=%d", Version, IsEnabled());
              
@@ -158,6 +159,10 @@ namespace AZ
             }
 
             sourceData.SetPropertyValue(Name{"opacity.factor"}, materialData.GetOpacity());
+            if (1.0f - materialData.GetOpacity() > AZ::Constants::FloatEpsilon)
+            {
+                sourceData.SetPropertyValue(Name{ "opacity.mode" }, AZStd::string("Blended"));
+            }
 
             auto applyOptionalPropertiesFunc = [&sourceData, &anyPBRInUse](const auto& propertyGroup, const auto& propertyName, const auto& propertyOptional)
             {
@@ -175,8 +180,21 @@ namespace AZ
             applyOptionalPropertiesFunc("metallic", "useTexture", materialData.GetUseMetallicMap());
 
             handleTexture("roughness", "textureMap", SceneAPI::DataTypes::IMaterialData::TextureMapType::Roughness);
-            applyOptionalPropertiesFunc("roughness", "factor", materialData.GetRoughnessFactor());
             applyOptionalPropertiesFunc("roughness", "useTexture", materialData.GetUseRoughnessMap());
+            // Both PBR material and non-PBR material can have the RoughnessFactor property
+            AZStd::optional<float> roughness = materialData.GetRoughnessFactor();
+            if (roughness.has_value())
+            {
+                sourceData.SetPropertyValue(Name{"roughness.factor"}, roughness.value());
+            }
+            else if (materialData.GetShininess() > AZ::Constants::FloatEpsilon)
+            {
+                // When the MaterialData provides Shininess instead of Roughness, it is necessary to convert Shininess to Roughness.
+                // Normalized Blinn-Phong: D_p(m)=((alpha_p+2)/(2*PI))dot(n, m)^alpha_p, Usually use formula: alpha_p=2*alpha^-2 - 2,
+                // alpha = roughness^2
+                sourceData.SetPropertyValue(
+                    Name{ "roughness.factor" }, aznumeric_cast<float>(pow(2.0f / (materialData.GetShininess() + 2.0f), 0.25)));
+            }
 
             handleTexture("emissive", "textureMap", SceneAPI::DataTypes::IMaterialData::TextureMapType::Emissive);
             sourceData.SetPropertyValue(Name{"emissive.color"}, toColor(materialData.GetEmissiveColor()));
@@ -197,7 +215,7 @@ namespace AZ
 
         AZStd::string MaterialConverterSystemComponent::GetMaterialTypePath() const
         {
-            return "Materials/Types/StandardPBR.materialtype";
+            return AZ::RPI::MaterialUtils::PredictIntermediateMaterialTypeSourcePath("Materials/Types/StandardPBR.materialtype");
         }
 
         AZStd::string MaterialConverterSystemComponent::GetDefaultMaterialPath() const

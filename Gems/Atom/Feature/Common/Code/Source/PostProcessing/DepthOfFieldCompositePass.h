@@ -23,7 +23,7 @@ namespace AZ
 
         public:
             AZ_RTTI(AZ::Render::DepthOfFieldCompositePass, "{7595A972-7ED5-46FE-BBE0-3262846E2964}", AZ::RPI::FullscreenTrianglePass);
-            AZ_CLASS_ALLOCATOR(DepthOfFieldCompositePass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DepthOfFieldCompositePass, SystemAllocator);
             virtual ~DepthOfFieldCompositePass() = default;
 
             //! Creates a DepthOfFieldCompositePass

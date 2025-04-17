@@ -26,7 +26,6 @@ namespace GraphCanvas
         , m_displayLabel(nullptr)
         , m_lineEdit(nullptr)
         , m_proxyWidget(nullptr)        
-        , m_valueDirty(false)
         , m_isNudging(false)
     {
         m_dataInterface->RegisterDisplay(this);        
@@ -85,11 +84,6 @@ namespace GraphCanvas
         }
 
         ResizeToContents();
-        
-        if (m_proxyWidget)
-        {
-            m_proxyWidget->update();
-        }
     }
 
     QGraphicsLayoutItem* StringNodePropertyDisplay::GetDisabledGraphicsLayoutItem()
@@ -134,15 +128,8 @@ namespace GraphCanvas
 
     void StringNodePropertyDisplay::SubmitValue()
     {
-        if (!m_valueDirty)
-        {
-            return;
-        }
-
         if (m_lineEdit)
         {
-            m_valueDirty = false;
-
             AZStd::string value = m_lineEdit->text().toUtf8().data();
             m_dataInterface->SetString(value);
 
@@ -185,25 +172,13 @@ namespace GraphCanvas
             m_lineEdit->setProperty("HasNoWindowDecorations", true);
             m_lineEdit->setEnabled(true);
 
-            QObject::connect(m_lineEdit, &QLineEdit::textChanged, [this]() {
-                this->m_valueDirty = true;
-                this->ResizeToContents();
+            QObject::connect(m_lineEdit, &QLineEdit::textChanged, [this]() { ResizeToContents(); });
+            QObject::connect(m_lineEdit, &Internal::FocusableLineEdit::OnFocusIn, [this]() { EditStart(); });
+            QObject::connect(m_lineEdit, &Internal::FocusableLineEdit::OnFocusOut, [this]() { EditFinished(); });
+            QObject::connect(m_lineEdit, &QLineEdit::editingFinished, [this]() {
+                SubmitValue();
+                UpdateDisplay();
             });
-
-            QObject::connect(m_lineEdit, &Internal::FocusableLineEdit::OnFocusIn, [this]() { 
-                this->m_valueDirty = false;
-                this->EditStart();
-            });
-
-            QObject::connect(m_lineEdit, &Internal::FocusableLineEdit::OnFocusOut, [this]()
-            {
-                this->OnFocusOut();
-            });
-
-            QObject::connect(m_lineEdit, &QLineEdit::returnPressed, [this]()
-            {
-                this->SubmitValue();
-            });            
 
             m_proxyWidget->setWidget(m_lineEdit);
             UpdateDisplay();
@@ -254,6 +229,11 @@ namespace GraphCanvas
                     SceneRequestBus::Event(GetSceneId(), &SceneRequests::StartNudging, fixedNodes);
                 }
             }
+        }
+        
+        if (m_proxyWidget)
+        {
+            m_proxyWidget->update();
         }
     }
 

@@ -19,7 +19,7 @@
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphPlugin.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/BlendGraphWidget.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/ParameterWindow.h>
-#include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/ParameterCreateEditDialog.h>
+#include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/ParameterCreateEditWidget.h>
 
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
@@ -31,13 +31,19 @@
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
 #include <AzQtComponents/Components/StyleManager.h>
 
-#include <Editor/Plugins/SimulatedObject/SimulatedObjectColliderWidget.h>
+#include <GraphCanvas/Widgets/NodePalette/NodePaletteTreeView.h>
+
+#include <Editor/Plugins/ColliderWidgets/SimulatedObjectColliderWidget.h>
 #include <Editor/Plugins/SimulatedObject/SimulatedObjectWidget.h>
 #include <Editor/Plugins/SimulatedObject/SimulatedJointWidget.h>
+#include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerPlugin.h>
+
+
 
 #include <Editor/ReselectingTreeView.h>
 
 #include <QtTest>
+#include <QAbstractItemModel>
 #include <QApplication>
 #include <QWidget>
 #include <QToolBar>
@@ -80,6 +86,9 @@ namespace EMotionFX
         {
             EMStudio::GetPluginManager()->CreateWindowOfType(plugin->GetName());
         }
+        m_skeletonOutlinerPlugin = EMStudio::GetPluginManager()->FindActivePlugin<EMotionFX::SkeletonOutlinerPlugin>();
+        m_simulatedObjectPlugin = EMStudio::GetPluginManager()->FindActivePlugin<EMotionFX::SimulatedObjectWidget>();
+        m_animGraphPlugin = EMStudio::GetPluginManager()->FindActivePlugin<EMStudio::AnimGraphPlugin>();
     }
 
     void UIFixture::ReflectMockedSystems()
@@ -108,7 +117,6 @@ namespace EMotionFX
         ReflectMockedSystems();
         SetupPluginWindows();
 
-        m_animGraphPlugin = static_cast<EMStudio::AnimGraphPlugin*>(EMStudio::GetPluginManager()->FindActivePlugin(EMStudio::AnimGraphPlugin::CLASS_ID));
         ON_CALL(m_assetSystemRequestMock, GetFullSourcePathFromRelativeProductPath(_, _))
             .WillByDefault(Return(true));
         m_assetSystemRequestMock.BusConnect();
@@ -200,6 +208,18 @@ namespace EMotionFX
         return nullptr;
     }
 
+    QModelIndex UIFixture::GetIndexFromName(const GraphCanvas::NodePaletteTreeView* tree, const QString& name)
+    {
+        const QAbstractItemModel* model = tree->model();
+        const QModelIndexList matches = model->match(model->index(0,0), Qt::DisplayRole, name, 1, Qt::MatchRecursive);
+
+        if (!matches.empty())
+        {
+            return matches[0];
+        }
+        return {};
+    }
+
     void UIFixture::ExecuteCommands(std::vector<std::string> commands)
     {
         AZStd::string result;
@@ -232,6 +252,7 @@ namespace EMotionFX
 
     void UIFixture::CloseAllPlugins()
     {
+        m_skeletonOutlinerPlugin = nullptr;
         const EMStudio::PluginManager::PluginVector plugins = EMStudio::GetPluginManager()->GetActivePlugins();
         for (EMStudio::EMStudioPlugin* plugin : plugins)
         {
@@ -417,14 +438,14 @@ namespace EMotionFX
         EMStudio::ParameterWindow* parameterWindow = m_animGraphPlugin->GetParameterWindow();
         parameterWindow->OnAddParameter();
 
-        EMStudio::ParameterCreateEditDialog* paramDialog = parameterWindow->findChild< EMStudio::ParameterCreateEditDialog*>();
-        ASSERT_TRUE(paramDialog);
+        auto paramWidget = qobject_cast<EMStudio::ParameterCreateEditWidget*>(FindTopLevelWidget("ParameterCreateEditWidget"));
+        ASSERT_TRUE(paramWidget);
 
-        const AZStd::unique_ptr<EMotionFX::Parameter>& param = paramDialog->GetParameter();
+        const AZStd::unique_ptr<EMotionFX::Parameter>& param = paramWidget->GetParameter();
         param->SetName(name);
         const size_t numParams = m_animGraphPlugin->GetActiveAnimGraph()->GetNumParameters();
 
-        QPushButton* createButton = paramDialog->findChild<QPushButton*>("EMFX.ParameterCreateEditDialog.CreateApplyButton");
+        QPushButton* createButton = paramWidget->findChild<QPushButton*>("EMFX.ParameterCreateEditWidget.CreateApplyButton");
         QTest::mouseClick(createButton, Qt::LeftButton);
 
         ASSERT_EQ(m_animGraphPlugin->GetActiveAnimGraph()->GetNumParameters(), numParams + 1);

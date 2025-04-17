@@ -21,7 +21,6 @@
 namespace AZ
 {
     class IAllocator;
-    class MallocSchema;
 
     /**
     * Global allocation manager. It has access to all
@@ -34,17 +33,14 @@ namespace AZ
         friend IAllocator;
         friend class AllocatorBase;
         friend class Debug::AllocationRecords;
-        template<typename T, typename... Args> friend constexpr auto AZStd::construct_at(T*, Args&&... args)
-            ->AZStd::enable_if_t<AZStd::is_void_v<AZStd::void_t<decltype(new (AZStd::declval<void*>()) T(AZStd::forward<Args>(args)...))>>, T*>;
-        template<typename T> constexpr friend void AZStd::destroy_at(T*);
 
     public:
 
         AllocatorManager();
+        ~AllocatorManager();
 
-        typedef AZStd::function<void (IAllocator* allocator, size_t /*byteSize*/, size_t /*alignment*/, int/* flags*/, const char* /*name*/, const char* /*fileName*/, int lineNum /*=0*/)>    OutOfMemoryCBType;
+        typedef AZStd::function<void (IAllocator* allocator, size_t /*byteSize*/, size_t /*alignment*/)>    OutOfMemoryCBType;
 
-        static IAllocator* CreateLazyAllocator(size_t size, size_t alignment, IAllocator*(*creationFn)(void*));  // May be called at any time before shutdown
         static AllocatorManager& Instance();
         static bool IsReady();
         static void Destroy();
@@ -90,8 +86,15 @@ namespace AZ
         void EnterProfilingMode();
         void ExitProfilingMode();
 
-        /// Outputs allocator useage to the console, and also stores the values in m_dumpInfo for viewing in the crash dump
+        // Controls if profiling should be enabled for newly created allocators
+        void SetDefaultProfilingState(bool newState) { m_defaultProfilingState = newState; }
+        bool GetDefaultProfilingState() const { return m_defaultProfilingState; }
+
+        /// Outputs allocator usage to the console, and also stores the values in m_dumpInfo for viewing in the crash dump
         void DumpAllocators();
+
+        void SetTrackingForAllocator(AZStd::string_view allocatorName, AZ::Debug::AllocationRecords::Mode recordMode);
+        bool RemoveTrackingForAllocator(AZStd::string_view allocatorName);
 
         struct DumpInfo
         {
@@ -104,15 +107,15 @@ namespace AZ
 
         struct AllocatorStats
         {
-            AllocatorStats(const char* name, const char* aliasOrDescription, size_t allocatedBytes, size_t capacityBytes)
+            AllocatorStats(const char* name, const char* parentName, size_t allocatedBytes, size_t capacityBytes)
                 : m_name(name)
-                , m_aliasOrDescription(aliasOrDescription)
+                , m_parentName(parentName)
                 , m_allocatedBytes(allocatedBytes)
                 , m_capacityBytes(capacityBytes)
             {}
 
             AZStd::string m_name;
-            AZStd::string m_aliasOrDescription;
+            AZStd::string m_parentName;
             size_t m_allocatedBytes;
             size_t m_capacityBytes;
         };
@@ -147,16 +150,16 @@ namespace AZ
     private:
         void InternalDestroy();
         void DebugBreak(void* address, const Debug::AllocationInfo& info);
-        AZ::MallocSchema* CreateMallocSchema();
 
         AllocatorManager(const AllocatorManager&);
         AllocatorManager& operator=(const AllocatorManager&);
 
-        static const int m_maxNumAllocators = 100;
+        static constexpr int m_maxNumAllocators = 100;
         IAllocator*         m_allocators[m_maxNumAllocators];
         volatile int        m_numAllocators;
         OutOfMemoryCBType   m_outOfMemoryListener;
         bool                m_isAllocatorLeaking;
+        bool                m_defaultProfilingState = false;
         MemoryBreak         m_memoryBreak[MaxNumMemoryBreaks];
         char                m_activeBreaks;
         AZStd::mutex        m_allocatorListMutex;
@@ -166,10 +169,19 @@ namespace AZ
         AZStd::atomic<int>  m_profilingRefcount;
 
         AZ::Debug::AllocationRecords::Mode m_defaultTrackingRecordMode;
-        AZStd::unique_ptr<AZ::MallocSchema, void(*)(AZ::MallocSchema*)> m_mallocSchema;
 
-        ~AllocatorManager();
+        using AllocatorName = AZStd::fixed_string<128>;
+        //! Stores the name
+        struct AllocatorTrackingConfig
+        {
+            AllocatorName m_allocatorName;
+            AZ::Debug::AllocationRecords::Mode m_recordMode{ AZ::Debug::AllocationRecords::Mode::RECORD_NO_RECORDS };
+        };
+        AZStd::fixed_vector<AllocatorTrackingConfig, m_maxNumAllocators> m_allocatorTrackingConfigs;
 
         static AllocatorManager g_allocMgr;    ///< The single instance of the allocator manager
+
+    private:
+        void ConfigureTrackingForAllocator(IAllocator* alloc, const AllocatorTrackingConfig& foundTrackingConfigIt);
     };
 }

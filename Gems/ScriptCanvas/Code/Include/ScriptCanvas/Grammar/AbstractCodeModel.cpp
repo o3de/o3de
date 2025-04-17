@@ -32,6 +32,7 @@
 #include <ScriptCanvas/Variable/VariableData.h>
 
 #include "AbstractCodeModel.h"
+#include "ASTModifications.h"
 #include "ExecutionTraversalListeners.h"
 #include "ParsingUtilities.h"
 #include "Primitives.h"
@@ -248,7 +249,7 @@ namespace ScriptCanvas
                 AZ_Assert(datum != nullptr, "the datum must be valid");
 
                 // #functions2 slot<->variable check to verify if it is a member variable
-                auto variable = sourceVariable->GetScope() == VariableFlags::Scope::Graph
+                auto variable = (sourceVariable->GetScope() == VariableFlags::Scope::Graph)
                     ? AddMemberVariable(*datum, sourceVariable->GetVariableName(), sourceVariable->GetVariableId())
                     : AddVariable(*datum, sourceVariable->GetVariableName(), sourceVariable->GetVariableId());
 
@@ -1135,7 +1136,7 @@ namespace ScriptCanvas
 
             ReturnValueConnections connections = FindAssignments(execution, outputSlot);
 
-            // get/set methods 
+            // get/set methods
             if (IsVariableSet(execution) && !IsPropertyExtractionSlot(execution, &outputSlot))
             {
                 if (!out.m_output.size() == 1)
@@ -2209,12 +2210,12 @@ namespace ScriptCanvas
 
         void AbstractCodeModel::MarkParseStart()
         {
-            m_parseStartTime = AZStd::chrono::system_clock::now();
+            m_parseStartTime = AZStd::chrono::steady_clock::now();
         }
 
         void AbstractCodeModel::MarkParseStop()
         {
-            m_parseDuration = AZStd::chrono::microseconds(AZStd::chrono::system_clock::now() - m_parseStartTime).count();
+            m_parseDuration = AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(AZStd::chrono::steady_clock::now() - m_parseStartTime).count();
         }
 
         AZStd::vector<ExecutionTreePtr> AbstractCodeModel::ModAllExecutionRoots()
@@ -2362,6 +2363,8 @@ namespace ScriptCanvas
             ParseUserFunctionTopology();
             // culls unused variables, and determine whether the the graph defines an object or static functionality
             ParseExecutionCharacteristics();
+            // subgraph interface is available, use it to check this function
+            ParseLocallyDefinedFunctionCalls();
             // now that variables have been culled, determined what data needs to be initialized by an external source
             ParseConstructionInputVariables();
             // now that externally initialized data has been identified, associate local, static initializers with individual functions
@@ -2547,7 +2550,7 @@ namespace ScriptCanvas
             if (!outSlots.empty())
             {
                 start->AddChild({ outSlots[0], {}, nullptr });
-                
+
                 ParseExecutionMultipleOutSyntaxSugar(start, outNodes, outSlots);
                 PostParseProcess(start);
                 PostParseErrorDetect(start);
@@ -2578,17 +2581,22 @@ namespace ScriptCanvas
             if (auto functionNode = azrtti_cast<const Nodes::Core::FunctionCallNode*>(&node))
             {
                 Nodes::Core::FunctionCallNodeCompareConfig config;
+                const auto result = functionNode->IsOutOfDate(config, m_source.m_assetId.m_guid);
 
-                if (functionNode->IsOutOfDate(config))
+                if (result == Nodes::Core::IsFunctionCallNodeOutOfDateResult::Yes)
                 {
-                    AZ_Warning("ScriptCanvas", false, "%s node is out-of-date.", node.GetNodeName().c_str());
+                    AZ_Warning("ScriptCanvas", false, "FunctionCallNode '%s' is out-of-date.", node.GetNodeName().c_str());
                     AddError(nullptr, aznew NodeCompatiliblity::NodeOutOfDate(node.GetEntityId(), node.GetNodeName()));
                     return false;
+                }
+                else if (result == Nodes::Core::IsFunctionCallNodeOutOfDateResult::EvaluateAfterLocalDefinition)
+                {
+                    m_locallyDefinedFunctionCallNodes.push_back(functionNode);
                 }
             }
             else if (node.IsOutOfDate(m_source.m_graph->GetVersion()))
             {
-                AZ_Warning("ScriptCanvas", false, "%s node is out-of-date.", node.GetNodeName().c_str());
+                AZ_Warning("ScriptCanvas", false, "Node '%s' is out-of-date.", node.GetNodeName().c_str());
                 AddError(nullptr, aznew NodeCompatiliblity::NodeOutOfDate(node.GetEntityId(), node.GetNodeName()));
                 return false;
             }
@@ -2601,6 +2609,7 @@ namespace ScriptCanvas
             else
             {
                 ParseDependencies(node);
+                ParseSubgraphInterface(node);
                 ParseImplicitVariables(node);
                 return CheckCreateRoot(node);
             }
@@ -2683,7 +2692,7 @@ namespace ScriptCanvas
                 return inScopeVar;
             }
 
-            // do this exact thing for multiple out sequence sugar, and change the way those are translated 
+            // do this exact thing for multiple out sequence sugar, and change the way those are translated
             auto inPreviouslyExecutedScopeResult = FindConnectedInputInPreviouslyExecutedScope(executionWithInput, scriptCanvasNodesConnectedToInput, firstNode);
 
             if (!inPreviouslyExecutedScopeResult.m_connections.empty())
@@ -2961,51 +2970,39 @@ namespace ScriptCanvas
 
         void AbstractCodeModel::ParseDependencies(const Node& node)
         {
-            const auto dependencyOutcome = node.GetDependencies();
-
-            if (dependencyOutcome.IsSuccess())
+            if (!IsUserFunctionCallLocallyDefined(*this, node))
             {
-                const auto& dependencies = dependencyOutcome.GetValue();
+                const auto dependencyOutcome = node.GetDependencies();
 
-                // #functions2 this search needs to recurse, this layer of dependencies will only be one step deep
-                // currently this problem is found by the asset processor
-                if (dependencies.userSubgraphs.find(m_source.m_namespacePath) != dependencies.userSubgraphs.end())
+                if (dependencyOutcome.IsSuccess())
                 {
-                    AZStd::string circularDependency = AZStd::string::format
-                    (ParseErrors::CircularDependencyFormat
-                        , m_source.m_name.data()
-                        , node.GetDebugName().data()
-                        , m_source.m_name.data());
+                    auto& dependencies = dependencyOutcome.GetValue();
 
-                    AddError(nullptr, aznew Internal::ParseError(node.GetEntityId(), circularDependency));
+                    // #functions2 This search needs to recurse, and ignore the graphs in which the functions are defined, do this after the
+                    // editor executed unit tests are restored
+                    //
+                    // This layer of dependencies will only be one step deep.
+                    // Currently, this problem is only detected by the asset processor
+                    if (dependencies.userSubgraphs.find(m_source.m_namespacePath) != dependencies.userSubgraphs.end())
+                    {
+                        // Need to add an error on naming function definition the same as the file, or account for possibility that all over the place in the grammar
+                        AZStd::string circularDependency = AZStd::string::format
+                            ( ParseErrors::CircularDependencyFormat
+                            , m_source.m_name.data()
+                            , node.GetDebugName().data()
+                            , m_source.m_name.data());
+
+                        AddError(nullptr, aznew Internal::ParseError(node.GetEntityId(), circularDependency));
+                    }
+
+                    // #functions2 make this use an identifier for the node, for property window display and easier find/replace updates
+                    // this part must NOT recurse, the dependency tree should remain a tree and not be flattened
+                    m_orderedDependencies.source.MergeWith(dependencies);
                 }
-
-                // #functions2 make this use an identifier for the node, for property window display and easier find/replace updates
-                // this part must NOT recurse, the dependency tree should remain a tree and not be flattened
-                m_orderedDependencies.source.MergeWith(dependencies);
-            }
-            else
-            {
-                AddError(nullptr, ValidationConstPtr(aznew DependencyRetrievalFailiure(node.GetEntityId())));
-            }
-
-            if (auto subgraphInterface = node.GetSubgraphInterface())
-            {
-                m_subgraphInterface.MergeExecutionCharacteristics(*subgraphInterface);
-
-                if (subgraphInterface->HasOnGraphStart())
+                else
                 {
-                    m_subgraphStartCalls.insert(&node);
+                    AddError(nullptr, ValidationConstPtr(aznew DependencyRetrievalFailiure(node.GetEntityId())));
                 }
-
-                if (subgraphInterface->IsActiveDefaultObject())
-                {
-                    m_activeDefaultObject.insert(&node);
-                }
-            }
-            else if (azrtti_cast<const Nodes::Core::FunctionCallNode*>(&node))
-            {
-                AddError(node.GetEntityId(), nullptr, "FunctionCallNode failed to return latest SubgraphInterface");
             }
         }
 
@@ -3294,6 +3291,11 @@ namespace ScriptCanvas
              * as is done in the translator(s).
              */
 
+            if (execution->GetId().m_node && IsUserFunctionCallLocallyDefined(*this, *execution->GetId().m_node))
+            {
+                MarkUserFunctionCallLocallyDefined(execution);
+            }
+
             AccountForEBusConnectionControl(execution);
 
             if (execution->GetChildrenCount() == 0)
@@ -3315,7 +3317,27 @@ namespace ScriptCanvas
 
             // \todo Infinite loop handling both in code and in the graph will have to occur here.
             auto executionOutNodes = execution->GetId().m_node->GetConnectedNodes(outSlot);
-            auto numConnections = executionOutNodes.size();
+
+            // Sort the out node connections to ensure that implicit execution connections are always parsed first
+            EndpointsResolved sortedExecutionOutNodes;
+            for (const EndpointResolved& endpoint : executionOutNodes)
+            {
+                // If this connection is implicit, only parse it if the recieving node has parsed all of its implicit
+                // connections already
+                if (endpoint.second->CreatesImplicitConnections() && !HasUnparsedImplicitConnections(&outSlot, endpoint.second))
+                {
+                    sortedExecutionOutNodes.emplace_back(endpoint);
+                }
+            }
+            for (const EndpointResolved& endpoint : executionOutNodes)
+            {
+                if (!endpoint.second->CreatesImplicitConnections())
+                {
+                    sortedExecutionOutNodes.emplace_back(endpoint);
+                }
+            }
+
+            auto numConnections = sortedExecutionOutNodes.size();
 
             if (numConnections == 0)
             {
@@ -3330,13 +3352,13 @@ namespace ScriptCanvas
             }
             else if (numConnections == 1)
             {
-                ParseExecutionFunctionRecurse(execution, execution->ModChild(0), outSlot, executionOutNodes[0]);
+                ParseExecutionFunctionRecurse(execution, execution->ModChild(0), outSlot, sortedExecutionOutNodes[0]);
             }
             else
             {
                 AZStd::vector<const Slot*> outSlots;
-                outSlots.resize(executionOutNodes.size(), &outSlot);
-                ParseExecutionMultipleOutSyntaxSugar(execution, executionOutNodes, outSlots);
+                outSlots.resize(sortedExecutionOutNodes.size(), &outSlot);
+                ParseExecutionMultipleOutSyntaxSugar(execution, sortedExecutionOutNodes, outSlots);
             }
 
             ParseMultiExecutionPost(execution);
@@ -3368,7 +3390,7 @@ namespace ScriptCanvas
                         }
                         else
                         {
-                            // Interior node branches: This is required for highly custom or state-ful nodes, namely those that fire different, 
+                            // Interior node branches: This is required for highly custom or state-ful nodes, namely those that fire different,
                             // and/or unknown-at-compile-time outs based on the same in.
                             auto iter = m_nodeablesByNode.find(node);
                             if (iter == m_nodeablesByNode.end())
@@ -3782,6 +3804,51 @@ namespace ScriptCanvas
                     return;
                 }
             }
+        }
+
+        bool AbstractCodeModel::HasUnparsedImplicitConnections(const Slot* outSlot, const Slot* inSlot)
+        {
+            if (inSlot->CreatesImplicitConnections())
+            {
+                // Get each endpoint connected to the input slot
+                EndpointsResolved connectedNodes;
+                if (const Node* inNode = inSlot->GetNode())
+                {
+                    connectedNodes = inNode->GetConnectedNodes(*inSlot);
+                }
+                for (const EndpointResolved& connectedNode : connectedNodes)
+                {
+                    // If the endpoint's slot is not the same as the output slot currently being processed, check if it has already been parsed
+                    if (connectedNode.second != outSlot)
+                    {
+                        // If there are no connections to ignore yet, that must mean there are still more slots on this node to parse
+                        if (m_parsedImplicitConnections.empty())
+                        {
+                            m_parsedImplicitConnections.push_back(AZStd::make_pair(outSlot, inSlot));
+                            return true;
+                        }
+                        else
+                        {
+                            bool foundConnectionInParsed = false;
+                            for (const auto& connection : m_parsedImplicitConnections)
+                            {
+                                if (connection.first == connectedNode.second && connection.second == inSlot)
+                                {
+                                    foundConnectionInParsed = true;
+                                }
+                            }
+                            // If the connection we are currently checking is not in the connections to ignore vector, that means there are
+                            // still more implicit slots on this node that we must parse
+                            if (!foundConnectionInParsed)
+                            {
+                                m_parsedImplicitConnections.push_back(AZStd::make_pair(outSlot, inSlot));
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+            return false;
         }
 
         void AbstractCodeModel::ParseExecutionOnce(ExecutionTreePtr once)
@@ -4461,7 +4528,7 @@ namespace ScriptCanvas
                 {
                     auto node2 = execution->GetId().m_node;
                     AddError(execution, aznew ParseError(node2->GetEntityId(), AZStd::string::format
-                    ("Failed to find member variable for Node: %s Id: %s"
+                        ( "Failed to find member variable for Node: %s Id: %s"
                         , node2->GetNodeName().data()
                         , node2->GetEntityId().ToString().data()).data()));
                 }
@@ -4492,13 +4559,31 @@ namespace ScriptCanvas
                 {
                     auto node2 = execution->GetId().m_node;
                     AddError(execution, aznew ParseError(node2->GetEntityId(), AZStd::string::format
-                    ("Failed to find member variable for Node: %s Id: %s"
+                        ( "Failed to find member variable for Node: %s Id: %s"
                         , node2->GetNodeName().data()
                         , node2->GetEntityId().ToString().data()).data()));
                 }
             }
 
             return true;
+        }
+
+        void AbstractCodeModel::ParseLocallyDefinedFunctionCalls()
+        {
+            using namespace Nodes::Core;
+
+            const FunctionCallNodeCompareConfig compareConfig;
+
+            for (auto functionCallNode : m_locallyDefinedFunctionCallNodes)
+            {
+                if (IsLocallyDefinedFunctionCallNodeOutOfDate(*functionCallNode, compareConfig, m_subgraphInterface))
+                {
+                    AZ_Warning("ScriptCanvas", false, "%s node is out-of-date.", functionCallNode->GetNodeName().c_str());
+                    AddError
+                        ( nullptr
+                        , aznew NodeCompatiliblity::NodeOutOfDate(functionCallNode->GetEntityId(), functionCallNode->GetNodeName()));
+                }
+            }
         }
 
         void AbstractCodeModel::ParseMetaData(ExecutionTreePtr execution)
@@ -4787,7 +4872,7 @@ namespace ScriptCanvas
 
         void AbstractCodeModel::ParseOutputData(ExecutionTreePtr execution, ExecutionChild& executionChild)
         {
-            if (const auto nodeling = azrtti_cast<const Nodes::Core::FunctionDefinitionNode*>(execution->GetId().m_node))
+            if (azrtti_cast<const Nodes::Core::FunctionDefinitionNode*>(execution->GetId().m_node))
             {
                 // this nodeling will always be the Execution-In part of the function definition
                 // since a call to a user out does not enter this path
@@ -4980,6 +5065,31 @@ namespace ScriptCanvas
             }
 
             execution->AddReturnValue(nullptr, returnValue);
+        }
+
+        void AbstractCodeModel::ParseSubgraphInterface(const Node& node)
+        {
+            if (!IsUserFunctionCallLocallyDefined(*this, node))
+            {
+                if (auto subgraphInterface = node.GetSubgraphInterface())
+                {
+                    m_subgraphInterface.MergeExecutionCharacteristics(*subgraphInterface);
+
+                    if (subgraphInterface->HasOnGraphStart())
+                    {
+                        m_subgraphStartCalls.insert(&node);
+                    }
+
+                    if (subgraphInterface->IsActiveDefaultObject())
+                    {
+                        m_activeDefaultObject.insert(&node);
+                    }
+                }
+                else if (azrtti_cast<const Nodes::Core::FunctionCallNode*>(&node))
+                {
+                    AddError(node.GetEntityId(), nullptr, "FunctionCallNode failed to return latest SubgraphInterface");
+                }
+            }
         }
 
         void AbstractCodeModel::ParseUserFunctionTopology()
@@ -5451,3 +5561,4 @@ namespace ScriptCanvas
         }
     }
 }
+

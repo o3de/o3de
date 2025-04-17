@@ -19,12 +19,10 @@ namespace UnitTest
     protected:
         void SetupEnvironment() override
         {
-            AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
         }
 
         void TeardownEnvironment() override
         {
-            AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
         }
     };
 
@@ -87,13 +85,11 @@ namespace UnitTest
 
     TEST_F(AtomToolsFrameworkTest, GetPathToExteralReference_Succeeds)
     {
-        ASSERT_EQ(AtomToolsFramework::GetPathToExteralReference("", "", true), "");
-        ASSERT_EQ(AtomToolsFramework::GetPathToExteralReference("@exefolder@/root1/project/assets/materials/condor.material", "", true), "");
-        ASSERT_EQ(AtomToolsFramework::GetPathToExteralReference("@exefolder@/root1/project/assets/materials/talisman.material", "", false), "");
-        ASSERT_EQ(AtomToolsFramework::GetPathToExteralReference("@exefolder@/root1/project/assets/materials/talisman.material", "@exefolder@/root1/project/assets/textures/gold.png", true), "../textures/gold.png");
-        ASSERT_EQ(AtomToolsFramework::GetPathToExteralReference("@exefolder@/root1/project/assets/materials/talisman.material", "@exefolder@/root1/project/assets/textures/gold.png", false), "textures/gold.png");
-        ASSERT_EQ(AtomToolsFramework::GetPathToExteralReference("@exefolder@/root1/project/assets/objects/upgrades/materials/supercondor.material", "@exefolder@/root1/project/assets/materials/condor.material", true), "../../../materials/condor.material");
-        ASSERT_EQ(AtomToolsFramework::GetPathToExteralReference("@exefolder@/root1/project/assets/objects/upgrades/materials/supercondor.material", "@exefolder@/root1/project/assets/materials/condor.material", false), "materials/condor.material");
+        ASSERT_EQ(AtomToolsFramework::GetPathToExteralReference("", ""), "");
+        ASSERT_EQ(AtomToolsFramework::GetPathToExteralReference("@exefolder@/root1/project/assets/materials/condor.material", ""), "");
+        ASSERT_EQ(AtomToolsFramework::GetPathToExteralReference("@exefolder@/root1/project/assets/materials/talisman.material", ""), "");
+        ASSERT_EQ(AtomToolsFramework::GetPathToExteralReference("@exefolder@/root1/project/assets/materials/talisman.material", "@exefolder@/root1/project/assets/textures/gold.png"), "../textures/gold.png");
+        ASSERT_EQ(AtomToolsFramework::GetPathToExteralReference("@exefolder@/root1/project/assets/objects/upgrades/materials/supercondor.material", "@exefolder@/root1/project/assets/materials/condor.material"), "../../../materials/condor.material");
     }
 
     TEST_F(AtomToolsFrameworkTest, IsDocumentPathInSupportedFolder_Succeeds)

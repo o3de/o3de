@@ -16,12 +16,6 @@
 
 #include <functional>
 #include <QSharedPointer>
-#include <QWidgetAction>
-#include <QComboBox>
-
-#include <AzToolsFramework/UI/Prefab/PrefabViewportFocusPathHandler.h>
-#include <AzQtComponents/Components/Widgets/SpinBox.h>
-
 #endif
 
 // CViewportTitleDlg dialog
@@ -41,8 +35,6 @@ namespace Ui
 //////////////////////////////////////////////////////////////////////////
 class CViewportTitleDlg
     : public QWidget
-    , public IEditorNotifyListener
-    , public ISystemEventListener
 {
     Q_OBJECT
 public:
@@ -51,12 +43,6 @@ public:
 
     void SetViewPane(CLayoutViewPane* pViewPane);
     void SetTitle(const QString& title);
-    void OnViewportSizeChanged(int width, int height);
-    void OnViewportFOVChanged(float fovRadians);
-
-    static void AddFOVMenus(QMenu* menu, std::function<void(float)> callback, const QStringList& customPresets);
-    static void AddAspectRatioMenus(QMenu* menu, std::function<void(int, int)> callback, const QStringList& customPresets);
-    static void AddResolutionMenus(QMenu* menu, std::function<void(int, int)> callback, const QStringList& customPresets);
 
     static void LoadCustomPresets(const QString& section, const QString& keyName, QStringList& outCustompresets);
     static void SaveCustomPresets(const QString& section, const QString& keyName, const QStringList& custompresets);
@@ -64,13 +50,11 @@ public:
 
     bool eventFilter(QObject* object, QEvent* event) override;
 
-    void SetSpeedComboBox(double value);
-
-    QMenu* const GetFovMenu();
-    QMenu* const GetAspectMenu();
-    QMenu* const GetResolutionMenu();
-
-    void InitializePrefabViewportFocusPathHandler(AzQtComponents::BreadCrumbs* breadcrumbsWidget, QToolButton* backButton);
+    void SetNoViewportInfo();
+    void SetNormalViewportInfo();
+    void SetFullViewportInfo();
+    void SetCompactViewportInfo();
+    void OnToggleDisplayInfo();
 
 Q_SIGNALS:
     void ActionTriggered(int command);
@@ -78,19 +62,7 @@ Q_SIGNALS:
 protected:
     virtual void OnInitDialog();
 
-    void OnEditorNotifyEvent(EEditorNotifyEvent event) override;
-    void OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR lparam) override;
-
     void OnMaximize();
-    void UpdateEditMode();
-    void UpdateDisplayInfo();
-
-    void SetupCameraDropdownMenu();
-    void SetupResolutionDropdownMenu();
-    void SetupEditModeMenu();
-    void SetupViewportInformationMenu();
-    void SetupOverflowMenu();
-    void SetupHelpersButton();
 
     QString m_title;
 
@@ -101,98 +73,32 @@ protected:
     QStringList m_customFOVPresets;
     QStringList m_customAspectRatioPresets;
 
-    float m_prevMoveSpeed;
+    float m_prevMoveSpeedScale;
 
     // Speed combobox/lineEdit settings
-    double m_minSpeed = 0.01;
-    double m_maxSpeed = 100.0;
-    double m_speedStep = 0.001;
-    int m_numDecimals = 3;
-
-    // Speed presets
-    float m_speedPresetValues[4] = { 0.01f, 0.1f, 1.0f, 10.0f };
-
-    double m_fieldWidthMultiplier = 1.8;
+    double m_speedScaleMin = 0.001;
+    double m_speedScaleMax = 100.0;
+    double m_speedScaleStep = 0.01;
+    int m_speedScaleDecimalCount = 3;
 
     void OnMenuFOVCustom();
-
-    void CreateFOVMenu();
-
     void OnMenuAspectRatioCustom();
-    void CreateAspectMenu();
-
     void OnMenuResolutionCustom();
-    void CreateResolutionMenu();
     
-    void CreateEditModeMenu();
-    QMenu* const GetEditModeMenu();
-    void SetNormalEditMode();
-    void SetMonochromaticEditMode();
-
-    void CreateViewportInformationMenu();
-    QMenu* const GetViewportInformationMenu();
-    void SetNoViewportInfo();
-    void SetNormalViewportInfo();
-    void SetFullViewportInfo();
-    void SetCompactViewportInfo();
-
     void OnBnClickedGotoPosition();
     void OnBnClickedMuteAudio();
 
-    void UpdateMuteActionText();
-
-    void OnToggleDisplayInfo();
-
-    void OnSpeedComboBoxEnter();
-    void OnUpdateMoveSpeedText(const QString&);
-
-    void CheckForCameraSpeedUpdate();
-
-    void OnGridSnappingToggled(int state);
-    void OnAngleSnappingToggled(int state);
-
-    void OnGridSpinBoxChanged(double value);
-    void OnAngleSpinBoxChanged(double value);
-
-    void UpdateOverFlowMenuState();
-
-    QAction* m_normalEditModeAction = nullptr;
-    QAction* m_monochromaticEditModeAction = nullptr;
-    QMenu* m_fovMenu = nullptr;
-    QMenu* m_aspectMenu = nullptr;
-    QMenu* m_resolutionMenu = nullptr;
-    QMenu* m_editModeMenu = nullptr;
-    QMenu* m_viewportInformationMenu = nullptr;
-    QMenu* m_helpersMenu = nullptr;
-    QAction* m_helpersAction = nullptr;
-    QAction* m_iconsAction = nullptr;
-    QAction* m_noInformationAction = nullptr;
-    QAction* m_normalInformationAction = nullptr;
-    QAction* m_fullInformationAction = nullptr;
-    QAction* m_compactInformationAction = nullptr;
-    QAction* m_audioMuteAction = nullptr;
-    QCheckBox* m_enableGridSnappingCheckBox = nullptr;
-    QCheckBox* m_enableGridVisualizationCheckBox = nullptr;
-    QCheckBox* m_enableAngleSnappingCheckBox = nullptr;
-    QComboBox* m_cameraSpeed = nullptr;
-    AzQtComponents::DoubleSpinBox* m_gridSpinBox = nullptr;
-    AzQtComponents::DoubleSpinBox* m_angleSpinBox = nullptr;
-    QWidgetAction* m_gridSizeActionWidget = nullptr;
-    QWidgetAction* m_angleSizeActionWidget = nullptr;
-
-    AzToolsFramework::Prefab::PrefabViewportFocusPathHandler* m_prefabViewportFocusPathHandler = nullptr;
-
     QScopedPointer<Ui::ViewportTitleDlg> m_ui;
 
-    //! The different edit mode effects available in the Edit mode menu.
-    enum class FocusModeUxSetting
+    //! The different prefab edit mode effects available in the Edit mode menu.
+    enum class PrefabEditModeUXSetting
     {
         Normal, //!< No effect.
         Monochromatic //!< Monochromatic effect.
     };
 
     //! The currently active edit mode effect.
-    FocusModeUxSetting m_editMode = FocusModeUxSetting::Monochromatic;
+    PrefabEditModeUXSetting m_prefabEditMode = PrefabEditModeUXSetting::Monochromatic;
 };
 
 namespace AzToolsFramework

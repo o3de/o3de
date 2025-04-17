@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScriptCanvas Include="${Name}.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+              xsi:noNamespaceSchemaLocation="AutoGen/ScriptCanvasNodeable.xsd">
+
+    <Class Name="${SanitizedCppName}"
+        QualifiedName="ScriptCanvas::Nodes::${SanitizedCppName}"
+        PreferredClassName="${SanitizedCppName}"
+        Category="${Name} Nodes"
+        Namespace="ScriptCanvas"
+        Description="Simple Script Canvas node example">
+
+        <Input Name="In" OutputName="Out" Description="Entry point into the node"/>
+
+    </Class>
+</ScriptCanvas>

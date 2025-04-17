@@ -34,7 +34,13 @@ IF "%DCCSI_BLENDER_VERSION%"=="" (set DCCSI_BLENDER_VERSION=3.1)
 :: Initialize env
 CALL %~dp0\Env_O3DE_Core.bat
 CALL %~dp0\Env_O3DE_Python.bat
-CALL %~dp0\Env_O3DE_Qt.bat
+
+:: This can now only be added late, in the launcher
+:: it conflicts with other Qt apps like Wing Pro 8+
+::CALL %~dp0\Env_O3DE_Qt.bat
+:: this could interfere with standalone python apps/tools/utils that use O3DE Qt
+:: and trying to run them from the IDE
+:: We may have to find a work around in the next iteration?
 
 echo.
 echo _____________________________________________________________________

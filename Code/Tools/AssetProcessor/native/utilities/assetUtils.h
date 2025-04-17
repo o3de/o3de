@@ -22,6 +22,7 @@
 #include <AzToolsFramework/Asset/AssetProcessorMessages.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzToolsFramework/AssetDatabase/AssetDatabaseConnection.h>
+#include <AssetManager/SourceAssetReference.h>
 
 namespace AzToolsFramework
 {
@@ -164,6 +165,9 @@ namespace AssetUtilities
     // UUID generation defaults to lowercase SHA1 of the source name, this does normalization and such
     AZ::Uuid CreateSafeSourceUUIDFromName(const char* sourceName, bool caseInsensitive = true);
 
+    AZ::Outcome<AZ::Uuid, AZStd::string> GetSourceUuid(const AssetProcessor::SourceAssetReference& sourceAsset);
+    AZ::Outcome<AZStd::unordered_set<AZ::Uuid>, AZStd::string> GetLegacySourceUuids(const AssetProcessor::SourceAssetReference& sourceAsset);
+
     //! Compute a CRC given a null-terminated string
     //! @param[in] priorCRC     If supplied, continues an existing CRC by feeding it more data
     unsigned int ComputeCRC32(const char* inString, unsigned int priorCRC = 0xFFFFFFFF);
@@ -246,12 +250,11 @@ namespace AssetUtilities
 
     QString GuessProductNameInDatabase(QString path, QString platform, AssetProcessor::AssetDatabaseConnection* databaseConnection);
 
-    //! Given a list of source asset Uuids, it returns a list that contains the same source assets Uuids along with all of their dependencies
-    //! which are discovered recursively. All the returned Uuids are unique, meaning they appear once in the returned list.
-    AZStd::vector<AZ::Uuid> CollectAssetAndDependenciesRecursively(AssetProcessor::AssetDatabaseConnection& databaseConnection, const AZStd::vector<AZ::Uuid>& assetList);
-
     //! A utility function which checks the given path starting at the root and updates the relative path to be the actual case correct path.
-    bool UpdateToCorrectCase(const QString& rootPath, QString& relativePathFromRoot);
+    //! Set checkEntirePath to false if the caller is absolutely sure the path is correct and only the last element (file name or extension)
+    //! is potentially wrong. This can happen when for example taking a real file found from a real file directory that is already correct
+    //! and modifying just the file path or extension.  It is significantly faster to avoid checking the entire path.
+    bool UpdateToCorrectCase(const QString& rootPath, QString& relativePathFromRoot, bool checkEntirePath = true);
 
     //! Returns true if the path is in the cachePath and *not* in the intermediate assets folder.
     //! If cachePath is empty, it will be computed using ComputeProjectCacheRoot.
@@ -268,12 +271,17 @@ namespace AssetUtilities
     AZStd::string GetIntermediateAssetDatabaseName(AZ::IO::PathView relativePath);
 
     //! Finds the top level source that produced an intermediate product.  If the source is not yet recorded in the database or has no top level source, this will return nothing
-    AZStd::optional<AzToolsFramework::AssetDatabase::SourceDatabaseEntry> GetTopLevelSourceForProduct(AZ::IO::PathView relativePath, AZStd::shared_ptr<AssetProcessor::AssetDatabaseConnection> db);
+    AZStd::optional<AzToolsFramework::AssetDatabase::SourceDatabaseEntry> GetTopLevelSourceForIntermediateAsset(const AssetProcessor::SourceAssetReference& sourceAsset, AZStd::shared_ptr<AssetProcessor::AssetDatabaseConnection> db);
+
+    //! Gets the absolute path to the top level source that produced an intermediate product. Returns nothing if the source is not yet recorded, there is no top level source, or other issues are encountered.
+    //! Does not check if the file exists.
+    AZStd::optional<AZ::IO::Path> GetTopLevelSourcePathForIntermediateAsset(
+        const AssetProcessor::SourceAssetReference& sourceAsset, AZStd::shared_ptr<AssetProcessor::AssetDatabaseConnection> db);
 
     //! Finds all the sources (up and down) in an intermediate output chain
-    AZStd::vector<AZStd::string> GetAllIntermediateSources(
-        AZ::IO::PathView relativeSourcePath, AZStd::shared_ptr<AssetProcessor::AssetDatabaseConnection> db);
-    
+    AZStd::vector<AssetProcessor::SourceAssetReference> GetAllIntermediateSources(
+        const AssetProcessor::SourceAssetReference& sourceAsset, AZStd::shared_ptr<AssetProcessor::AssetDatabaseConnection> db);
+
     //! Given a source path for an intermediate asset, constructs the product path.
     //! This does not verify either exist, it just manipulates the string.
     AZStd::string GetRelativeProductPathForIntermediateSourcePath(AZStd::string_view relativeSourcePath);
@@ -305,6 +313,7 @@ namespace AssetUtilities
         : public AssetBuilderSDK::FilePatternMatcher
     {
     public:
+        AZ_CLASS_ALLOCATOR(BuilderFilePatternMatcher, AZ::SystemAllocator)
         BuilderFilePatternMatcher() = default;
         BuilderFilePatternMatcher(const BuilderFilePatternMatcher& copy);
         BuilderFilePatternMatcher(const AssetBuilderSDK::AssetBuilderPattern& pattern, const AZ::Uuid& builderDescID);

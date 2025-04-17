@@ -12,12 +12,12 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(MeshDeformer, DeformerAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(MeshDeformer, DeformerAllocator)
 
 
     // constructor
     MeshDeformer::MeshDeformer(Mesh* mesh)
-        : BaseObject()
+        : MCore::RefCounted()
     {
         m_mesh       = mesh;
         m_isEnabled  = true;

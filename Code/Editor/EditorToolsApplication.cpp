@@ -20,18 +20,26 @@
 
 // Editor
 #include "MainWindow.h"
+#include "Controls/ReflectedPropertyControl/ReflectedVar.h"
 #include "CryEdit.h"
 #include "DisplaySettingsPythonFuncs.h"
 #include "GameEngine.h"
 #include "PythonEditorFuncs.h"
 #include "TrackView/TrackViewPythonFuncs.h"
-#include "Include/IObjectManager.h"
-#include "Objects/ObjectManager.h"
 
 namespace EditorInternal
 {
+    EditorToolsApplication::EditorToolsApplication(AZ::ComponentApplicationSettings componentAppSettings)
+        : EditorToolsApplication(nullptr, nullptr, AZStd::move(componentAppSettings))
+    {
+    }
     EditorToolsApplication::EditorToolsApplication(int* argc, char*** argv)
-        : ToolsApplication(argc, argv)
+        : EditorToolsApplication(argc, argv, {})
+    {
+    }
+
+    EditorToolsApplication::EditorToolsApplication(int* argc, char*** argv, AZ::ComponentApplicationSettings componentAppSettings)
+        : ToolsApplication(argc, argv, AZStd::move(componentAppSettings))
     {
         EditorToolsApplicationRequests::Bus::Handler::BusConnect();
         AzToolsFramework::ViewportInteraction::EditorModifierKeyRequestBus::Handler::BusConnect();
@@ -61,7 +69,6 @@ namespace EditorInternal
         RegisterComponentDescriptor(AzToolsFramework::CryEditDocFuncsHandler::CreateDescriptor());
         RegisterComponentDescriptor(AzToolsFramework::DisplaySettingsPythonFuncsHandler::CreateDescriptor());
         RegisterComponentDescriptor(AzToolsFramework::MainWindowEditorFuncsHandler::CreateDescriptor());
-        RegisterComponentDescriptor(AzToolsFramework::ObjectManagerFuncsHandler::CreateDescriptor());
         RegisterComponentDescriptor(AzToolsFramework::PythonEditorComponent::CreateDescriptor());
         RegisterComponentDescriptor(AzToolsFramework::PythonEditorFuncsHandler::CreateDescriptor());
         RegisterComponentDescriptor(AzToolsFramework::DisplaySettingsComponent::CreateDescriptor());
@@ -114,7 +121,7 @@ namespace EditorInternal
     }
 
     void EditorToolsApplication::QueryApplicationType(AZ::ApplicationTypeQuery& appType) const
-    { 
+    {
         appType.m_maskValue = AZ::ApplicationTypeQuery::Masks::Editor | AZ::ApplicationTypeQuery::Masks::Tool;
     };
 
@@ -128,6 +135,12 @@ namespace EditorInternal
     void EditorToolsApplication::Reflect(AZ::ReflectContext* context)
     {
         ToolsApplication::Reflect(context);
+
+        // Reflect property control classes to the serialize context...
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            ReflectedVarInit::setupReflection(serializeContext);
+        }
 
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
@@ -196,7 +209,7 @@ namespace EditorInternal
                 return false;
             }
         }
-        
+
         auto previousDocument = GetIEditor()->GetDocument();
         QString previousPathName = (previousDocument != nullptr) ? previousDocument->GetLevelPathName() : "";
         auto newDocument = CCryEditApp::instance()->OpenDocumentFile(levelPath.c_str(), true, COpenSameLevelOptions::ReopenLevelIfSame);
@@ -211,14 +224,16 @@ namespace EditorInternal
         return OpenLevel(levelName);
     }
 
-    int EditorToolsApplication::CreateLevel(AZStd::string_view levelName, bool /*bUseTerrain*/)
+    int EditorToolsApplication::CreateLevel(AZStd::string_view templateName, AZStd::string_view levelName, bool /*bUseTerrain*/)
     {
         // Clang warns about a temporary being created in a function's argument list, so fullyQualifiedLevelName before the call
         QString fullyQualifiedLevelName;
-        return CCryEditApp::instance()->CreateLevel(QString::fromUtf8(levelName.data(), static_cast<int>(levelName.size())), fullyQualifiedLevelName);
+        return CCryEditApp::instance()->CreateLevel(QString::fromUtf8(templateName.data(), static_cast<int>(templateName.size())),
+                                                    QString::fromUtf8(levelName.data(), static_cast<int>(levelName.size())),
+                                                    fullyQualifiedLevelName);
     }
 
-    int EditorToolsApplication::CreateLevelNoPrompt(AZStd::string_view levelName, int /*terrainExportTextureSize*/, bool /*useTerrain*/)
+    int EditorToolsApplication::CreateLevelNoPrompt(AZStd::string_view templateName, AZStd::string_view levelName, int /*terrainExportTextureSize*/, bool /*useTerrain*/)
     {
         // If a level was open, ignore any unsaved changes if it had been modified
         if (GetIEditor()->IsLevelLoaded())
@@ -228,7 +243,9 @@ namespace EditorInternal
 
         // Clang warns about a temporary being created in a function's argument list, so fullyQualifiedLevelName before the call
         QString fullyQualifiedLevelName;
-        return CCryEditApp::instance()->CreateLevel(QString::fromUtf8(levelName.data(), static_cast<int>(levelName.size())), fullyQualifiedLevelName);
+        return CCryEditApp::instance()->CreateLevel(QString::fromUtf8(templateName.data(), static_cast<int>(templateName.size())),
+                                                    QString::fromUtf8(levelName.data(), static_cast<int>(levelName.size())),
+                                                    fullyQualifiedLevelName);
     }
 
     AZStd::string EditorToolsApplication::GetCurrentLevelName() const
@@ -243,18 +260,7 @@ namespace EditorInternal
 
     const char* EditorToolsApplication::GetLevelExtension() const
     {
-        bool prefabSystemEnabled = false;
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(
-            prefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-
-        if (!prefabSystemEnabled)
-        {
-            return ".ly";
-        }
-        else
-        {
-            return ".prefab";
-        }
+        return ".prefab";
     }
 
     const char* EditorToolsApplication::GetOldCryLevelExtension() const
@@ -284,7 +290,7 @@ namespace EditorInternal
 
     AZStd::chrono::milliseconds EditorToolsApplication::EditorViewportInputTimeNow()
     {
-        const auto now = AZStd::chrono::high_resolution_clock::now();
+        const auto now = AZStd::chrono::steady_clock::now();
         return AZStd::chrono::time_point_cast<AZStd::chrono::milliseconds>(now).time_since_epoch();
     }
 } // namespace EditorInternal

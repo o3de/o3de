@@ -10,7 +10,6 @@
 
 #include <Tests/SystemComponentFixture.h>
 
-#include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzFramework/Physics/Material/PhysicsMaterialSystemComponent.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyManagerComponent.h>
@@ -22,6 +21,7 @@
 #include <EMotionStudio/Plugins/StandardPlugins/Source/MotionSetsWindow/MotionSetsWindowPlugin.h>
 #include <Integration/AnimationBus.h>
 
+#include <QModelIndex>
 #include <QString>
 #include <QToolBar>
 #include <QTreeView>
@@ -31,15 +31,19 @@
 QT_FORWARD_DECLARE_CLASS(QWidget)
 QT_FORWARD_DECLARE_CLASS(QAction)
 QT_FORWARD_DECLARE_CLASS(QTreeView)
+QT_FORWARD_DECLARE_CLASS(QAbstractItemModel)
 QT_FORWARD_DECLARE_CLASS(ReselectingTreeView)
 
 namespace AzToolsFramework { class ReflectedPropertyEditor; }
 namespace AzQtComponents { class WindowDecorationWrapper; }
 namespace AzQtComponents { class TitleBar; }
+namespace GraphCanvas { class NodePaletteTreeView; }
 
 namespace EMotionFX
 {
     class SimulatedObjectColliderWidget;
+    class SkeletonOutlinerPlugin;
+    class SimulatedObjectWidget;
 
     class MakeQtApplicationBase
     {
@@ -57,7 +61,6 @@ namespace EMotionFX
     };
 
     using UIFixtureBase = ComponentFixture<
-        AZ::MemoryComponent,
         AZ::AssetManagerComponent,
         AZ::JobManagerComponent,
         AZ::StreamerComponent,
@@ -83,7 +86,15 @@ namespace EMotionFX
         static QWidget* GetWidgetFromToolbarWithObjectName(const QToolBar* toolbar, const QString &objectName);
         static QWidget* GetWidgetWithNameFromNamedToolbar(const QWidget* widget, const QString &toolBarName, const QString &objectName);
 
+        template<class T>
+        T* GetFirstChildOfType(const QWidget* widget)
+        {
+            const QList<T*> children = widget->findChildren<T*>();
+            return children.isEmpty() ? nullptr : children[0];
+        }
+
         static QAction* GetNamedAction(const QWidget* widget, const QString& actionName);
+        QModelIndex GetIndexFromName(const GraphCanvas::NodePaletteTreeView* tree, const QString& name);
         static bool GetActionFromContextMenu(QAction*& action, const QMenu* contextMenu, const QString& actionName);
 
         static void ExecuteCommands(std::vector<std::string> commands);
@@ -123,6 +134,9 @@ namespace EMotionFX
 
         QApplication* m_uiApp = nullptr;
         EMStudio::AnimGraphPlugin* m_animGraphPlugin = nullptr;
+        EMotionFX::SkeletonOutlinerPlugin* m_skeletonOutlinerPlugin = nullptr;
+        EMotionFX::SimulatedObjectWidget* m_simulatedObjectPlugin = nullptr;
+
         testing::NiceMock<UnitTests::MockAssetSystemRequest> m_assetSystemRequestMock;
     };
 } // end namespace EMotionFX

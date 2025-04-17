@@ -1,5 +1,6 @@
 {
     "gem_name": "Multiplayer",
+    "version": "0.0.0",
     "display_name": "Multiplayer",
     "license": "Apache-2.0 Or MIT",
     "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
@@ -18,6 +19,9 @@
     "icon_path": "preview.png",
     "requirements": "",
     "documentation_url": "",
+    "external_subdirectories": [
+        "Multiplayer_ScriptCanvas"
+    ],
     "dependencies": [
         "CertificateManager",
         "Atom_Feature_Common",

@@ -35,7 +35,7 @@ namespace AzToolsFramework
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(PropertyEnumComboBoxCtrl, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PropertyEnumComboBoxCtrl, AZ::SystemAllocator);
 
         PropertyEnumComboBoxCtrl(QWidget* pParent = NULL);
         virtual ~PropertyEnumComboBoxCtrl();
@@ -96,7 +96,7 @@ namespace AzToolsFramework
                             {
                                 for (const AZ::AttributePair& attributePair : data->m_attributes)
                                 {
-                                    PropertyAttributeReader reader(attrValue->GetInstancePointer(), attributePair.second);
+                                    PropertyAttributeReader reader(attrValue->GetInstance(), attributePair.second);
                                     ConsumeAttribute(GUI, attributePair.first, &reader, debugName);
                                 }
                             }
@@ -104,13 +104,13 @@ namespace AzToolsFramework
                     }
                 }
             }
-            else if (attrib == AZ_CRC("EnumValue", 0xe4f32eed))
+            else if (attrib == AZ_CRC_CE("EnumValue"))
             {
                 AZStd::pair<ValueType, AZStd::string>  enumValue;
                 AZ::Edit::EnumConstant<ValueType> enumConstant;
                 if (attrValue->Read<AZ::Edit::EnumConstant<ValueType>>(enumConstant))
                 {
-                    enumValue.first = enumConstant.m_value;
+                    enumValue.first = ValueType(enumConstant.m_value);
                     enumValue.second = enumConstant.m_description;
 
                     genericGUI->addElement(enumValue);
@@ -150,7 +150,7 @@ namespace AzToolsFramework
                 {
                     for (const AZ::Edit::EnumConstant<ValueType>& constantValue : enumConstantValues)
                     {
-                        enumValues.emplace_back(constantValue.m_value, constantValue.m_description);
+                        enumValues.emplace_back(static_cast<ValueType>(constantValue.m_value), constantValue.m_description);
                     }
                     genericGUI->setElements(enumValues);
                 }
@@ -206,35 +206,35 @@ namespace AzToolsFramework
         : public GenericEnumPropertyComboBoxHandler<char>
     {
     public:
-        AZ_CLASS_ALLOCATOR(charEnumPropertyComboBoxHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(charEnumPropertyComboBoxHandler, AZ::SystemAllocator);
     };
 
     class s8EnumPropertyComboBoxHandler
         : public GenericEnumPropertyComboBoxHandler<AZ::s8>
     {
     public:
-        AZ_CLASS_ALLOCATOR(s8EnumPropertyComboBoxHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(s8EnumPropertyComboBoxHandler, AZ::SystemAllocator);
     };
 
     class u8EnumPropertyComboBoxHandler
         : public GenericEnumPropertyComboBoxHandler<AZ::u8>
     {
     public:
-        AZ_CLASS_ALLOCATOR(u8EnumPropertyComboBoxHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(u8EnumPropertyComboBoxHandler, AZ::SystemAllocator);
     };
 
     class s16EnumPropertyComboBoxHandler
         : public GenericEnumPropertyComboBoxHandler<AZ::s16>
     {
     public:
-        AZ_CLASS_ALLOCATOR(s16EnumPropertyComboBoxHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(s16EnumPropertyComboBoxHandler, AZ::SystemAllocator);
     };
 
     class u16EnumPropertyComboBoxHandler
         : public GenericEnumPropertyComboBoxHandler<AZ::u16>
     {
     public:
-        AZ_CLASS_ALLOCATOR(u16EnumPropertyComboBoxHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(u16EnumPropertyComboBoxHandler, AZ::SystemAllocator);
     };
 
     // Default: int
@@ -242,28 +242,28 @@ namespace AzToolsFramework
         : public GenericEnumPropertyComboBoxHandler<int>
     {
     public:
-        AZ_CLASS_ALLOCATOR(defaultEnumPropertyComboBoxHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(defaultEnumPropertyComboBoxHandler, AZ::SystemAllocator);
     };
 
     class u32EnumPropertyComboBoxHandler
         : public GenericEnumPropertyComboBoxHandler<AZ::u32>
     {
     public:
-        AZ_CLASS_ALLOCATOR(u32EnumPropertyComboBoxHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(u32EnumPropertyComboBoxHandler, AZ::SystemAllocator);
     };
 
     class s64EnumPropertyComboBoxHandler
         : public GenericEnumPropertyComboBoxHandler<AZ::s64>
     {
     public:
-        AZ_CLASS_ALLOCATOR(s64EnumPropertyComboBoxHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(s64EnumPropertyComboBoxHandler, AZ::SystemAllocator);
     };
 
     class u64EnumPropertyComboBoxHandler
         : public GenericEnumPropertyComboBoxHandler<AZ::u64>
     {
     public:
-        AZ_CLASS_ALLOCATOR(u64EnumPropertyComboBoxHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(u64EnumPropertyComboBoxHandler, AZ::SystemAllocator);
     };
 
     void RegisterEnumComboBoxHandler();

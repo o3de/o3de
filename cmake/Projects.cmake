@@ -16,6 +16,49 @@ include_guard()
 # it would have to be defined in each project.
 set(LY_PROJECTS "${LY_PROJECTS}" CACHE STRING "List of projects to enable, this can be a relative path to the engine root or an absolute path")
 
+
+# o3de_find_ancestor_project_root: Searches for the nearest project root from input source_dir
+#
+# \arg:source_dir(FILEPATH) - Filepath to walk upwards from to locate a project.json
+# \return:output_project_root - The directory containing the nearest project.json
+# \return:output_project_name - The name of the project read from the project.json
+function(o3de_find_ancestor_project_root output_project_root output_project_name source_dir)
+    unset(${output_project_root} PARENT_SCOPE)
+
+    if(source_dir)
+        set(candidate_project_path ${source_dir})
+        # Locate the root of the project by finding the project.json location
+        cmake_path(APPEND candidate_project_path "project.json" OUTPUT_VARIABLE candidate_project_json_path)
+        while(NOT EXISTS "${candidate_project_json_path}")
+            cmake_path(GET candidate_project_path PARENT_PATH parent_path)
+
+            # If the parent directory is the same as the candidate path then the root path has been found
+            cmake_path(COMPARE "${candidate_project_path}" EQUAL "${parent_path}" reached_root_dir)
+            if (reached_root_dir)
+                # The source directory is not under a project path in this case
+                return()
+            endif()
+            set(candidate_project_path ${parent_path})
+            cmake_path(APPEND candidate_project_path "project.json" OUTPUT_VARIABLE candidate_project_json_path)
+        endwhile()
+    endif()
+
+    if (EXISTS ${candidate_project_json_path})
+        # Update source_dir if the project root path exists
+        set(source_dir ${candidate_project_path})
+        o3de_read_json_key(project_name ${candidate_project_json_path} "project_name")
+    endif()
+
+    # Set the project root output directory to the location with the project.json file within it or
+    # the supplied project_target SOURCE_DIR location if no project.json file was found
+    set(${output_project_root} ${source_dir} PARENT_SCOPE)
+
+    # Set the project name output value to the name of the project as in the project.json file
+    if(project_name)
+        set(${output_project_name} ${project_name} PARENT_SCOPE)
+    endif()
+endfunction()
+
 #! ly_add_target_dependencies: adds module load dependencies for this target.
 #
 #  Each target may have dependencies on gems. To properly define these dependencies, users provides
@@ -28,11 +71,13 @@ set(LY_PROJECTS "${LY_PROJECTS}" CACHE STRING "List of projects to enable, this 
 # \arg:TARGETS names of the targets to associate the dependencies to
 # \arg:DEPENDENCIES_FILES file(s) that contains the load-time dependencies the TARGETS will be associated to
 # \arg:DEPENDENT_TARGETS additional list of targets should be added as load-time dependencies for the TARGETS list
+# \arg:GEM_VARIANT variant associated with TARGETS dependencies are being added to
+#      Some variant values are "Clients", "Servers", "Tools", "Builders", "Unified"
 #
 function(ly_add_target_dependencies)
 
     set(options)
-    set(oneValueArgs PREFIX)
+    set(oneValueArgs PREFIX GEM_VARIANT)
     set(multiValueArgs TARGETS DEPENDENCIES_FILES DEPENDENT_TARGETS)
 
     cmake_parse_arguments(ly_add_gem_dependencies "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
@@ -46,6 +91,8 @@ function(ly_add_target_dependencies)
         message(FATAL_ERROR "DEPENDENCIES_FILES parameter missing. It must be supplied unless the DEPENDENT_TARGETS parameter is set")
     endif()
 
+
+    set(gem_variant ${ly_add_gem_dependencies_GEM_VARIANT})
     unset(ALL_GEM_DEPENDENCIES)
     foreach(dependency_file ${ly_add_gem_dependencies_DEPENDENCIES_FILES})
         #unset any GEM_DEPENDENCIES and include the dependencies file, that should populate GEM_DEPENDENCIES
@@ -57,20 +104,25 @@ function(ly_add_target_dependencies)
     # Append the DEPENDENT_TARGETS to the list of ALL_GEM_DEPENDENCIES
     list(APPEND ALL_GEM_DEPENDENCIES ${ly_add_gem_dependencies_DEPENDENT_TARGETS})
 
-    # for each target, add the dependencies and generate setreg json with the list of gems to load
+    # for each target, add the dependencies and set a global property that maps
+    # the prefix, target name and gem variant to that list of dependencies to load
+    # This list is iterated in [SettingsRegistry.cmake](./SettingsRegistry.cmake)
+    # to generate json with the list of active gem modules to load
     foreach(target ${ly_add_gem_dependencies_TARGETS})
         ly_add_dependencies(${target} ${ALL_GEM_DEPENDENCIES})
 
+        set(delayed_load_dependency_key "${ly_add_gem_dependencies_PREFIX},${target},${gem_variant}")
         # Add the target to the LY_DELAYED_LOAD_DEPENDENCIES if it isn't already on the list
         get_property(load_dependencies_set GLOBAL PROPERTY LY_DELAYED_LOAD_DEPENDENCIES)
-        if(NOT "${ly_add_gem_dependencies_PREFIX},${target}" IN_LIST load_dependencies_set)
-            set_property(GLOBAL APPEND PROPERTY LY_DELAYED_LOAD_DEPENDENCIES "${ly_add_gem_dependencies_PREFIX},${target}")
+        if(NOT "${delayed_load_dependency_key}" IN_LIST load_dependencies_set)
+            set_property(GLOBAL APPEND PROPERTY LY_DELAYED_LOAD_DEPENDENCIES "${delayed_load_dependency_key}")
         endif()
         foreach(gem_target ${ALL_GEM_DEPENDENCIES})
-            # Add the list of gem dependencies to the LY_TARGET_DELAYED_DEPENDENCIES_${ly_add_gem_dependencies_PREFIX};${target} property
-            get_property(target_load_dependencies GLOBAL PROPERTY LY_DELAYED_LOAD_"${ly_add_gem_dependencies_PREFIX},${target}")
+            # Add the list of gem dependencies to the
+            # LY_TARGET_DELAYED_DEPENDENCIES_${ly_add_gem_dependencies_PREFIX},${target},${variant} property
+            get_property(target_load_dependencies GLOBAL PROPERTY LY_DELAYED_LOAD_"${delayed_load_dependency_key}")
             if(NOT "${gem_target}" IN_LIST target_load_dependencies)
-                set_property(GLOBAL APPEND PROPERTY LY_DELAYED_LOAD_"${ly_add_gem_dependencies_PREFIX},${target}" ${gem_target})
+                set_property(GLOBAL APPEND PROPERTY LY_DELAYED_LOAD_"${delayed_load_dependency_key}" ${gem_target})
             endif()
         endforeach()
     endforeach()
@@ -181,10 +233,38 @@ endif()
     ly_install_run_code("${install_engine_pak_code}")
 endfunction()
 
+#! Updates a generated <project-path>/user/cmake/engine/CMakePresets.json
+# file to include the path to the engine root CMakePresets.json
+# \arg: PROJECT_PATH path to project root.
+#       will used to form the root of the file path to the presets file that includes the engine presets
+# \arg: ENGINE_PATH path to the engine root
+function(update_cmake_presets_for_project)
+    set(options)
+    set(oneValueArgs PROJECT_PATH ENGINE_PATH)
+    set(multiValueArgs)
+    cmake_parse_arguments("${CMAKE_CURRENT_FUNCTION}" "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+    set(project_path "${${CMAKE_CURRENT_FUNCTION}_PROJECT_PATH}")
+    set(engine_path "${${CMAKE_CURRENT_FUNCTION}_ENGINE_PATH}")
+
+    execute_process(COMMAND
+        ${LY_PYTHON_CMD} "${LY_ROOT_FOLDER}/scripts/o3de/o3de/cmake.py" "update-cmake-presets-for-project" -pp "${project_path}" -ep "${engine_path}"
+        WORKING_DIRECTORY ${LY_ROOT_FOLDER}
+        RESULT_VARIABLE O3DE_CLI_RESULT
+        ERROR_VARIABLE O3DE_CLI_ERROR
+        )
+
+    if(NOT O3DE_CLI_RESULT EQUAL 0)
+        message(STATUS "Unable to update the project \"${project_path}\" CMakePresets to include the engine presets:\n${O3DE_CLI_ERROR}")
+    endif()
+endfunction()
+
 # Add the projects here so the above function is found
 foreach(project ${LY_PROJECTS})
     file(REAL_PATH ${project} full_directory_path BASE_DIRECTORY ${CMAKE_SOURCE_DIR})
     string(SHA256 full_directory_hash ${full_directory_path})
+
+    # Set the project normalized path into the global O3DE_PROJECTS_PATHS property
+    set_property(GLOBAL APPEND PROPERTY O3DE_PROJECTS_PATHS ${full_directory_path})
 
     # Truncate the full_directory_hash down to 8 characters to avoid hitting the Windows 260 character path limit
     # when the external subdirectory contains relative paths of significant length
@@ -205,7 +285,13 @@ foreach(project ${LY_PROJECTS})
     # Append the project external directory to LY_EXTERNAL_SUBDIR_${project_name} property
     add_project_json_external_subdirectories(${full_directory_path} "${project_name}")
 
+    # Use the install(CODE) command to archive the project cache
+    # directory assets for use in a proejct relase layout
     install_project_asset_artifacts(${full_directory_path})
+
+    # Update the <project-path>/user/cmake/engine/CMakePresets.json
+    # to include the current engine CMakePresets.json file
+    update_cmake_presets_for_project(PROJECT_PATH "${full_directory_path}" ENGINE_PATH "${LY_ROOT_FOLDER}")
 
 endforeach()
 

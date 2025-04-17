@@ -17,12 +17,12 @@
 #include <AzCore/UnitTest/TestTypes.h>
 
 class GameStateTest
-    : public UnitTest::AllocatorsTestFixture
+    : public UnitTest::LeakDetectionFixture
 {
 protected:
     void SetUp() override
     {
-        AllocatorsTestFixture::SetUp();
+        LeakDetectionFixture::SetUp();
         m_gameStateSystemComponent = AZStd::make_unique<GameState::GameStateSystemComponent>();
         m_gameStateSystemComponent->GameState::GameStateRequestBus::Handler::BusConnect();
     }
@@ -31,7 +31,7 @@ protected:
     {
         m_gameStateSystemComponent->GameState::GameStateRequestBus::Handler::BusDisconnect();
         m_gameStateSystemComponent.reset();
-        AllocatorsTestFixture::TearDown();
+        LeakDetectionFixture::TearDown();
     }
 
 private:
@@ -41,7 +41,7 @@ private:
 class TestGameStateA : public GameState::IGameState
 {
     public:
-        AZ_CLASS_ALLOCATOR(TestGameStateA, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TestGameStateA, AZ::SystemAllocator);
         AZ_RTTI(TestGameStateA, "{81345EC1-3F5F-4F6E-AEC0-49143BE8D133}", IGameState);
 
         void OnPushed() override
@@ -78,21 +78,21 @@ class TestGameStateA : public GameState::IGameState
 class TestGameStateB : public TestGameStateA
 {
     public:
-        AZ_CLASS_ALLOCATOR(TestGameStateB, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TestGameStateB, AZ::SystemAllocator);
         AZ_RTTI(TestGameStateB, "{DBA86F9F-DEAF-426D-8496-AC9A20256E5D}", TestGameStateA);
 };
 
 class TestGameStateC : public TestGameStateA
 {
     public:
-        AZ_CLASS_ALLOCATOR(TestGameStateC, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TestGameStateC, AZ::SystemAllocator);
         AZ_RTTI(TestGameStateC, "{F6C6C512-9F19-4B2B-A8B2-A0F0552E27EB}", TestGameStateA);
 };
 
 class TestGameStateX : public GameState::IGameState
 {
     public:
-        AZ_CLASS_ALLOCATOR(TestGameStateX, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TestGameStateX, AZ::SystemAllocator);
         AZ_RTTI(TestGameStateX, "{FCF63A12-ED21-4432-AB71-F268CC49126E}", IGameState);
 };
 

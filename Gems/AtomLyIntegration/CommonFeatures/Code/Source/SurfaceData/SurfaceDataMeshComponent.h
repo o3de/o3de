@@ -33,7 +33,7 @@ namespace SurfaceData
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(SurfaceDataMeshConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SurfaceDataMeshConfig, AZ::SystemAllocator);
         AZ_RTTI(SurfaceDataMeshConfig, "{764C602E-7CA8-4BCC-AB2D-3E46623B3A20}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
         SurfaceTagVector m_tags;

@@ -1,0 +1,50 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "id": "{229D9C2B-6AD4-45DC-83F0-AB5BE771298C}",
+        "category": "Math Functions",
+        "title": "Sine Cosine",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Returns the sine and cosine of the input value (per component)",
+        "slotDataTypeGroups": [
+            "inValue|outSin|outCos"
+        ],
+        "settings": {
+            "instructions": [
+                "SLOTTYPE(outSin) outSin;\nSLOTTYPE(outCos) outCos;\nsincos(inValue, outSin, outCos);"
+            ]
+        },
+        "inputSlots": [
+            {
+                "name": "inValue",
+                "displayName": "Value",
+                "description": "Value",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
+                "defaultDataType": "float4",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            }
+        ],
+        "outputSlots": [
+            {
+                "name": "outSin",
+                "displayName": "Sin",
+                "description": "Sin",
+                "supportedDataTypeRegex": "float4",
+                "defaultDataType": "float4"
+            },
+            {
+                "name": "outCos",
+                "displayName": "Cos",
+                "description": "Cos",
+                "supportedDataTypeRegex": "float4",
+                "defaultDataType": "float4"
+            }
+        ]
+    }
+}

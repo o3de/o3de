@@ -24,7 +24,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(SMAAEdgeDetectionPass, "{26D07086-9938-4FAB-A212-BB3CB4166641}", SMAABasePass);
-            AZ_CLASS_ALLOCATOR(SMAAEdgeDetectionPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SMAAEdgeDetectionPass, SystemAllocator);
             virtual ~SMAAEdgeDetectionPass() = default;
 
             //! Creates a SMAAEdgeDetectionPass

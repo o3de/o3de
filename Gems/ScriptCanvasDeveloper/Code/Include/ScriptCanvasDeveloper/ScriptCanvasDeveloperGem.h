@@ -18,7 +18,7 @@ namespace ScriptCanvas::Developer
     {
     public:
         AZ_RTTI(ScriptCanvasDeveloperModule, "{31E2A550-3940-4BDD-9764-EEDB9CC5B876}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(ScriptCanvasDeveloperModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptCanvasDeveloperModule, AZ::SystemAllocator);
 
         ScriptCanvasDeveloperModule();
         ~ScriptCanvasDeveloperModule() override;

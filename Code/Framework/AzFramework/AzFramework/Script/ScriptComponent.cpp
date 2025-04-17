@@ -12,6 +12,7 @@
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Component/Entity.h>
+#include <AzCore/Component/TickBus.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Script/ScriptContext.h>
 #include <AzCore/Script/ScriptProperty.h>
@@ -19,6 +20,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Utils.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzFramework/StringFunc/StringFunc.h>
@@ -31,6 +33,8 @@ extern "C" {
 #include <AzFramework/Script/ScriptComponent.h>
 
 AZ_DEFINE_BUDGET(Script);
+
+constexpr static const char* ScriptComponentHotReloadPath = "/O3DE/AzFramework/Script/HotReloadEnabled";
 
 namespace ScriptComponentCpp
 {
@@ -489,7 +493,7 @@ namespace AzFramework
     void ScriptComponent::Init()
     {
         // Grab the script context
-        EBUS_EVENT_RESULT(m_context, AZ::ScriptSystemRequestBus, GetContext, m_contextId);
+        AZ::ScriptSystemRequestBus::BroadcastResult(m_context, &AZ::ScriptSystemRequestBus::Events::GetContext, m_contextId);
         AZ_Assert(m_context, "We must have a valid script context!");
     }
 
@@ -506,16 +510,27 @@ namespace AzFramework
         // Load the script, find the base table...
         if (LoadInContext())
         {
+#if defined(_RELEASE)
+            bool isHotReloadEnabled = false;
+#else
+            bool isHotReloadEnabled = true;
+#endif
+            if (auto* registry = AZ::SettingsRegistry::Get())
+            {
+                registry->Get(isHotReloadEnabled, ScriptComponentHotReloadPath);
+            }
+
+            if (isHotReloadEnabled)
+            {
+                AZ::Data::AssetBus::Handler::BusConnect(m_script.GetId());
+            }
+
             // ...create the entity table, find the Activate/Deactivate functions in the script and call them
             CreateEntityTable();
         }
     }
 
-    //=========================================================================
-    // Deactivate
-    // [8/12/2013]
-    //=========================================================================
-    void ScriptComponent::Deactivate()
+    void ScriptComponent::DestroyEntityTable()
     {
         AZ_PROFILE_SCOPE(Script, "Unload: %s", m_script.GetHint().c_str());
 
@@ -553,10 +568,34 @@ namespace AzFramework
         }
     }
 
-    //=========================================================================
-    // LoadInContext
-    // [3/3/2014]
-    //=========================================================================
+    void ScriptComponent::Deactivate()
+    {
+        AZ::Data::AssetBus::Handler::BusDisconnect();
+        AZ::TickBus::Handler::BusDisconnect();
+
+        DestroyEntityTable();
+    }
+
+    void ScriptComponent::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
+    {
+        DestroyEntityTable();
+
+        m_script = asset;
+
+        // Load the updated asset on the next tick so we're not holding on to the old script
+        AZ::TickBus::Handler::BusConnect();
+    }
+
+    void ScriptComponent::OnTick([[maybe_unused]]float deltaTime, [[maybe_unused]]AZ::ScriptTimePoint time)
+    {
+        AZ::TickBus::Handler::BusDisconnect();
+
+        if (LoadInContext())
+        {
+            CreateEntityTable();
+        }
+    }
+
     bool ScriptComponent::LoadInContext()
     {
         LSV_BEGIN(m_context->NativeContext(), 1);
@@ -568,7 +607,8 @@ namespace AzFramework
 
         // Set the metamethods as we will use the script table as a metatable for entity tables
         bool success = false;
-        EBUS_EVENT_RESULT(success, AZ::ScriptSystemRequestBus, Load, m_script, AZ::k_scriptLoadBinary, m_contextId);
+        AZ::ScriptSystemRequestBus::BroadcastResult(
+            success, &AZ::ScriptSystemRequestBus::Events::Load, m_script, AZ::k_scriptLoadBinary, m_contextId);
         if (!success)
         {
             return false;
@@ -837,14 +877,14 @@ namespace AzFramework
         if (serializeContext)
         {
             // we may have been reflected by ScriptEditorComponent already, so check first
-            if (serializeContext->FindClassData("{8D1BC97E-C55D-4D34-A460-E63C57CD0D4B}") == nullptr)
+            if (serializeContext->FindClassData(AZ::Uuid("{8D1BC97E-C55D-4D34-A460-E63C57CD0D4B}")) == nullptr)
             {
                 auto converter = [](AZ::SerializeContext&, AZ::SerializeContext::DataElementNode& node)
                 {
                     // If version 2, remove SourceScriptName
                     if (node.GetVersion() == 2)
                     {
-                        int index = node.FindElement(AZ_CRC("SourceScriptName", 0x3654ac50));
+                        int index = node.FindElement(AZ_CRC_CE("SourceScriptName"));
                         if (index != -1)
                         {
                             node.RemoveElement(index);

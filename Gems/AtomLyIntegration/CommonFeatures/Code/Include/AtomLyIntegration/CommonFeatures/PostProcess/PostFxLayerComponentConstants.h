@@ -8,12 +8,14 @@
 
 #pragma once
 
+#include <AzCore/RTTI/TypeInfo.h>
+
 namespace AZ
 {
     namespace Render
     {
-        static constexpr const char* const PostFxLayerComponentTypeId = "{CB98EF9F-E99E-4262-9492-4964DCD01B8B}";
-        static constexpr const char* const EditorPostFxLayerComponentTypeId = "{4DE50024-068D-4656-862B-6B51D38C3273}";
+        inline constexpr AZ::TypeId PostFxLayerComponentTypeId{ "{CB98EF9F-E99E-4262-9492-4964DCD01B8B}" };
+        inline constexpr AZ::TypeId EditorPostFxLayerComponentTypeId{ "{4DE50024-068D-4656-862B-6B51D38C3273}" };
 
     } // namespace Render
 } // namespace AZ

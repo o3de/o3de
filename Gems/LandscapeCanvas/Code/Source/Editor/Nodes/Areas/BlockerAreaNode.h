@@ -26,7 +26,7 @@ namespace LandscapeCanvas
     class BlockerAreaNode : public BaseAreaNode
     {
     public:
-        AZ_CLASS_ALLOCATOR(BlockerAreaNode, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BlockerAreaNode, AZ::SystemAllocator);
         AZ_RTTI(BlockerAreaNode, "{EF5E78F2-00A6-472E-9411-8CD31953B9CB}", BaseAreaNode);
 
         static void Reflect(AZ::ReflectContext* context);
@@ -34,7 +34,7 @@ namespace LandscapeCanvas
         BlockerAreaNode() = default;
         explicit BlockerAreaNode(GraphModel::GraphPtr graph);
 
-        static const QString TITLE;
-        const char* GetTitle() const override { return TITLE.toUtf8().constData(); }
+        static const char* TITLE;
+        const char* GetTitle() const override { return TITLE; }
     };
 }

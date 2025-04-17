@@ -30,7 +30,7 @@ namespace AZ
         {
             using ContainerType = AZStd::basic_string_view<Element, Traits>;
 
-            // TODO: Count reflection types for a proper un-reflect 
+            // TODO: Count reflection types for a proper un-reflect
             if (dc.GetNumArguments() == 1)
             {
                 if (dc.IsString(0))
@@ -47,12 +47,10 @@ namespace AZ
             }
         }
 
-        template<class Element, class Traits, class Allocator>
-        inline void ConstructBasicString(AZStd::basic_string<Element, Traits, Allocator>* thisPtr, ScriptDataContext& dc)
+        template<class ContainerType>
+        inline void ConstructBasicString(ContainerType* thisPtr, ScriptDataContext& dc)
         {
-            using ContainerType = AZStd::basic_string<Element, Traits, Allocator>;
-
-            // TODO: Count reflection types for a proper un-reflect 
+            // TODO: Count reflection types for a proper un-reflect
             if (dc.GetNumArguments() == 1)
             {
                 if (dc.IsString(0))
@@ -67,7 +65,7 @@ namespace AZ
                 }
             }
         }
-        
+
         // Read a Lua native string as a C++ string class
         template<typename StringType>
         inline bool StringTypeFromLua(lua_State* lua, int stackIndex, BehaviorArgument& value, BehaviorClass* valueClass, ScriptContext::StackVariableAllocator* stackTempAllocator)

@@ -11,6 +11,7 @@
 
 // AZ
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 
 // Graph Model
 #include <GraphModel/Model/Slot.h>
@@ -32,7 +33,7 @@ namespace LandscapeCanvas
         }
     }
 
-    const QString ShapeIntersectionFilterNode::TITLE = QObject::tr("Shape Intersection Filter");
+    const char* ShapeIntersectionFilterNode::TITLE = "Shape Intersection Filter";
 
     ShapeIntersectionFilterNode::ShapeIntersectionFilterNode(GraphModel::GraphPtr graph)
         : BaseAreaFilterNode(graph)
@@ -45,11 +46,13 @@ namespace LandscapeCanvas
     {
         GraphModel::DataTypePtr boundsDataType = GetGraphContext()->GetDataType(LandscapeCanvasDataTypeEnum::Bounds);
 
-        RegisterSlot(GraphModel::SlotDefinition::CreateInputData(
+        RegisterSlot(AZStd::make_shared<GraphModel::SlotDefinition>(
+            GraphModel::SlotDirection::Input,
+            GraphModel::SlotType::Data,
             INBOUND_SHAPE_SLOT_ID,
             INBOUND_SHAPE_SLOT_LABEL.toUtf8().constData(),
-            { boundsDataType },
-            AZStd::any(AZ::EntityId()),
-            INBOUND_SHAPE_INPUT_SLOT_DESCRIPTION.toUtf8().constData()));
+            INBOUND_SHAPE_INPUT_SLOT_DESCRIPTION.toUtf8().constData(),
+            GraphModel::DataTypeList{ boundsDataType },
+            AZStd::any(AZ::EntityId())));
     }
 } // namespace LandscapeCanvas

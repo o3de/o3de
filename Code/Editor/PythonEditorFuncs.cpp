@@ -12,6 +12,7 @@
 #include "PythonEditorFuncs.h"
 
 // Qt
+#include <QInputDialog>
 #include <QMessageBox>
 #include <QFileDialog>
 
@@ -20,17 +21,17 @@
 // AzToolsFramework
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 
 // Editor
 #include "CryEdit.h"
 #include "GameEngine.h"
 #include "ViewManager.h"
-#include "StringDlg.h"
 #include "GenericSelectItemDialog.h"
-#include "Objects/BaseObject.h"
 #include "Commands/CommandManager.h"
 
+AZ_CVAR_EXTERNED(bool, ed_previewGameInFullscreen_once);
 
 namespace
 {
@@ -61,7 +62,7 @@ namespace
         }
         else if (pCVar->GetType() == CVAR_INT)
         {
-            PySetCVarFromInt(pName, std::stol(pValue));
+            PySetCVarFromInt(pName, static_cast<int>(std::stol(pValue)));
         }
         else if (pCVar->GetType() == CVAR_FLOAT)
         {
@@ -164,6 +165,12 @@ namespace
         {
             GetIEditor()->GetGameEngine()->RequestSetGameMode(true);
         }
+    }
+
+    void PyEnterGameModeFullscreen()
+    {
+        ed_previewGameInFullscreen_once = true;
+        PyEnterGameMode();
     }
 
     void PyExitGameMode()
@@ -336,22 +343,19 @@ namespace
 
     AZStd::string PyEditBox(AZStd::string_view pTitle)
     {
-        StringDlg stringDialog(pTitle.data());
-        if (stringDialog.exec() == QDialog::Accepted)
+        QString stringValue = QInputDialog::getText(AzToolsFramework::GetActiveWindow(), pTitle.data(), QString());
+        if (!stringValue.isEmpty())
         {
-            return stringDialog.GetString().toUtf8().constData();
+            return stringValue.toUtf8().constData();
         }
         return "";
     }
 
     AZStd::any PyEditBoxAndCheckProperty(const char* pTitle)
     {
-        StringDlg stringDialog(pTitle);
-        stringDialog.SetString(QStringLiteral(""));
-        if (stringDialog.exec() == QDialog::Accepted)
+        QString stringValue = QInputDialog::getText(AzToolsFramework::GetActiveWindow(), pTitle, QString());
+        if (!stringValue.isEmpty())
         {
-            const QString stringValue = stringDialog.GetString();
-
             // detect data type
             QString tempString = stringValue;
             int countComa = 0;
@@ -1094,6 +1098,7 @@ namespace AzToolsFramework
             addLegacyGeneral(behaviorContext->Method("run_console", PyRunConsole, nullptr, "Runs a console command."));
 
             addLegacyGeneral(behaviorContext->Method("enter_game_mode", PyEnterGameMode, nullptr, "Enters the editor game mode."));
+            addLegacyGeneral(behaviorContext->Method("enter_game_mode_fullscreen", PyEnterGameModeFullscreen, nullptr, "Enters the editor game mode in fullscreen."));
             addLegacyGeneral(behaviorContext->Method("is_in_game_mode", PyIsInGameMode, nullptr, "Queries if it's in the game mode or not."));
             addLegacyGeneral(behaviorContext->Method("exit_game_mode", PyExitGameMode, nullptr, "Exits the editor game mode."));
 

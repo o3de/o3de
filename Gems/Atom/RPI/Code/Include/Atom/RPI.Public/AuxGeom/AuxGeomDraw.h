@@ -7,12 +7,15 @@
  */
 #pragma once
 
-#include <AzCore/Math/Vector3.h>
-#include <AzCore/Math/Color.h>
 #include <AzCore/Math/Aabb.h>
+#include <AzCore/Math/Color.h>
+#include <AzCore/Math/Frustum.h>
 #include <AzCore/Math/Matrix3x4.h>
+#include <AzCore/Math/Vector3.h>
 
 #include <AzCore/std/smart_ptr/shared_ptr.h>
+
+#include <Atom/RPI.Public/Configuration.h>
 
 namespace AZ
 {
@@ -28,7 +31,7 @@ namespace AZ
        //! geometry will not be combined with any other geometry to reduce draw calls. For functions where a single color is provided, the given color
        //! is used to determine if the geometry is opaque or translucent. If multiple colors are provided then a separate parameter of type OpacityType
        //! is used to indicate if the geometry is opaque or translucent.
-        class AuxGeomDraw
+        class ATOM_RPI_PUBLIC_API AuxGeomDraw
         {
         public: //types
 
@@ -256,6 +259,17 @@ namespace AZ
             //! @param faceCull      Which (if any) facing triangles should be culled
             //! @param viewProjOverrideIndex Which view projection override entry to use, -1 if unused
             virtual void DrawObb(const AZ::Obb& obb, const AZ::Matrix3x4& transform, const AZ::Color& color, DrawStyle style = DrawStyle::Shaded, DepthTest depthTest = DepthTest::On, DepthWrite depthWrite = DepthWrite::On, FaceCullMode faceCull = FaceCullMode::Back, int32_t viewProjOverrideIndex = -1) = 0;
+
+            //! Draw a frustum.
+            //! @param frustum       The frustum
+            //! @param color         The color to draw the frustum
+            //! @param drawNormals   If true, frustum plane normals will be drawn as lines
+            //! @param style         The draw style (point, wireframe, solid) Shaded not currently supported.
+            //! @param depthTest     If depth testing should be enabled
+            //! @param depthWrite    If depth writing should be enabled
+            //! @param faceCull      Which (if any) facing triangles should be culled
+            //! @param viewProjOverrideIndex Which view projection override entry to use, -1 if unused
+            virtual void DrawFrustum(const AZ::Frustum& frustum, const AZ::Color& color, bool drawNormals = true, DrawStyle style = DrawStyle::Shaded, DepthTest depthTest = DepthTest::On, DepthWrite depthWrite = DepthWrite::On, FaceCullMode faceCull = FaceCullMode::Back, int32_t viewProjOverrideIndex = -1) = 0;
         };
 
     } // namespace RPI

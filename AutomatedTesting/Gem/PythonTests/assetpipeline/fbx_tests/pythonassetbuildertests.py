@@ -62,8 +62,8 @@ class TestsPythonAssetProcessing_APBatch(object):
         assert result, "AP Batch failed"
 
         expected_product_list = [
-            "a_simple_box_with_script.dbgsg",
-            "b_simple_box_no_script.dbgsg"
+            "a_simple_box_with_script.fbx.dbgsg",
+            "b_simple_box_no_script.fbx.dbgsg"
         ]
 
         missing_assets, _ = utils.compare_assets_with_cache(expected_product_list,
@@ -103,11 +103,7 @@ class TestsPythonAssetProcessing_APBatch(object):
         assert result, "AP Batch failed"
 
         # compute the cache path
-        platform = workspace.asset_processor_platform
-        cache_folder = asset_processor.temp_asset_root()
-        if platform == 'windows':
-            platform = 'pc'
-        cache_folder = os.path.join(cache_folder, 'Cache', platform)
+        cache_folder = asset_processor.project_test_cache_folder()
 
         # compute the file name to the debug file
         asset_debug_filename = os.path.join(cache_folder, debug_filename)
@@ -119,7 +115,7 @@ class TestsPythonAssetProcessing_APBatch(object):
     def test_ProcessSceneWithMetadata_SupportedMayaDataTypes_Work(self, workspace, ap_setup_fixture, asset_processor):
         # This test loads the debug output file for an FBX exported by Maya that has a few user defined properties
 
-        asset_dbgsg = 'userdefinedproperties/maya_with_attributes.dbgsg'
+        asset_dbgsg = 'maya_with_attributes.fbx.dbgsg'
         dbgsg_file = self.compute_udp_asset_debug_file(workspace, asset_processor, asset_dbgsg, ap_setup_fixture)
         assert self.find_user_defined_property(dbgsg_file, 'o3de_atom_lod: false'), "Malformed o3de_atom_lod value"
         assert self.find_user_defined_property(dbgsg_file, 'o3de_atom_material: 0'), "Malformed o3de_atom_material value"
@@ -129,7 +125,7 @@ class TestsPythonAssetProcessing_APBatch(object):
     def test_ProcessSceneWithMetadata_SupportedMaxDataTypes_Work(self, workspace, ap_setup_fixture, asset_processor):
         # This test loads the debug output file for an FBX exported by Max that has a few user defined properties
 
-        asset_dbgsg = 'userdefinedproperties/max_with_attributes.dbgsg'
+        asset_dbgsg = 'max_with_attributes.fbx.dbgsg'
         dbgsg_file = self.compute_udp_asset_debug_file(workspace, asset_processor, asset_dbgsg, ap_setup_fixture)
         assert self.find_user_defined_property(dbgsg_file, 'o3de_atom_material: 0'), "Malformed o3de_atom_material value"
         assert self.find_user_defined_property(dbgsg_file, 'o3de_phyx_lodY: 0.000000'), "Malformed o3de_phyx_lodY value"
@@ -140,7 +136,7 @@ class TestsPythonAssetProcessing_APBatch(object):
     def test_ProcessSceneWithMetadata_SupportedBlenderDataTypes_Work(self, workspace, ap_setup_fixture, asset_processor):
         # This test loads the debug output file for an FBX exported by Blender that has a few user defined properties
 
-        asset_dbgsg = 'userdefinedproperties/blender_with_attributes.dbgsg'
+        asset_dbgsg = 'blender_with_attributes.fbx.dbgsg'
         dbgsg_file = self.compute_udp_asset_debug_file(workspace, asset_processor, asset_dbgsg, ap_setup_fixture)
         assert self.find_user_defined_property(dbgsg_file, 'o3de_atom_material: 0'), "Malformed o3de_atom_material value"
         assert self.find_user_defined_property(dbgsg_file, 'o3de_default_lod: 0.000000'), "Malformed o3de_default_lod value"
@@ -150,7 +146,7 @@ class TestsPythonAssetProcessing_APBatch(object):
     def test_ProcessSceneWithMetadata_DebugSceneManifest_Work(self, workspace, ap_setup_fixture, asset_processor):
         # This test detects the debug .assetinfo file in the cahce folder
 
-        assetinfo_dbg = 'userdefinedproperties/blender_with_attributes.assetinfo.dbg'
+        assetinfo_dbg = 'blender_with_attributes.fbx.assetinfo.dbg'
         assetinfo_dbg_file = self.compute_udp_asset_debug_file(workspace, asset_processor, assetinfo_dbg, ap_setup_fixture)
         assert assetinfo_dbg_file, "The debug assetinfo file is missing"
 
@@ -159,8 +155,8 @@ class TestsPythonAssetProcessing_APBatch(object):
         # of a scene containing mesh nodes that have a common parent transform node
 
         assetinfo_dbg_list = {
-            "meshgroups/blender_with_common_parent.assetinfo.dbg",
-            "meshgroups/maya_with_common_parent.assetinfo.dbg"
+            "blender_with_common_parent.fbx.assetinfo.dbg",
+            "maya_with_common_parent.fbx.assetinfo.dbg"
         }
 
         expected_mesh_nodes = {
@@ -195,3 +191,21 @@ class TestsPythonAssetProcessing_APBatch(object):
                     assert current_set == set(unselected_node_list), "Unselected node list does not contain the correct meshes"
                     found_mesh_nodes.add(selected_node_list[0])
             assert found_mesh_nodes == expected_mesh_nodes, "Not all expected mesh groups found"
+
+    def test_ProcessAssetScript_SimpleFbx_HasExpectedProducts(self, workspace, ap_setup_fixture, asset_processor):
+        # This tests all of the entry points a scene builder can script:
+        # - OnUpdateManifest() returns a JSON string to use as the scene manifest; this must succeed to continue the scene pipe
+        # - OnPrepareForExport() returns an export product list; this test should produce a simple.fbx.fake_asset export product
+
+        asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], "script_basics")
+
+        result, _ = asset_processor.batch_process(extra_params=self.asset_processor_extra_params)
+        assert result, "AP Batch failed"
+
+        expected_product_list = [
+            "simple.fbx.fake_asset"
+        ]
+
+        missing_assets, _ = utils.compare_assets_with_cache(expected_product_list, asset_processor.project_test_cache_folder())
+        assert not missing_assets, f'The following assets were expected to be in, but not found in cache: {str(missing_assets)}'
+

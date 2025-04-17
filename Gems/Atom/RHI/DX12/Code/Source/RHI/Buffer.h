@@ -8,7 +8,7 @@
 #pragma once
 
 #include <RHI/MemoryView.h>
-#include <Atom/RHI/Buffer.h>
+#include <Atom/RHI/DeviceBuffer.h>
 #include <RHI/BufferMemoryView.h>
 #include <AzCore/Memory/PoolAllocator.h>
 #include <AzCore/std/parallel/atomic.h>
@@ -22,11 +22,11 @@ namespace AZ
         class AliasedHeap;
 
         class Buffer final
-            : public RHI::Buffer
+            : public RHI::DeviceBuffer
         {
-            using Base = RHI::Buffer;
+            using Base = RHI::DeviceBuffer;
         public:
-            AZ_CLASS_ALLOCATOR(Buffer, AZ::ThreadPoolAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Buffer, AZ::ThreadPoolAllocator);
             AZ_RTTI(Buffer, "{EFBC5B3C-84BB-43E8-8C68-A44EC30ADC39}", Base);
             ~Buffer() = default;
 
@@ -56,13 +56,13 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::Resource
+            // RHI::DeviceResource
             void ReportMemoryUsage(RHI::MemoryStatisticsBuilder& builder) const override;
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::Buffer
-            using RHI::Buffer::SetDescriptor;
+            // RHI::DeviceBuffer
+            using RHI::DeviceBuffer::SetDescriptor;
             //////////////////////////////////////////////////////////////////////////
 
             // The buffer memory allocation on the primary heap.

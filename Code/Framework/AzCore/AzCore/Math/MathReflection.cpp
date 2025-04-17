@@ -20,6 +20,7 @@
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Vector4.h>
+#include <AzCore/Math/VectorN.h>
 #include <AzCore/Math/MathMatrixSerializer.h>
 #include <AzCore/Math/MathVectorSerializer.h>
 #include <AzCore/Math/Color.h>
@@ -30,6 +31,7 @@
 #include <AzCore/Math/Matrix3x3.h>
 #include <AzCore/Math/Matrix3x4.h>
 #include <AzCore/Math/Matrix4x4.h>
+#include <AzCore/Math/MatrixMxN.h>
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Obb.h>
 #include <AzCore/Math/Plane.h>
@@ -132,18 +134,6 @@ namespace AZ
             }
         }
 
-        //////////////////////////////////////////////////////////////////////////
-        AZStd::string UuidToString(const Uuid& id)
-        {
-            char buffer[64];
-            AZStd::string result;
-            if (id.ToString(buffer, AZ_ARRAY_SIZE(buffer)))
-            {
-                result = buffer;
-            }
-            return result;
-        }
-
         /**
          * Script Wrapper for Crc32
          */
@@ -244,7 +234,7 @@ namespace AZ
     {
     public:
         AZ_TYPE_INFO(MathGlobals, "{35D44724-7470-42F2-A0E3-4E4349793B98}");
-        AZ_CLASS_ALLOCATOR(MathGlobals, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MathGlobals, SystemAllocator);
 
         MathGlobals() = default;
         ~MathGlobals() = default;
@@ -300,7 +290,7 @@ namespace AZ
             Attribute(AZ::Script::Attributes::Storage, AZ::Script::Attributes::StorageType::Value)->
             Attribute(AZ::Script::Attributes::ConstructorOverride, &Internal::ScriptUuidConstructor)->
             Attribute(AZ::Script::Attributes::GenericConstructorOverride, &Internal::UuidDefaultConstructor)->
-            Method("ToString", &Internal::UuidToString)->
+            Method("ToString", [](const Uuid* self) { return self->ToString<AZStd::string>(); })->
                 Attribute(AZ::Script::Attributes::Operator, AZ::Script::Attributes::OperatorType::ToString)->
             Method("LessThan", &Uuid::operator<)->
                 Attribute(AZ::Script::Attributes::Operator, AZ::Script::Attributes::OperatorType::LessThan)->
@@ -314,10 +304,10 @@ namespace AZ
                 Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)->
             Method("CreateNull", &Uuid::CreateNull)->
                 Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)->
-            Method("CreateString", &Uuid::CreateString)->
+            Method("CreateString", [](AZStd::string_view uuidString) { return Uuid::CreateString(uuidString); })->
                 Attribute(AZ::Script::Attributes::MethodOverride, &Internal::UuidCreateStringGeneric)->
                 Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)->
-            Method("CreateName", &Uuid::CreateName)->
+            Method("CreateName", [](AZStd::string_view nameString) { return Uuid::CreateName(nameString); })->
                 Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)->
             Method("CreateRandom", &Uuid::CreateRandom);
 
@@ -383,10 +373,12 @@ namespace AZ
             Vector2::Reflect(context);
             Vector3::Reflect(context);
             Vector4::Reflect(context);
+            VectorN::Reflect(context);
             Quaternion::Reflect(context);
             Matrix3x3::Reflect(context);
             Matrix3x4::Reflect(context);
             Matrix4x4::Reflect(context);
+            MatrixMxN::Reflect(context);
             Frustum::Reflect(context);
             Plane::Reflect(context);
             Transform::Reflect(context);

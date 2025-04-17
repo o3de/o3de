@@ -73,7 +73,8 @@ namespace Camera
         }
 
         m_initialTransform = AZ::Transform::CreateIdentity();
-        EBUS_EVENT_ID_RESULT(m_initialTransform, GetEntityId(), AZ::TransformBus, GetWorldTM);
+        AZ::TransformBus::EventResult(m_initialTransform, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
+
         AZ::TickBus::Handler::BusConnect();
     }
 
@@ -125,7 +126,7 @@ namespace Camera
                         ->Attribute(AZ::Edit::Attributes::Category, "Camera")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/CameraRig.svg")
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/CameraRig.png")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
+                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                         ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/camera/camera-rig/")
                     ->DataElement(0, &CameraRigComponent::m_targetAcquirers, "Target acquirers",
                     "A list of behaviors that define how a camera will select a target.  They are executed in order until one succeeds")
@@ -142,24 +143,24 @@ namespace Camera
 
     void CameraRigComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("CameraRigService", 0xd284a2d3));
+        provided.push_back(AZ_CRC_CE("CameraRigService"));
     }
 
     void CameraRigComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("TransformService", 0x8ee22c50));
+        required.push_back(AZ_CRC_CE("TransformService"));
+        required.push_back(AZ_CRC_CE("CameraService"));
     }
 
-    void CameraRigComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
+    void CameraRigComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
-        dependent.push_back(AZ_CRC("CameraService", 0x1dd1caa4));
     }
 
     void CameraRigComponent::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
         // Step 1 Acquire a target
         AZ::Transform initialCameraTransform = AZ::Transform::Identity();
-        EBUS_EVENT_ID_RESULT(initialCameraTransform, GetEntityId(), AZ::TransformBus, GetWorldTM);
+        AZ::TransformBus::EventResult(initialCameraTransform, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
         AZ::Transform targetTransform(m_initialTransform);
         for (ICameraTargetAcquirer* targetAcquirer : m_targetAcquirers)
         {
@@ -184,6 +185,6 @@ namespace Camera
         }
 
         // Step 4 Alert the camera component of the new desired transform
-        EBUS_EVENT_ID(GetEntityId(), AZ::TransformBus, SetWorldTM, finalTransform);
+        AZ::TransformBus::Event(GetEntityId(), &AZ::TransformBus::Events::SetWorldTM, finalTransform);
     }
 } //namespace Camera

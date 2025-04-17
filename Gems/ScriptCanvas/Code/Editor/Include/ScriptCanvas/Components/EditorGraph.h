@@ -8,7 +8,6 @@
 #pragma once
 
 #include <AzCore/std/containers/unordered_map.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzToolsFramework/UI/Notifications/ToastBus.h>
 #include <ScriptCanvas/Core/Graph.h>
 #include <ScriptCanvas/Bus/GraphBus.h>
@@ -36,10 +35,13 @@
 #include <Editor/Include/ScriptCanvas/Components/GraphUpgrade.h>
 #include <Editor/Assets/ScriptCanvasUndoHelper.h>
 
+namespace AZ
+{
+    class ReflectContext;
+}
 namespace ScriptCanvas
 {
     struct NodeReplacementConfiguration;
-    struct NodeUpdateSlotReport;
 }
 
 namespace ScriptCanvasEditor
@@ -131,7 +133,7 @@ namespace ScriptCanvasEditor
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
             ScriptCanvas::Graph::GetProvidedServices(provided);
-            provided.push_back(AZ_CRC("EditorScriptCanvasService", 0x975114ff));
+            provided.push_back(AZ_CRC_CE("EditorScriptCanvasService"));
         }
 
         static void GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
@@ -141,7 +143,7 @@ namespace ScriptCanvasEditor
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
             ScriptCanvas::Graph::GetIncompatibleServices(incompatible);
-            incompatible.push_back(AZ_CRC("EditorScriptCanvasService", 0x975114ff));
+            incompatible.push_back(AZ_CRC_CE("EditorScriptCanvasService"));
         }
 
         // SceneCounterRequestBus
@@ -166,6 +168,9 @@ namespace ScriptCanvasEditor
 
         void DisconnectConnection(const GraphCanvas::ConnectionId& connectionId) override;
         bool CreateConnection(const GraphCanvas::ConnectionId& connectionId, const GraphCanvas::Endpoint& sourcePoint, const GraphCanvas::Endpoint& targetPoint) override;
+
+        // Adds or removes an implicit execution connection between the nodes these endpoints are connected if necessary
+        void UpdateCorrespondingImplicitConnection(const ScriptCanvas::Endpoint& sourceEndpoint, const ScriptCanvas::Endpoint& targetEndpoint);
 
         bool IsValidConnection(const GraphCanvas::Endpoint& sourcePoint, const GraphCanvas::Endpoint& targetPoint) const override;
 
@@ -233,14 +238,12 @@ namespace ScriptCanvasEditor
         void DisplayGraphCanvasScene() override;
 
         /////
-        EditorGraphUpgradeMachine m_upgradeSM;
-
         enum UpgradeRequest
         {
             IfOutOfDate,
             Forced
         };
-bool UpgradeGraph(SourceHandle source, UpgradeRequest upgradeRequest, const UpgradeGraphConfig& upgradeConfig);
+        bool UpgradeGraph(SourceHandle source, UpgradeRequest upgradeRequest, const UpgradeGraphConfig& upgradeConfig);
         void ConnectGraphCanvasBuses();
         void DisconnectGraphCanvasBuses();
         ///////
@@ -249,6 +252,7 @@ bool UpgradeGraph(SourceHandle source, UpgradeRequest upgradeRequest, const Upgr
         void OnSystemTick() override;
         ////
 
+        // EditorGraphRequestBus
         void OnGraphCanvasSceneVisible() override;
 
         GraphCanvas::GraphId GetGraphCanvasGraphId() const override;
@@ -282,6 +286,11 @@ bool UpgradeGraph(SourceHandle source, UpgradeRequest upgradeRequest, const Upgr
 
         ScriptCanvas::Endpoint ConvertToScriptCanvasEndpoint(const GraphCanvas::Endpoint& endpoint) const override;
         GraphCanvas::Endpoint ConvertToGraphCanvasEndpoint(const ScriptCanvas::Endpoint& endpoint) const override;
+
+        void SetOriginalToNewIdsMap(const AZStd::unordered_map<AZ::EntityId, AZ::EntityId>& originalIdToNewIds) override;
+        void GetOriginalToNewIdsMap(AZStd::unordered_map<AZ::EntityId, AZ::EntityId>& originalIdToNewIdsOut) const override;
+        AZ::EntityId FindNewIdFromOriginal(const AZ::EntityId& originalId) const override;
+        AZ::EntityId FindOriginalIdFromNew(const AZ::EntityId& newId) const override;
         ////
 
         bool OnVersionConversionBegin(ScriptCanvas::Node& node);
@@ -310,7 +319,7 @@ bool UpgradeGraph(SourceHandle source, UpgradeRequest upgradeRequest, const Upgr
         void ReportError(const ScriptCanvas::Node& node, const AZStd::string& errorSource, const AZStd::string& errorMessage) override;
 
         const GraphStatisticsHelper& GetNodeUsageStatistics() const;
-        
+
     protected:
         void PostRestore(const UndoData& restoredData) override;
 
@@ -337,18 +346,8 @@ bool UpgradeGraph(SourceHandle source, UpgradeRequest upgradeRequest, const Upgr
         void HandleQueuedUpdates();
         bool IsNodeVersionConverting(const AZ::EntityId& graphCanvasNodeId) const;
 
-        AZStd::unordered_map< AzToolsFramework::ToastId, AZ::EntityId > m_toastNodeIds;
-
         // Function Definition Node Extension
         void HandleFunctionDefinitionExtension(ScriptCanvas::Node* node, GraphCanvas::SlotId graphCanvasSlotId, const GraphCanvas::NodeId& nodeId);
-
-        //// Version Update code
-
-        AZ::Outcome<ScriptCanvas::Node*> ReplaceNodeByConfig(ScriptCanvas::Node*, ScriptCanvas::NodeReplacementConfiguration&, ScriptCanvas::NodeUpdateSlotReport& nodeUpdateSlotReport);
-
-        bool SanityCheckNodeReplacement(ScriptCanvas::Node*, ScriptCanvas::Node*, ScriptCanvas::NodeUpdateSlotReport& nodeUpdateSlotReport);
-        bool SanityCheckNodeReplacementWithCustomLogic(ScriptCanvas::Node*, ScriptCanvas::Node*, ScriptCanvas::NodeUpdateSlotReport& nodeUpdateSlotReport);
-        bool SanityCheckNodeReplacementWithSameTopology(ScriptCanvas::Node*, ScriptCanvas::Node*, ScriptCanvas::NodeUpdateSlotReport& nodeUpdateSlotReport);
 
         // Live node replacement, that is, completely swap out a node, while the user is actively editing (rather then when opening or
         // versioning a graph). The default intention is to retain as much connection and data as is remotely appropriate.
@@ -374,7 +373,6 @@ bool UpgradeGraph(SourceHandle source, UpgradeRequest upgradeRequest, const Upgr
         using NodesById = AZStd::unordered_map<AZ::EntityId, ScriptCanvas::Node*>;
 
         AZ::Outcome<LiveSlotInfo, AZStd::string> ConvertToLiveStateInfo(const ScriptCanvas::Node& node, const ScriptCanvas::Slot& slot) const;
-        static ScriptCanvas::Node* GetOrCreateNodeFromReplacementConfig(ScriptCanvas::NodeReplacementConfiguration& config);
         AZ::Outcome<ScriptCanvas::Node*, AZStd::string> ReplaceLiveNode(ScriptCanvas::Node&, ScriptCanvas::NodeReplacementConfiguration&);
         AZ::Outcome<LiveSlotStates, AZStd::string> GetSlotState(const ScriptCanvas::Node& node) const;
         LiveSlotInfo* FindMatchingSlotState(ScriptCanvas::Node& node, ScriptCanvas::Slot& slot, LiveSlotStates& slotState) const;
@@ -399,6 +397,10 @@ bool UpgradeGraph(SourceHandle source, UpgradeRequest upgradeRequest, const Upgr
 
         void RefreshVariableReferences(const ScriptCanvas::VariableId& variableId) override;
 
+    private:
+        AZStd::unordered_map<AZ::EntityId, AZ::EntityId> m_originalIdToNewIds;
+        EditorGraphUpgradeMachine m_upgradeSM;
+        AZStd::unordered_map<AzToolsFramework::ToastId, AZ::EntityId> m_toastNodeIds;
         bool m_allowVersionUpdate = false;
         AZStd::unordered_set< AZ::EntityId > m_queuedConvertingNodes;
         AZStd::unordered_set< AZ::EntityId > m_convertingNodes;

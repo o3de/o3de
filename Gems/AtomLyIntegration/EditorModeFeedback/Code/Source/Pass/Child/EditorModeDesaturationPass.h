@@ -20,7 +20,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(EditorModeDesaturationPass, "{3587B748-7EA8-497F-B2D1-F60E369EACF4}", EditorModeFeedbackChildPassBase);
-            AZ_CLASS_ALLOCATOR(EditorModeDesaturationPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(EditorModeDesaturationPass, SystemAllocator);
 
             virtual ~EditorModeDesaturationPass() = default;
 

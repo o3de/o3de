@@ -36,7 +36,7 @@ namespace ScriptCanvas
         m_descriptors.insert(m_descriptors.end(), {
             // System Component
             ScriptCanvas::SystemComponent::CreateDescriptor(),
-            
+
             // Components
             ScriptCanvas::Connection::CreateDescriptor(),
             ScriptCanvas::Node::CreateDescriptor(),
@@ -44,11 +44,11 @@ namespace ScriptCanvas
             ScriptCanvas::Graph::CreateDescriptor(),
             ScriptCanvas::GraphVariableManagerComponent::CreateDescriptor(),
             ScriptCanvas::RuntimeComponent::CreateDescriptor(),
-            
+
             // ScriptCanvasBuilder
             ScriptCanvas::RuntimeAssetSystemComponent::CreateDescriptor(),
         });
-        
+
         ScriptCanvas::InitLibraries();
         AZStd::vector<AZ::ComponentDescriptor*> libraryDescriptors = ScriptCanvas::GetLibraryDescriptors();
         m_descriptors.insert(m_descriptors.end(), libraryDescriptors.begin(), libraryDescriptors.end());
@@ -56,14 +56,7 @@ namespace ScriptCanvas
         MathNodeUtilities::RandomEngineInit();
         InitDataRegistry();
 
-        ScriptCanvas::AutoGenRegistryManager::Init();
-        if (auto componentApplication = AZ::Interface<AZ::ComponentApplicationRequests>::Get())
-        {
-            for (auto descriptor : ScriptCanvas::AutoGenRegistryManager::GetComponentDescriptors())
-            {
-                componentApplication->RegisterComponentDescriptor(descriptor);
-            }
-        }
+        ScriptCanvasModel::Instance().Init();
     }
 
     ScriptCanvasModuleCommon::~ScriptCanvasModuleCommon()
@@ -72,9 +65,9 @@ namespace ScriptCanvas
         ScriptCanvas::ResetLibraries();
         ResetDataRegistry();
     }
-    
+
     AZ::ComponentTypeList ScriptCanvasModuleCommon::GetCommonSystemComponents() const
-    {   
+    {
         return std::initializer_list<AZ::Uuid> {
             azrtti_typeid<ScriptCanvas::SystemComponent>(),
             azrtti_typeid<ScriptCanvas::RuntimeAssetSystemComponent>(),

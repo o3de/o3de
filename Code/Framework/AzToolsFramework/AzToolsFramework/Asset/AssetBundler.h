@@ -131,7 +131,7 @@ namespace AzToolsFramework
             AZStd::string m_cachedSecondInputPath;
         };
         AZ_TYPE_INFO(AssetFileInfoListComparison, "{AC003572-3A33-476C-9B2B-ADDA4F7BB870}");
-        AZ_CLASS_ALLOCATOR(AssetFileInfoListComparison, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AssetFileInfoListComparison, AZ::SystemAllocator);
 
         AssetFileInfoListComparison() = default;
 

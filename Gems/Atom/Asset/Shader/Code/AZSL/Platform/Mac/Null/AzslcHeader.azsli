@@ -10,3 +10,15 @@
 * The shader build pipeline has 2 preprocess stages. The first one happens 
 * after appending this header and pre-processing with mcpp ahead of azslc.
 */
+
+#define UNBOUNDED_SIZE 100000
+
+
+ // Full floats for null rhi
+ #define real float
+ #define real2 float2
+ #define real3 float3
+ #define real4 float4
+ #define real3x3 float3x3
+ #define real3x4 float3x4
+ 

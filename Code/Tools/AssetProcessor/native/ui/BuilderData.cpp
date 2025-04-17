@@ -15,7 +15,7 @@
 
 namespace AssetProcessor
 {
-    static constexpr char builderNotFoundWarningMessage[] =
+    [[maybe_unused]] static constexpr char builderNotFoundWarningMessage[] =
         "Found a %s metric entry with builder %s \"%s\", but Asset Processor does not recognize this "
         "builder. Ensure this builder is in the asset folders and its name is shown "
         "in the Builders tab. If this builder was removed intentionally in the past, you can safely ignore this "
@@ -119,7 +119,7 @@ namespace AssetProcessor
             });
     }
 
-    void BuilderData::OnCreateJobsDurationChanged(QString sourceName)
+    void BuilderData::OnCreateJobsDurationChanged(QString sourceName, [[maybe_unused]] AZ::s64 scanFolderID)
     {
         QString statKey = QString("CreateJobs,").append(sourceName).append("%");
         m_dbConnection->QueryStatLikeStatName(
@@ -163,7 +163,7 @@ namespace AssetProcessor
 
             AZStd::string entryName = AZStd::string::format(
                 "%s,%s,%s",
-                jobEntry.m_databaseSourceName.toUtf8().constData(),
+                jobEntry.m_sourceAssetReference.RelativePath().c_str(),
                 jobEntry.m_jobKey.toUtf8().constData(),
                 jobEntry.m_platformInfo.m_identifier.c_str());
 

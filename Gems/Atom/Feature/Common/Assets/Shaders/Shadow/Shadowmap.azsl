@@ -7,6 +7,29 @@
  */
 
 #include <Atom/Features/PBR/DefaultObjectSrg.azsli>
-#include <ShadowmapCommon.azsli>
+#include <scenesrg_all.srgi>
+#include <viewsrg_all.srgi>
+#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
+#include <Atom/Features/InstancedTransforms.azsli>
 
-// Use the shadowmap shader with the default object srg
+struct VertexInput
+{
+    float3 m_position : POSITION;
+};
+
+struct VertexOutput
+{
+    float4 m_position : SV_Position;
+};
+
+VertexOutput MainVS(VertexInput input, uint instanceId : SV_InstanceID)
+{
+    const float4x4 worldMatrix = GetObjectToWorldMatrix(instanceId);
+    VertexOutput output;
+    
+    const float3 worldPosition = mul(worldMatrix, float4(input.m_position, 1.0)).xyz;
+    output.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(worldPosition, 1.0));
+
+    return output;
+}
+

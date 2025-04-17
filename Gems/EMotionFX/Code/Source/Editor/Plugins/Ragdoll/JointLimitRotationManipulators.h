@@ -45,7 +45,7 @@ namespace EMotionFX
 
         void OnManipulatorMoved(const AZ::Quaternion& rotation);
         void BeginEditing();
-        void FinishEditing();
+        void EndEditing();
 
         AZ::Quaternion& GetLocalOrientation();
         const AZ::Quaternion& GetLocalOrientation() const;

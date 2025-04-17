@@ -138,7 +138,7 @@ namespace Multiplayer
                     {
                         const AZStd::vector<AZ::Entity*>& hierarchicalChildren = rootComponent->GetHierarchicalEntities();
 
-                        azsprintf(m_statusBuffer, "Hierarchy [%s] %u members", rootComponent->GetEntity()->GetName().c_str(),
+                        azsnprintf(m_statusBuffer, AZ_ARRAY_SIZE(m_statusBuffer), "Hierarchy [%s] %u members", rootComponent->GetEntity()->GetName().c_str(),
                             aznumeric_cast<AZ::u32>(hierarchicalChildren.size()));
 
                         AZ::Vector3 entityPosition = rootComponent->GetEntity()->GetTransform()->GetWorldTranslation();

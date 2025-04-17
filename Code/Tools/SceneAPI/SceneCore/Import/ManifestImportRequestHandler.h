@@ -17,14 +17,15 @@ namespace AZ
     {
         namespace Import
         {
-            class ManifestImportRequestHandler
+            class SCENE_CORE_CLASS ManifestImportRequestHandler
                 : public SceneCore::BehaviorComponent
                 , public Events::AssetImportRequestBus::Handler
             {
             public:
                 AZ_COMPONENT(ManifestImportRequestHandler, "{6CF0520E-D5A9-4003-81A5-F20D62010E6F}", SceneCore::BehaviorComponent);
 
-                ~ManifestImportRequestHandler() override = default;
+                SCENE_CORE_API ManifestImportRequestHandler() = default;
+                SCENE_CORE_API ~ManifestImportRequestHandler() override = default;
 
                 void Activate() override;
                 void Deactivate() override;
@@ -32,8 +33,13 @@ namespace AZ
 
                 void GetManifestExtension(AZStd::string& result) override;
                 void GetGeneratedManifestExtension(AZStd::string& result) override;
-                Events::LoadingResult LoadAsset(Containers::Scene& scene, const AZStd::string& path, const Uuid& guid,
+                SCENE_CORE_API Events::LoadingResult LoadAsset(
+                    Containers::Scene& scene, const AZStd::string& path, const Uuid& guid,
                     RequestingApplication requester) override;
+                void GetPolicyName(AZStd::string& result) const override
+                {
+                    result = "ManifestImportRequestHandler";
+                }
                 
             private:
                 static const char* s_extension;

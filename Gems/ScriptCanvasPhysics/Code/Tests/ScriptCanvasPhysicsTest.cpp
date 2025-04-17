@@ -126,6 +126,7 @@ namespace ScriptCanvasPhysicsTests
             [[maybe_unused]] AzPhysics::SceneEvents::OnSceneGravityChangedEvent::Handler& handler) override {}
 
         MOCK_METHOD1(GetSceneHandle, AzPhysics::SceneHandle(const AZStd::string& sceneName));
+        MOCK_METHOD1(GetScene, AzPhysics::Scene*(AzPhysics::SceneHandle));
         MOCK_CONST_METHOD1(IsEnabled, bool(AzPhysics::SceneHandle sceneHandle));
         MOCK_METHOD2(AddSimulatedBody, AzPhysics::SimulatedBodyHandle(AzPhysics::SceneHandle sceneHandle, const AzPhysics::SimulatedBodyConfiguration* simulatedBodyConfig));
         MOCK_METHOD2(AddSimulatedBodies, AzPhysics::SimulatedBodyHandleList(AzPhysics::SceneHandle sceneHandle, const AzPhysics::SimulatedBodyConfigurationList& simulatedBodyConfigs));
@@ -139,6 +140,7 @@ namespace ScriptCanvasPhysicsTests
         MOCK_METHOD2(RegisterSceneSimulationFinishHandler, void(AzPhysics::SceneHandle sceneHandle, AzPhysics::SceneEvents::OnSceneSimulationFinishHandler& handler));
         MOCK_CONST_METHOD2(GetLegacyBody, AzPhysics::SimulatedBody* (AzPhysics::SceneHandle sceneHandle, AzPhysics::SimulatedBodyHandle handle));
         MOCK_METHOD2(QueryScene, AzPhysics::SceneQueryHits(AzPhysics::SceneHandle sceneHandle, const AzPhysics::SceneQueryRequest* request));
+        MOCK_METHOD3(QueryScene, bool(AzPhysics::SceneHandle sceneHandle, const AzPhysics::SceneQueryRequest* request, AzPhysics::SceneQueryHits&));
         MOCK_METHOD2(QuerySceneBatch, AzPhysics::SceneQueryHitsList(AzPhysics::SceneHandle sceneHandle, const AzPhysics::SceneQueryRequests& requests));
         MOCK_METHOD4(QuerySceneAsync, bool(AzPhysics::SceneHandle sceneHandle, AzPhysics::SceneQuery::AsyncRequestId requestId,
             const AzPhysics::SceneQueryRequest* request, AzPhysics::SceneQuery::AsyncCallback callback));
@@ -150,6 +152,7 @@ namespace ScriptCanvasPhysicsTests
         : public AzPhysics::SimulatedBody
     {
     public:
+        AZ_CLASS_ALLOCATOR(MockSimulatedBody, AZ::SystemAllocator)
         MOCK_CONST_METHOD0(GetEntityId, AZ::EntityId());
         MOCK_CONST_METHOD0(GetTransform, AZ::Transform());
         MOCK_METHOD1(SetTransform, void(const AZ::Transform& transform));
@@ -165,8 +168,10 @@ namespace ScriptCanvasPhysicsTests
         : public Physics::Shape
     {
     public:
+        AZ_CLASS_ALLOCATOR(MockShape, AZ::SystemAllocator)
         MOCK_METHOD1(SetMaterial, void(const AZStd::shared_ptr<Physics::Material>& material));
         MOCK_CONST_METHOD0(GetMaterial, AZStd::shared_ptr<Physics::Material>());
+        MOCK_CONST_METHOD0(GetMaterialId, Physics::MaterialId());
         MOCK_METHOD1(SetCollisionLayer, void(const AzPhysics::CollisionLayer& layer));
         MOCK_CONST_METHOD0(GetCollisionLayer, AzPhysics::CollisionLayer());
         MOCK_METHOD1(SetCollisionGroup, void(const AzPhysics::CollisionGroup& group));
@@ -175,6 +180,7 @@ namespace ScriptCanvasPhysicsTests
         MOCK_METHOD2(SetLocalPose, void(const AZ::Vector3& offset, const AZ::Quaternion& rotation));
         MOCK_CONST_METHOD0(GetLocalPose, AZStd::pair<AZ::Vector3, AZ::Quaternion>());
         MOCK_METHOD0(GetNativePointer, void*());
+        MOCK_CONST_METHOD0(GetNativePointer, const void*());
         MOCK_CONST_METHOD0(GetTag, AZ::Crc32());
         MOCK_METHOD1(AttachedToActor, void(void* actor));
         MOCK_METHOD0(DetachedFromActor, void());

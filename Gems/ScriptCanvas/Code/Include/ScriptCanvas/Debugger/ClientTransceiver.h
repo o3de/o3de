@@ -43,7 +43,7 @@ namespace ScriptCanvas
             using Lock = AZStd::lock_guard<Mutex>;
 
         public:
-            AZ_CLASS_ALLOCATOR(ClientTransceiver, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ClientTransceiver, AZ::SystemAllocator);
             AZ_RTTI(ClientTransceiver, "{C6F5ACDC-5415-48FE-A7C3-E6398FDDED33}");
             
             ClientTransceiver();
@@ -75,15 +75,13 @@ namespace ScriptCanvas
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
-            // TargetManagerClient
-            void DesiredTargetConnected(bool connected);
-            void DesiredTargetChanged(AZ::u32 newId, AZ::u32 oldId);
+            // TODO : Must be implemented via IRemoteTools handlers
             void TargetJoinedNetwork(AzFramework::RemoteToolsEndpointInfo info);
             void TargetLeftNetwork(AzFramework::RemoteToolsEndpointInfo info);
             //////////////////////////////////////////////////////////////////////////
 
             void OnReceivedMsg(AzFramework::RemoteToolsMessagePointer msg);
-            
+
             //////////////////////////////////////////////////////////////////////////
             // Message processing
             void Visit(Message::ActiveEntitiesResult& notification) override;
@@ -129,12 +127,12 @@ namespace ScriptCanvas
             void ProcessMessages();
             
         private:
-
+            void DesiredTargetConnected(bool connected);
+            void DesiredTargetChanged(AZ::u32 newId, AZ::u32 oldId);
             void DisconnectFromTarget();
             void CleanupConnection();
 
             Mutex m_mutex;
-            bool m_breakOnNext = true;
 
             AzFramework::RemoteToolsEndpointInfo m_selfTarget;
 

@@ -30,21 +30,16 @@
 #include <AzFramework/Asset/GenericAssetHandler.h>
 #include <AzFramework/Asset/NetworkAssetNotification_private.h>
 #include <AzFramework/Application/Application.h>
-#include <AzFramework/StringFunc/StringFunc.h>
-
-#include "AZTestShared/Utils/Utils.h"
-
-using namespace AZ::Data;
 
 namespace UnitTest
 {
     namespace
     {
-        AssetId asset1;
-        AssetId asset2;
-        AssetId asset3;
-        AssetId asset4;
-        AssetId asset5;
+        AZ::Data::AssetId asset1;
+        AZ::Data::AssetId asset2;
+        AZ::Data::AssetId asset3;
+        AZ::Data::AssetId asset4;
+        AZ::Data::AssetId asset5;
 
         bool Search(const AZStd::vector<AZ::Data::ProductDependency>& dependencies, const AZ::Data::AssetId& assetId)
         {
@@ -61,7 +56,7 @@ namespace UnitTest
     }
 
     class AssetCatalogDependencyTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
         AzFramework::AssetCatalog* m_assetCatalog;
 
@@ -75,10 +70,6 @@ namespace UnitTest
 
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
-
             AZ::Data::AssetManager::Descriptor desc;
             AZ::Data::AssetManager::Create(desc);
 
@@ -88,11 +79,11 @@ namespace UnitTest
             AzFramework::AssetSystem::NetworkAssetUpdateInterface* notificationInterface = AZ::Interface<AzFramework::AssetSystem::NetworkAssetUpdateInterface>::Get();
             ASSERT_NE(notificationInterface, nullptr);
 
-            asset1 = AssetId(AZ::Uuid::CreateRandom(), 0);
-            asset2 = AssetId(AZ::Uuid::CreateRandom(), 0);
-            asset3 = AssetId(AZ::Uuid::CreateRandom(), 0);
-            asset4 = AssetId(AZ::Uuid::CreateRandom(), 0);
-            asset5 = AssetId(AZ::Uuid::CreateRandom(), 0);
+            asset1 = AZ::Data::AssetId(AZ::Uuid::CreateRandom(), 0);
+            asset2 = AZ::Data::AssetId(AZ::Uuid::CreateRandom(), 0);
+            asset3 = AZ::Data::AssetId(AZ::Uuid::CreateRandom(), 0);
+            asset4 = AZ::Data::AssetId(AZ::Uuid::CreateRandom(), 0);
+            asset5 = AZ::Data::AssetId(AZ::Uuid::CreateRandom(), 0);
 
             AZ::Data::AssetInfo info1, info2, info3, info4, info5;
             info1.m_relativePath = path1;
@@ -114,7 +105,7 @@ namespace UnitTest
                 AzFramework::AssetSystem::AssetNotificationMessage message("test", AzFramework::AssetSystem::AssetNotificationMessage::AssetChanged, AZ::Uuid::CreateRandom(), "");
                 message.m_assetId = asset1;
                 message.m_dependencies.emplace_back(asset2, 0);
-                notificationInterface->AssetChanged(message);
+                notificationInterface->AssetChanged({ message });
             }
 
             {
@@ -123,7 +114,7 @@ namespace UnitTest
                 message.m_assetId = asset2;
                 message.m_dependencies.emplace_back(asset3, 0);
                 message.m_dependencies.emplace_back(asset4, 0);
-                notificationInterface->AssetChanged(message);
+                notificationInterface->AssetChanged({ message });
             }
 
             {
@@ -131,21 +122,21 @@ namespace UnitTest
                 AzFramework::AssetSystem::AssetNotificationMessage message("test", AzFramework::AssetSystem::AssetNotificationMessage::AssetChanged, AZ::Uuid::CreateRandom(), "");
                 message.m_assetId = asset3;
                 message.m_dependencies.emplace_back(asset5, 0);
-                notificationInterface->AssetChanged(message);
+                notificationInterface->AssetChanged({ message });
             }
 
             {
                 m_assetCatalog->RegisterAsset(asset4, info4);
                 AzFramework::AssetSystem::AssetNotificationMessage message("test", AzFramework::AssetSystem::AssetNotificationMessage::AssetChanged, AZ::Uuid::CreateRandom(), "");
                 message.m_assetId = asset4;
-                notificationInterface->AssetChanged(message);
+                notificationInterface->AssetChanged({ message });
             }
 
             {
                 m_assetCatalog->RegisterAsset(asset5, info5);
                 AzFramework::AssetSystem::AssetNotificationMessage message("test", AzFramework::AssetSystem::AssetNotificationMessage::AssetChanged, AZ::Uuid::CreateRandom(), "");
                 message.m_assetId = asset5;
-                notificationInterface->AssetChanged(message);
+                notificationInterface->AssetChanged({ message });
             }
 
         }
@@ -157,18 +148,13 @@ namespace UnitTest
             AzFramework::LegacyAssetEventBus::ClearQueuedEvents();
             AZ::TickBus::ClearQueuedEvents();
 
-            AssetManager::Destroy();
-
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
-
-            AllocatorsFixture::TearDown();
+            AZ::Data::AssetManager::Destroy();
         }
 
-        void CheckDirectDependencies(AssetId assetId, AZStd::initializer_list<AssetId> expectedDependencies)
+        void CheckDirectDependencies(AZ::Data::AssetId assetId, AZStd::initializer_list<AZ::Data::AssetId> expectedDependencies)
         {
             AZ::Outcome<AZStd::vector<AZ::Data::ProductDependency>, AZStd::string> result = AZ::Failure<AZStd::string>("No response");
-            AssetCatalogRequestBus::BroadcastResult(result, &AssetCatalogRequestBus::Events::GetDirectProductDependencies, assetId);
+            AZ::Data::AssetCatalogRequestBus::BroadcastResult(result, &AZ::Data::AssetCatalogRequestBus::Events::GetDirectProductDependencies, assetId);
 
             EXPECT_TRUE(result.IsSuccess());
 
@@ -182,10 +168,10 @@ namespace UnitTest
             }
         }
 
-        void CheckAllDependencies(AssetId assetId, AZStd::initializer_list<AssetId> expectedDependencies)
+        void CheckAllDependencies(AZ::Data::AssetId assetId, AZStd::initializer_list<AZ::Data::AssetId> expectedDependencies)
         {
             AZ::Outcome<AZStd::vector<AZ::Data::ProductDependency>, AZStd::string> result = AZ::Failure<AZStd::string>("No response");
-            AssetCatalogRequestBus::BroadcastResult(result, &AssetCatalogRequestBus::Events::GetAllProductDependencies, assetId);
+            AZ::Data::AssetCatalogRequestBus::BroadcastResult(result, &AZ::Data::AssetCatalogRequestBus::Events::GetAllProductDependencies, assetId);
 
             EXPECT_TRUE(result.IsSuccess());
 
@@ -199,10 +185,10 @@ namespace UnitTest
             }
         }
 
-        void CheckAllDependenciesFilter(AssetId assetId, const AZStd::unordered_set<AssetId>& filterSet, const AZStd::vector<AZStd::string>& wildcardList, AZStd::initializer_list<AssetId> expectedDependencies)
+        void CheckAllDependenciesFilter(AZ::Data::AssetId assetId, const AZStd::unordered_set<AZ::Data::AssetId>& filterSet, const AZStd::vector<AZStd::string>& wildcardList, AZStd::initializer_list<AZ::Data::AssetId> expectedDependencies)
         {
             AZ::Outcome<AZStd::vector<AZ::Data::ProductDependency>, AZStd::string> result = AZ::Failure<AZStd::string>("No response");
-            AssetCatalogRequestBus::BroadcastResult(result, &AssetCatalogRequestBus::Events::GetAllProductDependenciesFilter, assetId, filterSet, wildcardList);
+            AZ::Data::AssetCatalogRequestBus::BroadcastResult(result, &AZ::Data::AssetCatalogRequestBus::Events::GetAllProductDependenciesFilter, assetId, filterSet, wildcardList);
 
             EXPECT_TRUE(result.IsSuccess());
 
@@ -259,13 +245,13 @@ namespace UnitTest
 
     TEST_F(AssetCatalogDependencyTest, unregisterTest)
     {
-        AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::UnregisterAsset, asset4);
+        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::UnregisterAsset, asset4);
         CheckDirectDependencies(asset2, { asset3 });
         CheckAllDependencies(asset1, { asset2, asset3, asset5 });
     }
 
     class AssetCatalogDeltaTest :
-        public ::testing::Test
+        public LeakDetectionFixture
     {
     public:
         const char* path1 = "Asset1Path";
@@ -275,14 +261,14 @@ namespace UnitTest
         const char* path5 = "Asset5Path";
         const char* path6 = "Asset6Path";
 
-        char sourceCatalogPath1[AZ_MAX_PATH_LEN];
-        char sourceCatalogPath2[AZ_MAX_PATH_LEN];
-        char sourceCatalogPath3[AZ_MAX_PATH_LEN];
+        AZ::IO::FixedMaxPath sourceCatalogPath1;
+        AZ::IO::FixedMaxPath sourceCatalogPath2;
+        AZ::IO::FixedMaxPath sourceCatalogPath3;
 
-        char baseCatalogPath[AZ_MAX_PATH_LEN];
-        char deltaCatalogPath[AZ_MAX_PATH_LEN];
-        char deltaCatalogPath2[AZ_MAX_PATH_LEN];
-        char deltaCatalogPath3[AZ_MAX_PATH_LEN];
+        AZ::IO::FixedMaxPath baseCatalogPath;
+        AZ::IO::FixedMaxPath deltaCatalogPath;
+        AZ::IO::FixedMaxPath deltaCatalogPath2;
+        AZ::IO::FixedMaxPath deltaCatalogPath3;
 
         AZStd::vector<AZStd::string> deltaCatalogFiles;
         AZStd::vector<AZStd::string> deltaCatalogFiles2;
@@ -294,15 +280,14 @@ namespace UnitTest
         AZStd::shared_ptr<AzFramework::AssetRegistry> deltaCatalog3;
 
         AZStd::unique_ptr<AzFramework::Application> m_app;
+        AZ::Test::ScopedAutoTempDirectory m_tempDirectory;
 
         void SetUp() override
         {
-            AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
-
             m_app.reset(aznew AzFramework::Application());
             AZ::ComponentApplication::Descriptor desc;
             desc.m_useExistingAllocator = true;
-            
+
             AZ::SettingsRegistryInterface* registry = AZ::SettingsRegistry::Get();
             auto projectPathKey =
                 AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
@@ -313,27 +298,28 @@ namespace UnitTest
 
             AZ::ComponentApplication::StartupParameters startupParameters;
             startupParameters.m_loadAssetCatalog = false;
+            startupParameters.m_loadSettingsRegistry = false;
             m_app->Start(desc, startupParameters);
 
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
-            // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
+            // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash
             // in the unit tests.
             AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
 
-            asset1 = AssetId(AZ::Uuid::CreateRandom(), 0);
-            asset2 = AssetId(AZ::Uuid::CreateRandom(), 0);
-            asset3 = AssetId(AZ::Uuid::CreateRandom(), 0);
-            asset4 = AssetId(AZ::Uuid::CreateRandom(), 0);
-            asset5 = AssetId(AZ::Uuid::CreateRandom(), 0);
+            asset1 = AZ::Data::AssetId(AZ::Uuid::CreateRandom(), 0);
+            asset2 = AZ::Data::AssetId(AZ::Uuid::CreateRandom(), 0);
+            asset3 = AZ::Data::AssetId(AZ::Uuid::CreateRandom(), 0);
+            asset4 = AZ::Data::AssetId(AZ::Uuid::CreateRandom(), 0);
+            asset5 = AZ::Data::AssetId(AZ::Uuid::CreateRandom(), 0);
 
-            azstrcpy(sourceCatalogPath1, AZ_MAX_PATH_LEN,(GetTestFolderPath() + "AssetCatalogSource1.xml").c_str());
-            azstrcpy(sourceCatalogPath2, AZ_MAX_PATH_LEN,(GetTestFolderPath() + "AssetCatalogSource2.xml").c_str());
-            azstrcpy(sourceCatalogPath3, AZ_MAX_PATH_LEN,(GetTestFolderPath() + "AssetCatalogSource3.xml").c_str());
+            sourceCatalogPath1 = m_tempDirectory.GetDirectoryAsPath() / "AssetCatalogSource1.xml";
+            sourceCatalogPath2 = m_tempDirectory.GetDirectoryAsPath() / "AssetCatalogSource2.xml";
+            sourceCatalogPath3 = m_tempDirectory.GetDirectoryAsPath() / "AssetCatalogSource3.xml";
 
-            azstrcpy(baseCatalogPath, AZ_MAX_PATH_LEN, (GetTestFolderPath() + "AssetCatalogBase.xml").c_str());
-            azstrcpy(deltaCatalogPath, AZ_MAX_PATH_LEN, (GetTestFolderPath() + "AssetCatalogDelta.xml").c_str());
-            azstrcpy(deltaCatalogPath2, AZ_MAX_PATH_LEN, (GetTestFolderPath() + "AssetCatalogDelta2.xml").c_str());
-            azstrcpy(deltaCatalogPath3, AZ_MAX_PATH_LEN, (GetTestFolderPath() + "AssetCatalogDelta3.xml").c_str());
+            baseCatalogPath = m_tempDirectory.GetDirectoryAsPath() / "AssetCatalogBase.xml";
+            deltaCatalogPath = m_tempDirectory.GetDirectoryAsPath() / "AssetCatalogDelta.xml";
+            deltaCatalogPath2 = m_tempDirectory.GetDirectoryAsPath() / "AssetCatalogDelta2.xml";
+            deltaCatalogPath3 = m_tempDirectory.GetDirectoryAsPath() / "AssetCatalogDelta3.xml";
 
             AZ::Data::AssetInfo info1, info2, info3, info4, info5, info6;
 
@@ -344,77 +330,77 @@ namespace UnitTest
             info5.m_relativePath = path5;
             info6.m_relativePath = path6;
 
-            AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::RegisterAsset, asset1, info1);
-            AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::RegisterAsset, asset2, info2);
+            AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::RegisterAsset, asset1, info1);
+            AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::RegisterAsset, asset2, info2);
             // baseCatalog - asset1 path1, asset2 path2
-            AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::SaveCatalog, baseCatalogPath);
+            AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::SaveCatalog, baseCatalogPath.c_str());
 
-            AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::RegisterAsset, asset1, info3);
-            AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::RegisterAsset, asset4, info4);
-            AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::StartMonitoringAssets);
+            AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::RegisterAsset, asset1, info3);
+            AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::RegisterAsset, asset4, info4);
+            AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::StartMonitoringAssets);
             AzFramework::AssetSystem::NetworkAssetUpdateInterface* notificationInterface = AZ::Interface<AzFramework::AssetSystem::NetworkAssetUpdateInterface>::Get();
             ASSERT_NE(notificationInterface, nullptr);
             {
                 AzFramework::AssetSystem::AssetNotificationMessage message(path3, AzFramework::AssetSystem::AssetNotificationMessage::AssetChanged, AZ::Uuid::CreateRandom(), "");
                 message.m_assetId = asset1;
                 message.m_dependencies.push_back(AZ::Data::ProductDependency(asset2, 0));
-                notificationInterface->AssetChanged(message);
+                notificationInterface->AssetChanged({ message });
             }
-            AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::StopMonitoringAssets);
+            AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::StopMonitoringAssets);
             // sourcecatalog1 - asset1 path3 (depends on asset 2), asset2 path2, asset4 path4
-            AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::SaveCatalog, sourceCatalogPath1);
-            AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::UnregisterAsset, asset2);
+            AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::SaveCatalog, sourceCatalogPath1.c_str());
+            AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::UnregisterAsset, asset2);
             // deltacatalog - asset1 path3 (depends on asset 2), asset4 path4
             deltaCatalogFiles.push_back(path3);
             deltaCatalogFiles.push_back(path4);
 
             // deltacatalog - asset1 path3, asset4 path4
-            AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::SaveCatalog, deltaCatalogPath);
+            AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::SaveCatalog, deltaCatalogPath.c_str());
 
-            AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::RegisterAsset, asset2, info2);
-            AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::RegisterAsset, asset5, info5);
-            AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::StartMonitoringAssets);
+            AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::RegisterAsset, asset2, info2);
+            AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::RegisterAsset, asset5, info5);
+            AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::StartMonitoringAssets);
             {
                 AzFramework::AssetSystem::AssetNotificationMessage message(path5, AzFramework::AssetSystem::AssetNotificationMessage::AssetChanged, AZ::Uuid::CreateRandom(), "");
                 message.m_assetId = asset5;
                 message.m_dependencies.push_back(AZ::Data::ProductDependency(asset2, 0));
-                notificationInterface->AssetChanged(message);
+                notificationInterface->AssetChanged({ message });
             }
-            AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::StopMonitoringAssets);
+            AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::StopMonitoringAssets);
             // sourcecatalog2 - asset1 path3 (depends on asset 2), asset2 path2, asset4 path4, asset5 path5 (depends on asset 2)
-            AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::SaveCatalog, sourceCatalogPath2);
-            AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::UnregisterAsset, asset1);
-            AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::UnregisterAsset, asset2);
-            AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::UnregisterAsset, asset4);
+            AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::SaveCatalog, sourceCatalogPath2.c_str());
+            AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::UnregisterAsset, asset1);
+            AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::UnregisterAsset, asset2);
+            AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::UnregisterAsset, asset4);
             // deltacatalog2 - asset5 path5 (depends on asset 2)
             deltaCatalogFiles2.push_back(path5);
-            AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::SaveCatalog, deltaCatalogPath2);
-            
-            AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::RegisterAsset, asset1, info6);
-            AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::RegisterAsset, asset2, info2);
-            AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::RegisterAsset, asset5, info4);
-            AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::StartMonitoringAssets);
+            AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::SaveCatalog, deltaCatalogPath2.c_str());
+
+            AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::RegisterAsset, asset1, info6);
+            AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::RegisterAsset, asset2, info2);
+            AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::RegisterAsset, asset5, info4);
+            AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::StartMonitoringAssets);
             {
                 AzFramework::AssetSystem::AssetNotificationMessage message(path4, AzFramework::AssetSystem::AssetNotificationMessage::AssetChanged, AZ::Uuid::CreateRandom(), "");
                 message.m_assetId = asset5;
                 message.m_dependencies.push_back(AZ::Data::ProductDependency(asset2, 0));
-                notificationInterface->AssetChanged(message);
+                notificationInterface->AssetChanged({ message });
             }
-            AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::StopMonitoringAssets);
+            AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::StopMonitoringAssets);
             //sourcecatalog3 - asset1 path6, asset2 path2, asset5 path4 (depends on asset 2)
-            AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::SaveCatalog, sourceCatalogPath3);
-            AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::UnregisterAsset, asset2);
+            AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::SaveCatalog, sourceCatalogPath3.c_str());
+            AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::UnregisterAsset, asset2);
             // deltacatalog3 - asset1 path6 asset5 path4 (depends on asset 2)
             deltaCatalogFiles3.push_back(path6);
             deltaCatalogFiles3.push_back(path4);
-            AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::SaveCatalog, deltaCatalogPath3);
-            AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::UnregisterAsset, asset1);
-            AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::UnregisterAsset, asset5);
+            AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::SaveCatalog, deltaCatalogPath3.c_str());
+            AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::UnregisterAsset, asset1);
+            AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::UnregisterAsset, asset5);
 
-            baseCatalog = AzFramework::AssetCatalog::LoadCatalogFromFile(baseCatalogPath);
-            deltaCatalog = AzFramework::AssetCatalog::LoadCatalogFromFile(deltaCatalogPath);
-            deltaCatalog2 = AzFramework::AssetCatalog::LoadCatalogFromFile(deltaCatalogPath2);
-            deltaCatalog3 = AzFramework::AssetCatalog::LoadCatalogFromFile(deltaCatalogPath3);
+            baseCatalog = AzFramework::AssetCatalog::LoadCatalogFromFile(baseCatalogPath.c_str());
+            deltaCatalog = AzFramework::AssetCatalog::LoadCatalogFromFile(deltaCatalogPath.c_str());
+            deltaCatalog2 = AzFramework::AssetCatalog::LoadCatalogFromFile(deltaCatalogPath2.c_str());
+            deltaCatalog3 = AzFramework::AssetCatalog::LoadCatalogFromFile(deltaCatalogPath3.c_str());
         }
 
         void TearDown() override
@@ -428,13 +414,13 @@ namespace UnitTest
             deltaCatalog3.reset();
             m_app->Stop();
             m_app.reset();
-            AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
+            AZ::AllocatorInstance<AZ::SystemAllocator>::Get().GarbageCollect();
         }
 
-        void CheckDirectDependencies(AssetId assetId, AZStd::initializer_list<AssetId> expectedDependencies)
+        void CheckDirectDependencies(AZ::Data::AssetId assetId, AZStd::initializer_list<AZ::Data::AssetId> expectedDependencies)
         {
             AZ::Outcome<AZStd::vector<AZ::Data::ProductDependency>, AZStd::string> result = AZ::Failure<AZStd::string>("No response");
-            AssetCatalogRequestBus::BroadcastResult(result, &AssetCatalogRequestBus::Events::GetDirectProductDependencies, assetId);
+            AZ::Data::AssetCatalogRequestBus::BroadcastResult(result, &AZ::Data::AssetCatalogRequestBus::Events::GetDirectProductDependencies, assetId);
 
             EXPECT_TRUE(result.IsSuccess());
 
@@ -448,179 +434,179 @@ namespace UnitTest
             }
         }
 
-        void CheckNoDependencies(AssetId assetId)
+        void CheckNoDependencies(AZ::Data::AssetId assetId)
         {
             AZ::Outcome<AZStd::vector<AZ::Data::ProductDependency>, AZStd::string> result = AZ::Failure<AZStd::string>("No response");
-            AssetCatalogRequestBus::BroadcastResult(result, &AssetCatalogRequestBus::Events::GetDirectProductDependencies, assetId);
+            AZ::Data::AssetCatalogRequestBus::BroadcastResult(result, &AZ::Data::AssetCatalogRequestBus::Events::GetDirectProductDependencies, assetId);
             EXPECT_FALSE(result.IsSuccess());
         }
     };
 
     TEST_F(AssetCatalogDeltaTest, LoadCatalog_AssetChangedCatalogLoaded_AssetStillKnown)
     {
-        AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::StartMonitoringAssets);
-        auto updatedAsset = AssetId(AZ::Uuid::CreateRandom(), 0);
+        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::StartMonitoringAssets);
+        auto updatedAsset = AZ::Data::AssetId(AZ::Uuid::CreateRandom(), 0);
         AzFramework::AssetSystem::NetworkAssetUpdateInterface* notificationInterface = AZ::Interface<AzFramework::AssetSystem::NetworkAssetUpdateInterface>::Get();
         ASSERT_NE(notificationInterface, nullptr);
         {
             AzFramework::AssetSystem::AssetNotificationMessage message("test", AzFramework::AssetSystem::AssetNotificationMessage::AssetChanged, AZ::Uuid::CreateRandom(), "");
             message.m_assetId = updatedAsset;
             message.m_dependencies.emplace_back(asset2, 0);
-            notificationInterface->AssetChanged(message);
+            notificationInterface->AssetChanged({ message });
         }
 
         AZ::Data::AssetInfo assetInfo;
-        AssetCatalogRequestBus::BroadcastResult(assetInfo, &AssetCatalogRequestBus::Events::GetAssetInfoById, updatedAsset);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, updatedAsset);
         EXPECT_TRUE(assetInfo.m_assetId.IsValid());
 
-        AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::LoadCatalog, baseCatalogPath);
+        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::LoadCatalog, baseCatalogPath.c_str());
 
         //Asset should still be known - the catalog should swap in the new catalog from disk
-        AssetCatalogRequestBus::BroadcastResult(assetInfo, &AssetCatalogRequestBus::Events::GetAssetInfoById, updatedAsset);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, updatedAsset);
         EXPECT_TRUE(assetInfo.m_assetId.IsValid());
     }
 
     TEST_F(AssetCatalogDeltaTest, DeltaCatalogTest)
     {
         AZStd::string assetPath;
-        AssetCatalogRequestBus::BroadcastResult(assetPath, &AssetCatalogRequestBus::Events::GetAssetPathById, asset1);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, asset1);
         EXPECT_EQ(assetPath, "");
 
-        AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::ClearCatalog);
-        AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::LoadCatalog, baseCatalogPath);
+        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::ClearCatalog);
+        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::LoadCatalog, baseCatalogPath.c_str());
 
         // Topmost should have precedence
 
         // baseCatalog path1 path2
-        AssetCatalogRequestBus::BroadcastResult(assetPath, &AssetCatalogRequestBus::Events::GetAssetPathById, asset1);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, asset1);
         EXPECT_EQ(assetPath, path1);
-        AssetCatalogRequestBus::BroadcastResult(assetPath, &AssetCatalogRequestBus::Events::GetAssetPathById, asset2);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, asset2);
         EXPECT_EQ(assetPath, path2);
         CheckNoDependencies(asset1);
         CheckNoDependencies(asset2);
 
-        AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::AddDeltaCatalog, deltaCatalog);
+        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::AddDeltaCatalog, deltaCatalog);
 
         // deltacatalog path3                path4
         /// baseCatalog path1  path2
         ///             asset1 asset2 asset3 asset4 asset5
-        AssetCatalogRequestBus::BroadcastResult(assetPath, &AssetCatalogRequestBus::Events::GetAssetPathById, asset1);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, asset1);
         EXPECT_EQ(assetPath, path3);
-        AssetCatalogRequestBus::BroadcastResult(assetPath, &AssetCatalogRequestBus::Events::GetAssetPathById, asset2);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, asset2);
         EXPECT_EQ(assetPath, path2);
         CheckDirectDependencies(asset1, { asset2 });
         CheckNoDependencies(asset2);
         CheckNoDependencies(asset4);
 
-        AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::AddDeltaCatalog, deltaCatalog2);
+        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::AddDeltaCatalog, deltaCatalog2);
 
         // deltacatalog2                             path5
         //  deltacatalog path3                path4
         ///  baseCatalog path1  path2
         ///              asset1 asset2 asset3 asset4 asset5
-        AssetCatalogRequestBus::BroadcastResult(assetPath, &AssetCatalogRequestBus::Events::GetAssetPathById, asset1);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, asset1);
         EXPECT_EQ(assetPath, path3);
-        AssetCatalogRequestBus::BroadcastResult(assetPath, &AssetCatalogRequestBus::Events::GetAssetPathById, asset2);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, asset2);
         EXPECT_EQ(assetPath, path2);
-        AssetCatalogRequestBus::BroadcastResult(assetPath, &AssetCatalogRequestBus::Events::GetAssetPathById, asset5);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, asset5);
         EXPECT_EQ(assetPath, path5);
         CheckDirectDependencies(asset1, { asset2 });
         CheckNoDependencies(asset2);
         CheckNoDependencies(asset4);
         CheckDirectDependencies(asset5, { asset2 });
 
-        AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::RemoveDeltaCatalog, deltaCatalog);
+        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::RemoveDeltaCatalog, deltaCatalog);
 
         // deltacatalog2                             path5
         ///  baseCatalog path1  path2
         ///              asset1 asset2 asset3 asset4 asset5
-        AssetCatalogRequestBus::BroadcastResult(assetPath, &AssetCatalogRequestBus::Events::GetAssetPathById, asset1);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, asset1);
         EXPECT_EQ(assetPath, path1);
-        AssetCatalogRequestBus::BroadcastResult(assetPath, &AssetCatalogRequestBus::Events::GetAssetPathById, asset3);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, asset3);
         EXPECT_EQ(assetPath, "");
-        AssetCatalogRequestBus::BroadcastResult(assetPath, &AssetCatalogRequestBus::Events::GetAssetPathById, asset2);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, asset2);
         EXPECT_EQ(assetPath, path2);
-        AssetCatalogRequestBus::BroadcastResult(assetPath, &AssetCatalogRequestBus::Events::GetAssetPathById, asset5);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, asset5);
         EXPECT_EQ(assetPath, path5);
         CheckNoDependencies(asset1);
         CheckNoDependencies(asset2);
         CheckDirectDependencies(asset5, { asset2 });
 
-        AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::AddDeltaCatalog, deltaCatalog);
+        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::AddDeltaCatalog, deltaCatalog);
 
         //  deltacatalog path3                path4
         // deltacatalog2                             path5
         ///  baseCatalog path1  path2
         ///              asset1 asset2 asset3 asset4 asset5
-        AssetCatalogRequestBus::BroadcastResult(assetPath, &AssetCatalogRequestBus::Events::GetAssetPathById, asset1);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, asset1);
         EXPECT_EQ(assetPath, path3);
-        AssetCatalogRequestBus::BroadcastResult(assetPath, &AssetCatalogRequestBus::Events::GetAssetPathById, asset2);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, asset2);
         EXPECT_EQ(assetPath, path2);
         CheckDirectDependencies(asset1, { asset2 });
         CheckNoDependencies(asset2);
         CheckNoDependencies(asset4);
         CheckDirectDependencies(asset5, { asset2 });
 
-        AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::InsertDeltaCatalog, deltaCatalog3, 0);
+        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::InsertDeltaCatalog, deltaCatalog3, 0);
 
         //  deltacatalog path3                path4
         // deltacatalog2                             path5
         // deltacatalog3 path6                       path4
         ///  baseCatalog path1  path2
         ///              asset1 asset2 asset3 asset4 asset5
-        AssetCatalogRequestBus::BroadcastResult(assetPath, &AssetCatalogRequestBus::Events::GetAssetPathById, asset1);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, asset1);
         EXPECT_EQ(assetPath, path3);
-        AssetCatalogRequestBus::BroadcastResult(assetPath, &AssetCatalogRequestBus::Events::GetAssetPathById, asset5);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, asset5);
         EXPECT_EQ(assetPath, path5);
         CheckDirectDependencies(asset1, { asset2 });
         CheckNoDependencies(asset2);
         CheckNoDependencies(asset4);
         CheckDirectDependencies(asset5, { asset2 });
 
-        AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::RemoveDeltaCatalog, deltaCatalog3);
+        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::RemoveDeltaCatalog, deltaCatalog3);
 
         //  deltacatalog path3                path4
         // deltacatalog2                             path5
         ///  baseCatalog path1  path2
         ///              asset1 asset2 asset3 asset4 asset5
-        AssetCatalogRequestBus::BroadcastResult(assetPath, &AssetCatalogRequestBus::Events::GetAssetPathById, asset1);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, asset1);
         EXPECT_EQ(assetPath, path3);
-        AssetCatalogRequestBus::BroadcastResult(assetPath, &AssetCatalogRequestBus::Events::GetAssetPathById, asset5);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, asset5);
         EXPECT_EQ(assetPath, path5);
         CheckDirectDependencies(asset1, { asset2 });
         CheckNoDependencies(asset2);
         CheckNoDependencies(asset4);
         CheckDirectDependencies(asset5, { asset2 });
 
-        AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::InsertDeltaCatalog, deltaCatalog3, 1);
+        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::InsertDeltaCatalog, deltaCatalog3, 1);
 
         //  deltacatalog path3                path4
         // deltacatalog3 path6                       path4
         // deltacatalog2                             path5
         ///  baseCatalog path1  path2
         ///              asset1 asset2 asset3 asset4 asset5
-        AssetCatalogRequestBus::BroadcastResult(assetPath, &AssetCatalogRequestBus::Events::GetAssetPathById, asset1);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, asset1);
         EXPECT_EQ(assetPath, path3);
-        AssetCatalogRequestBus::BroadcastResult(assetPath, &AssetCatalogRequestBus::Events::GetAssetPathById, asset5);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, asset5);
         EXPECT_EQ(assetPath, path4);
         CheckDirectDependencies(asset1, { asset2 });
         CheckNoDependencies(asset2);
         CheckNoDependencies(asset4);
         CheckDirectDependencies(asset5, { asset2 });
 
-        AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::RemoveDeltaCatalog, baseCatalog);
-        AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::InsertDeltaCatalog, baseCatalog, 3);
+        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::RemoveDeltaCatalog, baseCatalog);
+        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::InsertDeltaCatalog, baseCatalog, 3);
 
         ///  baseCatalog path1  path2
         //  deltacatalog path3                path4
         // deltacatalog3 path6                       path4
         // deltacatalog2                             path5
         ///              asset1 asset2 asset3 asset4 asset5
-        AssetCatalogRequestBus::BroadcastResult(assetPath, &AssetCatalogRequestBus::Events::GetAssetPathById, asset1);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, asset1);
         EXPECT_EQ(assetPath, path1);
-        AssetCatalogRequestBus::BroadcastResult(assetPath, &AssetCatalogRequestBus::Events::GetAssetPathById, asset2);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, asset2);
         EXPECT_EQ(assetPath, path2);
-        AssetCatalogRequestBus::BroadcastResult(assetPath, &AssetCatalogRequestBus::Events::GetAssetPathById, asset3);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, asset3);
         EXPECT_EQ(assetPath, "");
         CheckNoDependencies(asset1);
         CheckNoDependencies(asset2);
@@ -631,144 +617,144 @@ namespace UnitTest
     TEST_F(AssetCatalogDeltaTest, DeltaCatalogTest_AddDeltaCatalogNext_Success)
     {
         AZStd::string assetPath;
-        AssetCatalogRequestBus::BroadcastResult(assetPath, &AssetCatalogRequestBus::Events::GetAssetPathById, asset1);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, asset1);
         EXPECT_EQ(assetPath, "");
 
-        AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::ClearCatalog);
-        AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::LoadCatalog, baseCatalogPath);
+        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::ClearCatalog);
+        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::LoadCatalog, baseCatalogPath.c_str());
 
         // Topmost should have precedence
 
         // baseCatalog path1 path2
-        AssetCatalogRequestBus::BroadcastResult(assetPath, &AssetCatalogRequestBus::Events::GetAssetPathById, asset1);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, asset1);
         EXPECT_EQ(assetPath, path1);
-        AssetCatalogRequestBus::BroadcastResult(assetPath, &AssetCatalogRequestBus::Events::GetAssetPathById, asset2);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, asset2);
         EXPECT_EQ(assetPath, path2);
         CheckNoDependencies(asset1);
         CheckNoDependencies(asset2);
 
-        AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::AddDeltaCatalog, deltaCatalog);
+        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::AddDeltaCatalog, deltaCatalog);
 
         // deltacatalog path3                path4
         /// baseCatalog path1  path2
         ///             asset1 asset2 asset3 asset4 asset5
-        AssetCatalogRequestBus::BroadcastResult(assetPath, &AssetCatalogRequestBus::Events::GetAssetPathById, asset1);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, asset1);
         EXPECT_EQ(assetPath, path3);
-        AssetCatalogRequestBus::BroadcastResult(assetPath, &AssetCatalogRequestBus::Events::GetAssetPathById, asset2);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, asset2);
         EXPECT_EQ(assetPath, path2);
         CheckDirectDependencies(asset1, { asset2 });
         CheckNoDependencies(asset2);
         CheckNoDependencies(asset4);
 
-        AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::AddDeltaCatalog, deltaCatalog2);
+        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::AddDeltaCatalog, deltaCatalog2);
 
         // deltacatalog2                             path5
         //  deltacatalog path3                path4
         ///  baseCatalog path1  path2
         ///              asset1 asset2 asset3 asset4 asset5
-        AssetCatalogRequestBus::BroadcastResult(assetPath, &AssetCatalogRequestBus::Events::GetAssetPathById, asset1);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, asset1);
         EXPECT_EQ(assetPath, path3);
-        AssetCatalogRequestBus::BroadcastResult(assetPath, &AssetCatalogRequestBus::Events::GetAssetPathById, asset2);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, asset2);
         EXPECT_EQ(assetPath, path2);
-        AssetCatalogRequestBus::BroadcastResult(assetPath, &AssetCatalogRequestBus::Events::GetAssetPathById, asset5);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, asset5);
         EXPECT_EQ(assetPath, path5);
         CheckDirectDependencies(asset1, { asset2 });
         CheckNoDependencies(asset2);
         CheckNoDependencies(asset4);
         CheckDirectDependencies(asset5, { asset2 });
 
-        AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::RemoveDeltaCatalog, deltaCatalog);
+        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::RemoveDeltaCatalog, deltaCatalog);
 
         // deltacatalog2                             path5
         ///  baseCatalog path1  path2
         ///              asset1 asset2 asset3 asset4 asset5
-        AssetCatalogRequestBus::BroadcastResult(assetPath, &AssetCatalogRequestBus::Events::GetAssetPathById, asset1);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, asset1);
         EXPECT_EQ(assetPath, path1);
-        AssetCatalogRequestBus::BroadcastResult(assetPath, &AssetCatalogRequestBus::Events::GetAssetPathById, asset3);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, asset3);
         EXPECT_EQ(assetPath, "");
-        AssetCatalogRequestBus::BroadcastResult(assetPath, &AssetCatalogRequestBus::Events::GetAssetPathById, asset2);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, asset2);
         EXPECT_EQ(assetPath, path2);
-        AssetCatalogRequestBus::BroadcastResult(assetPath, &AssetCatalogRequestBus::Events::GetAssetPathById, asset5);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, asset5);
         EXPECT_EQ(assetPath, path5);
         CheckNoDependencies(asset1);
         CheckNoDependencies(asset2);
         CheckDirectDependencies(asset5, { asset2 });
 
-        AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::AddDeltaCatalog, deltaCatalog);
+        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::AddDeltaCatalog, deltaCatalog);
 
         //  deltacatalog path3                path4
         // deltacatalog2                             path5
         ///  baseCatalog path1  path2
         ///              asset1 asset2 asset3 asset4 asset5
-        AssetCatalogRequestBus::BroadcastResult(assetPath, &AssetCatalogRequestBus::Events::GetAssetPathById, asset1);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, asset1);
         EXPECT_EQ(assetPath, path3);
-        AssetCatalogRequestBus::BroadcastResult(assetPath, &AssetCatalogRequestBus::Events::GetAssetPathById, asset2);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, asset2);
         EXPECT_EQ(assetPath, path2);
         CheckDirectDependencies(asset1, { asset2 });
         CheckNoDependencies(asset2);
         CheckNoDependencies(asset4);
         CheckDirectDependencies(asset5, { asset2 });
 
-        AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::InsertDeltaCatalogBefore, deltaCatalog3, deltaCatalog2);
+        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::InsertDeltaCatalogBefore, deltaCatalog3, deltaCatalog2);
 
         //  deltacatalog path3                path4
         // deltacatalog2                             path5
         // deltacatalog3 path6                       path4
         ///  baseCatalog path1  path2
         ///              asset1 asset2 asset3 asset4 asset5
-        AssetCatalogRequestBus::BroadcastResult(assetPath, &AssetCatalogRequestBus::Events::GetAssetPathById, asset1);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, asset1);
         EXPECT_EQ(assetPath, path3);
-        AssetCatalogRequestBus::BroadcastResult(assetPath, &AssetCatalogRequestBus::Events::GetAssetPathById, asset5);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, asset5);
         EXPECT_EQ(assetPath, path5);
         CheckDirectDependencies(asset1, { asset2 });
         CheckNoDependencies(asset2);
         CheckNoDependencies(asset4);
         CheckDirectDependencies(asset5, { asset2 });
 
-        AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::RemoveDeltaCatalog, deltaCatalog3);
+        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::RemoveDeltaCatalog, deltaCatalog3);
 
         //  deltacatalog path3                path4
         // deltacatalog2                             path5
         ///  baseCatalog path1  path2
         ///              asset1 asset2 asset3 asset4 asset5
-        AssetCatalogRequestBus::BroadcastResult(assetPath, &AssetCatalogRequestBus::Events::GetAssetPathById, asset1);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, asset1);
         EXPECT_EQ(assetPath, path3);
-        AssetCatalogRequestBus::BroadcastResult(assetPath, &AssetCatalogRequestBus::Events::GetAssetPathById, asset5);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, asset5);
         EXPECT_EQ(assetPath, path5);
         CheckDirectDependencies(asset1, { asset2 });
         CheckNoDependencies(asset2);
         CheckNoDependencies(asset4);
         CheckDirectDependencies(asset5, { asset2 });
 
-        AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::InsertDeltaCatalogBefore, deltaCatalog3, deltaCatalog);
+        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::InsertDeltaCatalogBefore, deltaCatalog3, deltaCatalog);
 
         //  deltacatalog path3                path4
         // deltacatalog3 path6                       path4
         // deltacatalog2                             path5
         ///  baseCatalog path1  path2
         ///              asset1 asset2 asset3 asset4 asset5
-        AssetCatalogRequestBus::BroadcastResult(assetPath, &AssetCatalogRequestBus::Events::GetAssetPathById, asset1);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, asset1);
         EXPECT_EQ(assetPath, path3);
-        AssetCatalogRequestBus::BroadcastResult(assetPath, &AssetCatalogRequestBus::Events::GetAssetPathById, asset5);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, asset5);
         EXPECT_EQ(assetPath, path4);
         CheckDirectDependencies(asset1, { asset2 });
         CheckNoDependencies(asset2);
         CheckNoDependencies(asset4);
         CheckDirectDependencies(asset5, { asset2 });
 
-        AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::RemoveDeltaCatalog, baseCatalog);
-        AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::AddDeltaCatalog, baseCatalog);
+        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::RemoveDeltaCatalog, baseCatalog);
+        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::AddDeltaCatalog, baseCatalog);
 
         ///  baseCatalog path1  path2
         //  deltacatalog path3                path4
         // deltacatalog3 path6                       path4
         // deltacatalog2                             path5
         ///              asset1 asset2 asset3 asset4 asset5
-        AssetCatalogRequestBus::BroadcastResult(assetPath, &AssetCatalogRequestBus::Events::GetAssetPathById, asset1);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, asset1);
         EXPECT_EQ(assetPath, path1);
-        AssetCatalogRequestBus::BroadcastResult(assetPath, &AssetCatalogRequestBus::Events::GetAssetPathById, asset2);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, asset2);
         EXPECT_EQ(assetPath, path2);
-        AssetCatalogRequestBus::BroadcastResult(assetPath, &AssetCatalogRequestBus::Events::GetAssetPathById, asset3);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, asset3);
         EXPECT_EQ(assetPath, "");
         CheckNoDependencies(asset1);
         CheckNoDependencies(asset2);
@@ -779,61 +765,61 @@ namespace UnitTest
     TEST_F(AssetCatalogDeltaTest, DeltaCatalogCreationTest)
     {
         bool result = false;
-        AZStd::string assetPath;        
+        AZStd::string assetPath;
 
         // load source catalog 1
-        AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::ClearCatalog);
-        AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::LoadCatalog, sourceCatalogPath1);
+        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::ClearCatalog);
+        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::LoadCatalog, sourceCatalogPath1.c_str());
         // generate delta catalog 1
-        AZStd::string testDeltaCatalogPath1 = GetTestFolderPath() + "TestAssetCatalogDelta.xml";
-        AssetCatalogRequestBus::BroadcastResult(result, &AssetCatalogRequestBus::Events::CreateDeltaCatalog, deltaCatalogFiles, testDeltaCatalogPath1);
+        AZ::IO::Path testDeltaCatalogPath1 = m_tempDirectory.GetDirectoryAsPath() / "TestAssetCatalogDelta.xml";
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(result, &AZ::Data::AssetCatalogRequestBus::Events::CreateDeltaCatalog, deltaCatalogFiles, testDeltaCatalogPath1.Native());
         EXPECT_TRUE(result);
 
-        AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::ClearCatalog);
-        AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::LoadCatalog, testDeltaCatalogPath1.c_str());
-        AssetCatalogRequestBus::BroadcastResult(assetPath, &AssetCatalogRequestBus::Events::GetAssetPathById, asset1);
+        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::ClearCatalog);
+        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::LoadCatalog, testDeltaCatalogPath1.c_str());
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, asset1);
         EXPECT_EQ(assetPath, path3);
-        AssetCatalogRequestBus::BroadcastResult(assetPath, &AssetCatalogRequestBus::Events::GetAssetPathById, asset4);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, asset4);
         EXPECT_EQ(assetPath, path4);
-        AssetCatalogRequestBus::BroadcastResult(assetPath, &AssetCatalogRequestBus::Events::GetAssetPathById, asset2);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, asset2);
         EXPECT_EQ(assetPath, "");
         // check against depenency info
         CheckDirectDependencies(asset1, { asset2 });
 
 
         // load source catalog 2
-        AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::ClearCatalog);
-        AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::LoadCatalog, sourceCatalogPath2);
+        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::ClearCatalog);
+        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::LoadCatalog, sourceCatalogPath2.c_str());
         // generate delta catalog 3
-        AZStd::string testDeltaCatalogPath2 = GetTestFolderPath() + "TestAssetCatalogDelta2.xml";
-        AssetCatalogRequestBus::BroadcastResult(result, &AssetCatalogRequestBus::Events::CreateDeltaCatalog, deltaCatalogFiles2, testDeltaCatalogPath2);
+        AZ::IO::Path testDeltaCatalogPath2 = m_tempDirectory.GetDirectoryAsPath() / "TestAssetCatalogDelta2.xml";
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(result, &AZ::Data::AssetCatalogRequestBus::Events::CreateDeltaCatalog, deltaCatalogFiles2, testDeltaCatalogPath2.Native());
         EXPECT_TRUE(result);
 
-        AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::ClearCatalog);
-        AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::LoadCatalog, testDeltaCatalogPath2.c_str());
-        AssetCatalogRequestBus::BroadcastResult(assetPath, &AssetCatalogRequestBus::Events::GetAssetPathById, asset5);
+        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::ClearCatalog);
+        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::LoadCatalog, testDeltaCatalogPath2.c_str());
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, asset5);
         EXPECT_EQ(assetPath, path5);
-        AssetCatalogRequestBus::BroadcastResult(assetPath, &AssetCatalogRequestBus::Events::GetAssetPathById, asset2);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, asset2);
         EXPECT_EQ(assetPath, "");
         // check against dependency info
         CheckDirectDependencies(asset5, { asset2 });
 
 
         // load source catalog 3
-        AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::ClearCatalog);
-        AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::LoadCatalog, sourceCatalogPath3);
+        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::ClearCatalog);
+        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::LoadCatalog, sourceCatalogPath3.c_str());
         // generate delta catalog 3
-        AZStd::string testDeltaCatalogPath3 = GetTestFolderPath() + "TestAssetCatalogDelta3.xml";
-        AssetCatalogRequestBus::BroadcastResult(result, &AssetCatalogRequestBus::Events::CreateDeltaCatalog, deltaCatalogFiles3, testDeltaCatalogPath3);
+        AZ::IO::Path testDeltaCatalogPath3 = m_tempDirectory.GetDirectoryAsPath() / "TestAssetCatalogDelta3.xml";
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(result, &AZ::Data::AssetCatalogRequestBus::Events::CreateDeltaCatalog, deltaCatalogFiles3, testDeltaCatalogPath3.Native());
         EXPECT_TRUE(result);
 
-        AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::ClearCatalog);
-        AssetCatalogRequestBus::Broadcast(&AssetCatalogRequestBus::Events::LoadCatalog, testDeltaCatalogPath3.c_str());
-        AssetCatalogRequestBus::BroadcastResult(assetPath, &AssetCatalogRequestBus::Events::GetAssetPathById, asset1);
+        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::ClearCatalog);
+        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::LoadCatalog, testDeltaCatalogPath3.c_str());
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, asset1);
         EXPECT_EQ(assetPath, path6);
-        AssetCatalogRequestBus::BroadcastResult(assetPath, &AssetCatalogRequestBus::Events::GetAssetPathById, asset5);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, asset5);
         EXPECT_EQ(assetPath, path4);
-        AssetCatalogRequestBus::BroadcastResult(assetPath, &AssetCatalogRequestBus::Events::GetAssetPathById, asset2);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, asset2);
         EXPECT_EQ(assetPath, "");
         // check against dependency info
         CheckDirectDependencies(asset5, { asset2 });
@@ -841,16 +827,16 @@ namespace UnitTest
     }
 
     class AssetCatalogAPITest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         void SetUp() override
         {
             using namespace AZ::Data;
-            AllocatorsFixture::SetUp();
             m_application = new AzFramework::Application();
-            m_assetRoot = UnitTest::GetTestFolderPath();
-            m_application->NormalizePathKeepCase(m_assetRoot);
+            auto settingsRegistry = AZ::SettingsRegistry::Get();
+            ASSERT_NE(nullptr, settingsRegistry);
+            EXPECT_TRUE(settingsRegistry->Get(m_assetRoot.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder));
             m_assetCatalog = aznew AzFramework::AssetCatalog();
 
             m_firstAssetId = AssetId(AZ::Uuid::CreateRandom(), 0);
@@ -871,27 +857,24 @@ namespace UnitTest
         {
             delete m_assetCatalog;
             delete m_application;
-            AllocatorsFixture::TearDown();
         }
 
         AzFramework::Application* m_application;
         AzFramework::AssetCatalog* m_assetCatalog;
         AZ::Data::AssetId m_firstAssetId;
         AZ::Data::AssetId m_secondAssetId;
-        AZStd::string m_assetRoot;
+        AZ::IO::Path m_assetRoot;
     };
 
     TEST_F(AssetCatalogAPITest, GetAssetPathById_AbsolutePath_Valid)
     {
-        AZStd::string absPath;
-        AzFramework::StringFunc::Path::Join(m_assetRoot.c_str(), "AssetA.txt", absPath);
+        AZ::IO::Path absPath = m_assetRoot / "AssetA.txt";
         EXPECT_EQ(m_firstAssetId, m_assetCatalog->GetAssetIdByPath(absPath.c_str(), AZ::Data::s_invalidAssetType, false));
     }
 
     TEST_F(AssetCatalogAPITest, GetAssetPathById_AbsolutePathWithSubFolder_Valid)
     {
-        AZStd::string absPath;
-        AzFramework::StringFunc::Path::Join(m_assetRoot.c_str(), "Foo/AssetA.txt", absPath);
+        AZ::IO::Path absPath = (m_assetRoot / "Foo/AssetA.txt").LexicallyNormal();
         EXPECT_EQ(m_secondAssetId, m_assetCatalog->GetAssetIdByPath(absPath.c_str(), AZ::Data::s_invalidAssetType, false));
     }
 
@@ -905,9 +888,10 @@ namespace UnitTest
         EXPECT_EQ(m_secondAssetId, m_assetCatalog->GetAssetIdByPath("Foo/AssetA.txt", AZ::Data::s_invalidAssetType, false));
     }
 
-    TEST_F(AssetCatalogAPITest, GetAssetPathById_RelPathWithSeparators_Valid)
+    TEST_F(AssetCatalogAPITest, GetAssetPathById_AbsPath_Invalid)
     {
-        EXPECT_EQ(m_firstAssetId, m_assetCatalog->GetAssetIdByPath("//AssetA.txt", AZ::Data::s_invalidAssetType, false));
+        // A path that begins with a Posix path separator '/' is absolute not a relative path
+        EXPECT_NE(m_firstAssetId, m_assetCatalog->GetAssetIdByPath("//AssetA.txt", AZ::Data::s_invalidAssetType, false));
     }
 
     TEST_F(AssetCatalogAPITest, GetRegisteredAssetPaths_TwoAssetsRegistered_RetrieveAssetPaths)
@@ -927,14 +911,14 @@ namespace UnitTest
 
     TEST_F(AssetCatalogAPITest, DoesAssetIdMatchWildcardPattern_DoesNotMatch)
     {
-        EXPECT_FALSE(m_assetCatalog->DoesAssetIdMatchWildcardPattern(AssetId(), "*.txt"));
+        EXPECT_FALSE(m_assetCatalog->DoesAssetIdMatchWildcardPattern(AZ::Data::AssetId(), "*.txt"));
         EXPECT_FALSE(m_assetCatalog->DoesAssetIdMatchWildcardPattern(m_firstAssetId, "*.xml"));
         EXPECT_FALSE(m_assetCatalog->DoesAssetIdMatchWildcardPattern(m_firstAssetId, ""));
     }
 
     TEST_F(AssetCatalogAPITest, EnumerateAssetsListsCorrectAssets)
     {
-        AZStd::vector<AssetId> foundAssets;
+        AZStd::vector<AZ::Data::AssetId> foundAssets;
 
         AZ::Data::AssetCatalogRequestBus::Broadcast(
             &AZ::Data::AssetCatalogRequestBus::Events::EnumerateAssets, nullptr,
@@ -968,7 +952,6 @@ namespace UnitTest
         // actual lock inversion.
 
         // Set up job manager with one thread that we can use to set up the concurrent mutex access.
-        AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
         AZ::JobManagerDesc desc;
         AZ::JobManagerThreadDesc threadDesc;
         desc.m_workerThreads.push_back(threadDesc);
@@ -1004,7 +987,7 @@ namespace UnitTest
         AZ::Data::AssetCatalogRequestBus::Broadcast(
             &AZ::Data::AssetCatalogRequestBus::Events::EnumerateAssets, nullptr,
             [this, &mainToJobSync, &jobToMainSync, &testCompletedSuccessfully]
-                (const AZ::Data::AssetId assetId, [[maybe_unused]] const AZ::Data::AssetInfo& assetInfo)
+        (const AZ::Data::AssetId assetId, [[maybe_unused]] const AZ::Data::AssetInfo& assetInfo)
             {
                 // Only run this logic on the first assetId.
                 if (assetId == m_firstAssetId)
@@ -1030,24 +1013,23 @@ namespace UnitTest
         AZ::JobContext::SetGlobalContext(nullptr);
         delete jobContext;
         delete jobManager;
-        AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
     }
 
 
 
     class AssetType1
-        : public AssetData
+        : public AZ::Data::AssetData
     {
     public:
-        AZ_CLASS_ALLOCATOR(AssetType1, AZ::SystemAllocator, 0);
-        AZ_RTTI(AssetType1, "{64ECE3AE-2BEB-4502-9243-D17425249E08}", AssetData);
+        AZ_CLASS_ALLOCATOR(AssetType1, AZ::SystemAllocator);
+        AZ_RTTI(AssetType1, "{64ECE3AE-2BEB-4502-9243-D17425249E08}", AZ::Data::AssetData);
 
         AssetType1()
             : m_data(nullptr)
         {
         }
         explicit AssetType1(const AZ::Data::AssetId& assetId, const AZ::Data::AssetData::AssetStatus assetStatus = AZ::Data::AssetData::AssetStatus::NotLoaded)
-            : AssetData(assetId, assetStatus)
+            : AZ::Data::AssetData(assetId, assetStatus)
             , m_data(nullptr)
         {
         }
@@ -1061,20 +1043,20 @@ namespace UnitTest
 
         char* m_data;
     };
-    
+
     class AssetType2
-        : public AssetData
+        : public AZ::Data::AssetData
     {
     public:
-        AZ_CLASS_ALLOCATOR(AssetType2, AZ::SystemAllocator, 0);
-        AZ_RTTI(AssetType2, "{F5EDAAAB-2398-4967-A2C7-6B7C9421C1CE}", AssetData);
+        AZ_CLASS_ALLOCATOR(AssetType2, AZ::SystemAllocator);
+        AZ_RTTI(AssetType2, "{F5EDAAAB-2398-4967-A2C7-6B7C9421C1CE}", AZ::Data::AssetData);
 
         AssetType2()
             : m_data(nullptr)
         {
         }
         explicit AssetType2(const AZ::Data::AssetId& assetId, const AZ::Data::AssetData::AssetStatus assetStatus = AZ::Data::AssetData::AssetStatus::NotLoaded)
-            : AssetData(assetId, assetStatus)
+            : AZ::Data::AssetData(assetId, assetStatus)
             , m_data(nullptr)
         {
         }
@@ -1090,14 +1072,12 @@ namespace UnitTest
     };
 
     class AssetCatalogDisplayNameTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
         virtual AZ::IO::IStreamer* CreateStreamer() { return aznew AZ::IO::Streamer(AZStd::thread_desc{}, AZ::StreamerComponent::CreateStreamerStack()); }
         virtual void DestroyStreamer(AZ::IO::IStreamer* streamer) { delete streamer; }
 
-        AZ::IO::FileIOBase* m_prevFileIO{
-            nullptr
-        };
+        AZ::IO::FileIOBase* m_prevFileIO{ nullptr };
         TestFileIOBase m_fileIO;
         AZ::IO::IStreamer* m_streamer{ nullptr };
         AzFramework::AssetCatalog* m_assetCatalog;
@@ -1106,11 +1086,6 @@ namespace UnitTest
 
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
-
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
-
             m_prevFileIO = AZ::IO::FileIOBase::GetInstance();
             AZ::IO::FileIOBase::SetInstance(&m_fileIO);
 
@@ -1121,8 +1096,8 @@ namespace UnitTest
             }
 
             // create the database
-            AssetManager::Descriptor desc;
-            AssetManager::Create(desc);
+            AZ::Data::AssetManager::Descriptor desc;
+            AZ::Data::AssetManager::Create(desc);
 
             m_assetCatalog = aznew AzFramework::AssetCatalog();
         }
@@ -1132,7 +1107,7 @@ namespace UnitTest
             delete m_assetCatalog;
 
             // destroy the database
-            AssetManager::Destroy();
+            AZ::Data::AssetManager::Destroy();
 
             if (m_streamer)
             {
@@ -1141,10 +1116,6 @@ namespace UnitTest
             DestroyStreamer(m_streamer);
 
             AZ::IO::FileIOBase::SetInstance(m_prevFileIO);
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
-
-            AllocatorsFixture::TearDown();
         }
     };
 
@@ -1158,8 +1129,8 @@ namespace UnitTest
 
         {
             // Get the Asset Type from the Display Name
-            AssetType id;
-            AssetCatalogRequestBus::BroadcastResult(id, &AssetCatalogRequestBus::Events::GetAssetTypeByDisplayName, assetTypeName);
+            AZ::Data::AssetType id;
+            AZ::Data::AssetCatalogRequestBus::BroadcastResult(id, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetTypeByDisplayName, assetTypeName);
 
             EXPECT_EQ(id, assetTypeId);
         }
@@ -1179,10 +1150,10 @@ namespace UnitTest
 
         {
             // Try to get an Asset Type with a Display Name that was never registered
-            AssetType id;
-            AssetCatalogRequestBus::BroadcastResult(id, &AssetCatalogRequestBus::Events::GetAssetTypeByDisplayName, "Some Asset Type We Did Not Register");
+            AZ::Data::AssetType id;
+            AZ::Data::AssetCatalogRequestBus::BroadcastResult(id, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetTypeByDisplayName, "Some Asset Type We Did Not Register");
 
-            EXPECT_EQ(id, AssetType::CreateNull());
+            EXPECT_TRUE(id.IsNull());
         }
 
         // Delete the handler
@@ -1200,24 +1171,24 @@ namespace UnitTest
 
         {
             // Try to get the Asset Type we registered, but with a lowercase Display Name
-            AssetType id;
-            AssetCatalogRequestBus::BroadcastResult(id, &AssetCatalogRequestBus::Events::GetAssetTypeByDisplayName, "test asset type");
+            AZ::Data::AssetType id;
+            AZ::Data::AssetCatalogRequestBus::BroadcastResult(id, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetTypeByDisplayName, "test asset type");
 
-            EXPECT_EQ(id, AssetType::CreateNull());
+            EXPECT_TRUE(id.IsNull());
         }
 
         // Delete the handler
         handler->Unregister();
         delete handler;
     }
-    
+
     TEST_F(AssetCatalogDisplayNameTest, GetAssetTypeByDisplayName_NoRegisteredType)
     {
         // Get the Asset Type from a Display Name we did not register
-        AssetType id;
-        AssetCatalogRequestBus::BroadcastResult(id, &AssetCatalogRequestBus::Events::GetAssetTypeByDisplayName, "Some Asset Type We Did Not Register");
+        AZ::Data::AssetType id;
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(id, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetTypeByDisplayName, "Some Asset Type We Did Not Register");
 
-        EXPECT_EQ(id, AssetType::CreateNull());
+        EXPECT_TRUE(id.IsNull());
     }
 
     TEST_F(AssetCatalogDisplayNameTest, GetAssetTypeByDisplayName_MultiRegisteredType_SameDisplayName)
@@ -1237,8 +1208,8 @@ namespace UnitTest
         // Verify one of the types is returned.
         // Note that we have no control over which one is returned as it's an implementation detail of the AssetCatalog
         {
-            AssetType id;
-            AssetCatalogRequestBus::BroadcastResult(id, &AssetCatalogRequestBus::Events::GetAssetTypeByDisplayName, assetTypeName);
+            AZ::Data::AssetType id;
+            AZ::Data::AssetCatalogRequestBus::BroadcastResult(id, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetTypeByDisplayName, assetTypeName);
 
             EXPECT_TRUE((id == asset1TypeId) || (id == asset2TypeId));
         }

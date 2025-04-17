@@ -7,6 +7,7 @@
  */
 
 #include <AzTest/AzTest.h>
+#include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzToolsFramework/Entity/EditorEntityContextComponent.h>
 #include <AzToolsFramework/UnitTest/ToolsTestApplication.h>
@@ -14,12 +15,14 @@
 namespace AzToolsFramework
 {
     class EditorEntityContextComponentTests
-        : public ::testing::Test
+        : public UnitTest::LeakDetectionFixture
     {
     protected:
         void SetUp() override
         {
-            m_app.Start(m_descriptor);
+            AZ::ComponentApplication::StartupParameters startupParameters;
+            startupParameters.m_loadSettingsRegistry = false;
+            m_app.Start(m_descriptor, startupParameters);
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
             // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
             // in the unit tests.

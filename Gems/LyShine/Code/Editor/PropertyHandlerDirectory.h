@@ -24,7 +24,7 @@ class PropertyDirectoryCtrl
 
 public:
 
-    AZ_CLASS_ALLOCATOR(PropertyDirectoryCtrl, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(PropertyDirectoryCtrl, AZ::SystemAllocator);
 
     PropertyDirectoryCtrl(QWidget* parent = nullptr);
 
@@ -45,6 +45,7 @@ class PropertyAssetDirectorySelectionCtrl
     : public AzToolsFramework::PropertyAssetCtrl
 {
 public:
+    AZ_CLASS_ALLOCATOR(PropertyAssetDirectorySelectionCtrl, AZ::SystemAllocator)
     PropertyAssetDirectorySelectionCtrl(QWidget *pParent = NULL)
         : PropertyAssetCtrl(pParent) {}
     AzToolsFramework::AssetBrowser::AssetSelectionModel GetAssetSelectionModel() override;
@@ -62,9 +63,9 @@ class PropertyHandlerDirectory
     : public AzToolsFramework::PropertyHandler<AZStd::string, PropertyDirectoryCtrl>
 {
 public:
-    AZ_CLASS_ALLOCATOR(PropertyHandlerDirectory, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(PropertyHandlerDirectory, AZ::SystemAllocator);
     
-    AZ::u32 GetHandlerName(void) const override  { return AZ_CRC("Directory", 0x467844da); }
+    AZ::u32 GetHandlerName(void) const override  { return AZ_CRC_CE("Directory"); }
 
     QWidget* CreateGUI(QWidget* pParent) override;
     void ConsumeAttribute(PropertyDirectoryCtrl* GUI, AZ::u32 attrib, AzToolsFramework::PropertyAttributeReader* attrValue, const char* debugName) override;

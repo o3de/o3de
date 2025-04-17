@@ -40,7 +40,7 @@ namespace AzToolsFramework
         {
         public:
 
-            AZ_CLASS_ALLOCATOR(SliceTransaction, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SliceTransaction, AZ::SystemAllocator);
 
             typedef AZ::Outcome<void, AZStd::string> Result;
             typedef AZStd::intrusive_ptr<SliceTransaction> TransactionPtr;

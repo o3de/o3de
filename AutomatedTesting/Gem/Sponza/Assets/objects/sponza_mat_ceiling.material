@@ -1,6 +1,6 @@
 {
-    "materialType": "Materials/Types/StandardPBR.materialtype",
-    "materialTypeVersion": 4,
+    "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardPBR.materialtype",
+    "materialTypeVersion": 5,
     "propertyValues": {
         "baseColor.textureMap": "../Textures/ceiling_1k_basecolor.png",
         "emissive.color": [
@@ -9,13 +9,14 @@
             0.0,
             1.0
         ],
-        "irradiance.color": [
+        "irradiance.manualColor": [
             0.29176774621009827,
             0.27888914942741394,
             0.2501564025878906,
             1.0
         ],
         "normal.textureMap": "../Textures/ceiling_1k_normal.png",
+        "normal.flipY": true,
         "opacity.factor": 1.0,
         "roughness.textureMap": "../Textures/ceiling_1k_roughness.png"
     }

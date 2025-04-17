@@ -13,6 +13,10 @@ namespace AZ
 {
     namespace Vulkan
     {
+        class BufferPool;
+        class ImagePool;
+        class BufferView;
+
         //! The NullDescriptorManager creates filler descriptor for unbounded, un-initialized resources referenced in
         //! the shader. These include images, buffers, and texel buffer. 
         class NullDescriptorManager
@@ -24,7 +28,8 @@ namespace AZ
                 // 2d images
                 General2D = 0,
                 ReadOnly2D,
-                Storage2D,  
+                Storage2D,
+                Depth2D,
 
                 // 2d images that are multi-sampled
                 MultiSampleGeneral2D,
@@ -34,10 +39,12 @@ namespace AZ
                 GeneralArray2D,
                 ReadOnlyArray2D,
                 StorageArray2D,
+                DepthArray2D,
 
                 // cube images
                 GeneralCube,
                 ReadOnlyCube,
+                DepthCube,
 
                 // 3d images
                 General3D,
@@ -46,7 +53,7 @@ namespace AZ
                 Count,
             };
 
-            AZ_CLASS_ALLOCATOR(NullDescriptorManager, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(NullDescriptorManager, SystemAllocator);
 
             static RHI::Ptr<NullDescriptorManager> Create();
 
@@ -59,80 +66,40 @@ namespace AZ
             void Shutdown() override;
 
             //! Returns the texel buffer view null descriptor
-            VkBufferView GetTexelBufferView();
+            const BufferView& GetTexelBufferView() const;
 
             //! Returns the buffer null descriptor
-            VkDescriptorBufferInfo GetBuffer();
+            const Buffer& GetBuffer() const;
 
             //! Returns the null descriptor for image info based on the image type,
             //! access, and if the image is used as storage
-            VkDescriptorImageInfo GetDescriptorImageInfo(RHI::ShaderInputImageType imageType, bool storageImage);
+            VkDescriptorImageInfo GetDescriptorImageInfo(RHI::ShaderInputImageType imageType, bool storageImage, bool usesDepthFormat) const;
 
         protected:
             NullDescriptorManager() = default;
 
         private:
-            RHI::ResultCode CreateImage();
-            RHI::ResultCode CreateBuffer();
-            RHI::ResultCode CreateTexel();
+            RHI::ResultCode CreateImages();
+            RHI::ResultCode CreateBuffers();
 
-            VkDescriptorImageInfo GetImage(ImageTypes type);
+            VkDescriptorImageInfo GetImage(ImageTypes type) const;
 
-            // Image Null Descriptor
+            RHI::Ptr<ImagePool> m_imagePool;
+            RHI::Ptr<BufferPool> m_bufferPool;
+
+            RHI::Ptr<Buffer> m_bufferNull;
+            RHI::Ptr<BufferView> m_texelBufferViewNull;
+
             struct NullDescriptorImage
             {
-                AZStd::string                       m_name;
-
-                VkImage                             m_image;
-                VkImageLayout                       m_layout;
-                VkImageView                         m_view;
-                VkDescriptorImageInfo               m_descriptorImageInfo;
-                VkSampler                           m_sampler;
-
-                RHI::Ptr<Memory>                    m_deviceMemory;
-
-                VkSampleCountFlagBits               m_sampleCountFlag;
-                VkFormat                            m_format;
-                VkImageUsageFlagBits                m_usageFlagBits;
-
-                VkImageCreateFlagBits               m_imageCreateFlagBits;
-
-                uint32_t                            m_arrayLayers;
-                uint32_t                            m_dimension;
+                const char* m_name = nullptr;
+                RHI::ImageDescriptor m_descriptor;
+                RHI::Ptr<Image> m_image;
+                RHI::Ptr<ImageView> m_imageView;
+                VkImageLayout m_layout;
             };
 
-            // Total types of image null descriptors
-            struct ImageNullDescriptor
-            {
-                AZStd::vector<NullDescriptorImage>  m_images;
-            };
-
-            // Buffer null descriptor
-            struct BufferNullDescriptor
-            {
-                VkBuffer                            m_buffer;
-                VkBufferView                        m_view;
-                VkDescriptorBufferInfo              m_bufferDescriptor;
-                uint32_t                            m_bufferSize;
-
-                RHI::Ptr<Memory>                    m_memory;
-
-                VkDescriptorBufferInfo              m_bufferInfo;
-            };
-
-            // Texel view null descriptor
-            struct TexelViewNullDescriptor
-            {
-                VkBuffer                            m_buffer;
-                VkBufferView                        m_view;
-                uint32_t                            m_bufferSize;
-
-                RHI::Ptr<Memory>                    m_memory;
-            };
-
-            ImageNullDescriptor                 m_imageNullDescriptor;              // has all the different types of images used
-            BufferNullDescriptor                m_bufferNullDescriptor;
-            TexelViewNullDescriptor             m_texelViewNullDescriptor;
+            AZStd::array<NullDescriptorImage, static_cast<uint32_t>(ImageTypes::Count)> m_imageNullDescriptors;
         };
     }
 }

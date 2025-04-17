@@ -14,7 +14,6 @@ set(FILES
     Lib/Tests/test_EditorUtils.cpp
     Lib/Tests/test_Main.cpp
     Lib/Tests/test_MainWindowPythonBindings.cpp
-    Lib/Tests/test_ObjectManagerPythonBindings.cpp
     Lib/Tests/test_TrackViewPythonBindings.cpp
     Lib/Tests/test_ViewPanePythonBindings.cpp
     Lib/Tests/test_ViewportTitleDlgPythonBindings.cpp
@@ -22,6 +21,7 @@ set(FILES
     Lib/Tests/test_ViewportManipulatorController.cpp
     Lib/Tests/test_ModularViewportCameraController.cpp
     Lib/Tests/Camera/test_EditorCamera.cpp
+    Lib/Tests/test_AzAssetBrowserRequestHandler.cpp
     DisplaySettingsPythonFuncs.cpp
     DisplaySettingsPythonFuncs.h
 )

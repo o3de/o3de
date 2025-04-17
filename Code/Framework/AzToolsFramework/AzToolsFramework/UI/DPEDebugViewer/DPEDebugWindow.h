@@ -35,6 +35,7 @@ namespace AzToolsFramework
         Q_OBJECT
     public:
         explicit DPEDebugWindow(QWidget* parentWidget);
+        ~DPEDebugWindow() override;
         void SetAdapter(AZ::DocumentPropertyEditor::DocumentAdapterPtr adapter);
         AZ::DocumentPropertyEditor::DocumentAdapterPtr GetAdapter();
         void AddAdapterToList(const QString& adapterName, AZ::DocumentPropertyEditor::DocumentAdapterPtr adapter);

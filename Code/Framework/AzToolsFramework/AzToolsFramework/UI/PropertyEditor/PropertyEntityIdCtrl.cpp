@@ -117,15 +117,21 @@ namespace AzToolsFramework
             EditorPickModeRequestBus::Handler::BusConnect(pickModeEntityContextId);
             EditorEventsBus::Handler::BusConnect();
 
-            // replace the default input handler with one specific for dealing with
-            // entity selection in the viewport
-
-            EditorInteractionSystemViewportSelectionRequestBus::Event(
-                GetEntityContextId(), &EditorInteractionSystemViewportSelection::SetHandler,
-                [](const EditorVisibleEntityDataCacheInterface* entityDataCache, ViewportEditorModeTrackerInterface* viewportEditorModeTracker)
+            // Replace the default input handler with one specific for dealing with entity selection in the viewport,
+            // but only if we're not in component mode.
+            // If we're in component mode, we should continue to use the default handler and let the component mode handling
+            // manage the entity picking.
+            if (!AzToolsFramework::ComponentModeFramework::InComponentMode())
             {
-                    return AZStd::make_unique<EditorPickEntitySelection>(entityDataCache, viewportEditorModeTracker);
-            });
+                EditorInteractionSystemViewportSelectionRequestBus::Event(
+                    GetEntityContextId(),
+                    &EditorInteractionSystemViewportSelection::SetHandler,
+                    [](const EditorVisibleEntityDataCacheInterface* entityDataCache,
+                       ViewportEditorModeTrackerInterface* viewportEditorModeTracker)
+                    {
+                        return AZStd::make_unique<EditorPickEntitySelection>(entityDataCache, viewportEditorModeTracker);
+                    });
+            }
 
             if (!pickModeEntityContextId.IsNull())
             {
@@ -156,9 +162,13 @@ namespace AzToolsFramework
             EditorEventsBus::Handler::BusDisconnect();
             emit OnPickComplete();
 
-            // return to the default viewport editor selection
-            EditorInteractionSystemViewportSelectionRequestBus::Event(
-                GetEntityContextId(), &EditorInteractionSystemViewportSelection::SetDefaultHandler);
+            // If we changed the handler to the pick handler (i.e. we're not in component mode),
+            // then return to the default viewport editor selection now that we're done picking.
+            if (!AzToolsFramework::ComponentModeFramework::InComponentMode())
+            {
+                EditorInteractionSystemViewportSelectionRequestBus::Event(
+                    GetEntityContextId(), &EditorInteractionSystemViewportSelection::SetDefaultHandler);
+            }
 
             EditorPickModeNotificationBus::Broadcast(&EditorPickModeNotifications::OnEntityPickModeStopped);
         }
@@ -190,6 +200,11 @@ namespace AzToolsFramework
             return;
         }
 
+        if (!AllowsDrop())
+        {
+            return;
+        }
+
         const bool isValidDropTarget = IsCorrectMimeData(event->mimeData()) &&
             EntityIdsFromMimeData(*event->mimeData());
 
@@ -204,6 +219,11 @@ namespace AzToolsFramework
     void PropertyEntityIdCtrl::dropEvent(QDropEvent* event)
     {
         AzQtComponents::LineEdit::removeDropTargetStyle(m_entityIdLineEdit);
+
+        if (!AllowsDrop())
+        {
+            return;
+        }
 
         if (event == nullptr)
         {
@@ -335,22 +355,32 @@ namespace AzToolsFramework
         m_entityIdLineEdit->SetEntityId(newEntityId, nameOverride);
         m_componentsSatisfyingServices.clear();
 
+        if (!HasPickButton())
+        {
+            m_pickButton->hide();
+        }
+        else
+        {
+            m_pickButton->show();
+        }
+
         if (!m_requiredServices.empty() || !m_incompatibleServices.empty())
         {
             bool servicesMismatch = false;
 
             AZ::Entity* entity = nullptr;
-            EBUS_EVENT_RESULT(entity, AZ::ComponentApplicationBus, FindEntity, newEntityId);
+            AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, newEntityId);
 
             if (entity)
             {
-                AZStd::vector<AZ::ComponentServiceType> unmatchedServices(m_requiredServices);
+                AZ::ComponentDescriptor::DependencyArrayType unmatchedServices(m_requiredServices);
                 bool foundIncompatibleService = false;
                 const auto& components = entity->GetComponents();
                 for (const AZ::Component* component : components)
                 {
                     AZ::ComponentDescriptor* componentDescriptor = nullptr;
-                    EBUS_EVENT_ID_RESULT(componentDescriptor, component->RTTI_GetType(), AZ::ComponentDescriptorBus, GetDescriptor);
+                    AZ::ComponentDescriptorBus::EventResult(
+                        componentDescriptor, component->RTTI_GetType(), &AZ::ComponentDescriptorBus::Events::GetDescriptor);
                     AZ::ComponentDescriptor::DependencyArrayType providedServices;
                     componentDescriptor->GetProvidedServices(providedServices, component);
                     for (int serviceIdx = azlossy_cast<int>(unmatchedServices.size() - 1); serviceIdx >= 0; --serviceIdx)
@@ -404,7 +434,8 @@ namespace AzToolsFramework
     QString PropertyEntityIdCtrl::BuildTooltip()
     {
         AZ::Entity* entity = nullptr;
-        EBUS_EVENT_RESULT(entity, AZ::ComponentApplicationBus, FindEntity, m_entityIdLineEdit->GetEntityId());
+        AZ::ComponentApplicationBus::BroadcastResult(
+            entity, &AZ::ComponentApplicationBus::Events::FindEntity, m_entityIdLineEdit->GetEntityId());
 
         if (!entity)
         {
@@ -434,14 +465,14 @@ namespace AzToolsFramework
         return tooltip;
     }
 
-    void PropertyEntityIdCtrl::SetRequiredServices(const AZStd::vector<AZ::ComponentServiceType>& requiredServices)
+    void PropertyEntityIdCtrl::SetRequiredServices(AZStd::span<const AZ::ComponentServiceType> requiredServices)
     {
-        m_requiredServices = requiredServices;
+        m_requiredServices.assign(requiredServices.begin(), requiredServices.end());
     }
 
-    void PropertyEntityIdCtrl::SetIncompatibleServices(const AZStd::vector<AZ::ComponentServiceType>& incompatibleServices)
+    void PropertyEntityIdCtrl::SetIncompatibleServices(AZStd::span<const AZ::ComponentServiceType> incompatibleServices)
     {
-        m_incompatibleServices = incompatibleServices;
+        m_incompatibleServices.assign(incompatibleServices.begin(), incompatibleServices.end());
     }
 
     void PropertyEntityIdCtrl::SetMismatchedServices(bool mismatchedServices)
@@ -467,7 +498,10 @@ namespace AzToolsFramework
         bool supportsViewportEntityIdPicking = true;
         if (!m_acceptedEntityContextId.IsNull())
         {
-            EBUS_EVENT_ID_RESULT(supportsViewportEntityIdPicking, m_acceptedEntityContextId, AzToolsFramework::EditorEntityContextPickingRequestBus, SupportsViewportEntityIdPicking);
+            AzToolsFramework::EditorEntityContextPickingRequestBus::EventResult(
+                supportsViewportEntityIdPicking,
+                m_acceptedEntityContextId,
+                &AzToolsFramework::EditorEntityContextPickingRequestBus::Events::SupportsViewportEntityIdPicking);
         }
         m_pickButton->setVisible(supportsViewportEntityIdPicking);
     }
@@ -477,7 +511,7 @@ namespace AzToolsFramework
         PropertyEntityIdCtrl* newCtrl = aznew PropertyEntityIdCtrl(pParent);
         connect(newCtrl, &PropertyEntityIdCtrl::OnEntityIdChanged, this, [newCtrl](AZ::EntityId)
             {
-                EBUS_EVENT(PropertyEditorGUIMessages::Bus, RequestWrite, newCtrl);
+                PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Events::RequestWrite, newCtrl);
                 AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, newCtrl);
             });
         return newCtrl;
@@ -493,10 +527,10 @@ namespace AzToolsFramework
         if (attrib == AZ::Edit::Attributes::RequiredService)
         {
             AZ::ComponentServiceType requiredService = 0;
-            AZStd::vector<AZ::ComponentServiceType> requiredServices;
+            AZ::ComponentDescriptor::DependencyArrayType requiredServices;
             if (attrValue->template Read<AZ::ComponentServiceType>(requiredService))
             {
-                GUI->SetRequiredServices(AZStd::vector<AZ::ComponentServiceType>({ requiredService }));
+                GUI->SetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType({ requiredService }));
             }
             else if (attrValue->template Read<decltype(requiredServices)>(requiredServices))
             {
@@ -506,10 +540,10 @@ namespace AzToolsFramework
         else if (attrib == AZ::Edit::Attributes::IncompatibleService)
         {
             AZ::ComponentServiceType incompatibleService = 0;
-            AZStd::vector<AZ::ComponentServiceType> incompatibleServices;
+            AZ::ComponentDescriptor::DependencyArrayType incompatibleServices;
             if (attrValue->template Read<AZ::ComponentServiceType>(incompatibleService))
             {
-                GUI->SetIncompatibleServices(AZStd::vector<AZ::ComponentServiceType>({ incompatibleService }));
+                GUI->SetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType({ incompatibleService }));
             }
             else if (attrValue->template Read<decltype(incompatibleServices)>(incompatibleServices))
             {
@@ -522,6 +556,22 @@ namespace AzToolsFramework
             if (attrValue->Read<bool>(value))
             {
                 GUI->SetHasClearButton(value);
+            }
+        }
+        else if (attrib == AZ::Edit::Attributes::ShowPickButton)
+        {
+            bool value;
+            if (attrValue->Read<bool>(value))
+            {
+                GUI->SetHasPickButton(value);
+            }
+        }
+        else if (attrib == AZ::Edit::Attributes::AllowDrop)
+        {
+            bool value;
+            if (attrValue->Read<bool>(value))
+            {
+                GUI->SetAllowsDrop(value);
             }
         }
     }
@@ -563,7 +613,8 @@ namespace AzToolsFramework
         AzFramework::EntityContextId contextId = AzFramework::EntityContextId::CreateNull();
         if (entityId.IsValid())
         {
-            EBUS_EVENT_ID_RESULT(contextId, entityId, AzFramework::EntityIdContextQueryBus, GetOwningContextId);
+            AzFramework::EntityIdContextQueryBus::EventResult(
+                contextId, entityId, &AzFramework::EntityIdContextQueryBus::Events::GetOwningContextId);
         }
         GUI->SetAcceptedEntityContext(contextId);
 
@@ -573,7 +624,8 @@ namespace AzToolsFramework
 
     void RegisterEntityIdPropertyHandler()
     {
-        EBUS_EVENT(PropertyTypeRegistrationMessages::Bus, RegisterPropertyType, aznew EntityIdPropertyHandler());
+        PropertyTypeRegistrationMessages::Bus::Broadcast(
+            &PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew EntityIdPropertyHandler());
     }
 
 }

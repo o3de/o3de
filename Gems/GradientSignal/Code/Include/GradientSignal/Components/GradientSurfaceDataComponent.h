@@ -28,7 +28,7 @@ namespace GradientSignal
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(GradientSurfaceDataConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GradientSurfaceDataConfig, AZ::SystemAllocator);
         AZ_RTTI(GradientSurfaceDataConfig, "{34516BA4-2B13-4A84-A46B-01E1980CA778}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
         float m_thresholdMin = 0.1f;
@@ -42,7 +42,7 @@ namespace GradientSignal
         void AddTag(AZStd::string tag);
     };
 
-    static const AZ::Uuid GradientSurfaceDataComponentTypeId = "{BE5AF9E8-C509-4A8C-8D9E-D24BCD402812}";
+    inline constexpr AZ::TypeId GradientSurfaceDataComponentTypeId{ "{BE5AF9E8-C509-4A8C-8D9E-D24BCD402812}" };
 
     class GradientSurfaceDataComponent
         : public AZ::Component

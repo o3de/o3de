@@ -1,19 +1,16 @@
 {
-    "description": "",
-    "parentMaterial": "12_orange_yellow.material",
     "materialType": "../../Types/StandardPBR.materialtype",
     "materialTypeVersion": 5,
-    "properties": {
-        "baseColor": {
-            "color": [
-                1.0,
-                1.0,
-                1.0,
-                1.0
-            ],
-            "textureBlendMode": "Lerp",
-            "textureMap": "12_orange_yellow_sRGB.tif",
-            "useTexture": true
-        }
+    "parentMaterial": "12_orange_yellow.material",
+    "propertyValues": {
+        "baseColor.color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "baseColor.textureBlendMode": "Lerp",
+        "baseColor.textureMap": "12_orange_yellow_sRGB.tif",
+        "baseColor.useTexture": true
     }
 }

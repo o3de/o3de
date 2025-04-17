@@ -26,8 +26,8 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphTransitionIdPicker, AZ::SystemAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphMultiTransitionIdHandler, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphTransitionIdPicker, AZ::SystemAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphMultiTransitionIdHandler, AZ::SystemAllocator)
 
     const QColor AnimGraphTransitionIdSelector::s_graphWindowBorderOverwriteColor = QColor(255, 133, 0);
     const float AnimGraphTransitionIdSelector::s_graphWindowBorderOverwriteWidth = 5.0f;
@@ -353,7 +353,7 @@ namespace EMotionFX
 
     AZ::u32 AnimGraphMultiTransitionIdHandler::GetHandlerName() const
     {
-        return AZ_CRC("AnimGraphStateTransitionIds", 0x7b2468f7);
+        return AZ_CRC_CE("AnimGraphStateTransitionIds");
     }
 
     QWidget* AnimGraphMultiTransitionIdHandler::CreateGUI(QWidget* parent)
@@ -362,7 +362,8 @@ namespace EMotionFX
 
         connect(picker, &AnimGraphTransitionIdPicker::SelectionChanged, this, [picker]()
             {
-                EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, picker);
+                AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                    &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, picker);
             });
 
         return picker;
@@ -372,7 +373,7 @@ namespace EMotionFX
     {
         if (attrValue)
         {
-            AnimGraphStateTransition* transition = static_cast<AnimGraphStateTransition*>(attrValue->GetInstancePointer());
+            AnimGraphStateTransition* transition = static_cast<AnimGraphStateTransition*>(attrValue->GetInstance());
             m_transition = transition;
             GUI->SetTransition(m_transition);
         }

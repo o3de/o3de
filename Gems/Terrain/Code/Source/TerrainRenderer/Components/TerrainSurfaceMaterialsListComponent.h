@@ -10,9 +10,9 @@
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/Component.h>
+#include <AzCore/Component/TickBus.h>
 #include <AzCore/Serialization/EditContext.h>
 
-#include <Atom/Feature/Material/MaterialAssignment.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
@@ -30,27 +30,22 @@ namespace Terrain
 {
     struct TerrainSurfaceMaterialMapping final
     {
-        AZ_CLASS_ALLOCATOR(TerrainSurfaceMaterialMapping, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TerrainSurfaceMaterialMapping, AZ::SystemAllocator);
         AZ_RTTI(TerrainSurfaceMaterialMapping, "{37D2A586-CDDD-4FB7-A7D6-0B4CC575AB8C}");
         static void Reflect(AZ::ReflectContext* context);
 
         AZ::Data::Asset<AZ::RPI::MaterialAsset> m_materialAsset;
         AZ::Data::Instance<AZ::RPI::Material> m_materialInstance;
 
-        AZ::Data::AssetId m_activeMaterialAssetId;
-        AZ::RPI::Material::ChangeId m_previousChangeId = AZ::RPI::Material::DEFAULT_CHANGE_ID;
-
         // Surface tags not used by default material
         SurfaceData::SurfaceTag m_surfaceTag;
         SurfaceData::SurfaceTag m_previousTag;
-
-        bool m_active = false;
     };
 
     class TerrainSurfaceMaterialsListConfig : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(TerrainSurfaceMaterialsListConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TerrainSurfaceMaterialsListConfig, AZ::SystemAllocator);
         AZ_RTTI(TerrainSurfaceMaterialsListConfig, "{68A1CB1B-C835-4C3A-8D1C-08692E07711A}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
 
@@ -61,12 +56,14 @@ namespace Terrain
     private:
         static const AZ::Edit::ElementData* GetDynamicData(const void* handlerPtr, const void* elementPtr, const AZ::Uuid& elementType);
         AZ::Edit::ElementData m_hideSurfaceTagData;
+        static inline AZ::Edit::AttributeData<AZ::Crc32> m_hideAttribute{AZ::Edit::PropertyVisibility::Hide};
     };
 
     class TerrainSurfaceMaterialsListComponent
         : public AZ::Component
         , private TerrainAreaMaterialRequestBus::Handler
         , private AZ::Data::AssetBus::MultiHandler
+        , private AZ::TickBus::Handler
         , private LmbrCentral::ShapeComponentNotificationsBus::Handler
     {
     public:
@@ -90,9 +87,6 @@ namespace Terrain
         bool WriteOutConfig(AZ::ComponentConfig* outBaseConfig) const override;
 
     private:
-        void HandleMaterialStateChanges();
-        int CountMaterialIdInstances(AZ::Data::AssetId id) const;
-
         ////////////////////////////////////////////////////////////////////////
         // ShapeComponentNotificationsBus
         void OnShapeChanged(ShapeComponentNotifications::ShapeChangeReasons reasons) override;
@@ -104,9 +98,16 @@ namespace Terrain
         const TerrainSurfaceMaterialMapping& GetDefaultMaterial() const override;
 
         //////////////////////////////////////////////////////////////////////////
+        // AZ::TickBus::Handler
+        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
+
+        //////////////////////////////////////////////////////////////////////////
         // AZ::Data::AssetBus::Handler
         void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
         void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
+
+        void OnAssetReadyPostTick(AZ::Data::Asset<AZ::Data::AssetData> asset);
+        void OnAssetReloadedPostTick(AZ::Data::Asset<AZ::Data::AssetData> asset);
 
         TerrainSurfaceMaterialsListConfig m_configuration;
 

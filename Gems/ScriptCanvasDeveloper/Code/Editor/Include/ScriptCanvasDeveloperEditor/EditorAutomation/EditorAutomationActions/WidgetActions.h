@@ -26,7 +26,7 @@ namespace ScriptCanvas::Developer
         : public CompoundAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(WriteToLineEditAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(WriteToLineEditAction, AZ::SystemAllocator);
         AZ_RTTI(WriteToLineEditAction, "{EAF64BDE-9A06-4169-8FD1-50D6BFEBA73A}", CompoundAction);
 
         WriteToLineEditAction(QLineEdit* targetEdit, QString targetText);
@@ -46,7 +46,7 @@ namespace ScriptCanvas::Developer
         : public CompoundAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(MoveMouseToViewRowAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MoveMouseToViewRowAction, AZ::SystemAllocator);
         AZ_RTTI(MoveMouseToViewRowAction, "{094DD153-BDE4-4E56-B14A-25FE5C6348A1}", CompoundAction);
 
         MoveMouseToViewRowAction(QAbstractItemView* tableView, int row, QModelIndex parentIndex = QModelIndex());

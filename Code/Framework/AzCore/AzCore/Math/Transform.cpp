@@ -13,6 +13,7 @@
 #include <AzCore/Math/Obb.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/MathScriptHelpers.h>
+#include <AzCore/Serialization/Locale.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
 namespace AZ
@@ -178,6 +179,8 @@ namespace AZ
 
     size_t TransformSerializer::TextToData(const char* text, unsigned int textVersion, IO::GenericStream& stream, bool isDataBigEndian)
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale; // for strtod to be invariant
+
         const size_t dataBufferSize = AZStd::max(AZStd::max(NumFloatsVersion1, NumFloatsVersion0), NumFloats);
         const size_t numElements = textVersion < 1 ? NumFloatsVersion0 : (textVersion == 1 ? NumFloatsVersion1 : NumFloats);
 
@@ -354,6 +357,7 @@ namespace AZ
                 Method("CreateUniformScale", &Transform::CreateUniformScale)->
                 Method("CreateTranslation", &Transform::CreateTranslation)->
                 Method("CreateLookAt", &Transform::CreateLookAt)->
+                Method("GetEulerDegrees", &Transform::GetEulerDegrees)->
                 Method("ConstructFromValuesNumeric", &Internal::ConstructTransformFromValues);
         }
     }

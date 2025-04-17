@@ -8,7 +8,6 @@
 
 import argparse
 import json
-import logging
 import pytest
 import pathlib
 from unittest.mock import patch
@@ -19,6 +18,7 @@ from o3de import print_registration
 TEST_PROJECT_JSON_PAYLOAD = '''
 {
     "project_name": "MinimalProject",
+    "version": "0.0.0",
     "origin": "The primary repo for MinimalProject goes here: i.e. http://www.mydomain.com",
     "license": "What license MinimalProject uses goes here: i.e. https://opensource.org/licenses/MIT",
     "display_name": "MinimalProject",
@@ -40,11 +40,12 @@ TEST_PROJECT_JSON_PAYLOAD = '''
 TEST_ENGINE_JSON_PAYLOAD = '''
 {
     "engine_name": "o3de",
+    "version": "0.0.0",
     "restricted_name": "o3de",
-    "FileVersion": 1,
+    "file_version": 1,
     "O3DEVersion": "0.0.0.0",
-    "O3DECopyrightYear": 2021,
-    "O3DEBuildNumber": 0,
+    "copyright_year": 2021,
+    "build": 0,
     "external_subdirectories": [
         "Gems/TestGem2"
     ],
@@ -59,6 +60,7 @@ TEST_ENGINE_JSON_PAYLOAD = '''
 TEST_GEM_JSON_PAYLOAD = '''
 {
     "gem_name": "TestGem",
+    "version": "0.0.0",
     "display_name": "TestGem",
     "license": "What license TestGem uses goes here: i.e. https://opensource.org/licenses/MIT",
     "origin": "The primary repo for TestGem goes here: i.e. http://www.mydomain.com",
@@ -134,10 +136,7 @@ TEST_O3DE_MANIFEST_JSON_PAYLOAD = '''
     "repos": [],
     "engines": [
         "D:/o3de/o3de"
-    ],
-    "engines_path": {
-        "o3de": "D:/o3de/o3de"
-    }
+    ]
 }
 '''
 
@@ -151,7 +150,9 @@ class TestPrintRegistration:
         return json.loads(TEST_ENGINE_JSON_PAYLOAD)
 
     @staticmethod
-    def get_project_json_data(project_path: pathlib.Path = None):
+    def get_project_json_data(project_name: str = None,
+                            project_path: str or pathlib.Path = None,
+                            user: bool = False) -> dict or None:
         return json.loads(TEST_PROJECT_JSON_PAYLOAD)
 
     @staticmethod
@@ -376,3 +377,26 @@ class TestPrintRegistration:
                 patch('o3de.print_registration.get_project_path', return_value=project_path) as get_project_path_patch:
             result = print_registration._run_register_show(test_args)
             assert result == 0
+
+    # No --verbose for the -project-engine-name option doesn't produce more output.
+    @pytest.mark.parametrize("arg_option, project_path, expected_result", [
+        pytest.param("--project-engine-name", None, 1),
+        pytest.param("--project-engine-name", pathlib.Path("D:/MinimalProject"), 0),
+    ])
+    def test_print_external_subdirectories_registration(self, arg_option, project_path, expected_result):
+        parser = argparse.ArgumentParser()
+
+        # Register the registration script subparsers with the current argument parser
+        print_registration.add_parser_args(parser)
+        arg_list = [arg_option]
+        if project_path:
+            arg_list += ['--project-path', project_path.as_posix()]
+        test_args = parser.parse_args(arg_list)
+
+        with patch('o3de.manifest.load_o3de_manifest', side_effect=self.load_manifest_json) as load_manifest_patch, \
+                patch('o3de.manifest.save_o3de_manifest', return_value=True) as save_manifest_patch, \
+                patch('o3de.manifest.get_project_json_data',
+                      side_effect=self.get_project_json_data) as get_project_json_patch, \
+                patch('o3de.print_registration.get_project_path', return_value=project_path) as get_project_path_patch:
+            result = print_registration._run_register_show(test_args)
+            assert result == expected_result

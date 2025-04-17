@@ -11,6 +11,7 @@
 #include <AzCore/std/optional.h>
 
 #include <Atom/RPI.Reflect/Asset/AssetHandler.h>
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/Shader/ShaderOptionGroupLayout.h>
 
 namespace AZ
@@ -33,14 +34,17 @@ namespace AZ
         //! The variant searched using the tree has a key that matches the requested key, but some values can be undefined.
         //! For example, requesting a key equal to "00101" could return a variant with ID "0?10?", in which ? stands for undefined values.
         //! The undefined values must be provided to the fallback constant buffer. (See Shader::FindFallbackShaderResourceGroupAsset).
-        class ShaderVariantTreeAsset final
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+        class ATOM_RPI_REFLECT_API ShaderVariantTreeAsset final
             : public Data::AssetData
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             friend class ShaderVariantTreeAssetHandler;
             friend class ShaderVariantTreeAssetCreator;
             friend struct ShaderVariantTreeNode;
 
         public:
+            AZ_CLASS_ALLOCATOR(ShaderVariantTreeAsset , SystemAllocator)
             AZ_RTTI(ShaderVariantTreeAsset, "{EBF48506-F8BB-4B37-8FAC-F132BF83E42D}", Data::AssetData);
 
             static void Reflect(ReflectContext* context);
@@ -51,8 +55,8 @@ namespace AZ
             static constexpr AZ::u32 ProductSubID = 0; //Reserved for ShaderVariantTreeAssets.
 
             //! See comments in ValidateShaderVariantListLocation() inside ShaderVariantAssetBuilder.cpp
-            static constexpr const char* CommonSubFolder = "ShaderVariants";
-            static constexpr const char* CommonSubFolderLowerCase = "shadervariants";
+            static constexpr char CommonSubFolder[] = "ShaderVariants";
+            static constexpr char CommonSubFolderLowerCase[] = "shadervariants";
 
             ShaderVariantTreeAsset() = default;
             ~ShaderVariantTreeAsset() = default;
@@ -97,9 +101,11 @@ namespace AZ
             AZStd::vector<ShaderVariantTreeNode> m_nodes;
         };
 
-        class ShaderVariantTreeAssetHandler final
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+        class ATOM_RPI_REFLECT_API ShaderVariantTreeAssetHandler final
             : public AssetHandler<ShaderVariantTreeAsset>
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             using Base = AssetHandler<ShaderVariantTreeAsset>;
         public:
             ShaderVariantTreeAssetHandler() = default;
@@ -110,7 +116,7 @@ namespace AZ
         };
 
         //! Helper structure for the nodes in the shader variant search tree.
-        struct ShaderVariantTreeNode final
+        struct ATOM_RPI_REFLECT_API ShaderVariantTreeNode final
         {
         public:
             AZ_RTTI(ShaderVariantTreeNode, "{5C985619-B2AF-4761-937E-B66DB021637C}");

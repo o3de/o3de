@@ -28,7 +28,7 @@ namespace AzToolsFramework
         , public ViewBookmarkPersistInterface
     {
     public:
-        AZ_CLASS_ALLOCATOR(LocalViewBookmarkLoader, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(LocalViewBookmarkLoader, AZ::SystemAllocator);
         AZ_RTTI(LocalViewBookmarkLoader, "{A64F2300-0958-4430-9EEA-1D457997E618}", ViewBookmarkInterface);
 
         void RegisterViewBookmarkInterface();
@@ -45,15 +45,18 @@ namespace AzToolsFramework
         void OverrideStreamWriteFn(StreamWriteFn streamWriteFn) override;
         void OverrideStreamReadFn(StreamReadFn streamReadFn) override;
         void OverrideFileExistsFn(FileExistsFn fileExistsFn) override;
+        
+        // temporary value until there is UI to expose the fields
+        static constexpr int DefaultViewBookmarkCount = 12;
 
     private:
         LocalViewBookmarkComponent* FindOrCreateLocalViewBookmarkComponent();
 
-        void WriteViewBookmarksSettingsRegistryToFile(const AZStd::string& localBookmarksFileName);
-        bool ReadViewBookmarksSettingsRegistryFromFile(const AZStd::string& localBookmarksFileName);
+        void WriteViewBookmarksSettingsRegistryToFile(const AZ::IO::PathView& localBookmarksFileName);
+        bool ReadViewBookmarksSettingsRegistryFromFile(const AZ::IO::PathView& localBookmarksFileName);
 
         //! Writes the content of the string buffer to the stream.
-        bool Write(AZ::IO::GenericStream& genericStream, const AZStd::string& stringBuffer);
+        bool Write(AZ::IO::GenericStream& genericStream, AZStd::string_view stringBuffer);
 
         AZStd::vector<ViewBookmark> m_localBookmarks;
         AZStd::optional<ViewBookmark> m_lastKnownLocation;

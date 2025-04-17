@@ -27,34 +27,32 @@ namespace LyShine
         }
     }
 
-    void LyShineFeatureProcessor::Activate()
+    void LyShineFeatureProcessor::AddRenderPasses(AZ::RPI::RenderPipeline* renderPipeline)
     {
-        EnableSceneNotification();
-    }
-
-    void LyShineFeatureProcessor::Deactivate()
-    {        
-        DisableSceneNotification();
-    }
-
-    void LyShineFeatureProcessor::OnRenderPipelinePassesChanged([[maybe_unused]] AZ::RPI::RenderPipeline* renderPipeline)
-    {
-    }
-
-    void LyShineFeatureProcessor::ApplyRenderPipelineChange(AZ::RPI::RenderPipeline* renderPipeline)
-    {
-        // Get the pass request to create LyShine parent pass from the asset
-        const char* passRequestAssetFilePath = "Passes/LyShinePassRequest.azasset";
-        auto passRequestAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(
-            passRequestAssetFilePath, AZ::RPI::AssetUtils::TraceLevel::Warning);
-        const AZ::RPI::PassRequest* passRequest = nullptr;
-        if (passRequestAsset->IsReady())
+        // Only add LyShineParentPass if UIPass exists
+        if (!renderPipeline->FindFirstPass(AZ::Name("UIPass")))
         {
-            passRequest = passRequestAsset->GetDataAs<AZ::RPI::PassRequest>();
+            return;
         }
+
+        // Get the pass request if it's not loaded
+        if (!m_passRequestAsset)
+        {
+            const char* passRequestAssetFilePath = "Passes/LyShinePassRequest.azasset";
+            m_passRequestAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(
+                passRequestAssetFilePath, AZ::RPI::AssetUtils::TraceLevel::Warning);
+            
+        }
+
+        const AZ::RPI::PassRequest *passRequest = nullptr;
+        if (m_passRequestAsset->IsReady())
+        {
+            passRequest = m_passRequestAsset->GetDataAs<AZ::RPI::PassRequest>();
+        }
+
         if (!passRequest)
         {
-            AZ_Error("LyShine", false, "Failed to add LyShine parent pass. Can't load PassRequest from %s", passRequestAssetFilePath);
+            AZ_Error("LyShine", false, "Failed to add LyShine parent pass. Can't load PassRequest from %s", m_passRequestAsset.GetHint().c_str());
             return;
         }
 

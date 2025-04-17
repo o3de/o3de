@@ -26,7 +26,7 @@ using namespace AZ;
 using namespace SceneBuilder;
 
 class SceneBuilderTests
-    : public UnitTest::AllocatorsFixture
+    : public UnitTest::LeakDetectionFixture
     , public UnitTest::TraceBusRedirector
 {
 protected:
@@ -40,7 +40,9 @@ protected:
         registry->Set(projectPathKey, (enginePath / "AutomatedTesting").Native());
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
 
-        m_app.Start(AZ::ComponentApplication::Descriptor());
+        AZ::ComponentApplication::StartupParameters startupParameters;
+        startupParameters.m_loadSettingsRegistry = false;
+        m_app.Start(AZ::ComponentApplication::Descriptor(), startupParameters);
         AZ::Debug::TraceMessageBus::Handler::BusConnect();
         // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
         // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash
@@ -231,7 +233,7 @@ struct ImportHandler
     }
 };
 
-using SourceDependencyTests = UnitTest::ScopedAllocatorSetupFixture;
+using SourceDependencyTests = UnitTest::LeakDetectionFixture;
 
 namespace SourceDependencyJson
 {
@@ -283,7 +285,7 @@ TEST_F(SourceDependencyTests, PopulateSourceDependencies_WithEmptyManifest_Shoul
     ASSERT_EQ(dependencies.size(), 0);
 }
 
-struct SourceDependencyMockedIOTests : UnitTest::ScopedAllocatorSetupFixture
+struct SourceDependencyMockedIOTests : UnitTest::LeakDetectionFixture
     , UnitTest::SetRestoreFileIOBaseRAII
 {
     SourceDependencyMockedIOTests()
@@ -349,6 +351,7 @@ TEST_F(SourceDependencyMockedIOTests, RegularManifestHasPriority)
 
     EXPECT_CALL(m_ioMock, Exists(StrEq("file.fbx.test"))).WillRepeatedly(Return(true));
     EXPECT_CALL(m_ioMock, Exists(StrEq(genPath.c_str()))).Times(Exactly(0));
+    EXPECT_CALL(settingsRegistry, Get(::testing::An<FixedValueString&>(), ::testing::_)).Times(1);
     
     ASSERT_TRUE(SceneBuilderWorker::ManifestDependencyCheck(request, response));
     ASSERT_EQ(response.m_sourceFileDependencyList.size(), 2);
@@ -379,6 +382,7 @@ TEST_F(SourceDependencyMockedIOTests, GeneratedManifestTest)
 
     EXPECT_CALL(m_ioMock, Exists(StrEq("file.fbx.test"))).WillRepeatedly(Return(false));
     EXPECT_CALL(m_ioMock, Exists(StrEq(genPath.c_str()))).WillRepeatedly(Return(true));
+    EXPECT_CALL(settingsRegistry, Get(::testing::An<FixedValueString&>(), ::testing::_)).Times(1);
 
     ASSERT_TRUE(SceneBuilderWorker::ManifestDependencyCheck(request, response));
     ASSERT_EQ(response.m_sourceFileDependencyList.size(), 2);

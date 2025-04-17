@@ -14,7 +14,7 @@
 
 namespace MCore
 {
-    AZ_CLASS_ALLOCATOR_IMPL(AttributeFloat, AttributeAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AttributeFloat, AttributeAllocator)
 
     bool AttributeFloat::InitFrom(const Attribute* other)
     {

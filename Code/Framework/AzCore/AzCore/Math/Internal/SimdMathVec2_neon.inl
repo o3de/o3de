@@ -23,7 +23,8 @@ namespace AZ
 
         AZ_MATH_INLINE Vec2::FloatType Vec2::FromVec1(Vec1::FloatArgType value)
         {
-            return value;
+            // Coming from a Vec1 the last element could be garbage.
+            return NeonDouble::SplatIndex0(value); // {value.x, value.x}
         }
 
         AZ_MATH_INLINE Vec2::FloatType Vec2::LoadAligned(const float* __restrict addr)
@@ -76,14 +77,14 @@ namespace AZ
             NeonDouble::StreamAligned(addr, value);
         }
 
-        AZ_MATH_INLINE float Vec2::SelectFirst(FloatArgType value)
+        AZ_MATH_INLINE float Vec2::SelectIndex0(FloatArgType value)
         {
-            return NeonDouble::SelectFirst(value);
+            return NeonDouble::SelectIndex0(value);
         }
 
-        AZ_MATH_INLINE float Vec2::SelectSecond(FloatArgType value)
+        AZ_MATH_INLINE float Vec2::SelectIndex1(FloatArgType value)
         {
-            return NeonDouble::SelectSecond(value);
+            return NeonDouble::SelectIndex1(value);
         }
 
         AZ_MATH_INLINE Vec2::FloatType Vec2::Splat(float value)
@@ -96,34 +97,34 @@ namespace AZ
             return NeonDouble::Splat(value);
         }
 
-        AZ_MATH_INLINE Vec2::FloatType Vec2::SplatFirst(FloatArgType value)
+        AZ_MATH_INLINE Vec2::FloatType Vec2::SplatIndex0(FloatArgType value)
         {
-            return NeonDouble::SplatFirst(value);
+            return NeonDouble::SplatIndex0(value);
         }
 
-        AZ_MATH_INLINE Vec2::FloatType Vec2::SplatSecond(FloatArgType value)
+        AZ_MATH_INLINE Vec2::FloatType Vec2::SplatIndex1(FloatArgType value)
         {
-            return NeonDouble::SplatSecond(value);
+            return NeonDouble::SplatIndex1(value);
         }
 
-        AZ_MATH_INLINE Vec2::FloatType Vec2::ReplaceFirst(FloatArgType a, float b)
+        AZ_MATH_INLINE Vec2::FloatType Vec2::ReplaceIndex0(FloatArgType a, float b)
         {
-            return NeonDouble::ReplaceFirst(a, b);
+            return NeonDouble::ReplaceIndex0(a, b);
         }
 
-        AZ_MATH_INLINE Vec2::FloatType Vec2::ReplaceFirst(FloatArgType a, FloatArgType b)
+        AZ_MATH_INLINE Vec2::FloatType Vec2::ReplaceIndex0(FloatArgType a, FloatArgType b)
         {
-            return NeonDouble::ReplaceFirst(a, b);
+            return NeonDouble::ReplaceIndex0(a, b);
         }
 
-        AZ_MATH_INLINE Vec2::FloatType Vec2::ReplaceSecond(FloatArgType a, float b)
+        AZ_MATH_INLINE Vec2::FloatType Vec2::ReplaceIndex1(FloatArgType a, float b)
         {
-            return NeonDouble::ReplaceSecond(a, b);
+            return NeonDouble::ReplaceIndex1(a, b);
         }
 
-        AZ_MATH_INLINE Vec2::FloatType Vec2::ReplaceSecond(FloatArgType a, FloatArgType b)
+        AZ_MATH_INLINE Vec2::FloatType Vec2::ReplaceIndex1(FloatArgType a, FloatArgType b)
         {
-            return NeonDouble::ReplaceSecond(a, b);
+            return NeonDouble::ReplaceIndex1(a, b);
         }
 
         AZ_MATH_INLINE Vec2::FloatType Vec2::LoadImmediate(float x, float y)
@@ -475,7 +476,12 @@ namespace AZ
 
         AZ_MATH_INLINE Vec1::FloatType Vec2::Atan2(FloatArgType value)
         {
-            return Common::Atan2<Vec1>(Vec1::Splat(SelectSecond(value)), Vec1::Splat(SelectFirst(value)));
+            return Common::Atan2<Vec1>(Vec1::Splat(SelectIndex1(value)), Vec1::Splat(SelectIndex0(value)));
+        }
+
+        AZ_MATH_INLINE Vec2::FloatType Vec2::ExpEstimate(FloatArgType x)
+        {
+            return Common::ExpEstimate<Vec2>(x);
         }
 
         AZ_MATH_INLINE Vec1::FloatType Vec2::Dot(FloatArgType arg1, FloatArgType arg2)

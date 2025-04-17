@@ -12,6 +12,7 @@
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/std/parallel/condition_variable.h>
+#include <AZTestShared/Utils/Utils.h>
 
 namespace UnitTest
 {
@@ -35,7 +36,7 @@ namespace UnitTest
 
         AssetId m_assetId;
         AssetType m_type;
-        AZStd::string m_fileName;
+        AZ::IO::Path m_fileName;
 
         // Additional delay to add to loading on top of any global catalog delay
         size_t m_loadDelay{ 0 };
@@ -59,7 +60,7 @@ namespace UnitTest
         , AssetCatalog
         , AssetCatalogRequestBus::Handler
     {
-        AZ_CLASS_ALLOCATOR(DataDrivenHandlerAndCatalog, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DataDrivenHandlerAndCatalog, AZ::SystemAllocator);
 
         DataDrivenHandlerAndCatalog();
         ~DataDrivenHandlerAndCatalog() override;
@@ -82,7 +83,7 @@ namespace UnitTest
         AssetInfo GetAssetInfoById(const AssetId& assetId) override;
 
         const char* GetStreamName(const AssetId& id);
-        
+
         const AssetDefinition* FindByType(const Uuid& type);
         const AssetDefinition* FindById(const AssetId& id);
         void AddDependenciesHelper(const AZStd::vector<ProductDependency>& list, AZStd::vector<ProductDependency>& listOutput);
@@ -93,11 +94,11 @@ namespace UnitTest
         void SetArtificialDelayMilliseconds(size_t createDelay, size_t loadDelay);
 
         template<typename T>
-        AssetDefinition* AddAsset(const Uuid& assetUuid, const char* fileName, size_t loadDelay = 0, bool noAssetData = false,
+        AssetDefinition* AddAsset(const Uuid& assetUuid, const AZ::IO::Path& fileName, size_t loadDelay = 0, bool noAssetData = false,
             bool noHandler = false, LoadAssetDataSynchronizer* loadSynchronizer = nullptr)
         {
             m_assetDefinitions.push_back(AssetDefinition{
-                AssetId(assetUuid, 0), azrtti_typeid<T>(), fileName, loadDelay, loadSynchronizer, noAssetData, noHandler });
+                AssetId(assetUuid, 0), azrtti_typeid<T>(), GetTestFolderPath() / fileName, loadDelay, loadSynchronizer, noAssetData, noHandler });
 
             return &m_assetDefinitions.back();
         }

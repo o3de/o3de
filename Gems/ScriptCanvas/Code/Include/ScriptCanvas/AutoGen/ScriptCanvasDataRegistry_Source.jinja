@@ -1,0 +1,85 @@
+{#
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
+
+SPDX-License-Identifier: Apache-2.0 OR MIT
+#}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// This code was produced with AzAutoGen, any modifications made will not be preserved.
+// If you need to modify this code see:
+//
+// Gems\ScriptCanvas\Code\Include\ScriptCanvas\AutoGen\ScriptCanvasDataRegistry_Source.jinja
+//
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+{% import 'ScriptCanvas_Macros.jinja' as macros %}
+
+#include "{{filename}}.h"
+#include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
+#include <ScriptCanvas/Libraries/Core/ContainerTypeReflection.h>
+{% for ScriptCanvas in dataFiles %}
+{% for Data in ScriptCanvas%}
+{{ macros.Required('Include', Data, Data) -}}
+
+#include <{{ Data.attrib['Include'] }}>
+
+{{- macros.ReportErrors() }}
+{% endfor %}
+{% endfor %}
+
+namespace ScriptCanvas
+{
+    {{autogenTargetName}}DataRegistry::{{autogenTargetName}}DataRegistry()
+    {
+        ScriptCanvas::AutoGenRegistryManager::GetInstance()->RegisterRegistry(GetRegistryName(), this);
+    }
+
+    {{autogenTargetName}}DataRegistry::~{{autogenTargetName}}DataRegistry()
+    {
+        ScriptCanvas::AutoGenRegistryManager::GetInstance()->UnregisterRegistry(GetRegistryName());
+    }
+
+    const char* {{autogenTargetName}}DataRegistry::GetRegistryName() {
+        return "{{autogenTargetName}}DataRegistry";
+    }
+
+    void {{autogenTargetName}}DataRegistry::Reflect(AZ::ReflectContext* context)
+    {
+        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+{% for ScriptCanvas in dataFiles %}
+{%     for Data in ScriptCanvas -%}
+{%         set dataName = Data.attrib['Name'] %}
+{%         set namespaceName = '' %}
+{%         set sanitizedNamespaceName = '' %}
+{%         if Data.attrib['Namespace'] is defined and Data.attrib['Namespace'] %}
+{%             set namespaceName = Data.attrib['Namespace'] + '::' %}
+{%             set sanitizedNamespaceName = macros.CleanName(Data.attrib['Namespace'].replace('::', '_')) + '_' %}
+{%         endif %}
+            behaviorContext->Class<ContainerTypeReflection::BehaviorClassReflection<{{namespaceName}}{{dataName}}>>("ScriptCanvas_{{sanitizedNamespaceName}}{{dataName}}")
+                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
+                ->Attribute(AZ::Script::Attributes::Ignore, true)
+                ->Method("ScriptCanvas_ReflectVector", [](const AZStd::vector<{{namespaceName}}{{dataName}}>&) {})
+                ->Method("ScriptCanvas_ReflectStringMap", [](const AZStd::unordered_map<AZStd::string, {{namespaceName}}{{dataName}}>&) {})
+                ->Method("ScrtptCanvas_ReflectNumberMap", [](const AZStd::unordered_map<double, {{namespaceName}}{{dataName}}>&) {});
+
+{%     endfor %}
+{% endfor %}
+        }
+
+{% for ScriptCanvas in dataFiles %}
+{%     for Data in ScriptCanvas -%}
+{%         set dataName = Data.attrib['Name'] %}
+{%         set namespaceName = '' %}
+{%         if Data.attrib['Namespace'] is defined and Data.attrib['Namespace'] %}
+{%             set namespaceName = Data.attrib['Namespace'] + '::' %}
+{%         endif %}
+        ContainerTypeReflection::HashContainerReflector<{{namespaceName}}{{dataName}}>::Reflect(context);
+
+{%     endfor %}
+{% endfor %}
+    }
+}

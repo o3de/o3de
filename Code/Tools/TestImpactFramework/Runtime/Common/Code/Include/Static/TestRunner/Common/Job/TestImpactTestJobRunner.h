@@ -23,15 +23,6 @@ namespace TestImpact
     template<typename Payload>
     using PayloadOutcome = AZ::Outcome<Payload, AZStd::string>;
 
-    //! Default template payload factory (to be specialized by specific test runners).
-    //! @tparam AdditionalInfo The additional info class/struct provided to the test runner specialization.
-    //! @tparam Payload The The payload produced by the test runner specialization.
-    template<typename AdditionalInfo, typename Payload>
-    PayloadOutcome<Payload> PayloadFactory(const JobInfo<AdditionalInfo>& jobData, const JobMeta& jobMeta)
-    {
-        static_assert(false, "Please specify a factory function for the payload and additional info type.");
-    };
-
     //! Base class for test related job runners.
     //! @tparam AdditionalInfo The data structure containing the information additional to the command arguments necessary to execute and
     //! complete a job.
@@ -43,18 +34,20 @@ namespace TestImpact
     public:
         using JobData = typename JobRunner::JobData;
         using JobInfo = typename JobRunner::JobInfo;
+        using JobInfos = typename JobRunner::JobInfos;
         using Command = typename JobRunner::Command;
         using JobPayload = typename JobRunner::JobPayload;;
         using Job = typename JobRunner::Job;
         using PayloadMap = typename JobRunner::PayloadMap;
         using JobDataMap = typename JobRunner::JobDataMap;
-        using JobCallback = typename JobRunner::JobCallback;
-        using StdContentCallback = typename JobRunner::StdContentCallback;
         using JobPayloadOutcome = PayloadOutcome<JobPayload>;
+        using NotificationBus = typename JobRunner::NotificationBus;
 
         //! Constructs the job runner with the specified parameters common to all job runs of this runner.
         //! @param maxConcurrentJobs The maximum number of jobs to be in flight at any given time.
         explicit TestJobRunner(size_t maxConcurrentJobs);
+
+        virtual ~TestJobRunner() = default;
 
     protected:
         JobRunner m_jobRunner;

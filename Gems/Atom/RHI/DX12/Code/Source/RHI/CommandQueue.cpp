@@ -124,6 +124,13 @@ namespace AZ
             }
         }
 
+        AZStd::pair<uint64_t, uint64_t> CommandQueue::GetClockCalibration()
+        {
+            AZStd::pair<uint64_t, uint64_t> calibratedTimestamp{ 0ull, 0ull };
+            m_queue->GetClockCalibration(&calibratedTimestamp.first, &calibratedTimestamp.second);
+            return calibratedTimestamp;
+        }
+
         uint64_t CommandQueue::GetGpuTimestampFrequency() const
         {
             return m_calibratedGpuTimestampFrequency;
@@ -143,6 +150,11 @@ namespace AZ
 
                 static const uint32_t CommandListCountMax = 128;
                 ID3D12CommandQueue* dx12CommandQueue = static_cast<ID3D12CommandQueue*>(commandQueue);
+
+                for (Fence* fence : request.m_userFencesToWaitFor)
+                {
+                    dx12CommandQueue->Wait(fence->Get(), fence->GetPendingValue());
+                }
 
                 for (size_t producerQueueIdx = 0; producerQueueIdx < request.m_waitFences.size(); ++producerQueueIdx)
                 {
@@ -186,11 +198,41 @@ namespace AZ
                 }
 
                 AZ::Debug::ScopedTimer presentTimer(m_lastPresentDuration);
-                for (RHI::SwapChain* swapChain : request.m_swapChainsToPresent)
+                for (RHI::DeviceSwapChain* swapChain : request.m_swapChainsToPresent)
                 {
                     swapChain->Present();
                 }
             });
+        }
+
+        void UpdateTileMap(RHI::Ptr<ID3D12CommandQueue> queue, const CommandList::TileMapRequest& request)
+        {
+            // map the source resource to null if the heap is null
+            if (request.m_destinationHeap == nullptr)
+            {
+                // from: https://docs.microsoft.com/en-us/windows/win32/api/d3d12/nf-d3d12-id3d12commandqueue-updatetilemappings
+                // If pRangeFlags[i] is D3D12_TILE_RANGE_FLAG_NULL,
+                // pRangeTileCounts[i] specifies how many tiles from the tile regions to map to NULL.
+                // If NumRanges is 1, pRangeTileCounts can be NULL and defaults to the total number of tiles
+                // specified by all the tile regions. pHeapRangeStartOffsets[i] is ignored for NULL mappings.
+                auto rangeFlag = D3D12_TILE_RANGE_FLAG_NULL;
+                queue->UpdateTileMappings(
+                    request.m_sourceMemory,
+                    1, &request.m_sourceCoordinate, &request.m_sourceRegionSize,
+                    nullptr,
+                    1, &rangeFlag, nullptr, nullptr,
+                    D3D12_TILE_MAPPING_FLAG_NONE);
+            }
+            else
+            {
+                // Maps a single range of source tiles to N disjoint destination tiles on a heap
+                queue->UpdateTileMappings(
+                    request.m_sourceMemory,
+                    1, &request.m_sourceCoordinate, &request.m_sourceRegionSize,
+                    request.m_destinationHeap,
+                    aznumeric_cast<uint32_t>(request.m_rangeFlags.size()), request.m_rangeFlags.data(), request.m_rangeStartOffsets.data(), request.m_rangeTileCounts.data(),
+                    D3D12_TILE_MAPPING_FLAG_NONE);
+            }
         }
 
         void CommandQueue::UpdateTileMappings(CommandList& commandList)
@@ -198,32 +240,7 @@ namespace AZ
             AZ_PROFILE_SCOPE(RHI, "CommandQueue: UpdateTileMappings");
             for (const CommandList::TileMapRequest& request : commandList.GetTileMapRequests())
             {
-                const uint32_t tileCount = request.m_sourceRegionSize.NumTiles;
-
-                // DX12 requires that we pass the full array of range counts (even though they are all 1).
-                if (m_rangeCounts.size() < tileCount)
-                {
-                    m_rangeCounts.resize(tileCount, 1);
-                }
-
-                // Same with range flags, except that we can skip if they are all 'None'.
-                D3D12_TILE_RANGE_FLAGS* rangeFlags = nullptr;
-                if (!request.m_destinationHeap)
-                {
-                    if (m_rangeFlags.size() < tileCount)
-                    {
-                        m_rangeFlags.resize(tileCount, D3D12_TILE_RANGE_FLAG_NULL);
-                    }
-                    rangeFlags = m_rangeFlags.data();
-                }
-
-                // Maps a single range of source tiles to N disjoint destination tiles on a heap (or null, if no heap is specified).
-                m_queue->UpdateTileMappings(
-                    request.m_sourceMemory,
-                    1, &request.m_sourceCoordinate, &request.m_sourceRegionSize,
-                    request.m_destinationHeap,
-                    tileCount, rangeFlags, request.m_destinationTileMap.data(), m_rangeCounts.data(),
-                    D3D12_TILE_MAPPING_FLAG_NONE);
+                UpdateTileMap(m_queue, request);
             }
         }
         

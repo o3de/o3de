@@ -66,7 +66,7 @@ namespace ScriptCanvas
         struct EBusBase
         {
             AZ_TYPE_INFO(EBusBase, "{A29AF0FF-5E2E-404C-AA8A-029AEC67FB1F}");
-            AZ_CLASS_ALLOCATOR(EBusBase, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(EBusBase, AZ::SystemAllocator);
 
             bool m_isEverConnected = false;
             bool m_isEverDisconnected = false;
@@ -83,7 +83,7 @@ namespace ScriptCanvas
             , public EBusBase
         {
             AZ_TYPE_INFO(EBusHandling, "{CD45249C-3CC8-4AAD-B61E-8CCDC05144B7}");
-            AZ_CLASS_ALLOCATOR(EBusHandling, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(EBusHandling, AZ::SystemAllocator);
 
             bool m_isAddressed = false;
             const Node* m_node = nullptr;
@@ -112,7 +112,7 @@ namespace ScriptCanvas
         struct FunctionPrototype
         {
             AZ_TYPE_INFO(FunctionPrototype, "{7785B43E-102A-4E66-87F6-E59D37C4DBB2}");
-            AZ_CLASS_ALLOCATOR(FunctionPrototype, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FunctionPrototype, AZ::SystemAllocator);
 
             static void Reflect(AZ::ReflectContext* reflectContext);
 
@@ -133,7 +133,7 @@ namespace ScriptCanvas
         struct LexicalScope
         {
             AZ_TYPE_INFO(LexicalScope, "{98162B8F-BA67-4476-89E7-53F5569836B9}");
-            AZ_CLASS_ALLOCATOR(LexicalScope, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(LexicalScope, AZ::SystemAllocator);
 
             LexicalScopeType m_type = LexicalScopeType::Namespace;
             AZStd::vector<AZStd::string> m_namespaces;
@@ -153,7 +153,7 @@ namespace ScriptCanvas
             : public AZStd::enable_shared_from_this<MetaData>
         {
             AZ_RTTI(MetaData, "{1C663A26-F405-481D-BCC6-1F16A7A5DE9E}");
-            AZ_CLASS_ALLOCATOR(MetaData, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(MetaData, AZ::SystemAllocator);
 
             virtual ~MetaData() = default;
 
@@ -164,7 +164,7 @@ namespace ScriptCanvas
         struct MultipleFunctionCallFromSingleSlotEntry
         {
             AZ_TYPE_INFO(MultipleFunctionCallFromSingleSlotEntry, "{360A23A3-C490-4047-B71E-64E290E441D3}");
-            AZ_CLASS_ALLOCATOR(MultipleFunctionCallFromSingleSlotEntry, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(MultipleFunctionCallFromSingleSlotEntry, AZ::SystemAllocator);
 
             bool isVariadic = false;
             AZStd::string functionName;
@@ -177,7 +177,7 @@ namespace ScriptCanvas
         struct MultipleFunctionCallFromSingleSlotInfo
         {
             AZ_TYPE_INFO(MultipleFunctionCallFromSingleSlotInfo, "{DF51F08A-8B28-4851-9888-9AB7CC0B90D2}");
-            AZ_CLASS_ALLOCATOR(MultipleFunctionCallFromSingleSlotInfo, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(MultipleFunctionCallFromSingleSlotInfo, AZ::SystemAllocator);
 
             // this could likely be implemented, but needs care to duplicate input that the execution-slot created
             // bool errorOnReusedSlot = false;
@@ -192,7 +192,7 @@ namespace ScriptCanvas
             : public AZStd::enable_shared_from_this<NodeableParse>
         {
             AZ_RTTI(NodeableParse, "{72D8C7AA-E860-4806-B6AC-4A57EAD9AD22}");
-            AZ_CLASS_ALLOCATOR(NodeableParse, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(NodeableParse, AZ::SystemAllocator);
 
             virtual ~NodeableParse() {}
 
@@ -221,7 +221,7 @@ namespace ScriptCanvas
             : public AZStd::enable_shared_from_this<PropertyExtraction>
         {
             AZ_TYPE_INFO(PropertyExtraction, "{ACA69D23-5132-4E3E-A17F-01E354BA3B6B}");
-            AZ_CLASS_ALLOCATOR(PropertyExtraction, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PropertyExtraction, AZ::SystemAllocator);
 
             const Slot* m_slot = nullptr;
             AZStd::string m_name;
@@ -231,7 +231,7 @@ namespace ScriptCanvas
             : public AZStd::enable_shared_from_this<OutputAssignment>
         {
             AZ_TYPE_INFO(OutputAssignment, "{8A6281F4-403A-4A63-919B-633A4BF83901}");
-            AZ_CLASS_ALLOCATOR(OutputAssignment, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(OutputAssignment, AZ::SystemAllocator);
             
             VariableConstPtr m_source; // the actual result of the function
 
@@ -245,6 +245,7 @@ namespace ScriptCanvas
             : public OutputAssignment
         {
             AZ_TYPE_INFO(ReturnValue, "{2B7F0129-91F7-4662-8D31-E8DE72975ECC}");
+            AZ_CLASS_ALLOCATOR(ReturnValue, AZ::SystemAllocator)
 
             VariableConstPtr m_initializationValue;
             bool m_isNewValue = true;
@@ -257,7 +258,7 @@ namespace ScriptCanvas
             : public AZStd::enable_shared_from_this<Scope>
         {
             AZ_TYPE_INFO(Scope, "{E7FF5F8A-B98B-4609-B1DA-7A7F9729A34F}");
-            AZ_CLASS_ALLOCATOR(Scope, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Scope, AZ::SystemAllocator);
 
             ScopeConstPtr m_parent;
 
@@ -277,7 +278,7 @@ namespace ScriptCanvas
             : public AZStd::enable_shared_from_this<Variable>
         {
             AZ_TYPE_INFO(Variable, "{B249512C-A4D2-4EA0-9F86-409A0C22CC57}");
-            AZ_CLASS_ALLOCATOR(Variable, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Variable, AZ::SystemAllocator);
 
             static void Reflect(AZ::ReflectContext* reflectContext);
 
@@ -308,7 +309,7 @@ namespace ScriptCanvas
             , public EBusBase
         {
             AZ_TYPE_INFO(VariableWriteHandling, "{C60BD93A-B44F-4345-A9EA-4200DD97CFA6}");
-            AZ_CLASS_ALLOCATOR(VariableWriteHandling, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(VariableWriteHandling, AZ::SystemAllocator);
             
             VariableConstPtr m_variable;
             VariableConstPtr m_connectionVariable;

@@ -47,6 +47,7 @@ namespace CommandAdjustSimulatedObjectTests
         using ::EMotionFX::BlendTreeConnection;
         using ::EMotionFX::ValueParameter;
         using ::EMotionFX::CommandAllocator;
+        using ::EMotionFX::AnimGraphAllocator;
         using ::EMotionFX::PhysicsSetup;
         using ::EMotionFX::SimulatedObjectNotificationBus;
 
@@ -114,7 +115,7 @@ namespace EMotionFX
     };
 
     class CommandAdjustSimulatedObjectTestsFixture
-        : public UnitTest::AllocatorsTestFixture
+        : public UnitTest::LeakDetectionFixture
         , public ::testing::WithParamInterface<::testing::tuple<bool, bool, CommandAdjustSimulatedObjectTestsParam>>
     {
     public:
@@ -253,7 +254,7 @@ namespace EMotionFX
         }
     }
 
-    INSTANTIATE_TEST_CASE_P(TestCommandAdjustSimulatedObject, CommandAdjustSimulatedObjectTestsFixture,
+    INSTANTIATE_TEST_SUITE_P(TestCommandAdjustSimulatedObject, CommandAdjustSimulatedObjectTestsFixture,
         ::testing::Combine(
             ::testing::Bool(), // Test execute or test undo
             ::testing::Bool(), // Use command strings or not
@@ -420,15 +421,10 @@ namespace EMotionFX
     };
 
     class CommandAdjustSimulatedJointTestsFixture
-        : public UnitTest::AllocatorsTestFixture
+        : public UnitTest::LeakDetectionFixture
         , public ::testing::WithParamInterface<::testing::tuple<bool, bool, CommandAdjustSimulatedJointTestsParam>>
     {
     public:
-        void SetUp() override
-        {
-            UnitTest::AllocatorsTestFixture::SetUp();
-        }
-
         static std::string buildCommandLineFromTestParam(const CommandAdjustSimulatedJointTestsParam& param)
         {
             std::string string;
@@ -622,7 +618,7 @@ namespace EMotionFX
         }
     }
 
-    INSTANTIATE_TEST_CASE_P(TestCommandAdjustSimulatedJoint, CommandAdjustSimulatedJointTestsFixture,
+    INSTANTIATE_TEST_SUITE_P(TestCommandAdjustSimulatedJoint, CommandAdjustSimulatedJointTestsFixture,
         ::testing::Combine(
             ::testing::Bool(), // Test execute or test undo
             ::testing::Bool(), // Use command strings or not

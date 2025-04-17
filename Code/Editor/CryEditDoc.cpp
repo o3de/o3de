@@ -28,26 +28,24 @@
 #include <AzFramework/API/ApplicationAPI.h>
 
 // AzToolsFramework
-#include <AzToolsFramework/Slice/SliceUtilities.h>
+#include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
-#include <AzToolsFramework/UI/Layer/NameConflictWarning.hxx>
 #include <AzToolsFramework/API/EditorLevelNotificationBus.h>
 
 // Editor
 #include "Settings.h"
 
 #include "PluginManager.h"
+#include "Util/Variable.h"
 #include "ViewManager.h"
 #include "DisplaySettings.h"
 #include "GameEngine.h"
 
 #include "CryEdit.h"
-#include "ActionManager.h"
-#include "Include/IObjectManager.h"
+#include "Util/PakFile.h"
 #include "ErrorReportDialog.h"
 #include "Util/AutoLogTime.h"
 #include "CheckOutDialog.h"
-#include "GameExporter.h"
 #include "MainWindow.h"
 #include "LevelFileDialog.h"
 #include "Undo/Undo.h"
@@ -72,13 +70,6 @@ static const char* kBackupOrTempFolders[] =
     "_hold", // legacy name
     "_tmpresize", // legacy name
 };
-
-static const char* kLevelPathForSliceEditing = "EngineAssets/LevelForSliceEditing/LevelForSliceEditing.ly";
-
-static bool IsSliceFile(const QString& filePath)
-{
-    return filePath.endsWith(AzToolsFramework::SliceUtilities::GetSliceFileExtension().c_str(), Qt::CaseInsensitive);
-}
 
 namespace Internal
 {
@@ -118,24 +109,14 @@ CCryEditDoc::CCryEditDoc()
     GetIEditor()->SetDocument(this);
     CLogFile::WriteLine("Document created");
 
-    if (auto* actionManager = MainWindow::instance()->GetActionManager())
-    {
-        actionManager->RegisterActionHandler(ID_FILE_SAVE_AS, this, &CCryEditDoc::OnFileSaveAs);
-    }
-    
-    bool isPrefabSystemEnabled = false;
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-    if (isPrefabSystemEnabled)
-    {
-        m_prefabSystemComponentInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabSystemComponentInterface>::Get();
-        AZ_Assert(m_prefabSystemComponentInterface, "PrefabSystemComponentInterface is not found.");
-        m_prefabEditorEntityOwnershipInterface = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
-        AZ_Assert(m_prefabEditorEntityOwnershipInterface, "PrefabEditorEntityOwnershipInterface is not found.");
-        m_prefabLoaderInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabLoaderInterface>::Get();
-        AZ_Assert(m_prefabLoaderInterface, "PrefabLoaderInterface is not found.");
-        m_prefabIntegrationInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabIntegrationInterface>::Get();
-        AZ_Assert(m_prefabIntegrationInterface, "PrefabIntegrationInterface is not found.");
-    }
+    m_prefabSystemComponentInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabSystemComponentInterface>::Get();
+    AZ_Assert(m_prefabSystemComponentInterface, "PrefabSystemComponentInterface is not found.");
+    m_prefabEditorEntityOwnershipInterface = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
+    AZ_Assert(m_prefabEditorEntityOwnershipInterface, "PrefabEditorEntityOwnershipInterface is not found.");
+    m_prefabLoaderInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabLoaderInterface>::Get();
+    AZ_Assert(m_prefabLoaderInterface, "PrefabLoaderInterface is not found.");
+    m_prefabIntegrationInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabIntegrationInterface>::Get();
+    AZ_Assert(m_prefabIntegrationInterface, "PrefabIntegrationInterface is not found.");
 }
 
 CCryEditDoc::~CCryEditDoc()
@@ -143,8 +124,6 @@ CCryEditDoc::~CCryEditDoc()
     GetIEditor()->SetDocument(nullptr);
 
     CLogFile::WriteLine("Document destroyed");
-
-    AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler::BusDisconnect();
 }
 
 bool CCryEditDoc::IsModified() const
@@ -164,32 +143,13 @@ QString CCryEditDoc::GetLevelPathName() const
 
 void CCryEditDoc::SetPathName(const QString& pathName)
 {
-    if (IsSliceFile(pathName))
-    {
-        m_pathName = kLevelPathForSliceEditing;
-        m_slicePathName = pathName;
-    }
-    else
-    {
-        m_pathName = pathName;
-        m_slicePathName.clear();
-    }
+    m_pathName = pathName;
     SetTitle(pathName.isEmpty() ? tr("Untitled") : PathUtil::GetFileName(pathName.toUtf8().data()).c_str());
-}
-
-QString CCryEditDoc::GetSlicePathName() const
-{
-    return m_slicePathName;
-}
-
-CCryEditDoc::DocumentEditingMode CCryEditDoc::GetEditMode() const
-{
-    return m_slicePathName.isEmpty() ? CCryEditDoc::DocumentEditingMode::LevelEdit : CCryEditDoc::DocumentEditingMode::SliceEdit;
 }
 
 QString CCryEditDoc::GetActivePathName() const
 {
-    return GetEditMode() == CCryEditDoc::DocumentEditingMode::SliceEdit ? GetSlicePathName() : GetLevelPathName();
+    return GetLevelPathName();
 }
 
 QString CCryEditDoc::GetTitle() const
@@ -243,7 +203,8 @@ void CCryEditDoc::DeleteContents()
     GetIEditor()->Notify(eNotify_OnCloseScene);
     CrySystemEventBus::Broadcast(&CrySystemEventBus::Events::OnCryEditorCloseScene);
 
-    EBUS_EVENT(AzToolsFramework::EditorEntityContextRequestBus, ResetEditorContext);
+    AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
+        &AzToolsFramework::EditorEntityContextRequestBus::Events::ResetEditorContext);
 
     //////////////////////////////////////////////////////////////////////////
     // Clear all undo info.
@@ -258,9 +219,6 @@ void CCryEditDoc::DeleteContents()
 
     GetIEditor()->ResetViews();
 
-    // Delete all objects from Object Manager.
-    GetIEditor()->GetObjectManager()->DeleteAllObjects();
-
     // Load scripts data
     SetModifiedFlag(false);
     SetModifiedModules(eModifiedNothing);
@@ -274,42 +232,6 @@ void CCryEditDoc::DeleteContents()
     CrySystemEventBus::Broadcast(&CrySystemEventBus::Events::OnCryEditorSceneClosed);
 }
 
-
-void CCryEditDoc::Save(CXmlArchive& xmlAr)
-{
-    TDocMultiArchive arrXmlAr;
-    FillXmlArArray(arrXmlAr, &xmlAr);
-    Save(arrXmlAr);
-}
-
-void CCryEditDoc::Save(TDocMultiArchive& arrXmlAr)
-{
-    bool isPrefabEnabled = false;
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(isPrefabEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-
-    if (!isPrefabEnabled)
-    {
-        CAutoDocNotReady autoDocNotReady;
-
-        if (arrXmlAr[DMAS_GENERAL] != nullptr)
-        {
-            (*arrXmlAr[DMAS_GENERAL]).root = XmlHelpers::CreateXmlNode("Level");
-            (*arrXmlAr[DMAS_GENERAL]).root->setAttr("WaterColor", m_waterColor);
-
-            char version[50];
-            GetIEditor()->GetFileVersion().ToString(version, AZ_ARRAY_SIZE(version));
-            (*arrXmlAr[DMAS_GENERAL]).root->setAttr("SandboxVersion", version);
-
-            SerializeViewSettings((*arrXmlAr[DMAS_GENERAL]));
-
-            // Fog settings  ///////////////////////////////////////////////////////
-            SerializeFogSettings((*arrXmlAr[DMAS_GENERAL]));
-        }
-    }
-    AfterSave();
-}
-
-
 void CCryEditDoc::Load(CXmlArchive& xmlAr, const QString& szFilename)
 {
     TDocMultiArchive arrXmlAr;
@@ -318,24 +240,14 @@ void CCryEditDoc::Load(CXmlArchive& xmlAr, const QString& szFilename)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CCryEditDoc::Load(TDocMultiArchive& arrXmlAr, const QString& szFilename)
+void CCryEditDoc::Load(TDocMultiArchive& /* arrXmlAr */, const QString& szFilename)
 {
-    bool isPrefabEnabled = false;
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(isPrefabEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-
     m_hasErrors = false;
 
     // Register a unique load event
     QString fileName = Path::GetFileName(szFilename);
-    QString levelHash;
-    if (!isPrefabEnabled)
-    {
-        levelHash = GetIEditor()->GetSettingsManager()->GenerateContentHash(arrXmlAr[DMAS_GENERAL]->root, fileName);
-    }
-    else
-    {
-        levelHash = szFilename;
-    }
+    QString levelHash = szFilename;
+
     SEventLog loadEvent("Level_" + Path::GetFileName(fileName), "", levelHash);
 
     // Register this level and its content hash as version
@@ -366,31 +278,17 @@ void CCryEditDoc::Load(TDocMultiArchive& arrXmlAr, const QString& szFilename)
     }
 
     GetIEditor()->Notify(eNotify_OnBeginSceneOpen);
-    GetIEditor()->GetMovieSystem()->RemoveAllSequences();
+
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+    if (movieSystem)
+    {
+        movieSystem->RemoveAllSequences();
+    }
 
     {
         // Start recording errors
         const ICVar* pShowErrorDialogOnLoad = gEnv->pConsole->GetCVar("ed_showErrorDialogOnLoad");
         CErrorsRecorder errorsRecorder(pShowErrorDialogOnLoad && (pShowErrorDialogOnLoad->GetIVal() != 0));
-
-        bool usePrefabSystemForLevels = false;
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(
-            usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-
-        if (!usePrefabSystemForLevels)
-        {
-            AZStd::string levelPakPath;
-            if (AzFramework::StringFunc::Path::ConstructFull(szLevelPath.toUtf8().data(), "level", "pak", levelPakPath, true))
-            {
-                // Check whether level.pak is present
-                if (!gEnv->pFileIO->Exists(levelPakPath.c_str()))
-                {
-                    CryWarning(
-                        VALIDATOR_MODULE_EDITOR, VALIDATOR_WARNING,
-                        "level.pak is missing.  This will cause other errors.  To fix this, re-export the level.");
-                }
-            }
-        }
 
         int t0 = GetTickCount();
 
@@ -403,50 +301,6 @@ void CCryEditDoc::Load(TDocMultiArchive& arrXmlAr, const QString& szFilename)
         {
             CAutoLogTime logtime("Game Engine level load");
             GetIEditor()->GetGameEngine()->LoadLevel(true, true);
-        }
-
-        if (!isPrefabEnabled)
-        {
-            //////////////////////////////////////////////////////////////////////////
-            // Load water color.
-            //////////////////////////////////////////////////////////////////////////
-            (*arrXmlAr[DMAS_GENERAL]).root->getAttr("WaterColor", m_waterColor);
-
-            //////////////////////////////////////////////////////////////////////////
-            // Load View Settings
-            //////////////////////////////////////////////////////////////////////////
-            SerializeViewSettings((*arrXmlAr[DMAS_GENERAL]));
-
-            //////////////////////////////////////////////////////////////////////////
-            // Fog settings
-            //////////////////////////////////////////////////////////////////////////
-            SerializeFogSettings((*arrXmlAr[DMAS_GENERAL]));
-        }
-
-        if (!isPrefabEnabled)
-        {
-            // Serialize Shader Cache.
-            CAutoLogTime logtime("Load Level Shader Cache");
-        }
-
-        {
-            // support old version of sequences
-            IMovieSystem* pMs = GetIEditor()->GetMovieSystem();
-
-            if (pMs)
-            {
-                for (int k = 0; k < pMs->GetNumSequences(); ++k)
-                {
-                    IAnimSequence* seq = pMs->GetSequence(k);
-                    QString fullname = seq->GetName();
-                    CBaseObject* pObj = GetIEditor()->GetObjectManager()->FindObject(fullname);
-
-                    if (!pObj)
-                    {
-                        pObj = GetIEditor()->GetObjectManager()->NewObject("SequenceObject", nullptr, fullname);
-                    }
-                }
-            }
         }
 
         {
@@ -607,6 +461,12 @@ int CCryEditDoc::GetModifiedModule()
 
 bool CCryEditDoc::CanCloseFrame()
 {
+    if (AzToolsFramework::ComponentModeFramework::InComponentMode())
+    {
+        AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::Broadcast(
+            &AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequests::EndComponentMode);
+    }
+
     // Ask the base class to ask for saving, which also includes the save
     // status of the plugins. Additionaly we query if all the plugins can exit
     // now. A reason for a failure might be that one of the plugins isn't
@@ -622,11 +482,6 @@ bool CCryEditDoc::CanCloseFrame()
         return false;
     }
 
-    // If there is an export in process, exiting will corrupt it
-    if (CGameExporter::GetCurrentExporter() != nullptr)
-    {
-        return false;
-    }
 
     return true;
 }
@@ -638,56 +493,28 @@ bool CCryEditDoc::SaveModified()
         return true;
     }
 
-    bool usePrefabSystemForLevels = false;
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-    if (!usePrefabSystemForLevels)
+    AzToolsFramework::Prefab::TemplateId rootPrefabTemplateId = m_prefabEditorEntityOwnershipInterface->GetRootPrefabTemplateId();
+    if (!m_prefabSystemComponentInterface->AreDirtyTemplatesPresent(rootPrefabTemplateId))
     {
-        QMessageBox saveModifiedMessageBox(AzToolsFramework::GetActiveWindow());
-        saveModifiedMessageBox.setText(QString("Save changes to %1?").arg(GetTitle()));
-        saveModifiedMessageBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
-        saveModifiedMessageBox.setIcon(QMessageBox::Icon::Question);
-
-        auto button = QMessageBox::question(
-            AzToolsFramework::GetActiveWindow(), QString(), tr("Save changes to %1?").arg(GetTitle()),
-            QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
-        switch (button)
-        {
-        case QMessageBox::Cancel:
-            return false;
-        case QMessageBox::Yes:
-            return DoFileSave();
-        case QMessageBox::No:
-            SetModifiedFlag(false);
-            return true;
-        }
-        Q_UNREACHABLE();
+        return true;
     }
-    else
+
+    int prefabSaveSelection = m_prefabIntegrationInterface->HandleRootPrefabClosure(rootPrefabTemplateId);
+
+    // In order to get the accept and reject codes of QDialog and QDialogButtonBox aligned, we do (1-prefabSaveSelection) here.
+    // For example, QDialog::Rejected(0) is emitted when dialog is closed. But the int value corresponds to
+    // QDialogButtonBox::AcceptRole(0).
+    switch (1 - prefabSaveSelection)
     {
-        AzToolsFramework::Prefab::TemplateId rootPrefabTemplateId = m_prefabEditorEntityOwnershipInterface->GetRootPrefabTemplateId();
-        if (!m_prefabSystemComponentInterface->AreDirtyTemplatesPresent(rootPrefabTemplateId))
-        {
-            return true;
-        }
-
-        int prefabSaveSelection = m_prefabIntegrationInterface->HandleRootPrefabClosure(rootPrefabTemplateId);
-
-        // In order to get the accept and reject codes of QDialog and QDialogButtonBox aligned, we do (1-prefabSaveSelection) here.
-        // For example, QDialog::Rejected(0) is emitted when dialog is closed. But the int value corresponds to
-        // QDialogButtonBox::AcceptRole(0).
-        switch (1 - prefabSaveSelection)
-        {
-        case QDialogButtonBox::AcceptRole:
-            return true;
-        case QDialogButtonBox::RejectRole:
-            return false;
-        case QDialogButtonBox::InvalidRole:
-            SetModifiedFlag(false);
-            return true;
-        }
-        Q_UNREACHABLE();
+    case QDialogButtonBox::AcceptRole:
+        return true;
+    case QDialogButtonBox::RejectRole:
+        return false;
+    case QDialogButtonBox::InvalidRole:
+        SetModifiedFlag(false);
+        return true;
     }
+    Q_UNREACHABLE();
 }
 
 void CCryEditDoc::OnFileSaveAs()
@@ -701,15 +528,10 @@ void CCryEditDoc::OnFileSaveAs()
         if (OnSaveDocument(levelFileDialog.GetFileName()))
         {
             CCryEditApp::instance()->AddToRecentFileList(levelFileDialog.GetFileName());
-            bool usePrefabSystemForLevels = false;
-            AzFramework::ApplicationRequests::Bus::BroadcastResult(
-                usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-            if (usePrefabSystemForLevels)
-            {
-                AzToolsFramework::Prefab::TemplateId rootPrefabTemplateId =
-                    m_prefabEditorEntityOwnershipInterface->GetRootPrefabTemplateId();
-                SetModifiedFlag(m_prefabSystemComponentInterface->AreDirtyTemplatesPresent(rootPrefabTemplateId));
-            }
+
+            AzToolsFramework::Prefab::TemplateId rootPrefabTemplateId =
+                m_prefabEditorEntityOwnershipInterface->GetRootPrefabTemplateId();
+            SetModifiedFlag(m_prefabSystemComponentInterface->AreDirtyTemplatesPresent(rootPrefabTemplateId));
         }
     }
 }
@@ -730,19 +552,6 @@ bool CCryEditDoc::BeforeOpenDocument(const QString& lpszPathName, TOpenDocContex
     const double timeSec = AZ::TimeMsToSecondsDouble(timeMs);
     const CTimeValue loading_start_time(timeSec);
 
-    bool usePrefabSystemForLevels = false;
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-
-    if (!usePrefabSystemForLevels)
-    {
-        // ensure we close any open packs
-        if (!GetIEditor()->GetLevelFolder().isEmpty())
-        {
-            GetIEditor()->GetSystem()->GetIPak()->ClosePack((GetIEditor()->GetLevelFolder() + "\\level.pak").toUtf8().data());
-        }
-    }
-
     // restore directory to root.
     QDir::setCurrent(GetIEditor()->GetPrimaryCDFolder());
 
@@ -754,16 +563,7 @@ bool CCryEditDoc::BeforeOpenDocument(const QString& lpszPathName, TOpenDocContex
     // normalize the file path.
     absolutePath = Path::ToUnixPath(QFileInfo(absolutePath).canonicalFilePath());
     context.loading_start_time = loading_start_time;
-    if (IsSliceFile(absolutePath))
-    {
-        context.absoluteLevelPath = Path::GamePathToFullPath(kLevelPathForSliceEditing);
-        context.absoluteSlicePath = absolutePath;
-    }
-    else
-    {
-        context.absoluteLevelPath = absolutePath;
-        context.absoluteSlicePath = "";
-    }
+    context.absoluteLevelPath = absolutePath;
     return true;
 }
 
@@ -771,39 +571,16 @@ bool CCryEditDoc::DoOpenDocument(TOpenDocContext& context)
 {
     const CTimeValue& loading_start_time = context.loading_start_time;
 
-    bool isPrefabEnabled = false;
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(isPrefabEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-
     // normalize the path so that its the same in all following calls:
     QString levelFilePath = QFileInfo(context.absoluteLevelPath).absoluteFilePath();
     context.absoluteLevelPath = levelFilePath;
 
     m_bLoadFailed = false;
 
-    auto pIPak = GetIEditor()->GetSystem()->GetIPak();
-
     QString levelFolderAbsolutePath = QFileInfo(context.absoluteLevelPath).absolutePath();
-
-
-    if (!isPrefabEnabled)
-    {
-        // if the level pack exists, open that, too:
-        QString levelPackFileAbsolutePath = QDir(levelFolderAbsolutePath).absoluteFilePath("level.pak");
-
-        // we mount the pack (level.pak) using the folder its sitting in as the mountpoint (first parameter)
-        pIPak->OpenPack(levelFolderAbsolutePath.toUtf8().constData(), levelPackFileAbsolutePath.toUtf8().constData());
-    }
 
     TDocMultiArchive arrXmlAr = {};
 
-    if (!isPrefabEnabled)
-    {
-        if (!LoadXmlArchiveArray(arrXmlAr, levelFilePath, levelFolderAbsolutePath))
-        {
-            m_bLoadFailed = true;
-            return false;
-        }
-    }
     if (!LoadLevel(arrXmlAr, context.absoluteLevelPath))
     {
         m_bLoadFailed = true;
@@ -817,19 +594,9 @@ bool CCryEditDoc::DoOpenDocument(TOpenDocContext& context)
     }
 
     // Load AZ entities for the editor.
-    if (context.absoluteSlicePath.isEmpty())
+    if (!LoadEntitiesFromLevel(context.absoluteLevelPath))
     {
-        if (!LoadEntitiesFromLevel(context.absoluteLevelPath))
-        {
-            m_bLoadFailed = true;
-        }
-    }
-    else
-    {
-        if (!LoadEntitiesFromSlice(context.absoluteSlicePath))
-        {
-            m_bLoadFailed = true;
-        }
+        m_bLoadFailed = true;
     }
 
     if (m_bLoadFailed)
@@ -860,7 +627,6 @@ bool CCryEditDoc::OnNewDocument()
 {
     DeleteContents();
     m_pathName.clear();
-    m_slicePathName.clear();
     SetModifiedFlag(false);
     return true;
 }
@@ -874,7 +640,7 @@ bool CCryEditDoc::OnSaveDocument(const QString& lpszPathName)
         // Don't allow saving in AI/Physics mode.
         // Prompt the user to exit Simulation Mode (aka AI/Phyics mode) before saving.
         QWidget* mainWindow = nullptr;
-        EBUS_EVENT_RESULT(mainWindow, AzToolsFramework::EditorRequests::Bus, GetMainWindow);
+        AzToolsFramework::EditorRequests::Bus::BroadcastResult(mainWindow, &AzToolsFramework::EditorRequests::Bus::Events::GetMainWindow);
 
         QMessageBox msgBox(mainWindow);
         msgBox.setText(tr("You must exit AI/Physics mode before saving."));
@@ -926,12 +692,6 @@ bool CCryEditDoc::OnSaveDocument(const QString& lpszPathName)
 
 bool CCryEditDoc::BeforeSaveDocument(const QString& lpszPathName, TSaveDocContext& context)
 {
-    // Don't save level data if any conflict exists
-    if (HasLayerNameConflicts())
-    {
-        return false;
-    }
-
     // Restore directory to root.
     QDir::setCurrent(GetIEditor()->GetPrimaryCDFolder());
 
@@ -952,35 +712,6 @@ bool CCryEditDoc::BeforeSaveDocument(const QString& lpszPathName, TSaveDocContex
     return true;
 }
 
-bool CCryEditDoc::HasLayerNameConflicts() const
-{
-    AZStd::vector<AZ::Entity*> editorEntities;
-    AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
-        &AzToolsFramework::EditorEntityContextRequestBus::Events::GetLooseEditorEntities,
-        editorEntities);
-
-    AZStd::unordered_map<AZStd::string, int> nameConflictMapping;
-    for (AZ::Entity* entity : editorEntities)
-    {
-        AzToolsFramework::Layers::EditorLayerComponentRequestBus::Event(
-            entity->GetId(),
-            &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::UpdateLayerNameConflictMapping,
-            nameConflictMapping);
-    }
-
-    if (!nameConflictMapping.empty())
-    {
-        AzToolsFramework::Layers::NameConflictWarning* nameConflictWarning = new AzToolsFramework::Layers::NameConflictWarning(
-            MainWindow::instance(),
-            nameConflictMapping);
-        nameConflictWarning->exec();
-
-        return true;
-    }
-
-    return false;
-}
-
 bool CCryEditDoc::DoSaveDocument(const QString& filename, TSaveDocContext& context)
 {
     bool& bSaved = context.bSaved;
@@ -997,14 +728,8 @@ bool CCryEditDoc::DoSaveDocument(const QString& filename, TSaveDocContext& conte
     }
 
     QString normalizedPath = Path::ToUnixPath(filename);
-    if (IsSliceFile(normalizedPath))
-    {
-        bSaved = SaveSlice(normalizedPath);
-    }
-    else
-    {
-        bSaved = SaveLevel(normalizedPath);
-    }
+
+    bSaved = SaveLevel(normalizedPath);
 
     // Changes filename for this document.
     SetPathName(normalizedPath);
@@ -1030,7 +755,6 @@ bool CCryEditDoc::AfterSaveDocument([[maybe_unused]] const QString& lpszPathName
         CLogFile::WriteLine("$3Document successfully saved");
         SetModifiedFlag(false);
         SetModifiedModules(eModifiedNothing);
-        MainWindow::instance()->ResetAutoSaveTimers();
     }
 
     return bSaved;
@@ -1159,9 +883,7 @@ bool CCryEditDoc::SaveLevel(const QString& filename)
 
     }
 
-    // Save level to XML archive.
-    CXmlArchive xmlAr;
-    Save(xmlAr);
+    AfterSave();
 
     // temp files (to be ignored by AssetProcessor take the form $tmp[0-9]*_...).  we will conform
     // to that to make this file invisible to AP until it has been written completely.
@@ -1176,98 +898,19 @@ bool CCryEditDoc::SaveLevel(const QString& filename)
     auto tempFilenameStrData = tempSaveFile.toStdString();
     auto filenameStrData = fullPathName.toStdString();
 
-    bool isPrefabEnabled = false;
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(isPrefabEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-
-    if (!isPrefabEnabled)
+    if (m_prefabEditorEntityOwnershipInterface)
     {
-        AZStd::vector<char> entitySaveBuffer;
-        bool savedEntities = false;
-        CPakFile pakFile;
+        AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
+        AZ_Assert(fileIO, "No File IO implementation available");
 
+        AZ::IO::HandleType tempSaveFileHandle;
+        AZ::IO::Result openResult = fileIO->Open(tempFilenameStrData.c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeBinary, tempSaveFileHandle);
+        contentsAllSaved = openResult;
+        if (openResult)
         {
-            AZ_PROFILE_SCOPE(Editor, "CCryEditDoc::SaveLevel Open PakFile");
-            if (!pakFile.Open(tempSaveFile.toUtf8().data(), false))
-            {
-                gEnv->pLog->LogWarning("Unable to open pack file %s for writing", tempSaveFile.toUtf8().data());
-                return false;
-            }
-        }
-
-
-        AZStd::vector<AZ::Entity*> editorEntities;
-        AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
-            &AzToolsFramework::EditorEntityContextRequestBus::Events::GetLooseEditorEntities,
-            editorEntities);
-
-        AZStd::vector<AZ::Entity*> layerEntities;
-        AZ::SliceComponent::SliceReferenceToInstancePtrs instancesInLayers;
-        for (AZ::Entity* entity : editorEntities)
-        {
-            AzToolsFramework::Layers::LayerResult layerSaveResult(AzToolsFramework::Layers::LayerResult::CreateSuccess());
-            AzToolsFramework::Layers::EditorLayerComponentRequestBus::EventResult(
-                layerSaveResult,
-                entity->GetId(),
-                &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::WriteLayerAndGetEntities,
-                newLevelFolder,
-                layerEntities,
-                instancesInLayers);
-            layerSaveResult.MessageResult();
-        }
-
-        AZ::IO::ByteContainerStream<AZStd::vector<char>> entitySaveStream(&entitySaveBuffer);
-        {
-            AZ_PROFILE_SCOPE(Editor, "CCryEditDoc::SaveLevel Save Entities To Stream");
-            EBUS_EVENT_RESULT(
-                savedEntities, AzToolsFramework::EditorEntityContextRequestBus, SaveToStreamForEditor, entitySaveStream, layerEntities,
-                instancesInLayers);
-        }
-
-        for (AZ::Entity* entity : editorEntities)
-        {
-            AzToolsFramework::Layers::EditorLayerComponentRequestBus::Event(
-                entity->GetId(), &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::RestoreEditorData);
-        }
-
-        if (savedEntities)
-        {
-            AZ_PROFILE_SCOPE(AzToolsFramework, "CCryEditDoc::SaveLevel Updated PakFile levelEntities.editor_xml");
-            pakFile.UpdateFile("levelentities.editor_xml", entitySaveBuffer.begin(), static_cast<int>(entitySaveBuffer.size()));
-
-            // Save XML archive to pak file.
-            bool bSaved = xmlAr.SaveToPak(Path::GetPath(tempSaveFile), pakFile);
-            if (bSaved)
-            {
-                contentsAllSaved = true;
-            }
-            else
-            {
-                gEnv->pLog->LogWarning("Unable to write the level data to file %s", tempSaveFile.toUtf8().data());
-            }
-        }
-        else
-        {
-            gEnv->pLog->LogWarning("Unable to generate entity data for level save %s", tempSaveFile.toUtf8().data());
-        }
-
-        pakFile.Close();
-    }
-    else
-    {
-        if (m_prefabEditorEntityOwnershipInterface)
-        {
-            AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
-            AZ_Assert(fileIO, "No File IO implementation available");
-
-            AZ::IO::HandleType tempSaveFileHandle;
-            AZ::IO::Result openResult = fileIO->Open(tempFilenameStrData.c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeBinary, tempSaveFileHandle);
-            contentsAllSaved = openResult;
-            if (openResult)
-            {
-                AZ::IO::FileIOStream stream(tempSaveFileHandle, AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeBinary, false);
-                contentsAllSaved = m_prefabEditorEntityOwnershipInterface->SaveToStream(stream, AZStd::string_view(filenameStrData.data(), filenameStrData.size()));
-                stream.Close();
-            }
+            AZ::IO::FileIOStream stream(tempSaveFileHandle, AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeBinary, false);
+            contentsAllSaved = m_prefabEditorEntityOwnershipInterface->SaveToStream(stream, AZStd::string_view(filenameStrData.data(), filenameStrData.size()));
+            stream.Close();
         }
     }
 
@@ -1292,274 +935,31 @@ bool CCryEditDoc::SaveLevel(const QString& filename)
     return true;
 }
 
-bool CCryEditDoc::SaveSlice(const QString& filename)
-{
-    using namespace AzToolsFramework::SliceUtilities;
-
-    // Gather entities from live slice in memory
-    AZ::SliceComponent* liveSlice = nullptr;
-    AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::BroadcastResult(liveSlice,
-        &AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::Events::GetEditorRootSlice);
-    if (!liveSlice)
-    {
-        gEnv->pLog->LogWarning("Slice data not found.");
-        return false;
-    }
-
-    AZStd::unordered_set<AZ::EntityId> liveEntityIds;
-    if (!liveSlice->GetEntityIds(liveEntityIds))
-    {
-        gEnv->pLog->LogWarning("Error getting entities from slice.");
-        return false;
-    }
-
-
-    // Prevent save when there are multiple root entities.
-    bool foundRootEntity = false;
-    for (AZ::EntityId entityId : liveEntityIds)
-    {
-        AZ::EntityId parentId;
-        AZ::TransformBus::EventResult(parentId, entityId, &AZ::TransformBus::Events::GetParentId);
-        if (!parentId.IsValid())
-        {
-            if (foundRootEntity)
-            {
-                gEnv->pLog->LogWarning("Cannot save a slice with multiple root entities.");
-                return false;
-            }
-
-            foundRootEntity = true;
-        }
-    }
-
-    // Find target slice asset, and check if it's the same asset we opened
-    AZ::Data::AssetId targetAssetId;
-    AZ::Data::AssetCatalogRequestBus::BroadcastResult(targetAssetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, filename.toUtf8().data(), azrtti_typeid<AZ::SliceAsset>(), false);
-
-    QString openedFilepath = Path::ToUnixPath(Path::GetRelativePath(m_slicePathName, true));
-    AZ::Data::AssetId openedAssetId;
-    AZ::Data::AssetCatalogRequestBus::BroadcastResult(openedAssetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, openedFilepath.toUtf8().data(), azrtti_typeid<AZ::SliceAsset>(), false);
-
-    if (!targetAssetId.IsValid() || openedAssetId != targetAssetId)
-    {
-        gEnv->pLog->LogWarning("Slice editor can only modify existing slices. 'New Slice' and 'Save As' are not currently supported.");
-        return false;
-    }
-
-    AZ::Data::Asset<AZ::SliceAsset> sliceAssetRef = AZ::Data::AssetManager::Instance().GetAsset<AZ::SliceAsset>(targetAssetId, AZ::Data::AssetLoadBehavior::Default);
-
-    sliceAssetRef.BlockUntilLoadComplete();
-
-    if (!sliceAssetRef)
-    {
-        gEnv->pLog->LogWarning("Error loading slice: %s", filename.toUtf8().data());
-        return false;
-    }
-
-    // Get entities from target slice asset.
-    AZ::SliceComponent* assetSlice = sliceAssetRef.Get()->GetComponent();
-    if (!assetSlice)
-    {
-        gEnv->pLog->LogWarning("Error reading slice: %s", filename.toUtf8().data());
-        return false;
-    }
-
-    AZStd::unordered_set<AZ::EntityId> assetEntityIds;
-    if (!assetSlice->GetEntityIds(assetEntityIds))
-    {
-        gEnv->pLog->LogWarning("Error getting entities from slice: %s", filename.toUtf8().data());
-        return false;
-    }
-
-    AZStd::unordered_set<AZ::EntityId> entityAdds;
-    AZStd::unordered_set<AZ::EntityId> entityUpdates;
-    AZStd::unordered_set<AZ::EntityId> entityRemovals = assetEntityIds;
-
-    for (AZ::EntityId liveEntityId : liveEntityIds)
-    {
-        entityRemovals.erase(liveEntityId);
-        if (assetEntityIds.find(liveEntityId) != assetEntityIds.end())
-        {
-            entityUpdates.insert(liveEntityId);
-        }
-        else
-        {
-            entityAdds.insert(liveEntityId);
-        }
-    }
-
-    // Make a transaction targeting the specified slice
-    SliceTransaction::TransactionPtr transaction = SliceTransaction::BeginSlicePush(sliceAssetRef);
-    if (!transaction)
-    {
-        gEnv->pLog->LogWarning("Unable to update slice: %s", filename.toUtf8().data());
-        return false;
-    }
-
-    // Tell the transaction about all adds/updates/removals
-    for (AZ::EntityId id : entityAdds)
-    {
-        SliceTransaction::Result result = transaction->AddEntity(id);
-        if (!result)
-        {
-            gEnv->pLog->LogWarning("Error adding entity with ID %s to slice: %s\n\n%s",
-                id.ToString().c_str(), filename.toUtf8().data(), result.GetError().c_str());
-            return false;
-        }
-    }
-
-    for (AZ::EntityId id : entityRemovals)
-    {
-        SliceTransaction::Result result = transaction->RemoveEntity(id);
-        if (!result)
-        {
-            gEnv->pLog->LogWarning("Error removing entity with ID %s from slice: %s\n\n%s",
-                id.ToString().c_str(), filename.toUtf8().data(), result.GetError().c_str());
-            return false;
-        }
-    }
-
-    for (AZ::EntityId id : entityUpdates)
-    {
-        SliceTransaction::Result result = transaction->UpdateEntity(id);
-        if (!result)
-        {
-            gEnv->pLog->LogWarning("Error updating entity with ID %s in slice: %s\n\n%s",
-                id.ToString().c_str(), filename.toUtf8().data(), result.GetError().c_str());
-            return false;
-        }
-    }
-
-    // Commit
-    SliceTransaction::Result commitResult = transaction->Commit(
-        targetAssetId,
-        SlicePreSaveCallbackForWorldEntities,
-        nullptr,
-        SliceTransaction::SliceCommitFlags::DisableUndoCapture);
-
-    if (!commitResult)
-    {
-        gEnv->pLog->LogWarning("Failed to to save slice \"%s\".\n\nError:\n%s",
-            filename.toUtf8().data(), commitResult.GetError().c_str());
-        return false;
-    }
-
-    return true;
-}
-
 bool CCryEditDoc::LoadEntitiesFromLevel(const QString& levelPakFile)
 {
-    bool isPrefabEnabled = false;
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(isPrefabEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-
     bool loadedSuccessfully = false;
 
-    if (!isPrefabEnabled)
+    AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
+    AZ_Assert(fileIO, "No File IO implementation available");
+
+    AZ::IO::HandleType fileHandle;
+    AZ::IO::Result openResult = fileIO->Open(levelPakFile.toUtf8().data(), AZ::IO::OpenMode::ModeRead | AZ::IO::OpenMode::ModeBinary, fileHandle);
+    if (openResult)
     {
-        auto pakSystem = GetIEditor()->GetSystem()->GetIPak();
-        bool pakOpened = pakSystem->OpenPack(levelPakFile.toUtf8().data());
-        if (pakOpened)
-        {
-            const QString entityFilename = Path::GetPath(levelPakFile) + "levelentities.editor_xml";
-
-            CCryFile entitiesFile;
-            if (entitiesFile.Open(entityFilename.toUtf8().data(), "rt"))
-            {
-                AZStd::vector<char> fileBuffer;
-                fileBuffer.resize(entitiesFile.GetLength());
-                if (!fileBuffer.empty())
-                {
-                    if (fileBuffer.size() == entitiesFile.ReadRaw(fileBuffer.begin(), fileBuffer.size()))
-                    {
-                        AZ::IO::ByteContainerStream<AZStd::vector<char>> fileStream(&fileBuffer);
-
-                        EBUS_EVENT_RESULT(
-                            loadedSuccessfully, AzToolsFramework::EditorEntityContextRequestBus, LoadFromStreamWithLayers, fileStream,
-                            levelPakFile);
-                    }
-                    else
-                    {
-                        AZ_Error(
-                            "Editor", false, "Failed to load level entities because the file \"%s\" could not be read.",
-                            entityFilename.toUtf8().data());
-                    }
-                }
-                else
-                {
-                    AZ_Error(
-                        "Editor", false, "Failed to load level entities because the file \"%s\" is empty.", entityFilename.toUtf8().data());
-                }
-
-                entitiesFile.Close();
-            }
-            else
-            {
-                AZ_Error(
-                    "Editor", false, "Failed to load level entities because the file \"%s\" was not found.",
-                    entityFilename.toUtf8().data());
-            }
-
-            pakSystem->ClosePack(levelPakFile.toUtf8().data());
-        }
-    }
-    else
-    {
-        AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
-        AZ_Assert(fileIO, "No File IO implementation available");
-
-        AZ::IO::HandleType fileHandle;
-        AZ::IO::Result openResult = fileIO->Open(levelPakFile.toUtf8().data(), AZ::IO::OpenMode::ModeRead | AZ::IO::OpenMode::ModeBinary, fileHandle);
-        if (openResult)
-        {
-            AZ::IO::FileIOStream stream(fileHandle, AZ::IO::OpenMode::ModeRead | AZ::IO::OpenMode::ModeBinary, false);
-            AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
-                loadedSuccessfully, &AzToolsFramework::EditorEntityContextRequests::LoadFromStreamWithLayers, stream, levelPakFile);
-            stream.Close();
-        }
+        AZ::IO::FileIOStream stream(fileHandle, AZ::IO::OpenMode::ModeRead | AZ::IO::OpenMode::ModeBinary, false);
+        AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+            loadedSuccessfully, &AzToolsFramework::EditorEntityContextRequests::LoadFromStreamWithLayers, stream, levelPakFile);
+        stream.Close();
     }
 
     return loadedSuccessfully;
 }
 
-bool CCryEditDoc::LoadEntitiesFromSlice(const QString& sliceFile)
-{
-    bool sliceLoaded = false;
-    {
-        AZ::IO::FileIOStream sliceFileStream(sliceFile.toUtf8().data(), AZ::IO::OpenMode::ModeRead);
-        if (!sliceFileStream.IsOpen())
-        {
-            AZ_Error("Editor", false, "Failed to load entities because the file \"%s\" could not be read.", sliceFile.toUtf8().data());
-            return false;
-        }
-
-        AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(sliceLoaded, &AzToolsFramework::EditorEntityContextRequestBus::Events::LoadFromStream, sliceFileStream);
-    }
-
-    if (!sliceLoaded)
-    {
-        AZ_Error("Editor", false, "Failed to load entities from slice file \"%s\"", sliceFile.toUtf8().data());
-        return false;
-    }
-
-    return true;
-}
-
 bool CCryEditDoc::LoadLevel(TDocMultiArchive& arrXmlAr, const QString& absoluteCryFilePath)
 {
-    bool isPrefabEnabled = false;
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(isPrefabEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-
-    auto pIPak = GetIEditor()->GetSystem()->GetIPak();
-
     QString folderPath = QFileInfo(absoluteCryFilePath).absolutePath();
 
     OnStartLevelResourceList();
-
-    // Load next level resource list.
-    if (!isPrefabEnabled)
-    {
-        pIPak->GetResourceList(AZ::IO::IArchive::RFOM_NextLevel)->Load(Path::Make(folderPath, "resourcelist.txt").toUtf8().data());
-    }
 
     GetIEditor()->Notify(eNotify_OnBeginLoad);
     CrySystemEventBus::Broadcast(&CrySystemEventBus::Events::OnCryEditorBeginLoad);
@@ -1574,11 +974,7 @@ bool CCryEditDoc::LoadLevel(TDocMultiArchive& arrXmlAr, const QString& absoluteC
     Load(arrXmlAr, absoluteCryFilePath);
 
     GetISystem()->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_LEVEL_LOAD_END, 0, 0);
-    // We don't need next level resource list anymore.
-    if (!isPrefabEnabled)
-    {
-        pIPak->GetResourceList(AZ::IO::IArchive::RFOM_NextLevel)->Clear();
-    }
+
     SetModifiedFlag(false); // start off with unmodified
     SetModifiedModules(eModifiedNothing);
     SetDocumentReady(true);
@@ -1597,7 +993,7 @@ void CCryEditDoc::Hold(const QString& holdName)
 
 void CCryEditDoc::Hold(const QString& holdName, const QString& relativeHoldPath)
 {
-    if (!IsDocumentReady() || GetEditMode() == CCryEditDoc::DocumentEditingMode::SliceEdit)
+    if (!IsDocumentReady())
     {
         return;
     }
@@ -1625,7 +1021,7 @@ void CCryEditDoc::Fetch(const QString& relativeHoldPath, bool bShowMessages, boo
 
 void CCryEditDoc::Fetch(const QString& holdName, const QString& relativeHoldPath, bool bShowMessages, FetchPolicy policy)
 {
-    if (!IsDocumentReady() || GetEditMode() == CCryEditDoc::DocumentEditingMode::SliceEdit)
+    if (!IsDocumentReady())
     {
         return;
     }
@@ -1928,28 +1324,26 @@ void CCryEditDoc::OnStartLevelResourceList()
 
 bool CCryEditDoc::DoFileSave()
 {
-    if (GetEditMode() == CCryEditDoc::DocumentEditingMode::LevelEdit)
+    // If the file to save is the temporary level it should 'save as' since temporary levels will get deleted
+    const char* temporaryLevelName = GetTemporaryLevelName();
+    if (QString::compare(GetIEditor()->GetLevelName(), temporaryLevelName) == 0)
     {
-        // If the file to save is the temporary level it should 'save as' since temporary levels will get deleted
-        const char* temporaryLevelName = GetTemporaryLevelName();
-        if (QString::compare(GetIEditor()->GetLevelName(), temporaryLevelName) == 0)
+        QString filename;
+        if (CCryEditApp::instance()->GetDocManager()->DoPromptFileName(filename, ID_FILE_SAVE_AS, 0, false, nullptr)
+            && !filename.isEmpty() && !QFileInfo(filename).exists())
         {
-            QString filename;
-            if (CCryEditApp::instance()->GetDocManager()->DoPromptFileName(filename, ID_FILE_SAVE_AS, 0, false, nullptr)
-                && !filename.isEmpty() && !QFileInfo(filename).exists())
+            if (SaveLevel(filename))
             {
-                if (SaveLevel(filename))
-                {
-                    DeleteTemporaryLevel();
-                    QString newLevelPath = filename.left(filename.lastIndexOf('/') + 1);
-                    GetIEditor()->GetDocument()->SetPathName(filename);
-                    GetIEditor()->GetGameEngine()->SetLevelPath(newLevelPath);
-                    return true;
-                }
+                DeleteTemporaryLevel();
+                QString newLevelPath = filename.left(filename.lastIndexOf('/') + 1);
+                GetIEditor()->GetDocument()->SetPathName(filename);
+                GetIEditor()->GetGameEngine()->SetLevelPath(newLevelPath);
+                return true;
             }
-            return false;
         }
+        return false;
     }
+
     if (!IsDocumentReady())
     {
         return false;
@@ -2124,19 +1518,6 @@ void CCryEditDoc::ReleaseXmlArchiveArray(TDocMultiArchive& arrXmlAr)
 {
     SAFE_DELETE(arrXmlAr[0]);
 }
-
-//////////////////////////////////////////////////////////////////////////
-// AzToolsFramework::EditorEntityContextNotificationBus interface implementation
-void CCryEditDoc::OnSliceInstantiated([[maybe_unused]] const AZ::Data::AssetId& sliceAssetId, [[maybe_unused]] AZ::SliceComponent::SliceInstanceAddress& sliceAddress, [[maybe_unused]] const AzFramework::SliceInstantiationTicket& ticket)
-{
-    GetIEditor()->ResumeUndo();
-}
-
-void CCryEditDoc::OnSliceInstantiationFailed([[maybe_unused]] const AZ::Data::AssetId& sliceAssetId, [[maybe_unused]] const AzFramework::SliceInstantiationTicket& ticket)
-{
-    GetIEditor()->ResumeUndo();
-}
-//////////////////////////////////////////////////////////////////////////
 
 namespace AzToolsFramework
 {

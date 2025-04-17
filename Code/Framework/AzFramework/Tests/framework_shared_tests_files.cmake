@@ -9,10 +9,12 @@
 set(FILES
     DocumentPropertyEditor/DocumentPropertyEditorFixture.h
     DocumentPropertyEditor/DocumentPropertyEditorFixture.cpp
+    DeviceAttribute/TestDeviceAttribute.h
+    DeviceAttribute/TestDeviceAttribute.cpp
     Mocks/MockSpawnableEntitiesInterface.h
     Mocks/MockWindowRequests.h
+    Mocks/MockViewportRequests.h
     Utils/Utils.h
-    Utils/Utils.cpp
     Utils/Printers.h
     Utils/Printers.cpp
     FrameworkApplicationFixture.h

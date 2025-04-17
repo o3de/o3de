@@ -230,7 +230,7 @@ namespace ScriptCanvasEditor
 #else ///////////////////////////////////////////////////////////////////////////////////////
 
                         dependencies = LoadInterpretedDepencies(luaAssetResult.m_dependencies.source.userSubgraphs);
-                        
+
                         if (!dependencies.empty())
                         {
                             // #functions2_recursive_unit_tests eventually, this will need to be recursive, or the full asset handling system will need to be integrated into the testing framework
@@ -361,6 +361,7 @@ namespace ScriptCanvasEditor
         if (runGraphSpec.runSpec.processOnly)
         {
             Reporter reporter;
+            reporter.SetFilePath(runGraphSpec.graphPath);
             reporter.SetProcessOnly(runGraphSpec.runSpec.processOnly);
             reporters.push_back(reporter);
         }
@@ -369,10 +370,12 @@ namespace ScriptCanvasEditor
             if (runGraphSpec.runSpec.release)
             {
                 Reporter reporterRelease;
+                reporterRelease.SetFilePath(runGraphSpec.graphPath);
                 reporterRelease.SetExecutionConfiguration(ExecutionConfiguration::Release);
                 reporters.push_back(reporterRelease);
 
                 Reporter reporterPeformance;
+                reporterPeformance.SetFilePath(runGraphSpec.graphPath);
                 reporterPeformance.SetExecutionConfiguration(ExecutionConfiguration::Performance);
                 reporters.push_back(reporterPeformance);
             }
@@ -380,6 +383,7 @@ namespace ScriptCanvasEditor
             if (runGraphSpec.runSpec.debug)
             {
                 Reporter reporterDebug;
+                reporterDebug.SetFilePath(runGraphSpec.graphPath);
                 reporterDebug.SetExecutionConfiguration(ExecutionConfiguration::Debug);
                 reporters.push_back(reporterDebug);
             }
@@ -387,6 +391,7 @@ namespace ScriptCanvasEditor
             if (runGraphSpec.runSpec.traced)
             {
                 Reporter reporterTraced;
+                reporterTraced.SetFilePath(runGraphSpec.graphPath);
                 reporterTraced.SetExecutionConfiguration(ExecutionConfiguration::Traced);
                 reporters.push_back(reporterTraced);
             }
@@ -401,7 +406,7 @@ namespace ScriptCanvasEditor
         AZ::SystemTickBus::Broadcast(&AZ::SystemTickBus::Events::OnSystemTick);
         AZ::SystemTickBus::ExecuteQueuedEvents();
 
-        AZ::TickBus::Broadcast(&AZ::TickEvents::OnTick, duration.m_timeStep, AZ::ScriptTimePoint(AZStd::chrono::system_clock::now()));
+        AZ::TickBus::Broadcast(&AZ::TickEvents::OnTick, duration.m_timeStep, AZ::ScriptTimePoint(AZStd::chrono::steady_clock::now()));
         AZ::TickBus::ExecuteQueuedEvents();
     }
 

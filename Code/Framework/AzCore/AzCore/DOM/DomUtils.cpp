@@ -6,10 +6,12 @@
  *
  */
 
+#include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/DOM/DomUtils.h>
 #include <AzCore/IO/ByteContainerStream.h>
 #include <AzCore/Name/NameDictionary.h>
 #include <AzCore/DOM/Backends/JSON/JsonSerializationUtils.h>
+#include <AzCore/Serialization/SerializeContext.h>
 
 namespace AZ::Dom::Utils
 {
@@ -67,8 +69,36 @@ namespace AZ::Dom::Utils
 
     Value TypeIdToDomValue(const AZ::TypeId& typeId)
     {
+        // Assign a custom reporting callback to ignore unregistered types
+        AZ::JsonSerializerSettings settings;
+        AZStd::string scratchBuffer;
+        settings.m_reporting = [&scratchBuffer](
+            AZStd::string_view message,
+               AZ::JsonSerializationResult::ResultCode result,
+               AZStd::string_view path) -> auto
+        {
+            // Unregistered types are acceptable and do not require a warning
+            if (result.GetTask() != AZ::JsonSerializationResult::Tasks::RetrieveInfo ||
+                result.GetOutcome() != AZ::JsonSerializationResult::Outcomes::Unknown)
+            {
+                // Default Json serialization issue reporting
+                if (result.GetProcessing() != JsonSerializationResult::Processing::Completed)
+                {
+                    scratchBuffer.append(message.begin(), message.end());
+                    scratchBuffer.append("\n    Reason: ");
+                    result.AppendToString(scratchBuffer, path);
+                    scratchBuffer.append(".");
+                    AZ_Warning("JSON Serialization", false, "%s", scratchBuffer.c_str());
+
+                    scratchBuffer.clear();
+                }
+            }
+
+            return result;
+        };
+
         rapidjson::Document buffer;
-        JsonSerialization::StoreTypeId(buffer, buffer.GetAllocator(), typeId);
+        JsonSerialization::StoreTypeId(buffer, buffer.GetAllocator(), typeId, AZStd::string_view{}, settings);
         if (!buffer.IsString())
         {
             return Value("", false);
@@ -93,9 +123,74 @@ namespace AZ::Dom::Utils
         }
     }
 
+    bool CanLoadViaJsonSerialization(
+        const AZ::TypeId& typeId, const Value& root, JsonDeserializerSettings settings)
+    {
+        // A serializeContext is required for making the temporary AZStd::any for storage
+        // so if the supplied serialize context is nullptr, query the one associated with the ComponentApplication
+        auto componentApplicationInterface = AZ::Interface<AZ::ComponentApplicationRequests>::Get();
+        if (settings.m_serializeContext == nullptr)
+        {
+            settings.m_serializeContext = componentApplicationInterface != nullptr ? componentApplicationInterface->GetSerializeContext() : nullptr;
+        }
+        if (settings.m_serializeContext == nullptr)
+        {
+            return false;
+        }
+
+        if (settings.m_registrationContext == nullptr)
+        {
+            settings.m_registrationContext = componentApplicationInterface != nullptr ? componentApplicationInterface->GetJsonRegistrationContext() : nullptr;
+        }
+        if (settings.m_registrationContext == nullptr)
+        {
+            return false;
+        }
+
+        JsonSerializerSettings serializerSettings;
+        serializerSettings.m_serializeContext = settings.m_serializeContext;
+        serializerSettings.m_registrationContext = settings.m_registrationContext;
+        // Check if the type is serializable before moving on converting the Dom Value into a temporary JSON document
+        if (!JsonSerialization::IsTypeSerializable(typeId, serializerSettings))
+        {
+            return false;
+        }
+
+        rapidjson::Document jsonViewOfDomValue;
+        auto WriteDomFieldToJson = [&root](Visitor& visitor)
+        {
+            const bool copyStrings = false;
+            return root.Accept(visitor, copyStrings);
+        };
+        if (auto convertToJsonResult = Json::WriteToRapidJsonValue(jsonViewOfDomValue, jsonViewOfDomValue.GetAllocator(), AZStd::move(WriteDomFieldToJson));
+            !convertToJsonResult)
+        {
+            return false;
+        }
+
+        AZStd::any dryRunStorage = settings.m_serializeContext->CreateAny(typeId);
+        // CreateAny will fail if the type is not default constructible or not reflected to the Serialize Context
+        if (dryRunStorage.empty())
+        {
+            return false;
+        }
+        JsonSerializationResult::ResultCode loadResult = JsonSerialization::Load(AZStd::any_cast<void>(&dryRunStorage), typeId, jsonViewOfDomValue, settings);
+        return loadResult.GetProcessing() != JsonSerializationResult::Processing::Halted;
+    }
+
     JsonSerializationResult::ResultCode LoadViaJsonSerialization(
         void* object, const AZ::TypeId& typeId, const Value& root, const JsonDeserializerSettings& settings)
     {
+        // Check if the Type is serializable before attempting to load into the object pointer
+        JsonSerializerSettings serializerSettings;
+        serializerSettings.m_serializeContext = settings.m_serializeContext;
+        serializerSettings.m_registrationContext = settings.m_registrationContext;
+        if (!JsonSerialization::IsTypeSerializable(typeId, serializerSettings))
+        {
+            return JsonSerializationResult::ResultCode{ JsonSerializationResult::Tasks::Convert,
+                                                        JsonSerializationResult::Outcomes::Catastrophic };
+        }
+
         rapidjson::Document buffer;
         auto convertToRapidjsonResult = Json::WriteToRapidJsonValue(buffer, buffer.GetAllocator(), [&root](Visitor& visitor)
             {
@@ -112,6 +207,13 @@ namespace AZ::Dom::Utils
     JsonSerializationResult::ResultCode StoreViaJsonSerialization(
         const void* object, const void* defaultObject, const AZ::TypeId& typeId, Value& output, const JsonSerializerSettings& settings)
     {
+        // Check if the Type is serializable before attempting to store the object address into the Dom Value
+        if (!JsonSerialization::IsTypeSerializable(typeId, settings))
+        {
+            return JsonSerializationResult::ResultCode{ JsonSerializationResult::Tasks::Convert,
+                                                        JsonSerializationResult::Outcomes::Catastrophic };
+        }
+
         rapidjson::Document buffer;
         auto result = JsonSerialization::Store(buffer, buffer.GetAllocator(), object, defaultObject, typeId, settings);
         auto outputWriter = output.GetWriteHandler();
@@ -243,6 +345,11 @@ namespace AZ::Dom::Utils
                     const Array::ContainerType& ourChildren = ourNode.GetChildren();
                     const Array::ContainerType& theirChildren = theirNode.GetChildren();
 
+                    if (ourChildren.size() != theirChildren.size())
+                    {
+                        return false;
+                    }
+
                     for (size_t i = 0; i < ourChildren.size(); ++i)
                     {
                         const Value& lhsChild = ourChildren[i];
@@ -290,36 +397,47 @@ namespace AZ::Dom::Utils
 
     void* TryMarshalValueToPointer(const AZ::Dom::Value& value, const AZ::TypeId& expectedType)
     {
-        if (!value.IsObject())
+        if (value.IsObject())
         {
-            return nullptr;
-        }
-        auto typeIdIt = value.FindMember(TypeFieldName);
-        if (typeIdIt != value.MemberEnd() && typeIdIt->second.GetString() == PointerTypeName.GetStringView())
-        {
-            if (!expectedType.IsNull())
+            auto typeIdIt = value.FindMember(TypeFieldName);
+            if (typeIdIt != value.MemberEnd() && typeIdIt->second.GetString() == PointerTypeName.GetStringView())
             {
-                auto typeFieldIt = value.FindMember(PointerTypeFieldName);
-                if (typeFieldIt == value.MemberEnd())
+                if (!expectedType.IsNull())
                 {
-                    return nullptr;
+                    auto typeFieldIt = value.FindMember(PointerTypeFieldName);
+                    if (typeFieldIt == value.MemberEnd())
+                    {
+                        return nullptr;
+                    }
+                    AZ::TypeId actualTypeId = DomValueToTypeId(typeFieldIt->second);
+                    if (actualTypeId != expectedType)
+                    {
+                        return nullptr;
+                    }
                 }
-                AZ::TypeId actualTypeId = DomValueToTypeId(typeFieldIt->second);
-                if (actualTypeId != expectedType)
-                {
-                    return nullptr;
-                }
+                return reinterpret_cast<void*>(value[PointerValueFieldName].GetUint64());
             }
-            return reinterpret_cast<void*>(value[PointerValueFieldName].GetUint64());
         }
+        else if (value.IsOpaqueValue())
+        {
+            const auto& opaqueAny = value.GetOpaqueValue();
+            if (opaqueAny.type() == expectedType)
+            {
+                return AZStd::any_cast<void>(const_cast<AZStd::any*>(&opaqueAny));
+            }
+        }
+
         return nullptr;
     }
 
-    Dom::Value MarshalTypedPointerToValue(void* value, const AZ::TypeId& typeId)
+    // remove dangerous implementation that could result in dangling references
+    void* TryMarshalValueToPointer(AZ::Dom::Value&& value, const AZ::TypeId& expectedType) = delete;
+
+    Dom::Value MarshalTypedPointerToValue(const void* value, const AZ::TypeId& typeId)
     {
         Dom::Value result(Dom::Type::Object);
         result[TypeFieldName] = Dom::Value(PointerTypeName.GetStringView(), false);
-        result[PointerValueFieldName] = Dom::Value(reinterpret_cast<uint64_t>(value));
+        result[PointerValueFieldName] = Dom::Value(static_cast<uint64_t>(reinterpret_cast<const uintptr_t>(value)));
         Dom::Value typeName = TypeIdToDomValue(typeId);
         if (!typeName.GetString().empty())
         {
@@ -328,7 +446,7 @@ namespace AZ::Dom::Utils
         return result;
     }
 
-    const AZ::TypeId& GetValueTypeId(const Dom::Value& value)
+    AZ::TypeId GetValueTypeId(const Dom::Value& value)
     {
         switch (value.GetType())
         {
@@ -353,4 +471,107 @@ namespace AZ::Dom::Utils
             return azrtti_typeid<void>();
         }
     }
+
+    Dom::Value MarshalOpaqueValue(const void* valueAddress, const MarshalTypeTraits& typeTraits,
+        AZStd::any::action_handler_for_t actionHandler)
+    {
+        if (typeTraits.m_isPointer)
+        {
+            return MarshalTypedPointerToValue(valueAddress, typeTraits.m_typeId);
+        }
+        else
+        {
+            // For the non-pointer case source object is copied into the Dom::Value
+            // First try to use Json Serialization system if available to leverage
+            // the SerializeContext and JsonRegistrationContext for writing the value to a Dom::Value
+            // The ideal scenario is trying to replicate the data structure into the Dom Value as if
+            // it is a JSON Object.
+            // For example a C++ struct such as follows
+            /*
+             ```c++
+             struct DiceComponentConfig
+             {
+                int m_sides;
+                AZStd::vector<double> m_probabilities;
+                AZStd::string m_name;
+             };
+             ```
+             */
+            // Which contains the data ina C++ psuedo-layout of DiceComponentConfig{ 6, [1/6, 1/6, 1/6, 1/6, 1/6, 1/6], "Six-Sided Die" }
+            // Could map to JSON Object as follows if JSON Serialization is available
+            /*
+            ```JSON
+            {
+                "m_sides": 6,
+                "m_probabilities": [
+                    0.166667,
+                    0.166667
+                    0.166667
+                    0.166667
+                    0.166667
+                    0.166667
+                ],
+                "m_name": "Six-Sided Die"
+            }
+            ```
+            */
+            // That could then map into a Dom::Value of the following layout
+            // Dom::Value
+            // -> Object
+            //   1. Field: "m_sides" -> Int
+            //   2. Field: "m_probabilities" -> Array
+            //      Indices: 0-6 -> int
+            //   3. Field: "m_name": -> String
+            //
+            // However if JSON Serialization is not available, the data will be stored in an AZStd::any as an opaque
+            // type in which the data structure is opaque to the Dom::Value
+            // i.e
+            // Dom::Value
+            // -> Opaque = <value>
+            //
+            // The drawbacks of an opaque type is that the Dom::Value can only shallow compare two opaque values
+            // via looking at their memory address
+            // It can't actually compare the data
+            // Therefore two opaque values with the same data, but that different are aprt of different objects
+            // will always compare unequal. This can result in-efficient behavior such as creating more Dom Patches than necessary
+            AZ::JsonSerializerSettings storeSettings;
+            // Defaults should be kept in the Dom::Value to make sure a complete object is written to the Dom
+            storeSettings.m_keepDefaults = true;
+
+            // Create a pass no-op issue reporting to skip the DefaultIssueReporter logging AZ_Warnings
+            storeSettings.m_reporting = [](AZStd::string_view, JsonSerializationResult::ResultCode result, AZStd::string_view)
+            {
+                return result;
+            };
+            Value newValue;
+            if (auto storeViaSerializationResult = StoreViaJsonSerialization(valueAddress, nullptr, typeTraits.m_typeId, newValue, storeSettings);
+                storeViaSerializationResult.GetProcessing() != JsonSerializationResult::Processing::Halted)
+            {
+                return newValue;
+            }
+
+            // The data will be stored in AZStd::any as a fail-safe
+            AZStd::any::type_info typeInfo;
+            typeInfo.m_id = typeTraits.m_typeId;
+            typeInfo.m_handler = AZStd::move(actionHandler);
+            typeInfo.m_isPointer = false;
+            typeInfo.m_useHeap = typeTraits.m_typeSize > AZStd::Internal::ANY_SBO_BUF_SIZE;
+            return Dom::Value::FromOpaqueValue(AZStd::any(valueAddress, typeInfo));
+        }
+    }
+
+    Dom::Value ValueFromType(const void* valueAddress, const MarshalTypeTraits& typeTraits,
+        AZStd::any::action_handler_for_t actionHandler)
+    {
+        if (typeTraits.m_typeId == azrtti_typeid<Dom::Value>())
+        {
+            // Rely on the Dom::Value copy constructor to make a copy
+            return *reinterpret_cast<const Dom::Value*>(valueAddress);
+        }
+        else
+        {
+            return MarshalOpaqueValue(valueAddress, typeTraits, AZStd::move(actionHandler));
+        }
+    }
+
 } // namespace AZ::Dom::Utils

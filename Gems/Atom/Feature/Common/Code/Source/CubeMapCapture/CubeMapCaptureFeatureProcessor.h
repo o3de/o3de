@@ -19,6 +19,7 @@ namespace AZ
             : public CubeMapCaptureFeatureProcessorInterface
         {
         public:
+            AZ_CLASS_ALLOCATOR(CubeMapCaptureFeatureProcessor, AZ::SystemAllocator)
             AZ_RTTI(AZ::Render::CubeMapCaptureFeatureProcessor, "{821039A3-AF40-4E69-A7EF-D44D81EAF1FA}", AZ::Render::CubeMapCaptureFeatureProcessorInterface);
 
             static void Reflect(AZ::ReflectContext* context);
@@ -45,7 +46,7 @@ namespace AZ
             AZ_DISABLE_COPY_MOVE(CubeMapCaptureFeatureProcessor);
 
             // RPI::SceneNotificationBus::Handler overrides
-            void OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline) override;
+            void OnRenderPipelineChanged(RPI::RenderPipeline* renderPipeline, RPI::SceneNotification::RenderPipelineChangeType changeType) override;
 
             // list of CubeMapCaptures
             using CubeMapCaptureVector = AZStd::vector<AZStd::shared_ptr<CubeMapCapture>>;

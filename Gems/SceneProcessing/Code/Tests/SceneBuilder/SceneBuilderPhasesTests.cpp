@@ -40,6 +40,7 @@ class ComponentSingleton
     : public AZ::ComponentDescriptorDefault<ComponentType>
 {
 public:
+    AZ_CLASS_ALLOCATOR(ComponentSingleton, AZ::SystemAllocator)
     AZ::Component* CreateComponent() override { return m_component; }
     void SetComponent(ComponentType* c) { m_component = c; }
 private:
@@ -52,7 +53,8 @@ class TestLoadingComponent
 public:
     AZ_RTTI(TestLoadingComponent, "{19B714CA-6AEF-414D-A91C-54E73DF69625}", AZ::SceneAPI::SceneCore::LoadingComponent, AZ::Component)
     using DescriptorType = ComponentSingleton<TestLoadingComponent>;
-    AZ_COMPONENT_BASE(TestLoadingComponent, "{19B714CA-6AEF-414D-A91C-54E73DF69625}", AZ::SceneAPI::SceneCore::LoadingComponent)
+    AZ_COMPONENT_BASE(TestLoadingComponent);
+    AZ_CLASS_ALLOCATOR(TestLoadingComponent, AZ::ComponentAllocator);
 
     static void Reflect(AZ::ReflectContext* context)
     {
@@ -71,7 +73,8 @@ class TestGenerationComponent
 public:
     AZ_RTTI(TestGenerationComponent, "{3350BD61-2EB1-4F77-B1BD-D108795015EE}", AZ::SceneAPI::SceneCore::GenerationComponent, AZ::Component)
     using DescriptorType = ComponentSingleton<TestGenerationComponent>;
-    AZ_COMPONENT_BASE(TestGenerationComponent, "{3350BD61-2EB1-4F77-B1BD-D108795015EE}", AZ::SceneAPI::SceneCore::GenerationComponent)
+    AZ_COMPONENT_BASE(TestGenerationComponent);
+    AZ_CLASS_ALLOCATOR(TestGenerationComponent, AZ::ComponentAllocator);
 
     static void Reflect(AZ::ReflectContext* context)
     {
@@ -90,7 +93,8 @@ class TestExportingComponent
 public:
     AZ_RTTI(TestExportingComponent, "{EADA08AD-2068-4607-AA3D-8B17C59696D5}", AZ::SceneAPI::SceneCore::ExportingComponent, AZ::Component)
     using DescriptorType = ComponentSingleton<TestExportingComponent>;
-    AZ_COMPONENT_BASE(TestExportingComponent, "{EADA08AD-2068-4607-AA3D-8B17C59696D5}", AZ::SceneAPI::SceneCore::ExportingComponent)
+    AZ_COMPONENT_BASE(TestExportingComponent);
+    AZ_CLASS_ALLOCATOR(TestExportingComponent, AZ::ComponentAllocator);
 
     static void Reflect(AZ::ReflectContext* context)
     {
@@ -114,9 +118,9 @@ class TestSceneSerializationHandler
 public:
     TestSceneSerializationHandler() { BusConnect(); }
     ~TestSceneSerializationHandler() override { BusDisconnect(); }
-    MOCK_METHOD2(LoadScene, AZStd::shared_ptr<AZ::SceneAPI::Containers::Scene>(const AZStd::string& sceneFilePath, AZ::Uuid sceneSourceGuid));
+    MOCK_METHOD3(LoadScene, AZStd::shared_ptr<AZ::SceneAPI::Containers::Scene>(const AZStd::string& sceneFilePath, AZ::Uuid sceneSourceGuid, const AZStd::string& watchFolder));
 
-    void GenerateImportEvents(const AZStd::string& assetFilePath, [[maybe_unused]] const AZ::Uuid& sourceGuid)
+    void GenerateImportEvents(const AZStd::string& assetFilePath, [[maybe_unused]] const AZ::Uuid& sourceGuid, [[maybe_unused]] const AZStd::string& watchFolder)
     {
         auto loaders = AZ::SceneAPI::SceneCore::EntityConstructor::BuildEntity("Scene Loading", azrtti_typeid<AZ::SceneAPI::SceneCore::LoadingComponent>());
         auto scene = AZStd::make_shared<AZ::SceneAPI::Containers::Scene>("import scene");
@@ -131,7 +135,7 @@ public:
 // This fixture attaches the SceneCore and SceneData libraries, and attaches
 // the AZ::Environment to them
 class SceneBuilderPhasesFixture
-    : public UnitTest::ScopedAllocatorSetupFixture
+    : public UnitTest::LeakDetectionFixture
 {
 public:
     void SetUp() override
@@ -144,7 +148,9 @@ public:
         registry->Set(projectPathKey, (enginePath / "AutomatedTesting").Native());
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
 
-        m_app.Start(AZ::ComponentApplication::Descriptor());
+        AZ::ComponentApplication::StartupParameters startupParameters;
+        startupParameters.m_loadSettingsRegistry = false;
+        m_app.Start(AZ::ComponentApplication::Descriptor(), startupParameters);
 
         // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
         // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
@@ -176,7 +182,7 @@ private:
             return {};
         }
 
-        module->Load(false);
+        module->Load();
         if (auto init = module->GetFunction<AZ::InitializeDynamicModuleFunction>(AZ::InitializeDynamicModuleFunctionName); init)
         {
             AZStd::invoke(init);
@@ -209,7 +215,7 @@ TEST_F(SceneBuilderPhasesFixture, TestProcessingPhases)
     scene->SetManifestFilename("testScene.manifest");
 
     TestSceneSerializationHandler sceneLoadingHandler;
-    EXPECT_CALL(sceneLoadingHandler, LoadScene(testing::_, testing::_))
+    EXPECT_CALL(sceneLoadingHandler, LoadScene(testing::_, testing::_, testing::_))
         .WillOnce(testing::DoAll(
             testing::Invoke(&sceneLoadingHandler, &TestSceneSerializationHandler::GenerateImportEvents),
             testing::Return(scene)

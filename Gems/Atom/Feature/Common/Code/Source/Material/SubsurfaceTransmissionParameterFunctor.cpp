@@ -41,7 +41,7 @@ namespace AZ
             }
         }
 
-        void SubsurfaceTransmissionParameterFunctor::Process(RuntimeContext& context)
+        void SubsurfaceTransmissionParameterFunctor::Process(RPI::MaterialFunctorAPI::RuntimeContext& context)
         {
             // Build & preprocess all parameters used by subsurface scattering feature
 

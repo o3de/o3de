@@ -56,7 +56,7 @@ namespace GraphModel
     class Graph : public AZStd::enable_shared_from_this<Graph>
     {
     public:
-        AZ_CLASS_ALLOCATOR(Graph, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Graph, AZ::SystemAllocator);
         AZ_RTTI(Graph, "{CBF5DC3C-A0A7-45F5-A207-06433A9A10C5}");
         static void Reflect(AZ::ReflectContext* context);
 
@@ -113,12 +113,23 @@ namespace GraphModel
         //! Remove the wrapping from the specified node
         void UnwrapNode(ConstNodePtr node);
 
+        //! Return if the specified node is a wrapped node
+        bool IsNodeWrapped(NodePtr node) const;
+
         //! Return our full map of node wrappings
         const NodeWrappingMap& GetNodeWrappings();
 
+        //! Search for a note with the corresponding ID
         NodePtr GetNode(NodeId nodeId);
+
+        //! Return a map of all nodes in the graph
         const NodeMap& GetNodes();
+
+        //! Return a map of all nodes in the graph
         ConstNodeMap GetNodes() const;
+
+        //! Return the number of nodes in the graph
+        size_t GetNodeCount() const;
 
         //! Adds a new connection between sourceSlot and targetSlot and returns the
         //! new Connection, or returns the existing Connection if one already exists.
@@ -127,7 +138,11 @@ namespace GraphModel
         //! Removes a connection from the Graph, and returns whether it was found and removed
         bool RemoveConnection(ConstConnectionPtr connection);
 
+        //! Return a container of all connections in the graph
         const ConnectionList& GetConnections();
+
+        //! Return the number of connections for all nodes and slots in the graph
+        size_t GetConnectionCount() const;
 
         //! Set/gets a bundle of generic metadata that is provided by the node graph UI
         //! system. This may include node positions, comment blocks, node groupings, and 
@@ -138,12 +153,11 @@ namespace GraphModel
 
         AZStd::shared_ptr<Slot> FindSlot(const Endpoint& endpoint);
 
-    protected:
+        //! Reset any data that was cached for this graph
+        void ClearCachedData();
+
         bool Contains(SlotPtr slot) const;
         ConnectionPtr FindConnection(ConstSlotPtr sourceSlot, ConstSlotPtr targetSlot);
-
-        //! Common implementation for removing a specific connection from m_connections
-        bool RemoveConnection(ConnectionList::iterator iter);
 
     private:
         NodeMap m_nodes;

@@ -16,7 +16,7 @@ namespace LandscapeCanvas
     class SphereShapeNode : public BaseShapeNode
     {
     public:
-        AZ_CLASS_ALLOCATOR(SphereShapeNode, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SphereShapeNode, AZ::SystemAllocator);
         AZ_RTTI(SphereShapeNode, "{9ED3D9AF-E82D-4291-874A-B0758879CF39}", BaseShapeNode);
 
         static void Reflect(AZ::ReflectContext* context);
@@ -24,7 +24,7 @@ namespace LandscapeCanvas
         SphereShapeNode() = default;
         explicit SphereShapeNode(GraphModel::GraphPtr graph);
 
-        static const QString TITLE;
-        const char* GetTitle() const override { return TITLE.toUtf8().constData(); }
+        static const char* TITLE;
+        const char* GetTitle() const override { return TITLE; }
     };
 }

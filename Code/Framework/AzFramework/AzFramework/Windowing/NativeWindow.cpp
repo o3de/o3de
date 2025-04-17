@@ -7,7 +7,7 @@
  */
 
 #include <AzFramework/Windowing/NativeWindow.h>
-
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/Console/IConsole.h>
 
 void OnVsyncIntervalChanged(uint32_t const& interval)
@@ -55,8 +55,13 @@ namespace AzFramework
                                const WindowStyleMasks styleMasks)
         : m_pimpl()
     {
-        m_pimpl.reset(Implementation::Create());
-        m_pimpl->InitWindow(title, geometry, styleMasks);
+        // Create the platform specific or custom implementation
+        auto implementationFactory = AZ::Interface<ImplementationFactory>::Get();
+        m_pimpl = (implementationFactory != nullptr) ? implementationFactory->Create() : nullptr;
+        if (m_pimpl)
+        {
+            m_pimpl->InitWindow(title, geometry, styleMasks);
+        }
     }
     
     NativeWindow::~NativeWindow()
@@ -90,57 +95,87 @@ namespace AzFramework
 
     bool NativeWindow::IsActive() const
     {
-        return m_pimpl != nullptr && m_pimpl->IsActive();
+        return (m_pimpl != nullptr) && m_pimpl->IsActive();
     }
 
     void NativeWindow::SetWindowTitle(const AZStd::string& title)
     {
-        m_pimpl->SetWindowTitle(title);
+        if (m_pimpl != nullptr)
+        {
+            m_pimpl->SetWindowTitle(title);
+        }
     }
 
     WindowSize NativeWindow::GetClientAreaSize() const
     {
-        return m_pimpl->GetClientAreaSize();
+        return (m_pimpl != nullptr) ? m_pimpl->GetClientAreaSize() : WindowSize{};
     }
 
-    void NativeWindow::ResizeClientArea(WindowSize clientAreaSize)
+    WindowSize NativeWindow::GetMaximumClientAreaSize() const
     {
-        m_pimpl->ResizeClientArea(clientAreaSize);
+        return (m_pimpl != nullptr) ? m_pimpl->GetMaximumClientAreaSize() : WindowSize{};
+    }
+
+    void NativeWindow::ResizeClientArea(WindowSize clientAreaSize, const WindowPosOptions& options)
+    {
+        if (m_pimpl != nullptr)
+        {
+            m_pimpl->ResizeClientArea(clientAreaSize, options);
+        }
     }
 
     bool NativeWindow::SupportsClientAreaResize() const
     {
-        return m_pimpl->SupportsClientAreaResize();
+        return (m_pimpl != nullptr) && m_pimpl->SupportsClientAreaResize();
+    }
+
+    WindowSize NativeWindow::GetRenderResolution() const
+    {
+        return (m_pimpl != nullptr) ? m_pimpl->GetRenderResolution() : WindowSize{};
+    }
+
+    void NativeWindow::SetRenderResolution(WindowSize resolution)
+    {
+        if (m_pimpl != nullptr)
+        {
+            m_pimpl->SetRenderResolution(resolution);
+        }
     }
 
     bool NativeWindow::GetFullScreenState() const
     {
-        return m_pimpl->GetFullScreenState();
+        return (m_pimpl != nullptr) && m_pimpl->GetFullScreenState();
     }
 
     void NativeWindow::SetFullScreenState(bool fullScreenState)
     {
-        m_pimpl->SetFullScreenState(fullScreenState);
+        if (m_pimpl != nullptr)
+        {
+            m_pimpl->SetFullScreenState(fullScreenState);
+        }        
     }
 
     bool NativeWindow::CanToggleFullScreenState() const
     {
-        return m_pimpl->CanToggleFullScreenState();
+        return (m_pimpl != nullptr) && m_pimpl->CanToggleFullScreenState();
     }
 
     void NativeWindow::ToggleFullScreenState()
     {
-        SetFullScreenState(!GetFullScreenState());
+        if (m_pimpl != nullptr)
+        {
+            SetFullScreenState(!GetFullScreenState());
+        }
     }
 
     float NativeWindow::GetDpiScaleFactor() const
     {
-        return m_pimpl->GetDpiScaleFactor();
+        return (m_pimpl != nullptr) ? m_pimpl->GetDpiScaleFactor() : 1.0f;
     }
 
     uint32_t NativeWindow::GetDisplayRefreshRate() const
     {
-        return m_pimpl->GetDisplayRefreshRate();
+        return (m_pimpl != nullptr) ? m_pimpl->GetDisplayRefreshRate() : 0;
     }
 
     uint32_t NativeWindow::GetSyncInterval() const
@@ -232,12 +267,23 @@ namespace AzFramework
     // NativeWindow::Implementation class implementation
     //////////////////////////////////////////////////////////////////////////
 
+    void NativeWindow::Implementation::InitWindow(
+        const AZStd::string& title, const WindowGeometry& geometry, const WindowStyleMasks& styleMasks)
+    {
+        InitWindowInternal(title, geometry, styleMasks);
+        m_renderResolution = WindowSize(m_width, m_height);
+    }
+
+
     void NativeWindow::Implementation::Activate()
     {
         if (!m_activated)
         {
             m_activated = true;
             WindowNotificationBus::Event(GetWindowHandle(), &WindowNotificationBus::Events::OnWindowResized, m_width, m_height);
+
+            WindowSize resolution = GetRenderResolution();
+            WindowNotificationBus::Event(GetWindowHandle(), &WindowNotificationBus::Events::OnResolutionChanged, resolution.m_width, resolution.m_height);
         }
     }
 
@@ -261,7 +307,15 @@ namespace AzFramework
         return WindowSize(m_width, m_height);
     }
 
-    void NativeWindow::Implementation::ResizeClientArea([[maybe_unused]] WindowSize clientAreaSize)
+    WindowSize NativeWindow::Implementation::GetMaximumClientAreaSize() const
+    {
+        AZ_Assert(false, "GetMaximumClientAreaSize() not supported.");
+        return { AZStd::numeric_limits<uint32_t>::max(), AZStd::numeric_limits<uint32_t>::max() };
+    }
+
+    void NativeWindow::Implementation::ResizeClientArea(
+        [[maybe_unused]] WindowSize clientAreaSize,
+        [[maybe_unused]] const WindowPosOptions& options)
     {
     }
 
@@ -269,6 +323,20 @@ namespace AzFramework
     {
         // Default to client area resize is unsupported, supported platforms will override this function
         return false;
+    }
+
+    WindowSize NativeWindow::Implementation::GetRenderResolution() const
+    {
+        return m_renderResolution;
+    }
+
+    void NativeWindow::Implementation::SetRenderResolution(WindowSize resolution)
+    {
+        if (m_renderResolution != resolution)
+        {
+            m_renderResolution = resolution;
+            WindowNotificationBus::Event(GetWindowHandle(), &WindowNotificationBus::Events::OnResolutionChanged, resolution.m_width, resolution.m_height);
+        } 
     }
 
     bool NativeWindow::Implementation::GetFullScreenState() const

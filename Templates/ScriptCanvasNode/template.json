@@ -1,0 +1,54 @@
+{
+    "template_name": "ScriptCanvasNode",
+    "origin": "Open 3D Engine - o3de.org",
+    "origin_url": "https://github.com/o3de/o3de",
+    "license": "Apache-2.0 or MIT",
+    "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
+    "display_name": "Minimal Script Canvas Node Template",
+    "summary": "A template for a minimal Script Canvas node",
+    "canonical_tags": [
+        "Template"
+    ],
+    "user_tags": [
+        "ScriptCanvasNode"
+    ],
+    "icon_path": "preview.png",
+    "copyFiles": [
+        {
+            "file": "Source/${Name}.cpp",
+            "isTemplated": true
+        },
+        {
+            "file": "Include/${Name}.h",
+            "isTemplated": true
+        },
+        {
+            "file": "Source/${Name}.ScriptCanvasNodeable.xml",
+            "isTemplated": true
+        },
+        {
+            "file": "Source/AutoGen/ScriptCanvasNodeable.xsd",
+            "isTemplated": false
+        },
+        {
+            "file": "${Name}_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "CMakeLists.txt",
+            "isTemplated": true
+        },
+        {
+            "file": "README.md",
+            "isTemplated": true
+        }
+    ],
+    "createDirectories": [
+        {
+            "dir": "Include"
+        },
+        {
+            "dir": "Source"
+        }
+    ]
+}

@@ -35,7 +35,7 @@ namespace AZ
 
         //! Default constructor, components are uninitialized.
         Vector3() = default;
-        Vector3(const Vector3& v);
+        Vector3(const Vector3& v) = default;
 
         //! Constructs vector with all components set to the same specified value.
         explicit Vector3(float x);
@@ -233,8 +233,6 @@ namespace AZ
         float GetMaxElement() const;
         float GetMinElement() const;
 
-        Vector3& operator=(const Vector3& rhs);
-
         Vector3 operator-() const;
         Vector3 operator+(const Vector3& rhs) const;
         Vector3 operator-(const Vector3& rhs) const;
@@ -317,10 +315,14 @@ namespace AZ
         //! Project this vector onto a normal and return the resulting projection. P = v - (v.Dot(Normal) * normal)
         Vector3 GetProjectedOnNormal(const Vector3& normal);
 
-        //! Returns true if all elements are finite, false if at least one element is not finite
+        //! Returns true if the vector contains no nan or inf values, false if at least one element is not finite.
         bool IsFinite() const;
 
+        //! Returns the underlying SIMD vector.
         Simd::Vec3::FloatType GetSimdValue() const;
+
+        //! Directly sets the underlying SIMD vector.
+        void SetSimdValue(Simd::Vec3::FloatArgType value);
 
     private:
 

@@ -15,7 +15,7 @@
 
 namespace EMotionFX::MotionMatching
 {
-    AZ_CLASS_ALLOCATOR_IMPL(FeatureSchema, MotionMatchAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(FeatureSchema, MotionMatchAllocator)
 
     FeatureSchema::~FeatureSchema()
     {
@@ -41,7 +41,7 @@ namespace EMotionFX::MotionMatching
 
         if (iterator != m_featuresById.end())
         {
-            AZ_Assert(false, "Cannot add feature. Feature with id '%s' has already been registered.", feature->GetId().data);
+            AZ_Assert(false, "Cannot add feature. Feature with id '%s' has already been registered.", feature->GetId().ToFixedString().c_str());
             return;
         }
 

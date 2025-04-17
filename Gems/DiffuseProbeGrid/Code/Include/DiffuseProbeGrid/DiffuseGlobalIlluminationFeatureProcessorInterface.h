@@ -30,7 +30,7 @@ namespace AZ
             : public RPI::FeatureProcessor
         {
         public:
-            AZ_RTTI(AZ::Render::DiffuseProbeGridFeatureProcessorInterface, "{BD8CA35A-47C3-4FD8-932B-18495EF07527}", AZ::RPI::FeatureProcessor);
+            AZ_RTTI(AZ::Render::DiffuseGlobalIlluminationFeatureProcessorInterface, "{BD8CA35A-47C3-4FD8-932B-18495EF07527}", AZ::RPI::FeatureProcessor);
 
             virtual void SetQualityLevel(DiffuseGlobalIlluminationQualityLevel qualityLevel) = 0;
         };

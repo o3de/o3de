@@ -14,7 +14,7 @@ namespace UnitTest
     using namespace AZ;
     using namespace AZ::Data;
 
-    using AssetIdTest = AllocatorsFixture;
+    using AssetIdTest = LeakDetectionFixture;
 
     TEST_F(AssetIdTest, AssetId_PrintDecimalSubId_SubIdIsDecimal)
     {
@@ -89,7 +89,15 @@ namespace UnitTest
         EXPECT_EQ(dynamic, fixed);
     }
 
-    using AssetTest = AllocatorsFixture;
+    TEST_F(AssetIdTest, CreateString_SubIdIsNotNegative_Succeeds)
+    {
+        auto assetId = AssetId::CreateString("{A9F596D7-FFFF-4BA4-AD4E-7E477FB9B542}:0xFFFFFFFF");
+        AZStd::string asString = assetId.ToString<AZStd::string>(AZ::Data::AssetId::SubIdDisplayType::Decimal);
+        auto subId = asString.substr(asString.find_first_of(':') + 1);
+        EXPECT_STRCASEEQ(subId.c_str(), "4294967295");
+    }
+
+    using AssetTest = LeakDetectionFixture;
 
     TEST_F(AssetTest, AssetPreserveHintTest_Const_Copy)
     {
@@ -156,7 +164,7 @@ namespace UnitTest
     }
 
 
-    TEST_F(AllocatorsFixture, AssetReleaseRetainsAssetState_Id_Type_Hint)
+    TEST_F(LeakDetectionFixture, AssetReleaseRetainsAssetState_Id_Type_Hint)
     {
         const AssetId id("{52C79B55-B5AA-4841-AFC8-683D77716287}", 1);
         const AssetType type("{A99E8722-1F1D-4CA9-B89B-921EB3D907A9}");
@@ -171,7 +179,7 @@ namespace UnitTest
         EXPECT_EQ(assetWithHint.GetHint(), hint);
     }
 
-    TEST_F(AllocatorsFixture, AssetResetDefaultsAssetState_Id_Type_Hint)
+    TEST_F(LeakDetectionFixture, AssetResetDefaultsAssetState_Id_Type_Hint)
     {
         const AssetId id("{52C79B55-B5AA-4841-AFC8-683D77716287}", 1);
         const AssetType type("{A99E8722-1F1D-4CA9-B89B-921EB3D907A9}");
@@ -186,7 +194,7 @@ namespace UnitTest
         EXPECT_EQ(assetWithHint.GetHint(), AZStd::string{});
     }
 
-    using WeakAssetTest = AllocatorsFixture;
+    using WeakAssetTest = LeakDetectionFixture;
 
     // Expose the internal weak use count of AssetData for verification in unit tests.
     class TestAssetData : public AssetData

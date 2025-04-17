@@ -7,8 +7,6 @@
 #
 
 set(FILES
-    IAudioInterfacesCommonData.h
-    IAudioSystem.h
     ICmdLine.h
     IConsole.h
     IFont.h
@@ -19,22 +17,17 @@ set(FILES
     LocalizationManagerBus.h
     LocalizationManagerBus.inl
     ILog.h
-    IMaterial.h
     IMiniLog.h
+    IMovieSystem.cpp
     IMovieSystem.h
-    IRenderAuxGeom.h
     IRenderer.h
     ISerialize.h
-    IShader.h
     ISplines.h
     ISystem.h
     ITexture.h
     IValidator.h
     IWindowMessageHandler.h
     IXml.h
-    MicrophoneBus.h
-    INavigationSystem.h
-    IMNM.h
     SerializationTypes.h
     CryEndian.h
     CryRandomInternal.h
@@ -45,16 +38,12 @@ set(FILES
     CryAssert.h
     CryFile.h
     CryListenerSet.h
-    CryLegacyAllocator.h
     CryPath.h
     CrySystemBus.h
+    CrySystemBus.cpp
     CryVersion.h
-    LegacyAllocator.cpp
-    LegacyAllocator.h
     MiniQueue.h
     MultiThread_Containers.h
-    NullAudioSystem.h
-    PNoise3.h
     ProjectDefines.h
     Range.h
     ScopedVariableSetter.h
@@ -104,6 +93,5 @@ set(FILES
     Maestro/Types/AssetBlendKey.h
     Maestro/Types/AssetBlends.h
     Maestro/Types/SequenceType.h
-    StaticInstance.h
     WinBase.cpp
 )

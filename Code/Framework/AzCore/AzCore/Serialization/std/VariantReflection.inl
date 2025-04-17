@@ -26,13 +26,6 @@ namespace AZ
             classElement.m_typeId = SerializeGenericTypeInfo<ValueTypeNoPointer>::GetClassTypeId();
             classElement.m_editData = nullptr;
             classElement.m_attributeOwnership = SerializeContext::ClassElement::AttributeOwnership::Self;
-            /**
-             * This should technically bind the reference value from the GetCurrentSerializeContextModule() call
-             * as that will always return the current module that set the allocator.
-             * But as the AZStdAssociativeContainer instance will not be accessed outside of the module it was
-             * created within then this will return this .dll/.exe module allocator
-             */
-            classElement.m_attributes.set_allocator(AZStdFunctorAllocator([]() -> IAllocator& { return GetCurrentSerializeContextModule().GetAllocator(); }));
         }
 
         template<size_t Index, size_t... Digits>
@@ -420,20 +413,14 @@ namespace AZ
             : public GenericClassInfo
         {
         public:
-            AZ_TYPE_INFO(GenericClassVariant, AZ::s_variantTypeId);
+            AZ_TYPE_INFO(GenericClassVariant, "{12E371FD-AF57-44A7-9329-9BCA6E6F4158}");
             GenericClassVariant()
                 : m_classData{ SerializeContext::ClassData::Create<VariantType>(AZ::AzTypeInfo<VariantType>::Name(), GetSpecializedTypeId(), &m_variantInstanceFactory, nullptr, &m_variantContainer) }
             {
                 m_classData.m_dataConverter = &m_dataConverter;
-                // As the SerializeGenericTypeInfo is created on demand when a variant is reflected(in static memory)
-                // the serialize context dll module allocator has to be used to manage the lifetime of the ClassData attributes within a module
-                // If a module which reflects a variant is unloaded, then the dll module allocator will properly unreflect the variant type from the serialize context
-                // for this particular module
-                AZStdFunctorAllocator dllAllocator([]() -> IAllocator& { return GetCurrentSerializeContextModule().GetAllocator(); });
-                m_classData.m_attributes.set_allocator(AZStd::move(dllAllocator));
 
                 // Create the ObjectStreamWriteOverrideCB in the current module
-                m_classData.m_attributes.emplace_back(AZ_CRC("ObjectStreamWriteElementOverride", 0x35eb659f), CreateModuleAttribute(&ObjectStreamWriter));
+                m_classData.m_attributes.emplace_back(AZ_CRC_CE("ObjectStreamWriteElementOverride"), CreateModuleAttribute(&ObjectStreamWriter));
             }
 
             SerializeContext::ClassData* GetClassData() override
@@ -446,7 +433,7 @@ namespace AZ
                 return sizeof...(Types);
             }
 
-            const Uuid& GetTemplatedTypeId(size_t element) override
+            AZ::TypeId GetTemplatedTypeId(size_t element) override
             {
                 if (GenericClassInfo* valueGenericClassInfo = m_variantContainer.m_alternativeClassElements[element].m_genericClassInfo)
                 {
@@ -455,12 +442,12 @@ namespace AZ
                 return m_variantContainer.m_alternativeClassElements[element].m_typeId;
             }
 
-            const Uuid& GetSpecializedTypeId() const override
+            AZ::TypeId GetSpecializedTypeId() const override
             {
                 return azrtti_typeid<VariantType>();
             }
 
-            const Uuid& GetGenericTypeId() const override
+            AZ::TypeId GetGenericTypeId() const override
             {
                 return TYPEINFO_Uuid();
             }
@@ -519,7 +506,7 @@ namespace AZ
             return GetCurrentSerializeContextModule().CreateGenericClassInfo<VariantType>();
         }
 
-        static const Uuid& GetClassTypeId()
+        static AZ::TypeId GetClassTypeId()
         {
             return GetGenericInfo()->GetClassData()->m_typeId;
         }

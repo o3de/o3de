@@ -16,7 +16,7 @@
 
 namespace EMStudio
 {
-    AZ_CLASS_ALLOCATOR_IMPL(InputDialogValidatable, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(InputDialogValidatable, AZ::SystemAllocator)
 
     InputDialogValidatable::InputDialogValidatable(QWidget* parent, const QString& labelText, const QRegExp regExp)
         : QDialog(parent)

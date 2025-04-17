@@ -6,12 +6,14 @@
 #
 #
 
+o3de_gem_setup("AtomTressFX")
+
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
 
     # Declare ATOMTRESSFX_EDITOR only when tools pipeline is built
     # This is in order to allow AzToolsFramework to properly link across
-    # platforms that support editor mode, while in the rest, not include
-    # this module and avoide compiling the editor components.
+    # platforms that support editor mode, while in the rest,
+    # this module is not included to avoid compiling the editor components.
     set_source_files_properties(
         Code/HairModule.cpp
         Code/Components/EditorHairComponent.h
@@ -22,7 +24,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     )
 
     ly_add_target(
-        NAME AtomTressFX.Static STATIC
+        NAME ${gem_name}.Static STATIC
         NAMESPACE Gem
         FILES_CMAKE
             Hair_files.cmake
@@ -38,13 +40,13 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::LmbrCentral
                 Gem::Atom_RHI.Public
                 Gem::Atom_RPI.Public
-                Gem::Atom_Feature_Common.Static
-                Gem::AtomLyIntegration_CommonFeatures.Static
+                Gem::Atom_Feature_Common.Public
+                Gem::CommonFeaturesAtom.Static
                 Gem::EMotionFXStaticLib
     )
 
     ly_add_target(
-        NAME AtomTressFX ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+        NAME ${gem_name} ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
         NAMESPACE Gem
         FILES_CMAKE
             Hair_shared_files.cmake
@@ -60,13 +62,13 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AzToolsFramework
                 Gem::Atom_Utils.Static
                 Gem::EMotionFXStaticLib
-                Gem::AtomTressFX.Static
+                Gem::${gem_name}.Static
     )
 
 else()
 
     ly_add_target(
-        NAME AtomTressFX.Static STATIC
+        NAME ${gem_name}.Static STATIC
         NAMESPACE Gem
         FILES_CMAKE
             Hair_files.cmake
@@ -81,13 +83,13 @@ else()
                 Gem::LmbrCentral
                 Gem::Atom_RHI.Public
                 Gem::Atom_RPI.Public
-                Gem::Atom_Feature_Common.Static
-                Gem::AtomLyIntegration_CommonFeatures.Static
+                Gem::Atom_Feature_Common.Public
+                Gem::CommonFeaturesAtom.Static
                 Gem::EMotionFXStaticLib
     )
 
     ly_add_target(
-        NAME AtomTressFX ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+        NAME ${gem_name} ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
         NAMESPACE Gem
         FILES_CMAKE
             Hair_shared_files.cmake
@@ -102,18 +104,28 @@ else()
                 AZ::AzCore
                 Gem::Atom_Utils.Static
                 Gem::EMotionFXStaticLib
-                Gem::AtomTressFX.Static
+                Gem::${gem_name}.Static
     )
 endif()
 
-# Clients and servers use the AtomTressFX module
-ly_create_alias(NAME AtomTressFX.Clients NAMESPACE Gem TARGETS Gem::AtomTressFX)
-ly_create_alias(NAME AtomTressFX.Servers NAMESPACE Gem TARGETS Gem::AtomTressFX)
+# Inject the gem name into the Module source file
+ly_add_source_properties(
+    SOURCES
+        Code/HairModule.h
+    PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_GEM_NAME=${gem_name}
+            O3DE_GEM_VERSION=${gem_version})
+
+# Clients and servers use the ${gem_name} module
+ly_create_alias(NAME ${gem_name}.Clients NAMESPACE Gem TARGETS Gem::${gem_name})
+ly_create_alias(NAME ${gem_name}.Servers NAMESPACE Gem TARGETS Gem::${gem_name})
+ly_create_alias(NAME ${gem_name}.Unified NAMESPACE Gem TARGETS Gem::${gem_name})
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
 
     ly_add_target(
-        NAME AtomTressFX.Builders.Static STATIC
+        NAME ${gem_name}.Builders.Static STATIC
         NAMESPACE Gem
         FILES_CMAKE
             Hair_builders_files.cmake
@@ -125,11 +137,11 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         BUILD_DEPENDENCIES
             PUBLIC
                 AZ::AssetBuilderSDK
-                Gem::AtomTressFX.Static
+                Gem::${gem_name}.Static
     )
 
     ly_add_target(
-        NAME AtomTressFX.Builders GEM_MODULE
+        NAME ${gem_name}.Builders GEM_MODULE
         NAMESPACE Gem
         FILES_CMAKE
             Hair_builders_shared_files.cmake
@@ -140,10 +152,19 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 External/Code/src
         BUILD_DEPENDENCIES
             PRIVATE
-                Gem::AtomTressFX.Builders.Static
+                Gem::${gem_name}.Builders.Static
     )
+
+    # Inject the gem name into the Module source file
+    ly_add_source_properties(
+        SOURCES
+            Code/Builders/HairBuilderModule.h
+        PROPERTY COMPILE_DEFINITIONS
+            VALUES
+                O3DE_GEM_NAME=${gem_name}
+                O3DE_GEM_VERSION=${gem_version})
     
-    # builders and tools use the AtomTressFX.Builders and AtomTressFX modules
-    ly_create_alias(NAME AtomTressFX.Tools   NAMESPACE Gem TARGETS Gem::AtomTressFX Gem::AtomTressFX.Builders)
+    # builders and tools use the ${gem_name}.Builders and ${gem_name} modules
+    ly_create_alias(NAME ${gem_name}.Tools   NAMESPACE Gem TARGETS Gem::${gem_name} Gem::${gem_name}.Builders)
 
 endif()

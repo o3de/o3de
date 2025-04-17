@@ -27,7 +27,7 @@ namespace ScriptCanvasBuilder
     {
     public:
         AZ_TYPE_INFO(BuildVariableOverrides, "{8336D44C-8EDC-4C28-AEB4-3420D5FD5AE2}");
-        AZ_CLASS_ALLOCATOR(BuildVariableOverrides, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BuildVariableOverrides, AZ::SystemAllocator);
 
         static void Reflect(AZ::ReflectContext* reflectContext);
 

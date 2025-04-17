@@ -40,68 +40,26 @@ namespace GraphSerializationCpp
         }
     }
 
-    class EntityIdMapper
-    {
-    public:
-        EntityIdMapper()
-        {
-            m_newIdsByOld[AZ::EntityId()] = AZ::EntityId();
-            m_newIdsByOld[ScriptCanvas::GraphOwnerId] = ScriptCanvas::GraphOwnerId;
-            m_newIdsByOld[ScriptCanvas::UniqueId] = ScriptCanvas::UniqueId;
-        }
-
-        AZ::EntityId GetNewId(const AZ::EntityId& old)
-        {
-            if (auto iter = m_newIdsByOld.find(old); iter != m_newIdsByOld.end())
-            {
-                return iter->second;
-            }
-            else
-            {
-                const AZ::EntityId newId = AZ::Entity::MakeId();
-                m_newIdsByOld.insert(AZStd::make_pair(old, newId));
-                return newId;
-            }
-        }
-
-    private:
-        AZStd::unordered_map<AZ::EntityId, AZ::EntityId> m_newIdsByOld;
-    };
-
     // Create new EntityIds for all EntityIds found in the SC Entity/Component objects
     // and map all old Ids to the new ones. This way, no Entity activation/deactivation, or
     // bus communication via EntityId will be handled by multiple or incorrect objects on
     // possible multiple instantiations of graphs.
     //
     // EntityIds contained in variable (those set to self or the graph unique id, will be ignored)
-    void MakeGraphComponentEntityIdsUnique(AZ::Entity& entity, AZ::SerializeContext& serializeContext)
+    void MakeGraphComponentEntityIdsUnique(
+        AZ::Entity& entity, AZ::SerializeContext& serializeContext, AZStd::unordered_map<AZ::EntityId, AZ::EntityId>& oldIdToNewIdOut)
     {
-        AZStd::unordered_map<AZ::EntityId, AZ::EntityId> remappedIds;
-        remappedIds[AZ::EntityId()] = AZ::EntityId();
-        remappedIds[ScriptCanvas::GraphOwnerId] = ScriptCanvas::GraphOwnerId;
-        remappedIds[ScriptCanvas::UniqueId] = ScriptCanvas::UniqueId;
+        oldIdToNewIdOut.clear();
+        oldIdToNewIdOut[AZ::EntityId()] = AZ::EntityId();
+        oldIdToNewIdOut[ScriptCanvas::GraphOwnerId] = ScriptCanvas::GraphOwnerId;
+        oldIdToNewIdOut[ScriptCanvas::UniqueId] = ScriptCanvas::UniqueId;
 
-        AZ::IdUtils::Remapper<AZ::EntityId>::GenerateNewIdsAndFixRefs(&entity, remappedIds, &serializeContext);
+        AZ::IdUtils::Remapper<AZ::EntityId>::GenerateNewIdsAndFixRefs(&entity, oldIdToNewIdOut, &serializeContext);
     }
 }
 
 namespace ScriptCanvas
 {
-    SourceTree* SourceTree::ModRoot()
-    {
-        if (!m_parent)
-        {
-            return this;
-        }
-
-        return m_parent->ModRoot();
-    }
-
-    void SourceTree::SetParent(SourceTree& parent)
-    {
-        m_parent = &parent;
-    }
-
     AZStd::string SourceTree::ToString(size_t depth) const
     {
         AZStd::string result;
@@ -142,6 +100,7 @@ namespace ScriptCanvas
         AZ::JsonDeserializerSettings settings;
         settings.m_serializeContext = serializeContext;
         settings.m_metadata.Create<SerializationListeners>();
+        settings.m_clearContainers = true;
 
         auto loadResult = JSRU::LoadObjectFromStringByType
             ( &(*result.m_graphDataPtr)
@@ -149,9 +108,12 @@ namespace ScriptCanvas
             , source
             , result.m_jsonResults
             , &settings);
+
         if (!loadResult.IsSuccess())
         {
             // ...try legacy xml as a failsafe
+            result.m_fromObjectStreamXML = true;
+
             AZ::IO::MemoryStream stream(source.data(), source.length());
             if (!AZ::Utils::LoadObjectFromStreamInPlace
                 ( stream
@@ -160,7 +122,11 @@ namespace ScriptCanvas
                 , AZ::ObjectStream::FilterDescriptor(nullptr, AZ::ObjectStream::FILTERFLAG_IGNORE_UNKNOWN_CLASSES)))
             {
                 result.m_isSuccessful = false;
-                result.m_errors = "JSON (and failsafe XML) deserialize attempt failed.";
+                result.m_errors = "JSON (and failsafe XML) deserialize attempt failed.\n";
+                result.m_errors += "The error might be caused by deprecated Spawnable Nodes in your target scriptcanvas file.\n";
+                result.m_errors += "If so, please run UpdateSpawnableNodes python script for the scriptcanvas file to see if the error is resolved.\n";
+                result.m_errors += "(Run 'python {Your o3de engine folder}\\Gems\\ScriptCanvas\\SourceModificationScripts\\UpdateSpawnableNodes.py {Your target scriptcanvas file}')";
+
                 return result;
             }
         }
@@ -199,7 +165,7 @@ namespace ScriptCanvas
 
         if (makeUniqueEntities == MakeInternalGraphEntitiesUnique::Yes)
         {
-            MakeGraphComponentEntityIdsUnique(*entity, *serializeContext);
+            MakeGraphComponentEntityIdsUnique(*entity, *serializeContext, result.m_originalIdsToNewIds);
         }
 
         graph->MarkOwnership(*result.m_graphDataPtr);

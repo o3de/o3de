@@ -16,7 +16,7 @@ namespace LandscapeCanvas
     class CompoundShapeNode : public BaseShapeNode
     {
     public:
-        AZ_CLASS_ALLOCATOR(CompoundShapeNode, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CompoundShapeNode, AZ::SystemAllocator);
         AZ_RTTI(CompoundShapeNode, "{96A15E81-7271-4580-85F4-0D417807E86A}", BaseShapeNode);
 
         static void Reflect(AZ::ReflectContext* context);
@@ -24,7 +24,7 @@ namespace LandscapeCanvas
         CompoundShapeNode() = default;
         explicit CompoundShapeNode(GraphModel::GraphPtr graph);
 
-        static const QString TITLE;
-        const char* GetTitle() const override { return TITLE.toUtf8().constData(); }
+        static const char* TITLE;
+        const char* GetTitle() const override { return TITLE; }
     };
 }

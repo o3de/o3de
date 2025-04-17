@@ -6,6 +6,7 @@
  *
  */
 
+#include <GraphModel/GraphModelBus.h>
 #include <GraphModel/Integration/BooleanDataInterface.h>
 #include <GraphModel/Integration/IntegrationBus.h>
 
@@ -18,28 +19,22 @@ namespace GraphModelIntegration
 
     bool BooleanDataInterface::GetBool() const
     {
-        if (GraphModel::SlotPtr slot = m_slot.lock())
-        {
-            return slot->GetValue<bool>();
-        }
-        else
-        {
-            return false;
-        }
+        GraphModel::SlotPtr slot = m_slot.lock();
+        return slot ? slot->GetValue<bool>() : false;
     }
 
     void BooleanDataInterface::SetBool(bool enabled)
     {
-        if (GraphModel::SlotPtr slot = m_slot.lock())
+        GraphModel::SlotPtr slot = m_slot.lock();
+        if (slot && slot->GetValue<bool>() != enabled)
         {
-            if (enabled != slot->GetValue<bool>())
-            {
-                GraphCanvas::GraphId graphCanvasSceneId;
-                IntegrationBus::BroadcastResult(graphCanvasSceneId, &IntegrationBusInterface::GetActiveGraphCanvasSceneId);
-                GraphCanvas::ScopedGraphUndoBatch undoBatch(graphCanvasSceneId);
+            const GraphCanvas::GraphId graphCanvasSceneId = GetDisplay()->GetSceneId();
+            GraphCanvas::ScopedGraphUndoBatch undoBatch(graphCanvasSceneId);
 
-                slot->SetValue(enabled);
-            }
+            slot->SetValue(enabled);
+            GraphControllerNotificationBus::Event(graphCanvasSceneId, &GraphControllerNotifications::OnGraphModelSlotModified, slot);
+            GraphControllerNotificationBus::Event(
+                graphCanvasSceneId, &GraphControllerNotifications::OnGraphModelGraphModified, slot->GetParentNode());
         }
     }
-}
+} // namespace GraphModelIntegration

@@ -6,9 +6,9 @@
  *
  */
 
+#include <EditorPythonBindings/PythonUtility.h>
 #include <Source/PythonMarshalComponent.h>
 #include <Source/PythonMarshalTuple.h>
-#include <Source/PythonUtility.h>
 #include <Source/PythonProxyObject.h>
 #include <Source/PythonTypeCasters.h>
 
@@ -20,7 +20,7 @@
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
-#include <Source/PythonCommon.h>
+#include <EditorPythonBindings/PythonCommon.h>
 #include <pybind11/embed.h>
 #include <pybind11/pytypes.h>
 
@@ -271,7 +271,7 @@ namespace EditorPythonBindings
                 AZ_Warning("python", false, "Empty behavior object sent in.");
                 return AZStd::nullopt;
             }
-            
+
             AZStd::any* anyValue = CreateAnyValue(behaviorObject.value()->m_typeId, behaviorObject.value()->m_address);
             if (!anyValue)
             {
@@ -432,7 +432,7 @@ namespace EditorPythonBindings
             result.first = MarshalBehaviorValueParameter<BehaviorType, pybind11::float_>(behaviorValue);
             return result;
         }
-    
+
         bool CanConvertPythonToBehaviorValue([[maybe_unused]] PythonMarshalTypeRequests::BehaviorTraits traits, pybind11::object pyObj) const override
         {
             return (PyFloat_Check(pyObj.ptr()) != false);
@@ -468,6 +468,12 @@ namespace EditorPythonBindings
                 outValue.Set<AZStd::string>(stringValue);
                 return { {true, [stringValue]() { delete stringValue; }} };
             }
+            else if (AZ::AzTypeInfo<T>::Uuid() == AZ::AzTypeInfo<AZ::IO::FixedMaxPathString>::Uuid())
+            {
+                auto* stringValue = new AZ::IO::FixedMaxPathString(pybind11::cast<AZ::IO::FixedMaxPathString>(pyObj));
+                outValue.Set<AZ::IO::FixedMaxPathString>(stringValue);
+                return { {true, [stringValue]() { delete stringValue; }} };
+            }
             return AZStd::nullopt;
         }
 
@@ -485,7 +491,7 @@ namespace EditorPythonBindings
     };
 
     // The 'char' type can come in with a variety of type traits:
-    // 
+    //
     class TypeConverterChar
         : public PythonMarshalComponent::TypeConverter
     {
@@ -541,7 +547,7 @@ namespace EditorPythonBindings
             }
             return AZStd::nullopt;
         }
-    
+
         bool CanConvertPythonToBehaviorValue([[maybe_unused]] PythonMarshalTypeRequests::BehaviorTraits traits, pybind11::object pyObj) const override
         {
             return (PyUnicode_Check(pyObj.ptr()) != false);
@@ -901,7 +907,7 @@ namespace EditorPythonBindings
                 return (PyDict_Check(pyObj.ptr()) != false);
             }
         };
-               
+
         class TypeConverterVector
             : public PythonMarshalComponent::TypeConverter
         {
@@ -913,7 +919,7 @@ namespace EditorPythonBindings
             TypeConverterVector(AZ::GenericClassInfo* genericClassInfo, const AZ::SerializeContext::ClassData* classData, const AZ::TypeId& typeId)
                 : m_genericClassInfo(genericClassInfo)
                 , m_classData(classData)
-                , m_typeId(typeId) 
+                , m_typeId(typeId)
             {
             }
 
@@ -954,7 +960,7 @@ namespace EditorPythonBindings
                 AZ::BehaviorObject instance = behaviorClass->Create();
                 AZ::BehaviorMethod* pushBackMethod = iteratorToPushBackMethod->second;
 
-                size_t vectorCount = 0;
+                [[maybe_unused]] size_t vectorCount = 0;
                 pybind11::list pyList(pyObj);
                 for (auto pyItem = pyList.begin(); pyItem != pyList.end(); ++pyItem)
                 {
@@ -1003,7 +1009,7 @@ namespace EditorPythonBindings
                 AZStd::any* newVector = new AZStd::any(serializeContext->CreateAny(m_typeId));
                 void* instance = AZStd::any_cast<void>(newVector);
 
-                size_t vectorCount = 0;
+                [[maybe_unused]] size_t vectorCount = 0;
                 pybind11::list pyList(pyObj);
                 for (auto pyItem = pyList.begin(); pyItem != pyList.end(); ++pyItem)
                 {
@@ -1114,7 +1120,7 @@ namespace EditorPythonBindings
 
                     PythonMarshalTypeRequests::PythonValueResult result;
                     result.first = pythonList;
-                    
+
                     if (!deleterList->empty())
                     {
                         AZStd::weak_ptr<AZStd::vector<PythonMarshalTypeRequests::DeallocateFunction>> cleanUp(deleterList);
@@ -1132,7 +1138,7 @@ namespace EditorPythonBindings
                 }
                 return AZStd::nullopt;
             }
-        
+
             bool CanConvertPythonToBehaviorValue([[maybe_unused]] PythonMarshalTypeRequests::BehaviorTraits traits, pybind11::object pyObj) const override
             {
                 AZStd::vector<AZ::Uuid> typeList = AZ::Utils::GetContainedTypes(m_typeId);
@@ -1173,7 +1179,7 @@ namespace EditorPythonBindings
                 AZ::BehaviorObject instance = behaviorClass->Create();
                 AZ::BehaviorMethod* insertMethod = iteratorToInsertMethod->second;
 
-                size_t itemCount = 0;
+                [[maybe_unused]] size_t itemCount = 0;
                 pybind11::set pySet(pyObj);
                 for (auto pyItem = pySet.begin(); pyItem != pySet.end(); ++pyItem)
                 {
@@ -1227,7 +1233,7 @@ namespace EditorPythonBindings
                 AZStd::any* newVector = new AZStd::any(serializeContext->CreateAny(m_typeId));
                 void* instance = AZStd::any_cast<void>(newVector);
 
-                size_t itemCount = 0;
+                [[maybe_unused]] size_t itemCount = 0;
                 pybind11::set pySet(pyObj);
                 for (auto pyItem = pySet.begin(); pyItem != pySet.end(); ++pyItem)
                 {
@@ -1521,7 +1527,7 @@ namespace EditorPythonBindings
 
                 return PythonMarshalTypeRequests::BehaviorValueResult{ true, pairInstanceDeleter };
             }
-            
+
             AZStd::optional<PythonMarshalTypeRequests::PythonValueResult> BehaviorValueParameterToPython(AZ::BehaviorArgument& behaviorValue) override
             {
                 // the class data must have a container interface
@@ -1546,7 +1552,7 @@ namespace EditorPythonBindings
                 pybind11::object pythonItem0{ pybind11::none() };
                 pybind11::object pythonItem1{ pybind11::none() };
                 size_t itemCount = 0;
-                
+
                 auto pairElementCallback = [cleanUpList, &pythonItem0, &pythonItem1, &itemCount](void* instancePair, const AZ::Uuid& elementClassId, [[maybe_unused]] const AZ::SerializeContext::ClassData* elementGenericClassData, [[maybe_unused]] const AZ::SerializeContext::ClassElement* genericClassElement)
                 {
                     AZ::BehaviorObject behaviorObjectValue(instancePair, elementClassId);
@@ -1766,6 +1772,7 @@ namespace EditorPythonBindings
         RegisterTypeConverter(AZ::AzTypeInfo<float>::Uuid(), AZStd::make_unique<TypeConverterReal<float, float, float>>());
         RegisterTypeConverter(AZ::AzTypeInfo<double>::Uuid(), AZStd::make_unique<TypeConverterReal<double, double, double>>());
         RegisterTypeConverter(AZ::AzTypeInfo<AZStd::string>::Uuid(), AZStd::make_unique<TypeConverterString<AZStd::string>>());
+        RegisterTypeConverter(AZ::AzTypeInfo<AZ::IO::FixedMaxPathString>::Uuid(), AZStd::make_unique<TypeConverterString<AZ::IO::FixedMaxPathString>>());
         RegisterTypeConverter(AZ::AzTypeInfo<AZStd::string_view>::Uuid(), AZStd::make_unique<TypeConverterString<AZStd::string_view>>());
         RegisterTypeConverter(AZ::AzTypeInfo<AZStd::any>::Uuid(), AZStd::make_unique<TypeConverterAny>());
 

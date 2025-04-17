@@ -64,9 +64,13 @@ namespace MaterialEditor
         AZ::NonUniformScaleRequestBus::Event(
             GetShadowCatcherEntityId(), &AZ::NonUniformScaleRequests::SetScale, AZ::Vector3(100, 100, 1.0));
 
+        // Avoid z-fighting with the cube model when double-sided rendering is enabled
+        AZ::TransformBus::Event(
+            GetShadowCatcherEntityId(), &AZ::TransformInterface::SetWorldZ, -0.01f);
+
         AZ::Render::MeshComponentRequestBus::Event(
             GetShadowCatcherEntityId(), &AZ::Render::MeshComponentRequestBus::Events::SetModelAssetId,
-            AZ::RPI::AssetUtils::GetAssetIdForProductPath("materialeditor/viewportmodels/plane_1x1.azmodel"));
+            AZ::RPI::AssetUtils::GetAssetIdForProductPath("materialeditor/viewportmodels/plane_1x1.fbx.azmodel"));
 
         AZ::Render::MaterialComponentRequestBus::Event(
             GetShadowCatcherEntityId(), &AZ::Render::MaterialComponentRequestBus::Events::SetMaterialAssetId,

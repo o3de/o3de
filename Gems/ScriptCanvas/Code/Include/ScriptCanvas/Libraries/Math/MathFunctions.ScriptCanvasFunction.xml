@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScriptCanvas>
+<ScriptCanvas
+    Include="Include/ScriptCanvas/Libraries/Math/MathFunctions.h"
+>
     <Library
-        Include="Include/ScriptCanvas/Libraries/Math/MathFunctions.h"
         Namespace="ScriptCanvas::MathFunctions"
         Category="Math">
         
@@ -17,7 +18,6 @@
     </Library>
 
     <Library
-        Include="Include/ScriptCanvas/Libraries/Math/MathFunctions.h"
         Namespace="ScriptCanvas::MathRandoms"
         Category="Math/Random">
 

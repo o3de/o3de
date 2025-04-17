@@ -8,11 +8,12 @@
 #pragma once
 
 #include <AzCore/Preprocessor/Enum.h>
+#include <AzCore/RTTI/TypeInfo.h>
 #include <Atom/RHI.Reflect/Bits.h>
 
 namespace EMotionFX
 {
-    // The index of the render flag which is 0, 1, 2, 3.. based. 
+    // The index of the render flag which is 0, 1, 2, 3.. based.
     // Do not confuse this with the actual ActorRenderFlags::Type which is 1, 2, 4, 8.. based.
     enum ActorRenderFlagIndex : AZ::u8
     {
@@ -77,7 +78,7 @@ namespace EMotionFX
 
     AZ_DEFINE_ENUM_BITWISE_OPERATORS(ActorRenderFlags);
 
-    static constexpr ActorRenderFlags s_requireUpdateTransforms = 
+    static constexpr ActorRenderFlags s_requireUpdateTransforms =
         ActorRenderFlags::Solid | ActorRenderFlags::Wireframe | ActorRenderFlags::AABB |
         ActorRenderFlags::FaceNormals |ActorRenderFlags::VertexNormals | ActorRenderFlags::Tangents |
         ActorRenderFlags::Skeleton | ActorRenderFlags::LineSkeleton | ActorRenderFlags::NodeOrientation | ActorRenderFlags::NodeNames |

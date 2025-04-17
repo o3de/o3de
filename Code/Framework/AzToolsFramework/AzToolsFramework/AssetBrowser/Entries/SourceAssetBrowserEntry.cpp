@@ -56,29 +56,24 @@ namespace AzToolsFramework
             }
         }
 
-        void SourceAssetBrowserEntry::Reflect(AZ::ReflectContext* context)
-        {
-            AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
-            if (serializeContext)
-            {
-                serializeContext->Class<SourceAssetBrowserEntry, AssetBrowserEntry>()
-                    ->Version(2)
-                    ->Field("m_sourceId", &SourceAssetBrowserEntry::m_sourceId)
-                    ->Field("m_scanFolderId", &SourceAssetBrowserEntry::m_scanFolderId)
-                    ->Field("m_sourceUuid", &SourceAssetBrowserEntry::m_sourceUuid)
-                    ->Field("m_extension", &SourceAssetBrowserEntry::m_extension);
-            }
-        }
-
         AssetBrowserEntry::AssetEntryType SourceAssetBrowserEntry::GetEntryType() const
         {
             return AssetEntryType::Source;
         }
 
-        const AZStd::string& SourceAssetBrowserEntry::GetExtension() const
+        const AZStd::string SourceAssetBrowserEntry::GetExtension() const
         {
-            return m_extension;
-        }
+            AZStd::string extension;
+            AZ::StringFunc::Path::GetExtension(GetFullPath().c_str(), extension);
+            return extension;
+        };
+
+        const AZStd::string SourceAssetBrowserEntry::GetFileName() const
+        {
+            AZStd::string stem;
+            AZ::StringFunc::Path::GetFileName(GetFullPath().c_str(), stem);
+            return stem;
+        };
 
         AZ::s64 SourceAssetBrowserEntry::GetFileID() const
         {
@@ -140,12 +135,6 @@ namespace AzToolsFramework
             return nullptr;
         }
 
-        void SourceAssetBrowserEntry::UpdateChildPaths(AssetBrowserEntry* child) const
-        {
-            child->m_fullPath = m_fullPath;
-            AssetBrowserEntry::UpdateChildPaths(child);
-        }
-
         void SourceAssetBrowserEntry::PathsUpdated()
         {
             AssetBrowserEntry::PathsUpdated();
@@ -156,10 +145,10 @@ namespace AzToolsFramework
         {
             if (m_sourceControlThumbnailKey)
             {
-                disconnect(m_sourceControlThumbnailKey.data(), &ThumbnailKey::ThumbnailUpdatedSignal, this, &AssetBrowserEntry::ThumbnailUpdated);
+                disconnect(m_sourceControlThumbnailKey.data(), nullptr, this, nullptr);
             }
             m_sourceControlThumbnailKey = MAKE_TKEY(SourceControlThumbnailKey, m_fullPath.c_str());
-            connect(m_sourceControlThumbnailKey.data(), &ThumbnailKey::ThumbnailUpdatedSignal, this, &AssetBrowserEntry::ThumbnailUpdated);
+            connect(m_sourceControlThumbnailKey.data(), &ThumbnailKey::ThumbnailUpdated, this, &AssetBrowserEntry::SetThumbnailDirty);
         }
 
         SharedThumbnailKey SourceAssetBrowserEntry::CreateThumbnailKey()

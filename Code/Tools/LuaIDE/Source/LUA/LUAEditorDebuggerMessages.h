@@ -100,6 +100,9 @@ namespace LUAEditor
         // Request current callstack in the current context. Can only be called while context is on a breakpoint
         virtual void GetCallstack() = 0;
     };
+
+    using LUAEditorDebuggerMessagesRequestBus = AZ::EBus<LUAEditorDebuggerMessages>;
+
 }
 
 #endif//LUAEDITOR_LUAEditorDebuggerMessages_H

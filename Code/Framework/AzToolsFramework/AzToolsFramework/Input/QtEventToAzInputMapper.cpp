@@ -233,6 +233,8 @@ namespace AzToolsFramework
         // Install a global event filter to ensure we don't miss mouse and key release events.
         QApplication::instance()->installEventFilter(this);
         AzFramework::InputChannelNotificationBus::Handler::BusConnect();
+
+        m_viewportId = syntheticDeviceId;
     }
 
     bool QtEventToAzInputMapper::HandlesInputEvent(const AzFramework::InputChannel& channel) const
@@ -337,11 +339,19 @@ namespace AzToolsFramework
             // ensures cursor positions are refreshed correctly with context menu focus changes)
             if (eventType == QEvent::FocusIn)
             {
+                ViewportInteraction::ViewportInteractionNotificationBus::Event(
+                    m_viewportId, &ViewportInteraction::ViewportInteractionNotificationBus::Events::OnViewportFocusIn);
+
                 const auto globalCursorPosition = QCursor::pos();
                 if (m_sourceWidget->geometry().contains(m_sourceWidget->mapFromGlobal(globalCursorPosition)))
                 {
                     HandleMouseMoveEvent(globalCursorPosition);
                 }
+            }
+            else if (eventType == QEvent::FocusOut)
+            {
+                ViewportInteraction::ViewportInteractionNotificationBus::Event(
+                    m_viewportId, &ViewportInteraction::ViewportInteractionNotificationBus::Events::OnViewportFocusOut);
             }
         }
         // Map key events to input channels.
@@ -624,11 +634,35 @@ namespace AzToolsFramework
 
     void QtEventToAzInputMapper::ClearInputChannels(QEvent* event)
     {
+        // note that UpdateState() is not a virtual function in InputChannel,
+        // Keyboard channels are instances of InputChannelDigitalWithSharedModifierKeyStates derived from DigitalChannel
+        // which itself derives from InputChannel.  Since this is not a virtual function, if we were to call it directly
+        // with an InputChannel* such as in m_channels, it would not do the extra things that
+        // InputChannelDigitalWithSharedModifierKeyStates needs to do, such as capture modifier key states, before it calls base
+        // UpdateState.  Instead, keyboard key channels have to be cast into their actual type, and then ProcessRawInputEvent
+        // must be called instead, which itself then calls UpdateState() after doing its special modifier handling.
+
+        for (auto key : m_keyMappings)
+        {
+            if (auto* keyChannel = GetInputChannel<AzFramework::InputChannelDigitalWithSharedModifierKeyStates>(key.second))
+            {
+                if (keyChannel->IsActive())
+                {
+                    keyChannel->ProcessRawInputEvent(false);
+                    NotifyUpdateChannelIfNotIdle(keyChannel, event);
+                }
+            }
+        }
+
         for (auto& channelData : m_channels)
         {
             // If resetting the input device changed the channel state, submit it to the mapped channel list for processing.
             if (channelData.second->IsActive())
             {
+                // Note that the keyboard keys will have already transitioned from whatever state they are in 
+                // to the "Ended" or "Idle" state (if they were already "Ended"), due to the above loop.  
+                // This call here, assuming they were not already idle, will transition them further into the Idle state
+                // and thus we can expect NotifyUpdateChannelIfNotIdle here not to operate on keyboard keys due to that.
                 channelData.second->UpdateState(false);
                 NotifyUpdateChannelIfNotIdle(channelData.second, event);
             }

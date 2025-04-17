@@ -31,21 +31,21 @@ namespace AZ
 
         public:
             AZ_RTTI(ImagePoolResolver, "{8112B50E-E26D-4686-87A3-0757A90BE4EF}", Base);
-            AZ_CLASS_ALLOCATOR(ImagePoolResolver, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ImagePoolResolver, AZ::SystemAllocator);
 
             ImagePoolResolver(Device& device);
 
             /// Uploads new content to an image subresource.
-            RHI::ResultCode UpdateImage(const RHI::ImageUpdateRequest& request, size_t& bytesTransferred);
+            RHI::ResultCode UpdateImage(const RHI::DeviceImageUpdateRequest& request, size_t& bytesTransferred);
 
             //////////////////////////////////////////////////////////////////////
             ///ResourcePoolResolver
             void Compile(const RHI::HardwareQueueClass hardwareClass) override;
             void Resolve(CommandList& commandList) override;
             void Deactivate() override;
-            void OnResourceShutdown(const RHI::Resource& resource) override;
-            void QueuePrologueTransitionBarriers(CommandList& commandList) override;
-            void QueueEpilogueTransitionBarriers(CommandList& commandList) override;
+            void OnResourceShutdown(const RHI::DeviceResource& resource) override;
+            void QueuePrologueTransitionBarriers(CommandList& commandList, BarrierTypeFlags mask) override;
+            void QueueEpilogueTransitionBarriers(CommandList& commandList, BarrierTypeFlags mask) override;
             //////////////////////////////////////////////////////////////////////
 
         private:
@@ -53,7 +53,7 @@ namespace AZ
             {
                 Image* m_destinationImage = nullptr;
                 RHI::Ptr<Buffer> m_stagingBuffer;
-                RHI::ImageSubresourceLayout m_subresourceLayout;
+                RHI::DeviceImageSubresourceLayout m_subresourceLayout;
                 RHI::ImageSubresource m_subresource;
                 RHI::Origin m_offset;
             };
@@ -67,7 +67,7 @@ namespace AZ
                 bool operator==(const BarrierInfo& other) { return ::memcmp(this, &other, sizeof(BarrierInfo)) == 0; }
             };
 
-            void EmmitBarriers(CommandList& commandList, const AZStd::vector<BarrierInfo>& barriers) const;
+            void EmmitBarriers(CommandList& commandList, const AZStd::vector<BarrierInfo>& barriers, BarrierTypeFlags mask) const;
 
             AZStd::mutex m_uploadPacketsLock;
             AZStd::vector<ImageUploadPacket> m_uploadPackets;

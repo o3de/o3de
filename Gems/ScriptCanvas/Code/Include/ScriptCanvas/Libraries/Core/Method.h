@@ -40,7 +40,7 @@ namespace ScriptCanvas
 
                 Method() = default;
 
-                ~Method() = default;
+                ~Method() override = default;
 
                 bool BranchesOnResult() const;
 
@@ -171,8 +171,6 @@ namespace ScriptCanvas
                 bool GetBehaviorContextClassMethod(const AZ::BehaviorClass*& outClass, const AZ::BehaviorMethod*& outMethod, EventType& outType) const;
 
                 bool IsDeprecated() const override;
-
-                NodeReplacementConfiguration GetReplacementNodeConfiguration() const override;
 
             private:
                 friend struct ScriptCanvas::BehaviorContextMethodHelper;

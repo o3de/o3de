@@ -8,8 +8,9 @@
 
 #pragma once
 
-#include <Atom/RPI.Reflect/Image/StreamingImagePoolAsset.h>
 #include <Atom/RPI.Reflect/AssetCreator.h>
+#include <Atom/RPI.Reflect/Configuration.h>
+#include <Atom/RPI.Reflect/Image/StreamingImagePoolAsset.h>
 
 namespace AZ
 {
@@ -18,7 +19,7 @@ namespace AZ
         //! Constructs an instance of an StreamingImagePoolAsset.
         //! (Note this class generally follows the builder design pattern, but is called a "creator" rather 
         //! than a "builder" to avoid confusion with the AssetBuilderSDK).
-        class StreamingImagePoolAssetCreator
+        class ATOM_RPI_REFLECT_API StreamingImagePoolAssetCreator
             : public AssetCreator<StreamingImagePoolAsset>
         {
         public:
@@ -30,9 +31,6 @@ namespace AZ
 
             //! Assigns the descriptor used to initialize the RHI streaming image pool.
             void SetPoolDescriptor(AZStd::unique_ptr<RHI::StreamingImagePoolDescriptor>&& descriptor);
-
-            //! Assigns the controller asset which will perform streaming priority management on the pool.
-            void SetControllerAsset(const Data::Asset<StreamingImageControllerAsset>& controllerAsset);
 
             //! Assigns the name of the pool
             void SetPoolName(AZStd::string_view poolName);

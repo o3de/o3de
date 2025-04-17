@@ -724,7 +724,7 @@ namespace AZ
 
         float n = rayDir.Dot(AQ);
 
-        const float EPSILON = 0.00001f;
+        const float EPSILON = 1e-4f;
 
         // point RP on the ray: RP(t) = rayOrigin + t * rayDir
         // point CP on the cone surface: similar triangle property
@@ -1654,6 +1654,14 @@ namespace AZ
                 closestPointOnSegment = segmentStart + (proportion * segment);
             }
         }
+    }
+
+    float Intersect::PointSegmentDistanceSq(const Vector3& point, const Vector3& segmentStart, const Vector3& segmentEnd)
+    {
+        float proportion;
+        Vector3 closestPointOnCapsuleAxis;
+        Intersect::ClosestPointSegment(point, segmentStart, segmentEnd, proportion, closestPointOnCapsuleAxis);
+        return closestPointOnCapsuleAxis.GetDistanceSq(point);
     }
 
 #if 0

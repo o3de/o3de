@@ -41,7 +41,7 @@ const QString g_ui_1_0_SettingKey = QStringLiteral("useUI_1_0");
 static void LogToDebug([[maybe_unused]] QtMsgType Type, [[maybe_unused]] const QMessageLogContext& Context, const QString& message)
 {
     AZ::Debug::Platform::OutputToDebugger("Qt", message.toStdString().c_str());
-    AZ::Debug::Platform::OutputToDebugger(nullptr, "\n");
+    AZ::Debug::Platform::OutputToDebugger({}, "\n");
 }
 
 /*
@@ -55,9 +55,6 @@ public:
     {
         AZ::ComponentApplication::Descriptor appDesc;
         m_systemEntity = m_componentApp.Create(appDesc);
-
-        AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-        AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
 
         m_componentApp.RegisterComponentDescriptor(AZ::AssetManagerComponent::CreateDescriptor());
         m_componentApp.RegisterComponentDescriptor(AZ::JobManagerComponent::CreateDescriptor());
@@ -108,9 +105,6 @@ public:
         m_componentApp.UnregisterComponentDescriptor(AzFramework::CustomAssetTypeComponent::CreateDescriptor());
         m_componentApp.UnregisterComponentDescriptor(AzToolsFramework::Components::PropertyManagerComponent::CreateDescriptor());
 
-        AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
-        AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
-
         m_componentApp.Destroy();
     }
 
@@ -123,6 +117,7 @@ private:
 
 int main(int argc, char **argv)
 {
+    const AZ::Debug::Trace tracer;
     ComponentApplicationWrapper componentApplicationWrapper;
 
     QApplication::setOrganizationName("O3DE");

@@ -23,20 +23,27 @@ namespace ScriptCanvas
         {
             ClientRequestsBus::Handler::BusConnect();
             ClientUIRequestBus::Handler::BusConnect();
+            AZ::SystemTickBus::Handler::BusConnect();
 
             DiscoverNetworkTargets();
-            
+
             for (auto& idAndInfo : m_networkTargets)
             {
                 if (idAndInfo.second.IsSelf())
                 {
                     m_selfTarget = idAndInfo.second;
                     SCRIPT_CANVAS_DEBUGGER_TRACE_CLIENT("Self found!");
+                    break;
                 }
             }
 
-            if (!m_selfTarget.GetDisplayName())
+            if (m_selfTarget.IsValid())
             { 
+                m_currentTarget = m_selfTarget;
+                DesiredTargetConnected(true);
+            }
+            else
+            {
                 SCRIPT_CANVAS_DEBUGGER_TRACE_CLIENT("Self NOT found!");
             }
 
@@ -46,6 +53,7 @@ namespace ScriptCanvas
 
         ClientTransceiver::~ClientTransceiver()
         {
+            AZ::SystemTickBus::Handler::BusDisconnect();
             ClientUIRequestBus::Handler::BusDisconnect();
             ClientRequestsBus::Handler::BusDisconnect();
         }
@@ -103,7 +111,6 @@ namespace ScriptCanvas
             if (connected)
             {
                 SCRIPT_CANVAS_DEBUGGER_TRACE_CLIENT("DesiredTarget connected!, sending connect request to %s", m_currentTarget.GetDisplayName());
-                m_currentTarget = RemoteToolsInterface::Get()->GetDesiredEndpoint(ScriptCanvas::RemoteToolsKey);
             }
             else
             {
@@ -113,8 +120,6 @@ namespace ScriptCanvas
 
             ClientUINotificationBus::Broadcast(&ClientUINotifications::OnCurrentTargetChanged);
             
-            // If we are connected to our self, we want to use a different mechanism for now.
-            // Will unify this in a second pass so this handles all the indirection.
             if (m_currentTarget.IsValid())
             {
                 RemoteToolsInterface::Get()->SendRemoteToolsMessage(m_currentTarget, Message::ConnectRequest(m_connectionState));
@@ -170,7 +175,7 @@ namespace ScriptCanvas
             AzFramework::RemoteToolsEndpointInfo targetInfo;
             if (AzFramework::IRemoteTools* remoteTools = RemoteToolsInterface::Get())
             {
-                targetInfo = RemoteToolsInterface::Get()->GetDesiredEndpoint(ScriptCanvas::RemoteToolsKey);
+                targetInfo = remoteTools->GetDesiredEndpoint(ScriptCanvas::RemoteToolsKey);
             }
 
             if (!targetInfo.GetPersistentId())
@@ -276,7 +281,10 @@ namespace ScriptCanvas
 
         void ClientTransceiver::DisconnectFromTarget()
         {
-            RemoteToolsInterface::Get()->SendRemoteToolsMessage(m_currentTarget, Message::DisconnectRequest());
+            if (AzFramework::IRemoteTools* remoteTools = RemoteToolsInterface::Get())
+            {
+                remoteTools->SendRemoteToolsMessage(m_currentTarget, Message::DisconnectRequest());
+            }
         }
 
         void ClientTransceiver::CleanupConnection()
@@ -443,18 +451,33 @@ namespace ScriptCanvas
 
         void ClientTransceiver::OnSystemTick()
         {
-            if (AzFramework::IRemoteTools* remoteTools = RemoteToolsInterface::Get())
+            AzFramework::IRemoteTools* remoteTools = RemoteToolsInterface::Get();
+            if (!remoteTools)
+                return;
+
+            if (!m_addCache.m_entities.empty())
             {
                 remoteTools->SendRemoteToolsMessage(m_currentTarget, Message::AddTargetsRequest(m_addCache));
                 m_connectionState.Merge(m_addCache);
                 m_addCache.Clear();
+            }
 
+            if (!m_removeCache.m_entities.empty())
+            {
                 remoteTools->SendRemoteToolsMessage(m_currentTarget, Message::RemoveTargetsRequest(m_removeCache));
                 m_connectionState.Remove(m_removeCache);
                 m_removeCache.Clear();
             }
 
-            AZ::SystemTickBus::Handler::BusDisconnect();
+            const AzFramework::ReceivedRemoteToolsMessages* messages = remoteTools->GetReceivedMessages(ScriptCanvas::RemoteToolsKey);
+            if (messages)
+            {
+                for (const AzFramework::RemoteToolsMessagePointer& msg : *messages)
+                {
+                    OnReceivedMsg(msg);
+                }
+                remoteTools->ClearReceivedMessagesForNextTick(ScriptCanvas::RemoteToolsKey);
+            }
         }
 
         void ClientTransceiver::StartEditorSession()
@@ -514,11 +537,6 @@ namespace ScriptCanvas
             {
                 removeCacheIter->second.erase(graphIdentifier);
             }
-
-            if (!AZ::SystemTickBus::Handler::BusIsConnected())
-            {
-                AZ::SystemTickBus::Handler::BusConnect();
-            }
         }
 
         void ClientTransceiver::RemoveEntityLoggingTarget(const AZ::EntityId& entityId, const ScriptCanvas::GraphIdentifier& graphIdentifier)
@@ -534,33 +552,18 @@ namespace ScriptCanvas
             {
                 addCacheIter->second.erase(graphIdentifier);
             }
-
-            if (!AZ::SystemTickBus::Handler::BusIsConnected())
-            {
-                AZ::SystemTickBus::Handler::BusConnect();
-            }
         }
 
         void ClientTransceiver::AddGraphLoggingTarget(const AZ::Data::AssetId& assetId)
         {
             m_addCache.m_graphs.insert(assetId);
             m_removeCache.m_graphs.erase(assetId);
-
-            if (!AZ::SystemTickBus::Handler::BusIsConnected())
-            {
-                AZ::SystemTickBus::Handler::BusConnect();
-            }
         }
 
         void ClientTransceiver::RemoveGraphLoggingTarget(const AZ::Data::AssetId& assetId)
         {
             m_addCache.m_graphs.erase(assetId);
             m_removeCache.m_graphs.insert(assetId);
-
-            if (!AZ::SystemTickBus::Handler::BusIsConnected())
-            {
-                AZ::SystemTickBus::Handler::BusConnect();
-            }
         }
     }
 }

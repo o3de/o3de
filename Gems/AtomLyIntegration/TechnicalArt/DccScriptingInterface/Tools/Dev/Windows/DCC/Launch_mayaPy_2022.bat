@@ -49,7 +49,7 @@ CALL %~dp0..\Env_O3DE_Python.bat
 SET PATH=%MAYA_BIN_PATH%;%PATH%
 
 :: add all python related paths to PYTHONPATH for package imports
-set PYTHONPATH=%DCCSI_MAYA_SCRIPT_PATH%;%PATH_DCCSIG%;%PATH_DCCSI_PYTHON_LIB%;%PATH_O3DE_BIN%;%PYTHONPATH%
+set PYTHONPATH=%DCCSI_MAYA_SCRIPT_PATH%;%PATH_O3DE_TECHART_GEMS%;%PATH_DCCSIG%;%PATH_DCCSI_PYTHON_LIB%;%PATH_O3DE_BIN%;%PYTHONPATH%
 
 :: if the user has set up a custom env call it
 IF EXIST "%~dp0..\Env_Dev.bat" CALL %~dp0..\Env_Dev.bat

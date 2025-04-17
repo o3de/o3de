@@ -16,7 +16,7 @@
 namespace AZ::MeshBuilder
 {
     class CubeMeshVerticesTests
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         void SetUpMeshBuilder(size_t vertCount)
@@ -224,7 +224,7 @@ namespace AZ::MeshBuilder
         9
     };
 
-    INSTANTIATE_TEST_CASE_P(TriangleFanZVertexDedupTests,
+    INSTANTIATE_TEST_SUITE_P(TriangleFanZVertexDedupTests,
         TriangleFanMeshVerticesTestsFixture,
         ::testing::ValuesIn(meshVerticesTestData)
     );

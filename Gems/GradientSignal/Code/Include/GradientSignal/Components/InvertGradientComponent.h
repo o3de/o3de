@@ -27,13 +27,13 @@ namespace GradientSignal
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(InvertGradientConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(InvertGradientConfig, AZ::SystemAllocator);
         AZ_RTTI(InvertGradientConfig, "{1A4C0EF2-BF98-4EB3-B134-A6EF7B31B62E}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
         GradientSampler m_gradientSampler;
     };
 
-    static const AZ::Uuid InvertGradientComponentTypeId = "{FAE8B7AF-5D02-4DE4-860F-1DA31A7FE144}";
+    inline constexpr AZ::TypeId InvertGradientComponentTypeId{ "{FAE8B7AF-5D02-4DE4-860F-1DA31A7FE144}" };
 
     /**
     * calculates a gradient value by inverting values from another gradient

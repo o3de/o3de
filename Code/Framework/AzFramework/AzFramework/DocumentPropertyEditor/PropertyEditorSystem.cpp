@@ -7,8 +7,18 @@
  */
 
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/Console/IConsole.h>
 #include <AzFramework/DocumentPropertyEditor/PropertyEditorNodes.h>
 #include <AzFramework/DocumentPropertyEditor/PropertyEditorSystem.h>
+
+AZ_CVAR(
+    bool,
+    ed_DebugDPE,
+    false,
+    nullptr,
+    AZ::ConsoleFunctorFlags::DontReplicate | AZ::ConsoleFunctorFlags::DontDuplicate,
+    "If set, prints extra debug info from the DPE to the console. Instances of the DPE also spawn a DPE debug view window, which allows "
+    "users inspect the hierarchy and the DOM in pseudo XML format");
 
 namespace AZ::DocumentPropertyEditor
 {
@@ -17,13 +27,11 @@ namespace AZ::DocumentPropertyEditor
         Nodes::Reflect(this);
 
         AZ::Interface<PropertyEditorSystemInterface>::Register(this);
-        AZ::AllocatorInstance<AZ::Dom::ValueAllocator>::Create();
     }
 
     PropertyEditorSystem::~PropertyEditorSystem()
     {
         AZ::Interface<PropertyEditorSystemInterface>::Unregister(this);
-        AZ::AllocatorInstance<AZ::Dom::ValueAllocator>::Destroy();
     }
 
     void PropertyEditorSystem::RegisterNode(NodeMetadata metadata)
@@ -53,10 +61,33 @@ namespace AZ::DocumentPropertyEditor
         else
         {
             AZ_Error(
-                "PropertyEditorSystem", false, "Failed to register attribute, no parent Node specified: %s", attribute->GetName().GetCStr());
+                "PropertyEditorSystem",
+                false,
+                "Failed to register attribute, no parent Node specified: %s",
+                attribute->GetName().GetCStr());
             return;
         }
-        m_attributeMetadata[attribute->GetName()][parentNodeName] = attribute;
+
+        // Prevent duplication of (parentNodeName, attribute) pairs in case the same attribute definition
+        // was registered multiple times for the same node
+        if (m_attributeMetadata[attribute->GetName()].contains(parentNodeName))
+        {
+            auto relatedAttributes = m_attributeMetadata[attribute->GetName()].equal_range(parentNodeName);
+            for (auto iter = relatedAttributes.first; iter != relatedAttributes.second; ++iter)
+            {
+                if (iter->second == attribute)
+                {
+                    AZ_Warning(
+                        "PropertyEditorSystem",
+                        false,
+                        "Detected attempt to re-register a registered attribute definition interface for attribute %s",
+                        attribute->GetName().GetCStr());
+                    return;
+                }
+            }
+        }
+
+        m_attributeMetadata[attribute->GetName()].insert({ parentNodeName, attribute });
     }
 
     const NodeMetadata* PropertyEditorSystem::FindNode(AZ::Name name) const
@@ -102,6 +133,16 @@ namespace AZ::DocumentPropertyEditor
         }
     }
 
+    bool PropertyEditorSystem::DPEDebugEnabled()
+    {
+        bool dpeDebugEnabled = false;
+        if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
+        {
+            console->GetCvarValue("ed_DebugDPE", dpeDebugEnabled);
+        }
+        return dpeDebugEnabled;
+    }
+
     void PropertyEditorSystem::AddNameToCrcTable(AZ::Name name)
     {
         m_crcToName[AZ::Crc32(name.GetStringView())] = AZStd::move(name);
@@ -114,7 +155,11 @@ namespace AZ::DocumentPropertyEditor
         {
             return crcIt->second;
         }
-        AZ_Warning("DPE", false, "No name found for CRC, falling back to CRC value: %" PRIu32, static_cast<AZ::u32>(crc));
+
+        if (DPEDebugEnabled())
+        {
+            AZ_Warning("DPE", false, "No name found for CRC, falling back to CRC value: %" PRIu32, static_cast<AZ::u32>(crc));
+        }
         AZ::Name hashName(AZStd::fixed_string<16>::format("%" PRIu32, static_cast<AZ::u32>(crc)));
         m_crcToName[crc] = hashName;
         return hashName;

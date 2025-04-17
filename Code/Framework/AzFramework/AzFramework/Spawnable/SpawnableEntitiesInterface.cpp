@@ -379,9 +379,11 @@ namespace AzFramework
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<EntitySpawnTicket>(
-                    "EntitySpawnTicket",
-                    "EntitySpawnTicket is an object used to spawn, identify, and track the spawned entities associated with the ticket.");
+                // Hide EntitySpawnTicket in editContext, as there is no proper edit time constructor
+                editContext->Class<EntitySpawnTicket>("EntitySpawnTicket",
+                        "EntitySpawnTicket is an object used to spawn, identify, and track the spawned entities associated with the ticket.")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Hide);
             }
         }
 

@@ -11,6 +11,7 @@
 #include <DiffuseProbeGrid/DiffuseProbeGridFeatureProcessorInterface.h>
 #include <Atom/RHI/RayTracingBufferPools.h>
 #include <Atom/RHI/RayTracingAccelerationStructure.h>
+#include <Atom/RPI.Public/Buffer/RingBuffer.h>
 #include <Atom/RPI.Public/Model/Model.h>
 #include <Render/DiffuseProbeGrid.h>
 
@@ -18,12 +19,15 @@ namespace AZ
 {
     namespace Render
     {
+        class SpecularReflectionsFeatureProcessorInterface;
+
         //! This class manages DiffuseProbeGrids which generate diffuse global illumination
         class DiffuseProbeGridFeatureProcessor final
             : public DiffuseProbeGridFeatureProcessorInterface
             , private Data::AssetBus::MultiHandler
         {
         public:
+            AZ_CLASS_ALLOCATOR(DiffuseProbeGridFeatureProcessor, SystemAllocator)
             AZ_RTTI(AZ::Render::DiffuseProbeGridFeatureProcessor, "{BCD232F9-1EBF-4D0D-A5F4-84AEC933A93C}", AZ::Render::DiffuseProbeGridFeatureProcessorInterface);
 
             static void Reflect(AZ::ReflectContext* context);
@@ -42,18 +46,23 @@ namespace AZ
             void SetProbeSpacing(const DiffuseProbeGridHandle& probeGrid, const AZ::Vector3& probeSpacing) override;
             void SetViewBias(const DiffuseProbeGridHandle& probeGrid, float viewBias) override;
             void SetNormalBias(const DiffuseProbeGridHandle& probeGrid, float normalBias) override;
-            void SetNumRaysPerProbe(const DiffuseProbeGridHandle& probeGrid, const DiffuseProbeGridNumRaysPerProbe& numRaysPerProbe) override;
+            void SetNumRaysPerProbe(const DiffuseProbeGridHandle& probeGrid, DiffuseProbeGridNumRaysPerProbe numRaysPerProbe) override;
             void SetAmbientMultiplier(const DiffuseProbeGridHandle& probeGrid, float ambientMultiplier) override;
             void Enable(const DiffuseProbeGridHandle& probeGrid, bool enable) override;
             void SetGIShadows(const DiffuseProbeGridHandle& probeGrid, bool giShadows) override;
             void SetUseDiffuseIbl(const DiffuseProbeGridHandle& probeGrid, bool useDiffuseIbl) override;
             void SetMode(const DiffuseProbeGridHandle& probeGrid, DiffuseProbeGridMode mode) override;
             void SetScrolling(const DiffuseProbeGridHandle& probeGrid, bool scrolling) override;
+            void SetEdgeBlendIbl(const DiffuseProbeGridHandle& probeGrid, bool edgeBlendIbl) override;
+            void SetFrameUpdateCount(const DiffuseProbeGridHandle& probeGrid, uint32_t frameUpdateCount) override;
+            void SetTransparencyMode(const DiffuseProbeGridHandle& probeGrid, DiffuseProbeGridTransparencyMode transparencyMode) override;
+            void SetEmissiveMultiplier(const DiffuseProbeGridHandle& probeGrid, float emissiveMultiplier) override;
             void SetBakedTextures(const DiffuseProbeGridHandle& probeGrid, const DiffuseProbeGridBakedTextures& bakedTextures) override;
             void SetVisualizationEnabled(const DiffuseProbeGridHandle& probeGrid, bool visualizationEnabled) override;
             void SetVisualizationShowInactiveProbes(const DiffuseProbeGridHandle& probeGrid, bool visualizationShowInactiveProbes) override;
             void SetVisualizationSphereRadius(const DiffuseProbeGridHandle& probeGrid, float visualizationSphereRadius) override;
 
+            bool CanBakeTextures() override;
             void BakeTextures(
                 const DiffuseProbeGridHandle& probeGrid,
                 DiffuseProbeGridBakeTexturesCallback callback,
@@ -104,9 +113,15 @@ namespace AZ
 
             // irradiance query accessors
             uint32_t GetIrradianceQueryCount() const { return aznumeric_cast<uint32_t>(m_irradianceQueries.size()); }
-            const Data::Instance<RPI::Buffer>& GetQueryBuffer() const { return m_queryBuffer[m_currentBufferIndex]; }
+            const Data::Instance<RPI::Buffer>& GetQueryBuffer() const { return m_queryBuffer.GetCurrentBuffer(); }
             const RHI::AttachmentId GetQueryBufferAttachmentId() const { return m_queryBufferAttachmentId; }
             const RHI::BufferViewDescriptor& GetQueryBufferViewDescriptor() const { return m_queryBufferViewDescriptor; }
+
+            // Returns the Scene SRG that can tbe use with precompiled shaders
+            RPI::ShaderResourceGroup* GetSceneSrg() const;
+
+            // Returns the View SRG for a pipeline and PipelineViewTag combination that can be used with precompiled shaders
+            RPI::ShaderResourceGroup* GetViewSrg(RPI::RenderPipeline* pipeline, RPI::PipelineViewTag viewTag) const;     
 
         private:
             AZ_DISABLE_COPY_MOVE(DiffuseProbeGridFeatureProcessor);
@@ -130,10 +145,14 @@ namespace AZ
             // RPI::SceneNotificationBus::Handler overrides
             void OnBeginPrepareRender() override;
             void OnEndPrepareRender() override;
-            void OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline) override;
-            void OnRenderPipelineAdded(RPI::RenderPipelinePtr renderPipeline) override;
-            void OnRenderPipelineRemoved(RPI::RenderPipeline* renderPipeline) override;
+            void OnRenderPipelineChanged(RPI::RenderPipeline* pipeline, RPI::SceneNotification::RenderPipelineChangeType changeType) override;
+            void OnRenderPipelinePersistentViewChanged(
+                RPI::RenderPipeline* renderPipeline, RPI::PipelineViewTag viewTag, RPI::ViewPtr newView, RPI::ViewPtr previousView) override;
 
+            
+            // FeatureProcessor overrides
+            void AddRenderPasses(RPI::RenderPipeline* renderPipeline) override;
+            
             void AddPassRequest(RPI::RenderPipeline* renderPipeline, const char* passRequestAssetFilePath, const char* insertionPointPassName);
             void UpdatePipelineStates();
             void UpdatePasses();
@@ -213,9 +232,21 @@ namespace AZ
             IrradianceQueryVector m_irradianceQueries;
             RHI::BufferViewDescriptor m_queryBufferViewDescriptor;
             RHI::AttachmentId m_queryBufferAttachmentId;
-            static const uint32_t BufferFrameCount = 3;
-            Data::Instance<RPI::Buffer> m_queryBuffer[BufferFrameCount];
-            uint32_t m_currentBufferIndex = 0;
+            RPI::RingBuffer m_queryBuffer{ "DiffuseQueryBuffer", RPI::CommonBufferPoolType::ReadWrite, sizeof(IrradianceQuery) };
+
+            // SSR state, for controlling the DiffuseProbeGridQueryPass in the SSR pipeline
+            SpecularReflectionsFeatureProcessorInterface* m_specularReflectionsFeatureProcessor = nullptr;
+            bool m_ssrRayTracingEnabled = false;
+
+            // Shader that contains the scene and view SRGs for precompiled shaders
+            Data::Instance<RPI::Shader> m_sceneAndViewShader;
+
+            // SRG for copying the Scene SRG shader inputs
+            Data::Instance<RPI::ShaderResourceGroup> m_sceneShaderResourceGroup = nullptr;
+
+            // SRGs for copying the View SRGs shader inputs
+            using ViewShaderResourceGroups = AZStd::unordered_map<RPI::PipelineViewTag, Data::Instance<RPI::ShaderResourceGroup>>;
+            AZStd::unordered_map<RPI::RenderPipeline*, ViewShaderResourceGroups> m_viewShaderResourceGroups;
         };
     } // namespace Render
 } // namespace AZ

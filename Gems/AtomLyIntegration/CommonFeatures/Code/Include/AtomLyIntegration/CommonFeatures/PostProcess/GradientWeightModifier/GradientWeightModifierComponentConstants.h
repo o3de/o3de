@@ -8,12 +8,14 @@
 
 #pragma once
 
+#include <AzCore/RTTI/TypeInfo.h>
+
 namespace AZ
 {
     namespace Render
     {
-        static constexpr const char* const GradientWeightModifierComponentTypeId = "{1D22E9BE-81A5-4784-BB9F-5DF59526026F}";
-        static constexpr const char* const EditorGradientWeightModifierComponentTypeId = "{ABD08A3E-1A35-4BE2-AA57-092FCCFC9CA7}";
+        inline constexpr AZ::TypeId GradientWeightModifierComponentTypeId{ "{1D22E9BE-81A5-4784-BB9F-5DF59526026F}" };
+        inline constexpr AZ::TypeId EditorGradientWeightModifierComponentTypeId{ "{ABD08A3E-1A35-4BE2-AA57-092FCCFC9CA7}" };
 
     } // namespace Render
 } // namespace AZ

@@ -14,17 +14,17 @@
 namespace LmbrCentral
 {
     /// Type ID of CylinderShapeComponent
-    static const AZ::Uuid CylinderShapeComponentTypeId = "{B0C6AA97-E754-4E33-8D32-33E267DB622F}";
+    inline constexpr AZ::TypeId CylinderShapeComponentTypeId{ "{B0C6AA97-E754-4E33-8D32-33E267DB622F}" };
 
     /// Type ID of EditorCylinderShapeComponent
-    static const AZ::Uuid EditorCylinderShapeComponentTypeId = "{D5FC4745-3C75-47D9-8C10-9F89502487DE}";
+    inline constexpr AZ::TypeId EditorCylinderShapeComponentTypeId{ "{D5FC4745-3C75-47D9-8C10-9F89502487DE}" };
 
     /// Configuration data for CylinderShapeComponent
     class CylinderShapeConfig
         : public ShapeComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(CylinderShapeConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CylinderShapeConfig, AZ::SystemAllocator);
         AZ_RTTI(CylinderShapeConfig, "{53254779-82F1-441E-9116-81E1FACFECF4}", ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
 
@@ -61,13 +61,13 @@ namespace LmbrCentral
         : public AZ::ComponentBus
     {
     public:
-        virtual CylinderShapeConfig GetCylinderConfiguration() = 0;
+        virtual const CylinderShapeConfig& GetCylinderConfiguration() const = 0;
 
         /// @brief Returns the end to end height of the cylinder.
-        virtual float GetHeight() = 0;
+        virtual float GetHeight() const = 0;
 
         /// @brief Returns the radius of the cylinder.
-        virtual float GetRadius() = 0;
+        virtual float GetRadius() const = 0;
         
         /// @brief Sets height of the cylinder
         /// @param height new height of the cylinder

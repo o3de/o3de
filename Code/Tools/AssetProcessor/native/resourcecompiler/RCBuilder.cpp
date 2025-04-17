@@ -441,7 +441,7 @@ namespace AssetProcessor
             // Register the builder desc if its registrable
             if ((builder.GetType() == BuilderIdAndName::Type::REGISTERED_BUILDER) && (builder.GetUuid(builderUuid)))
             {
-                EBUS_EVENT(AssetBuilderRegistrationBus, UnRegisterBuilderDescriptor, builderUuid);
+                AssetBuilderRegistrationBus::Broadcast(&AssetBuilderRegistrationBus::Events::UnRegisterBuilderDescriptor, builderUuid);
             }
         }
     }

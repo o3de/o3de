@@ -32,6 +32,14 @@ namespace WhiteBox
 
     AtomRenderMesh::~AtomRenderMesh()
     {
+        m_materialInstance = {};
+        if (m_meshHandle.IsValid() && m_meshFeatureProcessor)
+        {
+            m_meshFeatureProcessor->ReleaseMesh(m_meshHandle);
+            AZ::Render::MeshHandleStateNotificationBus::Event(
+                m_entityId, &AZ::Render::MeshHandleStateNotificationBus::Events::OnMeshHandleSet, &m_meshHandle);
+        }
+        
         AZ::Render::MeshHandleStateRequestBus::Handler::BusDisconnect();
         AZ::TickBus::Handler::BusDisconnect();
     }
@@ -160,10 +168,7 @@ namespace WhiteBox
         
         if (auto materialAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::MaterialAsset>(TexturedMaterialPath.data()))
         {
-            auto materialOverrideInstance = AZ::RPI::Material::FindOrCreate(materialAsset);
-            auto& materialAssignment = m_materialMap[AZ::Render::DefaultMaterialAssignmentId];
-            materialAssignment.m_materialAsset = materialAsset;
-            materialAssignment.m_materialInstance = materialOverrideInstance;
+            m_materialInstance = AZ::RPI::Material::FindOrCreate(materialAsset);
 
             AZ::RPI::ModelMaterialSlot materialSlot;
             materialSlot.m_stableId = OneMaterialSlotId;
@@ -194,7 +199,7 @@ namespace WhiteBox
         }
 
         m_meshFeatureProcessor->ReleaseMesh(m_meshHandle);
-        m_meshHandle = m_meshFeatureProcessor->AcquireMesh(AZ::Render::MeshHandleDescriptor{ m_modelAsset });
+        m_meshHandle = m_meshFeatureProcessor->AcquireMesh(AZ::Render::MeshHandleDescriptor(m_modelAsset, m_materialInstance));
         AZ::Render::MeshHandleStateNotificationBus::Event(m_entityId, &AZ::Render::MeshHandleStateNotificationBus::Events::OnMeshHandleSet, &m_meshHandle);
 
         return true;
@@ -264,20 +269,24 @@ namespace WhiteBox
 
     void AtomRenderMesh::UpdateMaterial(const WhiteBoxMaterial& material)
     {
-        if (m_meshFeatureProcessor)
-        {
-            auto& materialAssignment = m_materialMap[AZ::Render::DefaultMaterialAssignmentId];
-            materialAssignment.m_propertyOverrides[AZ::Name("baseColor.color")] = AZ::Color(material.m_tint);
-            materialAssignment.m_propertyOverrides[AZ::Name("baseColor.useTexture")] = material.m_useTexture;
-            // if ApplyProperties fails, defer updating the material assignment map 
-            // on the next tick, and try applying properties again
-            if (materialAssignment.ApplyProperties())
+        if (m_meshFeatureProcessor && m_materialInstance)
+        {            
+            if (const auto& materialPropertyIndex = m_materialInstance->FindPropertyIndex(AZ::Name("baseColor.color"));
+                materialPropertyIndex.IsValid())
             {
-                if (AZ::TickBus::Handler::BusIsConnected())
-                {
-                    AZ::TickBus::Handler::BusDisconnect();
-                }
-                m_meshFeatureProcessor->SetMaterialAssignmentMap(m_meshHandle, m_materialMap);
+                m_materialInstance->SetPropertyValue(materialPropertyIndex, AZ::Color(material.m_tint));
+            }
+
+            if (const auto& materialPropertyIndex = m_materialInstance->FindPropertyIndex(AZ::Name("baseColor.useTexture"));
+                materialPropertyIndex.IsValid())
+            {
+                m_materialInstance->SetPropertyValue(materialPropertyIndex, material.m_useTexture);
+            }
+
+            // If the material changes were successfully applied then disconnect from the tick bus. Otherwise, make another attempt on the next tick.
+            if (!m_materialInstance->NeedsCompile() || m_materialInstance->Compile())
+            {
+                AZ::TickBus::Handler::BusDisconnect();
             }
             else if (!AZ::TickBus::Handler::BusIsConnected())
             {
@@ -288,10 +297,8 @@ namespace WhiteBox
 
     void AtomRenderMesh::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
-        auto& materialAssignment = m_materialMap[AZ::Render::DefaultMaterialAssignmentId];
-        if (materialAssignment.ApplyProperties())
+        if (!m_materialInstance || !m_materialInstance->NeedsCompile() || m_materialInstance->Compile())
         {
-            m_meshFeatureProcessor->SetMaterialAssignmentMap(m_meshHandle, m_materialMap);
             AZ::TickBus::Handler::BusDisconnect();
         }
     }

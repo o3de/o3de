@@ -1,0 +1,29 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "id": "{5559A2B1-331C-4E52-8F3E-916CD114F41D}",
+        "category": "Scene",
+        "title": "Time",
+        "titlePaletteName": "SceneNodeTitlePalette",
+        "description": "The current system time, often used to drive animated effects",
+        "slotDataTypeGroups": [
+            "outTime"
+        ],
+        "outputSlots": [
+            {
+                "name": "outTime",
+                "displayName": "Time",
+                "description": "Time",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = SceneSrg::m_time;"
+                    ]
+                }
+            }
+        ]
+    }
+}

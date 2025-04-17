@@ -9,6 +9,7 @@
 #pragma once
 
 #include <Atom/RPI.Reflect/Asset/AssetHandler.h>
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/Image/ImageAsset.h>
 #include <Atom/RPI.Reflect/ResourcePoolAsset.h>
 
@@ -21,18 +22,18 @@ namespace AZ
     namespace RPI
     {
         //! The asset for attachment image which is mainly used to create runtime attachment instance. 
-        class AttachmentImageAsset final
+        class ATOM_RPI_REFLECT_API AttachmentImageAsset final
             : public ImageAsset
         {
             friend class AttachmentImageAssetCreator;
 
         public:
-            static const char* DisplayName;
-            static const char* Group;
-            static const char* Extension;
+            static constexpr const char* DisplayName{ "AttachmentImageAsset" };
+            static constexpr const char* Group{ "Image" };
+            static constexpr const char* Extension{ "attimage" };
 
             AZ_RTTI(AttachmentImageAsset, "{82CEA86B-E891-4969-8F35-D8017E8902C8}", ImageAsset);
-            AZ_CLASS_ALLOCATOR(AttachmentImageAsset, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AttachmentImageAsset, AZ::SystemAllocator);
             static void Reflect(AZ::ReflectContext* context);
 
             ~AttachmentImageAsset() override = default;

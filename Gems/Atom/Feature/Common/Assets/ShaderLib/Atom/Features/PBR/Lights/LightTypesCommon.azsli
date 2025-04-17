@@ -14,10 +14,10 @@
 #include <Atom/Features/PBR/Hammersley.azsli>
 
 //! Adjust the intensity of specular light based on the radius of the light source and roughness of the surface to approximate energy conservation.
-float GetIntensityAdjustedByRadiusAndRoughness(float roughnessA, float radius, float distance2)
+real GetIntensityAdjustedByRadiusAndRoughness(real roughnessA, real radius, real distance2)
 {
-    float roughnessAdjusted = saturate(roughnessA + (radius / (3.0 * sqrt(distance2))));
-    float intensityNormalization = max(roughnessA, 0.001f) / roughnessAdjusted;
+    real roughnessAdjusted = saturate(roughnessA + (radius / (3.0 * sqrt(distance2))));
+    real intensityNormalization = max(roughnessA, 0.001) / roughnessAdjusted;
     return intensityNormalization * intensityNormalization;
 }
 
@@ -25,25 +25,25 @@ float GetIntensityAdjustedByRadiusAndRoughness(float roughnessA, float radius, f
 void AddSampleContribution(
     in Surface surface,
     in LightingData lightingData,
-    in float3 lightSamplePoint,
-    in float3 lightSampleDirection,
-    in float bothDirectionsFactor,
-    inout float3 diffuseAcc,
-    inout float3 specularAcc,
-    inout float3 translucentAcc)
+    in real3 lightSamplePoint,
+    in real3 lightSampleDirection,
+    in real bothDirectionsFactor,
+    inout real3 diffuseAcc,
+    inout real3 specularAcc,
+    inout real3 translucentAcc)
 {
-    float3 posToLightSample = lightSamplePoint - surface.position;
-    float distanceToLight2 = dot(posToLightSample, posToLightSample);
-    float3 posToLightSampleDir = normalize(posToLightSample);
+    real3 posToLightSample = lightSamplePoint - real3(surface.position);
+    real distanceToLight2 = dot(posToLightSample, posToLightSample);
+    real3 posToLightSampleDir = normalize(posToLightSample);
 
     // Lambertian emitter
-    float intensity = dot(-lightSampleDirection, posToLightSampleDir);
+    real intensity = dot(-lightSampleDirection, posToLightSampleDir);
     // Handle if the light emits from both sides
     intensity = abs(clamp(intensity, bothDirectionsFactor, 1.0));
     // Attenuate with distance
     intensity /= distanceToLight2;
 
-    float3 intensityRgb = float3(intensity, intensity, intensity);
+    real3 intensityRgb = real3(intensity, intensity, intensity);
 
     diffuseAcc += GetDiffuseLighting(surface, lightingData, intensityRgb, posToLightSampleDir);
 
@@ -52,10 +52,16 @@ void AddSampleContribution(
     // - If transmission mode is thick object -> use transmission thickness parameter instead
     // - If transmission mode is thin object -> ignore back lighting
     // To detect and apply this behavior in the GetBackLighting function, we need to use a negative transmissionDistance 
-    const float transmissionDistance = -1.0f;
+    const real transmissionDistance = -1.0;
     // If the transmissionDistance is ignored then the attenuation distance (only used on thin objects) does not have any influence
-    const float attenuationDistance = 0.0f;
+    const real attenuationDistance = 0.0;
     translucentAcc += GetBackLighting(surface, lightingData, intensityRgb, posToLightSampleDir, transmissionDistance, attenuationDistance);
 
     specularAcc += GetSpecularLighting(surface, lightingData, intensityRgb, posToLightSampleDir);
+}
+
+bool IsSameLightChannel(uint channelA, uint channelB)
+{
+    uint bitResult = channelA & channelB;
+    return bitResult;
 }

@@ -116,7 +116,20 @@ namespace EMotionFX
 
         AZ::SceneAPI::Events::ProcessingResult ActorGroupExporter::SaveActor(ActorGroupExportContext& context)
         {
-            AZStd::string filename = SceneUtil::FileUtilities::CreateOutputFileName(context.m_group.GetName(), context.m_outputDirectory, "");
+            // If we wanted to preserve the input file's extension as a part of the product asset name, we would pass
+            // context.m_scene.GetSourceExtension() here instead of emptySourceExtension. We aren't currently doing that for
+            // EmotionFX files (.actor, .motion) because source assets (.motionset, .emfxworkspace) can have references to
+            // existing product asset file names. Those names would need to get fixed up to contain the extension to preserve backwards
+            // compatibility.
+            // For example, 'robot.fbx' will produce 'robot.actor' here. If we pass in GetSourceExtension(), it would
+            // produce 'robot.fbx.actor'. The reason to want the latter is so that multiple input files that vary by extension only
+            // would produce different outputs (ex: 'robot.fbx' -> 'robot.fbx.actor', 'robot.obj' -> 'robot.obj.actor').
+            // If this is ever desired, the source asset input serialization would need to be modified to correctly change the
+            // assetId field that's stored in the source assets, and the version number on those files should be incremented.
+            const AZStd::string emptySourceExtension;
+            AZStd::string filename = SceneUtil::FileUtilities::CreateOutputFileName(
+                context.m_group.GetName(), context.m_outputDirectory, "", emptySourceExtension);
+
             if (filename.empty() || !SceneUtil::FileUtilities::EnsureTargetFolderExists(filename))
             {
                 return SceneEvents::ProcessingResult::Failure;
@@ -173,7 +186,7 @@ namespace EMotionFX
             }
 
             // Default to the first mesh group until we get a way to choose it via the scene settings (ATOM-13590).
-            AZ_Error("EMotionFX", atomModelAssets.size() <= 1, "Ambigious mesh for actor asset. More than one mesh group found. Defaulting to the first one.");
+            AZ_Warning("EMotionFX", atomModelAssets.size() <= 1, "Ambiguous mesh for actor asset. More than one mesh group found. Defaulting to the first one.");
             if (!atomModelAssets.empty())
             {
                 const AZ::SceneAPI::Events::ExportProduct& meshProduct = atomModelAssets[0];

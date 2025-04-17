@@ -8,19 +8,19 @@
 
 #include <Atom/Features/SrgSemantics.azsli>
 
-#include <scenesrg.srgi>
-#include <viewsrg.srgi>
+#include <scenesrg_all.srgi>
+#include <viewsrg_all.srgi>
 #include <TerrainSrg.azsli>
 #include <TerrainCommon.azsli>
 #include <TerrainDetailHelpers.azsli>
 #include <TerrainMacroHelpers.azsli>
 #include <ClipmapComputeHelpers.azsli>
-#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
-#include <Atom/Features/PBR/ForwardPassSrg.azsli>
-#include <Atom/Features/PBR/ForwardPassOutput.azsli>
+#include <Atom/Features/Pipeline/Forward/ForwardPassSrg.azsli>
+#include <Atom/Features/Pipeline/Forward/ForwardPassOutput.azsli>
 #include <Atom/Features/PBR/AlphaUtils.azsli>
 #include <Atom/Features/ColorManagement/TransformColor.azsli>
 #include <Atom/Features/PBR/Lighting/StandardLighting.azsli>
+#include <Atom/Features/PBR/Lights/IblForward.azsli>
 #include <Atom/Features/Shadow/DirectionalLightShadow.azsli>
 #include <Atom/Features/PBR/Decals.azsli>
 
@@ -162,7 +162,7 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput input)
 
     // Light iterator
     lightingData.tileIterator.Init(input.m_position, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
-    lightingData.Init(surface.position, surface.normal, surface.roughnessLinear);
+    lightingData.Init(surface.position, surface.normal, surface.roughnessLinear, ViewSrg::m_worldPosition.xyz);
 
     // Shadow, Occlusion
     lightingData.diffuseAmbientOcclusion = detailSurface.m_occlusion;
@@ -182,7 +182,7 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput input)
     ApplyDirectLighting(surface, lightingData, input.m_position);
 
     // Apply Image Based Lighting (IBL)
-    ApplyIBL(surface, lightingData);
+    ApplyIblForward(surface, lightingData);
 
     // Finalize Lighting
     lightingData.FinalizeLighting();
@@ -214,7 +214,7 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput input)
 
         // Draw red wireframe on quad boundaries
         float quadSpacing = patchScale * TerrainSrg::m_meshData.m_rcpGridSize;
-        float2 modPos = input.m_worldPosition.xy % quadSpacing;
+        float2 modPos = fmod(input.m_worldPosition.xy, quadSpacing);
         const float lineWidth = 0.04 * quadSpacing;
         if (any(abs(modPos) < lineWidth) || any(abs(modPos) > quadSpacing - lineWidth))
         {
@@ -223,14 +223,14 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput input)
 
         // Draw yellow (red + green) wireframe on quad boundaries of next lod level.
         quadSpacing *= 2.0;
-        modPos = input.m_worldPosition.xy % quadSpacing;
+        modPos = fmod(input.m_worldPosition.xy, quadSpacing);
         if (any(abs(modPos) < lineWidth) || any(abs(modPos) > quadSpacing - lineWidth))
         {
             output.m_diffuseColor.g += 1.0;
         }
 
         // Draw blue on sector boundaries
-        modPos = input.m_worldPosition.xy % patchScale;
+        modPos = fmod(input.m_worldPosition.xy, patchScale);
         if (any(abs(modPos) < quadSpacing * 0.5) || any(abs(modPos) > patchScale - quadSpacing * 0.5))
         {
             output.m_diffuseColor.b += 1.0;

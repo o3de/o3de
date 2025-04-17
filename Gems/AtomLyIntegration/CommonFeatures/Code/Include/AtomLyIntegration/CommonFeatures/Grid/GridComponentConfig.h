@@ -21,7 +21,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(GridComponentConfig, "{D1E357DF-6CCC-43C4-81F1-6B85C2E06A59}", ComponentConfig);
-            AZ_CLASS_ALLOCATOR(GridComponentConfig, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(GridComponentConfig, SystemAllocator);
 
             static void Reflect(ReflectContext* context);
 

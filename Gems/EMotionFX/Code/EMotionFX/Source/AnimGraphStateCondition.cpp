@@ -29,9 +29,9 @@ namespace EMotionFX
     const char* AnimGraphStateCondition::s_functionStateFullyBlendedOut = "State Fully Blended Out";
     const char* AnimGraphStateCondition::s_functionHasReachedSpecifiedPlaytime = "Has Reached Specified Playtime";
 
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphStateCondition, AnimGraphConditionAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphStateCondition::UniqueData, AnimGraphObjectUniqueDataAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphStateCondition::EventHandler, AnimGraphObjectUniqueDataAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphStateCondition, AnimGraphConditionAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphStateCondition::UniqueData, AnimGraphObjectUniqueDataAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphStateCondition::EventHandler, AnimGraphObjectUniqueDataAllocator)
 
     AnimGraphStateCondition::AnimGraphStateCondition()
         : AnimGraphTransitionCondition()
@@ -487,10 +487,10 @@ namespace EMotionFX
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
                 ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-            ->DataElement(AZ_CRC("AnimGraphStateId", 0x3547298f), &AnimGraphStateCondition::m_stateId, "State", "The state to watch.")
+            ->DataElement(AZ_CRC_CE("AnimGraphStateId"), &AnimGraphStateCondition::m_stateId, "State", "The state to watch.")
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &AnimGraphStateCondition::Reinit)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
-                ->Attribute(AZ_CRC("AnimGraph", 0x0d53d4b3), &AnimGraphStateCondition::GetAnimGraph)
+                ->Attribute(AZ_CRC_CE("AnimGraph"), &AnimGraphStateCondition::GetAnimGraph)
             ->DataElement(AZ::Edit::UIHandlers::ComboBox, &AnimGraphStateCondition::m_testFunction, "Test Function", "The type of test function or condition.")
                 ->Attribute(AZ::Edit::Attributes::Visibility, &AnimGraphStateCondition::GetTestFunctionVisibility)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)

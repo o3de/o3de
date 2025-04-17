@@ -68,22 +68,37 @@ namespace LmbrCentral
 
         if (m_broadPhaseTriggerArea.IsValid())
         {
-            if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
-            {
-                AZStd::pair<AzPhysics::SceneHandle, AzPhysics::SimulatedBodyHandle> foundBody = physicsSystem->FindAttachedBodyHandleFromEntityId(m_broadPhaseTriggerArea);
-                if (foundBody.first != AzPhysics::InvalidSceneHandle)
-                {
-                    AzPhysics::SimulatedBodyEvents::RegisterOnTriggerEnterHandler(
-                        foundBody.first, foundBody.second, m_onTriggerEnterHandler);
-                    AzPhysics::SimulatedBodyEvents::RegisterOnTriggerExitHandler(
-                        foundBody.first, foundBody.second, m_onTriggerExitHandler);
-                }
-            }
+            // During entity activation the simulated bodies are not created yet.
+            // Connect to RigidBodyNotificationBus to listen when they get enabled to register the trigger handlers.
+            Physics::RigidBodyNotificationBus::Handler::BusConnect(m_broadPhaseTriggerArea);
         }
     }
 
     //=========================================================================
     void AudioAreaEnvironmentComponent::Deactivate()
+    {
+        Physics::RigidBodyNotificationBus::Handler::BusDisconnect();
+        m_onTriggerEnterHandler.Disconnect();
+        m_onTriggerExitHandler.Disconnect();
+    }
+
+    //=========================================================================
+    void AudioAreaEnvironmentComponent::OnPhysicsEnabled(const AZ::EntityId& entityId)
+    {
+        if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
+        {
+            AZStd::pair<AzPhysics::SceneHandle, AzPhysics::SimulatedBodyHandle> foundBody =
+                physicsSystem->FindAttachedBodyHandleFromEntityId(entityId);
+            if (foundBody.first != AzPhysics::InvalidSceneHandle)
+            {
+                AzPhysics::SimulatedBodyEvents::RegisterOnTriggerEnterHandler(foundBody.first, foundBody.second, m_onTriggerEnterHandler);
+                AzPhysics::SimulatedBodyEvents::RegisterOnTriggerExitHandler(foundBody.first, foundBody.second, m_onTriggerExitHandler);
+            }
+        }
+    }
+
+    //=========================================================================
+    void AudioAreaEnvironmentComponent::OnPhysicsDisabled([[maybe_unused]] const AZ::EntityId& entityId)
     {
         m_onTriggerEnterHandler.Disconnect();
         m_onTriggerExitHandler.Disconnect();

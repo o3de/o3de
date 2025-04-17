@@ -18,6 +18,38 @@
 
 namespace AzToolsFramework
 {
+    //! This class is used to mute KeyPress events that are triggered after a shortcut has fired.
+    class ApplicationWatcher : public QObject
+    {
+    public:
+        void SetShortcutTriggeredFlag();
+
+        bool eventFilter(QObject* watched, QEvent* event) override;
+
+        bool m_shortcutWasTriggered = false;
+    };
+
+    //! This class is used to install an event filter on each widget assigned to an action context
+    //! to properly handle ambiguous shorcuts.
+    class ActionContextWidgetWatcher : public QObject
+    {
+    public:
+        explicit ActionContextWidgetWatcher(ApplicationWatcher* applicationWatcher, EditorActionContext* editorActionContext);
+
+        bool eventFilter(QObject* watched, QEvent* event) override;
+
+        bool TriggerActiveActionsForWidget(const QWidget* watchedWidget, const QKeyEvent* keyEvent);
+
+    private:
+        static bool TriggerActiveActionsWithShortcut(
+            const QList<QAction*>& contextActions, const QList<QAction*>& widgetActions, const QKeySequence& shortcutKeySequence);
+        static bool TriggerActiveActionsWithShortcut(
+            const QList<QAction*>& contextActions, const QList<QAction*>& widgetActions, const QKeyEvent* shortcutKeyEvent);
+
+        ApplicationWatcher* m_applicationWatcher = nullptr;
+        EditorActionContext* m_editorActionContext = nullptr;
+    };
+
     //! Action Manager class definition.
     //! Handles Editor Actions and allows registration and access across tools.
     class ActionManager final
@@ -28,13 +60,13 @@ namespace AzToolsFramework
         ActionManager();
         ~ActionManager();
 
+        static constexpr AZStd::string_view ActionContextWidgetIdentifier = "ActionContextWidgetIdentifier";
+
     private:
         // ActionManagerInterface overrides ...
         ActionManagerOperationResult RegisterActionContext(
-            const AZStd::string& parentContextIdentifier,
             const AZStd::string& contextIdentifier,
-            const ActionContextProperties& properties,
-            QWidget* widget
+            const ActionContextProperties& properties
         ) override;
         bool IsActionContextRegistered(const AZStd::string& contextIdentifier) const override;
         ActionManagerOperationResult RegisterAction(
@@ -59,6 +91,7 @@ namespace AzToolsFramework
         ActionManagerOperationResult SetActionCategory(const AZStd::string& actionIdentifier, const AZStd::string& category) override;
         ActionManagerGetterResult GetActionIconPath(const AZStd::string& actionIdentifier) override;
         ActionManagerOperationResult SetActionIconPath(const AZStd::string& actionIdentifier, const AZStd::string& iconPath) override;
+        int GenerateActionAlphabeticalSortKey(const AZStd::string& actionIdentifier) override;
         ActionManagerBooleanResult IsActionEnabled(const AZStd::string& actionIdentifier) const override;
         ActionManagerOperationResult TriggerAction(const AZStd::string& actionIdentifier) override;
         ActionManagerOperationResult InstallEnabledStateCallback(const AZStd::string& actionIdentifier, AZStd::function<bool()> enabledStateCallback) override;
@@ -75,23 +108,36 @@ namespace AzToolsFramework
         ActionManagerGetterResult GetWidgetActionName(const AZStd::string& widgetActionIdentifier) override;
         ActionManagerOperationResult SetWidgetActionName(const AZStd::string& widgetActionIdentifier, const AZStd::string& name) override;
         ActionManagerGetterResult GetWidgetActionCategory(const AZStd::string& widgetActionIdentifier) override;
-        ActionManagerOperationResult SetWidgetActionCategory(const AZStd::string& widgetActionIdentifier, const AZStd::string& category) override;
+        ActionManagerOperationResult SetWidgetActionCategory(
+            const AZStd::string& widgetActionIdentifier, const AZStd::string& category) override;
+        ActionManagerOperationResult RegisterActionContextMode(
+            const AZStd::string& actionContextIdentifier, const AZStd::string& modeIdentifier) override;
+        ActionManagerOperationResult AssignModeToAction(
+            const AZStd::string& modeIdentifier, const AZStd::string& actionIdentifier) override;
+        ActionManagerBooleanResult IsActionActiveInCurrentMode(const AZStd::string& actionIdentifier) const override;
+        ActionManagerOperationResult SetActiveActionContextMode(
+            const AZStd::string& actionContextIdentifier, const AZStd::string& modeIdentifier) override;
+        ActionManagerGetterResult GetActiveActionContextMode(const AZStd::string& actionContextIdentifier) const override;
 
         // ActionManagerInternalInterface overrides ...
         QAction* GetAction(const AZStd::string& actionIdentifier) override;
         const QAction* GetActionConst(const AZStd::string& actionIdentifier) const override;
         EditorAction* GetEditorAction(const AZStd::string& actionIdentifier) override;
         const EditorAction* GetEditorActionConst(const AZStd::string& actionIdentifier) const override;
-        bool GetHideFromMenusWhenDisabled(const AZStd::string& actionIdentifier) const override;
-        bool GetHideFromToolBarsWhenDisabled(const AZStd::string& actionIdentifier) const override;
+        ActionContextWidgetWatcher* GetActionContextWidgetWatcher(const AZStd::string& actionContextIdentifier) override;
+        ActionVisibility GetActionMenuVisibility(const AZStd::string& actionIdentifier) const override;
+        ActionVisibility GetActionToolBarVisibility(const AZStd::string& actionIdentifier) const override;
         QWidget* GenerateWidgetFromWidgetAction(const AZStd::string& widgetActionIdentifier) override;
+        void UpdateAllActionsInActionContext(const AZStd::string& actionContextIdentifier) override;
+        void Reset();
 
-        void ClearActionContextMap();
+        ApplicationWatcher m_applicationWatcher;
 
         AZStd::unordered_map<AZStd::string, EditorActionContext*> m_actionContexts;
-        AZStd::unordered_map<AZStd::string, EditorAction> m_actions;
+        AZStd::unordered_map<AZStd::string, ActionContextWidgetWatcher*> m_actionContextWidgetWatchers;
+        AZStd::unordered_map<AZStd::string, EditorAction*> m_actions;
         AZStd::unordered_map<AZStd::string, AZStd::unordered_set<AZStd::string>> m_actionUpdaters;
-        AZStd::unordered_map<AZStd::string, EditorWidgetAction> m_widgetActions;
+        AZStd::unordered_map<AZStd::string, EditorWidgetAction*> m_widgetActions;
     };
 
 } // namespace AzToolsFramework

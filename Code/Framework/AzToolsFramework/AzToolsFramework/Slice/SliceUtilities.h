@@ -64,38 +64,6 @@ namespace AzToolsFramework
         };
 
         /**
-         * Displays slice push UI for the specified set of entities.
-         * \param parent - the parent application window
-         * \param entities - the list of entity Ids to include in the push request.
-         * \param serializeContext - desired serialize context. Specify nullptr to use application's serialize context.
-         */
-        void PushEntitiesModal(QWidget* parent, const EntityIdList& entities,
-                               AZ::SerializeContext* serializeContext = nullptr);
-
-        /**
-         * Creates a new slice asset containing the specified entities.
-         * If the asset already exists, entities will instead be pushed to the asset to preserve relationships.
-         * \param entities - the set of entities to include in the new slice.
-         * \param targetDirectory - the preferred directory path.
-         * \param inheritSlices - if true, entities already part of slice instances will be added by cascading from their corresponding slices.
-         * \param setAsDynamic - if true, the slice is setup as a dynamic slice on creation
-         * \param acceptDefaultPath - Whether to prompt the user for a path save location or to proceed with the generated one. Defaults to false
-         * \param defaultMoveExternalRefs - Whether to prompt the user on if external entity references found in added entities get added to the created slice or do this automatically. Defaults to false
-         * \param defaultGenerateSharedRoot - Whether to generate a shared root if one or more added entities do not share the same root. Defaults to false
-         * \param silenceWarningPopups - Disables QT warning popups from being generated, can still rely on the return value for error handling. Defaults to false
-         * \return true if slice was created successfully.
-         */
-        bool MakeNewSlice(const AzToolsFramework::EntityIdSet& entities,
-                          const char* targetDirectory, 
-                          bool inheritSlices,
-                          bool setAsDynamic,
-                          bool acceptDefaultPath = false,
-                          bool defaultMoveExternalRefs = false,
-                          bool defaultGenerateSharedRoot = false,
-                          bool silenceWarningPopups = false,
-                          AZ::SerializeContext* serializeContext = nullptr);
-
-        /**
          * Utility function to gather all referenced entities given a set of entities.
          * This flood searches entity id references, so if you pass in Entity1 that references
          * Entity2, and Entity2 references Entity3, Entity3 is also visited and added to output as
@@ -258,23 +226,6 @@ namespace AzToolsFramework
                                        AZStd::string& outSliceFilePath);
 
         /**
-         * Populates a QMenu with sub-menus to expose slice override push operations for a provided set of entities.
-         * \param outerMenu QMenu to which sub menus will be added.
-         * \param inputEntities a set of entities for which quick push options will be determined. Typically callers will pass the selected entity set.
-         * \param options optional settings to affect the appearance of the push menu, i.e. title and whether to display a change count if it's singular.
-         */
-        void PopulateQuickPushMenu(QMenu& outerMenu, const AzToolsFramework::EntityIdList& inputEntities, const QuickPushMenuOptions& options = QuickPushMenuOptions());
-
-        /**
-         * Populates a QMenu with sub-menus to expose slice override push operations for a specific entity and data field.
-         * \param outerMenu QMenu to which sub menus will be added.
-         * \param entityId a specific live entity for which the specified field should be pushed.
-         * \param fieldAddress address for the specific field to be pushed.
-         * \param options optional settings to affect the appearance of the push menu, i.e. title and whether to display a change count if it's singular.
-         */
-        void PopulateQuickPushMenu(QMenu& outerMenu, AZ::EntityId entityId, const InstanceDataNode::Address& fieldAddress, const QuickPushMenuOptions& options = QuickPushMenuOptions());
-
-        /**
         * Get pushable new child entity Ids
         * \param entityIdList input entities
         * \param unpushableEntityIdsPerAsset [out] unpushable new child entity Ids for each potential ancestor
@@ -347,30 +298,6 @@ namespace AzToolsFramework
         void PopulateSliceRelationshipViewMenu(QMenu& outerMenu, const AZ::EntityId& selectedEntity, const AZ::SliceComponent::EntityAncestorList& ancestors, SliceSelectedCallback sliceSelectedCallback);
 
         /**
-        * Populates a QMenu with a sub-menu to reassign a slices root ancestor to a new base, this operation directly affects the slice asset file
-        * \param outerMenu The menu used as the parent for the go to slice menu.
-        * \param selectedEntities The entities selected and used to populate the menu
-        * \param selectedTransformHierarchyEntities The selected entities and all of their children
-        * \param headerText Optional header text
-        */
-        void PopulateDetachMenu(QMenu& outerMenu, const AzToolsFramework::EntityIdList& selectedEntities, const AzToolsFramework::EntityIdSet& selectedTransformHierarchyEntities, const AZStd::string& headerText = "Detach");
-
-        /**
-        * Save slice overrides using the hot key.
-        * \param inputEntities list of entities whose overrides need to be pushed.
-        * \param numEntitiesToAdd [out] number of new entities to add.
-        * \param numEntitiesToRemove [out] number of entities to remove.
-        * \param numEntitiesToUpdate [out] number of entities to update.
-        * \param QuickPushToFirstLevel true if users press the hot key to save overrides to the first level. Otherwise save overrides to the root level.
-        */
-        bool SaveSlice(
-            const AzToolsFramework::EntityIdList& inputEntities,
-            int& numEntitiesToAdd,
-            int& numEntitiesToRemove,
-            int& numEntitiesToUpdate,
-            const bool& QuickPushToFirstLevel);
-
-        /**
          * Returns true if any of the given entities have slice overrides for their immediate slice ancestor (may be slow on a large group of entities).
          * \param inputEntities The entities to test. If any are not in a slice instance they are ignored.
          */
@@ -407,13 +334,6 @@ namespace AzToolsFramework
          * \param newParentId The target parent entity
          */
         bool IsReparentNonTrivial(const AZ::EntityId& entityId, const AZ::EntityId& newParentId);
-
-        /**
-         * Performs the necessary detach operations on orphaned slice and subslice entities while reparenting existing loose entities and slices.
-         * \param entityId The target entity to reparent
-         * \param newParentId The target parent entity
-        */
-        void ReparentNonTrivialSliceInstanceHierarchy(const AZ::EntityId& entityId, const AZ::EntityId& newParentId);
 
         /**
         * Reflects slice tools related structures for serialization/editing.
@@ -487,7 +407,7 @@ namespace AzToolsFramework
             : public AZ::UserSettings
         {
         public:
-            AZ_CLASS_ALLOCATOR(SliceUserSettings, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SliceUserSettings, AZ::SystemAllocator);
             AZ_RTTI(SliceUserSettings, "{56EC1A8F-1ADB-4CC7-A3C3-3F462750C31F}", AZ::UserSettings);
 
             AZStd::string m_saveLocation;

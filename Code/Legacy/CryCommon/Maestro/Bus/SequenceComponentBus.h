@@ -10,8 +10,6 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/Math/Vector3.h>
-#include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/ComponentBus.h>
@@ -45,9 +43,9 @@ namespace Maestro
             const AZStd::string& GetVirtualPropertyName() const { return m_virtualPropertyName; }
             AZ::ComponentId      GetComponentId() const { return m_componentId; }
 
-            bool operator== (const AnimatablePropertyAddress& rhs) const 
-            { 
-                return (m_componentId == rhs.m_componentId && m_virtualPropertyName == rhs.m_virtualPropertyName); 
+            bool operator== (const AnimatablePropertyAddress& rhs) const
+            {
+                return (m_componentId == rhs.m_componentId && m_virtualPropertyName == rhs.m_virtualPropertyName);
             }
 
         private:
@@ -67,6 +65,7 @@ namespace Maestro
         class AnimatedBoolValue;
         class AnimatedQuaternionValue;
         class AnimatedAssetIdValue;
+        class AnimatedStringValue;
 
         class AnimatedValue
         {
@@ -76,7 +75,7 @@ namespace Maestro
             virtual ~AnimatedValue() {};
 
             // Query the type of the value
-            virtual const AZ::Uuid& GetTypeId() const = 0;
+            virtual AZ::TypeId GetTypeId() const = 0;
 
             void GetValue(AZ::Vector3& vector3Value) const
             {
@@ -106,6 +105,10 @@ namespace Maestro
             {
                 assetIdValue = GetAssetIdValue();
             }
+            void GetValue(AZStd::string& stringValue) const
+            {
+                stringValue = GetStringValue();
+            }
 
             // same as above but returning the value
             virtual AZ::Quaternion GetQuaternionValue() const = 0;
@@ -115,6 +118,7 @@ namespace Maestro
             virtual AZ::s32     GetS32Value() const = 0;
             virtual AZ::u32     GetU32Value() const = 0;
             virtual const AZ::Data::AssetId& GetAssetIdValue() const = 0;
+            virtual AZStd::string GetStringValue() const = 0;
 
             // Set the value to the given arg. Returns true if the arg is the 'native' type of the concrete animated value
             virtual bool SetValue(const AZ::Vector3& vector3Value) = 0;
@@ -124,12 +128,14 @@ namespace Maestro
             virtual bool SetValue(AZ::s32 s32Value) = 0;
             virtual bool SetValue(AZ::u32 u32Value) = 0;
             virtual bool SetValue(const AZ::Data::AssetId& assetIdValue) = 0;
+            virtual bool SetValue(const AZStd::string& stringValue) = 0;
 
             virtual bool IsClose(const AnimatedFloatValue& rhs, float tolerance = AZ::Constants::Tolerance) const = 0;
             virtual bool IsClose(const AnimatedVector3Value& rhs, float tolerance = AZ::Constants::Tolerance) const = 0;
             virtual bool IsClose(const AnimatedQuaternionValue& rhs, float tolerance = AZ::Constants::Tolerance) const = 0;
             virtual bool IsClose(const AnimatedBoolValue& rhs, float tolerance = AZ::Constants::Tolerance) const = 0;
             virtual bool IsClose(const AnimatedAssetIdValue& rhs, float tolerance = AZ::Constants::Tolerance) const = 0;
+            virtual bool IsClose(const AnimatedStringValue& rhs, float tolerance = AZ::Constants::Tolerance) const = 0;
 
         protected:
             AnimatedValue() {}     // protected constructor as the interface should never be constructed directly - it's an abstract class
@@ -144,7 +150,7 @@ namespace Maestro
             AnimatedFloatValue(float value = .0f) { m_value = value; }
             ~AnimatedFloatValue() {}
 
-            const AZ::Uuid& GetTypeId() const override
+            AZ::TypeId GetTypeId() const override
             {
                 return AZ::AzTypeInfo<float>::Uuid();
             }
@@ -178,6 +184,12 @@ namespace Maestro
                 AZ_Assert(0, "Not expected to be used.");
                 static AZ::Data::AssetId assetId;
                 return assetId;
+            }
+            AZStd::string GetStringValue() const override
+            {
+                char buffer[33] = { 0 };
+                azsprintf(buffer, "%f", m_value);
+                return AZStd::string(buffer);
             }
 
             bool SetValue(const AZ::Vector3& vector3Value) override
@@ -215,6 +227,15 @@ namespace Maestro
                 AZ_UNUSED(assetIdValue);
                 return true;
             }
+            bool SetValue(const AZStd::string& stringValue) override
+            {
+                float f = 0;
+                if (azsscanf(stringValue.c_str(), "%f", &f) == 1)
+                {
+                    m_value = f; 
+                }
+                return false;
+            }
 
             bool IsClose(const AnimatedFloatValue& rhs, float tolerance = AZ::Constants::FloatEpsilon) const override
             {
@@ -234,10 +255,14 @@ namespace Maestro
             }
             bool IsClose(const AnimatedAssetIdValue& rhs, float tolerance = AZ::Constants::Tolerance) const override
             {
-                AZ_Assert(0, "Shouldnt be used.");
+                AZ_Assert(0, "Shouldn't be used.");
                 AZ_UNUSED(rhs);
                 AZ_UNUSED(tolerance);
                 return false;
+            }
+            bool IsClose(const AnimatedStringValue& rhs, float tolerance = AZ::Constants::Tolerance) const override
+            {
+                return AZ::IsClose(m_value, rhs.GetFloatValue(), tolerance);
             }
 
         private:
@@ -253,7 +278,7 @@ namespace Maestro
             AnimatedVector3Value(const AZ::Vector3& value) { m_value = value; }
             ~AnimatedVector3Value() {}
 
-            const AZ::Uuid& GetTypeId() const override
+            AZ::TypeId GetTypeId() const override
             {
                 return AZ::Vector3::TYPEINFO_Uuid();
             }
@@ -289,6 +314,12 @@ namespace Maestro
                 static AZ::Data::AssetId assetId;
                 return assetId;
             }
+            AZStd::string GetStringValue() const override
+            {
+                char buffer[97] = { 0 };
+                azsprintf(buffer, "%f,%f,%f", m_value.GetX(), m_value.GetY(), m_value.GetZ());
+                return AZStd::string(buffer);
+            }
 
             bool SetValue(const AZ::Vector3& vector3Value) override
             {
@@ -322,8 +353,20 @@ namespace Maestro
             }
             bool SetValue(const AZ::Data::AssetId& assetIdValue) override
             {
+                AZ_Assert(0, "Shouldn't be used.");
                 AZ_UNUSED(assetIdValue);
-                return true;
+                return false;
+            }
+            bool SetValue(const AZStd::string& stringValue) override
+            {
+                float x = 0;
+                float y = 0;
+                float z = 0;
+                if (azsscanf(stringValue.c_str(), "%f,%f,%f", &x, &y, &z) == 3)
+                {
+                    m_value = AZ::Vector3(x, y, z);
+                }
+                return false;
             }
 
             bool IsClose(const AnimatedFloatValue& rhs, float tolerance = AZ::Constants::FloatEpsilon) const override
@@ -349,6 +392,10 @@ namespace Maestro
                 AZ_UNUSED(tolerance);
                 return false;
             }
+            bool IsClose(const AnimatedStringValue& rhs, float tolerance = AZ::Constants::Tolerance) const override
+            {
+                return m_value.IsClose(rhs.GetVector3Value(), tolerance);
+            }
 
         private:
             AZ::Vector3 m_value;
@@ -363,7 +410,7 @@ namespace Maestro
             AnimatedQuaternionValue(const AZ::Quaternion value) { m_value = value; }
             ~AnimatedQuaternionValue() {}
 
-            const AZ::Uuid& GetTypeId() const override
+            AZ::TypeId GetTypeId() const override
             {
                 return AZ::Quaternion::TYPEINFO_Uuid();
             }
@@ -380,7 +427,7 @@ namespace Maestro
             float GetFloatValue() const override
             {
                 // return the length of the quat
-                return m_value.GetLength(); 
+                return m_value.GetLength();
             }
             bool GetBoolValue() const override
             {
@@ -399,6 +446,12 @@ namespace Maestro
                 AZ_Assert(0, "Not expected to be used.");
                 static AZ::Data::AssetId assetId;
                 return assetId;
+            }
+            AZStd::string GetStringValue() const override
+            {
+                char buffer[129] = { 0 };
+                azsprintf(buffer, "%f,%f,%f,%f", m_value.GetX(), m_value.GetY(), m_value.GetZ(), m_value.GetW());
+                return AZStd::string(buffer);
             }
 
             bool SetValue(const AZ::Vector3& vector3Value) override
@@ -434,8 +487,21 @@ namespace Maestro
             }
             bool SetValue(const AZ::Data::AssetId& assetIdValue) override
             {
+                AZ_Assert(0, "Shouldn't be used.");
                 AZ_UNUSED(assetIdValue);
-                return true;
+                return false;
+            }
+            bool SetValue(const AZStd::string& stringValue) override
+            {
+                float x = 0;
+                float y = 0;
+                float z = 0;
+                float w = 0;
+                if (azsscanf(stringValue.c_str(), "%f,%f,%f,%f", &x, &y, &z, &w) == 4)
+                {
+                    m_value = AZ::Quaternion(x, y, z, w);
+                }
+                return false;
             }
 
             bool IsClose(const AnimatedFloatValue& rhs, float tolerance = AZ::Constants::FloatEpsilon) const override
@@ -461,6 +527,10 @@ namespace Maestro
                 AZ_UNUSED(tolerance);
                 return false;
             }
+            bool IsClose(const AnimatedStringValue& rhs, float tolerance = AZ::Constants::Tolerance) const override
+            {
+                return m_value.IsClose(rhs.GetQuaternionValue(), tolerance);
+            }
 
         private:
             AZ::Quaternion m_value;
@@ -475,7 +545,7 @@ namespace Maestro
             AnimatedBoolValue(bool value) { m_value = value; }
             ~AnimatedBoolValue() {}
 
-            const AZ::Uuid& GetTypeId() const override
+            AZ::TypeId GetTypeId() const override
             {
                 return AZ::AzTypeInfo<bool>::Uuid();
             }
@@ -510,6 +580,12 @@ namespace Maestro
                 static AZ::Data::AssetId assetId;
                 return assetId;
             }
+            AZStd::string GetStringValue() const override
+            {
+                char buffer[2] = { 0 };
+                azsprintf(buffer, "%d", m_value ? 1 : 0); // 1 or 0 representation
+                return AZStd::string(buffer);
+            }
 
             bool SetValue(const AZ::Vector3& vector3Value) override
             {
@@ -543,8 +619,19 @@ namespace Maestro
             }
             bool SetValue(const AZ::Data::AssetId& assetIdValue) override
             {
+                AZ_Assert(0, "Shouldn't be used.");
                 AZ_UNUSED(assetIdValue);
-                return true;
+                return false;
+            }
+            bool SetValue(const AZStd::string& stringValue) override
+            {
+                int i = 0;
+                if (azsscanf(stringValue.c_str(), "%d", &i) == 1) // 1 or 0 representation ?
+                {
+                    return i > 0;
+                }
+                // "true" or "false" representation ?
+                return azstricmp(stringValue.c_str(), "true") == 0;
             }
 
             bool IsClose(const AnimatedFloatValue& rhs, float tolerance = AZ::Constants::FloatEpsilon) const override
@@ -571,6 +658,10 @@ namespace Maestro
                 AZ_UNUSED(tolerance);
                 return false;
             }
+            bool IsClose(const AnimatedStringValue& rhs, [[maybe_unused]] float tolerance = AZ::Constants::Tolerance) const override
+            {
+                return m_value == rhs.GetBoolValue();
+            }
 
         private:
             bool m_value;
@@ -585,7 +676,7 @@ namespace Maestro
             AnimatedAssetIdValue() { m_value.SetInvalid(); }
             AnimatedAssetIdValue(const AZ::Data::AssetId& value) { m_value = value; }
 
-            const AZ::Uuid& GetTypeId() const override
+            AZ::TypeId GetTypeId() const override
             {
                 return AZ::AzTypeInfo<AZ::Data::AssetId>::Uuid();
             }
@@ -617,6 +708,10 @@ namespace Maestro
             const AZ::Data::AssetId& GetAssetIdValue() const override
             {
                 return m_value;
+            }
+            AZStd::string GetStringValue() const override
+            {
+                return m_value.ToString<AZStd::string>();
             }
 
             bool SetValue(const AZ::Vector3& vector3Value) override
@@ -654,6 +749,11 @@ namespace Maestro
                 m_value = assetIdValue;
                 return true;
             }
+            bool SetValue(const AZStd::string& stringValue) override
+            {
+                m_value = AZ::Data::AssetId::CreateString(stringValue);
+                return false;
+            }
 
             bool IsClose([[maybe_unused]] const AnimatedFloatValue& rhs, float tolerance = AZ::Constants::FloatEpsilon) const override
             {
@@ -679,9 +779,185 @@ namespace Maestro
             {
                 return m_value == rhs.m_value;
             }
+            bool IsClose(const AnimatedStringValue& rhs, [[maybe_unused]] float tolerance = AZ::Constants::Tolerance) const override
+            {
+                return m_value == rhs.GetAssetIdValue();
+            }
 
         private:
             AZ::Data::AssetId m_value;
+        };
+
+        class AnimatedStringValue : public AnimatedValue
+        {
+        public:
+            AZ_TYPE_INFO(AnimatedStringValue, "{B2DEEE6F-6055-4FC3-BA75-4B263EA59A5A}");
+
+            AnimatedStringValue(const AZStd::string& value)
+            {
+                m_value = value;
+            }
+            AnimatedStringValue() = default;
+            ~AnimatedStringValue()
+            {
+            }
+
+            AZ::TypeId GetTypeId() const override
+            {
+                return AZ::AzTypeInfo<AZStd::string>::Uuid();
+            }
+
+            float GetFloatValue() const override
+            {
+                float f = 0;
+                if (azsscanf(m_value.c_str(), "%f", &f) == 1)
+                {
+                    return f;
+                }
+                return 0.0f;
+            }
+            AZ::Vector3 GetVector3Value() const override
+            {
+                float x = 0;
+                float y = 0;
+                float z = 0;
+                if (azsscanf(m_value.c_str(), "%f,%f,%f", &x, &y, &z) == 3)
+                {
+                    return AZ::Vector3(x, y, z);
+                }
+
+                return AZ::Vector3::CreateZero();
+            }
+            AZ::Quaternion GetQuaternionValue() const override
+            {
+                float x = 0;
+                float y = 0;
+                float z = 0;
+                float w = 0;
+                if (azsscanf(m_value.c_str(), "%f,%f,%f,%f", &x, &y, &z, &w) == 4)
+                {
+                    return AZ::Quaternion(x, y, z, w);
+                }
+                return AZ::Quaternion::CreateIdentity();
+            }
+            bool GetBoolValue() const override
+            {
+                int i = 0;
+                if (azsscanf(m_value.c_str(), "%d", &i) == 1) // 1 or 0 representation ?
+                {
+                    return i > 0;
+                }
+                // "true" or "false" representation ?
+                return azstricmp(m_value.c_str(), "true") == 0;
+            }
+            AZ::s32 GetS32Value() const override
+            {
+                AZ::s32 s = 0;
+                if (azsscanf(m_value.c_str(), "%d", &s) == 1)
+                {
+                    return s;
+                }
+                return 0;
+            }
+            AZ::u32 GetU32Value() const override
+            {
+                AZ::u32 u = 0;
+                if (azsscanf(m_value.c_str(), "%u", &u) == 1)
+                {
+                    return u;
+                }
+                return 0;
+            }
+            const AZ::Data::AssetId& GetAssetIdValue() const override
+            {
+                static AZ::Data::AssetId assetId = AZ::Data::AssetId::CreateString(m_value);
+                return assetId;
+            }
+            AZStd::string GetStringValue() const override
+            {
+                return m_value;
+            }
+
+            bool SetValue(const AZ::Vector3& vector3Value) override
+            {
+                char buffer[97] = { 0 };
+                azsprintf(buffer, "%f,%f,%f", vector3Value.GetX(), vector3Value.GetY(), vector3Value.GetZ());
+                m_value = buffer;
+                return false;
+            }
+            bool SetValue(const AZ::Quaternion& quaternionValue) override
+            {
+                char buffer[129] = { 0 };
+                azsprintf(buffer, "%f,%f,%f,%f", quaternionValue.GetX(), quaternionValue.GetY(), quaternionValue.GetZ(), quaternionValue.GetW());
+                m_value = buffer;
+                return false;
+            }
+            bool SetValue(float floatValue) override
+            {
+                char buffer[33] = { 0 };
+                azsprintf(buffer, "%f", floatValue);
+                m_value = buffer;
+                return false;
+            }
+            bool SetValue(bool boolValue) override
+            {
+                char buffer[2] = { 0 };
+                azsprintf(buffer, "%d", boolValue ? 1 : 0);
+                m_value = buffer;
+                return false;
+            }
+            bool SetValue(AZ::s32 s32Value) override
+            {
+                char buffer[33] = { 0 };
+                azsprintf(buffer, "%d", s32Value);
+                m_value = buffer;
+                return false;
+            }
+            bool SetValue(AZ::u32 u32Value) override
+            {
+                char buffer[33] = { 0 };
+                azsprintf(buffer, "%u", u32Value);
+                m_value = buffer;
+                return false;
+            }
+            bool SetValue(const AZ::Data::AssetId& assetIdValue) override
+            {
+                assetIdValue.ToString(m_value, AZ::Data::AssetId::SubIdDisplayType::Decimal);
+                return false;
+            }
+            bool SetValue(const AZStd::string& stringValue) override
+            {
+                m_value = stringValue;
+                return true;
+            }
+
+            bool IsClose(const AnimatedFloatValue& rhs, float tolerance = AZ::Constants::FloatEpsilon) const override
+            {
+                return AZ::IsClose(GetFloatValue(), rhs.GetFloatValue(), tolerance);
+            }
+            bool IsClose(const AnimatedVector3Value& rhs, float tolerance = AZ::Constants::Tolerance) const override
+            {
+                return GetVector3Value().IsClose(rhs.GetVector3Value(), tolerance);
+            }
+            bool IsClose(const AnimatedQuaternionValue& rhs, float tolerance = AZ::Constants::Tolerance) const override
+            {
+                return GetQuaternionValue().IsClose(rhs.GetQuaternionValue(), tolerance);
+            }
+            bool IsClose(const AnimatedBoolValue& rhs, [[maybe_unused]] float tolerance = AZ::Constants::Tolerance) const override
+            {
+                return GetBoolValue() == rhs.GetBoolValue();
+            }
+            bool IsClose(const AnimatedAssetIdValue& rhs, [[maybe_unused]] float tolerance = AZ::Constants::Tolerance) const override
+            {
+                return GetAssetIdValue() == rhs.GetAssetIdValue();
+            }
+            bool IsClose(const AnimatedStringValue& rhs, [[maybe_unused]] float tolerance = AZ::Constants::Tolerance) const override
+            {
+                return m_value == rhs.m_value;
+            }
+
+        private:
+            AZStd::string m_value;
         };
 
         //////////////////////////////////////////////////////////////////////////
@@ -689,7 +965,7 @@ namespace Maestro
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;  // Only one component on a entity can implement the events
         //////////////////////////////////////////////////////////////////////////
 
-        /** 
+        /**
          * Set a value for an animated property at the given address on the given entity.
          * @param animatedEntityId the entity Id of the entity containing the animatedAddress
          * @param animatedAddress identifies the component and property to be set
@@ -704,7 +980,7 @@ namespace Maestro
          * @param animatedEntityId the entity Id of the entity containing the animatedAddress
          * @param animatedAddress identifies the component and property to be set
          */
-        virtual void GetAnimatedPropertyValue(AnimatedValue& returnValue, const AZ::EntityId& animatedEntityId, const AnimatablePropertyAddress& animatableAddress) = 0;
+        virtual bool GetAnimatedPropertyValue(AnimatedValue& returnValue, const AZ::EntityId& animatedEntityId, const AnimatablePropertyAddress& animatableAddress) = 0;
 
         /** Returns the Uuid of the type for the property at the animatableAddress on the given entityId
         */
@@ -712,7 +988,7 @@ namespace Maestro
 
         /**
          * Track View will expect some components to supply a GetAssetDuration event so Track View can query the duration of an asset (like a motion)
-         * without having any knowledge of that that asset is.
+         * without having any knowledge of what that asset is.
          */
         virtual void GetAssetDuration(AnimatedValue& returnValue, const AZ::EntityId& animatedEntityId, AZ::ComponentId componentId, const AZ::Data::AssetId& assetId) = 0;
 

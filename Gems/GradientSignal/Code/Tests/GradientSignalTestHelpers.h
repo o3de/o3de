@@ -8,6 +8,7 @@
 #pragma once
 
 #include <AzCore/Component/EntityId.h>
+#include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzTest/AzTest.h>
@@ -23,7 +24,7 @@ namespace UnitTest
     //! @param height The height of the image
     //! @param pixelSize Number of bytes per pixel
     //! @return The AZ::RHI::ImageSubresourceLayout that has been filled out appropriately
-    AZ::RHI::ImageSubresourceLayout BuildSubImageLayout(AZ::u32 width, AZ::u32 height, AZ::u32 pixelSize);
+    AZ::RHI::DeviceImageSubresourceLayout BuildSubImageLayout(AZ::u32 width, AZ::u32 height, AZ::u32 pixelSize);
 
     //! Build a deterministic random set of image pixel data
     //! @param width Width of the image
@@ -35,13 +36,13 @@ namespace UnitTest
 
     //! Build a mip chain asset that contains the basic image data from BuildBasicImageData
     //! @param mipLevels Number of mip levels in the chain
-    //! @param arraySize Number of sub images within a mip level
     //! @param width The width of the image
     //! @param height The height of the image
     //! @param pixelSize The number of bytes per pixel
-    //! @param seed The random seed for generating the data
+    //! @param data The raw pixel data
     //! @return A mip chain asset with the specified basic image data
-    AZ::Data::Asset<AZ::RPI::ImageMipChainAsset> BuildBasicMipChainAsset(AZ::u16 mipLevels, AZ::u16 arraySize, AZ::u32 width, AZ::u32 height, AZ::u32 pixelSize, AZ::s32 seed);
+    AZ::Data::Asset<AZ::RPI::ImageMipChainAsset> BuildBasicMipChainAsset(
+        AZ::u16 mipLevels, AZ::u32 width, AZ::u32 height, AZ::u32 pixelSize, AZStd::span<const uint8_t> data);
 
     //! Construct an array of image data where all the pixels are 0 except for one at the given coordinate
     //! @param width Width of the image
@@ -54,19 +55,14 @@ namespace UnitTest
     AZStd::vector<uint8_t> BuildSpecificPixelImageData(
         AZ::u32 width, AZ::u32 height, AZ::u32 pixelSize, AZ::u32 pixelX, AZ::u32 pixelY, AZStd::span<const AZ::u8> setPixelValues);
 
-    //! Build a mip chain asset that contains the specific image data from BuildSpecificPixelImageData
-    //! @param mipLevels Number of mip levels in the chain
-    //! @param arraySize Number of sub images within a mip level
+    //! Given a set of raw pixel data, create an AZ::RPI::StreamingImageAsset
     //! @param width The width of the image
     //! @param height The height of the image
-    //! @param pixelSize The number of bytes per pixel
-    //! @param pixelX The X coordinate of the pixel to set to a specific value 
-    //! @param pixelY The Y coordinate of the pixel to set to a specific value 
-    //! @param setPixelValues The values to set the one specific pixel to (one value per pixel channel, determined by pixelSize)
-    //! @return A mip chain asset with the specific pixel image data
-    AZ::Data::Asset<AZ::RPI::ImageMipChainAsset> BuildSpecificPixelMipChainAsset(
-        AZ::u16 mipLevels, AZ::u16 arraySize, AZ::u32 width, AZ::u32 height, AZ::u32 pixelSize,
-        AZ::u32 pixelX, AZ::u32 pixelY, AZStd::span<const AZ::u8> setPixelValues);
+    //! @param format The format of the pixel data
+    //! @param data The raw pixel data
+    //! \return The AZ::RPI::StreamingImageAsset in a loaded ready state
+    AZ::Data::Asset<AZ::RPI::StreamingImageAsset> CreateImageAssetFromPixelData(
+        AZ::u32 width, AZ::u32 height, AZ::RHI::Format format, AZStd::span<const uint8_t> data);
 
     //! Creates a deterministically random set of pixel data as an AZ::RPI::StreamingImageAsset.
     //! \param width The width of the AZ::RPI::StreamingImageAsset
@@ -84,6 +80,15 @@ namespace UnitTest
     //! \return The AZ::RPI::StreamingImageAsset in a loaded ready state
     AZ::Data::Asset<AZ::RPI::StreamingImageAsset> CreateSpecificPixelImageAsset(
         AZ::u32 width, AZ::u32 height, AZ::u32 pixelX, AZ::u32 pixelY, AZStd::span<const AZ::u8> setPixelValues);
+
+    //! Converts a set of pixel coordinates in an image to a world space value that represents the center of the pixel.
+    //! \param pixelX The X coordinate of the pixel to convert.
+    //! \param pixelY The Y coordinate of the pixel to convert.
+    //! \param bounds The world space bounds of the image.
+    //! \param width The width of the image in pixels.
+    //! \param height The height of the image in pixels.
+    //! @return The world space center of the requested pixel.
+    AZ::Vector3 PixelCoordinatesToWorldSpace(uint32_t pixelX, uint32_t pixelY, const AZ::Aabb& bounds, uint32_t width, uint32_t height);
 
     class GradientSignalTestHelpers
     {
@@ -117,25 +122,21 @@ namespace UnitTest
     BENCHMARK_REGISTER_F(Fixture, Func)                                                                                                   \
         ->Args({ GradientSignalTestHelpers::GetValuePermutation::EBUS_GET_VALUE, 1024 })                                                  \
         ->Args({ GradientSignalTestHelpers::GetValuePermutation::EBUS_GET_VALUE, 2048 })                                                  \
-        ->Args({ GradientSignalTestHelpers::GetValuePermutation::EBUS_GET_VALUE, 4096 })                                                  \
         ->ArgNames({ "EbusGetValue", "size" })                                                                                            \
         ->Unit(::benchmark::kMillisecond);                                                                                                \
     BENCHMARK_REGISTER_F(Fixture, Func)                                                                                                   \
         ->Args({ GradientSignalTestHelpers::GetValuePermutation::EBUS_GET_VALUES, 1024 })                                                 \
         ->Args({ GradientSignalTestHelpers::GetValuePermutation::EBUS_GET_VALUES, 2048 })                                                 \
-        ->Args({ GradientSignalTestHelpers::GetValuePermutation::EBUS_GET_VALUES, 4096 })                                                 \
         ->ArgNames({ "EbusGetValues", "size" })                                                                                           \
         ->Unit(::benchmark::kMillisecond);                                                                                                \
     BENCHMARK_REGISTER_F(Fixture, Func)                                                                                                   \
         ->Args({ GradientSignalTestHelpers::GetValuePermutation::SAMPLER_GET_VALUE, 1024 })                                               \
         ->Args({ GradientSignalTestHelpers::GetValuePermutation::SAMPLER_GET_VALUE, 2048 })                                               \
-        ->Args({ GradientSignalTestHelpers::GetValuePermutation::SAMPLER_GET_VALUE, 4096 })                                               \
         ->ArgNames({ "SamplerGetValue", "size" })                                                                                         \
         ->Unit(::benchmark::kMillisecond);                                                                                                \
     BENCHMARK_REGISTER_F(Fixture, Func)                                                                                                   \
         ->Args({ GradientSignalTestHelpers::GetValuePermutation::SAMPLER_GET_VALUES, 1024 })                                              \
         ->Args({ GradientSignalTestHelpers::GetValuePermutation::SAMPLER_GET_VALUES, 2048 })                                              \
-        ->Args({ GradientSignalTestHelpers::GetValuePermutation::SAMPLER_GET_VALUES, 4096 })                                              \
         ->ArgNames({ "SamplerGetValues", "size" })                                                                                        \
         ->Unit(::benchmark::kMillisecond);
 #endif

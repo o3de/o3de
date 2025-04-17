@@ -11,6 +11,7 @@
 
 // AZ
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 
 // Graph Model
 #include <GraphModel/Model/Slot.h>
@@ -32,7 +33,7 @@ namespace LandscapeCanvas
         }
     }
 
-    const QString PositionModifierNode::TITLE = QObject::tr("Position Modifier");
+    const char* PositionModifierNode::TITLE = "Position Modifier";
 
     PositionModifierNode::PositionModifierNode(GraphModel::GraphPtr graph)
         : BaseAreaModifierNode(graph)
@@ -45,25 +46,31 @@ namespace LandscapeCanvas
     {
         GraphModel::DataTypePtr gradientDataType = GetGraphContext()->GetDataType(LandscapeCanvasDataTypeEnum::Gradient);
 
-        RegisterSlot(GraphModel::SlotDefinition::CreateInputData(
+        RegisterSlot(AZStd::make_shared<GraphModel::SlotDefinition>(
+            GraphModel::SlotDirection::Input,
+            GraphModel::SlotType::Data,
             BaseAreaModifierNode::INBOUND_GRADIENT_X_SLOT_ID,
             BaseAreaModifierNode::INBOUND_GRADIENT_X_SLOT_LABEL.toUtf8().constData(),
-            { gradientDataType },
-            AZStd::any(AZ::EntityId()),
-            BaseAreaModifierNode::INBOUND_GRADIENT_X_INPUT_SLOT_DESCRIPTION.toUtf8().constData()));
+            BaseAreaModifierNode::INBOUND_GRADIENT_X_INPUT_SLOT_DESCRIPTION.toUtf8().constData(),
+            GraphModel::DataTypeList{ gradientDataType },
+            AZStd::any(AZ::EntityId())));
 
-        RegisterSlot(GraphModel::SlotDefinition::CreateInputData(
+        RegisterSlot(AZStd::make_shared<GraphModel::SlotDefinition>(
+            GraphModel::SlotDirection::Input,
+            GraphModel::SlotType::Data,
             BaseAreaModifierNode::INBOUND_GRADIENT_Y_SLOT_ID,
             BaseAreaModifierNode::INBOUND_GRADIENT_Y_SLOT_LABEL.toUtf8().constData(),
-            { gradientDataType },
-            AZStd::any(AZ::EntityId()),
-            BaseAreaModifierNode::INBOUND_GRADIENT_Y_INPUT_SLOT_DESCRIPTION.toUtf8().constData()));
+            BaseAreaModifierNode::INBOUND_GRADIENT_Y_INPUT_SLOT_DESCRIPTION.toUtf8().constData(),
+            GraphModel::DataTypeList{ gradientDataType },
+            AZStd::any(AZ::EntityId())));
 
-        RegisterSlot(GraphModel::SlotDefinition::CreateInputData(
+        RegisterSlot(AZStd::make_shared<GraphModel::SlotDefinition>(
+            GraphModel::SlotDirection::Input,
+            GraphModel::SlotType::Data,
             BaseAreaModifierNode::INBOUND_GRADIENT_Z_SLOT_ID,
             BaseAreaModifierNode::INBOUND_GRADIENT_Z_SLOT_LABEL.toUtf8().constData(),
-            { gradientDataType },
-            AZStd::any(AZ::EntityId()),
-            BaseAreaModifierNode::INBOUND_GRADIENT_Z_INPUT_SLOT_DESCRIPTION.toUtf8().constData()));
+            BaseAreaModifierNode::INBOUND_GRADIENT_Z_INPUT_SLOT_DESCRIPTION.toUtf8().constData(),
+            GraphModel::DataTypeList{ gradientDataType },
+            AZStd::any(AZ::EntityId())));
     }
 } // namespace LandscapeCanvas

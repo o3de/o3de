@@ -13,7 +13,7 @@
 
 namespace WhiteBox
 {
-    AZ_CLASS_ALLOCATOR_IMPL(WhiteBoxModule, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(WhiteBoxModule, AZ::SystemAllocator)
 
     WhiteBoxModule::WhiteBoxModule()
         : CryHooksModule()
@@ -40,5 +40,9 @@ namespace WhiteBox
 } // namespace WhiteBox
 
 #if !defined(WHITE_BOX_EDITOR)
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME), WhiteBox::WhiteBoxModule)
+#else
 AZ_DECLARE_MODULE_CLASS(Gem_WhiteBox, WhiteBox::WhiteBoxModule)
+#endif
 #endif // !defined(WHITE_BOX_EDITOR)

@@ -1,0 +1,16 @@
+{
+    "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardPBR.materialtype",
+    "materialTypeVersion": 5,
+    "propertyValues": {
+        "baseColor.textureMap": "@gemroot:Atom_Feature_Common@/Assets/Textures/Default/default_basecolor.tif",
+        "emissive.color": [
+            0.003936827648431063,
+            1.0,
+            0.0,
+            1.0
+        ],
+        "emissive.enable": true,
+        "emissive.intensity": 3.0,
+        "emissive.textureMap": "../../Textures/checker8x8_gray_512.png"
+    }
+}

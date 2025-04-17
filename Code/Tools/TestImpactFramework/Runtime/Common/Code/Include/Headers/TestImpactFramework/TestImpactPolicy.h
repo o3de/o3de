@@ -25,6 +25,13 @@ namespace TestImpact
             Ignore //!< Continue the test sequence and ignore the execution failures.
         };
 
+        //! Policy for which test runner should be used when running Python Tests.
+        enum class TestRunner : AZ::u8
+        {
+            UseNullTestRunner, //!< Use the Null Test Runner that consumes JUnit XML artifacts and carries out selection then returns those results without actually running the tests.
+            UseLiveTestRunner //!< Use the normal Test Runner that executes the Python tests.
+        };
+
         //! Policy for handling the coverage data of failed tests targets (both tests that failed to execute and tests that ran but failed).
         enum class FailedTestCoverage : AZ::u8
         {
@@ -70,13 +77,6 @@ namespace TestImpact
             Update //!< Update the dynamic dependency map with the coverage data produced by test sequences.
         };
 
-        //! Policy for sharding test targets that have been marked for test sharding.
-        enum class TestSharding : AZ::u8
-        {
-            Never, //!< Do not shard any test targets.
-            Always //!< Shard all test targets that have been marked for test sharding.
-        };
-
         //! Standard output capture of test target runs.
         enum class TargetOutputCapture : AZ::u8
         {
@@ -85,6 +85,5 @@ namespace TestImpact
             File, //!< Write captured output to file.
             StdOutAndFile //!< Send captured output to standard output and write to file.
         };
-
     } // namespace Policy
 } // namespace TestImpact

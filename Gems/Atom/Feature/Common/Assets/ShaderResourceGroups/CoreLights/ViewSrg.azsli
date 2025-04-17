@@ -12,6 +12,11 @@
 
 partial ShaderResourceGroup ViewSrg
 { 
+    
+    // The per-instance data for the visible objects in each view. The per-instance data is an index
+    // used to look up the actual instance data from a persistant buffer
+    StructuredBuffer<uint> m_instanceData;
+    
     // Light visibility grid is this wide 
     // e.g. if the screen resolution is 1904 x 800 with 16x16 bins then grid width is 1904/16 = 119 
     uint m_tileGridWidth;
@@ -23,62 +28,27 @@ partial ShaderResourceGroup ViewSrg
         uint2 m_shadowmapOriginInSlice;
         uint m_shadowmapSize;
         float m_lightDistanceOfCameraViewFrustum;
-        float m_n_f_n; // n / (f - n)
-        float m_n_f;   // n - f
-        float m_f;     // f
-                       // where n: nearDepth, f: farDepth.
-    };
-
-    // Simple Point Lights 
-
-    struct SimplePointLight
-    {
-        float3 m_position;
-        float m_invAttenuationRadiusSquared; // For a radius at which this light no longer has an effect, 1 / radius^2.
-        float3 m_rgbIntensityCandelas;
-        float m_affectsGIFactor;
-        bool m_affectsGI;
-        float3 m_padding;
+        float m_nf;  // n*f
+        float m_f_n; // f - n
+        float m_f;   // f
+                     // where n: nearDepth, f: farDepth.
     };
 
     StructuredBuffer<SimplePointLight> m_simplePointLights;
     uint m_simplePointLightCount;
 
-    // Simple Spot Lights
-
-    struct SimpleSpotLight
-    {
-        float3 m_position;
-        float m_invAttenuationRadiusSquared; // For a radius at which this light no longer has an effect, 1 / radius^2.
-        float3 m_direction;
-        float m_cosInnerConeAngle; // cosine of the outer cone angle
-        float3 m_rgbIntensityCandelas;
-        float m_cosOuterConeAngle; // cosine of the inner cone angle
-        float m_affectsGIFactor;
-        bool m_affectsGI;
-        float2 m_padding;
-    };
-
     StructuredBuffer<SimpleSpotLight> m_simpleSpotLights;
     uint m_simpleSpotLightCount;
-
-
-    // Point lights (sphere lights)
-
-    struct PointLight
-    {
-        float3 m_position;
-        float m_invAttenuationRadiusSquared; // For a radius at which this light no longer has an effect, 1 / radius^2.
-        float3 m_rgbIntensityCandelas;
-        float m_bulbRadius;
-        uint3 m_shadowIndices;
-        float m_affectsGIFactor;
-        bool m_affectsGI;
-        float3 m_padding;
-    };
+    Buffer<uint> m_visibleSimpleSpotLightIndices;
+    uint m_visibleSimpleSpotLightCount;
+    
+    static const uint MaxGoboTextureCount = 5;
+    Texture2D<float> m_goboTextures[MaxGoboTextureCount];
 
     StructuredBuffer<PointLight> m_pointLights;
     uint m_pointLightCount;
+    Buffer<uint> m_visibleSimplePointLightIndices;
+    uint m_visibleSimplePointLightCount;
 
     // Projected Shadows
 
@@ -117,7 +87,7 @@ partial ShaderResourceGroup ViewSrg
         uint m_cascadeCount;
         float m_shadowBias; 
         float m_normalShadowBias; 
-        uint m_filteringSampleCount;
+        uint m_filteringSampleCountMode;
         uint m_debugFlags;
         uint m_shadowFilterMethod;
         float m_far_minus_near;
@@ -138,76 +108,15 @@ partial ShaderResourceGroup ViewSrg
 
     StructuredBuffer<FilterParameter> m_esmsDirectional;
 
-    // Disk Lights
-    
-    struct DiskLight
-    {
-        float3 m_position;
-        float m_invAttenuationRadiusSquared; // For a radius at which this light no longer has an effect, 1 / radius^2.
-        float3 m_rgbIntensityCandelas;
-        float m_diskRadius;
-        float3 m_direction;
-        uint m_flags;
-        float m_cosInnerConeAngle;
-        float m_cosOuterConeAngle;
-        float m_bulbPositionOffset;
-        uint m_shadowIndex;
-        float m_affectsGIFactor;
-        bool m_affectsGI;
-        float2 m_padding;
-    };
-
     StructuredBuffer<DiskLight> m_diskLights;
     uint m_diskLightCount;
     
-    // Capsule Lights
-    
-    struct CapsuleLight
-    {
-        float3 m_startPoint;   // One of the end points of the capsule
-        float m_radius;        // Radius of the capsule, ie distance from line segment to surface.
-        float3 m_direction;    // normalized vector from m_startPoint towards the other end point.
-        float m_length;        // length of the line segment making up the inside of the capsule. Doesn't include caps (0 length capsule == sphere)
-        float3 m_rgbIntensityCandelas; // total rgb luminous intensity of the capsule in candelas
-        float m_invAttenuationRadiusSquared; // Inverse of the distance at which this light no longer has an effect, squared. Also used for falloff calculations.
-        float m_affectsGIFactor;
-        bool m_affectsGI;
-        float2 m_padding;
-    };
-
     StructuredBuffer<CapsuleLight> m_capsuleLights;
     uint m_capsuleLightCount;
     
-    // Quad Lights
-    
-    struct QuadLight
-    {
-        float3 m_position;
-        float m_invAttenuationRadiusSquared; // For a radius at which this light no longer has an effect, 1 / radius^2.
-        float3 m_leftDir; // Direction from center of quad to the left edge
-        float m_halfWidth; // Half the width of the quad. m_leftDir * m_halfWidth is a vector from the center to the left edge.
-        float3 m_upDir; // Direction from center of quad to the top edge
-        float m_halfHeight; // Half the height of the quad. m_upDir * m_halfHeight is a vector from the center to the top edge.
-        float3 m_rgbIntensityNits;
-        uint m_flags; // See QuadLightFlag enum
-        float m_affectsGIFactor;
-        bool m_affectsGI;
-        float2 m_padding;
-    };
-
     StructuredBuffer<QuadLight> m_quadLights;
     uint m_quadLightCount;
     
-    // Polygon Lights
-
-    struct PolygonLight
-    {
-        float3 m_position;
-        uint m_startEndIndex; // 16 bit start and end indices packed into one 32 bit uint
-        float3 m_rgbIntensityNits; // sign bit on red indicates winding order of first two edges. Used to determine direction.
-        float m_invAttenuationRadiusSquared; // negative sign bit indicates double sided.
-    };
-
     StructuredBuffer<PolygonLight> m_polygonLights;
     uint m_polygonLightCount;
     StructuredBuffer<float4> m_polygonLightPoints; // points for each polygon. Max 64 points per polygon.

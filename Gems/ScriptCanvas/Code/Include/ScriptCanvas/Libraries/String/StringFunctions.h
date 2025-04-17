@@ -34,6 +34,7 @@ namespace ScriptCanvas
         AZStd::string ReplaceString(AZStd::string& sourceString, const AZStd::string& replaceString, const AZStd::string& withString, bool caseSensitive);
 
         AZStd::vector<AZStd::string> Split(const AZStd::string& sourceString, const AZStd::string& delimiterString);
-        
     } // namespace StringFunctions
 } // namespace ScriptCanvas
+
+#include <Include/ScriptCanvas/Libraries/String/StringFunctions.generated.h>

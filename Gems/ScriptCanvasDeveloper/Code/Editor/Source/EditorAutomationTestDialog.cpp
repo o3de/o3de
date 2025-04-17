@@ -233,25 +233,25 @@ namespace ScriptCanvas::Developer
         m_testListModel->AddTest(aznew WriteTextToInput(searchFilter, "Multiply (*)"));
         m_testListModel->AddTest(aznew WriteTextToInput(searchFilter, "::Test::"));
         ////
-        
+
         // General Test for Graph Creation
         m_testListModel->AddTest(aznew CreateGraphTest());
         m_testListModel->AddTest(aznew CreateFunctionTest());
-        ////        
+        ////
 
         // General Tests for Node Creation
         m_testListModel->AddTest(aznew CreateNodeFromPaletteTest("Multiply (*)", nodePaletteWidget));
         m_testListModel->AddTest(aznew CreateNodeFromPaletteTest("Print", nodePaletteWidget));
         m_testListModel->AddTest(aznew CreateNodeFromContextMenuTest("Multiply (*)"));
         m_testListModel->AddTest(aznew CreateNodeFromContextMenuTest("Print"));
-        
+
         m_testListModel->AddTest(aznew CreateHelloWorldFromPalette(nodePaletteWidget));
         m_testListModel->AddTest(aznew CreateHelloWorldFromContextMenu());
-        
+
         m_testListModel->AddTest(aznew CreateExecutionSplicedNodeTest("Build String"));
         m_testListModel->AddTest(aznew CreateDragDropExecutionSpliceNodeTest(nodePaletteWidget, "Build String"));
         ////
-        
+
         m_testListModel->AddTest(aznew AltClickDeleteTest());
 
         // Actual BAT tests
@@ -264,25 +264,25 @@ namespace ScriptCanvas::Developer
         m_testListModel->AddTest(aznew ManuallyCreateVariableTest(ScriptCanvas::Data::Type::Vector3(), CreateVariableAction::CreationType::Programmatic));
 
         m_testListModel->AddTest(aznew CreateNamedVariableTest(ScriptCanvas::Data::Type::EntityID(), "Caterpillar", CreateVariableAction::CreationType::AutoComplete));
-        
+
         m_testListModel->AddTest(aznew DuplicateVariableNameTest(ScriptCanvas::Data::Type::Number(), ScriptCanvas::Data::Type::Number(), "SameType"));
         m_testListModel->AddTest(aznew DuplicateVariableNameTest(ScriptCanvas::Data::Type::Color(), ScriptCanvas::Data::Type::String(), "DifferentType"));
 
         m_testListModel->AddTest(aznew ModifyNumericInputTest(123.45));
         m_testListModel->AddTest(aznew ModifyStringInputTest("abcdefghijklmnopqrstuvwxyz"));
-        m_testListModel->AddTest(aznew ToggleBoolInputTest());        
+        m_testListModel->AddTest(aznew ToggleBoolInputTest());
 
-        
+
         AZStd::vector< ScriptCanvas::Data::Type > primitiveTypes;
         ScriptCanvasEditor::VariableAutomationRequestBus::BroadcastResult(primitiveTypes, &ScriptCanvasEditor::VariableAutomationRequests::GetPrimitiveTypes);
 
         m_testListModel->AddTest(aznew VariableLifeCycleTest("Primitive Variable LifeCycle Test", primitiveTypes));
-        
+
         AZStd::vector< ScriptCanvas::Data::Type > objectTypes;
         ScriptCanvasEditor::VariableAutomationRequestBus::BroadcastResult(objectTypes, &ScriptCanvasEditor::VariableAutomationRequests::GetBehaviorContextObjectTypes);
 
         m_testListModel->AddTest(aznew VariableLifeCycleTest("BCO Variable LifeCycle Test", objectTypes));
-        
+
         AZStd::vector< ScriptCanvas::Data::Type > mapTypes;
         ScriptCanvasEditor::VariableAutomationRequestBus::BroadcastResult(mapTypes, &ScriptCanvasEditor::VariableAutomationRequests::GetMapTypes);
 
@@ -318,23 +318,23 @@ namespace ScriptCanvas::Developer
         }
 
         m_testListModel->AddTest(aznew VariableLifeCycleTest("Array Variable LifeCycle Test", arrayTypes, CreateVariableAction::CreationType::Programmatic));
-        
+
         m_testListModel->AddTest(aznew RapidVariableCreationDeletionTest());
 
-        
-        m_testListModel->AddTest(aznew CreateCategoryTest("Logic", nodePaletteWidget));        
+
+        m_testListModel->AddTest(aznew CreateCategoryTest("Logic", nodePaletteWidget));
 
         m_testListModel->AddTest(aznew CreateGroupTest());
         m_testListModel->AddTest(aznew CreateGroupTest(CreateGroupAction::CreationType::Toolbar));
 
-        
+
         m_testListModel->AddTest(aznew GroupManipulationTest(nodePaletteWidget));
 
         m_testListModel->AddTest(aznew CutCopyPasteDuplicateTest("On Tick"));
         m_testListModel->AddTest(aznew CutCopyPasteDuplicateTest("Multiply (*)"));
         m_testListModel->AddTest(aznew CutCopyPasteDuplicateTest("Print"));
         ////
-        
+
         ////
 
         m_tableView->setModel(m_testListModel);
@@ -407,7 +407,7 @@ namespace ScriptCanvas::Developer
 
     void EditorAutomationTestDialog::OnSystemTick()
     {
-        auto currentTime = AZStd::chrono::system_clock::now();
+        auto currentTime = AZStd::chrono::steady_clock::now();
         auto elapsedTimed = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(currentTime - m_startTime);
 
         if (m_activeTest)
@@ -432,7 +432,7 @@ namespace ScriptCanvas::Developer
                 }
 
                 m_activeTest = nullptr;
-                m_startTime = AZStd::chrono::system_clock::now();
+                m_startTime = AZStd::chrono::steady_clock::now();
 
                 UpdateRunLabel();
             }
@@ -491,7 +491,7 @@ namespace ScriptCanvas::Developer
         m_successCount = 0;
 
         AZ::SystemTickBus::Handler::BusConnect();
-        m_startTime = AZStd::chrono::system_clock::now();
+        m_startTime = AZStd::chrono::steady_clock::now();
 
         UpdateRunLabel();
     }

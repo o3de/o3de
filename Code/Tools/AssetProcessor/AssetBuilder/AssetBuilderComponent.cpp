@@ -669,7 +669,7 @@ bool AssetBuilderComponent::RunDebugTask(AZStd::string&& debugFile, bool runCrea
                     AssetBuilderSDK::JobDescriptor placeholder;
                     placeholder.SetPlatformIdentifier(platformInfo.m_identifier.c_str());
                     placeholder.m_jobKey = AZStd::string::format("%s_DEBUG", builder->m_name.c_str());
-                    placeholder.m_jobParameters[AZ_CRC("Debug", 0x6ca547a7)] = "true";
+                    placeholder.m_jobParameters[AZ_CRC_CE("Debug")] = "true";
                     jobDescriptions.emplace_back(AZStd::move(placeholder));
                 }
             }
@@ -1023,7 +1023,7 @@ void AssetBuilderComponent::JobThread()
         std::fflush(stderr);
 
         AZ::SystemTickBus::Broadcast(&AZ::SystemTickBus::Events::OnSystemTick);
-        AZ::TickBus::Broadcast(&AZ::TickEvents::OnTick, 0.00f, AZ::ScriptTimePoint(AZStd::chrono::system_clock::now()));
+        AZ::TickBus::Broadcast(&AZ::TickEvents::OnTick, 0.00f, AZ::ScriptTimePoint(AZStd::chrono::steady_clock::now()));
         AZ::AllocatorManager::Instance().GarbageCollect();
 
         AzFramework::AssetSystem::SendResponse(*(job->m_netResponse), job->m_requestSerial);

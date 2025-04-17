@@ -289,7 +289,7 @@ namespace AZ::IO
         status.m_isIdle = status.m_isIdle && m_pendingReadRequests.empty() && m_pendingRequests.empty() && (m_activeReads_Count == 0);
     }
 
-    void StorageDriveWin::UpdateCompletionEstimates(AZStd::chrono::system_clock::time_point now, AZStd::vector<FileRequest*>& internalPending,
+    void StorageDriveWin::UpdateCompletionEstimates(AZStd::chrono::steady_clock::time_point now, AZStd::vector<FileRequest*>& internalPending,
         StreamerContext::PreparedQueue::iterator pendingBegin, StreamerContext::PreparedQueue::iterator pendingEnd)
     {
         StreamStackEntry::UpdateCompletionEstimates(now, internalPending, pendingBegin, pendingEnd);
@@ -302,7 +302,7 @@ namespace AZ::IO
         u64 activeOffset = m_activeOffset;
 
         // Determine the time of the first available slot
-        AZStd::chrono::system_clock::time_point earliestSlot = AZStd::chrono::system_clock::time_point::max();
+        AZStd::chrono::steady_clock::time_point earliestSlot = AZStd::chrono::steady_clock::time_point::max();
         for (size_t i = 0; i < m_readSlots_readInfo.size(); ++i)
         {
             if (m_readSlots_active[i])
@@ -312,13 +312,13 @@ namespace AZ::IO
                 double totalReadTime = aznumeric_caster(m_readTimeAverage.GetTotal().count());
                 auto readCommand = AZStd::get_if<Requests::ReadData>(&read.m_request->GetCommand());
                 AZ_Assert(readCommand, "Request currently reading doesn't contain a read command.");
-                AZStd::chrono::system_clock::time_point endTime =
+                AZStd::chrono::steady_clock::time_point endTime =
                     read.m_startTime + Statistic::TimeValue(aznumeric_cast<u64>((readCommand->m_size * totalReadTime) / totalBytesRead));
                 earliestSlot = AZStd::min(earliestSlot, endTime);
                 read.m_request->SetEstimatedCompletion(endTime);
             }
         }
-        if (earliestSlot != AZStd::chrono::system_clock::time_point::max())
+        if (earliestSlot != AZStd::chrono::steady_clock::time_point::max())
         {
             now = earliestSlot;
         }
@@ -347,7 +347,7 @@ namespace AZ::IO
         }
     }
 
-    void StorageDriveWin::EstimateCompletionTimeForRequest(FileRequest* request, AZStd::chrono::system_clock::time_point& startTime,
+    void StorageDriveWin::EstimateCompletionTimeForRequest(FileRequest* request, AZStd::chrono::steady_clock::time_point& startTime,
         const RequestPath*& activeFile, u64& activeOffset) const
     {
         u64 readSize = 0;
@@ -409,7 +409,7 @@ namespace AZ::IO
     }
 
     void StorageDriveWin::EstimateCompletionTimeForRequestChecked(FileRequest* request,
-        AZStd::chrono::system_clock::time_point startTime, const RequestPath*& activeFile, u64& activeOffset) const
+        AZStd::chrono::steady_clock::time_point startTime, const RequestPath*& activeFile, u64& activeOffset) const
     {
         AZStd::visit([&, this](auto&& args)
         {
@@ -511,7 +511,7 @@ namespace AZ::IO
             data.m_path.GetRelativePath());
 
         // Set the current request and update timestamp, regardless of cache hit or miss.
-        m_fileCache_lastTimeUsed[cacheIndex] = AZStd::chrono::system_clock::now();
+        m_fileCache_lastTimeUsed[cacheIndex] = AZStd::chrono::steady_clock::now();
         fileHandle = file;
         cacheSlot = cacheIndex;
         return OpenFileResult::FileOpened;
@@ -523,7 +523,7 @@ namespace AZ::IO
 
         if (!m_cachesInitialized)
         {
-            m_fileCache_lastTimeUsed.resize(m_maxFileHandles, AZStd::chrono::system_clock::time_point::min());
+            m_fileCache_lastTimeUsed.resize(m_maxFileHandles, AZStd::chrono::steady_clock::time_point::min());
             m_fileCache_paths.resize(m_maxFileHandles);
             m_fileCache_handles.resize(m_maxFileHandles, INVALID_HANDLE_VALUE);
             m_fileCache_activeReads.resize(m_maxFileHandles, 0);
@@ -696,7 +696,7 @@ namespace AZ::IO
             // if the read was fully asynchronous.
         }
 
-        auto now = AZStd::chrono::system_clock::now();
+        auto now = AZStd::chrono::steady_clock::now();
         if (m_activeReads_Count++ == 0)
         {
             m_activeReads_startTime = now;
@@ -913,7 +913,7 @@ namespace AZ::IO
                     m_fileCache_handles[cacheIndex] = INVALID_HANDLE_VALUE;
                 }
                 m_fileCache_activeReads[cacheIndex] = 0;
-                m_fileCache_lastTimeUsed[cacheIndex] = AZStd::chrono::system_clock::time_point();
+                m_fileCache_lastTimeUsed[cacheIndex] = AZStd::chrono::steady_clock::time_point();
                 m_fileCache_paths[cacheIndex].Clear();
             }
 
@@ -941,7 +941,7 @@ namespace AZ::IO
                     m_fileCache_handles[cacheIndex] = INVALID_HANDLE_VALUE;
                 }
                 m_fileCache_activeReads[cacheIndex] = 0;
-                m_fileCache_lastTimeUsed[cacheIndex] = AZStd::chrono::system_clock::time_point();
+                m_fileCache_lastTimeUsed[cacheIndex] = AZStd::chrono::steady_clock::time_point();
                 m_fileCache_paths[cacheIndex].Clear();
             }
 
@@ -1001,7 +1001,7 @@ namespace AZ::IO
             // Update read stats now that the operation is done.
             m_readSizeAverage.PushEntry(m_activeReads_ByteCount);
             m_readTimeAverage.PushEntry(AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(
-                AZStd::chrono::system_clock::now() - m_activeReads_startTime));
+                AZStd::chrono::steady_clock::now() - m_activeReads_startTime));
 
             m_activeReads_ByteCount = 0;
         }
@@ -1065,7 +1065,7 @@ namespace AZ::IO
 
         // This needs to look for files with no active reads, and the oldest file among those.
         size_t cacheIndex = InvalidFileCacheIndex;
-        AZStd::chrono::system_clock::time_point oldest = AZStd::chrono::system_clock::time_point::max();
+        AZStd::chrono::steady_clock::time_point oldest = AZStd::chrono::steady_clock::time_point::max();
         for (size_t index = 0; index < m_maxFileHandles; ++index)
         {
             if (m_fileCache_activeReads[index] == 0 && m_fileCache_lastTimeUsed[index] < oldest)

@@ -11,7 +11,7 @@
 
 #include <AzFramework/StringFunc/StringFunc.h>
 
-#include <AzCore/Component/ComponentApplicationBus.h> 
+#include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <AzFramework/Asset/SimpleAsset.h>
 #include <AzCore/Asset/AssetManagerBus.h>
@@ -119,10 +119,9 @@ namespace AzToolsFramework
                 buffer += "HideChildren";
             }
 
-            AZ::Attribute* attribute = nodePtr->FindAttribute(AZ::Edit::Attributes::ReadOnly);
-            if (attribute)
+            if (AZ::Attribute* attribute = nodePtr->FindAttribute(AZ::Edit::Attributes::ReadOnly))
             {
-                PropertyAttributeReader reader(nullptr, attribute);
+                PropertyAttributeReader reader(static_cast<AZ::Component*>(nodePtr->FirstInstance()), attribute);
                 bool readOnlyValue = false;
                 reader.Read<bool>(readOnlyValue);
                 if (readOnlyValue)
@@ -187,7 +186,7 @@ namespace AzToolsFramework
         auto&& propertyNodeHandle = FetchPropertyTreeEditorNode(propertyPath);
         if (!propertyNodeHandle)
         {
-            return {PropertyAccessOutcome::ErrorType("GetProperty - path provided was not found in tree.")};
+            return PropertyAccessOutcome{ AZStd::unexpect, PropertyAccessOutcome::ErrorType("GetProperty - path provided was not found in tree.")};
         }
 
         const PropertyTreeEditorNode& pteNode = *propertyNodeHandle.value();
@@ -209,7 +208,7 @@ namespace AzToolsFramework
         if (!pteNode.m_nodePtr->ReadRaw(nodeData, typeId))
         {
             AZ_Warning("PropertyTreeEditor", false, "GetProperty - path provided [ %.*s ] was found, but read operation failed.", aznumeric_cast<int>(propertyPath.size()), propertyPath.data());
-            return {PropertyAccessOutcome::ErrorType("GetProperty - path provided was found, but read operation failed.")};
+            return PropertyAccessOutcome{ AZStd::unexpect, PropertyAccessOutcome::ErrorType("GetProperty - path provided was found, but read operation failed.")};
         }
 
         if (pteNode.m_nodePtr->GetClassMetadata()->m_azRtti && pteNode.m_nodePtr->GetClassMetadata()->m_azRtti->IsTypeOf(azrtti_typeid<AzFramework::SimpleAssetReferenceBase>()))
@@ -303,7 +302,7 @@ namespace AzToolsFramework
         auto&& propertyNodeHandle = FetchPropertyTreeEditorNode(propertyPath);
         if (!propertyNodeHandle)
         {
-            return { PropertyAccessOutcome::ErrorType("SetProperty - path provided was not found in tree.") };
+            return PropertyAccessOutcome{ AZStd::unexpect, PropertyAccessOutcome::ErrorType("SetProperty - path provided was not found in tree.") };
         }
 
         const PropertyTreeEditorNode& pteNode = *propertyNodeHandle.value();
@@ -368,7 +367,7 @@ namespace AzToolsFramework
         //A temporary conversion buffer in case the src and dst data types are different.
         AZStd::any convertedValue;
 
-        
+
         // Check if types match, or convert the value if its type supports it.
         const void* valuePtr = HandleTypeConversion(value.type(), pteNode.m_nodePtr->GetClassMetadata()->m_typeId, AZStd::any_cast<void>(&value), convertedValue);
         if (valuePtr)
@@ -377,7 +376,7 @@ namespace AzToolsFramework
             PropertyNotify(&pteNode);
             return {PropertyAccessOutcome::ValueType(value)};
         }
-        
+
         // If it could not be converted, verify the underlying type.
         const AZ::TypeId& underlyingTypeId = AZ::Internal::GetUnderlyingTypeId(*pteNode.m_nodePtr->GetClassMetadata()->m_azRtti);
 
@@ -393,8 +392,8 @@ namespace AzToolsFramework
         }
 
         AZ_Warning("PropertyTreeEditor", false, "SetProperty - value type cannot be converted to the property's type.");
-        return { PropertyAccessOutcome::ErrorType("SetProperty - value type cannot be converted to the property's type.") };
-        
+        return PropertyAccessOutcome{ AZStd::unexpect, PropertyAccessOutcome::ErrorType("SetProperty - value type cannot be converted to the property's type.") };
+
     }
 
     bool PropertyTreeEditor::CompareProperty(const AZStd::string_view propertyPath, const AZStd::any& value)
@@ -543,7 +542,7 @@ namespace AzToolsFramework
         auto&& data = FetchContainerData(propertyPath);
         if (!data)
         {
-            return { PropertyAccessOutcome::ErrorType("GetContainerCount - could not get item count from a non-container") };
+            return PropertyAccessOutcome{ AZStd::unexpect, PropertyAccessOutcome::ErrorType("GetContainerCount - could not get item count from a non-container") };
         }
         const InstanceDataNode* nodePtr = data.value().m_propertyTreeEditorNode->m_nodePtr;
         const AZ::u64 count = aznumeric_cast<AZ::u64>(data.value().m_dataContainer->Size(nodePtr->FirstInstance()));
@@ -555,7 +554,7 @@ namespace AzToolsFramework
         auto&& data = FetchContainerData(propertyPath);
         if (!data)
         {
-            return { PropertyAccessOutcome::ErrorType("ResetContainer - could not reset items in a non-container") };
+            return PropertyAccessOutcome{ AZStd::unexpect, PropertyAccessOutcome::ErrorType("ResetContainer - could not reset items in a non-container") };
         }
         const InstanceDataNode* nodePtr = data.value().m_propertyTreeEditorNode->m_nodePtr;
         data.value().m_dataContainer->ClearElements(nodePtr->FirstInstance(), m_serializeContext);
@@ -567,11 +566,11 @@ namespace AzToolsFramework
         auto&& data = FetchContainerData(propertyPath);
         if (!data)
         {
-            return { PropertyAccessOutcome::ErrorType("AppendContainerItem - could not append an item to a non-container") };
+            return PropertyAccessOutcome{ AZStd::unexpect, PropertyAccessOutcome::ErrorType("AppendContainerItem - could not append an item to a non-container") };
         }
         if (data.value().m_dataContainer->GetAssociativeContainerInterface())
         {
-            return { PropertyAccessOutcome::ErrorType("AppendContainerItem - cannot use append an item to an associative container") };
+            return PropertyAccessOutcome{ AZStd::unexpect, PropertyAccessOutcome::ErrorType("AppendContainerItem - cannot use append an item to an associative container") };
         }
         const AZStd::any nullKey{};
         return AddContainerItem(propertyPath, nullKey, value);
@@ -582,7 +581,7 @@ namespace AzToolsFramework
         auto&& data = FetchContainerData(propertyPath);
         if (!data)
         {
-            return { PropertyAccessOutcome::ErrorType("AddContainerItem - could not add item to a non-container") };
+            return PropertyAccessOutcome{ AZStd::unexpect, PropertyAccessOutcome::ErrorType("AddContainerItem - could not add item to a non-container") };
         }
 
         const InstanceDataNode* nodePtr = data.value().m_propertyTreeEditorNode->m_nodePtr;
@@ -591,7 +590,7 @@ namespace AzToolsFramework
             auto&& keyPairInfo = MakeAssociatePair(data.value().m_valueElement);
             if (!keyPairInfo)
             {
-                return { PropertyAccessOutcome::ErrorType("RemoveContainerItem - invalid key pair for associative container") };
+                return PropertyAccessOutcome{ AZStd::unexpect, PropertyAccessOutcome::ErrorType("RemoveContainerItem - invalid key pair for associative container") };
             }
             void* newEntry = data.value().m_dataContainer->ReserveElement(nodePtr->FirstInstance(), data.value().m_valueElement);
             if (newEntry)
@@ -622,10 +621,10 @@ namespace AzToolsFramework
             }
             else
             {
-                return { PropertyAccessOutcome::ErrorType("AddContainerItem - could not allocate via ReserveElement()") };
+                return PropertyAccessOutcome{ AZStd::unexpect, PropertyAccessOutcome::ErrorType("AddContainerItem - could not allocate via ReserveElement()") };
             }
         }
-        return { PropertyAccessOutcome::ErrorType("AddContainerItem - could not add a value in the container") };
+        return PropertyAccessOutcome{ AZStd::unexpect, PropertyAccessOutcome::ErrorType("AddContainerItem - could not add a value in the container") };
     }
 
     PropertyTreeEditor::PropertyAccessOutcome PropertyTreeEditor::RemoveContainerItem(AZStd::string_view propertyPath, const AZStd::any& key)
@@ -633,7 +632,7 @@ namespace AzToolsFramework
         auto&& data = FetchContainerData(propertyPath);
         if (!data)
         {
-            return { PropertyAccessOutcome::ErrorType("RemoveContainerItem - could not remove item from a non-container") };
+            return PropertyAccessOutcome{ AZStd::unexpect, PropertyAccessOutcome::ErrorType("RemoveContainerItem - could not remove item from a non-container") };
         }
         const InstanceDataNode* nodePtr = data.value().m_propertyTreeEditorNode->m_nodePtr;
 
@@ -643,7 +642,7 @@ namespace AzToolsFramework
             if (!AZStd::any_numeric_cast(&key, index))
             {
                 AZ_Error("PropertyTreeEditor", false, "RemoveContainerItem - key value type should convert into size_t");
-                return { PropertyAccessOutcome::ErrorType("RemoveContainerItem - key value type should convert into size_t") };
+                return PropertyAccessOutcome{ AZStd::unexpect, PropertyAccessOutcome::ErrorType("RemoveContainerItem - key value type should convert into size_t") };
             }
             void* value = data.value().m_dataContainer->GetElementByIndex(nodePtr->FirstInstance(), data.value().m_valueElement, index);
             if (value)
@@ -657,7 +656,7 @@ namespace AzToolsFramework
             auto&& keyPairInfo = MakeAssociatePair(data.value().m_valueElement);
             if (!keyPairInfo)
             {
-                return { PropertyAccessOutcome::ErrorType("RemoveContainerItem - invalid key pair for associative container") };
+                return PropertyAccessOutcome{ AZStd::unexpect, PropertyAccessOutcome::ErrorType("RemoveContainerItem - invalid key pair for associative container") };
             }
             auto&& associativeContainer = data.value().m_dataContainer->GetAssociativeContainerInterface();
             void* keyPairValue = associativeContainer->GetElementByKey(nodePtr->FirstInstance(), nodePtr->GetElementMetadata(), AZStd::any_cast<void>(&key));
@@ -667,7 +666,7 @@ namespace AzToolsFramework
                 return { PropertyAccessOutcome::ValueType(removed) };
             }
         }
-        return { PropertyAccessOutcome::ErrorType("RemoveContainerItem - key did not remove a value") };
+        return PropertyAccessOutcome{ AZStd::unexpect, PropertyAccessOutcome::ErrorType("RemoveContainerItem - key did not remove a value") };
     }
 
     PropertyTreeEditor::PropertyAccessOutcome PropertyTreeEditor::UpdateContainerItem(AZStd::string_view propertyPath, const AZStd::any& key, const AZStd::any& value)
@@ -675,7 +674,7 @@ namespace AzToolsFramework
         auto&& data = FetchContainerData(propertyPath);
         if (!data)
         {
-            return { PropertyAccessOutcome::ErrorType("UpdateContainerItem - could not remove item from a non-container") };
+            return PropertyAccessOutcome{ AZStd::unexpect, PropertyAccessOutcome::ErrorType("UpdateContainerItem - could not remove item from a non-container") };
         }
         const InstanceDataNode* nodePtr = data.value().m_propertyTreeEditorNode->m_nodePtr;
 
@@ -685,7 +684,7 @@ namespace AzToolsFramework
             if (!AZStd::any_numeric_cast(&key, index))
             {
                 AZ_Error("PropertyTreeEditor", false, "UpdateContainerItem - key value type should convert into size_t");
-                return { PropertyAccessOutcome::ErrorType("UpdateContainerItem - key value type should convert into size_t") };
+                return PropertyAccessOutcome{ AZStd::unexpect, PropertyAccessOutcome::ErrorType("UpdateContainerItem - key value type should convert into size_t") };
             }
             void* destination = data.value().m_dataContainer->GetElementByIndex(nodePtr->FirstInstance(), data.value().m_valueElement, index);
             if (destination)
@@ -700,7 +699,7 @@ namespace AzToolsFramework
             auto&& keyPairInfo = MakeAssociatePair(data.value().m_valueElement);
             if (!keyPairInfo)
             {
-                return { PropertyAccessOutcome::ErrorType("UpdateContainerItem - invalid key pair for associative container") };
+                return PropertyAccessOutcome{ AZStd::unexpect, PropertyAccessOutcome::ErrorType("UpdateContainerItem - invalid key pair for associative container") };
             }
             auto&& associativeContainer = data.value().m_dataContainer->GetAssociativeContainerInterface();
             void* keyPairValue = associativeContainer->GetElementByKey(nodePtr->FirstInstance(), nodePtr->GetElementMetadata(), AZStd::any_cast<void>(&key));
@@ -712,7 +711,7 @@ namespace AzToolsFramework
                 return { PropertyAccessOutcome::ValueType(true) };
             }
         }
-        return { PropertyAccessOutcome::ErrorType("UpdateContainerItem - key did not remove a value") };
+        return PropertyAccessOutcome{ AZStd::unexpect, PropertyAccessOutcome::ErrorType("UpdateContainerItem - key did not remove a value") };
     }
 
     PropertyTreeEditor::PropertyAccessOutcome PropertyTreeEditor::GetContainerItem(AZStd::string_view propertyPath, const AZStd::any& key) const
@@ -720,7 +719,7 @@ namespace AzToolsFramework
         auto&& data = FetchContainerData(propertyPath);
         if (!data)
         {
-            return { PropertyAccessOutcome::ErrorType("GetContainerItem - could not get an item from a non-container") };
+            return PropertyAccessOutcome{ AZStd::unexpect, PropertyAccessOutcome::ErrorType("GetContainerItem - could not get an item from a non-container") };
         }
         const InstanceDataNode* nodePtr = data.value().m_propertyTreeEditorNode->m_nodePtr;
 
@@ -730,7 +729,7 @@ namespace AzToolsFramework
             if (!AZStd::any_numeric_cast(&key, index))
             {
                 AZ_Error("PropertyTreeEditor", false, "GetContainerItem - key value type should convert into size_t");
-                return { PropertyAccessOutcome::ErrorType("GetContainerItem - key value type should convert into size_t") };
+                return PropertyAccessOutcome{ AZStd::unexpect, PropertyAccessOutcome::ErrorType("GetContainerItem - key value type should convert into size_t") };
             }
 
             void* value = data.value().m_dataContainer->GetElementByIndex(nodePtr->FirstInstance(), data.value().m_valueElement, index);
@@ -747,7 +746,7 @@ namespace AzToolsFramework
             auto&& keyPairInfo = MakeAssociatePair(data.value().m_valueElement);
             if (!keyPairInfo)
             {
-                return { PropertyAccessOutcome::ErrorType("GetContainerItem - invalid key pair for associative container") };
+                return PropertyAccessOutcome{ AZStd::unexpect, PropertyAccessOutcome::ErrorType("GetContainerItem - invalid key pair for associative container") };
             }
             auto&& associativeContainer = data.value().m_dataContainer->GetAssociativeContainerInterface();
             void* keyPairValue = associativeContainer->GetElementByKey(nodePtr->FirstInstance(), nodePtr->GetElementMetadata(), AZStd::any_cast<void>(&key));
@@ -760,7 +759,7 @@ namespace AzToolsFramework
                 return { PropertyAccessOutcome::ValueType(AZStd::move(AZStd::any(value, typeInfo))) };
             }
         }
-        return { PropertyAccessOutcome::ErrorType("GetContainerItem - keyed value could not be returned") };
+        return PropertyAccessOutcome{ AZStd::unexpect, PropertyAccessOutcome::ErrorType("GetContainerItem - keyed value could not be returned") };
     }
 
     bool PropertyTreeEditor::IsPropertyTreeEditorNodeHidden(const PropertyTreeEditorNode& propertyTreeEditorNode) const
@@ -769,7 +768,7 @@ namespace AzToolsFramework
         return (visibility == NodeDisplayVisibility::NotVisible ||
                 visibility == NodeDisplayVisibility::ShowChildrenOnly);
     }
-    
+
     bool PropertyTreeEditor::HasAttribute(AZStd::string_view propertyPath, AZStd::string_view attribute) const
     {
         auto&& nodeIterator = m_nodeMap.find(propertyPath);
@@ -902,7 +901,7 @@ namespace AzToolsFramework
 
     //! Recursive function - explores the whole hierarchy in search of all class properties
     //! and saves them in m_nodeMap along with their pipe-separated path for easier access.
-    //!     nodeList        A list of InstanceDataNodes to add to the map. 
+    //!     nodeList        A list of InstanceDataNodes to add to the map.
     //!                     The function will call itself recursively on all node's children
     //!     previousPath    The property path to the current nodeList.
     void PropertyTreeEditor::PopulateNodeMap(AZStd::list<InstanceDataNode>& nodeList, const AZStd::string_view& previousPath)
@@ -986,7 +985,7 @@ namespace AzToolsFramework
                     if (editMetaData->m_deprecatedName && AZStd::char_traits<char>::length(editMetaData->m_deprecatedName) > 0)
                     {
                         AZStd::string deprecatedPath = previousPath;
-                        
+
                         if (!deprecatedPath.empty())
                         {
                             deprecatedPath += '|';

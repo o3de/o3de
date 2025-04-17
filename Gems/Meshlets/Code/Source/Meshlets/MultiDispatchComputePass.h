@@ -41,13 +41,13 @@ namespace AZ
 
         public:
             AZ_RTTI(MultiDispatchComputePass, "{13B3BAC7-0F12-4C23-BD9E-F82A7830195E}", RPI::ComputePass);
-            AZ_CLASS_ALLOCATOR(MultiDispatchComputePass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(MultiDispatchComputePass, SystemAllocator);
             ~MultiDispatchComputePass() = default;
 
             static RPI::Ptr<MultiDispatchComputePass> Create(const RPI::PassDescriptor& descriptor);
 
             //! Thread-safe function for adding the frame's dispatch items
-            void AddDispatchItems(AZStd::list<RHI::DispatchItem*>& dispatchItems);
+            void AddDispatchItems(AZStd::list<RHI::DeviceDispatchItem*>& dispatchItems);
 
             // Pass behavior overrides
             void CompileResources(const RHI::FrameGraphCompileContext& context) override;
@@ -70,7 +70,7 @@ namespace AZ
             void BuildShaderAndRenderData();
 
         private:
-            AZStd::unordered_set<const RHI::DispatchItem*> m_dispatchItems;
+            AZStd::unordered_set<const RHI::DeviceDispatchItem*> m_dispatchItems;
         };
 
     }   // namespace Meshlets

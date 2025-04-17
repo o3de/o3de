@@ -16,8 +16,8 @@
 #include <EMotionFX/CommandSystem/Source/RagdollCommands.h>
 #include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 #include <Editor/Plugins/Ragdoll/RagdollJointLimitWidget.h>
-#include <Editor/Plugins/Ragdoll/RagdollNodeInspectorPlugin.h>
-#include <Editor/Plugins/Ragdoll/RagdollNodeWidget.h>
+#include <Editor/Plugins/ColliderWidgets/RagdollOutlinerNotificationHandler.h>
+#include <Editor/Plugins/ColliderWidgets/RagdollNodeWidget.h>
 #include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerPlugin.h>
 
 #include <Tests/D6JointLimitConfiguration.h>
@@ -26,63 +26,55 @@
 #include <Tests/TestAssetCode/SimpleActors.h>
 #include <Tests/TestAssetCode/TestActorAssets.h>
 #include <Tests/UI/UIFixture.h>
+#include <Tests/UI/SkeletonOutlinerTestFixture.h>
 
 namespace EMotionFX
 {
-    class CopyPasteRagdollJointLimitsFixture : public UIFixture
+    class CopyPasteRagdollJointLimitsFixture : public SkeletonOutlinerTestFixture
     {
+    public:
+        void SetUp() override
+        {
+            using testing::_;
+
+            EXPECT_CALL(m_jointHelpers, GetSupportedJointTypeIds)
+                .WillRepeatedly(testing::Return(AZStd::vector<AZ::TypeId>{ azrtti_typeid<D6JointLimitConfiguration>() }));
+
+            EXPECT_CALL(m_jointHelpers, GetSupportedJointTypeId(_))
+                .WillRepeatedly(
+                    [](AzPhysics::JointType jointType) -> AZStd::optional<const AZ::TypeId>
+                    {
+                        if (jointType == AzPhysics::JointType::D6Joint)
+                        {
+                            return azrtti_typeid<D6JointLimitConfiguration>();
+                        }
+                        return AZStd::nullopt;
+                    });
+
+            EXPECT_CALL(m_jointHelpers, ComputeInitialJointLimitConfiguration(_, _, _, _, _))
+                .WillRepeatedly(
+                    []([[maybe_unused]] const AZ::TypeId& jointLimitTypeId, [[maybe_unused]] const AZ::Quaternion& parentWorldRotation,
+                       [[maybe_unused]] const AZ::Quaternion& childWorldRotation, [[maybe_unused]] const AZ::Vector3& axis,
+                       [[maybe_unused]] const AZStd::vector<AZ::Quaternion>& exampleLocalRotations)
+                    {
+                        return AZStd::make_unique<D6JointLimitConfiguration>();
+                    });
+
+            SkeletonOutlinerTestFixture::SetUp();
+        }
     protected:
         virtual bool ShouldReflectPhysicSystem() override { return true; }
+
+        Physics::MockJointHelpersInterface m_jointHelpers;
     };
 
-#if AZ_TRAIT_DISABLE_FAILED_EMOTION_FX_EDITOR_TESTS
-    TEST_F(CopyPasteRagdollJointLimitsFixture, DISABLED_TestJointLimits)
-#else
     TEST_F(CopyPasteRagdollJointLimitsFixture, TestJointLimits)
-#endif // AZ_TRAIT_DISABLE_FAILED_EMOTION_FX_EDITOR_TESTS
     {
-        using testing::_;
+        SetUpPhysics();
 
-        EMStudio::GetMainWindow()->ApplicationModeChanged("Physics");
 
-        auto ragdollPlugin = static_cast<EMotionFX::RagdollNodeInspectorPlugin*>(EMStudio::GetPluginManager()->FindActivePlugin(EMotionFX::RagdollNodeInspectorPlugin::CLASS_ID));
-        ASSERT_TRUE(ragdollPlugin) << "Ragdoll plugin not found.";
-
-        Physics::MockPhysicsSystem physicsSystem;
-        Physics::MockPhysicsInterface physicsInterface;
-        Physics::MockJointHelpersInterface jointHelpers;
-        EXPECT_CALL(jointHelpers, GetSupportedJointTypeIds)
-            .WillRepeatedly(testing::Return(AZStd::vector<AZ::TypeId>{ azrtti_typeid<D6JointLimitConfiguration>() }));
-        EXPECT_CALL(jointHelpers, GetSupportedJointTypeId(_))
-            .WillRepeatedly(
-                [](AzPhysics::JointType jointType) -> AZStd::optional<const AZ::TypeId>
-                {
-                    if (jointType == AzPhysics::JointType::D6Joint)
-                    {
-                        return azrtti_typeid<D6JointLimitConfiguration>();
-                    }
-                    return AZStd::nullopt;
-                });
-        EXPECT_CALL(jointHelpers, ComputeInitialJointLimitConfiguration(_, _, _, _, _))
-            .WillRepeatedly(
-                []([[maybe_unused]] const AZ::TypeId& jointLimitTypeId,
-                   [[maybe_unused]] const AZ::Quaternion& parentWorldRotation, [[maybe_unused]] const AZ::Quaternion& childWorldRotation,
-                   [[maybe_unused]] const AZ::Vector3& axis, [[maybe_unused]] const AZStd::vector<AZ::Quaternion>& exampleLocalRotations)
-                {
-                    return AZStd::make_unique<D6JointLimitConfiguration>();
-                });
-
-        AZ::Data::AssetId actorAssetId("{5060227D-B6F4-422E-BF82-41AAC5F228A5}");
-        AZ::Data::Asset<Integration::ActorAsset>  actorAsset = TestActorAssets::CreateActorAssetAndRegister<SimpleJointChainActor>(actorAssetId, 4);
-        const Actor* actor = actorAsset->GetActor();
-
-        {
-            AZStd::string result;
-            EXPECT_TRUE(CommandSystem::GetCommandManager()->ExecuteCommand("Select -actorId " + AZStd::to_string(actor->GetID()), result)) << result.c_str();
-        }
-
-        CommandRagdollHelpers::AddJointsToRagdoll(actor->GetID(), {"rootJoint", "joint1", "joint2", "joint3"});
-        const Physics::RagdollConfiguration& ragdollConfig = actor->GetPhysicsSetup()->GetRagdollConfig();
+        CommandRagdollHelpers::AddJointsToRagdoll(m_actor->GetID(), {"rootJoint", "joint1", "joint2", "joint3"});
+        const Physics::RagdollConfiguration& ragdollConfig = m_actor->GetPhysicsSetup()->GetRagdollConfig();
         ASSERT_EQ(ragdollConfig.m_nodes.size(), 4);
         AZStd::shared_ptr<D6JointLimitConfiguration> rootJointLimit = AZStd::rtti_pointer_cast<D6JointLimitConfiguration>(ragdollConfig.FindNodeConfigByName("rootJoint")->m_jointConfig);
         ASSERT_TRUE(rootJointLimit);
@@ -94,7 +86,7 @@ namespace EMotionFX
         ASSERT_TRUE(skeletonOutlinerPlugin) << "Skeleton outliner plugin not found.";
 
         SkeletonModel* model = skeletonOutlinerPlugin->GetModel();
-        const QModelIndex rootIndex = model->index(0, 0);
+        const QModelIndex rootIndex = model->index(0, 0, model->index(0, 0));
         const QModelIndex joint1Index = model->index(0, 0, rootIndex);
         const QModelIndex joint2Index = model->index(0, 0, joint1Index);
         const QModelIndex joint3Index = model->index(0, 0, joint2Index);
@@ -111,11 +103,11 @@ namespace EMotionFX
         QItemSelectionModel& selectionModel = model->GetSelectionModel();
         selectionModel.select(rootIndex, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
 
-        auto nodeWidget = ragdollPlugin->GetDockWidget()->findChild<RagdollNodeWidget*>();
+        auto nodeWidget = GetJointPropertyWidget()->findChild<RagdollNodeWidget*>();
         ASSERT_TRUE(nodeWidget);
         EXPECT_FALSE(nodeWidget->HasCopiedJointLimits());
 
-        auto jointLimitWidget = ragdollPlugin->GetDockWidget()->findChild<RagdollJointLimitWidget*>();
+        auto jointLimitWidget = GetJointPropertyWidget()->findChild<RagdollJointLimitWidget*>();
         ASSERT_TRUE(jointLimitWidget);
         {
             // Copy the joint limits for the rootJoint

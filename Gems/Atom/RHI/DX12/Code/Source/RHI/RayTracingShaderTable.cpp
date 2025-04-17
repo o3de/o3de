@@ -12,8 +12,8 @@
 #include <RHI/Conversions.h>
 #include <RHI/Device.h>
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/BufferPool.h>
-#include <Atom/RHI/RayTracingBufferPools.h>
+#include <Atom/RHI/DeviceBufferPool.h>
+#include <Atom/RHI/DeviceRayTracingBufferPools.h>
 #include <RHI/ShaderResourceGroup.h>
 
 namespace AZ
@@ -26,7 +26,7 @@ namespace AZ
         }
 
 #ifdef AZ_DX12_DXR_SUPPORT
-        uint32_t RayTracingShaderTable::FindLargestRecordSize(const RHI::RayTracingShaderTableRecordList& recordList)
+        uint32_t RayTracingShaderTable::FindLargestRecordSize(const RHI::DeviceRayTracingShaderTableRecordList& recordList)
         {
             uint32_t largestRecordSize = 0;
             for (const auto& record : recordList)
@@ -48,8 +48,8 @@ namespace AZ
         }
 
         RHI::Ptr<Buffer> RayTracingShaderTable::BuildTable([[maybe_unused]] RHI::Device& deviceBase,
-                                                           const RHI::RayTracingBufferPools& bufferPools,
-                                                           const RHI::RayTracingShaderTableRecordList& recordList,
+                                                           const RHI::DeviceRayTracingBufferPools& bufferPools,
+                                                           const RHI::DeviceRayTracingShaderTableRecordList& recordList,
                                                            uint32_t shaderRecordSize,
                                                            AZStd::wstring shaderTableName,
                                                            Microsoft::WRL::ComPtr<ID3D12StateObjectProperties>& stateObjectProperties)
@@ -57,14 +57,19 @@ namespace AZ
 
             uint32_t shaderTableSize = shaderRecordSize * static_cast<uint32_t>(recordList.size());
 
+            if (shaderTableSize == 0)
+            {
+                return nullptr;
+            }
+
             // create shader table buffer
-            RHI::Ptr<RHI::Buffer> shaderTableBuffer = RHI::Factory::Get().CreateBuffer();
+            RHI::Ptr<RHI::DeviceBuffer> shaderTableBuffer = RHI::Factory::Get().CreateBuffer();
             AZ::RHI::BufferDescriptor shaderTableBufferDescriptor;
             shaderTableBufferDescriptor.m_bindFlags = RHI::BufferBindFlags::ShaderRead | RHI::BufferBindFlags::CopyRead | RHI::BufferBindFlags::RayTracingShaderTable;
             shaderTableBufferDescriptor.m_byteCount = shaderTableSize;
             shaderTableBufferDescriptor.m_alignment = D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT;
 
-            AZ::RHI::BufferInitRequest shaderTableBufferRequest;
+            AZ::RHI::DeviceBufferInitRequest shaderTableBufferRequest;
             shaderTableBufferRequest.m_buffer = shaderTableBuffer.get();
             shaderTableBufferRequest.m_descriptor = shaderTableBufferDescriptor;
             [[maybe_unused]] RHI::ResultCode resultCode = bufferPools.GetShaderTableBufferPool()->InitBuffer(shaderTableBufferRequest);
@@ -74,8 +79,8 @@ namespace AZ
             shaderTableMemoryView.SetName(L"RayTracingShaderTable");
 
             // copy records
-            RHI::BufferMapResponse mapResponse;
-            resultCode = bufferPools.GetShaderTableBufferPool()->MapBuffer(RHI::BufferMapRequest(*shaderTableBuffer, 0, shaderTableSize), mapResponse);
+            RHI::DeviceBufferMapResponse mapResponse;
+            resultCode = bufferPools.GetShaderTableBufferPool()->MapBuffer(RHI::DeviceBufferMapRequest(*shaderTableBuffer, 0, shaderTableSize), mapResponse);
             AZ_Assert(resultCode == RHI::ResultCode::Success, "failed to map shader table buffer");
             uint8_t* mappedData = reinterpret_cast<uint8_t*>(mapResponse.m_data);
 
@@ -119,8 +124,7 @@ namespace AZ
         {
 #ifdef AZ_DX12_DXR_SUPPORT
             // advance to the next buffer
-            m_currentBufferIndex = (m_currentBufferIndex + 1) % BufferCount;
-            ShaderTableBuffers& buffers = m_buffers[m_currentBufferIndex];
+            ShaderTableBuffers& buffers = m_buffers.AdvanceCurrentElement();
 
             // clear the shader table if the descriptor has no ray generation shader
             if (m_descriptor->GetRayGenerationRecord().empty())
@@ -130,6 +134,9 @@ namespace AZ
                 buffers.m_missTable = nullptr;
                 buffers.m_missTableSize = 0;
                 buffers.m_missTableStride = 0;
+                buffers.m_callableTable = nullptr;
+                buffers.m_callableTableSize = 0;
+                buffers.m_callableTableStride = 0;
                 buffers.m_hitGroupTable = nullptr;
                 buffers.m_hitGroupTableSize = 0;
                 buffers.m_hitGroupTableStride = 0;
@@ -162,7 +169,16 @@ namespace AZ
                 buffers.m_missTableSize = shaderRecordSize * static_cast<uint32_t>(m_descriptor->GetMissRecords().size());
                 buffers.m_missTableStride = shaderRecordSize;
             }
-            
+
+            // callable shader table
+            {
+                uint32_t shaderRecordSize = RHI::AlignUp(FindLargestRecordSize(m_descriptor->GetCallableRecords()), D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT);
+
+                buffers.m_callableTable = BuildTable(GetDevice(), *m_bufferPools, m_descriptor->GetCallableRecords(), shaderRecordSize, L"Callable Shader Table", stateObjectProperties);
+                buffers.m_callableTableSize = shaderRecordSize * static_cast<uint32_t>(m_descriptor->GetCallableRecords().size());
+                buffers.m_callableTableStride = shaderRecordSize;
+            }
+
             // hit group shader table
             {
                 uint32_t shaderRecordSize = RHI::AlignUp(FindLargestRecordSize(m_descriptor->GetHitGroupRecords()), D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT);

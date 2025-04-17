@@ -18,6 +18,7 @@ namespace AZ::DocumentPropertyEditor
     // Forward declarations
     class DocumentAdapter;
     class RoutingAdapter;
+    class ExpanderSettings;
 
     using DocumentAdapterPtr = AZStd::shared_ptr<DocumentAdapter>;
     using ConstDocumentAdapterPtr = AZStd::shared_ptr<const DocumentAdapter>;
@@ -129,7 +130,7 @@ namespace AZ::DocumentPropertyEditor
         //! The provided patch contains all the changes provided (i.e. it shall apply cleanly on top of the last
         //! GetContents() result).
         void ConnectChangedHandler(ChangedEvent::Handler& handler);
-        //! Connects a listener for the message event, fired when SendMessage is called.
+        //! Connects a listener for the message event, fired when SendAdapterMessage is called.
         //! is invoked. This can be used to prompt the view for a response, e.g. when asking for a confirmation dialog.
         void ConnectMessageHandler(MessageEvent::Handler& handler);
 
@@ -141,7 +142,7 @@ namespace AZ::DocumentPropertyEditor
         //! inspect and examine the message.
         //! AdapterMessage provides a Match method to facilitate checking the message against
         //! registered CallbackAttributes.
-        Dom::Value SendMessage(const AdapterMessage& message);
+        Dom::Value SendAdapterMessage(const AdapterMessage& message);
 
         //! If true, debug mode is enabled for all DocumentAdapters.
         //! \see SetDebugModeEnabled
@@ -152,6 +153,15 @@ namespace AZ::DocumentPropertyEditor
         //! This can also be set at runtime with the `ed_debugDocumentPropertyEditorUpdates` CVar.
         static void SetDebugModeEnabled(bool enableDebugMode);
 
+        //! convenience method to determine whether a particular Dom Value is a row
+        static bool IsRow(const Dom::Value& domValue);
+
+        bool IsEmpty();
+
+        virtual ExpanderSettings* CreateExpanderSettings(DocumentAdapter* referenceAdapter,
+            const AZStd::string& settingsRegistryKey = AZStd::string(),
+            const AZStd::string& propertyEditorName = AZStd::string());
+
     protected:
         //! Generates the contents of this adapter. This must be an Adapter DOM node.
         //! These contents will be cached - to notify clients of changes to the structure,
@@ -159,7 +169,7 @@ namespace AZ::DocumentPropertyEditor
         //! \see AdapterBuilder for building out this DOM structure.
         virtual Dom::Value GenerateContents() = 0;
 
-        //! Called by SendMessage before the view is notified.
+        //! Called by SendAdapterMessage before the view is notified.
         //! This may be overridden to handle BoundAdapterMessages on fields.
         virtual Dom::Value HandleMessage(const AdapterMessage& message);
 

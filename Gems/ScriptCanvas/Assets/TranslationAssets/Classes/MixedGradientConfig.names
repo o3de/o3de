@@ -10,7 +10,6 @@
             "methods": [
                 {
                     "base": "GetNumLayers",
-                    "context": "MixedGradientConfig",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetNumLayers"
@@ -42,7 +41,6 @@
                 },
                 {
                     "base": "AddLayer",
-                    "context": "MixedGradientConfig",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke AddLayer"
@@ -66,7 +64,6 @@
                 },
                 {
                     "base": "RemoveLayer",
-                    "context": "MixedGradientConfig",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke RemoveLayer"
@@ -96,7 +93,6 @@
                 },
                 {
                     "base": "GetLayer",
-                    "context": "MixedGradientConfig",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetLayer"

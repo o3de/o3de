@@ -1,0 +1,8 @@
+{
+    "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardPBR.materialtype",
+    "materialTypeVersion": 5,
+    "propertyValues": {
+        "normal.factor": 0.30000001192092896,
+        "normal.textureMap": "../../Objects/cube/cube_norm.tif"
+    }
+}

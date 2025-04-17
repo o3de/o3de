@@ -16,7 +16,6 @@
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 
 #include <TerrainRenderer/Aabb2i.h>
-#include <TerrainRenderer/BindlessImageArrayHandler.h>
 #include <TerrainRenderer/ClipmapBounds.h>
 #include <TerrainRenderer/TerrainAreaMaterialRequestBus.h>
 #include <TerrainRenderer/Vector2i.h>
@@ -32,7 +31,7 @@ namespace Terrain
 {
     struct DetailMaterialConfiguration
     {
-        AZ_CLASS_ALLOCATOR(DetailMaterialConfiguration, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DetailMaterialConfiguration, AZ::SystemAllocator);
         AZ_RTTI(DetailMaterialConfiguration, "{D2A2EFBB-B0C2-4363-9B32-15B9ACD52902}");
 
         DetailMaterialConfiguration() = default;
@@ -57,7 +56,6 @@ namespace Terrain
         ~TerrainDetailMaterialManager() = default;
         
         void Initialize(
-            const AZStd::shared_ptr<AZ::Render::BindlessImageArrayHandler>& bindlessImageHandler,
             const AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg,
             const AZ::Data::Instance<AZ::RPI::Material>& materialInstance);
         bool IsInitialized() const;
@@ -71,7 +69,7 @@ namespace Terrain
     private:
         
         using MaterialInstance = AZ::Data::Instance<AZ::RPI::Material>;
-        static constexpr auto InvalidImageIndex = AZ::Render::BindlessImageArrayHandler::InvalidImageIndex;
+        static constexpr auto InvalidImageIndex = AZStd::numeric_limits<uint32_t>::max();
 
         enum DetailTextureFlags : uint32_t
         {
@@ -128,25 +126,23 @@ namespace Terrain
             DetailTextureFlags m_flags{ 0 };
 
             // Image indices
-            uint16_t m_colorImageIndex{ InvalidImageIndex };
-            uint16_t m_normalImageIndex{ InvalidImageIndex };
-            uint16_t m_roughnessImageIndex{ InvalidImageIndex };
-            uint16_t m_metalnessImageIndex{ InvalidImageIndex };
-
-            uint16_t m_specularF0ImageIndex{ InvalidImageIndex };
-            uint16_t m_occlusionImageIndex{ InvalidImageIndex };
-            uint16_t m_heightImageIndex{ InvalidImageIndex };
+            uint32_t m_colorImageIndex{ InvalidImageIndex };
+            uint32_t m_normalImageIndex{ InvalidImageIndex };
+            uint32_t m_roughnessImageIndex{ InvalidImageIndex };
+            uint32_t m_metalnessImageIndex{ InvalidImageIndex };
+            uint32_t m_specularF0ImageIndex{ InvalidImageIndex };
+            uint32_t m_occlusionImageIndex{ InvalidImageIndex };
+            uint32_t m_heightImageIndex{ InvalidImageIndex };
 
             // 16 byte aligned
-            uint16_t m_padding1{ 0 };
-            uint32_t m_padding2{ 0 };
+            uint32_t m_padding[2]{ 0 };
         };
-        static_assert(sizeof(DetailMaterialShaderData) % 16 == 0, "DetailMaterialShaderData must be 16 byte aligned.");
+        static constexpr size_t SizeOfDetailMaterialShaderData = sizeof(DetailMaterialShaderData);
+        static_assert(SizeOfDetailMaterialShaderData % 16 == 0, "DetailMaterialShaderData must be 16 byte aligned.");
 
         struct DetailMaterialData
         {
             AZ::Data::AssetId m_assetId;
-            AZ::RPI::Material::ChangeId m_materialChangeId{AZ::RPI::Material::DEFAULT_CHANGE_ID};
             uint32_t m_refCount = 0;
             uint16_t m_detailMaterialBufferIndex{ 0xFFFF };
 
@@ -201,9 +197,6 @@ namespace Terrain
         void OnTerrainSurfaceMaterialMappingRegionDestroyed(AZ::EntityId entityId, const AZ::Aabb& oldRegion) override;
         void OnTerrainSurfaceMaterialMappingRegionChanged(AZ::EntityId entityId, const AZ::Aabb& oldRegion, const AZ::Aabb& newRegion) override;
 
-        //! Removes all images from all detail materials from the bindless image array
-        void RemoveAllImages();
-
         //! Creates or updates an existing detail material with settings from a material instance
         uint16_t CreateOrUpdateDetailMaterial(MaterialInstance material);
 
@@ -244,14 +237,13 @@ namespace Terrain
 
         DetailMaterialConfiguration m_config;
 
-        AZStd::shared_ptr<AZ::Render::BindlessImageArrayHandler> m_bindlessImageHandler;
-        
         AZ::Data::Instance<AZ::RPI::AttachmentImage> m_detailTextureImage;
         AZ::Data::Instance<AZ::RPI::Material> m_terrainMaterial;
 
         DetailMaterialContainer m_detailMaterials;
         AZ::Render::IndexedDataVector<DetailMaterialListRegion> m_detailMaterialRegions;
-        AZ::Render::SparseVector<DetailMaterialShaderData> m_detailMaterialShaderData;
+        AZ::Render::SparseVector<size_t> m_detailMaterialShaderIndex;
+        AZStd::unordered_map<int, AZStd::vector<DetailMaterialShaderData>> m_detailMaterialShaderData;
         AZ::Render::GpuBufferHandler m_detailMaterialDataBuffer;
         uint8_t m_passthroughMaterialId = 0;
 

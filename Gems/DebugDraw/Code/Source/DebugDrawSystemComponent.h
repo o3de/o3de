@@ -29,7 +29,10 @@
 #endif // DEBUGDRAW_GEM_EDITOR
 
 #include <Atom/RPI.Public/SceneBus.h>
+#include <Atom/RPI.Public/Shader/Shader.h>
+#include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/Bootstrap/BootstrapNotificationBus.h>
+#include <Atom/Feature/RayTracing/RayTracingFeatureProcessorInterface.h>
 
 namespace DebugDraw
 {
@@ -37,7 +40,7 @@ namespace DebugDraw
     class DebugDrawAabbElement
     {
     public:
-        AZ_CLASS_ALLOCATOR(DebugDrawAabbElement, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DebugDrawAabbElement, AZ::SystemAllocator);
         AZ_TYPE_INFO(DebugDrawAabbElement, "{3B3E45AC-95B5-477F-BC34-58765A031BF1}");
 
         AZ::EntityId            m_targetEntityId;
@@ -94,15 +97,17 @@ namespace DebugDraw
         void DrawLineEntityToLocation(const AZ::EntityId& startEntity, const AZ::Vector3& endLocation, const AZ::Color& color, float duration) override;
         void DrawLineEntityToEntity(const AZ::EntityId& startEntity, const AZ::EntityId& endEntity, const AZ::Color& color, float duration) override;
         void DrawObb(const AZ::Obb& obb, const AZ::Color& color, float duration) override;
-        void DrawObbOnEntity(const AZ::EntityId& targetEntity, const AZ::Obb& obb, const AZ::Color& color, float duration) override;
+        void DrawObbOnEntity(const AZ::EntityId& targetEntity, const AZ::Obb& obb, const AZ::Color& color, bool enableRayTracing, float duration) override;
         void DrawRayLocationToDirection(const AZ::Vector3& worldLocation, const AZ::Vector3& worldDirection, const AZ::Color& color, float duration) override;
         void DrawRayEntityToDirection(const AZ::EntityId& startEntity, const AZ::Vector3& worldDirection, const AZ::Color& color, float duration) override;
         void DrawRayEntityToEntity(const AZ::EntityId& startEntity, const AZ::EntityId& endEntity, const AZ::Color& color, float duration) override;
         void DrawSphereAtLocation(const AZ::Vector3& worldLocation, float radius, const AZ::Color& color, float duration) override;
-        void DrawSphereOnEntity(const AZ::EntityId& targetEntity, float radius, const AZ::Color& color, float duration) override;
+        void DrawSphereOnEntity(const AZ::EntityId& targetEntity, float radius, const AZ::Color& color, bool enableRayTracing, float duration) override;
         void DrawTextAtLocation(const AZ::Vector3& worldLocation, const AZStd::string& text, const AZ::Color& color, float duration) override;
         void DrawTextOnEntity(const AZ::EntityId& targetEntity, const AZStd::string& text, const AZ::Color& color, float duration) override;
         void DrawTextOnScreen(const AZStd::string& text, const AZ::Color& color, float duration) override;
+        void DrawScaledTextOnScreen(const AZStd::string& text, float fontScale, const AZ::Color& color, float duration) override;
+        void DrawScaledTextOnScreenPos(float x, float y, const AZStd::string& text, float fontScale, const AZ::Color& color, float duration, bool bCenter = true) override;
 
         // DebugDrawInternalRequestBus interface implementation
         void RegisterDebugDrawComponent(AZ::Component* component) override;
@@ -141,15 +146,38 @@ namespace DebugDraw
         template <typename F>
         void removeExpiredDebugElementsFromVector(AZStd::vector<F>& vectorToExpire);
 
+        struct DebugDrawSphereElementWrapper : DebugDrawSphereElement
+        {
+            AZ::Vector3    m_previousWorldLocation = AZ::Vector3::CreateZero();
+            float          m_previousRadius = 0;
+            uint32_t       m_localInstanceIndex = 0;
+        };
+
+        struct DebugDrawObbElementWrapper : DebugDrawObbElement
+        {
+            AZ::Vector3    m_previousWorldLocation;
+            AZ::Vector3    m_previousScale;
+            AZ::Quaternion m_previousRotation;
+        };
+
+        // Adds the debug shape to the ray tracing scene by using the ProceduralGeometry interface of RayTracingFeatureProcessor and custom
+        // intersection shaders for hit detection
+        void AddRaytracingData(DebugDrawSphereElementWrapper& element);
+        void AddRaytracingData(DebugDrawObbElementWrapper& element);
+
+        // Removes the debug shape from the ray tracing scene if it was added before
+        void RemoveRaytracingData(const DebugDrawSphereElementWrapper& element);
+        void RemoveRaytracingData(const DebugDrawObbElementWrapper& element);
+
         AZStd::vector<DebugDrawAabbElement> m_activeAabbs;
         AZStd::mutex m_activeAabbsMutex;
         AZStd::vector<DebugDrawLineElement> m_activeLines;
         AZStd::mutex m_activeLinesMutex;
-        AZStd::vector<DebugDrawObbElement> m_activeObbs;
+        AZStd::vector<DebugDrawObbElementWrapper> m_activeObbs;
         AZStd::mutex m_activeObbsMutex;
         AZStd::vector<DebugDrawRayElement> m_activeRays;
         AZStd::mutex m_activeRaysMutex;
-        AZStd::vector<DebugDrawSphereElement> m_activeSpheres;
+        AZStd::vector<DebugDrawSphereElementWrapper> m_activeSpheres;
         AZStd::mutex m_activeSpheresMutex;
         AZStd::vector<DebugDrawTextElement> m_activeTexts;
         AZStd::mutex m_activeTextsMutex;
@@ -158,5 +186,11 @@ namespace DebugDraw
 
         AZStd::vector<AZ::Vector3> m_batchPoints;
         AZStd::vector<AZ::Color> m_batchColors;
+
+        AZ::Render::RayTracingFeatureProcessorInterface* m_rayTracingFeatureProcessor = nullptr;
+        AZ::RPI::Ptr<AZ::RPI::Buffer> m_spheresRayTracingIndicesBuffer;
+        AZ::Render::RayTracingFeatureProcessorInterface::ProceduralGeometryTypeHandle m_sphereRayTracingTypeHandle;
+        AZ::Render::RayTracingIndexList<1> m_spheresRayTracingIndices;
+        AZ::Render::RayTracingFeatureProcessorInterface::ProceduralGeometryTypeHandle m_obbRayTracingTypeHandle;
     };
 }

@@ -6,7 +6,7 @@
  *
  */
 
-#include <Atom/Feature/AuxGeom/AuxGeomFeatureProcessor.h>
+#include <AuxGeom/AuxGeomFeatureProcessor.h>
 
 #include "AuxGeomDrawQueue.h"
 #include "DynamicPrimitiveProcessor.h"
@@ -38,8 +38,6 @@ namespace AZ
             // create an AuxGeomDrawQueue object for this scene and register it with the AuxGeomSystemComponent
             m_sceneDrawQueue = RPI::AuxGeomDrawPtr(aznew AuxGeomDrawQueue);
 
-            RHI::RHISystemInterface* rhiSystem = RHI::RHISystemInterface::Get();
-
             // initialize the dynamic primitive processor
             m_dynamicPrimitiveProcessor = AZStd::make_unique<DynamicPrimitiveProcessor>();
             if (!m_dynamicPrimitiveProcessor->Initialize(scene))
@@ -50,7 +48,7 @@ namespace AZ
 
             // initialize the fixed shape processor
             m_fixedShapeProcessor = AZStd::make_unique<FixedShapeProcessor>();
-            if (!m_fixedShapeProcessor->Initialize(*rhiSystem->GetDevice(), scene))
+            if (!m_fixedShapeProcessor->Initialize(RHI::MultiDevice::AllDevices, scene))
             {
                 AZ_Error(s_featureProcessorName, false, "Failed to init AuxGeom FixedShapeProcessor");
                 return;
@@ -114,6 +112,12 @@ namespace AZ
             }
         }
 
+        void AuxGeomFeatureProcessor::OnRenderEnd()
+        {
+            m_dynamicPrimitiveProcessor->FrameEnd();
+            m_fixedShapeProcessor->FrameEnd();
+        }
+
         RPI::AuxGeomDrawPtr AuxGeomFeatureProcessor::GetDrawQueueForView(const RPI::View* view)
         {
             if (view)
@@ -157,15 +161,10 @@ namespace AZ
             m_fixedShapeProcessor->SetUpdatePipelineStates();
         }
 
-        void AuxGeomFeatureProcessor::OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline)
+        void AuxGeomFeatureProcessor::OnRenderPipelineChanged([[maybe_unused]] RPI::RenderPipeline* pipeline,
+            [[maybe_unused]] RPI::SceneNotification::RenderPipelineChangeType changeType)
         {
             OnSceneRenderPipelinesChanged();
         }
-
-        void AuxGeomFeatureProcessor::OnRenderPipelineRemoved([[maybe_unused]] RPI::RenderPipeline* pipeline)
-        {
-            OnSceneRenderPipelinesChanged();
-        }
-
     } // namespace Render
 } // namespace AZ

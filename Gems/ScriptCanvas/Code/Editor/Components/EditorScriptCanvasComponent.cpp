@@ -63,11 +63,9 @@ namespace ScriptCanvasEditor
         }
 
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
-        m_handlerSourceCompiled = m_configuration.ConnectToSourceCompiled([](const Configuration&)
+        m_handlerSourceCompiled = m_configuration.ConnectToSourceCompiled([this](const Configuration&)
             {
-                AzToolsFramework::ToolsApplicationNotificationBus::Broadcast
-                    ( &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay
-                    , AzToolsFramework::Refresh_EntireTree_NewContent);
+                this->InvalidatePropertyDisplay(AzToolsFramework::Refresh_EntireTree);
             });
 
         m_handlerSourcePropertiesChanged = m_configuration.ConnectToPropertiesChanged([this](const Configuration&)
@@ -76,13 +74,12 @@ namespace ScriptCanvasEditor
         });
 
         m_configuration.Refresh();
-        AzToolsFramework::ToolsApplicationNotificationBus::Broadcast
-            ( &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay
-            , AzToolsFramework::Refresh_EntireTree_NewContent);
+        InvalidatePropertyDisplay(AzToolsFramework::Refresh_EntireTree);
     }
 
     void EditorScriptCanvasComponent::Deactivate()
     {
+        m_handlerSourceCompiled.Disconnect();
         EditorComponentBase::Deactivate();
         EditorScriptCanvasComponentRequestBus::Handler::BusDisconnect();
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusDisconnect();
@@ -124,10 +121,10 @@ namespace ScriptCanvasEditor
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/ScriptCanvas/ScriptCanvas.svg")
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/ScriptCanvas/Viewport/ScriptCanvas.svg")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("UI", 0x27ff46b0))
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Level", 0x9aeacc13))
-                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/scripting/script-canvas/")
+                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
+                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
+                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Level"))
+                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/components/reference/scripting/script-canvas/")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorScriptCanvasComponent::m_configuration, "Configuration", "Script Selection and Property Overrides")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ;

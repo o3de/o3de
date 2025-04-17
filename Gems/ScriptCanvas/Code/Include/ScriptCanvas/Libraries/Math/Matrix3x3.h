@@ -74,3 +74,5 @@ namespace ScriptCanvas
         Data::Matrix3x3Type Zero();
     } // namespace Matrix3x3Functions
 } // namespace ScriptCanvas
+
+#include <Include/ScriptCanvas/Libraries/Math/Matrix3x3.generated.h>

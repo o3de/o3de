@@ -27,8 +27,19 @@
 #include <AzToolsFramework/Entity/EditorEntityContextComponent.h>
 #endif // DEBUGDRAW_GEM_EDITOR
 
+#include <Atom/RHI/RHIUtils.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
+#include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/Scene.h>
+
+namespace
+{
+    AZ::Uuid UuidFromEntityId(const AZ::EntityId& entityId)
+    {
+        AZ::u64 entityIdNumber = static_cast<AZ::u64>(entityId);
+        return AZ::Uuid::CreateData(reinterpret_cast<const AZStd::byte*>(&entityIdNumber), sizeof(AZ::u64));
+    }
+}
 
 namespace DebugDraw
 {
@@ -48,7 +59,6 @@ namespace DebugDraw
                 ec->Class<DebugDrawSystemComponent>("DebugDraw", "Provides game runtime debug visualization.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Debugging")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                 ;
             }
@@ -79,17 +89,17 @@ namespace DebugDraw
 
     void DebugDrawSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("DebugDrawService", 0x651d8874));
+        provided.push_back(AZ_CRC_CE("DebugDrawService"));
     }
 
     void DebugDrawSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("DebugDrawService", 0x651d8874));
+        incompatible.push_back(AZ_CRC_CE("DebugDrawService"));
     }
 
     void DebugDrawSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("RPISystem", 0xf2add773));
+        required.push_back(AZ_CRC_CE("RPISystem"));
     }
 
     void DebugDrawSystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
@@ -132,6 +142,10 @@ namespace DebugDraw
         }
         {
             AZStd::lock_guard<AZStd::mutex> locker(m_activeObbsMutex);
+            for (const auto& obb : m_activeObbs)
+            {
+                RemoveRaytracingData(obb);
+            }
             m_activeObbs.clear();
         }
         {
@@ -140,19 +154,28 @@ namespace DebugDraw
         }
         {
             AZStd::lock_guard<AZStd::mutex> locker(m_activeSpheresMutex);
+            for (const auto& sphere : m_activeSpheres)
+            {
+                RemoveRaytracingData(sphere);
+            }
             m_activeSpheres.clear();
         }
         {
             AZStd::lock_guard<AZStd::mutex> locker(m_activeTextsMutex);
             m_activeTexts.clear();
         }
+
+        m_sphereRayTracingTypeHandle.Free();
+        m_obbRayTracingTypeHandle.Free();
+        m_spheresRayTracingIndicesBuffer.reset();
+        m_spheresRayTracingIndices.Reset();
     }
 
     void DebugDrawSystemComponent::OnBootstrapSceneReady(AZ::RPI::Scene* scene)
     {
         AZ_Assert(scene, "Invalid scene received in OnBootstrapSceneReady");
+        AZ::RPI::SceneNotificationBus::Handler::BusDisconnect();
         AZ::RPI::SceneNotificationBus::Handler::BusConnect(scene->GetId());
-        AZ::Render::Bootstrap::NotificationBus::Handler::BusDisconnect();
     }
 
     #ifdef DEBUGDRAW_GEM_EDITOR
@@ -196,8 +219,8 @@ namespace DebugDraw
         // Obbs
         {
             AZStd::lock_guard<AZStd::mutex> locker(m_activeObbsMutex);
-            AZStd::vector<DebugDrawObbElement> elementsToSave;
-            for (const DebugDrawObbElement& element : m_activeObbs)
+            AZStd::vector<DebugDrawObbElementWrapper> elementsToSave;
+            for (const DebugDrawObbElementWrapper& element : m_activeObbs)
             {
                 if (element.m_owningEditorComponent != AZ::InvalidComponentId)
                 {
@@ -205,7 +228,7 @@ namespace DebugDraw
                 }
             }
             m_activeObbs.clear();
-            m_activeObbs.assign_rv(AZStd::forward<AZStd::vector<DebugDrawObbElement>>(elementsToSave));
+            m_activeObbs.assign_rv(AZStd::forward<AZStd::vector<DebugDrawObbElementWrapper>>(elementsToSave));
         }
 
         // Rays
@@ -226,8 +249,8 @@ namespace DebugDraw
         // Spheres
         {
             AZStd::lock_guard<AZStd::mutex> locker(m_activeSpheresMutex);
-            AZStd::vector<DebugDrawSphereElement> elementsToSave;
-            for (const DebugDrawSphereElement& element : m_activeSpheres)
+            AZStd::vector<DebugDrawSphereElementWrapper> elementsToSave;
+            for (const DebugDrawSphereElementWrapper& element : m_activeSpheres)
             {
                 if (element.m_owningEditorComponent != AZ::InvalidComponentId)
                 {
@@ -235,7 +258,7 @@ namespace DebugDraw
                 }
             }
             m_activeSpheres.clear();
-            m_activeSpheres.assign_rv(AZStd::forward<AZStd::vector<DebugDrawSphereElement>>(elementsToSave));
+            m_activeSpheres.assign_rv(AZStd::forward<AZStd::vector<DebugDrawSphereElementWrapper>>(elementsToSave));
         }
 
         // Text
@@ -386,6 +409,18 @@ namespace DebugDraw
             }
             debugDisplay.SetColor(obbElement.m_color);
             debugDisplay.DrawSolidOBB(obbElement.m_worldLocation, transformedObb.GetAxisX(), transformedObb.GetAxisY(), transformedObb.GetAxisZ(), transformedObb.GetHalfLengths());
+
+            if (m_rayTracingFeatureProcessor && obbElement.m_isRayTracingEnabled &&
+                (obbElement.m_worldLocation != obbElement.m_previousWorldLocation ||
+                 obbElement.m_scale != obbElement.m_previousScale ||
+                 transformedObb.GetRotation() != obbElement.m_previousRotation))
+            {
+                AZ::Transform obbTransform(obbElement.m_worldLocation, transformedObb.GetRotation(), 1.f);
+                m_rayTracingFeatureProcessor->SetProceduralGeometryTransform(UuidFromEntityId(obbElement.m_targetEntityId), obbTransform, obbElement.m_scale);
+                obbElement.m_previousWorldLocation = obbElement.m_worldLocation;
+                obbElement.m_previousScale = obbElement.m_scale;
+                obbElement.m_previousRotation = transformedObb.GetRotation();
+            }
         }
 
         removeExpiredDebugElementsFromVector(m_activeObbs);
@@ -438,6 +473,17 @@ namespace DebugDraw
             }
             debugDisplay.SetColor(sphereElement.m_color);
             debugDisplay.DrawBall(sphereElement.m_worldLocation, sphereElement.m_radius, true);
+
+            if (m_rayTracingFeatureProcessor && sphereElement.m_isRayTracingEnabled &&
+                (sphereElement.m_worldLocation != sphereElement.m_previousWorldLocation ||
+                 sphereElement.m_radius != sphereElement.m_previousRadius))
+            {
+                AZ::Transform sphereTransform(sphereElement.m_worldLocation, AZ::Quaternion::CreateIdentity(), sphereElement.m_radius);
+                m_rayTracingFeatureProcessor->SetProceduralGeometryTransform(
+                    UuidFromEntityId(sphereElement.m_targetEntityId), sphereTransform);
+                sphereElement.m_previousWorldLocation = sphereElement.m_worldLocation;
+                sphereElement.m_previousRadius = sphereElement.m_radius;
+            }
         }
 
         removeExpiredDebugElementsFromVector(m_activeSpheres);
@@ -460,7 +506,7 @@ namespace DebugDraw
         #endif // DEBUGDRAW_GEM_EDITOR
 
         // Draw text elements and remove any that are expired
-        int numScreenTexts = 0;
+        float currentOnScreenY = 20.f; // Initial shift down for the 1st line, then recalculate shifts down for next lines accounting for textElement.m_fontScale
         AZ::EntityId lastTargetEntityId;
 
         for (auto& textElement : m_activeTexts)
@@ -469,8 +515,20 @@ namespace DebugDraw
             debugDisplay.SetColor(textColor);
             if (textElement.m_drawMode == DebugDrawTextElement::DrawMode::OnScreen)
             {
-                debugDisplay.Draw2dTextLabel(100.0f, 20.f + ((float)numScreenTexts * 15.0f), 1.4f, textElement.m_text.c_str() );
-                ++numScreenTexts;
+                if (textElement.m_useOnScreenCoordinates)
+                {
+                    // Reuse textElement.m_worldLocation for 2D OnScreen positioning.
+                    debugDisplay.Draw2dTextLabel(textElement.m_worldLocation.GetX(),textElement.m_worldLocation.GetY(),textElement.m_fontScale
+                        , textElement.m_text.c_str(), textElement.m_bCenter);
+                }
+                else
+                {
+                    // Hardcoded 2D OnScreen positioning as in original code. Note original code below with constant shifts.
+                    debugDisplay.Draw2dTextLabel(100.0f, currentOnScreenY, textElement.m_fontScale, textElement.m_text.c_str());
+                    // Prepare the shift down for a next line assuming default m_textSizeFactor = 12.0f + line gap. 
+                    // Could be more precise if Draw2dTextLabel() returned drawn text size with current viewport settings.
+                    currentOnScreenY += textElement.m_fontScale * 14.0f + 2.0f; 
+                }
             }
             else if (textElement.m_drawMode == DebugDrawTextElement::DrawMode::InWorld)
             {
@@ -486,7 +544,7 @@ namespace DebugDraw
                     worldLocation = textElement.m_worldLocation;
                 }
 
-                debugDisplay.DrawTextLabel(worldLocation, 1.4f, textElement.m_text.c_str() );
+                debugDisplay.DrawTextLabel(worldLocation, textElement.m_size, textElement.m_text.c_str(), textElement.m_centered);
             }
         }
 
@@ -600,9 +658,10 @@ namespace DebugDraw
 
             for (auto iter = m_activeObbs.begin(); iter != m_activeObbs.end();)
             {
-                DebugDrawObbElement& element = *iter;
+                DebugDrawObbElementWrapper& element = *iter;
                 if (element.m_targetEntityId == entityId)
                 {
+                    RemoveRaytracingData(element);
                     m_activeObbs.erase(iter);
                 }
                 else
@@ -617,9 +676,10 @@ namespace DebugDraw
             AZStd::lock_guard<AZStd::mutex> locker(m_activeSpheresMutex);
             for (auto iter = m_activeSpheres.begin(); iter != m_activeSpheres.end();)
             {
-                DebugDrawSphereElement& element = *iter;
+                DebugDrawSphereElementWrapper& element = *iter;
                 if (element.m_targetEntityId == entityId)
                 {
+                    RemoveRaytracingData(element);
                     m_activeSpheres.erase(iter);
                 }
                 else
@@ -695,9 +755,10 @@ namespace DebugDraw
             AZStd::lock_guard<AZStd::mutex> locker(m_activeObbsMutex);
             for (auto iter = m_activeObbs.begin(); iter != m_activeObbs.end();)
             {
-                DebugDrawObbElement& element = *iter;
+                DebugDrawObbElementWrapper& element = *iter;
                 if (element.m_targetEntityId == componentEntityId && element.m_owningEditorComponent == componentId)
                 {
+                    RemoveRaytracingData(element);
                     m_activeObbs.erase(iter);
                     break; // Only one element per component
                 }
@@ -713,9 +774,10 @@ namespace DebugDraw
             AZStd::lock_guard<AZStd::mutex> locker(m_activeSpheresMutex);
             for (auto iter = m_activeSpheres.begin(); iter != m_activeSpheres.end();)
             {
-                DebugDrawSphereElement& element = *iter;
+                DebugDrawSphereElementWrapper& element = *iter;
                 if (element.m_targetEntityId == componentEntityId && element.m_owningEditorComponent == componentId)
                 {
+                    RemoveRaytracingData(element);
                     m_activeSpheres.erase(iter);
                     break; // Only one element per component
                 }
@@ -844,32 +906,43 @@ namespace DebugDraw
     void DebugDrawSystemComponent::DrawObb(const AZ::Obb& obb, const AZ::Color& color, float duration)
     {
         AZStd::lock_guard<AZStd::mutex> locker(m_activeObbsMutex);
-        DebugDrawObbElement& newElement = m_activeObbs.emplace_back();
+        DebugDrawObbElementWrapper& newElement = m_activeObbs.emplace_back();
         newElement.m_obb = obb;
         newElement.m_color = color;
         newElement.m_duration = duration;
         AZ::TickRequestBus::BroadcastResult(newElement.m_activateTime, &AZ::TickRequestBus::Events::GetTimeAtCurrentTick);
     }
 
-    void DebugDrawSystemComponent::DrawObbOnEntity(const AZ::EntityId& targetEntity, const AZ::Obb& obb, const AZ::Color& color, float duration)
+    void DebugDrawSystemComponent::DrawObbOnEntity(const AZ::EntityId& targetEntity, const AZ::Obb& obb, const AZ::Color& color, bool enableRayTracing, float duration)
     {
         AZStd::lock_guard<AZStd::mutex> locker(m_activeObbsMutex);
-        DebugDrawObbElement& newElement = m_activeObbs.emplace_back();
+        DebugDrawObbElementWrapper& newElement = m_activeObbs.emplace_back();
         newElement.m_targetEntityId = targetEntity;
         newElement.m_obb = obb;
+        newElement.m_scale = obb.GetHalfLengths();
         newElement.m_color = color;
+        newElement.m_isRayTracingEnabled = enableRayTracing;
         newElement.m_duration = duration;
         AZ::TickRequestBus::BroadcastResult(newElement.m_activateTime, &AZ::TickRequestBus::Events::GetTimeAtCurrentTick);
+
+        AddRaytracingData(newElement);
     }
 
     void DebugDrawSystemComponent::CreateObbEntryForComponent(const AZ::EntityId& componentEntityId, const DebugDrawObbElement& element)
     {
         AZStd::lock_guard<AZStd::mutex> locker(m_activeObbsMutex);
-        m_activeObbs.push_back(element);
-        DebugDrawObbElement& newElement = m_activeObbs.back();
-        newElement.m_duration = -1.0f; // Component-spawned text has infinite duration currently (can change in the future)
+        DebugDrawObbElementWrapper& newElement = m_activeObbs.emplace_back();
         newElement.m_targetEntityId = componentEntityId;
+        newElement.m_obb = element.m_obb;
+        newElement.m_duration = -1.0f; // Component-spawned text has infinite duration currently (can change in the future)
+        newElement.m_color = element.m_color;
+        newElement.m_worldLocation = element.m_worldLocation;
+        newElement.m_owningEditorComponent = element.m_owningEditorComponent;
+        newElement.m_scale = element.m_scale;
+        newElement.m_isRayTracingEnabled = element.m_isRayTracingEnabled;
         AZ::TickRequestBus::BroadcastResult(newElement.m_activateTime, &AZ::TickRequestBus::Events::GetTimeAtCurrentTick);
+
+        AddRaytracingData(newElement);
     }
 
 
@@ -928,7 +1001,7 @@ namespace DebugDraw
     void DebugDrawSystemComponent::DrawSphereAtLocation(const AZ::Vector3& worldLocation, float radius, const AZ::Color& color, float duration)
     {
         AZStd::lock_guard<AZStd::mutex> locker(m_activeSpheresMutex);
-        DebugDrawSphereElement& newElement = m_activeSpheres.emplace_back();
+        DebugDrawSphereElementWrapper& newElement = m_activeSpheres.emplace_back();
         newElement.m_worldLocation = worldLocation;
         newElement.m_radius = radius;
         newElement.m_color = color;
@@ -936,24 +1009,33 @@ namespace DebugDraw
         AZ::TickRequestBus::BroadcastResult(newElement.m_activateTime, &AZ::TickRequestBus::Events::GetTimeAtCurrentTick);
     }
 
-    void DebugDrawSystemComponent::DrawSphereOnEntity(const AZ::EntityId& targetEntity, float radius, const AZ::Color& color, float duration)
+    void DebugDrawSystemComponent::DrawSphereOnEntity(const AZ::EntityId& targetEntity, float radius, const AZ::Color& color, bool enableRayTracing, float duration)
     {
         AZStd::lock_guard<AZStd::mutex> locker(m_activeSpheresMutex);
-        DebugDrawSphereElement& newElement = m_activeSpheres.emplace_back();
+        DebugDrawSphereElementWrapper& newElement = m_activeSpheres.emplace_back();
         newElement.m_targetEntityId = targetEntity;
         newElement.m_radius = radius;
         newElement.m_color = color;
+        newElement.m_isRayTracingEnabled = enableRayTracing;
         newElement.m_duration = duration;
         AZ::TickRequestBus::BroadcastResult(newElement.m_activateTime, &AZ::TickRequestBus::Events::GetTimeAtCurrentTick);
+
+        AddRaytracingData(newElement);
     }
     void DebugDrawSystemComponent::CreateSphereEntryForComponent(const AZ::EntityId& componentEntityId, const DebugDrawSphereElement& element)
     {
         AZStd::lock_guard<AZStd::mutex> locker(m_activeSpheresMutex);
-        m_activeSpheres.push_back(element);
-        DebugDrawSphereElement& newElement = m_activeSpheres.back();
+        DebugDrawSphereElementWrapper& newElement = m_activeSpheres.emplace_back();
         newElement.m_duration = -1.0f; // Component-spawned text has infinite duration currently (can change in the future)
+        newElement.m_color = element.m_color;
         newElement.m_targetEntityId = componentEntityId;
+        newElement.m_worldLocation = element.m_worldLocation;
+        newElement.m_radius = element.m_radius;
+        newElement.m_isRayTracingEnabled = element.m_isRayTracingEnabled;
+        newElement.m_owningEditorComponent = element.m_owningEditorComponent;
         AZ::TickRequestBus::BroadcastResult(newElement.m_activateTime, &AZ::TickRequestBus::Events::GetTimeAtCurrentTick);
+
+        AddRaytracingData(newElement);
     }
 
     ///////////////////////////////////////////////////////////////////////
@@ -996,7 +1078,34 @@ namespace DebugDraw
         AZ::TickRequestBus::BroadcastResult(newText.m_activateTime, &AZ::TickRequestBus::Events::GetTimeAtCurrentTick);
     }
 
-    void DebugDrawSystemComponent::CreateTextEntryForComponent(const AZ::EntityId& componentEntityId, const DebugDrawTextElement& element)
+    void DebugDrawSystemComponent::DrawScaledTextOnScreen(const AZStd::string& text, float fontScale, const AZ::Color& color, float duration)
+    {
+        AZStd::lock_guard<AZStd::mutex> locker(m_activeTextsMutex);
+        DebugDrawTextElement& newText = m_activeTexts.emplace_back();
+        newText.m_drawMode = DebugDrawTextElement::DrawMode::OnScreen;
+        newText.m_text = text;
+        newText.m_fontScale = fontScale;
+        newText.m_color = color;
+        newText.m_duration = duration;
+        AZ::TickRequestBus::BroadcastResult(newText.m_activateTime, &AZ::TickRequestBus::Events::GetTimeAtCurrentTick);
+    }
+
+    void DebugDrawSystemComponent::DrawScaledTextOnScreenPos(float x, float y, const AZStd::string& text, float fontScale, const AZ::Color& color, float duration, bool bCenter)
+    {
+        AZStd::lock_guard<AZStd::mutex> locker(m_activeTextsMutex);
+        DebugDrawTextElement& newText = m_activeTexts.emplace_back();
+        newText.m_drawMode = DebugDrawTextElement::DrawMode::OnScreen;
+        newText.m_text = text;
+        newText.m_fontScale = fontScale;
+        newText.m_color = color;
+        newText.m_duration = duration;
+        newText.m_bCenter = bCenter;
+        newText.m_useOnScreenCoordinates = true;
+        newText.m_worldLocation.Set(x, y, 1.f);
+        AZ::TickRequestBus::BroadcastResult(newText.m_activateTime, &AZ::TickRequestBus::Events::GetTimeAtCurrentTick);
+    }
+
+    void DebugDrawSystemComponent::DebugDrawSystemComponent::CreateTextEntryForComponent(const AZ::EntityId& componentEntityId, const DebugDrawTextElement& element)
     {
         AZStd::lock_guard<AZStd::mutex> locker(m_activeTextsMutex);
         m_activeTexts.push_back(element);
@@ -1004,5 +1113,128 @@ namespace DebugDraw
         newText.m_duration = -1.0f; // Component-spawned text has infinite duration currently (can change in the future)
         newText.m_targetEntityId = componentEntityId;
         AZ::TickRequestBus::BroadcastResult(newText.m_activateTime, &AZ::TickRequestBus::Events::GetTimeAtCurrentTick);
+    }
+
+    void DebugDrawSystemComponent::AddRaytracingData(DebugDrawSphereElementWrapper& element)
+    {
+        if (!element.m_isRayTracingEnabled)
+        {
+            return;
+        }
+
+        if (!m_sphereRayTracingTypeHandle.IsValid())
+        {
+            m_rayTracingFeatureProcessor =
+                AZ::RPI::Scene::GetFeatureProcessorForEntity<AZ::Render::RayTracingFeatureProcessorInterface>(element.m_targetEntityId);
+
+            auto shaderAsset = AZ::RPI::FindShaderAsset("shaders/sphereintersection.azshader");
+            auto rayTracingShader = AZ::RPI::Shader::FindOrCreate(shaderAsset, AZ::RHI::GetDefaultSupervariantNameWithNoFloat16Fallback());
+
+            AZ::RPI::CommonBufferDescriptor desc;
+            desc.m_bufferName = "SpheresBuffer";
+            desc.m_poolType = AZ::RPI::CommonBufferPoolType::ReadOnly;
+            desc.m_byteCount = sizeof(float); // Start with just 1 element
+            desc.m_elementSize = sizeof(float);
+            desc.m_elementFormat = AZ::RHI::Format::R32_FLOAT;
+            desc.m_bufferData = nullptr;
+            m_spheresRayTracingIndicesBuffer = AZ::RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
+
+            m_sphereRayTracingTypeHandle = m_rayTracingFeatureProcessor->RegisterProceduralGeometryType(
+                "DebugDraw::Sphere",
+                rayTracingShader,
+                "SphereIntersection",
+                m_spheresRayTracingIndicesBuffer->GetBufferView()->GetBindlessReadIndex());
+        }
+
+        element.m_localInstanceIndex = m_spheresRayTracingIndices.AddEntry(0);
+
+        size_t requiredSizeInBytes = m_spheresRayTracingIndices.GetIndexList().size() * sizeof(float);
+        if (requiredSizeInBytes > m_spheresRayTracingIndicesBuffer->GetBufferSize())
+        {
+            m_spheresRayTracingIndicesBuffer->Resize(requiredSizeInBytes);
+            m_rayTracingFeatureProcessor->SetProceduralGeometryTypeBindlessBufferIndex(
+                m_sphereRayTracingTypeHandle.GetWeakHandle(), m_spheresRayTracingIndicesBuffer->GetBufferView()->GetBindlessReadIndex());
+
+            // Need to copy all existing data to resized buffer
+            AZStd::vector<float> radii(m_spheresRayTracingIndices.GetIndexList().size());
+            for (const DebugDrawSphereElementWrapper& sphere : m_activeSpheres)
+            {
+                radii[sphere.m_localInstanceIndex] = sphere.m_radius;
+            }
+            m_spheresRayTracingIndicesBuffer->UpdateData(radii.data(), radii.size() * sizeof(radii[0]));
+        }
+
+        m_spheresRayTracingIndicesBuffer->UpdateData(&element.m_radius, sizeof(float), element.m_localInstanceIndex * sizeof(float));
+
+        AZ::Render::RayTracingFeatureProcessorInterface::SubMeshMaterial material;
+        material.m_baseColor = element.m_color;
+        material.m_roughnessFactor = 0.9f;
+
+        m_rayTracingFeatureProcessor->AddProceduralGeometry(
+            m_sphereRayTracingTypeHandle.GetWeakHandle(),
+            UuidFromEntityId(element.m_targetEntityId),
+            AZ::Aabb::CreateCenterRadius(AZ::Vector3::CreateZero(), 1.f),
+            material,
+            AZ::RHI::RayTracingAccelerationStructureInstanceInclusionMask::STATIC_MESH,
+            element.m_localInstanceIndex);
+    }
+
+    void DebugDrawSystemComponent::AddRaytracingData(DebugDrawObbElementWrapper& element)
+    {
+        if (!element.m_isRayTracingEnabled)
+        {
+            return;
+        }
+
+        if (!m_obbRayTracingTypeHandle.IsValid())
+        {
+            m_rayTracingFeatureProcessor =
+                AZ::RPI::Scene::GetFeatureProcessorForEntity<AZ::Render::RayTracingFeatureProcessorInterface>(element.m_targetEntityId);
+
+            auto shaderAsset = AZ::RPI::FindShaderAsset("shaders/obbintersection.azshader");
+            auto rayTracingShader = AZ::RPI::Shader::FindOrCreate(shaderAsset, AZ::RHI::GetDefaultSupervariantNameWithNoFloat16Fallback());
+
+            m_obbRayTracingTypeHandle =
+                m_rayTracingFeatureProcessor->RegisterProceduralGeometryType("DebugDraw::Obb", rayTracingShader, "ObbIntersection");
+        }
+
+        AZ::Render::RayTracingFeatureProcessorInterface::SubMeshMaterial material;
+        material.m_baseColor = element.m_color;
+        material.m_roughnessFactor = 0.9f;
+
+        m_rayTracingFeatureProcessor->AddProceduralGeometry(
+            m_obbRayTracingTypeHandle.GetWeakHandle(),
+            UuidFromEntityId(element.m_targetEntityId),
+            AZ::Aabb::CreateCenterRadius(AZ::Vector3::CreateZero(), 1.f),
+            material,
+            AZ::RHI::RayTracingAccelerationStructureInstanceInclusionMask::STATIC_MESH,
+            0);
+    }
+
+    void DebugDrawSystemComponent::RemoveRaytracingData(const DebugDrawSphereElementWrapper& element)
+    {
+        if (m_rayTracingFeatureProcessor && element.m_isRayTracingEnabled)
+        {
+            m_spheresRayTracingIndices.RemoveEntry(element.m_localInstanceIndex);
+            m_rayTracingFeatureProcessor->RemoveProceduralGeometry(UuidFromEntityId(element.m_targetEntityId));
+            if (m_rayTracingFeatureProcessor->GetProceduralGeometryCount(m_sphereRayTracingTypeHandle.GetWeakHandle()) == 0)
+            {
+                m_sphereRayTracingTypeHandle.Free();
+                m_spheresRayTracingIndicesBuffer.reset();
+                m_spheresRayTracingIndices.Reset();
+            }
+        }
+    }
+
+    void DebugDrawSystemComponent::RemoveRaytracingData(const DebugDrawObbElementWrapper& element)
+    {
+        if (m_rayTracingFeatureProcessor && element.m_isRayTracingEnabled)
+        {
+            m_rayTracingFeatureProcessor->RemoveProceduralGeometry(UuidFromEntityId(element.m_targetEntityId));
+            if (m_rayTracingFeatureProcessor->GetProceduralGeometryCount(m_obbRayTracingTypeHandle.GetWeakHandle()) == 0)
+            {
+                m_obbRayTracingTypeHandle.Free();
+            }
+        }
     }
 } // namespace DebugDraw

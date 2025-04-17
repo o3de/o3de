@@ -7,18 +7,15 @@
  */
 #include <Atom/RHI/FrameGraphExecuteContext.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
-    {
-        FrameGraphExecuteContext::FrameGraphExecuteContext(const Descriptor& descriptor)
-            : m_descriptor{descriptor}
-        {}
+    FrameGraphExecuteContext::FrameGraphExecuteContext(const Descriptor& descriptor)
+        : m_descriptor{descriptor}
+    {}
 
-        void FrameGraphExecuteContext::SetCommandList(CommandList& commandList)
-        {
-            m_descriptor.m_commandList = &commandList;
-            m_descriptor.m_commandList->SetSubmitRange(m_descriptor.m_submitRange);
-        }
+    void FrameGraphExecuteContext::SetCommandList(CommandList& commandList)
+    {
+        m_descriptor.m_commandList = &commandList;
+        m_descriptor.m_commandList->SetSubmitRange(m_descriptor.m_submitRange);
     }
 }

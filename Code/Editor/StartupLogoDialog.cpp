@@ -46,7 +46,7 @@ CStartupLogoDialog::CStartupLogoDialog(
     switch (m_dialogType)
     {
     case Loading:
-        setWindowFlags(Qt::Dialog | Qt::FramelessWindowHint);
+        setWindowFlags(Qt::Dialog | Qt::FramelessWindowHint | Qt::NoDropShadowWindowHint);
         m_ui->m_pages->setCurrentIndex(0);
         setWindowTitle(tr("Starting Open 3D Engine Editor"));
         m_ui->m_TransparentConfidential->setObjectName("copyrightNotice");
@@ -58,7 +58,7 @@ CStartupLogoDialog::CStartupLogoDialog(
 
         break;
     case About:
-        setWindowFlags(Qt::FramelessWindowHint | Qt::Popup);
+        setWindowFlags(Qt::FramelessWindowHint | Qt::Popup | Qt::NoDropShadowWindowHint);
         m_ui->m_pages->setCurrentIndex(1);
         m_ui->m_transparentAllRightReserved->setObjectName("copyrightNotice");
         m_ui->m_transparentAllRightReserved->setTextFormat(Qt::RichText);
@@ -96,14 +96,12 @@ void CStartupLogoDialog::SetText(const char* text)
 
 void CStartupLogoDialog::SetInfoText(const char* text)
 {
-    m_ui->m_TransparentText->setText(text);
-
-    if (QThread::currentThread() == thread())
-    {
-        m_ui->m_TransparentText->repaint();
-    }
-
-    qApp->processEvents(QEventLoop::ExcludeUserInputEvents); // if you don't process events, repaint does not function correctly.
+    QMetaObject::invokeMethod(
+        this,
+        [this, text = QString(text)]()
+        {
+            m_ui->m_TransparentText->setText(text);
+        });
 }
 
 void CStartupLogoDialog::paintEvent(QPaintEvent*)

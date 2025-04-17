@@ -34,6 +34,27 @@ namespace ScriptCanvas
                 : ExecutionSlotConfiguration(GetName(), ConnectionType::Output)
             {
             }
-        };        
+        };
+
+        struct FloatData : public DataSlotConfiguration
+        {
+            FloatData(AZStd::string_view name, ConnectionType connectionType, bool isLatent = false)
+                : DataSlotConfiguration(Data::Type::Number(), name, connectionType)
+            {
+                m_isLatent = isLatent;
+            }
+        };
+
+        struct Execution : public ExecutionSlotConfiguration
+        {
+            Execution(AZStd::string_view name, ConnectionType connectionType, bool isLatent = false, bool createsImplicitConnections = false)
+                : ExecutionSlotConfiguration()
+            {
+                m_name = name;
+                SetConnectionType(connectionType);
+                m_isLatent = isLatent;
+                m_createsImplicitConnections = createsImplicitConnections;
+            }
+        };
     }    
 }

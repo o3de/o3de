@@ -151,6 +151,11 @@ namespace AzToolsFramework
             m_loadingInstance = &loadingInstance;
         }
 
+        const Instance* InstanceEntityIdMapper::GetLoadingInstance() const
+        {
+            return m_loadingInstance;
+        }
+
         EntityAlias InstanceEntityIdMapper::ResolveReferenceId(const AZ::EntityId& entityId)
         {
             AliasPath relativeEntityAliasPath;
@@ -162,7 +167,7 @@ namespace AzToolsFramework
 
                 if (!owningInstanceReference)
                 {
-                    AZ_Warning("Prefabs", false,
+                    AZ_Warning("Prefabs", m_acceptUnregisteredEntity,
                         "Prefab - EntityIdMapper: Entity with Id %s has no registered owning instance",
                         entityId.ToString().c_str());
 

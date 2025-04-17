@@ -26,7 +26,7 @@
 
 namespace CommandSystem
 {
-    AZ_CLASS_ALLOCATOR_IMPL(CommandSystemMotionSetCallback, EMotionFX::MotionAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(CommandSystemMotionSetCallback, EMotionFX::MotionAllocator)
 
     // Custom motion set motion loading.
     EMotionFX::Motion* CommandSystemMotionSetCallback::LoadMotion(EMotionFX::MotionSet::MotionEntry* entry)
@@ -139,7 +139,8 @@ namespace CommandSystem
         {
             AZStd::string filename;
             parameters.GetValue("fileName", this, filename);
-            EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePathKeepCase, filename);
+            AzFramework::ApplicationRequests::Bus::Broadcast(
+                &AzFramework::ApplicationRequests::Bus::Events::NormalizePathKeepCase, filename);
             motionSet->SetFilename(filename.c_str());
         }
 
@@ -885,7 +886,8 @@ namespace CommandSystem
         {
             m_relocateFilenameFunction(filename);
         }
-        EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePathKeepCase, filename);
+        AzFramework::ApplicationRequests::Bus::Broadcast(
+            &AzFramework::ApplicationRequests::Bus::Events::NormalizePathKeepCase, filename);
 
         // Get the old log levels.
         MCore::LogCallback::ELogLevel oldLogLevels = MCore::GetLogManager().GetLogLevels();

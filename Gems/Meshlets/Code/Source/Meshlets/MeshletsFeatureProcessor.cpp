@@ -21,7 +21,6 @@
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 
 #include <Atom/Feature/RenderCommon.h>
-#include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
 
 #include <MeshletsRenderObject.h>
 #include <MeshletsFeatureProcessor.h>
@@ -209,7 +208,7 @@ namespace AZ
 
         // This method will be called by the scene to establish all required injections
         // to the pass pipeline
-        void MeshletsFeatureProcessor::ApplyRenderPipelineChange(RPI::RenderPipeline* renderPipeline)
+        void MeshletsFeatureProcessor::AddRenderPasses(RPI::RenderPipeline* renderPipeline)
         {
             AddMeshletsPassesToPipeline(renderPipeline);
         }
@@ -408,39 +407,24 @@ namespace AZ
             m_renderPass->AddDrawPackets(drawPackets);
         }
 
-        void MeshletsFeatureProcessor::OnRenderPipelinePassesChanged([[maybe_unused]] RPI::RenderPipeline* renderPipeline)
+        void MeshletsFeatureProcessor::OnRenderPipelineChanged(RPI::RenderPipeline* renderPipeline, RPI::SceneNotification::RenderPipelineChangeType changeType)
         {
             if (!HasMeshletPasses(renderPipeline))
             {   // This pipeline is not relevant - exist without changing anything.
                 return;
             }
 
-            m_renderPipeline = renderPipeline;
-            CreateResources();
-            Init(m_renderPipeline);
-        }
-
-        void MeshletsFeatureProcessor::OnRenderPipelineAdded([[maybe_unused]] RPI::RenderPipelinePtr renderPipeline)
-        {
-            if (!HasMeshletPasses(renderPipeline.get()))
-            {   // This pipeline is not relevant - exist without changing anything.
-                return;
+            if (changeType == RPI::SceneNotification::RenderPipelineChangeType::Added
+                || changeType == RPI::SceneNotification::RenderPipelineChangeType::PassChanged)
+            {
+                m_renderPipeline = renderPipeline;
+                CreateResources();
+                Init(m_renderPipeline);
             }
-
-            m_renderPipeline = renderPipeline.get();
-            CreateResources();
-            Init(m_renderPipeline);
-        }
-
-        void MeshletsFeatureProcessor::OnRenderPipelineRemoved([[maybe_unused]] RPI::RenderPipeline* renderPipeline)
-        {
-            if (!HasMeshletPasses(renderPipeline))
-            {   // This pipeline is not relevant - exist without changing anything.
-                return;
+            else if (changeType == RPI::SceneNotification::RenderPipelineChangeType::Removed)
+            {
+                m_renderPipeline = nullptr;
             }
-
-            m_renderPipeline = nullptr;
         }
-
     } // namespace AtomSceneStream
 } // namespace AZ

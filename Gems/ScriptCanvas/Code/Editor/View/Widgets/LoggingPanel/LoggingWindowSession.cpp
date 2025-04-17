@@ -247,52 +247,36 @@ namespace ScriptCanvasEditor
     {
         if (modelIndex.column() == DebugLogTreeItem::Column::ScriptName)
         {
-            QModelIndex sourceIndex = m_filterModel->mapToSource(modelIndex);
-            DebugLogTreeItem* treeItem = static_cast<DebugLogTreeItem*>(sourceIndex.internalPointer());
-
-            if (ExecutionLogTreeItem* executionItem = azrtti_cast<ExecutionLogTreeItem*>(treeItem))
-            {
-                QScopedValueRollback<bool> valueRollback(m_clearSelectionOnSceneSelectionChange, false);
-
-                const AZ::Data::AssetId& assetId = executionItem->GetAssetId();
-                
-                GeneralRequestBus::Broadcast(&GeneralRequests::OpenScriptCanvasAssetId
-                    , SourceHandle(nullptr, assetId.m_guid), Tracker::ScriptCanvasFileState::UNMODIFIED);
-            }
+            OnLogDoubleClicked(modelIndex);
         }
     }
 
     void LoggingWindowSession::OnLogDoubleClicked(const QModelIndex& modelIndex)
     {
         ExecutionLogTreeItem* executionItem = ResolveExecutionItem(modelIndex);
-
-        if (executionItem)
+        if (!executionItem)
         {
-            const AZ::Data::AssetId& assetId = executionItem->GetAssetId();
-
-            bool isAssetOpen = false;
-            GeneralRequestBus::BroadcastResult(isAssetOpen, &GeneralRequests::IsScriptCanvasAssetOpen, SourceHandle(nullptr, assetId.m_guid));
-
-            GeneralRequestBus::Broadcast(&GeneralRequests::OpenScriptCanvasAssetId
-                , SourceHandle(nullptr, assetId.m_guid), Tracker::ScriptCanvasFileState::UNMODIFIED);
-
-            AZ::EntityId graphCanvasGraphId;
-            GeneralRequestBus::BroadcastResult(graphCanvasGraphId, &GeneralRequests::FindGraphCanvasGraphIdByAssetId
-                , SourceHandle(nullptr, assetId.m_guid));
-            
-            if (isAssetOpen)
-            {
-                FocusOnElement(assetId, executionItem->GetScriptCanvasAssetNodeId());
-            }
-            else
-            {
-                m_assetId = assetId;
-                m_assetNodeId = executionItem->GetScriptCanvasAssetNodeId();
-
-                m_focusDelayTimer.stop();
-                m_focusDelayTimer.start();
-            }
+            return;
         }
+
+        const AZ::Data::AssetId& assetId = executionItem->GetAssetId();
+
+        bool isAssetOpen = false;
+        GeneralRequestBus::BroadcastResult(isAssetOpen, &GeneralRequests::IsScriptCanvasAssetOpen, SourceHandle(nullptr, assetId.m_guid));
+        if (isAssetOpen)
+        {
+            FocusOnElement(assetId, executionItem->GetScriptCanvasAssetNodeId());
+            return;
+        }
+
+        // TODO https://github.com/o3de/o3de/issues/9192 need to get the source graph path from the relative fn_compiled_scriptcanvas and open it via a bus which leads to MainWindow::OpenFile
+        // See QuerySourceByProductID, maybe should be made available in AssetManagerBus
+
+        m_assetId = assetId;
+        m_assetNodeId = executionItem->GetScriptCanvasAssetNodeId();
+
+        m_focusDelayTimer.stop();
+        m_focusDelayTimer.start();
     }
 
     void LoggingWindowSession::OnLogSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
@@ -350,13 +334,14 @@ namespace ScriptCanvasEditor
         AZ::EntityId activeGraphCanvasGraphId;
         GeneralRequestBus::BroadcastResult(activeGraphCanvasGraphId, &GeneralRequests::GetActiveGraphCanvasGraphId);
 
+        // TODO https://github.com/o3de/o3de/issues/9192 will never be valid because the source handle does not have the editor graph ptr (broken by #6394)
         AZ::EntityId graphCanvasGraphId;
         GeneralRequestBus::BroadcastResult(graphCanvasGraphId, &GeneralRequests::FindGraphCanvasGraphIdByAssetId, SourceHandle(nullptr, m_assetId.m_guid));
 
         if (activeGraphCanvasGraphId == graphCanvasGraphId)
         {
             FocusOnElement(m_assetId, m_assetNodeId);
-            
+
             m_focusDelayTimer.stop();
 
             m_assetId.SetInvalid();
@@ -420,7 +405,7 @@ namespace ScriptCanvasEditor
 
             glowConfiguration.m_sceneMember = graphCanvasNodeId;
 
-            glowConfiguration.m_blurRadius = 5;
+            glowConfiguration.m_blurRadius = 0; // #17174 using blur degrades performance
 
             glowConfiguration.m_pen = QPen();
             glowConfiguration.m_pen.setBrush(QColor(243, 129, 29));

@@ -14,6 +14,7 @@
 #include <AzCore/Name/NameDictionary.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/RTTI/AttributeReader.h>
+#include <AzCore/Serialization/EditContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/string/fixed_string.h>
 #include <AzFramework/DocumentPropertyEditor/DocumentAdapter.h>
@@ -112,11 +113,14 @@ namespace AZ::DocumentPropertyEditor
         //! Retrieves the name of this attribute, as used as a key in the DOM.
         virtual Name GetName() const = 0;
         //! Gets this attribute's type ID.
-        virtual const AZ::TypeId& GetTypeId() const = 0;
-        //! Converts this attribute to an AZ::Attribute usable by the ReflectedPropertyEditor.
-        virtual AZStd::shared_ptr<AZ::Attribute> DomValueToLegacyAttribute(const AZ::Dom::Value& value) const = 0;
-        //! Converts this attribute from an AZ::Attribute to a Dom::Value usable in the DocumentPropertyEditor.
-        virtual AZ::Dom::Value LegacyAttributeToDomValue(void* instance, AZ::Attribute* attribute) const = 0;
+        virtual AZ::TypeId GetTypeId() const = 0;
+        /*! Converts this attribute to an AZ::Attribute usable by the ReflectedPropertyEditor
+            @param fallback if false, the Attribute type must match AZ::Dom::Value; if true, it will attempt a fallback on failure */
+        virtual AZStd::shared_ptr<AZ::Attribute> DomValueToLegacyAttribute(const AZ::Dom::Value& value, bool fallback = true) const = 0;
+
+        /*! Converts this attribute from an AZ::Attribute to a Dom::Value usable in the DocumentPropertyEditor.
+            @param fallback if false, a Read<AttributeType> failure will return a null Value; if true, it will attempt a fallback on failure */
+        virtual AZ::Dom::Value LegacyAttributeToDomValue(AZ::PointerObject instanceObject, AZ::Attribute* attribute) const = 0;
     };
 
     //! Defines an attribute applicable to a Node.
@@ -168,12 +172,12 @@ namespace AZ::DocumentPropertyEditor
             return DomToValue(memberIt->second);
         }
 
-        const AZ::TypeId& GetTypeId() const override
+        AZ::TypeId GetTypeId() const override
         {
             return azrtti_typeid<AttributeType>();
         }
 
-        AZStd::shared_ptr<AZ::Attribute> DomValueToLegacyAttribute(const AZ::Dom::Value& value) const override
+        AZStd::shared_ptr<AZ::Attribute> DomValueToLegacyAttribute(const AZ::Dom::Value& value, bool fallback) const override
         {
             if constexpr (AZStd::is_same_v<AttributeType, AZ::Dom::Value>)
             {
@@ -181,14 +185,19 @@ namespace AZ::DocumentPropertyEditor
             }
             else
             {
-                AZStd::optional<AttributeType> attributeValue = AZ::Dom::Utils::ValueToType<AttributeType>(value);
-                return attributeValue.has_value()
-                    ? AZStd::make_shared<AZ::AttributeData<AttributeType>>(AZStd::move(attributeValue.value()))
-                    : nullptr;
+                if (fallback)
+                {
+                    AZStd::optional<AttributeType> attributeValue = DomToValue(value);
+                    if (attributeValue.has_value())
+                    {
+                        return AZStd::make_shared<AZ::AttributeData<AttributeType>>(AZStd::move(attributeValue.value()));
+                    }
+                }
+                return nullptr;
             }
         }
 
-        AZ::Dom::Value LegacyAttributeToDomValue(void* instance, AZ::Attribute* attribute) const override
+        AZ::Dom::Value LegacyAttributeToDomValue(AZ::PointerObject instanceObject, AZ::Attribute* attribute) const override
         {
             if (attribute == nullptr)
             {
@@ -197,17 +206,27 @@ namespace AZ::DocumentPropertyEditor
 
             if constexpr (AZStd::is_same_v<AttributeType, AZ::Dom::Value>)
             {
-                return AZ::Reflection::ReadGenericAttributeToDomValue(instance, attribute).value_or(AZ::Dom::Value());
+                return AZ::Reflection::ReadGenericAttributeToDomValue(instanceObject, attribute).value_or(AZ::Dom::Value());
             }
             else
             {
-                AZ::AttributeReader reader(instance, attribute);
+                AZ::AttributeReader reader(instanceObject.m_address, attribute);
                 AttributeType value;
                 if (!reader.Read<AttributeType>(value))
                 {
-                    return AZ::Dom::Value();
+                    // Handle the attribute providing an invokable function instead of the value directly
+                    Dom::Value instanceAndArguments(Dom::Type::Array);
+                    instanceAndArguments.ArrayPushBack(AZ::Dom::Utils::ValueFromType(instanceObject.m_address));
+                    if (attribute->CanDomInvoke(instanceAndArguments))
+                    {
+                        return attribute->DomInvoke(instanceAndArguments);
+                    }
+                    else
+                    {
+                        return AZ::Dom::Value();
+                    }
                 }
-                return AZ::Dom::Utils::ValueFromType(value);
+                return ValueToDom(value);
             }
         }
 
@@ -226,8 +245,8 @@ namespace AZ::DocumentPropertyEditor
 
         Dom::Value ValueToDom(const AZ::TypeId& attribute) const override;
         AZStd::optional<AZ::TypeId> DomToValue(const Dom::Value& value) const override;
-        AZStd::shared_ptr<AZ::Attribute> DomValueToLegacyAttribute(const AZ::Dom::Value& value) const override;
-        AZ::Dom::Value LegacyAttributeToDomValue(void* instance, AZ::Attribute* attribute) const override;
+        AZStd::shared_ptr<AZ::Attribute> DomValueToLegacyAttribute(const AZ::Dom::Value& value, bool fallback = true) const override;
+        AZ::Dom::Value LegacyAttributeToDomValue(AZ::PointerObject instanceObject, AZ::Attribute* attribute) const override;
     };
 
     //! Represents an attribute that should be stored as an AZ::Name, but legacy attribute instances (AZ::Attribute*)
@@ -242,8 +261,163 @@ namespace AZ::DocumentPropertyEditor
 
         Dom::Value ValueToDom(const AZ::Name& attribute) const override;
         AZStd::optional<AZ::Name> DomToValue(const Dom::Value& value) const override;
-        AZStd::shared_ptr<AZ::Attribute> DomValueToLegacyAttribute(const AZ::Dom::Value& value) const override;
-        AZ::Dom::Value LegacyAttributeToDomValue(void* instance, AZ::Attribute* attribute) const override;
+        AZStd::shared_ptr<AZ::Attribute> DomValueToLegacyAttribute(const AZ::Dom::Value& value, bool fallback = true) const override;
+        AZ::Dom::Value LegacyAttributeToDomValue(AZ::PointerObject instanceObject, AZ::Attribute* attribute) const override;
+    };
+
+    template<typename GenericValueType>
+    class GenericValueAttributeDefinition final : public AttributeDefinition<AZStd::pair<GenericValueType, AZStd::string>>
+    {
+    public:
+        using GenericValuePair = AZStd::pair<GenericValueType, AZStd::string>;
+
+        static constexpr const char* EntryDescriptionKey = "description";
+        static constexpr const char* EntryValueKey = "value";
+
+        explicit constexpr GenericValueAttributeDefinition(AZStd::string_view name)
+            : AttributeDefinition<GenericValuePair>(name)
+        {
+        }
+
+        Dom::Value ValueToDom(const GenericValuePair& attribute) const override
+        {
+            Dom::Value result(Dom::Type::Object);
+            if constexpr (AZStd::is_constructible_v<Dom::Value, GenericValueType>)
+            {
+                // this type is already constructible as a normal Dom::Value, create it as-is
+                result[EntryValueKey] = Dom::Value(attribute.first);
+            }
+            else
+            {
+                // type doesn't fit directly into a Dom::Value, construct it as an opaque value
+                result[EntryValueKey] = Dom::Value::FromOpaqueValue(AZStd::make_any<GenericValueType>(attribute.first));
+            }
+            result[EntryDescriptionKey] = Dom::Value(attribute.second, true);
+            return result;
+        }
+
+        AZ::Dom::Value LegacyAttributeToDomValue(AZ::PointerObject instanceObject, AZ::Attribute* attribute) const override
+        {
+            if (attribute == nullptr)
+            {
+                return {};
+            }
+
+            // This case is for handling legacy EnumValueKey attributes
+            if constexpr (AZStd::is_same_v<GenericValueType, AZ::u64>)
+            {
+                using EnumConstantBaseType = AZ::SerializeContextEnumInternal::EnumConstantBase;
+                if (auto data = azdynamic_cast<AttributeData<AZStd::unique_ptr<EnumConstantBaseType>>*>(attribute); data != nullptr)
+                {
+                    EnumConstantBaseType* value = static_cast<EnumConstantBaseType*>(data->Get(instanceObject.m_address).get());
+                    return ValueToDom(AZStd::make_pair(value->GetEnumValueAsUInt(), value->GetEnumValueName()));
+                }
+            }
+
+            AZ::AttributeReader reader(instanceObject.m_address, attribute);
+            if (GenericValuePair value; reader.Read<GenericValuePair>(value))
+            {
+                return ValueToDom(value);
+            }
+
+            return {};
+        }
+
+        AZStd::optional<GenericValuePair> DomToValue(const Dom::Value& value) const override
+        {
+            if (!value.IsObject() || !value.HasMember(EntryDescriptionKey) || !value.HasMember(EntryValueKey))
+            {
+                return {};
+            }
+
+            if (auto genericValueOpt = Dom::Utils::ValueToType<GenericValueType>(value[EntryValueKey]); genericValueOpt.has_value())
+            {
+                return GenericValuePair{ genericValueOpt.value(), AZStd::string(value[EntryDescriptionKey].GetString()) };
+            }
+
+            return {};
+        }
+    };
+
+    template<typename T>
+    using GenericValueContainer = AZStd::vector<AZStd::pair<T, AZStd::string>>;
+
+    template<typename GenericValueType>
+    class GenericValueListAttributeDefinition final : public AttributeDefinition<GenericValueContainer<GenericValueType>>
+    {
+    public:
+        using GenericValueList = GenericValueContainer<GenericValueType>;
+
+        static constexpr const char* EntryDescriptionKey = "description";
+        static constexpr const char* EntryValueKey = "value";
+
+        explicit constexpr GenericValueListAttributeDefinition(AZStd::string_view name)
+            : AttributeDefinition<GenericValueList>(name)
+        {
+        }
+
+        Dom::Value ValueToDom(const GenericValueList& attribute) const override
+        {
+            Dom::Value result(Dom::Type::Array);
+            for (const auto& entry : attribute)
+            {
+                Dom::Value entryDom(Dom::Type::Object);
+                if constexpr (AZStd::is_constructible_v<Dom::Value, GenericValueType>)
+                {
+                    // this type is already constructible as a normal Dom::Value, create it as-is
+                    entryDom[EntryValueKey] = Dom::Value(entry.first);
+                }
+                else
+                {
+                    // type doesn't fit directly into a Dom::Value, construct it as an opaque value
+                    entryDom[EntryValueKey] = Dom::Value::FromOpaqueValue(AZStd::make_any<GenericValueType>(entry.first));
+                }
+                entryDom[EntryDescriptionKey] = Dom::Value(entry.second, true);
+                result.ArrayPushBack(AZStd::move(entryDom));
+            }
+            return result;
+        }
+
+        AZ::Dom::Value LegacyAttributeToDomValue(AZ::PointerObject instanceObject, AZ::Attribute* attribute) const override
+        {
+            if (attribute == nullptr)
+            {
+                return {};
+            }
+
+            auto attributeInvocable = attribute->GetVoidInstanceAttributeInvocable();
+            AttributeReader reader = AttributeReader(instanceObject.m_address, attributeInvocable.get());
+            if (GenericValueList value; reader.Read<GenericValueList>(value))
+            {
+                return ValueToDom(value);
+            }
+
+            return {};
+        }
+
+        AZStd::optional<GenericValueList> DomToValue(const Dom::Value& value) const override
+        {
+            if (!value.IsArray())
+            {
+                return {};
+            }
+
+            GenericValueList result;
+            for (const Dom::Value& entryDom : value.GetArray())
+            {
+                if (!entryDom.IsObject() || !entryDom.HasMember(EntryValueKey) || !entryDom.HasMember(EntryDescriptionKey))
+                {
+                    continue;
+                }
+
+                if (auto genericValueOpt = Dom::Utils::ValueToType<GenericValueType>(entryDom[EntryValueKey]); genericValueOpt.has_value())
+                {
+                    result.emplace_back(genericValueOpt.value(), entryDom[EntryDescriptionKey].GetString());
+                }
+            }
+
+            return !result.empty() ? AZStd::make_optional(AZStd::move(result)) : AZStd::nullopt;
+        }
     };
 
     //! Defines a callback applicable to a Node.
@@ -275,9 +449,9 @@ namespace AZ::DocumentPropertyEditor
                 return AZ::Success(fn(args...));
             }
 
-            static ResultType InvokeOnAttribute(AZ::Attribute* attribute, void* instance, const Dom::Value& args)
+            static ResultType InvokeOnAttribute(AZ::Attribute* attribute, const Dom::Value& instanceAndArgs)
             {
-                return AZ::Success(AZ::Dom::Utils::ValueToTypeUnsafe<Result>(attribute->DomInvoke(instance, args)));
+                return AZ::Success(AZ::Dom::Utils::ValueToTypeUnsafe<Result>(attribute->DomInvoke(instanceAndArgs)));
             }
 
             static FunctionType InvokeOnAttribute(void* instance, AZ::Attribute* attribute)
@@ -318,9 +492,9 @@ namespace AZ::DocumentPropertyEditor
                 return AZ::Success();
             }
 
-            static ResultType InvokeOnAttribute(AZ::Attribute* attribute, void* instance, const Dom::Value& args)
+            static ResultType InvokeOnAttribute(AZ::Attribute* attribute, const Dom::Value& instanceAndArgs)
             {
-                attribute->DomInvoke(instance, args);
+                attribute->DomInvoke(instanceAndArgs);
                 return AZ::Success();
             }
 
@@ -355,22 +529,30 @@ namespace AZ::DocumentPropertyEditor
         {
             if (value.IsObject())
             {
-                auto typeField = value.FindMember(AZ::Attribute::s_typeField);
+                auto typeField = value.FindMember(AZ::Attribute::GetTypeField());
                 if (typeField != value.MemberEnd() && typeField->second.IsString())
                 {
                     // For RPE callbacks, we may store an AZ::Attribute and its instance in a DOM value
-                    if (typeField->second.GetString() == Attribute::s_typeName)
+                    if (typeField->second.GetString() == Attribute::GetTypeName())
                     {
-                        void* instance = AZ::Dom::Utils::ValueToTypeUnsafe<void*>(value[AZ::Attribute::s_instanceField]);
+                        AZ::Dom::Value marshalledArguments(AZ::Dom::Type::Array);
+                        auto foundInstance = value.FindMember(AZ::Attribute::GetInstanceField());
+                        if (foundInstance != value.MemberEnd())
+                        {
+                            // Push the instance arguments as the first marshelled argument for the attribute functor
+                            marshalledArguments.ArrayPushBack(foundInstance->second);
+                        }
+
                         AZ::Attribute* attribute =
-                            AZ::Dom::Utils::ValueToTypeUnsafe<AZ::Attribute*>(value[AZ::Attribute::s_attributeField]);
+                            AZ::Dom::Utils::ValueToTypeUnsafe<AZ::Attribute*>(value[AZ::Attribute::GetAttributeField()]);
 
                         if (!attribute->IsInvokable())
                         {
                             return AZ::Failure<ErrorType>("Attempted to invoke a non-invokable attribute");
                         }
 
-                        AZ::Dom::Value marshalledArguments(AZ::Dom::Type::Array);
+                        // Push the remaining non-class type arguments to the Dom array containing the arguments
+                        // of the attribute functor that would be inovked
                         (marshalledArguments.ArrayPushBack(AZ::Dom::Utils::ValueFromType(args)), ...);
 
                         if (!attribute->CanDomInvoke(marshalledArguments))
@@ -378,7 +560,7 @@ namespace AZ::DocumentPropertyEditor
                             return AZ::Failure<ErrorType>("Attempted to invoke an AZ::Attribute with invalid parameters");
                         }
 
-                        return CallbackTraits::InvokeOnAttribute(attribute, instance, marshalledArguments);
+                        return CallbackTraits::InvokeOnAttribute(attribute, marshalledArguments);
                     }
                     // For messages handled by the adapter, we store a marshalled BoundAdapterMessage
                     else if (typeField->second.GetString() == BoundAdapterMessage::s_typeName)
@@ -394,8 +576,18 @@ namespace AZ::DocumentPropertyEditor
                     }
                 }
             }
-
-            if (!value.IsOpaqueValue())
+            else if (value.IsArray())
+            {
+                typename CallbackTraits::ResultType overallResult;
+                for (size_t valueIndex = 0, numValues = value.ArraySize(); valueIndex < numValues; ++valueIndex)
+                {
+                    // Note: Currently, last result wins. If different behavior is desirable in the future,
+                    // we can parameterize this function
+                    overallResult = InvokeOnDomValue(value[valueIndex], args...);
+                }
+                return overallResult;
+            }
+            else if (!value.IsOpaqueValue())
             {
                 // CallbackAttributes that return a value may be bound to a simple value of that type
                 // In that case, ignore our parameters and simply return the value
@@ -443,7 +635,7 @@ namespace AZ::DocumentPropertyEditor
             return false;
         }
 
-        AZStd::shared_ptr<AZ::Attribute> DomValueToLegacyAttribute(const AZ::Dom::Value& value) const override
+        AZStd::shared_ptr<AZ::Attribute> DomValueToLegacyAttribute(const AZ::Dom::Value& value, bool) const override
         {
             // If we're already an attribute, return a non-owning shared_ptr
             if (value.IsOpaqueValue() && value.GetOpaqueValue().is<AZ::Attribute*>())
@@ -465,9 +657,9 @@ namespace AZ::DocumentPropertyEditor
             return AZStd::make_shared<AZ::AttributeInvocable<CallbackSignature>>(function.value());
         }
 
-        AZ::Dom::Value LegacyAttributeToDomValue(void* instance, AZ::Attribute* attribute) const override
+        AZ::Dom::Value LegacyAttributeToDomValue(AZ::PointerObject instanceObject, AZ::Attribute* attribute) const override
         {
-            return attribute->GetAsDomValue(instance);
+            return attribute->GetAsDomValue(instanceObject);
         }
     };
 } // namespace AZ::DocumentPropertyEditor

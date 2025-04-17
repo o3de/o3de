@@ -12,55 +12,82 @@ set(AUDIOSYSTEM_COMPILEDEFINITIONS
 
 o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 
+################################################################################
+# Client Targets
+################################################################################
 ly_add_target(
-    NAME AudioSystem.Static STATIC
+    NAME ${gem_name}.API INTERFACE
+    NAMESPACE Gem
+    FILES_CMAKE
+        audiosystem_api_files.cmake
+    INCLUDE_DIRECTORIES
+        INTERFACE
+            Include/Engine
+    BUILD_DEPENDENCIES
+        INTERFACE
+            AZ::AzCore
+)
+
+ly_add_target(
+    NAME ${gem_name}.Private.Object STATIC
     NAMESPACE Gem
     FILES_CMAKE
         audiosystem_files.cmake
         ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
+    TARGET_PROPERTIES
+        O3DE_PRIVATE_TARGET TRUE
     INCLUDE_DIRECTORIES
         PRIVATE
-            Source
+            Include/Engine
             Source/Engine
             ${pal_dir}
-        PUBLIC
-            Include
-            Include/Engine
     PLATFORM_INCLUDE_FILES
             ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
     COMPILE_DEFINITIONS
         PUBLIC
             ${AUDIOSYSTEM_COMPILEDEFINITIONS}
     BUILD_DEPENDENCIES
-        PRIVATE
-            Legacy::CryCommon
+        PUBLIC
+            AZ::AzCore
+            AZ::AzFramework
+            Gem::${gem_name}.API
             Gem::Atom_RPI.Public
+            Legacy::CryCommon # Temporary, needs to be removed
 )
 
 ly_add_target(
-    NAME AudioSystem ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME ${gem_name} ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         audiosystem_shared_files.cmake
     INCLUDE_DIRECTORIES
         PRIVATE
-            Source
             Source/Engine
             ${pal_dir}
-        PUBLIC
-            Include
-            Include/Engine
     COMPILE_DEFINITIONS
         PUBLIC
             ${AUDIOSYSTEM_COMPILEDEFINITIONS}
     BUILD_DEPENDENCIES
+        PUBLIC
+            Gem::${gem_name}.API
         PRIVATE
-            Legacy::CryCommon
-            Gem::AudioSystem.Static
+            Gem::${gem_name}.Private.Object
 )
 
-# AudioSystem should use the above target on clients.
-ly_create_alias(NAME AudioSystem.Clients  NAMESPACE Gem TARGETS Gem::AudioSystem)
+# Inject the gem name into the Module source file
+ly_add_source_properties(
+    SOURCES
+        Source/AudioSystemModule.cpp
+    PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_GEM_NAME=${gem_name}
+            O3DE_GEM_VERSION=${gem_version})
+
+# AudioSystem aliases for Clients and Unified launchers (no Servers)
+ly_create_alias(NAME ${gem_name}.Clients        NAMESPACE Gem TARGETS Gem::${gem_name})
+ly_create_alias(NAME ${gem_name}.Clients.API    NAMESPACE Gem TARGETS Gem::${gem_name}.API)
+ly_create_alias(NAME ${gem_name}.Unified        NAMESPACE Gem TARGETS Gem::${gem_name})
+ly_create_alias(NAME ${gem_name}.Unified.API    NAMESPACE Gem TARGETS Gem::${gem_name}.API)
 
 ################################################################################
 # Tests
@@ -68,7 +95,7 @@ ly_create_alias(NAME AudioSystem.Clients  NAMESPACE Gem TARGETS Gem::AudioSystem
 if (PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     set(common_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/Common)
     ly_add_target(
-        NAME AudioSystem.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+        NAME ${gem_name}.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
         NAMESPACE Gem
         FILES_CMAKE
             audiosystem_tests_files.cmake
@@ -76,23 +103,21 @@ if (PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         INCLUDE_DIRECTORIES
             PRIVATE
                 Tests
-                Source
                 Source/Engine
-                Include/Engine
         BUILD_DEPENDENCIES
+            PUBLIC
+                Gem::${gem_name}.API
             PRIVATE
                 AZ::AzTest
-                AZ::AzFramework
-                Legacy::CryCommon
-                Gem::AudioSystem.Static
-        RUNTIME_DEPENDENCIES
-            Gem::LmbrCentral
-    )
-    ly_add_googletest(
-        NAME Gem::AudioSystem.Tests
+                Gem::${gem_name}.Private.Object
+                Legacy::CryCommon   # Temporary, needs to be removed
     )
 
-    list(APPEND testTargets AudioSystem.Tests)
+    ly_add_googletest(
+        NAME Gem::${gem_name}.Tests
+    )
+
+    list(APPEND testTargets ${gem_name}.Tests)
 
     ly_add_target_files(
         TARGETS
@@ -158,91 +183,115 @@ if (PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         OUTPUT_SUBDIRECTORY
             Test.Assets/Gems/AudioSystem/ATLData/OneOne
     )
-endif ()
+
+endif() # PAL_TRAIT_BUILD_TESTS_SUPPORTED
+
 
 ################################################################################
 # Editor
 ################################################################################
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
-        NAME AudioSystem.Editor.Static STATIC
+        NAME ${gem_name}.Editor.API INTERFACE
+        NAMESPACE Gem
+        FILES_CMAKE
+            audiosystem_editor_api_files.cmake
+        INCLUDE_DIRECTORIES
+            INTERFACE
+                Include/Editor
+        BUILD_DEPENDENCIES
+            INTERFACE
+                AZ::AzCore
+    )
+
+    ly_add_target(
+        NAME ${gem_name}.Editor.Private.Object STATIC
         NAMESPACE Gem
         AUTOMOC
         AUTOUIC
         AUTORCC
         FILES_CMAKE
             audiosystem_editor_files.cmake
+        TARGET_PROPERTIES
+            O3DE_PRIVATE_TARGET TRUE
         INCLUDE_DIRECTORIES
             PRIVATE
-                .
-                Source
+                .               # <-- This is needed for Automoc, Autouic, Autorcc
                 Source/Engine
-                Include/Engine
                 Source/Editor
                 ${pal_dir}
-            PUBLIC
-                Include/Editor
         COMPILE_DEFINITIONS
             PUBLIC
-                AUDIO_SYSTEM_EDITOR
+                ${AUDIOSYSTEM_COMPILEDEFINITIONS}
         BUILD_DEPENDENCIES
             PUBLIC
-                3rdParty::Qt::Core
-                3rdParty::Qt::Gui
-                3rdParty::Qt::Widgets
                 AZ::AzCore
                 AZ::AzToolsFramework
-                Legacy::CryCommon
                 Legacy::EditorCore
                 Legacy::EditorCommon
-                Gem::AudioSystem.Static
-                Gem::Atom_RPI.Public
+                Gem::${gem_name}.API
+                Gem::${gem_name}.Editor.API
+                Legacy::CryCommon   # Temporary, needs to be removed
+            PRIVATE
+                Gem::${gem_name}.Private.Object
+                3rdParty::Qt::Core
+                3rdParty::Qt::Widgets
+                3rdParty::Qt::Gui
     )
-    ly_add_target(
-        NAME AudioSystem.Editor GEM_MODULE
 
+    ly_add_target(
+        NAME ${gem_name}.Editor GEM_MODULE
         NAMESPACE Gem
         FILES_CMAKE
             audiosystem_editor_shared_files.cmake
         INCLUDE_DIRECTORIES
             PRIVATE
-                Source
                 Source/Editor
-            PUBLIC
-                Include/Editor
+                Source/Engine
+        COMPILE_DEFINITIONS
+            PRIVATE
+                AUDIO_SYSTEM_EDITOR
         BUILD_DEPENDENCIES
+            PUBLIC
+                Gem::${gem_name}.API
+                Gem::${gem_name}.Editor.API
             PRIVATE
                 3rdParty::Qt::Core
-                Gem::AudioSystem.Editor.Static
+                Gem::Atom_RPI.Public
+                Gem::${gem_name}.Editor.Private.Object
     )
 
     # use the above "Editor" target in tools and builders:
-    ly_create_alias(NAME AudioSystem.Tools    NAMESPACE Gem TARGETS Gem::AudioSystem.Editor)
-    ly_create_alias(NAME AudioSystem.Builders NAMESPACE Gem TARGETS Gem::AudioSystem.Editor)
+    ly_create_alias(NAME ${gem_name}.Tools    NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
+    ly_create_alias(NAME ${gem_name}.Builders NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
 
     if (PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         ly_add_target(
-            NAME AudioSystem.Editor.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+            NAME ${gem_name}.Editor.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
             NAMESPACE Gem
             FILES_CMAKE
                 audiosystem_editor_tests_files.cmake
+                audiosystem_editor_shared_files.cmake
             INCLUDE_DIRECTORIES
                 PRIVATE
                     Tests
                     Source/Editor
-                    Source/Audio
-                    Source
+                    Source/Engine
             BUILD_DEPENDENCIES
+                PUBLIC
+                    Gem::${gem_name}.API
+                    Gem::${gem_name}.Editor.API
                 PRIVATE
                     AZ::AzTest
                     3rdParty::Qt::Core
-                    Gem::AudioSystem.Editor.Static
+                    Gem::Atom_RPI.Public
+                    Gem::${gem_name}.Editor.Private.Object
         )
+
         ly_add_googletest(
             NAME Gem::AudioSystem.Editor.Tests
+            LABELS REQUIRES_tiaf
         )
-    endif()
-endif ()
 
-
-
+    endif() # PAL_TRAIT_BUILD_TESTS_SUPPORTED
+endif() # PAL_TRAIT_BUILD_HOST_TOOLS

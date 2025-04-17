@@ -7,26 +7,28 @@
  */
 #pragma once
 
-#include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
-#include <AzCore/Component/TickBus.h>
 
-#include <Maestro/Bus/EditorSequenceComponentBus.h>
 #include "SequenceComponent.h"
-#include "../Cinematics/AnimSequence.h"
+#include <AzCore/Component/TickBus.h>
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/smart_ptr/intrusive_ptr.h>
+#include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
+#include <IMovieSystem.h>
+#include <Maestro/Bus/EditorSequenceComponentBus.h>
 
 namespace Maestro
 {
     class EditorSequenceComponent
         : public AzToolsFramework::Components::EditorComponentBase
-        , public Maestro::EditorSequenceComponentRequestBus::Handler
-        , public Maestro::SequenceComponentRequestBus::Handler
+        , public EditorSequenceComponentRequestBus::Handler
+        , public SequenceComponentRequestBus::Handler
         , public AZ::TickBus::Handler       // for refreshing propertyGrids after SetAnimatedPropertyValue events
     {
     public:
         AZ_EDITOR_COMPONENT(EditorSequenceComponent, EditorSequenceComponentTypeId);    // EditorSequenceComponentTypeId is defined in EditorSequenceComponentBus.h
 
-        using AnimatablePropertyAddress = Maestro::SequenceComponentRequests::AnimatablePropertyAddress;
-        using AnimatedValue = Maestro::SequenceComponentRequests::AnimatedValue;
+        using AnimatablePropertyAddress = SequenceComponentRequests::AnimatablePropertyAddress;
+        using AnimatedValue = SequenceComponentRequests::AnimatedValue;
 
         EditorSequenceComponent();
         ~EditorSequenceComponent();
@@ -43,7 +45,7 @@ namespace Maestro
         void GetAllAnimatablePropertiesForComponent(IAnimNode::AnimParamInfos& addressList, AZ::EntityId id, AZ::ComponentId componentId) override;
         void GetAnimatableComponents(AZStd::vector<AZ::ComponentId>& componentIds, AZ::EntityId id) override;
 
-        void AddEntityToAnimate(AZ::EntityId entityToAnimate) override;
+        bool AddEntityToAnimate(AZ::EntityId entityToAnimate) override;
 
         void RemoveEntityToAnimate(AZ::EntityId removedEntityId) override;
 
@@ -60,7 +62,7 @@ namespace Maestro
         * @param animatedEntityId the entity Id of the entity containing the animatedAddress
         * @param animatedAddress identifies the component and property to be set
         */
-        void GetAnimatedPropertyValue(AnimatedValue& returnValue, const AZ::EntityId& animatedEntityId, const AnimatablePropertyAddress& animatableAddress) override;
+        bool GetAnimatedPropertyValue(AnimatedValue& returnValue, const AZ::EntityId& animatedEntityId, const AnimatablePropertyAddress& animatableAddress) override;
         /**
         * Set a value for an animated property at the given address on the given entity.
         * @param animatedEntityId the entity Id of the entity containing the animatedAddress
@@ -70,7 +72,7 @@ namespace Maestro
         */
         bool SetAnimatedPropertyValue(const AZ::EntityId& animatedEntityId, const AnimatablePropertyAddress& animatableAddress, const AnimatedValue& value) override;
 
-        AZ::Uuid GetAnimatedAddressTypeId(const AZ::EntityId& animatedEntityId, const Maestro::SequenceComponentRequests::AnimatablePropertyAddress& animatableAddress) override;
+        AZ::Uuid GetAnimatedAddressTypeId(const AZ::EntityId& animatedEntityId, const SequenceComponentRequests::AnimatablePropertyAddress& animatableAddress) override;
 
         void GetAssetDuration(AnimatedValue& returnValue, const AZ::EntityId& animatedEntityId, AZ::ComponentId componentId, const AZ::Data::AssetId& assetId) override;
 
@@ -88,12 +90,12 @@ namespace Maestro
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("SequenceService", 0x7cbe5938));
+            provided.push_back(AZ_CRC_CE("SequenceService"));
         }
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
             // This guarantees that only one SequenceComponent will ever be on an entity
-            incompatible.push_back(AZ_CRC("SequenceService", 0x7cbe5938));
+            incompatible.push_back(AZ_CRC_CE("SequenceService"));
             incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
         }
 
@@ -104,7 +106,7 @@ namespace Maestro
         void BuildGameEntity(AZ::Entity* gameEntity) override;
         ////////////////////////////////////////////////////////////////////////
     private:
-        // pointer and id of the CryMovie anim sequence responsible for playback/recording
+        // pointer and id of the CryMovie animation sequence responsible for playback/recording
         AZStd::intrusive_ptr<IAnimSequence> m_sequence;
         uint32                           m_sequenceId;
 
@@ -112,4 +114,5 @@ namespace Maestro
         static const double              s_refreshPeriodMilliseconds;       // property refresh period for SetAnimatedPropertyValue events
         static const uint32              s_invalidSequenceId;
     };
+
 } // namespace Maestro

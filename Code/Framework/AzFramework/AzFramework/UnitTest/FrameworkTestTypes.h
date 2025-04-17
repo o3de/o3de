@@ -17,11 +17,11 @@ namespace UnitTest
     * Helper class to set up a test fixture that uses the system alloctors and the local file IO
     */
     class ScopedAllocatorsFileIOFixture
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
     public:
         ScopedAllocatorsFileIOFixture()
-            :ScopedAllocatorSetupFixture()
+            :LeakDetectionFixture()
             , m_prevFileIO(AZ::IO::FileIOBase::GetInstance())
         {
             if (m_prevFileIO)

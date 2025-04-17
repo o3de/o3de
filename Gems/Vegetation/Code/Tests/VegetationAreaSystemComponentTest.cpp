@@ -45,8 +45,8 @@ namespace UnitTest
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("SurfaceDataSystemService", 0x1d44d25f));
-            provided.push_back(AZ_CRC("SurfaceDataProviderService", 0xfe9fb95e));
+            provided.push_back(AZ_CRC_CE("SurfaceDataSystemService"));
+            provided.push_back(AZ_CRC_CE("SurfaceDataProviderService"));
         }
         static void GetIncompatibleServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& incompatible) {}
         static void GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required) {}
@@ -58,9 +58,6 @@ namespace UnitTest
         void Init() override {}
         void Activate() override
         {
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
-
             // Initialize the job manager with 1 thread for the AssetManager to use.
             AZ::JobManagerDesc jobDesc;
             AZ::JobManagerThreadDesc threadDesc;
@@ -80,9 +77,6 @@ namespace UnitTest
             AZ::JobContext::SetGlobalContext(nullptr);
             delete m_jobContext;
             delete m_jobManager;
-
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
         }
 
         AZ::JobManager* m_jobManager{ nullptr };
@@ -95,7 +89,7 @@ namespace UnitTest
     {
     public:
         AZ_RTTI(MockVegetationDependenciesModule, "{3F7470AD-4FF9-48E6-8FFB-A5314F874F2B}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(MockVegetationDependenciesModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MockVegetationDependenciesModule, AZ::SystemAllocator);
 
         MockVegetationDependenciesModule()
         {
@@ -114,7 +108,7 @@ namespace UnitTest
 
     // Test harness for the vegetation system that starts up / shuts down all the vegetation system components.
     class VegetationTestApp
-        : public ::testing::Test
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         VegetationTestApp()
@@ -127,8 +121,7 @@ namespace UnitTest
         {
             AZ::ComponentApplication::Descriptor appDesc;
             appDesc.m_memoryBlocksByteSize = 50 * 1024 * 1024;
-            appDesc.m_recordingMode = AZ::Debug::AllocationRecords::RECORD_FULL;
-            appDesc.m_stackRecordLevels = 20;
+            appDesc.m_recordingMode = AZ::Debug::AllocationRecords::Mode::RECORD_FULL;
 
             AZ::ComponentApplication::StartupParameters appStartup;
             appStartup.m_createStaticModulesCallback =

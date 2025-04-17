@@ -168,7 +168,7 @@ namespace Audio
         AZStd::string m_implSubPath;
 
         using duration_ms = AZStd::chrono::duration<float, AZStd::milli>;
-        AZStd::chrono::system_clock::time_point m_lastUpdateTime;
+        AZStd::chrono::steady_clock::time_point m_lastUpdateTime;
         duration_ms m_elapsedTime;
 
 #if !defined(AUDIO_RELEASE)

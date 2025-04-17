@@ -9,7 +9,6 @@
 #pragma once
 
 #include <Atom/Features/Debug.azsli>
-#include <Atom/Features/PBR/ForwardPassSrg.azsli>
 #include <Atom/Features/PBR/Lights/CapsuleLight.azsli>
 #include <Atom/Features/PBR/Lights/DirectionalLight.azsli>
 #include <Atom/Features/PBR/Lights/DiskLight.azsli>
@@ -41,7 +40,7 @@ void ApplyDirectLighting(Surface surface, inout LightingData lightingData, float
             ApplyPolygonLights(surface, lightingData);
         }
     }
-    else if(GetRenderDebugViewMode() == RenderDebugViewMode::CascadeShadows)
+    else if(IsDebuggingEnabled_PLACEHOLDER() && GetRenderDebugViewMode() == RenderDebugViewMode::CascadeShadows)
     {
         if (o_enableDirectionalLights)
         {
@@ -50,11 +49,10 @@ void ApplyDirectLighting(Surface surface, inout LightingData lightingData, float
     }
     else if( UseDebugLight() )
     {
-        float3 lightIntensity = SceneSrg::m_debugLightingIntensity;
-        float3 lightDirection = SceneSrg::m_debugLightingDirection;
+        real3 lightIntensity = real3(SceneSrg::m_debugLightingIntensity);
+        real3 lightDirection = real3(SceneSrg::m_debugLightingDirection);
 
         lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, lightIntensity, lightDirection);
         lightingData.specularLighting += GetSpecularLighting(surface, lightingData, lightIntensity, lightDirection);
     }
-
 }

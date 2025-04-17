@@ -113,7 +113,7 @@
                 {
                     // The shader hair color render target - important to have at a non-MSAA mode
                     // so that no overwork is done on sampling.
-                    "Name": "HairColorRenderTarget",
+                    "Name": "HairColorImage",
                     "SizeSource": {
                         "Source": {
                             "Pass": "Parent",
@@ -144,12 +144,19 @@
                         "Pass": "This",
                         "Attachment": "BRDFTexture"
                     }
+                },
+                {
+                    "LocalSlot": "HairColorRenderTarget",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "HairColorImage"
+                    }
                 }
             ],
             "PassData": {
                 "$type": "RasterPassData",
                 "DrawListTag": "HairGeometryShadingDrawList",
-                "PipelineViewTag": "MainCamera",
+                "BindViewSrg": true,
                 "PassSrgShaderAsset": {
                     // Looking for it in the Shaders directory relative to the Assets directory
                     "FilePath": "Shaders/HairShortCutGeometryShading.shader"

@@ -24,7 +24,7 @@ namespace ScriptCanvasEditor
     {
         friend class EntityPivotTreeEntityItem;
     public:
-        AZ_CLASS_ALLOCATOR(GraphPivotTreeEntityItem, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GraphPivotTreeEntityItem, AZ::SystemAllocator);
         AZ_RTTI(GraphPivotTreeEntityItem, "{17B2C45B-D63B-458E-9A2F-ED0A8218A77B}", PivotTreeEntityItem);
 
         GraphPivotTreeEntityItem(const AZ::NamedEntityId& namedEntityId, const ScriptCanvas::GraphIdentifier& graphIdentifier);
@@ -46,7 +46,7 @@ namespace ScriptCanvasEditor
         , public LoggingDataNotificationBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(GraphPivotTreeGraphItem, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GraphPivotTreeGraphItem, AZ::SystemAllocator);
         AZ_RTTI(GraphPivotTreeGraphItem, "{9B449D02-109E-4D9E-BA99-35C52106432C}", PivotTreeGraphItem);
 
         GraphPivotTreeGraphItem(const AZ::Data::AssetId& assetId);
@@ -86,8 +86,8 @@ namespace ScriptCanvasEditor
         : public PivotTreeItem
     {
     public:
-        AZ_CLASS_ALLOCATOR(GraphPivotTreeFolder, AZ::SystemAllocator, 0);
-        AZ_RTTI(GraphPivotTreeRoot, "{E67BBC27-6E0D-4D56-A7D4-9389FE30E909}", PivotTreeItem);
+        AZ_CLASS_ALLOCATOR(GraphPivotTreeFolder, AZ::SystemAllocator);
+        AZ_RTTI(GraphPivotTreeFolder, "{E67BBC27-6E0D-4D56-A7D4-9389FE30E909}", PivotTreeItem);
 
         GraphPivotTreeFolder(AZStd::string_view folder);
         ~GraphPivotTreeFolder() override = default;
@@ -118,7 +118,7 @@ namespace ScriptCanvasEditor
     public:
         friend class GraphPivotTreeWidget;
 
-        AZ_CLASS_ALLOCATOR(GraphPivotTreeRoot, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GraphPivotTreeRoot, AZ::SystemAllocator);
         AZ_RTTI(GraphPivotTreeRoot, "{B4CD0FCF-F8C7-44D5-BF4D-12A52BB088CB}", PivotTreeRoot);
         
         GraphPivotTreeRoot();
@@ -161,7 +161,6 @@ namespace ScriptCanvasEditor
 
         LoggingDataId m_loggedDataId;
 
-        bool m_capturingData;
         AzToolsFramework::AssetBrowser::AssetBrowserFilterModel* m_assetModel;
     };
 

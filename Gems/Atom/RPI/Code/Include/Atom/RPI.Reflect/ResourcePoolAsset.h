@@ -9,11 +9,11 @@
 
 #include <AzCore/Asset/AssetCommon.h>
 
-#include <Atom/RHI.Reflect/Base.h>
-#include <Atom/RHI/ResourcePool.h>
-
 #include <Atom/RPI.Reflect/Asset/AssetHandler.h>
+#include <Atom/RHI.Reflect/Base.h>
+#include <Atom/RPI.Reflect/Configuration.h>
 
+#include <Atom/RHI/DeviceResourcePool.h>
 
 namespace AZ
 {
@@ -30,18 +30,20 @@ namespace AZ
         //! ResourcePoolAsset is the AssetData class for a resource pool asset.
         //! This is an immutable, serialized asset. It can be either serialized-in or created dynamically using ResourcePoolAssetCreator.
         //! Multiple runtime pool classes are based on this asset, for example RPI::ImagePool, RPI::StreamingImagePool, RPI::ShaderResourceGroupPool.
-        class ResourcePoolAsset 
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+        class ATOM_RPI_REFLECT_API ResourcePoolAsset
             : public AZ::Data::AssetData
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             friend class ResourcePoolAssetCreator;
 
         public:
             AZ_RTTI(ResourcePoolAsset, "{62A59999-66DA-467E-804A-0EA64A64299F}", AZ::Data::AssetData);
-            AZ_CLASS_ALLOCATOR(ResourcePoolAsset, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ResourcePoolAsset, AZ::SystemAllocator);
 
-            static const char* DisplayName;
-            static const char* Group;
-            static const char* Extension;
+            static constexpr const char* DisplayName{ "ResourcePool" };
+            static constexpr const char* Group{ "RenderingPipeline" };
+            static constexpr const char* Extension{ "pool" };
 
             static void Reflect(ReflectContext* context);
 

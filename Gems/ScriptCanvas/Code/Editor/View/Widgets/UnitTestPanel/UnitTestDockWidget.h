@@ -128,7 +128,7 @@ namespace ScriptCanvasEditor
         Q_OBJECT
 
     public:
-        AZ_CLASS_ALLOCATOR(UnitTestDockWidget, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(UnitTestDockWidget, AZ::SystemAllocator);
 
         UnitTestDockWidget(QWidget* parent = nullptr);
         ~UnitTestDockWidget();

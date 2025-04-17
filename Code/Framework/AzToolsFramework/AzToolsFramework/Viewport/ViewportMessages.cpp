@@ -10,6 +10,8 @@
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
+DECLARE_EBUS_INSTANTIATION_WITH_TRAITS(AzToolsFramework::ViewportInteraction::ViewportInteractionRequests, AzToolsFramework::ViewportInteraction::ViewportRequestsEBusTraits);
+
 namespace AzToolsFramework
 {
     AzFramework::ClickDetector::ClickEvent ClickDetectorEventFromViewportInteraction(
@@ -65,7 +67,7 @@ namespace AzToolsFramework
         return circleBoundWidth;
     }
 
-    AZ::Vector3 FindClosestPickIntersection(const AzFramework::RenderGeometry::RayRequest& rayRequest, const float defaultDistance)
+    AZStd::optional<AZ::Vector3> FindClosestPickIntersection(const AzFramework::RenderGeometry::RayRequest& rayRequest)
     {
         using AzFramework::RenderGeometry::IntersectorBus;
         using AzFramework::RenderGeometry::RayResult;
@@ -85,6 +87,20 @@ namespace AzToolsFramework
         }
         else
         {
+            return {};
+        }
+    }
+
+    AZ::Vector3 FindClosestPickIntersection(const AzFramework::RenderGeometry::RayRequest& rayRequest, const float defaultDistance)
+    {
+        auto result = FindClosestPickIntersection(rayRequest);
+
+        if (result.has_value())
+        {
+            return result.value();
+        }
+        else
+        {
             const AZ::Vector3 rayDirection = (rayRequest.m_endWorldPosition - rayRequest.m_startWorldPosition).GetNormalized();
             return rayRequest.m_startWorldPosition + rayDirection * defaultDistance;
         }
@@ -100,6 +116,17 @@ namespace AzToolsFramework
         rayRequest.m_endWorldPosition = viewportRay.m_origin + viewportRay.m_direction * rayLength;
     }
 
+    AZStd::optional<AZ::Vector3> FindClosestPickIntersection(
+        const AzFramework::ViewportId viewportId, const AzFramework::ScreenPoint& screenPoint, const float rayLength)
+    {
+        AzFramework::RenderGeometry::RayRequest ray;
+        ray.m_onlyVisible = true; // only consider visible objects
+
+        RefreshRayRequest(ray, ViewportInteraction::ViewportScreenToWorldRay(viewportId, screenPoint), rayLength);
+
+        return FindClosestPickIntersection(ray);
+    }
+
     AZ::Vector3 FindClosestPickIntersection(
         const AzFramework::ViewportId viewportId,
         const AzFramework::ScreenPoint& screenPoint,
@@ -112,5 +139,48 @@ namespace AzToolsFramework
         RefreshRayRequest(ray, ViewportInteraction::ViewportScreenToWorldRay(viewportId, screenPoint), rayLength);
 
         return FindClosestPickIntersection(ray, defaultDistance);
+    }
+
+    namespace ViewportInteraction
+    {
+        MouseInteractionResult InternalMouseViewportRequests::InternalHandleAllMouseInteractions(
+            const MouseInteractionEvent& mouseInteraction)
+        {
+            if (InternalHandleMouseManipulatorInteraction(mouseInteraction))
+            {
+                return MouseInteractionResult::Manipulator;
+            }
+            else if (InternalHandleMouseViewportInteraction(mouseInteraction))
+            {
+                return MouseInteractionResult::Viewport;
+            }
+            else
+            {
+                return MouseInteractionResult::None;
+            }
+        }
+
+        KeyboardModifiers QueryKeyboardModifiers()
+        {
+            KeyboardModifiers keyboardModifiers;
+            EditorModifierKeyRequestBus::BroadcastResult(keyboardModifiers, &EditorModifierKeyRequestBus::Events::QueryKeyboardModifiers);
+            return keyboardModifiers;
+        }
+
+        ProjectedViewportRay ViewportScreenToWorldRay(const AzFramework::ViewportId viewportId, const AzFramework::ScreenPoint& screenPoint)
+        {
+            ProjectedViewportRay viewportRay{};
+            ViewportInteractionRequestBus::EventResult(
+                viewportRay, viewportId, &ViewportInteractionRequestBus::Events::ViewportScreenToWorldRay, screenPoint);
+
+            return viewportRay;
+        }
+    }
+
+    AzFramework::EntityContextId GetEntityContextId()
+    {
+        auto entityContextId = AzFramework::EntityContextId::CreateNull();
+        EditorEntityContextRequestBus::BroadcastResult(entityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
+        return entityContextId;
     }
 } // namespace AzToolsFramework

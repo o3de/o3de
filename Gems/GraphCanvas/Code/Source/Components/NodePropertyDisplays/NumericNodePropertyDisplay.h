@@ -33,7 +33,7 @@ namespace GraphCanvas
         {
             Q_OBJECT
         public:
-            AZ_CLASS_ALLOCATOR(FocusableDoubleSpinBox, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FocusableDoubleSpinBox, AZ::SystemAllocator);
             FocusableDoubleSpinBox() = default;
             ~FocusableDoubleSpinBox() = default;
 
@@ -67,7 +67,7 @@ namespace GraphCanvas
         : public NodePropertyDisplay
     {    
     public:
-        AZ_CLASS_ALLOCATOR(NumericNodePropertyDisplay, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(NumericNodePropertyDisplay, AZ::SystemAllocator);
         NumericNodePropertyDisplay(NumericDataInterface* dataInterface);
         virtual ~NumericNodePropertyDisplay();
     

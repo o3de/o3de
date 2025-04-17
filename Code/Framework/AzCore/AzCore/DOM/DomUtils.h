@@ -25,7 +25,7 @@ namespace AZ::Dom::Utils
     struct ComparisonParameters
     {
         //! If set, opaque values will only be compared by type and not contents
-        //! This can be useful when comparing opaque values that aren't equal in-memory but shouldn't constitue a
+        //! This can be useful when comparing opaque values that aren't equal in-memory but shouldn't constitute a
         //! comparison failure (e.g. comparing callbacks)
         bool m_treatOpaqueValuesOfSameTypeAsEqual = false;
     };
@@ -33,6 +33,16 @@ namespace AZ::Dom::Utils
     bool DeepCompareIsEqual(const Value& lhs, const Value& rhs, const ComparisonParameters& parameters = {});
     Value TypeIdToDomValue(const AZ::TypeId& typeId);
     AZ::TypeId DomValueToTypeId(const AZ::Dom::Value& value, const AZ::TypeId* baseClassId = nullptr);
+    //! Runs a dry-run JSON Serializer over the Dom::Value to check if it can be converted to the type associated
+    //! with the AZ TypeId
+    //! @param typeId TypeInfo ID associated with C++ type to determine if the Dom Value can be deserialized into
+    //! @param root Dom Value to be check to see if it can be converted to the C++ TypeInfo ID
+    //! @param settings Json Deserializer Settings which is used to query the serialize context to use for loading the raw object
+    //!        data from the Dom Value
+    //! @return true if the Dom Value can be deserialized into the type associated with the TypeInfo ID
+    bool CanLoadViaJsonSerialization(
+        const AZ::TypeId& typeId, const Value& root, JsonDeserializerSettings settings = {});
+
     JsonSerializationResult::ResultCode LoadViaJsonSerialization(
         void* object, const AZ::TypeId& typeId, const Value& root, const JsonDeserializerSettings& settings = {});
     JsonSerializationResult::ResultCode StoreViaJsonSerialization(
@@ -77,10 +87,13 @@ namespace AZ::Dom::Utils
         using Type = T;
     };
 
+    // Only add pointer to non-pointer types
     template<typename T>
-    struct DomValueWrapper<T, AZStd::enable_if_t<(AZStd::is_reference_v<T> || !AZStd::is_copy_constructible_v<T>) && !is_dom_value_v<T>>>
+    struct DomValueWrapper<T, AZStd::enable_if_t<(AZStd::is_reference_v<T> || !AZStd::is_copy_constructible_v<T>)
+        && !is_dom_value_v<T>>>
     {
-        using Type = AZStd::add_pointer_t<AZStd::remove_reference_t<T>>;
+        // i.e don't convert `const void*&` to `const void**`, instead convert to a reference wrapper
+        using Type = AZStd::reference_wrapper<AZStd::remove_reference_t<T>>;
     };
 
     template<typename T>
@@ -97,59 +110,95 @@ namespace AZ::Dom::Utils
     extern const AZ::Name PointerValueFieldName;
     extern const AZ::Name PointerTypeFieldName;
 
-    Dom::Value MarshalTypedPointerToValue(void* value, const AZ::TypeId& typeId);
+    Dom::Value MarshalTypedPointerToValue(const void* value, const AZ::TypeId& typeId);
     void* TryMarshalValueToPointer(const AZ::Dom::Value& value, const AZ::TypeId& expectedType = AZ::TypeId::CreateNull());
+
+    struct MarshalTypeTraits
+    {
+        AZ::TypeId m_typeId{};
+        bool m_isPointer{};
+        bool m_isReference{};
+        bool m_isCopyConstructible{};
+        size_t m_typeSize{};
+    };
+
+    Dom::Value MarshalOpaqueValue(const void* valueAddress, const MarshalTypeTraits& typeTraits,
+        AZStd::any::action_handler_for_t actionHandler);
 
     template <typename T>
     Dom::Value MarshalOpaqueValue(T value)
     {
-        if constexpr (AZStd::is_pointer_v<T>)
+        using WrapperType = DomValueWrapperType<T>;
+        MarshalTypeTraits typeTraits;
+        // Store if the WrapperType is a pointer
+        typeTraits.m_isPointer = AZStd::is_pointer_v<AZStd::remove_cvref_t<WrapperType>>;
+        // Store if the T type is a reference
+        typeTraits.m_isReference = AZStd::is_reference_v<T>;
+        // Store if the T type is a copy constructible
+        typeTraits.m_isCopyConstructible = AZStd::is_copy_constructible_v<T>;
+
+        if constexpr (AZStd::is_pointer_v<AZStd::remove_cvref_t<WrapperType>>)
         {
-            // C-style cast to break const
-            return MarshalTypedPointerToValue((void*)(value), azrtti_typeid<T>());
+            using ValueType = AZStd::remove_cvref_t<WrapperType>;
+            typeTraits.m_typeSize = sizeof(ValueType);
+            typeTraits.m_typeId = azrtti_typeid(value);
+            return MarshalOpaqueValue(AZStd::as_const(value),
+                typeTraits, AZStd::any::get_action_handler_for_t<ValueType>());
         }
         else
         {
-            return Dom::Value::FromOpaqueValue(AZStd::any(value));
+            using ValueType = AZStd::remove_cvref_t<WrapperType>;
+            typeTraits.m_typeSize = sizeof(ValueType);
+            typeTraits.m_typeId = azrtti_typeid(value);
+            return MarshalOpaqueValue(&value,
+                typeTraits, AZStd::any::get_action_handler_for_t<ValueType>());
         }
     }
+
+    Dom::Value ValueFromType(const void* valueAddress, const MarshalTypeTraits& typeTraits,
+        AZStd::any::action_handler_for_t actionHandler);
 
     template<typename T>
     Dom::Value ValueFromType(T value)
     {
         using WrapperType = DomValueWrapperType<T>;
-        if constexpr (AZStd::is_same_v<AZStd::decay_t<T>, Dom::Value>)
+        MarshalTypeTraits typeTraits;
+        // Store if the WrapperType is a pointer
+        typeTraits.m_isPointer = AZStd::is_pointer_v<AZStd::remove_cvref_t<WrapperType>>;
+        // Store if the T type is a reference
+        typeTraits.m_isReference = AZStd::is_reference_v<T>;
+        // Store if the T type is a copy constructible
+        typeTraits.m_isCopyConstructible = AZStd::is_copy_constructible_v<T>;
+
+        AZStd::any::action_handler_for_t actionHandler;
+        using ValueType = AZStd::remove_cvref_t<WrapperType>;
+        typeTraits.m_typeId = azrtti_typeid<ValueType>();
+        typeTraits.m_typeSize = sizeof(ValueType);
+
+        // Lifetime variables provides storage for Dom::Value variable
+        // long enough to complete the call to the ValueFromType overload which accepts a void pointer
+        if constexpr (AZStd::is_reference_wrapper<ValueType>())
         {
-            return value;
-        }
-        else if constexpr (AZStd::is_reference_v<T> || !AZStd::is_copy_constructible_v<T>)
-        {
-            WrapperType wrapper = &value;
+            WrapperType wrapper = value;
             return MarshalOpaqueValue(wrapper);
-        }
-        else if constexpr (AZStd::is_same_v<WrapperType, Dom::Value>)
-        {
-            return value;
         }
         else if constexpr (AZStd::is_constructible_v<AZStd::string_view, WrapperType>)
         {
-            return Dom::Value(value, true);
+            constexpr bool deepCopyString = true;
+            return Dom::Value(value, deepCopyString);
         }
         else if constexpr (AZStd::is_constructible_v<Dom::Value, const WrapperType&>)
         {
             return Dom::Value(value);
         }
-        else if constexpr (AZStd::is_enum_v<WrapperType>)
-        {
-            return ValueFromType(static_cast<AZStd::underlying_type_t<WrapperType>>(value));
-        }
         else
         {
+            // The type is a non-referenced opaque value type that needs to be stored using an AZStd::any
             return MarshalOpaqueValue(value);
         }
     }
 
-    const AZ::TypeId& GetValueTypeId(const Dom::Value& value);
+    AZ::TypeId GetValueTypeId(const Dom::Value& value);
 
     template<typename T>
     bool CanConvertValueToType(const Dom::Value& value)
@@ -163,20 +212,22 @@ namespace AZ::Dom::Utils
         {
             return value.IsBool();
         }
-        else if constexpr (AZStd::is_integral_v<WrapperType> || AZStd::is_floating_point_v<WrapperType>)
+        else if constexpr (AZStd::is_integral_v<WrapperType> || AZStd::is_floating_point_v<WrapperType>
+            || AZStd::is_enum_v<WrapperType>)
         {
             return value.IsNumber();
         }
-        else if constexpr (AZStd::is_constructible_v<AZStd::string_view, WrapperType>)
-        {
-            return value.IsString();
-        }
-        else if constexpr (AZStd::is_enum_v<WrapperType>)
-        {
-            return CanConvertValueToType<AZStd::underlying_type_t<WrapperType>>(value);
-        }
         else
         {
+            if constexpr (AZStd::is_constructible_v<WrapperType, AZStd::string_view>)
+            {
+                if (value.IsString())
+                {
+                    return true;
+                }
+            }
+            // For pointer types, the pointer marshaling logic is used
+            // to extract a pointer address from the Object with the Dom::Value
             if constexpr (AZStd::is_pointer_v<WrapperType>)
             {
                 if (TryMarshalValueToPointer(value) != nullptr)
@@ -184,12 +235,37 @@ namespace AZ::Dom::Utils
                     return true;
                 }
             }
+
+            // If the Dom::Value can be loaded into the WrapperType using JSON
+            // Serialization, then the Value is convertible to the C++ type
+            JsonDeserializerSettings loadSettings;
+            // Create a no-op issue reporter to suppress AZ_Warnings
+            loadSettings.m_reporting = [](AZStd::string_view, JsonSerializationResult::ResultCode result, AZStd::string_view)
+            {
+                return result;
+            };
+            if (CanLoadViaJsonSerialization(azrtti_typeid<WrapperType>(), value, loadSettings))
+            {
+                return true;
+            }
+
             if (!value.IsOpaqueValue())
             {
                 return false;
             }
+
             const AZStd::any& opaqueValue = value.GetOpaqueValue();
-            return opaqueValue.is<WrapperType>();
+
+            // Then the original type should be check and not the wrapper type
+            // if the WrapperType is a std::reference_wrapper
+            if constexpr (AZStd::is_reference_wrapper<WrapperType>::value)
+            {
+                return opaqueValue.is<AZStd::remove_reference_t<T>>() || opaqueValue.is<WrapperType>();
+            }
+            else
+            {
+                return opaqueValue.is<WrapperType>();
+            }
         }
     }
 
@@ -261,28 +337,83 @@ namespace AZ::Dom::Utils
             {
                 if constexpr (AZStd::is_pointer_v<WrapperType>)
                 {
+                    // When the Wrapped C++ Type is a pointer
+                    // then the attempt to read the pointer address
+                    // from the Dom Value object
                     void* valuePointer = TryMarshalValueToPointer(value);
                     if (valuePointer != nullptr)
                     {
                         return reinterpret_cast<WrapperType>(valuePointer);
                     }
                 }
+
                 if (!value.IsOpaqueValue())
                 {
-                    return {};
-                }
-                const AZStd::any& opaqueValue = value.GetOpaqueValue();
-                if (!opaqueValue.is<WrapperType>())
-                {
-                    // Marshal void* into our type - CanConvertToType will not register this as correct,
-                    // but this is an important safety hatch for marshalling out non-primitive UI elements in the DocumentPropertyEditor
-                    if (opaqueValue.is<void*>())
+                    // For a non-opaque type attempt to first check if it Dom Object
+                    // which represents a pointer type and try to marshal that value to the pointer type
+                    void* valuePointer = TryMarshalValueToPointer(value);
+                    if (valuePointer != nullptr)
                     {
-                        return *reinterpret_cast<WrapperType*>(AZStd::any_cast<void*>(opaqueValue));
+                        return WrapperType(*reinterpret_cast<WrapperType*>(valuePointer));
                     }
+
+                    // If the Dom is not storing an object that is a pointer
+                    // attempt to use Json Serialization to load into the WrapperType if it is default constructible
+                    if constexpr (AZStd::is_constructible_v<WrapperType>)
+                    {
+                        // Attempt to deserialize the type into T using JSON Serialization if possible
+                        WrapperType typeValue;
+                        // Create a pass no-op issue reporting to skip the DefaultIssueReporter logging AZ_Warnings
+                        JsonDeserializerSettings loadSettings;
+                        loadSettings.m_reporting = [](AZStd::string_view, JsonSerializationResult::ResultCode result, AZStd::string_view)
+                            {
+                                return result;
+                            };
+                        if (auto loadViaJsonSerializationResult = LoadViaJsonSerialization(typeValue, value, loadSettings);
+                            loadViaJsonSerializationResult.GetProcessing() != JsonSerializationResult::Processing::Halted)
+                        {
+                            return typeValue;
+                        }
+                    }
+
                     return {};
                 }
-                return AZStd::any_cast<WrapperType>(opaqueValue);
+                // At this point, the type must be an opaque type which is an AZStd::any stored within the Dom::Value
+                else
+                {
+                    const AZStd::any& opaqueValue = value.GetOpaqueValue();
+                    // If the wrapper type is a reference wrapper, then the original type needs to be extracted
+                    // from the opaque object and then constructed into a reference_wrapper.
+                    // This is because the implementation of std::reference_wrapper might store a pointer to T or a reference to T
+                    // and that cannot be relied on
+                    if constexpr (AZStd::is_reference_wrapper<WrapperType>::value)
+                    {
+                        if (auto instanceValue = AZStd::any_cast<AZStd::remove_reference_t<T>>(&opaqueValue);
+                            instanceValue != nullptr)
+                        {
+                            // Construct a reference_wrapper using a deferenced value to the opaque type
+                            return WrapperType(const_cast<T>(*instanceValue));
+                        }
+
+                        // Check if The Dom Value is actually storing an reference_wrapper<T> and return that if possible
+                        else if (auto referenceWrapperValue = AZStd::any_cast<WrapperType>(&opaqueValue); referenceWrapperValue != nullptr)
+                        {
+                            // return the reference_wrapper<T> directly
+                            return *referenceWrapperValue;
+                        }
+                    }
+                    else if (!opaqueValue.is<WrapperType>())
+                    {
+                        // Marshal void* into our type - CanConvertToType will not register this as correct,
+                        // but this is an important safety hatch for marshalling out non-primitive UI elements in the DocumentPropertyEditor
+                        if (opaqueValue.is<void*>())
+                        {
+                            return *reinterpret_cast<WrapperType*>(AZStd::any_cast<void*>(opaqueValue));
+                        }
+                        return {};
+                    }
+                    return AZStd::any_cast<WrapperType>(opaqueValue);
+                }
             };
 
             return ExtractOpaqueValue();
@@ -298,11 +429,19 @@ namespace AZ::Dom::Utils
         }
         else
         {
+            using ValueTypeNoQualifier = AZStd::conditional_t<AZStd::is_pointer_v<AZStd::remove_cvref_t<T>>,
+                AZStd::remove_pointer_t<AZStd::remove_cvref_t<T>>,
+                AZStd::remove_cvref_t<T>>;
             auto convertedValue = ValueToType<T>(value);
-            if constexpr (AZStd::is_reference_v<T>)
+            if constexpr (AZStd::is_void_v<ValueTypeNoQualifier>)
             {
-                // Crash with a null deref to give a relatively sensible error messae
-                return *convertedValue.value_or(nullptr);
+                // Return the raw void pointer
+                return convertedValue.value();
+            }
+            else if constexpr (AZStd::is_reference_v<T>)
+            {
+                // The convertedValue is a reference wrapper in this case
+                return convertedValue.value();
             }
             else if constexpr (AZStd::is_constructible_v<T>)
             {

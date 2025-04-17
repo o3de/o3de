@@ -23,7 +23,7 @@ namespace AzToolsFramework
         Q_OBJECT
 
     public:
-        AZ_CLASS_ALLOCATOR(ExeSelectPropertyCtrl, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ExeSelectPropertyCtrl, AZ::SystemAllocator);
 
         ExeSelectPropertyCtrl(QWidget* pParent = nullptr);
 
@@ -50,7 +50,7 @@ namespace AzToolsFramework
         , public AzToolsFramework::PropertyHandler<AZStd::string, ExeSelectPropertyCtrl>
     {
     public:
-        AZ_CLASS_ALLOCATOR(ExeSelectPropertyHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ExeSelectPropertyHandler, AZ::SystemAllocator);
 
         ExeSelectPropertyHandler();
 

@@ -2,7 +2,6 @@
 <qresource prefix="/stylesheet">
     <file>img/in_progress.gif</file>
     <file>img/loading.svg</file>
-    <file>img/WindowShadow.png</file>
     <file>img/close.svg</file>
     <file>img/close_x.svg</file>
     <file>img/close_small.svg</file>
@@ -10,291 +9,27 @@
     <file>img/lock_on.svg</file>
     <file>img/tag_visibility_off.svg</file>
     <file>img/tag_visibility_on.svg</file>
-    <file>img/double_triangles.png</file>
-    <file>img/dockWidgetSeparatorDots_horiz.png</file>
-    <file>img/dockWidgetSeparatorDots_vert.png</file>
     <file>img/filter.svg</file>
-    <file>img/filter.png</file>
-    <file>img/filter_selected.png</file>
-    <file>img/menu.png</file>
-    <file>img/menu_selected.png</file>
     <file>img/indicator-arrow-down.svg</file>
     <file>img/indicator-arrow-up.svg</file>
-    <file>img/radio-hover.png</file>
-    <file>img/radio-selected.png</file>
-    <file>img/radio-unselected.png</file>
-    <file>img/radio-disabled.png</file>
-    <file>img/combo-checked.png</file>
-    <file>img/combo-tristate.png</file>
     <file>img/ly_application_icon.png</file>
     <file>img/search.svg</file>
-    <file>img/search.png</file>
     <file>img/search-dark.svg</file>
-    <file>img/separator.png</file>
-    <file>img/separator_horiz.png</file>
-    <file>img/slider-handle.png</file>
-    <file>img/slider-handle-disabled.png</file>
-    <file>img/titlebar_close.png</file>
     <file>img/table_error.png</file>
     <file>img/table_warning.png</file>
     <file>img/table_success.png</file>
     <file>img/table_debug.png</file>
-    <file>img/titlebar_divider.png</file>
-    <file>img/titlebar_maximize.png</file>
-    <file>img/titlebar_minimize.png</file>
-    <file>img/titlebar_close_down.png</file>
-    <file>img/titlebar_maximize_down.png</file>
-    <file>img/titlebar_minimize_down.png</file>
     <file>img/titlebar_tear.png</file>
-    <file>img/toolbar_divider.png</file>
-    <file>img/toolbar_tear.png</file>
-    <file>img/toolbar_tear_horiz.png</file>
-    <file>img/toolbutton_button.png</file>
-    <file>img/toolbutton_button_down.png</file>
-    <file>img/toolbutton_menubutton.png</file>
-    <file>img/toolbutton_menubutton_disabled.png</file>
-    <file>img/toolbar_combo_border_image.png</file>
-    <file>img/toolbar_combo_arrows.png</file>
-    <file>img/triangle1.png</file>
-    <file>img/triangle2.png</file>
-    <file>img/triangle3.png</file>
-    <file>img/vertical_arrows.png</file>
     <file>img/hidden-icons.svg</file>
-    <file>img/horizontal_arrows.png</file>
-    <file>img/16x16/lineedit-clear.png</file>
-    <file>img/16x16/lineedit-clear@2x.png</file>
-    <file>img/16x16/Align_object_to_surface.png</file>
-    <file>img/16x16/Align_to_grid.png</file>
-    <file>img/16x16/Align_to_Object.png</file>
-    <file>img/16x16/Angle.png</file>
-    <file>img/16x16/Asset_Browser.png</file>
-    <file>img/16x16/Audio.png</file>
-    <file>img/16x16/Database_view.png</file>
-    <file>img/16x16/Delete_named_selection.png</file>
-    <file>img/16x16/deploy.png</file>
-    <file>img/16x16/Follow_terrain.png</file>
-    <file>img/16x16/Freeze.png</file>
-    <file>img/16x16/Grid.png</file>
-    <file>img/16x16/Helpers.png</file>
-    <file>img/16x16/Helpers@2x.png</file>
-    <file>img/16x16/info.png</file>
-    <file>img/16x16/info@2x.png</file>
-    <file>img/16x16/layer_editor.png</file>
-    <file>img/16x16/layers.png</file>
-    <file>img/16x16/Load.png</file>
-    <file>img/16x16/LOD_generator.png</file>
-    <file>img/16x16/Material.png</file>
-    <file>img/16x16/Measure.png</file>
-    <file>img/16x16/Move.png</file>
-    <file>img/16x16/Play.png</file>
-    <file>img/16x16/Object_follow_terrain.png</file>
-    <file>img/16x16/Scale.png</file>
-    <file>img/16x16/Select.png</file>
-    <file>img/16x16/select_object.png</file>
-    <file>img/16x16/Select_terrain.png</file>
-    <file>img/16x16/Substance.png</file>
-    <file>img/16x16/Terrain.png</file>
-    <file>img/16x16/Terrain_Texture.png</file>
-    <file>img/16x16/Texture_browser.png</file>
-    <file>img/16x16/Time_of_Day.png</file>
-    <file>img/16x16/Unfreeze_all.png</file>
-    <file>img/16x16/Vertex_snapping.png</file>
-    <file>img/16x16/Gepetto.png</file>
-    <file>img/16x16/Get_physics_state.png</file>
-    <file>img/16x16/LIghting.png</file>
-    <file>img/16x16/LUA.png</file>
-    <file>img/16x16/Maximize.png</file>
-    <file>img/16x16/Object_list.png</file>
-    <file>img/16x16/Redo.png</file>
-    <file>img/16x16/Reset_physics_state.png</file>
-    <file>img/16x16/Save.png</file>
-    <file>img/16x16/Search.png</file>
-    <file>img/16x16/Search@2x.png</file>
+    <file>img/16x16/gravity.svg</file>
+    <file>img/16x16/impact.svg</file>
+    <file>img/16x16/move_manually.svg</file>
+    <file>img/16x16/move_with_code.svg</file>
     <file>img/16x16/Search_more.png</file>
-    <file>img/16x16/Search_more@2x.png</file>
-    <file>img/16x16/Simulate_Physics_on_selected_objects.png</file>
-    <file>img/16x16/Trackview.png</file>
-    <file>img/16x16/Translate.png</file>
-    <file>img/16x16/UI_editor.png</file>
-    <file>img/16x16/undo.png</file>
-    <file>img/16x16/X_axis.png</file>
-    <file>img/16x16/XY.png</file>
-    <file>img/16x16/XY_copy.png</file>
-    <file>img/16x16/Y_axis.png</file>
-    <file>img/16x16/Z_axis.png</file>
-    <file>img/16x16/Object_height.png</file>
-    <file>img/16x16/particle.png</file>
-    <file>img/16x16/add_link.png</file>
-    <file>img/16x16/Maximize2.png</file>
-    <file>img/16x16/remove_link.png</file>
-    <file>img/16x16/Search2.png</file>
-    <file>img/16x16/XY2_copy.png</file>
-    <file>img/24x24/add_link.png</file>
-    <file>img/24x24/Align_object_to_surface.png</file>
-    <file>img/24x24/Align_to_grid.png</file>
-    <file>img/24x24/Align_to_Object.png</file>
-    <file>img/24x24/Angle.png</file>
-    <file>img/24x24/Asset_Browser.png</file>
-    <file>img/24x24/Audio.png</file>
-    <file>img/24x24/Database_view.png</file>
-    <file>img/24x24/Delete_named_selection.png</file>
-    <file>img/24x24/deploy.png</file>
-    <file>img/24x24/Follow_terrain.png</file>
-    <file>img/24x24/Freeze.png</file>
-    <file>img/24x24/Get_physics_state.png</file>
-    <file>img/24x24/Grid.png</file>
-    <file>img/24x24/Helpers.png</file>
-    <file>img/24x24/info.png</file>
-    <file>img/24x24/layer_editor.png</file>
-    <file>img/24x24/layers.png</file>
-    <file>img/24x24/LIghting.png</file>
-    <file>img/24x24/lineedit-clear.png</file>
-    <file>img/24x24/Load.png</file>
-    <file>img/24x24/LOD_generator.png</file>
-    <file>img/24x24/LUA.png</file>
-    <file>img/24x24/Maximize.png</file>
-    <file>img/24x24/Measure.png</file>
-    <file>img/24x24/Move.png</file>
-    <file>img/24x24/Play.png</file>
-    <file>img/24x24/Gepetto.png</file>
-    <file>img/24x24/Object_follow_terrain.png</file>
-    <file>img/24x24/Object_height.png</file>
-    <file>img/24x24/Object_list.png</file>
-    <file>img/24x24/particle.png</file>
-    <file>img/24x24/Redo.png</file>
-    <file>img/24x24/remove_link.png</file>
-    <file>img/24x24/Reset_physics_state.png</file>
-    <file>img/24x24/Save.png</file>
-    <file>img/24x24/Scale.png</file>
-    <file>img/24x24/Search.png</file>
-    <file>img/24x24/Search_more.png</file>
-    <file>img/24x24/Select.png</file>
-    <file>img/24x24/select_object.png</file>
-    <file>img/24x24/Select_terrain.png</file>
-    <file>img/24x24/Simulate_Physics_on_selected_objects.png</file>
-    <file>img/24x24/Substance.png</file>
-    <file>img/24x24/Terrain.png</file>
-    <file>img/24x24/Terrain_Texture.png</file>
-    <file>img/24x24/Texture_browser.png</file>
-    <file>img/24x24/Time_of_Day.png</file>
-    <file>img/24x24/Trackview.png</file>
-    <file>img/24x24/Translate.png</file>
-    <file>img/24x24/UI_editor.png</file>
-    <file>img/24x24/undo.png</file>
-    <file>img/24x24/Unfreeze_all.png</file>
-    <file>img/24x24/Vertex_snapping.png</file>
-    <file>img/24x24/X_axis.png</file>
-    <file>img/24x24/Y_axis.png</file>
-    <file>img/24x24/Z_axis.png</file>
-    <file>img/32x32/add_link.png</file>
-    <file>img/32x32/Align_object_to_surface.png</file>
-    <file>img/32x32/Align_to_grid.png</file>
-    <file>img/32x32/Align_to_Object.png</file>
-    <file>img/32x32/Angle.png</file>
-    <file>img/32x32/Asset_Browser.png</file>
-    <file>img/32x32/Audio.png</file>
-    <file>img/32x32/Database_view.png</file>
-    <file>img/32x32/Delete_named_selection.png</file>
-    <file>img/32x32/deploy.png</file>
-    <file>img/32x32/Follow_terrain.png</file>
-    <file>img/32x32/Freeze.png</file>
-    <file>img/32x32/Get_physics_state.png</file>
-    <file>img/32x32/Grid.png</file>
-    <file>img/32x32/Helpers.png</file>
-    <file>img/32x32/info.png</file>
-    <file>img/32x32/layer_editor.png</file>
-    <file>img/32x32/layers.png</file>
-    <file>img/32x32/LIghting.png</file>
-    <file>img/32x32/lineedit-clear.png</file>
-    <file>img/32x32/Load.png</file>
-    <file>img/32x32/LOD_generator.png</file>
-    <file>img/32x32/LUA.png</file>
-    <file>img/32x32/Maximize.png</file>
-    <file>img/32x32/Measure.png</file>
-    <file>img/32x32/Move.png</file>
-    <file>img/32x32/Play.png</file>
-    <file>img/32x32/Object_follow_terrain.png</file>
-    <file>img/32x32/Object_height.png</file>
-    <file>img/32x32/Object_list.png</file>
-    <file>img/32x32/particle.png</file>
-    <file>img/32x32/Redo.png</file>
-    <file>img/32x32/remove_link.png</file>
-    <file>img/32x32/Reset_physics_state.png</file>
-    <file>img/32x32/Save.png</file>
-    <file>img/32x32/Scale.png</file>
-    <file>img/32x32/Search.png</file>
-    <file>img/32x32/Search_more.png</file>
-    <file>img/32x32/Select.png</file>
-    <file>img/32x32/select_object.png</file>
-    <file>img/32x32/Select_terrain.png</file>
-    <file>img/32x32/Simulate_Physics_on_selected_objects.png</file>
-    <file>img/32x32/Substance.png</file>
-    <file>img/32x32/Terrain.png</file>
-    <file>img/32x32/Terrain_Texture.png</file>
-    <file>img/32x32/Texture_browser.png</file>
-    <file>img/32x32/Time_of_Day.png</file>
-    <file>img/32x32/Trackview.png</file>
-    <file>img/32x32/Translate.png</file>
-    <file>img/32x32/UI_editor.png</file>
-    <file>img/32x32/undo.png</file>
-    <file>img/32x32/Unfreeze_all.png</file>
-    <file>img/32x32/Vertex_snapping.png</file>
-    <file>img/32x32/X_axis.png</file>
-    <file>img/32x32/Y_axis.png</file>
-    <file>img/32x32/Z_axis.png</file>
-    <file>img/24x24/Material.png</file>
-    <file>img/24x24/XY.png</file>
-    <file>img/24x24/XY_copy.png</file>
-    <file>img/24x24/XY2_copy.png</file>
-    <file>img/32x32/Gepetto.png</file>
-    <file>img/32x32/Material.png</file>
-    <file>img/32x32/XY.png</file>
-    <file>img/32x32/XY_copy.png</file>
-    <file>img/32x32/XY2_copy.png</file>
-    <file>img/menu-check.png</file>
-    <file>img/lineedit-information.png</file>
     <file>img/lineedit-invalid.png</file>
-    <file>img/lineedit-question.png</file>
-    <file>img/lineedit-valid.png</file>
     <file>img/lineedit-clear.png</file>
-    <file>img/styledslider-handle.png</file>
-    <file>img/slider-addpage-groove-shadow-185.png</file>
-    <file>img/slider-subpage-groove-shadow-185.png</file>
     <file>img/question.png</file>
-    <file>img/question_small.png</file>
-    <file>img/round_button.png</file>
-    <file>img/round_button_hover.png</file>
-    <file>img/round_button_press.png</file>
-    <file>img/round_button_small.png</file>
-    <file>img/round_button_small_hover.png</file>
-    <file>img/round_button_small_press.png</file>
-    <file>img/column-resize.png</file>
     <file>img/help.svg</file>
-    <file>img/dropdowns/big_arrow_down.png</file>
-    <file>img/dropdowns/big_arrow_left.png</file>
-    <file>img/dropdowns/double_arrows.png</file>
-    <file>img/dropdowns/double_arrows_disabled.png</file>
-    <file>img/dropdowns/down_arrow.png</file>
-    <file>img/dropdowns/down_arrow_disabled.png</file>
-    <file>img/dropdowns/black_down_arrow.png</file>
-    <file>img/titlebar/titlebar_close.png</file>
-    <file>img/titlebar/titlebar_close_hover.png</file>
-    <file>img/titlebar/titlebar_close_press.png</file>
-    <file>img/titlebar/titlebar_maximize.png</file>
-    <file>img/titlebar/titlebar_maximize_hover.png</file>
-    <file>img/titlebar/titlebar_maximize_press.png</file>
-    <file>img/titlebar/titlebar_minimize.png</file>
-    <file>img/titlebar/titlebar_minimize_press.png</file>
-    <file>img/titlebar/titlebar_minimize_hover.png</file>
-    <file>img/titlebar/titlebar_close_dark.png</file>
-    <file>img/titlebar/titlebar_close_hover_dark.png</file>
-    <file>img/titlebar/titlebar_close_press_dark.png</file>
-    <file>img/titlebar/titlebar_maximize_dark.png</file>
-    <file>img/titlebar/titlebar_maximize_hover_dark.png</file>
-    <file>img/titlebar/titlebar_maximize_press_dark.png</file>
-    <file>img/titlebar/titlebar_minimize_dark.png</file>
-    <file>img/titlebar/titlebar_minimize_press_dark.png</file>
-    <file>img/titlebar/titlebar_minimize_hover_dark.png</file>
     <file>img/titlebarmenu/close.png</file>
     <file>img/titlebarmenu/restore.png</file>
     <file>img/titlebarmenu/minimize.png</file>
@@ -321,6 +56,7 @@
     <file>img/logging/copy.svg</file>
     <file>img/logging/reset.svg</file>
     <file>img/logging/add-filter.svg</file>
+    <file>img/logging/failure.svg</file>
     <file>img/logging/warning-yellow.svg</file>
     <file>img/branch_open.png</file>
     <file>img/branch_closed.png</file>
@@ -344,10 +80,12 @@
     <file>img/UI20/toolbar/Align_to_Object.svg</file>
     <file>img/UI20/toolbar/Angle.svg</file>
     <file>img/UI20/toolbar/Audio.svg</file>
+    <file>img/UI20/toolbar/AutoFit.svg</file>
     <file>img/UI20/toolbar/Database_view.svg</file>
     <file>img/UI20/toolbar/Debugging.svg</file>
     <file>img/UI20/toolbar/Deploy.svg</file>
     <file>img/UI20/toolbar/Environment.svg</file>
+    <file>img/UI20/toolbar/Eyedropper.svg</file>
     <file>img/UI20/toolbar/Flowgraph.svg</file>
     <file>img/UI20/toolbar/Follow_terrain.svg</file>
     <file>img/UI20/toolbar/Get_physics_state.svg</file>
@@ -364,6 +102,7 @@
     <file>img/UI20/toolbar/Object_follow_terrain.svg</file>
     <file>img/UI20/toolbar/Object_height.svg</file>
     <file>img/UI20/toolbar/Object_list.svg</file>
+    <file>img/UI20/toolbar/Paint.svg</file>
     <file>img/UI20/toolbar/Parent.svg</file>
     <file>img/UI20/toolbar/particle.svg</file>
     <file>img/UI20/toolbar/Play.svg</file>
@@ -380,6 +119,7 @@
     <file>img/UI20/toolbar/Simulate_Physics.svg</file>
     <file>img/UI20/toolbar/Simulate_Physics_on_selected_objects.svg</file>
     <file>img/UI20/toolbar/SketchMode.svg</file>
+    <file>img/UI20/toolbar/Smooth.svg</file>
     <file>img/UI20/toolbar/Terrain.svg</file>
     <file>img/UI20/toolbar/Terrain_Texture.svg</file>
     <file>img/UI20/toolbar/Rotate.svg</file>
@@ -391,9 +131,11 @@
     <file>img/UI20/toolbar/Y_axis.svg</file>
     <file>img/UI20/toolbar/Z_axis.svg</file>
     <file>img/UI20/toolbar/XY2_copy.svg</file>
+    <file>img/UI20/toolbar/joints/ChildFrame.svg</file>
     <file>img/UI20/toolbar/joints/Damping.svg</file>
     <file>img/UI20/toolbar/joints/MaxForce.svg</file>
     <file>img/UI20/toolbar/joints/MaxTorque.svg</file>
+    <file>img/UI20/toolbar/joints/ParentFrame.svg</file>
     <file>img/UI20/toolbar/joints/SnapPosition.svg</file>
     <file>img/UI20/toolbar/joints/SnapRotation.svg</file>
     <file>img/UI20/toolbar/joints/Stiffness.svg</file>
@@ -408,43 +150,16 @@
     <file alias="Assets/Editor/Style/NewEditorStylesheet.qss">../../../../Editor/Style/NewEditorStylesheet.qss</file>
 </qresource>
 <qresource prefix="/Cards">
-    <file>img/UI20/Cards/point_hand.png</file>
-    <file>img/UI20/Cards/cross-circle-small.png</file>
-    <file>img/UI20/Cards/cross-small.png</file>
-    <file>img/UI20/Cards/list-add-small.png</file>
-    <file>img/UI20/Cards/group_closed.png</file>
-    <file>img/UI20/Cards/group_open.png</file>
     <file>img/UI20/Cards/caret-right.svg</file>
     <file>img/UI20/Cards/caret-right-disabled.svg</file>
     <file>img/UI20/Cards/caret-down.svg</file>
     <file>img/UI20/Cards/caret-down-disabled.svg</file>
-    <file>img/UI20/Cards/tool_cancel.png</file>
-    <file>img/UI20/Cards/tool_cancel_highlight.png</file>
-    <file>img/UI20/Cards/tool_cancel_hover.png</file>
-    <file>img/UI20/Cards/tool_filter.png</file>
-    <file>img/UI20/Cards/Browse.png</file>
-    <file>img/UI20/Cards/Browse_on.png</file>
-    <file>img/UI20/Cards/edit-asset.png</file>
     <file>img/UI20/Cards/slice_item.png</file>
-    <file>img/UI20/Cards/changed_data_item.png</file>
-    <file>img/UI20/Cards/new_data_item.png</file>
-    <file>img/UI20/Cards/removed_data_item.png</file>
     <file>img/UI20/Cards/menu_ico.svg</file>
-    <file>img/UI20/Cards/menu_ico.png</file>
     <file>img/UI20/Cards/error_icon.png</file>
     <file>img/UI20/Cards/warning.png</file>
-    <file>img/UI20/Cards/search.png</file>
-    <file>img/UI20/Cards/close.png</file>
     <file>img/UI20/Cards/error-conclict-state.svg</file>
     <file>img/UI20/Cards/help.svg</file>
-    <file>img/UI20/Cards/disabled_header.png</file>
-    <file>img/UI20/Cards/help.png</file>
-    <file>img/UI20/Cards/help_hover.png</file>
-    <file>img/UI20/Cards/checkmark.png</file>
-    <file>img/UI20/Cards/rectangle.png</file>
-    <file>img/UI20/Cards/spacer.png</file>
-    <file>img/UI20/Cards/eye_dropper.png</file>
-    <file>img/UI20/Cards/trash-small.png</file>
     <file>img/UI20/Cards/shadow.png</file>
 </qresource>
 <qresource prefix="/AzQtComponents">
@@ -546,12 +261,8 @@
     <file>img/UI20/toggleswitch/unchecked-disabled.svg</file>
     <file>img/UI20/toggleswitch/unchecked-focus.svg</file>
     <file>img/UI20/alpha-background.png</file>
-    <file>img/UI20/spinbox-cursor-scroll.png</file>
-    <file>img/UI20/spinbox-down-arrow.png</file>
-    <file>img/UI20/spinbox-up-arrow.png</file>
 </qresource>
 <qresource prefix="/Breadcrumb">
-    <file>img/UI20/Breadcrumb/Next_level_arrow.svg</file>
     <file>img/UI20/Breadcrumb/arrow_left-default.svg</file>
     <file>img/UI20/Breadcrumb/arrow_left-default_hover.svg</file>
     <file>img/UI20/Breadcrumb/arrow_right-default.svg</file>
@@ -565,8 +276,6 @@
     <file alias="Palette/add-normal.png">img/UI20/colorpicker/palette-add-normal.png</file>
     <file alias="ColorGrid/eyedropper-normal.svg">img/UI20/colorpicker/colorgrid-eyedropper-normal.svg</file>
     <file alias="ColorGrid/toggle-normal-on.svg">img/UI20/colorpicker/colorgrid-toggle-normal-on.svg</file>
-    <file alias="PaletteCard/open.png">img/UI20/colorpicker/library-open.png</file>
-    <file alias="PaletteCard/closed.png">img/UI20/colorpicker/library-closed.png</file>
 </qresource>
 <qresource prefix="/AzQtFonts">
     <file>Fonts/Open_Sans/OpenSans-BoldItalic.ttf</file>
@@ -624,6 +333,9 @@
     <file alias="Audio.svg">img/UI20/Audio.svg</file>
     <file alias="Camera.svg">img/UI20/Camera.svg</file>
     <file alias="Delete.svg">img/UI20/Delete.svg</file>
+    <file alias="Favorites.svg">img/UI20/Favorites.svg</file>
+    <file alias="Favorite_File.svg">img/UI20/Favorite_File.svg</file>
+    <file alias="Favorite_Folder.svg">img/UI20/Favorite_Folder.svg</file>
     <file alias="Folder.svg">img/UI20/Folder.svg</file>
     <file alias="Folder-small.svg">img/UI20/Folder-small.svg</file>
     <file alias="Goto-next-level.svg">img/UI20/Goto-next-level.svg</file>

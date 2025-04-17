@@ -29,7 +29,7 @@ class HierarchyWidget
 
 public:
 
-    AZ_CLASS_ALLOCATOR(HierarchyWidget, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(HierarchyWidget, AZ::SystemAllocator);
 
     HierarchyWidget(EditorWindow* editorWindow);
     virtual ~HierarchyWidget();

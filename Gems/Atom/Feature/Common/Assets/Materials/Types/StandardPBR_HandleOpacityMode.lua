@@ -22,49 +22,16 @@ AlphaSource_Packed = 0
 AlphaSource_Split = 1
 AlphaSource_None = 2
 
-function ConfigureAlphaBlending(shaderItem) 
-    shaderItem:GetRenderStatesOverride():SetDepthEnabled(true)
-    shaderItem:GetRenderStatesOverride():SetDepthWriteMask(DepthWriteMask_Zero)
-    shaderItem:GetRenderStatesOverride():SetBlendEnabled(0, true)
-    shaderItem:GetRenderStatesOverride():SetBlendSource(0, BlendFactor_One)
-    shaderItem:GetRenderStatesOverride():SetBlendDest(0, BlendFactor_AlphaSourceInverse)
-    shaderItem:GetRenderStatesOverride():SetBlendOp(0, BlendOp_Add)
-end
-
-function ConfigureDualSourceBlending(shaderItem)
-    -- This blend multiplies the dest against color source 1, then adds color source 0.
-    shaderItem:GetRenderStatesOverride():SetDepthEnabled(true)
-    shaderItem:GetRenderStatesOverride():SetDepthWriteMask(DepthWriteMask_Zero)
-    shaderItem:GetRenderStatesOverride():SetBlendEnabled(0, true)
-    shaderItem:GetRenderStatesOverride():SetBlendSource(0, BlendFactor_One)
-    shaderItem:GetRenderStatesOverride():SetBlendDest(0, BlendFactor_ColorSource1)
-    shaderItem:GetRenderStatesOverride():SetBlendOp(0, BlendOp_Add)
-end
-
-function ResetAlphaBlending(shaderItem)
-    shaderItem:GetRenderStatesOverride():ClearDepthEnabled()
-    shaderItem:GetRenderStatesOverride():ClearDepthWriteMask()
-    shaderItem:GetRenderStatesOverride():ClearBlendEnabled(0)
-    shaderItem:GetRenderStatesOverride():ClearBlendSource(0)
-    shaderItem:GetRenderStatesOverride():ClearBlendDest(0)
-    shaderItem:GetRenderStatesOverride():ClearBlendOp(0)
-end
-
 function Process(context)
-    local opacityMode = context:GetMaterialPropertyValue_enum("mode")
 
-    local forwardPassEDS = context:GetShaderByTag("ForwardPass_EDS")
-
-    if(opacityMode == OpacityMode_Blended) then
-        ConfigureAlphaBlending(forwardPassEDS)
-        forwardPassEDS:SetDrawListTagOverride("transparent")
-    elseif(opacityMode == OpacityMode_TintedTransparent) then
-        ConfigureDualSourceBlending(forwardPassEDS)
-        forwardPassEDS:SetDrawListTagOverride("transparent")
-    else
-        ResetAlphaBlending(forwardPassEDS)
-        forwardPassEDS:SetDrawListTagOverride("") -- reset to default draw list
+    local opacityMode = OpacityMode_Opaque
+    if context:HasMaterialProperty("mode") then
+        opacityMode = context:GetMaterialPropertyValue_enum("mode")
     end
+    
+    context:SetInternalMaterialPropertyValue_bool("hasPerPixelClip", opacityMode == OpacityMode_Cutout)
+    context:SetInternalMaterialPropertyValue_bool("isTransparent", opacityMode == OpacityMode_Blended)
+    context:SetInternalMaterialPropertyValue_bool("isTintedTransparent", opacityMode == OpacityMode_TintedTransparent)
 end
 
 function ProcessEditor(context)

@@ -55,7 +55,7 @@ namespace AZStd::HasMemberInternal
 *     HasIsReadyMember<B>::value (== true)
 *     HasIsReadyMember<Der>::value (== false)
 */
-#define AZ_HAS_MEMBER(_HasName, _FunctionName, _ResultType, _ParamsSignature)                      \
+#define AZ_HAS_MEMBER_QUAL(_HasName, _FunctionName, _ResultType, _ParamsSignature, _Qual)          \
     template<class T, class = void>                                                                \
     class Has##_HasName                                                                            \
         : public AZStd::false_type                                                                 \
@@ -65,15 +65,19 @@ namespace AZStd::HasMemberInternal
     class Has##_HasName<T, AZStd::enable_if_t<AZStd::is_invocable_r_v<                             \
             _ResultType,                                                                           \
             decltype(::AZStd::HasMemberInternal::direct_member_box<AZStd::remove_cvref_t<T>,       \
-                _ResultType (AZStd::remove_cvref_t<T>::*) _ParamsSignature,                        \
+                _ResultType (AZStd::remove_cvref_t<T>::*) _ParamsSignature _Qual,                  \
                 &AZStd::remove_cvref_t<T>::_FunctionName                                           \
-                AZ_IDENTITY_128(AZ_FOR_EACH_UNWRAP(AZ_PREFIX_ARG_WITH_COMMA, _ParamsSignature))>)> \
+                AZ_FOR_EACH_UNWRAP(AZ_PREFIX_ARG_WITH_COMMA, _ParamsSignature)>)>                  \
     >>                                                                                             \
          : public AZStd::true_type                                                                 \
     {                                                                                              \
     };                                                                                             \
     template <class T>                                                                             \
     inline static constexpr bool Has##_HasName ## _v = Has##_HasName<T>::value;
+
+#define AZ_HAS_MEMBER(_HasName, _FunctionName, _ResultType, _ParamsSignature) \
+    AZ_HAS_MEMBER_QUAL(_HasName, _FunctionName, _ResultType, _ParamsSignature,)
+
 
 /**
 * AZ_HAS_MEMBER_INCLUDE_BASE detects if the class or any of its base classes
@@ -89,7 +93,7 @@ namespace AZStd::HasMemberInternal
 *     HasIsReadyIncludeBase<B>::value (== true)
 *     HasIsReadyIncludeBase<Der>::value (== true)
 */
-#define AZ_HAS_MEMBER_INCLUDE_BASE(_HasName, _FunctionName, _ResultType, _ParamsSignature)       \
+#define AZ_HAS_MEMBER_INCLUDE_BASE_QUAL(_HasName, _FunctionName, _ResultType, _ParamsSignature, _Qual) \
     template<class T, class = void>                                                              \
     class Has##_HasName                                                                          \
         : public AZStd::false_type                                                               \
@@ -98,9 +102,9 @@ namespace AZStd::HasMemberInternal
     template<class T>                                                                            \
     class Has##_HasName<T, AZStd::enable_if_t<AZStd::is_invocable_r_v<                           \
         _ResultType,                                                                             \
-        decltype(static_cast<_ResultType (AZStd::remove_cvref_t<T>::*) _ParamsSignature>(&AZStd::remove_cvref_t<T>::_FunctionName)), \
+        decltype(static_cast<_ResultType (AZStd::remove_cvref_t<T>::*) _ParamsSignature _Qual>(&AZStd::remove_cvref_t<T>::_FunctionName)), \
         AZStd::remove_cvref_t<T>                                                                 \
-        AZ_IDENTITY_128(AZ_FOR_EACH_UNWRAP(AZ_PREFIX_ARG_WITH_COMMA, _ParamsSignature))>         \
+        AZ_FOR_EACH_UNWRAP(AZ_PREFIX_ARG_WITH_COMMA, _ParamsSignature)>                          \
     >>                                                                                           \
          : public AZStd::true_type                                                               \
     {                                                                                            \
@@ -108,6 +112,8 @@ namespace AZStd::HasMemberInternal
     template <class T>                                                                           \
     inline static constexpr bool Has##_HasName ## _v = Has##_HasName<T>::value;
 
+#define AZ_HAS_MEMBER_INCLUDE_BASE(_HasName, _FunctionName, _ResultType, _ParamsSignature) \
+    AZ_HAS_MEMBER_INCLUDE_BASE_QUAL(_HasName, _FunctionName, _ResultType, _ParamsSignature,)
 
 /**
 * AZ_HAS_STATIC_MEMBER detects if the class or any of its base classes
@@ -136,7 +142,7 @@ namespace AZStd::HasMemberInternal
     class Has##_HasName<T, AZStd::enable_if_t<AZStd::is_invocable_r_v<                       \
             _ResultType,                                                                     \
             decltype(static_cast<_ResultType (*) _ParamsSignature>(&AZStd::remove_cvref_t<T>::_FunctionName)) \
-            AZ_IDENTITY_128(AZ_FOR_EACH_UNWRAP(AZ_PREFIX_ARG_WITH_COMMA, _ParamsSignature))> \
+            AZ_FOR_EACH_UNWRAP(AZ_PREFIX_ARG_WITH_COMMA, _ParamsSignature)>                  \
     >>                                                                                       \
          : public AZStd::true_type                                                           \
     {                                                                                        \

@@ -64,7 +64,7 @@ namespace AzFramework
 
         virtual ~SimpleAssetReferenceBase() { }
 
-        AZ_CLASS_ALLOCATOR(SimpleAssetReferenceBase, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SimpleAssetReferenceBase, AZ::SystemAllocator);
         AZ_RTTI(SimpleAssetReferenceBase, "{E16CA6C5-5C78-4AD9-8E9B-F8C1FB4D1DB8}");
 
         const AZStd::string& GetAssetPath() const { return m_assetPath; }
@@ -85,7 +85,7 @@ namespace AzFramework
                 AZStd::char_traits<char>,
                 AZStd::static_buffer_allocator<128, AZStd::alignment_of<char>::value> >;
 
-    inline const AZ::Uuid SimpleAssetReferenceTypeId = { "{D03D0CF6-9A61-4DBA-AC53-E62453CE940D}" };
+    inline constexpr AZ::Uuid SimpleAssetReferenceTypeId{ "{D03D0CF6-9A61-4DBA-AC53-E62453CE940D}" };
 
     /*!
      * Templated asset reference type.
@@ -98,7 +98,7 @@ namespace AzFramework
         : public SimpleAssetReferenceBase
     {
     public:
-        AZ_CLASS_ALLOCATOR(SimpleAssetReference<AssetType>, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SimpleAssetReference<AssetType>, AZ::SystemAllocator);
         AZ_RTTI((SimpleAssetReference, SimpleAssetReferenceTypeId, AssetType), SimpleAssetReferenceBase);
 
         static void Register(AZ::SerializeContext& context)
@@ -191,7 +191,7 @@ namespace AZ
     };
 
     //! This is being declared so that azrtti_typeid<AzFramework::SimpleAssetReference>() will work
-    AZ_TYPE_INFO_INTERNAL_VARIATION_GENERIC(AzFramework::SimpleAssetReference, AzFramework::SimpleAssetReferenceTypeId)
+    AZ_TYPE_INFO_TEMPLATE(AzFramework::SimpleAssetReference, AzFramework::SimpleAssetReferenceTypeId, AZ_TYPE_INFO_CLASS);
 }
 
 #endif // AZFRAMEWORK_SIMPLEASSET_H

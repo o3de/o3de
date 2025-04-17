@@ -40,14 +40,12 @@
 #include <AzToolsFramework/Thumbnails/SourceControlThumbnailBus.h>
 
 // Editor
+#include "QtUtilWin.h"
 #include "Settings.h"
 #include "MainWindow.h"
 #include "CheckOutDialog.h"
-#include "ISourceControl.h"
 #include "Dialogs/Generic/UserOptions.h"
-#include "Include/IObjectManager.h"
 #include "UsedResources.h"
-#include "Objects/BaseObject.h"
 #include "StringHelpers.h"
 #include "AutoDirectoryRestoreFileDialog.h"
 #include "EditorPreferencesDialog.h"
@@ -55,7 +53,9 @@
 namespace Platform
 {
     // Forward declare platform specific functions
-    bool RunEditorWithArg(const QString editor, const QString arg);
+    bool RunCommandWithArguments(const QString& command, const QStringList& argsList);
+    bool RunEditorWithArg(const QString& editor, const QString& arg);
+    bool OpenUri(const QUrl& uri);
     QString GetDefaultEditor(const Common::EditFileType fileType);
     QString MakePlatformFileEditString(QString pathToEdit, int lineToEdit);
     bool CreatePath(const QString& strPath);
@@ -892,7 +892,7 @@ bool CFileUtil::GetLatestFromSourceControl(const char* filename, QWidget* parent
         }
     );
 
-    BlockAndWait(scOpComplete, parentWindow, "Requesting latest verison of file...");
+    BlockAndWait(scOpComplete, parentWindow, "Requesting latest version of file...");
     return scOpSuccess;
 }
 
@@ -1840,6 +1840,8 @@ void CFileUtil::PopulateQMenu(QWidget* caller, QMenu* menu, AZStd::string_view f
 
 void CFileUtil::PopulateQMenu(QWidget* caller, QMenu* menu, AZStd::string_view fullGamePath, bool* isSelected)
 {
+    using namespace AzToolsFramework;
+    
     // Normalize the full path so we get consistent separators
     AZStd::string fullFilePath(fullGamePath);
     AzFramework::StringFunc::Path::Normalize(fullFilePath);
@@ -1893,7 +1895,9 @@ void CFileUtil::PopulateQMenu(QWidget* caller, QMenu* menu, AZStd::string_view f
 
     action = menu->addAction(QObject::tr("Copy Path To Clipboard"), [fullPath]() { QApplication::clipboard()->setText(fullPath); });
 
-    if (fileInfo.isFile() && GetIEditor()->IsSourceControlAvailable() && nFileAttr != SCC_FILE_ATTRIBUTE_INVALID)
+    AzToolsFramework::SourceControlState sourceControlState = AzToolsFramework::SourceControlState::Disabled;
+    AzToolsFramework::SourceControlConnectionRequestBus::BroadcastResult(sourceControlState, &AzToolsFramework::SourceControlConnectionRequests::GetSourceControlState);
+    if (fileInfo.isFile() && sourceControlState == AzToolsFramework::SourceControlState::Active && nFileAttr != SCC_FILE_ATTRIBUTE_INVALID)
     {
         bool isEnableSC = nFileAttr & SCC_FILE_ATTRIBUTE_MANAGED;
         bool isInPak = nFileAttr & SCC_FILE_ATTRIBUTE_INPAK;
@@ -1927,7 +1931,10 @@ void CFileUtil::PopulateQMenu(QWidget* caller, QMenu* menu, AZStd::string_view f
 
             action = menu->addAction(QObject::tr("Get Latest Version"), [fullPath, caller]()
             {
-                if (GetIEditor()->IsSourceControlAvailable())
+
+                AzToolsFramework::SourceControlState sourceControlState = AzToolsFramework::SourceControlState::Disabled;
+                AzToolsFramework::SourceControlConnectionRequestBus::BroadcastResult(sourceControlState, &AzToolsFramework::SourceControlConnectionRequests::GetSourceControlState);
+                if (sourceControlState == AzToolsFramework::SourceControlState::Active)
                 {
                     if (!CFileUtil::GetLatestFromSourceControl(fullPath.toUtf8().data(), caller))
                     {
@@ -1949,40 +1956,6 @@ void CFileUtil::PopulateQMenu(QWidget* caller, QMenu* menu, AZStd::string_view f
                 }
             });
             action->setDisabled(isEnableSC);
-        }
-    }
-}
-
-void CFileUtil::GatherAssetFilenamesFromLevel(std::set<QString>& rOutFilenames, bool bMakeLowerCase, bool bMakeUnixPath)
-{
-    rOutFilenames.clear();
-    CBaseObjectsArray objArr;
-    CUsedResources usedRes;
-
-    GetIEditor()->GetObjectManager()->GetObjects(objArr);
-
-    for (size_t i = 0, iCount = objArr.size(); i < iCount; ++i)
-    {
-        CBaseObject* pObj = objArr[i];
-
-        usedRes.files.clear();
-        pObj->GatherUsedResources(usedRes);
-
-        for (CUsedResources::TResourceFiles::iterator iter = usedRes.files.begin(); iter != usedRes.files.end(); ++iter)
-        {
-            QString tmpStr = (*iter);
-
-            if (bMakeLowerCase)
-            {
-                tmpStr = tmpStr.toLower();
-            }
-
-            if (bMakeUnixPath)
-            {
-                tmpStr = Path::ToUnixPath(tmpStr);
-            }
-
-            rOutFilenames.insert(tmpStr);
         }
     }
 }

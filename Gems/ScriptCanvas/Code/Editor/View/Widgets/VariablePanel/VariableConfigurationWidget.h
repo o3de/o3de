@@ -65,7 +65,7 @@ namespace ScriptCanvasEditor
         Q_OBJECT
 
     public:
-        AZ_CLASS_ALLOCATOR(VariableConfigurationWidget, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(VariableConfigurationWidget, AZ::SystemAllocator);
 
         VariableConfigurationWidget
             ( const ScriptCanvas::ScriptCanvasId& scriptCanvasId
@@ -110,8 +110,6 @@ namespace ScriptCanvasEditor
         void OnNameChanged(const QString& text);
 
         void OnContextMenuRequested(const QPoint& pos);
-
-        bool m_manipulatingSelection;
 
         AZStd::vector< AZStd::unique_ptr<AZ::Entity> > m_propertyHelpers;
 

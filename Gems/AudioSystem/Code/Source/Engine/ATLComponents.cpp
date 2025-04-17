@@ -71,7 +71,6 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     CAudioEventManager::~CAudioEventManager()
     {
-        Release();
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -84,7 +83,7 @@ namespace Audio
             const TAudioEventID nEventID = m_oAudioEventPool.GetNextID();
             IATLEventData* pNewEventData = nullptr;
             AudioSystemImplementationRequestBus::BroadcastResult(pNewEventData, &AudioSystemImplementationRequestBus::Events::NewAudioEventData, nEventID);
-            auto pNewEvent = azcreate(CATLEvent, (nEventID, eAS_AUDIO_SYSTEM_IMPLEMENTATION, pNewEventData), Audio::AudioSystemAllocator, "ATLEvent");
+            auto pNewEvent = azcreate(CATLEvent, (nEventID, eAS_AUDIO_SYSTEM_IMPLEMENTATION, pNewEventData), Audio::AudioSystemAllocator);
             m_oAudioEventPool.m_cReserved.push_back(pNewEvent);
         }
 
@@ -209,11 +208,11 @@ namespace Audio
 
             IATLEventData* pNewEventData = nullptr;
             AudioSystemImplementationRequestBus::BroadcastResult(pNewEventData, &AudioSystemImplementationRequestBus::Events::NewAudioEventData, nNewID);
-            pEvent = azcreate(CATLEvent, (nNewID, eAS_AUDIO_SYSTEM_IMPLEMENTATION, pNewEventData), Audio::AudioSystemAllocator, "ATLEvent");
+            pEvent = azcreate(CATLEvent, (nNewID, eAS_AUDIO_SYSTEM_IMPLEMENTATION, pNewEventData), Audio::AudioSystemAllocator);
 
             if (!pEvent)
             {
-                AZLOG_ERROR("Failed to get a new instance of an ATLEvent from the implementation.");
+                AZLOG_ERROR("%s", "Failed to get a new instance of an ATLEvent from the implementation.");
             }
         }
 
@@ -462,12 +461,12 @@ namespace Audio
 
             if (unallocatedMemorySize >= minimalMemorySize)
             {
-                pObject = azcreate(CATLAudioObject, (nNewID, pObjectData), Audio::AudioSystemAllocator, "ATLAudioObject");
+                pObject = azcreate(CATLAudioObject, (nNewID, pObjectData), Audio::AudioSystemAllocator);
             }
 
             if (!pObject)
             {
-                AZLOG_ERROR("Failed to get a new instance of an AudioObject from the implementation. "
+                AZLOG_ERROR("%s", "Failed to get a new instance of an AudioObject from the implementation. "
                     "If this limit was reached from legitimate content creation and not a scripting error, "
                     "try increasing the Capacity of Audio::AudioSystemAllocator.");
                 //failed to get a new instance from the implementation
@@ -523,7 +522,7 @@ namespace Audio
             const auto nObjectID = AudioObjectIDFactory::GetNextID();
             IATLAudioObjectData* pObjectData = nullptr;
             AudioSystemImplementationRequestBus::BroadcastResult(pObjectData, &AudioSystemImplementationRequestBus::Events::NewAudioObjectData, nObjectID);
-            auto pObject = azcreate(CATLAudioObject, (nObjectID, pObjectData), Audio::AudioSystemAllocator, "ATLAudioObject");
+            auto pObject = azcreate(CATLAudioObject, (nObjectID, pObjectData), Audio::AudioSystemAllocator);
             m_cObjectPool.m_cReserved.push_back(pObject);
         }
 
@@ -689,7 +688,6 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     CAudioListenerManager::~CAudioListenerManager()
     {
-        Release();
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -699,7 +697,7 @@ namespace Audio
 
         // Default listener...
         AudioSystemImplementationRequestBus::BroadcastResult(pNewListenerData, &AudioSystemImplementationRequestBus::Events::NewDefaultAudioListenerObjectData, m_nDefaultListenerID);
-        m_pDefaultListenerObject = azcreate(CATLListenerObject, (m_nDefaultListenerID, pNewListenerData), Audio::AudioSystemAllocator, "ATLListenerObject-Default");
+        m_pDefaultListenerObject = azcreate(CATLListenerObject, (m_nDefaultListenerID, pNewListenerData), Audio::AudioSystemAllocator);
         if (m_pDefaultListenerObject)
         {
             m_cActiveListeners[m_nDefaultListenerID] = m_pDefaultListenerObject;
@@ -710,7 +708,7 @@ namespace Audio
         {
             const TAudioObjectID listenerId = AudioObjectIDFactory::GetNextID();
             AudioSystemImplementationRequestBus::BroadcastResult(pNewListenerData, &AudioSystemImplementationRequestBus::Events::NewAudioListenerObjectData, listenerId);
-            auto listenerObject = azcreate(CATLListenerObject, (listenerId, pNewListenerData), Audio::AudioSystemAllocator, "ATLListenerObject");
+            auto listenerObject = azcreate(CATLListenerObject, (listenerId, pNewListenerData), Audio::AudioSystemAllocator);
             m_cListenerPool.push_back(listenerObject);
         }
     }
@@ -722,21 +720,27 @@ namespace Audio
         {
             m_cActiveListeners.erase(m_nDefaultListenerID);
 
-            AudioSystemImplementationRequestBus::Broadcast(&AudioSystemImplementationRequestBus::Events::DeleteAudioListenerObjectData, m_pDefaultListenerObject->m_pImplData);
+            AudioSystemImplementationRequestBus::Broadcast(
+                &AudioSystemImplementationRequestBus::Events::DeleteAudioListenerObjectData, m_pDefaultListenerObject->m_pImplData);
             azdestroy(m_pDefaultListenerObject, Audio::AudioSystemAllocator);
             m_pDefaultListenerObject = nullptr;
         }
 
-        // Release any remaining active audio listeners back to the listener pool
-        for (auto listener : m_cActiveListeners)
+        // Release any remaining active audio listeners
+        for (auto listenerPair : m_cActiveListeners)
         {
-            ReleaseID(listener.first);
+            AudioSystemImplementationRequestBus::Broadcast(
+                &AudioSystemImplementationRequestBus::Events::DeleteAudioListenerObjectData, listenerPair.second->m_pImplData);
+            azdestroy(listenerPair.second, Audio::AudioSystemAllocator);
         }
 
-        // Delete all from the audio listener pool
+        m_cActiveListeners.clear();
+
+        // Delete all remaining listeners from the audio listener pool
         for (auto listener : m_cListenerPool)
         {
-            AudioSystemImplementationRequestBus::Broadcast(&AudioSystemImplementationRequestBus::Events::DeleteAudioListenerObjectData, listener->m_pImplData);
+            AudioSystemImplementationRequestBus::Broadcast(
+                &AudioSystemImplementationRequestBus::Events::DeleteAudioListenerObjectData, listener->m_pImplData);
             azdestroy(listener, Audio::AudioSystemAllocator);
         }
 
@@ -761,7 +765,7 @@ namespace Audio
         }
         else
         {
-            AZLOG_WARN("CAudioListenerManager::ReserveID - Reserved pool of pre-allocated Audio Listeners has been exhausted!");
+            AZLOG_WARN("%s", "CAudioListenerManager::ReserveID - Reserved pool of pre-allocated Audio Listeners has been exhausted!");
         }
 
         return bSuccess;
@@ -1069,7 +1073,7 @@ namespace Audio
                 auto it = m_rPreloadRequests.find(preloadRequestId);
                 if (it == m_rPreloadRequests.end())
                 {
-                    auto preloadRequest = azcreate(CATLPreloadRequest, (preloadRequestId, dataScope, autoLoad, fileEntryIds), Audio::AudioSystemAllocator, "ATLPreloadRequest");
+                    auto preloadRequest = azcreate(CATLPreloadRequest, (preloadRequestId, dataScope, autoLoad, fileEntryIds), Audio::AudioSystemAllocator);
                     m_rPreloadRequests[preloadRequestId] = preloadRequest;
 
                 #if !defined(AUDIO_RELEASE)
@@ -1226,7 +1230,7 @@ namespace Audio
 
                     if (environmentImplData)
                     {
-                        auto environmentImpl = azcreate(CATLEnvironmentImpl, (receiver, environmentImplData), Audio::AudioSystemAllocator, "ATLEnvironmentImpl");
+                        auto environmentImpl = azcreate(CATLEnvironmentImpl, (receiver, environmentImplData), Audio::AudioSystemAllocator);
                         envImpls.push_back(environmentImpl);
                     }
 
@@ -1235,7 +1239,7 @@ namespace Audio
 
                 if (!envImpls.empty())
                 {
-                    auto newEnvironment = azcreate(CATLAudioEnvironment, (atlEnvironmentId, dataScope, envImpls), Audio::AudioSystemAllocator, "ATLAudioEnvironment");
+                    auto newEnvironment = azcreate(CATLAudioEnvironment, (atlEnvironmentId, dataScope, envImpls), Audio::AudioSystemAllocator);
                     m_rEnvironments[atlEnvironmentId] = newEnvironment;
 
                 #if !defined(AUDIO_RELEASE)
@@ -1285,7 +1289,7 @@ namespace Audio
 
                     if (triggerImplData)
                     {
-                        auto triggerImpl = azcreate(CATLTriggerImpl, (++m_nTriggerImplIDCounter, atlTriggerId, receiver, triggerImplData), Audio::AudioSystemAllocator, "ATLTriggerImpl");
+                        auto triggerImpl = azcreate(CATLTriggerImpl, (++m_nTriggerImplIDCounter, atlTriggerId, receiver, triggerImplData), Audio::AudioSystemAllocator);
                         triggerImpls.push_back(triggerImpl);
                     }
 
@@ -1294,7 +1298,7 @@ namespace Audio
 
                 if (!triggerImpls.empty())
                 {
-                    auto newTrigger = azcreate(CATLTrigger, (atlTriggerId, dataScope, triggerImpls), Audio::AudioSystemAllocator, "ATLTrigger");
+                    auto newTrigger = azcreate(CATLTrigger, (atlTriggerId, dataScope, triggerImpls), Audio::AudioSystemAllocator);
                     m_rTriggers[atlTriggerId] = newTrigger;
 
                 #if !defined(AUDIO_RELEASE)
@@ -1323,7 +1327,7 @@ namespace Audio
 
             if ((atlSwitchId != INVALID_AUDIO_CONTROL_ID) && (m_rSwitches.find(atlSwitchId) == m_rSwitches.end()))
             {
-                auto newSwitch = azcreate(CATLSwitch, (atlSwitchId, dataScope), Audio::AudioSystemAllocator, "ATLSwitch");
+                auto newSwitch = azcreate(CATLSwitch, (atlSwitchId, dataScope), Audio::AudioSystemAllocator);
 
             #if !defined(AUDIO_RELEASE)
                 m_pDebugNameStore->AddAudioSwitch(atlSwitchId, atlSwitchName);
@@ -1362,14 +1366,14 @@ namespace Audio
 
                             if (newSwitchStateImplData)
                             {
-                                auto switchStateImpl = azcreate(CATLSwitchStateImpl, (receiver, newSwitchStateImplData), Audio::AudioSystemAllocator, "ATLSwitchStateImpl");
+                                auto switchStateImpl = azcreate(CATLSwitchStateImpl, (receiver, newSwitchStateImplData), Audio::AudioSystemAllocator);
                                 switchStateImplVec.push_back(switchStateImpl);
                             }
 
                             stateImplNode = stateImplNode->next_sibling(nullptr, 0, false);
                         }
 
-                        auto newState = azcreate(CATLSwitchState, (atlSwitchId, atlStateId, switchStateImplVec), Audio::AudioSystemAllocator, "ATLSwitchState");
+                        auto newState = azcreate(CATLSwitchState, (atlSwitchId, atlStateId, switchStateImplVec), Audio::AudioSystemAllocator);
                         newSwitch->cStates[atlStateId] = newState;
 
                     #if !defined(AUDIO_RELEASE)
@@ -1420,7 +1424,7 @@ namespace Audio
 
                     if (rtpcImplData)
                     {
-                        auto rtpcImpl = azcreate(CATLRtpcImpl, (receiver, rtpcImplData), Audio::AudioSystemAllocator, "ATLRtpcImpl");
+                        auto rtpcImpl = azcreate(CATLRtpcImpl, (receiver, rtpcImplData), Audio::AudioSystemAllocator);
                         rtpcImpls.push_back(rtpcImpl);
                     }
 
@@ -1429,7 +1433,7 @@ namespace Audio
 
                 if (!rtpcImpls.empty())
                 {
-                    auto newRtpc = azcreate(CATLRtpc, (atlRtpcId, dataScope, rtpcImpls), Audio::AudioSystemAllocator, "ATLRtpc");
+                    auto newRtpc = azcreate(CATLRtpc, (atlRtpcId, dataScope, rtpcImpls), Audio::AudioSystemAllocator);
                     m_rRtpcs[atlRtpcId] = newRtpc;
 
                 #if !defined(AUDIO_RELEASE)
@@ -1476,7 +1480,7 @@ namespace Audio
 
                     if (internalSwitchId != INVALID_AUDIO_CONTROL_ID && internalStateId != INVALID_AUDIO_SWITCH_STATE_ID)
                     {
-                        switchStateImpl = azcreate(SATLSwitchStateImplData_internal, (internalSwitchId, internalStateId), Audio::AudioSystemAllocator, "ATLSwitchStateImplData_internal");
+                        switchStateImpl = azcreate(SATLSwitchStateImplData_internal, (internalSwitchId, internalStateId), Audio::AudioSystemAllocator);
                     }
                 }
             }

@@ -248,7 +248,7 @@ namespace AZ::IO
             m_threadData.m_streamStack->UpdateStatus(m_stackStatus);
             if (m_stackStatus.m_isIdle)
             {
-                auto duration = AZStd::chrono::system_clock::now() - m_processingStartTime;
+                auto duration = AZStd::chrono::steady_clock::now() - m_processingStartTime;
                 auto durationSec = AZStd::chrono::duration_cast<AZStd::chrono::duration<double>>(duration);
                 m_processingSpeedStat.PushEntry(m_processingSize / durationSec.count());
                 m_processingSize = 0;
@@ -316,7 +316,7 @@ namespace AZ::IO
 #if AZ_STREAMER_ADD_EXTRA_PROFILING_INFO
                 if (m_processingSize == 0)
                 {
-                    m_processingStartTime = AZStd::chrono::system_clock::now();
+                    m_processingStartTime = AZStd::chrono::steady_clock::now();
                 }
 #endif
 
@@ -397,7 +397,7 @@ namespace AZ::IO
         }
 
 #if AZ_STREAMER_ADD_EXTRA_PROFILING_INFO
-        AZStd::chrono::system_clock::time_point now = AZStd::chrono::system_clock::now();
+        AZStd::chrono::steady_clock::time_point now = AZStd::chrono::steady_clock::now();
         auto visitor = [this, now](auto&& args) -> void
 #else
         auto visitor = [](auto&& args) -> void
@@ -501,6 +501,11 @@ namespace AZ::IO
 
     auto Scheduler::Thread_PrioritizeRequests(const FileRequest* first, const FileRequest* second) const -> Order
     {
+        if (first == second)
+        {
+            return Order::Equal;
+        }
+
         // Sort by order priority of the command in the request. This allows to for instance have cancel request
         // always happen before any other requests.
         auto order = [](auto&& args)
@@ -544,7 +549,12 @@ namespace AZ::IO
             }
 
             // If neither has started and have the same priority, prefer to start the closest deadline.
-            return firstRead->m_deadline <= secondRead->m_deadline ? Order::FirstRequest : Order::SecondRequest;
+            if (firstRead->m_deadline == secondRead->m_deadline)
+            {
+                return Order::Equal;
+            }
+
+            return firstRead->m_deadline < secondRead->m_deadline ? Order::FirstRequest : Order::SecondRequest;
         }
 
         // Check if one of the requests is in panic and prefer to prioritize that request
@@ -593,7 +603,13 @@ namespace AZ::IO
             s64 secondReadOffset = AZStd::visit(offset, second->GetCommand());
             s64 firstSeekDistance = abs(aznumeric_cast<s64>(m_threadData.m_lastFileOffset) - firstReadOffset);
             s64 secondSeekDistance = abs(aznumeric_cast<s64>(m_threadData.m_lastFileOffset) - secondReadOffset);
-            return firstSeekDistance <= secondSeekDistance ? Order::FirstRequest : Order::SecondRequest;
+
+            if (firstSeekDistance == secondSeekDistance)
+            {
+                return Order::Equal;
+            }
+            
+            return firstSeekDistance < secondSeekDistance ? Order::FirstRequest : Order::SecondRequest;
         }
 
         // Prefer to continue in the same file so prioritize the request that's in the same file
@@ -612,7 +628,7 @@ namespace AZ::IO
 #endif
         AZ_PROFILE_FUNCTION(AzCore);
 
-        AZStd::chrono::system_clock::time_point now = AZStd::chrono::system_clock::now();
+        AZStd::chrono::steady_clock::time_point now = AZStd::chrono::steady_clock::now();
         auto& pendingQueue = m_context.GetPreparedRequests();
 
         m_threadData.m_streamStack->UpdateCompletionEstimates(now, m_threadData.m_internalPendingRequests,
@@ -625,6 +641,13 @@ namespace AZ::IO
                 "Scheduler::Thread_ScheduleRequests - Sorting %i requests", m_context.GetNumPreparedRequests());
             auto sorter = [this](const FileRequest* lhs, const FileRequest* rhs) -> bool
             {
+                if (lhs == rhs)
+                {
+                    // AZStd::sort may compare an element to itself; 
+                    //   it's required this condition remain consistent and return false.
+                    return false;
+                }
+
                 Order order = Thread_PrioritizeRequests(lhs, rhs);
                 switch (order)
                 {

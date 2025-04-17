@@ -21,11 +21,15 @@
 
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Memory/SystemAllocator.h> // Used as the allocator for most components.
+#include <AzCore/Memory/ChildAllocatorSchema.h>
 #include <AzCore/Outcome/Outcome.h>
+#include <AzCore/PlatformDef.h> // Needed for Component_Platform.inl include
 #include <AzCore/std/containers/unordered_set.h>
 
 namespace AZ
 {
+    AZ_CHILD_ALLOCATOR_WITH_NAME(ComponentAllocator, "ComponentAllocator", "{1F0B962C-2D9D-414C-ABF1-E93E83C07A18}", SystemAllocator);
+
     class Entity;
     class ComponentDescriptor;
 
@@ -44,9 +48,11 @@ namespace AZ
     public:
 
         /**
-         * Adds run-time type information to the component.
+         * Forward declare run-time type information to the component.
          */
-        AZ_RTTI(AZ::Component, "{EDFCB2CF-F75D-43BE-B26B-F35821B29247}");
+        AZ_TYPE_INFO_WITH_NAME_DECL(Component);
+        AZ_RTTI_NO_TYPE_INFO_DECL();
+        AZ_CLASS_ALLOCATOR_DECL
 
         /**
          * Initializes a component's internals.
@@ -109,7 +115,7 @@ namespace AZ
         * to the wrapped component's ID.
         * @return The type ID of the component.
         */
-        virtual const TypeId& GetUnderlyingComponentType() const { return RTTI_GetType(); }
+        virtual TypeId GetUnderlyingComponentType() const { return RTTI_GetType(); }
 
         /**
          * Sets the component ID.
@@ -117,6 +123,16 @@ namespace AZ
          * @param id The ID to assign to the component.
          */
         void SetId(const ComponentId& id)   { m_id = id; }
+
+        //! Sets the provided string as the serialized identifier for the component. This should be done only for editor components
+        //! since those are the only ones that'll be written to disk.
+        //! @param serializedIdentifer The unique identifier for this component within the entity it lives in.
+        virtual void SetSerializedIdentifier(AZStd::string serializedIdentifer);
+
+        //! Gets the serialzied identifier of this component within an entity. This will be a non-empty string for components that
+        //! inherit from EditorComponentBase. For all others, it'll be empty.
+        //! @return The serialized identifier of this component.
+        virtual AZStd::string GetSerializedIdentifier() const;
 
         /**
         * Override to conduct per-component or per-slice validation logic during slice asset processing.
@@ -227,7 +243,10 @@ namespace AZ
          * This function is called by the entity.
          * @param entity The current entity.
          */
-        void SetEntity(Entity* entity);
+        virtual void SetEntity(Entity* entity);
+
+        //! Function to call after setting the entity in this component.
+        virtual void OnAfterEntitySet();
 
         /**
          * Reflects the Component class.
@@ -245,39 +264,84 @@ namespace AZ
      * This macro is typically included in other macros, such as AZ_COMPONENT, to
      * create a component.
      */
-    #define AZ_COMPONENT_BASE(_ComponentClass, ...)                                                                                     \
-    AZ_CLASS_ALLOCATOR(_ComponentClass, AZ::SystemAllocator, 0)                                                                         \
+    #define AZ_COMPONENT_BASE(_ComponentClass)                                                                                          \
     template<class Comp, class Void> friend class AZ::HasComponentReflect;                                                              \
     template<class Comp, class Void> friend class AZ::HasComponentProvidedServices;                                                     \
     template<class Comp, class Void> friend class AZ::HasComponentDependentServices;                                                    \
     template<class Comp, class Void> friend class AZ::HasComponentRequiredServices;                                                     \
     template<class Comp, class Void> friend class AZ::HasComponentIncompatibleServices;                                                 \
     static AZ::ComponentDescriptor* CreateDescriptor()                                                                                  \
-    {                                                                                                                                   \
-            AZ::ComponentDescriptor* descriptor = nullptr;                                                                              \
-            AZ::ComponentDescriptorBus::EventResult(descriptor, _ComponentClass::RTTI_Type(), &AZ::ComponentDescriptor::GetDescriptor); \
-            if (descriptor)                                                                                                             \
-            {                                                                                                                           \
-                /* Compare strings first, then pointers.  If we compare pointers first, different strings will give the wrong error message */ \
-                if (strcmp(descriptor->GetName(), _ComponentClass::RTTI_TypeName()) != 0)                                               \
-                {                                                                                                                       \
-                    AZ_Error("Component", false, "Two different components have the same UUID (%s), which is not allowed.\n"            \
-                        "Change the UUID on one of them.\nComponent A: %s\nComponent B: %s",                                            \
-                        _ComponentClass::RTTI_Type().ToString<AZStd::string>().c_str(), descriptor->GetName(), _ComponentClass::RTTI_TypeName());          \
-                    return nullptr;                                                                                                     \
-                }                                                                                                                       \
-                if (descriptor->GetName() != _ComponentClass::RTTI_TypeName())                                                     \
-                {                                                                                                                       \
-                    AZ_Error("Component", false, "The same component UUID (%s) / name (%s) was registered twice.  This isn't allowed, " \
-                             "it can cause lifetime management issues / crashes.\nThis situation can happen by declaring a component "  \
-                             "in a header and registering it from two different Gems.\n",                                               \
-                        _ComponentClass::RTTI_Type().ToString<AZStd::string>().c_str(), descriptor->GetName());                         \
-                    return nullptr;                                                                                                     \
-                }                                                                                                                       \
-                return descriptor;                                                                                                      \
-            }                                                                                                                           \
-            return aznew DescriptorType;                                                                                                \
+    { \
+        static const char* s_typeName = _ComponentClass::RTTI_TypeName(); \
+        static const AZ::TypeId s_typeId = _ComponentClass::RTTI_Type(); \
+        AZ::ComponentDescriptor* descriptor = nullptr; \
+        AZ::ComponentDescriptorBus::EventResult(descriptor, s_typeId, &AZ::ComponentDescriptor::GetDescriptor); \
+        if (descriptor) \
+        { \
+            /* Compare strings first, then pointers. */ \
+            if (descriptor->GetName() != AZStd::string_view(s_typeName)) \
+            { \
+                AZ_Error("Component", false, "Two different components have the same UUID (%s), which is not allowed.\n" \
+                    "Change the UUID on one of them.\nComponent A: %s\nComponent B: %s", \
+                    s_typeId.ToFixedString().c_str(), descriptor->GetName(), s_typeName); \
+                return nullptr; \
+            } \
+            return descriptor; \
+        } \
+        return aznew DescriptorType; \
     }
+
+    //! Declares the functions needed to make the component work with the Component Descriptor system
+    //! Does not provide any definitions, nor added AZ_CLASS_ALLOCATOR for the type
+    #define AZ_COMPONENT_BASE_DECL() \
+    template<class Comp, class Void> friend class AZ::HasComponentReflect; \
+    template<class Comp, class Void> friend class AZ::HasComponentProvidedServices; \
+    template<class Comp, class Void> friend class AZ::HasComponentDependentServices; \
+    template<class Comp, class Void> friend class AZ::HasComponentRequiredServices; \
+    template<class Comp, class Void> friend class AZ::HasComponentIncompatibleServices; \
+    static AZ::ComponentDescriptor* CreateDescriptor();
+
+    #define AZ_COMPONENT_BASE_IMPL_0(_ComponentClass, _Inline, _TemplateParamsParen) \
+    AZ_TYPE_INFO_SIMPLE_TEMPLATE_ID _TemplateParamsParen \
+    _Inline AZ::ComponentDescriptor* _ComponentClass AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST _TemplateParamsParen ::CreateDescriptor() \
+    { \
+        static const char* s_typeName = _ComponentClass::RTTI_TypeName(); \
+        static const AZ::TypeId s_typeId = _ComponentClass::RTTI_Type(); \
+        AZ::ComponentDescriptor* descriptor = nullptr; \
+        AZ::ComponentDescriptorBus::EventResult(descriptor, s_typeId, &AZ::ComponentDescriptor::GetDescriptor); \
+        if (descriptor) \
+        { \
+            /* Compare strings first, then pointers. */ \
+            if (descriptor->GetName() != AZStd::string_view(s_typeName)) \
+            { \
+                AZ_Error("Component", false, "Two different components have the same UUID (%s), which is not allowed.\n" \
+                    "Change the UUID on one of them.\nComponent A: %s\nComponent B: %s", \
+                    s_typeId.ToFixedString().c_str(), descriptor->GetName(), s_typeName); \
+                return nullptr; \
+            } \
+            return descriptor; \
+        } \
+        return aznew DescriptorType; \
+    }
+
+    //! Implements the CreateDescriptor function
+    //! If the Component Class is a template, the variadic arguments
+    //! are AZ_TYPE_INFO_CLASS, AZ_TYPE_INFO_AUTO placeholder parameters
+    //! that can be used to create an out of line definition
+    #define AZ_COMPONENT_BASE_IMPL(_ComponentClass, ...) \
+        AZ_COMPONENT_BASE_IMPL_0( \
+            _ComponentClass,, \
+            AZ_WRAP(AZ_UNWRAP(__VA_ARGS__)) \
+        )
+
+    //! Implements the CreateDescriptor function with the `inline` keyword in front of the function signature
+    //! This is suitable for adding an implementation to an .inl or header file
+    #define AZ_COMPONENT_BASE_IMPL_INLINE(_ComponentClass, ...) \
+        AZ_COMPONENT_BASE_IMPL_0( \
+            _ComponentClass, \
+            inline, \
+            AZ_WRAP(AZ_UNWRAP(__VA_ARGS__)) \
+        )
 
     /**
      * Declares a descriptor class.
@@ -289,7 +353,7 @@ namespace AZ
      */
     #define AZ_COMPONENT_INTRUSIVE_DESCRIPTOR_TYPE(_ComponentClass)         \
     friend class AZ::ComponentDescriptorDefault<_ComponentClass>;           \
-    typedef AZ::ComponentDescriptorDefault<_ComponentClass> DescriptorType;
+    using DescriptorType = AZ::ComponentDescriptorDefault<_ComponentClass>;
 
     /**
      * Declares a component with the default settings.
@@ -307,10 +371,152 @@ namespace AZ
      * You are not required to use the AZ_COMPONENT macro if you want to implement your own creation
      * functions by calling AZ_CLASS_ALLOCATOR, AZ_RTTI, and so on.
      */
-    #define AZ_COMPONENT(_ComponentClass, ...)                  \
-    AZ_RTTI(_ComponentClass, __VA_ARGS__, AZ::Component)        \
-    AZ_COMPONENT_INTRUSIVE_DESCRIPTOR_TYPE(_ComponentClass)     \
-    AZ_COMPONENT_BASE(_ComponentClass, __VA_ARGS__)
+
+    #define AZ_COMPONENT_WITH_ALLOCATOR(_ComponentClass, _Allocator, ...) \
+    AZ_RTTI(_ComponentClass, __VA_ARGS__, AZ::Component) \
+    AZ_COMPONENT_INTRUSIVE_DESCRIPTOR_TYPE(_ComponentClass) \
+    AZ_COMPONENT_BASE(_ComponentClass) \
+    AZ_CLASS_ALLOCATOR(_ComponentClass, _Allocator)
+
+    #define AZ_COMPONENT(_ComponentClass, ...) AZ_COMPONENT_WITH_ALLOCATOR(_ComponentClass, AZ::ComponentAllocator, __VA_ARGS__)
+
+    //! Declares the required AzTypeInfo(GetO3deTypeName and GetO3deTypeId),
+    //! RTTI (RTTI_TypeName and RTTI_Type),
+    //! static placement allocator functions(operator new and operator delete)
+    //! and Component Descriptor functions (CreateDescriptor).
+    //! This macro does not provide any definitions for those functions
+    //! and it's primary use is to avoid function definitions and include dependencies
+    //! that are needed in a header to reduce compilation time
+    #define AZ_COMPONENT_DECL(_ComponentClass) \
+    AZ_TYPE_INFO_WITH_NAME_DECL(_ComponentClass) \
+    AZ_RTTI_NO_TYPE_INFO_DECL() \
+    AZ_COMPONENT_INTRUSIVE_DESCRIPTOR_TYPE(AZ_USE_FIRST_ARG(AZ_UNWRAP(_ComponentClass))) \
+    AZ_COMPONENT_BASE_DECL() \
+    AZ_CLASS_ALLOCATOR_DECL
+
+    // Helper macro for allowing expansion of macro parameters
+    // in the second pass over the AZ_COMPONENT_IMPL when making a call
+    // The reason these macros are needed, is to avoid recursively invoking
+    // the same call helper macro.
+    // During second pass over a macro the preprocessor suppresses expansion of the token it processing
+    // So if there are two macros called
+    // #define FOO() AZ_MACRO_CALL(AZ_JOIN(BAR, _1))
+    // #define BAR_1() "7"
+    // Then using the AZ_MACRO_CALL macro to call the FOO macro
+    // such as `AZ_MACRO_CALL(FOO)` would not expand the inner call to `AZ_MACRO_CALL(AZ_JOIN(BAR, _1))`
+    #define AZ_COMPONENT_MACRO_CALL_II(macro, ...) macro(__VA_ARGS__)
+    #define AZ_COMPONENT_MACRO_CALL_I(macro, ...) AZ_COMPONENT_MACRO_CALL_II(macro, __VA_ARGS__)
+    #define AZ_COMPONENT_MACRO_CALL(macro, ...) AZ_COMPONENT_MACRO_CALL_I(macro, __VA_ARGS__)
+
+    //! Implements the the required definitions
+    //! needed for AzTypeInfo, RTTI, Allocator opt-in and
+    //! Component Descriptor creation
+    //! This macro pairs with the AZ_COMPONENT_DECL macro.
+    //! It is suitable for used in a cpp file within the same namespace
+    //! where the component class was created
+    //! @param _ComponentClassOrTemplate The C++ identifier associated with the component class
+    //! NOTES: The first argument should be either the class name for a regular class or when specifying the arguments for a class template
+    //! the simple-template-name  with no angle brackets(i.e `ComponentTemplate`, not `ComponentTemplate<T>`)
+    //! inside of an inner set of parenthesis, followed by 0 or template placeholder arguments
+    //! ex. class `class EditorInspectorComponent`
+    //!     -> `AZ_COMPONENT_IMPL(EditorInspectorComponent, ...)`
+    //! ex. class template `template<class, class, class> class EditorComponentAdapter`
+    //!    -> `AZ_COMPONENT_IMPL_INLINE((EditorComponentAdapter, AZ_CLASS, AZ_CLASS, AZ_CLASS), ...);
+    //! @param _DisplayName cstring which is used by AzTypeInfo as the TypeName for lookups
+    //! @param _Uuid unique identifier associated with AzTypeInfo and pairs with the _DisplayName
+    //! @param __VA_ARGS__ optional parameters used for specifying the base class of the component
+    //!        This is only used for RTTI to allow conversions from base pointer to derived types
+    //!        using azrtti_typeof and azrtti_cast
+    //!
+    //! The following is examples illustrate how to use the macro for a regular component class
+    //! ```
+    //! class TestToolGemSystemComponent : public BaseSystemComponent {};
+    //!  //... Later in a cpp file
+    //! AZ_COMPONENT_IMPL(TestToolGemSystemComponent, "TestToolGemSystemComponent", TestToolGemSystemComponentTypeId, BaseSystemComponent)
+    //! ```
+    //! Macro call breakdown:
+    //! 1. `AZ_TYPE_INFO_WITH_NAME_IMPL`: The call to `AZ_TYPE_INFO_WITH_NAME_IMPL` expects the template placeholder arguments to be passed as variadic arguments
+    //! while the simple template name is passed as the first parameter.
+    //! So the `_ComponentClassOrTemplate` has the first argument queried from it if it was wrapped in parenthesis
+    //! If `_ComponentClassOrTemplate` isn't wrapped in parenthesis it is returned as is
+    //! Any template arguments are supplied after the `_Uuid` argument via using the `AZ_INTERNAL_SKIP_FIRST` macro
+    //! combined with the AZ_VA_OPT to optionally add a comma after the `_Uuid` argument if there are any template parameters
+    //!
+    //! 2. `AZ_RTTI_NO_TYPE_INFO_IMPL`: The call to `AZ_RTTI_NO_TYPE_INFO_IMPL` expects the template placeholder arguments
+    //! to be wrapped in parenthesis along with the simple template name in the first argument.
+    //! Therefore no special processing needs to be done for it here, as the `AZ_RTTI_NO_TYPE_INFO_IMPL` will split out the
+    //! template placeholder arguments
+    //!
+    //! 3. `AZ_COMPONENT_BASE_IMPL`: The call to `AZ_COMPONENT_BASE_IMPL` requires the template placeholder arguments to be supplied as variadic args,
+    //! with the simple template name as the first parameter.
+    //! It goes through the same transformation as the `AZ_TYPE_INFO_WITH_NAME_IMPL` macro to split out the template name
+    //! from the template placeholder parameters via parenthesis unwrapping and using the `AZ_INTERNAL_USE_FIRST_ELEMENT` and `AZ_INTERNAL_SKIP_FIRST`
+    //! macros
+    //!
+    //! 4. `AZ_CLASS_ALLOCATOR_IMPL`: The call to `AZ_CLASS_ALLOCATOR_IMPL` requires template placeholder argument
+    //! to be wrapped in parenthesis with the simple template name as the entire first argument
+    //! This is the same way wrapping that is needed for the `AZ_RTTI_NO_TYPE_INFO_IMPL` macro when supplying a template class
+    //!
+    //! Next is an example of using the macro with a template class
+    //! ```
+    //! template<class T, class U, size_t N>
+    //! class TestTemplateGemSystemComponent : public BaseSystemComponent {};
+    //!  //... Later in a cpp file
+    //! AZ_COMPONENT_IMPL_INLINE((TestTemplateGemSystemComponent, AZ_CLASS, AZ_CLASS, AZ_AUTO),
+    //!     "TestTemplateGemSystemComponent", TestTemplateGemSystemComponentTypeId, BaseSystemComponent)
+    //! ```
+    //! The `AZ_CLASS` is a placeholder macro that is used to substitute `class` template parameters
+    //! For non-type template parameters such as `size_t` or `int` the `AZ_AUTO` placeholder can be used
+
+    // Include the platform specific implementation of AZ_RTTI_NO_TYPE_INFO_IMPL_VA_OPT_HELPER
+    #include <AzCore/Component/Component_Platform.inl>
+
+    // If there was no platform specific implementation defined, use a default one:
+    #if !defined(AZ_RTTI_NO_TYPE_INFO_IMPL_VA_OPT_HELPER)
+    #define AZ_RTTI_NO_TYPE_INFO_IMPL_VA_OPT_HELPER(_ComponentClassOrTemplate, _BaseClass, ...) \
+        AZ_RTTI_NO_TYPE_INFO_IMPL(_ComponentClassOrTemplate, __VA_ARGS__ AZ_VA_OPT(AZ_COMMA_SEPARATOR, __VA_ARGS__) _BaseClass)
+    #endif
+
+    #define AZ_COMPONENT_IMPL_WITH_ALLOCATOR(_ComponentClassOrTemplate, _DisplayName, _Uuid, _Allocator, ...) \
+    AZ_COMPONENT_MACRO_CALL(AZ_TYPE_INFO_WITH_NAME_IMPL, \
+        AZ_USE_FIRST_ARG(AZ_UNWRAP(_ComponentClassOrTemplate)), \
+        _DisplayName, \
+        _Uuid \
+        AZ_VA_OPT(AZ_COMMA_SEPARATOR, AZ_SKIP_FIRST_ARG(AZ_UNWRAP(_ComponentClassOrTemplate))) \
+        AZ_SKIP_FIRST_ARG(AZ_UNWRAP(_ComponentClassOrTemplate)) \
+    ) \
+    AZ_RTTI_NO_TYPE_INFO_IMPL_VA_OPT_HELPER(_ComponentClassOrTemplate, AZ::Component, __VA_ARGS__) \
+    AZ_COMPONENT_MACRO_CALL(AZ_COMPONENT_BASE_IMPL, \
+        AZ_USE_FIRST_ARG(AZ_UNWRAP(_ComponentClassOrTemplate)) \
+        AZ_VA_OPT(AZ_COMMA_SEPARATOR, AZ_SKIP_FIRST_ARG(AZ_UNWRAP(_ComponentClassOrTemplate))) \
+        AZ_SKIP_FIRST_ARG(AZ_UNWRAP(_ComponentClassOrTemplate)) \
+    ) \
+    AZ_CLASS_ALLOCATOR_IMPL(_ComponentClassOrTemplate, _Allocator)
+
+    #define AZ_COMPONENT_IMPL(_ComponentClassOrTemplate, _DisplayName, _Uuid, ...) \
+        AZ_COMPONENT_IMPL_WITH_ALLOCATOR(_ComponentClassOrTemplate, _DisplayName, _Uuid, AZ::ComponentAllocator, __VA_ARGS__)
+
+    //! Version of the AZ_COMPONENT_IMPL macro which can be used in a header or inline file
+    //! which is included in multiple translation units
+
+    #define AZ_COMPONENT_IMPL_INLINE_WITH_ALLOCATOR(_ComponentClassOrTemplate, _DisplayName, _Uuid, _Allocator, ...) \
+    AZ_COMPONENT_MACRO_CALL(AZ_TYPE_INFO_WITH_NAME_IMPL_INLINE, \
+        AZ_USE_FIRST_ARG(AZ_UNWRAP(_ComponentClassOrTemplate)), \
+        _DisplayName, \
+        _Uuid \
+        AZ_VA_OPT(AZ_COMMA_SEPARATOR, AZ_SKIP_FIRST_ARG(AZ_UNWRAP(_ComponentClassOrTemplate))) \
+        AZ_SKIP_FIRST_ARG(AZ_UNWRAP(_ComponentClassOrTemplate)) \
+    ) \
+    AZ_RTTI_NO_TYPE_INFO_IMPL_INLINE(_ComponentClassOrTemplate, __VA_ARGS__ AZ_VA_OPT(AZ_COMMA_SEPARATOR, __VA_ARGS__) AZ::Component) \
+    AZ_COMPONENT_MACRO_CALL(AZ_COMPONENT_BASE_IMPL_INLINE, \
+        AZ_USE_FIRST_ARG(AZ_UNWRAP(_ComponentClassOrTemplate)) \
+        AZ_VA_OPT(AZ_COMMA_SEPARATOR, AZ_SKIP_FIRST_ARG(AZ_UNWRAP(_ComponentClassOrTemplate))) \
+        AZ_SKIP_FIRST_ARG(AZ_UNWRAP(_ComponentClassOrTemplate)) \
+    ) \
+    AZ_CLASS_ALLOCATOR_IMPL_INLINE(_ComponentClassOrTemplate, _Allocator)
+
+    #define AZ_COMPONENT_IMPL_INLINE(_ComponentClassOrTemplate, _DisplayName, _Uuid, ...) \
+        AZ_COMPONENT_IMPL_INLINE_WITH_ALLOCATOR(_ComponentClassOrTemplate, _DisplayName, _Uuid, AZ::ComponentAllocator, __VA_ARGS__)
 
     /**
      * Provides an interface through which the system can get the details of a component
@@ -321,17 +527,18 @@ namespace AZ
     class ComponentDescriptor
     {
     public:
+        AZ_CLASS_ALLOCATOR(ComponentDescriptor, ComponentAllocator);
 
         /**
          * The type of array that components use to specify provided, required, dependent,
          * and incompatible services.
          */
-        typedef AZStd::vector<ComponentServiceType> DependencyArrayType;
+        using DependencyArrayType = AZStd::vector<ComponentServiceType, ComponentAllocator_for_std_t>;
 
         /**
         * This type of array is used by the warning
         */
-        typedef AZStd::vector<AZStd::string> StringWarningArray;
+        using StringWarningArray = AZStd::vector<AZStd::string, ComponentAllocator_for_std_t>;
 
          /**
           * Creates an instance of the component.
@@ -349,7 +556,7 @@ namespace AZ
          * Gets the ID of the component.
          * @return Returns a pointer to the component ID.
          */
-        virtual const Uuid& GetUuid() const = 0;
+        virtual Uuid GetUuid() const = 0;
 
         /**
          * Reflects component data into a variety of contexts (script, serialize, edit, and so on).
@@ -438,7 +645,8 @@ namespace AZ
 
         using MutexType = AZStd::recursive_mutex;
     };
-    typedef AZ::EBus<ComponentDescriptor, ComponentDescriptorBusTraits> ComponentDescriptorBus;
+
+    using ComponentDescriptorBus = AZ::EBus<ComponentDescriptor, ComponentDescriptorBusTraits>;
 
     /**
      * Helps you create a custom implementation of a descriptor.
@@ -449,6 +657,7 @@ namespace AZ
         : public ComponentDescriptorBus::Handler
     {
     public:
+        AZ_CLASS_ALLOCATOR(ComponentDescriptorHelper, ComponentAllocator);
         /**
          * Connects to the component descriptor bus.
          */
@@ -484,7 +693,7 @@ namespace AZ
          * Gets the ID of the component.
          * @return Returns a pointer to the component ID.
          */
-        const Uuid& GetUuid() const override
+        Uuid GetUuid() const override
         {
             return AzTypeInfo<ComponentClass>::Uuid();
         }
@@ -512,7 +721,7 @@ namespace AZ
          * Specifies that this class should use the AZ::SystemAllocator for memory
          * management by default.
          */
-        AZ_CLASS_ALLOCATOR(ComponentDescriptorDefault<ComponentClass>, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ComponentDescriptorDefault<ComponentClass>, ComponentAllocator);
 
         /**
          * Calls the static function AZ::ComponentDescriptor::Reflect if the user provided it.
@@ -616,3 +825,5 @@ namespace AZ
         }
     };
 }
+
+DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS_WITH_TRAITS(ComponentDescriptor, ComponentDescriptorBusTraits);

@@ -97,6 +97,7 @@ namespace AZ
                 Name HairShortCutResolveColorPassName;
 
             public:
+                AZ_CLASS_ALLOCATOR(HairFeatureProcessor, AZ::SystemAllocator)
                 AZ_RTTI(AZ::Render::Hair::HairFeatureProcessor, "{5F9DDA81-B43F-4E30-9E56-C7C3DC517A4C}", AZ::RPI::FeatureProcessor);
 
                 static void Reflect(AZ::ReflectContext* context);
@@ -113,7 +114,7 @@ namespace AZ
                 // FeatureProcessor overrides ...
                 void Activate() override;
                 void Deactivate() override;
-                void ApplyRenderPipelineChange(RPI::RenderPipeline* renderPipeline) override;
+                void AddRenderPasses(RPI::RenderPipeline* renderPipeline) override;
                 void Simulate(const FeatureProcessor::SimulatePacket& packet) override;
                 void Render(const FeatureProcessor::RenderPacket& packet) override;
 
@@ -125,9 +126,7 @@ namespace AZ
                 bool RemoveHairRenderObject(Data::Instance<HairRenderObject> renderObject);
 
                 // RPI::SceneNotificationBus overrides ...
-                void OnRenderPipelineAdded(RPI::RenderPipelinePtr renderPipeline) override;
-                void OnRenderPipelineRemoved(RPI::RenderPipeline* renderPipeline) override;
-                void OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline) override;
+                void OnRenderPipelineChanged(AZ::RPI::RenderPipeline* pipeline, AZ::RPI::SceneNotification::RenderPipelineChangeType changeType) override;
 
                 Data::Instance<HairSkinningComputePass> GetHairSkinningComputegPass();
                 Data::Instance<HairPPLLRasterPass> GetHairPPLLRasterPass();

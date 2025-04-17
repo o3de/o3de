@@ -12,6 +12,7 @@
 #include <AzCore/Serialization/Json/BasicContainerSerializer.h>
 #include <AzCore/Asset/AssetSerializer.h>
 
+#include <AzFramework/Physics/Material/PhysicsMaterialManager.h>
 #include <AzFramework/Physics/Material/PhysicsMaterialSlots.h>
 
 namespace Physics
@@ -36,6 +37,21 @@ namespace Physics
         }
     };
 
+    static AZ::Data::AssetId GetDefaultPhysicsMaterialAssetId()
+    {
+        // Used for Edit Context.
+        // When the physics material asset property doesn't have an asset assigned it
+        // will show "(default)" to indicate that the default material will be used.
+        if (auto* materialManager = AZ::Interface<Physics::MaterialManager>::Get())
+        {
+            if (AZStd::shared_ptr<Physics::Material> defaultMaterial = materialManager->GetDefaultMaterial())
+            {
+                return defaultMaterial->GetMaterialAsset().GetId();
+            }
+        }
+        return {};
+    }
+
     void MaterialSlots::MaterialSlot::Reflect(AZ::ReflectContext* context)
     {
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
@@ -52,7 +68,7 @@ namespace Physics
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialSlot::m_materialAsset, "", "")
                         ->Attribute(AZ::Edit::Attributes::NameLabelOverride, &MaterialSlot::m_name)
-                        ->Attribute(AZ::Edit::Attributes::DefaultAsset, &MaterialSlot::GetDefaultMaterialAssetId)
+                        ->Attribute(AZ::Edit::Attributes::DefaultAsset, &GetDefaultPhysicsMaterialAssetId)
                         ->Attribute(AZ_CRC_CE("EditButton"), "")
                         ->Attribute(AZ_CRC_CE("EditDescription"), "Open in Asset Editor")
                         ->Attribute(AZ_CRC_CE("DisableEditButtonWhenNoAssetSelected"), true)
@@ -60,14 +76,6 @@ namespace Physics
                     ;
             }
         }
-    }
-
-    AZ::Data::AssetId MaterialSlots::MaterialSlot::GetDefaultMaterialAssetId() const
-    {
-        // Used for Edit Context.
-        // When the physics material asset property doesn't have an asset assigned it
-        // will show "(default)" to indicate that the default material will be used.
-        return {};
     }
 
     void MaterialSlots::Reflect(AZ::ReflectContext* context)
@@ -95,7 +103,7 @@ namespace Physics
                         "Select which physics materials to use for each slot.")
                         ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->Attribute(AZ_CRC_CE("ValueText"), " ")
+                        ->Attribute(AZ::Edit::Attributes::ValueText, " ")
                         ->ElementAttribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ;
             }

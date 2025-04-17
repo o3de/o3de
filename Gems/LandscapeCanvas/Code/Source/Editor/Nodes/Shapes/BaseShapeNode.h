@@ -24,11 +24,11 @@ namespace LandscapeCanvas
     class BaseShapeNode : public BaseNode
     {
     public:
-        AZ_CLASS_ALLOCATOR(BaseShapeNode, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BaseShapeNode, AZ::SystemAllocator);
         AZ_RTTI(BaseShapeNode, "{1A9B84EC-22FA-4139-9D86-B158688612E2}", BaseNode);
 
         // Category sub-title
-        static const QString SHAPE_CATEGORY_TITLE;
+        static const char* SHAPE_CATEGORY_TITLE;
 
         // Connection slot ID (not translated, only used internally)
         static const char* BOUNDS_SLOT_ID;
@@ -44,7 +44,7 @@ namespace LandscapeCanvas
         BaseShapeNode() = default;
         explicit BaseShapeNode(GraphModel::GraphPtr graph);
 
-        const char* GetSubTitle() const override { return SHAPE_CATEGORY_TITLE.toUtf8().constData(); }
+        const char* GetSubTitle() const override { return SHAPE_CATEGORY_TITLE; }
 
         const BaseNodeType GetBaseNodeType() const override { return BaseNode::Shape; }
 

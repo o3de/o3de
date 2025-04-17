@@ -8,10 +8,10 @@
 
 #pragma once
 
+#include <Atom/Feature/RayTracing/RayTracingIndexList.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/map.h>
 #include <AzCore/Casting/numeric_cast.h>
-#include <RayTracing/RayTracingIndexList.h>
 
 namespace AZ
 {
@@ -144,6 +144,9 @@ namespace AZ
                     m_indirectionList.SetEntry(itLast->second.m_indirectionIndex, resourceIndex);                 
                 }
 
+                // cache the indirection index so that its okay to erase the iterator
+                uint32_t cachedIndirectionIndex = it->second.m_indirectionIndex;
+
                 // remove the last entry from the resource list
                 m_resources.pop_back();
 
@@ -151,7 +154,7 @@ namespace AZ
                 m_resourceMap.erase(it);
 
                 // remove the entry from the indirection list
-                m_indirectionList.RemoveEntry(it->second.m_indirectionIndex);
+                m_indirectionList.RemoveEntry(cachedIndirectionIndex);
             }
         }
 

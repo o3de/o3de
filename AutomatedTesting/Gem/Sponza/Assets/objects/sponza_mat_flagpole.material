@@ -1,10 +1,10 @@
 {
-    "materialType": "Materials/Types/StandardPBR.materialtype",
-    "materialTypeVersion": 4,
+    "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardPBR.materialtype",
+    "materialTypeVersion": 5,
     "propertyValues": {
         "baseColor.textureMap": "../Textures/flagpole_1k_basecolor.png",
         "general.applySpecularAA": true,
-        "irradiance.color": [
+        "irradiance.manualColor": [
             1.0,
             0.6520485281944275,
             0.7122911214828491,
@@ -12,6 +12,7 @@
         ],
         "metallic.textureMap": "../Textures/flagpole_1k_metallic.png",
         "normal.textureMap": "../Textures/flagpole_1k_normal.png",
+        "normal.flipY": true,
         "occlusion.diffuseTextureMap": "../Textures/flagpole_1k_ao.png",
         "opacity.factor": 1.0,
         "parallax.factor": 0.014000000432133675,

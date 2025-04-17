@@ -17,21 +17,30 @@
 #if !defined(Q_MOC_RUN)
 #include "ViewportTitleDlg.h"
 
-#include <AzQtComponents/Components/ToolBarArea.h>
 #include <AzCore/Component/Component.h>
+#include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
+#include <AzQtComponents/Components/ToolBarArea.h>
 #include <Include/SandboxAPI.h>
 #endif
 
 class CViewport;
-class QToolBar;
 class QScrollArea;
+class QToolBar;
 class ViewportTitleExpanderWatcher;
+
+namespace AzToolsFramework
+{
+    class ActionManagerInterface;
+    class MenuManagerInterface;
+    class ToolBarManagerInterface;
+}
 
 /////////////////////////////////////////////////////////////////////////////
 // CViewPane view
 
 class CLayoutViewPane
     : public AzQtComponents::ToolBarArea
+    , private AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler
 {
     Q_OBJECT
 public:
@@ -40,6 +49,13 @@ public:
 
     // Operations
 public:
+    // ActionManagerRegistrationNotificationBus overrides ...
+    void OnMenuRegistrationHook() override;
+    void OnToolBarRegistrationHook() override;
+    void OnActionRegistrationHook() override;
+    void OnMenuBindingHook() override;
+    void OnToolBarBindingHook() override;
+
     // Set get this pane id.
     void SetId(int id) { m_id = id; }
     int GetId() { return m_id; }
@@ -114,16 +130,19 @@ private:
 
     QString m_viewPaneClass;
     bool m_bFullscreen;
-    CViewportTitleDlg m_viewportTitleDlg;
 
+    CViewportTitleDlg* m_viewportTitleDlg;
     int m_id;
     int m_nBorder;
 
     QWidget* m_viewport;
     QScrollArea* m_viewportScrollArea = nullptr;
     ViewportExpansionPolicy m_viewportPolicy = ViewportExpansionPolicy::AutoExpand;
-    ViewportTitleExpanderWatcher* m_expanderWatcher;
     bool m_active;
+
+    AzToolsFramework::ActionManagerInterface* m_actionManagerInterface = nullptr;
+    AzToolsFramework::MenuManagerInterface* m_menuManagerInterface = nullptr;
+    AzToolsFramework::ToolBarManagerInterface* m_toolBarManagerInterface = nullptr;
 };
 
 /////////////////////////////////////////////////////////////////////////////

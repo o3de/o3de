@@ -8,10 +8,11 @@
 
 #pragma once
 
+#include <AzCore/Math/Sphere.h>
 #include <Atom/Feature/CoreLights/PhotometricValue.h>
 #include <Atom/Feature/CoreLights/PointLightFeatureProcessorInterface.h>
 #include <Atom/Feature/Utils/GpuBufferHandler.h>
-#include <Atom/Feature/Utils/IndexedDataVector.h>
+#include <Atom/Feature/Utils/MultiIndexedDataVector.h>
 #include <Shadows/ProjectedShadowFeatureProcessor.h>
 
 namespace AZ
@@ -25,6 +26,7 @@ namespace AZ
             : public PointLightFeatureProcessorInterface
         {
         public:
+            AZ_CLASS_ALLOCATOR(PointLightFeatureProcessor, AZ::SystemAllocator)
             AZ_RTTI(AZ::Render::PointLightFeatureProcessor, "{C16A39D6-0DDA-4511-9E35-42968702D3B4}", AZ::Render::PointLightFeatureProcessorInterface);
 
             static void Reflect(AZ::ReflectContext* context);
@@ -52,13 +54,15 @@ namespace AZ
             void SetShadowFilterMethod(LightHandle handle, ShadowFilterMethod method) override;
             void SetFilteringSampleCount(LightHandle handle, uint16_t count) override;
             void SetEsmExponent(LightHandle handle, float esmExponent) override;
+            void SetUseCachedShadows(LightHandle handle, bool useCachedShadows) override;
             void SetNormalShadowBias(LightHandle handle, float bias) override;
             void SetAffectsGI(LightHandle handle, bool affectsGI) override;
             void SetAffectsGIFactor(LightHandle handle, float affectsGIFactor) override;
+            void SetLightingChannelMask(LightHandle handle, uint32_t lightingChannelMask) override;
             void SetPointData(LightHandle handle, const PointLightData& data) override;
 
-            const Data::Instance<RPI::Buffer>  GetLightBuffer() const;
-            uint32_t GetLightCount()const;
+            const Data::Instance<RPI::Buffer> GetLightBuffer() const override;
+            uint32_t GetLightCount() const override;
 
         private:
             PointLightFeatureProcessor(const PointLightFeatureProcessor&) = delete;
@@ -71,8 +75,10 @@ namespace AZ
             void SetShadowSetting(LightHandle handle, Functor&&, ParamType&& param);
             ProjectedShadowFeatureProcessor* m_shadowFeatureProcessor = nullptr;
 
-            IndexedDataVector<PointLightData> m_pointLightData;
+            MultiIndexedDataVector<PointLightData, AZ::Sphere> m_lightData;
             GpuBufferHandler m_lightBufferHandler;
+            RHI::Handle<uint32_t> m_lightMeshFlag;
+            RHI::Handle<uint32_t> m_shadowMeshFlag;
             bool m_deviceBufferNeedsUpdate = false;
 
             AZStd::array<AZ::Transform, PointLightData::NumShadowFaces> m_pointShadowTransforms;

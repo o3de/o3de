@@ -48,7 +48,7 @@ namespace ScriptCanvasEditor
         : public GraphCanvas::GraphCanvasTreeItem
     {
     public:
-        AZ_CLASS_ALLOCATOR(DebugLogTreeItem, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DebugLogTreeItem, AZ::SystemAllocator);
         AZ_RTTI(DebugLogTreeItem, "{E0B2A52B-47A4-40FF-A76F-4655125D01CC}", GraphCanvas::GraphCanvasTreeItem);
 
         enum Column
@@ -98,7 +98,7 @@ namespace ScriptCanvasEditor
             SingleTime
         };
 
-        AZ_CLASS_ALLOCATOR(DebugLogRootItem, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DebugLogRootItem, AZ::SystemAllocator);
         AZ_RTTI(DebugLogRootItem, "{CF59F72E-04AC-415C-A2F2-99D79564730B}", DebugLogTreeItem);
 
         DebugLogRootItem();
@@ -130,13 +130,13 @@ namespace ScriptCanvasEditor
         , public GeneralAssetNotificationBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(ExecutionLogTreeItem, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ExecutionLogTreeItem, AZ::SystemAllocator);
         AZ_RTTI(ExecutionLogTreeItem, "{71139142-A30C-4A16-81CC-D51314AEAF7D}", DebugLogTreeItem);
 
         ExecutionLogTreeItem
             ( const LoggingDataId& loggingDataId
             , const ScriptCanvas::NodeTypeIdentifier& nodeType
-            , const SourceHandle& graphInfo
+            , const ScriptCanvas::GraphInfo& graphInfo
             , const ScriptCanvas::NamedNodeId& nodeId);
 
         ~ExecutionLogTreeItem() override = default;
@@ -191,8 +191,7 @@ namespace ScriptCanvasEditor
 
         LoggingDataId                       m_loggingDataId;
         ScriptCanvas::NodeTypeIdentifier    m_nodeType;
-        SourceHandle          m_graphInfo;
-        ScriptCanvas::GraphIdentifier       m_graphIdentifier;
+        ScriptCanvas::GraphInfo             m_graphInfo;
         QString                             m_sourceEntityName;
         QString                             m_graphName;
         QString                             m_relativeGraphPath;
@@ -223,7 +222,7 @@ namespace ScriptCanvasEditor
     {
         friend class ExecutionLogTreeItem;
     public:
-        AZ_CLASS_ALLOCATOR(DataLogTreeItem, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DataLogTreeItem, AZ::SystemAllocator);
         AZ_RTTI(DataLogTreeItem, "{04D997AD-E3CA-47CA-9810-8814B36AB726}", DebugLogTreeItem);
 
         DataLogTreeItem(const ScriptCanvas::GraphIdentifier& graphIdentifier);
@@ -268,7 +267,7 @@ namespace ScriptCanvasEditor
         : public DebugLogTreeItem
     {
     public:
-        AZ_CLASS_ALLOCATOR(NodeAnnotationTreeItem, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(NodeAnnotationTreeItem, AZ::SystemAllocator);
         AZ_RTTI(NodeAnnotationTreeItem, "{4A052945-F8D1-4A96-8D52-D8C20504E30F}", DebugLogTreeItem);
 
         NodeAnnotationTreeItem();

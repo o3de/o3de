@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Asset/AssetCommon.h>
+#include <Atom/RPI.Edit/Configuration.h>
 #include <Atom/RHI.Reflect/Base.h>
 #include <Atom/RPI.Reflect/ResourcePoolAsset.h>
 
@@ -28,16 +29,16 @@ namespace AZ
         };
         
         // Source data of resource pool asset. It may generate different kind of production asset based on m_poolType
-        struct ResourcePoolSourceData
+        struct ATOM_RPI_EDIT_API ResourcePoolSourceData
         {
             AZ_TYPE_INFO(ResourcePoolSourceData, "{8BFF0760-20E3-446D-9E3D-39D0266F7104}");
-            AZ_CLASS_ALLOCATOR(ResourcePoolSourceData, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ResourcePoolSourceData, AZ::SystemAllocator);
             
             static void Reflect(ReflectContext* context);
 
             ResourcePoolAssetType m_poolType = ResourcePoolAssetType::Unknown;
             AZStd::string m_poolName = "Unknown";
-            uint32_t m_budgetInBytes = 0;
+            AZ::u64 m_budgetInBytes = 0;
 
             // Configuration for buffer pool
             RHI::HeapMemoryLevel m_heapMemoryLevel = RHI::HeapMemoryLevel::Device;
@@ -49,4 +50,6 @@ namespace AZ
         };
 
     } // namespace RPI
+
+    AZ_TYPE_INFO_SPECIALIZE(RPI::ResourcePoolAssetType, "{09D35821-2D42-456B-B53C-C02BF387C5C4}");
 } // namespace AZ

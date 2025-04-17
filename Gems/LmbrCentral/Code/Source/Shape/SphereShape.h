@@ -29,7 +29,7 @@ namespace LmbrCentral
         , public AZ::TransformNotificationBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(SphereShape, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(SphereShape, AZ::SystemAllocator)
         AZ_RTTI(SphereShape, "{FC63856F-318C-406A-AF3A-FDFF448D850A}")
 
         static void Reflect(AZ::ReflectContext* context);
@@ -39,22 +39,23 @@ namespace LmbrCentral
         void InvalidateCache(InvalidateShapeCacheReason reason);
 
         // ShapeComponentRequestsBus::Handler
-        AZ::Crc32 GetShapeType() override { return AZ_CRC("Sphere", 0x55f96687); }
-        AZ::Aabb GetEncompassingAabb() override;
-        void GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds) override;
-        bool IsPointInside(const AZ::Vector3& point)  override;
-        float DistanceSquaredFromPoint(const AZ::Vector3& point) override;
-        bool IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) override;
+        AZ::Crc32 GetShapeType() const override { return AZ_CRC_CE("Sphere"); }
+        AZ::Aabb GetEncompassingAabb() const override;
+        void GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds) const override;
+        bool IsPointInside(const AZ::Vector3& point) const  override;
+        float DistanceSquaredFromPoint(const AZ::Vector3& point) const override;
+        bool IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) const override;
+        AZ::Vector3 GetTranslationOffset() const override;
+        void SetTranslationOffset(const AZ::Vector3& translationOffset) override;
 
         // SphereShapeComponentRequestsBus::Handler
-        SphereShapeConfig GetSphereConfiguration() override { return m_sphereShapeConfig; }
+        const SphereShapeConfig& GetSphereConfiguration() const override { return m_sphereShapeConfig; }
         void SetRadius(float radius) override;
-        float GetRadius() override;
+        float GetRadius() const override;
 
         // AZ::TransformNotificationBus::Handler
         void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
 
-        const SphereShapeConfig& GetSphereConfiguration() const { return m_sphereShapeConfig; }
         void SetSphereConfiguration(const SphereShapeConfig& sphereShapeConfig) { m_sphereShapeConfig = sphereShapeConfig; }
         const AZ::Transform& GetCurrentTransform() const { return m_currentTransform; }
 
@@ -79,7 +80,7 @@ namespace LmbrCentral
         };
 
         SphereShapeConfig m_sphereShapeConfig; ///< Underlying sphere configuration.
-        SphereIntersectionDataCache m_intersectionDataCache; ///< Caches transient intersection data.
+        mutable SphereIntersectionDataCache m_intersectionDataCache; ///< Caches transient intersection data.
         AZ::Transform m_currentTransform; ///< Caches the current world transform.
         AZ::EntityId m_entityId; ///< The Id of the entity the shape is attached to.
         mutable AZStd::shared_mutex m_mutex; ///< Mutex to allow multiple readers but single writer for efficient thread safety

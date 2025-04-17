@@ -9,8 +9,8 @@
 #pragma once
 
 #include <Source/AutoGen/NetworkCharacterComponent.AutoComponent.h>
-#include <PhysX/CharacterGameplayBus.h>
 #include <Multiplayer/Components/NetBindComponent.h>
+#include <AzFramework/Physics/CharacterBus.h>
 
 namespace Physics
 {
@@ -38,7 +38,7 @@ namespace Multiplayer
     //! Provides multiplayer support for game-play player characters.
     class NetworkCharacterComponent
         : public NetworkCharacterComponentBase
-        , private PhysX::CharacterGameplayRequestBus::Handler
+        , protected Physics::CharacterNotificationBus::Handler
     {
         friend class NetworkCharacterComponentController;
 
@@ -55,18 +55,13 @@ namespace Multiplayer
         void OnActivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
         void OnDeactivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
 
+    protected:
+        void OnCharacterActivated(const AZ::EntityId& entityId) override;
+        void OnCharacterDeactivated(const AZ::EntityId& entityId) override;
+
     private:
         void OnTranslationChangedEvent(const AZ::Vector3& translation);
         void OnSyncRewind();
-
-        // CharacterGameplayRequestBus
-        bool IsOnGround() const override;
-        float GetGravityMultiplier() const override { return {}; }
-        void SetGravityMultiplier([[maybe_unused]] float gravityMultiplier) override {}
-        float GetGroundDetectionBoxHeight() const override { return {}; }
-        void SetGroundDetectionBoxHeight([[maybe_unused]] float groundDetectionBoxHeight) override {}
-        AZ::Vector3 GetFallingVelocity() const override { return {}; }
-        void SetFallingVelocity([[maybe_unused]] const AZ::Vector3& fallingVelocity) override {}
 
         Physics::Character* m_physicsCharacter = nullptr;
         Multiplayer::EntitySyncRewindEvent::Handler m_syncRewindHandler = Multiplayer::EntitySyncRewindEvent::Handler([this]() { OnSyncRewind(); });

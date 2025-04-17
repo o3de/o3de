@@ -21,5 +21,6 @@
 		<file>Browse.png</file>
 		<file>Browse_on.png</file>
 		<file>Delete.png</file>
+		<file>cached_asset_item.png</file>
 	</qresource>
 </RCC>

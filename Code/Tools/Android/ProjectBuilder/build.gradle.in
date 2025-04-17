@@ -8,6 +8,7 @@
 apply plugin: "com.android.${TARGET_TYPE}"
 
 android {
+    ${PROJECT_NAMESPACE_OPTION}
 ${SIGNING_CONFIGS}
     compileSdkVersion sdkVer
     buildToolsVersion buildToolsVer
@@ -44,8 +45,8 @@ ${NATIVE_CMAKE_SECTION_RELEASE_CONFIG}
     }
 
     compileOptions {
-        targetCompatibility JavaVersion.VERSION_1_7
-        sourceCompatibility JavaVersion.VERSION_1_7
+        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_1_8
     }
 
 ${NATIVE_CMAKE_SECTION_ANDROID}
@@ -64,7 +65,22 @@ ${OVERRIDE_JAVA_SOURCESET}
         pickFirst '**/*.so'
     }
 
+    // APKs will attempt to compress file types it doesn't recognized as already compressed (ie jpeg, mp3, etc) 
+    // However, when it compresses an O3DE PAK file, whether the PAK was created with compression or not,
+    //   there is a bug causing the app to softlock when attempting to open the PAK. 
+    // See https://github.com/o3de/o3de/issues/17625
+    aaptOptions {
+        noCompress 'pak'
+    }
 }
+
+// Inject the zip64 option into package task to allow 4GiB apks
+tasks.withType(Zip) {
+    if (name == "packageDebug" || name == "packageProfile" || name == "packageRelease") {
+        zip64 = true
+    }
+}
+
 
 ${PROJECT_DEPENDENCIES}
 

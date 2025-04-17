@@ -13,7 +13,7 @@ namespace AZ
 {
     namespace Render
     {
-        AZ_CLASS_ALLOCATOR_IMPL(EditorModeFeedbackModule, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR_IMPL(EditorModeFeedbackModule, AZ::SystemAllocator)
 
         EditorModeFeedbackModule::EditorModeFeedbackModule()
         {
@@ -32,4 +32,8 @@ namespace AZ
     } // namespace Render
 } // namespace AZ
 
-AZ_DECLARE_MODULE_CLASS(Gem_EditorModeFeedback, AZ::Render::EditorModeFeedbackModule)
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME, _Editor), AZ::Render::EditorModeFeedbackModule)
+#else
+AZ_DECLARE_MODULE_CLASS(Gem_EditorModeFeedback_Editor, AZ::Render::EditorModeFeedbackModule)
+#endif

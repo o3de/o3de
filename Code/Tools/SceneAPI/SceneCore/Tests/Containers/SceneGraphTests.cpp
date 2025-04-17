@@ -14,7 +14,6 @@
 #include <SceneAPI/SceneCore/DataTypes/IGraphObject.h>
 #include <SceneAPI/SceneCore/Mocks/DataTypes/MockIGraphObject.h>
 
-
 namespace AZ
 {
     namespace SceneAPI
@@ -218,6 +217,13 @@ namespace AZ
                 SceneGraph testSceneGraph;
                 testSceneGraph.AddChild(testSceneGraph.GetRoot(), "testObject");
                 testSceneGraph.AddChild(testSceneGraph.GetRoot(), "testObject");
+                EXPECT_TRUE(m_assertTriggered);
+            }
+
+            TEST_F(SceneGraphTest, AddChild_EmptyNameUsed_AssertTriggered)
+            {
+                SceneGraph testSceneGraph;
+                testSceneGraph.AddChild(testSceneGraph.GetRoot(), "");
                 EXPECT_TRUE(m_assertTriggered);
             }
 

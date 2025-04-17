@@ -6,7 +6,7 @@
  *
  */
 
-#include <viewsrg.srgi>
+#include <viewsrg_all.srgi>
 
 #include <Atom/Features/PBR/Hammersley.azsli>
 #include <Atom/RPI/Math.azsli>
@@ -37,7 +37,6 @@
 #define MILLIMETER_TO_METER 1e-3
 #define METER_TO_MILLIMETER 1e3
 
-#define EPSILON 1e-4
 #define DEPTH_CLIP_THRESHOLD_SCALE (0.5 * MILLIMETER_TO_METER)
 
 ShaderResourceGroup PassSrg : SRG_PerPass
@@ -321,7 +320,9 @@ void MainCS(
     }
 
     // Force normalization with sum of weights
-    float3 outColor = lerp(colorX.rgb, totalSum / (weightSum + EPSILON), factor);
+    float3 subsurfaceScatteringColor = totalSum / (weightSum + EPSILON);
+
+    float3 outColor = lerp(colorX.rgb, subsurfaceScatteringColor, factor);
 
     // 1.0 in alpha channel will trigger 2x2 noise reduction filter in output merger to remove low discrepancy noises
     PassSrg::m_outputTexture[dispatchID.xy] = float4(outColor, 1.0);

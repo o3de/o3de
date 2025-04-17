@@ -22,7 +22,7 @@ namespace Multiplayer
     class NetworkPrefabProcessor : public AzToolsFramework::Prefab::PrefabConversionUtils::PrefabProcessor
     {
     public:
-        AZ_CLASS_ALLOCATOR(NetworkPrefabProcessor, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(NetworkPrefabProcessor, AZ::SystemAllocator);
         AZ_RTTI(
             Multiplayer::NetworkPrefabProcessor,
             "{AF6C36DA-CBB9-4DF4-AE2D-7BC6CCE65176}",

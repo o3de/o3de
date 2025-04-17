@@ -32,7 +32,8 @@ namespace AZ
                 RHI::HeapMemoryLevel m_heapMemoryLevel = RHI::HeapMemoryLevel::Host;
                 RHI::HostMemoryAccess m_hostMemoryAccess = RHI::HostMemoryAccess::Write;
                 GetHeapMemoryUsageFunction m_getHeapMemoryUsageFunction;
-                bool m_recycleOnCollect = true;
+                // we want to release the heap page when the tile allocator de-allocates it
+                bool m_recycleOnCollect = false;
             };
 
             void Init(const Descriptor& descriptor);

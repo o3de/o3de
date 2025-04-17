@@ -16,8 +16,8 @@
 #include <EMotionFX/Source/EventManager.h>
 #include <EMotionFX/Source/TransformData.h>
 #include <FeatureAngularVelocity.h>
+#include <FeatureMatrixTransformer.h>
 #include <FrameDatabase.h>
-#include <MotionMatchingData.h>
 #include <MotionMatchingInstance.h>
 #include <PoseDataJointVelocities.h>
 
@@ -25,7 +25,7 @@ namespace EMotionFX::MotionMatching
 {
     AZ_CVAR_EXTERNED(float, mm_debugDrawVelocityScale);
 
-    AZ_CLASS_ALLOCATOR_IMPL(FeatureAngularVelocity, MotionMatchAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(FeatureAngularVelocity, MotionMatchAllocator)
 
     void FeatureAngularVelocity::ExtractFeatureValues(const ExtractFeatureContext& context)
     {

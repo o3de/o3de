@@ -187,6 +187,7 @@ Q_SIGNALS:
     void DisplayNameChanged();
     void ElapsedChanged();
     void NormalConnectionRequested(QString IpAddress, quint16 Port);
+    void ConnectionReady(unsigned int connId, QStringList platforms);
 
     void connectionEnded();
     void TerminateConnection();

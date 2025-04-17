@@ -17,9 +17,9 @@
 
 // Analytical integation (approximation) of diffusion profile over radius, could be replaced by other pre integrated kernels
 // such as sum of Gaussian (see T(s))
-float3 TransmissionKernel(float t, float3 s)
+real3 TransmissionKernel(real t, real3 s)
 {
-    float3 exponent = s * t;
+    real3 exponent = s * t;
     return 0.25 * (1.0 / exp(exponent) + 3.0 / exp(exponent / 3.0));
 }
 
@@ -37,13 +37,13 @@ float3 T(float s)
     float3(0.078, 0.0, 0.0) * exp(-s*s/7.41);
 }
 
-float3 GetBackLighting(Surface surface, LightingData lightingData, float3 lightIntensity, float3 dirToLight, float transmissionDistance, float attenuationDistance)
+real3 GetBackLighting(Surface surface, LightingData lightingData, real3 lightIntensity, real3 dirToLight, real transmissionDistance, real attenuationDistance)
 {
-    float3 result = float3(0.0, 0.0, 0.0);
+    real3 result = real3(0.0, 0.0, 0.0);
 
 #if ENABLE_TRANSMISSION
 
-    float thickness = 0.0; 
+    real thickness = 0.0; 
     TransmissionSurfaceData transmission = surface.transmission;
 
     switch(o_transmission_mode)
@@ -57,8 +57,8 @@ float3 GetBackLighting(Surface surface, LightingData lightingData, float3 lightI
 
             {
                 thickness = max(transmissionDistance, transmission.thickness);
-                float transmittance = pow( saturate( dot( lightingData.dirToCamera, -normalize( dirToLight + surface.normal * transmission.GetDistortion() ) ) ), transmission.GetPower() ) * transmission.GetScale();
-                float lamberAttenuation = exp(-thickness * transmission.GetAttenuationCoefficient()) * saturate(1.0 - thickness);
+                real transmittance = pow( saturate( dot( lightingData.dirToCamera, -normalize( dirToLight + surface.GetVertexNormal() * transmission.GetDistortion() ) ) ), transmission.GetPower() ) * transmission.GetScale();
+                real lamberAttenuation = exp(-thickness * transmission.GetAttenuationCoefficient()) * saturate(1.0 - thickness);
                 result = transmittance * lamberAttenuation * lightIntensity;
             }
             break;
@@ -69,7 +69,7 @@ float3 GetBackLighting(Surface surface, LightingData lightingData, float3 lightI
             
             {
                 // transmissionDistance < 0.0f means shadows are not enabled --> avoid unnecessary computation
-                if (transmissionDistance < 0.0f)
+                if (transmissionDistance < 0.0)
                 {
                     break;
                 }
@@ -78,17 +78,17 @@ float3 GetBackLighting(Surface surface, LightingData lightingData, float3 lightI
                 // Albedo at front (surface point) is used to approximate irradiance at the back of the 
                 // object (observation 4 in [Jimenez J. et al, 2010])
                 // Increase angle of influence to avoid dark transition regions
-                float3 E = surface.albedo * saturate(transmission.GetTransmissionNdLBias() + dot(-surface.normal, dirToLight));
+                real3 E = surface.albedo * saturate(transmission.GetTransmissionNdLBias() + dot(-surface.GetVertexNormal(), dirToLight));
 
                 // Transmission distance modulated by hardcoded constant C and the thickness exposed parameter 
                 // (in this case modulating the distance traversed by the light inside the object)
-                const float C = 300.0f;
-                float s = transmissionDistance * C * transmission.thickness;
+                const real C = 300.0;
+                real s = transmissionDistance * C * transmission.thickness;
                 
                 // Use scattering color to weight thin object transmission color
-                const float3 invScattering = rcp(max(transmission.scatterDistance, float(0.00001)));
+                const real3 invScattering = rcp(max(transmission.scatterDistance, real(0.00001)));
                 
-#ifndef USE_HUMAN_SKIN_PROFILE
+#if !USE_HUMAN_SKIN_PROFILE
                 // Generic profile based on scatter color
                 result = TransmissionKernel(s, invScattering) * lightIntensity * E * transmission.GetScale();
 #else // USE_HUMAN_SKIN_PROFILE

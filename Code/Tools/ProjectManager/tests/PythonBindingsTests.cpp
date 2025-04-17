@@ -46,7 +46,7 @@ namespace O3DE::ProjectManager
     };
 
     class PythonBindingsTests 
-        : public ::UnitTest::ScopedAllocatorSetupFixture
+        : public ::UnitTest::LeakDetectionFixture
         , public AZ::Debug::TraceMessageBus::Handler
     {
     public:

@@ -24,7 +24,8 @@ namespace ProjectSettingsTool
         connect(m_pLineEdit, &QLineEdit::textChanged, this, &PropertyFuncValLineEditCtrl::ValidateAndShowErrors);
         connect(m_pLineEdit, &QLineEdit::textChanged, this, [this]([[maybe_unused]] const QString& text)
             {
-                EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, this);
+                AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                    &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, this);
             });
     }
 

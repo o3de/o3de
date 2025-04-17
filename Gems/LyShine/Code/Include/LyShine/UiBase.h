@@ -12,7 +12,6 @@
 #include <Cry_Math.h>
 #include <Cry_Color.h>
 #include <ISystem.h>
-#include <CryCommon/LegacyAllocator.h>
 
 #include <AzCore/std/string/string.h>
 #include <AzCore/Component/Entity.h>
@@ -46,7 +45,7 @@ namespace LyShine
     typedef AZStd::string StringType;    // not yet decided if we should use wchar_t or UTF8
 
     //! Used for passing lists of entities
-    typedef AZStd::vector<AZ::Entity*, AZ::StdLegacyAllocator> EntityArray;
+    typedef AZStd::vector<AZ::Entity*> EntityArray;
 
     enum class BlendMode
     {

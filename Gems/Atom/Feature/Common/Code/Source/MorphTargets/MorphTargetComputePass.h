@@ -23,7 +23,7 @@ namespace AZ
             AZ_RPI_PASS(MorphTargetComputePass);
         public:
             AZ_RTTI(AZ::Render::MorphTargetComputePass, "{14EEACDF-C1BB-4BFC-BB27-6821FDE276B0}", RPI::ComputePass);
-            AZ_CLASS_ALLOCATOR(MorphTargetComputePass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(MorphTargetComputePass, SystemAllocator);
 
             MorphTargetComputePass(const RPI::PassDescriptor& descriptor);
 

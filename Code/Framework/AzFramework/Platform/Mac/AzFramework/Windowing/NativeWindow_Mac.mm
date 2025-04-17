@@ -7,6 +7,7 @@
  *
  */
 
+#include <AzFramework/Components/NativeUISystemComponent.h>
 #include <AzFramework/Windowing/NativeWindow.h>
 
 #include <AppKit/AppKit.h>
@@ -19,18 +20,18 @@ namespace AzFramework
         : public NativeWindow::Implementation
     {
     public:
-        AZ_CLASS_ALLOCATOR(NativeWindowImpl_Darwin, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(NativeWindowImpl_Darwin, AZ::SystemAllocator);
         NativeWindowImpl_Darwin() = default;
         ~NativeWindowImpl_Darwin() override;
         
         // NativeWindow::Implementation overrides...
-        void InitWindow(const AZStd::string& title,
+        void InitWindowInternal(const AZStd::string& title,
                         const WindowGeometry& geometry,
                         const WindowStyleMasks& styleMasks) override;
         NativeWindowHandle GetWindowHandle() const override;
         void SetWindowTitle(const AZStd::string& title) override;
 
-        void ResizeClientArea( WindowSize clientAreaSize ) override;
+        void ResizeClientArea(WindowSize clientAreaSize, const WindowPosOptions& options) override;
         bool SupportsClientAreaResize() const override { return true; }
         bool GetFullScreenState() const override;
         void SetFullScreenState(bool fullScreenState) override;
@@ -45,18 +46,13 @@ namespace AzFramework
         uint32_t m_mainDisplayRefreshRate = 0;
     };
 
-    NativeWindow::Implementation* NativeWindow::Implementation::Create()
-    {
-        return aznew NativeWindowImpl_Darwin();
-    }
-
     NativeWindowImpl_Darwin::~NativeWindowImpl_Darwin()
     {
         [m_nativeWindow release];
         m_nativeWindow = nil;
     }
 
-    void NativeWindowImpl_Darwin::InitWindow(const AZStd::string& title,
+    void NativeWindowImpl_Darwin::InitWindowInternal(const AZStd::string& title,
                                              const WindowGeometry& geometry,
                                              const WindowStyleMasks& styleMasks)
     {
@@ -103,7 +99,7 @@ namespace AzFramework
         m_nativeWindow.title = m_windowTitle;
     }
 
-    void NativeWindowImpl_Darwin::ResizeClientArea( WindowSize clientAreaSize )
+    void NativeWindowImpl_Darwin::ResizeClientArea(WindowSize clientAreaSize, [[maybe_unused]] const WindowPosOptions& options)
     {
         NSRect contentRect = [m_nativeWindow contentLayoutRect];
         if (clientAreaSize.m_width != NSWidth(contentRect) || clientAreaSize.m_height != NSHeight(contentRect))
@@ -146,5 +142,23 @@ namespace AzFramework
     uint32_t NativeWindowImpl_Darwin::GetDisplayRefreshRate() const
     {
         return m_mainDisplayRefreshRate;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    class MacNativeWindowFactory 
+        : public NativeWindow::ImplementationFactory
+    {
+    public:
+        AZStd::unique_ptr<NativeWindow::Implementation> Create() override
+        {
+            return AZStd::make_unique<NativeWindowImpl_Darwin>();
+        }
+    };
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    void NativeUISystemComponent::InitializeNativeWindowImplementationFactory()
+    {
+        m_nativeWindowImplFactory = AZStd::make_unique<MacNativeWindowFactory>();
+        AZ::Interface<NativeWindow::ImplementationFactory>::Register(m_nativeWindowImplFactory.get());
     }
 } // namespace AzFramework

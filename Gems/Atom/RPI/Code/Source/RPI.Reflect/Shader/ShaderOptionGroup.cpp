@@ -14,8 +14,6 @@ namespace AZ
 {
     namespace RPI
     {
-        const char* ShaderOptionGroup::DebugCategory = "ShaderOption";
-
         ShaderOptionGroup::ShaderOptionGroup(const ShaderOptionGroup& rhs)
             : m_layout(rhs.m_layout)
             , m_id{rhs.m_id}
@@ -48,6 +46,7 @@ namespace AZ
                     ->Method("GetValueByOptionName", static_cast<ShaderOptionValue (ShaderOptionGroup::*)(const Name&) const>(&ShaderOptionGroup::GetValue))
                     ->Method("GetShaderOptionDescriptors", &ShaderOptionGroup::GetShaderOptionDescriptors)
                     ->Method("GetShaderVariantId", &ShaderOptionGroup::GetShaderVariantId)
+                    ->Method("ClearValue", static_cast<bool (ShaderOptionGroup::*)(const Name&)>(&ShaderOptionGroup::ClearValue))
                     ;
             }
         }
@@ -68,7 +67,7 @@ namespace AZ
 
             if (!optionIndex.IsValid())
             {
-                AZ_Error(DebugCategory, false, "Shader Option '%s' does not exist", optionName.GetCStr());
+                AZ_Error(DebugCategory, false, "ShaderOption '%s' does not exist", optionName.GetCStr());
                 return false;
             }
 

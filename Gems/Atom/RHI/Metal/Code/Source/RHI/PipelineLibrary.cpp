@@ -24,7 +24,7 @@ namespace AZ
             return m_mtlBinaryArchive;
         }
     
-        RHI::ResultCode PipelineLibrary::InitInternal(RHI::Device& deviceBase, const RHI::PipelineLibraryDescriptor& descriptor)
+        RHI::ResultCode PipelineLibrary::InitInternal(RHI::Device& deviceBase, const RHI::DevicePipelineLibraryDescriptor& descriptor)
         {
             DeviceObject::Init(deviceBase);
             auto& device = static_cast<Device&>(deviceBase);
@@ -76,6 +76,14 @@ namespace AZ
             {
                 m_renderPipelineStates.emplace(hash, pipelineStateDesc);
             }
+            else
+            {
+                if (RHI::Validation::IsEnabled())
+                {
+                    NSLog(@" error => %@ ", [*error userInfo] );
+                }
+                AZ_Assert(false, "Could not create Pipeline object!.");
+            }
             return graphicsPipelineState;
         }
         
@@ -100,11 +108,11 @@ namespace AZ
             return computePipelineState;
         }
     
-        RHI::ResultCode PipelineLibrary::MergeIntoInternal(AZStd::span<const RHI::PipelineLibrary* const> pipelineLibraries)
+        RHI::ResultCode PipelineLibrary::MergeIntoInternal(AZStd::span<const RHI::DevicePipelineLibrary* const> pipelineLibraries)
         {
             AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
             NSError* error = nil;
-            for (const RHI::PipelineLibrary* libraryBase : pipelineLibraries)
+            for (const RHI::DevicePipelineLibrary* libraryBase : pipelineLibraries)
             {
                 const PipelineLibrary* library = static_cast<const PipelineLibrary*>(libraryBase);
                 for (const auto& pipelineStateEntry : library->m_renderPipelineStates)

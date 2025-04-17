@@ -80,7 +80,13 @@ namespace AZ
     // The deferred head passes in a nullptr NameDictionary as the nameDictionary isn't available
     // until the constructor completes
     NameDictionary::NameDictionary()
+        : NameDictionary(static_cast<AZ::u64>(AZStd::numeric_limits<Name::Hash>::max()) + 1)
+    {
+    }
+
+    NameDictionary::NameDictionary(AZ::u64 maxHashSlots)
         : m_deferredHead(Name::FromStringLiteral("-fixed name dictionary deferred head-", nullptr))
+        , m_maxHashSlots(maxHashSlots != 0 ? maxHashSlots : static_cast<AZ::u64>(AZStd::numeric_limits<Name::Hash>::max()) + 1)
     {
         // Ensure a Name that is valid for the life-cycle of this dictionary is the head of our literal linked list
         // This prevents our list head from being destroyed from a module that has shut down its AZ::Environment and
@@ -100,19 +106,21 @@ namespace AZ
 
         [[maybe_unused]] bool leaksDetected = false;
 
-        for (const auto& keyValue : m_dictionary)
+        for (auto i = m_dictionary.begin(), last = m_dictionary.end(); i != last;)
         {
-            Internal::NameData* nameData = keyValue.second.m_nameData;
+            Internal::NameData* nameData = i->second.m_nameData;
             const int useCount = nameData->m_useCount;
 
             if (useCount == 0)
             {
+                i = m_dictionary.erase(i);
                 delete nameData;
             }
             else
             {
                 leaksDetected = true;
-                AZ_TracePrintf("NameDictionary", "\tLeaked Name [%3d reference(s)]: hash 0x%08X, '%.*s'\n", useCount, keyValue.first, AZ_STRING_ARG(nameData->GetName()));
+                AZ_TracePrintf("NameDictionary", "\tLeaked Name [%3d reference(s)]: hash 0x%08X, '%.*s'\n", useCount, i->first, AZ_STRING_ARG(nameData->GetName()));
+                ++i;
             }
         }
 
@@ -122,8 +130,16 @@ namespace AZ
     Name NameDictionary::FindName(Name::Hash hash) const
     {
         AZStd::shared_lock<AZStd::shared_mutex> lock(m_sharedMutex);
-        auto iter = m_dictionary.find(hash);
-        if (iter != m_dictionary.end())
+
+        // The NameData m_useCount check is to avoid a multithread race condition
+        // where thread B is in NameData::release and reduces the m_useCount to 0
+        // and this thread(thread A) construct a Name using that NameData pointer
+        // causing the m_useCount to go back up to 1.
+        // If thread A continues along and releases the NameData again, before thread B can run
+        // the the m_useCount can be reduced to 0 and multiple threads can be in the
+        // NameData::release `if (m_useCount.fetch_sub(1) == 1)` block
+        if (auto iter = m_dictionary.find(hash);
+            iter != m_dictionary.end() && iter->second.m_nameData->m_useCount > 0)
         {
             return Name(iter->second.m_nameData);
         }
@@ -373,7 +389,7 @@ namespace AZ
         // AZStd::hash<AZStd::string_view> returns 64 bits but we want 32 bit hashes for the sake
         // of network synchronization. So just take the low 32 bits.
         const uint32_t hash = AZStd::hash<AZStd::string_view>()(name) & 0xFFFFFFFF;
-        return hash;
+        return static_cast<Name::Hash>(hash % m_maxHashSlots);
     }
 
 

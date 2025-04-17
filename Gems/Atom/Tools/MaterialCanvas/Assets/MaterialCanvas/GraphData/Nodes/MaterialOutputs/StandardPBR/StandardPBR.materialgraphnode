@@ -1,0 +1,572 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "id": "{81F5EB68-12A1-47C2-BDC0-3A08A033D85A}",
+        "category": "Material Outputs",
+        "title": "Standard PBR",
+        "titlePaletteName": "MaterialOutputNodeTitlePalette",
+        "settings": {
+            "templatePaths": [
+                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/StandardPBR/MaterialGraphName.material",
+                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/StandardPBR/MaterialGraphName.materialtype",
+                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/StandardPBR/MaterialGraphName_Common.azsli",
+                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/StandardPBR/MaterialGraphName_DepthVertexData.azsli",
+                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/StandardPBR/MaterialGraphName_DepthVertexEval.azsli",
+                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/StandardPBR/MaterialGraphName_PixelGeometryEval.azsli",
+                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/StandardPBR/MaterialGraphName_SurfaceEval.azsli",
+                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/StandardPBR/MaterialGraphName_VertexEval.azsli"
+            ]
+        },
+        "propertySlots": [
+            {
+                "name": "inDescription",
+                "displayName": "Description",
+                "description": "Provide a description or overview of what this material graph is doing",
+                "supportedDataTypeRegex": "string",
+                "defaultDataType": "string",
+                "visibleOnNode": false,
+                "editableOnNode": false
+            },
+            {
+                "name": "inOpacityMode",
+                "displayName": "Opacity Mode",
+                "description": "Indicates the general approach how transparency is to be applied.",
+                "supportedDataTypeRegex": "string",
+                "defaultDataType": "string",
+                "defaultValue": {
+                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                    "Value": "Opaque"
+                },
+                "enumValues": [
+                    "Opaque",
+                    "Cutout",
+                    "Blended",
+                    "TintedTransparent"
+                ],
+                "visibleOnNode": false,
+                "editableOnNode": false,
+                "allowNameSubstitution": false,
+                "settings": {
+                    "materialPropertyConnectionName": [
+                        "o_opacity_mode"
+                    ],
+                    "materialPropertyConnectionType": [
+                        "ShaderOption"
+                    ]
+                }
+            },
+            {
+                "name": "inOpacityAffectsSpecularFactor",
+                "displayName": "Opacity Affects Specular Factor",
+                "description": "Opacity Affects Specular Factor",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
+                "defaultDataType": "bool",
+                "defaultValue": {
+                    "$type": "bool",
+                    "Value": true
+                },
+                "visibleOnNode": false,
+                "editableOnNode": false,
+                "allowNameSubstitution": false,
+                "settings": {
+                    "materialPropertyConnectionName": [
+                        "o_opacity_affects_specular_factor"
+                    ],
+                    "materialPropertyConnectionType": [
+                        "ShaderOption"
+                    ]
+                }
+            },
+            {
+                "name": "inEnableNormal",
+                "displayName": "Enable Normal Input",
+                "description": "Use normal values from material inputs.",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
+                "defaultDataType": "bool",
+                "defaultValue": {
+                    "$type": "bool",
+                    "Value": false
+                },
+                "visibleOnNode": false,
+                "editableOnNode": false,
+                "allowNameSubstitution": false,
+                "settings": {
+                    "materialPropertyConnectionName": [
+                        "o_normal_override_enabled"
+                    ],
+                    "materialPropertyConnectionType": [
+                        "ShaderOption"
+                    ]
+                }
+            },
+            {
+                "name": "inDoubleSided",
+                "displayName": "Double Sided",
+                "description": "Whether to render back-faces or just front-faces.",
+                "supportedDataTypeRegex": "bool",
+                "defaultDataType": "bool",
+                "defaultValue": {
+                    "$type": "bool",
+                    "Value": false
+                },
+                "visibleOnNode": false,
+                "editableOnNode": false,
+                "allowNameSubstitution": false,
+                "settings": {
+                    "materialPropertyConnectionName": [
+                        "doubleSided"
+                    ],
+                    "materialPropertyConnectionType": [
+                        "InternalProperty"
+                    ]
+                }
+            },
+            {
+                "name": "inApplySpecularAA",
+                "displayName": "Apply Specular AA",
+                "description": "Whether to apply specular anti-aliasing in the shader.",
+                "supportedDataTypeRegex": "bool",
+                "defaultDataType": "bool",
+                "defaultValue": {
+                    "$type": "bool",
+                    "Value": true
+                },
+                "visibleOnNode": false,
+                "editableOnNode": false,
+                "allowNameSubstitution": false,
+                "settings": {
+                    "materialPropertyConnectionName": [
+                        "o_applySpecularAA"
+                    ],
+                    "materialPropertyConnectionType": [
+                        "ShaderOption"
+                    ]
+                }
+            },
+            {
+                "name": "inEnableShadows",
+                "displayName": "Receive Shadows",
+                "description": "Whether to use the shadow maps during lighting.",
+                "supportedDataTypeRegex": "bool",
+                "defaultDataType": "bool",
+                "defaultValue": {
+                    "$type": "bool",
+                    "Value": true
+                },
+                "visibleOnNode": false,
+                "editableOnNode": false,
+                "allowNameSubstitution": false,
+                "settings": {
+                    "materialPropertyConnectionName": [
+                        "o_enableShadows"
+                    ],
+                    "materialPropertyConnectionType": [
+                        "ShaderOption"
+                    ]
+                }
+            },
+            {
+                "name": "inCastShadows",
+                "displayName": "Cast Shadows",
+                "description": "Whether to cast shadows onto other objects.",
+                "supportedDataTypeRegex": "bool",
+                "defaultDataType": "bool",
+                "defaultValue": {
+                    "$type": "bool",
+                    "Value": true
+                },
+                "visibleOnNode": false,
+                "editableOnNode": false,
+                "allowNameSubstitution": false,
+                "settings": {
+                    "materialPropertyConnectionName": [
+                        "castShadows"
+                    ],
+                    "materialPropertyConnectionType": [
+                        "InternalProperty"
+                    ]
+                }
+            },
+            {
+                "name": "inEnableDirectionalLights",
+                "displayName": "Enable Directional Lights",
+                "description": "Whether to use directional lights.",
+                "supportedDataTypeRegex": "bool",
+                "defaultDataType": "bool",
+                "defaultValue": {
+                    "$type": "bool",
+                    "Value": true
+                },
+                "visibleOnNode": false,
+                "editableOnNode": false,
+                "allowNameSubstitution": false,
+                "settings": {
+                    "materialPropertyConnectionName": [
+                        "o_enableDirectionalLights"
+                    ],
+                    "materialPropertyConnectionType": [
+                        "ShaderOption"
+                    ]
+                }
+            },
+            {
+                "name": "inEnablePunctualLights",
+                "displayName": "Enable Punctual Lights",
+                "description": "Whether to use punctual lights.",
+                "supportedDataTypeRegex": "bool",
+                "defaultDataType": "bool",
+                "defaultValue": {
+                    "$type": "bool",
+                    "Value": true
+                },
+                "visibleOnNode": false,
+                "editableOnNode": false,
+                "allowNameSubstitution": false,
+                "settings": {
+                    "materialPropertyConnectionName": [
+                        "o_enablePunctualLights"
+                    ],
+                    "materialPropertyConnectionType": [
+                        "ShaderOption"
+                    ]
+                }
+            },
+            {
+                "name": "inEnableAreaLights",
+                "displayName": "Enable Area Lights",
+                "description": "Whether to use area lights.",
+                "supportedDataTypeRegex": "bool",
+                "defaultDataType": "bool",
+                "defaultValue": {
+                    "$type": "bool",
+                    "Value": true
+                },
+                "visibleOnNode": false,
+                "editableOnNode": false,
+                "allowNameSubstitution": false,
+                "settings": {
+                    "materialPropertyConnectionName": [
+                        "o_enableAreaLights"
+                    ],
+                    "materialPropertyConnectionType": [
+                        "ShaderOption"
+                    ]
+                }
+            },
+            {
+                "name": "inEnableIBL",
+                "displayName": "Enable IBL",
+                "description": "Whether to use Image Based Lighting (IBL).",
+                "supportedDataTypeRegex": "bool",
+                "defaultDataType": "bool",
+                "defaultValue": {
+                    "$type": "bool",
+                    "Value": true
+                },
+                "visibleOnNode": false,
+                "editableOnNode": false,
+                "allowNameSubstitution": false,
+                "settings": {
+                    "materialPropertyConnectionName": [
+                        "o_enableIBL"
+                    ],
+                    "materialPropertyConnectionType": [
+                        "ShaderOption"
+                    ]
+                }
+            },
+            {
+                "name": "inUseForwardPassIBLSpecular",
+                "displayName": "Forward Pass IBL Specular",
+                "description": "Whether to apply IBL specular in the forward pass.",
+                "supportedDataTypeRegex": "bool",
+                "defaultDataType": "bool",
+                "defaultValue": {
+                    "$type": "bool",
+                    "Value": true
+                },
+                "visibleOnNode": false,
+                "editableOnNode": false,
+                "allowNameSubstitution": false,
+                "settings": {
+                    "materialPropertyConnectionName": [
+                        "o_materialUseForwardPassIBLSpecular"
+                    ],
+                    "materialPropertyConnectionType": [
+                        "ShaderOption"
+                    ]
+                }
+            },
+            {
+                "name": "inEnableClearCoat",
+                "displayName": "Enable Clear Coat",
+                "description": "Enable the clear coat feature for this material.",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
+                "defaultDataType": "bool",
+                "defaultValue": {
+                    "$type": "bool",
+                    "Value": false
+                },
+                "visibleOnNode": false,
+                "editableOnNode": false,
+                "allowNameSubstitution": false,
+                "settings": {
+                    "materialPropertyConnectionName": [
+                        "o_clearCoat_enabled"
+                    ],
+                    "materialPropertyConnectionType": [
+                        "ShaderOption"
+                    ]
+                }
+            },
+            {
+                "name": "inEnableClearCoatNormal",
+                "displayName": "Enable Clear Coat Normal Input",
+                "description": "Use normal values from clear coat material inputs.",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
+                "defaultDataType": "bool",
+                "defaultValue": {
+                    "$type": "bool",
+                    "Value": false
+                },
+                "visibleOnNode": false,
+                "editableOnNode": false,
+                "allowNameSubstitution": false,
+                "settings": {
+                    "materialPropertyConnectionName": [
+                        "o_clearCoat_normal_override_enabled"
+                    ],
+                    "materialPropertyConnectionType": [
+                        "ShaderOption"
+                    ]
+                }
+            }
+        ],
+        "inputSlots": [
+            {
+                "name": "inPositionOffset",
+                "displayName": "Position Offset",
+                "description": "Position Offset",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
+                "defaultDataType": "float3",
+                "allowNameSubstitution": false,
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            },
+            {
+                "name": "inNormal",
+                "displayName": "Normal",
+                "description": "Normal",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
+                "defaultDataType": "float3",
+                "allowNameSubstitution": false,
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            },
+            {
+                "name": "inBaseColor",
+                "displayName": "Base Color",
+                "description": "Base Color",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
+                "defaultDataType": "float3",
+                "defaultValue": {
+                    "$type": "Vector3",
+                    "Value": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                },
+                "allowNameSubstitution": false,
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            },
+            {
+                "name": "inMetallic",
+                "displayName": "Metallic",
+                "description": "Metallic",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
+                "defaultDataType": "float",
+                "allowNameSubstitution": false,
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            },
+            {
+                "name": "inSpecularF0Factor",
+                "displayName": "Specular F0 Factor",
+                "description": "Specular F0 Factor",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
+                "defaultDataType": "float",
+                "allowNameSubstitution": false,
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            },
+            {
+                "name": "inRoughness",
+                "displayName": "Roughness",
+                "description": "Roughness",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
+                "defaultDataType": "float",
+                "allowNameSubstitution": false,
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            },
+            {
+                "name": "inEmissive",
+                "displayName": "Emissive",
+                "description": "Emissive",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
+                "defaultDataType": "float3",
+                "allowNameSubstitution": false,
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            },
+            {
+                "name": "inAlpha",
+                "displayName": "Alpha",
+                "description": "Alpha",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
+                "defaultDataType": "float",
+                "defaultValue": {
+                    "$type": "float",
+                    "Value": 1.0
+                },
+                "allowNameSubstitution": false,
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            },
+            {
+                "name": "inOpacityFactor",
+                "displayName": "Opacity Factor",
+                "description": "Opacity Factor",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
+                "defaultDataType": "float",
+                "defaultValue": {
+                    "$type": "float",
+                    "Value": 1.0
+                },
+                "allowNameSubstitution": false,
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            },
+            {
+                "name": "inDiffuseAmbientOcclusion",
+                "displayName": "Diffuse Ambient Occlusion",
+                "description": "Diffuse Ambient Occlusion",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
+                "defaultDataType": "float",
+                "defaultValue": {
+                    "$type": "float",
+                    "Value": 1.0
+                },
+                "allowNameSubstitution": false,
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            },
+            {
+                "name": "inSpecularOcclusion",
+                "displayName": "Specular Occlusion",
+                "description": "Specular Occlusion",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
+                "defaultDataType": "float",
+                "defaultValue": {
+                    "$type": "float",
+                    "Value": 1.0
+                },
+                "allowNameSubstitution": false,
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            },
+            {
+                "name": "inClearCoatFactor",
+                "displayName": "Clear Coat Factor",
+                "description": "Clear Coat Factor",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
+                "defaultDataType": "float",
+                "defaultValue": {
+                    "$type": "float",
+                    "Value": 0.0
+                },
+                "allowNameSubstitution": false,
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            },
+            {
+                "name": "inClearCoatRoughness",
+                "displayName": "Clear Coat Roughness",
+                "description": "Clear Coat Roughness",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
+                "defaultDataType": "float",
+                "defaultValue": {
+                    "$type": "float",
+                    "Value": 0.0
+                },
+                "allowNameSubstitution": false,
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            },
+            {
+                "name": "inClearCoatNormal",
+                "displayName": "Clear Coat Normal Input",
+                "description": "Use material input values for clear coat normals instead of vertex normals.",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
+                "defaultDataType": "float3",
+                "defaultValue": {
+                    "$type": "Vector3",
+                    "Value": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ]
+                },
+                "allowNameSubstitution": false,
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            }
+        ]
+    }
+}

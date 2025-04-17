@@ -22,7 +22,7 @@ namespace AZ
             AZ_RPI_PASS(DiffuseProbeGridVisualizationPreparePass);
 
             AZ_RTTI(DiffuseProbeGridVisualizationPreparePass, "{33BD769D-378B-4142-8C11-6A2ADA2BB095}", Pass);
-            AZ_CLASS_ALLOCATOR(DiffuseProbeGridVisualizationPreparePass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DiffuseProbeGridVisualizationPreparePass, SystemAllocator);
 
             //! Creates a DiffuseProbeGridVisualizationPreparePass
             static RPI::Ptr<DiffuseProbeGridVisualizationPreparePass> Create(const RPI::PassDescriptor& descriptor);

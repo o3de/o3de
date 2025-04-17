@@ -7,7 +7,7 @@
 #
 
 ly_add_target(
-    NAME ScriptCanvasPhysics.Static STATIC
+    NAME ${gem_name}.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
         scriptcanvas_physics_files.cmake
@@ -20,12 +20,12 @@ ly_add_target(
         PUBLIC
             Gem::ScriptCanvas.Extensions
     AUTOGEN_RULES
-        *.ScriptCanvasFunction.xml,ScriptCanvasFunctionRegistry_Header.jinja,AutoGenFunctionRegistry.generated.h
-        *.ScriptCanvasFunction.xml,ScriptCanvasFunctionRegistry_Source.jinja,AutoGenFunctionRegistry.generated.cpp
+        *.ScriptCanvasFunction.xml,ScriptCanvasFunction_Header.jinja,$path/$fileprefix.generated.h
+        *.ScriptCanvasFunction.xml,ScriptCanvasFunction_Source.jinja,$path/$fileprefix.generated.cpp
 )
 
 ly_add_target(
-    NAME ScriptCanvasPhysics ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME ${gem_name} ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         scriptcanvas_physics_shared_files.cmake
@@ -35,22 +35,32 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             Legacy::CryCommon
-            Gem::ScriptCanvasPhysics.Static
+            Gem::${gem_name}.Static
 )
+
+# Inject the gem name into the Module source file
+ly_add_source_properties(
+    SOURCES
+        Source/ScriptCanvasPhysicsModule.cpp
+    PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_GEM_NAME=${gem_name}
+            O3DE_GEM_VERSION=${gem_version})
 
 # By default, the above module is used by all application types, however, the module depends at runtime to ScriptCanvas
 # and the dependency needs to be different per application type
-ly_create_alias(NAME ScriptCanvasPhysics.Clients  NAMESPACE Gem TARGETS Gem::ScriptCanvasPhysics Gem::ScriptCanvas)
-ly_create_alias(NAME ScriptCanvasPhysics.Servers  NAMESPACE Gem TARGETS Gem::ScriptCanvasPhysics Gem::ScriptCanvas)
-ly_create_alias(NAME ScriptCanvasPhysics.Tools    NAMESPACE Gem TARGETS Gem::ScriptCanvasPhysics Gem::ScriptCanvas.Editor)
-ly_create_alias(NAME ScriptCanvasPhysics.Builders NAMESPACE Gem TARGETS Gem::ScriptCanvasPhysics Gem::ScriptCanvas.Editor)
+ly_create_alias(NAME ${gem_name}.Clients  NAMESPACE Gem TARGETS Gem::${gem_name} Gem::ScriptCanvas)
+ly_create_alias(NAME ${gem_name}.Servers  NAMESPACE Gem TARGETS Gem::${gem_name} Gem::ScriptCanvas)
+ly_create_alias(NAME ${gem_name}.Unified  NAMESPACE Gem TARGETS Gem::${gem_name} Gem::ScriptCanvas)
+ly_create_alias(NAME ${gem_name}.Tools    NAMESPACE Gem TARGETS Gem::${gem_name} Gem::ScriptCanvas.Editor)
+ly_create_alias(NAME ${gem_name}.Builders NAMESPACE Gem TARGETS Gem::${gem_name} Gem::ScriptCanvas.Editor)
 
 ################################################################################
 # Tests
 ################################################################################
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_target(
-        NAME ScriptCanvasPhysics.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+        NAME ${gem_name}.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
         NAMESPACE Gem
         FILES_CMAKE
             scriptcanvas_physics_tests_files.cmake
@@ -63,9 +73,9 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzFramework
                 AZ::AzTest
                 Legacy::CryCommon
-                Gem::ScriptCanvasPhysics.Static
+                Gem::${gem_name}.Static
     )
     ly_add_googletest(
-        NAME Gem::ScriptCanvasPhysics.Tests
+        NAME Gem::${gem_name}.Tests
     )
 endif()

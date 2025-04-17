@@ -9,9 +9,11 @@
 
 #include <AzCore/Module/Environment.h>
 
+#include <AzCore/Math/Crc.h>
 #include <AzCore/Memory/OSAllocator.h> // Needed for Context allocation from the OS
 #include <AzCore/RTTI/RTTI.h> // Context dynamic casting
 #include <AzCore/std/containers/vector.h> // Environment context array
+#include <AzCore/std/allocator_stateless.h>
 
 namespace AZ
 {
@@ -72,41 +74,7 @@ namespace AZ
             static AZ_THREAD_LOCAL EBusEnvironment* s_tlsCurrentEnvironment; ///< Pointer to the current environment for the current thread.
         };
 
-        class EBusEnvironmentAllocator
-        {
-            /**
-            * AZStd allocator wrapper for the EBus context internals. Don't expose to external code, this allocation are NOT
-            * tracked, etc. These are only for EBus internal usage.
-            */
-        public:
-            typedef void*               pointer_type;
-            typedef AZStd::size_t       size_type;
-            typedef AZStd::ptrdiff_t    difference_type;
-            typedef AZStd::false_type   allow_memory_leaks;
-
-            EBusEnvironmentAllocator();
-            EBusEnvironmentAllocator(const EBusEnvironmentAllocator& rhs);
-            pointer_type allocate(size_t byteSize, size_t alignment, int flags = 0);
-            size_type resize(pointer_type, size_type) { return 0; }
-            void deallocate(pointer_type ptr, size_type byteSize, size_type alignment);
-
-            bool operator==(const EBusEnvironmentAllocator&) { return true; }
-            bool operator!=(const EBusEnvironmentAllocator&) { return false; }
-            EBusEnvironmentAllocator& operator=(const EBusEnvironmentAllocator&) { return *this; }
-
-            const char* get_name() const { return m_name; }
-            void        set_name(const char* name) { m_name = name; }
-            constexpr size_type   max_size() const { return AZ_CORE_MAX_ALLOCATOR_SIZE; }
-            size_type   get_allocated_size() const { return 0; }
-
-            bool is_lock_free() { return false; }
-            bool is_stale_read_allowed() { return false; }
-            bool is_delayed_recycling() { return false; }
-
-        private:
-            const char* m_name;
-            Environment::AllocatorInterface* m_allocator;
-        };
+        using EBusEnvironmentAllocator = AZStd::stateless_allocator;
     }
 
     /**
@@ -123,7 +91,7 @@ namespace AZ
         friend struct EBusEnvironmentStoragePolicy;
 
     public:
-        AZ_CLASS_ALLOCATOR(EBusEnvironment, AZ::OSAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EBusEnvironment, AZ::OSAllocator);
 
         EBusEnvironment();
 
@@ -295,7 +263,7 @@ namespace AZ
     template<class Context>
     u32 EBusEnvironmentStoragePolicy<Context>::GetVariableId()
     {
-        static const u32 NameCrc = Crc32(AZ_FUNCTION_SIGNATURE);
+        static constexpr u32 NameCrc = Crc32(AZ_FUNCTION_SIGNATURE);
         return NameCrc;
     }
 } // namespace AZ

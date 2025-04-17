@@ -8,9 +8,16 @@
 
 #include "EditorTubeShapeComponentMode.h"
 
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
+#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
+#include <AzToolsFramework/API/ComponentModeCollectionInterface.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorMenuIdentifiers.h>
 #include <AzToolsFramework/Manipulators/LinearManipulator.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
+#include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzToolsFramework/Viewport/ActionBus.h>
 #include <LmbrCentral/Shape/SplineComponentBus.h>
 #include <LmbrCentral/Shape/EditorTubeShapeComponentBus.h>
@@ -20,7 +27,7 @@
 
 namespace LmbrCentral
 {
-    AZ_CLASS_ALLOCATOR_IMPL(EditorTubeShapeComponentMode, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(EditorTubeShapeComponentMode, AZ::SystemAllocator)
 
     static const AZ::Crc32 s_resetVariableRadii = AZ_CRC_CE("org.o3de.action.tubeshape.reset_radii");
     static const char* const s_resetRadiiTitle = "Reset Radii";
@@ -40,16 +47,86 @@ namespace LmbrCentral
         EditorSplineComponentNotificationBus::Handler::BusConnect(entityComponentIdPair.GetEntityId());
 
         CreateManipulators();
+
+        EditorTubeShapeComponentModeRequestBus::Handler::BusConnect(entityComponentIdPair);
     }
 
     EditorTubeShapeComponentMode::~EditorTubeShapeComponentMode()
     {
+        EditorTubeShapeComponentModeRequestBus::Handler::BusDisconnect();
+
         DestroyManipulators();
 
         EditorSplineComponentNotificationBus::Handler::BusDisconnect();
         SplineComponentNotificationBus::Handler::BusDisconnect();
         ShapeComponentNotificationsBus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::Handler::BusDisconnect();
+    }
+
+    void EditorTubeShapeComponentMode::Reflect(AZ::ReflectContext* context)
+    {
+        AzToolsFramework::ComponentModeFramework::ReflectEditorBaseComponentModeDescendant<EditorTubeShapeComponentMode>(context);
+    }
+
+    void EditorTubeShapeComponentMode::RegisterActions()
+    {
+        auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+        AZ_Assert(actionManagerInterface, "EditorTubeShapeComponentMode - could not get ActionManagerInterface on RegisterActions.");
+
+        auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get();
+        AZ_Assert(hotKeyManagerInterface, "EditorTubeShapeComponentMode - could not get HotKeyManagerInterface on RegisterActions.");
+
+        // Reset Radii
+        {
+            constexpr AZStd::string_view actionIdentifier = "o3de.action.tubeShape.resetRadii";
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = s_resetRadiiTitle;
+            actionProperties.m_description = s_resetRadiiDesc;
+            actionProperties.m_category = "Tube Shape";
+
+            actionManagerInterface->RegisterAction(
+                EditorIdentifiers::MainWindowActionContextIdentifier,
+                actionIdentifier,
+                actionProperties,
+                []
+                {
+                    auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
+                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+
+                    componentModeCollectionInterface->EnumerateActiveComponents(
+                        [](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
+                        {
+                            EditorTubeShapeComponentModeRequestBus::Event(
+                                entityComponentIdPair, &EditorTubeShapeComponentModeRequests::ResetRadii);
+                        }
+                    );
+                }
+            );
+
+            hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "R");
+        }
+    }
+
+    void EditorTubeShapeComponentMode::BindActionsToModes()
+    {
+        auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+        AZ_Assert(actionManagerInterface, "EditorTubeShapeComponentMode - could not get ActionManagerInterface on BindActionsToModes.");
+
+        AZ::SerializeContext* serializeContext = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
+
+        AZStd::string modeIdentifier = AZStd::string::format(
+            "o3de.context.mode.%s", serializeContext->FindClassData(azrtti_typeid<EditorTubeShapeComponentMode>())->m_name);
+
+        actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.tubeShape.resetRadii");
+    }
+
+    void EditorTubeShapeComponentMode::BindActionsToMenus()
+    {
+        auto menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
+        AZ_Assert(menuManagerInterface, "EditorTubeShapeComponentMode - could not get MenuManagerInterface on BindActionsToMenus.");
+
+        menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, "o3de.action.tubeShape.resetRadii", 6000);
     }
 
     void EditorTubeShapeComponentMode::Refresh()
@@ -60,6 +137,11 @@ namespace LmbrCentral
     AZStd::string EditorTubeShapeComponentMode::GetComponentModeName() const
     {
         return "Tube Shape Edit Mode";
+    }
+
+    AZ::Uuid EditorTubeShapeComponentMode::GetComponentModeType() const
+    {
+        return azrtti_typeid<EditorTubeShapeComponentMode>();
     }
 
     AZStd::vector<AzToolsFramework::ActionOverride> EditorTubeShapeComponentMode::PopulateActionsImpl()
@@ -73,28 +155,9 @@ namespace LmbrCentral
                 .SetTip(s_resetRadiiDesc)
                 .SetEntityComponentIdPair(GetEntityComponentIdPair())
                 .SetCallback([this]()
-            {
-                const AZ::EntityId entityId = GetEntityId();
-
-                // ensure we record undo command for reset
-                AzToolsFramework::ScopedUndoBatch undoBatch("Reset variable radii");
-                AzToolsFramework::ScopedUndoBatch::MarkEntityDirty(entityId);
-
-                TubeShapeComponentRequestsBus::Event(
-                    entityId, &TubeShapeComponentRequests::SetAllVariableRadii, 0.0f);
-
-                RefreshManipulatorsLocal(entityId);
-
-                EditorTubeShapeComponentRequestBus::Event(
-                    entityId, &EditorTubeShapeComponentRequests::GenerateVertices);
-
-                AzToolsFramework::OnEntityComponentPropertyChanged(GetEntityComponentIdPair());
-
-                // ensure property grid values are refreshed
-                AzToolsFramework::ToolsApplicationNotificationBus::Broadcast(
-                    &AzToolsFramework::ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplay,
-                    AzToolsFramework::Refresh_Values);
-            })
+                {
+                    ResetRadii();
+                })
         };
     }
 
@@ -266,6 +329,29 @@ namespace LmbrCentral
     void EditorTubeShapeComponentMode::OnSplineTypeChanged()
     {
         ContainerChanged();
+    }
+
+    void EditorTubeShapeComponentMode::ResetRadii()
+    {
+        const AZ::EntityId entityId = GetEntityId();
+
+        // ensure we record undo command for reset
+        AzToolsFramework::ScopedUndoBatch undoBatch("Reset variable radii");
+        AzToolsFramework::ScopedUndoBatch::MarkEntityDirty(entityId);
+
+        TubeShapeComponentRequestsBus::Event(entityId, &TubeShapeComponentRequests::SetAllVariableRadii, 0.0f);
+
+        RefreshManipulatorsLocal(entityId);
+
+        EditorTubeShapeComponentRequestBus::Event(entityId, &EditorTubeShapeComponentRequests::GenerateVertices);
+
+        AzToolsFramework::OnEntityComponentPropertyChanged(GetEntityComponentIdPair());
+
+        // ensure property grid values are refreshed
+        AzToolsFramework::ToolsApplicationNotificationBus::Broadcast(
+            &AzToolsFramework::ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplayForComponent, 
+            GetEntityComponentIdPair(),
+            AzToolsFramework::Refresh_Values);
     }
 
     void EditorTubeShapeComponentMode::OnOpenCloseChanged(const bool /*closed*/)

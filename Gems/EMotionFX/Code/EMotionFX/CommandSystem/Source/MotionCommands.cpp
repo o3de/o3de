@@ -7,6 +7,9 @@
  */
 
 #include "MotionCommands.h"
+
+#include <AzCore/Serialization/Locale.h>
+
 #include "CommandManager.h"
 
 #include <MCore/Source/Compare.h>
@@ -22,13 +25,15 @@
 #include <EMotionFX/Source/EventManager.h>
 #include <EMotionFX/Exporters/ExporterLib/Exporter/Exporter.h>
 
+#include <AzCore/Serialization/Locale.h>
+
 #include <AzFramework/API/ApplicationAPI.h>
 
 
 namespace CommandSystem
 {
-    AZ_CLASS_ALLOCATOR_IMPL(MotionIdCommandMixin, EMotionFX::CommandAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(CommandAdjustMotion, EMotionFX::CommandAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(MotionIdCommandMixin, EMotionFX::CommandAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(CommandAdjustMotion, EMotionFX::CommandAllocator)
 
     const char* CommandStopAllMotionInstances::s_stopAllMotionInstancesCmdName = "StopAllMotionInstances";
 
@@ -77,6 +82,8 @@ namespace CommandSystem
 
     AZStd::string CommandPlayMotion::PlayBackInfoToCommandParameters(const EMotionFX::PlayBackInfo* playbackInfo)
     {
+        AZ::Locale::ScopedSerializationLocale localeScope; // ensures that %f uses '.' as decimal separator
+
         return AZStd::string::format("-blendInTime %f -blendOutTime %f -playSpeed %f -targetWeight %f -eventWeightThreshold %f -maxPlayTime %f -numLoops %i -priorityLevel %i -blendMode %i -playMode %i -mirrorMotion %s -mix %s -playNow %s -motionExtraction %s -retarget %s -freezeAtLastFrame %s -enableMotionEvents %s -blendOutBeforeEnded %s -canOverwrite %s -deleteOnZeroWeight %s -inPlace %s",
             playbackInfo->m_blendInTime,
             playbackInfo->m_blendOutTime,
@@ -212,7 +219,8 @@ namespace CommandSystem
         AZStd::string filename;
         parameters.GetValue("filename", this, &filename);
 
-        EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePathKeepCase, filename);
+        AzFramework::ApplicationRequests::Bus::Broadcast(
+            &AzFramework::ApplicationRequests::Bus::Events::NormalizePathKeepCase, filename);
         // Resolve the filename if it starts with a path alias
         if (auto fileIoBase{ AZ::IO::FileIOBase::GetInstance() }; fileIoBase && filename.starts_with('@'))
         {
@@ -521,7 +529,8 @@ namespace CommandSystem
     {
         AZStd::string filename = parameters.GetValue("filename", command);
 
-        EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePathKeepCase, filename);
+        AzFramework::ApplicationRequests::Bus::Broadcast(
+            &AzFramework::ApplicationRequests::Bus::Events::NormalizePathKeepCase, filename);
         // Resolve the filename if it starts with a path alias
         if (filename.starts_with('@'))
         {
@@ -830,7 +839,8 @@ namespace CommandSystem
     {
         AZStd::string filename;
         parameters.GetValue("filename", "", filename);
-        EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePathKeepCase, filename);
+        AzFramework::ApplicationRequests::Bus::Broadcast(
+            &AzFramework::ApplicationRequests::Bus::Events::NormalizePathKeepCase, filename);
         // Resolve the filename if it starts with a path alias
         if (filename.starts_with('@'))
         {
@@ -1014,6 +1024,8 @@ namespace CommandSystem
 
         if (m_useUnitType == false)
         {
+            AZ::Locale::ScopedSerializationLocale locale;
+
             AZStd::string commandString;
             commandString = AZStd::string::format("ScaleMotionData -id %d -scaleFactor %.8f", m_motionId, 1.0f / m_scaleFactor);
             GetCommandManager()->ExecuteCommandInsideCommand(commandString.c_str(), outResult);

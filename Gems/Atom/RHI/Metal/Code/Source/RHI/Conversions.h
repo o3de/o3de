@@ -7,14 +7,14 @@
  */
 #pragma once
 #include <Atom/RHI.Reflect/Format.h>
-#include <Atom/RHI/Buffer.h>
-#include <Atom/RHI/BufferView.h>
-#include <Atom/RHI/Image.h>
-#include <Atom/RHI/ImageView.h>
-#include <Atom/RHI/PipelineState.h>
-#include <Atom/RHI/DrawItem.h>
-#include <Atom/RHI/BufferPool.h>
-#include <Atom/RHI/Query.h>
+#include <Atom/RHI/DeviceBuffer.h>
+#include <Atom/RHI/DeviceBufferView.h>
+#include <Atom/RHI/DeviceImage.h>
+#include <Atom/RHI/DeviceImageView.h>
+#include <Atom/RHI/DevicePipelineState.h>
+#include <Atom/RHI/DeviceDrawItem.h>
+#include <Atom/RHI/DeviceBufferPool.h>
+#include <Atom/RHI/DeviceQuery.h>
 #include <Atom/RHI.Reflect/InputStreamLayout.h>
 #include <Atom/RHI.Reflect/ShaderResourceGroupLayoutDescriptor.h>
 #include <Metal/Metal.h>
@@ -47,8 +47,9 @@ namespace AZ
         };
 
         MTLPixelFormat ConvertPixelFormat(RHI::Format format);
+        RHI::Format  ConvertPixelFormat(MTLPixelFormat format);
         MTLTextureUsage ConvertTextureUsageFlags(RHI::BufferBindFlags flags, RHI::Format format);
-        MTLTextureType ConvertTextureType(RHI::ImageDimension dimension, int arraySize, bool isCubeMap);
+        MTLTextureType ConvertTextureType(RHI::ImageDimension dimension, int arraySize, bool isCubeMap, bool isViewArray=false);
         MTLPixelFormat ConvertImageViewFormat( const Image& image, const RHI::ImageViewDescriptor& imageViewDescriptor);
         MTLBlendOperation ConvertBlendOp(RHI::BlendOp op);
         MTLBlendFactor ConvertBlendFactor(RHI::BlendFactor factor);
@@ -79,6 +80,8 @@ namespace AZ
         MTLResourceOptions CovertCPUCahceMode(MTLCPUCacheMode cpuCahceMode);
         MTLResourceOptions CovertToResourceOptions(MTLStorageMode storageMode, MTLCPUCacheMode cpuCahceMode, MTLHazardTrackingMode hazardTrackingMode);
         MTLStorageMode GetCPUGPUMemoryMode();
+        MTLBindingAccess GetBindingAccess(RHI::ShaderInputImageAccess accessType);
+        MTLBindingAccess GetBindingAccess(RHI::ShaderInputBufferAccess accessType);
     
         void ConvertSamplerState(const RHI::SamplerState& state, MTLSamplerDescriptor* samplerDesc);
         void ConvertDepthStencilState(const RHI::DepthStencilState& depthStencil, MTLDepthStencilDescriptor* mtlDepthStencilDesc);
@@ -92,6 +95,7 @@ namespace AZ
         bool IsDepthStencilMerged(MTLPixelFormat mtlFormat);
         bool GetVertexFormatSizeInBytes(const MTLVertexFormat vertexFormat, uint32_t& size);
         bool GetIndexTypeSizeInBytes(const MTLIndexType indexType, uint32_t& size);
+        bool IsTextureTypeAnArray(MTLTextureType textureType);
         uint32_t GetArrayLength(int arraySize, bool isCubeMap);
         
         ResourceDescriptor ConvertBufferDescriptor(const RHI::BufferDescriptor& descriptor, RHI::HeapMemoryLevel heapMemoryLevel = RHI::HeapMemoryLevel::Device);

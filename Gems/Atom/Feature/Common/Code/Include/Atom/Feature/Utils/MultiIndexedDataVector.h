@@ -27,6 +27,8 @@ namespace AZ
 
             MultiIndexedDataVector()
             {
+                static_assert((AZStd::is_default_constructible_v<Ts> && ...), "MultiIndexDataVector can only be used with types that are default constructible");
+
                 m_dataToIndices.reserve(InitialReservedCount);
                 m_indices.reserve(InitialReservedCount);
 
@@ -216,6 +218,18 @@ namespace AZ
                 for (auto& item : AZStd::get<Index>(m_data))
                 {
                     if (!lambda(item))
+                    {
+                        break;
+                    }
+                }
+            }
+
+            template<typename LambdaType>
+            void ForEach(LambdaType lambda) const
+            {
+                for (auto& elementIdx : m_dataToIndices)
+                {
+                    if (!lambda(elementIdx))
                     {
                         break;
                     }

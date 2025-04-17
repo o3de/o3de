@@ -19,14 +19,15 @@
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/IO/IStreamer.h>
 #include <AzCore/IO/Streamer/FileRequest.h>
+#include <AzCore/Serialization/Locale.h>
 #include <AzCore/std/parallel/binary_semaphore.h>
 #include <AzCore/Console/IConsole.h>
 
 // AzFramework
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
+#include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 #include <AzFramework/Input/Buses/Requests/InputSystemCursorRequestBus.h>
-#include <AzFramework/Terrain/TerrainDataRequestBus.h>      // for TerrainDataRequests
 #include <AzFramework/Archive/IArchive.h>
 
 // Editor
@@ -35,7 +36,6 @@
 #include "Settings.h"
 
 // CryCommon
-#include <CryCommon/INavigationSystem.h>
 #include <CryCommon/MainThreadRenderRequestBus.h>
 
 // Editor
@@ -44,8 +44,6 @@
 #include "ViewManager.h"
 #include "AnimationContext.h"
 #include "MainWindow.h"
-#include "Include/IObjectManager.h"
-#include "ActionManager.h"
 
 // Implementation of System Callback structure.
 struct SSystemUserCallback
@@ -155,22 +153,6 @@ struct SSystemUserCallback
         }
     }
 
-    void ShowMessage(const char* text, const char* caption, unsigned int uType) override
-    {
-        if (CCryEditApp::instance()->IsInAutotestMode())
-        {
-            return;
-        }
-
-        const UINT kMessageBoxButtonMask = 0x000f;
-        if (!GetIEditor()->IsInGameMode() && (uType == 0 || uType == MB_OK || !(uType & kMessageBoxButtonMask)))
-        {
-            static_cast<CEditorImpl*>(GetIEditor())->AddErrorMessage(text, caption);
-            return;
-        }
-        CryMessageBox(text, caption, uType);
-    }
-
     void OnSplashScreenDone()
     {
         m_pLogo = nullptr;
@@ -260,7 +242,12 @@ CGameEngine::~CGameEngine()
 {
 AZ_POP_DISABLE_WARNING
     GetIEditor()->UnregisterNotifyListener(this);
-    m_pISystem->GetIMovieSystem()->SetCallback(nullptr);
+
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+    if (movieSystem)
+    {
+        movieSystem->SetCallback(nullptr);
+    }
 
     delete m_pISystem;
     m_pISystem = nullptr;
@@ -296,6 +283,9 @@ void KillMemory(IConsoleCmdArgs* /* pArgs */)
 
 static void CmdGotoEditor(IConsoleCmdArgs* pArgs)
 {
+    // Console commands are assumed to be in the culture invariant locale since they can come from data files.
+    AZ::Locale::ScopedSerializationLocale scopedLocale;
+
     // feature is mostly useful for QA purposes, this works with the game "goto" command
     // this console command actually is used by the game command, the editor command shouldn't be used by the user
     int iArgCount = pArgs->GetArgCount();
@@ -337,7 +327,7 @@ AZ::Outcome<void, AZStd::string> CGameEngine::Init(
     constexpr const char* crySystemLibraryName = AZ_TRAIT_OS_DYNAMIC_LIBRARY_PREFIX  "CrySystem" AZ_TRAIT_OS_DYNAMIC_LIBRARY_EXTENSION;
 
     m_hSystemHandle = AZ::DynamicModuleHandle::Create(crySystemLibraryName);
-    if (!m_hSystemHandle->Load(true))
+    if (!m_hSystemHandle->Load(AZ::DynamicModuleHandle::LoadFlags::InitFuncRequired))
     {
         auto errorMessage = AZStd::string::format("%s Loading Failed", crySystemLibraryName);
         Error(errorMessage.c_str());
@@ -351,7 +341,6 @@ AZ::Outcome<void, AZStd::string> CGameEngine::Init(
 
     sip.bEditor = true;
     sip.bDedicatedServer = false;
-    AZ::Interface<AZ::IConsole>::Get()->PerformCommand("sv_isDedicated false");
     sip.bPreview = bPreviewMode;
     sip.bTestMode = bTestMode;
     sip.hInstance = nullptr;
@@ -423,9 +412,10 @@ AZ::Outcome<void, AZStd::string> CGameEngine::Init(
 
     SetEditorCoreEnvironment(gEnv);
 
-    if (gEnv && gEnv->pMovieSystem)
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+    if (movieSystem)
     {
-        gEnv->pMovieSystem->EnablePhysicsEvents(m_bSimulationMode);
+        movieSystem->EnablePhysicsEvents(m_bSimulationMode);
     }
 
     CLogFile::AboutSystem();
@@ -438,7 +428,7 @@ AZ::Outcome<void, AZStd::string> CGameEngine::Init(
     gEnv->pConsole->RemoveCommand("quit");
     REGISTER_COMMAND("quit", CGameEngine::HandleQuitRequest, VF_RESTRICTEDMODE, "Quit/Shutdown the engine");
 
-    EBUS_EVENT(CrySystemEventBus, OnCryEditorInitialized);
+    CrySystemEventBus::Broadcast(&CrySystemEventBus::Events::OnCryEditorInitialized);
 
     return AZ::Success();
 }
@@ -484,25 +474,6 @@ bool CGameEngine::LoadLevel(
     // directory is wrong
     QDir::setCurrent(GetIEditor()->GetPrimaryCDFolder());
 
-
-    bool usePrefabSystemForLevels = false;
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-
-    if (!usePrefabSystemForLevels)
-    {
-        QString pakFile = m_levelPath + "/level.pak";
-
-        // Open Pak file for this level.
-        if (!m_pISystem->GetIPak()->OpenPack(m_levelPath.toUtf8().data(), pakFile.toUtf8().data()))
-        {
-            CryWarning(VALIDATOR_MODULE_EDITOR, VALIDATOR_WARNING, "Level Pack File %s Not Found", pakFile.toUtf8().data());
-        }
-    }
-
-    // Audio: notify audio of level loading start?
-    GetIEditor()->GetObjectManager()->SendEvent(EVENT_REFRESH);
-
     m_bLevelLoaded = true;
 
     return true;
@@ -532,18 +503,23 @@ void CGameEngine::SwitchToInGame()
 
     GetIEditor()->Notify(eNotify_OnBeginGameMode);
 
-    m_pISystem->GetIMovieSystem()->EnablePhysicsEvents(true);
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+    if (movieSystem)
+    {
+        movieSystem->EnablePhysicsEvents(true);
+    }
+
     m_bInGameMode = true;
 
-    // Disable accelerators.
-    GetIEditor()->EnableAcceleratos(false);
-    //! Send event to switch into game.
-    GetIEditor()->GetObjectManager()->SendEvent(EVENT_INGAME);
-
-    m_pISystem->GetIMovieSystem()->Reset(true, false);
+    if (movieSystem)
+    {
+        constexpr bool playOnReset = true;
+        constexpr bool seekToStart = false;
+        movieSystem->Reset(playOnReset, seekToStart);
+    }
 
     // Transition to runtime entity context.
-    EBUS_EVENT(AzToolsFramework::EditorEntityContextRequestBus, StartPlayInEditor);
+    AzToolsFramework::EditorEntityContextRequestBus::Broadcast(&AzToolsFramework::EditorEntityContextRequestBus::Events::StartPlayInEditor);
 
     if (!CCryEditApp::instance()->IsInAutotestMode())
     {
@@ -559,25 +535,27 @@ void CGameEngine::SwitchToInGame()
 void CGameEngine::SwitchToInEditor()
 {
     // Transition to editor entity context.
-    EBUS_EVENT(AzToolsFramework::EditorEntityContextRequestBus, StopPlayInEditor);
+    AzToolsFramework::EditorEntityContextRequestBus::Broadcast(&AzToolsFramework::EditorEntityContextRequestBus::Events::StopPlayInEditor);
 
     // Reset movie system
-    for (int i = m_pISystem->GetIMovieSystem()->GetNumPlayingSequences(); --i >= 0;)
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+    if (movieSystem)
     {
-        m_pISystem->GetIMovieSystem()->GetPlayingSequence(i)->Deactivate();
+        for (int i = movieSystem->GetNumPlayingSequences(); --i >= 0;)
+        {
+            movieSystem->GetPlayingSequence(i)->Deactivate();
+        }
+        constexpr bool playOnReset = false;
+        constexpr bool seekToStart = false;
+        movieSystem->Reset(playOnReset, seekToStart);
     }
-    m_pISystem->GetIMovieSystem()->Reset(false, false);
 
     CViewport* pGameViewport = GetIEditor()->GetViewManager()->GetGameViewport();
 
-    m_pISystem->GetIMovieSystem()->EnablePhysicsEvents(m_bSimulationMode);
-
-    // Enable accelerators.
-    GetIEditor()->EnableAcceleratos(true);
-
-    // [Anton] - order changed, see comments for CGameEngine::SetSimulationMode
-    //! Send event to switch out of game.
-    GetIEditor()->GetObjectManager()->SendEvent(EVENT_OUTOFGAME);
+    if (movieSystem)
+    {
+        movieSystem->EnablePhysicsEvents(m_bSimulationMode);
+    }
 
     m_bInGameMode = false;
 
@@ -607,7 +585,7 @@ void CGameEngine::HandleQuitRequest(IConsoleCmdArgs* /*args*/)
     }
     else
     {
-        MainWindow::instance()->GetActionManager()->GetAction(ID_APP_EXIT)->trigger();
+        MainWindow::instance()->window()->close();
     }
 }
 
@@ -660,8 +638,6 @@ void CGameEngine::SetGameMode(bool bInGame)
         SwitchToInEditor();
     }
 
-    GetIEditor()->GetObjectManager()->SendEvent(EVENT_PHYSICS_APPLYSTATE);
-
     // Enables engine to know about that.
     if (MainWindow::instance())
     {
@@ -683,7 +659,11 @@ void CGameEngine::SetSimulationMode(bool enabled, bool bOnlyPhysics)
         return;
     }
 
-    m_pISystem->GetIMovieSystem()->EnablePhysicsEvents(enabled);
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+    if (movieSystem)
+    {
+        movieSystem->EnablePhysicsEvents(enabled);
+    }
 
     if (enabled)
     {
@@ -698,19 +678,6 @@ void CGameEngine::SetSimulationMode(bool enabled, bool bOnlyPhysics)
 
     // Enables engine to know about simulation mode.
     gEnv->SetIsEditorSimulationMode(enabled);
-
-    if (m_bSimulationMode)
-    {
-        // [Anton] the order of the next 3 calls changed, since, EVENT_INGAME loads physics state (if any),
-        // and Reset should be called before it
-        GetIEditor()->GetObjectManager()->SendEvent(EVENT_INGAME);
-    }
-    else
-    {
-        GetIEditor()->GetObjectManager()->SendEvent(EVENT_OUTOFGAME);
-    }
-
-    GetIEditor()->GetObjectManager()->SendEvent(EVENT_PHYSICS_APPLYSTATE);
 
     // Execute all queued events before switching modes.
     ExecuteQueuedEvents();
@@ -788,7 +755,7 @@ void CGameEngine::Update()
     }
 
     AZ::ComponentApplication* componentApplication = nullptr;
-    EBUS_EVENT_RESULT(componentApplication, AZ::ComponentApplicationBus, GetApplication);
+    AZ::ComponentApplicationBus::BroadcastResult(componentApplication, &AZ::ComponentApplicationBus::Events::GetApplication);
 
     if (m_bInGameMode)
     {
@@ -802,6 +769,22 @@ void CGameEngine::Update()
         if (CViewport* pRenderViewport = GetIEditor()->GetViewManager()->GetGameViewport())
         {
             pRenderViewport->Update();
+        }
+
+        // Check for the Escape key to exit game mode here rather than in Qt, 
+        // because all Qt events are usually filtered out in game mode in 
+        // QtEditorApplication_<platform>.cpp nativeEventFilter() to prevent 
+        // using Editor menu actions and shortcuts that shouldn't trigger while 
+        // playing the game.
+        // When the user opens the console, Qt events will be allowed 
+        // so the user can interact with limited Editor content like the console.
+        const AzFramework::InputChannel* inputChannel = nullptr;
+        const AzFramework::InputChannelId channelId(AzFramework::InputDeviceKeyboard::Key::Escape);
+        AzFramework::InputChannelRequestBus::EventResult(inputChannel, channelId, &AzFramework::InputChannelRequests::GetInputChannel);
+        if(inputChannel && inputChannel->GetState() == AzFramework::InputChannel::State::Began)
+        {
+            // leave game mode
+            RequestSetGameMode(false);
         }
     }
     else
@@ -831,39 +814,8 @@ void CGameEngine::OnEditorNotifyEvent(EEditorNotifyEvent event)
     }
 }
 
-void CGameEngine::OnTerrainModified(const Vec2& modPosition, float modAreaRadius, bool fullTerrain)
+void CGameEngine::OnAreaModified([[maybe_unused]] const AABB& modifiedArea)
 {
-    INavigationSystem* pNavigationSystem = nullptr; // INavigationSystem will be converted to an AZInterface (LY-111343)
-
-    if (pNavigationSystem)
-    {
-        // Only report local modifications, not a change in the full terrain (probably happening during initialization)
-        if (fullTerrain == false)
-        {
-            const Vec2 offset(modAreaRadius * 1.5f, modAreaRadius * 1.5f);
-            AABB updateBox;
-            updateBox.min = modPosition - offset;
-            updateBox.max = modPosition + offset;
-            AzFramework::Terrain::TerrainDataRequests* terrain = AzFramework::Terrain::TerrainDataRequestBus::FindFirstHandler();
-            AZ_Assert(terrain != nullptr, "Expecting a valid terrain handler when the terrain is modified");
-            const float terrainHeight1 = terrain->GetHeightFromFloats(updateBox.min.x, updateBox.min.y);
-            const float terrainHeight2 = terrain->GetHeightFromFloats(updateBox.max.x, updateBox.max.y);
-            const float terrainHeight3 = terrain->GetHeightFromFloats(modPosition.x, modPosition.y);
-
-            updateBox.min.z = min(terrainHeight1, min(terrainHeight2, terrainHeight3)) - (modAreaRadius * 2.0f);
-            updateBox.max.z = max(terrainHeight1, max(terrainHeight2, terrainHeight3)) + (modAreaRadius * 2.0f);
-            pNavigationSystem->WorldChanged(updateBox);
-        }
-    }
-}
-
-void CGameEngine::OnAreaModified(const AABB& modifiedArea)
-{
-    INavigationSystem* pNavigationSystem = nullptr; // INavigationSystem will be converted to an AZInterface (LY-111343)
-    if (pNavigationSystem)
-    {
-        pNavigationSystem->WorldChanged(modifiedArea);
-    }
 }
 
 void CGameEngine::ExecuteQueuedEvents()

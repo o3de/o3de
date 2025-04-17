@@ -1,0 +1,120 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "id": "{2A23578C-FB72-4A9F-AC95-06B278CEA913}",
+        "category": "Material Inputs",
+        "title": "Color Input",
+        "titlePaletteName": "MaterialInputNodeTitlePalette",
+        "description": "Create a shader variable with the type and default value defined by this node. It will be exposed and customizable as a material property.",
+        "slotDataTypeGroups": [
+            "inValue|outValue",
+            "outR|outG|outB|outA"
+        ],
+        "propertySlots": [
+            {
+                "name": "inGroup",
+                "displayName": "Group",
+                "description": "Material type group name that will contain the property corresponding to this input.",
+                "supportedDataTypeRegex": "string",
+                "defaultDataType": "string",
+                "visibleOnNode": false,
+                "editableOnNode": false
+            },
+            {
+                "name": "inName",
+                "displayName": "Name",
+                "description": "Property name that will be added to the material type for this input. The shader variable name and display name will be derived from this.",
+                "supportedDataTypeRegex": "string",
+                "defaultDataType": "string"
+            },
+            {
+                "name": "inDescription",
+                "displayName": "Description",
+                "description": "Description about what this material input does and how it should be used.",
+                "supportedDataTypeRegex": "string",
+                "defaultDataType": "string",
+                "visibleOnNode": false,
+                "editableOnNode": false
+            },
+            {
+                "name": "inValue",
+                "displayName": "Value",
+                "description": "Default value for the material property.",
+                "supportedDataTypeRegex": "color",
+                "defaultDataType": "color",
+                "settings": {
+                    "materialPropertyConnectionType": [
+                        "ShaderInput"
+                    ],
+                    "materialPropertySrgMember": [
+                        "STANDARD_SRG_MEMBER"
+                    ]
+                }
+            }
+        ],
+        "outputSlots": [
+            {
+                "name": "outValue",
+                "displayName": "Color",
+                "description": "RGBA color output value",
+                "supportedDataTypeRegex": "color",
+                "defaultDataType": "color",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = MaterialSrg::inValue;"
+                    ]
+                }
+            },
+            {
+                "name": "outR",
+                "displayName": "R",
+                "description": "Red color channel output value",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = MaterialSrg::inValue.r;"
+                    ]
+                }
+            },
+            {
+                "name": "outG",
+                "displayName": "G",
+                "description": "Green color channel output value",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = MaterialSrg::inValue.g;"
+                    ]
+                }
+            },
+            {
+                "name": "outB",
+                "displayName": "B",
+                "description": "Blue collar channel output value",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = MaterialSrg::inValue.b;"
+                    ]
+                }
+            },
+            {
+                "name": "outA",
+                "displayName": "A",
+                "description": "Alpha color channel output value",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = MaterialSrg::inValue.a;"
+                    ]
+                }
+            }
+        ]
+    }
+}

@@ -9,10 +9,11 @@
 
 #pragma once
 
-#include <AzCore/std/smart_ptr/intrusive_refcount.h>
+#include <AzCore/std/smart_ptr/intrusive_base.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/set.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 
 namespace AZ::IO::ZipDir
 {
@@ -23,22 +24,23 @@ namespace AZ::IO::ZipDir
         FileEntryBase* pFileEntryBase{}; // the file entry itself
     };
 
-    struct FileDataRecord;
-    struct FileDataRecordDeleter
-    {
-        void operator()(const AZStd::intrusive_refcount<AZStd::atomic_uint, FileDataRecordDeleter>* ptr) const;
-
-        AZ::IAllocator* m_allocator{};
-    };
     struct FileDataRecord
         : public FileRecord
-        , public AZStd::intrusive_refcount<AZStd::atomic_uint, FileDataRecordDeleter>
+        , public AZStd::intrusive_base
     {
-        FileDataRecord();
+        AZ_CLASS_ALLOCATOR(FileDataRecord, AZ::SystemAllocator);
+        FileDataRecord(const FileRecord& rThat);
 
-        static auto New(const FileRecord& rThat, AZ::IAllocator* allocator) ->AZStd::intrusive_ptr<FileDataRecord>;
-
-        void* GetData() {return this + 1; }
+        void* GetData() {return m_data.get(); }
+    private:
+        struct DataDeleter
+        {
+            void operator()(void* ptr) const
+            {
+                azfree(ptr);
+            }
+        };
+        AZStd::unique_ptr<AZStd::byte[], DataDeleter> m_data;
     };
 
     using FileDataRecordPtr = AZStd::intrusive_ptr<FileDataRecord>;

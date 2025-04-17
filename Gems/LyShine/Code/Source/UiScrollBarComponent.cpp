@@ -149,7 +149,7 @@ void UiScrollBarComponent::SetHandleSize(float size)
     {
         // Change handle's anchor
         UiTransform2dInterface::Anchors anchors;
-        EBUS_EVENT_ID_RESULT(anchors, m_handleEntity, UiTransform2dBus, GetAnchors);
+        UiTransform2dBus::EventResult(anchors, m_handleEntity, &UiTransform2dBus::Events::GetAnchors);
 
         if (m_orientation == Orientation::Horizontal)
         {
@@ -164,7 +164,7 @@ void UiScrollBarComponent::SetHandleSize(float size)
             AZ_Assert(false, "unhandled scrollbar orientation");
         }
 
-        EBUS_EVENT_ID(m_handleEntity, UiTransform2dBus, SetAnchors, anchors, false, false);
+        UiTransform2dBus::Event(m_handleEntity, &UiTransform2dBus::Events::SetAnchors, anchors, false, false);
 
         // Position handle at the correct location
         DoSetValue(m_value);
@@ -417,7 +417,7 @@ bool UiScrollBarComponent::HandlePressed(AZ::Vector2 point, bool& shouldStayActi
         m_pressedOnHandle = false;
 
         AZ::Entity* handleParentEntity = nullptr;
-        EBUS_EVENT_ID_RESULT(handleParentEntity, m_handleEntity, UiElementBus, GetParent);
+        UiElementBus::EventResult(handleParentEntity, m_handleEntity, &UiElementBus::Events::GetParent);
 
         if (handleParentEntity)
         {
@@ -611,7 +611,7 @@ void UiScrollBarComponent::InputPositionUpdate(AZ::Vector2 point)
             {
                 // Only do something if we're over the interactable
                 bool isPointInRect = false;
-                EBUS_EVENT_ID_RESULT(isPointInRect, GetEntityId(), UiTransformBus, IsPointInRect, point);
+                UiTransformBus::EventResult(isPointInRect, GetEntityId(), &UiTransformBus::Events::IsPointInRect, point);
                 if (isPointInRect)
                 {
                     // Only do something if we're on either side of the handle
@@ -639,7 +639,7 @@ bool UiScrollBarComponent::DoesSupportDragHandOff(AZ::Vector2 startPoint)
 {
     // this component does support hand-off, so long as the start point is in its bounds
     bool isPointInRect = false;
-    EBUS_EVENT_ID_RESULT(isPointInRect, GetEntityId(), UiTransformBus, IsPointInRect, startPoint);
+    UiTransformBus::EventResult(isPointInRect, GetEntityId(), &UiTransformBus::Events::IsPointInRect, startPoint);
     return isPointInRect;
 }
 
@@ -662,7 +662,8 @@ bool UiScrollBarComponent::OfferDragHandOff(AZ::EntityId currentActiveInteractab
             m_lastDragPoint = m_pressedPoint;
 
             // tell the canvas that this is now the active interactable
-            EBUS_EVENT_ID(currentActiveInteractable, UiInteractableActiveNotificationBus, ActiveChanged, GetEntityId(), false);
+            UiInteractableActiveNotificationBus::Event(
+                currentActiveInteractable, &UiInteractableActiveNotificationBus::Events::ActiveChanged, GetEntityId(), false);
         }
     }
 
@@ -794,7 +795,7 @@ void UiScrollBarComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::Category, "UI")
                 ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/UiScrollBar.png")
                 ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/UiScrollBar.png")
-                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("UI", 0x27ff46b0))
+                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
             // Elements group
@@ -844,7 +845,7 @@ void UiScrollBarComponent::Reflect(AZ::ReflectContext* context)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
                 editInfo->DataElement(0, &UiScrollBarComponent::m_isAutoFadeEnabled, "Auto Fade When Not In Use", "The scrollbar will automatically fade away when not in use.")
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c));
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
                 editInfo->DataElement(0, &UiScrollBarComponent::m_inactiveSecondsBeforeFade, "Fade Delay", "The delay in seconds before the scrollbar will begin to fade.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiScrollBarComponent::m_isAutoFadeEnabled);
                 editInfo->DataElement(0, &UiScrollBarComponent::m_fadeSpeed, "Fade Speed", "The speed in seconds at which the scrollbar will fade away.")
@@ -913,8 +914,13 @@ UiScrollBarComponent::EntityComboBoxVec UiScrollBarComponent::PopulateChildEntit
 
     // Get a list of all child elements
     LyShine::EntityArray matchingElements;
-    EBUS_EVENT_ID(GetEntityId(), UiElementBus, FindDescendantElements,
-        []([[maybe_unused]] const AZ::Entity* entity) { return true; },
+    UiElementBus::Event(
+        GetEntityId(),
+        &UiElementBus::Events::FindDescendantElements,
+        []([[maybe_unused]] const AZ::Entity* entity)
+        {
+            return true;
+        },
         matchingElements);
 
     // add their names to the StringList and their IDs to the id list
@@ -934,7 +940,7 @@ float UiScrollBarComponent::GetValidDragDistanceInPixels(AZ::Vector2 startPoint,
 
     // convert the drag vector to local space
     AZ::Matrix4x4 transformFromViewport;
-    EBUS_EVENT_ID(m_entity->GetId(), UiTransformBus, GetTransformFromViewport, transformFromViewport);
+    UiTransformBus::Event(m_entity->GetId(), &UiTransformBus::Events::GetTransformFromViewport, transformFromViewport);
     AZ::Vector2 dragVec = endPoint - startPoint;
     AZ::Vector3 dragVec3(dragVec.GetX(), dragVec.GetY(), 0.0f);
     AZ::Vector3 localDragVec = transformFromViewport.Multiply3x3(dragVec3);
@@ -951,7 +957,7 @@ float UiScrollBarComponent::GetValidDragDistanceInPixels(AZ::Vector2 startPoint,
 
     // convert back to viewport space
     AZ::Matrix4x4 transformToViewport;
-    EBUS_EVENT_ID(m_entity->GetId(), UiTransformBus, GetTransformToViewport, transformToViewport);
+    UiTransformBus::Event(m_entity->GetId(), &UiTransformBus::Events::GetTransformToViewport, transformToViewport);
     AZ::Vector3 validDragVec = transformToViewport.Multiply3x3(localDragVec);
 
     float validDistance = validDragVec.GetLengthSq();
@@ -973,7 +979,7 @@ bool UiScrollBarComponent::CheckForDragOrHandOffToParent(AZ::EntityId currentAct
     bool result = false;
 
     AZ::EntityId parentDraggable;
-    EBUS_EVENT_ID_RESULT(parentDraggable, GetEntityId(), UiElementBus, FindParentInteractableSupportingDrag, startPoint);
+    UiElementBus::EventResult(parentDraggable, GetEntityId(), &UiElementBus::Events::FindParentInteractableSupportingDrag, startPoint);
 
     // if this interactable is inside another interactable that supports drag then we use
     // a threshold value before starting a drag on this interactable
@@ -1000,8 +1006,14 @@ bool UiScrollBarComponent::CheckForDragOrHandOffToParent(AZ::EntityId currentAct
     else if (parentDraggable.IsValid())
     {
         // offer the parent draggable the chance to become the active interactable
-        EBUS_EVENT_ID_RESULT(handOffDone, parentDraggable, UiInteractableBus,
-            OfferDragHandOff, currentActiveInteractable, startPoint, currentPoint, containedDragThreshold);
+        UiInteractableBus::EventResult(
+            handOffDone,
+            parentDraggable,
+            &UiInteractableBus::Events::OfferDragHandOff,
+            currentActiveInteractable,
+            startPoint,
+            currentPoint,
+            containedDragThreshold);
 
         if (handOffDone)
         {
@@ -1022,7 +1034,7 @@ void UiScrollBarComponent::DoSetValue(float value)
     {
         // Move handle's anchors
         UiTransform2dInterface::Anchors anchors;
-        EBUS_EVENT_ID_RESULT(anchors, m_handleEntity, UiTransform2dBus, GetAnchors);
+        UiTransform2dBus::EventResult(anchors, m_handleEntity, &UiTransform2dBus::Events::GetAnchors);
 
         if (m_orientation == Orientation::Horizontal)
         {
@@ -1039,7 +1051,7 @@ void UiScrollBarComponent::DoSetValue(float value)
             AZ_Assert(false, "unhandled scrollbar orientation");
         }
 
-        EBUS_EVENT_ID(m_handleEntity, UiTransform2dBus, SetAnchors, anchors, false, false);
+        UiTransform2dBus::Event(m_handleEntity, &UiTransform2dBus::Events::SetAnchors, anchors, false, false);
     }
 }
 
@@ -1055,8 +1067,8 @@ void UiScrollBarComponent::DoChangedActions()
     if (!m_valueChangedActionName.empty())
     {
         AZ::EntityId canvasEntityId;
-        EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
-        EBUS_EVENT_ID(canvasEntityId, UiCanvasNotificationBus, OnAction, GetEntityId(), m_valueChangedActionName);
+        UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
+        UiCanvasNotificationBus::Event(canvasEntityId, &UiCanvasNotificationBus::Events::OnAction, GetEntityId(), m_valueChangedActionName);
     }
 
     NotifyListenersOnValueChanged();
@@ -1074,8 +1086,9 @@ void UiScrollBarComponent::DoChangingActions()
     if (!m_valueChangingActionName.empty())
     {
         AZ::EntityId canvasEntityId;
-        EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
-        EBUS_EVENT_ID(canvasEntityId, UiCanvasNotificationBus, OnAction, GetEntityId(), m_valueChangingActionName);
+        UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
+        UiCanvasNotificationBus::Event(
+            canvasEntityId, &UiCanvasNotificationBus::Events::OnAction, GetEntityId(), m_valueChangingActionName);
     }
 
     ResetFade();
@@ -1085,25 +1098,27 @@ void UiScrollBarComponent::DoChangingActions()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiScrollBarComponent::NotifyListenersOnValueChanged()
 {
-    EBUS_EVENT_ID(GetEntityId(), UiScrollerNotificationBus, OnScrollerValueChanged, m_value);
+    UiScrollerNotificationBus::Event(GetEntityId(), &UiScrollerNotificationBus::Events::OnScrollerValueChanged, m_value);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiScrollBarComponent::NotifyListenersOnValueChanging()
 {
-    EBUS_EVENT_ID(GetEntityId(), UiScrollerNotificationBus, OnScrollerValueChanging, m_value);
+    UiScrollerNotificationBus::Event(GetEntityId(), &UiScrollerNotificationBus::Events::OnScrollerValueChanging, m_value);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiScrollBarComponent::NotifyScrollableOnValueChanged()
 {
-    EBUS_EVENT_ID(GetEntityId(), UiScrollerToScrollableNotificationBus, OnValueChangedByScroller, m_value);
+    UiScrollerToScrollableNotificationBus::Event(
+        GetEntityId(), &UiScrollerToScrollableNotificationBus::Events::OnValueChangedByScroller, m_value);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiScrollBarComponent::NotifyScrollableOnValueChanging()
 {
-    EBUS_EVENT_ID(GetEntityId(), UiScrollerToScrollableNotificationBus, OnValueChangingByScroller, m_value);
+    UiScrollerToScrollableNotificationBus::Event(
+        GetEntityId(), &UiScrollerToScrollableNotificationBus::Events::OnValueChangingByScroller, m_value);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1111,13 +1126,13 @@ UiScrollBarComponent::LocRelativeToHandle UiScrollBarComponent::GetLocationRelat
 {
     // get point in the no scale/rotate canvas space
     AZ::Matrix4x4 transform;
-    EBUS_EVENT_ID(m_handleEntity, UiTransformBus, GetTransformFromViewport, transform);
+    UiTransformBus::Event(m_handleEntity, &UiTransformBus::Events::GetTransformFromViewport, transform);
     AZ::Vector3 point3(point.GetX(), point.GetY(), 0.0f);
     point3 = transform * point3;
 
     // get the rect for this element in the same space
     UiTransformInterface::Rect rect;
-    EBUS_EVENT_ID(m_handleEntity, UiTransformBus, GetCanvasSpaceRectNoScaleRotate, rect);
+    UiTransformBus::Event(m_handleEntity, &UiTransformBus::Events::GetCanvasSpaceRectNoScaleRotate, rect);
 
     LocRelativeToHandle pointLoc;
 
@@ -1184,12 +1199,12 @@ float UiScrollBarComponent::GetHandleParentLength()
     float handleParentLength = 0.0f;
 
     AZ::Entity* handleParentEntity = nullptr;
-    EBUS_EVENT_ID_RESULT(handleParentEntity, m_handleEntity, UiElementBus, GetParent);
+    UiElementBus::EventResult(handleParentEntity, m_handleEntity, &UiElementBus::Events::GetParent);
 
     if (handleParentEntity)
     {
         AZ::Vector2 size;
-        EBUS_EVENT_ID_RESULT(size, handleParentEntity->GetId(), UiTransformBus, GetCanvasSpaceSizeNoScaleRotate);
+        UiTransformBus::EventResult(size, handleParentEntity->GetId(), &UiTransformBus::Events::GetCanvasSpaceSizeNoScaleRotate);
 
         if (m_orientation == Orientation::Horizontal)
         {
@@ -1214,12 +1229,12 @@ float UiScrollBarComponent::GetPosAlongAxis(AZ::Vector2 point)
     float posAlongAxis = 0.0f;
 
     AZ::Entity* handleParentEntity = nullptr;
-    EBUS_EVENT_ID_RESULT(handleParentEntity, m_handleEntity, UiElementBus, GetParent);
+    UiElementBus::EventResult(handleParentEntity, m_handleEntity, &UiElementBus::Events::GetParent);
 
     if (handleParentEntity)
     {
         AZ::Matrix4x4 transform;
-        EBUS_EVENT_ID(handleParentEntity->GetId(), UiTransformBus, GetTransformFromViewport, transform);
+        UiTransformBus::Event(handleParentEntity->GetId(), &UiTransformBus::Events::GetTransformFromViewport, transform);
 
         AZ::Vector3 point3(point.GetX(), point.GetY(), 0.0f);
         point3 = transform * point3;

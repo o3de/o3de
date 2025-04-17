@@ -17,18 +17,12 @@ namespace AZ::Platform
         return AZ::Utils::GetExecutableDirectory();
     }
 
-    void* OpenModule(const AZ::OSString& fileName, bool& alreadyOpen)
-    {
-        void* handle = dlopen(fileName.c_str(), RTLD_NOLOAD);
-        alreadyOpen = (handle != nullptr);
-        if (!alreadyOpen)
-        {
-            handle = dlopen(fileName.c_str(), RTLD_NOW);
-        }
-        return handle;
-    }
-
     void ConstructModuleFullFileName(AZ::IO::FixedMaxPath&)
     {
+    }
+
+    AZ::IO::FixedMaxPath CreateFrameworkModulePath(const AZ::IO::PathView&)
+    {
+        return {};
     }
 } // namespace AZ::Platform

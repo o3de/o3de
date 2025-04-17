@@ -26,7 +26,7 @@ namespace ScriptCanvas::Developer
         : public EditorAutomationAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(CompoundAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CompoundAction, AZ::SystemAllocator);
         AZ_RTTI(CompoundAction, "{3F9A5736-111C-4D49-A3D5-BA3484D74F4D}", EditorAutomationAction);
 
         CompoundAction();
@@ -60,7 +60,7 @@ namespace ScriptCanvas::Developer
         : public EditorAutomationAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(DelayAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DelayAction, AZ::SystemAllocator);
         AZ_RTTI(DelayAction, "{44927F65-58DF-4142-8C04-6EC7A10050FB}", EditorAutomationAction);
 
         DelayAction(AZStd::chrono::milliseconds delayTime = AZStd::chrono::milliseconds(250));
@@ -70,7 +70,7 @@ namespace ScriptCanvas::Developer
 
     private:
 
-        AZStd::chrono::time_point<AZStd::chrono::system_clock> m_startPoint;
+        AZStd::chrono::steady_clock::time_point m_startPoint;
 
         AZStd::chrono::milliseconds m_delay;
     };
@@ -82,7 +82,7 @@ namespace ScriptCanvas::Developer
         : public DelayAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(ProcessUserEventsAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ProcessUserEventsAction, AZ::SystemAllocator);
         AZ_RTTI(ProcessUserEventsAction, "{CB6D47D6-2E63-4277-BCD0-F9014D74CC48}", DelayAction);
 
         ProcessUserEventsAction(AZStd::chrono::milliseconds delayTime = AZStd::chrono::milliseconds(250));
@@ -104,7 +104,7 @@ namespace ScriptCanvas::Developer
         : public EditorAutomationAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(TraceEvent, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TraceEvent, AZ::SystemAllocator);
         AZ_RTTI(TraceEvent, "{A2C0B4B1-9FD7-4441-86EB-B63C8DDD2C97}", EditorAutomationAction);
 
         TraceEvent(AZStd::string traceName);
@@ -114,5 +114,5 @@ namespace ScriptCanvas::Developer
     private:
 
         AZStd::string m_traceName;
-    };   
+    };
 }

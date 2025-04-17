@@ -33,7 +33,8 @@ QWidget* PropertyHandlerEntityIdComboBox::CreateGUI(QWidget* pParent)
     PropertyEntityIdComboBoxCtrl* newCtrl = aznew PropertyEntityIdComboBoxCtrl(pParent);
     QObject::connect(newCtrl, &PropertyEntityIdComboBoxCtrl::valueChanged, this, [newCtrl]()
         {
-            EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, newCtrl);
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, newCtrl);
         });
     return newCtrl;
 }
@@ -42,14 +43,14 @@ void PropertyHandlerEntityIdComboBox::ConsumeAttribute(PropertyEntityIdComboBoxC
 {
     (void)debugName;
 
-    if (attrib == AZ_CRC("EnumValue", 0xe4f32eed))
+    if (attrib == AZ_CRC_CE("EnumValue"))
     {
         AZStd::pair<AZ::EntityId, AZStd::string>  guiEnumValue;
         AZStd::pair<AZ::EntityId, AZStd::string>  enumValue;
-        AZ::Edit::EnumConstant<AZ::EntityId> enumConstant;
-        if (attrValue->Read<AZ::Edit::EnumConstant<AZ::EntityId>>(enumConstant))
+        AZ::Edit::EnumConstant<AZ::u64> enumConstant;
+        if (attrValue->Read<AZ::Edit::EnumConstant<AZ::u64>>(enumConstant))
         {
-            guiEnumValue.first = enumConstant.m_value;
+            guiEnumValue.first = AZ::EntityId(enumConstant.m_value);
             guiEnumValue.second = enumConstant.m_description;
             GUI->addEnumValue(guiEnumValue);
         }
@@ -81,13 +82,13 @@ void PropertyHandlerEntityIdComboBox::ConsumeAttribute(PropertyEntityIdComboBoxC
     {
         AZStd::vector<AZStd::pair<AZ::EntityId, AZStd::string>>  guiEnumValues;
         AZStd::vector<AZStd::pair<AZ::EntityId, AZStd::string> > enumValues;
-        AZStd::vector<AZ::Edit::EnumConstant<AZ::EntityId>> enumConstantValues;
-        if (attrValue->Read<AZStd::vector<AZ::Edit::EnumConstant<AZ::EntityId>>>(enumConstantValues))
+        AZStd::vector<AZ::Edit::EnumConstant<AZ::u64>> enumConstantValues;
+        if (attrValue->Read<AZStd::vector<AZ::Edit::EnumConstant<AZ::u64>>>(enumConstantValues))
         {
-            for (const AZ::Edit::EnumConstant<AZ::EntityId>& constantValue : enumConstantValues)
+            for (const AZ::Edit::EnumConstant<AZ::u64>& constantValue : enumConstantValues)
             {
                 auto& enumValue = guiEnumValues.emplace_back();
-                enumValue.first = constantValue.m_value;
+                enumValue.first = AZ::EntityId(constantValue.m_value);
                 enumValue.second = constantValue.m_description;
             }
 
@@ -108,7 +109,7 @@ void PropertyHandlerEntityIdComboBox::ConsumeAttribute(PropertyEntityIdComboBoxC
                 if (attrValue->Read<AZStd::vector<AZStd::pair<AZ::EntityId, const char*> > >(attempt2))
                 {
                     for (auto it = attempt2.begin(); it != attempt2.end(); ++it)
-                        guiEnumValues.push_back(AZStd::make_pair<AZ::EntityId, AZStd::string>(it->first, it->second));
+                        guiEnumValues.push_back(AZStd::pair<AZ::EntityId, AZStd::string>(it->first, it->second));
                     GUI->addEnumValues(guiEnumValues);
                 }
                 else
@@ -122,7 +123,8 @@ void PropertyHandlerEntityIdComboBox::ConsumeAttribute(PropertyEntityIdComboBoxC
 }
 void PropertyHandlerEntityIdComboBox::Register()
 {
-    EBUS_EVENT(AzToolsFramework::PropertyTypeRegistrationMessages::Bus, RegisterPropertyType, aznew PropertyHandlerEntityIdComboBox());
+    AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Broadcast(
+        &AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew PropertyHandlerEntityIdComboBox());
 }
 
 PropertyEntityIdComboBoxCtrl::PropertyEntityIdComboBoxCtrl(QWidget* pParent)

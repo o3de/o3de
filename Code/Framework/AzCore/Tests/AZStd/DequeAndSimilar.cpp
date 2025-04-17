@@ -7,14 +7,16 @@
  */
 #include "UserTypes.h"
 
+#include <AzCore/std/allocator_ref.h>
+#include <AzCore/std/allocator_static.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/deque.h>
 #include <AzCore/std/containers/queue.h>
-#include <AzCore/std/containers/stack.h>
 #include <AzCore/std/containers/ring_buffer.h>
-
-#include <AzCore/std/allocator_static.h>
-#include <AzCore/std/allocator_ref.h>
+#include <AzCore/std/containers/set.h>
+#include <AzCore/std/containers/span.h>
+#include <AzCore/std/containers/stack.h>
+#include <AzCore/std/ranges/transform_view.h>
 
 #define AZ_TEST_VALIDATE_EMPTY_DEQUE(_Deque) \
     AZ_TEST_ASSERT(_Deque.validate());       \
@@ -31,7 +33,7 @@
 namespace UnitTest
 {
     class Containers
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     };
     
@@ -214,8 +216,8 @@ namespace UnitTest
         static_buffer_16KB_type myMemoryManager1;
         static_buffer_16KB_type myMemoryManager2;
         using static_allocator_ref_type = AZStd::allocator_ref<static_buffer_16KB_type>;
-        static_allocator_ref_type allocator1(myMemoryManager1, "Mystack allocator 1");
-        static_allocator_ref_type allocator2(myMemoryManager2, "Mystack allocator 2");
+        static_allocator_ref_type allocator1(myMemoryManager1);
+        static_allocator_ref_type allocator2(myMemoryManager2);
 
         using int_deque_myalloc_type = AZStd::deque<int, static_allocator_ref_type>;
         int_deque_myalloc_type int_deque10(100, 13, allocator1); /// Allocate 100 elements using memory manager 1
@@ -231,10 +233,12 @@ namespace UnitTest
         // allocate again from myMemoryManager1
         int_deque10.resize(100, 15);
 
+        const size_t allocator1AllocatedSize = myMemoryManager1.get_allocated_size();
         int_deque10.set_allocator(allocator2);
         AZ_TEST_VALIDATE_DEQUE(int_deque10, 100);
-        // now we move the allocated size from menager1 to manager2 (without freeing menager1)
-        AZ_TEST_ASSERT(myMemoryManager1.get_allocated_size() == myMemoryManager2.get_allocated_size());
+        // now we move the allocated size from manager1 to manager2
+        EXPECT_LE(myMemoryManager1.get_allocated_size(), allocator1AllocatedSize);
+        EXPECT_GE(myMemoryManager2.get_allocated_size(), 100 * sizeof(int));
 
         myMemoryManager1.reset(); // flush manager 1 again (int_vector10 is stored in manager 2)
 
@@ -624,7 +628,7 @@ namespace UnitTest
         int_buffer5.emplace_back();
         AZ_TEST_VALIDATE_RINGBUFFER(int_buffer5, myArr.size() + 2);
 
-        int_buffer5.push_front(201);
+        int_buffer5.emplace_front(201);
         AZ_TEST_VALIDATE_RINGBUFFER(int_buffer5, myArr.size() + 3);
         AZ_TEST_ASSERT(int_buffer5.front() == 201);
         int_buffer5.emplace_front();
@@ -671,7 +675,7 @@ namespace UnitTest
         }
     }
 
-    using StackContainerTestFixture = ScopedAllocatorSetupFixture;
+    using StackContainerTestFixture = LeakDetectionFixture;
 
     TEST_F(StackContainerTestFixture, StackEmplaceOperator_SupportsZeroOrMoreArguments)
     {
@@ -684,5 +688,79 @@ namespace UnitTest
         using ContainerType = typename AZStd::stack<TestPairType>::container_type;
         AZStd::stack<TestPairType> expectedStack(ContainerType{ TestPairType{ 0, 0 }, TestPairType{ 1, 0 }, TestPairType{ 2, 3 } });
         EXPECT_EQ(expectedStack, testStack);
+    }
+
+
+    using DequeTestFixture = LeakDetectionFixture;
+
+    TEST_F(DequeTestFixture, RangeConstructors_Succeeds)
+    {
+        constexpr AZStd::string_view testView = "abc";
+
+        AZStd::deque testDeque(AZStd::from_range, testView);
+        EXPECT_THAT(testDeque, ::testing::ElementsAre('a', 'b', 'c'));
+
+        testDeque = AZStd::deque(AZStd::from_range, AZStd::vector<char>{testView.begin(), testView.end()});
+        EXPECT_THAT(testDeque, ::testing::ElementsAre('a', 'b', 'c'));
+        testDeque = AZStd::deque(AZStd::from_range, AZStd::list<char>{testView.begin(), testView.end()});
+        EXPECT_THAT(testDeque, ::testing::ElementsAre('a', 'b', 'c'));
+        testDeque = AZStd::deque(AZStd::from_range, AZStd::deque<char>{testView.begin(), testView.end()});
+        EXPECT_THAT(testDeque, ::testing::ElementsAre('a', 'b', 'c'));
+        testDeque = AZStd::deque(AZStd::from_range, AZStd::set<char>{testView.begin(), testView.end()});
+        EXPECT_THAT(testDeque, ::testing::ElementsAre('a', 'b', 'c'));
+        testDeque = AZStd::deque(AZStd::from_range, AZStd::unordered_set<char>{testView.begin(), testView.end()});
+        EXPECT_THAT(testDeque, ::testing::ElementsAre('a', 'b', 'c'));
+        testDeque = AZStd::deque(AZStd::from_range, AZStd::fixed_vector<char, 8>{testView.begin(), testView.end()});
+        EXPECT_THAT(testDeque, ::testing::ElementsAre('a', 'b', 'c'));
+        testDeque = AZStd::deque(AZStd::from_range, AZStd::array{ 'a', 'b', 'c' });
+        EXPECT_THAT(testDeque, ::testing::ElementsAre('a', 'b', 'c'));
+        testDeque = AZStd::deque(AZStd::from_range, AZStd::span(testView));
+        EXPECT_THAT(testDeque, ::testing::ElementsAre('a', 'b', 'c'));
+
+        AZStd::fixed_string<8> testValue(testView);
+        testDeque = AZStd::deque(AZStd::from_range, testValue);
+        EXPECT_THAT(testDeque, ::testing::ElementsAre('a', 'b', 'c'));
+        testDeque = AZStd::deque(AZStd::from_range, AZStd::string(testView));
+        EXPECT_THAT(testDeque, ::testing::ElementsAre('a', 'b', 'c'));
+
+        // Test Range views
+        testDeque = AZStd::deque(AZStd::from_range, testValue | AZStd::views::transform([](const char elem) -> char { return elem + 1; }));
+        EXPECT_THAT(testDeque, ::testing::ElementsAre('b', 'c', 'd'));
+    }
+
+    TEST_F(DequeTestFixture, AssignRange_Succeeds)
+    {
+        constexpr AZStd::string_view testView = "def";
+        AZStd::deque testDev{ 'a', 'b', 'c' };
+        testDev.assign_range(AZStd::vector<char>{testView.begin(), testView.end()});
+        testDev.assign_range(AZStd::vector<char>{testView.begin(), testView.end()});
+        EXPECT_THAT(testDev, ::testing::ElementsAre('d', 'e', 'f'));
+    }
+
+    TEST_F(DequeTestFixture, InsertRange_Succeeds)
+    {
+        constexpr AZStd::string_view testView = "abc";
+        AZStd::deque testDeque{ 'd', 'e', 'f' };
+        testDeque.insert_range(testDeque.begin(), AZStd::vector<char>{testView.begin(), testView.end()});
+        testDeque.insert_range(testDeque.end(), testView | AZStd::views::transform([](const char elem) -> char { return elem + 6; }));
+        EXPECT_THAT(testDeque, ::testing::ElementsAre('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'));
+    }
+
+    TEST_F(DequeTestFixture, AppendRange_Succeeds)
+    {
+        constexpr AZStd::string_view testView = "def";
+        AZStd::deque testDeque{ 'a', 'b', 'c' };
+        testDeque.append_range(AZStd::vector<char>{testView.begin(), testView.end()});
+        testDeque.append_range(testView | AZStd::views::transform([](const char elem) -> char { return elem + 3; }));
+        EXPECT_THAT(testDeque, ::testing::ElementsAre('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'));
+    }
+
+    TEST_F(DequeTestFixture, PrependRange_Succeeds)
+    {
+        constexpr AZStd::string_view testView = "def";
+        AZStd::deque testDeque{ 'g', 'h', 'i' };
+        testDeque.prepend_range(AZStd::vector<char>{testView.begin(), testView.end()});
+        testDeque.prepend_range(testView | AZStd::views::transform([](const char elem) -> char { return elem + -3; }));
+        EXPECT_THAT(testDeque, ::testing::ElementsAre('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'));
     }
 }

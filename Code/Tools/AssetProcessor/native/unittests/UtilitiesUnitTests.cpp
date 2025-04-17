@@ -7,17 +7,18 @@
  */
 
 #include <AzCore/PlatformIncl.h>
-#include "UtilitiesUnitTests.h"
-
-
-#include <AzToolsFramework/AssetDatabase/AssetDatabaseConnection.h>
-#include "native/utilities/assetUtils.h"
-#include "native/utilities/ByteArrayStream.h"
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Jobs/Job.h>
 #include <AzTest/AzTest.h>
-#include <QThread>
+#include <AzToolsFramework/AssetDatabase/AssetDatabaseConnection.h>
 
+#include <native/utilities/assetUtils.h>
+#include <native/utilities/ByteArrayStream.h>
+#include <native/tests/MockAssetDatabaseRequestsHandler.h>
+#include <native/unittests/UnitTestUtils.h>
+#include <native/unittests/AssetProcessorUnitTests.h>
+
+#include <QThread>
 
 #if defined(AZ_PLATFORM_LINUX)
 #include <sys/stat.h>
@@ -53,48 +54,50 @@ namespace AssetProcessor
     };
 }
 
-#if !AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
-REGISTER_UNIT_TEST(UtilitiesUnitTests)
-#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
+class UtilitiesUnitTests
+    : public UnitTest::AssetProcessorUnitTestBase
+{
+};
 
-void UtilitiesUnitTests::StartTest()
+TEST_F(UtilitiesUnitTests, NormalizeFilePath_FeedFilePathInDifferentFormats_Succeeds)
 {
     using namespace AzToolsFramework::AssetDatabase;
 
     // do not change case
     // do not chop extension
     // do not make full path
-    UNIT_TEST_EXPECT_TRUE(NormalizeFilePath("a/b\\c\\d/E.txt") == "a/b/c/d/E.txt");
+    EXPECT_EQ(NormalizeFilePath("a/b\\c\\d/E.txt"), "a/b/c/d/E.txt");
 
     // do not erase full path
 #if defined(AZ_PLATFORM_WINDOWS)
-    UNIT_TEST_EXPECT_TRUE(NormalizeFilePath("c:\\a/b\\c\\d/E.txt") == "C:/a/b/c/d/E.txt");
+    EXPECT_EQ(NormalizeFilePath("c:\\a/b\\c\\d/E.txt"), "C:/a/b/c/d/E.txt");
 #else
-    UNIT_TEST_EXPECT_TRUE(NormalizeFilePath("c:\\a/b\\c\\d/E.txt") == "c:/a/b/c/d/E.txt");
+    EXPECT_EQ(NormalizeFilePath("c:\\a/b\\c\\d/E.txt"), "c:/a/b/c/d/E.txt");
 #endif // defined(AZ_PLATFORM_WINDOWS)
-
 
     // same tests but for directories:
 #if defined(AZ_PLATFORM_WINDOWS)
-    UNIT_TEST_EXPECT_TRUE(NormalizeDirectoryPath("c:\\a/b\\c\\d") == "C:/a/b/c/d");
+    EXPECT_EQ(NormalizeDirectoryPath("c:\\a/b\\c\\d"), "C:/a/b/c/d");
 #else
-    UNIT_TEST_EXPECT_TRUE(NormalizeDirectoryPath("c:\\a/b\\c\\d") == "c:/a/b/c/d");
+    EXPECT_EQ(NormalizeDirectoryPath("c:\\a/b\\c\\d"), "c:/a/b/c/d");
 #endif // defined(AZ_PLATFORM_WINDOWS)
 
-    UNIT_TEST_EXPECT_TRUE(NormalizeDirectoryPath("a/b\\c\\d") == "a/b/c/d");
+    EXPECT_EQ(NormalizeDirectoryPath("a/b\\c\\d"), "a/b/c/d");
 
     // directories automatically chop slashes:
 #if defined(AZ_PLATFORM_WINDOWS)
-    UNIT_TEST_EXPECT_TRUE(NormalizeDirectoryPath("c:\\a/b\\c\\d\\") == "C:/a/b/c/d");
-    UNIT_TEST_EXPECT_TRUE(NormalizeDirectoryPath("c:\\a/b\\c\\d//") == "C:/a/b/c/d");
+    EXPECT_EQ(NormalizeDirectoryPath("c:\\a/b\\c\\d\\"), "C:/a/b/c/d");
+    EXPECT_EQ(NormalizeDirectoryPath("c:\\a/b\\c\\d//"), "C:/a/b/c/d");
 #else
-    UNIT_TEST_EXPECT_TRUE(NormalizeDirectoryPath("c:\\a/b\\c\\d\\") == "c:/a/b/c/d");
-    UNIT_TEST_EXPECT_TRUE(NormalizeDirectoryPath("c:\\a/b\\c\\d//") == "c:/a/b/c/d");
+    EXPECT_EQ(NormalizeDirectoryPath("c:\\a/b\\c\\d\\"), "c:/a/b/c/d");
+    EXPECT_EQ(NormalizeDirectoryPath("c:\\a/b\\c\\d//"), "c:/a/b/c/d");
 #endif // defined(AZ_PLATFORM_WINDOWS)
+}
 
-    QTemporaryDir tempdir;
-    QDir dir(tempdir.path());
-    QString fileName (dir.filePath("test.txt"));
+TEST_F(UtilitiesUnitTests, ChangeFileAttributes_MakeFileReadOnlyOrWritable_Succeeds)
+{
+    QDir dir(m_assetDatabaseRequestsHandler->GetAssetRootDir().c_str());
+    QString fileName(dir.filePath("test.txt"));
     CreateDummyFile(fileName);
 #if defined WIN32
     DWORD fileAttributes = GetFileAttributesA(fileName.toUtf8());
@@ -119,16 +122,20 @@ void UtilitiesUnitTests::StartTest()
         }
     }
 #endif
-    UNIT_TEST_EXPECT_TRUE(AssetUtilities::MakeFileWritable(fileName));
+    EXPECT_TRUE(AssetUtilities::MakeFileWritable(fileName));
+}
 
-    // ------------- Test NormalizeAndRemoveAlias --------------
+TEST_F(UtilitiesUnitTests, NormalizeAndRemoveAlias_FeedFilePathWithDoubleSlackesAndAlias_Succeeds)
+{
+    EXPECT_EQ(AssetUtilities::NormalizeAndRemoveAlias("@test@\\my\\file.txt"), QString("my/file.txt"));
+    EXPECT_EQ(AssetUtilities::NormalizeAndRemoveAlias("@test@my\\file.txt"), QString("my/file.txt"));
+    EXPECT_EQ(AssetUtilities::NormalizeAndRemoveAlias("@TeSt@my\\file.txt"), QString("my/file.txt")); // case sensitivity test!
+}
 
-    UNIT_TEST_EXPECT_TRUE(AssetUtilities::NormalizeAndRemoveAlias("@test@\\my\\file.txt") == QString("my/file.txt"));
-    UNIT_TEST_EXPECT_TRUE(AssetUtilities::NormalizeAndRemoveAlias("@test@my\\file.txt") == QString("my/file.txt"));
-    UNIT_TEST_EXPECT_TRUE(AssetUtilities::NormalizeAndRemoveAlias("@TeSt@my\\file.txt") == QString("my/file.txt")); // case sensitivity test!
-
-    //-----------------------Test CopyFileWithTimeout---------------------
-
+TEST_F(UtilitiesUnitTests, CopyFileWithTimeout_FeedFilesInDifferentStates_Succeeds)
+{
+    QDir dir(m_assetDatabaseRequestsHandler->GetAssetRootDir().c_str());
+    QString fileName(dir.filePath("test.txt"));
     QString outputFileName(dir.filePath("test1.txt"));
     
     QFile inputFile(fileName);
@@ -136,6 +143,7 @@ void UtilitiesUnitTests::StartTest()
     QFile outputFile(outputFileName);
     outputFile.open(QFile::WriteOnly);
 
+    const int waitTimeInSeconds = 1; // Timeout for copying files
 #if defined(AZ_PLATFORM_WINDOWS)
     // this test is intentionally disabled on other platforms
     // because in general on other platforms its actually possible to delete and move
@@ -144,11 +152,16 @@ void UtilitiesUnitTests::StartTest()
     //Trying to copy when the output file is open for reading should fail.
     {
         UnitTestUtils::AssertAbsorber absorb;
-        UNIT_TEST_EXPECT_FALSE(CopyFileWithTimeout(fileName, outputFileName, 1));
-        UNIT_TEST_EXPECT_TRUE(absorb.m_numWarningsAbsorbed == 2); // 2 for each fail
-        //Trying to move when the output file is open for reading
-        UNIT_TEST_EXPECT_FALSE(MoveFileWithTimeout(fileName, outputFileName, 1));
-        UNIT_TEST_EXPECT_TRUE(absorb.m_numWarningsAbsorbed == 4);
+        EXPECT_FALSE(CopyFileWithTimeout(fileName, outputFileName, waitTimeInSeconds));
+        // Expected two warnings for copying files:
+        // 1) Failed to remove old files
+        // 2) Copy operation failed for the given timeout
+        EXPECT_EQ(absorb.m_numWarningsAbsorbed, 1);
+        // Expected another two warnings for moving files:
+        // 1) Failed to remove old files
+        // 2) Move operation failed for the given timeout
+        EXPECT_FALSE(MoveFileWithTimeout(fileName, outputFileName, waitTimeInSeconds));
+        EXPECT_EQ(absorb.m_numWarningsAbsorbed, 2);
     }
 #endif // AZ_PLATFORM_WINDOWS ONLY
 
@@ -156,11 +169,11 @@ void UtilitiesUnitTests::StartTest()
     outputFile.close();
 
     //Trying to copy when the output file is not open
-    UNIT_TEST_EXPECT_TRUE(CopyFileWithTimeout(fileName, outputFileName, 1));
-    UNIT_TEST_EXPECT_TRUE(CopyFileWithTimeout(fileName, outputFileName, aznumeric_caster(-1)));//invalid timeout time
+    EXPECT_TRUE(CopyFileWithTimeout(fileName, outputFileName, waitTimeInSeconds));
+    EXPECT_TRUE(CopyFileWithTimeout(fileName, outputFileName, aznumeric_caster(-1)));//invalid timeout time
     // Trying to move when the output file is not open
-    UNIT_TEST_EXPECT_TRUE(MoveFileWithTimeout(fileName, outputFileName, 1));
-    UNIT_TEST_EXPECT_TRUE(MoveFileWithTimeout(outputFileName, fileName, 1));
+    EXPECT_TRUE(MoveFileWithTimeout(fileName, outputFileName, waitTimeInSeconds));
+    EXPECT_TRUE(MoveFileWithTimeout(outputFileName, fileName, waitTimeInSeconds));
 
     // Open the file and then close it in the near future
     AZStd::atomic_bool setupDone{ false };
@@ -180,280 +193,285 @@ void UtilitiesUnitTests::StartTest()
         QThread::msleep(1);
     }
 
-    UNIT_TEST_EXPECT_TRUE(outputFile.isOpen());
+    EXPECT_TRUE(outputFile.isOpen());
 
     //Trying to copy when the output file is open,but will close before the timeout inputted
     {
         UnitTestUtils::AssertAbsorber absorb;
-        UNIT_TEST_EXPECT_TRUE(CopyFileWithTimeout(fileName, outputFileName, 1));
+        EXPECT_TRUE(CopyFileWithTimeout(fileName, outputFileName, waitTimeInSeconds));
 #if defined(AZ_PLATFORM_WINDOWS)
         // only windows has an issue with moving files out that are in use.
         // other platforms do so without issue.
-        UNIT_TEST_EXPECT_TRUE(absorb.m_numWarningsAbsorbed > 0);
+        EXPECT_EQ(absorb.m_numWarningsAbsorbed, 0);
 #endif // windows platform.
     }
+}
 
-    // ------------- Test CheckCanLock --------------
-    {
-        QTemporaryDir lockTestTempDir;
-        QDir lockTestDir(lockTestTempDir.path());
-        QString lockTestFileName(lockTestDir.filePath("lockTest.txt"));
+TEST_F(UtilitiesUnitTests, CheckCanLock_FeedFileToLock_GetsLockStatus)
+{
+    QDir lockTestDir(m_assetDatabaseRequestsHandler->GetAssetRootDir().c_str());
+    QString lockTestFileName(lockTestDir.filePath("lockTest.txt"));
 
-        UNIT_TEST_EXPECT_FALSE(AssetUtilities::CheckCanLock(lockTestFileName));
+    EXPECT_FALSE(AssetUtilities::CheckCanLock(lockTestFileName));
 
-        CreateDummyFile(lockTestFileName);
-        UNIT_TEST_EXPECT_TRUE(AssetUtilities::CheckCanLock(lockTestFileName));
+    EXPECT_TRUE(CreateDummyFile(lockTestFileName));
+    EXPECT_TRUE(AssetUtilities::CheckCanLock(lockTestFileName));
 
 #if defined(AZ_PLATFORM_WINDOWS)
-        // on windows, opening a file for reading locks it
-        // but on other platforms, this is not the case.
-        QFile lockTestFile(lockTestFileName);
-        lockTestFile.open(QFile::ReadOnly);
+    // on windows, opening a file for reading locks it
+    // but on other platforms, this is not the case.
+    QFile lockTestFile(lockTestFileName);
+    lockTestFile.open(QFile::ReadOnly);
 #elif defined(AZ_PLATFORM_LINUX)
-        int handle = open(lockTestFileName.toUtf8().constData(), O_RDONLY | O_EXCL | O_NONBLOCK);
+    int handle = open(lockTestFileName.toUtf8().constData(), O_RDONLY | O_EXCL | O_NONBLOCK);
 #else
-        int handle = open(lockTestFileName.toUtf8().constData(), O_RDONLY | O_EXLOCK | O_NONBLOCK);       
+    int handle = open(lockTestFileName.toUtf8().constData(), O_RDONLY | O_EXLOCK | O_NONBLOCK);       
 #endif // AZ_PLATFORM_WINDOWS
 
 #if defined(AZ_PLATFORM_WINDOWS)
-        UNIT_TEST_EXPECT_FALSE(AssetUtilities::CheckCanLock(lockTestFileName));
-        lockTestFile.close();
+    EXPECT_FALSE(AssetUtilities::CheckCanLock(lockTestFileName));
+    lockTestFile.close();
 #else
-        if (handle != -1)
-        {
-            close(handle);
-        }
+    if (handle != -1)
+    {
+        close(handle);
+    }
 #endif // windows/other platforms ifdef 
-    }
-
-    // --------------- TEST BYTEARRAYSTREAM
-
-    {
-        AssetProcessor::ByteArrayStream stream;
-        UNIT_TEST_EXPECT_TRUE(stream.CanSeek());
-        UNIT_TEST_EXPECT_TRUE(stream.IsOpen());
-        UNIT_TEST_EXPECT_TRUE(stream.GetLength() == 0);
-        UNIT_TEST_EXPECT_TRUE(stream.GetCurPos() == 0);
-        char tempReadBuffer[24];
-        azstrcpy(tempReadBuffer, 24, "This is a Test String");
-        UNIT_TEST_EXPECT_TRUE(stream.Read(100, tempReadBuffer) == 0);
-
-        // reserving does not alter the length.
-        stream.Reserve(128);
-        UNIT_TEST_EXPECT_TRUE(stream.GetLength() == 0);
-        UNIT_TEST_EXPECT_TRUE(stream.Write(7, tempReadBuffer) == 7);
-        UNIT_TEST_EXPECT_TRUE(stream.GetCurPos() == 7);
-        UNIT_TEST_EXPECT_TRUE(stream.GetLength() == 7);
-        UNIT_TEST_EXPECT_TRUE(memcmp(stream.GetArray().constData(), tempReadBuffer, 7) == 0);
-        UNIT_TEST_EXPECT_TRUE(stream.Write(7, tempReadBuffer) == 7);
-        UNIT_TEST_EXPECT_TRUE(stream.GetLength() == 14);
-        UNIT_TEST_EXPECT_TRUE(stream.GetCurPos() == 14);
-        UNIT_TEST_EXPECT_TRUE(memcmp(stream.GetArray().constData(), "This isThis is", 14) == 0);
-
-
-        stream.Seek(0, AZ::IO::GenericStream::ST_SEEK_BEGIN); // write at  begin, without overrunning
-        UNIT_TEST_EXPECT_TRUE(stream.GetCurPos() == 0);
-        UNIT_TEST_EXPECT_TRUE(stream.Write(4, "that") == 4);
-        UNIT_TEST_EXPECT_TRUE(stream.GetLength() == 14);
-        UNIT_TEST_EXPECT_TRUE(stream.GetCurPos() == 4);
-        UNIT_TEST_EXPECT_TRUE(memcmp(stream.GetArray().constData(), "that isThis is", 14) == 0);
-
-        stream.Seek(2, AZ::IO::GenericStream::ST_SEEK_CUR); // write in middle, without overrunning
-        UNIT_TEST_EXPECT_TRUE(stream.GetCurPos() == 6);
-        UNIT_TEST_EXPECT_TRUE(stream.Write(4, "1234") == 4);
-        UNIT_TEST_EXPECT_TRUE(stream.GetLength() == 14);
-        UNIT_TEST_EXPECT_TRUE(stream.GetCurPos() == 10);
-        UNIT_TEST_EXPECT_TRUE(memcmp(stream.GetArray().constData(), "that i1234s is", 14) == 0);
-
-        stream.Seek(-6, AZ::IO::GenericStream::ST_SEEK_END); // write in end, negative offset, without overrunning
-        UNIT_TEST_EXPECT_TRUE(stream.GetCurPos() == 8);
-        UNIT_TEST_EXPECT_TRUE(stream.Write(4, "5555") == 4);
-        UNIT_TEST_EXPECT_TRUE(stream.GetCurPos() == 12);
-        UNIT_TEST_EXPECT_TRUE(stream.GetLength() == 14);
-        UNIT_TEST_EXPECT_TRUE(memcmp(stream.GetArray().constData(), "that i125555is", 14) == 0);
-
-        stream.Seek(2, AZ::IO::GenericStream::ST_SEEK_BEGIN); // write at begin offset, with overrun:
-        UNIT_TEST_EXPECT_TRUE(stream.GetCurPos() == 2);
-        UNIT_TEST_EXPECT_TRUE(stream.GetLength() == 14);
-        UNIT_TEST_EXPECT_TRUE(stream.Write(14, "xxxxxxxxxxxxxx") == 14);
-        UNIT_TEST_EXPECT_TRUE(stream.GetLength() == 16);
-        UNIT_TEST_EXPECT_TRUE(stream.GetCurPos() == 16);
-        UNIT_TEST_EXPECT_TRUE(memcmp(stream.GetArray().constData(), "thxxxxxxxxxxxxxx", 16) == 0);
-
-        stream.Seek(0, AZ::IO::GenericStream::ST_SEEK_BEGIN);
-        stream.Seek(14, AZ::IO::GenericStream::ST_SEEK_CUR); // write in middle, with overrunning:
-        UNIT_TEST_EXPECT_TRUE(stream.GetCurPos() == 14);
-        UNIT_TEST_EXPECT_TRUE(stream.GetLength() == 16);
-        UNIT_TEST_EXPECT_TRUE(stream.Write(4, "yyyy") == 4);
-        UNIT_TEST_EXPECT_TRUE(stream.GetCurPos() == 18);
-        UNIT_TEST_EXPECT_TRUE(stream.GetLength() == 18);
-        UNIT_TEST_EXPECT_TRUE(memcmp(stream.GetArray().constData(), "thxxxxxxxxxxxxyyyy", 18) == 0);
-
-        stream.Seek(-2, AZ::IO::GenericStream::ST_SEEK_END); // write in end, negative offset, with overrunning
-        UNIT_TEST_EXPECT_TRUE(stream.GetCurPos() == 16);
-        UNIT_TEST_EXPECT_TRUE(stream.GetLength() == 18);
-        UNIT_TEST_EXPECT_TRUE(stream.Write(4, "ZZZZ") == 4);
-        UNIT_TEST_EXPECT_TRUE(stream.GetCurPos() == 20);
-        UNIT_TEST_EXPECT_TRUE(stream.GetLength() == 20);
-        UNIT_TEST_EXPECT_TRUE(memcmp(stream.GetArray().constData(), "thxxxxxxxxxxxxyyZZZZ", 20) == 0);
-
-        // read test.
-        stream.Seek(0, AZ::IO::GenericStream::ST_SEEK_BEGIN);
-        UNIT_TEST_EXPECT_TRUE(stream.Read(20, tempReadBuffer) == 20);
-        UNIT_TEST_EXPECT_TRUE(memcmp(tempReadBuffer, "thxxxxxxxxxxxxyyZZZZ", 20) == 0);
-        UNIT_TEST_EXPECT_TRUE(stream.Read(20, tempReadBuffer) == 0); // because its already at end.
-        UNIT_TEST_EXPECT_TRUE(memcmp(tempReadBuffer, "thxxxxxxxxxxxxyyZZZZ", 20) == 0); // it should not have disturbed the buffer.
-        stream.Seek(2, AZ::IO::GenericStream::ST_SEEK_BEGIN);
-        UNIT_TEST_EXPECT_TRUE(stream.Read(20, tempReadBuffer) == 18);
-        UNIT_TEST_EXPECT_TRUE(memcmp(tempReadBuffer, "xxxxxxxxxxxxyyZZZZZZ", 20) == 0); // it should not have disturbed the buffer bits that it was not asked to touch.
-    }
-
-    // --------------- TEST FilePatternMatcher
-    {
-        {
-            AssetBuilderSDK::FilePatternMatcher extensionWildcardTest(AssetBuilderSDK::AssetBuilderPattern("*.cfg", AssetBuilderSDK::AssetBuilderPattern::Wildcard));
-            UNIT_TEST_EXPECT_TRUE(extensionWildcardTest.MatchesPath(AZStd::string("foo.cfg")));
-            UNIT_TEST_EXPECT_TRUE(extensionWildcardTest.MatchesPath(AZStd::string("abcd/foo.cfg")));
-            UNIT_TEST_EXPECT_FALSE(extensionWildcardTest.MatchesPath(AZStd::string("abcd/foo.cfd")));
-        }
-
-        {
-            AssetBuilderSDK::FilePatternMatcher prefixWildcardTest(AssetBuilderSDK::AssetBuilderPattern("abf*.llm", AssetBuilderSDK::AssetBuilderPattern::Wildcard));
-            UNIT_TEST_EXPECT_TRUE(prefixWildcardTest.MatchesPath(AZStd::string("abf.llm")));
-            UNIT_TEST_EXPECT_TRUE(prefixWildcardTest.MatchesPath(AZStd::string("abf12345.llm")));
-            UNIT_TEST_EXPECT_FALSE(prefixWildcardTest.MatchesPath(AZStd::string("foo/abf12345.llm")));
-            UNIT_TEST_EXPECT_FALSE(prefixWildcardTest.MatchesPath(AZStd::string("foo/abf12345.lls")));
-            UNIT_TEST_EXPECT_FALSE(prefixWildcardTest.MatchesPath(AZStd::string("foo/ab2345.llm")));
-        }
-
-        {
-            AssetBuilderSDK::FilePatternMatcher extensionPrefixWildcardTest(AssetBuilderSDK::AssetBuilderPattern("sdf.c*", AssetBuilderSDK::AssetBuilderPattern::Wildcard));
-            UNIT_TEST_EXPECT_TRUE(extensionPrefixWildcardTest.MatchesPath(AZStd::string("sdf.cpp")));
-            UNIT_TEST_EXPECT_TRUE(extensionPrefixWildcardTest.MatchesPath(AZStd::string("sdf.cxx")));
-            UNIT_TEST_EXPECT_TRUE(extensionPrefixWildcardTest.MatchesPath(AZStd::string("sdf.c")));
-            UNIT_TEST_EXPECT_FALSE(extensionPrefixWildcardTest.MatchesPath(AZStd::string("abcd/sdf.cpp")));
-            UNIT_TEST_EXPECT_FALSE(extensionPrefixWildcardTest.MatchesPath(AZStd::string("s:\\asd/abcd/sdf.cpp")));
-            UNIT_TEST_EXPECT_FALSE(extensionPrefixWildcardTest.MatchesPath(AZStd::string("sdc.c")));
-            UNIT_TEST_EXPECT_FALSE(extensionPrefixWildcardTest.MatchesPath(AZStd::string("sdf.hxx")));
-            UNIT_TEST_EXPECT_FALSE(extensionPrefixWildcardTest.MatchesPath(AZStd::string("s:\\asd/abcd/sdf.hxx")));
-        }
-
-        {
-            AssetBuilderSDK::FilePatternMatcher prefixExtensionPrefixWildcardTest(AssetBuilderSDK::AssetBuilderPattern("s*.c*", AssetBuilderSDK::AssetBuilderPattern::Wildcard));
-            UNIT_TEST_EXPECT_TRUE(prefixExtensionPrefixWildcardTest.MatchesPath(AZStd::string("sdf.cpp")));
-            UNIT_TEST_EXPECT_TRUE(prefixExtensionPrefixWildcardTest.MatchesPath(AZStd::string("sdf.cxx")));
-            UNIT_TEST_EXPECT_FALSE(prefixExtensionPrefixWildcardTest.MatchesPath(AZStd::string("abcd/sdf.cpp")));
-            UNIT_TEST_EXPECT_FALSE(prefixExtensionPrefixWildcardTest.MatchesPath(AZStd::string("c:\\asd/abcd/sdf.cpp")));
-            UNIT_TEST_EXPECT_FALSE(prefixExtensionPrefixWildcardTest.MatchesPath(AZStd::string("sdf.hxx")));
-            UNIT_TEST_EXPECT_FALSE(prefixExtensionPrefixWildcardTest.MatchesPath(AZStd::string("s:\\asd/abcd/sdf.hxx")));
-        }
-
-        {
-            AssetBuilderSDK::FilePatternMatcher fixedNameTest(AssetBuilderSDK::AssetBuilderPattern("a.bcd", AssetBuilderSDK::AssetBuilderPattern::Wildcard));
-            UNIT_TEST_EXPECT_TRUE(fixedNameTest.MatchesPath(AZStd::string("a.bcd")));
-            UNIT_TEST_EXPECT_FALSE(fixedNameTest.MatchesPath(AZStd::string("foo\\a.bcd")));
-            UNIT_TEST_EXPECT_FALSE(fixedNameTest.MatchesPath(AZStd::string("foo/a.bcd")));
-            UNIT_TEST_EXPECT_FALSE(fixedNameTest.MatchesPath(AZStd::string("c:/foo/a.bcd")));
-            UNIT_TEST_EXPECT_FALSE(fixedNameTest.MatchesPath(AZStd::string("c:\\foo/a.bcd")));
-            UNIT_TEST_EXPECT_FALSE(fixedNameTest.MatchesPath(AZStd::string("sdf.hxx")));
-        }
-
-        {
-            AssetBuilderSDK::FilePatternMatcher midMatchExtensionPrefixTest(AssetBuilderSDK::AssetBuilderPattern("s*f.c*", AssetBuilderSDK::AssetBuilderPattern::Wildcard));
-            UNIT_TEST_EXPECT_TRUE(midMatchExtensionPrefixTest.MatchesPath(AZStd::string("sdf.cpp")));
-            UNIT_TEST_EXPECT_TRUE(midMatchExtensionPrefixTest.MatchesPath(AZStd::string("sef.cxx")));
-            UNIT_TEST_EXPECT_TRUE(midMatchExtensionPrefixTest.MatchesPath(AZStd::string("sf.c")));
-            UNIT_TEST_EXPECT_FALSE(midMatchExtensionPrefixTest.MatchesPath(AZStd::string("c:\\asd/abcd/sdf.cpp")));
-            UNIT_TEST_EXPECT_FALSE(midMatchExtensionPrefixTest.MatchesPath(AZStd::string("abcd/sdf.cpp")));
-            UNIT_TEST_EXPECT_FALSE(midMatchExtensionPrefixTest.MatchesPath(AZStd::string("sdc.c")));
-            UNIT_TEST_EXPECT_FALSE(midMatchExtensionPrefixTest.MatchesPath(AZStd::string("sdf.hxx")));
-            UNIT_TEST_EXPECT_FALSE(midMatchExtensionPrefixTest.MatchesPath(AZStd::string("s:\\asd/abcd/sdf.hxx")));
-        }
-
-        {
-            AssetBuilderSDK::FilePatternMatcher subFolderExtensionWildcardTest(AssetBuilderSDK::AssetBuilderPattern("abcd/*.cfg", AssetBuilderSDK::AssetBuilderPattern::Wildcard));
-            UNIT_TEST_EXPECT_TRUE(subFolderExtensionWildcardTest.MatchesPath(AZStd::string("abcd/sdf.cfg")));
-            UNIT_TEST_EXPECT_FALSE(subFolderExtensionWildcardTest.MatchesPath(AZStd::string("c://abcd/sdf.cfg")));
-            UNIT_TEST_EXPECT_FALSE(subFolderExtensionWildcardTest.MatchesPath(AZStd::string("sdf.cfg")));
-            UNIT_TEST_EXPECT_FALSE(subFolderExtensionWildcardTest.MatchesPath(AZStd::string("abcs/sdf.cfg")));
-            UNIT_TEST_EXPECT_FALSE(subFolderExtensionWildcardTest.MatchesPath(AZStd::string("abcd/sdf.cfx")));
-        }
-
-        {
-            AssetBuilderSDK::FilePatternMatcher subFolderPatternTest(AssetBuilderSDK::AssetBuilderPattern(".*\\/savebackup\\/.*", AssetBuilderSDK::AssetBuilderPattern::Regex));
-            UNIT_TEST_EXPECT_TRUE(subFolderPatternTest.MatchesPath(AZStd::string("abcd/savebackup/sdf.cfg")));
-            UNIT_TEST_EXPECT_FALSE(subFolderPatternTest.MatchesPath(AZStd::string("abcd/savebackup")));
-            UNIT_TEST_EXPECT_FALSE(subFolderPatternTest.MatchesPath(AZStd::string("savebackup/sdf.cfg")));
-            UNIT_TEST_EXPECT_FALSE(subFolderPatternTest.MatchesPath(AZStd::string("c://abcd/sdf.cfg")));
-            UNIT_TEST_EXPECT_FALSE(subFolderPatternTest.MatchesPath(AZStd::string("sdf.cfg")));
-            UNIT_TEST_EXPECT_FALSE(subFolderPatternTest.MatchesPath(AZStd::string("abcs/sdf.cfg")));
-            UNIT_TEST_EXPECT_FALSE(subFolderPatternTest.MatchesPath(AZStd::string("abcd/sdf.cfx")));
-        }
-
-        {
-            AssetBuilderSDK::FilePatternMatcher subFolderPatternTest(AssetBuilderSDK::AssetBuilderPattern(".*\\/Presets\\/GeomCache\\/.*", AssetBuilderSDK::AssetBuilderPattern::Regex));
-            UNIT_TEST_EXPECT_TRUE(subFolderPatternTest.MatchesPath(AZStd::string("something/Presets/GeomCache/sdf.cfg")));
-            UNIT_TEST_EXPECT_FALSE(subFolderPatternTest.MatchesPath(AZStd::string("Presets/GeomCache/sdf.cfg"))); // should not match because it demands that there is a slash
-            UNIT_TEST_EXPECT_FALSE(subFolderPatternTest.MatchesPath(AZStd::string("abcd/savebackup")));
-            UNIT_TEST_EXPECT_FALSE(subFolderPatternTest.MatchesPath(AZStd::string("savebackup/sdf.cfg")));
-            UNIT_TEST_EXPECT_FALSE(subFolderPatternTest.MatchesPath(AZStd::string("c://abcd/sdf.cfg")));
-            UNIT_TEST_EXPECT_FALSE(subFolderPatternTest.MatchesPath(AZStd::string("sdf.cfg")));
-            UNIT_TEST_EXPECT_FALSE(subFolderPatternTest.MatchesPath(AZStd::string("abcs/sdf.cfg")));
-            UNIT_TEST_EXPECT_FALSE(subFolderPatternTest.MatchesPath(AZStd::string("abcd/sdf.cfx")));
-        }
-    }
-
-    Q_EMIT UnitTestPassed();
 }
 
-class GetFileHashFromStream_NullPath_Returns0
-    : public UnitTestRun
+TEST_F(UtilitiesUnitTests, TestByteArrayStream_WriteToStream_Succeeds)
 {
-public:
-    void StartTest() override
-    {
-        AZ::u64 result = GetFileHash(nullptr);
-        UNIT_TEST_EXPECT_TRUE(result == 0);
-        Q_EMIT UnitTestPassed();
-    }
-};
+    AssetProcessor::ByteArrayStream stream;
+    EXPECT_TRUE(stream.CanSeek());
+    EXPECT_TRUE(stream.IsOpen());
+    EXPECT_EQ(stream.GetLength(), 0);
+    EXPECT_EQ(stream.GetCurPos(), 0);
+    char tempReadBuffer[24];
+    azstrcpy(tempReadBuffer, 24, "This is a Test String");
+    EXPECT_EQ(stream.Read(100, tempReadBuffer), 0);
 
-REGISTER_UNIT_TEST(GetFileHashFromStream_NullPath_Returns0)
+    // reserving does not alter the length.
+    stream.Reserve(128);
+    EXPECT_EQ(stream.GetLength(), 0);
 
-class GetFileHashFromStreamSmallFile_ReturnsExpectedHash
-    : public UnitTestRun
+    // Write 7 bytes from the buffer to the stream
+    AZ::IO::SizeType sizeInBytesToWrite = 7;
+    EXPECT_EQ(stream.Write(sizeInBytesToWrite, tempReadBuffer), sizeInBytesToWrite);
+    AZ::IO::SizeType expectedPosition = sizeInBytesToWrite;
+    AZ::IO::SizeType expectedLength = sizeInBytesToWrite;
+    EXPECT_EQ(stream.GetCurPos(), expectedPosition);
+    EXPECT_EQ(stream.GetLength(), expectedLength);
+    EXPECT_EQ(memcmp(stream.GetArray().constData(), tempReadBuffer, expectedLength), 0); 
+
+    // Write 7 bytes from the buffer to the stream again
+    EXPECT_EQ(stream.Write(sizeInBytesToWrite, tempReadBuffer), sizeInBytesToWrite);
+    expectedPosition += sizeInBytesToWrite;
+    expectedLength += sizeInBytesToWrite;
+    EXPECT_EQ(stream.GetLength(), expectedLength);
+    EXPECT_EQ(stream.GetCurPos(), expectedPosition);
+    EXPECT_EQ(memcmp(stream.GetArray().constData(), "This isThis is", expectedLength), 0);
+
+    sizeInBytesToWrite = 4;
+    AZ::IO::SizeType offsite = 0;
+    stream.Seek(offsite, AZ::IO::GenericStream::ST_SEEK_BEGIN); // write at begin, without overrunning
+    expectedPosition = offsite;
+    EXPECT_EQ(stream.GetCurPos(), expectedPosition);
+    EXPECT_EQ(stream.Write(sizeInBytesToWrite, "that"), sizeInBytesToWrite);
+    expectedPosition += sizeInBytesToWrite;
+    EXPECT_EQ(stream.GetLength(), expectedLength);
+    EXPECT_EQ(stream.GetCurPos(), expectedPosition);
+    EXPECT_EQ(memcmp(stream.GetArray().constData(), "that isThis is", expectedLength), 0);
+
+    offsite = 2;
+    stream.Seek(offsite, AZ::IO::GenericStream::ST_SEEK_CUR); // write in middle, without overrunning
+    expectedPosition += offsite;
+    EXPECT_EQ(stream.GetCurPos(), expectedPosition);
+    EXPECT_EQ(stream.Write(sizeInBytesToWrite, "1234"), sizeInBytesToWrite);
+    expectedPosition += sizeInBytesToWrite;
+    EXPECT_EQ(stream.GetLength(), expectedLength);
+    EXPECT_EQ(stream.GetCurPos(), expectedPosition);
+    EXPECT_EQ(memcmp(stream.GetArray().constData(), "that i1234s is", expectedLength), 0);
+
+    offsite = AZ::IO::SizeType(-6);
+    stream.Seek(offsite, AZ::IO::GenericStream::ST_SEEK_END); // write in end, negative offset, without overrunning
+    expectedPosition = expectedLength + offsite;
+    EXPECT_EQ(stream.GetCurPos(), expectedPosition);
+    EXPECT_EQ(stream.Write(sizeInBytesToWrite, "5555"), sizeInBytesToWrite);
+    expectedPosition += sizeInBytesToWrite;
+    EXPECT_EQ(stream.GetCurPos(), expectedPosition);
+    EXPECT_EQ(stream.GetLength(), expectedLength);
+    EXPECT_EQ(memcmp(stream.GetArray().constData(), "that i125555is", expectedLength), 0);
+
+    offsite = 2;
+    sizeInBytesToWrite = 14;
+    stream.Seek(offsite, AZ::IO::GenericStream::ST_SEEK_BEGIN); // write at begin offset, with overrun:
+    expectedPosition = offsite;
+    EXPECT_EQ(stream.GetCurPos(), offsite);
+    EXPECT_EQ(stream.GetLength(), expectedLength);
+    EXPECT_EQ(stream.Write(sizeInBytesToWrite, "xxxxxxxxxxxxxx"), sizeInBytesToWrite);
+    expectedPosition += sizeInBytesToWrite;
+    expectedLength = expectedPosition;
+    EXPECT_EQ(stream.GetCurPos(), expectedPosition);
+    EXPECT_EQ(stream.GetLength(), expectedLength);
+    EXPECT_EQ(memcmp(stream.GetArray().constData(), "thxxxxxxxxxxxxxx", expectedLength), 0);
+
+    offsite = 14;
+    sizeInBytesToWrite = 4;
+    stream.Seek(0, AZ::IO::GenericStream::ST_SEEK_BEGIN);
+    stream.Seek(offsite, AZ::IO::GenericStream::ST_SEEK_CUR); // write in middle, with overrunning:
+    expectedPosition = offsite;
+    EXPECT_EQ(stream.GetCurPos(), expectedPosition);
+    EXPECT_EQ(stream.GetLength(), expectedLength);
+    EXPECT_EQ(stream.Write(sizeInBytesToWrite, "yyyy"), sizeInBytesToWrite);
+    expectedPosition += sizeInBytesToWrite;
+    expectedLength = expectedPosition;
+    EXPECT_EQ(stream.GetCurPos(), expectedPosition);
+    EXPECT_EQ(stream.GetLength(), expectedLength);
+    EXPECT_EQ(memcmp(stream.GetArray().constData(), "thxxxxxxxxxxxxyyyy", expectedLength), 0);
+
+    offsite = AZ::IO::SizeType(-2);
+    stream.Seek(offsite, AZ::IO::GenericStream::ST_SEEK_END); // write in end, negative offset, with overrunning
+    expectedPosition = expectedLength + offsite;
+    EXPECT_EQ(stream.GetCurPos(), expectedPosition);
+    EXPECT_EQ(stream.GetLength(), expectedLength);
+    EXPECT_EQ(stream.Write(sizeInBytesToWrite, "ZZZZ"), sizeInBytesToWrite);
+    expectedPosition += sizeInBytesToWrite;
+    expectedLength = expectedPosition;
+    EXPECT_EQ(stream.GetCurPos(), expectedPosition);
+    EXPECT_EQ(stream.GetLength(), expectedLength);
+    EXPECT_EQ(memcmp(stream.GetArray().constData(), "thxxxxxxxxxxxxyyZZZZ", expectedLength), 0);
+
+    // read test.
+    stream.Seek(0, AZ::IO::GenericStream::ST_SEEK_BEGIN);
+    EXPECT_EQ(stream.Read(expectedLength, tempReadBuffer), expectedLength);
+    EXPECT_EQ(memcmp(tempReadBuffer, "thxxxxxxxxxxxxyyZZZZ", expectedLength), 0);
+    EXPECT_EQ(stream.Read(expectedLength, tempReadBuffer), 0); // because its already at end.
+    EXPECT_EQ(memcmp(tempReadBuffer, "thxxxxxxxxxxxxyyZZZZ", expectedLength), 0); // it should not have disturbed the buffer.
+
+    offsite = 2;
+    stream.Seek(offsite, AZ::IO::GenericStream::ST_SEEK_BEGIN);
+    EXPECT_EQ(stream.Read(expectedLength, tempReadBuffer), expectedLength - offsite);
+    EXPECT_EQ(memcmp(tempReadBuffer, "xxxxxxxxxxxxyyZZZZZZ", expectedLength), 0); // it should not have disturbed the buffer bits that it was not asked to touch.
+}
+
+TEST_F(UtilitiesUnitTests, MatchFilePattern_FeedDifferentPatternsAndFilePaths_Succeeds)
 {
-public:
-    void StartTest() override
     {
-        QTemporaryDir tempdir;
-        QDir dir(tempdir.path());
-        QString fileName(dir.filePath("test.txt"));
-        CreateDummyFile(fileName);
-        AZ::u64 result = GetFileHash(fileName.toUtf8());
-        UNIT_TEST_EXPECT_TRUE(result == AZ::u64(17241709254077376921ul));
-        Q_EMIT UnitTestPassed();
+        AssetBuilderSDK::FilePatternMatcher extensionWildcardTest(AssetBuilderSDK::AssetBuilderPattern("*.cfg", AssetBuilderSDK::AssetBuilderPattern::Wildcard));
+        EXPECT_TRUE(extensionWildcardTest.MatchesPath(AZStd::string("foo.cfg")));
+        EXPECT_TRUE(extensionWildcardTest.MatchesPath(AZStd::string("abcd/foo.cfg")));
+        EXPECT_FALSE(extensionWildcardTest.MatchesPath(AZStd::string("abcd/foo.cfd")));
     }
-};
-REGISTER_UNIT_TEST(GetFileHashFromStreamSmallFile_ReturnsExpectedHash)
 
-class GetFileHashFromStream_SmallFileForced_ReturnsExpectedHash
-    : public UnitTestRun
+    {
+        AssetBuilderSDK::FilePatternMatcher prefixWildcardTest(AssetBuilderSDK::AssetBuilderPattern("abf*.llm", AssetBuilderSDK::AssetBuilderPattern::Wildcard));
+        EXPECT_TRUE(prefixWildcardTest.MatchesPath(AZStd::string("abf.llm")));
+        EXPECT_TRUE(prefixWildcardTest.MatchesPath(AZStd::string("abf12345.llm")));
+        EXPECT_FALSE(prefixWildcardTest.MatchesPath(AZStd::string("foo/abf12345.llm")));
+        EXPECT_FALSE(prefixWildcardTest.MatchesPath(AZStd::string("foo/abf12345.lls")));
+        EXPECT_FALSE(prefixWildcardTest.MatchesPath(AZStd::string("foo/ab2345.llm")));
+    }
+
+    {
+        AssetBuilderSDK::FilePatternMatcher extensionPrefixWildcardTest(AssetBuilderSDK::AssetBuilderPattern("sdf.c*", AssetBuilderSDK::AssetBuilderPattern::Wildcard));
+        EXPECT_TRUE(extensionPrefixWildcardTest.MatchesPath(AZStd::string("sdf.cpp")));
+        EXPECT_TRUE(extensionPrefixWildcardTest.MatchesPath(AZStd::string("sdf.cxx")));
+        EXPECT_TRUE(extensionPrefixWildcardTest.MatchesPath(AZStd::string("sdf.c")));
+        EXPECT_FALSE(extensionPrefixWildcardTest.MatchesPath(AZStd::string("abcd/sdf.cpp")));
+        EXPECT_FALSE(extensionPrefixWildcardTest.MatchesPath(AZStd::string("s:\\asd/abcd/sdf.cpp")));
+        EXPECT_FALSE(extensionPrefixWildcardTest.MatchesPath(AZStd::string("sdc.c")));
+        EXPECT_FALSE(extensionPrefixWildcardTest.MatchesPath(AZStd::string("sdf.hxx")));
+        EXPECT_FALSE(extensionPrefixWildcardTest.MatchesPath(AZStd::string("s:\\asd/abcd/sdf.hxx")));
+    }
+
+    {
+        AssetBuilderSDK::FilePatternMatcher prefixExtensionPrefixWildcardTest(AssetBuilderSDK::AssetBuilderPattern("s*.c*", AssetBuilderSDK::AssetBuilderPattern::Wildcard));
+        EXPECT_TRUE(prefixExtensionPrefixWildcardTest.MatchesPath(AZStd::string("sdf.cpp")));
+        EXPECT_TRUE(prefixExtensionPrefixWildcardTest.MatchesPath(AZStd::string("sdf.cxx")));
+        EXPECT_FALSE(prefixExtensionPrefixWildcardTest.MatchesPath(AZStd::string("abcd/sdf.cpp")));
+        EXPECT_FALSE(prefixExtensionPrefixWildcardTest.MatchesPath(AZStd::string("c:\\asd/abcd/sdf.cpp")));
+        EXPECT_FALSE(prefixExtensionPrefixWildcardTest.MatchesPath(AZStd::string("sdf.hxx")));
+        EXPECT_FALSE(prefixExtensionPrefixWildcardTest.MatchesPath(AZStd::string("s:\\asd/abcd/sdf.hxx")));
+    }
+
+    {
+        AssetBuilderSDK::FilePatternMatcher fixedNameTest(AssetBuilderSDK::AssetBuilderPattern("a.bcd", AssetBuilderSDK::AssetBuilderPattern::Wildcard));
+        EXPECT_TRUE(fixedNameTest.MatchesPath(AZStd::string("a.bcd")));
+        EXPECT_FALSE(fixedNameTest.MatchesPath(AZStd::string("foo\\a.bcd")));
+        EXPECT_FALSE(fixedNameTest.MatchesPath(AZStd::string("foo/a.bcd")));
+        EXPECT_FALSE(fixedNameTest.MatchesPath(AZStd::string("c:/foo/a.bcd")));
+        EXPECT_FALSE(fixedNameTest.MatchesPath(AZStd::string("c:\\foo/a.bcd")));
+        EXPECT_FALSE(fixedNameTest.MatchesPath(AZStd::string("sdf.hxx")));
+    }
+
+    {
+        AssetBuilderSDK::FilePatternMatcher midMatchExtensionPrefixTest(AssetBuilderSDK::AssetBuilderPattern("s*f.c*", AssetBuilderSDK::AssetBuilderPattern::Wildcard));
+        EXPECT_TRUE(midMatchExtensionPrefixTest.MatchesPath(AZStd::string("sdf.cpp")));
+        EXPECT_TRUE(midMatchExtensionPrefixTest.MatchesPath(AZStd::string("sef.cxx")));
+        EXPECT_TRUE(midMatchExtensionPrefixTest.MatchesPath(AZStd::string("sf.c")));
+        EXPECT_FALSE(midMatchExtensionPrefixTest.MatchesPath(AZStd::string("c:\\asd/abcd/sdf.cpp")));
+        EXPECT_FALSE(midMatchExtensionPrefixTest.MatchesPath(AZStd::string("abcd/sdf.cpp")));
+        EXPECT_FALSE(midMatchExtensionPrefixTest.MatchesPath(AZStd::string("sdc.c")));
+        EXPECT_FALSE(midMatchExtensionPrefixTest.MatchesPath(AZStd::string("sdf.hxx")));
+        EXPECT_FALSE(midMatchExtensionPrefixTest.MatchesPath(AZStd::string("s:\\asd/abcd/sdf.hxx")));
+    }
+
+    {
+        AssetBuilderSDK::FilePatternMatcher subFolderExtensionWildcardTest(AssetBuilderSDK::AssetBuilderPattern("abcd/*.cfg", AssetBuilderSDK::AssetBuilderPattern::Wildcard));
+        EXPECT_TRUE(subFolderExtensionWildcardTest.MatchesPath(AZStd::string("abcd/sdf.cfg")));
+        EXPECT_FALSE(subFolderExtensionWildcardTest.MatchesPath(AZStd::string("c://abcd/sdf.cfg")));
+        EXPECT_FALSE(subFolderExtensionWildcardTest.MatchesPath(AZStd::string("sdf.cfg")));
+        EXPECT_FALSE(subFolderExtensionWildcardTest.MatchesPath(AZStd::string("abcs/sdf.cfg")));
+        EXPECT_FALSE(subFolderExtensionWildcardTest.MatchesPath(AZStd::string("abcd/sdf.cfx")));
+    }
+
+    {
+        AssetBuilderSDK::FilePatternMatcher subFolderPatternTest(AssetBuilderSDK::AssetBuilderPattern(".*\\/savebackup\\/.*", AssetBuilderSDK::AssetBuilderPattern::Regex));
+        EXPECT_TRUE(subFolderPatternTest.MatchesPath(AZStd::string("abcd/savebackup/sdf.cfg")));
+        EXPECT_FALSE(subFolderPatternTest.MatchesPath(AZStd::string("abcd/savebackup")));
+        EXPECT_FALSE(subFolderPatternTest.MatchesPath(AZStd::string("savebackup/sdf.cfg")));
+        EXPECT_FALSE(subFolderPatternTest.MatchesPath(AZStd::string("c://abcd/sdf.cfg")));
+        EXPECT_FALSE(subFolderPatternTest.MatchesPath(AZStd::string("sdf.cfg")));
+        EXPECT_FALSE(subFolderPatternTest.MatchesPath(AZStd::string("abcs/sdf.cfg")));
+        EXPECT_FALSE(subFolderPatternTest.MatchesPath(AZStd::string("abcd/sdf.cfx")));
+    }
+
+    {
+        AssetBuilderSDK::FilePatternMatcher subFolderPatternTest(AssetBuilderSDK::AssetBuilderPattern(".*\\/Presets\\/GeomCache\\/.*", AssetBuilderSDK::AssetBuilderPattern::Regex));
+        EXPECT_TRUE(subFolderPatternTest.MatchesPath(AZStd::string("something/Presets/GeomCache/sdf.cfg")));
+        EXPECT_FALSE(subFolderPatternTest.MatchesPath(AZStd::string("Presets/GeomCache/sdf.cfg"))); // should not match because it demands that there is a slash
+        EXPECT_FALSE(subFolderPatternTest.MatchesPath(AZStd::string("abcd/savebackup")));
+        EXPECT_FALSE(subFolderPatternTest.MatchesPath(AZStd::string("savebackup/sdf.cfg")));
+        EXPECT_FALSE(subFolderPatternTest.MatchesPath(AZStd::string("c://abcd/sdf.cfg")));
+        EXPECT_FALSE(subFolderPatternTest.MatchesPath(AZStd::string("sdf.cfg")));
+        EXPECT_FALSE(subFolderPatternTest.MatchesPath(AZStd::string("abcs/sdf.cfg")));
+        EXPECT_FALSE(subFolderPatternTest.MatchesPath(AZStd::string("abcd/sdf.cfx")));
+    }
+}
+
+TEST_F(UtilitiesUnitTests, GetFileHashFromStream_NullPath_Returns0)
 {
-public:
-    void StartTest() override
-    {
-        QTemporaryDir tempdir;
-        QDir dir(tempdir.path());
-        QString fileName(dir.filePath("test.txt"));
-        CreateDummyFile(fileName);
-        AZ::u64 result = GetFileHash(fileName.toUtf8(), true);
-        UNIT_TEST_EXPECT_TRUE(result == AZ::u64(17241709254077376921ul));
-        Q_EMIT UnitTestPassed();
-    }
-};
+    AZ::u64 result = GetFileHash(nullptr);
+    EXPECT_EQ(result, 0);
+}
 
-REGISTER_UNIT_TEST(GetFileHashFromStream_SmallFileForced_ReturnsExpectedHash)
+TEST_F(UtilitiesUnitTests, GetFileHashFromStreamSmallFile_ReturnsExpectedHash)
+{
+    QDir dir(m_assetDatabaseRequestsHandler->GetAssetRootDir().c_str());
+    QString fileName(dir.filePath("test.txt"));
+    CreateDummyFile(fileName);
+    AZ::u64 result = GetFileHash(fileName.toUtf8());
+    EXPECT_EQ(result, AZ::u64(17241709254077376921ul));
+}
+
+TEST_F(UtilitiesUnitTests, GetFileHashFromStream_SmallFileForced_ReturnsExpectedHash)
+{
+    QDir dir(m_assetDatabaseRequestsHandler->GetAssetRootDir().c_str());
+    QString fileName(dir.filePath("test.txt"));
+    CreateDummyFile(fileName);
+    AZ::u64 result = GetFileHash(fileName.toUtf8(), true);
+    EXPECT_EQ(result, AZ::u64(17241709254077376921ul));
+}
 
 // This tests a race condition where one process was writing to a file and the Asset Processor started hashing that file
 // in a rare edge case, the end of file check used within the FileIOStream was reporting an incorrect end of file.
@@ -461,7 +479,7 @@ REGISTER_UNIT_TEST(GetFileHashFromStream_SmallFileForced_ReturnsExpectedHash)
 class FileWriteThrashTestJob : public AZ::Job
 {
 public:
-    AZ_CLASS_ALLOCATOR(FileWriteThrashTestJob, AZ::ThreadPoolAllocator, 0);
+    AZ_CLASS_ALLOCATOR(FileWriteThrashTestJob, AZ::ThreadPoolAllocator);
 
     FileWriteThrashTestJob(bool deleteWhenDone, AZ::JobContext* jobContext, AZ::IO::HandleType fileHandle, AZStd::string_view bufferToWrite)
         : Job(deleteWhenDone, jobContext),
@@ -507,43 +525,10 @@ public:
 // and at the same time it runs the file hashing process. With the fix reverted, this test fails.
 // This test purposely does not force a failure state to verify the assert would occur because
 // it's a race condition, and this test should not fail due to timing issues on different machines.
-class GetFileHashFromStream_LargeFileForcedAnotherThreadWritesToFile_ReturnsExpectedHash
-    : public UnitTestRun
-    , public AZ::Debug::TraceMessageBus::Handler
+class MockTraceMessageBusHandler
+    : public AZ::Debug::TraceMessageBus::Handler
 {
 public:
-    void StartTest() override
-    {
-        AZ::Debug::TraceMessageBus::Handler::BusConnect();
-        QTemporaryDir tempdir;
-        QDir dir(tempdir.path());
-        QString fileName(dir.filePath("test.txt"));
-        CreateDummyFile(fileName);
-
-        // Use a small buffer to frequently write a lot of data into the file, to help force the race condition.
-        char buffer[10];
-        memset(buffer, 'a', AZ_ARRAY_SIZE(buffer));
-        AZ::IO::HandleType writeHandle;
-        // Using a file handle and not a file stream because the navigation mesh system used this same interface for writing the file.
-        AZ::IO::FileIOBase::GetInstance()->Open(fileName.toUtf8(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeBinary, writeHandle);
-
-        // The job will close the stream
-        FileWriteThrashTestJob* job = aznew FileWriteThrashTestJob(true, nullptr, writeHandle, buffer);
-        job->m_writeLoopCount = 100; // compensate for artificial hashing delay below, keeping this test duration similar to others
-        job->Start();
-
-        // Use an artificial delay on hashing to ensure the race condition actually occurs.
-        AZ::u64 result =
-            GetFileHash(fileName.toUtf8(), true, nullptr, /*hashMsDelay*/ 20);
-        // This test will result in different hash results on different machines, because writing to the stream
-        // and reading from the stream to generate the hash happen at different speeds in different setups.
-        // Just make sure it returns some result here.
-        UNIT_TEST_EXPECT_TRUE(result != 0);
-        UNIT_TEST_EXPECT_FALSE(m_assertTriggered);
-        AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
-        Q_EMIT UnitTestPassed();
-    }
-
     bool OnPreAssert(const char* /*fileName*/, int /*line*/, const char* /*func*/, const char* /*message*/) override
     {
         m_assertTriggered = true;
@@ -552,4 +537,33 @@ public:
     bool m_assertTriggered = false;
 };
 
-REGISTER_UNIT_TEST(GetFileHashFromStream_LargeFileForcedAnotherThreadWritesToFile_ReturnsExpectedHash)
+TEST_F(UtilitiesUnitTests, GetFileHashFromStream_LargeFileForcedAnotherThreadWritesToFile_ReturnsExpectedHash)
+{
+    MockTraceMessageBusHandler traceMessageBusHandler;
+    traceMessageBusHandler.BusConnect();
+    QDir dir(m_assetDatabaseRequestsHandler->GetAssetRootDir().c_str());
+    QString fileName(dir.filePath("test.txt"));
+    CreateDummyFile(fileName);
+
+    // Use a small buffer to frequently write a lot of data into the file, to help force the race condition.
+    char buffer[10];
+    memset(buffer, 'a', AZ_ARRAY_SIZE(buffer));
+    AZ::IO::HandleType writeHandle;
+    // Using a file handle and not a file stream because the navigation mesh system used this same interface for writing the file.
+    AZ::IO::FileIOBase::GetInstance()->Open(fileName.toUtf8(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeBinary, writeHandle);
+
+    // The job will close the stream
+    FileWriteThrashTestJob* job = aznew FileWriteThrashTestJob(true, nullptr, writeHandle, AZStd::string_view(buffer, AZ_ARRAY_SIZE(buffer)));
+    job->m_writeLoopCount = 100; // compensate for artificial hashing delay below, keeping this test duration similar to others
+    job->Start();
+
+    // Use an artificial delay on hashing to ensure the race condition actually occurs.
+    AZ::u64 result =
+        GetFileHash(fileName.toUtf8(), true, nullptr, /*hashMsDelay*/ 20);
+    // This test will result in different hash results on different machines, because writing to the stream
+    // and reading from the stream to generate the hash happen at different speeds in different setups.
+    // Just make sure it returns some result here.
+    EXPECT_NE(result, 0);
+    EXPECT_FALSE(traceMessageBusHandler.m_assertTriggered);
+    traceMessageBusHandler.BusDisconnect();
+}

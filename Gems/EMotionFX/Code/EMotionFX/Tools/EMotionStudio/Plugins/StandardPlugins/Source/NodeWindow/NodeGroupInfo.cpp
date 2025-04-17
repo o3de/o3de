@@ -16,7 +16,7 @@
 
 namespace EMStudio
 {
-    AZ_CLASS_ALLOCATOR_IMPL(NodeGroupInfo, EMStudio::UIAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(NodeGroupInfo, EMStudio::UIAllocator)
 
     NodeGroupInfo::NodeGroupInfo(EMotionFX::Actor* actor, EMotionFX::NodeGroup* nodeGroup)
     {

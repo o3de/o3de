@@ -14,7 +14,7 @@
 #include <AzFramework/Spawnable/SpawnableEntitiesContainer.h>
 #include <AzToolsFramework/Entity/EntityTypes.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
-#include <AzToolsFramework/Entity/SliceEditorEntityOwnershipServiceBus.h>
+#include <AzToolsFramework/Prefab/Overrides/PrefabOverridePublicHandler.h>
 #include <AzToolsFramework/Prefab/Spawnable/PrefabInMemorySpawnableConverter.h>
 
 namespace AzToolsFramework
@@ -22,6 +22,7 @@ namespace AzToolsFramework
     namespace Prefab
     {
         class Instance;
+        class InstanceEntityMapperInterface;
         class PrefabFocusInterface;
         class PrefabLoaderInterface;
         class PrefabSystemComponentInterface;
@@ -59,37 +60,6 @@ namespace AzToolsFramework
         AzFramework::SliceInstantiationTicket GenerateSliceInstantiationTicket() override;
         void SetIsDynamic(bool isDynamic) override;
         const AzFramework::RootSliceAsset& GetRootAsset() const override;
-    };
-
-    class UnimplementedSliceEditorEntityOwnershipService
-        : public AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::Handler
-    {
-    public:
-        bool m_shouldAssertForLegacySlicesUsage = false;
-    private:
-        AzFramework::SliceInstantiationTicket InstantiateEditorSlice(
-            const AZ::Data::Asset<AZ::Data::AssetData>& sliceAsset, const AZ::Transform& worldTransform) override;
-
-        AZ::SliceComponent::SliceInstanceAddress CloneEditorSliceInstance(
-            AZ::SliceComponent::SliceInstanceAddress sourceInstance,
-            AZ::SliceComponent::EntityIdToEntityIdMap& sourceToCloneEntityIdMap) override;
-
-        AZ::SliceComponent::SliceInstanceAddress CloneSubSliceInstance(
-            const AZ::SliceComponent::SliceInstanceAddress& sourceSliceInstanceAddress,
-            const AZStd::vector<AZ::SliceComponent::SliceInstanceAddress>& sourceSubSliceInstanceAncestry,
-            const AZ::SliceComponent::SliceInstanceAddress& sourceSubSliceInstanceAddress,
-            AZ::SliceComponent::EntityIdToEntityIdMap* out_sourceToCloneEntityIdMap) override;
-
-        AZ::SliceComponent::SliceInstanceAddress PromoteEditorEntitiesIntoSlice(
-            const AZ::Data::Asset<AZ::SliceAsset>& sliceAsset, const AZ::SliceComponent::EntityIdToEntityIdMap& liveToAssetMap) override;
-
-        void DetachSliceEntities(const EntityIdList& entities) override;
-        void DetachSliceInstances(const AZ::SliceComponent::SliceInstanceAddressSet& instances) override;
-        void DetachSubsliceInstances(const AZ::SliceComponent::SliceInstanceEntityIdRemapList& subsliceRootList) override;
-        void RestoreSliceEntity(
-            AZ::Entity* entity, const AZ::SliceComponent::EntityRestoreInfo& info, SliceEntityRestoreType restoreType) override;
-        void ResetEntitiesToSliceDefaults(EntityIdList entities) override;
-        AZ::SliceComponent* GetEditorRootSlice() override;
     };
     //////////////////////////////////////////////////////////////////////////
 
@@ -159,6 +129,8 @@ namespace AzToolsFramework
         void SetEntitiesRemovedCallback(OnEntitiesRemovedCallback onEntitiesRemovedCallback) override;
         void SetValidateEntitiesCallback(ValidateEntitiesCallback validateEntitiesCallback) override;
 
+        void HandleEntityBeingDestroyed(const AZ::EntityId& entityId) override;
+
         bool LoadFromStream(AZ::IO::GenericStream& stream, AZStd::string_view filename) override;
         bool SaveToStream(AZ::IO::GenericStream& stream, AZStd::string_view filename) override;
         
@@ -215,12 +187,13 @@ namespace AzToolsFramework
         ValidateEntitiesCallback m_validateEntitiesCallback;
 
         UnimplementedSliceEntityOwnershipService m_sliceOwnershipService;
-        UnimplementedSliceEditorEntityOwnershipService m_editorSliceOwnershipService;
 
         AZStd::string m_rootPath;
         AZStd::unique_ptr<Prefab::Instance> m_rootInstance;
+        Prefab::PrefabOverridePublicHandler m_prefabOverridePublicHandler;
 
         Prefab::PrefabFocusInterface* m_prefabFocusInterface = nullptr;
+        Prefab::InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
         Prefab::PrefabSystemComponentInterface* m_prefabSystemComponent = nullptr;
         Prefab::PrefabLoaderInterface* m_loaderInterface = nullptr;
         AzFramework::EntityContextId m_entityContextId;

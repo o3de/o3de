@@ -178,7 +178,7 @@ def GradientMixer_NodeConstruction():
     perlinNoiseComponent = perlinNoiseOutcome.GetValue()
 
     # Verify the Preview EntityId property on our Perlin Noise Gradient component has been set to our Box Shape's EntityId
-    previewEntityId = hydra.get_component_property_value(perlinNoiseComponent, 'Preview Settings|Pin Preview to Shape')
+    previewEntityId = hydra.get_component_property_value(perlinNoiseComponent, 'Previewer|Preview Settings|Pin Preview to Shape')
     Report.result(Tests.preview_entity_set, previewEntityId and boxShapeEntityId.invoke("Equal", previewEntityId))
 
     # Verify the 1st Inbound Gradient EntityId property on our Gradient Mixer component has been set to our Perlin Noise

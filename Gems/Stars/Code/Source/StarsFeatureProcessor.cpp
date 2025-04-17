@@ -24,6 +24,9 @@
 
 namespace AZ::Render
 {
+    constexpr float MinViewPortWidth = 1280.f;
+    constexpr float MinViewPortHeight = 720.f;
+
     void StarsFeatureProcessor::Reflect(ReflectContext* context)
     {
         if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
@@ -60,11 +63,17 @@ namespace AZ::Render
 
         auto viewportContextInterface = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
         auto viewportContext = viewportContextInterface->GetViewportContextByScene(GetParentScene());
-        m_viewportSize = viewportContext->GetViewportSize();
-
+        if (viewportContext)
+        {
+            m_viewportSize = viewportContext->GetViewportSize();
+            RPI::ViewportContextIdNotificationBus::Handler::BusConnect(viewportContext->GetId());
+        }
+        else
+        {
+            m_viewportSize = AzFramework::WindowSize(static_cast<uint32_t>(MinViewPortWidth), static_cast<uint32_t>(MinViewPortHeight));
+        }
         EnableSceneNotification();
 
-        RPI::ViewportContextIdNotificationBus::Handler::BusConnect(viewportContext->GetId());
     }
 
     void StarsFeatureProcessor::Deactivate()
@@ -94,9 +103,8 @@ namespace AZ::Render
     {
         const float width = static_cast<float>(m_viewportSize.m_width);
         const float height = static_cast<float>(m_viewportSize.m_height);
-        constexpr float minWidth = 1280.f;
-        constexpr float minHeight = 720.f;
-        const float size = m_radiusFactor * AZStd::min<float>(1.f, AZStd::min<float>(width / minWidth, height / minHeight));
+
+        const float size = m_radiusFactor * AZStd::min<float>(1.f, AZStd::min<float>(width / MinViewPortWidth, height / MinViewPortHeight));
 
         m_shaderConstants.m_scaleX = size / width;
         m_shaderConstants.m_scaleY = size / height;
@@ -112,9 +120,14 @@ namespace AZ::Render
 
     void StarsFeatureProcessor::UpdateDrawPacket()
     {
-        if(m_meshPipelineState && m_drawSrg && m_meshStreamBufferViews[0].GetByteCount() != 0)
+        if (m_geometryView.GetStreamBufferViews().size() == 0)
         {
-            m_drawPacket = BuildDrawPacket(m_drawSrg, m_meshPipelineState, m_drawListTag, m_meshStreamBufferViews, m_numStarsVertices);
+            return;
+        }
+
+        if(m_meshPipelineState && m_drawSrg && m_geometryView.GetStreamBufferView(0).GetByteCount() != 0)
+        {
+            m_drawPacket = BuildDrawPacket();
         }
     }
 
@@ -166,7 +179,8 @@ namespace AZ::Render
             m_starsVertexBuffer->UpdateData(m_starsMeshData.data(), bufferSize);
         }
 
-        m_meshStreamBufferViews[0] = RHI::StreamBufferView(*m_starsVertexBuffer->GetRHIBuffer(), 0, bufferSize, elementSize);
+        m_geometryView.ClearStreamBufferViews();
+        m_geometryView.AddStreamBufferView( RHI::StreamBufferView(*m_starsVertexBuffer->GetRHIBuffer(), 0, bufferSize, elementSize) );
 
         UpdateDrawPacket();
     }
@@ -195,39 +209,42 @@ namespace AZ::Render
         m_updateShaderConstants = true;
     }
 
-    void StarsFeatureProcessor::OnRenderPipelineAdded([[maybe_unused]] RPI::RenderPipelinePtr renderPipeline)
+    void StarsFeatureProcessor::OnRenderPipelineChanged([[maybe_unused]] AZ::RPI::RenderPipeline* renderPipeline,
+        AZ::RPI::SceneNotification::RenderPipelineChangeType changeType)
     {
-        if(!m_meshPipelineState)
+        if (changeType == AZ::RPI::SceneNotification::RenderPipelineChangeType::Added)
         {
-            m_meshPipelineState = aznew RPI::PipelineStateForDraw;
-            m_meshPipelineState->Init(m_shader);
+            if(!m_meshPipelineState)
+            {
+                m_meshPipelineState = aznew RPI::PipelineStateForDraw;
+                m_meshPipelineState->Init(m_shader);
 
 
-            RHI::InputStreamLayoutBuilder layoutBuilder;
-            layoutBuilder.AddBuffer()
-                ->Channel("POSITION", RHI::Format::R32G32B32_FLOAT)
-                ->Channel("COLOR", RHI::Format::R8G8B8A8_UNORM);
-            layoutBuilder.SetTopology(RHI::PrimitiveTopology::TriangleList);
-            auto inputStreamLayout = layoutBuilder.End();
+                RHI::InputStreamLayoutBuilder layoutBuilder;
+                layoutBuilder.AddBuffer()
+                    ->Channel("POSITION", RHI::Format::R32G32B32_FLOAT)
+                    ->Channel("COLOR", RHI::Format::R8G8B8A8_UNORM);
+                layoutBuilder.SetTopology(RHI::PrimitiveTopology::TriangleList);
+                auto inputStreamLayout = layoutBuilder.End();
 
-            m_meshPipelineState->SetInputStreamLayout(inputStreamLayout);
-            m_meshPipelineState->SetOutputFromScene(GetParentScene());
-            m_meshPipelineState->Finalize();
+                m_meshPipelineState->SetInputStreamLayout(inputStreamLayout);
+                m_meshPipelineState->SetOutputFromScene(GetParentScene());
+                m_meshPipelineState->Finalize();
 
-            UpdateDrawPacket();
-            UpdateBackgroundClearColor();
+                UpdateDrawPacket();
+                UpdateBackgroundClearColor();
+            }
         }
-    }
-
-    void StarsFeatureProcessor::OnRenderPipelinePassesChanged([[maybe_unused]] RPI::RenderPipeline* renderPipeline)
-    {
-        if(m_meshPipelineState)
+        else if (changeType == AZ::RPI::SceneNotification::RenderPipelineChangeType::PassChanged)
         {
-            m_meshPipelineState->SetOutputFromScene(GetParentScene());
-            m_meshPipelineState->Finalize();
+            if(m_meshPipelineState)
+            {
+                m_meshPipelineState->SetOutputFromScene(GetParentScene());
+                m_meshPipelineState->Finalize();
 
-            UpdateDrawPacket();
-            UpdateBackgroundClearColor();
+                UpdateDrawPacket();
+                UpdateBackgroundClearColor();
+            }
         }
     }
 
@@ -273,28 +290,19 @@ namespace AZ::Render
         RPI::PassSystemInterface::Get()->ForEachPass(passFilter, setClearValue);
     }
 
-    RHI::ConstPtr<RHI::DrawPacket> StarsFeatureProcessor::BuildDrawPacket(
-                const Data::Instance<RPI::ShaderResourceGroup>& srg,
-                const RPI::Ptr<RPI::PipelineStateForDraw>& pipelineState,
-                const RHI::DrawListTag& drawListTag,
-                const AZStd::span<const AZ::RHI::StreamBufferView>& streamBufferViews,
-                uint32_t vertexCount)
+    RHI::ConstPtr<RHI::DrawPacket> StarsFeatureProcessor::BuildDrawPacket()
     {
-        RHI::DrawLinear drawLinear;
-        drawLinear.m_vertexCount = vertexCount;
-        drawLinear.m_vertexOffset = 0;
-        drawLinear.m_instanceCount = 1;
-        drawLinear.m_instanceOffset = 0;
+        m_geometryView.SetDrawArguments(RHI::DrawLinear{ m_numStarsVertices, 0 });
 
-        RHI::DrawPacketBuilder drawPacketBuilder;
+        RHI::DrawPacketBuilder drawPacketBuilder{RHI::MultiDevice::AllDevices};
         drawPacketBuilder.Begin(nullptr);
-        drawPacketBuilder.SetDrawArguments(drawLinear);
-        drawPacketBuilder.AddShaderResourceGroup(srg->GetRHIShaderResourceGroup());
+        drawPacketBuilder.SetGeometryView(&m_geometryView);
+        drawPacketBuilder.AddShaderResourceGroup(m_drawSrg->GetRHIShaderResourceGroup());
 
         RHI::DrawPacketBuilder::DrawRequest drawRequest;
-        drawRequest.m_listTag = drawListTag;
-        drawRequest.m_pipelineState = pipelineState->GetRHIPipelineState();
-        drawRequest.m_streamBufferViews = streamBufferViews;
+        drawRequest.m_listTag = m_drawListTag;
+        drawRequest.m_pipelineState = m_meshPipelineState->GetRHIPipelineState();
+        drawRequest.m_streamIndices = m_geometryView.GetFullStreamBufferIndices();
         drawPacketBuilder.AddDrawItem(drawRequest);
         return drawPacketBuilder.End();
     }

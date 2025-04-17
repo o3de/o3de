@@ -99,8 +99,7 @@ struct SSystemCVars
     float sys_update_profile_time;
     int sys_MaxFPS;
     float sys_maxTimeStepForMovieSystem;
-    int sys_report_files_not_found_in_paks = 0;
-
+    
     int sys_asserts;
     int sys_error_debugbreak;
 
@@ -179,15 +178,12 @@ public:
     AZ::IO::IArchive* GetIPak() override { return m_env.pCryPak; };
     IConsole* GetIConsole() override { return m_env.pConsole; };
     IRemoteConsole* GetIRemoteConsole() override;
-    IMovieSystem* GetIMovieSystem() override { return m_env.pMovieSystem; };
+    IMovieSystem* GetIMovieSystem() override { return m_movieSystem; };
     ICryFont* GetICryFont() override{ return m_env.pCryFont; }
     ILog* GetILog() override{ return m_env.pLog; }
     ICmdLine* GetICmdLine() override{ return m_pCmdLine; }
     ILevelSystem* GetILevelSystem() override;
     ISystemEventDispatcher* GetISystemEventDispatcher() override { return m_pSystemEventDispatcher; }
-    //////////////////////////////////////////////////////////////////////////
-    // retrieves the perlin noise singleton instance
-    CPNoise3* GetNoiseGen() override;
 
     void DetectGameFolderAccessRights();
 
@@ -260,7 +256,7 @@ private:
     bool InitConsole();
     bool InitFileSystem();
     bool InitFileSystem_LoadEngineFolders(const SSystemInitParams& initParams);
-    bool InitAudioSystem(const SSystemInitParams& initParams);
+    bool InitAudioSystem();
 
     //@}
 
@@ -268,7 +264,6 @@ private:
     // Helper functions.
     //////////////////////////////////////////////////////////////////////////
     void CreateSystemVars();
-    void CreateAudioVars();
 
     void QueryVersionInfo();
     void LogVersion();
@@ -368,8 +363,6 @@ private: // ------------------------------------------------------
 #include AZ_RESTRICTED_FILE(System_h)
 #endif
 
-    ICVar* m_sys_audio_disable;
-
     ICVar* m_gpu_particle_physics;
 
     AZStd::string  m_sSavedRDriver;                                //!< to restore the driver when quitting the dedicated server
@@ -393,6 +386,8 @@ private: // ------------------------------------------------------
     bool m_executedCommandLine = false;
 
     AZStd::unique_ptr<AzFramework::MissingAssetLogger> m_missingAssetLogger;
+
+    IMovieSystem* m_movieSystem;
 
 public:
 
@@ -453,7 +448,6 @@ protected: // -------------------------------------------------------------
     CCmdLine*                                      m_pCmdLine;
 
     AZStd::string  m_currentLanguageAudio;
-    AZStd::string  m_systemConfigName; // computed from system_(hardwareplatform)_(assetsPlatform) - eg, system_android_android.cfg or system_windows_pc.cfg
 
     std::vector< std::pair<CTimeValue, float> > m_updateTimes;
 
@@ -472,6 +466,4 @@ protected: // -------------------------------------------------------------
     bool m_bIsAsserting;
 
     std::vector<IWindowMessageHandler*> m_windowMessageHandlers;
-    bool m_initedOSAllocator = false;
-    bool m_initedSysAllocator = false;
 };

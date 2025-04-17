@@ -21,7 +21,7 @@ namespace EMotionFX
     >;
 
     class CommandLineFixture
-        : public UnitTest::AllocatorsTestFixture
+        : public UnitTest::LeakDetectionFixture
         , public ::testing::WithParamInterface<CommandLineFixtureParameter>
     {
     };
@@ -108,5 +108,5 @@ namespace EMotionFX
         },
     };
 
-    INSTANTIATE_TEST_CASE_P(TestCommandLine, CommandLineFixture, ::testing::ValuesIn(commandLineTestData));
+    INSTANTIATE_TEST_SUITE_P(TestCommandLine, CommandLineFixture, ::testing::ValuesIn(commandLineTestData));
 } // namespace EMotionFX

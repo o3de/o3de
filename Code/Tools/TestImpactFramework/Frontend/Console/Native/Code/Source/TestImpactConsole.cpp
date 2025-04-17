@@ -14,13 +14,9 @@
 
 int main(int argc, char** argv)
 {
-    AZ::AllocatorInstance<AZ::OSAllocator>::Create();
-    AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
-    
-    TestImpact::Console::ReturnCode returnCode = TestImpact::Console::Main(argc, argv);
+    const AZ::Debug::Trace tracer;
 
-    AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
-    AZ::AllocatorInstance<AZ::OSAllocator>::Destroy();
+    TestImpact::Console::ReturnCode returnCode = TestImpact::Console::Main(argc, argv);
 
     return aznumeric_cast<int>(returnCode);
 }

@@ -18,7 +18,7 @@ namespace LocalUser
     {
     public:
         AZ_RTTI(LocalUserModule, "{E154A426-0E21-4EB0-BE57-0947BB257D4D}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(LocalUserModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(LocalUserModule, AZ::SystemAllocator);
 
         LocalUserModule()
             : AZ::Module()
@@ -41,7 +41,8 @@ namespace LocalUser
     };
 }
 
-// DO NOT MODIFY THIS LINE UNLESS YOU RENAME THE GEM
-// The first parameter should be GemName_GemIdLower
-// The second should be the fully qualified name of the class above
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME), LocalUser::LocalUserModule)
+#else
 AZ_DECLARE_MODULE_CLASS(Gem_LocalUser, LocalUser::LocalUserModule)
+#endif

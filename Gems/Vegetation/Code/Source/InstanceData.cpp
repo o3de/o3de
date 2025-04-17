@@ -6,6 +6,7 @@
  *
  */
 #include <Vegetation/InstanceData.h>
+#include <AzCore/Serialization/SerializeContext.h>
 
 namespace Vegetation
 {

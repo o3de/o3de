@@ -11,7 +11,6 @@
 
 #include <Atom/RPI.Reflect/Image/ImageMipChainAsset.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAssetHandler.h>
-#include <Atom/RPI.Public/RPISystem.h>
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Scene/SceneSystemComponent.h>
 #include <GradientSignal/Components/GradientSurfaceDataComponent.h>
@@ -38,6 +37,9 @@
 
 #include <MockAxisAlignedBoxShapeComponent.h>
 #include <Terrain/MockTerrainLayerSpawner.h>
+#include <Terrain/MockTerrainRPISystemComponent.h>
+
+extern "C" void CleanUpRpiPublicGenericClassInfo();
 
 namespace UnitTest
 {
@@ -63,6 +65,7 @@ namespace UnitTest
 
             UnitTest::MockAxisAlignedBoxShapeComponent::CreateDescriptor(),
             UnitTest::MockTerrainLayerSpawnerComponent::CreateDescriptor(),
+            UnitTest::MockTerrainRPISystemComponent::CreateDescriptor(),
         });
     }
 
@@ -410,14 +413,10 @@ namespace UnitTest
         m_systemEntity = CreateEntity();
         m_systemEntity->CreateComponent<AzFramework::SceneSystemComponent>();
         m_systemEntity->CreateComponent<Terrain::TerrainSystemComponent>();
+        m_systemEntity->CreateComponent<MockTerrainRPISystemComponent>();
 
         // Create a stub RHI for use by Atom
         m_rhiFactory.reset(aznew UnitTest::StubRHI::Factory());
-
-        // Create the Atom RPISystem
-        AZ::RPI::RPISystemDescriptor rpiSystemDescriptor;
-        m_rpiSystem = AZStd::make_unique<AZ::RPI::RPISystem>();
-        m_rpiSystem->Initialize(rpiSystemDescriptor);
 
         // Now that the RPISystem is activated, activate the system entity.
         m_systemEntity->Init();
@@ -426,11 +425,11 @@ namespace UnitTest
 
     void TerrainSystemTestFixture::TearDown()
     {
-        m_rpiSystem->Shutdown();
-        m_rpiSystem = nullptr;
         m_rhiFactory = nullptr;
 
         m_systemEntity.reset();
+
+        CleanUpRpiPublicGenericClassInfo();
 
         UnitTest::TerrainTestFixture::TearDown();
     }

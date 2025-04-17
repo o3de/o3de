@@ -12,6 +12,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Statistics/StatisticalProfilerProxy.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
+#include <AzCore/std/time.h>
 
 namespace Profiler
 {
@@ -20,23 +21,23 @@ namespace Profiler
     // --- CachedTimeRegion ---
 
     CachedTimeRegion::CachedTimeRegion(const GroupRegionName& groupRegionName)
+        : m_groupRegionName(groupRegionName)
     {
-        m_groupRegionName = groupRegionName;
     }
 
     CachedTimeRegion::CachedTimeRegion(const GroupRegionName& groupRegionName, uint16_t stackDepth, uint64_t startTick, uint64_t endTick)
+        : m_groupRegionName(groupRegionName)
+        , m_stackDepth(stackDepth)
+        , m_startTick(startTick)
+        , m_endTick(endTick)
     {
-        m_groupRegionName = groupRegionName;
-        m_stackDepth = stackDepth;
-        m_startTick = startTick;
-        m_endTick = endTick;
     }
 
     // --- GroupRegionName ---
 
-    CachedTimeRegion::GroupRegionName::GroupRegionName(const char* const group, const char* const region) :
-        m_groupName(group),
-        m_regionName(region)
+    CachedTimeRegion::GroupRegionName::GroupRegionName(const char* const group, const char* const region)
+        : m_groupName(group)
+        , m_regionName(region)
     {
     }
 
@@ -88,7 +89,7 @@ namespace Profiler
         AZ::SystemTickBus::Handler::BusDisconnect();
     }
 
-    void CpuProfiler::BeginRegion(const AZ::Debug::Budget* budget, const char* eventName, [[maybe_unused]] size_t eventNameArgCount, ...)
+    void CpuProfiler::BeginRegion(const AZ::Debug::Budget* budget, const char* eventName, ...)
     {
         // Try to lock here, the shutdownMutex will only be contested when the CpuProfiler is shutting down.
         if (m_shutdownMutex.try_lock_shared())
@@ -97,9 +98,10 @@ namespace Profiler
             {
                 // Lazy initialization, creates an instance of the Thread local data if it's not created, and registers it
                 RegisterThreadStorage();
-
+                va_list args;
+                va_start(args, eventName);
                 // Push it to the stack
-                CachedTimeRegion timeRegion({budget->Name(), eventName});
+                CachedTimeRegion timeRegion({ budget->Name(), AZStd::fixed_string<512>::format_arg(eventName, args).c_str() });
                 ms_threadLocalStorage->RegionStackPushBack(timeRegion);
             }
 
@@ -316,7 +318,7 @@ namespace Profiler
     // Gets called when region ends and all data is set
     void CpuTimingLocalStorage::AddCachedRegion(const CachedTimeRegion& timeRegionCached)
     {
-        if (auto iter = m_hitSizeLimitMap.find(timeRegionCached.m_groupRegionName.m_regionName);
+        if (auto iter = m_hitSizeLimitMap.find(timeRegionCached.m_groupRegionName.m_regionName.GetStringView());
             iter != m_hitSizeLimitMap.end() && iter->second)
         {
             return;
@@ -349,7 +351,7 @@ namespace Profiler
             // Add the cached regions to the map
             for (auto& cachedTimeRegion : m_cachedTimeRegions)
             {
-                const AZStd::string regionName = cachedTimeRegion.m_groupRegionName.m_regionName;
+                const AZStd::string regionName = cachedTimeRegion.m_groupRegionName.m_regionName.GetStringView();
                 AZStd::vector<CachedTimeRegion>& regionVec = m_cachedTimeRegionMap[regionName];
                 regionVec.push_back(cachedTimeRegion);
                 if (regionVec.size() >= TimeRegionStackSize)
@@ -405,6 +407,7 @@ namespace Profiler
                 }
             }
         }
+        m_timeTicksPerSecond = AZStd::GetTimeTicksPerSecond();
     }
 
     void CpuProfilingStatisticsSerializer::Reflect(AZ::ReflectContext* context)
@@ -413,7 +416,8 @@ namespace Profiler
         {
             serializeContext->Class<CpuProfilingStatisticsSerializer>()
                 ->Version(1)
-                ->Field("cpuProfilingStatisticsSerializerEntries", &CpuProfilingStatisticsSerializer::m_cpuProfilingStatisticsSerializerEntries);
+                ->Field("cpuProfilingStatisticsSerializerEntries", &CpuProfilingStatisticsSerializer::m_cpuProfilingStatisticsSerializerEntries)
+                ->Field("timeTicksPerSecond", &CpuProfilingStatisticsSerializer::m_timeTicksPerSecond);
         }
 
         CpuProfilingStatisticsSerializerEntry::Reflect(context);

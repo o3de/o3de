@@ -24,13 +24,7 @@ namespace GraphModel
 
     void Graph::Reflect(AZ::ReflectContext* context)
     {
-        Node::Reflect(context);
-        SlotIdData::Reflect(context);
-        Slot::Reflect(context);
-        Connection::Reflect(context);
-
-        AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
-        if (serializeContext)
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<Graph>()
                 ->Version(2)
@@ -40,12 +34,39 @@ namespace GraphModel
                 ->Field("m_nodeWrappings", &Graph::m_nodeWrappings)
                 ;
         }
+
+        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->Class<Graph>("GraphModelGraph")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                ->Attribute(AZ::Script::Attributes::Category, "Editor")
+                ->Attribute(AZ::Script::Attributes::Module, "editor.graph")
+                ->Method("GetContext", &Graph::GetContext)
+                ->Method("GetSystemName", &Graph::GetSystemName)
+                ->Method("AddNode", &Graph::AddNode)
+                ->Method("RemoveNode", &Graph::RemoveNode)
+                ->Method("WrapNode", &Graph::WrapNode)
+                ->Method("UnwrapNode", &Graph::UnwrapNode)
+                ->Method("IsNodeWrapped", &Graph::IsNodeWrapped)
+                ->Method("GetNodeWrappings", &Graph::GetNodeWrappings)
+                ->Method("GetNode", &Graph::GetNode)
+                ->Method("GetNodes", static_cast<const Graph::NodeMap& (Graph::*)()>(&Graph::GetNodes))
+                ->Method("GetNodeCount", &Graph::GetNodeCount)
+                ->Method("AddConnection", &Graph::AddConnection)
+                ->Method("RemoveConnection", &Graph::RemoveConnection)
+                ->Method("GetConnections", &Graph::GetConnections)
+                ->Method("GetConnectionCount", &Graph::GetConnectionCount)
+                ->Method("FindSlot", &Graph::FindSlot)
+                ->Method("ClearCachedData", &Graph::ClearCachedData)
+                ->Method("Contains", &Graph::Contains)
+                ->Method("FindConnection", &Graph::FindConnection)
+            ;
+        }
     }
 
     Graph::Graph(GraphContextPtr graphContext)
         : m_graphContext(graphContext)
     {
-
     }
 
     void Graph::PostLoadSetup(GraphContextPtr graphContext)
@@ -54,35 +75,22 @@ namespace GraphModel
 
         m_graphContext = graphContext;
 
-        for (auto& pair : m_nodes)
+        for (auto& [nodeId, node] : m_nodes)
         {
-            const NodeId nodeId = pair.first;
-            pair.second->PostLoadSetup(shared_from_this(), nodeId);
+            node->PostLoadSetup(shared_from_this(), nodeId);
 
-            // Find the highest NodeId in the graph so we can figure out
-            // what the next one should be
+            // Find the highest NodeId in the graph so we can figure out what the next one should be
             m_nextNodeId = AZ::GetMax(m_nextNodeId, nodeId + 1);
         }
 
-        for (auto it = m_connections.begin(); it != m_connections.end();)
+        for (auto& connection : m_connections)
         {
-            ConnectionPtr connection = *it;
             connection->PostLoadSetup(shared_from_this());
-
-            if (!connection->GetSourceSlot() || !connection->GetTargetSlot())
-            {
-                // Discard any cached connections if the source or target slot no longer exists
-                m_connections.erase(it);
-            }
-            else
-            {
-                // Valid slots, so update each slot's local cache of its connections
-                connection->GetSourceSlot()->m_connections.push_back(connection);
-                connection->GetTargetSlot()->m_connections.push_back(connection);
-
-                ++it;
-            }
         }
+
+        AZStd::erase_if(m_connections, [](const auto& connection){
+            return !connection || !connection->GetSourceSlot() || !connection->GetTargetSlot();
+        });
     }
 
     NodeId Graph::PostLoadSetup(NodePtr node)
@@ -90,7 +98,6 @@ namespace GraphModel
         node->m_graph = shared_from_this();
         NodeId nodeId = AddNode(node);
         node->PostLoadSetup();
-
         return nodeId;
     }
 
@@ -107,16 +114,14 @@ namespace GraphModel
 
     ConnectionPtr Graph::FindConnection(ConstSlotPtr sourceSlot, ConstSlotPtr targetSlot)
     {
-        if (!sourceSlot || !targetSlot)
+        if (sourceSlot && targetSlot)
         {
-            return nullptr;
-        }
-
-        for (ConnectionPtr searchConnection : m_connections)
-        {
-            if (searchConnection->GetSourceSlot() == sourceSlot && searchConnection->GetTargetSlot() == targetSlot)
+            for (ConnectionPtr connection : m_connections)
             {
-                return searchConnection;
+                if (connection->GetSourceSlot() == sourceSlot && connection->GetTargetSlot() == targetSlot)
+                {
+                    return connection;
+                }
             }
         }
 
@@ -126,16 +131,14 @@ namespace GraphModel
 
     bool Graph::Contains(SlotPtr slot) const
     {
-        if (!slot)
+        if (slot)
         {
-            return false;
-        }
-
-        for (auto pair : m_nodes)
-        {
-            if (pair.second->Contains(slot))
+            for (const auto& nodePair : m_nodes)
             {
-                return true;
+                if (nodePair.second->Contains(slot))
+                {
+                    return true;
+                }
             }
         }
 
@@ -146,12 +149,7 @@ namespace GraphModel
     NodePtr Graph::GetNode(NodeId nodeId)
     {
         auto nodeIter = m_nodes.find(nodeId);
-        if (nodeIter != m_nodes.end())
-        {
-            return nodeIter->second;
-        }
-
-        return nullptr;
+        return nodeIter != m_nodes.end() ? nodeIter->second : nullptr;
     }
 
 
@@ -162,9 +160,12 @@ namespace GraphModel
 
     Graph::ConstNodeMap Graph::GetNodes() const
     {
-        Graph::ConstNodeMap constNodes;
-        AZStd::for_each(m_nodes.begin(), m_nodes.end(), [&](auto pair) { constNodes.insert(pair); });
-        return constNodes;
+        return Graph::ConstNodeMap(m_nodes.begin(), m_nodes.end());
+    }
+
+    size_t Graph::GetNodeCount() const
+    {
+        return m_nodes.size();
     }
 
     NodeId Graph::AddNode(NodePtr node)
@@ -174,7 +175,7 @@ namespace GraphModel
         
         node->m_id = m_nextNodeId++;
         m_nodes.insert(AZStd::make_pair(node->m_id, node));
-
+        ClearCachedData();
         return node->m_id;
     }
 
@@ -182,21 +183,15 @@ namespace GraphModel
     bool Graph::RemoveNode(ConstNodePtr node)
     {
         // First delete any connections that are attached to the node.
-        // It looks like this code is never run because the connections are always 
-        // deleted individually first. But still have this hear for completeness.
-        for (int i = static_cast<int>(m_connections.size()) - 1; i >= 0; --i)
-        {
-            ConnectionPtr connection = m_connections[i];
-            if (connection->GetSourceNode() == node || connection->GetTargetNode() == node)
-            {
-                RemoveConnection(&m_connections[i]);
-            }
-        }
+        AZStd::erase_if(m_connections, [&](const auto& connection){
+            return !connection || !connection->GetSourceSlot() || !connection->GetTargetSlot() || connection->GetSourceNode() == node || connection->GetTargetNode() == node;
+        });
 
         // Also, remove any node wrapping stored for this node
         UnwrapNode(node);
 
-        return m_nodes.erase(node->GetId()) != 0;
+        ClearCachedData();
+        return m_nodes.erase(node->GetId()) > 0;
     }
 
 
@@ -209,16 +204,20 @@ namespace GraphModel
         AZ_Assert(m_nodeWrappings.find(node->GetId()) == m_nodeWrappings.end(), "The specified node is already wrapped on another WrapperNode");
 
         m_nodeWrappings[node->GetId()] = AZStd::make_pair(wrapperNode->GetId(), layoutOrder);
+        ClearCachedData();
     }
 
 
     void Graph::UnwrapNode(ConstNodePtr node)
     {
-        auto it = m_nodeWrappings.find(node->GetId());
-        if (it != m_nodeWrappings.end())
-        {
-            m_nodeWrappings.erase(it);
-        }
+        ClearCachedData();
+        m_nodeWrappings.erase(node->GetId());
+    }
+
+
+    bool Graph::IsNodeWrapped(NodePtr node) const
+    {
+        return m_nodeWrappings.contains(node->GetId());
     }
 
 
@@ -234,77 +233,58 @@ namespace GraphModel
     }
 
 
+    size_t Graph::GetConnectionCount() const
+    {
+        return m_connections.size();
+    }
+
+
     ConnectionPtr Graph::AddConnection(SlotPtr sourceSlot, SlotPtr targetSlot)
     {
         if (ConnectionPtr existingConnection = FindConnection(sourceSlot, targetSlot))
         {
             return existingConnection;
         }
-        else if (Contains(sourceSlot) && Contains(targetSlot))
+
+        if (Contains(sourceSlot) && Contains(targetSlot))
         {
-            ConnectionPtr newConnection = AZStd::make_shared<Connection>(shared_from_this(), sourceSlot, targetSlot);
-
-            m_connections.push_back(newConnection);
-            sourceSlot->m_connections.push_back(newConnection);
-            targetSlot->m_connections.push_back(newConnection);
-
-            return newConnection;
+            m_connections.push_back(AZStd::make_shared<Connection>(shared_from_this(), sourceSlot, targetSlot));
+            ClearCachedData();
+            return m_connections.back();
         }
-        else
-        {
-            AZ_Error(GetSystemName(), false, "Tried to add a connection between slots that don't exist in this Graph.");
-            return nullptr;
-        }
-    }
 
-    bool Graph::RemoveConnection(ConnectionList::iterator iter)
-    {
-        if (iter != m_connections.end())
-        {
-            ConnectionPtr connection = *iter;
-
-            // Remove the cached connection pointers from the slots
-            auto shouldRemove = [&connection](auto entry) {
-                ConstConnectionPtr entryPtr = entry.lock();
-                return !entryPtr || entryPtr == connection;
-            };
-            (*iter)->GetSourceSlot()->m_connections.remove_if(shouldRemove);
-            (*iter)->GetTargetSlot()->m_connections.remove_if(shouldRemove);
-
-            // Remove the actual connection
-            m_connections.erase(iter);
-
-#if defined(AZ_ENABLE_TRACING)
-            auto iterConnection = AZStd::find(m_connections.begin(), m_connections.end(), connection);
-            AZ_Assert(iterConnection == m_connections.end(), "Graph is broken. The same connection object was found multiple times.");
-#endif
-
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+        AZ_Error(GetSystemName(), false, "Tried to add a connection between slots that don't exist in this Graph.");
+        return nullptr;
     }
 
     bool Graph::RemoveConnection(ConstConnectionPtr connection)
     {
-        auto iter = AZStd::find(m_connections.begin(), m_connections.end(), connection);
-        return RemoveConnection(iter);
+        if (AZStd::erase_if(m_connections, [&](const auto& existingConnection) {
+            return existingConnection == connection ||
+                (existingConnection && connection &&
+                 existingConnection->GetSourceSlot() == connection->GetSourceSlot() &&
+                 existingConnection->GetTargetSlot() == connection->GetTargetSlot());
+                }) > 0)
+        {
+            ClearCachedData();
+            return true;
+        }
+        return false;
     }
 
 
     AZStd::shared_ptr<Slot> Graph::FindSlot(const Endpoint& endpoint)
     {
-        AZStd::shared_ptr<Slot> slot;
-
         auto nodeIter = m_nodes.find(endpoint.first);
-        if (nodeIter != m_nodes.end())
-        {
-            slot = nodeIter->second->GetSlot(endpoint.second);
-        }
+        return nodeIter != m_nodes.end() ? nodeIter->second->GetSlot(endpoint.second) : AZStd::shared_ptr<Slot>{};
+    }
 
-        return slot;
+    void Graph::ClearCachedData()
+    {
+        for (auto& nodePair : m_nodes)
+        {
+            nodePair.second->ClearCachedData();
+        }
     }
 
 

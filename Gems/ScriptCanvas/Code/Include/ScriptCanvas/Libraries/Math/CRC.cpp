@@ -10,6 +10,8 @@
 
 #include <AzCore/Math/Crc.h>
 
+#include <Include/ScriptCanvas/Libraries/Math/CRC.generated.h>
+
 namespace ScriptCanvas
 {
     namespace CRCFunctions

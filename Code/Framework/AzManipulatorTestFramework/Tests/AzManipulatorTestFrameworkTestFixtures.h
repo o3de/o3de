@@ -14,7 +14,7 @@
 
 namespace UnitTest
 {
-    class LinearManipulatorTestFixture : public ToolsApplicationFixture
+    class LinearManipulatorTestFixture : public ToolsApplicationFixture<>
     {
     protected:
         LinearManipulatorTestFixture(const AzToolsFramework::ManipulatorManagerId& manipulatorManagerId)

@@ -27,6 +27,9 @@ namespace AzToolsFramework
             , m_filePath(other.m_filePath)
             , m_isLoadedWithErrors(other.m_isLoadedWithErrors)
         {
+            // Force a memory clear by first assigning to empty.  Simply calling copyfrom
+            // just allocates more memory without clearing existing memory usage.
+            m_prefabDom = PrefabDom();
             m_prefabDom.CopyFrom(other.m_prefabDom, m_prefabDom.GetAllocator());
         }
 
@@ -37,6 +40,9 @@ namespace AzToolsFramework
                 m_links = other.m_links;
                 m_filePath = other.m_filePath;
                 m_isLoadedWithErrors = other.m_isLoadedWithErrors;
+                // Force a memory clear by first assigning to empty.  Simply calling copyfrom
+                // just allocates more memory without clearing existing memory usage.
+                m_prefabDom = PrefabDom();
                 m_prefabDom.CopyFrom(other.m_prefabDom, m_prefabDom.GetAllocator());
             }
             
@@ -62,6 +68,19 @@ namespace AzToolsFramework
             }
             
             return *this;
+        }
+
+        void Template::GarbageCollect()
+        {
+            // rapidjson does not actually free allocations until the PrefabDom object itself goes out of scope.
+            // Even calling CopyFrom, or pointer Set, setvalue, etc, just adds additional memory into the objects allocator
+            // without freeing pages already allocated (even if nothing points to them anymore except the allocator's page list).
+            // The only way to actually clean up memory is to create a new document (and thus, with a new allocator), and then
+            // copy into that fresh document.  Then the original can then be swapped and go out of scope, destroying its allocator
+            // and thus freeing the memory.
+            PrefabDom newDom;
+            newDom.CopyFrom(m_prefabDom, newDom.GetAllocator(), true);
+            m_prefabDom.Swap(newDom);
         }
 
         bool Template::IsValid() const

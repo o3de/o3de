@@ -7,7 +7,9 @@
  */
 
 #include <ProjectGemCatalogScreen.h>
+#include <ProjectUtils.h>
 #include <GemRepo/GemRepoScreen.h>
+#include <CreateAGemScreen.h>
 #include <ProjectManagerDefs.h>
 #include <PythonBindingsInterface.h>
 #include <ScreenHeaderWidget.h>
@@ -28,7 +30,7 @@
 
 namespace O3DE::ProjectManager
 {
-    UpdateProjectCtrl::UpdateProjectCtrl(QWidget* parent)
+    UpdateProjectCtrl::UpdateProjectCtrl(DownloadController* downloadController, QWidget* parent)
         : ScreenWidget(parent)
     {
         QVBoxLayout* vLayout = new QVBoxLayout();
@@ -41,11 +43,11 @@ namespace O3DE::ProjectManager
         vLayout->addWidget(m_header);
 
         m_updateSettingsScreen = new UpdateProjectSettingsScreen();
-        m_projectGemCatalogScreen = new ProjectGemCatalogScreen();
+        m_projectGemCatalogScreen = new ProjectGemCatalogScreen(downloadController, this);
         m_gemRepoScreen = new GemRepoScreen(this);
 
         connect(m_projectGemCatalogScreen, &ScreenWidget::ChangeScreenRequest, this, &UpdateProjectCtrl::OnChangeScreenRequest);
-        connect(m_gemRepoScreen, &GemRepoScreen::OnRefresh, m_projectGemCatalogScreen, &ProjectGemCatalogScreen::Refresh);
+        connect(static_cast<ScreensCtrl*>(parent), &ScreensCtrl::NotifyProjectRemoved, m_projectGemCatalogScreen, &GemCatalogScreen::NotifyProjectRemoved);
 
         m_stack = new QStackedWidget(this);
         m_stack->setObjectName("body");
@@ -65,6 +67,7 @@ namespace O3DE::ProjectManager
         tabWidget->addTab(m_updateSettingsScreen, tr("General"));
 
         QPushButton* gemsButton = new QPushButton(tr("Configure Gems"), this);
+        gemsButton->setProperty("secondary", true);
         topBarHLayout->addWidget(gemsButton);
         tabWidget->setCornerWidget(gemsButton);
 
@@ -81,11 +84,12 @@ namespace O3DE::ProjectManager
         m_backButton = backNextButtons->addButton(tr("Back"), QDialogButtonBox::RejectRole);
         m_backButton->setProperty("secondary", true);
         m_nextButton = backNextButtons->addButton(tr("Next"), QDialogButtonBox::ApplyRole);
+        m_nextButton->setProperty("primary", true);
 
         connect(gemsButton, &QPushButton::clicked, this, &UpdateProjectCtrl::HandleGemsButton);
         connect(m_backButton, &QPushButton::clicked, this, &UpdateProjectCtrl::HandleBackButton);
         connect(m_nextButton, &QPushButton::clicked, this, &UpdateProjectCtrl::HandleNextButton);
-        connect(reinterpret_cast<ScreensCtrl*>(parent), &ScreensCtrl::NotifyCurrentProject, this, &UpdateProjectCtrl::UpdateCurrentProject);
+        connect(static_cast<ScreensCtrl*>(parent), &ScreensCtrl::NotifyCurrentProject, this, &UpdateProjectCtrl::UpdateCurrentProject);
 
         Update();
         setLayout(vLayout);
@@ -119,18 +123,20 @@ namespace O3DE::ProjectManager
         if (screen == ProjectManagerScreen::GemRepos)
         {
             m_stack->setCurrentWidget(m_gemRepoScreen);
-            m_gemRepoScreen->Reinit();
+            m_gemRepoScreen->NotifyCurrentScreen();
             Update();
         }
         else if (screen == ProjectManagerScreen::ProjectGemCatalog)
         {
             m_projectGemCatalogScreen->ReinitForProject(m_projectInfo.m_path);
+            m_projectGemCatalogScreen->NotifyCurrentScreen();
             m_stack->setCurrentWidget(m_projectGemCatalogScreen);
             Update();
         }
         else if (screen == ProjectManagerScreen::UpdateProjectSettings)
         {
             m_stack->setCurrentWidget(m_updateSettingsScreen);
+            m_updateSettingsScreen->NotifyCurrentScreen();
             Update();
         }
         else
@@ -144,6 +150,7 @@ namespace O3DE::ProjectManager
         if (UpdateProjectSettings(true))
         {
             m_projectGemCatalogScreen->ReinitForProject(m_projectInfo.m_path);
+            m_projectGemCatalogScreen->NotifyCurrentScreen();
             m_stack->setCurrentWidget(m_projectGemCatalogScreen);
             Update();
         }
@@ -154,6 +161,10 @@ namespace O3DE::ProjectManager
         if (m_stack->currentIndex() > 0)
         {
             m_stack->setCurrentIndex(m_stack->currentIndex() - 1);
+            if (ScreenWidget* screenWidget = qobject_cast<ScreenWidget*>(m_stack->currentWidget()); screenWidget)
+            {
+                screenWidget->NotifyCurrentScreen();
+            }
             Update();
         }
         else
@@ -223,7 +234,7 @@ namespace O3DE::ProjectManager
         if (m_stack->currentIndex() == ScreenOrder::GemRepos)
         {
             m_header->setTitle(QString(tr("Edit Project Settings: \"%1\"")).arg(m_projectInfo.GetProjectDisplayName()));
-            m_header->setSubTitle(QString(tr("Gem Repositories")));
+            m_header->setSubTitle(QString(tr("Remote Sources")));
             m_nextButton->setVisible(false);
         }
         else if (m_stack->currentIndex() == ScreenOrder::Gems)
@@ -258,14 +269,14 @@ namespace O3DE::ProjectManager
         {
             if (shouldConfirm)
             {
-                QMessageBox::StandardButton warningResult = QMessageBox::warning(
+                QMessageBox::StandardButton questionResult = QMessageBox::question(
                     this,
-                    QObject::tr("Unsaved Changes"),
+                    QObject::tr("Unsaved changes"),
                     QObject::tr("Would you like to save your changes to project settings?"),
                     QMessageBox::No | QMessageBox::Yes
                 );
 
-                if (warningResult == QMessageBox::No)
+                if (questionResult == QMessageBox::No)
                 {
                     return true;
                 }
@@ -284,6 +295,53 @@ namespace O3DE::ProjectManager
                 {
                     QMessageBox::critical(this, tr("Project move failed"), tr("Failed to move project."));
                     return false;
+                }
+            }
+
+            // Check engine compatibility if a new engine was selected
+            if (QDir(newProjectSettings.m_enginePath) != QDir(m_projectInfo.m_enginePath))
+            {
+                auto incompatibleObjectsResult = PythonBindingsInterface::Get()->GetProjectEngineIncompatibleObjects(newProjectSettings.m_path, newProjectSettings.m_enginePath);
+
+                AZStd::string errorTitle, generalError, detailedError;
+                if (!incompatibleObjectsResult)
+                {
+                    errorTitle = "Failed to check project compatibility";
+                    generalError = incompatibleObjectsResult.GetError().first;
+                    generalError.append("\nDo you still want to save your changes to project settings?");
+                    detailedError = incompatibleObjectsResult.GetError().second;
+                }
+                else if (const auto& incompatibleObjects = incompatibleObjectsResult.GetValue(); !incompatibleObjects.isEmpty())
+                {
+                    // provide a couple more user friendly error messages for uncommon cases
+                    if (incompatibleObjects.at(0).contains(ProjectUtils::EngineJsonFilename.data(), Qt::CaseInsensitive))
+                    {
+                        errorTitle = "Failed to read engine.json";
+                        generalError = "The projects compatibility with the new engine could not be checked because the engine.json could not be read";
+                    }
+                    else if (incompatibleObjects.at(0).contains(ProjectUtils::ProjectJsonFilename.data(), Qt::CaseInsensitive))
+                    {
+                        errorTitle = "Invalid project, failed to read project.json";
+                        generalError = "The projects compatibility with the new engine could not be checked because the project.json could not be read.";
+                    }
+                    else
+                    {
+                        // could be gems, apis or both
+                        errorTitle = "Project may not be compatible with new engine";
+                        generalError = incompatibleObjects.join("\n").toUtf8().constData();
+                        generalError.append("\nDo you still want to save your changes to project settings?");
+                    }
+                }
+
+                if (!generalError.empty())
+                {
+                    QMessageBox warningDialog(QMessageBox::Warning, errorTitle.c_str(), generalError.c_str(), QMessageBox::Yes | QMessageBox::No, this);
+                    warningDialog.setDetailedText(detailedError.c_str());
+                    if(warningDialog.exec() == QMessageBox::No)
+                    {
+                        return false;
+                    }
+                    AZ_Warning("ProjectManager", false, "Proceeding with saving project settings after engine compatibility check failed.");
                 }
             }
 

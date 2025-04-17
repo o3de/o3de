@@ -58,7 +58,7 @@ namespace AzFramework
             static void Reflect(AZ::ReflectContext* context);
             static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
             static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
-            
+
         private:
             AssetSystemComponent(const AssetSystemComponent&) = delete;
             void EnableSocketConnection();
@@ -128,7 +128,7 @@ namespace AzFramework
             //! in the calling code.
             //! returns true if successfully connected, false if not
             bool ConnectFromAssetProcessor(const ConnectionSettings& connectionSettings);
-            
+
             AssetStatus CompileAssetSync(const AZStd::string& assetPath) override;
             AssetStatus CompileAssetSync_FlushIO(const AZStd::string& assetPath) override;
 
@@ -147,6 +147,7 @@ namespace AzFramework
             bool EscalateAssetBySearchTerm(AZStd::string_view searchTerm) override;
 
             void ShowAssetProcessor() override;
+            void UpdateSourceControlStatus(bool newStatus) override;
             void ShowInAssetProcessor(const AZStd::string& assetPath) override;
 
             void GetUnresolvedProductReferences(AZ::Data::AssetId assetId, AZ::u32& unresolvedAssetIdReferences, AZ::u32& unresolvedPathReferences) override;
@@ -160,6 +161,7 @@ namespace AzFramework
 
             AZStd::unique_ptr<SocketConnection> m_socketConn = nullptr;
             SocketConnection::TMessageCallbackHandle m_cbHandle = 0;
+            SocketConnection::TMessageCallbackHandle m_bulkMessageHandle = 0;
             AZStd::string m_assetProcessorBranchToken;
             AZStd::string m_assetProcessorProjectName;
             AZStd::string m_assetProcessorPlatform;

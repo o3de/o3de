@@ -20,7 +20,8 @@ from pathlib import Path
 import logging as _logging
 # -------------------------------------------------------------------------
 # global scope
-_PACKAGENAME = 'azpy.dcc'
+from DccScriptingInterface.azpy import _PACKAGENAME
+_PACKAGENAME = f'{_PACKAGENAME}.dcc'
 
 __all__ = ['blender',
            'houdini',
@@ -30,38 +31,33 @@ __all__ = ['blender',
            'substance']
 
 _LOGGER = _logging.getLogger(_PACKAGENAME)
-_LOGGER.info('Initializing: {0}.'.format({_PACKAGENAME}))
-from azpy.constants import STR_CROSSBAR
+_LOGGER.debug('Initializing: {0}.'.format({_PACKAGENAME}))
+from DccScriptingInterface import STR_CROSSBAR
 _LOGGER.debug(STR_CROSSBAR)
 
 # set up access to this DCC folder as a pkg
 _MODULE_PATH = Path(__file__)  # To Do: what if frozen?
 _LOGGER.debug('_MODULE_PATH: {}'.format(_MODULE_PATH.as_posix()))
 
-from azpy import _PATH_DCCSIG
-_LOGGER.debug('PATH_DCCSIG: {}'.format(_PATH_DCCSIG))
+from DccScriptingInterface import PATH_DCCSIG
+_LOGGER.debug('PATH_DCCSIG: {}'.format(PATH_DCCSIG))
 
-from azpy import _PATH_DCCSI_AZPY
-_LOGGER.debug('PATH_DCCSI_AZPY: {}'.format(_PATH_DCCSI_AZPY))
+from DccScriptingInterface.azpy import PATH_DCCSI_AZPY
+_LOGGER.debug('PATH_DCCSI_AZPY: {}'.format(PATH_DCCSI_AZPY))
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
-from azpy.env_bool import env_bool
-from azpy.constants import ENVAR_DCCSI_TESTS
+from DccScriptingInterface.globals import *
 
-#  global space
-_DCCSI_TESTS = env_bool(ENVAR_DCCSI_TESTS, False)
-
-if _DCCSI_TESTS:
+if DCCSI_TESTS:
     # If in dev mode this will test imports of __all__
-    from azpy import test_imports
-    
+    from DccScriptingInterface.azpy.shared.utils.init import test_imports
+
     _LOGGER.info(STR_CROSSBAR)
-    
+
     _LOGGER.debug('Testing Imports from {0}'.format(_PACKAGENAME))
-    test_imports(__all__,
-                 _pkg=_PACKAGENAME)
-    
+    test_imports(__all__, _pkg=_PACKAGENAME)
+
     _LOGGER.info(STR_CROSSBAR)
 # -------------------------------------------------------------------------

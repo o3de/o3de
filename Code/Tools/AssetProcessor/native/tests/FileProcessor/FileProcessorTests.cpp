@@ -19,20 +19,7 @@ namespace UnitTests
 
         m_databaseLocationListener.BusConnect();
 
-        m_temporarySourceDir = QDir(m_temporaryDir.path());
-
-        // in other unit tests we may open the database called ":memory:" to use an in-memory database instead of one on disk.
-        // in this test, however, we use a real database, because the file processor shares it and opens its own connection to it.
-        // ":memory:" databases are one-instance-only, and even if another connection is opened to ":memory:" it would
-        // not share with others created using ":memory:" and get a unique database instead.
-        m_databaseLocation = m_temporarySourceDir.absoluteFilePath("test_database.sqlite").toUtf8().constData();
-
-
-        ON_CALL(m_databaseLocationListener, GetAssetDatabaseLocation(::testing::_))
-            .WillByDefault(
-                DoAll( // set the 0th argument ref (string) to the database location and return true.
-                    ::testing::SetArgReferee<0>(m_databaseLocation),
-                    ::testing::Return(true)));
+        m_assetRootSourceDir = QDir(m_databaseLocationListener.GetAssetRootDir().c_str());
 
         // Initialize the database:
         m_connection.ClearData(); // this is expected to reset/clear/reopen
@@ -42,8 +29,8 @@ namespace UnitTests
 
         m_fileProcessor = AZStd::make_unique<FileProcessor>(m_config.get());
 
-        m_scanFolder = { m_temporarySourceDir.absoluteFilePath("dev").toUtf8().constData(), "dev", "rootportkey" };
-        m_scanFolder2 = { m_temporarySourceDir.absoluteFilePath("dev2").toUtf8().constData(), "dev2", "dev2" };
+        m_scanFolder = { m_assetRootSourceDir.absoluteFilePath("dev").toUtf8().constData(), "dev", "rootportkey" };
+        m_scanFolder2 = { m_assetRootSourceDir.absoluteFilePath("dev2").toUtf8().constData(), "dev2", "dev2" };
         ASSERT_TRUE(m_connection.SetScanFolder(m_scanFolder));
         ASSERT_TRUE(m_connection.SetScanFolder(m_scanFolder2));
 

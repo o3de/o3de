@@ -20,7 +20,6 @@
 // Editor
 #include "MainWindow.h"
 #include "EditorPreferencesTreeWidgetItem.h"
-#include "PreferencesStdPages.h"
 #include "DisplaySettings.h"
 #include "CryEditDoc.h"
 #include "Controls/ConsoleSCB.h"
@@ -30,9 +29,19 @@
 #include "EditorPreferencesPageViewportManipulator.h"
 #include "EditorPreferencesPageViewportCamera.h"
 #include "EditorPreferencesPageViewportDebug.h"
-#include "EditorPreferencesPageExperimentalLighting.h"
 #include "EditorPreferencesPageAWS.h"
 #include "LyViewPaneNames.h"
+#include "Entity/EditorEntityHelpers.h"
+
+// Editor
+#include "EditorPreferencesPageGeneral.h"
+#include "EditorPreferencesPageFiles.h"
+#include "EditorPreferencesPageViewportGeneral.h"
+#include "EditorPreferencesPageViewportManipulator.h"
+#include "EditorPreferencesPageViewportCamera.h"
+#include "EditorPreferencesPageViewportDebug.h"
+#include "EditorPreferencesPageAWS.h"
+
 
 AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include <ui_EditorPreferencesDialog.h>
@@ -51,15 +60,13 @@ EditorPreferencesDialog::EditorPreferencesDialog(QWidget* pParent)
     connect(ui->filter, &FilteredSearchWidget::TextFilterChanged, this, &EditorPreferencesDialog::SetFilter);
 
     AZ::SerializeContext* serializeContext = nullptr;
-    EBUS_EVENT_RESULT(serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
+    AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
     AZ_Assert(serializeContext, "Serialization context not available");
 
     static bool bAlreadyRegistered = false;
     if (!bAlreadyRegistered)
     {
         bAlreadyRegistered = true;
-        GetIEditor()->GetClassFactory()->RegisterClass(new CStdPreferencesClassDesc);
-
         if (serializeContext)
         {
             CEditorPreferencesPage_General::Reflect(*serializeContext);
@@ -68,7 +75,6 @@ EditorPreferencesDialog::EditorPreferencesDialog(QWidget* pParent)
             CEditorPreferencesPage_ViewportManipulator::Reflect(*serializeContext);
             CEditorPreferencesPage_ViewportCamera::Reflect(*serializeContext);
             CEditorPreferencesPage_ViewportDebug::Reflect(*serializeContext);
-            CEditorPreferencesPage_ExperimentalLighting::Reflect(*serializeContext);
             CEditorPreferencesPage_AWS::Reflect(*serializeContext);
         }
     }
@@ -127,7 +133,7 @@ bool WidgetConsumesKeyPressEvent(QKeyEvent* event)
     {
         return false;
     }
-   
+
     if (QWidget* editWidget = QApplication::focusWidget())
     {
         editWidget->clearFocus();
@@ -190,7 +196,8 @@ void EditorPreferencesDialog::OnAccept()
             origAutoBackup.nTime != gSettings.autoBackupTime ||
             origAutoBackup.nRemindTime != gSettings.autoRemindTime))
     {
-        MainWindow::instance()->ResetAutoSaveTimers(true);
+        // Ensure timers restart with the correct interval.
+        MainWindow::instance()->ResetAutoSaveTimers();
     }
 
     AzToolsFramework::EditorPreferencesNotificationBus::Broadcast(&AzToolsFramework::EditorPreferencesNotifications::OnEditorPreferencesChanged);
@@ -310,30 +317,19 @@ void EditorPreferencesDialog::CreateImages()
 
 void EditorPreferencesDialog::CreatePages()
 {
-    std::vector<IClassDesc*> classes;
-    GetIEditor()->GetClassFactory()->GetClassesBySystemID(ESYSTEM_CLASS_PREFERENCE_PAGE, classes);
 
-    for (int i = 0; i < classes.size(); i++)
+    auto addPreferencePage = [&](IPreferencesPage* page) {
+       ui->pageTree->addTopLevelItem(new EditorPreferencesTreeWidgetItem(page, page->GetIcon()));
+    };
+    addPreferencePage(new CEditorPreferencesPage_General());
+    addPreferencePage(new CEditorPreferencesPage_Files());
+    addPreferencePage(new CEditorPreferencesPage_ViewportGeneral());
+    addPreferencePage(new CEditorPreferencesPage_ViewportCamera());
+    addPreferencePage(new CEditorPreferencesPage_ViewportManipulator());
+    addPreferencePage(new CEditorPreferencesPage_ViewportDebug());
+    if (AzToolsFramework::IsComponentWithServiceRegistered(AZ_CRC_CE("AWSCoreEditorService")))
     {
-        auto pUnknown = classes[i];
-
-        IPreferencesPageCreator* pPageCreator = nullptr;
-        if (FAILED(pUnknown->QueryInterface(&pPageCreator)))
-        {
-            continue;
-        }
-
-        int numPages = pPageCreator->GetPagesCount();
-        for (int pindex = 0; pindex < numPages; pindex++)
-        {
-            IPreferencesPage* pPage = pPageCreator->CreateEditorPreferencesPage(pindex);
-            if (!pPage)
-            {
-                continue;
-            }
-
-            ui->pageTree->addTopLevelItem(new EditorPreferencesTreeWidgetItem(pPage, pPage->GetIcon()));
-        }
+        addPreferencePage(new CEditorPreferencesPage_AWS());
     }
 }
 

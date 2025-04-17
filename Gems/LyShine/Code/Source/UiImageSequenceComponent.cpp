@@ -128,7 +128,7 @@ void UiImageSequenceComponent::Render(LyShine::IRenderGraph* renderGraph)
         if (!UiCanvasPixelAlignmentNotificationBus::Handler::BusIsConnected())
         {
             AZ::EntityId canvasEntityId;
-            EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
+            UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
             UiCanvasPixelAlignmentNotificationBus::Handler::BusConnect(canvasEntityId);
         }
     }
@@ -210,7 +210,7 @@ void UiImageSequenceComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::Category, "UI")
                 ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/UiImage.png")
                 ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/UiImage.png")
-                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("UI", 0x27ff46b0))
+                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
             editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiImageSequenceComponent::m_imageType, "ImageType", "The image type. Affects how the texture/sprite is mapped to the image rectangle.")
@@ -221,7 +221,7 @@ void UiImageSequenceComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageSequenceComponent::OnImageTypeChange);
             editInfo->DataElement("Directory", &UiImageSequenceComponent::m_imageSequenceDirectory, "Sequence Directory", "A directory containing images of the sequence.")
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageSequenceComponent::OnImageSequenceDirectoryChange)
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c));
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
             editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiImageSequenceComponent::m_sequenceIndex, "Sequence Index", "Image index to display.")
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageSequenceComponent::OnImageSequenceIndexChange)
                 ->Attribute("EnumValues", &UiImageSequenceComponent::PopulateIndexStringList);
@@ -366,8 +366,8 @@ void UiImageSequenceComponent::OnImageSequenceDirectoryChange()
         PopulateSpriteListFromImageList(m_spriteList, m_imageList);
         m_sequenceIndex = 0;
         MarkRenderCacheDirty();
-        EBUS_EVENT_ID(GetEntityId(), UiSpriteSourceNotificationBus, OnSpriteSourceChanged);
-        EBUS_EVENT(UiEditorChangeNotificationBus, OnEditorPropertiesRefreshEntireTree);
+        UiSpriteSourceNotificationBus::Event(GetEntityId(), &UiSpriteSourceNotificationBus::Events::OnSpriteSourceChanged);
+        UiEditorChangeNotificationBus::Broadcast(&UiEditorChangeNotificationBus::Events::OnEditorPropertiesRefreshEntireTree);
     }
 }
 
@@ -424,7 +424,7 @@ void UiImageSequenceComponent::Deactivate()
 void UiImageSequenceComponent::RenderStretchedSprite(ISprite* sprite, int cellIndex, uint32 packedColor)
 {
     UiTransformInterface::RectPoints points;
-    EBUS_EVENT_ID(GetEntityId(), UiTransformBus, GetViewportSpacePoints, points);
+    UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::GetViewportSpacePoints, points);
 
     if (sprite)
     {
@@ -452,10 +452,10 @@ void UiImageSequenceComponent::RenderFixedSprite(ISprite* sprite, int cellIndex,
     AZ::Vector2 textureSize(sprite->GetCellSize(cellIndex));
 
     UiTransformInterface::RectPoints points;
-    EBUS_EVENT_ID(GetEntityId(), UiTransformBus, GetCanvasSpacePointsNoScaleRotate, points);
+    UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::GetCanvasSpacePointsNoScaleRotate, points);
 
     AZ::Vector2 pivot;
-    EBUS_EVENT_ID_RESULT(pivot, GetEntityId(), UiTransformBus, GetPivot);
+    UiTransformBus::EventResult(pivot, GetEntityId(), &UiTransformBus::Events::GetPivot);
 
     // change width and height to match texture
     AZ::Vector2 rectSize = points.GetAxisAlignedSize();
@@ -470,7 +470,7 @@ void UiImageSequenceComponent::RenderFixedSprite(ISprite* sprite, int cellIndex,
     points.BottomLeft() = AZ::Vector2(points.TopLeft().GetX(), points.BottomRight().GetY());
 
     // now apply scale and rotation
-    EBUS_EVENT_ID(GetEntityId(), UiTransformBus, RotateAndScalePoints, points);
+    UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::RotateAndScalePoints, points);
 
     // now draw the same as Stretched
     const UiTransformInterface::RectPoints& uvCoords = sprite->GetCellUvCoords(cellIndex);
@@ -491,10 +491,10 @@ void UiImageSequenceComponent::RenderStretchedToFitOrFillSprite(ISprite* sprite,
     AZ::Vector2 textureSize = sprite->GetCellSize(cellIndex);
 
     UiTransformInterface::RectPoints points;
-    EBUS_EVENT_ID(GetEntityId(), UiTransformBus, GetCanvasSpacePointsNoScaleRotate, points);
+    UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::GetCanvasSpacePointsNoScaleRotate, points);
 
     AZ::Vector2 pivot;
-    EBUS_EVENT_ID_RESULT(pivot, GetEntityId(), UiTransformBus, GetPivot);
+    UiTransformBus::EventResult(pivot, GetEntityId(), &UiTransformBus::Events::GetPivot);
 
     // scale the texture so it either fits or fills the enclosing rect
     AZ::Vector2 rectSize = points.GetAxisAlignedSize();
@@ -516,7 +516,7 @@ void UiImageSequenceComponent::RenderStretchedToFitOrFillSprite(ISprite* sprite,
     points.BottomLeft() = AZ::Vector2(points.TopLeft().GetX(), points.BottomRight().GetY());
 
     // now apply scale and rotation
-    EBUS_EVENT_ID(GetEntityId(), UiTransformBus, RotateAndScalePoints, points);
+    UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::RotateAndScalePoints, points);
 
     // now draw the same as Stretched
     const UiTransformInterface::RectPoints& uvCoords = sprite->GetCellUvCoords(cellIndex);
@@ -601,17 +601,17 @@ void UiImageSequenceComponent::MarkRenderCacheDirty()
 
     // tell the canvas to invalidate the render graph (never want to do this while rendering)
     AZ::EntityId canvasEntityId;
-    EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
-    EBUS_EVENT_ID(canvasEntityId, UiCanvasComponentImplementationBus, MarkRenderGraphDirty);
+    UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
+    UiCanvasComponentImplementationBus::Event(canvasEntityId, &UiCanvasComponentImplementationBus::Events::MarkRenderGraphDirty);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 bool UiImageSequenceComponent::IsPixelAligned()
 {
     AZ::EntityId canvasEntityId;
-    EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
+    UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
     bool isPixelAligned = true;
-    EBUS_EVENT_ID_RESULT(isPixelAligned, canvasEntityId, UiCanvasBus, GetIsPixelAligned);
+    UiCanvasBus::EventResult(isPixelAligned, canvasEntityId, &UiCanvasBus::Events::GetIsPixelAligned);
     return isPixelAligned;
 }
 

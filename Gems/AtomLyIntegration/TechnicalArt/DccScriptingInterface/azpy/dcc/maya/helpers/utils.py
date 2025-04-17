@@ -36,7 +36,7 @@ _DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
 _DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
 
 _PACKAGENAME = __name__
-if _PACKAGENAME is '__main__':
+if _PACKAGENAME == '__main__':
     _PACKAGENAME = 'azpy.dcc.maya.helpers.utils'
 
 _LOGGER = initialize_logger(_PACKAGENAME, default_log_level=int(20))

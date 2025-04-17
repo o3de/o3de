@@ -28,15 +28,16 @@ namespace AZ::ComponentApplicationLifecycle
 
         if (!ValidateEvent(settingsRegistry, eventName))
         {
-            AZ_Warning("ComponentApplicationLifecycle", false, R"(Cannot signal event %.*s. Name does is not a field of object "%.*s".)"
+            AZ_Warning("ComponentApplicationLifecycle", false, R"(Cannot signal event %.*s because it is not a field of object "%.*s".)"
                 R"( Please make sure the entry exists in the '<engine-root>/Registry/application_lifecycle_events.setreg")"
                 " or in *.setreg within the project", AZ_STRING_ARG(eventName), AZ_STRING_ARG(ApplicationLifecycleEventRegistrationKey));
             return false;
         }
-        auto eventRegistrationKey = FixedValueString::format("%.*s/%.*s", AZ_STRING_ARG(ApplicationLifecycleEventRegistrationKey),
+        // The Settings Registry key used to signal the event is a transient runtime key which is separate from the registration key
+        auto eventSignalKey = FixedValueString::format("%.*s/%.*s", AZ_STRING_ARG(ApplicationLifecycleEventSignalKey),
             AZ_STRING_ARG(eventName));
 
-        return settingsRegistry.MergeSettings(eventValue, Format::JsonMergePatch, eventRegistrationKey);
+        return static_cast<bool>(settingsRegistry.MergeSettings(eventValue, Format::JsonMergePatch, eventSignalKey));
     }
 
     bool RegisterEvent(AZ::SettingsRegistryInterface& settingsRegistry, AZStd::string_view eventName)
@@ -49,7 +50,7 @@ namespace AZ::ComponentApplicationLifecycle
             FixedValueString eventRegistrationKey{ ApplicationLifecycleEventRegistrationKey };
             eventRegistrationKey += '/';
             eventRegistrationKey += eventName;
-            return settingsRegistry.MergeSettings(R"({})", Format::JsonMergePatch, eventRegistrationKey);
+            return static_cast<bool>(settingsRegistry.MergeSettings(R"({})", Format::JsonMergePatch, eventRegistrationKey));
         }
 
         return true;
@@ -59,7 +60,6 @@ namespace AZ::ComponentApplicationLifecycle
         AZ::SettingsRegistryInterface::NotifyCallback callback, AZStd::string_view eventName, bool autoRegisterEvent)
     {
         using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
-        using Type = AZ::SettingsRegistryInterface::Type;
         using NotifyEventHandler = AZ::SettingsRegistryInterface::NotifyEventHandler;
 
         // Some systems may attempt to register a handler before the settings registry has been loaded
@@ -75,13 +75,16 @@ namespace AZ::ComponentApplicationLifecycle
                 " or in *.setreg within the project", AZ_STRING_ARG(eventName), AZ_STRING_ARG(ApplicationLifecycleEventRegistrationKey));
             return false;
         }
-        auto eventNameRegistrationKey = FixedValueString::format("%.*s/%.*s", AZ_STRING_ARG(ApplicationLifecycleEventRegistrationKey),
-            AZ_STRING_ARG(eventName));
-        auto lifecycleCallback = [callback = AZStd::move(callback), eventNameRegistrationKey](AZStd::string_view path, Type type)
+
+        // The signal key is used for invoking the handler
+        auto lifecycleCallback = [callback = AZStd::move(callback),
+            eventNameSignalKey = FixedValueString::format("%.*s/%.*s",
+                AZ_STRING_ARG(ApplicationLifecycleEventSignalKey), AZ_STRING_ARG(eventName))](
+            const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
         {
-            if (path == eventNameRegistrationKey)
+            if (notifyEventArgs.m_jsonKeyPath == eventNameSignalKey)
             {
-                callback(path, type);
+                callback(notifyEventArgs);
             }
         };
 

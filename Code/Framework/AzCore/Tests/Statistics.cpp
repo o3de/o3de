@@ -20,7 +20,7 @@ using namespace Debug;
 namespace UnitTest
 {
     class StatisticsTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         StatisticsTest()
@@ -29,7 +29,7 @@ namespace UnitTest
 
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             m_dataSamples = AZStd::make_unique<AZStd::vector<u32>>();
             const u32 numSamples = 100;
@@ -49,7 +49,7 @@ namespace UnitTest
             // clearing up memory
             m_dataSamples = nullptr;
 
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
     protected:
@@ -193,10 +193,10 @@ namespace UnitTest
     TEST_F(StatisticsTest, StatisticsManagerCrc32_DistributeSamplesAcrossStatistics_StatisticsAreCorrect)
     {
         Statistics::StatisticsManager<AZ::Crc32> statsManager;
-        AZ::Crc32 statName0 = AZ_CRC("stat0", 0xb8927780);
-        AZ::Crc32 statName1 = AZ_CRC("stat1", 0xcf954716);
-        AZ::Crc32 statName2 = AZ_CRC("stat2", 0x569c16ac);
-        AZ::Crc32 statName3 = AZ_CRC("stat3", 0x219b263a);
+        AZ::Crc32 statName0 = AZ_CRC_CE("stat0");
+        AZ::Crc32 statName1 = AZ_CRC_CE("stat1");
+        AZ::Crc32 statName2 = AZ_CRC_CE("stat2");
+        AZ::Crc32 statName3 = AZ_CRC_CE("stat3");
 
         EXPECT_TRUE(statsManager.AddStatistic(statName3) != nullptr);
         EXPECT_TRUE(statsManager.AddStatistic(statName0) != nullptr);

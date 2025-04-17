@@ -52,6 +52,9 @@ namespace AZ::Render
         //! Performs any updates for the editor state effect parent pass instances for the given simulation tick.
         void Update();
 
+        //! Returns the pass template name of the main parent pass
+        const char* GetParentPassTemplateName() const;
+
     private:
         //! Parent passes for each editor state (ordering in vector is ordering of rendering).
         EditorStateList m_editorStates;

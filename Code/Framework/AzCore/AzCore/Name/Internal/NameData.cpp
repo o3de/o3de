@@ -37,12 +37,16 @@ namespace AZ::Internal
         // this could be released after we decrement the counter, therefore we will
         // base the release on the hash which is stable
         Hash hash = m_hash;
+        // Once the use count goes to zero, it is no longer
+        // safe to access any member of the NameData class
+        // therefore copy the name dictionary pointer into a local variable
+        NameDictionary* nameDictionary = m_nameDictionary;
         AZ_Assert(m_useCount > 0, "m_useCount is already 0!");
         if (m_useCount.fetch_sub(1) == 1)
         {
-            if (m_nameDictionary)
+            if (nameDictionary)
             {
-                m_nameDictionary->TryReleaseName(hash);
+                nameDictionary->TryReleaseName(hash);
             }
         }
     }

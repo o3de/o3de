@@ -210,11 +210,6 @@ namespace UnitTest
     public:
         void SetupEnvironment() override
         {
-            if (!AZ::AllocatorInstance<AZ::OSAllocator>::IsReady())
-            {
-                AZ::AllocatorInstance<AZ::OSAllocator>::Create(); // used by the bus
-                m_createdAllocator = true;
-            }
             BusConnect();
 
             m_environmentSetup = true;
@@ -226,54 +221,57 @@ namespace UnitTest
             {
                 BusDisconnect();
 
-                if (m_createdAllocator)
+                // Leak detection. We need to collect the allocators and then shutdown the environment to remove all
+                // variables that are there before we can detect leaks.
+                AZStd::vector<AZ::IAllocator*, AZStd::stateless_allocator> allocators;
                 {
-                    AZ::AllocatorInstance<AZ::OSAllocator>::Destroy(); // used by the bus
-                }
-
-                // At this point, the AllocatorManager should not have any allocators left. If we happen to have any,
-                // we exit the test with an error code (this way the test process does not return 0 and the test run
-                // is considered a failure).
-                AZ::AllocatorManager& allocatorManager = AZ::AllocatorManager::Instance();
-                const int numAllocators = allocatorManager.GetNumAllocators();
-                int invalidAllocatorCount = 0;
-
-                for (int i = 0; i < numAllocators; ++i)
-                {
-                    if (!allocatorManager.GetAllocator(i)->IsLazilyCreated())
+                    AZ::AllocatorManager& allocatorManager = AZ::AllocatorManager::Instance();
+                    const int numAllocators = allocatorManager.GetNumAllocators();
+                    // Iterate in reverse order since some allocators could depend on others to do garbage collection.
+                    // If allocatorB depends on allocatorA, allocatorA will be registered before into the allocator manager.
+                    for (int i = numAllocators - 1; i >= 0; --i)
                     {
-                        invalidAllocatorCount++;
+                        allocatorManager.GetAllocator(i)->GarbageCollect();
                     }
-                }
 
-                if (invalidAllocatorCount && m_createdAllocator)
-                {
-                    // Print the name of the allocators still in the AllocatorManager
-                    ColoredPrintf(COLOR_RED, "[     FAIL ] There are still %d registered non-lazy allocators:\n", invalidAllocatorCount);
+                    allocators.reserve(numAllocators);
                     for (int i = 0; i < numAllocators; ++i)
                     {
-                        if (!allocatorManager.GetAllocator(i)->IsLazilyCreated())
-                        {
-                            ColoredPrintf(COLOR_RED, "\t\t%s\n", allocatorManager.GetAllocator(i)->GetName());
-                        }
+                        allocators.push_back(allocatorManager.GetAllocator(i));
                     }
+                }
 
-                    AZ::AllocatorManager::Destroy();
-                    m_environmentSetup = false;
+                bool allocationsLeft = false;
 
+                // Fail with errors if any of the ones with tracking have allocations left
+                for (AZ::IAllocator* allocator : allocators)
+                {
+                    const auto records = allocator->GetRecords();
+                    if (records && records->RequestedBytes() > 0)
+                    {
+                        if (!allocationsLeft)
+                        {
+                            ColoredPrintf(COLOR_RED, "[     FAIL ] There are still allocations\n");
+                            allocationsLeft = true;
+                        }
+                        ColoredPrintf(COLOR_RED, "\t\t%s, Request size left: %zu bytes\n", allocator->GetName(), records->RequestedBytes());
+                        records->EnumerateAllocations(AZ::Debug::PrintAllocationsCB{true, true});
+                    }
+                }
+
+                m_environmentSetup = false;
+
+                if (allocationsLeft)
+                {
 #if AZ_TRAIT_COMPILER_SUPPORT_CSIGNAL
                     std::raise(SIGTERM);
 #endif // AZ_TRAIT_COMPILER_SUPPORT_CSIGNAL
                 }
-
-                AZ::AllocatorManager::Destroy();
-                m_environmentSetup = false;
             }
         }
 
     private:
         bool m_environmentSetup = false;
-        bool m_createdAllocator = false;
     };
 }
 

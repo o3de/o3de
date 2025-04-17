@@ -8,7 +8,6 @@
 
 #include "AssetSystemDebugComponent.h"
 #include "ISystem.h"
-#include "IRenderAuxGeom.h"
 
 #include "AzCore/Asset/AssetManager.h"
 #include <AzCore/Interface/Interface.h>
@@ -172,7 +171,7 @@ namespace LmbrCentral
                 EventInfo info;
                 info.m_id = id;
                 info.m_status = status;
-                info.m_loadStart = AZStd::chrono::system_clock::now();
+                info.m_loadStart = AZStd::chrono::steady_clock::now();
 
                 m_events[id] = info;
                 m_oldestActive.insert(&m_events[id]);
@@ -188,7 +187,7 @@ namespace LmbrCentral
             {
                 if(exists)
                 {
-                    itr->second.m_loadFinish = AZStd::chrono::system_clock::now();
+                    itr->second.m_loadFinish = AZStd::chrono::steady_clock::now();
 
                     m_recentlyCompleted.insert(&itr->second);
                     m_oldestActive.erase(&itr->second);

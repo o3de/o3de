@@ -242,7 +242,7 @@ namespace AZStd
     template<class T, size_t N>
     bool operator==(const array<T, N>& a, const array<T, N>& b)
     {
-        return equal(a.begin(), a.end(), b.begin());
+        return AZStd::equal(a.begin(), a.end(), b.begin(), b.end());
     }
 
     template<class T, size_t N>

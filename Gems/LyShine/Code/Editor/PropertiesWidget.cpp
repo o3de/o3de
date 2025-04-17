@@ -188,7 +188,8 @@ void PropertiesWidget::InvalidatePropertyDisplay([[maybe_unused]] AzToolsFramewo
 {
     // This event is sent when the main editor's properties pane should refresh. We only care about script changes triggering
     // this event. In this case we want the UI Editor's properties pane to refresh and display any new script properties
-    TriggerRefresh(AzToolsFramework::PropertyModificationRefreshLevel::Refresh_EntireTree, &AZ::AzTypeInfo<AzToolsFramework::Components::ScriptEditorComponent>::Uuid());
+    static const AZ::TypeId scriptEditorTypeId = AZ::AzTypeInfo<AzToolsFramework::Components::ScriptEditorComponent>::Uuid();
+    TriggerRefresh(AzToolsFramework::PropertyModificationRefreshLevel::Refresh_EntireTree, &scriptEditorTypeId);
 }
 
 #include <moc_PropertiesWidget.cpp>

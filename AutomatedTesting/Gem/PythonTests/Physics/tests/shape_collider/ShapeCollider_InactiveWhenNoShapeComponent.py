@@ -53,6 +53,7 @@ def ShapeCollider_InactiveWhenNoShapeComponent():
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.editor_entity_utils import EditorEntity
     from editor_python_test_tools.utils import TestHelper as helper
+    from consts.physics import PHYSX_SHAPE_COLLIDER
 
     import editor_python_test_tools.hydra_editor_utils as hydra
 
@@ -72,13 +73,14 @@ def ShapeCollider_InactiveWhenNoShapeComponent():
 
     # 2) Add an entity with a PhysX Shape Collider component.
     collider = EditorEntity.create_editor_entity("Collider")
-    physx_component = collider.add_component("PhysX Shape Collider")
+    collider.add_component("PhysX Static Rigid Body")
+    physx_component = collider.add_component(PHYSX_SHAPE_COLLIDER)
 
     # 3) Validate Collider Entity
     Report.result(Tests.create_collider_entity, collider.id.IsValid())
 
     # 4) Validate PhysX Shape Collider component is inactive.
-    Report.result(Tests.add_physx_shape_collider, collider.has_component("PhysX Shape Collider"))
+    Report.result(Tests.add_physx_shape_collider, collider.has_component(PHYSX_SHAPE_COLLIDER))
     Report.result(Tests.collider_component_inactive, not is_component_active(physx_component.id))
 
     # 5) Add Shape component to Entity

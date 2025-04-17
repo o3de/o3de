@@ -15,7 +15,7 @@
         "Stencil" :
         {
             "Enable" : true,
-            "ReadMask" : "0x7F",
+            "ReadMask" : "0x3F",
             "WriteMask" : "0x00",
             "BackFace" :
             {
@@ -27,7 +27,7 @@
         }
     },
 
-    "BlendState" : {
+    "GlobalTargetBlendState" : {
         "Enable" : true,
         "BlendSource" : "One",
         "BlendDest" : "One",

@@ -61,13 +61,16 @@ namespace AZ::Geometry3dUtils
 
         // The 12 vertices of an icosahedron centered at the origin with edge length 1 are
         // (+- 1, +- 1/phi, 0), (0, +- 1, +- 1/phi), (+- 1/phi, 0, +- 1)
+
+        // normalization factor to make the radius 1
+        const float norm = 1.0f / AZStd::sqrt(1.0f + 1.0f / (phi * phi));
         const AZ::Vector3 icosahedronVertices[] = {
             // (+- 1, +- 1/phi, 0)
-            { -1.0f, 1.0f/phi, 0.0f }, { 1.0f, 1.0f/phi, 0.0f }, { -1.0f, -1.0f/phi, 0.0f }, { 1.0f, -1.0f/phi, 0.0f },
+            { -norm, norm/phi, 0.0f }, { norm, norm/phi, 0.0f }, { -norm, -norm/phi, 0.0f }, { norm, -norm/phi, 0.0f },
             // (0, +- 1, +- 1/phi)
-            { 0.0f, -1.0f, 1.0f/phi }, { 0.0f, 1.0f, 1.0f/phi }, { 0.0f, -1.0f, -1.0f/phi }, { 0.0f, 1.0f, -1.0f/phi },
+            { 0.0f, -norm, norm/phi }, { 0.0f, norm, norm/phi }, { 0.0f, -norm, -norm/phi }, { 0.0f, norm, -norm/phi },
             // (+- 1/phi, 0, +- 1)
-            { 1.0f/phi, 0.0f, -1.0f }, { 1.0f/phi, 0.0f, 1.0f }, { -1.0f/phi, 0.0f, -1.0f }, { -1.0f/phi, 0.0f, 1.0f } };
+            { norm/phi, 0.0f, -norm }, { norm/phi, 0.0f, norm }, { -norm/phi, 0.0f, -norm }, { -norm/phi, 0.0f, norm } };
 
         // The 20 triangles that make up the faces of the icosahedron.
         int faceIndices[IcosahedronFaces][3] = {

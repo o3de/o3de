@@ -12,32 +12,23 @@
     {
       "name": "mac-default",
       "displayName": "Mac",
-      "description": "Mac default configuratoin",
+      "description": "Mac default configuration",
       "inherits": [
         "mac-xcode",
         "mac-unity",
         "mac-non-monolithic"
-      ],
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Darwin"
-      }
+      ]
     },
     {
       "name": "mac-mono-default",
       "displayName": "Mac Monolithic with Unity and Xcode",
       "description": "Configures Mac to build the Monolithic permutation using Xcode with Unity builds",
+      "binaryDir": "${sourceDir}/build/mac_mono",
       "inherits": [
-        "mac-ninja",
+        "mac-xcode",
         "mac-unity",
         "mac-monolithic"
-      ],
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Darwin"
-      }
+      ]
     },
     {
       "name": "mac-unity",
@@ -45,13 +36,9 @@
       "description": "Mac build which uses unity files",
       "binaryDir": "${sourceDir}/build/mac",
       "inherits": [
-        "unity"
-      ],
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Darwin"
-      }
+        "unity",
+        "host-mac"
+      ]
     },
     {
       "name": "mac-no-unity",
@@ -59,26 +46,18 @@
       "description": "Mac build which uses unity files",
       "binaryDir": "${sourceDir}/build/mac_no_unity",
       "inherits": [
-        "no-unity"
-      ],
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Darwin"
-      }
+        "no-unity",
+        "host-mac"
+      ]
     },
     {
       "name": "mac-non-monolithic",
       "displayName": "Mac Non-Monolithic",
       "description": "Default configuration for non-monolithic builds",
       "inherits": [
-        "non-monolithic"
-      ],
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Darwin"
-      }
+        "non-monolithic",
+        "host-mac"
+      ]
     },
     {
       "name": "mac-monolithic",
@@ -86,55 +65,38 @@
       "description": "Default configuration for monolithic builds",
       "binaryDir": "${sourceDir}/build/mac_mono",
       "inherits": [
-        "monolithic"
-      ],
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Darwin"
-      }
+        "monolithic",
+        "host-mac"
+      ]
     },
     {
       "name": "mac-xcode",
       "displayName": "Mac Xcode",
       "description": "Configure Mac using with the Xcode generator",
       "binaryDir": "${sourceDir}/build/mac_xcode",
-      "generator": "Xcode",
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Darwin"
-      }
+      "inherits":[
+        "xcode"
+      ]
     },
     {
       "name": "mac-xcode-unity",
       "displayName": "Mac Xcode Unity",
       "description": "Configure Mac with the Xcode generator + Unity Builds",
       "binaryDir": "${sourceDir}/build/mac_xcode_unity",
-      "generator": "Xcode",
       "inherits": [
-        "mac-unity"
-      ],
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Darwin"
-      }
+        "mac-unity",
+        "xcode"
+      ]
     },
     {
       "name": "mac-xcode-no-unity",
       "displayName": "Mac Xcode without Unity",
       "description": "Configure Mac with the Xcode Generator without unity builds",
       "binaryDir": "${sourceDir}/build/mac_xcode_no_unity",
-      "generator": "Xcode",
       "inherits": [
-        "mac-no-unity"
-      ],
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Darwin"
-      }
+        "mac-no-unity",
+        "xcode"
+      ]
     },
     {
       "name": "mac-ninja",
@@ -143,12 +105,7 @@
       "binaryDir": "${sourceDir}/build/mac_ninja",
       "inherits": [
         "mac-ninja-unity"
-      ],
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Darwin"
-      }
+      ]
     },
     {
       "name": "mac-ninja-unity",
@@ -158,12 +115,7 @@
       "inherits": [
         "ninja-multi-config",
         "mac-unity"
-      ],
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Darwin"
-      }
+      ]
     },
     {
       "name": "mac-ninja-no-unity",
@@ -173,12 +125,7 @@
       "inherits": [
         "ninja-multi-config",
         "mac-no-unity"
-      ],
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Darwin"
-      }
+      ]
     }
   ],
   "buildPresets": [
@@ -187,11 +134,9 @@
       "displayName": "Mac",
       "description": "Builds all targets for Mac",
       "configurePreset": "mac-default",
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Darwin"
-      }
+      "inherits":[
+        "host-mac"
+      ]
     },
     {
       "name": "mac-install",
@@ -199,7 +144,8 @@
       "description": "Builds the \"install\" target for Mac, which builds all target and runs the CMake --install step",
       "configurePreset": "mac-default",
       "inherits": [
-        "install"
+        "install",
+        "host-mac"
       ],
       "condition": {
         "type": "equals",
@@ -212,11 +158,9 @@
       "displayName": "Mac Monolithic",
       "description": "Builds all targets for Mac in the monolithic permutation",
       "configurePreset": "mac-mono-default",
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Darwin"
-      }
+      "inherits":[
+        "host-mac"
+      ]
     },
     {
       "name": "mac-mono-install",
@@ -224,13 +168,9 @@
       "description": "Builds the \"install\" target for mac monolithic permutation, which builds all target and runs the CMake --install step",
       "configurePreset": "mac-mono-default",
       "inherits": [
-        "install"
-      ],
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Darwin"
-      }
+        "install",
+        "host-mac"
+      ]
     },
     {
       "name": "mac-editor",
@@ -238,13 +178,9 @@
       "description": "Builds the Editor application for Mac",
       "configurePreset": "mac-default",
       "inherits": [
-        "editor"
-      ],
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Darwin"
-      }
+        "editor",
+        "host-mac"
+      ]
     },
     {
       "name": "mac-assetprocessor",
@@ -252,13 +188,9 @@
       "description": "Builds the AssetProcessor application for Mac",
       "configurePreset": "mac-default",
       "inherits": [
-        "assetprocessor"
-      ],
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Darwin"
-      }
+        "assetprocessor",
+        "host-mac"
+      ]
     },
     {
       "name": "mac-test",
@@ -266,13 +198,9 @@
       "description": "Builds the TEST_SUITE_smoke/TEST_SUITE_main custom targets for Mac",
       "configurePreset": "mac-default",
       "inherits": [
-        "test-default"
-      ],
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Darwin"
-      }
+        "test-default",
+        "host-mac"
+      ]
     }
   ],
   "testPresets": [
@@ -282,13 +210,9 @@
       "description": "Runs the Smoke + Main Test Suite. Requires the mac-test build preset to have completed successfully",
       "configurePreset": "mac-default",
       "inherits": [
-        "test-default"
-      ],
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Darwin"
-      }
+        "test-default",
+        "host-mac"
+      ]
     },
     {
       "name": "mac-test-debug",
@@ -296,13 +220,9 @@
       "description": "Runs the Smoke + Main Test Suite in debug configuration. Requires the mac-test build preset to have completed successfully",
       "configurePreset": "mac-default",
       "inherits": [
-        "test-default-debug"
-      ],
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Darwin"
-      }
+        "test-default-debug",
+        "host-mac"
+      ]
     },
     {
       "name": "mac-test-profile",
@@ -310,13 +230,9 @@
       "description": "Runs the Smoke + Main Test Suite in profile configuration. Requires the mac-test build preset to have completed successfully",
       "configurePreset": "mac-default",
       "inherits": [
-        "test-default-profile"
-      ],
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Darwin"
-      }
+        "test-default-profile",
+        "host-mac"
+      ]
     }
   ]
 }

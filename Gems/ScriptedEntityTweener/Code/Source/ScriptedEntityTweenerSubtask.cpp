@@ -207,7 +207,7 @@ namespace ScriptedEntityTweener
         m_virtualPropertyTypeId = AZ::Uuid::CreateNull();
 
         AZ::BehaviorContext* behaviorContext = nullptr;
-        EBUS_EVENT_RESULT(behaviorContext, AZ::ComponentApplicationBus, GetBehaviorContext);
+        AZ::ComponentApplicationBus::BroadcastResult(behaviorContext, &AZ::ComponentApplicationBus::Events::GetBehaviorContext);
         if (!behaviorContext)
         {
             AZ_Error("ScriptedEntityTweenerSubtask", false, "ScriptedEntityTweenerSubtask::CacheVirtualProperty - failed to get behavior context for caching [%s]", animParamData.m_virtualPropertyName.c_str());

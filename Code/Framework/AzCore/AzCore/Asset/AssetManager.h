@@ -156,7 +156,7 @@ namespace AZ
             typedef AZStd::unordered_map<AssetContainerKey, AZStd::weak_ptr<AssetContainer>> WeakAssetContainerMap;
             typedef AZStd::unordered_map<AssetContainer*, AZStd::shared_ptr<AssetContainer>> OwnedAssetContainerMap;
 
-            AZ_CLASS_ALLOCATOR(AssetManager, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AssetManager, SystemAllocator);
 
             static bool Create(const Descriptor& desc);
             static void Destroy();
@@ -324,6 +324,9 @@ namespace AZ
             */
             bool HasActiveJobsOrStreamerRequests();
 
+            // memory debug output
+            void DumpLoadedAssetsInfo();
+
         protected:
             AssetManager(const Descriptor& desc);
             virtual ~AssetManager();
@@ -343,7 +346,7 @@ namespace AZ
             void AddJob(AssetDatabaseJob* job);
             void RemoveJob(AssetDatabaseJob* job);
             void AddActiveStreamerRequest(AssetId assetId, AZStd::shared_ptr<AssetDataStream> readRequest);
-            void RescheduleStreamerRequest(AssetId assetId, AZStd::chrono::milliseconds newDeadline, AZ::IO::IStreamerTypes::Priority newPriority);
+            void RescheduleStreamerRequest(AssetId assetId, AZ::IO::IStreamerTypes::Deadline newDeadline, AZ::IO::IStreamerTypes::Priority newPriority);
             void RemoveActiveStreamerRequest(AssetId assetId);
             void AddBlockingRequest(AssetId assetId, WaitForAsset* blockingRequest);
             void RemoveBlockingRequest(AssetId assetId, WaitForAsset* blockingRequest);

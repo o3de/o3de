@@ -82,7 +82,7 @@ namespace AZStd
             pthread_t tId;
             int res = pthread_create(&tId, &attr, &thread_run_function, ti);
             (void)res;
-            AZ_Assert(res == 0, "pthread failed %s", strerror(errno));
+            AZ_Assert(res == 0, "pthread failed with code %d: %s", res, strerror(res));
             pthread_attr_destroy(&attr);
 
             // Platform specific post thread creation action (setting thread name on some, affinity on others)

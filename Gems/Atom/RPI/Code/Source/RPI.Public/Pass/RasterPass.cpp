@@ -9,7 +9,6 @@
 #include <Atom/RHI/CommandList.h>
 #include <Atom/RHI/DrawListTagRegistry.h>
 #include <Atom/RHI/RHISystemInterface.h>
-#include <Atom/RHI/ShaderResourceGroup.h>
 
 #include <Atom/RPI.Public/DynamicDraw/DynamicDrawInterface.h>
 #include <Atom/RPI.Public/Pass/RasterPass.h>
@@ -47,33 +46,9 @@ namespace AZ
             SetDrawListTag(rasterData->m_drawListTag);
             m_drawListSortType = rasterData->m_drawListSortType;
 
-            // Get the shader asset that contains the SRG Layout.
-            Data::Asset<ShaderAsset> shaderAsset;
-            if (rasterData->m_passSrgShaderReference.m_assetId.IsValid())
-            {
-                shaderAsset = AssetUtils::LoadAssetById<ShaderAsset>(rasterData->m_passSrgShaderReference.m_assetId, AssetUtils::TraceLevel::Error);
-            }
-            else if (!rasterData->m_passSrgShaderReference.m_filePath.empty())
-            {
-                shaderAsset = AssetUtils::LoadAssetByProductPath<ShaderAsset>(
-                    rasterData->m_passSrgShaderReference.m_filePath.c_str(), AssetUtils::TraceLevel::Error);
-            }
+            RHI::RHISystemInterface::Get()->SetDrawListTagEnabledByDefault(m_drawListTag, rasterData->m_enableDrawItemsByDefault);
 
-            if (shaderAsset)
-            {
-                const auto srgLayout = shaderAsset->FindShaderResourceGroupLayout(SrgBindingSlot::Pass);
-                if (srgLayout)
-                {
-                    m_shaderResourceGroup = ShaderResourceGroup::Create(shaderAsset, srgLayout->GetName());
-
-                    AZ_Assert(
-                        m_shaderResourceGroup, "[RasterPass '%s']: Failed to create SRG from shader asset '%s'", GetPathName().GetCStr(),
-                        rasterData->m_passSrgShaderReference.m_filePath.data());
-
-                    PassUtils::BindDataMappingsToSrg(descriptor, m_shaderResourceGroup.get());
-                }
-            }
-
+            LoadShaderResourceGroup();
 
             if (!rasterData->m_overrideScissor.IsNull())
             {
@@ -85,6 +60,7 @@ namespace AZ
                 m_viewportState = rasterData->m_overrideViewport;
                 m_overrideViewportState = true;
             }
+            m_viewportAndScissorTargetOutputIndex = rasterData->m_viewportAndScissorTargetOutputIndex;
         }
 
         RasterPass::~RasterPass()
@@ -130,23 +106,62 @@ namespace AZ
 
         void RasterPass::FrameBeginInternal(FramePrepareParams params)
         {
-            if (!m_overrideScissorSate)
-            {
-                m_scissorState = params.m_scissorState;
-            }
-            if (!m_overrideViewportState)
-            {
-                m_viewportState = params.m_viewportState;
-            }
+            // Binding to use for viewport and scissor calculations
+            PassAttachmentBinding* viewportTarget = nullptr;
 
+            // If a target binding for viewport calculation is specified
+            if (m_viewportAndScissorTargetOutputIndex >= 0)
+            {
+                u32 idx = u32(m_viewportAndScissorTargetOutputIndex);
+                // First check outputs
+                if (GetOutputCount() > idx)
+                {
+                    viewportTarget = &GetOutputBinding(idx);
+                }
+                // If not an output, check input/outputs
+                else if (GetInputOutputCount() > idx)
+                {
+                    viewportTarget = &GetInputOutputBinding(idx);
+                }
+            }
+            // Build viewport and scissor from target binding if specified
+            if (viewportTarget)
+            {
+                u32 targetWidth = viewportTarget->GetAttachment()->m_descriptor.m_image.m_size.m_width;
+                u32 targetHeight = viewportTarget->GetAttachment()->m_descriptor.m_image.m_size.m_height;
+                m_scissorState = RHI::Scissor(0, 0, targetWidth, targetHeight);
+                m_viewportState = RHI::Viewport(0, static_cast<float>(targetWidth), 0, static_cast<float>(targetHeight));
+            }
+            // Otherwise check whether viewport/scissor overrides were manually provided
+            else
+            {
+                if (!m_overrideScissorSate)
+                {
+                    m_scissorState = params.m_scissorState;
+                }
+                if (!m_overrideViewportState)
+                {
+                    m_viewportState = params.m_viewportState;
+                }
+            }
             UpdateDrawList();
 
             RenderPass::FrameBeginInternal(params);
         }
 
+        void RasterPass::InitializeInternal()
+        {
+            BuildRenderAttachmentConfiguration();
+            if (m_shaderResourceGroup &&
+                m_shaderResourceGroup->GetShaderAsset()->GetSupervariantIndex(GetSuperVariantName()) != m_shaderResourceGroup->GetSupervariantIndex())
+            {
+                LoadShaderResourceGroup();
+            }
+            RenderPass::InitializeInternal();
+        }
+
         void RasterPass::UpdateDrawList()
         {
-            AZ_PROFILE_SCOPE(RPI, "RasterPass::UpdateDrawList");
              // DrawLists from dynamic draw
             AZStd::vector<RHI::DrawListView> drawLists = DynamicDrawInterface::Get()->GetDrawListsForPass(this);
 
@@ -157,10 +172,7 @@ namespace AZ
             {
                 const ViewPtr& view = views.front();
 
-                // Assert the view has our draw list (the view's DrawlistTags are collected from passes using its viewTag)
-                AZ_Assert(view->HasDrawListTag(m_drawListTag), "View's DrawListTags out of sync with pass'. ");
-
-                // Draw List 
+                // Draw List. May return an empty list, and that's ok.
                 viewDrawList = view->GetDrawList(m_drawListTag);
             }
 
@@ -211,7 +223,9 @@ namespace AZ
 
         void RasterPass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
         {
-            RenderPass::SetupFrameGraphDependencies(frameGraph);
+            DeclareAttachmentsToFrameGraph(frameGraph);
+            DeclarePassDependenciesToFrameGraph(frameGraph);
+            AddScopeQueryToFrameGraph(frameGraph);
             frameGraph.SetEstimatedItemCount(static_cast<uint32_t>(m_drawListView.size()));
         }
 
@@ -227,26 +241,72 @@ namespace AZ
             m_shaderResourceGroup->Compile();
         }
 
-        void RasterPass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)
+        void RasterPass::SubmitDrawItems(const RHI::FrameGraphExecuteContext& context, uint32_t startIndex, uint32_t endIndex, uint32_t indexOffset) const
         {
             RHI::CommandList* commandList = context.GetCommandList();
 
-            if (!m_drawListView.empty())
+            uint32_t clampedEndIndex = AZStd::GetMin<uint32_t>(endIndex, static_cast<uint32_t>(m_drawListView.size()));
+            for (uint32_t index = startIndex; index < clampedEndIndex; ++index)
             {
-                commandList->SetViewport(m_viewportState);
-                commandList->SetScissor(m_scissorState);
-                SetSrgsForDraw(commandList);
-
-                for (uint32_t index = context.GetSubmitRange().m_startIndex; index < context.GetSubmitRange().m_endIndex; ++index)
+                const RHI::DrawItemProperties& drawItemProperties = m_drawListView[index];
+                if (drawItemProperties.m_drawFilterMask & m_pipeline->GetDrawFilterMask())
                 {
-                    const RHI::DrawItemProperties& drawItemProperties = m_drawListView[index];
-                    if (drawItemProperties.m_drawFilterMask & m_pipeline->GetDrawFilterMask())
-                    {
-                        commandList->Submit(*drawItemProperties.m_item, index);
-                    }
+                    commandList->Submit(drawItemProperties.m_item->GetDeviceDrawItem(context.GetDeviceIndex()), index + indexOffset);
                 }
             }
         }
 
+        void RasterPass::LoadShaderResourceGroup()
+        {
+            const RasterPassData* rasterData = azrtti_cast<const RasterPassData*>(m_passData.get());
+            if (!rasterData)
+            {
+                return;
+            }
+
+            // Get the shader asset that contains the SRG Layout.
+            Data::Asset<ShaderAsset> shaderAsset;
+            if (rasterData->m_passSrgShaderReference.m_assetId.IsValid())
+            {
+                shaderAsset =
+                    AssetUtils::LoadAssetById<ShaderAsset>(rasterData->m_passSrgShaderReference.m_assetId, AssetUtils::TraceLevel::Error);
+            }
+            else if (!rasterData->m_passSrgShaderReference.m_filePath.empty())
+            {
+                shaderAsset = AssetUtils::LoadAssetByProductPath<ShaderAsset>(
+                    rasterData->m_passSrgShaderReference.m_filePath.c_str(), AssetUtils::TraceLevel::Error);
+            }
+
+            if (shaderAsset)
+            {
+                SupervariantIndex superVariantIndex = shaderAsset->GetSupervariantIndex(GetSuperVariantName());
+                const auto srgLayout = shaderAsset->FindShaderResourceGroupLayout(SrgBindingSlot::Pass, superVariantIndex);
+                if (srgLayout)
+                {
+                    m_shaderResourceGroup = ShaderResourceGroup::Create(shaderAsset, superVariantIndex, srgLayout->GetName());
+
+                    AZ_Assert(
+                        m_shaderResourceGroup,
+                        "[RasterPass '%s']: Failed to create SRG from shader asset '%s'",
+                        GetPathName().GetCStr(),
+                        rasterData->m_passSrgShaderReference.m_filePath.data());
+
+                    PassUtils::BindDataMappingsToSrg(GetPassDescriptor(), m_shaderResourceGroup.get());
+                }
+            }
+        }
+
+        void RasterPass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)
+        {
+            RHI::CommandList* commandList = context.GetCommandList();
+
+            if (context.GetSubmitRange().m_startIndex != context.GetSubmitRange().m_endIndex)
+            {
+                commandList->SetViewport(m_viewportState);
+                commandList->SetScissor(m_scissorState);
+                SetSrgsForDraw(context);
+                SubmitDrawItems(context, context.GetSubmitRange().m_startIndex, context.GetSubmitRange().m_endIndex, 0);
+            }
+        }
     }   // namespace RPI
 }   // namespace AZ

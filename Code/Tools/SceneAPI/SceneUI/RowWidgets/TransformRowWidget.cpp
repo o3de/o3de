@@ -21,7 +21,7 @@ namespace AZ
     {
         namespace SceneUI
         {
-            AZ_CLASS_ALLOCATOR_IMPL(ExpandedTransform, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR_IMPL(ExpandedTransform, SystemAllocator);
 
             void PopulateVector3(AzQtComponents::VectorInput* vectorProperty, AZ::Vector3& vector)
             {
@@ -96,23 +96,28 @@ namespace AZ
             {
                 m_scale = scale;
             }
-            
-            
-            AZ_CLASS_ALLOCATOR_IMPL(TransformRowWidget, SystemAllocator, 0);
+
+
+            AZ_CLASS_ALLOCATOR_IMPL(TransformRowWidget, SystemAllocator);
 
             TransformRowWidget::TransformRowWidget(QWidget* parent)
                 : QWidget(parent)
             {
-                QWidget* hider = new QWidget();
+                m_containerWidget = new QWidget();
                 QGridLayout* layout = new QGridLayout();
                 layout->setMargin(0);
                 QGridLayout* layout2 = new QGridLayout();
                 setLayout(layout);
-                AzToolsFramework::PropertyRowWidget* parentWidget = reinterpret_cast<AzToolsFramework::PropertyRowWidget*>(parent);
-                QToolButton* toolButton = parentWidget->GetIndicatorButton();
-                QVBoxLayout* layoutOriginal = parentWidget->GetLeftHandSideLayoutParent();
-                parentWidget->SetAsCustom(true);
-                parentWidget->GetNameLabel()->setContentsMargins(0, 0, 0, 0);
+                AzToolsFramework::PropertyRowWidget* parentWidget = static_cast<AzToolsFramework::PropertyRowWidget*>(parent);
+                QToolButton* toolButton{};
+                QVBoxLayout* layoutOriginal{};
+                if (parentWidget != nullptr)
+                {
+                    toolButton = parentWidget->GetIndicatorButton();
+                    layoutOriginal = parentWidget->GetLeftHandSideLayoutParent();
+                    parentWidget->SetAsCustom(true);
+                    parentWidget->GetNameLabel()->setContentsMargins(0, 0, 0, 0);
+                }
 
                 m_translationWidget = new AzQtComponents::VectorInput(this, 3);
                 m_translationWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
@@ -132,7 +137,7 @@ namespace AZ
                 m_scaleWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
                 m_scaleWidget->setMinimum(0);
                 m_scaleWidget->setMaximum(10000);
-                
+
                 layout2->addWidget(new  AzQtComponents::ElidingLabel("Position"), 0, 1);
                 layout->addWidget(m_translationWidget, 1, 1);
                 layout2->addWidget(new  AzQtComponents::ElidingLabel("Rotation"), 1, 1);
@@ -142,29 +147,32 @@ namespace AZ
                 layout->setRowMinimumHeight(0,16);
                 layout2->setColumnMinimumWidth(0, 30);
 
-                toolButton->setArrowType(Qt::DownArrow);
-                parentWidget->SetIndentSize(1);
-                toolButton->setVisible(true);
-
-                hider->setLayout(layout2);
-                layoutOriginal->addWidget(hider);
-
-                connect(toolButton, &QToolButton::clicked, this, [this, hider, toolButton]
+                if (parentWidget != nullptr)
                 {
-                    m_expanded = !m_expanded;
-                    if (m_expanded)
+                    toolButton->setArrowType(Qt::DownArrow);
+                    parentWidget->SetIndentSize(1);
+                    toolButton->setVisible(true);
+
+                    m_containerWidget->setLayout(layout2);
+                    layoutOriginal->addWidget(m_containerWidget);
+
+                    connect(toolButton, &QToolButton::clicked, this, [&, toolButton]
                     {
-                        this->show();
-                        hider->show();
-                        toolButton->setArrowType(Qt::DownArrow);
-                    }
-                    else
-                    {
-                        this->hide();
-                        hider->hide();
-                        toolButton->setArrowType(Qt::RightArrow);
-                    }
-                });
+                        m_expanded = !m_expanded;
+                        if (m_expanded)
+                        {
+                            show();
+                            m_containerWidget->show();
+                            toolButton->setArrowType(Qt::DownArrow);
+                        }
+                        else
+                        {
+                            hide();
+                            m_containerWidget->hide();
+                            toolButton->setArrowType(Qt::RightArrow);
+                        }
+                    });
+                }
 
                 QObject::connect(m_translationWidget, &AzQtComponents::VectorInput::valueChanged, this, [this]
                 {
@@ -197,6 +205,14 @@ namespace AZ
                 });
             }
 
+            TransformRowWidget::~TransformRowWidget()
+            {
+                if (m_containerWidget)
+                {
+                    m_containerWidget->deleteLater();
+                }
+            }
+
             void TransformRowWidget::SetEnableEdit(bool enableEdit)
             {
                 m_translationWidget->setEnabled(enableEdit);
@@ -207,9 +223,9 @@ namespace AZ
             void TransformRowWidget::SetTransform(const AZ::Transform& transform)
             {
                 blockSignals(true);
-                
+
                 m_transform.SetTransform(transform);
-                
+
                 m_translationWidget->setValuebyIndex(m_transform.GetTranslation().GetX(), 0);
                 m_translationWidget->setValuebyIndex(m_transform.GetTranslation().GetY(), 1);
                 m_translationWidget->setValuebyIndex(m_transform.GetTranslation().GetZ(), 2);

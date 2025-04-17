@@ -14,6 +14,7 @@
 #include <Atom/RHI.Reflect/Handle.h>
 
 #include <Atom/RPI.Public/Base.h>
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 
 namespace AZ
@@ -35,13 +36,13 @@ namespace AZ
        //! creating passes using either a Pass Name, a PassTemplate, a PassTemplate Name, or a PassRequest.
        //! To register a new pass type with the PassFactory, write a static create method for your pass class
        //! and register it with the PassFactory using the AddPassCreator function.
-        class PassFactory final
+        class ATOM_RPI_PUBLIC_API PassFactory final
         {
             friend class PassTests;
             using CreatorIndex = RHI::Handle<uint32_t, PassCreator>;
 
         public:
-            AZ_CLASS_ALLOCATOR(PassFactory, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PassFactory, SystemAllocator);
 
             PassFactory() = default;
 

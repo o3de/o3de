@@ -39,7 +39,7 @@ namespace AZ
             friend class CommandQueue;
 
         public:
-            AZ_CLASS_ALLOCATOR(Queue, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Queue, AZ::SystemAllocator);
             AZ_RTTI(Queue, "C3420514-4BB2-4416-A6A1-FEFFF041BCB4", Base);
 
             struct Descriptor
@@ -59,8 +59,9 @@ namespace AZ
             RHI::ResultCode SubmitCommandBuffers(
                 const AZStd::vector<RHI::Ptr<CommandList>>& commandBuffers,
                 const AZStd::vector<Semaphore::WaitSemaphore>& waitSemaphoresInfo,
-                const AZStd::vector< RHI::Ptr<Semaphore>>& semaphoresToSignal,
-                Fence* fenceToSignal);
+                const AZStd::vector<RHI::Ptr<Semaphore>>& semaphoresToSignal,
+                const AZStd::vector<RHI::Ptr<AZ::Vulkan::Fence>>& fencesToWaitFor,
+                AZ::Vulkan::Fence* fenceToSignal);
 
             /// Waits (blocks) until all fences are signaled in the fence-list.
             void WaitForIdle();

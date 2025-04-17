@@ -16,13 +16,9 @@
  * [Editor Components documentation](https://www.o3de.org/docs/user-guide/programming/components/editor-components/).
  */
 
-#ifndef EDITOR_COMPONENT_BASE_H
-#define EDITOR_COMPONENT_BASE_H
+#pragma once
 
 #include <AzCore/base.h>
-#include <AzCore/Asset/AssetCommon.h>
-#include <AzCore/Math/Crc.h>
-#include <AzCore/Math/Transform.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/Entity.h>
@@ -32,14 +28,21 @@ class QMenu;
 namespace AZ
 {
     class Vector2;
+    class TransformInterface;
+    class Transform;
+
+    namespace Data
+    {
+        struct AssetId;
+    }
 }
 
 namespace AzToolsFramework
 {
-    namespace Components
-    {
-        class SelectionComponent;
+    enum PropertyModificationRefreshLevel : int;
 
+    namespace Components
+    {        
         /**
          * A base class for all editor components.
          * Derive from this class to create a version of a component to use in the
@@ -117,7 +120,18 @@ namespace AzToolsFramework
              * call the Deactivate() function of the base class.
              */
             virtual void Deactivate() override;
-            //////////////////////////////////////////////////////////////////////////
+
+            //! Function to call after setting the entity in this component.
+            //! For an editor component, this would set up the serialized identifier.
+            void OnAfterEntitySet() override final;
+
+            //! Sets the provided string as the serialized identifier for the component.
+            //! @param serializedIdentifer The unique identifier for this component within the entity it lives in.
+            void SetSerializedIdentifier(AZStd::string serializedIdentifier) override final;
+
+            //! Gets the serialzied identifier of this component within an entity.
+            //! @return The serialized identifier of this component.
+            AZStd::string GetSerializedIdentifier() const override final;
 
             /**
              * Gets the transform interface of the entity that the component
@@ -128,17 +142,6 @@ namespace AzToolsFramework
              * AZ::ComponentDescriptor::GetRequiredServices().
              */
             AZ::TransformInterface* GetTransform() const;
-
-            /**
-             * Gets the selection component of the entity that the component
-             * belongs to, if the entity has a selection component.
-             * A selection component keeps track of whether the entity is
-             * selected in the editor.
-             * @return A pointer to the selection component. Might be null if
-             * you did not include "SelectionService" in the component's
-             * AZ::ComponentDescriptor::GetRequiredServices().
-             */
-            SelectionComponent* GetSelection() const;
 
             /**
              * Gets the world transform of the entity that the component belongs
@@ -167,26 +170,17 @@ namespace AzToolsFramework
              */
             bool IsSelected() const;
 
-            /**
-             * Identifies whether the component is the primary selection in the editor.
-             * @return True if the component is the primary selection in the editor.
-             * Otherwise, false.
+            /** 
+             * Invoke this to refresh the property display for the component.
+             * Only refreshes the ui for this component, not adjacent ones, which is faster than
+             * asking for complete full tree refresh of every entity in every inspector on every
+             * component.
+             * See @ref AzToolsFramework::RefreshType for the different types of refreshes.
+             * @ref Code/Framework/AzToolsFramework/AzToolsFramework/API/ToolsApplicationAPI.h
+             * @param refreshFlags The type of refresh to perform.
+             *   (Most common is either Refresh_EntireTree or Refresh_Values).
              */
-            bool IsPrimarySelection() const;
-
-            /// @cond EXCLUDE_DOCS
-            void UnregisterIcon();
-            /// @endcond
-
-            /**
-             * Determines if the entity that the component belongs to
-             * has a selection component.
-             * A selection component keeps track of whether the entity is
-             * selected in the editor.
-             * @return True if the entity has a selection component.
-             * Otherwise, false.
-             */
-            bool HasSelectionComponent() const { return m_selection != nullptr; }
+            void InvalidatePropertyDisplay(AzToolsFramework::PropertyModificationRefreshLevel refreshFlags);
 
             /**
              * Override this function to create one or more game components
@@ -225,8 +219,13 @@ namespace AzToolsFramework
             static void Reflect(AZ::ReflectContext* context);
 
         private:
+            //! Generates a component serialized identifier based on existing components of the same type.
+            //! @return Serialized identifier string that can be used as a component alias.
+            AZStd::string GenerateComponentSerializedIdentifier();
+
+        private:
+            AZStd::string m_alias;
             AZ::TransformInterface* m_transform;
-            SelectionComponent* m_selection;
         };
 
         /// @cond EXCLUDE_DOCS
@@ -316,7 +315,7 @@ namespace AzToolsFramework
              * Specifies that this class should use AZ::SystemAllocator for memory
              * management by default.
              */
-            AZ_CLASS_ALLOCATOR(EditorComponentDescriptorDefault<ComponentClass>, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(EditorComponentDescriptorDefault<ComponentClass>, AZ::SystemAllocator);
 
             AZ_HAS_STATIC_MEMBER(EditorComponentMatching, DoComponentsMatch, bool, (const ComponentClass*, const ComponentClass*));
             AZ_HAS_STATIC_MEMBER(EditorComponentPasteOver, PasteOverComponent, void, (const ComponentClass*, ComponentClass*));
@@ -431,12 +430,11 @@ namespace AzToolsFramework
         #define AZ_EDITOR_COMPONENT(_ComponentClass, ...)                                       \
         AZ_RTTI(_ComponentClass, __VA_ARGS__, AzToolsFramework::Components::EditorComponentBase)\
         AZ_EDITOR_COMPONENT_INTRUSIVE_DESCRIPTOR_TYPE(_ComponentClass)                          \
-        AZ_COMPONENT_BASE(_ComponentClass, __VA_ARGS__);
+        AZ_COMPONENT_BASE(_ComponentClass)                                                      \
+        AZ_CLASS_ALLOCATOR(_ComponentClass, AZ::ComponentAllocator);
         /// @endcond
 
     } // namespace Components
 } // namespace AzToolsFramework
 
-
-
-#endif
+DECLARE_EBUS_EXTERN_WITH_TRAITS(AzToolsFramework::Components::EditorComponentDescriptor, AZ::ComponentDescriptorBusTraits);

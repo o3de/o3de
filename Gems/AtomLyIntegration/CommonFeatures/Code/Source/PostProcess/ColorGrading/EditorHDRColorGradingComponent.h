@@ -50,7 +50,7 @@ namespace AZ
             void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
             // FrameCaptureNotificationBus overrides ...
-            void OnCaptureFinished(uint32_t frameCaptureId, AZ::Render::FrameCaptureResult result, const AZStd::string& info) override;
+            void OnFrameCaptureFinished(AZ::Render::FrameCaptureResult result, const AZStd::string& info) override;
 
             //! EditorHDRColorGradingRequestBus overrides...
             void GenerateLutAsync() override;
@@ -62,7 +62,6 @@ namespace AZ
             bool GetGeneratedLutVisibilitySettings();
 
             bool m_waitOneFrame = false;
-            uint32_t m_frameCaptureId = AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId;
             AZStd::string m_currentTiffFilePath;
             AZStd::string m_currentLutFilePath;
 

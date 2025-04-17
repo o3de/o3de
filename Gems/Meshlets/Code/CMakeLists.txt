@@ -23,7 +23,7 @@
 # Note: We include the common files and the platform specific files which are set in meshlets_common_files.cmake
 # and in ${pal_dir}/meshlets_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
 ly_add_target(
-    NAME Meshlets.Static STATIC
+    NAME ${gem_name}.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
         meshlets_files.cmake
@@ -33,22 +33,22 @@ ly_add_target(
             Include
             External/Include
             Source
-            Source/Meshlets
+            Source/${gem_name}
         PRIVATE
             External/Include
             Source
-            Source/Meshlets
+            Source/${gem_name}
     BUILD_DEPENDENCIES
         PUBLIC
             AZ::AzCore
             AZ::AzFramework
-            Gem::AtomLyIntegration_CommonFeatures.Static
+            Gem::CommonFeaturesAtom.Static
             Gem::Atom_RPI.Public
 )
 
-# Here add Meshlets target, it depends on the Meshlets.Static
+# Here add ${gem_name} target, it depends on the ${gem_name}.Static
 ly_add_target(
-    NAME Meshlets ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME ${gem_name} ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         meshlets_shared_files.cmake
@@ -57,26 +57,36 @@ ly_add_target(
         PUBLIC
             Include
             Source
-            Source/Meshlets
+            Source/${gem_name}
         PRIVATE
             Source
-            Source/Meshlets
+            Source/${gem_name}
     BUILD_DEPENDENCIES
         PRIVATE
-            Gem::Meshlets.Static
+            Gem::${gem_name}.Static
 )
 
-# By default, we will specify that the above target Meshlets would be used by
+# Inject the gem name into the Module source file
+ly_add_source_properties(
+    SOURCES
+        Source/MeshletsModule.cpp
+    PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_GEM_NAME=${gem_name}
+            O3DE_GEM_VERSION=${gem_version})
+
+# By default, we will specify that the above target ${gem_name} would be used by
 # Client and Server type targets when this gem is enabled.  If you don't want it
 # active in Clients or Servers by default, delete one of both of the following lines:
-ly_create_alias(NAME Meshlets.Clients NAMESPACE Gem TARGETS Gem::Meshlets)
-ly_create_alias(NAME Meshlets.Servers NAMESPACE Gem TARGETS Gem::Meshlets)
+ly_create_alias(NAME ${gem_name}.Clients NAMESPACE Gem TARGETS Gem::${gem_name})
+ly_create_alias(NAME ${gem_name}.Servers NAMESPACE Gem TARGETS Gem::${gem_name})
+ly_create_alias(NAME ${gem_name}.Unified NAMESPACE Gem TARGETS Gem::${gem_name})
 
-# If we are on a host platform, we want to add the host tools targets like the Meshlets.Editor target which
-# will also depend on Meshlets.Static
+# If we are on a host platform, we want to add the host tools targets like the ${gem_name}.Editor target which
+# will also depend on ${gem_name}.Static
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
-        NAME Meshlets.Editor.Static STATIC
+        NAME ${gem_name}.Editor.Static STATIC
         NAMESPACE Gem
         FILES_CMAKE
             meshlets_editor_files.cmake
@@ -84,17 +94,17 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             PRIVATE
                 External/Include
                 Source
-                Source/Meshlets
+                Source/${gem_name}
             PUBLIC
                 Include
         BUILD_DEPENDENCIES
             PUBLIC
                 AZ::AzToolsFramework
-                Gem::Meshlets.Static
+                Gem::${gem_name}.Static
     )
 
     ly_add_target(
-        NAME Meshlets.Editor GEM_MODULE
+        NAME ${gem_name}.Editor GEM_MODULE
         NAMESPACE Gem
         AUTOMOC
         FILES_CMAKE
@@ -102,19 +112,28 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         INCLUDE_DIRECTORIES
             PRIVATE
                 Source
-                Source/Meshlets
+                Source/${gem_name}
             PUBLIC
                 Include
         BUILD_DEPENDENCIES
             PUBLIC
-                Gem::Meshlets.Editor.Static
+                Gem::${gem_name}.Editor.Static
     )
 
-    # By default, we will specify that the above target Meshlets would be used by
+    # Inject the gem name into the Module source file
+    ly_add_source_properties(
+        SOURCES
+            Source/MeshletsEditorModule.cpp
+        PROPERTY COMPILE_DEFINITIONS
+            VALUES
+                O3DE_GEM_NAME=${gem_name}
+                O3DE_GEM_VERSION=${gem_version})
+
+    # By default, we will specify that the above target ${gem_name} would be used by
     # Tool and Builder type targets when this gem is enabled.  If you don't want it
     # active in Tools or Builders by default, delete one of both of the following lines:
-    ly_create_alias(NAME Meshlets.Tools    NAMESPACE Gem TARGETS Gem::Meshlets.Editor)
-    ly_create_alias(NAME Meshlets.Builders NAMESPACE Gem TARGETS Gem::Meshlets.Editor)
+    ly_create_alias(NAME ${gem_name}.Tools    NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
+    ly_create_alias(NAME ${gem_name}.Builders NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
 
 
 endif()
@@ -124,11 +143,11 @@ endif()
 ################################################################################
 # See if globally, tests are supported
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
-    # We globally support tests, see if we support tests on this platform for Meshlets.Static
+    # We globally support tests, see if we support tests on this platform for ${gem_name}.Static
     if(PAL_TRAIT_MESHLETS_TEST_SUPPORTED)
-        # We support Meshlets.Tests on this platform, add Meshlets.Tests target which depends on Meshlets.Static
+        # We support ${gem_name}.Tests on this platform, add ${gem_name}.Tests target which depends on ${gem_name}.Static
         ly_add_target(
-            NAME Meshlets.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+            NAME ${gem_name}.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
             NAMESPACE Gem
             FILES_CMAKE
                 meshlets_files.cmake
@@ -141,12 +160,12 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 PRIVATE
                     AZ::AzTest
                     AZ::AzFramework
-                    Gem::Meshlets.Static
+                    Gem::${gem_name}.Static
         )
 
-        # Add Meshlets.Tests to googletest
+        # Add ${gem_name}.Tests to googletest
         ly_add_googletest(
-            NAME Gem::Meshlets.Tests
+            NAME Gem::${gem_name}.Tests
         )
     endif()
 
@@ -154,9 +173,9 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     if(PAL_TRAIT_BUILD_HOST_TOOLS)
         # We are a host platform, see if Editor tests are supported on this platform
         if(PAL_TRAIT_MESHLETS_EDITOR_TEST_SUPPORTED)
-            # We support Meshlets.Editor.Tests on this platform, add Meshlets.Editor.Tests target which depends on Meshlets.Editor
+            # We support ${gem_name}.Editor.Tests on this platform, add ${gem_name}.Editor.Tests target which depends on ${gem_name}.Editor
             ly_add_target(
-                NAME Meshlets.Editor.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+                NAME ${gem_name}.Editor.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
                 NAMESPACE Gem
                 FILES_CMAKE
                     meshlets_editor_tests_files.cmake
@@ -167,12 +186,12 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 BUILD_DEPENDENCIES
                     PRIVATE
                         AZ::AzTest
-                        Gem::Meshlets.Editor
+                        Gem::${gem_name}.Editor
             )
 
-            # Add Meshlets.Editor.Tests to googletest
+            # Add ${gem_name}.Editor.Tests to googletest
             ly_add_googletest(
-                NAME Gem::Meshlets.Editor.Tests
+                NAME Gem::${gem_name}.Editor.Tests
             )
         endif()
     endif()

@@ -23,7 +23,7 @@ namespace PythonBindingsExample
 
 int main(int argc, char* argv[])
 {
-    AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
+    const AZ::Debug::Trace tracer;
     int runSuccess = 0;
     {
         PythonBindingsExample::Application application(&argc, &argv);
@@ -34,6 +34,5 @@ int main(int argc, char* argv[])
         application.SetUp();
         runSuccess = application.Run() ? 0 : 1;
     }
-    AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
     return runSuccess;
 }

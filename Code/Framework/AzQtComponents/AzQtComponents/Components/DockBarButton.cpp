@@ -65,12 +65,14 @@ namespace AzQtComponents
         {
             case DockBarButton::CloseButton:
                 Style::addClass(this, QStringLiteral("close"));
+                setToolTip(tr("Close"));
                 break;
             case DockBarButton::MaximizeButton:
                 SetMaximizeRestoreButton();
                 break;
             case DockBarButton::MinimizeButton:
                 Style::addClass(this, QStringLiteral("minimize"));
+                setToolTip(tr("Minimize"));
                 break;
             case DockBarButton::DividerButton:
                 break;
@@ -153,11 +155,13 @@ namespace AzQtComponents
         {
             Style::removeClass(this, QStringLiteral("maximize"));
             Style::addClass(this, QStringLiteral("restore"));
+            setToolTip(tr("Restore"));
         }
         else
         {
             Style::removeClass(this, QStringLiteral("restore"));
             Style::addClass(this, QStringLiteral("maximize"));
+            setToolTip(tr("Maximize"));
         }
     }
 

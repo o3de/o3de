@@ -7,6 +7,8 @@
  */
 #pragma once
 
+#include <AzCore/Outcome/Outcome.h>
+
 #if !defined(Q_MOC_RUN)
 #include <ScreenWidget.h>
 #include <ProjectInfo.h>
@@ -22,12 +24,13 @@ namespace O3DE::ProjectManager
     QT_FORWARD_DECLARE_CLASS(NewProjectSettingsScreen)
     QT_FORWARD_DECLARE_CLASS(ProjectGemCatalogScreen)
     QT_FORWARD_DECLARE_CLASS(GemRepoScreen)
+    QT_FORWARD_DECLARE_CLASS(DownloadController);
 
     class CreateProjectCtrl
         : public ScreenWidget
     {
     public:
-        explicit CreateProjectCtrl(QWidget* parent = nullptr);
+        explicit CreateProjectCtrl(DownloadController* downloadController, QWidget* parent = nullptr);
         ~CreateProjectCtrl() = default;
         ProjectManagerScreen GetScreenEnum() override;
         void NotifyCurrentScreen() override;
@@ -45,7 +48,8 @@ namespace O3DE::ProjectManager
         void NextScreen();
         void PreviousScreen();
 
-        bool CurrentScreenIsValid();
+        
+        AZ::Outcome<void, QString> CurrentScreenIsValid();
         void CreateProject();
 
         QStackedWidget* m_stack = nullptr;

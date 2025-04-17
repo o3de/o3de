@@ -17,6 +17,7 @@ from weakref import KeyedRef
 
 import ly_test_tools._internal.pytest_plugin
 import ly_test_tools.environment.file_system
+import ly_test_tools._internal.exceptions as exceptions
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +43,7 @@ def _find_engine_root(initial_path):
         else:  # explicit else avoids aberrant behavior from following filesystem links
             current_dir = os.path.abspath(os.path.join(current_dir, os.path.pardir))
 
-    raise OSError(f"Unable to find engine root directory. Verify root file '{root_file}' exists")
+    raise exceptions.LyTestToolsFrameworkException(f"Unable to find engine root directory. Verify root file '{root_file}' exists")
 
 
 def _find_project_json(engine_root, project):
@@ -299,20 +300,30 @@ class AbstractResourceLocator(object):
                             'ly_test_tools',
                             'devices.ini')
 
+    def material_editor_log(self):
+        """
+        Return path to the project's MaterialEditor log dir using the builds project and platform
+        :return: path to MaterialEditor.log
+        """
+        return os.path.join(self.project_log(), "MaterialEditor.log")
+
+    def editor_log(self):
+        """
+        Return path to the project's editor log dir using the builds project and platform
+        :return: path to Editor.log
+        """
+        return os.path.join(self.project_log(), "Editor.log")
+
+    def material_canvas_log(self):
+        """
+        Return path to the project's MaterialCanvas log dir using the builds project and platform
+        :return: path to MaterialCanvas.log
+        """
+        return os.path.join(self.project_log(), "MaterialCanvas.log")
+
     #
     #   The following are OS specific paths and must be defined by an override
     #
-
-    @abstractmethod
-    def platform_config_file(self):
-        """
-        Return the path to the platform config file.
-        :return: path to the platform config file (i.e. engine_root/dev/system_windows_pc.cfg)
-        """
-        raise NotImplementedError(
-            "platform_config_file() is not implemented on the base AbstractResourceLocator() class. "
-            "It must be defined by the inheriting class - "
-            "i.e. _WindowsResourceLocator(AbstractResourceLocator).platform_config_file()")
 
     @abstractmethod
     def platform_cache(self):
@@ -346,17 +357,6 @@ class AbstractResourceLocator(object):
             "project_screenshots() is not implemented on the base AbstractResourceLocator() class. "
             "It must be defined by the inheriting class - "
             "i.e. _WindowsResourceLocator(AbstractResourceLocator).project_screenshots()")
-
-    @abstractmethod
-    def editor_log(self):
-        """
-        Return path to the project's editor log dir using the builds project and platform
-        :return: path to Editor.log
-        """
-        raise NotImplementedError(
-            "editor_log() is not implemented on the base AbstractResourceLocator() class. "
-            "It must be defined by the inheriting class - "
-            "i.e. _WindowsResourceLocator(AbstractResourceLocator).editor_log()")
 
     @abstractmethod
     def crash_log(self):

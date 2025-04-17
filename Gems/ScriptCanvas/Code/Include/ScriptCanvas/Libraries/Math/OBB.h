@@ -31,3 +31,5 @@ namespace ScriptCanvas
         Vector3Type GetPosition(const OBBType& source);
     } // namespace OBBFunctions
 } // namespace ScriptCanvas
+
+#include <Include/ScriptCanvas/Libraries/Math/OBB.generated.h>

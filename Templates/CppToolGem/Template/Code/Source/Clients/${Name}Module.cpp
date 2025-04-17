@@ -8,6 +8,7 @@
  */
 // {END_LICENSE}
 
+#include <${Name}/${Name}TypeIds.h>
 #include <${Name}ModuleInterface.h>
 #include "${Name}SystemComponent.h"
 
@@ -17,9 +18,13 @@ namespace ${SanitizedCppName}
         : public ${SanitizedCppName}ModuleInterface
     {
     public:
-        AZ_RTTI(${SanitizedCppName}Module, "${ModuleClassId}", ${SanitizedCppName}ModuleInterface);
-        AZ_CLASS_ALLOCATOR(${SanitizedCppName}Module, AZ::SystemAllocator, 0);
+        AZ_RTTI(${SanitizedCppName}Module, ${SanitizedCppName}ModuleTypeId, ${SanitizedCppName}ModuleInterface);
+        AZ_CLASS_ALLOCATOR(${SanitizedCppName}Module, AZ::SystemAllocator);
     };
 }// namespace ${SanitizedCppName}
 
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME), ${SanitizedCppName}::${SanitizedCppName}Module)
+#else
 AZ_DECLARE_MODULE_CLASS(Gem_${SanitizedCppName}, ${SanitizedCppName}::${SanitizedCppName}Module)
+#endif

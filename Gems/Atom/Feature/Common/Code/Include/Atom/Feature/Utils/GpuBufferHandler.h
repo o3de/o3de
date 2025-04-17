@@ -9,8 +9,7 @@
 #pragma once
 
 #include <AzCore/std/string/string.h>
-#include <Atom/RHI/Buffer.h>
-#include <Atom/RHI/BufferView.h>
+#include <Atom/RHI/DeviceBufferView.h>
 #include <Atom/RPI.Public/Buffer/Buffer.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 
@@ -19,7 +18,7 @@ namespace AZ
     namespace Render
     {
 
-        // This helper class manages a re-sizable structured buffer which is (only) used for a shader's SRV
+        // This helper class manages a re-sizable structured or typed buffer which is (only) used for a shader's SRV
         class GpuBufferHandler
         {
         public:
@@ -31,6 +30,7 @@ namespace AZ
                 AZStd::string m_elementCountSrgName; // Name of the constant for buffer size in the SRG
                 const RHI::ShaderResourceGroupLayout* m_srgLayout = nullptr; // The srg to query for the buffer name and count.
                 uint32_t m_elementSize = 1; // The size of the elements stored in the buffer.
+                RHI::Format m_elementFormat = RHI::Format::Unknown; // Type of the elements (if typed)
             };
 
             GpuBufferHandler() = default;
@@ -40,6 +40,7 @@ namespace AZ
             bool UpdateBuffer(const T* data, uint32_t elementCount);
             template <typename T>
             bool UpdateBuffer(const AZStd::vector<T>& data);
+            bool UpdateBuffer(const AZStd::unordered_map<int, const void*>& data, uint32_t elementCount);
 
             void UpdateSrg(RPI::ShaderResourceGroup* srg) const;
 
@@ -59,7 +60,6 @@ namespace AZ
             uint32_t m_elementCount = 0;
             uint32_t m_elementSize = 0;
         };
-
         template <typename T>
         bool GpuBufferHandler::UpdateBuffer(const T* data, uint32_t elementCount)
         {

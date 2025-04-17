@@ -81,10 +81,37 @@ namespace AZ
         //! If nullptr, the AZ::Interface instance of the SettingsRegistry is used
         AZ::IO::FixedMaxPathString GetProjectPath(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
 
+        //! Retrieves the full path to the project user path from the settings registry
+        //! This path defaults to <project-path>/user, but can be overridden via the --project-user-path option
+        //! @param settingsRegistry pointer to the SettingsRegistry to use for lookup
+        //! If nullptr, the AZ::Interface instance of the SettingsRegistry is used
+        AZ::IO::FixedMaxPathString GetProjectUserPath(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
+
+        //! Retrieves the full path to the project log path from the settings registry
+        //! This path defaults to <project-user-path>/logs, but can be overridden via the --project-log-path option
+        //! @param settingsRegistry pointer to the SettingsRegistry to use for lookup
+        //! If nullptr, the AZ::Interface instance of the SettingsRegistry is used
+        AZ::IO::FixedMaxPathString GetProjectLogPath(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
+
+        //! Retrieves the full path to the project path for the current asset platform from the settings registry
+        //! This path is based on <project-cache-path>/<asset-platform>,
+        //! where on Windows <asset-platform> = "pc", Linux  <asset-platform> = linux, etc...
+        //! The list of OS -> asset platforms is available in the `AZ::PlatformDefaults::OSPlatformToDefaultAssetPlatform` function
+        //! @param settingsRegistry pointer to the SettingsRegistry to use for lookup
+        //! If nullptr, the AZ::Interface instance of the SettingsRegistry is used
+        AZ::IO::FixedMaxPathString GetProjectProductPathForPlatform(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
+
         //! Retrieves the project name from the settings registry
         //! @param settingsRegistry pointer to the SettingsRegistry to use for lookup
         //! If nullptr, the AZ::Interface instance of the SettingsRegistry is used
         AZ::SettingsRegistryInterface::FixedValueString GetProjectName(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
+
+        //! Retrieves the project display name from the settings registry
+        //! First attempts to lookup the "display_name" field read from the project.json settings section of the
+        //! Settings Registry ! and if that is not available, the "project_name" field is read instead.
+        //! @param settingsRegistry pointer to the SettingsRegistry to use for lookup
+        //! If nullptr, the AZ::Interface instance of the SettingsRegistry is used
+        AZ::SettingsRegistryInterface::FixedValueString GetProjectDisplayName(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
 
         //! Lookups the full path for a gem, given it's name from the settings registry
         //! @param gemName path of the gem whose paths will be queried from within the settings registry
@@ -108,17 +135,22 @@ namespace AZ
         AZ::IO::FixedMaxPathString GetO3deManifestPath(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
 
         //! Retrieves the full directory to the O3DE logs directory, i.e. "<userhome>/.o3de/Logs"
-        //! //! @param settingsRegistry pointer to the SettingsRegistry to use for lookup
+        //! @param settingsRegistry pointer to the SettingsRegistry to use for lookup
         //! If nullptr, the AZ::Interface instance of the SettingsRegistry is used
         AZ::IO::FixedMaxPathString GetO3deLogsDirectory(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
+
+        //! Retrieves a full directory which can be used to write files into during development
+        //! @param settingsRegistry pointer to the SettingsRegistry to use for lookup
+        //! If nullptr, the AZ::Interface instance of the SettingsRegistry is used
+        AZ::IO::FixedMaxPathString GetDevWriteStoragePath(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
 
         //! Retrieves the application root path for a non-host platform
         //! On host platforms this returns a nullopt
         AZStd::optional<AZ::IO::FixedMaxPathString> GetDefaultAppRootPath();
 
-        //! Retrieves the development write storage path to use on the current platform, may be considered
+        //! Retrieves the default development write storage path to use on the current platform, may be considered
         //! temporary or cache storage
-        AZStd::optional<AZ::IO::FixedMaxPathString> GetDevWriteStoragePath();
+        AZStd::optional<AZ::IO::FixedMaxPathString> GetDefaultDevWriteStoragePath();
 
         //! Attempts the supplied path to an absolute path.
         //! Returns nullopt if path cannot be converted to an absolute path
@@ -136,9 +168,57 @@ namespace AZ
         AZ::Outcome<Container, AZStd::string> ReadFile(
             AZStd::string_view filePath, size_t maxFileSize = AZStd::numeric_limits<size_t>::max());
 
+
+        //! Retrieves the full path where the 3rd Party path is configured to based on the value of 'default_third_party_folder'
+        //! in the o3de manifest file (o3de_manifest.json)
+        //! @param settingsRegistry pointer to the SettingsRegistry to use for lookup of the manifest file to base the lookup from
+        //! If nullptr, the AZ::Interface instance of the SettingsRegistry is used
+        //! Returns the outcome of the request, the configured 3rd Party path if successful, the error message if not.
+        AZ::Outcome<AZStd::string, AZStd::string> Get3rdPartyDirectory(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
+
+        //! Retrieves the full directory to the O3DE Python virtual environment (venv) folder. 
+        //! @param settingsRegistry pointer to the SettingsRegistry to use for lookup
+        //! If nullptr, the AZ::Interface instance of the SettingsRegistry is used
+        AZ::IO::FixedMaxPathString GetO3dePythonVenvRoot(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
+
+
+        //! error code value returned when GetEnv fails
+        enum class GetEnvErrorCode
+        {
+            EnvNotSet = 1,
+            BufferTooSmall,
+            NotImplemented
+        };
+
+        //! Return result from GetEnv when an environment variable value
+        //! fails to be returned
+        //! The `m_requiredSize` value is set to the needed size of the buffer
+        //! when the GetEnvErrorCode is set to `BufferTooSmall`
+        struct GetEnvErrorResult
+        {
+            //! Contains the error code of the GetEnv operation
+            GetEnvErrorCode m_errorCode{};
+            //! Set only when the error code is `BufferTooSmall`
+            size_t m_requiredSize{};
+        };
+        using GetEnvOutcome = AZ::Outcome<AZStd::string_view, GetEnvErrorResult>;
+
+        //! Queries the value of an environment variable
+        //! @param envvalueBuffer Span of buffer to populate with environment variable value if found
+        //! @param envname The environment variable name
+        //! @return Return an outcome with a string_view of the environment varaible if successful,
+        //! otherwise if the environment variable is not set or the span size cannot fit the environment
+        //! variable value, a GetEnvErrorResult will be returned
+        GetEnvOutcome GetEnv(AZStd::span<char> envvalueBuffer, const char* envname);
+
+        //! Queries if environment variable is set
+        //! @param envname The environment variable name
+        //! @return Return true if successful, otherwise false
+        bool IsEnvSet(const char* envname);
+
         //! Create or modify environment variable.
         //! @param envname The environment variable name
-        //! @param envvalue The environment variable name
+        //! @param envvalue The environment variable value
         //! @param overwrite If name does exist in the environment, then its value is changed to value if overwrite is nonzero;
         //! if overwrite is zero, then the value of name is not changed
         //! @returns Return true if successful, otherwise false

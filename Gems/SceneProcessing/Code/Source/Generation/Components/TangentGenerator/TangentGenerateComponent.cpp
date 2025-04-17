@@ -48,7 +48,7 @@ namespace AZ::SceneGenerationComponents
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
         if (serializeContext)
         {
-            serializeContext->Class<TangentGenerateComponent, AZ::SceneAPI::SceneCore::GenerationComponent>()->Version(2);
+            serializeContext->Class<TangentGenerateComponent, AZ::SceneAPI::SceneCore::GenerationComponent>()->Version(3);
         }
     }
 
@@ -300,7 +300,7 @@ namespace AZ::SceneGenerationComponents
                 else
                 {
                     // In case there are no tangents/bitangents while the user selected to use the source ones, default to MikkT.
-                    AZ_Warning(AZ::SceneAPI::Utilities::WarningWindow, false, "Cannot use source scene tangents as there are none in the asset for mesh '%s' for uv set %zu. Defaulting to generating tangents using MikkT.\n",
+                    AZ_TracePrintf(AZ::SceneAPI::Utilities::LogWindow, "Cannot use source scene tangents as there are none in the asset for mesh '%s' for uv set %zu. Defaulting to generating tangents using MikkT.\n",
                         scene.GetGraph().GetNodeName(nodeIndex).GetName(), uvSetIndex);
                     generationMethod = AZ::SceneAPI::DataTypes::TangentGenerationMethod::MikkT;
                 }

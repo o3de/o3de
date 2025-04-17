@@ -32,7 +32,7 @@ namespace AzToolsFramework
     {
         Q_OBJECT;
     public:
-        AZ_CLASS_ALLOCATOR(SaveChangesDialog, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SaveChangesDialog, AZ::SystemAllocator);
         SaveChangesDialog(QWidget* pParent);
         virtual ~SaveChangesDialog();
 

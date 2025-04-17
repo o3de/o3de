@@ -23,7 +23,7 @@ namespace AZ
     {
         ReflectionProbe::~ReflectionProbe()
         {
-            Data::AssetBus::MultiHandler::BusDisconnect();
+            Data::AssetBus::Handler::BusDisconnect();
             m_scene->GetCullingScene()->UnregisterCullable(m_cullable);
             m_meshFeatureProcessor->ReleaseMesh(m_visualizationMeshHandle);
         }
@@ -33,16 +33,16 @@ namespace AZ
             if (m_visualizationMaterialAsset.GetId() == asset.GetId())
             {
                 m_visualizationMaterialAsset = asset;
-                Data::AssetBus::MultiHandler::BusDisconnect(asset.GetId());
+                Data::AssetBus::Handler::BusDisconnect();
 
-                m_meshFeatureProcessor->SetMaterialAssignmentMap(m_visualizationMeshHandle, AZ::RPI::Material::FindOrCreate(m_visualizationMaterialAsset));
+                m_meshFeatureProcessor->SetCustomMaterials(m_visualizationMeshHandle, AZ::RPI::Material::FindOrCreate(m_visualizationMaterialAsset));
             }
         }
 
         void ReflectionProbe::OnAssetError(Data::Asset<Data::AssetData> asset)
         {
             AZ_Error("ReflectionProbe", false, "Failed to load ReflectionProbe dependency asset %s", asset.ToString<AZStd::string>().c_str());
-            Data::AssetBus::MultiHandler::BusDisconnect(asset.GetId());
+            Data::AssetBus::Handler::BusDisconnect();
         }
 
         void ReflectionProbe::Init(RPI::Scene* scene, ReflectionRenderData* reflectionRenderData)
@@ -59,7 +59,7 @@ namespace AZ
 
             // We don't have to pre-load this asset before passing it to MeshFeatureProcessor, because the MeshFeatureProcessor will handle the async-load for us.
             m_visualizationModelAsset = AZ::RPI::AssetUtils::GetAssetByProductPath<AZ::RPI::ModelAsset>(
-                "Models/ReflectionProbeSphere.azmodel",
+                "Models/ReflectionProbeSphere.fbx.azmodel",
                 AZ::RPI::AssetUtils::TraceLevel::Assert);
 
             MeshHandleDescriptor visualizationMeshDescriptor;
@@ -70,14 +70,14 @@ namespace AZ
             m_meshFeatureProcessor->SetExcludeFromReflectionCubeMaps(m_visualizationMeshHandle, true);
             m_meshFeatureProcessor->SetTransform(m_visualizationMeshHandle, AZ::Transform::CreateIdentity());
 
-            // We have to pre-load this asset before creating a Material instance because the InstanceDatabase will attempt a blocking load which could deadlock,
+            // We have to pre-load this asset before creating a material instance because the InstanceDatabase will attempt a blocking load which could deadlock,
             // particularly when slices are involved.
             // Note that m_visualizationMeshHandle had to be set up first, because AssetBus BusConnect() might call ReflectionProbe::OnAssetReady() immediately on this callstack.
             m_visualizationMaterialAsset = AZ::RPI::AssetUtils::GetAssetByProductPath<AZ::RPI::MaterialAsset>(
                 "Materials/ReflectionProbe/ReflectionProbeVisualization.azmaterial",
                 AZ::RPI::AssetUtils::TraceLevel::Assert);
             m_visualizationMaterialAsset.QueueLoad();
-            Data::AssetBus::MultiHandler::BusConnect(m_visualizationMaterialAsset.GetId());
+            Data::AssetBus::Handler::BusConnect(m_visualizationMaterialAsset.GetId());
 
             // reflection render Srgs
             m_stencilSrg = RPI::ShaderResourceGroup::Create(
@@ -105,7 +105,6 @@ namespace AZ
             AZ_Error("ReflectionProbeFeatureProcessor", m_renderInnerSrg.get(), "Failed to create render inner reflection shader resource group");
 
             // setup culling
-            m_cullable.m_cullData.m_scene = m_scene;
             m_cullable.SetDebugName(AZ::Name("ReflectionProbe Volume"));
         }
 
@@ -279,7 +278,7 @@ namespace AZ
             m_bakeExposure = bakeExposure;
         }
 
-        const RHI::DrawPacket* ReflectionProbe::BuildDrawPacket(
+        RHI::ConstPtr<RHI::DrawPacket> ReflectionProbe::BuildDrawPacket(
             const Data::Instance<RPI::ShaderResourceGroup>& srg,
             const RPI::Ptr<RPI::PipelineStateForDraw>& pipelineState,
             const RHI::DrawListTag& drawListTag,
@@ -292,22 +291,15 @@ namespace AZ
                 return nullptr;
             }
 
-            RHI::DrawPacketBuilder drawPacketBuilder;
-
-            RHI::DrawIndexed drawIndexed;
-            drawIndexed.m_indexCount = (uint32_t)m_reflectionRenderData->m_boxIndexCount;
-            drawIndexed.m_indexOffset = 0;
-            drawIndexed.m_vertexOffset = 0;
-
+            RHI::DrawPacketBuilder drawPacketBuilder{RHI::MultiDevice::AllDevices};
             drawPacketBuilder.Begin(nullptr);
-            drawPacketBuilder.SetDrawArguments(drawIndexed);
-            drawPacketBuilder.SetIndexBufferView(m_reflectionRenderData->m_boxIndexBufferView);
+            drawPacketBuilder.SetGeometryView(&m_reflectionRenderData->m_geometryView);
             drawPacketBuilder.AddShaderResourceGroup(srg->GetRHIShaderResourceGroup());
 
             RHI::DrawPacketBuilder::DrawRequest drawRequest;
             drawRequest.m_listTag = drawListTag;
+            drawRequest.m_streamIndices = m_reflectionRenderData->m_geometryView.GetFullStreamBufferIndices();
             drawRequest.m_pipelineState = pipelineState->GetRHIPipelineState();
-            drawRequest.m_streamBufferViews = m_reflectionRenderData->m_boxPositionBufferView;
             drawRequest.m_stencilRef = static_cast<uint8_t>(stencilRef);
             drawRequest.m_sortKey = m_sortKey;
             drawPacketBuilder.AddDrawItem(drawRequest);

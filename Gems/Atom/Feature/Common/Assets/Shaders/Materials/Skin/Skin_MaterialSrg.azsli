@@ -1,0 +1,83 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once 
+
+#include "../MaterialInputs/BaseColorInput.azsli"
+#include "../MaterialInputs/RoughnessInput.azsli"
+#include "../MaterialInputs/MetallicInput.azsli"
+#include "../MaterialInputs/SpecularInput.azsli"
+#include "../MaterialInputs/NormalInput.azsli"
+#include "../MaterialInputs/OcclusionInput.azsli"
+#include "../MaterialInputs/EmissiveInput.azsli"
+#include "../MaterialInputs/UvSetCount.azsli"
+#include "../MaterialInputs/DetailMapsInput.azsli"
+#include "../MaterialInputs/DualSpecular.azsli"
+
+#include <Atom/Features/SrgSemantics.azsli>
+
+ShaderResourceGroup MaterialSrg : SRG_PerMaterial
+{
+    // Auto-generate material SRG fields for common inputs
+    COMMON_SRG_INPUTS_BASE_COLOR()
+    COMMON_SRG_INPUTS_ROUGHNESS()
+    COMMON_SRG_INPUTS_SPECULAR_F0()
+    COMMON_SRG_INPUTS_NORMAL()
+    COMMON_SRG_INPUTS_OCCLUSION()
+    COMMON_SRG_INPUTS_DETAIL_MAPS()
+    COMMON_SRG_INPUTS_DUAL_SPECULAR()
+    
+    Sampler m_sampler
+    {
+        AddressU = Wrap;
+        AddressV = Wrap;
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        MaxAnisotropy = 16;
+    };
+
+    Texture2D m_brdfMap;
+
+    Sampler m_samplerBrdf
+    {
+        AddressU = Clamp;
+        AddressV = Clamp;
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+    };
+
+    // Parameters for subsurface scattering
+    float m_subsurfaceScatteringFactor;
+    float m_subsurfaceScatteringQuality;
+    float3 m_scatterDistance;
+    Texture2D m_subsurfaceScatteringInfluenceMap;
+    uint m_subsurfaceScatteringInfluenceMapUvIndex;
+
+    // Parameters for transmission
+    
+    // Elements of m_transmissionParams:
+    // Thick object mode: (attenuation coefficient, power, distortion, scale)
+    // Thin  object mode:  (shrinkFactor, transmissionNdLBias, distanceAttenuation, scale)
+    float4 m_transmissionParams;
+    
+    // (float3 TintColor, thickness)
+    float4 m_transmissionTintThickness;
+    Texture2D m_transmissionThicknessMap;
+    uint m_transmissionThicknessMapUvIndex;
+    
+    Texture2D m_wrinkle_baseColor_texture1;
+    Texture2D m_wrinkle_baseColor_texture2;
+    Texture2D m_wrinkle_baseColor_texture3;
+    Texture2D m_wrinkle_baseColor_texture4;
+    Texture2D m_wrinkle_normal_texture1;
+    Texture2D m_wrinkle_normal_texture2;
+    Texture2D m_wrinkle_normal_texture3;
+    Texture2D m_wrinkle_normal_texture4;
+}

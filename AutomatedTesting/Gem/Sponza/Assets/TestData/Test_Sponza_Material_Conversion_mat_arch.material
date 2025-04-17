@@ -1,6 +1,6 @@
 {
-    "materialType": "Materials/Types/StandardPBR.materialtype",
-    "materialTypeVersion": 3,
+    "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardPBR.materialtype",
+    "materialTypeVersion": 5,
     "propertyValues": {
         "baseColor.color": [
             0.800000011920929,
@@ -8,22 +8,22 @@
             0.800000011920929,
             1.0
         ],
-        "baseColor.textureMap": "Textures/arch_1k_basecolor.png",
+        "baseColor.textureMap": "../Textures/arch_1k_basecolor.png",
         "general.applySpecularAA": true,
-        "irradiance.color": [
+        "irradiance.manualColor": [
             1.0,
             0.885053813457489,
             0.801281750202179,
             1.0
         ],
-        "metallic.textureMap": "Textures/arch_1k_metallic.png",
-        "normal.textureMap": "Textures/arch_1k_normal.jpg",
-        "occlusion.diffuseTextureMap": "Textures/arch_1k_ao.png",
+        "metallic.textureMap": "../Textures/arch_1k_metallic.png",
+        "normal.textureMap": "../Textures/arch_1k_normal.jpg",
+        "occlusion.diffuseTextureMap": "../Textures/arch_1k_ao.png",
         "opacity.factor": 1.0,
         "parallax.factor": 0.050999999046325684,
         "parallax.pdo": true,
         "parallax.quality": "High",
         "parallax.useTexture": false,
-        "roughness.textureMap": "Textures/arch_1k_roughness.png"
+        "roughness.textureMap": "../Textures/arch_1k_roughness.png"
     }
 }

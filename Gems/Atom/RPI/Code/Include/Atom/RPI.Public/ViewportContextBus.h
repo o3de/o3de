@@ -16,6 +16,7 @@
 #include <AzFramework/Viewport/ViewportId.h>
 #include <AzFramework/Windowing/NativeWindow.h>
 #include <Atom/RPI.Public/Base.h>
+#include <Atom/RPI.Public/ViewGroup.h>
 
 namespace AZ
 {
@@ -31,7 +32,7 @@ namespace AZ
         //! push camera state to an arbitrary ViewportContext.
         //!
         //! All methods are thread-safe, but the underlying ViewportContext may not be.
-        class ViewportContextRequestsInterface
+        class ATOM_RPI_PUBLIC_API ViewportContextRequestsInterface
         {
         public:
             AZ_RTTI(ViewportContextRequestsInterface, "{FDB82F02-7021-433B-AAD3-25B97EC69962}");
@@ -77,18 +78,21 @@ namespace AZ
             //! Enumerates all registered ViewportContexts, calling visitorFunction once for each registered viewport.
             virtual void EnumerateViewportContexts(AZStd::function<void(ViewportContextPtr)> visitorFunction) = 0;
 
-            //! Pushes a view  to the stack for a given context name.
-            //! The View must be declared a camera by having the View::UsageFlags::UsageCamera usage flag set.
-            //! This View will be registered as the context's pipeline's default view until the top of the camera stack changes.
-            virtual void PushView(const Name& contextName, ViewPtr view) = 0;
-            //! Pops a camera off of the stack for a given context name. Returns true if the camera was successfully removed
-            //! or false if the camera wasn't removed, either because it wasn't found or its removal was not allowed.
-            //! @note The default camera for a given viewport may not be removed from the view stack.
-            //! You must push an additional camera to override the default view instead.
-            virtual bool PopView(const Name& contextName, ViewPtr view) = 0;
-            //! Gets the view currently registered to a given context, assuming the context exists.
-            //! This will be null if there is no registered ViewportContext and no views have been pushed for this context name.
-            virtual ViewPtr GetCurrentView(const Name& contextName) const = 0;
+            //! Pushes a view group to the stack for a given context name. A view group manages all stereoscopic and non-stereoscopic views.
+            //! The Views within a View Group must be declared a camera by having the View::UsageFlags::UsageCamera usage flag set.
+            //! This View Group will be registered as the context's pipeline's default view group until the top of the camera stack changes.
+            virtual void PushViewGroup(const Name& contextName, ViewGroupPtr viewGroup) = 0;
+
+            //! Pops a view group off the stack for a given context name. A view group manages all stereoscopic and non-stereoscopic views.
+            //! Returns true if the camera was successfully removed or false if the view wasn't removed,
+            //! either because it wasn't found within any existing view groups or its removal was not allowed.
+            //! @note The default camera's view group for a given viewport may not be removed from the view stack.
+            //! You must push an additional camera view groups to override the default view group instead.
+            virtual bool PopViewGroup(const Name& contextName, ViewGroupPtr viewGroup) = 0;
+
+            //! Gets the view group currently registered to a given context, assuming the context exists.
+            //! This will be null if there is no registered ViewportContext and no view groups have been pushed for this context name.
+            virtual ViewGroupPtr GetCurrentViewGroup(const Name& contextName) = 0;
         };
 
         using ViewportContextRequests = AZ::Interface<ViewportContextRequestsInterface>;
@@ -118,6 +122,8 @@ namespace AZ
             //! Called when the viewport is to be rendered.
             //! Add draws to this functions if they only need to be rendered to this viewport. 
             virtual void OnRenderTick(){};
+            //! Called as a sync point for any render jobs in flight
+            virtual void WaitForRender(){};
 
         protected:
             ~ViewportContextNotifications() = default;

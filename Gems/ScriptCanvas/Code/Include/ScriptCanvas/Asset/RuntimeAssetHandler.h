@@ -26,7 +26,7 @@ namespace ScriptCanvas
         , protected AZ::AssetTypeInfoBus::MultiHandler
     {
     public:
-        AZ_CLASS_ALLOCATOR(RuntimeAssetHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(RuntimeAssetHandler, AZ::SystemAllocator);
         AZ_RTTI(RuntimeAssetHandler, "{560A330A-2905-4A43-952D-70E21F8CE16C}", AZ::Data::AssetHandler);
 
         RuntimeAssetHandler(AZ::SerializeContext* context = nullptr);

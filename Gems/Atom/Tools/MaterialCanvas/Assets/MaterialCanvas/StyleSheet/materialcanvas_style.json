@@ -2104,6 +2104,20 @@
     "background-color": "#AF937B"
   },
   {
+    "selectors": [ "UtilityNodeTitlePalette" ],
+    "palette-style": "solid",
+    "line-color": "#FFFFFF",
+    "background-color": "#FFFFFF",
+    "color": "#ffffff"
+  },
+  {
+    "selectors": [ "DefaultNodeTitlePalette" ],
+    "palette-style": "solid",
+    "line-color": "#333333",
+    "background-color": "#333333",
+    "color": "#ffffff"
+  },
+  {
     "selectors": [ "ComparisonNodeTitlePalette" ],
     "palette-style": "solid",
     "line-color": "#10A396",
@@ -2155,8 +2169,8 @@
   {
     "selectors": [ "MathNodeTitlePalette" ],
     "palette-style": "solid",
-    "line-color": "#10A396",
-    "background-color": "#10A396",
+    "line-color": "#5500FF",
+    "background-color": "#5500FF",
     "color": "#ffffff"
   },
   {
@@ -2174,10 +2188,10 @@
     "color": "#ffffff"
   },
   {
-    "selectors": [ "ObjectNodeTitlePalette" ],
+    "selectors": [ "VertexNodeTitlePalette" ],
     "palette-style": "solid",
-    "line-color": "#AF937B",
-    "background-color": "#AF937B",
+    "line-color": "#0055FF",
+    "background-color": "#0055FF",
     "color": "#ffffff"
   },
   {
@@ -2188,36 +2202,52 @@
     "color": "#ffffff"
   },
   {
-    "selectors": [ "StringNodeTitlePalette" ],
+    "selectors": [ "TexturingNodeTitlePalette" ],
     "palette-style": "solid",
-    "line-color": "#2BF1F8",
-    "background-color": "#2BF1F8",
+    "line-color": "#FF00FF",
+    "background-color": "#FF00FF",
+    "color": "#ffffff"
+  },
+  {
+    "selectors": [ "ViewNodeTitlePalette" ],
+    "palette-style": "solid",
+    "line-color": "#FF8800",
+    "background-color": "#FF8800",
+    "color": "#ffffff"
+  },
+  {
+    "selectors": [ "SceneNodeTitlePalette" ],
+    "palette-style": "solid",
+    "line-color": "#FF8800",
+    "background-color": "#FF8800",
     "color": "#ffffff"
   },
   {
     "selectors": [ "TimeNodeTitlePalette" ],
     "palette-style": "solid",
-    "line-color": "#7A54BE",
-    "background-color": "#7A54BE",
+    "line-color": "#FF8800",
+    "background-color": "#FF8800",
     "color": "#ffffff"
   },
   {
-    "selectors": [ "GetVariableNodeTitlePalette" ],
+    "selectors": [ "ConstantNodeTitlePalette" ],
     "palette-style": "solid",
-    "line-color": "#0CDE17",
-    "background-color": "#0CDE17",
+    "line-color": "#FFFF00",
+    "background-color": "#FFFF00",
     "color": "#ffffff"
   },
   {
-    "selectors": [ "SetVariableNodeTitlePalette" ],
+    "selectors": [ "MaterialInputNodeTitlePalette" ],
     "palette-style": "solid",
-    "line-color": "#0CDE17",
-    "background-color": "#0CDE17",
+    "line-color": "#0000FF",
+    "background-color": "#0000FF",
     "color": "#ffffff"
   },
   {
-    "selectors": [ "ColorOverrideNodeTitlePalette" ],
+    "selectors": [ "MaterialOutputNodeTitlePalette" ],
     "palette-style": "solid",
+    "line-color": "#FF0000",
+    "background-color": "#FF0000",
     "color": "#ffffff"
   },
   {

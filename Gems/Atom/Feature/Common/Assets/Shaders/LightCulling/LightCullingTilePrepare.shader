@@ -1,10 +1,5 @@
 {
     "Source": "LightCullingTilePrepare.azsl",
-
-    "CompilerHints":
-    {
-        "DisableOptimizations": false
-    },
     
     "ProgramSettings" : 
     {

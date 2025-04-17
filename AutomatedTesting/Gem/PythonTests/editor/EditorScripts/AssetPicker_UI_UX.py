@@ -54,6 +54,8 @@ def AssetPicker_UI_UX():
 
         import azlmbr.asset as asset
         import azlmbr.bus as bus
+        import azlmbr.editor as editor
+        import azlmbr.entity as entity
         import azlmbr.legacy.general as general
         import azlmbr.math as math
 
@@ -63,8 +65,14 @@ def AssetPicker_UI_UX():
 
         file_path = ["AutomatedTesting", "Assets", "Objects", "Foliage"]
 
+        def select_entity_by_name(entity_name):
+            searchFilter = entity.SearchFilter()
+            searchFilter.names = [entity_name]
+            entities = entity.SearchBus(bus.Broadcast, 'SearchEntities', searchFilter)
+            editor.ToolsApplicationRequestBus(bus.Broadcast, 'MarkEntitySelected', entities[0])
+            
         def is_asset_assigned(component, interaction_option):
-            path = os.path.join("assets", "objects", "foliage", "cedar.azmodel")
+            path = os.path.join("assets", "objects", "foliage", "cedar.fbx.azmodel")
             expected_asset_id = asset.AssetCatalogRequestBus(bus.Broadcast, 'GetAssetIdByPath', path, math.Uuid(),
                                                              False)
             result = hydra.get_component_property_value(component, "Controller|Configuration|Model Asset")
@@ -224,18 +232,17 @@ def AssetPicker_UI_UX():
 
         # 3) Access Entity Inspector
         editor_window = pyside_utils.get_editor_main_window()
-        entity_inspector = editor_window.findChild(QtWidgets.QDockWidget, "Entity Inspector")
+        entity_inspector = editor_window.findChild(QtWidgets.QDockWidget, "Inspector")
         component_list_widget = entity_inspector.findChild(QtWidgets.QWidget, "m_componentListContents")
 
         # 4) Click on Asset Picker (Model Asset)
-        general.select_object("TestEntity")
+        select_entity_by_name("TestEntity")
         general.idle_wait(0.5)
-        model_asset = component_list_widget.findChildren(QtWidgets.QFrame, "Model Asset")[0]
-        attached_button = model_asset.findChildren(QtWidgets.QPushButton, "attached-button")[0]
+        attached_button = component_list_widget.findChildren(QtWidgets.QPushButton, "attached-button")[0]
 
         # Assign Model Asset via OK button
         pyside_utils.click_button_async(attached_button)
-        await asset_picker(["azmodel", "fbx"], "cedar (ModelAsset)", "ok")
+        await asset_picker(["azmodel", "fbx"], "cedar.fbx (ModelAsset)", "ok")
 
         # 5) Verify if Model Asset is assigned
         try:
@@ -252,14 +259,13 @@ def AssetPicker_UI_UX():
 
         # Clear Model Asset
         hydra.get_set_test(entity, 0, "Controller|Configuration|Model Asset", None)
-        general.select_object("TestEntity")
+        select_entity_by_name("TestEntity")
         general.idle_wait(0.5)
-        model_asset = component_list_widget.findChildren(QtWidgets.QFrame, "Model Asset")[0]
-        attached_button = model_asset.findChildren(QtWidgets.QPushButton, "attached-button")[0]
+        attached_button = component_list_widget.findChildren(QtWidgets.QPushButton, "attached-button")[0]
 
         # Assign Model Asset via Enter
         pyside_utils.click_button_async(attached_button)
-        await asset_picker(["azmodel", "fbx"], "cedar (ModelAsset)", "enter")
+        await asset_picker(["azmodel", "fbx"], "cedar.fbx (ModelAsset)", "enter")
 
         # 5) Verify if Model Asset is assigned
         try:

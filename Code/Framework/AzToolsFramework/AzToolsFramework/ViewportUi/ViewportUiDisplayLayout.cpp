@@ -26,7 +26,7 @@ namespace AzToolsFramework::ViewportUi::Internal
     {
         // set margins and spacing for internal contents
         setContentsMargins(
-            ViewportUiOverlayMargin, ViewportUiOverlayMargin + ViewportUiOverlayTopMarginPadding, ViewportUiOverlayMargin,
+            ViewportUiOverlayMargin, ViewportUiOverlayMargin, ViewportUiOverlayMargin,
             ViewportUiOverlayMargin);
         setSpacing(ViewportUiDisplayLayoutSpacing);
 

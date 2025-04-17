@@ -19,6 +19,7 @@
 
 #include <AzFramework/Process/ProcessWatcher.h>
 #include <AzToolsFramework/SourceControl/PerforceConnection.h>
+#include "PerforceSettings.h"
 
 #include <QProcess>
 
@@ -125,7 +126,6 @@ namespace AzToolsFramework
                     "Perforce Connectivity", "Manages Perforce connectivity and executes Perforce commands.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Editor")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                 ;
             }
         }
@@ -133,13 +133,13 @@ namespace AzToolsFramework
 
     void PerforceComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("SourceControlService", 0x67f338fd));
-        provided.push_back(AZ_CRC("PerforceService", 0x74b25961));
+        provided.push_back(AZ_CRC_CE("SourceControlService"));
+        provided.push_back(AZ_CRC_CE("PerforceService"));
     }
 
     void PerforceComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("PerforceService", 0x74b25961));
+        incompatible.push_back(AZ_CRC_CE("PerforceService"));
     }
 
     void PerforceComponent::GetFileInfo(const char* fullFilePath, const SourceControlResponseCallback& respCallback)
@@ -304,6 +304,16 @@ namespace AzToolsFramework
             result.UpdateSettingInfo(s_perforceConn->m_command.GetOutputValue(key));
         }
         QueueSettingResponse(result);
+    }
+
+    void PerforceComponent::OpenSettings()
+    {
+        PerforceSettings dialog;
+
+        if (dialog.exec() == QDialog::Accepted)
+        {
+            dialog.Apply();
+        }
     }
 
     SourceControlFileInfo PerforceComponent::GetFileInfo(const char* filePath)
@@ -902,7 +912,7 @@ namespace AzToolsFramework
     {
         AZStd::lock_guard<AZStd::mutex> locker(m_SettingsQueueMutex);
         m_settingsQueue.push(AZStd::move(result));
-        EBUS_QUEUE_FUNCTION(AZ::TickBus, &PerforceComponent::ProcessResultQueue, this);
+        AZ::TickBus::QueueFunction(&PerforceComponent::ProcessResultQueue, this);
     }
 
     bool PerforceComponent::CheckConnectivityForAction(const char* actionDesc, const char* filePath) const
@@ -1037,8 +1047,16 @@ namespace AzToolsFramework
 
             if (!p4PortSet)
             {
+                // The warnings need to show up repeatedly, as the user might be turning on and off perforce and configuring it.
+                if (!s_perforceConn->CommandApplicationFound())
+                {
+                    AZ_Warning(SCC_WINDOW, false, "Perforce - p4 executable not found on path, will not use Perforce source control!\n");
+                }
+                else
+                {
+                    AZ_Warning(SCC_WINDOW, false, "Perforce - p4 executable found, but P4PORT (server address) is not set, Perforce not available!\n");
+                }
                 // Disable any further connection status testing
-                AZ_WarningOnce(SCC_WINDOW, false, "Perforce - P4PORT (server address) is not set, Perforce not available!\n");
                 m_testTrust = false;
                 m_testConnection = false;
                 m_validConnection = false;
@@ -1139,25 +1157,26 @@ namespace AzToolsFramework
 
         if (s_perforceConn->GetUser().empty() || s_perforceConn->GetClientName().empty())
         {
-            AZ_WarningOnce(SCC_WINDOW, false, "Perforce - Your client or user is empty, Perforce not available!\n");
+            AZ_Warning(SCC_WINDOW, false, "Perforce - Your client or user is empty, Perforce not available!\n");
             return false;
         }
 
         if (s_perforceConn->GetClientName().compare("*unknown*") == 0)
         {
-            AZ_WarningOnce(SCC_WINDOW, false, "Perforce - client spec not found, Perforce not available!\n");
+            AZ_Warning(SCC_WINDOW, false, "Perforce - client spec not found, Perforce not available!\n");
             return false;
         }
 
         if (s_perforceConn->GetClientRoot().empty())
         {
-            AZ_WarningOnce(SCC_WINDOW, false, "Perforce - Your workspace root is empty, Perforce not available!\n");
+            AZ_Warning(SCC_WINDOW, false, "Perforce - Your workspace root is empty, Perforce not available!\n");
             return false;
         }
 
         if (s_perforceConn->GetServerAddress().empty() || s_perforceConn->GetServerUptime().empty())
         {
-            AZ_WarningOnce(SCC_WINDOW, false, "Perforce - Could not get server information, Perforce not available!\n");
+            AZ_Warning(SCC_WINDOW, false, "Perforce - Could not get server information, Perforce not available!\n");
+            return false;
         }
 
         AZ_TracePrintf(SCC_WINDOW, "Perforce - Connected, User: %s | Client: %s\n", s_perforceConn->GetUser().c_str(), s_perforceConn->GetClientName().c_str());
@@ -1458,7 +1477,7 @@ namespace AzToolsFramework
             {
                 AZStd::lock_guard<AZStd::mutex> locker(m_ResultQueueMutex);
                 m_resultQueue.push(AZStd::move(resp));
-                EBUS_QUEUE_FUNCTION(AZ::TickBus, &PerforceComponent::ProcessResultQueue, this);// narrow events to the main thread.
+                AZ::TickBus::QueueFunction(&PerforceComponent::ProcessResultQueue, this); // narrow events to the main thread.
             }
         }
     }

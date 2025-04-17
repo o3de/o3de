@@ -11,6 +11,7 @@
 
 // AZ
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 
 // Graph Model
 #include <GraphModel/Model/Slot.h>
@@ -32,7 +33,7 @@ namespace LandscapeCanvas
         }
     }
 
-    const QString AreaBlenderNode::TITLE = QObject::tr("Vegetation Layer Blender");
+    const char* AreaBlenderNode::TITLE = "Vegetation Layer Blender";
 
     AreaBlenderNode::AreaBlenderNode(GraphModel::GraphPtr graph)
         : BaseAreaNode(graph)
@@ -47,21 +48,25 @@ namespace LandscapeCanvas
 
         GraphModel::DataTypePtr areaDataType = GetGraphContext()->GetDataType(LandscapeCanvasDataTypeEnum::Area);
 
-        GraphModel::ExtendableSlotConfiguration slotConfig;
-        slotConfig.m_addButtonLabel = QObject::tr("Add Area").toUtf8().constData();
-        slotConfig.m_addButtonTooltip = QObject::tr("Add a layer area to the blender").toUtf8().constData();
-        RegisterSlot(GraphModel::SlotDefinition::CreateInputData(
+        RegisterSlot(AZStd::make_shared<GraphModel::SlotDefinition>(
+            GraphModel::SlotDirection::Input,
+            GraphModel::SlotType::Data,
             INBOUND_AREA_SLOT_ID,
             INBOUND_AREA_SLOT_LABEL.toUtf8().constData(),
-            { areaDataType },
-            AZStd::any(AZ::EntityId()),
             INBOUND_AREA_INPUT_SLOT_DESCRIPTION.toUtf8().constData(),
-            &slotConfig));
+            GraphModel::DataTypeList{ areaDataType },
+            AZStd::any(AZ::EntityId()),
+            1,
+            100,
+            QObject::tr("Add Area").toUtf8().constData(),
+            QObject::tr("Add a layer area to the blender").toUtf8().constData()));
 
-        RegisterSlot(GraphModel::SlotDefinition::CreateOutputData(
+        RegisterSlot(AZStd::make_shared<GraphModel::SlotDefinition>(
+            GraphModel::SlotDirection::Output,
+            GraphModel::SlotType::Data,
             OUTBOUND_AREA_SLOT_ID,
             OUTBOUND_AREA_SLOT_LABEL.toUtf8().constData(),
-            areaDataType,
-            OUTBOUND_AREA_OUTPUT_SLOT_DESCRIPTION.toUtf8().constData()));
+            OUTBOUND_AREA_OUTPUT_SLOT_DESCRIPTION.toUtf8().constData(),
+            GraphModel::DataTypeList{ areaDataType }));
     }
 } // namespace LandscapeCanvas
