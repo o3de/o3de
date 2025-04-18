@@ -248,18 +248,18 @@ public:
 };
 
 //Class to hold ePropertyColor (IVariable::DT_COLOR)
-class CReflectedVarColor3
+class CReflectedVarColor
     : public CReflectedVar
 {
 public:
-    AZ_RTTI(CReflectedVarColor3, "{CC69E773-B4FA-4B6D-8A46-0B580097B6D2}", CReflectedVar)
+    AZ_RTTI(CReflectedVarColor, "{CC69E773-B4FA-4B6D-8A46-0B580097B6D2}", CReflectedVar)
 
-    CReflectedVarColor3(const AZStd::string& name, AZ::Vector3 color = AZ::Vector3::CreateZero())
+    CReflectedVarColor(const AZStd::string& name, AZ::Vector3 color = AZ::Vector3::CreateZero())
         : CReflectedVar(name)
         , m_color(color)
     {}
 
-    CReflectedVarColor3() = default;
+    CReflectedVarColor() = default;
 
     AZStd::string varName() const { return m_varName; }
     AZStd::string description() const { return m_description; }

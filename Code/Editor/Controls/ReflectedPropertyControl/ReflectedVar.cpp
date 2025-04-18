@@ -37,9 +37,9 @@ void ReflectedVarInit::setupReflection(AZ::SerializeContext* serializeContext)
         ->Field("propertyType", &CReflectedVarResource::m_propertyType)
         ;
 
-    serializeContext->Class< CReflectedVarColor3, CReflectedVar>()
+    serializeContext->Class< CReflectedVarColor, CReflectedVar>()
         ->Version(1)
-        ->Field("color", &CReflectedVarColor3::m_color);
+        ->Field("color", &CReflectedVarColor::m_color);
 
     serializeContext->Class<CReflectedVarColor4, CReflectedVar>()
         ->Version(1)
@@ -80,14 +80,14 @@ void ReflectedVarInit::setupReflection(AZ::SerializeContext* serializeContext)
             ->Attribute(AZ::Edit::Attributes::Handler, AZ_CRC_CE("ePropertyUser"))
             ;
 
-        ec->Class< CReflectedVarColor3 >("VarColor", "Color RGB")
+        ec->Class< CReflectedVarColor >("VarColor", "Color RGB")
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
             ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC_CE("PropertyVisibility_ShowChildrenOnly"))
-            ->DataElement(AZ::Edit::UIHandlers::Color, &CReflectedVarColor3::m_color, "Color", "")
+            ->DataElement(AZ::Edit::UIHandlers::Color, &CReflectedVarColor::m_color, "Color", "")
             ->Attribute(AZ::Edit::Attributes::Min, 0)
             ->Attribute(AZ::Edit::Attributes::Max, 255)
-            ->Attribute(AZ::Edit::Attributes::NameLabelOverride, &CReflectedVarColor3::varName)
-            ->Attribute(AZ::Edit::Attributes::DescriptionTextOverride, &CReflectedVarColor3::description)
+            ->Attribute(AZ::Edit::Attributes::NameLabelOverride, &CReflectedVarColor::varName)
+            ->Attribute(AZ::Edit::Attributes::DescriptionTextOverride, &CReflectedVarColor::description)
             ;
 
         ec->Class<CReflectedVarColor4>("VarColorA", "Color RGBA")
@@ -104,7 +104,6 @@ void ReflectedVarInit::setupReflection(AZ::SerializeContext* serializeContext)
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
             ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC_CE("PropertyVisibility_ShowChildrenOnly"))
             ->DataElement(AZ::Edit::UIHandlers::LineEdit, &CReflectedVarResource::m_path, "Path", "")
-            //->DataElement(AZ::Edit::UIHandlers::Default, &CReflectedVarResource::m_propertyType, "Type", "")
             ->Attribute(AZ::Edit::Attributes::NameLabelOverride, &CReflectedVarResource::varName)
             ->Attribute(AZ::Edit::Attributes::DescriptionTextOverride, &CReflectedVarResource::description)
             ;
