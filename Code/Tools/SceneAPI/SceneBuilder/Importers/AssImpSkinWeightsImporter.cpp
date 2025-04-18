@@ -9,6 +9,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/string/conversions.h>
+#include <AzCore/Math/MathUtils.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
 #include <SceneAPI/SceneBuilder/Importers/AssImpSkinWeightsImporter.h>
 #include <SceneAPI/SceneBuilder/Importers/ImporterUtilities.h>
@@ -100,6 +101,11 @@ namespace AZ
                         int boneId = skinWeightData->GetBoneId(sanitizedName);
                         for (unsigned weight = 0; weight < bone->mNumWeights; ++weight)
                         {
+                            if (bone->mWeights[weight].mWeight <= AZ::Constants::FloatEpsilon)
+                            {
+                                continue;
+                            }
+
                             DataTypes::ISkinWeightData::Link link;
                             link.boneId = boneId;
                             link.weight = bone->mWeights[weight].mWeight;
