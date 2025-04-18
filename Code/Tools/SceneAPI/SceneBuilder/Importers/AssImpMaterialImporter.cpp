@@ -31,7 +31,7 @@ namespace AZ
     {
         namespace SceneBuilder
         {
-            AZStd::string ResolveTexturePath([[maybe_unused]] const AZStd::string& materialName, const AssImpSDKWrapper::AssImpSceneWrapper& scene, const AZStd::string& textureFilePath);
+            static AZStd::string ResolveTexturePath([[maybe_unused]] const AZStd::string& materialName, const AssImpSDKWrapper::AssImpSceneWrapper& scene, const AZStd::string& textureFilePath);
 
             AssImpMaterialImporter::AssImpMaterialImporter()
             {
@@ -74,7 +74,7 @@ namespace AZ
                     if (matFound == materialMap.end())
                     {
                         AZStd::shared_ptr<AssImpSDKWrapper::AssImpMaterialWrapper> assImpMaterial =
-                            AZStd::shared_ptr<AssImpSDKWrapper::AssImpMaterialWrapper>(aznew AssImpSDKWrapper::AssImpMaterialWrapper(context.m_sourceScene.GetAssImpScene()->mMaterials[materialIndex]));
+                            AZStd::shared_ptr<AssImpSDKWrapper::AssImpMaterialWrapper>(new AssImpSDKWrapper::AssImpMaterialWrapper(context.m_sourceScene.GetAssImpScene()->mMaterials[materialIndex]));
 
                         materialName = assImpMaterial->GetName().c_str();
                         RenamedNodesMap::SanitizeNodeName(materialName, context.m_scene.GetGraph(), context.m_currentGraphPosition, "Material");
@@ -180,7 +180,7 @@ namespace AZ
                 return combinedMaterialImportResults.GetResult();
             }
 
-            AZStd::string ResolveTexturePath([[maybe_unused]] const AZStd::string& materialName, const AssImpSDKWrapper::AssImpSceneWrapper& scene, const AZStd::string& textureFilePath) const
+            AZStd::string ResolveTexturePath([[maybe_unused]] const AZStd::string& materialName, const AssImpSDKWrapper::AssImpSceneWrapper& scene, const AZStd::string& textureFilePath)
             {
                 if (textureFilePath.empty())
                 {
@@ -188,7 +188,8 @@ namespace AZ
                     return textureFilePath;
                 }
                 const AZStd::string& sceneFilePath = scene.GetSceneFileName();
-                if (scene.m_extractEmbeddedTextures && const aiTexture* embeddedTexture = scene.GetAssImpScene()->GetEmbeddedTexture(textureFilePath.c_str()))
+                const aiTexture* embeddedTexture = scene.GetAssImpScene()->GetEmbeddedTexture(textureFilePath.c_str())
+                if (scene.GetExtractEmbeddedTextures() && embeddedTexture != nullptr)
                 {
                     if (embeddedTexture->mHeight == 0)
                     {
@@ -207,7 +208,7 @@ namespace AZ
                         {
                             // Set texture path as ${relative scene folder}/${scene filename}_${embedded texture index}
                             // for embedded texture, path starts with asterisk (like *1, *2, ...).
-                            const char* embeddedTextureIndex = &(textureFilePath->c_str()[1]);
+                            const char* embeddedTextureIndex = &(textureFilePath.c_str()[1]);
                             AZ::StringFunc::Path::GetFileName(sceneFilePath.c_str(), textureFileName);
                             textureFileName = AZStd::string::format("%s_%s_%s", textureFileName.c_str(), materialName.c_str(), embeddedTextureIndex);
                         }
@@ -227,7 +228,7 @@ namespace AZ
                         AZStd::string fullTexturePath;
                         AZ::StringFunc::Path::Join(fileIO->GetAlias("@projectroot@"), relativeTexturePath.c_str(), fullTexturePath);
 
-                        if (fileIO.Exists(fullTexturePath.c_str()))
+                        if (fileIO->Exists(fullTexturePath.c_str()))
                         {
                             // don't override if the file already exists.
                             return relativeTexturePath;
