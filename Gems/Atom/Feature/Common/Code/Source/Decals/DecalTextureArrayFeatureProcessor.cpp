@@ -660,7 +660,7 @@ namespace AZ
                 uint32_t dataIndex = sortedDecals[i];
                 const auto& decalData = dataVector[dataIndex];
 
-#if defined(CARBONATED)
+#if defined(CARBONATED) && defined(CARBONATED_DECAL_VISTOGGLE)
                 // In lieu of a visibility toggle, prevent sending decals to the GPU that are not visible
                 if (decalData.m_opacity <= 0.0f)
                 {

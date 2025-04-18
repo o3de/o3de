@@ -59,7 +59,7 @@ namespace AZ
                     ->Event("GetSortKey", &DecalRequestBus::Events::GetSortKey)
                     ->Event("GetDecalColor", &DecalRequestBus::Events::GetDecalColor)
                     ->Event("SetDecalColor", &DecalRequestBus::Events::SetDecalColor)
-#if defined(CARBONATED)
+#if defined(CARBONATED) && defined(CARBONATED_DECAL_VISTOGGLE)
                     ->Event("GetVisibility", &DecalRequestBus::Events::GetVisibility)
                     ->Event("SetVisibility", &DecalRequestBus::Events::SetVisibility)
 #endif
@@ -96,7 +96,7 @@ namespace AZ
 
         DecalComponentController::DecalComponentController(const DecalComponentConfig& config)
             : m_configuration(config)
-#if defined(CARBONATED)
+#if defined(CARBONATED) && defined(CARBONATED_DECAL_VISTOGGLE)
             , mIsHidden(false)
 #endif
         {
@@ -223,7 +223,7 @@ namespace AZ
             OpacityChanged();
         }
 
-#if defined(CARBONATED)
+#if defined(CARBONATED) && defined(CARBONATED_DECAL_VISTOGGLE)
         bool DecalComponentController::GetVisibility() const
         {
             return !mIsHidden;
@@ -290,7 +290,7 @@ namespace AZ
             DecalNotificationBus::Event(m_entityId, &DecalNotifications::OnOpacityChanged, m_configuration.m_opacity);
             if (m_featureProcessor)
             {
-#if defined(CARBONATED)
+#if defined(CARBONATED) && defined(CARBONATED_DECAL_VISTOGGLE)
                 m_featureProcessor->SetDecalOpacity(m_handle, mIsHidden ? 0.0f : m_configuration.m_opacity);
 #else
                 m_featureProcessor->SetDecalOpacity(m_handle, m_configuration.m_opacity);
