@@ -97,7 +97,7 @@ namespace AZ
         DecalComponentController::DecalComponentController(const DecalComponentConfig& config)
             : m_configuration(config)
 #if defined(CARBONATED) && defined(CARBONATED_DECAL_VISTOGGLE)
-            , mIsHidden(false)
+            , m_isHidden(false)
 #endif
         {
         }
@@ -294,7 +294,7 @@ namespace AZ
             if (m_featureProcessor)
             {
 #if defined(CARBONATED) && defined(CARBONATED_DECAL_VISTOGGLE)
-                m_featureProcessor->SetDecalOpacity(m_handle, mIsHidden ? 0.0f : m_configuration.m_opacity);
+                m_featureProcessor->SetDecalOpacity(m_handle, m_isHidden ? 0.0f : m_configuration.m_opacity);
 #else
                 m_featureProcessor->SetDecalOpacity(m_handle, m_configuration.m_opacity);
 #endif
