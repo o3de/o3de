@@ -520,9 +520,19 @@ namespace AzToolsFramework
             const auto& selectedIndexes = selected.indexes();
             if (!selectedIndexes.empty())
             {
-                auto newRootIndex = m_tableViewProxyModel->mapFromSource(
-                    m_assetFilterModel->mapFromSource(treeViewFilterModel->mapToSource(selectedIndexes[0])));
-                m_tableViewWidget->setRootIndex(newRootIndex);
+                auto indexInTreeView = treeViewFilterModel->mapToSource(selectedIndexes[0]);
+                auto indexInFilterModel = m_assetFilterModel->mapFromSource(indexInTreeView);
+                if (m_tableViewProxyModel->sourceModel() == m_treeToTableProxyModel)
+                {
+                    auto indexInProxyModel = m_treeToTableProxyModel->mapFromSource(indexInFilterModel);
+                    auto newRootIndex = m_tableViewProxyModel->mapFromSource(indexInProxyModel);
+                    m_tableViewWidget->setRootIndex(newRootIndex);
+                }
+                else
+                {
+                    auto newRootIndex = m_tableViewProxyModel->mapFromSource(indexInFilterModel);
+                    m_tableViewWidget->setRootIndex(newRootIndex);
+                }
             }
             else
             {

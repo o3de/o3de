@@ -470,6 +470,11 @@ namespace AzToolsFramework
 
     bool ComponentEditor::AreAnyComponentsDisabled() const
     {
+        if (m_preventDataAccess) // are we during some sort of full ui rebuild?
+        {
+            return false;
+        }
+
         for (auto component : m_components)
         {
             auto entity = component->GetEntity();
@@ -605,6 +610,11 @@ namespace AzToolsFramework
 
     void ComponentEditor::QueuePropertyEditorInvalidationForComponent(AZ::EntityComponentIdPair entityComponentIdPair, PropertyModificationRefreshLevel refreshLevel)
     {
+        if (m_preventDataAccess) // are we during some sort of full ui rebuild?
+        {
+            return;
+        }
+
         for (const auto component : m_components)
         {
             if ((component->GetId() == entityComponentIdPair.GetComponentId()) 
@@ -623,6 +633,7 @@ namespace AzToolsFramework
 
     void ComponentEditor::PreventRefresh(bool shouldPrevent)
     {
+        m_preventDataAccess = shouldPrevent;
         GetPropertyEditor()->PreventDataAccess(shouldPrevent);
     }
 
@@ -979,6 +990,11 @@ namespace AzToolsFramework
 
     bool ComponentEditor::HasComponentWithId(AZ::ComponentId componentId)
     {
+        if (m_preventDataAccess) // are we during some sort of full ui rebuild?
+        {
+            return false;
+        }
+
         for (AZ::Component* component : m_components)
         {
             if (component->GetId() == componentId)

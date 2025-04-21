@@ -35,7 +35,7 @@ namespace LmbrCentral
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Compound_Shape.svg")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/shape/compound-shape/")
+                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/components/reference/shape/compound-shape/")
                     ->DataElement(0, &EditorCompoundShapeComponent::m_configuration, "Configuration", "Compound Shape Configuration")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorCompoundShapeComponent::ConfigurationChanged)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC_CE("PropertyVisibility_ShowChildrenOnly"))

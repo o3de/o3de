@@ -43,7 +43,7 @@ namespace LmbrCentral
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/AudioMultiPosition.svg")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/audio/multi-position/")
+                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/components/reference/audio/multi-position/")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorAudioMultiPositionComponent::m_entityRefs, "Entity References", "The entities from which positions will be obtained for multi-position audio")
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &EditorAudioMultiPositionComponent::m_behaviorType, "Behavior Type", "Determines how multi-postion sounds are treated, Separate or Blended")
                     ;

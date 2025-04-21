@@ -238,6 +238,14 @@ namespace AZ
             template <typename T>
             bool SetConstant(RHI::ShaderInputConstantIndex inputIndex, const T& value);
 
+            /// Assign a device-specific value of type T to the constant shader input. Note that the corresponding GetConstant() - function
+            /// returns only the value of one device.
+            template<typename T>
+            bool SetConstant(RHI::ShaderInputNameIndex& inputIndex, const AZStd::unordered_map<int, T>& values);
+
+            template<typename T>
+            bool SetConstant(RHI::ShaderInputConstantIndex& inputIndex, const AZStd::unordered_map<int, T>& values);
+
             /// Assigns the specified number of rows from a Matrix
             template <typename T>
             bool SetConstantMatrixRows(RHI::ShaderInputNameIndex& inputIndex, const T& value, uint32_t rowCount);
@@ -422,6 +430,22 @@ namespace AZ
             if (inputIndex.ValidateOrFindConstantIndex(GetLayout()))
             {
                 return SetConstant(inputIndex.GetConstantIndex(), value);
+            }
+            return false;
+        }
+
+        template<typename T>
+        bool ShaderResourceGroup::SetConstant(RHI::ShaderInputConstantIndex& inputIndex, const AZStd::unordered_map<int, T>& values)
+        {
+            return m_data.SetConstant(inputIndex, values);
+        }
+
+        template<typename T>
+        bool ShaderResourceGroup::SetConstant(RHI::ShaderInputNameIndex& inputIndex, const AZStd::unordered_map<int, T>& values)
+        {
+            if (inputIndex.ValidateOrFindConstantIndex(GetLayout()))
+            {
+                return SetConstant(inputIndex.GetConstantIndex(), values);
             }
             return false;
         }
