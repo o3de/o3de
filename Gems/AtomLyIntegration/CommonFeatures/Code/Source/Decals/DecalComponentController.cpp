@@ -226,12 +226,15 @@ namespace AZ
 #if defined(CARBONATED) && defined(CARBONATED_DECAL_VISTOGGLE)
         bool DecalComponentController::GetVisibility() const
         {
-            return !mIsHidden;
+            return !m_isHidden;
         }
 
         void DecalComponentController::SetVisibility(bool show)
         {
-            mIsHidden = !show;
+            //Show is inverted
+            if (m_isHidden != show)
+                return; 
+            m_isHidden = !show;
             OpacityChanged();
         }
 #endif

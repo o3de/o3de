@@ -64,7 +64,7 @@ namespace AZ
             Data::AssetId GetMaterialAssetId() const override;
 
 #if defined(CARBONATED) && defined(CARBONATED_DECAL_VISTOGGLE)
-            bool mIsHidden = false;
+            bool m_isHidden;
             bool GetVisibility() const override;
             void SetVisibility(bool show) override;
 #endif
