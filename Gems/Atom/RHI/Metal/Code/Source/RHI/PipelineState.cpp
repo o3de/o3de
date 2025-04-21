@@ -222,7 +222,7 @@ namespace AZ
                 m_graphicsPipelineState = pipelineLibrary->CreateGraphicsPipelineState(static_cast<uint64_t>(descriptor.GetHash()), m_renderPipelineDesc, &error);
 
                 const int64_t dt = static_cast<int64_t>(AZ::GetRealElapsedTimeMs()) - startTime;
-                if (dt > 20)
+                if (dt > 50)
                 {
                     AZ_Info("PrimitiveLoadTime", "Pipeline state created in %d ms",  dt);
                 }
