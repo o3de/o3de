@@ -140,6 +140,11 @@ namespace AZ
             return m_shaderResourceGroup->IsQueuedForCompile();
         }
 
+        bool ShaderResourceGroup::IsInitialized() const
+        {
+            return m_isInitialized;
+        }
+
         RHI::ShaderInputBufferIndex ShaderResourceGroup::FindShaderInputBufferIndex(const Name& name) const
         {
             return m_layout->FindShaderInputBufferIndex(name);

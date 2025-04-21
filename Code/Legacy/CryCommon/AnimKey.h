@@ -95,7 +95,7 @@ struct ITcbKey
         fval[3] = val.w;
     };
 
-    ILINE void SetValue(float val)             { SetFloat(val);   }
+    ILINE void SetValue(float val)       { SetFloat(val); }
     ILINE void SetValue(const Vec3& val) { SetVec3(val); }
     ILINE void SetValue(const Quat& val) { SetQuat(val); }
 
@@ -149,15 +149,66 @@ struct IEventKey
 struct ISelectKey
     : public IKey
 {
-    AZStd::string szSelection;        //!< Node name.
-    AZ::EntityId cameraAzEntityId;    // will be Invalid for legacy Cameras
-    float fDuration;
-    float fBlendTime;
+    AZStd::string szSelection;      //!< Node name (an existing camera entity name), or empty.
+    AZ::EntityId cameraAzEntityId;  //!< Valid EntityId for an existing camera, or invalid.
+    float fDuration;                //!< Duration of camera activity in CSelectTrack, not user-defined, calculated for compatibility and UI sliders ranges.
+    float fBlendTime;               //!< Time in seconds to a next key where camera parameters are interpolated.
+    //!< Initial properties of an existing camera, used to interpolate between camera keys, stored when CSelectTrack is activated.
+    float m_FoV;                    //!< Initial FoV of an existing camera; positive value indicates that the key was initialized.
+    float m_nearZ;                  //!< Initial near clipping distance of an existing camera, if initialized.
+    AZ::Vector3 m_position;         //!< Initial world position of an existing camera, if initialized.
+    AZ::Quaternion m_rotation;      //!< Initial world rotation of an existing camera, if initialized.
 
     ISelectKey()
     {
+        Reset();
+    }
+
+    //!< @returns True if a valid camera controller EntityId and Name are set, otherwise returns false.
+    bool IsValid() const { return cameraAzEntityId.IsValid() && !szSelection.empty(); }
+
+    //!< @returns True if a valid camera controller EntityId is set and camera properties are stored, otherwise returns false.
+    bool IsInitialized() const { return IsValid() && m_FoV > 0.0f; } 
+
+    //!< @returns True if a valid camera controller EntityId is set, otherwise returns false and invalidates camera properties.
+    bool CheckValid()
+    {
+        if (IsValid())
+        {
+            return true;
+        }
+
+        Reset();
+        return false;
+    }
+
+    //!< Invalidates all key camera data.
+    void Reset()
+    {
+        szSelection.clear();
+        cameraAzEntityId = AZ::EntityId();
         fDuration = 0;
         fBlendTime = 0;
+        ResetCameraProperies();
+    }
+
+    //!< Invalidates key camera properties.
+    void ResetCameraProperies()
+    {
+        m_FoV = -1.0f;
+        m_nearZ = 0;
+        m_position = AZ::Vector3::CreateZero();
+        m_rotation = AZ::Quaternion::CreateIdentity();
+    }
+
+    //!< Copies stored key camera properties.
+    void CopyCameraProperies(const ISelectKey& rhs)
+    {
+        AZ_Assert(cameraAzEntityId == rhs.cameraAzEntityId, "Invalid camera data.")
+        m_FoV = rhs.m_FoV;
+        m_nearZ = rhs.m_nearZ;
+        m_position = rhs.m_position;
+        m_rotation = rhs.m_rotation;
     }
 };
 
@@ -180,7 +231,7 @@ struct ISequenceKey
         fStartTime = 0;
         fEndTime = 0;
         bOverrideTimes = false;
-        bDoNotStop = false; // default crysis behaviour
+        bDoNotStop = false;
     }
 };
 
@@ -477,6 +528,21 @@ struct IScreenFaderKey
     EFadeChangeType m_fadeChangeType;
 };
 
+/** IStringKey used in string tracks.
+ */
+struct IStringKey
+    : public IKey
+{
+    AZStd::string m_strValue;
+
+    IStringKey() = default;
+
+    IStringKey(const AZStd::string value)
+        : m_strValue(value) 
+    {
+    }
+};
+
 namespace AZ
 {
     AZ_TYPE_INFO_SPECIALIZE(IKey, "{680BD51E-C106-4BBF-9A6F-CD551E00519F}");
@@ -493,5 +559,6 @@ namespace AZ
     AZ_TYPE_INFO_SPECIALIZE(ISequenceKey, "{B55294AD-F14E-43AC-B6B5-AC27B377FE00}");
     AZ_TYPE_INFO_SPECIALIZE(ISoundKey, "{452E50CF-B7D0-42D5-A86A-B295682674BB}");
     AZ_TYPE_INFO_SPECIALIZE(ITimeRangeKey, "{17807C95-C7A1-481B-AD94-C54D83928D0B}");
+    AZ_TYPE_INFO_SPECIALIZE(IStringKey, "{A35D94C2-776B-4BA7-BBBC-1A1FD4402023}");
 }
 #endif // CRYINCLUDE_CRYCOMMON_ANIMKEY_H

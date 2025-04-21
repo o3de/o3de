@@ -588,6 +588,8 @@ namespace AZ
                 return;
             }
 
+            auto* rhiSystem = AZ::RHI::RHISystemInterface::Get();
+
             // Clear the references from the previous frame.
             m_passEntryReferences.clear();
 
@@ -597,6 +599,8 @@ namespace AZ
                 AZStd::vector<PassEntry*> sortedPassEntries;
                 AZStd::vector<AZStd::vector<PassEntry*>> sortedPassGrid;
                 RPI::TimestampResult gpuTimestamp;
+                int64_t deviceReferenceDuration{};
+                int64_t hostReferenceDuration{};
             };
 
             AZStd::map<int, PerDevicePassData> passEntriesMap;
@@ -637,8 +641,36 @@ namespace AZ
                 }
             }
 
+            /*
+                In order to compare timestamps recorded on multiple devices to one another, they need to be related to a common reference
+               frame. To this end, calibrated timestamps are recorded for each device, which represent a "simultaneous" timestamp on both
+               CPU and a specified GPU. With these timestamps at hand at hand, device timestamps are first related to the common CPU time
+               reference frame to allow for proper positioning and scaling of the resulting timestamp bars. The final values are again
+               displayed as device timestamps in the end.
+            */
+            int64_t minimumHostTime{ INT64_MAX };
+            int64_t maximumHostTime{ INT64_MIN };
+
             for (auto& [deviceIndex, passEntries] : passEntriesMap)
             {
+                // Only calibrate when taking new measurements to prevent flickering
+                if (!m_paused || m_calibratedTimestamps[deviceIndex] == m_lastCalibratedTimestamps[deviceIndex])
+                {
+                    m_calibratedTimestamps[deviceIndex] = rhiSystem->GetDevice(deviceIndex)->GetCalibratedTimestamp();
+                }
+
+                if (m_lastCalibratedTimestamps.find(deviceIndex) == m_lastCalibratedTimestamps.end())
+                {
+                    m_lastCalibratedTimestamps[deviceIndex] = { 0, 0 };
+                }
+
+                auto& [calibratedTimestampDevice, calibratedTimestampHost] = m_calibratedTimestamps[deviceIndex];
+                auto& [lastCalibratedTimestampDevice, lastCalibratedTimestampHost] = m_lastCalibratedTimestamps[deviceIndex];
+
+                // Calculate the scaling factor to go from a host to a device timestamp
+                passEntries.deviceReferenceDuration = calibratedTimestampDevice - lastCalibratedTimestampDevice;
+                passEntries.hostReferenceDuration = calibratedTimestampHost - lastCalibratedTimestampHost;
+
                 // Sort the pass entries based on their starting time and duration
                 AZStd::sort(
                     passEntries.sortedPassEntries.begin(),
@@ -654,11 +686,51 @@ namespace AZ
                             passEntry2->m_timestampResult.GetTimestampBeginInTicks();
                     });
 
+                uint64_t lastTimestamp{ 0 };
+                PassEntry* lastPassEntry{ nullptr };
+
+                // find the maximum length, since the pass that starts last could end earlier than another pass, so the sorting doesn't help
+                for (const auto& passEntry : passEntries.sortedPassEntries)
+                {
+                    uint64_t endTimestamp{ passEntry->m_timestampResult.GetTimestampBeginInTicks() +
+                                           passEntry->m_timestampResult.GetDurationInTicks() };
+
+                    if (endTimestamp > lastTimestamp)
+                    {
+                        lastPassEntry = passEntry;
+                        lastTimestamp = endTimestamp;
+                    }
+                }
+
                 // calculate the total GPU duration.
                 if (passEntries.sortedPassEntries.size() > 0)
                 {
                     passEntries.gpuTimestamp = passEntries.sortedPassEntries.front()->m_timestampResult;
-                    passEntries.gpuTimestamp.Add(passEntries.sortedPassEntries.back()->m_timestampResult);
+                    passEntries.gpuTimestamp.Add(lastPassEntry->m_timestampResult);
+                }
+
+                // Convert a device timestamp to a host timestamp so that all timestamps are in one reference frame and hence comparable
+                auto convertToHostTime{ [lastDeviceTimestamp = lastCalibratedTimestampDevice,
+                                         lastHostTimeStamp = lastCalibratedTimestampHost,
+                                         deviceReferenceDuration = passEntries.deviceReferenceDuration,
+                                         hostReferenceDuration = passEntries.hostReferenceDuration](int64_t timestamp)
+                                        {
+                                            return (((timestamp - int64_t(lastDeviceTimestamp)) * hostReferenceDuration) /
+                                                    deviceReferenceDuration) +
+                                                int64_t(lastHostTimeStamp);
+                                        } };
+
+                int64_t hostStartTime{ convertToHostTime(passEntries.gpuTimestamp.GetTimestampBeginInTicks()) };
+                int64_t hostEndTime{ convertToHostTime(lastTimestamp) };
+
+                if (hostStartTime < minimumHostTime)
+                {
+                    minimumHostTime = hostStartTime;
+                }
+
+                if (hostEndTime > maximumHostTime)
+                {
+                    maximumHostTime = hostEndTime;
                 }
 
                 // Add a pass to the pass grid which none of the pass's timestamp range won't overlap each other.
@@ -686,6 +758,8 @@ namespace AZ
                     }
                 }
             }
+
+            auto hostDuration{ maximumHostTime - minimumHostTime };
 
             // Refresh timestamp query
             bool needEnable = false;
@@ -779,6 +853,8 @@ namespace AZ
                         const float passBarSpace = 3.f;
                         float areaWidth = ImGui::GetContentRegionAvail().x - 20.f;
 
+                        auto& [lastCalibratedTimestampDevice, lastCalibratedTimestampHost] = m_lastCalibratedTimestamps[deviceIndex];
+
                         ImGui::Text("GPU %d", deviceIndex);
                         AZStd::string childID{ "Timeline" + AZStd::to_string(deviceIndex) };
                         if (ImGui::BeginChild(
@@ -786,11 +862,19 @@ namespace AZ
                                 ImVec2(areaWidth, (passBarHeight + passBarSpace) * passEntries.sortedPassGrid.size()),
                                 false))
                         {
-                            // start tick and end tick for the area
-                            uint64_t areaStartTick = passEntries.sortedPassEntries.front()->m_timestampResult.GetTimestampBeginInTicks();
-                            uint64_t areaEndTick = passEntries.sortedPassEntries.back()->m_timestampResult.GetTimestampBeginInTicks() +
-                                passEntries.sortedPassEntries.back()->m_timestampResult.GetDurationInTicks();
-                            uint64_t areaDurationInTicks = areaEndTick - areaStartTick;
+                            // To compute the correct minimum time per device, shift the minimum host time to the start of its
+                            // host time and compute the start tick and end tick for the area for device measurements
+                            auto shiftedHostTime = minimumHostTime - int64_t(lastCalibratedTimestampHost);
+                            auto areaStartTick =
+                                ((shiftedHostTime * passEntries.deviceReferenceDuration) / passEntries.hostReferenceDuration) +
+                                int64_t(lastCalibratedTimestampDevice);
+                            auto areaDurationInTicks =
+                                (hostDuration * passEntries.deviceReferenceDuration) / passEntries.hostReferenceDuration;
+
+                            auto offset = static_cast<int64_t>(static_cast<double>(areaDurationInTicks) * m_timelineOffset);
+                            areaStartTick += offset;
+                            auto scaledAreaDurationInTicks =
+                                static_cast<int64_t>(static_cast<double>(areaDurationInTicks) * m_timelineWindowWidth);
 
                             float rowStartY = 0.f;
                             for (auto& row : passEntries.sortedPassGrid)
@@ -798,15 +882,38 @@ namespace AZ
                                 // row start y
                                 for (auto passEntry : row)
                                 {
-                                    // button start and end
-                                    float buttonStartX = (passEntry->m_timestampResult.GetTimestampBeginInTicks() - areaStartTick) *
-                                        areaWidth / areaDurationInTicks;
-                                    float buttonWidth = passEntry->m_timestampResult.GetDurationInTicks() * areaWidth / areaDurationInTicks;
+                                    // button start and width
+                                    float buttonStartX =
+                                        (int64_t(passEntry->m_timestampResult.GetTimestampBeginInTicks()) - areaStartTick) * areaWidth /
+                                        scaledAreaDurationInTicks;
+                                    float buttonWidth =
+                                        passEntry->m_timestampResult.GetDurationInTicks() * areaWidth / scaledAreaDurationInTicks;
+
+                                    // If pass duration is too small, it is not visible in the timeline
+                                    // Increase the size to at least 1.5f and color them to denote this change
+                                    bool tooNarrow{ false };
+                                    if (buttonWidth < 1.5f)
+                                    {
+                                        buttonWidth = 1.5f;
+                                        tooNarrow = true;
+                                    }
+
                                     ImGui::SetCursorPosX(buttonStartX);
                                     ImGui::SetCursorPosY(rowStartY);
 
+                                    // If the size or position needed to be modified, color it red to make this clear
+                                    if (tooNarrow)
+                                    {
+                                        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 1.0f, 0.0f, 0.0f, 1.0f });
+                                    }
+
                                     // Adds a button and the hover colors.
                                     ImGui::Button(passEntry->m_name.GetCStr(), ImVec2(buttonWidth, passBarHeight));
+
+                                    if (tooNarrow)
+                                    {
+                                        ImGui::PopStyleColor(1);
+                                    }
 
                                     if (ImGui::IsItemHovered())
                                     {
@@ -819,6 +926,7 @@ namespace AZ
                                         ImGui::Text(
                                             "Duration in microsecond: %.3f us",
                                             passEntry->m_timestampResult.GetDurationInNanoseconds() / 1000.f);
+                                        ImGui::Text("Relative starting position (0-1): %.3f", buttonStartX / areaWidth);
                                         ImGui::EndTooltip();
                                     }
                                 }
@@ -828,7 +936,39 @@ namespace AZ
                         }
                         ImGui::EndChild();
 
+                        // Control the timeline offset and scale
+                        ImGuiIO& io = ImGui::GetIO();
+                        if (ImGui::IsWindowFocused() && ImGui::IsItemHovered())
+                        {
+                            io.WantCaptureMouse = true;
+                            static constexpr float STEP_SIZE{ 0.1f };
+                            auto timelineXOffsetScale{ (ImGui::GetMousePos().x - ImGui::GetCursorScreenPos().x) / areaWidth };
+                            if (io.MouseWheel)
+                            {
+                                auto stepSize{ STEP_SIZE * m_timelineWindowWidth };
+                                if (io.MouseWheel > 0.f)
+                                {
+                                    m_timelineWindowWidth = AZStd::max(m_timelineWindowWidth - stepSize, 0.f);
+                                    m_timelineOffset = AZStd::min(m_timelineOffset + (stepSize * timelineXOffsetScale), 1.f);
+                                }
+                                else
+                                {
+                                    m_timelineWindowWidth = AZStd::min(m_timelineWindowWidth + stepSize, 1.f);
+                                    m_timelineOffset = AZStd::max(m_timelineOffset - (stepSize * timelineXOffsetScale), 0.f);
+                                }
+                            }
+                        }
+
                         ImGui::Separator();
+                    }
+                }
+
+                // Reset m_lastCalibratedTimestamps every frame if not paused
+                if (!m_paused)
+                {
+                    for (auto& [deviceIndex, timestamps] : m_calibratedTimestamps)
+                    {
+                        m_lastCalibratedTimestamps[deviceIndex] = timestamps;
                     }
                 }
 
@@ -2102,6 +2242,12 @@ namespace AZ
             // NOTE: Write it all out, can't have recursive functions for lambdas.
             const AZStd::function<void(const RPI::Pass*, PassEntry*)> getPassEntryRecursive = [&addPassEntry, &getPassEntryRecursive](const RPI::Pass* pass, PassEntry* parent) -> void
             {
+                if (pass->GetRenderPipeline() && pass->GetRenderPipeline()->GetRenderMode() == RPI::RenderPipeline::RenderMode::NoRender)
+                {
+                    // Ignore passes from render pipelines that are currently not rendering
+                    // E.g. the Preview pipeline
+                    return;
+                }
                 // Add new entry to the timestamp map.
                 if (pass->IsEnabled())
                 {

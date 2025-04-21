@@ -32,6 +32,11 @@ namespace ScriptEvents
         virtual void RegisterAssetHandler() = 0;
         virtual void UnregisterAssetHandler() = 0;
 
+        // It is required to call Cleanup before the module is being unloaded, so that the refcounted
+        // script event handles can be unwound correctly, while the system is still actually able to respond to bus calls
+        // made by its destructor.  Best place is during Deactivate of the System Component that invoked RegisterAssetHandler in the first place.
+        virtual void CleanUp();
+
         ////////////////////////////////////////////////////////////////////////
         // ScriptEvents::ScriptEventBus::Handler
         AZStd::intrusive_ptr<Internal::ScriptEventRegistration> RegisterScriptEvent(const AZ::Data::AssetId& assetId, AZ::u32 version) override;

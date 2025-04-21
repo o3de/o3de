@@ -336,11 +336,11 @@ namespace UnitTest
         return bitset1.to_string() + 'x' + bitset2.to_string();
     }
 
-    INSTANTIATE_TEST_CASE_P(Bitset, BitsetUnsignedLongTests, ::testing::ValuesIn(GenerateBitsetUnsignedLongTestCases()), GenerateBitsetUnsignedLongTestCaseName);
+    INSTANTIATE_TEST_SUITE_P(Bitset, BitsetUnsignedLongTests, ::testing::ValuesIn(GenerateBitsetUnsignedLongTestCases()), GenerateBitsetUnsignedLongTestCaseName);
 
-    INSTANTIATE_TEST_CASE_P(Bitset, BitsetUnsignedLongPairTests, ::testing::ValuesIn(GenerateBitsetUnsignedLongPairTestCases()), GenerateBitsetUnsignedLongPairTestCaseName);
+    INSTANTIATE_TEST_SUITE_P(Bitset, BitsetUnsignedLongPairTests, ::testing::ValuesIn(GenerateBitsetUnsignedLongPairTestCases()), GenerateBitsetUnsignedLongPairTestCaseName);
 
-    INSTANTIATE_TEST_CASE_P(Bitset, BitsetStdComparisonTests, ::testing::ValuesIn(GenerateBitsetUnsignedLongTestCases()), GenerateBitsetUnsignedLongTestCaseName);
+    INSTANTIATE_TEST_SUITE_P(Bitset, BitsetStdComparisonTests, ::testing::ValuesIn(GenerateBitsetUnsignedLongTestCases()), GenerateBitsetUnsignedLongTestCaseName);
 
     class BitsetTests
         : public LeakDetectionFixture

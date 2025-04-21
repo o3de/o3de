@@ -50,6 +50,7 @@ namespace AtomToolsFramework
 
         void PoseContent();
 
+        bool IsContentReadyToRender();
         AZ::Render::FrameCaptureId StartCapture();
         void EndCapture();
 

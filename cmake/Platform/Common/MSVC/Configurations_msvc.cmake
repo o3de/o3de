@@ -8,6 +8,22 @@
 
 get_property(O3DE_SCRIPT_ONLY GLOBAL PROPERTY "O3DE_SCRIPT_ONLY")
 
+# Exceptions are disabled by default.  Use this to turn them on just for a specific target.
+set(O3DE_COMPILE_OPTION_ENABLE_EXCEPTIONS PUBLIC /EHsc)
+
+# O3DE Sets visibility to hidden by default, requiring explicit export on non-windows platforms
+# But on MSVC or MS-Clang, these compilers use MSVC compiler options and behavior, which means
+# it is not necessary to set visibility to hidden as on MSVC, things behave similar to if
+# hidden by default.  As such, there is no need to change compile options for 3rd Party Libraries
+# to cause them to export symbols.  This is thus blank
+set(O3DE_COMPILE_OPTION_EXPORT_SYMBOLS "")
+
+# By default, O3DE sets warning level 4 and sets warnings as errors.  If you're pulling in
+# external code (from 3rd Party libraries) you can't really control whether they generate
+# warnings or not, and its usually out of scope to fix them.  Add this compile option to 
+# those 3rd Party targets ONLY.
+set(O3DE_COMPILE_OPTION_DISABLE_WARNINGS PRIVATE /W0)
+
 if (NOT O3DE_SCRIPT_ONLY)
     set(minimum_supported_toolset 142)
     if(MSVC_TOOLSET_VERSION VERSION_LESS ${minimum_supported_toolset})
@@ -18,6 +34,7 @@ endif()
 
 include(cmake/Platform/Common/Configurations_common.cmake)
 include(cmake/Platform/Common/MSVC/VisualStudio_common.cmake)
+include(cmake/Platform/Common/MSVC/CompilerCache_msvc.cmake)
 
 # Verify that it wasn't invoked with an unsupported target/host architecture. Currently only supports x64/x64
 if(CMAKE_VS_PLATFORM_NAME AND NOT CMAKE_VS_PLATFORM_NAME STREQUAL "x64")
@@ -86,7 +103,6 @@ ly_append_configurations_options(
         /O2             # Maximinize speed, equivalent to /Og /Oi /Ot /Oy /Ob2 /GF /Gy
         /Zc:inline      # Removes unreferenced functions or data that are COMDATs or only have internal linkage
         /Zc:wchar_t     # Use compiler native wchar_t
-        /Zi             # Generate debugging information (no Edit/Continue)
     COMPILATION_RELEASE
         /Ox             # Full optimization
         /Ob2            # Inline any suitable function
@@ -106,6 +122,39 @@ ly_append_configurations_options(
         /OPT:ICF # Perform identical COMDAT folding. Redundant COMDATs can be removed from the linker output
         /INCREMENTAL:NO
 )
+
+# Look for O3DE_ENABLE_COMPILER_CACHE as a CMake flag or environment variable, then sets the appropriate compatible flags for caching
+# More details about the compiler cache can be found in CompilerCache.cmake
+
+if((O3DE_ENABLE_COMPILER_CACHE OR "$ENV{O3DE_ENABLE_COMPILER_CACHE}" STREQUAL "true"))
+    o3de_compiler_cache_activation() # Activates the compiler cache
+
+    # Configure debug info format and compiler launcher for cache compatibility
+    cmake_policy(SET CMP0141 NEW)
+    set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "Embedded")
+    set(CMAKE_C_COMPILER_LAUNCHER ${CMAKE_BINARY_DIR}/cl.exe)
+    set(CMAKE_CXX_COMPILER_LAUNCHER ${CMAKE_BINARY_DIR}/cl.exe)
+
+    # Fallback to compiler flags if the debug format doesn't work, which can depend on CMake version
+    ly_append_configurations_options(
+        COMPILATION_PROFILE
+            /Z7             # Use embedded debug info instead of PDB
+        COMPILATION_RELEASE
+            /Z7
+    )
+
+    # Set required VS globals for compiler cache
+    set(CMAKE_VS_GLOBALS
+        "CLToolExe=cl.exe"
+        "CLToolPath=${CMAKE_BINARY_DIR}"
+        "TrackFileAccess=false"
+    )
+else()
+    ly_append_configurations_options(
+        COMPILATION_PROFILE
+            /Zi             # Generate debugging information (no Edit/Continue)
+    )
+endif()
 
 set(LY_BUILD_WITH_ADDRESS_SANITIZER FALSE CACHE BOOL "Builds using AddressSanitizer (ASan). Will disable Edit/Continue, Incremental building and Run-Time checks (default = FALSE)")
 if(LY_BUILD_WITH_ADDRESS_SANITIZER)

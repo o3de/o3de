@@ -34,10 +34,6 @@ set(FILES
     Source/Builders/BenchmarkAssetBuilder/BenchmarkAssetBuilderWorker.cpp
     Source/Scripting/EditorLookAtComponent.h
     Source/Scripting/EditorLookAtComponent.cpp
-    Source/Scripting/EditorRandomTimedSpawnerComponent.cpp
-    Source/Scripting/EditorRandomTimedSpawnerComponent.h
-    Source/Scripting/EditorSpawnerComponent.h
-    Source/Scripting/EditorSpawnerComponent.cpp
     Source/Scripting/EditorTagComponent.h
     Source/Scripting/EditorTagComponent.cpp
     Source/Shape/EditorBaseShapeComponent.h
@@ -78,8 +74,6 @@ set(FILES
     Source/Shape/EditorShapeComponentConverters.cpp
     Source/Editor/EditorCommentComponent.h
     Source/Editor/EditorCommentComponent.cpp
-    Source/Scripting/SpawnerComponent.h
-    Source/Scripting/SpawnerComponent.cpp
     Source/Shape/TubeShape.h
     Source/Shape/TubeShape.cpp
     Source/Builders/CopyDependencyBuilder/CopyDependencyBuilderComponent.cpp

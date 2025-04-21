@@ -33,6 +33,7 @@ namespace AzFramework
             using testing::Return;
             using testing::SetArgPointee;
             using testing::_;
+            using testing::DoAll;
 
             XcbBaseTestFixture::SetUp();
             EXPECT_CALL(m_interface, xkb_context_new(XKB_CONTEXT_NO_FLAGS))

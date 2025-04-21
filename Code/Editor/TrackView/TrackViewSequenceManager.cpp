@@ -28,7 +28,6 @@
 #include "GameEngine.h"
 
 
-////////////////////////////////////////////////////////////////////////////
 CTrackViewSequenceManager::CTrackViewSequenceManager()
 {
     GetIEditor()->RegisterNotifyListener(this);
@@ -36,7 +35,6 @@ CTrackViewSequenceManager::CTrackViewSequenceManager()
     AZ::EntitySystemBus::Handler::BusConnect();
 }
 
-////////////////////////////////////////////////////////////////////////////
 CTrackViewSequenceManager::~CTrackViewSequenceManager()
 {
     AZ::EntitySystemBus::Handler::BusDisconnect();
@@ -44,7 +42,6 @@ CTrackViewSequenceManager::~CTrackViewSequenceManager()
     GetIEditor()->UnregisterNotifyListener(this);
 }
 
-////////////////////////////////////////////////////////////////////////////
 void CTrackViewSequenceManager::OnEditorNotifyEvent(EEditorNotifyEvent event)
 {
     switch (event)
@@ -67,10 +64,9 @@ void CTrackViewSequenceManager::OnEditorNotifyEvent(EEditorNotifyEvent event)
         m_bUnloadingLevel = false;
         SortSequences();
         break;
-    }   
+    }
 }
 
-////////////////////////////////////////////////////////////////////////////
 CTrackViewSequence* CTrackViewSequenceManager::GetSequenceByName(QString name) const
 {
     for (auto iter = m_sequences.begin(); iter != m_sequences.end(); ++iter)
@@ -86,7 +82,6 @@ CTrackViewSequence* CTrackViewSequenceManager::GetSequenceByName(QString name) c
     return nullptr;
 }
 
-////////////////////////////////////////////////////////////////////////////
 CTrackViewSequence* CTrackViewSequenceManager::GetSequenceByEntityId(const AZ::EntityId& entityId) const
 {
     for (auto iter = m_sequences.begin(); iter != m_sequences.end(); ++iter)
@@ -102,7 +97,6 @@ CTrackViewSequence* CTrackViewSequenceManager::GetSequenceByEntityId(const AZ::E
     return nullptr;
 }
 
-////////////////////////////////////////////////////////////////////////////
 CTrackViewSequence* CTrackViewSequenceManager::GetSequenceByAnimSequence(IAnimSequence* pAnimSequence) const
 {
     for (auto iter = m_sequences.begin(); iter != m_sequences.end(); ++iter)
@@ -118,7 +112,6 @@ CTrackViewSequence* CTrackViewSequenceManager::GetSequenceByAnimSequence(IAnimSe
     return nullptr;
 }
 
-////////////////////////////////////////////////////////////////////////////
 CTrackViewSequence* CTrackViewSequenceManager::GetSequenceByIndex(unsigned int index) const
 {
     if (index >= m_sequences.size())
@@ -129,7 +122,6 @@ CTrackViewSequence* CTrackViewSequenceManager::GetSequenceByIndex(unsigned int i
     return m_sequences[index].get();
 }
 
-////////////////////////////////////////////////////////////////////////////
 void CTrackViewSequenceManager::CreateSequence(QString name, [[maybe_unused]] SequenceType sequenceType)
 {
     CGameEngine* pGameEngine = GetIEditor()->GetGameEngine();
@@ -144,7 +136,11 @@ void CTrackViewSequenceManager::CreateSequence(QString name, [[maybe_unused]] Se
         return;
     }
 
-    AzToolsFramework::ScopedUndoBatch undoBatch("Create TrackView Sequence");
+    AZStd::unique_ptr<AzToolsFramework::ScopedUndoBatch> undoBatch;
+    if (!AzToolsFramework::UndoRedoOperationInProgress())
+    {
+        undoBatch = AZStd::make_unique<AzToolsFramework::ScopedUndoBatch>("Create TrackView Sequence");
+    }
 
     // create AZ::Entity at the current center of the viewport, but don't select it
 
@@ -173,11 +169,13 @@ void CTrackViewSequenceManager::CreateSequence(QString name, [[maybe_unused]] Se
         // restore the Editor selection
         AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(&AzToolsFramework::ToolsApplicationRequests::Bus::Events::SetSelectedEntities, selectedEntities);
 
-        undoBatch.MarkEntityDirty(newEntityId);        
+        if (undoBatch)
+        {
+            undoBatch->MarkEntityDirty(newEntityId);
+        }
     }
 }
 
-////////////////////////////////////////////////////////////////////////////
 IAnimSequence* CTrackViewSequenceManager::OnCreateSequenceObject(QString name, bool isLegacySequence, AZ::EntityId entityId)
 {
     IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
@@ -203,9 +201,14 @@ IAnimSequence* CTrackViewSequenceManager::OnCreateSequenceObject(QString name, b
     }
 }
 
-////////////////////////////////////////////////////////////////////////////
 void CTrackViewSequenceManager::OnSequenceActivated(const AZ::EntityId& entityId)
 {
+    if (!entityId.IsValid())
+    {
+        AZ_Assert(entityId.IsValid(), "Expected valid EntityId.");
+        return;
+    }
+
     CAnimationContext* pAnimationContext = GetIEditor()->GetAnimation();
     if (pAnimationContext != nullptr)
     {
@@ -213,9 +216,29 @@ void CTrackViewSequenceManager::OnSequenceActivated(const AZ::EntityId& entityId
     }
 }
 
-////////////////////////////////////////////////////////////////////////////
+void CTrackViewSequenceManager::OnSequenceDeactivated(const AZ::EntityId& entityId)
+{
+    if (!entityId.IsValid())
+    {
+        AZ_Assert(entityId.IsValid(), "Expected valid EntityId.");
+        return;
+    }
+
+    CAnimationContext* pAnimationContext = GetIEditor()->GetAnimation();
+    if (pAnimationContext != nullptr)
+    {
+        pAnimationContext->OnSequenceDeactivated(entityId);
+    }
+}
+
 void CTrackViewSequenceManager::OnCreateSequenceComponent(AZStd::intrusive_ptr<IAnimSequence>& sequence)
 {
+    if (!sequence.get())
+    {
+        AZ_Assert(false, "Expected a valid sequence pointer.");
+        return;
+    }
+
     // Fix up the internal pointers in the sequence to match the deserialized structure
     sequence->InitPostLoad();
 
@@ -233,80 +256,108 @@ void CTrackViewSequenceManager::OnCreateSequenceComponent(AZStd::intrusive_ptr<I
     AddTrackViewSequence(newTrackViewSequence);
 }
 
-////////////////////////////////////////////////////////////////////////////
 void CTrackViewSequenceManager::AddTrackViewSequence(CTrackViewSequence* sequenceToAdd)
 {
-    m_sequences.push_back(std::unique_ptr<CTrackViewSequence>(sequenceToAdd));
+    if (!sequenceToAdd)
+    {
+        AZ_Assert(false, "Expected a valid sequence pointer.");
+        return;
+    }
+
+    m_sequences.push_back(AZStd::unique_ptr<CTrackViewSequence>(sequenceToAdd));
     SortSequences();
     OnSequenceAdded(sequenceToAdd);
 }
 
-////////////////////////////////////////////////////////////////////////////
 void CTrackViewSequenceManager::DeleteSequence(CTrackViewSequence* sequence)
 {
+    if (!sequence)
+    {
+        AZ_Assert(false, "Expected a valid sequence pointer.");
+        return;
+    }
+
+    // Find sequence
     const int numSequences = static_cast<int>(m_sequences.size());
     for (int sequenceIndex = 0; sequenceIndex < numSequences; ++sequenceIndex)
     {
-        if (m_sequences[sequenceIndex].get() == sequence)
+        if (m_sequences[sequenceIndex].get() != sequence)
         {
-            AzToolsFramework::ScopedUndoBatch undoBatch("Delete TrackView Sequence");
-
-            // delete Sequence Component (and entity if there's no other components left on the entity except for the Transform Component)
-            AZ::Entity* entity = nullptr;
-            AZ::EntityId entityId = sequence->m_pAnimSequence->GetSequenceEntityId();
-            AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, entityId);
-            if (entity)
-            {
-                const AZ::Uuid editorSequenceComponentTypeId(EditorSequenceComponentTypeId);
-                AZ::Component* sequenceComponent = entity->FindComponent(editorSequenceComponentTypeId);
-                if (sequenceComponent)
-                {
-                    AZ::ComponentTypeList requiredComponents;
-                    AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(requiredComponents, &AzToolsFramework::EditorEntityContextRequestBus::Events::GetRequiredComponentTypes);
-                    const int numComponentToDeleteEntity = static_cast<int>(requiredComponents.size() + 1);
-
-                    AZ::Entity::ComponentArrayType entityComponents = entity->GetComponents();
-                    if (entityComponents.size() == numComponentToDeleteEntity)
-                    {
-                        // if the entity only has required components + 1 (the found sequenceComponent), delete the Entity. No need to start undo here
-                        // AzToolsFramework::ToolsApplicationRequests::DeleteEntities will take care of that
-                        AzToolsFramework::EntityIdList entitiesToDelete;
-                        entitiesToDelete.push_back(entityId);
-
-                        AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(&AzToolsFramework::ToolsApplicationRequests::DeleteEntities, entitiesToDelete);
-                    }
-                    else
-                    {
-                        // just remove the sequence component from the entity
-                        CUndo undo("Delete TrackView Sequence");
-
-                        AzToolsFramework::EntityCompositionRequestBus::Broadcast(&AzToolsFramework::EntityCompositionRequests::RemoveComponents, AZ::Entity::ComponentArrayType{ sequenceComponent });
-                    }
-
-                    undoBatch.MarkEntityDirty(entityId);
-                }
-            }
-
-            // sequence was deleted, we can stop searching
-            break;
+            continue;
         }
+
+        // Sequence found, now find entity and sequence component
+        AZ::Entity* entity = nullptr;
+        AZ::EntityId entityId = sequence->m_pAnimSequence->GetSequenceEntityId();
+        AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, entityId);
+        if (!entity)
+        {
+            AZ_Error("TrackViewSequenceManager", false, "DeleteSequence('%s'): Invalid entity.", sequence->GetName().c_str());
+            return;
+        }
+        const AZ::Uuid editorSequenceComponentTypeId(EditorSequenceComponentTypeId);
+        AZ::Component* sequenceComponent = entity->FindComponent(editorSequenceComponentTypeId);
+        if (!sequenceComponent)
+        {
+            AZ_Error("TrackViewSequenceManager", false, "DeleteSequence('%s'): Invalid sequence component.", sequence->GetName().c_str());
+            return;
+        }
+
+        AZStd::unique_ptr<AzToolsFramework::ScopedUndoBatch> undoBatch;
+        if (!AzToolsFramework::UndoRedoOperationInProgress())
+        {
+            undoBatch = AZStd::make_unique<AzToolsFramework::ScopedUndoBatch>("Delete TrackView Sequence");
+        }
+
+        // Delete Sequence Component (and entity if there's no other components left on the entity except for the Transform Component)
+        AZ::ComponentTypeList requiredComponents;
+        AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(requiredComponents, &AzToolsFramework::EditorEntityContextRequestBus::Events::GetRequiredComponentTypes);
+        const int numComponentToDeleteEntity = static_cast<int>(requiredComponents.size() + 1);
+
+        AZ::Entity::ComponentArrayType entityComponents = entity->GetComponents();
+        if (entityComponents.size() == numComponentToDeleteEntity)
+        {
+            // if the entity only has required components + 1 (the found sequenceComponent), delete the Entity. No need to start undo here
+            // AzToolsFramework::ToolsApplicationRequests::DeleteEntities will take care of that
+            AzToolsFramework::EntityIdList entitiesToDelete;
+            entitiesToDelete.push_back(entityId);
+
+            AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(&AzToolsFramework::ToolsApplicationRequests::DeleteEntities, entitiesToDelete);
+        }
+        else
+        {
+            // just remove the sequence component from the entity
+            AzToolsFramework::EntityCompositionRequestBus::Broadcast(&AzToolsFramework::EntityCompositionRequests::RemoveComponents, AZ::Entity::ComponentArrayType{ sequenceComponent });
+        }
+
+        // Do not mark deleted entityId as dirty, sequence was deleted, we can stop searching.
+        return;
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewSequenceManager::RenameNode(CTrackViewAnimNode* animNode, const char* newName) const
 {
-    AZ::EntityId entityId;
+    if (!animNode || !newName || !(*newName))
+    {
+        AZ_Assert(animNode != nullptr, "Expected a valid AnimNode pointer.");
+        AZ_Assert(newName != nullptr && (*newName) != 0, "Expected a valid new name C-string.");
+        return;
+    }
     CTrackViewSequence* sequence = animNode->GetSequence();
+    if (!sequence)
+    {
+        return; // Assert raised in GetSequence() above.
+    }
 
-    AZ_Assert(sequence, "Nodes should never have a null sequence.");
-
+    AZ::EntityId entityId;
     if (animNode->IsBoundToEditorObjects())
     {
         if (animNode->GetNodeType() == eTVNT_Sequence)
         {
-            CTrackViewSequence* sequenceNode = static_cast<CTrackViewSequence*>(animNode);
-            entityId = sequenceNode->GetSequenceComponentEntityId();
+            if (CTrackViewSequence* sequenceNode = static_cast<CTrackViewSequence*>(animNode))
+            {
+                entityId = sequenceNode->GetSequenceComponentEntityId();
+            }
         }
         else if (animNode->GetNodeType() == eTVNT_AnimNode)
         {
@@ -316,27 +367,44 @@ void CTrackViewSequenceManager::RenameNode(CTrackViewAnimNode* animNode, const c
 
     if (entityId.IsValid())
     {
-        AzToolsFramework::ScopedUndoBatch undoBatch("ModifyEntityName");
+        AZStd::unique_ptr<AzToolsFramework::ScopedUndoBatch> undoBatch;
+        if (!AzToolsFramework::UndoRedoOperationInProgress())
+        {
+            undoBatch = AZStd::make_unique<AzToolsFramework::ScopedUndoBatch>("Modify Entity Name");
+        }
+
         AZ::Entity* entity = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, entityId);
         entity->SetName(newName);
-        undoBatch.MarkEntityDirty(sequence->GetSequenceComponentEntityId());
+
+        if (undoBatch)
+        {
+            undoBatch->MarkEntityDirty(sequence->GetSequenceComponentEntityId());
+        }
     }
     else
     {
-        AzToolsFramework::ScopedUndoBatch undoBatch("Rename TrackView Node");
+        AZStd::unique_ptr<AzToolsFramework::ScopedUndoBatch> undoBatch;
+        if (!AzToolsFramework::UndoRedoOperationInProgress())
+        {
+            undoBatch = AZStd::make_unique<AzToolsFramework::ScopedUndoBatch>("Rename TrackView Node");
+        }
         animNode->SetName(newName);
-        undoBatch.MarkEntityDirty(sequence->GetSequenceComponentEntityId());
+
+        if (undoBatch)
+        {
+            undoBatch->MarkEntityDirty(sequence->GetSequenceComponentEntityId());
+        }
     }
 }
 
 void CTrackViewSequenceManager::RemoveSequenceInternal(CTrackViewSequence* sequence)
 {
-    std::unique_ptr<CTrackViewSequence> storedTrackViewSequence;
+    AZStd::unique_ptr<CTrackViewSequence> storedTrackViewSequence;
     
     for (auto iter = m_sequences.begin(); iter != m_sequences.end(); ++iter)
     {
-        std::unique_ptr<CTrackViewSequence>& currentSequence = *iter;
+        AZStd::unique_ptr<CTrackViewSequence>& currentSequence = *iter;
 
         if (currentSequence.get() == sequence)
         {
@@ -359,38 +427,35 @@ void CTrackViewSequenceManager::RemoveSequenceInternal(CTrackViewSequence* seque
     OnSequenceRemoved(sequence);
 }
 
-////////////////////////////////////////////////////////////////////////////
 void CTrackViewSequenceManager::OnDeleteSequenceEntity(const AZ::EntityId& entityId)
 {
     CTrackViewSequence* sequence = GetSequenceByEntityId(entityId);
-    assert(sequence);
-
-    if (sequence)
+    if (!sequence || !entityId.IsValid())
     {
-        const bool bUndoWasSuspended = GetIEditor()->IsUndoSuspended();
-        bool isDuringUndo = false;
+        AZ_Assert(sequence, "Sequence is null.");
+        AZ_Assert(entityId.IsValid(), "Expected valid EntityId.");
+        return;
+    }
 
-        AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(isDuringUndo, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::IsDuringUndoRedo);
+    const bool bUndoWasSuspended = !AzToolsFramework::UndoRedoOperationInProgress() && GetIEditor()->IsUndoSuspended();
 
-        if (bUndoWasSuspended)
-        {
-            GetIEditor()->ResumeUndo();
-        }
+    if (bUndoWasSuspended)
+    {
+        GetIEditor()->ResumeUndo();
+    }
 
-        RemoveSequenceInternal(sequence);
+    RemoveSequenceInternal(sequence);
 
-        if (bUndoWasSuspended)
-        {
-            GetIEditor()->SuspendUndo();
-        }
+    if (bUndoWasSuspended)
+    {
+        GetIEditor()->SuspendUndo();
     }
 }
 
-////////////////////////////////////////////////////////////////////////////
 void CTrackViewSequenceManager::SortSequences()
 {
     AZStd::stable_sort(m_sequences.begin(), m_sequences.end(),
-        [](const std::unique_ptr<CTrackViewSequence>& a, const std::unique_ptr<CTrackViewSequence>& b) -> bool
+        [](const AZStd::unique_ptr<CTrackViewSequence>& a, const AZStd::unique_ptr<CTrackViewSequence>& b) -> bool
         {
             QString aName = QString::fromUtf8(a.get()->GetName().c_str());
             QString bName = QString::fromUtf8(b.get()->GetName().c_str());
@@ -398,7 +463,6 @@ void CTrackViewSequenceManager::SortSequences()
         });
 }
 
-////////////////////////////////////////////////////////////////////////////
 void CTrackViewSequenceManager::ResumeAllSequences()
 {
     for (auto iter = m_sequences.begin(); iter != m_sequences.end(); ++iter)
@@ -411,41 +475,57 @@ void CTrackViewSequenceManager::ResumeAllSequences()
     }
 }
 
-////////////////////////////////////////////////////////////////////////////
 void CTrackViewSequenceManager::OnSequenceAdded(CTrackViewSequence* sequence)
 {
+    if (!sequence)
+    {
+        AZ_Assert(false, "Expected valid TrackViewSequence pointer.");
+        return;
+    }
+
     for (auto iter = m_listeners.begin(); iter != m_listeners.end(); ++iter)
     {
         (*iter)->OnSequenceAdded(sequence);
     }
 }
 
-////////////////////////////////////////////////////////////////////////////
 void CTrackViewSequenceManager::OnSequenceRemoved(CTrackViewSequence* sequence)
 {
+    if (!sequence)
+    {
+        AZ_Assert(false, "Expected valid TrackViewSequence pointer.");
+        return;
+    }
+
     for (auto iter = m_listeners.begin(); iter != m_listeners.end(); ++iter)
     {
         (*iter)->OnSequenceRemoved(sequence);
     }
 }
 
-////////////////////////////////////////////////////////////////////////////
 CTrackViewAnimNodeBundle CTrackViewSequenceManager::GetAllRelatedAnimNodes(const AZ::EntityId entityId) const
 {
     CTrackViewAnimNodeBundle nodeBundle;
+
+    if (!entityId.IsValid())
+    {
+        AZ_Assert(false, "Expected valid EntityId.")
+        return nodeBundle;
+    }
 
     const uint sequenceCount = GetCount();
 
     for (uint sequenceIndex = 0; sequenceIndex < sequenceCount; ++sequenceIndex)
     {
-        CTrackViewSequence* sequence = GetSequenceByIndex(sequenceIndex);
-        nodeBundle.AppendAnimNodeBundle(sequence->GetAllOwnedNodes(entityId));
+        if (CTrackViewSequence* sequence = GetSequenceByIndex(sequenceIndex))
+        {
+            nodeBundle.AppendAnimNodeBundle(sequence->GetAllOwnedNodes(entityId));
+        }
     }
 
     return nodeBundle;
 }
 
-////////////////////////////////////////////////////////////////////////////
 CTrackViewAnimNode* CTrackViewSequenceManager::GetActiveAnimNode(const AZ::EntityId entityId) const
 {
     CTrackViewAnimNodeBundle nodeBundle = GetAllRelatedAnimNodes(entityId);
@@ -453,10 +533,12 @@ CTrackViewAnimNode* CTrackViewSequenceManager::GetActiveAnimNode(const AZ::Entit
     const uint nodeCount = nodeBundle.GetCount();
     for (uint nodeIndex = 0; nodeIndex < nodeCount; ++nodeIndex)
     {
-        CTrackViewAnimNode* animNode = nodeBundle.GetNode(nodeIndex);
-        if (animNode->IsActive())
+        if (CTrackViewAnimNode* animNode = nodeBundle.GetNode(nodeIndex))
         {
-            return animNode;
+            if (animNode->IsActive())
+            {
+                return animNode;
+            }
         }
     }
 
@@ -465,6 +547,13 @@ CTrackViewAnimNode* CTrackViewSequenceManager::GetActiveAnimNode(const AZ::Entit
 
 void CTrackViewSequenceManager::OnEntityNameChanged(const AZ::EntityId& entityId, const AZStd::string& name)
 {
+    if (!entityId.IsValid() || name.empty())
+    {
+        AZ_Assert(name.empty(), "Invalid new name.");
+        AZ_Assert(entityId.IsValid(), "Expected valid EntityId.");
+        return;
+    }
+
     CTrackViewAnimNodeBundle bundle;
 
     // entity or component entity sequence object
@@ -475,18 +564,22 @@ void CTrackViewSequenceManager::OnEntityNameChanged(const AZ::EntityId& entityId
     const uint sequenceCount = GetCount();
     for (uint sequenceIndex = 0; sequenceIndex < sequenceCount; ++sequenceIndex)
     {
-        CTrackViewSequence* sequence = GetSequenceByIndex(sequenceIndex);
-        if (entityId == sequence->GetSequenceComponentEntityId())
+        if (CTrackViewSequence* sequence = GetSequenceByIndex(sequenceIndex))
         {
-            bundle.AppendAnimNode(sequence);
+            if (entityId == sequence->GetSequenceComponentEntityId())
+            {
+                bundle.AppendAnimNode(sequence);
+            }
         }
     }
 
     const uint numAffectedNodes = bundle.GetCount();
     for (uint i = 0; i < numAffectedNodes; ++i)
     {
-        CTrackViewAnimNode* animNode = bundle.GetNode(i);
-        animNode->SetName(name.c_str());
+        if (CTrackViewAnimNode* animNode = bundle.GetNode(i))
+        {
+            animNode->SetName(name.c_str());
+        }
     }
 
     if (numAffectedNodes > 0)
@@ -497,14 +590,22 @@ void CTrackViewSequenceManager::OnEntityNameChanged(const AZ::EntityId& entityId
 
 void CTrackViewSequenceManager::OnEntityDestruction(const AZ::EntityId& entityId)
 {
+    if (!entityId.IsValid())
+    {
+        AZ_Assert(false, "Expected valid EntityId.");
+        return;
+    }
+
     // we handle pre-delete instead of delete because GetAllRelatedAnimNodes() uses the ObjectManager to find node owners
     CTrackViewAnimNodeBundle bundle = GetAllRelatedAnimNodes(entityId);
 
     const uint numAffectedAnimNodes = bundle.GetCount();
     for (uint i = 0; i < numAffectedAnimNodes; ++i)
     {
-        CTrackViewAnimNode* animNode = bundle.GetNode(i);
-        animNode->OnEntityRemoved();
+        if (CTrackViewAnimNode* animNode = bundle.GetNode(i))
+        {
+            animNode->OnEntityRemoved();
+        }
     }
 
     if (numAffectedAnimNodes > 0)

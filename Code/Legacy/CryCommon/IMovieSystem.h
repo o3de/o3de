@@ -19,6 +19,7 @@
 #include <Range.h>
 #include <AnimKey.h>
 #include <ISplines.h>
+#include <CryCommon/Maestro/Types/AnimValueType.h>
 
 #define DEFAULT_NEAR 0.2f
 #define DEFAULT_FOV (75.0f * gf_PI / 180.0f)
@@ -195,24 +196,13 @@ struct SAnimContext
     float startTime;        //!< The start time of this playing sequence
 };
 
-/** Parameters for cut-scene cameras
-*/
-struct SCameraParams
-{
-    SCameraParams();
-    AZ::EntityId cameraEntityId;
-    float fov;
-    float nearZ;
-    bool justActivated;
-};
-
 //! Interface for movie-system implemented by user for advanced function-support
 struct IMovieUser
 {
     // <interfuscator:shuffle>
     virtual ~IMovieUser(){}
     //! Called when movie system requests a camera-change.
-    virtual void SetActiveCamera(const SCameraParams& Params) = 0;
+    virtual void SetActiveCamera(const AZ::EntityId& cameraEntityId) = 0;
     //! Called when movie system enters into cut-scene mode.
     virtual void BeginCutScene(IAnimSequence* pSeq, unsigned long dwFlags, bool bResetFX) = 0;
     //! Called when movie system exits from cut-scene mode.
@@ -273,8 +263,8 @@ struct IAnimTrack
     virtual void release() = 0;
 
     //////////////////////////////////////////////////////////////////////////
-    virtual EAnimCurveType GetCurveType() = 0;
-    virtual AnimValueType     GetValueType() = 0;
+    virtual EAnimCurveType GetCurveType() const = 0;
+    virtual AnimValueType  GetValueType() const = 0;
 
 #ifdef MOVIESYSTEM_SUPPORT_EDITING
     // This color is used for the editor.
@@ -292,13 +282,13 @@ struct IAnimTrack
 
     virtual void SetNode(IAnimNode* node) = 0;
     // Return Animation Sequence that owns this node.
-    virtual IAnimNode* GetNode() = 0;
+    virtual IAnimNode* GetNode() const = 0;
 
     //////////////////////////////////////////////////////////////////////////
     // Animation track can contain sub-tracks (Position XYZ anim track have sub-tracks for x,y,z)
     // Get count of sub tracks.
     virtual int GetSubTrackCount() const = 0;
-    // Retrieve pointer the specfied sub track.
+    // Retrieve pointer the specified sub track.
     virtual IAnimTrack* GetSubTrack(int nIndex) const = 0;
     virtual AZStd::string GetSubTrackName(int nIndex) const = 0;
     virtual void SetSubTrackName(int nIndex, const char* name) = 0;
@@ -318,39 +308,43 @@ struct IAnimTrack
     virtual void SetNumKeys(int numKeys) = 0;
 
     //! Remove specified key.
-    virtual void RemoveKey(int num) = 0;
+    virtual void RemoveKey(int keyIndex) = 0;
 
     //! Get key at specified location.
     //! @param key Must be valid pointer to compatible key structure, to be filled with specified key location.
-    virtual void GetKey(int index, IKey* key) const = 0;
+    virtual void GetKey(int keyIndex, IKey* key) const = 0;
 
     //! Get time of specified key.
-    //! @return key time.
-    virtual float GetKeyTime(int index) const = 0;
+    //! @return key time, or -1 if key with this index is not found.
+    virtual float GetKeyTime(int keyIndex) const = 0;
 
-    //! Find key at given time.
-    //! @return Index of found key, or -1 if key with this time not found.
-    virtual int FindKey(float time) = 0;
+    //! Get minimal legal time delta between keys.
+    //! @return Minimal legal time delta between keys.
+    virtual float GetMinKeyTimeDelta() const = 0;
+
+    //! Find key at given time within minimal time delta between keys.
+    //! @return Index of found key, or -1 if key with this time is not found.
+    virtual int FindKey(float time) const = 0;
 
     //! Get flags of specified key.
-    //! @return key time.
-    virtual int GetKeyFlags(int index) = 0;
+    //! @return key flags, or -1 if key with this index is not found.
+    virtual int GetKeyFlags(int keyIndex) = 0;
 
     //! Set key at specified location.
     //! @param key Must be valid pointer to compatible key structure.
-    virtual void SetKey(int index, IKey* key) = 0;
+    virtual void SetKey(int keyIndex, IKey* key) = 0;
 
     //! Set time of specified key.
-    virtual void SetKeyTime(int index, float time) = 0;
+    virtual void SetKeyTime(int keyIndex, float time) = 0;
 
     //! Set flags of specified key.
-    virtual void SetKeyFlags(int index, int flags) = 0;
+    virtual void SetKeyFlags(int keyIndex, int flags) = 0;
 
     //! Sort keys in track (after time of keys was modified).
     virtual void SortKeys() = 0;
 
     //! Get track flags.
-    virtual int GetFlags() = 0;
+    virtual int GetFlags() const = 0;
 
     //! Check if track is masked by mask
     // TODO: Mask should be stored with dynamic length
@@ -360,33 +354,35 @@ struct IAnimTrack
     virtual void SetFlags(int flags) = 0;
 
     //! Create key at given time, and return its index.
-    //! @return Index of new key.
+    //! @return Index of new key, or -1 if key is not created (for example, if a key at this time exists).
     virtual int CreateKey(float time) = 0;
 
-    //! Clone key at specified index.
-    //! @retun Index of new key.
-    virtual int CloneKey(int key) = 0;
+    //! Clone key at specified index, adding minimal legal time delta between keys to the new key.
+    //! @retun Index of new key if cloned, otherwise -1 (for example, if a key at increased time exists)).
+    virtual int CloneKey(int srcKeyIndex, float timeOffset) = 0;
 
-    //! Clone key at specified index from another track of SAME TYPE.
-    //! @retun Index of new key.
-    virtual int CopyKey(IAnimTrack* pFromTrack, int nFromKey) = 0;
+    //! Copy key at specified index from another track of SAME TYPE.
+    //! @retun Index of new key if copied, otherwise -1 (for example, if a key at the source key time exists)).
+    virtual int CopyKey(IAnimTrack* pFromTrack, int fromKeyIndex) = 0;
 
     //! Get info about specified key.
-    //! @param Short human readable text description of this key.
-    //! @param duration of this key in seconds.
-    virtual void GetKeyInfo(int key, const char*& description, float& duration) = 0;
+    //! @param keyIndex The index specifying the this key.
+    //! @param description The short human readable text description of this key.
+    //! @param duration The duration of this key in seconds.
+    virtual void GetKeyInfo(int keyIndex, const char*& description, float& duration) const = 0;
 
     //////////////////////////////////////////////////////////////////////////
     // Get track value at specified time.
     // Interpolates keys if needed.
     // Applies a scale multiplier set in SetMultiplier(), if requested
     //////////////////////////////////////////////////////////////////////////
-    virtual void GetValue(float time, float& value, bool applyMultiplier=false) = 0;
-    virtual void GetValue(float time, AZ::Vector3& value, bool applyMultiplier = false) = 0;
-    virtual void GetValue(float time, AZ::Vector4& value, bool applyMultiplier = false) = 0;
-    virtual void GetValue(float time, AZ::Quaternion& value) = 0;
-    virtual void GetValue(float time, bool& value) = 0;
-    virtual void GetValue(float time, Maestro::AssetBlends<AZ::Data::AssetData>& value) = 0;
+    virtual void GetValue(float time, float& value, bool applyMultiplier=false) const = 0;
+    virtual void GetValue(float time, AZ::Vector3& value, bool applyMultiplier = false) const = 0;
+    virtual void GetValue(float time, AZ::Vector4& value, bool applyMultiplier = false) const = 0;
+    virtual void GetValue(float time, AZ::Quaternion& value) const = 0;
+    virtual void GetValue(float time, bool& value) const = 0;
+    virtual void GetValue(float time, Maestro::AssetBlends<AZ::Data::AssetData>& value) const = 0;
+    virtual void GetValue(float time, AZStd::string& value) const = 0;
 
     //////////////////////////////////////////////////////////////////////////
     // Set track value at specified time.
@@ -398,6 +394,7 @@ struct IAnimTrack
     virtual void SetValue(float time, const AZ::Quaternion& value, bool bDefault = false) = 0;
     virtual void SetValue(float time, const bool& value, bool bDefault = false) = 0;
     virtual void SetValue(float time, const Maestro::AssetBlends<AZ::Data::AssetData>& value, bool bDefault = false) = 0;
+    virtual void SetValue(float time, const AZStd::string& value, bool bDefault = false) = 0;
 
     // Only for position tracks, offset all track keys by this amount.
     virtual void OffsetKeyPosition(const AZ::Vector3& value) = 0;
@@ -405,8 +402,10 @@ struct IAnimTrack
     // Used to update the data in tracks after the parent entity has been changed.
     virtual void UpdateKeyDataAfterParentChanged(const AZ::Transform& oldParentWorldTM, const AZ::Transform& newParentWorldTM) = 0;
 
-    // Assign active time range for this track.
+    //! Assign active time range for this track.
     virtual void SetTimeRange(const Range& timeRange) = 0;
+    //! Get active time range of this track.
+    virtual Range GetTimeRange() const = 0;
 
     //! @deprecated - IAnimTracks use AZ::Serialization now. Legacy - Serialize this animation track to XML.
     virtual bool Serialize(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTracks = true) = 0;
@@ -420,27 +419,28 @@ struct IAnimTrack
     // Get access to the internal spline of the track.
     virtual ISplineInterpolator* GetSpline() const { return 0; };
 
-    virtual bool IsKeySelected([[maybe_unused]] int key) const { return false; }
+    //! @return True if a specified key is selected (has selected flag).
+    virtual bool IsKeySelected([[maybe_unused]] int keyIndex) const { return false; }
 
-    virtual void SelectKey([[maybe_unused]] int key, [[maybe_unused]] bool select) {}
+    virtual void SelectKey([[maybe_unused]] int keyIndex, [[maybe_unused]] bool select) {}
 
-    virtual void SetSortMarkerKey([[maybe_unused]] unsigned int keyIndex, [[maybe_unused]] bool enabled) {}
-    virtual bool IsSortMarkerKey([[maybe_unused]] unsigned int keyIndex) const { return false; }
+    virtual void SetSortMarkerKey([[maybe_unused]] int keyIndex, [[maybe_unused]] bool enabled) {}
+    virtual bool IsSortMarkerKey([[maybe_unused]] int keyIndex) const { return false; }
 
     //! Return the index of the key which lies right after the given key in time.
-    //! @param key Index of of key.
+    //! @param key Index of key.
     //! @return Index of the next key in time. If the last key given, this returns -1.
     // In case of keys sorted, it's just 'key+1', but if not sorted, it can be another value.
-    virtual int NextKeyByTime(int key) const;
+    virtual int NextKeyByTime(int keyIndex) const;
 
     //! Get the animation layer index assigned. (only for character/look-at tracks ATM)
     virtual int GetAnimationLayerIndex() const { return -1; }
     //! Set the animation layer index. (only for character/look-at tracks ATM)
-    virtual void SetAnimationLayerIndex([[maybe_unused]] int index) { }
+    virtual void SetAnimationLayerIndex([[maybe_unused]] int index) {}
 
-    //! Returns whether the track responds to muting (false by default), which only affects the Edtior.
+    //! Returns whether the track responds to muting (false by default), which only affects the Editor.
     //! Tracks that use mute should override this, such as CSoundTrack
-    //! @return Boolean of whether the track respnnds to muting or not
+    //! @return Boolean of whether the track responds to muting or not
     virtual bool UsesMute() const { return false; }
 
     //! Set a multiplier which will be multiplied to track values in SetValue and divided out in GetValue if requested
@@ -501,8 +501,8 @@ public:
 
         AZStd::string name;           // parameter name.
         CAnimParamType paramType;     // parameter id.
-        AnimValueType valueType;       // value type, defines type of track to use for animating this parameter.
-        ESupportedParamFlags flags; // combination of flags from ESupportedParamFlags.
+        AnimValueType valueType;      // value type, defines type of track to use for animating this parameter.
+        ESupportedParamFlags flags;   // combination of flags from ESupportedParamFlags.
     };
 
     using AnimParamInfos = AZStd::vector<SParamInfo>;
@@ -637,11 +637,14 @@ public:
     // Get the index of a given track among tracks with the same parameter type in this node.
     virtual uint32 GetTrackParamIndex(const IAnimTrack* pTrack) const = 0;
 
-    // Creates a new track for given parameter.
-    virtual IAnimTrack* CreateTrack(const CAnimParamType& paramType) = 0;
+    // Creates a new track for given parameter, with possible remapping.
+    virtual IAnimTrack* CreateTrack(const CAnimParamType& paramType, AnimValueType remapValueType = AnimValueType::Unknown) = 0;
 
     // Initializes track default values after de-serialization / user creation. Only called in editor.
-    virtual void InitializeTrackDefaultValue(IAnimTrack* pTrack, const CAnimParamType& paramType) = 0;
+    virtual void InitializeTrackDefaultValue(IAnimTrack* pTrack, const CAnimParamType& paramType, AnimValueType remapValueType = AnimValueType::Unknown) = 0;
+
+    // Updates track default values before adding a new key at time, so that animated entity is not affected by adding a key
+    virtual void UpdateTrackDefaultValue(float time, IAnimTrack* pTrack) = 0;
 
     // Assign animation track to parameter.
     // if track parameter is NULL track with parameter id param will be removed.
@@ -826,7 +829,15 @@ struct IAnimSequence
         eSeqFlags_DisplayAsFramesOrSeconds = BIT(18), //!< Display Start/End time as frames or seconds
     };
 
-    virtual ~IAnimSequence() {};
+    IAnimSequence()
+    {
+        AZ_Trace("IAnimSequence", "IAnimSequence");
+    }
+
+    virtual ~IAnimSequence()
+    {
+        AZ_Trace("IAnimSequence", "~IAnimSequence");
+    }
 
     // for intrusive_ptr support
     virtual void add_ref() = 0;
@@ -929,7 +940,7 @@ struct IAnimSequence
     virtual void SetTimeRange(Range timeRange) = 0;
 
     //! Get time range of this sequence.
-    virtual Range GetTimeRange() = 0;
+    virtual Range GetTimeRange() const = 0;
 
     //! Resets the sequence
     virtual void Reset(bool bSeekToStart) = 0;
@@ -1215,14 +1226,14 @@ struct IMovieSystem
 
     virtual IMovieCallback* GetCallback() = 0;
 
-    virtual const SCameraParams& GetCameraParams() const = 0;
-    virtual void SetCameraParams(const SCameraParams& Params) = 0;
+    virtual AZ::EntityId GetActiveCamera() const = 0;
+    virtual void SetActiveCamera(const AZ::EntityId& entityId) = 0;
     virtual void SendGlobalEvent(const char* pszEvent) = 0;
 
     // Gets the float time value for a sequence that is already playing
     virtual float GetPlayingTime(IAnimSequence* pSeq) = 0;
     virtual float GetPlayingSpeed(IAnimSequence* pSeq) = 0;
-    // Sets the time progression of an already playing cutscene.
+    // Sets the time progression of an already playing cut-scene.
     // If IAnimSequence:NO_SEEK flag is set on pSeq, this call is ignored.
     virtual bool SetPlayingTime(IAnimSequence* pSeq, float fTime) = 0;
     virtual bool SetPlayingSpeed(IAnimSequence* pSeq, float fSpeed) = 0;

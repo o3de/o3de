@@ -21,6 +21,25 @@ namespace AZ::IO
     using FixedMaxPathWString = AZStd::fixed_wstring<MaxPathLength>;
     namespace
     {
+        // You can use this to issue a warning and print out the BYTES (not characters) of an invalid UTF-8 string
+        // in the format [00][01][02]...[FF].
+        void WarnInvalidUtf8String([[maybe_unused]] const char* message, [[maybe_unused]] const char* str)
+        {
+#if defined(AZ_ENABLE_TRACING)
+            FixedMaxPathString stringBytes;
+            size_t pos = 0;
+            while (stringBytes.size() < stringBytes.max_size() - 5 && str[pos] != 0)
+            {
+                unsigned char currentByte = str[pos];
+                stringBytes.append(AZStd::string::format("[%02X]", currentByte).c_str());
+                ++pos;
+            }
+            
+            AZ_Warning("SystemFile", false, "%s: Invalid UTF-8 string: %s", message, stringBytes.c_str());
+#endif
+        }
+
+
         //=========================================================================
         // GetAttributes
         //  Internal utility to avoid code duplication. Returns result of win32
@@ -29,7 +48,11 @@ namespace AZ::IO
         DWORD GetAttributes(const char* fileName)
         {
             FixedMaxPathWString fileNameW;
-            AZStd::to_wstring(fileNameW, fileName);
+            if (!AZStd::to_wstring(fileNameW, fileName))
+            {
+                WarnInvalidUtf8String("Invalid filename given to SystemFile::GetAttributes", fileName);
+                return INVALID_FILE_ATTRIBUTES;
+            }
             return GetFileAttributesW(fileNameW.c_str());
         }
 
@@ -41,7 +64,11 @@ namespace AZ::IO
         BOOL SetAttributes(const char* fileName, DWORD fileAttributes)
         {
             FixedMaxPathWString fileNameW;
-            AZStd::to_wstring(fileNameW, fileName);
+            if (!AZStd::to_wstring(fileNameW, fileName))
+            {
+                WarnInvalidUtf8String("Invalid filename given to SystemFile::GetAttributes", fileName);
+                return 0;
+            }
             return SetFileAttributesW(fileNameW.c_str(), fileAttributes);
         }
 
@@ -137,7 +164,11 @@ namespace AZ::IO
         }
 
         AZ::IO::FixedMaxPathWString fileNameW;
-        AZStd::to_wstring(fileNameW, m_fileName);
+        if (!AZStd::to_wstring(fileNameW, m_fileName))
+        {
+            WarnInvalidUtf8String("Invalid UTF-8 encoded string passed to SystemFile::Open", m_fileName.c_str());
+            return false;
+        }
         m_handle = INVALID_HANDLE_VALUE;
         m_handle = CreateFileW(fileNameW.c_str(), dwDesiredAccess, dwShareMode, 0, dwCreationDisposition, dwFlagsAndAttributes, 0);
 
@@ -357,7 +388,12 @@ namespace AZ::IO::Platform
         HANDLE hFile;
 
         AZ::IO::FixedMaxPathWString filterW;
-        AZStd::to_wstring(filterW, filter);
+        if (!AZStd::to_wstring(filterW, filter))
+        {
+            // we'd print out the string - but its an invalid string and not safe to do so... since its invalid encoding!
+            WarnInvalidUtf8String("Invalid UTF-8 encoded string passed to SystemFile::FindFiles", filter);
+            return;
+        }
         hFile = INVALID_HANDLE_VALUE;
         hFile = FindFirstFileW(filterW.c_str(), &fd);
 
@@ -389,7 +425,11 @@ namespace AZ::IO::Platform
         HANDLE handle = nullptr;
 
         AZ::IO::FixedMaxPathWString fileNameW;
-        AZStd::to_wstring(fileNameW, fileName);
+        if (!AZStd::to_wstring(fileNameW, fileName))
+        {
+            WarnInvalidUtf8String("Invalid UTF-8 encoded string passed to SystemFile::ModificationTime, returning 0", fileName);
+            return 0;
+        }
         handle = CreateFileW(fileNameW.c_str(), 0, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, 0, nullptr);
 
         if (handle == INVALID_HANDLE_VALUE)
@@ -419,7 +459,11 @@ namespace AZ::IO::Platform
         BOOL result = FALSE;
 
         AZ::IO::FixedMaxPathWString fileNameW;
-        AZStd::to_wstring(fileNameW, fileName);
+        if (!AZStd::to_wstring(fileNameW, fileName))
+        {
+            WarnInvalidUtf8String("Invalid UTF-8 encoded string passed to SystemFile::Length, returning 0", fileName);
+            return 0;
+        }
         result = GetFileAttributesExW(fileNameW.c_str(), GetFileExInfoStandard, &data);
 
         if (result)
@@ -437,7 +481,12 @@ namespace AZ::IO::Platform
     bool Delete(const char* fileName)
     {
         AZ::IO::FixedMaxPathWString fileNameW;
-        AZStd::to_wstring(fileNameW, fileName);
+        if (!AZStd::to_wstring(fileNameW, fileName))
+        {
+            WarnInvalidUtf8String("Invalid UTF-8 encoded string passed to SystemFile::Delete", fileName);
+            return false;
+        }
+
         if (DeleteFileW(fileNameW.c_str()) == 0)
         {
             return false;
@@ -449,9 +498,19 @@ namespace AZ::IO::Platform
     bool Rename(const char* sourceFileName, const char* targetFileName, bool overwrite)
     {
         AZ::IO::FixedMaxPathWString sourceFileNameW;
-        AZStd::to_wstring(sourceFileNameW, sourceFileName);
+        if (!AZStd::to_wstring(sourceFileNameW, sourceFileName))
+        {
+            WarnInvalidUtf8String("Invalid UTF-8 encoded string sourceFileName in SystemFile::Rename", sourceFileName);
+            return false;
+        }
+
         AZ::IO::FixedMaxPathWString targetFileNameW;
-        AZStd::to_wstring(targetFileNameW, targetFileName);
+        if (!AZStd::to_wstring(targetFileNameW, targetFileName))
+        {
+            WarnInvalidUtf8String("Invalid UTF-8 encoded string targetFileName in SystemFile::Rename", targetFileName);
+            return false;
+        }
+
         if (MoveFileExW(sourceFileNameW.c_str(), targetFileNameW.c_str(), overwrite ? MOVEFILE_REPLACE_EXISTING : 0) == 0)
         {
             return false;
@@ -491,7 +550,11 @@ namespace AZ::IO::Platform
         if (dirName)
         {
             AZ::IO::FixedMaxPathWString dirNameW;
-            AZStd::to_wstring(dirNameW, dirName);
+            if (!AZStd::to_wstring(dirNameW, dirName))
+            {
+                WarnInvalidUtf8String("Invalid UTF-8 encoded string passed to SystemFile::CreateDir", dirName);
+                return false;
+            }
             bool success = CreateDirRecursive(dirNameW);
             return success;
         }
@@ -503,7 +566,11 @@ namespace AZ::IO::Platform
         if (dirName)
         {
             AZ::IO::FixedMaxPathWString dirNameW;
-            AZStd::to_wstring(dirNameW, dirName);
+            if (!AZStd::to_wstring(dirNameW, dirName))
+            {
+                WarnInvalidUtf8String("Invalid UTF-8 encoded string passed to SystemFile::DeleteDir", dirName);
+                return false;
+            }
             return RemoveDirectory(dirNameW.c_str()) != 0;
         }
 
@@ -530,12 +597,12 @@ namespace AZ::IO::Internal
     // https://learn.microsoft.com/en-us/windows/win32/ipc/named-pipe-server-using-completion-routines
     struct AsyncPipeData
     {
-        AsyncPipeData(FileDescriptorCapturer& descriptorCapturer)
+        AsyncPipeData(FileDescriptorCapturer* descriptorCapturer)
             : m_descriptorCapturer(descriptorCapturer)
         {}
 
         OVERLAPPED m_asyncIO{};
-        FileDescriptorCapturer& m_descriptorCapturer;
+        FileDescriptorCapturer* m_descriptorCapturer;
         //! Storage buffer for read results of Async ReadFileEx opeastion
         AZStd::array<AZStd::byte, AZ::IO::FileDescriptorCapturer::DefaultPipeSize> m_capturedBytes;
     };
@@ -612,7 +679,7 @@ namespace AZ::IO
 
         // Store the OVERLAPPED IO in the m_pipeData
         // It will be used in the Flush(), to provide the async callback
-        auto asyncPipeData = new Internal::AsyncPipeData{ *this };
+        auto asyncPipeData = new Internal::AsyncPipeData{ this };
 
         constexpr bool eventNeedsToBeManuallyReset = true;
         constexpr bool initialStateIsSignalled = false;
@@ -658,7 +725,7 @@ namespace AZ::IO
             LPOVERLAPPED asyncIO)
         {
             auto asyncPipeData = reinterpret_cast<Internal::AsyncPipeData*>(asyncIO);
-            auto& self = asyncPipeData->m_descriptorCapturer;
+            auto& self = *asyncPipeData->m_descriptorCapturer;
             if (self.m_redirectCallback && errorCode == ERROR_SUCCESS && bytesRead > 0)
             {
                 self.m_redirectCallback(AZStd::span(asyncPipeData->m_capturedBytes.data(), bytesRead));

@@ -75,9 +75,7 @@
     "steps": [
       "profile",
       "asset_profile",
-      "test_cpu_profile",
-      "test_impact_analysis_profile_native",
-      "test_impact_analysis_profile_python"
+      "test_cpu_profile"
     ]
   },
   "scrubbing": {
@@ -207,11 +205,11 @@
     "PARAMETERS": {
       "CONFIGURATION": "profile",
       "OUTPUT_DIRECTORY": "build\\windows",
-      "CMAKE_OPTIONS": "-DCMAKE_SYSTEM_VERSION=10.0 -DO3DE_TEST_IMPACT_NATIVE_TEST_TARGETS_ENABLED=TRUE -DO3DE_TEST_IMPACT_PYTHON_TEST_TARGETS_ENABLED=TRUE",
+      "CMAKE_OPTIONS": "-DCMAKE_SYSTEM_VERSION=10.0 -DO3DE_TEST_IMPACT_NATIVE_TEST_TARGETS_ENABLED=FALSE -DO3DE_TEST_IMPACT_PYTHON_TEST_TARGETS_ENABLED=FALSE",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "TEST_SUITE_smoke TEST_SUITE_main",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
-      "CTEST_OPTIONS": "-L \"(SUITE_smoke|SUITE_main)\" -LE \"(REQUIRES_gpu|REQUIRES_tiaf)\" -T Test --no-tests=error",
+      "CTEST_OPTIONS": "-E \"(o3de_repo)\" -L \"(SUITE_smoke|SUITE_main)\" -LE \"(REQUIRES_gpu|REQUIRES_tiaf)\" -T Test --no-tests=error",
       "TEST_METRICS": "True",
       "TEST_RESULTS": "True"
     }

@@ -922,7 +922,7 @@ namespace PhysX
         return ret;
     };
 
-    INSTANTIATE_TEST_CASE_P(, PhysicsRigidBodyRayBusTest,
+    INSTANTIATE_TEST_SUITE_P(, PhysicsRigidBodyRayBusTest,
         ::testing::Values(RigidBodyRaycastEBusCall, WorldBodyRaycastEBusCall),
         // Provide nice names for the tests runs
         [](const testing::TestParamInfo<PhysicsRigidBodyRayBusTest::ParamType>& info)

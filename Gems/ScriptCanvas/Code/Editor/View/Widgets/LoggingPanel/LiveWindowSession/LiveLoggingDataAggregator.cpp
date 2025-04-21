@@ -117,7 +117,7 @@ namespace ScriptCanvasEditor
         RemoveStaticRegistration(namedEntityId, oldGraphIdentifier);
     }
 
-    void LiveLoggingDataAggregator::Connected([[maybe_unused]] const ScriptCanvas::Debugger::Target& target)
+    void LiveLoggingDataAggregator::Connected([[maybe_unused]] ScriptCanvas::Debugger::Target& target)
     {
         AZStd::lock(m_notificationMutex);
         SetupExternalEntities();

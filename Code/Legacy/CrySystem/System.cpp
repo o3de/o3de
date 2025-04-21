@@ -769,6 +769,10 @@ void CSystem::GetUpdateStats(SSystemUpdateStats& stats)
 //////////////////////////////////////////////////////////////////////////
 void CSystem::UpdateMovieSystem(const int updateFlags, const float fFrameTime, const bool bPreUpdate)
 {
+    if (!m_movieSystem)
+    {
+        m_movieSystem = AZ::Interface<IMovieSystem>::Get();
+    }
     if (m_movieSystem && !(updateFlags & ESYSUPDATE_EDITOR) && g_cvars.sys_trackview)
     {
         float fMovieFrameTime = fFrameTime;

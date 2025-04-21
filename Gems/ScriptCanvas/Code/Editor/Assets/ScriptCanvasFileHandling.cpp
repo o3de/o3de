@@ -276,17 +276,19 @@ namespace ScriptCanvas
         {
             result.m_fileReadErrors = "Script Canvas Graph Deserialization Failed - " + result.m_deserializeResult.m_errors + "\n";
         }
-
-        const auto& graphDataPtr = result.m_deserializeResult.m_graphDataPtr;
-        if (graphDataPtr && graphDataPtr->GetEditorGraph())
+        else
         {
-            ScriptCanvasEditor::EditorGraphRequestBus::Event(
-                graphDataPtr->GetEditorGraph()->GetScriptCanvasId(),
-                &ScriptCanvasEditor::EditorGraphRequests::SetOriginalToNewIdsMap,
-                result.m_deserializeResult.m_originalIdsToNewIds);
-        }
+            const auto& graphDataPtr = result.m_deserializeResult.m_graphDataPtr;
+            if (graphDataPtr && graphDataPtr->GetEditorGraph())
+            {
+                ScriptCanvasEditor::EditorGraphRequestBus::Event(
+                    graphDataPtr->GetEditorGraph()->GetScriptCanvasId(),
+                    &ScriptCanvasEditor::EditorGraphRequests::SetOriginalToNewIdsMap,
+                    result.m_deserializeResult.m_originalIdsToNewIds);
+            }
 
-        result.m_handle = SourceHandle::FromRelativePath(result.m_deserializeResult.m_graphDataPtr, path);
+            result.m_handle = SourceHandle::FromRelativePath(result.m_deserializeResult.m_graphDataPtr, path);
+        }
         return result;
     }
 

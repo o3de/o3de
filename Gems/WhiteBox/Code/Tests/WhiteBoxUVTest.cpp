@@ -274,7 +274,7 @@ namespace UnitTest
     }
 
     // test with permutations of all noise values and sources with rotations around the x and z axis
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         , WhiteBoxUVTestFixture,
         ::testing::Combine(
             ::testing::ValuesIn(Noise), ::testing::ValuesIn(Source),

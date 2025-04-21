@@ -6,17 +6,14 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_TRACKVIEW_TRACKVIEWNODE_H
-#define CRYINCLUDE_EDITOR_TRACKVIEW_TRACKVIEWNODE_H
 #pragma once
 
-
-class CTrackViewTrack;
-class CTrackViewSequence;
-struct IKey;
 class CTrackViewAnimNode;
+class CTrackViewSequence;
+class CTrackViewTrack;
+struct IKey;
 
+#include <AzCore/std/containers/vector.h>
 
 class CTrackViewKeyConstHandle
 {
@@ -32,6 +29,7 @@ public:
     void GetKey(IKey* pKey) const;
     float GetTime() const;
     const CTrackViewTrack* GetTrack() const { return m_pTrack; }
+    unsigned int GetIndex() const { return m_keyIndex; }
 
 private:
     unsigned int m_keyIndex;
@@ -79,7 +77,7 @@ public:
     // Deletes key. Note that handle will be invalid afterwards
     void Delete();
 
-    CTrackViewKeyHandle Clone();
+    CTrackViewKeyHandle Clone(float timeOffset);
 
     // Get next/prev/above/below key in expanded node tree
     // Note: Key is assumed to be already visible
@@ -111,18 +109,18 @@ public:
     bool AreAllKeysOfSameType() const { return m_bAllOfSameType; }
 
     unsigned int GetKeyCount() const { return static_cast<unsigned int>(m_keys.size()); }
-    CTrackViewKeyHandle GetKey(unsigned int index) const { return m_keys[index]; }
+    CTrackViewKeyHandle GetKey(unsigned int keyIndex) const { return m_keys[keyIndex]; }
+    CTrackViewKeyHandle GetSingleSelectedKey() const;
 
     void SelectKeys(const bool bSelected);
 
-    CTrackViewKeyHandle GetSingleSelectedKey();
 
 private:
     void AppendKey(const CTrackViewKeyHandle& keyHandle);
     void AppendKeyBundle(const CTrackViewKeyBundle& bundle);
 
     bool m_bAllOfSameType;
-    std::vector<CTrackViewKeyHandle> m_keys;
+    AZStd::vector<CTrackViewKeyHandle> m_keys;
 };
 
 // Types of nodes that derive from CTrackViewNode
@@ -133,12 +131,12 @@ enum ETrackViewNodeType
     eTVNT_Track
 };
 
-////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
 //
 // This is the base class for all sequences, nodes and tracks in TrackView,
 // which provides a interface for common operations
 //
-////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
 class CTrackViewNode
 {
 public:
@@ -147,7 +145,7 @@ public:
 
     // Name
     virtual AZStd::string GetName() const = 0;
-    virtual bool SetName([[maybe_unused]] const char* pName) { return false; };
+    virtual bool SetName([[maybe_unused]] const char* pName) { return false; }
     virtual bool CanBeRenamed() const { return false; }
 
     // CryMovie node type
@@ -217,7 +215,7 @@ public:
     CTrackViewNode* GetFirstSelectedNode();
 
     // Get director of this node
-    CTrackViewAnimNode* GetDirector();
+    CTrackViewAnimNode* GetDirector() const;
 
 protected:
     void AddNode(CTrackViewNode* pNode);
@@ -226,9 +224,8 @@ protected:
     bool HasObsoleteTrackRec(const CTrackViewNode* pCurrentNode) const;
 
     CTrackViewNode* m_pParentNode;
-    std::vector<std::unique_ptr<CTrackViewNode> > m_childNodes;
+    AZStd::vector<AZStd::unique_ptr<CTrackViewNode> > m_childNodes;
 
     bool m_bSelected;
     bool m_bHidden;
 };
-#endif // CRYINCLUDE_EDITOR_TRACKVIEW_TRACKVIEWNODE_H

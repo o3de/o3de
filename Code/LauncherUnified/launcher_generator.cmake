@@ -69,6 +69,7 @@ foreach(project_name project_path IN ZIP_LISTS O3DE_PROJECTS_NAME launcher_gener
         if(PAL_TRAIT_BUILD_HOST_TOOLS)
             add_custom_target(${project_name}.Assets
                 COMMENT "Processing ${project_name} assets..."
+                USES_TERMINAL # Do not buffer output of run command
                 COMMAND "${CMAKE_COMMAND}"
                     -DLY_LOCK_FILE=$<GENEX_EVAL:$<TARGET_FILE_DIR:AZ::AssetProcessorBatch>>/project_assets.lock
                     -P ${LY_ROOT_FOLDER}/cmake/CommandExecution.cmake
@@ -136,15 +137,15 @@ foreach(project_name project_path IN ZIP_LISTS O3DE_PROJECTS_NAME launcher_gener
         endif()
 
         if(PAL_TRAIT_BUILD_SERVER_SUPPORTED)
-            set(server_runtime_dependencies
-                Legacy::CrySystem
-            )
-
-            if (O3DE_SCRIPT_ONLY)
-                foreach(server_launcher_type ${SERVER_LAUNCHER_TYPES})
-                    set(SERVER_RUNTIME_DEPENDENCIES_${server_launcher_type} "${SERVER_RUNTIME_DEPENDENCIES_${server_launcher_type}}" O3DE.${server_launcher_type})
-                endforeach()
-            endif()
+            foreach(server_launcher_type ${SERVER_LAUNCHER_TYPES})
+                set(SERVER_RUNTIME_DEPENDENCIES_${server_launcher_type}
+                    Legacy::CrySystem
+                )
+                if (O3DE_SCRIPT_ONLY)
+                    set(SERVER_RUNTIME_DEPENDENCIES_${server_launcher_type} 
+                        "${SERVER_RUNTIME_DEPENDENCIES_${server_launcher_type}}" O3DE.${server_launcher_type})
+                endif()
+            endforeach()
         endif()
 
         if(PAL_TRAIT_BUILD_UNIFIED_SUPPORTED)

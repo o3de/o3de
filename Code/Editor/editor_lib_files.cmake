@@ -497,6 +497,7 @@ set(FILES
     TrackView/SelectKeyUIControls.cpp
     TrackView/SequenceKeyUIControls.cpp
     TrackView/SoundKeyUIControls.cpp
+    TrackView/StringKeyUIControls.cpp
     TrackView/TrackEventKeyUIControls.cpp
     TrackView/TrackViewTrackPropsDlg.ui
     TrackView/TVEventsDialog.cpp
@@ -520,6 +521,9 @@ set(FILES
     TrackView/TrackViewSequence.h
     TrackView/TrackViewNodeFactories.h
     TrackView/TrackViewEventNode.h
+    TrackView/TrackViewMessageBox.cpp
+    TrackView/TrackViewMessageBox.h
+    TrackView/VectorKeyUIControls.cpp
     Util/AffineParts.h
     Util/AutoLogTime.cpp
     Util/AutoLogTime.h

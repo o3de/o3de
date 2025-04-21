@@ -227,7 +227,6 @@ set(FILES
     typetraits/is_member_object_pointer.h
     typetraits/is_member_pointer.h
     typetraits/is_object.h
-    typetraits/is_pod.h
     typetraits/is_pointer.h
     typetraits/is_polymorphic.h
     typetraits/is_reference.h

@@ -1637,8 +1637,13 @@ class AndroidProjectGenerator(object):
                 cmake_argument_list.append(f'"-DLY_PROJECTS={template_project_path}"')
 
             if self._extra_cmake_configure_args:
+                # Extra cmake configure arguments are passed in as a single string separated by spaces and wrapped in quotes.
+                # We need to remove the quotes from the beginning and end of the string, and then split the string by spaces.
+                extra_cmake_args = self._extra_cmake_configure_args
+                if extra_cmake_args.startswith('"') and extra_cmake_args.endswith('"'):
+                    extra_cmake_args = extra_cmake_args[1:-1]
                 # Splits the arguments by white space but only if it's not in a quoted string (e.g. when specifiying a path with white spaces)
-                extra_cmake_configure_arg_list = [f'"{arg}"' for arg in re.split('''\s(?=(?:[^'"]|'[^']*'|"[^"]*")*$)''', self._extra_cmake_configure_args)]
+                extra_cmake_configure_arg_list = [f'"{arg}"' for arg in re.split('''\s(?=(?:[^'"]|'[^']*'|"[^"]*")*$)''', extra_cmake_args)]
                 cmake_argument_list.extend(extra_cmake_configure_arg_list)
 
             # Prepare the config-specific section to place the cmake argument list in the build.gradle for the app

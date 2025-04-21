@@ -31,6 +31,7 @@
 #include <Cinematics/SelectTrack.h>
 #include <Cinematics/SequenceTrack.h>
 #include <Cinematics/SoundTrack.h>
+#include <Cinematics/StringTrack.h>
 #include <Cinematics/TimeRangesTrack.h>
 #include <Cinematics/TrackEventTrack.h>
 
@@ -99,6 +100,12 @@ namespace Maestro
 
     SequenceComponent::SequenceComponent()
     {
+        AZ_Trace("SequenceComponent", "SequenceComponent");
+    }
+
+    SequenceComponent::~SequenceComponent()
+    {
+        AZ_Trace("SequenceComponent", "~SequenceComponent");
     }
 
     void SequenceComponent::Reflect(AZ::ReflectContext* context)
@@ -161,6 +168,7 @@ namespace Maestro
         CSelectTrack::Reflect(context);
         CSequenceTrack::Reflect(context);
         CSoundTrack::Reflect(context);
+        CStringTrack::Reflect(context);
         CTrackEventTrack::Reflect(context);
         CAssetBlendTrack::Reflect(context);
         CTimeRangesTrack::Reflect(context);
@@ -209,11 +217,13 @@ namespace Maestro
 
     void SequenceComponent::Activate()
     {
-        Maestro::SequenceComponentRequestBus::Handler::BusConnect(GetEntityId());
+        SequenceComponentRequestBus::Handler::BusConnect(GetEntityId());
 
-        if (m_sequence != nullptr && m_sequence->GetFlags() & IAnimSequence::eSeqFlags_PlayOnReset)
+        AZ_Trace("SequenceComponent::Activate", "SequenceComponentRequestBus connected to %s", GetEntityId().ToString().c_str())
+
+        if (m_movieSystem)
         {
-            if (gEnv != nullptr && m_movieSystem != nullptr && m_sequence.get() != nullptr)
+            if (m_sequence && (m_sequence->GetFlags() & IAnimSequence::eSeqFlags_PlayOnReset))
             {
                 m_movieSystem->OnSequenceActivated(m_sequence.get());
             }
@@ -222,7 +232,12 @@ namespace Maestro
 
     void SequenceComponent::Deactivate()
     {
-        Maestro::SequenceComponentRequestBus::Handler::BusDisconnect();
+        SequenceComponentRequestBus::Handler::BusDisconnect();
+
+        AZ_Trace(
+            "SequenceComponent::Deactivate",
+            "SequenceComponentRequestBus disconnected from %s",
+            GetEntityId().ToString().c_str());
 
         // Remove this sequence from the game movie system.
         if (nullptr != m_movieSystem)
@@ -234,47 +249,44 @@ namespace Maestro
         }
     }
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////
     bool SequenceComponent::SetAnimatedPropertyValue(const AZ::EntityId& animatedEntityId, const AnimatablePropertyAddress& animatableAddress, const AnimatedValue& value)
     {
-        const Maestro::SequenceAgentEventBusId ebusId(GetEntityId(), animatedEntityId);
+        const SequenceAgentEventBusId ebusId(GetEntityId(), animatedEntityId);
         bool changed = false;
         
-        Maestro::SequenceAgentComponentRequestBus::EventResult(
-            changed, ebusId, &Maestro::SequenceAgentComponentRequestBus::Events::SetAnimatedPropertyValue, animatableAddress, value);
+        SequenceAgentComponentRequestBus::EventResult(
+            changed, ebusId, &SequenceAgentComponentRequestBus::Events::SetAnimatedPropertyValue, animatableAddress, value);
         
         return changed;
     }
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////
-    void SequenceComponent::GetAnimatedPropertyValue(AnimatedValue& returnValue, const AZ::EntityId& animatedEntityId, const AnimatablePropertyAddress& animatableAddress)
+    bool SequenceComponent::GetAnimatedPropertyValue(AnimatedValue& returnValue, const AZ::EntityId& animatedEntityId, const AnimatablePropertyAddress& animatableAddress)
     {
-        const Maestro::SequenceAgentEventBusId ebusId(GetEntityId(), animatedEntityId);
+        const SequenceAgentEventBusId ebusId(GetEntityId(), animatedEntityId);
 
-        Maestro::SequenceAgentComponentRequestBus::Event(
-            ebusId, &Maestro::SequenceAgentComponentRequestBus::Events::GetAnimatedPropertyValue, returnValue, animatableAddress);
+        SequenceAgentComponentRequestBus::Event(
+            ebusId, &SequenceAgentComponentRequestBus::Events::GetAnimatedPropertyValue, returnValue, animatableAddress);
+
+        return true;
     }
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////
-    AZ::Uuid SequenceComponent::GetAnimatedAddressTypeId(const AZ::EntityId& animatedEntityId, const Maestro::SequenceComponentRequests::AnimatablePropertyAddress& animatableAddress)
+    AZ::Uuid SequenceComponent::GetAnimatedAddressTypeId(const AZ::EntityId& animatedEntityId, const SequenceComponentRequests::AnimatablePropertyAddress& animatableAddress)
     {
         AZ::Uuid typeId = AZ::Uuid::CreateNull();
-        const Maestro::SequenceAgentEventBusId ebusId(GetEntityId(), animatedEntityId);
+        const SequenceAgentEventBusId ebusId(GetEntityId(), animatedEntityId);
 
-        Maestro::SequenceAgentComponentRequestBus::EventResult(typeId, ebusId, &Maestro::SequenceAgentComponentRequestBus::Events::GetAnimatedAddressTypeId, animatableAddress);
+        SequenceAgentComponentRequestBus::EventResult(typeId, ebusId, &SequenceAgentComponentRequestBus::Events::GetAnimatedAddressTypeId, animatableAddress);
 
         return typeId;
     }
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////
     void SequenceComponent::GetAssetDuration(AnimatedValue& returnValue, const AZ::EntityId& animatedEntityId, AZ::ComponentId componentId, const AZ::Data::AssetId& assetId)
     {
-        const Maestro::SequenceAgentEventBusId ebusId(GetEntityId(), animatedEntityId);
-        Maestro::SequenceAgentComponentRequestBus::Event(
-            ebusId, &Maestro::SequenceAgentComponentRequestBus::Events::GetAssetDuration, returnValue, componentId, assetId);
+        const SequenceAgentEventBusId ebusId(GetEntityId(), animatedEntityId);
+        SequenceAgentComponentRequestBus::Event(
+            ebusId, &SequenceAgentComponentRequestBus::Events::GetAssetDuration, returnValue, componentId, assetId);
     }
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////
     void SequenceComponent::Play()
     {
         if (m_sequence)
@@ -282,7 +294,7 @@ namespace Maestro
             m_movieSystem->PlaySequence(m_sequence.get(), /*parentSeq =*/ nullptr, /*bResetFX =*/ true,/*bTrackedSequence =*/ false, /*float startTime =*/ -FLT_MAX, /*float endTime =*/ -FLT_MAX);
         }
     }
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////
+
     void SequenceComponent::PlayBetweenTimes(float startTime, float endTime)
     {
         if (m_sequence)
@@ -290,7 +302,7 @@ namespace Maestro
             m_movieSystem->PlaySequence(m_sequence.get(), /*parentSeq =*/ nullptr, /*bResetFX =*/ true,/*bTrackedSequence =*/ false, startTime, endTime);
         }
     }
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////
+
     void SequenceComponent::Stop()
     {
         if (m_sequence)
@@ -298,7 +310,7 @@ namespace Maestro
             m_movieSystem->StopSequence(m_sequence.get());
         }
     }
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////
+
     void SequenceComponent::Pause()
     {
         if (m_sequence)
@@ -306,7 +318,7 @@ namespace Maestro
             m_sequence.get()->Pause();
         }
     }
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////
+
     void SequenceComponent::Resume()
     {
         if (m_sequence)
@@ -314,7 +326,7 @@ namespace Maestro
             m_sequence.get()->Resume();
         }
     }
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////
+
     void SequenceComponent::SetPlaySpeed(float newSpeed)
     {
         if (m_sequence)
@@ -322,7 +334,7 @@ namespace Maestro
             m_movieSystem->SetPlayingSpeed(m_sequence.get(), newSpeed);
         }
     }
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////
+
     void SequenceComponent::JumpToTime(float newTime)
     {
         if (m_sequence)
@@ -331,7 +343,7 @@ namespace Maestro
             m_movieSystem->SetPlayingTime(m_sequence.get(), newTime);
         }
     }
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////
+
     void SequenceComponent::JumpToEnd()
     {
         if (m_sequence)
@@ -339,7 +351,7 @@ namespace Maestro
             m_movieSystem->SetPlayingTime(m_sequence.get(), m_sequence.get()->GetTimeRange().end);
         }
     }
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////
+
     void SequenceComponent::JumpToBeginning()
     {
         if (m_sequence)
@@ -347,7 +359,7 @@ namespace Maestro
             m_movieSystem->SetPlayingTime(m_sequence.get(), m_sequence.get()->GetTimeRange().start);
         }
     }
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////
+
     float SequenceComponent::GetCurrentPlayTime()
     {
         if (m_sequence)
@@ -356,7 +368,7 @@ namespace Maestro
         }
         return .0f;
     }
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////
+
     float SequenceComponent::GetPlaySpeed()
     {
         if (m_sequence)
@@ -365,4 +377,5 @@ namespace Maestro
         }
         return 1.0f;
     }
-}// namespace Maestro
+
+} // namespace Maestro

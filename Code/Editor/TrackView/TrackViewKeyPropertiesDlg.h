@@ -6,20 +6,19 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_TRACKVIEW_TRACKVIEWKEYPROPERTIESDLG_H
-#define CRYINCLUDE_EDITOR_TRACKVIEW_TRACKVIEWKEYPROPERTIESDLG_H
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include "TrackViewSequence.h"
-#include "TrackViewNode.h"
 #include "TrackViewDopeSheetBase.h"
+#include "TrackViewNode.h"
+#include "TrackViewSequence.h"
 
-#include <QScopedPointer>
 #include <QDockWidget>
+#include <QScopedPointer>
 #include "Util/Variable.h"
 #endif
+
+#include <AzCore/std/containers/vector.h>
 
 namespace Ui {
     class CTrackViewTrackPropsDlg;
@@ -112,7 +111,7 @@ protected:
 
 protected:
     _smart_ptr<CVarBlock> m_pVarBlock;
-    std::vector<_smart_ptr<IVariable> > m_registeredVariables;
+    AZStd::vector<_smart_ptr<IVariable> > m_registeredVariables;
     CTrackViewKeyPropertiesDlg* m_pKeyPropertiesDlg;
     IVariable::OnSetCallback m_onSetCallback;
 };
@@ -133,7 +132,7 @@ protected slots:
     void OnUpdateTime();
 
 protected:
-    CTrackViewKeyHandle m_keyHandle;
+    CTrackViewKeyBundle m_selectedKeys;
     QScopedPointer<Ui::CTrackViewTrackPropsDlg> ui;
 };
 
@@ -173,7 +172,7 @@ protected:
     void ReloadValues();
 
 protected:
-    std::vector< _smart_ptr<CTrackViewKeyUIControls> > m_keyControls;
+    AZStd::vector< _smart_ptr<CTrackViewKeyUIControls> > m_keyControls;
 
     _smart_ptr<CVarBlock> m_pVarBlock;
 
@@ -185,5 +184,3 @@ protected:
     CTrackViewTrack* m_pLastTrackSelected;
     CTrackViewSequence* m_sequence;
 };
-
-#endif // CRYINCLUDE_EDITOR_TRACKVIEW_TRACKVIEWKEYPROPERTIESDLG_H

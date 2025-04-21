@@ -18,8 +18,6 @@
 #include "Audio/EditorAudioSwitchComponent.h"
 #include "Audio/EditorAudioTriggerComponent.h"
 #include "Scripting/EditorLookAtComponent.h"
-#include "Scripting/EditorRandomTimedSpawnerComponent.h"
-#include "Scripting/EditorSpawnerComponent.h"
 #include "Scripting/EditorTagComponent.h"
 
 #include "Editor/EditorCommentComponent.h"
@@ -79,8 +77,6 @@ namespace LmbrCentral
             EditorSplineComponent::CreateDescriptor(),
             EditorPolygonPrismShapeComponent::CreateDescriptor(),
             EditorCommentComponent::CreateDescriptor(),
-            EditorRandomTimedSpawnerComponent::CreateDescriptor(),
-            EditorSpawnerComponent::CreateDescriptor(),            
             CopyDependencyBuilder::CopyDependencyBuilderComponent::CreateDescriptor(),
             LevelBuilder::LevelBuilderComponent::CreateDescriptor(),
             SliceBuilder::BuilderPluginComponent::CreateDescriptor(),

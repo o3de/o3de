@@ -7,54 +7,59 @@
  */
 #pragma once
 
-#include "IMovieSystem.h"
+#include <IMovieSystem.h>
 #include "AnimTrack.h"
+#include <Maestro/Types/AssetBlendKey.h>
 #include <Maestro/Types/AssetBlends.h>
 
-/** CAssetBlendTrack contains entity keys, when time reach event key, it fires script event or start animation etc...
-*/
-class CAssetBlendTrack
-    : public TAnimTrack<AZ::IAssetBlendKey>
+namespace Maestro
 {
-public:
-    AZ_CLASS_ALLOCATOR(CAssetBlendTrack, AZ::SystemAllocator);
-    AZ_RTTI(CAssetBlendTrack, "{8F606315-A8D9-4267-A1DA-8E84097F40CD}", IAnimTrack);
 
-    CAssetBlendTrack()
+    /** CAssetBlendTrack contains entity keys, when time reach event key, it fires script event or start animation etc...
+     */
+    class CAssetBlendTrack : public TAnimTrack<AZ::IAssetBlendKey>
     {
-    }
+    public:
+        AZ_CLASS_ALLOCATOR(CAssetBlendTrack, AZ::SystemAllocator);
+        AZ_RTTI(CAssetBlendTrack, "{8F606315-A8D9-4267-A1DA-8E84097F40CD}", IAnimTrack);
 
-    //////////////////////////////////////////////////////////////////////////
-    // Overrides of IAnimTrack.
-    //////////////////////////////////////////////////////////////////////////
-    bool Serialize(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTracks) override;
+        CAssetBlendTrack()
+        {
+        }
 
-    void GetKeyInfo(int key, const char*& description, float& duration) override;
-    void SerializeKey(AZ::IAssetBlendKey& key, XmlNodeRef& keyNode, bool bLoading) override;
+        //////////////////////////////////////////////////////////////////////////
+        // Overrides of IAnimTrack.
+        //////////////////////////////////////////////////////////////////////////
+        bool Serialize(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTracks) override;
 
-    //! Gets the duration of an animation key. If it's a looped animation,
-    //! a special consideration is required to compute the actual duration.
-    float GetKeyDuration(int key) const;
+        void GetKeyInfo(int keyIndex, const char*& description, float& duration) const override;
+        void SerializeKey(AZ::IAssetBlendKey& key, XmlNodeRef& keyNode, bool bLoading) override;
 
-    AnimValueType GetValueType() override;
-    void GetValue(float time, Maestro::AssetBlends<AZ::Data::AssetData>& value) override;
-    void SetValue(float time, const Maestro::AssetBlends<AZ::Data::AssetData>& value, bool bDefault = false) override;
+        //! Gets the duration of an animation key. If it's a looped animation,
+        //! a special consideration is required to compute the actual duration.
+        float GetKeyDuration(int keyIndex) const;
 
-    //////////////////////////////////////////////////////////////////////////
-    void SetDefaultValue(const Maestro::AssetBlends<AZ::Data::AssetData>& defaultValue);
-    void SetDefaultValue(float time, const Maestro::AssetBlends<AZ::Data::AssetData>& defaultValue);
-    void GetDefaultValue(Maestro::AssetBlends<AZ::Data::AssetData>& defaultValue) const;
+        AnimValueType GetValueType() const override;
+        void GetValue(float time, AssetBlends<AZ::Data::AssetData>& value) const override;
+        void SetValue(float time, const AssetBlends<AZ::Data::AssetData>& value, bool bDefault = false) override;
 
-    float GetEndTime() const;
+        //////////////////////////////////////////////////////////////////////////
+        void SetDefaultValue(const AssetBlends<AZ::Data::AssetData>& defaultValue);
+        void SetDefaultValue(float time, const AssetBlends<AZ::Data::AssetData>& defaultValue);
+        void GetDefaultValue(AssetBlends<AZ::Data::AssetData>& defaultValue) const;
 
-    static void Reflect(AZ::ReflectContext* context);
+        float GetEndTime() const;
 
-private:
-    void SetKeysAtTime(float time, const Maestro::AssetBlends<AZ::Data::AssetData>& value);
-    void ClearKeys();
-    void FilterBlends(const Maestro::AssetBlends<AZ::Data::AssetData>& value, Maestro::AssetBlends<AZ::Data::AssetData>& filteredValue) const;
+        static void Reflect(AZ::ReflectContext* context);
 
-    // Internal transient state, not serialized.
-    Maestro::AssetBlends<AZ::Data::AssetData> m_assetBlend;
-    Maestro::AssetBlends<AZ::Data::AssetData> m_defaultValue;
-};
+    private:
+        void SetKeysAtTime(float time, const AssetBlends<AZ::Data::AssetData>& value);
+        void ClearKeys();
+        void FilterBlends(
+            const AssetBlends<AZ::Data::AssetData>& value, AssetBlends<AZ::Data::AssetData>& filteredValue) const;
+
+        // Internal transient state, not serialized.
+        AssetBlends<AZ::Data::AssetData> m_defaultValue;
+    };
+
+} // namespace Maestro

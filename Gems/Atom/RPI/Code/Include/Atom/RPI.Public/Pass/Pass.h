@@ -29,6 +29,7 @@
 #include <AzCore/std/containers/span.h>
 
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/std/containers/deque.h>
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
@@ -67,11 +68,6 @@ namespace AZ
 
         using PassesByDrawList = AZStd::map<RHI::DrawListTag, const Pass*>;
 
-        const uint32_t PassAttachmentBindingCountMax = 32;
-        const uint32_t PassInputBindingCountMax = PassAttachmentBindingCountMax;
-        const uint32_t PassInputOutputBindingCountMax = PassInputBindingCountMax;
-        const uint32_t PassOutputBindingCountMax = PassInputBindingCountMax;
-                
         enum class PassAttachmentReadbackOption : uint8_t
         {
             Input = 0,
@@ -452,9 +448,8 @@ namespace AZ
             const Name PipelineGlobalKeyword{"PipelineGlobal"};
 
             // List of input, output and input/output attachment bindings
-            // Fixed size for performance and so we can hold pointers to the bindings for connections
-            AZStd::fixed_vector<PassAttachmentBinding, PassAttachmentBindingCountMax> m_attachmentBindings;
-            
+            PassAttachmentBindingList m_attachmentBindings;
+
             // List of attachments owned by this pass.
             // It includes both transient attachments and imported attachments
             AZStd::vector<Ptr<PassAttachment>> m_ownedAttachments;
@@ -565,7 +560,7 @@ namespace AZ
             
             // For read back attachment
             AZStd::shared_ptr<AttachmentReadback> m_attachmentReadback;
-            PassAttachmentReadbackOption m_readbackOption;
+            PassAttachmentReadbackOption m_readbackOption = PassAttachmentReadbackOption::Input;
 
             // For image attachment preview
             AZStd::weak_ptr<ImageAttachmentCopy> m_attachmentCopy;
@@ -667,13 +662,13 @@ namespace AZ
             // --- Private Members ---
 
             // List of attachment binding indices for all the input bindings
-            AZStd::fixed_vector<uint8_t, PassInputBindingCountMax> m_inputBindingIndices;
+            AZStd::vector<uint8_t> m_inputBindingIndices;
 
             // List of attachment binding indices for all the input/output bindings
-            AZStd::fixed_vector<uint8_t, PassInputOutputBindingCountMax> m_inputOutputBindingIndices;
+            AZStd::vector<uint8_t> m_inputOutputBindingIndices;
 
             // List of attachment binding indices for all the output bindings
-            AZStd::fixed_vector<uint8_t, PassOutputBindingCountMax> m_outputBindingIndices;
+            AZStd::vector<uint8_t> m_outputBindingIndices;
 
             // Used to maintain references to imported attachments so they're underlying
             // buffers and images don't get deleted during attachment build phase

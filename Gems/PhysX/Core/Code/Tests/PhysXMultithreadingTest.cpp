@@ -709,7 +709,7 @@ namespace PhysX
     }
 
 
-    INSTANTIATE_TEST_CASE_P(PhysXMultithreading, PhysXMultithreadingTest, ::testing::Values(1, 42, 123, 1337, 1403, 5317, 133987258));
+    INSTANTIATE_TEST_SUITE_P(PhysXMultithreading, PhysXMultithreadingTest, ::testing::Values(1, 42, 123, 1337, 1403, 5317, 133987258));
 }
 
 #ifdef PHYSX_MT_DEBUG_LOGS

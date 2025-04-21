@@ -15,21 +15,22 @@
 #include "TrackViewDialog.h"
 
 // Qt
+#include <QAction>
+#include <QComboBox>
 #include <QFileDialog>
+#include <QInputDialog>
+#include <QLabel>
+#include <QMenu>
+#include <QMenuBar>
+#include <QMessageBox>
+#include <QSettings>
 #include <QSplitter>
 #include <QToolBar>
-#include <QLabel>
-#include <QVBoxLayout>
-#include <QAction>
-#include <QMessageBox>
-#include <QMenuBar>
-#include <QMenu>
-#include <QInputDialog>
-#include <QComboBox>
-#include <QSettings>
 #include <QToolButton>
+#include <QVBoxLayout>
 
 // AzFramework
+#include <AzToolsFramework/API/EditorCameraBus.h>
 #include <AzToolsFramework/API/ViewPaneOptions.h>
 
 // AzQtComponents
@@ -38,8 +39,8 @@
 
 // CryCommon
 #include <CryCommon/Maestro/Bus/EditorSequenceComponentBus.h>
-#include <CryCommon/Maestro/Types/AnimParamType.h>
 #include <CryCommon/Maestro/Types/AnimNodeType.h>
+#include <CryCommon/Maestro/Types/AnimParamType.h>
 
 // Editor
 #include "Settings.h"
@@ -55,7 +56,6 @@
 #include "CryEditDoc.h"
 #include "LyViewPaneNames.h"
 
-//////////////////////////////////////////////////////////////////////////
 inline namespace TrackViewInternal
 {
     const char* s_kTrackViewLayoutSection = "TrackViewLayout";
@@ -103,7 +103,6 @@ inline namespace TrackViewInternal
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::RegisterViewClass()
 {
     AzToolsFramework::ViewPaneOptions opts;
@@ -130,10 +129,8 @@ const GUID& CTrackViewDialog::GetClassID()
 }
 
 
-//////////////////////////////////////////////////////////////////////////
 CTrackViewDialog* CTrackViewDialog::s_pTrackViewDialog = nullptr;
 
-//////////////////////////////////////////////////////////////////////////
 CTrackViewDialog::CTrackViewDialog(QWidget* pParent /*=nullptr*/)
     : QMainWindow(pParent)
 {
@@ -161,8 +158,8 @@ CTrackViewDialog::CTrackViewDialog(QWidget* pParent /*=nullptr*/)
     m_defaultTracksForEntityNode.push_back(AnimParamType::Position);
     m_defaultTracksForEntityNode.push_back(AnimParamType::Rotation);
 
-    OnInitDialog();
     AddDialogListeners();
+    OnInitDialog();
 
     AZ::EntitySystemBus::Handler::BusConnect();
     AzToolsFramework::ToolsApplicationNotificationBus::Handler::BusConnect();
@@ -190,7 +187,6 @@ CTrackViewDialog::~CTrackViewDialog()
     RemoveDialogListeners();
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::OnAddEntityNodeMenu()
 {
     // Toggle the selection
@@ -210,7 +206,6 @@ void CTrackViewDialog::OnAddEntityNodeMenu()
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 bool CTrackViewDialog::OnInitDialog()
 {
     InitToolbar();
@@ -256,8 +251,7 @@ bool CTrackViewDialog::OnInitDialog()
     m_wndCurveEditor = new TrackViewCurveEditorDialog(this);
     m_wndCurveEditorDock->setWidget(m_wndCurveEditor);
     addDockWidget(Qt::BottomDockWidgetArea, m_wndCurveEditorDock);
-    m_wndCurveEditor->SetPlayCallback([this] { OnPlay();
-        });
+    m_wndCurveEditor->SetPlayCallback([this] { OnPlay(); });
 
     InitSequences();
 
@@ -275,7 +269,6 @@ bool CTrackViewDialog::OnInitDialog()
     // EXCEPTION: OCX Property Pages should return FALSE
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::FillAddSelectedEntityMenu()
 {
     QMenu* menu = qobject_cast<QMenu*>(sender());
@@ -831,19 +824,16 @@ void CTrackViewDialog::UpdateActions()
     m_actions[ID_TV_SEQUENCE_NEW]->setEnabled(GetIEditor()->GetDocument() && GetIEditor()->GetDocument()->IsDocumentReady() && !m_enteringGameOrSimModeLock);
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::InitSequences()
 {
     ReloadSequences();
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::InvalidateSequence()
 {
     m_bNeedReloadSequence = true;
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::InvalidateDopeSheet()
 {
     if (m_wndDopeSheet)
@@ -852,9 +842,11 @@ void CTrackViewDialog::InvalidateDopeSheet()
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::Update()
 {
+    CAnimationContext* pAnimationContext = GetIEditor()->GetAnimation();
+    bool wasReloading = m_bNeedReloadSequence;
+
     if (m_bNeedReloadSequence || m_needReAddListeners)
     {
         const CTrackViewSequenceManager* pSequenceManager = GetIEditor()->GetSequenceManager();
@@ -863,7 +855,6 @@ void CTrackViewDialog::Update()
         if (m_bNeedReloadSequence)
         {
             m_bNeedReloadSequence = false;
-            CAnimationContext* pAnimationContext = GetIEditor()->GetAnimation();
             pAnimationContext->SetSequence(sequence, true, false);
         }
         if (m_needReAddListeners)
@@ -873,7 +864,15 @@ void CTrackViewDialog::Update()
         }
     }
 
-    CAnimationContext* pAnimationContext = GetIEditor()->GetAnimation();
+    constexpr const auto noMovieCameraName = "Active Camera";
+    const auto sequence = pAnimationContext->GetSequence();
+    if (!sequence)  // Nothing to update ?
+    {
+        m_activeCamStatic->setText(noMovieCameraName);
+        SetCursorPosText(-1.0f);
+        return;
+    }
+
     float fTime = pAnimationContext->GetTime();
 
     if (fTime != m_fLastTime)
@@ -883,31 +882,43 @@ void CTrackViewDialog::Update()
     }
 
     // Display the name of the active camera in the static control, if any.
-    // The active camera node means two conditions:
-    // 1. Sequence camera is currently active.
-    // 2. The camera which owns this node has been set as the current camera by the director node.
-    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+    // Having an active camera means at least the following conditions:
+    // 1. The movie system has the Animation Sequence corresponding to the active TrackView Sequence.
+    // 2. The Animation Sequence has an active Director node.
+    // 3. The current Camera parameters in the movie system are valid.
+    // TODO: invalidate the Camera parameters in the movie system when conditions 1 and 2 are not valid.
 
+    bool cameraNameSet = false;
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
     if (movieSystem)
     {
-        AZ::EntityId camId = movieSystem->GetCameraParams().cameraEntityId;
-        if (camId.IsValid())
+        const auto animSequence = movieSystem->FindSequenceById(sequence->GetCryMovieId());
+        IAnimNode* activeDirector = animSequence ? animSequence->GetActiveDirector() : nullptr;
+
+        AZ::EntityId camId = movieSystem->GetActiveCamera();
+        if (camId.IsValid() && activeDirector)
         {
             AZ::Entity* entity = nullptr;
             AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, camId);
             if (entity)
             {
                 m_activeCamStatic->setText(entity->GetName().c_str());
-            }
-            else
-            {
-                m_activeCamStatic->setText("Active Camera");
+                cameraNameSet = true;
+
+                // Evaluate the corner case when the sequence is reloaded and the "Autostart" flag is set for the sequence:
+                // prepare to manually scrub this sequence if the "Autostart" flag is set.
+                if (wasReloading && ((animSequence->GetFlags() & IAnimSequence::eSeqFlags_PlayOnReset) != 0))
+                {
+                    // Try to switch camera in the Editor Viewport Widget to the CameraComponent with the EntityId from this key,
+                    // works only in Editing mode (checked in the called method).
+                    pAnimationContext->SwitchEditorViewportCamera(camId);
+                }
             }
         }
-        else
-        {
-            m_activeCamStatic->setText("Active Camera");
-        }
+    }
+    if (!cameraNameSet)
+    {
+        m_activeCamStatic->setText(noMovieCameraName);
     }
 
     if (m_wndNodesCtrl)
@@ -917,7 +928,6 @@ void CTrackViewDialog::Update()
 }
 
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::OnGoToPrevKey()
 {
     CAnimationContext* pAnimationContext = GetIEditor()->GetAnimation();
@@ -937,7 +947,6 @@ void CTrackViewDialog::OnGoToPrevKey()
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::OnGoToNextKey()
 {
     CAnimationContext* pAnimationContext = GetIEditor()->GetAnimation();
@@ -957,13 +966,11 @@ void CTrackViewDialog::OnGoToNextKey()
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::OnAddKey()
 {
     m_wndDopeSheet->SetMouseActionMode(eTVActionMode_AddKeys);
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::OnDelKey()
 {
     CAnimationContext* pAnimationContext = GetIEditor()->GetAnimation();
@@ -976,24 +983,20 @@ void CTrackViewDialog::OnDelKey()
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::OnMoveKey()
 {
     m_wndDopeSheet->SetMouseActionMode(eTVActionMode_MoveKey);
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::OnSlideKey()
 {
     m_wndDopeSheet->SetMouseActionMode(eTVActionMode_SlideKey);
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::OnScaleKey()
 {
     m_wndDopeSheet->SetMouseActionMode(eTVActionMode_ScaleKey);
 }
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::OnAddSequence()
 {
     CTVNewSequenceDialog dlg(this);
@@ -1033,7 +1036,6 @@ void CTrackViewDialog::OnAddSequence()
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::ReloadSequences()
 {
     IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
@@ -1048,6 +1050,8 @@ void CTrackViewDialog::ReloadSequences()
 
     if (sequence)
     {
+        // In case a sequence was previously selected in this Editor session, - restore the selection, selecting this in ReloadSequencesComboBox().
+        m_currentSequenceEntityId = sequence->GetSequenceComponentEntityId();
         sequence->UnBindFromEditorObjects();
     }
 
@@ -1060,22 +1064,18 @@ void CTrackViewDialog::ReloadSequences()
 
     ReloadSequencesComboBox();
 
-    if (m_currentSequenceEntityId.IsValid())
+    if (m_currentSequenceEntityId.IsValid()) // A sequence force-selected when reloading the combo box ?
     {
-        CTrackViewSequenceManager* pSequenceManager = GetIEditor()->GetSequenceManager();
-        sequence = pSequenceManager->GetSequenceByEntityId(m_currentSequenceEntityId);
-
-        const float prevTime = pAnimationContext->GetTime();
-        pAnimationContext->SetSequence(sequence, true, true);
-        pAnimationContext->SetTime(prevTime);
+        OnSequenceComboBox(); // Emulate sequence selection to load it into the dialog
+        sequence = pAnimationContext->GetSequence(); // In case a latest sequence created was selected, actualize the pointer.
     }
-    else
+    else // No sequences yet
     {
         pAnimationContext->SetSequence(nullptr, true, false);
         m_sequencesComboBox->setCurrentIndex(0);
     }
 
-    if (sequence)
+    if (sequence && !sequence->IsBoundToEditorObjects())
     {
         sequence->BindToEditorObjects();
     }
@@ -1086,13 +1086,14 @@ void CTrackViewDialog::ReloadSequences()
     UpdateActions();
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::ReloadSequencesComboBox()
 {
     m_sequencesComboBox->blockSignals(true);
     m_sequencesComboBox->clear();
     m_sequencesComboBox->addItem(QString(s_kNoSequenceComboBoxEntry));
 
+    AZ::EntityId lastSequenceComponentEntityId;
+    int lastIndex = -1;
     {
         CTrackViewSequenceManager* pSequenceManager = GetIEditor()->GetSequenceManager();
         const unsigned int numSequences = pSequenceManager->GetCount();
@@ -1100,24 +1101,38 @@ void CTrackViewDialog::ReloadSequencesComboBox()
         for (unsigned int k = 0; k < numSequences; ++k)
         {
             CTrackViewSequence* sequence = pSequenceManager->GetSequenceByIndex(k);
+            const auto sequenceComponentEntityId = sequence->GetSequenceComponentEntityId();
+            if (!sequenceComponentEntityId.IsValid())
+            {
+                continue;
+            }
+            lastIndex = static_cast<int>(k);
+            lastSequenceComponentEntityId = sequenceComponentEntityId;
             QString entityIdString = GetEntityIdAsString(sequence->GetSequenceComponentEntityId());
             m_sequencesComboBox->addItem(QString::fromUtf8(sequence->GetName().c_str()), entityIdString);
         }
     }
 
-    if (!m_currentSequenceEntityId.IsValid())
-    {
-        m_sequencesComboBox->setCurrentIndex(0);
-    }
-    else
+    if (m_currentSequenceEntityId.IsValid())
     {
         QString entityIdString = GetEntityIdAsString(m_currentSequenceEntityId);
         m_sequencesComboBox->setCurrentIndex(m_sequencesComboBox->findData(entityIdString));
     }
+    else if (lastSequenceComponentEntityId.IsValid())
+    {
+        // Make opening the dialog more user friendly: selecting a sequence probably worked on lately,
+        // as sequences, when created, are pushed to back into corresponding container. 
+        m_currentSequenceEntityId = lastSequenceComponentEntityId;
+        m_sequencesComboBox->setCurrentIndex(lastIndex + 1);
+    }
+    else
+    {
+        m_sequencesComboBox->setCurrentIndex(0);
+    }
     m_sequencesComboBox->blockSignals(false);
+    InvalidateSequence();
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::UpdateSequenceLockStatus()
 {
     if (m_bIgnoreUpdates)
@@ -1137,7 +1152,6 @@ void CTrackViewDialog::UpdateSequenceLockStatus()
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::SetEditLock(bool bLock)
 {
     m_bEditLock = bLock;
@@ -1173,7 +1187,6 @@ void CTrackViewDialog::OnGameOrSimModeLock(bool lock)
     UpdateActions();
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::OnDelSequence()
 {
     if (m_sequencesComboBox->currentIndex() == 0)
@@ -1211,7 +1224,6 @@ void CTrackViewDialog::OnDelSequence()
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::OnEditSequence()
 {
     CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
@@ -1230,7 +1242,6 @@ void CTrackViewDialog::OnEditSequence()
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::OnSequenceComboBox()
 {
     int sel = m_sequencesComboBox->currentIndex();
@@ -1256,10 +1267,10 @@ void CTrackViewDialog::OnSequenceComboBox()
         const bool noNotify = false;
         const bool user = true;
         animationContext->SetSequence(sequence, force, noNotify, user);
+        InvalidateSequence(); // Force later update.
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::OnSequenceChanged(CTrackViewSequence* sequence)
 {
     if (m_bIgnoreUpdates)
@@ -1289,6 +1300,14 @@ void CTrackViewDialog::OnSequenceChanged(CTrackViewSequence* sequence)
         sequence->ClearSelection();
 
         AddSequenceListeners(sequence);
+
+        // Sync the sequence looping flag with looping states in the dialog and the editing animation context.
+        const bool isLooped = (sequence->GetFlags() & IAnimSequence::eSeqFlags_OutOfRangeLoop) != 0;
+        if (m_actions[ID_PLAY_LOOP])
+        {
+            m_actions[ID_PLAY_LOOP]->setChecked(isLooped);
+        }
+        GetIEditor()->GetAnimation()->SetLoopMode(isLooped);
     }
     else
     {
@@ -1312,7 +1331,6 @@ void CTrackViewDialog::OnSequenceChanged(CTrackViewSequence* sequence)
     UpdateActions();
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::OnRecord()
 {
     CAnimationContext* pAnimationContext = GetIEditor()->GetAnimation();
@@ -1321,7 +1339,6 @@ void CTrackViewDialog::OnRecord()
     UpdateActions();
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::OnAutoRecord()
 {
     CAnimationContext* pAnimationContext = GetIEditor()->GetAnimation();
@@ -1337,7 +1354,6 @@ void CTrackViewDialog::OnAutoRecordStep()
     m_fAutoRecordStep = 1.f / factor;
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::OnGoToStart()
 {
     CAnimationContext* pAnimationContext = GetIEditor()->GetAnimation();
@@ -1356,18 +1372,18 @@ void CTrackViewDialog::OnGoToStart()
 
     // notify explicit time changed and return to playback controls *after* the sequence is reset.
     pAnimationContext->TimeChanged(startTime);
+    UpdateActions(); // Sync buttons states with the above actions
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::OnGoToEnd()
 {
     CAnimationContext* pAnimationContext = GetIEditor()->GetAnimation();
     pAnimationContext->SetTime(pAnimationContext->GetMarkers().end);
     pAnimationContext->SetPlaying(false);
     pAnimationContext->SetRecording(false);
+    UpdateActions(); // Sync buttons states with the above actions
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::OnPlay()
 {
     CAnimationContext* pAnimationContext = GetIEditor()->GetAnimation();
@@ -1404,7 +1420,6 @@ void CTrackViewDialog::OnPlaySetScale()
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::OnStop()
 {
     CAnimationContext* pAnimationContext = GetIEditor()->GetAnimation();
@@ -1436,7 +1451,6 @@ void CTrackViewDialog::OnStopHardReset()
     UpdateActions();
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::OnPause()
 {
     CAnimationContext* pAnimationContext = GetIEditor()->GetAnimation();
@@ -1451,14 +1465,16 @@ void CTrackViewDialog::OnPause()
     UpdateActions();
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::OnLoop()
 {
-    CAnimationContext* pAnimationContext = GetIEditor()->GetAnimation();
-    pAnimationContext->SetLoopMode(!pAnimationContext->IsLoopMode());
+    // Sync the looping state in the dialog with the looping state of the editing animation context.
+    if (auto pAnimationContext = GetIEditor()->GetAnimation())
+    {
+        const bool isLooped = m_actions[ID_PLAY_LOOP] && m_actions[ID_PLAY_LOOP]->isChecked();
+        pAnimationContext->SetLoopMode(isLooped);
+    }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::OnEditorNotifyEvent(EEditorNotifyEvent event)
 {
     switch (event)
@@ -1513,7 +1529,6 @@ void CTrackViewDialog::OnEditorNotifyEvent(EEditorNotifyEvent event)
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::OnAddSelectedNode()
 {
     CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
@@ -1557,7 +1572,6 @@ void CTrackViewDialog::OnAddSelectedNode()
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::OnAddDirectorNode()
 {
     CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
@@ -1573,7 +1587,6 @@ void CTrackViewDialog::OnAddDirectorNode()
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::OnFindNode()
 {
     if (!m_findDlg)
@@ -1587,7 +1600,6 @@ void CTrackViewDialog::OnFindNode()
     m_findDlg->raise();
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::keyPressEvent(QKeyEvent* event)
 {
     // HAVE TO INCLUDE CASES FOR THESE IN THE ShortcutOverride handler in ::event() below
@@ -1668,7 +1680,6 @@ bool CTrackViewDialog::processRawInput(MSG* pMsg)
 }
 #endif
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::OnModeDopeSheet()
 {
     auto sizes = m_wndSplitter->sizes();
@@ -1686,7 +1697,6 @@ void CTrackViewDialog::OnModeDopeSheet()
     m_lastMode = ViewMode::TrackView;
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::OnModeCurveEditor()
 {
     auto sizes = m_wndSplitter->sizes();
@@ -1704,7 +1714,6 @@ void CTrackViewDialog::OnModeCurveEditor()
     m_lastMode = ViewMode::CurveEditor;
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::OnOpenCurveEditor()
 {
     OnModeDopeSheet();
@@ -1716,31 +1725,26 @@ void CTrackViewDialog::OnOpenCurveEditor()
     m_lastMode = ViewMode::Both;
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::OnSnapNone()
 {
     m_wndDopeSheet->SetSnappingMode(eSnappingMode_SnapNone);
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::OnSnapMagnet()
 {
     m_wndDopeSheet->SetSnappingMode(eSnappingMode_SnapMagnet);
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::OnSnapFrame()
 {
     m_wndDopeSheet->SetSnappingMode(eSnappingMode_SnapFrame);
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::OnSnapTick()
 {
     m_wndDopeSheet->SetSnappingMode(eSnappingMode_SnapTick);
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::OnSnapFPS()
 {
     int fps = FloatToIntRet(m_wndCurveEditor->GetFPS());
@@ -1755,7 +1759,6 @@ void CTrackViewDialog::OnSnapFPS()
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::OnViewTickInSeconds()
 {
     m_wndDopeSheet->SetTickDisplayMode(eTVTickMode_InSeconds);
@@ -1764,7 +1767,6 @@ void CTrackViewDialog::OnViewTickInSeconds()
     UpdateActions();
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::OnViewTickInFrames()
 {
     m_wndDopeSheet->SetTickDisplayMode(eTVTickMode_InFrames);
@@ -1773,7 +1775,6 @@ void CTrackViewDialog::OnViewTickInFrames()
     UpdateActions();
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::SaveMiscSettings() const
 {
     QSettings settings;
@@ -1786,7 +1787,6 @@ void CTrackViewDialog::SaveMiscSettings() const
         static_cast<int>(m_defaultTracksForEntityNode.size() * sizeof(AnimParamType))));
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::ReadMiscSettings()
 {
     QSettings settings;
@@ -1836,7 +1836,6 @@ void CTrackViewDialog::ReadMiscSettings()
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::SaveLayouts()
 {
     QSettings settings("O3DE", "O3DE");
@@ -1852,7 +1851,6 @@ void CTrackViewDialog::SaveLayouts()
     settings.sync();
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::ReadLayouts()
 {
     QSettings settings("O3DE", "O3DE");
@@ -1900,19 +1898,16 @@ void CTrackViewDialog::setViewMode(ViewMode mode)
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::SaveTrackColors() const
 {
     CTVCustomizeTrackColorsDlg::SaveColors(s_kTrackViewSettingsSection);
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::ReadTrackColors()
 {
     CTVCustomizeTrackColorsDlg::LoadColors(s_kTrackViewSettingsSection);
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::SetCursorPosText(float fTime)
 {
     QString sText;
@@ -1925,21 +1920,18 @@ void CTrackViewDialog::SetCursorPosText(float fTime)
     m_cursorPos->setText(sText);
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::OnCustomizeTrackColors()
 {
     CTVCustomizeTrackColorsDlg dlg(this);
     dlg.exec();
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::OnBatchRender()
 {
     CSequenceBatchRenderDialog dlg(m_wndCurveEditor->GetFPS(), this);
     dlg.exec();
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::UpdateTracksToolBar()
 {
     CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
@@ -2027,7 +2019,6 @@ void CTrackViewDialog::UpdateTracksToolBar()
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::ClearTracksToolBar()
 {
     m_tracksToolBar->clear();
@@ -2038,7 +2029,6 @@ void CTrackViewDialog::ClearTracksToolBar()
     m_currentToolBarParamTypeId = 0;
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::AddButtonToTracksToolBar(const CAnimParamType& paramId, const QIcon& hIcon, const QString& title)
 {
     const int paramTypeToolBarID = ID_TV_TRACKS_TOOLBAR_BASE + m_currentToolBarParamTypeId;
@@ -2053,7 +2043,6 @@ void CTrackViewDialog::AddButtonToTracksToolBar(const CAnimParamType& paramId, c
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::OnTracksToolBar()
 {
     QAction* action = static_cast<QAction*>(sender());
@@ -2079,7 +2068,6 @@ void CTrackViewDialog::OnTracksToolBar()
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::OnToggleDisable()
 {
     CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
@@ -2104,7 +2092,6 @@ void CTrackViewDialog::OnToggleDisable()
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::OnToggleMute()
 {
     CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
@@ -2121,7 +2108,6 @@ void CTrackViewDialog::OnToggleMute()
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::OnMuteAll()
 {
     CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
@@ -2138,7 +2124,6 @@ void CTrackViewDialog::OnMuteAll()
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::OnUnmuteAll()
 {
     CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
@@ -2155,7 +2140,6 @@ void CTrackViewDialog::OnUnmuteAll()
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::OnNodeSelectionChanged(CTrackViewSequence* sequence)
 {
     CTrackViewSequence* pCurrentSequence = GetIEditor()->GetAnimation()->GetSequence();
@@ -2167,7 +2151,6 @@ void CTrackViewDialog::OnNodeSelectionChanged(CTrackViewSequence* sequence)
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::OnNodeRenamed(CTrackViewNode* pNode, [[maybe_unused]] const char* pOldName)
 {
     // React to sequence name changes
@@ -2177,7 +2160,6 @@ void CTrackViewDialog::OnNodeRenamed(CTrackViewNode* pNode, [[maybe_unused]] con
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::UpdateDopeSheetTime(CTrackViewSequence* sequence)
 {
     Range timeRange = sequence->GetTimeRange();
@@ -2187,7 +2169,6 @@ void CTrackViewDialog::UpdateDopeSheetTime(CTrackViewSequence* sequence)
     m_wndDopeSheet->SetTimeScale(m_wndDopeSheet->GetTimeScale(), 0);
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::OnEntityDestruction(const AZ::EntityId& entityId)
 {
     if (m_currentSequenceEntityId == entityId)
@@ -2202,7 +2183,6 @@ void CTrackViewDialog::OnEntityDestruction(const AZ::EntityId& entityId)
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::OnSequenceSettingsChanged(CTrackViewSequence* sequence)
 {
     CTrackViewSequence* pCurrentSequence = GetIEditor()->GetAnimation()->GetSequence();
@@ -2214,21 +2194,18 @@ void CTrackViewDialog::OnSequenceSettingsChanged(CTrackViewSequence* sequence)
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::OnSequenceAdded([[maybe_unused]] CTrackViewSequence* sequence)
 {
     ReloadSequencesComboBox();
     UpdateActions();
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::OnSequenceRemoved([[maybe_unused]] CTrackViewSequence* sequence)
 {
     ReloadSequencesComboBox();
     UpdateActions();
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::AddSequenceListeners(CTrackViewSequence* sequence)
 {
     if (sequence)
@@ -2241,7 +2218,6 @@ void CTrackViewDialog::AddSequenceListeners(CTrackViewSequence* sequence)
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::RemoveSequenceListeners(CTrackViewSequence* sequence)
 {
     if (sequence)
@@ -2254,7 +2230,6 @@ void CTrackViewDialog::RemoveSequenceListeners(CTrackViewSequence* sequence)
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::AddDialogListeners()
 {
     GetIEditor()->RegisterNotifyListener(this);
@@ -2263,7 +2238,6 @@ void CTrackViewDialog::AddDialogListeners()
     GetIEditor()->GetUndoManager()->AddListener(this);
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::RemoveDialogListeners()
 {
     GetIEditor()->GetUndoManager()->RemoveListener(this);
@@ -2272,13 +2246,11 @@ void CTrackViewDialog::RemoveDialogListeners()
     GetIEditor()->UnregisterNotifyListener(this);
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::BeginUndoTransaction()
 {
     m_bDoingUndoOperation = true;
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::EndUndoTransaction()
 {
     m_bDoingUndoOperation = false;

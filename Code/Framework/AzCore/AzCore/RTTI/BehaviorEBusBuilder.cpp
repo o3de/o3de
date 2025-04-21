@@ -107,6 +107,77 @@ namespace AZ::Internal
         return this;
     }
 
+    void EBusBuilderBase::HandlerImpl(BehaviorMethod* createHandler, BehaviorMethod* destroyHandler)
+    {
+        // check than the handler returns the expected type
+        if (createHandler->GetResult()->m_typeId != AzTypeInfo<BehaviorEBusHandler>::Uuid() ||
+            destroyHandler->GetArgument(0)->m_typeId != AzTypeInfo<BehaviorEBusHandler>::Uuid())
+        {
+            AZ_Assert(
+                false,
+                "HandlerCreator my return a BehaviorEBusHandler* object and HandlerDestrcutor should have an argument that can handle "
+                "BehaviorEBusHandler!");
+            delete createHandler;
+            delete destroyHandler;
+            createHandler = nullptr;
+            destroyHandler = nullptr;
+        }
+        else
+        {
+            Base::m_currentAttributes = &createHandler->m_attributes;
+            Base::SetEBusEventSender(nullptr);
+        }
+        m_ebus->m_createHandler = createHandler;
+        m_ebus->m_destroyHandler = destroyHandler;
+    }
+
+    void EBusBuilderBase::EventWithBusImpl([[maybe_unused]] const char* name, const char* deprecatedName, AZStd::unordered_map<AZStd::string, BehaviorEBusEventSender>::iterator& insertIt)
+    {
+        // do we have a deprecated name for this event?
+        if (deprecatedName != nullptr)
+        {
+            // ensure deprecated name is not in use as a existing name
+            auto itr = m_ebus->m_events.find(deprecatedName);
+
+            if (itr != m_ebus->m_events.end())
+            {
+                AZ_Warning(
+                    "BehaviorContext",
+                    false,
+                    "Event %s is attempting to use %s as a deprecated name, but the deprecated name is already in use! The deprecated name "
+                    "is ignored!",
+                    name,
+                    deprecatedName);
+            }
+            else
+            {
+                // ensure that we won't have a duplicate deprecated name
+                bool isDuplicated = false;
+                for (const auto& i : m_ebus->m_events)
+                {
+                    if (i.second.m_deprecatedName == deprecatedName)
+                    {
+                        isDuplicated = true;
+                        AZ_Warning(
+                            "BehaviorContext",
+                            false,
+                            "Event %s is attempting to use %s as a deprecated name, but the deprecated name is already used as a "
+                            "deprecated name for the Event %s! The deprecated name is ignored!",
+                            name,
+                            deprecatedName,
+                            i.first.c_str());
+                        break;
+                    }
+                }
+
+                if (!isDuplicated)
+                {
+                    insertIt->second.m_deprecatedName = deprecatedName;
+                }
+            }
+        }
+    }
+
     EBusAttributes::EBusAttributes(BehaviorContext* context)
         : Base(context)
     {

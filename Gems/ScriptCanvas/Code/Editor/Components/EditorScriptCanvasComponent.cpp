@@ -55,11 +55,23 @@ namespace ScriptCanvasEditor
         using namespace AzToolsFramework;
 
         EditorComponentBase::Activate();
+
+        auto entityId = GetEntityId();
+        if (entityId.IsValid())
+        {
+            EditorScriptCanvasComponentRequestBus::Handler::BusConnect(entityId);
+        }
+
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
         m_handlerSourceCompiled = m_configuration.ConnectToSourceCompiled([this](const Configuration&)
             {
                 this->InvalidatePropertyDisplay(AzToolsFramework::Refresh_EntireTree);
             });
+
+        m_handlerSourcePropertiesChanged = m_configuration.ConnectToPropertiesChanged([this](const Configuration&)
+        {
+            this->SetDirty();
+        });
 
         m_configuration.Refresh();
         InvalidatePropertyDisplay(AzToolsFramework::Refresh_EntireTree);
@@ -69,6 +81,7 @@ namespace ScriptCanvasEditor
     {
         m_handlerSourceCompiled.Disconnect();
         EditorComponentBase::Deactivate();
+        EditorScriptCanvasComponentRequestBus::Handler::BusDisconnect();
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusDisconnect();
     }
 
@@ -111,7 +124,7 @@ namespace ScriptCanvasEditor
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Level"))
-                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/scripting/script-canvas/")
+                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/components/reference/scripting/script-canvas/")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorScriptCanvasComponent::m_configuration, "Configuration", "Script Selection and Property Overrides")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ;
@@ -126,6 +139,22 @@ namespace ScriptCanvasEditor
 
     void EditorScriptCanvasComponent::SetPrimaryAsset(const AZ::Data::AssetId& assetId)
     {
+        SetDirty();
         m_configuration.Refresh(SourceHandle(nullptr, assetId.m_guid));
+    }
+
+
+    void EditorScriptCanvasComponent::SetAssetId(const SourceHandle& assetId)
+    {
+        if (assetId.IsDescriptionValid()
+            && (!m_configuration.HasSource() || m_configuration.GetSource().Describe() != assetId.Describe()))
+        {
+            this->SetPrimaryAsset(assetId.Id());
+        }
+    }
+
+    bool EditorScriptCanvasComponent::HasAssetId() const
+    {
+        return m_configuration.HasSource() && m_configuration.GetSource().IsDescriptionValid();
     }
 }

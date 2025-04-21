@@ -331,7 +331,7 @@ namespace JsonSerializationTests
         AZ_RTTI(IncorrectClass, "{E201252B-D653-4753-93AD-4F13C5FA2246}");
     };
 
-    TYPED_TEST_CASE_P(JsonSerializerConformityTests);
+    TYPED_TEST_SUITE_P(JsonSerializerConformityTests);
 
     TYPED_TEST_P(JsonSerializerConformityTests, Registration_SerializerIsRegisteredWithContext_SerializerFound)
     {
@@ -1344,7 +1344,7 @@ namespace JsonSerializationTests
         }
     }
 
-    REGISTER_TYPED_TEST_CASE_P(JsonSerializerConformityTests,
+    REGISTER_TYPED_TEST_SUITE_P(JsonSerializerConformityTests,
         Registration_SerializerIsRegisteredWithContext_SerializerFound,
 
         Load_InvalidTypeOfNullType_ReturnsUnsupported,

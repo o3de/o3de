@@ -49,6 +49,39 @@ namespace AZ::Metrics
             // in order to use the BehaviorContext::ClassBuilder::Constructor function
             ScriptEventValue() = default;
 
+            // Special case - when the Script Event Value is being copied from another,
+            // the default constructor cannot be used, as it would do
+            // m_valueStorage = other.m_valueStorage;
+            // m_eventValueMirror = other.m_eventValueMirror;
+            // The problem is that value storage is a local array of data, as in
+            // AZStd::vector<EventValueStorageVariant> m_valueStorage;
+            // and the mirror is supposed to basically point at the front of the storage, the first
+            // value in it, for types that require storage.  Having it point at the `other` storage
+            // risks the `other` being destroyed while this object is still in use
+            // So here, we make sure that the mirror value points the local storage, instead of the other.
+            ScriptEventValue(const ScriptEventValue& other)
+            {
+                m_eventValueMirror = other.m_eventValueMirror;
+                if (!other.m_valueStorage.empty())
+                {
+                    m_valueStorage = other.m_valueStorage;
+                
+                    // we cannot just copy the other's mirror - that would make our mirror point at their internal storage.
+                    if (AZStd::holds_alternative<AZStd::string>(m_valueStorage.front()))
+                    {
+                        m_eventValueMirror = AZStd::get<AZStd::string>(m_valueStorage.front());
+                    }
+                    else if (AZStd::holds_alternative<AZStd::vector<EventValue>>(m_valueStorage.front()))
+                    {
+                        m_eventValueMirror = EventArray{ AZStd::get<AZStd::vector<EventValue>>(m_valueStorage.front()) };
+                    }
+                    else if (AZStd::holds_alternative<AZStd::vector<EventField>>(m_valueStorage.front()))
+                    {
+                        m_eventValueMirror = EventObject{ AZStd::get<AZStd::vector<EventField>>(m_valueStorage.front()) };
+                    }
+                }
+            }
+
             //! string instances need storage
             ScriptEventValue(AZStd::string value)
                 : m_valueStorage{ EventValueStorageVariant{AZStd::in_place_type<AZStd::string>, AZStd::move(value)} }
