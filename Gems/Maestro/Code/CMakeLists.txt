@@ -92,8 +92,8 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::${gem_name}.Static
             PUBLIC
                 Gem::Atom_Bootstrap.Headers
-            	Gem::Atom_RHI.Public
-            	Gem::Atom_RHI.Reflect
+                Gem::Atom_RHI.Public
+                Gem::Atom_RHI.Reflect
                 Gem::Atom_RPI.Public
 
         RUNTIME_DEPENDENCIES

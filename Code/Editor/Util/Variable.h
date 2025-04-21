@@ -1012,30 +1012,35 @@ namespace var_type
         void operator()(double value, AZStd::string& to) const          { to = AZStd::to_string(value); };
         void operator()(const Vec2& value, AZStd::string& to) const
         {
+            AZ::Locale::ScopedSerializationLocale scopedLocale; // String should be interpreted in the "C" Locale.
             char buf[128] = { 0 };
             azsprintf(buf, "%f,%f", value.x, value.y);
             to.assign(buf);
         }
         void operator()(const Vec3& value, AZStd::string& to) const
         {
+            AZ::Locale::ScopedSerializationLocale scopedLocale; // String should be interpreted in the "C" Locale.
             char buf[192] = { 0 };
             azsprintf(buf, "%f,%f,%f", value.x, value.y, value.z);
             to.assign(buf);
         }
         void operator()(const Vec4& value, AZStd::string& to) const
         {
+            AZ::Locale::ScopedSerializationLocale scopedLocale; // String should be interpreted in the "C" Locale.
             char buf[256] = { 0 };
             azsprintf(buf, "%f,%f,%f,%f", value.x, value.y, value.z, value.w);
             to.assign(buf);
         }
         void operator()(const Ang3& value, AZStd::string& to) const
         {
+            AZ::Locale::ScopedSerializationLocale scopedLocale; // String should be interpreted in the "C" Locale.
             char buf[192] = { 0 };
             azsprintf(buf, "%f,%f,%f", value.x, value.y, value.z);
             to.assign(buf);
         }
         void operator()(const Quat& value, AZStd::string& to) const
         {
+            AZ::Locale::ScopedSerializationLocale scopedLocale; // String should be interpreted in the "C" Locale.
             char buf[256] = { 0 };
             azsprintf(buf, "%f,%f,%f,%f", value.w, value.v.x, value.v.y, value.v.z);
             to.assign(buf);
@@ -1043,30 +1048,35 @@ namespace var_type
 
         void operator()(const AZ::Color& from, AZStd::string& to) const
         {
+            AZ::Locale::ScopedSerializationLocale scopedLocale; // String should be interpreted in the "C" Locale.
             char buf[256] = { 0 };
             azsprintf(buf, "%f,%f,%f,%f", from.GetR(), from.GetG(), from.GetB(), from.GetA());
             to.assign(buf);
         }
         void operator()(const AZ::Vector2& from, AZStd::string& to) const
         {
+            AZ::Locale::ScopedSerializationLocale scopedLocale; // String should be interpreted in the "C" Locale.
             char buf[128] = { 0 };
             azsprintf(buf, "%f,%f", from.GetX(), from.GetY());
             to.assign(buf);
         }
         void operator()(const AZ::Vector3& from, AZStd::string& to) const
         {
+            AZ::Locale::ScopedSerializationLocale scopedLocale; // String should be interpreted in the "C" Locale.
             char buf[192] = { 0 };
             azsprintf(buf, "%f,%f,%f", from.GetX(), from.GetY(), from.GetZ());
             to.assign(buf);
         }
         void operator()(const AZ::Vector4& from, AZStd::string& to) const
         {
+            AZ::Locale::ScopedSerializationLocale scopedLocale; // String should be interpreted in the "C" Locale.
             char buf[256] = { 0 };
             azsprintf(buf, "%f,%f,%f,%f", from.GetX(), from.GetY(), from.GetZ(), from.GetZ());
             to.assign(buf);
         }
         void operator()(const AZ::Quaternion& from, AZStd::string& to) const
         {
+            AZ::Locale::ScopedSerializationLocale scopedLocale; // String should be interpreted in the "C" Locale.
             char buf[256] = { 0 };
             azsprintf(buf, "%f,%f,%f,%f", from.GetX(), from.GetY(), from.GetZ(), from.GetZ());
             to.assign(buf);
@@ -1216,69 +1226,83 @@ namespace var_type
         /////////////////////////////////////////// From AZStd::string
         void operator()(const AZStd::string& from, int& value) const
         {
+            AZ::Locale::ScopedSerializationLocale scopedLocale; // String should be interpreted in the "C" Locale.
             azsscanf(from.c_str(), "%d", &value);
         }
         void operator()(const AZStd::string& from, bool& value) const
         {
+            AZ::Locale::ScopedSerializationLocale scopedLocale; // String should be interpreted in the "C" Locale.
             int val = 0;
             azsscanf(from.c_str(), "%d", &val);
             value = val != 0;
         }
         void operator()(const AZStd::string& from, float& value) const
         {
+            AZ::Locale::ScopedSerializationLocale scopedLocale; // String should be interpreted in the "C" Locale.
             azsscanf(from.c_str(), "%f", &value);
         }
         void operator()(const AZStd::string& from, double& value) const
         {
+            AZ::Locale::ScopedSerializationLocale scopedLocale; // String should be interpreted in the "C" Locale.
             azsscanf(from.c_str(), "%lf", &value);
         }
         void operator()(const AZStd::string& from, Vec2& value) const
         {
+            AZ::Locale::ScopedSerializationLocale scopedLocale; // String should be interpreted in the "C" Locale.
             azsscanf(from.c_str(), "%f,%f", &value.x, &value.y);
         }
         void operator()(const AZStd::string& from, Vec3& value) const
         {
+            AZ::Locale::ScopedSerializationLocale scopedLocale; // String should be interpreted in the "C" Locale.
             azsscanf(from.c_str(), "%f,%f,%f", &value.x, &value.y, &value.z);
         }
         void operator()(const AZStd::string& from, Vec4& value) const
         {
+            AZ::Locale::ScopedSerializationLocale scopedLocale; // String should be interpreted in the "C" Locale.
             azsscanf(from.c_str(), "%f,%f,%f,%f", &value.x, &value.y, &value.z, &value.w);
         }
         void operator()(const AZStd::string& from, Ang3& value) const
         {
+            AZ::Locale::ScopedSerializationLocale scopedLocale; // String should be interpreted in the "C" Locale.
             azsscanf(from.c_str(), "%f,%f,%f", &value.x, &value.y, &value.z);
         }
         void operator()(const AZStd::string& from, Quat& value) const
         {
+            AZ::Locale::ScopedSerializationLocale scopedLocale; // String should be interpreted in the "C" Locale.
             azsscanf(from.c_str(), "%f,%f,%f,%f", &value.w, &value.v.x, &value.v.y, &value.v.z);
         }
 
         void operator()(const AZStd::string& from, AZ::Color& value) const
         {
+            AZ::Locale::ScopedSerializationLocale scopedLocale; // String should be interpreted in the "C" Locale.
             float val[4];
             azsscanf(from.c_str(), "%f,%f,%f,%f", val, val + 1, val + 2, val + 3);
             value.Set(val);
         }
         void operator()(const AZStd::string& from, AZ::Vector2& value) const
         {
+            AZ::Locale::ScopedSerializationLocale scopedLocale; // String should be interpreted in the "C" Locale.
             float val[2];
             azsscanf(from.c_str(), "%f,%f,", val, val + 1);
             value = AZ::Vector2::CreateFromFloat2(val);
         }
         void operator()(const AZStd::string& from, AZ::Vector3& value) const
         {
+            AZ::Locale::ScopedSerializationLocale scopedLocale; // String should be interpreted in the "C" Locale.
             float val[3];
             azsscanf(from.c_str(), "%f,%f,%f", val, val + 1, val + 2);
             value.Set(val);
         }
         void operator()(const AZStd::string& from, AZ::Vector4& value) const
         {
+            AZ::Locale::ScopedSerializationLocale scopedLocale; // String should be interpreted in the "C" Locale.
             float val[4];
             azsscanf(from.c_str(), "%f,%f,%f,%f", val, val + 1, val + 2, val + 3);
             value.Set(val);
         };
         void operator()(const AZStd::string& from, AZ::Quaternion& value) const
         {
+            AZ::Locale::ScopedSerializationLocale scopedLocale; // String should be interpreted in the "C" Locale.
             float val[4];
             azsscanf(from.c_str(), "%f,%f,%f,%f", val, val + 1, val + 2, val + 3);
             value.Set(val);
