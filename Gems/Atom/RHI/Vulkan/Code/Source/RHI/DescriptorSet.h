@@ -39,7 +39,7 @@ namespace AZ
             using Base = RHI::DeviceObject;
             friend class DescriptorPool;
 
-            static constexpr size_t ViewsFixedsize = 16;
+            static constexpr size_t ViewsFixedsize = 2;
 
         public:
             
@@ -73,6 +73,9 @@ namespace AZ
             RHI::Ptr<BufferView> GetConstantDataBufferView() const;
 
         private:
+            // we use the small_vector to speed up SRG compilation, but we have to be a bit careful with the size of the pre-allocation:
+            // e.g. the StarterGame - Level has about 8000 objects (~4000 meshes with 2 LODs) that get a unique Draw-Srgs for
+            // each pass. And with 2 Material-Pipelines we have about 20 passes, so we end up with 160.000 unique Draw-Srgs
             struct WriteDescriptorData
             {
                 uint32_t m_layoutIndex = 0;
@@ -107,7 +110,7 @@ namespace AZ
             Descriptor m_descriptor;
 
             VkDescriptorSet m_nativeDescriptorSet = VK_NULL_HANDLE;
-            AZStd::small_vector<WriteDescriptorData, ViewsFixedsize> m_updateData;
+            AZStd::vector<WriteDescriptorData> m_updateData;
             RHI::Ptr<Buffer> m_constantDataBuffer;
             RHI::Ptr<BufferView> m_constantDataBufferView;
             bool m_nullDescriptorSupported = false;

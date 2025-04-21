@@ -32,15 +32,15 @@ namespace Maestro
         //////////////////////////////////////////////////////////////////////////
         bool Serialize(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTracks) override;
 
-        void GetKeyInfo(int key, const char*& description, float& duration) override;
+        void GetKeyInfo(int keyIndex, const char*& description, float& duration) const override;
         void SerializeKey(AZ::IAssetBlendKey& key, XmlNodeRef& keyNode, bool bLoading) override;
 
         //! Gets the duration of an animation key. If it's a looped animation,
         //! a special consideration is required to compute the actual duration.
-        float GetKeyDuration(int key) const;
+        float GetKeyDuration(int keyIndex) const;
 
-        AnimValueType GetValueType() override;
-        void GetValue(float time, AssetBlends<AZ::Data::AssetData>& value) override;
+        AnimValueType GetValueType() const override;
+        void GetValue(float time, AssetBlends<AZ::Data::AssetData>& value) const override;
         void SetValue(float time, const AssetBlends<AZ::Data::AssetData>& value, bool bDefault = false) override;
 
         //////////////////////////////////////////////////////////////////////////
@@ -59,7 +59,6 @@ namespace Maestro
             const AssetBlends<AZ::Data::AssetData>& value, AssetBlends<AZ::Data::AssetData>& filteredValue) const;
 
         // Internal transient state, not serialized.
-        AssetBlends<AZ::Data::AssetData> m_assetBlend;
         AssetBlends<AZ::Data::AssetData> m_defaultValue;
     };
 

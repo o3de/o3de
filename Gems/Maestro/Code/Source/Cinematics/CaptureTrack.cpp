@@ -43,25 +43,32 @@ namespace Maestro
         }
     }
 
-    void CCaptureTrack::GetKeyInfo(int key, const char*& description, float& duration)
+    void CCaptureTrack::GetKeyInfo(int keyIndex, const char*& description, float& duration) const
     {
-        AZ_Assert(key >= 0 && key < (int)m_keys.size(), "Key index %i is out of range", key);
-        static char buffer[256];
-        CheckValid();
-        duration = m_keys[key].once ? 0 : m_keys[key].duration;
-        char prefix[64] = "Frame";
-        if (!m_keys[key].prefix.empty())
+        description = 0;
+        duration = 0;
+
+        if (keyIndex < 0 || keyIndex >= GetNumKeys())
         {
-            azstrcpy(prefix, AZ_ARRAY_SIZE(prefix), m_keys[key].prefix.c_str());
+            AZ_Assert(false, "Key index (%d) is out of range (0 .. %d).", keyIndex, GetNumKeys());
+            return;
+        }
+
+        static char buffer[256];
+        duration = m_keys[keyIndex].once ? 0 : m_keys[keyIndex].duration;
+        char prefix[64] = "Frame";
+        if (!m_keys[keyIndex].prefix.empty())
+        {
+            azstrcpy(prefix, AZ_ARRAY_SIZE(prefix), m_keys[keyIndex].prefix.c_str());
         }
         description = buffer;
-        if (!m_keys[key].folder.empty())
+        if (!m_keys[keyIndex].folder.empty())
         {
-            sprintf_s(buffer, "[%s], %.3f, %s", prefix, m_keys[key].timeStep, m_keys[key].folder.c_str());
+            azsprintf(buffer, "[%s], %.3f, %s", prefix, m_keys[keyIndex].timeStep, m_keys[keyIndex].folder.c_str());
         }
         else
         {
-            sprintf_s(buffer, "[%s], %.3f", prefix, m_keys[key].timeStep);
+            azsprintf(buffer, "[%s], %.3f", prefix, m_keys[keyIndex].timeStep);
         }
     }
 

@@ -2332,7 +2332,7 @@ LUA_API const Node* lua_getDummyNode()
             template<class T>
             bool AllocateTempStorageLuaNative(BehaviorArgument& value, BehaviorClass* valueClass, ScriptContext::StackVariableAllocator& tempAllocator, AZStd::allocator* backupAllocator = nullptr)
             {
-                static_assert(AZStd::is_pod<T>::value, "This should be use only for POD data types, as no ctor/dtor is called!");
+                static_assert(AZStd::is_trivial<T>::value, "This should be use only for trivial data types, as no ctor/dtor is called!");
                 (void)valueClass;
 
                 if (value.m_traits & BehaviorParameter::TR_POINTER)

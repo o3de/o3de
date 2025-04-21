@@ -151,6 +151,7 @@ namespace PhysX
         AZStd::unordered_map<AZ::EntityId, physx::PxArticulationLink*> m_articulationLinksByEntityId;
         using EntityIdSensorIndexListPair = AZStd::pair<AZ::EntityId, AZStd::vector<AZ::u32>>;
         AZStd::unordered_map<AZ::EntityId, AZStd::vector<AZ::u32>> m_sensorIndicesByEntityId;
+        bool m_enabled = true;
     };
 
     //! Utility function for detecting if the current entity is the root of articulation.

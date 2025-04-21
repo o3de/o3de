@@ -41,16 +41,22 @@ namespace Maestro
         }
     }
 
-    void CSoundTrack::GetKeyInfo(int key, const char*& description, float& duration)
+    void CSoundTrack::GetKeyInfo(int keyIndex, const char*& description, float& duration) const
     {
-        AZ_Assert(key >= 0 && key < (int)m_keys.size(), "Key index %i is out of range", key);
-        CheckValid();
         description = 0;
-        duration = m_keys[key].fDuration;
+        duration = 0;
 
-        if (!m_keys[key].sStartTrigger.empty())
+        if (keyIndex < 0 || keyIndex >= GetNumKeys())
         {
-            description = m_keys[key].sStartTrigger.c_str();
+            AZ_Assert(false, "Key index (%d) is out of range (0 .. %d).", keyIndex, GetNumKeys());
+            return;
+        }
+
+        duration = m_keys[keyIndex].fDuration;
+
+        if (!m_keys[keyIndex].sStartTrigger.empty())
+        {
+            description = m_keys[keyIndex].sStartTrigger.c_str();
         }
     }
 

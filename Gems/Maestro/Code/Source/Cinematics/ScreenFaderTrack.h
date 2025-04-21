@@ -28,7 +28,7 @@ namespace Maestro
         //-----------------------------------------------------------------------------
         //! IAnimTrack Method Overriding.
         //-----------------------------------------------------------------------------
-        void GetKeyInfo(int key, const char*& description, float& duration) override;
+        void GetKeyInfo(int keyIndex, const char*& description, float& duration) const override;
         void SerializeKey(IScreenFaderKey& key, XmlNodeRef& keyNode, bool bLoading) override;
         void SetFlags(int flags) override;
 

@@ -60,6 +60,9 @@ namespace AzToolsFramework
 
             bool RemoveComponentFromEntityAndContainers(AZ::Entity* entity, AZ::Component* componentToRemove);
 
+            // Helper function to check whether an InstanceUpdateExecutor is currently Updating Template Instances In Queue
+            bool AreInstancesUpdated() const;
+
             ScrubEntityResults ScrubEntity(AZ::Entity* entity);
 
             /*!

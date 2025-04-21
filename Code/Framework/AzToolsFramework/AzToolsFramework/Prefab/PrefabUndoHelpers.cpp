@@ -121,7 +121,7 @@ namespace AzToolsFramework
             void UpdateEntitiesAsOverrides(
                 const AZStd::vector<const AZ::Entity*>& entityList,
                 Instance& owningInstance,
-                const Instance& focusedInstance,
+                Instance& focusedInstance,
                 UndoSystem::URSequencePoint* undoBatch)
             {
                 PrefabUndoEntityOverrides* state = aznew PrefabUndoEntityOverrides("Undo Updating Entity List As Override");

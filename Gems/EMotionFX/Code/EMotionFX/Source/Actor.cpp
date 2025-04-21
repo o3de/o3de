@@ -1476,7 +1476,7 @@ namespace EMotionFX
             Transform localTransform = pose.GetLocalSpaceTransform(motionSource);
             Transform orgDelta = Transform::CreateIdentity();
             orgDelta.m_position.Set(1.1f, 2.2f, 3.3f);
-            orgDelta.m_rotation = MCore::AzEulerAnglesToAzQuat(0.1f, 0.2f, 0.3f);
+            orgDelta.m_rotation = AZ::Quaternion::CreateFromEulerRadiansZYX(AZ::Vector3(0.1f, 0.2f, 0.3f));
             Transform delta = orgDelta;
             delta.Multiply(localTransform);
             pose.SetLocalSpaceTransform(motionSource, delta);

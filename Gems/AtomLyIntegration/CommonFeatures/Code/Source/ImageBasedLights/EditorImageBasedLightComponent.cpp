@@ -45,7 +45,7 @@ namespace AZ
                             ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Component_Placeholder.svg")
                             ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                            ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/atom/global-skylight-ibl/")
+                            ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/components/reference/atom/global-skylight-ibl/")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &EditorImageBasedLightComponent::m_diffuseImageAsset, "Diffuse Image", "Cubemap image asset for determining diffuse lighting")
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorImageBasedLightComponent::OnDiffuseImageAssetChanged)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &EditorImageBasedLightComponent::m_specularImageAsset, "Specular Image", "Cubemap image asset for determining specular lighting")

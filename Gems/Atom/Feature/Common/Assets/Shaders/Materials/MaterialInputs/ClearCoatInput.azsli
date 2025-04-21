@@ -49,7 +49,11 @@ void GetClearCoatInputs(Texture2D influenceMap, float2 influenceUV, real clearCo
         }
         else
         {
+        #ifdef CS_SAMPLERS
+            clearCoatFactor *= real(influenceMap.SampleLevel(mapSampler, influenceUV, 0).r);
+        #else
             clearCoatFactor *= real(influenceMap.Sample(mapSampler, influenceUV).r);
+        #endif
         }
     }
     
@@ -61,7 +65,11 @@ void GetClearCoatInputs(Texture2D influenceMap, float2 influenceUV, real clearCo
         }
         else
         {
+        #ifdef CS_SAMPLERS
+            roughness *= real(roughnessMap.SampleLevel(mapSampler, roughnessUV, 0).r);
+        #else
             roughness *= real(roughnessMap.Sample(mapSampler, roughnessUV).r);
+        #endif
         }
     }
     
@@ -74,7 +82,11 @@ void GetClearCoatInputs(Texture2D influenceMap, float2 influenceUV, real clearCo
         }
         else
         {
+        #ifdef CS_SAMPLERS
+            sampledValue = real2(normalMap.SampleLevel(mapSampler, normalUV, 0).xy);
+        #else
             sampledValue = real2(normalMap.Sample(mapSampler, normalUV).xy);
+        #endif
         }
         clearCoatNormal = GetWorldSpaceNormal(sampledValue.xy, normal, tangent, bitangent, uvMatrix, normalStrength);
     }

@@ -58,6 +58,11 @@ namespace Maestro
             keyNode->getAttr("blendGap", key.m_bBlendGap);
             keyNode->getAttr("inplace", key.m_bInPlace);
             keyNode->getAttr("start", key.m_startTime);
+
+            if (key.m_speed < AZ::Constants::Tolerance)
+            {
+                key.m_speed = 1.0f;
+            }
         }
         else
         {
@@ -97,54 +102,62 @@ namespace Maestro
         }
     }
 
-    void CCharacterTrack::GetKeyInfo(int key, const char*& description, float& duration)
+    void CCharacterTrack::GetKeyInfo(int keyIndex, const char*& description, float& duration) const
     {
-        AZ_Assert(key >= 0 && key < (int)m_keys.size(), "Key index %i is out of range", key);
-        CheckValid();
         description = 0;
         duration = 0;
-        if (!m_keys[key].m_animation.empty())
+
+        const auto numKeys = GetNumKeys();
+        if (keyIndex < 0 || keyIndex >= numKeys)
         {
-            description = m_keys[key].m_animation.c_str();
-            if (m_keys[key].m_bLoop)
+            AZ_Assert(false, "Key index (%d) is out of range (0 .. %d).", keyIndex, numKeys);
+            return;
+        }
+
+        if (!m_keys[keyIndex].m_animation.empty())
+        {
+            description = m_keys[keyIndex].m_animation.c_str();
+            if (m_keys[keyIndex].m_bLoop)
             {
                 float lastTime = m_timeRange.end;
-                if (key + 1 < (int)m_keys.size())
+                if (keyIndex + 1 < numKeys)
                 {
-                    lastTime = m_keys[key + 1].time;
+                    lastTime = m_keys[keyIndex + 1].time;
                 }
                 // duration is unlimited but cannot last past end of track or time of next key on track.
-                duration = lastTime - m_keys[key].time;
+                duration = lastTime - m_keys[keyIndex].time;
             }
             else
             {
-                if (m_keys[key].m_speed == 0)
-                {
-                    m_keys[key].m_speed = 1.0f;
-                }
-                duration = m_keys[key].GetActualDuration();
+                duration = m_keys[keyIndex].GetActualDuration();
             }
         }
     }
 
-    float CCharacterTrack::GetKeyDuration(int key) const
+    float CCharacterTrack::GetKeyDuration(int keyIndex) const
     {
-        AZ_Assert(key >= 0 && key < (int)m_keys.size(), "Key index %i is out of range", key);
+        const auto numKeys = GetNumKeys();
+        if (keyIndex < 0 || keyIndex >= numKeys)
+        {
+            AZ_Assert(false, "Key index (%d) is out of range (0 .. %d).", keyIndex, numKeys);
+            return 0.0f;
+        }
+
         const float EPSILON = 0.001f;
-        if (m_keys[key].m_bLoop)
+        if (m_keys[keyIndex].m_bLoop)
         {
             float lastTime = m_timeRange.end;
-            if (key + 1 < (int)m_keys.size())
+            if (keyIndex + 1 < numKeys)
             {
                 // EPSILON is required to ensure the correct ordering when getting nearest keys.
-                lastTime = m_keys[key + 1].time + AZStd::min(LoopTransitionTime, GetKeyDuration(key + 1) - EPSILON);
+                lastTime = m_keys[keyIndex + 1].time + AZStd::min(LoopTransitionTime, GetKeyDuration(keyIndex + 1) - EPSILON);
             }
             // duration is unlimited but cannot last past end of track or time of next key on track.
-            return AZStd::max(lastTime - m_keys[key].time, 0.0f);
+            return AZStd::max(lastTime - m_keys[keyIndex].time, 0.0f);
         }
         else
         {
-            return m_keys[key].GetActualDuration();
+            return m_keys[keyIndex].GetActualDuration();
         }
     }
 
@@ -173,7 +186,7 @@ namespace Maestro
         }
     }
 
-    AnimValueType CCharacterTrack::GetValueType()
+    AnimValueType CCharacterTrack::GetValueType() const
     {
         return AnimValueType::CharacterAnim;
     }

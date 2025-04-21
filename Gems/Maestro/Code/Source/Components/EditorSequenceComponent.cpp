@@ -176,7 +176,7 @@ namespace Maestro
         Maestro::EditorSequenceComponentRequestBus::Handler::BusConnect(GetEntityId());
         Maestro::SequenceComponentRequestBus::Handler::BusConnect(GetEntityId());
 
-        AZ_Trace("EditorSequenceComponent::Activate", "SequenceComponentRequestBus connected to %s", GetEntityId().ToString().c_str());
+        AZ_Trace("EditorSequenceComponent", "Activate(): %p, '%s'.", this, GetNamedEntityId().ToString().c_str());
 
         IEditor* editor = nullptr;
         AzToolsFramework::EditorRequests::Bus::BroadcastResult(editor, &AzToolsFramework::EditorRequests::Bus::Events::GetEditor);
@@ -199,7 +199,7 @@ namespace Maestro
         Maestro::EditorSequenceComponentRequestBus::Handler::BusDisconnect();
         Maestro::SequenceComponentRequestBus::Handler::BusDisconnect();
 
-        AZ_Trace("EditorSequenceComponent::Deactivate", "SequenceComponentRequestBus disconnected from %s", GetEntityId().ToString().c_str());
+        AZ_Trace("EditorSequenceComponent", "Deactivate(): %p, '%s'.", this, GetNamedEntityId().ToString().c_str());
 
         IEditor* editor = nullptr;
         AzToolsFramework::EditorRequests::Bus::BroadcastResult(editor, &AzToolsFramework::EditorRequests::Bus::Events::GetEditor);
@@ -265,8 +265,10 @@ namespace Maestro
         if (agentComponent)
         {
             agentComponent->ConnectSequence(GetEntityId());
+            return true;
         }
-        return true;
+
+        return false;
     }
 
     void EditorSequenceComponent::RemoveEntityToAnimate(AZ::EntityId removedEntityId)
@@ -278,6 +280,10 @@ namespace Maestro
             // entities are not activated, components have no pointers to parent entities,
             // buses are not connected -> no need to try fetching owner EntityId from m_sequence.
             return;
+        }
+        if (!removedEntityId.IsValid())
+        {
+            return; // nothing to do
         }
 
         const Maestro::SequenceAgentEventBusId ebusId(GetEntityId(), removedEntityId);

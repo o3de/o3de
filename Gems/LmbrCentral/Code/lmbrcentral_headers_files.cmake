@@ -27,8 +27,6 @@ set(FILES
     include/LmbrCentral/Scripting/EditorTagComponentBus.h
     include/LmbrCentral/Scripting/GameplayNotificationBus.h
     include/LmbrCentral/Scripting/SimpleStateComponentBus.h
-    include/LmbrCentral/Scripting/SpawnerComponentBus.h
-    include/LmbrCentral/Scripting/RandomTimedSpawnerComponentBus.h
     include/LmbrCentral/Scripting/TagComponentBus.h
     include/LmbrCentral/Shape/EditorShapeComponentBus.h
     include/LmbrCentral/Shape/ShapeComponentBus.h

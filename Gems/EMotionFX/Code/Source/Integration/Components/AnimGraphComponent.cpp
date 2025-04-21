@@ -13,7 +13,6 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 
 #include <MCore/Source/AttributeString.h>
-#include <MCore/Source/AzCoreConversions.h>
 #include <EMotionFX/Source/AnimGraph.h>
 #include <EMotionFX/Source/AnimGraphInstance.h>
 #include <EMotionFX/Source/ActorInstance.h>
@@ -824,7 +823,7 @@ namespace EMotionFX
                 {
                     MCore::AttributeQuaternion* quaternionParam = static_cast<MCore::AttributeQuaternion*>(param);
                     previousValue = quaternionParam->GetValue();
-                    quaternionParam->SetValue(MCore::AzEulerAnglesToAzQuat(value));
+                    quaternionParam->SetValue(AZ::Quaternion::CreateFromEulerRadiansZYX(value));
                     break;
                 }
                 default:
@@ -839,7 +838,7 @@ namespace EMotionFX
                     m_animGraphInstance.get(),
                     parameterIndex,
                     previousValue,
-                    MCore::AzEulerAnglesToAzQuat(value));
+                    AZ::Quaternion::CreateFromEulerRadiansZYX(value));
             }
         }
 
@@ -1108,7 +1107,7 @@ namespace EMotionFX
             {
                 AZ::Quaternion value;
                 m_animGraphInstance->GetRotationParameterValue(parameterIndex, &value);
-                return MCore::AzQuaternionToEulerAngles(value);
+                return value.GetEulerRadiansZYX();
             }
             return AZ::Vector3::CreateZero();
         }

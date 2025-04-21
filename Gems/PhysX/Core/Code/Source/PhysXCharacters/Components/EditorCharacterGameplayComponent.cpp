@@ -49,7 +49,7 @@ namespace PhysX
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/PhysXCharacter.svg")
                     ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/PhysXCharacter.svg")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
-                    ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/physx/character-gameplay/")
+                    ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/components/reference/physx/character-gameplay/")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorCharacterGameplayComponent::m_gameplayConfig,
                         "Gameplay Configuration", "Gameplay Configuration.")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)

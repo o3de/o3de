@@ -289,6 +289,10 @@ namespace AZ
 
             MeshInstanceManager& GetMeshInstanceManager();
             bool IsMeshInstancingEnabled() const;
+
+            Data::Instance<RPI::ShaderResourceGroup>& GetDrawSrg(const MeshHandle& meshHandle, uint32_t lodIndex, uint32_t subMeshIndex,
+                RHI::DrawListTag drawListTag, RHI::DrawFilterMask materialPipelineMask) override;
+
         private:
             MeshFeatureProcessor(const MeshFeatureProcessor&) = delete;
 

@@ -23,7 +23,7 @@ namespace Maestro
         AZ_RTTI(CCaptureTrack, "{72505F9F-C098-4435-9C95-79013C4DD70B}", IAnimTrack);
 
         void SerializeKey(ICaptureKey& key, XmlNodeRef& keyNode, bool bLoading) override;
-        void GetKeyInfo(int key, const char*& description, float& duration) override;
+        void GetKeyInfo(int keyIndex, const char*& description, float& duration) const override;
 
         static void Reflect(AZ::ReflectContext* context);
     };

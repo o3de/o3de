@@ -1104,10 +1104,15 @@ namespace Maestro
                                 AZ::Vector3 vector3PrevValue;
                                 prevValue.GetValue(vector3PrevValue);
 
-                                // Check sub-tracks for keys. If there are none, use the prevValue for that track (essentially making a non-keyed track a no-op)
-                                vec.Set(pTrack->GetSubTrack(0)->HasKeys() ? vec.GetX() : vector3PrevValue.GetX(),
-                                    pTrack->GetSubTrack(1)->HasKeys() ? vec.GetY() : vector3PrevValue.GetY(),
-                                    pTrack->GetSubTrack(2)->HasKeys() ? vec.GetZ() : vector3PrevValue.GetZ());
+                                // Check sub-tracks for keys and for enabled state.
+                                // If there are no keys in a sub-track, or sub-track is disabled, use the prevValue for that sub-track,
+                                // thus essentially making a non-keyed track or disabled track a no-op.
+                                for (int i = 0; i < 3; ++i)
+                                {
+                                    const auto valueIsValid = pTrack->GetSubTrack(i) && pTrack->GetSubTrack(i)->HasKeys() &&
+                                        (pTrack->GetSubTrack(i)->GetFlags() & IAnimTrack::eAnimTrackFlags_Disabled) == 0;
+                                    vec.SetElement(i, valueIsValid ? vec.GetElement(i) : vector3PrevValue.GetElement(i));
+                                }
                                 value.SetValue(vec);
 
                                 if (!value.IsClose(prevValue, tolerance))
@@ -1119,23 +1124,41 @@ namespace Maestro
                             }
                             case AnimValueType::Quat:
                             {
-                                if (pTrack->HasKeys())
+                                AZ::Quaternion quaternionValue(AZ::Quaternion::CreateIdentity());
+                                pTrack->GetValue(ac.time, quaternionValue);
+                                SequenceComponentRequests::AnimatedQuaternionValue prevValue(quaternionValue);
+                                SequenceComponentRequestBus::Event(m_pSequence->GetSequenceEntityId(), &SequenceComponentRequestBus::Events::GetAnimatedPropertyValue, prevValue, GetParentAzEntityId(), animatableAddress);
+                                AZ::Quaternion prevQuaternionValue;
+                                prevValue.GetValue(prevQuaternionValue);
+
+                                // Check sub-tracks for keys and for enabled state.
+                                // If there are no keys in a sub-track, or sub-track is disabled, use the prevValue for that sub-track,
+                                // thus essentially making a non-keyed track or disabled track a no-op.
+                                // Note that sub-tracks store 3 Tait-Bryan rotation angles in degrees, with ZYX order of conversion.
+                                AZ::Vector3 degreesRotation;
+                                pTrack->GetValue(ac.time, degreesRotation);
+                                AZ::Vector3 degreesRotationPrev = prevQuaternionValue.GetEulerDegreesZYX();
+                                bool needToRecalc = false; 
+                                for (int i = 0; i < 3; ++i)
                                 {
-                                    float tolerance = AZ::Constants::FloatEpsilon;
-
-                                    AZ::Quaternion quaternionValue(AZ::Quaternion::CreateIdentity());
-                                    pTrack->GetValue(ac.time, quaternionValue);
-                                    SequenceComponentRequests::AnimatedQuaternionValue value(quaternionValue);
-                                    SequenceComponentRequests::AnimatedQuaternionValue prevValue(quaternionValue);
-                                    SequenceComponentRequestBus::Event(m_pSequence->GetSequenceEntityId(), &SequenceComponentRequestBus::Events::GetAnimatedPropertyValue, prevValue, GetParentAzEntityId(), animatableAddress);
-                                    AZ::Quaternion prevQuaternionValue;
-                                    prevValue.GetValue(prevQuaternionValue);
-
-                                    if (!prevQuaternionValue.IsClose(quaternionValue, tolerance))
+                                    const auto valueIsValid = pTrack->GetSubTrack(i) && pTrack->GetSubTrack(i)->HasKeys() &&
+                                        (pTrack->GetSubTrack(i)->GetFlags() & IAnimTrack::eAnimTrackFlags_Disabled) == 0;
+                                    if (!valueIsValid)
                                     {
-                                        // only set the value if it's changed
-                                        SequenceComponentRequestBus::Event(m_pSequence->GetSequenceEntityId(), &SequenceComponentRequestBus::Events::SetAnimatedPropertyValue, GetParentAzEntityId(), animatableAddress, value);
+                                        degreesRotation.SetElement(i, degreesRotationPrev.GetElement(i));
+                                        needToRecalc = true;
                                     }
+                                }
+                                if (needToRecalc)
+                                {
+                                    quaternionValue = AZ::Quaternion::CreateFromEulerDegreesZYX(degreesRotation);
+                                }
+
+                                if (!prevQuaternionValue.IsClose(quaternionValue, AZ::Constants::FloatEpsilon))
+                                {
+                                    // only set the value if it's changed
+                                    SequenceComponentRequests::AnimatedQuaternionValue value(quaternionValue);
+                                    SequenceComponentRequestBus::Event(m_pSequence->GetSequenceEntityId(), &SequenceComponentRequestBus::Events::SetAnimatedPropertyValue, GetParentAzEntityId(), animatableAddress, value);
                                 }
                                 break;
                             }

@@ -14,7 +14,7 @@ namespace PhysX
     {
         const AZStd::string& GetPhysXDocsRoot()
         {
-            static const AZStd::string val = "https://o3de.org/docs/user-guide/interactivity/physics/nvidia-physx/";
+            static const AZStd::string val = "https://www.o3de.org/docs/user-guide/interactivity/physics/nvidia-physx/";
             return val;
         }
     } // namespace UXNameConstants

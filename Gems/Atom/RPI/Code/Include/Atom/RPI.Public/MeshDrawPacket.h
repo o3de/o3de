@@ -60,6 +60,8 @@ namespace AZ
             AZ_DEFAULT_COPY(MeshDrawPacket);
             AZ_DEFAULT_MOVE(MeshDrawPacket);
 
+            static Data::Instance<RPI::ShaderResourceGroup> InvalidSrg;
+
             bool Update(const Scene& parentScene, bool forceUpdate = false);
 
             RHI::DrawPacket* GetRHIDrawPacket() { return m_drawPacket.get(); }
@@ -84,6 +86,9 @@ namespace AZ
             const ShaderList& GetActiveShaderList() const { return m_activeShaders; }
 
             void DebugOutputShaderVariants();
+
+            //! Returns the DrawSrg from the DrawItem that corresponds to @drawItemIndex.
+            Data::Instance<RPI::ShaderResourceGroup>& GetDrawSrg(uint32_t drawItemIndex);
 
         private:
             bool DoUpdate(const Scene& parentScene);

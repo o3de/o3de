@@ -59,7 +59,6 @@
 #include <AzCore/std/typetraits/is_member_object_pointer.h>
 #include <AzCore/std/typetraits/is_member_pointer.h>
 #include <AzCore/std/typetraits/is_object.h>
-#include <AzCore/std/typetraits/is_pod.h>
 #include <AzCore/std/typetraits/is_polymorphic.h>
 #include <AzCore/std/typetraits/is_pointer.h>
 #include <AzCore/std/typetraits/is_reference.h>

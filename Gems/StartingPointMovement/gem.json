@@ -18,6 +18,6 @@
     ],
     "icon_path": "preview.png",
     "requirements": "",
-    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/input/starting-point-movement/",
+    "documentation_url": "https://www.o3de.org/docs/user-guide/gems/reference/input/starting-point-movement/",
     "dependencies": []
 }

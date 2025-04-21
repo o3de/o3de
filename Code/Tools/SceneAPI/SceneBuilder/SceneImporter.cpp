@@ -22,6 +22,7 @@
 #include <SceneAPI/SceneBuilder/Importers/ImporterUtilities.h>
 #include <SceneAPI/SceneBuilder/Importers/Utilities/RenamedNodesMap.h>
 #include <SceneAPI/SceneCore/Containers/Scene.h>
+#include <SceneAPI/SceneCore/DataTypes/GraphData/IBoneData.h>
 #include <SceneAPI/SceneCore/DataTypes/Groups/IImportGroup.h>
 #include <SceneAPI/SceneCore/Import/ManifestImportRequestHandler.h>
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
@@ -207,47 +208,42 @@ namespace AZ
                         nodeResult += Events::ProcessingResult::Success;
                     }
 
-                    // Create single node since only one piece of graph data was created
-                    if (sourceNodeEncountered.m_createdData.size() == 1)
+                    AZ_Assert(nodeResult.GetResult() != Events::ProcessingResult::Ignored,
+                        "%i importer(s) created data, but did not return success",
+                        sourceNodeEncountered.m_createdData.size());
+                    if (nodeResult.GetResult() == Events::ProcessingResult::Failure)
                     {
-                        AZ_Assert(nodeResult.GetResult() != Events::ProcessingResult::Ignored,
-                            "An importer created data, but did not return success");
-                        if (nodeResult.GetResult() == Events::ProcessingResult::Failure)
-                        {
-                            AZ_TracePrintf(Utilities::ErrorWindow, "One or more importers failed to create data.");
-                        }
-
-                        AssImpSceneDataPopulatedContext dataProcessed(sourceNodeEncountered,
-                            sourceNodeEncountered.m_createdData[0], nodeName.c_str());
-                        Events::ProcessingResult result = AddDataNodeWithContexts(dataProcessed);
-                        if (result != Events::ProcessingResult::Failure)
-                        {
-                            newNode = dataProcessed.m_currentGraphPosition;
-                        }
+                        AZ_TracePrintf(Utilities::ErrorWindow, "One or more importers failed to create data.");
                     }
-                    // Create an empty parent node and place all data under it. The remaining
-                    // tree will be built off of this as the logical parent
-                    else
-                    {
-                        AZ_Assert(nodeResult.GetResult() != Events::ProcessingResult::Ignored,
-                            "%i importers created data, but did not return success",
-                            sourceNodeEncountered.m_createdData.size());
-                        if (nodeResult.GetResult() == Events::ProcessingResult::Failure)
-                        {
-                            AZ_TracePrintf(Utilities::ErrorWindow, "One or more importers failed to create data.");
-                        }
 
-                        size_t offset = nodeName.length();
-                        for (size_t i = 0; i < sourceNodeEncountered.m_createdData.size(); ++i)
+                    size_t offset = nodeName.length();
+                    for (size_t i = 0; i < sourceNodeEncountered.m_createdData.size(); ++i)
+                    {
+                        bool saveCreatedDataToNewNode = (sourceNodeEncountered.m_createdData.size() == 1 || 
+                            sourceNodeEncountered.m_createdData[i]->RTTI_IsTypeOf(DataTypes::IBoneData::TYPEINFO_Uuid()));
+                        if (!saveCreatedDataToNewNode)
                         {
                             nodeName += '_';
                             nodeName += AZStd::to_string(aznumeric_cast<AZ::u64>(i + 1));
-
+                        }
+                        AssImpSceneDataPopulatedContext dataProcessed(sourceNodeEncountered,
+                            sourceNodeEncountered.m_createdData[i], nodeName.c_str());
+                        if (saveCreatedDataToNewNode)
+                        {
+                            // Create single node since only one piece of graph data was created
+                            Events::ProcessingResult result = AddDataNodeWithContexts(dataProcessed);
+                            if (result != Events::ProcessingResult::Failure)
+                            {
+                                newNode = dataProcessed.m_currentGraphPosition;
+                            }
+                        }
+                        else
+                        {
+                            // Create an empty parent node and place all data under it. The remaining
+                            // tree will be built off of this as the logical parent
                             Containers::SceneGraph::NodeIndex subNode =
                                 scene.GetGraph().AddChild(newNode, nodeName.c_str());
                             AZ_Assert(subNode.IsValid(), "Failed to create new scene sub node");
-                            AssImpSceneDataPopulatedContext dataProcessed(sourceNodeEncountered,
-                                sourceNodeEncountered.m_createdData[i], nodeName);
                             dataProcessed.m_currentGraphPosition = subNode;
                             AddDataNodeWithContexts(dataProcessed);
 

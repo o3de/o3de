@@ -29,15 +29,20 @@ namespace Maestro
         }
     }
 
-    void CConsoleTrack::GetKeyInfo(int key, const char*& description, float& duration)
+    void CConsoleTrack::GetKeyInfo(int keyIndex, const char*& description, float& duration) const
     {
-        AZ_Assert(key >= 0 && key < (int)m_keys.size(), "Key index %i is out of range", key);
-        CheckValid();
         description = 0;
         duration = 0;
-        if (!m_keys[key].command.empty())
+
+        if (keyIndex < 0 || keyIndex >= GetNumKeys())
         {
-            description = m_keys[key].command.c_str();
+            AZ_Assert(false, "Key index (%d) is out of range (0 .. %d).", keyIndex, GetNumKeys());
+            return;
+        }
+
+        if (!m_keys[keyIndex].command.empty())
+        {
+            description = m_keys[keyIndex].command.c_str();
         }
     }
 

@@ -34,25 +34,24 @@ namespace AZ::DocumentPropertyEditor
 
         AZ::IO::FixedMaxPath fullSettingsPath = AZ::Utils::GetProjectPath();
         fullSettingsPath /= relativeFilepath;
-        const char* posixSettingsPath = fullSettingsPath.AsPosix().c_str();
+        AZ::IO::FixedMaxPath posixSettingsPath = fullSettingsPath.AsPosix().c_str();
 
         AZStd::string stringBuffer;
         AZ::IO::ByteContainerStream stringStream(&stringBuffer);
         if (!AZ::SettingsRegistryMergeUtils::DumpSettingsRegistryToStream(*registry, anchorKey, stringStream, dumperSettings))
         {
             return AZ::Failure(AZStd::string::format(
-                "Failed to save settings to file '%s': failed to retrieve settings from registry", posixSettingsPath));
+                "Failed to save settings to file '%s': failed to retrieve settings from registry", posixSettingsPath.c_str()));
         }
 
         constexpr auto openMode = AZ::IO::SystemFile::SF_OPEN_CREATE
             | AZ::IO::SystemFile::SF_OPEN_CREATE_PATH
             | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY;
-        if (AZ::IO::SystemFile outputFile; outputFile.Open(posixSettingsPath, openMode))
+        if (AZ::IO::SystemFile outputFile; outputFile.Open(posixSettingsPath.c_str(), openMode))
         {
             if(outputFile.Write(stringBuffer.data(), stringBuffer.size()) != stringBuffer.size())
             {
-                return AZ::Failure(AZStd::string::format(
-                    "Failed to save settings to file '%s': incomplete contents written", posixSettingsPath));
+                return AZ::Failure(AZStd::string::format("Failed to save settings to file '%s': incomplete contents written", posixSettingsPath.c_str()));
             }
         }
 

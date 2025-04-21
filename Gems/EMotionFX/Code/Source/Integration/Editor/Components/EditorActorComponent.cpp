@@ -113,7 +113,7 @@ namespace EMotionFX
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, ":/EMotionFX/Viewport/ActorComponent.svg")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/animation/actor/")
+                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/components/reference/animation/actor/")
                         ->DataElement(0, &EditorActorComponent::m_actorAsset,
                             "Actor asset", "Assigned actor asset")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::OnAssetSelected)
@@ -669,7 +669,7 @@ namespace EMotionFX
                 return;
             }
 
-            m_actorInstance->SetLocalSpaceTransform(MCore::AzTransformToEmfxTransform(world));
+            m_actorInstance->SetLocalSpaceTransform(Transform(world));
         }
 
         //////////////////////////////////////////////////////////////////////////

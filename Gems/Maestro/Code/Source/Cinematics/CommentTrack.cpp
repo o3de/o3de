@@ -16,15 +16,21 @@ namespace Maestro
     {
     }
 
-    void CCommentTrack::GetKeyInfo(int key, const char*& description, float& duration)
+    void CCommentTrack::GetKeyInfo(int keyIndex, const char*& description, float& duration) const
     {
-        static char desc[128];
-        AZ_Assert(key >= 0 && key < (int)m_keys.size(), "Key index %i is out of range", key);
-        CheckValid();
         description = 0;
-        duration = m_keys[key].m_duration;
+        duration = 0;
 
-        azstrcpy(desc, AZ_ARRAY_SIZE(desc), m_keys[key].m_strComment.c_str());
+        if (keyIndex < 0 || keyIndex >= GetNumKeys())
+        {
+            AZ_Assert(false, "Key index (%d) is out of range (0 .. %d).", keyIndex, GetNumKeys());
+            return;
+        }
+
+        duration = m_keys[keyIndex].m_duration;
+
+        static char desc[128];
+        azstrcpy(desc, AZ_ARRAY_SIZE(desc), m_keys[keyIndex].m_strComment.c_str());
 
         description = desc;
     }

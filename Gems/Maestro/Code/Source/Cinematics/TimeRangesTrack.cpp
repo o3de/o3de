@@ -58,16 +58,21 @@ namespace Maestro
         }
     }
 
-    float CTimeRangesTrack::GetKeyDuration(int key) const
+    float CTimeRangesTrack::GetKeyDuration(int keyIndex) const
     {
-        AZ_Assert(key >= 0 && key < (int)m_keys.size(), "Key index %i is out of range", key);
-        return m_keys[key].GetActualDuration();
+        if (keyIndex < 0 || keyIndex >= GetNumKeys())
+        {
+            AZ_Assert(false, "Key index (%d) is out of range (0 .. %d).", keyIndex, GetNumKeys());
+            return 0.0f;
+        }
+
+        return m_keys[keyIndex].GetActualDuration();
     }
 
-    void CTimeRangesTrack::GetKeyInfo(int key, const char*& description, float& duration)
+    void CTimeRangesTrack::GetKeyInfo(int keyIndex, const char*& description, float& duration) const
     {
-        duration = GetKeyDuration(key);
-        description = "";
+        duration = GetKeyDuration(keyIndex);
+        description = 0;
     }
 
     int CTimeRangesTrack::GetActiveKeyIndexForTime(const float time)

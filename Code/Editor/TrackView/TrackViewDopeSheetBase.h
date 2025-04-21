@@ -235,7 +235,7 @@ private:
     void DrawClipboardKeys(QPainter* pDC, const QRect& rc);
     void DrawTrackClipboardKeys(QPainter* pDC, CTrackViewTrack* pTrack, XmlNodeRef trackNode, const float timeOffset);
 
-    CTrackViewNodesCtrl* m_pNodesCtrl;
+    CTrackViewNodesCtrl* m_pNodesCtrl = nullptr;
     void ComputeFrameSteps(const Range& VisRange);
     void DrawTimeLineInFrames(QPainter* dc, const QRect& rc, const QColor& lineCol, const QColor& textCol, double step);
     void DrawTimeLineInSeconds(QPainter* dc, const QRect& rc, const QColor& lineCol, const QColor& textCol, double step);
@@ -272,15 +272,15 @@ private:
     QScrollBar* m_scrollBar;
 
     // Time
-    float m_timeScale;
-    float m_currentTime;
-    float m_storedTime;
+    float m_timeScale = 1.0f;
+    float m_currentTime = 0.0f;
+    float m_storedTime = 0.0f;
     Range m_timeRange;
     Range m_timeMarked;
 
     // This is how often to place ticks.
     // value of 10 means place ticks every 10 second.
-    double m_ticksStep;
+    double m_ticksStep = 1.0;
 
     CTrackViewKeyPropertiesDlg* m_keyPropertiesDlg;
     ReflectedPropertyControl* m_wndPropsOnSpot;
@@ -289,38 +289,39 @@ private:
     QFont m_descriptionFont;
 
     // Mouse interaction state
-    int m_mouseMode;
-    int m_mouseActionMode;
-    bool m_bZoomDrag;
-    bool m_bMoveDrag;
-    bool m_bCursorWasInKey;
-    bool m_bJustSelected;
-    bool m_bMouseMovedAfterRButtonDown;
-    bool m_bKeysMoved;
-    bool m_stashedRecordModeWhileTimeDragging;
+    int m_mouseMode = 0;
+    int m_mouseActionMode = 0;
+    bool m_bZoomDrag = false;
+    bool m_bMoveDrag = false;
+    bool m_bCursorWasInKey = false;
+    bool m_bJustSelected = false;
+    bool m_bMouseMovedAfterRButtonDown = false;
+    bool m_bKeysMoved = false;
+    bool m_bKeysCloned = false;
+    bool m_stashedRecordModeWhileTimeDragging = false;
 
     // Offset for keys while moving/pasting
-    float m_keyTimeOffset;
+    float m_keyTimeOffset = 0.0f;
 
     // If control is locked for editing
-    bool m_bEditLock;
+    bool m_bEditLock = false;
 
     // Fast redraw: Only redraw time slider. Everything else is buffered.
-    bool m_bFastRedraw;
+    bool m_bFastRedraw = false;
 
     // Scrolling
-    int m_leftOffset;
-    int m_scrollMin;
-    int m_scrollMax;
+    int m_leftOffset = 0;
+    int m_scrollMin = 0;
+    int m_scrollMax = 1000;
 
     // Snapping
     ESnappingMode m_snappingMode;
-    float m_snapFrameTime;
+    float m_snapFrameTime = 1.0f;
 
     // Ticks in frames or seconds
     ETVTickMode m_tickDisplayMode;
-    double m_fFrameTickStep;
-    double m_fFrameLabelStep;
+    double m_fFrameTickStep = 1.0;
+    double m_fFrameLabelStep = 1.0;
 
     // Key for time adjust
     CTrackViewKeyHandle m_keyForTimeAdjust;
@@ -332,7 +333,7 @@ private:
     CTrackViewTrack* m_colorUpdateTrack;
 
     // Store the key time of that track
-    float            m_colorUpdateKeyTime;
+    float m_colorUpdateKeyTime = 0.0f;
 
     // Mementos of unchanged tracks for Move/Scale/Slide etc.
     struct TrackMemento

@@ -29,9 +29,7 @@
 #include "Bundling/BundlingSystemComponent.h"
 #include "Scripting/TagComponent.h"
 #include "Scripting/SimpleStateComponent.h"
-#include "Scripting/SpawnerComponent.h"
 #include "Scripting/LookAtComponent.h"
-#include "Scripting/RandomTimedSpawnerComponent.h"
 #include "Geometry/GeometrySystemComponent.h"
 #include <Asset/AssetSystemDebugComponent.h>
 
@@ -179,7 +177,6 @@ namespace LmbrCentral
             LmbrCentralAssetBuilderAllocatorComponent::CreateDescriptor(),
             LmbrCentralSystemComponent::CreateDescriptor(),
             SimpleStateComponent::CreateDescriptor(),
-            SpawnerComponent::CreateDescriptor(),
             LookAtComponent::CreateDescriptor(),
             TagComponent::CreateDescriptor(),
             SphereShapeComponent::CreateDescriptor(),
@@ -195,7 +192,6 @@ namespace LmbrCentral
             SplineComponent::CreateDescriptor(),
             PolygonPrismShapeComponent::CreateDescriptor(),
             GeometrySystemComponent::CreateDescriptor(),
-            RandomTimedSpawnerComponent::CreateDescriptor(),
             SphereShapeDebugDisplayComponent::CreateDescriptor(),
             DiskShapeDebugDisplayComponent::CreateDescriptor(),
             BoxShapeDebugDisplayComponent::CreateDescriptor(),

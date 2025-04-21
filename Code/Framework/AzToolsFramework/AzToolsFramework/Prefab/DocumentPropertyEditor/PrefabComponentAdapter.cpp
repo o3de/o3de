@@ -108,8 +108,8 @@ namespace AzToolsFramework::Prefab
         };
 
         message.Match(PrefabPropertyEditorNodes::PrefabOverrideLabel::RevertOverride, handleRevertOverride);
-
-        return ReflectionAdapter::HandleMessage(message);
+        
+        return ComponentAdapter::HandleMessage(message);
     }
 
     void PrefabComponentAdapter::UpdateDomContents(const PropertyChangeInfo& propertyChangeInfo)

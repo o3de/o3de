@@ -22,11 +22,11 @@ namespace Maestro
         AZ_CLASS_ALLOCATOR(CSelectTrack, AZ::SystemAllocator);
         AZ_RTTI(CSelectTrack, "{D05D53BF-86D1-4D38-A3C6-4EFC09C16431}", IAnimTrack);
 
-        AnimValueType GetValueType() override;
+        AnimValueType GetValueType() const override;
 
         // TAnimTrack<ISelectKey> overrides
-        void GetKeyInfo(int index, const char*& description, float& duration) override;
-        void SetKey(int index, IKey* key) override; // Stores the key and fills fDuration.
+        void GetKeyInfo(int keyIndex, const char*& description, float& duration) const override;
+        void SetKey(int keyIndex, IKey* key) override; // Stores the key and fills fDuration.
         int GetActiveKey(float time, ISelectKey* key) override; // Template specialization: skips invalid keys.
 
         // For all keys, calculate a key duration for correct UI slider range, even for invalid keys,

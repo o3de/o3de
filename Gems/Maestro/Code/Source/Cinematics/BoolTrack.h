@@ -25,13 +25,13 @@ namespace Maestro
 
         CBoolTrack();
 
-        AnimValueType GetValueType() override;
+        AnimValueType GetValueType() const override;
 
-        void GetValue(float time, bool& value) override;
+        void GetValue(float time, bool& value) const override;
         void SetValue(float time, const bool& value, bool bDefault = false) override;
 
         void SerializeKey([[maybe_unused]] IBoolKey& key, [[maybe_unused]] XmlNodeRef& keyNode, [[maybe_unused]] bool bLoading) override {}
-        void GetKeyInfo(int key, const char*& description, float& duration) override;
+        void GetKeyInfo(int keyIndex, const char*& description, float& duration) const override;
 
         void SetDefaultValue(const bool bDefaultValue);
 

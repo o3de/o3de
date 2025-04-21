@@ -72,15 +72,22 @@ namespace AZ::RHI
         }
     }
 
-    void TransientAttachmentPool::Begin(
-        const TransientAttachmentPoolCompileFlags compileFlags, const TransientAttachmentStatistics::MemoryUsage* memoryHint)
+    void TransientAttachmentPool::Begin(const TransientAttachmentPoolCompileFlags compileFlags)
     {
         m_compileFlags = compileFlags;
+        auto allocateResources = !CheckBitsAny(compileFlags, TransientAttachmentPoolCompileFlags::DontAllocateResources);
+        const auto& descriptors{ GetDescriptor() };
 
         IterateObjects<DeviceTransientAttachmentPool>(
-            [&compileFlags, &memoryHint](auto /*deviceIndex*/, auto deviceTransientAttachmentPool)
+            [&compileFlags, &descriptors, allocateResources](auto deviceIndex, auto deviceTransientAttachmentPool)
             {
-                deviceTransientAttachmentPool->Begin(compileFlags, memoryHint);
+                // Need to take a copy as Begin() will clear m_reservedMemory
+                auto memoryUsage{ deviceTransientAttachmentPool->GetStatistics().m_reservedMemory };
+                deviceTransientAttachmentPool->Begin(
+                    compileFlags,
+                    allocateResources && (descriptors.at(deviceIndex).m_heapParameters.m_type == HeapAllocationStrategy::MemoryHint)
+                        ? &memoryUsage
+                        : nullptr);
             });
     }
 

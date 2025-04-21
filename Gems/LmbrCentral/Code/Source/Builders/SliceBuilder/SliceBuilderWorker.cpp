@@ -195,7 +195,6 @@ namespace SliceBuilder
 
         bool requiresUpgrade = m_sliceHasLegacyDataPatches;
         bool sliceWritable = AZ::IO::SystemFile::IsWritable(fullPath.c_str());
-        bool createDynamicSlice = sourcePrefab->IsDynamic();
 
         AZ::SerializeContext* context = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
@@ -254,10 +253,7 @@ namespace SliceBuilder
                 requiresUpgrade = false;
             }
 
-            if (createDynamicSlice)
-            {
-                jobDescriptor.m_jobParameters.insert(AZStd::make_pair(AZ::u32(AZ_CRC_CE("JobParam_MakeDynamicSlice")), AZStd::string("Create Dynamic Slice")));
-            }
+            jobDescriptor.m_jobParameters.insert(AZStd::make_pair(AZ::u32(AZ_CRC_CE("JobParam_MakeDynamicSlice")), AZStd::string("Create Dynamic Slice")));
 
             response.m_createJobOutputs.push_back(jobDescriptor);
 

@@ -423,8 +423,8 @@ namespace ImageProcessingAtom
                     callback(asset);
                 }
 
-                m_assetCallbackMap.erase(itr);
                 AZ::Data::AssetBus::MultiHandler::BusDisconnect(itr->first);
+                m_assetCallbackMap.erase(itr);
              }
         }
     } // namespace Utils

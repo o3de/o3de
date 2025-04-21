@@ -132,7 +132,7 @@ protected slots:
     void OnUpdateTime();
 
 protected:
-    CTrackViewKeyHandle m_keyHandle;
+    CTrackViewKeyBundle m_selectedKeys;
     QScopedPointer<Ui::CTrackViewTrackPropsDlg> ui;
 };
 

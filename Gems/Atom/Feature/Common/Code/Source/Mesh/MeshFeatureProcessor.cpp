@@ -1683,6 +1683,38 @@ namespace AZ
             }
         }
 
+        Data::Instance<RPI::ShaderResourceGroup>& MeshFeatureProcessor::GetDrawSrg(const MeshHandle& meshHandle,
+            uint32_t lodIndex, uint32_t subMeshIndex,
+            RHI::DrawListTag drawListTag, RHI::DrawFilterMask materialPipelineMask)
+        {
+            if (!meshHandle.IsValid())
+            {
+                return RPI::MeshDrawPacket::InvalidSrg;
+            }
+            // We need to get the DrawPacket, from the DrawPacket we can query the index of the DrawItem
+            // that matches drawListTag & materialPipelineMask. We can use that index to fetch the DrawSrg
+            // from MeshDrawPacket::m_perDrawSrgs
+            auto& meshDrawPacketsByLod = ToModelDataInstance(meshHandle).m_meshDrawPacketListsByLod;
+            if (lodIndex >= aznumeric_cast<uint32_t>(meshDrawPacketsByLod.size()))
+            {
+                AZ_Error("MeshFeatureProcessor", false, "%s lodIndex=%u is invalid.\n", __FUNCTION__, lodIndex);
+                return RPI::MeshDrawPacket::InvalidSrg;
+            }
+            auto& meshDrawPackets = meshDrawPacketsByLod[lodIndex];
+            if (subMeshIndex >= meshDrawPackets.size())
+            {
+                AZ_Error("MeshFeatureProcessor", false, "%s subMeshIndex=%u is invalid.\n", __FUNCTION__, subMeshIndex);
+                return RPI::MeshDrawPacket::InvalidSrg;
+            }
+            auto& meshDrawPacket = meshDrawPackets[subMeshIndex];
+            auto drawItemIndex = meshDrawPacket.GetRHIDrawPacket()->GetDrawListIndex(drawListTag, materialPipelineMask);
+            if (drawItemIndex < 0)
+            {
+                return RPI::MeshDrawPacket::InvalidSrg;
+            }
+            return meshDrawPacket.GetDrawSrg(drawItemIndex);
+        }
+
         // ModelDataInstance::MeshLoader...
         ModelDataInstance::MeshLoader::MeshLoader(const Data::Asset<RPI::ModelAsset>& modelAsset, ModelDataInstance* parent)
             : m_modelAsset(modelAsset)

@@ -9,34 +9,49 @@
 #include "StringTrack.h"
 
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/StringFunc/StringFunc.h>
 #include <CryCommon/Maestro/Types/AnimValueType.h>
 
 namespace Maestro
 {
-    AnimValueType CStringTrack::GetValueType()
+    AnimValueType CStringTrack::GetValueType() const
     {
         return AnimValueType::String;
     }
 
     int CStringTrack::CreateKey(float time)
     {
-        CheckValid(); // sort keys
-        const int nkey = GetNumKeys();
+        if (((m_timeRange.end - m_timeRange.start) > AZ::Constants::Tolerance) && (time < m_timeRange.start || time > m_timeRange.end))
+        {
+            AZ_WarningOnce("StringTrack", false, "CreateKey(%f): Time is out of range (%f .. %f) in track (%s), clamped.",
+                time, m_timeRange.start, m_timeRange.end, (GetNode() ? GetNode()->GetName() : ""));
+            AZStd::clamp(time, m_timeRange.start, m_timeRange.end);
+        }
+
+        const auto existingKeyIndex = FindKey(time);
+        if (existingKeyIndex >= 0)
+        {
+            AZ_Error("StringTrack", false, "CreateKey(%f): Key (%d) at this time already exists in track (%s).",
+                time, existingKeyIndex, (GetNode() ? GetNode()->GetName() : ""))
+            return -1;
+        }
+
+        int numKeys = GetNumKeys();
+        SortKeys();
         IStringKey key;
         GetValue(time, key.m_strValue); // copy last key value or default value
         key.time = time;
-        SetNumKeys(nkey + 1);
-        SetKey(nkey, &key);
-        Invalidate();
+        SetNumKeys(numKeys + 1);
+        SetKey(numKeys, &key);
 
-        return nkey;
+        SortKeys();
+
+        return FindKey(time);
     }
 
-    void CStringTrack::GetValue(float time, AZStd::string& value)
+    void CStringTrack::GetValue(float time, AZStd::string& value) const
     {
         value = m_defaultValue;
-
-        CheckValid();
 
         int nkeys = static_cast<int>(m_keys.size());
         if (nkeys < 1)
@@ -59,40 +74,39 @@ namespace Maestro
         {
             SetDefaultValue(value);
         }
-        else if (time > m_timeRange.end)
-        {
-            return;
-        }
         else
         {
             IStringKey key(value);
             SetKeyAtTime(time, &key);
         }
-        Invalidate();
     }
 
     void CStringTrack::SetKeyAtTime(float time, IKey* key)
     {
         if (!key)
         {
-            AZ_Assert(false, "SetKeyAtTime given a null pointer to key.");
+            AZ_Assert(false, "Invalid key pointer.");
             return;
         }
 
-        AZStd::clamp(time, m_timeRange.start, m_timeRange.end);
+        if (((m_timeRange.end - m_timeRange.start) > AZ::Constants::Tolerance) && (time < m_timeRange.start || time > m_timeRange.end))
+        {
+            AZ_WarningOnce("StringTrack", false, "SetKeyAtTime(%f): Time is out of range (%f .. %f) in track (%s), clamped.",
+                time, m_timeRange.start, m_timeRange.end, (GetNode() ? GetNode()->GetName() : ""));
+            AZStd::clamp(time, m_timeRange.start, m_timeRange.end);
+        }
+
         key->time = time;
 
         // Find key with given time.
-        CheckValid();
-        constexpr float MinTimePrecision = 0.01f;
         bool found = false;
-        for (size_t i = 0; i < m_keys.size(); i++)
+        for (int i = 0; i < GetNumKeys(); i++)
         {
-            float keyt = m_keys[i].time;
-            if (AZStd::abs(keyt - time) < MinTimePrecision) // Found a close key?
+            float keyTime = m_keys[i].time;
+            if (AZStd::abs(keyTime - time) < GetMinKeyTimeDelta()) // Found a close key? -> replace it
             {
                 key->flags = m_keys[i].flags; // Reserve the flag value.
-                SetKey(static_cast<int>(i), key);
+                SetKey(i, key);
                 found = true;
                 break;
             }
@@ -104,12 +118,42 @@ namespace Maestro
             key->flags = m_keys[keyIndex].flags; // Reserve the flag value.
             SetKey(keyIndex, key);
         }
+
+        SortKeys();
     }
 
-    void CStringTrack::GetKeyInfo([[maybe_unused]] int index, const char*& description, float& duration)
+    void CStringTrack::GetKeyInfo([[maybe_unused]] int keyIndex, const char*& description, float& duration) const
     {
         description = 0;
         duration = 0;
+
+        if (keyIndex < 0 || keyIndex >= GetNumKeys())
+        {
+            AZ_Assert(false, "Key index (%d) is out of range (0 .. %d).", keyIndex, GetNumKeys());
+            return;
+        }
+
+        static auto str = m_keys[keyIndex].m_strValue;
+        constexpr const size_t allowedLength = 30;
+        if (str.length() > allowedLength)
+        {
+            // Get a sub-string for description.
+            // First check if its a path, then shorten description to filename.
+            AZStd::string fileName;
+            if (AzFramework::StringFunc::AssetDatabasePath::Split(str.c_str(), nullptr, nullptr, nullptr, &fileName, nullptr) && fileName.length() > 1)
+            {
+                str = fileName;
+            }
+            else // General string, take the tail sub-string.
+            {
+                AzFramework::StringFunc::TrimWhiteSpace(str, true, true);
+                if (str.length() > allowedLength)
+                {
+                    AzFramework::StringFunc::LChop(str, str.length() - allowedLength);
+                }
+            }
+        }
+        description = str.c_str();
     }
 
     static bool StringTrackVersionConverter(AZ::SerializeContext& serializeContext, AZ::SerializeContext::DataElementNode& rootElement)

@@ -61,15 +61,21 @@ namespace Maestro
         }
     }
 
-    void CLookAtTrack::GetKeyInfo(int key, const char*& description, float& duration)
+    void CLookAtTrack::GetKeyInfo(int keyIndex, const char*& description, float& duration) const
     {
-        AZ_Assert(key >= 0 && key < (int)m_keys.size(), "Key index %i is out of range", key);
-        CheckValid();
         description = 0;
-        duration = m_keys[key].fDuration;
-        if (!m_keys[key].szSelection.empty())
+        duration = 0;
+
+        if (keyIndex < 0 || keyIndex >= GetNumKeys())
         {
-            description = m_keys[key].szSelection.c_str();
+            AZ_Assert(false, "Key index (%d) is out of range (0 .. %d).", keyIndex, GetNumKeys());
+            return;
+        }
+
+        duration = m_keys[keyIndex].fDuration;
+        if (!m_keys[keyIndex].szSelection.empty())
+        {
+            description = m_keys[keyIndex].szSelection.c_str();
         }
     }
 

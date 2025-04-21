@@ -690,15 +690,14 @@ namespace AZ::RHI
 
         AZStd::sort(commands.begin(), commands.end());
 
-        auto processCommands = [&](int deviceIndex,
-                                   TransientAttachmentPoolCompileFlags compileFlags,
-                                   TransientAttachmentStatistics::MemoryUsage* memoryHint = nullptr)
+        auto processCommands = [&](TransientAttachmentPoolCompileFlags compileFlags, MultiDevice::DeviceMask memoryHintDeviceMask)
         {
-            transientAttachmentPool.Begin(compileFlags, memoryHint);
+            bool allocateResources = !CheckBitsAny(compileFlags, TransientAttachmentPoolCompileFlags::DontAllocateResources);
+            transientAttachmentPool.Begin(compileFlags);
 
             uint32_t currentScopeIndex = static_cast<uint32_t>(-1);
 
-            bool allocateResources = !CheckBitsAny(compileFlags, TransientAttachmentPoolCompileFlags::DontAllocateResources);
+            
             bool beganScope = false;
 
             for (Command command : commands)
@@ -707,8 +706,10 @@ namespace AZ::RHI
                 const uint32_t attachmentIndex = command.m_bits.m_attachmentIndex;
                 const Action action = (Action)command.m_bits.m_action;
 
-                if (scopes[scopeIndex]->GetDeviceIndex() != deviceIndex)
+                if (!allocateResources && !CheckBit(memoryHintDeviceMask, scopes[scopeIndex]->GetDeviceIndex()))
                 {
+                    // We can skip scopes in the exploratory phase if they run on a device that does not use the MemoryHint strategy for
+                    // allocation
                     continue;
                 }
 
@@ -717,11 +718,6 @@ namespace AZ::RHI
                 while (currentScopeIndex != scopeIndex)
                 {
                     const uint32_t nextScope = ++currentScopeIndex;
-
-                    if (scopes[nextScope]->GetDeviceIndex() != deviceIndex)
-                    {
-                        continue;
-                    }
 
                     // End the previous scope (if there is one).
                     if (beganScope)
@@ -826,29 +822,31 @@ namespace AZ::RHI
             transientAttachmentPool.End();
         };
 
+        MultiDevice::DeviceMask memoryHintDeviceMask{};
         for (auto& [deviceIndex, descriptor] : transientAttachmentPool.GetDescriptor())
         {
-            AZStd::optional<TransientAttachmentStatistics::MemoryUsage> memoryUsage;
-
-            // Check if we need to do two passes (one for calculating the size and the second one for allocating the resources)
             if (descriptor.m_heapParameters.m_type == HeapAllocationStrategy::MemoryHint)
             {
-                // First pass to calculate size needed.
-                processCommands(
-                    deviceIndex,
-                    TransientAttachmentPoolCompileFlags::GatherStatistics | TransientAttachmentPoolCompileFlags::DontAllocateResources);
-                auto statistics = transientAttachmentPool.GetDeviceTransientAttachmentPool(deviceIndex)->GetStatistics();
-                memoryUsage = statistics.m_reservedMemory;
+                memoryHintDeviceMask = SetBit(memoryHintDeviceMask, deviceIndex);
             }
-
-            // Second pass uses the information about memory usage
-            TransientAttachmentPoolCompileFlags poolCompileFlags = TransientAttachmentPoolCompileFlags::None;
-            if (CheckBitsAny(statisticsFlags, FrameSchedulerStatisticsFlags::GatherTransientAttachmentStatistics))
-            {
-                poolCompileFlags |= TransientAttachmentPoolCompileFlags::GatherStatistics;
-            }
-            processCommands(deviceIndex, poolCompileFlags, memoryUsage ? &memoryUsage.value() : nullptr);
         }
+
+        // Check if we need to do two passes (one for calculating the size and the second one for allocating the resources)
+        if (memoryHintDeviceMask != MultiDevice::NoDevices)
+        {
+            // First pass to calculate size needed.
+            processCommands(
+                TransientAttachmentPoolCompileFlags::GatherStatistics | TransientAttachmentPoolCompileFlags::DontAllocateResources,
+                memoryHintDeviceMask);
+        }
+
+        // Second pass uses the information about memory usage
+        TransientAttachmentPoolCompileFlags poolCompileFlags = TransientAttachmentPoolCompileFlags::None;
+        if (CheckBitsAny(statisticsFlags, FrameSchedulerStatisticsFlags::GatherTransientAttachmentStatistics))
+        {
+            poolCompileFlags |= TransientAttachmentPoolCompileFlags::GatherStatistics;
+        }
+        processCommands(poolCompileFlags, memoryHintDeviceMask);
 
         for (auto& [deviceIndex, attachmentIndex] : removeImages)
         {

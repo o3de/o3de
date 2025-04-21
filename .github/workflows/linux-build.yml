@@ -1,0 +1,201 @@
+#
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
+#
+
+name: Linux Build
+
+# These jobs are to be triggered by ar.yml
+
+on:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      compiler: 
+        required: true
+        type: string
+      config: 
+        required: true
+        type: string
+      image: 
+        required: true
+        type: string
+      platform: 
+        required: true
+        type: string
+      type: 
+        required: true
+        type: string
+      last_artifact: 
+        required: false
+        type: boolean
+      desktop:
+        required: false
+        type: boolean
+
+run-name: ${{ inputs.platform }} - ${{ inputs.type }}
+
+# Note: All 3P Github Actions use the commit hash for security reasons 
+# Avoid using the tag version, which is vulnerable to supply chain attacks
+
+jobs:
+  Build:
+    strategy:
+      fail-fast: false
+
+    runs-on: ${{ inputs.image }}
+
+    steps:
+      - name: Maximize build space
+        # Resize and combine disks as LVM in order to maximize the amount of space for builds
+        uses: easimon/maximize-build-space@fc881a613ad2a34aca9c9624518214ebc21dfc0c # v10
+        with:
+          root-reserve-mb: 6000
+          swap-size-mb: 200
+          remove-dotnet: true
+          remove-haskell: true
+          remove-codeql: true
+          remove-docker-images: true
+            
+      - name: Checkout repo
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          show-progress: false
+
+      - name: Git LFS pull
+        # Minimal pull for profile builds, otherwise pull all
+        run: |
+          git lfs install
+          [[ "${{ inputs.type }}" == "profile" ]] && git lfs pull --include "*.ico,*.bmp" || git lfs pull
+
+      - name: Setup 3p, user, and build folders
+        run: |
+          mkdir -p .o3de build 3rdParty && ln -sf "$(pwd)/.o3de" ~/.o3de
+
+      - name: Setup ccache
+        uses: Chocobo1/setup-ccache-action@f84f86840109403e0fe0ded8b0766c9633affa16 # v1.4.7
+        continue-on-error: true
+        if: always()
+        with:
+          prepend_symlinks_to_path: false
+          store_cache: false
+          restore_cache: false
+          ccache_options: |
+            max_size=15G
+            cache_dir=${{ github.workspace }}/.ccache
+
+      - name: Get last run
+        # Get the last runid of the target branch of a PR or the current branch
+        uses: dawidd6/action-download-artifact@07ab29fd4a977ae4d2b275087cf67563dfdf0295 # v9
+        id: last-run-id
+        if: ${{ inputs.last_artifact }}
+        continue-on-error: true
+        with:
+          workflow_search: true
+          workflow_conclusion: ""
+          branch: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref || github.ref_name }}
+          search_artifacts: true
+          name: O3DE-${{ inputs.platform }}-${{ inputs.config }}-build
+          dry_run: true
+                  
+      - name: Set artifact run ID
+        # Set the run ID of the artifact to be used for the download step
+        id: set-artifact-run-id
+        if: steps.last-run-id.outcome == 'success' && inputs.last_artifact == true
+        run: |
+          runId=${{ fromJSON(steps.last-run-id.outputs.artifacts)[0].workflow_run.id }}
+          echo "artifact_run_id=$runId" >> $GITHUB_OUTPUT
+          echo "Using artifacts from previous run: $runId"
+      
+      - name: Restore artifact cache
+        # Restore the artifact from the "Get last run" step or from the current run
+        id: restore-artifact-cache
+        uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.2.1
+        continue-on-error: true
+        with:
+          name: O3DE-${{ inputs.platform }}-${{ inputs.config }}-build
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ steps.set-artifact-run-id.outputs.artifact_run_id || github.run_id }}
+
+      - name: Extract artifact
+        # Extract the tar file from the artifact
+        id: extract-artifact
+        continue-on-error: true
+        if: ${{ steps.restore-artifact-cache.outcome == 'success' }}
+        run: |
+          if [ -f ${{ github.workspace }}/cache.tar ]; then          
+            tar -xvpf ${{ github.workspace }}/cache.tar --ignore-failed-read
+            rm ${{ github.workspace }}/cache.tar
+          fi
+
+      - name: Setup cmake
+        # Pin the version of cmake
+        uses: lukka/get-cmake@56d043d188c3612951d8755da8f4b709ec951ad6 # v3.31.6
+        with:
+          cmakeVersion: "~3.30.0"
+
+      - name: Configure environment
+        # Install dependencies. The desktop packages are for tests and assetprocessor
+        continue-on-error: true
+        run: |
+          echo "Installing dependencies"
+          pushd ./scripts/build/build_node/Platform/Linux
+          sudo ./install-ubuntu.sh
+          popd
+          echo "Getting python..."
+          ./python/get_python.sh
+          echo "Installing additional python dependencies..."
+          ./python/pip.sh install tempfile2 PyGithub
+
+          # If desktop is true, install desktop and x11 packages, otherwise install base packages
+          [[ "${{ inputs.desktop }}" == "true" ]] && \
+           sudo apt-get install -qq ubuntu-desktop libreoffice- thunderbird- xorg mesa-utils vulkan-tools libevdev-dev libevdev2 -y || \
+           sudo apt-get install -qq libevdev-dev libevdev2 -y
+          sudo apt -y autoremove --purge
+          sudo apt -y autoclean
+          sudo apt clean
+          df -h
+          
+      - name: Build ${{ inputs.type }}
+        # Builds with presets in ../scripts/build/Platform/Linux/build_config.json
+        env:
+          LY_3RDPARTY_PATH: ${{ github.workspace }}/3rdParty
+          CC:  ${{ inputs.compiler == 'gcc' && 'gcc' || 'clang'   }}
+          CXX: ${{ inputs.compiler == 'gcc' && 'g++' || 'clang++' }}
+          CMAKE_C_COMPILER_LAUNCHER: ccache
+          CMAKE_CXX_COMPILER_LAUNCHER: ccache
+          DISPLAY: :0
+        run: |
+          export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
+          if [ "${{ inputs.desktop }}" == "true" ]; then 
+            Xvfb :0 -screen 0 1400x1050x16 & # Start X virtual framebuffer for tests
+          fi
+          python/python.sh -u scripts/build/ci_build.py --platform ${{ inputs.platform }} --type ${{ inputs.type }}
+
+      - name: Compress artifacts
+        # Compress with posix format to preserve permissions and timestamps at nanosecond precision
+        # Skip compression and upload if the type is a test to reduce dirty build artifacts from previous runs
+        id: compress-artifacts
+        if: ${{ (steps.extract-artifact.outcome == 'success' || steps.extract-artifact.outcome == 'skipped') && !cancelled() && !contains(inputs.type, 'test') }}
+        continue-on-error: true
+        run: |
+          tar --format=posix -cvpf ${{ github.workspace }}/cache.tar --ignore-failed-read \
+            python \
+            3rdParty/packages \
+            AutomatedTesting/Cache \
+            AutomatedTesting/user \
+            .ccache
+  
+      - name: Save artifacts
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: ${{ steps.compress-artifacts.conclusion == 'success' && !cancelled() && !contains(inputs.type, 'test') }}
+        continue-on-error: true
+        with:
+          name: O3DE-${{ inputs.platform }}-${{ inputs.config }}-build
+          compression-level: 1
+          overwrite: true
+          path: |
+            ${{ github.workspace }}/cache.tar

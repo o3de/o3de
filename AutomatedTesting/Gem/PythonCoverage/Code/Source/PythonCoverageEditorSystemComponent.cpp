@@ -71,6 +71,8 @@ namespace PythonCoverage
     PythonCoverageEditorSystemComponent::CoverageState PythonCoverageEditorSystemComponent::ParseCoverageOutputDirectory()
     {
         m_coverageState = CoverageState::Disabled;
+
+#if defined(LY_TEST_IMPACT_DEFAULT_CONFIG_FILE)
         const AZStd::string configFilePath = LY_TEST_IMPACT_DEFAULT_CONFIG_FILE;
 
         if (configFilePath.empty())
@@ -106,6 +108,7 @@ namespace PythonCoverage
 
         // Everything is good to go, await the first python test case
         m_coverageState = CoverageState::Idle;
+#endif
         return m_coverageState;
     }
     

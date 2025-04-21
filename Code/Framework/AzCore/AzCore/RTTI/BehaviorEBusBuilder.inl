@@ -114,6 +114,10 @@ namespace AZ::Internal
         EBusBuilderBase* VirtualProperty(const char* name, const char* getterEvent, const char* setterEvent);
 
         BehaviorEBus* m_ebus;
+
+    private:
+        void HandlerImpl(BehaviorMethod* createHandler, BehaviorMethod* destroyHandler);
+        void EventWithBusImpl([[maybe_unused]] const char* name, const char* deprecatedName, AZStd::unordered_map<AZStd::string, BehaviorEBusEventSender>::iterator& insertIt);
     };
 }
 
@@ -146,36 +150,7 @@ namespace AZ::Internal
             }
             else
             {
-                // do we have a deprecated name for this event?
-                if (deprecatedName != nullptr)
-                {
-                    // ensure deprecated name is not in use as a existing name
-                    auto itr = m_ebus->m_events.find(deprecatedName);
-
-                    if (itr != m_ebus->m_events.end())
-                    {
-                        AZ_Warning("BehaviorContext", false, "Event %s is attempting to use %s as a deprecated name, but the deprecated name is already in use! The deprecated name is ignored!", name, deprecatedName);
-                    }
-                    else
-                    {
-                        // ensure that we won't have a duplicate deprecated name
-                        bool isDuplicated = false;
-                        for (const auto& i : m_ebus->m_events)
-                        {
-                            if (i.second.m_deprecatedName == deprecatedName)
-                            {
-                                isDuplicated = true;
-                                AZ_Warning("BehaviorContext", false, "Event %s is attempting to use %s as a deprecated name, but the deprecated name is already used as a deprecated name for the Event %s! The deprecated name is ignored!", name, deprecatedName, i.first.c_str());
-                                break;
-                            }
-                        }
-
-                        if (!isDuplicated)
-                        {
-                            insertIt.first->second.m_deprecatedName = deprecatedName;
-                        }
-                    }
-                }
+                EventWithBusImpl(name, deprecatedName, insertIt.first);
 
                 for (BehaviorMethod* method : { ebusEvent.m_event, ebusEvent.m_broadcast })
                 {
@@ -191,7 +166,6 @@ namespace AZ::Internal
                         }
                     }
                 }
-
                 Base::m_currentAttributes = &insertIt.first->second.m_attributes;
                 Base::SetEBusEventSender(&insertIt.first->second);
             }
@@ -230,22 +204,7 @@ namespace AZ::Internal
             m_ebus->m_ebusHandlerOnDemandReflector = AZStd::make_unique<ScopedBehaviorOnDemandReflector>(*Base::m_context);
             AZ::Internal::OnDemandReflectFunctions(m_ebus->m_ebusHandlerOnDemandReflector.get(), typename HandlerType::EventFunctionsParameterPack{});
 
-            // check than the handler returns the expected type
-            if (createHandler->GetResult()->m_typeId != AzTypeInfo<BehaviorEBusHandler>::Uuid() || destroyHandler->GetArgument(0)->m_typeId != AzTypeInfo<BehaviorEBusHandler>::Uuid())
-            {
-                AZ_Assert(false, "HandlerCreator my return a BehaviorEBusHandler* object and HandlerDestrcutor should have an argument that can handle BehaviorEBusHandler!");
-                delete createHandler;
-                delete destroyHandler;
-                createHandler = nullptr;
-                destroyHandler = nullptr;
-            }
-            else
-            {
-                Base::m_currentAttributes = &createHandler->m_attributes;
-                Base::SetEBusEventSender(nullptr);
-            }
-            m_ebus->m_createHandler = createHandler;
-            m_ebus->m_destroyHandler = destroyHandler;
+            HandlerImpl(createHandler, destroyHandler);
         }
         return this;
     }
@@ -470,59 +429,10 @@ namespace AZ
     auto BehaviorContext::EBus(const char* name, const char* deprecatedName, const char* toolTip)
         -> EBusBuilder<T>
     {
-        // should we require AzTypeInfo for EBus, technically we should if we want to work around the compiler issue that made us to do it in first place
-        if (IsRemovingReflection())
+        BehaviorEBus* behaviorEBus = BuildBehaviorEBus(name, deprecatedName, toolTip);
+
+        if (behaviorEBus)
         {
-            auto ebusIt = m_ebuses.find(name);
-            if (ebusIt != m_ebuses.end())
-            {
-                BehaviorContextBus::Event(this, &BehaviorContextBus::Events::OnRemoveEBus, name, ebusIt->second);
-
-                // Erase the deprecated name as well
-                auto deprecatedIt = m_ebuses.find(ebusIt->second->m_deprecatedName);
-                if (deprecatedIt != m_ebuses.end())
-                {
-                    m_ebuses.erase(deprecatedIt);
-                }
-
-                delete ebusIt->second;
-                m_ebuses.erase(ebusIt);
-            }
-
-            return EBusBuilder<T>(this, nullptr);
-        }
-        else
-        {
-            AZ_Error("BehaviorContext", m_ebuses.find(name) == m_ebuses.end(), "You shouldn't reflect an EBus multiple times (%s), subsequent reflections will not be registered!", name);
-
-            BehaviorEBus* behaviorEBus = aznew BehaviorEBus();
-            behaviorEBus->m_name = name;
-
-            if (toolTip != nullptr)
-            {
-                behaviorEBus->m_toolTip = toolTip;
-            }
-
-            /*
-            ** If we have a deprecated name, lets make sure the its not in use as an existing bus.
-            */
-
-            if (deprecatedName != nullptr)
-            {
-                if (*deprecatedName == '\0')
-                {
-                    AZ_Warning("BehaviorContext", false, "Deprecated name can't be a empty string!", deprecatedName);
-                }
-                else if (m_ebuses.find(deprecatedName) != m_ebuses.end())
-                {
-                    AZ_Warning("BehaviorContext", false, "EBus %s is attempting to use the deprecated name (%s) that is already used! Ignored!", name, deprecatedName);
-                }
-                else
-                {
-                    behaviorEBus->m_deprecatedName = deprecatedName;
-                }
-            }
-
             EBusSetIdFeatures<T>(behaviorEBus);
             behaviorEBus->m_queueFunction = QueueFunctionMethod<T>();
 
@@ -532,8 +442,8 @@ namespace AZ
             {
                 m_ebuses.insert(AZStd::make_pair(behaviorEBus->m_deprecatedName, behaviorEBus));
             }
-
-            return EBusBuilder<T>(this, behaviorEBus);
         }
+
+        return EBusBuilder<T>(this, behaviorEBus);
     }
 } // namespace AZ

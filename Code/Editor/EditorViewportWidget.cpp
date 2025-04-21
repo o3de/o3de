@@ -44,6 +44,7 @@
 #include <AzToolsFramework/API/ViewportEditorModeTrackerInterface.h>
 #include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
+#include <AzToolsFramework/Prefab/Instance/InstanceUpdateExecutorInterface.h>
 #include <AzToolsFramework/Viewport/ViewBookmarkLoaderInterface.h>
 #include <AzToolsFramework/Viewport/ViewportSettings.h>
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h>
@@ -141,6 +142,19 @@ namespace AZ::ViewportHelpers
 // helper to mark the view entity dirty that was moved using the 'Be this camera' functionality
 static void MarkCameraEntityDirty(const AZ::EntityId entityId)
 {
+    if (AzToolsFramework::UndoRedoOperationInProgress())
+    {
+        return; // An Undo/Redo operation already in progress.
+    }
+
+    const auto instanceUpdateExecutorInterface = AZ::Interface<AzToolsFramework::Prefab::InstanceUpdateExecutorInterface>::Get();
+    if (instanceUpdateExecutorInterface && instanceUpdateExecutorInterface->IsUpdatingTemplateInstancesInQueue())
+    {
+        // InstanceUpdateExecutor is currently Updating Template Instances In Queue, it removes Entities while cleaning-up
+        // in-memory DOM template, and thus marking deleted Entity as dirty breaks Undo/Redo stack.
+        return;
+    }
+
     using AzToolsFramework::ToolsApplicationRequests;
 
     AzToolsFramework::UndoSystem::URSequencePoint* undoBatch = nullptr;

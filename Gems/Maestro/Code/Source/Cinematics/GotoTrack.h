@@ -24,13 +24,13 @@ namespace Maestro
 
         CGotoTrack();
 
-        AnimValueType GetValueType() override;
+        AnimValueType GetValueType() const override;
 
-        void GetValue(float time, float& value, bool applyMultiplier = false) override;
+        void GetValue(float time, float& value, bool applyMultiplier = false) const override;
         void SetValue(float time, const float& value, bool bDefault = false, bool applyMultiplier = false) override;
 
         void SerializeKey(IDiscreteFloatKey& key, XmlNodeRef& keyNode, bool bLoading) override;
-        void GetKeyInfo(int key, const char*& description, float& duration) override;
+        void GetKeyInfo(int keyIndex, const char*& description, float& duration) const override;
 
         static void Reflect(AZ::ReflectContext* context);
 

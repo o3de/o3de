@@ -1,0 +1,135 @@
+#
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
+#
+
+name: AR
+
+on:
+  pull_request:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - development
+      - stabilization/**
+      - hotfix/**
+
+jobs:
+
+# The following jobs are used to build the project for the different platforms.
+# The parameters are the following:
+# - compiler: The compiler to use (msvc, clang)
+# - config: The configuration to use (profile, release). This is defined by presets in ../scripts/build/Platform/<os>/build_config.json
+# - image: The image to use (windows-2022, ubuntu-22.04). The images are defined from runners images repo: https://github.com/actions/runner-images
+# - platform: The platform to use (Windows, Linux, Android)
+# - type: The type of build to use (profile, asset_profile, test_profile, test_cpu_profile, release)
+# - last_artifact: Whether to use the artifact from the last run, from the target branch if it's a pull request or its own branch if it's a push
+# - desktop: Whether to use the desktop environment for tests (Linux only)
+
+#### Windows Build ####
+    Windows-Profile:
+        uses: ./.github/workflows/windows-build.yml
+        with:
+            compiler: msvc
+            config: profile
+            image: windows-2022
+            platform: Windows
+            type: profile
+            last_artifact: true
+    
+    Windows-Asset:
+        needs: Windows-Profile
+        uses: ./.github/workflows/windows-build.yml
+        with:
+            compiler: msvc
+            config: profile
+            image: windows-2022
+            platform: Windows
+            type: asset_profile
+
+    Windows-Test:
+        needs: Windows-Asset
+        uses: ./.github/workflows/windows-build.yml
+        with:
+            compiler: msvc
+            config: profile
+            image: windows-2022
+            platform: Windows
+            type: test_cpu_profile
+
+    Windows-Release:
+        uses: ./.github/workflows/windows-build.yml
+        with:
+            compiler: msvc
+            config: release
+            image: windows-2022
+            platform: Windows
+            type: release
+            last_artifact: true
+
+#### Linux Build ####
+    Linux-Profile:
+        uses: ./.github/workflows/linux-build.yml
+        with:
+            compiler: clang
+            config: profile
+            image: ubuntu-22.04
+            platform: Linux
+            type: profile
+            last_artifact: true
+
+    Linux-Asset:
+        needs: Linux-Profile
+        uses: ./.github/workflows/linux-build.yml
+        with:
+            compiler: clang
+            config: profile
+            image: ubuntu-22.04
+            platform: Linux
+            type: asset_profile
+
+    Linux-Test:
+        needs: Linux-Asset
+        uses: ./.github/workflows/linux-build.yml
+        with:
+            compiler: clang
+            config: profile
+            image: ubuntu-22.04
+            platform: Linux
+            type: test_profile
+            desktop: true
+
+#### Android Build ####
+    Android-Profile:
+        uses: ./.github/workflows/android-build.yml
+        with:
+            compiler: clang
+            config: profile
+            image: windows-2022
+            platform: Android
+            type: profile
+            last_artifact: true
+
+    Android-Asset:
+        uses: ./.github/workflows/android-build.yml
+        with:
+            compiler: msvc
+            config: asset_profile
+            image: windows-2022
+            platform: Android
+            type: asset_profile
+            last_artifact: true
+            
+    Android-Gradle:
+        uses: ./.github/workflows/android-build.yml
+        with:
+            compiler: clang
+            config: gradle
+            image: windows-2022
+            platform: Android
+            type: gradle
+            last_artifact: true

@@ -92,6 +92,10 @@ namespace AZ::RHI
         template<typename T>
         bool SetConstant(ShaderInputConstantIndex inputIndex, const T& value);
 
+        //! Assigns a device-specific value of type T to the constant shader input.
+        template<typename T>
+        bool SetConstant(ShaderInputConstantIndex inputIndex, const AZStd::unordered_map<int, T>& values);
+
         //! Assigns a specified number of rows from a Matrix
         template<typename T>
         bool SetConstantMatrixRows(ShaderInputConstantIndex inputIndex, const T& value, uint32_t rowCount);
@@ -266,6 +270,34 @@ namespace AZ::RHI
         {
             isValidAll &= deviceShaderResourceGroupData.SetConstant(inputIndex, value);
         }
+
+        return isValidAll;
+    }
+
+    template<typename T>
+    bool ShaderResourceGroupData::SetConstant(ShaderInputConstantIndex inputIndex, const AZStd::unordered_map<int, T>& values)
+    {
+        EnableResourceTypeCompilation(ResourceTypeMask::ConstantDataMask);
+
+        bool isValidAll = true;
+        bool foundValidDevice = false;
+
+        for (auto& [deviceIndex, deviceShaderResourceGroupData] : m_deviceShaderResourceGroupDatas)
+        {
+            auto deviceValueIterator = values.find(deviceIndex);
+            if (deviceValueIterator != values.end())
+            {
+                // Use the data for the first valid device for the getters
+                if (!foundValidDevice)
+                {
+                    foundValidDevice = true;
+                    m_constantsData.SetConstant(inputIndex, deviceValueIterator->second);
+                }
+                isValidAll &= deviceShaderResourceGroupData.SetConstant(inputIndex, deviceValueIterator->second);
+            }
+        }
+        // We need at least one valid device
+        isValidAll &= foundValidDevice;
 
         return isValidAll;
     }

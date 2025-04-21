@@ -334,79 +334,97 @@ void CTrackViewTrackPropsDlg::OnSequenceChanged()
 
 bool CTrackViewTrackPropsDlg::OnKeySelectionChange(const CTrackViewKeyBundle& selectedKeys)
 {
-    m_keyHandle = CTrackViewKeyHandle();
+    auto keyHandle = selectedKeys.GetSingleSelectedKey();
 
-    const auto keysCount = selectedKeys.GetKeyCount();
-    if (keysCount == 1 || ((keysCount > 1) && selectedKeys.AreAllKeysOfSameType()))
+    if (keyHandle.IsValid())
     {
-        m_keyHandle = selectedKeys.GetKey(0);
-    }
+        m_selectedKeys = selectedKeys;
 
-    if (m_keyHandle.IsValid())
-    {
         // Block the callback, the values is already set in m_keyHandle.GetTime(), no need to
         // reset it and create an undo even like the user was setting it via the UI.
         ui->TIME->blockSignals(true);
-        ui->TIME->setValue(m_keyHandle.GetTime());
+        ui->TIME->setValue(keyHandle.GetTime());
         ui->TIME->blockSignals(false);
-        ui->PREVNEXT->setText(QString::number(m_keyHandle.GetIndex() + 1));
 
+        ui->PREVNEXT->setText(QString::number(keyHandle.GetIndex() + 1));
         ui->PREVNEXT->setEnabled(true);
         ui->TIME->setEnabled(true);
     }
     else
     {
+        m_selectedKeys = CTrackViewKeyBundle();
+
+        ui->PREVNEXT->setText(QString());
         ui->PREVNEXT->setEnabled(false);
         ui->TIME->setEnabled(false);
     }
-    return true;
+
+    return keyHandle.IsValid();
 }
 
 void CTrackViewTrackPropsDlg::OnUpdateTime()
 {
-    if (!m_keyHandle.IsValid())
+    if (m_selectedKeys.GetKeyCount() < 1)
     {
         return;
     }
 
-    const float time = (float)ui->TIME->value();
-
-    // Check if the sequence is legacy
-    CTrackViewTrack* track = m_keyHandle.GetTrack();
-    if (nullptr != track)
+    const bool isDuringUndo = AzToolsFramework::UndoRedoOperationInProgress();
+    AZStd::unique_ptr<AzToolsFramework::ScopedUndoBatch> undoBatch;
+    if (!isDuringUndo)
     {
-        CTrackViewSequence* sequence = track->GetSequence();
-        if (nullptr != sequence && !AZ::IsClose(m_keyHandle.GetTime(), time, AZ::Constants::FloatEpsilon))
+        undoBatch = AZStd::make_unique<AzToolsFramework::ScopedUndoBatch>("Change Keys Time");
+    }
+
+    const float time = (float)ui->TIME->value();
+    bool allowDeletingKeys = false;
+
+    for (unsigned int i = 0; i < m_selectedKeys.GetKeyCount(); ++i)
+    {
+        auto keyHandle = m_selectedKeys.GetKey(i);
+        auto track = keyHandle.GetTrack();
+        if (!keyHandle.IsValid() || !track)
         {
-            bool isDuringUndo = false;
-            AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(isDuringUndo, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::IsDuringUndoRedo);
+            AZ_Assert(false, "Invalid key handle for a selected key %u.", i);
+            continue;
+        }
 
-            if (isDuringUndo)
+        if (AZ::IsClose(keyHandle.GetTime(), time, AZ::Constants::FloatEpsilon))
+        {
+            continue; // nothing to do
+        }
+
+        // Check if the sequence is legacy
+        const auto sequence = track->GetSequence();
+        if (!sequence)
+        {
+            AZ_Assert(false, "Each track should have a sequence, invalid key handle for a selected key %u.", i);
+            continue;
+        }
+        const auto sequenceId = sequence->GetSequenceComponentEntityId();
+
+        if (!isDuringUndo)
+        {
+            CTrackViewKeyHandle existingKey = track->GetKeyByTime(time);
+
+            // If there is an existing key at this time, remove it so the
+            // new key at this time is the only one here. Make sure it's actually a different
+            // key, because time can "change" but then be quantized (or snapped) to the same time by track->GetKeyByTime(time).
+            if (existingKey.IsValid() && (existingKey.GetIndex() != keyHandle.GetIndex()))
             {
-                m_keyHandle.SetTime(time);
-            }
-            else
-            {
-                // Let the AZ Undo system manage the nodes on the sequence entity
-                AzToolsFramework::ScopedUndoBatch undoBatch("Change key time");
+                // Save the old time before we set the new time so we
+                // can reselect the m_keyHandle after the Delete.
+                float currentTime = keyHandle.GetTime();
 
-                CTrackViewKeyHandle existingKey = track->GetKeyByTime(time);
-
-                // If there is an existing key at this time, remove it so the
-                // new key at this time is the only one here. Make sure it's actually a different
-                // key, because time can "change" but then be quantized (or snapped) to the same time by track->GetKeyByTime(time).
-                if (existingKey.IsValid() && (existingKey.GetIndex() != m_keyHandle.GetIndex()))
+                if (!allowDeletingKeys) // Open dialog asking to allow deleting existing key - only once.
                 {
-                    // Save the old time before we set the new time so we
-                    // can reselect the m_keyHandle after the Delete.
-                    float currentTime = m_keyHandle.GetTime();
-
                     // There is a bug in QT where editingFinished will get fired a second time if we show a QMessageBox
                     // so work around it by blocking signal before we do it.
-                    ui->TIME->blockSignals(true);
 
+                    ui->TIME->blockSignals(true);
                     QString msgBody = "There is an existing key at the specified time. If you continue, the existing key will be removed.";
-                    if (QMessageBox::warning(this, "Overwrite Existing Key?", msgBody, QMessageBox::Cancel | QMessageBox::Yes) == QMessageBox::Cancel)
+                    if (QMessageBox::warning(this, "Overwrite Existing Key?", msgBody, QMessageBox::Cancel | QMessageBox::Yes) ==
+                        QMessageBox::Cancel)
                     {
                         // Restore the old value and return.
                         ui->TIME->setValue(currentTime);
@@ -415,21 +433,39 @@ void CTrackViewTrackPropsDlg::OnUpdateTime()
                     }
                     else
                     {
+                        allowDeletingKeys = true;
                         ui->TIME->blockSignals(false);
                     }
-
-                    // Delete the key that is able to get replaced. This will
-                    // cause a sort and may cause m_keyHandle to become invalid.
-                    existingKey.Delete();
-
-                    // Reselect the key handle by time.
-                    m_keyHandle = track->GetKeyByTime(currentTime);
                 }
 
-                m_keyHandle.SetTime(time);
+                // Delete the key that is able to get replaced. This will
+                // cause a sort and may cause m_keyHandle to become invalid.
+                existingKey.Delete();
 
-                undoBatch.MarkEntityDirty(sequence->GetSequenceComponentEntityId());
+                // Reselect the key handle by time.
+                keyHandle = track->GetKeyByTime(currentTime);
+
+                keyHandle.SetTime(time);
+
+                if (undoBatch)
+                {
+                    undoBatch->MarkEntityDirty(sequenceId);
+                }
+
+                m_selectedKeys = sequence->GetSelectedKeys(); // Re-save selected keys as key index has been changed.
             }
+            else
+            {
+                keyHandle.SetTime(time);
+                if (undoBatch)
+                {
+                    undoBatch->MarkEntityDirty(sequenceId);
+                }
+            }
+        }
+        else // During Undo/Redo
+        {
+            keyHandle.SetTime(time);
         }
     }
 }

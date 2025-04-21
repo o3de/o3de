@@ -63,6 +63,11 @@ namespace Maestro
             keyNode->getAttr("start", key.m_startTime);
             keyNode->getAttr("blendInTime", key.m_blendInTime);
             keyNode->getAttr("blendOutTime", key.m_blendOutTime);
+
+            if (key.m_speed < AZ::Constants::Tolerance)
+            {
+                key.m_speed = 1;
+            }
         }
         else
         {
@@ -108,55 +113,61 @@ namespace Maestro
         }
     }
 
-    void CAssetBlendTrack::GetKeyInfo(int key, const char*& description, float& duration)
+    void CAssetBlendTrack::GetKeyInfo(int keyIndex, const char*& description, float& duration) const
     {
-        AZ_Assert(key >= 0 && key < (int)m_keys.size(), "Key index %i is out of range", key);
-        CheckValid();
         description = 0;
         duration = 0;
-        if (m_keys[key].m_assetId.IsValid())
-        {
-            description = m_keys[key].m_description.c_str();
 
-            if (m_keys[key].m_bLoop)
+        if (keyIndex < 0 || keyIndex >= GetNumKeys())
+        {
+            AZ_Assert(false, "Key index (%d) is out of range (0 .. %d).", keyIndex, GetNumKeys());
+            return;
+        }
+
+        if (m_keys[keyIndex].m_assetId.IsValid())
+        {
+            description = m_keys[keyIndex].m_description.c_str();
+
+            if (m_keys[keyIndex].m_bLoop)
             {
                 float lastTime = m_timeRange.end;
-                if (key + 1 < (int)m_keys.size())
+                if (keyIndex + 1 < (int)m_keys.size())
                 {
-                    lastTime = m_keys[key + 1].time;
+                    lastTime = m_keys[keyIndex + 1].time;
                 }
                 // duration is unlimited but cannot last past end of track or time of next key on track.
-                duration = lastTime - m_keys[key].time;
+                duration = lastTime - m_keys[keyIndex].time;
             }
             else
             {
-                if (m_keys[key].m_speed == 0)
-                {
-                    m_keys[key].m_speed = 1.0f;
-                }
-                duration = m_keys[key].GetActualDuration();
+                duration = m_keys[keyIndex].GetActualDuration();
             }
         }
     }
 
-    float CAssetBlendTrack::GetKeyDuration(int key) const
+    float CAssetBlendTrack::GetKeyDuration(int keyIndex) const
     {
-        AZ_Assert(key >= 0 && key < (int)m_keys.size(), "Key index %i is out of range", key);
+        if (keyIndex < 0 || keyIndex >= GetNumKeys())
+        {
+            AZ_Assert(false, "Key index (%d) is out of range (0 .. %d).", keyIndex, GetNumKeys());
+            return 0.0f;
+        }
+
         const float EPSILON = 0.001f;
-        if (m_keys[key].m_bLoop)
+        if (m_keys[keyIndex].m_bLoop)
         {
             float lastTime = m_timeRange.end;
-            if (key + 1 < (int)m_keys.size())
+            if (keyIndex + 1 < (int)m_keys.size())
             {
                 // EPSILON is required to ensure the correct ordering when getting nearest keys.
-                lastTime = m_keys[key + 1].time + AZStd::min(LoopTransitionTime, GetKeyDuration(key + 1) - EPSILON);
+                lastTime = m_keys[keyIndex + 1].time + AZStd::min(LoopTransitionTime, GetKeyDuration(keyIndex + 1) - EPSILON);
             }
             // duration is unlimited but cannot last past end of track or time of next key on track.
-            return AZStd::max(lastTime - m_keys[key].time, 0.0f);
+            return AZStd::max(lastTime - m_keys[keyIndex].time, 0.0f);
         }
         else
         {
-            return m_keys[key].GetActualDuration();
+            return m_keys[keyIndex].GetActualDuration();
         }
     }
 
@@ -185,15 +196,16 @@ namespace Maestro
         }
     }
 
-    AnimValueType CAssetBlendTrack::GetValueType()
+    AnimValueType CAssetBlendTrack::GetValueType() const
     {
         return AnimValueType::AssetBlend;
     }
 
-    void CAssetBlendTrack::GetValue(float time, AssetBlends<AZ::Data::AssetData>& value)
+    void CAssetBlendTrack::GetValue(float time, AssetBlends<AZ::Data::AssetData>& value) const
     {
         // Start by clearing all the assets.
-        m_assetBlend.m_assetBlends.clear();
+        AssetBlends<AZ::Data::AssetData> result;
+        result.m_assetBlends.clear();
 
         // Keep track of the nearest keys to be used if not key is found at the input time.
         bool foundPreviousKey = false;
@@ -212,8 +224,8 @@ namespace Maestro
             if (key.IsInRange(time) && key.m_assetId.IsValid())
             {
                 float segmentPercent = localTime / (segmentLength / key.GetValidSpeed());
-                m_assetBlend.m_assetBlends.push_back(AssetBlend(
-                    key.m_assetId, key.m_startTime + (segmentLength * segmentPercent), key.m_blendInTime, key.m_blendOutTime));
+                result.m_assetBlends.push_back(
+                    AssetBlend(key.m_assetId, key.m_startTime + (segmentLength * segmentPercent), key.m_blendInTime, key.m_blendOutTime));
             }
 
             // Find the nearest previous key
@@ -241,7 +253,7 @@ namespace Maestro
 
         // If no asset blends have been added, and there is a key somewhere in the time line,
         // add the first or last frame of the key.
-        if (m_assetBlend.m_assetBlends.empty() && !m_keys.empty())
+        if (result.m_assetBlends.empty() && !m_keys.empty())
         {
             // Check for looping the animation on the last key
             if (foundPreviousKey && previousKey.m_bLoop)
@@ -249,7 +261,7 @@ namespace Maestro
                 float localTime = time - previousKey.time;
                 float segmentLength = previousKey.GetValidEndTime() - previousKey.m_startTime;
                 float segmentPercent = static_cast<float>(fmod(localTime / (segmentLength / previousKey.GetValidSpeed()), 1.0));
-                m_assetBlend.m_assetBlends.push_back(AssetBlend(
+                result.m_assetBlends.push_back(AssetBlend(
                     previousKey.m_assetId,
                     previousKey.m_startTime + (segmentLength * segmentPercent),
                     previousKey.m_blendInTime,
@@ -260,14 +272,14 @@ namespace Maestro
                 // Nothing set, just freeze frame on the first or last frame of the nearest animation
                 if (!foundPreviousKey && foundNextKey)
                 {
-                    m_assetBlend.m_assetBlends.push_back(
+                    result.m_assetBlends.push_back(
                         AssetBlend(nextKey.m_assetId, nextKey.m_startTime, nextKey.m_blendInTime, nextKey.m_blendOutTime));
                 }
                 else if (foundPreviousKey)
                 {
                     // Add a small fudge factor to the end time so the animation will be frozen on the last frame if we play off the end
                     // of an animation and there is no other animation set on the tack.
-                    m_assetBlend.m_assetBlends.push_back(AssetBlend(
+                    result.m_assetBlends.push_back(AssetBlend(
                         previousKey.m_assetId,
                         previousKey.GetValidEndTime() - 0.001f,
                         previousKey.m_blendInTime,
@@ -277,11 +289,18 @@ namespace Maestro
         }
 
         // Return the updated assetBlend
-        value = m_assetBlend;
+        value = result;
     }
 
     void CAssetBlendTrack::SetKeysAtTime(float time, const AssetBlends<AZ::Data::AssetData>& value)
     {
+        if (((m_timeRange.end - m_timeRange.start) > AZ::Constants::Tolerance) && (time < m_timeRange.start || time > m_timeRange.end))
+        {
+            AZ_WarningOnce("AssetBlendTrack", false, "SetKeysAtTime(%f): Time is out of range (%f .. %f) in track (%s), clamped.",
+                time, m_timeRange.start, m_timeRange.end, (GetNode() ? GetNode()->GetName() : ""));
+            AZStd::clamp(time, m_timeRange.start, m_timeRange.end);
+        }
+
         ClearKeys();
         for (const auto& blend : value.m_assetBlends)
         {
@@ -302,7 +321,7 @@ namespace Maestro
             bool isUnique = true;
             for (const auto& previousKey : m_keys)
             {
-                if ((previousKey.m_assetId == key.m_assetId) && (fabs(previousKey.time - key.time) < AZ::Constants::Tolerance))
+                if ((previousKey.m_assetId == key.m_assetId) && (AZStd::abs(previousKey.time - key.time) < GetMinKeyTimeDelta()))
                 {
                     isUnique = false;
                     break;
@@ -369,7 +388,7 @@ namespace Maestro
                 for (const auto& previousBlend : filteredValue.m_assetBlends)
                 {
                     if ((previousBlend.m_assetId == nextBlend.m_assetId) &&
-                        (fabs(previousBlend.m_time - nextBlend.m_time) < AZ::Constants::Tolerance))
+                        (AZStd::abs(previousBlend.m_time - nextBlend.m_time) < GetMinKeyTimeDelta()))
                     {
                         isUnique = false;
                         break;
@@ -390,7 +409,6 @@ namespace Maestro
         m_currKey = 0;
         m_lastTime = -1;
         m_timeRange.Clear();
-        m_bModified = 0;
         m_fMinKeyValue = 0;
         m_fMaxKeyValue = 0;
     }
