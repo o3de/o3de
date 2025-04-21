@@ -63,9 +63,9 @@ namespace AzToolsFramework
                 }
                 else
                 {
-                    PrefabUndoUtils::GenerateUpdateEntityPatch(
+                    PrefabUndoUtils::GenerateAndAppendPatch(
                         m_redoPatch, parentEntityDomBeforeAddingEntity, parentEntityDomAfterAddingEntity, parentEntityAliasPath);
-                    PrefabUndoUtils::GenerateUpdateEntityPatch(
+                    PrefabUndoUtils::GenerateAndAppendPatch(
                         m_undoPatch, parentEntityDomAfterAddingEntity, parentEntityDomBeforeAddingEntity, parentEntityAliasPath);
                 }
             }
@@ -85,9 +85,9 @@ namespace AzToolsFramework
                     }
                     else
                     {
-                        PrefabUndoUtils::GenerateUpdateEntityPatch(
+                        PrefabUndoUtils::GenerateAndAppendPatch(
                             m_redoPatch, *parentEntityDomInFocusedTemplate, parentEntityDomAfterAddingEntity, parentEntityAliasPath);
-                        PrefabUndoUtils::GenerateUpdateEntityPatch(
+                        PrefabUndoUtils::GenerateAndAppendPatch(
                             m_undoPatch, parentEntityDomAfterAddingEntity, *parentEntityDomInFocusedTemplate, parentEntityAliasPath);
                     }
                 }
@@ -102,10 +102,8 @@ namespace AzToolsFramework
             PrefabDomReference cachedOwningInstanceDom = focusedInstance.GetCachedInstanceDom();
             if (cachedOwningInstanceDom.has_value())
             {
-                PrefabUndoUtils::UpdateEntityInInstanceDom(cachedOwningInstanceDom,
-                    parentEntityDomAfterAddingEntity, parentEntityAliasPath);
-                PrefabUndoUtils::UpdateEntityInInstanceDom(cachedOwningInstanceDom,
-                    newEntityDom, newEntityAliasPath);
+                PrefabUndoUtils::UpdateEntityInPrefabDom(cachedOwningInstanceDom, parentEntityDomAfterAddingEntity, parentEntityAliasPath);
+                PrefabUndoUtils::UpdateEntityInPrefabDom(cachedOwningInstanceDom, newEntityDom, newEntityAliasPath);
             }
         }
     }

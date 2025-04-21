@@ -45,13 +45,13 @@ namespace MessagePopup
     //-------------------------------------------------------------------------
     void LyShineMessagePopup::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("MessagePopupService"));
+        provided.push_back(AZ_CRC_CE("MessagePopupService"));
     }
 
     //-------------------------------------------------------------------------
     void LyShineMessagePopup::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("MessagePopupService"));
+        incompatible.push_back(AZ_CRC_CE("MessagePopupService"));
     }
 
     //-------------------------------------------------------------------------

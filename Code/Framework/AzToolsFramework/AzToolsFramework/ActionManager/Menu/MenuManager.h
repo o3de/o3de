@@ -66,8 +66,11 @@ namespace AzToolsFramework
         MenuManagerIntegerResult GetSortKeyOfSubMenuInMenu(const AZStd::string& menuIdentifier, const AZStd::string& subMenuIdentifier) const override;
         MenuManagerIntegerResult GetSortKeyOfWidgetInMenu(const AZStd::string& menuIdentifier, const AZStd::string& widgetActionIdentifier) const override;
         MenuManagerIntegerResult GetSortKeyOfMenuInMenuBar(const AZStd::string& menuBarIdentifier, const AZStd::string& menuIdentifier) const override;
+        MenuManagerOperationResult DisplayMenuAtScreenPosition(const AZStd::string& menuIdentifier, const QPoint& screenPosition) override;
+        MenuManagerOperationResult DisplayMenuUnderCursor(const AZStd::string& menuIdentifier) override;
+        MenuManagerPositionResult GetLastContextMenuPosition() const override;
 
-        // MenuManagerInterface overrides ...
+        // MenuManagerInternalInterface overrides ...
         QMenu* GetMenu(const AZStd::string& menuIdentifier) override;
         MenuManagerOperationResult QueueRefreshForMenu(const AZStd::string& menuIdentifier) override;
         MenuManagerOperationResult QueueRefreshForMenusContainingAction(const AZStd::string& actionIdentifier) override;
@@ -87,6 +90,11 @@ namespace AzToolsFramework
 
         // Identifies whether adding a submenu to a menu would generate any circular dependencies.
         bool WouldGenerateCircularDependency(const AZStd::string& menuIdentifier, const AZStd::string& subMenuIdentifier);
+
+        // If the menu that was stored as the last displayed is no longer visible, clear the variable.
+        void RefreshLastDisplayedMenu();
+
+        AZStd::string m_lastDisplayedMenuIdentifier;
 
         AZStd::unordered_map<AZStd::string, EditorMenu> m_menus;
         AZStd::unordered_map<AZStd::string, EditorMenuBar> m_menuBars;

@@ -84,19 +84,12 @@ namespace AZ::RPI
             return;
         }
 
-        RHI::ResultCode result = RHI::ResultCode::Success;
         RHI::ImageViewDescriptor imageViewDescriptor;
         for (uint32_t mipIndex = 0; mipIndex < GetMin(mipLevelCount, SpdMipLevelCountMax); ++mipIndex)
         {
             imageViewDescriptor.m_mipSliceMin = static_cast<uint16_t>(mipIndex);
             imageViewDescriptor.m_mipSliceMax = static_cast<uint16_t>(mipIndex);
-            Ptr<RHI::ImageView> imageView = RHI::Factory::Get().CreateImageView();
-            result = imageView->Init(*rhiImage, imageViewDescriptor);
-            if (result != RHI::ResultCode::Success)
-            {
-                AZ_Assert(false, "DownsampleSingelPassMipChainPass failed to create RHI::ImageView.");
-                return;
-            }
+            Ptr<RHI::ImageView> imageView = const_cast<RHI::Image*>(rhiImage)->GetImageView(imageViewDescriptor);
             srg.SetImageView(m_imageDestinationIndex, imageView.get(), mipIndex);
             m_imageViews[mipIndex] = imageView;
         }
@@ -256,7 +249,7 @@ namespace AZ::RPI
         // For the setting up of the parameter for SPD shader, refer to:
         // https://github.com/GPUOpen-Effects/FidelityFX-SPD/blob/c52944f547884774a1b33066f740e6bf89f927f5/ffx-spd/ffx_spd.h#L327
 
-        bool succeeded = true;
+        [[maybe_unused]] bool succeeded = true;
         ShaderResourceGroup& srg = *m_shaderResourceGroup;
         succeeded &= srg.SetConstant(
             m_numWorkGroupsIndex,

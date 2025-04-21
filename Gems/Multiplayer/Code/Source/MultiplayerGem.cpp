@@ -49,8 +49,20 @@ namespace Multiplayer
 
 #if !defined(MULTIPLAYER_EDITOR)
 #if defined(AZ_MONOLITHIC_BUILD)
-AZ_DECLARE_MODULE_CLASS(Gem_Multiplayer_Client, Multiplayer::MultiplayerModule);
-AZ_DECLARE_MODULE_CLASS(Gem_Multiplayer_Server, Multiplayer::MultiplayerModule);
+    #if defined(O3DE_GEM_NAME)
+    AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME, _Client), Multiplayer::MultiplayerModule)
+    #else
+    AZ_DECLARE_MODULE_CLASS(Gem_Multiplayer_Client, Multiplayer::MultiplayerModule)
+    #endif
+#if defined(O3DE_GEM_NAME)
+    AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME, _Server), Multiplayer::MultiplayerModule)
+    #else
+    AZ_DECLARE_MODULE_CLASS(Gem_Multiplayer_Server, Multiplayer::MultiplayerModule)
+    #endif
 #endif
-AZ_DECLARE_MODULE_CLASS(Gem_Multiplayer, Multiplayer::MultiplayerModule);
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME), Multiplayer::MultiplayerModule)
+#else
+AZ_DECLARE_MODULE_CLASS(Gem_Multiplayer, Multiplayer::MultiplayerModule)
+#endif
 #endif

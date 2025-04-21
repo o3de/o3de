@@ -32,6 +32,7 @@ namespace ScriptCanvas
 {
     namespace SlotExecution
     {
+        // Represents a data slot output
         struct Output final
         {
             AZ_TYPE_INFO(Output, "{61EA2FF0-3112-40DF-BA45-CF4BE680DC52}");
@@ -48,7 +49,8 @@ namespace ScriptCanvas
 
         using Outputs = AZStd::vector<Output>;
         using OutputSlotIds = AZStd::vector<SlotId>;
-        
+
+        // Represents a data slot input
         struct Input final
         {
             AZ_TYPE_INFO(Input, "{4E52A04D-C9FC-477F-8065-35F96A972CD6}");
@@ -73,6 +75,7 @@ namespace ScriptCanvas
             Inputs values;
         };
 
+        // Represents an execution slot output
         struct Out final
         {
             AZ_TYPE_INFO(Out, "{DD3D2547-868C-40DF-A37C-F60BE06FFFBA}");
@@ -86,6 +89,7 @@ namespace ScriptCanvas
         };
         using Outs = AZStd::vector<Out>;
 
+        // Represents an execution slot input
         struct In final
         {
             AZ_TYPE_INFO(In, "{4AAAEB0B-6367-46E5-B05D-E76EF884E16F}");
@@ -104,6 +108,7 @@ namespace ScriptCanvas
         InputSlotIds ToInputSlotIds(const Inputs& source);
         OutputSlotIds ToOutputSlotIds(const Outputs& source);
 
+        // Maps slots of nodes to one another to indicate what execution slots corrospond to what data slots
         class Map final
         {
         public:
@@ -120,7 +125,11 @@ namespace ScriptCanvas
 
             Map(Outs&& latents);
 
+            // Takes in a data input slot id, and returns the execution in associated with it
             const In* FindInFromInputSlot(const SlotId& slotID) const;
+
+            // Takes in a data output slot id, and returns the execution out associated with it
+            const Out* FindOutFromOutputSlot(const SlotId& slotID) const;
 
             SlotId FindInputSlotIdBySource(VariableId inputSourceId, Grammar::FunctionSourceId inSourceId) const;
 
@@ -138,6 +147,7 @@ namespace ScriptCanvas
 
             const Ins& GetIns() const;
 
+            // Takes in the slot ID of an execution in slot and returns a vector of its corresponding data inputs
             const Inputs* GetInput(SlotId in) const;
 
             const Out* GetLatent(SlotId latent) const;
@@ -150,6 +160,7 @@ namespace ScriptCanvas
 
             const Out* GetOut(SlotId in, SlotId out) const;
 
+            // Takes in the slot ID of an execution out slot and returns a vector of its corresponding data outputs
             const Outputs* GetOutput(SlotId out) const;
 
             const Outputs* GetOutput(SlotId in, SlotId out) const;
@@ -164,7 +175,7 @@ namespace ScriptCanvas
 
             bool IsEmpty() const;
 
-            // returns true iff there is at least one latent out
+            // Returns true if there is at least one latent out
             bool IsLatent() const;
 
             AZStd::string ToExecutionString() const;

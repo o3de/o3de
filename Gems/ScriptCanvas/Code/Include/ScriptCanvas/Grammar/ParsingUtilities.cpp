@@ -34,6 +34,7 @@
 #include <ScriptCanvas/Libraries/Logic/IsNull.h>
 #include <ScriptCanvas/Libraries/Logic/Once.h>
 #include <ScriptCanvas/Libraries/Logic/OrderedSequencer.h>
+#include <ScriptCanvas/Libraries/Logic/TargetedSequencer.h>
 #include <ScriptCanvas/Libraries/Logic/WeightedRandomSequencer.h>
 #include <ScriptCanvas/Libraries/Logic/While.h>
 #include <ScriptCanvas/Libraries/Math/MathExpression.h>
@@ -42,6 +43,7 @@
 #include <ScriptCanvas/Libraries/Operators/Math/OperatorDiv.h>
 #include <ScriptCanvas/Libraries/Operators/Math/OperatorMul.h>
 #include <ScriptCanvas/Libraries/Operators/Math/OperatorSub.h>
+
 #include <ScriptCanvas/Translation/Configuration.h>
 #include <ScriptCanvas/Variable/VariableData.h>
 
@@ -1567,3 +1569,8 @@ namespace ScriptCanvas
         }
     }
 }
+
+#include <ScriptCanvas/Libraries/Time/RepeaterNodeable.h>
+#include <ScriptCanvas/Libraries/Time/DelayNodeable.h>
+#include <ScriptCanvas/Libraries/Time/TimeDelayNodeable.h>
+#include <ScriptCanvas/Libraries/Logic/Gate.h>

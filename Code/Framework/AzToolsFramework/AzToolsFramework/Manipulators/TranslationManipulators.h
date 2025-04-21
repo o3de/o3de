@@ -99,8 +99,6 @@ namespace AzToolsFramework
         // Manipulators
         void ProcessManipulators(const AZStd::function<void(BaseManipulator*)>&) override;
 
-        const Dimensions m_dimensions; //!< How many dimensions of freedom does this manipulator have.
-
         AZStd::vector<AZStd::shared_ptr<LinearManipulator>> m_linearManipulators;
         AZStd::vector<AZStd::shared_ptr<PlanarManipulator>> m_planarManipulators;
         AZStd::shared_ptr<SurfaceManipulator> m_surfaceManipulator = nullptr;

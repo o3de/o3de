@@ -628,8 +628,8 @@ namespace AZ::Dom
             return AZ::Failure(destLookup.TakeError());
         }
 
-        Value valueToMove = rootElement[GetSourcePath()];
         const PathContext& sourceContext = sourceLookup.GetValue();
+        Value valueToMove = sourceContext.m_value[sourceContext.m_key];
         if (sourceContext.m_key.IsEndOfArray())
         {
             sourceContext.m_value.ArrayPopBack();
@@ -643,7 +643,29 @@ namespace AZ::Dom
             sourceContext.m_value.EraseMember(sourceContext.m_key.GetKey());
         }
 
-        rootElement[m_domPath] = AZStd::move(valueToMove);
+        auto newDestLookup = LookupPath(rootElement, m_domPath, ExistenceCheckFlags::AllowEndOfArray);
+        const PathContext& destContext = newDestLookup.GetValue();
+        const PathEntry& destinationIndex = destContext.m_key;
+        Value& targetValue = destContext.m_value;
+
+        if (destinationIndex.IsIndex() || destinationIndex.IsEndOfArray())
+        {
+            const size_t index = destinationIndex.GetIndex();
+            if (destinationIndex.IsEndOfArray() || targetValue.ArraySize() == index)
+            {
+                targetValue.ArrayPushBack(AZStd::move(valueToMove));
+            }
+            else
+            {
+                auto& arrayToChange = targetValue.GetMutableArray();
+                arrayToChange.insert(arrayToChange.begin() + index, AZStd::move(valueToMove));
+            }
+        }
+        else
+        {
+            targetValue[destinationIndex] = AZStd::move(valueToMove);
+        }
+
         return AZ::Success();
     }
 

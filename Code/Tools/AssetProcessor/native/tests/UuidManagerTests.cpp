@@ -48,6 +48,9 @@ namespace UnitTests
 
             // Enable txt files by default for these tests
             m_uuidInterface->EnableGenerationForTypes({ ".txt" });
+
+            m_pathConversion.AddScanfolder("c:/somepath", "somepath");
+            m_pathConversion.AddScanfolder("c:/other", "other");
         }
 
         void TearDown() override
@@ -67,7 +70,7 @@ namespace UnitTests
         AzToolsFramework::UuidUtilComponent m_uuidUtil;
         AzToolsFramework::MetadataManager m_metadataManager;
         AssetProcessor::UuidManager m_uuidManager;
-        MockPathConversion m_pathConversion;
+        MockMultiPathConversion m_pathConversion;
         MockVirtualFileIO m_virtualFileIO;
         AZStd::unique_ptr<testing::NiceMock<MockComponentApplication>> m_componentApplication;
         TraceBusErrorChecker m_errorChecker;
@@ -510,5 +513,97 @@ namespace UnitTests
         // Verify the case of the metadata file is actually updated
         EXPECT_TRUE(AssetUtilities::UpdateToCorrectCase("c:/somepath", relPath));
         EXPECT_STREQ(relPath.toUtf8().constData(), (QString("MockFile.txt") + AzToolsFramework::MetadataManager::MetadataFileExtension).toUtf8().constData());
+    }
+
+    TEST_F(UuidManagerTests, FindFilesByUuid)
+    {
+        // Test that FindFilesByUuid correctly returns all files with the same matching (legacy) UUID
+        using namespace AssetProcessor;
+
+        static constexpr AZ::IO::FixedMaxPath FileA = "c:/somepath/mockfile.txt";
+        static constexpr AZ::IO::FixedMaxPath FileB = "c:/other/MockFile.txt";
+        static constexpr AZ::IO::FixedMaxPath FileC = "c:/other/notvalid/mockFile.txt"; // throw in a random extra file to make sure only matching files are returned
+
+        MakeFile(FileA);
+        MakeFile(FileB);
+        MakeFile(FileC);
+
+        auto fileALegacy = m_uuidInterface->GetLegacyUuids(SourceAssetReference(FileA));
+        auto fileBLegacy = m_uuidInterface->GetLegacyUuids(SourceAssetReference(FileB));
+
+        ASSERT_TRUE(fileALegacy);
+        ASSERT_TRUE(fileBLegacy);
+
+        auto fileAUuid = *fileALegacy.GetValue().begin();
+
+        EXPECT_TRUE(fileBLegacy.GetValue().contains(fileAUuid));
+
+        auto files = m_uuidInterface->FindFilesByUuid(fileAUuid);
+
+        EXPECT_THAT(files, ::testing::UnorderedElementsAre(FileA, FileB));
+
+        auto fileACanonical = m_uuidInterface->GetUuid(SourceAssetReference(FileA));
+
+        ASSERT_TRUE(fileACanonical);
+
+        EXPECT_THAT(m_uuidInterface->FindFilesByUuid(fileACanonical.GetValue()), ::testing::UnorderedElementsAre(FileA));
+    }
+
+    TEST_F(UuidManagerTests, FindHighestPriorityFileByUuid)
+    {
+        // Test that FindHighestPriorityFileByUuid returns the oldest file
+        using namespace AssetProcessor;
+
+        static constexpr AZ::IO::FixedMaxPath FileA = "c:/somepath/fileA.txt";
+        static constexpr AZ::IO::FixedMaxPath FileB = "c:/somepath/fileB.txt";
+        static constexpr AZ::IO::FixedMaxPath FileC = "c:/other/fileA.txt";
+        static constexpr AZ::IO::FixedMaxPath FileD = "c:/other/fileB.txt";
+
+        MakeFile(FileA);
+        MakeFile(FileB);
+        MakeFile(FileC);
+        MakeFile(FileD);
+
+        auto result = m_uuidInterface->GetUuidDetails(AssetProcessor::SourceAssetReference(FileA));
+
+        ASSERT_TRUE(result);
+
+        auto uuidDetails = result.GetValue();
+
+        // Copy the metadata for FileA but give it a different canonical UUID and an older timestamp
+        // This is really just meant to duplicate the legacy UUIDs
+        uuidDetails.m_uuid = AZ::Uuid::CreateRandom();
+        uuidDetails.m_millisecondsSinceUnixEpoch = uuidDetails.m_millisecondsSinceUnixEpoch - 1;
+        m_metadataManager.SetValue(FileB, AzToolsFramework::UuidUtilComponent::UuidKey, &uuidDetails, azrtti_typeid<decltype(uuidDetails)>());
+
+        // Get UUID manager to load the uuids
+        m_uuidInterface->GetUuid(SourceAssetReference(FileB));
+        m_uuidInterface->GetUuid(SourceAssetReference(FileC));
+        m_uuidInterface->GetUuid(SourceAssetReference(FileD));
+
+        auto highestPriority = m_uuidInterface->FindHighestPriorityFileByUuid(*uuidDetails.m_legacyUuids.begin());
+
+        ASSERT_TRUE(highestPriority);
+
+        EXPECT_EQ(highestPriority.value(), FileB);
+    }
+
+    TEST_F(UuidManagerTests, GetCanonicalUuid)
+    {
+        // Test that a legacy UUID is correctly upgraded to the canonical UUID
+        using namespace AssetProcessor;
+
+        static constexpr AZ::IO::FixedMaxPath FileA = "c:/somepath/fileA.txt";
+
+        MakeFile(FileA);
+
+        auto legacyUuids = m_uuidInterface->GetLegacyUuids(SourceAssetReference(FileA));
+
+        ASSERT_TRUE(legacyUuids);
+
+        auto canonicalUuid = m_uuidInterface->GetCanonicalUuid(*legacyUuids.GetValue().begin());
+
+        ASSERT_TRUE(canonicalUuid);
+        EXPECT_EQ(m_uuidInterface->GetUuid(SourceAssetReference(FileA)).GetValue(), canonicalUuid.value());
     }
 }

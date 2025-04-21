@@ -16,12 +16,18 @@
 
 #include <AzFramework/Viewport/CameraState.h>
 #include <AzFramework/Viewport/ViewportScreen.h>
-#include <AzToolsFramework/API/ToolsApplicationAPI.h>
-#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
+#include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorMenuIdentifiers.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorActionUpdaterIdentifiers.h>
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
+#include <AzToolsFramework/UI/Prefab/ActionManagerIdentifiers/PrefabActionUpdaterIdentifiers.h>
 
 #include <AzToolsFramework/API/EditorCameraBus.h>
 #include "ViewportCameraSelectorWindow.h"
@@ -52,59 +58,18 @@ namespace Camera
 
     void CameraEditorSystemComponent::Activate()
     {
-        AzToolsFramework::EditorContextMenuBus::Handler::BusConnect();
         AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
         Camera::EditorCameraSystemRequestBus::Handler::BusConnect();
         Camera::CameraViewRegistrationRequestsBus::Handler::BusConnect();
+        AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusConnect();
     }
 
     void CameraEditorSystemComponent::Deactivate()
     {
+        AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
         Camera::CameraViewRegistrationRequestsBus::Handler::BusDisconnect();
         Camera::EditorCameraSystemRequestBus::Handler::BusDisconnect();
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
-        AzToolsFramework::EditorContextMenuBus::Handler::BusDisconnect();
-    }
-
-    void CameraEditorSystemComponent::PopulateEditorGlobalContextMenu(
-        QMenu* menu, [[maybe_unused]] const AZStd::optional<AzFramework::ScreenPoint>& point, int flags)
-    {
-        if (!(flags & AzToolsFramework::EditorEvents::eECMF_HIDE_ENTITY_CREATION))
-        {
-            QAction* action = menu->addAction(QObject::tr("Create camera entity from view"));
-            bool showAction = true;
-
-            if (const auto prefabEditorEntityOwnershipInterface = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
-                prefabEditorEntityOwnershipInterface && !prefabEditorEntityOwnershipInterface->IsRootPrefabAssigned())
-            {
-                showAction = false;
-            }
-
-            auto entityContextId = AzFramework::EntityContextId::CreateNull();
-            AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
-                entityContextId, &AzToolsFramework::EditorEntityContextRequests::GetEditorEntityContextId);
-
-            if (const auto prefabFocusInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabFocusInterface>::Get();
-                prefabFocusInterface && prefabFocusInterface->IsFocusedPrefabInstanceReadOnly(entityContextId))
-            {
-                showAction = false;
-            }
-
-            if (showAction)
-            {
-                QObject::connect(
-                    action, &QAction::triggered,
-                    [this]()
-                    {
-                        CreateCameraEntityFromViewport();
-                    }
-                );
-            }
-            else
-            {
-                action->setEnabled(false);
-            }
-        }
     }
 
     void CameraEditorSystemComponent::CreateCameraEntityFromViewport()
@@ -160,6 +125,76 @@ namespace Camera
             return viewIndex->second.lock();
         }
         return {};
+    }
+
+    void CameraEditorSystemComponent::OnActionRegistrationHook()
+    {
+        auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+        if (!actionManagerInterface)
+        {
+            return;
+        }
+
+        // Create camera entity from view
+        {
+            const AZStd::string_view actionIdentifier = "o3de.action.camera.createFromView";
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = "Create camera entity from view";
+            actionProperties.m_description = "Create an entity with a camera that shows the current viewport view.";
+            actionProperties.m_category = "Edit";
+
+            actionManagerInterface->RegisterAction(
+                EditorIdentifiers::MainWindowActionContextIdentifier,
+                actionIdentifier,
+                actionProperties,
+                [this]()
+                {
+                    CreateCameraEntityFromViewport();
+                }
+            );
+
+            actionManagerInterface->InstallEnabledStateCallback(
+                actionIdentifier,
+                []() -> bool
+                {
+                    if (const auto prefabEditorEntityOwnershipInterface =
+                            AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
+                        prefabEditorEntityOwnershipInterface && !prefabEditorEntityOwnershipInterface->IsRootPrefabAssigned())
+                    {
+                        return false;
+                    }
+
+                    auto entityContextId = AzFramework::EntityContextId::CreateNull();
+                    AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+                        entityContextId, &AzToolsFramework::EditorEntityContextRequests::GetEditorEntityContextId);
+                    if (const auto prefabFocusInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabFocusInterface>::Get();
+                        prefabFocusInterface && prefabFocusInterface->IsFocusedPrefabInstanceReadOnly(entityContextId))
+                    {
+                        return false;
+                    }
+
+                    return true;
+                }
+            );
+
+            // Trigger update whenever entity selection changes.
+            actionManagerInterface->AddActionToUpdater(EditorIdentifiers::LevelLoadedUpdaterIdentifier, actionIdentifier);
+            actionManagerInterface->AddActionToUpdater(PrefabIdentifiers::PrefabFocusChangedUpdaterIdentifier, actionIdentifier);
+
+            // This action is only accessible outside of Component Modes
+            actionManagerInterface->AssignModeToAction(AzToolsFramework::DefaultActionContextModeIdentifier, actionIdentifier);
+        }
+    }
+
+    void CameraEditorSystemComponent::OnMenuBindingHook()
+    {
+        auto menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
+        if (!menuManagerInterface)
+        {
+            return;
+        }
+
+        menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.camera.createFromView", 60100);
     }
 
     void CameraEditorSystemComponent::NotifyRegisterViews()

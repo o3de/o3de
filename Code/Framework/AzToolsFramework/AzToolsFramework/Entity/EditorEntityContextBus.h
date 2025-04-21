@@ -17,8 +17,6 @@
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
-#include <AzToolsFramework/ToolsComponents/EditorLayerComponentBus.h>
-
 namespace AZ
 {
     class Entity;
@@ -162,9 +160,9 @@ namespace AzToolsFramework
         virtual ~EditorEntityContextNotification() = default;
 
         /// Called before the context is reset.
-        virtual void PrepareForContextReset() {}
+        virtual void OnPrepareForContextReset() {}
 
-        /// Fired when the context is being reset.
+        /// Fired after the context is reset.
         virtual void OnContextReset() {}
 
         //! Fired when an Editor entity is created

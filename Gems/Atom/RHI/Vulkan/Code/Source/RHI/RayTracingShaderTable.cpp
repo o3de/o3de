@@ -12,8 +12,8 @@
 #include <RHI/Buffer.h>
 #include <RHI/Device.h>
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/BufferPool.h>
-#include <Atom/RHI/RayTracingBufferPools.h>
+#include <Atom/RHI/DeviceBufferPool.h>
+#include <Atom/RHI/DeviceRayTracingBufferPools.h>
 #include <RHI/ShaderResourceGroup.h>
 
 namespace AZ
@@ -25,22 +25,27 @@ namespace AZ
             return aznew RayTracingShaderTable;
         }
 
-        RHI::Ptr<RHI::Buffer> RayTracingShaderTable::BuildTable(
+        RHI::Ptr<RHI::DeviceBuffer> RayTracingShaderTable::BuildTable(
             const VkPhysicalDeviceRayTracingPipelinePropertiesKHR& rayTracingPipelineProperties,
             const RayTracingPipelineState* rayTracingPipelineState,
-            const RHI::RayTracingBufferPools& bufferPools,
-            const RHI::RayTracingShaderTableRecordList& recordList,
+            const RHI::DeviceRayTracingBufferPools& bufferPools,
+            const RHI::DeviceRayTracingShaderTableRecordList& recordList,
             uint32_t shaderRecordSize,
             AZStd::string shaderTableName)
         {
             uint32_t shaderTableSize = shaderRecordSize * static_cast<uint32_t>(recordList.size());
 
-            RHI::Ptr<RHI::Buffer> shaderTableBuffer = RHI::Factory::Get().CreateBuffer();
+            if (shaderTableSize == 0)
+            {
+                return nullptr;
+            }
+
+            RHI::Ptr<RHI::DeviceBuffer> shaderTableBuffer = RHI::Factory::Get().CreateBuffer();
             AZ::RHI::BufferDescriptor shaderTableBufferDescriptor;
             shaderTableBufferDescriptor.m_bindFlags = RHI::BufferBindFlags::CopyRead | RHI::BufferBindFlags::RayTracingShaderTable;
             shaderTableBufferDescriptor.m_byteCount = shaderTableSize;
 
-            AZ::RHI::BufferInitRequest shaderTableBufferRequest;
+            AZ::RHI::DeviceBufferInitRequest shaderTableBufferRequest;
             shaderTableBufferRequest.m_buffer = shaderTableBuffer.get();
             shaderTableBufferRequest.m_descriptor = shaderTableBufferDescriptor;
             [[maybe_unused]] RHI::ResultCode resultCode = bufferPools.GetShaderTableBufferPool()->InitBuffer(shaderTableBufferRequest);
@@ -49,8 +54,8 @@ namespace AZ
             BufferMemoryView* shaderTableMemoryView = static_cast<Buffer*>(shaderTableBuffer.get())->GetBufferMemoryView();
             shaderTableMemoryView->SetName(shaderTableName);
 
-            RHI::BufferMapResponse mapResponse;
-            resultCode = bufferPools.GetShaderTableBufferPool()->MapBuffer(RHI::BufferMapRequest(*shaderTableBuffer, 0, shaderTableSize), mapResponse);
+            RHI::DeviceBufferMapResponse mapResponse;
+            resultCode = bufferPools.GetShaderTableBufferPool()->MapBuffer(RHI::DeviceBufferMapRequest(*shaderTableBuffer, 0, shaderTableSize), mapResponse);
             AZ_Assert(resultCode == RHI::ResultCode::Success, "failed to map shader table buffer");
             uint8_t* mappedData = reinterpret_cast<uint8_t*>(mapResponse.m_data);
 
@@ -78,8 +83,7 @@ namespace AZ
             uint32_t alignedShaderHandleSize = RHI::AlignUp(shaderHandleSize, rayTracingPipelineProperties.shaderGroupBaseAlignment);
 
             // advance to the next buffer
-            m_currentBufferIndex = (m_currentBufferIndex + 1) % BufferCount;
-            ShaderTableBuffers& buffers = m_buffers[m_currentBufferIndex];
+            ShaderTableBuffers& buffers = m_buffers.AdvanceCurrentElement();
 
             // clear the shader table if the descriptor has no ray generation shader
             if (m_descriptor->GetRayGenerationRecord().empty())
@@ -90,6 +94,9 @@ namespace AZ
                 buffers.m_missTable = nullptr;
                 buffers.m_missTableSize = 0;
                 buffers.m_missTableStride = 0;
+                buffers.m_callableTable = nullptr;
+                buffers.m_callableTableSize = 0;
+                buffers.m_callableTableStride = 0;
                 buffers.m_hitGroupTable = nullptr;
                 buffers.m_hitGroupTableSize = 0;
                 buffers.m_hitGroupTableStride = 0;
@@ -99,11 +106,13 @@ namespace AZ
             // calculate record sizes
             buffers.m_rayGenerationTableStride = RHI::AlignUp(alignedShaderHandleSize, rayTracingPipelineProperties.shaderGroupBaseAlignment);
             buffers.m_missTableStride = RHI::AlignUp(alignedShaderHandleSize, rayTracingPipelineProperties.shaderGroupBaseAlignment);
+            buffers.m_callableTableStride = RHI::AlignUp(alignedShaderHandleSize, rayTracingPipelineProperties.shaderGroupBaseAlignment);
             buffers.m_hitGroupTableStride = RHI::AlignUp(alignedShaderHandleSize, rayTracingPipelineProperties.shaderGroupBaseAlignment);
 
             // calculate sub-table sizes
             buffers.m_rayGenerationTableSize = buffers.m_rayGenerationTableStride * aznumeric_cast<uint32_t>(m_descriptor->GetRayGenerationRecord().size());
             buffers.m_missTableSize = buffers.m_missTableStride * aznumeric_cast<uint32_t>(m_descriptor->GetMissRecords().size());
+            buffers.m_callableTableSize = buffers.m_callableTableStride * aznumeric_cast<uint32_t>(m_descriptor->GetCallableRecords().size());
             buffers.m_hitGroupTableSize = buffers.m_hitGroupTableStride * aznumeric_cast<uint32_t>(m_descriptor->GetHitGroupRecords().size());
 
             const RayTracingPipelineState* rayTracingPipelineState = static_cast<const RayTracingPipelineState*>(m_descriptor->GetPipelineState().get());
@@ -124,6 +133,14 @@ namespace AZ
                 m_descriptor->GetMissRecords(),
                 buffers.m_missTableStride,
                 "MissTable");
+
+            buffers.m_callableTable = BuildTable(
+                rayTracingPipelineProperties,
+                rayTracingPipelineState,
+                *m_bufferPools,
+                m_descriptor->GetCallableRecords(),
+                buffers.m_callableTableStride,
+                "CallableTable");
 
             buffers.m_hitGroupTable = BuildTable(
                 rayTracingPipelineProperties,

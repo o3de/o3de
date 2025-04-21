@@ -10,12 +10,11 @@
 #include "EditorDefs.h"
 
 // Editor
+#include "Controls/ReflectedPropertyControl/ReflectedPropertyItem.h"
 #include "KeyUIControls.h"
 #include "TrackViewKeyPropertiesDlg.h"
-#include "Controls/ReflectedPropertyControl/ReflectedPropertyItem.h"
 
-//////////////////////////////////////////////////////////////////////////
-bool C2DBezierKeyUIControls::OnKeySelectionChange(CTrackViewKeyBundle& selectedKeys)
+bool C2DBezierKeyUIControls::OnKeySelectionChange(const CTrackViewKeyBundle& selectedKeys)
 {
     if (!selectedKeys.AreAllKeysOfSameType())
     {

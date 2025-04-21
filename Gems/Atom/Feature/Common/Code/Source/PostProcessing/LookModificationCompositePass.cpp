@@ -14,7 +14,7 @@
 #include <Atom/RPI.Public/Shader/ShaderVariant.h>
 
 #include <Atom/RHI/FrameScheduler.h>
-#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/DevicePipelineState.h>
 
 #include <AzCore/Console/Console.h>
 
@@ -132,7 +132,7 @@ namespace AZ
             if (scene)
             {
                 PostProcessFeatureProcessor* fp = scene->GetFeatureProcessor<PostProcessFeatureProcessor>();
-                AZ::RPI::ViewPtr view = scene->GetDefaultRenderPipeline()->GetDefaultView();
+                AZ::RPI::ViewPtr view = m_pipeline->GetFirstView(GetPipelineViewTag());
                 if (fp)
                 {
                     PostProcessSettings* postProcessSettings = fp->GetLevelSettingsFromView(view);
@@ -157,7 +157,7 @@ namespace AZ
             if (scene)
             {
                 PostProcessFeatureProcessor* fp = scene->GetFeatureProcessor<PostProcessFeatureProcessor>();
-                AZ::RPI::ViewPtr view = scene->GetDefaultRenderPipeline()->GetDefaultView();
+                AZ::RPI::ViewPtr view = m_pipeline->GetFirstView(GetPipelineViewTag());
                 if (fp)
                 {
                     PostProcessSettings* postProcessSettings = fp->GetLevelSettingsFromView(view);
@@ -247,11 +247,11 @@ namespace AZ
             commandList->SetViewport(m_viewportState);
             commandList->SetScissor(m_scissorState);
 
-            SetSrgsForDraw(commandList);
+            SetSrgsForDraw(context);
 
-            m_item.m_pipelineState = GetPipelineStateFromShaderVariant();
+            m_item.SetPipelineState(GetPipelineStateFromShaderVariant());
 
-            commandList->Submit(m_item);
+            commandList->Submit(m_item.GetDeviceDrawItem(context.GetDeviceIndex()));
         }
 
         void LookModificationCompositePass::SetShaperParameters(const ShaperParams& shaperParams)

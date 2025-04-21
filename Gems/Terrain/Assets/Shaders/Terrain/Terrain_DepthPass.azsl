@@ -6,10 +6,9 @@
  */
 
 #include <Atom/Features/SrgSemantics.azsli>
-#include <scenesrg.srgi>
-#include <viewsrg.srgi>
+#include <scenesrg_all.srgi>
+#include <viewsrg_all.srgi>
 #include <TerrainCommon.azsli>
-#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 
 struct VSDepthOutput
 {

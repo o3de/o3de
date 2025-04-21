@@ -34,9 +34,9 @@ namespace LmbrCentral
                         ->Attribute(AZ::Edit::Attributes::Category, "Audio")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/AudioListener.svg")
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/AudioListener.svg")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
+                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/audio/listener/")
+                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/components/reference/audio/listener/")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorAudioListenerComponent::m_rotationEntity,
                         "Rotation Entity", "The Entity whose rotation the audio listener will adopt.  If none set, will assume 'this' Entity")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorAudioListenerComponent::m_positionEntity,

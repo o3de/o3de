@@ -132,7 +132,7 @@ static const uint NumberGlyphs[GLYPH_HEIGHT * MAX_CHARS] =
         if( r.x < r.z ) \
         { \
             r.xy /= scale; \
-            mask = (NumberGlyphs[r.y + ch * GLYPH_HEIGHT] & (1 << r.x)) != 0 ? IS_FOREGROUND : IS_BACKGROUND; \
+            mask = (NumberGlyphs[r.y + ch * GLYPH_HEIGHT] & (1u << r.x)) != 0 ? IS_FOREGROUND : IS_BACKGROUND; \
         } \
     }
     

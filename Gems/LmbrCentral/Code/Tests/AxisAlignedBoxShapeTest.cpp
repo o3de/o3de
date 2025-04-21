@@ -23,7 +23,6 @@ namespace UnitTest
 {
     class AxisAlignedBoxShapeTest
         : public LeakDetectionFixture
-        , public RegistryTestHelper
     {
         AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
         AZStd::unique_ptr<AZ::ComponentDescriptor> m_transformComponentDescriptor;
@@ -34,7 +33,6 @@ namespace UnitTest
         void SetUp() override
         {
             LeakDetectionFixture::SetUp();
-            RegistryTestHelper::SetUp(LmbrCentral::ShapeComponentTranslationOffsetEnabled, true);
             m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
 
             m_transformComponentDescriptor =
@@ -54,7 +52,6 @@ namespace UnitTest
             m_axisAlignedBoxShapeComponentDescriptor.reset();
             m_axisAlignedBoxShapeDebugDisplayComponentDescriptor.reset();
             m_serializeContext.reset();
-            RegistryTestHelper::TearDown();
             LeakDetectionFixture::TearDown();
         }
     };

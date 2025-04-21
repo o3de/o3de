@@ -11,6 +11,7 @@
 #if !defined(Q_MOC_RUN)
 #include <AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h>
 #include <AtomToolsFramework/Graph/GraphView.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 #endif
 
 namespace AtomToolsFramework
@@ -34,7 +35,10 @@ namespace AtomToolsFramework
         void OnDocumentClosed(const AZ::Uuid& documentId) override;
         void OnDocumentDestroyed(const AZ::Uuid& documentId) override;
 
+        void OnSettingsChanged();
+
         const AZ::Uuid m_documentId;
         bool m_openedBefore = false;
+        AZ::SettingsRegistryInterface::NotifyEventHandler m_graphViewSettingsNotifyEventHandler;
     };
 } // namespace AtomToolsFramework

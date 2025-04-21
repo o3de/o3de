@@ -288,7 +288,7 @@ int AZ::FontTexture::PreCacheString(const char* string, int* updated, float size
         *updated = updateCount;
     }
 
-    if (updated)
+    if (updateCount)
     {
         return 1;
     }

@@ -9,10 +9,13 @@
 #pragma once
 
 #include <ScriptAutomation/ScriptAutomationBus.h>
+#include <ImageComparisonSettings.h>
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
+
+#include <AzFramework/API/ApplicationAPI.h>
 
 #include <Atom/Feature/Utils/ProfilingCaptureBus.h>
 #include <Atom/Feature/Utils/FrameCaptureBus.h>
@@ -23,7 +26,7 @@ namespace AZ
     class ScriptContext;
 } // namespace AZ
 
-namespace ScriptAutomation
+namespace AZ::ScriptAutomation
 {
     //! Manages running lua scripts for test automation.
     //! This initializes a lua context, binds C++ callback functions and does per-frame processing
@@ -42,6 +45,7 @@ namespace ScriptAutomation
         , public ScriptAutomationRequestBus::Handler
         , public AZ::Render::ProfilingCaptureNotificationBus::Handler
         , public AZ::Render::FrameCaptureNotificationBus::Handler
+        , public AzFramework::LevelSystemLifecycleNotificationBus::Handler
     {
     public:
         AZ_COMPONENT(ScriptAutomationSystemComponent, "{755280BF-F227-4048-B323-D5E28EC55D61}", ScriptAutomationRequests);
@@ -77,6 +81,9 @@ namespace ScriptAutomation
         void PauseAutomation(float timeout = DefaultPauseTimeout) override;
         void ResumeAutomation() override;
         void QueueScriptOperation(ScriptAutomationRequests::ScriptOperation&& operation) override;
+        void ExecuteScript(const char* scriptFilePath) override;
+        const ImageComparisonToleranceLevel* FindToleranceLevel(const AZStd::string& name) override;
+        void LoadLevel(const char* levelName) override;
 
         // FrameCaptureNotificationBus implementation
         void OnFrameCaptureFinished(AZ::Render::FrameCaptureResult result, const AZStd::string& info) override;
@@ -87,15 +94,21 @@ namespace ScriptAutomation
         void OnCaptureQueryPipelineStatisticsFinished(bool result, const AZStd::string& info) override;
         void OnCaptureBenchmarkMetadataFinished(bool result, const AZStd::string& info) override;
 
-
-        void ExecuteScript(const char* scriptFilePath);
+        // LevelSystemLifecycleNotificationBus implementation
+        void OnLevelNotFound(const char* levelName) override;
+        void OnLoadingComplete(const char* levelName) override;
+        void OnLoadingError(const char* levelName, const char* error) override;
 
         AZStd::unique_ptr<AZ::ScriptContext> m_scriptContext; //< Provides the lua scripting system
         AZStd::unique_ptr<AZ::BehaviorContext> m_scriptBehaviorContext; //< Used to bind script callback functions to lua
+        ImageComparisonSettings m_imageComparisonSettings;
 
         AZStd::queue<ScriptAutomationRequests::ScriptOperation> m_scriptOperations;
 
         AZStd::string m_automationScript;
+
+        AZStd::string m_levelName;
+        bool m_levelLoading = false;
 
         int m_scriptIdleFrames = 0;
         float m_scriptIdleSeconds = 0.0f;
@@ -108,4 +121,4 @@ namespace ScriptAutomation
         bool m_exitOnFinish = false;
         bool m_doFinalCleanup = false;
     };
-} // namespace ScriptAutomation
+} // namespace AZ::ScriptAutomation

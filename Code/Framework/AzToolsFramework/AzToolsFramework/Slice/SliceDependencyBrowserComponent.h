@@ -63,12 +63,12 @@ namespace AzToolsFramework
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("SliceDependencyBrowserService", 0xe8f1ed19));
+            provided.push_back(AZ_CRC_CE("SliceDependencyBrowserService"));
         }
 
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("SliceDependencyBrowserService", 0xe8f1ed19));
+            incompatible.push_back(AZ_CRC_CE("SliceDependencyBrowserService"));
         }
     private:
 

@@ -22,7 +22,6 @@
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 #include <Atom/Features/Pipeline/Forward/ForwardPassSrg.azsli>
 
 #include "../../../Shaders/Materials/BasePBR/BasePBR_LightingData.azsli"

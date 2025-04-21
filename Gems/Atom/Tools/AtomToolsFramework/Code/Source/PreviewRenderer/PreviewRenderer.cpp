@@ -33,6 +33,7 @@ namespace AtomToolsFramework
     PreviewRenderer::PreviewRenderer(const AZStd::string& sceneName, const AZStd::string& pipelineName)
     {
         PreviewerFeatureProcessorProviderBus::Handler::BusConnect();
+        AZ::SystemTickBus::Handler::BusConnect();
 
         m_entityContext = AZStd::make_unique<AzFramework::EntityContext>();
         m_entityContext->InitContext();
@@ -63,8 +64,19 @@ namespace AtomToolsFramework
         pipelineDesc.m_mainViewTagName = "MainCamera";
         pipelineDesc.m_name = pipelineName;
         pipelineDesc.m_rootPassTemplate = "ToolsPipelineRenderToTexture";
-        pipelineDesc.m_renderSettings.m_multisampleState = AZ::RPI::RPISystemInterface::Get()->GetApplicationMultisampleState();
-
+        
+        uint32_t numRegisteredScenes = AZ::RPI::RPISystemInterface::Get()->GetNumScenes();
+        //If there are existing registered scenes use the msaa settings set by them
+        //otherwise broadcast default settings.
+        if (numRegisteredScenes > 0)
+        {
+            pipelineDesc.m_renderSettings.m_multisampleState = AZ::RPI::RPISystemInterface::Get()->GetApplicationMultisampleState();
+        }
+        else
+        {
+            AZ::RPI::RPISystemInterface::Get()->SetApplicationMultisampleState(pipelineDesc.m_renderSettings.m_multisampleState);
+        }
+        
         m_renderPipeline = AZ::RPI::RenderPipeline::CreateRenderPipeline(pipelineDesc);
         m_scene->AddRenderPipeline(m_renderPipeline);
         m_scene->Activate();
@@ -79,13 +91,6 @@ namespace AtomToolsFramework
         m_view->SetViewToClipMatrix(viewToClipMatrix);
         m_renderPipeline->SetDefaultView(m_view);
 
-        // Run the pipeline once for complete initialization, else capturing will fail
-        // Todo: Investigate why RemoveFromRenderTick doesn't work here and what initialization
-        // steps are missing in that case (could be the target image/texture doesn't get setup)
-        // Without this line, pipeline default to render every frame until a capture is triggered
-        // This resulted in a ~0.5ms performance hit every frame
-        m_renderPipeline->AddToRenderTickOnce();
-
         m_state.reset(new PreviewRendererIdleState(this));
 
         AZ::Interface<PreviewRendererInterface>::Register(this);
@@ -93,6 +98,7 @@ namespace AtomToolsFramework
 
     PreviewRenderer::~PreviewRenderer()
     {
+        AZ::SystemTickBus::Handler::BusDisconnect();
         PreviewerFeatureProcessorProviderBus::Handler::BusDisconnect();
 
         m_state.reset();
@@ -159,12 +165,14 @@ namespace AtomToolsFramework
         {
             m_currentCaptureRequest.m_captureFailedCallback();
         }
+        EndCapture();
         m_state.reset();
         m_state.reset(new PreviewRendererIdleState(this));
     }
 
     void PreviewRenderer::CompleteCaptureRequest()
     {
+        EndCapture();
         m_state.reset();
         m_state.reset(new PreviewRendererIdleState(this));
     }
@@ -201,11 +209,17 @@ namespace AtomToolsFramework
         m_currentCaptureRequest.m_content->Update();
     }
 
+    bool PreviewRenderer::IsContentReadyToRender()
+    {
+        return m_currentCaptureRequest.m_content->IsReadyToRender();
+    }
+
     AZ::Render::FrameCaptureId PreviewRenderer::StartCapture()
     {
         auto captureCompleteCallback = m_currentCaptureRequest.m_captureCompleteCallback;
         auto captureFailedCallback = m_currentCaptureRequest.m_captureFailedCallback;
-        auto captureCallback = [captureCompleteCallback, captureFailedCallback](const AZ::RPI::AttachmentReadback::ReadbackResult& result)
+        auto captureCallback =
+            [captureCompleteCallback, captureFailedCallback](const AZ::RPI::AttachmentReadback::ReadbackResult& result)
         {
             if (result.m_dataBuffer)
             {
@@ -255,6 +269,14 @@ namespace AtomToolsFramework
     {
         m_currentCaptureRequest = {};
         m_renderPipeline->RemoveFromRenderTick();
+    }
+
+    void PreviewRenderer::OnSystemTick()
+    {
+        if (m_state)
+        {
+            m_state->Update();
+        }
     }
 
     void PreviewRenderer::GetRequiredFeatureProcessors(AZStd::vector<AZStd::string>& featureProcessors) const

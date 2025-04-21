@@ -28,7 +28,7 @@
                 "ShaderAsset": {
                     "FilePath": "Shaders/SkyBox/SkyBox_TwoOutputs.shader"
                 },
-                "PipelineViewTag": "MainCamera",
+                "BindViewSrg": true,
                 "ShaderDataMappings": {
                     "FloatMappings": [
                         {

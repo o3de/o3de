@@ -16,5 +16,11 @@
     "engine": "o3de",
     "external_subdirectories": [
         "Gem"
+    ],
+    "gem_names": [
+        "${Name}",
+        "Atom",
+        "CameraFramework",
+        "ImGui"
     ]
 }

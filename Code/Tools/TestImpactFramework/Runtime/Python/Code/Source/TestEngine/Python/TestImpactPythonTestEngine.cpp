@@ -18,7 +18,6 @@
 #include <TestRunner/Python/TestImpactPythonRegularTestRunner.h>
 #include <TestRunner/Python/TestImpactPythonRegularNullTestRunner.h>
 
-#include <iostream>
 namespace TestImpact
 {
     AZStd::optional<Client::TestRunResult> PythonRegularTestRunnerErrorCodeChecker(
@@ -105,8 +104,7 @@ namespace TestImpact
         Policy::TestFailure testFailurePolicy,
         Policy::TargetOutputCapture targetOutputCapture,
         AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
-        AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-        AZStd::optional<TestEngineJobCompleteCallback<PythonTestTarget>> callback) const
+        AZStd::optional<AZStd::chrono::milliseconds> globalTimeout) const
     {
         DeleteXmlArtifacts();
 
@@ -123,9 +121,7 @@ namespace TestImpact
                 testFailurePolicy,
                 targetOutputCapture,
                 testTargetTimeout,
-                globalTimeout,
-                callback,
-                AZStd::nullopt);
+                globalTimeout);
         }
         else
         {
@@ -138,9 +134,7 @@ namespace TestImpact
                 testFailurePolicy,
                 targetOutputCapture,
                 testTargetTimeout,
-                globalTimeout,
-                callback,
-                AZStd::nullopt);
+                globalTimeout);
         }
     }
 
@@ -152,8 +146,7 @@ namespace TestImpact
         Policy::TestFailure testFailurePolicy,
         Policy::TargetOutputCapture targetOutputCapture,
         AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
-        AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-        AZStd::optional<TestEngineJobCompleteCallback<PythonTestTarget>> callback) const
+        AZStd::optional<AZStd::chrono::milliseconds> globalTimeout) const
     {
         const auto jobInfos = m_instrumentedTestJobInfoGenerator->GenerateJobInfos(testTargets);
 
@@ -169,9 +162,7 @@ namespace TestImpact
                 testFailurePolicy,
                 targetOutputCapture,
                 testTargetTimeout,
-                globalTimeout,
-                callback,
-                std::nullopt);
+                globalTimeout);
         }
         else
         {
@@ -184,9 +175,7 @@ namespace TestImpact
                     testFailurePolicy,
                     targetOutputCapture,
                     testTargetTimeout,
-                    globalTimeout,
-                    callback,
-                    std::nullopt);
+                    globalTimeout);
         }
     }
 } // namespace TestImpact

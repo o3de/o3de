@@ -51,7 +51,8 @@ namespace MaterialCanvas
 
         // AtomToolsFramework::AtomToolsDocumentMainWindow overrides...
         void PopulateSettingsInspector(AtomToolsFramework::InspectorWidget* inspector) const override;
-        AZStd::string GetHelpDialogText() const override;
+        void OnSettingsDialogClosed() override;
+        AZStd::string GetHelpUrl() const override;
 
     private:
         AtomToolsFramework::AtomToolsDocumentInspector* m_documentInspector = {};

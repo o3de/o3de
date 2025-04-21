@@ -19,12 +19,13 @@
 
 #include <QClipboard>
 #include <QCloseEvent>
-#include <QFileDialog>
+#include <QDesktopServices>
 #include <QInputDialog>
 #include <QMenu>
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QStatusBar>
+#include <QUrlQuery>
 #include <QVBoxLayout>
 
 namespace AtomToolsFramework
@@ -59,7 +60,7 @@ namespace AtomToolsFramework
         AddDockWidget("Python Terminal", new AzToolsFramework::CScriptTermDialog, Qt::BottomDockWidgetArea);
         SetDockWidgetVisible("Python Terminal", false);
 
-        m_logPanel = new AzToolsFramework::LogPanel::TracePrintFLogPanel(this);
+        m_logPanel = new AzToolsFramework::LogPanel::StyledTracePrintFLogPanel(this);
         m_logPanel->AddLogTab(AzToolsFramework::LogPanel::TabSettings("Log", "", ""));
         AddDockWidget("Logging", m_logPanel, Qt::BottomDockWidgetArea);
         SetDockWidgetVisible("Logging", false);
@@ -263,7 +264,7 @@ namespace AtomToolsFramework
         }, QKeySequence::Preferences);
 
         m_menuHelp->addAction(tr("&Help..."), [this]() {
-            OpenHelpDialog();
+            OpenHelpUrl();
         }, QKeySequence::HelpContents);
 
         m_menuHelp->addAction(tr("&About..."), [this]() {
@@ -298,6 +299,12 @@ namespace AtomToolsFramework
                   "Enable Source Control",
                   "Enable source control for the application if it is available",
                   false),
+              CreateSettingsPropertyValue(
+                  "/O3DE/AtomToolsFramework/Application/IgnoreCacheFolder",
+                  "Ignore Files In Cache Folder",
+                  "This toggles whether or not files located in the cache folder appear in the asset browser, file selection dialogs, and "
+                  "during file enumeration. Changing this setting may require restarting the application to take effect in some areas.",
+                  true),
               CreateSettingsPropertyValue(
                   "/O3DE/AtomToolsFramework/Application/UpdateIntervalWhenActive",
                   "Update Interval When Active",
@@ -363,21 +370,30 @@ namespace AtomToolsFramework
         dialog.setMinimumSize(0, 0);
         dialog.setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
         dialog.exec();
+
+        OnSettingsDialogClosed();
     }
 
-    AZStd::string AtomToolsMainWindow::GetHelpDialogText() const
+    void AtomToolsMainWindow::OnSettingsDialogClosed()
     {
-        return AZStd::string();
     }
 
-    void AtomToolsMainWindow::OpenHelpDialog()
+    AZStd::string AtomToolsMainWindow::GetHelpUrl() const
     {
-        QMessageBox::information(this, windowTitle(), GetHelpDialogText().c_str());
+        return "https://docs.o3de.org/docs/atom-guide/look-dev/tools/";
+    }
+
+    void AtomToolsMainWindow::OpenHelpUrl()
+    {
+        QDesktopServices::openUrl(QUrl(GetHelpUrl().c_str()));
     }
 
     void AtomToolsMainWindow::OpenAboutDialog()
     {
-        QMessageBox::about(this, windowTitle(), QApplication::applicationName());
+        const QString text = tr("<html><head/><body><p><b><u>%1</u></b></p><p><a href=\"%2\">Terms of Use</a></p></body></html>")
+                                 .arg(QApplication::applicationName())
+                                 .arg("https://www.o3debinaries.org/license");
+        QMessageBox::about(this, windowTitle(), text);
     }
 
     void AtomToolsMainWindow::showEvent(QShowEvent* showEvent)
@@ -455,7 +471,7 @@ namespace AtomToolsFramework
                     {
                         layoutSettingsMenu->addAction(
                             layoutName.c_str(),
-                            [this, layoutName, windowState]()
+                            [this, windowState]()
                             {
                                 m_advancedDockManager->restoreState(
                                     QByteArray(windowState.data(), aznumeric_cast<int>(windowState.size())));
@@ -477,7 +493,7 @@ namespace AtomToolsFramework
                         // Since these layouts were created and saved by the user, give them the option to restore and delete them.
                         layoutMenu->addAction(
                             tr("Load"),
-                            [this, layoutName, windowState]()
+                            [this, windowState]()
                             {
                                 m_advancedDockManager->restoreState(
                                     QByteArray(windowState.data(), aznumeric_cast<int>(windowState.size())));
@@ -550,7 +566,7 @@ namespace AtomToolsFramework
 
     void AtomToolsMainWindow::RestoreSavedLayout()
     {
-        // Attempt to restore the layout that was saved the last time the application was closed. 
+        // Attempt to restore the layout that was saved the last time the application was closed.
         const AZStd::string windowState = GetSettingsObject("/O3DE/AtomToolsFramework/MainWindow/WindowState", AZStd::string());
         if (!windowState.empty())
         {
@@ -595,16 +611,14 @@ namespace AtomToolsFramework
 
     void AtomToolsMainWindow::UpdateWindowTitle()
     {
-        AZ::Name apiName = AZ::RHI::Factory::Get().GetName();
-        if (!apiName.IsEmpty())
+        if (AZ::RHI::Factory::IsReady())
         {
-            QString title = QString{ "%1 (%2)" }.arg(QApplication::applicationName()).arg(apiName.GetCStr());
-            setWindowTitle(title);
+            const AZ::Name apiName = AZ::RHI::Factory::Get().GetName();
+            setWindowTitle(tr("%1 (%2)").arg(QApplication::applicationName()).arg(apiName.GetCStr()));
+            AZ_Error("AtomToolsMainWindow", !apiName.IsEmpty(), "Render API name not found");
+            return;
         }
-        else
-        {
-            AZ_Assert(false, "Render API name not found");
-            setWindowTitle(QApplication::applicationName());
-        }
+
+        setWindowTitle(QApplication::applicationName());
     }
 } // namespace AtomToolsFramework

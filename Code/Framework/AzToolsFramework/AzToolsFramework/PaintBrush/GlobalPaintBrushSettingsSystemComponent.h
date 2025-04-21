@@ -9,10 +9,14 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/Entity.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
 #include <AzToolsFramework/PaintBrush/GlobalPaintBrushSettings.h>
 #include <AzToolsFramework/PaintBrush/GlobalPaintBrushSettingsRequestBus.h>
+
+namespace AZ
+{
+    class ReflectContext;
+}
 
 namespace AzToolsFramework
 {

@@ -41,6 +41,9 @@ namespace ImageProcessingAtomEditor
         void OnChangePreset(int index);
         void OnPresetInfoButton();
 
+        void OnTagAdded();
+        void OnTagRemoved();
+
     protected:
         ////////////////////////////////////////////////////////////////////////
         //EditorInternalNotificationBus

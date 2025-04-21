@@ -127,6 +127,47 @@ namespace AZ
     AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_DECL(double);
     AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_DECL(bool);
     AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_DECL(void);
+
+    /**
+    * Use this macro outside a class to allow it to be identified across modules and serialized (in different contexts).
+    * The expected input is the class and the assigned uuid as a string or an instance of a uuid.
+    * Note that the AZ_TYPE_INFO_SPECIALIZE does NOT need to be declared in "namespace AZ".
+    * It can be declared outside the namespace as mechanism for adding TypeInfo uses function overloading
+    * instead of template specialization
+    * Example:
+    *   class MyClass
+    *   {
+    *   public:
+    *       ...
+    *   };
+    *
+    *   AZ_TYPE_INFO_SPECIALIZE(MyClass, "{BD5B1568-D232-4EBF-93BD-69DB66E3773F}");
+    */
+    #define AZ_TYPE_INFO_SPECIALIZE(_ClassType, _ClassUuid) \
+        AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME(_ClassType, #_ClassType, _ClassUuid)
+
+    // Adds support for specifying a different display name for the Class type being specialized for TypeInfo
+    // This is useful when wanting to remove a namespace from the TypeInfo name such as when reflecting to scripting
+    // i.e AZ_TYPE_INFO_SPECIALIZE_WITH_NAME(AZ::Metrics::MyClass, "{BD5B1568-D232-4EBF-93BD-69DB66E3773F}", MyClass)
+    #define AZ_TYPE_INFO_SPECIALIZE_WITH_NAME(_ClassType, _ClassUuid, _DisplayName) \
+        AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME(_ClassType, _DisplayName, _ClassUuid)
+
+    // Adds declaration TypeInfo function overloads for a type(class, enum or fundamental)
+    #define AZ_TYPE_INFO_SPECIALIZE_WITH_NAME_DECL(_ClassName) \
+        AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_DECL(_ClassName)
+
+    // Adds function definition for TypeInfo functions
+    // NOTE: This needs to be in the same namespace as the declaration
+    // The functions do not have the inline attached, so this macro is only suitable for use
+    // in a single translation unit
+    #define AZ_TYPE_INFO_SPECIALIZE_WITH_NAME_IMPL(_ClassName, _DisplayName, _ClassUuid) \
+        AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_IMPL(_ClassName, _DisplayName, _ClassUuid)
+
+    // Adds inline function definition for TypeInfo functions
+    // This macro can be used in a header or inline file and is suitable for use with class template types
+    #define AZ_TYPE_INFO_SPECIALIZE_WITH_NAME_IMPL_INLINE(_ClassName, _DisplayName, _ClassUuid) \
+        AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_IMPL_INLINE(_ClassName, _DisplayName, _ClassUuid)
+
 }
 
 namespace AZ
@@ -561,14 +602,20 @@ namespace AZ
 // This pairs with the AZ_TYPE_INFO_WITH_NAME_IMPL/AZ_TYPE_INFO_WITH_NAME_IMPL_INLINE where an implemenation can be provided
 // in a translation unit(.cpp) or a an inline(.inl) file in order to help reduce compile times
 // https://godbolt.org/z/EGPvKr7xM
-#define AZ_TYPE_INFO_WITH_NAME_DECL(_ClassName) \
+#define AZ_TYPE_INFO_WITH_NAME_DECL_HELPER(_ClassName, _TemplatePlaceholders) \
+    AZ_TYPE_INFO_SIMPLE_TEMPLATE_ID _TemplatePlaceholders \
     friend AZ::TypeNameString GetO3deTypeName(AZ::Adl, AZStd::type_identity<_ClassName>); \
+    AZ_TYPE_INFO_SIMPLE_TEMPLATE_ID _TemplatePlaceholders \
     friend AZ::TypeId GetO3deTypeId(AZ::Adl,AZStd::type_identity<_ClassName>); \
     static const char* TYPEINFO_Name(); \
     static AZ::TypeId TYPEINFO_Uuid();
 
+#define AZ_TYPE_INFO_WITH_NAME_DECL(_ClassNameOrTemplateName) \
+    AZ_TYPE_INFO_WITH_NAME_DECL_HELPER(AZ_USE_FIRST_ARG(AZ_UNWRAP(_ClassNameOrTemplateName)), \
+    AZ_WRAP(AZ_SKIP_FIRST_ARG(AZ_UNWRAP(_ClassNameOrTemplateName))) )
 
-// Repeat of AZ_TYPE_INFO_MACRO_CALL with a different name oo allow
+
+// Repeat of AZ_TYPE_INFO_MACRO_CALL with a different name to allow
 // calling a macro if inside of an expansion of a current AZ_TYPE_INFO_MACRO_CALL call
 #define AZ_TYPE_INFO_MACRO_CALL_NEW_II(MACRO_NAME, NPARAMS, PARAMS)    MACRO_NAME##NPARAMS PARAMS
 #define AZ_TYPE_INFO_MACRO_CALL_NEW_I(MACRO_NAME, NPARAMS, PARAMS)     AZ_TYPE_INFO_MACRO_CALL_NEW_II(MACRO_NAME, NPARAMS, PARAMS)

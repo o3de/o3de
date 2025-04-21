@@ -8,62 +8,61 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/BufferViewDescriptor.h>
+#include <Atom/RHI/Buffer.h>
+#include <Atom/RHI/Resource.h>
 #include <Atom/RHI/ResourceView.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    class DeviceBuffer;
+    class DeviceBufferView;
+
+    //! A BufferView is a light-weight representation of a view onto a multi-device buffer.
+    //! It holds a ConstPtr to a multi-device buffer as well as a BufferViewDescriptor
+    //! Using both, single-device BufferViews can be retrieved
+    class BufferView : public ResourceView
     {
-        class Buffer;
+    public:
+        AZ_RTTI(BufferView, "{AB366B8F-F1B7-45C6-A0D8-475D4834FAD2}", ResourceView);
+        virtual ~BufferView() = default;
 
-        //! BufferView is contains a platform-specific descriptor mapping to a linear sub-region of a specific buffer resource.
-        //! It associates 1-to-1 with a BufferViewDescriptor.
-        class BufferView
-            : public ResourceView
+        BufferView(const RHI::Buffer* buffer, BufferViewDescriptor descriptor, MultiDevice::DeviceMask deviceMask)
+            : ResourceView{ buffer, deviceMask }
+            , m_descriptor{ descriptor }
         {
-        public:
-            AZ_RTTI(BufferView, "{3012F770-1DD7-4CEC-A5D0-E2FC807548C1}", ResourceView);
-            virtual ~BufferView() = default;
+        }
 
-            static constexpr uint32_t InvalidBindlessIndex = 0xFFFFFFFF;
+        //! Given a device index, return the corresponding DeviceBufferView for the selected device
+        const RHI::Ptr<RHI::DeviceBufferView> GetDeviceBufferView(int deviceIndex) const;
 
-            //! Initializes the buffer view with the provided buffer and view descriptor.
-            ResultCode Init(const Buffer& buffer, const BufferViewDescriptor& viewDescriptor);
+        //! Return the contained multi-device buffer
+        const RHI::Buffer* GetBuffer() const
+        {
+            return static_cast<const RHI::Buffer*>(GetResource());
+        }
 
-            //! Returns the view descriptor used at initialization time.
-            const BufferViewDescriptor& GetDescriptor() const;
+        //! Return the contained BufferViewDescriptor
+        const BufferViewDescriptor& GetDescriptor() const
+        {
+            return m_descriptor;
+        }
 
-            //! Returns the buffer associated with this view.
-            const Buffer& GetBuffer() const;
+        AZStd::unordered_map<int, uint32_t> GetBindlessReadIndex() const;
 
-            //! Returns whether the view maps to the full buffer.
-            bool IsFullView() const override final;
+        const DeviceResourceView* GetDeviceResourceView(int deviceIndex) const override
+        {
+            return GetDeviceBufferView(deviceIndex).get();
+        }
 
-            //! Tells the renderer to ignore any validation related to this buffer's state and scope attachments.
-            //! Assumes that the programmer is manually managing the Read/Write state of the buffer correctly.
-            bool IgnoreFrameAttachmentValidation() const { return m_descriptor.m_ignoreFrameAttachmentValidation; }
+        // Convenient helper function to get both of the indices (Read and ReadWrite) in the BindlessSrg for a given device:
+        //     - If @outReadIndex != nullptr, it will get the shader index (READ) in Bindless::m_ByteAddressBuffer[].
+        //     - If @outReadWriteIndex != nullptr, it will get the shader index (ReadWrite) in Bindless::m_RWByteAddressBuffer[].
+        //     See "/o3de/Gems/Atom/Feature/Common/Assets/ShaderLib/Atom/Features\Bindless.azsli" for details.
+        // Returns true if @deviceIndex is valid, otherwise returns false.
+        bool GetBindlessIndices(int deviceIndex, uint32_t* outReadIndex, uint32_t* outReadWriteIndex = nullptr) const;
 
-            //! Returns the hash of the view.
-            HashValue64 GetHash() const;
-
-            virtual uint32_t GetBindlessReadIndex() const
-            {
-                return InvalidBindlessIndex;
-            }
-
-            virtual uint32_t GetBindlessReadWriteIndex() const
-            {
-                return InvalidBindlessIndex;
-            }
-
-        protected:
-            HashValue64 m_hash = HashValue64{ 0 };
-
-        private:
-            bool ValidateForInit(const Buffer& buffer, const BufferViewDescriptor& viewDescriptor) const;
-
-            /// The RHI descriptor for this view.
-            BufferViewDescriptor m_descriptor;
-        };
-    }
+    private:
+        //! The corresponding BufferViewDescriptor for this view.
+        BufferViewDescriptor m_descriptor;
+    };
 }

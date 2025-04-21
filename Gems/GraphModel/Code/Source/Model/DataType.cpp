@@ -27,6 +27,9 @@ namespace GraphModel
                 ->Field("m_cppName", &DataType::m_cppName)
                 ->Field("m_displayName", &DataType::m_displayName)
                 ;
+
+            serializeContext->RegisterGenericType<DataTypePtr>();
+            serializeContext->RegisterGenericType<DataTypeList>();
         }
 
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))

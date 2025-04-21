@@ -22,12 +22,6 @@ namespace AZ
 {
     namespace RPI
     {
-        const char* MaterialAsset::s_debugTraceName = "MaterialAsset";
-
-        const char* MaterialAsset::DisplayName = "MaterialAsset";
-        const char* MaterialAsset::Group = "Material";
-        const char* MaterialAsset::Extension = "azmaterial";
-
         void MaterialAsset::Reflect(ReflectContext* context)
         {
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
@@ -48,6 +42,20 @@ namespace AZ
         MaterialAsset::~MaterialAsset()
         {
             AssetInitBus::Handler::BusDisconnect();
+        }
+
+        bool MaterialAsset::InitializeNonSerializedData()
+        {
+            if (m_isNonSerializedDataInitialized)
+            {
+                return true;
+            }
+            if (!m_materialTypeAsset.IsReady())
+            {
+                return false;
+            }
+            m_isNonSerializedDataInitialized = m_materialTypeAsset->InitializeNonSerializedData();
+            return m_isNonSerializedDataInitialized;
         }
 
         const Data::Asset<MaterialTypeAsset>& MaterialAsset::GetMaterialTypeAsset() const

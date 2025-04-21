@@ -318,6 +318,10 @@ namespace ScriptCanvas
             HashCombineClasses(fingerprint, &(behaviorContext->m_classes));
             HashCombineEBuses(fingerprint, &(behaviorContext->m_ebuses));
         }
+
+        // Include the base node version in the hash, so when it changes, script canvas jobs are reprocessed.
+        AZStd::hash_combine(fingerprint, Node::GetNodeVersion());
+
         return fingerprint;
     }
 

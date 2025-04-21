@@ -1,0 +1,11 @@
+{
+  "O3DE": {
+    "Preferences": {
+      "Prefab": {
+        "CustomTemplatePaths": {
+          "EngineTemplatePathKey1": "@engroot@/Assets/Editor/Prefabs"
+        }
+      }
+    }
+  }
+}

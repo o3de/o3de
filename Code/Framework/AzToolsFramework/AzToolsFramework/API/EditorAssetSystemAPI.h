@@ -9,13 +9,17 @@
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/Math/Crc.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/PlatformDef.h>
+
+namespace AZ
+{
+    class ReflectContext;
+}
 
 namespace AzToolsFramework
 {

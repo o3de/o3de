@@ -25,12 +25,6 @@ namespace UnitTest
     {
     }
 
-    bool PrefabTestToolsApplication::IsPrefabSystemEnabled() const
-    {
-        // Make sure our prefab tests always run with prefabs enabled
-        return true;
-    }
-
     void PrefabTestFixture::SetUpEditorFixtureImpl()
     {
         // Acquire the system entity
@@ -61,10 +55,14 @@ namespace UnitTest
         m_settingsRegistryInterface = AZ::SettingsRegistry::Get();
         EXPECT_TRUE(m_settingsRegistryInterface);
 
+        // Have all instances cache their DOM for testing purposes.
+        Instance::s_DomCachingEnabledDefault = true;
+
         // This is for calling CreateEditorRepresentation that adds required editor components.
         AzToolsFramework::EditorRequestBus::Handler::BusConnect();
 
         GetApplication()->RegisterComponentDescriptor(PrefabTestComponent::CreateDescriptor());
+        GetApplication()->RegisterComponentDescriptor(PrefabNonEditorComponent::CreateDescriptor());
         GetApplication()->RegisterComponentDescriptor(PrefabTestComponentWithUnReflectedTypeMember::CreateDescriptor());
 
         // Gets undo stack.

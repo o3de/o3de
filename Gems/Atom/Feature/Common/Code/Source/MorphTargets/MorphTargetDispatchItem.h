@@ -58,7 +58,7 @@ namespace AZ
 
             bool Init();
 
-            const RHI::DispatchItem& GetRHIDispatchItem() const;
+            const AZ::RHI::DispatchItem& GetRHIDispatchItem() const;
 
             void SetWeight(float weight);
             float GetWeight() const;

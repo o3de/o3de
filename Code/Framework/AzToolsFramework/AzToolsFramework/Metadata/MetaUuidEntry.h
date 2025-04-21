@@ -8,7 +8,14 @@
 
 #pragma once
 
-#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
+#include <AzCore/std/containers/unordered_set.h>
+#include <AzCore/std/string/string.h>
+
+namespace AZ
+{
+    class ReflectContext;
+}
 
 namespace AzToolsFramework
 {

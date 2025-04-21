@@ -44,13 +44,13 @@ namespace LmbrCentral
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
             EditorBaseShapeComponent::GetProvidedServices(provided);
-            provided.push_back(AZ_CRC("TubeShapeService", 0x3fe791b4));
+            provided.push_back(AZ_CRC_CE("TubeShapeService"));
         }
 
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
             EditorBaseShapeComponent::GetRequiredServices(required);
-            required.push_back(AZ_CRC("SplineService", 0x2b674d3c));
+            required.push_back(AZ_CRC_CE("SplineService"));
         }
 
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);

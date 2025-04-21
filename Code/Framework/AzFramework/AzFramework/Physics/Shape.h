@@ -72,6 +72,13 @@ namespace Physics
     private:
         void OnRestOffsetChanged();
         void OnContactOffsetChanged();
+
+        // m_dummyIsSimulated is used for EditContext only, it will always be false and read-only.
+        // It will be shown instead of the real m_isSimulated property when m_isTrigger is enabled,
+        // this way it'll be clear that when the collider is a trigger it won't be simulated.
+        bool m_dummyIsSimulated = false;
+        AZ::Crc32 GetSimulatedPropertyVisibility() const;
+        AZ::Crc32 GetDummySimulatedPropertyVisibility() const;
     };
 
     struct RayCastRequest;

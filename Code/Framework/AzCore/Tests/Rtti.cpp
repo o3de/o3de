@@ -73,8 +73,14 @@ static_assert(AZStd::is_same_v<AZ::AzGenericTypeInfo::Internal::TemplateIdentity
 // any instantiation of the template to void
 // Similarly `template<class T> unique_ptr = std::unique_ptr<T>`, is not an alias for the `std::unique_ptr`
 // template, the result of it's instantiation results in a class type of `std::unique_ptr<T>`
-static_assert(!AZStd::is_same_v<AZ::AzGenericTypeInfo::Internal::TemplateIdentityTypes<UnitTest::AliasTest>,
-    AZ::AzGenericTypeInfo::Internal::TemplateIdentityTypes<UnitTestAlias::AliasTest>>);
+#if !defined(AZ_COMPILER_GCC)
+    static_assert(!AZStd::is_same_v<AZ::AzGenericTypeInfo::Internal::TemplateIdentityTypes<UnitTest::AliasTest>,
+        AZ::AzGenericTypeInfo::Internal::TemplateIdentityTypes<UnitTestAlias::AliasTest>>);
+#else
+    // On GCC the Alias template  matches actual template identifier
+    static_assert(AZStd::is_same_v<AZ::AzGenericTypeInfo::Internal::TemplateIdentityTypes<UnitTest::AliasTest>,
+        AZ::AzGenericTypeInfo::Internal::TemplateIdentityTypes<UnitTestAlias::AliasTest>>);
+#endif
 
 namespace UnitTest
 {

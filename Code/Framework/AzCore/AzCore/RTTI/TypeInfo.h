@@ -10,6 +10,7 @@
 #include <AzCore/RTTI/TypeInfoSimple.h>
 #include <AzCore/RTTI/TemplateInfo.h>
 #include <AzCore/std/containers/array.h>
+#include <AzCore/std/containers/span_fwd.h>
 #include <AzCore/Preprocessor/Enum.h>
 #include <AzCore/std/typetraits/is_enum.h>
 #include <AzCore/std/typetraits/remove_cvref.h>
@@ -263,7 +264,7 @@ namespace AZ
         extern template struct AggregateTypes<Crc32>;
 
         template<typename T>
-        constexpr const char* GetTypeName()
+        constexpr AZStd::string_view GetTypeName()
         {
             return AZ::AzTypeInfo<T>::Name();
         }
@@ -300,9 +301,9 @@ namespace AZ
 
         // Supports any non-type template argument which supports conversion to a size_t
         template<auto N>
-        constexpr const char* GetTypeName()
+        constexpr AZStd::string_view GetTypeName()
         {
-            return IntTypeName<static_cast<AZStd::size_t>(N)>.c_str();
+            return IntTypeName<static_cast<AZStd::size_t>(N)>;
         }
 
         template<typename T>
@@ -459,52 +460,13 @@ namespace AZ
     inline AZ::TypeId GetO3deTypeId(AZ::Adl, AZStd::type_identity<std::reference_wrapper<T>>)
     {
         // Return the type id of the non-reference type for the reference wrapper
-        return AZ::AzTypeInfo<T>::Uuid();
+        constexpr TemplateId referenceWrapperId{ "{49A51B21-8302-4E63-8EE8-A4BF51B72FFC}" };
+        return referenceWrapperId + AZ::AzTypeInfo<T>::Uuid();
     }
 } // namespace AZ
 
 namespace AZ
 {
-        /**
-    * Use this macro outside a class to allow it to be identified across modules and serialized (in different contexts).
-    * The expected input is the class and the assigned uuid as a string or an instance of a uuid.
-    * Note that the AZ_TYPE_INFO_SPECIALIZE does NOT need has to be declared in "namespace AZ".
-    * It can be declared outside the namespace as mechanism for adding TypeInfo uses function overloading
-    * instead of template specialization
-    * Example:
-    *   class MyClass
-    *   {
-    *   public:
-    *       ...
-    *   };
-    *
-    *   AZ_TYPE_INFO_SPECIALIZE(MyClass, "{BD5B1568-D232-4EBF-93BD-69DB66E3773F}");
-    */
-#define AZ_TYPE_INFO_SPECIALIZE(_ClassType, _ClassUuid) \
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME(_ClassType, #_ClassType, _ClassUuid)
-
-    // Adds support for specifying a different display name for the Class type being specialized for TypeInfo
-    // This is useful when wanting to remove a namespace from the TypeInfo name such as when reflecting to scripting
-    // i.e AZ_TYPE_INFO_SPECIALIZE_WITH_NAME(AZ::Metrics::MyClass, "{BD5B1568-D232-4EBF-93BD-69DB66E3773F}", MyClass)
-#define AZ_TYPE_INFO_SPECIALIZE_WITH_NAME(_ClassType, _ClassUuid, _DisplayName) \
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME(_ClassType, _DisplayName, _ClassUuid)
-
-// Adds declaration TypeInfo function overloads for a type(class, enum or fundamental)
-#define AZ_TYPE_INFO_SPECIALIZE_WITH_NAME_DECL(_ClassName) \
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_DECL(_ClassName)
-
-// Adds function definition for TypeInfo functions
-// NOTE: This needs to be in the same namespace as the declaration
-// The functions do not have the inline attached, so this macro is only suitable for use
-// in a single translation unit
-#define AZ_TYPE_INFO_SPECIALIZE_WITH_NAME_IMPL(_ClassName, _DisplayName, _ClassUuid) \
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_IMPL(_ClassName, _DisplayName, _ClassUuid)
-
-// Adds inline function definition for TypeInfo functions
-// This macro can be used in a header or inline file and is suitable for use with class template types
-#define AZ_TYPE_INFO_SPECIALIZE_WITH_NAME_IMPL_INLINE(_ClassName, _DisplayName, _ClassUuid) \
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_IMPL_INLINE(_ClassName, _DisplayName, _ClassUuid)
-
     //! Add GetO3deTypeName and GetO3deTypeId declarations for commonly used O3DE types
     AZ_TYPE_INFO_SPECIALIZE_WITH_NAME_DECL(AZ::Uuid);
     AZ_TYPE_INFO_SPECIALIZE_WITH_NAME_DECL(PlatformID);
@@ -554,6 +516,91 @@ namespace AZStd
     AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_BOTHFIX_UUID_DECL(AZStd::basic_string_view, AZ_TYPE_INFO_INTERNAL_TYPENAME, AZ_TYPE_INFO_INTERNAL_TYPENAME);
     AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_BOTHFIX_UUID_DECL(AZStd::basic_string, AZ_TYPE_INFO_INTERNAL_TYPENAME, AZ_TYPE_INFO_INTERNAL_TYPENAME, AZ_TYPE_INFO_INTERNAL_TYPENAME);
     AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_BOTHFIX_UUID_DECL(AZStd::basic_fixed_string, AZ_TYPE_INFO_INTERNAL_TYPENAME, AZ_TYPE_INFO_INTERNAL_AUTO, AZ_TYPE_INFO_INTERNAL_TYPENAME);
+}
+
+namespace AZStd
+{
+    // GetO3deTypeName/GetO3deTypeId overload for AZStd::span<T, Extent>
+    // Note the type ID only takes the type T template parameter into account, not the Extent template parameter.
+    // An `AZStd::span<AZ::Component*, 50>` and `AZStd::span<AZ::Component*, 100>` will have the same type ID, as the second template argument is not aggregated to the AZStd::span template ID.
+    inline constexpr AZ::TemplateId GetO3deTemplateId(AZ::Adl, AZ::AzGenericTypeInfo::Internal::TemplateIdentityTypeAuto<AZStd::span>)
+    {
+        constexpr AZ::TypeId prefixUuid{ "{2FCDBAB3-45E0-4159-A91D-FD1D37056C0F}" };
+        constexpr AZ::TypeId postfixUuid{};
+        if constexpr (!prefixUuid.IsNull())
+        {
+            return prefixUuid;
+        }
+        else if constexpr (!postfixUuid.IsNull())
+        {
+            return postfixUuid;
+        }
+        else
+        {
+            return AZ::TemplateId{};
+        }
+    }
+    template<typename T1>
+    AZ::TypeNameString GetO3deTypeName(AZ::Adl, AZStd::type_identity<AZStd::span<T1>>)
+    {
+        AZ::TypeNameString s_canonicalTypeName;
+        if (s_canonicalTypeName.empty())
+        {
+            AZStd::fixed_string<512> typeName{ "AZStd::span"
+                                               "<" };
+            bool prependSeparator = false;
+            for (AZStd::string_view templateParamName : { AZ::Internal::GetTypeName<T1>() })
+            {
+                typeName += prependSeparator ? AZ::Internal::TypeNameSeparator : "";
+                typeName += templateParamName;
+                prependSeparator = true;
+            }
+            typeName += '>';
+            s_canonicalTypeName = typeName;
+        }
+        return s_canonicalTypeName;
+    }
+    template<typename T1>
+    AZ::TypeId GetO3deTypeId(AZ::Adl, AZStd::type_identity<AZStd::span<T1>>)
+    {
+        AZ::TypeId s_canonicalTypeId;
+        if (s_canonicalTypeId.IsNull())
+        {
+            constexpr AZ::TypeId prefixUuid{ "{2FCDBAB3-45E0-4159-A91D-FD1D37056C0F}" };
+            constexpr AZ::TypeId postfixUuid{};
+            if constexpr (!prefixUuid.IsNull())
+            {
+                s_canonicalTypeId = prefixUuid + AZ::Internal::GetCanonicalTypeId<T1>();
+            }
+            else if constexpr (!postfixUuid.IsNull())
+            {
+                s_canonicalTypeId = AZ::Internal::GetCanonicalTypeId<T1>() + postfixUuid;
+            }
+            else
+            {
+                AZ_Assert(false, "Call to macro with template name %s, requires either a valid template uuid", "AZStd::span");
+            }
+        }
+        return s_canonicalTypeId;
+    }
+    template<typename T1>
+    AZ::TemplateId GetO3deClassTemplateId(AZ::Adl, AZStd::type_identity<AZStd::span<T1>>)
+    {
+        constexpr AZ::TypeId prefixUuid{ "{2FCDBAB3-45E0-4159-A91D-FD1D37056C0F}" };
+        constexpr AZ::TypeId postfixUuid{};
+        if constexpr (!prefixUuid.IsNull())
+        {
+            return prefixUuid;
+        }
+        else if constexpr (!postfixUuid.IsNull())
+        {
+            return postfixUuid;
+        }
+        else
+        {
+            return AZ::TemplateId{};
+        }
+    };
 }
 
 namespace std

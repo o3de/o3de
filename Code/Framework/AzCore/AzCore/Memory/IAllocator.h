@@ -21,6 +21,64 @@
 
 #define AZ_ALLOCATOR_DEFAULT_TRAITS AZ_ALLOCATOR_TRAITS(void)
 
+ //! Wraps an allocated memory address in a struct that is convertible to a void pointer
+ //! This is used to allow implicit conversion of the IAllocate::allocate function
+ //! to a void pointer to maintain backwards compatibility, while providing
+ //! the ability for newer code to get access to the actual amount of bytes allocated.
+ //! This can be used by wrapping allocators to track memory
+struct AllocateAddress
+{
+    //! default an empty address object
+    AllocateAddress() = default;
+
+    //! constructs an allocate address out of a void* and size
+    AllocateAddress(void* address, size_t size)
+        : m_value(address)
+        , m_size(size)
+    {}
+
+
+    //! default copy constructor and assignment operator
+    AllocateAddress(const AllocateAddress&) = default;
+    AllocateAddress& operator=(const AllocateAddress&) = default;
+
+    void* GetAddress() const
+    {
+        return m_value;
+    }
+
+    size_t GetAllocatedBytes() const
+    {
+        return m_size;
+    }
+
+    //! implicit void* operator allows assigning
+    //! an AllocateAddress directly to a void*
+    operator void* () const
+    {
+        return m_value;
+    }
+
+    //! explicit T* operator which is used
+    //! for explicit casting from an AllocateAddress
+    //! to a T* pointer
+    template <class T>
+    explicit operator T* () const
+    {
+        return reinterpret_cast<T*>(m_value);
+    }
+
+    explicit operator bool() const
+    {
+        return m_value != nullptr;
+    }
+
+    //! Store allocated memory address
+    void* m_value{};
+    //! Stores the amount of bytes allocated
+    size_t m_size{};
+};
+
 namespace AZ
 {
     namespace Debug
@@ -73,8 +131,10 @@ namespace AZ
         IAllocator& operator=(IAllocator&&) = delete;
         virtual ~IAllocator() = default;
 
-        virtual pointer allocate(size_type byteSize, align_type alignment = 1) = 0;
-        virtual void deallocate(pointer ptr, size_type byteSize = 0, align_type alignment = 0) = 0;
+        //! Allocates memory and returns the address + the amount of memory allocated
+        virtual AllocateAddress allocate(size_type byteSize, align_type alignment = 1) = 0;
+        //! Deallocates memory at the ptr address and returns the amount of memory that was allocated
+        virtual size_type deallocate(pointer ptr, size_type byteSize = 0, align_type alignment = 0) = 0;
 
         // Reallocates a bigger block. Allocators will do best effort to maintain the same pointer,
         // but they can return a new pointer if is not possible or the allocator doesnt support it.
@@ -83,7 +143,7 @@ namespace AZ
         // Memory pointed by ptr is copied to the returned pointer if the returned pointer is different
         // than the passed ptr
         // Memory pointed by ptr is freed if the returned pointer is different than the passed ptr
-        virtual pointer reallocate(pointer ptr, size_type newSize, align_type newAlignment = 1) = 0;
+        virtual AllocateAddress reallocate(pointer ptr, size_type newSize, align_type newAlignment = 1) = 0;
 
         virtual size_type max_size() const
         {
@@ -102,7 +162,7 @@ namespace AZ
         {
         }
 
-        const char* GetName() const
+        virtual const char* GetName() const
         {
             return RTTI_GetTypeName();
         }

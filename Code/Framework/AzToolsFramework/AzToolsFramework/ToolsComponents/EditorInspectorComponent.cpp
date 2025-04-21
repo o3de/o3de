@@ -8,6 +8,7 @@
 #include "EditorInspectorComponent.h"
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/std/sort.h>
+#include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 
 namespace AzToolsFramework
 {
@@ -47,12 +48,12 @@ namespace AzToolsFramework
 
         void EditorInspectorComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
         {
-            services.push_back(AZ_CRC("EditorInspectorService", 0xc7357f25));
+            services.push_back(AZ_CRC_CE("EditorInspectorService"));
         }
 
         void EditorInspectorComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
         {
-            services.push_back(AZ_CRC("EditorInspectorService", 0xc7357f25));
+            services.push_back(AZ_CRC_CE("EditorInspectorService"));
         }
 
         bool EditorInspectorComponent::SerializationConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
@@ -61,7 +62,7 @@ namespace AzToolsFramework
             if (classElement.GetVersion() <= 1)
             {
                 // Convert the vector of component ids to an array of order entries
-                auto componentOrderArrayElement = classElement.FindSubElement(AZ_CRC("ComponentOrderArray", 0x22bd99f7));
+                auto componentOrderArrayElement = classElement.FindSubElement(AZ_CRC_CE("ComponentOrderArray"));
                 if (!componentOrderArrayElement)
                 {
                     return false;
@@ -82,7 +83,7 @@ namespace AzToolsFramework
                 AZ_Error("EditorInspectorComponent", componentOrderArray.size() == componentOrderArrayElement->GetNumSubElements(), "Unable to get all the expected elements for the old component order array");
 
                 // Get rid of the old array
-                classElement.RemoveElementByName(AZ_CRC("ComponentOrderArray", 0x22bd99f7));
+                classElement.RemoveElementByName(AZ_CRC_CE("ComponentOrderArray"));
 
                 // Add a new empty array (unable to use AddElementWithData, fails stating that AZStd::vector is not registered)
                 int newArrayElementIndex = classElement.AddElement<ComponentOrderEntryArray>(context, "ComponentOrderEntryArray");
@@ -124,12 +125,6 @@ namespace AzToolsFramework
 
         void EditorInspectorComponent::PrepareSave()
         {
-            // If we didn't dirty the component order, we do not need to regenerate the serialized entry array
-            if (!m_componentOrderIsDirty)
-            {
-                return;
-            }
-
             // Clear the actual persistent id storage to get rebuilt from the order entry array
             m_componentOrderEntryArray.clear();
             m_componentOrderEntryArray.reserve(m_componentOrderArray.size());
@@ -139,8 +134,6 @@ namespace AzToolsFramework
             {
                 m_componentOrderEntryArray.push_back({ m_componentOrderArray[componentIndex], componentIndex });
             }
-
-            m_componentOrderIsDirty = false;
         }
 
         void EditorInspectorComponent::PostLoad()
@@ -163,8 +156,6 @@ namespace AzToolsFramework
             {
                 m_componentOrderArray.push_back(componentOrderEntry.m_componentId);
             }
-
-            m_componentOrderIsDirty = false;
         }
 
         ComponentOrderArray EditorInspectorComponent::GetComponentOrderArray()
@@ -176,16 +167,49 @@ namespace AzToolsFramework
         {
             if (m_componentOrderArray == componentOrderArray)
             {
+                // the order is unchanged, not necessary to set or invoke callbacks.
                 return;
             }
 
-            m_componentOrderArray = componentOrderArray;
+            // If we get here, the caller is requesting a new order, but, we only want to persist this if the order is actually
+            // different from what default would be.
+            AZ::Entity::ComponentArrayType components;
+            components = GetEntity()->GetComponents();
+            RemoveHiddenComponents(components);
+            SortComponentsByPriority(components);
 
+            ComponentOrderArray defaultOrderArray;
+            defaultOrderArray.reserve(components.size());
+
+            for (const auto& component : components)
+            {
+                defaultOrderArray.push_back(component->GetId());
+            }
+
+            if (defaultOrderArray == componentOrderArray)
+            {
+                // the new order is the same as the default order
+                if (m_componentOrderArray.empty())
+                {
+                    // the new order is default and the previous order is default, nothing to do.
+                    return;
+                }
+
+                m_componentOrderArray.clear();
+            }
+            else
+            {
+                // the new order is non-default and the previous order is different from it, we need to persist it.
+                m_componentOrderArray = componentOrderArray;
+            }
+
+            // if we get here, we either went from a default order to a user-specified order
+            // or vice versa.  Either way, the order has changed and needs to persist the change.
+            // We should only get in here from user interaction - dragging things around, cut and paste, etc
+            // so we are in an undo state.
             SetDirty();
+            PrepareSave();
 
-            // mark the order as dirty before sending the OnComponentOrderChanged event in order for PrepareSave to be properly handled in the case 
-            // one of the event listeners needs to build the InstanceDataHierarchy
-            m_componentOrderIsDirty = true;
             EditorInspectorComponentNotificationBus::Event(GetEntityId(), &EditorInspectorComponentNotificationBus::Events::OnComponentOrderChanged);
         }
 

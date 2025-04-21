@@ -8,9 +8,10 @@
 
 #pragma once
 
-#include <AzCore/Interface/Interface.h>
-#include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/std/function/function_base.h>
+#include <AzCore/Outcome/Outcome.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
+#include <AzCore/RTTI/RTTIMacros.h>
+#include <AzCore/std/string/string.h>
 
 #include <AzToolsFramework/ActionManager/Action/EditorActionUtils.h>
 
@@ -33,7 +34,7 @@ namespace AzToolsFramework
 
         AZStd::string m_name; //!< The friendly name for the Action Context.
     };
-    
+
     //! Action Properties object.
     //! Used to streamline registration of an Action.
     struct ActionProperties
@@ -189,7 +190,7 @@ namespace AzToolsFramework
         //! @param actionIdentifier The identifier for the action to trigger.
         //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
         virtual ActionManagerOperationResult TriggerAction(const AZStd::string& actionIdentifier) = 0;
-        
+
         //! Installs an enabled state callback to an action that will set its enabled state when the action is updated.
         //! An action can only have a single enabled state callback. The function will fail if called multiple times.
         //! @param actionIdentifier The identifier for the action to install the callback to.
@@ -197,7 +198,7 @@ namespace AzToolsFramework
             const AZStd::string& actionIdentifier,
             AZStd::function<bool()> enabledStateCallback
         ) = 0;
-        
+
         //! Update the state of an Action via its identifier.
         //! This will update both the enabled and checked state.
         //! @param actionIdentifier The identifier for the action to update.
@@ -210,13 +211,13 @@ namespace AzToolsFramework
         //! @param actionUpdaterIdentifier The identifier for the newly registered action updater.
         //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
         virtual ActionManagerOperationResult RegisterActionUpdater(const AZStd::string& actionUpdaterIdentifier) = 0;
-        
+
         //! Adds an action identifier to the updater's list.
         //! @param actionUpdaterIdentifier The identifier for the updater to add the action to.
         //! @param actionIdentifier The identifier for the action to add the updater's list.
         //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
         virtual ActionManagerOperationResult AddActionToUpdater(const AZStd::string& actionUpdaterIdentifier, const AZStd::string& actionIdentifier) = 0;
-        
+
         //! Trigger an update on all actions registered to the Action Updater.
         //! @param actionUpdaterIdentifier The identifier for the action updater to trigger an update on.
         //! @return A successful outcome object, or a string with a message detailing the error in case of failure.

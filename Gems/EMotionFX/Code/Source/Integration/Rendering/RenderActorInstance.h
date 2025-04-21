@@ -39,6 +39,8 @@ namespace EMotionFX
             SkinningMethod GetSkinningMethod() const;
             virtual void SetSkinningMethod(SkinningMethod skinningMethod);
 
+            virtual void SetRayTracingEnabled(bool enabled) = 0;
+
             virtual void UpdateBounds() = 0;
             const AZ::Aabb& GetWorldAABB() const;
             const AZ::Aabb& GetLocalAABB() const;
@@ -46,6 +48,8 @@ namespace EMotionFX
             bool IsVisible() const;
             virtual void SetIsVisible(bool isVisible);
             virtual bool IsInCameraFrustum() const;
+
+            virtual void SetExcludeFromReflectionCubeMaps(bool excludeFromReflectionCubeMaps) = 0;
 
             Actor* GetActor() const;
 

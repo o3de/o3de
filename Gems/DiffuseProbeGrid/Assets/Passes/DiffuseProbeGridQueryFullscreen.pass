@@ -1,0 +1,59 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData":
+    {
+        "PassTemplate": {
+            "Name": "DiffuseProbeGridQueryFullscreenPassTemplate",
+            "PassClass": "DiffuseProbeGridQueryFullscreenPass",
+            "Slots": [
+                {
+                    "Name": "PositionInput",
+                    "SlotType": "InputOutput",
+                    "ShaderInputName": "m_queryPositions",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "DirectionInput",
+                    "SlotType": "InputOutput",
+                    "ShaderInputName": "m_queryDirections",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "Output",
+                    "SlotType": "Output",
+                    "ShaderInputName": "m_output",
+                    "ScopeAttachmentUsage": "Shader"
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "OutputImage",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "This",
+                            "Attachment": "PositionInput"
+                        }
+                    },
+                    "ImageDescriptor": {
+                        "Format": "R16G16B16A16_FLOAT",
+                        "MultisampleState": {
+                            "samples": 1
+                        },
+                        "SharedQueueMask": "Graphics"
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "Output",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "OutputImage"
+                    }
+                }
+            ]
+        }
+    }
+}

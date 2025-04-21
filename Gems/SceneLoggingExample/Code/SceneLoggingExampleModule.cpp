@@ -33,7 +33,7 @@ namespace SceneLoggingExample
             // sure to repeat the following two lines for any SceneAPI you want to use. Omitting these 
             // calls or making them too late can cause problems such as missing EBus events.
             m_sceneCoreModule = AZ::DynamicModuleHandle::Create("SceneCore");
-            m_sceneCoreModule->Load(true);
+            m_sceneCoreModule->Load(AZ::DynamicModuleHandle::LoadFlags::InitFuncRequired);
             m_descriptors.insert(m_descriptors.end(), 
             {
                 LoggingGroupBehavior::CreateDescriptor(),
@@ -56,7 +56,8 @@ namespace SceneLoggingExample
     };
 } // namespace SceneLoggingExample
 
-// DO NOT MODIFY THIS LINE UNLESS YOU RENAME THE GEM.
-// The first parameter should be GemName_GemIdLower.
-// The second should be the fully qualified name of the class above.
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME), SceneLoggingExample::SceneLoggingExampleModule)
+#else
 AZ_DECLARE_MODULE_CLASS(Gem_SceneLoggingExample, SceneLoggingExample::SceneLoggingExampleModule)
+#endif

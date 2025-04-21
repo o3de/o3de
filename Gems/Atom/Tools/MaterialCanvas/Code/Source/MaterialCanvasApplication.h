@@ -11,15 +11,16 @@
 #include <Atom/RHI/FactoryManagerBus.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentApplication.h>
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsSystem.h>
+#include <AtomToolsFramework/Graph/AssetStatusReporterSystem.h>
 #include <AtomToolsFramework/Graph/DynamicNode/DynamicNodeManager.h>
+#include <AtomToolsFramework/Graph/GraphTemplateFileDataCache.h>
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
 #include <GraphModel/Model/GraphContext.h>
 #include <Window/MaterialCanvasMainWindow.h>
-#include <AtomToolsFramework/Graph/GraphTemplateFileDataCache.h>
 
-    namespace MaterialCanvas
+namespace MaterialCanvas
 {
-    //! The main application class for Material Canvas, setting up top level systems, document types, and the main window. 
+    //! The main application class for Material Canvas, setting up top level systems, document types, and the main window.
     class MaterialCanvasApplication
         : public AtomToolsFramework::AtomToolsDocumentApplication
         , private AzToolsFramework::EditorWindowRequestBus::Handler
@@ -42,7 +43,6 @@
         void Destroy() override;
 
     private:
-
         // AtomToolsFramework::AtomToolsApplication overrides...
         AZStd::vector<AZStd::string> GetCriticalAssetFilters() const override;
 
@@ -66,6 +66,7 @@
         AZStd::unique_ptr<MaterialCanvasMainWindow> m_window;
         AZStd::unique_ptr<AtomToolsFramework::EntityPreviewViewportSettingsSystem> m_viewportSettingsSystem;
         AZStd::unique_ptr<AtomToolsFramework::DynamicNodeManager> m_dynamicNodeManager;
+        AZStd::unique_ptr<AtomToolsFramework::AssetStatusReporterSystem> m_assetStatusReporterSystem;
         AZStd::shared_ptr<GraphModel::GraphContext> m_graphContext;
         AZStd::shared_ptr<AtomToolsFramework::GraphTemplateFileDataCache> m_graphTemplateFileDataCache;
         AtomToolsFramework::GraphViewSettingsPtr m_graphViewSettingsPtr;

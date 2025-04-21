@@ -88,6 +88,9 @@ namespace AZ::Internal
         // @}
 
         BehaviorClass* m_class;
+
+    private:
+        void SetDeprecatedName([[maybe_unused]] const char* name, const char* deprecatedName);
     };
 }
 
@@ -273,34 +276,7 @@ namespace AZ::Internal
             ** check to see if the deprecated name is used, and ensure its not duplicated.
             */
 
-            if (deprecatedName != nullptr)
-            {
-                auto itr = m_class->m_methods.find(name);
-                if (itr != m_class->m_methods.end())
-                {
-                    // now check to make sure that the deprecated name is not being used as a identical deprecated name for another method.
-                    bool isDuplicate = false;
-                    for (const auto& i : m_class->m_methods)
-                    {
-                        if (i.second->GetDeprecatedName() == deprecatedName)
-                        {
-                            AZ_Warning("BehaviorContext", false, "Method %s is attempting to use a deprecated name of %s which is already in use for method %s! Deprecated name is ignored!", name, deprecatedName, i.first.c_str());
-                            isDuplicate = true;
-                            break;
-                        }
-                    }
-
-                    if (!isDuplicate)
-                    {
-                        itr->second->SetDeprecatedName(deprecatedName);
-                    }
-                }
-                else
-                {
-                    AZ_Warning("BehaviorContext", false, "Method %s does not exist, so the deprecated name is ignored!", name, deprecatedName);
-                }
-            }
-
+            SetDeprecatedName(name, deprecatedName);
             auto methodIter = m_class->m_methods.find(name);
             if (methodIter != m_class->m_methods.end())
             {
@@ -605,55 +581,14 @@ namespace AZ
         }
 
         AZ::Uuid typeUuid = AzTypeInfo<T>::Uuid();
-        AZ_Assert(!typeUuid.IsNull(), "Type %s has no AZ_TYPE_INFO or AZ_RTTI.  Please use an AZ_RTTI or AZ_TYPE_INFO declaration before trying to use it in reflection contexts.", name ? name : "<Unknown class>");
-        if (typeUuid.IsNull())
-        {
-            return ClassBuilder<T>(this, static_cast<BehaviorClass*>(nullptr));
-        }
+        BehaviorClass* behaviorClass = ClassImpl(name, typeUuid, GetRttiHelper<T>(), AZStd::alignment_of<T>::value, sizeof(T));
 
-        auto classTypeIt = m_typeToClassMap.find(typeUuid);
-        if (IsRemovingReflection())
+        if (behaviorClass == nullptr)
         {
-            if (classTypeIt != m_typeToClassMap.end())
-            {
-                // find it in the name category
-                auto nameIt = m_classes.find(name);
-                while (nameIt != m_classes.end())
-                {
-                    if (nameIt->second == classTypeIt->second)
-                    {
-                        m_classes.erase(nameIt);
-                        break;
-                    }
-                }
-                BehaviorContextBus::Event(this, &BehaviorContextBus::Events::OnRemoveClass, name, classTypeIt->second);
-                delete classTypeIt->second;
-                m_typeToClassMap.erase(classTypeIt);
-            }
             return ClassBuilder<T>(this, static_cast<BehaviorClass*>(nullptr));
         }
         else
         {
-            if (classTypeIt != m_typeToClassMap.end())
-            {
-                AZ_Error("Reflection", false, "Class '%s' is already registered using Uuid: %s!", name, classTypeIt->first.ToFixedString().c_str());
-                return ClassBuilder<T>(this, static_cast<BehaviorClass*>(nullptr));
-            }
-
-            // TODO: make it a set and use the name inside the class
-            if (m_classes.find(name) != m_classes.end())
-            {
-                AZ_Error("Reflection", false, "A class with name '%s' is already registered!", name);
-                return ClassBuilder<T>(this, static_cast<BehaviorClass*>(nullptr));
-            }
-
-            BehaviorClass* behaviorClass = aznew BehaviorClass();
-            behaviorClass->m_typeId = AzTypeInfo<T>::Uuid();
-            behaviorClass->m_azRtti = GetRttiHelper<T>();
-            behaviorClass->m_alignment = AZStd::alignment_of<T>::value;
-            behaviorClass->m_size = sizeof(T);
-            behaviorClass->m_name = name;
-
             // enumerate all base classes (RTTI), we store only the IDs to allow for our of order reflection
             // At runtime it will be more efficient to have the pointers to the classes. Analyze in practice and cache them if needed.
             AZ::RttiEnumHierarchy<T>(
@@ -670,7 +605,7 @@ namespace AZ
                     );
 
             SetClassHasher<T>(behaviorClass);
-            SetClassDefaultAllocator<T>(behaviorClass, typename HasAZClassAllocator<T>::type());
+            SetClassDefaultAllocator<T>(behaviorClass, AZStd::bool_constant<HasAZClassAllocator_v<T>>{});
             SetClassDefaultConstructor<T>(behaviorClass, typename AZStd::conditional< AZStd::is_constructible<T>::value && !AZStd::is_abstract<T>::value, AZStd::true_type, AZStd::false_type>::type());
             SetClassDefaultDestructor<T>(behaviorClass, typename AZStd::is_destructible<T>::type());
             SetClassDefaultCopyConstructor<T>(behaviorClass, typename AZStd::conditional< AZStd::is_copy_constructible<T>::value && !AZStd::is_abstract<T>::value, AZStd::true_type, AZStd::false_type>::type());

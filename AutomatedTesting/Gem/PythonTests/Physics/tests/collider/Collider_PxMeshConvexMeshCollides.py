@@ -61,6 +61,8 @@ def Collider_PxMeshConvexMeshCollides():
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
     from editor_python_test_tools.asset_utils import Asset
+    from consts.physics import PHYSX_SHAPE_COLLIDER
+    from consts.physics import PHYSX_MESH_COLLIDER
 
     import azlmbr.math as math
     import editor_python_test_tools.hydra_editor_utils as hydra
@@ -70,7 +72,7 @@ def Collider_PxMeshConvexMeshCollides():
     import azlmbr.legacy.general as general
 
     # Constants
-    MESH_ASSET_PATH = os.path.join("assets", "Physics", "Collider_PxMeshConvexMeshCollides", "spherebot", "r0-b_body.pxmesh")
+    MESH_ASSET_PATH = os.path.join("assets", "Physics", "Collider_PxMeshConvexMeshCollides", "spherebot", "r0-b_body.fbx.pxmesh")
     TIMEOUT = 2.0
 
     # 1) Load the level
@@ -81,8 +83,8 @@ def Collider_PxMeshConvexMeshCollides():
     Report.result(Tests.create_collider_entity, collider.id.IsValid())
 
     # 3) Add PhysX Mesh Collider, PhysX Rigid Body and Mesh components.
-    collider_component = collider.add_component("PhysX Mesh Collider")
-    Report.result(Tests.physx_collider_added, collider.has_component("PhysX Mesh Collider"))
+    collider_component = collider.add_component(PHYSX_MESH_COLLIDER)
+    Report.result(Tests.physx_collider_added, collider.has_component(PHYSX_MESH_COLLIDER))
 
     collider.add_component("PhysX Dynamic Rigid Body")
     Report.result(Tests.physx_rigid_body_added, collider.has_component("PhysX Dynamic Rigid Body"))
@@ -101,8 +103,8 @@ def Collider_PxMeshConvexMeshCollides():
     terrain.add_component("PhysX Static Rigid Body")
     Report.result(Tests.create_terrain, terrain.id.IsValid())
 
-    terrain.add_component("PhysX Shape Collider")
-    Report.result(Tests.add_physx_shape_collider, terrain.has_component("PhysX Shape Collider"))
+    terrain.add_component(PHYSX_SHAPE_COLLIDER)
+    Report.result(Tests.add_physx_shape_collider, terrain.has_component(PHYSX_SHAPE_COLLIDER))
 
     box_shape_component = terrain.add_component("Box Shape")
     Report.result(Tests.add_box_shape, terrain.has_component("Box Shape"))

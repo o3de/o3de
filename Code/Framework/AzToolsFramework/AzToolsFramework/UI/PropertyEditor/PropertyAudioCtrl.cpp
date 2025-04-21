@@ -26,6 +26,25 @@ AZ_POP_DISABLE_WARNING
 
 namespace AzToolsFramework
 {
+    void CReflectedVarAudioControl::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<CReflectedVarAudioControl>()
+                ->Version(1)
+                ->Field("controlName", &CReflectedVarAudioControl::m_controlName)
+                ->Field("propertyType", &CReflectedVarAudioControl::m_propertyType)
+                ;
+
+            if (auto editContext = serializeContext->GetEditContext())
+            {
+                editContext->Class<CReflectedVarAudioControl>("VarAudioControl", "AudioControl")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                    ;
+            }
+        }
+    }
+
     //=============================================================================
     // Audio Control SelectorWidget
     //=============================================================================

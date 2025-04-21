@@ -153,6 +153,8 @@ namespace UnitTest
             // note: WindowRequests is used internally by ModularViewportCameraController, this ensures it returns the viewport size we want
             ON_CALL(m_mockWindowRequests, GetClientAreaSize())
                 .WillByDefault(Return(AzFramework::WindowSize(WidgetSize.width(), WidgetSize.height())));
+            ON_CALL(m_mockWindowRequests, GetRenderResolution())
+                .WillByDefault(Return(AzFramework::WindowSize(WidgetSize.width(), WidgetSize.height())));
 
             m_mockViewportInteractionRequests.Connect(TestViewportId);
 
@@ -297,7 +299,12 @@ namespace UnitTest
         RepeatDiagonalMouseMovements(
             [this]
             {
-                return GetParam();
+                // note that earlier versions of GoogleMock required 'this' capture in order to call GetParam
+                // GetParam is not a static member, but only works on static class data, which can cause some compilers to complain
+                // about 'this' being captured but not used, and other situations to complain about this NOT being captured but used,
+                // depending on which version of googlemock we actually use.  To try to satisfy all versions, we will explicitly capture 'this'
+                // AND explicily use it despite it not being syntactically necessary (ie, 'this->' being impiled by GetParam()).
+                return this->GetParam();
             });
 
         // Then
@@ -309,7 +316,7 @@ namespace UnitTest
         HaltCollaborators();
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         All, ModularViewportCameraControllerDeltaTimeParamFixture, testing::Values(1.0f / 60.0f, 1.0f / 50.0f, 1.0f / 30.0f));
 
     TEST_F(ModularViewportCameraControllerFixture, MouseMovementOrientatesCameraWhenCursorIsCaptured)

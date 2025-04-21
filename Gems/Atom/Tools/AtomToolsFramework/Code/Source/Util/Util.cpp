@@ -10,6 +10,7 @@
 #include <Atom/ImageProcessing/ImageProcessingBus.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
+#include <AtomToolsFramework/AtomToolsFrameworkSystemRequestBus.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/IO/ByteContainerStream.h>
 #include <AzCore/IO/SystemFile.h>
@@ -32,6 +33,7 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryUtils.h>
+#include <AzToolsFramework/AssetDatabase/AssetDatabaseConnection.h>
 #include <AzToolsFramework/ToolsComponents/EditorAssetMimeDataContainer.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
@@ -350,23 +352,30 @@ namespace AtomToolsFramework
             path = GetPathWithoutAlias(path);
         }
 
-        // Build a string list from the supported extensions container that will be used in a regular expression wild card for the asset
-        // selection model.
-        QStringList extensionList;
-        for (const auto& extensionPair : supportedExtensions)
+        // Create a custom filter function to plug into the asset selection model. The filter function will only display source assets
+        // matching one of the supported extensions. It will also ignore files in the cache folder, usually intermediate assets. This is
+        // much faster than the previous iteration using regular expressions.
+        auto filterFn = [&](const AssetBrowserEntry* entry)
         {
-            if (!extensionPair.second.empty())
+            if (entry->GetEntryType() != AssetBrowserEntry::AssetEntryType::Source)
             {
-                extensionList.append(extensionPair.second.c_str());
+                return false;
             }
-        }
 
-        // Build an expression that tells the selection model to only show files with matching extensions.
-        const QString expression = QString("[\\w\\-.]+\\.(%1)").arg(extensionList.join("|"));
-        const QRegExp filter(expression, Qt::CaseInsensitive);
+            const auto& path = entry->GetFullPath();
+            return !IsPathIgnored(path) &&
+                AZStd::any_of(
+                    supportedExtensions.begin(),
+                    supportedExtensions.end(),
+                    [&](const auto& extensionPair)
+                    {
+                        return path.ends_with(AZStd::fixed_string<32>::format(".%s", extensionPair.second.c_str()));
+                    });
+        };
 
-        // Create the selection models of the asset picture only displays files matching the filter.
-        auto selection = AzToolsFramework::AssetBrowser::AssetSelectionModel::SourceAssetTypeSelection(filter);
+        AssetSelectionModel selection;
+        selection.SetDisplayFilter(FilterConstType(new CustomFilter(filterFn)));
+        selection.SetSelectionFilter(FilterConstType(new CustomFilter(filterFn)));
         selection.SetTitle(title.c_str());
         selection.SetMultiselect(multiSelect);
         selection.SetSelectedFilePaths(selectedFilePathsWithoutAliases);
@@ -436,13 +445,9 @@ namespace AtomToolsFramework
 
     bool IsDocumentPathInSupportedFolder(const AZStd::string& path)
     {
-        bool assetFoldersRetrieved = false;
-        AZStd::vector<AZStd::string> assetFolders;
-        AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
-            assetFoldersRetrieved, &AzToolsFramework::AssetSystemRequestBus::Events::GetAssetSafeFolders, assetFolders);
-
-        AZ::IO::FixedMaxPath assetPath = AZ::IO::PathView(GetPathWithoutAlias(path)).LexicallyNormal();
-        for (const auto& assetFolder : assetFolders)
+        const auto& fullPath = GetPathWithoutAlias(path);
+        const AZ::IO::FixedMaxPath assetPath = AZ::IO::PathView(fullPath).LexicallyNormal();
+        for (const auto& assetFolder : GetSupportedSourceFolders())
         {
             // Check if the path is relative to the asset folder
             if (assetPath.IsRelativeTo(AZ::IO::PathView(assetFolder)))
@@ -456,32 +461,16 @@ namespace AtomToolsFramework
 
     bool IsDocumentPathEditable(const AZStd::string& path)
     {
-        const AZStd::string pathWithoutAlias = GetPathWithoutAlias(path);
-
-        for (const auto& [storedPath, flag] :
-             GetSettingsObject<AZStd::unordered_map<AZStd::string, bool>>("/O3DE/Atom/Tools/EditablePathSettings"))
-        {
-            if (pathWithoutAlias == GetPathWithoutAlias(storedPath))
-            {
-                return flag;
-            }
-        }
-        return true;
+        bool result = true;
+        AtomToolsFrameworkSystemRequestBus::BroadcastResult(result, &AtomToolsFrameworkSystemRequestBus::Events::IsPathEditable, path);
+        return result;
     }
 
     bool IsDocumentPathPreviewable(const AZStd::string& path)
     {
-        const AZStd::string pathWithoutAlias = GetPathWithoutAlias(path);
-
-        for (const auto& [storedPath, flag] :
-             GetSettingsObject<AZStd::unordered_map<AZStd::string, bool>>("/O3DE/Atom/Tools/PreviewablePathSettings"))
-        {
-            if (pathWithoutAlias == GetPathWithoutAlias(storedPath))
-            {
-                return flag;
-            }
-        }
-        return true;
+        bool result = true;
+        AtomToolsFrameworkSystemRequestBus::BroadcastResult(result, &AtomToolsFrameworkSystemRequestBus::Events::IsPathPreviewable, path);
+        return result;
     }
 
     bool LaunchTool(const QString& baseName, const QStringList& arguments)
@@ -658,10 +647,195 @@ namespace AtomToolsFramework
         return paths;
     }
 
+    AZStd::string GetAbsolutePathForSourceAsset(const AZStd::string& path)
+    {
+        bool found = false;
+        AZ::Data::AssetInfo sourceInfo;
+        AZStd::string rootFolder;
+        AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+            found, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath, path.c_str(), sourceInfo, rootFolder);
+
+        if (found)
+        {
+            const AZ::IO::Path result = AZ::IO::Path(rootFolder) / sourceInfo.m_relativePath;
+            if (!result.empty())
+            {
+                return result.LexicallyNormal().String();
+            }
+        }
+
+        return path;
+    }
+
+    AZStd::vector<AZStd::string> GetPathsForAssetSourceDependencies(const AZ::Data::AssetInfo& sourceInfo)
+    {
+        AzToolsFramework::AssetDatabase::AssetDatabaseConnection assetDatabaseConnection;
+        assetDatabaseConnection.OpenDatabase();
+
+        AzToolsFramework::AssetDatabase::SourceDatabaseEntry sourceEntry;
+        assetDatabaseConnection.QuerySourceBySourceName(
+            sourceInfo.m_relativePath.c_str(),
+            [&sourceEntry](const AzToolsFramework::AssetDatabase::SourceDatabaseEntry& entry)
+            {
+                sourceEntry = entry;
+                return false;
+            });
+
+        if (sourceEntry.m_sourceGuid.IsNull())
+        {
+            return {};
+        }
+
+        AZStd::vector<AZStd::string> sourcePaths;
+        assetDatabaseConnection.QueryDependsOnSourceBySourceDependency(
+            sourceEntry.m_sourceGuid,
+            AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_Any,
+            [&sourcePaths, &assetDatabaseConnection](AzToolsFramework::AssetDatabase::SourceFileDependencyEntry& entry)
+            {
+                AZStd::string dependencyName = entry.m_dependsOnSource.GetPath();
+
+                if (entry.m_dependsOnSource.IsUuid())
+                {
+                    assetDatabaseConnection.QuerySourceBySourceGuid(
+                        entry.m_dependsOnSource.GetUuid(),
+                        [&dependencyName](AzToolsFramework::AssetDatabase::SourceDatabaseEntry& entry)
+                        {
+                            dependencyName = entry.m_sourceName;
+                            return false;
+                        });
+                }
+
+                if (!dependencyName.empty())
+                {
+                    sourcePaths.emplace_back(GetAbsolutePathForSourceAsset(dependencyName));
+                }
+                return true;
+            });
+
+        assetDatabaseConnection.CloseDatabase();
+
+        AZStd::sort(sourcePaths.begin(), sourcePaths.end());
+        sourcePaths.erase(AZStd::unique(sourcePaths.begin(), sourcePaths.end()), sourcePaths.end());
+        return sourcePaths;
+    }
+
+    AZStd::vector<AZStd::string> GetPathsForAssetSourceDependenciesById(const AZ::Data::AssetId& assetId)
+    {
+        bool found = false;
+        AZ::Data::AssetInfo sourceInfo;
+        AZStd::string watchFolder;
+        AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+            found, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourceUUID, assetId.m_guid, sourceInfo, watchFolder);
+
+        return GetPathsForAssetSourceDependencies(sourceInfo);
+    }
+
+    AZStd::vector<AZStd::string> GetPathsForAssetSourceDependenciesByPath(const AZStd::string& sourcePath)
+    {
+        bool found = false;
+        AZ::Data::AssetInfo sourceInfo;
+        AZStd::string watchFolder;
+        AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+            found,
+            &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath,
+            GetPathWithoutAlias(sourcePath).c_str(),
+            sourceInfo,
+            watchFolder);
+
+        return GetPathsForAssetSourceDependencies(sourceInfo);
+    }
+
+    AZStd::vector<AZStd::string> GetPathsForAssetSourceDependents(const AZ::Data::AssetInfo& sourceInfo)
+    {
+        AzToolsFramework::AssetDatabase::AssetDatabaseConnection assetDatabaseConnection;
+        assetDatabaseConnection.OpenDatabase();
+
+        AzToolsFramework::AssetDatabase::SourceDatabaseEntry sourceEntry;
+        assetDatabaseConnection.QuerySourceBySourceName(
+            sourceInfo.m_relativePath.c_str(),
+            [&sourceEntry](const AzToolsFramework::AssetDatabase::SourceDatabaseEntry& entry)
+            {
+                sourceEntry = entry;
+                return false;
+            });
+
+        if (sourceEntry.m_sourceGuid.IsNull())
+        {
+            return {};
+        }
+
+        AZStd::string scanFolderPath;
+        assetDatabaseConnection.QueryScanFolderByScanFolderID(
+            sourceEntry.m_scanFolderPK,
+            [&scanFolderPath](const AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry& entry)
+            {
+                scanFolderPath = entry.m_scanFolder;
+                return false;
+            });
+
+        auto absolutePath = AZ::IO::Path(scanFolderPath) / sourceEntry.m_sourceName;
+
+        AZStd::vector<AZStd::string> sourcePaths;
+        assetDatabaseConnection.QuerySourceDependencyByDependsOnSource(
+            sourceEntry.m_sourceGuid,
+            sourceEntry.m_sourceName.c_str(),
+            absolutePath.FixedMaxPathStringAsPosix().c_str(),
+            AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_Any,
+            [&sourcePaths, &assetDatabaseConnection](AzToolsFramework::AssetDatabase::SourceFileDependencyEntry& entry)
+            {
+                AZStd::string sourceName;
+                assetDatabaseConnection.QuerySourceBySourceGuid(
+                    entry.m_sourceGuid,
+                    [&sourceName](AzToolsFramework::AssetDatabase::SourceDatabaseEntry& entry)
+                    {
+                        sourceName = entry.m_sourceName;
+                        return false;
+                    });
+
+                if (!sourceName.empty())
+                {
+                    sourcePaths.emplace_back(GetAbsolutePathForSourceAsset(sourceName));
+                }
+                return true;
+            });
+
+        assetDatabaseConnection.CloseDatabase();
+
+        AZStd::sort(sourcePaths.begin(), sourcePaths.end());
+        sourcePaths.erase(AZStd::unique(sourcePaths.begin(), sourcePaths.end()), sourcePaths.end());
+        return sourcePaths;
+    }
+
+    AZStd::vector<AZStd::string> GetPathsForAssetSourceDependentsById(const AZ::Data::AssetId& assetId)
+    {
+        bool found = false;
+        AZ::Data::AssetInfo sourceInfo;
+        AZStd::string watchFolder;
+        AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+            found, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourceUUID, assetId.m_guid, sourceInfo, watchFolder);
+
+        return GetPathsForAssetSourceDependents(sourceInfo);
+    }
+
+    AZStd::vector<AZStd::string> GetPathsForAssetSourceDependentsByPath(const AZStd::string& sourcePath)
+    {
+        bool found = false;
+        AZ::Data::AssetInfo sourceInfo;
+        AZStd::string watchFolder;
+        AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+            found,
+            &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath,
+            GetPathWithoutAlias(sourcePath).c_str(),
+            sourceInfo,
+            watchFolder);
+
+        return GetPathsForAssetSourceDependents(sourceInfo);
+    }
+
     void VisitFilesInFolder(
         const AZStd::string& folder, const AZStd::function<bool(const AZStd::string&)> visitorFn, bool recurse)
     {
-        if (!visitorFn)
+        if (!visitorFn || IsPathIgnored(folder))
         {
             return;
         }
@@ -693,44 +867,30 @@ namespace AtomToolsFramework
                     return visitorFn(fullPath);
                 }
 
-                if (recurse && !AZ::StringFunc::Contains(fullPath, "cache"))
-                {
-                    VisitFilesInFolder(fullPath, visitorFn, recurse);
-                }
+                VisitFilesInFolder(fullPath, visitorFn, recurse);
                 return true;
             });
     }
 
     void VisitFilesInScanFolders(const AZStd::function<bool(const AZStd::string&)> visitorFn)
     {
-        if (!visitorFn)
+        if (visitorFn)
         {
-            return;
-        }
-
-        AZStd::vector<AZStd::string> scanFolders;
-        scanFolders.reserve(100);
-        AzToolsFramework::AssetSystemRequestBus::Broadcast(
-            &AzToolsFramework::AssetSystem::AssetSystemRequest::GetAssetSafeFolders, scanFolders);
-
-        for (const AZStd::string& scanFolder : scanFolders)
-        {
-            VisitFilesInFolder(scanFolder, visitorFn, true);
+            for (const AZStd::string& scanFolder : GetSupportedSourceFolders())
+            {
+                VisitFilesInFolder(scanFolder, visitorFn, true);
+            }
         }
     }
 
     AZStd::vector<AZStd::string> GetPathsInSourceFoldersMatchingFilter(const AZStd::function<bool(const AZStd::string&)> filterFn)
     {
-        AZStd::vector<AZStd::string> scanFolders;
-        scanFolders.reserve(100);
-        AzToolsFramework::AssetSystemRequestBus::Broadcast(
-            &AzToolsFramework::AssetSystem::AssetSystemRequest::GetAssetSafeFolders, scanFolders);
+        const auto& scanFolders = GetSupportedSourceFolders();
 
-        AZStd::mutex resultsMutex;
         AZStd::vector<AZStd::string> results;
         results.reserve(scanFolders.size());
 
-        AZ::parallel_for_each(
+        AZStd::for_each(
             scanFolders.begin(),
             scanFolders.end(),
             [&](const AZStd::string& scanFolder)
@@ -741,7 +901,6 @@ namespace AtomToolsFramework
                     {
                         if (!filterFn || filterFn(path))
                         {
-                            AZStd::scoped_lock lock(resultsMutex);
                             results.emplace_back(path);
                         }
                         return true;
@@ -756,13 +915,38 @@ namespace AtomToolsFramework
         return results;
     }
 
-    AZStd::vector<AZStd::string> GetPathsInSourceFoldersMatchingWildcard(const AZStd::string& wildcard)
+    AZStd::vector<AZStd::string> GetPathsInSourceFoldersMatchingExtension(const AZStd::string& extension)
     {
+        if (extension.empty())
+        {
+            return {};
+        }
+
+        const AZStd::string& extensionWithDot = (extension[0] == '.') ? extension : AZStd::string::format(".%s", extension.c_str());
         return GetPathsInSourceFoldersMatchingFilter(
             [&](const AZStd::string& path)
             {
-                return AZ::IO::NameMatchesFilter(path, wildcard) && IsDocumentPathEditable(path);
+                return path.ends_with(extensionWithDot) && IsDocumentPathEditable(path);
             });
+    }
+
+    bool IsPathIgnored(const AZStd::string& path)
+    {
+        bool result = false;
+        AtomToolsFrameworkSystemRequestBus::BroadcastResult(result, &AtomToolsFrameworkSystemRequestBus::Events::IsPathIgnored, path);
+        return result;
+    }
+
+    AZStd::vector<AZStd::string> GetSupportedSourceFolders()
+    {
+        AZStd::vector<AZStd::string> scanFolders;
+        scanFolders.reserve(100);
+
+        AzToolsFramework::AssetSystemRequestBus::Broadcast(
+            &AzToolsFramework::AssetSystem::AssetSystemRequest::GetAssetSafeFolders, scanFolders);
+
+        AZStd::erase_if(scanFolders, [](const AZStd::string& path){ return IsPathIgnored(path); });
+        return scanFolders;
     }
 
     void AddRegisteredScriptToMenu(QMenu* menu, const AZStd::string& registryKey, const AZStd::vector<AZStd::string>& arguments)
@@ -855,7 +1039,16 @@ namespace AtomToolsFramework
             addUtilFunc(behaviorContext->Method("GetPathToExteralReference", GetPathToExteralReference, nullptr, ""));
             addUtilFunc(behaviorContext->Method("GetPathWithoutAlias", GetPathWithoutAlias, nullptr, ""));
             addUtilFunc(behaviorContext->Method("GetPathWithAlias", GetPathWithAlias, nullptr, ""));
-            addUtilFunc(behaviorContext->Method("GetPathsInSourceFoldersMatchingWildcard", GetPathsInSourceFoldersMatchingWildcard, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("GetAbsolutePathForSourceAsset", GetAbsolutePathForSourceAsset, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("GetPathsForAssetSourceDependencies", GetPathsForAssetSourceDependencies, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("GetPathsForAssetSourceDependenciesById", GetPathsForAssetSourceDependenciesById, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("GetPathsForAssetSourceDependenciesByPath", GetPathsForAssetSourceDependenciesByPath, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("GetPathsForAssetSourceDependents", GetPathsForAssetSourceDependents, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("GetPathsForAssetSourceDependentsById", GetPathsForAssetSourceDependentsById, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("GetPathsForAssetSourceDependentsByPath", GetPathsForAssetSourceDependentsByPath, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("GetPathsInSourceFoldersMatchingExtension", GetPathsInSourceFoldersMatchingExtension, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("IsPathIgnored", IsPathIgnored, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("GetSupportedSourceFolders", GetSupportedSourceFolders, nullptr, ""));
             addUtilFunc(behaviorContext->Method("GetSettingsValue_bool", GetSettingsValue<bool>, nullptr, ""));
             addUtilFunc(behaviorContext->Method("SetSettingsValue_bool", SetSettingsValue<bool>, nullptr, ""));
             addUtilFunc(behaviorContext->Method("GetSettingsValue_s64", GetSettingsValue<AZ::s64>, nullptr, ""));

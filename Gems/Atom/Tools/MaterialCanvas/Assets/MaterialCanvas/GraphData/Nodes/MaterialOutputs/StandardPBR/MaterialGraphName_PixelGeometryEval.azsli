@@ -12,10 +12,11 @@
 // used in your shader. Simply #define EvaluatePixelGeometry to your custom definition before including this file
 //
 #ifndef EvaluatePixelGeometry
-#define EvaluatePixelGeometry(IN, isFrontFace)      EvaluatePixelGeometry_MaterialGraphName(IN, isFrontFace)
+#define EvaluatePixelGeometry EvaluatePixelGeometry_MaterialGraphName
 #endif
 
 #include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_PixelGeometryEval.azsli>
+#include <Atom/Features/InstancedTransforms.azsli>
 
 #if ENABLE_PARALLAX
 #include "Atom/Feature/Common/Assets/Shaders/Materials/MaterialFunctions/ParallaxDepth.azsli"
@@ -23,16 +24,21 @@
 
 #include <Atom/Features/Debug.azsli>
 
-PixelGeometryData EvaluatePixelGeometry_MaterialGraphName(
-    inout float4 positionSV,
-    float3 positionWS,
-    float3 normal,
-    float3 tangent,
-    float3 bitangent,
-    float2 uvs[UvSetCount],
-    bool isFrontFace)
+PixelGeometryData EvaluatePixelGeometry_MaterialGraphName(inout VsOutput IN, bool isFrontFace)
 {
-    PixelGeometryData geoData = EvaluatePixelGeometry_BasePBR(positionWS, normal, tangent, bitangent, uvs, isFrontFace);
+    real4x4 objectToWorld = real4x4(GetObjectToWorldMatrix(IN.m_instanceId));
+    real3x3 objectToWorldIT = real3x3(GetObjectToWorldMatrixInverseTranspose(IN.m_instanceId));
+
+    real3 normalWS, tangentWS, bitangentWS;
+    ConstructTBN(real3(IN.normal), real4(IN.tangent), objectToWorld, objectToWorldIT, normalWS, tangentWS, bitangentWS);
+
+    PixelGeometryData geoData = EvaluatePixelGeometry_BasePBR(
+        IN.worldPosition,
+        normalWS,
+        tangentWS,
+        bitangentWS,
+        IN.uvs,
+        isFrontFace);
 
     // ------- Parallax -------
 
@@ -41,28 +47,20 @@ PixelGeometryData EvaluatePixelGeometry_MaterialGraphName(
 #if ENABLE_PARALLAX
     if(ShouldHandleParallax())
     {
-        SetPixelDepth(geoData.positionWS, geoData.vertexNormal, geoData.tangents, geoData.bitangents,
-                      geoData.uvs, isFrontFace, positionSV.z, positionSV.w, geoData.isDisplacementClipped);
+        SetPixelDepth(
+            geoData.positionWS,
+            geoData.vertexNormal,
+            geoData.tangents,
+            geoData.bitangents,
+            geoData.uvs,
+            isFrontFace,
+            objectToWorld,
+            IN.position.z,
+            IN.position.w,
+            geoData.isDisplacementClipped);
     }
 #endif
 
     return geoData;
 }
 
-PixelGeometryData EvaluatePixelGeometry_MaterialGraphName(inout VsOutput IN, bool isFrontFace)
-{
-    float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
-    float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
-
-    float3 vertexNormal, vertexTangent, vertexBitangent;
-    ConstructTBN(IN.normal, IN.tangent, objectToWorld, objectToWorldIT, vertexNormal, vertexTangent, vertexBitangent);
-
-    return EvaluatePixelGeometry_MaterialGraphName(
-        IN.position,
-        IN.worldPosition,
-        vertexNormal,
-        vertexTangent,
-        vertexBitangent,
-        IN.uvs,
-        isFrontFace);
-}

@@ -24,13 +24,13 @@ def DuplicateEntity_WithNestedEntitiesAndNestedPrefabs():
 
     from editor_python_test_tools.editor_entity_utils import EditorEntity
     from editor_python_test_tools.wait_utils import PrefabWaiter
+    from consts.physics import PHYSX_PRIMITIVE_COLLIDER as PHYSX_PRIMITIVE_COLLIDER_NAME
     import Prefab.tests.PrefabTestUtils as prefab_test_utils
 
     NESTED_ENTITIES_NAME_PREFIX = 'NestedEntity_'
     NESTED_PREFABS_FILE_NAME_PREFIX = Path(__file__).stem + '_' + 'nested_prefabs_'
     NESTED_PREFABS_NAME_PREFIX = 'NestedPrefabs_Prefab_'
     NESTED_PREFABS_TEST_ENTITY_NAME = 'TestEntity'
-    PHYSX_PRIMITIVE_COLLIDER_NAME = 'PhysX Primitive Collider'
     PARENT_CREATION_POSITION = azlmbr.math.Vector3(0.0, 0.0, 0.0)
     CHILDREN_CREATION_POSITION = azlmbr.math.Vector3(100.0, 100.0, 100.0)
     NUM_NESTED_ENTITIES_LEVELS = 3

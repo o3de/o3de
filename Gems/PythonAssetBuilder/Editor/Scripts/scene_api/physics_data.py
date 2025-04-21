@@ -266,7 +266,7 @@ class PhysicsAssetShapeConfiguration(ShapeConfiguration):
     Methods
     -------
     set_asset_reference(self, assetReference: str)
-        Helper function to set the asset reference to the collision mesh such as 'my/folder/my_mesh.azmodel'
+        Helper function to set the asset reference to the collision mesh such as 'my/folder/my_mesh.fbx.azmodel'
 
     to_dict()
         Converts contents to a Python dictionary

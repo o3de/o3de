@@ -8,10 +8,29 @@
 
 #include "CompoundShapeComponent.h"
 #include <AzCore/Math/Transform.h>
-
+#include <AzCore/Serialization/EditContext.h>
 
 namespace LmbrCentral
 {
+    void CompoundShapeConfiguration::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<CompoundShapeConfiguration>()
+                ->Version(1)
+                ->Field("Child Shape Entities", &CompoundShapeConfiguration::m_childEntities);
+
+            if (AZ::EditContext* editContext = serializeContext->GetEditContext())
+            {
+                editContext->Class<CompoundShapeConfiguration>("Configuration", "Compound shape configuration parameters")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &CompoundShapeConfiguration::m_childEntities,
+                        "Child Shape Entities", "A list of entities that have shapes on them which when combined, act as the compound shape")
+                    ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, true)
+                    ->ElementAttribute(AZ::Edit::Attributes::RequiredService, AZ_CRC_CE("ShapeService"));
+            }
+        }
+    }
+
     void CompoundShapeComponent::Reflect(AZ::ReflectContext* context)
     {
         CompoundShapeConfiguration::Reflect(context);
@@ -47,7 +66,7 @@ namespace LmbrCentral
 
     //////////////////////////////////////////////////////////////////////////
 
-    AZ::Aabb CompoundShapeComponent::GetEncompassingAabb()
+    AZ::Aabb CompoundShapeComponent::GetEncompassingAabb() const
     {
         AZ::Aabb finalAabb = AZ::Aabb::CreateNull();
 
@@ -63,7 +82,7 @@ namespace LmbrCentral
         return finalAabb;
     }
 
-    void CompoundShapeComponent::GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds)
+    void CompoundShapeComponent::GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds) const
     {
         transform = AZ::Transform::CreateIdentity();
         bounds = AZ::Aabb::CreateNull();
@@ -98,7 +117,7 @@ namespace LmbrCentral
         }
     }
 
-    bool CompoundShapeComponent::IsPointInside(const AZ::Vector3& point)
+    bool CompoundShapeComponent::IsPointInside(const AZ::Vector3& point) const
     {
         bool result = false;
         for (AZ::EntityId childEntity : m_configuration.GetChildEntities())
@@ -112,7 +131,7 @@ namespace LmbrCentral
         return result;
     }
 
-    float CompoundShapeComponent::DistanceSquaredFromPoint(const AZ::Vector3& point)
+    float CompoundShapeComponent::DistanceSquaredFromPoint(const AZ::Vector3& point) const
     {
         float smallestDistanceSquared = FLT_MAX;
         for (AZ::EntityId childEntity : m_configuration.GetChildEntities())
@@ -128,7 +147,7 @@ namespace LmbrCentral
         return smallestDistanceSquared;
     }
 
-    bool CompoundShapeComponent::IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance)
+    bool CompoundShapeComponent::IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) const
     {
         bool intersection = false;
         for (AZ::EntityId childEntity : m_configuration.GetChildEntities())

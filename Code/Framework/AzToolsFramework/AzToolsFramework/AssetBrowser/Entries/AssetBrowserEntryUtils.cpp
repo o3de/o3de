@@ -95,12 +95,7 @@ namespace AzToolsFramework
 
                 for (const AssetBrowserEntry* entry : entries)
                 {
-                    if (!entry)
-                    {
-                        continue;
-                    }
-
-                    if (alreadyAdded.find(entry) != alreadyAdded.end())
+                    if (!entry || alreadyAdded.contains(entry))
                     {
                         continue;
                     }
@@ -130,7 +125,7 @@ namespace AzToolsFramework
                     if (target)
                     {
                         anyFound = true;
-                        if (alreadyAdded.find(target) == alreadyAdded.end())
+                        if (!alreadyAdded.contains(target))
                         {
                             entries.push_back(target);
                             alreadyAdded.insert(target);

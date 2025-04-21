@@ -18,7 +18,6 @@
 #include <CryCommon/LoadScreenBus.h>
 
 #include <AzCore/Time/ITime.h>
-#include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/IO/FileOperations.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzFramework/Input/Buses/Requests/InputChannelRequestBus.h>
@@ -38,103 +37,25 @@ static constexpr const char* ArchiveExtension = ".pak";
 //////////////////////////////////////////////////////////////////////////
 bool CLevelInfo::OpenLevelPak()
 {
-    bool usePrefabSystemForLevels = false;
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-
     // The prefab system doesn't use level.pak
-    if (usePrefabSystemForLevels)
-    {
-        return false;
-    }
-
-    AZ::IO::Path levelPak(m_levelPath);
-    levelPak /= "level.pak";
-    AZ::IO::FixedMaxPathString fullLevelPakPath;
-    bool bOk = gEnv->pCryPak->OpenPack(levelPak.Native(), nullptr, &fullLevelPakPath, false);
-    m_levelPakFullPath.assign(fullLevelPakPath.c_str(), fullLevelPakPath.size());
-    return bOk;
+    return false;
 }
 
 //////////////////////////////////////////////////////////////////////////
 void CLevelInfo::CloseLevelPak()
 {
-    bool usePrefabSystemForLevels = false;
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-
     // The prefab system doesn't use level.pak
-    if (usePrefabSystemForLevels)
-    {
-        return;
-    }
-
-    if (!m_levelPakFullPath.empty())
-    {
-        gEnv->pCryPak->ClosePack(m_levelPakFullPath.c_str());
-        m_levelPakFullPath.clear();
-    }
+    return;
 }
 
 //////////////////////////////////////////////////////////////////////////
 bool CLevelInfo::ReadInfo()
 {
-    bool usePrefabSystemForLevels = false;
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-
     // Set up a default game type for legacy code.
     m_defaultGameTypeName = "mission0";
 
-    if (usePrefabSystemForLevels)
-    {
-        return true;
-    }
-
-
-    AZStd::string levelPath(m_levelPath);
-    AZStd::string xmlFile(levelPath);
-    xmlFile += "/levelinfo.xml";
-    XmlNodeRef rootNode = GetISystem()->LoadXmlFromFile(xmlFile.c_str());
-
-    if (rootNode)
-    {
-        AZStd::string dataFile(levelPath);
-        dataFile += "/leveldataaction.xml";
-        XmlNodeRef dataNode = GetISystem()->LoadXmlFromFile(dataFile.c_str());
-        if (!dataNode)
-        {
-            dataFile = levelPath + "/leveldata.xml";
-            dataNode = GetISystem()->LoadXmlFromFile(dataFile.c_str());
-        }
-
-        if (dataNode)
-        {
-            XmlNodeRef gameTypesNode = dataNode->findChild("Missions");
-
-            if ((gameTypesNode != 0) && (gameTypesNode->getChildCount() > 0))
-            {
-                m_defaultGameTypeName.clear();
-
-                for (int i = 0; i < gameTypesNode->getChildCount(); i++)
-                {
-                    XmlNodeRef gameTypeNode = gameTypesNode->getChild(i);
-
-                    if (gameTypeNode->isTag("Mission"))
-                    {
-                        const char* gameTypeName = gameTypeNode->getAttr("Name");
-
-                        if (gameTypeName)
-                        {
-                            m_defaultGameTypeName = gameTypeName;
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-    }
-    return rootNode != 0;
+    // Prefabs do not use Pak files.
+    return true;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -613,11 +534,13 @@ ILevel* CLevelSystem::LoadLevelInternal(const char* _levelName)
         //////////////////////////////////////////////////////////////////////////
         // Movie system must be reset after entities.
         //////////////////////////////////////////////////////////////////////////
-        IMovieSystem* movieSys = gEnv->pMovieSystem;
-        if (movieSys != NULL)
+        IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+        if (movieSystem)
         {
             // bSeekAllToStart needs to be false here as it's only of interest in the editor
-            movieSys->Reset(true, false);
+            constexpr bool playOnReset = true;
+            constexpr bool seekToStart = false;
+            movieSystem->Reset(playOnReset, seekToStart);
         }
 
         gEnv->pSystem->SetSystemGlobalState(ESYSTEM_GLOBAL_STATE_LEVEL_LOAD_START_PRECACHE);
@@ -852,10 +775,13 @@ void CLevelSystem::UnloadLevel()
     // Clear level entities and prefab instances.
     EBUS_EVENT(AzFramework::GameEntityContextRequestBus, ResetGameContext);
 
-    if (gEnv->pMovieSystem)
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+    if (movieSystem)
     {
-        gEnv->pMovieSystem->Reset(false, false);
-        gEnv->pMovieSystem->RemoveAllSequences();
+        constexpr bool playOnReset = false;
+        constexpr bool seekToStart = false;
+        movieSystem->Reset(playOnReset, seekToStart);
+        movieSystem->RemoveAllSequences();
     }
 
     OnUnloadComplete(m_lastLevelName.c_str());

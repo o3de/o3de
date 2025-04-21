@@ -61,13 +61,13 @@ namespace LmbrCentral
         : public AZ::ComponentBus
     {
     public:
-        virtual CylinderShapeConfig GetCylinderConfiguration() = 0;
+        virtual const CylinderShapeConfig& GetCylinderConfiguration() const = 0;
 
         /// @brief Returns the end to end height of the cylinder.
-        virtual float GetHeight() = 0;
+        virtual float GetHeight() const = 0;
 
         /// @brief Returns the radius of the cylinder.
-        virtual float GetRadius() = 0;
+        virtual float GetRadius() const = 0;
         
         /// @brief Sets height of the cylinder
         /// @param height new height of the cylinder

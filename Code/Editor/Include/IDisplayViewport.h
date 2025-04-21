@@ -8,13 +8,10 @@
 
 #pragma once
 
-struct DisplayContext;
-class CBaseObjectsCache;
 class QPoint;
 struct AABB;
 class CViewport;
 
-// Viewport functionality required for DisplayContext
 struct IDisplayViewport
 {
     virtual void Update() = 0;

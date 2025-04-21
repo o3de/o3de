@@ -19,17 +19,27 @@ namespace TestImpact
     public:
         template<typename... AdditionalInfoArgs>
         NativeTestRunJobData(LaunchMethod launchMethod, AdditionalInfoArgs&&... additionalInfo)
-            : Parent(std::forward<AdditionalInfoArgs>(additionalInfo)...)
+            : Parent(std::forward<AdditionalInfoArgs>(additionalInfo)...)   
             , m_launchMethod(launchMethod)
         {
         }
 
-        LaunchMethod GetLaunchMethod() const
-        {
-            return m_launchMethod;
-        }
+        //! Copy and move constructors/assignment operators.
+        NativeTestRunJobData(const NativeTestRunJobData& other) = default;
+        NativeTestRunJobData(NativeTestRunJobData&& other) = default;
+        NativeTestRunJobData& operator=(const NativeTestRunJobData& other) = default;
+        NativeTestRunJobData& operator=(NativeTestRunJobData&& other) = default;
+
+        //! Returns the launch method used by this test target.
+        LaunchMethod GetLaunchMethod() const;
 
     private:
         LaunchMethod m_launchMethod = LaunchMethod::TestRunner;
     };
+
+    template<typename Parent>
+    LaunchMethod NativeTestRunJobData<Parent>::GetLaunchMethod() const
+    {
+        return m_launchMethod;
+    }
 } // namespace TestImpact

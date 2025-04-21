@@ -65,7 +65,6 @@ namespace AZ::SceneAPI::SceneData
         AZStd::string m_name;
         Uuid m_id;
         AZStd::shared_ptr<Prefab::PrefabDomData> m_prefabDomData;
-        bool m_createProceduralPrefab = true;
     };
 
     //! If this IRule ends up in a MeshGroup container's rule group,

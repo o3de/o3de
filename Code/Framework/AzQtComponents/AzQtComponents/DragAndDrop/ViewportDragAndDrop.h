@@ -17,7 +17,7 @@ namespace AzQtComponents
 {
     namespace DragAndDropContexts 
     {
-        static const AZ::u32 EditorViewport = AZ_CRC("EditorViewport", 0x17395aca);
+        static const AZ::u32 EditorViewport = AZ_CRC_CE("EditorViewport");
     }
 
     /**

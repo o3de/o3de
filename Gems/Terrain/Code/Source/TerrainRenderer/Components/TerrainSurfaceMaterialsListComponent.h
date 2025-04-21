@@ -13,7 +13,6 @@
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Serialization/EditContext.h>
 
-#include <Atom/Feature/Material/MaterialAssignment.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
@@ -106,6 +105,9 @@ namespace Terrain
         // AZ::Data::AssetBus::Handler
         void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
         void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
+
+        void OnAssetReadyPostTick(AZ::Data::Asset<AZ::Data::AssetData> asset);
+        void OnAssetReloadedPostTick(AZ::Data::Asset<AZ::Data::AssetData> asset);
 
         TerrainSurfaceMaterialsListConfig m_configuration;
 

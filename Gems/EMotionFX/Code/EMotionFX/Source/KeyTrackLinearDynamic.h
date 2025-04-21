@@ -264,5 +264,6 @@ namespace EMotionFX
 
 
     // include keytrack inline code
-#include "KeyTrackLinearDynamic.inl"
 } // namespace EMotionFX
+
+#include "KeyTrackLinearDynamic.inl"

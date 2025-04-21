@@ -36,6 +36,7 @@ namespace AzToolsFramework
             InstantiatePrefabResult InstantiatePrefab(AZStd::string_view filePath, AZ::EntityId parent, const AZ::Vector3& position) override;
             PrefabOperationResult DeleteEntitiesAndAllDescendantsInInstance(const EntityIdList& entityIds) override;
             PrefabOperationResult DetachPrefab(const AZ::EntityId& containerEntityId) override;
+            PrefabOperationResult DetachPrefabAndRemoveContainerEntity(const AZ::EntityId& containerEntityId) override;
             DuplicatePrefabResult DuplicateEntitiesInInstance(const EntityIdList& entityIds) override;
             AZStd::string GetOwningInstancePrefabPath(AZ::EntityId entityId) const override;
             CreateSpawnableResult CreateInMemorySpawnableAsset(AZStd::string_view prefabFilePath, AZStd::string_view spawnableName) override;

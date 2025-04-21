@@ -8,13 +8,14 @@
 
 #pragma once
 
+#include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <MCore/Source/StringIdPool.h>
 #include <MCore/Source/Distance.h>
 #include "EMotionFXConfig.h"
 #include "EMotionFXManager.h"
 #include "PlayBackInfo.h"
-#include "BaseObject.h"
+#include <MCore/Source/RefCounted.h>
 #include <EMotionFX/Source/MotionData/MotionDataSampleSettings.h>
 
 namespace EMotionFX
@@ -37,11 +38,12 @@ namespace EMotionFX
      * named Update, which will output the resulting transformations into a Pose object.
      */
     class EMFX_API Motion
-        : public BaseObject
+        : public MCore::RefCounted
+
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL
-        AZ_RTTI(Motion, "{CCC21150-37F5-477A-9EBF-B5E71C0B5D71}", BaseObject)
+        AZ_RTTI(Motion, "{CCC21150-37F5-477A-9EBF-B5E71C0B5D71}")
 
         Motion(const char* name);
         virtual ~Motion();

@@ -12,6 +12,11 @@
 #include <QSortFilterProxyModel>
 #endif
 
+namespace AZ
+{
+    struct Uuid;
+}
+
 struct BuilderListModel : QAbstractListModel
 {
     Q_OBJECT;
@@ -24,6 +29,8 @@ public:
     int rowCount(const QModelIndex& parent) const override;
 
     QVariant data(const QModelIndex& index, int role) const override;
+
+    QModelIndex GetIndexForBuilder(const AZ::Uuid& builderUuid);
 
     void Reset();
 };

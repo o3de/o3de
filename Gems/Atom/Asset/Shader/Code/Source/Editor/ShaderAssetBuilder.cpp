@@ -23,6 +23,7 @@
 #include <Atom/RHI.Reflect/ConstantsLayout.h>
 #include <Atom/RHI.Reflect/PipelineLayoutDescriptor.h>
 #include <Atom/RHI.Reflect/ShaderStageFunction.h>
+#include <Atom/RHI/RHIUtils.h>
 
 #include <AzCore/Serialization/Json/JsonUtils.h>
 
@@ -58,7 +59,6 @@ namespace AZ
     namespace ShaderBuilder
     {
         static constexpr char ShaderAssetBuilderName[] = "ShaderAssetBuilder";
-        static constexpr uint32_t ShaderAssetBuildTimestampParam = 0;
 
         //! The search will start in @currentFolderPath.
         //! if the file is not found then it searches in order of appearence in @includeDirectories.
@@ -72,7 +72,7 @@ namespace AZ
                 return fullPath;
             }
 
-            for (const auto &includeDir : includeDirectories)
+            for (const auto& includeDir : includeDirectories)
             {
                 AzFramework::StringFunc::Path::Join(includeDir.c_str(), normalizedRelativePath.data(), fullPath);
                 if (AZ::IO::SystemFile::Exists(fullPath.c_str()))
@@ -93,7 +93,7 @@ namespace AZ
             AZStd::string fullPath;
             AzFramework::StringFunc::Path::Join(currentFolderPath.data(), normalizedRelativePath.data(), fullPath);
             includedFiles.insert(fullPath);
-            for (const auto &includeDir : includeDirectories)
+            for (const auto& includeDir : includeDirectories)
             {
                 AzFramework::StringFunc::Path::Join(includeDir.c_str(), normalizedRelativePath.data(), fullPath);
                 includedFiles.insert(fullPath);
@@ -126,7 +126,7 @@ namespace AZ
             }
 
             auto listOfRelativePaths = outcome.TakeValue();
-            for (auto relativePath : listOfRelativePaths)
+            for (const auto& relativePath : listOfRelativePaths)
             {
                 auto fullPath = DiscoverFullPath(relativePath, sourceFileFolderPath, includeDirectories);
                 if (fullPath.empty())
@@ -139,7 +139,7 @@ namespace AZ
                 }
 
                 // Add the file to the list and keep parsing recursively.
-                if (includedFiles.count(fullPath))
+                if (includedFiles.contains(fullPath))
                 {
                     continue;
                 }
@@ -150,18 +150,14 @@ namespace AZ
 
         void ShaderAssetBuilder::CreateJobs(const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response) const
         {
+            // Used to measure the duration of CreateJobs
+            AZ::u64 shaderAssetBuildTimestamp = AZStd::GetTimeUTCMilliSecond();
+
             AZStd::string shaderAssetSourceFileFullPath;
             AzFramework::StringFunc::Path::ConstructFull(request.m_watchFolder.data(), request.m_sourceFile.data(), shaderAssetSourceFileFullPath, true);
             ShaderBuilderUtility::IncludedFilesParser includedFilesParser;
 
             AZ_TracePrintf(ShaderAssetBuilderName, "CreateJobs for Shader \"%s\"\n", shaderAssetSourceFileFullPath.data());
-
-            // Used to synchronize versions of the ShaderAsset and ShaderVariantTreeAsset, especially during hot-reload.
-            // Note it's probably important for this to be set once outside the platform loop so every platform's ShaderAsset
-            // has the same value, because later the ShaderVariantTreeAsset job will fetch this value from the local ShaderAsset
-            // which could cross platforms (i.e. building an android ShaderVariantTreeAsset on PC would fetch the tiemstamp from
-            // the PC's ShaderAsset).
-            AZ::u64 shaderAssetBuildTimestamp = AZStd::GetTimeUTCMilliSecond();
 
             // Need to get the name of the azsl file from the .shader source asset, to be able to declare a dependency to SRG Layout Job.
             // and the macro options to preprocess.
@@ -183,7 +179,7 @@ namespace AZ
                 // Add the AZSL as source dependency
                 AssetBuilderSDK::SourceFileDependency azslFileDependency;
                 azslFileDependency.m_sourceFileDependencyPath = azslFullPath;
-                response.m_sourceFileDependencyList.emplace_back(azslFileDependency);
+                response.m_sourceFileDependencyList.emplace_back(AZStd::move(azslFileDependency));
             }
 
             if (!IO::FileIOBase::GetInstance()->Exists(azslFullPath.c_str()))
@@ -199,11 +195,20 @@ namespace AZ
 
             AZStd::unordered_set<AZStd::string> includedFiles;
             GetListOfIncludedFiles(azslFullPath, projectIncludePaths, includedFilesParser, includedFiles);
-            for (auto includePath : includedFiles)
+            for (const auto& includePath : includedFiles)
             {
                 AssetBuilderSDK::SourceFileDependency includeFileDependency;
                 includeFileDependency.m_sourceFileDependencyPath = includePath;
-                response.m_sourceFileDependencyList.emplace_back(includeFileDependency);
+                response.m_sourceFileDependencyList.emplace_back(AZStd::move(includeFileDependency));
+            }
+
+            // Add the shader_build_option files as source dependencies
+            AZStd::unordered_map<AZStd::string, AZ::IO::FixedMaxPath> configFiles = ShaderBuildArgumentsManager::DiscoverConfigurationFiles();
+            for (const auto& pair : configFiles)
+            {
+                AssetBuilderSDK::SourceFileDependency includeFileDependency;
+                includeFileDependency.m_sourceFileDependencyPath = pair.second.c_str();
+                response.m_sourceFileDependencyList.emplace_back(AZStd::move(includeFileDependency));
             }
 
             for (const AssetBuilderSDK::PlatformInfo& platformInfo : request.m_enabledPlatforms)
@@ -222,12 +227,10 @@ namespace AZ
                 jobDescriptor.m_critical = false;
                 jobDescriptor.m_jobKey = ShaderAssetBuilderJobKey;
                 jobDescriptor.SetPlatformIdentifier(platformInfo.m_identifier.c_str());
-                jobDescriptor.m_jobParameters.emplace(ShaderAssetBuildTimestampParam, AZStd::to_string(shaderAssetBuildTimestamp));
+                response.m_createJobOutputs.emplace_back(AZStd::move(jobDescriptor));
+            } // for all request.m_enabledPlatforms
 
-                response.m_createJobOutputs.push_back(jobDescriptor);
-            }  // for all request.m_enabledPlatforms
-
-            AZ_TracePrintf(
+            AZ_Printf(
                 ShaderAssetBuilderName, "CreateJobs for %s took %llu milliseconds", shaderAssetSourceFileFullPath.c_str(),
                 AZStd::GetTimeUTCMilliSecond() - shaderAssetBuildTimestamp);
 
@@ -248,6 +251,9 @@ namespace AZ
                 return false;
             }
 
+            // This step is very important, because it declares product dependency between ShaderAsset and the root ShaderVariantAssets (one for each supervariant).
+            // This will guarantee that when the ShaderAsset is loaded at runtime, the ShaderAsset will report OnAssetReady only after the root ShaderVariantAssets
+            // are already fully loaded and ready.
             AssetBuilderSDK::JobProduct shaderJobProduct;
             if (!AssetBuilderSDK::OutputObject(shaderAsset.Get(), shaderAssetOutputPath, azrtti_typeid<RPI::ShaderAsset>(),
                 aznumeric_cast<uint32_t>(RPI::ShaderAssetSubId::ShaderAsset), shaderJobProduct))
@@ -369,28 +375,6 @@ namespace AZ
                 return;
             }
 
-            // Get the time stamp string as u64, and also convert back to string to make sure it was converted correctly.
-            AZ::u64 shaderAssetBuildTimestamp = 0;
-            auto shaderAssetBuildTimestampIterator = request.m_jobDescription.m_jobParameters.find(ShaderAssetBuildTimestampParam);
-            if (shaderAssetBuildTimestampIterator != request.m_jobDescription.m_jobParameters.end())
-            {
-                shaderAssetBuildTimestamp = AZStd::stoull(shaderAssetBuildTimestampIterator->second);
-
-                if (AZStd::to_string(shaderAssetBuildTimestamp) != shaderAssetBuildTimestampIterator->second)
-                {
-                    response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
-                    AZ_Assert(false, "Incorrect conversion of ShaderAssetBuildTimestampParam");
-                    return;
-                }
-            }
-            else
-            {
-                // CreateJobs was not successful if there's no timestamp property in m_jobParameters.
-                response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
-                AZ_Assert(false, "Missing ShaderAssetBuildTimestampParam");
-                return;
-            }
-
             auto supervariantList = ShaderBuilderUtility::GetSupervariantListFromShaderSourceData(shaderSourceData);
 
             RPI::ShaderAssetCreator shaderAssetCreator;
@@ -398,7 +382,6 @@ namespace AZ
 
             shaderAssetCreator.SetName(AZ::Name{shaderFileName});
             shaderAssetCreator.SetDrawListName(shaderSourceData.m_drawListName);
-            shaderAssetCreator.SetShaderAssetBuildTimestamp(shaderAssetBuildTimestamp);
 
             // The ShaderOptionGroupLayout must be the same across all supervariants because
             // there can be only a single ShaderVariantTreeAsset per ShaderAsset.
@@ -423,7 +406,6 @@ namespace AZ
 
             // Remark: In general, the work done by the ShaderVariantAssetBuilder is similar, but it will start from the HLSL file created; in step 2, mentioned above; by this builder,
             // for each supervariant.
-
             for (RHI::ShaderPlatformInterface* shaderPlatformInterface : platformInterfaces)
             {
                 AZStd::string apiName(shaderPlatformInterface->GetAPIName().GetCStr());
@@ -487,7 +469,7 @@ namespace AZ
                     AZ_TracePrintf(ShaderAssetBuilderName, "Preprocessed AZSL File: %s \n", prependedAzslFilePath.c_str());
 
                     // Ready to transpile the azslin file into HLSL.
-                    ShaderBuilder::AzslCompiler azslc(azslinFullPath);
+                    ShaderBuilder::AzslCompiler azslc(azslinFullPath, request.m_tempDirPath);
                     AZStd::string hlslFullPath = AZStd::string::format("%s_%s.hlsl", superVariantAzslinStemName.c_str(), apiName.c_str());
                     AzFramework::StringFunc::Path::Join(request.m_tempDirPath.c_str(), hlslFullPath.c_str(), hlslFullPath, true);
                     auto emitFullOutcome = azslc.EmitFullData(buildArgsManager.GetCurrentArguments().m_azslcArguments, hlslFullPath);
@@ -524,17 +506,22 @@ namespace AZ
                     RPI::Ptr<RPI::ShaderOptionGroupLayout> shaderOptionGroupLayout = RPI::ShaderOptionGroupLayout::Create();
                     BindingDependencies bindingDependencies;
                     RootConstantData rootConstantData;
+                    bool usesSpecializationConstants = false;
                     AssetBuilderSDK::ProcessJobResultCode azslJsonReadResult = ShaderBuilderUtility::PopulateAzslDataFromJsonFiles(
                         ShaderAssetBuilderName, subProductsPaths, azslData, srgLayoutList,
-                        shaderOptionGroupLayout, bindingDependencies, rootConstantData);
+                        shaderOptionGroupLayout,
+                        bindingDependencies,
+                        rootConstantData,
+                        request.m_tempDirPath,
+                        usesSpecializationConstants);
                     if (azslJsonReadResult != AssetBuilderSDK::ProcessJobResult_Success)
-
                     {
                         response.m_resultCode = azslJsonReadResult;
                         return;
                     }
 
                     shaderAssetCreator.SetSrgLayoutList(srgLayoutList);
+                    shaderAssetCreator.SetUseSpecializationConstants(usesSpecializationConstants);
 
                     if (!finalShaderOptionGroupLayout)
                     {
@@ -613,7 +600,7 @@ namespace AZ
                         azslData, shaderEntryPoints, *shaderOptionGroupLayout.get(),
                         subProductsPaths[ShaderBuilderUtility::AzslSubProducts::om],
                         subProductsPaths[ShaderBuilderUtility::AzslSubProducts::ia],
-                        shaderInputContract, shaderOutputContract, colorAttachmentCount);
+                        shaderInputContract, shaderOutputContract, colorAttachmentCount, request.m_tempDirPath);
                     shaderAssetCreator.SetInputContract(shaderInputContract);
                     shaderAssetCreator.SetOutputContract(shaderOutputContract);
 
@@ -636,6 +623,7 @@ namespace AZ
                             if (targetBlendStates.contains(static_cast<uint32_t>(i)))
                             {
                                 renderStates.m_blendState.m_targets[i] = targetBlendStates.at(static_cast<uint32_t>(i));
+                                renderStates.m_blendState.m_independentBlendEnable = true;
                             }
                             // We have to ensure this actually has data before applying it, otherwise this would stomp any
                             // data in the "BlendState" or "TargetBlendStates" with default values.
@@ -687,15 +675,19 @@ namespace AZ
                         request.m_platformInfo,
                         buildArgsManager.GetCurrentArguments(),
                         request.m_tempDirPath,
-                        shaderAssetBuildTimestamp,
                         shaderSourceData,
                         *shaderOptionGroupLayout.get(),
                         shaderEntryPoints,
                         variantAssetId,
                         superVariantAzslinStemName,
                         hlslFullPath,
-                        hlslSourceCode};
+                        hlslSourceCode,
+                        usesSpecializationConstants };
 
+                    // Preserve the Temp folder when shaders are compiled with debug symbols
+                    // or because the ShaderSourceData has m_keepTempFolder set to true.
+                    response.m_keepTempFolder |= shaderVariantCreationContext.m_shaderBuildArguments.m_generateDebugInfo
+                        || shaderSourceData.m_keepTempFolder || RHI::IsGraphicsDevModeEnabled();
 
                     AZStd::optional<RHI::ShaderPlatformInterface::ByProducts> outputByproducts;
                     auto rootShaderVariantAssetOutcome = ShaderVariantAssetBuilder::CreateShaderVariantAsset(rootVariantInfo, shaderVariantCreationContext, outputByproducts);
@@ -750,7 +742,7 @@ namespace AZ
 
                 } // end for the supervariant
 
-                for (auto& [shaderOptionName, value] : shaderSourceData.m_shaderOptionValues)
+                for (const auto& [shaderOptionName, value] : shaderSourceData.m_shaderOptionValues)
                 {
                     shaderAssetCreator.SetShaderOptionDefaultValue(shaderOptionName, value);
                 }
@@ -774,11 +766,11 @@ namespace AZ
                 return;
             }
 
-            response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-
             AZ_TracePrintf(ShaderAssetBuilderName, "Finished processing %s in %.3f seconds\n", request.m_sourceFile.c_str(), timer.GetDeltaTimeInSeconds());
 
             ShaderBuilderUtility::LogProfilingData(ShaderAssetBuilderName, shaderFileName);
+
+            response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
         }
 
     } // ShaderBuilder

@@ -41,8 +41,8 @@ namespace ScriptCanvas::Developer
 
         QWidget* m_targetDispatch = nullptr;
 
-        MouseAction m_mouseAction;
-        Qt::MouseButton m_mouseButton = Qt::LeftButton;
+        [[maybe_unused]] MouseAction m_mouseAction;
+        [[maybe_unused]] Qt::MouseButton m_mouseButton = Qt::LeftButton;
         Qt::KeyboardModifiers m_keyboardModifiers = Qt::NoModifier;
     };
 

@@ -338,7 +338,7 @@ AZ::SerializeContext::DataElementNode* UiCanvasFileObject::FindRootElementInCanv
     }
 
     // Find the RootElement entity in the UiCanvasComponent
-    int rootElementIndex = canvasComponentNode->FindElement(AZ_CRC("RootElement", 0x9ac9557b));
+    int rootElementIndex = canvasComponentNode->FindElement(AZ_CRC_CE("RootElement"));
     if (rootElementIndex == -1)
     {
         return nullptr;
@@ -384,7 +384,7 @@ bool UiCanvasFileObject::CreateRootSliceNodeAndCopyInEntities(
     }
 
     // create the components vector node (which is a generic vector)
-    using componentsVector = AZStd::vector<AZ::Component*>;
+    using componentsVector = AZ::Entity::ComponentArrayType;
     AZ::SerializeContext::ClassData* componentVectorClassData = AZ::SerializeGenericTypeInfo<componentsVector>::GetGenericInfo()->GetClassData();
     int componentsIndex = entityNode.AddElement(context, "Components", *componentVectorClassData);
     if (componentsIndex == -1)
@@ -448,7 +448,7 @@ bool UiCanvasFileObject::VersionConverter(AZ::SerializeContext& context, AZ::Ser
         // the entities data into the slice component.
 
         // find the CanvasEntity in the CanvasFileObject
-        int canvasEntityIndex = canvasFileObjectNode.FindElement(AZ_CRC("CanvasEntity", 0x87ff30ab));
+        int canvasEntityIndex = canvasFileObjectNode.FindElement(AZ_CRC_CE("CanvasEntity"));
         if (canvasEntityIndex == -1)
         {
             return false;

@@ -56,6 +56,8 @@ namespace AzToolsFramework
         QWidget* GetLastInTabOrder();
         void UpdateTabOrder();
 
+        void ClearSavedState();
+
         void onValueChange();
     signals:
         void valueChanged(double val);
@@ -75,9 +77,12 @@ namespace AzToolsFramework
         QWidget* GetFirstInTabOrder(PropertyDoubleSliderCtrl* widget) override { return widget->GetFirstInTabOrder(); }
         QWidget* GetLastInTabOrder(PropertyDoubleSliderCtrl* widget) override { return widget->GetLastInTabOrder(); }
         void UpdateWidgetInternalTabbing(PropertyDoubleSliderCtrl* widget) override { widget->UpdateTabOrder(); }
+
+        void BeforeConsumeAttributes(PropertyDoubleSliderCtrl* widget, InstanceDataNode* /*attrValue*/) override
+        {
+            widget->ClearSavedState();
+        }
     };
-
-
 
     class doublePropertySliderHandler
         : QObject

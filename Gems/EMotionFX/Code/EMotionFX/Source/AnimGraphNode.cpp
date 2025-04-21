@@ -55,17 +55,12 @@ namespace EMotionFX
         , m_disabled(false)
         , m_parentNode(nullptr)
         , m_customData(nullptr)
+        , m_visualizeColor(EMotionFX::AnimGraph::RandomGraphColor())
         , m_visEnabled(false)
         , m_isCollapsed(false)
         , m_posX(0)
         , m_posY(0)
     {
-        const AZ::u32 col = MCore::GenerateColor();
-        m_visualizeColor = AZ::Color(
-            MCore::ExtractRed(col)/255.0f,
-            MCore::ExtractGreen(col)/255.0f,
-            MCore::ExtractBlue(col)/255.0f,
-            1.0f);
     }
 
 
@@ -2509,7 +2504,7 @@ namespace EMotionFX
         const unsigned int version = classElement.GetVersion();
         if (version < 2)
         {
-            int vizColorIndex = classElement.FindElement(AZ_CRC("visualizeColor", 0x6d52f421));
+            int vizColorIndex = classElement.FindElement(AZ_CRC_CE("visualizeColor"));
             if (vizColorIndex > 0)
             {
                 AZ::u32 oldColor;
@@ -2519,10 +2514,11 @@ namespace EMotionFX
                 {
                     return false;
                 }
+
                 const AZ::Color convertedColor(
-                    MCore::ExtractRed(oldColor)/255.0f,
-                    MCore::ExtractGreen(oldColor)/255.0f,
-                    MCore::ExtractBlue(oldColor)/255.0f,
+                    ((oldColor >> 16) & 0xff)/255.0f,
+                    ((oldColor >> 8)  & 0xff)/255.0f,
+                    (oldColor & 0xff)/255.0f,
                     1.0f
                 );
                 classElement.RemoveElement(vizColorIndex);
@@ -2567,8 +2563,8 @@ namespace EMotionFX
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
             ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
             ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-            ->DataElement(AZ_CRC("AnimGraphNodeName", 0x15120d7d), &AnimGraphNode::m_name, "Name", "Name of the node")
-            ->Attribute(AZ_CRC("AnimGraph", 0x0d53d4b3), &AnimGraphNode::GetAnimGraph)
+            ->DataElement(AZ_CRC_CE("AnimGraphNodeName"), &AnimGraphNode::m_name, "Name", "Name of the node")
+            ->Attribute(AZ_CRC_CE("AnimGraph"), &AnimGraphNode::GetAnimGraph)
         ;
     }
 

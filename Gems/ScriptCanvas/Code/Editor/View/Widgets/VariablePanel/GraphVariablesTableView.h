@@ -87,6 +87,10 @@ namespace ScriptCanvasEditor
         void OnVariablePriorityChanged() override;
         ////
 
+        // VariableNotificationBus
+        void OnVariableRenamed(AZStd::string_view newVariableName) override;
+        ///
+
         QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
 
@@ -141,7 +145,8 @@ namespace ScriptCanvasEditor
         static bool HandleVariablePaste(const ScriptCanvas::ScriptCanvasId& scriptCanvasId);
 
         AZ_CLASS_ALLOCATOR(GraphVariablesTableView, AZ::SystemAllocator);
-        GraphVariablesTableView(QWidget* parent);
+        explicit GraphVariablesTableView(QWidget* parent);
+        ~GraphVariablesTableView();
 
         void SetActiveScene(const ScriptCanvas::ScriptCanvasId& scriptCanvasId);
         void SetFilter(const QString& filterString);

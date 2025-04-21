@@ -524,7 +524,11 @@ namespace AZ
                 const AZ::IdUtils::Remapper<AZ::EntityId>::IdMapper& customMapper = nullptr);
 
             /// Instantiate all instances (by default we just hold the deltas - data patch), the Slice component controls the instantiate state
-            bool Instantiate(const AZ::ObjectStream::FilterDescriptor& filterDesc);
+            /// serializeContext and relativeToAbsoluteSlicePaths arguments are used for a specific case when asset processor is not available
+            bool Instantiate(
+                const AZ::ObjectStream::FilterDescriptor& filterDesc,
+                AZ::SerializeContext* serializeContext = nullptr,
+                AZStd::unordered_map<AZStd::string, AZStd::string>* relativeToAbsoluteSlicePaths = nullptr);
 
             void UnInstantiate();
 
@@ -936,8 +940,11 @@ namespace AZ
 
         /**
         * Instantiate entities for this slice, otherwise only the data are stored.
+        * \param serializeContext and relativeToAbsoluteSlicePaths are used for a specific case when asset processor is not available
         */
-        InstantiateResult Instantiate();
+        InstantiateResult Instantiate(
+            AZ::SerializeContext* serializeContext = nullptr,
+            AZStd::unordered_map<AZStd::string, AZStd::string>* relativeToAbsoluteSlicePaths = nullptr);
         bool IsInstantiated() const;
         /**
          * Generate new entity Ids and remap references
@@ -1122,6 +1129,9 @@ namespace AZ
 
             return replaced;
         }
+
+        // Deserialize a slice without using asset processor and read root entity from it
+        AZ::Entity* LoadRootEntityFromSlicePath(const char* filePath, SerializeContext* context);
     } // namespace EntityUtils
 
     namespace IdUtils

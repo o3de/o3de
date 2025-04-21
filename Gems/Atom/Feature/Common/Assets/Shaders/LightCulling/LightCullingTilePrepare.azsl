@@ -17,8 +17,8 @@
 #include <Atom/RPI/Math.azsli>
 
 // We are using the shader variant system to deal with different MSAA modes
-// The shader variant system needs a fallback, using DefaultDrawSrg for this.
-#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
+// The shader variant system needs a fallback, using UnusedFallbackDrawSrg for this.
+#include <Atom/RPI/ShaderResourceGroups/UnusedFallbackDrawSrg.azsli>
 #include <Atom/Features/LightCulling/LightCullingShared.azsli>
 
 
@@ -127,8 +127,8 @@ void CombineOpaqueMaskWithAllThreads(uint opaqueMask)
 // e.g. CreateFilledBitmask(1,30) produces 0b01111111111111111111111111111110
 uint CreateFilledBitmask(uint startBit, uint endBit)
 {
-    uint x = 1 << startBit;
-    uint y = 1 << endBit;
+    uint x = 1u << startBit;
+    uint y = 1u << endBit;
     return ((y - 1) | y) & ~(x - 1);
 }
 

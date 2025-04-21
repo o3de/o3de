@@ -23,13 +23,13 @@ namespace AZ
                 // Get the and remove the EditorComponentAdapter base class data that was previously serialized
                 AzToolsFramework::Components::EditorComponentAdapter<TController, TRuntimeComponent, TConfiguration> oldBaseClassData;
 
-                if (!classElement.FindSubElementAndGetData(AZ_CRC("BaseClass1", 0xd4925735), oldBaseClassData))
+                if (!classElement.FindSubElementAndGetData(AZ_CRC_CE("BaseClass1"), oldBaseClassData))
                 {
                     AZ_Error("AZ::Render", false, "Failed to get BaseClass1 element");
                     return false;
                 }
 
-                if (!classElement.RemoveElementByName(AZ_CRC("BaseClass1", 0xd4925735)))
+                if (!classElement.RemoveElementByName(AZ_CRC_CE("BaseClass1")))
                 {
                     AZ_Error("AZ::Render", false, "Failed to remove BaseClass1 element");
                     return false;
@@ -42,7 +42,7 @@ namespace AZ
                     classElement.GetSubElement(classElement.AddElementWithData(context, "BaseClass1", newBaseClassData));
 
                 // Overwrite EditorRenderComponentAdapter base class data with retrieved EditorComponentAdapter base class data
-                if (!newBaseClassElement.RemoveElementByName(AZ_CRC("BaseClass1", 0xd4925735)))
+                if (!newBaseClassElement.RemoveElementByName(AZ_CRC_CE("BaseClass1")))
                 {
                     AZ_Error("AZ::Render", false, "Failed to remove BaseClass1 element");
                     return false;

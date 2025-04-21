@@ -10,11 +10,9 @@
 
 // AZ ...
 #include <AzCore/Asset/AssetManagerComponent.h>
-#include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/IO/Streamer/StreamerComponent.h>
 #include <AzCore/Jobs/JobManagerComponent.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/smart_ptr/enable_shared_from_this.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzTest/AzTest.h>
@@ -29,9 +27,15 @@
 // Mock GraphCanvas buses ...
 #include <Tests/MockGraphCanvas.h>
 
+namespace AZ
+{
+    class ComponentApplication;
+    class ReflectContext;
+}
+
 namespace GraphModelIntegrationTest
 {
-    static const GraphCanvas::EditorId NODE_GRAPH_TEST_EDITOR_ID = AZ_CRC("GraphModelIntegrationTestEditor", 0x56953df8);
+    static const GraphCanvas::EditorId NODE_GRAPH_TEST_EDITOR_ID = AZ_CRC_CE("GraphModelIntegrationTestEditor");
     static const char* TEST_STRING_INPUT_ID = "inputString";
     static const char* TEST_STRING_OUTPUT_ID = "outputString";
     static const char* TEST_EVENT_INPUT_ID = "inputEvent";

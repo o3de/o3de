@@ -11,6 +11,17 @@
 #include <Atom/RHI.Reflect/Handle.h>
 #include <AzCore/Memory/SystemAllocator.h>
 
+namespace AZ::Serialize
+{
+    template<class T, bool U, bool A>
+    struct InstanceFactory;
+}
+namespace AZ
+{
+    template<typename ValueType, typename>
+    struct AnyTypeInfoConcept;
+}
+
 namespace AZ
 {
     class ReflectContext;
@@ -118,7 +129,10 @@ namespace AZ
             HashValue64 GetHashInternal(HashValue64 seed) const override;
             //////////////////////////////////////////////////////////////////////////
 
-            AZ_SERIALIZE_FRIEND();
+            template <typename, typename>
+            friend struct AnyTypeInfoConcept;
+            template <typename, bool, bool>
+            friend struct Serialize::InstanceFactory;
 
             RootConstantBinding m_rootConstantBinding;
             AZStd::fixed_vector<ShaderResourceGroupVisibility, RHI::Limits::Pipeline::ShaderResourceGroupCountMax> m_shaderResourceGroupVisibilities;

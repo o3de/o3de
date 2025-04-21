@@ -83,7 +83,7 @@ namespace TestImpact
             "test"
         };
 
-        enum
+        enum Fields
         {
             TargetKey,
             NameKey,
@@ -98,9 +98,12 @@ namespace TestImpact
             BuildDependenciesKey,
             RuntimeDependenciesKey,
             ProductionTargetTypeKey,
-            TestTargetTypeKey
+            TestTargetTypeKey,
+            // Checksum
+            _CHECKSUM_
         };
 
+        static_assert(Fields::_CHECKSUM_ == AZStd::size(Keys));
         AZ_TestImpact_Eval(!autogenMatcher.empty(), ArtifactException, "Autogen matcher cannot be empty");
 
         TargetDescriptor descriptor;

@@ -62,8 +62,8 @@ class TestsPythonAssetProcessing_APBatch(object):
         assert result, "AP Batch failed"
 
         expected_product_list = [
-            "a_simple_box_with_script.dbgsg",
-            "b_simple_box_no_script.dbgsg"
+            "a_simple_box_with_script.fbx.dbgsg",
+            "b_simple_box_no_script.fbx.dbgsg"
         ]
 
         missing_assets, _ = utils.compare_assets_with_cache(expected_product_list,
@@ -115,7 +115,7 @@ class TestsPythonAssetProcessing_APBatch(object):
     def test_ProcessSceneWithMetadata_SupportedMayaDataTypes_Work(self, workspace, ap_setup_fixture, asset_processor):
         # This test loads the debug output file for an FBX exported by Maya that has a few user defined properties
 
-        asset_dbgsg = 'maya_with_attributes.dbgsg'
+        asset_dbgsg = 'maya_with_attributes.fbx.dbgsg'
         dbgsg_file = self.compute_udp_asset_debug_file(workspace, asset_processor, asset_dbgsg, ap_setup_fixture)
         assert self.find_user_defined_property(dbgsg_file, 'o3de_atom_lod: false'), "Malformed o3de_atom_lod value"
         assert self.find_user_defined_property(dbgsg_file, 'o3de_atom_material: 0'), "Malformed o3de_atom_material value"
@@ -125,7 +125,7 @@ class TestsPythonAssetProcessing_APBatch(object):
     def test_ProcessSceneWithMetadata_SupportedMaxDataTypes_Work(self, workspace, ap_setup_fixture, asset_processor):
         # This test loads the debug output file for an FBX exported by Max that has a few user defined properties
 
-        asset_dbgsg = 'max_with_attributes.dbgsg'
+        asset_dbgsg = 'max_with_attributes.fbx.dbgsg'
         dbgsg_file = self.compute_udp_asset_debug_file(workspace, asset_processor, asset_dbgsg, ap_setup_fixture)
         assert self.find_user_defined_property(dbgsg_file, 'o3de_atom_material: 0'), "Malformed o3de_atom_material value"
         assert self.find_user_defined_property(dbgsg_file, 'o3de_phyx_lodY: 0.000000'), "Malformed o3de_phyx_lodY value"
@@ -136,7 +136,7 @@ class TestsPythonAssetProcessing_APBatch(object):
     def test_ProcessSceneWithMetadata_SupportedBlenderDataTypes_Work(self, workspace, ap_setup_fixture, asset_processor):
         # This test loads the debug output file for an FBX exported by Blender that has a few user defined properties
 
-        asset_dbgsg = 'blender_with_attributes.dbgsg'
+        asset_dbgsg = 'blender_with_attributes.fbx.dbgsg'
         dbgsg_file = self.compute_udp_asset_debug_file(workspace, asset_processor, asset_dbgsg, ap_setup_fixture)
         assert self.find_user_defined_property(dbgsg_file, 'o3de_atom_material: 0'), "Malformed o3de_atom_material value"
         assert self.find_user_defined_property(dbgsg_file, 'o3de_default_lod: 0.000000'), "Malformed o3de_default_lod value"
@@ -146,7 +146,7 @@ class TestsPythonAssetProcessing_APBatch(object):
     def test_ProcessSceneWithMetadata_DebugSceneManifest_Work(self, workspace, ap_setup_fixture, asset_processor):
         # This test detects the debug .assetinfo file in the cahce folder
 
-        assetinfo_dbg = 'blender_with_attributes.assetinfo.dbg'
+        assetinfo_dbg = 'blender_with_attributes.fbx.assetinfo.dbg'
         assetinfo_dbg_file = self.compute_udp_asset_debug_file(workspace, asset_processor, assetinfo_dbg, ap_setup_fixture)
         assert assetinfo_dbg_file, "The debug assetinfo file is missing"
 
@@ -155,8 +155,8 @@ class TestsPythonAssetProcessing_APBatch(object):
         # of a scene containing mesh nodes that have a common parent transform node
 
         assetinfo_dbg_list = {
-            "blender_with_common_parent.assetinfo.dbg",
-            "maya_with_common_parent.assetinfo.dbg"
+            "blender_with_common_parent.fbx.assetinfo.dbg",
+            "maya_with_common_parent.fbx.assetinfo.dbg"
         }
 
         expected_mesh_nodes = {

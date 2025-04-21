@@ -39,8 +39,8 @@ namespace UnitTest
     public:
         void SetUp() override
         {
-            AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::RECORD_FULL);
-            AZ::AllocatorManager::Instance().SetTrackingMode(AZ::Debug::AllocationRecords::RECORD_FULL);
+            AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::Mode::RECORD_FULL);
+            AZ::AllocatorManager::Instance().SetTrackingMode(AZ::Debug::AllocationRecords::Mode::RECORD_FULL);
             AZ::AllocatorManager::Instance().EnterProfilingMode();
             AZ::AllocatorManager::Instance().SetDefaultProfilingState(true);
         }
@@ -49,8 +49,8 @@ namespace UnitTest
             AZ::AllocatorManager::Instance().GarbageCollect();
             AZ::AllocatorManager::Instance().ExitProfilingMode();
             AZ::AllocatorManager::Instance().SetDefaultProfilingState(false);
-            AZ::AllocatorManager::Instance().SetTrackingMode(AZ::Debug::AllocationRecords::RECORD_FULL);
-            AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::RECORD_NO_RECORDS);
+            AZ::AllocatorManager::Instance().SetTrackingMode(AZ::Debug::AllocationRecords::Mode::RECORD_FULL);
+            AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::Mode::RECORD_NO_RECORDS);
         }
     };
 
@@ -299,9 +299,8 @@ namespace UnitTest
     {
     protected:
     public:
-        void run()
+        void run(IAllocator& poolAllocator)
         {
-            IAllocator& poolAllocator = AllocatorInstance<PoolAllocator>::Get();
             // 64 should be the max number of different pool sizes we can allocate.
             void* address[64];
             //////////////////////////////////////////////////////////////////////////
@@ -310,14 +309,16 @@ namespace UnitTest
 
             // try any size from 8 to 256 (which are supported pool sizes)
             int i = 0;
+            int expectedMinimumAllocationSize = 0;
             for (int size = 8; size <= 256; ++i, size += 8)
             {
                 address[i] = poolAllocator.Allocate(size, 8);
                 EXPECT_GE(poolAllocator.AllocationSize(address[i]), (AZStd::size_t)size);
                 memset(address[i], 1, size);
+                expectedMinimumAllocationSize += size;
             }
 
-            EXPECT_GE(poolAllocator.NumAllocatedBytes(), 4126);
+            EXPECT_GE(poolAllocator.NumAllocatedBytes(), expectedMinimumAllocationSize);
 
             if (poolAllocator.GetRecords())
             {
@@ -388,9 +389,54 @@ namespace UnitTest
         }
     };
 
-    TEST_F(PoolAllocatorTest, Test)
+    TEST_F(PoolAllocatorTest, TestDefaultPoolAllocator)
     {
-        run();
+        run(AllocatorInstance<PoolAllocator>::Get());
+    }
+
+    constexpr size_t s_testCustomPoolPageSize = 1024;
+    constexpr size_t s_testCustomPoolMinAllocationSize = 64;
+    constexpr size_t s_testCustomPoolMaxAllocationSize = 256;
+
+    // Define a custom pool allocator
+    class TestCustomPoolAllocator final : public AZ::Internal::PoolAllocatorHelper<AZ::PoolSchema>
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(TestCustomPoolAllocator, AZ::SystemAllocator, 0);
+        AZ_TYPE_INFO(TestCustomPoolAllocator, "{3B299C74-7697-4188-A116-32FC69A72E15}");
+
+        TestCustomPoolAllocator()
+            // Invoke the base constructor explicitely to use the override that takes custom page, min, and max allocation sizes
+            : AZ::Internal::PoolAllocatorHelper<AZ::PoolSchema>(
+                  s_testCustomPoolPageSize, s_testCustomPoolMinAllocationSize, s_testCustomPoolMaxAllocationSize)
+        {
+        }
+    };
+
+    TEST_F(PoolAllocatorTest, TestWithCustomPoolAllocator)
+    {
+        run(AllocatorInstance<TestCustomPoolAllocator>::Get());
+    }
+    
+    TEST_F(PoolAllocatorTest, Allocate_LessThanMinAllocationSize_RoundsUpToMinAllocationSize)
+    {
+        // Validate that the minimum allocation size of a custom PoolAllocator is respected
+        AZ::IAllocator::pointer result =
+            AZ::AllocatorInstance<TestCustomPoolAllocator>::Get().Allocate(s_testCustomPoolMinAllocationSize - 1, 1);
+        EXPECT_EQ(AZ::AllocatorInstance<TestCustomPoolAllocator>::Get().NumAllocatedBytes(), s_testCustomPoolMinAllocationSize);
+
+        // DeAllocate so the test doesn't leak
+        AZ::AllocatorInstance<TestCustomPoolAllocator>::Get().DeAllocate(result);
+    }
+
+    TEST_F(PoolAllocatorTest, Allocate_MoreThanMaxAllocationSize_FailsToAllocate)
+    {
+        // Validate that the maximum allocation size of a custom PoolAllocator is respected
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        AZ::IAllocator::pointer result =
+            AZ::AllocatorInstance<TestCustomPoolAllocator>::Get().Allocate(s_testCustomPoolMaxAllocationSize + 1, 1);
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+        EXPECT_EQ(result, nullptr);
     }
 
     /**

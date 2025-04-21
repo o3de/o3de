@@ -16,9 +16,11 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 
 #include <QDialog>
-#include <QTimer>
 #include <QFutureWatcher>
+#include <QTimer>
 #include <QValidator>
+
+#include <AzCore/std/containers/vector.h>
 
 class QStringListModel;
 
@@ -82,6 +84,7 @@ protected:
         Range frameRange;
         int resW, resH;
         int fps;
+        QString seqName;
         QString folder;
         QString imageFormat;
         QString prefix;
@@ -98,8 +101,10 @@ protected:
             if (pSequence == item.pSequence
                 && pDirectorNode == item.pDirectorNode
                 && frameRange == item.frameRange
-                && resW == item.resW && resH == item.resH
+                && resW == item.resW
+                && resH == item.resH
                 && fps == item.fps
+                && seqName == item.seqName 
                 && folder == item.folder
                 && prefix == item.prefix
                 && cvars == item.cvars
@@ -109,13 +114,10 @@ protected:
             {
                 return true;
             }
-            else
-            {
-                return false;
-            }
+            return false;
         }
     };
-    std::vector<SRenderItem> m_renderItems;
+    AZStd::vector<SRenderItem> m_renderItems;
 
     // Capture States
     enum class CaptureState
@@ -132,49 +134,32 @@ protected:
 
     struct SRenderContext
     {
-        int currentItemIndex;
-        float expectedTotalTime;
-        float spentTime;
-        int flagBU;
+        int currentItemIndex = -1;
+        float expectedTotalTime{};
+        float spentTime{};
+        int flagBU{};
         Range rangeBU;
-        int cvarCustomResWidthBU, cvarCustomResHeightBU;
-        int cvarDisplayInfoBU;
-        int  framesSpentInCurrentPhase;
-        IAnimNode* pActiveDirectorBU;
-        ICaptureKey captureOptions;
-        bool processingFFMPEG;
+        int cvarDisplayInfoBU{};
+        int framesSpentInCurrentPhase{};
+        IAnimNode* pActiveDirectorBU{};
+        ICaptureKey captureOptions{};
+        bool processingFFMPEG{};
         // Signals when an mpeg is finished being processed.
         QFutureWatcher<void> processingFFMPEGWatcher;
         // True if the user canceled a render.
-        bool canceled;
+        bool canceled{};
         // The sequence that triggered the CaptureState::Ending.
-        IAnimSequence* endingSequence;
+        IAnimSequence* endingSequence{};
         // Current capture state.
-        CaptureState captureState;
+        CaptureState captureState = CaptureState::Idle;
         // Is an individual frame currently being captured.
-        bool capturingFrame;
+        bool capturingFrame{};
         // Current frame being captured
-        int frameNumber;
+        int frameNumber{};
 
-        bool IsInRendering() const
-        { return currentItemIndex >= 0; }
+        bool IsInRendering() const { return currentItemIndex >= 0; }
 
-        SRenderContext()
-            : currentItemIndex(-1)
-            , expectedTotalTime(0)
-            , spentTime(0)
-            , flagBU(0)
-            , pActiveDirectorBU(nullptr)
-            , cvarCustomResWidthBU(0)
-            , cvarCustomResHeightBU(0)
-            , cvarDisplayInfoBU(0)
-            , framesSpentInCurrentPhase(0)
-            , processingFFMPEG(false)
-            , canceled(false)
-            , endingSequence(nullptr)
-            , captureState(CaptureState::Idle)
-            , capturingFrame(false)
-            , frameNumber(0) {}
+        SRenderContext() = default;
     };
     SRenderContext m_renderContext;
 
@@ -220,10 +205,12 @@ protected slots:
 
 private:
     void CheckForEnableUpdateButton();
-    void stashActiveViewportResolution();
+    void StashActiveViewportResolution();
     void UpdateSpinnerProgressMessage(const char* description);
     void EnterCaptureState(CaptureState captureState);
     void SetEnableEditorIdleProcessing(bool enabled);
+
+    void UpdateAtomOutputFrameCaptureView(const int width, const int height);
 
     QScopedPointer<Ui::SequenceBatchRenderDialog> m_ui;
     QStringListModel* m_renderListModel;

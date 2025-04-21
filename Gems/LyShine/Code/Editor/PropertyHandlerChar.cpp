@@ -15,10 +15,12 @@ QWidget* PropertyHandlerChar::CreateGUI(QWidget* pParent)
 {
     AzToolsFramework::PropertyStringLineEditCtrl* ctrl = aznew AzToolsFramework::PropertyStringLineEditCtrl(pParent);
     ctrl->setMaxLen(1);
-    QObject::connect(ctrl, &AzToolsFramework::PropertyStringLineEditCtrl::valueChanged, this, [ctrl]()
+    QObject::connect(ctrl->GetLineEdit(), &QLineEdit::editingFinished, this, [ctrl]()
         {
-            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
-                &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, ctrl);
+            AzToolsFramework::PropertyEditorGUIMessagesBus::Broadcast(
+                &AzToolsFramework::PropertyEditorGUIMessages::RequestWrite, ctrl);
+            AzToolsFramework::PropertyEditorGUIMessagesBus::Broadcast(
+                &AzToolsFramework::PropertyEditorGUIMessages::OnEditingFinished, ctrl);
         });
 
     return ctrl;

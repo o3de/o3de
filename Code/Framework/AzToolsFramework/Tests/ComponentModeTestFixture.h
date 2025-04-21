@@ -22,9 +22,10 @@ namespace UnitTest
     {
     public:
         // EditorDisabledCompositionRequestBus overrides ...
-        void GetDisabledComponents(AZStd::vector<AZ::Component*>& components) override;
+        void GetDisabledComponents(AZ::Entity::ComponentArrayType& components) override;
         void AddDisabledComponent(AZ::Component* componentToAdd) override;
         void RemoveDisabledComponent(AZ::Component* componentToRemove) override;
+        bool IsComponentDisabled(const AZ::Component* component) override;
 
         void Connect(AZ::EntityId entityId);
         void Disconnect();

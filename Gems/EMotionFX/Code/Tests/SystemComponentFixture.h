@@ -118,12 +118,14 @@ namespace EMotionFX
             AZ::ComponentApplication::StartupParameters startupParameters;
             startupParameters.m_createEditContext = true;
             startupParameters.m_loadAssetCatalog = false;
+            startupParameters.m_loadSettingsRegistry = false;
 
             // Add EMotionFX as an active gem within the Settings Registry for unit test
             if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
             {
                 AZ::Test::AddActiveGem("EMotionFX", *settingsRegistry);
             }
+
             m_app.Start(AZ::ComponentApplication::Descriptor{}, startupParameters);
 
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
@@ -146,15 +148,15 @@ namespace EMotionFX
             // Clear the queue of messages from unit tests on our buses
             EMotionFX::Integration::ActorNotificationBus::ClearQueuedEvents();
 
+            m_app.Stop();
+
             UnitTest::LeakDetectionFixture::TearDown();
         }
 
         ~ComponentFixture() override
         {
-            if (GetSystemEntity()->GetState() == AZ::Entity::State::Active)
-            {
-                GetSystemEntity()->Deactivate();
-            }
+            // note to future maintainers, 
+            // The System Entity is destroyed in m_app.Stop(), no need to manually destroy it here.
         }
 
         AZ::SerializeContext* GetSerializeContext()

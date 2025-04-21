@@ -10,7 +10,6 @@
 #include <Atom/RPI.Public/Image/StreamingImage.h>
 #include <Atom/RPI.Public/Image/StreamingImagePool.h>
 #include <Atom/RPI.Public/Image/StreamingImageController.h>
-
 #include <Atom/RPI.Reflect/Image/ImageMipChainAssetCreator.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAssetCreator.h>
 
@@ -21,7 +20,7 @@
 // Enable this define to debug output streaming image initialization and expanding process.
 //#define AZ_RPI_STREAMING_IMAGE_DEBUG_LOG
 
-AZ_DECLARE_BUDGET(RPI);
+ATOM_RPI_PUBLIC_API AZ_DECLARE_BUDGET(RPI);
 
 namespace AZ
 {
@@ -30,8 +29,7 @@ namespace AZ
         Data::Instance<StreamingImage> StreamingImage::FindOrCreate(const Data::Asset<StreamingImageAsset>& streamingImageAsset)
         {
             return Data::InstanceDatabase<StreamingImage>::Instance().FindOrCreate(
-                Data::InstanceId::CreateFromAssetId(streamingImageAsset.GetId()),
-                streamingImageAsset);
+                Data::InstanceId::CreateFromAsset(streamingImageAsset), streamingImageAsset);
         }
 
         Data::Instance<StreamingImage> StreamingImage::CreateFromCpuData(
@@ -43,7 +41,8 @@ namespace AZ
             size_t imageDataSize,
             Uuid id)
         {
-            Data::Instance<StreamingImage> existingImage = Data::InstanceDatabase<StreamingImage>::Instance().Find(Data::InstanceId::CreateFromAssetId(id));
+            const Data::InstanceId instanceId = Data::InstanceId::CreateUuid(id);
+            Data::Instance<StreamingImage> existingImage = Data::InstanceDatabase<StreamingImage>::Instance().Find(instanceId);
             AZ_Error("StreamingImage", !existingImage, "StreamingImage::CreateFromCpuData found an existing entry in the instance database for the provided id.");
 
             RHI::ImageDescriptor imageDescriptor;
@@ -52,7 +51,8 @@ namespace AZ
             imageDescriptor.m_size = imageSize;
             imageDescriptor.m_format = imageFormat;
 
-            const RHI::ImageSubresourceLayout imageSubresourceLayout = RHI::GetImageSubresourceLayout(imageDescriptor, RHI::ImageSubresource{});
+            const RHI::DeviceImageSubresourceLayout imageSubresourceLayout =
+                RHI::GetImageSubresourceLayout(imageDescriptor, RHI::ImageSubresource{});
 
             const size_t expectedImageDataSize = imageSubresourceLayout.m_bytesPerImage * imageDescriptor.m_size.m_depth;
             if (expectedImageDataSize != imageDataSize)
@@ -94,20 +94,14 @@ namespace AZ
                 }
             }
 
-            return StreamingImage::FindOrCreate(streamingImageAsset);
+            return Data::InstanceDatabase<StreamingImage>::Instance().FindOrCreate(instanceId, streamingImageAsset);
         }
 
         Data::Instance<StreamingImage> StreamingImage::CreateInternal(StreamingImageAsset& streamingImageAsset)
         {
             Data::Instance<StreamingImage> streamingImage = aznew StreamingImage();
             const RHI::ResultCode resultCode = streamingImage->Init(streamingImageAsset);
-
-            if (resultCode == RHI::ResultCode::Success)
-            {
-                return streamingImage;
-            }
-
-            return nullptr;
+            return resultCode == RHI::ResultCode::Success ? streamingImage : nullptr;
         }
 
         RHI::ResultCode StreamingImage::Init(StreamingImageAsset& imageAsset)
@@ -156,6 +150,9 @@ namespace AZ
 
             if (resultCode == RHI::ResultCode::Success)
             {
+                // Set rhi image name
+                m_imageAsset = { &imageAsset, AZ::Data::AssetLoadBehavior::PreLoad };
+                m_image->SetName(Name(m_imageAsset.GetHint()));
                 m_imageView = m_image->GetImageView(imageAsset.GetImageViewDescriptor());
                 if(!m_imageView.get())
                 {
@@ -184,13 +181,9 @@ namespace AZ
                 m_mipChainState.m_maskReady |= mipChainBit;
 
                 // Take references on dependent assets
-                m_imageAsset = { &imageAsset, AZ::Data::AssetLoadBehavior::PreLoad };
                 m_rhiPool = rhiPool;
                 m_pool = pool;
                 m_pool->AttachImage(this);
-
-                // Set rhi image name
-                m_image->SetName(Name(m_imageAsset.GetHint()));
 
                 // queue expand mipmaps if it's not managed by the streaming controller
                 if (!m_streamingController)
@@ -199,7 +192,7 @@ namespace AZ
                 }
                         
 #ifdef AZ_RPI_STREAMING_IMAGE_DEBUG_LOG
-                AZ_TracePrintf("StreamingImage", "Init image [%s]\n", m_image->GetName().data());
+                AZ_TracePrintf("StreamingImage", "Init image [%s]\n", m_image->GetName().GetCStr());
 #endif
                                 
 #if defined (AZ_RPI_STREAMING_IMAGE_HOT_RELOADING)
@@ -230,6 +223,8 @@ namespace AZ
 
                 GetRHIImage()->Shutdown();
 
+                // make sure we aren't iterrupting an active upload-callback
+                AZStd::scoped_lock<AZStd::mutex> guard(m_mipChainMutex);
                 // Evict all active mip chains
                 for (size_t mipChainIndex = 0; mipChainIndex < m_mipChains.size(); ++mipChainIndex)
                 {
@@ -241,9 +236,11 @@ namespace AZ
             }
         }
 
+        StreamingImage::StreamingImage() = default;
+
         StreamingImage::~StreamingImage()
         {
-            Shutdown(); 
+            Shutdown();
         }
 
         void StreamingImage::SetTargetMip(uint16_t targetMipLevel)
@@ -353,6 +350,11 @@ namespace AZ
             QueueExpandToMipChainLevel(m_mipChainState.m_streamingTarget - 1);
         }
 
+        void StreamingImage::CancelExpanding()
+        {
+            TrimToMipChainLevel(m_mipChainState.m_residencyTarget);
+        }
+
         RHI::ResultCode StreamingImage::ExpandMipChain()
         {
             AZ_Assert(m_mipChainState.m_streamingTarget <= m_mipChainState.m_residencyTarget, "The target mip chain cannot be less detailed than the resident mip chain.")
@@ -362,7 +364,7 @@ namespace AZ
             if (m_mipChainState.m_streamingTarget < m_mipChainState.m_residencyTarget)
             {
 #ifdef AZ_RPI_STREAMING_IMAGE_DEBUG_LOG
-                AZ_TracePrintf("StreamingImage", "Expand image [%s]\n", GetImage()->GetName().data());
+                AZ_TracePrintf("StreamingImage", "Expand image [%s]\n", m_image->GetName().GetCStr());
 #endif
 
                 // Start by assuming we can expand residency to the full target range.
@@ -402,6 +404,11 @@ namespace AZ
 
         void StreamingImage::EvictMipChainAsset(size_t mipChainIndex)
         {
+            if (m_mipChains.empty())
+            {
+                // it's possible we get here from a callback after the image was already destroyed
+                return;
+            }
             AZ_Assert(mipChainIndex < m_mipChains.size(), "Exceeded total number of mip chains.");
 
             const uint16_t mipChainBit = static_cast<uint16_t>(1 << mipChainIndex);
@@ -492,12 +499,17 @@ namespace AZ
                 request.m_image = GetRHIImage();
                 request.m_mipSlices = mipSlices;
 
-                request.m_completeCallback = [=]()
+                // thisPtr makes sure the request holds an intrusive ptr to the current StreamingImage, so it doesn't get destroyed before
+                // the callback is executed
+                request.m_completeCallback = [=, thisPtr = RHI::Ptr<StreamingImage>(this)]()
                 {
+                    AZ_UNUSED(thisPtr);
 #ifdef AZ_RPI_STREAMING_IMAGE_DEBUG_LOG
                     AZ_TracePrintf("StreamingImage", "Upload mipchain done [%s]\n", mipChainAsset.GetHint().c_str());
 #endif
-                    EvictMipChainAsset(mipChainIndex); 
+                    // make sure the callback isn't interrupted by Shutdown(), which could remove mipchains mid-processing
+                    AZStd::scoped_lock<AZStd::mutex> guard(m_mipChainMutex);
+                    EvictMipChainAsset(mipChainIndex);
                 };
 
 #ifdef AZ_RPI_STREAMING_IMAGE_DEBUG_LOG

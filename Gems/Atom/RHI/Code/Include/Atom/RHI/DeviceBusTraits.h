@@ -9,23 +9,18 @@
 
 #include <AzCore/EBus/EBus.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
-    {
-        class Device;
+    class Device;
 
-        /**
-         * Describes the common traits used by buses addressed by a device instance.
-         */
-        class DeviceBusTraits
-            : public EBusTraits
-        {
-        public:
-            static const EBusAddressPolicy AddressPolicy = EBusAddressPolicy::ById;
-            static const EBusHandlerPolicy HandlerPolicy = EBusHandlerPolicy::Multiple;
-            using MutexType = AZStd::mutex;
-            using BusIdType = Device*;
-        };
-    }
+    //! Describes the common traits used by buses addressed by a device instance.
+    class DeviceBusTraits
+        : public EBusTraits
+    {
+    public:
+        static const EBusAddressPolicy AddressPolicy = EBusAddressPolicy::ById;
+        static const EBusHandlerPolicy HandlerPolicy = EBusHandlerPolicy::Multiple;
+        using MutexType = AZStd::mutex;
+        using BusIdType = Device*;
+    };
 }

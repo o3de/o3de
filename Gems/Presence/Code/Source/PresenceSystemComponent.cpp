@@ -9,6 +9,8 @@
 #include <PresenceSystemComponent.h>
 #include <Presence/PresenceNotificationBus.h>
 #include <AzCore/Component/TickBus.h>
+#include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/EditContext.h>
 
 namespace Presence
 {
@@ -124,13 +126,13 @@ namespace Presence
     ////////////////////////////////////////////////////////////////////////////////////////////
     void PresenceSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("PresenceService"));
+        provided.push_back(AZ_CRC_CE("PresenceService"));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////
     void PresenceSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("PresenceService"));
+        incompatible.push_back(AZ_CRC_CE("PresenceService"));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////

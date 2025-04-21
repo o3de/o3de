@@ -15,6 +15,7 @@
 #include <QPainter>
 #include <QMouseEvent>
 #include <QHeaderView>
+#include <QLocale>
 
 namespace O3DE::ProjectManager
 {
@@ -26,6 +27,10 @@ namespace O3DE::ProjectManager
         m_refreshIcon   = QIcon(":/Refresh.svg").pixmap(s_refreshIconSize, s_refreshIconSize);
         m_editIcon      = QIcon(":/Edit.svg").pixmap(s_iconSize, s_iconSize);
         m_deleteIcon    = QIcon(":/Delete.svg").pixmap(s_iconSize, s_iconSize);
+        m_hiddenIcon    = QIcon(":/Hidden.svg").pixmap(s_iconSize, s_iconSize);
+        m_visibleIcon   = QIcon(":/Visible.svg").pixmap(s_iconSize, s_iconSize);
+        m_blueBadge   = QIcon(":/BannerBlue.svg").pixmap(s_badgeWidth, s_badgeHeight);
+        m_greenBadge   = QIcon(":/BannerGreen.svg").pixmap(s_badgeWidth, s_badgeHeight);
     }
 
     void GemRepoItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& modelIndex) const
@@ -46,6 +51,11 @@ namespace O3DE::ProjectManager
         QFont standardFont(options.font);
         standardFont.setPixelSize(static_cast<int>(s_fontSize));
         QFontMetrics standardFontMetrics(standardFont);
+
+        QFont standardBoldFont(options.font);
+        standardBoldFont.setPixelSize(static_cast<int>(s_fontSize));
+        standardBoldFont.setBold(true);
+        QFontMetrics standardFontBoldMetrics(standardFont);
 
         painter->save();
         painter->setClipping(true);
@@ -72,22 +82,22 @@ namespace O3DE::ProjectManager
             painter->restore();
         }
 
-        int currentHorizontalOffset = CalcColumnXBounds(HeaderOrder::Name).first;
+        int currentHorizontalOffset = CalcColumnXBounds(HeaderOrder::Name).first + s_contentMargins.left() ;
 
         // Repo name
         QString repoName = GemRepoModel::GetName(modelIndex);
-        int sectionSize = m_headerWidget->m_header->sectionSize(static_cast<int>(HeaderOrder::Name));
+        int sectionSize = m_headerWidget->m_header->sectionSize(static_cast<int>(HeaderOrder::Name)) - s_contentMargins.left();
         repoName = standardFontMetrics.elidedText(repoName, Qt::TextElideMode::ElideRight,
             sectionSize - AdjustableHeaderWidget::s_headerTextIndent);
 
         QRect repoNameRect = GetTextRect(standardFont, repoName, s_fontSize);
-        repoNameRect.moveTo(currentHorizontalOffset + AdjustableHeaderWidget::s_headerTextIndent,
+        repoNameRect.moveTo(currentHorizontalOffset,
             contentRect.center().y() - repoNameRect.height() / 2);
         repoNameRect = painter->boundingRect(repoNameRect, Qt::TextSingleLine, repoName);
 
         painter->drawText(repoNameRect, Qt::TextSingleLine, repoName);
 
-        // Rem repo creator
+        // Repo creator
         currentHorizontalOffset += sectionSize;
         sectionSize = m_headerWidget->m_header->sectionSize(static_cast<int>(HeaderOrder::Creator));
 
@@ -102,14 +112,56 @@ namespace O3DE::ProjectManager
 
         painter->drawText(repoCreatorRect, Qt::TextSingleLine, repoCreator);
 
-        // Repo update
+        // Badge
         currentHorizontalOffset += sectionSize;
-        sectionSize = m_headerWidget->m_header->sectionSize(static_cast<int>(HeaderOrder::Update));
+        sectionSize = m_headerWidget->m_header->sectionSize(static_cast<int>(HeaderOrder::Badge));
+        auto badgeType = GemRepoModel::GetBadgeType(modelIndex);
+        const QPixmap* badge = nullptr;
+        QString badgeText;
+        if (badgeType == GemRepoInfo::BadgeType::BlueBadge)
+        {
+            badge = &m_blueBadge;
+            badgeText = tr("O3DE Official");
+        }
+        else if (badgeType == GemRepoInfo::BadgeType::GreenBadge)
+        {
+            badge = &m_greenBadge;
 
-        QString repoUpdatedDate = GemRepoModel::GetLastUpdated(modelIndex).toString(RepoTimeFormat);
+            // this text should be made dynamic at some point
+            badgeText = tr("O3DF Recommended");
+        }
+
+        if (badge)
+        {
+            const QRect badgeRect = CalcBadgeRect(contentRect);
+            painter->drawPixmap(badgeRect, m_blueBadge);
+
+            painter->setFont(standardBoldFont);
+
+            QRect badgeLabelRect = GetTextRect(standardBoldFont, badgeText, s_fontSize);
+            badgeLabelRect.moveTo(currentHorizontalOffset + s_badgeLeftMargin,
+                contentRect.center().y() - (badgeLabelRect.height() / 2) - 1);
+            badgeLabelRect = painter->boundingRect(badgeLabelRect, Qt::TextSingleLine, badgeText);
+            painter->drawText(badgeLabelRect, Qt::TextSingleLine, badgeText);
+
+            painter->setFont(standardFont);
+        }
+
+        // Last updated
+        currentHorizontalOffset += sectionSize;
+        sectionSize = m_headerWidget->m_header->sectionSize(static_cast<int>(HeaderOrder::Updated));
+        auto lastUpdated = GemRepoModel::GetLastUpdated(modelIndex);
+
+        // get the month day and year in the preferred locale's format (QLocale defaults to the OS locale)
+        QString monthDayYear = lastUpdated.toString(QLocale().dateFormat(QLocale::ShortFormat));
+
+        // always show 12 hour + minutes + am/pm
+        QString hourMinuteAMPM = lastUpdated.toString("h:mmap");
+
+        QString repoUpdatedDate = QString("%1 %2").arg(monthDayYear, hourMinuteAMPM);
         repoUpdatedDate = standardFontMetrics.elidedText(
             repoUpdatedDate, Qt::TextElideMode::ElideRight,
-            sectionSize - GemRepoItemDelegate::s_refreshIconSpacing - GemRepoItemDelegate::s_refreshIconSize - AdjustableHeaderWidget::s_headerTextIndent);
+            sectionSize - AdjustableHeaderWidget::s_headerTextIndent);
 
         QRect repoUpdatedDateRect = GetTextRect(standardFont, repoUpdatedDate, s_fontSize);
         repoUpdatedDateRect.moveTo(currentHorizontalOffset + AdjustableHeaderWidget::s_headerTextIndent,
@@ -118,14 +170,13 @@ namespace O3DE::ProjectManager
 
         painter->drawText(repoUpdatedDateRect, Qt::TextSingleLine, repoUpdatedDate);
 
-        // Draw refresh button
+        // Refresh button
         const QRect refreshButtonRect = CalcRefreshButtonRect(contentRect);
         painter->drawPixmap(refreshButtonRect.topLeft(), m_refreshIcon);
 
-        if (options.state & QStyle::State_MouseOver)
-        {
-            DrawEditButtons(painter, contentRect);
-        }
+        // Visibility button
+        const QRect visibilityButtonRect = CalcVisibilityButtonRect(contentRect);
+        painter->drawPixmap(visibilityButtonRect, GemRepoModel::IsEnabled(modelIndex) ? m_visibleIcon  : m_hiddenIcon);
 
         painter->restore();
     }
@@ -136,7 +187,7 @@ namespace O3DE::ProjectManager
         initStyleOption(&options, modelIndex);
 
         const int marginsHorizontal = s_itemMargins.left() + s_itemMargins.right() + s_contentMargins.left() + s_contentMargins.right();
-        return QSize(marginsHorizontal + s_nameDefaultWidth + s_creatorDefaultWidth + s_updatedDefaultWidth, s_height);
+        return QSize(marginsHorizontal + s_nameDefaultWidth + s_creatorDefaultWidth + s_buttonsDefaultWidth, s_height);
     }
 
     bool GemRepoItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option, const QModelIndex& modelIndex)
@@ -168,12 +219,13 @@ namespace O3DE::ProjectManager
 
             QRect fullRect, itemRect, contentRect;
             CalcRects(option, fullRect, itemRect, contentRect);
-            const QRect deleteButtonRect = CalcDeleteButtonRect(contentRect);
+            const QRect visibilityButtonRect = CalcVisibilityButtonRect(contentRect);
             const QRect refreshButtonRect = CalcRefreshButtonRect(contentRect);
 
-            if (deleteButtonRect.contains(mouseEvent->pos()))
+            if (visibilityButtonRect.contains(mouseEvent->pos()))
             {
-                emit RemoveRepo(modelIndex);
+                bool isAdded = GemRepoModel::IsEnabled(modelIndex);
+                GemRepoModel::SetEnabled(*model, modelIndex, !isAdded);
                 return true;
             }
             else if (refreshButtonRect.contains(mouseEvent->pos()))
@@ -204,26 +256,29 @@ namespace O3DE::ProjectManager
         return m_headerWidget->CalcColumnXBounds(static_cast<int>(header));
     }
 
-    QRect GemRepoItemDelegate::CalcDeleteButtonRect(const QRect& contentRect) const
+    QRect GemRepoItemDelegate::CalcBadgeRect(const QRect& contentRect) const
     {
-        const int deleteHeaderEndX = CalcColumnXBounds(HeaderOrder::Delete).second;
-        const QPoint topLeft = QPoint(deleteHeaderEndX - s_iconSize - s_contentMargins.right(), contentRect.center().y() - s_iconSize / 2);
+        const auto bounds = CalcColumnXBounds(HeaderOrder::Badge);
+        const QPoint topLeft = QPoint(bounds.first, contentRect.center().y() - s_badgeHeight / 2);
+        return QRect(topLeft, QSize(s_badgeWidth, s_badgeHeight));
+    }
+
+    QRect GemRepoItemDelegate::CalcVisibilityButtonRect(const QRect& contentRect) const
+    {
+        const auto bounds = CalcColumnXBounds(HeaderOrder::Buttons);
+        const int centerX = (bounds.first + bounds.second) / 2;
+
+        const QPoint topLeft = QPoint(centerX + s_refreshIconSpacing, contentRect.center().y() - s_iconSize / 2);
         return QRect(topLeft, QSize(s_iconSize, s_iconSize));
     }
 
     QRect GemRepoItemDelegate::CalcRefreshButtonRect(const QRect& contentRect) const
     {
-        const int headerEndX = CalcColumnXBounds(HeaderOrder::Update).second;
-        const int leftX = headerEndX - s_refreshIconSize - s_refreshIconSpacing;
-        // Dividing size by 3 centers much better
-        const QPoint topLeft = QPoint(leftX, contentRect.center().y() - s_refreshIconSize / 3);
-        return QRect(topLeft, QSize(s_refreshIconSize, s_refreshIconSize));
-    }
+        const auto bounds = CalcColumnXBounds(HeaderOrder::Buttons);
+        const int centerX = (bounds.first + bounds.second) / 2;
 
-    void GemRepoItemDelegate::DrawEditButtons(QPainter* painter, const QRect& contentRect) const
-    {
-        const QRect deleteButtonRect = CalcDeleteButtonRect(contentRect);
-        painter->drawPixmap(deleteButtonRect, m_deleteIcon);
+        const QPoint topLeft = QPoint(centerX - s_refreshIconSpacing - s_refreshIconSize, contentRect.center().y() - s_refreshIconSize / 2 + 1);
+        return QRect(topLeft, QSize(s_refreshIconSize, s_refreshIconSize));
     }
 
 } // namespace O3DE::ProjectManager

@@ -39,8 +39,6 @@ set(FILES
     Source/Rendering/EntityDebugDisplayComponent.cpp
     Source/Scripting/LookAtComponent.h
     Source/Scripting/LookAtComponent.cpp
-    Source/Scripting/RandomTimedSpawnerComponent.cpp
-    Source/Scripting/RandomTimedSpawnerComponent.h
     Source/Scripting/SimpleStateComponent.h
     Source/Scripting/SimpleStateComponent.cpp
     Source/Scripting/TagComponent.h

@@ -127,12 +127,6 @@ namespace O3DE::ProjectManager
             });
     }
 
-    GemCartWidget::~GemCartWidget()
-    {
-        // disconnect from all download controller signals
-        disconnect(m_downloadController, nullptr, this, nullptr);
-    }
-
     void GemCartWidget::CreateGemSection(const QString& singularTitle, const QString& pluralTitle, GetTagIndicesCallback getTagIndices)
     {
         QWidget* widget = new QWidget();
@@ -353,7 +347,32 @@ namespace O3DE::ProjectManager
         tags.reserve(gems.size());
         for (const QModelIndex& modelIndex : gems)
         {
-            tags.push_back({ GemModel::GetDisplayName(modelIndex), GemModel::GetName(modelIndex) });
+            const GemInfo& gemInfo = GemModel::GetGemInfo(modelIndex);
+            if(gemInfo.m_isEngineGem)
+            {
+                // don't show engine gem versions
+                tags.push_back({ gemInfo.m_displayName, gemInfo.m_name });
+            }
+            else
+            {
+                // show non-engine gem versions if available
+                QString version =  GemModel::GetNewVersion(modelIndex);
+                if (version.isEmpty())
+                {
+                    version =  gemInfo.m_version;
+                }
+
+                if (version.isEmpty() || version.contains("Unknown", Qt::CaseInsensitive) || gemInfo.m_displayName.contains(version))
+                {
+                    tags.push_back({ gemInfo.m_displayName, gemInfo.m_name });
+                }
+                else
+                {
+                    const QString& title = QString("%1 %2").arg(gemInfo.m_displayName, version);
+                    tags.push_back({ title, gemInfo.m_name });
+                }
+            }
+
         }
         return tags;
     }
@@ -479,7 +498,6 @@ namespace O3DE::ProjectManager
         hLayout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Expanding));
 
         m_filterLineEdit = new AzQtComponents::SearchLineEdit();
-        m_filterLineEdit->setStyleSheet("background-color: #DDDDDD;");
         connect(m_filterLineEdit, &QLineEdit::textChanged, this, [=](const QString& text)
             {
                 filterProxyModel->SetSearchString(text);
@@ -519,7 +537,7 @@ namespace O3DE::ProjectManager
         hLayout->addSpacing(16);
 
         QMenu* gemMenu = new QMenu(this);
-        gemMenu->addAction( tr("Refresh"), [this]() { emit RefreshGems(); });
+        gemMenu->addAction(tr("Refresh"), [this]() { emit RefreshGems(/*refreshRemoteRepos*/true); });
         gemMenu->addAction( tr("Show Gem Repos"), [this]() { emit OpenGemsRepo(); });
         gemMenu->addSeparator();
         gemMenu->addAction( tr("Add Existing Gem"), [this]() { emit AddGem(); });

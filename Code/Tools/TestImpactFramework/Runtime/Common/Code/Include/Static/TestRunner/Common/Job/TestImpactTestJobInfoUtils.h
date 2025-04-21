@@ -14,6 +14,9 @@
 
 namespace TestImpact
 {
+    //! Generates the fully qualified target name (`namespace::name` or `name`) for use in artifact files.
+    RepoPath GenerateFullQualifiedTargetNameStem(const TestTarget* testTarget);
+
     //! Generates the path to the enumeration cache file for the specified test target.
     RepoPath GenerateTargetEnumerationCacheFilePath(const TestTarget* testTarget, const RepoPath& cacheDir);
 

@@ -10,21 +10,20 @@
 #include <AtomToolsFramework/Application/AtomToolsApplication.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AtomToolsFramework/Window/AtomToolsMainWindowRequestBus.h>
-
 #include <AzCore/Component/ComponentApplicationLifecycle.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Utils/Utils.h>
-
 #include <AzFramework/Asset/AssetSystemComponent.h>
+#include <AzFramework/AzFrameworkNativeUIModule.h>
+#include <AzFramework/Components/NativeUISystemComponent.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzFramework/Network/AssetProcessorConnection.h>
 #include <AzFramework/StringFunc/StringFunc.h>
-
 #include <AzQtComponents/Components/GlobalEventFilter.h>
-
 #include <AzToolsFramework/API/EditorPythonConsoleBus.h>
 #include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
+#include <AzToolsFramework/ActionManager/ActionManagerSystemComponent.h>
 #include <AzToolsFramework/Asset/AssetSystemComponent.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserComponent.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
@@ -49,8 +48,13 @@ namespace AtomToolsFramework
     AtomToolsApplication* AtomToolsApplication::m_instance = {};
 
     AtomToolsApplication::AtomToolsApplication(const char* targetName, int* argc, char*** argv)
+        : AtomToolsApplication(targetName, argc, argv, {})
+    {
+    }
+
+    AtomToolsApplication::AtomToolsApplication(const char* targetName, int* argc, char*** argv, AZ::ComponentApplicationSettings componentAppSettings)
         : AzQtApplication(*argc, *argv)
-        , Application(argc, argv)
+        , Application(argc, argv, AZStd::move(componentAppSettings))
         , m_targetName(targetName)
         , m_toolId(targetName)
     {
@@ -146,12 +150,13 @@ namespace AtomToolsFramework
         components.insert(
             components.end(),
             {
-                azrtti_typeid<AzToolsFramework::AssetSystem::AssetSystemComponent>(),
+                azrtti_typeid<AzToolsFramework::ActionManagerSystemComponent>(),
                 azrtti_typeid<AzToolsFramework::AssetBrowser::AssetBrowserComponent>(),
                 azrtti_typeid<AzToolsFramework::AssetSystem::AssetSystemComponent>(),
-                azrtti_typeid<AzToolsFramework::Thumbnailer::ThumbnailerComponent>(),
                 azrtti_typeid<AzToolsFramework::Components::PropertyManagerComponent>(),
                 azrtti_typeid<AzToolsFramework::PerforceComponent>(),
+                azrtti_typeid<AzToolsFramework::Thumbnailer::ThumbnailerComponent>(),
+                azrtti_typeid<AzFramework::NativeUISystemComponent>(),
             });
 
         return components;
@@ -161,6 +166,8 @@ namespace AtomToolsFramework
     {
         Base::CreateStaticModules(outModules);
         outModules.push_back(aznew AzToolsFramework::AzToolsFrameworkModule);
+        outModules.push_back(aznew AzFramework::AzFrameworkNativeUIModule());
+
     }
 
     void AtomToolsApplication::StartCommon(AZ::Entity* systemEntity)
@@ -194,7 +201,8 @@ namespace AtomToolsFramework
         AzToolsFramework::SourceControlConnectionRequestBus::Broadcast(
             &AzToolsFramework::SourceControlConnectionRequests::EnableSourceControl, enableSourceControl);
 
-        if (!AZ::RPI::RPISystemInterface::Get()->IsInitialized())
+        auto rpiInterface = AZ::RPI::RPISystemInterface::Get();
+        if (rpiInterface && !rpiInterface->IsInitialized())
         {
             AZ::RPI::RPISystemInterface::Get()->InitializeSystemAssets();
         }
@@ -368,12 +376,8 @@ namespace AtomToolsFramework
             AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::ExitMainLoop);
         }
 
-        AZ_TracePrintf("AtomToolsApplication", "CriticalAssetsCompiled\n");
-
-        AZ::ComponentApplicationLifecycle::SignalEvent(*m_settingsRegistry, "CriticalAssetsCompiled", R"({})");
-
         // Reload the assetcatalog.xml at this point again
-        // Start Monitoring Asset changes over the network and load the AssetCatalog
+        // Start monitoring asset changes over the network and load the AssetCatalog
         auto LoadCatalog = [settingsRegistry = m_settingsRegistry.get()](AZ::Data::AssetCatalogRequests* assetCatalogRequests)
         {
             if (AZ::IO::FixedMaxPath assetCatalogPath;
@@ -384,6 +388,9 @@ namespace AtomToolsFramework
             }
         };
         AZ::Data::AssetCatalogRequestBus::Broadcast(AZStd::move(LoadCatalog));
+
+        // Only signal the event *after* the asset catalog has been loaded.
+        AZ::ComponentApplicationLifecycle::SignalEvent(*m_settingsRegistry, "CriticalAssetsCompiled", R"({})");
     }
 
     void AtomToolsApplication::SaveSettings()

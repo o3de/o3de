@@ -67,7 +67,7 @@ namespace AzToolsFramework
             AZ_CLASS_ALLOCATOR(AssetJobsInfoRequest, AZ::OSAllocator);
             AZ_RTTI(AssetJobsInfoRequest, "{E5DEF45C-C4CF-47ED-843F-97B3C4A3D5B3}", AzFramework::AssetSystem::BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
-            static constexpr unsigned int MessageType = AZ_CRC("AssetProcessor::AssetJobsInfoRequest", 0xbd18de74);
+            static constexpr unsigned int MessageType = AZ_CRC_CE("AssetProcessor::AssetJobsInfoRequest");
 
             explicit AssetJobsInfoRequest(bool requireFencing = true);
             explicit AssetJobsInfoRequest(const AZ::Data::AssetId& assetId, bool m_escalateJobs = true, bool requireFencing = true);
@@ -106,7 +106,7 @@ namespace AzToolsFramework
             AZ_CLASS_ALLOCATOR(AssetJobLogRequest, AZ::OSAllocator);
             AZ_RTTI(AssetJobLogRequest, "{8E69F76E-F25D-486E-BC3F-26BB3FF5A3A3}", AzFramework::AssetSystem::BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
-            static constexpr unsigned int MessageType = AZ_CRC("AssetProcessor::AssetJobLogRequest", 0xfbb80fd3);
+            static constexpr unsigned int MessageType = AZ_CRC_CE("AssetProcessor::AssetJobLogRequest");
             explicit AssetJobLogRequest(bool requireFencing = true);
             explicit AssetJobLogRequest(AZ::u64 jobRunKey, bool requireFencing = true);
             unsigned int GetMessageType() const override;
@@ -146,7 +146,7 @@ namespace AzToolsFramework
             AZ_CLASS_ALLOCATOR(SourceFileNotificationMessage, AZ::OSAllocator);
             AZ_RTTI(SourceFileNotificationMessage, "{61126952-242A-4299-B1D6-4D0E24DB1B06}", AzFramework::AssetSystem::BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
-            static constexpr unsigned int MessageType = AZ_CRC("AssetProcessorManager::SourceFileNotification", 0x8bfc4d1c);
+            static constexpr unsigned int MessageType = AZ_CRC_CE("AssetProcessorManager::SourceFileNotification");
 
             SourceFileNotificationMessage() = default;
             SourceFileNotificationMessage(const AZ::OSString& relPath, const AZ::OSString& scanFolder, NotificationType type, AZ::Uuid sourceUUID);
@@ -165,7 +165,7 @@ namespace AzToolsFramework
             AZ_CLASS_ALLOCATOR(GetAbsoluteAssetDatabaseLocationRequest, AZ::OSAllocator);
             AZ_RTTI(GetAbsoluteAssetDatabaseLocationRequest, "{8696976E-F19D-48E3-BDDF-2GB63FA1AF23}", AzFramework::AssetSystem::BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
-            static constexpr unsigned int MessageType = AZ_CRC("AssetProcessor::GetAbsoluteAssetDatabaseLocationRequest", 0xb3aa4931);
+            static constexpr unsigned int MessageType = AZ_CRC_CE("AssetProcessor::GetAbsoluteAssetDatabaseLocationRequest");
             GetAbsoluteAssetDatabaseLocationRequest() = default;
             unsigned int GetMessageType() const override;
         };
@@ -192,7 +192,7 @@ namespace AzToolsFramework
             AZ_CLASS_ALLOCATOR(GetScanFoldersRequest, AZ::OSAllocator);
             AZ_RTTI(GetScanFoldersRequest, "{A3D7FD31-C260-4D6C-B970-D565B43F1316}", AzFramework::AssetSystem::BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
-            static constexpr unsigned int MessageType = AZ_CRC("AssetProcessor::GetScanFoldersRequest", 0x01274152);
+            static constexpr unsigned int MessageType = AZ_CRC_CE("AssetProcessor::GetScanFoldersRequest");
 
             ~GetScanFoldersRequest() override = default;
 
@@ -225,7 +225,7 @@ namespace AzToolsFramework
             AZ_CLASS_ALLOCATOR(GetAssetSafeFoldersRequest, AZ::OSAllocator);
             AZ_RTTI(GetAssetSafeFoldersRequest, "{9A7951B1-257C-45F0-B334-A52A42A5A871}", AzFramework::AssetSystem::BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
-            static constexpr unsigned int MessageType = AZ_CRC("AssetProcessor::GetAssetSafeFoldersRequest", 0xf58fd05c);
+            static constexpr unsigned int MessageType = AZ_CRC_CE("AssetProcessor::GetAssetSafeFoldersRequest");
 
             ~GetAssetSafeFoldersRequest() override = default;
 
@@ -281,7 +281,7 @@ namespace AzToolsFramework
             AZ_CLASS_ALLOCATOR(AssetProcessorPlatformStatusRequest, AZ::OSAllocator);
             AZ_RTTI(AssetProcessorPlatformStatusRequest, "{529A8549-DD78-4E66-9BEA-D633846115C6}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
-            static constexpr unsigned int MessageType = AZ_CRC("AssetSystem::AssetProcessorPlatformStatusRequest", 0x036e116e);
+            static constexpr unsigned int MessageType = AZ_CRC_CE("AssetSystem::AssetProcessorPlatformStatusRequest");
 
             AssetProcessorPlatformStatusRequest() = default;
             unsigned int GetMessageType() const override;
@@ -312,7 +312,7 @@ namespace AzToolsFramework
             AZ_CLASS_ALLOCATOR(AssetProcessorPendingPlatformAssetsRequest, AZ::OSAllocator);
             AZ_RTTI(AssetProcessorPendingPlatformAssetsRequest, "{5B16F6F2-0F94-4BAE-8238-1E8F3E66D507}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
-            static constexpr unsigned int MessageType = AZ_CRC("AssetSystem::AssetProcessorPendingPlatformAssetsRequest", 0x9582a76c);
+            static constexpr unsigned int MessageType = AZ_CRC_CE("AssetSystem::AssetProcessorPendingPlatformAssetsRequest");
 
             AssetProcessorPendingPlatformAssetsRequest() = default;
             unsigned int GetMessageType() const override;
@@ -343,7 +343,7 @@ namespace AzToolsFramework
             AZ_CLASS_ALLOCATOR(WantAssetBrowserShowRequest, AZ::OSAllocator);
             AZ_RTTI(WantAssetBrowserShowRequest, "{C66852BF-1A8C-47AC-9CFF-183CC4241075}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
-            static constexpr unsigned int MessageType = AZ_CRC("AssetSystem::WantAssetBrowserShowRequest", 0xa861bc09);
+            static constexpr unsigned int MessageType = AZ_CRC_CE("AssetSystem::WantAssetBrowserShowRequest");
 
             WantAssetBrowserShowRequest() = default;
             unsigned int GetMessageType() const override;
@@ -357,7 +357,7 @@ namespace AzToolsFramework
             AZ_CLASS_ALLOCATOR(WantAssetBrowserShowResponse, AZ::OSAllocator);
             AZ_RTTI(WantAssetBrowserShowResponse, "{B3015EF2-A91F-4E7D-932A-DA6043EDB678}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
-            static constexpr unsigned int MessageType = AZ_CRC("AssetSystem::WantAssetBrowserShowResponse", 0x2784cbb9);
+            static constexpr unsigned int MessageType = AZ_CRC_CE("AssetSystem::WantAssetBrowserShowResponse");
 
             WantAssetBrowserShowResponse() = default;
             unsigned int GetMessageType() const override;
@@ -373,7 +373,7 @@ namespace AzToolsFramework
             AZ_CLASS_ALLOCATOR(AssetBrowserShowRequest, AZ::OSAllocator);
             AZ_RTTI(AssetBrowserShowRequest, "{D44903DD-45D8-4CBA-8A9D-C9D5E7FFB0A6}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
-            static constexpr unsigned int MessageType = AZ_CRC("AssetSystem::AssetBrowserShowRequest", 0xb2768047);
+            static constexpr unsigned int MessageType = AZ_CRC_CE("AssetSystem::AssetBrowserShowRequest");
 
             AssetBrowserShowRequest() = default;
             unsigned int GetMessageType() const override;
@@ -389,7 +389,7 @@ namespace AzToolsFramework
             AZ_CLASS_ALLOCATOR(SourceAssetProductsInfoRequest, AZ::OSAllocator);
             AZ_RTTI(SourceAssetProductsInfoRequest, "{14D0994C-7096-44D9-A239-2A7B51DDC95A}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
-            static constexpr unsigned int MessageType = AZ_CRC("AssetProcessor::SourceAssetProductsInfoRequest", 0x97f169fc);
+            static constexpr unsigned int MessageType = AZ_CRC_CE("AssetProcessor::SourceAssetProductsInfoRequest");
 
             SourceAssetProductsInfoRequest() = default;
             explicit SourceAssetProductsInfoRequest(const AZ::Data::AssetId& assetId);

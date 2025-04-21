@@ -153,7 +153,7 @@ namespace AzPhysics
         void RegisterSceneAddedEvent(SystemEvents::OnSceneAddedEvent::Handler& handler) { handler.Connect(m_sceneAddedEvent); }
         //! Register to receive notifications when the a Scene is removed from the simulation.
         //! @param handler The handler to receive the event.
-        void RegisterSceneRemovedEvent(SystemEvents::OnSceneAddedEvent::Handler& handler) { handler.Connect(m_sceneRemovedEvent); }
+        void RegisterSceneRemovedEvent(SystemEvents::OnSceneRemovedEvent::Handler& handler) { handler.Connect(m_sceneRemovedEvent); }
         //! Register to receive notifications when the SystemConfiguration changes.
         //! @param handler The handler to receive the event.
         void RegisterSystemConfigurationChangedEvent(SystemEvents::OnConfigurationChangedEvent::Handler& handler) { handler.Connect(m_configChangeEvent); }

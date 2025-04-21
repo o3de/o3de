@@ -31,6 +31,18 @@ namespace UnitTest
         bool c = DefaultValueC;
     };
 
+    struct TestDataWithDestructor
+    {
+        bool m_destroyed = false;
+        size_t m_value = 100;
+
+        ~TestDataWithDestructor()
+        {
+            EXPECT_FALSE(m_destroyed);
+            m_destroyed = true;
+        }
+    };
+
     TEST_F(SparseVectorTests, SparseVectorCreate)
     {
         // Simple test to make sure we can create a SparseVector and it initializes with no values.
@@ -274,5 +286,34 @@ namespace UnitTest
 
         container.Clear();
         EXPECT_EQ(0, container.GetSize());
+    }
+
+    TEST_F(SparseVectorTests, SparseVectorNonTrivialDestructor)
+    {
+        constexpr size_t Count = 10;
+
+        SparseVector<TestDataWithDestructor> container;
+        for (size_t i = 0; i < Count; ++i)
+        {
+            container.Reserve();
+        }
+        // Release some elements to call their destructor
+        for (size_t i = 0; i < Count / 2; ++i)
+        {
+            container.Release(i);
+        }
+        container.Clear(); // TestDataWithDestructor checks in its destructor for double-deletes;
+
+        MultiSparseVector<TestDataWithDestructor, TestData> multiContainer;
+        for (size_t i = 0; i < Count; ++i)
+        {
+            multiContainer.Reserve();
+        }
+        // Release some elements to call their destructor
+        for (size_t i = 0; i < Count / 2; ++i)
+        {
+            multiContainer.Release(i);
+        }
+        multiContainer.Clear(); // TestDataWithDestructor checks in its destructor for double-deletes;
     }
 }

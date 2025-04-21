@@ -10,34 +10,27 @@
 #include <Atom/RHI/DeviceBusTraits.h>
 #include <Atom/RHI/MemoryStatisticsBuilder.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    //! This bus is called first to enumerate platform memory heaps.
+    class MemoryStatisticsHeapEventInterface
+        : public DeviceBusTraits
     {
-        /**
-         * This bus is called first to enumerate platform memory heaps.
-         */
-        class MemoryStatisticsHeapEventInterface
-            : public DeviceBusTraits
-        {
-        public:
+    public:
 
 
-            virtual void ReportMemoryHeaps(MemoryStatisticsBuilder& builder) const = 0;
-        };
+        virtual void ReportMemoryHeaps(MemoryStatisticsBuilder& builder) const = 0;
+    };
 
-        using MemoryStatisticsHeapEventBus = AZ::EBus<MemoryStatisticsHeapEventInterface>;
+    using MemoryStatisticsHeapEventBus = AZ::EBus<MemoryStatisticsHeapEventInterface>;
 
-        /**
-         * This bus is called after heaps have been enumerated to populate memory usage within each heap.
-         */
-        class MemoryStatisticsEventInterface
-            : public DeviceBusTraits
-        {
-        public:
-            virtual void ReportMemoryUsage(MemoryStatisticsBuilder& builder) const = 0;
-        };
+    //! This bus is called after heaps have been enumerated to populate memory usage within each heap.
+    class MemoryStatisticsEventInterface
+        : public DeviceBusTraits
+    {
+    public:
+        virtual void ReportMemoryUsage(MemoryStatisticsBuilder& builder) const = 0;
+    };
 
-        using MemoryStatisticsEventBus = AZ::EBus<MemoryStatisticsEventInterface>;
-    }
+    using MemoryStatisticsEventBus = AZ::EBus<MemoryStatisticsEventInterface>;
 }

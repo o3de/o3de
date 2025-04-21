@@ -58,7 +58,7 @@ namespace AzPhysics
         // padding was added. But having this structure limits the warnings to this member usage because
         // SystemConfiguration won't need extra padding to achieve 16 byte alignment.
         AZ_PUSH_DISABLE_WARNING(4324, "-Wunknown-warning-option") // structure was padded due to alignment
-        struct alignas(16)
+        [[maybe_unused]] struct alignas(16)
         {
             unsigned char m_unused[16];
         } m_unusedPadding;

@@ -15,12 +15,12 @@ namespace ScriptCanvasEditor
 {
     namespace SlotGroups
     {
-        static const GraphCanvas::SlotGroup DynamicPropertiesGroup = AZ_CRC("ScriptCanvas_DynamicPropertiesGroup", 0x545b0552);
-        static const GraphCanvas::SlotGroup EBusConnectionSlotGroup = AZ_CRC("ScriptCanvas_EBusConnectionSlotGroup", 0xc470f5c7);
+        static const GraphCanvas::SlotGroup DynamicPropertiesGroup = AZ_CRC_CE("ScriptCanvas_DynamicPropertiesGroup");
+        static const GraphCanvas::SlotGroup EBusConnectionSlotGroup = AZ_CRC_CE("ScriptCanvas_EBusConnectionSlotGroup");
     }
 
     namespace PropertySlotIds
     {
-        static const AZ::Crc32 DefaultValue = AZ_CRC("ScriptCanvas_Property_DefaultValue", 0xf837b153);
+        static const AZ::Crc32 DefaultValue = AZ_CRC_CE("ScriptCanvas_Property_DefaultValue");
     }
 }

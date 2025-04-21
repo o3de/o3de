@@ -49,7 +49,7 @@
                     ],
                     "PassData": {
                         "$type": "RasterPassData",
-                        "PipelineViewTag": "MainCamera"
+                        "BindViewSrg": true
                     }
                 },
                 {
@@ -67,7 +67,7 @@
                     ],
                     "PassData": {
                         "$type": "RasterPassData",
-                        "PipelineViewTag": "MainCamera"
+                        "BindViewSrg": true
                     }
                 },
                 {
@@ -106,7 +106,7 @@
                     ],
                     "PassData": {
                         "$type": "RasterPassData",
-                        "PipelineViewTag": "MainCamera"
+                        "BindViewSrg": true
                     }
                 }
             ]

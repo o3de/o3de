@@ -59,6 +59,7 @@ ShaderResourceGroupSemantic SRG_Bindless
 ShaderResourceGroupSemantic SRG_RayTracingGlobal
 {
     FrequencyId = 0;
+    ShaderVariantFallback = 128; // The minimal size to use Shader Options.
 };
 
 ShaderResourceGroupSemantic SRG_RayTracingScene

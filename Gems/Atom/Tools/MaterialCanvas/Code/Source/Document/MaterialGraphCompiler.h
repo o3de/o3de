@@ -39,6 +39,8 @@ namespace MaterialCanvas
         void BuildDependencyTables();
         void BuildTemplatePathsForCurrentNode(const GraphModel::ConstNodePtr& currentNode);
         bool LoadTemplatesForCurrentNode();
+        void DeleteExistingFilesForCurrentNode();
+        void ClearFingerprintsForCurrentNode();
         void PreprocessTemplatesForCurrentNode();
         void BuildInstructionsForCurrentNode(const GraphModel::ConstNodePtr& currentNode);
         void BuildMaterialSrgForCurrentNode();
@@ -126,6 +128,9 @@ namespace MaterialCanvas
             const AZStd::string& templateInputPath,
             const AZStd::string& templateOutputPath) const;
 
+        // Returns the name that will be used to replace material graph name during any substitutions 
+        AZStd::string GetUniqueGraphName() const;
+
         // All slots and nodes will be visited to collect all of the unique include paths.
         AZStd::set<AZStd::string> m_includePaths;
 
@@ -140,6 +145,9 @@ namespace MaterialCanvas
         // Table of values for every slot, on every node, including values redirected from incoming connections, and values upgraded to
         // match types and sizes of values on related slots.
         AZStd::map<GraphModel::ConstSlotPtr, AZStd::any> m_slotValueTable;
+
+        // This counter will be used as a suffix for graph name substitutions in case multiple template nodes are included in the same graph
+        int m_templateNodeCount = 0;
 
         // Container of paths for template files that need to be evaluated and have products generated for the current node.
         AZStd::set<AZStd::string> m_templatePathsForCurrentNode;

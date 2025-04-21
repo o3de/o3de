@@ -11,6 +11,7 @@
 
 // AzCore
 #include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Jobs/JobFunction.h>
 
@@ -33,7 +34,7 @@ void CEditorPreferencesPage_AWS::Reflect(AZ::SerializeContext& serialize)
 
         editContext->Class<CEditorPreferencesPage_AWS>("AWS Preferences", "AWS Preferences")
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-            ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC("PropertyVisibility_ShowChildrenOnly", 0xef428f20))
+            ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC_CE("PropertyVisibility_ShowChildrenOnly"))
             ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_AWS::m_usageOptions, "AWS Data Collection and Use", "AWS Data Collection and Use");
     }
 }

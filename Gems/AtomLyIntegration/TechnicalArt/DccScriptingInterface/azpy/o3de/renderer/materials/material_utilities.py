@@ -180,7 +180,7 @@ def get_all_properties_description(material_type: str):
     description_location = get_material_templates_location()
     if description_location:
         for file in [x for x in description_location.glob('**/*') if x.is_file()]:
-            if file.name == f'{material_type.lower()}_allproperties.material':
+            if file.name == f'{material_type.lower()}_allproperties.json':
                 with open(str(file), 'r') as data:
                     return json.loads(data.read())
     return None

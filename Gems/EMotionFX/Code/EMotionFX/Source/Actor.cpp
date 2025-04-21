@@ -1242,12 +1242,19 @@ namespace EMotionFX
 
     AZ::Data::AssetId Actor::ConstructSkinMetaAssetId(const AZ::Data::AssetId& meshAssetId)
     {
+        // Get the full mesh asset path (ex: 'objects/model.fbx.azmodel')
         AZStd::string meshAssetPath;
         AZ::Data::AssetCatalogRequestBus::BroadcastResult(meshAssetPath, &AZ::Data::AssetCatalogRequests::GetAssetPathById, meshAssetId);
+
+        // Get just the filename, stripping off the path and the extension (ex: 'model.fbx')
         AZStd::string meshAssetFileName;
         AzFramework::StringFunc::Path::GetFileName(meshAssetPath.c_str(), meshAssetFileName);
 
-        return AZ::RPI::SkinMetaAsset::ConstructAssetId(meshAssetId, meshAssetFileName);
+        // Strip off the source extension as well, to bring us down to the base asset name (ex: 'model')
+        AZStd::string baseMeshAssetFileName;
+        AzFramework::StringFunc::Path::GetFileName(meshAssetFileName.c_str(), baseMeshAssetFileName);
+
+        return AZ::RPI::SkinMetaAsset::ConstructAssetId(meshAssetId, baseMeshAssetFileName);
     }
 
     bool Actor::DoesSkinMetaAssetExist(const AZ::Data::AssetId& meshAssetId)
@@ -1262,12 +1269,19 @@ namespace EMotionFX
 
     AZ::Data::AssetId Actor::ConstructMorphTargetMetaAssetId(const AZ::Data::AssetId& meshAssetId)
     {
+        // Get the full mesh asset path (ex: 'objects/model.fbx.azmodel')
         AZStd::string meshAssetPath;
         AZ::Data::AssetCatalogRequestBus::BroadcastResult(meshAssetPath, &AZ::Data::AssetCatalogRequests::GetAssetPathById, meshAssetId);
+
+        // Get just the filename, stripping off the path and the extension (ex: 'model.fbx')
         AZStd::string meshAssetFileName;
         AzFramework::StringFunc::Path::GetFileName(meshAssetPath.c_str(), meshAssetFileName);
 
-        return AZ::RPI::MorphTargetMetaAsset::ConstructAssetId(meshAssetId, meshAssetFileName);
+        // Strip off the source extension as well, to bring us down to the base asset name (ex: 'model')
+        AZStd::string baseMeshAssetFileName;
+        AzFramework::StringFunc::Path::GetFileName(meshAssetFileName.c_str(), baseMeshAssetFileName);
+
+        return AZ::RPI::MorphTargetMetaAsset::ConstructAssetId(meshAssetId, baseMeshAssetFileName);
     }
 
     bool Actor::DoesMorphTargetMetaAssetExist(const AZ::Data::AssetId& meshAssetId)
@@ -1365,14 +1379,16 @@ namespace EMotionFX
         // Do not release the mesh assets. We need the mesh data to initialize future instances of the render actor instances.
     }
 
-    // update the static AABB (very heavy as it has to create an actor instance, update mesh deformers, calculate the mesh based bounds etc)
     void Actor::UpdateStaticAabb()
     {
-        ActorInstance* actorInstance = ActorInstance::Create(this, nullptr, m_threadIndex);
-        actorInstance->UpdateMeshDeformers(0.0f);
-        actorInstance->UpdateStaticBasedAabbDimensions();
-        actorInstance->GetStaticBasedAabb(&m_staticAabb);
-        actorInstance->Destroy();
+        if (m_meshAsset && m_meshAsset.IsReady())
+        {
+            SetStaticAabb(m_meshAsset->GetAabb());
+        }
+        else
+        {
+            AZ_Error("Actor", false, "Actor %s is attempting to set the static aabb, but the model asset is not ready yet", m_name.c_str());
+        }
     }
 
 
@@ -1460,7 +1476,7 @@ namespace EMotionFX
             Transform localTransform = pose.GetLocalSpaceTransform(motionSource);
             Transform orgDelta = Transform::CreateIdentity();
             orgDelta.m_position.Set(1.1f, 2.2f, 3.3f);
-            orgDelta.m_rotation = MCore::AzEulerAnglesToAzQuat(0.1f, 0.2f, 0.3f);
+            orgDelta.m_rotation = AZ::Quaternion::CreateFromEulerRadiansZYX(AZ::Vector3(0.1f, 0.2f, 0.3f));
             Transform delta = orgDelta;
             delta.Multiply(localTransform);
             pose.SetLocalSpaceTransform(motionSource, delta);

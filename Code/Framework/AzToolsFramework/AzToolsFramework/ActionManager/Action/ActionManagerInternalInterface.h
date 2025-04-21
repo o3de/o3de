@@ -8,9 +8,8 @@
 
 #pragma once
 
-#include <AzCore/Interface/Interface.h>
-#include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/std/function/function_base.h>
+#include <AzCore/Outcome/Outcome.h>
+#include <AzCore/std/string/string.h>
 
 class QAction;
 class QWidget;

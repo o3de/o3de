@@ -7,8 +7,9 @@
  */
 
 // AZ
+#include <AzCore/IO/Path/Path.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
-#include <AzFramework/StringFunc/StringFunc.h>
 
 // Graph Model
 #include <GraphModel/Model/Graph.h>
@@ -20,7 +21,7 @@
 
 namespace GraphModel
 {
- 
+
     void ModuleNode::Reflect(AZ::ReflectContext* context)
     {
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
@@ -33,16 +34,14 @@ namespace GraphModel
                 ;
         }
     }
-    
+
     ModuleNode::ModuleNode(GraphPtr ownerGraph, AZ::Uuid moduleGraphFileId, AZStd::string_view moduleGraphFileName)
         : Node(ownerGraph)
         , m_moduleGraphFileId(moduleGraphFileId)
     {
         // The module file name (without extension) is the node title
-        if (!AzFramework::StringFunc::Path::GetFileName(moduleGraphFileName.data(), m_nodeTitle))
-        {
-            AZ_Error(ownerGraph->GetSystemName(), false, "Could not get node name from file string [%s]", moduleGraphFileName.data());
-        }
+        m_nodeTitle = AZ::IO::PathView(moduleGraphFileName).Filename().String();
+        AZ_Error(ownerGraph->GetSystemName(), !m_nodeTitle.empty(), "Could not get node name from file string [%.*s]", AZ_STRING_ARG(moduleGraphFileName));
 
         LoadModuleGraph(ownerGraph->GetContext()->GetModuleGraphManager());
 
@@ -87,7 +86,7 @@ namespace GraphModel
                     RegisterSlot(AZStd::make_shared<GraphModel::SlotDefinition>(
                         GraphModel::SlotDirection::Input,
                         GraphModel::SlotType::Data,
-                        inputNode->GetName(), 
+                        inputNode->GetName(),
                         inputNode->GetDisplayName(),
                         inputNode->GetDescription(),
                         GraphModel::DataTypeList{ inputNode->GetNodeDataType() },

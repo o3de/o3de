@@ -15,7 +15,6 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/API/EditorEntityAPI.h>
 #include <AzToolsFramework/Application/EditorEntityManager.h>
-#include <AzToolsFramework/Commands/PreemptiveUndoCache.h>
 #include <AzToolsFramework/Prefab/PrefabPublicNotificationBus.h>
 
 #pragma once
@@ -37,6 +36,8 @@ namespace AzToolsFramework
         AZ_CLASS_ALLOCATOR(ToolsApplication, AZ::SystemAllocator);
 
         ToolsApplication(int* argc = nullptr, char*** argv = nullptr);
+        explicit ToolsApplication(AZ::ComponentApplicationSettings componentAppSettings);
+        ToolsApplication(int* argc, char*** argv, AZ::ComponentApplicationSettings componentAppSettings);
         ~ToolsApplication();
 
         void Stop() override;
@@ -84,6 +85,9 @@ namespace AzToolsFramework
         void AddDirtyEntity(AZ::EntityId entityId) override;
         int RemoveDirtyEntity(AZ::EntityId entityId) override;
         void ClearDirtyEntities() override;
+        void AddIgnoredEntity(AZ::EntityId entityId) override;
+        int RemoveIgnoredEntity(AZ::EntityId entityId) override;
+        void ClearIgnoredEntities() override;
         bool IsDuringUndoRedo() override { return m_isDuringUndoRedo; }
         void UndoPressed() override;
         void RedoPressed() override;
@@ -91,7 +95,7 @@ namespace AzToolsFramework
         void FlushRedo() override;
         UndoSystem::URSequencePoint* BeginUndoBatch(const char* label) override;
         UndoSystem::URSequencePoint* ResumeUndoBatch(UndoSystem::URSequencePoint* token, const char* label) override;
-        void EndUndoBatch() override;
+        bool EndUndoBatch() override;
 
         bool IsEntityEditable(AZ::EntityId entityId) override;
         bool AreEntitiesEditable(const EntityIdList& entityIds) override;
@@ -110,7 +114,6 @@ namespace AzToolsFramework
 
         UndoSystem::UndoStack* GetUndoStack() override { return m_undoStack; }
         UndoSystem::URSequencePoint* GetCurrentUndoBatch() override { return m_currentBatchUndo; }
-        PreemptiveUndoCache* GetUndoCache() override { return &m_undoCache; }
 
         EntityIdSet GatherEntitiesAndAllDescendents(const EntityIdList& inputEntities) override;
 
@@ -123,18 +126,6 @@ namespace AzToolsFramework
         void DeleteEntities(const EntityIdList& entities) override;
         void DeleteEntityAndAllDescendants(AZ::EntityId entityId) override;
         void DeleteEntitiesAndAllDescendants(const EntityIdList& entities) override;
-
-        bool DetachEntities(const AZStd::vector<AZ::EntityId>& entitiesToDetach, AZStd::vector<AZStd::pair<AZ::EntityId, AZ::SliceComponent::EntityRestoreInfo>>& restoreInfos) override;
-
-        /**
-        * Detaches the supplied subslices from their owning slice instance
-        * @param subsliceRootList A list of SliceInstanceAddresses paired with a mapping from the sub slices asset entityId's to the owing slice instance's live entityIds
-                                  See SliceComponent::GetMappingBetweenSubsliceAndSourceInstanceEntityIds for a helper to acquire this mapping
-        * @param restoreInfos A list of EntityRestoreInfo's to be filled with information on how to restore the entities in the subslices back to their original state before this operation
-        * @return Returns true on operation success, false otherwise
-        */
-        bool DetachSubsliceInstances(const AZ::SliceComponent::SliceInstanceEntityIdRemapList& subsliceRootList,
-            AZStd::vector<AZStd::pair<AZ::EntityId, AZ::SliceComponent::EntityRestoreInfo>>& restoreInfos) override;
 
         bool FindCommonRoot(const EntityIdSet& entitiesToBeChecked, AZ::EntityId& commonRootEntityId, EntityIdList* topLevelEntities = nullptr) override;
         bool FindCommonRootInactive(const EntityList& entitiesToBeChecked, AZ::EntityId& commonRootEntityId, EntityList* topLevelEntities = nullptr) override;
@@ -187,7 +178,7 @@ namespace AzToolsFramework
         UndoSystem::UndoStack*              m_undoStack;
         UndoSystem::URSequencePoint*        m_currentBatchUndo;
         AZStd::unordered_set<AZ::EntityId>  m_dirtyEntities;
-        PreemptiveUndoCache                 m_undoCache;
+        AZStd::unordered_set<AZ::EntityId>  m_ignoredEntities;
         bool                                m_isDuringUndoRedo;
         bool                                m_isInIsolationMode;
         EntityIdSet                         m_isolatedEntityIdSet;

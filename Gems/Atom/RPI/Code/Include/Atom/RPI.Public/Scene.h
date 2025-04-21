@@ -16,6 +16,7 @@
 #include <Atom/RHI.Reflect/ShaderResourceGroupLayoutDescriptor.h>
 #include <Atom/RPI.Reflect/System/SceneDescriptor.h>
 #include <Atom/RPI.Public/Base.h>
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/FeatureProcessor.h>
 #include <Atom/RPI.Public/FeatureProcessorFactory.h>
 #include <Atom/RPI.Public/Pass/Pass.h>
@@ -55,8 +56,7 @@ namespace AZ
         // Callback function to modify values of a ShaderResourceGroup
         using ShaderResourceGroupCallback = AZStd::function<void(ShaderResourceGroup*)>;
 
-        class Scene final
-            : public SceneRequestBus::Handler
+        class ATOM_RPI_PUBLIC_API Scene final : public SceneRequestBus::Handler
         {
             friend class FeatureProcessorFactory;
             friend class RPISystem;
@@ -165,9 +165,9 @@ namespace AZ
 
             bool HasOutputForPipelineState(RHI::DrawListTag drawListTag) const;
 
-            AzFramework::IVisibilityScene* GetVisibilityScene() const { return m_visibilityScene; }
+            AzFramework::IVisibilityScene* GetVisibilityScene() const;
 
-            AZ::RPI::CullingScene* GetCullingScene() const { return m_cullingScene; }
+            AZ::RPI::CullingScene* GetCullingScene() const;
 
             RenderPipelinePtr FindRenderPipelineForWindow(AzFramework::NativeWindowHandle windowHandle, ViewType viewType = ViewType::Default);
 
@@ -186,14 +186,13 @@ namespace AZ
 
             RHI::TagBitRegistry<uint32_t>& GetViewTagBitRegistry();
             
-            RHI::Ptr<RHI::DrawFilterTagRegistry> GetDrawFilterTagRegistry() const
-            {
-                return m_drawFilterTagRegistry;
-            }
+            RHI::Ptr<RHI::DrawFilterTagRegistry> GetDrawFilterTagRegistry() const;
+
+            uint16_t GetActiveRenderPipelines() const;
 
         protected:
-            // SceneFinder overrides...
-            void OnSceneNotifictaionHandlerConnected(SceneNotification* handler);
+            // SceneRequestBus::Handler overrides...
+            void OnSceneNotificationHandlerConnected(SceneNotification* handler) override;
             void PipelineStateLookupNeedsRebuild() override;
 
             // Cpu simulation which runs all active FeatureProcessor Simulate() functions.
@@ -213,7 +212,6 @@ namespace AZ
             // Update and compile scene and view srgs
             // This is called after PassSystem's FramePrepare so passes can still modify view srgs in its FramePrepareIntenal function before they are submitted to command list
             void UpdateSrgs();
-
 
         private:
             Scene();
@@ -300,6 +298,7 @@ namespace AZ
             float m_simulationTime = 0.0;
             RHI::ShaderInputNameIndex m_prevTimeInputIndex = "m_prevTime";
             float m_prevSimulationTime = 0.0;
+            uint16_t m_numActiveRenderPipelines = 0;
         };
 
         // --- Template functions ---

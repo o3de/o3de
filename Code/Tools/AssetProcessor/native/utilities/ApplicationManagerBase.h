@@ -19,6 +19,7 @@
 #include <native/utilities/AssetBuilderInfo.h>
 #include <native/utilities/BuilderManager.h>
 #include <native/utilities/UuidManager.h>
+#include <QtGui/qwindowdefs.h>
 #endif
 
 namespace AzToolsFramework
@@ -63,7 +64,9 @@ class ApplicationManagerBase
 {
     Q_OBJECT
 public:
-    explicit ApplicationManagerBase(int* argc, char*** argv, QObject* parent = 0);
+    ApplicationManagerBase(int* argc, char*** argv, QObject* parent = nullptr);
+    ApplicationManagerBase(int* argc, char*** argv, AZ::ComponentApplicationSettings componentAppSettings);
+    ApplicationManagerBase(int* argc, char*** argv, QObject* parent, AZ::ComponentApplicationSettings componentAppSettings);
     virtual ~ApplicationManagerBase();
     ApplicationManager::BeforeRunStatus BeforeRun() override;
     void Destroy() override;
@@ -136,6 +139,8 @@ public:
         const char* m_switch;
         const char* m_helpText;
     };
+
+    virtual WId GetWindowId() const;
 
 Q_SIGNALS:
     void CheckAssetProcessorManagerIdleState();

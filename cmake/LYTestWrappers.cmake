@@ -66,14 +66,14 @@ function(ly_strip_target_namespace)
     set(${ly_strip_target_namespace_OUTPUT_VARIABLE} ${stripped_target} PARENT_SCOPE)
 endfunction()
 
-#! ly_add_test: Adds a new RUN_TEST using for the specified target using the supplied command
+#! ly_add_test: Adds a new RUN_TEST for the specified target using the supplied command
 #
-# \arg:NAME - Name to for the test run target
+# \arg:NAME - Name of the test run target
 # \arg:PARENT_NAME(optional) - Name of the parent test run target (if this is a subsequent call to specify a suite)
 # \arg:TEST_REQUIRES(optional) - List of system resources that are required to run this test.
 #      Only available option is "gpu"
 # \arg:TEST_SUITE(optional) - "smoke" or "periodic" or "benchmark" or "sandbox" or "awsi" - prevents the test from running normally
-#      and instead places it a special suite of tests that only run when requested.
+#      and instead places it in a special suite of tests that only run when requested.
 #      Otherwise, do not specify a TEST_SUITE value and the default ("main") will apply.
 #      "smoke" is tiny, quick tests of fundamental operation (tests with no suite marker will also execute here in CI)
 #      "periodic" is low-priority verification, which should not block code submission
@@ -362,8 +362,8 @@ endfunction()
 # \arg:TIMEOUT (optional) The timeout in seconds for the module. If not set, will have its timeout set by ly_add_test to the default timeout.
 # \arg:EXCLUDE_TEST_RUN_TARGET_FROM_IDE(bool) - If set the test run target will be not be shown in the IDE
 function(ly_add_googletest)
-    if(NOT PAL_TRAIT_BUILD_TESTS_SUPPORTED)
-        message(FATAL_ERROR "Platform does not support test targets")
+    if(NOT PAL_TRAIT_TEST_GOOGLE_TEST_SUPPORTED)
+        message(FATAL_ERROR "Googletest unavailable on this platform.  check PAL_TRAIT_TEST_GOOGLE_TEST_SUPPORTED before using ly_add_googletest")
     endif()
 
     set(one_value_args NAME TARGET TEST_SUITE)
@@ -380,11 +380,6 @@ function(ly_add_googletest)
     # AzTestRunner modules only supports google test libraries, regardless of whether or not
     # google test suites are supported
     set_property(GLOBAL APPEND PROPERTY LY_AZTESTRUNNER_TEST_MODULES "${target_name}")
-
-    if(NOT PAL_TRAIT_TEST_GOOGLE_TEST_SUPPORTED)
-        return()
-    endif()
-
 
     if (ly_add_googletest_TEST_SUITE AND NOT ly_add_googletest_TEST_SUITE STREQUAL "main")
         # if a suite is specified, we filter to only accept things which match that suite (in c++)
@@ -456,10 +451,11 @@ endfunction()
 #      NOTE: Not used if a custom TEST_COMMAND is supplied
 # \arg:TIMEOUT (optional) The timeout in seconds for the module. If not set, will have its timeout set by ly_add_test to the default timeout.
 function(ly_add_googlebenchmark)
-    if(NOT PAL_TRAIT_BUILD_TESTS_SUPPORTED)
-        message(FATAL_ERROR "Platform does not support test targets")
-    endif()
     if(NOT PAL_TRAIT_TEST_GOOGLE_BENCHMARK_SUPPORTED)
+        # Special case for benchmarks.  Most of the time, the benchmark is inside an existing module
+        # that also contains non-benchmark googletest tests.  In this case, its easier to just early out and ignore
+        # the request to add a benchmark rather than to FATAL ERROR which would require a separate if check for every
+        # module that contains benchmarks.
         return()
     endif()
 

@@ -14,7 +14,10 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
 {
     PrefabDocument::PrefabDocument(AZStd::string name)
         : m_name(AZStd::move(name))
-        , m_instance(AZStd::make_unique<AzToolsFramework::Prefab::Instance>(AzToolsFramework::Prefab::EntityIdInstanceRelationship::OneToMany))
+        , m_instance(AZStd::make_unique<AzToolsFramework::Prefab::Instance>("DummyAlias", // Note: Use a 'DummyAlias' here to prevent generating a new
+                                                                                          // Instance Alias when new instances are being created for the 
+                                                                                          // same prefab.
+                                                                            AzToolsFramework::Prefab::EntityIdInstanceRelationship::OneToMany))
     {
         m_instance->SetTemplateSourcePath(AZ::IO::Path("InMemory") / m_name);
     }

@@ -123,19 +123,26 @@ namespace AzFramework
         static void Reflect(AZ::ReflectContext* context);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
-        // Foward declare the internal Implementation class so it can be passed into the constructor
+        // Foward declare the internal Implementation class so its unique ptr can be referenced from 
+        // the ImplementationFactory
         class Implementation;
 
         ////////////////////////////////////////////////////////////////////////////////////////////
-        //! Alias for the function type used to create a custom implementation for this input device
-        using ImplementationFactory = Implementation*(InputDeviceMouse&);
+        //! The factory class to create a custom implementation for this input device
+        class ImplementationFactory
+        {
+        public:
+            AZ_TYPE_INFO(ImplementationFactory, "{1A44CE87-088A-4A43-9EDA-350F3E4F21FF}");
+            virtual ~ImplementationFactory() = default;
+            virtual AZStd::unique_ptr<Implementation> Create(InputDeviceMouse& inputDevice) = 0;
+        };
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Constructor
         //! \param[in] inputDeviceId Optional override of the default input device id
         //! \param[in] implementationFactory Optional override of the default Implementation::Create
         explicit InputDeviceMouse(const InputDeviceId& inputDeviceId = Id,
-                                  ImplementationFactory implementationFactory = &Implementation::Create);
+                                  ImplementationFactory* implementationFactory = AZ::Interface<ImplementationFactory>::Get());
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Disable copying
@@ -181,6 +188,11 @@ namespace AzFramework
         //! Set the sample rate for raw mouse movement events
         //! \param[in] sampleRateHertz The raw movement sample rate in Hertz (cycles per second)
         void SetRawMovementSampleRate(AZ::u32 sampleRateHertz);
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        //! Set if the cursor should be visible or hidden
+        //! \param[in] captureCursor True if the cursor should be visible, false if it should be hidden
+        void SetCaptureCursor(bool captureCursor);
 
     protected:
         ////////////////////////////////////////////////////////////////////////////////////////////
@@ -266,6 +278,11 @@ namespace AzFramework
             //! \param[in] sampleRateHertz The raw movement sample rate in Hertz (cycles per second)
             void SetRawMovementSampleRate(AZ::u32 sampleRateHertz);
 
+            ////////////////////////////////////////////////////////////////////////////////////////////
+            //! Set if the cursor should be visible or hidden
+            //! \param[in] captureCursor True if the cursor should be visible, false if it should be hidden
+            void SetCaptureCursor(bool captureCursor);
+
         protected:
             ////////////////////////////////////////////////////////////////////////////////////////
             //! Queue raw button events to be processed in the next call to ProcessRawEventQueues.
@@ -295,6 +312,8 @@ namespace AzFramework
             ///@{
             using RawButtonEventQueueByIdMap = AZStd::unordered_map<InputChannelId, AZStd::vector<bool>>;
             using RawMovementEventQueueByIdMap = AZStd::unordered_map<InputChannelId, AZStd::vector<float>>;
+            using LastSampleTimeArray = AZStd::array<AZStd::chrono::steady_clock::time_point, InputDeviceMouse::Movement::All.size()>;
+
             ///@}
 
         private:
@@ -304,7 +323,9 @@ namespace AzFramework
             AZStd::sys_time_t            m_rawMovementSampleRate;      //!< Raw movement sample rate
             RawButtonEventQueueByIdMap   m_rawButtonEventQueuesById;   //!< Raw button events by id
             RawMovementEventQueueByIdMap m_rawMovementEventQueuesById; //!< Raw movement events by id
-            AZStd::chrono::steady_clock::time_point m_timeOfLastRawMovementSample; //!< Time of the last raw movement sample
+            LastSampleTimeArray          m_timeOfLastRawMovementSample;  //!< Time of the last raw movement sample
+        protected:
+            bool                         m_captureCursor;              //!< Should the cursor be captured?
         };
 
         ////////////////////////////////////////////////////////////////////////////////////////////

@@ -6,6 +6,8 @@
  *
  */
 
+#pragma once
+
 #include <Editor/Core/QtEditorApplication.h>
 
 namespace Editor

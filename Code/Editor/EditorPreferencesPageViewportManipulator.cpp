@@ -10,6 +10,8 @@
 
 #include "EditorPreferencesPageViewportManipulator.h"
 
+#include <AzCore/Serialization/EditContext.h>
+
 #include <AzToolsFramework/Viewport/ViewportSettings.h>
 
 // Editor
@@ -101,7 +103,7 @@ void CEditorPreferencesPage_ViewportManipulator::Reflect(AZ::SerializeContext& s
         editContext
             ->Class<CEditorPreferencesPage_ViewportManipulator>("Manipulator Viewport Preferences", "Manipulator Viewport Preferences")
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-            ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC("PropertyVisibility_ShowChildrenOnly", 0xef428f20))
+            ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC_CE("PropertyVisibility_ShowChildrenOnly"))
             ->DataElement(
                 AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_ViewportManipulator::m_manipulators, "Manipulators", "Manipulators");
     }

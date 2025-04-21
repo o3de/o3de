@@ -6,6 +6,8 @@
  *
  */
 
+#pragma once
+
 #include <TestImpactFramework/TestImpactRepoPath.h>
 #include <TestImpactFramework/TestImpactTestSequence.h>
 #include <TestImpactFramework/TestImpactClientSequenceReport.h>
@@ -13,10 +15,33 @@
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/containers/vector.h>
 
-#pragma once
-
 namespace TestImpact
 {
+    //! Simple helper class for tracking basic timing information.
+    class Timer
+    {
+    public:
+        Timer();
+
+        //! Returns the time point that the timer was instantiated.
+        AZStd::chrono::steady_clock::time_point GetStartTimePoint() const;
+
+        //! Returns the time point that the timer was instantiated relative to the specified starting time point.
+        AZStd::chrono::steady_clock::time_point GetStartTimePointRelative(const Timer& start) const;
+
+        //! Returns the time elapsed (in milliseconds) since the timer was instantiated.
+        AZStd::chrono::milliseconds GetElapsedMs() const;
+
+        //! Returns the current time point relative to the time point the timer was instantiated.
+        AZStd::chrono::steady_clock::time_point GetElapsedTimepoint() const;
+
+        //! Resets the timer start point to now.
+        void ResetStartTimePoint();
+
+    private:
+        AZStd::chrono::steady_clock::time_point m_startTime;
+    };
+
     //! Attempts to read the contents of the specified file into a string.
     //! @tparam ExceptionType The exception type to throw upon failure.
     //! @param path The path to the file to read the contents of.
@@ -124,9 +149,6 @@ namespace TestImpact
 
     //! User-friendly names for the dynamic dependency map policy types.
     AZStd::string DynamicDependencyMapPolicyAsString(Policy::DynamicDependencyMap dynamicDependencyMapPolicy);
-
-    //! User-friendly names for the test sharding policy types.
-    AZStd::string TestShardingPolicyAsString(Policy::TestSharding testShardingPolicy);
 
     //! User-friendly names for the target output capture policy types.
     AZStd::string TargetOutputCapturePolicyAsString(Policy::TargetOutputCapture targetOutputCapturePolicy);

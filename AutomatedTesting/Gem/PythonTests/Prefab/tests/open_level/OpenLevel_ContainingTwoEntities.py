@@ -27,6 +27,7 @@ def OpenLevel_ContainingTwoEntities():
 
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
+    from consts.physics import PHYSX_MESH_COLLIDER
 
     import editor_python_test_tools.hydra_editor_utils as hydra
 
@@ -63,7 +64,7 @@ def OpenLevel_ContainingTwoEntities():
     pxentity = find_entity("EntityWithPxCollider")
     Report.result(Tests.find_pxentity, pxentity.IsValid())
 
-    pxcollider_id = hydra.get_component_type_id("PhysX Mesh Collider")
+    pxcollider_id = hydra.get_component_type_id(PHYSX_MESH_COLLIDER)
     hasComponent = azlmbr.editor.EditorComponentAPIBus(azlmbr.bus.Broadcast, 'HasComponentOfType', pxentity, pxcollider_id)
     Report.result(Tests.pxentity_component, hasComponent)
 

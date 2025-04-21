@@ -26,10 +26,12 @@
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Public/Pass/PassFactory.h>
+#include <Atom/RPI.Public/PerformanceCollectionNotificationBus.h>
 
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/Device.h>
 #include <Atom/RHI.Reflect/PlatformLimitsDescriptor.h>
+#include <Atom/RHI/RHIUtils.h>
 #include <Atom/RHI/XRRenderingInterface.h>
 
 #include <AzCore/Interface/Interface.h>
@@ -75,24 +77,15 @@ namespace AZ
             GpuQuerySystemDescriptor::Reflect(context);
 
             PipelineStatisticsResult::Reflect(context);
+
+            PerformaceCollectionNotification::Reflect(context);
         }
 
         void RPISystem::Initialize(const RPISystemDescriptor& rpiSystemDescriptor)
         {
-            //If xr system is registered with RPI init xr instance
-            if (m_xrSystem)
-            {
-                AZ::RHI::ResultCode resultCode = m_xrSystem->InitInstance();
-                // Fail result code can happen if no compatible device is attached. UnRegister xr system if that happens
-                if (resultCode == AZ::RHI::ResultCode::Fail)
-                {
-                    UnregisterXRSystem();
-                }
-                AZ_Error("RPISystem", resultCode == AZ::RHI::ResultCode::Success, "Unable to initialize XR System. Possible reasons could be no xr compatible device found or Link mode not enabled");
-            }
-
-            //Init RHI device
-            m_rhiSystem.InitDevice();
+            // Init RHI device(s)
+            auto commandLineMultipleDevicesValue{ RHI::GetCommandLineValue("device-count") };
+            m_rhiSystem.InitDevices((commandLineMultipleDevicesValue != "") ? AZStd::stoi(commandLineMultipleDevicesValue) : 1);
 
             // Gather asset handlers from sub-systems.
             ImageSystem::GetAssetHandlers(m_assetHandlers);
@@ -119,10 +112,6 @@ namespace AZ
             Debug::TraceMessageBus::Handler::BusConnect();
 #endif
             m_descriptor = rpiSystemDescriptor;
-
-            // set the default multisample state to MSAA 4x
-            // the default render pipeline may override this when it is loaded
-            m_multisampleState.m_samples = 4;
         }
 
         void RPISystem::Shutdown()
@@ -220,6 +209,11 @@ namespace AZ
             }
             return nullptr;
         }
+
+        uint32_t RPISystem::GetNumScenes() const
+        {
+            return aznumeric_cast<uint32_t>(m_scenes.size());
+        }
         
         ScenePtr RPISystem::GetDefaultScene() const
         {
@@ -297,6 +291,34 @@ namespace AZ
             return AZ::TimeUsToSeconds(currentSimulationTimeUs);
         }
 
+        void RPISystem::InitXRSystem()
+        {
+            // The creation of an XR Session requires an asset that defines
+            // the action bindings for the application. This means the asset catalog
+            // must be available before creating the XR Session.
+            AZ_Assert(m_systemAssetsInitialized, "IntXRSystem should not be called before the asset system is ready.");
+
+            if (!m_xrSystem)
+            {
+                return;
+            }
+
+            auto xrRender = m_xrSystem->GetRHIXRRenderingInterface();
+            if (!xrRender)
+            {
+                return;
+            }
+
+            RHI::Ptr<RHI::XRDeviceDescriptor> xrDescriptor = m_rhiSystem.GetDevice()->BuildXRDescriptor();
+            [[maybe_unused]] auto result = xrRender->CreateDevice(xrDescriptor.get());
+            AZ_Error("RPISystem", result == RHI::ResultCode::Success, "Failed to initialize XR device");
+            AZ::RHI::XRSessionDescriptor sessionDescriptor;
+            result = xrRender->CreateSession(&sessionDescriptor);
+            AZ_Error("RPISystem", result == RHI::ResultCode::Success, "Failed to initialize XR session");
+            result = xrRender->CreateSwapChain();
+            AZ_Error("RPISystem", result == RHI::ResultCode::Success, "Failed to initialize XR swapchain");
+        }
+
         void RPISystem::RenderTick()
         {
             if (!m_systemAssetsInitialized || IsNullRenderer())
@@ -316,6 +338,14 @@ namespace AZ
             {
                 scenePtr->PrepareRender(m_prepareRenderJobPolicy, m_currentSimulationTime);
             }
+
+            //Collect all the active pipelines running in this frame.
+            uint16_t numActiveRenderPipelines = 0;
+            for (auto& scenePtr : m_scenes)
+            {
+                numActiveRenderPipelines += scenePtr->GetActiveRenderPipelines();
+            }
+            m_rhiSystem.SetNumActiveRenderPipelines(numActiveRenderPipelines);
 
             m_rhiSystem.FrameUpdate(
                 [this](RHI::FrameGraphBuilder& frameGraphBuilder)
@@ -403,8 +433,19 @@ namespace AZ
                     m_descriptor.m_commonSrgsShaderAssetPath.c_str());
                 return;
             }
+            RHI::Ptr<RHI::ShaderResourceGroupLayout> bindlessSrgLayout = m_commonShaderAssetForSrgs->FindShaderResourceGroupLayout(SrgBindingSlot::Bindless);
+            if (!bindlessSrgLayout)
+            {
+                AZ_Error(
+                    "RPISystem",
+                    false,
+                    "Failed to find BindlessSrg by slot=<%u> from shader asset at path <%s>",
+                    SrgBindingSlot::Bindless,
+                    m_descriptor.m_commonSrgsShaderAssetPath.c_str());
+                return;
+            }
 
-            m_rhiSystem.Init();
+            m_rhiSystem.Init(bindlessSrgLayout);
             m_imageSystem.Init(m_descriptor.m_imageSystemDescriptor);
             m_bufferSystem.Init();
             m_dynamicDraw.Init(m_descriptor.m_dynamicDrawSystemDescriptor);
@@ -413,6 +454,10 @@ namespace AZ
 
             m_systemAssetsInitialized = true;
             AZ_TracePrintf("RPI system", "System assets initialized\n");
+
+            // Now that the asset system is up and running, we can safely initialize
+            // the XR System and the XR Session.
+            InitXRSystem();
         }
 
         bool RPISystem::IsInitialized() const
@@ -490,14 +535,20 @@ namespace AZ
         void RPISystem::RegisterXRSystem(XRRenderingInterface* xrSystemInterface)
         { 
             AZ_Assert(!m_xrSystem, "XR System is already registered");
-            m_xrSystem = xrSystemInterface;
-            m_rhiSystem.RegisterXRSystem(xrSystemInterface->GetRHIXRRenderingInterface());
+            if (m_rhiSystem.RegisterXRSystem(xrSystemInterface->GetRHIXRRenderingInterface()))
+            {
+                m_xrSystem = xrSystemInterface;
+            }
         }
 
         void RPISystem::UnregisterXRSystem()
         {
-            m_rhiSystem.UnregisterXRSystem();
-            m_xrSystem = nullptr;
+            AZ_Assert(m_xrSystem, "XR System is not registered");
+            if (m_xrSystem)
+            {
+                m_rhiSystem.UnregisterXRSystem();
+                m_xrSystem = nullptr;
+            }
         }
 
         XRRenderingInterface* RPISystem::GetXRSystem() const

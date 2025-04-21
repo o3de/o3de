@@ -11,7 +11,6 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Script/lua/lua.h>
 #include <AzCore/Script/ScriptProperty.h>
-#include <AzCore/Serialization/SerializeContext.h>
 
 namespace AZ
 {
@@ -105,7 +104,7 @@ namespace AZ
     // ScriptProperty
     ///////////////////
 
-    bool ScriptProperty::VersionConverter(SerializeContext& context, SerializeContext::DataElementNode& classElement)
+    static bool ScriptPropertyVersionConverter(SerializeContext& context, SerializeContext::DataElementNode& classElement)
     {
         if (classElement.GetVersion() == 1)
         {
@@ -113,7 +112,7 @@ namespace AZ
             for (int i = 0; i < classElement.GetNumSubElements(); ++i)
             {
                 AZ::SerializeContext::DataElementNode& elementNode = classElement.GetSubElement(i);
-                if (elementNode.GetName() == AZ_CRC("name", 0x5e237e06))
+                if (elementNode.GetName() == AZ_CRC_CE("name"))
                 {
                     AZStd::string name;
                     if (elementNode.GetData(name))
@@ -136,7 +135,7 @@ namespace AZ
         if (serializeContext)
         {
             serializeContext->Class<AZ::ScriptProperty>()->
-                Version(2, AZ::ScriptProperty::VersionConverter)->
+                Version(2, &AZ::ScriptPropertyVersionConverter)->
                     PersistentId([](const void* instance) -> AZ::u64 { return reinterpret_cast<const AZ::ScriptProperty*>(instance)->m_id; })->
                     Field("id", &AZ::ScriptProperty::m_id)->
                     Field("name", &AZ::ScriptProperty::m_name);
@@ -837,7 +836,7 @@ namespace AZ
         return AZ::SerializeGenericTypeInfo< AZStd::vector<bool> >::GetClassTypeId();
     }
 
-    bool ScriptPropertyBooleanArray::DoesTypeMatch(AZ::ScriptDataContext& context, int valueIndex) const 
+    bool ScriptPropertyBooleanArray::DoesTypeMatch(AZ::ScriptDataContext& context, int valueIndex) const
     {
         return IsBooleanArray(context,valueIndex);
     }
@@ -963,7 +962,7 @@ namespace AZ
         return AZ::SerializeGenericTypeInfo< AZStd::vector<double> >::GetClassTypeId();
     }
 
-    bool ScriptPropertyNumberArray::DoesTypeMatch(AZ::ScriptDataContext& context, int valueIndex) const 
+    bool ScriptPropertyNumberArray::DoesTypeMatch(AZ::ScriptDataContext& context, int valueIndex) const
     {
         return IsNumberArray(context,valueIndex);
     }
@@ -1089,7 +1088,7 @@ namespace AZ
         return AZ::SerializeGenericTypeInfo< AZStd::vector<AZStd::string> >::GetClassTypeId();
     }
 
-    bool ScriptPropertyStringArray::DoesTypeMatch(AZ::ScriptDataContext& context, int valueIndex) const 
+    bool ScriptPropertyStringArray::DoesTypeMatch(AZ::ScriptDataContext& context, int valueIndex) const
     {
         return IsStringArray(context,valueIndex);
     }
@@ -1120,6 +1119,9 @@ namespace AZ
     ////////////////////////////////////
     // ScriptPropertyGenericClassArray
     ////////////////////////////////////
+    // The GenericClassArray version converter is defined later in this file
+    static bool ScriptPropertyGenericClassArrayVersionConverter(AZ::SerializeContext& context,
+        AZ::SerializeContext::DataElementNode& classElement);
     void ScriptPropertyGenericClassArray::Reflect(AZ::ReflectContext* reflection)
     {
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(reflection);
@@ -1127,7 +1129,7 @@ namespace AZ
         if (serializeContext)
         {
             serializeContext->Class<ScriptPropertyGenericClassArray, ScriptProperty>()->
-                Version(2, &VersionConverter)->
+                Version(2, &ScriptPropertyGenericClassArrayVersionConverter)->
                 Field("values", &ScriptPropertyGenericClassArray::m_values)->
                 Field("elementType", &ScriptPropertyGenericClassArray::m_elementTypeId);
         }
@@ -1257,7 +1259,7 @@ namespace AZ
         m_elementTypeId = elementTypeId;
     }
 
-    bool ScriptPropertyGenericClassArray::DoesTypeMatch(AZ::ScriptDataContext& context, int valueIndex) const 
+    bool ScriptPropertyGenericClassArray::DoesTypeMatch(AZ::ScriptDataContext& context, int valueIndex) const
     {
         return IsGenericClassArray(context,valueIndex);
     }
@@ -1309,7 +1311,7 @@ namespace AZ
         }
     }
 
-    bool ScriptPropertyGenericClassArray::VersionConverter(AZ::SerializeContext& context,
+    bool ScriptPropertyGenericClassArrayVersionConverter(AZ::SerializeContext& context,
         AZ::SerializeContext::DataElementNode& classElement)
     {
 
@@ -1319,7 +1321,7 @@ namespace AZ
             for (int classIdx = 0; classIdx < classElement.GetNumSubElements(); ++classIdx)
             {
                 AZ::SerializeContext::DataElementNode& elementNode = classElement.GetSubElement(classIdx);
-                if (elementNode.GetName() == AZ_CRC("values", 0x3aa74ce6))
+                if (elementNode.GetName() == AZ_CRC_CE("values"))
                 {
                     if (elementNode.GetNumSubElements() > 0)
                     {
@@ -1328,7 +1330,7 @@ namespace AZ
                         for (int dsfIdx = 0; dsfIdx < dsfNode.GetNumSubElements(); ++dsfIdx)
                         {
                             AZ::SerializeContext::DataElementNode& dataNode = dsfNode.GetSubElement(dsfIdx);
-                            if (dataNode.GetName() == AZ_CRC("m_data", 0x335cc942))
+                            if (dataNode.GetName() == AZ_CRC_CE("m_data"))
                             {
                                 const int idx = classElement.AddElement<AZ::Uuid>(context, "elementType");
                                 const AZ::Uuid elementType = dataNode.GetId();

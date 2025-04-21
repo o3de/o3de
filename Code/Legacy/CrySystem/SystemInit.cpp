@@ -33,6 +33,7 @@
 
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
+#include <AzFramework/Quality/QualitySystemBus.h>
 
 #include "AZCoreLogSink.h"
 #include <AzCore/Component/ComponentApplicationBus.h>
@@ -41,7 +42,6 @@
 #include <AzCore/IO/SystemFile.h> // for AZ_MAX_PATH_LEN
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
-#include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Archive/ArchiveFileIO.h>
 #include <AzFramework/Archive/INestedArchive.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>
@@ -1066,27 +1066,11 @@ bool CSystem::Init(const SSystemInitParams& startupParams)
         }
         AZ_Printf(AZ_TRACE_SYSTEM_WINDOW, "Initializing additional systems\n");
 
-        InlineInitializationProcessing("CSystem::Init AIInit");
-
         //////////////////////////////////////////////////////////////////////////
         // LEVEL SYSTEM
-        bool usePrefabSystemForLevels = false;
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(
-            usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-
-        if (usePrefabSystemForLevels)
-        {
-            m_pLevelSystem = new LegacyLevelSystem::SpawnableLevelSystem(this);
-        }
-        else
-        {
-            // [LYN-2376] Remove once legacy slice support is removed
-            m_pLevelSystem = new LegacyLevelSystem::CLevelSystem(this, ILevelSystem::GetLevelsDirectoryName());
-        }
+        m_pLevelSystem = new LegacyLevelSystem::SpawnableLevelSystem(this);
 
         InlineInitializationProcessing("CSystem::Init Level System");
-
-        InlineInitializationProcessing("CSystem::Init InitLmbrAWS");
 
         // Az to Cry console binding
         AZ::Interface<AZ::IConsole>::Get()->VisitRegisteredFunctors(
@@ -1116,11 +1100,11 @@ bool CSystem::Init(const SSystemInitParams& startupParams)
 
     InlineInitializationProcessing("CSystem::Init End");
 
-#if defined(IS_PROSDK)
-    SDKEvaluation::InitSDKEvaluation(gEnv, &m_pUserCallback);
-#endif
-
-    InlineInitializationProcessing("CSystem::Init End");
+    // All CVARs should now be registered, load and apply quality settings for the default quality group
+    // using device rules to auto-detected the correct quality level 
+    AzFramework::QualitySystemEvents::Bus::Broadcast(
+        &AzFramework::QualitySystemEvents::LoadDefaultQualityGroup,
+        AzFramework::QualityLevel::LevelFromDeviceRules);
 
     // Send out EBus event
     EBUS_EVENT(CrySystemEventBus, OnCrySystemInitialized, *this, startupParams);
@@ -1219,6 +1203,16 @@ void CSystem::CreateSystemVars()
         []([[maybe_unused]] const AZ::ConsoleCommandContainer& params)
         {
             GetISystem()->Quit();
+        });
+
+    static AZ::ConsoleFunctor<void, false> s_functorCrash(
+        "crash",
+        "Crash the engine",
+        AZ::ConsoleFunctorFlags::IsInvisible | AZ::ConsoleFunctorFlags::DontReplicate,
+        AZ::TypeId::CreateNull(),
+        []([[maybe_unused]] const AZ::ConsoleCommandContainer& params)
+        {
+            AZ_Crash();
         });
 
     m_sys_load_files_to_memory = REGISTER_STRING(
@@ -1405,12 +1399,6 @@ void CSystem::CreateSystemVars()
     m_env.pConsole->CreateKeyBind("alt_keyboard_key_function_F12", "Screenshot");
     m_env.pConsole->CreateKeyBind("alt_keyboard_key_function_F11", "RecordClip");
 
-    /*
-        // experimental feature? - needs to be created very early
-        m_sys_filecache = REGISTER_INT("sys_FileCache",0,0,
-            "To speed up loading from non HD media\n"
-            "0=off / 1=enabled");
-    */
     REGISTER_CVAR2("sys_trackview", &g_cvars.sys_trackview, 1, 0, "Enables TrackView Update");
 
     // Defines selected language.
@@ -1440,10 +1428,6 @@ void CSystem::CreateSystemVars()
 #if defined(WIN32) || defined(WIN64)
     REGISTER_INT("sys_screensaver_allowed", 0, VF_NULL, "Specifies if screen saver is allowed to start up while the game is running.");
 #endif
-
-    // Since the UI Canvas Editor is incomplete, we have a variable to enable it.
-    // By default it is now enabled. Modify system.cfg or game.cfg to disable it
-    REGISTER_INT("sys_enableCanvasEditor", 1, VF_NULL, "Enables the UI Canvas Editor");
 }
 
 /////////////////////////////////////////////////////////////////////

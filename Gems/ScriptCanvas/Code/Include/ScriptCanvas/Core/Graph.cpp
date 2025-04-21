@@ -65,7 +65,7 @@ namespace ScriptCanvas
     {
         if (componentElementNode.GetVersion() < 12)
         {
-            componentElementNode.RemoveElementByName(AZ_CRC("m_uniqueId", 0x52157a7a));
+            componentElementNode.RemoveElementByName(AZ_CRC_CE("m_uniqueId"));
         }
 
         if (componentElementNode.GetVersion() < 13)
@@ -180,7 +180,7 @@ namespace ScriptCanvas
     {
         for (auto& nodeRef : m_graphData.m_nodes)
         {
-            if (auto node = FindNode(nodeRef->GetId()); node->IsDeprecated())
+            if (auto node = FindNode(nodeRef->GetId()); node && node->IsDeprecated())
             {
                 return true;
             }
@@ -775,6 +775,12 @@ namespace ScriptCanvas
         }
 
         return false;
+    }
+
+    bool Graph::FindConnection(const Endpoint& firstEndpoint, const Endpoint& otherEndpoint) const
+    {
+        AZ::Entity* connectionEntity = nullptr;
+        return FindConnection(connectionEntity, firstEndpoint, otherEndpoint);
     }
 
 

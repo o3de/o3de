@@ -15,9 +15,12 @@ namespace Multiplayer
         NetComponentId netComponentId = m_nextNetComponentId++;
         m_componentData[netComponentId] = componentData;
 
-        // add all the component hashes together to create an system-wide hash
-        m_componentVersionHashes[componentData.m_componentName] = componentData.m_versionHash;
-        m_systemVersionHash += componentData.m_versionHash;
+        if (componentData.m_includeInVersionCheck)
+        {
+            // add all the component hashes together to create an system-wide hash
+            m_componentVersionHashes[componentData.m_componentName] = componentData.m_versionHash;
+            m_systemVersionHash += componentData.m_versionHash;
+        }
 
         return netComponentId;
     }

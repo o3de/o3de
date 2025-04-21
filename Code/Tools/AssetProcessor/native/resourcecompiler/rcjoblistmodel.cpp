@@ -77,6 +77,23 @@ namespace AssetProcessor
         return m_jobsInFlight.size();
     }
 
+    unsigned int RCJobListModel::jobsInQueueWithoutMissingDependencies() const
+    {
+        unsigned int jobsWithNoMissingDependencies = 0;
+        for (const auto& job : m_jobsInQueueLookup)
+        {
+            if (!job->HasMissingSourceDependency())
+            {
+                ++jobsWithNoMissingDependencies;
+            }
+        }
+        return jobsWithNoMissingDependencies;
+    }
+
+    unsigned int RCJobListModel::jobsPendingCatalog() const
+    {
+        return m_finishedJobsNotInCatalog.count();
+    }
 
     void RCJobListModel::UpdateJobEscalation(AssetProcessor::RCJob* rcJob, int jobEscalation)
     {
@@ -229,7 +246,6 @@ namespace AssetProcessor
 #if defined(DEBUG_RCJOB_MODEL)
         AZ_TracePrintf(AssetProcessor::DebugChannel, "JobTrace markAsCompleted(%i %s,%s,%s)\n", rcJob, rcJob->GetInputFileAbsolutePath().toUtf8().constData(), rcJob->GetPlatformInfo().m_identifier.c_str(), rcJob->GetJobKey().toUtf8().constData());
 #endif
-
         rcJob->SetTimeCompleted(QDateTime::currentDateTime());
 
         auto foundInQueue = m_jobsInQueueLookup.find(rcJob->GetElementID());
@@ -276,14 +292,13 @@ namespace AssetProcessor
             }
         }
 
-        AZ_TracePrintf(
-            AssetProcessor::DebugChannel,
-            "JobTrace jobIndex == -1!!! (%i %s,%s,%s)\n",
-            rcJob,
+        AZ_Error(
+            AssetProcessor::ConsoleChannel,
+            false,
+            "Programmer Error: Could not mark job for file %s as completed, job was not tracked in the m_jobs container. It was either already finished, or never queued. (platform:%s, job key:%s)\n",
             rcJob->GetJobEntry().GetAbsoluteSourcePath().toUtf8().constData(),
             rcJob->GetPlatformInfo().m_identifier.c_str(),
             rcJob->GetJobKey().toUtf8().constData());
-        AZ_Assert(false, "Job not found!!!");
     }
 
     void RCJobListModel::markAsCataloged(const AssetProcessor::QueueElementID& check)
@@ -316,12 +331,12 @@ namespace AssetProcessor
         return false;
     }
 
-    int RCJobListModel::GetIndexOfProcessingJob(const QueueElementID& elementId)
+    int RCJobListModel::GetIndexOfJobByState(const QueueElementID& elementId, RCJob::JobState jobState)
     {
         for (int idx = 0; idx < rowCount(); ++idx)
         {
             RCJob* job = getItem(idx);
-            if (job->GetState() == RCJob::processing && job->GetElementID() == elementId)
+            if (job->GetState() == jobState && job->GetElementID() == elementId)
             {
                 return idx;
                 break;

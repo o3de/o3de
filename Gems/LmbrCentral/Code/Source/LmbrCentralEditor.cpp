@@ -18,12 +18,11 @@
 #include "Audio/EditorAudioSwitchComponent.h"
 #include "Audio/EditorAudioTriggerComponent.h"
 #include "Scripting/EditorLookAtComponent.h"
-#include "Scripting/EditorRandomTimedSpawnerComponent.h"
-#include "Scripting/EditorSpawnerComponent.h"
 #include "Scripting/EditorTagComponent.h"
 
 #include "Editor/EditorCommentComponent.h"
 #include "Shape/EditorAxisAlignedBoxShapeComponent.h"
+#include "Shape/EditorAxisAlignedBoxShapeComponentMode.h"
 #include "Shape/EditorBoxShapeComponent.h"
 #include "Shape/EditorCapsuleShapeComponent.h"
 #include "Shape/EditorCylinderShapeComponent.h"
@@ -78,8 +77,6 @@ namespace LmbrCentral
             EditorSplineComponent::CreateDescriptor(),
             EditorPolygonPrismShapeComponent::CreateDescriptor(),
             EditorCommentComponent::CreateDescriptor(),
-            EditorRandomTimedSpawnerComponent::CreateDescriptor(),
-            EditorSpawnerComponent::CreateDescriptor(),            
             CopyDependencyBuilder::CopyDependencyBuilderComponent::CreateDescriptor(),
             LevelBuilder::LevelBuilderComponent::CreateDescriptor(),
             SliceBuilder::BuilderPluginComponent::CreateDescriptor(),
@@ -119,30 +116,22 @@ namespace LmbrCentral
     {
         EditorSplineComponentMode::RegisterActions();
         EditorTubeShapeComponentMode::RegisterActions();
-        if (IsShapeComponentTranslationEnabled())
-        {
-            AzToolsFramework::BoxComponentMode::RegisterActions();
-        }
+        AzToolsFramework::BoxComponentMode::RegisterActions();
     }
 
     void LmbrCentralEditorModule::OnActionContextModeBindingHook()
     {
         EditorSplineComponentMode::BindActionsToModes();
         EditorTubeShapeComponentMode::BindActionsToModes();
-        if (IsShapeComponentTranslationEnabled())
-        {
-            AzToolsFramework::BoxComponentMode::BindActionsToModes();
-        }
+        AzToolsFramework::BoxComponentMode::BindActionsToModes();
+        EditorAxisAlignedBoxShapeComponentMode::BindActionsToModes();
     }
 
     void LmbrCentralEditorModule::OnMenuBindingHook()
     {
         EditorSplineComponentMode::BindActionsToMenus();
         EditorTubeShapeComponentMode::BindActionsToMenus();
-        if (IsShapeComponentTranslationEnabled())
-        {
-            AzToolsFramework::BoxComponentMode::BindActionsToMenus();
-        }
+        AzToolsFramework::BoxComponentMode::BindActionsToMenus();
     }
 
     void LmbrCentralEditorModule::OnPostActionManagerRegistrationHook()
@@ -152,4 +141,8 @@ namespace LmbrCentral
 
 } // namespace LmbrCentral
 
-AZ_DECLARE_MODULE_CLASS(Gem_LmbrCentralEditor, LmbrCentral::LmbrCentralEditorModule)
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME, _Editor), LmbrCentral::LmbrCentralEditorModule)
+#else
+AZ_DECLARE_MODULE_CLASS(Gem_LmbrCentral_Editor, LmbrCentral::LmbrCentralEditorModule)
+#endif

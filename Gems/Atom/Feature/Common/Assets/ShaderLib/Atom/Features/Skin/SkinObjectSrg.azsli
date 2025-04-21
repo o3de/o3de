@@ -11,6 +11,10 @@
 #include <Atom/Features/SrgSemantics.azsli>
 #include <Atom/Features/PBR/Lights/ReflectionProbeData.azsli>
 
+#ifndef MATERIAL_PIPELINE_OBJECT_SRG_MEMBERS
+#define MATERIAL_PIPELINE_OBJECT_SRG_MEMBERS
+#endif
+
 ShaderResourceGroup ObjectSrg : SRG_PerObject
 {
     uint m_objectId;
@@ -28,6 +32,11 @@ ShaderResourceGroup ObjectSrg : SRG_PerObject
         return SceneSrg::GetObjectToWorldInverseTransposeMatrix(m_objectId);
     }
 
+    float4x4 GetWorldMatrixPrev()
+    {
+        return SceneSrg::GetObjectToWorldMatrixPrev(m_objectId);
+    }
+
     uint m_wrinkle_mask_count;
     float4 m_wrinkle_mask_weights[4];
     Texture2D m_wrinkle_masks[16];
@@ -39,4 +48,7 @@ ShaderResourceGroup ObjectSrg : SRG_PerObject
 
     ReflectionProbeData m_reflectionProbeData;
     TextureCube m_reflectionProbeCubeMap;
+
+    MATERIAL_PIPELINE_OBJECT_SRG_MEMBERS
+    uint m_lightingChannelMask;
 }

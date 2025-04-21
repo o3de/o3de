@@ -20,7 +20,6 @@ namespace AZ
             return result;
         }
 
-
         AZ::Matrix4x4 ConstructMatrix4x4FromValues
             ( float v00, float v01, float v02, float v03
             , float v10, float v11, float v12, float v13
@@ -29,7 +28,6 @@ namespace AZ
         {
             return ConstructMatrix4x4(AZ::Vector4(v00, v01, v02, v03), AZ::Vector4(v10, v11, v12, v13), AZ::Vector4(v20, v21, v22, v23), AZ::Vector4(v30, v31, v32, v33));
         }
-
 
         void Matrix4x4DefaultConstructor(Matrix4x4* thisPtr)
         {
@@ -100,7 +98,6 @@ namespace AZ
             }
         }
 
-
         void Matrix4x4SetColumnGeneric(Matrix4x4* thisPtr, ScriptDataContext& dc)
         {
             bool columnIsSet = false;
@@ -165,7 +162,6 @@ namespace AZ
             }
         }
 
-
         void Matrix4x4SetTranslationGeneric(Matrix4x4* thisPtr, ScriptDataContext& dc)
         {
             bool translationIsSet = false;
@@ -198,7 +194,6 @@ namespace AZ
             }
         }
 
-
         void Matrix4x4GetRowsMultipleReturn(const Matrix4x4* thisPtr, ScriptDataContext& dc)
         {
             Vector4 row0(Vector4::CreateZero()), row1(Vector4::CreateZero()), row2(Vector4::CreateZero()), row3(Vector4::CreateZero());
@@ -209,7 +204,6 @@ namespace AZ
             dc.PushResult(row3);
         }
 
-
         void Matrix4x4GetColumnsMultipleReturn(const Matrix4x4* thisPtr, ScriptDataContext& dc)
         {
             Vector4 column0(Vector4::CreateZero()), column1(Vector4::CreateZero()), column2(Vector4::CreateZero()), column3(Vector4::CreateZero());
@@ -219,7 +213,6 @@ namespace AZ
             dc.PushResult(column2);
             dc.PushResult(column3);
         }
-
 
         void Matrix4x4MultiplyGeneric(const Matrix4x4* thisPtr, ScriptDataContext& dc)
         {
@@ -255,7 +248,6 @@ namespace AZ
             }
         }
 
-
         AZStd::string Matrix4x4ToString(const Matrix4x4& m)
         {
             return AZStd::string::format("%s,%s,%s,%s",
@@ -263,7 +255,6 @@ namespace AZ
                 Vector4ToString(m.GetColumn(2)).c_str(), Vector4ToString(m.GetColumn(3)).c_str());
         }
     }
-
 
     void Matrix4x4::Reflect(ReflectContext* context)
     {
@@ -389,7 +380,6 @@ namespace AZ
         }
     }
 
-
     void Matrix4x4::SetRotationPartFromQuaternion(const Quaternion& q)
     {
         float tx = q.GetX() * 2.0f;
@@ -418,7 +408,6 @@ namespace AZ
         SetElement(2, 2, 1.0f - (txx + tyy));
     }
 
-
     Matrix4x4 Matrix4x4::CreateProjection(float fovY, float aspectRatio, float nearDist, float farDist)
     {
         // This section contains some notes about camera matrices and field of view, because there are some subtle differences
@@ -442,7 +431,6 @@ namespace AZ
         return CreateProjectionInternal(cotX, cotY, nearDist, farDist);
     }
 
-
     Matrix4x4 Matrix4x4::CreateProjectionFov(float fovX, float fovY, float nearDist, float farDist)
     {
         // note that the relationship between fovX and fovY is not linear with the aspect ratio, so prefer the
@@ -450,11 +438,10 @@ namespace AZ
         // FOV's exactly
         Simd::Vec4::FloatType angles = Simd::Vec4::LoadImmediate(0.5f * fovX, 0.5f * fovX, 0.5f * fovY, 0.5f * fovY);
         Simd::Vec4::FloatType values = Simd::Vec4::SinCos(angles);
-        float cotX = Simd::Vec4::SelectSecond(values) / Simd::Vec4::SelectFirst(values);
-        float cotY = Simd::Vec4::SelectFourth(values) / Simd::Vec4::SelectThird(values);
+        float cotX = Simd::Vec4::SelectIndex1(values) / Simd::Vec4::SelectIndex0(values);
+        float cotY = Simd::Vec4::SelectIndex3(values) / Simd::Vec4::SelectIndex2(values);
         return CreateProjectionInternal(cotX, cotY, nearDist, farDist);
     }
-
 
     Matrix4x4 Matrix4x4::CreateProjectionInternal(float cotX, float cotY, float nearDist, float farDist)
     {
@@ -479,7 +466,6 @@ namespace AZ
 #endif
         return result;
     }
-
 
     // Set the projection matrix with a volume offset
     Matrix4x4 Matrix4x4::CreateProjectionOffset(float left, float right, float bottom, float top, float nearDist, float farDist)
@@ -506,7 +492,6 @@ namespace AZ
         return result;
     }
 
-
     Matrix4x4 Matrix4x4::GetInverseTransform() const
     {
         Matrix4x4 out;
@@ -529,8 +514,14 @@ namespace AZ
         // Calculate the determinant
         float det = (*this)(0, 0) * out(0, 0) + (*this)(1, 0) * out(0, 1) + (*this)(2, 0) * out(0, 2);
 
+        // Run singularity test
+        if (det == 0)
+        {
+            return CreateIdentity();
+        }
+
         // Divide cofactors by determinant
-        float f = (Abs(det) > Constants::Tolerance) ? 1.0f / det : 10000000.0f;
+        float f = 1.0f / det;
 
         out.SetRow(0, out.GetRow(0) * f);
         out.SetRow(1, out.GetRow(1) * f);
@@ -546,7 +537,6 @@ namespace AZ
 
         return out;
     }
-
 
     Matrix4x4 Matrix4x4::GetInverseFull() const
     {
@@ -610,7 +600,6 @@ namespace AZ
 
         return out;
     }
-
 
     Matrix4x4 Matrix4x4::CreateInterpolated(const Matrix4x4& m1, const Matrix4x4& m2, float t)
     {

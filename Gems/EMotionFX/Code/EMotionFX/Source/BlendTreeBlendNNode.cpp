@@ -645,7 +645,7 @@ namespace EMotionFX
         data->SetTrajectoryDeltaMirrored(delta);
     }
 
-    bool BlendTreeBlendNNode::VersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
+    static bool BlendTreeBlendNNodeVersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
     {
         const unsigned int version = classElement.GetVersion();
         if (version < 2)
@@ -667,7 +667,7 @@ namespace EMotionFX
         }
 
         serializeContext->Class<BlendTreeBlendNNode, AnimGraphNode>()
-            ->Version(2, VersionConverter)
+            ->Version(2, &BlendTreeBlendNNodeVersionConverter)
             ->Field("syncMode", &BlendTreeBlendNNode::m_syncMode)
             ->Field("eventMode", &BlendTreeBlendNNode::m_eventMode)
             ->Field("paramWeights", &BlendTreeBlendNNode::m_paramWeights);
@@ -684,12 +684,12 @@ namespace EMotionFX
             ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
             ->DataElement(AZ::Edit::UIHandlers::ComboBox, &BlendTreeBlendNNode::m_syncMode)
             ->DataElement(AZ::Edit::UIHandlers::ComboBox, &BlendTreeBlendNNode::m_eventMode)
-            ->DataElement(AZ_CRC("BlendNParamWeightsContainerHandler", 0x311f6bb3), &BlendTreeBlendNNode::m_paramWeights, "Blend weight triggers", "The values of the input weight at which an input pose will weigh 100%")
-            ->Attribute(AZ_CRC("BlendTreeBlendNNodeParamWeightsElement", 0x7eae1990), "")
+            ->DataElement(AZ_CRC_CE("BlendNParamWeightsContainerHandler"), &BlendTreeBlendNNode::m_paramWeights, "Blend weight triggers", "The values of the input weight at which an input pose will weigh 100%")
+            ->Attribute(AZ_CRC_CE("BlendTreeBlendNNodeParamWeightsElement"), "")
             ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeBlendNNode::UpdateParamWeightRanges)
-            ->ElementAttribute(AZ::Edit::UIHandlers::Handler, AZ_CRC("BlendNParamWeightsElementHandler", 0xec71620d));
+            ->ElementAttribute(AZ::Edit::UIHandlers::Handler, AZ_CRC_CE("BlendNParamWeightsElementHandler"));
     }
 
     void BlendTreeBlendNNode::SetSyncMode(ESyncMode syncMode)

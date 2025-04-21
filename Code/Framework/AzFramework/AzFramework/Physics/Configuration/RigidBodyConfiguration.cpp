@@ -24,18 +24,6 @@ namespace AzPhysics
             return (flags & property) != 0 ? AZ::Edit::PropertyVisibility::Show : AZ::Edit::PropertyVisibility::Hide;
         }
 
-        void SetPropertyVisibility(AZ::u16 flags, RigidBodyConfiguration::PropertyVisibility property, bool isVisible)
-        {
-            if (isVisible)
-            {
-                flags |= property;
-            }
-            else
-            {
-                flags &= ~property;
-            }
-        }
-
         bool RigidBodyVersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
         {
             if (classElement.GetVersion() <= 1)

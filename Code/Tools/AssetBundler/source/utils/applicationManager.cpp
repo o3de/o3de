@@ -23,6 +23,7 @@
 
 #include <AzFramework/Asset/AssetCatalogComponent.h>
 #include <AzFramework/Entity/GameEntityContextComponent.h>
+#include <AzFramework/FileFunc/FileFunc.h>
 #include <AzFramework/FileTag/FileTagComponent.h>
 #include <AzFramework/Input/System/InputSystemComponent.h>
 #include <AzFramework/Platform/PlatformDefaults.h>
@@ -37,11 +38,25 @@
 
 namespace AssetBundler
 {
+    // Added a declaration of GetBuildTargetName which retrieves the name of the build target
+    // The build target changes depending on which shared library/executable applicationManager.cpp
+    // is linked to 
+    AZStd::string_view GetBuildTargetName();
+
     const char compareVariablePrefix = '$';
 
     ApplicationManager::ApplicationManager(int* argc, char*** argv, QObject* parent)
+        : ApplicationManager(argc, argv, parent, {})
+    {
+    }
+    ApplicationManager::ApplicationManager(int* argc, char*** argv, AZ::ComponentApplicationSettings componentAppSettings)
+        : ApplicationManager(argc, argv, nullptr, AZStd::move(componentAppSettings))
+    {
+    }
+
+    ApplicationManager::ApplicationManager(int* argc, char*** argv, QObject* parent, AZ::ComponentApplicationSettings componentAppSettings)
         : QObject(parent)
-        , AzToolsFramework::ToolsApplication(argc, argv)
+        , AzToolsFramework::ToolsApplication(argc, argv, AZStd::move(componentAppSettings))
     {
     }
 
@@ -59,7 +74,7 @@ namespace AssetBundler
         startupParameters.m_loadDynamicModules = false;
         Start(AzFramework::Application::Descriptor(), startupParameters);
 
-        AZ::SerializeContext* context;
+        AZ::SerializeContext* context = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
         AZ_Assert(context, "No serialize context");
         AzToolsFramework::AssetSeedManager::Reflect(context);
@@ -189,7 +204,7 @@ namespace AssetBundler
     void ApplicationManager::SetSettingsRegistrySpecializations(AZ::SettingsRegistryInterface::Specializations& specializations)
     {
         AzToolsFramework::ToolsApplication::SetSettingsRegistrySpecializations(specializations);
-        specializations.Append("assetbundler");
+        specializations.Append(GetBuildTargetName());
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////
@@ -1473,9 +1488,45 @@ namespace AssetBundler
         {
             // Add Seeds
             PlatformFlags platformFlag = AzFramework::PlatformHelper::GetPlatformFlagFromPlatformIndex(platformId);
+
+            auto cacheFolderPath = AssetBundler::GetProjectCacheFolderPath();
+            AZ::IO::Path cachePath;
+            if (cacheFolderPath.IsSuccess())
+            {
+                cachePath = cacheFolderPath.GetValue() / AZ::PlatformDefaults::PlatformHelper::GetPlatformName(platformId);
+            }
+
             for (const AZStd::string& assetPath : params.m_addSeedList)
             {
-                m_assetSeedManager->AddSeedAsset(assetPath, platformFlag);
+                if (AZ::StringFunc::Contains(assetPath, '*'))
+                {
+                    auto filter = cachePath / assetPath;
+                    AZStd::string path = filter.ParentPath().Native();
+                    AZStd::string ext = filter.Filename().Native();
+
+                    bool bRecursive = AZ::StringFunc::Contains(filter.Filename().Native(), "**");
+
+                    // we search all files and filter by extension later
+                    // because recursive is not working with extension
+                    auto result = AzFramework::FileFunc::FindFilesInPath(path, "*", bRecursive);
+                    if (result.IsSuccess())
+                    {
+                        auto list = result.GetValue();
+                        for (auto& file : list)
+                        {
+                            if (AZStd::wildcard_match(ext, file))
+                            {
+                                AZ::IO::Path filepath(file);
+                                filepath = filepath.LexicallyRelative(cachePath);
+                                m_assetSeedManager->AddSeedAsset(filepath.Native(), platformFlag);
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    m_assetSeedManager->AddSeedAsset(assetPath, platformFlag);
+                }
             }
 
             // Remove Seeds

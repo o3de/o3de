@@ -31,9 +31,13 @@ namespace AzToolsFramework
         public:
             explicit SearchWidget(QWidget* parent = nullptr);
 
-            void Setup(bool stringFilter, bool assetTypeFilter);
+            void Setup(bool stringFilter, bool assetTypeFilter, bool useFavorites = false);
 
-            void ToggleProjectSourceAssetFilter(bool checked);
+            void ToggleEngineFilter(bool checked);
+
+            void ToggleUnusableProductsFilter(bool checked);
+
+            AZStd::vector<AZ::Data::AssetType> BuildAssetTypeList();
 
             void AddFolderFilter();
 
@@ -45,10 +49,17 @@ namespace AzToolsFramework
 
             QSharedPointer<CompositeFilter> GetTypesFilter() const;
 
-            QSharedPointer<CompositeFilter> GetProjectSourceFilter() const;
+            QSharedPointer<CompositeFilter> GetEngineFilter() const;
+
+            QSharedPointer<CompositeFilter> GetUnusableProductsFilter() const;
 
             QSharedPointer<CompositeFilter> GetFolderFilter() const;
 
+            bool GetIsEngineFilterActive();
+            bool GetIsUnusableProductsFilterActive();
+            bool GetIsFolderFilterActive();
+
+            void SetFilterString(const QString& searchTerm);
             QString GetFilterString() const { return textFilter(); }
             void ClearStringFilter() { ClearTextFilter(); }
 
@@ -56,7 +67,8 @@ namespace AzToolsFramework
             QSharedPointer<CompositeFilter> m_filter;
             QSharedPointer<CompositeFilter> m_stringFilter;
             QSharedPointer<CompositeFilter> m_typesFilter;
-            QSharedPointer<CompositeFilter> m_projectSourceFilter;
+            QSharedPointer<CompositeFilter> m_engineFilter;
+            QSharedPointer<CompositeFilter> m_unusableProductsFilter;
             QSharedPointer<CompositeFilter> m_folderFilter;
         };
 

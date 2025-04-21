@@ -10,7 +10,7 @@
  * @file
  * Header file for internal EBus classes.
  * For more information about EBuses, see AZ::EBus and AZ::EBusTraits in this guide and
- * [Event Bus documentation](https://www.o3de.org/docs/user-guide/programming/ebus/).
+ * [Event Bus documentation](https://www.o3de.org/docs/user-guide/programming/messaging/ebus/).
  */
 
 #pragma once

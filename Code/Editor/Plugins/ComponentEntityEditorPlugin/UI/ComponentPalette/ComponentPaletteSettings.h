@@ -11,11 +11,16 @@
 
 #include <AzCore/base.h>
 #include <AzCore/Memory/SystemAllocator.h>
-#include <AzCore/RTTI/ReflectContext.h>
-#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
+#include <AzCore/RTTI/RTTIMacros.h>
+
 #include <AzCore/UserSettings/UserSettings.h>
 
 //=============================================================================
+namespace AZ
+{
+    class ReflectContext;
+}
 
 class ComponentPaletteSettings
     : public AZ::UserSettings
@@ -51,16 +56,6 @@ public:
         return settingsFile;
     }
 
-    static void Reflect(AZ::ReflectContext* context)
-    {
-        AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
-        if (serializeContext)
-        {
-            serializeContext->Class<ComponentPaletteSettings>()
-                ->Version(1)
-                ->Field("m_favorites", &ComponentPaletteSettings::m_favorites)
-                ;
-        }
-    }
+    static void Reflect(AZ::ReflectContext* context);
 };
 

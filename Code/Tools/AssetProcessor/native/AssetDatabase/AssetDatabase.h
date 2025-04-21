@@ -114,6 +114,8 @@ namespace AssetProcessor
         bool GetJobsBySourceName(const AssetProcessor::SourceAssetReference& sourceAsset, AzToolsFramework::AssetDatabase::JobDatabaseEntryContainer& container, AZ::Uuid builderGuid = AZ::Uuid::CreateNull(), QString jobKey = QString(), QString platform = QString(), AzToolsFramework::AssetSystem::JobStatus status = AzToolsFramework::AssetSystem::JobStatus::Any);
         bool GetJobsLikeSourceName(QString likeSourceName, LikeType likeType, AzToolsFramework::AssetDatabase::JobDatabaseEntryContainer& container, AZ::Uuid builderGuid = AZ::Uuid::CreateNull(), QString jobKey = QString(), QString platform = QString(), AzToolsFramework::AssetSystem::JobStatus status = AzToolsFramework::AssetSystem::JobStatus::Any);
 
+        bool GetJobsByFailureCauseSourceId(AZ::s64 sourceID, AzToolsFramework::AssetDatabase::JobDatabaseEntryContainer& container);
+
         bool GetJobsByProductName(QString exactProductName, AzToolsFramework::AssetDatabase::JobDatabaseEntryContainer& container, AZ::Uuid builderGuid = AZ::Uuid::CreateNull(), QString jobKey = QString(), QString platform = QString(), AzToolsFramework::AssetSystem::JobStatus status = AzToolsFramework::AssetSystem::JobStatus::Any);
         bool GetJobsLikeProductName(QString likeProductName, LikeType likeType, AzToolsFramework::AssetDatabase::JobDatabaseEntryContainer& container, AZ::Uuid builderGuid = AZ::Uuid::CreateNull(), QString jobKey = QString(), QString platform = QString(), AzToolsFramework::AssetSystem::JobStatus status = AzToolsFramework::AssetSystem::JobStatus::Any);
 

@@ -45,7 +45,7 @@ namespace AZ
             }
 
             // We have a single stream (position and color are interleaved in the vertex buffer)
-            m_primitiveBuffers.m_streamBufferViews.resize(1);
+            m_geometryView.GetStreamBufferViews().resize(1);
 
             m_scene = scene;
             InitShader();
@@ -71,10 +71,6 @@ namespace AZ
 
         void DynamicPrimitiveProcessor::PrepareFrame()
         {
-            AZ_PROFILE_SCOPE(AzRender, "DynamicPrimitiveProcessor: PrepareFrame");
-            m_drawPackets.clear();
-            m_processSrgs.clear();
-
             if (m_needUpdatePipelineStates)
             {
                 // for created pipeline state, re-set their data from scene
@@ -87,19 +83,25 @@ namespace AZ
             }
         }
 
-        void DynamicPrimitiveProcessor::ProcessDynamicPrimitives(const AuxGeomBufferData* bufferData, const RPI::FeatureProcessor::RenderPacket& fpPacket)
+        void DynamicPrimitiveProcessor::FrameEnd()
+        {
+            m_processSrgs.clear();
+            m_drawPackets.clear();
+        }
+
+        void DynamicPrimitiveProcessor::ProcessDynamicPrimitives(AuxGeomBufferData* bufferData, const RPI::FeatureProcessor::RenderPacket& fpPacket)
         {
             AZ_PROFILE_SCOPE(AzRender, "DynamicPrimitiveProcessor: ProcessDynamicPrimitives");
-            RHI::DrawPacketBuilder drawPacketBuilder;
+            RHI::DrawPacketBuilder drawPacketBuilder{RHI::MultiDevice::AllDevices};
 
-            const DynamicPrimitiveData& srcPrimitives = bufferData->m_primitiveData;
+            DynamicPrimitiveData& srcPrimitives = bufferData->m_primitiveData;
             // Update the buffers for the dynamic primitives and generate draw packets for them
             if (srcPrimitives.m_indexBuffer.size() > 0)
             {
                 // Update the buffers for all dynamic primitives in this frame's data
                 // There is just one index buffer and one vertex buffer for all dynamic primitives
-                if (!UpdateIndexBuffer(srcPrimitives.m_indexBuffer, m_primitiveBuffers)
-                    || !UpdateVertexBuffer(srcPrimitives.m_vertexBuffer, m_primitiveBuffers))
+                if (!UpdateIndexBuffer(srcPrimitives.m_indexBuffer)
+                    || !UpdateVertexBuffer(srcPrimitives.m_vertexBuffer))
                 {
                     // Skip adding render data if failed to update buffers
                     // Note, the error would be already reported inside the Update* functions
@@ -109,7 +111,7 @@ namespace AZ
                 // Validate the stream buffer views for all stream layout's if necessary
                 for (int primitiveType = 0; primitiveType < PrimitiveType_Count; ++primitiveType)
                 {
-                    ValidateStreamBufferViews(m_primitiveBuffers.m_streamBufferViews, m_streamBufferViewsValidatedForLayout, primitiveType);
+                    ValidateStreamBufferViews(m_geometryView.GetStreamBufferViews(), m_streamBufferViewsValidatedForLayout, primitiveType);
                 }
 
                 // Loop over all the primitives and use one draw call for each AuxGeom API call
@@ -165,17 +167,17 @@ namespace AZ
                         srg = m_shaderData.m_defaultSRG;
                     }
 
+                    primitive.m_geometryView = m_geometryView;
+                    primitive.m_geometryView.SetDrawArguments(RHI::DrawIndexed(0, primitive.m_indexCount, primitive.m_indexOffset));
+
                     for (auto& view : auxGeomViews)
                     {
                         RHI::DrawItemSortKey sortKey = primitive.m_blendMode == BlendMode_Off ? 0 : view->GetSortKeyForPosition(primitive.m_center);
 
-
-                        const RHI::DrawPacket* drawPacket = BuildDrawPacketForDynamicPrimitive(
-                            m_primitiveBuffers,
+                        auto drawPacket = BuildDrawPacketForDynamicPrimitive(
+                            primitive.m_geometryView,
                             pipelineState,
                             srg,
-                            primitive.m_indexCount,
-                            primitive.m_indexOffset,
                             drawPacketBuilder,
                             sortKey);
 
@@ -183,14 +185,14 @@ namespace AZ
                         {
                             m_drawPackets.emplace_back(drawPacket);
                             m_processSrgs.push_back(srg);
-                            view->AddDrawPacket(drawPacket);
+                            view->AddDrawPacket(drawPacket.get());
                         }
                     }
                 }
             }
         }
 
-        bool DynamicPrimitiveProcessor::UpdateIndexBuffer(const IndexBuffer& source, DynamicBufferGroup& group)
+        bool DynamicPrimitiveProcessor::UpdateIndexBuffer(const IndexBuffer& source)
         {
             const size_t sourceByteSize = source.size() * sizeof(AuxGeomIndex);
             
@@ -201,11 +203,11 @@ namespace AZ
                 return false;
             }
             dynamicBuffer->Write(source.data(), static_cast<uint32_t>(sourceByteSize));
-            group.m_indexBufferView = dynamicBuffer->GetIndexBufferView(RHI::IndexFormat::Uint32);
+            m_geometryView.SetIndexBufferView(dynamicBuffer->GetIndexBufferView(RHI::IndexFormat::Uint32));
             return true;
         }
 
-        bool DynamicPrimitiveProcessor::UpdateVertexBuffer(const VertexBuffer& source, DynamicBufferGroup& group)
+        bool DynamicPrimitiveProcessor::UpdateVertexBuffer(const VertexBuffer& source)
         {
             const size_t sourceByteSize = source.size() * sizeof(AuxGeomDynamicVertex);
 
@@ -216,11 +218,11 @@ namespace AZ
                 return false;
             }
             dynamicBuffer->Write(source.data(), static_cast<uint32_t>(sourceByteSize));
-            group.m_streamBufferViews[0] = dynamicBuffer->GetStreamBufferView(sizeof(AuxGeomDynamicVertex));
+            m_geometryView.GetStreamBufferViews()[0] = dynamicBuffer->GetStreamBufferView(sizeof(AuxGeomDynamicVertex));
             return true;
         }
 
-        void DynamicPrimitiveProcessor::ValidateStreamBufferViews(StreamBufferViewsForAllStreams& streamBufferViews, bool* isValidated, int primitiveType)
+        void DynamicPrimitiveProcessor::ValidateStreamBufferViews(AZStd::span<const RHI::StreamBufferView> streamBufferViews, bool* isValidated, int primitiveType)
         {
             if (!isValidated[primitiveType])
             {
@@ -383,29 +385,21 @@ namespace AZ
             }
         }
 
-        const RHI::DrawPacket* DynamicPrimitiveProcessor::BuildDrawPacketForDynamicPrimitive(
-            DynamicBufferGroup& group,
+        RHI::ConstPtr<RHI::DrawPacket> DynamicPrimitiveProcessor::BuildDrawPacketForDynamicPrimitive(
+            RHI::GeometryView& geometryView,
             const RPI::Ptr<RPI::PipelineStateForDraw>& pipelineState,
             Data::Instance<RPI::ShaderResourceGroup> srg,
-            uint32_t indexCount,
-            uint32_t indexOffset,
             RHI::DrawPacketBuilder& drawPacketBuilder,
             RHI::DrawItemSortKey sortKey)
         {
-            RHI::DrawIndexed drawIndexed;
-            drawIndexed.m_indexCount = indexCount;
-            drawIndexed.m_indexOffset = indexOffset;
-            drawIndexed.m_vertexOffset = 0; // indices are offsets from the start of vertex buffer
-
             drawPacketBuilder.Begin(nullptr);
-            drawPacketBuilder.SetDrawArguments(drawIndexed);
-            drawPacketBuilder.SetIndexBufferView(group.m_indexBufferView);
+            drawPacketBuilder.SetGeometryView(&geometryView);
             drawPacketBuilder.AddShaderResourceGroup(srg->GetRHIShaderResourceGroup());
 
             RHI::DrawPacketBuilder::DrawRequest drawRequest;
             drawRequest.m_listTag = m_shaderData.m_drawListTag;
+            drawRequest.m_streamIndices = geometryView.GetFullStreamBufferIndices();
             drawRequest.m_pipelineState = pipelineState->GetRHIPipelineState();
-            drawRequest.m_streamBufferViews = group.m_streamBufferViews;
             drawRequest.m_sortKey = sortKey;
             drawPacketBuilder.AddDrawItem(drawRequest);
 

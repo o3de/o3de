@@ -46,10 +46,10 @@ namespace AZ
                             ->Attribute(AZ::Edit::Attributes::Category, "Test")
                             ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Comment.svg")
                             ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Comment.svg")
-                            ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZStd::vector<AZ::Crc32>({ AZ_CRC("Level", 0x9aeacc13), AZ_CRC("Game", 0x232b318c), AZ_CRC("Layer", 0xe4db211a) }))
+                            ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZStd::vector<AZ::Crc32>({ AZ_CRC_CE("Level"), AZ_CRC_CE("Game"), AZ_CRC_CE("Layer") }))
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->DataElement(AZ::Edit::UIHandlers::LineEdit, &AssetCollectionAsyncLoaderTestComponent::m_pathToAssetListJson, "", "Path To Asset List")
-                            ->Attribute(AZ_CRC("PlaceholderText", 0xa23ec278), "Path to a JSON file")
+                            ->Attribute(AZ::Edit::Attributes::PlaceholderText, "Path to a JSON file")
                         ->UIElement(AZ::Edit::UIHandlers::Button, "", "Starts/Stop the test")
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &AssetCollectionAsyncLoaderTestComponent::OnStartCancelButtonClicked)
                             ->Attribute(AZ::Edit::Attributes::ButtonText, &AssetCollectionAsyncLoaderTestComponent::GetStartCancelButtonText);

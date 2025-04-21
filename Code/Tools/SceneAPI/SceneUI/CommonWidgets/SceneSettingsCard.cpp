@@ -171,7 +171,7 @@ void SceneSettingsCard::AddLogEntry(const AzToolsFramework::Logging::LogEntry& l
         }
     }
 
-    m_additionalLogDetails.push_back(detailsForLogLine);
+    m_additionalLogDetails[m_reportModel->rowCount()] = detailsForLogLine;
     
     if (logEntry.GetSeverity() == AzToolsFramework::Logging::LogEntry::Severity::Error)
     {
@@ -339,12 +339,15 @@ void SceneSettingsCard::SetState(State newState)
             case CompletionState::Error:
             case CompletionState::Failure:
                 m_settingsHeader->setIcon(QIcon(":/SceneUI/Common/ErrorIcon.svg"));
+                m_settingsHeader->setUnderlineColor(QColor(226, 82, 67));
                 break;
             case CompletionState::Warning:
                 m_settingsHeader->setIcon(QIcon(":/SceneUI/Common/WarningIcon.svg"));
+                m_settingsHeader->setUnderlineColor(QColor(240, 195, 45));
                 break;
             default:
                 m_settingsHeader->setIcon(QIcon(":/SceneUI/Common/SuccessIcon.svg"));
+                m_settingsHeader->setUnderlineColor(QColor(88, 188, 97));
                 break;
             }
             AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
@@ -435,12 +438,8 @@ void SceneSettingsCard::ShowLogContextMenu(const QPoint& pos)
     }
     
     int logRow = selectedIndex.row();
-    if (logRow <= 0)
-    {
-        return;
-    }
 
-    if (logRow > m_additionalLogDetails.count())
+    if (!m_additionalLogDetails.contains(logRow))
     {
         return;
     }

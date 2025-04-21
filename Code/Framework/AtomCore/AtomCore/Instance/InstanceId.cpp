@@ -12,65 +12,83 @@ namespace AZ
 {
     namespace Data
     {
-        InstanceId InstanceId::CreateFromAsset(const Asset<AssetData>& asset)
+        InstanceId InstanceId::CreateFromAsset(const Asset<AssetData>& asset, const SubIdContainer& subIds)
         {
-            // Passing the asset data pointer in as a unique identifier for this version of the asset. Ideally this would use the asset
-            // creation token instead of the asset pointer but that requires the asset pointer to be valid beforehand. If the asset pointer
-            // is null this will be the same as CreateFromAssetId.
-            return InstanceId(asset.GetId().m_guid, asset.GetId().m_subId, asset.Get());
+            const Data::AssetId assetId{ asset.GetId() };
+            const Data::AssetData* assetPtr{ asset.GetData() };
+
+            SubIdContainer combinedSubIds;
+            combinedSubIds.push_back(assetId.m_subId);
+            // The creation token is a unique id assigned by the asset manager to differentiate between unique versions of (re)loaded
+            // assets. Including it in the instance id allows creating new, unique instances from (re)loaded assets with previously used
+            // asset IDs.
+            combinedSubIds.push_back(static_cast<uint32_t>(assetPtr ? assetPtr->GetCreationToken() : AZ::Data::s_defaultCreationToken));
+            combinedSubIds.insert(combinedSubIds.end(), subIds.begin(), subIds.end());
+            return CreateUuid(assetId.m_guid, combinedSubIds);
         }
 
-        InstanceId InstanceId::CreateFromAssetId(const AssetId& assetId)
+        InstanceId InstanceId::CreateFromAssetId(const AssetId& assetId, const SubIdContainer& subIds)
         {
-            return InstanceId(assetId.m_guid, assetId.m_subId);
+            SubIdContainer combinedSubIds;
+            combinedSubIds.push_back(assetId.m_subId);
+            // Injecting AZ::Data::s_defaultCreationToken to keep instance IDs uniform and interchangeable whether created from an asset or
+            // asset id.
+            combinedSubIds.push_back(static_cast<uint32_t>(AZ::Data::s_defaultCreationToken));
+            combinedSubIds.insert(combinedSubIds.end(), subIds.begin(), subIds.end());
+            return CreateUuid(assetId.m_guid, combinedSubIds);
         }
 
-        InstanceId InstanceId::CreateName(const char* name)
+        InstanceId InstanceId::CreateName(const char* name, const SubIdContainer& subIds)
         {
-            return InstanceId(Uuid::CreateName(name));
+            return CreateUuid(Uuid::CreateName(name), subIds);
         }
 
-        InstanceId InstanceId::CreateData(const void* data, size_t dataSize)
+        InstanceId InstanceId::CreateData(const void* data, size_t dataSize, const SubIdContainer& subIds)
         {
-            return InstanceId(Uuid::CreateData(reinterpret_cast<const AZStd::byte*>(data), dataSize));
+            return CreateUuid(Uuid::CreateData(reinterpret_cast<const AZStd::byte*>(data), dataSize), subIds);
         }
 
         InstanceId InstanceId::CreateRandom()
         {
-            return InstanceId(Uuid::CreateRandom());
+            return CreateUuid(Uuid::CreateRandom());
         }
 
-        InstanceId::InstanceId(const Uuid& guid)
-            : m_guid{ guid }
+        InstanceId InstanceId::CreateUuid(const AZ::Uuid& guid, const SubIdContainer& subIds)
         {
+            return InstanceId(guid, subIds);
         }
 
-        InstanceId::InstanceId(const Uuid& guid, uint32_t subId)
-            : m_guid{ guid }
-            , m_subId{ subId }
-        {
-        }
-
-        InstanceId::InstanceId(const Uuid& guid, uint32_t subId, void* versionId)
-            : m_guid{ guid }
-            , m_subId{ subId }
-            , m_versionId{ versionId }
+        InstanceId::InstanceId(const Uuid& guid, const SubIdContainer& subIds)
+            : m_guid(guid)
+            , m_subIds(subIds)
         {
         }
 
         bool InstanceId::IsValid() const
         {
-            return m_guid != AZ::Uuid::CreateNull();
+            return !m_guid.IsNull();
+        }
+
+        bool InstanceId::operator<(const InstanceId& rhs) const
+        {
+            return m_guid < rhs.m_guid ||
+                (m_guid == rhs.m_guid &&
+                 AZStd::lexicographical_compare(m_subIds.begin(), m_subIds.end(), rhs.m_subIds.begin(), rhs.m_subIds.end()));
         }
 
         bool InstanceId::operator==(const InstanceId& rhs) const
         {
-            return m_guid == rhs.m_guid && m_subId == rhs.m_subId && m_versionId == rhs.m_versionId;
+            return m_guid == rhs.m_guid && AZStd::equal(m_subIds.begin(), m_subIds.end(), rhs.m_subIds.begin(), rhs.m_subIds.end());
         }
 
         bool InstanceId::operator!=(const InstanceId& rhs) const
         {
-            return m_guid != rhs.m_guid || m_subId != rhs.m_subId || m_versionId != rhs.m_versionId;
+            return !operator==(rhs);
+        }
+
+        const Uuid& InstanceId::GetGuid() const
+        {
+            return m_guid;
         }
     } // namespace Data
 } // namespace AZ

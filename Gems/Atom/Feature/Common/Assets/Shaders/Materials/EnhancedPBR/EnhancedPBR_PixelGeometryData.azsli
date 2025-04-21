@@ -31,7 +31,7 @@
     class PixelGeometryData_EnhancedPBR 
     {
         float3 positionWS;
-        float3 vertexNormal;
+        real3 vertexNormal;
         float2 uvs[UvSetCount];
         float2 detailUvs[UvSetCount];
         float3 tangents[UvSetCount];

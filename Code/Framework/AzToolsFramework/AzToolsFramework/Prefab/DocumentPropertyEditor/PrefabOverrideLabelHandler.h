@@ -15,6 +15,7 @@
 #include <QHBoxLayout>
 #include <QIcon>
 #include <QMenu>
+#include <QSharedPointer>
 #include <QToolButton>
 
 namespace AzToolsFramework::Prefab
@@ -31,7 +32,9 @@ namespace AzToolsFramework::Prefab
 
         //! Specifies the behavior when override label property is encountered in the DPE DOM.
         //! @param value The value holding the override label property in the DPE DOM
-        void SetValueFromDom(const AZ::Dom::Value& value);
+        void SetValueFromDom(const AZ::Dom::Value& value) override;
+
+        bool ResetToDefaults() override;
 
         static constexpr const AZStd::string_view GetHandlerName()
         {
@@ -43,8 +46,14 @@ namespace AzToolsFramework::Prefab
         void ShowContextMenu(const QPoint&);
 
         bool m_overridden;
+        AZ::Dom::Value m_node;
 
         QToolButton* m_iconButton;
         AzQtComponents::ElidingLabel* m_textLabel;
+        QSharedPointer<QIcon> m_overrideIcon;
+        QSharedPointer<QIcon> m_emptyIcon;
+
+        static QWeakPointer<QIcon> s_sharedOverrideIcon;
+        static QWeakPointer<QIcon> s_sharedEmptyIcon;
     };
 } // namespace AzToolsFramework::Prefab

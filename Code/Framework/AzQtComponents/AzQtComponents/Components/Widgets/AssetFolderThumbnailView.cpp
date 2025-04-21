@@ -7,17 +7,28 @@
  */
 #include <AzQtComponents/Components/Widgets/AssetFolderThumbnailView.h>
 
+#include <AzCore/Debug/Trace.h>
+#include <AzCore/std/algorithm.h>
 #include <AzQtComponents/Components/Style.h>
 
 AZ_PUSH_DISABLE_WARNING(4244 4251 4800, "-Wunknown-warning-option") // 4244: 'initializing': conversion from 'int' to 'float', possible loss of data
                                                                     // 4251: 'QInputEvent::modState': class 'QFlags<Qt::KeyboardModifier>' needs to have dll-interface to be used by clients of class 'QInputEvent'
                                                                     // 4800: 'QFlags<QPainter::RenderHint>::Int': forcing value to bool 'true' or 'false' (performance warning)
-#include <QAbstractItemDelegate>
+#include <QBrush>
+#include <QDrag>
+#include <QGuiApplication>
+#include <QIcon>
+#include <QLineEdit>
+#include <QMenu>
+#include <QMimeData>
+#include <QMimeDatabase>
 #include <QMouseEvent>
 #include <QPainter>
 #include <QScrollBar>
 #include <QSettings>
-#include <QMenu>
+#include <QStyledItemDelegate>
+#include <QTextDocument>
+#include <QTimer>
 AZ_POP_DISABLE_WARNING
 
 namespace
@@ -112,22 +123,8 @@ namespace AzQtComponents
         painter->drawConvexPolygon(caret);
     }
 
-    class AssetFolderThumbnailViewDelegate : public QAbstractItemDelegate
-    {
-    public:
-        explicit AssetFolderThumbnailViewDelegate(QObject* parent = nullptr);
-
-        void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
-        QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
-
-        void polish(const AssetFolderThumbnailView::Config& config);
-
-    private:
-        AssetFolderThumbnailView::Config m_config;
-    };
-
     AssetFolderThumbnailViewDelegate::AssetFolderThumbnailViewDelegate(QObject* parent)
-        : QAbstractItemDelegate(parent)
+        : QStyledItemDelegate(parent)
     {
     }
 
@@ -151,7 +148,6 @@ namespace AzQtComponents
         const auto imageRect = thumbnailRect.adjusted(padding, padding, -padding, -padding);
 
         // border
-
         const auto halfBorderThickness = qMax(config.borderThickness, config.selectedBorderThickness) / 2;
         const auto borderRect = QRectF{thumbnailRect}.adjusted(halfBorderThickness, halfBorderThickness, -halfBorderThickness, -halfBorderThickness);
         QPen borderPen;
@@ -168,12 +164,20 @@ namespace AzQtComponents
         painter->drawRoundedRect(borderRect, borderRadius, borderRadius);
 
         // pixmap
-
-        const auto& iconVariant = index.data(Qt::DecorationRole);
-        if (!iconVariant.isNull())
+        const auto& qVariant = index.data(Qt::DecorationRole);
+        if (!qVariant.isNull())
         {
-            const auto& icon = iconVariant.value<QIcon>();
-            icon.paint(painter, imageRect);
+            QIcon icon;
+            if (const auto& path = qVariant.value<QString>(); !path.isEmpty())
+            {
+                icon.addFile(path, imageRect.size(), QIcon::Normal, QIcon::Off);
+                icon.paint(painter, imageRect);
+            }
+            else if (const auto& pixmap = qVariant.value<QPixmap>(); !pixmap.isNull())
+            {
+                icon.addPixmap(pixmap.scaled(imageRect.size(), Qt::KeepAspectRatio, Qt::SmoothTransformation), QIcon::Normal, QIcon::Off);
+                icon.paint(painter, imageRect);
+            }
         }
 
         if (isTopLevel)
@@ -187,7 +191,6 @@ namespace AzQtComponents
             }
 
             // expand button
-
             if (option.state & QStyle::State_DownArrow)
             {
                 const auto& buttonConfig = m_config.expandButton;
@@ -197,19 +200,54 @@ namespace AzQtComponents
             }
 
             // text
-
             const auto textHeight = option.fontMetrics.height();
             const auto textRect = QRect{rect.left(), rect.bottom() - textHeight, rect.width(), textHeight * 2};
 
             painter->setPen(option.palette.color(QPalette::Text));
-            QString text = elidedTextWithExtension(option.fontMetrics, index.data().toString(), textRect.width());
-            (text.contains(QChar::LineFeed) ? painter->drawText(textRect, Qt::AlignTop | Qt::AlignLeft, text)
-                                            : painter->drawText(textRect, Qt::AlignTop | Qt::AlignHCenter, text));
+
+            QString text = index.data().toString();
+
+            QRegularExpression htmlMarkupRegex("<[^>]*>");
+            if (htmlMarkupRegex.match(text).hasMatch())
+            {
+                // Grab the plain text to measure.
+                QTextDocument textDoc;
+                textDoc.setHtml(text);
+                QString plainText = textDoc.toPlainText();
+                textDoc.clear();
+
+                auto textWidth = option.fontMetrics.horizontalAdvance(plainText);
+
+                QString alignment = textWidth > textRect.width() ? "left" : "center";
+
+                QStyleOptionViewItem optionV4{ option };
+                initStyleOption(&optionV4, index);
+                optionV4.state &= ~(QStyle::State_HasFocus | QStyle::State_Selected);
+
+                painter->save();
+                painter->setRenderHint(QPainter::Antialiasing);
+
+                textDoc.setDefaultFont(option.font);
+
+                textDoc.setDefaultStyleSheet("body {color: white}");
+
+                textDoc.setHtml("<body align='" + alignment + "'>" + index.data().toString() + "</span> </body>");
+                painter->translate(textRect.topLeft());
+                textDoc.setTextWidth(textRect.width());
+                textDoc.drawContents(painter, QRectF(0, 0, textRect.width(), textRect.height()));
+                painter->restore();
+            }
+            else
+            {
+                text = elidedTextWithExtension(option.fontMetrics, index.data().toString(), textRect.width());
+
+                (text.contains(QChar::LineFeed) ? painter->drawText(textRect, Qt::AlignTop | Qt::AlignLeft, text)
+                                                : painter->drawText(textRect, Qt::AlignTop | Qt::AlignHCenter, text));
+            }
         }
         else
         {
             // text
-
             const auto textHeight = option.fontMetrics.height();
             const auto textRect = QRect{ rect.left(), rect.bottom() - textHeight, rect.width(), textHeight * 2};
 
@@ -231,6 +269,44 @@ namespace AzQtComponents
     void AssetFolderThumbnailViewDelegate::polish(const AssetFolderThumbnailView::Config& config)
     {
         m_config = config;
+    }
+
+    QWidget* AssetFolderThumbnailViewDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const
+    {
+        QWidget* widget = QStyledItemDelegate::createEditor(parent, option, index);
+        QLineEdit* lineEdit = qobject_cast<QLineEdit*>(widget);
+        if (lineEdit)
+        {
+            connect(lineEdit, &QLineEdit::editingFinished, this, &AssetFolderThumbnailViewDelegate::editingFinished);
+        }
+        return widget;
+    }
+
+    void AssetFolderThumbnailViewDelegate::editingFinished()
+    {
+        if (auto sendingLineEdit = qobject_cast<QLineEdit*>(sender()); sendingLineEdit)
+        {
+            // debounce this call by disconnecting from the signal immediately.
+            // This is because editingFinished is triggered repeatedly, for example,
+            // when the user presses enter but also when the line edit loses focus.  
+            // If the user presses enter, both happen, causing a double send if we don't debounce like this.
+            QObject::disconnect(sendingLineEdit, &QLineEdit::editingFinished, this, &AssetFolderThumbnailViewDelegate::editingFinished); 
+            emit RenameThumbnail(sendingLineEdit->text());
+        }
+    }
+
+    void AssetFolderThumbnailViewDelegate::updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const
+    {
+        if (QLineEdit* lineEdit = qobject_cast<QLineEdit*>(editor))
+        {
+            const auto& rect = option.rect;
+            const auto textHeight = option.fontMetrics.height();
+            const auto textRect = QRect{ rect.left(), rect.bottom() - textHeight, rect.width(), textHeight * 2 };
+            lineEdit->setGeometry(textRect);
+            lineEdit->setMaximumWidth(rect.width());
+            return;
+        }
+        QStyledItemDelegate::updateEditorGeometry(editor, option, index);
     }
 
     static void readColor(QSettings& settings, const QString& name, QColor& color)
@@ -283,6 +359,7 @@ namespace AzQtComponents
         config.topItemsVerticalSpacing = settings.value(QStringLiteral("TopItemsVerticalSpacing"), config.topItemsVerticalSpacing).toInt();
         config.childrenItemsHorizontalSpacing =
             settings.value(QStringLiteral("ChildrenItemsHorizontalSpacing"), config.childrenItemsHorizontalSpacing).toInt();
+        config.scrollSpeed = settings.value(QStringLiteral("ScrollSpeed"), config.scrollSpeed).toInt();
 
         settings.beginGroup(QStringLiteral("RootThumbnail"));
         readThumbnail(settings, config.rootThumbnail);
@@ -311,6 +388,7 @@ namespace AzQtComponents
         config.topItemsHorizontalSpacing = 18;
         config.topItemsVerticalSpacing = 18;
         config.childrenItemsHorizontalSpacing = 7;
+        config.scrollSpeed = 45;
 
         config.rootThumbnail.width = 96;
         config.rootThumbnail.height = 96;
@@ -376,6 +454,32 @@ namespace AzQtComponents
         , m_config(defaultConfig())
     {
         setItemDelegate(m_delegate);
+        setSelectionMode(ExtendedSelection);
+
+        connect(
+            m_delegate,
+            &AssetFolderThumbnailViewDelegate::RenameThumbnail,
+            this,
+            [this](const QString& value)
+            {
+                emit afterRename(value);
+            });
+
+        // Enable drag/drop.
+        setDragEnabled(true);
+        setAcceptDrops(true);
+        setDragDropMode(QAbstractItemView::DragDrop);
+        setDropIndicatorShown(true);
+        setDragDropOverwriteMode(true);
+
+        // Setup the Selection Updater timer. Only start during a drag selection operation.
+        m_selectionUpdater = new QTimer(this);
+        connect(m_selectionUpdater, &QTimer::timeout, this,
+            [&](){
+                SelectAllEntitiesInSelectionRect();
+                update();
+            }
+        );
     }
 
     AssetFolderThumbnailView::~AssetFolderThumbnailView() = default;
@@ -496,12 +600,6 @@ namespace AzQtComponents
         }
     }
 
-    void AssetFolderThumbnailView::RefreshThumbnailview()
-    {
-        updateGeometries();
-        update();
-    }
-
     QModelIndex AssetFolderThumbnailView::moveCursor(QAbstractItemView::CursorAction cursorAction, Qt::KeyboardModifiers modifiers)
     {
         Q_UNUSED(modifiers);
@@ -591,7 +689,7 @@ namespace AzQtComponents
 
     bool AssetFolderThumbnailView::isExpandable(const QModelIndex& index) const
     {
-        return (m_hideProductAssets ? false : index.data(static_cast<int>(AssetFolderThumbnailView::Role::IsExpandable)).value<bool>());
+        return index.data(static_cast<int>(AssetFolderThumbnailView::Role::IsExpandable)).value<bool>();
     }
 
     void AssetFolderThumbnailView::paintEvent(QPaintEvent* event)
@@ -614,6 +712,24 @@ namespace AzQtComponents
         paintChildFrames(&painter);
 
         paintItems(&painter);
+
+        // Draw the drag selection rect.
+        if (m_isDragSelectActive && m_queuedMouseEvent)
+        {
+            // Retrieve the two corners of the rect.
+            const QPoint point1 = (m_queuedMouseEvent->pos()); // The position the drag operation started at.
+            const QPoint point2 = (m_mousePosition); // The current mouse position.
+
+            // We need the top left and bottom right corners, which may not be the two corners we got above.
+            // So we composite the corners based on the coordinates of the points.
+            const QPoint topLeft(AZStd::min(point1.x(), point2.x()), AZStd::min(point1.y(), point2.y()));
+            const QPoint bottomRight(AZStd::max(point1.x(), point2.x()), AZStd::max(point1.y(), point2.y()));
+
+            // Paint the rect.
+            painter.setBrush(m_dragSelectRectColor);
+            painter.setPen(m_dragSelectBorderColor);
+            painter.drawRect(QRect(topLeft, bottomRight));
+        }
     }
 
     void AssetFolderThumbnailView::paintChildFrames(QPainter* painter) const
@@ -704,84 +820,6 @@ namespace AzQtComponents
         return {};
     }
 
-    void AssetFolderThumbnailView::mousePressEvent(QMouseEvent* event)
-    {
-        const auto p = event->pos() + QPoint{horizontalOffset(), verticalOffset()};
-
-        // check the expand/collapse buttons on one of the top level items was clicked
-
-        {
-            auto it = std::find_if(
-                m_itemGeometry.keyBegin(),
-                m_itemGeometry.keyEnd(),
-                [this, &p](const QModelIndex& index)
-                {
-                    if (isExpandable(index) && !m_expandedIndexes.contains(index))
-                    {
-                        const auto& rect = m_itemGeometry.value(index);
-                        const auto width = m_config.expandButton.width;
-                        const auto buttonRect = QRect{ rect.left() + rect.width() - width, rect.top(), width, rect.width() };
-                        return buttonRect.contains(p);
-                    }
-                    return false;
-                });
-            if (it != m_itemGeometry.keyEnd())
-            {
-                if (m_expandedIndexes.contains(*it))
-                {
-                    m_expandedIndexes.remove(*it);
-                }
-                else
-                {
-                    m_expandedIndexes.insert(*it);
-                }
-                scheduleDelayedItemsLayout();
-                return;
-            }
-        }
-
-        // check that the preview on one of the top level items was clicked
-        // No need to do computations on m_itemGeometry entries since we handled the expand/collapse button with the case above
-        auto idx = indexAtPos(p);
-        if (idx.isValid())
-        {
-            selectionModel()->select(idx, QItemSelectionModel::SelectionFlag::ClearAndSelect);
-            emit clicked(idx);
-            update();
-            return;
-        }
-
-        // check the collapse button on one of the child frames was clicked
-
-        {
-            auto it = std::find_if(m_childFrames.begin(), m_childFrames.end(), [this, &p](const ChildFrame& childFrame) {
-                const auto& rect = childFrame.rects.last();
-                const auto width = m_config.expandButton.width;
-                const auto buttonRect = QRect{rect.left() + rect.width() - width, rect.top(), width, rect.width()};
-                return buttonRect.contains(p);
-            });
-            if (it != m_childFrames.end())
-            {
-                if (m_expandedIndexes.contains(it->index))
-                {
-                    m_expandedIndexes.remove(it->index);
-                    scheduleDelayedItemsLayout();
-                    return;
-                }
-            }
-        }
-
-        // If empty space in the view is clicked, clear the current selection and update the view
-        if (!idx.isValid())
-        {
-            selectionModel()->clear();
-            update();
-            return;
-        }
-
-        QAbstractItemView::mousePressEvent(event);
-    }
-
     void AssetFolderThumbnailView::mouseDoubleClickEvent(QMouseEvent* event)
     {
         const auto p = event->pos() + QPoint{ horizontalOffset(), verticalOffset() };
@@ -801,31 +839,9 @@ namespace AzQtComponents
 
     void AssetFolderThumbnailView::contextMenuEvent(QContextMenuEvent* event)
     {
-        // For now we only have a context menu in search mode for the "show in folder" option
-        if (!m_showSearchResultsMode)
-        {
-            return;
-        }
-
         const auto p = event->pos() + QPoint{ horizontalOffset(), verticalOffset() };
         auto idx = indexAtPos(p);
-
-        if (idx.isValid())
-        {
-            m_contextMenu = new QMenu(this);
-            auto action = m_contextMenu->addAction("Show In Folder");
-            connect(
-                action,
-                &QAction::triggered,
-                this,
-                [this, idx]()
-                {
-                    emit showInFolderTriggered(idx);
-                });
-            m_contextMenu->exec(event->globalPos());
-            delete m_contextMenu;
-            m_contextMenu = nullptr;
-        }
+        emit contextMenu(idx);
     }
 
     int AssetFolderThumbnailView::rootThumbnailSizeInPixels() const
@@ -836,6 +852,29 @@ namespace AzQtComponents
     int AssetFolderThumbnailView::childThumbnailSizeInPixels() const
     {
         return m_config.childThumbnail.width;
+    }
+
+    void AssetFolderThumbnailView::rowsInserted(const QModelIndex& parent, int start, int end)
+    {
+        scheduleDelayedItemsLayout();
+
+        QAbstractItemView::rowsInserted(parent, start, end);
+    }
+
+    void AssetFolderThumbnailView::rowsAboutToBeRemoved(const QModelIndex& parent, int start, int end)
+    {
+        scheduleDelayedItemsLayout();
+
+        QAbstractItemView::rowsAboutToBeRemoved(parent, start, end);
+    }
+
+    void AssetFolderThumbnailView::reset()
+    {
+        m_itemGeometry.clear();
+        m_expandedIndexes.clear();
+        m_childFrames.clear();
+
+        QAbstractItemView::reset();
     }
 
     void AssetFolderThumbnailView::updateGeometries()
@@ -864,6 +903,7 @@ namespace AzQtComponents
         }
 
         verticalScrollBar()->setPageStep(viewport()->height());
+        verticalScrollBar()->setSingleStep(m_config.scrollSpeed);
         verticalScrollBar()->setRange(0, y + rowHeight - viewport()->height());
     }
 
@@ -997,9 +1037,413 @@ namespace AzQtComponents
         m_showSearchResultsMode = searchMode;
     }
 
-    void AssetFolderThumbnailView::HideProductAssets(bool checked)
+    bool AssetFolderThumbnailView::InSearchResultsMode() const
     {
-        m_hideProductAssets = checked;
+        return m_showSearchResultsMode;
+    }
+
+    void AssetFolderThumbnailView::selectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
+    {
+        QAbstractItemView::selectionChanged(selected, deselected);
+        Q_EMIT selectionChangedSignal(selected, deselected);
+    }
+
+    void AssetFolderThumbnailView::mousePressEvent(QMouseEvent* event)
+    {
+        // Postponing normal mouse press logic until mouse is released or dragged.
+        // This allows drag/drop of non-selected items.
+        ClearQueuedMouseEvent();
+        m_queuedMouseEvent = new QMouseEvent(*event);
+    }
+
+    void AssetFolderThumbnailView::mouseMoveEvent(QMouseEvent* event)
+    {
+        // Prevent multiple updates throughout the function for changing UIs.
+        bool forceUpdate = false;
+
+        m_mousePosition = event->pos();
+
+        if (m_queuedMouseEvent && !m_isDragSelectActive)
+        {
+            // Determine whether the mouse move should trigger a rect selection or an entity drag.
+            QModelIndex clickedIndex = indexAt(m_queuedMouseEvent->pos());
+            if (clickedIndex.isValid())
+            {
+                HandleDrag();
+            }
+            else
+            {
+                // Store previous selection - will be used if key modifiers are being held.
+                m_previousSelection = selectionModel()->selection();
+
+                // Start the updater to only refresh the selection at regular intervals.
+                m_selectionUpdater->start(m_selectionUpdateInterval);
+
+                m_isDragSelectActive = true;
+                forceUpdate = true;
+            }
+        }
+
+        if (forceUpdate)
+        {
+            update();
+        }
+    }
+
+    void AssetFolderThumbnailView::mouseReleaseEvent(QMouseEvent* event)
+    {
+        if (m_isDragSelectActive)
+        {
+            SelectAllEntitiesInSelectionRect();
+            update();
+        }
+        else if (m_queuedMouseEvent)
+        {
+            ProcessQueuedMousePressedEvent(m_queuedMouseEvent);
+        }
+
+        ClearQueuedMouseEvent();
+
+        m_previousSelection.clear();
+        m_selectionUpdater->stop();
+        m_isDragSelectActive = false;
+
+        QAbstractItemView::mouseReleaseEvent(event);
+    }
+
+    void AssetFolderThumbnailView::SelectAllEntitiesInSelectionRect()
+    {
+        if (!m_queuedMouseEvent)
+        {
+            return;
+        }
+
+        // TODO - Handle Ctrl and Shift
+
+        // Retrieve the two opposing corners of the rect.
+        const QPoint point1 = (m_queuedMouseEvent->pos()); // The position the drag operation started at.
+        const QPoint point2 = (m_mousePosition); // The current mouse position.
+
+        // Determine which point's y is the top and which is the bottom.
+        const int top(AZStd::min(point1.y(), point2.y()));
+        const int bottom(AZStd::max(point1.y(), point2.y()));
+        const int left(AZStd::min(point1.x(), point2.x()));
+        const int right(AZStd::max(point1.x(), point2.x()));
+
+        const QRect selectionRect(QPoint(left, top), QPoint(right, bottom));
+
+        QItemSelection selection;
+        for (auto iter = m_itemGeometry.begin(), end = m_itemGeometry.end(); iter != end; ++iter)
+        {
+            QRect indexRect = iter.value();
+            indexRect.translate(-horizontalOffset(), -verticalOffset());
+
+            if (selectionRect.intersects(indexRect))
+            {
+                const auto& index = iter.key();
+                selection.select(index, index);
+            }
+        }
+
+        switch (QGuiApplication::queryKeyboardModifiers())
+        {
+        case Qt::ControlModifier:
+            {
+                selection.merge(m_previousSelection, QItemSelectionModel::ToggleCurrent);
+                selectionModel()->select(selection, QItemSelectionModel::ClearAndSelect);
+            }
+            break;
+
+        case Qt::ShiftModifier:
+            {
+                // Replicates behavior in Windows explorer.
+                // This will add all newly selected items to the existing selection, but if an item is added
+                // to the selection rect and then removed, it will be removed from the previous selection.
+
+                // Remove new selection from previous selection.
+                m_previousSelection.merge(selection, QItemSelectionModel::Deselect | QItemSelectionModel::Current);
+
+                // Add previous selection to new selection.
+                selection.merge(m_previousSelection, QItemSelectionModel::SelectCurrent);
+
+                // Select both (updated) previous and current selection.
+                selectionModel()->select(selection, QItemSelectionModel::ClearAndSelect);
+            }
+            break;
+
+        default:
+            {
+                selectionModel()->select(selection, QItemSelectionModel::ClearAndSelect);
+            }
+            break;
+        }
+    }
+
+    void AssetFolderThumbnailView::ClearQueuedMouseEvent()
+    {
+        if (m_queuedMouseEvent)
+        {
+            delete m_queuedMouseEvent;
+            m_queuedMouseEvent = nullptr;
+        }
+    }
+
+    void AssetFolderThumbnailView::ProcessQueuedMousePressedEvent(QMouseEvent* event)
+    {
+        const auto p = event->pos() + QPoint{ horizontalOffset(), verticalOffset() };
+
+        // check the expand/collapse buttons on one of the top level items was clicked
+        {
+            auto it = std::find_if(
+                m_itemGeometry.keyBegin(),
+                m_itemGeometry.keyEnd(),
+                [this, &p](const QModelIndex& index)
+                {
+                    if (isExpandable(index) && !m_expandedIndexes.contains(index))
+                    {
+                        const auto& rect = m_itemGeometry.value(index);
+                        const auto width = m_config.expandButton.width;
+                        const auto buttonRect = QRect{ rect.left() + rect.width() - width, rect.top(), width, rect.width() };
+                        return buttonRect.contains(p);
+                    }
+                    return false;
+                });
+            if (it != m_itemGeometry.keyEnd())
+            {
+                if (m_expandedIndexes.contains(*it))
+                {
+                    m_expandedIndexes.remove(*it);
+                }
+                else
+                {
+                    m_expandedIndexes.insert(*it);
+                }
+                scheduleDelayedItemsLayout();
+                return;
+            }
+        }
+
+        // check that the preview on one of the top level items was clicked
+        // No need to do computations on m_itemGeometry entries since we handled the expand/collapse button with the case above
+        auto idx = indexAtPos(p);
+        if (idx.isValid())
+        {
+            bool isRightClick = event->button() == Qt::RightButton;
+            if (selectionMode() == ExtendedSelection && QGuiApplication::queryKeyboardModifiers() == Qt::ControlModifier)
+            {
+                auto selectionFlag = isRightClick ? QItemSelectionModel::SelectionFlag::Select : QItemSelectionModel::SelectionFlag::Toggle;
+                selectionModel()->select(idx, selectionFlag);
+            }
+            else if (selectionMode() == ExtendedSelection && QGuiApplication::queryKeyboardModifiers() == Qt::ShiftModifier)
+            {
+                auto selectedIndex =
+                    (selectionModel()->hasSelection() ? selectionModel()->currentIndex() : model()->index(0, 0, rootIndex()));
+                QItemSelectionRange indexRange;
+                if (selectedIndex.row() < idx.row())
+                {
+                    indexRange = QItemSelectionRange(selectedIndex, idx);
+                }
+                else if (selectedIndex.row() > idx.row())
+                {
+                    indexRange = QItemSelectionRange(idx, selectedIndex);
+                }
+                if (!indexRange.isEmpty())
+                {
+                    QItemSelectionModel::SelectionFlag selectionFlag;
+                    if (selectionModel()->isSelected(idx) && !isRightClick)
+                    {
+                        selectionFlag = QItemSelectionModel::SelectionFlag::Deselect;
+                    }
+                    else
+                    {
+                        selectionFlag = QItemSelectionModel::SelectionFlag::Select;
+                    }
+                    for (auto index : indexRange.indexes())
+                    {
+                        selectionModel()->select(index, selectionFlag);
+                    }
+                }
+            }
+            else if (!selectionModel()->isSelected(idx))
+            {
+                selectionModel()->select(idx, QItemSelectionModel::SelectionFlag::ClearAndSelect);
+            }
+            update();
+            // Pass event to base class to enable drag/drop selections.
+            QAbstractItemView::mousePressEvent(event);
+            return;
+        }
+
+        // check the collapse button on one of the child frames was clicked
+        {
+            auto it = std::find_if(
+                m_childFrames.begin(),
+                m_childFrames.end(),
+                [this, &p](const ChildFrame& childFrame)
+                {
+                    const auto& rect = childFrame.rects.last();
+                    const auto width = m_config.expandButton.width;
+                    const auto buttonRect = QRect{ rect.left() + rect.width() - width, rect.top(), width, rect.width() };
+                    return buttonRect.contains(p);
+                });
+            if (it != m_childFrames.end())
+            {
+                if (m_expandedIndexes.contains(it->index))
+                {
+                    m_expandedIndexes.remove(it->index);
+                    scheduleDelayedItemsLayout();
+                    return;
+                }
+            }
+        }
+
+        // If empty space in the view is clicked, clear the current selection and update the view
+        if (!idx.isValid() && selectionModel()->hasSelection())
+        {
+            selectionModel()->clear();
+            emit deselected();
+            update();
+            return;
+        }
+    }
+
+    void AssetFolderThumbnailView::HandleDrag()
+    {
+        // Retrieve the index at the click position.
+        QModelIndex indexAtClick = indexAt(m_queuedMouseEvent->pos()).siblingAtColumn(0);
+
+        // If the index is selected, we should move the whole selection.
+        if (selectionModel()->isSelected(indexAtClick))
+        {
+            StartCustomDrag(selectionModel()->selectedIndexes(), defaultDropAction());
+        }
+        else
+        {
+            StartCustomDrag(QModelIndexList{ indexAtClick }, defaultDropAction());
+        }
+    }
+
+    void AssetFolderThumbnailView::StartCustomDrag(const QModelIndexList& indexList, Qt::DropActions /* supportedActions */)
+    {
+        QMimeData* mimeData = model()->mimeData(indexList);
+
+        if (mimeData)
+        {
+            QDrag* drag = new QDrag(this);
+            drag->setPixmap(QPixmap::fromImage(CreateDragImage(indexList)));
+            drag->setMimeData(mimeData);
+
+            drag->exec({ Qt::CopyAction }, Qt::CopyAction);
+        }
+    }
+
+    QImage AssetFolderThumbnailView::CreateDragImage(const QModelIndexList& indexList)
+    {
+        if (indexList.isEmpty())
+        {
+            return QImage();
+        }
+
+        // Define size of rect for asset/folder icons.
+        QRect rect(0, 9, 36, 36);
+
+        // Generate a drag image of the dragged element.
+        // We get the configuration of the first item in the list.
+        auto index = indexList.at(0);
+        const auto isTopLevel = index.data(static_cast<int>(AssetFolderThumbnailView::Role::IsTopLevel)).value<bool>();
+        const auto& config = isTopLevel ? m_config.rootThumbnail : m_config.childThumbnail;
+
+        // Initialize option
+        QStyleOptionViewItem option;
+        option.palette = palette();
+        option.font = font();
+        option.fontMetrics = fontMetrics();
+        option.decorationAlignment = Qt::AlignCenter;
+        option.rect = rect;
+
+        // Initialize painter from desired output image.
+        QImage dragImage(QRect(0, 0, 44, 56).size(), QImage::Format_ARGB32_Premultiplied);
+        QPainter painter(&dragImage);
+        painter.setCompositionMode(QPainter::CompositionMode_Source);
+        painter.fillRect(dragImage.rect(), Qt::transparent);
+        painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+
+        painter.save();
+
+        // Define border color.
+        if (selectionModel()->isSelected(index))
+        {
+            painter.setPen(QPen(config.selectedBorderColor, config.selectedBorderThickness));
+        }
+        else
+        {
+            painter.setPen(QPen(config.borderColor, config.borderThickness));
+        }
+        
+        // Paint additional rectangles under the top one to signify multiple selection.
+        painter.setBrush(QColor("#555")); // TODO - move to const members
+
+        if (indexList.size() > 2)
+        {
+            painter.setOpacity(0.5f);
+            painter.drawRoundedRect(rect.translated(7, 7), 1, 1); // TODO - move to const members
+        }
+
+        if (indexList.size() > 1)
+        {
+            painter.setOpacity(1.0f);
+            painter.drawRoundedRect(rect.translated(3, 3), 1, 1); // TODO - move to const members
+        }
+
+        // Reset opacity to full.
+        painter.setOpacity(1.0f);
+
+
+
+        const auto thumbnailRect = rect;
+
+        const auto padding = 5;
+        const auto imageRect = thumbnailRect.adjusted(padding, padding, -padding, -padding);
+
+        // border
+        const auto halfBorderThickness = qMax(config.borderThickness, config.selectedBorderThickness) / 2;
+        const auto borderRect =
+            QRectF{ thumbnailRect }.adjusted(halfBorderThickness, halfBorderThickness, -halfBorderThickness, -halfBorderThickness);
+        painter.setBrush(config.backgroundColor);
+        painter.drawRoundedRect(borderRect, config.borderRadius, config.borderRadius);
+
+        // pixmap
+        const auto& qVariant = index.data(Qt::DecorationRole);
+        if (!qVariant.isNull())
+        {
+            QIcon icon;
+            if (const auto& path = qVariant.value<QString>(); !path.isEmpty())
+            {
+                icon.addFile(path, imageRect.size(), QIcon::Normal, QIcon::Off);
+                icon.paint(&painter, imageRect);
+            }
+            else if (const auto& pixmap = qVariant.value<QPixmap>(); !pixmap.isNull())
+            {
+                icon.addPixmap(pixmap.scaled(imageRect.size(), Qt::KeepAspectRatio, Qt::SmoothTransformation), QIcon::Normal, QIcon::Off);
+                icon.paint(&painter, imageRect);
+            }
+        }
+
+        if (isTopLevel)
+        {
+            // draw top right status icon if there's data in the corresponding role
+            if (index.data(Qt::StatusTipRole).isValid())
+            {
+                painter.setPen(Qt::NoPen);
+                painter.setBrush(QColor::fromRgb(0x22, 0x22, 0x22));
+                painter.drawRect(rect.right() - config.borderThickness + 1 - 16, rect.top() + config.borderThickness, 16, 16);
+            }
+        }
+
+        painter.restore();
+
+        painter.end();
+        return dragImage;
     }
 
 } // namespace AzQtComponents

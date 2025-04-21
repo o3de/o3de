@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/DOM/DomPath.h>
+#include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/Overrides/PrefabOverrideTypes.h>
 #include <AzToolsFramework/Prefab/PrefabIdTypes.h>
 
@@ -41,6 +42,23 @@ namespace AzToolsFramework
             //! @return Whether overrides are reverted successfully.
             bool RevertOverrides(AZ::Dom::Path path, LinkId linkId) const;
 
+            //! Pushes overrides corresponding to the provided path to the prefab template of the prefab instance.
+            //! @param path The path at which overrides should be applied.
+            //! @param relativePath The relative path from the instance currently holding the overrides to the one that will receive them.
+            //! @param targetInstance The instance whose prefab template the overrides will be pushed to.
+            //! @return Whether overrides are applied successfully.
+            bool PushOverridesToPrefab(const AZ::Dom::Path& path, AZStd::string_view relativePath, InstanceOptionalReference targetInstance) const;
+
+            //! Pushes overrides corresponding to the provided path from one link to another.
+            //! For this to work, overrides should target a descendant of both source and target links,
+            //! and targetLink should be a descendant of sourceLink.
+            //! @param path The path at which overrides should be applied.
+            //! @param relativePath The relative path from the instance currently holding the overrides to the one that will receive them.
+            //! @param sourceLinkId The id for the link currently holding the overrides.
+            //! @param targetLinkId The id for the link that will be receive the overrides.
+            //! @return Whether overrides are applied successfully.
+            bool PushOverridesToLink(const AZ::Dom::Path& path, AZStd::string_view relativePath, LinkId sourceLinkId, LinkId targetLinkId) const;
+            
         private:
             PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
         };

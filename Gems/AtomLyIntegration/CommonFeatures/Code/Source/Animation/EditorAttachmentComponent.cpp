@@ -67,11 +67,11 @@ namespace AZ
                         ->Attribute(AZ::Edit::Attributes::Category, "Animation")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Attachment.svg")
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Attachment.svg")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
+                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(
                             AZ::Edit::Attributes::HelpPageURL,
-                            "https://o3de.org/docs/user-guide/components/reference/animation/attachment/")
+                            "https://www.o3de.org/docs/user-guide/components/reference/animation/attachment/")
                         ->DataElement(0, &EditorAttachmentComponent::m_targetId, "Target entity", "Attach to this entity.")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorAttachmentComponent::OnTargetIdChanged)
                         ->DataElement(

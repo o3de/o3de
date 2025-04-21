@@ -57,7 +57,7 @@ namespace AzToolsFramework::Prefab
         TemplateId GetFocusedPrefabTemplateId(AzFramework::EntityContextId entityContextId) const override;
         InstanceOptionalReference GetFocusedPrefabInstance(AzFramework::EntityContextId entityContextId) const override;
         bool IsFocusedPrefabInstanceReadOnly(AzFramework::EntityContextId entityContextId) const override;
-        LinkId AppendPathFromFocusedInstanceToPatchPaths(PrefabDom& providedPatch, AZ::EntityId entityId) const override;
+        LinkId PrependPathFromFocusedInstanceToPatchPaths(PrefabDom& patches, AZ::EntityId entityId) const override;
 
         // PrefabFocusPublicInterface and PrefabFocusPublicRequestBus overrides ...
         PrefabFocusOperationResult FocusOnOwningPrefab(AZ::EntityId entityId) override;
@@ -73,7 +73,7 @@ namespace AzToolsFramework::Prefab
         void SetPrefabEditScope(AzFramework::EntityContextId entityContextId, PrefabEditScope mode) override;
 
         // EditorEntityContextNotificationBus overrides ...
-        void OnContextReset() override;
+        void OnPrepareForContextReset() override;
         
         // EditorEntityInfoNotificationBus overrides ...
         void OnEntityInfoUpdatedName(AZ::EntityId entityId, const AZStd::string& name) override;

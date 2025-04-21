@@ -6,15 +6,16 @@
  *
  */
 
-
 #ifndef CRYINCLUDE_CRYSYSTEM_DEBUGCALLSTACK_H
 #define CRYINCLUDE_CRYSYSTEM_DEBUGCALLSTACK_H
 #pragma once
 
-
 #include "IDebugCallStack.h"
 
-#if defined (WIN32) || defined (WIN64)
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/containers/map.h>
+
+#if defined(WIN32) || defined(WIN64)
 
 //! Limits the maximal number of functions in call stack.
 const int MAX_DEBUG_STACK_ENTRIES_FILE_DUMP = 12;
@@ -26,41 +27,45 @@ struct ISystem;
 //! DebugCallStack class, capture call stack information from symbol files.
 //!
 //!============================================================================
-class DebugCallStack
-    : public IDebugCallStack
+class DebugCallStack : public IDebugCallStack
 {
 public:
     DebugCallStack();
     virtual ~DebugCallStack();
 
-    ISystem* GetSystem() { return m_pSystem; };
+    ISystem* GetSystem()
+    {
+        return m_pSystem;
+    };
 
-    virtual AZStd::string GetModuleNameForAddr(void* addr);
-    virtual void GetProcNameForAddr(void* addr, AZStd::string& procName, void*& baseAddr, AZStd::string& filename, int& line);
-    virtual AZStd::string GetCurrentFilename();
+    virtual AZStd::string GetModuleNameForAddr(void* addr) override;
+    virtual void GetProcNameForAddr(void* addr, AZStd::string& procName, void*& baseAddr, AZStd::string& filename, int& line) override;
+    virtual AZStd::string GetCurrentFilename() override;
+    virtual int handleException(EXCEPTION_POINTERS* exception_pointer) override;
+    virtual void ReportBug(const char*) override;
 
     void installErrorHandler(ISystem* pSystem);
-    virtual int handleException(EXCEPTION_POINTERS* exception_pointer);
-
-    virtual void ReportBug(const char*);
-
-    void dumpCallStack(std::vector<AZStd::string>& functions);
-
+    void dumpCallStack(AZStd::vector<AZStd::string>& functions);
     void SetUserDialogEnable(const bool bUserDialogEnable);
 
-    typedef std::map<void*, AZStd::string> TModules;
+    typedef AZStd::map<void*, AZStd::string> TModules;
+
 protected:
+    enum class UserPostExceptionChoice
+    {
+        Exit,
+        Recover // Only available if the exception type allows it (eg: floating point exception)
+    };
+
     static void RemoveOldFiles();
     static void RemoveFile(const char* szFileName);
 
-    static int PrintException(EXCEPTION_POINTERS* exception_pointer);
-    static INT_PTR CALLBACK ExceptionDialogProc(HWND hwndDlg, UINT message, WPARAM wParam, LPARAM lParam);
-    static INT_PTR CALLBACK ConfirmSaveDialogProc(HWND hwndDlg, UINT message, WPARAM wParam, LPARAM lParam);
+    static UserPostExceptionChoice AskUserToRecoverOrCrash(EXCEPTION_POINTERS* exception_pointer);
 
-    void LogExceptionInfo(EXCEPTION_POINTERS* exception_pointer);
+    void SaveExceptionInfoAndShowUserReportDialogs(EXCEPTION_POINTERS* exception_pointer);
     bool BackupCurrentLevel();
     bool SaveCurrentLevel();
-    int SubmitBug(EXCEPTION_POINTERS* exception_pointer);
+    UserPostExceptionChoice SubmitBugAndAskToRecoverOrCrash(EXCEPTION_POINTERS* exception_pointer);
     void ResetFPU(EXCEPTION_POINTERS* pex);
 
     static const int s_iCallStackSize = 32768;
@@ -81,11 +86,11 @@ protected:
     ISystem* m_pSystem;
 
     int m_nSkipNumFunctions;
-    CONTEXT  m_context;
+    CONTEXT m_context;
 
     TModules m_modules;
 };
 
-#endif //WIN32
+#endif // WIN32
 
 #endif // CRYINCLUDE_CRYSYSTEM_DEBUGCALLSTACK_H

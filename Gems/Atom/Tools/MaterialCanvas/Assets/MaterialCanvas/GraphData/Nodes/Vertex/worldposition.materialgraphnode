@@ -21,7 +21,7 @@
                 "defaultDataType": "float3",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE SLOTNAME = O3DE_MC_WORLD_POSITION;"
+                        "SLOTTYPE SLOTNAME = O3DE_MC_POSITION_WS;"
                     ]
                 }
             },
@@ -33,7 +33,7 @@
                 "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE SLOTNAME = O3DE_MC_WORLD_POSITION.x;"
+                        "SLOTTYPE SLOTNAME = O3DE_MC_POSITION_WS.x;"
                     ]
                 }
             },
@@ -45,7 +45,7 @@
                 "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE SLOTNAME = O3DE_MC_WORLD_POSITION.y;"
+                        "SLOTTYPE SLOTNAME = O3DE_MC_POSITION_WS.y;"
                     ]
                 }
             },
@@ -57,7 +57,7 @@
                 "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE SLOTNAME = O3DE_MC_WORLD_POSITION.z;"
+                        "SLOTTYPE SLOTNAME = O3DE_MC_POSITION_WS.z;"
                     ]
                 }
             }

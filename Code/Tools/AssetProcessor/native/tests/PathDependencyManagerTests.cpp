@@ -483,7 +483,7 @@ namespace UnitTests
     };
 
     struct PathDependencyTestValidation
-        : UnitTest::LeakDetectionFixture
+        : ::UnitTest::LeakDetectionFixture
         , PathDependencyBenchmarks
     {
         void SetUp() override

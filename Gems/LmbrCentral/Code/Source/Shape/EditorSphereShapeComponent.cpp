@@ -46,10 +46,10 @@ namespace LmbrCentral
                     ->Attribute(AZ::Edit::Attributes::Category, "Shape")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Sphere_Shape.svg")
                     ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Sphere_Shape.svg")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(
-                        AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/shape/sphere-shape/")
+                        AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/components/reference/shape/sphere-shape/")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &EditorSphereShapeComponent::m_sphereShape,
@@ -92,7 +92,7 @@ namespace LmbrCentral
         AzToolsFramework::RadiusManipulatorRequestBus::Handler::BusConnect(entityComponentIdPair);
         AzToolsFramework::ShapeManipulatorRequestBus::Handler::BusConnect(entityComponentIdPair);
 
-        const bool allowAsymmetricalEditing = IsShapeComponentTranslationEnabled();
+        const bool allowAsymmetricalEditing = true;
         m_componentModeDelegate.ConnectWithSingleComponentMode<EditorSphereShapeComponent, AzToolsFramework::SphereComponentMode>(
             entityComponentIdPair, this, allowAsymmetricalEditing);
     }

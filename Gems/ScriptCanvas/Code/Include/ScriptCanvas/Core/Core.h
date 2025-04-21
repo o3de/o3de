@@ -19,7 +19,6 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/RTTI/ReflectContext.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/any.h>
 #include <AzCore/std/hash.h>
 #include <Core/NamedId.h>
@@ -394,6 +393,9 @@ namespace ScriptCanvas
 
         AZStd::string ToString() const;
 
+        AZStd::string GetSuggestedFileName() const;
+        void SetSuggestedFileName(const AZStd::string_view suggestedFileName);
+
     private:
         SourceHandle(const SourceHandle& data, const AZ::Uuid& id, const AZ::IO::Path& path);
 
@@ -407,6 +409,7 @@ namespace ScriptCanvas
         AZ::Uuid m_id = AZ::Uuid::CreateNull();
         AZ::IO::Path m_relativePath;
         AZ::IO::Path m_absolutePath;
+        AZStd::string m_suggestedFileName;
 
         void SanitizePath();
     };

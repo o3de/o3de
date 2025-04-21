@@ -40,7 +40,9 @@ protected:
         registry->Set(projectPathKey, (enginePath / "AutomatedTesting").Native());
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
 
-        m_app.Start(AZ::ComponentApplication::Descriptor());
+        AZ::ComponentApplication::StartupParameters startupParameters;
+        startupParameters.m_loadSettingsRegistry = false;
+        m_app.Start(AZ::ComponentApplication::Descriptor(), startupParameters);
         AZ::Debug::TraceMessageBus::Handler::BusConnect();
         // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
         // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash

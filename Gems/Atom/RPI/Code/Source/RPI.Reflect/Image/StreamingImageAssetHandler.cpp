@@ -8,6 +8,7 @@
 
 #include <Atom/RPI.Reflect/Image/StreamingImageAssetHandler.h>
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
+#include <Atom/RPI.Public/AssetTagBus.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
 
@@ -38,14 +39,36 @@ namespace AZ
             Data::AssetHandler::LoadResult loadResult = Data::AssetHandler::LoadResult::Error;
             if (assetData)
             {
-                loadResult = Utils::LoadObjectFromStreamInPlace<StreamingImageAsset>(*stream, *assetData, m_serializeContext) ?
-                    Data::AssetHandler::LoadResult::LoadComplete :
-                    Data::AssetHandler::LoadResult::Error;
-                
+                if (stream->GetLength() > 0)
+                {
+                    loadResult = Utils::LoadObjectFromStreamInPlace<StreamingImageAsset>(*stream, *assetData, m_serializeContext)
+                        ? Data::AssetHandler::LoadResult::LoadComplete
+                        : Data::AssetHandler::LoadResult::Error;
+                }
+               
                 if (loadResult == Data::AssetHandler::LoadResult::LoadComplete)
                 {
                     // ImageMipChainAsset has some internal variables need to initialized after it was loaded.
                     assetData->m_tailMipChain.Init();
+
+                    if (const auto& imageTags = assetData->GetTags(); !imageTags.empty())
+                    {
+                        AssetQuality highestMiplevel = AssetQualityLowest;
+                        for (const AZ::Name& tag : imageTags)
+                        {
+                            AssetQuality tagQuality = AssetQualityHighest;
+                            ImageTagBus::BroadcastResult(tagQuality, &ImageTagBus::Events::GetQuality, tag);
+
+                            highestMiplevel = AZStd::min(highestMiplevel, tagQuality);
+                        }
+
+                        assetData->RemoveFrontMipchains(highestMiplevel);
+
+                        for (const AZ::Name& tag : imageTags)
+                        {
+                            ImageTagBus::Broadcast(&ImageTagBus::Events::RegisterAsset, tag, assetData->GetId());
+                        }
+                    }
 
                     // Handle StreamingImageAsset reload (which the asset can be found from asset manager)
                     auto& assetManager = AZ::Data::AssetManager::Instance();
@@ -223,9 +246,13 @@ namespace AZ
 
         Data::AssetId StreamingImageAssetHandler::AssetMissingInCatalog(const Data::Asset<Data::AssetData>& asset)
         {
+            AZ_Info("Streaming Image",
+                "Streaming Image id " AZ_STRING_FORMAT " not found in asset catalog, using fallback image.\n",
+                AZ_STRING_ARG(asset.GetId().ToFixedString()));
+
             // Find out if the asset is missing completely, or just still processing
             // and escalate the asset to the top of the list
-            AzFramework::AssetSystem::AssetStatus missingAssetStatus;
+            AzFramework::AssetSystem::AssetStatus missingAssetStatus = AzFramework::AssetSystem::AssetStatus::AssetStatus_Unknown;
             AzFramework::AssetSystemRequestBus::BroadcastResult(
                 missingAssetStatus, &AzFramework::AssetSystem::AssetSystemRequests::GetAssetStatusById, asset.GetId().m_guid);
 

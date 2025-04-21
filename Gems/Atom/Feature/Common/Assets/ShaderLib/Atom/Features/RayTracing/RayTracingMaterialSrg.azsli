@@ -7,6 +7,7 @@
  */
 
 #include <Atom/Features/SrgSemantics.azsli>
+#include <Atom/Features/PBR/Lights/ReflectionProbeData.azsli>
 
 // this define specifies that the mesh buffers and material textures are stored in the Bindless Srg
 // Note1: The previous implementation using separate unbounded arrays is preserved since it demonstrates a TDR caused by
@@ -32,12 +33,15 @@ ShaderResourceGroup RayTracingMaterialSrg : SRG_RayTracingMaterial
     struct MaterialInfo
     {
         float4 m_baseColor;
-        float m_metallicFactor;
-        float m_roughnessFactor;
+        float4 m_irradianceColor;
         float3 m_emissiveColor;
-        uint m_textureFlags;
-        uint m_textureStartIndex;
-        float m_padding0;
+        float  m_metallicFactor;
+        float  m_roughnessFactor;
+        uint   m_textureFlags;
+        uint   m_textureStartIndex;
+        uint   m_reflectionProbeCubeMapIndex;
+        ReflectionProbeData m_reflectionProbeData;
+        [[pad_to(16)]]
     };
     
     // hit shaders can retrieve the MaterialInfo for a mesh hit using: RayTracingMaterialSrg::m_materialInfo[InstanceIndex()]   

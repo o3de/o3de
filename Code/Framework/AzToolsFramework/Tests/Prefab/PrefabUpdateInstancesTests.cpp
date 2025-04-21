@@ -198,7 +198,7 @@ namespace UnitTest
         EXPECT_EQ(entityComponents->MemberCount(), expectedComponentCount + 1);
 
         // Extract the component id of the entity in Template and verify that it matches with the component id of the Instance.
-        PrefabTestDomUtils::ValidateComponentsDomHasId(*entityComponents, prefabTestComponent->GetId());
+        PrefabTestDomUtils::ValidateComponentsDomHasId(*entityComponents, prefabTestComponent->RTTI_GetTypeName(), prefabTestComponent->GetId());
 
         // Update Template's Instances and validate if all Instances have the new component under their entities.
         m_instanceUpdateExecutorInterface->AddTemplateInstancesToQueue(newTemplateId);
@@ -339,7 +339,8 @@ namespace UnitTest
         EXPECT_EQ(entityComponents->MemberCount(), expectedComponentCount);
 
         // Extract the component id of the entity in the Template and verify that it matches with the component id of the entity's component.
-        PrefabTestDomUtils::ValidateComponentsDomHasId(*entityComponents, prefabTestComponent->GetId());
+        PrefabTestDomUtils::ValidateComponentsDomHasId(
+            *entityComponents, prefabTestComponent->RTTI_GetTypeName(), prefabTestComponent->GetId());
 
         // Instantiate Instances and validate if all Instances have the entity.
         const int numberOfInstances = 3;
@@ -399,7 +400,8 @@ namespace UnitTest
         EXPECT_EQ(entityComponents->MemberCount(), expectedComponentCount);
 
         // Extract the component id of the entity in the Template and verify that it matches with the component id of the entity's component.
-        PrefabTestDomUtils::ValidateComponentsDomHasId(*entityComponents, prefabTestComponent->GetId());
+        PrefabTestDomUtils::ValidateComponentsDomHasId(
+            *entityComponents, prefabTestComponent->RTTI_GetTypeName(), prefabTestComponent->GetId());
 
         // Instantiate Instances and validate if all Instances have the entity.
         const int numberOfInstances = 3;
@@ -426,8 +428,8 @@ namespace UnitTest
         ASSERT_TRUE(entityComponents != nullptr && entityComponents->IsObject());
         EXPECT_EQ(entityComponents->MemberCount(), expectedComponentCount);
 
-        AZStd::string componentValueName = AZStd::string::format("Component_[%llu]", prefabTestComponent->GetId());
-        PrefabDomValueConstReference wheelEntityComponentValue = PrefabDomUtils::FindPrefabDomValue(*entityComponents, componentValueName.c_str());
+        PrefabDomValueConstReference wheelEntityComponentValue =
+            PrefabDomUtils::FindPrefabDomValue(*entityComponents, prefabTestComponent->RTTI_GetTypeName());
         ASSERT_TRUE(wheelEntityComponentValue);
 
         PrefabDomValueConstReference wheelEntityComponentBoolPropertyValue =

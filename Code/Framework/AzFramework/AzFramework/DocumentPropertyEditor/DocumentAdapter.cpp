@@ -11,6 +11,7 @@
 #include <AzCore/DOM/DomUtils.h>
 #include <AzCore/Name/NameDictionary.h>
 #include <AzFramework/DocumentPropertyEditor/DocumentAdapter.h>
+#include <AzFramework/DocumentPropertyEditor/ExpanderSettings.h>
 #include <AzFramework/DocumentPropertyEditor/PropertyEditorNodes.h>
 
 AZ_CVAR(
@@ -79,10 +80,21 @@ namespace AZ::DocumentPropertyEditor
         ed_debugDocumentPropertyEditorUpdates = enableDebugMode;
     }
 
+    bool DocumentAdapter::IsRow(const Dom::Value& domValue)
+    {
+        return (domValue.IsNode() && domValue.GetNodeName() == Dpe::GetNodeName<Dpe::Nodes::Row>());
+    }
+
     bool DocumentAdapter::IsEmpty()
     {
         const auto& contents = GetContents();
         return contents.IsArrayEmpty();
+    }
+
+    ExpanderSettings* DocumentAdapter::CreateExpanderSettings(
+        DocumentAdapter* referenceAdapter, const AZStd::string& settingsRegistryKey, const AZStd::string& propertyEditorName)
+    {
+        return new ExpanderSettings(referenceAdapter, settingsRegistryKey, propertyEditorName);
     }
 
     void DocumentAdapter::NotifyResetDocument(DocumentResetType resetType)
@@ -99,9 +111,34 @@ namespace AZ::DocumentPropertyEditor
             Dom::Value newContents = GenerateContents();
 
             Dom::DeltaPatchGenerationParameters patchGenerationParams;
-            // Prefer more expensive patch generation that produces fewer replace patches, we want as minimal a GUI
-            // update as possible, as that's the really expensive side of this
-            patchGenerationParams.m_replaceThreshold = Dom::DeltaPatchGenerationParameters::NoReplace;
+
+            // at most allow non-nested row replacement, a diff to replace the whole tree is almost certainly inefficient for this architecture
+            patchGenerationParams.m_allowReplacement = [](const Dom::Value& before, [[maybe_unused]] const Dom::Value& after)
+            {
+                if (before.GetType() == Dom::Type::Node)
+                {
+                    auto beforeName = before.GetNodeName();
+                    auto rowName = AZ::Dpe::GetNodeName<AZ::Dpe::Nodes::Row>();
+                    if (beforeName == AZ::Dpe::GetNodeName<AZ::Dpe::Nodes::Adapter>())
+                    {
+                        // don't allow full adapter replacement
+                        return false;
+                    }
+                    else if (beforeName == rowName)
+                    {
+                        // don't allow nested row replacement, it's too broad and likely inefficient
+                        for (auto childIter = before.ArrayBegin(), endIter = before.ArrayEnd(); childIter != endIter; ++childIter)
+                        {
+                            if (childIter->GetNodeName() == rowName)
+                            {
+                                return false;
+                            }
+                        }
+                    }
+                }
+                return true;
+            };
+
             // Generate denormalized paths instead of EndOfArray entries (this is required by ChangedEvent)
             patchGenerationParams.m_generateDenormalizedPaths = true;
             Dom::PatchUndoRedoInfo patches = Dom::GenerateHierarchicalDeltaPatch(m_cachedContents, newContents, patchGenerationParams);

@@ -100,6 +100,11 @@ namespace ScriptCanvas
             return Type(eType::Matrix4x4);
         }
 
+        Type Type::MatrixMxN()
+        {
+            return Type(eType::MatrixMxN);
+        }
+
         Type Type::Number()
         {
             return Type(eType::Number);
@@ -143,6 +148,11 @@ namespace ScriptCanvas
         Type Type::Vector4()
         {
             return Type(eType::Vector4);
+        }
+
+        Type Type::VectorN()
+        {
+            return Type(eType::VectorN);
         }
 
         AZ::Uuid Type::GetAZType() const

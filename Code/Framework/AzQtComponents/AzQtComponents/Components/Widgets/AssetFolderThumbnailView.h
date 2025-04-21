@@ -13,10 +13,12 @@
 
 AZ_PUSH_DISABLE_WARNING(4244, "-Wunknown-warning-option")
 #include <QAbstractItemView>
+#include <QStyledItemDelegate>
 AZ_POP_DISABLE_WARNING
 #endif
 
 class QSettings;
+class QTimer;
 
 namespace AzQtComponents
 {
@@ -68,6 +70,7 @@ namespace AzQtComponents
             int topItemsHorizontalSpacing;
             int topItemsVerticalSpacing;
             int childrenItemsHorizontalSpacing;
+            int scrollSpeed;
             Thumbnail rootThumbnail;
             Thumbnail childThumbnail;
             ExpandButton expandButton;
@@ -100,6 +103,9 @@ namespace AzQtComponents
         void setThumbnailSize(ThumbnailSize size);
         ThumbnailSize thumbnailSize() const;
 
+        void rowsInserted(const QModelIndex& parent, int start, int end) override;
+        void rowsAboutToBeRemoved(const QModelIndex& parent, int start, int end) override;
+        void reset() override;
         void updateGeometries() override;
         QModelIndex indexAt(const QPoint& point) const override;
         void scrollTo(const QModelIndex& index, QAbstractItemView::ScrollHint hint) override;
@@ -107,15 +113,18 @@ namespace AzQtComponents
 
         void setRootIndex(const QModelIndex &index) override;
 
-        void RefreshThumbnailview();
-
         void SetShowSearchResultsMode(bool searchMode);
+        bool InSearchResultsMode() const;
 
-        void HideProductAssets(bool checked);
+    protected Q_SLOTS:
+        void selectionChanged(const QItemSelection& selected, const QItemSelection& deselected) override;
 
     signals:
         void rootIndexChanged(const QModelIndex& idx);
-        void showInFolderTriggered(const QModelIndex& idx);
+        void contextMenu(const QModelIndex& idx);
+        void afterRename(const QString& value) const;
+        void deselected();
+        void selectionChangedSignal(const QItemSelection& selected, const QItemSelection& deselected);
 
     protected:
         friend class Style;
@@ -132,6 +141,8 @@ namespace AzQtComponents
 
         void paintEvent(QPaintEvent* event) override;
         void mousePressEvent(QMouseEvent* event) override;
+        void mouseMoveEvent(QMouseEvent* event) override;
+        void mouseReleaseEvent(QMouseEvent* event) override;
         void mouseDoubleClickEvent(QMouseEvent* event) override;
         void contextMenuEvent(QContextMenuEvent* event) override;
 
@@ -163,6 +174,49 @@ namespace AzQtComponents
         Config m_config;
         bool m_showSearchResultsMode = false;
         bool m_hideProductAssets = true;
-        QMenu* m_contextMenu = nullptr;
+
+        // Selection Handling
+        void SelectAllEntitiesInSelectionRect();
+        QItemSelection m_previousSelection;
+
+        void ClearQueuedMouseEvent();
+        void ProcessQueuedMousePressedEvent(QMouseEvent* event);
+        void HandleDrag();
+        void StartCustomDrag(const QModelIndexList& indexList, Qt::DropActions supportedActions);
+        QImage CreateDragImage(const QModelIndexList& indexList);
+
+        QMouseEvent* m_queuedMouseEvent = nullptr;
+        QPoint m_mousePosition;
+        bool m_isDragSelectActive = false;
+        QTimer* m_selectionUpdater;
+
+        const int m_selectionUpdateInterval = 30; //msec
+        const QColor m_dragSelectRectColor = QColor(255, 255, 255, 20);
+        const QColor m_dragSelectBorderColor = QColor(255, 255, 255);
+    };
+
+    class AssetFolderThumbnailViewDelegate
+        : public QStyledItemDelegate
+    {
+        Q_OBJECT
+    public:
+        explicit AssetFolderThumbnailViewDelegate(QObject* parent = nullptr);
+
+        void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+        QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+
+        QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+        void updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+
+        void polish(const AssetFolderThumbnailView::Config& config);
+
+    signals:
+        void RenameThumbnail(const QString& value) const;
+    
+    protected Q_SLOTS:
+        void editingFinished();
+
+    private:
+        AssetFolderThumbnailView::Config m_config;
     };
 }

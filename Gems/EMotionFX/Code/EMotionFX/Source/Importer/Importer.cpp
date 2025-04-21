@@ -45,7 +45,7 @@ namespace EMotionFX
 
     // constructor
     Importer::Importer()
-        : BaseObject()
+        : MCore::RefCounted()
     {
         // register all standard chunks
         RegisterStandardChunks();
@@ -544,9 +544,12 @@ namespace EMotionFX
         }
 
         EMotionFX::MotionSet* motionSet = EMotionFX::MotionSet::LoadFromBuffer(memoryStart, lengthInBytes, context);
-        if (settings)
+        if (motionSet)
         {
-            motionSet->SetIsOwnedByRuntime(settings->m_isOwnedByRuntime);
+            if (settings)
+            {
+                motionSet->SetIsOwnedByRuntime(settings->m_isOwnedByRuntime);
+            }
         }
         return motionSet;
     }

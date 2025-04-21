@@ -109,9 +109,9 @@ namespace AZ::Debug
     {
         char message[MaxMessageLength];
         // Trace::RawOutput
-        Debug::Trace::Instance().RawOutput(nullptr, "==================================================================\n");
+        Debug::Trace::Instance().RawOutput(AZ::Debug::Trace::GetDefaultSystemWindow(), "==================================================================\n");
         azsnprintf(message, MaxMessageLength, "Error: signal %s: \n", strsignal(signal));
-        Debug::Trace::Instance().RawOutput(nullptr, message);
+        Debug::Trace::Instance().RawOutput(AZ::Debug::Trace::GetDefaultSystemWindow(), message);
 
         StackFrame frames[MaxStackLines];
         SymbolStorage::StackLine stackLines[MaxStackLines];
@@ -121,9 +121,9 @@ namespace AZ::Debug
         for (int i = 0; i < numberOfFrames; ++i)
         {
             azsnprintf(message, MaxMessageLength, "%s \n", stackLines[i]);
-            Debug::Trace::Instance().RawOutput(nullptr, message);
+            Debug::Trace::Instance().RawOutput(AZ::Debug::Trace::GetDefaultSystemWindow(), message);
         }
-        Debug::Trace::Instance().RawOutput(nullptr, "==================================================================\n");
+        Debug::Trace::Instance().RawOutput(AZ::Debug::Trace::GetDefaultSystemWindow(), "==================================================================\n");
 
         // Continue to exit the process when a signal is caught by this signal handler. 
         // The exit code will conform to https://tldp.org/LDP/abs/html/exitcodes.html.

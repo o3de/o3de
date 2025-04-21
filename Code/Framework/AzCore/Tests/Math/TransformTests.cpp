@@ -41,7 +41,7 @@ namespace UnitTest
         EXPECT_THAT(transform.TransformPoint(vector), IsClose(vector + translation));
     }
 
-    INSTANTIATE_TEST_CASE_P(MATH_Transform, TransformCreateFixture, ::testing::ValuesIn(MathTestData::Vector3s));
+    INSTANTIATE_TEST_SUITE_P(MATH_Transform, TransformCreateFixture, ::testing::ValuesIn(MathTestData::Vector3s));
 
     using TransformCreateRotationFixture = ::testing::TestWithParam<float>;
 
@@ -108,7 +108,7 @@ namespace UnitTest
         EXPECT_NEAR(projectedDotProduct, projectedMagnitudeSq * cosf(angle), 1e-2f * projectedMagnitudeSq);
     }
 
-    INSTANTIATE_TEST_CASE_P(MATH_Transform, TransformCreateRotationFixture, ::testing::ValuesIn(MathTestData::Angles));
+    INSTANTIATE_TEST_SUITE_P(MATH_Transform, TransformCreateRotationFixture, ::testing::ValuesIn(MathTestData::Angles));
 
     TEST(MATH_Transform, GetSetTranslation)
     {
@@ -153,7 +153,7 @@ namespace UnitTest
         EXPECT_THAT(transform.TransformPoint(vector), IsClose(quaternion.TransformVector(vector)));
     }
 
-    INSTANTIATE_TEST_CASE_P(MATH_Transform, TransformCreateFromQuaternionFixture, ::testing::ValuesIn(MathTestData::UnitQuaternions));
+    INSTANTIATE_TEST_SUITE_P(MATH_Transform, TransformCreateFromQuaternionFixture, ::testing::ValuesIn(MathTestData::UnitQuaternions));
 
     TEST(MATH_Transform, CreateUniformScale)
     {
@@ -184,7 +184,24 @@ namespace UnitTest
         EXPECT_THAT(forward, IsClose(expectedForward.GetNormalized()));
     }
 
-    INSTANTIATE_TEST_CASE_P(MATH_Transform, TransformCreateLookAtFixture, ::testing::ValuesIn(MathTestData::Axes));
+    INSTANTIATE_TEST_SUITE_P(MATH_Transform, TransformCreateLookAtFixture, ::testing::ValuesIn(MathTestData::Axes));
+
+    using TransformFromMatrixFixture = ::testing::TestWithParam<AZ::Matrix3x4>;
+
+    TEST_P(TransformFromMatrixFixture, ReconstructMatrixFromRetrievedTransformScale)
+    {
+        AZ::Matrix3x4 matrix = GetParam();
+        AZ::Transform retrievedTransform = AZ::Transform::CreateFromMatrix3x4(matrix);
+        retrievedTransform.ExtractUniformScale();
+        AZ::Vector3 retrievedNonUniformScale = matrix.RetrieveScale();
+
+        AZ::Matrix3x4 reconstructedMatrix = AZ::Matrix3x4::CreateFromTransform(retrievedTransform);
+        reconstructedMatrix.MultiplyByScale(retrievedNonUniformScale);
+
+        EXPECT_THAT(matrix, IsClose(reconstructedMatrix));
+    }
+
+    INSTANTIATE_TEST_SUITE_P(MATH_Transform, TransformFromMatrixFixture, ::testing::ValuesIn(MathTestData::NonOrthogonalMatrix3x4s));
 
     TEST(MATH_Transform, CreateLookAtDegenerateCases)
     {
@@ -303,7 +320,7 @@ namespace UnitTest
         EXPECT_THAT((inverse * transform), IsClose(AZ::Transform::Identity()));
     }
 
-    INSTANTIATE_TEST_CASE_P(MATH_Transform, TransformInvertFixture, ::testing::ValuesIn(MathTestData::OrthogonalTransforms));
+    INSTANTIATE_TEST_SUITE_P(MATH_Transform, TransformInvertFixture, ::testing::ValuesIn(MathTestData::OrthogonalTransforms));
 
     using TransformScaleFixture = ::testing::TestWithParam<AZ::Transform>;
 
@@ -320,7 +337,7 @@ namespace UnitTest
         EXPECT_NEAR(scaledTransform.GetUniformScale(), scale, AZ::Constants::Tolerance);
     }
 
-    INSTANTIATE_TEST_CASE_P(MATH_Transform, TransformScaleFixture, ::testing::ValuesIn(MathTestData::OrthogonalTransforms));
+    INSTANTIATE_TEST_SUITE_P(MATH_Transform, TransformScaleFixture, ::testing::ValuesIn(MathTestData::OrthogonalTransforms));
 
     TEST(MATH_Transform, IsOrthogonal)
     {
@@ -349,7 +366,7 @@ namespace UnitTest
         EXPECT_THAT(transform, IsClose(rotX * rotY * rotZ));
     }
 
-    INSTANTIATE_TEST_CASE_P(MATH_Transform, TransformSetFromEulerDegreesFixture, ::testing::ValuesIn(MathTestData::EulerAnglesDegrees));
+    INSTANTIATE_TEST_SUITE_P(MATH_Transform, TransformSetFromEulerDegreesFixture, ::testing::ValuesIn(MathTestData::EulerAnglesDegrees));
 
     using TransformSetFromEulerRadiansFixture = ::testing::TestWithParam<AZ::Vector3>;
 
@@ -364,7 +381,7 @@ namespace UnitTest
         EXPECT_THAT(transform, IsClose(rotX * rotY * rotZ));
     }
 
-    INSTANTIATE_TEST_CASE_P(MATH_Transform, TransformSetFromEulerRadiansFixture, ::testing::ValuesIn(MathTestData::EulerAnglesRadians));
+    INSTANTIATE_TEST_SUITE_P(MATH_Transform, TransformSetFromEulerRadiansFixture, ::testing::ValuesIn(MathTestData::EulerAnglesRadians));
 
     using TransformGetEulerFixture = ::testing::TestWithParam<AZ::Transform>;
 
@@ -385,7 +402,7 @@ namespace UnitTest
         EXPECT_THAT(eulerTransform, IsClose(transform));
     }
 
-    INSTANTIATE_TEST_CASE_P(MATH_Transform, TransformGetEulerFixture, ::testing::ValuesIn(MathTestData::OrthogonalTransforms));
+    INSTANTIATE_TEST_SUITE_P(MATH_Transform, TransformGetEulerFixture, ::testing::ValuesIn(MathTestData::OrthogonalTransforms));
 
     class MATH_TransformApplicationFixture
         : public LeakDetectionFixture
@@ -403,7 +420,9 @@ namespace UnitTest
             AZ::ComponentApplication::Descriptor desc;
             desc.m_useExistingAllocator = true;
             m_app.reset(aznew AZ::ComponentApplication);
-            m_app->Create(desc);
+            AZ::ComponentApplication::StartupParameters startupParameters;
+            startupParameters.m_loadSettingsRegistry = false;
+            m_app->Create(desc, startupParameters);
         }
 
         void TearDown() override

@@ -37,7 +37,7 @@ namespace ScriptCanvasEditor
         if (classElement.GetVersion() < 2)
         {
             AZStd::vector< AZStd::string > eventNames;
-            auto subElement = classElement.FindSubElement(AZ_CRC("EventNames", 0xb0dd75f0));
+            auto subElement = classElement.FindSubElement(AZ_CRC_CE("EventNames"));
 
             if (subElement)
             {
@@ -55,7 +55,7 @@ namespace ScriptCanvasEditor
                 handlerEventIds.emplace_back(eventName.c_str());
             }
 
-            classElement.RemoveElementByName(AZ_CRC("EventNames", 0xb0dd75f0));
+            classElement.RemoveElementByName(AZ_CRC_CE("EventNames"));
             classElement.AddElementWithData(context, "EventIds", handlerEventIds);
         }
 
@@ -98,7 +98,7 @@ namespace ScriptCanvasEditor
     {
         if (classElement.GetVersion() <= 1)
         {
-            AZ::Crc32 displayConnectionId = AZ_CRC("DisplayConnections", 0x710635cc);
+            AZ::Crc32 displayConnectionId = AZ_CRC_CE("DisplayConnections");
 
             EBusHandlerNodeDescriptorComponent::EBusHandlerNodeDescriptorSaveData saveData;
 
@@ -110,7 +110,7 @@ namespace ScriptCanvasEditor
             }
 
             classElement.RemoveElementByName(displayConnectionId);
-            classElement.RemoveElementByName(AZ_CRC("BusName", 0x1bbf25c5));
+            classElement.RemoveElementByName(AZ_CRC_CE("BusName"));
             classElement.AddElementWithData(context, "SaveData", saveData);
         }
 

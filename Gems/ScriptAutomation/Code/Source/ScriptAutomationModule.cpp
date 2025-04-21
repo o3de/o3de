@@ -11,7 +11,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Module/Module.h>
 
-namespace ScriptAutomation
+namespace AZ::ScriptAutomation
 {
     class ScriptAutomationModule
         : public AZ::Module
@@ -41,6 +41,10 @@ namespace ScriptAutomation
             };
         }
     };
-}// namespace ScriptAutomation
+}// namespace AZ::ScriptAutomation
 
-AZ_DECLARE_MODULE_CLASS(Gem_ScriptAutomation, ScriptAutomation::ScriptAutomationModule)
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME), AZ::ScriptAutomation::ScriptAutomationModule)
+#else
+AZ_DECLARE_MODULE_CLASS(Gem_ScriptAutomation, AZ::ScriptAutomation::ScriptAutomationModule)
+#endif

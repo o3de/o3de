@@ -1429,7 +1429,7 @@ bool UiElementComponent::MoveEntityAndDescendantsToListAndReplaceWithEntityId(AZ
     // it will already have had its child entities replaced with entity IDs
 
     // find the m_children field
-    int childrenIndex = elementComponentNode->FindElement(AZ_CRC("Children", 0xa197b1ba));
+    int childrenIndex = elementComponentNode->FindElement(AZ_CRC_CE("Children"));
     if (childrenIndex == -1)
     {
         return false;
@@ -1469,7 +1469,7 @@ bool UiElementComponent::MoveEntityAndDescendantsToListAndReplaceWithEntityId(AZ
     AZStd::string elementFieldName = elementNode.GetNameString();
 
     // Find the EntityId node within this entity
-    int entityIdIndex = elementNode.FindElement(AZ_CRC("Id", 0xbf396750));
+    int entityIdIndex = elementNode.FindElement(AZ_CRC_CE("Id"));
     if (entityIdIndex == -1)
     {
         return false;
@@ -1477,7 +1477,7 @@ bool UiElementComponent::MoveEntityAndDescendantsToListAndReplaceWithEntityId(AZ
     AZ::SerializeContext::DataElementNode& elementIdNode = elementNode.GetSubElement(entityIdIndex);
 
     // Find the sub node of the EntityID that actually stores the u64 and make a copy of it
-    int u64Index = elementIdNode.FindElement(AZ_CRC("id", 0xbf396750));
+    int u64Index = elementIdNode.FindElement(AZ_CRC_CE("id"));
     if (u64Index == -1)
     {
         return false;
@@ -1622,7 +1622,7 @@ void UiElementComponent::OnPatchEnd(const AZ::DataPatchNodeInfo& patchInfo)
 
     // Build the address of the "Children" element within this UiElementComponent
     AZ::DataPatch::AddressType childrenAddress = address;
-    childrenAddress.push_back(AZ_CRC("Children", 0xa197b1ba));
+    childrenAddress.push_back(AZ_CRC_CE("Children"));
 
     // Get the serialize context for use in the LoadObjectFromStreamInPlace calls
     AZ::SerializeContext* serializeContext = nullptr;
@@ -1741,7 +1741,7 @@ void UiElementComponent::OnPatchEnd(const AZ::DataPatchNodeInfo& patchInfo)
                 }
 
                 // This should be the u64 "Id" element of the EntityId, if not ignore.
-                if (childPatchAddress.back().GetAddressElement() == AZ_CRC("Id", 0xbf396750))
+                if (childPatchAddress.back().GetAddressElement() == AZ_CRC_CE("Id"))
                 {
                     // the second to last part of the address is the index in the m_children array
                     AZ::u64 index = childPatchAddress[childPatchAddress.size() - 2].GetAddressElement();
@@ -1918,7 +1918,7 @@ bool UiElementComponent::VersionConverter(AZ::SerializeContext& context,
     {
         // Version 3 added the persistent member m_childEntityIdOrder with replaces m_children
         // Find the "Children" element that we will be replacing.
-        int childrenIndex = classElement.FindElement(AZ_CRC("Children"));
+        int childrenIndex = classElement.FindElement(AZ_CRC_CE("Children"));
         if (childrenIndex != -1)
         {
             AZ::SerializeContext::DataElementNode& childrenElementNode = classElement.GetSubElement(childrenIndex);
@@ -1949,7 +1949,7 @@ bool UiElementComponent::VersionConverter(AZ::SerializeContext& context,
             }
 
             // remove the old m_children persistent member
-            classElement.RemoveElementByName(AZ_CRC("Children"));
+            classElement.RemoveElementByName(AZ_CRC_CE("Children"));
         }
     }
 

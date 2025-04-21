@@ -12,7 +12,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 
 #include <Atom/RHI/CommandList.h>
-#include <Atom/RHI/DrawItem.h>
+#include <Atom/RHI/DeviceDrawItem.h>
 #include <Atom/RHI/ScopeProducer.h>
 
 #include <Atom/RPI.Reflect/Pass/PassName.h>
@@ -60,7 +60,6 @@ namespace AZ
             // Scope producer functions...
             void CompileResources(const RHI::FrameGraphCompileContext& context) override;
 
-            AZ::RPI::ShaderVariantKey m_currentShaderVariantKeyFallbackValue;
             bool m_needToUpdateShaderVariant = false;
             bool m_needToUpdateSRG = true;
         };

@@ -22,7 +22,7 @@
 namespace AZ::SceneAPI::SceneBuilder
 {
     bool BuildSceneMeshFromAssImpMesh(const aiNode* currentNode, const aiScene* scene, const SceneSystem& sceneSystem, AZStd::vector<AZStd::shared_ptr<DataTypes::IGraphObject>>& meshes,
-        const AZStd::function<AZStd::shared_ptr<SceneData::GraphData::MeshData>()>& makeMeshFunc)
+        const AZStd::function<AZStd::shared_ptr<AZ::SceneData::GraphData::MeshData>()>& makeMeshFunc)
     {
         AZStd::unordered_map<int, int> assImpMatIndexToLYIndex;
         int lyMeshIndex = 0;
@@ -68,21 +68,28 @@ namespace AZ::SceneAPI::SceneBuilder
                 }
             }
 
+            // Only print one warning per mesh if it has the wrong number of vertices.
+            [[maybe_unused]] bool warningPrinted = false;
+
             for (unsigned int faceIdx = 0; faceIdx < mesh->mNumFaces; ++faceIdx)
             {
                 aiFace face = mesh->mFaces[faceIdx];
                 AZ::SceneAPI::DataTypes::IMeshData::Face meshFace;
-                if (face.mNumIndices > 3)
+
+                // Only faces with exactly 3 indices are supported, since the engine only supports triangles.
+                if (face.mNumIndices != 3)
                 {
-                    // AssImp should have triangulated everything, so if this happens then someone has
-                    // probably changed AssImp's import settings. The engine only supports triangles.
-                    AZ_Error(Utilities::ErrorWindow, false,
-                        "Mesh on node %s has a face with %d vertices, only 3 vertices are supported per face. You could "
-                        "fix it by triangulating the meshes in the dcc tool.",
+                    AZ_Warning(Utilities::ErrorWindow, warningPrinted,
+                        "Mesh on node %s has a face with %d vertices and will be ignored. %s",
                         currentNode->mName.C_Str(),
-                        face.mNumIndices);
+                        face.mNumIndices,
+                        (face.mNumIndices < 3)
+                            ? "This is likely a control curve object."
+                            : "Only 3 vertices are supported per face, you could fix it by triangulating the meshes in the dcc tool.");
+                    warningPrinted = true;
                     continue;
                 }
+
                 for (unsigned int idx = 0; idx < face.mNumIndices; ++idx)
                 {
                     meshFace.vertexIndex[idx] = face.mIndices[idx] + vertOffset;
@@ -110,10 +117,10 @@ namespace AZ::SceneAPI::SceneBuilder
             return AZ::Failure(Events::ProcessingResult::Failure);
         }
 
-        if (!parentData->RTTI_IsTypeOf(SceneData::GraphData::MeshData::TYPEINFO_Uuid()))
+        if (!parentData->RTTI_IsTypeOf(AZ::SceneData::GraphData::MeshData::TYPEINFO_Uuid()))
         {
             // The parent node may contain bone information and not mesh information, skip it.
-            if (parentData->RTTI_IsTypeOf(SceneData::GraphData::BoneData::TYPEINFO_Uuid()))
+            if (parentData->RTTI_IsTypeOf(AZ::SceneData::GraphData::BoneData::TYPEINFO_Uuid()))
             {
                 // Return the ignore processing result in the failure.
                 return AZ::Failure(Events::ProcessingResult::Ignored);
@@ -123,8 +130,8 @@ namespace AZ::SceneAPI::SceneBuilder
             return AZ::Failure(Events::ProcessingResult::Failure);
         }
 
-        const SceneData::GraphData::MeshData* const parentMeshData =
-            azrtti_cast<const SceneData::GraphData::MeshData* const>(parentData);
+        const AZ::SceneData::GraphData::MeshData* const parentMeshData =
+            azrtti_cast<const AZ::SceneData::GraphData::MeshData* const>(parentData);
         return AZ::Success(parentMeshData);
     }
 

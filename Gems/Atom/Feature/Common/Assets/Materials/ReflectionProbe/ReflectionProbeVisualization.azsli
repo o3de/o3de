@@ -5,7 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-    
+
+#include <viewsrg_all.srgi>
 #include <Atom/Features/PBR/DefaultObjectSrg.azsli>
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 #include <Atom/Features/VertexUtility.azsli>
@@ -14,10 +15,17 @@
 
 #if MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE
     
+#define MATERIAL_HAS_UVS 0
+
     struct VsInput
     {
         float3 position : POSITION;
         float3 normal : NORMAL;
+    };
+
+    struct VsSystemValues
+    {
+        uint m_instanceId;
     };
 
     struct VsOutput
@@ -27,10 +35,10 @@
         float3 worldPosition : UV0;
     };
     
-    VsOutput EvaluateVertexGeometry(VsInput IN)
+    VsOutput EvaluateVertexGeometry(VsInput IN, VsSystemValues SV)
     {        
         VsOutput output;
-        output.worldPosition = LocalSpaceToWorldSpace(IN.position);
+        output.worldPosition = LocalSpaceToWorldSpace(IN.position, SV.m_instanceId);
         output.position = WorldSpaceToClipSpace(output.worldPosition);
         output.normal = IN.normal;
         return output;
@@ -44,9 +52,6 @@
 
     PixelGeometryData EvaluatePixelGeometry(VsOutput IN, bool isFrontFace)
     {
-        float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
-        float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
-
         PixelGeometryData geoData;
         geoData.positionWS = IN.worldPosition;
         geoData.vertexNormal = normalize(IN.normal);
@@ -55,7 +60,7 @@
 
     #include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_SurfaceData.azsli>
 
-    Surface EvaluateSurface(PixelGeometryData geoData)
+    Surface EvaluateSurface(VsOutput IN, PixelGeometryData geoData)
     {
         Surface surface;
         surface.position = geoData.positionWS;

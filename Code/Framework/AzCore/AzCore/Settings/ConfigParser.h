@@ -64,11 +64,12 @@ namespace AZ::Settings
         //! All other members are defaulted to work with INI style files
         //! IMPORTANT: Any lambda functions or class instances that are larger than 16 bytes
         //! in size requires a memory allocation to store.
-        //! So it is recommmended that users binding a lambda bind at most 2 reference or pointer members
+        //! So it is recommended that users binding a lambda bind at most 2 reference or pointer members
         //! to avoid dynamic heap allocations
         //!
+        //! NOTE: This function will not be called if the key is empty
         //! @return True should be returned from this function to indicate that parsing of the config entry
-        //! has a succeed
+        //! has succeeded
         using ParseConfigEntryFunc = AZStd::function<bool(const ConfigEntry&)>;
 
         ParseConfigEntryFunc m_parseConfigEntryFunc;
@@ -111,7 +112,7 @@ namespace AZ::Settings
         //! to split the key,value pair of a line
         //! NOTE: Leading and trailing whitespace will be removed from the line before invoking the callback
         //!
-        //! @return an instance of a ConfigKeyValuePair with the split key and value with surrounding whitespaced
+        //! @return an instance of a ConfigKeyValuePair with the split key and value with surrounding whitespace
         //! trimmed
         using DelimiterFunc = AZStd::function<ConfigKeyValuePair(AZStd::string_view line)>;
 
@@ -128,7 +129,7 @@ namespace AZ::Settings
 
         //! Function which is invoked on the config line after filtering through the SectionHeaderFunc
         //! to determine the delimiter of the line
-        //! The structure contains a functor which returns true if a character is a valid delimiter
+        //! The structure contains a functor which returns a ConfigKeyValuePair to split the key value pair
         DelimiterFunc m_delimiterFunc = &DefaultDelimiterFunc;
     };
 
@@ -143,7 +144,7 @@ namespace AZ::Settings
     //! This function will NOT allocate any dynamic memory.
     //! It is safe to call without any AZ Allocators
     //! @param stream GenericStream derived class where the configuration data will be read from
-    //! @param configParseSettigs struct defining configuration on how the INI style file should be parsed
+    //! @param configParseSettings struct defining configuration on how the INI style file should be parsed
     //! @return success outcome if the configuration file was parsed without error,
     //! otherwise a failure string is provided with the parse error
     ParseOutcome ParseConfigFile(AZ::IO::GenericStream& stream, const ConfigParserSettings& configParserSettings);

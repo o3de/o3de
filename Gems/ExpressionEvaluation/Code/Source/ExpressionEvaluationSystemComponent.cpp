@@ -92,8 +92,8 @@ namespace ExpressionEvaluation
         if (rootElement.GetVersion() < 1)
         {
             AZ::Crc32 interfaceId;
-            rootElement.GetChildData(AZ_CRC("InterfaceId", 0x221346a5), interfaceId);
-            rootElement.RemoveElementByName(AZ_CRC("InterfaceId", 0x221346a5));
+            rootElement.GetChildData(AZ_CRC_CE("InterfaceId"), interfaceId);
+            rootElement.RemoveElementByName(AZ_CRC_CE("InterfaceId"));
 
             rootElement.AddElementWithData<unsigned int>(serializeContext, "ParserId", static_cast<unsigned int>(interfaceId));
         }
@@ -158,12 +158,12 @@ namespace ExpressionEvaluation
 
     void ExpressionEvaluationSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("ExpressionEvaluationGemService", 0xad59526b));
+        provided.push_back(AZ_CRC_CE("ExpressionEvaluationGemService"));
     }
 
     void ExpressionEvaluationSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("ExpressionEvaluationGemService", 0xad59526b));
+        incompatible.push_back(AZ_CRC_CE("ExpressionEvaluationGemService"));
     }
 
     void ExpressionEvaluationSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)

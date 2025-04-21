@@ -9,7 +9,9 @@
 #include <AzCore/std/parallel/lock.h>
 #include <AzCore/std/sort.h>
 #include <Atom/RHI.Reflect/Vulkan/Conversion.h>
+#include <Atom/RHI.Reflect/VkAllocator.h>
 #include <RHI/AsyncUploadQueue.h>
+#include <RHI/Conversion.h>
 #include <RHI/Device.h>
 #include <RHI/Fence.h>
 #include <RHI/Image.h>
@@ -20,7 +22,6 @@
 #include <RHI/ReleaseContainer.h>
 #include <RHI/StreamingImagePool.h>
 #include <RHI/SwapChain.h>
-#include <Atom/RHI.Reflect/VkAllocator.h>
 
 namespace AZ
 {
@@ -119,15 +120,14 @@ namespace AZ
 
         void SparseImageInfo::MultiHeapTilesToMemoryViews(MemoryViews& output, const MultiHeapTiles& multiHeapTiles)
         {
-            for (const HeapTiles& heapTiles : multiHeapTiles)
-            {
-                for (const RHI::PageTileSpan& tileSpan : heapTiles.m_tileSpanList)
+            AZStd::transform(
+                multiHeapTiles.begin(),
+                multiHeapTiles.end(),
+                AZStd::back_inserter(output),
+                [&](const auto& alloc)
                 {
-                    MemoryView memoryView { heapTiles.m_heap, tileSpan.m_offset * SparseImageInfo::StandardBlockSize,
-                        tileSpan.m_tileCount * SparseImageInfo::StandardBlockSize, SparseImageInfo::StandardBlockSize, MemoryAllocationType::SubAllocated };
-                    output.push_back(memoryView);
-                }
-            }
+                    return MemoryView(alloc);
+                });            
         }
 
         uint64_t SparseImageInfo::GetRequiredMemorySize(uint16_t residentMipLevel) const
@@ -192,8 +192,9 @@ namespace AZ
                 {
                     // find the offset base on bound blocks
                     VkOffset3D offset;
+                    // The offset need to modulo over the blockCountPerRow/PerColumn to ensure it stays in the boundary
                     offset.x = (boundBlockCount % blockCountPerRow) * imageGranularity.width;
-                    offset.y = (boundBlockCount / blockCountPerRow) * imageGranularity.height;
+                    offset.y = ((boundBlockCount / blockCountPerRow) % blockCountPerColumn) * imageGranularity.height;
                     offset.z = (boundBlockCount / (blockCountPerRow * blockCountPerColumn)) * imageGranularity.depth;
 
                     // only update the width of the extent 
@@ -214,8 +215,8 @@ namespace AZ
                     }
                
                     memoryBind.subresource = subResource;
-                    memoryBind.memory = memoryView.GetMemory()->GetNativeDeviceMemory();
-                    memoryBind.memoryOffset = memoryView.GetOffset() + memoryView.GetSize() - memoryBlockCount * m_blockSizeInBytes;
+                    memoryBind.memory = memoryView.GetAllocation()->GetNativeDeviceMemory();
+                    memoryBind.memoryOffset = memoryView.GetVKMemoryOffset() + memoryView.GetSize() - memoryBlockCount * m_blockSizeInBytes;
                     memoryBind.offset = offset;
                     memoryBind.extent = extent;
                     memoryBind.flags = 0;
@@ -280,8 +281,8 @@ namespace AZ
                     uint32_t bindCount = AZStd::min(memoryBlockCount, m_mipTailBlockCount - boundBlockCount);
 
                     VkSparseMemoryBind memoryBind;
-                    memoryBind.memory = memoryView.GetMemory()->GetNativeDeviceMemory();
-                    memoryBind.memoryOffset = memoryView.GetOffset() + memoryView.GetSize() - memoryBlockCount*m_blockSizeInBytes;
+                    memoryBind.memory = memoryView.GetAllocation()->GetNativeDeviceMemory();
+                    memoryBind.memoryOffset = memoryView.GetVKMemoryOffset() + memoryView.GetSize() - memoryBlockCount * m_blockSizeInBytes;
                     memoryBind.size = bindCount * m_blockSizeInBytes;
                     memoryBind.resourceOffset = boundBlockCount * m_blockSizeInBytes + m_sparseImageMemoryRequirements.imageMipTailOffset
                         + arrayIndex * m_sparseImageMemoryRequirements.imageMipTailStride;
@@ -392,17 +393,6 @@ namespace AZ
             return aznew Image();
         }
 
-         RHI::ResultCode Image::Init(Device& device, VkImage image, const RHI::ImageDescriptor& descriptor)
-        {
-            AZ_Assert(image != VK_NULL_HANDLE, "Vulkan Image is null.");
-            RHI::DeviceObject::Init(device);
-            m_vkImage = image;
-            m_isOwnerOfNativeImage = false;
-            SetDescriptor(descriptor);
-            SetName(GetName());
-            return RHI::ResultCode::Success;
-        }
-
         void Image::Invalidate()
         {
             if (m_vkImage != VK_NULL_HANDLE && m_isOwnerOfNativeImage)
@@ -505,7 +495,7 @@ namespace AZ
             return m_ownerQueue.Get(range ? *range : RHI::ImageSubresourceRange(GetDescriptor()));
         }
 
-        AZStd::vector<Image::SubresourceRangeOwner> Image::GetOwnerQueue(const RHI::ImageView& view) const
+        AZStd::vector<Image::SubresourceRangeOwner> Image::GetOwnerQueue(const RHI::DeviceImageView& view) const
         {
             auto range = RHI::ImageSubresourceRange(view.GetDescriptor());
             return GetOwnerQueue(&range);
@@ -517,7 +507,7 @@ namespace AZ
             m_ownerQueue.Set(range ? *range : RHI::ImageSubresourceRange(GetDescriptor()), queueId);
         }
 
-        void Image::SetOwnerQueue(const QueueId& queueId, const RHI::ImageView& view)
+        void Image::SetOwnerQueue(const QueueId& queueId, const RHI::DeviceImageView& view)
         {
             auto range = RHI::ImageSubresourceRange(view.GetDescriptor());
             SetOwnerQueue(queueId , &range);
@@ -535,20 +525,69 @@ namespace AZ
             m_layout.Set(range ? *range : RHI::ImageSubresourceRange(GetDescriptor()), layout);
         }
 
+        PipelineAccessFlags Image::GetPipelineAccess(const RHI::ImageSubresourceRange* range) const
+        {
+            AZStd::lock_guard<AZStd::mutex> lock(m_pipelineAccessMutex);
+            PipelineAccessFlags pipelineAccessFlags = {};
+            for (const auto& propertyRange : m_pipelineAccess.Get(range ? *range : RHI::ImageSubresourceRange(GetDescriptor())))
+            {
+                pipelineAccessFlags.m_pipelineStage |= propertyRange.m_property.m_pipelineStage;
+                pipelineAccessFlags.m_access |= propertyRange.m_property.m_access;
+            }
+            return pipelineAccessFlags;
+        }
+
+        void Image::SetPipelineAccess(const PipelineAccessFlags& pipelineAccess, const RHI::ImageSubresourceRange* range)
+        {
+            AZStd::lock_guard<AZStd::mutex> lock(m_pipelineAccessMutex);
+            m_pipelineAccess.Set(range ? *range : RHI::ImageSubresourceRange(GetDescriptor()), pipelineAccess);
+        }
+
         VkImageUsageFlags Image::GetUsageFlags() const
         {
             return m_usageFlags;
         }
 
-        RHI::ResultCode Image::Init(Device& device, const RHI::ImageDescriptor& descriptor, bool tryUseSparse)
+        VkSharingMode Image::GetSharingMode() const
+        {
+            return m_sharingMode;
+        }
+
+        const MemoryView& Image::GetMemoryView()
+        {
+            return m_memoryView;
+        }
+
+        void Image::OnPreInit(Device& device, const RHI::ImageDescriptor& descriptor, Image::InitFlags flags)
         {
             RHI::DeviceObject::Init(device);
             SetDescriptor(descriptor);
-
             m_isSparse = false;
+            m_isOwnerOfNativeImage = true;
+            m_initFlags = flags;
+        }
 
+        RHI::ResultCode Image::Init(
+            Device& device,
+            VkImage image,
+            const RHI::ImageDescriptor& descriptor)
+        {
+            AZ_Assert(image != VK_NULL_HANDLE, "Vulkan Image is null.");
+            OnPreInit(device, descriptor, InitFlags::None);
+            m_vkImage = image;
+            m_isOwnerOfNativeImage = false;
+            OnPostInit();
+            return RHI::ResultCode::Success;
+        }
+
+        RHI::ResultCode Image::Init(
+            Device& device,
+            const RHI::ImageDescriptor& descriptor,
+            const Image::InitFlags flags)
+        {
+            OnPreInit(device, descriptor, flags);
             // try create sparse image first
-            if (tryUseSparse)
+            if (RHI::CheckBitsAll(flags, Image::InitFlags::TrySparse))
             {
                 m_isSparse = BuildSparseImage() == RHI::ResultCode::Success;
             }
@@ -560,14 +599,28 @@ namespace AZ
                 RETURN_RESULT_IF_UNSUCCESSFUL(result);
             }
 
-            m_isOwnerOfNativeImage = true;
-
-            // Get image memory requirements 
-            device.GetContext().GetImageMemoryRequirements(device.GetNativeDevice(), m_vkImage, &m_memoryRequirements);
-
-            SetName(GetName());
-
+            OnPostInit();
             return RHI::ResultCode::Success;
+        }
+
+        RHI::ResultCode Image::Init(
+            Device& device,
+            const RHI::ImageDescriptor& descriptor,
+            const MemoryView& memoryView)
+        {
+            OnPreInit(device, descriptor, InitFlags::None);
+            RHI::ResultCode result = BuildNativeImage(&memoryView);
+            RETURN_RESULT_IF_UNSUCCESSFUL(result);
+            OnPostInit();
+            return RHI::ResultCode::Success;
+        }
+
+        void Image::OnPostInit()
+        {
+            // Get image memory requirements
+            Device& device = static_cast<Device&>(GetDevice());
+            device.GetContext().GetImageMemoryRequirements(device.GetNativeDevice(), m_vkImage, &m_memoryRequirements);
+            SetName(GetName());
         }
 
         RHI::ResultCode Image::TrimImage(StreamingImagePool& pool, uint16_t targetMipLevel, bool updateMemoryBind)
@@ -610,22 +663,6 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
-        RHI::ResultCode Image::BindMemoryView(const MemoryView& memoryView)
-        {
-            AZ_Assert(m_vkImage != VK_NULL_HANDLE, "Vulkan's native image is not initialized.");
-            AZ_Assert(memoryView.IsValid(), "MemoryView is not valid.");
-            AZ_Assert(!m_isSparse, "use bind memory view for sparse image.");
-
-            auto& device = static_cast<Device&>(GetDevice());
-            VkResult vkResult = device.GetContext().BindImageMemory(
-                device.GetNativeDevice(), m_vkImage, memoryView.GetMemory()->GetNativeDeviceMemory(), memoryView.GetOffset());
-            AssertSuccess(vkResult);
-            RHI::ResultCode result = ConvertResult(vkResult);
-            RETURN_RESULT_IF_UNSUCCESSFUL(result);
-            m_memoryView = memoryView;
-            return result;
-        }
-
         RHI::ResultCode Image::AllocateAndBindMemory(StreamingImagePool& imagePool, uint16_t residentMipLevel)
         {
             auto& device = static_cast<Device&>(GetDevice());
@@ -639,6 +676,9 @@ namespace AZ
 
             if (m_isSparse)
             {
+                VkMemoryRequirements memReq = m_memoryRequirements;
+                memReq.size = m_sparseImageInfo->m_blockSizeInBytes;
+
                 // The mip we need to start to allocate memory from
                 const uint16_t startMip = m_highestMipLevel - 1;
                 const uint16_t endMip = AZStd::min(residentMipLevel, m_sparseImageInfo->m_tailStartMip);
@@ -656,7 +696,7 @@ namespace AZ
                         blockCount *= GetDescriptor().m_arraySize;
                     }
                     
-                    result = imagePool.AllocateMemoryBlocks(m_sparseImageInfo->m_mipTailHeapTiles, blockCount);
+                    result = imagePool.AllocateMemoryBlocks(blockCount, memReq, m_sparseImageInfo->m_mipTailHeapTiles);
                     if (result != RHI::ResultCode::Success)
                     {
                         return result;
@@ -675,7 +715,7 @@ namespace AZ
                     {
                         SparseImageInfo::NonTailMipInfo& mipInfo = m_sparseImageInfo->m_nonTailMipInfos[mipLevel];
                         uint32_t blockCount = mipInfo.m_blockCount * GetDescriptor().m_arraySize;
-                        result = imagePool.AllocateMemoryBlocks(mipInfo.m_heapTiles, blockCount);
+                        result = imagePool.AllocateMemoryBlocks(blockCount, memReq, mipInfo.m_heapTiles);
                         if (result != RHI::ResultCode::Success)
                         {
                             allocationSuccess = false;
@@ -703,29 +743,6 @@ namespace AZ
                 m_highestMipLevel = endMip;
                 m_residentSizeInBytes = m_sparseImageInfo->GetRequiredMemorySize(m_highestMipLevel);
                 device.GetAsyncUploadQueue().QueueBindSparse(bindSparseInfo);
-            }
-            else 
-            {
-                auto memoryView = imagePool.AllocateMemory(m_memoryRequirements.size, m_memoryRequirements.alignment);
-                if (!memoryView.IsValid())
-                {
-                    return RHI::ResultCode::OutOfMemory;
-                }
-
-                VkResult vkResult = device.GetContext().BindImageMemory(
-                    device.GetNativeDevice(), m_vkImage, memoryView.GetMemory()->GetNativeDeviceMemory(), memoryView.GetOffset());
-                AssertSuccess(vkResult);
-                result = ConvertResult(vkResult);
-                RETURN_RESULT_IF_UNSUCCESSFUL(result);
-
-                if (m_memoryView.IsValid())
-                {
-                    imagePool.DeAllocateMemory(m_memoryView);
-                }
-
-                m_memoryView = memoryView;
-                m_residentSizeInBytes = m_memoryRequirements.size;
-                m_highestMipLevel = 0;
             }
 
             return RHI::ResultCode::Success;
@@ -761,118 +778,80 @@ namespace AZ
                 return RHI::ResultCode::Fail;
             }
 
-            VkImageCreateInfo createInfo{};
-            createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-            createInfo.pNext = nullptr;
-            createInfo.format = ConvertFormat(descriptor.m_format);
-            createInfo.flags = CalculateImageCreateFlags();
+            ImageCreateInfo createInfo = device.BuildImageCreateInfo(descriptor);
             // Add flags for sparse binding and sparse memory residency
-            createInfo.flags |= VK_IMAGE_CREATE_SPARSE_BINDING_BIT | VK_IMAGE_CREATE_SPARSE_RESIDENCY_BIT; 
-            createInfo.imageType = ConvertToImageType(descriptor.m_dimension);
-            createInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-            createInfo.usage = CalculateImageUsageFlags();
-
-            // Get general image properties
-            VkImageFormatProperties formatProps{};
-            AssertSuccess(device.GetContext().GetPhysicalDeviceImageFormatProperties(
-                physicalDevice.GetNativePhysicalDevice(), createInfo.format, createInfo.imageType, createInfo.tiling, createInfo.usage,
-                createInfo.flags, &formatProps));
-
-            VkSampleCountFlagBits sampleCountFlagBits = static_cast<VkSampleCountFlagBits>(RHI::FilterBits(static_cast<VkSampleCountFlags>(ConvertSampleCount(descriptor.m_multisampleState.m_samples)), formatProps.sampleCounts));
-            createInfo.samples = (static_cast<uint32_t>(sampleCountFlagBits) > 0) ? sampleCountFlagBits : VK_SAMPLE_COUNT_1_BIT;
-            
-            VkExtent3D extent = ConvertToExtent3D(descriptor.m_size);
-            extent.width = AZStd::min<uint32_t>(extent.width, formatProps.maxExtent.width);
-            extent.height = AZStd::min<uint32_t>(extent.height, formatProps.maxExtent.height);
-            extent.depth = AZStd::min<uint32_t>(extent.depth, formatProps.maxExtent.depth);
-            createInfo.extent = extent;
-            createInfo.mipLevels = AZStd::min<uint32_t>(descriptor.m_mipLevels, formatProps.maxMipLevels);
-            createInfo.arrayLayers = AZStd::min<uint32_t>(descriptor.m_arraySize, formatProps.maxArrayLayers);
+            createInfo.GetCreateInfo()->flags |= VK_IMAGE_CREATE_SPARSE_BINDING_BIT | VK_IMAGE_CREATE_SPARSE_RESIDENCY_BIT;
 
             // We will always handles image's ownership
-            createInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-            createInfo.queueFamilyIndexCount = 1;
-            createInfo.pQueueFamilyIndices = nullptr;
+            createInfo.GetCreateInfo()->sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+            createInfo.GetCreateInfo()->queueFamilyIndexCount = 1;
+            createInfo.GetCreateInfo()->pQueueFamilyIndices = nullptr;
 
-            createInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            createInfo.GetCreateInfo()->initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
-            const VkResult result =
-                device.GetContext().CreateImage(device.GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &m_vkImage);
+            const VkResult vkResult =
+                device.GetContext().CreateImage(device.GetNativeDevice(), createInfo.GetCreateInfo(), VkSystemAllocator::Get(), &m_vkImage);
 
-            if (result == VkResult::VK_SUCCESS)
-            {
-                // If the sparse image's alignment is not standard block size, release the image and return fail
-                // We only support images with standard block size due to memory allocator restriction
-                VkMemoryRequirements memoryRequirements;
-                device.GetContext().GetImageMemoryRequirements(device.GetNativeDevice(), m_vkImage, &memoryRequirements);
-                if (memoryRequirements.alignment != SparseImageInfo::StandardBlockSize)
-                {
-                    device.GetContext().DestroyImage(device.GetNativeDevice(), m_vkImage, VkSystemAllocator::Get());
-                    m_vkImage = VK_NULL_HANDLE;
-                    return RHI::ResultCode::Fail;
-                }
+            AssertSuccess(vkResult);
+            RHI::ResultCode result = ConvertResult(vkResult);
+            RETURN_RESULT_IF_UNSUCCESSFUL(result);
 
-                m_sparseImageInfo = AZStd::make_unique<SparseImageInfo>();
-                m_sparseImageInfo->Init(device, m_vkImage, descriptor);
-            }
+            m_sparseImageInfo = AZStd::make_unique<SparseImageInfo>();
+            m_sparseImageInfo->Init(device, m_vkImage, descriptor);
+            m_isOwnerOfNativeImage = true;
+            m_sharingMode = createInfo.GetCreateInfo()->sharingMode;
 
-            return ConvertResult(result);
+            return result;
         }
 
-        RHI::ResultCode Image::BuildNativeImage()
+        RHI::ResultCode Image::BuildNativeImage(const MemoryView* memoryView /*= nullptr*/)
         {
             AZ_Assert(m_vkImage == VK_NULL_HANDLE, "Vulkan's native image has already been initialized.");
 
             auto& device = static_cast<Device&>(GetDevice());
-            const auto& physicalDevice = static_cast<const PhysicalDevice&>(device.GetPhysicalDevice());
             const RHI::ImageDescriptor& descriptor = GetDescriptor();
-            
-            VkImageCreateInfo createInfo{};
-            createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-            createInfo.pNext = nullptr;
-            createInfo.format = ConvertFormat(descriptor.m_format);
-            createInfo.flags = CalculateImageCreateFlags();
-            createInfo.imageType = ConvertToImageType(descriptor.m_dimension);
-            createInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-            createInfo.usage = CalculateImageUsageFlags();
 
-            m_usageFlags = createInfo.usage;
+            ImageCreateInfo createInfo = device.BuildImageCreateInfo(descriptor);
+            m_usageFlags = createInfo.GetCreateInfo()->usage;
+            m_sharingMode = createInfo.GetCreateInfo()->sharingMode;
 
-            VkImageFormatProperties formatProps{};
-            AssertSuccess(device.GetContext().GetPhysicalDeviceImageFormatProperties(
-                physicalDevice.GetNativePhysicalDevice(), createInfo.format, createInfo.imageType, createInfo.tiling, createInfo.usage,
-                createInfo.flags, &formatProps));
+            VkResult result = VK_SUCCESS;
+            if (memoryView)
+            {
+                // Creates an image at a specific memory location. This function doesn't allocate new memory,
+                // it just binds the provided memory to the newly created image.
+                result = vmaCreateAliasingImage2(
+                    device.GetVmaAllocator(),
+                    memoryView->GetAllocation()->GetVmaAllocation(),
+                    memoryView->GetOffset(),
+                    createInfo.GetCreateInfo(),
+                    &m_vkImage);
 
-            AZ_Assert(descriptor.m_sharedQueueMask != RHI::HardwareQueueClassMask::None, "Invalid shared queue mask");
-            AZStd::vector<uint32_t> queueFamilies(device.GetCommandQueueContext().GetQueueFamilyIndices(descriptor.m_sharedQueueMask));
+                if (result == VK_SUCCESS)
+                {
+                    m_memoryView = *memoryView;
+                    m_highestMipLevel = 0;
+                }
+            }
+            else
+            {
+                VmaAllocationCreateInfo allocInfo = GetVmaAllocationCreateInfo(RHI::HeapMemoryLevel::Device);
+                VmaAllocation vmaAlloc;
+                // Creates a new image, allocates a new memory for it, and binds the memory to the image.
+                result = vmaCreateImage(device.GetVmaAllocator(), createInfo.GetCreateInfo(), &allocInfo, &m_vkImage, &vmaAlloc, nullptr);
 
-            bool exclusiveOwnership = queueFamilies.size() == 1; // Only supports one queue.
-             // If it's writable, then we assume that this will be used as an ImageAttachment and all proper ownership transfers will be handled by the FrameGraph.
-            exclusiveOwnership |= RHI::CheckBitsAny(descriptor.m_bindFlags, RHI::ImageBindFlags::ShaderWrite | RHI::ImageBindFlags::Color | RHI::ImageBindFlags::DepthStencil);
-            exclusiveOwnership |=
-                RHI::CheckBitsAny(descriptor.m_sharedQueueMask, RHI::HardwareQueueClassMask::Copy) && // Supports copy queue
-                RHI::CountBitsSet(static_cast<uint32_t>(descriptor.m_sharedQueueMask)) == 2;    // And ONLY copy + another queue. This means that the
-                                                                                                // copy queue can transition the resource to the correct queue
-                                                                                                // after finishing copying.
-            
-            VkExtent3D extent = ConvertToExtent3D(descriptor.m_size);
-            extent.width = AZStd::min<uint32_t>(extent.width, formatProps.maxExtent.width);
-            extent.height = AZStd::min<uint32_t>(extent.height, formatProps.maxExtent.height);
-            extent.depth = AZStd::min<uint32_t>(extent.depth, formatProps.maxExtent.depth);
-            createInfo.extent = extent;
-            createInfo.mipLevels = AZStd::min<uint32_t>(descriptor.m_mipLevels, formatProps.maxMipLevels);
-            createInfo.arrayLayers = AZStd::min<uint32_t>(descriptor.m_arraySize, formatProps.maxArrayLayers);
-            VkSampleCountFlagBits sampleCountFlagBits = static_cast<VkSampleCountFlagBits>(RHI::FilterBits(static_cast<VkSampleCountFlags>(ConvertSampleCount(descriptor.m_multisampleState.m_samples)), formatProps.sampleCounts));
-            createInfo.samples = (static_cast<uint32_t>(sampleCountFlagBits) > 0) ? sampleCountFlagBits : VK_SAMPLE_COUNT_1_BIT;
-            createInfo.sharingMode = exclusiveOwnership ? VK_SHARING_MODE_EXCLUSIVE : VK_SHARING_MODE_CONCURRENT;
-            createInfo.queueFamilyIndexCount = static_cast<uint32_t>(queueFamilies.size());
-            createInfo.pQueueFamilyIndices = queueFamilies.empty() ? nullptr : queueFamilies.data();
-            createInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+                if (result == VK_SUCCESS)
+                {
+                    RHI::Ptr<VulkanMemoryAllocation> alloc = VulkanMemoryAllocation::Create();
+                    alloc->Init(device, vmaAlloc);
+                    m_memoryView = MemoryView(alloc);
+                    SetResidentSizeInBytes(m_memoryView.GetSize());
+                    m_highestMipLevel = 0;
+                }
+            }
 
-            const VkResult result =
-                device.GetContext().CreateImage(device.GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &m_vkImage);
+            m_isOwnerOfNativeImage = true;
             AssertSuccess(result);
-
             return ConvertResult(result);
         }
 
@@ -891,122 +870,14 @@ namespace AZ
             {
                 if (m_memoryView.IsValid())
                 {
-                    imagePool.DeAllocateMemory(m_memoryView);
+                    AZStd::vector<RHI::Ptr<VulkanMemoryAllocation>> blocks{ m_memoryView.GetAllocation() };
+                    imagePool.DeAllocateMemoryBlocks(blocks);
                     m_memoryView = MemoryView{ };
                 }
             }
             m_residentSizeInBytes = 0;
             m_highestMipLevel = RHI::Limits::Image::MipCountMax;
-        }
-
-        VkImageCreateFlags Image::CalculateImageCreateFlags() const
-        {
-            auto& device = static_cast<Device&>(GetDevice());
-            const RHI::ImageDescriptor& descriptor = GetDescriptor();
-
-            VkImageCreateFlags flags{};
-
-            // Spec. of VkImageCreate:
-            // "If imageType is VK_IMAGE_TYPE_2D and flags contains VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT, 
-            //  extent.width and extent.height must be equal and arrayLayers must be greater than or equal to 6"
-            // https://www.khronos.org/registry/vulkan/specs/1.1-extensions/man/html/VkImageCreateInfo.html
-            if (descriptor.m_dimension == RHI::ImageDimension::Image2D &&
-                descriptor.m_size.m_width == descriptor.m_size.m_height &&
-                descriptor.m_arraySize >= 6)
-            {
-                flags |= VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
-            }
-
-            // For required condition of VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT, refer the spec. of VkImageViewCreate:
-            // https://www.khronos.org/registry/vulkan/specs/1.1-extensions/man/html/VkImageViewCreateInfo.html
-            auto& physicalDevice = static_cast<const Vulkan::PhysicalDevice&>(device.GetPhysicalDevice());
-            if (physicalDevice.IsFeatureSupported(DeviceFeature::Compatible2dArrayTexture) &&
-                (descriptor.m_dimension == RHI::ImageDimension::Image3D))
-            {
-                // The KHR value will map to the core one in case compatible 2D array is part of core.
-                flags |= VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT_KHR;
-            }
-
-            if (physicalDevice.IsFeatureSupported(DeviceFeature::CustomSampleLocation) &&
-                descriptor.m_multisampleState.m_customPositionsCount > 0 &&
-                RHI::CheckBitsAny(descriptor.m_bindFlags, RHI::ImageBindFlags::DepthStencil))
-            {
-                flags |= VK_IMAGE_CREATE_SAMPLE_LOCATIONS_COMPATIBLE_DEPTH_BIT_EXT;
-            }
-
-            flags |= VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT;
-
-            return flags;
-        }
-
-        VkImageUsageFlags Image::CalculateImageUsageFlags() const
-        {
-            auto& device = static_cast<Device&>(GetDevice());
-            const RHI::ImageBindFlags bindFlags = GetDescriptor().m_bindFlags;
-            VkImageUsageFlags usageFlags{};
-
-            if (RHI::CheckBitsAny(bindFlags, RHI::ImageBindFlags::ShaderRead))
-            {
-                usageFlags |= VK_IMAGE_USAGE_SAMPLED_BIT;
-            }
-            if (RHI::CheckBitsAny(bindFlags, RHI::ImageBindFlags::ShaderWrite))
-            {
-                usageFlags |= VK_IMAGE_USAGE_STORAGE_BIT;
-            }
-            if (RHI::CheckBitsAny(bindFlags, RHI::ImageBindFlags::Color))
-            {
-                usageFlags |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-            }
-            if (RHI::CheckBitsAny(bindFlags, RHI::ImageBindFlags::DepthStencil))
-            {
-                usageFlags |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-            }
-            if (RHI::CheckBitsAny(bindFlags, RHI::ImageBindFlags::CopyWrite))
-            {
-                usageFlags |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
-            }
-            if (RHI::CheckBitsAll(bindFlags, RHI::ImageBindFlags::Color | RHI::ImageBindFlags::ShaderRead) ||
-                RHI::CheckBitsAll(bindFlags, RHI::ImageBindFlags::DepthStencil | RHI::ImageBindFlags::ShaderRead))
-            {
-                usageFlags |= VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
-            }
-            if (RHI::CheckBitsAny(bindFlags, RHI::ImageBindFlags::ShadingRate))
-            {
-                switch (device.GetImageShadingRateMode())
-                {
-                case Device::ShadingRateImageMode::DensityMap:
-                {
-                    usageFlags |= VK_IMAGE_USAGE_FRAGMENT_DENSITY_MAP_BIT_EXT;
-                }
-                break;
-                case Device::ShadingRateImageMode::ImageAttachment:
-                {
-                    usageFlags |= VK_IMAGE_USAGE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR;
-                }
-                break;
-                default:
-                {
-                    AZ_Error("Image", false, "Image Shading Rate mode not supported on this platform");
-                }
-                break;
-                }
-            }
-
-            // add transfer src usage for all images since we may want them to be copyied for preview or readback
-            usageFlags |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
-
-            const VkImageUsageFlags usageMask = device.GetImageUsageFromFormat(GetDescriptor().m_format);
-
-            auto finalFlags = usageFlags & usageMask;
-
-            // Output a warning about desired usages are not support
-            if (finalFlags != usageFlags)
-            {
-                AZ_Warning("Vulkan", false, "Missing usage bit flags (unsupported): %x", usageFlags & ~finalFlags);
-            }
-
-            return finalFlags;
-        }
+        }             
         
         void Image::SetNameInternal(const AZStd::string_view& name)
         {
@@ -1030,7 +901,7 @@ namespace AZ
         // We don't use vkGetImageSubresourceLayout to calculate the subresource layout because we don't use linear images.
         // vkGetImageSubresourceLayout only works for linear images.
         // We always use optimal tiling since it's more efficient. We upload the content of the image using a staging buffer.
-        void Image::GetSubresourceLayoutsInternal(const RHI::ImageSubresourceRange& subresourceRange, RHI::ImageSubresourceLayout* subresourceLayouts, size_t* totalSizeInBytes) const
+        void Image::GetSubresourceLayoutsInternal(const RHI::ImageSubresourceRange& subresourceRange, RHI::DeviceImageSubresourceLayout* subresourceLayouts, size_t* totalSizeInBytes) const
         {
             const RHI::ImageDescriptor& imageDescriptor = GetDescriptor();
             uint32_t byteOffset = 0;
@@ -1042,12 +913,12 @@ namespace AZ
                     RHI::ImageSubresource subresource;
                     subresource.m_arraySlice = arraySlice;
                     subresource.m_mipSlice = mipSlice;
-                    RHI::ImageSubresourceLayout subresourceLayout = RHI::GetImageSubresourceLayout(imageDescriptor, subresource);
+                    RHI::DeviceImageSubresourceLayout subresourceLayout = RHI::GetImageSubresourceLayout(imageDescriptor, subresource);
 
                     if (subresourceLayouts)
                     {
                         const uint32_t subresourceIndex = RHI::GetImageSubresourceIndex(mipSlice, arraySlice, imageDescriptor.m_mipLevels);
-                        RHI::ImageSubresourceLayout& layout = subresourceLayouts[subresourceIndex];
+                        RHI::DeviceImageSubresourceLayout& layout = subresourceLayouts[subresourceIndex];
                         layout.m_bytesPerRow = subresourceLayout.m_bytesPerRow;
                         layout.m_bytesPerImage = subresourceLayout.m_rowCount * subresourceLayout.m_bytesPerRow;
                         layout.m_offset = byteOffset;
@@ -1071,8 +942,10 @@ namespace AZ
 
             m_ownerQueue.Init(descriptor);
             m_layout.Init(descriptor);
+            m_pipelineAccess.Init(descriptor);
             SetLayout(VK_IMAGE_LAYOUT_UNDEFINED);
             SetInitalQueueOwner();
+            SetPipelineAccess({ VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, VK_ACCESS_NONE });
         }
 
         bool Image::IsStreamableInternal() const
@@ -1098,7 +971,6 @@ namespace AZ
                 }
             }
         }
-
     }
 }
 

@@ -219,8 +219,8 @@
                 "ShaderAsset": {
                     "FilePath": "Shaders/Checkerboard/CheckerboardColorResolveCS.shader"
                 },
-                "PipelineViewTag": "MainCamera",
-                "Make Fullscreen Pass": true
+                "BindViewSrg": true,
+                "FullscreenDispatch": true
             }
         }
     }

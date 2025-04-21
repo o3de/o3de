@@ -70,7 +70,7 @@ namespace UnitTest
 
     TEST_F(TypeValidatingSerializerTests, TestTypeValidatingSerializer)
     {
-        const int16_t ExpectedSerializedBytes = 274;
+        const int16_t ExpectedSerializedBytes = 270;
         const size_t Capacity = 2048;
         AZStd::array<uint8_t, Capacity> buffer;
 

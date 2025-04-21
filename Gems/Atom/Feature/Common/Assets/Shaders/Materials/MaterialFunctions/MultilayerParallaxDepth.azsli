@@ -12,47 +12,49 @@
 #include "ParallaxShadowUtil.azsli"
 
  void MultilayerSetPixelDepth(
-     float3 vertexBlendMask,
+     real3 vertexBlendMask,
      inout float3 worldPosition,
-     float3 normal,
+     real3 normal,
      float3 tangents[UvSetCount],
      float3 bitangents[UvSetCount],
      inout float2 uvs[UvSetCount],
      bool isFrontFace,
+     real4x4 objectToWorld,
      inout float depthNDC,
      inout float depthCS,
      out bool isClipped)
 {
-    float3x3 uvMatrix = MaterialSrg::m_parallaxUvIndex == 0 ? MaterialSrg::m_uvMatrix : CreateIdentity3x3();
-    float3x3 uvMatrixInverse = MaterialSrg::m_parallaxUvIndex == 0 ? MaterialSrg::m_uvMatrixInverse : CreateIdentity3x3();
+    real3x3 uvMatrix = MaterialSrg::m_parallaxUvIndex == 0 ? real3x3(MaterialSrg::m_uvMatrix) : CreateIdentity3x3_real();
+    real3x3 uvMatrixInverse = MaterialSrg::m_parallaxUvIndex == 0 ? real3x3(MaterialSrg::m_uvMatrixInverse) : CreateIdentity3x3_real();
 
-    float parallaxOverallOffset = MaterialSrg::m_displacementMax;
-    float parallaxOverallFactor = MaterialSrg::m_displacementMax - MaterialSrg::m_displacementMin;
+    real parallaxOverallOffset = real(MaterialSrg::m_displacementMax);
+    real parallaxOverallFactor = real(MaterialSrg::m_displacementMax) - real(MaterialSrg::m_displacementMin);
     
-    AdjustParallaxShadowCaster(parallaxOverallFactor, parallaxOverallOffset, MaterialSrg::m_parallax_pdo_shadowFactor);
+    AdjustParallaxShadowCaster(parallaxOverallFactor, parallaxOverallOffset, real(MaterialSrg::m_parallax_pdo_shadowFactor));
     
     s_blendMaskFromVertexStream = vertexBlendMask;
     
     GetParallaxInput(
         normal, tangents[MaterialSrg::m_parallaxUvIndex], bitangents[MaterialSrg::m_parallaxUvIndex],
         parallaxOverallFactor, parallaxOverallOffset, 
-        ObjectSrg::GetWorldMatrix(), uvMatrix, uvMatrixInverse,
+        objectToWorld, uvMatrix, uvMatrixInverse,
         uvs[MaterialSrg::m_parallaxUvIndex], worldPosition, depthNDC, depthCS, isClipped);
 }
 
  void MultilayerSetPixelDepth(
-     float3 vertexBlendMask,
+     real3 vertexBlendMask,
      inout float3 positionWS,
-     float3 normal,
+     real3 normal,
      float3 tangents[UvSetCount],
      float3 bitangents[UvSetCount],
      inout float2 uvs[UvSetCount],
      bool isFrontFace,
+     real4x4 objectToWorld,
      inout float depthNDC)
 {
     // Dummy variables to call the above function
     float depthCS = 1.0;
-    bool isClipped;
-    
-    MultilayerSetPixelDepth(vertexBlendMask, positionWS, normal, tangents, bitangents, uvs, isFrontFace, depthNDC, depthCS, isClipped);
+    bool isClipped = false;
+
+    MultilayerSetPixelDepth(vertexBlendMask, positionWS, normal, tangents, bitangents, uvs, isFrontFace, objectToWorld, depthNDC, depthCS, isClipped);
 }

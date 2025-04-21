@@ -7,114 +7,97 @@
  */
 #pragma once
 
-#include <Atom/RHI.Reflect/ImagePoolDescriptor.h>
 #include <Atom/RHI.Reflect/ClearValue.h>
+#include <Atom/RHI.Reflect/ImagePoolDescriptor.h>
+#include <Atom/RHI/DeviceImagePool.h>
 #include <Atom/RHI/Image.h>
 #include <Atom/RHI/ImagePoolBase.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    //! @brief The data structure used to update the device mask of an RHI::Image.
+    struct ImageDeviceMaskRequest
     {
-        /**
-         * @brief The data structure used to initialize an RHI::Image on an RHI::ImagePool.
-         */
-        struct ImageInitRequest
+        ImageDeviceMaskRequest() = default;
+
+        ImageDeviceMaskRequest(
+            Image& image, MultiDevice::DeviceMask deviceMask = MultiDevice::AllDevices, const ClearValue* optimizedClearValue = nullptr)
+            : m_image{ &image }
+            , m_deviceMask{ deviceMask }
+            , m_optimizedClearValue{ optimizedClearValue }
         {
-            ImageInitRequest() = default;
+        }
 
-            ImageInitRequest(
-                Image& image,
-                const ImageDescriptor& descriptor,
-                const ClearValue* optimizedClearValue = nullptr);
+        /// The image to initialize.
+        Image* m_image = nullptr;
 
-            /// The image to initialize.
-            Image* m_image = nullptr;
+        /// The device mask used for the image.
+        /// Note: Only devices in the mask of the image pool will be considered.
+        MultiDevice::DeviceMask m_deviceMask = MultiDevice::AllDevices;
 
-            /// The descriptor used to initialize the image.
-            ImageDescriptor m_descriptor;
+        /// An optional, optimized clear value for the image. Certain
+        /// platforms may use this value to perform fast clears when this
+        /// clear value is used.
+        const ClearValue* m_optimizedClearValue = nullptr;
+    };
 
-            /// An optional, optimized clear value for the image. Certain
-            /// platforms may use this value to perform fast clears when this
-            /// clear value is used.
-            const ClearValue* m_optimizedClearValue = nullptr;
-        };
+    //! @brief The data structure used to initialize an RHI::Image on an RHI::ImagePool.
+    struct ImageInitRequest : public ImageDeviceMaskRequest
+    {
+        ImageInitRequest() = default;
 
-        /**
-         * @brief The data structure used to update contents of an RHI::Image on an RHI::ImagePool.
-         */
-        struct ImageUpdateRequest
+        ImageInitRequest(
+            Image& image,
+            const ImageDescriptor& descriptor,
+            const ClearValue* optimizedClearValue = nullptr,
+            MultiDevice::DeviceMask deviceMask = MultiDevice::AllDevices)
+            : ImageDeviceMaskRequest{ image, deviceMask, optimizedClearValue }
+            , m_descriptor{ descriptor }
         {
-            ImageUpdateRequest() = default;
+        }
 
-            /// A pointer to an initialized image, whose contents will be updated.
-            Image* m_image = nullptr;
+        /// The descriptor used to initialize the image.
+        ImageDescriptor m_descriptor;
+    };
 
-            /// The image subresource to update.
-            ImageSubresource m_imageSubresource;
+    using ImageUpdateRequest = ImageUpdateRequestTemplate<Image, ImageSubresourceLayout>;
 
-            /// The offset in pixels from the start of the sub-resource in the destination image.
-            Origin m_imageSubresourcePixelOffset;
+    //! ImagePool is a pool of images that will be bound as attachments to the frame scheduler.
+    //! As a result, they are intended to be produced and consumed by the GPU. Persistent Color / Depth Stencil / Image
+    //! attachments should be created from this pool. This pool is not designed for intra-frame aliasing.
+    //! If transient images are required, they can be created from the frame scheduler itself.
+    class ImagePool : public ImagePoolBase
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(ImagePool, AZ::SystemAllocator, 0);
+        AZ_RTTI(ImagePool, "{11D804D0-8332-490B-8A3E-BE279FCEFB8E}", ImagePoolBase);
+        AZ_RHI_MULTI_DEVICE_OBJECT_GETTER(ImagePool);
+        ImagePool() = default;
+        virtual ~ImagePool() = default;
 
-            /// The source data pointer
-            const void* m_sourceData = nullptr;
+        //! Initializes the pool. The pool must be initialized before images can be registered with it.
+        ResultCode Init(const ImagePoolDescriptor& descriptor);
 
-            /// The source sub-resource layout.
-            ImageSubresourceLayout m_sourceSubresourceLayout;
-        };
+        //! Initializes an image onto the pool. The pool provides backing GPU resources to the image.
+        ResultCode InitImage(const ImageInitRequest& request);
 
-        /**
-         * ImagePool is a pool of images that will be bound as attachments to the frame scheduler.
-         * As a result, they are intended to be produced and consumed by the GPU. Persistent Color / Depth Stencil / Image
-         * attachments should be created from this pool. This pool is not designed for intra-frame aliasing.
-         * If transient images are required, they can be created from the frame scheduler itself.
-         */
-        class ImagePool
-            : public ImagePoolBase
-        {
-        public:
-            AZ_RTTI(ImagePool, "{A5563DF9-191E-4DF7-86BA-CFF39BE07BDD}", ImagePoolBase);
-            virtual ~ImagePool() = default;
+        //! Updates the device mask of an image instance created from this pool.
+        ResultCode UpdateImageDeviceMask(const ImageDeviceMaskRequest& request);
 
-            /// Initializes the pool. The pool must be initialized before images can be registered with it.
-            ResultCode Init(Device& device, const ImagePoolDescriptor& descriptor);
+        //! Updates image content from the CPU.
+        ResultCode UpdateImageContents(const ImageUpdateRequest& request);
 
-            /// Initializes an image onto the pool. The pool provides backing GPU resources to the image.
-            ResultCode InitImage(const ImageInitRequest& request);
+        //! Returns the descriptor used to initialize the pool.
+        const ImagePoolDescriptor& GetDescriptor() const override final;
 
-            /// Updates image content from the CPU.
-            ResultCode UpdateImageContents(const ImageUpdateRequest& request);
+        void Shutdown() override final;
 
-            /// Returns the descriptor used to initialize the pool.
-            const ImagePoolDescriptor& GetDescriptor() const override final;
+    private:
+        using ImagePoolBase::InitImage;
+        using ResourcePool::Init;
 
-            /// Returns the fragmentation produced by this pool
-            void ComputeFragmentation() const override;
+        bool ValidateUpdateRequest(const ImageUpdateRequest& updateRequest) const;
 
-        protected:
-            ImagePool() = default;
-
-        private:
-            using ResourcePool::Init;
-            using ImagePoolBase::InitImage;
-
-            bool ValidateUpdateRequest(const ImageUpdateRequest& updateRequest) const;
-
-            //////////////////////////////////////////////////////////////////////////
-            // Platform API
-
-            /// Called when the pool is being initialized.
-            virtual ResultCode InitInternal(Device& device, const ImagePoolDescriptor& descriptor) = 0;
-
-            /// Called when an image contents are being updated.
-            virtual ResultCode UpdateImageContentsInternal(const ImageUpdateRequest& request) = 0;
-
-            /// Called when an image is being initialized on the pool.
-            virtual ResultCode InitImageInternal(const ImageInitRequest& request) = 0;
-
-            //////////////////////////////////////////////////////////////////////////
-
-            ImagePoolDescriptor m_descriptor;
-        };
-    }
-}
+        ImagePoolDescriptor m_descriptor;
+    };
+} // namespace AZ::RHI

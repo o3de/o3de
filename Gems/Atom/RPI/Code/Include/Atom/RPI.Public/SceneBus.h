@@ -12,13 +12,14 @@
 #include <AzCore/EBus/EBus.h>
 
 #include <Atom/RPI.Public/Base.h>
+#include <Atom/RPI.Public/Configuration.h>
 
 namespace AZ
 {
     namespace RPI
     {
         //! Ebus to receive scene's notifications
-        class SceneNotification
+        class ATOM_RPI_PUBLIC_API SceneNotification
             : public AZ::EBusTraits
         {
         public:
@@ -78,6 +79,10 @@ namespace AZ
             //! @param previousView The previous view associates to render pipeline's view tag before the new view was set
             virtual void OnRenderPipelinePersistentViewChanged([[maybe_unused]] RenderPipeline* renderPipeline, PipelineViewTag viewTag, ViewPtr newView, ViewPtr previousView) {}
 
+            //! Notifies that the pipeline state lookup table has been rebuilt, so the pipeline state data (multisample state,
+            //! render attachment configuration, etc) for a DrawListTag may have changed. 
+            virtual void OnPipelineStateLookupRebuilt() {};
+
             //! Notifies when the PrepareRender phase is beginning
             //! This phase is when data is read from the FeatureProcessors and written to the draw lists.
             virtual void OnBeginPrepareRender() {}
@@ -89,7 +94,7 @@ namespace AZ
         using SceneNotificationBus = AZ::EBus<SceneNotification>;
         
         //! Ebus to handle requests sent to scene
-        class SceneRequest
+        class ATOM_RPI_PUBLIC_API SceneRequest
             : public AZ::EBusTraits
         {
         public:
@@ -97,7 +102,7 @@ namespace AZ
             static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
             using BusIdType = SceneId;
 
-            virtual void OnSceneNotifictaionHandlerConnected(SceneNotification* handler) = 0;
+            virtual void OnSceneNotificationHandlerConnected(SceneNotification* handler) = 0;
 
             //! Causes an update of the PipelineStateLookup during the next render tick,
             //! after queued Pipeline changes are executed.
@@ -111,7 +116,9 @@ namespace AZ
             typename Bus::HandlerNode& handler, typename Bus::Context::ConnectLockGuard& connectLock, const typename Bus::BusIdType& id)
         {
             EBusConnectionPolicy<Bus>::Connect(busPtr, context, handler, connectLock, id);
-            SceneRequestBus::Event(id, &SceneRequestBus::Events::OnSceneNotifictaionHandlerConnected, handler);
+            SceneRequestBus::Event(id, &SceneRequestBus::Events::OnSceneNotificationHandlerConnected, handler);
         }
     } // namespace RPI
 } // namespace AZ
+
+DECLARE_EBUS_EXTERN_DLL_MULTI_ADDRESS(RPI::SceneNotification);

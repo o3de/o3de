@@ -94,7 +94,7 @@
                 "ShaderAsset": {
                     "FilePath": "Shaders/PostProcessing/Taa.shader"
                 },
-                "Make Fullscreen Pass": true,
+                "FullscreenDispatch": true,
                 "ShaderDataMappings": {
                     "FloatMappings": [
                         {

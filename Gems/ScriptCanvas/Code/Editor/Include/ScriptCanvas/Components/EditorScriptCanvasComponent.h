@@ -11,6 +11,7 @@
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 #include <Editor/Framework/Configuration.h>
+#include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
 #include <ScriptCanvas/Components/EditorDeprecationData.h>
 #include <ScriptCanvas/Components/EditorScriptCanvasComponentSerializer.h>
 
@@ -23,6 +24,7 @@ namespace ScriptCanvasEditor
     class EditorScriptCanvasComponent final
         : public AzToolsFramework::Components::EditorComponentBase
         , private AzToolsFramework::EditorEntityContextNotificationBus::Handler
+        , private EditorScriptCanvasComponentRequestBus::Handler
     {
     public:
         AZ_COMPONENT(EditorScriptCanvasComponent, "{C28E2D29-0746-451D-A639-7F113ECF5D72}", AzToolsFramework::Components::EditorComponentBase);
@@ -46,11 +48,15 @@ namespace ScriptCanvasEditor
         EditorScriptCanvasComponent();
         EditorScriptCanvasComponent(const SourceHandle& sourceHandle);
         ~EditorScriptCanvasComponent() override;
-                        
+
+        //=====================================================================
+        // EditorComponentBase
+        void SetPrimaryAsset(const AZ::Data::AssetId&) override;
+
     protected:
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("ScriptCanvasService", 0x41fd58f3));
+            provided.push_back(AZ_CRC_CE("ScriptCanvasService"));
         }
 
         static void Reflect(AZ::ReflectContext* context);
@@ -63,10 +69,13 @@ namespace ScriptCanvasEditor
         //=====================================================================
         // EditorComponentBase
         void BuildGameEntity(AZ::Entity* gameEntity) override;
-        void SetPrimaryAsset(const AZ::Data::AssetId&) override;
+
+        void SetAssetId(const SourceHandle& assetId) override;
+        bool HasAssetId() const override;
 
     private:
         Configuration m_configuration;
         AZ::EventHandler<const Configuration&> m_handlerSourceCompiled;
+        AZ::EventHandler<const Configuration&> m_handlerSourcePropertiesChanged;
     };
 }

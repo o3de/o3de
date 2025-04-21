@@ -45,7 +45,7 @@ namespace LmbrCentral
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
             EditorBaseShapeComponent::GetProvidedServices(provided);
-            provided.push_back(AZ_CRC("SphereShapeService", 0x90c8dc80));
+            provided.push_back(AZ_CRC_CE("SphereShapeService"));
         }
 
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);

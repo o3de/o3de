@@ -10,7 +10,6 @@
 
 #include <AzToolsFramework/AssetCatalog/PlatformAddressedAssetCatalog.h>
 #include <AzFramework/Asset/NetworkAssetNotification_private.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/containers/vector.h>
 

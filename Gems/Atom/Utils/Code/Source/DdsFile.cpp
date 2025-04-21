@@ -666,6 +666,7 @@ namespace AZ
         {
             m_header.m_flags |= DdsFlags::Depth;
             m_header.m_depth = size.m_depth;
+            SetAsVolumeTexture();
         }
         else
         {
@@ -720,6 +721,12 @@ namespace AZ
         m_headerDx10.m_miscFlag |= Dx10MiscFlags::TextureCube;
     }
 
+    void DdsFile::SetAsVolumeTexture()
+    {
+        m_header.m_caps |= DdsCaps::Complex;
+        m_header.m_caps_2 |= DdsCaps2::Volume;
+    }
+
     void DdsFile::SetMipLevels(uint32_t mipLevels)
     {
         m_header.m_mipMapCount = mipLevels;
@@ -762,7 +769,7 @@ namespace AZ
             DdsFlags pitchOrLinearSize = PitchOrLinearSizeFromFormat(m_externalFormat);
             m_header.m_flags |= pitchOrLinearSize;
 
-            RHI::ImageSubresourceLayout layout = RHI::GetImageSubresourceLayout(GetSize(), m_externalFormat);
+            RHI::DeviceImageSubresourceLayout layout = RHI::GetImageSubresourceLayout(GetSize(), m_externalFormat);
             m_header.m_pitchOrLinearSize = layout.m_bytesPerRow;
         }
     }

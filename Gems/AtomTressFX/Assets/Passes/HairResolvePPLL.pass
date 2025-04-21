@@ -139,7 +139,7 @@
             ],
             "PassData": {
                 "$type": "FullscreenTrianglePassData",
-                "PipelineViewTag": "MainCamera",
+                "BindViewSrg": true,
                 "ShaderAsset": {
                     // Looking for it in the Shaders directory relative to the Assets directory
                     "FilePath": "Shaders/HairRenderingResolvePPLL.shader"

@@ -501,6 +501,11 @@ namespace AZ::IO
 
     auto Scheduler::Thread_PrioritizeRequests(const FileRequest* first, const FileRequest* second) const -> Order
     {
+        if (first == second)
+        {
+            return Order::Equal;
+        }
+
         // Sort by order priority of the command in the request. This allows to for instance have cancel request
         // always happen before any other requests.
         auto order = [](auto&& args)
@@ -544,7 +549,12 @@ namespace AZ::IO
             }
 
             // If neither has started and have the same priority, prefer to start the closest deadline.
-            return firstRead->m_deadline <= secondRead->m_deadline ? Order::FirstRequest : Order::SecondRequest;
+            if (firstRead->m_deadline == secondRead->m_deadline)
+            {
+                return Order::Equal;
+            }
+
+            return firstRead->m_deadline < secondRead->m_deadline ? Order::FirstRequest : Order::SecondRequest;
         }
 
         // Check if one of the requests is in panic and prefer to prioritize that request
@@ -593,7 +603,13 @@ namespace AZ::IO
             s64 secondReadOffset = AZStd::visit(offset, second->GetCommand());
             s64 firstSeekDistance = abs(aznumeric_cast<s64>(m_threadData.m_lastFileOffset) - firstReadOffset);
             s64 secondSeekDistance = abs(aznumeric_cast<s64>(m_threadData.m_lastFileOffset) - secondReadOffset);
-            return firstSeekDistance <= secondSeekDistance ? Order::FirstRequest : Order::SecondRequest;
+
+            if (firstSeekDistance == secondSeekDistance)
+            {
+                return Order::Equal;
+            }
+            
+            return firstSeekDistance < secondSeekDistance ? Order::FirstRequest : Order::SecondRequest;
         }
 
         // Prefer to continue in the same file so prioritize the request that's in the same file
@@ -625,6 +641,13 @@ namespace AZ::IO
                 "Scheduler::Thread_ScheduleRequests - Sorting %i requests", m_context.GetNumPreparedRequests());
             auto sorter = [this](const FileRequest* lhs, const FileRequest* rhs) -> bool
             {
+                if (lhs == rhs)
+                {
+                    // AZStd::sort may compare an element to itself; 
+                    //   it's required this condition remain consistent and return false.
+                    return false;
+                }
+
                 Order order = Thread_PrioritizeRequests(lhs, rhs);
                 switch (order)
                 {

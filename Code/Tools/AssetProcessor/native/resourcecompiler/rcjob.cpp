@@ -20,6 +20,7 @@
 #include "native/utilities/JobDiagnosticTracker.h"
 
 #include <qstorageinfo.h>
+#include <native/utilities/ProductOutputUtil.h>
 
 namespace
 {
@@ -103,6 +104,11 @@ namespace AssetProcessor
     const JobEntry& RCJob::GetJobEntry() const
     {
         return m_jobDetails.m_jobEntry;
+    }
+
+    bool RCJob::HasMissingSourceDependency() const
+    {
+        return m_jobDetails.m_hasMissingSourceDependency;
     }
 
     QDateTime RCJob::GetTimeCreated() const
@@ -401,7 +407,7 @@ namespace AssetProcessor
 
 #if defined(AZ_ENABLE_TRACING)
         QString sourceFullPath(builderParams.m_processJobRequest.m_fullPath.c_str());
-        auto failReason = builderParams.m_processJobRequest.m_jobDescription.m_jobParameters.find(AZ_CRC(AssetProcessor::AutoFailReasonKey));
+        auto failReason = builderParams.m_processJobRequest.m_jobDescription.m_jobParameters.find(AZ_CRC_CE(AssetProcessor::AutoFailReasonKey));
         if (failReason != builderParams.m_processJobRequest.m_jobDescription.m_jobParameters.end())
         {
             // you are allowed to have many lines in your fail reason.
@@ -420,7 +426,7 @@ namespace AssetProcessor
             // obvious from the output in other ways)
             AZ_TracePrintf("Debug", "(auto-failed)\n");
         }
-        auto failLogFile = builderParams.m_processJobRequest.m_jobDescription.m_jobParameters.find(AZ_CRC(AssetProcessor::AutoFailLogFile));
+        auto failLogFile = builderParams.m_processJobRequest.m_jobDescription.m_jobParameters.find(AZ_CRC_CE(AssetProcessor::AutoFailLogFile));
         if (failLogFile != builderParams.m_processJobRequest.m_jobDescription.m_jobParameters.end())
         {
             AzToolsFramework::Logging::LogLine::ParseLog(failLogFile->second.c_str(), failLogFile->second.size(),
@@ -452,7 +458,7 @@ namespace AssetProcessor
         // applications reading log file will find it.
         AZ_Error(AssetBuilderSDK::ErrorWindow, false, "Builder indicated that the job has failed.\n");
 
-        if (builderParams.m_processJobRequest.m_jobDescription.m_jobParameters.find(AZ_CRC(AssetProcessor::AutoFailOmitFromDatabaseKey)) != builderParams.m_processJobRequest.m_jobDescription.m_jobParameters.end())
+        if (builderParams.m_processJobRequest.m_jobDescription.m_jobParameters.find(AZ_CRC_CE(AssetProcessor::AutoFailOmitFromDatabaseKey)) != builderParams.m_processJobRequest.m_jobDescription.m_jobParameters.end())
         {
             // we don't add Auto-fail jobs to the database if they have asked to be emitted.
             builderParams.m_rcJob->m_jobDetails.m_jobEntry.m_addToDatabase = false;
@@ -503,9 +509,25 @@ namespace AssetProcessor
 
             QString sourceFullPath(builderParams.m_processJobRequest.m_fullPath.c_str());
 
-            if (sourceFullPath.length() >= AP_MAX_PATH_LEN)
+            if (sourceFullPath.length() >= ASSETPROCESSOR_WARN_PATH_LEN && sourceFullPath.length() < ASSETPROCESSOR_TRAIT_MAX_PATH_LEN)
             {
-                AZ_Warning(AssetBuilderSDK::WarningWindow, false, "Source Asset: %s filepath length %d exceeds the maximum path length (%d) allowed.\n", sourceFullPath.toUtf8().data(), sourceFullPath.length(), AP_MAX_PATH_LEN);
+                AZ_Warning(
+                    AssetBuilderSDK::WarningWindow,
+                    false,
+                    "Source Asset: %s filepath length %d exceeds the suggested max path length (%d). This may not work on all platforms.\n",
+                    sourceFullPath.toUtf8().data(),
+                    sourceFullPath.length(),
+                    ASSETPROCESSOR_WARN_PATH_LEN);
+            }
+            if (sourceFullPath.length() >= ASSETPROCESSOR_TRAIT_MAX_PATH_LEN)
+            {
+                AZ_Warning(
+                    AssetBuilderSDK::WarningWindow,
+                    false,
+                    "Source Asset: %s filepath length %d exceeds the maximum path length (%d) allowed.\n",
+                    sourceFullPath.toUtf8().data(),
+                    sourceFullPath.length(),
+                    ASSETPROCESSOR_TRAIT_MAX_PATH_LEN);
                 result.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
             }
             else
@@ -673,7 +695,7 @@ namespace AssetProcessor
                     result.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
                     shouldRemoveTempFolder = false;
                 }
-                shouldRemoveTempFolder = shouldRemoveTempFolder && !s_createRequestFileForSuccessfulJob;
+                shouldRemoveTempFolder = shouldRemoveTempFolder && !result.m_keepTempFolder && !s_createRequestFileForSuccessfulJob;
             }
             break;
 
@@ -803,6 +825,17 @@ namespace AssetProcessor
                 return false;
             }
 
+            const bool isSourceMetadataEnabled = !params.m_sourceUuid.IsNull();
+
+            if (isSourceMetadataEnabled)
+            {
+                // For metadata enabled files, the output file needs to be prefixed to handle multiple files with the same relative path.
+                // This phase will just use a temporary prefix which is longer and less likely to result in accidental conflicts.
+                // During AssetProcessed_Impl in APM, the prefixing will be resolved to figure out which file is highest priority and gets renamed
+                // back to the non-prefixed, backwards compatible format and every other file with the same rel path will be re-prefixed to a finalized form.
+                ProductOutputUtil::GetInterimProductPath(outputFilename, params.m_rcJob->GetJobEntry().m_sourceAssetReference.ScanFolderId());
+            }
+
             if(outputToCache)
             {
                 needCacheDirectory = true;
@@ -838,7 +871,7 @@ namespace AssetProcessor
                     // The assumption for the UUID generated below is that the source UUID will not change.  A type which has no metadata
                     // file currently may be updated later to have a metadata file, which would break that assumption.  In that case, stick
                     // with the default path-based UUID.
-                    if (!params.m_sourceUuid.IsNull())
+                    if (isSourceMetadataEnabled)
                     {
                         // Generate a UUID for the intermediate as:
                         // SourceUuid:BuilderUuid:SubId
@@ -923,6 +956,7 @@ namespace AssetProcessor
             const QString& productAbsolutePath = filePair.second;
 
             bool isCopyJob = !(sourceAbsolutePath.startsWith(tempFolder, Qt::CaseInsensitive));
+            isCopyJob |= response.m_keepTempFolder; // Copy instead of Move if the builder wants to keep the Temp Folder. 
 
             if (!MoveCopyFile(sourceAbsolutePath, productAbsolutePath, isCopyJob)) // this has its own traceprintf for failure
             {
@@ -954,12 +988,26 @@ namespace AssetProcessor
         // breaks macOS. The case is already setup properly when the job
         // was created.
 
-        if (productFile.length() >= AP_MAX_PATH_LEN)
+        if (productFile.length() >= ASSETPROCESSOR_WARN_PATH_LEN && productFile.length() < ASSETPROCESSOR_TRAIT_MAX_PATH_LEN)
+        {
+            AZ_Warning(
+                AssetBuilderSDK::WarningWindow,
+                false,
+                "Product '%s' path length (%d) exceeds the suggested max path length (%d). This may not work on all platforms.\n",
+                productFile.toUtf8().data(),
+                productFile.length(),
+                ASSETPROCESSOR_WARN_PATH_LEN);
+        }
+
+        if (productFile.length() >= ASSETPROCESSOR_TRAIT_MAX_PATH_LEN)
         {
             AZ_Error(
-                AssetBuilderSDK::ErrorWindow, false,
+                AssetBuilderSDK::ErrorWindow,
+                false,
                 "Cannot copy file: Product '%s' path length (%d) exceeds the max path length (%d) allowed on disk\n",
-                productFile.toUtf8().data(), productFile.length(), AP_MAX_PATH_LEN);
+                productFile.toUtf8().data(),
+                productFile.length(),
+                ASSETPROCESSOR_TRAIT_MAX_PATH_LEN);
             return false;
         }
 

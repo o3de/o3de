@@ -72,7 +72,6 @@ namespace AzToolsFramework
             AZStd::unordered_map<QObject*, TabSettings> m_settingsForTabs;
 
             QWidget* m_noTabsWidget = nullptr;
-            bool m_pauseCheckForBlankTab = false;
         };
 
         // Replaces BaseLogView

@@ -1,0 +1,680 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#include <Atom/RPI/Math.azsli>
+#include <Atom/Features/PBR/Microfacet/Brdf.azsli>
+#include <Atom/Features/PBR/LightingUtils.azsli>
+#include <Atom/Features/PBR/MaterialUtils.azsli>
+#include <Atom/Features/Shadow/NormalOffsetShadows.azsli>
+#include <Atom/Features/SrgSemantics.azsli>
+#include <Atom/Features/RayTracing/RayTracingSrgs.azsli>
+#include <Atom/Features/RayTracing/RayTracingSceneUtils.azsli>
+#include <Atom/Features/RayTracing/RayTracingMaterialUtils.azsli>
+#include "ReflectionCommon.azsli"
+
+struct PayloadData
+{
+    float  m_hitT;
+    float3 m_fallbackColor;
+    float3 m_fallbackAlbedo;
+    float3 m_fallbackPosition;
+    float3 m_fallbackNormal;
+    float  m_opacity;
+    bool   m_cameraTrace;
+    bool   m_obstructed;
+    bool   m_offScreen;
+    bool   m_lightVisibilityTrace;
+    bool   m_wasIntersectionShader;
+};
+
+enum class ReflectionMethod
+{
+    ScreenSpace,
+    Hybrid,
+    HybridWithFallback,
+    RayTracing
+};
+
+struct RayTracingLightingData
+{
+    // surface
+    float3 m_albedo;
+    float3 m_specularF0;
+    float3 m_diffuseResponse;
+    float3 m_worldPosition;
+    float3 m_normal;
+    float3 m_vertexNormal;
+    float  m_roughnessA2;
+
+    // view
+    float3 m_dirToCamera;
+    float  m_NdotV;
+    float  m_normalBias;
+    float  m_viewBias;
+
+    // scene
+    RaytracingAccelerationStructure m_scene;
+};
+
+bool CheckLightVisibility(RayTracingLightingData lightingData, float3 dirToLight, float tmax)
+{
+    // ray trace from the surface position to the light
+    RayDesc ray;
+    ray.Origin = lightingData.m_worldPosition + (lightingData.m_normal * lightingData.m_normalBias);
+    ray.Direction = dirToLight;
+    ray.TMin = 0.0f;
+    ray.TMax = tmax;
+
+    // note that we do not run the closest hit shader since we are just testing for visibility,
+    // and instead rely on the miss shader to set payload.m_hitT to -1.0f and check for a negative value
+    PayloadData payload = (PayloadData)0;
+    payload.m_lightVisibilityTrace = true;
+    TraceRay(
+        lightingData.m_scene,
+        RAY_FLAG_SKIP_CLOSEST_HIT_SHADER,
+        0xFF,
+        0,
+        1,
+        0,
+        ray,
+        payload);
+
+    // if hitT is negative that means the miss shader executed and we did not hit anything 
+    // between the surface and the light, thus the light is visible
+    return (payload.m_hitT < 0.0f);
+}
+
+void ApplyDirectionalLight(DirectionalLight light, RayTracingLightingData lightingData, bool applySpecular, inout float3 diffuse, inout float3 specular)
+{   
+    float3 dirToLight = normalize(-light.m_direction);
+
+    // Adjust the direction of the light based on its angular diameter.
+    float3 reflectionDir = reflect(-lightingData.m_dirToCamera, lightingData.m_normal);
+    float3 lightDirToReflectionDir = reflectionDir - dirToLight;
+    float lightDirToReflectionDirLen = length(lightDirToReflectionDir);
+    lightDirToReflectionDir = lightDirToReflectionDir / lightDirToReflectionDirLen; // normalize the length
+    lightDirToReflectionDirLen = min(light.m_angularRadius, lightDirToReflectionDirLen);
+    dirToLight += lightDirToReflectionDir * lightDirToReflectionDirLen;
+
+    float tmax = 1e27f;
+    if (!CheckLightVisibility(lightingData, dirToLight, tmax))
+    {
+        return;
+    }
+
+    diffuse += DiffuseLambertian(lightingData.m_albedo, lightingData.m_normal, dirToLight, lightingData.m_diffuseResponse) * light.m_rgbIntensityLux;
+
+    if (applySpecular)
+    {
+        specular += SpecularGGX(lightingData.m_dirToCamera, dirToLight, lightingData.m_normal, lightingData.m_specularF0, lightingData.m_NdotV, lightingData.m_roughnessA2, 1.0f) * light.m_rgbIntensityLux;
+    }
+}
+
+void ApplySimplePointLight(SimplePointLight light, RayTracingLightingData lightingData, bool applySpecular, inout float3 diffuse, inout float3 specular)
+{
+    float3 posToLight = light.m_position - lightingData.m_worldPosition;
+    float3 dirToLight = normalize(posToLight);
+    float d2 = dot(posToLight, posToLight); // light distance squared
+    float falloff = d2 * light.m_invAttenuationRadiusSquared;
+    
+    // test for out of range
+    if (falloff >= 1.0f)
+        return;
+
+    float tmax = (sqrt(d2) - lightingData.m_viewBias);
+    if (!CheckLightVisibility(lightingData, dirToLight, tmax))
+    {
+        return;
+    }
+
+    // smoothly adjusts the light intensity so it reaches 0 at light.m_attenuationRadius distance
+    float radiusAttenuation = 1.0f - (falloff * falloff);
+    radiusAttenuation = radiusAttenuation * radiusAttenuation;
+        
+    // standard quadratic falloff
+    d2 = max(0.001f * 0.001f, d2);
+    float3 lightIntensity = (light.m_rgbIntensityCandelas / d2) * radiusAttenuation;
+
+    diffuse += DiffuseLambertian(lightingData.m_albedo, lightingData.m_normal, dirToLight, lightingData.m_diffuseResponse) * lightIntensity;
+
+    if (applySpecular)
+    {
+        specular += SpecularGGX(lightingData.m_dirToCamera, dirToLight, lightingData.m_normal, lightingData.m_specularF0, lightingData.m_NdotV, lightingData.m_roughnessA2, 1.0f) * lightIntensity;
+    }
+}
+
+void ApplySimpleSpotLight(SimpleSpotLight light, RayTracingLightingData lightingData, bool applySpecular, inout float3 diffuse, inout float3 specular)
+{
+    float3 posToLight = light.m_position - lightingData.m_worldPosition;
+    float3 dirToLight = normalize(posToLight);
+    float d2 = dot(posToLight, posToLight);
+    float falloff = d2 * light.m_invAttenuationRadiusSquared;
+    
+    // test for out of range
+    if (falloff >= 1.0f)
+        return;
+
+    // test for outside of outer cone
+    float dotWithDirection = dot(dirToLight, -light.m_direction);
+    if (dotWithDirection <= light.m_cosOuterConeAngle)
+        return;
+
+    float tmax = (sqrt(d2) - lightingData.m_viewBias);
+    if (!CheckLightVisibility(lightingData, dirToLight, tmax))
+    {
+        return;
+    }
+
+    // smoothly adjusts the light intensity so it reaches 0 at light.m_attenuationRadius distance
+    float radiusAttenuation = 1.0f - (falloff * falloff);
+    radiusAttenuation = radiusAttenuation * radiusAttenuation;
+
+    // standard quadratic falloff
+    d2 = max(0.001f * 0.001f, d2);
+    float3 lightIntensity = (light.m_rgbIntensityCandelas / d2) * radiusAttenuation;
+
+    diffuse += DiffuseLambertian(lightingData.m_albedo, lightingData.m_normal, dirToLight, lightingData.m_diffuseResponse) * lightIntensity;
+
+    if (applySpecular)
+    {
+        specular += SpecularGGX(lightingData.m_dirToCamera, dirToLight, lightingData.m_normal, lightingData.m_specularF0, lightingData.m_NdotV, lightingData.m_roughnessA2, 1.0f) * lightIntensity;
+    }
+}
+
+void ApplyPointLight(PointLight light, RayTracingLightingData lightingData, bool applySpecular, inout float3 diffuse, inout float3 specular)
+{
+    float3 posToLight = light.m_position - lightingData.m_worldPosition;
+    float3 dirToLight = normalize(posToLight);
+    float d2 = dot(posToLight, posToLight); // light distance squared
+    float falloff = d2 * light.m_invAttenuationRadiusSquared;
+    
+    // test for out of range
+    if (falloff >= 1.0f)
+        return;
+
+    float tmax = (sqrt(d2) - lightingData.m_viewBias);
+    if (!CheckLightVisibility(lightingData, dirToLight, tmax))
+    {
+        return;
+    }
+
+    // smoothly adjusts the light intensity so it reaches 0 at light.m_attenuationRadius distance
+    float radiusAttenuation = 1.0f - (falloff * falloff);
+    radiusAttenuation = radiusAttenuation * radiusAttenuation;
+        
+    // standard quadratic falloff
+    d2 = max(0.001f * 0.001f, d2);
+    float3 lightIntensity = (light.m_rgbIntensityCandelas / d2) * radiusAttenuation;
+
+    diffuse += DiffuseLambertian(lightingData.m_albedo, lightingData.m_normal, dirToLight, lightingData.m_diffuseResponse) * lightIntensity;
+
+    if (applySpecular)
+    {
+        specular += SpecularGGX(lightingData.m_dirToCamera, dirToLight, lightingData.m_normal, lightingData.m_specularF0, lightingData.m_NdotV, lightingData.m_roughnessA2, 1.0f) * lightIntensity;
+    }
+}
+
+void ApplyDiskLight(DiskLight light, RayTracingLightingData lightingData, bool applySpecular, inout float3 diffuse, inout float3 specular)
+{
+    float3 posToLight = light.m_position - lightingData.m_worldPosition;
+    float d2 = dot(posToLight, posToLight); // light distance squared
+    float falloff = d2 * light.m_invAttenuationRadiusSquared;
+
+    float3 dirToLight = normalize(posToLight);
+
+    // Reduce the brightness based on how much the disk is facing this pixel.
+    float angleFalloff = dot(dirToLight, -light.m_direction);
+
+    // test for out of range
+    if (falloff >= 1.0f || angleFalloff <= 0.0f)
+        return;
+
+    float tmax = (sqrt(d2) - lightingData.m_viewBias);
+    if (!CheckLightVisibility(lightingData, dirToLight, tmax))
+    {
+        return;
+    }
+
+    // smoothly adjusts the light intensity so it reaches 0 at light.m_attenuationRadius distance
+    float radiusAttenuation = 1.0f - (falloff * falloff);
+    radiusAttenuation = radiusAttenuation * radiusAttenuation;
+        
+    // find the distance to the closest point on the disk
+    float distanceToPlane = dot(posToLight, -light.m_direction);
+    float distanceToPlane2 = distanceToPlane * distanceToPlane;
+    float pointOnPlaneToLightDistance = sqrt(d2 - distanceToPlane2); // pythagorean theorem 
+    float pointOnPlaneToDiskDistance = max(pointOnPlaneToLightDistance - light.m_diskRadius, 0.0f); 
+    float distanceToDisk2 = pointOnPlaneToDiskDistance * pointOnPlaneToDiskDistance + distanceToPlane2;
+
+    // update the light direction based on the edges of the disk as visible from this point instead of the center.
+    float3 pointOnPlane = -light.m_direction * distanceToPlane;
+    float3 pointOnPlaneToLightDir = normalize(posToLight - pointOnPlane);
+    float3 nearSideDir = normalize(pointOnPlane + pointOnPlaneToLightDir * (pointOnPlaneToLightDistance - light.m_diskRadius));
+    float3 farSideDir = normalize(pointOnPlane + pointOnPlaneToLightDir * (pointOnPlaneToLightDistance + light.m_diskRadius));
+    dirToLight = normalize((nearSideDir + farSideDir) * 0.5f);
+
+    // standard quadratic falloff
+    distanceToDisk2 = max(0.001f * 0.001f, distanceToDisk2); // clamp the light to at least 1mm away to avoid extreme values.
+    float3 lightIntensity = (light.m_rgbIntensityCandelas / distanceToDisk2) * radiusAttenuation * angleFalloff;
+
+    // adjust brightness based on the disk size relative to its distance,
+    // the larger the disk is relative to the surface point, the dimmer it becomes.
+    // 0 radius disks are unaffected.
+    lightIntensity /= ((light.m_diskRadius / distanceToPlane) + 1.0f);
+
+    diffuse += DiffuseLambertian(lightingData.m_albedo, lightingData.m_normal, dirToLight, lightingData.m_diffuseResponse) * lightIntensity;
+
+    if (applySpecular)
+    {
+        specular += SpecularGGX(lightingData.m_dirToCamera, dirToLight, lightingData.m_normal, lightingData.m_specularF0, lightingData.m_NdotV, lightingData.m_roughnessA2, 1.0f) * lightIntensity;
+    }
+}
+
+//! Adjust the intensity of specular light based on the radius of the light source and roughness of the surface to approximate energy conservation.
+float GetIntensityAdjustedByRadiusAndRoughness(float roughnessA, float radius, float distance2)
+{
+    float roughnessAdjusted = saturate(roughnessA + (radius / (3.0 * sqrt(distance2))));
+    float intensityNormalization = max(roughnessA, 0.001f) / roughnessAdjusted;
+    return intensityNormalization * intensityNormalization;
+}
+
+void ApplyCapsuleLight(CapsuleLight light, RayTracingLightingData lightingData, bool applySpecular, inout float3 diffuse, inout float3 specular)
+{
+    float lightLength = light.m_length;
+    float3 startPoint = light.m_startPoint;
+    float3 startToEnd = light.m_direction * lightLength;
+    float3 endPoint = startPoint + startToEnd;
+    
+    // do simple distance check to line for falloff and tight culling
+    float3 surfaceToStart = startPoint - lightingData.m_worldPosition;
+    float closestPointDistance = dot(-surfaceToStart, light.m_direction);
+    closestPointDistance = clamp(closestPointDistance, 0.0f, lightLength);
+
+    float3 dirToClosestPoint = surfaceToStart + closestPointDistance * light.m_direction;
+    float d2 = dot(dirToClosestPoint, dirToClosestPoint);
+    float falloff = d2 * light.m_invAttenuationRadiusSquared;
+
+    // test for out of range
+    if (falloff >= 1.0f)
+        return;
+
+    float tmax = (sqrt(d2) - lightingData.m_viewBias);
+    if (!CheckLightVisibility(lightingData, normalize(dirToClosestPoint), tmax))
+    {
+        return;
+    }
+
+    // smoothly adjusts the light intensity so it reaches 0 at light.m_attenuationRadius distance
+    float radiusAttenuation = 1.0f - (falloff * falloff);
+    radiusAttenuation = radiusAttenuation * radiusAttenuation;
+
+    // check if the capsule intersects the plane formed by the surface normal. If so, the capsule should be
+    // truncated to just the portion above the plane.
+    float startProjection = dot(lightingData.m_normal, surfaceToStart);
+    float lengthProjection = dot(lightingData.m_normal, startToEnd);
+    float startOverLength = startProjection / lengthProjection;
+    float ratioVisible = 1.0f;
+
+    // check if part of the capsule light is behind the surface:
+    // if startOverLength is less than -1.0, then the length isn't great enough to cross the surface plane
+    // if startOverLength is positive, the capsule start and capsule direction are on the same side of the surface plane
+    if (-1.0f < startOverLength && startOverLength < 0.0f)
+    {
+        startOverLength = abs(startOverLength);
+
+        // clamp the capsule light to above the surface
+        if (startProjection < 0.0f)
+        {
+            // start point is behind the surface, so move it
+            startPoint = startPoint + lightLength * startOverLength * light.m_direction;
+            ratioVisible = 1.0f - startOverLength;
+            lightLength *= ratioVisible;
+            surfaceToStart = startPoint - lightingData.m_worldPosition;
+        }
+        else
+        {
+            // end point is behind the surface so adjust the capsule length
+            lightLength *= startOverLength;
+            ratioVisible = startOverLength;
+            endPoint = light.m_startPoint + light.m_direction * lightLength;
+        }
+        startToEnd = light.m_direction * lightLength;
+    }
+
+    // calculate the distances to start and end
+    float distanceToStart = length(surfaceToStart);
+    float3 surfaceToEnd = endPoint - lightingData.m_worldPosition;
+    float distanceToEnd = length(surfaceToEnd);
+        
+    // integration of lambert reflectance of a line segment to get diffuse intensity
+    // See https://cdn2.unrealengine.com/Resources/files/2013SiggraphPresentationsNotes-26915738.pdf
+    float NdotStart = dot(lightingData.m_normal, surfaceToStart) / distanceToStart;
+    float NdotEnd =  dot(lightingData.m_normal, surfaceToEnd) / distanceToEnd;
+    float intensity = (NdotStart + NdotEnd) / (distanceToStart * distanceToEnd + dot(surfaceToStart, surfaceToEnd));
+    intensity /= PI; // normalize for lambert reflectance.
+
+    float3 lightIntensity = (intensity * radiusAttenuation * ratioVisible) * light.m_rgbIntensityCandelas;
+    diffuse += max(0.0f, lightingData.m_albedo * lightIntensity);
+    
+    if (applySpecular)
+    {
+        // Calculate the reflection of the normal from the view direction
+        float3 reflectionDir = reflect(-lightingData.m_dirToCamera, lightingData.m_normal);
+
+        // Find closest point on light to reflection vector.
+        // See https://cdn2.unrealengine.com/Resources/files/2013SiggraphPresentationsNotes-26915738.pdf
+        float reflDotStartToEnd = dot(reflectionDir, startToEnd);
+        float closestT = (dot(reflectionDir, surfaceToStart) * reflDotStartToEnd - dot(surfaceToStart, startToEnd)) / (dot(startToEnd, startToEnd) - reflDotStartToEnd * reflDotStartToEnd);
+        closestT = saturate(closestT);
+
+        float3 closestIntersectionPoint = startPoint + closestT * startToEnd;
+        float3 posToLight = closestIntersectionPoint - lightingData.m_worldPosition;
+
+        // Calculate the offset from the nearest point on the reflection vector to the nearest point on the capsule light
+        float3 posToClosestPointAlongReflection = dot(posToLight, reflectionDir) * reflectionDir;
+        float3 lightReflectionOffset = posToLight - posToClosestPointAlongReflection;
+
+        // Adjust the direction to light based on the capsule radius
+        posToLight -= lightReflectionOffset * saturate(light.m_radius / length(lightReflectionOffset));
+        d2 = dot(posToLight, posToLight);
+        d2 = max(light.m_radius * light.m_radius, d2);
+
+        // Adjust the intensity of the light based on the capsule radius to conserve energy
+        float sphereIntensityNormalization = GetIntensityAdjustedByRadiusAndRoughness(lightingData.m_roughnessA2, light.m_radius, d2);
+
+        // Capsule specular is done just like spherical specular, we just move the position of the sphere along the capsule depending
+        // on the point being shaded. However this means that the intensity needs to be reduced by the ratio of the capsule surface
+        // area to a sphere of the same radius.
+        //capsArea = 4.0 * PI * light.m_radius * light.m_radius;
+        //cylinderArea = 2.0 * PI * light.m_radius * light.m_length;
+        //sphereToCapsuleAreaRatio 
+        //    = capsArea / (capsArea + cylinderArea);
+        //    = 4.0 * PI * radius * radius / (4.0 * PI * radius * radius + 2.0 * PI * radius * length )
+        //    = 2.0 * radius / (2.0 * radius + length)
+        
+        float sphereToCapsuleAreaRatio = 2.0 * light.m_radius / max(2.0 * light.m_radius + light.m_length, EPSILON);
+
+        // Specular contribution
+        lightIntensity = sphereToCapsuleAreaRatio * radiusAttenuation / d2;
+        lightIntensity *= light.m_rgbIntensityCandelas;
+        specular += SpecularGGX(lightingData.m_dirToCamera, normalize(posToLight), lightingData.m_normal, lightingData.m_specularF0, lightingData.m_NdotV, lightingData.m_roughnessA2, 1.0f) * sphereIntensityNormalization;
+    }
+}
+
+// returns the solid angle at origin of a rectangle defined by points p0-p3. Does not handle horizon.
+// modified from https://seblagarde.files.wordpress.com/2015/07/course_notes_moving_frostbite_to_pbr_v32.pdf Listing 11 on page 49.
+float RectangleSolidAngle(float3 v0, float3 v1, float3 v2, float3 v3)
+{
+    float3 n0 = normalize(cross(v0, v1));
+    float3 n1 = normalize(cross(v1, v2));
+    float3 n2 = normalize(cross(v2, v3));
+    float3 n3 = normalize(cross(v3, v0));
+    
+    float g0 = acos(dot (-n0, n1));
+    float g1 = acos(dot (-n1, n2));
+    float g2 = acos(dot (-n2, n3));
+    float g3 = acos(dot (-n3, n0));
+
+    return max(0.0, g0 + g1 + g2 + g3 - 2.0f * PI);
+}
+
+float3 GetSpecularDominantDirection(float3 normal, float3 reflection, float roughness)
+{
+    float lerpFactor = 1.0 - roughness;
+    return normalize(lerp(normal, reflection, lerpFactor));
+}
+
+// Unlike standard ray-plane intersection, this version is made for light planes to avoid discontinuities when the
+// reflection vector is going away from a light plane.
+float3 RayLightPlaneIntersection(in float3 pos, in float3 rayDirection, in float3 lightOrigin, in float3 lightDirection)
+{
+    float3 lightToPos = pos - lightOrigin;
+    float reflectionDotLight = dot(rayDirection, -lightDirection);
+    
+    float distanceToPlane = dot(lightToPos, lightDirection);
+    if (reflectionDotLight >= 0.0001)
+    {
+        // Reflection going towards the light
+        return pos + rayDirection * distanceToPlane / reflectionDotLight;
+    }
+    else
+    {
+        // Reflection going away from the light. Choose a point far off and project it on the plane,
+        // then treat that as the reflection plane intersection.
+        float3 posToFarOffPoint = rayDirection * distanceToPlane * 10000.0;
+        float3 lightToFarOffPoint = lightToPos + posToFarOffPoint;
+        // Here "intersection" refers to the projection of the far off point onto the light plane.
+        float3 intersectionToFarOffPoint = dot(lightToFarOffPoint, lightDirection) * lightDirection;
+        return pos + posToFarOffPoint - intersectionToFarOffPoint;
+    }
+}
+
+float3 ClosestPointRect(in float3 pos, in float3 planeOrigin, in float3 left, in float3 up, in float2 halfSize)
+{
+    float3 dir = pos - planeOrigin;
+    float2 dist2D = float2(dot(dir, left), dot(dir, up));
+    dist2D = clamp(dist2D, -halfSize, halfSize);
+    return planeOrigin + dist2D.x * left + dist2D.y * up;
+}
+
+void ApplyQuadLight(QuadLight light, RayTracingLightingData lightingData, bool applySpecular, inout float3 diffuse, inout float3 specular)
+{
+    float3 lightDirection = cross(light.m_leftDir, light.m_upDir); // left and up are already normalized
+
+    float3 posToLight = light.m_position - lightingData.m_worldPosition;
+    float3 dirToLight = normalize(posToLight);
+    float posToLightDotLightDirection = dot(posToLight, -lightDirection);
+
+    float d2 = dot(posToLight, posToLight); // light distance squared
+    float falloff = d2 * light.m_invAttenuationRadiusSquared;
+
+    bool doubleSided = (light.m_flags & QuadLightFlag::EmitsBothDirections) > 0;
+    if (doubleSided)
+    {
+        lightDirection *= sign(posToLightDotLightDirection);
+        posToLightDotLightDirection = abs(posToLightDotLightDirection);
+    }
+
+    // test for out of range
+    if (falloff >= 1.0f || posToLightDotLightDirection <= 0.0f)
+        return;
+
+    float tmax = (sqrt(d2) - lightingData.m_viewBias);
+    if (!CheckLightVisibility(lightingData, dirToLight, tmax))
+    {
+        return;
+    }
+
+    // smoothly adjusts the light intensity so it reaches 0 at light.m_attenuationRadius distance
+    float radiusAttenuation = 1.0f - (falloff * falloff);
+    radiusAttenuation = radiusAttenuation * radiusAttenuation;
+
+    float3 left = light.m_leftDir * light.m_halfWidth;
+    float3 up = light.m_upDir * light.m_halfHeight;
+
+    // calculate positions for 4 corners relative to the surface
+    float3 p0 = posToLight + -left +  up;
+    float3 p1 = posToLight + -left + -up;
+    float3 p2 = posToLight +  left + -up;
+    float3 p3 = posToLight +  left +  up;
+
+    // calculate solid angle of light
+    float solidAngle = RectangleSolidAngle(p0, p1, p2, p3);
+
+    // update positions to corners to be directions
+    p0 = normalize(p0);
+    p1 = normalize(p1);
+    p2 = normalize(p2);
+    p3 = normalize(p3);
+
+    float3 dirToLightCenter = normalize(posToLight);
+
+    // intensity is the solid angle times the brightness of the light surface,
+    // each position contributes 1/5 of the light (4 corners + center)
+    float3 intensity = solidAngle * 0.2f * radiusAttenuation * light.m_rgbIntensityNits;
+
+    diffuse += 
+    (
+        DiffuseLambertian(lightingData.m_albedo, lightingData.m_normal, p0, lightingData.m_diffuseResponse) +
+        DiffuseLambertian(lightingData.m_albedo, lightingData.m_normal, p1, lightingData.m_diffuseResponse) +
+        DiffuseLambertian(lightingData.m_albedo, lightingData.m_normal, p2, lightingData.m_diffuseResponse) +
+        DiffuseLambertian(lightingData.m_albedo, lightingData.m_normal, p3, lightingData.m_diffuseResponse)
+    ) * intensity;
+
+    if (applySpecular)
+    {
+        // Calculate specular by choosing a single representative point on the light's surface based on the reflection ray
+        // Then adjusting it's brightness based on different factors.
+
+        // Calculate the reflection ray from the view direction and surface normal
+        float3 reflectionDir = reflect(-lightingData.m_dirToCamera, lightingData.m_normal);
+            
+        // First find the reflection-plane intersection, then find the closest point on the rectangle to that intersection.
+        float2 halfSize = float2(light.m_halfWidth, light.m_halfHeight);
+        float3 positionOnPlane = RayLightPlaneIntersection(lightingData.m_worldPosition, reflectionDir, light.m_position, lightDirection);
+        float3 lightPositionWorld = ClosestPointRect(positionOnPlane, light.m_position, light.m_leftDir, light.m_upDir, halfSize);
+        float3 lightPositionLocal = lightPositionWorld - lightingData.m_worldPosition;
+
+        // It's possible that the reflection-plane intersection is far from where the reflection ray passes the light when the light
+        // is at a grazing angle. This can cause the "closest" point to tend towards the corners of the rectangle. To correct this,
+        // we find the closest point on the reflection line to this first attempt, and use it for a second attempt.
+        float3 localPositionOnLine = reflectionDir * dot(reflectionDir, lightPositionLocal);
+        lightPositionLocal = ClosestPointRect(localPositionOnLine, posToLight, light.m_leftDir, light.m_upDir, halfSize);
+
+        dirToLight = normalize(lightPositionLocal);
+        float lightPositionDist2 = dot(lightPositionLocal, lightPositionLocal);
+
+        // Adjust the specular intensity based on the roughness, solid angle, and distance to the light.
+        // The following are approximations that attempt to mimic ground truth results
+
+        // Rough surfaces reflect light from their entire hemisphere, so they should use the solid angle. This causes nearby quad lights to look more
+        // accurate at the cost of far away quad lights having dimmer specular than they should.
+        float rough = lightingData.m_roughnessA2;
+        float roughnessAdjustment = lerp(0.0, solidAngle, pow(rough, 1.5));
+
+        // Decrease intensity when the light position doesn't line up well with the dominant reflection direction.
+        float3 dominantDir = GetSpecularDominantDirection(lightingData.m_normal, reflectionDir, rough);
+        roughnessAdjustment *= max(0.0f, dot(dirToLight, dominantDir)) * INV_PI; // INV_PI is here to make brightness match ground truth result more accurately for nearby lights.
+    
+        // Smooth surfaces need to increase light intensity with distance to maintain constant perceptual
+        // intensity depending on the solid angle of the light.
+        float solidAngleCoverage = solidAngle / (2.0 * PI); // Adjust solid angle to 0-1 range of how much of the hemisphere is covered.
+        float distanceAdjustment = 1.0 + sqrt(lightPositionDist2) * (1.0 - rough * rough * solidAngleCoverage);
+
+        float3 specularintensity = light.m_rgbIntensityNits * roughnessAdjustment * distanceAdjustment;
+        specular += SpecularGGX(lightingData.m_dirToCamera, dirToLight, lightingData.m_normal, lightingData.m_specularF0, lightingData.m_NdotV, lightingData.m_roughnessA2, 1.0f) * specularintensity * radiusAttenuation;
+    }
+}
+
+void ApplyDirectLighting(RayTracingLightingData lightingData, bool applySpecular, inout float3 diffuse, inout float3 specular)
+{
+    uint index = 0;
+
+    for (index = 0; index < RayTracingSceneSrg::m_directionalLightCount; ++index)
+    {
+        DirectionalLight light = RayTracingSceneSrg::m_directionalLights[index];
+        ApplyDirectionalLight(light, lightingData, applySpecular, diffuse, specular);
+    }
+    
+    for (index = 0; index < RayTracingSceneSrg::m_simplePointLightCount; ++index)
+    {
+        SimplePointLight light = RayTracingSceneSrg::m_simplePointLights[index];
+        ApplySimplePointLight(light, lightingData, applySpecular, diffuse, specular);
+    }
+
+    for (index = 0; index < RayTracingSceneSrg::m_simpleSpotLightCount; ++index)
+    {
+        SimpleSpotLight light = RayTracingSceneSrg::m_simpleSpotLights[index];
+        ApplySimpleSpotLight(light, lightingData, applySpecular, diffuse, specular);
+    }
+
+    for (index = 0; index < RayTracingSceneSrg::m_pointLightCount; ++index)
+    {
+        PointLight light = RayTracingSceneSrg::m_pointLights[index];
+        ApplyPointLight(light, lightingData, applySpecular, diffuse, specular);
+    }
+
+    for (index = 0; index < RayTracingSceneSrg::m_diskLightCount; ++index)
+    {
+        DiskLight light = RayTracingSceneSrg::m_diskLights[index];
+        ApplyDiskLight(light, lightingData, applySpecular, diffuse, specular);
+    }
+
+    for (index = 0; index < RayTracingSceneSrg::m_capsuleLightCount; ++index)
+    {
+        CapsuleLight light = RayTracingSceneSrg::m_capsuleLights[index];
+        ApplyCapsuleLight(light, lightingData, applySpecular, diffuse, specular);
+    }
+
+    for (index = 0; index < RayTracingSceneSrg::m_quadLightCount; ++index)
+    {
+        QuadLight light = RayTracingSceneSrg::m_quadLights[index];
+        ApplyQuadLight(light, lightingData, applySpecular, diffuse, specular);
+    }
+}
+
+float3 GetIblSpecular(
+    float3 position, 
+    float3 normal, 
+    float3 specularF0, 
+    float roughnessLinear, 
+    float3 dirToCamera, 
+    float2 brdf,
+    ReflectionProbeData reflectionProbe,
+    TextureCube reflectionProbeCubemap)
+{
+    float3 reflectDir = reflect(-dirToCamera, normal);
+    reflectDir = MultiplyVectorQuaternion(reflectDir, SceneSrg::m_iblOrientation);    
+
+    // global
+    float3 outSpecular = SceneSrg::m_specularEnvMap.SampleLevel(SceneSrg::m_samplerEnv, GetCubemapCoords(reflectDir), GetRoughnessMip(roughnessLinear)).rgb;
+    outSpecular *= (specularF0 * brdf.x + brdf.y);
+    
+    // reflection probe
+    if (reflectionProbe.m_useReflectionProbe)
+    {
+        if (reflectionProbe.m_useParallaxCorrection)
+        {
+            reflectDir = ApplyParallaxCorrectionOBB(
+                GetReflectionProbeWorldMatrixInverse(reflectionProbe),
+                reflectionProbe.m_outerObbHalfLengths,
+                position,
+                reflectDir);
+        }
+    
+        float3 probeSpecular = reflectionProbeCubemap.SampleLevel(SceneSrg::m_samplerEnv, GetCubemapCoords(reflectDir), GetRoughnessMip(roughnessLinear)).rgb;
+        probeSpecular *= (specularF0 * brdf.x + brdf.y);
+    
+        // compute blend amount based on world position in the reflection probe volume
+        float blendAmount = ComputeLerpBetweenInnerOuterOBBs(
+            (float3x4)GetReflectionProbeWorldMatrixInverse(reflectionProbe),
+            reflectionProbe.m_innerObbHalfLengths,
+            reflectionProbe.m_outerObbHalfLengths,
+            position);
+    
+        outSpecular = lerp(outSpecular, probeSpecular, blendAmount);
+    }
+
+    return outSpecular;
+}
+
+bool IsRayTracingFallbackEnabled()
+{
+    ReflectionMethod reflectionMethod = (ReflectionMethod)RayTracingGlobalSrg::m_reflectionMethod;
+    return reflectionMethod == ReflectionMethod::HybridWithFallback || reflectionMethod == ReflectionMethod::RayTracing;
+}
+
+bool IsRayTracingOverrideEnabled()
+{
+    ReflectionMethod reflectionMethod = (ReflectionMethod)RayTracingGlobalSrg::m_reflectionMethod;
+    return reflectionMethod == ReflectionMethod::RayTracing;
+}

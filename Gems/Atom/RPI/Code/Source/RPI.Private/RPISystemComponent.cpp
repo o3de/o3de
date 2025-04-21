@@ -14,6 +14,7 @@
 #include <RPI.Private/RPISystemComponent.h>
 
 #include <Atom/RHI/Factory.h>
+#include <Atom/RHI/RHIUtils.h>
 
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/IO/IOUtils.h>
@@ -25,6 +26,8 @@
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/CommandLine/CommandLine.h>
 #include <AzFramework/Components/ConsoleBus.h>
+
+#include <Atom/RPI.Public/PerformanceCollectionNotificationBus.h>
 
 #ifdef RPI_EDITOR
 #include <Atom/RPI.Edit/Material/MaterialFunctorSourceDataRegistration.h>
@@ -65,7 +68,7 @@ namespace AZ
 
         void RPISystemComponent::GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("RPISystem", 0xf2add773));
+            provided.push_back(AZ_CRC_CE("RPISystem"));
         }
 
         void RPISystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
@@ -100,22 +103,35 @@ namespace AZ
 
             auto settingsRegistry = AZ::SettingsRegistry::Get();
             const char* settingPath = "/O3DE/Atom/RPI/Initialization";
-
-            // if the command line contains -NullRenderer, merge it to setting registry
-            const char* nullRendererOption = "NullRenderer"; // command line option name
             const char* setregName = "NullRenderer"; // same as serialization context name for RPISystemDescriptor::m_isNullRenderer
-            const AzFramework::CommandLine* commandLine = nullptr;
-            AzFramework::ApplicationRequests::Bus::BroadcastResult(commandLine, &AzFramework::ApplicationRequests::GetApplicationCommandLine);
 
-            AZStd::string commandLineValue;
-            if (commandLine)
+            AZ::ApplicationTypeQuery appType;
+            ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::QueryApplicationType, appType);
+            
+            bool isNullRenderer = false;
+            if ( (appType.IsHeadless()) || (RHI::IsNullRHI()) )
             {
+                // if the application is `headless` or the RHI is the null RHI, merge `NullRenderer` attribute to the setting registry
+                isNullRenderer = true;
+            }
+            else
+            {
+                // The command-line switch "--NullRenderer=true" can also be used to switch to null renderer.  This is maintained
+                // for backwards compatibility.  Use "-rhi=null" instead.
+                const char* nullRendererOption = "NullRenderer"; // command line option name
+                const AzFramework::CommandLine* commandLine = nullptr;
+                AzFramework::ApplicationRequests::Bus::BroadcastResult(commandLine, &AzFramework::ApplicationRequests::GetApplicationCommandLine);
                 if (commandLine->GetNumSwitchValues(nullRendererOption) > 0)
                 {
-                    // add it to setting registry
-                    auto overrideArg = AZStd::string::format("%s/%s=true", settingPath, setregName);
-                    settingsRegistry->MergeCommandLineArgument(overrideArg, "");
+                    isNullRenderer = true;
                 }
+            }
+
+            if (isNullRenderer)
+            {
+                // add it to setting registry
+                auto overrideArg = AZStd::string::format("%s/%s=true", settingPath, setregName);
+                settingsRegistry->MergeCommandLineArgument(overrideArg, "");
             }
 
             // load rpi desriptor from setting registry
@@ -227,6 +243,7 @@ namespace AZ
                     m_gpuPassProfiler->SetGpuTimeMeasurementEnabled(false);
                     // Force disabling timestamp collection in the root pass.
                     AZ::RPI::PassSystemInterface::Get()->GetRootPass()->SetTimestampQueryEnabled(false);
+                    PerformaceCollectionNotificationBus::Broadcast(&PerformaceCollectionNotification::OnPerformanceCollectionJobFinished, m_performanceCollector->GetOutputFilePath().String());
                 }
                 if (r_metricsQuitUponCompletion && (pendingBatches == 0))
                 {
@@ -253,6 +270,5 @@ namespace AZ
             m_performanceCollector->UpdateWaitTimeBeforeEachBatch(AZStd::chrono::seconds(r_metricsWaitTimePerCaptureBatch));
             m_performanceCollector->UpdateNumberOfCaptureBatches(r_metricsNumberOfCaptureBatches);
         }
-
     } // namespace RPI
 } // namespace AZ

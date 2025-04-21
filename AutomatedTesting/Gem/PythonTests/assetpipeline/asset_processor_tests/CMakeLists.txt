@@ -115,7 +115,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
 
     ly_add_pytest(
         NAME AssetProcessorCacheServerTests.Periodic
-        PATH  ${CMAKE_CURRENT_LIST_DIR}/asset_processor_cache_server.py
+        PATH  ${CMAKE_CURRENT_LIST_DIR}/asset_processor_cache_server_tests.py
         TEST_SUITE periodic
         PYTEST_MARKS "not SUITE_sandbox" # don't run sandbox tests in this file
         RUNTIME_DEPENDENCIES

@@ -22,6 +22,8 @@ namespace LmbrCentral
 {
     void EditorAxisAlignedBoxShapeComponent::Reflect(AZ::ReflectContext* context)
     {
+        EditorAxisAlignedBoxShapeComponentMode::Reflect(context);
+
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<EditorAxisAlignedBoxShapeComponent, EditorBaseShapeComponent>()
@@ -40,7 +42,7 @@ namespace LmbrCentral
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/AxisAlignedBoxShape.svg")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/shape/axis-aligned-box-shape/")
+                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/components/reference/shape/axis-aligned-box-shape/")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorAxisAlignedBoxShapeComponent::m_aaboxShape, "Axis Aligned Box Shape", "Axis Aligned Box Shape Configuration")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorAxisAlignedBoxShapeComponent::ConfigurationChanged)
@@ -69,7 +71,7 @@ namespace LmbrCentral
             AZ::EntityComponentIdPair(GetEntityId(), GetId()));
 
         // ComponentMode
-        const bool allowAsymmetricalEditing = IsShapeComponentTranslationEnabled();
+        const bool allowAsymmetricalEditing = true;
         m_componentModeDelegate.ConnectWithSingleComponentMode<
             EditorAxisAlignedBoxShapeComponent, EditorAxisAlignedBoxShapeComponentMode>(
                 AZ::EntityComponentIdPair(GetEntityId(), GetId()), this, allowAsymmetricalEditing);
@@ -188,7 +190,7 @@ namespace LmbrCentral
         return AZ::Quaternion::CreateIdentity();
     }
 
-    AZ::Aabb EditorAxisAlignedBoxShapeComponent::GetLocalBounds()
+    AZ::Aabb EditorAxisAlignedBoxShapeComponent::GetLocalBounds() const
     {
         AZ::Transform transform = AZ::Transform::CreateIdentity();
         AZ::Aabb aabb = AZ::Aabb::CreateNull();

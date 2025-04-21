@@ -9,6 +9,7 @@
 #pragma once
 
 #include <Atom/RPI.Reflect/AssetCreator.h>
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 
 namespace AZ
@@ -16,7 +17,7 @@ namespace AZ
     namespace RPI
     {
         //! Constructs an instance of a ModelAsset
-        class ModelAssetCreator
+        class ATOM_RPI_REFLECT_API ModelAssetCreator
             : public AssetCreator<ModelAsset>
         {
         public:
@@ -40,6 +41,8 @@ namespace AZ
             //! Finalizes and assigns ownership of the asset to result, if successful. 
             //! Otherwise false is returned and result is left untouched.
             bool End(Data::Asset<ModelAsset>& result);
+            
+            void AddTag(AZ::Name tag);
 
             //! Clone the given source model asset.
             //! @param sourceAsset The source model asset to clone.

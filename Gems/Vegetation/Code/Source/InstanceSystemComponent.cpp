@@ -112,17 +112,17 @@ namespace Vegetation
 
     void InstanceSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationInstanceSystemService", 0x823a6007));
+        services.push_back(AZ_CRC_CE("VegetationInstanceSystemService"));
     }
 
     void InstanceSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationInstanceSystemService", 0x823a6007));
+        services.push_back(AZ_CRC_CE("VegetationInstanceSystemService"));
     }
 
     void InstanceSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationDebugSystemService", 0x8cac3d67));
+        services.push_back(AZ_CRC_CE("VegetationDebugSystemService"));
     }
 
     void InstanceSystemComponent::Activate()

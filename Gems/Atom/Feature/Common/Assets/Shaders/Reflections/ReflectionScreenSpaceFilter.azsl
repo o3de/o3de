@@ -1,0 +1,143 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include <scenesrg_all.srgi>
+#include <viewsrg_all.srgi>
+
+#include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
+#include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
+#include <Atom/Features/MatrixUtility.azsli>
+#include <Atom/Features/PBR/LightingUtils.azsli>
+#include <Atom/Features/PBR/Microfacet/Fresnel.azsli>
+#include <Atom/Features/PostProcessing/PostProcessUtil.azsli>
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2DMS<float>  m_depth;
+    Texture2DMS<float4> m_normal;       // RGB10 = EncodeNormalSignedOctahedron(worldNormal), A2 = multiScatterCompensationEnabled
+    Texture2DMS<float4> m_specularF0;   // RGB8 = SpecularF0, A8 = Roughness
+    Texture2D<float4>   m_traceReflection;
+    Texture2D<float4>   m_traceCoords;
+    Texture2D<float4>   m_history;
+
+    // output image scale and dimensions
+    float m_invOutputScale;
+    uint  m_outputWidth;
+    uint  m_outputHeight;
+    uint  m_mipLevels;
+
+    // SSR Settings
+    bool  m_coneTracing;
+    bool  m_rayTracing;
+    bool  m_temporalFiltering;
+    float m_invTemporalFilteringStrength;
+    float m_maxRoughness;
+    float m_roughnessBias;
+    bool  m_luminanceClamp;
+    float m_maxLuminance;
+
+    Sampler LinearSampler
+    {
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        AddressU  = Clamp;
+        AddressV  = Clamp;
+        AddressW  = Clamp;
+    };
+
+    Sampler PointSampler
+    {
+        MinFilter = Point;
+        MagFilter = Point;
+        MipFilter = Point;
+        AddressU  = Clamp;
+        AddressV  = Clamp;
+        AddressW  = Clamp;
+    };
+}
+
+#include "ReflectionCommon.azsli"
+
+PSOutput MainPS(VSOutput IN)
+{
+    float2 coords = IN.m_position.xy;
+    float2 UV = IN.m_texCoord.xy;
+    uint2  dimensions = uint2(PassSrg::m_outputWidth, PassSrg::m_outputHeight);
+    float2 fullScreenCoords = coords * PassSrg::m_invOutputScale;
+    uint2  fullScreenDimensions = dimensions * PassSrg::m_invOutputScale;
+
+    float4 result = float4(0.0f, 0.0f, 0.0f, 0.0f);
+    float4 traceReflection = PassSrg::m_traceReflection.Load(uint3(coords, 0));
+    if (traceReflection.a <= 0.0f)
+    {
+        // no reflection data
+        discard;
+    }
+
+    float roughness = PassSrg::m_specularF0.Load(fullScreenCoords, 0).a;
+    if (roughness > PassSrg::m_maxRoughness)
+    {
+        // fallback to the cubemap reflections currently in the reflection buffer
+        discard;
+    }
+
+    roughness = saturate(roughness + PassSrg::m_roughnessBias);
+
+    // sample reflection image at the appropriate roughness mip
+    uint maxMipLevel = PassSrg::m_mipLevels - 1;
+    float mip = roughness * maxMipLevel;
+    result.rgb = PassSrg::m_traceReflection.SampleLevel(PassSrg::LinearSampler, UV, mip).rgb;
+    result.a = traceReflection.a;
+
+    if (PassSrg::m_temporalFiltering)
+    {
+        // reproject
+        float depth = PassSrg::m_depth.Load(fullScreenCoords, 0).r;
+        float2 ndc = float2(UV.x, 1.0f - UV.y) * 2.0f - 1.0f;
+        float4 projectedPos = float4(ndc, depth, 1.0f);
+        float4 positionVS = mul(ViewSrg::m_projectionMatrixInverse, projectedPos);
+        positionVS /= positionVS.w;
+        float4 positionWS = mul(ViewSrg::m_viewMatrixInverse, positionVS);
+        
+        float4 prevNDC = mul(ViewSrg::m_viewProjectionPrevMatrix, positionWS);
+        prevNDC /= prevNDC.w;
+        float2 prevUV = float2(prevNDC.x, -1.0f * prevNDC.y) * 0.5f + 0.5f;
+
+        bool validUV = any(float4(prevUV.x <= 1.0f, prevUV.x >= 0.0f, prevUV.y <= 1.0f, prevUV.y >= 0.0f));
+        if (validUV)
+        {
+            float4 historySample = PassSrg::m_history.SampleLevel(PassSrg::PointSampler, prevUV, 0);
+            if (historySample.a > 0.0f)
+            {
+                float historyLuminance = GetLuminance(historySample.rgb);
+                float curLuminance = GetLuminance(result.rgb);
+                float maxLuminance = max(curLuminance, historyLuminance);
+                if (maxLuminance > 0.0f)
+                {
+                    float delta = abs(curLuminance - historyLuminance) * 1.5f * PassSrg::m_invTemporalFilteringStrength;
+                    float weight = min(delta / maxLuminance, 1.0f);
+                    result.rgb = lerp(historySample.rgb, result.rgb, weight);
+                }
+            }        
+        }
+    }
+
+    if (PassSrg::m_luminanceClamp)
+    {
+        float luminance = GetLuminance(result.rgb);
+        if (luminance > PassSrg::m_maxLuminance)
+        {
+            result.rgb *= (PassSrg::m_maxLuminance / luminance);
+        }
+    }
+
+    PSOutput OUT;
+    OUT.m_color = result;
+    return OUT;
+}

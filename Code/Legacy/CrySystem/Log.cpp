@@ -35,10 +35,6 @@
 
 #define LOG_BACKUP_PATH "@log@/LogBackups"
 
-#if defined(IOS)
-#include <AzFramework/Utils/SystemUtilsApple.h>
-#endif
-
 AZ_CVAR(int32_t, log_IncludeTime, 1, nullptr, AZ::ConsoleFunctorFlags::Null,
                 "Toggles time stamping of log entries.\n"
                 "Usage: log_IncludeTime [0/1/2/3/4/5]\n"
@@ -271,7 +267,7 @@ bool CLog::OpenLogFile(const char* filename, AZ::IO::OpenMode mode)
         AZ_Assert(false, "Attempt to open log file when one is already open.  This would lead to a handle leak.");
         return false;
     }
-    
+
     if (filename == nullptr || filename[0] == '\0')
     {
         return false;
@@ -377,7 +373,7 @@ void CLog::LogAlways(const char* szFormat, ...)
     {
         return;
     }
-   
+
     va_list arg;
     va_start(arg, szFormat);
     LogV (eAlways, szFormat, arg);
@@ -1285,18 +1281,18 @@ void CLog::LogStringToFile(AZStd::string_view message, ELogType logType, bool ap
         }
     }
 
-    // do not OutputDebugString in release.
+    // do not output in release.
 #if !defined(_RELEASE)
     if (queueState == MessageQueueState::NotQueued)
     {
         if (!timeStr.empty())
         {
-            AZ::Debug::Platform::OutputToDebugger({}, timeStr);
+            AZ::Debug::Trace::Instance().OutputToRawAndDebugger(nullptr, timeStr.data());
         }
-        AZ::Debug::Platform::OutputToDebugger({}, message);
+        AZ::Debug::Trace::Instance().OutputToRawAndDebugger(nullptr, message.data());
         if (!message.ends_with('\n'))
         {
-            AZ::Debug::Platform::OutputToDebugger({}, "\n");
+           AZ::Debug::Trace::Instance().OutputToRawAndDebugger(nullptr, "\n");
         }
     }
 

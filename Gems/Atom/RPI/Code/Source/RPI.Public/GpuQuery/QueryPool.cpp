@@ -7,6 +7,7 @@
  */
 
 #include <Atom/RHI/Factory.h>
+#include <Atom/RHI/FrameGraphExecuteContext.h>
 #include <Atom/RHI/FrameGraphInterface.h>
 #include <Atom/RHI/Query.h>
 #include <Atom/RHI/RHISystemInterface.h>
@@ -19,6 +20,29 @@ namespace AZ
 {
     namespace RPI
     {
+        static const char* GetQueryTypeString(RHI::QueryType queryType)
+        {
+            switch (queryType)
+            {
+            case RHI::QueryType::Occlusion:
+            {
+                return "Occlusion";
+            }
+            case RHI::QueryType::Timestamp:
+            {
+                return "Timestamp";
+            }
+            case RHI::QueryType::PipelineStatistics:
+            {
+                return "PipelineStatistics";
+            }
+            default:
+            {
+                AZ_Assert(false, "Unknown QueryType supplied");
+                return "UnknownQueryType";
+            }
+            };
+        }
         QueryPoolPtr QueryPool::CreateQueryPool(uint32_t queryCount, uint32_t rhiQueriesPerResult, RHI::QueryType queryType, RHI::PipelineStatisticsFlags pipelineStatisticsFlags)
         {
             return AZStd::unique_ptr<QueryPool>(aznew QueryPool(queryCount, rhiQueriesPerResult, queryType, pipelineStatisticsFlags));
@@ -26,8 +50,6 @@ namespace AZ
 
         QueryPool::QueryPool(uint32_t queryCapacity, uint32_t queriesPerResult, RHI::QueryType queryType, RHI::PipelineStatisticsFlags statisticsFlags)
         {
-            RHI::Device* device = RHI::RHISystemInterface::Get()->GetDevice();
-
             m_queryCapacity = queryCapacity;
             m_queriesPerResult = queriesPerResult;
             m_statisticsFlags = statisticsFlags;
@@ -52,8 +74,10 @@ namespace AZ
                 queryPoolDesc.m_type = m_queryType;
                 queryPoolDesc.m_pipelineStatisticsMask = m_statisticsFlags;
 
-                m_rhiQueryPool = RHI::Factory::Get().CreateQueryPool();
-                [[maybe_unused]] auto result = m_rhiQueryPool->Init(*device, queryPoolDesc);
+                m_rhiQueryPool = aznew RHI::QueryPool();
+                AZStd::string poolName = AZStd::string::format("%sQueryPool", GetQueryTypeString(queryType));
+                m_rhiQueryPool->SetName(AZ::Name(poolName));
+                [[maybe_unused]] auto result = m_rhiQueryPool->Init(queryPoolDesc);
                 AZ_Assert(result == RHI::ResultCode::Success, "Failed to create the query pool");
             }
 
@@ -64,7 +88,7 @@ namespace AZ
 
                 for (RHI::Ptr<RHI::Query>& query : m_rhiQueryArray)
                 {
-                    query = RHI::Factory::Get().CreateQuery();
+                    query = aznew RHI::Query();
                     rawQueryArray.emplace_back(query.get());
                 }
 
@@ -131,20 +155,20 @@ namespace AZ
             m_queryRegistry.erase(query);
         }
 
-        RHI::ResultCode QueryPool::BeginQueryInternal(RHI::Interval rhiQueryIndices, RHI::CommandList& commandList)
+        RHI::ResultCode QueryPool::BeginQueryInternal(RHI::Interval rhiQueryIndices, const RHI::FrameGraphExecuteContext& context)
         {
             auto rhiQueryArray = GetRhiQueryArray();
             RHI::Ptr<RHI::Query> beginQuery = rhiQueryArray[rhiQueryIndices.m_min];
 
-            return beginQuery->Begin(commandList);
+            return beginQuery->GetDeviceQuery(context.GetDeviceIndex())->Begin(*context.GetCommandList());
         }
 
-        RHI::ResultCode QueryPool::EndQueryInternal(RHI::Interval rhiQueryIndices, RHI::CommandList& commandList)
+        RHI::ResultCode QueryPool::EndQueryInternal(RHI::Interval rhiQueryIndices, const RHI::FrameGraphExecuteContext& context)
         {
             auto rhiQueryArray = GetRhiQueryArray();
             RHI::Ptr<RHI::Query> endQuery = rhiQueryArray[rhiQueryIndices.m_max];
 
-            return endQuery->End(commandList);
+            return endQuery->GetDeviceQuery(context.GetDeviceIndex())->End(*context.GetCommandList());
         }
 
         AZStd::span<const RHI::Ptr<RHI::Query>> RPI::QueryPool::GetRhiQueryArray() const
@@ -152,14 +176,14 @@ namespace AZ
             return m_rhiQueryArray;
         }
 
-        QueryResultCode QueryPool::GetQueryResultFromIndices(uint64_t* result, RHI::Interval rhiQueryIndices, RHI::QueryResultFlagBits queryResultFlag)
+        QueryResultCode QueryPool::GetQueryResultFromIndices(uint64_t* result, RHI::Interval rhiQueryIndices, RHI::QueryResultFlagBits queryResultFlag, int deviceIndex)
         {
             // Get the raw RHI Query pointers.
-            AZStd::vector<RHI::Query*> queryArray = GetRawRhiQueriesFromInterval(rhiQueryIndices);
+            AZStd::vector<RHI::DeviceQuery*> queryArray = GetRawRhiQueriesFromInterval(rhiQueryIndices, deviceIndex);
 
             // RHI Query results are readback with values that are a multiple of uint64_t.
             const uint32_t resultCount = m_queryResultSize / sizeof(uint64_t);
-            const RHI::ResultCode resultCode = m_rhiQueryPool->GetResults(queryArray.data(), m_queriesPerResult, result, resultCount, queryResultFlag);
+            const RHI::ResultCode resultCode = m_rhiQueryPool->GetDeviceQueryPool(deviceIndex)->GetResults(queryArray.data(), m_queriesPerResult, result, resultCount, queryResultFlag);
 
             return resultCode == RHI::ResultCode::Success ? QueryResultCode::Success : QueryResultCode::Fail;
         }
@@ -238,15 +262,15 @@ namespace AZ
             return AZStd::span<const RHI::Ptr<RHI::Query>>(m_rhiQueryArray.begin() + rhiQueryIndices.m_min, queryCount);
         }
 
-        AZStd::vector<RHI::Query*> QueryPool::GetRawRhiQueriesFromInterval(const RHI::Interval& rhiQueryIndices) const
+        AZStd::vector<RHI::DeviceQuery*> QueryPool::GetRawRhiQueriesFromInterval(const RHI::Interval& rhiQueryIndices, int deviceIndex) const
         {
             auto rhiQueries = GetRhiQueriesFromInterval(rhiQueryIndices);
 
-            AZStd::vector<RHI::Query*> queryArray;
+            AZStd::vector<RHI::DeviceQuery*> queryArray;
             queryArray.reserve(rhiQueries.size());
             for (RHI::Ptr<RHI::Query> rhiQuery : rhiQueries)
             {
-                queryArray.emplace_back(rhiQuery.get());
+                queryArray.emplace_back(rhiQuery->GetDeviceQuery(deviceIndex).get());
             }
 
             return queryArray;

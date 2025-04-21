@@ -29,11 +29,9 @@ namespace AZ
         Uuid id;
         Sfmt& smft = Sfmt::GetInstance();
 
-        AZ::u32* id32 = reinterpret_cast<AZ::u32*>(&id);
-        id32[0] = smft.Rand32();
-        id32[1] = smft.Rand32();
-        id32[2] = smft.Rand32();
-        id32[3] = smft.Rand32();
+        AZ::u64* id64 = reinterpret_cast<AZ::u64*>(&id);
+        id64[0] = smft.Rand64();
+        id64[1] = smft.Rand64();
 
         // variant VAR_RFC_4122
         id.m_data[8] &= AZStd::byte(0xBF);

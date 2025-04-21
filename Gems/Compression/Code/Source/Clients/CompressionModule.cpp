@@ -8,9 +8,7 @@
 
 
 #include <CompressionModuleInterface.h>
-#include "CompressionSystemComponent.h"
-#include <Compression/DecompressionInterfaceAPI.h>
-#include "DecompressionRegistrarImpl.h"
+#include <Compression/CompressionTypeIds.h>
 
 namespace Compression
 {
@@ -18,31 +16,16 @@ namespace Compression
         : public CompressionModuleInterface
     {
     public:
-        AZ_RTTI(CompressionModule, "{6D256D91-6F1F-4132-B78E-6C24BA9D688C}", CompressionModuleInterface);
+        AZ_RTTI(CompressionModule, CompressionModuleTypeId, CompressionModuleInterface);
         AZ_CLASS_ALLOCATOR(CompressionModule, AZ::SystemAllocator);
 
-        CompressionModule()
-        {
-            // Create and Register the Decompression Registrar
-            m_decompressionRegistrarInterface = AZStd::make_unique<DecompressionRegistrarImpl>();
-            if (DecompressionRegistrar::Get() == nullptr)
-            {
-                DecompressionRegistrar::Register(m_decompressionRegistrarInterface.get());
-            }
-        }
-
-        ~CompressionModule()
-        {
-            if (DecompressionRegistrar::Get() == m_decompressionRegistrarInterface.get())
-            {
-                DecompressionRegistrar::Unregister(m_decompressionRegistrarInterface.get());
-            }
-        }
-    private:
-        // DecompressionRegistrar interface used to register Decompression interfaces
-        // Available in ALL applications to allow decompression to occur
-        AZStd::unique_ptr<DecompressionRegistrarInterface> m_decompressionRegistrarInterface;
+        CompressionModule() = default;
+        ~CompressionModule() = default;
     };
 }// namespace Compression
 
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME), Compression::CompressionModule)
+#else
 AZ_DECLARE_MODULE_CLASS(Gem_Compression, Compression::CompressionModule)
+#endif

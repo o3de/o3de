@@ -52,7 +52,7 @@ namespace PassCanvas
         InitPassCanvasResources();
 
         QApplication::setOrganizationName("O3DE");
-        QApplication::setApplicationName("O3DE Pass Canvas (Preview)");
+        QApplication::setApplicationName("O3DE Pass Canvas");
         QApplication::setWindowIcon(QIcon(":/Icons/application.svg"));
 
         AzToolsFramework::EditorWindowRequestBus::Handler::BusConnect();
@@ -107,7 +107,7 @@ namespace PassCanvas
     void PassCanvasApplication::Destroy()
     {
         // Save all of the graph view configuration settings to the settings registry.
-        AtomToolsFramework::SetSettingsObject("/O3DE/Atom/PassCanvas/GraphViewSettings", m_graphViewSettingsPtr);
+        AtomToolsFramework::SetSettingsObject("/O3DE/Atom/GraphView/ViewSettings", m_graphViewSettingsPtr);
 
         m_graphViewSettingsPtr.reset();
         m_window.reset();
@@ -170,7 +170,7 @@ namespace PassCanvas
     {
         // This configuration data is passed through the main window and graph views to setup translation data, styling, and node palettes
         m_graphViewSettingsPtr = AtomToolsFramework::GetSettingsObject(
-            "/O3DE/Atom/PassCanvas/GraphViewSettings", AZStd::make_shared<AtomToolsFramework::GraphViewSettings>());
+            "/O3DE/Atom/GraphView/ViewSettings", AZStd::make_shared<AtomToolsFramework::GraphViewSettings>());
 
         // Initialize the application specific graph view settings that are not serialized.
         m_graphViewSettingsPtr->m_translationPath = "@products@/passcanvas/translation/passcanvas_en_us.qm";
@@ -187,7 +187,7 @@ namespace PassCanvas
 
         // Initialize the default group preset names and colors needed by the graph canvas view to create node groups.
         const AZStd::map<AZStd::string, AZ::Color> defaultGroupPresets = AtomToolsFramework::GetSettingsObject(
-            "/O3DE/Atom/PassCanvas/GraphViewSettings/DefaultGroupPresets",
+            "/O3DE/Atom/GraphView/DefaultGroupPresets",
             AZStd::map<AZStd::string, AZ::Color>{});
 
         // Connect the graph view settings to the required buses so that they can be accessed throughout the application.

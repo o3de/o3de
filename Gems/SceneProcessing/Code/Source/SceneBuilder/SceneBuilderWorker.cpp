@@ -9,6 +9,7 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/SystemFile.h>
+#include <AzCore/JSON/prettywriter.h>
 #include <AzCore/Serialization/Utils.h>
 #include <SceneAPI/SceneCore/DataTypes/IGraphObject.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -263,8 +264,9 @@ namespace SceneBuilder
             return;
         }
 
-        auto debugFlagItr = request.m_jobDescription.m_jobParameters.find(AZ_CRC_CE("DebugFlag"));
-        DebugOutputScope theDebugOutputScope(debugFlagItr != request.m_jobDescription.m_jobParameters.end() && debugFlagItr->second == "true");
+        auto itr = request.m_jobDescription.m_jobParameters.find(AZ_CRC_CE("DebugFlag"));
+        const bool isDebug = (itr != request.m_jobDescription.m_jobParameters.end() && itr->second == "true");
+        DebugOutputScope theDebugOutputScope(isDebug);
 
         AZStd::shared_ptr<Scene> scene;
         if (!LoadScene(scene, request, response))
@@ -411,6 +413,7 @@ namespace SceneBuilder
         using namespace AZ::SceneAPI;
         using namespace AZ::SceneAPI::Events;
         using namespace AZ::SceneAPI::SceneCore;
+        using AZ::SceneAPI::Utilities::IsDebugEnabled;
 
         AZ_Assert(scene, "Invalid scene passed for exporting.");
 
@@ -423,24 +426,43 @@ namespace SceneBuilder
         AZ_TracePrintf(Utilities::LogWindow, "Creating export entities.\n");
         EntityConstructor::EntityPointer exporter = EntityConstructor::BuildEntity("Scene Exporters", ExportingComponent::TYPEINFO_Uuid());
 
-        auto itr = request.m_jobDescription.m_jobParameters.find(AZ_CRC_CE("DebugFlag"));
-        const bool isDebug = (itr != request.m_jobDescription.m_jobParameters.end() && itr->second == "true");
-
         ExportProductList productList;
         ProcessingResultCombiner result;
         AZ_TracePrintf(Utilities::LogWindow, "Preparing for export.\n");
-        result += Process<PreExportEventContext>(productList, outputFolder, *scene, platformIdentifier, isDebug);
+        result += Process<PreExportEventContext>(productList, outputFolder, *scene, platformIdentifier, IsDebugEnabled());
         AZ_TracePrintf(Utilities::LogWindow, "Exporting...\n");
         result += Process<ExportEventContext>(productList, outputFolder, *scene, platformIdentifier);
         AZ_TracePrintf(Utilities::LogWindow, "Finalizing export process.\n");
         result += Process<PostExportEventContext>(productList, outputFolder, platformIdentifier);
 
-        if (isDebug)
+        if (scene->HasDimension())
+        {
+            AZStd::string folder;
+            AZStd::string jsonName;
+            AzFramework::StringFunc::Path::GetFullFileName(scene->GetSourceFilename().c_str(), jsonName);
+            folder = AZStd::string::format("%s/%s.abdata.json", outputFolder.c_str(), jsonName.c_str());
+
+            AssetBuilderSDK::CreateABDataFile(folder, [scene](rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer)
+            {
+                writer.Key("dimension");
+                writer.StartArray();
+                AZ::Vector3& dimension = scene->GetSceneDimension();
+                writer.Double(dimension.GetX());
+                writer.Double(dimension.GetY());
+                writer.Double(dimension.GetZ());
+                writer.EndArray();
+                writer.Key("vertices");
+                writer.Uint(scene->GetSceneVertices());
+            });
+
+            AssetBuilderSDK::JobProduct jsonProduct(folder);
+            response.m_outputProducts.emplace_back(jsonProduct);
+        }
+        if (IsDebugEnabled())
         {
             AZStd::string productName;
             AzFramework::StringFunc::Path::GetFullFileName(scene->GetSourceFilename().c_str(), productName);
-            AzFramework::StringFunc::Path::ReplaceExtension(productName, "dbgsg");
-            AZ::SceneAPI::Utilities::DebugOutput::BuildDebugSceneGraph(outputFolder.c_str(), productList, scene, productName);
+            AZ::SceneAPI::Utilities::DebugOutput::BuildDebugSceneGraph(outputFolder.c_str(), productList, scene, productName + ".dbgsg");
         }
 
         AZ_TracePrintf(Utilities::LogWindow, "Collecting and registering products.\n");

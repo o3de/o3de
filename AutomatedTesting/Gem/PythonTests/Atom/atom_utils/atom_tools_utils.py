@@ -5,14 +5,20 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
+import os
 import pathlib
+import shutil
 import sys
 import time
 
+import azlmbr.asset as azasset
 import azlmbr.atom
 import azlmbr.atomtools
 import azlmbr.bus as bus
+import azlmbr.math as azmath
 import azlmbr.paths
+
+import ly_test_tools.environment.file_system as fs
 
 from Atom.atom_utils.atom_constants import (
     AtomToolsDocumentRequestBusEvents, AtomToolsDocumentSystemRequestBusEvents, AtomToolsMainWindowRequestBusEvents,
@@ -271,9 +277,19 @@ def exit() -> None:
     azlmbr.atomtools.general.exit()
 
 
-def disable_material_canvas_file_writes() -> None:
+def disable_document_message_box_settings() -> None:
     """
-    Modifies some registry settings to disable MaterialCanvas graph compilation on open/edit/save.
+    Modifies some registry settings to disable warning and error message boxes that block test progression.
+
+    :return: None
+    """
+    azlmbr.atomtools.util.SetSettingsValue_bool("/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/DisplayErrorMessageDialogs", False)
+    azlmbr.atomtools.util.SetSettingsValue_bool("/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/DisplayWarningMessageDialogs", False)
+
+
+def disable_graph_compiler_settings() -> None:
+    """
+    Modifies some registry settings to disable automatic graph compilation on open/edit/save.
     This is because some tests (i.e. main suite) need to avoid file writing/saving during the test run.
 
     :return: None
@@ -309,6 +325,62 @@ def wait_for_condition(function: (), timeout_in_seconds: float = 1.0) -> bool or
             if ret:
                 return True
 
+class ShaderAssetTestHelper:
+
+    def copy_file(src_file, src_path, target_file, target_path):
+            # type: (str, str, str, str) -> None
+            """
+            Copies the [src_file] located in [src_path] to the [target_file] located at [target_path].
+            Leaves the [target_file] unlocked for reading and writing privileges
+            :param src_file: The source file to copy (file name)
+            :param src_path: The source file's path
+            :param target_file: The target file to copy into (file name)
+            :param target_path: The target file's path
+            :return: None
+            """
+            target_file_path = os.path.join(target_path, target_file)
+            src_file_path = os.path.join(src_path, src_file)
+            if os.path.exists(target_file_path):
+                fs.unlock_file(target_file_path)
+            shutil.copyfile(src_file_path, target_file_path)
+
+    def copy_tmp_files_in_order(src_directory, file_list, dst_directory, wait_time_in_between=0.0):
+
+        import azlmbr.legacy.general as general
+
+        # type: (str, list, str, float) -> None
+        """
+        This function assumes that for each file name listed in @file_list
+        there's file named "@filename.txt" which the original source file
+        but they will be copied with just the @filename (.txt removed).
+        """
+        for filename in file_list:
+            src_name = f"{filename}.txt"
+            ShaderAssetTestHelper.copy_file(src_name, src_directory, filename, dst_directory)
+            if wait_time_in_between > 0.0:
+                print(f"Created {filename} in {dst_directory}")
+                general.idle_wait(wait_time_in_between)
+
+    def remove_file(src_file, src_path):
+        # type: (str, str) -> None
+        """
+        Removes the [src_file] located in [src_path].
+        :param src_file: The source file to copy (file name)
+        :param src_path: The source file's path
+        :return: None
+        """
+        src_file_path = os.path.join(src_path, src_file)
+        if os.path.exists(src_file_path):
+            fs.unlock_file(src_file_path)
+            os.remove(src_file_path)
+
+    def remove_files(directory, file_list):
+        for filename in file_list:
+            ShaderAssetTestHelper.remove_file(filename, directory)
+
+    def asset_exists(cache_relative_path):
+        asset_id = azasset.AssetCatalogRequestBus(bus.Broadcast, "GetAssetIdByPath", cache_relative_path, azmath.Uuid(), False)
+        return asset_id.is_valid()
 
 class Timeout(object):
     """

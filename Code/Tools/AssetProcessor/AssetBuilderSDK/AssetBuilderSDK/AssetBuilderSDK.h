@@ -10,8 +10,7 @@
 #pragma once
 
 #include <AzCore/Debug/TraceMessageBus.h>
-#include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/Serialization/AZStdContainers.inl>
+#include <AzCore/JSON/prettywriter.h>
 #include <AzCore/std/string/regex.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/vector.h>
@@ -36,6 +35,7 @@ namespace AZ
 {
     class ComponentDescriptor;
     class Entity;
+    class ReflectContext;
 }
 
 namespace AzToolsFramework
@@ -82,6 +82,8 @@ namespace AssetBuilderSDK
 
         static void Reflect(AZ::ReflectContext* context);
     };
+
+    void CreateABDataFile(AZStd::string& folder, AZStd::function<void(rapidjson::PrettyWriter<rapidjson::StringBuffer>&)> body);
 }
 
 namespace AZStd
@@ -107,7 +109,7 @@ namespace AssetBuilderSDK
     namespace ComponentTags
     {
         //! Components with the AssetBuilder tag in their reflect data's attributes as AZ::Edit::Attributes::SystemComponetTags will automatically be created on AssetBuilder startup
-        const static AZ::Crc32 AssetBuilder = AZ_CRC("AssetBuilder", 0xc739c7d7);
+        const static AZ::Crc32 AssetBuilder = AZ_CRC_CE("AssetBuilder");
     }
 
     extern const char* const ErrorWindow; //Use this window name to log error messages.
@@ -371,8 +373,12 @@ namespace AssetBuilderSDK
 
         //! This is similiar to Order where the dependent job should only run after all the jobs it depends on are processed by the Asset Processor.
         //! The difference is that here only those dependent jobs matter that have never been processed by the Asset Processor.
-        //! Also important to note is the fingerprint of the dependent jobs will not alter the the fingerprint of the job.
+        //! Also important to note is the fingerprint of the dependent jobs will not alter the fingerprint of the job.
         OrderOnce,
+
+        //! Similar to Order, except that the dependent jobs do not rebuild when the jobs they depend on are processed.
+        //! Also important to note is the fingerprint of the dependent jobs will not alter the fingerprint of the job.
+        OrderOnly,
     };
 
     //! Job dependency information that the builder will send to the Asset Processor.
@@ -766,6 +772,17 @@ namespace AssetBuilderSDK
         ProcessJobResultCode m_resultCode = ProcessJobResult_Failed;
         AZStd::vector<JobProduct> m_outputProducts;
         bool m_requiresSubIdGeneration = true; //!< Used to determine if legacy RC products need sub ids generated for them.
+
+        //! Typically the AP deletes the Temp folder when a job completes successfully. By setting this flag to true
+        //! the AssetBuilder will have the chance to preserve the temp folder and its content after a successful run.
+        //! REMARK-1: This flag was added for debugging purposes, make sure production code doesn't set this flag as true.
+        //!           Otherwise there will be an excessive proliferation of "JobTemp-xxxx" folders in user/AssetProcessorTemp.
+        //! REMARK-2: In normal circumstance the AP does a file-move operation when creating product assets. But when
+        //!           this flags is set to true it will do a file-copy operation, which may impact performance of the AP.
+        //!           Again, because this flag has been added for debugging purposes, it shouldn't be a big deal so long
+        //!           as production code keeps it as false. 
+        bool m_keepTempFolder = false;
+
         //! Populate m_sourcesToReprocess with sources by absolute path which you want to trigger a rebuild for
         //! To reprocess these sources, make sure to update fingerprints in CreateJobs of those builders which process them, like changing source dependencies.
         AZStd::vector<AZStd::string> m_sourcesToReprocess;

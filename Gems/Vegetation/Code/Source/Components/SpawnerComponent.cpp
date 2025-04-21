@@ -32,7 +32,7 @@ namespace Vegetation
         {
             if (classElement.GetVersion() < 1)
             {
-                classElement.RemoveElementByName(AZ_CRC("UseRelativeUVW", 0x97a6718e));
+                classElement.RemoveElementByName(AZ_CRC_CE("UseRelativeUVW"));
             }
             return true;
         }
@@ -94,8 +94,8 @@ namespace Vegetation
     void SpawnerComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
         AreaComponentBase::GetRequiredServices(services);
-        services.push_back(AZ_CRC("VegetationDescriptorProviderService", 0x62e51209));
-        services.push_back(AZ_CRC("ShapeService", 0xe86aa5fe));
+        services.push_back(AZ_CRC_CE("VegetationDescriptorProviderService"));
+        services.push_back(AZ_CRC_CE("ShapeService"));
     }
 
     void SpawnerComponent::Reflect(AZ::ReflectContext* context)

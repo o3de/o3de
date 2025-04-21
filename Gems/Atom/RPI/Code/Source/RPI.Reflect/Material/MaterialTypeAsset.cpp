@@ -19,10 +19,6 @@ namespace AZ
 {
     namespace RPI
     {
-        const char* MaterialTypeAsset::DisplayName = "MaterialTypeAsset";
-        const char* MaterialTypeAsset::Group = "Material";
-        const char* MaterialTypeAsset::Extension = "azmaterialtype";
-
         void UvNamePair::Reflect(ReflectContext* context)
         {
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
@@ -74,6 +70,27 @@ namespace AZ
         {
             Data::AssetBus::MultiHandler::BusDisconnect();
             AssetInitBus::Handler::BusDisconnect();
+        }
+
+        bool MaterialTypeAsset::InitializeNonSerializedData()
+        {
+            if (m_isNonSerializedDataInitialized)
+            {
+                return true;
+            }
+            if (!m_generalShaderCollection.InitializeShaderOptionGroups())
+            {
+                return false;
+            }
+            for (auto& materialPipelinePair : m_materialPipelinePayloads)
+            {
+                if (!materialPipelinePair.second.m_shaderCollection.InitializeShaderOptionGroups())
+                {
+                    return false;
+                }
+            }
+            m_isNonSerializedDataInitialized = true;
+            return true;
         }
 
         const ShaderCollection& MaterialTypeAsset::GetGeneralShaderCollection() const
@@ -210,6 +227,11 @@ namespace AZ
 
         bool MaterialTypeAsset::PostLoadInit()
         {
+            // Attempt to initialize non-serialized data. The referenced shader assets in the ShaderCollection
+            // may not be ready right now, but in the future the system will retry when said assets
+            // are ready.
+            InitializeNonSerializedData();
+
             for (const auto& shaderItem : m_generalShaderCollection)
             {
                 Data::AssetBus::MultiHandler::BusConnect(shaderItem.GetShaderAsset().GetId());
@@ -227,33 +249,17 @@ namespace AZ
 
             return true;
         }
-
-        template<typename AssetDataT>
-        void TryReplaceAsset(Data::Asset<AssetDataT>& assetToReplace, const Data::Asset<Data::AssetData>& newAsset)
-        {
-            if (assetToReplace.GetId() == newAsset.GetId())
-            {
-                assetToReplace = newAsset;
-            }
-        }
         
         void MaterialTypeAsset::ReinitializeAsset(Data::Asset<Data::AssetData> asset)
         {
             // The order of asset reloads is non-deterministic. If the MaterialTypeAsset reloads before these
             // dependency assets, this will make sure the MaterialTypeAsset gets the latest ones when they reload.
             // Or in some cases a these assets could get updated and reloaded without reloading the MaterialTypeAsset at all.
-
-            for (auto& shaderItem : m_generalShaderCollection)
-            {
-                TryReplaceAsset(shaderItem.m_shaderAsset, asset);
-            }
+            m_generalShaderCollection.TryReplaceShaderAsset(asset);
 
             for (auto& materialPipelinePair : m_materialPipelinePayloads)
             {
-                for (auto& shaderItem : materialPipelinePair.second.m_shaderCollection)
-                {
-                    TryReplaceAsset(shaderItem.m_shaderAsset, asset);
-                }
+                materialPipelinePair.second.m_shaderCollection.TryReplaceShaderAsset(asset);
             }
         }
 

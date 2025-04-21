@@ -106,15 +106,17 @@ namespace AZ::Debug
         }
 
         Debug::AllocationRecordsType::pair_iter_bool iterBool;
+        size_t numRecords;
         {
             AZStd::scoped_lock lock(m_recordsMutex);
             iterBool = m_records.insert_key(address);
+            numRecords = m_records.size();
         }
 
         if (!iterBool.second)
         {
             // If that memory address was already registered, print the stack trace of the previous registration
-            PrintAllocationsCB(true, (m_saveNames || m_mode == RECORD_FULL))(address, iterBool.first->second, m_numStackLevels);
+            PrintAllocationsCB(true, (m_saveNames || m_mode == RECORD_FULL))(address, iterBool.first->second, m_numStackLevels, numRecords);
             AZ_Assert(iterBool.second, "Memory address 0x%p is already allocated and in the records!", address);
         }
 
@@ -490,7 +492,7 @@ namespace AZ::Debug
         }
         for (Debug::AllocationRecordsType::const_iterator iter = recordsCopy.begin(); iter != recordsCopy.end(); ++iter)
         {
-            if (!cb(iter->first, iter->second, m_numStackLevels))
+            if (!cb(iter->first, iter->second, m_numStackLevels, recordsCopy.size()))
             {
                 break;
             }
@@ -535,17 +537,17 @@ namespace AZ::Debug
     // operator()
     // [9/29/2009]
     //=========================================================================
-    bool PrintAllocationsCB::operator()(void* address, const AllocationInfo& info, unsigned char numStackLevels)
+    bool PrintAllocationsCB::operator()(void* address, const AllocationInfo& info, unsigned char numStackLevels, size_t numRecords)
     {
         if (m_includeNameAndFilename && info.m_name)
         {
             AZ_Printf(
-                "Memory", "Allocation Name: \"%s\" Addr: 0%p Size: %d Alignment: %d\n", info.m_name, address, info.m_byteSize,
+                "Memory", "Allocation Name: \"%s\" Addr: 0%p Size: %zu Alignment: %u\n", info.m_name, address, info.m_byteSize,
                 info.m_alignment);
         }
         else
         {
-            AZ_Printf("Memory", "Allocation Addr: 0%p Size: %d Alignment: %d\n", address, info.m_byteSize, info.m_alignment);
+            AZ_Printf("Memory", "Allocation Addr: 0%p Size: %zu Alignment: %u\n", address, info.m_byteSize, info.m_alignment);
         }
 
         if (m_isDetailed)
@@ -575,6 +577,8 @@ namespace AZ::Debug
                     iFrame += numToDecode;
                 }
             }
+
+            AZ_Printf("Memory", "Total number of allocation records %zu\n", numRecords);
         }
         return true; // continue enumerating
     }

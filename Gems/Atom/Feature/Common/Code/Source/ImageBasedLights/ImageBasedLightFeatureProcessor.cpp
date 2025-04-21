@@ -6,9 +6,10 @@
  *
  */
 
-#include <Atom/Feature/ImageBasedLights/ImageBasedLightFeatureProcessor.h>
+#include <ImageBasedLights/ImageBasedLightFeatureProcessor.h>
 
 #include <Atom/RPI.Public/Scene.h>
+#include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/Image/StreamingImage.h>
 
 namespace AZ
@@ -87,32 +88,10 @@ namespace AZ
             const constexpr char* DefaultSpecularCubeMapPath = "textures/default/default_iblglobalcm_iblspecular.dds.streamingimage";
             const constexpr char* DefaultDiffuseCubeMapPath = "textures/default/default_iblglobalcm_ibldiffuse.dds.streamingimage";
 
-            Data::AssetId specularAssetId;
-            Data::AssetCatalogRequestBus::BroadcastResult(
-                specularAssetId,
-                &Data::AssetCatalogRequestBus::Events::GetAssetIdByPath,
-                DefaultSpecularCubeMapPath,
-                azrtti_typeid<AZ::RPI::StreamingImageAsset>(),
-                false);
-
-            Data::AssetId diffuseAssetId;
-            Data::AssetCatalogRequestBus::BroadcastResult(
-                diffuseAssetId,
-                &Data::AssetCatalogRequestBus::Events::GetAssetIdByPath,
-                DefaultDiffuseCubeMapPath,
-                azrtti_typeid<AZ::RPI::StreamingImageAsset>(),
-                false);
-
-            auto specularAsset = Data::AssetManager::Instance().GetAsset<RPI::StreamingImageAsset>(specularAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
-            auto diffuseAsset = Data::AssetManager::Instance().GetAsset<RPI::StreamingImageAsset>(diffuseAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
-
-            specularAsset.BlockUntilLoadComplete();
-            diffuseAsset.BlockUntilLoadComplete();
-
-            m_defaultSpecularImage = RPI::StreamingImage::FindOrCreate(specularAsset);
+            m_defaultSpecularImage = RPI::LoadStreamingTexture(DefaultSpecularCubeMapPath);
             AZ_Assert(m_defaultSpecularImage, "Failed to load default specular cubemap");
 
-            m_defaultDiffuseImage = RPI::StreamingImage::FindOrCreate(diffuseAsset);
+            m_defaultDiffuseImage = RPI::LoadStreamingTexture(DefaultDiffuseCubeMapPath);
             AZ_Assert(m_defaultDiffuseImage, "Failed to load default diffuse cubemap");
         }
 

@@ -2104,6 +2104,13 @@
     "background-color": "#AF937B"
   },
   {
+    "selectors": [ "UtilityNodeTitlePalette" ],
+    "palette-style": "solid",
+    "line-color": "#FFFFFF",
+    "background-color": "#FFFFFF",
+    "color": "#ffffff"
+  },
+  {
     "selectors": [ "DefaultNodeTitlePalette" ],
     "palette-style": "solid",
     "line-color": "#333333",

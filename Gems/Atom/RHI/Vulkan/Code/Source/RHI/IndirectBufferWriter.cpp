@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#include <Atom_RHI_Vulkan_Platform.h>
 #include <RHI/Buffer.h>
 #include <RHI/IndirectBufferWriter.h>
 #include <RHI/IndirectBufferSignature.h>
@@ -18,33 +19,33 @@ namespace AZ
             return aznew IndirectBufferWriter();
         }
 
-        void IndirectBufferWriter::SetVertexViewInternal([[maybe_unused]] RHI::IndirectCommandIndex index, [[maybe_unused]] const RHI::StreamBufferView& view)
+        void IndirectBufferWriter::SetVertexViewInternal([[maybe_unused]] RHI::IndirectCommandIndex index, [[maybe_unused]] const RHI::DeviceStreamBufferView& view)
         {
             AZ_Assert(false, "Vertex View command is not supported on this platform");
         }
 
-        void IndirectBufferWriter::SetIndexViewInternal([[maybe_unused]] RHI::IndirectCommandIndex index, [[maybe_unused]] const RHI::IndexBufferView& indexBufferView)
+        void IndirectBufferWriter::SetIndexViewInternal([[maybe_unused]] RHI::IndirectCommandIndex index, [[maybe_unused]] const RHI::DeviceIndexBufferView& indexBufferView)
         {
             AZ_Assert(false, "Index View command is not supported on this platform");
         }
 
-        void IndirectBufferWriter::DrawInternal(RHI::IndirectCommandIndex index, const RHI::DrawLinear& arguments)
+        void IndirectBufferWriter::DrawInternal(RHI::IndirectCommandIndex index, const RHI::DrawLinear& arguments, const RHI::DrawInstanceArguments& drawInstanceArgs)
         {
             VkDrawIndirectCommand* command = reinterpret_cast<VkDrawIndirectCommand*>(GetCommandMemoryMap(index));
             command->vertexCount = arguments.m_vertexCount;
-            command->instanceCount = arguments.m_instanceCount;
+            command->instanceCount = drawInstanceArgs.m_instanceCount;
             command->firstVertex = arguments.m_vertexOffset;
-            command->firstInstance = arguments.m_instanceOffset;
+            command->firstInstance = drawInstanceArgs.m_instanceOffset;
         }
 
-        void IndirectBufferWriter::DrawIndexedInternal(RHI::IndirectCommandIndex index, const RHI::DrawIndexed& arguments)
+        void IndirectBufferWriter::DrawIndexedInternal(RHI::IndirectCommandIndex index, const RHI::DrawIndexed& arguments, const RHI::DrawInstanceArguments& drawInstanceArgs)
         {
             VkDrawIndexedIndirectCommand* command = reinterpret_cast<VkDrawIndexedIndirectCommand*>(GetCommandMemoryMap(index));
             command->indexCount = arguments.m_indexCount;
-            command->instanceCount = arguments.m_instanceCount;
+            command->instanceCount = drawInstanceArgs.m_instanceCount;
             command->firstIndex = arguments.m_indexOffset;
             command->vertexOffset = arguments.m_vertexOffset;
-            command->firstInstance = arguments.m_instanceOffset;
+            command->firstInstance = drawInstanceArgs.m_instanceOffset;
         }
 
         void IndirectBufferWriter::DispatchInternal(RHI::IndirectCommandIndex index, const RHI::DispatchDirect& arguments)

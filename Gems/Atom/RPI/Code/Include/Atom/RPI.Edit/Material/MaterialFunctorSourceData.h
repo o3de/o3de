@@ -10,7 +10,7 @@
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/std/smart_ptr/intrusive_base.h>
-#include <AzCore/Serialization/SerializeContext.h>
+#include <Atom/RPI.Edit/Configuration.h>
 #include <Atom/RPI.Reflect/Base.h>
 #include <Atom/RPI.Reflect/Material/MaterialTypeAsset.h>
 
@@ -31,7 +31,7 @@ namespace AZ
         //! This is an abstract base class for initializing MaterialFunctor objects.
         //! Material functors provide custom logic and calculations to configure shaders, render states, and more.
         //! See MaterialFunctor.h for details.
-        class MaterialFunctorSourceData
+        class ATOM_RPI_EDIT_API MaterialFunctorSourceData
             : public AZStd::intrusive_base
         {
             friend class JsonMaterialFunctorSourceDataSerializer;
@@ -49,7 +49,7 @@ namespace AZ
                 AZStd::string m_jobKey;         //!< The AssetBuilderSDK's job key name for the asset produced by m_sourceFilePath
             };
 
-            struct RuntimeContext
+            struct ATOM_RPI_EDIT_API RuntimeContext
             {
             public:
                 RuntimeContext(
@@ -91,7 +91,7 @@ namespace AZ
                 const MaterialNameContext*               m_materialNameContext;
             };
 
-            struct EditorContext
+            struct ATOM_RPI_EDIT_API EditorContext
             {
             public:
                 EditorContext(
@@ -110,7 +110,7 @@ namespace AZ
                 //! Find a property's index by its name. It will report error and return a Null index if it fails.
                 //! This will also automatically apply the MaterialNameContext.
                 MaterialPropertyIndex FindMaterialPropertyIndex(Name propertyId) const;
-                
+
                 //! Returns the name context for the functor.
                 //! It acts like a namespace for any names that the MaterialFunctorSourceData might reference. The namespace
                 //! is automatically applied by the other relevant functions of this RuntimeContext class.
@@ -140,7 +140,7 @@ namespace AZ
 
             //! Returns a list of all shader options that this functor can set.
             virtual AZStd::vector<AZ::Name> GetShaderOptionDependencies() const { return {}; }
-            
+
             //! Returns a list of other assets that this functor depends on.
             //! Any change to one of these assets will trigger the .materialtype to rebuild.
             virtual AZStd::vector<AssetDependency> GetAssetDependencies() const { return {}; }

@@ -48,7 +48,7 @@ namespace AzToolsFramework
             , public AssetBrowserComponentRequestBus::Handler
             , public AssetDatabaseLocationNotificationBus::Handler
             , public AzFramework::AssetCatalogEventBus::Handler
-            , public AZ::TickBus::Handler
+            , public AZ::SystemTickBus::Handler
             , public AssetSystemBus::Handler
             , public AssetBrowserInteractionNotificationBus::Handler
             , private AssetBrowserFileCreationNotificationBus::Handler
@@ -90,9 +90,9 @@ namespace AzToolsFramework
             void OnCatalogAssetRemoved(const AZ::Data::AssetId& assetId, const AZ::Data::AssetInfo& assetInfo) override;
 
             //////////////////////////////////////////////////////////////////////////
-            // TickBus
+            // SystemTickBus
             //////////////////////////////////////////////////////////////////////////
-            void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
+            void OnSystemTick() override;
 
             //////////////////////////////////////////////////////////////////////////
             // AssetSystemBus
@@ -124,6 +124,8 @@ namespace AzToolsFramework
             AZStd::atomic_bool m_waitingForMore;
             //! should the query thread stop
             AZStd::atomic_bool m_disposed;
+            AZStd::atomic_bool m_isResetting;
+            AZStd::atomic_bool m_changesApplied;
 
             AZStd::unique_ptr<AssetBrowserModel> m_assetBrowserModel;
             AZStd::shared_ptr<AssetEntryChangeset> m_changeset;

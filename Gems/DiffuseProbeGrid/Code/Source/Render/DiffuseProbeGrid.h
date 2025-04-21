@@ -8,6 +8,7 @@
 #pragma once
 
 #include <Atom/RHI/DrawPacketBuilder.h>
+#include <Atom/RHI/GeometryView.h>
 #include <Atom/RHI/RayTracingAccelerationStructure.h>
 #include <Atom/RPI.Public/Culling.h>
 #include <Atom/RPI.Public/PipelineState.h>
@@ -28,14 +29,12 @@ namespace AZ
             static const RHI::Format IrradianceImageFormat = RHI::Format::R16G16B16A16_FLOAT;
             static const RHI::Format DistanceImageFormat = RHI::Format::R32G32_FLOAT;
             static const RHI::Format ProbeDataImageFormat = RHI::Format::R16G16B16A16_FLOAT;
-            static const uint32_t GridDataBufferSize = 180;
+            static const uint32_t GridDataBufferSize = 112;
 
-            RHI::Ptr<RHI::ImagePool> m_imagePool;          
+            RHI::Ptr<RHI::ImagePool> m_imagePool;
             RHI::Ptr<RHI::BufferPool> m_bufferPool;
 
-            AZStd::array<RHI::StreamBufferView, 1> m_boxPositionBufferView;
-            RHI::IndexBufferView m_boxIndexBufferView;
-            uint32_t m_boxIndexCount = 0;
+            RHI::GeometryView m_geometryView;
 
             // image views
             RHI::ImageViewDescriptor m_probeRayTraceImageViewDescriptor;
@@ -60,33 +59,23 @@ namespace AZ
             RHI::ShaderInputNameIndex m_prepareSrgGridDataNameIndex = "m_gridData";
             RHI::ShaderInputNameIndex m_prepareSrgGridDataInitializedNameIndex = "m_gridDataInitialized";
             RHI::ShaderInputNameIndex m_prepareSrgProbeGridOriginNameIndex = "m_probeGrid.origin";
+            RHI::ShaderInputNameIndex m_prepareSrgProbeGridProbeHysteresisNameIndex = "m_probeGrid.probeHysteresis";
             RHI::ShaderInputNameIndex m_prepareSrgProbeGridRotationNameIndex = "m_probeGrid.rotation";
             RHI::ShaderInputNameIndex m_prepareSrgProbeGridProbeRayRotationNameIndex = "m_probeGrid.probeRayRotation";
-            RHI::ShaderInputNameIndex m_prepareSrgProbeGridMovementTypeNameIndex = "m_probeGrid.movementType";
-            RHI::ShaderInputNameIndex m_prepareSrgProbeGridProbeSpacingNameIndex = "m_probeGrid.probeSpacing";
-            RHI::ShaderInputNameIndex m_prepareSrgProbeGridProbeCountsNameIndex = "m_probeGrid.probeCounts";
-            RHI::ShaderInputNameIndex m_prepareSrgProbeGridProbeNumRaysNameIndex = "m_probeGrid.probeNumRays";
-            RHI::ShaderInputNameIndex m_prepareSrgProbeGridProbeNumIrradianceTexelsNameIndex = "m_probeGrid.probeNumIrradianceTexels";
-            RHI::ShaderInputNameIndex m_prepareSrgProbeGridProbeNumDistanceTexelsNameIndex = "m_probeGrid.probeNumDistanceTexels";
-            RHI::ShaderInputNameIndex m_prepareSrgProbeGridProbeHysteresisNameIndex = "m_probeGrid.probeHysteresis";
             RHI::ShaderInputNameIndex m_prepareSrgProbeGridProbeMaxRayDistanceNameIndex = "m_probeGrid.probeMaxRayDistance";
             RHI::ShaderInputNameIndex m_prepareSrgProbeGridProbeNormalBiasNameIndex = "m_probeGrid.probeNormalBias";
             RHI::ShaderInputNameIndex m_prepareSrgProbeGridProbeViewBiasNameIndex = "m_probeGrid.probeViewBias";
             RHI::ShaderInputNameIndex m_prepareSrgProbeGridProbeDistanceExponentNameIndex = "m_probeGrid.probeDistanceExponent";
+            RHI::ShaderInputNameIndex m_prepareSrgProbeGridProbeSpacingNameIndex = "m_probeGrid.probeSpacing";
+            RHI::ShaderInputNameIndex m_prepareSrgProbeGridPacked0NameIndex = "m_probeGrid.packed0";
+            RHI::ShaderInputNameIndex m_prepareSrgProbeGridProbeIrradianceEncodingGammaNameIndex = "m_probeGrid.probeIrradianceEncodingGamma";
             RHI::ShaderInputNameIndex m_prepareSrgProbeGridProbeIrradianceThresholdNameIndex = "m_probeGrid.probeIrradianceThreshold";
             RHI::ShaderInputNameIndex m_prepareSrgProbeGridProbeBrightnessThresholdNameIndex = "m_probeGrid.probeBrightnessThreshold";
-            RHI::ShaderInputNameIndex m_prepareSrgProbeGridProbeIrradianceEncodingGammaNameIndex = "m_probeGrid.probeIrradianceEncodingGamma";
-            RHI::ShaderInputNameIndex m_prepareSrgProbeGridProbeRandomRayBackfaceThresholdNameIndex = "m_probeGrid.probeRandomRayBackfaceThreshold";
-            RHI::ShaderInputNameIndex m_prepareSrgProbeGridProbeFixedRayBackfaceThresholdNameIndex = "m_probeGrid.probeFixedRayBackfaceThreshold";
+            RHI::ShaderInputNameIndex m_prepareSrgProbeGridPacked1NameIndex = "m_probeGrid.packed1";
             RHI::ShaderInputNameIndex m_prepareSrgProbeGridProbeMinFrontfaceDistanceNameIndex = "m_probeGrid.probeMinFrontfaceDistance";
-            RHI::ShaderInputNameIndex m_prepareSrgProbeGridProbeScrollOffsetsNameIndex = "m_probeGrid.probeScrollOffsets";
-            RHI::ShaderInputNameIndex m_prepareSrgProbeGridProbeRayDataFormatNameIndex = "m_probeGrid.probeRayDataFormat";
-            RHI::ShaderInputNameIndex m_prepareSrgProbeGridProbeIrradianceFormatNameIndex = "m_probeGrid.probeIrradianceFormat";
-            RHI::ShaderInputNameIndex m_prepareSrgProbeGridProbeRelocationEnabledNameIndex = "m_probeGrid.probeRelocationEnabled";
-            RHI::ShaderInputNameIndex m_prepareSrgProbeGridProbeClassificationEnabledNameIndex = "m_probeGrid.probeClassificationEnabled";
-            RHI::ShaderInputNameIndex m_prepareSrgProbeGridProbeScrollClear0NameIndex = "m_probeGrid.probeScrollClear[0]";
-            RHI::ShaderInputNameIndex m_prepareSrgProbeGridProbeScrollClear1NameIndex = "m_probeGrid.probeScrollClear[1]";
-            RHI::ShaderInputNameIndex m_prepareSrgProbeGridProbeScrollClear2NameIndex = "m_probeGrid.probeScrollClear[2]";
+            RHI::ShaderInputNameIndex m_prepareSrgProbeGridPacked2NameIndex = "m_probeGrid.packed2";
+            RHI::ShaderInputNameIndex m_prepareSrgProbeGridPacked3NameIndex = "m_probeGrid.packed3";
+            RHI::ShaderInputNameIndex m_prepareSrgProbeGridPacked4NameIndex = "m_probeGrid.packed4";
 
             RHI::ShaderInputNameIndex m_rayTraceSrgGridDataNameIndex = "m_gridData";
             RHI::ShaderInputNameIndex m_rayTraceSrgProbeRayTraceNameIndex = "m_probeRayTrace";
@@ -304,10 +293,6 @@ namespace AZ
 
             const DiffuseProbeGridRenderData* GetRenderData() const { return m_renderData; }
 
-            // the Irradiance, Distance, and ProbeData images need to be manually cleared after certain operations, e.g., changing the grid size
-            bool GetTextureClearRequired() const { return m_textureClearRequired; }
-            void ResetTextureClearRequired() { m_textureClearRequired = false; }
-
             // texture readback
             DiffuseProbeGridTextureReadback& GetTextureReadback() { return m_textureReadback; }
 
@@ -423,7 +408,6 @@ namespace AZ
             RHI::Ptr<RHI::Image> m_probeDataImage[ImageFrameCount];
             uint32_t m_currentImageIndex = 0;
             bool m_updateTextures = false;
-            bool m_textureClearRequired = true;
 
             // baked textures
             Data::Instance<RPI::Image> m_bakedIrradianceImage;

@@ -16,7 +16,7 @@
 
 namespace UnitTests
 {
-    class BuilderManagerTest : public UnitTest::LeakDetectionFixture
+    class BuilderManagerTest : public ::UnitTest::LeakDetectionFixture
     {
 
     };

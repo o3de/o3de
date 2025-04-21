@@ -47,7 +47,6 @@ namespace GraphCanvas
         , public AzToolsFramework::EditorEvents::Bus::Handler
     {
     private:
-        const int KEYBOARD_MOVE = 50;
         const int WHEEL_ZOOM = 120;
         const int WHEEL_ZOOM_ANGLE = 15;
 

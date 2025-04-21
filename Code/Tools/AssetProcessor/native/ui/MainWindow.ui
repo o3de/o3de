@@ -337,6 +337,60 @@
         <property name="currentIndex">
          <number>0</number>
         </property>
+        <widget class="QWidget" name="WelcomePage">
+         <layout class="QVBoxLayout" name="WelcomeVerticalLayout">
+          <item>
+           <widget class="QLabel" name="welcomeScreenTitle">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string># Welcome to the O3DE Asset Processor</string>
+            </property>
+            <property name="textFormat">
+             <enum>Qt::MarkdownText</enum>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="WelcomeDescriptionLabel1">
+            <property name="text">
+             <string>This tool converts an O3DE project's source assets to runtime ready content.</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="WelcomeDescriptionLabel2">
+            <property name="text">
+             <string>You can read more about the Asset Processor &lt;a href=&quot;https://www.o3de.org/docs/user-guide/assets/asset-processor/&quot;&gt;here.&lt;/a&gt;</string>
+            </property>
+            <property name="openExternalLinks">
+             <bool>true</bool>
+            </property>
+            <property name="textInteractionFlags">
+             <set>Qt::LinksAccessibleByKeyboard|Qt::LinksAccessibleByMouse</set>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="welcomeScreenVerticalSpacer">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>16</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </widget>
         <widget class="QSplitter" name="jobDialogSplitter">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
@@ -1257,26 +1311,6 @@
               </property>
               <item>
                <layout class="QGridLayout" name="builderInfoHeader" columnstretch="1,4">
-                <item row="3" column="0">
-                 <widget class="QLabel" name="builderInfoHeaderTitleVersionNumber">
-                  <property name="font">
-                   <font>
-                    <weight>75</weight>
-                    <italic>false</italic>
-                    <bold>true</bold>
-                   </font>
-                  </property>
-                  <property name="styleSheet">
-                   <string notr="true">font: bold;</string>
-                  </property>
-                  <property name="text">
-                   <string>Version Number</string>
-                  </property>
-                  <property name="wordWrap">
-                   <bool>true</bool>
-                  </property>
-                 </widget>
-                </item>
                 <item row="0" column="1">
                  <widget class="QLabel" name="builderInfoHeaderValueName">
                   <property name="text">
@@ -1301,106 +1335,6 @@
                   </property>
                   <property name="text">
                    <string>Name</string>
-                  </property>
-                  <property name="wordWrap">
-                   <bool>true</bool>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="1">
-                 <widget class="QLabel" name="builderInfoHeaderValueType">
-                  <property name="text">
-                   <string/>
-                  </property>
-                  <property name="wordWrap">
-                   <bool>true</bool>
-                  </property>
-                 </widget>
-                </item>
-                <item row="2" column="0">
-                 <widget class="QLabel" name="builderInfoHeaderTitleFingerprint">
-                  <property name="font">
-                   <font>
-                    <weight>75</weight>
-                    <italic>false</italic>
-                    <bold>true</bold>
-                   </font>
-                  </property>
-                  <property name="styleSheet">
-                   <string notr="true">font: bold;</string>
-                  </property>
-                  <property name="text">
-                   <string>Fingerprint</string>
-                  </property>
-                  <property name="wordWrap">
-                   <bool>true</bool>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="0">
-                 <widget class="QLabel" name="builderInfoHeaderTitleType">
-                  <property name="font">
-                   <font>
-                    <weight>75</weight>
-                    <italic>false</italic>
-                    <bold>true</bold>
-                   </font>
-                  </property>
-                  <property name="styleSheet">
-                   <string notr="true">font: bold;</string>
-                  </property>
-                  <property name="text">
-                   <string>Type</string>
-                  </property>
-                  <property name="wordWrap">
-                   <bool>true</bool>
-                  </property>
-                 </widget>
-                </item>
-                <item row="4" column="0">
-                 <widget class="QLabel" name="builderInfoHeaderTitleBusId">
-                  <property name="font">
-                   <font>
-                    <weight>75</weight>
-                    <italic>false</italic>
-                    <bold>true</bold>
-                   </font>
-                  </property>
-                  <property name="styleSheet">
-                   <string notr="true">font: bold;</string>
-                  </property>
-                  <property name="text">
-                   <string>BusID</string>
-                  </property>
-                  <property name="wordWrap">
-                   <bool>true</bool>
-                  </property>
-                 </widget>
-                </item>
-                <item row="2" column="1">
-                 <widget class="QLabel" name="builderInfoHeaderValueFingerprint">
-                  <property name="text">
-                   <string/>
-                  </property>
-                  <property name="wordWrap">
-                   <bool>true</bool>
-                  </property>
-                 </widget>
-                </item>
-                <item row="3" column="1">
-                 <widget class="QLabel" name="builderInfoHeaderValueVersionNumber">
-                  <property name="text">
-                   <string/>
-                  </property>
-                  <property name="wordWrap">
-                   <bool>true</bool>
-                  </property>
-                 </widget>
-                </item>
-                <item row="4" column="1">
-                 <widget class="QLabel" name="builderInfoHeaderValueBusId">
-                  <property name="text">
-                   <string/>
                   </property>
                   <property name="wordWrap">
                    <bool>true</bool>
@@ -1444,6 +1378,141 @@
                  <attribute name="title">
                   <string>Details</string>
                  </attribute>
+                 <layout class="QGridLayout" name="builderInfoDetails" columnstretch="1,3">
+                  <item row="2" column="0">
+                   <widget class="QLabel" name="builderInfoDetailsTitleVersionNumber">
+                    <property name="font">
+                     <font>
+                      <weight>75</weight>
+                      <italic>false</italic>
+                      <bold>true</bold>
+                     </font>
+                    </property>
+                    <property name="styleSheet">
+                     <string notr="true">font: bold;</string>
+                    </property>
+                    <property name="text">
+                     <string>Version Number</string>
+                    </property>
+                    <property name="wordWrap">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="1">
+                   <widget class="QLabel" name="builderInfoDetailsValueType">
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="wordWrap">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="0">
+                   <widget class="QLabel" name="builderInfoDetailsTitleFingerprint">
+                    <property name="font">
+                     <font>
+                      <weight>75</weight>
+                      <italic>false</italic>
+                      <bold>true</bold>
+                     </font>
+                    </property>
+                    <property name="styleSheet">
+                     <string notr="true">font: bold;</string>
+                    </property>
+                    <property name="text">
+                     <string>Fingerprint</string>
+                    </property>
+                    <property name="wordWrap">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="0">
+                   <widget class="QLabel" name="builderInfoDetailsTitleType">
+                    <property name="font">
+                     <font>
+                      <weight>75</weight>
+                      <italic>false</italic>
+                      <bold>true</bold>
+                     </font>
+                    </property>
+                    <property name="styleSheet">
+                     <string notr="true">font: bold;</string>
+                    </property>
+                    <property name="text">
+                     <string>Type</string>
+                    </property>
+                    <property name="wordWrap">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="3" column="0">
+                   <widget class="QLabel" name="builderInfoDetailsTitleBusId">
+                    <property name="font">
+                     <font>
+                      <weight>75</weight>
+                      <italic>false</italic>
+                      <bold>true</bold>
+                     </font>
+                    </property>
+                    <property name="styleSheet">
+                     <string notr="true">font: bold;</string>
+                    </property>
+                    <property name="text">
+                     <string>BusID</string>
+                    </property>
+                    <property name="wordWrap">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="1">
+                   <widget class="QLabel" name="builderInfoDetailsValueFingerprint">
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="wordWrap">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="1">
+                   <widget class="QLabel" name="builderInfoDetailsValueVersionNumber">
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="wordWrap">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="3" column="1">
+                   <widget class="QLabel" name="builderInfoDetailsValueBusId">
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="wordWrap">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="4" column="0">
+                   <spacer name="builderInfoDetailsSpacer">
+                    <property name="orientation">
+                     <enum>Qt::Vertical</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>16</width>
+                      <height>40</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                 </layout>
                 </widget>
                 <widget class="QWidget" name="builderInfoMetricsTab">
                  <attribute name="title">
@@ -2264,6 +2333,78 @@
               </widget>
              </item>
             </layout>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="AssetRelocationPage">
+         <layout class="QVBoxLayout" name="AssetRelocationVerticalLayout">
+          <item>
+           <widget class="QLabel" name="AssetRelocationScreenTitle">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string># Asset Relocation</string>
+            </property>
+            <property name="textFormat">
+             <enum>Qt::MarkdownText</enum>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="MetaCreationDelayLayout">
+            <item>
+             <widget class="QLabel" name="MetaCreationDelayTitle">
+              <property name="text">
+               <string>Meta File Creation Delay:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="MetaCreationDelayValue">
+              <property name="text">
+               <string>Delay value could not be loaded</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="MetaCreationDelaySpacer">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QLabel" name="AssetRelocationDescriptionLabel">
+            <property name="text">
+             <string>This is the list of currently enabled extensions for asset relocation. You can read more about relocating assets &lt;a href=&quot;https://www.o3de.org/docs/user-guide/assets/pipeline/metadata&quot;&gt;here.&lt;/a&gt;</string>
+            </property>
+            <property name="openExternalLinks">
+             <bool>true</bool>
+            </property>
+            <property name="textInteractionFlags">
+             <set>Qt::LinksAccessibleByKeyboard|Qt::LinksAccessibleByMouse</set>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QListView" name="AssetRelocationExtensionListView">
+            <property name="showDropIndicator" stdset="0">
+             <bool>false</bool>
+            </property>
            </widget>
           </item>
          </layout>

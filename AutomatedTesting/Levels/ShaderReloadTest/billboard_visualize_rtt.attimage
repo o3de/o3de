@@ -1,0 +1,21 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "AttachmentImageAsset",
+    "ClassData": {
+        "m_imageDescriptor": {
+            "BindFlags": [
+                "ShaderRead",
+                "ShaderWrite",
+                "Color"
+            ],
+            "Size": {
+                "Width": 512,
+                "Height": 512
+            },
+            "Format": 19 //AZ::RHI::Format::R8G8B8A8_UNORM
+        },
+        "Name": "$BillboardVisualizeRtt",
+        "IsUniqueName": true
+    }
+}

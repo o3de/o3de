@@ -8,8 +8,8 @@
 
 #include <Atom/Features/SrgSemantics.azsli>
 
-#include <scenesrg.srgi>
-#include <viewsrg.srgi>
+#include <scenesrg_all.srgi>
+#include <viewsrg_all.srgi>
 
 #include <Atom/RPI/Math.azsli>
 
@@ -315,9 +315,9 @@ void MainCS(uint3 thread_id : SV_GroupThreadID, uint3 group_id : SV_GroupID, uin
 
     // PHASE I: accumulates AO from local depth samples stored in LDS
     [unroll]
-    for (uint i = 0; i < LOCAL_SAMPLE_COUNT; ++i)
+    for (uint k = 0; k < LOCAL_SAMPLE_COUNT; ++k)
     {
-        float3 occluderPosition = GetPositionFromDepthLDS(ldsPosition + localSamplesForLDS[i], ldsOffsetUV);
+        float3 occluderPosition = GetPositionFromDepthLDS(ldsPosition + localSamplesForLDS[k], ldsOffsetUV);
         AccumulateOcclusion(position, normal, occluderPosition, totalOcclusion, totalWeight);
     }
 

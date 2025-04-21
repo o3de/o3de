@@ -30,6 +30,8 @@
 #include <AzToolsFramework/Entity/EditorEntitySearchBus.h>
 #include <AzToolsFramework/ToolsComponents/GenericComponentWrapper.h>
 
+#include <AzCore/std/containers/map.h>
+
 // AzQtComponents
 #include <AzQtComponents/Components/InputDialog.h>
 #include <AzQtComponents/Components/Widgets/ColorPicker.h>
@@ -45,12 +47,9 @@
 // Editor
 #include "TrackView/TVEventsDialog.h"
 #include "TrackView/TrackViewDialog.h"
-#include "Objects/SelectionGroup.h"
-#include "Objects/ObjectManager.h"
 #include "Util/AutoDirectoryRestoreFileDialog.h"
 #include "TrackViewFBXImportPreviewDialog.h"
 #include "AnimationContext.h"
-
 
 CTrackViewNodesCtrl::CRecord::CRecord(CTrackViewNode* pNode /*= nullptr*/)
     : m_pNode(pNode)
@@ -173,7 +172,7 @@ protected:
             if (allValidReparenting && !nodes.isEmpty())
             {
                 // By default here the drop action is a CopyAction. That is what we want in case
-                // some other random control accepts this drop (and then does nothing with the data). 
+                // some other random control accepts this drop (and then does nothing with the data).
                 // If that happens we will not receive any notifications. If the Action default was MoveAction,
                 // the dragged items in the tree would be deleted out from under us causing a crash.
                 // Since we are here, we know this drop is on the same control so we can
@@ -329,7 +328,6 @@ enum EMenuItem
     eMI_AddDOF = 510,
     eMI_AddScreenfader = 511,
     eMI_AddShadowSetup = 513,
-    eMI_AddEnvironment = 514,
     eMI_EditEvents = 550,
     eMI_SaveToFBX = 12,
     eMI_ImportFromFBX = 14,
@@ -351,7 +349,6 @@ AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 
-//////////////////////////////////////////////////////////////////////////
 CTrackViewNodesCtrl::CTrackViewNodesCtrl(QWidget* hParentWnd, CTrackViewDialog* parent /* = 0 */)
     : QWidget(hParentWnd)
     , m_bIgnoreNotifications(false)
@@ -383,16 +380,6 @@ CTrackViewNodesCtrl::CTrackViewNodesCtrl(QWidget* hParentWnd, CTrackViewDialog* 
 
     connect(ui->searchField, &QLineEdit::textChanged, this, &CTrackViewNodesCtrl::OnFilterChange);
 
-    // legacy node icons are enumerated and stored as png files on disk
-    for (int i = 0; i <= 29; i++)
-    {
-        QIcon icon(QString(":/nodes/tvnodes-%1.png").arg(i, 2, 10, QLatin1Char('0')));
-        if (!icon.isNull())
-        {
-            m_imageList[i] = icon;
-        }
-    }
-
     m_bEditLock = false;
 
     m_arrowCursor = Qt::ArrowCursor;
@@ -418,13 +405,16 @@ CTrackViewNodesCtrl::CTrackViewNodesCtrl(QWidget* hParentWnd, CTrackViewDialog* 
     ///////////////////////////////////////////////////////////////
 
 
+    GetIEditor()->GetSequenceManager()->AddListener(this);
+    GetIEditor()->GetAnimation()->AddListener(this);
     GetIEditor()->GetUndoManager()->AddListener(this);
 };
 
-//////////////////////////////////////////////////////////////////////////
 CTrackViewNodesCtrl::~CTrackViewNodesCtrl()
 {
     GetIEditor()->GetUndoManager()->RemoveListener(this);
+    GetIEditor()->GetAnimation()->RemoveListener(this);
+    GetIEditor()->GetSequenceManager()->RemoveListener(this);
 }
 
 bool CTrackViewNodesCtrl::eventFilter(QObject* o, QEvent* e)
@@ -442,10 +432,9 @@ bool CTrackViewNodesCtrl::eventFilter(QObject* o, QEvent* e)
 }
 
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewNodesCtrl::OnSequenceChanged()
 {
-    assert(m_pTrackViewDialog);
+    AZ_Assert(m_pTrackViewDialog, "m_pTrackViewDialog is null");
 
     m_nodeToRecordMap.clear();
     ui->treeWidget->clear();
@@ -455,159 +444,23 @@ void CTrackViewNodesCtrl::OnSequenceChanged()
     Reload();
 }
 
-//////////////////////////////////////////////////////////////////////////
+// IAnimationContextListener
+void CTrackViewNodesCtrl::OnSequenceChanged([[maybe_unused]]CTrackViewSequence* pNewSequence)
+{
+    OnSequenceChanged();
+}
+
+// ITrackViewSequenceManagerListener
+void CTrackViewNodesCtrl::OnSequenceRemoved([[maybe_unused]] CTrackViewSequence* pSequence)
+{
+    OnSequenceChanged();
+}
+
 void CTrackViewNodesCtrl::SetDopeSheet(CTrackViewDopeSheetBase* pDopeSheet)
 {
     m_pDopeSheet = pDopeSheet;
 }
 
-//////////////////////////////////////////////////////////////////////////
-int CTrackViewNodesCtrl::GetIconIndexForTrack(const CTrackViewTrack* pTrack) const
-{
-    int nImage = 13; // Default
-
-    if (!pTrack)
-    {
-        return nImage;
-    }
-
-    CAnimParamType paramType = pTrack->GetParameterType();
-    AnimValueType valueType = pTrack->GetValueType();
-    AnimNodeType nodeType = pTrack->GetAnimNode()->GetType();
-
-    // If it's a track which belongs to the post-fx node,
-    // just use a default icon.
-    if (nodeType == AnimNodeType::RadialBlur
-        || nodeType == AnimNodeType::ColorCorrection
-        || nodeType == AnimNodeType::DepthOfField
-        || nodeType == AnimNodeType::ShadowSetup)
-    {
-        return nImage;
-    }
-
-    AnimParamType type = paramType.GetType();
-
-    if (type == AnimParamType::FOV)
-    {
-        nImage = 2;
-    }
-    else if (type == AnimParamType::Position)
-    {
-        nImage = 3;
-    }
-    else if (type == AnimParamType::Rotation)
-    {
-        nImage = 4;
-    }
-    else if (type == AnimParamType::Scale)
-    {
-        nImage = 5;
-    }
-    else if (type == AnimParamType::Event || type == AnimParamType::TrackEvent)
-    {
-        nImage = 6;
-    }
-    else if (type == AnimParamType::Visibility)
-    {
-        nImage = 7;
-    }
-    else if (type == AnimParamType::Camera)
-    {
-        nImage = 8;
-    }
-    else if (type == AnimParamType::Sound)
-    {
-        nImage = 9;
-    }
-    else if (type == AnimParamType::Animation || type == AnimParamType::TimeRanges || valueType == AnimValueType::CharacterAnim || valueType == AnimValueType::AssetBlend)
-    {
-        nImage = 10;
-    }
-    else if (type == AnimParamType::Sequence)
-    {
-        nImage = 11;
-    }
-    else if (type == AnimParamType::Float)
-    {
-        nImage = 13;
-    }
-    else if (type == AnimParamType::Capture)
-    {
-        nImage = 25;
-    }
-    else if (type == AnimParamType::Console)
-    {
-        nImage = 15;
-    }
-    else if (type == AnimParamType::LookAt)
-    {
-        nImage = 17;
-    }
-    else if (type == AnimParamType::TimeWarp)
-    {
-        nImage = 22;
-    }
-    else if (type == AnimParamType::CommentText)
-    {
-        nImage = 23;
-    }
-    else if (type == AnimParamType::ShakeMultiplier || type == AnimParamType::TransformNoise)
-    {
-        nImage = 28;
-    }
-
-    return nImage;
-}
-
-//////////////////////////////////////////////////////////////////////////
-int CTrackViewNodesCtrl::GetIconIndexForNode(AnimNodeType type) const
-{
-    int nImage = 0;
-    if (type == AnimNodeType::AzEntity)
-    {
-        nImage = 29;
-    }
-    else if (type == AnimNodeType::Director)
-    {
-        nImage = 27;
-    }
-    else if (type == AnimNodeType::CVar)
-    {
-        nImage = 15;
-    }
-    else if (type == AnimNodeType::ScriptVar)
-    {
-        nImage = 14;
-    }
-    else if (type == AnimNodeType::Event)
-    {
-        nImage = 6;
-    }
-    else if (type == AnimNodeType::Group)
-    {
-        nImage = 1;
-    }
-    else if (type == AnimNodeType::Layer)
-    {
-        nImage = 20;
-    }
-    else if (type == AnimNodeType::Comment)
-    {
-        nImage = 23;
-    }
-    else if (type == AnimNodeType::Light)
-    {
-        nImage = 18;
-    }
-    else if (type == AnimNodeType::ShadowSetup)
-    {
-        nImage = 24;
-    }
-
-    return nImage;
-}
-
-//////////////////////////////////////////////////////////////////////////
 CTrackViewNodesCtrl::CRecord* CTrackViewNodesCtrl::AddAnimNodeRecord(CRecord* pParentRecord, CTrackViewAnimNode* animNode)
 {
     CRecord* pNewRecord = new CRecord(animNode);
@@ -620,11 +473,9 @@ CTrackViewNodesCtrl::CRecord* CTrackViewNodesCtrl::AddAnimNodeRecord(CRecord* pP
     return pNewRecord;
 }
 
-//////////////////////////////////////////////////////////////////////////
 CTrackViewNodesCtrl::CRecord* CTrackViewNodesCtrl::AddTrackRecord(CRecord* pParentRecord, CTrackViewTrack* pTrack)
 {
     CRecord* pNewTrackRecord = new CRecord(pTrack);
-    pNewTrackRecord->setSizeHint(0, QSize(30, 18));
     pNewTrackRecord->setText(0, QString::fromUtf8(pTrack->GetName().c_str()));
     UpdateTrackRecord(pNewTrackRecord, pTrack);
     pParentRecord->insertChild(GetInsertPosition(pParentRecord, pTrack), pNewTrackRecord);
@@ -633,7 +484,6 @@ CTrackViewNodesCtrl::CRecord* CTrackViewNodesCtrl::AddTrackRecord(CRecord* pPare
     return pNewTrackRecord;
 }
 
-//////////////////////////////////////////////////////////////////////////
 int CTrackViewNodesCtrl::GetInsertPosition(CRecord* pParentRecord, CTrackViewNode* pNode)
 {
     // Search for insert position
@@ -652,12 +502,12 @@ int CTrackViewNodesCtrl::GetInsertPosition(CRecord* pParentRecord, CTrackViewNod
     return siblingCount;
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewNodesCtrl::AddNodeRecord(CRecord* record, CTrackViewNode* pNode)
 {
-    assert(m_nodeToRecordMap.find(pNode) == m_nodeToRecordMap.end());
     if (m_nodeToRecordMap.find(pNode) != m_nodeToRecordMap.end())
     {
+        AZ_Assert(false, "Node %p already added to the node to record map", pNode)
+
         // For safety. Shouldn't happen
         return;
     }
@@ -705,7 +555,6 @@ void CTrackViewNodesCtrl::AddNodeRecord(CRecord* record, CTrackViewNode* pNode)
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewNodesCtrl::FillNodesRec(CRecord* record, CTrackViewNode* pCurrentNode)
 {
     const unsigned int childCount = pCurrentNode->GetChildCount();
@@ -721,7 +570,6 @@ void CTrackViewNodesCtrl::FillNodesRec(CRecord* record, CTrackViewNode* pCurrent
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewNodesCtrl::UpdateNodeRecord(CRecord* record)
 {
     CTrackViewNode* pNode = record->GetNode();
@@ -740,13 +588,9 @@ void CTrackViewNodesCtrl::UpdateNodeRecord(CRecord* record)
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewNodesCtrl::UpdateTrackRecord(CRecord* record, CTrackViewTrack* pTrack)
 {
-    int nImage = GetIconIndexForTrack(pTrack);
-    assert(m_imageList.contains(nImage));
-    record->setIcon(0, m_imageList[nImage]);
-
+    record->setIcon(0, GetIconForTrack(pTrack));
     // Check if parameter is valid for non sub tracks
     CTrackViewAnimNode* animNode = pTrack->GetAnimNode();
     const bool isParamValid = pTrack->IsSubTrack() || animNode->IsParamValid(pTrack->GetParameterType());
@@ -758,7 +602,6 @@ void CTrackViewNodesCtrl::UpdateTrackRecord(CRecord* record, CTrackViewTrack* pT
     record->setData(0, CRecord::EnableRole, !bDisabledOrMuted && isParamValid);
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewNodesCtrl::UpdateAnimNodeRecord(CRecord* record, CTrackViewAnimNode* animNode)
 {
     const QColor TextColorForMissingEntity(226, 52, 43);        // LY palette for 'Error/Failure'
@@ -774,9 +617,9 @@ void CTrackViewNodesCtrl::UpdateAnimNodeRecord(CRecord* record, CTrackViewAnimNo
     if (nodeType == AnimNodeType::Component)
     {
         // get the component icon from cached component icons
-        
+
         AZ::Entity* azEntity = nullptr;
-        AZ::ComponentApplicationBus::BroadcastResult(azEntity, &AZ::ComponentApplicationBus::Events::FindEntity, 
+        AZ::ComponentApplicationBus::BroadcastResult(azEntity, &AZ::ComponentApplicationBus::Events::FindEntity,
                                                         static_cast<CTrackViewAnimNode*>(animNode->GetParentNode())->GetAzEntityId());
         if (azEntity)
         {
@@ -788,18 +631,14 @@ void CTrackViewNodesCtrl::UpdateAnimNodeRecord(CRecord* record, CTrackViewAnimNo
                 {
                     record->setIcon(0, findIter->second);
                 }
-            }           
-        }     
+            }
+        }
     }
     else
     {
-        // legacy node icons
-        int nNodeImage = GetIconIndexForNode(nodeType);
-        assert(m_imageList.contains(nNodeImage));
-
-        record->setIcon(0, m_imageList[nNodeImage]);
+        record->setIcon(0, TrackViewNodeIcon(nodeType));
     }
-    
+
 
     const bool disabled = animNode->IsDisabled();
     record->setData(0, CRecord::EnableRole, !disabled);
@@ -820,6 +659,10 @@ void CTrackViewNodesCtrl::UpdateAnimNodeRecord(CRecord* record, CTrackViewAnimNo
             // In case of a missing entity, color it red.
             record->setForeground(0, TextColorForMissingEntity);
         }
+        else
+        {
+            record->setData(0, Qt::ForegroundRole, QPalette::ColorRole::NoRole);
+        }
     }
 
     // Mark the active director and other directors properly.
@@ -833,7 +676,6 @@ void CTrackViewNodesCtrl::UpdateAnimNodeRecord(CRecord* record, CTrackViewAnimNo
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewNodesCtrl::Reload()
 {
     ui->treeWidget->clear();
@@ -870,7 +712,6 @@ void CTrackViewNodesCtrl::OnFillItems()
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewNodesCtrl::OnItemExpanded(QTreeWidgetItem* item)
 {
     CRecord* record = (CRecord*) item;
@@ -904,7 +745,6 @@ void CTrackViewNodesCtrl::OnItemExpanded(QTreeWidgetItem* item)
     UpdateDopeSheet();
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewNodesCtrl::OnSelectionChanged()
 {
     // Need to avoid the second call to this, because GetSelectedRows is broken
@@ -942,7 +782,6 @@ void CTrackViewNodesCtrl::OnSelectionChanged()
     UpdateDopeSheet();
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewNodesCtrl::OnNMRclick(QPoint point)
 {
     CRecord* record = nullptr;
@@ -1004,61 +843,7 @@ void CTrackViewNodesCtrl::OnNMRclick(QPoint point)
 
     float scrollPos = SaveVerticalScrollPos();
 
-    if (cmd == eMI_SaveToFBX)
-    {
-        CExportManager* pExportManager = static_cast<CExportManager*>(GetIEditor()->GetExportManager());
-
-        if (pExportManager)
-        {
-            CTrackViewSequence* sequence2 = GetIEditor()->GetAnimation()->GetSequence();
-            if (!sequence2)
-            {
-                return;
-            }
-
-            CTrackViewAnimNodeBundle selectedNodes = sequence2->GetSelectedAnimNodes();
-            const unsigned int numSelectedNodes = selectedNodes.GetCount();
-            if (numSelectedNodes == 0)
-            {
-                return;
-            }
-
-            QString file = QString::fromUtf8(sequence2->GetName().c_str()) + QString(".fbx");
-            QString selectedSequenceFBXStr = QString::fromUtf8(sequence2->GetName().c_str()) + ".fbx";
-
-            if (numSelectedNodes > 1)
-            {
-                file = selectedSequenceFBXStr;
-            }
-            else
-            {
-                file = QString::fromUtf8(selectedNodes.GetNode(0)->GetName().c_str()) + QString(".fbx");
-            }
-
-            QString path = AzQtComponents::FileDialog::GetSaveFileName(this, tr("Export Selected Nodes To FBX File"), QString(), tr("FBX Files (*.fbx)"));
-
-            if (!path.isEmpty())
-            {
-                pExportManager->SetBakedKeysSequenceExport(false);
-                pExportManager->Export(path.toUtf8().data(), "", "", false, false, false, true);
-            }
-        }
-    }
-    else if (cmd == eMI_ImportFromFBX)
-    {
-        if (animNode)
-        {
-            ImportFromFBX();
-        }
-    }
-    else if (cmd == eMI_SetAsViewCamera)
-    {
-        if (animNode && animNode->GetType() == AnimNodeType::Camera)
-        {
-            animNode->SetAsViewCamera();
-        }
-    }
-    else if (cmd == eMI_RemoveSelected)
+    if (cmd == eMI_RemoveSelected)
     {
         // If we are about to delete the sequence, cancel the notification
         // context, otherwise it will notify on a stale sequence pointer.
@@ -1097,7 +882,10 @@ void CTrackViewNodesCtrl::OnNMRclick(QPoint point)
             {
                 AzToolsFramework::ScopedUndoBatch undoBatch("Add Entities to Track View");
                 CTrackViewAnimNodeBundle addedNodes = groupNode->AddSelectedEntities(m_pTrackViewDialog->GetDefaultTracksForEntityNode());
-                undoBatch.MarkEntityDirty(groupNode->GetSequence()->GetSequenceComponentEntityId());
+                if (addedNodes.GetCount() > 0)
+                {
+                    undoBatch.MarkEntityDirty(groupNode->GetSequence()->GetSequenceComponentEntityId());
+                }
 
                 int selectedEntitiesCount = 0;
                 AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
@@ -1106,9 +894,9 @@ void CTrackViewNodesCtrl::OnNMRclick(QPoint point)
                 // check to make sure all nodes were added and notify user if they weren't
                 if (addedNodes.GetCount() != static_cast<unsigned int>(selectedEntitiesCount))
                 {
-                    IMovieSystem* movieSystem = GetIEditor()->GetMovieSystem();
+                    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
 
-                    AZStd::string messages = movieSystem->GetUserNotificationMsgs();
+                    AZStd::string messages = movieSystem ? movieSystem->GetUserNotificationMsgs() : "";
 
                     // Create a list of all lines
                     AZStd::vector<AZStd::string> lines;
@@ -1136,7 +924,10 @@ void CTrackViewNodesCtrl::OnNMRclick(QPoint point)
                         shortMessages = messages;
                     }
 
-                    QMessageBox::information(this, tr("Track View Warning"), tr(shortMessages.c_str()));
+                    if (!shortMessages.empty())
+                    {
+                        QMessageBox::information(this, tr("Track View Warning"), tr(shortMessages.c_str()));
+                    }
 
                     // clear the notification log now that we've consumed and presented them.
                     movieSystem->ClearUserNotificationMsgs();
@@ -1185,12 +976,6 @@ void CTrackViewNodesCtrl::OnNMRclick(QPoint point)
             {
                 AzToolsFramework::ScopedUndoBatch undoBatch("Add Track View Shadow Setup Node");
                 groupNode->CreateSubNode("ShadowsSetup", AnimNodeType::ShadowSetup);
-                undoBatch.MarkEntityDirty(groupNode->GetSequence()->GetSequenceComponentEntityId());
-            }
-            else if (cmd == eMI_AddEnvironment)
-            {
-                AzToolsFramework::ScopedUndoBatch undoBatch("Add Track View Environment Node");
-                groupNode->CreateSubNode("Environment", AnimNodeType::Environment);
                 undoBatch.MarkEntityDirty(groupNode->GetSequence()->GetSequenceComponentEntityId());
             }
             else if (cmd == eMI_AddDirectorNode)
@@ -1268,18 +1053,6 @@ void CTrackViewNodesCtrl::OnNMRclick(QPoint point)
                 groupNode->GetAnimNodesByType(AnimNodeType::AzEntity).CollapseAll();
                 undoBatch.MarkEntityDirty(groupNode->GetSequence()->GetSequenceComponentEntityId());
             }
-            else if (cmd == eMI_ExpandCameras)
-            {
-                AzToolsFramework::ScopedUndoBatch undoBatch("Expand Track View cameras");
-                groupNode->GetAnimNodesByType(AnimNodeType::Camera).ExpandAll();
-                undoBatch.MarkEntityDirty(groupNode->GetSequence()->GetSequenceComponentEntityId());
-            }
-            else if (cmd == eMI_CollapseCameras)
-            {
-                AzToolsFramework::ScopedUndoBatch undoBatch("Collapse Track View cameras");
-                groupNode->GetAnimNodesByType(AnimNodeType::Camera).CollapseAll();
-                undoBatch.MarkEntityDirty(groupNode->GetSequence()->GetSequenceComponentEntityId());
-            }
             else if (cmd == eMI_ExpandEvents)
             {
                 AzToolsFramework::ScopedUndoBatch undoBatch("Expand Track View events");
@@ -1292,7 +1065,7 @@ void CTrackViewNodesCtrl::OnNMRclick(QPoint point)
                 groupNode->GetAnimNodesByType(AnimNodeType::Event).CollapseAll();
                 undoBatch.MarkEntityDirty(groupNode->GetSequence()->GetSequenceComponentEntityId());
             }
-        }  
+        }
     }
 
     if (cmd == eMI_EditEvents)
@@ -1368,7 +1141,13 @@ void CTrackViewNodesCtrl::OnNMRclick(QPoint point)
                 }
             } while (retryRename);
 
-            if (!newName.isEmpty())
+            if(!GetNodeRecord(animNode2)) {
+                QMessageBox::warning(
+                    this,
+                    tr("Entity does not exist"),
+                    tr("Entity has been deleted.\n\nUnable to rename entity"));
+            }
+            else if (!newName.isEmpty())
             {
                 const CTrackViewSequenceManager* sequenceManager = GetIEditor()->GetSequenceManager();
                 sequenceManager->RenameNode(animNode2, newName.toUtf8().data());
@@ -1389,7 +1168,7 @@ void CTrackViewNodesCtrl::OnNMRclick(QPoint point)
         if (animNode)
         {
             unsigned int menuId = cmd - eMI_AddTrackBase;
-            
+
             if (animNode->GetType() != AnimNodeType::AzEntity)
             {
                 // add track
@@ -1400,7 +1179,7 @@ void CTrackViewNodesCtrl::OnNMRclick(QPoint point)
                     animNode->CreateTrack(findIter->second);
                     undoBatch.MarkEntityDirty(animNode->GetSequence()->GetSequenceComponentEntityId());
                 }
-            }                   
+            }
         }
     }
     else if (cmd == eMI_RemoveTrack)
@@ -1516,7 +1295,6 @@ void CTrackViewNodesCtrl::OnNMRclick(QPoint point)
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewNodesCtrl::OnItemDblClick(QTreeWidgetItem* item, int)
 {
     CRecord* record = (CRecord*)item;
@@ -1540,227 +1318,12 @@ void CTrackViewNodesCtrl::OnItemDblClick(QTreeWidgetItem* item, int)
     }
 }
 
-CTrackViewTrack* CTrackViewNodesCtrl::GetTrackViewTrack(const Export::EntityAnimData* pAnimData, CTrackViewTrackBundle trackBundle, const QString& nodeName)
-{
-    for (unsigned int trackID = 0; trackID < trackBundle.GetCount(); ++trackID)
-    {
-        CTrackViewTrack* pTrack = trackBundle.GetTrack(trackID);
-        const QString bundleTrackName = QString::fromUtf8(pTrack->GetAnimNode()->GetName().c_str());
-
-        if (bundleTrackName.compare(nodeName, Qt::CaseInsensitive) != 0)
-        {
-            continue;
-        }
-
-        // Position, Rotation
-        if (pTrack->IsCompoundTrack())
-        {
-            for (unsigned int childTrackID = 0; childTrackID < pTrack->GetChildCount(); ++childTrackID)
-            {
-                CTrackViewTrack* childTrack = static_cast<CTrackViewTrack*>(pTrack->GetChild(childTrackID));
-                // Have to cast GetType to int since the enum it returns is not the same enum that pAnimData->dataType is
-                if (static_cast<int>(childTrack->GetParameterType().GetType()) == pAnimData->dataType)
-                {
-                    return childTrack;
-                }
-            }
-        }
-
-        // FOV
-        // Have to cast GetType to int since the enum it returns is not the same enum that pAnimData->dataType is
-        if (static_cast<int>(pTrack->GetParameterType().GetType()) == pAnimData->dataType)
-        {
-            return pTrack;
-        }
-    }
-
-    return nullptr;
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CTrackViewNodesCtrl::ImportFromFBX()
-{
-    CExportManager* pExportManager = static_cast<CExportManager*>(GetIEditor()->GetExportManager());
-
-    CAutoDirectoryRestoreFileDialog dlg(QFileDialog::AcceptOpen, QFileDialog::AnyFile, {}, {}, "FBX Files (*.fbx)", {}, {}, this);
-
-    if (dlg.exec())
-    {
-        bool bImportResult = pExportManager->ImportFromFile(dlg.selectedFiles().first().toStdString().c_str());
-
-        if (!bImportResult)
-        {
-            return;
-        }
-    }
-    else
-    {
-        return;
-    }
-
-    CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
-
-    if (sequence)
-    {
-        AzToolsFramework::ScopedUndoBatch undoBatch("Replace Keys");
-        CTrackViewTrackBundle tracks = sequence->GetAllTracks();
-        const unsigned int numTracks = tracks.GetCount();
-
-        for (unsigned int trackID = 0; trackID < numTracks; ++trackID)
-        {
-            undoBatch.MarkEntityDirty(sequence->GetSequenceComponentEntityId());
-        }
-
-        CTrackViewTrackBundle trackBundle = sequence->GetAllTracks();
-
-        const Export::CData pData = pExportManager->GetData();
-        const int objectsCount = pData.GetObjectCount();
-
-        CTrackViewFBXImportPreviewDialog importSelectionDialog;
-
-        for (int objectID = 0; objectID < objectsCount; ++objectID)
-        {
-            importSelectionDialog.AddTreeItem(pData.GetObject(objectID)->name);
-        }
-
-        if (importSelectionDialog.exec() != QDialog::Accepted)
-        {
-            return;
-        }
-
-        // Remove all keys from the affected tracks
-        for (int objectID = 0; objectID < objectsCount; ++objectID)
-        {
-            Export::Object* pObject = pData.GetObject(objectID);
-
-            if (pObject)
-            {
-                // Clear only the selected tracks for which we have AnimNodes
-                if (!importSelectionDialog.IsObjectSelected(pObject->name))
-                {
-                    continue;
-                }
-                const char* updatedNodeName = pObject->name;
-                if (sequence->GetAnimNodesByName(updatedNodeName).GetCount() == 0)
-                {
-                    continue;
-                }
-
-                int animatonDataCount = pObject->GetEntityAnimationDataCount();
-                for (int animDataID = 0; animDataID < animatonDataCount; ++animDataID)
-                {
-                    const Export::EntityAnimData* pAnimData = pObject->GetEntityAnimationData(animDataID);
-
-                    CTrackViewTrack* pTrack = GetTrackViewTrack(pAnimData, trackBundle, (QString)updatedNodeName);
-
-                    if (pTrack)
-                    {
-                        CTrackViewKeyBundle keys = pTrack->GetAllKeys();
-
-                        for (int deleteKeyID = (int)keys.GetKeyCount() - 1; deleteKeyID >= 0; --deleteKeyID)
-                        {
-                            CTrackViewKeyHandle key = keys.GetKey(deleteKeyID);
-                            key.Delete();
-                        }
-                    }
-                }
-            }
-        }
-        // Add keys from FBX file
-        for (int objectID = 0; objectID < objectsCount; ++objectID)
-        {
-            const Export::Object* pObject = pData.GetObject(objectID);
-
-            if (pObject)
-            {
-                // only process selected nodes from file for which we have AnimNodes
-                if (!importSelectionDialog.IsObjectSelected(pObject->name))
-                {
-                    continue;
-                }
-                const char* updatedNodeName = pObject->name;
-                if (sequence->GetAnimNodesByName(updatedNodeName).GetCount() == 0)
-                {
-                    continue;
-                }
-
-                const int animatonDataCount = pObject->GetEntityAnimationDataCount();
-
-                // Add keys from the imported file to the selected tracks
-                for (int animDataID = 0; animDataID < animatonDataCount; ++animDataID)
-                {
-                    const Export::EntityAnimData* pAnimData = pObject->GetEntityAnimationData(animDataID);
-                    CTrackViewTrack* pTrack = GetTrackViewTrack(pAnimData, trackBundle, (QString)updatedNodeName);
-
-                    if (pTrack)
-                    {
-                        CTrackViewKeyHandle key = pTrack->CreateKey(pAnimData->keyTime);
-                        I2DBezierKey bezierKey;
-                        key.GetKey(&bezierKey);
-                        bezierKey.value = Vec2(pAnimData->keyTime, pAnimData->keyValue);
-                        key.SetKey(&bezierKey);
-                    }
-                }
-
-                // After all keys are added, we are able to add the left and right tangents to the imported keys
-                for (int animDataID = 0; animDataID < animatonDataCount; ++animDataID)
-                {
-                    const Export::EntityAnimData* pAnimData = pObject->GetEntityAnimationData(animDataID);
-
-                    CTrackViewTrack* pTrack = GetTrackViewTrack(pAnimData, trackBundle, (QString)updatedNodeName);
-
-                    if (pTrack)
-                    {
-                        CTrackViewKeyHandle key = pTrack->GetKeyByTime(pAnimData->keyTime);
-                        ISplineInterpolator* pSpline = pTrack->GetSpline();
-
-                        if (pSpline)
-                        {
-                            const int keyIndex = key.GetIndex();
-
-                            ISplineInterpolator::ValueType inTangent;
-                            ISplineInterpolator::ValueType outTangent;
-                            ZeroStruct(inTangent);
-                            ZeroStruct(outTangent);
-
-                            float currentKeyTime = 0.0f;
-                            pSpline->SetKeyFlags(keyIndex, SPLINE_KEY_TANGENT_BROKEN);
-
-                            if (keyIndex > 0)
-                            {
-                                currentKeyTime = key.GetTime() - key.GetPrevKey().GetTime();
-                                inTangent[0] = pAnimData->leftTangentWeight * currentKeyTime;
-                                inTangent[1] = inTangent[0] * pAnimData->leftTangent;
-                                pSpline->SetKeyInTangent(keyIndex, inTangent);
-                            }
-
-                            if (keyIndex < static_cast<int>(pTrack->GetKeyCount() - 1))
-                            {
-                                CTrackViewKeyHandle nextKey = key.GetNextKey();
-                                if (nextKey.IsValid())
-                                {
-                                    currentKeyTime = nextKey.GetTime() - key.GetTime();
-                                    outTangent[0] = pAnimData->rightTangentWeight * currentKeyTime;
-                                    outTangent[1] = outTangent[0] * pAnimData->rightTangent;
-                                    pSpline->SetKeyOutTangent(keyIndex, outTangent);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewNodesCtrl::EditEvents()
 {
     CTVEventsDialog dlg;
     dlg.exec();
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewNodesCtrl::CreateFolder(CTrackViewAnimNode* groupNode)
 {
     // Change Group of the node.
@@ -1775,15 +1338,13 @@ void CTrackViewNodesCtrl::CreateFolder(CTrackViewAnimNode* groupNode)
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 struct STrackMenuTreeNode
 {
     QMenu menu;
     CAnimParamType paramType;
-    std::map<QString, std::unique_ptr<STrackMenuTreeNode> > children;
+    AZStd::map<QString, AZStd::unique_ptr<STrackMenuTreeNode> > children;
 };
 
-//////////////////////////////////////////////////////////////////////////
 struct SContextMenu
 {
     QMenu main;
@@ -1794,7 +1355,6 @@ struct SContextMenu
     QMenu addComponentSub;
 };
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewNodesCtrl::AddGroupNodeAddItems(SContextMenu& contextMenu, CTrackViewAnimNode* animNode)
 {
     contextMenu.main.addAction("Create Folder")->setData(eMI_CreateFolder);
@@ -1837,11 +1397,6 @@ void CTrackViewNodesCtrl::AddGroupNodeAddItems(SContextMenu& contextMenu, CTrack
         contextMenu.main.addAction("Add Shadows Setup Node")->setData(eMI_AddShadowSetup);
     }
 
-    if (pDirector->GetAnimNodesByType(AnimNodeType::Environment).GetCount() == 0)
-    {
-        contextMenu.main.addAction("Add Environment Node")->setData(eMI_AddEnvironment);
-    }
-
     // A director node cannot have another director node as a child.
     if (animNode->GetType() != AnimNodeType::Director)
     {
@@ -1854,7 +1409,6 @@ void CTrackViewNodesCtrl::AddGroupNodeAddItems(SContextMenu& contextMenu, CTrack
     contextMenu.main.addAction("Add Event Node")->setData(eMI_AddEvent);
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewNodesCtrl::AddMenuSeperatorConditional(QMenu& menu, bool& bAppended)
 {
     if (bAppended)
@@ -1865,7 +1419,6 @@ void CTrackViewNodesCtrl::AddMenuSeperatorConditional(QMenu& menu, bool& bAppend
     bAppended = false;
 }
 
-//////////////////////////////////////////////////////////////////////////
 int CTrackViewNodesCtrl::ShowPopupMenuSingleSelection(SContextMenu& contextMenu, CTrackViewSequence* sequence, CTrackViewNode* pNode)
 {
     bool bAppended = false;
@@ -1920,11 +1473,6 @@ int CTrackViewNodesCtrl::ShowPopupMenuSingleSelection(SContextMenu& contextMenu,
         AddMenuSeperatorConditional(contextMenu.main, bAppended);
 
         contextMenu.main.addAction("Select In Viewport")->setData(eMI_SelectInViewport);
-
-        if (animNode->GetType() == AnimNodeType::Camera)
-        {
-            contextMenu.main.addAction("Set As View Camera")->setData(eMI_SetAsViewCamera);
-        }
 
         bAppended = true;
     }
@@ -2033,8 +1581,6 @@ int CTrackViewNodesCtrl::ShowPopupMenuSingleSelection(SContextMenu& contextMenu,
             contextMenu.collapseSub.addAction("Collapse Folders")->setData(eMI_CollapseFolders);
             contextMenu.expandSub.addAction("Expand Entities")->setData(eMI_ExpandEntities);
             contextMenu.collapseSub.addAction("Collapse Entities")->setData(eMI_CollapseEntities);
-            contextMenu.expandSub.addAction("Expand Cameras")->setData(eMI_ExpandCameras);
-            contextMenu.collapseSub.addAction("Collapse Cameras")->setData(eMI_CollapseCameras);
             contextMenu.expandSub.addAction("Expand Events")->setData(eMI_ExpandEvents);
             contextMenu.collapseSub.addAction("Collapse Events")->setData(eMI_CollapseEvents);
         }
@@ -2064,11 +1610,17 @@ int CTrackViewNodesCtrl::ShowPopupMenuSingleSelection(SContextMenu& contextMenu,
                 // Create 'Add Tracks' submenu
                 m_menuParamTypeMap.clear();
 
+                const QString addTracksMenuName = "Add Tracks";
                 if (FillAddTrackMenu(contextMenu.addTrackSub, animNode))
                 {
-                    // add script table properties
+                    // add script table properties -> tracks available for adding
                     unsigned int currentId = 0;
-                    CreateAddTrackMenuRec(contextMenu.main, "Add Track", animNode, contextMenu.addTrackSub, currentId);
+                    CreateAddTrackMenuRec(contextMenu.main, addTracksMenuName, animNode, contextMenu.addTrackSub, currentId);
+                }
+                else
+                {
+                    // no tracks available for adding -> add empty disabled submenu for UI consistency
+                    contextMenu.main.addMenu(addTracksMenuName)->setEnabled(false);
                 }
             }
 
@@ -2124,8 +1676,9 @@ int CTrackViewNodesCtrl::ShowPopupMenuSingleSelection(SContextMenu& contextMenu,
     if (bOnNode && !pNode->IsGroupNode())
     {
         AddMenuSeperatorConditional(contextMenu.main, bAppended);
-        QString string = QString("%1 Tracks").arg(animNode->GetName().c_str());
-        contextMenu.main.addAction(string)->setEnabled(false);
+
+        const QString manageTracksMenuName = "Toggle Tracks";
+        auto manageTracksAction = contextMenu.main.addAction(manageTracksMenuName);
 
         bool bAppendedTrackFlag = false;
 
@@ -2150,13 +1703,14 @@ int CTrackViewNodesCtrl::ShowPopupMenuSingleSelection(SContextMenu& contextMenu,
             }
         }
 
+        manageTracksAction->setEnabled(bAppendedTrackFlag); // Disable this submenu if no tracks were added.
+
         bAppended = bAppendedTrackFlag || bAppended;
     }
 
     return 0;
 }
 
-//////////////////////////////////////////////////////////////////////////
 int CTrackViewNodesCtrl::ShowPopupMenuMultiSelection(SContextMenu& contextMenu)
 {
     QList<QTreeWidgetItem*> records = ui->treeWidget->selectedItems();
@@ -2202,7 +1756,6 @@ int CTrackViewNodesCtrl::ShowPopupMenuMultiSelection(SContextMenu& contextMenu)
     return 0;
 }
 
-//////////////////////////////////////////////////////////////////////////
 int CTrackViewNodesCtrl::ShowPopupMenu([[maybe_unused]] QPoint point, const CRecord* record)
 {
     CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
@@ -2239,7 +1792,6 @@ int CTrackViewNodesCtrl::ShowPopupMenu([[maybe_unused]] QPoint point, const CRec
     return ret;
 }
 
-//////////////////////////////////////////////////////////////////////////
 // Add tracks that can be added to the given animation node to the
 // internal track menu tree data structure rooted at menuAddTrack
 bool CTrackViewNodesCtrl::FillAddTrackMenu(STrackMenuTreeNode& menuAddTrack, const CTrackViewAnimNode* animNode)
@@ -2249,7 +1801,7 @@ bool CTrackViewNodesCtrl::FillAddTrackMenu(STrackMenuTreeNode& menuAddTrack, con
     int paramCount = 0;
     IAnimNode::AnimParamInfos animatableProperties;
     CTrackViewNode* parentNode = animNode->GetParentNode();
-   
+
     // all AZ::Entity entities are animated through components. Component nodes always have a parent - the containing AZ::Entity
     if (nodeType == AnimNodeType::Component && parentNode)
     {
@@ -2262,19 +1814,19 @@ bool CTrackViewNodesCtrl::FillAddTrackMenu(STrackMenuTreeNode& menuAddTrack, con
             const AZ::EntityId azEntityId = static_cast<CTrackViewAnimNode*>(parentNode)->GetAzEntityId();
 
             // query the animatable component properties from the Sequence Component
-            Maestro::EditorSequenceComponentRequestBus::Event(const_cast<CTrackViewAnimNode*>(animNode)->GetSequence()->GetSequenceComponentEntityId(), 
-                                                                    &Maestro::EditorSequenceComponentRequestBus::Events::GetAllAnimatablePropertiesForComponent, 
+            Maestro::EditorSequenceComponentRequestBus::Event(const_cast<CTrackViewAnimNode*>(animNode)->GetSequence()->GetSequenceComponentEntityId(),
+                                                                    &Maestro::EditorSequenceComponentRequestBus::Events::GetAllAnimatablePropertiesForComponent,
                                                                     animatableProperties, azEntityId, animNode->GetComponentId());
 
             paramCount = static_cast<int>(animatableProperties.size());
-        }       
+        }
     }
     else
     {
         // legacy Entity
-        paramCount = animNode->GetParamCount(); 
+        paramCount = animNode->GetParamCount();
     }
-    
+
     for (int i = 0; i < paramCount; ++i)
     {
         CAnimParamType paramType;
@@ -2319,12 +1871,7 @@ bool CTrackViewNodesCtrl::FillAddTrackMenu(STrackMenuTreeNode& menuAddTrack, con
             {
                 pCurrentNode = findIter->second.get();
             }
-            else
-            {
-                STrackMenuTreeNode* pNewNode = new STrackMenuTreeNode;
-                pCurrentNode->children[segment] = std::unique_ptr<STrackMenuTreeNode>(pNewNode);
-                pCurrentNode = pNewNode;
-            }
+            //else {} - keep current node to avoid unnecessary nesting
         }
 
         // only add tracks to the that STrackMenuTreeNode tree that haven't already been added
@@ -2332,17 +1879,16 @@ bool CTrackViewNodesCtrl::FillAddTrackMenu(STrackMenuTreeNode& menuAddTrack, con
         if (matchedTracks.GetCount() == 0 && !splitName.isEmpty())
         {
             STrackMenuTreeNode* pParamNode = new STrackMenuTreeNode;
-            pCurrentNode->children[splitName.back()] = std::unique_ptr<STrackMenuTreeNode>(pParamNode);
+            pCurrentNode->children[splitName.back()] = AZStd::unique_ptr<STrackMenuTreeNode>(pParamNode);
             pParamNode->paramType = paramType;
 
             bTracksToAdd = true;
-        }  
+        }
     }
-    
+
     return bTracksToAdd;
 }
 
-//////////////////////////////////////////////////////////////////////////
 //
 // FillAddTrackMenu fills the data structure for tracks to add (a STrackMenuTreeNode tree)
 // CreateAddTrackMenuRec actually creates the Qt submenu from this data structure
@@ -2369,7 +1915,6 @@ void CTrackViewNodesCtrl::CreateAddTrackMenuRec(QMenu& parent, const QString& na
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewNodesCtrl::SetPopupMenuLock(QMenu* menu)
 {
     if (!m_bEditLock || !menu)
@@ -2390,15 +1935,13 @@ void CTrackViewNodesCtrl::SetPopupMenuLock(QMenu* menu)
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 float CTrackViewNodesCtrl::SaveVerticalScrollPos() const
 {
     int sbMin = ui->treeWidget->verticalScrollBar()->minimum();
     int sbMax = ui->treeWidget->verticalScrollBar()->maximum();
-    return float(ui->treeWidget->verticalScrollBar()->value() - sbMin) / std::max(float(sbMax - sbMin), 1.0f);
+    return float(ui->treeWidget->verticalScrollBar()->value() - sbMin) / AZStd::max(float(sbMax - sbMin), 1.0f);
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewNodesCtrl::RestoreVerticalScrollPos(float fScrollPos)
 {
     int sbMin = ui->treeWidget->verticalScrollBar()->minimum();
@@ -2407,7 +1950,6 @@ void CTrackViewNodesCtrl::RestoreVerticalScrollPos(float fScrollPos)
     ui->treeWidget->verticalScrollBar()->setValue(newScrollPos);
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewNodesCtrl::FillAutoCompletionListForFilter()
 {
     QStringList strings;
@@ -2440,7 +1982,6 @@ void CTrackViewNodesCtrl::FillAutoCompletionListForFilter()
     ui->searchField->setCompleter(c);
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewNodesCtrl::OnFilterChange(const QString& text)
 {
     CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
@@ -2469,7 +2010,6 @@ void CTrackViewNodesCtrl::OnFilterChange(const QString& text)
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 int CTrackViewNodesCtrl::GetMatNameAndSubMtlIndexFromName(QString& matName, const char* nodeName)
 {
     if (const char* pCh = strstr(nodeName, ".["))
@@ -2492,7 +2032,6 @@ int CTrackViewNodesCtrl::GetMatNameAndSubMtlIndexFromName(QString& matName, cons
     return -1;
 }
 
-//////////////////////////////////////////////////////////////////////////
 
 void CTrackViewNodesCtrl::ShowNextResult()
 {
@@ -2525,10 +2064,9 @@ void CTrackViewNodesCtrl::ShowNextResult()
 void CTrackViewNodesCtrl::Update()
 {
     // Update the Track UI elements with the latest names of the Tracks.
-    // In some cases (save slice overrides) the Track names (param names)
-    // may not be available at the time of the Sequence activation because
-    // they come from the animated entities (which may not be active). So
-    // just update them once a frame to make sure they are the latest.
+    // In some cases the Track names (param names) may not be available at the time
+    // of the Sequence activation because they come from the animated entities (which may not be active).
+    // So just update them once a frame to make sure they are the latest.
     for (auto iter = m_nodeToRecordMap.begin(); iter != m_nodeToRecordMap.end(); ++iter)
     {
         const CTrackViewNode* node = iter->first;
@@ -2590,12 +2128,13 @@ bool CTrackViewNodesCtrl::event(QEvent* e)
 void CTrackViewNodesCtrl::CreateSetAnimationLayerPopupMenu(QMenu& menuSetLayer, CTrackViewTrack* pTrack) const
 {
     // First collect layers already in use.
-    std::vector<int> layersInUse;
+    AZStd::vector<int> layersInUse;
 
     CTrackViewTrackBundle lookAtTracks = pTrack->GetAnimNode()->GetTracksByParam(AnimParamType::LookAt);
-    assert(lookAtTracks.GetCount() <= 1);
+    const auto numLookAtTracks = lookAtTracks.GetCount();
+    AZ_Assert(numLookAtTracks <= 1, "Invalid number of LookAt tracks %u", numLookAtTracks);
 
-    if (lookAtTracks.GetCount() > 0)
+    if (numLookAtTracks > 0)
     {
         const int kDefaultLookIKLayer = 15;
         int lookIKLayerIndex = lookAtTracks.GetTrack(0)->GetAnimationLayerIndex();
@@ -2641,7 +2180,6 @@ void CTrackViewNodesCtrl::CreateSetAnimationLayerPopupMenu(QMenu& menuSetLayer, 
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewNodesCtrl::CustomizeTrackColor(CTrackViewTrack* pTrack)
 {
     CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
@@ -2668,7 +2206,6 @@ void CTrackViewNodesCtrl::CustomizeTrackColor(CTrackViewTrack* pTrack)
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewNodesCtrl::ClearCustomTrackColor(CTrackViewTrack* pTrack)
 {
     CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
@@ -2678,21 +2215,19 @@ void CTrackViewNodesCtrl::ClearCustomTrackColor(CTrackViewTrack* pTrack)
     }
 
     AzToolsFramework::ScopedUndoBatch undoBatch("Clear Custom Track Color");
-    
+
     pTrack->ClearCustomColor();
     undoBatch.MarkEntityDirty(sequence->GetSequenceComponentEntityId());
 
     UpdateDopeSheet();
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewNodesCtrl::paintEvent(QPaintEvent* event)
 {
     QWidget::paintEvent(event);
     UpdateDopeSheet();
 }
 
-//////////////////////////////////////////////////////////////////////////
 CTrackViewNodesCtrl::CRecord* CTrackViewNodesCtrl::GetNodeRecord(const CTrackViewNode* pNode) const
 {
     auto findIter = m_nodeToRecordMap.find(pNode);
@@ -2701,11 +2236,10 @@ CTrackViewNodesCtrl::CRecord* CTrackViewNodesCtrl::GetNodeRecord(const CTrackVie
         return nullptr;
     }
 
-    assert (findIter->second->GetNode() == pNode);
+    AZ_Assert(findIter->second->GetNode() == pNode, "Node record does not belong to the node %p", pNode);
     return findIter->second;
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewNodesCtrl::UpdateDopeSheet()
 {
     UpdateRecordVisibility();
@@ -2716,10 +2250,8 @@ void CTrackViewNodesCtrl::UpdateDopeSheet()
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 // Workaround: CXTPReportRecord::IsVisible is
 // unreliable after the last visible element
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewNodesCtrl::UpdateRecordVisibility()
 {
     // Mark all records invisible
@@ -2729,7 +2261,6 @@ void CTrackViewNodesCtrl::UpdateRecordVisibility()
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewNodesCtrl::OnNodeChanged(CTrackViewNode* pNode, ITrackViewSequenceListener::ENodeChangeType type)
 {
     if (pNode->GetSequence() != GetIEditor()->GetAnimation()->GetSequence())
@@ -2808,7 +2339,6 @@ void CTrackViewNodesCtrl::OnNodeChanged(CTrackViewNode* pNode, ITrackViewSequenc
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewNodesCtrl::OnNodeRenamed(CTrackViewNode* pNode, [[maybe_unused]] const char* pOldName)
 {
     if (!m_bIgnoreNotifications)
@@ -2824,7 +2354,6 @@ void CTrackViewNodesCtrl::OnNodeRenamed(CTrackViewNode* pNode, [[maybe_unused]] 
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewNodesCtrl::BeginUndoTransaction()
 {
     m_bNeedReload = false;
@@ -2832,7 +2361,6 @@ void CTrackViewNodesCtrl::BeginUndoTransaction()
     m_storedScrollPosition = SaveVerticalScrollPos();
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewNodesCtrl::EndUndoTransaction()
 {
     m_bIgnoreNotifications = false;
@@ -2847,14 +2375,109 @@ void CTrackViewNodesCtrl::EndUndoTransaction()
     UpdateDopeSheet();
 }
 
-//////////////////////////////////////////////////////////////////////////
-QIcon CTrackViewNodesCtrl::GetIconForTrack(const CTrackViewTrack* pTrack)
+QIcon CTrackViewNodesCtrl::TrackViewIcon(const CTrackViewTrack* pTrack)
 {
-    int r = GetIconIndexForTrack(pTrack);
-    return m_imageList.contains(r) ? m_imageList[r] : QIcon();
+    const QIcon defaultIcon(QStringLiteral(":/nodes/tvnodes-13.png"));
+
+    if (!pTrack)
+    {
+        return defaultIcon;
+    }
+    const CAnimParamType paramType = pTrack->GetParameterType();
+    const AnimValueType valueType = pTrack->GetValueType();
+    const AnimNodeType nodeType = pTrack->GetAnimNode()->GetType();
+
+    if (nodeType == AnimNodeType::RadialBlur || nodeType == AnimNodeType::ColorCorrection || nodeType == AnimNodeType::DepthOfField ||
+        nodeType == AnimNodeType::ShadowSetup)
+    {
+        return defaultIcon;
+    }
+
+    switch (valueType)
+    {
+    case AnimValueType::CharacterAnim:
+    case AnimValueType::AssetBlend:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-10.png"));
+    }
+
+    AnimParamType type = paramType.GetType();
+    switch (type)
+    {
+    case AnimParamType::Position:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-03.png"));
+    case AnimParamType::Rotation:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-04.png"));
+    case AnimParamType::Scale:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-05.png"));
+    case AnimParamType::Event:
+    case AnimParamType::TrackEvent:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-06.png"));
+    case AnimParamType::Visibility:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-07.png"));
+    case AnimParamType::Camera:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-08.png"));
+    case AnimParamType::Sound:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-09.png"));
+    case AnimParamType::Animation:
+    case AnimParamType::TimeRanges:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-10.png"));
+    case AnimParamType::Sequence:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-11.png"));
+    case AnimParamType::Capture:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-25.png"));
+    case AnimParamType::Console:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-15.png"));
+    case AnimParamType::LookAt:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-17.png"));
+    case AnimParamType::TimeWarp:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-22.png"));
+    case AnimParamType::CommentText:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-23.png"));
+    case AnimParamType::ShakeMultiplier:
+        [[fallthrough]];
+    case AnimParamType::TransformNoise:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-28.png"));
+    default:
+    case AnimParamType::Float:
+        break;
+    }
+    return defaultIcon;
 }
 
-//////////////////////////////////////////////////////////////////////////
+QIcon CTrackViewNodesCtrl::TrackViewNodeIcon(AnimNodeType type)
+{
+    switch (type)
+    {
+    case AnimNodeType::AzEntity:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-29.png"));
+    case AnimNodeType::Director:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-27.png"));
+    case AnimNodeType::CVar:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-15.png"));
+    case AnimNodeType::ScriptVar:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-14.png"));
+    case AnimNodeType::Material:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-16.png"));
+    case AnimNodeType::Event:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-06.png"));
+    case AnimNodeType::Group:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-01.png"));
+    case AnimNodeType::Layer:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-20.png"));
+    case AnimNodeType::Comment:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-23.png"));
+    case AnimNodeType::Light:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-18.png"));
+    case AnimNodeType::ShadowSetup:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-24.png"));
+    }
+    return QIcon(QStringLiteral(":/nodes/tvnodes-21.png"));
+}
+QIcon CTrackViewNodesCtrl::GetIconForTrack(const CTrackViewTrack* pTrack)
+{
+    return TrackViewIcon(pTrack);
+}
+
 void CTrackViewNodesCtrl::OnKeysChanged(CTrackViewSequence* sequence)
 {
     if (!m_bIgnoreNotifications && sequence && sequence == GetIEditor()->GetAnimation()->GetSequence())
@@ -2863,13 +2486,11 @@ void CTrackViewNodesCtrl::OnKeysChanged(CTrackViewSequence* sequence)
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewNodesCtrl::OnKeySelectionChanged(CTrackViewSequence* sequence)
 {
     OnKeysChanged(sequence);
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewNodesCtrl::OnNodeSelectionChanged(CTrackViewSequence* sequence)
 {
     if (m_bSelectionChanging)
@@ -2898,10 +2519,9 @@ void CTrackViewNodesCtrl::OnNodeSelectionChanged(CTrackViewSequence* sequence)
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewNodesCtrl::SelectRow(CTrackViewNode* pNode, const bool bEnsureVisible, const bool bDeselectOtherRows)
 {
-    std::unordered_map<const CTrackViewNode*, CRecord*>::const_iterator it = m_nodeToRecordMap.find(pNode);
+    AZStd::unordered_map<const CTrackViewNode*, CRecord*>::const_iterator it = m_nodeToRecordMap.find(pNode);
     if (it != m_nodeToRecordMap.end())
     {
         if (bDeselectOtherRows)
@@ -2916,17 +2536,15 @@ void CTrackViewNodesCtrl::SelectRow(CTrackViewNode* pNode, const bool bEnsureVis
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewNodesCtrl::DeselectRow(CTrackViewNode* pNode)
 {
-    std::unordered_map<const CTrackViewNode*, CRecord*>::const_iterator it = m_nodeToRecordMap.find(pNode);
+    AZStd::unordered_map<const CTrackViewNode*, CRecord*>::const_iterator it = m_nodeToRecordMap.find(pNode);
     if (it != m_nodeToRecordMap.end())
     {
         (*it).second->setSelected(false);
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewNodesCtrl::EraseNodeRecordRec(CTrackViewNode* pNode)
 {
     m_nodeToRecordMap.erase(pNode);

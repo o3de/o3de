@@ -57,6 +57,9 @@ namespace O3DE::ProjectManager
         GemActive GetGemActive() const { return m_gemActiveFilter; }
         void SetGemActive(GemActive enabled) { m_gemActiveFilter = enabled; InvalidateFilter(); }
 
+        bool GetMissingActive() const { return m_gemMissingFilter; }
+        void SetGemMissing(bool enabled) { m_gemMissingFilter = enabled; InvalidateFilter(); }
+
         GemInfo::GemOrigins GetGemOrigins() const { return m_gemOriginFilter; }
         void SetGemOrigins(const GemInfo::GemOrigins& gemOrigins) { m_gemOriginFilter = gemOrigins; InvalidateFilter(); }
 
@@ -69,11 +72,20 @@ namespace O3DE::ProjectManager
         const QSet<QString>& GetFeatures() const { return m_featureFilter; }
         void SetFeatures(const QSet<QString>& features) { m_featureFilter = features; InvalidateFilter(); }
 
+        bool GetCompatibleFilterFlag() const { return m_compatibleOnlyFilter; }
+
         void InvalidateFilter();
         void ResetFilters(bool clearSearchString = true);
 
     signals:
         void OnInvalidated();
+
+    public slots:
+        void SetCompatibleFilterFlag(bool showCompatibleGemsOnly);
+        void SetUpdateAvailable(bool showGemsWithUpdates);
+        void SetTypeFilterFlag(int flag, bool set); 
+        void SetPlatformFilterFlag(int flag, bool set); 
+        void SetOriginFilterFlag(int flag, bool set); 
 
     private:
         GemModel* m_sourceModel = nullptr;
@@ -85,6 +97,9 @@ namespace O3DE::ProjectManager
         GemInfo::GemOrigins m_gemOriginFilter = {};
         GemInfo::Platforms m_platformFilter = {};
         GemInfo::Types m_typeFilter = {};
+        bool m_updateAvailableFilter = false;
+        bool m_compatibleOnlyFilter = true;
+        bool m_gemMissingFilter = false;
         QSet<QString> m_featureFilter;
     };
 } // namespace O3DE::ProjectManager

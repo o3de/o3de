@@ -11,16 +11,18 @@
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Interface/Interface.h>
 
+#include "CompressionTypeIds.h"
+
 namespace Compression
 {
     class CompressionRequests
     {
     public:
-        AZ_RTTI(CompressionRequests, "{40076ED8-6AC5-498B-AF61-C5CD7136750E}");
+        AZ_RTTI(CompressionRequests, CompressionRequestsTypeId);
         virtual ~CompressionRequests() = default;
         // Put your public methods here
     };
-    
+
     class CompressionBusTraits
         : public AZ::EBusTraits
     {

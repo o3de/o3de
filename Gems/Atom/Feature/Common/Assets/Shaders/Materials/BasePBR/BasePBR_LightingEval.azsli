@@ -12,25 +12,32 @@
 // used in your shader. Simply #define EvaluateLighting to your custom definition before including this file
 //
 #ifndef EvaluateLighting
-#define EvaluateLighting(surface, screenPosition)       EvaluateLighting_BasePBR(surface, screenPosition)
+#define EvaluateLighting EvaluateLighting_BasePBR
 #endif
 
 #include <Atom/Features/PBR/Lights/Lights.azsli>
 #include <Atom/Features/PBR/Lights/IblForward.azsli>
 #include <Atom/Features/PBR/Decals.azsli>
 
-void InitializeLightingData_BasePBR(inout Surface surface, float4 screenPosition, inout LightingData lightingData)
+void InitializeLightingData_BasePBR(inout Surface surface, float4 screenPosition, float3 viewPosition, inout LightingData lightingData)
 {
     // Light iterator
+#if ENABLE_LIGHT_CULLING
     lightingData.tileIterator.Init(screenPosition, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
-    lightingData.Init(surface.position, surface.normal, surface.roughnessLinear);
+#else
+    lightingData.tileIterator.InitNoCulling();
+#endif
+
+    lightingData.Init(surface.position, surface.GetSpecularNormal(), surface.roughnessLinear, viewPosition);
+
+    lightingData.lightingChannels = ObjectSrg::m_lightingChannelMask;
     
     // Diffuse and Specular response (used in IBL calculations)
-    float3 specularResponse = FresnelSchlickWithRoughness(lightingData.NdotV, surface.specularF0, surface.roughnessLinear);
+    real3 specularResponse = FresnelSchlickWithRoughness(lightingData.GetSpecularNdotV(), surface.GetSpecularF0(), surface.roughnessLinear);
     lightingData.diffuseResponse = 1.0 - specularResponse;
 
     // Multiscatter
-    lightingData.CalculateMultiscatterCompensation(surface.specularF0, o_specularF0_enableMultiScatterCompensation);
+    lightingData.CalculateMultiscatterCompensation(surface.GetSpecularF0(), o_specularF0_enableMultiScatterCompensation);
 }
 
 void CalculateLighting_BasePBR(inout Surface surface, float4 screenPosition, inout LightingData lightingData)
@@ -48,10 +55,10 @@ void CalculateLighting_BasePBR(inout Surface surface, float4 screenPosition, ino
     lightingData.FinalizeLighting(surface);
 }
 
-LightingData EvaluateLighting_BasePBR(inout Surface surface, float4 screenPosition)
+LightingData EvaluateLighting_BasePBR(inout Surface surface, float4 screenPosition, float3 viewPosition)
 {
     LightingData lightingData;
-    InitializeLightingData_BasePBR(surface, screenPosition, lightingData);
+    InitializeLightingData_BasePBR(surface, screenPosition, viewPosition, lightingData);
     CalculateLighting_BasePBR(surface, screenPosition, lightingData);
     return lightingData;
 }

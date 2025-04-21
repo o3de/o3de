@@ -113,7 +113,6 @@ namespace ScriptCanvasEditor
 
             void RequestBuildChildrenFromSubgraphInterface(NodePaletteTreeItem* item, AZ::Data::Asset<AZ::Data::AssetData> asset);
 
-            const NodePaletteModel& m_nodePaletteModel;
             AzToolsFramework::AssetBrowser::AssetBrowserFilterModel* m_assetModel;
 
             GraphCanvas::GraphCanvasTreeCategorizer m_categorizer;

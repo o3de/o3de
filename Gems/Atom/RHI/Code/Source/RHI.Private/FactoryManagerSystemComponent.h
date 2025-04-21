@@ -18,54 +18,51 @@
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    //! System component in charge of selecting which Factory to use at runtime in case
+    //! multiple ones are active. It also contains reflected data that determines the priorities
+    //! between the factory backends.
+    class FactoryManagerSystemComponent final
+        : public AZ::Component
+        , public FactoryManagerBus::Handler
     {
-        /**
-         * System component in charge of selecting which Factory to use at runtime in case
-         * multiple ones are active. It also contains reflected data that determines the priorities
-         * between the factory backends.
-         */
-        class FactoryManagerSystemComponent final
-            : public AZ::Component
-            , public FactoryManagerBus::Handler
-        {
-        public:
-            AZ_COMPONENT(FactoryManagerSystemComponent, "{7C7AD991-9DD8-49D9-8C5F-6626937378E9}");
-            static void Reflect(AZ::ReflectContext* context);
+    public:
+        AZ_COMPONENT(FactoryManagerSystemComponent, "{7C7AD991-9DD8-49D9-8C5F-6626937378E9}");
+        static void Reflect(AZ::ReflectContext* context);
 
-            FactoryManagerSystemComponent() = default;
-            ~FactoryManagerSystemComponent() override = default;
+        FactoryManagerSystemComponent() = default;
+        ~FactoryManagerSystemComponent() override = default;
 
-            static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
-            static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
+        static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
+        static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
+        static void GetDependentServices(ComponentDescriptor::DependencyArrayType& dependent);
 
-            // AZ::Component overrides ...
-            void Activate() override;
-            void Deactivate() override;
+        // AZ::Component overrides ...
+        void Activate() override;
+        void Deactivate() override;
 
-            // FactoryManagerBus overrides ...
-            void RegisterFactory(Factory* factory) override;
-            void UnregisterFactory(Factory* factory) override;
-            void FactoryRegistrationFinalize() override;
-            AZ::RHI::ValidationMode DetermineValidationMode() const override;
+        // FactoryManagerBus overrides ...
+        void RegisterFactory(Factory* factory) override;
+        void UnregisterFactory(Factory* factory) override;
+        void FactoryRegistrationFinalize() override;
+        AZ::RHI::ValidationMode DetermineValidationMode() const override;
+        void EnumerateFactories(AZStd::function<bool(Factory* factory)> callback) override;
 
-        private:
-            FactoryManagerSystemComponent(const FactoryManagerSystemComponent&) = delete;
+    private:
+        FactoryManagerSystemComponent(const FactoryManagerSystemComponent&) = delete;
 
-            /// Check if a factory was specified via command line.
-            Factory* GetFactoryFromCommandLine();
-            /// Select a factory from the available list using the user generated priorities or the factory default ones.
-            Factory* SelectRegisteredFactory();
+        /// Check if a factory was specified via command line.
+        Factory* GetFactoryFromCommandLine();
+        /// Select a factory from the available list using the user generated priorities or the factory default ones.
+        Factory* SelectRegisteredFactory();
 
-            void UpdateValidationModeFromCommandline();
+        void UpdateValidationModeFromCommandline();
 
-            /// List with the factory priorities set by the user.
-            AZStd::vector<AZStd::string> m_factoriesPriority;
-            /// List of registered factories.
-            AZStd::vector<Factory*> m_registeredFactories;
-            AZ::RHI::ValidationMode m_validationMode = AZ::RHI::ValidationMode::Disabled;
-        };
-    } // namespace RHI
-} // namespace AZ
+        /// List with the factory priorities set by the user.
+        AZStd::vector<AZStd::string> m_factoriesPriority;
+        /// List of registered factories.
+        AZStd::vector<Factory*> m_registeredFactories;
+        AZ::RHI::ValidationMode m_validationMode = AZ::RHI::ValidationMode::Disabled;
+    };
+}

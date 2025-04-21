@@ -960,4 +960,64 @@ namespace UnitTest
         EXPECT_THAT(SandboxEditor::CameraOrbitPanChannelId(), Eq(initialCameraOrbitPanChannelId));
         EXPECT_THAT(SandboxEditor::CameraFocusChannelId(), Eq(initialCameraFocusChannelId));
     }
+
+    static constexpr float CameraTransformTolerance = 0.001f;
+
+    TEST(EditorViewportCamera, CalculateGoToEntityTransformHandlesNormalCaseLookingForward)
+    {
+        const AZStd::optional<AZ::Transform> nextCameraTransform = SandboxEditor::CalculateGoToEntityTransform(
+            AZ::Transform::CreateTranslation(AZ::Vector3(0.0f, -5.0f, 0.5f)), AZ::DegToRad(60.0f), AZ::Vector3::CreateAxisZ(0.5f), 0.866f);
+
+        EXPECT_THAT(
+            *nextCameraTransform,
+            IsCloseTolerance(
+                AZ::Transform::CreateFromQuaternionAndTranslation(AZ::Quaternion::CreateIdentity(), AZ::Vector3(0.0f, -1.87499f, 0.5f)),
+                CameraTransformTolerance));
+    }
+
+    // camera starts over look down point, looking forwards
+    TEST(EditorViewportCamera, CalculateGoToEntityTransformHandlesDegenerateCaseLookingDown)
+    {
+        const AZStd::optional<AZ::Transform> nextCameraTransform = SandboxEditor::CalculateGoToEntityTransform(
+            AZ::Transform::CreateTranslation(AZ::Vector3(0.0f, 0.0f, 3.0f)), AZ::DegToRad(60.0f), AZ::Vector3::CreateAxisZ(0.5f), 0.866f);
+
+        const auto expectedTransform = AZ::Transform::CreateFromQuaternionAndTranslation(
+            AZ::Quaternion(-0.675590217f, 0.0f, 0.0f, 0.737277329f), AZ::Vector3(0.0f, -0.163416f, 2.367864f));
+
+        EXPECT_THAT(nextCameraTransform->GetTranslation(), IsCloseTolerance(expectedTransform.GetTranslation(), CameraTransformTolerance));
+        EXPECT_THAT(
+            nextCameraTransform->GetUniformScale(), ::testing::FloatNear(expectedTransform.GetUniformScale(), CameraTransformTolerance));
+        // it's possible for either rotation to be valid - both represent the same rotation/orientation
+        EXPECT_THAT(
+            nextCameraTransform->GetRotation(),
+            ::testing::AnyOf(
+                IsCloseTolerance(expectedTransform.GetRotation(), CameraTransformTolerance),
+                IsCloseTolerance(-expectedTransform.GetRotation(), CameraTransformTolerance)));
+    }
+
+    // camera starts under look down point, looking up
+    TEST(EditorViewportCamera, CalculateGoToEntityTransformHandlesDegenerateCaseLookingUp)
+    {
+        const AZStd::optional<AZ::Transform> nextCameraTransform = SandboxEditor::CalculateGoToEntityTransform(
+            AZ::Transform::CreateFromQuaternionAndTranslation(
+                AZ::Quaternion::CreateRotationZ(AZ::DegToRad(-90.0f)) *
+                    AZ::Quaternion::CreateRotationX(AZ::DegToRad(90.0f) - AzFramework::CameraPitchTolerance),
+                AZ::Vector3(0.0f, 0.0f, 5.0f)),
+            AZ::DegToRad(60.0f),
+            AZ::Vector3::CreateAxisZ(10.0f),
+            0.866f);
+
+        const auto expectedTransform = AZ::Transform::CreateFromQuaternionAndTranslation(
+            AZ::Quaternion(-0.477643281f, 0.477785647f, 0.521411479f, -0.521256149f), AZ::Vector3(-0.163416952f, 0.0f, 8.13213539f));
+
+        EXPECT_THAT(nextCameraTransform->GetTranslation(), IsCloseTolerance(expectedTransform.GetTranslation(), CameraTransformTolerance));
+        EXPECT_THAT(
+            nextCameraTransform->GetUniformScale(), ::testing::FloatNear(expectedTransform.GetUniformScale(), CameraTransformTolerance));
+        // it's possible for either rotation to be valid - both represent the same rotation/orientation
+        EXPECT_THAT(
+            nextCameraTransform->GetRotation(),
+            ::testing::AnyOf(
+                IsCloseTolerance(expectedTransform.GetRotation(), CameraTransformTolerance),
+                IsCloseTolerance(-expectedTransform.GetRotation(), CameraTransformTolerance)));
+    }
 } // namespace UnitTest

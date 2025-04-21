@@ -11,6 +11,8 @@
 #include "EditorPreferencesPageViewportGeneral.h"
 #include "EditorViewportSettings.h"
 
+#include <AzCore/Serialization/EditContext.h>
+
 #include <AzQtComponents/Components/StyleManager.h>
 
 // Editor
@@ -159,7 +161,7 @@ void CEditorPreferencesPage_ViewportGeneral::Reflect(AZ::SerializeContext& seria
 
         editContext->Class<CEditorPreferencesPage_ViewportGeneral>("General Viewport Preferences", "General Viewport Preferences")
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-            ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC("PropertyVisibility_ShowChildrenOnly", 0xef428f20))
+            ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC_CE("PropertyVisibility_ShowChildrenOnly"))
             ->DataElement(
                 AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_ViewportGeneral::m_general, "General Viewport Settings",
                 "General Viewport Settings")
@@ -280,7 +282,7 @@ void CEditorPreferencesPage_ViewportGeneral::InitializeSettings()
     m_general.m_defaultNearPlane = SandboxEditor::CameraDefaultNearPlaneDistance();
     m_general.m_defaultFarPlane = SandboxEditor::CameraDefaultFarPlaneDistance();
     m_general.m_defaultFOV = SandboxEditor::CameraDefaultFovDegrees();
-    
+
     m_general.m_contextMenuEnabled = gSettings.viewports.bEnableContextMenu;
     m_general.m_sync2DViews = gSettings.viewports.bSync2DViews;
     m_general.m_stickySelectEnabled = SandboxEditor::StickySelectEnabled();

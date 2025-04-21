@@ -605,7 +605,10 @@ namespace AzToolsFramework
 
             PrefabDom& loadedTemplateDomRef = loadedTemplateDom->get();
 
-            // first, decode the template DOM into actual Instance data.  This will actually create real
+            // first, check and fix prefabs which could be previously stored with invalid entities' parents (GHI #11500)
+            PrefabDomUtils::SubstituteInvalidParentsInEntities(loadedTemplateDomRef);
+
+            // second, decode the template DOM into actual Instance data.  This will actually create real
             // C++ classes for the instances in the template DOM and fill their member properties with the
             // properties from the DOM.
             Instance loadedPrefabInstance;
@@ -620,12 +623,14 @@ namespace AzToolsFramework
 
             // Now that the Instance has been created, convert it back into a Prefab DOM.  Because we
             // don't specify to skip default fields in the call to StoreInstanceInPrefabDom,
-            // this new DOM will have all fields from all classes except link ids.
-            if (!PrefabDomUtils::StoreInstanceInPrefabDom(
-                    loadedPrefabInstance, loadedTemplateDomRef, PrefabDomUtils::StoreFlags::StripLinkIds))
+            // this new DOM will have all fields from all classes.
+            if (!PrefabDomUtils::StoreInstanceInPrefabDom(loadedPrefabInstance, loadedTemplateDomRef))
             {
                 return false;
             }
+
+            // Remove 'LinkId' from the top level template DOM as only nested template DOMs should have 'LinkId' in them.
+            loadedTemplateDomRef.RemoveMember(PrefabDomUtils::LinkIdName);
             return true;
         }
 

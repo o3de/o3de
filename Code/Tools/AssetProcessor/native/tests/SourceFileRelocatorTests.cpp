@@ -12,6 +12,7 @@
 #include <AzCore/Jobs/JobManager.h>
 #include <AzCore/Jobs/JobManagerDesc.h>
 #include <AzCore/Memory/PoolAllocator.h>
+#include <AzCore/Utils/Utils.h>
 #include "AssetProcessorTest.h"
 #include "AzToolsFramework/API/AssetDatabaseBus.h"
 #if !defined(Q_MOC_RUN)
@@ -62,6 +63,9 @@ namespace UnitTests
             m_data->m_databaseLocation = tempPath.absoluteFilePath("test_database.sqlite").toUtf8().constData();
             m_data->m_databaseLocationListener.BusConnect();
 
+            m_settingsRegistry = AZStd::make_unique<AZ::SettingsRegistryImpl>();
+            AZ::SettingsRegistry::Register(m_settingsRegistry.get());
+
             {
                 using namespace testing;
 
@@ -78,6 +82,7 @@ namespace UnitTests
 
             m_data->m_platformConfig.AddMetaDataType("metadataextension", "metadatatype");
             m_data->m_platformConfig.AddMetaDataType("bar", "foo");
+            m_data->m_platformConfig.ReadMetaDataFromSettingsRegistry();
 
             AZStd::vector<AssetBuilderSDK::PlatformInfo> platforms;
             m_data->m_platformConfig.PopulatePlatformsForScanFolder(platforms);
@@ -202,6 +207,8 @@ namespace UnitTests
                 AZ::IO::FileIOBase::SetInstance(nullptr);
             }
             m_localFileIo.reset();
+
+            AZ::SettingsRegistry::Unregister(m_settingsRegistry.get());
 
             AZ::JobContext::SetGlobalContext(nullptr);
             delete m_data->m_jobContext;
@@ -402,6 +409,11 @@ namespace UnitTests
         };
 
         QTemporaryDir m_tempDir{ QDir::tempPath() + QLatin1String("/AssetProcessorUnitTest-XXXXXX") };
+
+        AzToolsFramework::UuidUtilComponent m_uuidUtil;
+        AzToolsFramework::MetadataManager m_metadataManager;
+        AssetProcessor::UuidManager m_uuidManager;
+        AZStd::unique_ptr<AZ::SettingsRegistryImpl> m_settingsRegistry;
 
         // we store the above data in a unique_ptr so that its memory can be cleared during TearDown() in one call, before we destroy the memory
         // allocator, reducing the chance of missing or forgetting to destroy one in the future.
@@ -821,6 +833,44 @@ namespace UnitTests
         ASSERT_EQ(successResult.m_moveSuccessCount, 1);
         ASSERT_EQ(successResult.m_moveFailureCount, 0);
         ASSERT_EQ(successResult.m_moveTotalCount, 1);
+        ASSERT_EQ(successResult.m_updateTotalCount, 0);
+    }
+
+    TEST_F(SourceFileRelocatorTest, MoveMetadataEnabledType_Real_Succeeds)
+    {
+        QDir tempPath(m_tempDir.path());
+
+        auto filePath = QDir(tempPath.absoluteFilePath(m_data->m_scanFolder1.m_scanFolder.c_str())).absoluteFilePath("duplicate/file1.tif");
+        auto newFilePath =
+            QDir(tempPath.absoluteFilePath(m_data->m_scanFolder1.m_scanFolder.c_str())).absoluteFilePath("someOtherPlace/renamed.tif");
+        auto metadataPath = AzToolsFramework::MetadataManager::ToMetadataPath(filePath.toUtf8().constData());
+        auto newMetadataPath = AzToolsFramework::MetadataManager::ToMetadataPath(newFilePath.toUtf8().constData());
+
+        ASSERT_TRUE(AZ::IO::FileIOBase::GetInstance()->Exists(filePath.toUtf8().constData()));
+
+        auto* uuidInterface = AZ::Interface<AssetProcessor::IUuidRequests>::Get();
+        ASSERT_TRUE(uuidInterface);
+
+        uuidInterface->EnableGenerationForTypes({ ".tif" });
+
+        AZ::Utils::WriteFile("unit test file", metadataPath.c_str());
+
+        auto result = m_data->m_reporter->Move(filePath.toUtf8().constData(), "someOtherPlace/renamed.tif", false);
+
+        auto* io = AZ::IO::FileIOBase::GetInstance();
+        ASSERT_TRUE(io);
+
+        ASSERT_TRUE(result.IsSuccess());
+        ASSERT_FALSE(io->Exists(filePath.toUtf8().constData()));
+        ASSERT_TRUE(io->Exists(newFilePath.toUtf8().constData()));
+        ASSERT_FALSE(io->Exists(metadataPath.c_str()));
+        ASSERT_TRUE(io->Exists(newMetadataPath.c_str()));
+
+        RelocationSuccess successResult = result.TakeValue();
+
+        ASSERT_EQ(successResult.m_moveSuccessCount, 2);
+        ASSERT_EQ(successResult.m_moveFailureCount, 0);
+        ASSERT_EQ(successResult.m_moveTotalCount, 2);
         ASSERT_EQ(successResult.m_updateTotalCount, 0);
     }
 

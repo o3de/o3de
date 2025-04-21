@@ -81,7 +81,7 @@ namespace UnitTests
         LeakDetectionFixture::TearDown();
     }
 
-    using BatchApplicationManagerTest = UnitTest::LeakDetectionFixture;
+    using BatchApplicationManagerTest = ::UnitTest::LeakDetectionFixture;
 
     TEST_F(ApplicationManagerTest, FileWatcherEventsTriggered_ProperlySignalledOnCorrectThread_SUITE_sandbox)
     {

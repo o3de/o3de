@@ -134,7 +134,7 @@ namespace UnitTest
             // Create application descriptor
             ComponentApplication::Descriptor appDesc;
             appDesc.m_memoryBlocksByteSize = 10 * 1024 * 1024;
-            appDesc.m_recordingMode = Debug::AllocationRecords::RECORD_FULL;
+            appDesc.m_recordingMode = Debug::AllocationRecords::Mode::RECORD_FULL;
 
             // AZCoreTestDLL will load as a dynamic module
             DynamicModuleDescriptor& dynamicModuleDescriptor = appDesc.m_modules.emplace_back();
@@ -145,6 +145,7 @@ namespace UnitTest
             // Start up application
             ComponentApplication::StartupParameters startupParams;
             startupParams.m_createStaticModulesCallback = AZCreateStaticModules;
+            startupParams.m_loadSettingsRegistry = false;
             Entity* systemEntity = app.Create(appDesc, startupParams);
             EXPECT_NE(nullptr, systemEntity);
             systemEntity->Init();
@@ -240,6 +241,7 @@ namespace UnitTest
             // Start up application
             ComponentApplication::Descriptor appDesc;
             ComponentApplication::StartupParameters startupParams;
+            startupParams.m_loadSettingsRegistry = false;
             Entity* systemEntity = app.Create(appDesc, startupParams);
 
             EXPECT_NE(nullptr, systemEntity);
@@ -367,6 +369,7 @@ namespace UnitTest
         // Start up application
         ComponentApplication::Descriptor appDesc;
         ComponentApplication::StartupParameters startupParams;
+        startupParams.m_loadSettingsRegistry = false;
         Entity* systemEntity = app.Create(appDesc, startupParams);
 
         ASSERT_NE(nullptr, systemEntity);
@@ -407,14 +410,14 @@ namespace UnitTest
                 PrintFCollector watchForCreation("InitializeDynamicModule called");
                 {
                     auto handle = DynamicModuleHandle::Create("AzCoreTestDLL");
-                    handle->Load(true);
+                    handle->Load(AZ::DynamicModuleHandle::LoadFlags::InitFuncRequired);
                     EXPECT_TRUE(watchForCreation.m_foundWhatWeWereWatchingFor); // should not destroy until we leave scope.
                                                                                 // steal the file path (which will be resolved with per-platform extensions like DLL or SO.
                     EXPECT_FALSE(watchForDestruction.m_foundWhatWeWereWatchingFor); // should not destroy until we leave scope.
 
                     PrintFCollector watchForCreationSecondTime("InitializeDynamicModule called");
                     auto handle2 = DynamicModuleHandle::Create("AzCoreTestDLL");
-                    handle2->Load(true);
+                    handle2->Load(AZ::DynamicModuleHandle::LoadFlags::InitFuncRequired);
                     // this should NOT have initialized it again:
                     EXPECT_FALSE(watchForCreationSecondTime.m_foundWhatWeWereWatchingFor); // should not destroy until we leave scope.
                 }

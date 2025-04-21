@@ -61,10 +61,8 @@ namespace AZ::Render
         
         // Scope producer functions...
         void CompileResources(const RHI::FrameGraphCompileContext& context) override;
-        void BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context) override;
 
         // Pass behavior overrides...
-        void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph) override;
         void FrameBeginInternal(FramePrepareParams params) override;
         void ResetInternal() override;
         void BuildInternal() override;
@@ -79,13 +77,10 @@ namespace AZ::Render
         RHI::ShaderInputNameIndex m_constantDataIndex = "m_constantData";
 
         AZStd::array<Data::Instance<RPI::PassAttachment>, 2> m_accumulationAttachments;
-        AZStd::array<Data::Instance<RPI::AttachmentImage>, 2> m_attachmentImages;
 
         RPI::PassAttachmentBinding* m_inputColorBinding = nullptr;
         RPI::PassAttachmentBinding* m_lastFrameAccumulationBinding = nullptr;
         RPI::PassAttachmentBinding* m_outputColorBinding = nullptr;
-
-        RHI::CopyItem m_copyItem; // Can be removed when ShouldCopyHistoryBuffer is no longer needed.
 
         struct Offset
         {

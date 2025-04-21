@@ -53,13 +53,14 @@ def Collider_PxMeshAutoAssignedWhenAddingRenderMeshComponent():
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
     from editor_python_test_tools.asset_utils import Asset
+    from consts.physics import PHYSX_MESH_COLLIDER
 
     import editor_python_test_tools.hydra_editor_utils as hydra
 
     # Asset paths
-    STATIC_MESH = os.path.join("assets", "Physics", "Collider_PxMeshAutoAssigned", "spherebot", "r0-b_body.azmodel")
+    STATIC_MESH = os.path.join("assets", "Physics", "Collider_PxMeshAutoAssigned", "spherebot", "r0-b_body.fbx.azmodel")
     PHYSX_MESH = os.path.join(
-        "assets", "Physics", "Collider_PxMeshAutoAssigned", "spherebot", "r0-b_body.pxmesh"
+        "assets", "Physics", "Collider_PxMeshAutoAssigned", "spherebot", "r0-b_body.fbx.pxmesh"
     )
 
     # 1) Load the empty level
@@ -81,8 +82,8 @@ def Collider_PxMeshAutoAssignedWhenAddingRenderMeshComponent():
     Report.result(Tests.assign_model_asset, model_asset.get_path().lower() == STATIC_MESH.replace(os.sep, "/").lower())
 
     # 5) Add PhysX Mesh Collider component
-    test_component = test_entity.add_component("PhysX Mesh Collider")
-    Report.result(Tests.physx_collider_added, test_entity.has_component("PhysX Mesh Collider"))
+    test_component = test_entity.add_component(PHYSX_MESH_COLLIDER)
+    Report.result(Tests.physx_collider_added, test_entity.has_component(PHYSX_MESH_COLLIDER))
 
     # 6) The physics asset in PhysX Mesh Collider component is auto-assigned.
     asset_id = test_component.get_component_property_value("Shape Configuration|Asset|PhysX Mesh")

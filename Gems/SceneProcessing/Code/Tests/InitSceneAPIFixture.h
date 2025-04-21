@@ -33,7 +33,7 @@ namespace SceneProcessing
             {
                 AZStd::unique_ptr<AZ::DynamicModuleHandle> module = AZ::DynamicModuleHandle::Create(moduleName.c_str());
                 ASSERT_TRUE(module) << "Scene Processing Gem unit tests failed to create " << moduleName.c_str() << " module.";
-                const bool loaded = module->Load(false);
+                const bool loaded = module->Load();
                 ASSERT_TRUE(loaded) << "Scene Processing Gem unit tests failed to load " << moduleName.c_str() << " module.";
                 auto init = module->GetFunction<AZ::InitializeDynamicModuleFunction>(AZ::InitializeDynamicModuleFunctionName);
                 ASSERT_TRUE(init) << "Scene Processing Gem unit tests failed to find the initialization function the " << moduleName.c_str() << " module.";

@@ -33,6 +33,7 @@ set(FILES
     Tests/RewindableContainerTests.cpp
     Tests/RewindableObjectTests.cpp
     Tests/ServerHierarchyTests.cpp
+    Tests/SimplePlayerSpawnerTests.cpp
     Tests/TestMultiplayerComponent.h
     Tests/TestMultiplayerComponent.cpp
 

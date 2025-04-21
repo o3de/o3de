@@ -45,7 +45,7 @@ def assetIdToPath(assetId):
 # List all slot ids
 def getIds(entityId):
     print("Get material ids")
-    return azlmbr.render.MaterialComponentRequestBus(azlmbr.bus.Event, 'GetDefautMaterialMap', entityId).keys()
+    return azlmbr.render.MaterialComponentRequestBus(azlmbr.bus.Event, 'GetDefaultMaterialMap', entityId).keys()
 
 def printMaterials(entityId):
     materials = azlmbr.render.MaterialComponentRequestBus(azlmbr.bus.Event, 'GetMaterialMap', entityId)

@@ -23,7 +23,7 @@ namespace AZ
         {
             seed = TypeHash64(m_intensity, seed);
             seed = TypeHash64(m_overrideStrength, seed);
-            seed = TypeHash64(m_assetId.GetId(), seed);
+            seed = TypeHash64(m_asset.GetId(), seed);
             seed = TypeHash64(m_shaperPreset, seed);
             seed = TypeHash64(m_customMinExposure, seed);
             seed = TypeHash64(m_customMaxExposure, seed);
@@ -44,13 +44,13 @@ namespace AZ
         {
             AZ_Assert(target != nullptr, "LookModificationSettings::ApplySettingsTo called with nullptr as argument.");
 
-            auto lutAssetId = GetColorGradingLut();
-            if (GetEnabled() && lutAssetId.GetId().IsValid())
+            auto lutAsset = GetColorGradingLut();
+            if (GetEnabled() && lutAsset.GetId().IsValid())
             {
                 Render::LutBlendItem lutBlend;
                 lutBlend.m_intensity = GetColorGradingLutIntensity();
                 lutBlend.m_overrideStrength = GetColorGradingLutOverride() * alpha;
-                lutBlend.m_assetId = lutAssetId;
+                lutBlend.m_asset = lutAsset;
                 lutBlend.m_shaperPreset = GetShaperPresetType();
                 lutBlend.m_customMinExposure = GetCustomMinExposure();
                 lutBlend.m_customMaxExposure = GetCustomMaxExposure();
@@ -90,7 +90,7 @@ namespace AZ
                     LutBlendItem blendItem;
                     blendItem.m_intensity = GetColorGradingLutIntensity();
                     blendItem.m_overrideStrength = GetColorGradingLutOverride();
-                    blendItem.m_assetId = GetColorGradingLut();
+                    blendItem.m_asset = GetColorGradingLut();
                     blendItem.m_shaperPreset = GetShaperPresetType();
                     blendItem.m_customMinExposure = GetCustomMinExposure();
                     blendItem.m_customMaxExposure = GetCustomMaxExposure();

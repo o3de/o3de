@@ -7,8 +7,10 @@
  */
 
 #include "CompressionRegistrarImpl.h"
-#include <CompressionModuleInterface.h>
 #include "CompressionEditorSystemComponent.h"
+
+#include <CompressionModuleInterface.h>
+#include <Compression/CompressionTypeIds.h>
 
 namespace Compression
 {
@@ -16,7 +18,7 @@ namespace Compression
         : public CompressionModuleInterface
     {
     public:
-        AZ_RTTI(CompressionEditorModule, "{6D256D91-6F1F-4132-B78E-6C24BA9D688C}", CompressionModuleInterface);
+        AZ_RTTI(CompressionEditorModule, CompressionEditorModuleTypeId, CompressionModuleInterface);
         AZ_CLASS_ALLOCATOR(CompressionEditorModule, AZ::SystemAllocator);
 
         CompressionEditorModule()
@@ -62,4 +64,8 @@ namespace Compression
     };
 }// namespace Compression
 
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME), Compression::CompressionEditorModule)
+#else
 AZ_DECLARE_MODULE_CLASS(Gem_Compression, Compression::CompressionEditorModule)
+#endif

@@ -13,6 +13,8 @@
 #include <AzCore/std/string/conversions.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
+#include <Include/ScriptCanvas/Libraries/String/StringFunctions.h>
+
 #define LUA_BACKEND
 
 namespace ScriptCanvas

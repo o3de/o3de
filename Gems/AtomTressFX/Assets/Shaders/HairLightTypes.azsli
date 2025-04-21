@@ -38,7 +38,7 @@ float3 GetSpecularLighting(Surface surface, LightingData lightingData, const flo
     float3 specular = float3(1, 0, 1);  // purple - error color
     if (o_hairLightingModel == HairLightingModel::GGX)
     {
-        specular = SpecularGGX(lightingData.dirToCamera, dirToLight, surface.normal, surface.specularF0, lightingData.NdotV, surface.roughnessA2, lightingData.multiScatterCompensation);
+        specular = SpecularGGX(lightingData.dirToCamera, dirToLight, surface.GetSpecularNormal(), surface.GetSpecularF0(), lightingData.GetSpecularNdotV(), surface.roughnessA2, lightingData.multiScatterCompensation);
     }
     else if(o_hairLightingModel == HairLightingModel::Marschner)
     {
@@ -63,7 +63,7 @@ float3 GetHairBackLighting(Surface surface, LightingData lightingData, float3 li
         result = shadowRatio ?
             float3(0.0, 0.0, 0.0) :
             TransmissionKernel(surface.transmission.thickness * transmissionParams.w, rcp(transmissionParams.xyz)) *
-            saturate(dot(-surface.normal, dirToLight)) * lightIntensity * shadowRatio;
+            saturate(dot(-surface.GetDefaultNormal(), dirToLight)) * lightIntensity * shadowRatio;
 
         return result;
     }
@@ -91,7 +91,7 @@ float3 GetDiffuseLighting(Surface surface, LightingData lightingData, float3 lig
     if (o_hairLightingModel == HairLightingModel::GGX)
     {
         // Notice that addition of the response (1-F) here
-        diffuse = HairDiffuseLambertian(surface.albedo, surface.normal, dirToLight) * lightingData.diffuseResponse;
+        diffuse = HairDiffuseLambertian(surface.albedo, surface.GetDiffuseNormal(), dirToLight) * lightingData.diffuseResponse;
     }
     else if (o_hairLightingModel == HairLightingModel::Marschner)
     {
@@ -112,7 +112,7 @@ void UpdateLightingParameters(
     // sample BRDF map (indexed by smoothness values rather than roughness)
     lightingData.NdotV = saturate(dot(normal, lightingData.dirToCamera));
 
-    float2 brdfUV = float2(lightingData.NdotV, (1.0f - roughnessLinear));
+    float2 brdfUV = float2(lightingData.GetSpecularNdotV(), (1.0f - roughnessLinear));
 
     lightingData.brdf = PassSrg::m_brdfMap.Sample(PassSrg::LinearSampler, brdfUV).rg;
 }
@@ -138,22 +138,23 @@ void SetNormalAndUpdateLightingParams(
     surface.vertexNormal = surface.normal; // [To Do] - support proper vertex normals in the hair shader.
 
     // Next is important in order to set NdotV and other PBR settings - needs to be set once per light
-    UpdateLightingParameters(lightingData, surface.position, surface.normal, surface.roughnessLinear);
+    UpdateLightingParameters(lightingData, surface.position, surface.GetSpecularNormal(), surface.roughnessLinear);
 
     // Diffuse and Specular response
-    lightingData.specularResponse = FresnelSchlickWithRoughness(lightingData.NdotV, surface.specularF0, surface.roughnessLinear);
+    lightingData.specularResponse = FresnelSchlickWithRoughness(lightingData.GetSpecularNdotV(), surface.GetSpecularF0(), surface.roughnessLinear);
     lightingData.diffuseResponse = 1.0f - lightingData.specularResponse;
 }
 
 //==============================================================================
 #include <Atom/Features/PBR/Lights/LightTypesCommon.azsli>
+#include <Atom/Features/PBR/Lights/LightStructures.azsli>
 //==============================================================================
 
 
 //==============================================================================
 //                         Simple Point Light 
 //==============================================================================
-void ApplySimplePointLight(ViewSrg::SimplePointLight light, Surface surface, inout LightingData lightingData)
+void ApplySimplePointLight(SimplePointLight light, Surface surface, inout LightingData lightingData)
 {  
     float3 posToLight = light.m_position - surface.position;
     float d2 = dot(posToLight, posToLight); // light distance squared
@@ -196,7 +197,7 @@ void ApplyCulledSimplePointLights(Surface surface, inout LightingData lightingDa
         uint currLightIndex = lightingData.tileIterator.GetValue(); 
         lightingData.tileIterator.LoadAdvance();
 
-        ViewSrg::SimplePointLight light = ViewSrg::m_simplePointLights[currLightIndex];
+        SimplePointLight light = ViewSrg::m_simplePointLights[currLightIndex];
         ApplySimplePointLight(light, surface, lightingData);
         ++lightCount;
     }
@@ -206,7 +207,7 @@ void ApplyAllSimplePointLights(Surface surface, inout LightingData lightingData)
 {
     for (int l = 0; l < ViewSrg::m_simplePointLightCount; ++l)
     {
-        ViewSrg::SimplePointLight light = ViewSrg::m_simplePointLights[l];
+        SimplePointLight light = ViewSrg::m_simplePointLights[l];
         ApplySimplePointLight(light, surface, lightingData);
     }
 }
@@ -214,11 +215,11 @@ void ApplyAllSimplePointLights(Surface surface, inout LightingData lightingData)
 //==============================================================================
 //                           Simple Spot Light 
 //==============================================================================
-void ApplySimpleSpotLight(ViewSrg::SimpleSpotLight light, Surface surface, inout LightingData lightingData)
+void ApplySimpleSpotLight(SimpleSpotLight light, Surface surface, inout LightingData lightingData)
 {
     float3 posToLight = light.m_position - surface.position;
     float3 dirToLight = normalize(posToLight);
-   float dotWithDirection = dot(dirToLight, -normalize(light.m_direction));
+    float dotWithDirection = dot(dirToLight, -light.m_direction);
 
     // If outside the outer cone angle return.
     if (dotWithDirection < light.m_cosOuterConeAngle)
@@ -268,14 +269,14 @@ void ApplyAllSimpleSpotLights(Surface surface, inout LightingData lightingData)
 {
     for (int l = 0; l < ViewSrg::m_simpleSpotLightCount; ++l)
     {
-        ViewSrg::SimpleSpotLight light = ViewSrg::m_simpleSpotLights[l];
+        SimpleSpotLight light = ViewSrg::m_simpleSpotLights[l];
         ApplySimpleSpotLight(light, surface, lightingData);
     }
 }
 //==============================================================================
 //                              Point Light 
 //==============================================================================
-void ApplyPointLight(ViewSrg::PointLight light, Surface surface, inout LightingData lightingData)
+void ApplyPointLight(PointLight light, Surface surface, inout LightingData lightingData)
 {
     float3 posToLight = light.m_position - surface.position;
     float d2 = dot(posToLight, posToLight); // light distance squared
@@ -304,7 +305,7 @@ void ApplyPointLight(ViewSrg::PointLight light, Surface surface, inout LightingD
         // Adjust the light direcion for specular based on bulb size
 
         // Calculate the reflection off the normal from the view direction
-        float3 reflectionDir = reflect(-lightingData.dirToCamera, surface.normal);
+        float3 reflectionDir = reflect(-lightingData.dirToCamera, surface.GetSpecularNormal());
 
         // Calculate a vector from the reflection vector to the light
         float3 reflectionPosToLight = posToLight - dot(posToLight, reflectionDir) * reflectionDir;
@@ -324,7 +325,7 @@ void ApplyAllPointLights(Surface surface, inout LightingData lightingData)
 {
     for (int l = 0; l < ViewSrg::m_pointLightCount; ++l)
     {
-        ViewSrg::PointLight light = ViewSrg::m_pointLights[l];
+        PointLight light = ViewSrg::m_pointLights[l];
         ApplyPointLight(light, surface, lightingData);
     }
 }
@@ -339,7 +340,7 @@ void ApplyAllDiskLights(Surface surface, inout LightingData lightingData)
     SetNormalAndUpdateLightingParams(surface.tangent, lightingData.dirToCamera, surface, lightingData);
     for (int l = 0; l < ViewSrg::m_diskLightCount; ++l)
     {
-        ViewSrg::DiskLight light = ViewSrg::m_diskLights[l];
+        DiskLight light = ViewSrg::m_diskLights[l];
         ApplyDiskLight(light, surface, lightingData);
     }
 }
@@ -368,11 +369,11 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData, fl
     // Add the lighting contribution for each directional light
     for (int index = 0; index < SceneSrg::m_directionalLightCount; index++)
     {
-        SceneSrg::DirectionalLight light = SceneSrg::m_directionalLights[index];
+        DirectionalLight light = SceneSrg::m_directionalLights[index];
         float3 dirToLight = normalize(-light.m_direction);
 
         // Adjust the direction of the light based on its angular diameter.
-        float3 reflectionDir = reflect(-lightingData.dirToCamera, surface.normal);
+        float3 reflectionDir = reflect(-lightingData.dirToCamera, surface.GetSpecularNormal());
         float3 lightDirToReflectionDir = reflectionDir - dirToLight;
         float lightDirToReflectionDirLen = length(lightDirToReflectionDir);
         lightDirToReflectionDir = lightDirToReflectionDir / lightDirToReflectionDirLen; // normalize the length
@@ -411,11 +412,11 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData, fl
 // - Diffuse contribution elements / scaling
 float3 ApplyIblDiffuse(Surface surface, LightingData lightingData)
 {
-    float3 irradianceDir = MultiplyVectorQuaternion(surface.normal, SceneSrg::m_iblOrientation);
+    float3 irradianceDir = MultiplyVectorQuaternion(surface.GetDiffuseNormal(), SceneSrg::m_iblOrientation);
     float3 diffuseSample = SceneSrg::m_diffuseEnvMap.Sample(SceneSrg::m_samplerEnv, GetCubemapCoords(irradianceDir)).rgb;
 
-//    float3 diffuseLighting = HairDiffuseLambertian(surface.albedo, surface.normal, lightingData.dirToCamera) * lightingData.diffuseResponse * diffuseSample;
-//    float3 diffuseLighting = GetDiffuseLighting(surface, lightingData, diffuseSample, surface.normal);
+//    float3 diffuseLighting = HairDiffuseLambertian(surface.albedo, surface.GetDiffuseNormal(), lightingData.dirToCamera) * lightingData.diffuseResponse * diffuseSample;
+//    float3 diffuseLighting = GetDiffuseLighting(surface, lightingData, diffuseSample, surface.GetDiffuseNormal());
 
     // Notice the multiplication with inverse thickness used as a measure of occlusion
     return lightingData.diffuseResponse * surface.albedo * diffuseSample * (1.0f - surface.thickness);
@@ -423,7 +424,7 @@ float3 ApplyIblDiffuse(Surface surface, LightingData lightingData)
 
 float3 ApplyIblSpecular(Surface surface, LightingData lightingData)
 {
-    float3 reflectDir = reflect(-lightingData.dirToCamera, surface.normal);
+    float3 reflectDir = reflect(-lightingData.dirToCamera, surface.GetSpecularNormal());
     reflectDir = MultiplyVectorQuaternion(reflectDir, SceneSrg::m_iblOrientation);    
 
     // global

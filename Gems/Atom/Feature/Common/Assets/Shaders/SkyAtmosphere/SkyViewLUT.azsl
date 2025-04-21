@@ -11,7 +11,7 @@
 // SkyViewLUT does not support shadows currently because it does not bind or sample the depth buffer
 #define ENABLE_ATMOSPHERE_SHADOWS 0
 
-#include <viewsrg.srgi>
+#include <viewsrg_all.srgi>
 #include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
 #include <Atom/Features/ColorManagement/TransformColor.azsli>
 #include <SkyAtmosphereCommon.azsli>
@@ -27,51 +27,62 @@ SkyViewLutPSOutput SkyViewLutPS(VSOutput Input)
 
     AtmosphereParameters Atmosphere = GetAtmosphereParameters();
 
-    const float worldScale = 0.001f;
-    const float depth = 0.0f;
+    const float worldScale = 0.001;
+    const float depth = 0.0;
 
-    float2 ndcPos = float2(Input.m_texCoord.x, 1.0f - Input.m_texCoord.y) * 2.0f - 1.0f;
-    float4 positionWS = mul(ViewSrg::m_viewProjectionInverseMatrix, float4(ndcPos, depth, 1.0f));
-    positionWS /= positionWS.w;
-
+    float2 ndcPos = float2(Input.m_texCoord.x, 1.0 - Input.m_texCoord.y) * 2.0 - 1.0;
+    float4 positionWS = mul(ViewSrg::m_viewProjectionInverseMatrix, float4(ndcPos, depth, 1.0));
     float3 worldDir = normalize(positionWS.xyz / positionWS.w - ViewSrg::m_worldPosition);
     const float worldDepthKm = length(worldDir);
     float3 worldPosKm = ViewSrg::m_worldPosition * worldScale - Atmosphere.PlanetOrigin;
+
     float viewHeight = length(worldPosKm);
+    float3 upVector = worldPosKm / viewHeight;
+
+    // prevent the camera from going below the surface or getting too close - 
+    // we do not current support drawing from under the surface
+    if (viewHeight < Atmosphere.BottomRadius + SKY_MINIMUM_GROUND_OFFSET_KM)
+    {
+        viewHeight = Atmosphere.BottomRadius + SKY_MINIMUM_GROUND_OFFSET_KM;
+        worldPosKm = upVector * viewHeight;
+    }
 
     float viewZenithCosAngle;
     float lightViewCosAngle;
     UvToSkyViewLutParams(Atmosphere, viewZenithCosAngle, lightViewCosAngle, viewHeight, Input.m_texCoord.xy);
 
-    float3 upVector = worldPosKm / viewHeight;
     float sunZenithCosAngle = dot(upVector, PassSrg::m_constants.m_sunDirection);
-    float3 sunDir = normalize(float3(sqrt(1.0 - sunZenithCosAngle * sunZenithCosAngle), 0.0, sunZenithCosAngle));
+    float3 sunDir = float3(0.0, 0.0, sunZenithCosAngle);
+    const float epsilon = 0.0001;
+    if((sunZenithCosAngle < 1.0 - epsilon) && (sunZenithCosAngle > -1.0 + epsilon))
+    {
+        sunDir = normalize(float3(sqrt(1.0 - sunZenithCosAngle * sunZenithCosAngle), 0.0, sunZenithCosAngle));
+    }
 
-    worldPosKm = float3(0.0f, 0.0f, viewHeight);
+    worldPosKm = float3(0.0, 0.0, viewHeight);
 
-    float viewZenithSinAngle = sqrt(1 - viewZenithCosAngle * viewZenithCosAngle);
+    float viewZenithSinAngle = sqrt(1.0 - viewZenithCosAngle * viewZenithCosAngle);
     worldDir = float3(
         viewZenithSinAngle * lightViewCosAngle,
         viewZenithSinAngle * sqrt(1.0 - lightViewCosAngle * lightViewCosAngle),
         viewZenithCosAngle);
 
-    float distanceToTop = 0.f;
-    if (!MoveToTopAtmosphere(worldPosKm, distanceToTop, worldDir, Atmosphere.TopRadius, worldDepthKm))
+    float distanceToAtmosphere = 1.0;
+    if (!MoveToAtmosphere(Atmosphere, worldPosKm, distanceToAtmosphere, worldDir, worldDepthKm))
     {
         // ray does not intersect the atmosphere
-        OUT.m_skyViewLut = float4(0, 0, 0, 1);
+        OUT.m_skyViewLut = float4(0.0, 0.0, 0.0, 1.0);
         return OUT;
     }
 
     const bool ground = true;
-    const float sampleCountIni = 30;
+    const float sampleCountIni = 30.0;
     const float depthBufferValue = -1.0;
     const bool variablesampleCount = true;
     const bool mieRayPhase = true;
     const float2 pixPos = Input.m_position.xy;
-    const float2 uv = Input.m_texCoord;
-    SingleScatteringResult ss = IntegrateScatteredLuminance(pixPos, uv, worldPosKm, worldDir, sunDir, Atmosphere, ground, sampleCountIni, depthBufferValue, variablesampleCount, mieRayPhase);
+    SingleScatteringResult ss = IntegrateScatteredLuminance(pixPos, worldPosKm, worldDir, sunDir, Atmosphere, ground, sampleCountIni, depthBufferValue, variablesampleCount, mieRayPhase);
 
-    OUT.m_skyViewLut = float4(ss.L, 1);
+    OUT.m_skyViewLut = float4(ss.L, 1.0);
     return OUT;
 }

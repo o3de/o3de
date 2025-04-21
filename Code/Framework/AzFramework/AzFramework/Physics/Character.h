@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Math/Vector3.h>
+#include <AzCore/Outcome/Outcome.h>
 
 #include <AzFramework/Physics/Shape.h>
 
@@ -17,6 +18,11 @@
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <AzFramework/Physics/Configuration/SimulatedBodyConfiguration.h>
+
+namespace AZ
+{
+    class ReflectContext;
+}
 
 namespace Physics
 {

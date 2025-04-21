@@ -8,7 +8,7 @@
 
 #include "BehaviorContextObjectPtr.h"
 
-#include <AzCore/RTTI/ReflectContext.h>
+#include <AzCore/Serialization/EditContext.h>
 #include <ScriptCanvas/Data/BehaviorContextObject.h>
 
 namespace ScriptCanvas

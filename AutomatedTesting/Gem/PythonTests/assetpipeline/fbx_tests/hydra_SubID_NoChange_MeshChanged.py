@@ -61,7 +61,7 @@ def SubID_NoChange_MeshChanged():
         dst = os.path.join(dirpath, 'Objects', 'shaderball_simple.fbx.assetinfo')
 
         # Test Setup: Find the asset by asset path
-        model_path = os.path.join('objects', 'shaderball_simple.azmodel')
+        model_path = os.path.join('objects', 'shaderball_simple.fbx.azmodel')
         model = Asset.find_asset_by_path(model_path)
 
         # Test Setup: Ensure there is no assetinfo file in the dst path, if there is, remove it.

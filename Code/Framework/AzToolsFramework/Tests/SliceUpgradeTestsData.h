@@ -202,7 +202,7 @@ namespace UnitTest
             // - Data (int) becomes Info (float) with the conversion Info = Data + 13.5f
             if (classElement.GetVersion() == 0)
             {
-                int dataIndex = classElement.FindElement(AZ_CRC("Data"));
+                int dataIndex = classElement.FindElement(AZ_CRC_CE("Data"));
 
                 if (dataIndex < 0)
                 {

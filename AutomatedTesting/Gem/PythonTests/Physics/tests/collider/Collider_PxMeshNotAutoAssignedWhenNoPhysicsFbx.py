@@ -58,6 +58,7 @@ def Collider_PxMeshNotAutoAssignedWhenNoPhysicsFbx():
     from editor_python_test_tools.utils import TestHelper as helper
     from editor_python_test_tools.utils import Tracer
     from editor_python_test_tools.asset_utils import Asset
+    from consts.physics import PHYSX_MESH_COLLIDER
 
     import editor_python_test_tools.hydra_editor_utils as hydra
 
@@ -65,7 +66,7 @@ def Collider_PxMeshNotAutoAssignedWhenNoPhysicsFbx():
     import azlmbr.asset as azasset
 
     # Asset paths
-    STATIC_MESH = os.path.join("assets", "Physics", "Collider_PxMeshNotAutoAssignedWhenNoPhysicsFbx", "test_asset.azmodel")
+    STATIC_MESH = os.path.join("assets", "Physics", "Collider_PxMeshNotAutoAssignedWhenNoPhysicsFbx", "test_asset.fbx.azmodel")
 
     # 1) Load the empty level
     hydra.open_base_level()
@@ -86,8 +87,8 @@ def Collider_PxMeshNotAutoAssignedWhenNoPhysicsFbx():
     Report.result(Tests.assign_model_asset, model_asset.get_path().lower() == STATIC_MESH.replace(os.sep, "/").lower())
 
     # 5) Add PhysX Mesh Collider component
-    test_component = test_entity.add_component("PhysX Mesh Collider")
-    Report.result(Tests.physx_collider_added, test_entity.has_component("PhysX Mesh Collider"))
+    test_component = test_entity.add_component(PHYSX_MESH_COLLIDER)
+    Report.result(Tests.physx_collider_added, test_entity.has_component(PHYSX_MESH_COLLIDER))
 
     # 6) The physics asset in PhysX Mesh Collider component is not auto-assigned.
     asset_id = test_component.get_component_property_value("Shape Configuration|Asset|PhysX Mesh")

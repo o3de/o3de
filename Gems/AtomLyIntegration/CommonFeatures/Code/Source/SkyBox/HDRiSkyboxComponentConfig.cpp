@@ -20,7 +20,8 @@ namespace AZ
             if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Class<HDRiSkyboxComponentConfig, ComponentConfig>()
-                    ->Version(7)
+                    ->Version(8)
+                    ->Field("CubemapAssetId", &HDRiSkyboxComponentConfig::m_cubemapAssetId)
                     ->Field("CubemapAsset", &HDRiSkyboxComponentConfig::m_cubemapAsset)
                     ->Field("Exposure", &HDRiSkyboxComponentConfig::m_exposure)
                     ;

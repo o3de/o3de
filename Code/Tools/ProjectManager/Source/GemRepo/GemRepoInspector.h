@@ -17,10 +17,18 @@
 #include <QScrollArea>
 #include <QSpacerItem>
 #include <QWidget>
+#include <QPersistentModelIndex>
 #endif
 
 QT_FORWARD_DECLARE_CLASS(QVBoxLayout)
 QT_FORWARD_DECLARE_CLASS(QLabel)
+QT_FORWARD_DECLARE_CLASS(QPushButton)
+QT_FORWARD_DECLARE_CLASS(QItemSelectionModel)
+
+namespace AzQtComponents
+{
+    class ElidingLabel;
+}
 
 namespace O3DE::ProjectManager
 {
@@ -28,24 +36,34 @@ namespace O3DE::ProjectManager
     {
         Q_OBJECT
 
-            public : explicit GemRepoInspector(GemRepoModel* model, QWidget* parent = nullptr);
+    public:
+
+        explicit GemRepoInspector(GemRepoModel* model, QItemSelectionModel* selectionModel, QWidget* parent = nullptr);
         ~GemRepoInspector() = default;
 
         void Update(const QModelIndex& modelIndex);
 
+    signals:
+        void RemoveRepo(const QModelIndex& modelIndex);
+        void ShowToastNotification(const QString& notification);
+
     private slots:
         void OnSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
+        void OnCopyDownloadLinkClicked();
 
     private:
         void InitMainWidget();
 
+
         GemRepoModel* m_model = nullptr;
+        QItemSelectionModel* m_selectionModel = nullptr;
         QWidget* m_mainWidget = nullptr;
         QVBoxLayout* m_mainLayout = nullptr;
 
         // General info section
-        QLabel* m_nameLabel = nullptr;
+        AzQtComponents::ElidingLabel* m_nameLabel = nullptr;
         LinkLabel* m_repoLinkLabel = nullptr;
+        LinkLabel* m_copyDownloadLinkLabel = nullptr;
         QLabel* m_summaryLabel = nullptr;
 
         // Additional information
@@ -53,7 +71,14 @@ namespace O3DE::ProjectManager
         QLabel* m_addInfoTextLabel = nullptr;
         QSpacerItem* m_addInfoSpacer = nullptr;
 
-        // Included Gems
+        // Buttons
+        QPushButton* m_removeRepoButton = nullptr;
+
+        // Included objects 
         GemsSubWidget* m_includedGems = nullptr;
+        GemsSubWidget* m_includedProjects = nullptr;
+        GemsSubWidget* m_includedTemplates = nullptr;
+
+        QModelIndex m_curModelIndex; 
     };
 } // namespace O3DE::ProjectManager

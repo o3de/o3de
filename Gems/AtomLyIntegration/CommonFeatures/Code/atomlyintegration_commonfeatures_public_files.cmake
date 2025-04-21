@@ -12,6 +12,8 @@ set(FILES
     Include/AtomLyIntegration/CommonFeatures/CoreLights/CoreLightsConstants.h
     Include/AtomLyIntegration/CommonFeatures/CoreLights/DirectionalLightBus.h
     Include/AtomLyIntegration/CommonFeatures/CoreLights/DirectionalLightComponentConfig.h
+    Include/AtomLyIntegration/CommonFeatures/Debug/RayTracingDebugBus.h
+    Include/AtomLyIntegration/CommonFeatures/Debug/RayTracingDebugComponentConfig.h
     Include/AtomLyIntegration/CommonFeatures/Debug/RenderDebugBus.h
     Include/AtomLyIntegration/CommonFeatures/Debug/RenderDebugComponentConfig.h
     Include/AtomLyIntegration/CommonFeatures/Decals/DecalBus.h
@@ -23,6 +25,8 @@ set(FILES
     Include/AtomLyIntegration/CommonFeatures/ImageBasedLights/ImageBasedLightComponentBus.h
     Include/AtomLyIntegration/CommonFeatures/ImageBasedLights/ImageBasedLightComponentConfig.h
     Include/AtomLyIntegration/CommonFeatures/ImageBasedLights/ImageBasedLightComponentConstants.h
+    Include/AtomLyIntegration/CommonFeatures/Material/MaterialAssignment.h
+    Include/AtomLyIntegration/CommonFeatures/Material/MaterialAssignmentId.h
     Include/AtomLyIntegration/CommonFeatures/Material/MaterialComponentBus.h
     Include/AtomLyIntegration/CommonFeatures/Material/MaterialComponentConfig.h
     Include/AtomLyIntegration/CommonFeatures/Material/MaterialComponentConstants.h
@@ -33,9 +37,17 @@ set(FILES
     Include/AtomLyIntegration/CommonFeatures/PostProcess/PostFxLayerComponentConfig.h
     Include/AtomLyIntegration/CommonFeatures/PostProcess/PostFxLayerComponentConstants.h
     Include/AtomLyIntegration/CommonFeatures/PostProcess/Bloom/BloomBus.h
-    Include/AtomLyIntegration/CommonFeatures/PostProcess/Bloom/BloomComponentConfig.h
+    Include/AtomLyIntegration/CommonFeatures/PostProcess/Bloom/BloomComponentConfig.h    
     Include/AtomLyIntegration/CommonFeatures/PostProcess/ChromaticAberration/ChromaticAberrationBus.h
-    Include/AtomLyIntegration/CommonFeatures/PostProcess/ChromaticAberration/ChromaticAberrationComponentConfig.h
+    Include/AtomLyIntegration/CommonFeatures/PostProcess/ChromaticAberration/ChromaticAberrationComponentConfig.h    
+    Include/AtomLyIntegration/CommonFeatures/PostProcess/PaniniProjection/PaniniProjectionBus.h
+    Include/AtomLyIntegration/CommonFeatures/PostProcess/PaniniProjection/PaniniProjectionComponentConfig.h    
+    Include/AtomLyIntegration/CommonFeatures/PostProcess/FilmGrain/FilmGrainBus.h
+    Include/AtomLyIntegration/CommonFeatures/PostProcess/FilmGrain/FilmGrainComponentConfig.h
+    Include/AtomLyIntegration/CommonFeatures/PostProcess/WhiteBalance/WhiteBalanceBus.h
+    Include/AtomLyIntegration/CommonFeatures/PostProcess/WhiteBalance/WhiteBalanceComponentConfig.h
+    Include/AtomLyIntegration/CommonFeatures/PostProcess/Vignette/VignetteBus.h
+    Include/AtomLyIntegration/CommonFeatures/PostProcess/Vignette/VignetteComponentConfig.h
     Include/AtomLyIntegration/CommonFeatures/PostProcess/DepthOfField/DepthOfFieldBus.h
     Include/AtomLyIntegration/CommonFeatures/PostProcess/DepthOfField/DepthOfFieldComponentConfig.h
     Include/AtomLyIntegration/CommonFeatures/PostProcess/DisplayMapper/DisplayMapperComponentBus.h
@@ -63,6 +75,7 @@ set(FILES
     Include/AtomLyIntegration/CommonFeatures/ScreenSpace/DeferredFogComponentConfig.h
     Include/AtomLyIntegration/CommonFeatures/ScreenSpace/DeferredFogBus.h
     Include/AtomLyIntegration/CommonFeatures/SkinnedMesh/SkinnedMeshOverrideBus.h
+    Include/AtomLyIntegration/CommonFeatures/SkyAtmosphere/SkyAtmosphereBus.h
     Include/AtomLyIntegration/CommonFeatures/SkyAtmosphere/SkyAtmosphereComponentConfig.h
     Include/AtomLyIntegration/CommonFeatures/SkyBox/HDRiSkyboxBus.h
     Include/AtomLyIntegration/CommonFeatures/SkyBox/HDRiSkyboxComponentConfig.h

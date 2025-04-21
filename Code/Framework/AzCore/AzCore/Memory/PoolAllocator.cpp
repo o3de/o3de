@@ -120,8 +120,8 @@ namespace AZ
         PoolAllocation(Allocator* alloc, size_t pageSize, size_t minAllocationSize, size_t maxAllocationSize);
         virtual ~PoolAllocation();
 
-        void* Allocate(size_t byteSize, size_t alignment);
-        void DeAllocate(void* ptr);
+        AllocateAddress Allocate(size_t byteSize, size_t alignment);
+        size_t DeAllocate(void* ptr);
         size_t get_allocated_size(void* ptr) const;
         void GarbageCollect();
 
@@ -141,11 +141,12 @@ namespace AZ
     class PoolSchemaImpl
     {
     public:
+        PoolSchemaImpl(PoolSchema::size_type pageSize, PoolSchema::size_type minAllocationSize, PoolSchema::size_type maxAllocationSize);
         PoolSchemaImpl();
         ~PoolSchemaImpl();
 
-        PoolSchema::pointer Allocate(PoolSchema::size_type byteSize, PoolSchema::size_type alignment);
-        void DeAllocate(PoolSchema::pointer ptr);
+        AllocateAddress Allocate(PoolSchema::size_type byteSize, PoolSchema::size_type alignment);
+        PoolSchema::size_type DeAllocate(PoolSchema::pointer ptr);
         PoolSchema::size_type get_allocated_size(PoolSchema::pointer ptr, PoolSchema::align_type alignment) const;
 
         /**
@@ -224,7 +225,7 @@ namespace AZ
 
         inline Bucket* AllocateBuckets(size_t numBuckets)
         {
-            Bucket* buckets = reinterpret_cast<Bucket*>(m_pageAllocator->allocate(sizeof(Bucket) * numBuckets, alignof(Bucket)));
+            Bucket* buckets = reinterpret_cast<Bucket*>(static_cast<void*>(m_pageAllocator->allocate(sizeof(Bucket) * numBuckets, alignof(Bucket))));
             for (size_t i = 0; i < numBuckets; ++i)
             {
                 new (buckets + i) Bucket();
@@ -298,10 +299,18 @@ namespace AZ
         ThreadPoolSchemaImpl(
             ThreadPoolSchema::GetThreadPoolData threadPoolGetter,
             ThreadPoolSchema::SetThreadPoolData threadPoolSetter);
+
+        ThreadPoolSchemaImpl(
+            ThreadPoolSchema::GetThreadPoolData threadPoolGetter,
+            ThreadPoolSchema::SetThreadPoolData threadPoolSetter,
+            ThreadPoolSchema::size_type pageSize,
+            ThreadPoolSchema::size_type minAllocationSize,
+            ThreadPoolSchema::size_type maxAllocationSize);
+
         ~ThreadPoolSchemaImpl();
 
-        ThreadPoolSchema::pointer Allocate(ThreadPoolSchema::size_type byteSize, ThreadPoolSchema::size_type alignment);
-        void DeAllocate(ThreadPoolSchema::pointer ptr);
+        AllocateAddress Allocate(ThreadPoolSchema::size_type byteSize, ThreadPoolSchema::size_type alignment);
+        ThreadPoolSchema::size_type DeAllocate(ThreadPoolSchema::pointer ptr);
         ThreadPoolSchema::size_type get_allocated_size(ThreadPoolSchema::pointer ptr, ThreadPoolSchema::align_type alignment) const;
         /// Return unused memory to the OS. Don't call this too often because you will force unnecessary allocations.
         void GarbageCollect();
@@ -314,8 +323,8 @@ namespace AZ
         {
             // We store the page struct at the end of the block
             char* memBlock;
-            memBlock = reinterpret_cast<char*>(
-                m_pageAllocator->allocate(m_pageSize, m_pageSize));
+            memBlock = reinterpret_cast<char*>(static_cast<void*>(
+                m_pageAllocator->allocate(m_pageSize, m_pageSize)));
             size_t pageDataSize = m_pageSize - sizeof(Page);
             Page* page = new (memBlock + pageDataSize) Page(m_threadPoolGetter());
             page->SetupFreeList(elementSize, pageDataSize);
@@ -348,7 +357,7 @@ namespace AZ
 
         inline Bucket* AllocateBuckets(size_t numBuckets)
         {
-            Bucket* buckets = reinterpret_cast<Bucket*>(m_pageAllocator->allocate(sizeof(Bucket) * numBuckets, alignof(Bucket)));
+            Bucket* buckets = static_cast<Bucket*>(static_cast<void*>(m_pageAllocator->allocate(sizeof(Bucket) * numBuckets, alignof(Bucket))));
             for (size_t i = 0; i < numBuckets; ++i)
             {
                 new (buckets + i) Bucket();
@@ -472,7 +481,7 @@ namespace AZ
     // [9/09/2009]
     //=========================================================================
     template<class Allocator>
-    AZ_INLINE void* PoolAllocation<Allocator>::Allocate(size_t byteSize, size_t alignment)
+    inline AllocateAddress PoolAllocation<Allocator>::Allocate(size_t byteSize, size_t alignment)
     {
         AZ_Assert(byteSize > 0, "You can not allocate 0 bytes!");
         AZ_Assert(alignment > 0 && (alignment & (alignment - 1)) == 0, "Alignment must be >0 and power of 2!");
@@ -484,7 +493,7 @@ namespace AZ
         if (byteSize > m_maxAllocationSize)
         {
             AZ_Assert(false, "Allocation size (%d) is too big (max: %d) for pools!", byteSize, m_maxAllocationSize);
-            return nullptr;
+            return AllocateAddress{};
         }
 
         if (!m_buckets)
@@ -543,7 +552,7 @@ namespace AZ
 
         m_numBytesAllocated += byteSize;
 
-        return address;
+        return AllocateAddress{ address, byteSize };
     }
 
     //=========================================================================
@@ -551,13 +560,13 @@ namespace AZ
     // [9/09/2009]
     //=========================================================================
     template<class Allocator>
-    AZ_INLINE void PoolAllocation<Allocator>::DeAllocate(void* ptr)
+    inline size_t PoolAllocation<Allocator>::DeAllocate(void* ptr)
     {
         PageType* page = m_allocator->PageFromAddress(ptr);
         if (page == nullptr)
         {
             AZ_Error("Memory", false, "Address 0x%08x is not in the ThreadPool!", ptr);
-            return;
+            return 0;
         }
 
         // (pageSize - info struct at the end) / (element size)
@@ -604,7 +613,9 @@ namespace AZ
             }
         }
 
-        m_numBytesAllocated -= page->m_elementSize;
+        size_t bytesDeallocated = page->m_elementSize;
+        m_numBytesAllocated -= bytesDeallocated;
+        return bytesDeallocated;
     }
 
     //=========================================================================
@@ -665,8 +676,7 @@ namespace AZ
     // [9/15/2009]
     //=========================================================================
     PoolSchema::PoolSchema()
-        : m_impl(new (AZStd::stateless_allocator().allocate(sizeof(PoolSchemaImpl), AZStd::alignment_of<PoolSchemaImpl>::value))
-                 PoolSchemaImpl())
+        : m_impl(nullptr)
     {
     }
 
@@ -687,6 +697,13 @@ namespace AZ
     //=========================================================================
     bool PoolSchema::Create()
     {
+        return Create(POOL_ALLOCATION_PAGE_SIZE, POOL_ALLOCATION_MIN_ALLOCATION_SIZE, POOL_ALLOCATION_MAX_ALLOCATION_SIZE);
+    }
+
+    bool PoolSchema::Create(PoolSchema::size_type pageSize, PoolSchema::size_type minAllocationSize, PoolSchema::size_type maxAllocationSize)
+    {
+        m_impl = new (AZStd::stateless_allocator().allocate(sizeof(PoolSchemaImpl), AZStd::alignment_of<PoolSchemaImpl>::value))
+            PoolSchemaImpl(pageSize, minAllocationSize, maxAllocationSize);
         return true;
     }
 
@@ -694,9 +711,7 @@ namespace AZ
     // Allocate
     // [9/15/2009]
     //=========================================================================
-    PoolSchema::pointer PoolSchema::allocate(
-        size_type byteSize,
-        size_type alignment)
+    AllocateAddress PoolSchema::allocate(size_type byteSize, size_type alignment)
     {
         return m_impl->Allocate(byteSize, alignment);
     }
@@ -705,32 +720,32 @@ namespace AZ
     // DeAllocate
     // [9/15/2009]
     //=========================================================================
-    void PoolSchema::deallocate(pointer ptr, size_type byteSize, size_type alignment)
+    auto PoolSchema::deallocate(pointer ptr, size_type byteSize, size_type alignment) -> size_type
     {
         (void)byteSize;
         (void)alignment;
-        m_impl->DeAllocate(ptr);
+        return m_impl->DeAllocate(ptr);
     }
 
     //=========================================================================
     // ReAllocate
     // [10/14/2018]
     //=========================================================================
-    PoolSchema::pointer PoolSchema::reallocate(pointer ptr, size_type newSize, size_type newAlignment)
+    AllocateAddress PoolSchema::reallocate(pointer ptr, size_type newSize, size_type newAlignment)
     {
         (void)ptr;
         (void)newSize;
         (void)newAlignment;
         AZ_Assert(false, "unsupported");
 
-        return ptr;
+        return AllocateAddress{ ptr, get_allocated_size(ptr, newAlignment) };
     }
 
     //=========================================================================
     // AllocationSize
     // [11/22/2010]
     //=========================================================================
-    PoolSchema::size_type PoolSchema::get_allocated_size(pointer ptr, align_type alignment) const
+    auto PoolSchema::get_allocated_size(pointer ptr, align_type alignment) const -> size_type
     {
         return m_impl->get_allocated_size(ptr, alignment);
     }
@@ -751,7 +766,7 @@ namespace AZ
     // NumAllocatedBytes
     // [11/1/2010]
     //=========================================================================
-    PoolSchema::size_type PoolSchema::NumAllocatedBytes() const
+    auto PoolSchema::NumAllocatedBytes() const -> size_type
     {
         return m_impl->m_allocator.m_numBytesAllocated;
     }
@@ -767,9 +782,15 @@ namespace AZ
     // [9/15/2009]
     //=========================================================================
     PoolSchemaImpl::PoolSchemaImpl()
+        : PoolSchemaImpl(POOL_ALLOCATION_PAGE_SIZE, POOL_ALLOCATION_MIN_ALLOCATION_SIZE, POOL_ALLOCATION_MAX_ALLOCATION_SIZE)
+    {
+    }
+
+    PoolSchemaImpl::PoolSchemaImpl(
+        PoolSchema::size_type pageSize, PoolSchema::size_type minAllocationSize, PoolSchema::size_type maxAllocationSize)
         : m_pageAllocator(&AllocatorInstance<SystemAllocator>::Get())
-        , m_allocator(this, POOL_ALLOCATION_PAGE_SIZE, POOL_ALLOCATION_MIN_ALLOCATION_SIZE, POOL_ALLOCATION_MAX_ALLOCATION_SIZE)
-        , m_pageSize(POOL_ALLOCATION_PAGE_SIZE)
+        , m_allocator(this, pageSize, minAllocationSize, maxAllocationSize)
+        , m_pageSize(pageSize)
     {
     }
 
@@ -787,23 +808,22 @@ namespace AZ
     // Allocate
     // [9/15/2009]
     //=========================================================================
-    PoolSchema::pointer PoolSchemaImpl::Allocate(PoolSchema::size_type byteSize, PoolSchema::size_type alignment)
+    AllocateAddress PoolSchemaImpl::Allocate(PoolSchema::size_type byteSize, PoolSchema::size_type alignment)
     {
         // AZ_Warning("Memory",m_ownerThread==AZStd::this_thread::get_id(),"You can't allocation from a different context/thread, use
         // ThreadPoolAllocator!");
-        void* address = m_allocator.Allocate(byteSize, alignment);
-        return address;
+        return m_allocator.Allocate(byteSize, alignment);
     }
 
     //=========================================================================
     // DeAllocate
     // [9/15/2009]
     //=========================================================================
-    void PoolSchemaImpl::DeAllocate(PoolSchema::pointer ptr)
+    PoolSchema::size_type PoolSchemaImpl::DeAllocate(PoolSchema::pointer ptr)
     {
         // AZ_Warning("Memory",m_ownerThread==AZStd::this_thread::get_id(),"You can't deallocate from a different context/thread, use
         // ThreadPoolAllocator!");
-        m_allocator.DeAllocate(ptr);
+        return m_allocator.DeAllocate(ptr);
     }
 
     //=========================================================================
@@ -887,8 +907,7 @@ namespace AZ
     ThreadPoolSchema::ThreadPoolSchema(GetThreadPoolData getThreadPoolData, SetThreadPoolData setThreadPoolData)
         : m_threadPoolGetter(getThreadPoolData)
         , m_threadPoolSetter(setThreadPoolData)
-        , m_impl(new (AZStd::stateless_allocator().allocate(sizeof(ThreadPoolSchemaImpl), AZStd::alignment_of<ThreadPoolSchemaImpl>::value))
-                     ThreadPoolSchemaImpl(m_threadPoolGetter, m_threadPoolSetter))
+        , m_impl(nullptr)
     {
     }
 
@@ -909,6 +928,14 @@ namespace AZ
     //=========================================================================
     bool ThreadPoolSchema::Create()
     {
+        return Create(POOL_ALLOCATION_PAGE_SIZE, POOL_ALLOCATION_MIN_ALLOCATION_SIZE, POOL_ALLOCATION_MAX_ALLOCATION_SIZE);
+    }
+
+    bool ThreadPoolSchema::Create(
+        PoolSchema::size_type pageSize, PoolSchema::size_type minAllocationSize, PoolSchema::size_type maxAllocationSize)
+    {
+        m_impl = new (AZStd::stateless_allocator().allocate(sizeof(ThreadPoolSchemaImpl), AZStd::alignment_of<ThreadPoolSchemaImpl>::value))
+                     ThreadPoolSchemaImpl(m_threadPoolGetter, m_threadPoolSetter, pageSize, minAllocationSize, maxAllocationSize);
         return true;
     }
 
@@ -916,9 +943,7 @@ namespace AZ
     // Allocate
     // [9/15/2009]
     //=========================================================================
-    ThreadPoolSchema::pointer ThreadPoolSchema::allocate(
-        size_type byteSize,
-        size_type alignment)
+    AllocateAddress ThreadPoolSchema::allocate(size_type byteSize, size_type alignment)
     {
         return m_impl->Allocate(byteSize, alignment);
     }
@@ -927,25 +952,25 @@ namespace AZ
     // DeAllocate
     // [9/15/2009]
     //=========================================================================
-    void ThreadPoolSchema::deallocate(pointer ptr, size_type byteSize, size_type alignment)
+    auto ThreadPoolSchema::deallocate(pointer ptr, size_type byteSize, size_type alignment) -> size_type
     {
         (void)byteSize;
         (void)alignment;
-        m_impl->DeAllocate(ptr);
+        return m_impl->DeAllocate(ptr);
     }
 
     //=========================================================================
     // ReAllocate
     // [10/14/2018]
     //=========================================================================
-    ThreadPoolSchema::pointer ThreadPoolSchema::reallocate(pointer ptr, size_type newSize, size_type newAlignment)
+    AllocateAddress ThreadPoolSchema::reallocate(pointer ptr, size_type newSize, size_type newAlignment)
     {
         (void)ptr;
         (void)newSize;
         (void)newAlignment;
         AZ_Assert(false, "unsupported");
 
-        return ptr;
+        return AllocateAddress{ ptr, get_allocated_size(ptr, newAlignment) };
     }
 
     //=========================================================================
@@ -988,14 +1013,28 @@ namespace AZ
     // [9/15/2009]
     //=========================================================================
     ThreadPoolSchemaImpl::ThreadPoolSchemaImpl(
+        ThreadPoolSchema::GetThreadPoolData threadPoolGetter, ThreadPoolSchema::SetThreadPoolData threadPoolSetter)
+        : ThreadPoolSchemaImpl(
+              threadPoolGetter,
+              threadPoolSetter,
+              POOL_ALLOCATION_PAGE_SIZE,
+              POOL_ALLOCATION_MIN_ALLOCATION_SIZE,
+              POOL_ALLOCATION_MAX_ALLOCATION_SIZE)
+    {
+    }
+
+    ThreadPoolSchemaImpl::ThreadPoolSchemaImpl(
         ThreadPoolSchema::GetThreadPoolData threadPoolGetter,
-        ThreadPoolSchema::SetThreadPoolData threadPoolSetter)
+        ThreadPoolSchema::SetThreadPoolData threadPoolSetter,
+        ThreadPoolSchema::size_type pageSize,
+        ThreadPoolSchema::size_type minAllocationSize,
+        ThreadPoolSchema::size_type maxAllocationSize)
         : m_threadPoolGetter(threadPoolGetter)
         , m_threadPoolSetter(threadPoolSetter)
         , m_pageAllocator(&AllocatorInstance<SystemAllocator>::Get())
-        , m_pageSize(POOL_ALLOCATION_PAGE_SIZE)
-        , m_minAllocationSize(POOL_ALLOCATION_MIN_ALLOCATION_SIZE)
-        , m_maxAllocationSize(POOL_ALLOCATION_MAX_ALLOCATION_SIZE)
+        , m_pageSize(pageSize)
+        , m_minAllocationSize(minAllocationSize)
+        , m_maxAllocationSize(maxAllocationSize)
     {
 #if AZ_TRAIT_OS_HAS_CRITICAL_SECTION_SPIN_COUNT
         // In memory allocation case (usually tools) we might have high contention,
@@ -1040,7 +1079,7 @@ namespace AZ
     // Allocate
     // [9/15/2009]
     //=========================================================================
-    ThreadPoolSchema::pointer ThreadPoolSchemaImpl::Allocate(
+    AllocateAddress ThreadPoolSchemaImpl::Allocate(
         ThreadPoolSchema::size_type byteSize, ThreadPoolSchema::size_type alignment)
     {
         ThreadPoolData* threadData = m_threadPoolGetter();
@@ -1072,20 +1111,20 @@ namespace AZ
     // DeAllocate
     // [9/15/2009]
     //=========================================================================
-    void ThreadPoolSchemaImpl::DeAllocate(ThreadPoolSchema::pointer ptr)
+    ThreadPoolSchema::size_type ThreadPoolSchemaImpl::DeAllocate(ThreadPoolSchema::pointer ptr)
     {
         Page* page = PageFromAddress(ptr);
         if (page == nullptr)
         {
             AZ_Error("Memory", false, "Address 0x%08x is not in the ThreadPool!", ptr);
-            return;
+            return 0;
         }
         AZ_Assert(page->m_threadData != nullptr, ("We must have valid page thread data for the page!"));
         ThreadPoolData* threadData = m_threadPoolGetter();
         if (threadData == page->m_threadData)
         {
             // we can free here
-            threadData->m_allocator.DeAllocate(ptr);
+            return threadData->m_allocator.DeAllocate(ptr);
         }
         else
         {
@@ -1097,7 +1136,11 @@ namespace AZ
             // otherwise we will assert the node is in the list
             fakeLFNode->m_next = 0;
 #endif
+            // Query the allocated size of the ptr before pushing it on the freed element stack
+            const size_t allocatedSize = page->m_threadData->m_allocator.get_allocated_size(ptr);
             page->m_threadData->m_freedElements.push(*fakeLFNode);
+
+            return allocatedSize;
         }
     }
 

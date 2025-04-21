@@ -36,7 +36,6 @@ namespace ScriptCanvasEditor
 
     private:
 
-        const NodePaletteModel& m_nodePaletteModel;
         GraphCanvas::GraphCanvasTreeCategorizer m_categorizer;
     };
 

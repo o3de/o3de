@@ -19,7 +19,8 @@
                             {
                                 "$type": "AZ::IO::StorageDriveConfig",
                                 // The maximum number of file handles that the drive will cache.
-                                "MaxFileHandles": 1024 
+                                // The Streamer will not close handles until it has at least this many handles open
+                                "MaxFileHandles": 128 
                             }
                         }
                     }

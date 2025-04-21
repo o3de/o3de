@@ -15,6 +15,10 @@
 #define VsInput         VsInput_Skin
 #endif
 
+#ifndef VsSystemValues
+#define VsSystemValues  VsSystemValues_Skin
+#endif
+
 #ifndef VsOutput
 #define VsOutput        VsOutput_Skin
 #endif
@@ -39,6 +43,11 @@ struct VsInput_Skin
     float4 m_optional_blendMask : COLOR0;
 };
 
+struct VsSystemValues_Skin
+{
+    uint m_instanceId;
+};
+
 struct VsOutput_Skin
 {
     // Base fields (required by the template azsli file)...
@@ -47,6 +56,7 @@ struct VsOutput_Skin
     float3 normal: NORMAL;
     float4 tangent : TANGENT;
     float3 worldPosition : UV0;
+    uint m_instanceId : SV_InstanceID;
 
     // Extended fields (only referenced in this azsl file)...
     float2 uvs[UvSetCount] : UV1;

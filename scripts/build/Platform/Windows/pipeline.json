@@ -1,6 +1,6 @@
 {
     "ENV": {
-        "NODE_LABEL": "windows-8fe4037c",
+        "NODE_LABEL": "windows-2024-07",
         "LY_3RDPARTY_PATH": "D:/workspace/3rdParty",
         "TIMEOUT": 30,
         "WORKSPACE": "D:/workspace",
@@ -99,6 +99,13 @@
                 "default_value": "",
                 "use_last_run_value": true,
                 "description": "The O3DE version shown in the splash screens"
+            },
+            {
+                "parameter_name": "INSTALLER_S3_PATH",
+                "parameter_type": "string",
+                "default_value": "/development/Latest/Windows/o3de_installer.exe",
+                "use_last_run_value": true,
+                "description": "The path to the O3DE installer executable in S3"
             }
         ]
     }

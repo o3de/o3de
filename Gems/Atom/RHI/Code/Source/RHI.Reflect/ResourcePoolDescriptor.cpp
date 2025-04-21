@@ -9,18 +9,15 @@
 #include <Atom/RHI.Reflect/ResourcePoolDescriptor.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    void ResourcePoolDescriptor::Reflect(AZ::ReflectContext* context)
     {
-        void ResourcePoolDescriptor::Reflect(AZ::ReflectContext* context)
+        if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
         {
-            if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
-            {
-                serializeContext->Class<ResourcePoolDescriptor>()
-                    ->Version(1)
-                    ->Field("m_budgetInBytes", &ResourcePoolDescriptor::m_budgetInBytes);
-            }
+            serializeContext->Class<ResourcePoolDescriptor>()
+                ->Version(1)
+                ->Field("m_budgetInBytes", &ResourcePoolDescriptor::m_budgetInBytes);
         }
     }
 }

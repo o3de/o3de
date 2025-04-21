@@ -17,7 +17,7 @@
 #include <AzQtComponents/Components/FancyDocking.h>
 #include <AzQtComponents/Components/StyledDockWidget.h>
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
-#include <AzToolsFramework/UI/Logging/TracePrintFLogPanel.h>
+#include <AzToolsFramework/UI/Logging/StyledTracePrintFLogPanel.h>
 
 #include <QLabel>
 #include <QTimer>
@@ -54,9 +54,10 @@ namespace AtomToolsFramework
 
         virtual void PopulateSettingsInspector(InspectorWidget* inspector) const;
         virtual void OpenSettingsDialog();
+        virtual void OnSettingsDialogClosed();
 
-        virtual AZStd::string GetHelpDialogText() const;
-        virtual void OpenHelpDialog();
+        virtual AZStd::string GetHelpUrl() const;
+        virtual void OpenHelpUrl();
 
         virtual void OpenAboutDialog();
 
@@ -103,7 +104,7 @@ namespace AtomToolsFramework
         QMenu* m_menuHelp = {};
 
         AtomToolsFramework::AtomToolsAssetBrowser* m_assetBrowser = {};
-        AzToolsFramework::LogPanel::TracePrintFLogPanel* m_logPanel = {};
+        AzToolsFramework::LogPanel::StyledTracePrintFLogPanel* m_logPanel = {};
 
         mutable AZStd::shared_ptr<DynamicPropertyGroup> m_applicationSettingsGroup;
         mutable AZStd::shared_ptr<DynamicPropertyGroup> m_assetBrowserSettingsGroup;

@@ -6,46 +6,98 @@
  *
  */
 
-
+#include <Atom/RHI.Reflect/Scissor.h>
+#include <Atom/RHI.Reflect/Viewport.h>
+#include <Atom/RHI/ConstantsData.h>
 #include <Atom/RHI/DrawPacket.h>
 
 #include <AzCore/Memory/Memory.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    size_t DrawPacket::GetDrawItemCount() const
     {
-        size_t DrawPacket::GetDrawItemCount() const
-        {
-            return m_drawItemCount;
-        }
+        return m_drawItems.size();
+    }
 
-        DrawItemProperties DrawPacket::GetDrawItem(size_t index) const
+    s32 DrawPacket::GetDrawListIndex(DrawListTag drawListTag, DrawFilterMask materialPipelineMask) const
+    {
+        for (size_t i = 0; i < m_drawItems.size(); ++i)
         {
-            AZ_Assert(index < GetDrawItemCount(), "Out of bounds array access!");
-            return DrawItemProperties(&m_drawItems[index], m_drawItemSortKeys[index], m_drawFilterMasks[index]);
+            if ((GetDrawListTag(i) == drawListTag) && (GetDrawFilterMask(i) & materialPipelineMask))
+            {
+                return s32(i);
+            }
         }
+        return -1;
+    }
 
-        DrawListTag DrawPacket::GetDrawListTag(size_t index) const
+    DrawItem* DrawPacket::GetDrawItem(size_t index)
+    {
+        return (index < m_drawItems.size()) ? &m_drawItems[index] : nullptr;
+    }
+
+    const DrawItem* DrawPacket::GetDrawItem(size_t index) const
+    {
+        return (index < m_drawItems.size()) ? &m_drawItems[index] : nullptr;
+    }
+
+    DrawItem* DrawPacket::GetDrawItem(DrawListTag drawListTag, DrawFilterMask materialPipelineMask)
+    {
+        s32 index = GetDrawListIndex(drawListTag, materialPipelineMask);
+        if (index > -1)
         {
-            AZ_Assert(index < GetDrawItemCount(), "Out of bounds array access!");
-            return m_drawListTags[index];
+            return GetDrawItem(index);
         }
+        return nullptr;
+    }
 
-        DrawFilterMask DrawPacket::GetDrawFilterMask(size_t index) const
+    const DrawItem* DrawPacket::GetDrawItem(DrawListTag drawListTag, DrawFilterMask materialPipelineMask) const
+    {
+        s32 index = GetDrawListIndex(drawListTag, materialPipelineMask);
+        if (index > -1)
         {
-            AZ_Assert(index < GetDrawItemCount(), "Out of bounds array access!");
-            return m_drawFilterMasks[index];
+            return GetDrawItem(index);
         }
+        return nullptr;
+    }
 
-        DrawListMask DrawPacket::GetDrawListMask() const
-        {
-            return m_drawListMask;
-        }
+    DrawItemProperties DrawPacket::GetDrawItemProperties(size_t index) const
+    {
+        AZ_Assert(index < GetDrawItemCount(), "Out of bounds array access!");
+        return DrawItemProperties{&m_drawItems[index], m_drawItemSortKeys[index], m_drawFilterMasks[index]};
+    }
 
-        void DrawPacket::operator delete(void* p, [[maybe_unused]] size_t size)
+    DrawListTag DrawPacket::GetDrawListTag(size_t index) const
+    {
+        AZ_Assert(index < GetDrawItemCount(), "Out of bounds array access!");
+        return m_drawListTags[index];
+    }
+
+    DrawFilterMask DrawPacket::GetDrawFilterMask(size_t index) const
+    {
+        AZ_Assert(index < GetDrawItemCount(), "Out of bounds array access!");
+        return m_drawFilterMasks[index];
+    }
+
+    DrawListMask DrawPacket::GetDrawListMask() const
+    {
+        return m_drawListMask;
+    }
+
+    void DrawPacket::SetRootConstant(uint32_t offset, const AZStd::span<uint8_t>& data)
+    {
+        for(auto&[_, deviceDrawPacket] : m_deviceDrawPackets)
         {
-            reinterpret_cast<const DrawPacket*>(p)->m_allocator->DeAllocate(p);
+            deviceDrawPacket->SetRootConstant(offset, data);
         }
     }
-}
+
+    void DrawPacket::SetInstanceCount(uint32_t instanceCount)
+    {
+        for (auto& [_, deviceDrawPacket] : m_deviceDrawPackets)
+        {
+            deviceDrawPacket->SetInstanceCount(instanceCount);
+        }
+    }
+} // namespace AZ::RHI

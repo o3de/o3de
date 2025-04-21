@@ -9,6 +9,7 @@
 #include <AzCore/Script/ScriptPropertySerializer.h>
 #include <AzCore/Serialization/DynamicSerializableField.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
+#include <AzCore/Serialization/SerializeContext.h>
 
 namespace AZ
 {
@@ -51,7 +52,7 @@ namespace AZ
         storageField.m_data = AZStd::any_cast<void>(&storage);
         storageField.m_typeId = typeId;
         outputVariable->CopyDataFrom(storageField, context.GetSerializeContext());
-        
+
         result.Combine(ContinueLoadingFromJsonObjectField(outputVariable->m_data, typeId, inputValue, "value", context));
         return context.Report(result, result.GetProcessing() != JSR::Processing::Halted
             ? "ScriptPropertySerializer Load finished loading DynamicSerializableField"
@@ -74,10 +75,29 @@ namespace AZ
         auto inputFieldPtr = inputScriptDataPtr->m_data;
         auto defaultScriptDataPtr = reinterpret_cast<const DynamicSerializableField*>(defaultValue);
         auto defaultFieldPtr = defaultScriptDataPtr ? &defaultScriptDataPtr->m_data : nullptr;
- 
+
         if (defaultScriptDataPtr && inputScriptDataPtr->IsEqualTo(*defaultScriptDataPtr, context.GetSerializeContext()))
         {
             return context.Report(JSR::Tasks::WriteValue, JSR::Outcomes::DefaultsUsed, "ScriptPropertySerializer Store used defaults for DynamicSerializableField");
+        }
+
+        if (defaultScriptDataPtr && defaultScriptDataPtr->m_typeId != inputScriptDataPtr->m_typeId)
+        {
+            // Edge Case here, where the stored types don't match:
+            // example:
+            // inputScriptdataPtr has
+            //   m_value{ m_data = 0x000012d2be18d820 m_typeId = 0xA96A5037 - 0xAD0D43B6 - 0x9948ED63 - 0x438C4A52 } AZ::DynamicSerializableField
+            //
+            // defaultScriptDataPtr has
+            //   m_value{ m_data = 0x0000000000000000 m_typeId = 0x00000000 - 0x00000000 - 0x00000000 - 0x00000000 } AZ::DynamicSerializableField
+            // 
+            // if the script data and the default data hold a different type entirely from each other, you cannot pass the default
+            // down into any further JSON functions, because all of those functions (Store, ContinueStoring, etc)
+            // only take 3 params related to these objects - namely,
+            //    *  the void* thing to store
+            //    *  typeid of thing to store
+            //    *  optional void* of default value, ASSUMED TO BE THE SAME TYPE
+            defaultFieldPtr = nullptr;
         }
 
         JSR::ResultCode result(JSR::Tasks::WriteValue);

@@ -271,6 +271,11 @@ namespace AZ::Dom
         return {};
     }
 
+    PathEntry Path::Back() const
+    {
+        return m_entries.back();
+    }
+
     size_t Path::Size() const
     {
         return m_entries.size();
@@ -459,7 +464,7 @@ namespace AZ::Dom
         }
 
         size_t pathEntryCount = 0;
-        for (size_t i = 1; i <= pathString.size(); ++i)
+        for (size_t i = 1; i < pathString.size(); ++i)
         {
             if (pathString[i] == PathSeparator)
             {

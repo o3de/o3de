@@ -10,9 +10,10 @@
 #include <AzCore/Memory/SystemAllocator.h>
 
 #include <Atom/RHI/CommandList.h>
-#include <Atom/RHI/DrawItem.h>
+#include <Atom/RHI/DeviceDrawItem.h>
 #include <Atom/RHI/ScopeProducer.h>
 
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/Pass/RenderPass.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
@@ -27,7 +28,7 @@ namespace AZ
         //! This pass is designed to work without any dedicated geometry buffers
         //! and instead issues a 3-vertex draw and relies on the vertex shader
         //! to generate a fullscreen triangle from the vertex ids.
-        class FullscreenTrianglePass
+        class ATOM_RPI_PUBLIC_API FullscreenTrianglePass
             : public RenderPass
             , public ShaderReloadNotificationBus::Handler
         {
@@ -46,6 +47,7 @@ namespace AZ
 
             //! Updates the shader options used in this pass
             void UpdateShaderOptions(const ShaderOptionList& shaderOptions);
+            void UpdateShaderOptions(const ShaderVariantId& shaderVariantId);
 
         protected:
             FullscreenTrianglePass(const PassDescriptor& descriptor);
@@ -59,6 +61,14 @@ namespace AZ
             void CompileResources(const RHI::FrameGraphCompileContext& context) override;
             void BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context) override;
 
+            // ShaderReloadNotificationBus overrides...
+            void OnShaderReinitialized(const Shader& shader) override;
+            void OnShaderAssetReinitialized(const Data::Asset<ShaderAsset>& shaderAsset) override;
+            void OnShaderVariantReinitialized(const ShaderVariant& shaderVariant) override;
+
+            // Common code when updating the shader variant with new options
+            void UpdateShaderOptionsCommon();
+
             RHI::Viewport m_viewportState;
             RHI::Scissor m_scissorState;
 
@@ -71,19 +81,15 @@ namespace AZ
             // The draw item submitted by this pass
             RHI::DrawItem m_item;
 
+            // Holds the geometry info for the draw call
+            RHI::GeometryView m_geometryView;
+
             // The stencil reference value for the draw item
             uint32_t m_stencilRef;
 
             Data::Instance<ShaderResourceGroup> m_drawShaderResourceGroup;
 
         private:
-
-            ///////////////////////////////////////////////////////////////////
-            // ShaderReloadNotificationBus overrides...
-            void OnShaderReinitialized(const Shader& shader) override;
-            void OnShaderAssetReinitialized(const Data::Asset<ShaderAsset>& shaderAsset) override;
-            ///////////////////////////////////////////////////////////////////
-
             void LoadShader();
             void UpdateSrgs();
             void BuildDrawItem();

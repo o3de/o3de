@@ -74,6 +74,7 @@ namespace AzToolsFramework
             QStringList mimeTypes() const override;
             QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
             QModelIndex parent(const QModelIndex& child) const override;
+            bool canDropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent) const override;
 
             //////////////////////////////////////////////////////////////////////////
             // AssetBrowserModelRequestBus
@@ -83,6 +84,9 @@ namespace AzToolsFramework
             void EndAddEntry(AssetBrowserEntry* parent) override;
             void BeginRemoveEntry(AssetBrowserEntry* entry) override;
             void EndRemoveEntry() override;
+
+            void BeginReset() override;
+            void EndReset() override;
 
             //////////////////////////////////////////////////////////////////////////
             // TickBus
@@ -97,7 +101,7 @@ namespace AzToolsFramework
             void SetFilterModel(AssetBrowserFilterModel* filterModel);
 
             static void SourceIndexesToAssetIds(const QModelIndexList& indexes, AZStd::vector<AZ::Data::AssetId>& assetIds);
-            static void SourceIndexesToAssetDatabaseEntries(const QModelIndexList& indexes, AZStd::vector<AssetBrowserEntry*>& entries);
+            static void SourceIndexesToAssetDatabaseEntries(const QModelIndexList& indexes, AZStd::vector<const AssetBrowserEntry*>& entries);
 
             void HandleAssetCreatedInEditor(const AZStd::string& assetPath, const AZ::Crc32& creatorBusId = AZ::Crc32(), const bool initialFilenameChange = true);
 
@@ -105,8 +109,6 @@ namespace AzToolsFramework
 
         Q_SIGNALS:
             void RequestOpenItemForEditing(const QModelIndex& index);
-
-            void RequestThumbnailviewUpdate();
 
         private:
             //Non owning pointer
@@ -118,9 +120,10 @@ namespace AzToolsFramework
             bool m_isTickBusEnabled = false;
             AZStd::unordered_map<AssetBrowserEntry*, AZ::Crc32> m_assetEntriesToCreatorBusIds;
             AZStd::unordered_map<AZStd::string, AZ::Crc32> m_newlyCreatedAssetPathsToCreatorBusIds;
-            AZStd::unordered_map<AZStd::string, AZ::Crc32> m_customNewlyCreatedAssetPathsToCreatorBusIds;
 
             void WatchForExpectedAssets(AssetBrowserEntry* entry);
+
+            bool m_isResetting = false;
         };
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

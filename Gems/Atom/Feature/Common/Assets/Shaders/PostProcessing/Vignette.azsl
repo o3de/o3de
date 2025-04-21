@@ -1,0 +1,45 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include <scenesrg_all.srgi>
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2D<float4> m_inputColor;
+    RWTexture2D<float4> m_outputColor;
+
+    // Must match the struct in VignettePass.cpp
+    struct Constants
+    {
+        uint2 m_outputSize; // texture size of output
+        float2 m_outputCenter; // center of image in pixel coords
+        float m_intensity; // strength of effect (0 to 1), i.e. displacement of channels
+        [[pad_to(16)]]
+    };
+    Constants m_constants;
+}
+
+[numthreads(8, 8, 1)]
+void MainCS(uint3 dispatchThreadID : SV_DispatchThreadID)
+{
+    if (dispatchThreadID.x >= PassSrg::m_constants.m_outputSize.x || dispatchThreadID.y >= PassSrg::m_constants.m_outputSize.y)
+    {
+        return;
+    }
+
+    // Displacement from center of screen as a ratio (methods that measure from edges tend to involve either a "square" appearance or extra calculations)
+    float2 disp = (dispatchThreadID.xy - PassSrg::m_constants.m_outputCenter) / PassSrg::m_constants.m_outputCenter;
+
+    // The dot product essentially gets us the square magnitude, which is cheaper than magnituded
+    // Furthermore, we do not want a linear dropoff. By using sq mag this non linear feature is built in
+    float vig = dot(disp, disp) * PassSrg::m_constants.m_intensity;
+
+    float3 output = mad(vig, -PassSrg::m_inputColor[dispatchThreadID.xy].rgb, PassSrg::m_inputColor[dispatchThreadID.xy].rgb);
+
+    PassSrg::m_outputColor[dispatchThreadID.xy] = float4(output.r, output.g, output.b, PassSrg::m_inputColor[dispatchThreadID.xy].a);
+}

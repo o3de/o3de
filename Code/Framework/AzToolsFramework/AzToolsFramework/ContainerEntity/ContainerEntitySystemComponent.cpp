@@ -10,6 +10,7 @@
 
 #include <AzCore/Component/TransformBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/API/ViewportEditorModeTrackerInterface.h>
 #include <AzToolsFramework/ContainerEntity/ContainerEntityNotificationBus.h>
 #include <AzToolsFramework/Prefab/PrefabEditorPreferences.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
@@ -113,6 +114,16 @@ namespace AzToolsFramework
             return entityId;
         }
 
+        // is entity pick mode enabled?
+        bool isEntityPickModeEnabled = false;
+        if (auto viewportEditorModeTracker = AZ::Interface<AzToolsFramework::ViewportEditorModeTrackerInterface>::Get())
+        {
+            auto entityContextId = AzFramework::EntityContextId::CreateNull();
+            EditorEntityContextRequestBus::BroadcastResult(entityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
+            isEntityPickModeEnabled = viewportEditorModeTracker->GetViewportEditorModes({ entityContextId })
+                                          ->IsModeActive(AzToolsFramework::ViewportEditorMode::Pick);
+        }
+
         auto editorEntityContextId = AzFramework::EntityContextId::CreateNull();
         EditorEntityContextRequestBus::BroadcastResult(editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
 
@@ -141,16 +152,29 @@ namespace AzToolsFramework
                 {
                     if (AZStd::find(selectedEntities.begin(), selectedEntities.end(), entityId) != selectedEntities.end())
                     {
-                        // Found a selected container
+                        if (!IsContainerOpen(entityId))
+                        {
+                            // If the selected container is closed, keep selecting it.
+                            highestUnselectedAncestorContainer = entityId;
+                        }
                         break;
                     }
                     else
                     {
-                        highestUnselectedAncestorContainer = entityId;
+                        if (!isEntityPickModeEnabled || !IsContainerOpen(entityId))
+                        {
+                            highestUnselectedAncestorContainer = entityId;
+                        }
                     }
                 }
 
-                AZ::TransformBus::EventResult(entityId, entityId, &AZ::TransformBus::Events::GetParentId);
+                AZ::EntityId parentId; // start with an invalid id, in case the parent is invalid.
+                AZ::TransformBus::EventResult(parentId, entityId, &AZ::TransformBus::Events::GetParentId);
+                if (entityId == parentId)
+                {
+                    break; // avoid situation where a GetParentId returns the same id leading to an infinite loop
+                }
+                entityId = parentId;
             }
 
             return highestUnselectedAncestorContainer;
@@ -172,7 +196,13 @@ namespace AzToolsFramework
                 highestSelectableEntityId = entityId;
             }
 
-            AZ::TransformBus::EventResult(entityId, entityId, &AZ::TransformBus::Events::GetParentId);
+            AZ::EntityId parentId; // start with an invalid id, in case the parent is invalid.
+            AZ::TransformBus::EventResult(parentId, entityId, &AZ::TransformBus::Events::GetParentId);
+            if (entityId == parentId)
+            {
+                break; // avoid an infinite loop in the case where the same entity is returned.
+            }
+            entityId = parentId;
         }
 
         return highestSelectableEntityId;

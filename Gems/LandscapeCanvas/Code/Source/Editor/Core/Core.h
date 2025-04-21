@@ -17,7 +17,7 @@
 
 namespace LandscapeCanvas
 {
-    inline const GraphCanvas::EditorId LANDSCAPE_CANVAS_EDITOR_ID = AZ_CRC("LandscapeCanvasEditor", 0x57f5535f);
+    inline const GraphCanvas::EditorId LANDSCAPE_CANVAS_EDITOR_ID = AZ_CRC_CE("LandscapeCanvasEditor");
 
     inline constexpr const char* SYSTEM_NAME = "Landscape Canvas";
     inline constexpr const char* MODULE_FILE_EXTENSION = ".landscapecanvas";

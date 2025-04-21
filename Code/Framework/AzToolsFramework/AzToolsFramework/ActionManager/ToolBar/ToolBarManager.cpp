@@ -33,6 +33,7 @@ namespace AzToolsFramework
         ActionManagerNotificationBus::Handler::BusConnect();
 
         EditorToolBar::Initialize(defaultParentWidget);
+        ToolBarExpanderWatcher::Initialize();
         EditorToolBarArea::Initialize();
     }
 

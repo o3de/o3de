@@ -8,6 +8,7 @@
 #pragma once
 
 #include <Atom/RPI.Reflect/Asset/AssetReference.h>
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/Pass/RenderPassData.h>
 
 namespace AZ
@@ -15,7 +16,7 @@ namespace AZ
     namespace RPI
     {
         //! Custom data for the FullscreenTrianglePass. Should be specified in the PassRequest.
-        struct FullscreenTrianglePassData
+        struct ATOM_RPI_REFLECT_API FullscreenTrianglePassData
             : public RenderPassData
         {
             AZ_RTTI(FullscreenTrianglePassData, "{564738A1-9690-4446-8CC1-615EA2567434}", RenderPassData);

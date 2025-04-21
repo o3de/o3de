@@ -29,9 +29,10 @@ namespace AZ
                     ;
 
                 serializeContext->Class<ShaderVariantListSourceData>()
-                    ->Version(1)
+                    ->Version(2)   // 2: addition of materialOptionsHint field
                     ->Field("Shader", &ShaderVariantListSourceData::m_shaderFilePath)
                     ->Field("Variants", &ShaderVariantListSourceData::m_shaderVariants)
+                    ->Field("MaterialOptionsHint", &ShaderVariantListSourceData::m_materialOptionsHint)
                     ;
 
                 if (auto editContext = serializeContext->GetEditContext())
@@ -79,6 +80,7 @@ namespace AZ
                     ->Attribute(AZ::Script::Attributes::Module, "shader")
                     ->Property("shaderFilePath", BehaviorValueGetter(&ShaderVariantListSourceData::m_shaderFilePath), BehaviorValueSetter(&ShaderVariantListSourceData::m_shaderFilePath))
                     ->Property("shaderVariants", BehaviorValueGetter(&ShaderVariantListSourceData::m_shaderVariants), BehaviorValueSetter(&ShaderVariantListSourceData::m_shaderVariants))
+                    ->Property("materialOptionsHint", BehaviorValueGetter(&ShaderVariantListSourceData::m_materialOptionsHint), BehaviorValueSetter(&ShaderVariantListSourceData::m_materialOptionsHint))
                     ;
 
                 // [GFX TODO][ATOM-14858] Expose JsonUtils to Behavior Context in JsonUtils.cpp and make it generic

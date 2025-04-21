@@ -8,25 +8,26 @@
 
 #pragma once
 
-#include <AzFramework/DocumentPropertyEditor/PropertyEditorNodes.h>
-#include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyHandlerWidget.h>
-#include <QToolButton>
+#include <AzToolsFramework/UI/DocumentPropertyEditor/GenericButtonHandler.h>
 
 namespace AzToolsFramework
 {
-    class ContainerActionButtonHandler : public PropertyHandlerWidget<QToolButton>
+    class ContainerActionButtonHandler : public GenericButtonHandler
     {
     public:
         ContainerActionButtonHandler();
 
-        void SetValueFromDom(const AZ::Dom::Value& node);
+        void SetValueFromDom(const AZ::Dom::Value& node) override;
+        virtual bool ResetToDefaults() override;
 
         static constexpr const AZStd::string_view GetHandlerName()
         {
             return AZ::DocumentPropertyEditor::Nodes::ContainerActionButton::Name;
         }
 
-    private:
-        AZ::Dom::Value m_node;
+    protected:
+        AZ::DocumentPropertyEditor::Nodes::ContainerAction m_action;
+
+        void OnClicked() override;
     };
 } // namespace AzToolsFramework

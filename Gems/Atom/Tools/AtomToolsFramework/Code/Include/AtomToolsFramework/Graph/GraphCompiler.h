@@ -8,7 +8,9 @@
 
 #pragma once
 
+#include <AzCore/Math/Crc.h>
 #include <AzCore/RTTI/RTTI.h>
+#include <AzCore/std/functional.h>
 #include <GraphModel/Model/Graph.h>
 
 namespace AtomToolsFramework
@@ -99,7 +101,10 @@ namespace AtomToolsFramework
         // Current state of the graph compiler
         AZStd::atomic<State> m_state = State::Idle;
 
-        // Optional function for handling state changes 
+        // Optional function for handling state changes
         StateChangeHandler m_stateChangeHandler;
+
+        // Asset status report request ID
+        const AZ::Uuid m_assetReportRequestId = AZ::Uuid::CreateRandom();
     };
 } // namespace AtomToolsFramework

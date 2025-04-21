@@ -6,62 +6,75 @@
  *
  */
 
-#include <Atom/RHI/ResourceView.h>
-#include <Atom/RHI/Resource.h>
-namespace AZ
+ #include <Atom/RHI/ResourceView.h>
+ #include <Atom/RHI/Resource.h>
+ #include <Atom/RHI/DeviceImageView.h>
+ #include <Atom/RHI/DeviceBufferView.h>
+
+ namespace AZ::RHI
 {
-    namespace RHI
-    {
-        ResultCode ResourceView::Init(const Resource& resource)
+    void ResourceView::Shutdown()
         {
-            RHI::Device& device = resource.GetDevice();
-
-            m_resource = &resource;
-            m_version = resource.GetVersion();
-            ResultCode resultCode = InitInternal(device, resource);
-            if (resultCode != ResultCode::Success)
+            if(m_resource->IsInitialized())
             {
+                m_resource->EraseResourceView(static_cast<ResourceView*>(this));
                 m_resource = nullptr;
-                return resultCode;
             }
-
-            DeviceObject::Init(device);
-            ResourceInvalidateBus::Handler::BusConnect(&resource);
-            return ResultCode::Success;
         }
 
-        void ResourceView::Shutdown()
+        const Resource* ResourceView::GetResource() const
         {
-            if (IsInitialized())
+            return m_resource.get();
+        }
+
+        template<typename View, typename ViewDescriptor>
+        const RHI::Ptr<View> ResourceView::GetDeviceResourceView(int deviceIndex, const ViewDescriptor& viewDescriptor) const
+        {
+            // As this can be called concurrently and the cache is potentially manipulated, need to lock this scope
+            AZStd::lock_guard lock(m_resourceViewMutex);
+
+            // As the view keeps the device resources alive (by keeping the views alive in the cache),
+            // we need to check if they are still required by the resource, otherwise delete the corresponding views from the cache
+            if (m_resource->GetDeviceMask() != m_deviceMask)
             {
-                ResourceInvalidateBus::Handler::BusDisconnect(m_resource.get());
-                ShutdownInternal();
+                m_deviceMask = m_resource->GetDeviceMask();
 
-                m_resource->EraseResourceView(this);
-                m_resource = nullptr;
-                DeviceObject::Shutdown();
+                MultiDeviceObject::IterateDevices(
+                    m_deviceMask,
+                    [this](int deviceIndex)
+                    {
+                        if (auto it{ m_cache.find(deviceIndex) }; it != m_cache.end())
+                        {
+                            m_cache.erase(it);
+                        }
+                        return true;
+                    });
             }
-        }
 
-        const Resource& ResourceView::GetResource() const
-        {
-            return *m_resource;
-        }
-
-        bool ResourceView::IsStale() const
-        {
-            return m_resource && m_resource->GetVersion() != m_version;
-        }
-
-        ResultCode ResourceView::OnResourceInvalidate()
-        {
-            AZ_PROFILE_FUNCTION(RHI);
-            ResultCode resultCode = InvalidateInternal();
-            if (resultCode == ResultCode::Success)
+            auto iterator{ m_cache.find(deviceIndex) };
+            if (iterator == m_cache.end())
             {
-                m_version = m_resource->GetVersion();
+                // ResourceView is not yet in the cache
+                const auto& deviceResourceView{ m_resource->GetDeviceResource(deviceIndex)->GetResourceView(viewDescriptor) };
+                auto [new_iterator, inserted]{ m_cache.insert(
+                    AZStd::make_pair(deviceIndex, static_cast<DeviceResourceView*>(deviceResourceView.get()))) };
+                if (inserted)
+                {
+                    return deviceResourceView;
+                }
             }
-            return resultCode;
+            else if (&iterator->second->GetResource() != m_resource->GetDeviceResource(deviceIndex).get())
+            {
+                iterator->second =
+                    static_cast<DeviceResourceView*>(m_resource->GetDeviceResource(deviceIndex)->GetResourceView(viewDescriptor).get());
+            }
+
+            return static_cast<View*>(iterator->second.get());
         }
-    }
+
+        // Explicit instantiations for DeviceImageView and DeviceBufferView
+        template const RHI::Ptr<RHI::DeviceImageView> ResourceView::GetDeviceResourceView<RHI::DeviceImageView, RHI::ImageViewDescriptor>(
+            int, const RHI::ImageViewDescriptor&) const;
+        template const RHI::Ptr<RHI::DeviceBufferView> ResourceView::
+            GetDeviceResourceView<RHI::DeviceBufferView, RHI::BufferViewDescriptor>(int, const RHI::BufferViewDescriptor&) const;
 }

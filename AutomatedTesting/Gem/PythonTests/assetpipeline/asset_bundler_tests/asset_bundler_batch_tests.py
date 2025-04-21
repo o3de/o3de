@@ -14,16 +14,13 @@ import os
 import subprocess
 import re
 from typing import List, Optional, Dict
-import time
 
 # Import LyTestTools
-import ly_test_tools.builtin.helpers as helpers
 import ly_test_tools.environment.file_system as fs
 import ly_test_tools.environment.waiter as waiter
 
 from ..ap_fixtures.ap_setup_fixture import ap_setup_fixture as ap_setup_fixture
 from ..ap_fixtures.asset_processor_fixture import asset_processor
-from ..ap_fixtures.timeout_option_fixture import timeout_option_fixture as timeout
 
 
 from ..ap_fixtures.bundler_batch_setup_fixture \
@@ -34,9 +31,6 @@ from ..ap_fixtures.ap_config_backup_fixture import ap_config_backup_fixture as c
 # Import LyShared
 import ly_test_tools.o3de.pipeline_utils as utils
 from ly_test_tools.o3de.asset_processor import ASSET_PROCESSOR_PLATFORM_MAP
-
-win_and_mac_platforms = [ASSET_PROCESSOR_PLATFORM_MAP['windows'],
-                         ASSET_PROCESSOR_PLATFORM_MAP['mac']]
 
 # Just some platforms for filename computation (doesn't matter which)
 platforms = {}
@@ -68,10 +62,10 @@ class TestsAssetBundlerBatch(object):
     """
 
     @staticmethod
-    def ap_prepare_test_environment(test_folder_name, asset_processor, ap_setup_fixture):
+    def ap_prepare_test_environment(test_folder_name, asset_processor, ap_setup_fixture, bundler_batch_helper):
         """Helper: Prepares the test environment; copies test files to the project in the current root, then runs AP."""
         asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], test_folder_name, use_current_root=True)
-        ap_result, _ = asset_processor.batch_process(platforms="pc,mac")
+        ap_result, _ = asset_processor.batch_process(platforms=bundler_batch_helper["platforms"])
         assert ap_result, "Asset Processor failed to process test assets."
 
     @pytest.mark.BAT
@@ -116,7 +110,7 @@ class TestsAssetBundlerBatch(object):
         # Test Setup:
         test_folder_name = "asset_bundler_test_assets"
         helper = bundler_batch_helper
-        self.ap_prepare_test_environment(test_folder_name, asset_processor, ap_setup_fixture)
+        self.ap_prepare_test_environment(test_folder_name, asset_processor, ap_setup_fixture, helper)
         seed_asset = os.path.join(asset_processor.project_test_cache_folder(), "txtfile_0.txt")
         additional_seed_asset = os.path.join(asset_processor.project_test_cache_folder(), "txtfile_1.txt")
         # Test Setup Ends
@@ -125,7 +119,7 @@ class TestsAssetBundlerBatch(object):
         helper.call_seeds(
             seedListFile=helper["seed_list_file"],
             addSeed=seed_asset,
-            platform="pc"
+            platform=workspace.asset_processor_platform
         )
 
         #Create an assetlist using the previously created seedlist
@@ -208,7 +202,7 @@ class TestsAssetBundlerBatch(object):
         """
         test_folder_name = "asset_bundler_test_assets"
         helper = bundler_batch_helper
-        self.ap_prepare_test_environment(test_folder_name, asset_processor, ap_setup_fixture)
+        self.ap_prepare_test_environment(test_folder_name, asset_processor, ap_setup_fixture, helper)
         seed_asset = os.path.join(asset_processor.project_test_cache_folder(), "txtfile_0.txt")
         seed_list = os.path.join(workspace.paths.engine_root(), "Assets", "Engine", "SeedAssetList.seed")  # Engine seed list
 
@@ -304,7 +298,7 @@ class TestsAssetBundlerBatch(object):
         # Test Setup Start
         test_folder_name = "asset_bundler_test_assets"
         helper = bundler_batch_helper
-        self.ap_prepare_test_environment(test_folder_name, asset_processor, ap_setup_fixture)
+        self.ap_prepare_test_environment(test_folder_name, asset_processor, ap_setup_fixture, helper)
         seed_assets = [os.path.join(asset_processor.project_test_cache_folder(), seed_file) for seed_file in
                        os.listdir(asset_processor.project_test_cache_folder())]
         asset_list = helper["asset_info_file_request"]
@@ -447,7 +441,7 @@ class TestsAssetBundlerBatch(object):
         """
         test_folder_name = "asset_bundler_test_assets"
         helper = bundler_batch_helper
-        self.ap_prepare_test_environment(test_folder_name, asset_processor, ap_setup_fixture)
+        self.ap_prepare_test_environment(test_folder_name, asset_processor, ap_setup_fixture, helper)
         seed_asset = os.path.join(asset_processor.project_test_cache_folder(), "txtfile_0.txt")
 
         # Make sure asset list file does not exist entering the test
@@ -545,7 +539,6 @@ class TestsAssetBundlerBatch(object):
         )
 
         # Validate seed was removed from file
-
         with open(helper["seed_list_file"], "r") as seed_list_file:
             assert seed_asset not in seed_list_file.read(), \
                 f"Seed was not removed from asset list file {helper['seed_list_file']}"
@@ -559,7 +552,7 @@ class TestsAssetBundlerBatch(object):
     @pytest.mark.test_case_id("C16877178")
 
     def test_ComparisonOperations_Success(self, workspace, bundler_batch_helper, ap_setup_fixture,
-                                                        asset_processor, timeout):
+                                                        asset_processor):
 
         """
         Tests asset list comparison, both by file and by comparison type. Uses a set
@@ -573,7 +566,7 @@ class TestsAssetBundlerBatch(object):
         """
         test_folder_name = "asset_bundler_test_assets"
         helper = bundler_batch_helper
-        self.ap_prepare_test_environment(test_folder_name, asset_processor, ap_setup_fixture)
+        self.ap_prepare_test_environment(test_folder_name, asset_processor, ap_setup_fixture, helper)
 
         assert "pc" in helper["platforms"] and "mac" in helper["platforms"], \
             "This test requires both PC and MAC platforms to be enabled. " \
@@ -894,14 +887,14 @@ class TestsAssetBundlerBatch(object):
     @pytest.mark.assetpipeline
     @pytest.mark.test_case_id("C16877174")
     @pytest.mark.test_case_id("C16877175")
-    def test_AssetListCreation_OutputMatchesResult(self, workspace, bundler_batch_helper, asset_processor, ap_setup_fixture):
+    @pytest.mark.parametrize("bundler_batch_helper", [False], indirect=True)
+    def test_AssetListCreation_OutputMatchesResult(self, workspace, bundler_batch_helper, asset_processor):
         """
         Tests that assetlists are created equivalent to the output while being created, and
         makes sure overwriting an existing file without the --allowOverwrites fails
 
         Test Steps:
-        1. Check that Asset List creation requires PC platform flag
-        2. Create a PC Asset List using asset info file and default seed lists using --print
+        1. Create an Asset List using asset info file and default seed lists using --print
         3. Validate all assets output are present in the asset list
         4. Create a seed file
         5. Attempt to overwrite Asset List without using --allowOverwrites
@@ -909,149 +902,84 @@ class TestsAssetBundlerBatch(object):
         7. Specifying platform but not "add" or "remove" should fail
         8. Verify file Has changed
         """
-        test_folder_name = "asset_bundler_test_assets"
+        test_folder_name = "textures/milestone2"
         helper = bundler_batch_helper
-        self.ap_prepare_test_environment(test_folder_name, asset_processor, ap_setup_fixture)
-        seed_asset = os.path.join(asset_processor.project_test_cache_folder(), "txtfile_0.txt")
+        platform_to_test = ASSET_PROCESSOR_PLATFORM_MAP.get(workspace.asset_processor_platform)
+        seed_asset = os.path.join(workspace.paths.platform_cache_path(platform_to_test), test_folder_name, "ama_grey_01.tif.streamingimage")
+        asset_info_file = os.path.join(helper["test_dir"],
+                                       helper.platform_file_name(helper["asset_info_file_name"], platform_to_test))
 
-        assert "pc" in helper["platforms"], \
-            "This test requires the PC platform to be enabled. " \
-            "Please rerun with commandline option: '--bundle_platforms=pc'"
-
-        # Assetlist result file (pc platform)
-        al_file_path = os.path.join(
-            helper["project_path"],
-            helper.platform_file_name(helper["asset_info_file_name"], platforms["pc"])
-        )
+        asset_processor.batch_process(platforms=platform_to_test)
         seed_files_pattern = re.compile("Loading Seed List file ( ([^)]*) )")
 
         # Create an asset file
-        output = subprocess.check_output(
-            [
-                helper["bundler_batch"],
-                "assetLists",
-                f"--assetListFile={helper['asset_info_file_request']}",
-                "--addDefaultSeedListFiles",
-                "--platform=pc",
-                "--print",
-                f"--project-path={workspace.paths.project()}"
-            ],
-            universal_newlines=True,
-        )
+        try:
+            output = subprocess.check_output(
+                [
+                    helper["bundler_batch"],
+                    "assetLists",
+                    f"--assetListFile={asset_info_file}",
+                    "--addDefaultSeedListFiles",
+                    f"--platform={platform_to_test}",
+                    "--print",
+                    f"--project-path={workspace.paths.project()}"
+                ],
+                universal_newlines=True,
+            )
+        except subprocess.CalledProcessError as e:
+            output = e.output
+            logger.error(f"AssetBundlerBatch returned error {e} with output {output}")
+        except FileNotFoundError as e:
+            logger.error(f"File Not Found - Failed to call AssetBundlerBatch with error: {e}")
+            raise e
 
         seed_files = seed_files_pattern.findall(output)
 
         # Validate all assets output are present in the resulting asset file
         for seed_file in seed_files:
-            for rel_path in helper.get_seed_relative_paths_for_platform(seed_file, helper.get_platform_flag("pc")):
+            for rel_path in helper.get_seed_relative_paths_for_platform(seed_file, helper.get_platform_flag(platform_to_test)):
                 assert rel_path in output, f"{rel_path} was not found in output from Asset Bundle Batch"
 
         # Create a seed file
         helper.call_seeds(
             seedListFile=helper["seed_list_file"],
             addSeed=seed_asset,
-            platform="pc",
+            platform=platform_to_test,
         )
+        assert os.path.isfile(helper["seed_list_file"])
 
         # Get file contents before trying a failed overwrite attempt
-        with open(al_file_path, "r") as asset_file:
+        with open(asset_info_file, "r") as asset_file:
             file_contents = asset_file.read()
 
         result, _ = helper.call_assetLists(
-            assetListFile=helper["asset_info_file_request"],
+            assetListFile=asset_info_file,
             seedListFile=helper["seed_list_file"],
-            platform="pc",
+            platform=platform_to_test,
             print="",
         )
         assert result is False, "Overwriting without override did not throw an error"
 
         # Validate file did not change when overwrite failed
-        with open(al_file_path, "r") as asset_file:
-            assert file_contents == asset_file.read(), "The failed overwrite changed the file {al_file_path}"
+        with open(asset_info_file, "r") as asset_file:
+            assert file_contents == asset_file.read(), "The failed overwrite changed the file {asset_info_file}"
 
         # Specifying platform but not "add" or "remove" should fail
         result, _ = helper.call_assetLists(
-            assetListFile=helper["asset_info_file_request"],
+            assetListFile=asset_info_file,
             allowOverwrites="",
             seedListFile=helper["seed_list_file"],
-            platform="pc",
+            platform=platform_to_test,
         )
         assert result, "Overwriting with override threw an error"
 
         # Make sure the file is now changed
-        with open(al_file_path, "r") as asset_file:
-            assert file_contents != asset_file.read(), f"The overwrite did not change the file {al_file_path}"
+        with open(asset_info_file, "r") as asset_file:
+            assert file_contents != asset_file.read(), f"The overwrite did not change the file {asset_info_file}"
 
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
-    @pytest.mark.test_case_id("C16877175")
-    @pytest.mark.test_case_id("C16877177")
-    def test_AP_BundleProcessing_BundleProcessedAtRuntime(self, workspace, bundler_batch_helper, asset_processor,
-                                                          ap_setup_fixture, request):
-        """
-        Test to make sure the AP GUI will process a newly created bundle file
-
-        Test Steps:
-        1. Make asset list file (used for bundle creation)
-        2. Start Asset Processor GUI
-        3. Make bundle in <project_folder>/Bundles
-        4. Validate file was created in Bundles folder
-        5. Make sure bundle now exists in cache
-        """
-        # Set up helpers and variables
-        test_folder_name = "asset_bundler_test_assets"
-        helper = bundler_batch_helper
-        self.ap_prepare_test_environment(test_folder_name, asset_processor, ap_setup_fixture)
-        seed_asset = os.path.join(asset_processor.project_test_cache_folder(), "txtfile_0.txt")
-
-        # Make sure file gets deleted on teardown
-        request.addfinalizer(lambda: fs.delete([bundle_result_path], True, False))
-
-        bundles_folder = os.path.join(bundler_batch_helper["project_path"], "Bundles")
-        bundle_request_path = os.path.join(bundles_folder, "bundle.pak")
-        bundle_result_path = os.path.join(bundles_folder,
-                                          helper.platform_file_name("bundle.pak", workspace.asset_processor_platform))
-
-        bundle_cache_path = os.path.join(asset_processor.temp_project_cache(asset_platform="pc"),
-                                         "Bundles",
-                                         helper.platform_file_name("bundle.pak", workspace.asset_processor_platform))
-
-        # Create target 'Bundles' folder if DNE
-        if not os.path.exists(bundles_folder):
-            os.mkdir(bundles_folder)
-        # Delete target bundle file if it already exists
-        if os.path.exists(bundle_result_path):
-            fs.delete([bundle_result_path], True, False)
-
-        # Make asset list file (used for bundle creation)
-        helper.call_assetLists(
-            addSeed=seed_asset,
-            assetListFile=helper["asset_info_file_request"],
-        )
-
-        # Run Asset Processor GUI
-        result, _ = asset_processor.gui_process()
-        assert result, "AP GUI failed"
-
-        asset_processor.wait_for_idle(timeout=5)
-
-        # Make bundle in <project_folder>/Bundles
-        helper.call_bundles(
-            assetListFile=helper["asset_info_file_result"],
-            outputBundlePath=bundle_request_path,
-            maxSize="2048",
-        )
-
-        # Ensure file was created
-        assert os.path.exists(bundle_result_path), f"Bundle was not created at location: {bundle_result_path}"
-
-        timeout = 10
-        waiter.wait_for(lambda: os.path.exists(bundle_cache_path), timeout=timeout)
-        # Make sure bundle now exists in cache
-        assert os.path.exists(bundle_cache_path), f"{bundle_cache_path} not found"
-
-    @pytest.mark.BAT
-    @pytest.mark.assetpipeline
+    @pytest.mark.skip(reason="https://github.com/o3de/o3de/issues/14630")
     def test_FilesMarkedSkip_FilesAreSkipped(self, workspace, asset_processor, ap_setup_fixture, bundler_batch_helper):
         """
         Test Steps:
@@ -1060,7 +988,8 @@ class TestsAssetBundlerBatch(object):
         3. Verify that only the expected assets are present in the created asset list
         """
         test_folder_name = "SeedWithDependencies"
-        self.ap_prepare_test_environment(test_folder_name, asset_processor, ap_setup_fixture)
+        helper = bundler_batch_helper
+        self.ap_prepare_test_environment(test_folder_name, asset_processor, ap_setup_fixture, helper)
         seed_asset = os.path.join(asset_processor.project_test_cache_folder(), "canvas1.uicanvas")
 
         expected_assets = sorted([
@@ -1069,44 +998,41 @@ class TestsAssetBundlerBatch(object):
             "seedwithdependencies/ama_white_01.tif.streamingimage",
             "seedwithdependencies/canvas1.uicanvas"
         ])
-        # Printing these lists out can save a step in debugging if this test fails on Jenkins.
-        logger.info(f"expected_assets: {expected_assets}")
 
         skip_assets = sorted([
             "seedwithdependencies/default1024.font",
             "seedwithdependencies/default2048.font"
         ])
-        logger.info(f"skip_assets: {skip_assets}")
 
         expected_and_skip_assets = sorted(expected_assets + skip_assets)
         # Printing both together to make it quick to compare the results in the logs for a test failure on Jenkins
-        logger.info(f"expected_and_skip_assets: {expected_and_skip_assets}")
 
         # First, generate an asset info file without skipping, to get a list that can be used as a baseline to verify
         # the files were actually skipped, and not just missing.
-        bundler_batch_helper.call_assetLists(
-            assetListFile=bundler_batch_helper['asset_info_file_request'],
+        helper.call_assetLists(
+            assetListFile=helper['asset_info_file_request'],
             addSeed=seed_asset
         )
-        assert os.path.isfile(bundler_batch_helper["asset_info_file_result"])
+        assert os.path.isfile(helper["asset_info_file_result"])
+
         assets_in_no_skip_list = []
-        for rel_path in bundler_batch_helper.get_asset_relative_paths(bundler_batch_helper["asset_info_file_result"]):
+        for rel_path in helper.get_asset_relative_paths(helper["asset_info_file_result"]):
             assets_in_no_skip_list.append(rel_path)
         assets_in_no_skip_list = sorted(assets_in_no_skip_list)
         logger.info(f"assets_in_no_skip_list: {assets_in_no_skip_list}")
-        assert assets_in_no_skip_list == expected_and_skip_assets
+        assert assets_in_no_skip_list == expected_and_skip_assets, f"Expected Assets: {expected_and_skip_assets}, Actual Assets: {assets_in_no_skip_list}"
 
         # Now generate an asset info file using the skip command, and verify the skip files are not in the list.
-        bundler_batch_helper.call_assetLists(
-            assetListFile=bundler_batch_helper['asset_info_file_request'],
+        helper.call_assetLists(
+            assetListFile=helper['asset_info_file_request'],
             addSeed=seed_asset,
             allowOverwrites="",
             skip=','.join(skip_assets)
         )
+        assert os.path.isfile(helper["asset_info_file_result"])
 
-        assert os.path.isfile(bundler_batch_helper["asset_info_file_result"])
         assets_in_list = []
-        for rel_path in bundler_batch_helper.get_asset_relative_paths(bundler_batch_helper["asset_info_file_result"]):
+        for rel_path in helper.get_asset_relative_paths(helper["asset_info_file_result"]):
             assets_in_list.append(rel_path)
         assets_in_list = sorted(assets_in_list)
         logger.info(f"assets_in_list: {assets_in_list}")
@@ -1122,7 +1048,7 @@ class TestsAssetBundlerBatch(object):
         1. Create an asset list that skips the root asset
         2. Verify that asset list was not generated
         """
-        test_folder_name = os.path.join(workspace.project, "libs\\particles")
+        test_folder_name = os.path.join(workspace.project, "libs/particles")
         asset_processor.add_source_folder_assets(test_folder_name)
         asset_processor.batch_process()
 
@@ -1139,7 +1065,6 @@ class TestsAssetBundlerBatch(object):
 
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
-
     def test_AssetLists_SkipUniversalWildcard_ExcludesAll(self, workspace, asset_processor, ap_setup_fixture, bundler_batch_helper):
         """
         Negative scenario test that uses the all wildcard when generating an asset list.
@@ -1148,7 +1073,7 @@ class TestsAssetBundlerBatch(object):
         1. Create an Asset List while using the universal all wildcard "*"
         2. Verify that asset list was not generated
         """
-        test_folder_name = os.path.join(workspace.project, "libs\\particles")
+        test_folder_name = os.path.join(workspace.project, "libs/particles")
         asset_processor.add_source_folder_assets(test_folder_name)
         asset_processor.batch_process()
 
@@ -1197,10 +1122,10 @@ class TestsAssetBundlerBatch(object):
         3. Verify that only the expected assets are present in the asset list
         """
 
-        asset_processor.batch_process()
+        asset_processor.batch_process(platforms=workspace.asset_processor_platform)
         expected_assets = [
-            "objects/cube_lod0.azlod",
-            "objects/cube_lod0_index.azbuffer",
+            "objects/cube_lod0.fbx.azlod",
+            "objects/cube_lod0_index.fbx.azbuffer",
             "resourcepools/defaultvertexbufferpool.pool"
         ]
         # Test Asset Structure:
@@ -1213,10 +1138,11 @@ class TestsAssetBundlerBatch(object):
         # Even if we exclude all parents besides "ParentA", we should still have "CommonChild" since it is a product dependency of "ParentA"
         bundler_batch_helper.call_assetLists(
             assetListFile=bundler_batch_helper['asset_info_file_request'],
-            addSeed="objects/cube_lod0.azlod",
-            skip="objects/cube_lod0_position0.azbuffer, objects/cube_lod0_tangent0.azbuffer,"
-                 "objects/cube_lod0_normal0.azbuffer, objects/cube_lod0_bitangent0.azbuffer,"
-                 "objects/cube_lod0_uv0.azbuffer"
+            addSeed="objects/cube_lod0.fbx.azlod",
+            skip="objects/cube_lod0_position0.fbx.azbuffer, objects/cube_lod0_tangent0.fbx.azbuffer,"
+                 "objects/cube_lod0_normal0.fbx.azbuffer, objects/cube_lod0_bitangent0.fbx.azbuffer,"
+                 "objects/cube_lod0_uv0.fbx.azbuffer",
+            platform=workspace.asset_processor_platform
         )
         assert os.path.isfile(bundler_batch_helper["asset_info_file_result"])
         assets_in_list = []

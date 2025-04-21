@@ -16,6 +16,8 @@
 #define ENABLE_ANISOTROPY 0
 #define ENABLE_SHADER_DEBUGGING 1
 #define ENABLE_CLEAR_COAT 0
+#define ENABLE_DUAL_SPECULAR 1
+#define FORCE_IBL_IN_FORWARD_PASS 1
 
 // Use human skin profile for thin object transmission (if enabled)
 // Remove this line to use a custom profile based on the scatter color
@@ -27,7 +29,6 @@
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 #include <Atom/Features/Pipeline/Forward/ForwardPassSrg.azsli>
 
 // TODO(MaterialPipeline): I don't like how this file #includes something from BasePBR. I'd rather it include a file
@@ -35,7 +36,7 @@
 // a mistake of some kind.
 #include "../../../Shaders/Materials/BasePBR/BasePBR_LightingData.azsli"
 #include "../../../Shaders/Materials/Skin/Skin_LightingBrdf.azsli"
-#include "../../../Shaders/Materials/BasePBR/BasePBR_LightingEval.azsli"
+#include "../../../Shaders/Materials/Skin/Skin_LightingEval.azsli"
 
 
 #include "ForwardPassVertexAndPixel.azsli"

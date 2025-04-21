@@ -70,7 +70,9 @@ namespace AZ
                 RPI::ShaderResourceGroupLayoutList& srgLayoutList,
                 RPI::Ptr<RPI::ShaderOptionGroupLayout> shaderOptionGroupLayout,
                 BindingDependencies& bindingDependencies,
-                RootConstantData& rootConstantData);
+                RootConstantData& rootConstantData,
+                const AZStd::string& tempFolder,
+                bool& useSpecializationConstants);
 
 
             RHI::ShaderHardwareStage ToAssetBuilderShaderType(RPI::ShaderStageType stageType);
@@ -94,7 +96,8 @@ namespace AZ
                 const AzslData& azslData, const MapOfStringToStageType& shaderEntryPoints,
                 const RPI::ShaderOptionGroupLayout& shaderOptionGroupLayout, const AZStd::string& pathToOmJson,
                 const AZStd::string& pathToIaJson, RPI::ShaderInputContract& shaderInputContract,
-                RPI::ShaderOutputContract& shaderOutputContract, size_t& colorAttachmentCount);
+                RPI::ShaderOutputContract& shaderOutputContract, size_t& colorAttachmentCount,
+                const AZStd::string& tempFolder);
 
 
             //! Create a file from a string's content.

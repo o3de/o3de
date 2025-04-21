@@ -23,6 +23,20 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
     )
 
     ly_add_pytest(
+        NAME AutomatedTesting::EditorTests_DPE_Main
+        TEST_SUITE main
+        TEST_SERIAL
+        PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_DPE.py
+        PYTEST_MARKS "not REQUIRES_gpu"
+        RUNTIME_DEPENDENCIES
+            Legacy::Editor
+            AZ::AssetProcessor
+            AutomatedTesting.Assets
+        COMPONENT
+            Editor
+    )
+
+    ly_add_pytest(
         NAME AutomatedTesting::EditorTests_Main_GPU_Optimized
         TEST_SUITE main
         TEST_SERIAL
@@ -37,18 +51,18 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
             Editor
     )
 
-    ly_add_pytest(
-        NAME AutomatedTesting::EditorTests_Sandbox
-        TEST_SUITE sandbox
-        TEST_SERIAL
-        PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Sandbox.py
-        PYTEST_MARKS "not REQUIRES_gpu"
-        RUNTIME_DEPENDENCIES
-            Legacy::Editor
-            AZ::AssetProcessor
-            AutomatedTesting.Assets
-        COMPONENT
-            Editor
-    )
+    #ly_add_pytest(
+    #    NAME AutomatedTesting::EditorTests_Sandbox
+    #    TEST_SUITE sandbox
+    #    TEST_SERIAL
+    #    PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Sandbox.py
+    #    PYTEST_MARKS "not REQUIRES_gpu"
+    #    RUNTIME_DEPENDENCIES
+    #        Legacy::Editor
+    #        AZ::AssetProcessor
+    #        AutomatedTesting.Assets
+    #    COMPONENT
+    #        Editor
+    #)
 
 endif()

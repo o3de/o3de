@@ -8,10 +8,12 @@
 
 #pragma once
 
-#include <AzCore/Interface/Interface.h>
 #include <AzCore/Math/Vector3.h>
-#include <AzCore/Serialization/EditContext.h>
-#include <AzCore/Serialization/SerializeContext.h>
+
+namespace AZ
+{
+    class ReflectContext;
+}
 
 namespace AzToolsFramework
 {
@@ -24,25 +26,7 @@ namespace AzToolsFramework
 
         ViewBookmark() = default;
 
-        static void Reflect(AZ::ReflectContext* context)
-        {
-            if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
-            {
-                serializeContext->Class<ViewBookmark>()
-                    ->Version(0)
-                    ->Field("Position", &ViewBookmark::m_position)
-                    ->Field("Rotation", &ViewBookmark::m_rotation);
-
-                if (AZ::EditContext* editContext = serializeContext->GetEditContext())
-                {
-                    editContext->Class<ViewBookmark>("ViewBookmark Data", "")
-                        ->ClassElement(AZ::Edit::ClassElements::EditorData, "ViewBookmark")
-                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->DataElement(AZ::Edit::UIHandlers::Vector3, &ViewBookmark::m_position, "Position", "")
-                        ->DataElement(AZ::Edit::UIHandlers::Vector3, &ViewBookmark::m_rotation, "Rotation", "");
-                }
-            }
-        }
+        static void Reflect(AZ::ReflectContext* context);
 
         bool operator==(const ViewBookmark& other) const
         {

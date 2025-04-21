@@ -232,7 +232,7 @@ namespace LmbrCentral
         return aabb;
     }
 
-    AZ::Aabb TubeShape::GetEncompassingAabb()
+    AZ::Aabb TubeShape::GetEncompassingAabb() const
     {
         AZStd::shared_lock lock(m_mutex);
         if (m_spline == nullptr)
@@ -246,14 +246,14 @@ namespace LmbrCentral
         return CalculateTubeBounds(*this, worldFromLocalUniformScale);
     }
 
-    void TubeShape::GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds)
+    void TubeShape::GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds) const
     {
         AZStd::shared_lock lock(m_mutex);
         bounds = CalculateTubeBounds(*this, AZ::Transform::CreateIdentity());
         transform = m_currentTransform;
     }
 
-    bool TubeShape::IsPointInside(const AZ::Vector3& point)
+    bool TubeShape::IsPointInside(const AZ::Vector3& point) const
     {
         AZStd::shared_lock lock(m_mutex);
         if (m_spline == nullptr)
@@ -274,7 +274,7 @@ namespace LmbrCentral
         return (m_spline->GetPosition(address) - localPoint).GetLengthSq() < (radiusSq + variableRadiusSq) * scale;
     }
 
-    float TubeShape::DistanceFromPoint(const AZ::Vector3& point)
+    float TubeShape::DistanceFromPoint(const AZ::Vector3& point) const
     {
         AZStd::shared_lock lock(m_mutex);
         AZ::Transform worldFromLocalNormalized = m_currentTransform;
@@ -290,13 +290,13 @@ namespace LmbrCentral
         return AZStd::max(0.0f, (sqrtf(splineQueryResult.m_distanceSq) - (m_radius + variableRadius)) * uniformScale);
     }
 
-    float TubeShape::DistanceSquaredFromPoint(const AZ::Vector3& point)
+    float TubeShape::DistanceSquaredFromPoint(const AZ::Vector3& point) const
     {
         float distance = DistanceFromPoint(point);
         return powf(distance, 2.0f);
     }
 
-    bool TubeShape::IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance)
+    bool TubeShape::IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) const
     {
         AZStd::shared_lock lock(m_mutex);
         const auto splineQueryResult = IntersectSpline(m_currentTransform, src, dir, *m_spline);
@@ -603,27 +603,16 @@ namespace LmbrCentral
         }
     }
 
-    static void RefreshUI()
-    {
-#if LMBR_CENTRAL_EDITOR
-        AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
-            &AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh,
-            AzToolsFramework::PropertyModificationRefreshLevel::Refresh_Values);
-#endif
-    }
-
     void TubeShape::BaseRadiusChanged()
     {
         // ensure all variable radii stay in bounds should the base radius
         // change and cause the resulting total radius to be negative
         ValidateAllVariableRadii();
-        RefreshUI();
     }
 
     void TubeShape::VariableRadiusChanged(size_t vertIndex)
     {
         ValidateVariableRadius(vertIndex);
-        RefreshUI();
     }
 
     void TubeShape::ValidateVariableRadius(const size_t vertIndex)

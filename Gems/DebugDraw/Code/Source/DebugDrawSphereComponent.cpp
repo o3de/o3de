@@ -25,6 +25,7 @@ namespace DebugDraw
                 ->Field("Color", &DebugDrawSphereElement::m_color)
                 ->Field("WorldLocation", &DebugDrawSphereElement::m_worldLocation)
                 ->Field("Radius", &DebugDrawSphereElement::m_radius)
+                ->Field("IsRayTracingEnabled", &DebugDrawSphereElement::m_isRayTracingEnabled)
                 ;
 
             AZ::EditContext* editContext = serializeContext->GetEditContext();
@@ -35,6 +36,7 @@ namespace DebugDraw
                     ->Attribute(AZ::Edit::Attributes::Category, "Debugging")
                     ->DataElement(0, &DebugDrawSphereElement::m_color,  "Color",    "Display color for the line.")
                     ->DataElement(0, &DebugDrawSphereElement::m_radius, "Radius",   "The size of the sphere.")
+                    ->DataElement(0, &DebugDrawSphereElement::m_isRayTracingEnabled, "Use ray tracing", "Includes this object in ray tracing calculations.")
                     ;
             }
         }
@@ -61,7 +63,7 @@ namespace DebugDraw
 
     void DebugDrawSphereComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("DebugDrawSphereService", 0x15765c23));
+        provided.push_back(AZ_CRC_CE("DebugDrawSphereService"));
     }
 
     void DebugDrawSphereComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)

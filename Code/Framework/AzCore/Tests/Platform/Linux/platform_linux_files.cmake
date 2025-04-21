@@ -7,6 +7,7 @@
 #
 
 set(FILES
+    ../Common/UnixLike/Tests/IO/SystemFileTest_UnixLike.cpp
     ../Common/UnixLike/Tests/Process/ProcessInfoTests_UnixLike.cpp
     Tests/UtilsTests_Linux.cpp
     ../Common/UnixLike/Tests/UtilsTests_UnixLike.cpp

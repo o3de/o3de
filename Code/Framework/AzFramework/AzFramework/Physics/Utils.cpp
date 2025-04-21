@@ -173,5 +173,10 @@ namespace Physics
             // If the filter tag is empty, then ignore it
             return !filterTag || tag == filterTag;
         }
+
+        bool HasUniformScale(const AZ::Vector3& scale)
+        {
+            return AZ::IsClose(scale.GetX(), scale.GetY()) && AZ::IsClose(scale.GetX(), scale.GetZ());
+        }
     }
 }

@@ -159,6 +159,19 @@ ly_add_target(
             Gem::${gem_name}.Unified.Private.Object
 )
 
+# Include the gem name into Module source file
+# for use with the AZ_DECLARE_MODULE_CLASS macro
+# This is to allow renaming of the gem to also cause
+# the CreateModuleClass_Gem_<gem-name> function which
+# is used to bootstrap the gem in monolithic builds to link to the new gem name
+ly_add_source_properties(
+SOURCES
+    Source/Unified/${Name}Module.cpp
+PROPERTY COMPILE_DEFINITIONS
+    VALUES
+        O3DE_GEM_NAME=${gem_name}
+        O3DE_GEM_VERSION=${gem_version})
+
 # By default, we will specify that the above target ${gem_name} would be used by
 # Client and Server type targets when this gem is enabled.  If you don't want it
 # active in Clients or Servers by default, delete one of both of the following lines:
@@ -170,6 +183,10 @@ ly_create_alias(NAME ${gem_name}.Unified NAMESPACE Gem TARGETS Gem::${gem_name})
 ly_create_alias(NAME ${gem_name}.Clients.API NAMESPACE Gem TARGETS Gem::${gem_name}.API)
 ly_create_alias(NAME ${gem_name}.Servers.API NAMESPACE Gem TARGETS Gem::${gem_name}.API)
 ly_create_alias(NAME ${gem_name}.Unified.API NAMESPACE Gem TARGETS Gem::${gem_name}.API)
+
+# Add in CMake dependencies for each gem dependency listed in this gem's gem.json file
+# for the Clients, Servers and Unified gem variants
+o3de_add_variant_dependencies_for_gem_dependencies(GEM_NAME ${gem_name} VARIANTS Clients Servers Unified)
 
 # If we are on a host platform, we want to add the host tools targets like the ${gem_name}.Editor MODULE target
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
@@ -205,7 +222,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         BUILD_DEPENDENCIES
             PUBLIC
                 AZ::AzToolsFramework
-                $<TARGET_OBJECTS:Gem::${gem_name}.Unified.Private.Object>
+                ${gem_name}.Unified.Private.Object
     )
 
     ly_add_target(
@@ -226,6 +243,19 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::${gem_name}.Editor.Private.Object
     )
 
+    # Include the gem name into the Editor Module source file
+    # for use with the AZ_DECLARE_MODULE_CLASS macro
+    # This is to allow renaming of the gem to also cause
+    # the CreateModuleClass_Gem_<gem-name> function which
+    # is used to bootstrap the gem in monolithic builds to link to the new gem name
+    ly_add_source_properties(
+    SOURCES
+        Source/Tools/${Name}EditorModule.cpp
+    PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_GEM_NAME=${gem_name}
+            O3DE_GEM_VERSION=${gem_version})
+
     # By default, we will specify that the above target ${gem_name} would be used by
     # Tool and Builder type targets when this gem is enabled.  If you don't want it
     # active in Tools or Builders by default, delete one of both of the following lines:
@@ -236,6 +266,9 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_create_alias(NAME ${gem_name}.Tools.API NAMESPACE Gem TARGETS Gem::${gem_name}.Editor.API)
     ly_create_alias(NAME ${gem_name}.Builders.API NAMESPACE Gem TARGETS Gem::${gem_name}.Editor.API)
 
+    # Add in CMake dependencies for each gem dependency listed in this gem's gem.json file
+    # for the Tools and Builders gem variants
+    o3de_add_variant_dependencies_for_gem_dependencies(GEM_NAME ${gem_name} VARIANTS Tools Builders)
 endif()
 
 ################################################################################

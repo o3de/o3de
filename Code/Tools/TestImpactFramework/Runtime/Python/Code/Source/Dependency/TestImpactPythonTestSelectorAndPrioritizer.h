@@ -9,6 +9,7 @@
 #pragma once
 
 #include <Dependency/TestImpactTestSelectorAndPrioritizer.h>
+#include <Dependency/TestImpactDynamicDependencyMap.h>
 #include <Target/Python/TestImpactPythonProductionTarget.h>
 #include <Target/Python/TestImpactPythonTestTarget.h>
 

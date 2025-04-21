@@ -18,6 +18,6 @@ namespace AzToolsFramework
         , Ui::KeyQueryDPE
     {
     public:
-        KeyQueryDPE(AZ::DocumentPropertyEditor::DocumentAdapterPtr* keyQueryAdatper, QWidget* parentWidget = nullptr);
+        KeyQueryDPE(AZ::DocumentPropertyEditor::DocumentAdapterPtr keyQueryAdapter, QWidget* parentWidget = nullptr);
     };
 } // namespace AzToolsFramework

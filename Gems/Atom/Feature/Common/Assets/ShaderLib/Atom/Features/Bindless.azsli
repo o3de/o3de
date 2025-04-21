@@ -21,8 +21,8 @@
 
 #include "SrgSemantics.azsli"
 
-// The structure of this SRG must exactly match the code that refers to in the each of the RHI API implementations.
-// Todo: Find a way to make the bindless SRG structure data driven in code https://github.com/o3de/o3de/issues/13324
+// Bindless SRG where all the views related to the following resource types (read only textures, read write textures,
+// read only buffers, read write buffers and read only cube map textures) reside and can be accessed indirectly by any shader
 partial ShaderResourceGroup Bindless : SRG_Bindless
 {
     // UNBOUNDED_SIZE is used to approximate unbounded arrays on platforms that have issues with their
@@ -33,7 +33,8 @@ partial ShaderResourceGroup Bindless : SRG_Bindless
     RWTexture2D<float4> m_RWTexture2D[UNBOUNDED_SIZE];
     ByteAddressBuffer m_ByteAddressBuffer[UNBOUNDED_SIZE];
     RWByteAddressBuffer m_RWByteAddressBuffer[UNBOUNDED_SIZE];
-    
+    TextureCube m_TextureCube[UNBOUNDED_SIZE];
+
     Texture2D<float4> GetTexture2D(uint index)
     {
         return m_Texture2D[index];
@@ -52,6 +53,11 @@ partial ShaderResourceGroup Bindless : SRG_Bindless
     RWByteAddressBuffer GetRWByteAddressBuffer(uint index)
     {
         return m_RWByteAddressBuffer[index];
+    }
+
+    TextureCube GetTextureCube(uint index)
+    {
+        return m_TextureCube[index];
     }
 
 };

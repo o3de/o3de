@@ -27,7 +27,6 @@
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 #include <Atom/Features/Pipeline/Forward/ForwardPassSrg.azsli>
 
 // TODO(MaterialPipeline): I don't like how this file #includes something from BasePBR. I'd rather it include a file

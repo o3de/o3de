@@ -57,8 +57,8 @@ namespace GraphCanvas
 
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC("GraphCanvas_StyledGraphicItemService", 0xeae4cdf4));
-            required.push_back(AZ_CRC("GraphCanvas_SceneMemberService", 0xe9759a2d));
+            required.push_back(AZ_CRC_CE("GraphCanvas_StyledGraphicItemService"));
+            required.push_back(AZ_CRC_CE("GraphCanvas_SceneMemberService"));
         }
         
         void Init() override;

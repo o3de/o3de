@@ -7,9 +7,6 @@
  */
 #pragma once
 
-#include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/Serialization/EditContextConstants.inl>
-
 
 /*
     Any class that implements a nodeable AzAutoGen driver (i.e. *.ScriptCanvasNodeable.xml)

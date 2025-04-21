@@ -31,7 +31,7 @@ namespace AZ
             //! During LUT blending, this override intensity is considered in conjunction with the LUTs own intensity.
             float m_overrideStrength = 0.0;
             //! Asset ID of LUT
-            Data::Asset<RPI::AnyAsset> m_assetId;
+            Data::Asset<RPI::AnyAsset> m_asset;
             //! Shaper preset type
             ShaperPresetType m_shaperPreset = AZ::Render::ShaperPresetType::Log2_48Nits;
             //! When shaper preset is custom, these values set min and max exposure.

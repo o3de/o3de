@@ -161,7 +161,7 @@ namespace SimulatedObjectSetupTests
         EXPECT_EQ(object->GetSimulatedJoints().size(), GetParam().m_expectedSimulatedJointCount);
     }
 
-    INSTANTIATE_TEST_CASE_P(Test, AddSimulatedJointAndChildrenFixture,
+    INSTANTIATE_TEST_SUITE_P(Test, AddSimulatedJointAndChildrenFixture,
         testing::ValuesIn(std::vector<AddSimulatedJointAndChildrenParams>
         {
             {PrefabLeftArmSkeleton::leftShoulderIndex, 13}, // leftShoulder is a root joint
@@ -280,7 +280,7 @@ namespace SimulatedObjectSetupTests
         }
     }
 
-    INSTANTIATE_TEST_CASE_P(Test, GetSimulatedRootJointFixture,
+    INSTANTIATE_TEST_SUITE_P(Test, GetSimulatedRootJointFixture,
         ::testing::Combine(
             ::testing::Values(
                 PrefabLeftArmSkeleton::leftShoulderIndex,

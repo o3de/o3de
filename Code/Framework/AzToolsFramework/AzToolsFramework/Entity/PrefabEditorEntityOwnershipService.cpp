@@ -63,11 +63,10 @@ namespace AzToolsFramework
         AZ_Assert(m_loaderInterface != nullptr,
             "Couldn't get prefab loader interface, it's a requirement for PrefabEntityOwnership system to work");
 
-        m_rootInstance = AZStd::unique_ptr<Prefab::Instance>(m_prefabSystemComponent->CreatePrefab({}, {}, "newLevel.prefab"));
+        m_rootInstance =
+            AZStd::unique_ptr<Prefab::Instance>(m_prefabSystemComponent->CreatePrefab(AzToolsFramework::EntityList{}, {}, "newLevel.prefab"));
         m_sliceOwnershipService.BusConnect(m_entityContextId);
         m_sliceOwnershipService.m_shouldAssertForLegacySlicesUsage = m_shouldAssertForLegacySlicesUsage;
-        m_editorSliceOwnershipService.BusConnect();
-        m_editorSliceOwnershipService.m_shouldAssertForLegacySlicesUsage = m_shouldAssertForLegacySlicesUsage;
     }
 
     bool PrefabEditorEntityOwnershipService::IsInitialized()
@@ -78,8 +77,6 @@ namespace AzToolsFramework
     void PrefabEditorEntityOwnershipService::Destroy()
     {
         StopPlayInEditor();
-        m_editorSliceOwnershipService.BusDisconnect();
-        m_sliceOwnershipService.BusDisconnect();
 
         if (m_rootInstance != nullptr)
         {
@@ -428,14 +425,13 @@ namespace AzToolsFramework
             filePath, instanceToParentUnder,
             [this](const EntityList& entities)
             {
-                HandleEntitiesAdded(entities);
+                HandleEntitiesAdded(entities); // includes container entity
             });
 
         if (instantiatedPrefabInstance)
         {
             Prefab::Instance& addedInstance = instanceToParentUnder->get().AddInstance(
                 AZStd::move(instantiatedPrefabInstance));
-            HandleEntitiesAdded({addedInstance.m_containerEntity.get()});
             return addedInstance;
         }
 
@@ -770,68 +766,5 @@ namespace AzToolsFramework
         static AzFramework::RootSliceAsset dummy;
         AZ_Assert(!m_shouldAssertForLegacySlicesUsage, "Slice usage with Prefab code enabled");
         return dummy;
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-
-    AzFramework::SliceInstantiationTicket UnimplementedSliceEditorEntityOwnershipService::InstantiateEditorSlice(
-        const AZ::Data::Asset<AZ::Data::AssetData>&, const AZ::Transform&)
-    {
-        AZ_Assert(!m_shouldAssertForLegacySlicesUsage, "Slice usage with Prefab code enabled");
-        return AzFramework::SliceInstantiationTicket();
-    }
-
-    AZ::SliceComponent::SliceInstanceAddress UnimplementedSliceEditorEntityOwnershipService::CloneEditorSliceInstance(
-        AZ::SliceComponent::SliceInstanceAddress, AZ::SliceComponent::EntityIdToEntityIdMap&)
-    {
-        AZ_Assert(!m_shouldAssertForLegacySlicesUsage, "Slice usage with Prefab code enabled");
-        return {};
-    }
-
-    AZ::SliceComponent::SliceInstanceAddress UnimplementedSliceEditorEntityOwnershipService::CloneSubSliceInstance(
-        const AZ::SliceComponent::SliceInstanceAddress&, const AZStd::vector<AZ::SliceComponent::SliceInstanceAddress>&,
-        const AZ::SliceComponent::SliceInstanceAddress&, AZ::SliceComponent::EntityIdToEntityIdMap*)
-    {
-        AZ_Assert(!m_shouldAssertForLegacySlicesUsage, "Slice usage with Prefab code enabled");
-        return {};
-    }
-
-    AZ::SliceComponent::SliceInstanceAddress UnimplementedSliceEditorEntityOwnershipService::PromoteEditorEntitiesIntoSlice(
-        const AZ::Data::Asset<AZ::SliceAsset>&, const AZ::SliceComponent::EntityIdToEntityIdMap&)
-    {
-        AZ_Assert(!m_shouldAssertForLegacySlicesUsage, "Slice usage with Prefab code enabled");
-        return {};
-    }
-
-    void UnimplementedSliceEditorEntityOwnershipService::DetachSliceEntities(const EntityIdList&)
-    {
-        AZ_Assert(!m_shouldAssertForLegacySlicesUsage, "Slice usage with Prefab code enabled");
-    }
-
-    void UnimplementedSliceEditorEntityOwnershipService::DetachSliceInstances(const AZ::SliceComponent::SliceInstanceAddressSet&)
-    {
-        AZ_Assert(!m_shouldAssertForLegacySlicesUsage, "Slice usage with Prefab code enabled");
-    }
-
-    void UnimplementedSliceEditorEntityOwnershipService::DetachSubsliceInstances(const AZ::SliceComponent::SliceInstanceEntityIdRemapList&)
-    {
-        AZ_Assert(!m_shouldAssertForLegacySlicesUsage, "Slice usage with Prefab code enabled");
-    }
-
-    void UnimplementedSliceEditorEntityOwnershipService::RestoreSliceEntity(
-        AZ::Entity*, const AZ::SliceComponent::EntityRestoreInfo&, SliceEntityRestoreType)
-    {
-        AZ_Assert(!m_shouldAssertForLegacySlicesUsage, "Slice usage with Prefab code enabled");
-    }
-
-    void UnimplementedSliceEditorEntityOwnershipService::ResetEntitiesToSliceDefaults(EntityIdList)
-    {
-        AZ_Assert(!m_shouldAssertForLegacySlicesUsage, "Slice usage with Prefab code enabled");
-    }
-
-    AZ::SliceComponent* UnimplementedSliceEditorEntityOwnershipService::GetEditorRootSlice()
-    {
-        AZ_Assert(!m_shouldAssertForLegacySlicesUsage, "Slice usage with Prefab code enabled");
-        return nullptr;
     }
 }

@@ -1,0 +1,366 @@
+{
+    "template_name": "ScriptOnlyProject",
+    "template_restricted_platform_relative_path": "Templates/ScriptOnlyProject",
+    "restricted_name": "o3de",
+    "restricted_platform_relative_path": "Templates/ScriptOnlyProject",
+    "origin": "Open 3D Engine - o3de.org",
+    "origin_url": "https://github.com/o3de/o3de",
+    "license": "Apache-2.0 or MIT",
+    "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
+    "display_name": "Quick start (Scripts only)",
+    "summary": "Does not require any c++ compilation to get started using the editor.  LUA and Script Canvas are still available.",
+    "canonical_tags": [
+        "Template",
+        "Project"
+    ],
+    "user_tags": [
+        "ScriptOnlyProject"
+    ],
+    "icon_path": "preview.png",
+    "copyFiles": [
+        {
+            "file": ".gitignore",
+            "isTemplated": false
+        },
+        {
+            "file": "CMakeLists.txt",
+            "isTemplated": true
+        },
+        {
+            "file": "CMakePresets.json",
+            "isTemplated": true
+        },
+        {
+            "file": "cmake/EngineFinder.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Config/shader_global_build_options.json",
+            "isTemplated": false
+        },
+        {
+            "file": "Levels/start/start.prefab",
+            "isTemplated": false
+        },
+        {
+            "file": "Platform/Android/android_project.cmake",
+            "isTemplated": false
+        },
+        {
+            "file": "Platform/Android/android_project.json",
+            "isTemplated": true
+        },
+        {
+            "file": "Platform/Linux/linux_project.cmake",
+            "isTemplated": false
+        },
+        {
+            "file": "Platform/Linux/linux_project.json",
+            "isTemplated": false
+        },
+        {
+            "file": "Platform/Mac/mac_project.cmake",
+            "isTemplated": false
+        },
+        {
+            "file": "Platform/Mac/mac_project.json",
+            "isTemplated": false
+        },
+        {
+            "file": "Platform/Windows/windows_project.cmake",
+            "isTemplated": false
+        },
+        {
+            "file": "Platform/Windows/windows_project.json",
+            "isTemplated": false
+        },
+        {
+            "file": "Platform/iOS/ios_project.cmake",
+            "isTemplated": false
+        },
+        {
+            "file": "Platform/iOS/ios_project.json",
+            "isTemplated": false
+        },
+        {
+            "file": "Registry/assetprocessor_settings.setreg",
+            "isTemplated": true
+        },
+        {
+            "file": "Registry/assimp_settings.setreg",
+            "isTemplated": false
+        },
+        {
+            "file": "Resources/GameSDK.ico",
+            "isTemplated": false
+        },
+        {
+            "file": "Resources/Splash.bmp",
+            "isTemplated": false
+        },
+        {
+            "file": "Resources/Platform/Mac/Images.xcassets/Contents.json",
+            "isTemplated": false
+        },
+        {
+            "file": "Resources/Platform/Mac/Images.xcassets/AppIcon.appiconset/Contents.json",
+            "isTemplated": false
+        },
+        {
+            "file": "Resources/Platform/Mac/Images.xcassets/AppIcon.appiconset/icon_128.png",
+            "isTemplated": false
+        },
+        {
+            "file": "Resources/Platform/Mac/Images.xcassets/AppIcon.appiconset/icon_128_2x.png",
+            "isTemplated": false
+        },
+        {
+            "file": "Resources/Platform/Mac/Images.xcassets/AppIcon.appiconset/icon_16.png",
+            "isTemplated": false
+        },
+        {
+            "file": "Resources/Platform/Mac/Images.xcassets/AppIcon.appiconset/icon_16_2x.png",
+            "isTemplated": false
+        },
+        {
+            "file": "Resources/Platform/Mac/Images.xcassets/AppIcon.appiconset/icon_256.png",
+            "isTemplated": false
+        },
+        {
+            "file": "Resources/Platform/Mac/Images.xcassets/AppIcon.appiconset/icon_256_2x.png",
+            "isTemplated": false
+        },
+        {
+            "file": "Resources/Platform/Mac/Images.xcassets/AppIcon.appiconset/icon_32.png",
+            "isTemplated": false
+        },
+        {
+            "file": "Resources/Platform/Mac/Images.xcassets/AppIcon.appiconset/icon_32_2x.png",
+            "isTemplated": false
+        },
+        {
+            "file": "Resources/Platform/Mac/Images.xcassets/AppIcon.appiconset/icon_512.png",
+            "isTemplated": false
+        },
+        {
+            "file": "Resources/Platform/Mac/Images.xcassets/AppIcon.appiconset/icon_512_2x.png",
+            "isTemplated": false
+        },
+        {
+            "file": "Resources/Platform/Mac/Info.plist",
+            "isTemplated": true
+        },
+        {
+            "file": "Resources/Platform/iOS/Images.xcassets/Contents.json",
+            "isTemplated": false
+        },
+        {
+            "file": "Resources/Platform/iOS/Images.xcassets/LaunchImage.launchimage/Contents.json",
+            "isTemplated": false
+        },
+        {
+            "file": "Resources/Platform/iOS/Images.xcassets/LaunchImage.launchimage/iPadLaunchImage1024x768.png",
+            "isTemplated": false
+        },
+        {
+            "file": "Resources/Platform/iOS/Images.xcassets/LaunchImage.launchimage/iPadLaunchImage1536x2048.png",
+            "isTemplated": false
+        },
+        {
+            "file": "Resources/Platform/iOS/Images.xcassets/LaunchImage.launchimage/iPadLaunchImage2048x1536.png",
+            "isTemplated": false
+        },
+        {
+            "file": "Resources/Platform/iOS/Images.xcassets/LaunchImage.launchimage/iPadLaunchImage768x1024.png",
+            "isTemplated": false
+        },
+        {
+            "file": "Resources/Platform/iOS/Images.xcassets/LaunchImage.launchimage/iPhoneLaunchImage640x1136.png",
+            "isTemplated": false
+        },
+        {
+            "file": "Resources/Platform/iOS/Images.xcassets/LaunchImage.launchimage/iPhoneLaunchImage640x960.png",
+            "isTemplated": false
+        },
+        {
+            "file": "Resources/Platform/iOS/Images.xcassets/AppIcon.appiconset/Contents.json",
+            "isTemplated": false
+        },
+        {
+            "file": "Resources/Platform/iOS/Images.xcassets/AppIcon.appiconset/iPadAppIcon152x152.png",
+            "isTemplated": false
+        },
+        {
+            "file": "Resources/Platform/iOS/Images.xcassets/AppIcon.appiconset/iPadAppIcon76x76.png",
+            "isTemplated": false
+        },
+        {
+            "file": "Resources/Platform/iOS/Images.xcassets/AppIcon.appiconset/iPadProAppIcon167x167.png",
+            "isTemplated": false
+        },
+        {
+            "file": "Resources/Platform/iOS/Images.xcassets/AppIcon.appiconset/iPadSettingsIcon29x29.png",
+            "isTemplated": false
+        },
+        {
+            "file": "Resources/Platform/iOS/Images.xcassets/AppIcon.appiconset/iPadSettingsIcon58x58.png",
+            "isTemplated": false
+        },
+        {
+            "file": "Resources/Platform/iOS/Images.xcassets/AppIcon.appiconset/iPadSpotlightIcon40x40.png",
+            "isTemplated": false
+        },
+        {
+            "file": "Resources/Platform/iOS/Images.xcassets/AppIcon.appiconset/iPadSpotlightIcon80x80.png",
+            "isTemplated": false
+        },
+        {
+            "file": "Resources/Platform/iOS/Images.xcassets/AppIcon.appiconset/iPhoneAppIcon120x120.png",
+            "isTemplated": false
+        },
+        {
+            "file": "Resources/Platform/iOS/Images.xcassets/AppIcon.appiconset/iPhoneAppIcon180x180.png",
+            "isTemplated": false
+        },
+        {
+            "file": "Resources/Platform/iOS/Images.xcassets/AppIcon.appiconset/iPhoneSettingsIcon58x58.png",
+            "isTemplated": false
+        },
+        {
+            "file": "Resources/Platform/iOS/Images.xcassets/AppIcon.appiconset/iPhoneSettingsIcon87x87.png",
+            "isTemplated": false
+        },
+        {
+            "file": "Resources/Platform/iOS/Images.xcassets/AppIcon.appiconset/iPhoneSpotlightIcon120x120.png",
+            "isTemplated": false
+        },
+        {
+            "file": "Resources/Platform/iOS/Images.xcassets/AppIcon.appiconset/iPhoneSpotlightIcon80x80.png",
+            "isTemplated": false
+        },
+        {
+            "file": "Resources/Platform/iOS/Info.plist",
+            "isTemplated": true
+        },
+        {
+            "file": "ShaderLib/README.md",
+            "isTemplated": false
+        },
+        {
+            "file": "ShaderLib/scenesrg.srgi",
+            "isTemplated": false
+        },
+        {
+            "file": "ShaderLib/viewsrg.srgi",
+            "isTemplated": false
+        },
+        {
+            "file": "autoexec.cfg",
+            "isTemplated": false
+        },
+        {
+            "file": "package.bat",
+            "isTemplated": true
+        },
+        {
+            "file": "package.sh",
+            "isTemplated": true
+        },
+        {
+            "file": "AssetBundling/SeedLists/Example.seed",
+            "isTemplated": false
+        },
+        {
+            "file": "game.cfg",
+            "isTemplated": false
+        },
+        {
+            "file": "preview.png",
+            "isTemplated": false
+        },
+        {
+            "file": "project.json",
+            "isTemplated": true
+        }
+    ],
+    "createDirectories": [
+        {
+            "dir": "Assets"
+        },
+        {
+            "dir": "AssetBundling"
+        },
+        {
+            "dir": "AssetBundling/SeedLists"
+        },
+        {
+            "dir": "cmake"
+        },
+        {
+            "dir": "Config"
+        },
+        {
+            "dir": "Levels"
+        },
+        {
+            "dir": "Levels/start"
+        },
+        {
+            "dir": "Platform"
+        },
+        {
+            "dir": "Platform/Android"
+        },
+        {
+            "dir": "Platform/Linux"
+        },
+        {
+            "dir": "Platform/Mac"
+        },
+        {
+            "dir": "Platform/Windows"
+        },
+        {
+            "dir": "Platform/iOS"
+        },
+        {
+            "dir": "Registry"
+        },
+        {
+            "dir": "Resources"
+        },
+        {
+            "dir": "Resources/Platform"
+        },
+        {
+            "dir": "Resources/Platform/Mac"
+        },
+        {
+            "dir": "Resources/Platform/Mac/Images.xcassets"
+        },
+        {
+            "dir": "Resources/Platform/Mac/Images.xcassets/AppIcon.appiconset"
+        },
+        {
+            "dir": "Resources/Platform/iOS"
+        },
+        {
+            "dir": "Resources/Platform/iOS/Images.xcassets"
+        },
+        {
+            "dir": "Resources/Platform/iOS/Images.xcassets/LaunchImage.launchimage"
+        },
+        {
+            "dir": "Resources/Platform/iOS/Images.xcassets/AppIcon.appiconset"
+        },
+        {
+            "dir": "ShaderLib"
+        },
+        {
+            "dir": "Shaders"
+        },
+        {
+            "dir": "Shaders/ShaderResourceGroups"
+        }
+    ]
+}

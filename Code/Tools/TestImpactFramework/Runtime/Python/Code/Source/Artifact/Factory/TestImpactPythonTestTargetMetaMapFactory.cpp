@@ -35,7 +35,7 @@ namespace TestImpact
             "labels"
         };
 
-        enum
+        enum Fields
         {
             PythonKey,
             TestKey,
@@ -47,9 +47,12 @@ namespace TestImpact
             TimeoutKey,
             ScriptKey,
             TestCommandKey,
-            SuiteLabelsKey
+            SuiteLabelsKey,
+            // Checksum
+            _CHECKSUM_
         };
 
+        static_assert(Fields::_CHECKSUM_ == AZStd::size(Keys));
         AZ_TestImpact_Eval(!testListData.empty(), ArtifactException, "Test meta-data cannot be empty");
 
         PythonTestTargetMetaMap testMetas;

@@ -6,8 +6,9 @@
  *
  */
 
-#include <AzFramework/DocumentPropertyEditor/SortAdapter.h>
+#include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/ranges/zip_view.h>
+#include <AzFramework/DocumentPropertyEditor/SortAdapter.h>
 
 namespace AZ::DocumentPropertyEditor
 {
@@ -20,26 +21,31 @@ namespace AZ::DocumentPropertyEditor
         if (m_sortActive != active)
         {
             m_sortActive = active;
+
+            Dom::Patch outgoingPatch;
             if (active)
             {
-                // TODO: This method should generate patches to/from source once custom patching is implemented
-                HandleReset();
-
                 // we can use the currently cached tree, if it still exists. NB it will be cleared by DOM changes
                 if (!m_rootNode)
                 {
-                    // TODO: GenerateFullTree();
+                    GenerateFullTree();
                 }
-                // TODO: generate RemovalsFromSource patch
             }
-            else
+            else if (!m_rootNode)
             {
-                // TODO: generate PatchToSource patch
+                // tree wasn't generated yet and sort is being disabled, nothing to do.
+                // Wait for the normal GenerateContents to be called to generate the initial tree
+                return;
+            }
+            GenerateMovePatches(m_rootNode.get(), Dom::Path(), !active, outgoingPatch);
+            if (outgoingPatch.size())
+            {
+                NotifyContentsChanged(outgoingPatch);
             }
         }
     }
 
-    Dom::Path RowSortAdapter::MapPath(const Dom::Path& path, bool mapToSource) const
+    Dom::Path RowSortAdapter::MapPath(const Dom::Path& path, bool mapFromSource) const
     {
         if (!m_sortActive)
         {
@@ -55,16 +61,25 @@ namespace AZ::DocumentPropertyEditor
             if (pathEntry.IsIndex())
             {
                 bool found = false;
-                for (auto [indexSortedNode, adapterSortedNode] : AZStd::views::zip(currNode->m_indexSortedChildren, currNode->m_adapterSortedChildren))
+                for (auto [indexSortedNode, adapterSortedNode] :
+                     AZStd::views::zip(currNode->m_indexSortedChildren, currNode->m_adapterSortedChildren))
                 {
-                    const SortInfoNode* comparisonNode = (mapToSource ? adapterSortedNode : indexSortedNode.get());
-                    if (comparisonNode->m_domIndex == pathEntry.GetIndex())
+                    const SortInfoNode* comparisonNode =
+                        static_cast<SortInfoNode*>((mapFromSource ? adapterSortedNode : indexSortedNode.get()));
+                    const auto comparisonIndex = comparisonNode->m_domIndex;
+                    const auto pathIndex = pathEntry.GetIndex();
+                    if (comparisonIndex == pathIndex)
                     {
                         // set the mapped entry
-                        const auto mappedIndex = (mapToSource ? indexSortedNode->m_domIndex : adapterSortedNode->m_domIndex);
+                        const auto mappedIndex = (mapFromSource ? indexSortedNode->m_domIndex : adapterSortedNode->m_domIndex);
                         mappedPath.Push(mappedIndex);
                         currNode = comparisonNode;
                         found = true;
+                        break;
+                    }
+                    else if (!mapFromSource && pathIndex < comparisonIndex)
+                    {
+                        // if we're searching the index-ordered container, we can stop if we've passed the index we're looking for
                         break;
                     }
                 }
@@ -108,6 +123,11 @@ namespace AZ::DocumentPropertyEditor
         return filteredContents;
     }
 
+    bool RowSortAdapter::LessThan(SortInfoNode* lhs, SortInfoNode* rhs) const
+    {
+        return (lhs->m_domIndex < rhs->m_domIndex);
+    }
+
     void RowSortAdapter::HandleReset()
     {
         m_rootNode.reset();
@@ -142,8 +162,11 @@ namespace AZ::DocumentPropertyEditor
                         outgoingPatch.PushBack(Dom::PatchOperation::ReplaceOperation(sortedPath, operationIterator->GetValue()));
 
                         // the replaced column entry might've changed the row's sorting. Updated it
-                        sortedPath.Pop();
-                        ResortRow(sortedPath);
+                        ResortRow(GetRowPath(patchPath), outgoingPatch);
+                    }
+                    else
+                    {
+                        needsReset = true;
                     }
                 }
                 else if (operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Add)
@@ -158,8 +181,7 @@ namespace AZ::DocumentPropertyEditor
 
             if (needsReset)
             {
-                // TODO: handle other patch types here. Some of this is not currently possible, 
-                // because a sort change is mostly move operations, and the DPE doesn't handle moves yet.
+                // TODO: handle other patch types here
                 HandleReset();
             }
             else if (outgoingPatch.Size())
@@ -180,6 +202,26 @@ namespace AZ::DocumentPropertyEditor
         HandleReset();
     }
 
+    RowSortAdapter::SortInfoNode* RowSortAdapter::GetNodeAtSourcePath(Dom::Path sourcePath)
+    {
+        SortInfoNode* currNode = m_rootNode.get();
+        for (auto pathIter = sourcePath.begin(), endIter = sourcePath.end(); pathIter != endIter; ++pathIter)
+        {
+            if (!pathIter->IsIndex())
+            {
+                return nullptr;
+            }
+            auto searchChild = AZStd::make_unique<SortInfoBase>(pathIter->GetIndex());
+            auto foundChild = currNode->m_indexSortedChildren.find(searchChild);
+            if (foundChild == currNode->m_indexSortedChildren.end())
+            {
+                return nullptr;
+            }
+            currNode = static_cast<SortInfoNode*>(foundChild->get());
+        }
+        return currNode;
+    }
+
     void RowSortAdapter::GenerateFullTree()
     {
         const auto& sourceContents = m_sourceAdapter->GetContents();
@@ -198,6 +240,7 @@ namespace AZ::DocumentPropertyEditor
             if (IsRow(childValue))
             {
                 auto newChild = NewSortInfoNode();
+                newChild->m_parentNode = sortInfo;
                 newChild->m_domIndex = childIndex;
                 CacheDomInfoForNode(childValue, newChild);
 
@@ -229,7 +272,7 @@ namespace AZ::DocumentPropertyEditor
 
             // sort the source child before copying it
             auto sortedChild = GetSortedValue(sourceValue[nextInSort], *nextSortedIter);
-            
+
             // do the actual copy into the current position
             sortedValue[nextIndex] = sortedChild;
         }
@@ -237,11 +280,143 @@ namespace AZ::DocumentPropertyEditor
         return sortedValue;
     }
 
-    void RowSortAdapter::ResortRow(Dom::Path sortedPath)
+    void RowSortAdapter::ResortRow(Dom::Path sourcePath, Dom::Patch& outgoingPatch)
     {
-        // TODO once the DPE supports move operations:
-        // record row's sorted index, remove it, re-cache its data,add it, check its new index. If changed, generate move operation
-        // NB: this isn't necessary for flat adapters that can't be re-ordered, so the CVarAdapter doesn't need this
+        // get the actual node at sortedPath
+        auto* node = GetNodeAtSourcePath(sourcePath);
+
+        // remove the (possibly changed) node from its sorted set and re-add it to see if it ends up in the same position
+        auto& parentNode = node->m_parentNode;
+        auto& sortedSet = parentNode->m_adapterSortedChildren;
+        auto sortedIter = sortedSet.find(node);
+        AZ_Assert(sortedIter != sortedSet.end(), "node not found in sorted set!");
+        sortedSet.erase(sortedIter);
+        auto insertedIter = sortedSet.insert(node).first;
+        auto indexIter = parentNode->m_indexSortedChildren.begin();
+        sortedIter = sortedSet.begin();
+
+        // walk both sets until we get to the newly inserted node
+        while (sortedIter != insertedIter && sortedIter != sortedSet.end())
+        {
+            ++sortedIter;
+            ++indexIter;
+        }
+        AZ_Assert(sortedIter != sortedSet.end(), "re-inserted node not found!");
+        const auto newIndex = (*indexIter)->m_domIndex;
+
+        // record row's existing sorted index for comparison
+        auto sortedPath = MapFromSourcePath(sourcePath);
+        const auto oldIndex = sortedPath.Back().GetIndex();
+        if (newIndex != oldIndex)
+        {
+            auto newPath = sortedPath;
+            newPath.Pop();
+            newPath.Push(newIndex);
+            outgoingPatch.PushBack(Dom::PatchOperation::MoveOperation(newPath, sortedPath));
+        }
     }
 
+    void RowSortAdapter::GenerateMovePatches(
+        const SortInfoNode* sortNode, Dom::Path parentPath, bool mapToSource, Dom::Patch& outgoingPatch)
+    {
+        if (sortNode->m_indexSortedChildren.empty())
+        {
+            // no children, nothing to do
+            return;
+        }
+
+        AZStd::unordered_map<size_t, size_t> sourceToDestination;
+        auto firstMoveIndex = outgoingPatch.size();
+
+        auto zippedView = AZStd::views::zip(sortNode->m_indexSortedChildren, sortNode->m_adapterSortedChildren);
+        // generate a map of child move patch operations for this parent
+        for (auto [indexSortedNode, adapterSortedNode] : zippedView)
+        {
+            size_t sourceIndex, destinationIndex;
+            if (mapToSource)
+            {
+                destinationIndex = adapterSortedNode->m_domIndex;
+                sourceIndex = indexSortedNode->m_domIndex;
+            }
+            else
+            {
+                destinationIndex = indexSortedNode->m_domIndex;
+                sourceIndex = adapterSortedNode->m_domIndex;
+            }
+            sourceToDestination[sourceIndex] = destinationIndex;
+        }
+
+        // iterate over the mappings, adjusting the source index by any prior moves that have crossed it
+        auto currMapping = sourceToDestination.extract(sourceToDestination.begin());
+        while (!currMapping.empty())
+        {
+            auto& sourceIndex = currMapping.key();
+            auto& destinationIndex = currMapping.mapped();
+            for (auto operationIndex = firstMoveIndex, numMoves = outgoingPatch.size(); operationIndex < numMoves; ++operationIndex)
+            {
+                auto& currMove = outgoingPatch[operationIndex];
+                const auto operationSource = currMove.GetSourcePath().Back().GetIndex();
+                const auto operationDest = currMove.GetDestinationPath().Back().GetIndex();
+
+                if (operationSource > operationDest)
+                {
+                    // check if this prior operation crossed us moving backwards which would've incremented our source index
+                    if (operationSource > sourceIndex && operationDest <= sourceIndex)
+                    {
+                        ++sourceIndex;
+                    }
+                }
+                else
+                {
+                    // check if this prior operation crossed us moving forwards which would've decremented our source index
+                    if (operationSource < sourceIndex && operationDest >= sourceIndex)
+                    {
+                        --sourceIndex;
+                    }
+                }
+            }
+
+            if (sourceIndex != destinationIndex)
+            {
+                // it's an actual different index, generate the move patch
+                auto destPath = parentPath / destinationIndex;
+                auto sourcePath = parentPath / sourceIndex;
+                outgoingPatch.PushBack(Dom::PatchOperation::MoveOperation(destPath, sourcePath));
+            }
+
+            // next do the mapping whose source is the previous operation's destination
+            auto nextMapping = sourceToDestination.find(destinationIndex);
+            if (nextMapping == sourceToDestination.end())
+            {
+                // there's no mapping starting there - we've reached the end of a loop
+                if (sourceToDestination.empty())
+                {
+                    // no remaining mappings, we're done!
+                    currMapping = {};
+                }
+                else
+                {
+                    // we've reached the end of a loop, but there are more mappings to account for
+                    // Grab one from the front and start a new loop
+                    // because this loop is finished, no mappings are displaced, we can reset firstMoveIndex
+                    firstMoveIndex = outgoingPatch.size();
+                    currMapping = sourceToDestination.extract(sourceToDestination.begin());
+                }
+            }
+            else
+            {
+                currMapping = sourceToDestination.extract(nextMapping);
+            }
+        }
+
+        // Now loop through the children again so that they can generate their children's patches. Note that we can't recurse into children
+        // until all moves for this level are done, because the move operations for this level should be adjacent in the patch for searching
+        for (auto [indexSortedNode, adapterSortedNode] : zippedView)
+        {
+            // now recurse to children, note that we're always mapping to the indexSortedNode dom index,
+            // whether it's mapping the sorted node to its new place or mapping the index node back to its home
+            SortInfoNode* sourceNode = (mapToSource ? static_cast<SortInfoNode*>(indexSortedNode.get()) : adapterSortedNode);
+            GenerateMovePatches(sourceNode, parentPath / indexSortedNode->m_domIndex, mapToSource, outgoingPatch);
+        }
+    }
 } // namespace AZ::DocumentPropertyEditor

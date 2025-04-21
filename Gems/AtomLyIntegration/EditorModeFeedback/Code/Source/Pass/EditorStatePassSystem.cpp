@@ -58,6 +58,14 @@ namespace AZ::Render
             return;
         }
 
+        // check if the reference pass of insert position exist
+        Name postProcessPassName = Name("PostProcessPass");
+        if (renderPipeline->FindFirstPass(postProcessPassName) == nullptr)
+        {
+            AZ_Warning("EditorModeFeedback", false, "Can't find %s in the render pipeline. Editor mode feedback is disabled", postProcessPassName.GetCStr());
+            return;
+        }
+
         auto mainParentPassTemplate = RPI::PassSystemInterface::Get()->GetPassTemplate(templateName);
         if (!mainParentPassTemplate)
         {
@@ -165,7 +173,7 @@ namespace AZ::Render
         passRequest.m_passName = Name(MainPassParentPassName);
         passRequest.m_templateName = mainParentPassTemplate->m_name;
         passRequest.AddInputConnection(
-            RPI::PassConnection{ Name("ColorInputOutput"), RPI::PassAttachmentRef{ Name("PostProcessPass"), Name("Output") } });
+            RPI::PassConnection{ Name("ColorInputOutput"), RPI::PassAttachmentRef{ postProcessPassName, Name("Output") } });
         passRequest.AddInputConnection(
             RPI::PassConnection{ Name("InputDepth"), RPI::PassAttachmentRef{ Name("DepthPrePass"), Name("Depth") } });
 
@@ -177,7 +185,7 @@ namespace AZ::Render
         }
 
         // Inject the parent pass after the PostProcess pass
-        if (!renderPipeline->AddPassAfter(parentPass, Name("PostProcessPass")))
+        if (!renderPipeline->AddPassAfter(parentPass, postProcessPassName))
         {
             AZ_Error(
                 "EditorStatePassSystem", false, "Add editor mode feedback parent pass to render pipeline [%s] failed", renderPipeline->GetId().GetCStr());

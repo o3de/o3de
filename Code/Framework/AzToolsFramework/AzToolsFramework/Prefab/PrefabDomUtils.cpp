@@ -29,7 +29,7 @@ namespace AzToolsFramework
         {
             namespace Internal
             {
-                static constexpr const char* const ComponentRemovalNotice =
+                [[maybe_unused]] static constexpr const char* const ComponentRemovalNotice =
                     "[INFORMATION] %s data has been altered to remove component '%s'. "
                     "Please edit and save %s to persist the change.";
 
@@ -545,6 +545,150 @@ namespace AzToolsFramework
                 return prefabBuffer.GetString();
             }
 
+            void AddNestedInstance(
+                PrefabDom& prefabDom,
+                const InstanceAlias& nestedInstanceAlias,
+                PrefabDomValueConstReference nestedInstanceDom)
+            {
+                auto instancesMember = prefabDom.FindMember(PrefabDomUtils::InstancesName);
+                if (instancesMember == prefabDom.MemberEnd())
+                {
+                    // Add an "Instances" member in the prefab DOM
+                    prefabDom.AddMember(
+                        rapidjson::StringRef(PrefabDomUtils::InstancesName), PrefabDomValue(), prefabDom.GetAllocator());
+                    instancesMember = prefabDom.FindMember(PrefabDomUtils::InstancesName);
+                }
+
+                PrefabDomValueReference instancesValue = instancesMember->value;
+                if (!instancesValue->get().IsObject())
+                {
+                    instancesValue->get().SetObject();
+                }
+
+                auto instanceMember = instancesValue->get().FindMember(rapidjson::StringRef(nestedInstanceAlias.c_str()));
+                if (instanceMember == instancesValue->get().MemberEnd())
+                {
+                    // Add a member for the nested instance in the prefab DOM
+                    instancesValue->get().AddMember(
+                        rapidjson::Value(nestedInstanceAlias.c_str(), prefabDom.GetAllocator()),
+                        nestedInstanceDom.has_value() ? rapidjson::Value(nestedInstanceDom->get(), prefabDom.GetAllocator())
+                                                      : PrefabDomValue(),
+                        prefabDom.GetAllocator());
+                }
+                else
+                {
+                    AZ_Assert(
+                        false,
+                        "PrefabDomUtils::AddNestedInstance - Nested instance already exists in prefab DOM.");
+                }
+            }
+
+            bool SubstituteInvalidParentsInEntities(PrefabDom& templateDomRef)
+            {
+                // Search for a TransformComponent and check the "Parent Entity" statement
+                auto sourceIt = templateDomRef.FindMember(PrefabDomUtils::SourceName);
+                if (sourceIt == templateDomRef.MemberEnd() || !sourceIt->value.IsString())
+                {
+                    AZ_Warning("Prefab", false, "lacks a 'Source' container.");
+                    return false;
+                }
+                const AZStd::string path(sourceIt->value.GetString());
+
+                const auto containerEntityIt = templateDomRef.FindMember(PrefabDomUtils::ContainerEntityName);
+                if (containerEntityIt == templateDomRef.MemberEnd() || !containerEntityIt->value.IsObject())
+                {
+                    AZ_Warning("Prefab", false, "'%s' lacks a 'ContainerEntity' container.", path.c_str());
+                    return false;
+                }
+                const auto containerEntityAliasIt = containerEntityIt->value.FindMember(PrefabDomUtils::EntityIdName);
+                if (containerEntityAliasIt == containerEntityIt->value.MemberEnd() || !containerEntityAliasIt->value.IsString())
+                {
+                    AZ_Error("Prefab", false, "'%s' lacks 'Id' object for ContainerEntity.", path.c_str());
+                    return false;
+                }
+                const AZStd::string containerEntityAlias(containerEntityAliasIt->value.GetString());
+
+                const auto entitiesIt = templateDomRef.FindMember(PrefabDomUtils::EntitiesName);
+                if (entitiesIt == templateDomRef.MemberEnd() || !entitiesIt->value.IsObject())
+                {
+                    AZ_Error("Prefab", false, "'%s' lacks 'Entities' container.", path.c_str());
+                    return false;
+                }
+
+                bool result = true;
+                // Search through entities for their TransformComponents
+                for (auto entityIt = entitiesIt->value.MemberBegin(); entityIt != entitiesIt->value.MemberEnd(); ++entityIt)
+                {
+                    // More information for logs
+                    constexpr const auto unknownName = "[unknown]";
+                    AZStd::string entityAlias = unknownName;
+                    const auto entityAliasIt = entityIt->value.FindMember(PrefabDomUtils::EntityIdName);
+                    if (entityAliasIt != entityIt->value.MemberEnd() && entityAliasIt->value.IsString())
+                    {
+                        entityAlias = entityAliasIt->value.GetString();
+                    }
+                    AZStd::string entityName = unknownName;
+                    const auto entityNameIt = entityIt->value.FindMember("Name");
+                    if (entityNameIt != entityIt->value.MemberEnd() && entityNameIt->value.IsString())
+                    {
+                        entityName = entityNameIt->value.GetString();
+                    }
+
+                    const auto componentsIt = entityIt->value.FindMember(PrefabDomUtils::ComponentsName);
+                    if (componentsIt == entityIt->value.MemberEnd() || !componentsIt->value.IsObject())
+                    {
+                        result = false;
+                        AZ_Error("Prefab", false, "'%s' lacks 'Components' container in Entity (%s, '%s').",
+                            path.c_str(), entityAlias.c_str(), entityName.c_str());
+                        continue;
+                    }
+
+                    // Search current entity object for TransformComponent looping through components
+                    for (auto componentIt = componentsIt->value.MemberBegin(); componentIt != componentsIt->value.MemberEnd();
+                         ++componentIt)
+                    {
+                        const auto componentsTypeIt = componentIt->value.FindMember(PrefabDomUtils::TypeName);
+                        if (componentsTypeIt == componentIt->value.MemberEnd() || !componentsTypeIt->value.IsString())
+                        {
+                            result = false;
+                            AZStd::string componentName = componentIt->name.GetString();
+                            AZ_Error("Prefab", false, "'%s' lacks '$type' sub-object in a component object of Entity (%s, '%s').",
+                                path.c_str(), entityAlias.c_str(), entityName.c_str());
+                            continue;
+                        }
+                        
+                        AZStd::string componentAlias(componentsTypeIt->value.GetString());
+                        if (!componentAlias.contains("TransformComponent"))
+                        {
+                            continue;
+                        }
+                        
+                        constexpr const auto parentObjectName = "Parent Entity";
+                        auto parentIt = componentIt->value.FindMember(parentObjectName);
+                        if (parentIt == componentIt->value.MemberEnd() || !parentIt->value.IsString())
+                        {
+                            result = false;
+                            AZ_Error("Prefab", false, "'%s' lacks 'Parent Entity' object in TransformComponent of Entity (%s, '%s').",
+                                path.c_str(), entityAlias.c_str(), entityName.c_str());
+                            break; // one TransformComponent for an Entity -> invalid
+                        }
+
+                        if (AZStd::string(parentIt->value.GetString()).empty()) // parent link empty ?
+                        {
+                            // Re-link this entity under the ContainerEntity using its Alias
+                            parentIt->value.SetString(rapidjson::StringRef(containerEntityAlias.c_str()), templateDomRef.GetAllocator());
+
+                            result = false; // report that changes were needed and made 
+                            AZ_Error("Prefab", false,
+                                "'%s' lacks 'Parent Entity' value in TransformComponent of Entity (%s, '%s')"
+                                "\nEntity re-linked under the root container '%s'.",
+                                path.c_str(), entityAlias.c_str(), entityName.c_str(), containerEntityAlias.c_str());
+                        }
+                        break; // single TransformComponent for an Entity -> evaluated
+                    }
+                }
+                return result;
+            }
         } // namespace PrefabDomUtils
     } // namespace Prefab
 } // namespace AzToolsFramework

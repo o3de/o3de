@@ -123,7 +123,7 @@ namespace Multiplayer
         MultiplayerAgentType GetAgentType() const override;
         void InitializeMultiplayer(MultiplayerAgentType state) override;
         bool StartHosting(uint16_t port = UseDefaultHostPort, bool isDedicated = true) override;
-        bool Connect(const AZStd::string& remoteAddress, uint16_t port) override;
+        bool Connect(const AZStd::string& remoteAddress, uint16_t port, const AZStd::string& connectionTicket = "") override;
         void Terminate(AzNetworking::DisconnectReason reason) override;
         void AddClientMigrationStartEventHandler(ClientMigrationStartEvent::Handler& handler) override;
         void AddClientMigrationEndEventHandler(ClientMigrationEndEvent::Handler& handler) override;
@@ -131,8 +131,16 @@ namespace Multiplayer
         void AddNotifyClientMigrationHandler(NotifyClientMigrationEvent::Handler& handler) override;
         void AddNotifyEntityMigrationEventHandler(NotifyEntityMigrationEvent::Handler& handler) override;
         void AddConnectionAcquiredHandler(ConnectionAcquiredEvent::Handler& handler) override;
-        void AddSessionInitHandler(SessionInitEvent::Handler& handler) override;
-        void AddSessionShutdownHandler(SessionShutdownEvent::Handler& handler) override;
+        void AddNetworkInitHandler(NetworkInitEvent::Handler& handler) override;
+
+        //! @deprecated If looking for an event when a multiplayer session is created, use SessionNotificationBus::OnCreateSessionBegin or
+        //! SessionNotificationBus::OnCreateSessionEnd.
+        void AddSessionInitHandler(SessionInitEvent::Handler&) override {}
+
+        //! @deprecated If looking for an event when the multiplayer session ends, use SessionNotificationBus::OnDestroySessionBegin or
+        //! SessionNotificationBus::OnDestroySessionEnd.
+        void AddSessionShutdownHandler(SessionShutdownEvent::Handler&) override {}
+
         void AddLevelLoadBlockedHandler(LevelLoadBlockedEvent::Handler& handler) override;
         void AddNoServerLevelLoadedHandler(NoServerLevelLoadedEvent::Handler& handler) override;
         void AddVersionMismatchHandler(VersionMismatchEvent::Handler& handler) override;
@@ -157,7 +165,9 @@ namespace Multiplayer
 
         //! AzFramework::RootSpawnableNotificationBus::Handler
         //! @{
+        void OnRootSpawnableAssigned(AZ::Data::Asset<AzFramework::Spawnable> rootSpawnable, uint32_t generation) override;
         void OnRootSpawnableReady(AZ::Data::Asset<AzFramework::Spawnable> rootSpawnable, uint32_t generation) override;
+        void OnRootSpawnableReleased(uint32_t generation) override;
         //! @}
 
         //! AzFramework::LevelLoadBlockerBus::Handler overrides.
@@ -194,9 +204,8 @@ namespace Multiplayer
         
         IFilterEntityManager* m_filterEntityManager = nullptr; // non-owning pointer
 
-        SessionInitEvent m_initEvent;
-        SessionShutdownEvent m_shutdownEvent;
         ConnectionAcquiredEvent m_connectionAcquiredEvent;
+        NetworkInitEvent m_networkInitEvent;
         ServerAcceptanceReceivedEvent m_serverAcceptanceReceivedEvent;
         EndpointDisconnectedEvent m_endpointDisconnectedEvent;
         ClientMigrationStartEvent m_clientMigrationStartEvent;
@@ -238,6 +247,7 @@ namespace Multiplayer
 
         AZStd::vector<PlayerWaitingToBeSpawned> m_playersWaitingToBeSpawned;
         bool m_blockClientLoadLevel = true;
+        bool m_levelEntitiesActivated = false;
 
         AZStd::unordered_map<AzNetworking::ConnectionId, MultiplayerPackets::Connect> m_originalConnectPackets;
 
@@ -247,6 +257,10 @@ namespace Multiplayer
         {
             MetricsEvent();
         }, AZ::Name("MultiplayerSystemComponent Metrics") };
+
+        void UpdatedMetricsConnectionCount();
+
+        void UpdateConnections();
 
         void OnPhysicsPreSimulate(float dt);
         AzPhysics::SystemEvents::OnPresimulateEvent::Handler m_preSimulateHandler{[this](float dt)

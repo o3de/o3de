@@ -15,8 +15,9 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Math/Aabb.h>
-#include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/list.h>
+#include <AzCore/std/containers/map.h>
+#include <AzCore/std/containers/vector.h>
 #include <AzCore/std/function/function_fwd.h>
 
 #include <Vegetation/Descriptor.h>

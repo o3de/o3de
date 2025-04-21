@@ -11,7 +11,7 @@
 #include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Public/Shader/ShaderSystemInterface.h>
-#include <Atom/RPI.Public/Scene.h> 
+#include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Reflect/Material/MaterialFunctor.h>
 #include <Atom/RHI/DrawPacketBuilder.h>
 #include <Atom/RHI/RHISystemInterface.h>
@@ -35,7 +35,8 @@ namespace AZ::Render
     {
         if (!m_material)
         {
-            const RPI::ModelLod::Mesh& mesh = m_modelLod->GetMeshes()[m_modelLodMeshIndex];
+            const auto meshes = m_modelLod->GetMeshes();
+            const RPI::ModelLod::Mesh& mesh = meshes[m_modelLodMeshIndex];
             m_material = mesh.m_material;
         }
 
@@ -114,7 +115,8 @@ namespace AZ::Render
 
     bool EditorStateMeshDrawPacket::DoUpdate(const RPI::Scene& parentScene)
     {
-        const RPI::ModelLod::Mesh& mesh = m_modelLod->GetMeshes()[m_modelLodMeshIndex];
+        auto meshes = m_modelLod->GetMeshes();
+        RPI::ModelLod::Mesh& mesh = meshes[m_modelLodMeshIndex];
 
         if (!m_material)
         {
@@ -122,11 +124,10 @@ namespace AZ::Render
             return false;
         }
 
-        RHI::DrawPacketBuilder drawPacketBuilder;
+        RHI::DrawPacketBuilder drawPacketBuilder{RHI::MultiDevice::AllDevices};
         drawPacketBuilder.Begin(nullptr);
 
-        drawPacketBuilder.SetDrawArguments(mesh.m_drawArguments);
-        drawPacketBuilder.SetIndexBufferView(mesh.m_indexBufferView);
+        drawPacketBuilder.SetGeometryView(&mesh);
         drawPacketBuilder.AddShaderResourceGroup(m_objectSrg->GetRHIShaderResourceGroup());
         drawPacketBuilder.AddShaderResourceGroup(m_material->GetRHIShaderResourceGroup());
 
@@ -188,7 +189,7 @@ namespace AZ::Render
             const RPI::ShaderVariant& variant = shader->GetVariant(finalVariantId);
 
             RHI::PipelineStateDescriptorForDraw pipelineStateDescriptor;
-            variant.ConfigurePipelineState(pipelineStateDescriptor);
+            variant.ConfigurePipelineState(pipelineStateDescriptor, shaderOptions);
 
             // Render states need to merge the runtime variation.
             // This allows materials to customize the render states that the shader uses.
@@ -196,13 +197,12 @@ namespace AZ::Render
             RHI::MergeStateInto(renderStatesOverlay, pipelineStateDescriptor.m_renderStates);
 
             streamBufferViewsPerShader.emplace_back();
-            auto& streamBufferViews = streamBufferViewsPerShader.back();
-
             RPI::UvStreamTangentBitmask uvStreamTangentBitmask;
+            RHI::StreamBufferIndices streamIndices;
 
             if (!m_modelLod->GetStreamsForMesh(
                 pipelineStateDescriptor.m_inputStreamLayout,
-                streamBufferViews,
+                streamIndices,
                 &uvStreamTangentBitmask,
                 shader->GetInputContract(),
                 m_modelLodMeshIndex,
@@ -219,7 +219,7 @@ namespace AZ::Render
                 // If the DrawSrg exists we must create and bind it, otherwise the CommandList will fail validation for SRG being null
                 drawSrg = RPI::ShaderResourceGroup::Create(shader->GetAsset(), shader->GetSupervariantIndex(), drawSrgLayout->GetName());
 
-                if (!variant.IsFullyBaked() && drawSrgLayout->HasShaderVariantKeyFallbackEntry())
+                if (variant.UseKeyFallback() && drawSrgLayout->HasShaderVariantKeyFallbackEntry())
                 {
                     drawSrg->SetShaderVariantKeyFallbackValue(shaderOptions.GetShaderVariantKeyFallbackValue());
                 }
@@ -250,7 +250,7 @@ namespace AZ::Render
             RHI::DrawPacketBuilder::DrawRequest drawRequest;
             drawRequest.m_listTag = m_drawListTag;
             drawRequest.m_pipelineState = pipelineState;
-            drawRequest.m_streamBufferViews = streamBufferViews;
+            drawRequest.m_streamIndices = streamIndices;
             drawRequest.m_stencilRef = m_stencilRef;
             drawRequest.m_sortKey = m_sortKey;
             if (drawSrg)

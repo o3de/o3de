@@ -55,7 +55,7 @@
                 "ShaderAsset": {
                     "FilePath": "Shaders/PostProcessing/NewDepthOfFieldFilterSmall.shader"
                 },
-                "PipelineViewTag": "MainCamera"
+                "BindViewSrg": true
             }
         }
     }

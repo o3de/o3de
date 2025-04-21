@@ -72,8 +72,6 @@ namespace GraphCanvas
         QGraphicsWidget*                                m_spacer;
         NodePropertyDisplayWidget*                      m_nodePropertyDisplay;
         GraphCanvasLabel*                               m_slotText;
-
-        QGraphicsLayoutItem*                            m_layoutItem;
     };    
 
     //! Lays out the parts of the Data Slot

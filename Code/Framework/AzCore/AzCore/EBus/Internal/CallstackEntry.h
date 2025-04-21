@@ -161,8 +161,6 @@ namespace AZ
         template <class C>
         struct EBusCallstackStorage<C, true>
         {
-            static AZ_THREAD_LOCAL C* s_entry;
-
             EBusCallstackStorage() = default;
             ~EBusCallstackStorage() = default;
             EBusCallstackStorage(const EBusCallstackStorage&) = delete;
@@ -170,24 +168,36 @@ namespace AZ
 
             C* operator->() const
             {
-                return s_entry;
+                return GetEntry();
             }
 
             C& operator*() const
             {
-                return *s_entry;
+                return *GetEntry();
             }
 
             C* operator=(C* entry)
             {
-                s_entry = entry;
-                return s_entry;
+                GetEntry() = entry;
+                return GetEntry();
             }
 
             operator C*() const
             {
-                return s_entry;
+                return GetEntry();
             }
+
+        private:
+            C*& GetEntry() const;
         };
+
+        // This functino needs to be defined outside of the class definition such that it can get explicitly instantiated correctly. This is
+        // important when using an EBus across module boundaries, as otherwise a callstack cannot traverse the module boundary.
+        template <class C>
+        C*& EBusCallstackStorage<C, true>::GetEntry() const
+        {
+            static AZ_THREAD_LOCAL C* s_entry = nullptr;
+            return s_entry;
+        }
     }
 }

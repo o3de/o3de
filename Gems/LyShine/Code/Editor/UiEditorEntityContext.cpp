@@ -189,7 +189,7 @@ bool UiEditorEntityContext::SaveToStreamForGame(AZ::IO::GenericStream& stream, A
     }
 
     // Emulate client flags.
-    AZ::PlatformTagSet platformTags = { AZ_CRC("renderer", 0xf199a19c) };
+    AZ::PlatformTagSet platformTags = { AZ_CRC_CE("renderer") };
 
     // Compile the source slice into the runtime slice (with runtime components).
     AzToolsFramework::UiEditorOnlyEntityHandler uiEditorOnlyEntityHandler;
