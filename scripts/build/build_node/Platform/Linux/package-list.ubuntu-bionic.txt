@@ -27,3 +27,8 @@ mesa-common-dev
 libunwind-dev
 libzstd-dev
 pkg-config
+
+# Wayland Libraries
+libwayland-dev                         # For client headers
+wayland-protocols                      # For protocols
+libwayland-bin                         # For wayland-scanner

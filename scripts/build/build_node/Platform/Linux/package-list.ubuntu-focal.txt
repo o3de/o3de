@@ -31,3 +31,8 @@ ros-humble-urdfdom
 ros-humble-vision-msgs
 libunwind-dev
 libzstd-dev
+
+# Wayland Libraries
+libwayland-dev                         # For client headers
+wayland-protocols                      # For protocols
+libwayland-bin                         # For wayland-scanner
