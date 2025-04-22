@@ -37,7 +37,7 @@ namespace AZ
             //! Sets the decal opacity
             virtual void SetOpacity(float opacity) = 0;
 
-#if defined(CARBONATED)
+#if defined(CARBONATED) && defined(CARBONATED_DECAL_VISTOGGLE)
             //! Gets the decals visibility
             virtual bool GetVisibility() const = 0;
 
