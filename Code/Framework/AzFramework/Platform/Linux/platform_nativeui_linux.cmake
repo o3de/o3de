@@ -31,6 +31,7 @@ if (${PAL_TRAIT_LINUX_WINDOW_MANAGER} STREQUAL "xcb")
 elseif(PAL_TRAIT_LINUX_WINDOW_MANAGER STREQUAL "wayland")
     # Protocol files to generate
     # Paths are relative to the pkgdatadir of wayland-protocols, .xml is automatically appended
+    # Update gen_license.py when adding or removing protocols
     set(WAYLAND_PROTOCOLS
             stable/xdg-shell/xdg-shell
             unstable/xdg-decoration/xdg-decoration-unstable-v1
