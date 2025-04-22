@@ -189,7 +189,7 @@ namespace AZ
                         auto tmpName = nodeName;
                         do
                         {
-                            nodeName = tmpName + AZStd::string::format("%d", num++);
+                            nodeName = AZStd::string::format("%s%d", tmpName.c_str(), num++);
                         } while (nameMap.contains(nodeName));
                          
                     }
