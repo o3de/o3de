@@ -2095,7 +2095,13 @@ void UiCanvasComponent::RenderCanvas(bool isInGame, AZ::Vector2 viewportSize, Ui
             }
         }
 
+#if defined(CARBONATED) && defined(CARBONATED_DROP_LYSHINE_OFFSCREEN_PRIMITIVES)
+        m_renderGraph.SetViewportSize(viewportSize);
+#endif
         UiElementBus::Event(m_rootElement, &UiElementBus::Events::RenderElement, &m_renderGraph, isInGame);
+#if defined(CARBONATED) && defined(CARBONATED_DROP_LYSHINE_OFFSCREEN_PRIMITIVES)
+        m_renderGraph.SetViewportSize(AZ::Vector2(0.0f, 0.0f));
+#endif
 
         if (renderToTexture)
         {
