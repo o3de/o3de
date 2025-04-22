@@ -9,6 +9,10 @@
 #include <Atom/RPI.Public/PipelineState.h>
 #include <Atom/RPI.Public/Scene.h>
 
+#if defined(CARBONATED) && defined(CARBONATED_SHADER_LOADING_TIME)
+#include <AzCore/Time/ITime.h>
+#endif
+
 namespace AZ
 {
     namespace RPI
@@ -166,8 +170,17 @@ namespace AZ
                     {
                         RHI::MergeStateInto(m_renderStatesOverlay, descriptor.m_renderStates);
                     }
-
+#if defined(CARBONATED) && defined(CARBONATED_SHADER_LOADING_TIME)
+                    const int64_t startTime = static_cast<int64_t>(AZ::GetRealElapsedTimeMs());
                     m_pipelineState = m_shader->AcquirePipelineState(descriptor);
+                    const int64_t dt = static_cast<int64_t>(AZ::GetRealElapsedTimeMs()) - startTime;
+                    if (dt > 50)
+                    {
+                        AZ_Info("PrimitiveLoadTime", "acquired pipeline state for %s in  %d ms", m_shader->GetAsset().GetHint().c_str(), dt);
+                    }
+#else
+                    m_pipelineState = m_shader->AcquirePipelineState(descriptor);
+#endif
                 }
                 m_dirty = false;
             }
