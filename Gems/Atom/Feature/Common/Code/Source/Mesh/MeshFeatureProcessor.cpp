@@ -2926,7 +2926,9 @@ namespace AZ
                     }
                     else
                     {
-                        AZ_Error("BuildCullable", false, "m_postCullingInstanceDataByLod index %lu out of range", static_cast<unsigned int>(index));
+                        AZ_Error("BuildCullable", false, "Lod index %lu out of range, m_postCullingInstanceDataByLod %lu lods, lodCount %lu, asset %s",
+                                        static_cast<unsigned int>(index), static_cast<unsigned int>(m_postCullingInstanceDataByLod.size()),
+                                        static_cast<unsigned int>(lodCount), GetAssetHint().c_str());
                     }
 #else
                     const PostCullingInstanceDataList& postCullingInstanceDataList = m_postCullingInstanceDataByLod[lodIndex + m_lodBias];
