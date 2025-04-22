@@ -34,7 +34,7 @@
 #endif
 #endif
 
-namespace ScriptCanvasDeveloper
+namespace ScriptCanvas::Developer
 {
     ///////////////////////////////
     // ManuallyCreateVariableTest

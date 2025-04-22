@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Memory/SystemAllocator.h>
 
@@ -20,10 +21,10 @@ namespace AZ
         //! The asset builders for classes that uses this can look up the asset ID of the file path,
         //! add it to it's list of dependencies, and then set the m_assetId for runtime use by the class.
         //! For an example of this, see PassAssetBuilder
-        struct AssetReference final
+        struct ATOM_RPI_REFLECT_API AssetReference final
         {
             AZ_RTTI(AssetReference, "{33895678-2406-46F5-9303-103C3FB6C40F}");
-            AZ_CLASS_ALLOCATOR(AssetReference, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AssetReference, SystemAllocator);
             static void Reflect(ReflectContext* context);
 
             AssetReference() = default;

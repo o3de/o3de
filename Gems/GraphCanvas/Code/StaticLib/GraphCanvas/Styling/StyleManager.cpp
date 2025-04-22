@@ -68,7 +68,7 @@ namespace
         : public GraphCanvas::TintableIcon
     {
     public:
-        AZ_CLASS_ALLOCATOR(HexagonIcon, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(HexagonIcon, AZ::SystemAllocator);
 
         HexagonIcon()
         {
@@ -89,14 +89,14 @@ namespace
             painter.drawLine(QPointF(8, 0), QPointF(8, 10));
         }
 
-        AZ::Crc32 GetIconId() const override { return AZ_CRC("HexagonIcon", 0x34053842); }
+        AZ::Crc32 GetIconId() const override { return AZ_CRC_CE("HexagonIcon"); }
     };
 
     class CheckerboardIcon
         : public GraphCanvas::TintableIcon
     {
     public:
-        AZ_CLASS_ALLOCATOR(CheckerboardIcon, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CheckerboardIcon, AZ::SystemAllocator);
 
         CheckerboardIcon()
         {
@@ -112,14 +112,14 @@ namespace
             painter.fillRect(QRectF(8, 8, 8, 8), QColor(0, 0, 0));
         }
 
-        AZ::Crc32 GetIconId() const override { return AZ_CRC("CheckerboardIcon", 0x782adcad); }
+        AZ::Crc32 GetIconId() const override { return AZ_CRC_CE("CheckerboardIcon"); }
     };
 
     class TriColorCheckerboardIcon
         : public GraphCanvas::TintableIcon
     {
     public:
-        AZ_CLASS_ALLOCATOR(TriColorCheckerboardIcon, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TriColorCheckerboardIcon, AZ::SystemAllocator);
 
         TriColorCheckerboardIcon()
         {
@@ -136,7 +136,7 @@ namespace
             painter.fillRect(QRectF(8, 8, 8, 8), QColor(1, 1, 1));
         }
 
-        AZ::Crc32 GetIconId() const override { return AZ_CRC("TriColorCheckerboardIcon", 0x9f93d99d); }
+        AZ::Crc32 GetIconId() const override { return AZ_CRC_CE("TriColorCheckerboardIcon"); }
     };
 }
 
@@ -407,13 +407,17 @@ namespace GraphCanvas
         StyledEntityRequestBus::EventResult(selectors, object, &StyledEntityRequests::GetStyleSelectors);
 
         QVector<StyleMatch> matches;
-        for (const auto& style : m_styles)
+        matches.reserve(static_cast<int>(selectors.size()));
+
         {
             GRAPH_CANVAS_PROFILE_SCOPE(StyleManager, "StyleManager::ResolveStyles::StyleMatching");
-            int complexity = style->Matches(object);
-            if (complexity != 0)
+            for (const auto& style : m_styles)
             {
-                matches.push_back({ style, complexity });
+                int complexity = style->Matches(object);
+                if (complexity != 0)
+                {
+                    matches.push_back({ style, complexity });
+                }
             }
         }
 
@@ -421,13 +425,16 @@ namespace GraphCanvas
             GRAPH_CANVAS_PROFILE_SCOPE(StyleManager, "StyleManager::ResolveStyles::Sorting");
             std::stable_sort(matches.begin(), matches.end());
         }
+
         Styling::StyleVector result;
         result.reserve(matches.size());
-        const auto& constMatches = matches;
-        for (auto& match : constMatches)
+
         {
             GRAPH_CANVAS_PROFILE_SCOPE(StyleManager, "StyleManager::ResolveStyles::ResultConstruction");
-            result.push_back(match.style);
+            for (const auto& match : matches)
+            {
+                result.push_back(match.style);
+            }
         }
 
         auto computed = new Styling::ComputedStyle(m_editorId, selectors, std::move(result));
@@ -442,7 +449,7 @@ namespace GraphCanvas
 
     void StyleManager::RegisterDataPaletteStyle(const AZ::Uuid& dataType, const AZStd::string& palette)
     {
-        m_dataPaletteMapping[dataType] = palette;
+        m_dataPaletteMapping.emplace(dataType, palette);
     }
 
     AZStd::string StyleManager::GetDataPaletteStyle(const AZ::Uuid& dataType) const
@@ -451,19 +458,14 @@ namespace GraphCanvas
         {
             return "UnknownDataColorPalette";
         }
-        else
-        {
-            auto mapIter = m_dataPaletteMapping.find(dataType);
 
-            if (mapIter == m_dataPaletteMapping.end())
-            {
-                return "ObjectDataColorPalette";
-            }
-            else
-            {
-                return mapIter->second;
-            }
+        auto mapIter = m_dataPaletteMapping.find(dataType);
+        if (mapIter == m_dataPaletteMapping.end())
+        {
+            return "ObjectDataColorPalette";
         }
+
+        return mapIter->second;
     }
 
     const Styling::StyleHelper* StyleManager::FindDataColorPalette(const AZ::Uuid& dataType)
@@ -474,9 +476,7 @@ namespace GraphCanvas
     QColor StyleManager::GetDataTypeColor(const AZ::Uuid& dataType)
     {
         Styling::StyleHelper* style = FindCreateStyleHelper(GetDataPaletteStyle(dataType));
-        QColor color = style->GetAttribute(Styling::Attribute::BackgroundColor, QColor());
-
-        return color;
+        return style->GetAttribute(Styling::Attribute::BackgroundColor, QColor());
     }
 
     const QPixmap* StyleManager::GetDataTypeIcon(const AZ::Uuid& dataType)
@@ -513,9 +513,7 @@ namespace GraphCanvas
     QColor StyleManager::GetPaletteColor(const AZStd::string& palette)
     {
         Styling::StyleHelper* style = FindCreateStyleHelper(palette);
-        QColor color = style->GetAttribute(Styling::Attribute::BackgroundColor, QColor());
-
-        return color;
+        return style->GetAttribute(Styling::Attribute::BackgroundColor, QColor());
     }
 
     const QPixmap* StyleManager::GetPaletteIcon(const AZStd::string& iconStyle, const AZStd::string& palette)

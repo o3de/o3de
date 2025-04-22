@@ -43,7 +43,7 @@
 
 namespace ImageProcessingAtom
 {
-    const char* BuilderSettingManager::s_defaultConfigRelativeFolder = "Gems/Atom/Asset/ImageProcessingAtom/Assets/Config/";
+    const char* BuilderSettingManager::s_defaultConfigFolder = "@gemroot:ImageProcessingAtom@/Assets/Config/";
     const char* BuilderSettingManager::s_projectConfigRelativeFolder = "Config/AtomImageBuilder/";
     const char* BuilderSettingManager::s_builderSettingFileName = "ImageBuilder.settings";
     const char* BuilderSettingManager::s_presetFileExtension = "preset";
@@ -237,10 +237,9 @@ namespace ImageProcessingAtom
                 AZStd::string("File IO instance needs to be initialized to resolve ImageProcessing builder file aliases"));
         }
 
-        if (auto engineRoot = fileIoBase->ResolvePath("@engroot@"); engineRoot.has_value())
+        if (auto defaultConfigFolder = fileIoBase->ResolvePath(s_defaultConfigFolder); defaultConfigFolder.has_value())
         {
-            m_defaultConfigFolder = *engineRoot;
-            m_defaultConfigFolder /= s_defaultConfigRelativeFolder;
+            m_defaultConfigFolder = *defaultConfigFolder;
         }
 
         if (auto sourceGameRoot = fileIoBase->ResolvePath("@projectroot@"); sourceGameRoot.has_value())
@@ -558,6 +557,14 @@ namespace ImageProcessingAtom
                     AZ_Warning(LogWindow, false, "File mask '%s' is invalid. It must contain only a single '%c' character.", filemask.c_str(), FileMaskDelimiter);
                     continue;
                 }
+                else if (filemask.find(AZ_FILESYSTEM_EXTENSION_SEPARATOR) != AZStd::string::npos)
+                {
+                    AZ_Warning(LogWindow, false,
+                        "File mask '%s' is invalid. It must not contain a file extension separator ('%c').",
+                        filemask.c_str(),
+                        AZ_FILESYSTEM_EXTENSION_SEPARATOR);
+                    continue;
+                }
 
                 extraString += (filemask + preset.m_name.GetCStr());
 
@@ -588,13 +595,16 @@ namespace ImageProcessingAtom
         metafilePath = AZStd::string();
     }
 
-    AZStd::string GetFileMask(AZStd::string_view imageFilePath)
+    AZStd::string BuilderSettingManager::GetFileMask(AZStd::string_view imageFilePath) const
     {
         //get file name
-        AZStd::string fileName;
         QString lowerFileName = imageFilePath.data();
         lowerFileName = lowerFileName.toLower();
-        AzFramework::StringFunc::Path::GetFileName(lowerFileName.toUtf8().constData(), fileName);
+
+        // If the complete file name contains multiple extension separators ('.'), only use the base name before the first separator
+        // for the file mask. For example, 'name_filemask.something.extension' will only use 'name_filemask', producing a result
+        // of '_filemask' that is returned from this method.
+        AZStd::string fileName(QFileInfo(lowerFileName).baseName().toUtf8());
 
         //get the substring from last '_'
         size_t lastUnderScore = fileName.find_last_of(FileMaskDelimiter);
@@ -604,6 +614,32 @@ namespace ImageProcessingAtom
         }
 
         return AZStd::string();
+    }
+
+    PresetName BuilderSettingManager::GetDefaultPreset() const
+    {
+        return m_defaultPreset;
+    }
+
+    PresetName BuilderSettingManager::GetDefaultAlphaPreset() const
+    {
+        return m_defaultPresetAlpha;
+    }
+
+    AZStd::vector<PresetName> BuilderSettingManager::GetPresetsForFileMask(const FileMask& fileMask) const
+    {
+        AZStd::vector<PresetName> presets;
+
+        AZStd::lock_guard<AZStd::recursive_mutex> lock(m_presetMapLock);
+        if (auto it = m_presetFilterMap.find(fileMask); it != m_presetFilterMap.end())
+        {
+            for (const PresetName& presetName : it->second)
+            {
+                presets.push_back(presetName);
+            }
+        }
+
+        return presets;
     }
 
     bool BuilderSettingManager::IsValidPreset(PresetName presetName) const
@@ -639,8 +675,8 @@ namespace ImageProcessingAtom
         if (outPreset == emptyPreset)
         {        
             auto image = IImageObjectPtr(LoadImageFromFile(imageFilePath));
-            if (image->GetAlphaContent() == EAlphaContent::eAlphaContent_Absent
-                || image->GetAlphaContent() == EAlphaContent::eAlphaContent_OnlyWhite)
+            if (image && ((image->GetAlphaContent() == EAlphaContent::eAlphaContent_Absent
+                || image->GetAlphaContent() == EAlphaContent::eAlphaContent_OnlyWhite)))
             {
                 outPreset = m_defaultPreset;
             }
@@ -664,8 +700,12 @@ namespace ImageProcessingAtom
 
     bool BuilderSettingManager::DoesSupportPlatform(AZStd::string_view platformId)
     {
-        bool rv = m_builderSettings.find(platformId) != m_builderSettings.end();
-        return rv;
+        if (const auto& itr = m_builderSettings.find(platformId); itr != m_builderSettings.end())
+        {
+            return itr->second.m_enablePlatform;
+        }
+
+        return false;
     }
     
     void BuilderSettingManager::SavePresets(AZStd::string_view outputFolder)

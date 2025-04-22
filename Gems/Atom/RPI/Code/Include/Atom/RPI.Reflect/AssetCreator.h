@@ -28,9 +28,11 @@ namespace AZ
             // [GFX TODO] We need to iterate on this concept at some point. We may want to expose it through cvars or something
             // like that, or we may not need this at all. For now it's helpful for testing.
             void SetElevateWarnings(bool elevated);
+            bool GetElevateWarnings() const { return m_warningsElevated; }
 
             int GetErrorCount() const { return m_errorCount; }
             int GetWarningCount() const { return m_warningCount; }
+            bool IsFailed() const { return m_errorCount || m_warningsElevated && m_warningCount; }
 
             //! Errors should be reported for any condition that prevents creating a valid asset that can be used at runtime.
             //! The output asset data would be corrupt to the point that the runtime would report further errors or even crash.

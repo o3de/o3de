@@ -33,7 +33,7 @@ namespace TextureAtlasNamespace
     struct hash_case_insensitive : public AZStd::hash<AZStd::string>
     {
         AZ_TYPE_INFO(hash_case_insensitive, "{FE0F4349-D80D-4286-8874-733966A32B29}");
-        inline result_type operator()(const AZStd::string& value) const
+        inline size_t operator()(const AZStd::string& value) const
         {
             AZStd::string lowerStr = value;
             AZStd::to_lower(lowerStr.begin(), lowerStr.end());
@@ -44,7 +44,7 @@ namespace TextureAtlasNamespace
     class TextureAtlasImpl: public TextureAtlas
     {
     public:
-        AZ_CLASS_ALLOCATOR(TextureAtlasImpl, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TextureAtlasImpl, AZ::SystemAllocator);
         AZ_TYPE_INFO(TextureAtlasImpl, "{2CA51C61-1B5F-4480-A257-F28D8944AA35}");
 
         TextureAtlasImpl();

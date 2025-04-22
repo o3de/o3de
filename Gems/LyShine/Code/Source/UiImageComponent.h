@@ -25,7 +25,9 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Math/Vector3.h>
 
-#include <LmbrCentral/Rendering/MaterialAsset.h>
+#include <Atom/RPI.Public/Image/AttachmentImage.h>
+
+#include <LmbrCentral/Rendering/TextureAsset.h>
 
 class ITexture;
 class ISprite;
@@ -71,8 +73,8 @@ public: // member functions
     AZStd::string GetSpritePathname() override;
     void SetSpritePathname(AZStd::string spritePath) override;
     bool SetSpritePathnameIfExists(AZStd::string spritePath) override;
-    AZStd::string GetRenderTargetName() override;
-    void SetRenderTargetName(AZStd::string renderTargetName) override;
+    AZ::Data::Asset<AZ::RPI::AttachmentImageAsset> GetAttachmentImageAsset() override;
+    void SetAttachmentImageAsset(const AZ::Data::Asset<AZ::RPI::AttachmentImageAsset>& attachmentImageAsset) override;
     bool GetIsRenderTargetSRGB() override;
     void SetIsRenderTargetSRGB(bool isSRGB) override;
     SpriteType GetSpriteType() override;
@@ -134,20 +136,20 @@ public:  // static member functions
 
     static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("UiVisualService", 0xa864fdf8));
-        provided.push_back(AZ_CRC("UiImageService"));
-        provided.push_back(AZ_CRC("UiIndexableImageService"));
+        provided.push_back(AZ_CRC_CE("UiVisualService"));
+        provided.push_back(AZ_CRC_CE("UiImageService"));
+        provided.push_back(AZ_CRC_CE("UiIndexableImageService"));
     }
 
     static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("UiVisualService", 0xa864fdf8));
+        incompatible.push_back(AZ_CRC_CE("UiVisualService"));
     }
 
     static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("UiElementService", 0x3dca7ad4));
-        required.push_back(AZ_CRC("UiTransformService", 0x3a838e34));
+        required.push_back(AZ_CRC_CE("UiElementService"));
+        required.push_back(AZ_CRC_CE("UiTransformService"));
     }
 
     static void Reflect(AZ::ReflectContext* context);
@@ -235,7 +237,7 @@ private: // member functions
     void OnEditorRenderSettingChange();
 
     void OnSpritePathnameChange();
-    void OnSpriteRenderTargetNameChange();
+    void OnSpriteAttachmentImageAssetChange();
     void OnSpriteTypeChange();
 
     //! ChangeNotify callback for color change
@@ -262,7 +264,7 @@ private: // static member functions
 private: // data
 
     AzFramework::SimpleAssetReference<LmbrCentral::TextureAsset> m_spritePathname;
-    AZStd::string m_renderTargetName;
+    AZ::Data::Asset<AZ::RPI::AttachmentImageAsset> m_attachmentImageAsset;
     bool m_isRenderTargetSRGB           = false;
     SpriteType m_spriteType             = SpriteType::SpriteAsset;
     AZ::Color m_color                   = AZ::Color(1.0f, 1.0f, 1.0f, 1.0f);

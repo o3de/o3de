@@ -7,65 +7,63 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
-# -- This line is 75 characters -------------------------------------------
-# The __init__.py files help guide import statements without automatically
-# importing all of the modules
-"""azpy.houdini.__init__"""
+# -------------------------------------------------------------------------
+"""! @brief
+<DCCsi>/azpy/dcc/marmoset/__init__.py
 
+dcc/marmoset is a sub-module of the azpy.dcc pure-python api.
+If a sub-module requires an import from a marmoset api like mset,
+Then it must be placed into this API so it is gated!
+"""
+# -------------------------------------------------------------------------
+# standard imports
+import os
+from pathlib import Path
 import logging as _logging
-
-import azpy.env_bool as env_bool
-from azpy.constants import ENVAR_DCCSI_GDEBUG
-from azpy.constants import ENVAR_DCCSI_DEV_MODE
-from azpy.constants import FRMT_LOG_LONG
-
-#  global space
-_DCCSI_GDEBUG = env_bool.env_bool(ENVAR_DCCSI_GDEBUG, False)
-_DCCSI_DEV_MODE = env_bool.env_bool(ENVAR_DCCSI_DEV_MODE, False)
-
-_PACKAGENAME = __name__
-if _PACKAGENAME is '__main__':
-    _PACKAGENAME = 'azpy.dcc.marmoset'
-
-# set up module logging
-for handler in _logging.root.handlers[:]:
-    _logging.root.removeHandler(handler)
+# -------------------------------------------------------------------------
+# global scope
+from DccScriptingInterface.azpy.dcc import _PACKAGENAME
+_PKG_DCC_NAME = 'marmoset'
+_PACKAGENAME = f'{_PACKAGENAME}.{_PKG_DCC_NAME}'
 _LOGGER = _logging.getLogger(_PACKAGENAME)
-_logging.basicConfig(format=FRMT_LOG_LONG)
 _LOGGER.debug('Initializing: {0}.'.format({_PACKAGENAME}))
 
-# -------------------------------------------------------------------------
-# These are explicit imports for now
-__all__ = []
-# To Do: procedurally discover dcc access and extend __all__
+from DccScriptingInterface.globals import *
+
+__all__ = ['stub'] # only add here, if that sub-module does NOT require bpy!
 # -------------------------------------------------------------------------
 
 
-# -------------------------------------------------------------------------
-if _DCCSI_DEV_MODE:
+def init(_all=list()):
+    """If the Marmoset or other apis are required for a package/module to
+    import, then it should be initialized and added here so general imports
+    don't fail"""
+
+    _add_all_ = (None) # populate modules here
+
+    # ^ as moldules are created, add them to the list above
+    # like _add_all_ = list('foo', 'bar')
+
+    for each in _add_all_:
+        # extend all with submodules
+        _all.append(each)
+
+    # Importing local packages/modules
+    return _all
+
+
+# Make sure we can import the native blender apis
+try:
+    import mset
+    __all__ = init(__all__) # if we can import maya, we can load sub-modules
+except:
+    pass # no changes to __all__
+
+
+if DCCSI_DEV_MODE:
     # If in dev mode this will test imports of __all__
-    from azpy import test_imports
+    from DccScriptingInterface.azpy.shared.utils.init import test_imports
     _LOGGER.debug('Testing Imports from {0}'.format(_PACKAGENAME))
     test_imports(__all__,
                  _pkg=_PACKAGENAME,
                  _logger=_LOGGER)
-# -------------------------------------------------------------------------
-
-
-# -------------------------------------------------------------------------
-def init():
-    """If the marmoset api is required for a package/module to import,
-    then it should be initialized and added here so general imports
-    don't fail"""
-
-    # Make sure we can import the native apis
-    import mset
-
-    # extend all with submodules
-    #__all__.append('foo', 'bar')
-
-    # Importing local packages/modules
-    pass
-# -------------------------------------------------------------------------
-
-del _LOGGER

@@ -23,52 +23,6 @@
 
 namespace EMStudio
 {
-    void SaveDirtyActorFilesCallback::GetDirtyFileNames(AZStd::vector<AZStd::string>* outFileNames, AZStd::vector<ObjectPointer>* outObjects)
-    {
-        const size_t numLeaderActors = EMotionFX::GetActorManager().GetNumActors();
-        for (size_t i = 0; i < numLeaderActors; ++i)
-        {
-            EMotionFX::Actor* actor = EMotionFX::GetActorManager().GetActor(i);
-
-            // return in case we found a dirty file
-            if (actor->GetDirtyFlag() && actor->GetIsUsedForVisualization() == false)
-            {
-                // add the filename to the dirty filenames array
-                outFileNames->push_back(actor->GetFileName());
-
-                // add the link to the actual object
-                ObjectPointer objPointer;
-                objPointer.m_actor = actor;
-                outObjects->push_back(objPointer);
-            }
-        }
-    }
-
-
-    int SaveDirtyActorFilesCallback::SaveDirtyFiles(const AZStd::vector<AZStd::string>& filenamesToSave, const AZStd::vector<ObjectPointer>& objects, MCore::CommandGroup* commandGroup)
-    {
-        MCORE_UNUSED(filenamesToSave);
-
-        for (const ObjectPointer& objPointer : objects)
-        {
-            // get the current object pointer and skip directly if the type check fails
-            if (objPointer.m_actor == nullptr)
-            {
-                continue;
-            }
-
-            EMotionFX::Actor* actor = objPointer.m_actor;
-            if (m_plugin->SaveDirtyActor(actor, commandGroup, false) == DirtyFileManager::CANCELED)
-            {
-                return DirtyFileManager::CANCELED;
-            }
-        }
-
-        return DirtyFileManager::FINISHED;
-    }
-
-
-    // constructor
     SceneManagerPlugin::SceneManagerPlugin()
         : EMStudio::DockWidgetPlugin()
     {
@@ -85,95 +39,8 @@ namespace EMStudio
         m_adjustActorCallback                = nullptr;
         m_actorSetCollisionMeshesCallback    = nullptr;
         m_adjustActorInstanceCallback        = nullptr;
-        m_dirtyFilesCallback                 = nullptr;
-            }
-
-
-    // save dirty actor
-    int SceneManagerPlugin::SaveDirtyActor(EMotionFX::Actor* actor, [[maybe_unused]] MCore::CommandGroup* commandGroup, bool askBeforeSaving, bool showCancelButton)
-    {
-        // only process changed files
-        if (actor->GetDirtyFlag() == false)
-        {
-            return DirtyFileManager::NOFILESTOSAVE;
-        }
-
-        // and files that really represent an actor that we take serious in emstudio :)
-        if (actor->GetIsUsedForVisualization())
-        {
-            return DirtyFileManager::NOFILESTOSAVE;
-        }
-
-        if (askBeforeSaving)
-        {
-            EMStudio::GetApp()->setOverrideCursor(QCursor(Qt::ArrowCursor));
-
-            QMessageBox msgBox(GetMainWindow());
-            AZStd::string text;
-            AZStd::string filename = actor->GetFileNameString();
-            AZStd::string extension;
-            AzFramework::StringFunc::Path::GetExtension(filename.c_str(), extension, false /* include dot */);
-
-            if (filename.empty() == false && extension.empty() == false)
-            {
-                text = AZStd::string::format("Save changes to '%s'?", actor->GetFileName());
-            }
-            else if (actor->GetNameString().empty() == false)
-            {
-                text = AZStd::string::format("Save changes to the actor named '%s'?", actor->GetName());
-            }
-            else
-            {
-                text = "Save changes to untitled actor?";
-            }
-
-            msgBox.setText(text.c_str());
-            msgBox.setWindowTitle("Save Changes");
-
-            if (showCancelButton)
-            {
-                msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
-            }
-            else
-            {
-                msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard);
-            }
-
-            msgBox.setDefaultButton(QMessageBox::Save);
-            msgBox.setIcon(QMessageBox::Question);
-
-
-            int messageBoxResult = msgBox.exec();
-            switch (messageBoxResult)
-            {
-            case QMessageBox::Save:
-            {
-                GetMainWindow()->GetFileManager()->SaveActor(actor);
-                break;
-            }
-            case QMessageBox::Discard:
-            {
-                EMStudio::GetApp()->restoreOverrideCursor();
-                return DirtyFileManager::FINISHED;
-            }
-            case QMessageBox::Cancel:
-            {
-                EMStudio::GetApp()->restoreOverrideCursor();
-                return DirtyFileManager::CANCELED;
-            }
-            }
-        }
-        else
-        {
-            // save without asking first
-            GetMainWindow()->GetFileManager()->SaveActor(actor);
-        }
-
-        return DirtyFileManager::FINISHED;
     }
 
-
-    // destructor
     SceneManagerPlugin::~SceneManagerPlugin()
     {
         // unregister the command callbacks and get rid of the memory
@@ -201,18 +68,7 @@ namespace EMStudio
         delete m_actorSetCollisionMeshesCallback;
         delete m_adjustActorInstanceCallback;
         delete m_scaleActorDataCallback;
-
-        GetMainWindow()->GetDirtyFileManager()->RemoveCallback(m_dirtyFilesCallback, false);
-        delete m_dirtyFilesCallback;
     }
-
-
-    // clone the log window
-    EMStudioPlugin* SceneManagerPlugin::Clone()
-    {
-        return new SceneManagerPlugin();
-    }
-
 
     // init after the parent dock window has been created
     bool SceneManagerPlugin::Init()
@@ -268,10 +124,6 @@ namespace EMStudio
 
         // reinit the dialog
         ReInit();
-
-        // initialize the dirty files callback
-        m_dirtyFilesCallback = new SaveDirtyActorFilesCallback(this);
-        GetMainWindow()->GetDirtyFileManager()->AddCallback(m_dirtyFilesCallback);
 
         return true;
     }

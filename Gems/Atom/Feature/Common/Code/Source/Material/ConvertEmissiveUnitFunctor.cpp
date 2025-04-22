@@ -6,7 +6,7 @@
  *
  */
 
-#include "./ConvertEmissiveUnitFunctor.h"
+#include <Atom/Feature/Material/ConvertEmissiveUnitFunctor.h>
 #include <Atom/RPI.Public/Material/Material.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 
@@ -33,32 +33,16 @@ namespace AZ
             }
         }
 
-        void ConvertEmissiveUnitFunctor::Process(RuntimeContext& context)
+        void ConvertEmissiveUnitFunctor::Process(RPI::MaterialFunctorAPI::RuntimeContext& context)
         {
             // Convert unit on runtime
             float sourceValue = context.GetMaterialPropertyValue<float>(m_intensityPropertyIndex);
             uint32_t lightUnit = context.GetMaterialPropertyValue<uint32_t>(m_lightUnitPropertyIndex);
-
-            PhotometricUnit sourceType;
-            if (lightUnit == m_ev100Index)
-            {
-                sourceType = PhotometricUnit::Ev100Luminance;
-            }
-            else if (lightUnit == m_nitIndex)
-            {
-                sourceType = PhotometricUnit::Nit;
-            }
-            else
-            {
-                sourceType = PhotometricUnit::Unknown;
-                AZ_Assert(false, "ConvertEmissiveUnitFunctor doesn't recognize light unit.")
-            }
-
-            float targetValue = PhotometricValue::ConvertIntensityBetweenUnits(sourceType, PhotometricUnit::Nit, sourceValue);
+            float targetValue = GetProcessedValue(sourceValue, lightUnit);
             context.GetShaderResourceGroup()->SetConstant(m_shaderInputIndex, targetValue);
         }
 
-        void ConvertEmissiveUnitFunctor::Process(EditorContext& context)
+        void ConvertEmissiveUnitFunctor::Process(RPI::MaterialFunctorAPI::EditorContext& context)
         {
             // Update Editor based on selected light unit
             uint32_t lightUnit = context.GetMaterialPropertyValue<uint32_t>(m_lightUnitPropertyIndex);
@@ -77,6 +61,26 @@ namespace AZ
             {
                 AZ_Assert(false, "ConvertEmissiveUnitFunctor doesn't recognize light unit.")
             }
+        }
+
+        float ConvertEmissiveUnitFunctor::GetProcessedValue(float originalEmissiveIntensity, uint32_t lightUnitIndex) const
+        {
+            PhotometricUnit sourceType;
+            if (lightUnitIndex == m_ev100Index)
+            {
+                sourceType = PhotometricUnit::Ev100Luminance;
+            }
+            else if (lightUnitIndex == m_nitIndex)
+            {
+                sourceType = PhotometricUnit::Nit;
+            }
+            else
+            {
+                sourceType = PhotometricUnit::Unknown;
+                AZ_Assert(false, "ConvertEmissiveUnitFunctor doesn't recognize light unit.")
+            }
+
+            return PhotometricValue::ConvertIntensityBetweenUnits(sourceType, PhotometricUnit::Nit, originalEmissiveIntensity);
         }
     }
 }

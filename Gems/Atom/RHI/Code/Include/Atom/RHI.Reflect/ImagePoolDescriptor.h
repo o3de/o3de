@@ -13,21 +13,22 @@
 namespace AZ
 {
     class ReflectContext;
+}
 
-    namespace RHI
+namespace AZ::RHI
+{
+    class ImagePoolDescriptor
+        : public ResourcePoolDescriptor
     {
-        class ImagePoolDescriptor
-            : public ResourcePoolDescriptor
-        {
-        public:
-            virtual ~ImagePoolDescriptor() = default;
-            AZ_RTTI(ImagePoolDescriptor, "{9828B912-7D7D-4443-8794-E10E0EF34269}", ResourcePoolDescriptor);
-            static void Reflect(AZ::ReflectContext* context);
+    public:
+        virtual ~ImagePoolDescriptor() = default;
+        AZ_RTTI(ImagePoolDescriptor, "{9828B912-7D7D-4443-8794-E10E0EF34269}", ResourcePoolDescriptor);
+        AZ_CLASS_ALLOCATOR(ImagePoolDescriptor, SystemAllocator)
+        static void Reflect(AZ::ReflectContext* context);
 
-            ImagePoolDescriptor() = default;
+        ImagePoolDescriptor() = default;
 
-            /// The set of image bind flags supported by this pool.
-            ImageBindFlags m_bindFlags = ImageBindFlags::Color;
-        };
-    }
+        /// The set of image bind flags supported by this pool.
+        ImageBindFlags m_bindFlags = ImageBindFlags::Color;
+    };
 }

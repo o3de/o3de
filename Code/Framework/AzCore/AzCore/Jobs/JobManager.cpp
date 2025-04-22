@@ -12,7 +12,7 @@
 
 using namespace AZ;
 
-AZ_CLASS_ALLOCATOR_IMPL(JobManager, SystemAllocator, 0)
+AZ_CLASS_ALLOCATOR_IMPL(JobManager, SystemAllocator);
 
 JobManager::JobManager(const JobManagerDesc& desc)
     : m_impl(desc)

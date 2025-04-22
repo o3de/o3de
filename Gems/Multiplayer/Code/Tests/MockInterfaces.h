@@ -10,6 +10,7 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Time/ITime.h>
 #include <AzNetworking/ConnectionLayer/IConnectionListener.h>
+#include <AzNetworking/Serialization/ISerializer.h>
 #include <AzTest/AzTest.h>
 #include <Multiplayer/IMultiplayer.h>
 #include <Multiplayer/NetworkEntity/NetworkEntityRpcMessage.h>
@@ -22,17 +23,21 @@ namespace UnitTest
         MOCK_CONST_METHOD0(GetAgentType, Multiplayer::MultiplayerAgentType());
         MOCK_METHOD1(InitializeMultiplayer, void(Multiplayer::MultiplayerAgentType));
         MOCK_METHOD2(StartHosting, bool(uint16_t, bool));
-        MOCK_METHOD2(Connect, bool(const AZStd::string&, uint16_t));
+        MOCK_METHOD3(Connect, bool(const AZStd::string&, uint16_t, const AZStd::string&));
         MOCK_METHOD1(Terminate, void(AzNetworking::DisconnectReason));
+        MOCK_METHOD1(AddNetworkInitHandler, void(AZ::Event<INetworkInterface*>::Handler&));
         MOCK_METHOD1(AddClientMigrationStartEventHandler, void(Multiplayer::ClientMigrationStartEvent::Handler&));
         MOCK_METHOD1(AddClientMigrationEndEventHandler, void(Multiplayer::ClientMigrationEndEvent::Handler&));
-        MOCK_METHOD1(AddClientDisconnectedHandler, void(AZ::Event<>::Handler&));
+        MOCK_METHOD1(AddEndpointDisconnectedHandler, void(Multiplayer::EndpointDisconnectedEvent::Handler&));
         MOCK_METHOD1(AddNotifyClientMigrationHandler, void(Multiplayer::NotifyClientMigrationEvent::Handler&));
         MOCK_METHOD1(AddNotifyEntityMigrationEventHandler, void(Multiplayer::NotifyEntityMigrationEvent::Handler&));
         MOCK_METHOD1(AddConnectionAcquiredHandler, void(Multiplayer::ConnectionAcquiredEvent::Handler&));
         MOCK_METHOD1(AddServerAcceptanceReceivedHandler, void(Multiplayer::ServerAcceptanceReceivedEvent::Handler&));
         MOCK_METHOD1(AddSessionInitHandler, void(Multiplayer::SessionInitEvent::Handler&));
         MOCK_METHOD1(AddSessionShutdownHandler, void(Multiplayer::SessionShutdownEvent::Handler&));
+        MOCK_METHOD1(AddLevelLoadBlockedHandler, void(Multiplayer::LevelLoadBlockedEvent::Handler&));
+        MOCK_METHOD1(AddNoServerLevelLoadedHandler, void(Multiplayer::NoServerLevelLoadedEvent::Handler&));
+        MOCK_METHOD1(AddVersionMismatchHandler, void(Multiplayer::VersionMismatchEvent::Handler&));
         MOCK_METHOD5(SendNotifyClientMigrationEvent, void(AzNetworking::ConnectionId, const Multiplayer::HostId&, uint64_t, Multiplayer::ClientInputId, Multiplayer::NetEntityId));
         MOCK_METHOD2(SendNotifyEntityMigrationEvent, void(const Multiplayer::ConstNetworkEntityHandle&, const Multiplayer::HostId&));
         MOCK_METHOD1(SendReadyForEntityUpdates, void(bool));
@@ -40,8 +45,6 @@ namespace UnitTest
         MOCK_CONST_METHOD0(GetCurrentBlendFactor, float());
         MOCK_METHOD0(GetNetworkTime, Multiplayer::INetworkTime* ());
         MOCK_METHOD0(GetNetworkEntityManager, Multiplayer::INetworkEntityManager* ());
-        MOCK_METHOD1(SetFilterEntityManager, void(Multiplayer::IFilterEntityManager*));
-        MOCK_METHOD0(GetFilterEntityManager, Multiplayer::IFilterEntityManager* ());
         MOCK_METHOD2(RegisterPlayerIdentifierForRejoin, void(uint64_t, Multiplayer::NetEntityId));
         MOCK_METHOD4(CompleteClientMigration, void(uint64_t, AzNetworking::ConnectionId, const Multiplayer::HostId&, Multiplayer::ClientInputId));
         MOCK_METHOD1(SetShouldSpawnNetworkEntities, void(bool));
@@ -71,6 +74,7 @@ namespace UnitTest
         MOCK_METHOD3(SetupNetEntity, void(AZ::Entity*, Multiplayer::PrefabEntityId, Multiplayer::NetEntityRole));
         MOCK_CONST_METHOD0(GetEntityCount, uint32_t());
         MOCK_METHOD2(AddEntityToEntityMap, Multiplayer::NetworkEntityHandle(Multiplayer::NetEntityId, AZ::Entity*));
+        MOCK_METHOD1(RemoveEntityFromEntityMap, void(Multiplayer::NetEntityId));
         MOCK_METHOD1(MarkForRemoval, void(const Multiplayer::ConstNetworkEntityHandle&));
         MOCK_CONST_METHOD1(IsMarkedForRemoval, bool(const Multiplayer::ConstNetworkEntityHandle&));
         MOCK_METHOD1(ClearEntityFromRemovalList, void(const Multiplayer::ConstNetworkEntityHandle&));
@@ -89,6 +93,10 @@ namespace UnitTest
         MOCK_METHOD1(HandleLocalRpcMessage, void(Multiplayer::NetworkEntityRpcMessage&));
         MOCK_METHOD1(HandleEntitiesExitDomain, void(const Multiplayer::NetEntityIdSet&));
         MOCK_METHOD1(ForceAssumeAuthority, void(const Multiplayer::ConstNetworkEntityHandle&));
+        MOCK_METHOD2(MarkAlwaysRelevantToClients, void(const Multiplayer::ConstNetworkEntityHandle&, bool));
+        MOCK_METHOD2(MarkAlwaysRelevantToServers, void(const Multiplayer::ConstNetworkEntityHandle&, bool));
+        const Multiplayer::NetEntityHandleSet& GetAlwaysRelevantToClientsSet() const override { static Multiplayer::NetEntityHandleSet value; return value; }
+        const Multiplayer::NetEntityHandleSet& GetAlwaysRelevantToServersSet() const override { static Multiplayer::NetEntityHandleSet value; return value; }
         MOCK_METHOD1(SetMigrateTimeoutTimeMs, void(AZ::TimeMs));
         MOCK_CONST_METHOD0(DebugDraw, void());
     };
@@ -159,16 +167,18 @@ namespace UnitTest
         MOCK_METHOD4(Serialize, bool (int8_t&, const char*, int8_t, int8_t));
         MOCK_METHOD4(Serialize, bool (int16_t&, const char*, int16_t, int16_t));
         MOCK_METHOD4(Serialize, bool (int32_t&, const char*, int32_t, int32_t));
-        MOCK_METHOD4(Serialize, bool (int64_t&, const char*, int64_t, int64_t));
+        MOCK_METHOD4(Serialize, bool (long&, const char*, long, long));
+        MOCK_METHOD4(Serialize, bool (AZ::s64&, const char*, AZ::s64, AZ::s64));
         MOCK_METHOD4(Serialize, bool (uint8_t&, const char*, uint8_t, uint8_t));
         MOCK_METHOD4(Serialize, bool (uint16_t&, const char*, uint16_t, uint16_t));
         MOCK_METHOD4(Serialize, bool (uint32_t&, const char*, uint32_t, uint32_t));
-        MOCK_METHOD4(Serialize, bool (uint64_t&, const char*, uint64_t, uint64_t));
+        MOCK_METHOD4(Serialize, bool (unsigned long&, const char*, unsigned long, unsigned long));
+        MOCK_METHOD4(Serialize, bool (AZ::u64&, const char*, AZ::u64, AZ::u64));
         MOCK_METHOD4(Serialize, bool (float&, const char*, float, float));
         MOCK_METHOD4(Serialize, bool (double&, const char*, double, double));
         MOCK_METHOD5(SerializeBytes, bool (uint8_t*, uint32_t, bool, uint32_t&, const char*));
-        MOCK_METHOD2(BeginObject, bool (const char*, const char*));
-        MOCK_METHOD2(EndObject, bool (const char*, const char*));
+        MOCK_METHOD1(BeginObject, bool (const char*));
+        MOCK_METHOD1(EndObject, bool (const char*));
         MOCK_CONST_METHOD0(GetBuffer, const uint8_t* ());
         MOCK_CONST_METHOD0(GetCapacity, uint32_t ());
         MOCK_CONST_METHOD0(GetSize, uint32_t ());
@@ -176,4 +186,3 @@ namespace UnitTest
         MOCK_CONST_METHOD0(GetTrackedChangesFlag, bool ());
     };
 }
-

@@ -11,10 +11,11 @@
 
 #include <Atom/RPI.Public/Scene.h>
 
+#include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Math/Obb.h>
 #include <AzCore/Math/Matrix4x4.h>
+#include <AzCore/Math/ShapeIntersection.h>
 #include <AzCore/std/functional.h>
-#include <AzCore/Casting/numeric_cast.h>
 
 namespace AZ
 {
@@ -584,6 +585,168 @@ namespace AZ
             AddBox(style, box);
         }
 
+        void AuxGeomDrawQueue::DrawFrustum(
+            const Frustum& frustum,
+            const Color& color,
+            bool drawNormals,
+            DrawStyle style,
+            DepthTest depthTest,
+            DepthWrite depthWrite,
+            FaceCullMode faceCull,
+            int32_t viewProjOverrideIndex)
+        {
+
+            Frustum::CornerVertexArray corners;
+            bool validFrustum = frustum.GetCorners(corners);
+
+            if (validFrustum)
+            {
+                // This helps cut down on clutter below. Replace with a using-enum-declaration when c++20 support is required.
+                enum CornerIndices
+                {
+                    NearTopLeft = Frustum::CornerIndices::NearTopLeft,
+                    NearTopRight = Frustum::CornerIndices::NearTopRight,
+                    NearBottomLeft = Frustum::CornerIndices::NearBottomLeft,
+                    NearBottomRight = Frustum::CornerIndices::NearBottomRight,
+                    FarTopLeft = Frustum::CornerIndices::FarTopLeft,
+                    FarTopRight = Frustum::CornerIndices::FarTopRight,
+                    FarBottomLeft = Frustum::CornerIndices::FarBottomLeft,
+                    FarBottomRight = Frustum::CornerIndices::FarBottomRight,
+                };
+
+                RPI::AuxGeomDraw::AuxGeomDynamicIndexedDrawArguments drawArgs;
+                drawArgs.m_verts = corners.data();
+                drawArgs.m_vertCount = 8;
+                drawArgs.m_colors = &color;
+                drawArgs.m_colorCount = 1;
+                drawArgs.m_depthTest = depthTest;
+                drawArgs.m_depthWrite = depthWrite;
+                drawArgs.m_viewProjectionOverrideIndex = viewProjOverrideIndex;
+
+                if (style == DrawStyle::Point)
+                {
+                    DrawPoints(drawArgs);
+                }
+                else
+                {
+                    // Always draw lines if draw style isn't Point.
+                    uint32_t lineIndices[24]{
+                        //near plane
+                        NearTopLeft, NearTopRight,
+                        NearTopRight, NearBottomRight,
+                        NearBottomRight, NearBottomLeft,
+                        NearBottomLeft, NearTopLeft,
+
+                        //Far plane
+                        FarTopLeft, FarTopRight,
+                        FarTopRight, FarBottomRight,
+                        FarBottomRight, FarBottomLeft,
+                        FarBottomLeft, FarTopLeft,
+
+                        //Near-to-Far connecting lines
+                        NearTopLeft, FarTopLeft,
+                        NearTopRight, FarTopRight,
+                        NearBottomLeft, FarBottomLeft,
+                        NearBottomRight, FarBottomRight,
+                    };
+
+                    drawArgs.m_indices = lineIndices;
+                    drawArgs.m_indexCount = 24;
+                    DrawLines(drawArgs);
+
+                    if (style == DrawStyle::Solid || style == DrawStyle::Shaded)
+                    {
+                        // DrawTriangles doesn't support shaded drawing, so we can't support it here either.
+                        AZ_WarningOnce("AuxGeomDrawQueue", style != DrawStyle::Shaded, "Cannot draw frustum with Shaded DrawStyle, using Solid instead.");
+
+                        uint32_t triangleIndices[36]{
+                            //near
+                            NearBottomLeft, NearTopLeft, NearTopRight,
+                            NearBottomLeft, NearTopRight, NearBottomRight,
+
+                            //far
+                            FarBottomRight, FarTopRight, FarTopLeft,
+                            FarBottomRight, FarTopLeft, FarBottomLeft,
+
+                            //left
+                            NearTopLeft, NearBottomLeft, FarBottomLeft,
+                            NearTopLeft, FarBottomLeft, FarTopLeft,
+
+                            //right
+                            NearBottomRight, NearTopRight, FarTopRight,
+                            NearBottomRight, FarTopRight, FarBottomRight,
+
+                            //bottom
+                            FarBottomLeft, NearBottomLeft, NearBottomRight,
+                            FarBottomLeft, NearBottomRight, FarBottomRight,
+
+                            //top
+                            NearTopLeft, FarTopLeft, FarTopRight,
+                            NearTopLeft, FarTopRight, NearTopRight,
+                        };
+
+                        Color transparentColor(color.GetR(), color.GetG(), color.GetB(), color.GetA() * 0.3f);
+                        drawArgs.m_indices = triangleIndices;
+                        drawArgs.m_indexCount = 36;
+                        drawArgs.m_colors = &transparentColor;
+                        DrawTriangles(drawArgs, faceCull);
+                    }
+                }
+
+                if (drawNormals)
+                {
+                    Vector3 planeNormals[] =
+                    {
+                        //near
+                        0.25f * (corners[NearBottomLeft] + corners[NearBottomRight] + corners[NearTopLeft] + corners[NearTopRight]),
+                        0.25f * (corners[NearBottomLeft] + corners[NearBottomRight] + corners[NearTopLeft] + corners[NearTopRight]) + frustum.GetPlane(Frustum::PlaneId::Near).GetNormal(),
+
+                        //far
+                        0.25f * (corners[FarBottomLeft] + corners[FarBottomRight] + corners[FarTopLeft] + corners[FarTopRight]),
+                        0.25f * (corners[FarBottomLeft] + corners[FarBottomRight] + corners[FarTopLeft] + corners[FarTopRight]) + frustum.GetPlane(Frustum::PlaneId::Far).GetNormal(),
+
+                        //left
+                        0.5f * (corners[NearBottomLeft] + corners[NearTopLeft]),
+                        0.5f * (corners[NearBottomLeft] + corners[NearTopLeft]) + frustum.GetPlane(Frustum::PlaneId::Left).GetNormal(),
+
+                        //right
+                        0.5f * (corners[NearBottomRight] + corners[NearTopRight]),
+                        0.5f * (corners[NearBottomRight] + corners[NearTopRight]) + frustum.GetPlane(Frustum::PlaneId::Right).GetNormal(),
+
+                        //bottom
+                        0.5f * (corners[NearBottomLeft] + corners[NearBottomRight]),
+                        0.5f * (corners[NearBottomLeft] + corners[NearBottomRight]) + frustum.GetPlane(Frustum::PlaneId::Bottom).GetNormal(),
+
+                        //top
+                        0.5f * (corners[NearTopLeft] + corners[NearTopRight]),
+                        0.5f * (corners[NearTopLeft] + corners[NearTopRight]) + frustum.GetPlane(Frustum::PlaneId::Top).GetNormal(),
+                    };
+
+                    Color planeNormalColors[] =
+                    {
+                        Colors::Red, Colors::Red,       //near
+                        Colors::Green, Colors::Green,   //far
+                        Colors::Blue, Colors::Blue,     //left
+                        Colors::Orange, Colors::Orange, //right
+                        Colors::Pink, Colors::Pink,     //bottom
+                        Colors::MediumPurple, Colors::MediumPurple, //top
+                    };
+
+                    RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments planeNormalLineArgs;
+                    planeNormalLineArgs.m_verts = planeNormals;
+                    planeNormalLineArgs.m_vertCount = 12;
+                    planeNormalLineArgs.m_colors = planeNormalColors;
+                    planeNormalLineArgs.m_colorCount = planeNormalLineArgs.m_vertCount;
+                    planeNormalLineArgs.m_depthTest = depthTest;
+                    DrawLines(planeNormalLineArgs);
+                }
+            }
+            else
+            {
+                AZ_Assert(false, "invalid frustum, cannot draw");
+            }
+        }
+
         AuxGeomBufferData* AuxGeomDrawQueue::Commit()
         {
             AZ_PROFILE_SCOPE(AzRender, "AuxGeomDrawQueue: Commit");
@@ -689,8 +852,6 @@ namespace AZ
             }
 
             AZ::Vector3 center(0.0f, 0.0f, 0.0f);
-            primBuffer.m_vertexBuffer.reserve(vertexCountTotal);
-            primBuffer.m_indexBuffer.reserve(vertexCountTotal);
             for (uint32_t vertexIndex = 0; vertexIndex < vertexCount; ++vertexIndex)
             {
                 AZ::u32 packedColor = packedColorFunction(vertexIndex);
@@ -710,8 +871,7 @@ namespace AZ
             }
             else
             {
-                primBuffer.m_primitiveBuffer.push_back();
-                auto& primitive = primBuffer.m_primitiveBuffer.back();
+                auto& primitive = primBuffer.m_primitiveBuffer.emplace_back();
                 primitive.m_primitiveType = primitiveType;
                 primitive.m_depthReadType = depthRead;
                 primitive.m_depthWriteType = depthWrite;
@@ -763,7 +923,6 @@ namespace AZ
             }
 
             AZ::Vector3 center(0.0f, 0.0f, 0.0f);
-            primBuffer.m_vertexBuffer.reserve(vertexCountTotal);
             for (uint32_t vertexIndex = 0; vertexIndex < vertexCount; ++vertexIndex)
             {
                 AZ::u32 packedColor = packedColorFunction(vertexIndex);
@@ -774,7 +933,6 @@ namespace AZ
             }
             center /= aznumeric_cast<float>(vertexCount);
 
-            primBuffer.m_indexBuffer.reserve(indexCount + indexOffset);
             for (uint32_t index = 0; index < indexCount; ++index)
             {
                 primBuffer.m_indexBuffer.push_back(vertexOffset + indexFunction(index));
@@ -788,8 +946,7 @@ namespace AZ
             }
             else
             {
-                primBuffer.m_primitiveBuffer.push_back();
-                auto& primitive = primBuffer.m_primitiveBuffer.back();
+                auto& primitive = primBuffer.m_primitiveBuffer.emplace_back();
                 primitive.m_primitiveType = primitiveType;
                 primitive.m_depthReadType = depthRead;
                 primitive.m_depthWriteType = depthWrite;

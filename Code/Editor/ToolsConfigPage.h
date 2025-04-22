@@ -75,7 +75,6 @@ protected:
     void OnSelchangeCommandList();
 
     void OnAssignCommand();
-    void OnAssignMacroShortcut();
     void OnSelectMacroIcon();
     void OnClearMacroIcon();
 

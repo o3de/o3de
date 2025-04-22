@@ -6,7 +6,7 @@
  *
  */
 
-#include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
+#include <TransformService/TransformServiceFeatureProcessor.h>
 
 #include <Atom/RHI/Factory.h>
 
@@ -133,9 +133,15 @@ namespace AZ
 
         void TransformServiceFeatureProcessor::UpdateSceneSrg(RPI::ShaderResourceGroup *sceneSrg)
         {
-            sceneSrg->SetBufferView(m_objectToWorldBufferIndex, m_objectToWorldBuffer->GetBufferView());
-            sceneSrg->SetBufferView(m_objectToWorldInverseTransposeBufferIndex, m_objectToWorldInverseTransposeBuffer->GetBufferView());
-            sceneSrg->SetBufferView(m_objectToWorldHistoryBufferIndex, m_objectToWorldHistoryBuffer->GetBufferView());
+            sceneSrg->SetBufferView(
+                m_objectToWorldBufferIndex,
+                m_objectToWorldBuffer->GetBufferView());
+            sceneSrg->SetBufferView(
+                m_objectToWorldInverseTransposeBufferIndex,
+                m_objectToWorldInverseTransposeBuffer->GetBufferView());
+            sceneSrg->SetBufferView(
+                m_objectToWorldHistoryBufferIndex,
+                m_objectToWorldHistoryBuffer->GetBufferView());
         }
 
         void TransformServiceFeatureProcessor::OnBeginPrepareRender()
@@ -182,9 +188,9 @@ namespace AZ
             else
             {
                 modelIndex = aznumeric_cast<uint32_t>(m_objectToWorldTransforms.size());
-                m_objectToWorldTransforms.push_back();
-                m_objectToWorldInverseTransposeTransforms.push_back();
-                m_objectToWorldHistoryTransforms.push_back();
+                m_objectToWorldTransforms.emplace_back();
+                m_objectToWorldInverseTransposeTransforms.emplace_back();
+                m_objectToWorldHistoryTransforms.emplace_back();
             }
             return ObjectId(modelIndex);
         }

@@ -11,6 +11,17 @@
 
 #include <AzFramework/Asset/SimpleAsset.h>
 
+namespace AZ
+{
+    // Added definition of type info and rtti for the DataPatchTypeUpgrade class
+    // to this Unit Test file to allow rtti functions to be accessible from the SerializeContext::TypeChange
+    // call
+    AZ_TYPE_INFO_TEMPLATE_WITH_NAME_IMPL(SerializeContext::DataPatchTypeUpgrade, \
+        "DataPatchTypeUpgrade", "{E5A2F519-261C-4B81-925F-3730D363AB9C}", AZ_TYPE_INFO_CLASS, AZ_TYPE_INFO_CLASS);
+    AZ_RTTI_NO_TYPE_INFO_IMPL((SerializeContext::DataPatchTypeUpgrade, \
+        AZ_TYPE_INFO_CLASS, AZ_TYPE_INFO_CLASS), DataPatchUpgrade);
+}
+
 namespace UnitTest
 {
     static const float TestDataA_ExpectedVal = 1.5f;
@@ -22,7 +33,7 @@ namespace UnitTest
 
     public:
         AZ_RTTI(TestDataA, "{3B7949D0-07BF-408E-8101-264466AEC403}");
-        
+
         virtual ~TestDataA() = default;
 
         static void Reflect(AZ::ReflectContext* reflection)
@@ -38,11 +49,11 @@ namespace UnitTest
         }
     };
 
-    static const char* TestComponentATypeId = "{C802148B-7EDC-4518-9780-FB9F99880446}";
+    inline constexpr AZ::TypeId TestComponentATypeId{ "{C802148B-7EDC-4518-9780-FB9F99880446}" };
     class TestComponentA_V0
         : public AzToolsFramework::Components::EditorComponentBase
     {
-    public: 
+    public:
         TestDataA m_data;
 
     public:
@@ -75,7 +86,7 @@ namespace UnitTest
 
     public:
         AZ_RTTI(NewTestDataA, "{2CEC8357-5156-4C8C-B664-501EA19213CB}");
-        
+
         virtual ~NewTestDataA() = default;
 
         static void Reflect(AZ::ReflectContext* reflection)
@@ -129,7 +140,7 @@ namespace UnitTest
         }
     };
 
-    static const char* TestDataB_TypeId = "{20E6777B-6857-409B-B27F-9E505D4378EF}";
+    inline constexpr AZ::TypeId TestDataB_TypeId { "{20E6777B-6857-409B-B27F-9E505D4378EF}" };
 
     struct TestDataB_V0
     {
@@ -146,9 +157,9 @@ namespace UnitTest
             : m_persistentId(++PersistentIdCounter)
             , m_data(data)
         {}
-        
+
         virtual ~TestDataB_V0() = default;
-        
+
 
         static void Reflect(AZ::ReflectContext* reflection)
         {
@@ -177,7 +188,7 @@ namespace UnitTest
             : m_persistentId(++TestDataB_V0::PersistentIdCounter)
             , m_info(0)
         {}
-        
+
         virtual ~TestDataB_V1() = default;
 
         static float TestDataB_V0_V1(int in)
@@ -191,7 +202,7 @@ namespace UnitTest
             // - Data (int) becomes Info (float) with the conversion Info = Data + 13.5f
             if (classElement.GetVersion() == 0)
             {
-                int dataIndex = classElement.FindElement(AZ_CRC("Data"));
+                int dataIndex = classElement.FindElement(AZ_CRC_CE("Data"));
 
                 if (dataIndex < 0)
                 {
@@ -239,7 +250,7 @@ namespace UnitTest
         float m_info = 27.5f;
     };
 
-    static const char* TestComponentBTypeId = "{10778D96-4860-4690-9A0E-B1066C00136B}";
+    inline constexpr AZ::TypeId TestComponentBTypeId{ "{10778D96-4860-4690-9A0E-B1066C00136B}" };
 
     class TestComponentB_V0
         : public AzToolsFramework::Components::EditorComponentBase
@@ -270,8 +281,8 @@ namespace UnitTest
     };
 
     // TestComponentB_V0_1 is NOT a version upgrade of TestComponentB_V0. It is TestComponentB_V0.
-    // We have to create a different class to represent TestComponentB_V0 so we can simulate 
-    // version upgrade of TestDataB. 
+    // We have to create a different class to represent TestComponentB_V0 so we can simulate
+    // version upgrade of TestDataB.
     class TestComponentB_V0_1
         : public AzToolsFramework::Components::EditorComponentBase
     {
@@ -329,8 +340,8 @@ namespace UnitTest
     };
 
     // TestComponentC_V0_1 is NOT a version upgrade of TestComponentC_V0. It is TestComponentC_V0.
-    // We have to create a different class to represent TestComponentC_V0 so we can simulate 
-    // version upgrade of TestDataB. 
+    // We have to create a different class to represent TestComponentC_V0 so we can simulate
+    // version upgrade of TestDataB.
     class TestComponentC_V0_1
         : public AzToolsFramework::Components::EditorComponentBase
     {
@@ -359,7 +370,7 @@ namespace UnitTest
         }
     };
 
-    static const char* TestComponentDTypeId = "{77655B67-3E03-418C-B010-D272DBCEAE25}";
+    inline constexpr AZ::TypeId TestComponentDTypeId{ "{77655B67-3E03-418C-B010-D272DBCEAE25}" };
 
     // Initial Test Values
     static const int Value1_Initial = 3;
@@ -507,7 +518,7 @@ namespace UnitTest
     // 2. float (V4) -> int (V5), int (V5) -> double (V6)       // Applies 2 incremental upgrades to upgrade a data patch created using TestComponentE_V4 so that it can be applied to TestComponentE_V6_1 (Expected data loss)
     // 3. float (V4) -> double (V6)                             // Applies a skip-version patch to go directly from TestComponentE_V4 to TestComponentE_V6_2 to avoid the data loss in the previous scenario.
 
-    static const char* TestComponentETypeId = "{835E5A78-2283-4113-91BC-BFC022619388}";
+    inline constexpr AZ::TypeId TestComponentETypeId{ "{835E5A78-2283-4113-91BC-BFC022619388}" };
 
     // Original data for our test TestComponentE_V4
     static const float V4_DefaultData = 3.75f;

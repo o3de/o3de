@@ -7,8 +7,6 @@
  */
 #pragma once
 
-#include <CryCommon/BaseTypes.h>
-
 #include <Atom/RPI.Public/DynamicDraw/DynamicDrawContext.h>
 #include <Atom/RPI.Public/WindowContext.h>
 #include <Atom/RPI.Public/ViewportContext.h>
@@ -18,8 +16,6 @@
 #ifndef _RELEASE
 #include <AzCore/std/containers/unordered_set.h>
 #endif
-
-class ITexture;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //! UI render interface
@@ -117,10 +113,10 @@ public: // member functions
     AZ::RPI::ShaderVariantId GetCurrentShaderVariant();
 
     //! Get the current stencil test reference value
-    uint32 GetStencilRef();
+    uint32_t GetStencilRef();
 
     //! Set the stencil test reference value
-    void SetStencilRef(uint32);
+    void SetStencilRef(uint32_t);
 
     //! Increment the current stencil reference value
     void IncrementStencilRef();
@@ -137,6 +133,9 @@ public: // member functions
 
     //! Display debug texture data after rendering
     void DebugDisplayTextureData(int recordingOption);
+
+    //! Track textures being used in the current frame
+    void DebugUseTexture(AZ::Data::Instance<AZ::RPI::Image> image);
 #endif
 
 private: // member functions
@@ -165,7 +164,7 @@ protected: // attributes
     static constexpr char LogName[] = "UiRenderer";
 
     BaseState m_baseState;
-    uint32 m_stencilRef = 0;
+    uint32_t m_stencilRef = 0;
 
     UiShaderData m_uiShaderData;
     AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> m_dynamicDraw;
@@ -179,6 +178,6 @@ protected: // attributes
 
 #ifndef _RELEASE
     int m_debugTextureDataRecordLevel = 0;
-    AZStd::unordered_set<ITexture*> m_texturesUsedInFrame; // [LYN-7857] - Support debug display with Atom
+    AZStd::unordered_set<AZ::Data::Instance<AZ::RPI::Image>> m_texturesUsedInFrame;
 #endif
 };

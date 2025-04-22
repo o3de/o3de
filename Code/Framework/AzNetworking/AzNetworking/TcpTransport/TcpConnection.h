@@ -72,8 +72,9 @@ namespace AzNetworking
         bool IsOpen() const;
 
         //! Connects to the provided remote address.
+        //! @param localPort the local port to open a connection from, 0 binds to any available port
         //! @return boolean true on success
-        bool Connect();
+        bool Connect(uint16_t localPort);
 
         //! Handles any new outgoing network traffic.
         void UpdateSend();

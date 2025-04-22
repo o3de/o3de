@@ -10,7 +10,6 @@
             "methods": [
                 {
                     "base": "FromString",
-                    "context": "MathCrc32_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke FromString"

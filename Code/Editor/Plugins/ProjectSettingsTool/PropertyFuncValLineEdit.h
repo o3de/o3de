@@ -25,6 +25,7 @@ namespace ProjectSettingsTool
         Q_OBJECT
 
     public:
+        AZ_CLASS_ALLOCATOR(PropertyFuncValLineEditCtrl, AZ::SystemAllocator)
         PropertyFuncValLineEditCtrl(QWidget* pParent = nullptr);
 
         virtual QString GetValue() const;
@@ -56,7 +57,7 @@ namespace ProjectSettingsTool
     class PropertyFuncValLineEditHandler
         : public AzToolsFramework::PropertyHandler <AZStd::string, PropertyFuncValLineEditCtrl>
     {
-        AZ_CLASS_ALLOCATOR(PropertyFuncValLineEditHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PropertyFuncValLineEditHandler, AZ::SystemAllocator);
 
     public:
         PropertyFuncValLineEditHandler(ValidationHandler* valHdlr);

@@ -68,7 +68,7 @@ namespace UnitTest
 
     TEST_F(VegetationComponentFilterTests, SurfaceMaskFilterComponent)
     {
-        const auto maskValue = AZ_CRC("test_mask", 0x7a16e9ff);
+        const auto maskValue = AZ_CRC_CE("test_mask");
 
         Vegetation::SurfaceMaskFilterConfig config;
         config.m_inclusiveSurfaceMasks.push_back(maskValue);
@@ -80,7 +80,7 @@ namespace UnitTest
         });
 
         Vegetation::InstanceData vegInstance;
-        vegInstance.m_masks[maskValue] = 1.0f;
+        vegInstance.m_masks.AddSurfaceTagWeight(maskValue, 1.0f);
 
         // passes
         {
@@ -119,8 +119,7 @@ namespace UnitTest
         MockSurfaceHandler mockSurfaceHandler;
         mockSurfaceHandler.m_outPosition = AZ::Vector3::CreateZero();
         mockSurfaceHandler.m_outNormal = AZ::Vector3::CreateAxisZ();
-        mockSurfaceHandler.m_outMasks.clear();
-        mockSurfaceHandler.m_outMasks[SurfaceData::Constants::s_unassignedTagCrc] = 1.0f;
+        mockSurfaceHandler.m_outMasks.AddSurfaceTagWeight(SurfaceData::Constants::s_unassignedTagCrc, 1.0f);
 
         // passes
         {

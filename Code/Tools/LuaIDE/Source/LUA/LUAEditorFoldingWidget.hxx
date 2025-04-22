@@ -6,21 +6,17 @@
  *
  */
 
-#ifndef LUAEDITOR_FOLDINGWIDGET_H
-#define LUAEDITOR_FOLDINGWIDGET_H
-
 #if !defined(Q_MOC_RUN)
+#include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/base.h>
 #include <QtWidgets/QWidget>
-#include "AzToolsFramework/UI/UICore/PlainTextEdit.hxx"
+#include <Source/LUA/LUAEditorPlainTextEdit.hxx>
 #endif
 
 #pragma once
 
 namespace LUAEditor
 {
-    class LUAEditorPlainTextEdit;
-
     class FoldingWidget : public QWidget
     {
         Q_OBJECT
@@ -28,12 +24,12 @@ namespace LUAEditor
         static const int c_borderSize{3};
 
     public:
-        AZ_CLASS_ALLOCATOR(FoldingWidget, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(FoldingWidget, AZ::SystemAllocator);
 
         FoldingWidget(QWidget *pParent = nullptr);
         virtual ~FoldingWidget();
 
-        void SetTextEdit(AzToolsFramework::PlainTextEdit* textEdit) { m_textEdit = textEdit; }
+        void SetTextEdit(LUAEditorPlainTextEdit* textEdit) { m_textEdit = textEdit; }
         void OnContentChanged(int from, int charsRemoved, int charsAdded);
 
         void FoldAll();
@@ -48,9 +44,7 @@ namespace LUAEditor
         void paintEvent(QPaintEvent*) override;
         void mouseReleaseEvent(QMouseEvent* event) override;
 
-        AzToolsFramework::PlainTextEdit* m_textEdit;
+        LUAEditorPlainTextEdit* m_textEdit;
         int m_singleSize{10}; //square size for folding widget, of a single line in editor
     };
 }
-
-#endif

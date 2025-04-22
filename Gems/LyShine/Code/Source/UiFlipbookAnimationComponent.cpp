@@ -29,7 +29,7 @@ namespace
         AZ::SerializeContext& context,
         AZ::SerializeContext::DataElementNode& classElement)
     {
-        int index = classElement.FindElement(AZ_CRC("Frame Delay"));
+        int index = classElement.FindElement(AZ_CRC_CE("Frame Delay"));
         if (index != -1)
         {
             AZ::SerializeContext::DataElementNode& frameDelayNode = classElement.GetSubElement(index);
@@ -45,7 +45,7 @@ namespace
             classElement.RemoveElement(index);
 
             // If Framerate doesn't exist yet, add it
-            index = classElement.FindElement(AZ_CRC("Framerate"));
+            index = classElement.FindElement(AZ_CRC_CE("Framerate"));
             if (index == -1)
             {
                 index = classElement.AddElement<float>(context, "Framerate");
@@ -78,7 +78,7 @@ namespace
         AZ::SerializeContext::DataElementNode& classElement)
     {
         // If Framerate Unit doesn't exist yet, add it
-        int index = classElement.FindElement(AZ_CRC("Framerate Unit"));
+        int index = classElement.FindElement(AZ_CRC_CE("Framerate Unit"));
         if (index == -1)
         {
             index = classElement.AddElement<int>(context, "Framerate Unit");
@@ -184,20 +184,20 @@ void UiFlipbookAnimationComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::Category, "UI")
                 ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Flipbook.png")
                 ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Flipbook.svg")
-                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("UI"))
+                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
             ;
 
             editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiFlipbookAnimationComponent::m_startFrame, "Start frame", "Frame to start at")
                 ->Attribute("EnumValues", &UiFlipbookAnimationComponent::PopulateIndexStringList)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiFlipbookAnimationComponent::OnStartFrameChange)
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c));
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
             ;
 
             editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiFlipbookAnimationComponent::m_endFrame, "End frame", "Frame to end at")
                 ->Attribute("EnumValues", &UiFlipbookAnimationComponent::PopulateIndexStringList)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiFlipbookAnimationComponent::OnEndFrameChange)
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c));
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
             ;
 
             editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiFlipbookAnimationComponent::m_loopStartFrame, "Loop start frame", "Frame to start looping from")
@@ -208,14 +208,14 @@ void UiFlipbookAnimationComponent::Reflect(AZ::ReflectContext* context)
                 ->EnumAttribute(UiFlipbookAnimationInterface::LoopType::None, "None")
                 ->EnumAttribute(UiFlipbookAnimationInterface::LoopType::Linear, "Linear")
                 ->EnumAttribute(UiFlipbookAnimationInterface::LoopType::PingPong, "PingPong")
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c))
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"))
             ;
 
             editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiFlipbookAnimationComponent::m_framerateUnit, "Framerate unit", "Unit of measurement for framerate")
                 ->EnumAttribute(UiFlipbookAnimationInterface::FramerateUnits::FPS, "FPS")
                 ->EnumAttribute(UiFlipbookAnimationInterface::FramerateUnits::SecondsPerFrame, "Seconds Per Frame")
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiFlipbookAnimationComponent::OnFramerateUnitChange)
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c))
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"))
                 ;
 
             editInfo->DataElement(0, &UiFlipbookAnimationComponent::m_framerate, "Framerate", "Determines transition speed between frames")
@@ -296,7 +296,7 @@ AZ::u32 UiFlipbookAnimationComponent::GetMaxFrame() const
 {
     AZ::u32 numImageIndices = 0;
 
-    EBUS_EVENT_ID_RESULT(numImageIndices, GetEntityId(), UiIndexableImageBus, GetImageIndexCount);
+    UiIndexableImageBus::EventResult(numImageIndices, GetEntityId(), &UiIndexableImageBus::Events::GetImageIndexCount);
 
     return numImageIndices;
 }
@@ -418,7 +418,7 @@ void UiFlipbookAnimationComponent::Activate()
         // this is unlikely but possible. To get here a client would have to start the flipbook
         // playing and then deactivate and reactivate (e.g. add a component).
         AZ::EntityId canvasEntityId;
-        EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
+        UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
         if (canvasEntityId.IsValid())
         {
             UiCanvasUpdateNotificationBus::Handler::BusConnect(canvasEntityId);
@@ -448,7 +448,7 @@ void UiFlipbookAnimationComponent::Update(float deltaTime)
             {
                 m_useStartDelay = false;
                 m_elapsedTime = 0.0f;
-                EBUS_EVENT_ID(GetEntityId(), UiIndexableImageBus, SetImageIndex, m_currentFrame);
+                UiIndexableImageBus::Event(GetEntityId(), &UiIndexableImageBus::Events::SetImageIndex, m_currentFrame);
             }
             return;
         }
@@ -487,7 +487,8 @@ void UiFlipbookAnimationComponent::Update(float deltaTime)
                 if (m_currentFrame > m_endFrame)
                 {
                     m_currentFrame = m_loopStartFrame;
-                    EBUS_EVENT_ID(GetEntityId(), UiFlipbookAnimationNotificationsBus, OnLoopSequenceCompleted);
+                    UiFlipbookAnimationNotificationsBus::Event(
+                        GetEntityId(), &UiFlipbookAnimationNotificationsBus::Events::OnLoopSequenceCompleted);
                 }
                 break;
             case LoopType::PingPong:
@@ -495,13 +496,15 @@ void UiFlipbookAnimationComponent::Update(float deltaTime)
                 {
                     m_currentLoopDirection = -1;
                     m_currentFrame = m_endFrame;
-                    EBUS_EVENT_ID(GetEntityId(), UiFlipbookAnimationNotificationsBus, OnLoopSequenceCompleted);
+                    UiFlipbookAnimationNotificationsBus::Event(
+                        GetEntityId(), &UiFlipbookAnimationNotificationsBus::Events::OnLoopSequenceCompleted);
                 }
                 else if (m_currentLoopDirection < 0 && m_currentFrame <= m_loopStartFrame)
                 {
                     m_currentLoopDirection = 1;
                     m_currentFrame = m_loopStartFrame;
-                    EBUS_EVENT_ID(GetEntityId(), UiFlipbookAnimationNotificationsBus, OnLoopSequenceCompleted);
+                    UiFlipbookAnimationNotificationsBus::Event(
+                        GetEntityId(), &UiFlipbookAnimationNotificationsBus::Events::OnLoopSequenceCompleted);
                 }
                 break;
             default:
@@ -509,7 +512,7 @@ void UiFlipbookAnimationComponent::Update(float deltaTime)
             }
 
             // Show current frame
-            EBUS_EVENT_ID(GetEntityId(), UiIndexableImageBus, SetImageIndex, m_currentFrame);
+            UiIndexableImageBus::Event(GetEntityId(), &UiIndexableImageBus::Events::SetImageIndex, m_currentFrame);
         }
     }
 }
@@ -523,7 +526,7 @@ void UiFlipbookAnimationComponent::InGamePostActivate()
         if (!UiCanvasUpdateNotificationBus::Handler::BusIsConnected())
         {
             AZ::EntityId canvasEntityId;
-            EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
+            UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
             if (canvasEntityId.IsValid())
             {
                 UiCanvasUpdateNotificationBus::Handler::BusConnect(canvasEntityId);
@@ -548,14 +551,14 @@ void UiFlipbookAnimationComponent::Start()
     // Show current frame
     if (!m_useStartDelay)
     {
-        EBUS_EVENT_ID(GetEntityId(), UiIndexableImageBus, SetImageIndex, m_currentFrame);
+        UiIndexableImageBus::Event(GetEntityId(), &UiIndexableImageBus::Events::SetImageIndex, m_currentFrame);
     }
 
     // Start the update loop
     if (!UiCanvasUpdateNotificationBus::Handler::BusIsConnected())
     {
         AZ::EntityId canvasEntityId;
-        EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
+        UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
         // if this element has not been fixed up yet then canvasEntityId will be invalid. We handle this
         // in InGamePostActivate
         if (canvasEntityId.IsValid())
@@ -565,7 +568,7 @@ void UiFlipbookAnimationComponent::Start()
     }
 
     // Let listeners know that we started playing
-    EBUS_EVENT_ID(GetEntityId(), UiFlipbookAnimationNotificationsBus, OnAnimationStarted);
+    UiFlipbookAnimationNotificationsBus::Event(GetEntityId(), &UiFlipbookAnimationNotificationsBus::Events::OnAnimationStarted);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -574,7 +577,7 @@ void UiFlipbookAnimationComponent::Stop()
     m_isPlaying = false;
     UiCanvasUpdateNotificationBus::Handler::BusDisconnect();
 
-    EBUS_EVENT_ID(GetEntityId(), UiFlipbookAnimationNotificationsBus, OnAnimationStopped);
+    UiFlipbookAnimationNotificationsBus::Event(GetEntityId(), &UiFlipbookAnimationNotificationsBus::Events::OnAnimationStopped);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -615,7 +618,7 @@ void UiFlipbookAnimationComponent::SetCurrentFrame(AZ::u32 currentFrame)
     }
 
     m_currentFrame = currentFrame;
-    EBUS_EVENT_ID(GetEntityId(), UiIndexableImageBus, SetImageIndex, m_currentFrame);
+    UiIndexableImageBus::Event(GetEntityId(), &UiIndexableImageBus::Events::SetImageIndex, m_currentFrame);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -18,7 +18,7 @@ namespace MultiplayerCompression
     {
     public:
         AZ_RTTI(MultiplayerCompressionModule, "{939AFA0D-CFBC-4910-88F3-A0CF429307E4}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(MultiplayerCompressionModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MultiplayerCompressionModule, AZ::SystemAllocator);
 
         MultiplayerCompressionModule()
             : AZ::Module()
@@ -41,7 +41,8 @@ namespace MultiplayerCompression
     };
 }
 
-// DO NOT MODIFY THIS LINE UNLESS YOU RENAME THE GEM
-// The first parameter should be GemName_GemIdLower
-// The second should be the fully qualified name of the class above
-AZ_DECLARE_MODULE_CLASS(MultiplayerCompression_1d353c8ca3c74ed193fd6c6783ae41cc, MultiplayerCompression::MultiplayerCompressionModule)
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME), MultiplayerCompression::MultiplayerCompressionModule)
+#else
+AZ_DECLARE_MODULE_CLASS(Gem_MultiplayerCompression, MultiplayerCompression::MultiplayerCompressionModule)
+#endif

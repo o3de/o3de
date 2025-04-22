@@ -11,18 +11,46 @@ import re
 import sys
 import time
 import errno
-import shutil
 import fnmatch
-import filecmp
 import fileinput
-import importlib
+import logging
 import argparse
 import hashlib
+import pathlib
 from xml.sax.saxutils import escape, unescape, quoteattr
+
+logging.basicConfig(format='[%(levelname)s] %(name)s: %(message)s')
+logger = logging.getLogger('AzAutoGen')
+logger.setLevel(logging.INFO)
 
 # Maximum number of errors before bailing on AutoGen
 MAX_ERRORS = 100
 errorCount = 0
+
+class AutoGenConfig:
+    def __init__(self, targetName, cacheDir, outputDir, projectDir, inputFiles, expansionRules, dryrun, verbose, pythonPaths):
+        self.targetName = targetName
+        self.cacheDir = cacheDir
+        self.outputDir = outputDir
+        self.projectDir = projectDir
+        self.inputFiles = inputFiles
+        self.expansionRules = expansionRules
+        self.dryrun = dryrun
+        self.verbose = verbose
+        self.pythonPaths = pythonPaths
+
+def SanitizeTargetName(targetName):
+    return re.sub(r'[^\w]', '', targetName.lstrip('0123456789'))
+
+def ParseInputFile(inputFilePath):
+    result = []
+    if inputFilePath:
+        with open(inputFilePath, 'r') as file:
+            # input files are expected to be separated by semicolon at first line
+            inputFileContent = file.readline()
+            inputFiles = inputFileContent.strip().split(";")
+            result = inputFiles
+    return result
 
 def PrintError(*objs):
     print(*objs, file=sys.stderr)
@@ -54,7 +82,19 @@ def CreateHashGuid(string):
     hashStr = hash.hexdigest()
     return ("{" + hashStr[0:8] + "-" + hashStr[8:12] + "-" + hashStr[12:16] + "-" + hashStr[16:20] + "-" + hashStr[20:] + "}").upper()
 
+def CreateAZHashValue64(btyes):
+    hash = hashlib.new('sha256')
+    hash.update(btyes)
+    hashStr = hash.hexdigest()
+    return ("AZ::HashValue64{ 0x" + hashStr[0:16] + " }")  # grab the first 64-bits of a sha256; any 64-bits of a sha256 are just as secure as any other 64.
+
 def EtreeToString(xmlNode):
+    return etree.tostring(xmlNode)
+
+def EtreeToStringStripped(xmlNode):
+    for elem in xmlNode.iter():
+        if elem.text: elem.text = elem.text.strip()
+        if elem.tail: elem.tail = elem.tail.strip()
     return etree.tostring(xmlNode)
 
 def SanitizePath(path):
@@ -78,8 +118,8 @@ def ComputeOutputPath(inputFiles, projectDir, outputDir):
     inputRelativePath = os.path.relpath(commonInputPath, commonPath) # Computes the relative path for the project source directory (Code/Framework/AzCore/AutoGen/)
     return os.path.join(outputDir, inputRelativePath) # Returns a suitable output directory (//depot/dev/Generated/Code/Framework/AzCore/AutoGen/)
 
-def ProcessTemplateConversion(dataInputSet, dataInputFiles, templateFile, outputFile, templateCache, dryrun, verbose):
-    if dryrun or not dataInputFiles:
+def ProcessTemplateConversion(autogenConfig, dataInputSet, dataInputFiles, templateFile, outputFile, templateCache):
+    if autogenConfig.dryrun or not dataInputFiles:
         return
     try:
         outputFile = os.path.abspath(outputFile)
@@ -107,7 +147,7 @@ def ProcessTemplateConversion(dataInputSet, dataInputFiles, templateFile, output
 #                    if xmlSchema:
 #                        # check the template directory, the template include dir, and the folder that houses the nvdef file, and the xml's location for the xsd
 #                        searchPaths = [os.path.dirname(templateFile)]
-#                        searchPaths += [os.path.dirname(dataInputFile)] 
+#                        searchPaths += [os.path.dirname(dataInputFile)]
 #                        xmlShemaLoc = SearchPaths(xmlSchema, searchPaths)
 #                        try:
 #                            xmlSchemaDoc = etree.parse(xmlShemaLoc)
@@ -151,15 +191,18 @@ def ProcessTemplateConversion(dataInputSet, dataInputFiles, templateFile, output
         templateEnv.filters['camelToHuman'  ] = CamelToHuman
         templateEnv.filters['booleanTrue'   ] = BooleanTrue
         templateEnv.filters['createHashGuid'] = CreateHashGuid
+        templateEnv.filters['createAZHashValue64'] = CreateAZHashValue64
         templateEnv.filters['etreeToString' ] = EtreeToString
+        templateEnv.filters['etreeToStringStripped' ] = EtreeToStringStripped
         templateJinja  = templateEnv.get_template(os.path.basename(templateFile))
         templateVars   = \
             { \
-                "dataFiles"     : treeRoots, \
-                "dataFileNames" : dataInputFiles, \
-                "templateName"  : templateFile, \
-                "outputFile"    : outputFile, \
-                "filename"      : os.path.splitext(os.path.basename(outputFile))[0], \
+                "autogenTargetName": autogenConfig.targetName, \
+                "dataFiles"        : treeRoots, \
+                "dataFileNames"    : dataInputFiles, \
+                "templateName"     : templateFile, \
+                "outputFile"       : outputFile, \
+                "filename"         : os.path.splitext(os.path.basename(outputFile))[0], \
             }
         try:
             outputExtension = os.path.splitext(outputFile)[1]
@@ -171,7 +214,7 @@ def ProcessTemplateConversion(dataInputSet, dataInputFiles, templateFile, output
                 compareFD.write('<!-- SPDX-License-Identifier: Apache-2.0 OR MIT                                -->\n')
                 compareFD.write('\n')
                 compareFD.write('<!-- This file is generated automatically at compile time, DO NOT EDIT BY HAND -->\n')
-                compareFD.write('<!-- Template Source {0}; XML Sources {1}-->\n'.format(templateFile, ', '.join(dataInputFiles)))
+                compareFD.write('<!-- Template Source {0};\n * XML Sources {1}-->\n'.format(templateFile, ', '.join(dataInputFiles)))
                 compareFD.write('\n')
             elif outputExtension == ".lua":
                 compareFD.write('-- Copyright (c) Contributors to the Open 3D Engine Project.\n')
@@ -180,7 +223,7 @@ def ProcessTemplateConversion(dataInputSet, dataInputFiles, templateFile, output
                 compareFD.write('-- SPDX-License-Identifier: Apache-2.0 OR MIT\n')
                 compareFD.write('\n')
                 compareFD.write('-- This file is generated automatically at compile time, DO NOT EDIT BY HAND\n')
-                compareFD.write('-- Template Source {0}; XML Sources {1}\n'.format(templateFile, ', '.join(dataInputFiles)))
+                compareFD.write('-- Template Source {0};\n * XML Sources {1}\n'.format(templateFile, ', '.join(dataInputFiles)))
                 compareFD.write('\n')
             elif outputExtension == ".h" or outputExtension == ".hpp" or outputExtension == ".inl" or outputExtension == ".c" or outputExtension == ".cpp":
                 compareFD.write('/*\n')
@@ -190,7 +233,7 @@ def ProcessTemplateConversion(dataInputSet, dataInputFiles, templateFile, output
                 compareFD.write(' * SPDX-License-Identifier: Apache-2.0 OR MIT\n')
                 compareFD.write(' *\n')
                 compareFD.write(' * This file is generated automatically at compile time, DO NOT EDIT BY HAND\n')
-                compareFD.write(' * Template Source {0}; Data Sources {1}\n'.format(templateFile, ', '.join(dataInputFiles)))
+                compareFD.write(' * Template Source {0};\n * Data Sources {1}\n'.format(templateFile, ', '.join(dataInputFiles)))
                 compareFD.write(' */\n')
                 compareFD.write('\n')
             compareFD.write(templateJinja.render(templateVars))
@@ -216,17 +259,24 @@ def ProcessTemplateConversion(dataInputSet, dataInputFiles, templateFile, output
             with open(outputFile, 'r+') as currentFile:
                 currentFileStringData = currentFile.read()
                 if currentFileStringData == compareFD.getvalue():
-                    if verbose == True:
-                        print('Generated file %s is unchanged, skipping' % (outputFile))                    
+                    if autogenConfig.verbose == True:
+                        print('Generated file %s is unchanged, skipping' % (outputFile))
                 else:
                     currentFile.truncate()
                     with open(outputFile, 'w+') as currentFile:
                         currentFile.write(compareFD.getvalue())
-                        print('Generating %s with template %s and inputs %s' % (outputFile, templateFile, ", ".join(dataInputFiles)))
+                        if autogenConfig.verbose == True:
+                            print(f'Generated {outputFile} with template {templateFile} and inputs, '.join(dataInputFiles))
+                        else:
+                            print('Generated %s' % (os.path.basename(outputFile)))
         else:
             with open(outputFile, 'w+') as outputFD:
-                outputFD.write(compareFD.getvalue())                
-                print('Generating %s using template %s and inputs %s' % (outputFile, templateFile, ", ".join(dataInputFiles)))
+                outputFD.write(compareFD.getvalue())
+                if autogenConfig.verbose == True:
+                    print(f'Generated {outputFile} using template {templateFile} and inputs, '.join(dataInputFiles))
+                else:
+                    print('Generated %s' % (os.path.basename(outputFile)))
+
     except IOError as e:
         PrintError('%s(%s) : error I/O(%s) accessing %s : %s' % (fileinput.filename(), str(fileinput.filelineno()), e.errno, e.filename, e.strerror))
     except:
@@ -235,7 +285,7 @@ def ProcessTemplateConversion(dataInputSet, dataInputFiles, templateFile, output
         raise
     compareFD.close()
 
-def ProcessExpansionRule(sourceFiles, templateFiles, templateCache, outputDir, projectDir, expansionRule, dryrun, verbose, dataInputSet, outputFiles):
+def ProcessExpansionRule(autogenConfig, sourceFiles, templateFiles, templateCache, expansionRule, dataInputSet, outputFiles):
     try:
         # should be of the format inputFile(s),templateFile,outputFile, where inputFile and outputFile are subject to wildcarding and substitutions
         expansionRuleSet = expansionRule.split(",")
@@ -261,38 +311,40 @@ def ProcessExpansionRule(sourceFiles, templateFiles, templateCache, outputDir, p
         #       generate a single output file containing all matching data file's
         #    endif
         # endif
-        testSingle = os.path.join(projectDir, inputFiles)
+        testSingle = os.path.join(autogenConfig.projectDir, inputFiles)
         if os.path.isfile(testSingle):
             # If we specified an *explicit* file to be processed (no wildcards for the data input file foo.json not *.foo.json), this is the branch that handles this case
             # This is explicitly one-to-one mapping
             dataInputFiles = [os.path.abspath(testSingle)]
-            outputFileAbsolute = outputFile.replace("$path", ComputeOutputPath(dataInputFiles, projectDir, outputDir))
+            outputFileAbsolute = outputFile.replace("$path", ComputeOutputPath(dataInputFiles, autogenConfig.projectDir, autogenConfig.outputDir))
             outputFileAbsolute = outputFileAbsolute.replace("$fileprefix", os.path.splitext(os.path.basename(testSingle))[0].split(".")[0])
             outputFileAbsolute = outputFileAbsolute.replace("$file", os.path.splitext(os.path.basename(testSingle))[0])
             outputFileAbsolute = SanitizePath(outputFileAbsolute)
-            ProcessTemplateConversion(dataInputSet, dataInputFiles, templateFile, outputFileAbsolute, templateCache, dryrun, verbose)
-            outputFiles.append(outputFileAbsolute)
+            ProcessTemplateConversion(autogenConfig, dataInputSet, dataInputFiles, templateFile, outputFileAbsolute, templateCache)
+            outputFiles.append(pathlib.PurePath(outputFileAbsolute))
         else:
             # We've wildcarded the data input field, so we may have to handle one-to-one mapping of data files to output, or many-to-one mapping of data files to output
             if "$fileprefix" in outputFile or "$file" in outputFile:
                 # Due to the wildcards in the output file, we've determined we'll do a one-to-one mapping of data files to output
                 for filename in fnmatch.filter(sourceFiles, inputFiles):
                     dataInputFiles = [os.path.abspath(filename)]
-                    outputFileAbsolute = outputFile.replace("$path", ComputeOutputPath(dataInputFiles, projectDir, outputDir))
+                    outputFileAbsolute = outputFile.replace("$path", ComputeOutputPath(dataInputFiles, autogenConfig.projectDir, autogenConfig.outputDir))
                     outputFileAbsolute = outputFileAbsolute.replace("$fileprefix", os.path.splitext(os.path.basename(filename))[0].split(".")[0])
                     outputFileAbsolute = outputFileAbsolute.replace("$file", os.path.splitext(os.path.basename(filename))[0])
                     outputFileAbsolute = SanitizePath(outputFileAbsolute)
-                    ProcessTemplateConversion(dataInputSet, dataInputFiles, templateFile, outputFileAbsolute, templateCache, dryrun, verbose)
-                    outputFiles.append(outputFileAbsolute)
+                    ProcessTemplateConversion(autogenConfig, dataInputSet, dataInputFiles, templateFile, outputFileAbsolute, templateCache)
+                    outputFiles.append(pathlib.PurePath(outputFileAbsolute))
             else:
                 # Process all matches in one batch
-                # Due to the lack of wildcards in the output file, we've determined we'll glob all matching input files into the template conversion 
-                for filename in fnmatch.filter(sourceFiles, inputFiles):
-                    dataInputFiles = [os.path.abspath(file) for file in fnmatch.filter(sourceFiles, inputFiles)]
-                outputFileAbsolute = outputFile.replace("$path", ComputeOutputPath(dataInputFiles, projectDir, outputDir))
+                # Due to the lack of wildcards in the output file, we've determined we'll glob all matching input files into the template conversion
+                dataInputFiles = [os.path.abspath(file) for file in fnmatch.filter(sourceFiles, inputFiles)]
+                if "$path" in outputFile:
+                    outputFileAbsolute = outputFile.replace("$path", ComputeOutputPath(dataInputFiles, autogenConfig.projectDir, autogenConfig.outputDir))
+                else: # if no relative $path, put one batch file under outputDir
+                    outputFileAbsolute = os.path.join(autogenConfig.outputDir, outputFile)
                 outputFileAbsolute = SanitizePath(outputFileAbsolute)
-                ProcessTemplateConversion(dataInputSet, dataInputFiles, templateFile, outputFileAbsolute, templateCache, dryrun, verbose)
-                outputFiles.append(outputFileAbsolute)
+                ProcessTemplateConversion(autogenConfig, dataInputSet, dataInputFiles, templateFile, outputFileAbsolute, templateCache)
+                outputFiles.append(pathlib.PurePath(outputFileAbsolute))
     except IOError as e:
         PrintError('%s : error I/O(%s) accessing %s : %s' % (expansionRule, e.errno, e.filename, e.strerror))
     except:
@@ -300,15 +352,14 @@ def ProcessExpansionRule(sourceFiles, templateFiles, templateCache, outputDir, p
         PrintUnhandledExcptionInfo()
         raise
 
-def ExecuteExpansionRules(cacheDir, outputDir, projectDir, inputFiles, expansionRules, dryrun, verbose, dataInputSet, outputFiles):
+def ExecuteExpansionRules(autogenConfig, dataInputSet, outputFiles, pruneNonGenerated):
     # Get Globals
-    global MAX_ERRORS
-    global errorCount
+    global MAX_ERRORS, errorCount
     currentPath = os.getcwd()
     startTime = time.time()
     # Ensure jinja2 template cache dir actually exists...
     try:
-        os.makedirs(cacheDir)
+        os.makedirs(autogenConfig.cacheDir)
     except OSError as e:
         if e.errno == errno.EEXIST:
             pass
@@ -316,51 +367,80 @@ def ExecuteExpansionRules(cacheDir, outputDir, projectDir, inputFiles, expansion
             raise
     sourceFiles = []
     templateFiles = []
-    for inputFile in inputFiles:
+    for inputFile in autogenConfig.inputFiles:
         if inputFile.endswith(".xml") or inputFile.endswith(".json"):
-            sourceFiles.append(os.path.join(projectDir, inputFile))
+            sourceFiles.append(os.path.join(autogenConfig.projectDir, inputFile))
         elif inputFile.endswith(".jinja"):
-            templateFiles.append(os.path.join(projectDir, inputFile))
-    templateCache = jinja2.FileSystemBytecodeCache(cacheDir)
-    for expansionRule in expansionRules:
-        ProcessExpansionRule(sourceFiles, templateFiles, templateCache, outputDir, projectDir, expansionRule, dryrun, verbose, dataInputSet, outputFiles)
-    if not dryrun:
+            templateFiles.append(os.path.join(autogenConfig.projectDir, inputFile))
+    templateCache = jinja2.FileSystemBytecodeCache(autogenConfig.cacheDir)
+    for expansionRule in autogenConfig.expansionRules:
+        ProcessExpansionRule(autogenConfig, sourceFiles, templateFiles, templateCache, expansionRule, dataInputSet, outputFiles)
+    if not autogenConfig.dryrun:
+        if pruneNonGenerated:
+            PruneNonGeneratedFiles(autogenConfig, outputFiles)
         elapsedTime = time.time() - startTime
         millis = int(round(elapsedTime * 10))
         m, s = divmod(elapsedTime, 60)
-        h, m = divmod(m, 60)    
+        h, m = divmod(m, 60)
         print('Total Time %d:%02d:%02d.%02d' % (h, m, s, millis))
     # Return true on success
     return errorCount == 0
+
+def PruneNonGeneratedFiles(autogenConfig : AutoGenConfig, outputFiles : list[pathlib.PurePath]):
+    '''
+    Removes all files from the generated files output directories which was not generated during this invocation
+    :param autogenConfig: Stores the configuration structure containing the output directory paths for generated files
+    :param outputFiles: Contains the list of output files generated during the current run
+    '''
+    # First generate a set of output directories to iterate using the outputFiles
+    generatedOutputDirs = set()
+    for outputFile in outputFiles:
+        generatedOutputDirs.add(pathlib.Path(outputFile.parent))
+
+    # iterate over all the output directories where generated files are output
+    # and gather a list of files that were not generated during the current invocation
+    for outputDir in generatedOutputDirs:
+        filesToRemove = []
+        if outputDir.is_dir():
+            for genFile in outputDir.iterdir():
+                if genFile.is_file() and not genFile in outputFiles:
+                    filesToRemove.append(genFile)
+        if filesToRemove:
+            logger.info(f'The following files will be pruned from the generated output directory "{outputDir}":\n' \
+                f'{[str(path) for path in filesToRemove]}')
+            for fileToRemove in filesToRemove:
+                fileToRemove.unlink()
+
 
 # Main Function
 if __name__ == '__main__':
     # setup our command syntax
     parser = argparse.ArgumentParser()
+    parser.add_argument("targetName", help="AzAutoGen build target name")
     parser.add_argument("cacheDir", help="location to store jinja template cache files")
     parser.add_argument("outputDir", help="location to output generated files")
     parser.add_argument("projectDir", help="location to build directory against")
-    parser.add_argument("inputFiles", help="set of files to run azcg expansion rules against")
+    parser.add_argument("inputFilePath", help="input file which contains autogen required files to run azcg expansion rules against")
     parser.add_argument("expansionRules", help="set of azcg expansion rules for matching data files to template files")
     parser.add_argument("-n", "--dryrun", action='store_true', help="does not execute autogen, only outputs the set of files that autogen would generate")
     parser.add_argument("-v", "--verbose", action='store_true', help="output only the set of files that would be generated by an expansion run")
     parser.add_argument("-p", "--pythonPaths", action='append', nargs='+', default=[""], help="set of additional python paths to use for module imports")
-    
+    parser.add_argument("--prune", action='store_true', default=False,
+        help="Prunes any files in the outputDir that was not generated by the current invocation")
+
     args = parser.parse_args()
-    pythonPaths = args.pythonPaths
-    cacheDir  = args.cacheDir
-    outputDir = args.outputDir
-    projectDir = args.projectDir
-    inputFiles = args.inputFiles.split(";")
-    expansionRules = args.expansionRules.split(";")
-    dryrun = args.dryrun
-    verbose = args.verbose
-    cacheDir = os.path.abspath(SanitizePath(cacheDir))
-    outputDir = os.path.abspath(SanitizePath(outputDir))
-    projectDir = os.path.abspath(SanitizePath(projectDir))
+    autogenConfig = AutoGenConfig(SanitizeTargetName(args.targetName),
+                                  os.path.abspath(SanitizePath(args.cacheDir)),
+                                  os.path.abspath(SanitizePath(args.outputDir)),
+                                  os.path.abspath(SanitizePath(args.projectDir)),
+                                  ParseInputFile(args.inputFilePath.strip()),
+                                  args.expansionRules.split(";"),
+                                  args.dryrun,
+                                  args.verbose,
+                                  args.pythonPaths)
 
     # Import 3rd party modules
-    for pythonPath in pythonPaths:
+    for pythonPath in autogenConfig.pythonPaths:
         sys.path.append(pythonPath)
     import jinja2
     #from lxml import etree
@@ -369,9 +449,9 @@ if __name__ == '__main__':
 
     dataInputSet = {}
     outputFiles  = []
-    autoGenResult = ExecuteExpansionRules(cacheDir, outputDir, projectDir, inputFiles, expansionRules, dryrun, verbose, dataInputSet, outputFiles)
-    if dryrun:
-        print("%s" % ';'.join(outputFiles))
+    autoGenResult = ExecuteExpansionRules(autogenConfig, dataInputSet, outputFiles, args.prune)
+    if autogenConfig.dryrun:
+        print("%s" % ';'.join([str(path) for path in outputFiles]))
     if autoGenResult:
         sys.exit(0)
     else:

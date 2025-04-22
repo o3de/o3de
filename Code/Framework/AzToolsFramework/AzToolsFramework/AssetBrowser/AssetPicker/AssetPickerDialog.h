@@ -33,7 +33,7 @@ namespace AzToolsFramework
     {
         class ProductAssetBrowserEntry;
         class AssetBrowserFilterModel;
-        class AssetBrowserTableModel;
+        class AssetBrowserListModel;
         class AssetBrowserModel;
         class AssetSelectionModel;
 
@@ -42,7 +42,7 @@ namespace AzToolsFramework
         {
             Q_OBJECT
         public:
-            AZ_CLASS_ALLOCATOR(AssetPickerDialog, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AssetPickerDialog, AZ::SystemAllocator);
             explicit AssetPickerDialog(AssetSelectionModel& selection, QWidget* parent = nullptr);
             virtual ~AssetPickerDialog();
 
@@ -58,23 +58,23 @@ namespace AzToolsFramework
             void keyPressEvent(QKeyEvent* e) override;
             void resizeEvent(QResizeEvent* resizeEvent) override;
 
-        private Q_SLOTS:
+        protected Q_SLOTS:
             void DoubleClickedSlot(const QModelIndex& index);
             void SelectionChangedSlot();
             void RestoreState();
             void OnFilterUpdated();
 
-        private:
+        protected:
             //! Evaluate whether current selection is valid.
             //! Valid selection requires exactly one item to be selected, must be source or product type, and must match the wildcard filter
-            bool EvaluateSelection() const;
+            virtual bool EvaluateSelection() const;
             void UpdatePreview() const;
             void SaveState();
 
             QScopedPointer<Ui::AssetPickerDialogClass> m_ui;
             AssetBrowserModel* m_assetBrowserModel = nullptr;
             QScopedPointer<AssetBrowserFilterModel> m_filterModel;
-            QScopedPointer<AssetBrowserTableModel> m_tableModel;
+            QScopedPointer<AssetBrowserListModel> m_listModel;
             AssetSelectionModel& m_selection;
             bool m_hasFilter;
             AZStd::unique_ptr<TreeViewState> m_filterStateSaver;

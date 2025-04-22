@@ -8,7 +8,7 @@
 
 #include <AzTest/GemTestEnvironment.h>
 #include <gmock/gmock.h>
-#include <AzFramework/Physics/Material.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/Physics/PhysicsScene.h>
 #include <AzFramework/Physics/Shape.h>
 #include <AzFramework/Physics/ShapeConfiguration.h>
@@ -18,26 +18,12 @@
 #include <AzFramework/Physics/Collision/CollisionLayers.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
-#include <WorldNodes.h>
+#include <World.h>
 
 namespace ScriptCanvasPhysics
 {
-    namespace WorldNodes
+    namespace WorldFunctions
     {
-        using Result = AZStd::tuple<
-            bool /*true if an object was hit*/,
-            AZ::Vector3 /*world space position*/,
-            AZ::Vector3 /*surface normal*/,
-            float /*distance to the hit*/,
-            AZ::EntityId /*entity hit, if any*/,
-            AZ::Crc32 /*tag of material surface hit, if any*/
-        >;
-
-        using OverlapResult = AZStd::tuple<
-            bool, /*true if the overlap returned hits*/
-            AZStd::vector<AZ::EntityId> /*list of entityIds*/
-        >;
-
         extern Result RayCastWorldSpaceWithGroup(const AZ::Vector3& start,
             const AZ::Vector3& direction,
             float distance,
@@ -140,6 +126,7 @@ namespace ScriptCanvasPhysicsTests
             [[maybe_unused]] AzPhysics::SceneEvents::OnSceneGravityChangedEvent::Handler& handler) override {}
 
         MOCK_METHOD1(GetSceneHandle, AzPhysics::SceneHandle(const AZStd::string& sceneName));
+        MOCK_METHOD1(GetScene, AzPhysics::Scene*(AzPhysics::SceneHandle));
         MOCK_CONST_METHOD1(IsEnabled, bool(AzPhysics::SceneHandle sceneHandle));
         MOCK_METHOD2(AddSimulatedBody, AzPhysics::SimulatedBodyHandle(AzPhysics::SceneHandle sceneHandle, const AzPhysics::SimulatedBodyConfiguration* simulatedBodyConfig));
         MOCK_METHOD2(AddSimulatedBodies, AzPhysics::SimulatedBodyHandleList(AzPhysics::SceneHandle sceneHandle, const AzPhysics::SimulatedBodyConfigurationList& simulatedBodyConfigs));
@@ -153,6 +140,7 @@ namespace ScriptCanvasPhysicsTests
         MOCK_METHOD2(RegisterSceneSimulationFinishHandler, void(AzPhysics::SceneHandle sceneHandle, AzPhysics::SceneEvents::OnSceneSimulationFinishHandler& handler));
         MOCK_CONST_METHOD2(GetLegacyBody, AzPhysics::SimulatedBody* (AzPhysics::SceneHandle sceneHandle, AzPhysics::SimulatedBodyHandle handle));
         MOCK_METHOD2(QueryScene, AzPhysics::SceneQueryHits(AzPhysics::SceneHandle sceneHandle, const AzPhysics::SceneQueryRequest* request));
+        MOCK_METHOD3(QueryScene, bool(AzPhysics::SceneHandle sceneHandle, const AzPhysics::SceneQueryRequest* request, AzPhysics::SceneQueryHits&));
         MOCK_METHOD2(QuerySceneBatch, AzPhysics::SceneQueryHitsList(AzPhysics::SceneHandle sceneHandle, const AzPhysics::SceneQueryRequests& requests));
         MOCK_METHOD4(QuerySceneAsync, bool(AzPhysics::SceneHandle sceneHandle, AzPhysics::SceneQuery::AsyncRequestId requestId,
             const AzPhysics::SceneQueryRequest* request, AzPhysics::SceneQuery::AsyncCallback callback));
@@ -164,6 +152,7 @@ namespace ScriptCanvasPhysicsTests
         : public AzPhysics::SimulatedBody
     {
     public:
+        AZ_CLASS_ALLOCATOR(MockSimulatedBody, AZ::SystemAllocator)
         MOCK_CONST_METHOD0(GetEntityId, AZ::EntityId());
         MOCK_CONST_METHOD0(GetTransform, AZ::Transform());
         MOCK_METHOD1(SetTransform, void(const AZ::Transform& transform));
@@ -179,8 +168,10 @@ namespace ScriptCanvasPhysicsTests
         : public Physics::Shape
     {
     public:
+        AZ_CLASS_ALLOCATOR(MockShape, AZ::SystemAllocator)
         MOCK_METHOD1(SetMaterial, void(const AZStd::shared_ptr<Physics::Material>& material));
         MOCK_CONST_METHOD0(GetMaterial, AZStd::shared_ptr<Physics::Material>());
+        MOCK_CONST_METHOD0(GetMaterialId, Physics::MaterialId());
         MOCK_METHOD1(SetCollisionLayer, void(const AzPhysics::CollisionLayer& layer));
         MOCK_CONST_METHOD0(GetCollisionLayer, AzPhysics::CollisionLayer());
         MOCK_METHOD1(SetCollisionGroup, void(const AzPhysics::CollisionGroup& group));
@@ -189,45 +180,19 @@ namespace ScriptCanvasPhysicsTests
         MOCK_METHOD2(SetLocalPose, void(const AZ::Vector3& offset, const AZ::Quaternion& rotation));
         MOCK_CONST_METHOD0(GetLocalPose, AZStd::pair<AZ::Vector3, AZ::Quaternion>());
         MOCK_METHOD0(GetNativePointer, void*());
+        MOCK_CONST_METHOD0(GetNativePointer, const void*());
         MOCK_CONST_METHOD0(GetTag, AZ::Crc32());
         MOCK_METHOD1(AttachedToActor, void(void* actor));
         MOCK_METHOD0(DetachedFromActor, void());
         MOCK_METHOD2(RayCast, AzPhysics::SceneQueryHit(const AzPhysics::RayCastRequest& worldSpaceRequest, const AZ::Transform& worldTransform));
         MOCK_METHOD1(RayCastLocal, AzPhysics::SceneQueryHit(const AzPhysics::RayCastRequest& localSpaceRequest));
-        MOCK_METHOD3(GetGeometry, void(AZStd::vector<AZ::Vector3>&, AZStd::vector<AZ::u32>&, AZ::Aabb*));
+        MOCK_CONST_METHOD3(GetGeometry, void(AZStd::vector<AZ::Vector3>&, AZStd::vector<AZ::u32>&, const AZ::Aabb*));
         MOCK_CONST_METHOD1(GetAabb, AZ::Aabb(const AZ::Transform& worldTransform));
         MOCK_CONST_METHOD0(GetAabbLocal, AZ::Aabb());
         MOCK_CONST_METHOD0(GetRestOffset, float());
         MOCK_METHOD1(SetRestOffset, void(float));
         MOCK_CONST_METHOD0(GetContactOffset, float());
         MOCK_METHOD1(SetContactOffset, void(float));
-    };
-
-    class MockPhysicsMaterial
-        : public Physics::Material
-    {
-    public:
-        virtual ~MockPhysicsMaterial() = default;
-
-        MOCK_CONST_METHOD0(GetSurfaceType, AZ::Crc32());
-        MOCK_CONST_METHOD0(GetSurfaceTypeName, const AZStd::string&());
-        MOCK_METHOD1(SetSurfaceTypeName, void(const AZStd::string&));
-        MOCK_CONST_METHOD0(GetDynamicFriction, float());
-        MOCK_METHOD1(SetDynamicFriction, void(float));
-        MOCK_CONST_METHOD0(GetStaticFriction, float());
-        MOCK_METHOD1(SetStaticFriction, void(float));
-        MOCK_CONST_METHOD0(GetRestitution, float());
-        MOCK_METHOD1(SetRestitution, void(float));
-        MOCK_CONST_METHOD0(GetFrictionCombineMode, CombineMode());
-        MOCK_METHOD1(SetFrictionCombineMode, void(CombineMode));
-        MOCK_CONST_METHOD0(GetRestitutionCombineMode, CombineMode());
-        MOCK_METHOD1(SetRestitutionCombineMode, void(CombineMode));
-        MOCK_CONST_METHOD0(GetCryEngineSurfaceId, AZ::u32());
-        MOCK_METHOD0(GetNativePointer, void*());
-        MOCK_CONST_METHOD0(GetDensity, float());
-        MOCK_METHOD1(SetDensity, void(float));
-        MOCK_CONST_METHOD0(GetDebugColor, AZ::Color());
-        MOCK_METHOD1(SetDebugColor, void(const AZ::Color&));
     };
 
     class ScriptCanvasPhysicsTestEnvironment
@@ -247,14 +212,11 @@ namespace ScriptCanvasPhysicsTests
         {
             ::testing::Test::SetUp();
 
-            ON_CALL(m_material, GetSurfaceType())
-                .WillByDefault(Return(AZ::Crc32("CustomSurface")));
-
             m_hit.m_position = AZ::Vector3(1.f, 2.f, 3.f);
             m_hit.m_distance = 2.5f;
             m_hit.m_normal = AZ::Vector3(-1.f, 3.5f, 0.5f);
             m_hit.m_shape = &m_shape;
-            m_hit.m_material = &m_material;
+            m_hit.m_physicsMaterialId = Physics::MaterialId::CreateName("Default");
             m_hit.m_resultFlags = AzPhysics::SceneQuery::ResultFlags::Position |
                 AzPhysics::SceneQuery::ResultFlags::Distance |
                 AzPhysics::SceneQuery::ResultFlags::Normal |
@@ -265,12 +227,11 @@ namespace ScriptCanvasPhysicsTests
 
         NiceMock<MockSimulatedBody> m_worldBody;
         NiceMock<MockShape> m_shape;
-        NiceMock<MockPhysicsMaterial> m_material;
         NiceMock<MockPhysicsSceneInterface> m_sceneInterfaceMock;
         AzPhysics::SceneQueryHit m_hit;
         AzPhysics::SceneQueryHits m_hitResult;
 
-        bool ResultIsEqualToHit(const ScriptCanvasPhysics::WorldNodes::Result& result, const AzPhysics::SceneQueryHit& hit)
+        bool ResultIsEqualToHit(const ScriptCanvasPhysics::WorldFunctions::Result& result, const AzPhysics::SceneQueryHit& hit)
         {
             return
                 AZStd::get<0>(result) == hit.IsValid() &&
@@ -278,7 +239,7 @@ namespace ScriptCanvasPhysicsTests
                 AZStd::get<2>(result) == hit.m_normal &&
                 AZStd::get<3>(result) == hit.m_distance &&
                 AZStd::get<4>(result) == hit.m_entityId &&
-                AZStd::get<5>(result) == (hit.m_material ? hit.m_material->GetSurfaceType() : AZ::Crc32())
+                AZStd::get<5>(result) == AZ::Crc32(hit.m_physicsMaterialId.ToString<AZStd::string>())
                 ;
         }
     };
@@ -297,7 +258,7 @@ namespace ScriptCanvasPhysicsTests
         const AZ::EntityId ignoreEntityId;
 
         // when a raycast is performed
-        auto result = ScriptCanvasPhysics::WorldNodes::RayCastWorldSpaceWithGroup(
+        auto result = ScriptCanvasPhysics::WorldFunctions::RayCastWorldSpaceWithGroup(
             start,
             direction,
             distance,
@@ -326,7 +287,7 @@ namespace ScriptCanvasPhysicsTests
         fromEntity->Activate();
 
         // when a raycast is performed
-        auto result = ScriptCanvasPhysics::WorldNodes::RayCastLocalSpaceWithGroup(
+        auto result = ScriptCanvasPhysics::WorldFunctions::RayCastLocalSpaceWithGroup(
             fromEntity->GetId(),
             direction,
             distance,
@@ -358,7 +319,7 @@ namespace ScriptCanvasPhysicsTests
         fromEntity->Activate();
 
         // when a raycast is performed
-        auto results = ScriptCanvasPhysics::WorldNodes::RayCastMultipleLocalSpaceWithGroup(
+        auto results = ScriptCanvasPhysics::WorldFunctions::RayCastMultipleLocalSpaceWithGroup(
             fromEntity->GetId(),
             direction,
             distance,
@@ -372,7 +333,7 @@ namespace ScriptCanvasPhysicsTests
         for (auto result : results)
         {
             EXPECT_EQ(result.m_distance, m_hit.m_distance);
-            EXPECT_EQ(result.m_material, m_hit.m_material);
+            EXPECT_EQ(result.m_physicsMaterialId, m_hit.m_physicsMaterialId);
             EXPECT_EQ(result.m_normal, m_hit.m_normal);
             EXPECT_EQ(result.m_position, m_hit.m_position);
             EXPECT_EQ(result.m_shape, m_hit.m_shape);
@@ -392,7 +353,7 @@ namespace ScriptCanvasPhysicsTests
         const AZ::Transform pose = AZ::Transform::CreateIdentity();
 
         // when a shapecast is performed
-        auto result = ScriptCanvasPhysics::WorldNodes::ShapecastQuery(
+        auto result = ScriptCanvasPhysics::WorldFunctions::ShapecastQuery(
             distance,
             pose,
             direction,

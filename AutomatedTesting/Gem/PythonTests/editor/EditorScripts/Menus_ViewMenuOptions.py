@@ -26,33 +26,36 @@ def Menus_ViewMenuOptions_Work():
     :return: None
     """
 
-    import editor_python_test_tools.pyside_utils as pyside_utils
+    import azlmbr.legacy.general as general
+    import editor_python_test_tools.hydra_editor_utils as hydra
+    import pyside_utils
     from editor_python_test_tools.utils import Report
-    from editor_python_test_tools.utils import TestHelper as helper
 
     view_menu_options = [
-        ("Center on Selection",),
-        ("Show Quick Access Bar",),
-        ("Viewport", "Configure Layout"),
         ("Viewport", "Go to Position"),
-        ("Viewport", "Center on Selection"),
+        ("Viewport", "Find Selected Entities in Viewport"),
         ("Viewport", "Go to Location"),
-        ("Viewport", "Remember Location"),
-        ("Viewport", "Switch Camera"),
-        ("Viewport", "Show Helpers"),
-        ("Viewport", "Show Icons"),
-        ("Refresh Style",),
+        ("Viewport", "Viewport Helpers", "Show Icons"),
+        ("Viewport", "Viewport Helpers", "Show Helpers for all entities"),
+        ("Viewport", "Viewport Helpers", "Show Helpers for selected entities"),
+        ("Viewport", "Viewport Helpers", "Hide Helpers"),
+        ("Refresh Style",)
     ]
 
     # 1) Open an existing simple level
-    helper.init_idle()
-    helper.open_level("Physics", "Base")
+    hydra.open_base_level()
+
+    # The action manager doesn't register the menus until the next system tick, so need to wait
+    # until the menu bar has been populated
+    general.idle_enable(True)
+    general.idle_wait_frames(1)
 
     # 2) Interact with View Menu options
     editor_window = pyside_utils.get_editor_main_window()
     for option in view_menu_options:
         try:
             action = pyside_utils.get_action_for_menu_path(editor_window, "View", *option)
+            Report.info(f"Triggering {action.iconText()}")
             action.trigger()
             action_triggered = True
         except Exception as e:

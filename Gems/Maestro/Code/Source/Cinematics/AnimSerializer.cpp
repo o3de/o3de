@@ -5,12 +5,16 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #include <IMovieSystem.h>
 #include <Range.h>
 #include <AnimKey.h>
 #include <Maestro/Types/AssetBlendKey.h>
 
 #include "AnimSerializer.h"
+
+#include <AzCore/Serialization/SerializeContext.h>
+
 
 void AnimSerializer::ReflectAnimTypes(AZ::ReflectContext* context)
 {
@@ -104,6 +108,9 @@ void AnimSerializer::ReflectAnimTypes(AZ::ReflectContext* context)
             ->Field("StopTrigger", &ISoundKey::sStopTrigger)
             ->Field("Duration", &ISoundKey::fDuration)
             ->Field("Color", &ISoundKey::customColor);
+
+        serializeContext->Class<IStringKey, IKey>()
+            ->Field("Value", &IStringKey::m_strValue);
 
         serializeContext->Class<ITimeRangeKey, IKey>()
             ->Field("Duration", &ITimeRangeKey::m_duration)

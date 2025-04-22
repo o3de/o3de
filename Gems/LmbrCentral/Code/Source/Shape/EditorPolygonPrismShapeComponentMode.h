@@ -31,6 +31,9 @@ namespace LmbrCentral
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL
+        AZ_RTTI(EditorPolygonPrismShapeComponentMode, "{010CC49A-477A-4F1A-812F-60F7C4E420D5}", EditorBaseComponentMode)
+
+        static void Reflect(AZ::ReflectContext* context);
 
         EditorPolygonPrismShapeComponentMode(
             const AZ::EntityComponentIdPair& entityComponentIdPair, AZ::Uuid componentType);
@@ -42,6 +45,8 @@ namespace LmbrCentral
         AZStd::vector<AzToolsFramework::ActionOverride> PopulateActionsImpl() override;
         bool HandleMouseInteraction(
             const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteraction) override;
+        AZStd::string GetComponentModeName() const override;
+        AZ::Uuid GetComponentModeType() const override;
 
         // Manipulator handling
         void CreateManipulators();

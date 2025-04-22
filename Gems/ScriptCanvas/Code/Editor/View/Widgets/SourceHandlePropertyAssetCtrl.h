@@ -22,7 +22,7 @@ namespace ScriptCanvasEditor
         Q_OBJECT
 
     public:
-        AZ_CLASS_ALLOCATOR(SourceHandlePropertyAssetCtrl, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SourceHandlePropertyAssetCtrl, AZ::SystemAllocator);
 
         SourceHandlePropertyAssetCtrl(QWidget* parent = nullptr);
 
@@ -31,7 +31,7 @@ namespace ScriptCanvasEditor
         void ClearAssetInternal() override;
         void ConfigureAutocompleter() override;
 
-        void SetSourceAssetFilterPattern(const QString& filterPattern);
+        void SetSourceAssetFilterPattern(const QRegExp& filterPattern);
 
         AZ::IO::Path GetSelectedSourcePath() const;
         void SetSelectedSourcePath(const AZ::IO::Path& sourcePath);
@@ -43,7 +43,7 @@ namespace ScriptCanvasEditor
         //! A regular expression pattern for filtering by source assets
         //! If this is set, the PropertyAssetCtrl will be dealing with source assets
         //! instead of a specific asset type
-        QString m_sourceAssetFilterPattern;
+        QRegExp m_sourceAssetFilterPattern;
 
         AZ::IO::Path m_selectedSourcePath;
     };
@@ -55,7 +55,7 @@ namespace ScriptCanvasEditor
         Q_OBJECT
 
     public:
-        AZ_CLASS_ALLOCATOR(SourceHandlePropertyHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SourceHandlePropertyHandler, AZ::SystemAllocator);
 
         AZ::u32 GetHandlerName(void) const override { return AZ_CRC_CE("SourceHandle"); }
         bool IsDefaultHandler() const override { return true; }

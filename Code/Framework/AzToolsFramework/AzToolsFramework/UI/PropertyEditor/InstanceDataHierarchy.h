@@ -33,10 +33,12 @@ namespace AzToolsFramework
     class InstanceDataNode
     {
         friend class InstanceDataHierarchy;
+        template<typename WrappedType>
+        friend class RpePropertyHandlerWrapper;
 
     public:
         typedef AZStd::list<InstanceDataNode>   NodeContainer;
-        AZ_CLASS_ALLOCATOR(InstanceDataNode, AZ::PoolAllocator, 0)
+        AZ_CLASS_ALLOCATOR(InstanceDataNode, AZ::PoolAllocator)
 
         /// Field address structure, which is a string of the 64-bit addresses of each ancestor along the hierarchy.
         using Identifier = AZ::u64;
@@ -84,6 +86,7 @@ namespace AzToolsFramework
         /// Check if have more than one instance for this node.
         bool    IsMultiInstance() const             { return m_instances.size() > 1; }
         size_t  GetNumInstances() const             { return m_instances.size(); }
+        bool    HasInstances() const                { return !m_instances.empty(); }
         void*   GetInstance(size_t idx) const;
         void**  GetInstanceAddress(size_t idx) const;
         void*   FirstInstance() const { return GetInstance(0); }
@@ -267,7 +270,7 @@ namespace AzToolsFramework
         : public InstanceDataNode
     {
     public:
-        AZ_CLASS_ALLOCATOR(InstanceDataHierarchy, AZ::PoolAllocator, 0)
+        AZ_CLASS_ALLOCATOR(InstanceDataHierarchy, AZ::PoolAllocator)
 
         InstanceDataHierarchy();
 

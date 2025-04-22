@@ -15,6 +15,7 @@
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/std/functional.h>
 #include <sqlite3.h>
+#include <AzToolsFramework/AssetDatabase/PathOrUuid.h>
 
 namespace AzToolsFramework
 {
@@ -26,7 +27,7 @@ namespace AzToolsFramework
         class StatementPrototype
         {
         public:
-            AZ_CLASS_ALLOCATOR(StatementPrototype, AZ::SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR(StatementPrototype, AZ::SystemAllocator)
             StatementPrototype();
             StatementPrototype(const AZStd::string& stmt);
             ~StatementPrototype();
@@ -65,6 +66,9 @@ namespace AzToolsFramework
 
         bool Connection::Open(const AZStd::string& filename, bool readOnly)
         {
+            AZ_Assert(sqlite3_libversion_number() == SQLITE_VERSION_NUMBER, "Sqlite header version number does not match library");
+            AZ_Assert(strncmp(sqlite3_sourceid(), SQLITE_SOURCE_ID, 80) == 0, "Sqlite header source id does not match library");
+            AZ_Assert(strcmp(sqlite3_libversion(), SQLITE_VERSION) == 0, "Sqlite header version does not match library");
             AZ_Assert(m_db == NULL, "You have to close the database prior to opening a new one.");
             if (m_db)
             {
@@ -346,7 +350,7 @@ namespace AzToolsFramework
                 return false;
             }
 
-            StatementPrototype stmt("SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name=:1;");
+            StatementPrototype stmt("SELECT COUNT(*) FROM sqlite_schema WHERE type='table' AND name=:1;");
             Statement* execute = stmt.Prepare(m_db); // execute now belongs to stmt and will die when stmt leaves scope.
             if (!execute->Prepared())
             {
@@ -440,13 +444,13 @@ namespace AzToolsFramework
             const void* blobAddr = GetColumnBlob(statement, col);
             int blobBytes = GetColumnBlobBytes(statement, col);
             AZ::Uuid newUuid;
-            AZ_Error("SQLiteConnection", blobAddr && (blobBytes == sizeof(newUuid.data)), "GetColumnUuid: Database column %i does not contain a UUID - could be a sign of a corrupt database.", col);
-            if ((!blobAddr) || (blobBytes != sizeof(newUuid.data)))
+            AZ_Error("SQLiteConnection", blobAddr && (blobBytes == AZStd::ranges::size(newUuid)), "GetColumnUuid: Database column %i does not contain a UUID - could be a sign of a corrupt database.", col);
+            if ((!blobAddr) || (blobBytes != AZStd::ranges::size(newUuid)))
             {
                 return AZ::Uuid::CreateNull();
             }
 
-            memcpy(newUuid.data, blobAddr, blobBytes);
+            memcpy(AZStd::ranges::data(newUuid), blobAddr, blobBytes);
             return newUuid;
         }
 
@@ -498,7 +502,7 @@ namespace AzToolsFramework
             //    https://www.sqlite.org/c3ref/prepare.html                                      ^^^^^^^^^
 
             int res = sqlite3_prepare_v2(db, m_parentPrototype->GetSqlText().c_str(), (int)m_parentPrototype->GetSqlText().length() + 1, &m_statement, NULL);
-            
+
             AZ_Assert(res == SQLITE_OK, "Statement::PrepareFirstTime: failed! %s ( prototype is '%s'). Error code returned is %d.", sqlite3_errmsg(db), m_parentPrototype->GetSqlText().c_str(), res);
             return ((res == SQLITE_OK)&&(m_statement));
         }
@@ -636,9 +640,20 @@ namespace AzToolsFramework
             {
                 return false;
             }
-            int res = sqlite3_bind_blob(m_statement, idx, data.data, sizeof(data.data), nullptr);
+            int res = sqlite3_bind_blob(m_statement, idx, AZStd::ranges::data(data), static_cast<int>(AZStd::ranges::size(data)), nullptr);
             AZ_Assert(res == SQLITE_OK, "Statement::BindValueUuid: failed to bind!");
             return (res == SQLITE_OK);
+        }
+
+        bool Statement::BindValuePathOrUuid(int col, const AssetDatabase::PathOrUuid& data)
+        {
+            AZ_Assert(m_statement, "Statement::BindValuePathOrUuid: Statement not ready!");
+            if(!m_statement)
+            {
+                return false;
+            }
+
+            return BindValueText(col, data.ToString().c_str());
         }
 
         bool Statement::BindValueDouble(int idx, double data)
@@ -700,7 +715,7 @@ namespace AzToolsFramework
             int res = sqlite3_clear_bindings(m_statement);
             AZ_Assert(res == SQLITE_OK, "Statement::sqlite3_clear_bindings: failed!");
             return (res == SQLITE_OK);
-            
+
         }
 
         int Statement::GetNamedParamIdx(const char* name)

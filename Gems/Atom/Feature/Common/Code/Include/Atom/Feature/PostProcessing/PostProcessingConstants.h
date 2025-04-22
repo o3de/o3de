@@ -8,11 +8,13 @@
 
 #pragma once
 
+#include <AzCore/RTTI/TypeInfo.h>
+
 namespace AZ
 {
     namespace Render
     {
-        static constexpr const char* const DepthOfFieldComponentTypeId = "{0DD99E22-7918-4145-9B32-10CF967F69C9}";
-        static constexpr const char* const EditorDepthOfFieldComponentTypeId = "{D680F240-D523-4D33-9DB0-411FFDC8140E}";
+        inline constexpr AZ::TypeId DepthOfFieldComponentTypeId{ "{0DD99E22-7918-4145-9B32-10CF967F69C9}" };
+        inline constexpr AZ::TypeId EditorDepthOfFieldComponentTypeId{ "{D680F240-D523-4D33-9DB0-411FFDC8140E}" };
     } // namespace Render
 } // namespace AZ

@@ -17,8 +17,6 @@ class CryMovieTestEnvironment
     : public AZ::Test::ITestEnvironment
 {
 public:
-    AZ_TEST_CLASS_ALLOCATOR(CryMovieTestEnvironment);
-
     virtual ~CryMovieTestEnvironment()
     {}
 

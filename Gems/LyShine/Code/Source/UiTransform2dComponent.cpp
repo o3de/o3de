@@ -72,9 +72,9 @@ namespace
         // Note that the name of the new element has to be the same as the name of the old element
         // because we have no version conversion for data patches. The bool to enum conversion happens
         // to work out for the data patches because the bool value of 1 maps to the correct int value.
-        const char* scaleToDeviceName = "ScaleToDevice";
+        constexpr const char* ScaleToDeviceName = "ScaleToDevice";
 
-        int index = classElement.FindElement(AZ_CRC(scaleToDeviceName));
+        int index = classElement.FindElement(AZ_CRC_CE(ScaleToDeviceName));
         if (index != -1)
         {
             AZ::SerializeContext::DataElementNode& elementNode = classElement.GetSubElement(index);
@@ -84,7 +84,7 @@ namespace
             if (!elementNode.GetData(oldData))
             {
                 // Error, old subElement was not a bool or not valid
-                AZ_Error("Serialization", false, "Cannot get bool data for element %s.", scaleToDeviceName);
+                AZ_Error("Serialization", false, "Cannot get bool data for element %s.", ScaleToDeviceName);
                 return false;
             }
 
@@ -92,11 +92,11 @@ namespace
             classElement.RemoveElement(index);
 
             // Add a new element for the new data.
-            int newElementIndex = classElement.AddElement<int>(context, scaleToDeviceName);
+            int newElementIndex = classElement.AddElement<int>(context, ScaleToDeviceName);
             if (newElementIndex == -1)
             {
                 // Error adding the new sub element
-                AZ_Error("Serialization", false, "AddElement failed for converted element %s", scaleToDeviceName);
+                AZ_Error("Serialization", false, "AddElement failed for converted element %s", ScaleToDeviceName);
                 return false;
             }
 
@@ -121,6 +121,7 @@ UiTransform2dComponent::UiTransform2dComponent()
     : m_pivot(AZ::Vector2(0.5f, 0.5f))
     , m_rotation(0.0f)
     , m_scale(AZ::Vector2(1.0f, 1.0f))
+    , m_isFlooringOffsets(false)
     , m_scaleToDeviceMode(ScaleToDeviceMode::None)
     , m_recomputeTransformToViewport(true)
     , m_recomputeTransformToCanvasSpace(true)
@@ -232,6 +233,22 @@ float UiTransform2dComponent::GetPivotY()
 void UiTransform2dComponent::SetPivotY(float pivot)
 {
     return SetPivot(AZ::Vector2(m_pivot.GetX(), pivot));
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+bool UiTransform2dComponent::GetIsFlooringOffsets()
+{
+    return m_isFlooringOffsets;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void UiTransform2dComponent::SetIsFlooringOffsets(bool isFlooringOffsets)
+{
+    if (m_isFlooringOffsets != isFlooringOffsets)
+    {
+        m_isFlooringOffsets = isFlooringOffsets;
+        SetRecomputeFlags(UiTransformInterface::Recompute::RectOnly);
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -764,6 +781,14 @@ void UiTransform2dComponent::SetRecomputeFlags(Recompute recompute)
         return;
     }
 
+    if (m_isFlooringOffsets && (recompute == Recompute::RectOnly || recompute == Recompute::RectAndTransform))
+    {
+        m_offsets.m_right = floorf(m_offsets.m_right);
+        m_offsets.m_left = floorf(m_offsets.m_left);
+        m_offsets.m_top = floorf(m_offsets.m_top);
+        m_offsets.m_bottom = floorf(m_offsets.m_bottom);
+    }
+
     if (recompute == Recompute::RectOnly && HasScaleOrRotation())
     {
         // if this element has scale or rotation then a rect change will require the transforms to be recomputed
@@ -840,7 +865,8 @@ void UiTransform2dComponent::NotifyAndResetCanvasSpaceRectChange()
         Rect prevRect = m_prevRect;
         m_prevRect = m_rect;
         m_rectChangedByInitialization = false;
-        EBUS_EVENT_ID(GetEntityId(), UiTransformChangeNotificationBus, OnCanvasSpaceRectChanged, GetEntityId(), prevRect, m_rect);
+        UiTransformChangeNotificationBus::Event(
+            GetEntityId(), &UiTransformChangeNotificationBus::Events::OnCanvasSpaceRectChanged, GetEntityId(), prevRect, m_rect);
     }
 }
 
@@ -1134,6 +1160,11 @@ float UiTransform2dComponent::GetLocalWidth()
     {
         width = m_offsets.m_right - m_offsets.m_left;
     }
+    else
+    {
+        width = GetCanvasSpaceSizeNoScaleRotate().GetX();
+    }
+
     return width;
 }
 
@@ -1161,6 +1192,11 @@ float UiTransform2dComponent::GetLocalHeight()
     {
         height = m_offsets.m_bottom - m_offsets.m_top;
     }
+    else
+    {
+        height = GetCanvasSpaceSizeNoScaleRotate().GetY();
+    }
+
     return height;
 }
 
@@ -1188,12 +1224,14 @@ void UiTransform2dComponent::Reflect(AZ::ReflectContext* context)
     if (serializeContext)
     {
         serializeContext->Class<UiTransform2dComponent, AZ::Component>()
-            ->Version(3, &VersionConverter)
+
+            ->Version(4, &VersionConverter)
             ->Field("Anchors", &UiTransform2dComponent::m_anchors)
             ->Field("Offsets", &UiTransform2dComponent::m_offsets)
             ->Field("Pivot", &UiTransform2dComponent::m_pivot)
             ->Field("Rotation", &UiTransform2dComponent::m_rotation)
             ->Field("Scale", &UiTransform2dComponent::m_scale)
+            ->Field("IsFlooringOffsets", &UiTransform2dComponent::m_isFlooringOffsets)
             ->Field("ScaleToDevice", &UiTransform2dComponent::m_scaleToDeviceMode);
 
         // EditContext. Note that the Transform component is unusual in that we want to hide the
@@ -1228,30 +1266,30 @@ void UiTransform2dComponent::Reflect(AZ::ReflectContext* context)
                 "there is a single anchor point that the element is offset from.\n"
                 "If they are apart, then there are two anchor points and as the parent changes size\n"
                 "this element will change size also")
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshAttributesAndValues", 0xcbc2147c)) // Refresh attributes for scale to device mode
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshAttributesAndValues")) // Refresh attributes for scale to device mode
                 ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                 ->Attribute(AZ::Edit::Attributes::Max, 100.0f)
                 ->Attribute(AZ::Edit::Attributes::Step, 1.0f)
                 ->Attribute(AZ::Edit::Attributes::Suffix, "%")
                 ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show) // needed because sub-elements are hidden
                 ->Attribute(AZ::Edit::Attributes::ReadOnly, &UiTransform2dComponent::IsControlledByParent)
-                ->Attribute(AZ_CRC("LayoutFitterType", 0x7c009203), &UiTransform2dComponent::GetLayoutFitterType)
+                ->Attribute(AZ_CRC_CE("LayoutFitterType"), &UiTransform2dComponent::GetLayoutFitterType)
                 ->Attribute(AZ::Edit::Attributes::NameLabelOverride, &UiTransform2dComponent::GetAnchorPropertyLabel);
 
             editInfo->DataElement("Offset", &UiTransform2dComponent::m_offsets, "Offsets",
                 "The offsets (in pixels) from the anchors.\n"
                 "When anchors are together, the offset to the pivot plus the size is displayed.\n"
                 "When they are apart, the offsets to each edge of the element's rect are displayed")
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshValues", 0x28e720d4))
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshValues"))
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiTransform2dComponent::IsNotControlledByParent)
-                ->Attribute(AZ_CRC("LayoutFitterType", 0x7c009203), &UiTransform2dComponent::GetLayoutFitterType)
+                ->Attribute(AZ_CRC_CE("LayoutFitterType"), &UiTransform2dComponent::GetLayoutFitterType)
                 ->Attribute(AZ::Edit::Attributes::Min, -AZ::Constants::MaxFloatBeforePrecisionLoss)
                 ->Attribute(AZ::Edit::Attributes::Max, AZ::Constants::MaxFloatBeforePrecisionLoss);
 
             editInfo->DataElement("Pivot", &UiTransform2dComponent::m_pivot, "Pivot",
                 "Rotation and scaling happens around the pivot point.\n"
                 "If the anchors are together then the offsets specify the offset from the anchor to the pivot")
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshValues", 0x28e720d4))
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshValues"))
                 ->Attribute(AZ::Edit::Attributes::Step, 0.1f)
                 ->Attribute(AZ::Edit::Attributes::Min, -AZ::Constants::MaxFloatBeforePrecisionLoss)
                 ->Attribute(AZ::Edit::Attributes::Max, AZ::Constants::MaxFloatBeforePrecisionLoss);
@@ -1268,6 +1306,12 @@ void UiTransform2dComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::Min, -AZ::Constants::MaxFloatBeforePrecisionLoss)
                 ->Attribute(AZ::Edit::Attributes::Max, AZ::Constants::MaxFloatBeforePrecisionLoss);
 
+            editInfo->DataElement(
+                AZ::Edit::UIHandlers::CheckBox,
+                &UiTransform2dComponent::m_isFlooringOffsets,
+                "Floor offsets",
+                "When checked, this element's offsets are floored");
+
             editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiTransform2dComponent::m_scaleToDeviceMode, "Scale to device",
                 "Controls how this element and all its children will be scaled to allow for\n"
                 "the difference between the authored canvas size and the actual viewport size")
@@ -1280,7 +1324,7 @@ void UiTransform2dComponent::Reflect(AZ::ReflectContext* context)
                 ->EnumAttribute(UiTransformInterface::ScaleToDeviceMode::ScaleXOnly,         "Stretch to fit X (non-uniformly)")
                 ->EnumAttribute(UiTransformInterface::ScaleToDeviceMode::ScaleYOnly,         "Stretch to fit Y (non-uniformly)")
                 ->Attribute("Warning", &UiTransform2dComponent::GetScaleToDeviceModeWarningTooltipText)
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshAttributesAndValues", 0xcbc2147c));
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshAttributesAndValues"));
         }
     }
 
@@ -1388,7 +1432,7 @@ bool UiTransform2dComponent::IsControlledByParent() const
         AZ::Entity* parentElement = GetElementComponent()->GetParent();
         if (parentElement)
         {
-            EBUS_EVENT_ID_RESULT(isControlledByParent, parentElement->GetId(), UiLayoutBus, IsControllingChild, GetEntityId());
+            UiLayoutBus::EventResult(isControlledByParent, parentElement->GetId(), &UiLayoutBus::Events::IsControllingChild, GetEntityId());
         }
     }
     else
@@ -1403,7 +1447,7 @@ bool UiTransform2dComponent::IsControlledByParent() const
 UiLayoutFitterInterface::FitType UiTransform2dComponent::GetLayoutFitterType() const
 {
     UiLayoutFitterInterface::FitType fitType = UiLayoutFitterInterface::FitType::None;
-    EBUS_EVENT_ID_RESULT(fitType, GetEntityId(), UiLayoutFitterBus, GetFitType);
+    UiLayoutFitterBus::EventResult(fitType, GetEntityId(), &UiLayoutFitterBus::Events::GetFitType);
 
     return fitType;
 }
@@ -1423,11 +1467,11 @@ AZ::EntityId UiTransform2dComponent::GetAncestorWithSameDimensionScaleToDevice(S
     {
         AZ::EntityId prevParent;
         AZ::EntityId parent;
-        EBUS_EVENT_ID_RESULT(parent, GetEntityId(), UiElementBus, GetParentEntityId);
+        UiElementBus::EventResult(parent, GetEntityId(), &UiElementBus::Events::GetParentEntityId);
         while (parent.IsValid())
         {
             ScaleToDeviceMode parentScaleToDeviceMode = ScaleToDeviceMode::None;
-            EBUS_EVENT_ID_RESULT(parentScaleToDeviceMode, parent, UiTransformBus, GetScaleToDeviceMode);
+            UiTransformBus::EventResult(parentScaleToDeviceMode, parent, &UiTransformBus::Events::GetScaleToDeviceMode);
             if (parentScaleToDeviceMode != ScaleToDeviceMode::None)
             {
                 if ((DoesScaleToDeviceModeAffectX(scaleToDeviceMode) && DoesScaleToDeviceModeAffectX(parentScaleToDeviceMode))
@@ -1440,7 +1484,7 @@ AZ::EntityId UiTransform2dComponent::GetAncestorWithSameDimensionScaleToDevice(S
 
             prevParent = parent;
             parent.SetInvalid();
-            EBUS_EVENT_ID_RESULT(parent, prevParent, UiElementBus, GetParentEntityId);
+            UiElementBus::EventResult(parent, prevParent, &UiElementBus::Events::GetParentEntityId);
         }
     }
     else
@@ -1458,14 +1502,14 @@ LyShine::EntityArray UiTransform2dComponent::GetDescendantsWithSameDimensionScal
     auto HasSameDimensionScaleToDevice = [scaleToDeviceMode](const AZ::Entity* entity)
     {
         ScaleToDeviceMode descendantScaleToDeviceMode = ScaleToDeviceMode::None;
-        EBUS_EVENT_ID_RESULT(descendantScaleToDeviceMode, entity->GetId(), UiTransformBus, GetScaleToDeviceMode);
+        UiTransformBus::EventResult(descendantScaleToDeviceMode, entity->GetId(), &UiTransformBus::Events::GetScaleToDeviceMode);
 
         return ((DoesScaleToDeviceModeAffectX(descendantScaleToDeviceMode) && DoesScaleToDeviceModeAffectX(scaleToDeviceMode))
             || (DoesScaleToDeviceModeAffectY(descendantScaleToDeviceMode) && DoesScaleToDeviceModeAffectY(scaleToDeviceMode)));
     };
 
     LyShine::EntityArray descendants;
-    EBUS_EVENT_ID(GetEntityId(), UiElementBus, FindDescendantElements, HasSameDimensionScaleToDevice, descendants);
+    UiElementBus::Event(GetEntityId(), &UiElementBus::Events::FindDescendantElements, HasSameDimensionScaleToDevice, descendants);
 
     return descendants;
 }
@@ -1535,7 +1579,7 @@ AZStd::string UiTransform2dComponent::GetScaleToDeviceModeWarningTooltipText() c
             {
                 const char* ancestorName = "";
                 AZ::Entity* ancestorEntity = nullptr;
-                EBUS_EVENT_RESULT(ancestorEntity, AZ::ComponentApplicationBus, FindEntity, ancestor);
+                AZ::ComponentApplicationBus::BroadcastResult(ancestorEntity, &AZ::ComponentApplicationBus::Events::FindEntity, ancestor);
                 if (ancestorEntity)
                 {
                     ancestorName = ancestorEntity->GetName().c_str();
@@ -1582,7 +1626,7 @@ AZ::EntityId UiTransform2dComponent::GetCanvasEntityId()
     }
     else
     {
-        EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
+        UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
     }
 
     return canvasEntityId;
@@ -1629,7 +1673,7 @@ void UiTransform2dComponent::RecomputeTransformToViewportIfNeeded()
 
     m_recomputeTransformToViewport = false;
 
-    EBUS_EVENT_ID(GetEntityId(), UiTransformChangeNotificationBus, OnTransformToViewportChanged);
+    UiTransformChangeNotificationBus::Event(GetEntityId(), &UiTransformChangeNotificationBus::Events::OnTransformToViewportChanged);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -24,7 +24,7 @@ namespace AzFramework
 
 namespace AzToolsFramework
 {
-    class EditorVisibleEntityDataCache;
+    class EditorVisibleEntityDataCacheInterface;
     class FocusModeInterface;
 
     namespace ViewportInteraction
@@ -64,7 +64,7 @@ namespace AzToolsFramework
 
         //! An EditorVisibleEntityDataCache must be passed to EditorHelpers to allow it to
         //! efficiently read entity data without resorting to EBus calls.
-        explicit EditorHelpers(const EditorVisibleEntityDataCache* entityDataCache);
+        explicit EditorHelpers(const EditorVisibleEntityDataCacheInterface* entityDataCache);
         EditorHelpers(const EditorHelpers&) = delete;
         EditorHelpers& operator=(const EditorHelpers&) = delete;
         ~EditorHelpers() = default;
@@ -101,9 +101,13 @@ namespace AzToolsFramework
         //! to the current Container Entity setup.
         bool IsSelectableAccordingToContainerEntities(AZ::EntityId entityId) const;
 
+        //! Returns whether the entityCacheIndex can be selected in the viewport according
+        //! to the current Editor Focus Mode and Container Entity setup.
+        bool IsSelectableInViewport(size_t entityCacheIndex) const;
+
         AZStd::unique_ptr<InvalidClicks> m_invalidClicks; //!< Display for invalid click behavior.
 
-        const EditorVisibleEntityDataCache* m_entityDataCache = nullptr; //!< Entity Data queried by the EditorHelpers.
+        const EditorVisibleEntityDataCacheInterface* m_entityDataCache = nullptr; //!< Entity Data queried by the EditorHelpers.
         const FocusModeInterface* m_focusModeInterface = nullptr; //!< API to interact with focus mode functionality.
     };
 

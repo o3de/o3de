@@ -1,0 +1,26 @@
+name: Add stabilization PR checklist
+
+on:
+  pull_request_target:
+    types: [opened, reopened]
+    branches:
+    - stabilization/**
+    
+jobs:
+  comment-on-PR:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Pull sig-release repo
+        uses: actions/checkout@v4
+        with:
+          repository: o3de/sig-release
+          ref: main
+          fetch-depth: 0
+          path: sig-release
+          
+      - uses: mshick/add-pr-comment@v2
+        with:
+          message-path: |
+            sig-release/releases/Process/O3DE Exception Checklist.md

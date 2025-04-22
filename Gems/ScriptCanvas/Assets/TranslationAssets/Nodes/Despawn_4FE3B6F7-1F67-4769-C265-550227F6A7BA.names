@@ -1,0 +1,47 @@
+{
+    "entries": [
+        {
+            "base": "{4FE3B6F7-1F67-4769-C265-550227F6A7BA}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Despawn",
+                "category": "Prefab/Spawning",
+                "tooltip": "Despawns a selected prefab"
+            },
+            "slots": [
+                {
+                    "base": "Input_Request Despawn_0",
+                    "details": {
+                        "name": "Request Despawn"
+                    }
+                },
+                {
+                    "base": "DataInput_SpawnTicket_0",
+                    "details": {
+                        "name": "SpawnTicket"
+                    }
+                },
+                {
+                    "base": "Output_Despawn Requested_0",
+                    "details": {
+                        "name": "Despawn Requested"
+                    }
+                },
+                {
+                    "base": "Output_On Despawn_1",
+                    "details": {
+                        "name": "On Despawn",
+                        "tooltip": "Called when despawning entities has completed."
+                    }
+                },
+                {
+                    "base": "DataOutput_SpawnTicketOut_0",
+                    "details": {
+                        "name": "SpawnTicketOut"
+                    }
+                }
+            ]
+        }
+    ]
+}

@@ -10,6 +10,7 @@
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Vector4.h>
 #include <AzCore/UnitTest/TestTypes.h>
+#include <AZTestShared/Math/MathTestHelpers.h>
 
 using namespace AZ;
 
@@ -25,15 +26,15 @@ namespace UnitTest
         // Vector4 constructor
         const Vector4 vectorColor(0.5f, 0.6f, 0.7f, 1.0f);
         const Color colorFromVector(vectorColor);
-        EXPECT_TRUE(colorFromVector.GetAsVector4().IsClose(vectorColor));
+        EXPECT_THAT(colorFromVector.GetAsVector4(), IsClose(vectorColor));
 
         // Single float constructor
         const Color colorFromFloat(1.0f);
-        EXPECT_TRUE(colorFromFloat.GetAsVector4().IsClose(Vector4(1.0f, 1.0f, 1.0f, 1.0f)));
+        EXPECT_THAT(colorFromFloat.GetAsVector4(), IsClose(Vector4(1.0f, 1.0f, 1.0f, 1.0f)));
 
         // Four individual floats constructor
         const Color colorFromFloats(0.5f, 0.6f, 0.7f, 1.0f);
-        EXPECT_TRUE(colorFromFloats.GetAsVector4().IsClose(vectorColor));
+        EXPECT_THAT(colorFromFloats.GetAsVector4(), IsClose(vectorColor));
 
         // Four individual uint8s constructor
         const Color colorFronUints((u8)0x7F, (u8)0x9F, (u8)0xBF, (u8)0xFF);
@@ -44,25 +45,25 @@ namespace UnitTest
     {
         // Zero color
         const Color colorZero = Color::CreateZero();
-        EXPECT_TRUE(colorZero.GetAsVector4().IsClose(Vector4(0.0f, 0.0f, 0.0f, 0.0f)));
+        EXPECT_THAT(colorZero.GetAsVector4(), IsClose(Vector4(0.0f, 0.0f, 0.0f, 0.0f)));
 
         // OneColor
         const Color colorOne = Color::CreateOne();
-        EXPECT_TRUE(colorOne.GetAsVector4().IsClose(Vector4(1.0f, 1.0f, 1.0f, 1.0f)));
+        EXPECT_THAT(colorOne.GetAsVector4(), IsClose(Vector4(1.0f, 1.0f, 1.0f, 1.0f)));
 
         // From Float4
         const float float4Color[4] = { 0.3f, 0.4f, 0.5f, 0.8f };
         const Color colorFrom4Floats = Color::CreateFromFloat4(float4Color);
-        EXPECT_TRUE(colorFrom4Floats.GetAsVector4().IsClose(Vector4(0.3f, 0.4f, 0.5f, 0.8f)));
+        EXPECT_THAT(colorFrom4Floats.GetAsVector4(), IsClose(Vector4(0.3f, 0.4f, 0.5f, 0.8f)));
 
         // From Vector3
         const Vector3 vector3Color(0.6f, 0.7f, 0.8f);
         const Color colorFromVector3 = Color::CreateFromVector3(vector3Color);
-        EXPECT_TRUE(colorFromVector3.GetAsVector4().IsClose(Vector4(0.6f, 0.7f, 0.8f, 1.0f)));
+        EXPECT_THAT(colorFromVector3.GetAsVector4(), IsClose(Vector4(0.6f, 0.7f, 0.8f, 1.0f)));
 
         // From Vector 3 and float
         const Color colorFromVector3AndFloat = Color::CreateFromVector3AndFloat(vector3Color, 0.5f);
-        EXPECT_TRUE(colorFromVector3AndFloat.GetAsVector4().IsClose(Vector4(0.6f, 0.7f, 0.8f, 0.5f)));
+        EXPECT_THAT(colorFromVector3AndFloat.GetAsVector4(), IsClose(Vector4(0.6f, 0.7f, 0.8f, 0.5f)));
     }
 
     TEST(MATH_Color, Store)
@@ -122,20 +123,20 @@ namespace UnitTest
     {
         // Vector3 getter
         const Color vectorColor = Color(0.3f, 0.4f, 0.5f, 0.7f);
-        EXPECT_TRUE(vectorColor.GetAsVector3().IsClose(Vector3(0.3f, 0.4f, 0.5f)));
+        EXPECT_THAT(vectorColor.GetAsVector3(), IsClose(Vector3(0.3f, 0.4f, 0.5f)));
 
         // Vector 4 getter
-        EXPECT_TRUE(vectorColor.GetAsVector4().IsClose(Vector4(0.3f, 0.4f, 0.5f, 0.7f)));
+        EXPECT_THAT(vectorColor.GetAsVector4(), IsClose(Vector4(0.3f, 0.4f, 0.5f, 0.7f)));
 
         // Set from single float
         Color singleValue;
         singleValue.Set(0.75f);
-        EXPECT_TRUE(singleValue.GetAsVector4().IsClose(Vector4(0.75f, 0.75f, 0.75f, 0.75f)));
+        EXPECT_THAT(singleValue.GetAsVector4(), IsClose(Vector4(0.75f, 0.75f, 0.75f, 0.75f)));
 
         // Set from 4 floats
         Color separateValues;
         separateValues.Set(0.23f, 0.45f, 0.67f, 0.89f);
-        EXPECT_TRUE(separateValues.GetAsVector4().IsClose(Vector4(0.23f, 0.45f, 0.67f, 0.89f)));
+        EXPECT_THAT(separateValues.GetAsVector4(), IsClose(Vector4(0.23f, 0.45f, 0.67f, 0.89f)));
 
         // Set from a float[4]
         float floatArray[4] = { 0.87f, 0.65f, 0.43f, 0.21f };
@@ -146,12 +147,12 @@ namespace UnitTest
         // Set from Vector3, Alpha should be set to 1.0f
         Color vector3Color;
         vector3Color.Set(Vector3(0.2f, 0.4f, 0.6f));
-        EXPECT_TRUE(vector3Color.GetAsVector4().IsClose(Vector4(0.2f, 0.4f, 0.6f, 1.0f)));
+        EXPECT_THAT(vector3Color.GetAsVector4(), IsClose(Vector4(0.2f, 0.4f, 0.6f, 1.0f)));
 
         // Set from Vector3 +_ alpha
         Color vector4Color;
         vector4Color.Set(Vector3(0.1f, 0.3f, 0.5f), 0.7f);
-        EXPECT_TRUE(vector4Color.GetAsVector4().IsClose(Vector4(0.1f, 0.3f, 0.5f, 0.7f)));
+        EXPECT_THAT(vector4Color.GetAsVector4(), IsClose(Vector4(0.1f, 0.3f, 0.5f, 0.7f)));
 
         // Oddly lacking a Set() from Vector4...
     }
@@ -162,75 +163,75 @@ namespace UnitTest
 
         // Check first sexant (0-60 degrees) with 0 hue, full saturation and value = red.
         fromHSV.SetFromHSVRadians(0.0f, 1.0f, 1.0f);
-        EXPECT_TRUE(fromHSV.IsClose(Color(1.0f, 0.0f, 0.0f, 1.0f)));
+        EXPECT_THAT(fromHSV, IsClose(Color(1.0f, 0.0f, 0.0f, 1.0f)));
 
         // Check the second sexant (60-120 degrees)
         fromHSV.SetFromHSVRadians(AZ::DegToRad(72.0f), 1.0f, 1.0f);
-        EXPECT_TRUE(fromHSV.IsClose(Color(0.8f, 1.0f, 0.0f, 1.0f)));
+        EXPECT_THAT(fromHSV, IsClose(Color(0.8f, 1.0f, 0.0f, 1.0f)));
 
         // Check the third sexant (120-180 degrees)
         fromHSV.SetFromHSVRadians(AZ::DegToRad(144.0f), 1.0f, 1.0f);
-        EXPECT_TRUE(fromHSV.IsClose(Color(0.0f, 1.0f, 0.4f, 1.0f)));
+        EXPECT_THAT(fromHSV, IsClose(Color(0.0f, 1.0f, 0.4f, 1.0f)));
 
         // Check the fourth sexant (180-240 degrees)
         fromHSV.SetFromHSVRadians(AZ::DegToRad(216.0f), 1.0f, 1.0f);
-        EXPECT_TRUE(fromHSV.IsClose(Color(0.0f, 0.4f, 1.0f, 1.0f)));
+        EXPECT_THAT(fromHSV, IsClose(Color(0.0f, 0.4f, 1.0f, 1.0f)));
 
         // Check the fifth sexant (240-300 degrees)
         fromHSV.SetFromHSVRadians(AZ::DegToRad(252.0f), 1.0f, 1.0f);
-        EXPECT_TRUE(fromHSV.IsClose(Color(0.2f, 0.0f, 1.0f, 1.0f)));
+        EXPECT_THAT(fromHSV, IsClose(Color(0.2f, 0.0f, 1.0f, 1.0f)));
 
         // Check the sixth sexant (300-360 degrees)
         fromHSV.SetFromHSVRadians(AZ::DegToRad(324.0f), 1.0f, 1.0f);
-        EXPECT_TRUE(fromHSV.IsClose(Color(1.0f, 0.0f, 0.6f, 1.0f)));
+        EXPECT_THAT(fromHSV, IsClose(Color(1.0f, 0.0f, 0.6f, 1.0f)));
 
         // Check the upper limit of the hue
         fromHSV.SetFromHSVRadians(AZ::Constants::TwoPi, 1.0f, 1.0f);
-        EXPECT_TRUE(fromHSV.IsClose(Color(1.0f, 0.0f, 0.0f, 1.0f)));
+        EXPECT_THAT(fromHSV, IsClose(Color(1.0f, 0.0f, 0.0f, 1.0f)));
 
         // Check that zero saturation causes RGB to all be value.
         fromHSV.SetFromHSVRadians(AZ::DegToRad(90.0f), 0.0f, 0.75f);
-        EXPECT_TRUE(fromHSV.IsClose(Color(0.75f, 0.75f, 0.75f, 1.0f)));
+        EXPECT_THAT(fromHSV, IsClose(Color(0.75f, 0.75f, 0.75f, 1.0f)));
 
         // Check that zero value causes the color to be black.
         fromHSV.SetFromHSVRadians(AZ::DegToRad(180.0f), 1.0f, 0.0f);
-        EXPECT_TRUE(fromHSV.IsClose(Color(0.0f, 0.0f, 0.0f, 1.0f)));
+        EXPECT_THAT(fromHSV, IsClose(Color(0.0f, 0.0f, 0.0f, 1.0f)));
 
         // Check a non-zero, non-one saturation
         fromHSV.SetFromHSVRadians(AZ::DegToRad(252.0f), 0.5f, 1.0f);
-        EXPECT_TRUE(fromHSV.IsClose(Color(0.6f, 0.5f, 1.0f, 1.0f)));
+        EXPECT_THAT(fromHSV, IsClose(Color(0.6f, 0.5f, 1.0f, 1.0f)));
 
         // Check a non-zero, non-one value
         fromHSV.SetFromHSVRadians(AZ::DegToRad(216.0f), 1.0f, 0.5f);
-        EXPECT_TRUE(fromHSV.IsClose(Color(0.0f, 0.2f, 0.5f, 1.0f)));
+        EXPECT_THAT(fromHSV, IsClose(Color(0.0f, 0.2f, 0.5f, 1.0f)));
 
         // Check a non-zero, non-one value and saturation
         fromHSV.SetFromHSVRadians(AZ::DegToRad(144.0f), 0.25f, 0.75f);
-        EXPECT_TRUE(fromHSV.IsClose(Color(143.44f / 255.0f, 191.25f / 255.0f, 162.56f / 255.0f, 1.0f)));
+        EXPECT_THAT(fromHSV, IsClose(Color(143.44f / 255.0f, 191.25f / 255.0f, 162.56f / 255.0f, 1.0f)));
 
         // Check that negative hue is handled correctly (only fractional value, +1 to be positive)
         fromHSV.SetFromHSVRadians(AZ::DegToRad(-396.0f), 1.0f, 1.0f);
-        EXPECT_TRUE(fromHSV.IsClose(Color(1.0f, 0.0f, 0.6f, 1.0f)));
+        EXPECT_THAT(fromHSV, IsClose(Color(1.0f, 0.0f, 0.6f, 1.0f)));
 
         // Check that negative saturation is clamped to 0
         fromHSV.SetFromHSVRadians(AZ::DegToRad(324.0f), -1.0f, 1.0f);
-        EXPECT_TRUE(fromHSV.IsClose(Color(1.0f, 1.0f, 1.0f, 1.0f)));
+        EXPECT_THAT(fromHSV, IsClose(Color(1.0f, 1.0f, 1.0f, 1.0f)));
 
         // Check that negative value is clamped to 0
         fromHSV.SetFromHSVRadians(AZ::Constants::Pi, 1.0f, -1.0f);
-        EXPECT_TRUE(fromHSV.IsClose(Color(0.0f, 0.0f, 0.0f, 1.0f)));
+        EXPECT_THAT(fromHSV, IsClose(Color(0.0f, 0.0f, 0.0f, 1.0f)));
 
         // Check that > 1 saturation is clamped to 1
         fromHSV.SetFromHSVRadians(AZ::DegToRad(324.0f), 2.0f, 1.0f);
-        EXPECT_TRUE(fromHSV.IsClose(Color(1.0f, 0.0f, 0.6f, 1.0f)));
+        EXPECT_THAT(fromHSV, IsClose(Color(1.0f, 0.0f, 0.6f, 1.0f)));
 
         // Check that > 1 value is clamped to 1
         fromHSV.SetFromHSVRadians(AZ::DegToRad(324.0f), 1.0f, 2.0f);
-        EXPECT_TRUE(fromHSV.IsClose(Color(1.0f, 0.0f, 0.6f, 1.0f)));
+        EXPECT_THAT(fromHSV, IsClose(Color(1.0f, 0.0f, 0.6f, 1.0f)));
 
         // Check a large hue.
         fromHSV.SetFromHSVRadians(AZ::DegToRad(3744.0f), 1.0f, 1.0f);
-        EXPECT_TRUE(fromHSV.IsClose(Color(0.0f, 1.0f, 0.4f, 1.0f)));
+        EXPECT_THAT(fromHSV, IsClose(Color(0.0f, 1.0f, 0.4f, 1.0f)));
     }
 
     TEST(MATH_Color, EqualityComparisons)
@@ -240,9 +241,9 @@ namespace UnitTest
         Color color2(0.1f, 0.2f, 0.3f, 0.4f);
         Color color3(0.12f, 0.22f, 0.32f, 0.42f);
 
-        EXPECT_TRUE(color1.IsClose(color2));
+        EXPECT_THAT(color1, IsClose(color2));
         EXPECT_FALSE(color1.IsClose(color3));
-        EXPECT_TRUE(color1.IsClose(color3, 0.03f));
+        EXPECT_THAT(color1, IsCloseTolerance(color3, 0.03f));
         EXPECT_FALSE(color1.IsClose(color3, 0.01f));
 
         // Zero check within tolerance
@@ -344,14 +345,14 @@ namespace UnitTest
     TEST(MATH_Color, VectorConversions)
     {
         Vector3 vec3FromColor(Color(0.4f, 0.6f, 0.8f, 1.0f));
-        EXPECT_TRUE(vec3FromColor.IsClose(Vector3(0.4f, 0.6f, 0.8f)));
+        EXPECT_THAT(vec3FromColor, IsClose(Vector3(0.4f, 0.6f, 0.8f)));
 
         Vector4 vec4FromColor(Color(0.4f, 0.6f, 0.8f, 1.0f));
-        EXPECT_TRUE(vec4FromColor.IsClose(Vector4(0.4f, 0.6f, 0.8f, 1.0f)));
+        EXPECT_THAT(vec4FromColor, IsClose(Vector4(0.4f, 0.6f, 0.8f, 1.0f)));
 
         Color ColorfromVec3;
         ColorfromVec3 = Vector3(0.3f, 0.4f, 0.5f);
-        EXPECT_TRUE(ColorfromVec3.GetAsVector4().IsClose(Vector4(0.3f, 0.4f, 0.5f, 1.0f)));
+        EXPECT_THAT(ColorfromVec3.GetAsVector4(), IsClose(Vector4(0.3f, 0.4f, 0.5f, 1.0f)));
     }
 
     TEST(MATH_Color, LinearToGamma)
@@ -360,29 +361,29 @@ namespace UnitTest
         Color reallyDarkLinear(0.001234f, 0.000123f, 0.001010f, 0.5f);
         Color reallyDarkGamma = reallyDarkLinear.LinearToGamma();
         Color reallyDarkGammaCheck(0.01594328f, 0.00158916f, 0.0130492f, 0.5f);
-        EXPECT_TRUE(reallyDarkGamma.IsClose(reallyDarkGammaCheck, 0.00001f));
+        EXPECT_THAT(reallyDarkGamma, IsCloseTolerance(reallyDarkGammaCheck, 0.00001f));
 
         // Normal values
         Color normalLinear(0.123456f, 0.345678f, 0.567890f, 0.8f);
         Color normalGamma = normalLinear.LinearToGamma();
         Color normalGammaCheck(0.386281658744f, 0.622691988496f, 0.77841737783f, 0.8f);
-        EXPECT_TRUE(normalGamma.IsClose(normalGammaCheck, 0.00001f));
+        EXPECT_THAT(normalGamma, IsCloseTolerance(normalGammaCheck, 0.00001f));
 
         // Bright values
         Color brightLinear(1.234567f, 3.456789f, 5.678901f, 1.0f);
         Color brightGamma = brightLinear.LinearToGamma();
         Color brightGammaCheck(1.09681722689f, 1.71388455271f, 2.12035054203f, 1.0f);
-        EXPECT_TRUE(brightGamma.IsClose(brightGammaCheck, 0.00001f));
+        EXPECT_THAT(brightGamma, IsCloseTolerance(brightGammaCheck, 0.00001f));
 
         // Zero should stay the same
         Color zeroColor = Color::CreateZero();
         Color zeroColorGamma = zeroColor.LinearToGamma();
-        EXPECT_TRUE(zeroColorGamma.IsClose(zeroColor, 0.00001f));
+        EXPECT_THAT(zeroColorGamma, IsCloseTolerance(zeroColor, 0.00001f));
 
         // One should stay the same
         Color oneColor = Color::CreateOne();
         Color oneColorGamma = oneColor.LinearToGamma();
-        EXPECT_TRUE(oneColorGamma.IsClose(oneColor, 0.00001f));
+        EXPECT_THAT(oneColorGamma, IsCloseTolerance(oneColor, 0.00001f));
     }
 
     TEST(MATH_Color, GammaToLinear)
@@ -391,29 +392,29 @@ namespace UnitTest
         Color reallyDarkGamma(0.001234f, 0.000123f, 0.001010f, 0.5f);
         Color reallyDarkLinear = reallyDarkGamma.GammaToLinear();
         Color reallyDarkLinearCheck(0.0000955108359133f, 0.00000952012383901f, 0.000078173374613f, 0.5f);
-        EXPECT_TRUE(reallyDarkLinear.IsClose(reallyDarkLinearCheck, 0.00001f));
+        EXPECT_THAT(reallyDarkLinear, IsCloseTolerance(reallyDarkLinearCheck, 0.00001f));
 
         // Normal values
         Color normalGamma(0.123456f, 0.345678f, 0.567890f, 0.8f);
         Color normalLinear = normalGamma.GammaToLinear();
         Color normalLinearCheck(0.0140562303977f, 0.097927189487f, 0.282345816828f, 0.8f);
-        EXPECT_TRUE(normalLinear.IsClose(normalLinearCheck, 0.00001f));
+        EXPECT_THAT(normalLinear, IsCloseTolerance(normalLinearCheck, 0.00001f));
 
         // Bright values
         Color brightGamma(1.234567f, 3.456789f, 5.678901f, 1.0f);
         Color brightLinear = brightGamma.GammaToLinear();
         Color brightLinearCheck(1.61904710087f, 17.9251290437f, 58.1399365547f, 1.0f);
-        EXPECT_TRUE(brightLinear.IsClose(brightLinearCheck, 0.00001f));
+        EXPECT_THAT(brightLinear, IsCloseTolerance(brightLinearCheck, 0.00001f));
 
         // Zero should stay the same
         Color zeroColor = Color::CreateZero();
         Color zeroColorLinear = zeroColor.GammaToLinear();
-        EXPECT_TRUE(zeroColorLinear.IsClose(zeroColor, 0.00001f));
+        EXPECT_THAT(zeroColorLinear, IsCloseTolerance(zeroColor, 0.00001f));
 
         // One should stay the same
         Color oneColor = Color::CreateOne();
         Color oneColorLinear = oneColor.GammaToLinear();
-        EXPECT_TRUE(oneColorLinear.IsClose(oneColor, 0.00001f));
+        EXPECT_THAT(oneColorLinear, IsCloseTolerance(oneColor, 0.00001f));
     }
 
     TEST(MATH_Color, UintConversions)
@@ -425,7 +426,7 @@ namespace UnitTest
         // Convert from u32
         Color colorFromU32;
         colorFromU32.FromU32(0xFFE08C3A);
-        EXPECT_TRUE(colorFromU32.IsClose(Color(0.22745098039f, 0.549019607843f, 0.87843137254f, 1.0f), 0.00001f));
+        EXPECT_THAT(colorFromU32, IsCloseTolerance(Color(0.22745098039f, 0.549019607843f, 0.87843137254f, 1.0f), 0.00001f));
 
         // Convert to u32 and change to gamma space at the same time.
         Color colorToU32Gamma(0.23f, 0.55f, 0.88f, 0.5f);
@@ -434,7 +435,7 @@ namespace UnitTest
         // Convert from u32 and change to linear space at the same time.
         Color colorFromU32Gamma;
         colorFromU32Gamma.FromU32GammaToLinear(0x7FF1C383);
-        EXPECT_TRUE(colorFromU32Gamma.IsClose(Color(0.22696587351f, 0.54572446137f, 0.879622396888f, 0.498039215686f), 0.00001f));
+        EXPECT_THAT(colorFromU32Gamma, IsCloseTolerance(Color(0.22696587351f, 0.54572446137f, 0.879622396888f, 0.498039215686f), 0.00001f));
     }
 
     TEST(MATH_Color, Lerp)
@@ -442,9 +443,9 @@ namespace UnitTest
         Color colorSrc(1.0f, 0.0f, 0.2f, 0.8f);
         Color colorDest(0.0f, 1.0f, 0.8f, 0.2f);
 
-        AZ_TEST_ASSERT(colorSrc.Lerp(colorDest, 0.0f).IsClose(colorSrc));
-        EXPECT_TRUE(colorSrc.Lerp(colorDest, 0.5f).IsClose(Color(0.5f, 0.5f, 0.5f, 0.5f), 0.00001f));
-        AZ_TEST_ASSERT(colorSrc.Lerp(colorDest, 1.0f).IsClose(colorDest));
+        EXPECT_THAT(colorSrc.Lerp(colorDest, 0.0f), IsClose(colorSrc));
+        EXPECT_THAT(colorSrc.Lerp(colorDest, 0.5f), IsCloseTolerance(Color(0.5f, 0.5f, 0.5f, 0.5f), 0.00001f));
+        EXPECT_THAT(colorSrc.Lerp(colorDest, 1.0f), IsClose(colorDest));
     }
 
     TEST(MATH_Color, DotProduct)
@@ -468,10 +469,10 @@ namespace UnitTest
         Color color2(0.5f, 0.7f, 0.3f, 0.8f);
         Color colorSum(1.1f, 1.1f, 0.6f, 0.9f);
 
-        EXPECT_TRUE(colorSum.IsClose(color1 + color2, 0.0001f));
+        EXPECT_THAT(colorSum, IsCloseTolerance(color1 + color2, 0.0001f));
 
         color1 += color2;
-        EXPECT_TRUE(colorSum.IsClose(color1, 0.0001f));
+        EXPECT_THAT(colorSum, IsCloseTolerance(color1, 0.0001f));
     }
 
     TEST(MATH_Color, Subtraction)
@@ -480,10 +481,10 @@ namespace UnitTest
         Color color2(0.5f, 0.7f, 0.3f, 0.8f);
         Color colorDiff(0.1f, -0.3f, 0.0f, -0.7f);
 
-        EXPECT_TRUE(colorDiff.IsClose(color1 - color2, 0.0001f));
+        EXPECT_THAT(colorDiff, IsCloseTolerance(color1 - color2, 0.0001f));
 
         color1 -= color2;
-        EXPECT_TRUE(colorDiff.IsClose(color1, 0.0001f));
+        EXPECT_THAT(colorDiff, IsCloseTolerance(color1, 0.0001f));
     }
 
     TEST(MATH_Color, Multiplication)
@@ -494,18 +495,18 @@ namespace UnitTest
         Color color2Double(1.0f, 1.4f, 0.6f, 1.6f);
 
         // Product of two colors
-        EXPECT_TRUE(colorProduct.IsClose(color1 * color2, 0.0001f));
+        EXPECT_THAT(colorProduct, IsCloseTolerance(color1 * color2, 0.0001f));
 
         // Multiply-assignment
         color1 *= color2;
-        EXPECT_TRUE(colorProduct.IsClose(color1, 0.0001f));
+        EXPECT_THAT(colorProduct, IsCloseTolerance(color1, 0.0001f));
 
         // Product of color and float
-        EXPECT_TRUE(color2Double.IsClose(color2 * 2.0f));
+        EXPECT_THAT(color2Double, IsClose(color2 * 2.0f));
 
         // Multiply-assignment with single float
         color2 *= 2.0f;
-        EXPECT_TRUE(color2Double.IsClose(color2));
+        EXPECT_THAT(color2Double, IsClose(color2));
     }
 
     TEST(MATH_Color, Division)
@@ -516,17 +517,17 @@ namespace UnitTest
         Color color2Half(0.25f, 0.4f, 0.15f, 0.4f);
 
         // Product of two colors
-        EXPECT_TRUE(colorQuotient.IsClose(color1 / color2, 0.0001f));
+        EXPECT_THAT(colorQuotient, IsCloseTolerance(color1 / color2, 0.0001f));
 
         // Multiply-assignment
         color1 /= color2;
-        EXPECT_TRUE(colorQuotient.IsClose(color1, 0.0001f));
+        EXPECT_THAT(colorQuotient, IsCloseTolerance(color1, 0.0001f));
 
         // Product of color and float
-        EXPECT_TRUE(color2Half.IsClose(color2 / 2.0f));
+        EXPECT_THAT(color2Half, IsClose(color2 / 2.0f));
 
         // Multiply-assignment with single float
         color2 /= 2.0f;
-        EXPECT_TRUE(color2Half.IsClose(color2));
+        EXPECT_THAT(color2Half, IsClose(color2));
     }
 }

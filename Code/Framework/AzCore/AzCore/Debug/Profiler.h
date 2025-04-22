@@ -10,11 +10,6 @@
 #include <AzCore/Debug/Budget.h>
 #include <AzCore/Statistics/StatisticalProfilerProxy.h>
 
-#ifdef USE_PIX
-#include <AzCore/PlatformIncl.h>
-#include <WinPixEventRuntime/pix3.h>
-#endif
-
 #if defined(AZ_PROFILER_MACRO_DISABLE) // by default we never disable the profiler registers as their overhead should be minimal, you can
                                        // still do that for your code though.
 #define AZ_PROFILE_SCOPE(...)
@@ -52,9 +47,16 @@
 #endif
 
 #ifndef AZ_PROFILE_DATAPOINT
-#define AZ_PROFILE_DATAPOINT(...)
+#define AZ_PROFILE_DATAPOINT(budget, value, counterName)\
+    ::AZ::Debug::Profiler::ReportCounter(AZ_BUDGET_GETTER(budget)(), counterName, value)
 #define AZ_PROFILE_DATAPOINT_PERCENT(...)
 #endif
+
+#ifndef AZ_PROFILE_EVENT
+#define AZ_PROFILE_EVENT(budget, eventName) \
+    ::AZ::Debug::Profiler::ReportProfileEvent(AZ_BUDGET_GETTER(budget)(), eventName)
+#endif
+
 
 namespace AZStd
 {
@@ -72,27 +74,27 @@ namespace AZ::Debug
         Profiler() = default;
         virtual ~Profiler() = default;
 
-        // support for the extra macro args (e.g. format strings) will come in a later PR
-        virtual void BeginRegion(const Budget* budget, const char* eventName) = 0;
+        virtual void BeginRegion(const Budget* budget, const char* eventName, ...) = 0;
         virtual void EndRegion(const Budget* budget) = 0;
+
+        template<typename T>
+        static void ReportCounter(const Budget* budget, const wchar_t* counterName, const T& value);
+        static void ReportProfileEvent(const Budget* budget, const char* eventName);
     };
 
     class ProfileScope
     {
     public:
-        template<typename... T>
-        static void BeginRegion([[maybe_unused]] Budget* budget, [[maybe_unused]] const char* eventName, [[maybe_unused]] T const&... args);
+        static void BeginRegion(Budget* budget, const char* eventName, ...);
+        static void EndRegion(Budget* budget);
 
-        static void EndRegion([[maybe_unused]] Budget* budget);
-
-        template<typename... T>
-        ProfileScope(Budget* budget, char const* eventName, T const&... args);
-
+        ProfileScope(Budget* budget, const char* eventName, ...);
         ~ProfileScope();
 
     private:
         Budget* m_budget;
+
+        // Optimization to avoid calling Interface<Profiler>::Get
+        static AZStd::optional<Profiler*> m_cachedProfiler;
     };
 } // namespace AZ::Debug
-
-#include <AzCore/Debug/Profiler.inl>

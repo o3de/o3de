@@ -1,6 +1,0 @@
-<download name="C5968760_ForceRegion_CheckNetForce" type="Map">
- <index src="filelist.xml" dest="filelist.xml"/>
- <files>
-  <file src="level.pak" dest="level.pak" size="39323" md5="be593415bbd188372c9341f7caf86e49"/>
- </files>
-</download>

@@ -1,0 +1,21 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+ #pragma once
+
+#include "../MaterialInputs/AlphaInput.azsli"
+
+real GetAlphaAndClip(float2 uvs[UvSetCount], float4 uvDxDy = float4(0.0f, 0.0f, 0.0f, 0.0f), bool customDerivatives = false)
+{
+    // Alpha
+    float2 baseColorUV = uvs[MaterialSrg::m_baseColorMapUvIndex];
+    float2 opacityUV = uvs[MaterialSrg::m_opacityMapUvIndex];
+    real alpha = SampleAlpha(MaterialSrg::m_baseColorMap, MaterialSrg::m_opacityMap, baseColorUV, opacityUV, MaterialSrg::m_sampler, o_opacity_source, uvDxDy, customDerivatives);
+    CheckClipping(alpha, real(MaterialSrg::m_opacityFactor));
+    return real(MaterialSrg::m_opacityFactor) * alpha;
+}

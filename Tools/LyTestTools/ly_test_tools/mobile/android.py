@@ -14,7 +14,7 @@ import subprocess
 
 import ly_test_tools.environment.process_utils as process_utils
 import ly_test_tools.environment.waiter as waiter
-
+import ly_test_tools._internal.exceptions as exceptions
 
 logger = logging.getLogger(__name__)
 
@@ -56,7 +56,7 @@ def check_adb_connection_state():
     elif 'device' == output.strip():
         return SINGLE_DEVICE
     else:
-        raise RuntimeError("Detected unhandled output from adb get-state: {}".format(output.strip()))
+        raise exceptions.LyTestToolsFrameworkException("Detected unhandled output from adb get-state: {}".format(output.strip()))
 
 
 def reverse_tcp(device, host_port, device_port):
@@ -136,7 +136,7 @@ def pull_files_to_pc(package_name, logs_path, device=None):
     """
     directory = os.path.join(logs_path, device)
     if not os.path.exists(directory):
-        os.makedirs(directory)
+        os.makedirs(directory, exist_ok=True)
 
     pull_cmd = ['adb']
     if device is not None:
@@ -149,7 +149,7 @@ def pull_files_to_pc(package_name, logs_path, device=None):
         if 'does not exist' in err.output:
             logger.info('Could not pull logs since none exist on device {}'.format(device))
         else:
-            raise
+            raise exceptions.LyTestToolsFrameworkException from err
 
     logger.debug('Pull File Command Ran successfully: {}'.format(str(pull_cmd)))
 
@@ -175,7 +175,7 @@ def push_files_to_device(source, destination, device=None):
     push_result = process_utils.check_output(cmd)
     logger.debug('Push File Command Ran: {}'.format(str(cmd)))
     if 'pushed' not in push_result:
-        raise RuntimeError('[AndroidLauncher] Failed to push file to device: {}!'.format(device))
+        raise exceptions.LyTestToolsFrameworkException('[AndroidLauncher] Failed to push file to device: {}!'.format(device))
 
 
 def start_adb_server():

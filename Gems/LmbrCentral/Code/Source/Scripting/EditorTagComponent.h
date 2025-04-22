@@ -25,7 +25,6 @@ namespace LmbrCentral
     class EditorTagComponent
         : public AzToolsFramework::Components::EditorComponentBase
         , private LmbrCentral::EditorTagComponentRequestBus::Handler
-        , private LmbrCentral::TagGlobalRequestBus::MultiHandler
     {
     public:
         AZ_COMPONENT(EditorTagComponent,
@@ -52,21 +51,16 @@ namespace LmbrCentral
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("TagService", 0xf1ef347d));
+            provided.push_back(AZ_CRC_CE("TagService"));
         }
 
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("TagService", 0xf1ef347d));
+            incompatible.push_back(AZ_CRC_CE("TagService"));
         }
 
         //////////////////////////////////////////////////////////////////////////
 
-
-        //////////////////////////////////////////////////////////////////////////
-        // TagGlobalRequestBus::MultiHandler
-        const AZ::EntityId RequestTaggedEntities() override { return GetEntityId(); }
-        //////////////////////////////////////////////////////////////////////////
 
         //////////////////////////////////////////////////////////////////////////
         // EditorTagComponentRequestBus::Handler

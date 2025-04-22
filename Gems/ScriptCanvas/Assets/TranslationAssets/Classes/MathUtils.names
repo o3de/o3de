@@ -11,7 +11,6 @@
             "methods": [
                 {
                     "base": "ConvertEulerDegreesToQuaternion",
-                    "context": "MathUtils",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Convert Euler Angles To Quaternion"
@@ -42,7 +41,6 @@
                 },
                 {
                     "base": "ConvertEulerDegreesToTransformPrecise",
-                    "context": "MathUtils",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Convert Euler Angles To Transform (Precise)"
@@ -74,7 +72,6 @@
                 },
                 {
                     "base": "ConvertEulerDegreesToTransform",
-                    "context": "MathUtils",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Convert Euler Angles To Transform"
@@ -105,7 +102,6 @@
                 },
                 {
                     "base": "ConvertQuaternionToEulerRadians",
-                    "context": "MathUtils",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Convert Quaternion To Euler Angles (Radians)"
@@ -136,7 +132,6 @@
                 },
                 {
                     "base": "CreateLookAt",
-                    "context": "MathUtils",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Create Look At"
@@ -180,7 +175,6 @@
                 },
                 {
                     "base": "ConvertTransformToEulerRadians",
-                    "context": "MathUtils",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Convert Transform To Euler Angles (Radians)"
@@ -211,7 +205,6 @@
                 },
                 {
                     "base": "ConvertQuaternionToEulerDegrees",
-                    "context": "MathUtils",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Convert Quaternion To Euler Angles (Degrees)"
@@ -242,7 +235,6 @@
                 },
                 {
                     "base": "ConvertTransformToEulerDegrees",
-                    "context": "MathUtils",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Convert Transform To Euler Angles (Degrees)"
@@ -273,7 +265,6 @@
                 },
                 {
                     "base": "ConvertEulerRadiansToQuaternion",
-                    "context": "MathUtils",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Convert Euler Angles (Radians) To Quaternion"

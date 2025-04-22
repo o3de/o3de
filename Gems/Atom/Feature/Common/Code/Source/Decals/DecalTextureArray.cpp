@@ -16,6 +16,7 @@
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Public/Material/Material.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
+#include <AzCore/Name/NameDictionary.h>
 
 namespace AZ
 {
@@ -23,15 +24,17 @@ namespace AZ
     {
         namespace
         {
-            static AZ::Name GetMapName(const DecalMapType mapType)
+            static const AZ::Name& GetMapName(const DecalMapType mapType)
             {
-                // Using local static to avoid cost of creating AZ::Name. Also so that this can be called from other static functions
-                static AZStd::array<AZ::Name, DecalMapType_Num> mapNames =
+                switch (mapType)
                 {
-                    AZ::Name("baseColor.textureMap"),
-                    AZ::Name("normal.textureMap")
-                };
-                return mapNames[mapType];
+                case DecalMapType_Diffuse:
+                    return AZ_NAME_LITERAL("baseColor.textureMap");
+                case DecalMapType_Normal:
+                    return AZ_NAME_LITERAL("normal.textureMap");
+                default:
+                    return AZ_NAME_LITERAL("");
+                }
             }
 
             static AZ::Data::AssetId GetImagePoolId()
@@ -49,7 +52,7 @@ namespace AZ
             }
 
             // Extract exactly which texture asset we need to load from the given material and map type (diffuse, normal, etc).
-            static AZ::Data::Asset<AZ::RPI::StreamingImageAsset> GetStreamingImageAsset(const AZ::RPI::MaterialAsset& materialAsset, const AZ::Name& propertyName)
+            static AZ::Data::Asset<AZ::RPI::StreamingImageAsset> GetStreamingImageAsset(AZ::RPI::MaterialAsset& materialAsset, const AZ::Name& propertyName)
             {
                 if (!materialAsset.IsReady())
                 {
@@ -68,12 +71,15 @@ namespace AZ
                 const auto& propertyValues = materialAsset.GetPropertyValues();
                 const AZ::RPI::MaterialPropertyValue& propertyValue = propertyValues[propertyIndex.GetIndex()];
                 auto imageAsset = propertyValue.GetValue<Data::Asset<RPI::ImageAsset>>();
-                imageAsset.QueueLoad();
-                // [GFX TODO][ATOM-14271] - DecalTextureArrayFeatureProcessor should use async loading
-                imageAsset.BlockUntilLoadComplete();
-
                 const auto& assetId = imageAsset.GetId();
-                if (!assetId.IsValid())
+
+                if (assetId.IsValid())
+                {
+                    imageAsset.QueueLoad();
+                    // [GFX TODO][ATOM-14271] - DecalTextureArrayFeatureProcessor should use async loading
+                    imageAsset.BlockUntilLoadComplete();
+                }
+                else
                 {
                     AZ_Warning("DecalTextureArray", false, "Material property: %s does not have a valid asset Id", propertyName.GetCStr());
                     return {};
@@ -84,7 +90,7 @@ namespace AZ
             static AZ::Data::Asset<AZ::RPI::StreamingImageAsset> GetStreamingImageAsset(const AZ::Data::Asset<Data::AssetData> materialAssetData, const AZ::Name& propertyName)
             {
                 AZ_Assert(materialAssetData->IsReady(), "GetStreamingImageAsset() called with AssetData that is not ready.");
-                const AZ::RPI::MaterialAsset* materialAsset = materialAssetData.GetAs<AZ::RPI::MaterialAsset>();
+                AZ::RPI::MaterialAsset* materialAsset = materialAssetData.GetAs<AZ::RPI::MaterialAsset>();
                 return GetStreamingImageAsset(*materialAsset, propertyName);
             }
         }
@@ -141,7 +147,7 @@ namespace AZ
             return m_textureArrayPacked[mapType];
         }
 
-        bool DecalTextureArray::IsValidDecalMaterial(const AZ::RPI::MaterialAsset& materialAsset)
+        bool DecalTextureArray::IsValidDecalMaterial(AZ::RPI::MaterialAsset& materialAsset)
         {
             return GetStreamingImageAsset(materialAsset, GetMapName(DecalMapType_Diffuse)).IsReady();
         }
@@ -200,7 +206,7 @@ namespace AZ
                 const DecalMapType mapType = aznumeric_cast<DecalMapType>(i);
                 if (!AreAllTextureMapsPresent(mapType))
                 {
-                    AZ_Warning("DecalTextureArray", true, "Missing decal texture maps for %s. Please make sure all maps of this type are present.\n", GetMapName(mapType).GetCStr());
+                    AZ_Warning("DecalTextureArray", false, "Missing decal texture maps for %s. Please make sure all maps of this type are present.\n", GetMapName(mapType).GetCStr());
                     m_textureArrayPacked[i] = nullptr;
                     continue;
                 }
@@ -254,7 +260,7 @@ namespace AZ
             return imageAsset->GetImageDescriptor().m_mipLevels;
         }
 
-        RHI::ImageSubresourceLayout DecalTextureArray::GetLayout(const DecalMapType mapType, int mip) const
+        RHI::DeviceImageSubresourceLayout DecalTextureArray::GetLayout(const DecalMapType mapType, int mip) const
         {
             AZ_Assert(m_materials.size() > 0, "GetLayout() cannot be called unless at least one material has been added");
 
@@ -267,7 +273,7 @@ namespace AZ
             return AZ::RHI::GetImageSubresourceLayout(mipSize, descriptor.m_format);
         }
 
-        AZStd::array_view<uint8_t> DecalTextureArray::GetRawImageData(const AZ::Name& mapName, int arrayLevel, const int mip) const
+        AZStd::span<const uint8_t> DecalTextureArray::GetRawImageData(const AZ::Name& mapName, int arrayLevel, const int mip) const
         {
             // We always want to provide valid data to the AssetCreator for each texture.
             // If this spot in the array is empty, just provide some random image as filler.
@@ -282,6 +288,11 @@ namespace AZ
             {
                 return {};
             }
+            AZ_Assert(
+                mip < image->GetImageDescriptor().m_mipLevels,
+                "It is expected that all decals in a texture array must have the same number of mips which may not be the case here. "
+                "Please ensure that all the materials within m_materials are pointing to textures with same mips.");
+
             const auto srcData = image->GetSubImageData(mip, 0);
             return srcData;
         }

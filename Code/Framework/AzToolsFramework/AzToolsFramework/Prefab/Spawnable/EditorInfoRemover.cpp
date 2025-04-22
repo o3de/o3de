@@ -9,12 +9,16 @@
 #include <AzCore/Component/ComponentExport.h>
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/ranges/ranges_algorithm.h>
+#include <AzCore/std/ranges/transform_view.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/string/string_view.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <AzToolsFramework/Prefab/Spawnable/EditorInfoRemover.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 #include <AzToolsFramework/ToolsComponents/EditorOnlyEntityComponentBus.h>
+#include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI_Internals.h>
 
 namespace AzToolsFramework::Prefab::PrefabConversionUtils
 {
@@ -37,13 +41,13 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         }
 
         prefabProcessorContext.ListPrefabs(
-            [this, &serializeContext, &prefabProcessorContext]([[maybe_unused]] AZStd::string_view prefabName, PrefabDom& prefab)
+            [this, &serializeContext, &prefabProcessorContext](PrefabDocument& prefab)
             {
                 auto result = RemoveEditorInfo(prefab, serializeContext, prefabProcessorContext);
                 if (!result)
                 {
                     AZ_Error(
-                        "Prefab", false, "Converting to runtime Prefab '%.*s' failed, Error: %s .", AZ_STRING_ARG(prefabName),
+                        "Prefab", false, "Converting to runtime Prefab '%s' failed, Error: %s .", prefab.GetName().c_str(),
                         result.GetError().c_str());
                     return;
                 } 
@@ -58,10 +62,9 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         }
     }
 
-    void EditorInfoRemover::GetEntitiesFromInstance(
-        AZStd::unique_ptr<AzToolsFramework::Prefab::Instance>& instance, EntityList& hierarchyEntities)
+    void EditorInfoRemover::GetEntitiesFromInstance(AzToolsFramework::Prefab::Instance& instance, EntityList& hierarchyEntities)
     {
-        instance->GetAllEntitiesInHierarchy(
+        instance.GetAllEntitiesInHierarchy(
             [&hierarchyEntities](const AZStd::unique_ptr<AZ::Entity>& entity)
             {
                 hierarchyEntities.emplace_back(entity.get());
@@ -153,7 +156,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
             sourceEntity->Init();
         }
 
-        AZ::Entity* exportEntity = aznew AZ::Entity(sourceEntity->GetId(), sourceEntity->GetName().c_str());
+        auto exportEntity = AZStd::make_unique<AZ::Entity>(sourceEntity->GetId(), sourceEntity->GetName().c_str());
         exportEntity->SetRuntimeActiveByDefault(sourceEntity->IsRuntimeActiveByDefault());
 
         AddEntityIdIfEditorOnly(sourceEntity);
@@ -162,7 +165,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         EntityList exportedEntities;
         for (AZ::Component* component : editorComponents)
         {
-            auto result = ExportComponent(component, context, sourceEntity, exportEntity);
+            auto result = ExportComponent(component, context, sourceEntity, exportEntity.get());
             if (!result)
             {
                 return AZ::Failure(AZStd::string::format(
@@ -188,7 +191,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
                 sortResult.GetError().m_message.c_str()));
         }
 
-        return AZ::Success(exportEntity);
+        return AZ::Success(AZStd::move(exportEntity));
     }
 
     bool EditorInfoRemover::ReadComponentAttribute(
@@ -498,7 +501,7 @@ exportComponent, prefabProcessorContext);
     }
 
     EditorInfoRemover::RemoveEditorInfoResult EditorInfoRemover::RemoveEditorInfo(
-        PrefabDom& prefab,
+        PrefabDocument& prefab,
         AZ::SerializeContext* serializeContext,
         PrefabProcessorContext& prefabProcessorContext)
     {
@@ -510,30 +513,14 @@ exportComponent, prefabProcessorContext);
 
         m_componentRequirementsValidator.SetPlatformTags(prefabProcessorContext.GetPlatformTags());
 
-        // convert Prefab DOM into Prefab Instance.
-        AZStd::unique_ptr<Instance> instance(aznew Instance());
-        if (!Prefab::PrefabDomUtils::LoadInstanceFromPrefabDom(*instance, prefab,
-            Prefab::PrefabDomUtils::LoadFlags::AssignRandomEntityId))
-        {
-            PrefabDomValueReference sourceReference = PrefabDomUtils::FindPrefabDomValue(prefab, PrefabDomUtils::SourceName);
-
-            AZStd::string errorMessage("Failed to Load Prefab Instance from given Prefab Dom during Removal of Editor Info.");
-            if (sourceReference.has_value() &&
-                sourceReference->get().IsString() &&
-                sourceReference->get().GetStringLength() != 0)
-            {
-                AZStd::string_view source(sourceReference->get().GetString(), sourceReference->get().GetStringLength());
-                errorMessage += AZStd::string::format("Prefab Source: %.*s", AZ_STRING_ARG(source));
-            }
-
-            return AZ::Failure(errorMessage);
-        }
-
         // grab all nested entities from the Instance as source entities.
+        AzToolsFramework::Prefab::Instance& sourceInstance = prefab.GetInstance();
         EntityList sourceEntities;
-        GetEntitiesFromInstance(instance, sourceEntities);
+        GetEntitiesFromInstance(sourceInstance, sourceEntities);
 
-        EntityList exportEntities;
+        // The entities made by ExportEntity must be managed. A unique_ptr is used to ensure they are destroyed if any
+        // of the error conditions are true, which results in an early return.
+        AZStd::vector<AZStd::unique_ptr<AZ::Entity>> exportEntitiesOwner;
 
         // prepare for validation of component requirements.
         m_componentRequirementsValidator.SetEntities(sourceEntities);
@@ -544,7 +531,7 @@ exportComponent, prefabProcessorContext);
         // export entities.
         for (AZ::Entity* entity : sourceEntities)
         {
-            const auto result = ExportEntity(entity, prefabProcessorContext);
+            auto result = ExportEntity(entity, prefabProcessorContext);
             if (!result)
             {
                 return AZ::Failure(AZStd::string::format(
@@ -555,8 +542,12 @@ exportComponent, prefabProcessorContext);
                 );
             }
 
-            exportEntities.emplace_back(result.GetValue());
+            exportEntitiesOwner.emplace_back(result.TakeValue());
         }
+
+        const auto nonOwningEntityView = exportEntitiesOwner | AZStd::views::transform([](const auto& entity) { return entity.get(); });
+        EntityList exportEntities(exportEntitiesOwner.size());
+        AZStd::copy(nonOwningEntityView.begin(), nonOwningEntityView.end(), exportEntities.begin());
 
         // remove editor-only entities with valid editor-only entity handler.
         const auto removeEditorOnlyEntitiesResult = RemoveEditorOnlyEntities(exportEntities);
@@ -597,7 +588,7 @@ exportComponent, prefabProcessorContext);
                 exportEntitiesMap.emplace(entity->GetId(), entity);
             }
         );
-        instance->RemoveNestedEntities(
+        sourceInstance.RemoveEntitiesInHierarchy(
             [&exportEntitiesMap](const AZStd::unique_ptr<AZ::Entity>& entity)
             {
                 return exportEntitiesMap.find(entity->GetId()) == exportEntitiesMap.end();
@@ -605,7 +596,7 @@ exportComponent, prefabProcessorContext);
         );
 
         // replace entities of instance with exported ones.
-        instance->GetAllEntitiesInHierarchy(
+        sourceInstance.GetAllEntitiesInHierarchy(
             [&exportEntitiesMap](AZStd::unique_ptr<AZ::Entity>& entity)
             {
                 auto entityId = entity->GetId();
@@ -614,15 +605,16 @@ exportComponent, prefabProcessorContext);
             }
         );
 
-        // save the final result in the target Prefab DOM.
-        PrefabDom filteredPrefab;
-        if (!PrefabDomUtils::StoreInstanceInPrefabDom(*instance, filteredPrefab))
+        // The caller is expected to take ownership of the created entities. The ones that are editor only are kept in
+        // the exportEntitiesOwner vector, and destroyed when that vector is destroyed at the end of this method.
+        for (const AZ::Entity* entity : exportEntities)
         {
-            return AZ::Failure(AZStd::string::format(
-                "Saving exported Prefab Instance within a Prefab Dom failed.")
-            );
+            auto it = AZStd::ranges::find_if(exportEntitiesOwner, [&entity](const auto& ownedEntity) { return ownedEntity.get() == entity; });
+            if (it != exportEntitiesOwner.end())
+            {
+                (void)it->release();
+            }
         }
-        prefab.Swap(filteredPrefab);
 
         return AZ::Success();
     }

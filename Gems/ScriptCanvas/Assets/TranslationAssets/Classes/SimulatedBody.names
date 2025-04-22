@@ -9,104 +9,10 @@
             },
             "methods": [
                 {
-                    "base": "GetOnCollisionEndEvent",
-                    "context": "SimulatedBody",
-                    "entry": {
-                        "name": "In",
-                        "tooltip": "When signaled, this will invoke Get On Collision End Event"
-                    },
-                    "exit": {
-                        "name": "Out",
-                        "tooltip": "Signaled after Get On Collision End Event is invoked"
-                    },
-                    "details": {
-                        "name": "Get On Collision End Event"
-                    },
-                    "params": [
-                        {
-                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
-                            "details": {
-                                "name": "Entity Id",
-                                "tooltip": "Entity Unique Id"
-                            }
-                        }
-                    ],
-                    "results": [
-                        {
-                            "typeid": "{4C19E257-F929-524E-80E3-C910C5F3E2D9}",
-                            "details": {
-                                "name": "Collision Event"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "base": "GetOnCollisionPersistEvent",
-                    "context": "SimulatedBody",
-                    "entry": {
-                        "name": "In",
-                        "tooltip": "When signaled, this will invoke Get On Collision Persist Event"
-                    },
-                    "exit": {
-                        "name": "Out",
-                        "tooltip": "Signaled after Get On Collision Persist Event is invoked"
-                    },
-                    "details": {
-                        "name": "Get On Collision Persist Event"
-                    },
-                    "params": [
-                        {
-                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
-                            "details": {
-                                "name": "Entity Id",
-                                "tooltip": "Entity Unique Id"
-                            }
-                        }
-                    ],
-                    "results": [
-                        {
-                            "typeid": "{4C19E257-F929-524E-80E3-C910C5F3E2D9}",
-                            "details": {
-                                "name": "Collision Event"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "base": "GetOnTriggerEnterEvent",
-                    "context": "SimulatedBody",
-                    "entry": {
-                        "name": "In",
-                        "tooltip": "When signaled, this will invoke Get On Trigger Enter Event"
-                    },
-                    "exit": {
-                        "name": "Out",
-                        "tooltip": "Signaled after Get On Trigger Enter Event is invoked"
-                    },
-                    "details": {
-                        "name": "Get On Trigger Enter Event"
-                    },
-                    "params": [
-                        {
-                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
-                            "details": {
-                                "name": "Entity Id",
-                                "tooltip": "Entity Unique Id"
-                            }
-                        }
-                    ],
-                    "results": [
-                        {
-                            "typeid": "{C00D2478-E0F3-57A3-AB60-A04DFC515016}",
-                            "details": {
-                                "name": "Trigger Event"
-                            }
-                        }
-                    ]
-                },
-                {
                     "base": "GetOnCollisionBeginEvent",
-                    "context": "SimulatedBody",
+                    "details": {
+                        "name": "Get On Collision Begin Event"
+                    },
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get On Collision Begin Event"
@@ -115,15 +21,12 @@
                         "name": "Out",
                         "tooltip": "Signaled after Get On Collision Begin Event is invoked"
                     },
-                    "details": {
-                        "name": "Get On Collision Begin Event"
-                    },
                     "params": [
                         {
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
                                 "name": "Entity Id",
-                                "tooltip": "Entity Unique Id"
+                                "tooltip": "Listen for events related to this Entity Id"
                             }
                         }
                     ],
@@ -131,14 +34,113 @@
                         {
                             "typeid": "{4C19E257-F929-524E-80E3-C910C5F3E2D9}",
                             "details": {
-                                "name": "Collision Event"
+                                "name": "Collision Begin Event",
+                                "tooltip": "The Collision Begin Event to listen for"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetOnCollisionEndEvent",
+                    "details": {
+                        "name": "Get On Collision End Event"
+                    },
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get On Collision End Event"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get On Collision End Event is invoked"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Listen for events related to this Entity Id"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{4C19E257-F929-524E-80E3-C910C5F3E2D9}",
+                            "details": {
+                                "name": "Collision End Event",
+                                "tooltip": "The Collision End Event to listen for"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetOnCollisionPersistEvent",
+                    "details": {
+                        "name": "Get On Collision Persist Event"
+                    },
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get On Collision Persist Event"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get On Collision Persist Event is invoked"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Listen for events related to this Entity Id"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{4C19E257-F929-524E-80E3-C910C5F3E2D9}",
+                            "details": {
+                                "name": "Collision Persist Event",
+                                "tooltip": "The Collision Persist Event to listen for"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetOnTriggerEnterEvent",
+                    "details": {
+                        "name": "Get On Trigger Enter Event"
+                    },
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get On Trigger Enter Event"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get On Trigger Enter Event is invoked"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Listen for events related to this Entity Id"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{C00D2478-E0F3-57A3-AB60-A04DFC515016}",
+                            "details": {
+                                "name": "Trigger Enter Event",
+                                "tooltip": "The Trigger Enter Event to listen for"
                             }
                         }
                     ]
                 },
                 {
                     "base": "GetOnTriggerExitEvent",
-                    "context": "SimulatedBody",
+                    "details": {
+                        "name": "Get On Trigger Exit Event"
+                    },
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get On Trigger Exit Event"
@@ -147,16 +149,12 @@
                         "name": "Out",
                         "tooltip": "Signaled after Get On Trigger Exit Event is invoked"
                     },
-                    "details": {
-                        "name": "Get On Trigger Exit Event",
-                        "category": "Other"
-                    },
                     "params": [
                         {
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
                                 "name": "Entity Id",
-                                "tooltip": "Entity Unique Id"
+                                "tooltip": "Listen for events related to this Entity Id"
                             }
                         }
                     ],
@@ -164,10 +162,12 @@
                         {
                             "typeid": "{C00D2478-E0F3-57A3-AB60-A04DFC515016}",
                             "details": {
-                                "name": "Trigger Event"
+                                "name": "Trigger Exit Event",
+                                "tooltip": "The Trigger Exit Event to listen for"
                             }
                         }
                     ]
+
                 }
             ]
         }

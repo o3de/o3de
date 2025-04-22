@@ -18,7 +18,7 @@
 
 namespace AzToolsFramework
 {
-    AZ_CLASS_ALLOCATOR_IMPL(MultiLinearManipulator, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(MultiLinearManipulator, AZ::SystemAllocator)
 
     AZStd::shared_ptr<MultiLinearManipulator> MultiLinearManipulator::MakeShared(const AZ::Transform& worldFromLocal)
     {
@@ -51,6 +51,11 @@ namespace AzToolsFramework
         m_onMouseMoveCallback = onMouseMoveCallback;
     }
 
+    void MultiLinearManipulator::InstallInvalidateCallback(const InvalidateActionCallback& onInvalidateCallback)
+    {
+        m_onInvalidateCallback = onInvalidateCallback;
+    }
+
     static MultiLinearManipulator::Action BuildMultiLinearManipulatorAction(
         const AZ::Transform& worldFromLocal,
         const AZ::Vector3& nonUniformScale,
@@ -76,7 +81,7 @@ namespace AzToolsFramework
     void MultiLinearManipulator::OnLeftMouseDownImpl(
         const ViewportInteraction::MouseInteraction& interaction, const float rayIntersectionDistance)
     {
-        const AZ::Transform worldFromLocalUniformScale = TransformUniformScale(GetSpace());
+        const AZ::Transform worldFromLocal = GetSpace();
         const AzFramework::CameraState cameraState = GetCameraState(interaction.m_interactionId.m_viewportId);
 
         // build up initial start state for each axis
@@ -84,7 +89,7 @@ namespace AzToolsFramework
         {
             // note: m_localTransform must not be made uniform as it may contain a local scale we want to snap
             const auto linearStart = CalculateLinearManipulationDataStart(
-                fixed, worldFromLocalUniformScale, GetNonUniformScale(), GetLocalTransform(), interaction, rayIntersectionDistance,
+                fixed, worldFromLocal, GetNonUniformScale(), GetLocalTransform(), interaction, rayIntersectionDistance,
                 cameraState);
 
             m_starters.push_back(linearStart);
@@ -95,7 +100,7 @@ namespace AzToolsFramework
             const GridSnapParameters gridSnapParams = GridSnapSettings(interaction.m_interactionId.m_viewportId);
             // pass action containing all linear actions for each axis to handler
             m_onLeftMouseDownCallback(BuildMultiLinearManipulatorAction(
-                worldFromLocalUniformScale, GetNonUniformScale(), GetLocalTransform(), interaction, m_fixedAxes, m_starters,
+                worldFromLocal, GetNonUniformScale(), GetLocalTransform(), interaction, m_fixedAxes, m_starters,
                 gridSnapParams));
         }
     }
@@ -104,11 +109,10 @@ namespace AzToolsFramework
     {
         if (m_onMouseMoveCallback)
         {
-            const AZ::Transform worldFromLocalUniformScale = TransformUniformScale(GetSpace());
+            const AZ::Transform worldFromLocal = GetSpace();
             const GridSnapParameters gridSnapParams = GridSnapSettings(interaction.m_interactionId.m_viewportId);
             m_onMouseMoveCallback(BuildMultiLinearManipulatorAction(
-                worldFromLocalUniformScale, GetNonUniformScale(), GetLocalTransform(), interaction, m_fixedAxes, m_starters,
-                gridSnapParams));
+                worldFromLocal, GetNonUniformScale(), GetLocalTransform(), interaction, m_fixedAxes, m_starters, gridSnapParams));
         }
     }
 
@@ -116,11 +120,10 @@ namespace AzToolsFramework
     {
         if (m_onLeftMouseUpCallback)
         {
-            const AZ::Transform worldFromLocalUniformScale = TransformUniformScale(GetSpace());
+            const AZ::Transform worldFromLocal = GetSpace();
             const GridSnapParameters gridSnapParams = GridSnapSettings(interaction.m_interactionId.m_viewportId);
             m_onLeftMouseUpCallback(BuildMultiLinearManipulatorAction(
-                worldFromLocalUniformScale, GetNonUniformScale(), GetLocalTransform(), interaction, m_fixedAxes, m_starters,
-                gridSnapParams));
+                worldFromLocal, GetNonUniformScale(), GetLocalTransform(), interaction, m_fixedAxes, m_starters, gridSnapParams));
 
             m_starters.clear();
         }
@@ -134,7 +137,7 @@ namespace AzToolsFramework
     {
         if (ed_manipulatorDrawDebug)
         {
-            const AZ::Transform combined = TransformUniformScale(GetSpace()) * GetLocalTransform();
+            const AZ::Transform combined = GetSpace() * GetLocalTransform();
             for (const auto& fixed : m_fixedAxes)
             {
                 DrawAxis(debugDisplay, combined.GetTranslation(), TransformDirectionNoScaling(combined, fixed.m_axis));
@@ -175,6 +178,11 @@ namespace AzToolsFramework
         for (auto& view : m_manipulatorViews)
         {
             view->Invalidate(GetManipulatorManagerId());
+        }
+
+        if (m_onInvalidateCallback)
+        {
+            m_onInvalidateCallback();
         }
     }
 

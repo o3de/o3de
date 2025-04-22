@@ -1,0 +1,19 @@
+{
+    "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardPBR.materialtype",
+    "materialTypeVersion": 5,
+    "propertyValues": {
+        "normal.factor": 0.15000000596046448,
+        "normal.flipY": true,
+        "normal.textureMap": "../../Textures/test_dome_normal.tiff",
+        "uv.center": [
+            0.25,
+            0.5
+        ],
+        "uv.offsetU": 0.3737373948097229,
+        "uv.offsetV": -0.4545454978942871,
+        "uv.rotateDegrees": 110.0,
+        "uv.scale": 2.0,
+        "uv.tileU": 0.5,
+        "uv.tileV": 1.5
+    }
+}

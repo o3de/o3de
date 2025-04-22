@@ -74,7 +74,7 @@ namespace ImageProcessingAtom
         builderDescriptor.m_busId = azrtti_typeid<ImageBuilderWorker>();
         builderDescriptor.m_createJobFunction = AZStd::bind(&ImageBuilderWorker::CreateJobs, &m_imageBuilder, AZStd::placeholders::_1, AZStd::placeholders::_2);
         builderDescriptor.m_processJobFunction = AZStd::bind(&ImageBuilderWorker::ProcessJob, &m_imageBuilder, AZStd::placeholders::_1, AZStd::placeholders::_2);
-        builderDescriptor.m_version = 27;   // [ATOM-16958]
+        builderDescriptor.m_version = 35;   // Added MipmapChain and StreamingImage allocator
         builderDescriptor.m_analysisFingerprint = ImageProcessingAtom::BuilderSettingManager::Instance()->GetAnalysisFingerprint();
         m_imageBuilder.BusConnect(builderDescriptor.m_busId);
         AssetBuilderSDK::AssetBuilderBus::Broadcast(&AssetBuilderSDK::AssetBuilderBusTraits::RegisterBuilderInformation, builderDescriptor);
@@ -118,12 +118,12 @@ namespace ImageProcessingAtom
 
     void BuilderPluginComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("ImagerBuilderPluginService", 0x6dc0db6e));
+        provided.push_back(AZ_CRC_CE("ImagerBuilderPluginService"));
     }
 
     void BuilderPluginComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("ImagerBuilderPluginService", 0x6dc0db6e));
+        incompatible.push_back(AZ_CRC_CE("ImagerBuilderPluginService"));
     }
 
     IImageObjectPtr BuilderPluginComponent::LoadImage(const AZStd::string& filePath)
@@ -196,6 +196,50 @@ namespace ImageProcessingAtom
         return outProducts;
     }
 
+    IImageObjectPtr BuilderPluginComponent::ConvertImageObjectInMemory(
+        IImageObjectPtr imageObject,
+        const AZStd::string& presetName,
+        const AZStd::string& platformName,
+        const AZ::Data::AssetId& sourceAssetId,
+        const AZStd::string& sourceAssetName)
+    {
+        AZStd::vector<AssetBuilderSDK::JobProduct> outProducts;
+
+        AZStd::string_view presetFilePath;
+        const PresetSettings* preset = BuilderSettingManager::Instance()->GetPreset(PresetName(presetName), platformName, &presetFilePath);
+        if (preset == nullptr)
+        {
+            AZ_Assert(false, "Cannot find preset with name %s.", presetName.c_str());
+            return nullptr;
+        }
+
+        AZStd::unique_ptr<ImageConvertProcessDescriptor> desc = AZStd::make_unique<ImageConvertProcessDescriptor>();
+        TextureSettings& textureSettings = desc->m_textureSetting;
+        textureSettings.m_preset = preset->m_name;
+        desc->m_inputImage = imageObject;
+        desc->m_presetSetting = *preset;
+        desc->m_isPreview = false;
+        desc->m_platform = platformName;
+        desc->m_filePath = presetFilePath;
+        desc->m_isStreaming = BuilderSettingManager::Instance()->GetBuilderSetting(platformName)->m_enableStreaming;
+        desc->m_imageName = sourceAssetName;
+        desc->m_shouldSaveFile = false;
+        desc->m_sourceAssetId = sourceAssetId;
+        
+        // Create an image convert process
+        ImageConvertProcess process(AZStd::move(desc));
+        process.ProcessAll();
+        bool result = process.IsSucceed();
+        if (result)
+        {
+            return process.GetOutputImage();
+        }
+        else
+        {
+            return nullptr;
+        }
+    }
+
     bool BuilderPluginComponent::DoesSupportPlatform(const AZStd::string& platformId)
     {
         return ImageProcessingAtom::BuilderSettingManager::Instance()->DoesSupportPlatform(platformId);
@@ -213,6 +257,41 @@ namespace ImageProcessingAtom
 
         const PixelFormatInfo* info = CPixelFormats::GetInstance().GetPixelFormatInfo(preset->m_pixelFormat);
         return info->bSquarePow2;
+    }
+
+    FileMask BuilderPluginComponent::GetFileMask(AZStd::string_view imageFilePath)
+    {
+        return ImageProcessingAtom::BuilderSettingManager::Instance()->GetFileMask(imageFilePath);
+    }
+
+    AZStd::vector<AZStd::string> BuilderPluginComponent::GetFileMasksForPreset(const PresetName& presetName)
+    {
+        return ImageProcessingAtom::BuilderSettingManager::Instance()->GetFileMasksForPreset(presetName);
+    }
+
+    AZStd::vector<PresetName> BuilderPluginComponent::GetPresetsForFileMask(const FileMask& fileMask)
+    {
+        return ImageProcessingAtom::BuilderSettingManager::Instance()->GetPresetsForFileMask(fileMask);
+    }
+
+    PresetName BuilderPluginComponent::GetDefaultPreset()
+    {
+        return ImageProcessingAtom::BuilderSettingManager::Instance()->GetDefaultPreset();
+    }
+
+    PresetName BuilderPluginComponent::GetDefaultAlphaPreset()
+    {
+        return ImageProcessingAtom::BuilderSettingManager::Instance()->GetDefaultAlphaPreset();
+    }
+
+    bool BuilderPluginComponent::IsValidPreset(PresetName presetName)
+    {
+        return ImageProcessingAtom::BuilderSettingManager::Instance()->IsValidPreset(presetName);
+    }
+
+    bool BuilderPluginComponent::IsExtensionSupported(const char* extension)
+    {
+        return ImageProcessingAtom::IsExtensionSupported(extension);
     }
 
     void ImageBuilderWorker::ShutDown()
@@ -241,8 +320,7 @@ namespace ImageProcessingAtom
         // Reload preset if it was changed
         ImageProcessingAtom::BuilderSettingManager::Instance()->ReloadPreset(presetName);
         
-        AZStd::string_view filePath;
-        auto presetSettings = BuilderSettingManager::Instance()->GetPreset(presetName, /*default platform*/"", &filePath);
+        auto presetSettings = BuilderSettingManager::Instance()->GetPreset(presetName, /*default platform*/"");
 
         AssetBuilderSDK::SourceFileDependency sourceFileDependency;
         sourceFileDependency.m_sourceDependencyType = AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Absolute;
@@ -269,6 +347,32 @@ namespace ImageProcessingAtom
                 if (presetSettings->m_cubemapSetting->m_generateIBLSpecular && !presetSettings->m_cubemapSetting->m_iblSpecularPreset.IsEmpty())
                 {
                     HandlePresetDependency(presetSettings->m_cubemapSetting->m_iblSpecularPreset, sourceDependencyList);
+                }
+            }
+        }
+    }
+
+    void ReloadPresetIfNeeded(PresetName presetName)
+    {
+        // Reload preset if it was changed
+        ImageProcessingAtom::BuilderSettingManager::Instance()->ReloadPreset(presetName);
+        
+        auto presetSettings = BuilderSettingManager::Instance()->GetPreset(presetName, /*default platform*/"");
+
+        if (presetSettings)
+        {
+            // handle special case here
+            // Cubemap setting may reference some other presets
+            if (presetSettings->m_cubemapSetting)
+            {
+                if (presetSettings->m_cubemapSetting->m_generateIBLDiffuse && !presetSettings->m_cubemapSetting->m_iblDiffusePreset.IsEmpty())
+                {
+                    ImageProcessingAtom::BuilderSettingManager::Instance()->ReloadPreset(presetSettings->m_cubemapSetting->m_iblDiffusePreset);
+                }
+            
+                if (presetSettings->m_cubemapSetting->m_generateIBLSpecular && !presetSettings->m_cubemapSetting->m_iblSpecularPreset.IsEmpty())
+                {
+                    ImageProcessingAtom::BuilderSettingManager::Instance()->ReloadPreset(presetSettings->m_cubemapSetting->m_iblSpecularPreset);
                 }
             }
         }
@@ -336,6 +440,11 @@ namespace ImageProcessingAtom
         // Do conversion and get exported file's path
         if (needConversion)
         {
+
+            // Handles preset changes
+            auto presetName = GetImagePreset(request.m_fullPath);
+            ReloadPresetIfNeeded(presetName);
+
             AZ_TracePrintf(AssetBuilderSDK::InfoWindow, "Performing image conversion: %s\n", request.m_fullPath.c_str());
             ImageConvertProcess* process = CreateImageConvertProcess(request.m_fullPath, request.m_tempDirPath,
                 request.m_jobDescription.GetPlatformIdentifier(), response.m_outputProducts);

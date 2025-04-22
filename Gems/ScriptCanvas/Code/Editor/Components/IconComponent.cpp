@@ -77,12 +77,12 @@ namespace ScriptCanvasEditor
 
     void IconComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("GraphCanvas_IconService", 0x2037454a));
+        provided.push_back(AZ_CRC_CE("GraphCanvas_IconService"));
     }
 
     void IconComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("GraphCanvas_IconService", 0x2037454a));
+        incompatible.push_back(AZ_CRC_CE("GraphCanvas_IconService"));
     }
 
     void IconComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)

@@ -8,6 +8,9 @@
 
 // include the required headers
 #include "MotionEventCommands.h"
+
+#include <AzCore/Serialization/Locale.h>
+
 #include "CommandManager.h"
 #include <EMotionFX/Source/MotionSystem.h>
 #include <EMotionFX/Source/MotionManager.h>
@@ -21,15 +24,16 @@
 
 namespace CommandSystem
 {
-    AZ_CLASS_ALLOCATOR_IMPL(CommandCreateMotionEventTrack, EMotionFX::CommandAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(CommandClearMotionEvents, EMotionFX::CommandAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(CommandCreateMotionEvent, EMotionFX::CommandAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(CommandAdjustMotionEventTrack, EMotionFX::CommandAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(CommandAdjustMotionEvent, EMotionFX::CommandAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(CommandCreateMotionEventTrack, EMotionFX::CommandAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(CommandClearMotionEvents, EMotionFX::CommandAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(CommandCreateMotionEvent, EMotionFX::CommandAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(CommandAdjustMotionEventTrack, EMotionFX::CommandAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(CommandAdjustMotionEvent, EMotionFX::CommandAllocator)
 
     // add a new motion event
     void CommandHelperAddMotionEvent(const EMotionFX::Motion* motion, const char* trackName, float startTime, float endTime, const EMotionFX::EventDataSet& eventDatas, MCore::CommandGroup* commandGroup)
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale; // Ensures that %f uses "." as decimal separator
         // make sure the motion is valid
         if (motion == nullptr)
         {

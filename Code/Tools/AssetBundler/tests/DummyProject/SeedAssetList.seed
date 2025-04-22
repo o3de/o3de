@@ -1,4 +1,7 @@
-<ObjectStream version="3">
-	<Class name="AZStd::vector" type="{82FC5264-88D0-57CD-9307-FC52E4DAD550}"/>
-</ObjectStream>
-
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "AZStd::vector<SeedInfo, allocator>",
+    "ClassData": [
+    ]
+}

@@ -42,9 +42,8 @@ ly_add_target(
             AZ::AzQtComponents
             AZ::AzToolsFramework
             AZ::AssetBuilderSDK
+            AZ::AssetBuilder.Static
             ${additional_dependencies}
-    RUNTIME_DEPENDENCIES
-        AZ::AssetBuilder
 )
 
 # Aggregates all combined AssetBuilders into a single LY_ASSET_BUILDERS #define
@@ -52,7 +51,7 @@ get_property(asset_builders GLOBAL PROPERTY LY_ASSET_BUILDERS)
 string (REPLACE ";" "," asset_builders "${asset_builders}")
 ly_add_source_properties(
     SOURCES native/utilities/ApplicationManager.cpp
-    PROPERTY COMPILE_DEFINITIONS 
+    PROPERTY COMPILE_DEFINITIONS
     VALUES LY_ASSET_BUILDERS="${asset_builders}"
 )
 
@@ -75,6 +74,8 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AssetProcessor.Static
+    RUNTIME_DEPENDENCIES
+        AZ::AssetBuilder
 )
 
 # Adds the AssetProcessor target as a C preprocessor define so that it can be used as a Settings Registry
@@ -121,6 +122,8 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AssetProcessorBatch.Static
+    RUNTIME_DEPENDENCIES
+        AZ::AssetBuilder
 )
 
 if(LY_DEFAULT_PROJECT_PATH)
@@ -147,9 +150,9 @@ endif()
 # Tests
 ################################################################################
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
-    
+
     ly_add_target(
-        NAME AssetProcessor.Tests EXECUTABLE
+        NAME AssetProcessor.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
         NAMESPACE AZ
         AUTOMOC
         AUTORCC
@@ -167,12 +170,12 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     )
     ly_add_source_properties(
         SOURCES native/tests/assetBuilderSDK/assetBuilderSDKTest.cpp
-        PROPERTY COMPILE_DEFINITIONS 
+        PROPERTY COMPILE_DEFINITIONS
         VALUES ${LY_PAL_TOOLS_DEFINES}
     )
     ly_add_source_properties(
         SOURCES native/unittests/AssetProcessorManagerUnitTests.cpp
-        PROPERTY COMPILE_DEFINITIONS 
+        PROPERTY COMPILE_DEFINITIONS
         VALUES LY_CMAKE_BINARY_DIR="${CMAKE_BINARY_DIR}"
     )
 
@@ -251,10 +254,10 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
 
     # Have the AssetProcessorTest use the LY_CMAKE_TARGET define of AssetProcessorBatch for the purpose
     # of looking up the generated cmake build dependencies settings registry .setreg file
-    # It is tied to the UnitTestRunner.cpp file
+    # It is tied to the UnitTestUtils.cpp file
     if(TARGET AssetProcessorBatch)
         set_source_files_properties(
-            native/unittests/UnitTestRunner.cpp
+            native/unittests/UnitTestUtils.cpp
             PROPERTIES
                 COMPILE_DEFINITIONS
                     LY_CMAKE_TARGET="AssetProcessorBatch"
@@ -264,9 +267,22 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             " Perhaps it has been renamed")
     endif()
 
+    # there are some tests in the main suite, and some in periodic.
     ly_add_googletest(
         NAME AZ::AssetProcessor.Tests
-        TEST_COMMAND $<TARGET_FILE:AZ::AssetProcessor.Tests> --unittest --gtest_filter=-*.SUITE_sandbox*
+        LABELS REQUIRES_tiaf
+    )
+    ly_add_googletest(NAME AZ::AssetProcessor.Tests.Periodic
+        TARGET AZ::AssetProcessor.Tests 
+        TEST_SUITE periodic)
+    # Sandbox the tests that fail intermittently
+    ly_add_googletest(NAME AZ::AssetProcessor.Tests.Sandbox
+        TARGET AZ::AssetProcessor.Tests 
+        TEST_SUITE sandbox)
+
+    ly_add_googlebenchmark(
+        NAME AZ::AssetProcessor.Benchmarks
+        TARGET AZ::AssetProcessor.Tests
     )
 
 endif()

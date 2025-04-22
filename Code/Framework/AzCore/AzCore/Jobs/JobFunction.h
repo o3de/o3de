@@ -25,7 +25,7 @@ namespace AZ
         : public Job
     {
     public:
-        AZ_CLASS_ALLOCATOR(JobFunction, ThreadPoolAllocator, 0)
+        AZ_CLASS_ALLOCATOR(JobFunction, ThreadPoolAllocator);
 
         typedef const typename AZStd::remove_cv<typename AZStd::remove_reference<Function>::type>::type& FunctionCRef;
 

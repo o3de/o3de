@@ -1,0 +1,46 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#define ENABLE_VERTEX_COLOR 1
+    
+//TODO(MaterialPipeline): Inline the MaterialSrg files since they aren't reused.
+//TODO(MaterialPipeline): Try removing different parts of the SRG and see how hard/easy it is to customize the surface function.
+#include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_MaterialSrg.azsli>
+
+#include <Atom/Features/PBR/DefaultObjectSrg.azsli>
+#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
+
+#if MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE
+
+    COMMON_OPTIONS_BASE_COLOR()
+    COMMON_OPTIONS_VERTEX_COLOR()
+    COMMON_OPTIONS_ROUGHNESS()
+    COMMON_OPTIONS_METALLIC()
+    COMMON_OPTIONS_SPECULAR_F0()
+    COMMON_OPTIONS_NORMAL()
+    
+    bool NeedsTangentFrame()
+    {
+        return o_normal_useTexture;
+    }
+
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_VertexData.azsli>
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_VertexEval.azsli>
+    
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_PixelGeometryData.azsli>
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_PixelGeometryEval.azsli>
+
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_SurfaceData.azsli>
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_SurfaceEval.azsli>
+
+#else
+
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/DepthPass_VertexData.azsli>
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/DepthPass_VertexEval.azsli>
+
+#endif

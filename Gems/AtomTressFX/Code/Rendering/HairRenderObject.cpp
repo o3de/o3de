@@ -7,6 +7,7 @@
  */
 #include <Atom/RHI/Factory.h>
 
+#include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
 #include <Atom/RPI.Reflect/Buffer/BufferAssetView.h>
 
@@ -123,13 +124,7 @@ namespace AZ
                         streamDesc.m_elementFormat, RHI::BufferBindFlags::ShaderRead    // No need for ReadWrite in the raster fill
                     );
 
-                    m_readBuffersViews[index] = RHI::Factory::Get().CreateBufferView();
-                    RHI::ResultCode resultCode = m_readBuffersViews[index]->Init(*rhiBuffer, viewDescriptor);
-                    if (resultCode != RHI::ResultCode::Success)
-                    {
-                        AZ_Error("Hair Gem", false, "Read BufferView could not be retrieved for [%s]", streamDesc.m_bufferName.GetCStr());
-                        return false;
-                    }
+                    m_readBuffersViews[index] = rhiBuffer->GetBufferView(viewDescriptor);
 
                     // Buffer binding into the raster srg
                     RHI::ShaderInputBufferIndex indexHandle = m_simSrgForRaster->FindShaderInputBufferIndex(streamDesc.m_paramNameInSrg);
@@ -213,6 +208,8 @@ namespace AZ
                 Data::Instance<RPI::Shader> rasterShader,
                 uint32_t vertexCount, uint32_t strandsCount )
             {
+                m_initialized = false;
+
                 AZ_Assert(vertexCount <= std::numeric_limits<uint32_t>().max(), "Hair vertex count exceeds uint32_t size.");
 
                 // Create the dynamic shared buffers Srg.
@@ -256,13 +253,7 @@ namespace AZ
                         streamDesc.m_elementFormat, RHI::BufferBindFlags::ShaderReadWrite
                     );
 
-                    m_dynamicBuffersViews[stream] = RHI::Factory::Get().CreateBufferView();
-                    RHI::ResultCode resultCode = m_dynamicBuffersViews[stream]->Init(*rhiBuffer, viewDescriptor);
-                    if (resultCode != RHI::ResultCode::Success)
-                    {
-                        AZ_Error("Hair Gem", false, "Dynamic BufferView could not be retrieved for [%s]", streamDesc.m_bufferName.GetCStr());
-                        return false;
-                    }
+                    m_dynamicBuffersViews[stream] = rhiBuffer->GetBufferView(viewDescriptor);
                 }
 
                 m_initialized = true;
@@ -575,7 +566,7 @@ namespace AZ
 
                 RHI::BufferInitRequest request;
                 uint32_t indexBufferSize = m_TotalIndices * sizeof(uint32_t);
-                m_indexBuffer = RHI::Factory::Get().CreateBuffer();
+                m_indexBuffer = aznew RHI::Buffer;
                 request.m_buffer = m_indexBuffer.get();
                 request.m_descriptor = RHI::BufferDescriptor{
                     RHI::BufferBindFlags::ShaderRead | RHI::BufferBindFlags::InputAssembly,
@@ -594,7 +585,7 @@ namespace AZ
                 AZ_Error("Hair Gem", result == RHI::ResultCode::Success, "Failed to initialize index buffer - error [%d]", result);
 
                 // create index buffer view
-                m_indexBufferView = RHI::IndexBufferView(*m_indexBuffer.get(), 0, indexBufferSize, RHI::IndexFormat::Uint32 );
+                m_geometryView.SetIndexBufferView(RHI::IndexBufferView(*m_indexBuffer.get(), 0, indexBufferSize, RHI::IndexFormat::Uint32));
  
                 return true;
             }
@@ -608,8 +599,16 @@ namespace AZ
                 // First, Directly loading from the asset stored in the render settings.
                 if (pRenderSettings)
                 {
-                    m_baseAlbedo = RPI::StreamingImage::FindOrCreate(pRenderSettings->m_baseAlbedoAsset);
-                    m_strandAlbedo = RPI::StreamingImage::FindOrCreate(pRenderSettings->m_strandAlbedoAsset);
+                    if (pRenderSettings->m_baseAlbedoAsset)
+                    {
+                        pRenderSettings->m_baseAlbedoAsset.BlockUntilLoadComplete();
+                        m_baseAlbedo = RPI::StreamingImage::FindOrCreate(pRenderSettings->m_baseAlbedoAsset);
+                    }
+                    if (pRenderSettings->m_strandAlbedoAsset)
+                    {
+                        pRenderSettings->m_strandAlbedoAsset.BlockUntilLoadComplete();
+                        m_strandAlbedo = RPI::StreamingImage::FindOrCreate(pRenderSettings->m_strandAlbedoAsset);
+                    }
                 }
 
                 // Fallback using the texture name stored in the render settings. 
@@ -622,7 +621,7 @@ namespace AZ
                     {
                         baseAlbedoName = pRenderSettings->m_BaseAlbedoName;
                     }
-                    m_baseAlbedo = UtilityClass::LoadStreamingImage(baseAlbedoName.c_str(), "Hair Gem");
+                    m_baseAlbedo = AZ::RPI::LoadStreamingTexture(baseAlbedoName.c_str());
                 }
                 if (!m_strandAlbedo)
                 {
@@ -631,7 +630,7 @@ namespace AZ
                     {
                         strandAlbedoName = pRenderSettings->m_StrandAlbedoName;
                     }
-                    m_strandAlbedo = UtilityClass::LoadStreamingImage(strandAlbedoName.c_str(), "Hair Gem");
+                    m_strandAlbedo = AZ::RPI::LoadStreamingTexture(strandAlbedoName.c_str());
                 }
 
                 // Bind the Srg resources
@@ -1109,8 +1108,7 @@ namespace AZ
 
             bool HairRenderObject::BuildDrawPacket(RPI::Shader* geometryShader, RHI::DrawPacketBuilder::DrawRequest& drawRequest)
             {
-                RHI::DrawPacketBuilder drawPacketBuilder;
-                RHI::DrawIndexed drawIndexed;
+                RHI::DrawPacketBuilder drawPacketBuilder{RHI::MultiDevice::AllDevices};
 
                 uint32_t numPrimsToRender = m_TotalIndices;
                 if (m_LODHairDensity < 1.0f)
@@ -1129,20 +1127,17 @@ namespace AZ
                     numPrimsToRender *= 3;
                 }
 
-                drawIndexed.m_indexCount = numPrimsToRender;
-                drawIndexed.m_indexOffset = 0;
-                drawIndexed.m_vertexOffset = 0;
+                m_geometryView.SetDrawArguments(RHI::DrawIndexed{ 0, numPrimsToRender, 0 });
 
                 drawPacketBuilder.Begin(nullptr);
-                drawPacketBuilder.SetDrawArguments(drawIndexed);
-                drawPacketBuilder.SetIndexBufferView(m_indexBufferView);
+                drawPacketBuilder.SetGeometryView(&m_geometryView);
 
                 RPI::ShaderResourceGroup* renderMaterialSrg = m_hairRenderSrg.get();
                 RPI::ShaderResourceGroup* simSrg = m_dynamicHairData.GetSimSrgForRaster().get();
 
                 if (!renderMaterialSrg || !simSrg)
                 {
-                    AZ_Error("Hair Gem", false, "Failed to get thre hair material Srg for the raster pass.");
+                    AZ_Error("Hair Gem", false, "Failed to get the hair material Srg for the raster pass.");
                     return false;
                 }
                 // No need to compile the simSrg since it was compiled already by the Compute pass this frame
@@ -1150,7 +1145,7 @@ namespace AZ
                 drawPacketBuilder.AddShaderResourceGroup(simSrg->GetRHIShaderResourceGroup());
                 drawPacketBuilder.AddDrawItem(drawRequest);
 
-                const RHI::DrawPacket* drawPacket = drawPacketBuilder.End();
+                auto drawPacket = drawPacketBuilder.End();
                 if (!drawPacket)
                 {
                     AZ_Error("Hair Gem", false, "Failed to build the hair DrawPacket.");
@@ -1161,7 +1156,6 @@ namespace AZ
                 auto iter = m_geometryDrawPackets.find(geometryShader);
                 if (iter != m_geometryDrawPackets.end())
                 {
-                    delete iter->second;
                     iter->second = drawPacket;
                 }
                 else
@@ -1179,7 +1173,7 @@ namespace AZ
                 {
                     return nullptr;
                 }
-                return iter->second;
+                return iter->second.get();
             }
 
             const RHI::DispatchItem* HairRenderObject::GetDispatchItem(RPI::Shader* computeShader)

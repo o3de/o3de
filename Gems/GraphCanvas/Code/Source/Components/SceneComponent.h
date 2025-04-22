@@ -50,7 +50,7 @@ namespace GraphCanvas
     class SceneHelper        
     {
     public:
-        AZ_CLASS_ALLOCATOR(SceneHelper, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SceneHelper, AZ::SystemAllocator);
         SceneHelper() = default;
         virtual ~SceneHelper() = default;
 
@@ -76,7 +76,7 @@ namespace GraphCanvas
         , public SceneMimeDelegateHandlerRequestBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(MimeDelegateSceneHelper, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MimeDelegateSceneHelper, AZ::SystemAllocator);
         MimeDelegateSceneHelper() = default;
         ~MimeDelegateSceneHelper() = default;
 
@@ -146,7 +146,7 @@ namespace GraphCanvas
         , public AZ::SystemTickBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(GestureSceneHelper, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GestureSceneHelper, AZ::SystemAllocator);
         GestureSceneHelper() = default;
         ~GestureSceneHelper() = default;
 
@@ -228,7 +228,7 @@ namespace GraphCanvas
 
         struct GraphCanvasConstructSaveData
         {
-            AZ_CLASS_ALLOCATOR(GraphCanvasConstructSaveData, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(GraphCanvasConstructSaveData, AZ::SystemAllocator);
             AZ_RTTI(GraphCanvasConstructSaveData, "{C074944F-8218-4753-94EE-1C5CC02DE8E4}");
 
             static bool VersionConverter(AZ::SerializeContext& serializeContext, AZ::SerializeContext::DataElementNode& classElement);
@@ -258,7 +258,7 @@ namespace GraphCanvas
         {
         public:
             AZ_RTTI(SceneComponentSaveData, "{5F84B500-8C45-40D1-8EFC-A5306B241444}", ComponentSaveData);
-            AZ_CLASS_ALLOCATOR(SceneComponentSaveData, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SceneComponentSaveData, AZ::SystemAllocator);
 
             SceneComponentSaveData()
                 : m_bookmarkCounter(0)
@@ -291,14 +291,14 @@ namespace GraphCanvas
         // AZ::Component
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("GraphCanvas_SceneService", 0x8ec010e7));
-            provided.push_back(AZ_CRC("GraphCanvas_MimeDataHandlerService", 0x7a6beb5a));
+            provided.push_back(AZ_CRC_CE("GraphCanvas_SceneService"));
+            provided.push_back(AZ_CRC_CE("GraphCanvas_MimeDataHandlerService"));
         }
 
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incombatible)
         {
-            incombatible.push_back(AZ_CRC("GraphCanvas_SceneService", 0x8ec010e7));
-            incombatible.push_back(AZ_CRC("GraphCanvas_MimeDataHandlerService", 0x7a6beb5a));
+            incombatible.push_back(AZ_CRC_CE("GraphCanvas_SceneService"));
+            incombatible.push_back(AZ_CRC_CE("GraphCanvas_MimeDataHandlerService"));
         }
 
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& /*dependent*/)
@@ -679,8 +679,8 @@ namespace GraphCanvas
         : public QGraphicsScene
     {
     public:
-        AZ_TYPE_INFO(Scene, "{48C47083-2CF2-4BB5-8058-FF25084FC2AA}");
-        AZ_CLASS_ALLOCATOR(GraphCanvasGraphicsScene, AZ::SystemAllocator, 0);
+        AZ_TYPE_INFO(GraphCanvasGraphicsScene, "{48C47083-2CF2-4BB5-8058-FF25084FC2AA}");
+        AZ_CLASS_ALLOCATOR(GraphCanvasGraphicsScene, AZ::SystemAllocator);
 
         static void Reflect(AZ::ReflectContext*) = delete;
 

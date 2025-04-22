@@ -20,6 +20,9 @@
 #include "native/utilities/AssetUtilEBusHelper.h"
 #include "native/utilities/ApplicationManagerAPI.h"
 #include <AzToolsFramework/Asset/AssetProcessorMessages.h>
+#include <AzCore/IO/Path/Path.h>
+#include <AzToolsFramework/AssetDatabase/AssetDatabaseConnection.h>
+#include <AssetManager/SourceAssetReference.h>
 
 namespace AzToolsFramework
 {
@@ -82,15 +85,6 @@ namespace AssetUtilities
     //! Updates the branch token in the bootstrap file
     bool UpdateBranchToken();
 
-    //! Checks to see if the asset processor is running in server mode
-    bool InServerMode();
-
-    //! Checks the args for the server parameter, returns true if found otherwise false.
-    bool CheckServerMode();
-
-    //! Reads the server address from the config file.
-    QString ServerAddress();
-
     bool ShouldUseFileHashing();
 
     //! Determine the name of the current project - for example, AutomatedTesting
@@ -145,13 +139,17 @@ namespace AssetUtilities
     //! Strips the first "asset platform" from the first path segment of a relative product path
     //! This is meant for removing the asset platform for paths such as "pc/MyAssetFolder/MyAsset.asset"
     //! Therefore the result here becomes "MyAssetFolder/MyAsset"
-    //! 
+    //!
     //! Similarly invoking this function on relative path that begins with the "server" platform
     //! "server/AssetFolder/Server.asset2" -> "AssetFolder/Server.asset2"
     //! This function does not strip an asset platform from anywhere, but the first path segment
     //! Therefore invoking strip Asset on "MyProject/Cache/pc/MyAsset/MyAsset.asset"
     //! would return a copy of the relative path
     QString StripAssetPlatform(AZStd::string_view relativeProductPath);
+
+    //! Same as StripAssetPlatform, but does not perform any string copies
+    //! The return result is only valid for as long as the original input is valid
+    AZStd::string_view StripAssetPlatformNoCopy(AZStd::string_view relativeProductPath, AZStd::string_view* outputPlatform = nullptr);
 
     //! Converts all slashes to forward slashes, removes double slashes,
     //! replaces all indirections such as '.' or '..' as appropriate.
@@ -166,6 +164,9 @@ namespace AssetUtilities
 
     // UUID generation defaults to lowercase SHA1 of the source name, this does normalization and such
     AZ::Uuid CreateSafeSourceUUIDFromName(const char* sourceName, bool caseInsensitive = true);
+
+    AZ::Outcome<AZ::Uuid, AZStd::string> GetSourceUuid(const AssetProcessor::SourceAssetReference& sourceAsset);
+    AZ::Outcome<AZStd::unordered_set<AZ::Uuid>, AZStd::string> GetLegacySourceUuids(const AssetProcessor::SourceAssetReference& sourceAsset);
 
     //! Compute a CRC given a null-terminated string
     //! @param[in] priorCRC     If supplied, continues an existing CRC by feeding it more data
@@ -249,17 +250,70 @@ namespace AssetUtilities
 
     QString GuessProductNameInDatabase(QString path, QString platform, AssetProcessor::AssetDatabaseConnection* databaseConnection);
 
-    //! Given a list of source asset Uuids, it returns a list that contains the same source assets Uuids along with all of their dependencies
-    //! which are discovered recursively. All the returned Uuids are unique, meaning they appear once in the returned list.
-    AZStd::vector<AZ::Uuid> CollectAssetAndDependenciesRecursively(AssetProcessor::AssetDatabaseConnection& databaseConnection, const AZStd::vector<AZ::Uuid>& assetList);
+    //! A utility function which checks the given path starting at the root and updates the relative path to be the actual case correct path.
+    //! Set checkEntirePath to false if the caller is absolutely sure the path is correct and only the last element (file name or extension)
+    //! is potentially wrong. This can happen when for example taking a real file found from a real file directory that is already correct
+    //! and modifying just the file path or extension.  It is significantly faster to avoid checking the entire path.
+    bool UpdateToCorrectCase(const QString& rootPath, QString& relativePathFromRoot, bool checkEntirePath = true);
 
-    // A utility function which checks the given path starting at the root and updates the relative path to be the actual case correct path.
-    bool UpdateToCorrectCase(const QString& rootPath, QString& relativePathFromRoot);
+    //! Returns true if the path is in the cachePath and *not* in the intermediate assets folder.
+    //! If cachePath is empty, it will be computed using ComputeProjectCacheRoot.
+    bool IsInCacheFolder(AZ::IO::PathView path, AZ::IO::Path cachePath = "");
+
+    //! Returns true if the path is in the intermediate assets folder.
+    //! If cachePath is empty, it will be computed using ComputeProjectCacheRoot.
+    bool IsInIntermediateAssetsFolder(AZ::IO::PathView path, AZ::IO::PathView cachePath = "");
+
+    //! Returns the absolute path of the intermediate assets folder
+    AZ::IO::FixedMaxPath GetIntermediateAssetsFolder(AZ::IO::PathView cachePath);
+
+    //! Appends the platform prefix for an intermediate asset to get the database name used for products
+    AZStd::string GetIntermediateAssetDatabaseName(AZ::IO::PathView relativePath);
+
+    //! Finds the top level source that produced an intermediate product.  If the source is not yet recorded in the database or has no top level source, this will return nothing
+    AZStd::optional<AzToolsFramework::AssetDatabase::SourceDatabaseEntry> GetTopLevelSourceForIntermediateAsset(const AssetProcessor::SourceAssetReference& sourceAsset, AZStd::shared_ptr<AssetProcessor::AssetDatabaseConnection> db);
+
+    //! Gets the absolute path to the top level source that produced an intermediate product. Returns nothing if the source is not yet recorded, there is no top level source, or other issues are encountered.
+    //! Does not check if the file exists.
+    AZStd::optional<AZ::IO::Path> GetTopLevelSourcePathForIntermediateAsset(
+        const AssetProcessor::SourceAssetReference& sourceAsset, AZStd::shared_ptr<AssetProcessor::AssetDatabaseConnection> db);
+
+    //! Finds all the sources (up and down) in an intermediate output chain
+    AZStd::vector<AssetProcessor::SourceAssetReference> GetAllIntermediateSources(
+        const AssetProcessor::SourceAssetReference& sourceAsset, AZStd::shared_ptr<AssetProcessor::AssetDatabaseConnection> db);
+
+    //! Given a source path for an intermediate asset, constructs the product path.
+    //! This does not verify either exist, it just manipulates the string.
+    AZStd::string GetRelativeProductPathForIntermediateSourcePath(AZStd::string_view relativeSourcePath);
+
+    //! Helper class that provides various paths related to a single output asset.
+    //! Files are not guaranteed to exist at the given path.
+    struct ProductPath
+    {
+        ProductPath(AZStd::string scanfolderRelativeProductPath, AZStd::string platformIdentifier);
+
+        static ProductPath FromDatabasePath(AZStd::string_view databasePath, AZStd::string_view* platformOut = nullptr);
+        static ProductPath FromAbsoluteProductPath(AZ::IO::PathView absolutePath, AZStd::string& outPlatform);
+
+        //! Absolute path for the product in the intermediate asset folder.  Not guaranteed to exist, this is just the path the file would be at
+        AZStd::string GetIntermediatePath() const { return m_intermediatePath.StringAsPosix(); }
+        //! Absolute path for the product in the cache folder.  Not guaranteed to exist, this is just the path the file would be at
+        AZStd::string GetCachePath() const { return m_cachePath.StringAsPosix(); }
+        //! Relative path of the product for the database, this includes the platform prefix and is lowercased
+        AZStd::string GetDatabasePath() const { return m_databasePath.StringAsPosix(); }
+        //! Scanfolder relative path of the product.  This is lowercased and does not include the platform prefix
+        AZStd::string GetRelativePath() const { return m_relativePath; }
+
+    protected:
+        AZStd::string m_relativePath;
+        AZ::IO::Path m_intermediatePath, m_cachePath, m_databasePath;
+    };
 
     class BuilderFilePatternMatcher
         : public AssetBuilderSDK::FilePatternMatcher
     {
     public:
+        AZ_CLASS_ALLOCATOR(BuilderFilePatternMatcher, AZ::SystemAllocator)
         BuilderFilePatternMatcher() = default;
         BuilderFilePatternMatcher(const BuilderFilePatternMatcher& copy);
         BuilderFilePatternMatcher(const AssetBuilderSDK::AssetBuilderPattern& pattern, const AZ::Uuid& builderDescID);

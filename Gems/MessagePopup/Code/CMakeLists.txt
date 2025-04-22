@@ -7,7 +7,7 @@
 #
 
 ly_add_target(
-    NAME MessagePopup.Static STATIC
+    NAME ${gem_name}.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
         messagepopup_files.cmake
@@ -19,11 +19,11 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PUBLIC
             Legacy::CryCommon
-            Gem::LyShine
+            Gem::LyShine.Clients.API
 )
 
 ly_add_target(
-    NAME MessagePopup ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME ${gem_name} ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         messagepopup_shared_files.cmake
@@ -34,9 +34,18 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         PRIVATE
-            Gem::MessagePopup.Static
+            Gem::${gem_name}.Static
 )
 
-# MessagePopup is used only in client applications
-ly_create_alias(NAME MessagePopup.Clients NAMESPACE Gem TARGETS Gem::MessagePopup)
+# Inject the gem name into the Module source file
+ly_add_source_properties(
+    SOURCES
+        Source/MessagePopupModule.cpp
+    PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_GEM_NAME=${gem_name}
+            O3DE_GEM_VERSION=${gem_version})
 
+# ${gem_name} is used only in client applications
+ly_create_alias(NAME ${gem_name}.Clients NAMESPACE Gem TARGETS Gem::${gem_name})
+ly_create_alias(NAME ${gem_name}.Builders NAMESPACE Gem TARGETS Gem::UiBasics.Builders)

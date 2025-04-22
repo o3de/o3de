@@ -2,20 +2,17 @@
 
 <ScriptCanvas Include="Include/ScriptCanvas/Libraries/Logic/Gate.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <Class Name="Gate"
-	       QualifiedName="ScriptCanvas::Nodes::Logic::Gate"
-	       PreferredClassName="If"
-           Uuid="{F19CC10A-02FD-4E75-ADAA-9CFBD8A4E2F8}"
-           Icon="Icons/ScriptCanvas/Print.png"
-           Version="0"
-           GeneratePropertyFriend="True"
-           Description="An execution flow gate that continues True if the Condition is True, otherwise continues False">
+        QualifiedName="ScriptCanvas::Nodes::Logic::Gate"
+        PreferredClassName="If"
+        Uuid="{F19CC10A-02FD-4E75-ADAA-9CFBD8A4E2F8}"
+        Description="An execution flow gate that continues True if the Condition is True, otherwise continues False">
         <In Name="In" Description="Input signal"/>
         <Out Name="True" Description="Signaled if the condition provided evaluates to true."/>
         <Out Name="False" Description="Signaled if the condition provided evaluates to false."/>
         <Property Name="Condition"
-                  Description="If true the node will signal the Output and proceed execution"
-                  Type="bool"
-                  IsInput="True"
-                  IsOutput="False" />
+            Description="If true the node will signal the Output and proceed execution"
+            Type="bool"
+            IsInput="True"
+            IsOutput="False" />
     </Class>
 </ScriptCanvas>

@@ -12,6 +12,7 @@
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 
+#include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
 #include <LandscapeCanvas/LandscapeCanvasBus.h>
@@ -23,6 +24,7 @@ namespace LandscapeCanvas
         , private AzToolsFramework::EditorEvents::Bus::Handler
         , private LandscapeCanvasNodeFactoryRequestBus::Handler
         , private LandscapeCanvasSerializationRequestBus::Handler
+        , private AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler
     {
     public:
         AZ_COMPONENT(LandscapeCanvasSystemComponent, "{891CA15A-725A-430F-B395-BCA005CFF606}");
@@ -42,6 +44,9 @@ namespace LandscapeCanvas
         void NotifyRegisterViews() override;
         ////////////////////////////////////////////////////////////////////////
 
+        // ActionManagerRegistrationNotificationBus overrides ...
+        void OnActionContextRegistrationHook() override;
+
     protected:
         ////////////////////////////////////////////////////////////////////////
         // AZ::Component interface implementation
@@ -55,12 +60,12 @@ namespace LandscapeCanvas
         BaseNode::BaseNodePtr CreateNodeForType(GraphModel::GraphPtr graph, const AZ::TypeId& typeId) override;
         GraphModel::NodePtr CreateNodeForTypeName(GraphModel::GraphPtr graph, AZStd::string_view nodeName) override;
         const AZ::TypeId GetComponentTypeId(const AZ::TypeId& nodeTypeId) override;
+        int GetNodeRegisteredIndex(const AZ::TypeId& nodeTypeId) const override;
         ////////////////////////////////////////////////////////////////////////
 
         ////////////////////////////////////////////////////////////////////////
         // LandscapeCanvas::LandscapeCanvasSerializationRequestBus::Handler overrides
         const LandscapeCanvasSerialization& GetSerializedMappings() override;
-        void SetSerializedNodeEntities(const AZStd::unordered_map<AZ::EntityId, AZ::Entity*>& nodeEntities) override;
         void SetDeserializedEntities(const AZStd::unordered_map<AZ::EntityId, AZ::EntityId>& entities) override;
         ////////////////////////////////////////////////////////////////////////
 
@@ -75,15 +80,16 @@ namespace LandscapeCanvas
             };
 
             m_nodeFactory[typeId] = factory;
-            m_nodeComponentTypeIds[AZ::RttiTypeId<NodeType>()] = typeId;
+            m_nodeComponentTypeIds[AZ::RttiTypeId<NodeType>()] = AZStd::make_pair(typeId, aznumeric_cast<AZ::u32>(m_nodeComponentTypeIds.size()));
         }
 
         AZ::SerializeContext* m_serializeContext = nullptr;
 
         // Map where the key is the Component TypeId and the value is the factory function for creating a new node for that component type
         AZStd::unordered_map<AZ::TypeId, NodeFactoryFunction> m_nodeFactory;
-        // Map where the key is the node RTTI TypeId and the value is the corresponding Component TypeId
-        AZStd::unordered_map<AZ::TypeId, AZ::TypeId> m_nodeComponentTypeIds;
+        // Map where the key is the node RTTI TypeId and the value is a pair with the
+        // corresponding Component TypeId plus an index so we can keep track of the order they were registered
+        AZStd::unordered_map<AZ::TypeId, AZStd::pair<AZ::TypeId, AZ::u32>> m_nodeComponentTypeIds;
 
         LandscapeCanvasSerialization m_serialization;
     };

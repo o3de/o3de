@@ -23,7 +23,9 @@
 #include <BuilderComponent.h>
 
 #include <Tests.Builders/BuilderTestFixture.h>
-  
+
+extern "C" void CleanUpRpiPublicGenericClassInfo();
+extern "C" void CleanUpRpiEditGenericClassInfo();
 
 namespace UnitTest
 {
@@ -60,7 +62,7 @@ namespace UnitTest
 
     void BuilderTestFixture::SetUp()
     {
-        AllocatorsFixture::SetUp();
+        LeakDetectionFixture::SetUp();
 
         //prepare reflection
         m_context = AZStd::make_unique<SerializeContext>();
@@ -84,9 +86,6 @@ namespace UnitTest
         Reflect(m_context.get());
         Reflect(m_jsonRegistrationContext.get());
 
-        AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-        AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
-
         m_streamer = AZStd::make_unique<AZ::IO::Streamer>(AZStd::thread_desc{}, AZ::StreamerComponent::CreateStreamerStack());
         Interface<AZ::IO::IStreamer>::Register(m_streamer.get());
 
@@ -103,9 +102,6 @@ namespace UnitTest
 
         Interface<AZ::IO::IStreamer>::Unregister(m_streamer.get());
         m_streamer.reset();
-
-        AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
-        AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
 
         delete IO::FileIOBase::GetInstance();
         IO::FileIOBase::SetInstance(nullptr);
@@ -124,7 +120,11 @@ namespace UnitTest
         NameDictionary::Destroy();
 
         m_context.reset();
-        AllocatorsFixture::TearDown();
+
+        CleanUpRpiPublicGenericClassInfo();
+        CleanUpRpiEditGenericClassInfo();
+
+        LeakDetectionFixture::TearDown();
     }
 
 } // namespace UnitTest

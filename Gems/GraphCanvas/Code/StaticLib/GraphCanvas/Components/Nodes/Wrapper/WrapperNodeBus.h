@@ -18,7 +18,7 @@ class QMimeData;
 
 namespace GraphCanvas
 {
-    static const AZ::Crc32 WrapperNodeLayoutServiceCrc = AZ_CRC("GraphCanvas_WrapperNodeLayoutService", 0x4033e2f5);
+    static const AZ::Crc32 WrapperNodeLayoutServiceCrc = AZ_CRC_CE("GraphCanvas_WrapperNodeLayoutService");
 
     // WrappedNodeConfiguration
     // This contains the configuration required to display the Wrapped node inside of the WrapperNode.
@@ -31,7 +31,7 @@ namespace GraphCanvas
         friend class WrapperNodeLayoutComponent;
 
         AZ_TYPE_INFO(WrappedNodeConfiguration, "{55C674CA-2AB3-4D60-A687-D4DBC98F1E95}");
-        AZ_CLASS_ALLOCATOR(WrappedNodeConfiguration, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(WrappedNodeConfiguration, AZ::SystemAllocator);
 
         WrappedNodeConfiguration()
             : m_layoutOrder(std::numeric_limits<AZ::u32>::max())

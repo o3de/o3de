@@ -97,7 +97,8 @@ namespace AZ
                 Name HairShortCutResolveColorPassName;
 
             public:
-                AZ_RTTI(AZ::Render::Hair::HairFeatureProcessor, "{5F9DDA81-B43F-4E30-9E56-C7C3DC517A4C}", RPI::FeatureProcessor);
+                AZ_CLASS_ALLOCATOR(HairFeatureProcessor, AZ::SystemAllocator)
+                AZ_RTTI(AZ::Render::Hair::HairFeatureProcessor, "{5F9DDA81-B43F-4E30-9E56-C7C3DC517A4C}", AZ::RPI::FeatureProcessor);
 
                 static void Reflect(AZ::ReflectContext* context);
 
@@ -113,6 +114,7 @@ namespace AZ
                 // FeatureProcessor overrides ...
                 void Activate() override;
                 void Deactivate() override;
+                void AddRenderPasses(RPI::RenderPipeline* renderPipeline) override;
                 void Simulate(const FeatureProcessor::SimulatePacket& packet) override;
                 void Render(const FeatureProcessor::RenderPacket& packet) override;
 
@@ -124,9 +126,7 @@ namespace AZ
                 bool RemoveHairRenderObject(Data::Instance<HairRenderObject> renderObject);
 
                 // RPI::SceneNotificationBus overrides ...
-                void OnRenderPipelineAdded(RPI::RenderPipelinePtr renderPipeline) override;
-                void OnRenderPipelineRemoved(RPI::RenderPipeline* renderPipeline) override;
-                void OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline) override;
+                void OnRenderPipelineChanged(AZ::RPI::RenderPipeline* pipeline, AZ::RPI::SceneNotification::RenderPipelineChangeType changeType) override;
 
                 Data::Instance<HairSkinningComputePass> GetHairSkinningComputegPass();
                 Data::Instance<HairPPLLRasterPass> GetHairPPLLRasterPass();
@@ -167,6 +167,8 @@ namespace AZ
 
                 bool HasHairParentPass(RPI::RenderPipeline* renderPipeline);
 
+                bool AddHairParentPass(RPI::RenderPipeline* renderPipeline);
+
                 //! The following will serve to register the FP in the Thumbnail system
                 AZStd::vector<AZStd::string> m_hairFeatureProcessorRegistryName;
 
@@ -193,6 +195,9 @@ namespace AZ
                 Data::Instance<HairShortCutGeometryDepthAlphaPass> m_hairShortCutGeometryDepthAlphaPass = nullptr;
                 Data::Instance<HairShortCutGeometryShadingPass> m_hairShortCutGeometryShadingPass = nullptr;
 
+                // Cache the pass request data for creating a hair parent pass
+                AZ::Data::Asset<AZ::RPI::AnyAsset> m_hairPassRequestAsset;
+
                 //--------------------------------------------------------------
                 //                      Per Pass Resources 
                 //--------------------------------------------------------------
@@ -211,7 +216,6 @@ namespace AZ
                 float m_currentDeltaTime = 0.02f;
                 //! flag to disable/enable feature processor adding dispatch calls to compute passes.
                 bool m_addDispatchEnabled = true;
-                bool m_sharedResourcesCreated = false;
                 //! reload / pipeline changes force build dispatches and render items
                 bool m_forceRebuildRenderData = false;      
                 bool m_forceClearRenderData = false;

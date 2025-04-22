@@ -6,7 +6,7 @@
  *
  */
 
-#include <Atom/Feature/DisplayMapper/BakeAcesOutputTransformLutPass.h>
+#include <DisplayMapper/BakeAcesOutputTransformLutPass.h>
 #include <Atom/Feature/ACES/AcesDisplayMapperFeatureProcessor.h>
 
 #include <Atom/RHI/FrameGraphAttachmentInterface.h>
@@ -67,7 +67,7 @@ namespace AZ
             AZ_Assert(m_displayMapperLut.m_lutImage != nullptr, "BakeAcesOutputTransformLutPass unable to acquire LUT image");
 
             AZ::RHI::AttachmentId imageAttachmentId = AZ::RHI::AttachmentId("DisplayMapperLutImageAttachmentId");
-            [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportImage(imageAttachmentId, m_displayMapperLut.m_lutImage);
+            [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportImage(imageAttachmentId, m_displayMapperLut.m_lutImage.get());
             AZ_Error("BakeAcesOutputTransformLutPass", result == RHI::ResultCode::Success, "Failed to import compute buffer with error %d", result);
 
             RHI::ImageScopeAttachmentDescriptor desc;
@@ -75,7 +75,7 @@ namespace AZ
             desc.m_imageViewDescriptor = m_displayMapperLut.m_lutImageViewDescriptor;
             desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::DontCare;
 
-            frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::ReadWrite);
+            frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::ReadWrite, RHI::ScopeAttachmentStage::ComputeShader);
         }
 
         void BakeAcesOutputTransformLutPass::CompileResources(const RHI::FrameGraphCompileContext& context)

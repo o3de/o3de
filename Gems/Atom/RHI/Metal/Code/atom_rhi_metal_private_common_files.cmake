@@ -34,6 +34,7 @@ set(FILES
     Source/RHI/MetalCopyShaders.h
     Source/RHI/Device.cpp
     Source/RHI/Device.h
+    Source/RHI/DispatchRaysIndirectBuffer.h
     Source/RHI/CommandQueue.cpp
     Source/RHI/CommandQueue.h
     Source/RHI/CommandQueueContext.cpp
@@ -46,10 +47,16 @@ set(FILES
     Source/RHI/FrameGraphCompiler.h
     Source/RHI/FrameGraphExecuteGroup.cpp
     Source/RHI/FrameGraphExecuteGroup.h
-    Source/RHI/FrameGraphExecuteGroupBase.cpp
-    Source/RHI/FrameGraphExecuteGroupBase.h
-    Source/RHI/FrameGraphExecuteGroupMerged.cpp
-    Source/RHI/FrameGraphExecuteGroupMerged.h
+    Source/RHI/FrameGraphExecuteGroupHandler.cpp
+    Source/RHI/FrameGraphExecuteGroupHandler.h
+    Source/RHI/FrameGraphExecuteGroupPrimary.cpp
+    Source/RHI/FrameGraphExecuteGroupPrimary.h
+    Source/RHI/FrameGraphExecuteGroupPrimaryHandler.cpp
+    Source/RHI/FrameGraphExecuteGroupPrimaryHandler.h
+    Source/RHI/FrameGraphExecuteGroupSecondary.cpp
+    Source/RHI/FrameGraphExecuteGroupSecondary.h
+    Source/RHI/FrameGraphExecuteGroupSecondaryHandler.cpp
+    Source/RHI/FrameGraphExecuteGroupSecondaryHandler.h
     Source/RHI/FrameGraphExecuter.cpp
     Source/RHI/FrameGraphExecuter.h
     Source/RHI/Image.cpp
@@ -110,4 +117,10 @@ set(FILES
     Source/RHI/MetalView.mm
     Source/RHI/MetalViewController.h
     Source/RHI/MetalViewController.mm
+    Source/RHI/BindlessArgumentBuffer.cpp
+    Source/RHI/BindlessArgumentBuffer.h
+    Source/RHI/RenderPassBuilder.cpp
+    Source/RHI/RenderPassBuilder.h
+    Source/RHI/ClearAttachments.cpp
+    Source/RHI/ClearAttachments.h
 )

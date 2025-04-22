@@ -9,6 +9,7 @@
 #include "LyShineTest.h"
 #include <Mocks/ISystemMock.h>
 #include <AzCore/UnitTest/Mocks/MockITime.h>
+#include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzFramework/Application/Application.h>
 
 #include <UiCanvasComponent.h>
@@ -100,13 +101,17 @@ namespace UnitTest
         {
             AZ::ComponentApplication::Descriptor appDesc;
             appDesc.m_memoryBlocksByteSize = 10 * 1024 * 1024;
-            appDesc.m_recordingMode = AZ::Debug::AllocationRecords::RECORD_FULL;
-            appDesc.m_stackRecordLevels = 20;
+            appDesc.m_recordingMode = AZ::Debug::AllocationRecords::Mode::RECORD_FULL;
 
             m_application = aznew LyShineAnimationTestApplication();
             m_systemEntity = m_application->Create(appDesc);
             m_systemEntity->Init();
             m_systemEntity->Activate();
+
+            // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
+            // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash
+            // in the unit tests.
+            AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
         }
 
         void SetupEnvironment() override

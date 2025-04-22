@@ -11,7 +11,6 @@
             "methods": [
                 {
                     "base": "GetUV",
-                    "context": "BlendShapeData",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get UV"
@@ -54,7 +53,6 @@
                 },
                 {
                     "base": "GetTangent",
-                    "context": "BlendShapeData",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Tangent"
@@ -91,7 +89,6 @@
                 },
                 {
                     "base": "GetBitangent",
-                    "context": "BlendShapeData",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Bitangent"
@@ -128,7 +125,6 @@
                 },
                 {
                     "base": "GetColor",
-                    "context": "BlendShapeData",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Color"

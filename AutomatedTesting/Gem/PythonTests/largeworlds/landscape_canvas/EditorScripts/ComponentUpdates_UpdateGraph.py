@@ -1,15 +1,14 @@
 """
 Copyright (c) Contributors to the Open 3D Engine Project.
 For complete copyright and license terms please see the LICENSE at the root of this distribution.
-
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 
 class Tests:
-    slice_instantiated = (
-        "Slice instantiated successfully",
-        "Failed to instantiate slice"
+    prefab_instantiated = (
+        "Prefab instantiated successfully",
+        "Failed to instantiate prefab"
     )
     lc_entity_found = (
         "LandscapeCanvas entity found",
@@ -24,7 +23,7 @@ class Tests:
         "Failed to find Distribution Filter component on BushSpawner entity"
     )
     existing_graph_opened = (
-        "Opened existing graph from slice",
+        "Opened existing graph from prefab",
         "Failed to open existing graph"
     )
     dist_filter_node_found = (
@@ -66,10 +65,8 @@ def ComponentUpdates_UpdateGraph():
     Summary:
     This test verifies that the Landscape Canvas graphs update properly when components are added/removed outside of
     Landscape Canvas.
-
     Expected Behavior:
     Graphs properly reflect component changes made to entities outside of Landscape Canvas.
-
     Test Steps:
         1. Open Level
         2. Find LandscapeCanvas named entity
@@ -83,128 +80,93 @@ def ComponentUpdates_UpdateGraph():
         9. Add a new entity with unique name as a child of the Landscape Canvas entity
         10. Add a Box Shape component to the new child entity
         11. Ensure Box Shape node is present on the open graph
-
     Note:
     - This test file must be called from the Open 3D Engine Editor command terminal
     - Any passed and failed tests are written to the Editor.log file.
             Parsing the file or running a log_monitor are required to observe the test results.
-
     :return: None
     """
 
     import os
 
-    import azlmbr.asset as asset
     import azlmbr.bus as bus
-    import azlmbr.editor as editor
     import azlmbr.entity as entity
     import azlmbr.legacy.general as general
     import azlmbr.landscapecanvas as landscapecanvas
     import azlmbr.math as math
-    import azlmbr.slice as slice
+    import azlmbr.prefab as prefab
 
     import editor_python_test_tools.hydra_editor_utils as hydra
+    from editor_python_test_tools.editor_entity_utils import EditorEntity
     from editor_python_test_tools.utils import Report
-    from editor_python_test_tools.utils import TestHelper as helper
 
-    # Open a simple level and instantiate LC_BushFlowerBlender.slice
-    helper.init_idle()
-    helper.open_level("Physics", "Base")
+    # Open a simple level and instantiate BushFlowerBlender.prefab
+    hydra.open_base_level()
     transform = math.Transform_CreateIdentity()
     position = math.Vector3(64.0, 64.0, 32.0)
     transform.invoke('SetPosition', position)
-    test_slice_path = os.path.join("Slices", "LC_BushFlowerBlender.slice")
-    test_slice_id = asset.AssetCatalogRequestBus(bus.Broadcast, "GetAssetIdByPath", test_slice_path, math.Uuid(),
-                                                 False)
-    test_slice = slice.SliceRequestBus(bus.Broadcast, 'InstantiateSliceFromAssetId', test_slice_id, transform)
-    Report.critical_result(Tests.slice_instantiated, test_slice.IsValid())
+    test_prefab_path = os.path.join("Assets", "Prefabs", "BushFlowerBlender.prefab")
+    prefab_result = prefab.PrefabPublicRequestBus(bus.Broadcast, "InstantiatePrefab", test_prefab_path,
+                                                  entity.EntityId(), position)
+    Report.critical_result(Tests.prefab_instantiated, prefab_result.IsSuccess())
 
     # Find root entity in the loaded level
-    search_filter = entity.SearchFilter()
-    search_filter.names = ["LandscapeCanvas"]
-
-    # Allow a few seconds for matching entity to be found
-    helper.wait_for_condition(lambda: len(entity.SearchBus(bus.Broadcast, 'SearchEntities', search_filter)) > 0, 5.0)
-    lc_matching_entities = entity.SearchBus(bus.Broadcast, 'SearchEntities', search_filter)
-    slice_root_id = lc_matching_entities[0]         #Entity with Landscape Canvas component
-    Report.critical_result(Tests.lc_entity_found, slice_root_id.IsValid())
+    prefab_root_entity = EditorEntity.find_editor_entity("LandscapeCanvas", must_be_unique=True)
+    Report.critical_result(Tests.lc_entity_found, prefab_root_entity.id.IsValid())
 
     # Find the BushSpawner entity
-    search_filter.names = ["BushSpawner"]
-    spawner_matching_entities = entity.SearchBus(bus.Broadcast, 'SearchEntities', search_filter)
-    spawner_id = spawner_matching_entities[0]       #Entity with Vegetation Layer Spawner component
-    Report.critical_result(Tests.spawner_entity_found, spawner_id.IsValid())
-
-    # Get needed component type ids
-    distribution_filter_type_id = hydra.get_component_type_id("Vegetation Distribution Filter")
-    altitude_filter_type_id = hydra.get_component_type_id("Vegetation Altitude Filter")
-    box_shape_type_id = hydra.get_component_type_id("Box Shape")
+    bush_spawner_entity = EditorEntity.find_editor_entity("BushSpawner", must_be_unique=True)
+    Report.critical_result(Tests.spawner_entity_found, bush_spawner_entity.id.IsValid())
 
     # Verify the BushSpawner entity has a Distribution Filter
-    has_distribution_filter = editor.EditorComponentAPIBus(bus.Broadcast, 'HasComponentOfType', spawner_id,
-                                                           distribution_filter_type_id)
+    has_distribution_filter = bush_spawner_entity.has_component("Vegetation Distribution Filter")
     Report.critical_result(Tests.dist_filter_component_found, has_distribution_filter)
 
     # Open Landscape Canvas and the existing graph
-    general.open_pane('Landscape Canvas')
-    open_graph = landscapecanvas.LandscapeCanvasRequestBus(bus.Broadcast, 'OnGraphEntity', slice_root_id)
+    general.open_pane("Landscape Canvas")
+    open_graph = landscapecanvas.LandscapeCanvasRequestBus(bus.Broadcast, "OnGraphEntity", prefab_root_entity.id)
     Report.critical_result(Tests.existing_graph_opened, open_graph.IsValid())
 
     # Verify that Distribution Filter node is present on the graph
-    spawner_distribution_filter_component = editor.EditorComponentAPIBus(bus.Broadcast, 'GetComponentOfType', spawner_id,
-                                                                         distribution_filter_type_id)
-    spawner_distribution_filter_component_id = spawner_distribution_filter_component.GetValue()
-    distribution_filter_node = landscapecanvas.LandscapeCanvasRequestBus(bus.Broadcast,
-                                                                         'GetNodeMatchingEntityComponentInGraph',
-                                                                         open_graph,
-                                                                         spawner_distribution_filter_component_id)
-    Report.critical_result(Tests.dist_filter_node_found, distribution_filter_node is not None)
+    spawner_dist_filter_component = bush_spawner_entity.get_components_of_type(["Vegetation Distribution Filter"])[0]
+    spawner_dist_filter_nodes = landscapecanvas.LandscapeCanvasRequestBus(bus.Broadcast,
+                                                                          "GetAllNodesMatchingEntityComponent",
+                                                                          spawner_dist_filter_component.id)
+    Report.critical_result(Tests.dist_filter_node_found, len(spawner_dist_filter_nodes) > 0)
 
     # Add a Vegetation Altitude Filter component to the BushSpawner entity, and verify the node is added to the graph
-    spawner_altitude_filter_component = editor.EditorComponentAPIBus(bus.Broadcast, 'GetComponentOfType', spawner_id,
-                                                                     altitude_filter_type_id)
-    spawner_altitude_filter_component_id = spawner_altitude_filter_component.GetValue()
-    editor.EditorComponentAPIBus(bus.Broadcast, 'AddComponentOfType', spawner_id, altitude_filter_type_id)
-    has_altitude_filter = editor.EditorComponentAPIBus(bus.Broadcast, 'HasComponentOfType', spawner_id,
-                                                       altitude_filter_type_id)
-    altitude_filter_node = landscapecanvas.LandscapeCanvasRequestBus(bus.Broadcast, 'GetNodeMatchingEntityComponentInGraph',
-                                                                     open_graph, spawner_altitude_filter_component_id)
-    Report.result(Tests.dist_filter_component_found, has_altitude_filter)
-    Report.result(Tests.dist_filter_node_found, altitude_filter_node is not None)
+    spawner_alt_filter_component = bush_spawner_entity.add_component("Vegetation Altitude Filter")
+    has_altitude_filter = bush_spawner_entity.has_component("Vegetation Altitude Filter")
+    altitude_filter_nodes = landscapecanvas.LandscapeCanvasRequestBus(bus.Broadcast,
+                                                                      "GetAllNodesMatchingEntityComponent",
+                                                                      spawner_alt_filter_component.id)
+    Report.result(Tests.alt_filter_component_found, has_altitude_filter)
+    Report.result(Tests.alt_filter_node_found, len(altitude_filter_nodes) > 0)
 
     # Remove the Distribution Filter
-    editor.EditorComponentAPIBus(bus.Broadcast, 'RemoveComponents', [spawner_distribution_filter_component_id])
-    general.idle_wait(1.0)
+    bush_spawner_entity.remove_component("Vegetation Distribution Filter")
 
     # Verify the Distribution Filter was successfully removed from entity and the node was likewise removed
-    has_distribution_filter = editor.EditorComponentAPIBus(bus.Broadcast, 'HasComponentOfType', spawner_id,
-                                                           distribution_filter_type_id)
-    Report.result(Tests.dist_filter_component_removed, not has_distribution_filter)
-
-    distribution_filter_node = landscapecanvas.LandscapeCanvasRequestBus(bus.Broadcast,
-                                                                         'GetAllNodesMatchingEntityComponent',
-                                                                         spawner_distribution_filter_component_id)
-    Report.result(Tests.dist_filter_node_removed, not distribution_filter_node)
+    has_dist_filter = bush_spawner_entity.has_component("Vegetation Distribution Filter")
+    Report.result(Tests.dist_filter_component_removed, not has_dist_filter)
+    spawner_dist_filter_nodes = landscapecanvas.LandscapeCanvasRequestBus(bus.Broadcast,
+                                                                          "GetAllNodesMatchingEntityComponent",
+                                                                          spawner_dist_filter_component.id)
+    Report.result(Tests.dist_filter_node_removed, len(spawner_dist_filter_nodes) == 0)
 
     # Add a new child entity of BushSpawner entity
-    box_id = editor.ToolsApplicationRequestBus(bus.Broadcast, 'CreateNewEntity', spawner_id)
-    Report.result(Tests.child_entity_added, editor.EditorEntityInfoRequestBus(bus.Event, 'GetParent', box_id) ==
-                  spawner_id)
+    box_entity = EditorEntity.create_editor_entity("Box Child", parent_id=bush_spawner_entity.id)
+    Report.result(Tests.child_entity_added, box_entity.get_parent_id() == bush_spawner_entity.id)
 
     # Add a Box Shape component to the new entity and verify it was properly added
-    editor.EditorComponentAPIBus(bus.Broadcast, 'AddComponentOfType', box_id, box_shape_type_id)
-    has_box_shape = editor.EditorComponentAPIBus(bus.Broadcast, 'HasComponentOfType', box_id,
-                                                 box_shape_type_id)
+    box_shape_component = box_entity.add_component("Box Shape")
+    has_box_shape = box_entity.has_component("Box Shape")
     Report.result(Tests.box_shape_component_found, has_box_shape)
 
     # Verify the Box Shape node appears on the graph
-    box_shape_component = editor.EditorComponentAPIBus(bus.Broadcast, 'GetComponentOfType', box_id,
-                                                       box_shape_type_id)
-
-    box_shape_component_id = box_shape_component.GetValue()
-    box_shape_node = landscapecanvas.LandscapeCanvasRequestBus(bus.Broadcast, 'GetAllNodesMatchingEntityComponent',
-                                                               box_shape_component_id)
-    Report.result(Tests.box_shape_node_found, box_shape_node is not None)
+    box_shape_nodes = landscapecanvas.LandscapeCanvasRequestBus(bus.Broadcast, "GetAllNodesMatchingEntityComponent",
+                                                                box_shape_component.id)
+    Report.result(Tests.box_shape_node_found, len(box_shape_nodes) > 0)
 
 
 if __name__ == "__main__":

@@ -12,6 +12,11 @@ licenses).  It is your responsibility to comply with the applicable licenses.
 Information on third party materials, and the applicable license terms, are 
 referenced in or included with the materials, such as in separate LICENSE.txt 
 files accompanying the materials.
+
+Third party components with license-identification SPDX tags are logged in 
+the 3P repository at https://github.com/o3de/3p-package-source. For more 
+information on applying SPDX tags to O3DE components properly, see 
+https://www.o3de.org/docs/user-guide/build/packages/#o3de-package-structure.
  
 Please note that certain materials are subject to "copyleft" licenses, which 
 require distribution of source code, including:
@@ -19,7 +24,7 @@ require distribution of source code, including:
 - Qt Toolkit https://github.com/qtproject/, which is subject to the GNU 
 Lesser General Public License version 3 (with certain exceptions). A copy of 
 the source code for Qt Toolkit may be found at 
-https://s3-us-west-2.amazonaws.com/ly-legal/LicenseConformance/Qt/Src.zip
+https://github.com/o3de/qt5/tree/5.15.1-o3de
  
 - The AWS Python SDK uses Chardet https://chardet.github.io/, which is 
 subject to the GNU Lesser General Public License version 2.1. A copy of the 

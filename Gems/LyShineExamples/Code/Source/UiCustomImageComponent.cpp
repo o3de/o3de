@@ -14,7 +14,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 
-#include <LyShine/Draw2d.h>
+#include <LyShine/IDraw2d.h>
 #include <LyShine/ISprite.h>
 #include <LyShine/Bus/UiElementBus.h>
 #include <LyShine/Bus/UiCanvasBus.h>
@@ -72,34 +72,23 @@ namespace LyShineExamples
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    void UiCustomImageComponent::Render([[maybe_unused]] LyShine::IRenderGraph* renderGraph)
+    void UiCustomImageComponent::Render(LyShine::IRenderGraph* renderGraph)
     {
-#ifdef LYSHINE_ATOM_TODO // [GHI #3568] Convert draws to use Atom
         // get fade value (tracked by UiRenderer) and compute the desired alpha for the image
         float fade = renderGraph->GetAlphaFade();
         float desiredAlpha = m_overrideAlpha * fade;
         uint8 desiredPackedAlpha = static_cast<uint8>(desiredAlpha * 255.0f);
 
-        // if desired alpha is zero then no need to do any more
-        if (desiredPackedAlpha == 0)
-        {
-            return;
-        }
-
-        ISprite* sprite = (m_overrideSprite) ? m_overrideSprite : m_sprite;
-        ITexture* texture = (sprite) ? sprite->GetTexture() : nullptr;
-
-        if (!texture)
-        {
-            // if there is no texture we will just use a white texture
-            // TODO:  Get a default atom texture here when possible
-            //texture = ???->EF_GetTextureByID(???->GetWhiteTextureId());
-        }
-
         if (m_isRenderCacheDirty)
         {
             RenderToCache(renderGraph);
             m_isRenderCacheDirty = false;
+        }
+
+        // if desired alpha is zero then no need to do any more
+        if (desiredPackedAlpha == 0)
+        {
+            return;
         }
 
         // Render cache is now valid - render using the cache
@@ -109,7 +98,7 @@ namespace LyShineExamples
         if (m_cachedPrimitive.m_vertices[0].color.a != desiredPackedAlpha)
         {
             // go through all the cached vertices and update the alpha values
-            UCol desiredPackedColor = m_cachedPrimitive.m_vertices[0].color;
+            LyShine::UCol desiredPackedColor = m_cachedPrimitive.m_vertices[0].color;
             desiredPackedColor.a = desiredPackedAlpha;
             for (int i = 0; i < m_cachedPrimitive.m_numVertices; ++i)
             {
@@ -117,11 +106,18 @@ namespace LyShineExamples
             }
         }
 
+        ISprite* sprite = (m_overrideSprite) ? m_overrideSprite : m_sprite;
+        AZ::Data::Instance<AZ::RPI::Image> image;
+
+        if (sprite != nullptr)
+        {
+            image = sprite->GetImage();
+        }
+
         bool isTextureSRGB = false;
         bool isTexturePremultipliedAlpha = false; // we are not rendering from a render target with alpha in it
         LyShine::BlendMode blendMode = LyShine::BlendMode::Normal;
-        renderGraph->AddPrimitive(&m_cachedPrimitive, texture, m_clamp, isTextureSRGB, isTexturePremultipliedAlpha, blendMode);
-#endif
+        renderGraph->AddPrimitive(&m_cachedPrimitive, image, m_clamp, isTextureSRGB, isTexturePremultipliedAlpha, blendMode);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -245,7 +241,7 @@ namespace LyShineExamples
                 editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/UiImage.png")
                     ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/UiImage.png")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("UI", 0x27ff46b0))
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
                 editInfo->DataElement("Sprite", &UiCustomImageComponent::m_spritePathname, "Sprite path", "The sprite path. Can be overridden by another component such as an interactable.")
@@ -261,12 +257,12 @@ namespace LyShineExamples
 
                 editInfo->DataElement(0, &UiCustomImageComponent::m_uvs, "UV Rect", "The UV coordinates of the rectangle for rendering the texture.")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiCustomImageComponent::OnRenderSettingChange)
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshValues", 0x28e720d4))
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshValues"))
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show); // needed because sub-elements are hidden
 
                 editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiCustomImageComponent::m_clamp, "Clamp", "Whether the image should be clamped or not.")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiCustomImageComponent::OnRenderSettingChange)
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshValues", 0x28e720d4));
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshValues"));
             }
         }
 
@@ -294,7 +290,7 @@ namespace LyShineExamples
         // If this is called from RC.exe for example these pointers will not be set. In that case
         // we only need to be able to load, init and save the component. It will never be
         // activated.
-        if (!(gEnv && gEnv->pLyShine))
+        if (!AZ::Interface<ILyShine>::Get())
         {
             return;
         }
@@ -304,7 +300,7 @@ namespace LyShineExamples
         {
             if (!m_spritePathname.GetAssetPath().empty())
             {
-                m_sprite = gEnv->pLyShine->LoadSprite(m_spritePathname.GetAssetPath().c_str());
+                m_sprite = AZ::Interface<ILyShine>::Get()->LoadSprite(m_spritePathname.GetAssetPath().c_str());
             }
         }
 
@@ -339,7 +335,7 @@ namespace LyShineExamples
     void UiCustomImageComponent::RenderToCache(LyShine::IRenderGraph* renderGraph)
     {
         UiTransformInterface::RectPoints points;
-        EBUS_EVENT_ID(GetEntityId(), UiTransformBus, GetViewportSpacePoints, points);
+        UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::GetViewportSpacePoints, points);
 
         // points are a clockwise quad
         const AZ::Vector2 uvs[4] = {
@@ -395,9 +391,9 @@ namespace LyShineExamples
     bool UiCustomImageComponent::IsPixelAligned()
     {
         AZ::EntityId canvasEntityId;
-        EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
+        UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
         bool isPixelAligned = true;
-        EBUS_EVENT_ID_RESULT(isPixelAligned, canvasEntityId, UiCanvasBus, GetIsPixelAligned);
+        UiCanvasBus::EventResult(isPixelAligned, canvasEntityId, &UiCanvasBus::Events::GetIsPixelAligned);
         return isPixelAligned;
     }
 
@@ -409,7 +405,7 @@ namespace LyShineExamples
         if (!m_spritePathname.GetAssetPath().empty())
         {
             // Load the new texture.
-            newSprite = gEnv->pLyShine->LoadSprite(m_spritePathname.GetAssetPath().c_str());
+            newSprite = AZ::Interface<ILyShine>::Get()->LoadSprite(m_spritePathname.GetAssetPath().c_str());
         }
 
         SAFE_RELEASE(m_sprite);
@@ -446,8 +442,8 @@ namespace LyShineExamples
     {
         // tell the canvas to invalidate the render graph (never want to do this while rendering)
         AZ::EntityId canvasEntityId;
-        EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
-        EBUS_EVENT_ID(canvasEntityId, UiCanvasComponentImplementationBus, MarkRenderGraphDirty);
+        UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
+        UiCanvasComponentImplementationBus::Event(canvasEntityId, &UiCanvasComponentImplementationBus::Events::MarkRenderGraphDirty);
     }
 
 }

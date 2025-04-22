@@ -111,6 +111,11 @@ namespace Camera
         //! The height is calculated automatically based on the aspect ratio.
         virtual void SetOrthographicHalfWidth(float halfWidth) = 0;
 
+        //! Sets the Quaternion related to a stereoscopic view for a camera with the provided view index related to your eye.
+        //! @params viewQuat Used to cache view orientation data from the XR device
+        //! @params xrViewIndex View index related to the pipeline associated with a specific eye
+        virtual void SetXRViewQuaternion(const AZ::Quaternion& viewQuat, uint32_t xrViewIndex) = 0;
+
         //! Makes the camera the active view
         virtual void MakeActiveView() = 0;
 
@@ -129,6 +134,32 @@ namespace Camera
                 GetFrustumHeight()
             };
         }
+
+        //! Unprojects a position in screen space pixel coordinates to world space.
+        //! With a depth of zero, the position returned will be on the near clip plane of the camera
+        //! in world space.
+        //! @param screenPosition The absolute screen position
+        //! @param depth The depth offset into the world relative to the near clip plane of the camera 
+        //! @return the position in world space
+        virtual AZ::Vector3 ScreenToWorld(const AZ::Vector2& screenPosition, float depth) = 0;
+
+        //! Unprojects a position in screen space normalized device coordinates to world space.
+        //! With a depth of zero, the position returned will be on the near clip plane of the camera
+        //! in world space.
+        //! @param screenNdcPosition The normalized device coordinates in the range [0,1]
+        //! @param depth The depth offset into the world relative to the near clip plane of the camera 
+        //! @return the position in world space
+        virtual AZ::Vector3 ScreenNdcToWorld(const AZ::Vector2& screenNdcPosition, float depth) = 0;
+
+        //! Projects a position in world space to screen space for the given camera.
+        //! @param worldPosition The world position
+        //! @return The absolute screen position
+        virtual AZ::Vector2 WorldToScreen(const AZ::Vector3& worldPosition) = 0;
+
+        //! Projects a position in world space to screen space normalized device coordinates.
+        //! @param worldPosition The world position
+        //! @return The normalized device coordinates in the range [0,1]
+        virtual AZ::Vector2 WorldToScreenNdc(const AZ::Vector3& worldPosition) = 0;
     };
     using CameraRequestBus = AZ::EBus<CameraComponentRequests>;
 
@@ -229,7 +260,7 @@ namespace Camera
     };
     using CameraNotificationBus = AZ::EBus<CameraNotifications>;
 
-#define CameraComponentTypeId "{E2DC7EB8-02D1-4E6D-BFE4-CE652FCB7C7F}"
-#define EditorCameraComponentTypeId "{CA11DA46-29FF-4083-B5F6-E02C3A8C3A3D}"
+#define CameraComponentTypeId AZ::TypeId("{E2DC7EB8-02D1-4E6D-BFE4-CE652FCB7C7F}")
+#define EditorCameraComponentTypeId AZ::TypeId("{CA11DA46-29FF-4083-B5F6-E02C3A8C3A3D}")
 
 } // namespace Camera

@@ -15,13 +15,13 @@
 #include <AzCore/std/parallel/thread.h>
 #include <AzCore/std/functional.h>
 
-using namespace AZStd;
-using namespace UnitTestInternal;
-
 namespace UnitTest
 {
+    using namespace AZStd;
+    using namespace UnitTestInternal;
+
     class LockFreeStack
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         
@@ -160,7 +160,7 @@ namespace UnitTest
 
     
     class LockFreeIntrusiveStack
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
 #ifdef _DEBUG

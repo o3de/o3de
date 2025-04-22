@@ -6,7 +6,16 @@
  *
  */
 
-#include <viewsrg.srgi>
+#include <viewsrg_all.srgi>
+
+option enum class OpacityMode 
+{
+    Opaque, 
+    Cutout, 
+    Blended, 
+    TintedTransparent
+    
+} o_opacity_mode = OpacityMode::Blended;
 
 struct VSInput
 {
@@ -19,7 +28,6 @@ struct VSOutput
     float4 m_position : SV_Position;
     float3 m_worldPosition : TEXCOORD0;
     float3 m_worldNormal : NORMAL;
-    float3 m_shadowCoords[ViewSrg::MaxCascadeCount] : TEXCOORD1;
 };
 
 struct PSOutput
@@ -33,29 +41,25 @@ ShaderResourceGroup MaterialSrg : SRG_PerMaterial
 }
 
 #include <Atom/Features/PBR/DefaultObjectSrg.azsli>
-#include <Atom/Features/PBR/ForwardPassSrg.azsli>
+#include <Atom/Features/Pipeline/Forward/ForwardPassSrg.azsli>
 #include <Atom/Features/Shadow/DirectionalLightShadow.azsli>
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
+#include <Atom/Features/InstancedTransforms.azsli>
 
 //! Shades the entire geometry with the shadow color, not just what's in shadow. For debugging.
 option bool o_shadeAll = false;
 
-VSOutput ShadowCatcherVS(VSInput IN)
+VSOutput ShadowCatcherVS(VSInput IN, uint instanceId : SV_InstanceID)
 {
     VSOutput OUT;
  
-    float3 worldPosition = mul(ObjectSrg::GetWorldMatrix(), float4(IN.m_position, 1.0)).xyz;
+    float3 worldPosition = mul(GetObjectToWorldMatrix(instanceId), float4(IN.m_position, 1.0)).xyz;
   
     OUT.m_worldPosition = worldPosition;
     OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(OUT.m_worldPosition, 1.0));
-    OUT.m_worldNormal = normalize(mul(ObjectSrg::GetWorldMatrixInverseTranspose(), IN.m_normal));
+    OUT.m_worldNormal = normalize(mul(GetObjectToWorldMatrixInverseTranspose(instanceId), IN.m_normal));
     
-    // [GFX TODO][ATOM-2012] Add support for multiple directional light shadows
-    DirectionalLightShadow::GetShadowCoords(
-        ViewSrg::m_shadowIndexDirectionalLight,
-        worldPosition,
-        OUT.m_worldNormal,
-        OUT.m_shadowCoords);
+
     
     return OUT;
 }
@@ -63,14 +67,8 @@ VSOutput ShadowCatcherVS(VSInput IN)
 PSOutput ShadowCatcherPS(VSOutput IN)
 {
     PSOutput OUT;
-    
-    DirectionalLightShadow::DebugInfo debugInfo;
-    
-    float litRatio = DirectionalLightShadow::GetVisibility(
-            ViewSrg::m_shadowIndexDirectionalLight,
-            IN.m_shadowCoords,
-            IN.m_worldNormal,
-        debugInfo);
+        
+    real litRatio = DirectionalLightShadow::GetVisibility(ViewSrg::m_shadowIndexDirectionalLight, real3(IN.m_worldPosition), real3(IN.m_worldNormal), 0);
 
     if (o_shadeAll)
     {
@@ -80,18 +78,15 @@ PSOutput ShadowCatcherPS(VSOutput IN)
     if (ViewSrg::m_directionalLightShadows[ViewSrg::m_shadowIndexDirectionalLight].m_debugFlags & 
         ViewSrg::DirectionalLightShadowDebugColoringBitMask)
     {
-        float3 debugColor = float3(1,1,1) * litRatio * 0.5f;
-        debugColor = DirectionalLightShadow::AddDebugColoring(
-            debugColor,
-            ViewSrg::m_shadowIndexDirectionalLight,
-            debugInfo);
+        real3 debugColor = real3(1,1,1) * litRatio * 0.5;
+        debugColor = DirectionalLightShadow::AddDebugColoring(debugColor, ViewSrg::m_shadowIndexDirectionalLight, real3(IN.m_worldPosition), real3(IN.m_worldNormal));
         OUT.m_color.rgb = debugColor;
         OUT.m_color.a = 1; 
     }
     else
     {
-        OUT.m_color = float4(0, 0, 0, 1 - litRatio) * MaterialSrg::m_opacity;  
-    } 
+        OUT.m_color = real4(0, 0, 0, 1 - litRatio) * MaterialSrg::m_opacity;
+    }
 
     return OUT; 
 }

@@ -7,25 +7,38 @@
 #
 
 if(NOT PROJECT_NAME)
-    cmake_minimum_required(VERSION 3.20)
-    include(cmake/CompilerSettings.cmake)
+    cmake_minimum_required(VERSION 3.22)
+
+    # Utility function to look for an optional 'engine_finder_cmake_path'setting 
+    function(get_engine_finder_cmake_path project_json_file_path path_value)
+        if(NOT ${path_value} AND EXISTS "${project_json_file_path}")
+            file(READ "${project_json_file_path}" project_json_data)
+            string(JSON engine_finder_cmake_value ERROR_VARIABLE json_error GET ${project_json_data} "engine_finder_cmake_path")
+            cmake_path(APPEND CMAKE_CURRENT_SOURCE_DIR "${engine_finder_cmake_value}" engine_finder_cmake_value)
+            if(NOT json_error AND EXISTS "${engine_finder_cmake_value}")
+                set(${path_value} "${engine_finder_cmake_value}" PARENT_SCOPE)
+            elseif(json_error AND ${engine_finder_cmake_value} STREQUAL "NOTFOUND")
+                # When the error value is just NOTFOUND that means there is a JSON
+                # parsing error, and not simply a missing key 
+                message(WARNING "Unable to read 'engine_finder_cmake_path'.\nError: ${json_error} ${engine_finder_cmake_value}")
+            endif()
+        endif()
+    endfunction()
+    
+    # Check for optional 'engine_finder_cmake_path' in order of preference
+    # We support per-project customization to make it easier to upgrade 
+    # or revert to a custom EngineFinder.cmake 
+    get_engine_finder_cmake_path("${CMAKE_CURRENT_SOURCE_DIR}/user/project.json" engine_finder_cmake_path)
+    get_engine_finder_cmake_path("${CMAKE_CURRENT_SOURCE_DIR}/project.json" engine_finder_cmake_path)
+    if(NOT engine_finder_cmake_path)
+        set(engine_finder_cmake_path cmake/EngineFinder.cmake)
+    endif()
+
+    include(${engine_finder_cmake_path} OPTIONAL)
+    find_package(o3de REQUIRED)
     project(AutomatedTesting
         LANGUAGES C CXX
         VERSION 1.0.0.0
     )
-    include(cmake/EngineFinder.cmake OPTIONAL)
-    find_package(o3de REQUIRED)
     o3de_initialize()
-else()
-    # Add the project_name to global LY_PROJECTS_TARGET_NAME property
-    file(READ "${CMAKE_CURRENT_LIST_DIR}/project.json" project_json)
-
-    string(JSON project_target_name ERROR_VARIABLE json_error GET ${project_json} "project_name")
-    if(json_error)
-        message(FATAL_ERROR "Unable to read key 'project_name' from 'project.json'")
-    endif()
-
-    set_property(GLOBAL APPEND PROPERTY LY_PROJECTS_TARGET_NAME ${project_target_name})
-
-    add_subdirectory(Gem)
 endif()

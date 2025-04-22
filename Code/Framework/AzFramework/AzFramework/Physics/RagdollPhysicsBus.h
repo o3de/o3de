@@ -17,7 +17,7 @@ namespace Physics
     enum class SimulationType
     {
         Kinematic, ///< For ragdoll nodes controlled directly by animation.
-        Dynamic ///< For ragdoll nodes driven by the physics simulation.
+        Simulated ///< For ragdoll nodes driven by the physics simulation.
     };
 
     /// Contains pose and velocity information, simulation type and joint strength properties for a node in the ragdoll

@@ -20,7 +20,7 @@ namespace CommandSystem
     //--------------------------------------------------------------------------------
     // CommandAdjustNodeGroup
     //--------------------------------------------------------------------------------
-    AZ_CLASS_ALLOCATOR_IMPL(CommandAdjustNodeGroup, EMotionFX::CommandAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(CommandAdjustNodeGroup, EMotionFX::CommandAllocator)
 
     CommandAdjustNodeGroup::CommandAdjustNodeGroup(
         MCore::Command* orgCommand,

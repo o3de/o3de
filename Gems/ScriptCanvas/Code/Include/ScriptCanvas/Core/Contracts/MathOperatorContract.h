@@ -16,7 +16,7 @@ namespace ScriptCanvas
         : public Contract
     {
     public:
-        AZ_CLASS_ALLOCATOR(MathOperatorContract, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MathOperatorContract, AZ::SystemAllocator);
         AZ_RTTI(MathOperatorContract, "{17B1AEA6-B36B-4EE5-83E9-4563CAC79889}", Contract);
 
         MathOperatorContract() = default;

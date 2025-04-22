@@ -63,7 +63,7 @@ namespace AZ {
         {
             if (!s_dynamicallyLoadedModulesMutex)
             {
-                s_dynamicallyLoadedModulesMutex = Environment::CreateVariable<AZStd::mutex>(AZ_CRC("SymbolStorageDynamicallyLoadedModulesMutex", 0x2b7dbaf2));
+                s_dynamicallyLoadedModulesMutex = Environment::CreateVariable<AZStd::mutex>(AZ_CRC_CE("SymbolStorageDynamicallyLoadedModulesMutex"));
                 AZ_Assert(s_dynamicallyLoadedModulesMutex, "Unable to create SymbolStorageDynamicallyLoadedModulesMutex environment variable");
             }
             return *s_dynamicallyLoadedModulesMutex;
@@ -73,7 +73,7 @@ namespace AZ {
         {
             if (!s_dynamicallyLoadedModules)
             {
-                s_dynamicallyLoadedModules = Environment::CreateVariable<SymbolStorageDynamicallyLoadedModules>(AZ_CRC("SymbolStorageDynamicallyLoadedModules", 0xecf96588));
+                s_dynamicallyLoadedModules = Environment::CreateVariable<SymbolStorageDynamicallyLoadedModules>(AZ_CRC_CE("SymbolStorageDynamicallyLoadedModules"));
                 AZ_Assert(s_dynamicallyLoadedModules, "Unable to create SymbolStorageDynamicallyLoadedModules environment variable - dynamically loaded modules won't have symbols loaded!");
             }
             return *s_dynamicallyLoadedModules;
@@ -140,7 +140,7 @@ namespace AZ {
     SymRegisterCallback64_t     g_SymRegisterCallback64;
     HMODULE                     g_dbgHelpDll;
 
-#define LOAD_FUNCTION(A)    { g_##A = (A##_t)GetProcAddress(g_dbgHelpDll, #A); AZ_Assert(g_##A != 0, ("Can not load %s function!",#A)); }
+#define LOAD_FUNCTION(A)    { g_##A = (A##_t)GetProcAddress(g_dbgHelpDll, #A); AZ_Assert(g_##A != 0, "Can not load %s function!",#A); }
 
     using namespace AZ::Debug;
 
@@ -596,7 +596,7 @@ namespace AZ {
                 result = GetLastError();
             }
             ULONGLONG fileVersion = 0;
-            if (szImg != NULL)
+            if (szImg[0]) // !szImg.empty()
             {
                 // try to retrieve the file-version:
                 VS_FIXEDFILEINFO* fInfo = NULL;
@@ -624,48 +624,10 @@ namespace AZ {
                     }
                 }
 
-                // Retrive some additional-infos about the module
-                IMAGEHLP_MODULE64 Module;
-                const char* szSymType = "-unknown-";
-                if (GetModuleInfo(hProcess, baseAddr, &Module) != FALSE)
-                {
-                    switch (Module.SymType)
-                    {
-                    case SymNone:
-                        szSymType = "-nosymbols-";
-                        break;
-                    case SymCoff:
-                        szSymType = "COFF";
-                        break;
-                    case SymCv:
-                        szSymType = "CV";
-                        break;
-                    case SymPdb:
-                        szSymType = "PDB";
-                        break;
-                    case SymExport:
-                        szSymType = "-exported-";
-                        break;
-                    case SymDeferred:
-                        szSymType = "-deferred-";
-                        break;
-                    case SymSym:
-                        szSymType = "SYM";
-                        break;
-                    case 8: //SymVirtual:
-                        szSymType = "Virtual";
-                        break;
-                    case 9: // SymDia:
-                        szSymType = "DIA";
-                        break;
-                    }
-                }
-
                 // find insert position
                 if (g_moduleInfo.size() <  g_moduleInfo.capacity())
                 {
-                    g_moduleInfo.push_back();
-                    SymbolStorage::ModuleInfo& modInfo = g_moduleInfo.back();
+                    SymbolStorage::ModuleInfo& modInfo = g_moduleInfo.emplace_back();
                     modInfo.m_baseAddress = (u64)baseAddr;
                     azstrcpy(modInfo.m_modName, AZ_ARRAY_SIZE(modInfo.m_modName), szMod);
                     azstrcpy(modInfo.m_fileName, AZ_ARRAY_SIZE(modInfo.m_fileName), img);
@@ -1073,7 +1035,7 @@ cleanup:
             }
 
             HANDLE hThread = nativeThread;
-            CONTEXT alignas(8) context; // Without this alignment the function randomly crashes in release.
+            alignas(alignof(CONTEXT)) CONTEXT context; // Without this alignment the function randomly crashes in release.
             context.ContextFlags = CONTEXT_ALL;
             GetThreadContext(hThread, &context);
 

@@ -60,7 +60,7 @@ namespace EMotionFX
     class EMFX_API MotionLayerSystem
         : public MotionSystem
     {
-        MCORE_MEMORYOBJECTCATEGORY(MotionLayerSystem, EMFX_DEFAULT_ALIGNMENT, EMFX_MEMCATEGORY_MOTIONS_MOTIONSYSTEMS);
+        AZ_CLASS_ALLOCATOR_DECL
 
     public:
         // the motion system type, returned by GetType()

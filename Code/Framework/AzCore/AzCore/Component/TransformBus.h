@@ -29,6 +29,13 @@ namespace AZ
     enum class ChildChangeType { Added, Removed };
     using ChildChangedEvent = Event<ChildChangeType, EntityId>;
 
+    //! Used to control the behavior of an entity's transform when its parent's transform changes at runtime.
+    enum class OnParentChangedBehavior : AZ::u8
+    {
+        Update, //!< Update this entity's transform based on the parent's new world transform and this entity's local transform (default).
+        DoNotUpdate //!< Do not update this entity's world transform when the parent's transform changes.
+    };
+
     //! Interface for AZ::TransformBus, which is an EBus that receives requests
     //! to translate (position), rotate, and scale an entity in 3D space. It
     //! also receives requests to get and set the parent of an entity and get
@@ -286,6 +293,15 @@ namespace AZ
         //! A static transform is unmovable and does not respond to requests that would move it.
         virtual void SetIsStaticTransform([[maybe_unused]] bool isStatic) {}
         //! @}
+
+        //! Get the behavior at runtime when this entity's parent's transform changes.
+        virtual OnParentChangedBehavior GetOnParentChangedBehavior()
+        {
+            return OnParentChangedBehavior::Update;
+        }
+
+        //! Set the behavior at runtime when this entity's parent's transform changes.
+        virtual void SetOnParentChangedBehavior([[maybe_unused]] OnParentChangedBehavior onParentChangedBehavior) {}
     };
 
     //! The EBus for requests to position and parent an entity.
@@ -344,10 +360,10 @@ namespace AZ
     using TransformNotificationBus = AZ::EBus<TransformNotification>;
 
     //! The typeId of game component AzFramework::TransformComponent.
-    static const TypeId TransformComponentTypeId = "{22B10178-39B6-4C12-BB37-77DB45FDD3B6}";
+    static constexpr TypeId TransformComponentTypeId{ AZStd::string_view("{22B10178-39B6-4C12-BB37-77DB45FDD3B6}") };
 
     //! The typeId of editor component AzToolsFramework::Components::TransformComponent.
-    static const TypeId EditorTransformComponentTypeId = "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0}";
+    static constexpr TypeId EditorTransformComponentTypeId{ AZStd::string_view("{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0}") };
 
     //! Component configuration for the transform component.
     class TransformConfig
@@ -355,7 +371,7 @@ namespace AZ
     {
     public:
         AZ_RTTI(TransformConfig, "{B3AAB26D-D075-4E2B-9653-9527EE363DF8}", ComponentConfig);
-        AZ_CLASS_ALLOCATOR(TransformConfig, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TransformConfig, SystemAllocator);
 
         //! Behavior when a parent entity activates.
         //! A parent may activate before or after its children have activated.
@@ -471,3 +487,7 @@ namespace AZ
     using TransformHierarchyInformationBus = AZ::EBus<TransformHierarchyInformation>;
     /// @endcond
 }
+
+DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(TransformInterface);
+DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(TransformNotification);
+DECLARE_EBUS_EXTERN_DLL_MULTI_ADDRESS(TransformHierarchyInformation);

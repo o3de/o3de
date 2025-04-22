@@ -20,8 +20,6 @@
 #include <AzFramework/Visibility/EntityVisibilityBoundsUnionSystem.h>
 
 #include <AzToolsFramework/Entity/EditorEntityContextPickingBus.h>
-#include <AzToolsFramework/Entity/SliceEditorEntityOwnershipService.h>
-#include <AzToolsFramework/Entity/SliceEditorEntityOwnershipServiceBus.h>
 
 #include "EditorEntityContextBus.h"
 
@@ -54,7 +52,6 @@ namespace AzToolsFramework
         , private EditorEntityContextRequestBus::Handler
         , private EditorEntityContextPickingRequestBus::Handler
         , private EditorLegacyGameModeNotificationBus::Handler
-        , private SliceEditorEntityOwnershipServiceNotificationBus::Handler
     {
     public:
 
@@ -81,6 +78,7 @@ namespace AzToolsFramework
         void AddEditorEntity(AZ::Entity* entity) override;
         void AddEditorEntities(const EntityList& entities) override;
         void HandleEntitiesAdded(const EntityList& entities) override;
+        void FinalizeEditorEntity(AZ::Entity* entity) override;
         bool CloneEditorEntities(const EntityIdList& sourceEntities, 
                                  EntityList& resultEntities,
                                  AZ::SliceComponent::EntityIdToEntityIdMap& sourceToCloneEntityIdMap) override;
@@ -142,12 +140,8 @@ namespace AzToolsFramework
         }
 
     protected:
-
         void OnContextEntitiesAdded(const EntityList& entities) override;
         void OnContextEntityRemoved(const AZ::EntityId& id) override;
-
-        // Helper function for creating editor ready entities.
-        void FinalizeEditorEntity(AZ::Entity* entity);
 
         void SetupEditorEntity(AZ::Entity* entity);
         void SetupEditorEntities(const EntityList& entities);
@@ -156,14 +150,6 @@ namespace AzToolsFramework
 
     private:
         EditorEntityContextComponent(const EditorEntityContextComponent&) = delete;
-
-        //////////////////////////////////////////////////////////////////////////
-        // SliceEditorEntityOwnershipServiceNotificationBus
-        void OnSaveStreamForGameBegin(AZ::IO::GenericStream& gameStream, AZ::DataStream::StreamType streamType,
-            AZStd::vector<AZStd::unique_ptr<AZ::Entity>>& levelEntities) override;
-        void OnSaveStreamForGameSuccess(AZ::IO::GenericStream& gameStream) override;
-        void OnSaveStreamForGameFailure(AZStd::string_view failureString) override;
-        //////////////////////////////////////////////////////////////////////////
         
         // EditorLegacyGameModeNotificationBus ...
         void OnStartGameModeRequest() override;
@@ -178,14 +164,14 @@ namespace AzToolsFramework
         EntityIdList m_selectedBeforeStartingGame;
 
         //! Bidirectional mapping of runtime entity Ids to their editor counterparts (relevant during in-editor simulation).
+        using EntityIdToEntityIdMap = AZStd::unordered_map<AZ::EntityId, AZ::EntityId>;
+
         EntityIdToEntityIdMap m_editorToRuntimeIdMap;
         EntityIdToEntityIdMap m_runtimeToEditorIdMap;
 
         //! Array of types of required components added to all Editor entities with
         //! EditorEntityContextRequestBus::Events::AddRequiredComponents()
         AZ::ComponentTypeList m_requiredEditorComponentTypes;
-
-        bool m_isLegacySliceService;
 
         UndoSystem::UndoCacheInterface* m_undoCacheInterface = nullptr;
     };

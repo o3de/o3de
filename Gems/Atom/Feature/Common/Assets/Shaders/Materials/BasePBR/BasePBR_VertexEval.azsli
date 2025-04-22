@@ -1,0 +1,113 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+#ifndef ENABLE_VERTEX_COLOR
+#define ENABLE_VERTEX_COLOR 0
+#endif
+
+// This #define magic allows you to use the EvaluateVertexGeometry function in this file without making it the final
+// EvaluateVertexGeometry used in your shader. Simply #define EvaluateVertexGeometry before including this file
+//
+#ifndef EvaluateVertexGeometry
+#define EvaluateVertexGeometry EvaluateVertexGeometry_BasePBR
+#endif
+
+#include <viewsrg_all.srgi>
+#include <Atom/RPI/TangentSpace.azsli>
+#include <Atom/Features/InstancedTransforms.azsli>
+
+VsOutput EvaluateVertexGeometry_BasePBR(
+    float3 position,
+    float3 normal,
+    float4 tangent,
+    float2 uv0,
+    float2 uv1,
+    uint instanceId,
+    bool useVertexColor0,
+    float4 color0)
+{
+    VsOutput output;
+
+    float4x4 objectToWorld = GetObjectToWorldMatrix(instanceId);
+    float4 worldPosition = mul(objectToWorld, float4(position, 1.0));
+    output.worldPosition = worldPosition.xyz;
+    output.position = mul(ViewSrg::m_viewProjectionMatrix, worldPosition);
+
+    // By design, only UV0 is allowed to apply transforms.
+    output.uvs[0] = mul(MaterialSrg::m_uvMatrix, float3(uv0, 1.0)).xy;
+    output.uvs[1] = uv1;
+
+    output.normal = normal;
+    output.tangent = tangent;
+
+#if ENABLE_VERTEX_COLOR
+    if(useVertexColor0)
+    {
+        output.color0 =  color0;
+    }
+    else
+    {
+        output.color0 = float4(1,1,1,1);
+    }
+#endif
+
+    // Set the instanceId on the output so the pixel shader can use it
+    // since you can't use SV_InstanceID for both a vertex and a pixel shader at the same time
+    output.m_instanceId = instanceId;
+
+    return output;
+}
+
+void GetVertexColor(VsInput IN, out float4 color, out bool useVertexColor)
+{
+#if ENABLE_VERTEX_COLOR
+    color = IN.m_optional_color0;
+    useVertexColor = o_color0_isBound;
+#else
+    color = float4(1.0f, 1.0f, 1.0f, 1.0f);
+    useVertexColor = false;
+#endif
+}
+
+VsOutput EvaluateVertexGeometry_BasePBR(VsInput IN, VsSystemValues SV)
+{
+    float4 color0;
+    bool useVertexColor0;
+    GetVertexColor(IN, color0, useVertexColor0);
+
+    return EvaluateVertexGeometry_BasePBR(
+        IN.position,
+        IN.normal,
+        IN.tangent,
+        IN.uv0,
+        IN.uv1,
+        SV.m_instanceId,
+        useVertexColor0,
+        color0);
+}
+
+VsOutput EvaluateVertexGeometry_BasePBR(
+    float3 position,
+    float3 normal,
+    float4 tangent,
+    float2 uv0,
+    float2 uv1,
+    uint instanceId)
+{
+    return EvaluateVertexGeometry_BasePBR(
+        position,
+        normal,
+        tangent,
+        uv0,
+        uv1,
+        instanceId,
+        false,
+        float4(1.0f, 1.0f, 1.0f, 1.0f));
+}

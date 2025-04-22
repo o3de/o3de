@@ -68,32 +68,41 @@ namespace LmbrCentral
 
     void CylinderShape::InvalidateCache(InvalidateShapeCacheReason reason)
     {
+        AZStd::unique_lock lock(m_mutex);
         m_intersectionDataCache.InvalidateCache(reason);
     }
 
     void CylinderShape::OnTransformChanged(const AZ::Transform& /*local*/, const AZ::Transform& world)
     {
-        m_currentTransform = world;
-        m_intersectionDataCache.InvalidateCache(InvalidateShapeCacheReason::TransformChange);
+        {
+            AZStd::unique_lock lock(m_mutex);
+            m_currentTransform = world;
+            m_intersectionDataCache.InvalidateCache(InvalidateShapeCacheReason::TransformChange);
+        }
         ShapeComponentNotificationsBus::Event(
             m_entityId, &ShapeComponentNotificationsBus::Events::OnShapeChanged,
             ShapeComponentNotifications::ShapeChangeReasons::TransformChanged);
     }
 
-    float CylinderShape::GetHeight()
+    float CylinderShape::GetHeight() const
     {
+        AZStd::shared_lock lock(m_mutex);
         return m_cylinderShapeConfig.m_height;
     }
 
-    float CylinderShape::GetRadius()
+    float CylinderShape::GetRadius() const
     {
+        AZStd::shared_lock lock(m_mutex);
         return m_cylinderShapeConfig.m_radius;
     }
 
     void CylinderShape::SetHeight(float height)
     {
-        m_cylinderShapeConfig.m_height = height;
-        m_intersectionDataCache.InvalidateCache(InvalidateShapeCacheReason::ShapeChange);
+        {
+            AZStd::unique_lock lock(m_mutex);
+            m_cylinderShapeConfig.m_height = height;
+            m_intersectionDataCache.InvalidateCache(InvalidateShapeCacheReason::ShapeChange);
+        }
         ShapeComponentNotificationsBus::Event(
             m_entityId, &ShapeComponentNotificationsBus::Events::OnShapeChanged,
             ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
@@ -101,8 +110,11 @@ namespace LmbrCentral
 
     void CylinderShape::SetRadius(float radius)
     {
-        m_cylinderShapeConfig.m_radius = radius;
-        m_intersectionDataCache.InvalidateCache(InvalidateShapeCacheReason::ShapeChange);
+        {
+            AZStd::unique_lock lock(m_mutex);
+            m_cylinderShapeConfig.m_radius = radius;
+            m_intersectionDataCache.InvalidateCache(InvalidateShapeCacheReason::ShapeChange);
+        }
         ShapeComponentNotificationsBus::Event(
             m_entityId, &ShapeComponentNotificationsBus::Events::OnShapeChanged,
             ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
@@ -114,9 +126,10 @@ namespace LmbrCentral
     }
 
     // reference: http://www.iquilezles.org/www/articles/diskbbox/diskbbox.htm
-    AZ::Aabb CylinderShape::GetEncompassingAabb()
+    AZ::Aabb CylinderShape::GetEncompassingAabb() const
     {
-        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_cylinderShapeConfig);
+        AZStd::shared_lock lock(m_mutex);
+        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_cylinderShapeConfig, &m_mutex);
 
         const AZ::Vector3 base = m_intersectionDataCache.m_baseCenterPoint;
         const AZ::Vector3 top = m_intersectionDataCache.m_baseCenterPoint + m_intersectionDataCache.m_axisVector;
@@ -137,16 +150,18 @@ namespace LmbrCentral
         }
     }
 
-    void CylinderShape::GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds)
+    void CylinderShape::GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds) const
     {
+        AZStd::shared_lock lock(m_mutex);
         const AZ::Vector3 extent(m_cylinderShapeConfig.m_radius, m_cylinderShapeConfig.m_radius, m_cylinderShapeConfig.m_height * 0.5f);
         bounds = AZ::Aabb::CreateFromMinMax(-extent, extent);
         transform = m_currentTransform;
     }
 
-    AZ::Vector3 CylinderShape::GenerateRandomPointInside(AZ::RandomDistributionType randomDistribution)
+    AZ::Vector3 CylinderShape::GenerateRandomPointInside(AZ::RandomDistributionType randomDistribution) const
     {
-        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_cylinderShapeConfig);
+        AZStd::shared_lock lock(m_mutex);
+        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_cylinderShapeConfig, &m_mutex);
 
         const float minAngle = 0.0f;
         const float maxAngle = AZ::Constants::TwoPi;
@@ -222,9 +237,10 @@ namespace LmbrCentral
         return m_currentTransform.TransformPoint(localRandomPoint);
     }
 
-    bool CylinderShape::IsPointInside(const AZ::Vector3& point)
+    bool CylinderShape::IsPointInside(const AZ::Vector3& point) const
     {
-        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_cylinderShapeConfig);
+        AZStd::shared_lock lock(m_mutex);
+        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_cylinderShapeConfig, &m_mutex);
 
         return AZ::Intersect::PointCylinder(
             m_intersectionDataCache.m_baseCenterPoint,
@@ -234,9 +250,10 @@ namespace LmbrCentral
             point);
     }
 
-    float CylinderShape::DistanceSquaredFromPoint(const AZ::Vector3& point)
+    float CylinderShape::DistanceSquaredFromPoint(const AZ::Vector3& point) const
     {
-        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_cylinderShapeConfig);
+        AZStd::shared_lock lock(m_mutex);
+        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_cylinderShapeConfig, &m_mutex);
 
         if (m_cylinderShapeConfig.m_height <= 0.0f || m_cylinderShapeConfig.m_radius <= 0.0f)
         {
@@ -249,9 +266,10 @@ namespace LmbrCentral
             m_intersectionDataCache.m_radius);
     }
 
-    bool CylinderShape::IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance)
+    bool CylinderShape::IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) const
     {
-        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_cylinderShapeConfig);
+        AZStd::shared_lock lock(m_mutex);
+        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_cylinderShapeConfig, &m_mutex);
 
         float t1 = 0.0f, t2 = 0.0f;
         const bool intersection =
@@ -284,7 +302,7 @@ namespace LmbrCentral
             debugDisplay.SetColor(shapeDrawParams.m_shapeColor.GetAsVector4());
             debugDisplay.DrawSolidCylinder(
                 AZ::Vector3::CreateZero(), AZ::Vector3::CreateAxisZ(),
-                cylinderShapeConfig.m_radius, cylinderShapeConfig.m_height);
+                cylinderShapeConfig.m_radius, cylinderShapeConfig.m_height, false);
         }
 
         debugDisplay.SetColor(shapeDrawParams.m_wireColor.GetAsVector4());

@@ -90,7 +90,7 @@ namespace EMotionFX
             for (int i = 0; i < param.m_numStates; ++i)
             {
                 AnimGraphBindPoseNode* state = aznew AnimGraphBindPoseNode();
-                state->SetName(AZStd::string(1, startChar + i).c_str());
+                state->SetName(AZStd::string(1, static_cast<char>(startChar + i)).c_str());
                 m_rootStateMachine->AddChildNode(state);
                 AddTransitionWithTimeCondition(prevState, state, /*blendTime*/param.m_blendTime, /*countDownTime*/param.m_countDownTime);
                 prevState = state;
@@ -132,7 +132,7 @@ namespace EMotionFX
         }
     };
 
-    INSTANTIATE_TEST_CASE_P(AnimGraphRefCountTest_SimpleChain,
+    INSTANTIATE_TEST_SUITE_P(AnimGraphRefCountTest_SimpleChain,
          AnimGraphRefCountTest_SimpleChain,
          ::testing::ValuesIn(animGraphRefCountTest_SimpleChainTestData)
     );

@@ -10,6 +10,7 @@
 
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Component/NonUniformScaleBus.h>
+#include <AzCore/std/parallel/shared_mutex.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 #include <LmbrCentral/Shape/QuadShapeComponentBus.h>
 
@@ -29,7 +30,7 @@ namespace LmbrCentral
         , public AZ::TransformNotificationBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(QuadShape, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(QuadShape, AZ::SystemAllocator);
         AZ_RTTI(LmbrCentral::QuadShape, "{4DCA67DA-5CBB-4E6C-8DA2-2B8CB177A301}");
 
         QuadShape();
@@ -41,20 +42,20 @@ namespace LmbrCentral
         void InvalidateCache(InvalidateShapeCacheReason reason);
 
         //! ShapeComponentRequestsBus overrides...
-        AZ::Crc32 GetShapeType() override { return AZ_CRC("QuadShape", 0x40d75e14); }
-        AZ::Aabb GetEncompassingAabb() override;
-        void GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds) override;
-        bool IsPointInside(const AZ::Vector3& point)  override;
-        float DistanceSquaredFromPoint(const AZ::Vector3& point) override;
-        bool IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) override;
+        AZ::Crc32 GetShapeType() const override { return AZ_CRC_CE("QuadShape"); }
+        AZ::Aabb GetEncompassingAabb() const override;
+        void GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds) const override;
+        bool IsPointInside(const AZ::Vector3& point) const  override;
+        float DistanceSquaredFromPoint(const AZ::Vector3& point) const override;
+        bool IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) const override;
 
         //! QuadShapeComponentRequestBus overrides...
-        QuadShapeConfig GetQuadConfiguration() override;
+        const QuadShapeConfig& GetQuadConfiguration() const override;
         void SetQuadWidth(float width) override;
-        float GetQuadWidth() override;
+        float GetQuadWidth() const override;
         void SetQuadHeight(float height) override;
-        float GetQuadHeight() override;
-        const AZ::Quaternion& GetQuadOrientation() override;
+        float GetQuadHeight() const override;
+        const AZ::Quaternion& GetQuadOrientation() const override;
 
         //! AZ::TransformNotificationBus overrides...
         void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
@@ -62,7 +63,6 @@ namespace LmbrCentral
         void OnNonUniformScaleChanged(const AZ::Vector3& scale);
         const AZ::Vector3& GetCurrentNonUniformScale() const { return m_currentNonUniformScale; }
 
-        const QuadShapeConfig& GetQuadConfiguration() const;
         void SetQuadConfiguration(const QuadShapeConfig& quadShapeConfig);
         const AZ::Transform& GetCurrentTransform() const;
 
@@ -91,11 +91,12 @@ namespace LmbrCentral
         };
 
         QuadShapeConfig m_quadShapeConfig; //! Underlying quad configuration.
-        QuadIntersectionDataCache m_intersectionDataCache; //! Caches transient intersection data.
+        mutable QuadIntersectionDataCache m_intersectionDataCache; //! Caches transient intersection data.
         AZ::Transform m_currentTransform; //! Caches the current world transform.
         AZ::EntityId m_entityId; //! The Id of the entity the shape is attached to.
         AZ::NonUniformScaleChangedEvent::Handler m_nonUniformScaleChangedHandler; ///< Responds to changes in non-uniform scale.
         AZ::Vector3 m_currentNonUniformScale = AZ::Vector3::CreateOne(); ///< Caches the current non-uniform scale.
+        mutable AZStd::shared_mutex m_mutex; ///< Mutex to allow multiple readers but single writer for efficient thread safety
     };
 
     void DrawQuadShape(

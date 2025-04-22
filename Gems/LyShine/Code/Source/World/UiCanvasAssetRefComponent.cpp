@@ -8,6 +8,7 @@
 #include "UiCanvasAssetRefComponent.h"
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <LyShine/Bus/UiCanvasBus.h>
 #include <LyShine/LyShineBus.h>
@@ -106,14 +107,16 @@ AZ::EntityId UiCanvasAssetRefComponent::LoadCanvas()
         // Check if we already have a referenced UI canvas, if so release it
         if (m_canvasEntityId.IsValid())
         {
-            gEnv->pLyShine->ReleaseCanvasDeferred(m_canvasEntityId);
+            AZ::Interface<ILyShine>::Get()->ReleaseCanvasDeferred(m_canvasEntityId);
             m_canvasEntityId.SetInvalid();
         }
 
-        m_canvasEntityId = gEnv->pLyShine->LoadCanvas(canvasPath.c_str());
+        m_canvasEntityId = AZ::Interface<ILyShine>::Get()->LoadCanvas(canvasPath.c_str());
 
-        EBUS_EVENT_ID(GetEntityId(), UiCanvasAssetRefNotificationBus, OnCanvasLoadedIntoEntity, m_canvasEntityId);
-        EBUS_EVENT_ID(GetEntityId(), UiCanvasRefNotificationBus, OnCanvasRefChanged, GetEntityId(), m_canvasEntityId);
+        UiCanvasAssetRefNotificationBus::Event(
+            GetEntityId(), &UiCanvasAssetRefNotificationBus::Events::OnCanvasLoadedIntoEntity, m_canvasEntityId);
+        UiCanvasRefNotificationBus::Event(
+            GetEntityId(), &UiCanvasRefNotificationBus::Events::OnCanvasRefChanged, GetEntityId(), m_canvasEntityId);
     }
 
     return m_canvasEntityId;
@@ -124,10 +127,11 @@ void UiCanvasAssetRefComponent::UnloadCanvas()
 {
     if (m_canvasEntityId.IsValid())
     {
-        gEnv->pLyShine->ReleaseCanvasDeferred(m_canvasEntityId);
+        AZ::Interface<ILyShine>::Get()->ReleaseCanvasDeferred(m_canvasEntityId);
         m_canvasEntityId.SetInvalid();
 
-        EBUS_EVENT_ID(GetEntityId(), UiCanvasRefNotificationBus, OnCanvasRefChanged, GetEntityId(), m_canvasEntityId);
+        UiCanvasRefNotificationBus::Event(
+            GetEntityId(), &UiCanvasRefNotificationBus::Events::OnCanvasRefChanged, GetEntityId(), m_canvasEntityId);
     }
 }
 
@@ -139,7 +143,8 @@ void UiCanvasAssetRefComponent::OnCanvasUnloaded(AZ::EntityId canvasEntityId)
         // this canvas has been unloaded (e.g. from script), set our canvas entity ID to invalid
         // and tell anyone watching this assert ref that it changed
         m_canvasEntityId.SetInvalid();
-        EBUS_EVENT_ID(GetEntityId(), UiCanvasRefNotificationBus, OnCanvasRefChanged, GetEntityId(), m_canvasEntityId);
+        UiCanvasRefNotificationBus::Event(
+            GetEntityId(), &UiCanvasRefNotificationBus::Events::OnCanvasRefChanged, GetEntityId(), m_canvasEntityId);
     }
 }
 
@@ -169,10 +174,10 @@ void UiCanvasAssetRefComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::Category, "UI")
                 ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/UiCanvasAssetRef.svg")
                 ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/UiCanvasAssetRef.svg")
-                ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/ui-canvas-asset-ref/")
-                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c));
+                ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/components/reference/ui/canvas-asset-ref/")
+                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"));
 
-            editInfo->DataElement("SimpleAssetRef", &UiCanvasAssetRefComponent::m_canvasAssetRef,
+            editInfo->DataElement("CanvasAssetRef", &UiCanvasAssetRefComponent::m_canvasAssetRef,
                 "Canvas pathname", "The pathname of the canvas.")
                 ->Attribute("BrowseIcon", ":/stylesheet/img/UI20/browse-edit-select-files.svg")
                 ->Attribute("EditButton", "")
@@ -180,7 +185,7 @@ void UiCanvasAssetRefComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute("EditCallback", &UiCanvasAssetRefComponent::LaunchUIEditor);
             editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiCanvasAssetRefComponent::m_isAutoLoad,
                 "Load automatically", "When checked, the canvas is loaded when this component is activated.")
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c));
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
             editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiCanvasAssetRefComponent::m_shouldLoadDisabled,
                 "Load in disabled state", "When checked and loading automatically, the canvas is loaded in a disabled state.")
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiCanvasAssetRefComponent::m_isAutoLoad);
@@ -230,7 +235,7 @@ void UiCanvasAssetRefComponent::Activate()
 
             if (m_shouldLoadDisabled)
             {
-                EBUS_EVENT_ID(m_canvasEntityId, UiCanvasBus, SetEnabled, false);
+                UiCanvasBus::Event(m_canvasEntityId, &UiCanvasBus::Events::SetEnabled, false);
             }
         }
     }
@@ -239,11 +244,11 @@ void UiCanvasAssetRefComponent::Activate()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiCanvasAssetRefComponent::Deactivate()
 {
-    if (!gEnv->IsDedicated())
+    if (gEnv && !gEnv->IsDedicated())
     {
         if (m_canvasEntityId.IsValid())
         {
-            gEnv->pLyShine->ReleaseCanvasDeferred(m_canvasEntityId);
+            AZ::Interface<ILyShine>::Get()->ReleaseCanvasDeferred(m_canvasEntityId);
             m_canvasEntityId.SetInvalid();
         }
 

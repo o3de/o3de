@@ -32,22 +32,18 @@ namespace UnitTest
 {
     // Fixture base class for AzFramework::TransformComponent tests.
     class TransformComponentApplication
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
-    public:
-        TransformComponentApplication()
-            : AllocatorsFixture()
-        {
-        }
-
     protected:
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
             ComponentApplication::Descriptor desc;
             desc.m_useExistingAllocator = true;
 
-            m_app.Start(desc);
+            AZ::ComponentApplication::StartupParameters startupParameters;
+            startupParameters.m_loadSettingsRegistry = false;
+            m_app.Start(desc, startupParameters);
 
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
             // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
@@ -58,7 +54,7 @@ namespace UnitTest
         void TearDown() override
         {
             m_app.Stop();
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         AzFramework::Application m_app;
@@ -773,7 +769,7 @@ namespace UnitTest
 
     TEST_F(MovableTransformComponent, SetWorldTM_MovesEntity)
     {
-        Transform previousTM = m_transformInterface->GetWorldTM();
+        [[maybe_unused]] Transform previousTM = m_transformInterface->GetWorldTM();
         Transform nextTM = Transform::CreateTranslation(Vector3(1.f, 2.f, 3.f));
         m_transformInterface->SetWorldTM(nextTM);
         EXPECT_TRUE(m_transformInterface->GetWorldTM().IsClose(nextTM));
@@ -789,7 +785,7 @@ namespace UnitTest
 
     TEST_F(MovableTransformComponent, SetLocalTM_MovesEntity)
     {
-        Transform previousTM = m_transformInterface->GetLocalTM();
+        [[maybe_unused]] Transform previousTM = m_transformInterface->GetLocalTM();
         Transform nextTM = Transform::CreateTranslation(Vector3(1.f, 2.f, 3.f));
         m_transformInterface->SetLocalTM(nextTM);
         EXPECT_TRUE(m_transformInterface->GetLocalTM().IsClose(nextTM));
@@ -806,7 +802,7 @@ namespace UnitTest
     TEST_F(StaticTransformComponent, SetLocalTmOnDeactivatedEntity_MovesEntity)
     {
         // when static transform component is deactivated, it should allow movement
-        Transform previousTM = m_transformInterface->GetLocalTM();
+        [[maybe_unused]] Transform previousTM = m_transformInterface->GetLocalTM();
         m_entity->Deactivate();
         Transform nextTM = Transform::CreateTranslation(Vector3(1.f, 2.f, 3.f));
         m_transformInterface->SetLocalTM(nextTM);
@@ -978,12 +974,14 @@ namespace UnitTest
 
     // Fixture base class for AzToolsFramework::Components::TransformComponent tests
     class OldEditorTransformComponentTest
-        : public ::testing::Test
+        : public UnitTest::LeakDetectionFixture
     {
     protected:
         void SetUp() override
         {
-            m_app.Start(AZ::ComponentApplication::Descriptor());
+            AZ::ComponentApplication::StartupParameters startupParameters;
+            startupParameters.m_loadSettingsRegistry = false;
+            m_app.Start(AZ::ComponentApplication::Descriptor(), startupParameters);
 
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
             // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
@@ -1075,13 +1073,11 @@ R"DELIMITER(<ObjectStream version="1">
         void SetUpEditorFixtureImpl() override
         {
             PrefabTestFixture::SetUpEditorFixtureImpl();
-
-            CreateRootPrefab();
         }
 
         void TearDownEditorFixtureImpl() override
         {
-            BusDisconnect();
+            AZ::TransformNotificationBus::Handler::BusDisconnect();
             
             PrefabTestFixture::TearDownEditorFixtureImpl();
         }
@@ -1102,9 +1098,10 @@ R"DELIMITER(<ObjectStream version="1">
     
     TEST_F(TransformComponentActivationTest, TransformChangedEventIsSentWhenEntityIsActivatedViaUndoRedo)
     {
-        AZ::EntityId entityId = CreateEntityUnderRootPrefab("Entity");
+        AZ::EntityId entityId = CreateEditorEntityUnderRoot("Entity");
         MoveEntity(entityId);
-        BusConnect(entityId);
+        ProcessDeferredUpdates();
+        AZ::TransformNotificationBus::Handler::BusConnect(entityId);
 
         // verify that undoing/redoing move operations fires TransformChanged event
         Undo();
@@ -1118,8 +1115,8 @@ R"DELIMITER(<ObjectStream version="1">
 
     TEST_F(TransformComponentActivationTest, TransformChangedEventIsNotSentWhenEntityIsDeactivatedAndActivated)
     {
-        AZ::EntityId entityId = CreateEntityUnderRootPrefab("Entity");
-        BusConnect(entityId);
+        AZ::EntityId entityId = CreateEditorEntityUnderRoot("Entity");
+        AZ::TransformNotificationBus::Handler::BusConnect(entityId);
 
         // verify that simply activating/deactivating an entity does not fire TransformChanged event
         Entity* entity = nullptr;

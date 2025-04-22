@@ -13,7 +13,6 @@
 
 #include <LyShine/Animation/IUiAnimation.h>
 #include "UiAnimationSystem.h"
-#include <AzCore/std/allocator_stateless.h>
 
 
 /*!
@@ -25,7 +24,7 @@ class CUiAnimNode
     : public IUiAnimNode
 {
 public:
-    AZ_CLASS_ALLOCATOR(CUiAnimNode, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR(CUiAnimNode, AZ::SystemAllocator)
     AZ_RTTI(CUiAnimNode, "{1ECF3B73-FCED-464D-82E8-CFAF31BB63DC}", IUiAnimNode);
 
     struct SParamInfo
@@ -40,7 +39,7 @@ public:
             , valueType(_valueType)
             , flags(_flags) {};
 
-        AZStd::basic_string<char, AZStd::char_traits<char>, AZStd::stateless_allocator> name;               // parameter name.
+        AZStd::string name;               // parameter name.
         CUiAnimParamType paramType;     // parameter id.
         EUiAnimValue valueType;         // value type, defines type of track to use for animating this parameter.
         ESupportedParamFlags flags;     // combination of flags from ESupportedParamFlags.

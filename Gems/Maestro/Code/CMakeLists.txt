@@ -7,7 +7,7 @@
 #
 
 ly_add_target(
-    NAME Maestro.Static STATIC
+    NAME ${gem_name}.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
         maestro_static_files.cmake
@@ -19,10 +19,12 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             Legacy::CryCommon
+        PUBLIC
+            Gem::AudioSystem.API
 )
 
 ly_add_target(
-    NAME Maestro ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME ${gem_name} ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         maestro_files.cmake
@@ -34,18 +36,28 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             Legacy::CryCommon
-            Gem::Maestro.Static
+            Gem::${gem_name}.Static
     RUNTIME_DEPENDENCIES
         Gem::LmbrCentral
 )
 
-# if enabled, "Maestro" module is used for Clients and Servers:
-ly_create_alias(NAME Maestro.Clients  NAMESPACE Gem TARGETS Gem::Maestro)
-ly_create_alias(NAME Maestro.Servers  NAMESPACE Gem TARGETS Gem::Maestro)
+# Inject the gem name into the Module source file
+ly_add_source_properties(
+    SOURCES
+        Source/MaestroModule.cpp
+    PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_GEM_NAME=${gem_name}
+            O3DE_GEM_VERSION=${gem_version})
+
+# if enabled, "${gem_name}" module is used for Clients and Servers:
+ly_create_alias(NAME ${gem_name}.Clients  NAMESPACE Gem TARGETS Gem::${gem_name})
+ly_create_alias(NAME ${gem_name}.Servers  NAMESPACE Gem TARGETS Gem::${gem_name})
+ly_create_alias(NAME ${gem_name}.Unified  NAMESPACE Gem TARGETS Gem::${gem_name})
 
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
-        NAME Maestro.Editor GEM_MODULE
+        NAME ${gem_name}.Editor GEM_MODULE
 
         NAMESPACE Gem
         FILES_CMAKE
@@ -67,19 +79,17 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AzFramework
                 AZ::AzToolsFramework
                 AZ::AssetBuilderSDK
-                Gem::Maestro.Static
+                Gem::${gem_name}.Static
         RUNTIME_DEPENDENCIES
             Gem::LmbrCentral.Editor
     )
     # the .Editor variant is used in dev tools:
-    ly_create_alias(NAME Maestro.Tools    NAMESPACE Gem TARGETS Gem::Maestro.Editor)
-    ly_create_alias(NAME Maestro.Builders NAMESPACE Gem TARGETS Gem::Maestro.Editor)
+    ly_create_alias(NAME ${gem_name}.Tools    NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
+    ly_create_alias(NAME ${gem_name}.Builders NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
 
 endif()
 
-# Maestro is still used by the CrySystem Level System, CSystem::SystemInit and TrackView
-ly_enable_gems(GEMS Maestro)
-
+# ${gem_name} is still used by the CrySystem Level System, CSystem::SystemInit and TrackView
 
 ################################################################################
 # Tests
@@ -87,7 +97,7 @@ ly_enable_gems(GEMS Maestro)
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
 
     ly_add_target(
-        NAME Maestro.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+        NAME ${gem_name}.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
         NAMESPACE Gem
         FILES_CMAKE
             maestro_tests_files.cmake
@@ -99,9 +109,10 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             PRIVATE
                 AZ::AzTest
                 Legacy::CryCommon
-                Gem::Maestro.Static
+                Gem::${gem_name}.Static
     )
     ly_add_googletest(
-        NAME Gem::Maestro.Tests
+        NAME Gem::${gem_name}.Tests
+        LABELS REQUIRES_tiaf
     )
 endif()

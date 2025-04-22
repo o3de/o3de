@@ -29,7 +29,7 @@ public:
 
     AZ::u32 GetHandlerName(void) const override
     {
-        return AZ_CRC("Legacy_Vector_Property_Handler", 0x67bdda50);
+        return AZ_CRC_CE("Legacy_Vector_Property_Handler");
     }
 
     bool IsDefaultHandler() const override
@@ -94,14 +94,14 @@ class PropertyHandlerVec2
     : public LegacyVectorPropertyHandlerBase<Vec2>
 {
 public:
-    AZ_CLASS_ALLOCATOR(PropertyHandlerVec2, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(PropertyHandlerVec2, AZ::SystemAllocator);
 
     PropertyHandlerVec2()
         : LegacyVectorPropertyHandlerBase(2)
     {
     }
 
-    AZ::u32 GetHandlerName(void) const override { return AZ_CRC("Vec2", 0xa70b4073); }
+    AZ::u32 GetHandlerName(void) const override { return AZ_CRC_CE("Vec2"); }
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -110,14 +110,14 @@ class PropertyHandlerVec3
     : public LegacyVectorPropertyHandlerBase<Vec3>
 {
 public:
-    AZ_CLASS_ALLOCATOR(PropertyHandlerVec3, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(PropertyHandlerVec3, AZ::SystemAllocator);
 
     PropertyHandlerVec3()
         : LegacyVectorPropertyHandlerBase(3)
     {
     }
 
-    AZ::u32 GetHandlerName(void) const override { return AZ_CRC("Vec3", 0xd00c70e5); }
+    AZ::u32 GetHandlerName(void) const override { return AZ_CRC_CE("Vec3"); }
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -126,14 +126,14 @@ class PropertyHandlerVec4
     : public LegacyVectorPropertyHandlerBase<Vec4>
 {
 public:
-    AZ_CLASS_ALLOCATOR(PropertyHandlerVec3, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(PropertyHandlerVec3, AZ::SystemAllocator);
 
     PropertyHandlerVec4()
         : LegacyVectorPropertyHandlerBase(4)
     {
     }
 
-    AZ::u32 GetHandlerName(void) const override { return AZ_CRC("Vec4", 0x4e68e546); }
+    AZ::u32 GetHandlerName(void) const override { return AZ_CRC_CE("Vec4"); }
 };
 //////////////////////////////////////////////////////////////////////////
 

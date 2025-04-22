@@ -11,14 +11,33 @@ import os
 import time
 import traceback
 from typing import Callable, Tuple
+from enum import Enum
 
 import azlmbr
-import azlmbr.legacy.general as general
-import azlmbr.multiplayer as multiplayer
+try:
+    import azlmbr.atomtools.general as general  # Standard MaterialEditor or similar executable test.
+except ModuleNotFoundError:  # azlmbr.atomtools is not yet available in the Editor
+    import azlmbr.legacy.general as general  # Will be updated in https://github.com/o3de/o3de/issues/11056
+
+try:
+    import azlmbr.multiplayer as multiplayer
+except ModuleNotFoundError: # Not all projects enable the Multiplayer Gem.
+    pass
+
 import azlmbr.debug
 import ly_test_tools.environment.waiter as waiter
 import ly_test_tools.environment.process_utils as process_utils
 
+# Controls how many reconnection attempts to make from the editor to the multiplayer server before giving up and failing the test.
+# Note that the editor will wait one additional second in between each attempt, so the final time will be
+# 1 + 2 + 3 + ... + MULIPLAYER_SERVER_RECONNECT_ATTEMPTS seconds, which formulates to n(n+1)/2 where n is the number of attempts.
+# For example, with the value of 35, the editor will wait 630 seconds (10.5 minutes) before giving up.
+
+# also note that the editor stops trying to connect the moment it is successful so its better for automated testing to set this to a very
+# large number rather than a borderline number.  10.5 minutes of still not appearing should be a very high confidence indicator that the 
+# server is not going to appear even on a very busy machine, and it's better to have a reliable indicator of failure than to have a borderline
+# wait time that could be failing just because it's a busy machine.
+MULIPLAYER_SERVER_RECONNECT_ATTEMPTS = 35
 
 class FailFast(Exception):
     """
@@ -31,8 +50,6 @@ class TestHelper:
     @staticmethod
     def init_idle():
         general.idle_enable(True)
-        # JIRA: SPEC-2880
-        # general.idle_wait_frames(1)
 
     @staticmethod
     def create_level(level_name: str) -> bool:
@@ -40,7 +57,8 @@ class TestHelper:
         :param level_name: The name of the level to be created
         :return: True if ECreateLevelResult returns 0, False otherwise with logging to report reason
         """
-        Report.info(f"Creating level {level_name}")
+        template_name = "Prefabs/Default_Level.prefab"
+        Report.info(f"Creating level {level_name} from template '{template_name}'")
 
         # Use these hardcoded values to pass expected values for old terrain system until new create_level API is
         # available
@@ -49,7 +67,7 @@ class TestHelper:
         terrain_texture_resolution = 4096
         use_terrain = False
 
-        result = general.create_level_no_prompt(level_name, heightmap_resolution, heightmap_meters_per_pixel,
+        result = general.create_level_no_prompt(template_name, level_name, heightmap_resolution, heightmap_meters_per_pixel,
                                                 terrain_texture_resolution, use_terrain)
 
         # Result codes are ECreateLevelResult defined in CryEdit.h
@@ -67,15 +85,25 @@ class TestHelper:
         return result == 0
 
     @staticmethod
-    def open_level(directory : str, level : str):
+    def open_level(directory : str, level : str, no_prompt: bool = True):
         # type: (str, str) -> None
         """
         :param level: the name of the level folder in AutomatedTesting\\Physics\\
 
         :return: None
         """
+        # Make sure we are not in game mode
+        if general.is_in_game_mode():
+            general.exit_game_mode()
+            TestHelper.wait_for_condition(lambda : not general.is_in_game_mode(), 1.0)
+            assert not general.is_in_game_mode(), "Editor was in gamemode when opening the level and was unable to exit from it"
+
         Report.info("Open level {}/{}".format(directory, level))
-        success = general.open_level_no_prompt(os.path.join(directory, level))
+        if no_prompt:
+            success = general.open_level_no_prompt(os.path.join(directory, level))
+        else:
+            success = general.open_level(os.path.join(directory, level))
+
         if not success:
             open_level_name = general.get_current_level_name()
             if open_level_name == level:
@@ -101,56 +129,119 @@ class TestHelper:
         Report.critical_result(msgtuple_success_fail, general.is_in_game_mode())
 
     @staticmethod
-    def multiplayer_enter_game_mode(msgtuple_success_fail: Tuple[str, str], sv_default_player_spawn_asset: str) -> None:
+    def find_line(window, line, print_infos):
+        """
+        Looks for an expected line in a list of tracer log lines
+        :param window: The log's window name. For example, logs printed via script-canvas use the "Script" window. 
+        :param line: The log message to search for. 
+        :param print_infos: A list of PrintInfos collected by Tracer to search. Example options: your_tracer.warnings, your_tracer.errors, your_tracer.asserts, or your_tracer.prints 
+
+        :return: True if the line is found, otherwise false.
+        """
+        for printInfo in print_infos:
+            if printInfo.window == window.strip() and printInfo.message.strip() == line:
+                return True
+        return False
+
+    @staticmethod
+    def succeed_if_log_line_found(window, line, print_infos, time_out):
+        """
+        Looks for a line in a list of tracer log lines and reports success if found.
+        :param window: The log's window name. For example, logs printed via script-canvas use the "Script" window. 
+        :param line: The log message we're hoping to find.
+        :param print_infos: A list of PrintInfos collected by Tracer to search. Example options: your_tracer.warnings, your_tracer.errors, your_tracer.asserts, or your_tracer.prints 
+        :param time_out: The total amount of time to wait before giving up looking for the expected line.
+
+        :return: No return value, but if the message is found, a successful critical result is reported; otherwise failure.
+        """
+        TestHelper.wait_for_condition(lambda : TestHelper.find_line(window, line, print_infos), time_out)
+        Report.critical_result(("Found expected line: " + line, "Failed to find expected line: " + line), TestHelper.find_line(window, line, print_infos))
+
+    @staticmethod
+    def fail_if_log_line_found(window, line, print_infos, time_out):
+        """
+        Reports a failure if a log line in a list of tracer log lines is found.
+        :param window: The log's window name. For example, logs printed via script-canvas use the "Script" window. 
+        :param line: The log message we're hoping to not find.
+        :param print_infos: A list of PrintInfos collected by Tracer to search. Example options: your_tracer.warnings, your_tracer.errors, your_tracer.asserts, or your_tracer.prints 
+        :param time_out: The total amount of time to wait before giving up looking for the unexpected line. If time runs out and we don't see the unexpected line then report a success.
+
+        :return: No return value, but if the line is found, a failed critical result is reported; otherwise success.
+        """
+        TestHelper.wait_for_condition(lambda : TestHelper.find_line(window, line, print_infos), time_out)
+        Report.critical_result(("Unexpected line not found: " + line, "Unexpected line found: " + line), not TestHelper.find_line(window, line, print_infos))
+
+    @staticmethod
+    def all_expected_log_lines_found(section_tracer, lines):
+        """
+        function for parsing game mode's console output for expected test lines. duplicate lines and error lines are not
+        handled by this function.
+
+        param section_tracer: python editor tracer object
+        param lines: list of expected lines
+
+
+        returns true if all the expected lines were detected in the parsed output
+        """
+        found_lines = [printInfo.message.strip() for printInfo in section_tracer.prints]
+
+        expected_lines = len(lines)
+        matching_lines = 0
+
+        for line in lines:
+            for found_line in found_lines:
+                if line == found_line:
+                    matching_lines += 1
+
+        return matching_lines >= expected_lines
+
+    
+    EditorServerMode = Enum('EditorServerMode', ['DEDICATED_SERVER', 'CLIENT_SERVER'])
+
+    @staticmethod
+    def multiplayer_enter_game_mode(msgtuple_success_fail: Tuple[str, str], editor_server_mode: EditorServerMode) -> None:
         """
         :param msgtuple_success_fail: The tuple with the expected/unexpected messages for entering game mode.
-        :param sv_default_player_spawn_asset: The path to the network player prefab that will be automatically spawned upon entering gamemode.  The engine default is "prefabs/player.network.spawnable" 
 
         :return: None
         """
-
-        # looks for an expected line in a list of tracers lines
-        # lines: the tracer list of lines to search. options are section_tracer.warnings, section_tracer.errors, section_tracer.asserts, section_tracer.prints
-        # return: true if the line is found, otherwise false
-        def find_expected_line(expected_line, lines):
-            found_lines = [printInfo.message.strip() for printInfo in lines]
-            return expected_line in found_lines
-
-        def wait_for_critical_expected_line(expected_line, lines, time_out):
-            TestHelper.wait_for_condition(lambda : find_expected_line(expected_line, lines), time_out)
-            Report.critical_result(("Found expected line: " + expected_line, "Failed to find expected line: " + expected_line), find_expected_line(expected_line, lines))
-
-        def wait_for_critical_unexpected_line(unexpected_line, lines, time_out):
-            TestHelper.wait_for_condition(lambda : find_expected_line(unexpected_line, lines), time_out)
-            Report.critical_result(("Unexpected line not found: " + unexpected_line, "Unexpected line found: " + unexpected_line), not find_expected_line(unexpected_line, lines))
-
-
         Report.info("Entering game mode")
-        if sv_default_player_spawn_asset :
-            general.set_cvar("sv_defaultPlayerSpawnAsset", sv_default_player_spawn_asset)
 
-        with Tracer() as section_tracer:
+        with MultiplayerHelper() as multiplayer_helper:
             # enter game-mode. 
             # game-mode in multiplayer will also launch ServerLauncher.exe and connect to the editor
+            general.set_cvar_integer('editorsv_max_connection_attempts', MULIPLAYER_SERVER_RECONNECT_ATTEMPTS)
+
+            # The editor waits 1 additional second between each retry, meaning the total time is the sum of the first n natural numbers, which
+            # solves as n(n+1)/2.
+            wait_duration = MULIPLAYER_SERVER_RECONNECT_ATTEMPTS * (MULIPLAYER_SERVER_RECONNECT_ATTEMPTS + 1.0) / 2.0
+
+            general.set_cvar_string('editorsv_clientserver', 'true' if editor_server_mode == TestHelper.EditorServerMode.CLIENT_SERVER else 'false')
+
             multiplayer.PythonEditorFuncs_enter_game_mode()
 
-            # make sure the server launcher binary exists
-            wait_for_critical_unexpected_line("LaunchEditorServer failed! The ServerLauncher binary is missing!", section_tracer.errors, 0.5)
+            if editor_server_mode == TestHelper.EditorServerMode.DEDICATED_SERVER:
+                # note that this next line merely waits for the editor say that it has asked the server to launch, not that it did actually launch.
+                TestHelper.wait_for_condition(lambda : multiplayer_helper.serverLaunched, 20.0)
 
-            # make sure the server launcher is running
-            waiter.wait_for(lambda: process_utils.process_exists("AutomatedTesting.ServerLauncher", ignore_extensions=True), timeout=5.0, exc=AssertionError("AutomatedTesting.ServerLauncher has NOT launched!"), interval=1.0)
+                # note that this next line ensures that the process is running, not that it is connected to the editor.
+                waiter.wait_for(lambda: process_utils.process_exists("AutomatedTesting.ServerLauncher", ignore_extensions=True), timeout=5.0, exc=AssertionError("AutomatedTesting.ServerLauncher process is not running!"), interval=1.0)
+                Report.critical_result(("AutomatedTesting.ServerLauncher process successfully launched", "AutomatedTesting.ServerLauncher process failed to launch"), process_utils.process_exists("AutomatedTesting.ServerLauncher", ignore_extensions=True))
 
-            wait_for_critical_expected_line("MultiplayerEditorConnection: Editor-server activation has found and connected to the editor.", section_tracer.prints, 15.0)
+                # note that this line waits for the editor to say that it has attempted to connect to the server at least once, not that it has actually connected.
+                TestHelper.wait_for_condition(lambda : multiplayer_helper.editorConnectionAttemptCount > 0, 10.0)
+                Report.critical_result(("Multiplayer Editor attempting server connection.", "Multiplayer Editor never tried connecting to the server."), multiplayer_helper.editorConnectionAttemptCount > 0)
 
-            wait_for_critical_expected_line("Editor is sending the editor-server the level data packet.", section_tracer.prints, 5.0)
+                # between the previous step and this one, the editor has to use up all its connection attempts, and be successfully connected, which can take a while
+                # since the server process has to actually start up, load all its dynamic libraries, assets, etc.
+                # so it has to wait at least wait_duration seconds or else the test will fail prematurely
+                TestHelper.wait_for_condition(lambda : multiplayer_helper.editorSendingLevelData, wait_duration)
+                Report.critical_result(("Multiplayer Editor sent level data to the server.", "Multiplayer Editor never sent the level to the server."), multiplayer_helper.editorSendingLevelData)
 
-            wait_for_critical_expected_line("Logger: Editor Server completed receiving the editor's level assets, responding to Editor...", section_tracer.prints, 5.0)
+                TestHelper.wait_for_condition(lambda : multiplayer_helper.connectToSimulationSuccess, 20.0)
+                Report.critical_result(("Multiplayer Editor successfully connected to server network simuluation.", "Multiplayer Editor failed to connected to server network simuluation."), multiplayer_helper.connectToSimulationSuccess)
 
-            wait_for_critical_expected_line("Editor-server ready. Editor has successfully connected to the editor-server's network simulation.", section_tracer.prints, 5.0)
-
-            wait_for_critical_unexpected_line(f"MultiplayerSystemComponent: SpawnDefaultPlayerPrefab failed. Missing sv_defaultPlayerSpawnAsset at path '{sv_default_player_spawn_asset.lower()}'.", section_tracer.prints, 0.5)
-
-        TestHelper.wait_for_condition(lambda : multiplayer.PythonEditorFuncs_is_in_game_mode(), 5.0)
+        TestHelper.wait_for_condition(lambda : multiplayer.PythonEditorFuncs_is_in_game_mode(), 10.0)
         Report.critical_result(msgtuple_success_fail, multiplayer.PythonEditorFuncs_is_in_game_mode())
 
     @staticmethod
@@ -179,10 +270,8 @@ class TestHelper:
         raises FailFast
         :return: None
         """
-        Report.info("Failing fast. Raising an exception and shutting down the editor.")
         if message:
             Report.info("Fail fast message: {}".format(message))
-        TestHelper.close_editor()
         raise FailFast()
 
     @staticmethod
@@ -280,7 +369,7 @@ class Report:
             Report._exception = traceback.format_exc()
 
         success, report_str = Report.get_report(test_function)
-        # Print on the o3de console, for debugging purpuses
+        # Print on the o3de console, for debugging purposes
         print(report_str)
         # Print the report on the piped stdout of the application
         general.test_output(report_str)
@@ -545,6 +634,53 @@ class AngleHelper:
         """
         return AngleHelper.is_angle_close(math.radians(x_deg), math.radians(y_deg), tolerance)
 
+'''
+Utility for receiving Multiplayer Editor notifications.
+Usage:
+
+    ...
+    with MultiplayerHelper() as multiplayer_helper:
+        # section were we are interested in capturing multiplayer editor notifications
+        TestHelper.wait_for_condition(lambda : multiplayer_helper.serverLaunched, 10.0)
+        ...
+'''
+class MultiplayerHelper:
+    def __init__(self):
+        self.handler = None
+        self.serverLaunched = False
+        self.editorConnectionAttemptCount = 0
+        self.editorSendingLevelData = False
+        self.connectToSimulationSuccess = False
+
+    def __enter__(self):
+        self.handler = azlmbr.multiplayer.MultiplayerEditorServerNotificationBusHandler()
+        self.handler.connect()
+        self.handler.add_callback("OnServerLaunched", self._on_server_launched)
+        self.handler.add_callback("OnEditorConnectionAttempt", self._on_editor_connection_attempt)
+        self.handler.add_callback("OnEditorSendingLevelData", self._on_editor_sending_level_data)
+        self.handler.add_callback("OnConnectToSimulationSuccess", self._on_connect_to_simulation_success)
+        return self
+        
+    def __exit__(self, type, value, traceback):
+        self.handler.disconnect()
+        self.handler = None
+        return False
+
+    def _on_server_launched(self, args):
+        self.serverLaunched = True
+        return False
+    
+    def _on_editor_connection_attempt(self, args):
+        self.editorConnectionAttemptCount = args[0]
+        return False
+    
+    def _on_editor_sending_level_data(self, args):
+        self.editorSendingLevelData = True
+        return False
+
+    def _on_connect_to_simulation_success(self, args):
+        self.connectToSimulationSuccess = True
+        return False
 
 def vector3_str(vector3):
     return "(x: {:.2f}, y: {:.2f}, z: {:.2f})".format(vector3.x, vector3.y, vector3.z)

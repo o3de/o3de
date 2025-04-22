@@ -104,13 +104,13 @@ namespace GraphCanvas
         // AZ::Component
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("GraphCanvas_ConnectionService", 0x7ef98865));
-            provided.push_back(AZ_CRC("GraphCanvas_SceneMemberService", 0xe9759a2d));
+            provided.push_back(AZ_CRC_CE("GraphCanvas_ConnectionService"));
+            provided.push_back(AZ_CRC_CE("GraphCanvas_SceneMemberService"));
         }
 
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("GraphCanvas_ConnectionService", 0x7ef98865));
+            incompatible.push_back(AZ_CRC_CE("GraphCanvas_ConnectionService"));
         }
 
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
@@ -250,7 +250,7 @@ namespace GraphCanvas
         : public SceneEventFilter
     {
     public:
-        AZ_CLASS_ALLOCATOR(ConnectionEventFilter, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ConnectionEventFilter, AZ::SystemAllocator);
         ConnectionEventFilter(ConnectionComponent& connection)
             : SceneEventFilter(nullptr)
             , m_connection(connection)

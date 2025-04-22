@@ -6,7 +6,7 @@
 #
 #
 
-ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME})
+o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} ${O3DE_ENGINE_RESTRICTED_PATH} ${LY_ROOT_FOLDER})
 
 include(${pal_dir}/LauncherUnified_traits_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
 
@@ -28,6 +28,26 @@ ly_add_target(
             AZ::AzGameFramework
             Legacy::CryCommon
 )
+
+ly_add_target(
+    NAME Launcher.Headless.Static STATIC
+    NAMESPACE AZ
+    FILES_CMAKE
+        launcher_files.cmake
+        ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
+    PLATFORM_INCLUDE_FILES
+        ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
+    INCLUDE_DIRECTORIES
+        PRIVATE
+            .
+            ${pal_dir}
+    BUILD_DEPENDENCIES
+        PUBLIC
+            AZ::AzCore
+            AZ::AzGameFramework.Headless
+            Legacy::CryCommon
+)
+
 
 ly_add_target(
     NAME Launcher.Game.Static STATIC
@@ -52,6 +72,24 @@ if(PAL_TRAIT_BUILD_SERVER_SUPPORTED)
         NAMESPACE AZ
         FILES_CMAKE
             launcher_server_files.cmake
+        INCLUDE_DIRECTORIES
+            PRIVATE
+                .
+        BUILD_DEPENDENCIES
+            PRIVATE
+                AZ::AzCore
+                Legacy::CryCommon
+    )
+
+endif()
+
+if(PAL_TRAIT_BUILD_UNIFIED_SUPPORTED)
+
+    ly_add_target(
+        NAME Launcher.Unified.Static STATIC
+        NAMESPACE AZ
+        FILES_CMAKE
+            launcher_unified_files.cmake
         INCLUDE_DIRECTORIES
             PRIVATE
                 .
@@ -90,6 +128,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
     )
     ly_add_googletest(
         NAME AZ::Launcher.Tests
+        LABELS REQUIRES_tiaf
     )
 
 endif()

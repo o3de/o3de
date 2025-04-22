@@ -18,130 +18,6 @@
 
 namespace DataCpp
 {
-    using namespace ScriptCanvas;
-    using namespace ScriptCanvas::Data;
-
-    AZ_INLINE AZStd::pair<bool, Type> FromAZTypeHelper(const AZ::Uuid& type)
-    {
-        if (type.IsNull())
-        {
-            return { true, Type::Invalid() };
-        }
-        else if (IsAABB(type))
-        {
-            return { true, Type::AABB() };
-        }
-        else if (IsAssetId(type))
-        {
-            return { true, Type::AssetId() };
-        }
-        else if (IsBoolean(type))
-        {
-            return { true, Type::Boolean() };
-        }
-        else if (IsColor(type))
-        {
-            return { true, Type::Color() };
-        }
-        else if (IsCRC(type))
-        {
-            return { true, Type::CRC() };
-        }
-        else if (IsEntityID(type))
-        {
-            return { true, Type::EntityID() };
-        }
-        else if (IsNamedEntityID(type))
-        {
-            return{ true, Type::NamedEntityID() };
-        }
-        else if (IsMatrix3x3(type))
-        {
-            return { true, Type::Matrix3x3() };
-        }
-        else if (IsMatrix4x4(type))
-        {
-            return { true, Type::Matrix4x4() };
-        }
-        else if (IsNumber(type))
-        {
-            return { true, Type::Number() };
-        }
-        else if (IsOBB(type))
-        {
-            return { true, Type::OBB() };
-        }
-        else if (IsPlane(type))
-        {
-            return { true, Type::Plane() };
-        }
-        else if (IsQuaternion(type))
-        {
-            return { true, Type::Quaternion() };
-        }
-        else if (IsString(type))
-        {
-            return { true, Type::String() };
-        }
-        else if (IsTransform(type))
-        {
-            return { true, Type::Transform() };
-        }
-        else if (IsVector2(type))
-        {
-            return { true, Type::Vector2() };
-        }
-        else if (IsVector3(type))
-        {
-            return { true, Type::Vector3() };
-        }
-        else if (IsVector4(type))
-        {
-            return { true, Type::Vector4() };
-        }
-        else
-        {
-            return { false, Type::Invalid() };
-        }
-    }
-
-    AZ_INLINE AZStd::pair<bool, Type> FromBehaviorContextTypeHelper(const AZ::Uuid& type)
-    {
-        if (type.IsNull())
-        {
-            return { true, Type::Invalid() };
-        }
-        else if (IsBoolean(type))
-        {
-            return { true, Type::Boolean() };
-        }
-        else if (IsEntityID(type))
-        {
-            return { true, Type::EntityID() };
-        }
-        else if (IsNamedEntityID(type))
-        {
-            return{ true, Type::NamedEntityID() };
-        }
-        else if (IsNumber(type))
-        {
-            return { true, Type::Number() };
-        }
-        else if (IsString(type))
-        {
-            return { true, Type::String() };
-        }
-        else
-        {
-            return { false, Type::Invalid() };
-        }
-    }
-    
-    AZ_INLINE bool IsSupportedBehaviorContextObject(const AZ::Uuid& typeID)
-    {
-        return AZ::BehaviorContextHelper::GetClass(typeID) != nullptr;
-    }
-
     AZ_INLINE const char* GetRawBehaviorContextName(const AZ::Uuid& typeID)
     {
         AZ::BehaviorContext* behaviorContext(nullptr);
@@ -164,23 +40,7 @@ namespace DataCpp
 namespace ScriptCanvas
 {
     namespace Data
-    {
-        Type FromAZType(const AZ::Uuid& type)
-        {
-            AZStd::pair<bool, Type> help = DataCpp::FromAZTypeHelper(type);
-            return help.first ? help.second : Type::BehaviorContextObject(type);
-        }
-        
-        Type FromAZTypeChecked(const AZ::Uuid& type)
-        {
-            AZStd::pair<bool, Type> help = DataCpp::FromAZTypeHelper(type);
-            return help.first 
-                ? help.second 
-                : DataCpp::IsSupportedBehaviorContextObject(type)
-                    ? Type::BehaviorContextObject(type)
-                    : Type::Invalid();
-        }
-        
+    {        
         AZStd::string GetBehaviorClassName(const AZ::Uuid& typeID)
         {
             AZ::BehaviorContext* behaviorContext(nullptr);
@@ -203,15 +63,14 @@ namespace ScriptCanvas
                 }
                 // Special casing out the fixed size vectors/arrays.
                 // Will need a more in depth way of generating these names long term I think.
-                else if (typeID == AZ::GetGenericClassInfoArrayTypeId()
-                    || typeID == AZ::GetGenericClassInfoFixedVectorTypeId())
+                else if (typeID == AZ::GetGenericClassInfoArrayTypeId() || typeID == AZ::GetGenericClassInfoFixedVectorTypeId())
                 {
                     return "Fixed Size Array";
                 }
                 else if (AZ::Utils::IsVectorContainerType(typeID))
                 {
                     return "Array";
-                }                
+                }
                 else
                 {
                     return "Unknown Container";
@@ -221,7 +80,8 @@ namespace ScriptCanvas
             {
                 if (const AZ::BehaviorClass* behaviorClass = AZ::BehaviorContextHelper::GetClass(typeID))
                 {
-                    if (AZ::Attribute* prettyNameAttribute = AZ::FindAttribute(AZ::ScriptCanvasAttributes::PrettyName, behaviorClass->m_attributes))
+                    if (AZ::Attribute* prettyNameAttribute =
+                            AZ::FindAttribute(AZ::ScriptCanvasAttributes::PrettyName, behaviorClass->m_attributes))
                     {
                         AZ::AttributeReader operatorAttrReader(nullptr, prettyNameAttribute);
                         AZStd::string prettyName;
@@ -238,7 +98,7 @@ namespace ScriptCanvas
 
             return "Invalid BehaviorContext::Class name";
         }
-        
+
         AZStd::string GetName(const Type& type)
         {
             switch (type.GetType())
@@ -276,6 +136,9 @@ namespace ScriptCanvas
             case eType::Matrix4x4:
                 return eTraits<eType::Matrix4x4>::GetName();
 
+            case eType::MatrixMxN:
+                return eTraits<eType::MatrixMxN>::GetName();
+
             case eType::Number:
                 return eTraits<eType::Number>::GetName();
 
@@ -302,6 +165,9 @@ namespace ScriptCanvas
 
             case eType::Vector4:
                 return eTraits<eType::Vector4>::GetName();
+
+            case eType::VectorN:
+                return eTraits<eType::VectorN>::GetName();
 
             default:
                 AZ_Assert(false, "Invalid type!");
@@ -357,64 +223,6 @@ namespace ScriptCanvas
             }
         }
 
-        bool IsAZRttiTypeOf(const AZ::Uuid& candidate, const AZ::Uuid& reference)
-        {
-            auto bcClass = AZ::BehaviorContextHelper::GetClass(candidate);
-            return bcClass
-                && bcClass->m_azRtti
-                && bcClass->m_azRtti->IsTypeOf(reference);
-        }
-
-        bool IsOutcomeType(const AZ::Uuid& type)
-        {
-            return AZ::Utils::IsOutcomeType(type);
-        }
-
-        bool IsOutcomeType(const Type& type)
-        {
-            return AZ::Utils::IsOutcomeType(ToAZType(type));
-        }
-
-        bool IsVectorContainerType(const AZ::Uuid& type)
-        {
-            return AZ::Utils::IsVectorContainerType(type);
-        }
-
-        bool IsVectorContainerType(const Type& type)
-        {
-            return AZ::Utils::IsVectorContainerType(ToAZType(type));
-        }
-
-        bool IsSetContainerType(const AZ::Uuid& type)
-        {
-            return AZ::Utils::IsSetContainerType(type);
-        }
-
-        bool IsSetContainerType(const Type& type)
-        {
-            return AZ::Utils::IsSetContainerType(ToAZType(type));
-        }
-
-        bool IsMapContainerType(const AZ::Uuid& type)
-        {
-            return AZ::Utils::IsMapContainerType(type);
-        }
-
-        bool IsMapContainerType(const Type& type)
-        {
-            return AZ::Utils::IsMapContainerType(ToAZType(type));
-        }
-
-        bool IsContainerType(const AZ::Uuid& type)
-        {
-            return AZ::Utils::IsContainerType(type);
-        }
-
-        bool IsContainerType(const Type& type)
-        {
-            return AZ::Utils::IsContainerType(ToAZType(type));
-        }
-
         AZStd::vector<AZ::Uuid> GetContainedTypes(const AZ::Uuid& type)
         {
             return AZ::Utils::GetContainedTypes(type);
@@ -453,28 +261,5 @@ namespace ScriptCanvas
             AZStd::pair<AZ::Uuid, AZ::Uuid> azOutcomeTypes(GetOutcomeTypes(ToAZType(type)));
             return AZStd::make_pair(FromAZType(azOutcomeTypes.first), FromAZType(azOutcomeTypes.second));
         }
-
-        void Type::Reflect(AZ::ReflectContext* reflection)
-        {
-            if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(reflection))
-            {
-                serializeContext->Class<Type>()
-                    ->Version(2)
-                    ->Field("m_type", &Type::m_type)
-                    ->Field("m_azType", &Type::m_azType)
-                    ;
-            }
-        }
-
-        bool Type::operator==(const Type& other) const
-        {
-            return IS_EXACTLY_A(other);
-        }
-
-        bool Type::operator!=(const Type& other) const
-        {
-            return !((*this) == other);
-        }
-
     }
 }

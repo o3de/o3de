@@ -39,9 +39,6 @@ public:
     bool ExtractFile(QString& file, bool bMsgBoxAskForExtraction = true, const char* pDestinationFilename = nullptr) override;
     void EditTextureFile(const char* txtureFile, bool bUseGameFolder) override;
 
-    //! dcc filename calculation and extraction sub-routines
-    bool CalculateDccFilename(const QString& assetFilename, QString& dccFilename) override;
-
     //! Reformat filter string for (MFC) CFileDialog style file filtering
     void FormatFilterString(QString& filter) override;
 
@@ -117,8 +114,6 @@ public:
     // It doesn't move the source folder to the target folder, only it's contents.
     // THIS FUNCTION IS NOT DESIGNED FOR MULTI-THREADED USAGE
     ECopyTreeResult MoveTree(const QString& strSourceDirectory, const QString& strTargetDirectory, bool boRecurse = true, bool boConfirmOverwrite = false) override;
-
-    void GatherAssetFilenamesFromLevel(std::set<QString>& rOutFilenames, bool bMakeLowerCase = false, bool bMakeUnixPath = false) override;
 
     // Get file attributes include source control attributes if available
     uint32 GetAttributes(const char* filename, bool bUseSourceControl = true) override;

@@ -6,18 +6,34 @@
  *
  */
 #pragma once
+
 #if !defined(Q_MOC_RUN)
-#include "UnitTestRunner.h"
+#include <native/unittests/AssetProcessorUnitTests.h>
 #endif
 
 namespace AssetProcessor
 {
+    class MockAssetRequestHandler;
+    class MockConnectionHandler;
+
     class AssetRequestHandlerUnitTests
-        : public UnitTestRun
+        : public QObject
+        , public UnitTest::AssetProcessorUnitTestBase
     {
         Q_OBJECT
     public:
-        AssetRequestHandlerUnitTests();
-        virtual void StartTest() override;
+        ~AssetRequestHandlerUnitTests();
+    protected:
+        void SetUp() override;
+        void TearDown() override;
+
+        AZStd::unique_ptr<MockAssetRequestHandler> m_requestHandler;
+
+        AZStd::unique_ptr<AssetProcessor::MockConnectionHandler> m_connection;
+        bool m_requestedCompileGroup = false;
+        bool m_requestedAssetExists = false;
+        QString m_platformSet;
+        NetworkRequestID m_requestIdSet;
+        QString m_searchTermSet;
     };
 }

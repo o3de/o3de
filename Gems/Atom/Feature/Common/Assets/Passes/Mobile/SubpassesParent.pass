@@ -1,0 +1,139 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "SubpassesParentTemplate",
+            "PassClass": "ParentPass",
+            "Slots": [
+                // Inputs...
+                {
+                    "Name": "LightingInputOutput",
+                    "SlotType": "InputOutput"
+                },
+                {
+                    "Name": "DepthStencilInputOutput",
+                    "SlotType": "InputOutput"
+                },
+                // SwapChain here is only used to reference the frame height and format
+                {
+                    "Name": "PipelineOutput",
+                    "SlotType": "InputOutput"
+                },
+                {
+                    "Name": "Output",
+                    "SlotType": "Output"
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "Output",
+                    "AttachmentRef": {
+                        "Pass": "Subpass3",
+                        "Attachment": "Output"
+                    }
+                }
+            ],
+            "PassRequests": [
+                {
+                    // Subpass group that contains the Transparent and Fog passes
+                    "Name": "Subpass2",
+                    "TemplateName": "MobileSubpass2ParentPassTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "LightingInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "LightingInputOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DepthStencilInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DepthStencilInputOutput"
+                            }
+                        }
+                    ]
+                },
+                {
+                    // This can't be merge because it's sampling the Silhouette gather pass
+                    // from multiple locations.
+                    "Name": "SilhouettePass",
+                    "TemplateName": "SilhouettePassTemplate",
+                    "Enabled": false,
+                    "Connections": [
+                        {
+                            "LocalSlot": "InputOutput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "LightingInputOutput"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "MobilePostProcessPass",
+                    "TemplateName": "MobilePostProcessParentTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "LightingInput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "LightingInputOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "Depth",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DepthStencilInputOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "PipelineOutput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "PipelineOutput"
+                            }
+                        }
+                    ]
+                },               
+                {
+                    // Subpass group that contains the DisplayMapper, UI, LYShine, AuxGeom and CopyToSwapChain passes.
+                    // This could merge with the previous subpass group if no other passes in between are enabled.
+                    "Name": "Subpass3",
+                    "TemplateName": "MobileSubpass3ParentPassTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "LightingInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "LightingInputOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DepthStencilInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DepthStencilInputOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "PipelineOutput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "PipelineOutput"
+                            }
+                        }
+                    ]
+                }
+            ],
+            "PassData": {
+                "MergeChildrenAsSubpasses": true
+            }
+        }
+    }
+}

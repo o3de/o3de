@@ -5,12 +5,12 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZ_SCRIPT_COMPONENT_H
-#define AZ_SCRIPT_COMPONENT_H
+#pragma once
 
 #include <AzCore/Script/ScriptAsset.h>
 #include <AzCore/Script/ScriptContext.h>
 #include <AzCore/Component/Component.h>
+#include <AzCore/Component/TickBus.h>
 #include <AzCore/Serialization/DynamicSerializableField.h>
 #include <AzCore/Math/Crc.h>
 #include <AzCore/std/string/string.h>
@@ -33,8 +33,6 @@ namespace AzFramework
 {
     struct ScriptCompileRequest;
 
-    using WriteFunction = AZStd::function< AZ::Outcome<void, AZStd::string>(const ScriptCompileRequest&, AZ::IO::GenericStream& in, AZ::IO::GenericStream& out) >;
-
     struct ScriptCompileRequest
     {
         AZStd::string_view m_errorWindow;
@@ -43,19 +41,17 @@ namespace AzFramework
         AZStd::string_view m_fileName;
         AZStd::string_view m_tempDirPath;        
         AZ::IO::GenericStream* m_input = nullptr;
-        AZ::IO::GenericStream* m_output = nullptr;
-        WriteFunction m_prewriteCallback;
-        WriteFunction m_postwriteCallback;
-
         AZStd::string m_destFileName;
         AZStd::string m_destPath;
+        AZ::LuaScriptData m_luaScriptDataOut;
     };
 
     void ConstructScriptAssetPaths(ScriptCompileRequest& request);
     AZ::Outcome<void, AZStd::string> CompileScript(ScriptCompileRequest& request);
     AZ::Outcome<void, AZStd::string> CompileScriptAndAsset(ScriptCompileRequest& request);
     AZ::Outcome<void, AZStd::string> CompileScript(ScriptCompileRequest& request, AZ::ScriptContext& context);
-    AZ::Outcome<AZStd::string, AZStd::string> CompileScriptAndSaveAsset(ScriptCompileRequest& request, bool writeAssetInfo = true);
+    AZ::Outcome<AZStd::string, AZStd::string> CompileScriptAndSaveAsset(ScriptCompileRequest& request);
+    bool SaveLuaAssetData(const AZ::LuaScriptData& data, AZ::IO::GenericStream& stream);
 
     struct ScriptPropertyGroup
     {
@@ -84,6 +80,7 @@ namespace AzFramework
     class ScriptComponent
         : public AZ::Component
         , private AZ::Data::AssetBus::Handler
+        , private AZ::TickBus::Handler
     {
         friend class AzToolsFramework::Components::ScriptEditorComponent;        
 
@@ -109,40 +106,29 @@ namespace AzFramework
 
     protected:
         ScriptComponent(const ScriptComponent&) = delete;
-        //////////////////////////////////////////////////////////////////////////
-        // Component base
+
         void Init() override;
         void Activate() override;
         void Deactivate() override;
-        //////////////////////////////////////////////////////////////////////////
 
-        //////////////////////////////////////////////////////////////////////////
         // AssetBus
-        void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
         void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
-        //////////////////////////////////////////////////////////////////////////
 
-        /// Load script (unless already by other instances) and creates the script instance into the VM
-        void LoadScript();
-        /// Removes the script instance and unloads the script (unless needed by other instances)
-        void UnloadScript();
+        // TickBus
+        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
         /// Loads the script into the context/VM, \returns true if the script is loaded
         bool LoadInContext();
 
-        // Create script instance table.
         void CreateEntityTable();
         void DestroyEntityTable();
-
+        
         void CreatePropertyGroup(const ScriptPropertyGroup& group, int propertyGroupTableIndex, int parentIndex, int metatableIndex, bool isRoot);
 
-        AZ::ScriptContext*               m_context;              ///< Context in which the script will be running
+        AZ::ScriptContext*                  m_context;              ///< Context in which the script will be running
         AZ::ScriptContextId                 m_contextId;            ///< Id of the script context.
         AZ::Data::Asset<AZ::ScriptAsset>    m_script;               ///< Reference to the script asset used for this component.
         int                                 m_table;                ///< Cached table index
         ScriptPropertyGroup                 m_properties;           ///< List with all properties that were tweaked in the editor and should override values in the m_sourceScriptName class inside m_script.
     };        
 }   // namespace AZ
-
-#endif  // AZ_SCRIPT_COMPONENTH_
-#pragma once

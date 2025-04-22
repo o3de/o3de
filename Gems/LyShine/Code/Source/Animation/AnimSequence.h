@@ -18,7 +18,7 @@ class CUiAnimSequence
     : public IUiAnimSequence
 {
 public:
-    AZ_CLASS_ALLOCATOR(CUiAnimSequence, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR(CUiAnimSequence, AZ::SystemAllocator)
     AZ_RTTI(CUiAnimSequence, "{AA5AB4ED-CB98-4166-953E-0FE1EF7AC61F}", IUiAnimSequence);
 
     CUiAnimSequence();  // required for serialization

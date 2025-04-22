@@ -46,7 +46,7 @@ namespace ScriptCanvasEditor
         : public QSortFilterProxyModel
     {
     public:
-        AZ_CLASS_ALLOCATOR(LoggingWindowFilterModel, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(LoggingWindowFilterModel, AZ::SystemAllocator);
 
         LoggingWindowFilterModel() = default;
 

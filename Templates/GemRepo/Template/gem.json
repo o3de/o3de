@@ -1,19 +1,32 @@
 {
-    "gem_name": "${Name}Gem",
-    "display_name": "${Name}Gem",
-    "license": "What license ${Name}Gem uses goes here: i.e. Apache-2.0 Or MIT",
-    "license_url": "",
-    "origin": "The primary repo for ${Name}Gem goes here: i.e. http://www.mydomain.com",
-    "summary": "A short description of ${Name}Gem which is zipped up in an archive named gem.zip in the root of the Gem Repo. Though not required, it is recommended that the sha256 of the gem.zip file should be placed in the sha256 field of this gem.json so the download can be verified.",
+    "gem_name": "${Name}",
+    "version": "${Version}",
+    "display_name": "${DisplayName}",
+    "license": "${License}",
+    "license_url": "${LicenseURL}",
+    "origin": "${Origin}",
+    "origin_url": "${OriginURL}",
+    "type": "Code",
+    "summary": "${Summary}",
     "origin_uri": "${RepoURI}/gem.zip",
     "sha256": "",
-    "type": "Code",
     "canonical_tags": [
         "Gem"
     ],
     "user_tags": [
-        "${Name}Gem"
+        "${UserTags}"
     ],
-    "icon_path": "preview.png",
-    "requirements": ""
+    "platforms": [
+        "${Platforms}"
+    ],
+    "icon_path": "${IconPath}",
+    "requirements": "${Requirements}",
+    "documentation_url": "${DocumentationURL}",
+    "dependencies": [
+    ],
+    "repo_uri": "${RepoURI}",
+    "compatible_engines": [
+    ],
+    "engine_api_dependencies":[
+    ]
 }

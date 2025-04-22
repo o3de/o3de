@@ -46,12 +46,13 @@ namespace LmbrCentral
         void SetShapeColor(const AZ::Color& solidColor) override;
         void SetShapeWireframeColor(const AZ::Color& wireColor) override;
         void SetVisibleInEditor(bool visible) override;
+        void SetVisibleInGame(bool visible) override;
         void SetShapeColorIsEditable(bool editable) override;
         bool GetShapeColorIsEditable() override;
 
         // BoundsRequestBus overrides ...
-        AZ::Aabb GetWorldBounds() override;
-        AZ::Aabb GetLocalBounds() override;
+        AZ::Aabb GetWorldBounds() const override;
+        AZ::Aabb GetLocalBounds() const override;
 
         // ShapeComponentNotificationsBus overrides ...
         void OnShapeChanged(ShapeChangeReasons changeReason) override;
@@ -72,7 +73,8 @@ namespace LmbrCentral
         bool EditorSelectionIntersectRayViewport(
             const AzFramework::ViewportInfo& viewportInfo,
             const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) override;
-        bool SupportsEditorRayIntersect() override { return true; }
+        bool SupportsEditorRayIntersect() override;
+        bool SupportsEditorRayIntersectViewport(const AzFramework::ViewportInfo& viewportInfo) override;
 
         // EditorComponentSelectionNotificationsBus overrides ... 
         void OnAccentTypeChanged(AzToolsFramework::EntityAccentType accent) override;

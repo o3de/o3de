@@ -36,16 +36,6 @@ namespace AZ
         virtual AZStd::string_view GetMessage() const = 0;
     };
 
-    class JsonAnySerializer : public JsonUnsupportedTypesSerializer
-    {
-    public:
-        AZ_RTTI(JsonAnySerializer, "{699A0864-C4E2-4266-8141-99793C76870F}", JsonUnsupportedTypesSerializer);
-        AZ_CLASS_ALLOCATOR_DECL;
-
-    protected:
-        AZStd::string_view GetMessage() const override;
-    };
-
     class JsonVariantSerializer : public JsonUnsupportedTypesSerializer
     {
     public:

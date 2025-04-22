@@ -41,6 +41,6 @@ function ProcessEditor(context)
     local enableLayer2 = context:GetMaterialPropertyValue_bool("blend.enableLayer2")
     local enableLayer3 = context:GetMaterialPropertyValue_bool("blend.enableLayer3")
     
-    SetLayerVisibility(context, "layer2_", context:GetMaterialPropertyValue_bool("blend.enableLayer2"))
-    SetLayerVisibility(context, "layer3_", context:GetMaterialPropertyValue_bool("blend.enableLayer3"))
+    SetLayerVisibility(context, "layer2.", context:GetMaterialPropertyValue_bool("blend.enableLayer2"))
+    SetLayerVisibility(context, "layer3.", context:GetMaterialPropertyValue_bool("blend.enableLayer3"))
 end

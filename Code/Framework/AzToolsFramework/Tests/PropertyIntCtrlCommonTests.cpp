@@ -16,12 +16,12 @@ namespace UnitTest
 
     template<typename ValueType>
     struct PropertyIntCtrlCommonFixture
-        : public ToolsApplicationFixture
+        : public ToolsApplicationFixture<>
     {
 
     };
 
-    TYPED_TEST_CASE(PropertyIntCtrlCommonFixture, IntegerPrimtitiveTestConfigs);
+    TYPED_TEST_SUITE(PropertyIntCtrlCommonFixture, IntegerPrimtitiveTestConfigs);
 
     TYPED_TEST(PropertyIntCtrlCommonFixture, ValidMinValue_ExpectSafeValueEqualToOriginalValue)
     {

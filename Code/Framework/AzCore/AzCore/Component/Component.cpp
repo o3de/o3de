@@ -16,6 +16,11 @@
 
 namespace AZ
 {
+    // Add definition for type info and runtime type information to component
+    AZ_TYPE_INFO_WITH_NAME_IMPL(Component, "AZ::Component", "{EDFCB2CF-F75D-43BE-B26B-F35821B29247}");
+    AZ_RTTI_NO_TYPE_INFO_IMPL(AZ::Component);
+    AZ_CLASS_ALLOCATOR_IMPL(AZ::Component, ComponentAllocator);
+
     //=========================================================================
     // Component
     // [6/15/2012]
@@ -44,23 +49,28 @@ namespace AZ
     //=========================================================================
     EntityId Component::GetEntityId() const
     {
+
         if (m_entity)
         {
             return m_entity->GetId();
         }
+        else
+        {
+            AZ_Warning("System", false, "Can't get component (type: %s, addr: %p) entity ID as it is not attached to an entity yet!", RTTI_GetTypeName(), this);
+        }
 
-        AZ_Warning("System", false, "Can't get component %p entity ID as it is not attached to an entity yet!", this);
         return EntityId();
     }
 
     NamedEntityId Component::GetNamedEntityId() const
     {
+
         if (m_entity)
         {
             return NamedEntityId(m_entity->GetId(), m_entity->GetName());
         }
+        AZ_Warning("System", false, "Can't get component (type: %s, addr: %p) entity ID as it is not attached to an entity yet!", RTTI_GetTypeName(), this);
 
-        AZ_Warning("System", false, "Can't get component %p entity ID as it is not attached to an entity yet!", this);
         return NamedEntityId();
     }
 
@@ -149,6 +159,19 @@ namespace AZ
                 m_id = InvalidComponentId;
             }
         }
+    }
+
+    void Component::OnAfterEntitySet()
+    {
+    }
+
+    AZStd::string Component::GetSerializedIdentifier() const
+    {
+        return AZStd::string();
+    }
+
+    void Component::SetSerializedIdentifier(AZStd::string)
+    {
     }
 
     //=========================================================================

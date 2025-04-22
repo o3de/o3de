@@ -37,8 +37,6 @@
 #include <EMotionFX/Source/MotionManager.h>
 #include <EMotionFX/Source/AnimGraphManager.h>
 #include <EMotionFX/CommandSystem/Source/MotionEventCommands.h>
-#include "../MotionWindow/MotionWindowPlugin.h"
-#include "../MotionEvents/MotionEventsPlugin.h"
 #include "../../../../EMStudioSDK/Source/EMStudioManager.h"
 #include "../../../../EMStudioSDK/Source/MainWindow.h"
 
@@ -160,7 +158,7 @@ namespace EMStudio
         painter.setPen(m_plugin->m_penCurTimeHandle);
         painter.drawLine(QPointF(curTimeX, startHeight), QPointF(curTimeX, rect.bottom()));
     }
-        
+
     void TrackDataHeaderWidget::mouseDoubleClickEvent(QMouseEvent* event)
     {
         if (event->button() != Qt::LeftButton)
@@ -219,10 +217,10 @@ namespace EMStudio
             }
             else
             {
-                const AZStd::vector<EMotionFX::MotionInstance*>& motionInstances = MotionWindowPlugin::GetSelectedMotionInstances();
-                if (motionInstances.size() == 1)
+                const AZStd::vector<EMotionFX::MotionInstance*>& selectedMotionInstances = CommandSystem::GetCommandManager()->GetCurrentSelection().GetSelectedMotionInstances();
+                if (selectedMotionInstances.size() == 1)
                 {
-                    EMotionFX::MotionInstance* motionInstance = motionInstances[0];
+                    EMotionFX::MotionInstance* motionInstance = selectedMotionInstances[0];
                     motionInstance->SetCurrentTime(aznumeric_cast<float>(m_plugin->GetCurrentTime()), false);
                     motionInstance->SetPause(true);
                     emit m_plugin->ManualTimeChange(aznumeric_cast<float>(m_plugin->GetCurrentTime()));
@@ -325,10 +323,10 @@ namespace EMStudio
                 }
                 else
                 {
-                    const AZStd::vector<EMotionFX::MotionInstance*>& motionInstances = MotionWindowPlugin::GetSelectedMotionInstances();
-                    if (motionInstances.size() == 1)
+                    const AZStd::vector<EMotionFX::MotionInstance*>& selectedMotionInstances = CommandSystem::GetCommandManager()->GetCurrentSelection().GetSelectedMotionInstances();
+                    if (selectedMotionInstances.size() == 1)
                     {
-                        EMotionFX::MotionInstance* motionInstance = motionInstances[0];
+                        EMotionFX::MotionInstance* motionInstance = selectedMotionInstances[0];
                         motionInstance->SetCurrentTime(aznumeric_cast<float>(m_plugin->GetCurrentTime()), false);
                         motionInstance->SetPause(true);
                         m_plugin->GetTimeViewToolBar()->UpdateInterface();
@@ -451,10 +449,10 @@ namespace EMStudio
         double dropTime = m_plugin->PixelToTime(mousePos.x());
         m_plugin->SetCurrentTime(dropTime);
 
-        const AZStd::vector<EMotionFX::MotionInstance*>& motionInstances = MotionWindowPlugin::GetSelectedMotionInstances();
-        if (motionInstances.size() == 1)
+        const AZStd::vector<EMotionFX::MotionInstance*>& selectedMotionInstances = CommandSystem::GetCommandManager()->GetCurrentSelection().GetSelectedMotionInstances();
+        if (selectedMotionInstances.size() == 1)
         {
-            EMotionFX::MotionInstance* motionInstance = motionInstances[0];
+            EMotionFX::MotionInstance* motionInstance = selectedMotionInstances[0];
             motionInstance->SetCurrentTime(aznumeric_cast<float>(dropTime), false);
             motionInstance->Pause();
         }
@@ -481,7 +479,7 @@ namespace EMStudio
             m_plugin->OnKeyReleaseEvent(event);
         }
     }
-    
+
     // draw the time line
     void TrackDataHeaderWidget::DrawTimeLine(QPainter& painter, const QRect& rect)
     {

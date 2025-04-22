@@ -45,7 +45,7 @@ public:
     };
 
     AssetCatalogEntry() {}
-    AZ_CLASS_ALLOCATOR(AssetCatalogEntry, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(AssetCatalogEntry, AZ::SystemAllocator);
 
     bool operator<(const QStandardItem& other) const override;
 
@@ -63,7 +63,7 @@ class AssetCatalogModel
     Q_OBJECT
 
 public:
-    AZ_CLASS_ALLOCATOR(AssetCatalogModel, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(AssetCatalogModel, AZ::SystemAllocator);
 
     AssetCatalogModel(QObject* parent = 0);
     ~AssetCatalogModel() override;

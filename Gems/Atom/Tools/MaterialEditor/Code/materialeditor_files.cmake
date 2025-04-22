@@ -7,7 +7,17 @@
 #
 
 set(FILES
-    Source/main.cpp
-    Source/MaterialEditorApplication.cpp
     Source/MaterialEditorApplication.h
+    Source/MaterialEditorApplication.cpp
+    Source/main.cpp
+
+    Source/Document/MaterialDocument.cpp
+    Source/Document/MaterialDocument.h
+    Source/Document/MaterialDocumentRequestBus.h
+    Source/Window/MaterialEditor.qrc
+
+    Source/Window/MaterialEditorMainWindow.cpp
+    Source/Window/MaterialEditorMainWindow.h
+    Source/Window/MaterialEditorViewportContent.cpp
+    Source/Window/MaterialEditorViewportContent.h
 )

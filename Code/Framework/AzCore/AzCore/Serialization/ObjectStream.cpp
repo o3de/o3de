@@ -12,6 +12,7 @@
 #include <AzCore/Serialization/DataOverlayInstanceMsgs.h>
 #include <AzCore/Serialization/DataOverlayProviderMsgs.h>
 #include <AzCore/Serialization/DynamicSerializableField.h>
+#include <AzCore/Serialization/Locale.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Debug/Profiler.h>
@@ -54,6 +55,20 @@
 
 namespace AZ
 {
+    static bool ShouldLookUpSpecializedTypeId(const SerializeContext::DataElement& element)
+    {
+        // Version 1 of the asset serializer stored the generic typeid of
+        // assets in the element's type field. It also used the same typeid for
+        // the generic type and the specialized type. However, there is a
+        // one-to-many relationship of generic_typeid->specialized_typeid, so
+        // remapping from the generic typeid for the asset can only choose one
+        // of the possible specializations of that asset. Switching from a
+        // generic typeid to a specialized typeid for assets may choose the
+        // wrong specialization.
+        const bool isVersionOneAsset = element.m_id == GetAssetClassId() && element.m_version <= 2;
+        return !isVersionOneAsset;
+    }
+
     namespace ObjectStreamInternal
     {
         static const u32 s_objectStreamVersion = 3;
@@ -91,7 +106,7 @@ namespace AZ
                 ST_BINARYFLAG_ELEMENT_END       = 0
             };
 
-            AZ_CLASS_ALLOCATOR(ObjectStreamImpl, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ObjectStreamImpl, SystemAllocator);
 
             ObjectStreamImpl(IO::GenericStream* stream, SerializeContext* sc, const ClassReadyCB& readyCB, const CompletionCB& doneCB, const FilterDescriptor& filterDesc = FilterDescriptor(), int flags = 0, const InplaceLoadRootInfoCB& inplaceLoadInfoCB = InplaceLoadRootInfoCB())
                 : ObjectStream(sc)
@@ -104,6 +119,7 @@ namespace AZ
                 , m_pending(0)
                 , m_inStream(&m_buffer1)
                 , m_outStream(&m_buffer2)
+                , m_localeScope(false) // do not automatically activate the locale.
             {
                 // Assign default asset filter if none was provided by the user.
                 m_filterDesc = filterDesc;
@@ -226,6 +242,7 @@ namespace AZ
             // completed successfully to make sure the equivalent amount
             // of CloseElements are called
             AZStd::vector<bool>                           m_writeElementResultStack;
+            Locale::ScopedSerializationLocale             m_localeScope;
         };
 
         //=========================================================================
@@ -234,15 +251,16 @@ namespace AZ
         //=========================================================================
         void ObjectStreamImpl::PreparseOldVersion(SerializeContext& sc, SerializeContext::DataElementNode& elementNode, IO::GenericStream& stream, const SerializeContext::ClassData* elementClass)
         {
-            // whenever tracing is availalble we make error logging available.
+            // whenever tracing is available we make error logging available.
 #if defined(AZ_ENABLE_TRACING) 
             {
-                SerializeContext::DbgStackEntry de;
-                de.m_dataPtr = nullptr;
-                de.m_uuidPtr = &elementClass->m_typeId;
-                de.m_elementName = elementNode.GetNameString();
-                de.m_classData = elementClass;
-                de.m_classElement = nullptr;
+                SerializeContext::DbgStackEntry de {
+                    /*.m_dataPtr =*/ nullptr,
+                    /*.m_uuid =*/ elementClass ? elementClass->m_typeId : AZ::Uuid{},
+                    /*.m_classData =*/ elementClass,
+                    /*.m_elementName =*/ elementNode.GetNameString(),
+                    /*.m_classElement =*/ nullptr,
+                };
                 m_errorLogger.Push(de);
             }
 #endif // AZ_ENABLE_TRACING
@@ -259,8 +277,7 @@ namespace AZ
 
                 nextLevel = false;
 
-                elementNode.m_subElements.push_back();
-                SerializeContext::DataElementNode& childNode = elementNode.m_subElements.back();
+                SerializeContext::DataElementNode& childNode = elementNode.m_subElements.emplace_back();
                 // we might need to copy the element name, if it's deleted after the read element
                 // otherwise it will be left dangling
                 childNode.m_element = AZStd::move(childElement);
@@ -268,7 +285,17 @@ namespace AZ
 
                 if (childClass)
                 {
-                    AZ_Assert(childNode.m_element.m_version <= childClass->m_version, "Serialize was parsing old version class and found newer version element! This should be impossible!");
+                    AZ_Error("Error", childNode.m_element.m_version <= childClass->m_version,
+                        "The current class (%s) version is (%d). The field (%s) of class (%s) with version (%d) is a newer version than the code supports. "
+                        "First, check if you've built latest, your C++ code could be out of date. "
+                        "It is possible that the class version has been reset. Please check if the team provides a conversion tool. "
+                        "To resolve you'll either need to get the latest version of this class, use any provided migration tools or re-sync to an early commit. ",
+                        childClass->m_name,
+                        childClass->m_version,
+                        childNode.m_element.m_name,
+                        childClass->m_name,
+                        childNode.m_element.m_version
+                    );
 
                     // Only proceed if:
                     // * the child node is out of date AND the class does not have a custom serializer
@@ -288,11 +315,6 @@ namespace AZ
                         }
                         continue;
                     }
-                }
-                else
-                {
-                    // output a warning
-                    //AZ_Warning("Serializer",false,"Element '%s' with class ID '%s' found while converting '%s' is not registered with the serializer! You will have to parse this data yourself!",childElement.m_name,childElement.m_id.ToString<AZStd::string>().c_str(), parent->m_name);
                 }
 
                 if (childNode.m_element.m_dataSize > 0) // if we have values to convert
@@ -502,7 +524,8 @@ namespace AZ
                     overlaidNode.m_element.m_stream = &stream;
                     DataOverlayTarget data(&overlaidNode, m_sc, &m_errorLogger);
 
-                    EBUS_EVENT_ID(overlay.m_providerId, DataOverlayProviderBus, FillOverlayData, &data, overlay.m_dataToken);
+                    DataOverlayProviderBus::Event(
+                        overlay.m_providerId, &DataOverlayProviderBus::Events::FillOverlayData, &data, overlay.m_dataToken);
                     if (overlaidNode.GetNumSubElements() > 0)
                     {
                         AZ_Assert(overlaidNode.GetNumSubElements() == 1, "Only one node should ever be returned by the overlay provider!");
@@ -582,7 +605,7 @@ namespace AZ
                             }
                         }
                     }
-                    else if (parentClassInfo->m_typeId == SerializeTypeInfo<DynamicSerializableField>::GetUuid() && element.m_nameCrc == AZ_CRC("m_data", 0x335cc942))   // special case for dynamic-typed fields
+                    else if (parentClassInfo->m_typeId == SerializeTypeInfo<DynamicSerializableField>::GetUuid() && element.m_nameCrc == AZ_CRC_CE("m_data"))   // special case for dynamic-typed fields
                     {
                         DynamicSerializableField* fieldContainer = reinterpret_cast<DynamicSerializableField*>(parentClassPtr);
                         fieldContainer->m_typeId = classData->m_typeId;
@@ -751,12 +774,13 @@ namespace AZ
 
 #if defined(AZ_ENABLE_TRACING)
                 {
-                    SerializeContext::DbgStackEntry de;
-                    de.m_dataPtr = dataAddress;
-                    de.m_uuidPtr = &element.m_id;
-                    de.m_elementName = element.m_name;
-                    de.m_classData = classData;
-                    de.m_classElement = classElement;
+                    SerializeContext::DbgStackEntry de {
+                        /*.m_dataPtr =*/ dataAddress,
+                        /*.m_uuid =*/ element.m_id,
+                        /*.m_classData =*/ classData,
+                        /*.m_elementName =*/ element.m_name,
+                        /*.m_classElement =*/ classElement,
+                    };
                     m_errorLogger.Push(de);
                 }
 #endif // AZ_ENABLE_TRACING
@@ -766,7 +790,7 @@ namespace AZ
                     classData->m_eventHandler->OnWriteBegin(dataAddress);
                 }
 
-                if (element.m_id == GetAssetClassId())
+                if (const auto* genericTypeInfo = m_sc->FindGenericClassInfo(element.m_id); genericTypeInfo && genericTypeInfo->GetGenericTypeId() == GetAssetClassId())
                 {
                     AZ_Assert(dataAddress, "Reference field address is invalid");
                     AZ_Assert(classData->m_serializer, "Asset references should always have a serializer defined");
@@ -787,8 +811,6 @@ namespace AZ
                 // Serializable leaf element.
                 else if (classData->m_serializer)
                 {
-                    AZ_PROFILE_SCOPE(AzCore, "ObjectStreamImpl::LoadClass Load");
-
                     // Wrap the stream
                     IO::GenericStream* currentStream = &m_inStream;
                     IO::MemoryStream memStream(m_inStream.GetData()->data(), 0, element.m_dataSize);
@@ -1050,7 +1072,6 @@ namespace AZ
                 }
                 m_xmlNode = next;
 
-                Uuid specializedId = Uuid::CreateNull();
                 // now parse the node
                 rapidxml::xml_attribute<char>* attr = m_xmlNode->first_attribute();
                 while (attr)
@@ -1083,33 +1104,28 @@ namespace AZ
                     else if (m_version == 2 && strcmp(attr->name(), "specializationTypeId") == 0)
                     {
                         // Version 3 of the ObjectStream serializes the specialized type id directly in the data element id field.
-                        specializedId = Uuid(attr->value());   
+                        element.m_id = Uuid(attr->value());
                     }
                     attr = attr->next_attribute();
                 }
 
-                // The Asset ClassId is handled directly within the LoadClass function so don't replace it
-                if (m_version == 2 && element.m_id != GetAssetClassId())
+                if (m_version == 2 && parent && parent->m_container && ShouldLookUpSpecializedTypeId(element))
                 {
-                    if (parent && parent->m_container)
+                    const SerializeContext::ClassElement* classElement = parent->m_container->GetElement(element.m_nameCrc);
+                    if (classElement && classElement->m_genericClassInfo)
                     {
-                        const SerializeContext::ClassElement* classElement = parent->m_container->GetElement(element.m_nameCrc);
-                        if (classElement && classElement->m_genericClassInfo)
+                        if (classElement->m_genericClassInfo->CanStoreType(element.m_id))
                         {
-                            if (classElement->m_genericClassInfo->CanStoreType(specializedId))
-                            {
-                                specializedId = classElement->m_genericClassInfo->GetSpecializedTypeId();
-                            }
+                            element.m_id = classElement->m_genericClassInfo->GetSpecializedTypeId();
                         }
-
                     }
-                    element.m_id = specializedId;
+
                 }
  
                 // find the registered class data
                 cd = sc.FindClassData(element.m_id, parent, element.m_nameCrc);
 
-                if (cd)
+                if (cd && ShouldLookUpSpecializedTypeId(element))
                 {
                     // Lookup the SpecializedTypeId from the class if it has GenericClassInfo registered with it
                     if (GenericClassInfo* genericClassInfo = sc.FindGenericClassInfo(cd->m_typeId))
@@ -1205,22 +1221,20 @@ namespace AZ
                 if (m_version == 2)
                 {
                     valueIt = currentElement->FindMember("specializationTypeId");
-                    if (valueIt != currentElement->MemberEnd() && element.m_id != GetAssetClassId())
+                    if (valueIt != currentElement->MemberEnd())
                     {
-                        // The Asset ClassId is handled directly within the LoadClass function
-                        Uuid specializedId(valueIt->value.GetString());
-                        if (parent && parent->m_container)
+                        element.m_id = Uuid(valueIt->value.GetString());
+                        if (parent && parent->m_container && ShouldLookUpSpecializedTypeId(element))
                         {
                             const SerializeContext::ClassElement* classElement = parent->m_container->GetElement(element.m_nameCrc);
                             if (classElement && classElement->m_genericClassInfo)
                             {
-                                if (classElement->m_genericClassInfo->CanStoreType(specializedId))
+                                if (classElement->m_genericClassInfo->CanStoreType(element.m_id))
                                 {
-                                    specializedId = classElement->m_genericClassInfo->GetSpecializedTypeId();
+                                    element.m_id = classElement->m_genericClassInfo->GetSpecializedTypeId();
                                 }
                             }
                         }
-                        element.m_id = specializedId;
                     }
                 }
                 valueIt = currentElement->FindMember("version");
@@ -1236,7 +1250,7 @@ namespace AZ
 
                 // find the registered class data
                 cd = sc.FindClassData(element.m_id, parent, element.m_nameCrc);
-                if (cd)
+                if (cd && ShouldLookUpSpecializedTypeId(element))
                 {
                     // Lookup the SpecializedTypeId from the class if it has GenericClassInfo registered with it
                     if (GenericClassInfo* genericClassInfo = sc.FindGenericClassInfo(cd->m_typeId))
@@ -1321,30 +1335,25 @@ namespace AZ
                     nBytesRead = m_stream->Read(specializedId.end() - specializedId.begin(), specializedId.begin());
                     AZ_Assert(nBytesRead == static_cast<IO::SizeType>(specializedId.end() - specializedId.begin()), "Failed trying to read binary class element uuid");
 
-                    // The Asset ClassId is handled directly within the LoadClass function
-                    if (element.m_id != GetAssetClassId())
+                    if (parent && parent->m_container && ShouldLookUpSpecializedTypeId(element))
                     {
-                        if (parent && parent->m_container)
+                        const SerializeContext::ClassElement* classElement = parent->m_container->GetElement(element.m_nameCrc);
+                        if (classElement && classElement->m_genericClassInfo)
                         {
-                            const SerializeContext::ClassElement* classElement = parent->m_container->GetElement(element.m_nameCrc);
-                            if (classElement && classElement->m_genericClassInfo)
+                            if (classElement->m_genericClassInfo->CanStoreType(specializedId))
                             {
-                                if (classElement->m_genericClassInfo->CanStoreType(specializedId))
-                                {
-                                    specializedId = classElement->m_genericClassInfo->GetSpecializedTypeId();
-                                }
+                                specializedId = classElement->m_genericClassInfo->GetSpecializedTypeId();
                             }
                         }
-                        element.m_id = specializedId;
                     }
+                    element.m_id = specializedId;
                 }
 
                 element.m_dataType = SerializeContext::DataElement::DT_BINARY_BE;
 
-
                 // find the registered class data
                 cd = sc.FindClassData(element.m_id, parent, element.m_nameCrc);
-                if (cd)
+                if (cd && ShouldLookUpSpecializedTypeId(element))
                 {
                     // Lookup the SpecializedTypeId from the class if it has GenericClassInfo registered with it
                     if (GenericClassInfo* genericClassInfo = sc.FindGenericClassInfo(cd->m_typeId))
@@ -1564,7 +1573,8 @@ namespace AZ
             {
                 // Data overlays are only supported for non-root elements, which means we should have a valid class element.
                 DataOverlayInfo overlay;
-                EBUS_EVENT_ID_RESULT(overlay, DataOverlayInstanceId(objectPtr, classElement->m_typeId), DataOverlayInstanceBus, GetOverlayInfo);
+                DataOverlayInstanceBus::EventResult(
+                    overlay, DataOverlayInstanceId(objectPtr, classElement->m_typeId), &DataOverlayInstanceBus::Events::GetOverlayInfo);
                 if (overlay.m_providerId)
                 {
                     const SerializeContext::ClassData* overlayClassMetadata = m_sc->FindClassData(SerializeTypeInfo<DataOverlayInfo>::GetUuid());
@@ -1651,7 +1661,7 @@ namespace AZ
                         // So use the classTypeId instead
                         AZ_UNUSED(classTypeId);
                         AZ_Error("Serialize", false, "CloseElement is attempted to be called without a corresponding WriteElement when writing class %s",
-                            classTypeId.ToString<AZStd::fixed_string<AZ::TypeId::MaxStringBuffer>>().c_str());
+                            classTypeId.ToFixedString().c_str());
                         return true;
                     }
                     if (m_writeElementResultStack.back())
@@ -1668,9 +1678,23 @@ namespace AZ
                     SerializeContext::ENUM_ACCESS_FOR_READ,
                     &m_errorLogger
                 );
-                if (objectStreamWriteOverrideCB.Invoke<void>(callContext, objectPtr, *classData, classElement))
+                if (ObjectStreamWriteOverrideResponse writeResponse;
+                    objectStreamWriteOverrideCB.Read<ObjectStreamWriteOverrideResponse>(writeResponse, callContext, objectPtr, *classData, classElement))
                 {
-                    return false;
+                    switch (writeResponse)
+                    {
+                    case ObjectStreamWriteOverrideResponse::FallbackToDefaultWrite:
+                        break;
+                    case ObjectStreamWriteOverrideResponse::AbortWrite:
+                        m_errorLogger.ReportError(AZStd::string::format("ObjectStream Write Element Override callback has aborted the write for class data %s",
+                            classData->m_name).c_str());
+                        [[fallthrough]];
+                    case ObjectStreamWriteOverrideResponse::CompletedWrite:
+                        return false;
+                    default:
+                        AZ_Error("Serialize", false, "Invalid Response %d returned from the ObjectStream Write Element Override callback", static_cast<int>(writeResponse));
+                        return false;
+                    }
                 }
                 else
                 {
@@ -1728,7 +1752,8 @@ namespace AZ
                     classData->m_serializer->DataToText(memStream, m_outStream, false);
 
                     char* rawText = static_cast<char*>(m_outStream.GetData()->data());
-                    char* xmlString = m_xmlDoc->allocate_string(rawText, static_cast<size_t>(m_outStream.GetCurPos() + 1));
+                    char* xmlString = m_xmlDoc->allocate_string(nullptr, static_cast<size_t>(m_outStream.GetCurPos() + 1));
+                    AZStd::copy(rawText, rawText + m_outStream.GetCurPos(), xmlString);
                     xmlString[m_outStream.GetCurPos()] = 0;
 
                     attr = m_xmlDoc->allocate_attribute(m_xmlDoc->allocate_string("value"), xmlString);
@@ -1749,8 +1774,7 @@ namespace AZ
             }
             else if (GetType() == ST_JSON)
             {
-                m_jsonWriteValues.push_back();
-                rapidjson::Value& classObject = m_jsonWriteValues.back();
+                rapidjson::Value& classObject = m_jsonWriteValues.emplace_back();
                 classObject.SetObject();
                 // element name
                 if (element.m_name)
@@ -1785,8 +1809,7 @@ namespace AZ
                     AZ_Assert(element.m_dataSize == 0, "We can't serialize values for %s(0x%x), value=%s without a serializer to do DataToText()!", element.m_name ? element.m_name : "NULL", element.m_nameCrc, idBuffer);
                 }
                 // Add child fields array
-                m_jsonWriteValues.push_back();
-                m_jsonWriteValues.back().SetArray();
+                m_jsonWriteValues.emplace_back().SetArray();
             }
             else /*ST_BINARY*/
             {
@@ -1940,6 +1963,8 @@ namespace AZ
 
             bool result = true;
 
+            m_localeScope.Activate();
+
             if (m_flags & OPF_SAVING)
             {
                 if (m_type == ST_XML)
@@ -1957,8 +1982,7 @@ namespace AZ
                     m_jsonDoc->SetObject();
                     m_jsonDoc->AddMember("name", "ObjectStream", m_jsonDoc->GetAllocator());
                     m_jsonDoc->AddMember("version", m_version, m_jsonDoc->GetAllocator());
-                    m_jsonWriteValues.push_back();
-                    m_jsonWriteValues.back().SetArray();
+                    m_jsonWriteValues.emplace_back().SetArray();
                 }
                 else
                 {
@@ -2161,6 +2185,7 @@ namespace AZ
                     m_stream->Write(sizeof(u8), &endTag);
                 }
             }
+            m_localeScope.Deactivate();
             delete this;
             return success;
         }

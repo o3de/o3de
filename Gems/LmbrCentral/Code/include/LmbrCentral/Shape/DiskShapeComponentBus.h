@@ -19,17 +19,17 @@ namespace AZ
 namespace LmbrCentral
 {
     //! Type ID for DiskShapeComponent
-    static const AZ::Uuid DiskShapeComponentTypeId = "{A3E6BE21-29B7-46AA-8B0E-1D8372DADA3F}";
+    inline constexpr AZ::TypeId DiskShapeComponentTypeId{ "{A3E6BE21-29B7-46AA-8B0E-1D8372DADA3F}" };
 
     //! Type ID for EditorDiskShapeComponent
-    static const AZ::Uuid EditorDiskShapeComponentTypeId = "{5CD2459F-9D51-4FA3-9D35-D1A2C65ED272}";
+    inline constexpr AZ::TypeId EditorDiskShapeComponentTypeId{ "{5CD2459F-9D51-4FA3-9D35-D1A2C65ED272}" };
 
     //! Configuration data for DiskShapeComponent
     class DiskShapeConfig
         : public ShapeComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(DiskShapeConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DiskShapeConfig, AZ::SystemAllocator);
         AZ_RTTI(DiskShapeConfig, "{24EC2919-F198-4871-8404-F6DE8A16275E}", ShapeComponentConfig);
         
         static void Reflect(AZ::ReflectContext* context);
@@ -45,17 +45,17 @@ namespace LmbrCentral
         : public AZ::ComponentBus
     {
     public:
-        virtual DiskShapeConfig GetDiskConfiguration() = 0;
+        virtual const DiskShapeConfig& GetDiskConfiguration() const = 0;
 
         //! @brief Returns the radius for the disk shape component.
-        virtual float GetRadius() = 0;
+        virtual float GetRadius() const = 0;
 
         //! @brief Sets the radius for the disk shape component.
         //! @param radius new Radius of the disk shape.
         virtual void SetRadius(float radius) = 0;
 
         //! @brief Convenience function that returns the facing normal for the disk determined by the transform component.
-        virtual const AZ::Vector3& GetNormal() = 0;
+        virtual const AZ::Vector3& GetNormal() const = 0;
 
     };
 

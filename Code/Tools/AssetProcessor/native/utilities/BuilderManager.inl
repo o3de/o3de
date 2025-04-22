@@ -19,7 +19,30 @@ namespace AssetProcessor
         TNetResponse netResponse;
         netRequest.m_request = request;
 
-        AZ::u32 type;
+        struct BuildTracker final
+        {
+            BuildTracker(const Builder& builder, const AZStd::string& sourceFile, const AZStd::string& task)
+                : m_builder(builder)
+                , m_sourceFile(sourceFile)
+                , m_task(task)
+            {
+                AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Request started builder [%s] task (%s) %s \n",
+                    m_builder.UuidString().c_str(), m_task.c_str(), m_sourceFile.c_str());
+            }
+
+            ~BuildTracker()
+            {
+                AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Request stopped builder [%s] task (%s) %s \n",
+                    m_builder.UuidString().c_str(), m_task.c_str(), m_sourceFile.c_str());
+            }
+
+            const Builder& m_builder;
+            const AZStd::string& m_sourceFile;
+            const AZStd::string& m_task;
+        };
+        BuildTracker tracker(*this, request.m_sourceFile, task);
+
+        [[maybe_unused]] AZ::u32 type;
         QByteArray data;
         AZStd::binary_semaphore wait;
 
@@ -50,8 +73,12 @@ namespace AssetProcessor
 
         if (!netResponse.m_response.Succeeded() || s_createRequestFileForSuccessfulJob)
         {
-            // we write the request out to disk for failure or debugging 
-            if (!DebugWriteRequestFile(tempFolderPath.c_str(), request, task, modulePath))
+            // we write the request out to disk for failure or debugging
+            BuilderPurpose purpose = azrtti_typeid<TRequest>() == azrtti_typeid<AssetBuilderSDK::CreateJobsRequest>()
+                ? BuilderPurpose::CreateJobs
+                : BuilderPurpose::ProcessJob;
+
+            if (!DebugWriteRequestFile(tempFolderPath.c_str(), request, task, modulePath, purpose))
             {
                 return BuilderRunJobOutcome::FailedToWriteDebugRequest;
             }
@@ -63,7 +90,7 @@ namespace AssetProcessor
     }
 
     template<typename TRequest>
-    bool Builder::DebugWriteRequestFile(QString tempFolderPath, const TRequest& request, const AZStd::string& task, const AZStd::string& modulePath) const
+    bool Builder::DebugWriteRequestFile(QString tempFolderPath, const TRequest& request, const AZStd::string& task, const AZStd::string& modulePath, BuilderPurpose purpose) const
     {
         if (tempFolderPath.isEmpty())
         {
@@ -83,7 +110,7 @@ namespace AssetProcessor
             return false;
         }
 
-        auto params = BuildParams(task.c_str(), modulePath.c_str(), "", jobRequestFile, jobResponseFile);
+        auto params = BuildParams(task.c_str(), modulePath.c_str(), "", jobRequestFile, jobResponseFile, purpose);
         AZStd::string paramString;
         AZ::StringFunc::Join(paramString, params.begin(), params.end(), " ");
 

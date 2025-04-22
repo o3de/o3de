@@ -1,0 +1,77 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+// This #define magic lets you use the VsInput & VsOutput classes in this file without making it the final VsInput & VsOutput
+// used in your shader. Simply #define VsInput & VsOutput to your custom definitions before including this file
+//
+#ifndef VsInput
+#define VsInput         VsInput_BasePBR
+#endif
+
+#ifndef VsSystemValues
+#define VsSystemValues  VsSystemValues_BasePBR
+#endif
+
+#ifndef VsOutput
+#define VsOutput        VsOutput_BasePBR
+#endif
+
+#ifndef ENABLE_VERTEX_COLOR
+#define ENABLE_VERTEX_COLOR 0
+#endif
+
+#if ENABLE_VERTEX_COLOR
+option bool o_color0_isBound = false;
+#endif
+
+struct VsInput_BasePBR
+{
+    // Base fields (required by the template azsli file)...
+    float3 position : POSITION;
+    float3 normal : NORMAL;
+    float4 tangent : TANGENT;
+    // Bitangent is temporarily added back to fix the eye material screenshot test.
+    float3 bitangent : BITANGENT;
+
+    // Extended fields (only referenced in this azsl file)...
+    float2 uv0 : UV0;
+    float2 uv1 : UV1;
+
+#if ENABLE_VERTEX_COLOR
+    // This gets set automatically by the system at runtime only if it's available.
+    // There is a soft naming convention that associates this with o_color0_isBound, which will be set to true whenever o_color0_isBound is available.
+    float4 m_optional_color0 : COLOR0;
+#endif
+};
+
+struct VsSystemValues_BasePBR
+{
+    uint m_instanceId;
+};
+
+struct VsOutput_BasePBR
+{
+    // Base fields (required by the template azsli file)...
+    // "centroid" is needed for SV_Depth to compile
+    precise linear centroid 
+    float4 position : SV_Position;
+    float3 normal: NORMAL;
+    float4 tangent : TANGENT;
+    float3 worldPosition : UV0;
+
+    // Extended fields (only referenced in this azsl file)...
+    float2 uvs[UvSetCount] : UV1;
+    uint m_instanceId : SV_InstanceID;
+
+#if ENABLE_VERTEX_COLOR
+    // Optional
+    float4 color0 : UV7; // Using UV7 just to leave some room for non optional attributes
+#endif
+};

@@ -41,7 +41,7 @@ namespace O3DE::ProjectManager
         o3deUserPath /= AZ::SettingsRegistryInterface::RegistryFolder;
         o3deUserPath /= "ProjectManager.setreg";
 
-        bool saved = false;
+        [[maybe_unused]] bool saved = false;
         constexpr auto configurationMode =
             AZ::IO::SystemFile::SF_OPEN_CREATE | AZ::IO::SystemFile::SF_OPEN_CREATE_PATH | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY;
 
@@ -148,7 +148,8 @@ namespace O3DE::ProjectManager
 
         // Check if buildPath is listed as successfully built
         AZStd::string projectPath = projectInfo.m_path.toStdString().c_str();
-        if (builtPathsResult.contains(projectPath))
+        AZ::IO::FixedMaxPath lexicallyNormalPath = AZ::IO::FixedMaxPath(projectPath).LexicallyNormal();
+        if (builtPathsResult.contains(lexicallyNormalPath.c_str()))
         {
             result = true;
         }
@@ -167,15 +168,16 @@ namespace O3DE::ProjectManager
         bool success = GetBuiltSuccessfullyPaths(builtPathsResult);
 
         AZStd::string projectPath = projectInfo.m_path.toStdString().c_str();
+        AZ::IO::FixedMaxPath lexicallyNormalPath = AZ::IO::FixedMaxPath(projectPath).LexicallyNormal();
         if (successfullyBuilt)
         {
             //Add successfully built path to set
-            builtPathsResult.insert(projectPath);
+            builtPathsResult.insert(lexicallyNormalPath.c_str());
         }
         else
         {
             // Remove unsuccessfully built path from set
-            builtPathsResult.erase(projectPath);
+            builtPathsResult.erase(lexicallyNormalPath.c_str());
         }
 
         success = m_settingsRegistry->SetObject<AZStd::set<AZStd::string>>(ProjectsBuiltSuccessfullyKey, builtPathsResult);

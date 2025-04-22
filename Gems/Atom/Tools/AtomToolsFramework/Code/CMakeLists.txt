@@ -10,10 +10,10 @@ if(NOT PAL_TRAIT_BUILD_HOST_TOOLS)
     return()
 endif()
 
-ly_get_list_relative_pal_filename(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME})
+o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 
 ly_add_target(
-    NAME AtomToolsFramework.Static STATIC
+    NAME ${gem_name}.Static STATIC
     NAMESPACE Gem
     AUTOMOC
     AUTOUIC
@@ -29,24 +29,29 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         PUBLIC
-            AZ::AzCore
-            AZ::AzToolsFramework
-            AZ::AzQtComponents
+            3rdParty::Python
             3rdParty::Qt::Core
             3rdParty::Qt::Gui
             3rdParty::Qt::Network
             3rdParty::Qt::Widgets
-            3rdParty::Python
+            AZ::AzCore
+            AZ::AzQtComponents
+            AZ::AzToolsFramework
+            Gem::Atom_Bootstrap.Headers
+            Gem::Atom_Component_DebugCamera.Static
+            Gem::Atom_Feature_Common
+            Gem::Atom_Feature_Common.Public
+            Gem::Atom_RHI.Public
+            Gem::Atom_RHI.Reflect
             Gem::Atom_RPI.Edit
             Gem::Atom_RPI.Public
-            Gem::Atom_RHI.Reflect
-            Gem::Atom_Feature_Common.Static
-            Gem::Atom_Bootstrap.Headers
+            Gem::GraphCanvasWidgets
+            Gem::GraphModel.Editor.Static
             Gem::ImageProcessingAtom.Headers
 )
 
 ly_add_target(
-    NAME AtomToolsFramework.Editor GEM_MODULE
+    NAME ${gem_name}.Editor GEM_MODULE
 
     NAMESPACE Gem
     AUTOMOC
@@ -60,10 +65,33 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         PRIVATE
-            Gem::AtomToolsFramework.Static
+            Gem::${gem_name}.Static
     RUNTIME_DEPENDENCIES
+        Gem::Atom_Bootstrap
+        Gem::Atom_Component_DebugCamera
+        Gem::Atom_Feature_Common.Editor
+        Gem::Atom_RHI.Private
+        Gem::Atom_RHI_Null.Private
+        Gem::Atom_RPI.Editor
+        Gem::EditorPythonBindings.Editor
+        Gem::GraphCanvas.Editor
+        Gem::GraphCanvasWidgets
+        Gem::GraphModel.Editor
         Gem::ImageProcessingAtom.Editor
 )
+
+# Inject the gem name into the Module source file
+ly_add_source_properties(
+    SOURCES
+        Source/AtomToolsFrameworkModule.cpp
+    PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_GEM_NAME=${gem_name}
+            O3DE_GEM_VERSION=${gem_version})
+
+# Add a 'builders' alias to allow the ${gem_name} root gem path to be added to the generated
+# cmake_dependencies.<project>.assetprocessor.setreg to allow the asset scan folder for it to be added
+ly_create_alias(NAME ${gem_name}.Builders NAMESPACE Gem)
 
 ################################################################################
 # Tests
@@ -71,7 +99,7 @@ ly_add_target(
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
 
     ly_add_target(
-        NAME AtomToolsFramework.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+        NAME ${gem_name}.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
         NAMESPACE Gem
         FILES_CMAKE
             atomtoolsframework_tests_files.cmake
@@ -81,15 +109,17 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 Tests
         BUILD_DEPENDENCIES
             PRIVATE
+                3rdParty::Qt::Test
+                AZ::AzFrameworkTestShared
                 AZ::AzTest
                 AZ::AzTestShared
-                AZ::AzFrameworkTestShared
-                Gem::AtomToolsFramework.Static
                 Gem::Atom_Utils.TestUtils.Static
+                Gem::${gem_name}.Static
     )
 
     ly_add_googletest(
-        NAME Gem::AtomToolsFramework.Tests
+        NAME Gem::${gem_name}.Tests
+        LABELS REQUIRES_tiaf
     )
 
 endif()

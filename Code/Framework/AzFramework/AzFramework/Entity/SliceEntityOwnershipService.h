@@ -32,7 +32,7 @@ namespace AzFramework
         , private SliceEntityRequestBus::MultiHandler
     {
     public:
-        AZ_CLASS_ALLOCATOR(SliceEntityOwnershipService, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SliceEntityOwnershipService, AZ::SystemAllocator);
 
         explicit SliceEntityOwnershipService(const EntityContextId& entityContextId, AZ::SerializeContext* serializeContext);
 
@@ -81,6 +81,8 @@ namespace AzFramework
         void SetEntitiesAddedCallback(OnEntitiesAddedCallback onEntitiesAddedCallback) override;
         void SetEntitiesRemovedCallback(OnEntitiesRemovedCallback onEntityRemovedCallback) override;
         void SetValidateEntitiesCallback(ValidateEntitiesCallback validateEntitiesCallback) override;
+
+        void HandleEntityBeingDestroyed(const AZ::EntityId& entityId) override;
         //////////////////////////////////////////////////////////////////////////
 
         //////////////////////////////////////////////////////////////////////////
@@ -147,6 +149,9 @@ namespace AzFramework
 
     private:
         EntityList GetRootSliceEntities();
+
+        // Checks if the root and root component is available, asserts if its not, and returns true if things are OK to proceed, false otherwise.
+        bool CheckAndAssertRootComponentIsAvailable();
 
         /// Helper function to send OnSliceInstantiationFailed events.
         static void DispatchOnSliceInstantiationFailed(const SliceInstantiationTicket& ticket,

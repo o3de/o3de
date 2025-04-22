@@ -28,7 +28,7 @@
 #include <ScriptCanvasDeveloperEditor/EditorAutomation/EditorAutomationStates/UtilityStates.h>
 #include <ScriptCanvasDeveloperEditor/EditorAutomation/EditorAutomationStates/VariableStates.h>
 
-namespace ScriptCanvasDeveloper
+namespace ScriptCanvas::Developer
 {
     /**
         EditorautomationTest that creates a node from the node palette using drag/drop

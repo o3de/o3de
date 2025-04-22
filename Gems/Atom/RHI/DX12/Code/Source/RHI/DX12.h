@@ -33,6 +33,8 @@
 #define IID_GRAPHICS_PPV_ARGS(ppType) IID_PPV_ARGS(ppType)
 #endif
 
+#define MAKE_FOURCC(a, b, c, d) (((uint32_t)(d) << 24) | ((uint32_t)(c) << 16) | ((uint32_t)(b) << 8) | (uint32_t)(a))
+
 namespace AZ
 {
     namespace DX12
@@ -50,12 +52,7 @@ namespace AZ
             return l.ptr != r.ptr;
         }
 
-        inline bool AssertSuccess(HRESULT hr)
-        {
-            bool success = SUCCEEDED(hr);
-            AZ_Assert(success, "HRESULT not a success %x", hr);
-            return success;
-        }
+        bool AssertSuccess(HRESULT hr);
 
         template<class T, class U>
         inline RHI::Ptr<T> DX12ResourceCast(U* resource)
@@ -64,13 +61,6 @@ namespace AZ
             resource->QueryInterface(IID_GRAPHICS_PPV_ARGS(newResource.GetAddressOf()));
             return newResource.Get();
         }
-
-        enum
-        {
-            DX12_RESOURCE_STATE_COPY_QUEUE_BIT = 0x80000000,
-
-            DX12_RESOURCE_STATE_VALID_API_MASK = ~DX12_RESOURCE_STATE_COPY_QUEUE_BIT
-        };
 
         using GpuDescriptorHandle = D3D12_GPU_DESCRIPTOR_HANDLE;
         using GpuVirtualAddress = D3D12_GPU_VIRTUAL_ADDRESS;

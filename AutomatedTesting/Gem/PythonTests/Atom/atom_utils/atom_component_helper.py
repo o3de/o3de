@@ -9,9 +9,6 @@ import datetime
 import os
 import zipfile
 
-from ly_test_tools.image.screenshot_compare_qssim import qssim as compare_screenshots
-
-
 class ImageComparisonTestFailure(Exception):
     """Custom test failure for failed image comparisons."""
     pass
@@ -28,7 +25,7 @@ def create_screenshots_archive(screenshot_path):
     # Search for .png and .ppm files to add to the zip archive file.
     for (folder_name, sub_folders, file_names) in os.walk(screenshot_path):
         for file_name in file_names:
-            if file_name.endswith(".png") or file_name.endswith(".ppm"):
+            if file_name.lower().endswith(".png") or file_name.lower().endswith(".ppm"):
                 file_path = os.path.join(folder_name, file_name)
                 files_to_archive.append(file_path)
 
@@ -63,53 +60,18 @@ def golden_images_directory():
     return golden_images_dir
 
 
-def compare_screenshot_similarity(
-        test_screenshot, golden_image, similarity_threshold, create_zip_archive=False, screenshot_directory=""):
+def compare_screenshot_to_golden_image(screenshot_directory, test_screenshot, golden_image):
     """
-    Compares the similarity between a test screenshot and a golden image.
-    It returns a "Screenshots match" string if the comparison mean value is higher than the similarity threshold.
-    Otherwise, it returns an error string.
-    :param test_screenshot: path to the test screenshot to compare.
-    :param golden_image: path to the golden image to compare.
-    :param similarity_threshold: value for the comparison mean value to be asserted against.
-    :param create_zip_archive: toggle to create a zip archive containing the screenshots if the assert check fails.
-    :param screenshot_directory: directory containing screenshots to create zip archive from.
-    :return: Error string if compared mean value < similarity threshold or screenshot_directory is missing for .zip,
-        otherwise it returns a "Screenshots match" string.
+    Compares the test_screenshot to the golden_images and return the comparison result.
+    :param screenshot_directory: path to the directory containing screenshots.
+    :param test_screenshot: the screenshot file name.
+    :param golden_image: the golden image file name.
     """
-    result = "Screenshots match"
-    if create_zip_archive and not screenshot_directory:
-        result = 'You must specify a screenshot_directory in order to create a zip archive.\n'
+    from Atom.atom_utils.screenshot_utils import compare_screenshots
 
-    mean_similarity = compare_screenshots(test_screenshot, golden_image)
-    if not mean_similarity > similarity_threshold:
-        if create_zip_archive:
-            create_screenshots_archive(screenshot_directory)
-        result = (
-            f"When comparing the test_screenshot: '{test_screenshot}' "
-            f"to golden_image: '{golden_image}' the mean similarity of '{mean_similarity}' "
-            f"was lower than the similarity threshold of '{similarity_threshold}'. ")
+    golden_images_dir = golden_images_directory()
 
-    return result
-
-
-def compare_screenshot_to_golden_image(
-        screenshot_directory, test_screenshots, golden_images, similarity_threshold=0.99):
-    """
-    Compares a list of test_screenshots to a list of golden_images and return True if they match within the
-    similarity threshold set. Otherwise, it will raise ImageComparisonTestFailure with a failure message.
-    :param screenshot_directory: path to the directory containing screenshots for creating .zip archives.
-    :param test_screenshots: list of test screenshot path strings.
-    :param golden_images: list of golden image path strings.
-    :param similarity_threshold: float threshold tolerance to set when comparing screenshots to golden images.
-    """
-    for test_screenshot, golden_image in zip(test_screenshots, golden_images):
-        screenshot_comparison_result = compare_screenshot_similarity(
-            test_screenshot, golden_image, similarity_threshold, True, screenshot_directory)
-        if screenshot_comparison_result != "Screenshots match":
-            raise ImageComparisonTestFailure(f"Screenshot test failed: {screenshot_comparison_result}")
-
-    return True
+    return compare_screenshots(f"{screenshot_directory}/{test_screenshot}", f"{golden_images_dir}/{golden_image}")
 
 
 def initial_viewport_setup(screen_width=1280, screen_height=720):
@@ -123,7 +85,9 @@ def initial_viewport_setup(screen_width=1280, screen_height=720):
     import azlmbr.legacy.general as general
 
     general.set_viewport_size(screen_width, screen_height)
+    general.idle_wait_frames(1)
     general.update_viewport()
+    general.idle_wait_frames(1)
 
 
 def enter_exit_game_mode_take_screenshot(screenshot_name, enter_game_tuple, exit_game_tuple, timeout_in_seconds=4):
@@ -137,13 +101,18 @@ def enter_exit_game_mode_take_screenshot(screenshot_name, enter_game_tuple, exit
     """
     import azlmbr.legacy.general as general
 
-    from editor_python_test_tools.utils import TestHelper
+    from editor_python_test_tools.utils import TestHelper, Report
 
     from Atom.atom_utils.screenshot_utils import ScreenshotHelper
 
+    screenshot_helper = ScreenshotHelper(general.idle_wait_frames)
     TestHelper.enter_game_mode(enter_game_tuple)
     TestHelper.wait_for_condition(function=lambda: general.is_in_game_mode(), timeout_in_seconds=timeout_in_seconds)
-    ScreenshotHelper(general.idle_wait_frames).capture_screenshot_blocking(screenshot_name)
+    screenshot_helper.prepare_viewport_for_screenshot(1920, 1080)
+    success_screenshot = TestHelper.wait_for_condition(
+        function=lambda: screenshot_helper.capture_screenshot_blocking(screenshot_name),
+        timeout_in_seconds=timeout_in_seconds)
+    Report.result(("Screenshot taken", "Screenshot failed to be taken"), success_screenshot)
     TestHelper.exit_game_mode(exit_game_tuple)
     TestHelper.wait_for_condition(function=lambda: not general.is_in_game_mode(), timeout_in_seconds=timeout_in_seconds)
 
@@ -193,17 +162,17 @@ def create_basic_atom_rendering_scene():
         AtomComponentProperties.global_skylight(), default_level_entity.id)
     hdri_skybox_component = global_skylight_entity.add_component(AtomComponentProperties.hdri_skybox())
     global_skylight_component = global_skylight_entity.add_component(AtomComponentProperties.global_skylight())
-    global_skylight_image_asset_path = os.path.join("LightingPresets", "default_iblskyboxcm.exr.streamingimage")
+    global_skylight_image_asset_path = os.path.join("lightingpresets", "default_iblskyboxcm.exr.streamingimage")
     global_skylight_image_asset = Asset.find_asset_by_path(global_skylight_image_asset_path, False)
     hdri_skybox_component.set_component_property_value(
         AtomComponentProperties.hdri_skybox('Cubemap Texture'), global_skylight_image_asset.id)
     global_skylight_diffuse_image_asset_path = os.path.join(
-        "LightingPresets", "default_iblskyboxcm_ibldiffuse.exr.streamingimage")
+        "lightingpresets", "default_iblskyboxcm_ibldiffuse.exr.streamingimage")
     global_skylight_diffuse_image_asset = Asset.find_asset_by_path(global_skylight_diffuse_image_asset_path, False)
     global_skylight_component.set_component_property_value(
         AtomComponentProperties.global_skylight('Diffuse Image'), global_skylight_diffuse_image_asset.id)
     global_skylight_specular_image_asset_path = os.path.join(
-        "LightingPresets", "default_iblskyboxcm_iblspecular.exr.streamingimage")
+        "lightingpresets", "default_iblskyboxcm_iblspecular.exr.streamingimage")
     global_skylight_specular_image_asset = Asset.find_asset_by_path(
         global_skylight_specular_image_asset_path, False)
     global_skylight_component.set_component_property_value(
@@ -215,11 +184,11 @@ def create_basic_atom_rendering_scene():
     ground_plane_material_component = ground_plane_entity.add_component(AtomComponentProperties.material())
     ground_plane_entity.set_local_uniform_scale(32.0)
     ground_plane_mesh_component = ground_plane_entity.add_component(AtomComponentProperties.mesh())
-    ground_plane_mesh_asset_path = os.path.join("TestData", "Objects", "plane.azmodel")
+    ground_plane_mesh_asset_path = os.path.join("testdata", "objects", "plane.fbx.azmodel")
     ground_plane_mesh_asset = Asset.find_asset_by_path(ground_plane_mesh_asset_path, False)
     ground_plane_mesh_component.set_component_property_value(
-        AtomComponentProperties.mesh('Mesh Asset'), ground_plane_mesh_asset.id)
-    ground_plane_material_asset_path = os.path.join("Materials", "Presets", "PBR", "metal_chrome.azmaterial")
+        AtomComponentProperties.mesh('Model Asset'), ground_plane_mesh_asset.id)
+    ground_plane_material_asset_path = os.path.join("materials", "presets", "pbr", "metal_chrome.azmaterial")
     ground_plane_material_asset = Asset.find_asset_by_path(ground_plane_material_asset_path, False)
     ground_plane_material_component.set_component_property_value(
         AtomComponentProperties.material('Material Asset'), ground_plane_material_asset.id)
@@ -235,12 +204,12 @@ def create_basic_atom_rendering_scene():
     sphere_entity = EditorEntity.create_editor_entity_at(
         math.Vector3(0.0, 0.0, 1.0), "Sphere", default_level_entity.id)
     sphere_mesh_component = sphere_entity.add_component(AtomComponentProperties.mesh())
-    sphere_mesh_asset_path = os.path.join("Models", "sphere.azmodel")
+    sphere_mesh_asset_path = os.path.join("models", "sphere.fbx.azmodel")
     sphere_mesh_asset = Asset.find_asset_by_path(sphere_mesh_asset_path, False)
     sphere_mesh_component.set_component_property_value(
-        AtomComponentProperties.mesh('Mesh Asset'), sphere_mesh_asset.id)
+        AtomComponentProperties.mesh('Model Asset'), sphere_mesh_asset.id)
     sphere_material_component = sphere_entity.add_component(AtomComponentProperties.material())
-    sphere_material_asset_path = os.path.join("Materials", "Presets", "PBR", "metal_brass_polished.azmaterial")
+    sphere_material_asset_path = os.path.join("materials", "presets", "pbr", "metal_brass_polished.azmaterial")
     sphere_material_asset = Asset.find_asset_by_path(sphere_material_asset_path, False)
     sphere_material_component.set_component_property_value(
         AtomComponentProperties.material('Material Asset'), sphere_material_asset.id)

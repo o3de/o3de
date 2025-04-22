@@ -33,6 +33,7 @@ namespace AudioControls
     {
         setupUi(this);
 
+        m_connectionPropertiesFrame->setHidden(true);
         m_connectionList->viewport()->installEventFilter(this);
         m_connectionList->installEventFilter(this);
 

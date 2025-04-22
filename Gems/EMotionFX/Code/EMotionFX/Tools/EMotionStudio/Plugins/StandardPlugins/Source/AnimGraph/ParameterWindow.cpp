@@ -6,26 +6,25 @@
  *
  */
 
-// include required headers
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzQtComponents/Components/FilteredSearchWidget.h>
+#include <Editor/InspectorBus.h>
 #include <EMotionFX/CommandSystem/Source/AnimGraphGroupParameterCommands.h>
 #include <EMotionFX/CommandSystem/Source/AnimGraphParameterCommands.h>
 #include <EMotionFX/CommandSystem/Source/SelectionList.h>
 #include <EMotionFX/Source/ActorInstance.h>
-#include <EMotionFX/Source/AnimGraphGameControllerSettings.h>
 #include <EMotionFX/Source/AnimGraphInstance.h>
 #include <EMotionFX/Source/AnimGraphNode.h>
 #include <EMotionFX/Source/BlendTreeParameterNode.h>
 #include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
+#include <EMotionStudio/EMStudioSDK/Source/MainWindow.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphPlugin.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/BlendGraphWidget.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/BlendTreeVisualNode.h>
-#include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/GameControllerWindow.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/GraphNode.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/NodeGraph.h>
-#include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/ParameterCreateEditDialog.h>
+#include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/ParameterCreateEditWidget.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/ParameterEditor/ParameterEditorFactory.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/ParameterEditor/ValueParameterEditor.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/ParameterWindow.h>
@@ -34,6 +33,7 @@
 #include <MCore/Source/LogManager.h>
 #include <MCore/Source/ReflectionSerializer.h>
 #include <QAction>
+#include <QComboBox>
 #include <QContextMenuEvent>
 #include <QHeaderView>
 #include <QLabel>
@@ -165,11 +165,6 @@ namespace EMStudio
             m_addAction->setMenu(contextMenu);
         }
 
-        // add edit button
-        m_editAction = toolBar->addAction(QIcon(":/EMotionFX/Edit.svg"),
-            tr("Edit selected parameter"),
-            this, &ParameterWindow::OnEditButton);
-
         // add spacer widget
         QWidget* spacerWidget = new QWidget();
         spacerWidget->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
@@ -229,6 +224,10 @@ namespace EMStudio
         // set the focus policy
         setFocusPolicy(Qt::ClickFocus);
 
+        // create parameter create/edit widget, no parent because we don't want to show
+        // it. Inspector will show this widget when instructed
+        m_parameterCreateEditWidget = new ParameterCreateEditWidget(m_plugin, nullptr);
+
         // Force reinitialize in case e.g. a parameter got added or removed.
         connect(&m_plugin->GetAnimGraphModel(), &AnimGraphModel::ParametersChanged, [this](EMotionFX::AnimGraph* animGraph)
         {
@@ -252,6 +251,7 @@ namespace EMStudio
     ParameterWindow::~ParameterWindow()
     {
         EMotionFX::AnimGraphNotificationBus::Handler::BusDisconnect();
+        delete m_parameterCreateEditWidget;
     }
 
     // check if the gamepad control mode is enabled for the given parameter and if its actually being controlled or not
@@ -260,84 +260,16 @@ namespace EMStudio
         *outIsActuallyControlled = false;
         *outIsEnabled = false;
 
-        // get the game controller settings and its active preset
-        EMotionFX::AnimGraphGameControllerSettings& gameControllerSettings = animGraph->GetGameControllerSettings();
-        EMotionFX::AnimGraphGameControllerSettings::Preset* preset = gameControllerSettings.GetActivePreset();
-
-        // get access to the game controller and check if it is valid
-        bool isGameControllerValid = false;
-#if AZ_TRAIT_EMOTIONFX_HAS_GAME_CONTROLLER
-        GameControllerWindow* gameControllerWindow = m_plugin->GetGameControllerWindow();
-        if (gameControllerWindow)
-        {
-            isGameControllerValid = gameControllerWindow->GetIsGameControllerValid();
-        }
-#endif
-
-        // only update in case a preset is selected and the game controller is valid
-        if (preset && isGameControllerValid)
-        {
-            // check if the given parameter is controlled by a joystick
-            EMotionFX::AnimGraphGameControllerSettings::ParameterInfo* controllerParameterInfo = preset->FindParameterInfo(parameter->GetName().c_str());
-            if (controllerParameterInfo)
-            {
-                // set the gamepad controlled enable flag
-                if (controllerParameterInfo->m_enabled)
-                {
-                    *outIsEnabled = true;
-                }
-
-                // when the axis is not set to "None"
-                if (controllerParameterInfo->m_axis != MCORE_INVALIDINDEX8)
-                {
-                    *outIsActuallyControlled = true;
-                }
-            }
-
-            // check if the given parameter is controlled by a gamepad button
-            if (preset->CheckIfIsParameterButtonControlled(parameter->GetName().c_str()))
-            {
-                *outIsActuallyControlled = true;
-            }
-            if (preset->CheckIfIsButtonEnabled(parameter->GetName().c_str()))
-            {
-                *outIsEnabled = true;
-            }
-        }
+        AZ_UNUSED(animGraph);
+        AZ_UNUSED(parameter);
     }
-
 
     // helper function to update all parameter and button infos
     void ParameterWindow::SetGamepadState(EMotionFX::AnimGraph* animGraph, const EMotionFX::Parameter* parameter, bool isEnabled)
     {
-        // get the game controller settings and its active preset
-        EMotionFX::AnimGraphGameControllerSettings& gameControllerSettings = animGraph->GetGameControllerSettings();
-        EMotionFX::AnimGraphGameControllerSettings::Preset* preset = gameControllerSettings.GetActivePreset();
-
-        // get access to the game controller and check if it is valid
-        bool isGameControllerValid = false;
-
-#if AZ_TRAIT_EMOTIONFX_HAS_GAME_CONTROLLER
-        GameControllerWindow* gameControllerWindow = m_plugin->GetGameControllerWindow();
-        if (gameControllerWindow)
-        {
-            isGameControllerValid = gameControllerWindow->GetIsGameControllerValid();
-        }
-#endif
-
-        // only update in case a preset is selected and the game controller is valid
-        if (preset && isGameControllerValid)
-        {
-            // check if the given parameter is controlled by a joystick and set its enabled state
-            EMotionFX::AnimGraphGameControllerSettings::ParameterInfo* controllerParameterInfo = preset->FindParameterInfo(parameter->GetName().c_str());
-            if (controllerParameterInfo)
-            {
-                controllerParameterInfo->m_enabled = isEnabled;
-            }
-
-            // do the same for the button infos
-            preset->SetButtonEnabled(parameter->GetName().c_str(), isEnabled);
-        }
+        AZ_UNUSED(animGraph);
+        AZ_UNUSED(parameter);
+        AZ_UNUSED(isEnabled);
     }
 
     void ParameterWindow::AddParameterToInterface(EMotionFX::AnimGraph* animGraph, const EMotionFX::Parameter* parameter, QTreeWidgetItem* parentWidgetItem)
@@ -515,10 +447,6 @@ namespace EMStudio
                     connect(makeDefaultAction, &QAction::triggered, this, &ParameterWindow::OnMakeDefaultValue);
                 }
             }
-
-            // edit action
-            QAction* editAction = menu->addAction("Edit");
-            connect(editAction, &QAction::triggered, this, &ParameterWindow::OnEditButton);
         }
         if (!m_selectedParameterNames.empty())
         {
@@ -710,6 +638,7 @@ namespace EMStudio
 
         m_lockSelection = false;
 
+        UpdateSelectionArrays();
         UpdateAttributesForParameterWidgets();
         UpdateInterface();
     }
@@ -819,18 +748,20 @@ namespace EMStudio
         if (!m_animGraph || EMotionFX::GetRecorder().GetIsInPlayMode() || EMotionFX::GetRecorder().GetIsRecording())
         {
             m_addAction->setEnabled(false);
-            m_editAction->setEnabled(false);
             return;
         }
 
         // always allow to add a parameter when there is a anim graph selected
         m_addAction->setEnabled(true);
 
-        // disable the remove and edit buttton if we dont have any parameter selected
-        m_editAction->setEnabled(true);
-        if (m_selectedParameterNames.empty())
+        // edit variable if only one is chosen, otherwise close parameter editor
+        if (m_selectedParameterNames.size() == 1)
         {
-            m_editAction->setEnabled(false);
+            OnEditSelected();
+        }
+        else if (m_parameterCreateEditWidget)
+        {
+            EMStudio::InspectorRequestBus::Broadcast(&EMStudio::InspectorRequestBus::Events::ClearIfShown, m_parameterCreateEditWidget);
         }
 
         // check if we can move up/down the currently single selected item
@@ -911,23 +842,20 @@ namespace EMStudio
             return;
         }
 
-        ParameterCreateEditDialog* createEditParameterDialog = new ParameterCreateEditDialog(m_plugin, this);
-        createEditParameterDialog->Init();
+        m_parameterCreateEditWidget->Reinit();
+        QObject::disconnect(m_parameterCreateEditWidget, &EMStudio::ParameterCreateEditWidget::accept, nullptr, nullptr);
 
-        EMStudio::ParameterCreateEditDialog::connect(createEditParameterDialog, &QDialog::finished, [=](int resultCode)
+        EMStudio::InspectorRequestBus::Broadcast(&EMStudio::InspectorRequestBus::Events::Update, m_parameterCreateEditWidget);
+        EMStudio::ParameterCreateEditWidget::connect(m_parameterCreateEditWidget, &EMStudio::ParameterCreateEditWidget::accept, [this]()
             {
-                if (resultCode == QDialog::Rejected)
-                {
-                    delete createEditParameterDialog;
-                    return;
-                }
+                EMStudio::InspectorRequestBus::Broadcast(&EMStudio::InspectorRequestBus::Events::ClearIfShown, m_parameterCreateEditWidget);
 
                 AZStd::string commandResult;
                 AZStd::string commandString;
                 MCore::CommandGroup commandGroup("Add parameter");
 
                 // Construct the create parameter command and add it to the command group.
-                const AZStd::unique_ptr<EMotionFX::Parameter>& parameter = createEditParameterDialog->GetParameter();
+                const AZStd::unique_ptr<EMotionFX::Parameter>& parameter = m_parameterCreateEditWidget->GetParameter();
 
                 CommandSystem::ConstructCreateParameterCommand(commandString, m_animGraph, parameter.get());
                 commandGroup.AddCommandString(commandString);
@@ -962,15 +890,12 @@ namespace EMStudio
                 {
                     AZ_Error("EMotionFX", false, result.c_str());
                 }
-                delete createEditParameterDialog;
             });
-
-        createEditParameterDialog->open();
     }
 
 
     // edit a new parameter
-    void ParameterWindow::OnEditButton()
+    void ParameterWindow::OnEditSelected()
     {
         if (!m_animGraph)
         {
@@ -986,20 +911,16 @@ namespace EMStudio
 
         const AZStd::string oldName = parameter->GetName();
 
-        // create and init the dialog
-        ParameterCreateEditDialog* dialog = new ParameterCreateEditDialog(m_plugin, this, parameter);
-        dialog->Init();
-        // We cannot use exec here as we need to access it from the tests
-        EMStudio::ParameterCreateEditDialog::connect(dialog, &QDialog::finished, [=](int resultCode)
+        m_parameterCreateEditWidget->Reinit(parameter);
+        QObject::disconnect(m_parameterCreateEditWidget, &EMStudio::ParameterCreateEditWidget::accept, nullptr, nullptr);
+
+        EMStudio::InspectorRequestBus::Broadcast(&EMStudio::InspectorRequestBus::Events::Update, m_parameterCreateEditWidget);
+        EMStudio::ParameterCreateEditWidget::connect(m_parameterCreateEditWidget, &EMStudio::ParameterCreateEditWidget::accept, [this, parameter, oldName]()
             {
-                dialog->deleteLater();
-                if (resultCode == QDialog::Rejected)
-                {
-                    return;
-                }
+                EMStudio::InspectorRequestBus::Broadcast(&EMStudio::InspectorRequestBus::Events::ClearIfShown, m_parameterCreateEditWidget);
 
                 // convert the interface type into a string
-                const AZStd::unique_ptr<EMotionFX::Parameter>& editedParameter = dialog->GetParameter();
+                const AZStd::unique_ptr<EMotionFX::Parameter>& editedParameter = m_parameterCreateEditWidget->GetParameter();
                 const AZStd::string contents = MCore::ReflectionSerializer::Serialize(editedParameter.get()).GetValue();
 
                 const bool isGroupParameter = (azrtti_typeid(parameter) == azrtti_typeid<EMotionFX::GroupParameter>());
@@ -1099,7 +1020,6 @@ namespace EMStudio
                     }
                 }
             });
-        dialog->open();
     }
 
 
@@ -1184,6 +1104,8 @@ namespace EMStudio
         {
             return;
         }
+
+        EMStudio::InspectorRequestBus::Broadcast(&EMStudio::InspectorRequestBus::Events::ClearIfShown, m_parameterCreateEditWidget);
 
         MCore::CommandGroup commandGroup("Remove parameters/groups");
 
@@ -1277,6 +1199,8 @@ namespace EMStudio
         {
             return;
         }
+
+        EMStudio::InspectorRequestBus::Broadcast(&EMStudio::InspectorRequestBus::Events::ClearIfShown, m_parameterCreateEditWidget);
 
         MCore::CommandGroup commandGroup("Clear parameters/groups");
 

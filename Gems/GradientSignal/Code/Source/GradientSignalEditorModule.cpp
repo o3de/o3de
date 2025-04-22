@@ -11,7 +11,6 @@
 #include <Editor/EditorSmoothStepGradientComponent.h>
 #include <Editor/EditorSurfaceSlopeGradientComponent.h>
 #include <Editor/EditorMixedGradientComponent.h>
-#include <Editor/EditorImageBuilderComponent.h>
 #include <Editor/EditorImageGradientComponent.h>
 #include <Editor/EditorConstantGradientComponent.h>
 #include <Editor/EditorThresholdGradientComponent.h>
@@ -24,11 +23,14 @@
 #include <Editor/EditorPerlinGradientComponent.h>
 #include <Editor/EditorRandomGradientComponent.h>
 #include <Editor/EditorGradientTransformComponent.h>
+#include <Editor/EditorStreamingImageAssetCtrl.h>
 #include <Editor/EditorSurfaceMaskGradientComponent.h>
 #include <Editor/EditorGradientSurfaceDataComponent.h>
+#include <GradientSignal/Editor/GradientPreviewer.h>
+#include <GradientSignal/Editor/EditorGradientBakerComponent.h>
 #include <GradientSignal/Editor/EditorGradientComponentBase.h>
+#include <GradientSignal/Editor/PaintableImageAssetHelper.h>
 #include <UI/GradientPreviewDataWidget.h>
-#include <Editor/EditorImageProcessingSystemComponent.h>
 
 namespace GradientSignal
 {
@@ -36,13 +38,12 @@ namespace GradientSignal
     {
         m_descriptors.insert(m_descriptors.end(), {
             GradientSignalEditorSystemComponent::CreateDescriptor(),
-            EditorImageProcessingSystemComponent::CreateDescriptor(),
 
+            EditorGradientBakerComponent::CreateDescriptor(),
             EditorSurfaceAltitudeGradientComponent::CreateDescriptor(),
             EditorSmoothStepGradientComponent::CreateDescriptor(),
             EditorSurfaceSlopeGradientComponent::CreateDescriptor(),
             EditorMixedGradientComponent::CreateDescriptor(),
-            EditorImageBuilderPluginComponent::CreateDescriptor(),
             EditorImageGradientComponent::CreateDescriptor(),
             EditorConstantGradientComponent::CreateDescriptor(),
             EditorThresholdGradientComponent::CreateDescriptor(),
@@ -65,13 +66,15 @@ namespace GradientSignal
         AZ::ComponentTypeList requiredComponents = GradientSignalModule::GetRequiredSystemComponents();
 
         requiredComponents.push_back(azrtti_typeid<GradientSignalEditorSystemComponent>());
-        requiredComponents.push_back(azrtti_typeid<EditorImageProcessingSystemComponent>());
 
         return requiredComponents;
     }
 
     void GradientSignalEditorSystemComponent::Reflect(AZ::ReflectContext* context)
     {
+        GradientPreviewer::Reflect(context);
+        ImageCreatorUtils::PaintableImageAssetHelper<EditorImageGradientComponent, EditorImageGradientComponentMode>::Reflect(context);
+
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<GradientSignalEditorSystemComponent, AZ::Component>()
@@ -82,7 +85,6 @@ namespace GradientSignal
             {
                 editContext->Class<GradientSignalEditorSystemComponent>("GradientSignalEditorSystemComponent", "Handles registration of the gradient preview data widget handler")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }
@@ -91,33 +93,46 @@ namespace GradientSignal
 
     void GradientSignalEditorSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("GradientSignalEditorService", 0xb7e6d6c7));
+        provided.push_back(AZ_CRC_CE("GradientSignalEditorService"));
     }
 
     void GradientSignalEditorSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("GradientSignalEditorService", 0xb7e6d6c7));
+        incompatible.push_back(AZ_CRC_CE("GradientSignalEditorService"));
     }
 
     void GradientSignalEditorSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("PropertyManagerService", 0x63a3d7ad));
+        required.push_back(AZ_CRC_CE("PropertyManagerService"));
     }
 
     void GradientSignalEditorSystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& /*dependent*/)
     {
+    }
 
+    void GradientSignalEditorSystemComponent::OnActionContextModeBindingHook()
+    {
+        EditorImageGradientComponentMode::BindActionsToModes();
     }
 
     void GradientSignalEditorSystemComponent::Activate()
     {
         GradientPreviewDataWidgetHandler::Register();
+        StreamingImagePropertyHandler::Register();
+        AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusConnect();
     }
 
     void GradientSignalEditorSystemComponent::Deactivate()
     {
+        AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
         GradientPreviewDataWidgetHandler::Unregister();
+        // We don't need to unregister the StreamingImagePropertyHandler
+        // because its set to auto-delete (default)
     }
 }
 
-AZ_DECLARE_MODULE_CLASS(Gem_GradientSignalEditor, GradientSignal::GradientSignalEditorModule)
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME, _Editor), GradientSignal::GradientSignalEditorModule)
+#else
+AZ_DECLARE_MODULE_CLASS(Gem_GradientSignal_Editor, GradientSignal::GradientSignalEditorModule)
+#endif

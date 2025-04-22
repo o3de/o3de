@@ -20,6 +20,7 @@ namespace AZ
             : public ComponentConfig
         {
         public:
+            AZ_CLASS_ALLOCATOR(PostFxLayerComponentConfig, SystemAllocator)
             AZ_RTTI(AZ::Render::PostFxLayerComponentConfig, "{D9D31439-BD33-43AA-B341-4F47C669F843}", AZ::ComponentConfig);
 
             static void Reflect(ReflectContext* context);

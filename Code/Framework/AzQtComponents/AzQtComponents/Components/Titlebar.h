@@ -189,7 +189,7 @@ namespace AzQtComponents
         bool eventFilter(QObject* watched, QEvent* event) override;
 
     protected Q_SLOTS:
-        void handleButtonClicked(const DockBarButton::WindowDecorationButton type);
+        void handleButtonClicked(DockBarButton::WindowDecorationButton type);
 
     private:
         friend class Style;

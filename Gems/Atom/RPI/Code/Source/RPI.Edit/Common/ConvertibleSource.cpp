@@ -8,6 +8,8 @@
 
 #include <Atom/RPI.Edit/Common/ConvertibleSource.h>
 
+#include <AzCore/Serialization/SerializeContext.h>
+
 namespace AZ
 {
     namespace RPI

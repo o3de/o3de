@@ -6,10 +6,10 @@
 #
 #
 
-ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME})
+o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 
 ly_add_target(
-    NAME AtomFont ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME ${gem_name} ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         atomfont_files.cmake
@@ -20,7 +20,7 @@ ly_add_target(
             Source
     BUILD_DEPENDENCIES
         PRIVATE
-            3rdParty::freetype
+            3rdParty::Freetype
             AZ::AzCore
             AZ::AtomCore
             Legacy::CryCommon
@@ -30,13 +30,22 @@ ly_add_target(
             Gem::Atom_AtomBridge.Static
 )
 
+# Inject the gem name into the Module source file
+ly_add_source_properties(
+    SOURCES
+        Source/Module.cpp
+    PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_GEM_NAME=${gem_name}
+            O3DE_GEM_VERSION=${gem_version})
+
 ################################################################################
 # Tests
 ################################################################################
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
 
     ly_add_target(
-        NAME AtomFont.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+        NAME ${gem_name}.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
         NAMESPACE Gem
         FILES_CMAKE
             atomfont_test_files.cmake
@@ -49,7 +58,8 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzTest
     )
     ly_add_googletest(
-        NAME Gem::AtomFont.Tests
+        NAME Gem::${gem_name}.Tests
+        LABELS REQUIRES_tiaf
     )
 endif()
 

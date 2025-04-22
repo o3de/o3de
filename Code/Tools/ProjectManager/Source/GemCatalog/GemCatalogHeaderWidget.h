@@ -33,16 +33,15 @@ namespace O3DE::ProjectManager
     class GemCartWidget
         : public QScrollArea
     {
-        Q_OBJECT // AUTOMOC
+        Q_OBJECT
 
     public:
         GemCartWidget(GemModel* gemModel, DownloadController* downloadController, QWidget* parent = nullptr);
-        ~GemCartWidget();
 
     public slots:
-        void GemDownloadAdded(const QString& gemName);
-        void GemDownloadRemoved(const QString& gemName);
-        void GemDownloadProgress(const QString& gemName, int bytesDownloaded, int totalBytes);
+        void ObjectDownloadAdded(const QString& gemName, DownloadController::DownloadObjectType objectType);
+        void ObjectDownloadRemoved(const QString& gemName, DownloadController::DownloadObjectType objectType);
+        void ObjectDownloadProgress(const QString& gemName, DownloadController::DownloadObjectType objectType, int bytesDownloaded, int totalBytes);
 
     private:
         QVector<Tag> GetTagsFromModelIndices(const QVector<QModelIndex>& gems) const;
@@ -102,14 +101,15 @@ namespace O3DE::ProjectManager
         void ReinitForProject();
 
     public slots:
-        void GemDownloadAdded(const QString& gemName);
-        void GemDownloadRemoved(const QString& gemName);
+        void GemDownloadAdded(const QString& gemName, DownloadController::DownloadObjectType objectType);
+        void GemDownloadRemoved(const QString& gemName, DownloadController::DownloadObjectType objectType);
         void GemCartShown(bool state = false);
 
     signals:
         void AddGem();
+        void CreateGem();
         void OpenGemsRepo();
-        void RefreshGems();
+        void RefreshGems(bool refreshRemoteRepos);
         void UpdateGemCart(QWidget* gemCart);
 
     protected slots:

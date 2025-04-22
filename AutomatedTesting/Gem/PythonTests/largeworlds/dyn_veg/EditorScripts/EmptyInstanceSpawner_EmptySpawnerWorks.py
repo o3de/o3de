@@ -57,12 +57,11 @@ def EmptyInstanceSpawner_EmptySpawnerWorks():
     from editor_python_test_tools.utils import TestHelper as helper
 
     # 1) Open an existing simple level
-    helper.init_idle()
-    helper.open_level("Physics", "Base")
+    hydra.open_base_level()
     general.set_current_view_position(512.0, 480.0, 38.0)
 
     # Grab the UUID that we need for creating an Empty Spawner
-    empty_spawner_uuid = azlmbr.math.Uuid_CreateString('{23C40FD4-A55F-4BD3-BE5B-DC5423F217C2}', 0)
+    empty_spawner_uuid = azlmbr.math.Uuid_CreateString('{23C40FD4-A55F-4BD3-BE5B-DC5423F217C2}')
 
     # 2) Test EmptyInstanceSpawner BehaviorContext
     behavior_context_test_success = True

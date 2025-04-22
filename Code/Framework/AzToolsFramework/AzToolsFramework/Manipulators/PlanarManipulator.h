@@ -30,7 +30,7 @@ namespace AzToolsFramework
 
     public:
         AZ_RTTI(PlanarManipulator, "{2B1C2140-F3B1-4DB2-B066-156B67B57B97}", BaseManipulator)
-        AZ_CLASS_ALLOCATOR(PlanarManipulator, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(PlanarManipulator, AZ::SystemAllocator)
 
         PlanarManipulator() = delete;
         PlanarManipulator(const PlanarManipulator&) = delete;

@@ -47,51 +47,43 @@ namespace LmbrCentral
          * AudioProxyComponentRequestBus::Handler
          * Required Interface
          */
-        bool ExecuteSourceTrigger(
-            const Audio::TAudioControlID triggerID,
-            const Audio::SAudioCallBackInfos& callbackInfo,
-            const Audio::SAudioSourceInfo& sourceInfo
+        bool ExecuteTrigger(
+            const Audio::TAudioControlID triggerID
         ) override;
 
-        bool ExecuteTrigger(
+        bool ExecuteSourceTrigger(
             const Audio::TAudioControlID triggerID,
-            const Audio::SAudioCallBackInfos& callbackInfo
+            const Audio::SAudioSourceInfo& sourceInfo
         ) override;
 
         void KillTrigger(const Audio::TAudioControlID triggerID) override;
         void KillAllTriggers() override;
 
         void SetRtpcValue(const Audio::TAudioControlID rtpcID, float value) override;
-
         void SetSwitchState(const Audio::TAudioControlID switchID, const Audio::TAudioSwitchStateID stateID) override;
-
         void SetEnvironmentAmount(const Audio::TAudioEnvironmentID environmentID, float amount) override;
-
         void SetMovesWithEntity(bool shouldTrackEntity) override
         {
             m_tracksEntityPosition = shouldTrackEntity;
         }
-
-        void SetObstructionCalcType(const Audio::EAudioObjectObstructionCalcType type) override;
-
+        void SetObstructionCalcType(const Audio::ObstructionType type) override;
         void SetPosition(const Audio::SATLWorldPosition& position) override;
-
         void SetMultiplePositions(const Audio::MultiPositionParams& params) override;
 
     protected:
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("AudioProxyService", 0x7da4c79c));
+            provided.push_back(AZ_CRC_CE("AudioProxyService"));
         }
 
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC("TransformService", 0x8ee22c50));
+            required.push_back(AZ_CRC_CE("TransformService"));
         }
 
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("AudioProxyService", 0x7da4c79c));
+            incompatible.push_back(AZ_CRC_CE("AudioProxyService"));
         }
 
         static void Reflect(AZ::ReflectContext* context);

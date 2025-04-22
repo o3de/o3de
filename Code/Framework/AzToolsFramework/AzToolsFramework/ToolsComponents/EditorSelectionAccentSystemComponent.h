@@ -59,7 +59,7 @@ namespace AzToolsFramework
 
             static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
             {
-                provided.push_back(AZ_CRC("EditorSelectionAccentingSelectionService", 0x8b5253cf));
+                provided.push_back(AZ_CRC_CE("EditorSelectionAccentingSelectionService"));
             }
 
             /**

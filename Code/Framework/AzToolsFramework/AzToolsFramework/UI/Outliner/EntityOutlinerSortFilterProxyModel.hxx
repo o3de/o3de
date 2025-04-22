@@ -31,7 +31,7 @@ namespace AzToolsFramework
         Q_OBJECT
 
     public:
-        AZ_CLASS_ALLOCATOR(EntityOutlinerSortFilterProxyModel, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EntityOutlinerSortFilterProxyModel, AZ::SystemAllocator);
 
         EntityOutlinerSortFilterProxyModel(QObject* pParent = nullptr);
 

@@ -1,0 +1,38 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_Matrix4x4Functions_FromTranslation",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "From Translation",
+                "category": "Math/Matrix4x4"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_Matrix4x4Functions_FromTranslation",
+                    "details": {
+                        "name": "From Translation",
+                        "tooltip": "Returns a skew-symmetric cross product matrix based on supplied vector"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Source"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{157193C7-B673-4A2B-8B43-5681DCC3DEC3}",
+                            "details": {
+                                "name": "Matrix4x4"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

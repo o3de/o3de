@@ -39,7 +39,7 @@ namespace ScriptEventData
     {
     public:
         AZ_RTTI(VersionedProperty, "{828CA9C0-32F1-40B3-8018-EE7C3C38192A}");
-        AZ_CLASS_ALLOCATOR(VersionedProperty, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(VersionedProperty, AZ::SystemAllocator);
 
         VersionedProperty()
             : m_id(AZ::Uuid::CreateRandom())
@@ -165,9 +165,9 @@ namespace ScriptEventData
 
         //! Data can only be set into a property through this function.
         template <typename T>
-        void Set(T& data)
+        void Set(T&& data)
         {
-            m_data = AZStd::any(data);
+            m_data = AZStd::any(AZStd::forward<T>(data));
         }
 
         //! Returns the latest version of the property

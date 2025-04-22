@@ -9,132 +9,248 @@
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
 ## AP Python Tests ##
 
+## Main Tests ##
+
     ly_add_pytest(
-        NAME AssetPipelineTests.Batch
-        TEST_SUITE sandbox
+        NAME APTests.Batch_2_Main
+        PATH  ${CMAKE_CURRENT_LIST_DIR}/asset_processor_batch_tests_2.py
+        TEST_SUITE main
+        PYTEST_MARKS "not SUITE_sandbox" # don't run sandbox tests in this file
+        RUNTIME_DEPENDENCIES
+            AZ::AssetProcessorBatch
+            AZ::AssetProcessor
+    )
+
+    ly_add_pytest(
+        NAME APTests.ScriptCanvas_Main
+        PATH ${CMAKE_CURRENT_LIST_DIR}/ScriptCanvasAssetProcessorTests.py
+        TEST_SUITE main
+        PYTEST_MARKS "not SUITE_sandbox" # don't run sandbox tests in this file
+        RUNTIME_DEPENDENCIES       
+            AZ::AssetProcessorBatch
+            AZ::AssetProcessor
+        COMPONENT
+            ScriptCanvas
+    )
+
+## Periodic Tests ##
+
+    ly_add_pytest(
+        NAME APTests.AssetBuilder_Periodic
+        PATH ${CMAKE_CURRENT_LIST_DIR}/asset_builder_tests.py
+        TEST_SERIAL 
+        TEST_SUITE periodic
+        RUNTIME_DEPENDENCIES
+            AZ::AssetProcessor
+    )
+
+    ly_add_pytest(
+        NAME APTests.Batch_Periodic
         PATH ${CMAKE_CURRENT_LIST_DIR}/asset_processor_batch_tests.py
-        EXCLUDE_TEST_RUN_TARGET_FROM_IDE
+        TEST_SUITE periodic        
+        PYTEST_MARKS "not SUITE_sandbox" # don't run sandbox tests in this file
         RUNTIME_DEPENDENCIES       
             AZ::AssetProcessorBatch
             AZ::AssetProcessor
     )
     
     ly_add_pytest(
-        NAME AssetPipelineTests.Batch_2_Main
-        TEST_SUITE main
-        PATH  ${CMAKE_CURRENT_LIST_DIR}/asset_processor_batch_tests_2.py
+        NAME APTests.Batch_Periodic_Serial
+        PATH ${CMAKE_CURRENT_LIST_DIR}/asset_processor_batch_periodic_serial_tests.py
+        TEST_SERIAL
+        TEST_SUITE periodic        
         PYTEST_MARKS "not SUITE_sandbox" # don't run sandbox tests in this file
-        EXCLUDE_TEST_RUN_TARGET_FROM_IDE
-        RUNTIME_DEPENDENCIES
+        RUNTIME_DEPENDENCIES       
             AZ::AssetProcessorBatch
-            AZ::AssetProcessor
     )
 
     ly_add_pytest(
-        NAME AssetPipelineTests.Batch_2_Sandbox
-        TEST_SUITE sandbox
-        PATH  ${CMAKE_CURRENT_LIST_DIR}/asset_processor_batch_tests_2.py
-        PYTEST_MARKS "SUITE_sandbox" # run only sandbox tests in this file
-        EXCLUDE_TEST_RUN_TARGET_FROM_IDE
-        RUNTIME_DEPENDENCIES
-            AZ::AssetProcessorBatch
-            AZ::AssetProcessor
-    )
-
-    ly_add_pytest(
-        NAME AssetPipelineTests.BatchDependency
+        NAME APTests.BatchDependency_Periodic
         PATH  ${CMAKE_CURRENT_LIST_DIR}/asset_processor_batch_dependency_tests.py
-        EXCLUDE_TEST_RUN_TARGET_FROM_IDE
+        TEST_SUITE periodic
+        PYTEST_MARKS "not SUITE_sandbox" # don't run sandbox tests in this file
         RUNTIME_DEPENDENCIES
             AZ::AssetProcessorBatch
             AZ::AssetProcessor
     )
 
     ly_add_pytest(
-        NAME AssetPipelineTests.BatchDependency_Sandbox
-        TEST_SUITE sandbox
+        NAME APTests.BatchDependency_2_Periodic
         PATH  ${CMAKE_CURRENT_LIST_DIR}/asset_processor_batch_dependency_tests2.py
-        EXCLUDE_TEST_RUN_TARGET_FROM_IDE
+        TEST_SUITE periodic
         RUNTIME_DEPENDENCIES
+            AZ::AssetProcessorBatch
+            AZ::AssetProcessor
+    )
+
+    ly_add_pytest(
+        NAME APTests.Gui_Periodic
+        PATH  ${CMAKE_CURRENT_LIST_DIR}/asset_processor_gui_tests.py
+        TEST_SUITE periodic
+        PYTEST_MARKS "not SUITE_sandbox" # don't run sandbox tests in this file
+        RUNTIME_DEPENDENCIES
+            AZ::AssetProcessorBatch
+            AZ::AssetProcessor
+    )
+
+    ly_add_pytest(
+        NAME APTests.Gui_2_Periodic
+        PATH  ${CMAKE_CURRENT_LIST_DIR}/asset_processor_gui_tests_2.py
+        TEST_SUITE periodic
+        PYTEST_MARKS "not SUITE_sandbox" # don't run sandbox tests in this file
+        RUNTIME_DEPENDENCIES
+            AutomatedTesting.GameLauncher
+            AZ::AssetProcessorBatch
+            AZ::AssetProcessor
+    )
+
+    ly_add_pytest(
+        NAME APTests.AssetRelocator_Periodic
+        PATH ${CMAKE_CURRENT_LIST_DIR}/asset_relocator_tests.py
+        TEST_SUITE periodic
+        PYTEST_MARKS "not SUITE_sandbox" # don't run sandbox tests in this file
+        RUNTIME_DEPENDENCIES
+            AZ::AssetProcessorBatch
+    )
+
+    ly_add_pytest(
+        NAME AssetProcessorCacheServerTests.Periodic
+        PATH  ${CMAKE_CURRENT_LIST_DIR}/asset_processor_cache_server_tests.py
+        TEST_SUITE periodic
+        PYTEST_MARKS "not SUITE_sandbox" # don't run sandbox tests in this file
+        RUNTIME_DEPENDENCIES
+            AZ::AssetProcessor
+    )
+
+## Sandbox Tests ##
+
+    ly_add_pytest(
+        NAME APTests.Batch_Sandbox
+        PATH ${CMAKE_CURRENT_LIST_DIR}/asset_processor_batch_tests.py
+        TEST_SUITE sandbox
+        PYTEST_MARKS "SUITE_sandbox" # run only sandbox tests in this file
+        RUNTIME_DEPENDENCIES       
+            AZ::AssetProcessorBatch
+            AZ::AssetProcessor
+    )
+
+    ly_add_pytest(
+        NAME APTests.Batch_2_Sandbox
+        PATH ${CMAKE_CURRENT_LIST_DIR}/asset_processor_batch_tests_2.py
+        TEST_SUITE sandbox
+        PYTEST_MARKS "SUITE_sandbox" # run only sandbox tests in this file
+        RUNTIME_DEPENDENCIES       
+            AZ::AssetProcessorBatch
+            AZ::AssetProcessor
+    )
+
+    ly_add_pytest(
+        NAME APTests.ScriptCanvas_Sandbox
+        PATH ${CMAKE_CURRENT_LIST_DIR}/ScriptCanvasAssetProcessorTests.py
+        TEST_SUITE sandbox
+        PYTEST_MARKS "SUITE_sandbox" # run only sandbox tests in this file
+        RUNTIME_DEPENDENCIES       
+            AZ::AssetProcessorBatch
+            AZ::AssetProcessor
+        COMPONENT
+            ScriptCanvas
+    )
+    
+    ly_add_pytest(
+        NAME APTests.asset_builder_Sandbox
+        PATH ${CMAKE_CURRENT_LIST_DIR}/asset_builder_tests.py
+        TEST_SUITE sandbox
+        PYTEST_MARKS "SUITE_sandbox" # run only sandbox tests in this file
+        RUNTIME_DEPENDENCIES       
+            AZ::AssetProcessor
+    )
+    
+    ly_add_pytest(
+        NAME APTests.batch_periodic_serial_Sandbox
+        PATH ${CMAKE_CURRENT_LIST_DIR}/asset_processor_batch_periodic_serial_tests.py
+        TEST_SERIAL
+        TEST_SUITE sandbox
+        PYTEST_MARKS "SUITE_sandbox" # run only sandbox tests in this file
+        RUNTIME_DEPENDENCIES       
+            AZ::AssetProcessorBatch
+    )
+    
+    ly_add_pytest(
+        NAME APTests.batch_dependency_Sandbox
+        PATH ${CMAKE_CURRENT_LIST_DIR}/asset_processor_batch_dependency_tests.py
+        TEST_SUITE sandbox
+        PYTEST_MARKS "SUITE_sandbox" # run only sandbox tests in this file
+        RUNTIME_DEPENDENCIES       
             AZ::AssetProcessorBatch
             AZ::AssetProcessor
     )
     
     ly_add_pytest(
-        NAME AssetPipelineTests.Gui
+        NAME APTests.batch_dependency_2_Sandbox
+        PATH ${CMAKE_CURRENT_LIST_DIR}/asset_processor_batch_dependency_tests2.py
         TEST_SUITE sandbox
-        PATH  ${CMAKE_CURRENT_LIST_DIR}/asset_processor_gui_tests.py
-        EXCLUDE_TEST_RUN_TARGET_FROM_IDE
-        RUNTIME_DEPENDENCIES
-            AZ::AssetProcessorBatch
-            AZ::AssetProcessor
-    )
-
-    ly_add_pytest(
-        NAME AssetPipelineTests.Gui_2_Main
-        TEST_SUITE main
-        PATH  ${CMAKE_CURRENT_LIST_DIR}/asset_processor_gui_tests_2.py
-        PYTEST_MARKS "not SUITE_sandbox" # don't run sandbox tests in this file
-        EXCLUDE_TEST_RUN_TARGET_FROM_IDE
-        RUNTIME_DEPENDENCIES
-            AZ::AssetProcessorBatch
-            AZ::AssetProcessor
-    )
-
-    ly_add_pytest(
-        NAME AssetPipelineTests.Gui_2_Sandbox
-        TEST_SUITE sandbox
-        PATH  ${CMAKE_CURRENT_LIST_DIR}/asset_processor_gui_tests_2.py
         PYTEST_MARKS "SUITE_sandbox" # run only sandbox tests in this file
-        EXCLUDE_TEST_RUN_TARGET_FROM_IDE
+        RUNTIME_DEPENDENCIES       
+            AZ::AssetProcessorBatch
+            AZ::AssetProcessor
+    )
+    
+    ly_add_pytest(
+        NAME APTests.gui_Sandbox
+        PATH ${CMAKE_CURRENT_LIST_DIR}/asset_processor_gui_tests.py
+        TEST_SUITE sandbox
+        PYTEST_MARKS "SUITE_sandbox" # run only sandbox tests in this file
+        RUNTIME_DEPENDENCIES       
+            AZ::AssetProcessorBatch
+            AZ::AssetProcessor
+    )
+    
+    ly_add_pytest(
+        NAME APTests.gui_2_Sandbox
+        PATH ${CMAKE_CURRENT_LIST_DIR}/asset_processor_gui_tests_2.py
+        TEST_SUITE sandbox
+        PYTEST_MARKS "SUITE_sandbox" # run only sandbox tests in this file
         RUNTIME_DEPENDENCIES
+            AutomatedTesting.GameLauncher
+            AZ::AssetProcessorBatch
+            AZ::AssetProcessor
+    )
+    
+    ly_add_pytest(
+        NAME APTests.asset_relocator_Sandbox
+        PATH ${CMAKE_CURRENT_LIST_DIR}/asset_relocator_tests.py
+        TEST_SUITE sandbox
+        PYTEST_MARKS "SUITE_sandbox" # run only sandbox tests in this file
+        RUNTIME_DEPENDENCIES       
+            AZ::AssetProcessorBatch
+    )
+    
+    ly_add_pytest(
+        NAME APTests.cache_server_Sandbox
+        PATH ${CMAKE_CURRENT_LIST_DIR}/asset_processor_cache_server.py
+        TEST_SUITE sandbox
+        PYTEST_MARKS "SUITE_sandbox" # run only sandbox tests in this file
+        RUNTIME_DEPENDENCIES       
             AZ::AssetProcessorBatch
             AZ::AssetProcessor
     )
 
-    ly_add_pytest(
-        NAME AssetPipelineTests.AssetBundler
-        PATH ${CMAKE_CURRENT_LIST_DIR}/asset_bundler_batch_tests.py
-        EXCLUDE_TEST_RUN_TARGET_FROM_IDE
-        TEST_SERIAL 
-        TEST_SUITE periodic
-        RUNTIME_DEPENDENCIES
-            AZ::AssetProcessor
-            AZ::AssetBundlerBatch
-    )
+## Non-Linux Tests ##
+
+    set(SUPPORTED_PLATFORMS "Windows" "Mac")
+    if (NOT "${PAL_PLATFORM_NAME}" IN_LIST SUPPORTED_PLATFORMS)
+        return()
+    endif()
+
+## Periodic Tests ##
 
     ly_add_pytest(
-        NAME AssetPipelineTests.BundleMode
-        PATH ${CMAKE_CURRENT_LIST_DIR}/bundle_mode_tests.py
-        EXCLUDE_TEST_RUN_TARGET_FROM_IDE
-        TEST_SERIAL
-        TEST_SUITE periodic
-        RUNTIME_DEPENDENCIES
-            AZ::AssetProcessor
-            AZ::AssetBundlerBatch
-            Legacy::Editor
-            AutomatedTesting.Assets
-    )
-
-    ly_add_pytest(
-        NAME AssetPipelineTests.AssetBuilder
-        PATH ${CMAKE_CURRENT_LIST_DIR}/asset_builder_tests.py
-        EXCLUDE_TEST_RUN_TARGET_FROM_IDE
-        TEST_SERIAL 
-        TEST_SUITE periodic
-        RUNTIME_DEPENDENCIES
-            AZ::AssetProcessor
-    )
-
-
-    ly_add_pytest(
-        NAME AssetPipelineTests.MissingDependency
+        NAME APTests.MissingDependency
         PATH ${CMAKE_CURRENT_LIST_DIR}/missing_dependency_tests.py
-        EXCLUDE_TEST_RUN_TARGET_FROM_IDE
         TEST_SERIAL 
         TEST_SUITE periodic
         RUNTIME_DEPENDENCIES
             AZ::AssetProcessorBatch
     )
-        
+
 endif()

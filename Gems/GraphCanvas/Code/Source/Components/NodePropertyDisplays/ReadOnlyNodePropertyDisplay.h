@@ -18,7 +18,7 @@ namespace GraphCanvas
         : public NodePropertyDisplay 
     {    
     public:
-        AZ_CLASS_ALLOCATOR(ReadOnlyNodePropertyDisplay, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ReadOnlyNodePropertyDisplay, AZ::SystemAllocator);
         
         ReadOnlyNodePropertyDisplay(ReadOnlyDataInterface* dataInterface);
         virtual ~ReadOnlyNodePropertyDisplay();

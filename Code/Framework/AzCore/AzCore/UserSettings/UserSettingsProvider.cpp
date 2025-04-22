@@ -75,12 +75,9 @@ namespace AZ
         bool settingsLoaded = false;
         if (IO::SystemFile::Exists(settingsPath))
         {
-            IO::SystemFile settingsFile;
-            settingsFile.Open(settingsPath, IO::SystemFile::SF_OPEN_READ_ONLY);
-            AZ_Warning("UserSettings", settingsFile.IsOpen(), "UserSettingsProvider cannot open %s. Settings were not loaded!", settingsPath);
-            if (settingsFile.IsOpen())
+            if (IO::SystemFileStream settingsFileStream(settingsPath, IO::OpenMode::ModeRead);
+                settingsFileStream.IsOpen())
             {
-                IO::SystemFileStream settingsFileStream(&settingsFile, false);
                 ObjectStream::ClassReadyCB readyCB(
                     [this](void* classPtr, const Uuid& classId, const SerializeContext* sc)
                     {
@@ -90,7 +87,10 @@ namespace AZ
                 // do not try to load assets during User Settings Provider bootup - we are still initializing the application!
                 // in addition, the file may contain settings we don't understand, from other applications - don't error on those.
                 settingsLoaded = ObjectStream::LoadBlocking(&settingsFileStream, *sc, readyCB, ObjectStream::FilterDescriptor(&AZ::Data::AssetFilterNoAssetLoading, AZ::ObjectStream::FILTERFLAG_IGNORE_UNKNOWN_CLASSES));
-                settingsFile.Close();
+            }
+            else
+            {
+                AZ_Warning("UserSettings", false, "UserSettingsProvider cannot open %s. Settings were not loaded!", settingsPath);
             }
         }
         return settingsLoaded;
@@ -113,7 +113,6 @@ namespace AZ
             bool writtenOk = objStream->WriteClass(&m_settings);
             bool streamOk = objStream->Finalize();
 
-            IO::SystemFileStream settingsFileStream(&settingsFile, false);
             AZ::u64 bytesWritten = settingsFile.Write(saveBuffer.data(), saveBuffer.size());
             settingsFile.Close();
 

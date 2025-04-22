@@ -15,13 +15,12 @@
 #include <Atom/RPI.Reflect/Image/StreamingImageAssetCreator.h>
 #include <Atom/RPI.Reflect/Image/StreamingImagePoolAsset.h>
 #include <Atom/RPI.Reflect/Image/StreamingImagePoolAssetCreator.h>
-#include <Atom/RPI.Reflect/Image/DefaultStreamingImageControllerAsset.h>
 #include <Atom/RPI.Reflect/Asset/BuiltInAssetHandler.h>
 
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
 #include <Atom/RPI.Public/Image/StreamingImage.h>
 #include <Atom/RPI.Public/Image/StreamingImagePool.h>
-#include <Atom/RPI.Public/Image/DefaultStreamingImageController.h>
+#include <Atom/RPI.Public/RPIUtils.h>
 
 #include <AtomCore/Instance/InstanceDatabase.h>
 
@@ -86,7 +85,7 @@ namespace UnitTest
     struct TestStreamingImagePoolDescriptor
         : public AZ::RHI::StreamingImagePoolDescriptor
     {
-        AZ_CLASS_ALLOCATOR(TestStreamingImagePoolDescriptor, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TestStreamingImagePoolDescriptor, AZ::SystemAllocator);
         AZ_RTTI(TestStreamingImagePoolDescriptor, "{8D0CA5A2-F886-42EF-9B00-09E6C9F6B90B}", AZ::RHI::StreamingImagePoolDescriptor);
 
         static constexpr uint32_t Magic = 0x1234;
@@ -117,50 +116,20 @@ namespace UnitTest
         , public AZStd::intrusive_list_node<TestStreamingImageContext>
     {
     public:
-        AZ_CLASS_ALLOCATOR(TestStreamingImageContext, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TestStreamingImageContext, AZ::SystemAllocator);
         AZ_RTTI(TestStreamingImageContext, "{E2FC3EB5-4F66-41D0-9ABE-6EDD2622DD88}", AZ::RPI::StreamingImageContext);
-    };
-
-    class TestStreamingImageController final
-        : public AZ::RPI::StreamingImageController
-    {
-    public:
-        AZ_CLASS_ALLOCATOR(TestStreamingImageController, AZ::SystemAllocator, 0);
-        AZ_RTTI(TestStreamingImageController, "{69D1A49C-B07E-4987-86D4-79C1F4E239B8}", AZ::RPI::StreamingImageController);
-
-        TestStreamingImageController() = default;
-
-    private:
-        AZ::RPI::StreamingImageContextPtr CreateContextInternal() override
-        {
-            return aznew TestStreamingImageContext();
-        }
-
-        void UpdateInternal(size_t timestamp, const StreamingImageContextList&) override
-        {
-            EXPECT_EQ(timestamp, m_expectedTimestamp);
-            m_expectedTimestamp++;
-        }
-
-        size_t m_expectedTimestamp = 0;
     };
 
     class StreamingImageTests
         : public RPITestFixture
     {
-    private:
-        AZ::Data::Asset<AZ::RPI::DefaultStreamingImageControllerAsset> m_testControllerAsset;
-
     protected:
-        AZ::RPI::BuiltInAssetHandler* m_testControllerAssetHandler;
-        AZ::Data::AssetId m_testControllerAssetId;
 
         AZ::Data::AssetHandler* m_imageHandler = nullptr;
         AZ::Data::AssetHandler* m_mipChainHandler = nullptr;
         AZ::Data::Instance<AZ::RPI::StreamingImagePool> m_defaultPool = nullptr;
 
         StreamingImageTests()
-            : m_testControllerAssetId(AZ::RPI::DefaultStreamingImageControllerAsset::BuiltInAssetId)
         {}
 
         void SetUp() override
@@ -214,7 +183,7 @@ namespace UnitTest
             return image;
         }
 
-        void ValidateImageData(AZStd::array_view<uint8_t> data, const AZ::RHI::ImageSubresourceLayout& layout)
+        void ValidateImageData(AZStd::span<const uint8_t> data, const AZ::RHI::DeviceImageSubresourceLayout& layout)
         {
             const uint32_t pixelSize = layout.m_size.m_width / layout.m_bytesPerRow;
 
@@ -253,13 +222,13 @@ namespace UnitTest
 
             for (uint16_t mipLevel = 0; mipLevel < mipChain->GetMipLevelCount(); ++mipLevel)
             {
-                RHI::ImageSubresourceLayout layout = BuildSubImageLayout(imageSize >> mipLevel, expectedPixelSize);
+                RHI::DeviceImageSubresourceLayout layout = BuildSubImageLayout(imageSize >> mipLevel, expectedPixelSize);
 
-                EXPECT_EQ(memcmp(&layout, &mipChain->GetSubImageLayout(mipLevel), sizeof(RHI::ImageSubresourceLayout)), 0);
+                EXPECT_EQ(memcmp(&layout, &mipChain->GetSubImageLayout(mipLevel), sizeof(RHI::DeviceImageSubresourceLayout)), 0);
 
                 for (uint16_t arrayIndex = 0; arrayIndex < mipChain->GetArraySize(); ++arrayIndex)
                 {
-                    AZStd::array_view<uint8_t> imageData = mipChain->GetSubImageData(mipLevel, arrayIndex);
+                    AZStd::span<const uint8_t> imageData = mipChain->GetSubImageData(mipLevel, arrayIndex);
                     ValidateImageData(imageData, layout);
                 }
             }
@@ -298,11 +267,6 @@ namespace UnitTest
                 const auto* desc = azrtti_cast<const TestStreamingImagePoolDescriptor*>(&poolAsset->GetPoolDescriptor());
                 EXPECT_NE(desc, nullptr);
                 EXPECT_EQ(desc->m_magic, UnitTest::TestStreamingImagePoolDescriptor::Magic);
-            }
-
-            {
-                Data::Asset<RPI::StreamingImageControllerAsset> asset = poolAsset->GetControllerAsset();
-                EXPECT_TRUE(azrtti_typeid<RPI::DefaultStreamingImageControllerAsset>() == asset.GetType());
             }
         }
 
@@ -362,11 +326,11 @@ namespace UnitTest
             EXPECT_EQ(rhiImage->GetResidentMipLevel(), 0);
         }
 
-        AZ::RHI::ImageSubresourceLayout BuildSubImageLayout(uint32_t imageSize, uint32_t pixelSize)
+        AZ::RHI::DeviceImageSubresourceLayout BuildSubImageLayout(uint32_t imageSize, uint32_t pixelSize)
         {
             using namespace AZ;
 
-            RHI::ImageSubresourceLayout layout;
+            RHI::DeviceImageSubresourceLayout layout;
             layout.m_size = RHI::Size{ imageSize, imageSize, 1 };
             layout.m_rowCount = imageSize;
             layout.m_bytesPerRow = imageSize * pixelSize;
@@ -388,7 +352,7 @@ namespace UnitTest
             {
                 const uint32_t mipSize = imageSize >> mipLevel;
 
-                RHI::ImageSubresourceLayout layout = BuildSubImageLayout(mipSize, pixelSize);
+                RHI::DeviceImageSubresourceLayout layout = BuildSubImageLayout(mipSize, pixelSize);
 
                 assetCreator.BeginMip(layout);
 
@@ -419,12 +383,6 @@ namespace UnitTest
 
             assetCreator.SetPoolDescriptor(AZStd::make_unique<TestStreamingImagePoolDescriptor>(budgetInBytes));
 
-            assetCreator.SetControllerAsset(
-                Data::AssetManager::Instance().GetAsset<RPI::DefaultStreamingImageControllerAsset>(
-                    m_testControllerAssetId,
-                    Data::AssetLoadBehavior::PreLoad)
-            );
-
             Data::Asset<RPI::StreamingImagePoolAsset> poolAsset;
             EXPECT_TRUE(assetCreator.End(poolAsset));
 
@@ -433,12 +391,12 @@ namespace UnitTest
             return poolAsset;
         }
 
-        AZ::Data::Asset<AZ::RPI::StreamingImageAsset> BuildTestImage()
+        AZ::Data::Asset<AZ::RPI::StreamingImageAsset> BuildTestImage(AZ::RHI::Format format = AZ::RHI::Format::R8G8B8A8_UNORM)
         {
             using namespace AZ;
 
             const uint32_t arraySize = 2;
-            const uint32_t pixelSize = 4;
+            const uint32_t pixelSize = RHI::GetFormatSize(format);
             const uint32_t mipCountHead = 1;
             const uint32_t mipCountMiddle = 2;
             const uint32_t mipCountTail = 3;
@@ -453,7 +411,7 @@ namespace UnitTest
             RPI::StreamingImageAssetCreator assetCreator;
             assetCreator.Begin(Data::AssetId(Uuid::CreateRandom()));
 
-            RHI::ImageDescriptor imageDesc = RHI::ImageDescriptor::Create2DArray(RHI::ImageBindFlags::ShaderRead, imageWidth, imageHeight, arraySize, RHI::Format::R8G8B8A8_UNORM);
+            RHI::ImageDescriptor imageDesc = RHI::ImageDescriptor::Create2DArray(RHI::ImageBindFlags::ShaderRead, imageWidth, imageHeight, arraySize, format);
             imageDesc.m_mipLevels = static_cast<uint16_t>(mipCountTotal);
 
             assetCreator.SetImageDescriptor(imageDesc);
@@ -511,7 +469,7 @@ namespace UnitTest
         {
             RPI::ImageMipChainAssetCreator assetCreator;
             assetCreator.Begin(Data::AssetId(AZ::Uuid::CreateRandom()), mipLevels, arraySize);
-            assetCreator.BeginMip(RHI::ImageSubresourceLayout());
+            assetCreator.BeginMip(RHI::DeviceImageSubresourceLayout());
 
             ErrorMessageFinder messageFinder("Expected 1 sub-images in mip, but got 0.");
             assetCreator.EndMip();
@@ -520,7 +478,7 @@ namespace UnitTest
         {
             RPI::ImageMipChainAssetCreator assetCreator;
             assetCreator.Begin(Data::AssetId(AZ::Uuid::CreateRandom()), mipLevels, arraySize);
-            assetCreator.BeginMip(RHI::ImageSubresourceLayout());
+            assetCreator.BeginMip(RHI::DeviceImageSubresourceLayout());
 
             ErrorMessageFinder messageFinder("You must supply a valid data payload.");
             assetCreator.AddSubImage(nullptr, 0);
@@ -529,7 +487,7 @@ namespace UnitTest
         {
             RPI::ImageMipChainAssetCreator assetCreator;
             assetCreator.Begin(Data::AssetId(AZ::Uuid::CreateRandom()), mipLevels, arraySize);
-            assetCreator.BeginMip(RHI::ImageSubresourceLayout());
+            assetCreator.BeginMip(RHI::DeviceImageSubresourceLayout());
 
             ErrorMessageFinder messageFinder("You must supply a valid data payload.");
             assetCreator.AddSubImage(nullptr, 10);
@@ -541,7 +499,7 @@ namespace UnitTest
         {
             RPI::ImageMipChainAssetCreator assetCreator;
             assetCreator.Begin(Data::AssetId(AZ::Uuid::CreateRandom()), mipLevels, arraySize);
-            assetCreator.BeginMip(RHI::ImageSubresourceLayout());
+            assetCreator.BeginMip(RHI::DeviceImageSubresourceLayout());
             assetCreator.AddSubImage(data, dataSize);
 
             ErrorMessageFinder messageFinder("Exceeded the 1 array slices declared in Begin().");
@@ -551,18 +509,18 @@ namespace UnitTest
         {
             RPI::ImageMipChainAssetCreator assetCreator;
             assetCreator.Begin(Data::AssetId(AZ::Uuid::CreateRandom()), mipLevels, arraySize);
-            assetCreator.BeginMip(RHI::ImageSubresourceLayout());
+            assetCreator.BeginMip(RHI::DeviceImageSubresourceLayout());
             assetCreator.AddSubImage(data, dataSize);
 
             ErrorMessageFinder messageFinder("Already building a mip. You must call EndMip() first.");
-            assetCreator.BeginMip(RHI::ImageSubresourceLayout());
+            assetCreator.BeginMip(RHI::DeviceImageSubresourceLayout());
         }
 
         // Finally, build a valid one
         {
             RPI::ImageMipChainAssetCreator assetCreator;
             assetCreator.Begin(Data::AssetId(AZ::Uuid::CreateRandom()), mipLevels, arraySize);
-            assetCreator.BeginMip(RHI::ImageSubresourceLayout());
+            assetCreator.BeginMip(RHI::DeviceImageSubresourceLayout());
             assetCreator.AddSubImage(data, dataSize);
             assetCreator.EndMip();
 
@@ -573,7 +531,7 @@ namespace UnitTest
             EXPECT_EQ(mipChain->GetArraySize(), arraySize);
             EXPECT_EQ(mipChain->GetSubImageCount(), mipLevels * arraySize);
 
-            AZStd::array_view<uint8_t> dataView = mipChain->GetSubImageData(0);
+            AZStd::span<const uint8_t> dataView = mipChain->GetSubImageData(0);
             EXPECT_EQ(dataView[0], data[0]);
             EXPECT_EQ(dataView[1], data[1]);
             EXPECT_EQ(dataView[2], data[2]);
@@ -725,5 +683,44 @@ namespace UnitTest
         }
 
         RPI::ImageSystemInterface::Get()->Update();
+    }
+
+    TEST_F(StreamingImageTests, GetSubImagePixelValues)
+    {
+        using namespace AZ;
+
+        Data::Asset<RPI::StreamingImageAsset> imageAsset = BuildTestImage(AZ::RHI::Format::R8_UNORM);
+
+        auto streamingImageAsset = imageAsset.Get();
+        EXPECT_NE(streamingImageAsset, nullptr);
+
+        // Validate retrieving one pixel at a time
+        auto size = streamingImageAsset->GetImageDescriptor().m_size;
+        for (uint32_t y = 0; y < size.m_height; ++y)
+        {
+            for (uint32_t x = 0; x < size.m_width; ++x)
+            {
+                auto pixelDataValue = RPI::GetSubImagePixelValue<float>(imageAsset, x, y);
+                auto pixelExpectedValue = static_cast<uint8_t>(y * size.m_width + x) / static_cast<float>(std::numeric_limits<AZ::u8>::max());
+
+                EXPECT_NEAR(pixelDataValue, pixelExpectedValue, Constants::Tolerance);
+            }
+        }
+
+        // Validate retrieving a region of pixels
+        AZStd::vector<float> pixelValues;
+        pixelValues.reserve(size.m_width * size.m_height);
+        auto topLeft = AZStd::make_pair(0U, 0U);
+        auto bottomRight = AZStd::make_pair(size.m_width, size.m_height);
+        RPI::GetSubImagePixelValues(imageAsset, topLeft, bottomRight, [&pixelValues]([[maybe_unused]] const AZ::u32& x, [[maybe_unused]] const AZ::u32& y, const float& value) {
+            pixelValues.push_back(value);
+        });
+        for (uint32_t index = 0; index < pixelValues.size(); ++index)
+        {
+            auto pixelDataValue = pixelValues[index];
+            auto pixelExpectedValue = static_cast<uint8_t>(index) / static_cast<float>(std::numeric_limits<AZ::u8>::max());
+
+            EXPECT_NEAR(pixelDataValue, pixelExpectedValue, Constants::Tolerance);
+        }
     }
 }

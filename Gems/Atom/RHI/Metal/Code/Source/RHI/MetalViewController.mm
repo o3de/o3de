@@ -28,6 +28,7 @@
     RHIMetalView* metalView = reinterpret_cast<RHIMetalView*>([notification.object contentView]);
     CGSize drawableSize = metalView.metalLayer.drawableSize;
     AzFramework::WindowNotificationBus::Event(notification.object, &AzFramework::WindowNotificationBus::Events::OnWindowResized, drawableSize.width, drawableSize.height);
+    AzFramework::WindowNotificationBus::Event(notification.object, &AzFramework::WindowNotificationBus::Events::OnResolutionChanged, drawableSize.width, drawableSize.height);
 }
 @end
 

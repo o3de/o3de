@@ -8,6 +8,7 @@
 #pragma once
 
 #include <Atom/RHI/AliasingBarrierTracker.h>
+#include <Atom/RHI/interval_map.h>
 
 namespace AZ
 {
@@ -16,6 +17,7 @@ namespace AZ
         class Device;
         class Scope;
         class Semaphore;
+        struct PipelineAccessFlags;
 
         // Tracks aliased resource and adds the proper barriers and synchronization semaphores when two resources that
         // overlap each other, partially or totally. It doesn't add any type of synchronization between resources
@@ -26,20 +28,23 @@ namespace AZ
         {
             using Base = RHI::AliasingBarrierTracker;
         public:
-            AZ_CLASS_ALLOCATOR(AliasingBarrierTracker, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AliasingBarrierTracker, AZ::SystemAllocator);
             AZ_RTTI(AliasingBarrierTracker, "{6BF3509E-D38A-4F55-B539-E9207C714CA7}", Base);
 
-            AliasingBarrierTracker(Device& device);
+            AliasingBarrierTracker(Device& device, uint64_t heapSize);
 
         private:
             //////////////////////////////////////////////////////////////////////////
             // RHI::AliasingBarrierTracker
+            void AddResourceInternal(const RHI::AliasedResource& resourceNew) override;
             void AppendBarrierInternal(const RHI::AliasedResource& resourceBefore, const RHI::AliasedResource& resourceAfter) override;
             void EndInternal() override;
             //////////////////////////////////////////////////////////////////////////
 
             Device& m_device;
             AZStd::vector<Semaphore*> m_barrierSemaphores;
+            // Keeps track of the PipelineAccessFlags of the heap memory.
+            RHI::interval_map<uint64_t, PipelineAccessFlags> m_pipelineAccess;
         };
     }
 }

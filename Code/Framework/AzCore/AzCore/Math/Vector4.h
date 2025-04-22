@@ -8,10 +8,15 @@
 
 #pragma once
 
-#include <AzCore/Math/Vector3.h>
+#include <AzCore/Math/Internal/MathTypes.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
 
 namespace AZ
 {
+    class Vector3;
+    class Vector2;
+    class ReflectContext;
+
     //! A vector class with 4 components.
     //! To convert back to a Vector3, call the GetHomogenized function.
     class Vector4
@@ -26,18 +31,28 @@ namespace AZ
 
         //! Default constructor, components are uninitialized.
         Vector4() = default;
-        Vector4(const Vector4& v);
+        Vector4(const Vector4& v) = default;
 
         //! Constructs vector with all components set to the same specified value.
         explicit Vector4(float x);
 
         explicit Vector4(float x, float y, float z, float w);
 
-        ///Copies x,y, components from a Vector2, z = 0, w = 1.0
+        //! Copies x,y components from a Vector2, set z = 0.0, w = 1.0.
         explicit Vector4(const Vector2& source);
 
-        ///Copies x,y,z components from a Vector3, w = 1.0
+        //! Copies x,y components from a Vector2, sets w = 1.0, specify z separately.
+        Vector4(const Vector2& source, float z);
+
+        //! Copies x,y components from a Vector2, specify z and w separately.
+        Vector4(const Vector2& source, float z, float w);
+
+        //! Copies x,y,z components from a Vector3, sets w = 1.0.
         explicit Vector4(const Vector3& source);
+
+        //! Copies x,y,z components from a Vector3, specify w separately.
+        Vector4(const Vector3& source, float w);
+
         //! For internal use only, arrangement of values in SIMD type is not guaranteed.
         explicit Vector4(Simd::Vec4::FloatArgType value);
 
@@ -227,8 +242,6 @@ namespace AZ
         //! Returns the homogenized vector, i.e. divides all components by w, return value is a Vector3.
         Vector3 GetHomogenized() const;
 
-        Vector4& operator=(const Vector4& rhs);
-
         Vector4 operator-() const;
         Vector4 operator+(const Vector4& rhs) const;
         Vector4 operator-(const Vector4& rhs) const;
@@ -259,6 +272,9 @@ namespace AZ
         //! Gets the arctangent of each component.
         Vector4 GetAtan() const;
 
+        //! Gets an estimate of the exponential function for each component.
+        Vector4 GetExpEstimate() const;
+
         //! Wraps the angle in each component into the [-pi,pi] range.
         Vector4 GetAngleMod() const;
 
@@ -285,9 +301,14 @@ namespace AZ
         //! Returns the reciprocal of each component of the vector, fast but low accuracy, uses raw estimate instructions.
         Vector4 GetReciprocalEstimate() const;
 
+        //! Returns true if the vector contains no nan or inf values, false if at least one element is not finite.
         bool IsFinite() const;
 
+        //! Returns the underlying SIMD vector.
         Simd::Vec4::FloatType GetSimdValue() const;
+
+        //! Directly sets the underlying SIMD vector.
+        void SetSimdValue(Simd::Vec4::FloatArgType value);
 
     protected:
         union

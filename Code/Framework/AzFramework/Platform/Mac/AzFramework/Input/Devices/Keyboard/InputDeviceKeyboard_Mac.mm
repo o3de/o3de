@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzFramework/Components/NativeUISystemComponent.h>
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 #include <AzFramework/Input/Buses/Notifications/RawInputNotificationBus_Platform.h>
 
@@ -421,7 +422,7 @@ namespace AzFramework
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Allocator
-        AZ_CLASS_ALLOCATOR(InputDeviceKeyboardMac, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(InputDeviceKeyboardMac, AZ::SystemAllocator);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Constructor
@@ -493,12 +494,6 @@ namespace AzFramework
         //! Does the application's main window currently have focus?
         bool m_hasFocus = false;
     };
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    InputDeviceKeyboard::Implementation* InputDeviceKeyboard::Implementation::Create(InputDeviceKeyboard& inputDevice)
-    {
-        return aznew InputDeviceKeyboardMac(inputDevice);
-    }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     int InputDeviceKeyboardMac::s_instanceCount = 0;
@@ -648,7 +643,7 @@ namespace AzFramework
             break;
             case NSEventTypeFlagsChanged:
             {
-                QueueRawModifierKeyEvent(nsEvent.keyCode, nsEvent.modifierFlags);
+                QueueRawModifierKeyEvent(nsEvent.keyCode, static_cast<AZ::u32>(nsEvent.modifierFlags));
             }
             break;
             default:
@@ -789,5 +784,23 @@ namespace AzFramework
             }
             break;
         }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    class MacDeviceKeyboardImplFactory
+        : public InputDeviceKeyboard::ImplementationFactory
+    {
+    public:
+        AZStd::unique_ptr<InputDeviceKeyboard::Implementation> Create(InputDeviceKeyboard& inputDevice) override
+        {
+            return AZStd::make_unique<InputDeviceKeyboardMac>(inputDevice);
+        }
+    };
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    void NativeUISystemComponent::InitializeDeviceKeyboardImplementationFactory()
+    {
+        m_deviceKeyboardImplFactory = AZStd::make_unique<MacDeviceKeyboardImplFactory>();
+        AZ::Interface<InputDeviceKeyboard::ImplementationFactory>::Register(m_deviceKeyboardImplFactory.get());
     }
 } // namespace AzFramework

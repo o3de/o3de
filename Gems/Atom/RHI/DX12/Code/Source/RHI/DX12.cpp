@@ -5,7 +5,10 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
+#include <RHI/Device.h>
 #include <RHI/DX12.h>
+#include <Atom/RHI/RHISystemInterface.h>
 
 namespace AZ
 {
@@ -242,6 +245,49 @@ namespace AZ
             default:
                 return DXGI_FORMAT_UNKNOWN;
             }
+        }
+
+        bool AssertSuccess(HRESULT hr)
+        {
+            if (hr == DXGI_ERROR_DEVICE_REMOVED)
+            {
+                RHI::Device* rhiDevice = RHI::RHISystemInterface::Get()->GetDevice();
+                Device* device = static_cast<Device*>(rhiDevice);
+                if (device)
+                {
+                    device->OnDeviceRemoved();
+                }
+                else
+                {
+                    AZ_Assert(false, "Device doesn't exist");
+                }
+            }
+
+            if (FAILED(hr))
+            {
+                char* msgBuf = nullptr;
+
+                if (FormatMessage(
+                        FORMAT_MESSAGE_ALLOCATE_BUFFER |
+                        FORMAT_MESSAGE_FROM_SYSTEM |
+                        FORMAT_MESSAGE_IGNORE_INSERTS,
+                        NULL,
+                        hr,
+                        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
+                        (LPTSTR) &msgBuf,
+                        0,
+                        NULL))
+                {
+                    AZ_Assert(false, "HRESULT not a success %x, error msg = %s", hr, msgBuf);
+                    LocalFree(msgBuf);
+                }
+                else
+                {
+                    AZ_Assert(false, "HRESULT not a success %x, Unable to retrieve error msg", hr);
+                }
+                return false;
+            }
+            return true;
         }
     }
 }

@@ -10,7 +10,7 @@
 
 #include <Atom/Features/PostProcessing/AcesColorSpaceConversion.azsli>
 
-float3 LinearSrgb_To_AcesCg(float3 color)
+real3 LinearSrgb_To_AcesCg(real3 color)
 {
     return mul(mul(XYZToAP1Mat, mul(D65ToD60Cat, SRGBToXYZMat)), color);
 }

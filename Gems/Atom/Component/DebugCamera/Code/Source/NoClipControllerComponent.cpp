@@ -27,6 +27,7 @@ namespace AZ
         static constexpr float MaxFov = 160.0f * Constants::Pi / 180.0f;
         static constexpr float MinFov = 1.0f * Constants::Pi / 180.0f;
         static constexpr float DefaultFov = Constants::QuarterPi;
+        static constexpr float deadZone = 0.07f;
 
         void NoClipControllerProperties::Reflect(AZ::ReflectContext* context)
         {
@@ -85,10 +86,8 @@ namespace AZ
             Camera::CameraRequestBus::Event(GetEntityId(), &Camera::CameraRequestBus::Events::SetFovRadians, DefaultFov);
         }
 
-        void NoClipControllerComponent::OnTick(float deltaTime, AZ::ScriptTimePoint time)
+        void NoClipControllerComponent::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
         {
-            AZ_UNUSED(time);
-
             static const float normalSpeed = 3.0f;
             static const float sprintSpeed = 10.0f;
 
@@ -246,7 +245,6 @@ namespace AZ
                 {
                     auto* positionData = inputChannel.GetCustomData<AzFramework::InputChannel::PositionData2D>();
                     AZ::Vector2 screenPos = positionData->m_normalizedPosition;
-                    const float deadZone = 0.07f;
                     if (inputChannelId == m_mouseLookTouch.m_channelId)
                     {
                         // modify yaw angle
@@ -402,6 +400,36 @@ namespace AZ
         {
             m_currentHeading = heading;
             m_currentHeading = NormalizeAngle(m_currentHeading);
+        }
+
+        void NoClipControllerComponent::SetCameraStateForward(float value)
+        {
+            m_inputStates[CameraKeys::Forward] = value >= -deadZone; 
+        }
+
+        void NoClipControllerComponent::SetCameraStateBack(float value)
+        {
+            m_inputStates[Back] = value <= deadZone;
+        }
+
+        void NoClipControllerComponent::SetCameraStateLeft(float value)
+        {
+            m_inputStates[Left] = value < -deadZone; 
+        }
+
+        void NoClipControllerComponent::SetCameraStateRight(float value)
+        {
+            m_inputStates[Right] = value > deadZone;
+        }
+
+        void NoClipControllerComponent::SetCameraStateUp(float value)
+        {
+            m_inputStates[Up] = value > deadZone;
+        }
+
+        void NoClipControllerComponent::SetCameraStateDown(float value)
+        {
+            m_inputStates[Down] = value > deadZone;
         }
 
         void NoClipControllerComponent::SetPitch(float pitch)

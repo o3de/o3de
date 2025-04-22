@@ -52,7 +52,7 @@ namespace Vegetation
         {
             if (classElement.GetVersion() < 4)
             {
-                classElement.RemoveElementByName(AZ_CRC("ThreadSleepTimeMs", 0x9e86f79d));
+                classElement.RemoveElementByName(AZ_CRC_CE("ThreadSleepTimeMs"));
             }
             return true;
         }
@@ -274,19 +274,19 @@ namespace Vegetation
 
     void AreaSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationAreaSystemService", 0x36da2b62));
+        services.push_back(AZ_CRC_CE("VegetationAreaSystemService"));
     }
 
     void AreaSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationAreaSystemService", 0x36da2b62));
+        services.push_back(AZ_CRC_CE("VegetationAreaSystemService"));
     }
 
     void AreaSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationDebugSystemService", 0x8cac3d67));
-        services.push_back(AZ_CRC("VegetationInstanceSystemService", 0x823a6007));
-        services.push_back(AZ_CRC("SurfaceDataSystemService", 0x1d44d25f));
+        services.push_back(AZ_CRC_CE("VegetationDebugSystemService"));
+        services.push_back(AZ_CRC_CE("VegetationInstanceSystemService"));
+        services.push_back(AZ_CRC_CE("SurfaceDataSystemService"));
     }
 
     void AreaSystemComponent::Reflect(AZ::ReflectContext* context)
@@ -306,7 +306,6 @@ namespace Vegetation
                 editContext->Class<AreaSystemComponent>("Vegetation Area System", "Manages registration and processing of vegetation area entities")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Vegetation")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/")
                     ->DataElement(0, &AreaSystemComponent::m_configuration, "Configuration", "")
@@ -593,7 +592,11 @@ namespace Vegetation
             });
     }
 
-    void AreaSystemComponent::OnSurfaceChanged(const AZ::EntityId& /*entityId*/, const AZ::Aabb& oldBounds, const AZ::Aabb& newBounds)
+    void AreaSystemComponent::OnSurfaceChanged(
+        [[maybe_unused]] const AZ::EntityId& entityId,
+        const AZ::Aabb& oldBounds,
+        const AZ::Aabb& newBounds,
+        [[maybe_unused]] const SurfaceData::SurfaceTagSet& changedSurfaceTags)
     {
         m_vegTasks.QueueVegetationTask([oldBounds, newBounds](UpdateContext* context, PersistentThreadData* threadData, VegetationThreadTasks* vegTasks)
         {
@@ -615,7 +618,7 @@ namespace Vegetation
 
     void AreaSystemComponent::EnumerateInstancesInOverlappingSectors(const AZ::Aabb& bounds, AreaSystemEnumerateCallback callback) const
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        VEGETATION_PROFILE_FUNCTION_VERBOSE
 
         if (!bounds.IsValid())
         {
@@ -642,7 +645,7 @@ namespace Vegetation
 
     void AreaSystemComponent::EnumerateInstancesInAabb(const AZ::Aabb& bounds, AreaSystemEnumerateCallback callback) const
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        VEGETATION_PROFILE_FUNCTION_VERBOSE
 
         if (!bounds.IsValid())
         {
@@ -1054,7 +1057,7 @@ namespace Vegetation
 
     const AreaSystemComponent::SectorInfo* AreaSystemComponent::VegetationThreadTasks::GetSector(const SectorId& sectorId) const
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        VEGETATION_PROFILE_FUNCTION_VERBOSE
 
         AZStd::lock_guard<decltype(m_sectorRollingWindowMutex)> lock(m_sectorRollingWindowMutex);
         auto itSector = m_sectorRollingWindow.find(sectorId);
@@ -1063,7 +1066,7 @@ namespace Vegetation
 
     AreaSystemComponent::SectorInfo* AreaSystemComponent::VegetationThreadTasks::GetSector(const SectorId& sectorId)
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        VEGETATION_PROFILE_FUNCTION_VERBOSE
 
         AZStd::lock_guard<decltype(m_sectorRollingWindowMutex)> lock(m_sectorRollingWindowMutex);
         auto itSector = m_sectorRollingWindow.find(sectorId);
@@ -1072,7 +1075,7 @@ namespace Vegetation
 
     AreaSystemComponent::SectorInfo* AreaSystemComponent::VegetationThreadTasks::CreateSector(const SectorId& sectorId, int sectorDensity, int sectorSizeInMeters, SnapMode sectorPointSnapMode)
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        VEGETATION_PROFILE_FUNCTION_VERBOSE
 
         SectorInfo sectorInfo;
         sectorInfo.m_id = sectorId;
@@ -1087,11 +1090,11 @@ namespace Vegetation
 
     void AreaSystemComponent::VegetationThreadTasks::UpdateSectorPoints(SectorInfo& sectorInfo, int sectorDensity, int sectorSizeInMeters, SnapMode sectorPointSnapMode)
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        VEGETATION_PROFILE_FUNCTION_VERBOSE
         const float vegStep = sectorSizeInMeters / static_cast<float>(sectorDensity);
 
         //build a free list of all points in the sector for areas to consume
-        sectorInfo.m_baseContext.m_masks.clear();
+        sectorInfo.m_baseContext.m_masks.Clear();
         sectorInfo.m_baseContext.m_availablePoints.clear();
         sectorInfo.m_baseContext.m_availablePoints.reserve(sectorDensity * sectorDensity);
 
@@ -1099,7 +1102,7 @@ namespace Vegetation
         // 0 = lower left corner, 0.5 = center
         const float texelOffset = (sectorPointSnapMode == SnapMode::Center) ? 0.5f : 0.0f;
 
-        SurfaceData::SurfacePointListPerPosition availablePointsPerPosition;
+        SurfaceData::SurfacePointList availablePointsPerPosition;
         AZ::Vector2 stepSize(vegStep, vegStep);
         AZ::Vector3 regionOffset(texelOffset * vegStep, texelOffset * vegStep, 0.0f);
         AZ::Aabb regionBounds = sectorInfo.m_bounds;
@@ -1113,31 +1116,25 @@ namespace Vegetation
         regionBounds.SetMax(regionBounds.GetMin() + AZ::Vector3(vegStep * (sectorDensity - 0.5f),
             vegStep * (sectorDensity - 0.5f), 0.0f));
 
-        SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
-            &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePointsFromRegion,
+        AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->GetSurfacePointsFromRegion(
             regionBounds,
             stepSize,
             SurfaceData::SurfaceTagVector(),
             availablePointsPerPosition);
 
-        AZ_Assert(availablePointsPerPosition.size() == (sectorDensity * sectorDensity),
-            "Veg sector ended up with unexpected density (%d points created, %d expected)", availablePointsPerPosition.size(),
-            (sectorDensity * sectorDensity));
-
         uint claimIndex = 0;
-        for (auto& availablePoints : availablePointsPerPosition)
-        {
-            for (auto& surfacePoint : availablePoints.second)
+        availablePointsPerPosition.EnumeratePoints([this, &sectorInfo, &claimIndex]
+        ([[maybe_unused]] size_t inPositionIndex, const AZ::Vector3& position,
+            const AZ::Vector3& normal, const SurfaceData::SurfaceTagWeights& masks) -> bool
             {
-                sectorInfo.m_baseContext.m_availablePoints.push_back();
-                ClaimPoint& claimPoint = sectorInfo.m_baseContext.m_availablePoints.back();
+                ClaimPoint& claimPoint = sectorInfo.m_baseContext.m_availablePoints.emplace_back();
                 claimPoint.m_handle = CreateClaimHandle(sectorInfo, ++claimIndex);
-                claimPoint.m_position = surfacePoint.m_position;
-                claimPoint.m_normal = surfacePoint.m_normal;
-                claimPoint.m_masks = surfacePoint.m_masks;
-                SurfaceData::AddMaxValueForMasks(sectorInfo.m_baseContext.m_masks, surfacePoint.m_masks);
-            }
-        }
+                claimPoint.m_position = position;
+                claimPoint.m_normal = normal;
+                claimPoint.m_masks = masks;
+                sectorInfo.m_baseContext.m_masks.AddSurfaceTagWeights(masks);
+                return true;
+            });
     }
 
     void AreaSystemComponent::VegetationThreadTasks::UpdateSectorCallbacks(SectorInfo& sectorInfo)
@@ -1188,7 +1185,7 @@ namespace Vegetation
 
     void AreaSystemComponent::VegetationThreadTasks::DeleteSector(const SectorId& sectorId)
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        VEGETATION_PROFILE_FUNCTION_VERBOSE
 
         AZStd::lock_guard<decltype(m_sectorRollingWindowMutex)> lock(m_sectorRollingWindowMutex);
         auto itSector = m_sectorRollingWindow.find(sectorId);
@@ -1247,7 +1244,7 @@ namespace Vegetation
 
     void AreaSystemComponent::VegetationThreadTasks::ReleaseUnregisteredClaims(SectorInfo& sectorInfo)
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        VEGETATION_PROFILE_FUNCTION_VERBOSE
 
         if (!m_unregisteredVegetationAreaSet.empty())
         {
@@ -1273,7 +1270,7 @@ namespace Vegetation
 
     void AreaSystemComponent::VegetationThreadTasks::ReleaseUnusedClaims(SectorInfo& sectorInfo)
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        VEGETATION_PROFILE_FUNCTION_VERBOSE
 
         AZStd::unordered_map<AZ::EntityId, AZStd::unordered_set<ClaimHandle>> claimsToRelease;
 
@@ -1309,7 +1306,7 @@ namespace Vegetation
     void AreaSystemComponent::VegetationThreadTasks::FillSector(SectorInfo& sectorInfo, const VegetationAreaVector& activeAreas)
     {
         AZ_PROFILE_FUNCTION(Entity);
-        VEG_PROFILE_METHOD(DebugNotificationBus::TryQueueBroadcast(&DebugNotificationBus::Events::FillSectorStart, sectorInfo.GetSectorX(), sectorInfo.GetSectorY(), AZStd::chrono::system_clock::now()));
+        VEG_PROFILE_METHOD(DebugNotificationBus::TryQueueBroadcast(&DebugNotificationBus::Events::FillSectorStart, sectorInfo.GetSectorX(), sectorInfo.GetSectorY(), AZStd::chrono::steady_clock::now()));
 
         ReleaseUnregisteredClaims(sectorInfo);
 
@@ -1332,20 +1329,20 @@ namespace Vegetation
             //only consider areas that intersect this sector
             if (!area.m_bounds.IsValid() || area.m_bounds.Overlaps(sectorInfo.m_bounds))
             {
-                VEG_PROFILE_METHOD(DebugNotificationBus::TryQueueBroadcast(&DebugNotificationBus::Events::FillAreaStart, area.m_id, AZStd::chrono::system_clock::now()));
+                VEG_PROFILE_METHOD(DebugNotificationBus::TryQueueBroadcast(&DebugNotificationBus::Events::FillAreaStart, area.m_id, AZStd::chrono::steady_clock::now()));
 
                 //each area is responsible for removing whatever points it claims from m_availablePoints, so subsequent areas will have fewer points to try to claim.
                 AreaNotificationBus::Event(area.m_id, &AreaNotificationBus::Events::OnAreaConnect);
                 AreaRequestBus::Event(area.m_id, &AreaRequestBus::Events::ClaimPositions, EntityIdStack{}, activeContext);
                 AreaNotificationBus::Event(area.m_id, &AreaNotificationBus::Events::OnAreaDisconnect);
 
-                VEG_PROFILE_METHOD(DebugNotificationBus::TryQueueBroadcast(&DebugNotificationBus::Events::FillAreaEnd, area.m_id, AZStd::chrono::system_clock::now(), aznumeric_cast<AZ::u32>(activeContext.m_availablePoints.size())));
+                VEG_PROFILE_METHOD(DebugNotificationBus::TryQueueBroadcast(&DebugNotificationBus::Events::FillAreaEnd, area.m_id, AZStd::chrono::steady_clock::now(), aznumeric_cast<AZ::u32>(activeContext.m_availablePoints.size())));
             }
         }
 
         ReleaseUnusedClaims(sectorInfo);
 
-        VEG_PROFILE_METHOD(DebugNotificationBus::TryQueueBroadcast(&DebugNotificationBus::Events::FillSectorEnd, sectorInfo.GetSectorX(), sectorInfo.GetSectorY(), AZStd::chrono::system_clock::now(), aznumeric_cast<AZ::u32>(activeContext.m_availablePoints.size())));
+        VEG_PROFILE_METHOD(DebugNotificationBus::TryQueueBroadcast(&DebugNotificationBus::Events::FillSectorEnd, sectorInfo.GetSectorX(), sectorInfo.GetSectorY(), AZStd::chrono::steady_clock::now(), aznumeric_cast<AZ::u32>(activeContext.m_availablePoints.size())));
     }
 
     void AreaSystemComponent::VegetationThreadTasks::EmptySector(SectorInfo& sectorInfo)
@@ -1397,13 +1394,13 @@ namespace Vegetation
 
     void AreaSystemComponent::VegetationThreadTasks::CreateClaim(SectorInfo& sectorInfo, const ClaimHandle handle, const InstanceData& instanceData)
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        VEGETATION_PROFILE_FUNCTION_VERBOSE
         sectorInfo.m_claimedWorldPoints[handle] = instanceData;
     }
 
     ClaimHandle AreaSystemComponent::VegetationThreadTasks::CreateClaimHandle(const SectorInfo& sectorInfo, uint32_t index) const
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        VEGETATION_PROFILE_FUNCTION_VERBOSE
 
         ClaimHandle handle = 0;
         AreaSystemUtil::hash_combine_64(handle, sectorInfo.m_id.first);

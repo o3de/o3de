@@ -27,7 +27,6 @@
 #include <AzCore/std/sort.h>
 #include <AzCore/StringFunc/StringFunc.h>
 
-#include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Asset/AssetBundleManifest.h>
 #include <AzFramework/Asset/AssetRegistry.h>
 #include <AzFramework/IO/FileOperations.h>
@@ -42,13 +41,13 @@
 
 namespace AZ::IO
 {
-    AZ_CVAR(int, sys_PakPriority, aznumeric_cast<int>(ArchiveVars{}.m_fileSearchPriority), nullptr, AZ::ConsoleFunctorFlags::Null,
-        "If set to 0, tells Archive to try to open the file on the file system first othewise check mounted paks.\n"
+    AZ_CVAR(int, sys_PakPriority, aznumeric_cast<int>(ArchiveVars{}.m_fileSearchPriority), nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
+        "If set to 0, tells Archive to try to open the file on the file system first otherwise check mounted paks.\n"
         "If set to 1, tells Archive to try to open the file in pak first, then go to file system.\n"
         "If set to 2, tells the Archive to only open files from the pak");
-    AZ_CVAR(int, sys_report_files_not_found_in_paks, 0, nullptr, AZ::ConsoleFunctorFlags::Null,
+    AZ_CVAR(int, sys_report_files_not_found_in_paks, 0, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "Reports when files are searched for in paks and not found. 1 = log, 2 = warning, 3 = error");
-    AZ_CVAR(int32_t, az_archive_verbosity, 0, nullptr, AZ::ConsoleFunctorFlags::Null,
+    AZ_CVAR(int32_t, az_archive_verbosity, 0, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "Sets the verbosity level for logging Archive operations\n"
         ">=1 - Turns on verbose logging of all operations");
 }
@@ -84,7 +83,7 @@ namespace AZ::IO::ArchiveInternal
     // an (inside zip) emulated open file
     struct CZipPseudoFile
     {
-        AZ_CLASS_ALLOCATOR(CZipPseudoFile, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CZipPseudoFile, AZ::SystemAllocator);
         CZipPseudoFile()
         {
             Construct();
@@ -236,7 +235,7 @@ namespace AZ::IO
         : public IResourceList
     {
     public:
-        AZ_CLASS_ALLOCATOR(CResourceList, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CResourceList, AZ::SystemAllocator);
         CResourceList() { m_iter = m_set.end(); }
         ~CResourceList() override {}
 
@@ -337,16 +336,16 @@ namespace AZ::IO
     {
         SAutoCollectFileAccessTime(Archive* pArchive)
             : m_pArchive{ pArchive }
-            , m_startTime{ AZStd::chrono::system_clock::now() }
+            , m_startTime{ AZStd::chrono::steady_clock::now() }
         {
         }
         ~SAutoCollectFileAccessTime()
         {
-            m_pArchive->m_fFileAccessTime += aznumeric_cast<float>(AZStd::chrono::duration_cast<AZStd::chrono::seconds>(AZStd::chrono::system_clock::now() - m_startTime).count());
+            m_pArchive->m_fFileAccessTime += aznumeric_cast<float>(AZStd::chrono::duration_cast<AZStd::chrono::seconds>(AZStd::chrono::steady_clock::now() - m_startTime).count());
         }
     private:
         Archive* m_pArchive;
-        AZStd::chrono::system_clock::time_point m_startTime;
+        AZStd::chrono::steady_clock::time_point m_startTime;
     };
 
     /////////////////////////////////////////////////////
@@ -370,7 +369,7 @@ namespace AZ::IO
             // this system is initialized before the settings registry has loaded the event list.
             AZ::ComponentApplicationLifecycle::RegisterHandler(
                 *settingsRegistry, m_componentApplicationLifecycleHandler,
-                [this](AZStd::string_view /*path*/, AZ::SettingsRegistryInterface::Type /*type*/)
+                [this](const AZ::SettingsRegistryInterface::NotifyEventArgs&)
                 {
                     OnSystemEntityActivated();
                 },
@@ -386,7 +385,7 @@ namespace AZ::IO
 
         m_arrZips = {};
 
-        uint32_t numFilesForcedToClose = 0;
+        [[maybe_unused]] uint32_t numFilesForcedToClose = 0;
         // scan through all open files and close them
         {
             AZStd::unique_lock lock(m_csOpenFiles);
@@ -412,7 +411,7 @@ namespace AZ::IO
     {
         // Print call stack for each find.
         AZ_TracePrintf("Archive", "LogFileAccessCallStack() - name=%.*s; nameFull=%.*s; mode=%s\n", AZ_STRING_ARG(name), AZ_STRING_ARG(nameFull), mode);
-        AZ::Debug::Trace::PrintCallstack("Archive", 32);
+        AZ::Debug::Trace::Instance().PrintCallstack("Archive", 32);
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -1130,7 +1129,7 @@ namespace AZ::IO
 
 
     bool Archive::OpenPackCommon(AZStd::string_view szBindRoot, AZStd::string_view szFullPath,
-        AZStd::intrusive_ptr<AZ::IO::MemoryBlock> pData, bool addLevels)
+        AZStd::intrusive_ptr<AZ::IO::MemoryBlock> pData, bool /* addLevels */)
     {
         // setup PackDesc before the duplicate test
         PackDesc desc;
@@ -1206,46 +1205,7 @@ namespace AZ::IO
                 ArchivesWithCatalogsToLoad(szFullPath, szBindRoot, flags, nextBundle, desc.m_strFileName));
         }
 
-        bool usePrefabSystemForLevels = false;
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(
-            usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
-
-        if (usePrefabSystemForLevels)
-        {
-            m_arrZips.insert(revItZip.base(), desc);
-        }
-        else
-        {
-            // [LYN-2376] Remove once legacy slice support is removed
-            AZStd::vector<AZ::IO::Path> levelDirs;
-
-            if (addLevels)
-            {
-                // Note that manifest version two and above will contain level directory information inside them
-                // otherwise we will fallback to scanning the archive for levels.
-                if (bundleManifest && bundleManifest->GetBundleVersion() >= 2)
-                {
-                    levelDirs = bundleManifest->GetLevelDirectories();
-                }
-                else
-                {
-                    levelDirs = ScanForLevels(desc.pZip);
-                }
-            }
-
-            if (!levelDirs.empty())
-            {
-                desc.m_containsLevelPak = true;
-            }
-
-            m_arrZips.insert(revItZip.base(), desc);
-
-            // This lock is for m_arrZips.
-            // Unlock it now because the modification is complete, and events responding to this signal
-            // will attempt to lock the same mutex, causing the application to lock up.
-            lock.unlock();
-            m_levelOpenEvent.Signal(levelDirs);
-        }
+        m_arrZips.insert(revItZip.base(), desc);
 
         if (bundleManifest && bundleCatalog)
         {
@@ -1272,10 +1232,6 @@ namespace AZ::IO
             return false;
         }
 
-        bool usePrefabSystemForLevels = false;
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(
-            usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
-
         AZStd::unique_lock lock(m_csZips);
         for (auto it = m_arrZips.begin(); it != m_arrZips.end();)
         {
@@ -1291,26 +1247,7 @@ namespace AZ::IO
                     archiveNotifications->BundleClosed(bundleName.c_str());
                 }, it->GetFullPath());
 
-                if (usePrefabSystemForLevels)
-                {
-                    it = m_arrZips.erase(it);
-                }
-                else
-                {
-                    // [LYN-2376] Remove once legacy slice support is removed
-                    bool needRescan = false;
-                    if (it->m_containsLevelPak)
-                    {
-                        needRescan = true;
-                    }
-
-                    it = m_arrZips.erase(it);
-
-                    if (needRescan)
-                    {
-                        m_levelCloseEvent.Signal(szZipPath->Native());
-                    }
-                }
+                it = m_arrZips.erase(it);
             }
             else
             {
@@ -1945,12 +1882,12 @@ namespace AZ::IO
 
     void* Archive::PoolMalloc(size_t size)
     {
-        return AZ::AllocatorInstance<AZ::OSAllocator>::Get().Allocate(size, 1, 0, "Archive::Malloc");
+        return azmalloc(size);
     }
 
     void Archive::PoolFree(void* p)
     {
-        return AZ::AllocatorInstance<AZ::OSAllocator>::Get().DeAllocate(p);
+        azfree(p);
     }
 
     // gets the current archive priority
@@ -1967,41 +1904,16 @@ namespace AZ::IO
 
     //////////////////////////////////////////////////////////////////////////
 
-
-    AZStd::intrusive_ptr<AZ::IO::MemoryBlock> Archive::PoolAllocMemoryBlock(size_t size, const char* usage, size_t alignment)
-    {
-        if (!AZ::AllocatorInstance<AZ::OSAllocator>::IsReady())
-        {
-            AZ_Error("Archive", false, "OSAllocator is not ready. It cannot be used to allocate a MemoryBlock");
-            return {};
-        }
-        AZ::IAllocatorAllocate* allocator = &AZ::AllocatorInstance<AZ::OSAllocator>::Get();
-        AZStd::intrusive_ptr<AZ::IO::MemoryBlock> memoryBlock{ new (allocator->Allocate(sizeof(AZ::IO::MemoryBlock), alignof(AZ::IO::MemoryBlock))) AZ::IO::MemoryBlock{AZ::IO::MemoryBlockDeleter{ &AZ::AllocatorInstance<AZ::OSAllocator>::Get() }} };
-        auto CreateFunc = [](size_t byteSize, size_t byteAlignment, const char* name)
-        {
-            return reinterpret_cast<uint8_t*>(AZ::AllocatorInstance<AZ::OSAllocator>::Get().Allocate(byteSize, byteAlignment, 0, name));
-        };
-        auto DeleterFunc = [](uint8_t* ptrArray)
-        {
-            if (ptrArray)
-            {
-                AZ::AllocatorInstance<AZ::OSAllocator>::Get().DeAllocate(ptrArray);
-            }
-        };
-        memoryBlock->m_address = AZ::IO::MemoryBlock::AddressPtr{ CreateFunc(size, alignment, usage), AZ::IO::MemoryBlock::AddressDeleter{DeleterFunc} };
-        memoryBlock->m_size = size;
-
-        return memoryBlock;
-    }
-
-    void Archive::FindCompressionInfo(bool& found, AZ::IO::CompressionInfo& info, const AZStd::string_view filename)
+    void Archive::FindCompressionInfo(bool& found, AZ::IO::CompressionInfo& info, const AZ::IO::PathView filePath)
     {
         if (!found)
         {
-            auto correctedFilename = AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(filename);
+            auto correctedFilename = AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(filePath);
             if (!correctedFilename)
             {
-                AZ_Assert(false, "Unable to resolve path for filepath %.*s", aznumeric_cast<int>(filename.size()), filename.data());
+                AZ_Assert(
+                    false, "Unable to resolve path for file path %.*s", aznumeric_cast<int>(filePath.Native().size()),
+                    filePath.Native().data());
                 return;
             }
 
@@ -2020,7 +1932,7 @@ namespace AZ::IO
             {
                 found = true;
 
-                info.m_archiveFilename.InitFromRelativePath(archive->GetFilePath().Native());
+                info.m_archiveFilename = archive->GetFilePath();
                 info.m_offset = pFileData->GetFileDataOffset();
                 info.m_compressedSize = entry->desc.lSizeCompressed;
                 info.m_uncompressedSize = entry->desc.lSizeUncompressed;
@@ -2140,10 +2052,19 @@ namespace AZ::IO
 
         AZ::SerializeContext* serializeContext = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
-        AZ_Assert(serializeContext, "Failed to retrieve serialize context.");
-        auto manifestInfo = AZStd::shared_ptr<AzFramework::AssetBundleManifest>(AZ::Utils::LoadObjectFromBuffer<AzFramework::AssetBundleManifest>(fileData->GetData(), fileData->GetFileEntry()->desc.lSizeUncompressed));
 
-        return manifestInfo;
+        if (serializeContext)
+        {
+            auto manifestInfo =
+                AZStd::shared_ptr<AzFramework::AssetBundleManifest>(AZ::Utils::LoadObjectFromBuffer<AzFramework::AssetBundleManifest>(
+                    fileData->GetData(), fileData->GetFileEntry()->desc.lSizeUncompressed));
+
+            return manifestInfo;
+        }
+
+        // If the serialize context doesn't exist yet, just silently return for now. The bundle manifest will still get
+        // successfully loaded at a later point.
+        return {};
     }
 
     AZStd::vector<AZ::IO::Path> Archive::ScanForLevels(ZipDir::CachePtr pZip)
@@ -2208,13 +2129,13 @@ namespace AZ::IO
 
     void Archive::OnSystemEntityActivated()
     {
-        for (const auto& archiveInfo : m_archivesWithCatalogsToLoad)
+        auto LoadArchives = [this](const AZ::IO::Archive::ArchivesWithCatalogsToLoad& archiveInfo)
         {
             AZStd::intrusive_ptr<INestedArchive> archive =
                 OpenArchive(archiveInfo.m_fullPath, archiveInfo.m_bindRoot, archiveInfo.m_flags, nullptr);
             if (!archive)
             {
-                continue;
+                return false;
             }
 
             ZipDir::CachePtr pZip = static_cast<NestedArchive*>(archive.get())->GetCache();
@@ -2234,7 +2155,9 @@ namespace AZ::IO
                     archiveNotifications->BundleOpened(bundleName, bundleManifest, nextBundle.c_str(), bundleCatalog);
                 },
                 archiveInfo.m_strFileName.c_str(), bundleManifest, archiveInfo.m_nextBundle, bundleCatalog);
-        }
-        m_archivesWithCatalogsToLoad.clear();
+
+            return true;
+        };
+        AZStd::erase_if(m_archivesWithCatalogsToLoad, LoadArchives);
     }
 }

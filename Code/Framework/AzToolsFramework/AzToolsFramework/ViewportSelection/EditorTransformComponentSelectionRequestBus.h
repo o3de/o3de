@@ -17,24 +17,31 @@ namespace AzToolsFramework
     //! @name Reverse URLs.
     //! Used to identify common actions and override them when necessary.
     //@{
-    constexpr inline AZ::Crc32 LockSelection = AZ_CRC_CE("com.o3de.action.editortransform.lockselect");
-    constexpr inline AZ::Crc32 UnlockSelection = AZ_CRC_CE("com.o3de.action.editortransform.unlockselect");
-    constexpr inline AZ::Crc32 HideSelection = AZ_CRC_CE("com.o3de.action.editortransform.hideselect");
-    constexpr inline AZ::Crc32 ShowSelection = AZ_CRC_CE("com.o3de.action.editortransform.showselect");
-    constexpr inline AZ::Crc32 UnlockAll = AZ_CRC_CE("com.o3de.action.editortransform.unlockall");
-    constexpr inline AZ::Crc32 ShowAll = AZ_CRC_CE("com.o3de.action.editortransform.unhideall");
-    constexpr inline AZ::Crc32 SelectAll = AZ_CRC_CE("com.o3de.action.editortransform.selectall");
-    constexpr inline AZ::Crc32 InvertSelect = AZ_CRC_CE("com.o3de.action.editortransform.invertselect");
-    constexpr inline AZ::Crc32 DuplicateSelect = AZ_CRC_CE("com.o3de.action.editortransform.duplicateselect");
-    constexpr inline AZ::Crc32 DeleteSelect = AZ_CRC_CE("com.o3de.action.editortransform.deleteselect");
-    constexpr inline AZ::Crc32 EditEscaspe = AZ_CRC_CE("com.o3de.action.editortransform.editescape");
-    constexpr inline AZ::Crc32 EditPivot = AZ_CRC_CE("com.o3de.action.editortransform.editpivot");
-    constexpr inline AZ::Crc32 EditReset = AZ_CRC_CE("com.o3de.action.editortransform.editreset");
-    constexpr inline AZ::Crc32 EditResetManipulator = AZ_CRC_CE("com.o3de.action.editortransform.editresetmanipulator");
-    constexpr inline AZ::Crc32 ViewportUiVisible = AZ_CRC_CE("com.o3de.action.editortransform.viewportuivisible");
-    constexpr inline AZ::Crc32 Helpers = AZ_CRC_CE("com.o3de.action.editor.helpers");
-    constexpr inline AZ::Crc32 Icons = AZ_CRC_CE("com.o3de.action.editor.icons");
+    constexpr inline AZ::Crc32 LockSelection = AZ_CRC_CE("org.o3de.action.editortransform.lockselect");
+    constexpr inline AZ::Crc32 UnlockSelection = AZ_CRC_CE("org.o3de.action.editortransform.unlockselect");
+    constexpr inline AZ::Crc32 HideSelection = AZ_CRC_CE("org.o3de.action.editortransform.hideselect");
+    constexpr inline AZ::Crc32 ShowSelection = AZ_CRC_CE("org.o3de.action.editortransform.showselect");
+    constexpr inline AZ::Crc32 UnlockAll = AZ_CRC_CE("org.o3de.action.editortransform.unlockall");
+    constexpr inline AZ::Crc32 ShowAll = AZ_CRC_CE("org.o3de.action.editortransform.unhideall");
+    constexpr inline AZ::Crc32 SelectAll = AZ_CRC_CE("org.o3de.action.editortransform.selectall");
+    constexpr inline AZ::Crc32 InvertSelect = AZ_CRC_CE("org.o3de.action.editortransform.invertselect");
+    constexpr inline AZ::Crc32 DuplicateSelect = AZ_CRC_CE("org.o3de.action.editortransform.duplicateselect");
+    constexpr inline AZ::Crc32 DeleteSelect = AZ_CRC_CE("org.o3de.action.editortransform.deleteselect");
+    constexpr inline AZ::Crc32 EditEscaspe = AZ_CRC_CE("org.o3de.action.editortransform.editescape");
+    constexpr inline AZ::Crc32 EditPivot = AZ_CRC_CE("org.o3de.action.editortransform.editpivot");
+    constexpr inline AZ::Crc32 EditReset = AZ_CRC_CE("org.o3de.action.editortransform.editreset");
+    constexpr inline AZ::Crc32 EditResetManipulator = AZ_CRC_CE("org.o3de.action.editortransform.editresetmanipulator");
+    constexpr inline AZ::Crc32 ViewportUiVisible = AZ_CRC_CE("org.o3de.action.editortransform.viewportuivisible");
+    constexpr inline AZ::Crc32 Helpers = AZ_CRC_CE("org.o3de.action.editor.helpers");
+    constexpr inline AZ::Crc32 Icons = AZ_CRC_CE("org.o3de.action.editor.icons");
+    constexpr inline AZ::Crc32 OnlyShowHelpersForSelectedEntitiesAction = AZ_CRC_CE("org.o3de.action.editor.onlyshowselectedentitieshelpers");
+    constexpr inline AZ::Crc32 HideHelpers = AZ_CRC_CE("org.o3de.action.editor.hidehelpers");
     //@}
+
+    namespace ComponentModeFramework
+    {
+        class ComponentModeSwitcher;
+    }
 
     //! Provide interface for EditorTransformComponentSelection requests.
     class EditorTransformComponentSelectionRequests : public AZ::EBusTraits
@@ -124,6 +131,12 @@ namespace AzToolsFramework
 
         //! Snap selected entities to be aligned with the world space grid.
         virtual void SnapSelectedEntitiesToWorldGrid(float gridSize) = 0;
+
+        //! Replace ComponentModeSwitcher with overridden ComponentModeSwitcher
+        virtual void OverrideComponentModeSwitcher(AZStd::shared_ptr<ComponentModeFramework::ComponentModeSwitcher>) = 0;
+
+        //! Deselect all entities
+        virtual void DeselectEntities() = 0;
 
     protected:
         ~EditorTransformComponentSelectionRequests() = default;

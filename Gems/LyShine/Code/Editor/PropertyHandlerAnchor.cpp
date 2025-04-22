@@ -67,7 +67,8 @@ PropertyAnchorCtrl::PropertyAnchorCtrl(QWidget* parent)
                     m_propertyVectorCtrl->setValuebyIndex(presetValues.GetZ(), 2);
                     m_propertyVectorCtrl->setValuebyIndex(presetValues.GetW(), 3);
 
-                    EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, this);
+                    AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                        &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, this);
                 },
                 this);
 
@@ -83,7 +84,8 @@ PropertyAnchorCtrl::PropertyAnchorCtrl(QWidget* parent)
 
         QObject::connect(m_propertyVectorCtrl, &AzQtComponents::VectorInput::valueChanged, this, [this]()
             {
-                EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, this);
+                AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                    &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, this);
             });
 
         m_propertyVectorCtrl->setMinimum(-std::numeric_limits<float>::max());
@@ -120,7 +122,7 @@ void PropertyAnchorCtrl::ConsumeAttribute(AZ::u32 attrib, AzToolsFramework::Prop
         }
         return;
     }
-    else if (attrib == AZ_CRC("LayoutFitterType", 0x7c009203))
+    else if (attrib == AZ_CRC_CE("LayoutFitterType"))
     {
         UiLayoutFitterInterface::FitType fitType = UiLayoutFitterInterface::FitType::None;
         if (attrValue->Read<UiLayoutFitterInterface::FitType>(fitType))
@@ -236,10 +238,10 @@ void PropertyHandlerAnchor::WriteGUIValuesIntoProperty(size_t index, PropertyAnc
             bool bNeedHeight = (newAnchors.m_top == newAnchors.m_bottom);
 
             UiTransform2dInterface::Anchors oldAnchors;
-            EBUS_EVENT_ID_RESULT(oldAnchors, entityId, UiTransform2dBus, GetAnchors);
+            UiTransform2dBus::EventResult(oldAnchors, entityId, &UiTransform2dBus::Events::GetAnchors);
 
             UiTransform2dInterface::Offsets oldOffsets;
-            EBUS_EVENT_ID_RESULT(oldOffsets, entityId, UiTransform2dBus, GetOffsets);
+            UiTransform2dBus::EventResult(oldOffsets, entityId, &UiTransform2dBus::Events::GetOffsets);
 
             // Calculate width/height from offsets if anchors are the same
             if (bNeedWidth && (oldAnchors.m_left == oldAnchors.m_right))
@@ -255,7 +257,7 @@ void PropertyHandlerAnchor::WriteGUIValuesIntoProperty(size_t index, PropertyAnc
             {
                 // Calculate width/height from element rect in canvas space
                 UiTransformInterface::RectPoints elemRect;
-                EBUS_EVENT_ID(entityId, UiTransformBus, GetCanvasSpacePointsNoScaleRotate, elemRect);
+                UiTransformBus::Event(entityId, &UiTransformBus::Events::GetCanvasSpacePointsNoScaleRotate, elemRect);
                 AZ::Vector2 size = elemRect.GetAxisAlignedSize();
                 if (width < 0.0f)
                 {
@@ -269,13 +271,13 @@ void PropertyHandlerAnchor::WriteGUIValuesIntoProperty(size_t index, PropertyAnc
         }
 
         // Set anchors to the selected preset values
-        EBUS_EVENT_ID(entityId, UiTransform2dBus, SetAnchors, newAnchors, false, false);
+        UiTransform2dBus::Event(entityId, &UiTransform2dBus::Events::SetAnchors, newAnchors, false, false);
 
         // Adjust pivot
         AZ::Vector2 currentPivot;
         currentPivot.SetX((newAnchors.m_left == newAnchors.m_right) ? newAnchors.m_left : 0.5f);
         currentPivot.SetY((newAnchors.m_top == newAnchors.m_bottom) ? newAnchors.m_top : 0.5f);
-        EBUS_EVENT_ID(entityId, UiTransform2dBus, SetPivotAndAdjustOffsets, currentPivot);
+        UiTransform2dBus::Event(entityId, &UiTransform2dBus::Events::SetPivotAndAdjustOffsets, currentPivot);
 
         // Adjust offsets
         UiTransform2dInterface::Offsets newOffsets;
@@ -300,7 +302,7 @@ void PropertyHandlerAnchor::WriteGUIValuesIntoProperty(size_t index, PropertyAnc
             newOffsets.m_top = 0.0f;
             newOffsets.m_bottom = 0.0f;
         }
-        EBUS_EVENT_ID(entityId, UiTransform2dBus, SetOffsets, newOffsets);
+        UiTransform2dBus::Event(entityId, &UiTransform2dBus::Events::SetOffsets, newOffsets);
     }
     else
     {
@@ -308,10 +310,10 @@ void PropertyHandlerAnchor::WriteGUIValuesIntoProperty(size_t index, PropertyAnc
 
         // Check if transform is controlled by a layout fitter
         bool horizontalFit = false;
-        EBUS_EVENT_ID_RESULT(horizontalFit, entityId, UiLayoutFitterBus, GetHorizontalFit);
+        UiLayoutFitterBus::EventResult(horizontalFit, entityId, &UiLayoutFitterBus::Events::GetHorizontalFit);
 
         bool verticalFit = false;
-        EBUS_EVENT_ID_RESULT(verticalFit, entityId, UiLayoutFitterBus, GetVerticalFit);
+        UiLayoutFitterBus::EventResult(verticalFit, entityId, &UiLayoutFitterBus::Events::GetVerticalFit);
 
         if (elements[0]->wasValueEditedByUser())
         {
@@ -346,7 +348,7 @@ void PropertyHandlerAnchor::WriteGUIValuesIntoProperty(size_t index, PropertyAnc
             }
         }
 
-        EBUS_EVENT_ID(entityId, UiTransform2dBus, SetAnchors, newAnchors, false, true);
+        UiTransform2dBus::Event(entityId, &UiTransform2dBus::Events::SetAnchors, newAnchors, false, true);
     }
 }
 
@@ -408,7 +410,8 @@ AZ::EntityId PropertyHandlerAnchor::GetParentEntityId(AzToolsFramework::Instance
 
 void PropertyHandlerAnchor::Register()
 {
-    EBUS_EVENT(AzToolsFramework::PropertyTypeRegistrationMessages::Bus, RegisterPropertyType, aznew PropertyHandlerAnchor());
+    AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Broadcast(
+        &AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew PropertyHandlerAnchor());
 }
 
 #include <moc_PropertyHandlerAnchor.cpp>

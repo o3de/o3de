@@ -18,10 +18,10 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphNodeIdPicker, EditorAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphNodeIdHandler, EditorAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphMotionNodeIdHandler, EditorAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphStateIdHandler, EditorAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphNodeIdPicker, EditorAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphNodeIdHandler, EditorAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphMotionNodeIdHandler, EditorAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphStateIdHandler, EditorAllocator)
 
     AnimGraphNodeIdPicker::AnimGraphNodeIdPicker(QWidget* parent)
         : QWidget(parent)
@@ -137,7 +137,7 @@ namespace EMotionFX
 
     AZ::u32 AnimGraphNodeIdHandler::GetHandlerName() const
     {
-        return AZ_CRC("AnimGraphNodeId", 0xadadb878);
+        return AZ_CRC_CE("AnimGraphNodeId");
     }
 
 
@@ -149,7 +149,8 @@ namespace EMotionFX
 
         connect(picker, &AnimGraphNodeIdPicker::SelectionChanged, this, [picker]()
         {
-            EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, picker);
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, picker);
         });
 
         return picker;
@@ -167,7 +168,7 @@ namespace EMotionFX
             }
         }
 
-        if (attrib == AZ_CRC("AnimGraph", 0x0d53d4b3))
+        if (attrib == AZ_CRC_CE("AnimGraph"))
         {
             attrValue->Read<AnimGraph*>(m_animGraph);
             GUI->SetAnimGraph(m_animGraph);
@@ -199,7 +200,7 @@ namespace EMotionFX
 
     AZ::u32 AnimGraphMotionNodeIdHandler::GetHandlerName() const
     {
-        return AZ_CRC("AnimGraphMotionNodeId", 0xe19a0672);
+        return AZ_CRC_CE("AnimGraphMotionNodeId");
     }
 
     //---------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -213,7 +214,7 @@ namespace EMotionFX
 
     AZ::u32 AnimGraphStateIdHandler::GetHandlerName() const
     {
-        return AZ_CRC("AnimGraphStateId", 0x3547298f);
+        return AZ_CRC_CE("AnimGraphStateId");
     }
 } // namespace EMotionFX
 

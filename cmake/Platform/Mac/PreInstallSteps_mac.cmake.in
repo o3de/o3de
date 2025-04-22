@@ -6,7 +6,7 @@
 #
 #
 
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.22)
 
 # The O3DE SDK will be shipped as an app bundle. So we create an O3DE_SDK.app directory
 # and install SDK into the app's Contents/Engine directory.

@@ -11,7 +11,6 @@
             "methods": [
                 {
                     "base": "SetBottom",
-                    "context": "UiAnchors",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Bottom"
@@ -40,7 +39,6 @@
                 },
                 {
                     "base": "SetRight",
-                    "context": "UiAnchors",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Right"
@@ -69,7 +67,6 @@
                 },
                 {
                     "base": "SetTop",
-                    "context": "UiAnchors",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Top"
@@ -98,7 +95,6 @@
                 },
                 {
                     "base": "SetLeft",
-                    "context": "UiAnchors",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Left"
@@ -127,7 +123,6 @@
                 },
                 {
                     "base": "SetAnchors",
-                    "context": "UiAnchors",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Anchors"

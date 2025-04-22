@@ -10,9 +10,10 @@
 
 #if !defined(Q_MOC_RUN)
 #include <ScreenWidget.h>
+#include <ScreensCtrl.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzToolsFramework/UI/Notifications/ToastNotificationsView.h>
-
+#include <GemCatalog/GemInfo.h>
 #include <QSet>
 #include <QString>
 #endif
@@ -34,41 +35,51 @@ namespace O3DE::ProjectManager
         : public ScreenWidget
     {
     public:
-        explicit GemCatalogScreen(QWidget* parent = nullptr);
+        explicit GemCatalogScreen(DownloadController* downloadController, bool readOnly = false, QWidget* parent = nullptr);
         ~GemCatalogScreen() = default;
         ProjectManagerScreen GetScreenEnum() override;
 
         void ReinitForProject(const QString& projectPath);
 
-        enum class EnableDisableGemsResult 
-        {
-            Failed = 0,
-            Success,
-            Cancel
-        };
-        EnableDisableGemsResult EnableDisableGemsForProject(const QString& projectPath);
+        QString GetTabText() override;
+        bool IsTab() override;
+        void NotifyCurrentScreen() override;
+
+        void AddToGemModel(const GemInfo& gemInfo);
 
         GemModel* GetGemModel() const { return m_gemModel; }
         DownloadController* GetDownloadController() const { return m_downloadController; }
 
     public slots:
+        void ShowStandardToastNotification(const QString& notification);
         void OnGemStatusChanged(const QString& gemName, uint32_t numChangedDependencies);
         void OnDependencyGemStatusChanged(const QString& gemName);
         void OnAddGemClicked();
         void SelectGem(const QString& gemName);
         void OnGemDownloadResult(const QString& gemName, bool succeeded = true);
-        void Refresh();
-        void UpdateGem(const QModelIndex& modelIndex);
-        void UninstallGem(const QModelIndex& modelIndex);
+        void Refresh(bool refreshRemoteRepos = false);
+        void UpdateGem(const QModelIndex& modelIndex, const QString& version, const QString& path);
+        void UninstallGem(const QModelIndex& modelIndex, const QString& path);
+        void DownloadGem(const QModelIndex& modelIndex, const QString& version, const QString& path);
+        void HandleGemCreated(const GemInfo& gemInfo);
+        void HandleGemEdited(const GemInfo& newGemInfo);
+        void NotifyProjectRemoved(const QString& projectPath);
 
     protected:
         void hideEvent(QHideEvent* event) override;
         void showEvent(QShowEvent* event) override;
         void resizeEvent(QResizeEvent* event) override;
         void moveEvent(QMoveEvent* event) override;
+        virtual void SetUpScreensControl(QWidget* parent);
+
+        GemModel* m_gemModel = nullptr;
+        QSet<QString> m_gemsToRegisterWithProject;
+        ScreensCtrl* m_screensControl = nullptr;
 
     private slots:
         void HandleOpenGemRepo();
+        void HandleCreateGem();
+        void HandleEditGem(const QModelIndex& currentModelIndex, const QString& path);
         void UpdateAndShowGemCart(QWidget* cartWidget);
         void ShowInspector();
 
@@ -82,18 +93,20 @@ namespace O3DE::ProjectManager
         void FillModel(const QString& projectPath);
 
         AZStd::unique_ptr<AzToolsFramework::ToastNotificationsView> m_notificationsView;
-
         GemListView* m_gemListView = nullptr;
         QStackedWidget* m_rightPanelStack = nullptr;
         GemInspector* m_gemInspector = nullptr;
-        GemModel* m_gemModel = nullptr;
         GemCatalogHeaderWidget* m_headerWidget = nullptr;
         GemSortFilterProxyModel* m_proxyModel = nullptr;
         QVBoxLayout* m_filterWidgetLayout = nullptr;
         GemFilterWidget* m_filterWidget = nullptr;
         DownloadController* m_downloadController = nullptr;
         bool m_notificationsEnabled = true;
-        QSet<QString> m_gemsToRegisterWithProject;
         QString m_projectPath;
+        bool m_readOnly;
+        bool m_needRefresh = false;
+
+        QModelIndex m_curEditedIndex;
+
     };
 } // namespace O3DE::ProjectManager

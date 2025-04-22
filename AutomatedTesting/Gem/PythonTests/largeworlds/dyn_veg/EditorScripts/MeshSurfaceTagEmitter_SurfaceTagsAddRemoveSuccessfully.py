@@ -43,12 +43,12 @@ def MeshSurfaceTagEmitter_SurfaceTagsAddRemoveSuccessfully():
     import azlmbr.surface_data as surface_data
 
     import editor_python_test_tools.hydra_editor_utils as hydra
+    from editor_python_test_tools.wait_utils import PrefabWaiter
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
 
     # 1) Open an existing simple level
-    helper.init_idle()
-    helper.open_level("Physics", "Base")
+    hydra.open_base_level()
 
     #  2) Create a new entity with components "Mesh Surface Tag Emitter", "Mesh"
     entity_position = math.Vector3(125.0, 136.0, 32.0)
@@ -59,6 +59,7 @@ def MeshSurfaceTagEmitter_SurfaceTagsAddRemoveSuccessfully():
     # 3) Add/ remove Surface Tags
     tag = surface_data.SurfaceTag()
     tag.SetTag("water")
+    PrefabWaiter.wait_for_propagation()
     pte = hydra.get_property_tree(entity.components[0])
     path = "Configuration|Generated Tags"
     pte.add_container_item(path, 0, tag)

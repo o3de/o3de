@@ -31,11 +31,23 @@
 #include "Core/QtEditorApplication.h"
 #include "Commands/CommandManager.h"
 #include "Util/Variable.h"
+#include "CvarDPE.h"
 
+#include <AzToolsFramework/UI/DocumentPropertyEditor/DocumentPropertyEditor.h>
+
+static void OnVariableUpdated(ICVar* pCVar);
 
 AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include <Controls/ui_ConsoleSCB.h>
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
+
+namespace ConsoleConstants
+{
+    static constexpr const char* ButtonIcon = ":/controls/img/cvar_dark.bmp";
+    static constexpr const char* SearchIcon = ":/stylesheet/img/search.svg";
+    static constexpr const char* ClearIcon = ":/stylesheet/img/lineedit-clear.png";
+    static constexpr const char* MenuIcon = ":/Menu/menu.svg";
+} // namespace ConsoleConstants
 
 class CConsoleSCB::SearchHighlighter : public QSyntaxHighlighter
 {
@@ -311,6 +323,8 @@ CConsoleSCB::CConsoleSCB(QWidget* parent)
     ui->lineEditFind->setClearButtonEnabled(true);
     AzQtComponents::LineEdit::applySearchStyle(ui->lineEditFind);
 
+    SetupOptionsMenu();
+
     // Setup the color table for the default (light) theme
     m_colorTable << QColor(0, 0, 0)
         << QColor(0, 0, 0)
@@ -338,7 +352,7 @@ CConsoleSCB::CConsoleSCB(QWidget* parent)
 
     connect(ui->button, &QPushButton::clicked, this, &CConsoleSCB::showVariableEditor);
     connect(ui->findButton, &QPushButton::clicked, this, &CConsoleSCB::toggleConsoleSearch);
-    connect(ui->textEdit, &ConsoleTextEdit::searchBarRequested, this, [this]
+    connect(ui->textEdit, &AzToolsFramework::ConsoleTextEdit::searchBarRequested, this, [this]
     {
         this->ui->findBar->setVisible(true);
         this->ui->lineEditFind->setFocus();
@@ -361,12 +375,6 @@ CConsoleSCB::CConsoleSCB(QWidget* parent)
 
     connect(ui->lineEdit, &ConsoleLineEdit::variableEditorRequested, this, &CConsoleSCB::showVariableEditor);
 
-    if (GetIEditor()->IsInConsolewMode())
-    {
-        // Attach / register edit box
-        //CLogFile::AttachEditBox(m_edit.GetSafeHwnd()); // FIXME
-    }
-
     AzToolsFramework::EditorPreferencesNotificationBus::Handler::BusConnect();
 }
 
@@ -380,6 +388,30 @@ CConsoleSCB::~CConsoleSCB()
     CLogFile::AttachEditBox(nullptr);
 }
 
+void CConsoleSCB::SetupOptionsMenu()
+{
+    m_optionsMenu = new QMenu(QStringLiteral("Console Options Menu"), this);
+    connect(m_optionsMenu, &QMenu::aboutToShow, this, &CConsoleSCB::UpdateOptionsMenu);
+    ui->optionsButton->setMenu(m_optionsMenu);
+    ui->optionsButton->setAutoRaise(true);
+    ui->optionsButton->setPopupMode(QToolButton::InstantPopup);
+
+    m_clearOnPlayAction = new QAction(tr("Clear On Play"), this);
+    m_clearOnPlayAction->setCheckable(true);
+    connect(m_clearOnPlayAction, &QAction::triggered, this, &CConsoleSCB::toggleClearOnPlay);
+    m_optionsMenu->addAction(m_clearOnPlayAction);
+}
+
+void CConsoleSCB::UpdateOptionsMenu()
+{
+    m_clearOnPlayAction->setChecked(gSettings.clearConsoleOnGameModeStart);
+}
+
+void CConsoleSCB::toggleClearOnPlay()
+{
+    gSettings.clearConsoleOnGameModeStart = !gSettings.clearConsoleOnGameModeStart;
+}
+
 void CConsoleSCB::RegisterViewClass()
 {
     AzToolsFramework::ViewPaneOptions opts;
@@ -389,6 +421,10 @@ void CConsoleSCB::RegisterViewClass()
     opts.showInMenu = true;
     opts.builtInActionId = ID_VIEW_CONSOLEWINDOW;
     opts.shortcut = QKeySequence(Qt::Key_QuoteLeft);
+    // Override the default behavior for component mode enter/exit and imgui enter/exit
+    // so that we don't disable and enable the Console window.
+    opts.isDisabledInComponentMode = false;
+    opts.isDisabledInImGuiMode = false;
 
     AzToolsFramework::RegisterViewPane<CConsoleSCB>(LyViewPane::Console, LyViewPane::CategoryTools, opts);
 }
@@ -400,10 +436,10 @@ void CConsoleSCB::OnEditorPreferencesChanged()
 
 void CConsoleSCB::RefreshStyle()
 {
-    ui->button->setIcon(QIcon(QString(":/controls/img/cvar_dark.bmp")));
-    ui->findButton->setIcon(QIcon(QString(":/stylesheet/img/search.png")));
-    ui->closeButton->setIcon(QIcon(QString(":/stylesheet/img/lineedit-clear.png")));
-
+    ui->button->setIcon(QIcon(ConsoleConstants::ButtonIcon));
+    ui->findButton->setIcon(QIcon(ConsoleConstants::SearchIcon));
+    ui->closeButton->setIcon(QIcon(ConsoleConstants::ClearIcon));
+    ui->optionsButton->setIcon(QIcon(ConsoleConstants::MenuIcon));
     // Set the debug/warning text colors appropriately for the background theme
     // (e.g. not have black text on black background)
     QColor textColor = Qt::black;
@@ -418,12 +454,10 @@ void CConsoleSCB::RefreshStyle()
         m_colorTable[6] = QColor(0xff, 0xaa, 0x22);     // Warning (Yellow)
     }
 
-    const bool uiAndDark = !GetIEditor()->IsInConsolewMode() && CConsoleSCB::GetCreatedInstance() && m_backgroundTheme == AzToolsFramework::ConsoleColorTheme::Dark;
-
     QColor bgColor;
     if (!GetIEditor()->IsInConsolewMode() && CConsoleSCB::GetCreatedInstance() && m_backgroundTheme == AzToolsFramework::ConsoleColorTheme::Dark)
     {
-        bgColor = Qt::black;
+        bgColor = QColor(0x22, 0x22, 0x22);
         AzQtComponents::ScrollBar::applyLightStyle(ui->textEdit);
     }
     else
@@ -436,8 +470,7 @@ void CConsoleSCB::RefreshStyle()
     m_colorTable[0] = textColor;
     m_colorTable[1] = textColor;
 
-    ui->textEdit->setBackgroundVisible(!uiAndDark);
-    ui->textEdit->setStyleSheet(uiAndDark ? QString() : QString("QPlainTextEdit{ background: %1 }").arg(bgColor.name(QColor::HexRgb)));
+    ui->textEdit->setStyleSheet(QString("background: %1").arg(bgColor.name(QColor::HexRgb)));
 
     // Clear out the console text when we change our background color since
     // some of the previous text colors may not be appropriate for the
@@ -544,7 +577,7 @@ void CConsoleSCB::AddToPendingLines(const QString& text, bool bNewLine)
  * When a CVar variable is updated, we need to tell alert our console variables
  * pane so it can update the corresponding row
  */
-static void OnVariableUpdated([[maybe_unused]] int row, ICVar* pCVar)
+static void OnVariableUpdated(ICVar* pCVar)
 {
     QtViewPane* pane = QtViewPaneManager::instance()->GetPane(LyViewPane::ConsoleVariables);
     if (!pane)
@@ -601,11 +634,6 @@ static CVarBlock* VarBlockFromConsoleVars()
             assert(0);
         }
 
-        // Add our on change handler so we can update the CVariable created for
-        // the matching ICVar that has been modified
-        AZStd::function<void()> onChange = [row=i,pCVar=pCVar]() { OnVariableUpdated(row,pCVar); };
-        pCVar->AddOnChangeFunctor(onChange);
-
         pVariable->SetDescription(pCVar->GetHelp());
         pVariable->SetName(cmds[i].data());
 
@@ -657,96 +685,6 @@ static void OnConsoleVariableUpdated(IVariable* pVar)
     }
 }
 
-ConsoleTextEdit::ConsoleTextEdit(QWidget* parent)
-    : QPlainTextEdit(parent)
-    , m_contextMenu(new QMenu(this))
-{
-    setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(this, &QPlainTextEdit::customContextMenuRequested, this, &ConsoleTextEdit::showContextMenu);
-
-    // Make sure to add the actions to this widget, so that the ShortCutDispatcher picks them up properly
-
-    QAction* copyAction = m_contextMenu->addAction(tr("&Copy"));
-    copyAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    copyAction->setShortcut(QKeySequence::Copy);
-    copyAction->setEnabled(false);
-    connect(copyAction, &QAction::triggered, this, &QPlainTextEdit::copy);
-    addAction(copyAction);
-
-    QAction* selectAllAction = m_contextMenu->addAction(tr("Select &All"));
-    selectAllAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    selectAllAction->setShortcut(QKeySequence::SelectAll);
-    selectAllAction->setEnabled(false);
-    connect(selectAllAction, &QAction::triggered, this, &QPlainTextEdit::selectAll);
-    addAction(selectAllAction);
-
-    m_contextMenu->addSeparator();
-
-    QAction* deleteAction = m_contextMenu->addAction(tr("Delete"));
-    deleteAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    deleteAction->setShortcut(QKeySequence::Delete);
-    deleteAction->setEnabled(false);
-    connect(deleteAction, &QAction::triggered, this, [=]() { textCursor().removeSelectedText(); } );
-    addAction(deleteAction);
-
-    QAction* clearAction = m_contextMenu->addAction(tr("Clear"));
-    clearAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    clearAction->setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_C);
-    clearAction->setEnabled(false);
-    connect(clearAction, &QAction::triggered, this, &QPlainTextEdit::clear);
-    addAction(clearAction);
-
-    QAction* findAction = m_contextMenu->addAction(tr("Find"));
-    findAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    findAction->setShortcut(QKeySequence::Find);
-    findAction->setEnabled(true);
-    connect(findAction, &QAction::triggered, this, &ConsoleTextEdit::searchBarRequested);
-    addAction(findAction);
-
-    connect(this, &QPlainTextEdit::copyAvailable, copyAction, &QAction::setEnabled);
-    connect(this, &QPlainTextEdit::copyAvailable, deleteAction, &QAction::setEnabled);
-    connect(this, &QPlainTextEdit::textChanged, selectAllAction, [=]
-        {
-            if (document() && !document()->isEmpty())
-            {
-                clearAction->setEnabled(true);
-                selectAllAction->setEnabled(true);
-            }
-            else
-            {
-                clearAction->setEnabled(false);
-                selectAllAction->setEnabled(false);
-            }
-        });
-}
-
-bool ConsoleTextEdit::event(QEvent* theEvent)
-{
-    if (theEvent->type() == QEvent::ShortcutOverride)
-    {
-        // ignore several possible key combinations to prevent them bubbling up to the main editor
-        QKeyEvent* shortcutEvent = static_cast<QKeyEvent*>(theEvent);
-
-        QKeySequence::StandardKey ignoredKeys[] = { QKeySequence::Backspace };
-
-        for (auto& currKey : ignoredKeys)
-        {
-            if (shortcutEvent->matches(currKey))
-            {
-                // these shortcuts are ignored. Accept them and do nothing.
-                theEvent->accept();
-                return true;
-            }
-        }
-    }
-
-    return QPlainTextEdit::event(theEvent);
-}
-
-void ConsoleTextEdit::showContextMenu(const QPoint &pt)
-{
-    m_contextMenu->exec(mapToGlobal(pt));
-}
 
 ConsoleVariableItemDelegate::ConsoleVariableItemDelegate(QObject* parent)
     : QStyledItemDelegate(parent)
@@ -1169,6 +1107,100 @@ void ConsoleVariableModel::ClearModifiedRows()
     m_modifiedRows.clear();
 }
 
+template<typename T, int expectedCvarType>
+static bool SetCVarFromConsoleCommand(ICVar* cvar, AZ::ConsoleFunctorBase* consoleCommand)
+{
+    bool succeeded = false;
+    if (T value; consoleCommand->GetValue(value) == AZ::GetValueResult::Success)
+    {
+        if (cvar->GetType() == expectedCvarType)
+        {
+            if constexpr (expectedCvarType == CVAR_INT)
+            {
+                cvar->Set(static_cast<int>(value));
+                succeeded = true;
+            }
+            else if constexpr (expectedCvarType == CVAR_FLOAT)
+            {
+                cvar->Set(static_cast<float>(value));
+                succeeded = true;
+            }
+            else if constexpr (expectedCvarType == CVAR_STRING)
+            {
+                if (!value.empty())
+                {
+                    cvar->Set(value.data());
+                    succeeded = true;
+                }
+            }
+        }
+        else if (cvar->GetType() == CVAR_STRING)
+        {
+            if constexpr (expectedCvarType != CVAR_STRING)
+            {
+                auto stringified = AZStd::to_string(value);
+                if (!stringified.empty())
+                {
+                    cvar->Set(stringified.c_str());
+                }
+            }
+        }
+    }
+    return succeeded;
+}
+
+AZ::ConsoleCommandInvokedEvent::Handler ConsoleVariableEditor::m_commandInvokedHandler(
+    [](AZStd::string_view command,
+       const AZ::ConsoleCommandContainer&,
+       AZ::ConsoleFunctorFlags,
+       AZ::ConsoleInvokedFrom)
+    {
+        if (command == AzToolsFramework::DocumentPropertyEditor::GetEnableCVarEditorName())
+        {
+            // the cvar editor pref changed, unregister the old and register the new
+            AzToolsFramework::UnregisterViewPane(LyViewPane::ConsoleVariables);
+            ConsoleVariableEditor::RegisterViewClass();
+        }
+
+        // find the cvar that changed and keep the console informed
+        auto changedCVar = GetIEditor()->GetSystem()->GetIConsole()->GetCVar(AZStd::string(command).c_str());
+        if (changedCVar)
+        {
+            auto console = AZ::Interface<AZ::IConsole>::Get();
+            auto azConsoleCommand = console->FindCommand(command);
+            if (azConsoleCommand)
+            {
+                const bool handled =
+                    (SetCVarFromConsoleCommand<AZStd::string, CVAR_STRING>(changedCVar, azConsoleCommand) ||
+                     SetCVarFromConsoleCommand<AZ::CVarFixedString, CVAR_STRING>(changedCVar, azConsoleCommand) ||
+                     SetCVarFromConsoleCommand<AZ::s8, CVAR_INT>(changedCVar, azConsoleCommand) ||
+                     SetCVarFromConsoleCommand<AZ::s16, CVAR_INT>(changedCVar, azConsoleCommand) ||
+                     SetCVarFromConsoleCommand<AZ::s32, CVAR_INT>(changedCVar, azConsoleCommand) ||
+                     SetCVarFromConsoleCommand<AZ::s64, CVAR_INT>(changedCVar, azConsoleCommand) ||
+                     SetCVarFromConsoleCommand<AZ::u8, CVAR_INT>(changedCVar, azConsoleCommand) ||
+                     SetCVarFromConsoleCommand<AZ::u16, CVAR_INT>(changedCVar, azConsoleCommand) ||
+                     SetCVarFromConsoleCommand<AZ::u32, CVAR_INT>(changedCVar, azConsoleCommand) ||
+                     SetCVarFromConsoleCommand<AZ::u64, CVAR_INT>(changedCVar, azConsoleCommand) ||
+                     SetCVarFromConsoleCommand<bool, CVAR_INT>(changedCVar, azConsoleCommand) ||
+                     SetCVarFromConsoleCommand<long, CVAR_INT>(changedCVar, azConsoleCommand) ||
+                     SetCVarFromConsoleCommand<unsigned long, CVAR_INT>(changedCVar, azConsoleCommand) ||
+                     SetCVarFromConsoleCommand<float, CVAR_FLOAT>(changedCVar, azConsoleCommand) ||
+                     SetCVarFromConsoleCommand<double, CVAR_FLOAT>(changedCVar, azConsoleCommand)
+                     );
+
+                if (!handled)
+                {
+                    AZ_Warning("ConsoleSCB", false, "an unknown type could not be read into the console!");
+                }
+            }
+
+            if (!AzToolsFramework::DocumentPropertyEditor::ShouldReplaceCVarEditor())
+            {
+                OnVariableUpdated(changedCVar);
+            }
+        }
+    });
+
 ConsoleVariableEditor::ConsoleVariableEditor(QWidget* parent)
     : QWidget(parent)
     , m_tableView(new QTableView(this))
@@ -1242,11 +1274,22 @@ void ConsoleVariableEditor::SetVarBlock(CVarBlock* varBlock)
 
 void ConsoleVariableEditor::RegisterViewClass()
 {
-    AzToolsFramework::ViewPaneOptions opts;
-    opts.paneRect = QRect(100, 100, 340, 500);
-    opts.isDeletable = false;
+    if (m_commandInvokedHandler.IsConnected())
+    {
+        m_commandInvokedHandler.Disconnect();
+    }
+    m_commandInvokedHandler.Connect(AZ::Interface<AZ::IConsole>::Get()->GetConsoleCommandInvokedEvent());
 
-    AzToolsFramework::RegisterViewPane<ConsoleVariableEditor>(LyViewPane::ConsoleVariables, LyViewPane::CategoryOther, opts);
+    if (AzToolsFramework::DocumentPropertyEditor::ShouldReplaceCVarEditor())
+    {
+        AzToolsFramework::CvarDPE::RegisterViewClass();
+    }
+    else
+    {
+        AzToolsFramework::ViewPaneOptions opts;
+        opts.paneRect = QRect(100, 100, 340, 500);
+        AzToolsFramework::RegisterViewPane<ConsoleVariableEditor>(LyViewPane::ConsoleVariables, LyViewPane::CategoryOther, opts);
+    }
 }
 
 /**

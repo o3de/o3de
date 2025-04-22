@@ -10,6 +10,7 @@
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Math/Sha1.h>
 
+#include <native/assetprocessor.h>
 #include <native/utilities/PlatformConfiguration.h>
 #include <native/utilities/StatsCapture.h>
 #include <native/AssetManager/FileStateCache.h>
@@ -39,6 +40,7 @@
 #include <AzFramework/Platform/PlatformDefaults.h>
 #include <AzToolsFramework/UI/Logging/LogLine.h>
 #include <xxhash/xxhash.h>
+#include <native/utilities/UuidManager.h>
 
 #if defined(AZ_PLATFORM_WINDOWS)
 #   include <windows.h>
@@ -88,7 +90,8 @@ namespace AssetUtilsInternal
                 {
                     if (!failureOccurredOnce)
                     {
-                        AZ_Warning(AssetProcessor::ConsoleChannel, false, "Warning: Unable to remove file %s to copy source file %s in... (We may retry)\n", outputFile.toUtf8().constData(), sourceFile.toUtf8().constData());
+                        // This is not a warning because there is retry logic in place.
+                        AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Unable to remove file %s to copy source file %s in... (We may retry)\n", outputFile.toUtf8().constData(), sourceFile.toUtf8().constData());
                         failureOccurredOnce = true;
                     }
                     //not able to remove the file
@@ -131,7 +134,7 @@ namespace AssetUtilsInternal
                 }
             }
         } while (!timer.hasExpired(waitTimeInSeconds * 1000)); //We will keep retrying until the timer has expired the inputted timeout
-        
+
         // once we're done, regardless of success or failure, we 'unlock' those files for further process.
         // if we failed, also re-trigger them to rebuild (the bool param at the end of the ebus call)
         QString normalized = AssetUtilities::NormalizeFilePath(outputFile);
@@ -232,7 +235,6 @@ namespace AssetUtilities
     AZ::SettingsRegistryInterface::FixedValueString s_projectPath;
     AZ::SettingsRegistryInterface::FixedValueString s_projectName;
     AZ::SettingsRegistryInterface::FixedValueString s_assetRoot;
-    AZ::SettingsRegistryInterface::FixedValueString s_assetServerAddress;
     AZ::SettingsRegistryInterface::FixedValueString s_cachedEngineRoot;
     int s_truncateFingerprintTimestampPrecision{ 1 };
     AZStd::optional<bool> s_fileHashOverride{};
@@ -468,7 +470,8 @@ namespace AssetUtilities
         fileName.toWCharArray(usableFileName.data());
 
         // third parameter dwShareMode (0) prevents share access
-        HANDLE fileHandle = CreateFileW(usableFileName.c_str(), GENERIC_READ, 0, nullptr, OPEN_EXISTING, 0, 0);
+        const DWORD dwShareMode = 0;
+        HANDLE fileHandle = CreateFileW(usableFileName.c_str(), GENERIC_READ, dwShareMode, nullptr, OPEN_EXISTING, 0, 0);
 
         if (fileHandle != INVALID_HANDLE_VALUE)
         {
@@ -549,83 +552,6 @@ namespace AssetUtilities
         return QString::fromUtf8(s_projectPath.c_str(), aznumeric_cast<int>(s_projectPath.size()));
     }
 
-    bool InServerMode()
-    {
-        static bool s_serverMode = CheckServerMode();
-        return s_serverMode;
-    }
-
-    bool CheckServerMode()
-    {
-        QStringList args = QCoreApplication::arguments();
-        for (const QString& arg : args)
-        {
-            if (arg.contains("/server", Qt::CaseInsensitive) || arg.contains("--server", Qt::CaseInsensitive))
-            {
-                bool isValid = false;
-                AssetProcessor::AssetServerBus::BroadcastResult(isValid, &AssetProcessor::AssetServerBusTraits::IsServerAddressValid);
-                if (isValid)
-                {
-                    AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Asset Processor is running in server mode.\n");
-                    return true;
-                }
-                else
-                {
-                    AZ_Warning(AssetProcessor::ConsoleChannel, false, "Invalid server address, please check the AssetProcessorPlatformConfig.setreg file"
-                        " to ensure that the address is correct. Asset Processor won't be running in server mode.");
-                }
-
-                break;
-            }
-        }
-
-        return false;
-    }
-
-
-    QString ServerAddress()
-    {
-        if (!s_assetServerAddress.empty())
-        {
-            return QString::fromUtf8(s_assetServerAddress.data(), aznumeric_cast<int>(s_assetServerAddress.size()));
-        }
-        // QCoreApplication is not created during unit test mode and that can cause QtWarning to get emitted
-        // since we need to retrieve arguments from Qt
-        if (QCoreApplication::instance())
-        {
-            // if its been specified on the command line, then ignore AssetProcessorPlatformConfig:
-            QStringList args = QCoreApplication::arguments();
-            for (QString arg : args)
-            {
-                if (arg.contains("/serverAddress=", Qt::CaseInsensitive) || arg.contains("--serverAddress=", Qt::CaseInsensitive))
-                {
-                    QString serverAddress = arg.split("=")[1].trimmed();
-                    if (!serverAddress.isEmpty())
-                    {
-                        s_assetServerAddress = serverAddress.toUtf8().constData();
-                        return QString::fromUtf8(s_assetServerAddress.data(), aznumeric_cast<int>(s_assetServerAddress.size()));
-                    }
-                }
-            }
-        }
-
-        auto settingsRegistry = AZ::SettingsRegistry::Get();
-        if (settingsRegistry)
-        {
-            AZStd::string address;
-            if (settingsRegistry->Get(address, AZ::SettingsRegistryInterface::FixedValueString(AssetProcessor::AssetProcessorSettingsKey)
-                + "/Server/cacheServerAddress"))
-            {
-                AZ_TracePrintf(AssetProcessor::DebugChannel, "Server Address: %s\n", address.c_str());
-            }
-            s_assetServerAddress = address;
-
-            return QString::fromUtf8(address.data(), aznumeric_cast<int>(address.size()));
-        }
-
-        return QString();
-    }
-
     bool ShouldUseFileHashing()
     {
         // Check if the settings file is overridden, if so, use the override instead
@@ -660,8 +586,7 @@ namespace AssetUtilities
 
     QString ReadAllowedlistFromSettingsRegistry([[maybe_unused]] QString initialFolder)
     {
-        constexpr size_t BufferSize = AZ_ARRAY_SIZE(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + AZStd::char_traits<char>::length("/allowed_list");
-        AZStd::fixed_string<BufferSize> allowedListKey{ AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey };
+        AZ::SettingsRegistryInterface::FixedValueString allowedListKey{ AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey };
         allowedListKey += "/allowed_list";
 
         AZ::SettingsRegistryInterface::FixedValueString allowedListIp;
@@ -675,8 +600,7 @@ namespace AssetUtilities
 
     QString ReadRemoteIpFromSettingsRegistry([[maybe_unused]] QString initialFolder)
     {
-        constexpr size_t BufferSize = AZ_ARRAY_SIZE(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + AZStd::char_traits<char>::length("/remote_ip");
-        AZStd::fixed_string<BufferSize> remoteIpKey{ AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey };
+        AZ::SettingsRegistryInterface::FixedValueString remoteIpKey{ AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey };
         remoteIpKey += "/remote_ip";
 
         AZ::SettingsRegistryInterface::FixedValueString remoteIp;
@@ -741,8 +665,7 @@ namespace AssetUtilities
             initialFolder = engineRoot.absolutePath();
         }
 
-        constexpr size_t BufferSize = AZ_ARRAY_SIZE(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + AZStd::char_traits<char>::length("/remote_port");
-        AZStd::fixed_string<BufferSize> remotePortKey{ AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey };
+        AZ::SettingsRegistryInterface::FixedValueString remotePortKey{ AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey };
         remotePortKey += "/remote_port";
 
         AZ::s64 portNumber;
@@ -787,7 +710,7 @@ namespace AssetUtilities
             return true;
         }
 
-        int retries = 0;
+        [[maybe_unused]] int retries = 0;
         QElapsedTimer timer;
         timer.start();
         do
@@ -870,47 +793,64 @@ namespace AssetUtilities
         return true;
     }
 
-    QString StripAssetPlatform(AZStd::string_view relativeProductPath)
+    AZStd::string_view StripAssetPlatformNoCopy(AZStd::string_view relativeProductPath, AZStd::string_view* outputPlatform)
     {
         // Skip over the assetPlatform path segment if it is matches one of the platform defaults
         // Otherwise return the path unchanged
-        AZStd::string_view strippedProductPath{ relativeProductPath };
-        if (AZStd::optional pathSegment = AZ::StringFunc::TokenizeNext(strippedProductPath, AZ_CORRECT_AND_WRONG_FILESYSTEM_SEPARATOR);
-            pathSegment.has_value())
+
+        AZStd::string_view originalPath = relativeProductPath;
+        AZStd::optional firstPathSegment = AZ::StringFunc::TokenizeNext(relativeProductPath, AZ_CORRECT_AND_WRONG_FILESYSTEM_SEPARATOR);
+
+        if (firstPathSegment && (AzFramework::PlatformHelper::GetPlatformIdFromName(*firstPathSegment) != AzFramework::PlatformId::Invalid
+            || firstPathSegment == AssetBuilderSDK::CommonPlatformName))
         {
-            AZ::IO::FixedMaxPathString assetPlatformSegmentLower{ *pathSegment };
-            AZStd::to_lower(assetPlatformSegmentLower.begin(), assetPlatformSegmentLower.end());
-            if (AzFramework::PlatformHelper::GetPlatformIdFromName(assetPlatformSegmentLower) != AzFramework::PlatformId::Invalid)
+            if(outputPlatform)
             {
-                return QString::fromUtf8(strippedProductPath.data(), aznumeric_cast<int>(strippedProductPath.size()));
+                *outputPlatform = *firstPathSegment;
             }
+
+            return relativeProductPath;
         }
 
-        return QString::fromUtf8(relativeProductPath.data(), aznumeric_cast<int>(relativeProductPath.size()));
+        return originalPath;
+    }
+
+    QString StripAssetPlatform(AZStd::string_view relativeProductPath)
+    {
+        AZStd::string_view result = StripAssetPlatformNoCopy(relativeProductPath);
+
+        return QString::fromUtf8(result.data(), aznumeric_cast<int>(result.size()));
     }
 
     QString NormalizeFilePath(const QString& filePath)
     {
         // do NOT convert to absolute paths here, we just want to manipulate the string itself.
-
-        // note that according to the Qt Documentation, in QDir::toNativeSeparators,
-        // "The returned string may be the same as the argument on some operating systems, for example on Unix.".
-        // in other words, what we need here is a custom normalization - we want always the same
-        // direction of slashes on all platforms.s
-
         QString returnString = filePath;
-        returnString.replace(QChar('\\'), QChar('/'));
+
+        // QDir::cleanPath only replaces backslashes with forward slashes in the input string if the OS
+        // it is currently natively running on uses backslashes as its native path separator.
+        // see https://github.com/qt/qtbase/blob/40143c189b7c1bf3c2058b77d00ea5c4e3be8b28/src/corelib/io/qdir.cpp#L2357
+        // This assumption is incorrect in this application - it can receive file paths from data files created on
+        // backslash operating systems even if its a non-backslash operating system.
+
+        // we can skip this step in the cases where cleanPath will do it for us:
+        if (QDir::separator() == QLatin1Char('/'))
+        {
+            returnString.replace(QLatin1Char('\\'), QLatin1Char('/'));
+        }
+
+        // cleanPath to remove/resolve .. and . and any extra slashes, and remove any trailing slashes.
         returnString = QDir::cleanPath(returnString);
 
 #if defined(AZ_PLATFORM_WINDOWS)
         // windows has an additional idiosyncrasy - it returns upper and lower case drive letters
         // from various APIs differently.  we will settle on upper case as the standard.
-        if ((returnString.length() > 1) && (returnString[1] == ':'))
+        if ((returnString.length() > 1) && (returnString.at(1) == ':'))
         {
-            returnString[0] = returnString[0].toUpper();
+            QCharRef firstChar = returnString[0]; // QCharRef allows you to modify the string in place.
+            firstChar = firstChar.toUpper();
         }
 #endif
-
         return returnString;
     }
 
@@ -933,6 +873,37 @@ namespace AssetUtilities
         }
         AzFramework::StringFunc::Replace(lowerVersion, '\\', '/');
         return AZ::Uuid::CreateName(lowerVersion.c_str());
+    }
+
+    AZ::Outcome<AZ::Uuid, AZStd::string> GetSourceUuid(const AssetProcessor::SourceAssetReference& sourceAsset)
+    {
+        if (!sourceAsset)
+        {
+            return {};
+        }
+
+        auto* uuidRequests = AZ::Interface<AssetProcessor::IUuidRequests>::Get();
+
+        if (uuidRequests)
+        {
+            return uuidRequests->GetUuid(sourceAsset);
+        }
+
+        AZ_Assert(false, "Programmer Error: GetSourceUuid called before IUuidRequests interface is available.");
+        return {};
+    }
+
+    AZ::Outcome<AZStd::unordered_set<AZ::Uuid>, AZStd::string> GetLegacySourceUuids(const AssetProcessor::SourceAssetReference& sourceAsset)
+    {
+        auto* uuidRequests = AZ::Interface<AssetProcessor::IUuidRequests>::Get();
+
+        if (uuidRequests)
+        {
+            return uuidRequests->GetLegacyUuids(sourceAsset);
+        }
+
+        AZ_Assert(false, "Programmer Error: GetSourceUuid called before IUuidRequests interface is available.");
+        return {};
     }
 
     void NormalizeFilePaths(QStringList& filePaths)
@@ -1012,7 +983,8 @@ namespace AssetUtilities
 
     QString ComputeJobDescription(const AssetProcessor::AssetRecognizer* recognizer)
     {
-        return recognizer->m_name.toLower();
+        QString jobDescription{ recognizer->m_name.c_str() };
+        return jobDescription.toLower();
     }
 
     AZStd::string ComputeJobLogFolder()
@@ -1104,12 +1076,13 @@ namespace AssetUtilities
         // now the other jobs, which this job depends on:
         for (const AssetProcessor::JobDependencyInternal& jobDependencyInternal : jobDetail.m_jobDependencyList)
         {
-            if (jobDependencyInternal.m_jobDependency.m_type == AssetBuilderSDK::JobDependencyType::OrderOnce)
+            if (jobDependencyInternal.m_jobDependency.m_type == AssetBuilderSDK::JobDependencyType::OrderOnce ||
+                jobDependencyInternal.m_jobDependency.m_type == AssetBuilderSDK::JobDependencyType::OrderOnly)
             {
-                // we do not want to include the fingerprint of dependent jobs if the job dependency type is OrderOnce.
+                // We do not want to include the fingerprint of dependent jobs if the job dependency type is OrderOnce or OrderOnly.
                 continue;
             }
-            AssetProcessor::JobDesc jobDesc(jobDependencyInternal.m_jobDependency.m_sourceFile.m_sourceFileDependencyPath,
+            AssetProcessor::JobDesc jobDesc(AssetProcessor::SourceAssetReference(jobDependencyInternal.m_jobDependency.m_sourceFile.m_sourceFileDependencyPath.c_str()),
                 jobDependencyInternal.m_jobDependency.m_jobKey, jobDependencyInternal.m_jobDependency.m_platformIdentifier);
 
             for (auto builderIter = jobDependencyInternal.m_builderUuidList.begin(); builderIter != jobDependencyInternal.m_builderUuidList.end(); ++builderIter)
@@ -1131,7 +1104,7 @@ namespace AssetUtilities
         }
 
         AZ::Sha1 sha;
-        sha.ProcessBytes(fingerprintString.data(), fingerprintString.size());
+        sha.ProcessBytes(AZStd::as_bytes(AZStd::span(fingerprintString)));
         AZ::u32 digest[5];
         sha.GetDigest(digest);
 
@@ -1245,7 +1218,8 @@ namespace AssetUtilities
 
     AZStd::string ComputeJobLogFileName(const AssetProcessor::JobEntry& jobEntry)
     {
-        return AZStd::string::format("%s-%u-%llu.log", jobEntry.m_databaseSourceName.toUtf8().constData(), jobEntry.GetHash(), jobEntry.m_jobRunKey);
+        return AZStd::string::format(
+            "%s-%u-%llu.log", jobEntry.m_sourceAssetReference.RelativePath().c_str(), jobEntry.GetHash(), jobEntry.m_jobRunKey);
     }
 
     bool CreateTempRootFolder(QString startFolder, QDir& tempRoot)
@@ -1389,75 +1363,193 @@ namespace AssetUtilities
         return productName.toLower();
     }
 
-    static void CollectDependenciesRecursively(AssetProcessor::AssetDatabaseConnection& databaseConnection, const AZ::Uuid& assetId,
-        AZStd::unordered_set<AZ::Uuid>& uuidSet, AZStd::vector<AZ::Uuid>& dependecyList)
-    {
-        if (uuidSet.count(assetId))
-        {
-            return;
-        }
-        dependecyList.push_back(assetId);
-        uuidSet.insert(assetId);
-        AzToolsFramework::AssetDatabase::SourceDatabaseEntry entry;
-        if (!databaseConnection.GetSourceBySourceGuid(assetId, entry))
-        {
-            return;
-        }
-
-        AzToolsFramework::AssetDatabase::SourceFileDependencyEntryContainer container;
-        if (!databaseConnection.GetDependsOnSourceBySource(entry.m_sourceName.c_str(), AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_Any, container))
-        {
-            return;
-        }
-        for (const auto& sourceFileEntry : container)
-        {
-            databaseConnection.QuerySourceBySourceName(sourceFileEntry.m_dependsOnSource.c_str(), [&](AzToolsFramework::AssetDatabase::SourceDatabaseEntry& entry)
-                {
-                    CollectDependenciesRecursively(databaseConnection, entry.m_sourceGuid, uuidSet, dependecyList);
-                    return true;
-                });
-        }
-    }
-
-    AZStd::vector<AZ::Uuid> CollectAssetAndDependenciesRecursively(AssetProcessor::AssetDatabaseConnection& databaseConnection, const AZStd::vector<AZ::Uuid>& assetList)
-    {
-        AZStd::unordered_set<AZ::Uuid> uuidSet; // Used to guarantee uniqueness and prevent infinite recursion.
-        AZStd::vector<AZ::Uuid> completeAssetList;
-        for (const AZ::Uuid& assetId : assetList)
-        {
-            CollectDependenciesRecursively(databaseConnection, assetId, uuidSet, completeAssetList);
-        }
-        return completeAssetList;
-    }
-
-    bool UpdateToCorrectCase(const QString& rootPath, QString& relativePathFromRoot)
+    bool UpdateToCorrectCase(const QString& rootPath, QString& relativePathFromRoot, bool checkEntirePath /* = true*/)
     {
         // normalize the input string:
         relativePathFromRoot = NormalizeFilePath(relativePathFromRoot);
 
-#if defined(AZ_PLATFORM_WINDOWS) || defined(AZ_PLATFORM_MAC)
-        // these operating systems use File Systems which are generally not case sensitive, and so we can make this function "early out" a lot faster.
-        // by quickly determining the case where it does not exist at all.  Without this assumption, it can be hundreds of times slower.
-        bool exists = false;
+        // the File State Cache is itself case-insensitive on all operating systems an is warmed up as the application starts
+        // from a quick iteration of all files that exist, before any real logic is created.  It is safe to check
+        // it for the existence of a file and early out to save time.
         auto* fileStateInterface = AZ::Interface<AssetProcessor::IFileStateRequests>::Get();
         if (fileStateInterface)
         {
-            exists = fileStateInterface->Exists(QDir(rootPath).absoluteFilePath(relativePathFromRoot));
+            AssetProcessor::FileStateInfo fsInfo;
+            // use AZ::IO::Path here to combine the strings.  Qt will otherwise potentially make assumptions about the 
+            // working directory and give weird results that differ depending on the operating system.
+            AZ::IO::Path fullPath = AZ::IO::Path(rootPath.toUtf8().constData()) / relativePathFromRoot.toUtf8().constData();
+            if (!fileStateInterface->GetFileInfo(QString::fromUtf8(fullPath.c_str()), &fsInfo))
+            {
+                return false;  // file does not exist according to the cache, which itself, is case insensitive.
+            }
+            // fsInfo contains the absolute path, but we need to update only the relative path part.
+            if (!rootPath.isEmpty()) // rootpath could be empty and relativePathFromRoot could be a full path
+            {   
+                // to get here, length of rootpath will be at LEAST one.
+                relativePathFromRoot = fsInfo.m_absolutePath.mid(rootPath.length() + 1);
+            }
+            else
+            {
+                 relativePathFromRoot = fsInfo.m_absolutePath;
+            }
+            return true;
         }
-
-        if (!exists)
-        {
-            return false;
-        }
-#endif
-
+       
+        // If we get here, there is no cache, and we fall back on the actual update to correct case logic.
+        // The reason we have to do this is that it could be possible that the file has a different
+        // case than expected, so it won't "exist" on disk with that exact name.
         AZStd::string relPathFromRoot = relativePathFromRoot.toUtf8().constData();
-        if(AzToolsFramework::AssetUtils::UpdateFilePathToCorrectCase(rootPath.toUtf8().constData(), relPathFromRoot))
+        if(AzToolsFramework::AssetUtils::UpdateFilePathToCorrectCase(rootPath.toUtf8().constData(), relPathFromRoot, checkEntirePath))
         {
             relativePathFromRoot = QString::fromUtf8(relPathFromRoot.c_str(), aznumeric_cast<int>(relPathFromRoot.size()));
             return true;
         }
         return false;
+    }
+
+    bool IsInCacheFolder(AZ::IO::PathView path, AZ::IO::Path cachePath)
+    {
+        if(cachePath.empty())
+        {
+            QDir cacheDir;
+            [[maybe_unused]] bool result = ComputeProjectCacheRoot(cacheDir);
+
+            AZ_Error("AssetUtils", result, "Failed to get cache root for IsInCacheFolder");
+
+            cachePath = cacheDir.absolutePath().toUtf8().constData();
+        }
+
+        return path.IsRelativeTo(cachePath) && !IsInIntermediateAssetsFolder(path, cachePath);
+    }
+
+    bool IsInIntermediateAssetsFolder(AZ::IO::PathView path, AZ::IO::PathView cachePath)
+    {
+        AZ::IO::FixedMaxPath fixedCachedPath = cachePath;
+
+        if (fixedCachedPath.empty())
+        {
+            QDir cacheDir;
+            [[maybe_unused]] bool result = ComputeProjectCacheRoot(cacheDir);
+
+            AZ_Error("AssetUtils", result, "Failed to get cache root for IsInCacheFolder");
+
+            fixedCachedPath = cacheDir.absolutePath().toUtf8().constData();
+        }
+
+        AZ::IO::FixedMaxPath intermediateAssetsPath = GetIntermediateAssetsFolder(cachePath);
+
+        return path.IsRelativeTo(intermediateAssetsPath);
+    }
+
+    AZ::IO::FixedMaxPath GetIntermediateAssetsFolder(AZ::IO::PathView cachePath)
+    {
+        AZ::IO::FixedMaxPath path(cachePath);
+
+        return path / AssetProcessor::IntermediateAssetsFolderName;
+    }
+
+    AZStd::string GetIntermediateAssetDatabaseName(AZ::IO::PathView relativePath)
+    {
+        // For intermediate assets, the platform must always be common, we don't support anything else for intermediate assets
+        AZ::IO::Path platformPrefix = AssetBuilderSDK::CommonPlatformName;
+
+        return (platformPrefix / relativePath).LexicallyNormal().StringAsPosix();
+    }
+
+    AZStd::optional<AzToolsFramework::AssetDatabase::SourceDatabaseEntry> GetTopLevelSourceForIntermediateAsset(
+        const AssetProcessor::SourceAssetReference& sourceAsset, AZStd::shared_ptr<AssetProcessor::AssetDatabaseConnection> db)
+    {
+        AzToolsFramework::AssetDatabase::SourceDatabaseEntryContainer sources;
+        db->GetSourcesByProductName(GetIntermediateAssetDatabaseName(sourceAsset.RelativePath()).c_str(), sources);
+
+        if (sources.empty())
+        {
+            return {};
+        }
+
+        if (sources.size() > 1)
+        {
+            AZ_Error(AssetProcessor::ConsoleChannel, false, "GetTopLevelSourceForProduct found multiple sources for product %s", sourceAsset.AbsolutePath().c_str());
+            return {};
+        }
+
+        AzToolsFramework::AssetDatabase::SourceDatabaseEntry source;
+
+        do
+        {
+            source = sources[0];
+            sources = {}; // Clear the array, otherwise it keeps accumulating the results
+        } while (db->GetSourcesByProductName(GetIntermediateAssetDatabaseName(source.m_sourceName.c_str()).c_str(), sources));
+
+        return source;
+    }
+
+    AZStd::optional<AZ::IO::Path> GetTopLevelSourcePathForIntermediateAsset(
+        const AssetProcessor::SourceAssetReference& sourceAsset, AZStd::shared_ptr<AssetProcessor::AssetDatabaseConnection> db)
+    {
+        auto topLevelSourceDbEntry = GetTopLevelSourceForIntermediateAsset(sourceAsset, db);
+
+        if (!topLevelSourceDbEntry)
+        {
+            return {};
+        }
+
+        AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry scanfolderForTopLevelSource;
+        if(!db->GetScanFolderByScanFolderID(topLevelSourceDbEntry->m_scanFolderPK, scanfolderForTopLevelSource))
+        {
+            return {};
+        }
+
+        AZ::IO::Path fullPath = scanfolderForTopLevelSource.m_scanFolder;
+        fullPath /= topLevelSourceDbEntry->m_sourceName;
+
+        return fullPath;
+    }
+
+    AZStd::vector<AssetProcessor::SourceAssetReference> GetAllIntermediateSources(
+        const AssetProcessor::SourceAssetReference& sourceAsset, AZStd::shared_ptr<AssetProcessor::AssetDatabaseConnection> db)
+    {
+        AZStd::vector<AssetProcessor::SourceAssetReference> sources;
+
+        auto topLevelSource = GetTopLevelSourceForIntermediateAsset(sourceAsset, db);
+
+        if (!topLevelSource)
+        {
+            AzToolsFramework::AssetDatabase::SourceDatabaseEntry source;
+            if(!db->GetSourceBySourceNameScanFolderId(sourceAsset.RelativePath().c_str(), sourceAsset.ScanFolderId(), source))
+            {
+                return {};
+            }
+
+            topLevelSource = source;
+        }
+
+        AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry scanFolder;
+        db->GetScanFolderByScanFolderID(topLevelSource->m_scanFolderPK, scanFolder);
+
+        sources.emplace_back(scanFolder.m_scanFolder.c_str(), topLevelSource->m_sourceName.c_str());
+
+        AzToolsFramework::AssetDatabase::ProductDatabaseEntryContainer products;
+        db->GetProductsBySourceID(topLevelSource->m_sourceID, products);
+
+        auto size = products.size();
+        for (int i = 0; i < size; ++i)
+        {
+            const auto& product = products[i];
+
+            if ((static_cast<AssetBuilderSDK::ProductOutputFlags>(product.m_flags.to_ullong()) & AssetBuilderSDK::ProductOutputFlags::IntermediateAsset) == AssetBuilderSDK::ProductOutputFlags::IntermediateAsset)
+            {
+                auto productPath = ProductPath::FromDatabasePath(product.m_productName);
+                sources.emplace_back(productPath.GetIntermediatePath().c_str());
+
+                // Note: This call is intentionally re-using the products array.  The new results will be appended to the end (via push_back).
+                // The array will not be cleared.  We're essentially using products as a queue
+                db->GetProductsBySourceNameScanFolderID(sources.back().RelativePath().c_str(), sources.back().ScanFolderId(), products);
+                size = products.size(); // Update the loop size since the array grew
+            }
+        }
+
+        return sources;
     }
 
     BuilderFilePatternMatcher::BuilderFilePatternMatcher(const AssetBuilderSDK::AssetBuilderPattern& pattern, const AZ::Uuid& builderDescID)
@@ -1582,8 +1674,12 @@ namespace AssetUtilities
             {
                 std::string dummy;
                 std::istringstream stream(message);
+                AZ::s64 errorCount, warningCount;
 
-                stream >> dummy >> m_errorCount >> dummy >> m_warningCount;
+                stream >> dummy >> errorCount >> dummy >> warningCount;
+
+                m_errorCount += errorCount;
+                m_warningCount += warningCount;
             }
 
             if (azstrnicmp(window, "debug", 5) == 0)
@@ -1675,5 +1771,78 @@ namespace AssetUtilities
     void JobLogTraceListener::AddWarning()
     {
         ++m_warningCount;
+    }
+
+    AZStd::string GetRelativeProductPathForIntermediateSourcePath(AZStd::string_view relativeSourcePath)
+    {
+        AZStd::string productPath((AZ::IO::FixedMaxPath(AssetBuilderSDK::CommonPlatformName) / relativeSourcePath).StringAsPosix());
+        // Product paths are always lowercase
+        AZStd::to_lower(productPath.begin(), productPath.end());
+        return productPath;
+    }
+
+    ProductPath::ProductPath(AZStd::string scanfolderRelativeProductPath, AZStd::string platformIdentifier)
+    {
+        AZ_Assert(AZ::IO::PathView(scanfolderRelativeProductPath).IsRelative(), "scanfolderRelativeProductPath is not relative: %s", scanfolderRelativeProductPath.c_str());
+
+        QDir cacheDir;
+        [[maybe_unused]] bool result = ComputeProjectCacheRoot(cacheDir);
+
+        AZ_Error("AssetUtils", result, "Failed to get cache root");
+
+        AZ::IO::FixedMaxPath cachePath = cacheDir.absolutePath().toUtf8().constData();
+
+        // Lowercase the inputs.  The cache path is always lowercased, which means the database path is lowercased,
+        // and for consistency, the intermediate path is also lowercased.
+        // All the other parts of the path must remain properly cased.
+        AZStd::to_lower(scanfolderRelativeProductPath.begin(), scanfolderRelativeProductPath.end());
+        AZStd::to_lower(platformIdentifier.begin(), platformIdentifier.end());
+
+        m_relativePath = NormalizeFilePath(scanfolderRelativeProductPath.c_str()).toUtf8().constData();
+        m_cachePath = cachePath / platformIdentifier / scanfolderRelativeProductPath;
+        m_intermediatePath = AssetUtilities::GetIntermediateAssetsFolder(cachePath) / scanfolderRelativeProductPath;
+        m_databasePath = AZ::IO::FixedMaxPath(platformIdentifier) / scanfolderRelativeProductPath;
+    }
+
+    ProductPath ProductPath::FromDatabasePath(AZStd::string_view databasePath, AZStd::string_view* platformOut)
+    {
+        AZStd::string_view platform;
+        AZStd::string_view relativeProductPath = AssetUtilities::StripAssetPlatformNoCopy(databasePath, &platform);
+
+        if(platformOut)
+        {
+            *platformOut = platform;
+        }
+
+        return ProductPath{ relativeProductPath, platform };
+    }
+
+    ProductPath ProductPath::FromAbsoluteProductPath(AZ::IO::PathView absolutePath, AZStd::string& outPlatform)
+    {
+        QDir cacheDir;
+        [[maybe_unused]] bool result = ComputeProjectCacheRoot(cacheDir);
+
+        AZ_Error("AssetUtils", result, "Failed to get cache root for IsInCacheFolder");
+
+        AZ::IO::FixedMaxPath parentFolder = cacheDir.absolutePath().toUtf8().constData();
+
+        bool intermediateAsset = IsInIntermediateAssetsFolder(absolutePath, parentFolder);
+        if (intermediateAsset)
+        {
+            parentFolder = AssetUtilities::GetIntermediateAssetsFolder(parentFolder);
+            outPlatform = AssetBuilderSDK::CommonPlatformName;
+        }
+
+        auto relativePath = absolutePath.LexicallyRelative(parentFolder);
+
+        if (!intermediateAsset)
+        {
+            AZStd::string_view platform;
+            auto fixedString = relativePath.FixedMaxPathStringAsPosix();
+            relativePath = StripAssetPlatformNoCopy(fixedString, &platform);
+            outPlatform = platform;
+        }
+
+        return ProductPath{ relativePath.StringAsPosix(), outPlatform };
     }
 } // namespace AssetUtilities

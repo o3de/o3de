@@ -1,0 +1,38 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_AABBFunctions_FromOBB",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "From OBB",
+                "category": "Math/AABB"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_AABBFunctions_FromOBB",
+                    "details": {
+                        "name": "From OBB",
+                        "tooltip": "Returns the AABB which contains Source."
+                    },
+                    "params": [
+                        {
+                            "typeid": "{004ABD25-CF14-4EB3-BD41-022C247C07FA}",
+                            "details": {
+                                "name": "Source"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
+                            "details": {
+                                "name": "AABB"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

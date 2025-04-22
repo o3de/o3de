@@ -7,13 +7,9 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
-# -- This line is 75 characters -------------------------------------------
-
-# -------------------------------------------------------------------------
 # -------------------------------------------------------------------------
 # <DCCsi>\\azpy\\maya\\\toolbits\\detach.py
 # Maya event callback handler
-# -------------------------------------------------------------------------
 # -------------------------------------------------------------------------
 '''
 Module Documentation:
@@ -48,7 +44,7 @@ _DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
 _DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
 
 _PACKAGENAME = __name__
-if _PACKAGENAME is '__main__':
+if _PACKAGENAME == '__main__':
     _PACKAGENAME = 'azpy.dcc.maya.toolbits.detatch'
 
 import azpy

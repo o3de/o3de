@@ -6,8 +6,8 @@
  *
  */
 
-#include <scenesrg.srgi>
-#include <viewsrg.srgi>
+#include <scenesrg_all.srgi>
+#include <viewsrg_all.srgi>
 
 #include <Atom/RPI/Math.azsli>
 #include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
@@ -20,11 +20,18 @@
 ShaderResourceGroup PassSrg : SRG_PerPass
 {
     Texture2D<float4>   m_reflection;
-    Texture2D<float>    m_downsampledDepth;
+    Texture2D<float>    m_depthLinear;
+    Texture2D<float2>   m_downsampledDepthLinear;
     Texture2DMS<float4> m_normal;       // RGB10 = Normal (Encoded), A2 = Flags
     Texture2DMS<float4> m_specularF0;   // RGB8 = SpecularF0, A8 = Roughness
-    Texture2DMS<float>  m_depth;
-    Texture2D<float4>   m_previousFrame;
+
+    // output image scale and dimensions    
+    float m_outputScale;
+    uint  m_outputWidth;
+    uint  m_outputHeight;
+
+    // SSR settings
+    float m_maxRoughness;
 
     Sampler LinearSampler
     {
@@ -35,23 +42,18 @@ ShaderResourceGroup PassSrg : SRG_PerPass
         AddressV = Clamp;
         AddressW = Clamp;
     };
-
-    // the max roughness mip level for sampling the previous frame image
-    uint m_maxMipLevel;
 }
 
-#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
-
-float3 SampleReflection(float2 reflectionUV, float mip, float depth, float3 normal, uint2 invDimensions)
-{  
+float3 SampleReflection(float2 reflectionUV, float depth, float3 normal, uint2 invDimensions)
+{
     const float DepthTolerance = 0.001f;
 
     // attempt to trivially accept the downsampled reflection texel
-    float downsampledDepth = PassSrg::m_downsampledDepth.SampleLevel(PassSrg::LinearSampler, reflectionUV, floor(mip)).r;
+    float downsampledDepth = PassSrg::m_downsampledDepthLinear.SampleLevel(PassSrg::LinearSampler, reflectionUV, 0).r;
     if (abs(depth - downsampledDepth) <= DepthTolerance)
     {
         // use this reflection sample
-        float3 reflection = PassSrg::m_reflection.SampleLevel(PassSrg::LinearSampler, reflectionUV, mip).rgb;
+        float3 reflection = PassSrg::m_reflection.SampleLevel(PassSrg::LinearSampler, reflectionUV, 0).rgb;
         return reflection;
     }
     
@@ -63,13 +65,13 @@ float3 SampleReflection(float2 reflectionUV, float mip, float depth, float3 norm
         for (int x = -4; x <= 4; ++x)
         {
             float2 offsetUV = float2(x * invDimensions.x, y * invDimensions.y);
-            float downsampledDepth = PassSrg::m_downsampledDepth.SampleLevel(PassSrg::LinearSampler, reflectionUV + offsetUV, floor(mip)).r;
+            float downsampledDepth = PassSrg::m_downsampledDepthLinear.SampleLevel(PassSrg::LinearSampler, reflectionUV + offsetUV, 0).r;
             float depthDelta = abs(depth - downsampledDepth);
 
             if (depthDelta <= DepthTolerance)
             {
                 // depth is within tolerance, use this texel
-                float3 reflection = PassSrg::m_reflection.SampleLevel(PassSrg::LinearSampler, reflectionUV + offsetUV, mip).rgb;
+                float3 reflection = PassSrg::m_reflection.SampleLevel(PassSrg::LinearSampler, reflectionUV + offsetUV, 0).rgb;
                 return reflection;
             }
 
@@ -81,63 +83,41 @@ float3 SampleReflection(float2 reflectionUV, float mip, float depth, float3 norm
         }
     }
     
-    float3 reflection = PassSrg::m_reflection.SampleLevel(PassSrg::LinearSampler, reflectionUV + closestOffsetUV, mip).rgb;
+    float3 reflection = PassSrg::m_reflection.SampleLevel(PassSrg::LinearSampler, reflectionUV + closestOffsetUV, 0).rgb;
     return reflection;
 }
 
 // Pixel Shader
 PSOutput MainPS(VSOutput IN, in uint sampleIndex : SV_SampleIndex)
 {
-    float2 screenCoords = IN.m_position.xy;
-
-    uint2 dimensions;
-    uint samples;
-    PassSrg::m_depth.GetDimensions(dimensions.x, dimensions.y, samples);
-
-    // compute trace image coordinates for the half-res image
-    float2 traceCoords = screenCoords * 0.5f;
+    float2 fullScreenCoords = IN.m_position.xy;
+    float2 coords = fullScreenCoords * PassSrg::m_outputScale;
+    uint2 invDimensions = 1.0f / (uint2(PassSrg::m_outputWidth, PassSrg::m_outputHeight) * PassSrg::m_outputScale);
 
     // check reflection data mip0 to see if there was a hit
-    float4 reflectionData = PassSrg::m_reflection.Load(uint3(traceCoords, 0));
-    if (reflectionData.w <= 0.0f)
+    float4 reflectionData = PassSrg::m_reflection.Load(uint3(coords, 0));
+    if (reflectionData.a <= 0.0f)
     {
         // fallback to the cubemap reflections currently in the reflection buffer
         discard;
     }
 
-    // load specular and roughness
-    float4 specularF0 = PassSrg::m_specularF0.Load(screenCoords, sampleIndex);
+    // load roughness
+    float4 specularF0 = PassSrg::m_specularF0.Load(fullScreenCoords, sampleIndex);
     float roughness = specularF0.a;
-    const float MaxRoughness = 0.5f;
-    if (roughness > MaxRoughness)
+    if (roughness > PassSrg::m_maxRoughness)
     {
         // fallback to the cubemap reflections currently in the reflection buffer
         discard;
     }
-
-    // reconstruct world space position of current pixel
-    float2 UV = IN.m_texCoord;
-    float depth = PassSrg::m_depth.Load(screenCoords, sampleIndex).r;
-    float2 ndcPos = float2(UV.x, 1.0f - UV.y) * 2.0f - 1.0f;
-    float4 projectedPos = float4(ndcPos, depth, 1.0f);
-    float4 positionVS = mul(ViewSrg::m_projectionMatrixInverse, projectedPos);
-    positionVS /= positionVS.w;
-    float3 positionWS = mul(ViewSrg::m_viewMatrixInverse, positionVS).xyz;  
-
-    // compute ray from camera to surface position
-    float3 cameraToPositionWS = normalize(positionWS.xyz - ViewSrg::m_worldPosition);
 
     // retrieve surface normal
-    float4 encodedNormal = PassSrg::m_normal.Load(screenCoords, sampleIndex);
+    float4 encodedNormal = PassSrg::m_normal.Load(fullScreenCoords, sampleIndex);
     float3 normalWS = DecodeNormalSignedOctahedron(encodedNormal.rgb);
-    float NdotV = dot(normalWS, -cameraToPositionWS);
-
-    // compute the roughness mip to use in the reflection image
-    // remap the roughness mip into a lower range to more closely match the material roughness values
-    float mip = saturate(roughness / MaxRoughness) * PassSrg::m_maxMipLevel;
     
-    // sample reflection color from the mip chain
-    float3 reflectionColor = SampleReflection(IN.m_texCoord, mip, depth, normalWS, 1.0f / dimensions);
+    // upsample reflection color
+    float depth = PassSrg::m_depthLinear.Load(uint3(fullScreenCoords, 0)).r;
+    float3 reflectionColor = SampleReflection(IN.m_texCoord, depth, normalWS, invDimensions);
 
     PSOutput OUT;
     OUT.m_color = float4(reflectionColor, reflectionData.w);

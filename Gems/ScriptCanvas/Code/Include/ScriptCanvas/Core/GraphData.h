@@ -25,7 +25,7 @@ namespace ScriptCanvas
     struct GraphData
     {
         AZ_TYPE_INFO(GraphData, "{ADCB5EB5-8D3F-42ED-8F65-EAB58A82C381}");
-        AZ_CLASS_ALLOCATOR(GraphData, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GraphData, AZ::SystemAllocator);
         static void Reflect(AZ::ReflectContext* context);
 
         GraphData() = default;

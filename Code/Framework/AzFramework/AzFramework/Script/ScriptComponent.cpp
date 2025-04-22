@@ -8,33 +8,33 @@
 
 #if !defined(AZCORE_EXCLUDE_LUA)
 
-#include <AzCore/Script/ScriptContext.h>
-#include <AzCore/Script/ScriptSystemBus.h>
-#include <AzCore/Script/ScriptProperty.h>
-
-#include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Asset/AssetManager.h>
+#include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Asset/AssetSerializer.h>
-
 #include <AzCore/Component/Entity.h>
-#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Component/TickBus.h>
+#include <AzCore/Debug/Profiler.h>
+#include <AzCore/Script/ScriptContext.h>
+#include <AzCore/Script/ScriptProperty.h>
+#include <AzCore/Script/ScriptSystemBus.h>
 #include <AzCore/Serialization/EditContext.h>
-
+#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Serialization/Utils.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/std/string/conversions.h>
-
-#include <AzFramework/Script/ScriptComponent.h>
-
-#include <AzFramework/StringFunc/StringFunc.h>
-
 #include <AzFramework/IO/LocalFileIO.h>
-
+#include <AzFramework/StringFunc/StringFunc.h>
 
 extern "C" {
 #   include <Lua/lualib.h>
 #   include <Lua/lauxlib.h>
 }
 
+#include <AzFramework/Script/ScriptComponent.h>
+
 AZ_DEFINE_BUDGET(Script);
+
+constexpr static const char* ScriptComponentHotReloadPath = "/O3DE/AzFramework/Script/HotReloadEnabled";
 
 namespace ScriptComponentCpp
 {
@@ -64,43 +64,8 @@ namespace ScriptComponentCpp
             AZ_TracePrintf(errorWindow.data(), "Top of stack is not function!");
         }
 
-        // get this off the laptop
         const int stripBinaryRepresentation = 1;
         return lua_dump(l, LuaStreamWriter, &stream, stripBinaryRepresentation) == 0;
-    }
-
-    AZ::Outcome<void, AZStd::string> WriteAssetInfo(const AzFramework::ScriptCompileRequest& request, AZ::IO::GenericStream&, AZ::IO::GenericStream& out)
-    {
-        // Write asset version
-        // u8: asset version
-        AZ::ScriptAsset::LuaScriptInfo currentField = AZ::ScriptAsset::AssetVersion;
-        if (!ScriptComponentCpp::WriteToStream(out, &currentField))
-        {
-            return AZ::Failure(AZStd::string("Failed writing asset version to stream."));
-        }
-
-        // Write asset type
-        // u8: asset type (compiled)
-        currentField = AZ::ScriptAsset::AssetTypeCompiled;
-        if (!ScriptComponentCpp::WriteToStream(out, &currentField))
-        {
-            return AZ::Failure(AZStd::string("Failed to write asset type to stream."));
-        }
-
-        // u32: debug name length
-        const AZ::u32 debugNameLength = aznumeric_caster(request.m_fileName.size());
-        if (!ScriptComponentCpp::WriteToStream(out, &debugNameLength))
-        {
-            return AZ::Failure(AZStd::string("Failed to write asset debug name length to stream."));
-        }
-
-        // str[len]: debug name
-        if (out.Write(request.m_fileName.size(), request.m_fileName.data()) != request.m_fileName.size())
-        {
-            return AZ::Failure(AZStd::string("Failed to write asset debug name length to stream."));
-        }
-
-        return AZ::Success();
     }
 }
 
@@ -130,12 +95,6 @@ namespace AzFramework
 
     AZ::Outcome<void, AZStd::string> CompileScriptAndAsset(ScriptCompileRequest& request)
     {
-        if (request.m_prewriteCallback)
-        {
-            return AZ::Failure(AZStd::string("asset writing is requested, but the prewriteCallback is non null"));
-        }
-
-        request.m_prewriteCallback = &ScriptComponentCpp::WriteAssetInfo;
         return CompileScript(request);
     }
 
@@ -143,59 +102,26 @@ namespace AzFramework
     {
         AZ_TracePrintf(request.m_errorWindow.data(), "Starting script compile.\n");
 
-        AZStd::string debugName = "@";
-        debugName += request.m_sourceFile;
-        AZStd::to_lower(debugName.begin(), debugName.end());
+        AZ::LuaScriptData& assetData = request.m_luaScriptDataOut;
+        assetData.m_debugName = "@";
+        assetData.m_debugName += request.m_sourceFile;
+        AZStd::to_lower(assetData.m_debugName.begin(), assetData.m_debugName.end());
+        auto scriptStream = assetData.CreateScriptWriteStream();
 
-        // Parse asset
-        COMPILE_VERIFY(scriptContext.LoadFromStream(request.m_input, debugName.data(), AZ::k_scriptLoadRawText), "%s", lua_tostring(scriptContext.NativeContext(), -1));
-
-        if (request.m_prewriteCallback)
-        {
-            AZ_TracePrintf(request.m_errorWindow.data(), "Beginning pre-write.\n");
-            auto preWriteResult = request.m_prewriteCallback(request, *request.m_input, *request.m_output);
-            if (!preWriteResult.IsSuccess())
-            {
-                return preWriteResult;
-            }
-        }
-
+        // parse source
+        COMPILE_VERIFY(scriptContext.LoadFromStream(request.m_input, assetData.m_debugName.c_str(), AZ::k_scriptLoadRawText), "%s", lua_tostring(scriptContext.NativeContext(), -1));
         AZ_TracePrintf(request.m_errorWindow.data(), "Beginning writing of script data.\n");
-        COMPILE_VERIFY(ScriptComponentCpp::LuaDumpToStream(request.m_errorWindow, *request.m_output, scriptContext.NativeContext()), "Failed to write lua script to stream.");
-
-        if (request.m_postwriteCallback)
-        {
-            AZ_TracePrintf(request.m_errorWindow.data(), "Beginning post-write.\n");
-            auto postWriteResult = request.m_postwriteCallback(request, *request.m_input, *request.m_output);
-            if (!postWriteResult.IsSuccess())
-            {
-                return postWriteResult;
-            }
-        }
-
+        COMPILE_VERIFY(ScriptComponentCpp::LuaDumpToStream(request.m_errorWindow, scriptStream, scriptContext.NativeContext()), "Failed to write lua script to stream.");
         return AZ::Success();
     }
 
-    AZ::Outcome<AZStd::string, AZStd::string> CompileScriptAndSaveAsset(ScriptCompileRequest& request, bool writeAssetInfo)
+    AZ::Outcome<AZStd::string, AZStd::string> CompileScriptAndSaveAsset(ScriptCompileRequest& request)
     {
         using namespace AZ::IO;
         FileIOStream outputStream;
-
         if (!outputStream.Open(request.m_destPath.c_str(), OpenMode::ModeWrite | OpenMode::ModeBinary))
         {
             return AZ::Failure(AZStd::string("Failed to open output file %s", request.m_destPath.data()));
-        }
-
-        request.m_output = &outputStream;
-
-        if (writeAssetInfo)
-        {
-            if (request.m_prewriteCallback)
-            {
-                return AZ::Failure(AZStd::string("asset writing is requested, but the prewriteCallback is non null"));
-            }
-
-            request.m_prewriteCallback = &ScriptComponentCpp::WriteAssetInfo;
         }
 
         auto compileOutcome = CompileScript(request);
@@ -204,9 +130,25 @@ namespace AzFramework
             return AZ::Failure(compileOutcome.TakeError());
         }
 
+        AZ::SerializeContext* serializeContext = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
+        COMPILE_VERIFY(serializeContext, "Unable to retrieve serialize context.");
+        COMPILE_VERIFY(AZ::Utils::SaveObjectToStream<AZ::LuaScriptData>
+            ( outputStream
+            , AZ::ObjectStream::ST_BINARY
+            , &request.m_luaScriptDataOut, serializeContext)
+            , "Failed to write asset data to stream");
+
         return AZ::Success(request.m_destFileName);
     }
 
+    bool SaveLuaAssetData(const AZ::LuaScriptData& data, AZ::IO::GenericStream& stream)
+    {
+        AZ::SerializeContext* serializeContext = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
+        AZ_Assert(serializeContext, "Unable to retrieve serialize context.");
+        return AZ::Utils::SaveObjectToStream<AZ::LuaScriptData>(stream, AZ::ObjectStream::ST_BINARY, &data, serializeContext);
+    }
 
     //  We generally have the following data types which we can use for editor properties
     //  simple: numbers, strings, booleans, arrays, entity
@@ -540,6 +482,7 @@ namespace AzFramework
         AZ_Assert(m_entity == nullptr || m_entity->GetState() != AZ::Entity::State::Active, "You can't change the script while the entity is active");
 
         m_script = script;
+        m_script.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
     }
 
     AZ::ScriptProperty* ScriptComponent::GetScriptProperty(const char* propertyName)
@@ -550,7 +493,7 @@ namespace AzFramework
     void ScriptComponent::Init()
     {
         // Grab the script context
-        EBUS_EVENT_RESULT(m_context, AZ::ScriptSystemRequestBus, GetContext, m_contextId);
+        AZ::ScriptSystemRequestBus::BroadcastResult(m_context, &AZ::ScriptSystemRequestBus::Events::GetContext, m_contextId);
         AZ_Assert(m_context, "We must have a valid script context!");
     }
 
@@ -560,96 +503,112 @@ namespace AzFramework
     //=========================================================================
     void ScriptComponent::Activate()
     {
-        // if we have valid asset listen for script asset events, like reload
-        if (m_script.GetId().IsValid())
+        AZ_PROFILE_SCOPE(Script, "Load: %s", m_script.GetHint().c_str());
+        AZ_Error("LuaComponent", m_script.GetAutoLoadBehavior() == AZ::Data::AssetLoadBehavior::PreLoad, "Runtime LuaComponent script asset not set to Preload");
+        AZ_Error("LuaComponent", m_script.Get(), "Runtime LuaComponent script asset not preloaded and ready");
+
+        // Load the script, find the base table...
+        if (LoadInContext())
         {
-            AZ::Data::AssetBus::Handler::BusConnect(m_script.GetId());
-            m_script.QueueLoad();
+#if defined(_RELEASE)
+            bool isHotReloadEnabled = false;
+#else
+            bool isHotReloadEnabled = true;
+#endif
+            if (auto* registry = AZ::SettingsRegistry::Get())
+            {
+                registry->Get(isHotReloadEnabled, ScriptComponentHotReloadPath);
+            }
+
+            if (isHotReloadEnabled)
+            {
+                AZ::Data::AssetBus::Handler::BusConnect(m_script.GetId());
+            }
+
+            // ...create the entity table, find the Activate/Deactivate functions in the script and call them
+            CreateEntityTable();
         }
     }
 
-    //=========================================================================
-    // Deactivate
-    // [8/12/2013]
-    //=========================================================================
+    void ScriptComponent::DestroyEntityTable()
+    {
+        AZ_PROFILE_SCOPE(Script, "Unload: %s", m_script.GetHint().c_str());
+
+        if (m_table != LUA_NOREF)
+        {
+            lua_State* lua = m_context->NativeContext();
+            LSV_BEGIN(lua, 0);
+
+            // call OnDeactivate
+            // load table
+            lua_rawgeti(lua, LUA_REGISTRYINDEX, m_table);
+            if (lua_getmetatable(lua, -1) == 0) // load the base table
+            {
+                AZ_Assert(false, "This should not happen, all entity table should have the base table as a metatable!");
+            }
+            // cache
+            lua_pushliteral(lua, "OnDeactivate");
+            lua_rawget(lua, -2); // ScriptTable[OnDeactivte]
+            if (lua_isfunction(lua, -1))
+            {
+                AZ_PROFILE_SCOPE(Script, "OnDeactivate");
+
+                lua_pushvalue(lua, -3); // push the entity table as the only argument
+                AZ::Internal::LuaSafeCall(lua, 1, 0); // Call OnDeactivate
+            }
+            else
+            {
+                lua_pop(lua, 1); // remove the OnDeactivate result
+            }
+            lua_pop(lua, 2); // remove the base table and the entity table
+
+            // release table reference
+            luaL_unref(lua, LUA_REGISTRYINDEX, m_table);
+            m_table = LUA_NOREF;
+        }
+    }
+
     void ScriptComponent::Deactivate()
     {
-        AZ::Data::AssetBus::Handler::BusDisconnect(m_script.GetId());
+        AZ::Data::AssetBus::Handler::BusDisconnect();
+        AZ::TickBus::Handler::BusDisconnect();
 
-        UnloadScript();
+        DestroyEntityTable();
     }
 
-    //=========================================================================
-    // ScriptComponent::OnAssetReady
-    //=========================================================================
-    void ScriptComponent::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
-    {
-        if (asset)
-        {
-            m_script = asset;
-            LoadScript();
-        }
-    }
-
-    //=========================================================================
-    // ScriptComponent::OnAssetReloaded
-    //=========================================================================
     void ScriptComponent::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
-        // When we reload a script it's tricky to maintain state for that entity instance,
-        // even though theoretical mapping is possible. This feature is used for
-        // faster in game iteration and based on feedbacks game designers do expect on reload to
-        // reset the state.
-        // If we don't need to fix the state, all we need to unload and reload the script.
-        // To make sure the script behaves properly (external connections and other resources)
-        // we call deactivate and activate after reload. This can cause performance issues if the
-        // script registers "expensive" to register assets. If this becomes a problem we should
-        // provide mapping.
-        // Other things to consider are properties. Reloading will just reload the code.
-        // Properties are exported from ScriptEditorComponent, so they will not be updated by
-        UnloadScript();
+        DestroyEntityTable();
 
         m_script = asset;
 
-        LoadScript();
+        // Load the updated asset on the next tick so we're not holding on to the old script
+        AZ::TickBus::Handler::BusConnect();
     }
 
-    //=========================================================================
-    // LoadScript
-    //=========================================================================
-    void ScriptComponent::LoadScript()
+    void ScriptComponent::OnTick([[maybe_unused]]float deltaTime, [[maybe_unused]]AZ::ScriptTimePoint time)
     {
-        AZ_PROFILE_SCOPE(Script, "Load: %s", m_script.GetHint().c_str());
+        AZ::TickBus::Handler::BusDisconnect();
 
-        // Load the script, find the base table, create the entity table
-        // find the Activate/Deactivate functions in the script and call them
         if (LoadInContext())
         {
             CreateEntityTable();
         }
     }
 
-    //=========================================================================
-    // UnloadScript
-    //=========================================================================
-    void ScriptComponent::UnloadScript()
-    {
-        AZ_PROFILE_SCOPE(Script, "Unload: %s", m_script.GetHint().c_str());
-
-        DestroyEntityTable();
-    }
-
-    //=========================================================================
-    // LoadInContext
-    // [3/3/2014]
-    //=========================================================================
     bool ScriptComponent::LoadInContext()
     {
         LSV_BEGIN(m_context->NativeContext(), 1);
 
+        SCRIPT_SYSTEM_SCRIPT_STATUS("ScriptSystemComponent"
+            , "ScriptComponent::LoadInContext requesting load with its own script value: %s-%s"
+            , m_script.GetHint().c_str()
+            , m_script.GetId().m_guid.ToString<AZStd::fixed_string<AZ::Uuid::MaxStringBuffer>>().c_str());
+
         // Set the metamethods as we will use the script table as a metatable for entity tables
         bool success = false;
-        EBUS_EVENT_RESULT(success, AZ::ScriptSystemRequestBus, Load, m_script, AZ::k_scriptLoadBinaryOrText, m_contextId);
+        AZ::ScriptSystemRequestBus::BroadcastResult(
+            success, &AZ::ScriptSystemRequestBus::Events::Load, m_script, AZ::k_scriptLoadBinary, m_contextId);
         if (!success)
         {
             return false;
@@ -835,45 +794,6 @@ namespace AzFramework
     }
 
     //=========================================================================
-    // DestroyEntityTable
-    //=========================================================================
-    void ScriptComponent::DestroyEntityTable()
-    {
-        if (m_table != LUA_NOREF)
-        {
-            lua_State* lua = m_context->NativeContext();
-            LSV_BEGIN(lua, 0);
-
-            // call OnDeactivate
-            // load table
-            lua_rawgeti(lua, LUA_REGISTRYINDEX, m_table);
-            if (lua_getmetatable(lua, -1) == 0) // load the base table
-            {
-                AZ_Assert(false, "This should not happen, all entity table should have the base table as a metatable!");
-            }
-            // cache
-            lua_pushliteral(lua, "OnDeactivate");
-            lua_rawget(lua, -2); // ScriptTable[OnDeactivte]
-            if (lua_isfunction(lua, -1))
-            {
-                AZ_PROFILE_SCOPE(Script, "OnDeactivate");
-
-                lua_pushvalue(lua, -3); // push the entity table as the only argument
-                AZ::Internal::LuaSafeCall(lua, 1, 0); // Call OnDeactivate
-            }
-            else
-            {
-                lua_pop(lua, 1); // remove the OnDeactivate result
-            }
-            lua_pop(lua, 2); // remove the base table and the entity table
-
-            // release table reference
-            luaL_unref(lua, LUA_REGISTRYINDEX, m_table);
-            m_table = LUA_NOREF;
-        }
-    }
-
-    //=========================================================================
     // CreatePropertyGroup
     // [3/3/2014]
     //=========================================================================
@@ -957,14 +877,14 @@ namespace AzFramework
         if (serializeContext)
         {
             // we may have been reflected by ScriptEditorComponent already, so check first
-            if (serializeContext->FindClassData("{8D1BC97E-C55D-4D34-A460-E63C57CD0D4B}") == nullptr)
+            if (serializeContext->FindClassData(AZ::Uuid("{8D1BC97E-C55D-4D34-A460-E63C57CD0D4B}")) == nullptr)
             {
                 auto converter = [](AZ::SerializeContext&, AZ::SerializeContext::DataElementNode& node)
                 {
                     // If version 2, remove SourceScriptName
                     if (node.GetVersion() == 2)
                     {
-                        int index = node.FindElement(AZ_CRC("SourceScriptName", 0x3654ac50));
+                        int index = node.FindElement(AZ_CRC_CE("SourceScriptName"));
                         if (index != -1)
                         {
                             node.RemoveElement(index);

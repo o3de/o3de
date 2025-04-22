@@ -23,9 +23,6 @@
 #include <AzCore/Component/EntityBus.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Math/Vector3.h>
-#include <AzCore/RTTI/RTTI.h>
-#include <AzCore/Serialization/EditContext.h>
-#include <AzCore/Serialization/SerializeContext.h>
 
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
@@ -42,10 +39,8 @@ class CommandHierarchyItemRename;
 class CommandHierarchyItemReparent;
 class CommandHierarchyItemToggleIsExpanded;
 class CommandHierarchyItemToggleIsSelectable;
-class CommandHierarchyItemToggleIsSelected;
 class CommandHierarchyItemToggleIsVisible;
 class CommandPropertiesChange;
-class CommandViewportInteractionMode;
 class ComponentButton;
 class CoordinateSystemToolbarSection;
 class EditorMenu;
@@ -123,10 +118,8 @@ enum class FusibleCommand
 #include "CommandHierarchyItemReparent.h"
 #include "CommandHierarchyItemToggleIsExpanded.h"
 #include "CommandHierarchyItemToggleIsSelectable.h"
-#include "CommandHierarchyItemToggleIsSelected.h"
 #include "CommandHierarchyItemToggleIsVisible.h"
 #include "CommandPropertiesChange.h"
-#include "CommandViewportInteractionMode.h"
 #include "ComponentButton.h"
 #include "CoordinateSystemToolbarSection.h"
 #include "EditorWindow.h"

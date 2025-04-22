@@ -11,13 +11,7 @@
 #include <Atom/RPI.Reflect/Material/MaterialPropertyDescriptor.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertyValue.h>
 #include <AtomToolsFramework/DynamicProperty/DynamicProperty.h>
-#include <AzCore/IO/Path/Path.h>
 #include <AzCore/std/any.h>
-
-namespace AzToolsFramework
-{
-    class InstanceDataNode;
-}
 
 namespace AtomToolsFramework
 {
@@ -27,11 +21,8 @@ namespace AtomToolsFramework
     //! Convert a material property value into a AZStd::any that can be used as a dynamic property
     AZStd::any ConvertToEditableType(const AZ::RPI::MaterialPropertyValue& value);
 
-    //! Convert from a material system property type enumeration into the corresponding dynamic property type 
-    AtomToolsFramework::DynamicPropertyType ConvertToEditableType(const AZ::RPI::MaterialPropertyDataType dataType);
-
     //! Convert and assign material type source data property definition fields to editor dynamic property configuration 
-    void ConvertToPropertyConfig(AtomToolsFramework::DynamicPropertyConfig& propertyConfig, const AZ::RPI::MaterialTypeSourceData::PropertyDefinition& propertyDefinition);
+    void ConvertToPropertyConfig(AtomToolsFramework::DynamicPropertyConfig& propertyConfig, const AZ::RPI::MaterialPropertySourceData& propertyDefinition);
 
     //! Convert and assign material property meta data fields to editor dynamic property configuration 
     void ConvertToPropertyConfig(AtomToolsFramework::DynamicPropertyConfig& propertyConfig, const AZ::RPI::MaterialPropertyDynamicMetadata& propertyMetaData);
@@ -50,16 +41,9 @@ namespace AtomToolsFramework
     bool ConvertToExportFormat(
         const AZStd::string& exportPath,
         [[maybe_unused]] const AZ::Name& propertyId,
-        const AZ::RPI::MaterialTypeSourceData::PropertyDefinition& propertyDefinition,
+        const AZ::RPI::MaterialPropertySourceData& propertyDefinition,
         AZ::RPI::MaterialPropertyValue& propertyValue);
 
-    //! Generate a file path that is relative to either the source asset root or the export path
-    //! @param exportPath absolute path of the file being saved
-    //! @param referencePath absolute path of a file that will be treated as an external reference
-    //! @param relativeToExportPath specifies if the path is relative to the source asset root or the export path
-    AZStd::string GetExteralReferencePath(
-        const AZStd::string& exportPath, const AZStd::string& referencePath, const bool relativeToExportPath = false);
-
-    //! Traverse up the instance data node hierarchy to find the containing dynamic property object 
-    const AtomToolsFramework::DynamicProperty* FindDynamicPropertyForInstanceDataNode(const AzToolsFramework::InstanceDataNode* pNode);
+    AZ::RPI::MaterialPropertyDataType GetMaterialPropertyDataTypeFromValue(
+        AZ::RPI::MaterialPropertyValue& propertyValue, bool hasEnumValues);
 } // namespace AtomToolsFramework

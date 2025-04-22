@@ -13,12 +13,15 @@
 
 namespace EMotionFX
 {
+    class RotationParameter;
+    AZ_TYPE_INFO_SPECIALIZE(RotationParameter, "{D84302D2-2977-43DD-B953-F038222E65BF}");
+
     class RotationParameter
         : public RangedValueParameter<AZ::Quaternion, RotationParameter>
     {
         using BaseType = RangedValueParameter<AZ::Quaternion, RotationParameter>;
     public:
-        AZ_RTTI(RotationParameter, "{D84302D2-2977-43DD-B953-F038222E65BF}", ValueParameter);
+        AZ_RTTI_NO_TYPE_INFO_DECL();
         AZ_CLASS_ALLOCATOR_DECL
 
         RotationParameter()

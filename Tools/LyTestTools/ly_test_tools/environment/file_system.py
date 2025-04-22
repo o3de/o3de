@@ -40,8 +40,8 @@ def check_free_space(dest, required_space, msg):
 def safe_makedirs(dest_path):
     """ This allows an OSError in the case the directory cannot be created, which is logged but does not propagate."""
     try:
-        logger.debug(f'Creating directory "{dest_path}"')
-        os.makedirs(dest_path)
+        logger.info(f'Creating directory "{dest_path}"')
+        os.makedirs(dest_path, exist_ok=True)
 
     except OSError as e:
         if e.errno == errno.EEXIST:
@@ -50,7 +50,7 @@ def safe_makedirs(dest_path):
             # In this case, windows will raise EACCES instead of EEXIST if you try to make a directory at the root.
             pass
         else:
-            logger.debug(f'Could not create directory: "{dest_path}".')
+            logger.info(f'Could not create directory: "{dest_path}".')
             raise
 
 
@@ -73,7 +73,7 @@ def remove_path_and_extension(src):
     Given a src, will strip off the path and the extension. Used in unzip and untgz
 
     Example:
-        C:\\packages\\lumberyard-XXXX.zip would become lumberyard-XXX
+        C:\\packages\\lumberyard-XXXX.zip would become lumberyard-XXXX
     """
     src_name = os.path.basename(src)
     src_no_extension, _ = os.path.splitext(src_name)
@@ -182,7 +182,26 @@ def untgz(dest, src, exact_tgz_size=False, force=False, allow_exists=False):
 
         # Extract it and return final path.
         start_time = time.time()
-        tar_file.extractall(dst_path)
+        def is_within_directory(directory, target):
+            
+            abs_directory = os.path.abspath(directory)
+            abs_target = os.path.abspath(target)
+        
+            prefix = os.path.commonprefix([abs_directory, abs_target])
+            
+            return prefix == abs_directory
+        
+        def safe_extract(tar, path=".", members=None, *, numeric_owner=False):
+        
+            for member in tar.getmembers():
+                member_path = os.path.join(path, member.name)
+                if not is_within_directory(path, member_path):
+                    raise Exception("Attempted Path Traversal in Tar File")
+        
+            tar.extractall(path, members, numeric_owner=numeric_owner)
+            
+        
+        safe_extract(tar_file, dst_path)
         secs = time.time() - start_time
         if secs == 0:
             secs = 0.01
@@ -221,7 +240,7 @@ def unlock_file(file_name):
     if not os.access(file_name, os.W_OK):
         file_stat = os.stat(file_name)
         os.chmod(file_name, file_stat.st_mode | stat.S_IWRITE)
-        logger.warning(f'Clearing write lock for file {file_name}.')
+        logger.info(f'Clearing write lock for file {file_name}.')
         return True
     else:
         logger.info(f'File {file_name} not write locked. Unlocking file not necessary.')
@@ -238,7 +257,7 @@ def lock_file(file_name):
     if os.access(file_name, os.W_OK):
         file_stat = os.stat(file_name)
         os.chmod(file_name, file_stat.st_mode & (~stat.S_IWRITE))
-        logger.warning(f'Write locking file {file_name}')
+        logger.info(f'Write locking file {file_name}')
         return True
     else:
         logger.info(f'File {file_name} already locked. Locking file not necessary.')
@@ -292,6 +311,35 @@ def delete(file_list, del_files, del_dirs):
             return False
     return True
 
+def rename(src: str | bytes, dst: str | bytes) -> bool:
+    """
+    Given a file or directory path, will rename from src to dst.
+
+    :param src: Full path to file to rename
+    :param dst: Full path to renamed file
+
+    Returns a boolean for success or failure of the operation.
+    """
+
+    logger.info(f"Renaming {src} to {dst}.")
+    def _rename_helper(src: str | bytes, dst: str | bytes) -> bool:
+        """ Helper: Change file permissions and renames the file."""
+        try:
+            os.chmod(src, 0o777)
+            os.rename(src,dst)
+            return True
+        except OSError as e:
+            logger.error(f"Could not rename {e.filename} Error: {e.strerror}.")
+            return False
+
+    if not os.path.exists(src):
+        logger.error(f"No file located at: {src}")
+        return False
+    if os.path.exists(dst):
+        logger.error(f"File already exists at: {dst}")
+        return False
+
+    return _rename_helper(src, dst)
 
 def create_backup(source, backup_dir, backup_name=None):
     """
@@ -362,6 +410,7 @@ def restore_backup(original_file, backup_dir, backup_name=None):
         logger.warning('Could not restore backup, exception occurred while copying.', exc_info=True)
         return False
     return True
+
 
 def delete_oldest(path_glob, keep_num, del_files=True, del_dirs=False):
     """ Delete oldest builds, keeping a specific number """
@@ -442,7 +491,7 @@ def find_ancestor_file(target_file_name, start_path=os.getcwd()):
     :param start_path: Optional path to start looking for the file.
     :return: Path to the file or None if not found.
     """
-    current_path = os.path.normpath(start_path)
+    current_path = os.path.abspath(start_path)
     candidate_path = os.path.join(current_path, target_file_name)
 
     # Limit the number of directories to traverse, to avoid infinite loop in path cycles

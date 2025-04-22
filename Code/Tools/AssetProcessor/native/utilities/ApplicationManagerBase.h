@@ -14,10 +14,12 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/Debug/TraceMessageBus.h>
 #include <AzToolsFramework/API/AssetDatabaseBus.h>
-#include <native/FileWatcher/FileWatcher.h>
+#include <native/FileWatcher/FileWatcherBase.h>
 #include <native/utilities/ApplicationManager.h>
 #include <native/utilities/AssetBuilderInfo.h>
 #include <native/utilities/BuilderManager.h>
+#include <native/utilities/UuidManager.h>
+#include <QtGui/qwindowdefs.h>
 #endif
 
 namespace AzToolsFramework
@@ -47,7 +49,6 @@ namespace AssetProcessor
 
 class ApplicationServer;
 class ConnectionManager;
-class FolderWatchCallbackEx;
 class ControlRequestHandler;
 
 class ApplicationManagerBase
@@ -57,12 +58,15 @@ class ApplicationManagerBase
     , public AssetProcessor::AssetBuilderRegistrationBus::Handler
     , public AZ::Debug::TraceMessageBus::Handler
     , protected AzToolsFramework::AssetDatabase::AssetDatabaseRequests::Bus::Handler
-    , public AssetProcessor::DiskSpaceInfoBus::Handler
+    , public AZ::Interface<AssetProcessor::IDiskSpaceInfo>::Registrar
     , protected AzToolsFramework::SourceControlNotificationBus::Handler
+    , public AssetProcessor::MessageInfoBus::Handler
 {
     Q_OBJECT
 public:
-    explicit ApplicationManagerBase(int* argc, char*** argv, QObject* parent = 0);
+    ApplicationManagerBase(int* argc, char*** argv, QObject* parent = nullptr);
+    ApplicationManagerBase(int* argc, char*** argv, AZ::ComponentApplicationSettings componentAppSettings);
+    ApplicationManagerBase(int* argc, char*** argv, QObject* parent, AZ::ComponentApplicationSettings componentAppSettings);
     virtual ~ApplicationManagerBase();
     ApplicationManager::BeforeRunStatus BeforeRun() override;
     void Destroy() override;
@@ -70,6 +74,7 @@ public:
     void HandleFileRelocation() const;
     bool Activate() override;
     bool PostActivate() override;
+    void Reflect() override;
 
     AssetProcessor::PlatformConfiguration* GetPlatformConfiguration() const;
 
@@ -104,18 +109,39 @@ public:
     //! TraceMessageBus Interface
     bool OnError(const char* window, const char* message) override;
 
-    //! DiskSpaceInfoBus::Handler
-    bool CheckSufficientDiskSpace(const QString& savePath, qint64 requiredSpace, bool shutdownIfInsufficient) override;
+    //! IDiskSpaceInfo Interface
+    bool CheckSufficientDiskSpace(qint64 requiredSpace, bool shutdownIfInsufficient) override;
 
     //! AzFramework::SourceControlNotificationBus::Handler
     void ConnectivityStateChanged(const AzToolsFramework::SourceControlState newState) override;
+
+    //! MessageInfoBus::Handler
+    void OnBuilderRegistrationFailure() override;
 
     void RemoveOldTempFolders();
 
     void Rescan();
 
+    void FastScan();
+
     bool IsAssetProcessorManagerIdle() const override;
     bool CheckFullIdle();
+
+    // Used to track AP command line checks, so the help can be easily printed.
+    struct APCommandLineSwitch
+    {
+        APCommandLineSwitch(AZStd::vector<APCommandLineSwitch>& commandLineInfo, const char* switchTitle, const char* helpText)
+            : m_switch(switchTitle)
+            , m_helpText(helpText)
+        {
+            commandLineInfo.push_back(*this);
+        }
+        const char* m_switch;
+        const char* m_helpText;
+    };
+
+    virtual WId GetWindowId() const;
+
 Q_SIGNALS:
     void CheckAssetProcessorManagerIdleState();
     void ConnectionStatusMsg(QString message);
@@ -127,15 +153,16 @@ public Q_SLOTS:
     void OnAssetProcessorManagerIdleState(bool isIdle);
 
 protected:
-    virtual void InitAssetProcessorManager();//Deletion of assetProcessor Manager will be handled by the ThreadController
-    virtual void InitAssetCatalog();//Deletion of AssetCatalog will be handled when the ThreadController is deleted by the base ApplicationManager
+    virtual void InitAssetProcessorManager(AZStd::vector<APCommandLineSwitch>& commandLineInfo);//Deletion of assetProcessor Manager will be handled by the ThreadController
+    virtual void InitAssetCatalog(); // Deletion of AssetCatalog will be handled when the ThreadController is deleted by the base ApplicationManager
+    virtual void ConnectAssetCatalog();
     virtual void InitRCController();
     virtual void DestroyRCController();
     virtual void InitAssetScanner();
     virtual void DestroyAssetScanner();
     virtual bool InitPlatformConfiguration();
     virtual void DestroyPlatformConfiguration();
-    virtual void InitFileMonitor();
+    virtual void InitFileMonitor(AZStd::unique_ptr<FileWatcherBase> fileWatcher);
     virtual void DestroyFileMonitor();
     virtual bool InitBuilderConfiguration();
     virtual void InitControlRequestHandler();
@@ -145,14 +172,14 @@ protected:
     virtual void InitConnectionManager();
     void DestroyConnectionManager();
     void InitAssetRequestHandler(AssetProcessor::AssetRequestHandler* assetRequestHandler);
-    void InitFileStateCache();
+    virtual void InitFileStateCache();
+    virtual void InitUuidManager();
     void CreateQtApplication() override;
 
     bool InitializeInternalBuilders();
-    bool InitializeExternalBuilders();
     void InitBuilderManager();
     void ShutdownBuilderManager();
-    bool InitAssetDatabase();
+    bool InitAssetDatabase(bool ignoreFutureAssetDBVersionError);
     void ShutDownAssetDatabase();
     void InitAssetServerHandler();
     void DestroyAssetServerHandler();
@@ -161,6 +188,8 @@ protected:
     virtual void InitSourceControl() = 0;
     void InitInputThread();
     void InputThread();
+
+    void HandleCommandLineHelp(AZStd::vector<APCommandLineSwitch>& commandLineInfo);
 
     // Give an opportunity to derived classes to make connections before the application server starts listening
     virtual void MakeActivationConnections() {}
@@ -173,7 +202,7 @@ protected:
 
     AssetProcessor::AssetCatalog* GetAssetCatalog() const { return m_assetCatalog; }
 
-    static bool WaitForBuilderExit(AzFramework::ProcessWatcher* processWatcher, AssetBuilderSDK::JobCancelListener* jobCancelListener, AZ::u32 processTimeoutLimitInSeconds);
+    bool CheckReprocessFileList();
 
     ApplicationServer* m_applicationServer = nullptr;
     ConnectionManager* m_connectionManager = nullptr;
@@ -188,16 +217,15 @@ protected Q_SLOTS:
 
 protected:
     int m_processedAssetCount = 0;
-    int m_failedAssetsCount = 0;
     int m_warningCount = 0;
     int m_errorCount = 0;
+    int m_remainingAssetsToFinalize = 0;
+    AZStd::set<AZStd::string> m_failedAssets;
     bool m_AssetProcessorManagerIdleState = false;
     bool m_sourceControlReady = false;
     bool m_fullIdle = false;
 
-    AZStd::vector<AZStd::unique_ptr<FolderWatchCallbackEx> > m_folderWatches;
-    FileWatcher m_fileWatcher;
-    AZStd::vector<int> m_watchHandles;
+    AZStd::unique_ptr<FileWatcherBase> m_fileWatcher;
     AssetProcessor::PlatformConfiguration* m_platformConfiguration = nullptr;
     AssetProcessor::AssetProcessorManager* m_assetProcessorManager = nullptr;
     AssetProcessor::AssetCatalog* m_assetCatalog = nullptr;
@@ -209,14 +237,15 @@ protected:
     ControlRequestHandler* m_controlRequestHandler = nullptr;
 
     AZStd::unique_ptr<AssetProcessor::FileStateBase> m_fileStateCache;
-
     AZStd::unique_ptr<AssetProcessor::FileProcessor> m_fileProcessor;
-
     AZStd::unique_ptr<AssetProcessor::BuilderConfigurationManager> m_builderConfig;
+    AZStd::unique_ptr<AssetProcessor::UuidManager> m_uuidManager;
 
     // The internal builders
     AZStd::shared_ptr<AssetProcessor::InternalRecognizerBasedBuilder> m_internalBuilder;
     AZStd::shared_ptr<AssetProcessor::SettingsRegistryBuilder> m_settingsRegistryBuilder;
+
+    bool m_builderRegistrationComplete = false;
 
     // Builder description map based on the builder id
     AZStd::unordered_map<AZ::Uuid, AssetBuilderSDK::AssetBuilderDesc> m_builderDescMap;
@@ -231,15 +260,10 @@ protected:
     AZStd::list<AssetProcessor::ExternalModuleAssetBuilderInfo*>    m_externalAssetBuilders;
 
     AssetProcessor::ExternalModuleAssetBuilderInfo* m_currentExternalAssetBuilder = nullptr;
-    
+
     QAtomicInt m_connectionsAwaitingAssetCatalogSave = 0;
     int m_remainingAPMJobs = 0;
     bool m_assetProcessorManagerIsReady = false;
-
-    // When job priority and escalation is equal, jobs sort in order by job key.
-    // This switches that behavior to instead sort by the DB source name, which
-    // allows automated tests to get deterministic behavior out of Asset Processor.
-    bool m_sortJobsByDBSourceName = false;
 
     unsigned int m_highestConnId = 0;
     AzToolsFramework::Ticker* m_ticker = nullptr; // for ticking the tickbus.
@@ -247,6 +271,8 @@ protected:
     QList<QMetaObject::Connection> m_connectionsToRemoveOnShutdown;
     QString m_dependencyScanPattern;
     QString m_fileDependencyScanPattern;
+    QString m_reprocessFileList;
+    QStringList m_filesToReprocess;
     AZStd::vector<AZStd::string> m_dependencyAddtionalScanFolders;
     int m_dependencyScanMaxIteration = AssetProcessor::MissingDependencyScanner::DefaultMaxScanIteration; // The maximum number of times to recurse when scanning a file for missing dependencies.
 };

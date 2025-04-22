@@ -40,8 +40,10 @@
 #define LEFT_BORDER_OFFSET 40
 
 #ifndef NM_CLICK
-#define NM_CLICK (-2)
-#define NM_RCLICK (-5)
+// from commctrl.h
+#define NM_FIRST (0U - 0U)
+#define NM_CLICK (NM_FIRST - 2)
+#define NM_RCLICK (NM_FIRST - 5)
 #endif
 
 const float AbstractSplineWidget::threshold = 0.015f;
@@ -297,8 +299,7 @@ AbstractSplineWidget::AbstractSplineWidget()
 
     m_nLeftOffset = LEFT_BORDER_OFFSET;
 
-    m_grid.zoom.x = 200;
-    m_grid.zoom.y = 100;
+    m_grid.zoom.Set(200, 100);
 
     m_bKeyTimesDirty = false;
 
@@ -333,22 +334,22 @@ AbstractSplineWidget::~AbstractSplineWidget()
 //////////////////////////////////////////////////////////////////////////
 Vec2 AbstractSplineWidget::GetZoom()
 {
-    return m_grid.zoom;
+    return Vec2(m_grid.zoom.GetX(), m_grid.zoom.GetY());
 }
 
 Vec2 AbstractSplineWidget::GetScrollOffset()
 {
-    return m_grid.origin;
+    return Vec2(m_grid.origin.GetX(), m_grid.origin.GetY());
 }
 
 //////////////////////////////////////////////////////////////////////////
 void AbstractSplineWidget::SetZoom(Vec2 zoom, const QPoint& center)
 {
     m_grid.SetZoom(zoom, QPoint(center.x(), m_rcSpline.bottom() + 1 - center.y()));
-    SetScrollOffset(m_grid.origin);
+    SetScrollOffset(Vec2(m_grid.origin.GetX(), m_grid.origin.GetY()));
     if (m_pTimelineCtrl)
     {
-        m_pTimelineCtrl->setZoom(zoom.x, m_grid.origin.x);
+        m_pTimelineCtrl->setZoom(zoom.x, m_grid.origin.GetX());
     }
     update();
 }
@@ -356,11 +357,11 @@ void AbstractSplineWidget::SetZoom(Vec2 zoom, const QPoint& center)
 //////////////////////////////////////////////////////////////////////////
 void AbstractSplineWidget::SetZoom(Vec2 zoom)
 {
-    m_grid.zoom = zoom;
-    SetScrollOffset(m_grid.origin);
+    m_grid.zoom = AZ::Vector2(zoom.x,zoom.y);
+    SetScrollOffset(Vec2(m_grid.origin.GetX(), m_grid.origin.GetY()));
     if (m_pTimelineCtrl)
     {
-        m_pTimelineCtrl->setZoom(zoom.x, m_grid.origin.x);
+        m_pTimelineCtrl->setZoom(zoom.x, m_grid.origin.GetX());
     }
     SendNotifyEvent(SPLN_SCROLL_ZOOM);
     update();
@@ -369,10 +370,10 @@ void AbstractSplineWidget::SetZoom(Vec2 zoom)
 //////////////////////////////////////////////////////////////////////////
 void AbstractSplineWidget::SetScrollOffset(Vec2 ofs)
 {
-    m_grid.origin = ofs;
+    m_grid.origin = AZ::Vector2(ofs.x, ofs.y);
     if (m_pTimelineCtrl)
     {
-        m_pTimelineCtrl->setZoom(m_grid.zoom.x, m_grid.origin.x);
+        m_pTimelineCtrl->setZoom(m_grid.zoom.GetX(), m_grid.origin.GetX());
     }
     SendNotifyEvent(SPLN_SCROLL_ZOOM);
     update();
@@ -383,7 +384,7 @@ float AbstractSplineWidget::SnapTime(float time)
 {
     if (m_bSnapTime)
     {
-        float step = m_grid.step.x / 10.0f;
+        const float step = m_grid.step.GetX() / 10.0f;
         return floor((time / step) + 0.5f) * step;
     }
     return time;
@@ -394,7 +395,7 @@ float AbstractSplineWidget::SnapValue(float val)
 {
     if (m_bSnapValue)
     {
-        float step = m_grid.step.y;
+        const float step = m_grid.step.GetY();
         return floor((val / step) + 0.5f) * step;
     }
     return val;
@@ -796,7 +797,7 @@ void SplineWidget::DrawGrid(QPainter* painter)
 
     // Draw vertical grid lines.
     SplineControlVerticalLineDrawer verticalLineDrawer(painter, m_rcSpline);
-    GridUtils::IterateGrid(verticalLineDrawer, 50.0f, m_grid.zoom.x, m_grid.origin.x, m_fGridTimeScale, m_grid.rect.left(), m_grid.rect.right() + 1);
+    GridUtils::IterateGrid(verticalLineDrawer, 50.0f, m_grid.zoom.GetX(), m_grid.origin.GetX(), m_fGridTimeScale, m_grid.rect.left(), m_grid.rect.right() + 1);
 
     //////////////////////////////////////////////////////////////////////////
     {
@@ -869,16 +870,12 @@ void SplineWidget::DrawSpline(QPainter* painter, SSplineInfo& splineInfo, float 
 
         painter->setPen(pen);
 
-        int linesDrawn = 0;
-        int pixels = 0;
-
         float gradient = 0.0f;
         int pointsInLine = -1;
         QPoint lineStart;
         QPainterPath path;
         for (int x = left; x <= right; x++)
         {
-            ++pixels;
 
             float time = XOfsToTime(x);
             ISplineInterpolator::ValueType value;
@@ -905,7 +902,6 @@ void SplineWidget::DrawSpline(QPainter* painter, SSplineInfo& splineInfo, float 
                 path.lineTo(lineStart);
                 gradient = float(pt.y() - lineStart.y()) / (pt.x() - lineStart.x());
                 pointsInLine = 1;
-                ++linesDrawn;
             }
             else if ((x == right && pointsInLine >= 0) || (pointsInLine > 0 && fabs(lineStart.y() + gradient * (pt.x() - lineStart.x()) - pt.y()) == 1.0f))
             {
@@ -913,7 +909,6 @@ void SplineWidget::DrawSpline(QPainter* painter, SSplineInfo& splineInfo, float 
                 path.lineTo(lineStart);
                 gradient = 0.0f;
                 pointsInLine = 0;
-                ++linesDrawn;
             }
             else if (pointsInLine > 0)
             {
@@ -1280,6 +1275,13 @@ void SplineWidget::mouseDoubleClickEvent(QMouseEvent* event)
     break;
     case HIT_KEY:
     {
+        // End recording that was started at the beginning of the double click sequence
+        if (UiAnimUndo::IsRecording())
+        {
+            UiAnimUndoManager::Get()->Cancel();
+            m_pCurrentUndo = nullptr;
+        }
+
         RemoveKey(m_pHitSpline, m_nHitKeyIndex);
     }
     break;
@@ -1438,8 +1440,8 @@ void SplineWidget::mouseMoveEvent(QMouseEvent* event)
     case ScrollMode:
     {
         // Set the new scrolled coordinates
-        float ofsx = m_grid.origin.x - (event->x() - m_cMouseDownPos.x()) / m_grid.zoom.x;
-        float ofsy = m_grid.origin.y + (event->y() - m_cMouseDownPos.y()) / m_grid.zoom.y;
+        float ofsx = m_grid.origin.GetX() - (event->x() - m_cMouseDownPos.x()) / m_grid.zoom.GetX();
+        float ofsy = m_grid.origin.GetY() + (event->y() - m_cMouseDownPos.y()) / m_grid.zoom.GetY();
         SetScrollOffset(Vec2(ofsx, ofsy));
         m_cMouseDownPos = event->pos();
     }
@@ -1450,16 +1452,16 @@ void SplineWidget::mouseMoveEvent(QMouseEvent* event)
         float ofsx = (event->x() - m_cMouseDownPos.x()) * 0.01f;
         float ofsy = (event->y() - m_cMouseDownPos.y()) * 0.01f;
 
-        Vec2 z = m_grid.zoom;
+        AZ::Vector2 z = m_grid.zoom;
         if (ofsx != 0)
         {
-            z.x = max(z.x * (1.0f + ofsx), 0.001f);
+            z.SetX(max(z.GetX() * (1.0f + ofsx), 0.001f));
         }
         if (ofsy != 0)
         {
-            z.y = max(z.y * (1.0f + ofsy), 0.001f);
+            z.SetY(max(z.GetY() * (1.0f + ofsy), 0.001f));
         }
-        SetZoom(z, m_cMouseDownPos);
+        SetZoom(Vec2(z.GetX(), z.GetY()), m_cMouseDownPos);
         m_cMouseDownPos = event->pos();
     }
     break;
@@ -1650,7 +1652,7 @@ void SplineWidget::wheelEvent(QWheelEvent* event)
     {
         return;
     }
-    Vec2 z = m_grid.zoom;
+    AZ::Vector2 z = m_grid.zoom;
     float scale = 1.2f * fabs(zDelta / 120.0f);
     if (zDelta > 0)
     {
@@ -1660,7 +1662,7 @@ void SplineWidget::wheelEvent(QWheelEvent* event)
     {
         z /= scale;
     }
-    SetZoom(z, m_cMousePos);
+    SetZoom(Vec2(z.GetX(), z.GetY()), m_cMousePos);
 
     event->accept();
 }
@@ -2607,7 +2609,7 @@ void AbstractSplineWidget::SelectAll()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void SplineWidget::SendNotifyEvent(int nEvent)
+void SplineWidget::SendNotifyEvent(const uint32_t nEvent)
 {
     if (nEvent == SPLN_BEFORE_CHANGE)
     {
@@ -2644,8 +2646,8 @@ void SplineWidget::SetTimelineCtrl(TimelineWidget* pTimelineCtrl)
     if (m_pTimelineCtrl)
     {
         pTimelineCtrl->setParent(this);
-        pTimelineCtrl->SetZoom(m_grid.zoom.x);
-        pTimelineCtrl->SetOrigin(m_grid.origin.x);
+        pTimelineCtrl->SetZoom(m_grid.zoom.GetX());
+        pTimelineCtrl->SetOrigin(m_grid.origin.GetX());
         pTimelineCtrl->SetKeyTimeSet(this);
         pTimelineCtrl->update();
     }
@@ -3020,8 +3022,8 @@ void AbstractSplineWidget::FitSplineToViewWidth()
     }
 
     float zoom = abs(m_rcSpline.width() - 20) / max(1.0f, fabs(t1 - t0));
-    SetZoom(Vec2(zoom, m_grid.zoom.y));
-    SetScrollOffset(Vec2(t0, m_grid.origin.y));
+    SetZoom(Vec2(zoom, m_grid.zoom.GetY()));
+    SetScrollOffset(Vec2(t0, m_grid.origin.GetY()));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -3060,8 +3062,8 @@ void AbstractSplineWidget::FitSplineToViewHeight()
     }
 
     float zoom = abs(m_rcSpline.height() - 40) / max(1.0f, fabs(vmax - vmin));
-    SetZoom(Vec2(m_grid.zoom.x, zoom));
-    SetScrollOffset(Vec2(m_grid.origin.x, vmin));
+    SetZoom(Vec2(m_grid.zoom.GetX(), zoom));
+    SetScrollOffset(Vec2(m_grid.origin.GetX(), vmin));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -3149,8 +3151,8 @@ void AbstractSplineWidget::GotoNextKey(bool previousKey)
                             pSpline->SelectKeyAtDimension(nextKey, nCurrentDimension, true);
 
                             // Set the new scrolled coordinates
-                            float ofsx = keyTime - ((m_grid.rect.right() + 1) / 2) / m_grid.zoom.x;
-                            float ofsy = afValue[nCurrentDimension] - ((m_grid.rect.bottom() + 1) / 2) / m_grid.zoom.y;
+                            float ofsx = keyTime - ((m_grid.rect.right() + 1) / 2) / m_grid.zoom.GetX();
+                            float ofsy = afValue[nCurrentDimension] - ((m_grid.rect.bottom() + 1) / 2) / m_grid.zoom.GetY();
 
                             SetScrollOffset(Vec2(ofsx, ofsy));
                         }
@@ -3202,8 +3204,8 @@ void AbstractSplineWidget::GotoNextKey(bool previousKey)
                 }
 
                 // Set the new scrolled coordinates
-                float ofsx = fClosestKeyTime - ((m_grid.rect.right() + 1) / 2) / m_grid.zoom.x;
-                float ofsy = averageValue / dimensions - ((m_grid.rect.bottom() + 1) / 2) / m_grid.zoom.y;
+                float ofsx = fClosestKeyTime - ((m_grid.rect.right() + 1) / 2) / m_grid.zoom.GetX();
+                float ofsy = averageValue / dimensions - ((m_grid.rect.bottom() + 1) / 2) / m_grid.zoom.GetY();
 
                 SetScrollOffset(Vec2(ofsx, ofsy));
             }

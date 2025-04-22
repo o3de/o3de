@@ -15,6 +15,8 @@
 
 namespace ScriptCanvasEditor
 {
+    using SourceHandle = ScriptCanvas::SourceHandle;
+
     // #sc-editor-asset remove this
     class AssetGraphScene : public AZ::EBusTraits
     {

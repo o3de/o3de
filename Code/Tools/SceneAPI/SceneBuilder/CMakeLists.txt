@@ -69,5 +69,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     )
     ly_add_googletest(
         NAME AZ::SceneBuilder.Tests
+        LABELS REQUIRES_tiaf
     )
 endif()

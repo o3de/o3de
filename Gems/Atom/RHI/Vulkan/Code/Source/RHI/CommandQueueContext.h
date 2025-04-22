@@ -24,7 +24,7 @@ namespace AZ
         class CommandQueueContext final
         {
         public:
-            AZ_CLASS_ALLOCATOR(CommandQueueContext, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(CommandQueueContext, AZ::SystemAllocator);
 
             CommandQueueContext(const CommandQueueContext&) = delete;
             CommandQueueContext& operator=(const CommandQueueContext&) = delete;
@@ -49,6 +49,7 @@ namespace AZ
 
             CommandQueue& GetCommandQueue(RHI::HardwareQueueClass hardwareQueueClass) const;
             CommandQueue& GetOrCreatePresentationCommandQueue(const SwapChain& swapchain);
+            CommandQueue& GetPresentationCommandQueue() const;
             RHI::Ptr<Fence> GetFrameFence(RHI::HardwareQueueClass hardwareQueueClass) const;
             RHI::Ptr<Fence> GetFrameFence(const QueueId& queueId) const;
             uint32_t GetCurrentFrameIndex() const;
@@ -81,6 +82,10 @@ namespace AZ
 
             /// Number of created queues per each of the queue families
             AZStd::vector<uint32_t> m_numCreatedQueuesPerFamily;
+
+            // Index to the presentation queue
+            const uint32_t InvalidIndex = aznumeric_cast<uint32_t>(-1);
+            uint32_t m_presentationQueueIndex = InvalidIndex;
         };
     }
 }

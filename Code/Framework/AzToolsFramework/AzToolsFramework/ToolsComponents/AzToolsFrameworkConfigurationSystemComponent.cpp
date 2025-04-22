@@ -31,7 +31,6 @@ namespace AzToolsFramework
                     "AzToolsFramework Configuration Component", "System component responsible for configuring AzToolsFramework")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Editor")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                     ;
             }
         }
@@ -97,19 +96,19 @@ namespace AzToolsFramework
 
     void AzToolsFrameworkConfigurationSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("AzToolsFrameworkConfigurationSystemComponentService", 0xfc4f9667));
+        provided.push_back(AZ_CRC_CE("AzToolsFrameworkConfigurationSystemComponentService"));
     }
 
     void AzToolsFrameworkConfigurationSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("AzToolsFrameworkConfigurationSystemComponentService", 0xfc4f9667));
+        incompatible.push_back(AZ_CRC_CE("AzToolsFrameworkConfigurationSystemComponentService"));
     }
 
     void AzToolsFrameworkConfigurationSystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
-        dependent.push_back(AZ_CRC("AzFrameworkConfigurationSystemComponentService", 0xcc49c96e));
-        dependent.push_back(AZ_CRC("SceneSystemComponentService", 0xd8975435));
-        dependent.push_back(AZ_CRC("EditorEntityContextService", 0x28d93a43));
+        dependent.push_back(AZ_CRC_CE("AzFrameworkConfigurationSystemComponentService"));
+        dependent.push_back(AZ_CRC_CE("SceneSystemComponentService"));
+        dependent.push_back(AZ_CRC_CE("EditorEntityContextService"));
     }
 
 } // AzToolsFramework

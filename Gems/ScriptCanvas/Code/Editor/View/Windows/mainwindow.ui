@@ -29,7 +29,7 @@
    <bool>true</bool>
   </property>
   <property name="windowTitle">
-   <string>Script Canvas (PREVIEW)</string>
+   <string>Script Canvas</string>
   </property>
   <property name="toolButtonStyle">
    <enum>Qt::ToolButtonIconOnly</enum>
@@ -121,11 +121,13 @@
     <addaction name="action_ViewProperties"/>
     <addaction name="action_ViewDebugger"/>
     <addaction name="action_ViewCommandLine"/>
+	<addaction name="action_ViewGraphOutliner"/>
     <addaction name="action_ViewLog"/>
     <addaction name="action_ViewBookmarks"/>
     <addaction name="action_ViewMiniMap"/>
     <addaction name="action_ViewVariableManager"/>
     <addaction name="action_GraphValidation"/>
+    <addaction name="action_Interpreter"/>
     <addaction name="action_Debugging"/>
     <addaction name="separator"/>
     <addaction name="action_UpgradeTool"/>
@@ -134,12 +136,6 @@
     <addaction name="action_PresetsEditor"/>
     <addaction name="separator"/>
    </widget>
-   <!-- Disabled until tool is stabilized <widget class="QMenu" name="menuUtilities">
-    <property name="title">
-     <string>&amp;Utilities</string>
-    </property>
-    <addaction name="action_UpgradeTool"/>
-   </widget> -->
    <widget class="QMenu" name="menuSettings_2">
     <property name="title">
      <string>&amp;Preferences</string>
@@ -171,8 +167,6 @@
    <addaction name="menuEdit"/>
    <addaction name="menuView_2"/>
    <addaction name="menuTools_2"/>
-    <!-- Disabled until tool is stabilized <widget class="QMenu" name="menuUtilities">
-   <addaction name="menuUtilities"/> -->
    <addaction name="menuSettings_2"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
@@ -190,11 +184,17 @@
    <property name="text">
     <string>&amp;Save</string>
    </property>
+    <property name="enabled">
+      <bool>false</bool>
+    </property>
   </action>
   <action name="action_Save_As">
    <property name="text">
     <string>&amp;Save As...</string>
    </property>
+    <property name="enabled">
+      <bool>false</bool>
+    </property>
   </action>
   <action name="action_Open">
    <property name="text">
@@ -236,8 +236,8 @@
     <iconset resource="ScriptCanvasEditorResources.qrc">
      <normaloff>:/ScriptCanvasEditorResources/Resources/scriptcanvas_commandline.png</normaloff>:/ScriptCanvasEditorResources/Resources/scriptcanvas_commandline.png</iconset>
    </property>
-   <property name="text">
-    <string>Command Line</string>
+    <property name="text">
+    <string>Command Line (Experimental)</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+P</string>
@@ -246,7 +246,7 @@
     <bool>false</bool>
    </property>
    <property name="visible">
-    <bool>true</bool>
+    <bool>false</bool>
    </property>
   </action>
   <action name="action_ViewNodePalette">
@@ -421,6 +421,9 @@
    <property name="shortcut">
     <string>Ctrl+D</string>
    </property>
+   <property name="shortcutContext">
+    <enum>Qt::WidgetWithChildrenShortcut</enum>
+   </property>
    <property name="autoRepeat">
     <bool>false</bool>
    </property>
@@ -431,6 +434,9 @@
    </property>
    <property name="text">
     <string>Delete</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::WidgetWithChildrenShortcut</enum>
    </property>
    <property name="autoRepeat">
     <bool>false</bool>
@@ -449,6 +455,25 @@
     <string>Graph Preferences</string>
    </property>
   </action>
+
+   <action name="action_ViewGraphOutliner">
+     <property name="checkable">
+       <bool>true</bool>
+     </property>
+     <property name="checked">
+       <bool>true</bool>
+     </property>
+     <property name="text">
+       <string>GraphOutliner</string>
+     </property>
+     <property name="shortcut">
+       <string>Ctrl+F</string>
+     </property>
+     <property name="autoRepeat">
+       <bool>false</bool>
+     </property>
+   </action>
+
   <action name="action_ViewBookmarks">
    <property name="checkable">
     <bool>true</bool>
@@ -526,13 +551,13 @@
    <property name="checked">
     <bool>false</bool>
    </property>
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Test Manager</string>
    </property>
-    <property name="enabled">
-      <bool>false</bool>
-    </property>
-    <property name="shortcut">
+   <property name="shortcut">
     <string>Ctrl+Shift+T</string>
    </property>
    <property name="autoRepeat">
@@ -681,6 +706,9 @@
    <property name="shortcut">
     <string>Shift+Left</string>
    </property>
+    <property name="enabled">
+      <bool>false</bool>
+    </property>
   </action>
   <action name="action_AlignRight">
    <property name="text">
@@ -689,6 +717,9 @@
    <property name="shortcut">
     <string>Shift+Right</string>
    </property>
+    <property name="enabled">
+      <bool>false</bool>
+    </property>
   </action>
   <action name="action_AlignTop">
    <property name="text">
@@ -697,6 +728,9 @@
    <property name="shortcut">
     <string>Shift+Up</string>
    </property>
+    <property name="enabled">
+      <bool>false</bool>
+    </property>
   </action>
   <action name="action_AlignBottom">
    <property name="text">
@@ -705,6 +739,9 @@
    <property name="shortcut">
     <string>Shift+Down</string>
    </property>
+    <property name="enabled">
+      <bool>false</bool>
+    </property>
   </action>
   <action name="action_SelectAll">
    <property name="text">
@@ -729,6 +766,9 @@
    <property name="shortcut">
     <string>Esc</string>
    </property>
+    <property name="enabled">
+      <bool>false</bool>
+    </property>
   </action>
   <action name="action_GotoStartOfChain">
    <property name="text">
@@ -737,6 +777,9 @@
    <property name="shortcut">
     <string>Ctrl+Shift+Left</string>
    </property>
+    <property name="enabled">
+      <bool>false</bool>
+    </property>
   </action>
   <action name="action_GotoEndOfChain">
    <property name="text">
@@ -745,6 +788,9 @@
    <property name="shortcut">
     <string>Ctrl+Shift+Right</string>
    </property>
+    <property name="enabled">
+      <bool>false</bool>
+    </property>
   </action>
   <action name="actionZoom_To">
    <property name="text">
@@ -758,6 +804,9 @@
    <property name="shortcut">
     <string>Ctrl+Shift+Up</string>
    </property>
+    <property name="enabled">
+      <bool>false</bool>
+    </property>
   </action>
   <action name="action_EnableSelection">
    <property name="text">
@@ -766,6 +815,9 @@
    <property name="shortcut">
     <string>Ctrl+K, Ctrl+U</string>
    </property>
+    <property name="enabled">
+      <bool>false</bool>
+    </property>
   </action>
   <action name="action_DisableSelection">
    <property name="text">
@@ -774,10 +826,23 @@
    <property name="shortcut">
     <string>Ctrl+K, Ctrl+C</string>
    </property>
+    <property name="enabled">
+      <bool>false</bool>
+    </property>
   </action>
   <action name="actionEditor_Graph">
    <property name="text">
     <string>Editor Graph</string>
+   </property>
+  </action>
+  <action name="action_Interpreter">
+   <property name="text">
+    <string>Interpreter</string>
+   </property>
+  </action>
+  <action name="actionOpen_Script_Event">
+   <property name="text">
+    <string>&amp;Open ...</string>
    </property>
   </action>
   <addaction name="action_ViewNodePalette"/>

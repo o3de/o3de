@@ -7,9 +7,6 @@
  */
 #pragma once
 
-#include <AzCore/PlatformDef.h>
-
-AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option")
 #if !defined(Q_MOC_RUN)
 #include <QCompleter>
 #include <QDialog>
@@ -19,9 +16,9 @@ AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option")
 #include <QTableView>
 #include <QTimer>
 #include <QWidget>
-AZ_POP_DISABLE_WARNING
 
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/PlatformDef.h>
 
 #include <GraphCanvas/Components/ViewBus.h>
 #include <GraphCanvas/Editor/EditorTypes.h>
@@ -32,17 +29,14 @@ AZ_POP_DISABLE_WARNING
 namespace GraphCanvas
 {
     class GraphCanvasComboBoxFilterProxyModel
-        : public QSortFilterProxyModel        
+        : public QSortFilterProxyModel
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(GraphCanvasComboBoxFilterProxyModel, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GraphCanvasComboBoxFilterProxyModel, AZ::SystemAllocator);
 
         GraphCanvasComboBoxFilterProxyModel(QObject* parent = nullptr);
-
-        // QSortfilterProxyModel
         bool filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const override;
-        ////
 
         void SetFilter(const QString& filter);
 
@@ -131,7 +125,7 @@ namespace GraphCanvas
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(GraphCanvasComboBox, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GraphCanvasComboBox, AZ::SystemAllocator);
         
         GraphCanvasComboBox(ComboBoxItemModelInterface* comboBoxModel, QWidget* parent = nullptr);
         ~GraphCanvasComboBox();
@@ -144,9 +138,6 @@ namespace GraphCanvas
         QModelIndex GetSelectedIndex() const;
 
         // Weird issue where the background color gets dropped when provide the override. Going to pass it in for now.
-        void SetOutline(const QBrush& brush, const QColor& backgroundColor);
-        void SetOutlineColor(const QColor& color, const QColor& backgroundColor);
-        void SetOutlineColor(const QGradient& gradient, const QColor& backgroundColor);
         void ClearOutlineColor();
 
         void ResetComboBox();
@@ -158,7 +149,6 @@ namespace GraphCanvas
         // QLineEdit
         void focusInEvent(QFocusEvent* focusEvent) override;
         void focusOutEvent(QFocusEvent* focusEvent) override;
-
         void keyPressEvent(QKeyEvent* keyEvent) override;
         ////
 
@@ -197,7 +187,6 @@ namespace GraphCanvas
         void HandleFocusState();
         
     private:
-
         enum class CloseMenuState
         {
             Reject,
@@ -216,21 +205,13 @@ namespace GraphCanvas
         QPoint m_anchorPoint;
         qreal m_displayWidth;
 
-        bool m_lineEditInFocus;
-        bool m_popUpMenuInFocus;
-
         QTimer m_focusTimer;
-        bool m_hasFocus;
-        
         QTimer m_filterTimer;
-
         QTimer m_closeTimer;
+        
         CloseMenuState m_closeState;
 
         ViewId m_viewId;
-        
-        bool m_ignoreNextComplete;
-        bool m_recursionBlocker;
 
         QString m_selectedName;
         
@@ -240,5 +221,11 @@ namespace GraphCanvas
         ComboBoxItemModelInterface* m_modelInterface;
         
         GraphCanvas::StateSetter<bool> m_disableHidingStateSetter;
+
+        bool m_lineEditInFocus;
+        bool m_popUpMenuInFocus;
+        bool m_hasFocus;
+        bool m_ignoreNextComplete;
+        bool m_recursionBlocker;
     };
 }

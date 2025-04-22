@@ -286,7 +286,7 @@ namespace TextureAtlasBuilder
                     {
                         AZStd::string color = AZStd::string::format("%s%s%s%s", args[1].substr(7).c_str(), args[1].substr(5, 2).c_str(),
                                                                     args[1].substr(3, 2).c_str(), args[1].substr(1, 2).c_str());
-                        data.m_unusedColor.FromU32(AZStd::stoul(color, nullptr, 16));
+                        data.m_unusedColor.FromU32(static_cast<AZ::u32>(AZStd::stoul(color, nullptr, 16)));
                     }
                 }
                 else if (args[0] == "presetname")
@@ -482,7 +482,10 @@ namespace TextureAtlasBuilder
             {
                 AZStd::string ext;
                 AzFramework::StringFunc::Path::GetExtension(candidates[i].c_str(), ext, false);
-                if (ext != "dds")
+
+                bool extensionSupported = false;
+                ImageProcessingAtom::ImageBuilderRequestBus::BroadcastResult(extensionSupported, &ImageProcessingAtom::ImageBuilderRequestBus::Events::IsExtensionSupported, ext.c_str());
+                if (extensionSupported)
                 {
                     bool duplicate = false;
                     for (size_t j = 0; j < paths.size() && !duplicate; ++j)
@@ -592,12 +595,19 @@ namespace TextureAtlasBuilder
             {
                 AZStd::string child = (entry.filePath().toStdString()).c_str();
                 AZStd::string ext;
+
                 bool isDir = !AzFramework::StringFunc::Path::GetExtension(child.c_str(), ext, false);
                 if (isDir)
                 {
                     AddFolderContents(paths, child, valid);
+                    continue;
                 }
-                else if (ext != "dds")
+
+                // Not a directory - add the file if it supports an image extension
+                bool extensionSupported = false;
+                ImageProcessingAtom::ImageBuilderRequestBus::BroadcastResult(extensionSupported, &ImageProcessingAtom::ImageBuilderRequestBus::Events::IsExtensionSupported, ext.c_str());
+
+                if (extensionSupported)    
                 {
                     AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::NormalizePathKeepCase, child);
                     bool duplicate = false;
@@ -690,20 +700,20 @@ namespace TextureAtlasBuilder
         AssetBuilderSDK::JobDescriptor descriptor;
         descriptor.m_jobKey = ext + " Atlas";
         descriptor.m_critical = false;
-        descriptor.m_jobParameters[AZ_CRC("forceSquare")] = input.m_forceSquare ? "true" : "false";
-        descriptor.m_jobParameters[AZ_CRC("forcePowerOf2")] = input.m_forcePowerOf2 ? "true" : "false";
-        descriptor.m_jobParameters[AZ_CRC("includeWhiteTexture")] = input.m_includeWhiteTexture ? "true" : "false";
-        descriptor.m_jobParameters[AZ_CRC("padding")] = AZStd::to_string(input.m_padding);
-        descriptor.m_jobParameters[AZ_CRC("maxDimension")] = AZStd::to_string(input.m_maxDimension);
-        descriptor.m_jobParameters[AZ_CRC("filePaths")] = AZStd::to_string(input.m_filePaths.size());
+        descriptor.m_jobParameters[AZ_CRC_CE("forceSquare")] = input.m_forceSquare ? "true" : "false";
+        descriptor.m_jobParameters[AZ_CRC_CE("forcePowerOf2")] = input.m_forcePowerOf2 ? "true" : "false";
+        descriptor.m_jobParameters[AZ_CRC_CE("includeWhiteTexture")] = input.m_includeWhiteTexture ? "true" : "false";
+        descriptor.m_jobParameters[AZ_CRC_CE("padding")] = AZStd::to_string(input.m_padding);
+        descriptor.m_jobParameters[AZ_CRC_CE("maxDimension")] = AZStd::to_string(input.m_maxDimension);
+        descriptor.m_jobParameters[AZ_CRC_CE("filePaths")] = AZStd::to_string(input.m_filePaths.size());
 
         AZ::u32 col = input.m_unusedColor.ToU32();
-        descriptor.m_jobParameters[AZ_CRC("unusedColor")] = AZStd::to_string(*reinterpret_cast<int*>(&col));
-        descriptor.m_jobParameters[AZ_CRC("presetName")] = input.m_presetName;
+        descriptor.m_jobParameters[AZ_CRC_CE("unusedColor")] = AZStd::to_string(*reinterpret_cast<int*>(&col));
+        descriptor.m_jobParameters[AZ_CRC_CE("presetName")] = input.m_presetName;
 
         // The starting point for the list
         const int start = static_cast<int>(descriptor.m_jobParameters.size()) + 1;
-        descriptor.m_jobParameters[AZ_CRC("startPoint")] = AZStd::to_string(start);
+        descriptor.m_jobParameters[AZ_CRC_CE("startPoint")] = AZStd::to_string(start);
 
         for (int i = 0; i < input.m_filePaths.size(); ++i)
         {
@@ -723,20 +733,20 @@ namespace TextureAtlasBuilder
 
         // read in settings/filepaths
         AtlasBuilderInput input;
-        input.m_forceSquare = AzFramework::StringFunc::ToBool(request.m_jobDescription.m_jobParameters.find(AZ_CRC("forceSquare"))->second.c_str());
-        input.m_forcePowerOf2 = AzFramework::StringFunc::ToBool(request.m_jobDescription.m_jobParameters.find(AZ_CRC("forcePowerOf2"))->second.c_str());
-        input.m_includeWhiteTexture = AzFramework::StringFunc::ToBool(request.m_jobDescription.m_jobParameters.find(AZ_CRC("includeWhiteTexture"))->second.c_str());
-        input.m_padding = AzFramework::StringFunc::ToInt(request.m_jobDescription.m_jobParameters.find(AZ_CRC("padding"))->second.c_str());
-        input.m_maxDimension = AzFramework::StringFunc::ToInt(request.m_jobDescription.m_jobParameters.find(AZ_CRC("maxDimension"))->second.c_str());
-        int startAsInt = AzFramework::StringFunc::ToInt(request.m_jobDescription.m_jobParameters.find(AZ_CRC("startPoint"))->second.c_str());
-        int sizeAsInt = AzFramework::StringFunc::ToInt(request.m_jobDescription.m_jobParameters.find(AZ_CRC("filePaths"))->second.c_str());
+        input.m_forceSquare = AzFramework::StringFunc::ToBool(request.m_jobDescription.m_jobParameters.find(AZ_CRC_CE("forceSquare"))->second.c_str());
+        input.m_forcePowerOf2 = AzFramework::StringFunc::ToBool(request.m_jobDescription.m_jobParameters.find(AZ_CRC_CE("forcePowerOf2"))->second.c_str());
+        input.m_includeWhiteTexture = AzFramework::StringFunc::ToBool(request.m_jobDescription.m_jobParameters.find(AZ_CRC_CE("includeWhiteTexture"))->second.c_str());
+        input.m_padding = AzFramework::StringFunc::ToInt(request.m_jobDescription.m_jobParameters.find(AZ_CRC_CE("padding"))->second.c_str());
+        input.m_maxDimension = AzFramework::StringFunc::ToInt(request.m_jobDescription.m_jobParameters.find(AZ_CRC_CE("maxDimension"))->second.c_str());
+        int startAsInt = AzFramework::StringFunc::ToInt(request.m_jobDescription.m_jobParameters.find(AZ_CRC_CE("startPoint"))->second.c_str());
+        int sizeAsInt = AzFramework::StringFunc::ToInt(request.m_jobDescription.m_jobParameters.find(AZ_CRC_CE("filePaths"))->second.c_str());
         AZ::u32 start = static_cast<AZ::u32>(AZStd::max(0, startAsInt));
         AZ::u32 size = static_cast<AZ::u32>(AZStd::max(0, sizeAsInt));
 
-        int col = AzFramework::StringFunc::ToInt(request.m_jobDescription.m_jobParameters.find(AZ_CRC("unusedColor"))->second.c_str());
+        int col = AzFramework::StringFunc::ToInt(request.m_jobDescription.m_jobParameters.find(AZ_CRC_CE("unusedColor"))->second.c_str());
         input.m_unusedColor.FromU32(*reinterpret_cast<AZ::u32*>(&col));
 
-        input.m_presetName = request.m_jobDescription.m_jobParameters.find(AZ_CRC("presetName"))->second;
+        input.m_presetName = request.m_jobDescription.m_jobParameters.find(AZ_CRC_CE("presetName"))->second;
 
         for (AZ::u32 i = 0; i < size; ++i)
         {
@@ -1044,14 +1054,15 @@ namespace TextureAtlasBuilder
 
             // The Image Processing Gem can produce multiple output files under certain
             // circumstances, but the texture atlas is not expected to produce such output
-            if (outProducts.size() > 1)
+            // There should only be the texture atlas and its abdata file
+            if (outProducts.size() > 2)
             {
                 AZ_Error("AtlasBuilder", false, "Image processing resulted in multiple output files. Texture atlas is expected to produce one output.");
                 response.m_outputProducts.clear();
                 return;
             }
 
-            response.m_outputProducts.push_back(outProducts[0]);
+            response.m_outputProducts.insert(response.m_outputProducts.end(), outProducts.begin(), outProducts.end());
 
             // The texatlasidx file is a data file that indicates where the original parts are inside the atlas, 
             // and this would usually imply that it refers to its dds file in some way or needs it to function.

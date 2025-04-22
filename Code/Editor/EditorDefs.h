@@ -115,7 +115,8 @@
 // Utility classes.
 #include "Util/EditorUtils.h"
 #include "Util/FileEnum.h"
-#include "Util/Math.h"
+#include <Editor/Util/EditorUtils.h>
+#include <CryCommon/Cry_GeoIntersect.h>
 #include "Util/AffineParts.h"
 
 // Xml support.
@@ -123,9 +124,7 @@
 #include "Util/XmlTemplate.h"
 
 // Utility classes.
-#include "Util/bitarray.h"
 #include "Util/RefCountBase.h"
-#include "Util/TRefCountBase.h"
 #include "Util/MemoryBlock.h"
 #include "Util/PathUtil.h"
 
@@ -168,18 +167,3 @@
 #ifdef LoadCursor
 #undef LoadCursor
 #endif
-
-
-#ifdef _DEBUG
-#if !defined(AZ_PLATFORM_LINUX)
-#ifdef assert
-#undef assert
-#if defined(USE_AZ_ASSERT)
-#define assert(condition) AZ_Assert(condition, "")
-#else
-#define assert CRY_ASSERT
-#endif
-#endif // !defined(AZ_PLATFORM_LINUX)
-#endif
-#endif
-

@@ -8,7 +8,7 @@
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
-        NAME GraphModel.Editor.Static STATIC
+        NAME ${gem_name}.Editor.Static STATIC
         NAMESPACE Gem
         FILES_CMAKE
             graphmodel_editor_static_files.cmake
@@ -28,7 +28,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::GraphCanvasWidgets
     )
     ly_add_target(
-        NAME GraphModel.Editor GEM_MODULE
+        NAME ${gem_name}.Editor GEM_MODULE
 
         NAMESPACE Gem
         FILES_CMAKE
@@ -45,14 +45,23 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AzFramework
                 AZ::AzToolsFramework
                 Gem::GraphCanvasWidgets
-                Gem::GraphModel.Editor.Static
+                Gem::${gem_name}.Editor.Static
         RUNTIME_DEPENDENCIES
             Gem::GraphCanvas.Editor
     )
 
-    # Load the "Gem::GraphModel" module in Builders and Tools
-    ly_create_alias(NAME GraphModel.Builders NAMESPACE Gem TARGETS Gem::GraphModel.Editor)
-    ly_create_alias(NAME GraphModel.Tools    NAMESPACE Gem TARGETS Gem::GraphModel.Editor)
+    # Inject the gem name into the Module source file
+    ly_add_source_properties(
+        SOURCES
+            Source/GraphModelModule.cpp
+        PROPERTY COMPILE_DEFINITIONS
+            VALUES
+                O3DE_GEM_NAME=${gem_name}
+                O3DE_GEM_VERSION=${gem_version})
+
+    # Load the "Gem::${gem_name}" module in Builders and Tools
+    ly_create_alias(NAME ${gem_name}.Builders NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
+    ly_create_alias(NAME ${gem_name}.Tools    NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
 
 endif()
 
@@ -62,7 +71,7 @@ endif()
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     if(PAL_TRAIT_BUILD_HOST_TOOLS)
         ly_add_target(
-            NAME GraphModel.Editor.Tests MODULE
+            NAME ${gem_name}.Editor.Tests MODULE
             NAMESPACE Gem
             FILES_CMAKE
                 graphmodel_tests_editor_files.cmake
@@ -80,10 +89,11 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     AZ::AzFramework
                     AZ::AzToolsFramework
                     Gem::GraphCanvasWidgets
-                    Gem::GraphModel.Editor.Static
+                    Gem::${gem_name}.Editor.Static
         )
         ly_add_googletest(
-            NAME Gem::GraphModel.Editor.Tests
+            NAME Gem::${gem_name}.Editor.Tests
+            LABELS REQUIRES_tiaf
         )
     endif()
 endif()

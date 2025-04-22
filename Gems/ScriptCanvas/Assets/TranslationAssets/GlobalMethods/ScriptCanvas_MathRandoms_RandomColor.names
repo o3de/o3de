@@ -1,0 +1,44 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_MathRandoms_RandomColor",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "Random Color",
+                "category": "Math/Random"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_MathRandoms_RandomColor",
+                    "details": {
+                        "name": "Random Color",
+                        "tooltip": "Returns a random color [Min, Max]."
+                    },
+                    "params": [
+                        {
+                            "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}",
+                            "details": {
+                                "name": "Min Value"
+                            }
+                        },
+                        {
+                            "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}",
+                            "details": {
+                                "name": "Max Value"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}",
+                            "details": {
+                                "name": "Color"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

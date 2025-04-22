@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScriptCanvas Include="Source/Nodes/Nodeables/GatherEntitiesByComponentAabb.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Class Name="GatherEntitiesByComponentAabb"
+           QualifiedName="ScriptCanvasMultiplayer::GatherEntitiesByComponentAabb"
+           PreferredClassName="Gather Entities by Component AABB"
+           Category="Multiplayer"
+           Description="Gathers entites that have the provided component type using an axis-aligned bounding box. Use a For-Each node to iterate the results.">
+
+        <Input Name="In" DisplayGroup="In" Description="Parameters controlling the entity gather">
+            <Parameter Name="ComponentId" Type="AZ::Uuid" Description="The typeId of the components to look for."/>
+            <Parameter Name="Minimum" Type="AZ::Vector3" Description="The minimum point of the AABB used to gather."/>
+            <Parameter Name="Maximum" Type="AZ::Vector3" Description="The maximum point of the AABB used to gather."/>
+            <Return Name="Entities" Type="AZStd::vector&lt;AZ::EntityId&gt;" Shared="true"/>
+        </Input>
+    </Class>
+</ScriptCanvas>

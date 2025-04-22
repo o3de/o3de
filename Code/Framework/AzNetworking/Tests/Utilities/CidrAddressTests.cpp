@@ -13,18 +13,8 @@
 namespace UnitTest
 {
     class CidrAddressTests
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
-    public:
-        void SetUp() override
-        {
-            AllocatorsFixture::SetUp();
-        }
-
-        void TearDown() override
-        {
-            AllocatorsFixture::TearDown();
-        }
     };
 
     static const AzNetworking::IpAddress testIp1 = AzNetworking::IpAddress(127, 0, 0, 1, 0);

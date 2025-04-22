@@ -8,37 +8,46 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 class Tests:
     creation_undo = (
         "UNDO Entity creation success",
-        "UNDO Entity creation failed")
+        "P0: UNDO Entity creation failed")
     creation_redo = (
         "REDO Entity creation success",
-        "REDO Entity creation failed")
+        "P0: REDO Entity creation failed")
     occlusion_culling_plane_entity_creation = (
         "Occlusion Culling Plane Entity successfully created",
-        "Occlusion Culling Plane Entity failed to be created")
+        "P0: Occlusion Culling Plane Entity failed to be created")
     occlusion_culling_plane_component_added = (
         "Entity has a Occlusion Culling Plane component",
-        "Entity failed to find Occlusion Culling Plane component")
+        "P0: Entity failed to find Occlusion Culling Plane component")
     enter_game_mode = (
         "Entered game mode",
-        "Failed to enter game mode")
+        "P0: Failed to enter game mode")
     exit_game_mode = (
         "Exited game mode",
-        "Couldn't exit game mode")
+        "P0: Couldn't exit game mode")
     is_visible = (
         "Entity is visible",
-        "Entity was not visible")
+        "P0: Entity was not visible")
     is_hidden = (
         "Entity is hidden",
-        "Entity was not hidden")
+        "P0: Entity was not hidden")
     entity_deleted = (
         "Entity deleted",
-        "Entity was not deleted")
+        "P0: Entity was not deleted")
     deletion_undo = (
         "UNDO deletion success",
-        "UNDO deletion failed")
+        "P0: UNDO deletion failed")
     deletion_redo = (
         "REDO deletion success",
-        "REDO deletion failed")
+        "P0: REDO deletion failed")
+    show_visualization = (
+        "Show Visualization property set",
+        "P1: Show Visualization property failed to be set correctly")
+    transparent_visualization = (
+        "Transparent Visualization property set",
+        "P1: Transparent Visualization property failed to be set correctly")
+    scale = (
+        "Occlusion Culling Plane entity scaled as expected",
+        "P1: Occlusion Culling Plane entity failed to scale as expected")
 
 
 def AtomEditorComponents_OcclusionCullingPlane_AddedToEntity():
@@ -59,13 +68,16 @@ def AtomEditorComponents_OcclusionCullingPlane_AddedToEntity():
     2) Add a Occlusion Culling Plane component to Occlusion Culling Plane entity.
     3) UNDO the entity creation and component addition.
     4) REDO the entity creation and component addition.
-    5) Enter/Exit game mode.
-    6) Test IsHidden.
-    7) Test IsVisible.
-    8) Delete Occlusion Culling Plane entity.
-    9) UNDO deletion.
-    10) REDO deletion.
-    11) Look for errors.
+    5) Toggle Show Visualization
+    6) Toggle Transparent Visualization
+    7) Set local uniform scale this is how the Occlusion Culling Plane is sized for use
+    8) Enter/Exit game mode.
+    9) Test IsHidden.
+    10) Test IsVisible.
+    11) Delete Occlusion Culling Plane entity.
+    12) UNDO deletion.
+    13) REDO deletion.
+    14) Look for errors.
 
     :return: None
     """
@@ -80,7 +92,7 @@ def AtomEditorComponents_OcclusionCullingPlane_AddedToEntity():
         # Test setup begins.
         # Setup: Wait for Editor idle loop before executing Python hydra scripts then open "Base" level.
         TestHelper.init_idle()
-        TestHelper.open_level("", "Base")
+        TestHelper.open_level("Graphics", "base_empty")
 
         # Test steps begin.
         # 1. Create a occlusion culling plane entity with no components.
@@ -120,33 +132,75 @@ def AtomEditorComponents_OcclusionCullingPlane_AddedToEntity():
         general.idle_wait_frames(1)
         Report.result(Tests.creation_redo, occlusion_culling_plane_entity.exists())
 
-        # 5. Enter/Exit game mode.
+        # 5. Toggle Show Visualization
+        # Set Show Visualization to False
+        occlusion_culling_plane_component.set_component_property_value(
+            AtomComponentProperties.occlusion_culling_plane('Show Visualization'), False)
+        Report.result(
+            Tests.show_visualization,
+            occlusion_culling_plane_component.get_component_property_value(
+                AtomComponentProperties.occlusion_culling_plane('Show Visualization')) is False)
+
+        # Set Show Visualization to True
+        occlusion_culling_plane_component.set_component_property_value(
+            AtomComponentProperties.occlusion_culling_plane('Show Visualization'), True)
+        Report.result(
+            Tests.show_visualization,
+            occlusion_culling_plane_component.get_component_property_value(
+                AtomComponentProperties.occlusion_culling_plane('Show Visualization')) is True)
+
+        # 6. Toggle Transparent Visualization
+        # Set Transparent Visualization to True
+        occlusion_culling_plane_component.set_component_property_value(
+            AtomComponentProperties.occlusion_culling_plane('Transparent Visualization'), True)
+        Report.result(
+            Tests.transparent_visualization,
+            occlusion_culling_plane_component.get_component_property_value(
+                AtomComponentProperties.occlusion_culling_plane('Transparent Visualization')) is True)
+
+        # Set Transparent Visualization to False
+        occlusion_culling_plane_component.set_component_property_value(
+            AtomComponentProperties.occlusion_culling_plane('Transparent Visualization'), False)
+        Report.result(
+            Tests.transparent_visualization,
+            occlusion_culling_plane_component.get_component_property_value(
+                AtomComponentProperties.occlusion_culling_plane('Transparent Visualization')) is False)
+
+        # 7. Set local uniform scale this is how the Occlusion Culling Plane is sized for use
+        occlusion_culling_plane_entity.set_local_uniform_scale(5.0)
+        Report.result(
+            Tests.scale,
+            occlusion_culling_plane_entity.get_local_uniform_scale() == 5.0)
+
+        # 8. Enter/Exit game mode.
         TestHelper.enter_game_mode(Tests.enter_game_mode)
         general.idle_wait_frames(1)
         TestHelper.exit_game_mode(Tests.exit_game_mode)
 
-        # 6. Test IsHidden.
+        # 9. Test IsHidden.
         occlusion_culling_plane_entity.set_visibility_state(False)
         Report.result(Tests.is_hidden, occlusion_culling_plane_entity.is_hidden() is True)
 
-        # 7. Test IsVisible.
+        # 10. Test IsVisible.
         occlusion_culling_plane_entity.set_visibility_state(True)
         general.idle_wait_frames(1)
         Report.result(Tests.is_visible, occlusion_culling_plane_entity.is_visible() is True)
 
-        # 8. Delete occlusion_culling_plane entity.
+        # 11. Delete occlusion_culling_plane entity.
         occlusion_culling_plane_entity.delete()
         Report.result(Tests.entity_deleted, not occlusion_culling_plane_entity.exists())
 
-        # 9. UNDO deletion.
+        # 12. UNDO deletion.
         general.undo()
+        general.idle_wait_frames(1)
         Report.result(Tests.deletion_undo, occlusion_culling_plane_entity.exists())
 
-        # 10. REDO deletion.
+        # 13. REDO deletion.
         general.redo()
+        general.idle_wait_frames(1)
         Report.result(Tests.deletion_redo, not occlusion_culling_plane_entity.exists())
 
-        # 11. Look for errors or asserts.
+        # 14. Look for errors or asserts.
         TestHelper.wait_for_condition(lambda: error_tracer.has_errors or error_tracer.has_asserts, 1.0)
         for error_info in error_tracer.errors:
             Report.info(f"Error: {error_info.filename} {error_info.function} | {error_info.message}")

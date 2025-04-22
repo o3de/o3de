@@ -13,6 +13,7 @@
 #include <Integration/Components/ActorComponent.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
+#include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <Atom/Feature/CoreLights/DirectionalLightFeatureProcessorInterface.h>
 #include <Atom/Feature/DisplayMapper/DisplayMapperFeatureProcessorInterface.h>
@@ -55,21 +56,41 @@ namespace EMStudio
         m_frameworkScene = createSceneOutcome.TakeValue();
         m_frameworkScene->SetSubsystem<AzFramework::EntityContext::SceneStorageType>(m_entityContext.get());
 
-        // Create and register a scene with all available feature processors
+        // Create and register a scene with feature processors defined in the viewport settings
         AZ::RPI::SceneDescriptor sceneDesc;
         sceneDesc.m_nameId = AZ::Name("AnimViewport");
+        auto settingsRegistry = AZ::SettingsRegistry::Get();
+        const char* viewportSettingPath = "/O3DE/Editor/Viewport/Animation/Scene";
+        bool sceneDescLoaded = settingsRegistry->GetObject(sceneDesc, viewportSettingPath);
         m_scene = AZ::RPI::Scene::CreateScene(sceneDesc);
-        m_scene->EnableAllFeatureProcessors();
+
+        if (!sceneDescLoaded)
+        {
+            AZ_Warning("AnimViewportRenderer", false, "Settings registry is missing the scene settings for this viewport, so all feature processors will be enabled. "
+                        "To enable only a minimal set, add the specific list of feature processors with a registry path of '%s'.", viewportSettingPath);
+            m_scene->EnableAllFeatureProcessors();
+        }
 
         // Link our RPI::Scene to the AzFramework::Scene
         m_frameworkScene->SetSubsystem(m_scene);
 
-        // Create a render pipeline from the specified asset for the window context and add the pipeline to the scene
-        AZStd::string defaultPipelineAssetPath = "passes/MainRenderPipeline.azasset";
-        AZ::Data::Asset<AZ::RPI::AnyAsset> pipelineAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(
-            defaultPipelineAssetPath.c_str(), AZ::RPI::AssetUtils::TraceLevel::Error);
-        m_renderPipeline = AZ::RPI::RenderPipeline::CreateRenderPipelineForWindow(pipelineAsset, *m_windowContext.get());
-        pipelineAsset.Release();
+        AZStd::string pipelineAssetPath = "passes/MainRenderPipeline.azasset";
+        AZ::RPI::XRRenderingInterface* xrSystem = AZ::RPI::RPISystemInterface::Get()->GetXRSystem();
+        if (xrSystem)
+        {
+            // OpenXr uses low end render pipeline
+            pipelineAssetPath = "passes/LowEndRenderPipeline.azasset";
+        }
+
+        AZStd::optional<AZ::RPI::RenderPipelineDescriptor> renderPipelineDesc =
+            AZ::RPI::GetRenderPipelineDescriptorFromAsset(pipelineAssetPath.c_str(), AZStd::string::format("_%i", viewportContext->GetId()));
+        AZ_Assert(renderPipelineDesc.has_value(), "Invalid render pipeline descriptor from asset %s", pipelineAssetPath.c_str());
+
+        const AZ::RHI::MultisampleState multiSampleState = AZ::RPI::RPISystemInterface::Get()->GetApplicationMultisampleState();
+        renderPipelineDesc.value().m_renderSettings.m_multisampleState = multiSampleState;
+        AZ_Printf("AnimViewportRenderer", "Animation viewport renderer starting with multi sample %d", multiSampleState.m_samples);
+        
+        m_renderPipeline = AZ::RPI::RenderPipeline::CreateRenderPipelineForWindow(renderPipelineDesc.value(), *m_windowContext.get());
         m_scene->AddRenderPipeline(m_renderPipeline);
         m_renderPipeline->SetDefaultView(viewportContext->GetDefaultView());
 
@@ -173,6 +194,14 @@ namespace EMStudio
         ResetEnvironment();
     }
 
+    void AnimViewportRenderer::MoveActorEntitiesToOrigin()
+    {
+        for (AZ::Entity* entity : m_actorEntities)
+        {
+            AZ::TransformBus::Event(entity->GetId(), &AZ::TransformBus::Events::SetWorldTM, AZ::Transform::CreateIdentity());
+        }
+    }
+
     AZ::Vector3 AnimViewportRenderer::GetCharacterCenter() const
     {
         AZ::Vector3 result = AZ::Vector3::CreateZero();
@@ -191,7 +220,7 @@ namespace EMStudio
         return result;
     }
 
-    void AnimViewportRenderer::UpdateActorRenderFlag(EMotionFX::ActorRenderFlagBitset renderFlags)
+    void AnimViewportRenderer::UpdateActorRenderFlag(EMotionFX::ActorRenderFlags renderFlags)
     {
         for (AZ::Entity* entity : m_actorEntities)
         {
@@ -210,6 +239,33 @@ namespace EMStudio
         return m_frameworkScene;
     }
 
+    AZ::EntityId AnimViewportRenderer::GetEntityId() const
+    {
+        if (m_actorEntities.empty())
+        {
+            return AZ::EntityId();
+        }
+        return m_actorEntities[0]->GetId();
+    }
+
+    AzFramework::EntityContextId AnimViewportRenderer::GetEntityContextId() const
+    {
+        return m_entityContext->GetContextId();
+    }
+
+    void AnimViewportRenderer::UpdateGroundplane()
+    {
+        AZ::Vector3 groundPos;
+        AZ::TransformBus::EventResult(groundPos, m_groundEntity->GetId(), &AZ::TransformBus::Events::GetWorldTranslation);
+
+        const AZ::Vector3 characterPos = GetCharacterCenter();
+        const float tileOffsetX = AZStd::fmod(characterPos.GetX(), TileSize);
+        const float tileOffsetY = AZStd::fmod(characterPos.GetY(), TileSize);
+        const AZ::Vector3 newGroundPos(characterPos.GetX() - tileOffsetX, characterPos.GetY() - tileOffsetY, groundPos.GetZ());
+
+        AZ::TransformBus::Event(m_groundEntity->GetId(), &AZ::TransformBus::Events::SetWorldTranslation, newGroundPos);
+    }
+
     void AnimViewportRenderer::ResetEnvironment()
     {
         // Reset environment
@@ -221,13 +277,19 @@ namespace EMStudio
         skyBoxFeatureProcessorInterface->SetCubemapRotationMatrix(rotationMatrix);
 
         // Reset ground entity
-        AZ::Transform groundTransform = AZ::Transform::CreateIdentity();
-        AZ::TransformBus::Event(m_groundEntity->GetId(), &AZ::TransformBus::Events::SetLocalTM, groundTransform);
+        AZ::Transform identityTransform = AZ::Transform::CreateIdentity();
+        AZ::TransformBus::Event(m_groundEntity->GetId(), &AZ::TransformBus::Events::SetLocalTM, identityTransform);
 
         auto modelAsset = AZ::RPI::AssetUtils::GetAssetByProductPath<AZ::RPI::ModelAsset>(
-            "objects/groudplane/groundplane_512x512m.azmodel", AZ::RPI::AssetUtils::TraceLevel::Assert);
+            "objects/groudplane/groundplane_512x512m.fbx.azmodel", AZ::RPI::AssetUtils::TraceLevel::Assert);
         AZ::Render::MeshComponentRequestBus::Event(
             m_groundEntity->GetId(), &AZ::Render::MeshComponentRequestBus::Events::SetModelAsset, modelAsset);
+
+        // Reset actor position
+        for (AZ::Entity* entity : m_actorEntities)
+        {
+            AZ::TransformBus::Event(entity->GetId(), &AZ::TransformBus::Events::SetLocalTM, identityTransform);
+        }
     }
 
     void AnimViewportRenderer::ReinitActorEntities()
@@ -332,6 +394,16 @@ namespace EMStudio
 
         preset->ApplyLightingPreset(
             iblFeatureProcessor, m_skyboxFeatureProcessor, exposureControlSettingInterface, m_directionalLightFeatureProcessor,
-            cameraConfig, m_lightHandles, nullptr, AZ::RPI::MaterialPropertyIndex::Null, false);
+            cameraConfig, m_lightHandles, false);
+    }
+
+    AZ::RPI::SceneId AnimViewportRenderer::GetRenderSceneId() const
+    {
+        return m_scene->GetId();
+    }
+
+    const AZStd::vector<AZ::Entity*>& AnimViewportRenderer::GetActorEntities() const
+    {
+        return m_actorEntities;
     }
 } // namespace EMStudio

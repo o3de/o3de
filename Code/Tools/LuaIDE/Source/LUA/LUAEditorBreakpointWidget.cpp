@@ -27,7 +27,7 @@ namespace LUAEditor
             : public QTextBlockUserData
         {
         public:
-            AZ_CLASS_ALLOCATOR(OriginalLineNumber, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(OriginalLineNumber, AZ::SystemAllocator);
             OriginalLineNumber(int lineNumber, AZStd::function<void(int)> callback)
                 : m_Callback(callback)
                 , m_LineNumber(lineNumber) {}
@@ -62,16 +62,13 @@ namespace LUAEditor
     {
         ClearBreakpoints();
         m_textEdit = nullptr;
-        OnToggleBreakpoint.clear();
-        OnBreakpointLineMoved.clear();
-        OnBreakpointLineDeleted.clear();
     }
 
     void LUAEditorBreakpointWidget::paintEvent([[maybe_unused]] QPaintEvent* paintEvent)
     {
         QPainter p(this);
 
-        auto colors = AZ::UserSettings::CreateFind<SyntaxStyleSettings>(AZ_CRC("LUA Editor Text Settings", 0xb6e15565), AZ::UserSettings::CT_GLOBAL);
+        auto colors = AZ::UserSettings::CreateFind<SyntaxStyleSettings>(AZ_CRC_CE("LUA Editor Text Settings"), AZ::UserSettings::CT_GLOBAL);
 
         auto oldPen = p.pen();
         auto oldBrush = p.brush();
@@ -98,7 +95,7 @@ namespace LUAEditor
                 drawRect.setLeft(c_borderSize);
                 drawRect.setRight(c_borderSize + m_numDigits * avgCharWidth);
 
-                p.setPen(colors->GetTextColor());
+                p.setPen(colors->GetLineNumberColor());
                 p.drawText(drawRect.toRect(), Qt::AlignRight | Qt::AlignBottom, lineNumStr.c_str());
 
                 {
@@ -194,20 +191,17 @@ namespace LUAEditor
 
     void LUAEditorBreakpointWidget::mouseReleaseEvent(QMouseEvent* event)
     {
-        if (OnToggleBreakpoint)
-        {
-            auto mousePos = event->localPos();
-
-            m_textEdit->ForEachVisibleBlock([&](const QTextBlock& block, const QRectF& blockRect)
+        auto mousePos = event->localPos();
+        m_textEdit->ForEachVisibleBlock(
+            [&](const QTextBlock& block, const QRectF& blockRect)
+            {
+                if (mousePos.y() >= blockRect.top() && mousePos.y() <= blockRect.bottom())
                 {
-                    if (mousePos.y() >= blockRect.top() && mousePos.y() <= blockRect.bottom())
-                    {
-                        OnToggleBreakpoint(block.blockNumber() + 1); // offset by one because line number starts from 1
-                    }
-                });
+                    emit toggleBreakpoint(block.blockNumber() + 1); // offset by one because line number starts from 1
+                }
+            });
 
-            event->accept();
-        }
+        event->accept();
     }
 
     void LUAEditorBreakpointWidget::OnBlockCountChange()
@@ -244,11 +238,11 @@ namespace LUAEditor
         }
         for (auto& moves : movedBreakpoints)
         {
-            OnBreakpointLineMoved(moves.first, moves.second);
+            emit breakpointLineMove(moves.first, moves.second);
         }
         for (auto& deletes : m_DeletedBreakpoints)
         {
-            OnBreakpointLineDeleted(deletes);
+            emit breakpointDelete(deletes);
         }
         m_DeletedBreakpoints.clear();
         UpdateSize();

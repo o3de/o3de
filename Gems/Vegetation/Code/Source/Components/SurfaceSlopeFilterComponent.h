@@ -24,7 +24,7 @@ namespace Vegetation
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(SurfaceSlopeFilterConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SurfaceSlopeFilterConfig, AZ::SystemAllocator);
         AZ_RTTI(SurfaceSlopeFilterConfig, "{6CEBAF3A-2A5C-4508-A351-9613E32CF63F}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
         FilterStage m_filterStage = FilterStage::Default;
@@ -33,7 +33,7 @@ namespace Vegetation
         float m_slopeMax = 180.0f;
     };
 
-    static const AZ::Uuid SurfaceSlopeFilterComponentTypeId = "{2938AA64-9B84-4B18-A90F-25798A255B8C}";
+    inline constexpr AZ::TypeId SurfaceSlopeFilterComponentTypeId{ "{2938AA64-9B84-4B18-A90F-25798A255B8C}" };
 
     /**
     * Component implementing VegetationFilterRequestBus that accepts/rejects based on slope

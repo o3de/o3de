@@ -15,8 +15,8 @@
 #include <Vegetation/Descriptor.h>
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <Vegetation/InstanceData.h>
+#include <VegetationProfiler.h>
 #include <SurfaceData/SurfaceDataSystemRequestBus.h>
-#include <AzCore/Debug/Profiler.h>
 
 namespace Vegetation
 {
@@ -27,18 +27,18 @@ namespace Vegetation
             if (classElement.GetVersion() < 1)
             {
                 AZ::Vector3 rangeMin(-0.3f, -0.3f, 0.0f);
-                if (classElement.GetChildData(AZ_CRC("RangeMin", 0xedb80851), rangeMin))
+                if (classElement.GetChildData(AZ_CRC_CE("RangeMin"), rangeMin))
                 {
-                    classElement.RemoveElementByName(AZ_CRC("RangeMin", 0xedb80851));
+                    classElement.RemoveElementByName(AZ_CRC_CE("RangeMin"));
                     classElement.AddElementWithData(context, "RangeMinX", (float)rangeMin.GetX());
                     classElement.AddElementWithData(context, "RangeMinY", (float)rangeMin.GetY());
                     classElement.AddElementWithData(context, "RangeMinZ", (float)rangeMin.GetZ());
                 }
 
                 AZ::Vector3 rangeMax(0.3f, 0.3f, 0.0f);
-                if (classElement.GetChildData(AZ_CRC("RangeMax", 0xd1b53708), rangeMax))
+                if (classElement.GetChildData(AZ_CRC_CE("RangeMax"), rangeMax))
                 {
-                    classElement.RemoveElementByName(AZ_CRC("RangeMax", 0xd1b53708));
+                    classElement.RemoveElementByName(AZ_CRC_CE("RangeMax"));
                     classElement.AddElementWithData(context, "RangeMaxX", (float)rangeMax.GetX());
                     classElement.AddElementWithData(context, "RangeMaxY", (float)rangeMax.GetY());
                     classElement.AddElementWithData(context, "RangeMaxZ", (float)rangeMax.GetZ());
@@ -180,18 +180,18 @@ namespace Vegetation
 
     void PositionModifierComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationModifierService", 0xc551fca6));
-        services.push_back(AZ_CRC("VegetationPositionModifierService", 0xe7d7293e));
+        services.push_back(AZ_CRC_CE("VegetationModifierService"));
+        services.push_back(AZ_CRC_CE("VegetationPositionModifierService"));
     }
 
     void PositionModifierComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationPositionModifierService", 0xe7d7293e));
+        services.push_back(AZ_CRC_CE("VegetationPositionModifierService"));
     }
 
     void PositionModifierComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationAreaService", 0x6a859504));
+        services.push_back(AZ_CRC_CE("VegetationAreaService"));
     }
 
     void PositionModifierComponent::Reflect(AZ::ReflectContext* context)
@@ -281,7 +281,7 @@ namespace Vegetation
 
     void PositionModifierComponent::Execute(InstanceData& instanceData) const
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        VEGETATION_PROFILE_FUNCTION_VERBOSE
 
         const GradientSignal::GradientSampleParams sampleParams(instanceData.m_position);
         float factorX = m_configuration.m_gradientSamplerX.GetValue(sampleParams);
@@ -306,31 +306,42 @@ namespace Vegetation
             m_surfaceTagsToSnapToCombined.clear();
             m_surfaceTagsToSnapToCombined.reserve(
                 m_configuration.m_surfaceTagsToSnapTo.size() +
-                instanceData.m_masks.size());
+                instanceData.m_masks.GetSize());
 
             m_surfaceTagsToSnapToCombined.insert(m_surfaceTagsToSnapToCombined.end(),
                 m_configuration.m_surfaceTagsToSnapTo.begin(), m_configuration.m_surfaceTagsToSnapTo.end());
 
-            for (const auto& maskPair : instanceData.m_masks)
-            {
-                m_surfaceTagsToSnapToCombined.push_back(maskPair.first);
-            }
-
-            //get the intersection data at the new position
-            m_points.clear();
-            SurfaceData::SurfaceDataSystemRequestBus::Broadcast(&SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePoints, instanceData.m_position, m_surfaceTagsToSnapToCombined, m_points);
-            if (!m_points.empty())
-            {
-                //sort the intersection data by distance from the new position in case there are multiple intersections at different or unrelated heights
-                AZStd::sort(m_points.begin(), m_points.end(), [&instanceData](const SurfaceData::SurfacePoint& a, const SurfaceData::SurfacePoint& b)
+            instanceData.m_masks.EnumerateWeights(
+                [this](AZ::Crc32 surfaceType, [[maybe_unused]] float weight)
                 {
-                    return a.m_position.GetDistanceSq(instanceData.m_position) < b.m_position.GetDistanceSq(instanceData.m_position);
+                    m_surfaceTagsToSnapToCombined.push_back(surfaceType);
+                    return true;
                 });
 
-                instanceData.m_position = m_points[0].m_position;
-                instanceData.m_normal = m_points[0].m_normal;
-                instanceData.m_masks = m_points[0].m_masks;
-            }
+            //get the intersection data at the new position
+            m_points.Clear();
+            AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->GetSurfacePoints(
+                instanceData.m_position, m_surfaceTagsToSnapToCombined, m_points);
+
+            // Get the point with the closest distance from the new position in case there are multiple intersections at different or
+            // unrelated heights
+            float closestPointDistanceSq = AZStd::numeric_limits<float>::max();
+            AZ::Vector3 originalInstanceDataPosition = instanceData.m_position;
+            m_points.EnumeratePoints(
+                [&instanceData, originalInstanceDataPosition, &closestPointDistanceSq](
+                    [[maybe_unused]] size_t inPositionIndex, const AZ::Vector3& position,
+                    const AZ::Vector3& normal, const SurfaceData::SurfaceTagWeights& masks) -> bool
+                {
+                    float distanceSq = position.GetDistanceSq(originalInstanceDataPosition);
+                    if (distanceSq < closestPointDistanceSq)
+                    {
+                        instanceData.m_position = position;
+                        instanceData.m_normal = normal;
+                        instanceData.m_masks = masks;
+                        closestPointDistanceSq = distanceSq;
+                    }
+                    return true;
+                });
         }
 
         instanceData.m_position.SetZ(instanceData.m_position.GetZ() + delta.GetZ());

@@ -19,7 +19,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeMirrorPoseNode, AnimGraphAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeMirrorPoseNode, AnimGraphAllocator)
 
     BlendTreeMirrorPoseNode::BlendTreeMirrorPoseNode()
         : AnimGraphNode()
@@ -208,7 +208,7 @@ namespace EMotionFX
 
         // perform motion extraction on the input node
         AnimGraphNode* inputNode = GetInputNode(INPUTPORT_POSE);
-        inputNode->PerformPostUpdate(animGraphInstance, timePassedInSeconds);
+        PostUpdateIncomingNode(animGraphInstance, inputNode, timePassedInSeconds);
 
         RequestRefDatas(animGraphInstance);
         AnimGraphNodeData* uniqueData = FindOrCreateUniqueNodeData(animGraphInstance);

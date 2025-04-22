@@ -12,6 +12,7 @@
 #include <ActorAsset.h>
 
 #include <Atom/Feature/SkinnedMesh/SkinnedMeshInputBuffers.h>
+#include <AtomLyIntegration/CommonFeatures/SkinnedMesh/SkinnedMeshOverrideBus.h>
 #include <Integration/System/SystemCommon.h>
 #include <Integration/System/SystemComponent.h>
 #include <EMotionFX/Source/ActorInstance.h>
@@ -23,7 +24,6 @@
 #include <EMotionFX/Source/Skeleton.h>
 #include <EMotionFX/Source/Mesh.h>
 #include <EMotionFX/Source/Node.h>
-#include <MCore/Source/AzCoreConversions.h>
 
 #include <Atom/RHI/RHIUtils.h>
 
@@ -38,18 +38,21 @@
 #include <AzCore/Math/Transform.h>
 #include <AzCore/base.h>
 
+#include <numeric>
+
 namespace AZ::Render
 {
     static constexpr uint32_t s_maxActiveWrinkleMasks = 16;
 
-    AZ_CLASS_ALLOCATOR_IMPL(AtomActorInstance, EMotionFX::Integration::EMotionFXAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AtomActorInstance, EMotionFX::Integration::EMotionFXAllocator)
 
     AtomActorInstance::AtomActorInstance(AZ::EntityId entityId,
         const EMotionFX::Integration::EMotionFXPtr<EMotionFX::ActorInstance>& actorInstance,
         const AZ::Data::Asset<EMotionFX::Integration::ActorAsset>& asset,
         [[maybe_unused]] const AZ::Transform& worldTransform,
-        EMotionFX::Integration::SkinningMethod skinningMethod)
-        : RenderActorInstance(asset, actorInstance.get(), entityId)
+        EMotionFX::Integration::SkinningMethod skinningMethod,
+        bool rayTracingEnabled)
+        : m_rayTracingEnabled(rayTracingEnabled), RenderActorInstance(asset, actorInstance.get(), entityId)
     {
         RenderActorInstance::SetSkinningMethod(skinningMethod);
         if (m_entityId.IsValid())
@@ -75,9 +78,10 @@ namespace AZ::Render
     void AtomActorInstance::OnTick([[maybe_unused]] float timeDelta)
     {
         UpdateBounds();
+        m_atomActorDebugDraw->UpdateActorInstance(m_actorInstance, timeDelta);
     }
 
-    void AtomActorInstance::DebugDraw(const EMotionFX::ActorRenderFlagBitset& renderFlags)
+    void AtomActorInstance::DebugDraw(const EMotionFX::ActorRenderFlags& renderFlags)
     {
         m_atomActorDebugDraw->DebugDraw(renderFlags, m_actorInstance);
     }
@@ -103,21 +107,29 @@ namespace AZ::Render
         AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->RefreshEntityLocalBoundsUnion(m_entityId);
     }
 
-    AZ::Aabb AtomActorInstance::GetWorldBounds()
+    AZ::Aabb AtomActorInstance::GetWorldBounds() const
     {
         return m_worldAABB;
     }
 
-    AZ::Aabb AtomActorInstance::GetLocalBounds()
+    AZ::Aabb AtomActorInstance::GetLocalBounds() const
     {
         return m_localAABB;
     }
 
     void AtomActorInstance::SetSkinningMethod(EMotionFX::Integration::SkinningMethod emfxSkinningMethod)
     {
-        RenderActorInstance::SetSkinningMethod(emfxSkinningMethod);
+        // Check if the actor has skinning, otherwise fall back to `NoSkinning` regardless of `emfxSkinningMethod`
+        if (m_actorInstance->GetActor()->GetSkinMetaAsset().Get())
+        {
+            RenderActorInstance::SetSkinningMethod(emfxSkinningMethod);
+            m_boneTransforms = CreateBoneTransformBufferFromActorInstance(m_actorInstance, emfxSkinningMethod);
+        }
+        else
+        {
+            RenderActorInstance::SetSkinningMethod(EMotionFX::Integration::SkinningMethod::None);
+        }
 
-        m_boneTransforms = CreateBoneTransformBufferFromActorInstance(m_actorInstance, emfxSkinningMethod);
         // Release the Atom skinned mesh and acquire a new one to apply the new skinning method
         UnregisterActor();
         RegisterActor();
@@ -131,6 +143,8 @@ namespace AZ::Render
             return SkinningMethod::DualQuaternion;
         case EMotionFX::Integration::SkinningMethod::Linear:
             return SkinningMethod::LinearSkinning;
+        case EMotionFX::Integration::SkinningMethod::None:
+            return SkinningMethod::NoSkinning;
         default:
             AZ_Error("AtomActorInstance", false, "Unsupported skinning method. Defaulting to linear");
         }
@@ -181,7 +195,7 @@ namespace AZ::Render
         AZ_Warning("AtomActorInstance", m_transformInterface, "Unable to attach to a TransformBus handler. This skinned mesh will always be rendered at the origin.");
 
         SkinnedMeshFeatureProcessorNotificationBus::Handler::BusConnect();
-        MaterialReceiverRequestBus::Handler::BusConnect(m_entityId);
+        MaterialConsumerRequestBus::Handler::BusConnect(m_entityId);
         LmbrCentral::SkeletalHierarchyRequestBus::Handler::BusConnect(m_entityId);
 
         Create();
@@ -191,7 +205,7 @@ namespace AZ::Render
     {
         SkinnedMeshOutputStreamNotificationBus::Handler::BusDisconnect();
         LmbrCentral::SkeletalHierarchyRequestBus::Handler::BusDisconnect();
-        MaterialReceiverRequestBus::Handler::BusDisconnect();
+        MaterialConsumerRequestBus::Handler::BusDisconnect();
         SkinnedMeshFeatureProcessorNotificationBus::Handler::BusDisconnect();
 
         Destroy();
@@ -200,38 +214,20 @@ namespace AZ::Render
         m_skinnedMeshFeatureProcessor = nullptr;
     }
 
-    RPI::ModelMaterialSlotMap AtomActorInstance::GetModelMaterialSlots() const
+    MaterialAssignmentLabelMap AtomActorInstance::GetMaterialLabels() const
     {
-        Data::Asset<const RPI::ModelAsset> modelAsset = GetModelAsset();
-        if (modelAsset.IsReady())
-        {
-            return modelAsset->GetMaterialSlots();
-        }
-        else
-        {
-            return {};
-        }
+        return GetMaterialSlotLabelsFromModelAsset(GetModelAsset());
     }
 
     MaterialAssignmentId AtomActorInstance::FindMaterialAssignmentId(
         const MaterialAssignmentLodIndex lod, const AZStd::string& label) const
     {
-        if (m_skinnedMeshInstance && m_skinnedMeshInstance->m_model)
-        {
-            return FindMaterialAssignmentIdInModel(m_skinnedMeshInstance->m_model, lod, label);
-        }
-
-        return MaterialAssignmentId();
+        return GetMaterialSlotIdFromModelAsset(GetModelAsset(), lod, label);
     }
 
-    MaterialAssignmentMap AtomActorInstance::GetMaterialAssignments() const
+    MaterialAssignmentMap AtomActorInstance::GetDefaultMaterialMap() const
     {
-        if (m_skinnedMeshInstance && m_skinnedMeshInstance->m_model)
-        {
-            return GetMaterialAssignmentsFromModel(m_skinnedMeshInstance->m_model);
-        }
-
-        return MaterialAssignmentMap{};
+        return GetDefaultMaterialMapFromModelAsset(GetModelAsset());
     }
 
     AZStd::unordered_set<AZ::Name> AtomActorInstance::GetModelUvNames() const
@@ -247,19 +243,21 @@ namespace AZ::Render
     {
         // The mesh transform is used to determine where the actor instance is actually rendered
         m_meshFeatureProcessor->SetTransform(*m_meshHandle, world); // handle validity is checked internally.
-
-        if (m_skinnedMeshRenderProxy.IsValid())
-        {
-            // The skinned mesh transform is used to determine which Lod needs to be skinned
-            m_skinnedMeshRenderProxy->SetTransform(world);
-        }
     }
 
     void AtomActorInstance::OnMaterialsUpdated(const MaterialAssignmentMap& materials)
     {
         if (m_meshFeatureProcessor)
         {
-            m_meshFeatureProcessor->SetMaterialAssignmentMap(*m_meshHandle, materials);
+            m_meshFeatureProcessor->SetCustomMaterials(*m_meshHandle, ConvertToCustomMaterialMap(materials));
+        }
+    }
+
+    void AtomActorInstance::OnMaterialPropertiesUpdated([[maybe_unused]] const MaterialAssignmentMap& materials)
+    {
+        if (m_meshFeatureProcessor)
+        {
+            m_meshFeatureProcessor->SetRayTracingDirty(*m_meshHandle);
         }
     }
 
@@ -379,6 +377,42 @@ namespace AZ::Render
         return IsVisible();
     }
 
+    void AtomActorInstance::SetRayTracingEnabled(bool enabled)
+    {
+        if (m_meshHandle->IsValid() && m_meshFeatureProcessor)
+        {
+            m_rayTracingEnabled = enabled;
+            m_meshFeatureProcessor->SetRayTracingEnabled(*m_meshHandle, m_rayTracingEnabled);
+        }
+    }
+
+    bool AtomActorInstance::GetRayTracingEnabled() const
+    {
+        if (m_meshHandle->IsValid() && m_meshFeatureProcessor)
+        {
+            return m_meshFeatureProcessor->GetRayTracingEnabled(*m_meshHandle);
+        }
+        return false;
+    }
+
+    void AtomActorInstance::SetExcludeFromReflectionCubeMaps(bool enabled)
+    {
+        if (m_meshHandle->IsValid() && m_meshFeatureProcessor)
+        {
+            m_meshFeatureProcessor->SetExcludeFromReflectionCubeMaps(*m_meshHandle, enabled);
+        }
+    }
+
+    bool AtomActorInstance::GetExcludeFromReflectionCubeMaps() const
+    {
+        if (m_meshHandle->IsValid() && m_meshFeatureProcessor)
+        {
+            return m_meshFeatureProcessor->GetExcludeFromReflectionCubeMaps(*m_meshHandle);
+        }
+
+        return false;
+    }
+
     AZ::u32 AtomActorInstance::GetJointCount()
     {
         return aznumeric_caster(m_actorInstance->GetActor()->GetSkeleton()->GetNumNodes());
@@ -419,7 +453,7 @@ namespace AZ::Render
         const EMotionFX::TransformData* transforms = m_actorInstance->GetTransformData();
         if (transforms && jointIndex < transforms->GetNumTransforms())
         {
-            return MCore::EmfxTransformToAzTransform(transforms->GetCurrentPose()->GetModelSpaceTransform(jointIndex));
+            return transforms->GetCurrentPose()->GetModelSpaceTransform(jointIndex).ToAZTransform();
         }
 
         return AZ::Transform::CreateIdentity();
@@ -432,31 +466,37 @@ namespace AZ::Render
         AZ_Warning("AtomActorInstance", m_skinnedMeshInputBuffers, "Failed to create SkinnedMeshInputBuffers from Actor. It is likely that this actor doesn't have any meshes");
         if (m_skinnedMeshInputBuffers)
         {
-            m_boneTransforms = CreateBoneTransformBufferFromActorInstance(m_actorInstance, GetSkinningMethod());
-            AZ_Error("AtomActorInstance", m_boneTransforms || AZ::RHI::IsNullRenderer(), "Failed to create bone transform buffer.");
+            EMotionFX::Integration::SkinningMethod skinningMethod = GetSkinningMethod();
+            
+            // When skinning mode is none or there's no skin asset, skip creating bone transform buffer
+            if (skinningMethod != EMotionFX::Integration::SkinningMethod::None && m_actorAsset->GetActor()->GetSkinMetaAsset().Get())
+            {
+                m_boneTransforms = CreateBoneTransformBufferFromActorInstance(m_actorInstance, skinningMethod);
+                AZ_Error("AtomActorInstance", m_boneTransforms || AZ::RHI::IsNullRHI(), "Failed to create bone transform buffer.");
+            }
+            else if (!m_actorAsset->GetActor()->GetSkinMetaAsset().Get())
+            {
+                // Fallback to no skinning if skinning metaasset doesn't exist
+                RenderActorInstance::SetSkinningMethod(EMotionFX::Integration::SkinningMethod::None);
+            }
 
             // If the instance is created before the default materials on the model have finished loading, the mesh feature processor will ignore it.
             // Wait for them all to be ready before creating the instance
-            size_t lodCount = m_skinnedMeshInputBuffers->GetLodCount();
-            for (size_t lodIndex = 0; lodIndex < lodCount; ++lodIndex)
+            uint32_t lodCount = m_skinnedMeshInputBuffers->GetLodCount();
+            for (uint32_t lodIndex = 0; lodIndex < lodCount; ++lodIndex)
             {
                 const SkinnedMeshInputLod& inputLod = m_skinnedMeshInputBuffers->GetLod(lodIndex);
-                const AZStd::vector< SkinnedSubMeshProperties>& subMeshProperties = inputLod.GetSubMeshProperties();
-                for (const SkinnedSubMeshProperties& submesh : subMeshProperties)
+                Data::Asset<RPI::ModelLodAsset> modelLodAsset = inputLod.GetModelLodAsset();
+                for (const RPI::ModelLodAsset::Mesh& submesh : modelLodAsset->GetMeshes())
                 {
-                    Data::Asset<RPI::MaterialAsset> materialAsset = submesh.m_materialSlot.m_defaultMaterialAsset;
-                    AZ_Error("AtomActorInstance", materialAsset, "Actor does not have a valid default material in lod %d", lodIndex);
-
-                    if (materialAsset)
+                    Data::Asset<RPI::MaterialAsset> defaultSubmeshMaterial = m_skinnedMeshInputBuffers->GetModelAsset()->FindMaterialSlot(submesh.GetMaterialSlotId()).m_defaultMaterialAsset;
+                    if (defaultSubmeshMaterial && !defaultSubmeshMaterial.IsReady())
                     {
-                        if (!materialAsset->IsReady())
-                        {
-                            // Start listening for the material's OnAssetReady event.
-                            // AtomActorInstance::Create is called on the main thread, so there should be no need to synchronize with the OnAssetReady event handler
-                            // since those events will also come from the main thread
-                            m_waitForMaterialLoadIds.insert(materialAsset->GetId());
-                            Data::AssetBus::MultiHandler::BusConnect(materialAsset->GetId());
-                        }
+                        // Start listening for the material's OnAssetReady event.
+                        // AtomActorInstance::Create is called on the main thread, so there should be no need to synchronize with the OnAssetReady event handler
+                        // since those events will also come from the main thread
+                        m_waitForMaterialLoadIds.insert(defaultSubmeshMaterial.GetId());
+                        Data::AssetBus::MultiHandler::BusConnect(defaultSubmeshMaterial.GetId());
                     }
                 }
             }
@@ -486,7 +526,10 @@ namespace AZ::Render
             UnregisterActor();
             m_skinnedMeshInputBuffers.reset();
             m_skinnedMeshInstance.reset();
-            m_boneTransforms.reset();
+            if (m_boneTransforms)
+            {
+                m_boneTransforms.reset();
+            }
         }
     }
 
@@ -506,12 +549,12 @@ namespace AZ::Render
 
     void AtomActorInstance::OnUpdateSkinningMatrices()
     {
-        if (m_skinnedMeshRenderProxy.IsValid())
+        if (m_skinnedMeshHandle.IsValid())
         {
             AZStd::vector<float> boneTransforms;
             GetBoneTransformsFromActorInstance(m_actorInstance, boneTransforms, GetSkinningMethod());
 
-            m_skinnedMeshRenderProxy->SetSkinningMatrices(boneTransforms);
+            m_skinnedMeshFeatureProcessor->SetSkinningMatrices(m_skinnedMeshHandle, boneTransforms);
 
             // Update the morph weights for every lod. This does not mean they will all be dispatched, but they will all have up to date weights
             // TODO: once culling is hooked up such that EMotionFX and Atom are always in sync about which lod to update, only update the currently visible lods [ATOM-13564]
@@ -542,7 +585,7 @@ namespace AZ::Render
                         EMotionFX::MorphSetupInstance::MorphTarget* morphTargetSetupInstance = m_actorInstance->GetMorphSetupInstance()->FindMorphTargetByID(morphTargetStandard->GetID());
 
                         // Each morph target is split into several deform datas, all of which share the same weight but have unique min/max delta values
-                        // and thus correspond with unique dispatches in the morph target pass
+                        // and impact a unique mesh and thus correspond with unique dispatches in the morph target pass
                         for (size_t deformDataIndex = 0; deformDataIndex < morphTargetStandard->GetNumDeformDatas(); ++deformDataIndex)
                         {
                             // Morph targets that don't deform any vertices (e.g. joint-based morph targets) are not registered in the render proxy. Skip adding their weights.
@@ -587,7 +630,7 @@ namespace AZ::Render
                         swizzle_unique(m_wrinkleMaskWeights, remapped);
                     }
 
-                    m_skinnedMeshRenderProxy->SetMorphTargetWeights(lodIndex, m_morphTargetWeights);
+                    m_skinnedMeshFeatureProcessor->SetMorphTargetWeights(m_skinnedMeshHandle, lodIndex, m_morphTargetWeights);
 
                     // Until EMotionFX and Atom lods are synchronized [ATOM-13564] we don't know which EMotionFX lod to pull the weights from
                     // Until that is fixed, just use lod 0 [ATOM-15251]
@@ -597,13 +640,20 @@ namespace AZ::Render
                     }
                 }
             }
+            UpdateLightingChannelMask();
         }
     }
 
     void AtomActorInstance::RegisterActor()
     {
+        if (!m_skinnedMeshInstance)
+        {
+            AZ_Error("AtomActorInstance", m_skinnedMeshInstance, "SkinnedMeshInstance must be created before register this actor.");
+            return;
+        }
+
         MaterialAssignmentMap materials;
-        MaterialComponentRequestBus::EventResult(materials, m_entityId, &MaterialComponentRequests::GetMaterialOverrides);
+        MaterialComponentRequestBus::EventResult(materials, m_entityId, &MaterialComponentRequests::GetMaterialMap);
         CreateRenderProxy(materials);
 
         InitWrinkleMasks();
@@ -611,22 +661,26 @@ namespace AZ::Render
         TransformNotificationBus::Handler::BusConnect(m_entityId);
         MaterialComponentNotificationBus::Handler::BusConnect(m_entityId);
         MeshComponentRequestBus::Handler::BusConnect(m_entityId);
+        SkinnedMeshOverrideRequestBus::Handler::BusConnect(m_entityId);
+        MeshHandleStateRequestBus::Handler::BusConnect(m_entityId);
 
-        const Data::Instance<RPI::Model> model = m_meshFeatureProcessor->GetModel(*m_meshHandle);
-        MeshComponentNotificationBus::Event(m_entityId, &MeshComponentNotificationBus::Events::OnModelReady, GetModelAsset(), model);
+        m_meshFeatureProcessor->SetVisible(*m_meshHandle, IsVisible());
     }
 
     void AtomActorInstance::UnregisterActor()
     {
         MeshComponentNotificationBus::Event(m_entityId, &MeshComponentNotificationBus::Events::OnModelPreDestroy);
 
+        MeshHandleStateRequestBus::Handler::BusDisconnect();
+        SkinnedMeshOverrideRequestBus::Handler::BusDisconnect(m_entityId);
         MeshComponentRequestBus::Handler::BusDisconnect();
         MaterialComponentNotificationBus::Handler::BusDisconnect();
         TransformNotificationBus::Handler::BusDisconnect();
-        m_skinnedMeshFeatureProcessor->ReleaseRenderProxyInterface(m_skinnedMeshRenderProxy);
+        m_skinnedMeshFeatureProcessor->ReleaseSkinnedMesh(m_skinnedMeshHandle);
         if (m_meshHandle)
         {
             m_meshFeatureProcessor->ReleaseMesh(*m_meshHandle);
+            MeshHandleStateNotificationBus::Event(m_entityId, &MeshHandleStateNotificationBus::Events::OnMeshHandleSet, &(*m_meshHandle));
             m_meshHandle = nullptr;
         }
     }
@@ -638,18 +692,22 @@ namespace AZ::Render
         if (meshFeatureProcessor)
         {
             MeshHandleDescriptor meshDescriptor;
+            meshDescriptor.m_entityId = m_entityId;
             meshDescriptor.m_modelAsset = m_skinnedMeshInstance->m_model->GetModelAsset();
-
-            // [GFX TODO][ATOM-13067] Enable raytracing on skinned meshes
-            meshDescriptor.m_isRayTracingEnabled = false;
-
-            m_meshHandle = AZStd::make_shared<MeshFeatureProcessorInterface::MeshHandle>(
-                m_meshFeatureProcessor->AcquireMesh(meshDescriptor, materials));
+            meshDescriptor.m_customMaterials = ConvertToCustomMaterialMap(materials);
+            meshDescriptor.m_isRayTracingEnabled = m_rayTracingEnabled;
+            meshDescriptor.m_isAlwaysDynamic = true;
+            meshDescriptor.m_excludeFromReflectionCubeMaps = true;
+            meshDescriptor.m_isSkinnedMesh = true;
+            meshDescriptor.m_supportRayIntersection = true; // we need to keep the buffer data in order to initialize the actor.
+            meshDescriptor.m_modelChangedEventHandler = m_modelChangedEventHandler;
+            meshDescriptor.m_objectSrgCreatedHandler = m_objectSrgCreatedHandler;
+            m_meshHandle = AZStd::make_shared<MeshFeatureProcessorInterface::MeshHandle>(m_meshFeatureProcessor->AcquireMesh(meshDescriptor));
         }
 
         // If render proxies already exist, they will be auto-freed
-        SkinnedMeshFeatureProcessorInterface::SkinnedMeshRenderProxyDesc desc{ m_skinnedMeshInputBuffers, m_skinnedMeshInstance, m_meshHandle, m_boneTransforms, {GetAtomSkinningMethod()} };
-        m_skinnedMeshRenderProxy = m_skinnedMeshFeatureProcessor->AcquireRenderProxyInterface(desc);
+        SkinnedMeshFeatureProcessorInterface::SkinnedMeshHandleDescriptor desc{ m_skinnedMeshInputBuffers, m_skinnedMeshInstance, m_meshHandle, m_boneTransforms, {GetAtomSkinningMethod()} };
+        m_skinnedMeshHandle = m_skinnedMeshFeatureProcessor->AcquireSkinnedMesh(desc);
 
         if (m_transformInterface)
         {
@@ -668,13 +726,9 @@ namespace AZ::Render
         m_skinnedMeshInstance = m_skinnedMeshInputBuffers->CreateSkinnedMeshInstance();
         if (m_skinnedMeshInstance && m_skinnedMeshInstance->m_model)
         {
-            MaterialReceiverNotificationBus::Event(m_entityId, &MaterialReceiverNotificationBus::Events::OnMaterialAssignmentsChanged);
-            RegisterActor();
+            MaterialConsumerNotificationBus::Event(m_entityId, &MaterialConsumerNotificationBus::Events::OnMaterialAssignmentSlotsChanged);
 
-            // [TODO ATOM-15288]
-            // Temporary workaround for cloth to make sure the output skinned buffers are filled at least once.
-            // When meshes with cloth data are not dispatched for skinning FillSkinnedMeshInstanceBuffers can be removed.
-            FillSkinnedMeshInstanceBuffers();
+            RegisterActor();
         }
         else
         {
@@ -683,49 +737,19 @@ namespace AZ::Render
         }
     }
 
-    void AtomActorInstance::FillSkinnedMeshInstanceBuffers()
+    void AtomActorInstance::EnableSkinning(uint32_t lodIndex, uint32_t meshIndex)
     {
-        AZ_Assert( m_skinnedMeshInputBuffers->GetLodCount() == m_skinnedMeshInstance->m_outputStreamOffsetsInBytes.size(),
-            "Number of lods in Skinned Mesh Input Buffers (%d) does not match with Skinned Mesh Instance (%d)",
-            m_skinnedMeshInputBuffers->GetLodCount(), m_skinnedMeshInstance->m_outputStreamOffsetsInBytes.size());
-
-        for (size_t lodIndex = 0; lodIndex < m_skinnedMeshInputBuffers->GetLodCount(); ++lodIndex)
+        if (m_skinnedMeshHandle.IsValid())
         {
-            const SkinnedMeshInputLod& inputSkinnedMeshLod = m_skinnedMeshInputBuffers->GetLod(lodIndex);
-            const AZStd::vector<uint32_t>& outputBufferOffsetsInBytes = m_skinnedMeshInstance->m_outputStreamOffsetsInBytes[lodIndex];
-            uint32_t lodVertexCount = inputSkinnedMeshLod.GetVertexCount();
+            m_skinnedMeshFeatureProcessor->EnableSkinning(m_skinnedMeshHandle, lodIndex, meshIndex);
+        }
+    }
 
-            auto updateSkinnedMeshInstance =
-                [&inputSkinnedMeshLod, &outputBufferOffsetsInBytes, &lodVertexCount](SkinnedMeshInputVertexStreams inputStream, SkinnedMeshOutputVertexStreams outputStream)
-            {
-                const Data::Asset<RPI::BufferAsset>& inputBufferAsset = inputSkinnedMeshLod.GetSkinningInputBufferAsset(inputStream);
-                const RHI::BufferViewDescriptor& inputBufferViewDescriptor = inputBufferAsset->GetBufferViewDescriptor();
-
-                const uint64_t inputByteCount = aznumeric_cast<uint64_t>(inputBufferViewDescriptor.m_elementCount) * aznumeric_cast<uint64_t>(inputBufferViewDescriptor.m_elementSize);
-                const uint64_t inputByteOffset = aznumeric_cast<uint64_t>(inputBufferViewDescriptor.m_elementOffset) * aznumeric_cast<uint64_t>(inputBufferViewDescriptor.m_elementSize);
-
-                const uint32_t outputElementSize = SkinnedMeshVertexStreamPropertyInterface::Get()->GetOutputStreamInfo(outputStream).m_elementSize;
-                [[maybe_unused]] const uint64_t outputByteCount = aznumeric_cast<uint64_t>(lodVertexCount) * aznumeric_cast<uint64_t>(outputElementSize);
-                const uint64_t outputByteOffset = aznumeric_cast<uint64_t>(outputBufferOffsetsInBytes[static_cast<uint8_t>(outputStream)]);
-
-                // The byte count from input and output buffers doesn't have to match necessarily.
-                // For example the output positions buffer has double the amount of elements because it has
-                // another set of positions from the previous frame.
-                AZ_Assert(inputByteCount <= outputByteCount, "Trying to write too many bytes to output buffer.");
-
-                // The shared buffer that all skinning output lives in
-                AZ::Data::Instance<AZ::RPI::Buffer> rpiBuffer = SkinnedMeshOutputStreamManagerInterface::Get()->GetBuffer();
-
-                rpiBuffer->UpdateData(
-                    inputBufferAsset->GetBuffer().data() + inputByteOffset,
-                    inputByteCount,
-                    outputByteOffset);
-            };
-
-            updateSkinnedMeshInstance(SkinnedMeshInputVertexStreams::Position, SkinnedMeshOutputVertexStreams::Position);
-            updateSkinnedMeshInstance(SkinnedMeshInputVertexStreams::Normal, SkinnedMeshOutputVertexStreams::Normal);
-            updateSkinnedMeshInstance(SkinnedMeshInputVertexStreams::Tangent, SkinnedMeshOutputVertexStreams::Tangent);
-            updateSkinnedMeshInstance(SkinnedMeshInputVertexStreams::BiTangent, SkinnedMeshOutputVertexStreams::BiTangent);
+    void AtomActorInstance::DisableSkinning(uint32_t lodIndex, uint32_t meshIndex)
+    {
+        if (m_skinnedMeshHandle.IsValid())
+        {
+            m_skinnedMeshFeatureProcessor->DisableSkinning(m_skinnedMeshHandle, lodIndex, meshIndex);
         }
     }
 
@@ -790,7 +814,7 @@ namespace AZ::Render
 
                     if (m_wrinkleMasks.size())
                     {
-                        wrinkleMaskObjectSrg->SetImageArray(wrinkleMasksIndex, AZStd::array_view<Data::Instance<RPI::Image>>(m_wrinkleMasks.data(), m_wrinkleMasks.size()));
+                        wrinkleMaskObjectSrg->SetImageArray(wrinkleMasksIndex, AZStd::span<const Data::Instance<RPI::Image>>(m_wrinkleMasks.data(), m_wrinkleMasks.size()));
 
                         // Set the weights for any active masks
                         for (size_t i = 0; i < m_wrinkleMaskWeights.size(); ++i)
@@ -805,6 +829,48 @@ namespace AZ::Render
                 }
             }
         }
+    }
+
+    void AtomActorInstance::HandleObjectSrgCreate(const Data::Instance<RPI::ShaderResourceGroup>& objectSrg)
+    {
+        MeshComponentNotificationBus::Event(m_entityId, &MeshComponentNotificationBus::Events::OnObjectSrgCreated, objectSrg);
+    }
+
+    void AtomActorInstance::HandleModelChange(const Data::Instance<RPI::Model>& model)
+    {
+        Data::Asset<RPI::ModelAsset> modelAsset = m_meshFeatureProcessor->GetModelAsset(*m_meshHandle);
+        if (model && modelAsset.IsReady())
+        {
+            MeshComponentNotificationBus::Event(m_entityId, &MeshComponentNotificationBus::Events::OnModelReady, modelAsset, model);
+            MaterialConsumerNotificationBus::Event(m_entityId, &MaterialConsumerNotificationBus::Events::OnMaterialAssignmentSlotsChanged);
+            AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->RefreshEntityLocalBoundsUnion(m_entityId);
+            MeshHandleStateNotificationBus::Event(m_entityId, &MeshHandleStateNotificationBus::Events::OnMeshHandleSet, &(*m_meshHandle));
+        }
+    }
+
+    void AtomActorInstance::UpdateLightingChannelMask()
+    {
+        if (m_meshHandle)
+        {
+            const AZStd::vector<Data::Instance<RPI::ShaderResourceGroup>>& objectSrgs =
+                m_meshFeatureProcessor->GetObjectSrgs(*m_meshHandle);
+            for (auto& objectSrg : objectSrgs)
+            {
+                RHI::ShaderInputConstantIndex lightingChannelMaskIndex =
+                    objectSrg->FindShaderInputConstantIndex(AZ::Name("m_lightingChannelMask"));
+                if (lightingChannelMaskIndex.IsValid())
+                {
+                    objectSrg->SetConstant(lightingChannelMaskIndex, m_actorInstance->GetLightingChannelMask());
+                }
+            }
+            m_meshFeatureProcessor->SetLightingChannelMask(*m_meshHandle, m_actorInstance->GetLightingChannelMask());
+            m_meshFeatureProcessor->QueueObjectSrgForCompile(*m_meshHandle);
+        }
+    }
+
+    const MeshFeatureProcessorInterface::MeshHandle* AtomActorInstance::GetMeshHandle() const
+    {
+        return m_meshHandle.get();
     }
 
 } // namespace AZ::Render

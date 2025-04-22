@@ -1,0 +1,43 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+// This file provides utilities for common handling of inputs for specular response of PBR materials.
+
+// These macros can be used to declare common shader inputs for this feature. 
+// Use the COMMON_SRG_INPUTS_* macro in your material SRG definition, and use the COMMON_OPTIONS_* macro at the global scope in your shader. Then you can pass these variables to the Get*Input() function below.
+// You can optionally provide a prefix for the set of inputs which corresponds to a prefix string supplied by the .materialtype file. This is common for multi-layered material types.
+
+#define COMMON_SRG_INPUTS_SPECULAR_F0(prefix) \
+float       prefix##m_specularF0Factor;       \
+Texture2D   prefix##m_specularF0Map;          \
+uint        prefix##m_specularF0MapUvIndex;
+
+#define COMMON_OPTIONS_SPECULAR_F0(prefix) \
+option bool prefix##o_specularF0_useTexture; 
+
+real GetSpecularInput(Texture2D map, sampler mapSampler, float2 uv, real specularFactor, bool useTexture, float4 uvDxDy = float4(0.0, 0.0, 0.0, 0.0), bool customDerivatives = false)
+{
+    if (useTexture)
+    {
+        if (customDerivatives)
+        {
+            specularFactor *= real(map.SampleGrad(mapSampler, uv, uvDxDy.xy, uvDxDy.zw).r);
+        }
+        else
+        {
+            #ifdef CS_SAMPLERS
+            specularFactor *= real(map.SampleLevel(mapSampler, uv, 0).r);
+            #else
+            specularFactor *= real(map.Sample(mapSampler, uv).r);
+            #endif
+        }
+    }
+    return specularFactor;
+}

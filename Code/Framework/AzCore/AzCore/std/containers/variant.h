@@ -40,16 +40,16 @@ namespace AZStd
      * A variant object holds and manages the lifetime of one of its template types
      * A variant holds either the value of one of its alternatives(i.e Types...) or
      * no value at all. The template arguments are called alternatives.
-     * 
+     *
      * The implementation is made to be as lightweight as possible by only requiring
      * space for the union to contain the type elements and an index which tracks
      * active alternative. The sizeof the index is dependent on the number of alternatives.
-     * When less than 255 alternatives are stored in a variant only a single byte is used 
+     * When less than 255 alternatives are stored in a variant only a single byte is used
      * to store the index
      *
      * A use case for an variant is replacing a c style union of types and an enum
      * which keeps track of the active member.
-     * The drawbacks of using a variant to using c style union is 
+     * The drawbacks of using a variant to using c style union is
      * 1. The inability to name the data members
      * 2. The inability to store raw c style arrays within the variant(std::array can be used instead to mitigate this issue)
      * ```
@@ -62,7 +62,7 @@ namespace AZStd
      * /// SerializationType as variant
      * using SerializationType = AZStd::variant<char*, AZStd::array<float, 4>>;
      * ```
-     * 
+     *
      * For example a variant can be used to implement a restricted set of types for serialization and marshalling.
      * So if the requirements for the marshaling system is that it would be able to serialize booleans, numbers, strings
      * and binary data a variant with the types of `AZStd::variant<double, int64_t, AZStd::string, AZStd::vector<uint8_t>>`
@@ -87,12 +87,12 @@ namespace AZStd
      *    This increases the size of any as it has to maintain the storage buffer as well as the typeid UUID within it
      *    Furthermore This makes it hard to add debug visualizers for visualizing the current type of element stored in the any/
      * 5. Requires the use of the heap if an object is type is stored within it that is larger than it's internal small object buffer
-     * 
+     *
      * variant pros:
      * 1. It restricts the set of types that can be stored within it at compile time.
      *    This allows it to optimize the space required to store the types to that of the largest type
      * 2. It supports storing an alternative at compile time and is therefore usable in constexpr.
-     * 3. It performs type validation of the element at compile, enforcing that the alternative being returned  
+     * 3. It performs type validation of the element at compile, enforcing that the alternative being returned
      *    is of the correct type(though whether that alternative is active can depend on run time code)
      * 4. Due to being a template class, the types stored within the variant can be used in algorithm at compile time
      *    For example serialization of a :variant can be coded to cast to the type of active alternative
@@ -167,8 +167,8 @@ namespace AZStd
 
         ~variant() = default;
 
-        variant& operator=(const variant&) = default;
-        variant& operator=(variant&&) = default;
+        constexpr variant& operator=(const variant&) = default;
+        constexpr variant& operator=(variant&&) = default;
 
         // Variant assignment operator #3
         template <class T,
@@ -176,33 +176,33 @@ namespace AZStd
             class Alternative = variant_detail::best_alternative_t<T, Types...>,
             size_t Index = find_type::find_exactly_one_alternative_v<Alternative, Types...>,
             enable_if_t<is_assignable<Alternative&, T>::value && is_constructible<Alternative, T>::value, int> = 0>
-        auto operator=(T&& arg)->variant&;
+        constexpr auto operator=(T&& arg)->variant&;
 
         // Variant emplace #1
         template <class T, class... Args,
             size_t Index = find_type::find_exactly_one_alternative_v<T, Types...>,
             enable_if_t<is_constructible<T, Args...>::value, int> = 0>
-        T& emplace(Args&&... args);
+        constexpr T& emplace(Args&&... args);
 
         // Variant emplace #2
         template <class T, class U, class... Args,
             size_t Index = find_type::find_exactly_one_alternative_v<T, Types...>,
             enable_if_t<is_constructible<T, std::initializer_list<U>&, Args...>::value, int> = 0>
-        T& emplace(std::initializer_list<U> il, Args&&... args);
+        constexpr T& emplace(std::initializer_list<U> il, Args&&... args);
 
         // Variant emplace #3
         template <size_t Index, class... Args,
             enable_if_t<(Index < variant_size<variant>::value), int> = 0,
             class Alternative = variant_alternative_t<Index, variant>,
             enable_if_t<is_constructible<Alternative, Args...>::value, int> = 0>
-        Alternative& emplace(Args&&... args);
+        constexpr Alternative& emplace(Args&&... args);
 
         // Variant emplace #4
         template <size_t Index, class U, class... Args,
             enable_if_t<(Index < variant_size<variant>::value), int> = 0,
             class Alternative = variant_alternative_t<Index, variant>,
             enable_if_t<is_constructible<Alternative, std::initializer_list<U>&, Args...>::value, int> = 0>
-        Alternative& emplace(std::initializer_list<U> il, Args&&... args);
+        constexpr Alternative& emplace(std::initializer_list<U> il, Args&&... args);
 
         /// Returns false if and only if the variant holds a value.
         constexpr bool valueless_by_exception() const;
@@ -212,7 +212,7 @@ namespace AZStd
 
         /// Overloads the std::swap algorithm for std::variant. Effectively calls lhs.swap(rhs).
         template <bool Placeholder = true, enable_if_t<conjunction<bool_constant<Placeholder && is_swappable<Types>::value && is_move_constructible<Types>::value>...>::value, bool> = false>
-        void swap(variant& other);
+        constexpr void swap(variant& other);
 
     private:
         variant_detail::impl<Types...> m_impl;
@@ -279,7 +279,7 @@ namespace AZStd
 
 
     template <typename... Types>
-    void swap(variant<Types...>& lhs, variant<Types...>& rhs);
+    constexpr void swap(variant<Types...>& lhs, variant<Types...>& rhs);
 
     template <class Visitor, class... Variants>
     constexpr decltype(auto) visit(Visitor&& visitor, Variants&&... variants);

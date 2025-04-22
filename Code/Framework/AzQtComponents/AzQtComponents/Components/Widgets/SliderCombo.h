@@ -149,6 +149,8 @@ namespace AzQtComponents
         explicit SliderDoubleCombo(QWidget *parent = nullptr);
         ~SliderDoubleCombo();
 
+        void resetLimits();
+
         //! Sets the current value.
         void setValue(double value);
         //! Sets the current value.
@@ -237,6 +239,5 @@ namespace AzQtComponents
         double m_softMinimum = 0.0;
         double m_softMaximum = 100.0;
         double m_value = 0.0;
-        bool m_fromSlider{ false };
     };
 } // namespace AzQtComponents

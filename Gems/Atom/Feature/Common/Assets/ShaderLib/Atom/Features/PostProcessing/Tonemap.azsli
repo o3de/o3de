@@ -1,0 +1,57 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+#include <Atom/Features/ColorManagement/TransformColor.azsli>
+
+// Simple reinhard tone mapping algorithm based on below paper.
+// http://www.cmap.polytechnique.fr/~peyre/cours/x2005signal/hdr_photographic.pdf
+float3 TonemapReinhard(const float3 inputColor)
+{
+    return inputColor / (1.0 + inputColor);
+}
+
+// Originally written by Stephen Hill (@self_shadow)
+// Input and output color are in AcesCG space
+float3 TonemapAcesFitted(const float3 inputColor)
+{
+    // Apply RRT and ODT
+    float a = 0.0245786f;
+    float b = 0.000090537f;
+    float c = 0.983729f;
+    float d = 0.4329510f;
+    float e = 0.238081f;
+    return saturate((inputColor * (inputColor + a) - b) / (inputColor * (c * inputColor + d) + e));
+}
+
+// https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve/
+float3 TonemapAcesFilmic(const float3 inputColor)
+{
+    // Apply filmic curve. 
+    float a = 2.51f;
+    float b = 0.03f;
+    float c = 2.43f;
+    float d = 0.59f;
+    float e = 0.14f;
+    return saturate((inputColor * (a * inputColor + b)) / (inputColor * (c * inputColor + d) + e));
+}
+
+// Applies the filmic curve from John Hable
+float3 TonemapFilmic(const float3 inputColor)
+{
+    // See: https://github.com/dmnsgn/glsl-tone-map/blob/main/filmic.glsl
+    float3 color = max(float3(0.0, 0.0, 0.0), inputColor - 0.004);
+    return (color * (6.2 * color + 0.5)) / (color * (6.2 * color + 1.7) + 0.06);
+}
+
+float3 ApplyManualExposure(float3 color, float exposure)
+{
+    // Apply Manual exposure
+    return color * pow(2.0, exposure);
+}

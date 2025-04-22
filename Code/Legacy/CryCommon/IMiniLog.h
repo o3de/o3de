@@ -13,9 +13,13 @@
 //               parts that need logging (e.g. Streaming Engine) separately
 
 
-#ifndef CRYINCLUDE_CRYCOMMON_IMINILOG_H
-#define CRYINCLUDE_CRYCOMMON_IMINILOG_H
 #pragma once
+
+#include <AzCore/std/function/function_fwd.h>
+namespace AZ::IO
+{
+    class GenericStream;
+}
 
 
 struct IMiniLog
@@ -39,6 +43,13 @@ struct IMiniLog
     virtual void LogV(ELogType nType, const char* szFormat, va_list args) PRINTF_PARAMS(3, 0) = 0;
 
     virtual void LogV(ELogType nType, int flags, const char* szFormat, va_list args) PRINTF_PARAMS(4, 0) = 0;
+
+    //! Callback function which is invoked to allow writing to the supplied GenericStream
+    using LogWriteCallback = AZStd::function<void(AZ::IO::GenericStream&)>;
+    // Description:
+    //   Logging function which accepts string_view and writes it directly to the log
+    //   It is not restricted by the buffer of a format string, so the message can be larger than 4096 + 32 bytes
+    virtual void LogWithCallback(ELogType nType, const LogWriteCallback&) = 0;
 
     // Summary:
     //   Logs using type.
@@ -118,11 +129,8 @@ struct CNullMiniLog
     // Notes:
     //   The default implementation just won't do anything
     //##@{
-    void LogV([[maybe_unused]] const char* szFormat, [[maybe_unused]] va_list args) {}
     void LogV([[maybe_unused]] ELogType nType, [[maybe_unused]] const char* szFormat, [[maybe_unused]] va_list args) override {}
     void LogV ([[maybe_unused]] ELogType nType, [[maybe_unused]] int flags, [[maybe_unused]] const char* szFormat, [[maybe_unused]] va_list args) override {}
+    void LogWithCallback(ELogType, const LogWriteCallback&) override {}
     //##@}
 };
-
-
-#endif // CRYINCLUDE_CRYCOMMON_IMINILOG_H

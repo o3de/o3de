@@ -7,9 +7,11 @@
  */
 #pragma once
 
-#include <Atom/RHI/StreamingImagePool.h>
+#include <Atom/RHI/DeviceStreamingImagePool.h>
 #include <Atom/RHI/PoolAllocator.h>
 #include <RHI/CommandList.h>
+#include <RHI/HeapAllocator.h>
+#include <RHI/TileAllocator.h>
 
 namespace AZ
 {
@@ -20,11 +22,11 @@ namespace AZ
         class StreamingImagePoolResolver;
 
         class StreamingImagePool final
-            : public RHI::StreamingImagePool
+            : public RHI::DeviceStreamingImagePool
         {
-            using Base = RHI::StreamingImagePool;
+            using Base = RHI::DeviceStreamingImagePool;
         public:
-            AZ_CLASS_ALLOCATOR(StreamingImagePool, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(StreamingImagePool, AZ::SystemAllocator);
             AZ_RTTI(StreamingImagePool, "{D168A0F2-6B81-4281-9D4D-01C784F98DDD}", Base);
 
             static RHI::Ptr<StreamingImagePool> Create();
@@ -36,23 +38,33 @@ namespace AZ
         private:
             StreamingImagePool() = default;
 
-            D3D12_RESOURCE_ALLOCATION_INFO GetAllocationInfo(const RHI::ImageDescriptor& imageDescriptor, uint32_t residentMipLevel);
-
             //////////////////////////////////////////////////////////////////////////
-            // RHI::StreamingImagePool
+            // RHI::DeviceStreamingImagePool
             RHI::ResultCode InitInternal(RHI::Device& deviceBase, const RHI::StreamingImagePoolDescriptor& descriptor) override;
-            RHI::ResultCode InitImageInternal(const RHI::StreamingImageInitRequest& request) override;
-            RHI::ResultCode ExpandImageInternal(const RHI::StreamingImageExpandRequest& request) override;
-            RHI::ResultCode TrimImageInternal(RHI::Image& image, uint32_t targetMipLevel) override;
+            RHI::ResultCode InitImageInternal(const RHI::DeviceStreamingImageInitRequest& request) override;
+            RHI::ResultCode ExpandImageInternal(const RHI::DeviceStreamingImageExpandRequest& request) override;
+            RHI::ResultCode TrimImageInternal(RHI::DeviceImage& image, uint32_t targetMipLevel) override;
+            RHI::ResultCode SetMemoryBudgetInternal(size_t newBudget) override;
+            bool SupportTiledImageInternal() const override;
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::ResourcePool
+            // RHI::DeviceResourcePool
             void ShutdownInternal() override;
-            void ShutdownResourceInternal(RHI::Resource& resourceBase) override;
+            void ShutdownResourceInternal(RHI::DeviceResource& resourceBase) override;
+
+            // Streaming images are either committed resource or using tiles from heap pages. So there is no fragmentation
+            void ComputeFragmentation() const override {}
             //////////////////////////////////////////////////////////////////////////
 
-            void AllocateImageTilesInternal(Image& image, CommandList::TileMapRequest& request, uint32_t subresourceIndex);
+            // Check if we can use heap tiles for an image 
+            bool ShouldUseTileHeap(const RHI::ImageDescriptor& imageDescriptor) const;
+
+            // Allocate and map heap tiles for specified subresource of the image.
+            // The allocated heap tiles will be saved in the image
+            void AllocateImageTilesInternal(Image& image, uint32_t subresourceIndex);
+            // Deallocate and unmap heap tiles for specified subresource of the image.
+            // The heap tiles info for the image subresource is cleared. 
             void DeAllocateImageTilesInternal(Image& image, uint32_t subresourceIndex);
 
             // Standard mips each have their own set of tiles.
@@ -62,10 +74,31 @@ namespace AZ
             // Packed mips occupy a dedicated set of tiles.
             void AllocatePackedImageTiles(Image& image);
 
-            RHI::Ptr<ID3D12Heap> m_heap;
+            // Get the data reference of device heap memory usage 
+            RHI::HeapMemoryUsage& GetDeviceHeapMemoryUsage();
 
+            // A helper function that makes sure any previous upload request
+            // is actually completed on @image.
+            void WaitFinishUploading(const Image& image);
+
+            // whether to enable tiled resource
+            bool m_enableTileResource = false;
+
+            // mutex to protect tile allocation and de-allocation from any threads
             AZStd::mutex m_tileMutex;
-            RHI::PoolAllocator m_tileAllocator;
+
+            // for allocating heap pages
+            HeapAllocator m_heapPageAllocator;
+
+            // for allocating tiles from heap pages
+            TileAllocator m_tileAllocator;
+
+            // The default tile for null tiles. The default tile is initialized in order to support images that have no tiles.
+            // This is for resources when there is not enough of gpu memory
+            // from https://docs.microsoft.com/en-us/windows/win32/api/d3d12/ne-d3d12-d3d12_tiled_resources_tier
+            // "GPU reads or writes to NULL mappings are undefined. Applications are encouraged to workaround this limitation by
+            // repeatedly mapping the same page to everywhere a NULL mapping would've been used."
+            HeapTiles m_defaultTile;
         };
     }
 }

@@ -41,9 +41,15 @@ namespace AzToolsFramework
         QRect textRect = style->subElementRect(QStyle::SE_ItemViewItemText, &styledOption);
         painter->save();
         painter->translate(textRect.topLeft());
-        painter->setClipRect(textRect.translated(-textRect.topLeft()));
 
+        if ((option.state & QStyle::State_MouseOver) != 0)
+        {
+            painter->fillRect(option.rect.translated(-option.rect.topLeft()), m_hoverColor);
+        }
+
+        painter->setClipRect(textRect.translated(-textRect.topLeft()));
         doc.documentLayout()->draw(painter, ctx);
+
         painter->restore();
     }
     

@@ -26,6 +26,7 @@ namespace ProjectSettingsTool
         Q_OBJECT
 
     public:
+        AZ_CLASS_ALLOCATOR(PropertyFileSelectCtrl, AZ::SystemAllocator)
         typedef QString(* FileSelectFuncType)(const QString&);
 
         PropertyFileSelectCtrl(QWidget* pParent = nullptr);
@@ -42,7 +43,7 @@ namespace ProjectSettingsTool
     class PropertyFileSelectHandler
         : public AzToolsFramework::PropertyHandler<AZStd::string, PropertyFileSelectCtrl>
     {
-        AZ_CLASS_ALLOCATOR(PropertyFileSelectHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PropertyFileSelectHandler, AZ::SystemAllocator);
 
     public:
         PropertyFileSelectHandler(ValidationHandler* valHdlr);

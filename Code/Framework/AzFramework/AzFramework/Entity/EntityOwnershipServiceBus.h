@@ -20,7 +20,7 @@ namespace AzFramework
     using EntityContextId = AZ::Uuid;
     using EntityList = AZStd::vector<AZ::Entity*>;
 
-    class EntityOwnershipService;   
+    class EntityOwnershipService;
 
     class EntityOwnershipServiceInterface
     {
@@ -33,11 +33,9 @@ namespace AzFramework
         virtual AZStd::unique_ptr<EntityOwnershipService> CreateEntityOwnershipService() = 0;
     };
 
-    class EntityOwnershipServiceNotifications
-        : public AZ::EBusTraits
+    class EntityOwnershipServiceNotifications : public AZ::EBusTraits
     {
     public:
-
         // We don't want anybody other than entity contexts to listen to these events.
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
@@ -46,19 +44,25 @@ namespace AzFramework
         /**
          * Sends a notification before resetting the Entity Ownership Service.
          */
-        virtual void PrepareForEntityOwnershipServiceReset() = 0;
+        virtual void PrepareForEntityOwnershipServiceReset()
+        {
+        }
 
         /**
          * Sends a notification indicating that the Entity Ownership Service has been reset.
          */
-        virtual void OnEntityOwnershipServiceReset() = 0;
+        virtual void OnEntityOwnershipServiceReset()
+        {
+        }
 
         /**
          * Signals that entities from a given stream have been reloaded.
          * @param entities A reference to a list of entities that are reloaded from the given stream.
          */
-        virtual void OnEntitiesReloadedFromStream(const EntityList& entities) = 0;
+        virtual void OnEntitiesReloadedFromStream([[maybe_unused]] const EntityList& entities)
+        {
+        }
     };
 
     using EntityOwnershipServiceNotificationBus = AZ::EBus<EntityOwnershipServiceNotifications>;
-}
+} // namespace AzFramework

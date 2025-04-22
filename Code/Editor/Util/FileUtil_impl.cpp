@@ -30,11 +30,6 @@ void CFileUtil_impl::EditTextureFile(const char* txtureFile, bool bUseGameFolder
     CFileUtil::EditTextureFile(txtureFile, bUseGameFolder);
 }
 
-bool CFileUtil_impl::CalculateDccFilename(const QString& assetFilename, QString& dccFilename)
-{
-    return CFileUtil::CalculateDccFilename(assetFilename, dccFilename);
-}
-
 void CFileUtil_impl::FormatFilterString(QString& filter)
 {
     CFileUtil::FormatFilterString(filter);
@@ -153,11 +148,6 @@ IFileUtil::ECopyTreeResult CFileUtil_impl::CopyFile(const QString& strSourceFile
 IFileUtil::ECopyTreeResult CFileUtil_impl::MoveTree(const QString& strSourceDirectory, const QString& strTargetDirectory, bool boRecurse, bool boConfirmOverwrite)
 {
     return CFileUtil::MoveTree(strSourceDirectory, strTargetDirectory, boRecurse, boConfirmOverwrite);
-}
-
-void CFileUtil_impl::GatherAssetFilenamesFromLevel(std::set<QString>& rOutFilenames, bool bMakeLowerCase, bool bMakeUnixPath)
-{
-    CFileUtil::GatherAssetFilenamesFromLevel(rOutFilenames, bMakeLowerCase, bMakeUnixPath);
 }
 
 uint32 CFileUtil_impl::GetAttributes(const char* filename, bool bUseSourceControl)

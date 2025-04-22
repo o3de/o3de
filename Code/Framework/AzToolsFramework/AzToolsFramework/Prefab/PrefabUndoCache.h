@@ -30,7 +30,7 @@ namespace AzToolsFramework
             : UndoSystem::UndoCacheInterface
         {
         public:
-            AZ_CLASS_ALLOCATOR(PrefabUndoCache, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PrefabUndoCache, AZ::SystemAllocator);
 
             virtual ~PrefabUndoCache() = default;
 
@@ -43,20 +43,14 @@ namespace AzToolsFramework
             void Clear() override;
             void Validate(const AZ::EntityId& entityId) override;
 
-            // Retrieve the last known state for an entity
-            bool Retrieve(const AZ::EntityId& entityId, PrefabDom& outDom, AZ::EntityId& parentId);
+            // Retrieve the last known parent state for an entity
+            bool Retrieve(const AZ::EntityId& entityId, AZ::EntityId& parentId);
 
-            // Store dom as the cached state of entityId
-            void Store(const AZ::EntityId& entityId, PrefabDom&& dom, const AZ::EntityId& parentId);
+            // Store the parent state of an entity
+            void Store(const AZ::EntityId& entityId, const AZ::EntityId& parentId);
 
         private:
-            struct PrefabUndoCacheItem
-            {
-                PrefabDom dom;
-                AZ::EntityId parentId;
-            };
-            typedef AZStd::unordered_map<AZ::EntityId, PrefabUndoCacheItem> EntityCache;
-            EntityCache m_entitySavedStates;
+            AZStd::unordered_map<AZ::EntityId, AZ::EntityId> m_parentEntityCache;
 
             InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
             InstanceToTemplateInterface* m_instanceToTemplateInterface = nullptr;

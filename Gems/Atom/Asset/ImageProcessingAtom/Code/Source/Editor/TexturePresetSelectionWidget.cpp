@@ -14,6 +14,9 @@
 #include <QPushButton>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <BuilderSettings/PresetSettings.h>
+#include <AzQtComponents/Components/Widgets/CheckBox.h>
+
+#include <Atom/RPI.Public/AssetTagBus.h>
 
 namespace ImageProcessingAtomEditor
 {
@@ -48,25 +51,7 @@ namespace ImageProcessingAtomEditor
 
         // Add presets into combo box
         m_presetList.clear();
-        auto& presetFilterMap = BuilderSettingManager::Instance()->GetPresetFilterMap();
-
-        if (m_listAllPresets)
-        {
-            m_presetList = BuilderSettingManager::Instance()->GetFullPresetList();
-        }
-        else
-        {
-            auto fileMask = GetImageFileMask(m_textureSetting->m_textureName);
-            auto itr = presetFilterMap.find(fileMask);
-            if (itr != presetFilterMap.end())
-            {
-                m_presetList = itr->second;
-            }
-            else
-            {
-                m_presetList = BuilderSettingManager::Instance()->GetFullPresetList();
-            }
-        }
+        m_presetList = BuilderSettingManager::Instance()->GetFullPresetList();
 
         QStringList stringList;
         foreach (const auto& presetName, m_presetList)
@@ -90,9 +75,6 @@ namespace ImageProcessingAtomEditor
 
             SetCheckBoxReadOnly(m_ui->serCheckBox, presetSetting->m_suppressEngineReduce);
             QObject::connect(m_ui->serCheckBox, &QCheckBox::clicked, this, &TexturePresetSelectionWidget::OnCheckBoxStateChanged);
-
-            // Set convention label
-            SetPresetConvention(presetSetting);
         }
 
         // Reset btn
@@ -101,12 +83,32 @@ namespace ImageProcessingAtomEditor
         // PresetInfo btn
         QObject::connect(m_ui->infoBtn, &QPushButton::clicked, this, &TexturePresetSelectionWidget::OnPresetInfoButton);
 
+        // Style the Checkbox
+        AzQtComponents::CheckBox::applyToggleSwitchStyle(m_ui->serCheckBox);
+
         // Tooltips
-        m_ui->activeFileConventionLabel->setToolTip(QString("Displays the supported naming convention for the selected preset."));
-        m_ui->presetComboBox->setToolTip(QString("Choose a preset to update the preview and other properties."));
-        m_ui->resetBtn->setToolTip(QString("Reset values to current preset defaults."));
-        m_ui->serCheckBox->setToolTip(QString("Preserves the original size. Use this setting for textures that include text."));
-        m_ui->infoBtn->setToolTip(QString("Show detail properties of the current preset"));
+        m_ui->activePresetLabel->setToolTip(QString("Choose a texture preset based on the texture's intended use case."));
+        m_ui->infoBtn->setToolTip(QString("Display the property details for the selected texture preset"));
+        m_ui->resetBtn->setToolTip(QString("Reset all values to the default values for the selected texture preset."));
+        m_ui->maxResLabel->setToolTip(QString("Use the maximum texture resolution regardless of the target platform specification. Use this setting for textures that feature text or other details that should be legible."));
+
+        AZStd::vector<AZ::Name> textureTags;
+        AZ::RPI::ImageTagBus::BroadcastResult(textureTags, &AZ::RPI::ImageTagBus::Events::GetTags);
+
+        for (const AZ::Name& tag : textureTags)
+        {
+            m_ui->tagComboBox->addItem(tag.GetCStr());
+        }
+
+        m_ui->tagList->setSortingEnabled(true);
+
+        for (const AZStd::string& tag : m_textureSetting->GetMultiplatformTextureSetting().m_tags)
+        {
+            m_ui->tagList->addItem(QString(tag.c_str()));
+        }
+
+        QObject::connect(m_ui->tagAddButton, &QPushButton::released, this, &TexturePresetSelectionWidget::OnTagAdded);
+        QObject::connect(m_ui->tagRemoveButton, &QPushButton::released, this, &TexturePresetSelectionWidget::OnTagRemoved);
 
         EditorInternalNotificationBus::Handler::BusConnect();
     }
@@ -148,6 +150,37 @@ namespace ImageProcessingAtomEditor
         m_presetPopup->show();
     }
 
+    void TexturePresetSelectionWidget::OnTagAdded()
+    {
+        QString selectedTag = m_ui->tagComboBox->currentText();
+        if (selectedTag.isEmpty())
+        {
+            return;
+        }
+
+        auto& tags = m_textureSetting->GetMultiplatformTextureSetting().m_tags;
+        if (!tags.emplace(selectedTag.toUtf8().data()).second)
+        {
+            return;
+        }
+
+        m_ui->tagList->addItem(selectedTag);
+    }
+
+    void TexturePresetSelectionWidget::OnTagRemoved()
+    {
+        QListWidgetItem* item = m_ui->tagList->currentItem();
+        if (!item)
+        {
+            return;
+        }
+
+        auto& tags = m_textureSetting->GetMultiplatformTextureSetting().m_tags;
+        tags.erase(item->text().toUtf8().data());
+
+        delete item;
+    }
+
     void TexturePresetSelectionWidget::OnEditorSettingsChanged(bool needRefresh, const AZStd::string& /*platform*/)
     {
         if (needRefresh)
@@ -160,7 +193,6 @@ namespace ImageProcessingAtomEditor
             if (presetSetting)
             {
                 SetCheckBoxReadOnly(m_ui->serCheckBox, presetSetting->m_suppressEngineReduce);
-                SetPresetConvention(presetSetting);
                 // If there is preset info dialog open, update the text
                 if (m_presetPopup && m_presetPopup->isVisible())
                 {
@@ -169,38 +201,6 @@ namespace ImageProcessingAtomEditor
             }
             m_ui->serCheckBox->blockSignals(oldState);
         }
-    }
-
-    bool TexturePresetSelectionWidget::IsMatchingWithFileMask(const AZStd::string& filename, const AZStd::string& fileMask)
-    {
-        if (fileMask.empty())
-        {
-            // Will not match with empty string
-            return false;
-        }
-        else
-        {
-            // Extract the file name and compare if it ends with file mask or not
-            AZStd::string filenameNoExt;
-            AzFramework::StringFunc::Path::GetFileName(filename.c_str(), filenameNoExt);
-            return filenameNoExt.length() >= fileMask.length() && filenameNoExt.compare(filenameNoExt.length() - fileMask.length(), fileMask.length(), fileMask) == 0;
-        }
-    }
-
-    void ImageProcessingAtomEditor::TexturePresetSelectionWidget::SetPresetConvention(const PresetSettings* presetSettings)
-    {
-        AZStd::string conventionText = "";
-        if (presetSettings)
-        {
-            auto fileMasks = BuilderSettingManager::Instance()->GetFileMasksForPreset(presetSettings->m_name);
-            int i = 0;
-            for (const auto& filemask : fileMasks)
-            {
-                conventionText +=  i > 0 ? " " + filemask : filemask;
-                i++;
-            }
-        }
-        m_ui->conventionLabel->setText(QString(conventionText.c_str()));
     }
 
     void ImageProcessingAtomEditor::TexturePresetSelectionWidget::SetCheckBoxReadOnly(QCheckBox* checkBox, bool readOnly)

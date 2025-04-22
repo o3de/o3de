@@ -8,22 +8,27 @@
 #pragma once
 
 #include <AzCore/base.h>
-#include <AzCore/IO/Streamer/FileRequest.h>
 #include <AzCore/IO/Streamer/Statistics.h>
 #include <AzCore/IO/Streamer/StreamerConfiguration.h>
 #include <AzCore/IO/Streamer/StreamerContext_Platform.h>
-#include <AzCore/std/containers/deque.h>
-#include <AzCore/std/containers/vector.h>
-#include <AzCore/std/containers/queue.h>
 #include <AzCore/Statistics/RunningStatistic.h>
+#include <AzCore/std/containers/deque.h>
+#include <AzCore/std/containers/queue.h>
+#include <AzCore/std/containers/vector.h>
 
 namespace AZ::IO
 {
+    class FileRequest;
+    class ExternalFileRequest;
+
+    using FileRequestPtr = AZStd::intrusive_ptr<ExternalFileRequest>;
+
     class StreamerContext
     {
     public:
         using PreparedQueue = AZStd::deque<FileRequest*>;
 
+        StreamerContext();
         ~StreamerContext();
 
         //! Gets a new file request, either by creating a new instance or
@@ -110,7 +115,7 @@ namespace AZ::IO
 #if AZ_STREAMER_ADD_EXTRA_PROFILING_INFO
         //! By how much time the prediction was off. This mostly covers the latter part of scheduling, which
         //! gets more precise the closer the request gets to completion.
-        AZ::Statistics::RunningStatistic m_predictionAccuracyUsStat;
+        TimedAverageWindow<s_statisticsWindowSize> m_predictionAccuracyStat;
 
         //! Tracks the percentage of requests with late predictions where the request completed earlier than expected,
         //! versus the requests that completed later than predicted.
@@ -119,6 +124,11 @@ namespace AZ::IO
         //! Percentage of requests that missed their deadline. If percentage is too high it can indicate that
         //! there are too many file requests or the deadlines for requests are too tight.
         AZ::Statistics::RunningStatistic m_missedDeadlinePercentageStat;
+
+        //! The average amount of time spend on completing internal completion callbacks.
+        TimedAverageWindow<s_statisticsWindowSize> m_internalCompletionTimeAverage;
+        //! The average amount of time spend on completing external completion callbacks.
+        TimedAverageWindow<s_statisticsWindowSize> m_externalCompletionTimeAverage;
 #endif // AZ_STREAMER_ADD_EXTRA_PROFILING_INFO
 
         //! Platform-specific synchronization object used to suspend the Streamer thread and wake it up to resume procesing.

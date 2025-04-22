@@ -46,8 +46,8 @@ namespace LmbrCentral
         void BuildGameEntity(AZ::Entity* gameEntity) override;
 
         // BoundsRequestBus overrides ...
-        AZ::Aabb GetWorldBounds() override;
-        AZ::Aabb GetLocalBounds() override;
+        AZ::Aabb GetWorldBounds() const override;
+        AZ::Aabb GetLocalBounds() const override;
 
     private:
         AZ_DISABLE_COPY_MOVE(EditorSplineComponent)
@@ -62,7 +62,8 @@ namespace LmbrCentral
         bool EditorSelectionIntersectRayViewport(
             const AzFramework::ViewportInfo& viewportInfo,
             const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) override;
-        bool SupportsEditorRayIntersect() override { return true; };
+        bool SupportsEditorRayIntersect() override;
+        bool SupportsEditorRayIntersectViewport(const AzFramework::ViewportInfo& viewportInfo) override;
 
         // EditorComponentSelectionNotificationsBus overrides ...
         void OnAccentTypeChanged(AzToolsFramework::EntityAccentType accent) override { m_accentType = accent; }
@@ -72,7 +73,7 @@ namespace LmbrCentral
 
         // SplineComponentRequestBus overrides ...
         AZ::SplinePtr GetSpline() override;
-        void ChangeSplineType(AZ::u64 splineType) override;
+        void ChangeSplineType(SplineType splineType) override;
         void SetClosed(bool closed) override;
 
         // SplineComponentRequestBus/VertexContainerInterface overrides ...

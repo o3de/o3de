@@ -29,7 +29,7 @@ namespace DatumSerializerCpp
 
 namespace AZ
 {
-    AZ_CLASS_ALLOCATOR_IMPL(DatumSerializer, SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(DatumSerializer, SystemAllocator);
 
     JsonSerializationResult::Result DatumSerializer::Load
         ( void* outputValue
@@ -107,7 +107,8 @@ namespace AZ
             }
 
             result.Combine(ContinueLoadingFromJsonObjectField(AZStd::any_cast<void>(&storage), typeId, inputValue, "value", context));
-            *outputDatum = Datum(scType, Datum::eOriginality::Original, AZStd::any_cast<void>(&storage), scType.GetAZType());
+            outputDatum->ReconfigureDatumTo(
+                Datum(scType, Datum::eOriginality::Original, AZStd::any_cast<void>(&storage), scType.GetAZType()));
         } // datum storage end
 
         AZStd::string label;

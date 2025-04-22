@@ -29,7 +29,7 @@ namespace AzToolsFramework
 
     public:
         AZ_RTTI(LinearManipulator, "{4AA805DA-7D3C-4AFA-8110-EECF32B8F530}", BaseManipulator)
-        AZ_CLASS_ALLOCATOR(LinearManipulator, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(LinearManipulator, AZ::SystemAllocator)
 
         LinearManipulator() = delete;
         LinearManipulator(const LinearManipulator&) = delete;

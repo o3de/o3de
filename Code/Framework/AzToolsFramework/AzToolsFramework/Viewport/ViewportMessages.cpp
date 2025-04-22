@@ -7,7 +7,10 @@
  */
 
 #include <AzFramework/Render/IntersectorInterface.h>
+#include <AzFramework/Terrain/TerrainDataRequestBus.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
+
+DECLARE_EBUS_INSTANTIATION_WITH_TRAITS(AzToolsFramework::ViewportInteraction::ViewportInteractionRequests, AzToolsFramework::ViewportInteraction::ViewportRequestsEBusTraits);
 
 namespace AzToolsFramework
 {
@@ -64,17 +67,37 @@ namespace AzToolsFramework
         return circleBoundWidth;
     }
 
+    AZStd::optional<AZ::Vector3> FindClosestPickIntersection(const AzFramework::RenderGeometry::RayRequest& rayRequest)
+    {
+        using AzFramework::RenderGeometry::IntersectorBus;
+        using AzFramework::RenderGeometry::RayResult;
+        using AzFramework::RenderGeometry::RayResultClosestAggregator;
+        using AzFramework::Terrain::TerrainDataRequestBus;
+
+        // attempt a ray intersection with any visible mesh or terrain and return the intersection position if successful
+        AZ::EBusReduceResult<RayResult, RayResultClosestAggregator> renderGeometryIntersectionResult;
+        IntersectorBus::EventResult(
+            renderGeometryIntersectionResult, AzToolsFramework::GetEntityContextId(), &IntersectorBus::Events::RayIntersect, rayRequest);
+        TerrainDataRequestBus::BroadcastResult(
+            renderGeometryIntersectionResult, &TerrainDataRequestBus::Events::GetClosestIntersection, rayRequest);
+
+        if (renderGeometryIntersectionResult.value)
+        {
+            return renderGeometryIntersectionResult.value.m_worldPosition;
+        }
+        else
+        {
+            return {};
+        }
+    }
+
     AZ::Vector3 FindClosestPickIntersection(const AzFramework::RenderGeometry::RayRequest& rayRequest, const float defaultDistance)
     {
-        AzFramework::RenderGeometry::RayResult renderGeometryIntersectionResult;
-        AzFramework::RenderGeometry::IntersectorBus::EventResult(
-            renderGeometryIntersectionResult, AzToolsFramework::GetEntityContextId(),
-            &AzFramework::RenderGeometry::IntersectorBus::Events::RayIntersect, rayRequest);
+        auto result = FindClosestPickIntersection(rayRequest);
 
-        // attempt a ray intersection with any visible mesh and return the intersection position if successful
-        if (renderGeometryIntersectionResult)
+        if (result.has_value())
         {
-            return renderGeometryIntersectionResult.m_worldPosition;
+            return result.value();
         }
         else
         {
@@ -93,6 +116,17 @@ namespace AzToolsFramework
         rayRequest.m_endWorldPosition = viewportRay.m_origin + viewportRay.m_direction * rayLength;
     }
 
+    AZStd::optional<AZ::Vector3> FindClosestPickIntersection(
+        const AzFramework::ViewportId viewportId, const AzFramework::ScreenPoint& screenPoint, const float rayLength)
+    {
+        AzFramework::RenderGeometry::RayRequest ray;
+        ray.m_onlyVisible = true; // only consider visible objects
+
+        RefreshRayRequest(ray, ViewportInteraction::ViewportScreenToWorldRay(viewportId, screenPoint), rayLength);
+
+        return FindClosestPickIntersection(ray);
+    }
+
     AZ::Vector3 FindClosestPickIntersection(
         const AzFramework::ViewportId viewportId,
         const AzFramework::ScreenPoint& screenPoint,
@@ -105,5 +139,48 @@ namespace AzToolsFramework
         RefreshRayRequest(ray, ViewportInteraction::ViewportScreenToWorldRay(viewportId, screenPoint), rayLength);
 
         return FindClosestPickIntersection(ray, defaultDistance);
+    }
+
+    namespace ViewportInteraction
+    {
+        MouseInteractionResult InternalMouseViewportRequests::InternalHandleAllMouseInteractions(
+            const MouseInteractionEvent& mouseInteraction)
+        {
+            if (InternalHandleMouseManipulatorInteraction(mouseInteraction))
+            {
+                return MouseInteractionResult::Manipulator;
+            }
+            else if (InternalHandleMouseViewportInteraction(mouseInteraction))
+            {
+                return MouseInteractionResult::Viewport;
+            }
+            else
+            {
+                return MouseInteractionResult::None;
+            }
+        }
+
+        KeyboardModifiers QueryKeyboardModifiers()
+        {
+            KeyboardModifiers keyboardModifiers;
+            EditorModifierKeyRequestBus::BroadcastResult(keyboardModifiers, &EditorModifierKeyRequestBus::Events::QueryKeyboardModifiers);
+            return keyboardModifiers;
+        }
+
+        ProjectedViewportRay ViewportScreenToWorldRay(const AzFramework::ViewportId viewportId, const AzFramework::ScreenPoint& screenPoint)
+        {
+            ProjectedViewportRay viewportRay{};
+            ViewportInteractionRequestBus::EventResult(
+                viewportRay, viewportId, &ViewportInteractionRequestBus::Events::ViewportScreenToWorldRay, screenPoint);
+
+            return viewportRay;
+        }
+    }
+
+    AzFramework::EntityContextId GetEntityContextId()
+    {
+        auto entityContextId = AzFramework::EntityContextId::CreateNull();
+        EditorEntityContextRequestBus::BroadcastResult(entityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
+        return entityContextId;
     }
 } // namespace AzToolsFramework

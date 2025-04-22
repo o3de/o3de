@@ -2,14 +2,10 @@
 
 <ScriptCanvas Include="Include/ScriptCanvas/Libraries/Core/GetVariable.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <Class Name="GetVariableNode"
-	       QualifiedName="ScriptCanvas::Nodes::Core::GetVariableNode"
-	       PreferredClassName="Get Variable"
-           Uuid="{8225BE35-4C45-4A32-94D9-3DE114F6F5AF}"
-           Base="ScriptCanvas::Node"
-           Icon="Icons/ScriptCanvas/Placeholder.png"
-           Version="0"
-           GeneratePropertyFriend="True"
-           Description="Node for referencing a property within the graph">
+        QualifiedName="ScriptCanvas::Nodes::Core::GetVariableNode"
+        PreferredClassName="Get Variable"
+        Uuid="{8225BE35-4C45-4A32-94D9-3DE114F6F5AF}"
+        Description="Node for referencing a property within the graph">
         <In Name="In" Description="When signaled sends the property referenced by this node to a Data Output slot"/>
         <Out Name="Out" Description="Signaled after the referenced property has been pushed to the Data Output slot"/>
         <SerializedProperty Name="m_variableId" />

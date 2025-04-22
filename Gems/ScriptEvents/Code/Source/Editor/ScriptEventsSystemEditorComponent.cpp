@@ -69,7 +69,7 @@ namespace ScriptEventsEditor
         AZStd::shared_ptr<AZ::Data::AssetDataStream> stream,
         const AZ::Data::AssetFilterCB& assetLoadFilterCB)
     {
-        AZ::Data::AssetHandler::LoadResult loadedData = loadedData = AzFramework::GenericAssetHandler<ScriptEvents::ScriptEventsAsset>::LoadAssetData(asset, stream, assetLoadFilterCB);
+        AZ::Data::AssetHandler::LoadResult loadedData = AzFramework::GenericAssetHandler<ScriptEvents::ScriptEventsAsset>::LoadAssetData(asset, stream, assetLoadFilterCB);
 
         if (loadedData == AZ::Data::AssetHandler::LoadResult::LoadComplete)
         {
@@ -192,7 +192,7 @@ namespace ScriptEventsEditor
         {
             serialize->Class<ScriptEventEditorSystemComponent, AZ::Component>()
                 ->Version(3)
-                ->Attribute(AZ::Edit::Attributes::SystemComponentTags, AZStd::vector<AZ::Crc32>({ AZ_CRC("AssetBuilder", 0xc739c7d7) }));
+                ->Attribute(AZ::Edit::Attributes::SystemComponentTags, AZStd::vector<AZ::Crc32>({ AZ_CRC_CE("AssetBuilder") }));
             ;
         }
 
@@ -210,12 +210,12 @@ namespace ScriptEventsEditor
 
     void ScriptEventEditorSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("ScriptEventsService", 0x6897c23b));
+        provided.push_back(AZ_CRC_CE("ScriptEventsService"));
     }
 
     void ScriptEventEditorSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("ScriptEventsService", 0x6897c23b));
+        incompatible.push_back(AZ_CRC_CE("ScriptEventsService"));
     }
 
     ////////////////////
@@ -243,6 +243,7 @@ namespace ScriptEventsEditor
         if (moduleConfiguration)
         {
             moduleConfiguration->UnregisterAssetHandler();
+            moduleConfiguration->CleanUp();
         }
     }
 }

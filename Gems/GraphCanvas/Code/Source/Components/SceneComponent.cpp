@@ -341,15 +341,15 @@ namespace GraphCanvas
     {
         GRAPH_CANVAS_PROFILE_FUNCTION();
 
+        // Once we finalize the node, we want to release the undo state, and push a new undo.
+        ScopedGraphUndoBatch undoBatch(GetSceneId());
+
         m_spliceTimer.stop();
 
         m_displayStateStateSetter.ResetStateSetter();
 
         if (m_splicingNode.IsValid())
         {
-            // Once we finalize the node, we want to release the undo state, and push a new undo.
-            GraphModelRequestBus::Event(GetSceneId(), &GraphModelRequests::RequestUndoPoint);
-
             SceneRequestBus::Event(GetSceneId(), &SceneRequests::ClearSelection);
             SceneMemberUIRequestBus::Event(m_splicingNode, &SceneMemberUIRequests::SetSelected, true);
 
@@ -366,7 +366,6 @@ namespace GraphCanvas
             m_splicingPath = QPainterPath();
 
             AssignLastCreationToGroup();
-
             return;
         }
 
@@ -1034,7 +1033,7 @@ namespace GraphCanvas
     {
         if (classElement.GetVersion() == 1)
         {
-            AZ::Crc32 typeId = AZ_CRC("Type", 0x8cde5729);
+            AZ::Crc32 typeId = AZ_CRC_CE("Type");
 
             AZ::SerializeContext::DataElementNode* dataNode = classElement.FindSubElement(typeId);
 
@@ -1246,23 +1245,22 @@ namespace GraphCanvas
         saveData->ClearConstructData();
         for (AZ::Entity* currentEntity : m_graphData.m_nodes)
         {
-            GraphCanvasConstructSaveData* constructSaveData = nullptr;
-
             if (GraphUtils::IsComment(currentEntity->GetId()))
             {
-                constructSaveData = aznew GraphCanvasConstructSaveData();
+                GraphCanvasConstructSaveData* constructSaveData = aznew GraphCanvasConstructSaveData();
                 constructSaveData->m_constructType = ConstructType::CommentNode;
-            }
-            else if (GraphUtils::IsNodeGroup(currentEntity->GetId()))
-            {
-                constructSaveData = aznew GraphCanvasConstructSaveData();
-                constructSaveData->m_constructType = ConstructType::NodeGroup;
-            }
-
-            if (constructSaveData)
-            {
                 EntitySaveDataRequestBus::Event(currentEntity->GetId(), &EntitySaveDataRequests::WriteSaveData, constructSaveData->m_saveDataContainer);
                 saveData->m_constructs.push_back(constructSaveData);
+                continue;
+            }
+
+            if (GraphUtils::IsNodeGroup(currentEntity->GetId()))
+            {
+                GraphCanvasConstructSaveData* constructSaveData = aznew GraphCanvasConstructSaveData();
+                constructSaveData->m_constructType = ConstructType::NodeGroup;
+                EntitySaveDataRequestBus::Event(currentEntity->GetId(), &EntitySaveDataRequests::WriteSaveData, constructSaveData->m_saveDataContainer);
+                saveData->m_constructs.push_back(constructSaveData);
+                continue;
             }
         }
 
@@ -1271,10 +1269,8 @@ namespace GraphCanvas
         for (AZ::Entity* currentEntity : m_graphData.m_bookmarkAnchors)
         {
             GraphCanvasConstructSaveData* constructSaveData = aznew GraphCanvasConstructSaveData();
-
             constructSaveData->m_constructType = ConstructType::BookmarkAnchor;
             EntitySaveDataRequestBus::Event(currentEntity->GetId(), &EntitySaveDataRequests::WriteSaveData, constructSaveData->m_saveDataContainer);
-
             saveData->m_constructs.push_back(constructSaveData);
         }
 
@@ -1285,39 +1281,40 @@ namespace GraphCanvas
     void SceneComponent::ReadSaveData(const EntitySaveDataContainer& saveDataContainer)
     {
         GRAPH_CANVAS_PROFILE_FUNCTION();
-        const SceneComponentSaveData* saveData = saveDataContainer.FindSaveDataAs<SceneComponentSaveData>();
-
-        for (const GraphCanvasConstructSaveData* currentConstruct : saveData->m_constructs)
+        if (const SceneComponentSaveData* saveData = saveDataContainer.FindSaveDataAs<SceneComponentSaveData>())
         {
-            AZ::Entity* constructEntity = nullptr;
-            switch (currentConstruct->m_constructType)
+            for (const GraphCanvasConstructSaveData* currentConstruct : saveData->m_constructs)
             {
-            case ConstructType::CommentNode:
-                GraphCanvasRequestBus::BroadcastResult(constructEntity, &GraphCanvasRequests::CreateCommentNode);
-                break;
-            case ConstructType::NodeGroup:
-                GraphCanvasRequestBus::BroadcastResult(constructEntity, &GraphCanvasRequests::CreateNodeGroup);
-                break;
-            case ConstructType::BookmarkAnchor:
-                GraphCanvasRequestBus::BroadcastResult(constructEntity, &GraphCanvasRequests::CreateBookmarkAnchor);
-                break;
-            default:
-                break;
+                AZ::Entity* constructEntity = nullptr;
+                switch (currentConstruct->m_constructType)
+                {
+                case ConstructType::CommentNode:
+                    GraphCanvasRequestBus::BroadcastResult(constructEntity, &GraphCanvasRequests::CreateCommentNode);
+                    break;
+                case ConstructType::NodeGroup:
+                    GraphCanvasRequestBus::BroadcastResult(constructEntity, &GraphCanvasRequests::CreateNodeGroup);
+                    break;
+                case ConstructType::BookmarkAnchor:
+                    GraphCanvasRequestBus::BroadcastResult(constructEntity, &GraphCanvasRequests::CreateBookmarkAnchor);
+                    break;
+                default:
+                    break;
+                }
+
+                if (constructEntity)
+                {
+                    constructEntity->Init();
+                    constructEntity->Activate();
+
+                    EntitySaveDataRequestBus::Event(constructEntity->GetId(), &EntitySaveDataRequests::ReadSaveData, currentConstruct->m_saveDataContainer);
+
+                    Add(constructEntity->GetId());
+                }
             }
 
-            if (constructEntity)
-            {
-                constructEntity->Init();
-                constructEntity->Activate();
-
-                EntitySaveDataRequestBus::Event(constructEntity->GetId(), &EntitySaveDataRequests::ReadSaveData, currentConstruct->m_saveDataContainer);
-
-                Add(constructEntity->GetId());
-            }
+            m_viewParams = saveData->m_viewParams;
+            m_bookmarkCounter = saveData->m_bookmarkCounter;
         }
-
-        m_viewParams = saveData->m_viewParams;
-        m_bookmarkCounter = saveData->m_bookmarkCounter;
     }
 
     AZStd::any* SceneComponent::GetUserData()
@@ -1730,9 +1727,7 @@ namespace GraphCanvas
         GRAPH_CANVAS_DETAILED_PROFILE_FUNCTION();
         if (node.IsValid())
         {
-            const AZ::EntityId& entityId = GetEntityId();
-
-            GraphModelRequestBus::Event(entityId, &GraphModelRequests::RequestPushPreventUndoStateUpdate);
+            ScopedGraphUndoBatch undoBatch(GetEntityId());
 
             float explosionDensity = 0.6f;
 
@@ -1744,9 +1739,6 @@ namespace GraphCanvas
             ExplodeSceneMember(node, explosionDensity);
             GraphUtils::DetachNodeAndStitchConnections(node);
             Delete({ node });
-
-            GraphModelRequestBus::Event(entityId, &GraphModelRequests::RequestPopPreventUndoStateUpdate);
-            GraphModelRequestBus::Event(entityId, &GraphModelRequests::RequestUndoPoint);
         }
     }
 
@@ -3994,6 +3986,9 @@ namespace GraphCanvas
         {
             GraphicsEffectRequestBus::Event(effectId, &GraphicsEffectRequests::OnGraphicsEffectCancelled);
             RemoveItemFromScene(graphicsItem);
+            // https://stackoverflow.com/questions/38458830/crash-after-qgraphicssceneremoveitem-with-custom-item-class
+            // Scene Index does not correctly update causing a crash when the index tree is queried. 
+            GraphicsEffectRequestBus::Event(effectId, &GraphicsEffectRequests::PrepareGeometryChange);
             delete graphicsItem;
         }
 
@@ -4697,9 +4692,6 @@ namespace GraphCanvas
         : m_scene(scene)
         , m_suppressContextMenu(false)
     {
-        // Workaround for QTBUG-18021
-        setItemIndexMethod(QGraphicsScene::NoIndex);
-
         setMinimumRenderSize(2.0f);
         connect(this, &QGraphicsScene::selectionChanged, this, [this]() { m_scene.OnSelectionChanged(); });
         setSceneRect(-20000, -20000, 40000, 40000);

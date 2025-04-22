@@ -331,13 +331,13 @@ namespace AzQtComponents
             }
 
             QRect itemRect = itemView->visualRect(index);
-            dragPainter.drawPixmap(QPoint(0, imageY),
+            dragPainter.drawPixmap(QPoint(4, imageY + 4),
                 itemView->model()->data(index, Qt::DecorationRole).value<QIcon>().pixmap(QSize(16, 16)));
             dragPainter.setPen(
                 itemView->model()->data(index, Qt::ForegroundRole).value<QBrush>().color());
             dragPainter.setFont(
                 itemView->font());
-            dragPainter.drawText(QRect(20, imageY, rect.width() - 20, rect.height()),
+            dragPainter.drawText(QRect(24, imageY + 4, rect.width() - 20, rect.height()),
                 itemView->model()->data(index, Qt::DisplayRole).value<QString>());
             imageY += itemRect.height();
         }

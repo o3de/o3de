@@ -13,7 +13,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(TriggerActionSetup, EMotionFX::ActorAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(TriggerActionSetup, EMotionFX::ActorAllocator)
 
     TriggerActionSetup::TriggerActionSetup()
     {

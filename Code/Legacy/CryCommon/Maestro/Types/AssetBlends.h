@@ -9,7 +9,6 @@
 
 #pragma once
 
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Asset/AssetCommon.h>
 
 namespace Maestro

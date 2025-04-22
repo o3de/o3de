@@ -56,7 +56,7 @@ namespace AzToolsFramework
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(PropertyColorCtrl, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PropertyColorCtrl, AZ::SystemAllocator);
 
         PropertyColorCtrl(QWidget* pParent = NULL);
         virtual ~PropertyColorCtrl();
@@ -97,7 +97,7 @@ namespace AzToolsFramework
         AZ::Color TransformColor(const AZ::Color& color, uint32_t fromColorSpaceId, uint32_t toColorSpaceId) const;
         QColor TransformColor(const QColor& color, uint32_t fromColorSpaceId, uint32_t toColorSpaceId) const;
 
-        QRegExpValidator* CreateTextEditValidator() const;
+        QRegExpValidator* CreateTextEditValidator();
 
         QToolButton* m_pDefaultButton;
         AzQtComponents::ColorPicker* m_pColorDialog;
@@ -127,7 +127,7 @@ namespace AzToolsFramework
         // this is a Qt Object purely so it can connect to slots with context.  This is the only reason its in this header.
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(Vector3ColorPropertyHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Vector3ColorPropertyHandler, AZ::SystemAllocator);
 
         virtual QWidget* CreateGUI(QWidget* pParent) override;
         virtual void ConsumeAttribute(PropertyColorCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName) override;
@@ -140,7 +140,7 @@ namespace AzToolsFramework
         // this is a Qt Object purely so it can connect to slots with context.  This is the only reason its in this header.
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(AZColorPropertyHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AZColorPropertyHandler, AZ::SystemAllocator);
         bool IsDefaultHandler() const override { return true;  }
         QWidget* CreateGUI(QWidget* pParent) override;
         void ConsumeAttribute(PropertyColorCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName) override;

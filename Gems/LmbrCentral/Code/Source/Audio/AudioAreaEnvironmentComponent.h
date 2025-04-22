@@ -9,6 +9,7 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TransformBus.h>
+#include <AzFramework/Physics/RigidBodyBus.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBodyEvents.h>
 
 #include <IAudioSystem.h>
@@ -28,6 +29,7 @@ namespace LmbrCentral
      */
     class AudioAreaEnvironmentComponent
         : public AZ::Component
+        , protected Physics::RigidBodyNotificationBus::Handler
         , private AZ::TransformNotificationBus::MultiHandler
     {
         friend class EditorAudioAreaEnvironmentComponent;
@@ -50,25 +52,29 @@ namespace LmbrCentral
     protected:
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("AudioAreaEnvironmentService", 0x6ba54d6c));
+            provided.push_back(AZ_CRC_CE("AudioAreaEnvironmentService"));
         }
 
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
         {
-            dependent.push_back(AZ_CRC("AudioPreloadService", 0x20c917d8));
+            dependent.push_back(AZ_CRC_CE("AudioPreloadService"));
         }
 
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC("ShapeService", 0xe86aa5fe));
+            required.push_back(AZ_CRC_CE("ShapeService"));
         }
 
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("AudioAreaEnvironmentService", 0x6ba54d6c));
+            incompatible.push_back(AZ_CRC_CE("AudioAreaEnvironmentService"));
         }
 
         static void Reflect(AZ::ReflectContext* context);
+
+        // Physics::RigidBodyNotifications overrides ...
+        void OnPhysicsEnabled(const AZ::EntityId& entityId) override;
+        void OnPhysicsDisabled(const AZ::EntityId& entityId) override;
 
     private:
         void OnTriggerEnter(const AzPhysics::TriggerEvent& triggerEvent);

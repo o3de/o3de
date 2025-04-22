@@ -10,8 +10,7 @@
 #pragma once
 
 #include <AzCore/Debug/TraceMessageBus.h>
-#include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/Serialization/AZStdContainers.inl>
+#include <AzCore/JSON/prettywriter.h>
 #include <AzCore/std/string/regex.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/vector.h>
@@ -23,7 +22,7 @@
 #include <AzCore/std/string/string_view.h>
 #include "AssetBuilderBusses.h"
 
-/** 
+/**
 * this define exists to turn on and off the support for legacy m_platformFlags and the concept of platforms as an enum
 * If you want to upgrade your system to use the new platform tag system, you can turn this define off in order to strip out
 * any references to the old stuff and cause compile-time errors anywhere your code tries to use the legacy API.
@@ -36,6 +35,15 @@ namespace AZ
 {
     class ComponentDescriptor;
     class Entity;
+    class ReflectContext;
+}
+
+namespace AzToolsFramework
+{
+    namespace AssetDatabase
+    {
+        class ProductDatabaseEntry;
+    }
 }
 
 // This needs to be up here because it needs to be defined before the hash definition, and the hash needs to be defined before the first use (which occurs further down in this file)
@@ -48,13 +56,13 @@ namespace AssetBuilderSDK
     };
 
     /**
-     * Product dependency information that the builder will send to the assetprocessor
+     * Product dependency information that the builder will send to the Asset Processor
      * Indicates a product asset that depends on another product based on the path
      * Should only be used by legacy systems.  Prefer ProductDependencies whenever possible
      */
     struct ProductPathDependency
     {
-        AZ_CLASS_ALLOCATOR(ProductPathDependency, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ProductPathDependency, AZ::SystemAllocator);
         AZ_TYPE_INFO(ProductPathDependency, "{2632bfae-7490-476f-9214-a6d1f02e6085}");
 
         //! Relative path to the asset dependency
@@ -74,6 +82,8 @@ namespace AssetBuilderSDK
 
         static void Reflect(AZ::ReflectContext* context);
     };
+
+    void CreateABDataFile(AZStd::string& folder, AZStd::function<void(rapidjson::PrettyWriter<rapidjson::StringBuffer>&)> body);
 }
 
 namespace AZStd
@@ -99,7 +109,7 @@ namespace AssetBuilderSDK
     namespace ComponentTags
     {
         //! Components with the AssetBuilder tag in their reflect data's attributes as AZ::Edit::Attributes::SystemComponetTags will automatically be created on AssetBuilder startup
-        const static AZ::Crc32 AssetBuilder = AZ_CRC("AssetBuilder", 0xc739c7d7);
+        const static AZ::Crc32 AssetBuilder = AZ_CRC_CE("AssetBuilder");
     }
 
     extern const char* const ErrorWindow; //Use this window name to log error messages.
@@ -108,6 +118,8 @@ namespace AssetBuilderSDK
 
     extern const char* const s_processJobRequestFileName; //!< File name for having job requests send from the Asset Processor.
     extern const char* const s_processJobResponseFileName; //!< File name for having job responses returned to the Asset Processor.
+
+    constexpr const char* CommonPlatformName = "common"; // Use for platform-agnostic jobs
 
     // SubIDs uniquely identify a particular output product of a specific source asset
     // currently we use a scheme where various bits of the subId (which is a 32 bit unsigned) are used to designate different things.
@@ -153,7 +165,7 @@ namespace AssetBuilderSDK
         Platform_SALEM      = 0x40,
         Platform_JASPER     = 0x80,
 
-        //! if you add a new platform entry to this enum, you must add it to allplatforms as well otherwise that platform would not be considered valid. 
+        //! if you add a new platform entry to this enum, you must add it to allplatforms as well otherwise that platform would not be considered valid.
         AllPlatforms = Platform_PC | Platform_LINUX | Platform_ANDROID | Platform_IOS | Platform_MAC | Platform_PROVO | Platform_SALEM | Platform_JASPER
     };
 #endif // defined(ENABLE_LEGACY_PLATFORMFLAGS_SUPPORT)
@@ -171,7 +183,7 @@ namespace AssetBuilderSDK
     //! Structure defining the type of pattern to use to apply
     struct AssetBuilderPattern
     {
-        AZ_CLASS_ALLOCATOR(AssetBuilderPattern, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AssetBuilderPattern, AZ::SystemAllocator);
         AZ_TYPE_INFO(AssetBuilderPattern, "{A8818121-D106-495E-9776-11F59E897BAD}");
 
         enum PatternType
@@ -199,6 +211,9 @@ namespace AssetBuilderSDK
     class FilePatternMatcher
     {
     public:
+        AZ_CLASS_ALLOCATOR(FilePatternMatcher, AZ::SystemAllocator);
+        AZ_TYPE_INFO(FilePatternMatcher, "{3649C0D9-D9D5-4878-B14B-C7E1E1137894}");
+
         FilePatternMatcher() = default;
         explicit FilePatternMatcher(const AssetBuilderSDK::AssetBuilderPattern& pattern);
         FilePatternMatcher(const AZStd::string& pattern, AssetBuilderSDK::AssetBuilderPattern::PatternType type);
@@ -215,7 +230,7 @@ namespace AssetBuilderSDK
 
     protected:
         static bool ValidatePatternRegex(const AZStd::string& pattern);
-        
+
         AssetBuilderSDK::AssetBuilderPattern    m_pattern;
         RegexType           m_regex;
         AZStd::string       m_errorString;
@@ -223,10 +238,10 @@ namespace AssetBuilderSDK
         bool                m_isValid{};
     };
 
-    //!Information that builders will send to the assetprocessor
+    //!Information that builders will send to the Asset Processor
     struct AssetBuilderDesc
     {
-        AZ_CLASS_ALLOCATOR(AssetBuilderDesc, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AssetBuilderDesc, AZ::SystemAllocator);
         AZ_TYPE_INFO(AssetBuilderDesc, "{7778EB3D-7B3B-4231-80C0-94C4226309AF}");
 
         enum class AssetBuilderType
@@ -242,7 +257,7 @@ namespace AssetBuilderSDK
             BF_EmitsNoDependencies = 1<<0, // if you set this flag, dependency-related parts in the code will be skipped
             BF_DeleteLastKnownGoodProductOnFailure = 1<<1,  // if processing fails, delete previous successful product if it exists
         };
-        
+
         //! The name of the Builder
         AZStd::string m_name;
 
@@ -256,16 +271,16 @@ namespace AssetBuilderSDK
         //! Changing this version number will cause all your assets to be re-submitted to the builder for job creation and rebuilding.
         int m_version = 0;
 
-        //! The required create job function callback that the asset processor will call during the job creation phase
+        //! The required create job function callback that the Asset Processor will call during the job creation phase
         CreateJobFunction m_createJobFunction;
-        //! The required process job function callback that the asset processor will call during the job processing phase
+        //! The required process job function callback that the Asset Processor will call during the job processing phase
         ProcessJobFunction m_processJobFunction;
 
         //! The builder type.  We set this to External by default, as that is the typical set up for custom builders (builders in gems and legacy dll builders).
         AssetBuilderType m_builderType = AssetBuilderType::External;
 
         /** Analysis Fingerprint
-         * you can optionally emit an analysis fingerprint, or leave this empty.  
+         * you can optionally emit an analysis fingerprint, or leave this empty.
          * The Analysis Fingerprint, used to quickly skip analysis if the source files modtime has not changed.
          * If your analysis fingerprint DOES change, then all source files will be sent to your CreateJobs function regardless of modtime changes.
          * This does not necessarily mean that the jobs will need doing, just that CreateJobs will be called.
@@ -295,12 +310,12 @@ namespace AssetBuilderSDK
         static void Reflect(AZ::ReflectContext* context);
     };
 
-    //! Source file dependency information that the builder will send to the assetprocessor
-    //! It is important to note that the builder do not need to provide both the sourceFileDependencyUUID or sourceFileDependencyPath info to the asset processor,
+    //! Source file dependency information that the builder will send to the Asset Processor
+    //! It is important to note that the builder do not need to provide both the sourceFileDependencyUUID or sourceFileDependencyPath info to the Asset Processor,
     //! any one of them should be sufficient
     struct SourceFileDependency
     {
-        AZ_CLASS_ALLOCATOR(SourceFileDependency, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SourceFileDependency, AZ::SystemAllocator);
         AZ_TYPE_INFO(SourceFileDependency, "{d3c055d8-b5e8-44ab-a6ce-1ecb0da091ec}");
 
         // Corresponds to SourceFileDependencyEntry TypeOfDependency Values
@@ -309,17 +324,17 @@ namespace AssetBuilderSDK
             Absolute, // Corresponds to DEP_SourceToSource
             Wildcards // DEP_SourceLikeMatch
         };
-        /** Filepath on which the source file depends, it can be either be a relative path from the assets folder, or an absolute path. 
-        * if it's relative, the asset processor will check every watched folder in the order specified in the assetprocessor config file until it finds that file. 
-        * For example if the builder sends a SourceFileDependency with m_sourceFileDependencyPath = "texture/blah.tif" to the asset processor,
+        /** Filepath on which the source file depends, it can be either be a relative path from the assets folder, or an absolute path.
+        * if it's relative, the Asset Processor will check every watched folder in the order specified in the Asset Processor config file until it finds that file.
+        * For example if the builder sends a SourceFileDependency with m_sourceFileDependencyPath = "texture/blah.tif" to the Asset Processor,
         * it will check all watch folders for a file whose relative path with regard to it is "texture/blah.tif".
         * and supposing it finds it in "C:/dev/gamename/texture/blah.tif", it will use that as the dependency.
         * You can also send absolute path, which will obey the usual overriding rules.
-        *     @note You must EITHER provide the m_sourceFileDependencyPath OR the m_sourceFileDependencyUUID. 
+        *     @note You must EITHER provide the m_sourceFileDependencyPath OR the m_sourceFileDependencyUUID.
         **/
         AZStd::string m_sourceFileDependencyPath;
 
-        /** UUID of the file on which the source file depends.  
+        /** UUID of the file on which the source file depends.
         *     @note You must EITHER provide the m_sourceFileDependencyPath OR the m_sourceFileDependencyUUID if you have that instead.
         */
         AZ::Uuid m_sourceFileDependencyUUID = AZ::Uuid::CreateNull();
@@ -327,7 +342,7 @@ namespace AssetBuilderSDK
         SourceFileDependencyType m_sourceDependencyType{ SourceFileDependencyType::Absolute };
 
         SourceFileDependency() = default;
-        
+
         SourceFileDependency(const AZStd::string& sourceFileDependencyPath, AZ::Uuid sourceFileDependencyUUID, SourceFileDependencyType sourceDependencyType = SourceFileDependencyType::Absolute)
             : m_sourceFileDependencyPath(sourceFileDependencyPath)
             , m_sourceFileDependencyUUID(sourceFileDependencyUUID)
@@ -342,45 +357,58 @@ namespace AssetBuilderSDK
         {
         }
 
+        bool operator==(const SourceFileDependency& other) const;
+
         AZStd::string ToString() const;
 
         static void Reflect(AZ::ReflectContext* context);
     };
     enum class JobDependencyType : AZ::u32
     {
-        //! This implies that the dependent job should get processed by the assetprocessor, if the fingerprint of job it depends on changes.
+        //! This implies that the dependent job should get processed by the Asset Processor, if the fingerprint of job it depends on changes.
         Fingerprint,
 
-        //! This implies that the dependent job should only run after the job it depends on is processed by the assetprocessor.
+        //! This implies that the dependent job should only run after the job it depends on is processed by the Asset Processor.
         Order,
 
-        //! This is similiar to Order where the dependent job should only run after all the jobs it depends on are processed by the assetprocessor.
-        //! The difference is that here only those dependent jobs matter that have never been processed by the asset processor.
-        //! Also important to note is the fingerprint of the dependent jobs will not alter the the fingerprint of the job.  
+        //! This is similiar to Order where the dependent job should only run after all the jobs it depends on are processed by the Asset Processor.
+        //! The difference is that here only those dependent jobs matter that have never been processed by the Asset Processor.
+        //! Also important to note is the fingerprint of the dependent jobs will not alter the fingerprint of the job.
         OrderOnce,
+
+        //! Similar to Order, except that the dependent jobs do not rebuild when the jobs they depend on are processed.
+        //! Also important to note is the fingerprint of the dependent jobs will not alter the fingerprint of the job.
+        OrderOnly,
     };
 
-    //! Job dependency information that the builder will send to the assetprocessor.
+    //! Job dependency information that the builder will send to the Asset Processor.
     struct JobDependency
     {
-        AZ_CLASS_ALLOCATOR(JobDependency, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(JobDependency, AZ::SystemAllocator);
         AZ_TYPE_INFO(JobDependency, "{93A9D915-8C9E-4588-8D86-578C01EEA388}");
-        //! Source file dependency information that the builder will send to the assetprocessor
-        //! It is important to note that the builder do not need to provide both the sourceFileDependencyUUID or sourceFileDependencyPath info to the asset processor,
-        //! any one of them should be sufficient
+        //! Source file dependency information that the builder will send to the Asset Processor.
+        //! It is important to note that the builder does not need to provide both the sourceFileDependencyUUID and sourceFileDependencyPath info to the Asset Processor,
+        //! any one of them should be sufficient.
         SourceFileDependency m_sourceFile;
-        
+
         //! JobKey of the dependent job
         AZStd::string m_jobKey;
-        
+
         //! Platform Identifier of the dependent job
         AZStd::string m_platformIdentifier;
 
         //! Type of Job Dependency (order or fingerprint)
         JobDependencyType m_type;
 
+        //! An optional list of Asset SubIds to filter the dependency to.  Only products in this list which have changed will cause
+        //! CreateJobs to be called. If the list is empty, AP will assume every emitted product will trigger the dependency.
+        AZStd::vector<AZ::u32> m_productSubIds;
+
         JobDependency() = default;
         JobDependency(const AZStd::string& jobKey, const AZStd::string& platformIdentifier, const JobDependencyType& type, const SourceFileDependency& sourceFile);
+
+        AZStd::string ConcatenateSubIds() const;
+        bool operator==(const JobDependency& other) const;
 
         static void Reflect(AZ::ReflectContext* context);
     };
@@ -388,7 +416,7 @@ namespace AssetBuilderSDK
     //! JobDescriptor is used by the builder to store job related information
     struct JobDescriptor
     {
-        AZ_CLASS_ALLOCATOR(JobDescriptor, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(JobDescriptor, AZ::SystemAllocator);
         AZ_TYPE_INFO(JobDescriptor, "{bd0472a4-7634-41f3-97ef-00f3b239bae2}");
 
         //! Any builder specific parameters to pass to the Process Job Request
@@ -396,7 +424,7 @@ namespace AssetBuilderSDK
 
         //! Any additional info that should be taken into account during fingerprinting for this job
         AZStd::string m_additionalFingerprintInfo;
-        
+
         //! Job specific key, e.g. TIFF Job, etc
         AZStd::string m_jobKey;
 
@@ -420,23 +448,23 @@ namespace AssetBuilderSDK
         //! Flag to determine whether we need to check the input file for exclusive lock before we process the job
         bool m_checkExclusiveLock = false;
 
-        //! Flag to determine whether we need to check the server for the outputs of this job 
+        //! Flag to determine whether we need to check the server for the outputs of this job
         //! before we start processing the job locally.
-        //! If the asset processor is running in server mode then this will be used to determine whether we need 
+        //! If the Asset Processor is running in server mode then this will be used to determine whether we need
         //! to store the outputs of this jobs in the server.
         bool m_checkServer = false;
 
-        //! This is required for jobs that want to declare job dependency on other jobs. 
+        //! This is required for jobs that want to declare job dependency on other jobs.
         AZStd::vector<JobDependency> m_jobDependencyList;
 
         //! If set to true, reported errors, asserts and exceptions will automatically cause the job to fail even is ProcessJobResult_Success is the result code.
         bool m_failOnError = false;
 
-        /** 
+        /**
         * construct using a platformIdentifier from your CreateJobsRequest.  it is the m_identifier member of the PlatformInfo.
         */
-        JobDescriptor(const AZStd::string& additionalFingerprintInfo, AZStd::string jobKey, const char* platformIdentifier); 
-        
+        JobDescriptor(const AZStd::string& additionalFingerprintInfo, AZStd::string jobKey, const char* platformIdentifier);
+
 #if defined(ENABLE_LEGACY_PLATFORMFLAGS_SUPPORT)
         /**
         * DEPRECATED - please use the above constructor
@@ -445,13 +473,13 @@ namespace AssetBuilderSDK
         */
         JobDescriptor(AZStd::string additionalFingerprintInfo, int platform, const AZStd::string& jobKey);
 #endif // defined(ENABLE_LEGACY_PLATFORMFLAGS_SUPPORT)
-        
+
         JobDescriptor() = default;
 
         static void Reflect(AZ::ReflectContext* context);
 
         /** Use this to set the platform identifier.  it knows when it needs to retroactively compute
-        * the old m_platform flag when that code is enabled.
+        * the old m_platform flag when that code is enabled. Use CommonPlatformName for platform-agnostic jobs.
         */
         void SetPlatformIdentifier(const char* platformIdentifier);
         const AZStd::string& GetPlatformIdentifier() const;
@@ -464,41 +492,12 @@ namespace AssetBuilderSDK
         AZStd::string m_platformIdentifier;
     };
 
-    //! RegisterBuilderRequest contains input data that will be sent by the AssetProcessor to the builder during the startup registration phase
-    struct RegisterBuilderRequest
-    {
-        AZ_CLASS_ALLOCATOR(RegisterBuilderRequest, AZ::SystemAllocator, 0);
-        AZ_TYPE_INFO(RegisterBuilderRequest, "{7C6C5198-4766-42B8-9A1E-48479CE2F5EA}");
-
-        AZStd::string m_filePath;
-
-        RegisterBuilderRequest() {}
-
-        explicit RegisterBuilderRequest(const AZStd::string& filePath)
-            : m_filePath(filePath)
-        {
-        }
-
-        static void Reflect(AZ::ReflectContext* context);
-    };
-
-    //! INTERNAL USE ONLY - RegisterBuilderResponse contains registration data that will be sent by the builder to the AssetProcessor in response to RegisterBuilderRequest
-    struct RegisterBuilderResponse
-    {
-        AZ_CLASS_ALLOCATOR(RegisterBuilderResponse, AZ::SystemAllocator, 0);
-        AZ_TYPE_INFO(RegisterBuilderResponse, "{0AE5583F-C763-410E-BA7F-78BD90546C01}");
-
-        AZStd::vector<AssetBuilderDesc> m_assetBuilderDescList;
-
-        static void Reflect(AZ::ReflectContext* context);
-    };
-
     /**
     *  This tells you about a platform in your CreateJobsRequest or your ProcessJobRequest
     */
     struct PlatformInfo
     {
-        AZ_CLASS_ALLOCATOR(PlatformInfo, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PlatformInfo, AZ::SystemAllocator);
         AZ_TYPE_INFO(PlatformInfo, "{F7DA39A5-C319-4552-954B-3479E2454D3F}");
 
         AZStd::string m_identifier; ///< like "pc" or "android" or "ios"...
@@ -515,10 +514,10 @@ namespace AssetBuilderSDK
         static AZStd::string PlatformVectorAsString(const AZStd::vector<PlatformInfo>& platforms);
     };
 
-    //! CreateJobsRequest contains input job data that will be send by the AssetProcessor to the builder for creating jobs
+    //! CreateJobsRequest contains input job data that will be send by the Asset Processor to the builder for creating jobs
     struct CreateJobsRequest
     {
-        AZ_CLASS_ALLOCATOR(CreateJobsRequest, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CreateJobsRequest, AZ::SystemAllocator);
         AZ_TYPE_INFO(CreateJobsRequest, "{02d470fb-4cb6-4cd7-876f-f0652910ff75}");
 
         //! The builder id to identify which builder will process this job request
@@ -533,7 +532,7 @@ namespace AssetBuilderSDK
 
         AZ::Uuid m_sourceFileUUID; ///< each source file has a unique UUID.
 
-        
+
         //! Information about each platform you are expected to build is stored here.
         //! You can emit any number of jobs to produce some or all of the assets for each of these platforms.
         AZStd::vector<PlatformInfo> m_enabledPlatforms;
@@ -554,7 +553,7 @@ namespace AssetBuilderSDK
         bool HasPlatformWithTag(const char* platformTag) const;
 
 #if defined(ENABLE_LEGACY_PLATFORMFLAGS_SUPPORT)
-        /** 
+        /**
         * Legacy - DEPRECATED - use m_enabledPlatforms instead.
         * returns the number of platforms that are enabled for the source file
         */
@@ -562,13 +561,13 @@ namespace AssetBuilderSDK
 
         /***
         * Legacy - DEPRECATED - use m_enabledPlatforms instead.
-        * returns the enabled platform by index, if no platform is found then we will return  Platform_NONE. 
+        * returns the enabled platform by index, if no platform is found then we will return  Platform_NONE.
         */
         AssetBuilderSDK::Platform GetEnabledPlatformAt(size_t index) const;
 
         /***
         * Legacy - DEPRECATED - use m_enabledPlatforms instead.
-        * determine whether the platform is enabled or not, returns true if enabled  otherwise false  
+        * determine whether the platform is enabled or not, returns true if enabled  otherwise false
         */
         bool IsPlatformEnabled(AZ::u32 platform) const;
 
@@ -579,15 +578,15 @@ namespace AssetBuilderSDK
         bool IsPlatformValid(AZ::u32 platform) const;
         /**
         * Legacy - deprecated!  Only here for backward compatibility.  Will not support new platforms - please use the m_enabledPlatform APIs going forward
-        * Platform flags informs the builder which platforms the AssetProcessor is interested in.  Its the platforms enum as bitmasks
+        * Platform flags informs the builder which platforms the Asset Processor is interested in.  Its the platforms enum as bitmasks
         */
         int m_platformFlags = 0;
 #endif // defined(ENABLE_LEGACY_PLATFORMFLAGS_SUPPORT)
 
-        
+
         static void Reflect(AZ::ReflectContext* context);
 
-        
+
     };
 
     //! Possible result codes from CreateJobs requests
@@ -601,10 +600,10 @@ namespace AssetBuilderSDK
         ShuttingDown
     };
 
-    //! CreateJobsResponse contains job data that will be send by the builder to the assetProcessor in response to CreateJobsRequest
+    //! CreateJobsResponse contains job data that will be send by the builder to the Asset Processor in response to CreateJobsRequest
     struct CreateJobsResponse
     {
-        AZ_CLASS_ALLOCATOR(CreateJobsResponse, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CreateJobsResponse, AZ::SystemAllocator);
         AZ_TYPE_INFO(CreateJobsResponse, "{32a27d68-25bc-4425-a12b-bab961d6afcd}");
 
         CreateJobsResultCode         m_result = CreateJobsResultCode::Failed;   // The result code from the create jobs request
@@ -617,11 +616,11 @@ namespace AssetBuilderSDK
         static void Reflect(AZ::ReflectContext* context);
     };
 
-    //! Product dependency information that the builder will send to the assetprocessor
+    //! Product dependency information that the builder will send to the Asset Processor
     //! Indicates a product asset that depends on another product asset
     struct ProductDependency
     {
-        AZ_CLASS_ALLOCATOR(ProductDependency, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ProductDependency, AZ::SystemAllocator);
         AZ_TYPE_INFO(ProductDependency, "{54338921-b437-4f39-a0da-b1d0d1ee7b57}");
 
         //! ID of the asset dependency
@@ -644,12 +643,26 @@ namespace AssetBuilderSDK
         static void Reflect(AZ::ReflectContext* context);
     };
 
+    // A set of bit flags for a JobProduct
+    enum class ProductOutputFlags : AZ::u32
+    {
+        // Indicates this JobProduct is a product asset which should be output to the cache.  This is the default.
+        // Currently it is not supported to use this with IntermediateAsset since the Common platform is required for IntermediateAsset and not yet supported for ProductAsset.
+        ProductAsset = 1,
+        IntermediateAsset = 2, // Indicates this JobProduct is an intermediate asset which should be output to the intermediate asset folder.  Must be used with the "common" platform (see CommonPlatformName).
+        CachedAsset = 4 // This product asset has been archived using the Asset Cache Server feature (aka Shared Cache)
+    };
+
+    bool IsProductOutputFlagSet(const AzToolsFramework::AssetDatabase::ProductDatabaseEntry& product, ProductOutputFlags flag);
+
+    AZ_DEFINE_ENUM_BITWISE_OPERATORS(ProductOutputFlags);
+
     using ProductPathDependencySet = AZStd::unordered_set<AssetBuilderSDK::ProductPathDependency>;
 
     //! JobProduct is used by the builder to store job product information
     struct JobProduct
     {
-        AZ_CLASS_ALLOCATOR(JobProduct, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(JobProduct, AZ::SystemAllocator);
         AZ_TYPE_INFO(JobProduct, "{d1d35d2c-3e4a-45c6-a13a-e20056344516}");
 
         AZStd::string m_productFileName; // relative or absolute product file path
@@ -663,7 +676,7 @@ namespace AssetBuilderSDK
         /// canonical product SubID, the system will attempt to look it up in the list of "previously known as..." legacy subIds in case
         /// the source data it is reading is old.  This allows you to change your subID scheme at any time as long as you include
         /// the old scheme in the legacySubIDs list.
-        AZStd::vector<AZ::u32> m_legacySubIDs; 
+        AZStd::vector<AZ::u32> m_legacySubIDs;
 
         // SUB ID context: A Stable sub id means a few things. Products (game ready assets) are identified in the engine by AZ::Data::AssetId, which is a combination of source guid which is random and this product sub id. AssetType is currently NOT USED to differentiate assets by the system. So if two or more products of the same source are for the same platform they can not generate the same sub id!!! If they did this would be a COLLISION!!! which would not allow the rngine to access one or more of the products!!! Not using asset type in the differentiation may change in the future, but it is the way it is done for now.
         // SUB ID RULES:
@@ -693,6 +706,18 @@ namespace AssetBuilderSDK
         /// When false, AP will emit a warning that dependencies have not been handled.
         bool m_dependenciesHandled{ false };
 
+        /// Bit flags for the output product
+        ProductOutputFlags m_outputFlags = ProductOutputFlags::ProductAsset;
+
+        /// Scan-folder relative path to use for the output product instead of the default.  An empty string will use the default pathing rules.
+        /// Only allowed for products with the IntermediateAsset flag.
+        /// Example:
+        /// Input: game/examples/example.shader
+        /// Output: IntermediateAsset - example.pdb
+        /// By default the product would output to <IntermediateAssetsFolder>/game/examples/example.pdb
+        /// With a PathOverride of shaders/debug the product is instead written to <IntermediateAssetsFolder>/shaders/debug
+        AZStd::string m_outputPathOverride;
+
         JobProduct() = default;
         JobProduct(const AZStd::string& productName, AZ::Data::AssetType productAssetType = AZ::Data::AssetType::CreateNull(), AZ::u32 productSubID = 0);
         JobProduct(AZStd::string&& productName, AZ::Data::AssetType productAssetType = AZ::Data::AssetType::CreateNull(), AZ::u32 productSubID = 0);
@@ -708,10 +733,10 @@ namespace AssetBuilderSDK
         static void Reflect(AZ::ReflectContext* context);
     };
 
-    //! ProcessJobRequest contains input job data that will be send by the AssetProcessor to the builder for processing jobs
+    //! ProcessJobRequest contains input job data that will be send by the Asset Processor to the builder for processing jobs
     struct ProcessJobRequest
     {
-        AZ_CLASS_ALLOCATOR(ProcessJobRequest, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ProcessJobRequest, AZ::SystemAllocator);
         AZ_TYPE_INFO(ProcessJobRequest, "{20461454-d2f9-4079-ab95-703905e06002}");
 
         AZStd::string m_sourceFile; ///! relative source file name
@@ -721,7 +746,7 @@ namespace AssetBuilderSDK
         JobDescriptor m_jobDescription; ///! job descriptor for this job.  Note that this still contains the job parameters from when you emitted it during CreateJobs
         PlatformInfo m_platformInfo; ///! the information about the platform that this job was emitted for.
         AZStd::string m_tempDirPath; // temp directory that the builder should use to create job outputs for this job request
-        AZ::u64 m_jobId; ///! job id for this job, this is also the address for the JobCancelListener
+        AZ::u64 m_jobId{}; ///! job id for this job, this is also the address for the JobCancelListener
         AZ::Uuid m_sourceFileUUID; ///! the UUID of the source file.  Will be used as the uuid of the AssetID of the product when combined with the subID.
         AZStd::vector<SourceFileDependency> m_sourceFileDependencyList;
 
@@ -738,117 +763,41 @@ namespace AssetBuilderSDK
         ProcessJobResult_NetworkIssue = 4
     };
 
-    //! ProcessJobResponse contains job data that will be send by the builder to the assetProcessor in response to ProcessJobRequest
+    //! ProcessJobResponse contains job data that will be send by the builder to the Asset Processor in response to ProcessJobRequest
     struct ProcessJobResponse
     {
-        AZ_CLASS_ALLOCATOR(ProcessJobResponse, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ProcessJobResponse, AZ::SystemAllocator);
         AZ_TYPE_INFO(ProcessJobResponse, "{6b48ada5-0d52-43be-ad57-0bf8aeaef04b}");
-        
+
         ProcessJobResultCode m_resultCode = ProcessJobResult_Failed;
         AZStd::vector<JobProduct> m_outputProducts;
         bool m_requiresSubIdGeneration = true; //!< Used to determine if legacy RC products need sub ids generated for them.
+
+        //! Typically the AP deletes the Temp folder when a job completes successfully. By setting this flag to true
+        //! the AssetBuilder will have the chance to preserve the temp folder and its content after a successful run.
+        //! REMARK-1: This flag was added for debugging purposes, make sure production code doesn't set this flag as true.
+        //!           Otherwise there will be an excessive proliferation of "JobTemp-xxxx" folders in user/AssetProcessorTemp.
+        //! REMARK-2: In normal circumstance the AP does a file-move operation when creating product assets. But when
+        //!           this flags is set to true it will do a file-copy operation, which may impact performance of the AP.
+        //!           Again, because this flag has been added for debugging purposes, it shouldn't be a big deal so long
+        //!           as production code keeps it as false. 
+        bool m_keepTempFolder = false;
+
         //! Populate m_sourcesToReprocess with sources by absolute path which you want to trigger a rebuild for
         //! To reprocess these sources, make sure to update fingerprints in CreateJobs of those builders which process them, like changing source dependencies.
-        AZStd::vector<AZStd::string> m_sourcesToReprocess; 
-        
+        AZStd::vector<AZStd::string> m_sourcesToReprocess;
+
         bool Succeeded() const;
 
+        //! Detects if any products ids created by the builder collide. Call this once the builder has completed processing. Any colliding ids will be logged.
+        bool ReportProductCollisions() const;
+
         static void Reflect(AZ::ReflectContext* context);
     };
 
-    //! BuilderHelloRequest is sent by an AssetBuilder that is attempting to connect to the AssetProcessor to register itself as a worker
-    class BuilderHelloRequest : public AzFramework::AssetSystem::BaseAssetProcessorMessage
-    {
-    public:
 
-        AZ_CLASS_ALLOCATOR(BuilderHelloRequest, AZ::OSAllocator, 0);
-        AZ_RTTI(BuilderHelloRequest, "{5fab5962-a1d8-42a5-bf7a-fb1a8c5a9588}", BaseAssetProcessorMessage);
 
-        static void Reflect(AZ::ReflectContext* context);
-        static unsigned int MessageType();
 
-        unsigned int GetMessageType() const override;
-
-        //! Unique ID assigned to this builder to identify it
-        AZ::Uuid m_uuid = AZ::Uuid::CreateNull();
-    };
-
-    //! BuilderHelloResponse contains the AssetProcessor's response to a builder connection attempt, indicating if it is accepted and the ID that it was assigned
-    class BuilderHelloResponse : public AzFramework::AssetSystem::BaseAssetProcessorMessage
-    {
-    public:
-
-        AZ_CLASS_ALLOCATOR(BuilderHelloResponse, AZ::OSAllocator, 0);
-        AZ_RTTI(BuilderHelloResponse, "{5f3d7c11-6639-4c6f-980a-32be546903c2}", BaseAssetProcessorMessage);
-
-        static void Reflect(AZ::ReflectContext* context);
-
-        unsigned int GetMessageType() const override;
-
-        //! Indicates if the builder was accepted by the AP
-        bool m_accepted = false;
-
-        //! Unique ID assigned to the builder.  If the builder isn't a local process, this is the ID assigned by the AP
-        AZ::Uuid m_uuid = AZ::Uuid::CreateNull();
-    };
-
-    class CreateJobsNetRequest : public AzFramework::AssetSystem::BaseAssetProcessorMessage
-    {
-    public:
-
-        AZ_CLASS_ALLOCATOR(CreateJobsNetRequest, AZ::OSAllocator, 0);
-        AZ_RTTI(CreateJobsNetRequest, "{97fa717d-3a09-4d21-95c6-b2eafd773f1c}", BaseAssetProcessorMessage);
-
-        static void Reflect(AZ::ReflectContext* context);
-        static unsigned int MessageType();
-
-        unsigned int GetMessageType() const override;
-
-        CreateJobsRequest m_request;
-    };
-
-    class CreateJobsNetResponse : public AzFramework::AssetSystem::BaseAssetProcessorMessage
-    {
-    public:
-
-        AZ_CLASS_ALLOCATOR(CreateJobsNetResponse, AZ::OSAllocator, 0);
-        AZ_RTTI(CreateJobsNetResponse, "{b2c7c2d3-b60e-4b27-b699-43e0ba991c33}", BaseAssetProcessorMessage);
-
-        static void Reflect(AZ::ReflectContext* context);
-
-        unsigned int GetMessageType() const override;
-
-        CreateJobsResponse m_response;
-    };
-
-    class ProcessJobNetRequest : public AzFramework::AssetSystem::BaseAssetProcessorMessage
-    {
-    public:
-
-        AZ_CLASS_ALLOCATOR(ProcessJobNetRequest, AZ::OSAllocator, 0);
-        AZ_RTTI(ProcessJobNetRequest, "{05288de1-020b-48db-b9de-715f17284efa}", BaseAssetProcessorMessage);
-
-        static void Reflect(AZ::ReflectContext* context);
-        static unsigned int MessageType();
-
-        unsigned int GetMessageType() const override;
-
-        ProcessJobRequest m_request;
-    };
-
-    class ProcessJobNetResponse : public AzFramework::AssetSystem::BaseAssetProcessorMessage
-    {
-    public:
-
-        AZ_CLASS_ALLOCATOR(ProcessJobNetResponse, AZ::OSAllocator, 0);
-        AZ_RTTI(ProcessJobNetResponse, "{26ddf882-246c-4cfb-912f-9b8e389df4f6}", BaseAssetProcessorMessage);
-
-        static void Reflect(AZ::ReflectContext* context);
-
-        unsigned int GetMessageType() const override;
-
-        ProcessJobResponse m_response;
-    };
 
     //! JobCancelListener can be used by builders in their processJob method to listen for job cancellation request.
     //! The address of this listener is the jobid which can be found in the process job request.
@@ -860,7 +809,7 @@ namespace AssetBuilderSDK
         JobCancelListener(const JobCancelListener&) = delete;
         //////////////////////////////////////////////////////////////////////////
         //!JobCommandBus::Handler overrides
-        //!Note: This will be called on a thread other than your processing job thread. 
+        //!Note: This will be called on a thread other than your processing job thread.
         //!You can derive from JobCancelListener and reimplement Cancel if you need to do something special in order to cancel your job.
         void Cancel() override;
         ///////////////////////////////////////////////////////////////////////
@@ -881,7 +830,7 @@ namespace AssetBuilderSDK
         ~AssertAbsorber();
 
         bool OnAssert(const char* message) override;
-                
+
         AZStd::string m_assertMessage;
         // only absorb messages for your thread!
         static AZ_THREAD_LOCAL bool s_onAbsorbThread;
@@ -907,7 +856,7 @@ namespace AssetBuilderSDK
         bool m_errorsWillFailJob;
         size_t m_errorsOccurred = 0;
 
-        //! The id of the thread that created this object.  
+        //! The id of the thread that created this object.
         //! There can be multiple builders running at once, so we need to filter out ones coming from other builders
         AZStd::thread_id m_jobThreadId;
     };
@@ -934,45 +883,28 @@ namespace AZ
     AZ_TYPE_INFO_SPECIALIZE(AssetBuilderSDK::ProcessJobResultCode, "{15797D63-4980-436A-9DE1-E0CCA9B5DB19}");
     AZ_TYPE_INFO_SPECIALIZE(AssetBuilderSDK::ProductPathDependencyType, "{EF77742B-9627-4072-B431-396AA7183C80}");
     AZ_TYPE_INFO_SPECIALIZE(AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType, "{BE9C8805-DB17-4500-944A-EB33FD0BE347}");
+    AZ_TYPE_INFO_SPECIALIZE(AssetBuilderSDK::ProductOutputFlags, "{247B6AEB-D92E-40BE-B741-70E18DE5F888}");
 }
 
-//! This macro should be used by every AssetBuilder to register itself,
-//! AssetProcessor uses these exported function to identify whether a dll is an Asset Builder or not
-//! If you want something highly custom you can do these entry points yourself instead of using the macro.
-#define REGISTER_ASSETBUILDER                                                      \
-    extern void BuilderOnInit();                                                   \
-    extern void BuilderDestroy();                                                  \
-    extern void BuilderRegisterDescriptors();                                      \
-    extern void BuilderAddComponents(AZ::Entity * entity);                         \
-    extern "C"                                                                     \
-    {                                                                              \
-    AZ_DLL_EXPORT int IsAssetBuilder()                                             \
-    {                                                                              \
-        return 0;                                                                  \
-    }                                                                              \
-                                                                                   \
-    AZ_DLL_EXPORT void InitializeModule(AZ::EnvironmentInstance sharedEnvironment) \
-    {                                                                              \
-        AZ::Environment::Attach(sharedEnvironment);                                \
-        BuilderOnInit();                                                           \
-    }                                                                              \
-                                                                                   \
-    AZ_DLL_EXPORT void UninitializeModule()                                        \
-    {                                                                              \
-        BuilderDestroy();                                                          \
-        AZ::Environment::Detach();                                                 \
-    }                                                                              \
-                                                                                   \
-    AZ_DLL_EXPORT void ModuleRegisterDescriptors()                                 \
-    {                                                                              \
-        BuilderRegisterDescriptors();                                              \
-    }                                                                              \
-                                                                                   \
-    AZ_DLL_EXPORT void ModuleAddComponents(AZ::Entity * entity)                    \
-    {                                                                              \
-        BuilderAddComponents(entity);                                              \
-    }                                                                              \
-    }
-// confusion-reducing note: above end-brace is part of the macro, not a namespace
+namespace AZStd
+{
+    template<>
+    struct hash<AssetBuilderSDK::JobDependency>
+    {
+        size_t operator()(const AssetBuilderSDK::JobDependency& jobDependency) const
+        {
+            if(jobDependency.m_sourceFile.m_sourceFileDependencyPath.empty())
+            {
+                AZStd::hash<AZ::Uuid> hasher;
 
+                return hasher(jobDependency.m_sourceFile.m_sourceFileDependencyUUID);
+            }
+            else
+            {
+                AZStd::hash<AZStd::string> hasher;
 
+                return hasher(jobDependency.m_sourceFile.m_sourceFileDependencyPath);
+            }
+        }
+    };
+} // namespace AZStd

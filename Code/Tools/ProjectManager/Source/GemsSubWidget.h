@@ -22,7 +22,7 @@ namespace O3DE::ProjectManager
     class GemsSubWidget
         : public QWidget
     {
-        Q_OBJECT // AUTOMOC
+        Q_OBJECT
 
     public:
         GemsSubWidget(QWidget* parent = nullptr);
@@ -34,7 +34,6 @@ namespace O3DE::ProjectManager
     private:
         QLabel* m_titleLabel = nullptr;
         QLabel* m_textLabel = nullptr;
-        QVBoxLayout* m_layout = nullptr;
         TagContainerWidget* m_tagWidget = nullptr;
     };
 } // namespace O3DE::ProjectManager

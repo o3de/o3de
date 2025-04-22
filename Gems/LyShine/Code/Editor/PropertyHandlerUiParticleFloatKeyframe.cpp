@@ -39,7 +39,8 @@ PropertyUiParticleFloatKeyframeCtrl::PropertyUiParticleFloatKeyframeCtrl(QWidget
 
     QObject::connect(m_timeCtrl, &AzToolsFramework::PropertyDoubleSpinCtrl::valueChanged, this, [this]()
         {
-            EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, this);
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, this);
         });
 
     layout->addWidget(m_timeCtrl);
@@ -56,7 +57,8 @@ PropertyUiParticleFloatKeyframeCtrl::PropertyUiParticleFloatKeyframeCtrl(QWidget
 
     QObject::connect(m_multiplierCtrl, &AzToolsFramework::PropertyDoubleSpinCtrl::valueChanged, this, [this]()
         {
-            EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, this);
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, this);
         });
 
     layout->addWidget(m_multiplierCtrl);
@@ -86,7 +88,8 @@ PropertyUiParticleFloatKeyframeCtrl::PropertyUiParticleFloatKeyframeCtrl(QWidget
 
     QObject::connect(m_inTangentCtrl, &AzToolsFramework::PropertyEnumComboBoxCtrl::valueChanged, this, [this]()
         {
-            EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, this);
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, this);
         });
 
     layoutRow2->addWidget(m_inTangentCtrl);
@@ -103,7 +106,8 @@ PropertyUiParticleFloatKeyframeCtrl::PropertyUiParticleFloatKeyframeCtrl(QWidget
 
     QObject::connect(m_outTangentCtrl, &AzToolsFramework::PropertyEnumComboBoxCtrl::valueChanged, this, [this]()
         {
-            EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, this);
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, this);
         });
 
     layoutRow2->addWidget(m_outTangentCtrl);
@@ -188,7 +192,9 @@ AZ::EntityId PropertyHandlerUiParticleFloatKeyframe::GetParentEntityId(AzToolsFr
 
 void PropertyHandlerUiParticleFloatKeyframe::Register()
 {
-    EBUS_EVENT(AzToolsFramework::PropertyTypeRegistrationMessages::Bus, RegisterPropertyType, aznew PropertyHandlerUiParticleFloatKeyframe());
+    AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Broadcast(
+        &AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType,
+        aznew PropertyHandlerUiParticleFloatKeyframe());
 }
 
 #include <moc_PropertyHandlerUiParticleFloatKeyframe.cpp>

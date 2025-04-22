@@ -12,7 +12,7 @@
 #include <Atom/RHI/CommandList.h>
 #include <Atom/RHI/ImagePool.h>
 #include <Atom/RHI/ScopeProducerFunction.h>
-#include <Atom/RHI/ShaderResourceGroup.h>
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/Image/AttachmentImage.h>
 #include <Atom/RPI.Public/Pass/AttachmentReadback.h>
 #include <Atom/RPI.Public/Pass/ParentPass.h>
@@ -23,12 +23,12 @@ namespace AZ
     namespace RPI
     {
         // pass that generates all faces of a Cubemap environment image at a specified point
-        class EnvironmentCubeMapPass final
+        class ATOM_RPI_PUBLIC_API EnvironmentCubeMapPass final
             : public ParentPass
         {
         public:
             AZ_RTTI(EnvironmentCubeMapPass, "{B7EA8010-FB24-451C-890B-6E40B94546B9}", ParentPass);
-            AZ_CLASS_ALLOCATOR(EnvironmentCubeMapPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(EnvironmentCubeMapPass, SystemAllocator);
 
             static Ptr<EnvironmentCubeMapPass> Create(const PassDescriptor& passDescriptor);
             virtual ~EnvironmentCubeMapPass();
@@ -38,8 +38,8 @@ namespace AZ
             void SetDefaultView();
 
             // cubemap face size is always 1024, it is downsampled during the asset build by the ImageProcessor
-            static const u32 CubeMapFaceSize = 1024;
-            static const u32 NumCubeMapFaces = 6;
+            static constexpr u32 CubeMapFaceSize = 1024;
+            static constexpr u32 NumCubeMapFaces = 6;
 
             // returns true if all faces of the cubemap have been rendered
             bool IsFinished() { return m_renderFace == NumCubeMapFaces; }
@@ -60,17 +60,6 @@ namespace AZ
             void BuildInternal() override;
             void FrameBeginInternal(FramePrepareParams params) override;
             void FrameEndInternal() override;
-
-            // camera basis vectors for each cubemap face
-            inline static const Vector3 CameraBasis[NumCubeMapFaces][3] =
-            {
-                { Vector3( 0.0f,  1.0f,  0.0f), Vector3(-1.0f,  0.0f,  0.0f), Vector3( 0.0f,  0.0f,  1.0f) },
-                { Vector3( 0.0f, -1.0f,  0.0f), Vector3( 1.0f,  0.0f,  0.0f), Vector3( 0.0f,  0.0f,  1.0f) },
-                { Vector3(-1.0f,  0.0f,  0.0f), Vector3( 0.0f,  0.0f,  1.0f), Vector3( 0.0f,  1.0f,  0.0f) },
-                { Vector3(-1.0f,  0.0f,  0.0f), Vector3( 0.0f,  0.0f, -1.0f), Vector3( 0.0f, -1.0f,  0.0f) },
-                { Vector3(-1.0f,  0.0f,  0.0f), Vector3( 0.0f, -1.0f,  0.0f), Vector3( 0.0f,  0.0f,  1.0f) },
-                { Vector3( 1.0f,  0.0f,  0.0f), Vector3( 0.0f,  1.0f,  0.0f), Vector3( 0.0f,  0.0f,  1.0f) },
-            };
 
             // world space position to render the environment cubemap
             Vector3 m_position;
@@ -108,7 +97,7 @@ namespace AZ
             // tracks the number of frames elapsed before submitting the readback request
             // this is a work-around for a synchronization issue and will be removed after changing the readback mechanism
             // [ATOM-3844] Remove frame delay in EnvironmentCubeMapPass
-            static const u32 NumReadBackDelayFrames = 5;
+            static constexpr u32 NumReadBackDelayFrames = 5;
             u32 m_readBackDelayFrames = 0;
 
             // lock for managing state between this object and the callback

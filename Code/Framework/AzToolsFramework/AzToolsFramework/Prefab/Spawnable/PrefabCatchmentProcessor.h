@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/Serialization/ObjectStream.h>
 #include <AzToolsFramework/Prefab/Spawnable/PrefabProcessor.h>
 
 namespace AZ
@@ -22,7 +23,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         : public PrefabProcessor
     {
     public:
-        AZ_CLASS_ALLOCATOR(PrefabCatchmentProcessor, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PrefabCatchmentProcessor, AZ::SystemAllocator);
         AZ_RTTI(AzToolsFramework::Prefab::PrefabConversionUtils::PrefabCatchmentProcessor,
             "{F71E2FBA-22ED-44C7-B4C8-D2CF4B2C7B97}", PrefabProcessor);
 
@@ -40,8 +41,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         static void Reflect(AZ::ReflectContext* context);
 
     protected:
-        static void ProcessPrefab(PrefabProcessorContext& context, AZStd::string_view prefabName, PrefabDom& prefab,
-            AZ::DataStream::StreamType serializationFormat);
+        static void ProcessPrefab(PrefabProcessorContext& context, PrefabDocument& prefab, AZ::DataStream::StreamType serializationFormat);
 
         SerializationFormats m_serializationFormat{ SerializationFormats::Binary };
     };

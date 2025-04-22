@@ -20,7 +20,7 @@
 
 #include <Editor/Include/ScriptCanvas/Bus/RequestBus.h>
 
-namespace ScriptCanvasDeveloper
+namespace ScriptCanvas::Developer
 {
     /////////////////////
     // FindNodePosition

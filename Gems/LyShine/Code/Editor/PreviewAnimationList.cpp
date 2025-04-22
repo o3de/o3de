@@ -53,7 +53,7 @@ void PreviewAnimationList::Activate(AZ::EntityId canvasEntityId)
     m_canvasEntityId = canvasEntityId;
 
     IUiAnimationSystem* animationSystem = nullptr;
-    EBUS_EVENT_ID_RESULT(animationSystem, m_canvasEntityId, UiCanvasBus, GetAnimationSystem);
+    UiCanvasBus::EventResult(animationSystem, m_canvasEntityId, &UiCanvasBus::Events::GetAnimationSystem);
 
     if (animationSystem)
     {
@@ -114,7 +114,7 @@ void PreviewAnimationList::AddToolBarButton(const QIcon& icon, Action action, co
 void PreviewAnimationList::DoActionOnSelectedAnimations(Action action)
 {
     IUiAnimationSystem* animationSystem = nullptr;
-    EBUS_EVENT_ID_RESULT(animationSystem, m_canvasEntityId, UiCanvasBus, GetAnimationSystem);
+    UiCanvasBus::EventResult(animationSystem, m_canvasEntityId, &UiCanvasBus::Events::GetAnimationSystem);
     if (nullptr == animationSystem)
     {
         return;     // m_canvasEntityId may not be valid

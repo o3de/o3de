@@ -6,4 +6,6 @@
 #
 #
 
+o3de_gem_setup("NvCloth")
+
 add_subdirectory(Code)

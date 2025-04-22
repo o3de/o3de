@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScriptCanvas>
+    <Library
+        Include="Include/ScriptCanvas/Libraries/Math/Color.h"
+        Namespace="ScriptCanvas::ColorFunctions"
+        Category="Math/Color">
+
+        <Function Name="Dot">
+            <Parameter Name="A"/>
+            <Parameter Name="B"/>
+        </Function>
+        
+        <Function Name="Dot3">
+            <Parameter Name="A"/>
+            <Parameter Name="B"/>
+        </Function>
+        
+        <Function Name="FromValues">
+            <Parameter Name="R"/>
+            <Parameter Name="G"/>
+            <Parameter Name="B"/>
+            <Parameter Name="A"/>
+        </Function>
+        
+        <Function Name="FromVector3">
+            <Parameter Name="Source"/>
+        </Function>
+        
+        <Function Name="FromVector3AndNumber">
+            <Parameter Name="RGB"/>
+            <Parameter Name="A"/>
+        </Function>
+        
+        <Function Name="GammaToLinear">
+            <Parameter Name="Source"/>
+        </Function>
+        
+        <Function Name="IsClose">
+            <Parameter Name="A"/>
+            <Parameter Name="B"/>
+            <Parameter Name="Tolerance" DefaultValue="0.01"/>
+        </Function>
+        
+        <Function Name="IsZero">
+            <Parameter Name="Source"/>
+            <Parameter Name="Tolerance" DefaultValue="0.01"/>
+        </Function>
+        
+        <Function Name="LinearToGamma">
+            <Parameter Name="Source"/>
+        </Function>
+        
+        <Function Name="MultiplyByNumber">
+            <Parameter Name="Source"/>
+            <Parameter Name="Multiplier"/>
+        </Function>
+        
+        <Function Name="One"/>
+    </Library>
+</ScriptCanvas>

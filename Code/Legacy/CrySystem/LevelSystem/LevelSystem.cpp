@@ -15,11 +15,9 @@
 #include <ILocalizationManager.h>
 #include "CryPath.h"
 
-#include <LoadScreenBus.h>
-#include <CryCommon/StaticInstance.h>
+#include <CryCommon/LoadScreenBus.h>
 
 #include <AzCore/Time/ITime.h>
-#include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/IO/FileOperations.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzFramework/Input/Buses/Requests/InputChannelRequestBus.h>
@@ -39,103 +37,25 @@ static constexpr const char* ArchiveExtension = ".pak";
 //////////////////////////////////////////////////////////////////////////
 bool CLevelInfo::OpenLevelPak()
 {
-    bool usePrefabSystemForLevels = false;
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
-
     // The prefab system doesn't use level.pak
-    if (usePrefabSystemForLevels)
-    {
-        return false;
-    }
-
-    AZ::IO::Path levelPak(m_levelPath);
-    levelPak /= "level.pak";
-    AZ::IO::FixedMaxPathString fullLevelPakPath;
-    bool bOk = gEnv->pCryPak->OpenPack(levelPak.Native(), nullptr, &fullLevelPakPath, false);
-    m_levelPakFullPath.assign(fullLevelPakPath.c_str(), fullLevelPakPath.size());
-    return bOk;
+    return false;
 }
 
 //////////////////////////////////////////////////////////////////////////
 void CLevelInfo::CloseLevelPak()
 {
-    bool usePrefabSystemForLevels = false;
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
-
     // The prefab system doesn't use level.pak
-    if (usePrefabSystemForLevels)
-    {
-        return;
-    }
-
-    if (!m_levelPakFullPath.empty())
-    {
-        gEnv->pCryPak->ClosePack(m_levelPakFullPath.c_str());
-        m_levelPakFullPath.clear();
-    }
+    return;
 }
 
 //////////////////////////////////////////////////////////////////////////
 bool CLevelInfo::ReadInfo()
 {
-    bool usePrefabSystemForLevels = false;
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
-
     // Set up a default game type for legacy code.
     m_defaultGameTypeName = "mission0";
 
-    if (usePrefabSystemForLevels)
-    {
-        return true;
-    }
-
-
-    AZStd::string levelPath(m_levelPath);
-    AZStd::string xmlFile(levelPath);
-    xmlFile += "/levelinfo.xml";
-    XmlNodeRef rootNode = GetISystem()->LoadXmlFromFile(xmlFile.c_str());
-
-    if (rootNode)
-    {
-        AZStd::string dataFile(levelPath);
-        dataFile += "/leveldataaction.xml";
-        XmlNodeRef dataNode = GetISystem()->LoadXmlFromFile(dataFile.c_str());
-        if (!dataNode)
-        {
-            dataFile = levelPath + "/leveldata.xml";
-            dataNode = GetISystem()->LoadXmlFromFile(dataFile.c_str());
-        }
-
-        if (dataNode)
-        {
-            XmlNodeRef gameTypesNode = dataNode->findChild("Missions");
-
-            if ((gameTypesNode != 0) && (gameTypesNode->getChildCount() > 0))
-            {
-                m_defaultGameTypeName.clear();
-
-                for (int i = 0; i < gameTypesNode->getChildCount(); i++)
-                {
-                    XmlNodeRef gameTypeNode = gameTypesNode->getChild(i);
-
-                    if (gameTypeNode->isTag("Mission"))
-                    {
-                        const char* gameTypeName = gameTypeNode->getAttr("Name");
-
-                        if (gameTypeName)
-                        {
-                            m_defaultGameTypeName = gameTypeName;
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-    }
-    return rootNode != 0;
+    // Prefabs do not use Pak files.
+    return true;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -148,30 +68,7 @@ struct SLevelNameAutoComplete
     virtual int GetCount() const { return static_cast<int>(levels.size()); };
     virtual const char* GetValue(int nIndex) const { return levels[nIndex].c_str(); };
 };
-// definition and declaration must be separated for devirtualization
-static StaticInstance<SLevelNameAutoComplete, AZStd::no_destruct<SLevelNameAutoComplete>> g_LevelNameAutoComplete;
-
-//------------------------------------------------------------------------
-static void LoadMap(IConsoleCmdArgs* args)
-{
-    if (gEnv->pSystem && gEnv->pSystem->GetILevelSystem() && !gEnv->IsEditor())
-    {
-        if (args->GetArgCount() > 1)
-        {
-            gEnv->pSystem->GetILevelSystem()->UnloadLevel();
-            gEnv->pSystem->GetILevelSystem()->LoadLevel(args->GetArg(1));
-        }
-    }
-}
-
-//------------------------------------------------------------------------
-static void UnloadMap([[maybe_unused]] IConsoleCmdArgs* args)
-{
-    if (gEnv->pSystem && gEnv->pSystem->GetILevelSystem() && !gEnv->IsEditor())
-    {
-        gEnv->pSystem->GetILevelSystem()->UnloadLevel();
-    }
-}
+static SLevelNameAutoComplete g_LevelNameAutoComplete;
 
 //------------------------------------------------------------------------
 CLevelSystem::CLevelSystem(ISystem* pSystem, const char* levelsFolder)
@@ -192,9 +89,7 @@ CLevelSystem::CLevelSystem(ISystem* pSystem, const char* levelsFolder)
 
     m_nLoadedLevelsCount = 0;
 
-    REGISTER_COMMAND("map", LoadMap, VF_BLOCKFRAME, "Load a map");
-    REGISTER_COMMAND("unload", UnloadMap, 0, "Unload current map");
-    gEnv->pConsole->RegisterAutoComplete("map", &(*g_LevelNameAutoComplete));
+    gEnv->pConsole->RegisterAutoComplete("LoadLevel", &g_LevelNameAutoComplete);
 
     AZ_Assert(gEnv && gEnv->pCryPak, "gEnv and CryPak must be initialized for loading levels.");
     if (!gEnv || !gEnv->pCryPak)
@@ -224,6 +119,9 @@ CLevelSystem::CLevelSystem(ISystem* pSystem, const char* levelsFolder)
         });
         m_levelPackCloseHandler.Connect(*levelPakCloseEvent);
     }
+
+    AZ_Error("LevelSystem", AzFramework::LevelSystemLifecycleInterface::Get() == this,
+        "Failed to register the LevelSystem with the LevelSystemLifecycleInterface.");
 }
 
 //------------------------------------------------------------------------
@@ -245,10 +143,10 @@ void CLevelSystem::Rescan(const char* levelsFolder)
     m_levelInfos.reserve(64);
     ScanFolder(0, false);
 
-    g_LevelNameAutoComplete->levels.clear();
-    for (int i = 0; i < (int)m_levelInfos.size(); i++)
+    g_LevelNameAutoComplete.levels.clear();
+    for (const CLevelInfo& levelInfo : m_levelInfos)
     {
-        g_LevelNameAutoComplete->levels.push_back(AZStd::string(PathUtil::GetFileName(m_levelInfos[i].GetName()).c_str()));
+        g_LevelNameAutoComplete.levels.emplace_back(AZ::IO::PathView(levelInfo.GetName()).Stem().Native());
     }
 }
 
@@ -636,11 +534,13 @@ ILevel* CLevelSystem::LoadLevelInternal(const char* _levelName)
         //////////////////////////////////////////////////////////////////////////
         // Movie system must be reset after entities.
         //////////////////////////////////////////////////////////////////////////
-        IMovieSystem* movieSys = gEnv->pMovieSystem;
-        if (movieSys != NULL)
+        IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+        if (movieSystem)
         {
             // bSeekAllToStart needs to be false here as it's only of interest in the editor
-            movieSys->Reset(true, false);
+            constexpr bool playOnReset = true;
+            constexpr bool seekToStart = false;
+            movieSystem->Reset(playOnReset, seekToStart);
         }
 
         gEnv->pSystem->SetSystemGlobalState(ESYSTEM_GLOBAL_STATE_LEVEL_LOAD_START_PRECACHE);
@@ -702,6 +602,9 @@ void CLevelSystem::PrepareNextLevel(const char* levelName)
     {
         (*it)->OnPrepareNextLevel(pLevelInfo->GetName());
     }
+
+    AzFramework::LevelSystemLifecycleNotificationBus::Broadcast(
+        &AzFramework::LevelSystemLifecycleNotifications::OnPrepareNextLevel, levelName);
 }
 
 //------------------------------------------------------------------------
@@ -711,6 +614,9 @@ void CLevelSystem::OnLevelNotFound(const char* levelName)
     {
         (*it)->OnLevelNotFound(levelName);
     }
+
+    AzFramework::LevelSystemLifecycleNotificationBus::Broadcast(
+        &AzFramework::LevelSystemLifecycleNotifications::OnLevelNotFound, levelName);
 }
 
 //------------------------------------------------------------------------
@@ -730,6 +636,9 @@ void CLevelSystem::OnLoadingStart(const char* levelName)
     {
         (*it)->OnLoadingStart(levelName);
     }
+
+    AzFramework::LevelSystemLifecycleNotificationBus::Broadcast(
+        &AzFramework::LevelSystemLifecycleNotifications::OnLoadingStart, levelName);
 }
 
 //------------------------------------------------------------------------
@@ -746,6 +655,9 @@ void CLevelSystem::OnLoadingError(const char* levelName, const char* error)
     {
         (*it)->OnLoadingError(levelName, error);
     }
+
+    AzFramework::LevelSystemLifecycleNotificationBus::Broadcast(
+        &AzFramework::LevelSystemLifecycleNotifications::OnLoadingError, levelName, error);
 
     ((CLevelInfo*)pLevelInfo)->CloseLevelPak();
 }
@@ -770,6 +682,9 @@ void CLevelSystem::OnLoadingComplete(const char* levelName)
         (*it)->OnLoadingComplete(levelName);
     }
 
+    AzFramework::LevelSystemLifecycleNotificationBus::Broadcast(
+        &AzFramework::LevelSystemLifecycleNotifications::OnLoadingComplete, levelName);
+
 #if AZ_LOADSCREENCOMPONENT_ENABLED
     EBUS_EVENT(LoadScreenBus, Stop);
 #endif // if AZ_LOADSCREENCOMPONENT_ENABLED
@@ -782,6 +697,9 @@ void CLevelSystem::OnLoadingProgress(const char* levelName, int progressAmount)
     {
         (*it)->OnLoadingProgress(levelName, progressAmount);
     }
+
+    AzFramework::LevelSystemLifecycleNotificationBus::Broadcast(
+        &AzFramework::LevelSystemLifecycleNotifications::OnLoadingProgress, levelName, progressAmount);
 }
 
 //------------------------------------------------------------------------
@@ -791,6 +709,9 @@ void CLevelSystem::OnUnloadComplete(const char* levelName)
     {
         (*it)->OnUnloadComplete(levelName);
     }
+
+    AzFramework::LevelSystemLifecycleNotificationBus::Broadcast(
+        &AzFramework::LevelSystemLifecycleNotifications::OnUnloadComplete, levelName);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -854,10 +775,13 @@ void CLevelSystem::UnloadLevel()
     // Clear level entities and prefab instances.
     EBUS_EVENT(AzFramework::GameEntityContextRequestBus, ResetGameContext);
 
-    if (gEnv->pMovieSystem)
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+    if (movieSystem)
     {
-        gEnv->pMovieSystem->Reset(false, false);
-        gEnv->pMovieSystem->RemoveAllSequences();
+        constexpr bool playOnReset = false;
+        constexpr bool seekToStart = false;
+        movieSystem->Reset(playOnReset, seekToStart);
+        movieSystem->RemoveAllSequences();
     }
 
     OnUnloadComplete(m_lastLevelName.c_str());

@@ -6,10 +6,11 @@
  *
  */
 #include <AzCore/std/smart_ptr/unique_ptr.h>
-#include <RHI/Conversion.h>
+#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/Device.h>
 #include <RHI/QueryPool.h>
 #include <RHI/ReleaseContainer.h>
+#include <Atom/RHI.Reflect/VkAllocator.h>
 
 namespace AZ
 {
@@ -27,12 +28,10 @@ namespace AZ
 
         void QueryPool::ResetQueries(CommandList& commandList, const RHI::Interval& interval)
         {
-            vkCmdResetQueryPool(
-                commandList.GetNativeCommandBuffer(),
-                m_nativeQueryPool,
-                interval.m_min,
-                interval.m_max - interval.m_min + 1
-            );
+            static_cast<Device&>(GetDevice())
+                .GetContext()
+                .CmdResetQueryPool(
+                    commandList.GetNativeCommandBuffer(), m_nativeQueryPool, interval.m_min, interval.m_max - interval.m_min + 1);
         }
 
         RHI::ResultCode QueryPool::InitInternal(RHI::Device& baseDevice, const RHI::QueryPoolDescriptor& descriptor)
@@ -43,7 +42,7 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
-        RHI::ResultCode QueryPool::InitQueryInternal([[maybe_unused]] RHI::Query& query)
+        RHI::ResultCode QueryPool::InitQueryInternal([[maybe_unused]] RHI::DeviceQuery& query)
         {
             // Nothing to initialize
             return RHI::ResultCode::Success;
@@ -53,8 +52,9 @@ namespace AZ
         {
             VkQueryResultFlags vkFlags = VK_QUERY_RESULT_64_BIT;
             vkFlags |= RHI::CheckBitsAll(flags, RHI::QueryResultFlagBits::Wait) ? VK_QUERY_RESULT_WAIT_BIT : 0;
-            VkResult vkResult = vkGetQueryPoolResults(
-                static_cast<Device&>(GetDevice()).GetNativeDevice(),
+            auto& device = static_cast<Device&>(GetDevice());
+            VkResult vkResult = device.GetContext().GetQueryPoolResults(
+                device.GetNativeDevice(),
                 m_nativeQueryPool,
                 startIndex,
                 queryCount,
@@ -74,11 +74,8 @@ namespace AZ
             createInfo.queryCount = descriptor.m_queriesCount;
             createInfo.pipelineStatistics = ConvertQueryPipelineStatisticMask(descriptor.m_pipelineStatisticsMask);
 
-            auto vkResult = vkCreateQueryPool(
-                device.GetNativeDevice(),
-                &createInfo,
-                nullptr,
-                &m_nativeQueryPool);
+            auto vkResult =
+                device.GetContext().CreateQueryPool(device.GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &m_nativeQueryPool);
 
             return ConvertResult(vkResult);
         }
@@ -89,7 +86,8 @@ namespace AZ
             if (m_nativeQueryPool)
             {
                 auto& device = static_cast<Device&>(GetDevice());
-                device.QueueForRelease(new ReleaseContainer<VkQueryPool>(device.GetNativeDevice(), m_nativeQueryPool, vkDestroyQueryPool));
+                device.QueueForRelease(
+                    new ReleaseContainer<VkQueryPool>(device.GetNativeDevice(), m_nativeQueryPool, device.GetContext().DestroyQueryPool));
                 m_nativeQueryPool = VK_NULL_HANDLE;
             }
         }

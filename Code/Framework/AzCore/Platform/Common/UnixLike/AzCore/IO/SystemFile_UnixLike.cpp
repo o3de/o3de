@@ -25,80 +25,83 @@
 
 namespace AZ::IO
 {
+    const char* SystemFile::GetNullFilename()
+    {
+        return "/dev/null";
+    }
+} // namespace AZ::IO
 
-const char* SystemFile::GetNullFilename()
-{
-    return "/dev/null";
-}
-
-namespace UnixLikePlatformUtil
+namespace AZ::IO::UnixLikePlatformUtil
 {
     // Platform specific helpers
     bool CanCreateDirRecursive(char* dirPath);
-}
+} // AZ::IO::UnixLikePlatformUtil
 
-namespace
+namespace AZ::IO
 {
-    //=========================================================================
-    //  Internal utility to create a folder hierarchy recursively without
-    //  any additional string copies.
-    //  If this function fails (returns false), the error will be available
-    //   via errno on Unix platforms
-    //=========================================================================
-    bool CreateDirRecursive(char* dirPath)
+    namespace
     {
-        if (!UnixLikePlatformUtil::CanCreateDirRecursive(dirPath))
+        //=========================================================================
+        //  Internal utility to create a folder hierarchy recursively without
+        //  any additional string copies.
+        //  If this function fails (returns false), the error will be available
+        //   via errno on Unix platforms
+        //=========================================================================
+        bool CreateDirRecursive(char* dirPath)
         {
-            // Our current platform has told us we have failed
-            return false;
-        }
-
-        int result = mkdir(dirPath, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-        if (result == 0)
-        {
-            return true;    // Created without error
-        }
-        else if (result == -1)
-        {
-            // If result == -1, the error is stored in errno
-            // http://pubs.opengroup.org/onlinepubs/007908799/xsh/mkdir.html
-            result = errno;
-        }
-
-        if (result == ENOTDIR || result == ENOENT)
-        {
-            // try to create our parent hierarchy
-            for (size_t i = strlen(dirPath); i > 0; --i)
+            if (!UnixLikePlatformUtil::CanCreateDirRecursive(dirPath))
             {
-                if (dirPath[i] == '/' || dirPath[i] == '\\')
+                // Our current platform has told us we have failed
+                return false;
+            }
+
+            int result = mkdir(dirPath, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+            if (result == 0)
+            {
+                return true;    // Created without error
+            }
+            else if (result == -1)
+            {
+                // If result == -1, the error is stored in errno
+                // http://pubs.opengroup.org/onlinepubs/007908799/xsh/mkdir.html
+                result = errno;
+            }
+
+            if (result == ENOTDIR || result == ENOENT)
+            {
+                // try to create our parent hierarchy
+                for (size_t i = strlen(dirPath); i > 0; --i)
                 {
-                    char delimiter = dirPath[i];
-                    dirPath[i] = 0; // null-terminate at the previous slash
-                    bool ret = CreateDirRecursive(dirPath);
-                    dirPath[i] = delimiter; // restore slash
-                    if (ret)
+                    if (dirPath[i] == '/' || dirPath[i] == '\\')
                     {
-                        // now that our parent is created, try to create again
-                        return mkdir(dirPath, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) == 0;
+                        char delimiter = dirPath[i];
+                        dirPath[i] = 0; // null-terminate at the previous slash
+                        bool ret = CreateDirRecursive(dirPath);
+                        dirPath[i] = delimiter; // restore slash
+                        if (ret)
+                        {
+                            // now that our parent is created, try to create again
+                            return mkdir(dirPath, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) == 0;
+                        }
+                        return false;
                     }
-                    return false;
+                }
+                // if we reach here then there was no parent folder to create, so we failed for other reasons
+            }
+            else if (result == EEXIST)
+            {
+                struct stat s;
+                if (stat(dirPath, &s) == 0)
+                {
+                    return s.st_mode & S_IFDIR;
                 }
             }
-            // if we reach here then there was no parent folder to create, so we failed for other reasons
+            return false;
         }
-        else if (result == EEXIST)
-        {
-            struct stat s;
-            if (stat(dirPath, &s) == 0)
-            {
-                return s.st_mode & S_IFDIR;
-            }
-        }
-        return false;
     }
-}
+} // namespace AZ::IO
 
-namespace Platform
+namespace AZ::IO::Platform
 {
     AZ::u64 ModificationTime(const char* fileName)
     {
@@ -212,7 +215,7 @@ namespace Platform
     }
 } // namespace AZ::IO::Platform
 
-namespace PosixInternal
+namespace AZ::IO::PosixInternal
 {
     int Dup(int fileDescriptor)
     {
@@ -225,4 +228,106 @@ namespace PosixInternal
     }
 } // namespace AZ::IO::PosixInternal
 
+namespace AZ::IO
+{
+    FileDescriptorCapturer::FileDescriptorCapturer(int sourceDescriptor)
+        : m_sourceDescriptor(sourceDescriptor)
+        , m_pipeData(-1)
+    {
+    }
+
+    bool FileDescriptorCapturer::Flush()
+    {
+        constexpr int PipeBufferSize = DefaultPipeSize;
+        AZStd::array<AZStd::byte, PipeBufferSize> capturedBytes;
+
+        bool dataReadSuccess{};
+        int bytesRead{};
+        do
+        {
+            // Pump the read end of the pipe until it is empty
+            // and invoke the visitor for each call
+            // If the callback is empty, there is no where to flush the output
+            // However the pipe stills needs to be read to allow writes on the on the other end to occur
+            bytesRead = PosixInternal::Read(static_cast<int>(m_pipe[ReadEnd]),
+                AZStd::ranges::data(capturedBytes), static_cast<int>(AZStd::ranges::size(capturedBytes)));
+
+            if (m_redirectCallback && bytesRead > 0)
+            {
+                m_redirectCallback(AZStd::span(AZStd::ranges::data(capturedBytes), bytesRead));
+                dataReadSuccess = true;
+            }
+
+        } while (bytesRead > 0);
+
+        return dataReadSuccess;
+    }
+
+    // Reset which uses PosixInternal::Close for closing posix file descriptors
+    void FileDescriptorCapturer::Reset()
+    {
+        if (auto expectedState = RedirectState::Active;
+            !m_redirectState.compare_exchange_strong(expectedState, RedirectState::ClosingPipeWriteSide))
+        {
+            // Since the descriptor capturer is not active return
+            return;
+        }
+
+        // Close the write end of the pipe first
+        if (m_pipe[WriteEnd] != -1)
+        {
+            PosixInternal::Close(static_cast<int>(m_pipe[WriteEnd]));
+        }
+
+        // Set the pipe state to disconnected
+        m_redirectState = RedirectState::DisconnectedPipe;
+        // At this point the the flush thread can now join without a deadlock occuring
+        // As the pipe is disconnected at this point
+
+        if (m_flushThread.joinable())
+        {
+            m_flushThread.join();
+        }
+        // Default contruct the thread to clear it out.
+        m_flushThread = {};
+
+        // Close the read end of the pipe after the write end is closed
+        if (m_pipe[ReadEnd] != -1)
+        {
+            PosixInternal::Close(static_cast<int>(m_pipe[ReadEnd]));
+        }
+
+        m_redirectCallback = {};
+        if (m_pipeData != 1)
+        {
+            PosixInternal::Close(static_cast<int>(m_pipeData));
+            m_pipeData = -1;
+        }
+
+        // Reset the file descriptors after any flush thread
+        // operations have been complete, so correct descriptor value
+        // is used until it is safe to reset it to -1
+        m_pipe[WriteEnd] = -1;
+        m_pipe[ReadEnd] = -1;
+
+        // Take the duplicate of the original source descriptor and restore it
+        // Afterwards close the duplicate descriptor
+        if (m_dupSourceDescriptor != -1)
+        {
+            PosixInternal::Dup2(m_dupSourceDescriptor, m_sourceDescriptor);
+            PosixInternal::Close(m_dupSourceDescriptor);
+            m_dupSourceDescriptor = -1;
+        }
+
+        m_redirectState = RedirectState::Idle;
+        // At this point it is now safe to call Start() again on this Capturer
+    }
 } // namespace AZ::IO
+
+namespace AZ::IO::Posix
+{
+    int Fileno(FILE* stream)
+    {
+        return fileno(stream);
+    }
+}

@@ -5,28 +5,30 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
+# Built-in Imports
 from __future__ import annotations
-from collections import Counter
-from collections import deque
 from os import path
-from pathlib import Path
+from typing import List
 
+# 3rdParty Imports
 from PySide2 import QtWidgets
 
+# O3DE Imports
 import azlmbr.legacy.general as general
 from azlmbr.entity import EntityId
 from azlmbr.math import Vector3
-from editor_python_test_tools.editor_entity_utils import EditorEntity
-from editor_python_test_tools.utils import Report
-
 import azlmbr.entity as entity
 import azlmbr.bus as bus
 import azlmbr.components as components
 import azlmbr.editor as editor
 import azlmbr.globals
-import azlmbr.math as math
 import azlmbr.prefab as prefab
-import editor_python_test_tools.pyside_utils as pyside_utils
+
+# Helper Imports
+from editor_python_test_tools.editor_entity_utils import EditorEntity
+from editor_python_test_tools.utils import Report
+from editor_python_test_tools.wait_utils import PrefabWaiter
+import pyside_utils
 
 
 def get_prefab_file_path(prefab_path):
@@ -39,17 +41,16 @@ def get_prefab_file_path(prefab_path):
         prefab_path = name + ".prefab"
     return prefab_path
 
+
 def get_all_entity_ids():
     return entity.SearchBus(bus.Broadcast, 'SearchEntities', entity.SearchFilter())
 
-def wait_for_propagation():
-    general.idle_wait_frames(1)
 
 # This is a helper class which contains some of the useful information about a prefab instance.
 class PrefabInstance:
 
-    def __init__(self, prefab_file_name: str = None, container_entity: EditorEntity = None):
-        self.prefab_file_name: str = prefab_file_name
+    def __init__(self, prefab_file_path: str = None, container_entity: EditorEntity = None):
+        self.prefab_file_path: str = prefab_file_path
         self.container_entity: EditorEntity = container_entity
 
     def __eq__(self, other):
@@ -66,7 +67,7 @@ class PrefabInstance:
         See if this instance is valid to be used with other prefab operations. 
         :return: Whether the target instance is valid or not.
         """
-        return self.container_entity.id.IsValid() and self.prefab_file_name in Prefab.existing_prefabs
+        return self.container_entity.id.IsValid() and self.prefab_file_path in Prefab.existing_prefabs
 
     def has_editor_prefab_component(self) -> bool:
         """
@@ -103,7 +104,7 @@ class PrefabInstance:
         new_parent_before_reparent_children_ids = {child_id.ToString(): child_id for child_id in new_parent.get_children_ids()}
 
         pyside_utils.run_soon(lambda: self.container_entity.set_parent_entity(parent_entity_id))
-        pyside_utils.run_soon(lambda: wait_for_propagation())
+        pyside_utils.run_soon(lambda: PrefabWaiter.wait_for_propagation())
 
         try:
             active_modal_widget = await pyside_utils.wait_for_modal_widget()
@@ -131,7 +132,7 @@ class PrefabInstance:
         has_correct_parent = reparented_container_entity_parent_id.ToString() == parent_entity_id.ToString()
         assert has_correct_parent, "Prefab Instance reparented is *not* under the expected parent entity"
 
-        current_instance_prefab = Prefab.get_prefab(self.prefab_file_name)
+        current_instance_prefab = Prefab.get_prefab(self.prefab_file_path)
         current_instance_prefab.instances.remove(self)
 
         self.container_entity = reparented_container_entity
@@ -143,6 +144,31 @@ class PrefabInstance:
         This function does not return entities contained in other child instances
         """
         return self.container_entity.get_children()
+
+    def get_direct_child_entity_by_name(self, name: str):
+        """
+        Returns the child entity in the current prefab instance with the given name.
+        :param name: The name of the child entity to find
+        :return: EditorEntity
+        """
+        child_entities = self.get_direct_child_entities()
+        for entity in child_entities:
+            if entity.get_name() == name:
+                return entity
+
+    def get_child_entity_by_name(self, name: str) -> EditorEntity:
+        """
+        Returns the first child entity in the current prefab instance with the given name. Will search from the
+        container entity root through all children.
+        :param name: The name of the child entity to find
+        :return: EditorEntity if entity found, else None
+        """
+        search_filter = azlmbr.entity.SearchFilter()
+        search_filter.names = [name]
+        search_filter.roots = [self.container_entity.id]
+        search_filter.names_are_root_based = False
+        found_entities = azlmbr.entity.SearchBus(bus.Broadcast, 'SearchEntities', search_filter)
+        return EditorEntity(found_entities[0]) if found_entities else None
 
 
 # This is a helper class which contains some of the useful information about a prefab template.
@@ -161,46 +187,48 @@ class Prefab:
         :param file_path: A unique file path of the target prefab.
         :return: Whether the target prefab is loaded or not.
         """
-        return file_path in Prefab.existing_prefabs
-
+        for entry in Prefab.existing_prefabs:
+            Report.info(f"PrefabPath: '{entry}'")
+        
+        return get_prefab_file_path(file_path) in Prefab.existing_prefabs
     
     @classmethod
     def prefab_exists(cls, file_path: str) -> bool:
         """
         Check if a prefab exists in the directory for files of prefab tests.
-        :param file_name: A unique file name of the target prefab.
+        :param file_path: A unique file path of the target prefab.
         :return: Whether the target prefab exists or not.
         """
         return path.exists(get_prefab_file_path(file_path))
 
     @classmethod
-    def get_prefab(cls, file_name: str) -> Prefab:
+    def get_prefab(cls, file_path: str) -> Prefab:
         """
         Return a prefab which can be used immediately.
-        :param file_name: A unique file name of the target prefab.
+        :param file_path: A unique file path of the target prefab.
         :return: The prefab with given file name.
         """
-        assert file_name, "Received an empty file_name"
-        if Prefab.is_prefab_loaded(file_name):
-            return Prefab.existing_prefabs[file_name]
+        assert file_path, "Received an empty file_path"
+        if Prefab.is_prefab_loaded(file_path):
+            return Prefab.existing_prefabs[get_prefab_file_path(file_path)]
         else:
-            assert Prefab.prefab_exists(file_name), f"Attempted to get a prefab \"{file_name}\" that doesn't exist"
-            new_prefab = Prefab(file_name)
-            Prefab.existing_prefabs[file_name] = Prefab(file_name)
+            assert Prefab.prefab_exists(file_path), f"Attempted to get a prefab \"{file_path}\" that doesn't exist"
+            new_prefab = Prefab(file_path)
+            Prefab.existing_prefabs[new_prefab.file_path] = new_prefab
             return new_prefab
 
     @classmethod
-    def create_prefab(cls, entities: list[EditorEntity], file_name: str, prefab_instance_name: str=None) -> tuple(Prefab, PrefabInstance):
+    def create_prefab(cls, entities: list[EditorEntity], file_path: str, prefab_instance_name: str=None) -> tuple(Prefab, PrefabInstance):
         """
         Create a prefab in memory and return it. The very first instance of this prefab will also be created.
         :param entities: The entities that should form the new prefab (along with their descendants).
-        :param file_name: A unique file name of new prefab.
-        :param prefab_instance_name: A name for the very first instance generated while prefab creation. The default instance name is the same as file_name.
+        :param file_path: A unique file path for new prefab.
+        :param prefab_instance_name: A name for the very first instance generated while prefab creation. The default instance name is the same as the file name in file_path.
         :return: Created Prefab object and the very first PrefabInstance object owned by the prefab.
         """
-        assert not Prefab.is_prefab_loaded(file_name), f"Can't create Prefab '{file_name}' since the prefab already exists"
+        assert not Prefab.is_prefab_loaded(file_path), f"Can't create Prefab '{file_path}' since the prefab already exists"
 
-        new_prefab = Prefab(file_name)
+        new_prefab = Prefab(file_path)
         entity_ids = [entity.id for entity in entities]
         create_prefab_result = prefab.PrefabPublicRequestBus(bus.Broadcast, 'CreatePrefabInMemory', entity_ids, new_prefab.file_path)
         assert create_prefab_result.IsSuccess(), f"Prefab operation 'CreatePrefab' failed. Error: {create_prefab_result.GetError()}"
@@ -210,19 +238,18 @@ class Prefab:
         children_entity_ids = container_entity.get_children_ids()
 
         assert len(children_entity_ids) == len(entities), f"Entity count of created prefab instance does *not* match the count of given entities."
+        
+        PrefabWaiter.wait_for_propagation()
 
+        new_prefab_instance = PrefabInstance(new_prefab.file_path, EditorEntity(container_entity_id))
         if prefab_instance_name:
-            container_entity.set_name(prefab_instance_name)
-
-        wait_for_propagation()
-
-        new_prefab_instance = PrefabInstance(file_name, EditorEntity(container_entity_id))
+            new_prefab_instance.container_entity.set_name(prefab_instance_name)
         new_prefab.instances.add(new_prefab_instance)
-        Prefab.existing_prefabs[file_name] = new_prefab
+        Prefab.existing_prefabs[new_prefab.file_path] = new_prefab
         return new_prefab, new_prefab_instance
 
     @classmethod
-    def remove_prefabs(cls, prefab_instances: list[PrefabInstance]):
+    def remove_prefabs(cls, prefab_instances: list[PrefabInstance]) -> List[azlmbr.entity.EntityId]:
         """
         Remove target prefab instances.
         :param prefab_instances: Instances to be removed.
@@ -241,7 +268,7 @@ class Prefab:
         delete_prefab_result = prefab.PrefabPublicRequestBus(bus.Broadcast, 'DeleteEntitiesAndAllDescendantsInInstance', container_entity_ids)
         assert delete_prefab_result.IsSuccess(), f"Prefab operation 'DeleteEntitiesAndAllDescendantsInInstance' failed. Error: {delete_prefab_result.GetError()}"
 
-        wait_for_propagation()
+        PrefabWaiter.wait_for_propagation()
 
         entity_ids_after_delete = set(get_all_entity_ids())
         
@@ -250,9 +277,41 @@ class Prefab:
                 assert False, "Not all entities and descendants in target prefabs are deleted."
 
         for instance in prefab_instances:
-            instance_deleted_prefab = Prefab.get_prefab(instance.prefab_file_name)
+            instance_deleted_prefab = Prefab.get_prefab(instance.prefab_file_path)
             instance_deleted_prefab.instances.remove(instance)
             instance = PrefabInstance()
+
+        return entity_ids_to_remove
+
+    @classmethod
+    def validate_duplicated_prefab(cls, prefab_instances: list[PrefabInstance],
+                                   child_ids_before_duplicate: set[EntityId],
+                                   child_ids_after_duplicate: set[EntityId],
+                                   duplicate_container_entity_ids: list[EntityId],
+                                   common_parent: EditorEntity) -> None:
+        """
+        Validates that entity hierarchy matches expectations after a prefab instance is duplicated.
+        :param prefab_instances: Instances that were duplicated.
+        :param child_ids_before_duplicate: List of EntityIds of children of the common parent pre-duplication.
+        :param child_ids_after_duplicate: List of EntityIds of children of the common parent post-duplication.
+        :param duplicate_container_entity_ids: List of EntityIds of duplicated instance container entities.
+        :param common_parent: EditorEntity of the duplicated instance parent
+        :return: None
+        """
+        container_entity_ids = [prefab_instance.container_entity.id for prefab_instance in prefab_instances]
+
+        assert set([container_entity_id.ToString() for container_entity_id in
+                    container_entity_ids]).issubset(child_ids_after_duplicate), \
+            "Provided prefab instances are *not* the children of their common parent anymore after duplication."
+        assert child_ids_before_duplicate.issubset(child_ids_after_duplicate), \
+            "Some children of provided entities' common parent before duplication are *not* the children of " \
+            "the common parent anymore after duplication."
+        assert len(child_ids_after_duplicate) == len(child_ids_before_duplicate) + len(prefab_instances), \
+            "The children count of the given prefab instances' common parent entity is *not* increased " \
+            "to the expected number."
+        assert EditorEntity(duplicate_container_entity_ids[0]).get_parent_id().ToString() == \
+               common_parent.id.ToString(), "Provided prefab instances' parent should be the " \
+                                            "same as duplicates' parent."
 
     @classmethod
     def duplicate_prefabs(cls, prefab_instances: list[PrefabInstance]):
@@ -271,27 +330,21 @@ class Prefab:
         duplicate_prefab_result = prefab.PrefabPublicRequestBus(bus.Broadcast, 'DuplicateEntitiesInInstance', container_entity_ids)
         assert duplicate_prefab_result.IsSuccess(), f"Prefab operation 'DuplicateEntitiesInInstance' failed. Error: {duplicate_prefab_result.GetError()}"
 
-        wait_for_propagation()
+        PrefabWaiter.wait_for_propagation()
 
         duplicate_container_entity_ids = duplicate_prefab_result.GetValue()
         common_parent_children_ids_after_duplicate = set([child_id.ToString() for child_id in common_parent.get_children_ids()])
 
-        assert set([container_entity_id.ToString() for container_entity_id in container_entity_ids]).issubset(common_parent_children_ids_after_duplicate), \
-            "Provided prefab instances are *not* the children of their common parent anymore after duplication."
-        assert common_parent_children_ids_before_duplicate.issubset(common_parent_children_ids_after_duplicate), \
-            "Some children of provided entities' common parent before duplication are *not* the children of the common parent anymore after duplication."
-        assert len(common_parent_children_ids_after_duplicate) == len(common_parent_children_ids_before_duplicate) + len(prefab_instances), \
-            "The children count of the given prefab instances' common parent entity is *not* increased to the expected number."
-        assert EditorEntity(duplicate_container_entity_ids[0]).get_parent_id().ToString() == common_parent.id.ToString(), \
-            "Provided prefab instances' parent should be the same as duplicates' parent."
+        cls.validate_duplicated_prefab(prefab_instances, common_parent_children_ids_before_duplicate,
+                                       common_parent_children_ids_after_duplicate, duplicate_container_entity_ids,
+                                       common_parent)
 
         duplicate_instances = []
         for duplicate_container_entity_id in duplicate_container_entity_ids:
             prefab_file_path = prefab.PrefabPublicRequestBus(bus.Broadcast, 'GetOwningInstancePrefabPath', duplicate_container_entity_id)
             assert prefab_file_path, "Returned file path should *not* be empty."
 
-            prefab_file_name =  Path(prefab_file_path).stem
-            duplicate_instance_prefab = Prefab.get_prefab(prefab_file_name)
+            duplicate_instance_prefab = Prefab.get_prefab(prefab_file_path)
             duplicate_instance = PrefabInstance(prefab_file_path, EditorEntity(duplicate_container_entity_id))
             duplicate_instance_prefab.instances.add(duplicate_instance)
             duplicate_instances.append(duplicate_instance)
@@ -322,9 +375,9 @@ class Prefab:
         assert len(parent_children_ids_after_detach) == len(parent_children_ids_before_detach), \
             "Parent entity should still keep the same amount of children entities."
 
-        wait_for_propagation()
+        PrefabWaiter.wait_for_propagation()
 
-        instance_owner_prefab = Prefab.get_prefab(prefab_instance.prefab_file_name)
+        instance_owner_prefab = Prefab.get_prefab(prefab_instance.prefab_file_path)
         instance_owner_prefab.instances.remove(prefab_instance)
         prefab_instance = PrefabInstance()
 
@@ -346,13 +399,13 @@ class Prefab:
         container_entity_id = instantiate_prefab_result.GetValue()
         container_entity = EditorEntity(container_entity_id)
 
-        if name:
-            container_entity.set_name(name)
-
-        wait_for_propagation()
+        PrefabWaiter.wait_for_propagation()
 
         new_prefab_instance = PrefabInstance(self.file_path, EditorEntity(container_entity_id))
-        assert not new_prefab_instance in self.instances, "This prefab instance is already existed before this instantiation."
+        assert not new_prefab_instance in self.instances, "This prefab instance already existed before this instantiation."
+        if name:
+            new_prefab_instance.container_entity.set_name(name)
+
         self.instances.add(new_prefab_instance)
 
         assert new_prefab_instance.is_at_position(prefab_position), "This prefab instance is *not* at expected position."

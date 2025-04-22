@@ -8,7 +8,7 @@
 
 #include <ScriptCanvasDeveloperEditor/EditorAutomation/EditorAutomationTest.h>
 
-namespace ScriptCanvasDeveloper
+namespace ScriptCanvas::Developer
 {
     /////////////////////////////////
     // EditorAutomationActionRunner

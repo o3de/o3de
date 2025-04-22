@@ -25,7 +25,6 @@ namespace AtomToolsFramework
             {
                 ec->Class<PreviewRendererSystemComponent>("PreviewRendererSystemComponent", "System component that manages a global PreviewRenderer.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("System"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }
@@ -35,6 +34,11 @@ namespace AtomToolsFramework
     void PreviewRendererSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
         provided.push_back(AZ_CRC_CE("PreviewRendererSystem"));
+    }
+    
+    void PreviewRendererSystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
+    {
+        dependent.push_back(AZ_CRC_CE("RPISystem"));
     }
 
     void PreviewRendererSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
@@ -48,34 +52,35 @@ namespace AtomToolsFramework
 
     void PreviewRendererSystemComponent::Activate()
     {
+        AZ::SystemTickBus::Handler::BusConnect();
         AzFramework::ApplicationLifecycleEvents::Bus::Handler::BusConnect();
         PreviewRendererSystemRequestBus::Handler::BusConnect();
-
-        AZ::TickBus::QueueFunction(
-            [this]()
-            {
-                // Only create a preview renderer if the RPI interface is fully initialized.  Otherwise the constructor will leave things
-                // in a bad state that can lead to crashing.
-                if (AZ::RPI::RPISystemInterface::Get()->IsInitialized())
-                {
-                    if (!m_previewRenderer)
-                    {
-                        m_previewRenderer.reset(aznew AtomToolsFramework::PreviewRenderer(
-                            "PreviewRendererSystemComponent Preview Scene", "PreviewRendererSystemComponent Preview Pipeline"));
-                    }
-                }
-            });
     }
 
     void PreviewRendererSystemComponent::Deactivate()
     {
         PreviewRendererSystemRequestBus::Handler::BusDisconnect();
         AzFramework::ApplicationLifecycleEvents::Bus::Handler::BusDisconnect();
+        AZ::SystemTickBus::Handler::BusDisconnect();
         m_previewRenderer.reset();
     }
 
     void PreviewRendererSystemComponent::OnApplicationAboutToStop()
     {
         m_previewRenderer.reset();
+    }
+
+    void PreviewRendererSystemComponent::OnSystemTick()
+    {
+        // Do not create the preview reader until the RPI has been initialized
+        if (AZ::RPI::RPISystemInterface::Get() && AZ::RPI::RPISystemInterface::Get()->IsInitialized())
+        {
+            if (!m_previewRenderer)
+            {
+                m_previewRenderer.reset(aznew AtomToolsFramework::PreviewRenderer(
+                    "PreviewRendererSystemComponent Preview Scene", "PreviewRendererSystemComponent Preview Pipeline"));
+            }
+            AZ::SystemTickBus::Handler::BusDisconnect();
+        }
     }
 } // namespace AtomToolsFramework

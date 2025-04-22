@@ -16,11 +16,11 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(BlendNParamWeightContainerWidget, EditorAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(BlendNParamWeightsHandler, EditorAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(BlendNParamWeightElementWidget, EditorAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(BlendNParamWeightElementHandler, EditorAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(BlendNParamWeightGuiEntry, EditorAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendNParamWeightContainerWidget, EditorAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendNParamWeightsHandler, EditorAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendNParamWeightElementWidget, EditorAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendNParamWeightElementHandler, EditorAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendNParamWeightGuiEntry, EditorAllocator)
 
 
     const int BlendNParamWeightElementWidget::s_decimalPlaces = 2;
@@ -403,7 +403,7 @@ namespace EMotionFX
 
     AZ::u32 BlendNParamWeightElementHandler::GetHandlerName() const
     {
-        return AZ_CRC("BlendNParamWeightsElementHandler", 0xec71620d);
+        return AZ_CRC_CE("BlendNParamWeightsElementHandler");
     }
 
     QWidget* BlendNParamWeightElementHandler::CreateGUI(QWidget* parent)
@@ -432,7 +432,7 @@ namespace EMotionFX
 
     AZ::u32 BlendNParamWeightsHandler::GetHandlerName() const
     {
-        return AZ_CRC("BlendNParamWeightsContainerHandler", 0x311f6bb3);
+        return AZ_CRC_CE("BlendNParamWeightsContainerHandler");
     }
 
     QWidget* BlendNParamWeightsHandler::CreateGUI(QWidget* parent)
@@ -449,9 +449,9 @@ namespace EMotionFX
 
     void BlendNParamWeightsHandler::ConsumeAttribute([[maybe_unused]] BlendNParamWeightContainerWidget* widget, AZ::u32 attrib, AzToolsFramework::PropertyAttributeReader* attrValue, [[maybe_unused]] const char* debugName)
     {
-        if (attrib == AZ_CRC("BlendTreeBlendNNodeParamWeightsElement", 0x7eae1990) && attrValue)
+        if (attrib == AZ_CRC_CE("BlendTreeBlendNNodeParamWeightsElement") && attrValue)
         {
-            m_node = static_cast<AnimGraphNode*>(attrValue->GetInstancePointer());
+            m_node = static_cast<AnimGraphNode*>(attrValue->GetInstance());
         }
     }
 

@@ -17,7 +17,7 @@ namespace ScriptCanvas
         : public Contract
     {
     public:
-        AZ_CLASS_ALLOCATOR(DisplayGroupConnectedSlotLimitContract, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DisplayGroupConnectedSlotLimitContract, AZ::SystemAllocator);
         AZ_RTTI(DisplayGroupConnectedSlotLimitContract, "{71E55CC5-6212-48C2-973E-1AC9E20A4481}", Contract);
         
         static void Reflect(AZ::ReflectContext* reflection);

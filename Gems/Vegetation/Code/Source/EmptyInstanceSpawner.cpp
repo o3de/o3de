@@ -52,7 +52,7 @@ namespace Vegetation
 
     bool EmptyInstanceSpawner::DataIsEquivalent(const InstanceSpawner & baseRhs) const
     {
-        if (const auto* rhs = azrtti_cast<const EmptyInstanceSpawner*>(&baseRhs))
+        if (azrtti_cast<const EmptyInstanceSpawner*>(&baseRhs))
         {
             return true;
         }

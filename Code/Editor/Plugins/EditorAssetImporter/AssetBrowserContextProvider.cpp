@@ -21,18 +21,21 @@ namespace AZ
 
     AssetBrowserContextProvider::AssetBrowserContextProvider()
     {
-        BusConnect();
+        AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusConnect();
+        AzToolsFramework::AssetBrowser::AssetBrowserPreviewRequestBus::Handler::BusConnect();
     }
 
     AssetBrowserContextProvider::~AssetBrowserContextProvider()
     {
-        BusDisconnect();
+        AzToolsFramework::AssetBrowser::AssetBrowserPreviewRequestBus::Handler::BusDisconnect();
+        AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusDisconnect();
     }
 
     bool AssetBrowserContextProvider::HandlesSource(const AzToolsFramework::AssetBrowser::SourceAssetBrowserEntry* entry) const
     {
         AZStd::unordered_set<AZStd::string> extensions;
-        EBUS_EVENT(AZ::SceneAPI::Events::AssetImportRequestBus, GetSupportedFileExtensions, extensions);
+        AZ::SceneAPI::Events::AssetImportRequestBus::Broadcast(
+            &AZ::SceneAPI::Events::AssetImportRequestBus::Events::GetSupportedFileExtensions, extensions);
         if (extensions.empty())
         {
             return false;
@@ -53,30 +56,6 @@ namespace AZ
         return false;
     }
 
-    void AssetBrowserContextProvider::AddSourceFileOpeners([[maybe_unused]] const char* fullSourceFileName, const AZ::Uuid& sourceUUID, AzToolsFramework::AssetBrowser::SourceFileOpenerList& openers)
-    {
-        using namespace AzToolsFramework;
-
-        if (const SourceAssetBrowserEntry* source = SourceAssetBrowserEntry::GetSourceByUuid(sourceUUID))
-        {
-            if (!HandlesSource(source))
-            {
-                return;
-            }
-        }
-        else
-        {
-            // its not something we can actually open if its not a source file at all
-            return;
-        }
-
-        openers.push_back({ "O3DE_FBX_Settings_Edit", "Edit Settings...", QIcon(), [](const char* fullSourceFileNameInCallback, const AZ::Uuid& /*sourceUUID*/)
-        {
-            AZStd::string sourceName(fullSourceFileNameInCallback); // because the below call absolutely requires a AZStd::string.
-            AssetImporterPlugin::GetInstance()->EditImportSettings(sourceName);
-        } });
-    }
-
     AzToolsFramework::AssetBrowser::SourceFileDetails AssetBrowserContextProvider::GetSourceFileDetails(const char* fullSourceFileName)
     {
         AZStd::string extensionString;
@@ -84,16 +63,55 @@ namespace AZ
         {
             // this does include the "." in the extension.
             AZStd::unordered_set<AZStd::string> extensions;
-            EBUS_EVENT(AZ::SceneAPI::Events::AssetImportRequestBus, GetSupportedFileExtensions, extensions);
+            AZ::SceneAPI::Events::AssetImportRequestBus::Broadcast(
+                &AZ::SceneAPI::Events::AssetImportRequestBus::Events::GetSupportedFileExtensions, extensions);
             for (AZStd::string potentialExtension : extensions)
             {
                 if (AzFramework::StringFunc::Equal(extensionString.c_str(), potentialExtension.c_str()))
                 {
-                    return AzToolsFramework::AssetBrowser::SourceFileDetails("Icons/AssetBrowser/FBX_16.png");
+                    return AzToolsFramework::AssetBrowser::SourceFileDetails("Icons/AssetBrowser/FBX_80.svg");
                 }
             }
         }
 
         return AzToolsFramework::AssetBrowser::SourceFileDetails();
+    }
+
+    void AssetBrowserContextProvider::PreviewSceneSettings(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* selectedEntry)
+    {
+        using namespace AzToolsFramework;
+
+        if (const SourceAssetBrowserEntry* sourceEntry = azrtti_cast<const SourceAssetBrowserEntry*>(selectedEntry))
+        {
+            if (HandlesSource(sourceEntry) && sourceEntry != m_currentEntry)
+            {
+                if (AssetImporterPlugin::GetInstance()->EditImportSettings(sourceEntry->GetFullPath()))
+                {
+                    m_currentEntry = sourceEntry;
+                }
+            }
+        }
+    }
+
+    bool AssetBrowserContextProvider::HandleSource(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* selectedEntry) const
+    {
+        using namespace AzToolsFramework;
+
+        if (const SourceAssetBrowserEntry* sourceEntry = azrtti_cast<const SourceAssetBrowserEntry*>(selectedEntry))
+        {
+            return HandlesSource(sourceEntry);
+        }
+
+        return false;
+    }
+
+    QMainWindow* AssetBrowserContextProvider::GetSceneSettings()
+    {
+        return AssetImporterPlugin::GetInstance()->OpenImportSettings();
+    }
+
+    bool AssetBrowserContextProvider::SaveBeforeClosing()
+    {
+        return AssetImporterPlugin::GetInstance()->SaveBeforeClosing();
     }
 }

@@ -7,19 +7,19 @@
  */
 #pragma once
 
-#include <Atom/RHI/Fence.h>
+#include <Atom/RHI/DeviceFence.h>
 
 namespace AZ
 {
     namespace Null
     {
         class Fence
-            : public RHI::Fence
+            : public RHI::DeviceFence
         {
-            using Base = RHI::Fence;
+            using Base = RHI::DeviceFence;
         public:
             AZ_RTTI(Fence, "{34908F40-A7DE-4EE8-A871-71ACE0C24972}", Base);
-            AZ_CLASS_ALLOCATOR(Fence, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Fence, AZ::SystemAllocator);
 
             static RHI::Ptr<Fence> Create();
             
@@ -27,8 +27,14 @@ namespace AZ
             Fence() = default;
             
             //////////////////////////////////////////////////////////////////////////
-            // RHI::Fence
-            RHI::ResultCode InitInternal([[maybe_unused]] RHI::Device& device, [[maybe_unused]] RHI::FenceState initialState) override { return RHI::ResultCode::Success;}
+            // RHI::DeviceFence
+            RHI::ResultCode InitInternal(
+                [[maybe_unused]] RHI::Device& device,
+                [[maybe_unused]] RHI::FenceState initialState,
+                [[maybe_unused]] bool usedForWaitingOnDevice) override
+            {
+                return RHI::ResultCode::Success;
+            }
             void ShutdownInternal() override {}
             void SignalOnCpuInternal() override {}
             void WaitOnCpuInternal() const override {}

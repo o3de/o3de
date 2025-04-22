@@ -6,7 +6,7 @@
  *
  */
 
-#include "MixedGradientComponent.h"
+#include <GradientSignal/Components/MixedGradientComponent.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -37,6 +37,7 @@ namespace GradientSignal
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &MixedGradientLayer::m_operation, "Operation", "Function used to mix the current gradient with the previous result.")
                     ->EnumAttribute(MixedGradientLayer::MixingOperation::Initialize, "Initialize")
                     ->EnumAttribute(MixedGradientLayer::MixingOperation::Multiply, "Multiply")
+                    ->EnumAttribute(MixedGradientLayer::MixingOperation::Screen, "Screen")
                     ->EnumAttribute(MixedGradientLayer::MixingOperation::Add, "Linear Dodge (Add)")
                     ->EnumAttribute(MixedGradientLayer::MixingOperation::Subtract, "Subtract")
                     ->EnumAttribute(MixedGradientLayer::MixingOperation::Min, "Darken (Min)")
@@ -68,8 +69,7 @@ namespace GradientSignal
     {
         // This needs to be static since the return value is used by the RPE and needs to exist long enough to set the UI data
         static AZStd::string entityName;
-        
-        entityName = "<empty>";
+        static constexpr auto emptyName = "<empty>";
 
         AZ::EntityId layerEntityId = m_gradientSampler.m_gradientId;
         if (layerEntityId.IsValid())
@@ -77,7 +77,14 @@ namespace GradientSignal
             AZ::ComponentApplicationBus::BroadcastResult(entityName, &AZ::ComponentApplicationRequests::GetEntityName, layerEntityId);
         }
 
-        return entityName.c_str();
+        if (entityName.empty())
+        {
+            return emptyName;
+        }
+        else
+        {
+            return entityName.c_str();
+        }
     }
 
     size_t MixedGradientConfig::GetNumLayers() const
@@ -162,13 +169,13 @@ namespace GradientSignal
 
     void MixedGradientComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("GradientService", 0x21c18d23));
+        services.push_back(AZ_CRC_CE("GradientService"));
     }
 
     void MixedGradientComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("GradientService", 0x21c18d23));
-        services.push_back(AZ_CRC("GradientTransformService", 0x8c8c5ecc));
+        services.push_back(AZ_CRC_CE("GradientService"));
+        services.push_back(AZ_CRC_CE("GradientTransformService"));
     }
 
     void MixedGradientComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& services)
@@ -212,6 +219,32 @@ namespace GradientSignal
     void MixedGradientComponent::Activate()
     {
         m_dependencyMonitor.Reset();
+
+        m_dependencyMonitor.SetEntityNotificationFunction(
+            [this](const AZ::EntityId& ownerId, const AZ::EntityId& dependentId, const AZ::Aabb& dirtyRegion)
+            {
+                for (const auto& layer : m_configuration.m_layers)
+                {
+                    if (layer.m_enabled &&
+                        (layer.m_gradientSampler.m_gradientId == dependentId) &&
+                        layer.m_gradientSampler.m_opacity != 0.0f)
+                    {
+                        if (dirtyRegion.IsValid())
+                        {
+                            AZ::Aabb transformedRegion = layer.m_gradientSampler.TransformDirtyRegion(dirtyRegion);
+
+                            LmbrCentral::DependencyNotificationBus::Event(
+                                ownerId, &LmbrCentral::DependencyNotificationBus::Events::OnCompositionRegionChanged, transformedRegion);
+                        }
+                        else
+                        {
+                            LmbrCentral::DependencyNotificationBus::Event(
+                                ownerId, &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
+                        }
+                    }
+                }
+            });
+
         m_dependencyMonitor.ConnectOwner(GetEntityId());
         for (const auto& layer : m_configuration.m_layers)
         {
@@ -220,18 +253,22 @@ namespace GradientSignal
 
         if (!m_configuration.m_layers.empty())
         {
-            //forcing first layer to always be initialize
+            // Force the first layer to always be 'Initialize'
             m_configuration.m_layers.front().m_operation = MixedGradientLayer::MixingOperation::Initialize;
         }
 
-        GradientRequestBus::Handler::BusConnect(GetEntityId());
         MixedGradientRequestBus::Handler::BusConnect(GetEntityId());
+
+        // Connect to GradientRequestBus last so that everything is initialized before listening for gradient queries.
+        GradientRequestBus::Handler::BusConnect(GetEntityId());
     }
 
     void MixedGradientComponent::Deactivate()
     {
-        m_dependencyMonitor.Reset();
+        // Disconnect from GradientRequestBus first to ensure no queries are in process when deactivating.
         GradientRequestBus::Handler::BusDisconnect();
+
+        m_dependencyMonitor.Reset();
         MixedGradientRequestBus::Handler::BusDisconnect();
     }
 
@@ -257,61 +294,83 @@ namespace GradientSignal
 
     float MixedGradientComponent::GetValue(const GradientSampleParams& sampleParams) const
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        AZStd::shared_lock lock(m_queryMutex);
 
-        //accumulate the mixed/combined result of all layers and operations
+        // accumulate the mixed/combined result of all layers and operations
         float result = 0.0f;
-        float operationResult = 0.0f;
 
         for (const auto& layer : m_configuration.m_layers)
         {
             // added check to prevent opacity of 0.0, which will bust when we unpremultiply the alpha out
             if (layer.m_enabled && layer.m_gradientSampler.m_opacity != 0.0f)
             {
+                // Precalculate the inverse opacity that we'll use for blending the current accumulated value with.
+                // In the one case of "Initialize" blending, force this value to 0 so that we erase any accumulated values.
+                const float inverseOpacity = (layer.m_operation == MixedGradientLayer::MixingOperation::Initialize)
+                    ? 0.0f
+                    : (1.0f - layer.m_gradientSampler.m_opacity);
+
                 // this includes leveling and opacity result, we need unpremultiplied opacity to combine properly
                 float current = layer.m_gradientSampler.GetValue(sampleParams);
                 // unpremultiplied alpha (we clamp the end result)
-                float currentUnpremultiplied = current / layer.m_gradientSampler.m_opacity;
-                switch (layer.m_operation)
-                {
-                default:
-                case MixedGradientLayer::MixingOperation::Initialize:
-                    //reset the result of the mixed/combined layers to the current value
-                    result = 0.0f;
-                    operationResult = currentUnpremultiplied;
-                    break;
-                case MixedGradientLayer::MixingOperation::Multiply:
-                    operationResult = result * currentUnpremultiplied;
-                    break;
-                case MixedGradientLayer::MixingOperation::Add:
-                    operationResult = result + currentUnpremultiplied;
-                    break;
-                case MixedGradientLayer::MixingOperation::Subtract:
-                    operationResult = result - currentUnpremultiplied;
-                    break;
-                case MixedGradientLayer::MixingOperation::Min:
-                    operationResult = AZStd::min(currentUnpremultiplied, result);
-                    break;
-                case MixedGradientLayer::MixingOperation::Max:
-                    operationResult = AZStd::max(currentUnpremultiplied, result);
-                    break;
-                case MixedGradientLayer::MixingOperation::Average:
-                    operationResult = (result + currentUnpremultiplied) / 2.0f;
-                    break;
-                case MixedGradientLayer::MixingOperation::Normal:
-                    operationResult = currentUnpremultiplied;
-                    break;
-                case MixedGradientLayer::MixingOperation::Overlay:
-                    operationResult = (result >= 0.5f) ? (1.0f - (2.0f * (1.0f - result) * (1.0f - currentUnpremultiplied))) : (2.0f * result * currentUnpremultiplied);
-                    break;
-                }
+                const float currentUnpremultiplied = current / layer.m_gradientSampler.m_opacity;
+                const float operationResult = PerformMixingOperation(layer.m_operation, result, currentUnpremultiplied);
                 // blend layers (re-applying opacity, which is why we needed to use unpremultiplied)
-                result = (result * (1.0f - layer.m_gradientSampler.m_opacity)) + (operationResult * layer.m_gradientSampler.m_opacity);
+                result = (result * inverseOpacity) + (operationResult * layer.m_gradientSampler.m_opacity);
             }
         }
 
         return AZ::GetClamp(result, 0.0f, 1.0f);
     }
+
+    void MixedGradientComponent::GetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const
+    {
+        if (positions.size() != outValues.size())
+        {
+            AZ_Assert(false, "input and output lists are different sizes (%zu vs %zu).", positions.size(), outValues.size());
+            return;
+        }
+
+        AZStd::shared_lock lock(m_queryMutex);
+
+        // Initialize all of our output data to 0.0f. Layer blends will combine with this, so we need it to have an initial value.
+        AZStd::fill(outValues.begin(), outValues.end(), 0.0f);
+
+        AZStd::vector<float> layerValues(positions.size());
+
+        // accumulate the mixed/combined result of all layers and operations
+        for (const auto& layer : m_configuration.m_layers)
+        {
+            // added check to prevent opacity of 0.0, which will bust when we unpremultiply the alpha out
+            if (layer.m_enabled && layer.m_gradientSampler.m_opacity != 0.0f)
+            {
+                // Precalculate the inverse opacity that we'll use for blending the current accumulated value with.
+                // In the one case of "Initialize" blending, force this value to 0 so that we erase any accumulated values.
+                const float inverseOpacity = (layer.m_operation == MixedGradientLayer::MixingOperation::Initialize)
+                    ? 0.0f
+                    : (1.0f - layer.m_gradientSampler.m_opacity);
+
+                // this includes leveling and opacity result, we need unpremultiplied opacity to combine properly
+                layer.m_gradientSampler.GetValues(positions, layerValues);
+
+                for (size_t index = 0; index < outValues.size(); index++)
+                {
+                    // unpremultiplied alpha (we clamp the end result)
+                    const float currentUnpremultiplied = layerValues[index] / layer.m_gradientSampler.m_opacity;
+                    const float operationResult = PerformMixingOperation(layer.m_operation, outValues[index], currentUnpremultiplied);
+                    // blend layers (re-applying opacity, which is why we needed to use unpremultiplied)
+                    outValues[index] = (outValues[index] * inverseOpacity) + (operationResult * layer.m_gradientSampler.m_opacity);
+                }
+            }
+        }
+
+        for (auto& outValue : outValues)
+        {
+            outValue = AZ::GetClamp(outValue, 0.0f, 1.0f);
+        }
+    }
+
+
 
     bool MixedGradientComponent::IsEntityInHierarchy(const AZ::EntityId& entityId) const
     {
@@ -333,13 +392,25 @@ namespace GradientSignal
 
     void MixedGradientComponent::AddLayer()
     {
-        m_configuration.AddLayer();
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.AddLayer();
+        }
+
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 
     void MixedGradientComponent::RemoveLayer(int layerIndex)
     {
-        m_configuration.RemoveLayer(layerIndex);
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.RemoveLayer(layerIndex);
+        }
+
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 

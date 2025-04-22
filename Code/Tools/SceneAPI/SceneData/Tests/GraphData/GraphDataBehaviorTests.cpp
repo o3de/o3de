@@ -21,6 +21,7 @@
 #include <SceneAPI/SceneCore/DataTypes/IGraphObject.h>
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IMeshData.h>
 #include <SceneAPI/SceneData/ReflectionRegistrar.h>
+#include <SceneAPI/SceneData/GraphData/CustomPropertyData.h>
 #include <SceneAPI/SceneData/GraphData/MeshData.h>
 #include <SceneAPI/SceneData/GraphData/MeshVertexBitangentData.h>
 #include <SceneAPI/SceneData/GraphData/MeshVertexColorData.h>
@@ -31,6 +32,9 @@
 #include <SceneAPI/SceneData/GraphData/MaterialData.h>
 #include <SceneAPI/SceneData/GraphData/BoneData.h>
 #include <SceneAPI/SceneData/GraphData/RootBoneData.h>
+#include <SceneAPI/SceneData/GraphData/TransformData.h>
+
+extern "C" AZ_DLL_EXPORT void CleanUpSceneDataGenericClassInfo();
 
 namespace AZ
 {
@@ -186,10 +190,28 @@ namespace AZ
                         boneData->SetWorldTransform(SceneAPI::DataTypes::MatrixType::CreateDiagonal({1.0, 2.0, 3.0}));
                         return true;
                     }
+                    else if (data.get_type_info().m_id == azrtti_typeid<AZ::SceneData::GraphData::CustomPropertyData>())
+                    {
+                        AZ::SceneData::GraphData::CustomPropertyData::PropertyMap propertyMap;
+                        propertyMap["a_string"] = AZStd::make_any<AZStd::string>("the string");
+                        propertyMap["a_bool"] = AZStd::make_any<bool>(true);
+                        propertyMap["a_int32"] = AZStd::make_any<int32_t>(aznumeric_cast<int32_t>(-32));
+                        propertyMap["a_uint64"] = AZStd::make_any<AZ::u64>(aznumeric_cast<AZ::u64>(64));
+                        propertyMap["a_float"] = AZStd::make_any<float>(aznumeric_cast<float>(12.34));
+                        propertyMap["a_double"] = AZStd::make_any<double>(aznumeric_cast<double>(0.1234));
+                        AZStd::any_cast<AZ::SceneData::GraphData::CustomPropertyData>(&data)->SetPropertyMap(propertyMap);
+                        return true;
+                    }
                     else if (data.get_type_info().m_id == azrtti_typeid<AZ::SceneData::GraphData::RootBoneData>())
                     {
                         auto* boneData = AZStd::any_cast<AZ::SceneData::GraphData::RootBoneData>(&data);
                         boneData->SetWorldTransform(SceneAPI::DataTypes::MatrixType::CreateDiagonal({2.0, 3.0, 4.0}));
+                        return true;
+                    }
+                    else if (data.get_type_info().m_id == azrtti_typeid<AZ::SceneData::GraphData::TransformData>())
+                    {
+                        auto* transformData = AZStd::any_cast<AZ::SceneData::GraphData::TransformData>(&data);
+                        transformData->SetMatrix(AZ::Matrix3x4::CreateDiagonal({1.0, 2.0, 3.0}));
                         return true;
                     }
                     return false;
@@ -208,8 +230,8 @@ namespace AZ
                 }
             };
 
-            class GrapDatahBehaviorScriptTest
-                : public UnitTest::AllocatorsFixture
+            class GraphDataBehaviorScriptTest
+                : public UnitTest::LeakDetectionFixture
             {
             public:
                 AZStd::unique_ptr<AZ::ScriptContext> m_scriptContext;
@@ -233,7 +255,7 @@ namespace AZ
 
                 void SetUp() override
                 {
-                    UnitTest::AllocatorsFixture::SetUp();
+                    UnitTest::LeakDetectionFixture::SetUp();
                     AZ::NameDictionary::Create();
 
                     m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
@@ -257,8 +279,10 @@ namespace AZ
                     m_serializeContext.reset();
                     m_behaviorContext.reset();
 
+                    CleanUpSceneDataGenericClassInfo();
+
                     AZ::NameDictionary::Destroy();
-                    UnitTest::AllocatorsFixture::TearDown();
+                    UnitTest::LeakDetectionFixture::TearDown();
                 }
 
                 void ExpectExecute(AZStd::string_view script)
@@ -267,7 +291,7 @@ namespace AZ
                 }
             };
 
-            TEST_F(GrapDatahBehaviorScriptTest, SceneGraph_MeshData_AccessWorks)
+            TEST_F(GraphDataBehaviorScriptTest, SceneGraph_MeshData_AccessWorks)
             {
                 ExpectExecute("meshData = MeshData()");
                 ExpectExecute("TestExpectTrue(meshData ~= nil)");
@@ -319,7 +343,7 @@ namespace AZ
                 ExpectExecute("TestExpectIntegerEquals(meshData:GetFaceInfo(0):GetVertexIndex(2), 2)");
             }
 
-            TEST_F(GrapDatahBehaviorScriptTest, SceneGraph_MeshVertexColorData_AccessWorks)
+            TEST_F(GraphDataBehaviorScriptTest, SceneGraph_MeshVertexColorData_AccessWorks)
             {
                 ExpectExecute("meshVertexColorData = MeshVertexColorData()");
                 ExpectExecute("TestExpectTrue(meshVertexColorData ~= nil)");
@@ -337,7 +361,7 @@ namespace AZ
                 ExpectExecute("TestExpectFloatEquals(colorOne.alpha, 0.8)");
             }
 
-            TEST_F(GrapDatahBehaviorScriptTest, SceneGraph_MeshVertexUVData_AccessWorks)
+            TEST_F(GraphDataBehaviorScriptTest, SceneGraph_MeshVertexUVData_AccessWorks)
             {
                 ExpectExecute("meshVertexUVData = MeshVertexUVData()");
                 ExpectExecute("TestExpectTrue(meshVertexUVData ~= nil)");
@@ -351,7 +375,7 @@ namespace AZ
                 ExpectExecute("TestExpectFloatEquals(uvOne.y, 0.4)");
             }
 
-            TEST_F(GrapDatahBehaviorScriptTest, SceneGraph_MeshVertexBitangentData_AccessWorks)
+            TEST_F(GraphDataBehaviorScriptTest, SceneGraph_MeshVertexBitangentData_AccessWorks)
             {
                 ExpectExecute("meshVertexBitangentData = MeshVertexBitangentData()");
                 ExpectExecute("TestExpectTrue(meshVertexBitangentData ~= nil)");
@@ -368,7 +392,7 @@ namespace AZ
                 ExpectExecute("TestExpectTrue(meshVertexBitangentData:GetGenerationMethod(), MeshVertexBitangentData.FromSourceScene)");
             }
 
-            TEST_F(GrapDatahBehaviorScriptTest, SceneGraph_MeshVertexTangentData_AccessWorks)
+            TEST_F(GraphDataBehaviorScriptTest, SceneGraph_MeshVertexTangentData_AccessWorks)
             {
                 ExpectExecute("meshVertexTangentData = MeshVertexTangentData()");
                 ExpectExecute("TestExpectTrue(meshVertexTangentData ~= nil)");
@@ -387,7 +411,7 @@ namespace AZ
                 ExpectExecute("TestExpectTrue(meshVertexTangentData:GetGenerationMethod(), MeshVertexTangentData.MikkT)");
             }
 
-            TEST_F(GrapDatahBehaviorScriptTest, SceneGraph_AnimationData_AccessWorks)
+            TEST_F(GraphDataBehaviorScriptTest, SceneGraph_AnimationData_AccessWorks)
             {
                 ExpectExecute("animationData = AnimationData()");
                 ExpectExecute("TestExpectTrue(animationData ~= nil)");
@@ -399,7 +423,7 @@ namespace AZ
                 ExpectExecute("TestExpectFloatEquals(animationData:GetKeyFrame(2).basisX.z, 3.0)");
             }
 
-            TEST_F(GrapDatahBehaviorScriptTest, SceneGraph_BlendShapeAnimationData_AccessWorks)
+            TEST_F(GraphDataBehaviorScriptTest, SceneGraph_BlendShapeAnimationData_AccessWorks)
             {
                 ExpectExecute("blendShapeAnimationData = BlendShapeAnimationData()");
                 ExpectExecute("TestExpectTrue(blendShapeAnimationData ~= nil)");
@@ -412,7 +436,7 @@ namespace AZ
                 ExpectExecute("TestExpectFloatEquals(blendShapeAnimationData:GetTimeStepBetweenFrames(), 4.0)");
             }
 
-            TEST_F(GrapDatahBehaviorScriptTest, SceneGraph_BlendShapeData_AccessWorks)
+            TEST_F(GraphDataBehaviorScriptTest, SceneGraph_BlendShapeData_AccessWorks)
             {
                 ExpectExecute("blendShapeData = BlendShapeData()");
                 ExpectExecute("TestExpectTrue(blendShapeData ~= nil)");
@@ -497,7 +521,7 @@ namespace AZ
                 ExpectExecute("TestExpectFloatEquals(blendShapeData:GetBitangent(2).z, 0.4)");
             }
 
-            TEST_F(GrapDatahBehaviorScriptTest, SceneGraph_MaterialData_AccessWorks)
+            TEST_F(GraphDataBehaviorScriptTest, SceneGraph_MaterialData_AccessWorks)
             {
                 ExpectExecute("materialData = MaterialData()");
                 ExpectExecute("TestExpectTrue(materialData ~= nil)");
@@ -540,7 +564,7 @@ namespace AZ
                 ExpectExecute("TestExpectTrue(materialData:GetTexture(MaterialData.Specular) == 'specular')");
             }
 
-            TEST_F(GrapDatahBehaviorScriptTest, SceneGraph_BoneData_AccessWorks)
+            TEST_F(GraphDataBehaviorScriptTest, SceneGraph_BoneData_AccessWorks)
             {
                 ExpectExecute("boneData = BoneData()");
                 ExpectExecute("TestExpectTrue(boneData ~= nil)");
@@ -559,7 +583,20 @@ namespace AZ
                 ExpectExecute("TestExpectFloatEquals(boneData:GetWorldTransform():GetRow(2).w, 0.0)");
             }
 
-            TEST_F(GrapDatahBehaviorScriptTest, SceneGraph_RootBoneData_AccessWorks)
+            TEST_F(GraphDataBehaviorScriptTest, SceneGraph_CustomPropertyData_AccessWorks)
+            {
+                ExpectExecute("customPropertyData = CustomPropertyData()");
+                ExpectExecute("TestExpectTrue(customPropertyData ~= nil)");
+                ExpectExecute("MockGraphData.FillData(customPropertyData)");
+                ExpectExecute("TestExpectTrue(customPropertyData:GetPropertyMap():At('a_string') == 'the string')");
+                ExpectExecute("TestExpectTrue(customPropertyData:GetPropertyMap():At('a_bool') == true)");
+                ExpectExecute("TestExpectIntegerEquals(customPropertyData:GetPropertyMap():At('a_int32'), -32)");
+                ExpectExecute("TestExpectIntegerEquals(customPropertyData:GetPropertyMap():At('a_uint64'), 64)");
+                ExpectExecute("TestExpectFloatEquals(customPropertyData:GetPropertyMap():At('a_float'), 12.34)");
+                ExpectExecute("TestExpectFloatEquals(customPropertyData:GetPropertyMap():At('a_double'), 0.1234)");
+            }
+
+            TEST_F(GraphDataBehaviorScriptTest, SceneGraph_RootBoneData_AccessWorks)
             {
                 ExpectExecute("rootBoneData = RootBoneData()");
                 ExpectExecute("TestExpectTrue(rootBoneData ~= nil)");
@@ -576,6 +613,25 @@ namespace AZ
                 ExpectExecute("TestExpectFloatEquals(rootBoneData:GetWorldTransform():GetRow(2).y, 0.0)");
                 ExpectExecute("TestExpectFloatEquals(rootBoneData:GetWorldTransform():GetRow(2).z, 4.0)");
                 ExpectExecute("TestExpectFloatEquals(rootBoneData:GetWorldTransform():GetRow(2).w, 0.0)");
+            }
+
+            TEST_F(GraphDataBehaviorScriptTest, SceneGraph_TransformData_AccessWorks)
+            {
+                ExpectExecute("transformData = TransformData()");
+                ExpectExecute("TestExpectTrue(transformData ~= nil)");
+                ExpectExecute("MockGraphData.FillData(transformData)");
+                ExpectExecute("TestExpectFloatEquals(transformData.transform:GetRow(0).x, 1.0)");
+                ExpectExecute("TestExpectFloatEquals(transformData.transform:GetRow(0).y, 0.0)");
+                ExpectExecute("TestExpectFloatEquals(transformData.transform:GetRow(0).z, 0.0)");
+                ExpectExecute("TestExpectFloatEquals(transformData.transform:GetRow(0).w, 0.0)");
+                ExpectExecute("TestExpectFloatEquals(transformData.transform:GetRow(1).x, 0.0)");
+                ExpectExecute("TestExpectFloatEquals(transformData.transform:GetRow(1).y, 2.0)");
+                ExpectExecute("TestExpectFloatEquals(transformData.transform:GetRow(1).z, 0.0)");
+                ExpectExecute("TestExpectFloatEquals(transformData.transform:GetRow(1).w, 0.0)");
+                ExpectExecute("TestExpectFloatEquals(transformData.transform:GetRow(2).x, 0.0)");
+                ExpectExecute("TestExpectFloatEquals(transformData.transform:GetRow(2).y, 0.0)");
+                ExpectExecute("TestExpectFloatEquals(transformData.transform:GetRow(2).z, 3.0)");
+                ExpectExecute("TestExpectFloatEquals(transformData.transform:GetRow(2).w, 0.0)");
             }
         }
     }

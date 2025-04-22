@@ -15,7 +15,7 @@ namespace SurfaceData
 {
     namespace Constants
     {
-        static const char* s_unassignedTagName = AzFramework::SurfaceData::Constants::s_unassignedTagName;
+        static const char* s_unassignedTagName = AzFramework::SurfaceData::Constants::UnassignedTagName;
 
         static const AZ::Crc32 s_unassignedTagCrc = AZ::Crc32(s_unassignedTagName);
     }

@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Asset/AssetCommon.h>
@@ -24,12 +25,15 @@ namespace AZ
         //! concrete streaming image controller instance. Users should derive from this class, store
         //! configuration data on it for your specific back-end, and implement the factory method to create
         //! an instance at runtime.
-        class StreamingImageControllerAsset
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+        class ATOM_RPI_REFLECT_API StreamingImageControllerAsset
             : public Data::AssetData
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+
         public:
             AZ_RTTI(StreamingImageControllerAsset, "{0797F48F-B097-4209-8D6F-DA40DC0FAB42}", Data::AssetData);
-            AZ_CLASS_ALLOCATOR(StreamingImageControllerAsset, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(StreamingImageControllerAsset, SystemAllocator);
 
             static void Reflect(AZ::ReflectContext* context);
 

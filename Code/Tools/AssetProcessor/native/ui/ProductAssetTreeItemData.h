@@ -23,9 +23,21 @@ namespace AssetProcessor
     public:
         AZ_RTTI(ProductAssetTreeItemData, "{6DEFC394-98A3-4EEA-9419-E8F51F447862}", AssetTreeItemData);
 
-        static AZStd::shared_ptr<ProductAssetTreeItemData> MakeShared(const AzToolsFramework::AssetDatabase::ProductDatabaseEntry* databaseInfo, const AZStd::string& assetDbName, QString name, bool isFolder, const AZ::Uuid& uuid);
+        static AZStd::shared_ptr<ProductAssetTreeItemData> MakeShared(
+            const AzToolsFramework::AssetDatabase::ProductDatabaseEntry* databaseInfo,
+            const AZStd::string& assetDbName,
+            QString name,
+            bool isFolder,
+            const AZ::Uuid& uuid,
+            const AZ::s64 scanFolderID);
 
-        ProductAssetTreeItemData(const AzToolsFramework::AssetDatabase::ProductDatabaseEntry* databaseInfo, const AZStd::string& assetDbName, QString name, bool isFolder, const AZ::Uuid& uuid);
+        ProductAssetTreeItemData(
+            const AzToolsFramework::AssetDatabase::ProductDatabaseEntry* databaseInfo,
+            const AZStd::string& assetDbName,
+            QString name,
+            bool isFolder,
+            const AZ::Uuid& uuid,
+            const AZ::s64 scanFolderID);
 
         ~ProductAssetTreeItemData() override {}
 

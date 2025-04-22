@@ -8,6 +8,7 @@ General Asset Processor GUI Tests
 """
 
 # Import builtin libraries
+import psutil
 import pytest
 import logging
 import os
@@ -16,13 +17,14 @@ import configparser
 from pathlib import Path
 
 # Import LyTestTools
+import ly_test_tools
 import ly_test_tools.builtin.helpers as helpers
 import ly_test_tools.environment.waiter as waiter
 import ly_test_tools.environment.file_system as fs
 import ly_test_tools.environment.process_utils as process_utils
 import ly_test_tools.launchers.launcher_helper as launcher_helper
 from ly_test_tools.o3de.asset_processor import ASSET_PROCESSOR_PLATFORM_MAP
-from ly_test_tools.o3de.asset_processor import AssetProcessorError
+from ly_test_tools.o3de.asset_processor import StopReason
 
 # Import fixtures
 from ..ap_fixtures.asset_processor_fixture import asset_processor as asset_processor
@@ -62,11 +64,11 @@ def ap_idle(workspace, ap_setup_fixture):
 @pytest.mark.usefixtures("ap_setup_fixture")
 @pytest.mark.usefixtures("local_resources")
 @pytest.mark.parametrize("project", targetProjects)
-@pytest.mark.SUITE_sandbox
+@pytest.mark.SUITE_periodic
 @pytest.mark.assetpipeline
-class TestsAssetProcessorGUI_Windows(object):
+class TestsAssetProcessorGUI(object):
     """
-    Specific Tests for Asset Processor GUI To Only Run on Windows
+    Specific Tests for Asset Processor GUI
     """
 
     @pytest.mark.assetpipeline
@@ -91,15 +93,15 @@ class TestsAssetProcessorGUI_Windows(object):
         assert output_message == "pong", "Failed to receive response on control channel socket"
         asset_processor.stop()
 
+    @pytest.mark.skip(reason="https://github.com/o3de/o3de/issues/14930")
     @pytest.mark.test_case_id("C1564070")
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
-    def test_WindowsPlatforms_ProcessAssets_ReprocessDeletedCache(self, asset_processor, workspace):
+    def test_ProcessAssets_ReprocessDeletedCache(self, asset_processor, workspace):
         """
         Deleting assets from Cache will make them re-processed in the already running AP
         """
 
-        START_UP_SECONDS = 3
         asset_processor.create_temp_asset_root()
         asset_processor.add_source_folder_assets(os.path.join(workspace.project, 'Fonts'))
         font_path = os.path.join(asset_processor.temp_project_cache(), "fonts")
@@ -108,7 +110,7 @@ class TestsAssetProcessorGUI_Windows(object):
         result, _ = asset_processor.gui_process()
         assert result, "AP GUI failed"
 
-        # check that files exist in the cache: dev\Cache\AutomatedTesting\pc\automatedtesting\fonts
+        # check that files exist in the cache: \tempAssetRoot\AutomatedTesting\Cache\pc\fonts
         assert os.path.exists(font_path), "Fonts folder was not found initially."
 
         # delete the cached files
@@ -126,10 +128,10 @@ class TestsAssetProcessorGUI_Windows(object):
     @pytest.mark.test_case_id("C1564065")
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
-    # fmt:off
-    def test_WindowsPlatforms_RemoveProjectAssets_ProcessedAssetsDeleted(self, asset_processor, ap_setup_fixture,
+
+    def test_RemoveProjectAssets_ProcessedAssetsDeleted(self, asset_processor, ap_setup_fixture,
                                                                          ):
-        # fmt:on
+
         """
         Asset Processor Deletes processed assets when source is removed from project folder (while running)
 
@@ -175,10 +177,10 @@ class TestsAssetProcessorGUI_Windows(object):
     @pytest.mark.test_case_id("C1591563")
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
-    # fmt:off
-    def test_WindowsPlatforms_ModifyAsset_UpdatedAssetProcessed(self, asset_processor, ap_setup_fixture,
+
+    def test_ModifyAsset_UpdatedAssetProcessed(self, asset_processor, ap_setup_fixture,
                                                                 ):
-        # fmt:on
+
         """
         Processing changed files (while running)
 
@@ -201,7 +203,7 @@ class TestsAssetProcessorGUI_Windows(object):
 
         # Save path to test asset in project folder and path to test asset in cache
         project_asset_path = os.path.join(test_assets_folder, "C1591563_test_asset.txt")
-        cache_asset_path = os.path.join(cache_path, "C1591563_test_asset.txt")
+        cache_asset_path = os.path.join(cache_path, "c1591563_test_asset.txt")
 
         result, _ = asset_processor.gui_process(quitonidle=False)
         assert result, "AP GUI failed"
@@ -234,9 +236,8 @@ class TestsAssetProcessorGUI_Windows(object):
 
     @pytest.mark.test_case_id("C24168803")
     @pytest.mark.BAT
-    @pytest.mark.SUITE_sandbox
     @pytest.mark.assetpipeline
-    def test_WindowsPlatforms_RunAP_ProcessesIdle(self, asset_processor):
+    def test_RunAP_ProcessesIdle(self, asset_processor):
         """
         Asset Processor goes idle
 
@@ -269,7 +270,7 @@ class TestsAssetProcessorGUI_Windows(object):
     @pytest.mark.test_case_id("C1564064")
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
-    def test_WindowsPlatforms_AddAssetsWhileRunning_AssetsProcessed(
+    def test_AddAssetsWhileRunning_AssetsProcessed(
         self, ap_setup_fixture, workspace, asset_processor
     ):
         """
@@ -296,22 +297,10 @@ class TestsAssetProcessorGUI_Windows(object):
         cache_level_dir = os.path.join(asset_processor.temp_project_cache(), "levels", level_name.lower())
 
         # Expected test asset sources and products
-        exp_project_level_assets = [
-            "filelist.xml",
-            "level.pak",
-            "tags.txt",
-            "terraintexture.pak",
-            f"{level_name}.ly",
-            os.path.join("leveldata", "Environment.xml"),
-            os.path.join("leveldata", "Heightmap.dat"),
-            os.path.join("leveldata", "TerrainTexture.xml"),
-            os.path.join("leveldata", "TimeOfDay.xml"),
-            os.path.join("leveldata", "VegetationMap.dat"),
-            os.path.join("terrain", "cover.ctc"),
-        ]
+        exp_project_level_assets = ["TestDependenciesLevel.prefab"]
         exp_project_test_assets = [new_asset]
-        exp_cache_level_assets = [asset.lower() for asset in exp_project_level_assets if not asset.endswith(".ly")]
-        exp_cache_test_assets = [new_asset_lower, f"{new_asset_lower}_compiled"]
+        exp_cache_level_assets = ["TestDependenciesLevel.spawnable".lower()]
+        exp_cache_test_assets = [f"{new_asset_lower}_compiled", f"{new_asset_lower}_fn_compiled", "c1564064_vm.luac"]
 
         result, _ = asset_processor.gui_process(quitonidle=False)
         assert result, "AP GUI failed"
@@ -329,80 +318,43 @@ class TestsAssetProcessorGUI_Windows(object):
         # Verify level and test assets in project folder
         level_assets_list = utils.get_relative_file_paths(project_level_dir)
         test_assets_list = utils.get_relative_file_paths(test_project_asset_dir)
-        # fmt:off
+
         assert utils.compare_lists(level_assets_list, exp_project_level_assets), \
             "One or more assets is missing between the level in the project and its expected source assets"
         assert utils.compare_lists(test_assets_list, exp_project_test_assets), \
             "One or more assets is missing between the test assets in the project and the expected source assets"
-        # fmt:on
+
 
         # Verify level and test assets in cache folder
         level_assets_list = utils.get_relative_file_paths(cache_level_dir)
         test_assets_list = utils.get_relative_file_paths(os.path.join(asset_processor.temp_project_cache(),
                                                                       env["test_asset_dir_name"]))
-        # fmt:off
+
         assert utils.compare_lists(level_assets_list, exp_cache_level_assets), \
             "One or more assets is missing between the level in the cache and its expected product assets"
         assert utils.compare_lists(test_assets_list, exp_cache_test_assets), \
             "One or more assets is missing between the test assets in the cache and the expected product assets"
-        # fmt:on
+
         asset_processor.stop()
 
-    @pytest.mark.test_case_id("C24256593")
-    @pytest.mark.BAT
     @pytest.mark.assetpipeline
-    def test_WindowsPlatforms_LaunchAP_LogReportsIdle(self, asset_processor, workspace, ap_idle):
-        """
-        Asset Processor creates a log entry when it goes idle
-
-        Test Steps:
-        1. Create temporary testing environment
-        2. Run Asset Processor batch to pre-process assets
-        3. Run Asset Processor GUI
-        4. Check if Asset Processor GUI reports that it has gone idle
-        """
-
-        asset_processor.create_temp_asset_root()
-        # Run batch process to ensure project assets are processed
-        assert asset_processor.batch_process(), "AP Batch failed"
-
-        ap_idle.set_file_path(workspace.paths.ap_gui_log())
-        # Launch Asset Processor and wait for it to go idle
-        result, _ = asset_processor.gui_process()
-        assert result, "AP GUI failed"
-        ap_idle.check_if_idle()
-        asset_processor.stop()
-
-
-    @pytest.mark.assetpipeline
-    def test_APStopTimesOut_ExceptionThrown(self, ap_setup_fixture, asset_processor):
+    def test_APStop_TimesOut(self, asset_processor):
         """
         Tests whether or not Asset Processor will Time Out
 
         Test Steps:
-        1. Create a temporary testing environment
-        2. Start the Asset Processor
-        3. Copy in assets to the test environment
-        4. Try to stop the Asset Processor with a timeout of 1 second (This cannot be done manually).
-        5. Verify that Asset Processor times out and returns the expected error
+        1. Start the Asset Processor
+        2. Try to stop the Asset Processor with a timeout of 0 seconds (This cannot be done manually).
+        3. Verify that Asset Processor times out and returns the expected StopReason
         """
 
         asset_processor.create_temp_asset_root()
         asset_processor.start()
-
-        # Copy in some assets, so that the AP will be busy when the stop command is called.
-        asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], "TimeOutTest")
-
-        ap_quit_timed_out = False
-        try:
-            asset_processor.stop(timeout=1)
-        except AssetProcessorError:
-            ap_quit_timed_out = True
-        assert ap_quit_timed_out, "AP did not time out as expected"
-
+        stop = asset_processor.stop(timeout=-1)
+        assert stop == StopReason.TIMEOUT, f"AP did not time out as expected, Expected: {StopReason.TIMEOUT} Actual: {stop}"
 
     @pytest.mark.assetpipeline
-    def test_APStopDefaultTimeout_NoException(self, asset_processor):
+    def test_APStopDefaultTimeout_DoesNotTimeOut(self, asset_processor):
         """
         Tests the default timeout of the Asset Processor
 
@@ -419,9 +371,21 @@ class TestsAssetProcessorGUI_Windows(object):
 
         asset_processor.create_temp_asset_root()
         asset_processor.start()
-        ap_quit_timed_out = False
-        try:
-            asset_processor.stop()
-        except AssetProcessorError:
-            ap_quit_timed_out = True
-        assert not ap_quit_timed_out, "AP timed out"
+        assert asset_processor.stop() is None, "AP timed out"
+
+    @pytest.mark.assetpipeline
+    def test_APStopNoControlConnection_Terminates(self, ap_setup_fixture, asset_processor):
+        """
+        Tests AP successfully terminates if no control connection is found during an stop call.
+
+        Test Steps:
+        1. Create a temporary testing environment
+        2. Start Asset Processor
+        3. Disconnect the control_connection
+        4. Stop Asset Processor
+        5. Verify AP detected no control_connection and terminated
+        """
+        asset_processor.create_temp_asset_root()
+        asset_processor.start()
+        asset_processor.set_control_connection(None)
+        assert asset_processor.stop() == StopReason.NO_CONTROL, "AP was not terminated as expected"

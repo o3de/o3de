@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/IO/Streamer/RequestPath.h>
 #include <AzCore/IO/IStreamerTypes.h>
 #include <AzCore/IO/Streamer/Statistics.h>
 #include <AzCore/IO/Streamer/StreamerConfiguration.h>
@@ -23,12 +24,21 @@
 namespace AZ::IO
 {
     class FileRequest;
+    class Streamer_SchedulerTest_RequestSorting_Test;
+
+    namespace Requests
+    {
+        struct CancelData;
+        struct RescheduleData;
+    } // namespace Requests
 
     class Scheduler final
     {
     public:
         explicit Scheduler(AZStd::shared_ptr<StreamStackEntry> streamStack, u64 memoryAlignment = AZCORE_GLOBAL_NEW_ALIGNMENT,
             u64 sizeAlignment = 1, u64 granularity = 1_mib);
+        ~Scheduler();
+
         void Start(const AZStd::thread_desc& threadDesc);
         void Stop();
 
@@ -43,6 +53,8 @@ namespace AZ::IO
         void SuspendProcessing();
         //! Resumes processing of requests on the Scheduler's main thread.
         void ResumeProcessing();
+        //! Whether or not processing of requests has been suspended.
+        bool IsSuspended() const;
 
         //! Collects various metrics that are recorded by streamer and its stream stack.
         //! This function is deliberately not thread safe. All stats use a sliding window and never
@@ -54,6 +66,7 @@ namespace AZ::IO
         void GetRecommendations(IStreamerTypes::Recommendations& recommendations) const;
 
     private:
+        friend class Streamer_SchedulerTest_RequestSorting_Test;
         inline static constexpr u32 ProfilerColor = 0x0080ffff; //!< A lite shade of blue. (See https://www.color-hex.com/color/0080ff).
 
         void Thread_MainLoop();
@@ -61,14 +74,14 @@ namespace AZ::IO
         bool Thread_ExecuteRequests();
         bool Thread_PrepareRequests(AZStd::vector<FileRequestPtr>& outstandingRequests);
         void Thread_ProcessTillIdle();
-        void Thread_ProcessCancelRequest(FileRequest* request, FileRequest::CancelData& data);
-        void Thread_ProcessRescheduleRequest(FileRequest* request, FileRequest::RescheduleData& data);
+        void Thread_ProcessCancelRequest(FileRequest* request, Requests::CancelData& data);
+        void Thread_ProcessRescheduleRequest(FileRequest* request, Requests::RescheduleData& data);
 
         enum class Order
         {
-            FirstRequest, //< The first request is the most important to process next.
-            SecondRequest, //< The second request is the most important to process next.
-            Equal //< Both requests are equally important.
+            FirstRequest, //!< The first request is the most important to process next.
+            SecondRequest, //!< The second request is the most important to process next.
+            Equal //!< Both requests are equally important.
         };
         //! Determine which of the two provided requests is more important to process next.
         Order Thread_PrioritizeRequests(const FileRequest* first, const FileRequest* second) const;
@@ -91,13 +104,17 @@ namespace AZ::IO
 
         StreamStackEntry::Status m_stackStatus;
 #if AZ_STREAMER_ADD_EXTRA_PROFILING_INFO
-        AZStd::chrono::system_clock::time_point m_processingStartTime;
+        AZStd::chrono::steady_clock::time_point m_processingStartTime;
         size_t m_processingSize{ 0 };
         //! Indication of how efficient the scheduler works. For loose files a large gap with the read speed of
         //! the storage drive means that the scheduler is having to spend too much time between requests. For archived
         //! files this value should be larger than the read speed of the storage drive otherwise compressing files has
         //! no benefit (other than reduced disk space).
         AverageWindow<double, double, s_statisticsWindowSize> m_processingSpeedStat;
+        TimedAverageWindow<s_statisticsWindowSize> m_schedulingTimeStat;
+        TimedAverageWindow<s_statisticsWindowSize> m_queuingTimeStat;
+        TimedAverageWindow<s_statisticsWindowSize> m_executingTimeStat;
+        TimedAverageWindow<s_statisticsWindowSize> m_preparingTimeStat;
 
         //! Percentage of reads that come in that are already on their deadline. Requests like this are disruptive
         //! as they cause the scheduler to prioritize these over the most optimal read layout.

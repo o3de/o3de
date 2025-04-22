@@ -24,7 +24,6 @@
 #include <EMotionFX/Source/MotionSystem.h>
 #include <EMotionFX/Source/Recorder.h>
 #include <EMotionFX/Source/Importer/Importer.h>
-#include <EMotionFX/Exporters/ExporterLib/Exporter/ExporterFileProcessor.h>
 #include <AzFramework/API/ApplicationAPI.h>
 
 
@@ -69,7 +68,8 @@ namespace CommandSystem
         {
             m_relocateFilenameFunction(filename);
         }
-        EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePathKeepCase, filename);
+        AzFramework::ApplicationRequests::Bus::Broadcast(
+            &AzFramework::ApplicationRequests::Bus::Events::NormalizePathKeepCase, filename);
         // Resolve the filename if it starts with a path alias
         if (filename.starts_with('@'))
         {
@@ -455,8 +455,17 @@ namespace CommandSystem
         EMotionFX::ActorInstance* actorInstance = nullptr;
         if (parameters.CheckIfHasParameter("actorInstanceID"))
         {
-            const uint32 actorInstanceID = parameters.GetValueAsInt("actorInstanceID", this);
-            actorInstance = EMotionFX::GetActorManager().FindActorInstanceByID(actorInstanceID);
+            const int actorInstanceID = parameters.GetValueAsInt("actorInstanceID", this);
+            if (actorInstanceID == -1)
+            {
+                // If there isn't an actorInstanceId, grab the first actor instance. 
+                actorInstance = EMotionFX::GetActorManager().GetFirstEditorActorInstance();
+            }
+            else
+            {
+                actorInstance = EMotionFX::GetActorManager().FindActorInstanceByID(actorInstanceID);
+            }
+
             if (!actorInstance)
             {
                 outResult = AZStd::string::format("Cannot activate anim graph. Actor instance id '%i' is not valid.", actorInstanceID);

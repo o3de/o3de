@@ -18,140 +18,132 @@
 #include <AzCore/std/string/string_view.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
-#include <ScriptCanvas/Assets/ScriptCanvasFileHandling.h>
+#include <ScriptCanvas/Asset/SubgraphInterfaceAsset.h>
+#include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
 #include <ScriptCanvas/Bus/ScriptCanvasBus.h>
 #include <ScriptCanvas/Components/EditorGraph.h>
+#include <ScriptCanvas/Components/EditorUtils.h>
+#include <ScriptCanvas/Core/GraphSerialization.h>
 #include <ScriptCanvas/Core/SerializationListener.h>
-#include <ScriptCanvas/Asset/RuntimeAsset.h>
 #include <ScriptCanvas/Libraries/Math/MathNodeUtilities.h>
+
+#include <ScriptCanvas/Assets/ScriptCanvasFileHandling.h>
 
 namespace ScriptCanvasFileHandlingCpp
 {
-    void AppendTabs(AZStd::string& result, size_t depth)
+    class SourceTreeLoader
     {
-        for (size_t i = 0; i < depth; ++i)
-        {
-            result += "\t";
-        }
-    }
+    public:
+        AZ_CLASS_ALLOCATOR(SourceTreeLoader, AZ::SystemAllocator);
 
-    void CollectNodes(const ScriptCanvas::GraphData::NodeContainer& container, ScriptCanvas::SerializationListeners& listeners)
-    {
-        for (auto& nodeEntity : container)
+        ScriptCanvas::SourceHandle m_source;
+        AZStd::vector<SourceTreeLoader> m_dependencies;
+
+        void AssignParents(SourceTreeLoader& parent)
         {
-            if (nodeEntity)
+            m_parent = &parent;
+
+            for (auto& dep : m_dependencies)
             {
-                if (auto listener = azrtti_cast<ScriptCanvas::SerializationListener*>
-                    ( AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvas::Node>(nodeEntity)))
+                dep.AssignParents(*this);
+            }
+        }
+
+        ScriptCanvas::SourceTree ConvertToSourceTree() const
+        {
+            ScriptCanvas::SourceTree sourceTree;
+            sourceTree.m_source = m_source;
+
+            for (auto& dep : m_dependencies)
+            {
+                sourceTree.m_dependencies.push_back(dep.ConvertToSourceTree());
+            }
+
+            return sourceTree;
+        }
+
+        AZStd::optional<SourceTreeLoader> FindDependency(ScriptCanvas::SourceHandle dependency)
+        {
+            if (m_source.AnyEquals(dependency) && m_source.Get())
+            {
+                return *this;
+            }
+
+            for (auto& dep : m_dependencies)
+            {
+                if (auto depOptional = dep.FindDependency(dependency))
                 {
-                    listeners.push_back(listener);
+                    return *depOptional;
                 }
             }
-        }
-    }
-}
 
-namespace ScriptCanvasEditor
-{
-    EditorAssetTree* EditorAssetTree::ModRoot()
-    {
-        if (!m_parent)
+            return AZStd::nullopt;
+        }
+
+        bool IsLoading(ScriptCanvas::SourceHandle dependency, AZStd::string& path)
         {
-            return this;
+            path += m_source.RelativePath().c_str();
+            
+            if (m_source.AnyEquals(dependency))
+            {
+                return true;
+            }
+            else if (m_parent)
+            {
+                path += " =>\n";
+                return m_parent->IsLoading(dependency, path);
+            }
+            else
+            {
+                return false;
+            }
         }
 
-        return m_parent->ModRoot();
-    }
-
-    void EditorAssetTree::SetParent(EditorAssetTree& parent)
-    {
-        m_parent = &parent;
-    }
-
-    AZStd::string EditorAssetTree::ToString(size_t depth) const
-    {
-        AZStd::string result;
-        ScriptCanvasFileHandlingCpp::AppendTabs(result, depth);
-        result += m_asset.ToString();
-        depth += m_dependencies.empty() ? 0 : 1;
-
-        for (const auto& dependency : m_dependencies)
+        SourceTreeLoader* ModRoot()
         {
-            result += "\n";
-            ScriptCanvasFileHandlingCpp::AppendTabs(result, depth);
-            result += dependency.ToString(depth);
+            if (!m_parent)
+            {
+                return this;
+            }
+
+            return m_parent->ModRoot();
         }
 
-        return result;
-    }
+    private:
+        SourceTreeLoader* m_parent = nullptr;
+    };
 
-    AZ::Outcome<void, AZStd::string> LoadDataFromJson
-        ( ScriptCanvas::ScriptCanvasData& dataTarget
-        , AZStd::string_view source
-        , AZ::SerializeContext& serializeContext)
+    AZ::Outcome<void, AZStd::string> LoadEditorAssetTree(
+        SourceTreeLoader& result, ScriptCanvas::MakeInternalGraphEntitiesUnique makeUniqueEntities)
     {
-        namespace JSRU = AZ::JsonSerializationUtils;
         using namespace ScriptCanvas;
 
-        AZ::JsonDeserializerSettings settings;
-        settings.m_serializeContext = &serializeContext;
-        settings.m_metadata.Create<SerializationListeners>();
-
-        auto loadResult = JSRU::LoadObjectFromStringByType
-            ( &dataTarget
-            , azrtti_typeid<ScriptCanvasData>()
-            , source
-            , &settings);
-
-        if (!loadResult.IsSuccess())
+        if (!ScriptCanvasEditor::CompleteDescriptionInPlace(result.m_source))
         {
-            return loadResult;
+            return AZ::Failure(AZStd::string::format("LoadEditorAssetTree failed to describe graph from %s", result.m_source.ToString().c_str()));
         }
-                    
-        if (auto graphData = dataTarget.ModGraph())
+
+        if (!result.m_source.Get())
         {
-            auto listeners = settings.m_metadata.Find<SerializationListeners>();
-            AZ_Assert(listeners, "Failed to find SerializationListeners");
-
-            ScriptCanvasFileHandlingCpp::CollectNodes(graphData->GetGraphData()->m_nodes, *listeners);
-
-            for (auto listener : *listeners)
+            const auto loadResult = LoadFromFile(result.m_source.AbsolutePath().Native(), makeUniqueEntities);
+            if (!loadResult)
             {
-                listener->OnDeserialize();
-            }
-        }
-        else
-        {
-            return AZ::Failure(AZStd::string("Failed to find graph data after loading source"));
-        }
-
-        return AZ::Success();
-    }
-
-
-    AZ::Outcome<EditorAssetTree, AZStd::string> LoadEditorAssetTree(SourceHandle handle, EditorAssetTree* parent)
-    {
-        if (!CompleteDescriptionInPlace(handle))
-        {
-            return AZ::Failure(AZStd::string::format("LoadEditorAssetTree failed to describe graph from %s", handle.ToString().c_str()));
-        }
-
-        if (!handle.Get())
-        {
-            auto loadAssetOutcome = LoadFromFile(handle.Path().c_str());
-            if (!loadAssetOutcome.IsSuccess())
-            {
-                return AZ::Failure(AZStd::string::format("LoadEditorAssetTree failed to load graph from %s: %s"
-                    , handle.ToString().c_str(), loadAssetOutcome.GetError().c_str()));
+                return AZ::Failure
+                    ( AZStd::string::format("LoadEditorAssetTree failed to load graph from %s: %s"
+                    , result.m_source.ToString().c_str()
+                    , loadResult.ToString().c_str()));
             }
 
-            handle = SourceHandle(loadAssetOutcome.GetValue(), handle.Id(), handle.Path().c_str());
+            auto absolutePath = result.m_source.AbsolutePath();
+            result.m_source = SourceHandle::FromRelativePath(loadResult.m_handle.Data(), result.m_source.Id(), result.m_source.RelativePath().c_str());
+            result.m_source = SourceHandle::MarkAbsolutePath(result.m_source, absolutePath);
         }
 
-        AZStd::vector<SourceHandle> dependentAssets;
         const auto subgraphInterfaceAssetTypeID = azrtti_typeid<AZ::Data::Asset<ScriptCanvas::SubgraphInterfaceAsset>>();
-        
-        auto beginElementCB = [&subgraphInterfaceAssetTypeID, &dependentAssets]
+
+        AZStd::vector<SourceTreeLoader> possibleDependencies;
+
+        auto onBeginElement = [&subgraphInterfaceAssetTypeID, &possibleDependencies]
             ( void* instance
             , const AZ::SerializeContext::ClassData* classData
             , const AZ::SerializeContext::ClassElement* classElement) -> bool
@@ -162,15 +154,17 @@ namespace ScriptCanvasEditor
                 if (classElement->m_flags & AZ::SerializeContext::ClassElement::FLG_POINTER)
                 {
                     // if ptr is a pointer-to-pointer, cast its value to a void* (or const void*) and dereference to get to the actual object pointer.
-                    instance = *(void**)(instance);
+                    instance = *static_cast<void**>(instance);
                 }
             }
 
-            if (classData->m_typeId == subgraphInterfaceAssetTypeID)
+            const auto azTypeId = classData->m_azRtti->GetTypeId();
+            if (azTypeId == subgraphInterfaceAssetTypeID)
             {
-                auto asset = reinterpret_cast<AZ::Data::Asset<ScriptCanvas::SubgraphInterfaceAsset>*>(instance);
-                auto id = asset->GetId();
-                dependentAssets.push_back(SourceHandle(nullptr, id.m_guid, {}));
+                auto id = reinterpret_cast<AZ::Data::Asset<ScriptCanvas::SubgraphInterfaceAsset>*>(instance)->GetId();
+                SourceTreeLoader dependencyLoader;
+                dependencyLoader.m_source = ScriptCanvas::SourceHandle(nullptr, id.m_guid);
+                possibleDependencies.push_back(dependencyLoader);
             }
 
             return true;
@@ -180,150 +174,122 @@ namespace ScriptCanvasEditor
         AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
         AZ_Assert(serializeContext, "LoadEditorAssetTree() ailed to retrieve serialize context!");
 
-        const ScriptCanvasEditor::Graph* graph = handle.Get();
-        serializeContext->EnumerateObject(graph, beginElementCB, nullptr, AZ::SerializeContext::ENUM_ACCESS_FOR_READ);
+        const ScriptCanvasEditor::EditorGraph* graph = result.m_source.Get();
+        serializeContext->EnumerateObject(graph, onBeginElement, nullptr, AZ::SerializeContext::ENUM_ACCESS_FOR_READ);
 
-        EditorAssetTree result;
-
-        for (auto& dependentAsset : dependentAssets)
+        for (auto& possibleDependency : possibleDependencies)
         {
-            auto loadDependentOutcome = LoadEditorAssetTree(dependentAsset, &result);
-            if (!loadDependentOutcome.IsSuccess())
+            // do not count locally defined functions as dependencies
+            if (!result.m_source.AnyEquals(possibleDependency.m_source))
             {
-                return AZ::Failure(AZStd::string::format("LoadEditorAssetTree failed to load graph from %s: %s"
-                    , dependentAsset.ToString().c_str(), loadDependentOutcome.GetError().c_str()));
+                // now that circular dependencies can be guarded against, load each dependency from disk only once
+                {
+                    SourceTreeLoader dependencyLoader;
+                    dependencyLoader.m_source = possibleDependency.m_source;
+                    result.m_dependencies.push_back(dependencyLoader);
+                    result.m_dependencies.back().AssignParents(result);
+                }
+
+                SourceTreeLoader& dependentAsset = result.m_dependencies.back();
+                AZStd::string path;
+                if (result.IsLoading(dependentAsset.m_source, path))
+                {   // check for circular dependencies...
+                    return AZ::Failure(AZStd::string::format("LoadEditorAsset tree failed to load. Circular dependency detected: %s", path.c_str()));
+                }
+                else if (auto sourceTreeOptional = result.ModRoot()->FindDependency(dependentAsset.m_source))
+                {   // check at the level root if the dependency is loaded already...
+                    dependentAsset.m_source = sourceTreeOptional->m_source;
+                }
+                else
+                {   // ...and if not, load and add the value to the in process-loads at this step...
+                    const auto loadDependentOutcome = ScriptCanvasFileHandlingCpp::LoadEditorAssetTree(dependentAsset, makeUniqueEntities);
+                    if (!loadDependentOutcome.IsSuccess())
+                    {
+                        return AZ::Failure(AZStd::string::format("LoadEditorAssetTree failed to load graph from %s: %s"
+                            , dependentAsset.m_source.ToString().c_str(), loadDependentOutcome.GetError().c_str()));
+                    }
+                }
             }
-
-            result.m_dependencies.push_back(loadDependentOutcome.TakeValue());
-        }
-
-        if (parent)
-        {
-            result.SetParent(*parent);
-        }
-
-        result.m_asset = AZStd::move(handle);
-        return AZ::Success(result);
-    }
-
-    AZ::Outcome<ScriptCanvasEditor::SourceHandle, AZStd::string> LoadFromFile(AZStd::string_view path)
-    {
-        namespace JSRU = AZ::JsonSerializationUtils;
-
-        auto fileStringOutcome = AZ::Utils::ReadFile<AZStd::string>(path);
-        if (!fileStringOutcome)
-        {
-            return AZ::Failure(fileStringOutcome.TakeError());
-        }
-
-        const auto& asString = fileStringOutcome.GetValue();
-        ScriptCanvas::DataPtr scriptCanvasData = aznew ScriptCanvas::ScriptCanvasData();
-        if (!scriptCanvasData)
-        {
-            return AZ::Failure(AZStd::string("failed to allocate ScriptCanvas::ScriptCanvasData after loading source file"));
-        }
-        
-        AZ::SerializeContext* serializeContext = nullptr;
-        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
-        if (!serializeContext)
-        {
-            return AZ::Failure(AZStd::string("no serialize context available to properly parse source file"));
-        }
-
-        // attempt JSON deserialization...
-        auto jsonResult = LoadDataFromJson(*scriptCanvasData, AZStd::string_view{ asString.begin(), asString.size() }, *serializeContext);
-        if (!jsonResult.IsSuccess())
-        {
-            // ...try legacy xml as a failsafe
-            AZ::IO::ByteContainerStream byteStream(&asString);
-            if (!AZ::Utils::LoadObjectFromStreamInPlace
-                ( byteStream
-                , *scriptCanvasData
-                , serializeContext
-                , AZ::ObjectStream::FilterDescriptor(nullptr, AZ::ObjectStream::FILTERFLAG_IGNORE_UNKNOWN_CLASSES)))
-            {
-                return AZ::Failure(AZStd::string::format("XML and JSON load attempts failed: %s", jsonResult.GetError().c_str()));
-            }
-        }
-
-        if (auto entity = scriptCanvasData->GetScriptCanvasEntity())
-        {
-            AZ_Assert(entity->GetState() == AZ::Entity::State::Constructed, "Entity loaded in bad state");
-            AZ::u64 entityId =
-                aznumeric_caster(ScriptCanvas::MathNodeUtilities::GetRandomIntegral<AZ::s64>(1, std::numeric_limits<AZ::s64>::max()));
-            entity->SetId(AZ::EntityId(entityId));
-
-            auto graph = entity->FindComponent<ScriptCanvasEditor::Graph>();
-            graph->MarkOwnership(*scriptCanvasData);
-
-            entity->Init();
-            entity->Activate();
-        }
-        else
-        {
-            return AZ::Failure(AZStd::string("Loaded script canvas file was missing a necessary Entity."));
-        }
-
-        return AZ::Success(ScriptCanvasEditor::SourceHandle(scriptCanvasData, path));
-    }
-
-    AZ::Outcome<void, AZStd::string> SaveToStream(const SourceHandle& source, AZ::IO::GenericStream& stream)
-    {
-        namespace JSRU = AZ::JsonSerializationUtils;
-        
-        if (!source.IsGraphValid())
-        {
-            return AZ::Failure(AZStd::string("no source graph to save"));
-        }
-
-        if (source.Path().empty())
-        {
-            return AZ::Failure(AZStd::string("no destination path specified"));
-        }
-
-        AZ::SerializeContext* serializeContext = nullptr;
-        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
-        if (!serializeContext)
-        {
-            return AZ::Failure(AZStd::string("no serialize context available to properly save source file"));
-        }
-
-        auto graphData = source.Get()->GetOwnership();
-        if (!graphData)
-        {
-            return AZ::Failure(AZStd::string("source is missing save container"));
-        }
-        
-        if (graphData->GetEditorGraph() != source.Get())
-        {
-            return AZ::Failure(AZStd::string("source save container refers to incorrect graph"));
-        }
-
-        auto saveTarget = graphData->ModGraph();
-        if (!saveTarget || !saveTarget->GetGraphData())
-        {
-            return AZ::Failure(AZStd::string("source save container failed to return serializable graph data"));
-        }
-
-        AZ::JsonSerializerSettings settings;
-        settings.m_metadata.Create<ScriptCanvas::SerializationListeners>();
-        auto listeners = settings.m_metadata.Find<ScriptCanvas::SerializationListeners>();
-        AZ_Assert(listeners, "Failed to create SerializationListeners");
-        ScriptCanvasFileHandlingCpp::CollectNodes(saveTarget->GetGraphData()->m_nodes, *listeners);
-        settings.m_keepDefaults = false;
-        settings.m_serializeContext = serializeContext;
-
-        for (auto listener : *listeners)
-        {   
-            listener->OnSerialize();
-        }
-
-        auto saveOutcome = JSRU::SaveObjectToStream<ScriptCanvas::ScriptCanvasData>(graphData.get(), stream, nullptr, &settings);
-        if (!saveOutcome.IsSuccess())
-        {
-            return AZ::Failure(AZStd::string::format("JSON serialization failed to save source: %s", saveOutcome.GetError().c_str()));
         }
 
         return AZ::Success();
     }
+
+}
+
+namespace ScriptCanvas
+{
+    AZStd::string FileLoadResult::ToString() const
+    {
+        if (m_isSuccess)
+        {
+            return "Success";
+        }
+        else
+        {
+            return AZStd::string::format("Failure@@@ File Read: %s@@@Deserialize: %s@@@Json: %s",
+                m_fileReadErrors.c_str(), m_deserializeResult.m_errors.c_str(), m_deserializeResult.m_jsonResults.c_str());
+        }
+    }
+
+    AZ::Outcome<SourceTree, AZStd::string> LoadEditorAssetTree(
+        SourceHandle sourceHandle, MakeInternalGraphEntitiesUnique makeUniqueEntities)
+    {
+        using namespace ScriptCanvasFileHandlingCpp;
+
+        SourceTreeLoader result;
+        result.m_source = sourceHandle;
+
+        auto loadOutome = LoadEditorAssetTree(result, makeUniqueEntities);
+
+        if (loadOutome.IsSuccess())
+        {
+            return AZ::Success(result.ConvertToSourceTree());
+        }
+        else
+        {
+            return AZ::Failure(loadOutome.TakeError());
+        }
+    }
+
+    FileLoadResult LoadFromFile
+        ( AZStd::string_view path
+        , MakeInternalGraphEntitiesUnique makeEntityIdsUnique
+        , LoadReferencedAssets loadReferencedAssets)
+    {
+        namespace JSRU = AZ::JsonSerializationUtils;
+
+        FileLoadResult result;
+
+        auto fileStringOutcome = AZ::Utils::ReadFile<AZStd::string>(path);
+        if (!fileStringOutcome)
+        {
+            result.m_isSuccess = false;
+            result.m_fileReadErrors = fileStringOutcome.TakeError();
+            return result;
+        }
+
+        const auto& asString = fileStringOutcome.GetValue();
+        result.m_deserializeResult = Deserialize(asString, makeEntityIdsUnique, loadReferencedAssets);
+        result.m_isSuccess = result.m_deserializeResult;
+        if (!result.m_deserializeResult.m_isSuccessful)
+        {
+            result.m_fileReadErrors = "Script Canvas Graph Deserialization Failed - " + result.m_deserializeResult.m_errors + "\n";
+        }
+        else
+        {
+            const auto& graphDataPtr = result.m_deserializeResult.m_graphDataPtr;
+            if (graphDataPtr && graphDataPtr->GetEditorGraph())
+            {
+                ScriptCanvasEditor::EditorGraphRequestBus::Event(
+                    graphDataPtr->GetEditorGraph()->GetScriptCanvasId(),
+                    &ScriptCanvasEditor::EditorGraphRequests::SetOriginalToNewIdsMap,
+                    result.m_deserializeResult.m_originalIdsToNewIds);
+            }
+
+            result.m_handle = SourceHandle::FromRelativePath(result.m_deserializeResult.m_graphDataPtr, path);
+        }
+        return result;
+    }
+
 }

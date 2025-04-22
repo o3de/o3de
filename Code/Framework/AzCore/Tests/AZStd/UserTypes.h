@@ -144,7 +144,7 @@ namespace UnitTestInternal
     {
         struct DelayedFreeItem
         {
-            pointer_type m_ptr;
+            pointer m_ptr;
             size_type m_byteSize;
             size_type m_alignment;
         };
@@ -158,7 +158,7 @@ namespace UnitTestInternal
             do_delayed_frees();
         }
 
-        void deallocate(pointer_type ptr, size_type byteSize, size_type alignment)
+        void deallocate(pointer ptr, size_type byteSize, size_type alignment)
         {
             AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
             DelayedFreeItem item;

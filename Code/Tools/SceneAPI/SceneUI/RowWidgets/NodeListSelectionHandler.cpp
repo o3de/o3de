@@ -16,7 +16,7 @@ namespace AZ
     {
         namespace UI
         {
-            AZ_CLASS_ALLOCATOR_IMPL(NodeListSelectionHandler, SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR_IMPL(NodeListSelectionHandler, SystemAllocator);
 
             NodeListSelectionHandler* NodeListSelectionHandler::s_instance = nullptr;
 
@@ -33,7 +33,7 @@ namespace AZ
 
             u32 NodeListSelectionHandler::GetHandlerName() const
             {
-                return AZ_CRC("NodeListSelection", 0x45c54909);
+                return AZ_CRC_CE("NodeListSelection");
             }
 
             bool NodeListSelectionHandler::AutoDelete() const
@@ -46,31 +46,31 @@ namespace AZ
             {
                 AZ_TraceContext("Attribute name", debugName);
 
-                if (attrib == AZ_CRC("DisabledOption", 0x6cd17278))
+                if (attrib == AZ_CRC_CE("DisabledOption"))
                 {
                     ConsumeDisabledOptionAttribute(widget, attrValue);
                 }
-                else if (attrib == AZ_CRC("ClassTypeIdFilter", 0x21c301f1))
+                else if (attrib == AZ_CRC_CE("ClassTypeIdFilter"))
                 {
                     ConsumeClassTypeIdAttribute(widget, attrValue);
                 }
-                else if (attrib == AZ_CRC("RequiresExactTypeId", 0x9adf9b0d))
+                else if (attrib == AZ_CRC_CE("RequiresExactTypeId"))
                 {
                     ConsumeRequiredExactTypeIdAttribute(widget, attrValue);
                 }
-                else if (attrib == AZ_CRC("UseShortNames", 0xf6a37fd3))
+                else if (attrib == AZ_CRC_CE("UseShortNames"))
                 {
                     ConsumeUseShortNameAttribute(widget, attrValue);
                 }
-                else if (attrib == AZ_CRC("ExcludeEndPoints", 0x53bd29cc))
+                else if (attrib == AZ_CRC_CE("ExcludeEndPoints"))
                 {
                     ConsumeExcludeEndPointsAttribute(widget, attrValue);
                 }
-                else if (attrib == AZ_CRC("DefaultToDisabled", 0xa2d03bd1))
+                else if (attrib == AZ_CRC_CE("DefaultToDisabled"))
                 {
                     ConsumeDefaultToDisabledAttribute(widget, attrValue);
                 }
-                else if (attrib == AZ_CRC("ComboBoxEditable", 0x7ee76669))
+                else if (attrib == AZ_CRC_CE("ComboBoxEditable"))
                 {
                     bool editable;
                     if (attrValue->Read<bool>(editable))

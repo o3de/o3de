@@ -48,7 +48,7 @@ namespace ExpressionEvaluation
     // All of the information required to
     struct ExpressionToken
     {
-        AZ_TYPE_INFO(ElementInformation, "{7E6DF1F4-97AC-4553-B839-9A3C88DF1C50}");
+        AZ_TYPE_INFO(ExpressionToken, "{7E6DF1F4-97AC-4553-B839-9A3C88DF1C50}");
 
         // The interface id that produced the information
         ExpressionParserId m_parserId;
@@ -77,9 +77,9 @@ namespace ExpressionEvaluation
     // Class to get the various symbol sets that can be added to the parsing steps.
     namespace Interfaces
     {
-        static const ExpressionParserId NumericPrimitives = AZ_CRC("ExpressionEngine::NumericPrimitive", 0x750f46ec);
-        static const ExpressionParserId BooleanPrimitives = AZ_CRC("ExpressionEngine::BooleanPrimitive", 0xa006d7be);
+        static const ExpressionParserId NumericPrimitives = AZ_CRC_CE("ExpressionEngine::NumericPrimitive");
+        static const ExpressionParserId BooleanPrimitives = AZ_CRC_CE("ExpressionEngine::BooleanPrimitive");
 
-        static const ExpressionParserId MathOperators = AZ_CRC("ExpressionEngine::BasicMath", 0xd0957da8);
+        static const ExpressionParserId MathOperators = AZ_CRC_CE("ExpressionEngine::BasicMath");
     }
 }

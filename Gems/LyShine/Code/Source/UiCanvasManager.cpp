@@ -6,7 +6,7 @@
  *
  */
 #include "UiCanvasManager.h"
-#include <LyShine/Draw2d.h>
+#include <LyShine/IDraw2d.h>
 
 #include "UiCanvasFileObject.h"
 #include "UiCanvasComponent.h"
@@ -23,12 +23,15 @@
 #include <AzFramework/Input/Channels/InputChannel.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/StringFunc/StringFunc.h>
+#include <AzFramework/Viewport/CameraState.h>
+#include <AzFramework/Viewport/ViewportScreen.h>
 
 #include <LyShine/Bus/UiCursorBus.h>
 #include <LyShine/Bus/World/UiCanvasOnMeshBus.h>
 #include <LyShine/Bus/World/UiCanvasRefBus.h>
 
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
+#include <Atom/RPI.Public/View.h>
 
 #ifndef _RELEASE
 #include <AzFramework/IO/LocalFileIO.h>
@@ -37,6 +40,8 @@
 #include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzFramework/Render/Intersector.h>
 #include <MathConversion.h>
+
+#include "LyShine.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Anonymous namespace
@@ -75,7 +80,7 @@ namespace
         }
 
         // Normalize path
-        EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePathKeepCase, assetPath);
+        AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::Bus::Events::NormalizePathKeepCase, assetPath);
 
         // Check for any leading slashes as the specified path should be a relative path to the @products@ alias.
         // This eliminates inconsistencies between lower level file opens on different platforms
@@ -191,7 +196,7 @@ AZ::EntityId UiCanvasManager::LoadCanvas(const AZStd::string& assetIdPathname)
         // The game entity context needs to know its corresponding canvas entity for instantiating dynamic slices
         entityContext->SetCanvasEntity(canvasEntityId);
 
-        EBUS_EVENT(UiCanvasManagerNotificationBus, OnCanvasLoaded, canvasEntityId);
+        UiCanvasManagerNotificationBus::Broadcast(&UiCanvasManagerNotificationBus::Events::OnCanvasLoaded, canvasEntityId);
     }
 
     return canvasEntityId;
@@ -250,11 +255,11 @@ void UiCanvasManager::OnCanvasEnabledStateChanged(AZ::EntityId canvasEntityId, b
     if (enabled)
     {
         bool isConsumingAllInputEvents = false;
-        EBUS_EVENT_ID_RESULT(isConsumingAllInputEvents, canvasEntityId, UiCanvasBus, GetIsConsumingAllInputEvents);
+        UiCanvasBus::EventResult(isConsumingAllInputEvents, canvasEntityId, &UiCanvasBus::Events::GetIsConsumingAllInputEvents);
         if (isConsumingAllInputEvents)
         {
             AzFramework::InputChannelRequestBus::Broadcast(&AzFramework::InputChannelRequests::ResetState);
-            EBUS_EVENT(UiCanvasBus, ClearAllInteractables);
+            UiCanvasBus::Broadcast(&UiCanvasBus::Events::ClearAllInteractables);
         }
     }
 
@@ -314,7 +319,7 @@ void UiCanvasManager::OnCatalogAssetChanged(const AZ::Data::AssetId& assetId)
 {
     // get AssetInfo from asset id
     AZ::Data::AssetInfo assetInfo;
-    EBUS_EVENT_RESULT(assetInfo, AZ::Data::AssetCatalogRequestBus, GetAssetInfoById, assetId);
+    AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, assetId);
     if (assetInfo.m_assetType != LyShine::CanvasAsset::TYPEINFO_Uuid())
     {
         // this is not a UI canvas asset
@@ -323,7 +328,7 @@ void UiCanvasManager::OnCatalogAssetChanged(const AZ::Data::AssetId& assetId)
 
     // get pathname from asset id
     AZStd::string assetPath;
-    EBUS_EVENT_RESULT(assetPath, AZ::Data::AssetCatalogRequestBus, GetAssetPathById, assetId);
+    AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, assetId);
 
     CanvasList reloadedCanvases;  // keep track of the reloaded canvases and add them to m_loadedCanvases after the loop
     AZStd::vector<AZ::EntityId> unloadedCanvases;  // also keep track of any canvases that fail to reload and are unloaded
@@ -380,13 +385,14 @@ void UiCanvasManager::OnCatalogAssetChanged(const AZ::Data::AssetId& assetId)
     // notify any listeners of any UI canvases that were reloaded
     for (auto reloadedCanvasComponent : reloadedCanvases)
     {
-        EBUS_EVENT(UiCanvasManagerNotificationBus, OnCanvasReloaded, reloadedCanvasComponent->GetEntityId());
+        UiCanvasManagerNotificationBus::Broadcast(
+            &UiCanvasManagerNotificationBus::Events::OnCanvasReloaded, reloadedCanvasComponent->GetEntityId());
     }
 
     // notify any listeners of any UI canvases that were unloaded
     for (auto unloadedCanvas : unloadedCanvases)
     {
-        EBUS_EVENT(UiCanvasManagerNotificationBus, OnCanvasUnloaded, unloadedCanvas);
+        UiCanvasManagerNotificationBus::Broadcast(&UiCanvasManagerNotificationBus::Events::OnCanvasUnloaded, unloadedCanvas);
     }
 }
 
@@ -473,7 +479,7 @@ void UiCanvasManager::ReleaseCanvas(AZ::EntityId canvasEntityId, bool forEditor)
     }
 
     AZ::Entity* canvasEntity = nullptr;
-    EBUS_EVENT_RESULT(canvasEntity, AZ::ComponentApplicationBus, FindEntity, canvasEntityId);
+    AZ::ComponentApplicationBus::BroadcastResult(canvasEntity, &AZ::ComponentApplicationBus::Events::FindEntity, canvasEntityId);
     AZ_Assert(canvasEntity, "Canvas entity not found by ID");
 
     if (canvasEntity)
@@ -493,7 +499,7 @@ void UiCanvasManager::ReleaseCanvas(AZ::EntityId canvasEntityId, bool forEditor)
                 stl::find_and_erase(m_loadedCanvases, canvasComponent);
                 delete canvasEntity;
 
-                EBUS_EVENT(UiCanvasManagerNotificationBus, OnCanvasUnloaded, canvasEntityId);
+                UiCanvasManagerNotificationBus::Broadcast(&UiCanvasManagerNotificationBus::Events::OnCanvasUnloaded, canvasEntityId);
 
                 // Update hover state for loaded canvases
                 m_generateMousePositionInputEvent = true;
@@ -511,7 +517,7 @@ void UiCanvasManager::ReleaseCanvasDeferred(AZ::EntityId canvasEntityId)
         return;
     }
     AZ::Entity* canvasEntity = nullptr;
-    EBUS_EVENT_RESULT(canvasEntity, AZ::ComponentApplicationBus, FindEntity, canvasEntityId);
+    AZ::ComponentApplicationBus::BroadcastResult(canvasEntity, &AZ::ComponentApplicationBus::Events::FindEntity, canvasEntityId);
     AZ_Assert(canvasEntity, "Canvas entity not found by ID");
 
     if (canvasEntity)
@@ -530,7 +536,7 @@ void UiCanvasManager::ReleaseCanvasDeferred(AZ::EntityId canvasEntityId)
             // Deactivate the canvas element
             canvasEntity->Deactivate();
 
-            EBUS_EVENT(UiCanvasManagerNotificationBus, OnCanvasUnloaded, canvasEntityId);
+            UiCanvasManagerNotificationBus::Broadcast(&UiCanvasManagerNotificationBus::Events::OnCanvasUnloaded, canvasEntityId);
 
             // Queue UI canvas deletion. This is because this function could have been triggered in input processing of
             // a component within the canvas. i.e. there could be a member function of the canvas or one of it's child entities
@@ -616,13 +622,11 @@ void UiCanvasManager::RenderLoadedCanvases()
 
     for (auto canvas : m_loadedCanvases)
     {
-        if (!canvas->GetIsRenderToTexture())
-        {
-            // Rendering in game full screen so the viewport size and target canvas size are the same
-            AZ::Vector2 viewportSize = canvas->GetTargetCanvasSize();
+        // In game we render full screen so the viewport size and target canvas size are the same.
+        // For render targets, the target canvas size is always the authored canvas size
+        AZ::Vector2 viewportSize = canvas->GetTargetCanvasSize();
 
-            canvas->RenderCanvas(true, viewportSize);
-        }
+        canvas->RenderCanvas(true, viewportSize);
     }
 }
 
@@ -805,94 +809,100 @@ UiCanvasComponent* UiCanvasManager::FindEditorCanvasComponentByPathname(const AZ
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-bool UiCanvasManager::HandleInputEventForInWorldCanvases([[maybe_unused]] const AzFramework::InputChannel::Snapshot& inputSnapshot, [[maybe_unused]] const AZ::Vector2& viewportPos)
+bool UiCanvasManager::HandleInputEventForInWorldCanvases(const AzFramework::InputChannel::Snapshot& inputSnapshot, const AZ::Vector2& viewportPos)
 {
-    // First we need to construct a ray from the either the center of the screen or the mouse position.
-    // This requires knowledge of the camera
-    // for initial testing we will just use a ray in the center of the viewport
+    if (!AZ::Interface<ILyShine>::Get())
+    {
+        return false;
+    }
 
-    // ToDo: Re-implement by getting the camera from Atom. LYN-3680
+    // First we need to construct a ray from either the center of the screen or the mouse position
+    CLyShine* lyShine = static_cast<CLyShine*>(AZ::Interface<ILyShine>::Get());
+    auto viewportContext = lyShine->GetUiRenderer()->GetViewportContext();
+    AZ::Transform cameraTransform = viewportContext->GetCameraTransform();
+
+    // Use a standard far clipping plane value for the ray length. This value could be made
+    // configurable if need be
+    const float rayLength = 1000.0f;
+    AZ::Vector3 rayOrigin(0.0f);
+    AZ::Vector3 endpoint(0.0f, rayLength, 0.0f);
+    rayOrigin = cameraTransform.TransformPoint(rayOrigin);
+
+    // If the mouse cursor is visible we will assume that the ray should be in the direction of the
+    // mouse pointer. This is a temporary solution. A better solution is to be able to configure the
+    // LyShine system to say how ray input should be handled.
+    bool isCursorVisible = false;
+    UiCursorBus::BroadcastResult(isCursorVisible, &UiCursorInterface::IsUiCursorVisible);
+    if (!isCursorVisible)
+    {
+        endpoint = cameraTransform.TransformPoint(endpoint);
+    }
+    else
+    {
+        AzFramework::WindowSize viewportSize = viewportContext->GetViewportSize();
+        AzFramework::ScreenSize screenSize(viewportSize.m_width, viewportSize.m_height);
+        AzFramework::ScreenPoint screenPosition(static_cast<int>(viewportPos.GetX()), static_cast<int>(viewportPos.GetY()));
+
+        AzFramework::CameraState cameraState = AzFramework::CreateDefaultCamera(cameraTransform, screenSize);
+        const AZ::Matrix4x4& viewToClipMatrix = viewportContext->GetCameraProjectionMatrix();
+        AzFramework::SetCameraClippingVolumeFromPerspectiveFovMatrixRH(cameraState, viewToClipMatrix);
+
+        endpoint = AzFramework::ScreenToWorld(
+            screenPosition,
+            cameraState
+        );
+
+        AZ::Vector3 rayDirection = (endpoint - rayOrigin).GetNormalized();
+        rayDirection.SetLength(rayLength);
+        endpoint = rayOrigin + rayDirection;
+    }
+
+    // Check if the ray intersects any entities
+    AzFramework::EntityContextId gameContextId;
+    AzFramework::GameEntityContextRequestBus::BroadcastResult(gameContextId,
+        &AzFramework::GameEntityContextRequests::GetGameEntityContextId);
+        
+    AzFramework::RenderGeometry::RayRequest request;
+    request.m_startWorldPosition = rayOrigin;
+    request.m_endWorldPosition = endpoint;
+        
+    AzFramework::RenderGeometry::RayResult rayResult;
+    AzFramework::RenderGeometry::IntersectorBus::EventResult(rayResult, gameContextId,
+        &AzFramework::RenderGeometry::IntersectorInterface::RayIntersect, request);
+        
+    if (rayResult)
+    {
+        AZ::EntityId hitEntity = rayResult.m_entityAndComponent.GetEntityId();
+        if (hitEntity.IsValid())
+        {
+            AZ::EntityId canvasEntityId;
+            UiCanvasRefBus::EventResult(canvasEntityId, hitEntity, &UiCanvasRefInterface::GetCanvas);
+            if (canvasEntityId.IsValid())
+            {
+                // Checkif the UI canvas referenced by the hit entity supports automatic input
+                bool doesCanvasSupportInput = false;
+                UiCanvasBus::EventResult(doesCanvasSupportInput, canvasEntityId, &UiCanvasInterface::GetIsPositionalInputSupported);
+        
+                if (doesCanvasSupportInput)
+                {
+                    // Send the hit details to the hit entity. It will convert into canvas coords and send to canvas.
+                    // TODO: RayResult has a m_uv field but that has not been implemented in Atom yet and is always zero.
+                    // Once this is implemented in Atom, we can pass the result directly, and remove our own UV calculations
+                    // in ProcessHitInputEvent
+                    bool handled = false;
+                    UiCanvasOnMeshBus::EventResult(handled, hitEntity,
+                        &UiCanvasOnMeshInterface::ProcessHitInputEvent, inputSnapshot, request);
+        
+                    if (handled)
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+
     return false;
-    //const CCamera cam;
-    //
-    //// construct a ray from the camera position in the view direction of the camera
-    //const float rayLength = 5000.0f;
-    //Vec3 rayOrigin(cam.GetPosition());
-    //Vec3 rayDirection = cam.GetViewdir() * rayLength;
-    //
-    //// If the mouse cursor is visible we will assume that the ray should be in the direction of the
-    //// mouse pointer. This is a temporary solution. A better solution is to be able to configure the
-    //// LyShine system to say how ray input should be handled.
-    //bool isCursorVisible = false;
-    //UiCursorBus::BroadcastResult(isCursorVisible, &UiCursorInterface::IsUiCursorVisible);
-    //if (isCursorVisible)
-    //{
-    //    // for some reason Unproject seems to work when given the viewport pos with (0,0) at the
-    //    // bottom left as opposed to the top left - even though that function specifically sets top left
-    //    // to (0,0).
-    //    const float viewportYInverted = cam.GetViewSurfaceZ() - viewportPos.GetY();
-    //
-    //    // Unproject to get the screen position in world space, use arbitrary Z that is within the depth range
-    //    Vec3 flippedViewportRayOrigin(viewportPos.GetX(), viewportYInverted, 0.f);
-    //    Vec3 flippedViewportRayForward(viewportPos.GetX(), viewportYInverted, 1.f);
-    //
-    //    cam.Unproject(flippedViewportRayOrigin, rayOrigin);
-    //
-    //    Vec3 unprojectedPosForward;
-    //    cam.Unproject(flippedViewportRayForward, unprojectedPosForward);
-    //
-    //    // We want a vector relative to the camera origin
-    //    Vec3 rayVec = unprojectedPosForward - rayOrigin;
-    //
-    //    // we want to ensure that the ray is a certain length so normalize it and scale it
-    //    rayVec.NormalizeSafe();
-    //    rayDirection = rayVec * rayLength;
-    //}
-    //
-    //
-    //AzFramework::EntityContextId gameContextId;
-    //AzFramework::GameEntityContextRequestBus::BroadcastResult(gameContextId,
-    //    &AzFramework::GameEntityContextRequests::GetGameEntityContextId);
-    //
-    //AzFramework::RenderGeometry::RayRequest request;
-    //request.m_startWorldPosition = LYVec3ToAZVec3(rayOrigin);
-    //request.m_endWorldPosition = LYVec3ToAZVec3(rayOrigin + rayDirection);
-    //
-    //AzFramework::RenderGeometry::RayResult rayResult;
-    //AzFramework::RenderGeometry::IntersectorBus::EventResult(rayResult, gameContextId,
-    //    &AzFramework::RenderGeometry::IntersectorInterface::RayIntersect, request);
-    //
-    //if (rayResult)
-    //{
-    //    AZ::EntityId hitEntity = rayResult.m_entityAndComponent.GetEntityId();
-    //    if (hitEntity.IsValid())
-    //    {
-    //        AZ::EntityId canvasEntityId;
-    //        UiCanvasRefBus::EventResult(canvasEntityId, hitEntity, &UiCanvasRefInterface::GetCanvas);
-    //        if (canvasEntityId.IsValid())
-    //        {
-    //            // Checkif the UI canvas referenced by the hit entity supports automatic input
-    //            bool doesCanvasSupportInput = false;
-    //            UiCanvasBus::EventResult(doesCanvasSupportInput, canvasEntityId, &UiCanvasInterface::GetIsPositionalInputSupported);
-    //
-    //            if (doesCanvasSupportInput)
-    //            {
-    //                // set the hit details to the hit entity, it will convert into canvas coords and send to canvas
-    //                bool handled = false;
-    //                UiCanvasOnMeshBus::EventResult(handled, hitEntity,
-    //                    &UiCanvasOnMeshInterface::ProcessHitInputEvent, inputSnapshot, rayResult);
-    //
-    //                if (handled)
-    //                {
-    //                    return true;
-    //                }
-    //            }
-    //        }
-    //    }
-    //}
-    //
-    //
-    //return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -953,7 +963,7 @@ AZ::EntityId UiCanvasManager::LoadCanvasInternal(const AZStd::string& assetIdPat
             if (canvasComponent->GetEnabled() && canvasComponent->GetIsConsumingAllInputEvents())
             {
                 AzFramework::InputChannelRequestBus::Broadcast(&AzFramework::InputChannelRequests::ResetState);
-                EBUS_EVENT(UiCanvasBus, ClearAllInteractables);
+                UiCanvasBus::Broadcast(&UiCanvasBus::Events::ClearAllInteractables);
             }
             m_loadedCanvases.push_back(canvasComponent);
             SortCanvasesByDrawOrder();
@@ -983,7 +993,7 @@ void UiCanvasManager::DeleteCanvasesQueuedForDeletion()
         for (auto canvasEntityId : m_canvasesQueuedForDeletion)
         {
             AZ::Entity* canvasEntity = nullptr;
-            EBUS_EVENT_RESULT(canvasEntity, AZ::ComponentApplicationBus, FindEntity, canvasEntityId);
+            AZ::ComponentApplicationBus::BroadcastResult(canvasEntity, &AZ::ComponentApplicationBus::Events::FindEntity, canvasEntityId);
             delete canvasEntity;
         }
 
@@ -997,33 +1007,30 @@ void UiCanvasManager::DebugDisplayCanvasData(int setting) const
 {
     bool onlyShowEnabledCanvases = (setting == 2) ? true : false;
 
-    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
+    IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
-    float xOffset = 20.0f;
-    float yOffset = 20.0f;
+    float dpiScale = draw2d->GetViewportDpiScalingFactor();
+    float xOffset = 20.0f * dpiScale;
+    float yOffset = 20.0f * dpiScale;
 
     const int elementNameFieldLength = 20;
 
     auto blackTexture = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::Black);
-
     float textOpacity = 1.0f;
-    float backgroundRectOpacity = 0.75f;
+    float backgroundRectOpacity = 0.0f; // 0.75f; // [GHI #6515] Reenable background rect
 
     const AZ::Vector3 white(1.0f, 1.0f, 1.0f);
     const AZ::Vector3 grey(0.5f, 0.5f, 0.5f);
     const AZ::Vector3 red(1.0f, 0.3f, 0.3f);
     const AZ::Vector3 blue(0.3f, 0.3f, 1.0f);
 
-    // If the viewport is narrow then a font size of 16 might be too large, so we use a size between 12 and 16 depending
-    // on the viewport width.
-    float fontSize(draw2d->GetViewportWidth() / 75.f);
-    fontSize = AZ::GetClamp(fontSize, 12.f, 16.f);
-    const float lineSpacing = fontSize;
+    const float fontSize = 8.0f;
+    const float lineSpacing = 20.0f * dpiScale;
 
     // local function to write a line of text (with a background rect) and increment Y offset
     AZStd::function<void(const char*, const AZ::Vector3&)> WriteLine = [&](const char* buffer, const AZ::Vector3& color)
     {
-        CDraw2d::TextOptions textOptions = draw2d->GetDefaultTextOptions();
+        IDraw2d::TextOptions textOptions = draw2d->GetDefaultTextOptions();
         textOptions.color = color;
         AZ::Vector2 textSize = draw2d->GetTextSize(buffer, fontSize, &textOptions);
         AZ::Vector2 rectTopLeft = AZ::Vector2(xOffset - 2, yOffset);
@@ -1155,15 +1162,15 @@ void UiCanvasManager::DebugDisplayCanvasData(int setting) const
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiCanvasManager::DebugDisplayDrawCallData() const
 {
-    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
+    IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
-    float xOffset = 20.0f;
-    float yOffset = 20.0f;
+    float dpiScale = draw2d->GetViewportDpiScalingFactor();
+    float xOffset = 20.0f * dpiScale;
+    float yOffset = 20.0f * dpiScale;
 
     auto blackTexture = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::Black);
     float textOpacity = 1.0f;
-    float backgroundRectOpacity = 0.75f;
-    const float lineSpacing = 20.0f;
+    float backgroundRectOpacity = 0.0f; // 0.75f; // [GHI #6515] Reenable background rect
 
     const AZ::Vector3 white(1,1,1);
     const AZ::Vector3 red(1,0.3f,0.3f);
@@ -1171,16 +1178,19 @@ void UiCanvasManager::DebugDisplayDrawCallData() const
     const AZ::Vector3 green(0.3f,1,0.3f);
     const AZ::Vector3 yellow(0.7f,0.7f,0.2f);
 
+    const float fontSize = 8.0f;
+    const float lineSpacing = 20.0f * dpiScale;
+
     // local function to write a line of text (with a background rect) and increment Y offset
     AZStd::function<void(const char*, const AZ::Vector3&)> WriteLine = [&](const char* buffer, const AZ::Vector3& color)
     {
-        CDraw2d::TextOptions textOptions = draw2d->GetDefaultTextOptions();
+        IDraw2d::TextOptions textOptions = draw2d->GetDefaultTextOptions();
         textOptions.color = color;
-        AZ::Vector2 textSize = draw2d->GetTextSize(buffer, 16, &textOptions);
+        AZ::Vector2 textSize = draw2d->GetTextSize(buffer, fontSize, &textOptions);
         AZ::Vector2 rectTopLeft = AZ::Vector2(xOffset - 2, yOffset);
         AZ::Vector2 rectSize = AZ::Vector2(textSize.GetX() + 4, lineSpacing);
         draw2d->DrawImage(blackTexture, rectTopLeft, rectSize, backgroundRectOpacity);
-        draw2d->DrawText(buffer, AZ::Vector2(xOffset, yOffset), 16, textOpacity, &textOptions);
+        draw2d->DrawText(buffer, AZ::Vector2(xOffset, yOffset), fontSize, textOpacity, &textOptions);
         yOffset += lineSpacing;
     };
 
@@ -1294,14 +1304,14 @@ AZStd::string UiCanvasManager::DebugGetElementName(AZ::EntityId entityId, int ma
 {
     AZStd::string name = "None";
     AZ::Entity* entity = nullptr;
-    EBUS_EVENT_RESULT(entity, AZ::ComponentApplicationBus, FindEntity, entityId);
+    AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, entityId);
     if (entity)
     {
         name = entity->GetName();
         if (name.length() < maxLength)
         {
             AZ::Entity* parent = nullptr;
-            EBUS_EVENT_ID_RESULT(parent, entityId, UiElementBus, GetParent);
+            UiElementBus::EventResult(parent, entityId, &UiElementBus::Events::GetParent);
             if (parent)
             {
                 name = parent->GetName() + "/" + name;
@@ -1486,7 +1496,7 @@ void UiCanvasManager::DebugReportDrawCalls(const AZStd::string& name) const
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiCanvasManager::DebugDisplayElemBounds(int canvasIndexFilter) const
 {
-    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
+    IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
     int canvasIndex = 0;
     for (auto canvas : m_loadedCanvases)

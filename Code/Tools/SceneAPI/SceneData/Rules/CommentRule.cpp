@@ -18,7 +18,7 @@ namespace AZ
     {
         namespace SceneData
         {
-            AZ_CLASS_ALLOCATOR_IMPL(CommentRule, AZ::SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR_IMPL(CommentRule, AZ::SystemAllocator)
 
             const AZStd::string& CommentRule::GetComment() const
             {

@@ -21,7 +21,6 @@
 #include "native/assetprocessor.h"
 #endif
 
-class FolderWatchCallbackEx;
 class QCoreApplication;
 
 namespace AZ
@@ -40,7 +39,10 @@ class AssetProcessorAZApplication
 {
     Q_OBJECT
 public:
-    explicit AssetProcessorAZApplication(int* argc, char*** argv, QObject* parent = nullptr);
+    AZ_CLASS_ALLOCATOR(AssetProcessorAZApplication, AZ::SystemAllocator)
+    AssetProcessorAZApplication(int* argc, char*** argv, QObject* parent = nullptr);
+    AssetProcessorAZApplication(int* argc, char*** argv, QObject* parent, AZ::ComponentApplicationSettings componentAppSettings);
+    AssetProcessorAZApplication(int* argc, char*** argv, AZ::ComponentApplicationSettings componentAppSettings);
 
     ~AssetProcessorAZApplication() override = default;
     /////////////////////////////////////////////////////////
@@ -85,7 +87,9 @@ public:
         Status_Restarting,
         Status_Failure,
     };
-    explicit ApplicationManager(int* argc, char*** argv, QObject* parent = 0);
+    ApplicationManager(int* argc, char*** argv, QObject* parent = nullptr);
+    ApplicationManager(int* argc, char*** argv, AZ::ComponentApplicationSettings componentAppSettings);
+    ApplicationManager(int* argc, char*** argv, QObject* parent, AZ::ComponentApplicationSettings componentAppSettings);
     virtual ~ApplicationManager();
     //! Prepares all the prerequisite needed for the main application functionality
     //! For eg Starts the AZ Framework,Activates logging ,Initialize Qt etc
@@ -115,7 +119,7 @@ Q_SIGNALS:
 
 public Q_SLOTS:
     void ReadyToQuit(QObject* source);
-    void QuitRequested();
+    virtual void QuitRequested();
     void ObjectDestroyed(QObject* source);
     void Restart();
 
@@ -139,7 +143,7 @@ protected:
     void RegisterObjectForQuit(QObject* source, bool insertInFront = false);
     bool NeedRestart() const;
     void addRunningThread(AssetProcessor::ThreadWorker* thread);
-    
+
     template<class BuilderClass>
     void RegisterInternalBuilder(const QString& builderName);
 
@@ -151,11 +155,8 @@ protected:
     bool m_duringStartup = true;
     AssetProcessorAZApplication m_frameworkApp;
     QCoreApplication* m_qApp = nullptr;
-    
-    //! Get the list of external builder files for this asset processor
-    void GetExternalBuilderFileList(QStringList& externalBuilderModules);
 
-    virtual void Reflect() = 0;
+    virtual void Reflect() {}
     virtual const char* GetLogBaseName() = 0;
     virtual RegistryCheckInstructions PopupRegistryProblemsMessage(QString warningText) = 0;
 private:

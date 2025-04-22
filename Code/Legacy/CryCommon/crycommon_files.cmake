@@ -7,8 +7,6 @@
 #
 
 set(FILES
-    IAudioInterfacesCommonData.h
-    IAudioSystem.h
     ICmdLine.h
     IConsole.h
     IFont.h
@@ -19,23 +17,17 @@ set(FILES
     LocalizationManagerBus.h
     LocalizationManagerBus.inl
     ILog.h
-    IMaterial.h
     IMiniLog.h
+    IMovieSystem.cpp
     IMovieSystem.h
-    IProcess.h
-    IRenderAuxGeom.h
     IRenderer.h
     ISerialize.h
-    IShader.h
     ISplines.h
     ISystem.h
     ITexture.h
     IValidator.h
     IWindowMessageHandler.h
     IXml.h
-    MicrophoneBus.h
-    INavigationSystem.h
-    IMNM.h
     SerializationTypes.h
     CryEndian.h
     CryRandomInternal.h
@@ -46,16 +38,12 @@ set(FILES
     CryAssert.h
     CryFile.h
     CryListenerSet.h
-    CryLegacyAllocator.h
     CryPath.h
     CrySystemBus.h
+    CrySystemBus.cpp
     CryVersion.h
-    LegacyAllocator.cpp
-    LegacyAllocator.h
     MiniQueue.h
     MultiThread_Containers.h
-    NullAudioSystem.h
-    PNoise3.h
     ProjectDefines.h
     Range.h
     ScopedVariableSetter.h
@@ -85,11 +73,6 @@ set(FILES
     MathConversion.h
     AndroidSpecific.h
     AppleSpecific.h
-    CryAssert_Android.h
-    CryAssert_impl.h
-    CryAssert_iOS.h
-    CryAssert_Linux.h
-    CryAssert_Mac.h
     Linux32Specific.h
     Linux64Specific.h
     Linux_Win32Wrapper.h
@@ -98,10 +81,7 @@ set(FILES
     MacSpecific.h
     platform.h
     platform_impl.cpp
-    Win32specific.h
     Win64specific.h
-    LyShine/UiAssetTypes.h
-    LyShine/Bus/UiCursorBus.h
     Maestro/Bus/EditorSequenceAgentComponentBus.h
     Maestro/Bus/EditorSequenceBus.h
     Maestro/Bus/EditorSequenceComponentBus.h
@@ -109,11 +89,9 @@ set(FILES
     Maestro/Bus/SequenceAgentComponentBus.h
     Maestro/Types/AnimNodeType.h
     Maestro/Types/AnimParamType.h
-    Maestro/Types/AnimValue.h
     Maestro/Types/AnimValueType.h
     Maestro/Types/AssetBlendKey.h
     Maestro/Types/AssetBlends.h
     Maestro/Types/SequenceType.h
-    StaticInstance.h
     WinBase.cpp
 )

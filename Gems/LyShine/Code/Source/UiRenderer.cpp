@@ -16,11 +16,13 @@
 #include <Atom/Bootstrap/DefaultWindowBus.h>
 #include <Atom/RPI.Public/ViewportContextBus.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
+#include <Atom/RPI.Public/Pass/RasterPass.h>
 
-#include <AzCore/Math/MatrixUtils.h>
 #include <AzCore/Debug/Trace.h>
+#include <AzCore/Math/MatrixUtils.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 
-#include <LyShine/Draw2d.h>
+#include <LyShine/IDraw2d.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // PUBLIC MEMBER FUNCTIONS
@@ -57,7 +59,7 @@ void UiRenderer::OnBootstrapSceneReady(AZ::RPI::Scene* bootstrapScene)
     // At this point the RPI is ready for use
 
     // Load the UI shader
-    const char* uiShaderFilepath = "Shaders/LyShineUI.azshader";
+    const char* uiShaderFilepath = "LyShine/Shaders/LyShineUI.azshader";
     AZ::Data::Instance<AZ::RPI::Shader> uiShader = AZ::RPI::LoadCriticalShader(uiShaderFilepath);
 
     // Create scene to be used by the dynamic draw context
@@ -76,7 +78,7 @@ void UiRenderer::OnBootstrapSceneReady(AZ::RPI::Scene* bootstrapScene)
     // Create a dynamic draw context for UI Canvas drawing for the scene
     m_dynamicDraw = CreateDynamicDrawContext(uiShader);
 
-    if (m_dynamicDraw)
+    if (m_dynamicDraw && m_dynamicDraw->IsReady())
     {
         // Cache shader data such as input indices for later use
         CacheShaderData(m_dynamicDraw);
@@ -85,28 +87,41 @@ void UiRenderer::OnBootstrapSceneReady(AZ::RPI::Scene* bootstrapScene)
     }
     else
     {
-        AZ_Error(LogName, false, "Failed to create a dynamic draw context for LyShine. \
+        AZ_Error(LogName, false, "Failed to create or initialize a dynamic draw context for LyShine. \
             This can happen if the LyShine pass hasn't been added to the main render pipeline.");
     }
 }
 
 AZ::RPI::ScenePtr UiRenderer::CreateScene(AZStd::shared_ptr<AZ::RPI::ViewportContext> viewportContext)
 {
-    // Create a scene with the necessary feature processors
+    // Create and register a scene with feature processors defined in the viewport settings
     AZ::RPI::SceneDescriptor sceneDesc;
     sceneDesc.m_nameId = AZ::Name("UiRenderer");
+    auto settingsRegistry = AZ::SettingsRegistry::Get();
+    const char* viewportSettingPath = "/O3DE/Editor/Viewport/UI/Scene";
+    bool sceneDescLoaded = settingsRegistry->GetObject(sceneDesc, viewportSettingPath);
     AZ::RPI::ScenePtr atomScene = AZ::RPI::Scene::CreateScene(sceneDesc);
-    atomScene->EnableAllFeatureProcessors(); // [LYSHINE_ATOM_TODO][GHI #6272] Enable minimal feature processors
+
+    if (!sceneDescLoaded)
+    {
+        AZ_Warning("UiRenderer", false, "Settings registry is missing the scene settings for this viewport, so all feature processors will be enabled. "
+                    "To enable only a minimal set, add the specific list of feature processors with a registry path of '%s'.", viewportSettingPath);
+        atomScene->EnableAllFeatureProcessors();
+    }
 
     // Assign the new scene to the specified viewport context
     viewportContext->SetRenderScene(atomScene);
 
-    // Create a render pipeline and add it to the scene
-    AZStd::string pipelineAssetPath = "passes/MainRenderPipeline.azasset"; // [LYSHINE_ATOM_TODO][GHI #6272] Use a custom UI pipeline
-    AZ::Data::Asset<AZ::RPI::AnyAsset> pipelineAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(pipelineAssetPath.c_str(), AZ::RPI::AssetUtils::TraceLevel::Error);
-    AZStd::shared_ptr<AZ::RPI::WindowContext> windowContext = viewportContext->GetWindowContext();
-    auto renderPipeline = AZ::RPI::RenderPipeline::CreateRenderPipelineForWindow(pipelineAsset, *windowContext.get());
-    pipelineAsset.Release();
+    const char* pipelineAssetPath = "passes/MainRenderPipeline.azasset"; // [LYSHINE_ATOM_TODO][GHI #6272] Use a custom UI pipeline
+    AZStd::optional<AZ::RPI::RenderPipelineDescriptor> renderPipelineDesc =
+        AZ::RPI::GetRenderPipelineDescriptorFromAsset(pipelineAssetPath, AZStd::string::format("_%i", viewportContext->GetId()));
+    AZ_Assert(renderPipelineDesc.has_value(), "Invalid render pipeline descriptor from asset %s", pipelineAssetPath);
+
+    const AZ::RHI::MultisampleState multiSampleState = AZ::RPI::RPISystemInterface::Get()->GetApplicationMultisampleState();
+    renderPipelineDesc.value().m_renderSettings.m_multisampleState = multiSampleState;
+    AZ_Printf("UiRenderer", "UI renderer starting with multi sample %d", multiSampleState.m_samples);
+
+    auto renderPipeline = AZ::RPI::RenderPipeline::CreateRenderPipelineForWindow(renderPipelineDesc.value(), *viewportContext->GetWindowContext().get());
     atomScene->AddRenderPipeline(renderPipeline);
 
     atomScene->Activate();
@@ -120,11 +135,6 @@ AZ::RPI::ScenePtr UiRenderer::CreateScene(AZStd::shared_ptr<AZ::RPI::ViewportCon
 AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> UiRenderer::CreateDynamicDrawContext(
     AZ::Data::Instance<AZ::RPI::Shader> uiShader)
 {
-    // Find the pass that renders the UI canvases after the rtt passes
-    AZ::RPI::RasterPass* uiCanvasPass = nullptr;
-    AZ::RPI::SceneId sceneId = m_scene->GetId();
-    LyShinePassRequestBus::EventResult(uiCanvasPass, sceneId, &LyShinePassRequestBus::Events::GetUiCanvasPass);
-
     AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> dynamicDraw = AZ::RPI::DynamicDrawInterface::Get()->CreateDynamicDrawContext();
 
     // Initialize the dynamic draw context
@@ -135,18 +145,10 @@ AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> UiRenderer::CreateDynamicDrawContext(
         { "TEXCOORD", AZ::RHI::Format::R32G32_FLOAT },
         { "BLENDINDICES", AZ::RHI::Format::R16G16_UINT } }
     );
-    dynamicDraw->AddDrawStateOptions(AZ::RPI::DynamicDrawContext::DrawStateOptions::StencilState
-        | AZ::RPI::DynamicDrawContext::DrawStateOptions::BlendMode);
+    dynamicDraw->AddDrawStateOptions(AZ::RPI::DynamicDrawContext::DrawStateOptions::StencilState | AZ::RPI::DynamicDrawContext::DrawStateOptions::BlendMode |
+        AZ::RPI::DynamicDrawContext::DrawStateOptions::ShaderVariant);
 
-    if (uiCanvasPass)
-    {
-        dynamicDraw->SetOutputScope(uiCanvasPass);
-    }
-    else
-    {
-        // Render target support is disabled
-        dynamicDraw->SetOutputScope(m_scene);
-    }
+    dynamicDraw->SetOutputScope(m_scene);
     dynamicDraw->EndInit();
 
     return dynamicDraw;
@@ -216,17 +218,11 @@ void UiRenderer::BeginUiFrameRender()
         m_texturesUsedInFrame.clear();
     }
 #endif
-   
-    // Various platform drivers expect all texture slots used in the shader to be bound
-    BindNullTexture();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiRenderer::EndUiFrameRender()
 {
-    // We never want to leave a texture bound that could get unloaded before the next render
-    // So bind the global white texture for all the texture units we use.
-    BindNullTexture();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -271,11 +267,11 @@ AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> UiRenderer::CreateDynamicDrawContextFo
         { "TEXCOORD", AZ::RHI::Format::R32G32_FLOAT },
         { "BLENDINDICES", AZ::RHI::Format::R16G16_UINT } }
     );
-    dynamicDraw->AddDrawStateOptions(AZ::RPI::DynamicDrawContext::DrawStateOptions::StencilState
-        | AZ::RPI::DynamicDrawContext::DrawStateOptions::BlendMode);
+    dynamicDraw->AddDrawStateOptions(AZ::RPI::DynamicDrawContext::DrawStateOptions::StencilState | AZ::RPI::DynamicDrawContext::DrawStateOptions::BlendMode |
+        AZ::RPI::DynamicDrawContext::DrawStateOptions::ShaderVariant);
 
     dynamicDraw->SetOutputScope(rttPass);
-
+    dynamicDraw->InitDrawListTag(rttPass->GetDrawListTag());
     dynamicDraw->EndInit();
 
     return dynamicDraw;
@@ -311,6 +307,11 @@ AZ::Matrix4x4 UiRenderer::GetModelViewProjectionMatrix()
 AZ::Vector2 UiRenderer::GetViewportSize()
 {
     auto viewportContext = GetViewportContext();
+    if (!viewportContext)
+    {
+        return AZ::Vector2::CreateZero();
+    }
+
     auto windowContext = viewportContext->GetWindowContext();
 
     const AZ::RHI::Viewport& viewport = windowContext->GetViewport();
@@ -361,13 +362,13 @@ AZ::RPI::ShaderVariantId UiRenderer::GetCurrentShaderVariant()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-uint32 UiRenderer::GetStencilRef()
+uint32_t UiRenderer::GetStencilRef()
 {
     return m_stencilRef;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void UiRenderer::SetStencilRef(uint32 stencilRef)
+void UiRenderer::SetStencilRef(uint32_t stencilRef)
 {
     m_stencilRef = stencilRef;
 }
@@ -384,45 +385,6 @@ void UiRenderer::DecrementStencilRef()
     --m_stencilRef;
 }
 
-#ifdef LYSHINE_ATOM_TODO
-////////////////////////////////////////////////////////////////////////////////////////////////////
-void UiRenderer::SetTexture(ITexture* texture, int texUnit, bool clamp)
-{
-    if (!texture)
-    {
-        texture = m_renderer->GetWhiteTexture();
-    }
-    else
-    {
-        texture->SetClamp(clamp);
-    }
-
-    m_renderer->SetTexture(texture->GetTextureID(), texUnit);
-
-#ifndef _RELEASE
-    if (m_debugTextureDataRecordLevel > 0)
-    {
-        m_texturesUsedInFrame.insert(texture);
-    }
-#endif
-}
-#endif
-
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-void UiRenderer::BindNullTexture()
-{
-#ifdef LYSHINE_ATOM_TODO
-    // Bind the global white texture for all the texture units we use
-    const int MaxTextures = 16;
-    int whiteTexId = m_renderer->GetWhiteTextureId();
-    for (int texUnit = 0; texUnit < MaxTextures; ++texUnit)
-    {
-        m_renderer->SetTexture(whiteTexId, texUnit);
-    }
-#endif
-}
-
 #ifndef _RELEASE
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -436,38 +398,42 @@ void UiRenderer::DebugDisplayTextureData(int recordingOption)
 {
     if (recordingOption > 0)
     {
-#ifdef LYSHINE_ATOM_TODO // [GHI #3568] Support canvas debug display with Atom
         // compute the total area of all the textures, also create a vector that we can sort by area
-        AZStd::vector<ITexture*> textures;
+        AZStd::vector<AZStd::pair<AZ::Data::Instance<AZ::RPI::Image>, uint32_t>> textures;
         int totalArea = 0;
         int totalDataSize = 0;
-        for (ITexture* texture : m_texturesUsedInFrame)
+        for (AZ::Data::Instance<AZ::RPI::Image> image : m_texturesUsedInFrame)
         {
-            int area = texture->GetWidth() * texture->GetHeight();
-            int dataSize = texture->GetDataSize();
+            const AZ::RHI::ImageDescriptor& imageDescriptor = image->GetRHIImage()->GetDescriptor();
+            AZ::RHI::Size size = imageDescriptor.m_size;
+            int area = size.m_width * size.m_height;
+            uint32_t dataSize = AZ::RHI::GetFormatSize(imageDescriptor.m_format) * area;
+
             totalArea += area;
             totalDataSize += dataSize;
 
-            textures.push_back(texture);
+            textures.push_back(AZStd::pair<AZ::Data::Instance<AZ::RPI::Image>, uint32_t>(image, dataSize));
         }
 
         // sort the vector by data size
-        std::sort( textures.begin( ), textures.end( ), [ ]( const ITexture* lhs, const ITexture* rhs )
+        std::sort( textures.begin( ), textures.end( ), [ ]( const AZStd::pair<AZ::Data::Instance<AZ::RPI::Image>, uint32_t> lhs, const AZStd::pair<AZ::Data::Instance<AZ::RPI::Image>, uint32_t> rhs )
         {
-            return lhs->GetDataSize() > rhs->GetDataSize();
+            return lhs.second > rhs.second;
         });
 
-        CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
+        IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
         // setup to render lines of text for the debug display
 
-        float xOffset = 20.0f;
-        float yOffset = 20.0f;
+        float dpiScale = GetViewportContext()->GetDpiScalingFactor();
+        float xOffset = 20.0f * dpiScale;
+        float yOffset = 20.0f * dpiScale;
 
         auto blackTexture = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::Black);
         float textOpacity = 1.0f;
-        float backgroundRectOpacity = 0.75f;
-        const float lineSpacing = 20.0f;
+        float backgroundRectOpacity = 0.0f; // 0.75f; // [GHI #6515] Reenable background rect
+        const float fontSize = 8.0f;
+        const float lineSpacing = 20.0f * dpiScale;
 
         const AZ::Vector3 white(1,1,1);
         const AZ::Vector3 red(1,0.3f,0.3f);
@@ -490,31 +456,63 @@ void UiRenderer::DebugDisplayTextureData(int recordingOption)
         // local function to write a line of text (with a background rect) and increment Y offset
         AZStd::function<void(const char*, const AZ::Vector3&)> WriteLine = [&](const char* buffer, const AZ::Vector3& color)
         {
-            CDraw2d::TextOptions textOptions = draw2d->GetDefaultTextOptions();
+            IDraw2d::TextOptions textOptions = draw2d->GetDefaultTextOptions();
             textOptions.color = color;
-            AZ::Vector2 textSize = draw2d->GetTextSize(buffer, 16, &textOptions);
+            AZ::Vector2 textSize = draw2d->GetTextSize(buffer, fontSize, &textOptions);
             AZ::Vector2 rectTopLeft = AZ::Vector2(xOffset - 2, yOffset);
             AZ::Vector2 rectSize = AZ::Vector2(textSize.GetX() + 4, lineSpacing);
             draw2d->DrawImage(blackTexture, rectTopLeft, rectSize, backgroundRectOpacity);
-            draw2d->DrawText(buffer, AZ::Vector2(xOffset, yOffset), 16, textOpacity, &textOptions);
+            draw2d->DrawText(buffer, AZ::Vector2(xOffset, yOffset), fontSize, textOpacity, &textOptions);
             yOffset += lineSpacing;
         };
 
-        int numTexturesUsedInFrame = m_texturesUsedInFrame.size();
+        size_t numTexturesUsedInFrame = m_texturesUsedInFrame.size();
         char buffer[200];
-        sprintf_s(buffer, "There are %d unique UI textures rendered in this frame, the total texture area is %d (%d x %d), total data size is %d (%.2f MB)",
+        sprintf_s(buffer, "There are %zu unique UI textures rendered in this frame, the total texture area is %d (%d x %d), total data size is %d (%.2f MB)",
             numTexturesUsedInFrame, totalArea, xDim, yDim, totalDataSize, totalDataSizeMB);
         WriteLine(buffer, white);
-        sprintf_s(buffer, "Dimensions   Data Size   Format Texture name");
+        sprintf_s(buffer, "Dimensions   Data Size              Format Texture name");
         WriteLine(buffer, blue);
 
-        for (ITexture* texture : textures)
+        for (auto texture : textures)
         {
-            sprintf_s(buffer, "%4d x %4d, %9d %8s %s",
-                texture->GetWidth(), texture->GetHeight(), texture->GetDataSize(), texture->GetFormatName(), texture->GetName());
+            AZ::Data::Instance<AZ::RPI::Image> image = texture.first;
+            const AZ::RHI::ImageDescriptor& imageDescriptor = image->GetRHIImage()->GetDescriptor();
+            uint32_t width = imageDescriptor.m_size.m_width;
+            uint32_t height = imageDescriptor.m_size.m_height;
+            uint32_t dataSize = texture.second;
+
+            const char* displayName = "Unnamed Texture";
+            AZStd::string imagePath;
+            // Check if the image has been assigned a name (ex. if it's an attachment image or a cpu generated image)
+            const AZ::Name& imageName = image->GetRHIImage()->GetName();
+            if (!imageName.IsEmpty())
+            {
+                displayName = imageName.GetCStr();
+            }
+            else
+            {
+                // Use the image's asset path as the display name
+                AZ::Data::AssetCatalogRequestBus::BroadcastResult(imagePath,
+                    &AZ::Data::AssetCatalogRequests::GetAssetPathById, image->GetAssetId());
+                if (!imagePath.empty())
+                {
+                    displayName = imagePath.c_str();
+                }
+            }
+
+            sprintf_s(buffer, "%4u x %4u, %9u %19s %s",
+                width, height, dataSize, AZ::RHI::ToString(imageDescriptor.m_format), displayName);
             WriteLine(buffer, white);
         }
-#endif
+    }
+}
+
+void UiRenderer::DebugUseTexture(AZ::Data::Instance<AZ::RPI::Image> image)
+{
+    if (m_debugTextureDataRecordLevel > 0)
+    {
+        m_texturesUsedInFrame.insert(image);
     }
 }
 

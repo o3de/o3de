@@ -12,7 +12,7 @@
 #include <AzCore/RTTI/RTTI.h>
 
 #include <AzToolsFramework/Prefab/PrefabPublicRequestBus.h>
-#include <AzToolsFramework/Prefab/Spawnable/InMemorySpawnableAssetContainer.h>
+#include <AzToolsFramework/Prefab/Spawnable/PrefabInMemorySpawnableConverter.h>
 
 namespace AzToolsFramework
 {
@@ -24,7 +24,7 @@ namespace AzToolsFramework
             : public PrefabPublicRequestBus::Handler
         {
         public:
-            AZ_CLASS_ALLOCATOR(PrefabPublicRequestHandler, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PrefabPublicRequestHandler, AZ::SystemAllocator);
             AZ_RTTI(PrefabPublicRequestHandler, "{83FBDDF9-10BE-4373-B1DC-44B47EE4805C}");
 
             static void Reflect(AZ::ReflectContext* context);
@@ -36,6 +36,7 @@ namespace AzToolsFramework
             InstantiatePrefabResult InstantiatePrefab(AZStd::string_view filePath, AZ::EntityId parent, const AZ::Vector3& position) override;
             PrefabOperationResult DeleteEntitiesAndAllDescendantsInInstance(const EntityIdList& entityIds) override;
             PrefabOperationResult DetachPrefab(const AZ::EntityId& containerEntityId) override;
+            PrefabOperationResult DetachPrefabAndRemoveContainerEntity(const AZ::EntityId& containerEntityId) override;
             DuplicatePrefabResult DuplicateEntitiesInInstance(const EntityIdList& entityIds) override;
             AZStd::string GetOwningInstancePrefabPath(AZ::EntityId entityId) const override;
             CreateSpawnableResult CreateInMemorySpawnableAsset(AZStd::string_view prefabFilePath, AZStd::string_view spawnableName) override;
@@ -47,7 +48,7 @@ namespace AzToolsFramework
         private:
             bool TryActivateSpawnableAssetContainer();
 
-            PrefabConversionUtils::InMemorySpawnableAssetContainer m_spawnableAssetContainer;
+            AzToolsFramework::Prefab::PrefabConversionUtils::PrefabInMemorySpawnableConverter m_spawnableAssetContainer;
             PrefabPublicInterface* m_prefabPublicInterface = nullptr;
 
         };

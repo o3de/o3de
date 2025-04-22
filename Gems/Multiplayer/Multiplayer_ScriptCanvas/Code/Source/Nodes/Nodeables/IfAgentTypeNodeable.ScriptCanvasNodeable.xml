@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScriptCanvas Include="Source/Nodes/Nodeables/IfAgentTypeNodeable.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Class Name="IfAgentTypeNodeable"
+           QualifiedName="ScriptCanvasMultiplayer::IfAgentTypeNodeable"
+           PreferredClassName="If Multiplayer Agent Type"
+           Category="Multiplayer"
+           Description="An execution flow gate that continues to the path based on the agent type of the current multiplayer session.">
+
+        <Input Name="In" Description="Branches on agent type" DisplayGroup="In">
+            <Branch Name="If Client Type" Description="A Client connected to either a server or host." DisplayGroup="In" />
+            <Branch Name="If ClientServer Type" Description="A Client that also hosts and is the authority of the session" DisplayGroup="In" />
+            <Branch Name="If DedicatedServer Type" Description="A Dedicated Server which does not locally host any clients" DisplayGroup="In" />
+            <Branch Name="If Singleplayer" Description="The application is in single player mode" DisplayGroup="In" />
+        </Input>
+    </Class>
+</ScriptCanvas>

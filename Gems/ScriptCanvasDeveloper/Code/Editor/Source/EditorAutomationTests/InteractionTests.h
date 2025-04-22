@@ -24,7 +24,7 @@
 
 #include <ScriptCanvasDeveloperEditor/EditorAutomation/EditorAutomationStates/CreateElementsStates.h>
 
-namespace ScriptCanvasDeveloper
+namespace ScriptCanvas::Developer
 {
     /**
         EditorautomationTest that will test out the AltClick to delete elements functionality for nodes, connected nodes, and connections
@@ -56,6 +56,7 @@ namespace ScriptCanvasDeveloper
         };
 
     public:
+        AZ_CLASS_ALLOCATOR(CutCopyPasteDuplicateTest, AZ::SystemAllocator)
         CutCopyPasteDuplicateTest(QString nodeName);
         ~CutCopyPasteDuplicateTest() override = default;
 

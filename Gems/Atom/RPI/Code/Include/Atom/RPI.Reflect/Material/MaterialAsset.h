@@ -9,13 +9,13 @@
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/std/containers/vector.h>
-#include <AtomCore/std/containers/array_view.h>
+#include <AzCore/std/containers/span.h>
 
 #include <Atom/RPI.Public/AssetInitBus.h>
 #include <Atom/RPI.Reflect/Base.h>
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/Material/MaterialTypeAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertyValue.h>
-#include <Atom/RPI.Public/Material/MaterialReloadNotificationBus.h>
 
 #include <AzCore/EBus/Event.h>
 
@@ -34,45 +34,49 @@ namespace AZ
         class MaterialAssetHandler;
 
         //! MaterialAsset defines a single material, which can be used to create a Material instance for rendering at runtime.
-        //! It fetches MaterialTypeSourceData from the MaterialTypeAsset it owned.
-        //! 
         //! Use a MaterialAssetCreator to create a MaterialAsset.
-        class MaterialAsset
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+        class ATOM_RPI_REFLECT_API MaterialAsset
             : public AZ::Data::AssetData
-            , public Data::AssetBus::Handler
-            , public MaterialReloadNotificationBus::Handler
             , public AssetInitBus::Handler
         {
-            friend class MaterialVersionUpdate;
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+            friend class MaterialVersionUpdates;
             friend class MaterialAssetCreator;
             friend class MaterialAssetHandler;
-            friend class MaterialAssetCreatorCommon;
             friend class UnitTest::MaterialTests;
             friend class UnitTest::MaterialAssetTests;
 
         public:
             AZ_RTTI(MaterialAsset, "{522C7BE0-501D-463E-92C6-15184A2B7AD8}", AZ::Data::AssetData);
-            AZ_CLASS_ALLOCATOR(MaterialAsset, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(MaterialAsset, SystemAllocator);
 
-            static const char* DisplayName;
-            static const char* Group;
-            static const char* Extension;
+            static constexpr const char* DisplayName{ "MaterialAsset" };
+            static constexpr const char* Group{ "Material" };
+            static constexpr const char* Extension{ "azmaterial" };
+            
+            static constexpr uint32_t UnspecifiedMaterialTypeVersion = static_cast<uint32_t>(-1);
 
             static void Reflect(ReflectContext* context);
 
             MaterialAsset();
             virtual ~MaterialAsset();
 
+            bool InitializeNonSerializedData();
+
             //! Returns the MaterialTypeAsset.
             const Data::Asset<MaterialTypeAsset>& GetMaterialTypeAsset() const;
 
-            //! Returns the collection of all shaders that this material could run.
-            const ShaderCollection& GetShaderCollection() const;
+            //! Return the general purpose shader collection that applies to any render pipeline.
+            const ShaderCollection& GetGeneralShaderCollection() const;
 
             //! The material may contain any number of MaterialFunctors.
             //! Material functors provide custom logic and calculations to configure shaders, render states, and more.
             //! See MaterialFunctor.h for details.
             const MaterialFunctorList& GetMaterialFunctors() const;
+
+            //! Return the collection of MaterialPipelinePayload data for all supported material pipelines.
+            const MaterialTypeAsset::MaterialPipelineMap& GetMaterialPipelinePayloads() const;
 
             //! Returns the shader resource group layout that has per-material frequency, which indicates most of the topology
             //! for a material's shaders.
@@ -112,56 +116,58 @@ namespace AZ
             //!
             //! Note that even though material source data files contain only override values and inherit the rest from
             //! their parent material, they all get flattened at build time so every MaterialAsset has the full set of values.
-            AZStd::array_view<MaterialPropertyValue> GetPropertyValues() const;
+            //!
+            //! Calling GetPropertyValues() will automatically finalize the material asset if it isn't finalized already. The
+            //! MaterialTypeAsset must be loaded and ready.
+            const AZStd::vector<MaterialPropertyValue>& GetPropertyValues() const;
 
         private:
             bool PostLoadInit() override;
+            
+            //! If the material asset is not finalized yet, this does the final processing of the raw property values to get the material asset ready to be used.
+            //! MaterialTypeAsset must be valid before this is called.
+            void Finalize(AZStd::function<void(const char*)> reportWarning = nullptr, AZStd::function<void(const char*)> reportError = nullptr);
 
-            //! Realigns property value and name indices with MaterialProperiesLayout by using m_propertyNames. Property names not found in the
-            //! MaterialPropertiesLayout are discarded, while property names not included in m_propertyNames will use the default value
-            //! from m_materialTypeAsset.
-            void RealignPropertyValuesAndNames();
-
-            //! Checks the material type version and potentially applies a series of property changes (most common are simple property renames)
-            //! based on the MaterialTypeAsset's version update procedure.
-            void ApplyVersionUpdates();
+            //! Checks the material type version and potentially applies a series of property
+            //! changes based on the MaterialTypeAsset's version update procedure.
+            void ApplyVersionUpdates(AZStd::function<void(const char*)> reportError);
 
             //! Called by asset creators to assign the asset to a ready state.
             void SetReady();
 
-            // AssetBus overrides...
-            void OnAssetReloaded(Data::Asset<Data::AssetData> asset) override;
-            void OnAssetReady(Data::Asset<Data::AssetData> asset) override;
+            static constexpr const char* s_debugTraceName{ "MaterialAsset" };
 
-            //! Replaces the MaterialTypeAsset when a reload occurs
-            void ReinitializeMaterialTypeAsset(Data::Asset<Data::AssetData> asset);
-
-            // MaterialReloadNotificationBus overrides...
-            void OnMaterialTypeAssetReinitialized(const Data::Asset<MaterialTypeAsset>& materialTypeAsset) override;
-
-            static const char* s_debugTraceName;
-
-            Data::Asset<MaterialTypeAsset> m_materialTypeAsset;
+            Data::Asset<MaterialTypeAsset> m_materialTypeAsset = { AZ::Data::AssetLoadBehavior::PreLoad };
 
             //! Holds values for each material property, used to initialize Material instances.
             //! This is indexed by MaterialPropertyIndex and aligns with entries in m_materialPropertiesLayout.
-            AZStd::vector<MaterialPropertyValue> m_propertyValues;
-            //! This is used to realign m_propertyValues as well as itself with MaterialPropertiesLayout when not empty.
-            //! If empty, this implies that m_propertyValues is aligned with the entries in m_materialPropertiesLayout.
-            AZStd::vector<AZ::Name> m_propertyNames;
+            mutable AZStd::vector<MaterialPropertyValue> m_propertyValues;
 
-            //! The materialTypeVersion this materialAsset was based of. If the versions do not match at runtime when a
-            //! materialTypeAsset is loaded, an update will be performed on m_propertyNames if populated. 
-            uint32_t m_materialTypeVersion = 1;
+            //! The MaterialAsset can be created in a "half-baked" state where minimal processing has been done because it does
+            //! not yet have access to the MaterialTypeAsset. In that case, this list will be populated with values copied from
+            //! the source .material file with little or no validation or other processing, and the m_propertyValues list will be empty.
+            //! Once a MaterialTypeAsset is available, Finalize() must be called to finish processing these values into the
+            //! final m_propertyValues list.
+            //! Note that the content of this list will remain after finalizing in order to support hot-reload of the MaterialTypeAsset.
+            //! The reason we use a vector instead of a map is to ensure inherited property values are applied in the right order;
+            //! if the material has a parent, and that parent uses an older material type version with renamed properties, then 
+            //! m_rawPropertyValues could be holding two values for the same property under different names. The auto-rename process
+            //! can't be applied until the MaterialTypeAsset is available, so we have to keep the properties in the same order they
+            //! were originally encountered.
+            AZStd::vector<AZStd::pair<Name, MaterialPropertyValue>> m_rawPropertyValues;
+            
+            //! The materialTypeVersion this materialAsset was based off. If the versions do not match at runtime when a
+            //! materialTypeAsset is loaded, automatic updates will be attempted.
+            uint32_t m_materialTypeVersion = UnspecifiedMaterialTypeVersion;
 
-            //! A flag to determine if m_propertyValues needs to be aligned with MaterialPropertiesLayout. Set to true whenever
-            //! m_materialTypeAsset is reinitializing.
-            bool m_isDirty = true;
+            bool m_isNonSerializedDataInitialized = false;
         };
        
 
-        class MaterialAssetHandler : public AssetHandler<MaterialAsset>
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+        class ATOM_RPI_REFLECT_API MaterialAssetHandler : public AssetHandler<MaterialAsset>
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             using Base = AssetHandler<MaterialAsset>;
         public:
             AZ_RTTI(MaterialAssetHandler, "{949DFEF5-6E19-4C81-8CF0-C764F474CCDD}", Base);

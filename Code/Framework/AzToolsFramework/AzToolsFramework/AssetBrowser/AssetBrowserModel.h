@@ -17,6 +17,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
+#include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/Component/TickBus.h>
 
 AZ_PUSH_DISABLE_WARNING(4127 4251 4800, "-Wunknown-warning-option") // 4127: conditional expression is constant
@@ -35,6 +36,7 @@ namespace AzToolsFramework
         class AssetBrowserEntry;
         class RootAssetBrowserEntry;
         class AssetEntryChangeset;
+        class AssetBrowserFilterModel;
 
         class AssetBrowserModel
             : public QAbstractItemModel
@@ -48,10 +50,13 @@ namespace AzToolsFramework
                 EntryRole = Qt::UserRole + 100,
             };
 
-            AZ_CLASS_ALLOCATOR(AssetBrowserModel, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AssetBrowserModel, AZ::SystemAllocator);
 
             explicit AssetBrowserModel(QObject* parent = nullptr);
             ~AssetBrowserModel();
+
+            void EnableTickBus();
+            void DisableTickBus();
 
             QModelIndex findIndex(const QString& absoluteAssetPath) const;
 
@@ -62,10 +67,14 @@ namespace AzToolsFramework
             int rowCount(const QModelIndex& parent = QModelIndex()) const override;
             int columnCount(const QModelIndex& parent = QModelIndex()) const override;
             QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
+            Qt::DropActions supportedDropActions() const override;
             Qt::ItemFlags flags(const QModelIndex& index) const override;
+            bool dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent) override;
             QMimeData* mimeData(const QModelIndexList& indexes) const override;
+            QStringList mimeTypes() const override;
             QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
             QModelIndex parent(const QModelIndex& child) const override;
+            bool canDropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent) const override;
 
             //////////////////////////////////////////////////////////////////////////
             // AssetBrowserModelRequestBus
@@ -75,7 +84,10 @@ namespace AzToolsFramework
             void EndAddEntry(AssetBrowserEntry* parent) override;
             void BeginRemoveEntry(AssetBrowserEntry* entry) override;
             void EndRemoveEntry() override;
-            
+
+            void BeginReset() override;
+            void EndReset() override;
+
             //////////////////////////////////////////////////////////////////////////
             // TickBus
             //////////////////////////////////////////////////////////////////////////
@@ -84,16 +96,34 @@ namespace AzToolsFramework
             AZStd::shared_ptr<RootAssetBrowserEntry> GetRootEntry() const;
             void SetRootEntry(AZStd::shared_ptr<RootAssetBrowserEntry> rootEntry);
 
+            AssetBrowserFilterModel* GetFilterModel();
+            const AssetBrowserFilterModel* GetFilterModel() const;
+            void SetFilterModel(AssetBrowserFilterModel* filterModel);
+
             static void SourceIndexesToAssetIds(const QModelIndexList& indexes, AZStd::vector<AZ::Data::AssetId>& assetIds);
-            static void SourceIndexesToAssetDatabaseEntries(const QModelIndexList& indexes, AZStd::vector<AssetBrowserEntry*>& entries);
-            
+            static void SourceIndexesToAssetDatabaseEntries(const QModelIndexList& indexes, AZStd::vector<const AssetBrowserEntry*>& entries);
+
+            void HandleAssetCreatedInEditor(const AZStd::string& assetPath, const AZ::Crc32& creatorBusId = AZ::Crc32(), const bool initialFilenameChange = true);
+
+            bool GetEntryIndex(AssetBrowserEntry* entry, QModelIndex& index) const;
+
+        Q_SIGNALS:
+            void RequestOpenItemForEditing(const QModelIndex& index);
+
         private:
+            //Non owning pointer
+            AssetBrowserFilterModel* m_filterModel = nullptr;
             AZStd::shared_ptr<RootAssetBrowserEntry> m_rootEntry;
             bool m_loaded;
             bool m_addingEntry;
             bool m_removingEntry;
+            bool m_isTickBusEnabled = false;
+            AZStd::unordered_map<AssetBrowserEntry*, AZ::Crc32> m_assetEntriesToCreatorBusIds;
+            AZStd::unordered_map<AZStd::string, AZ::Crc32> m_newlyCreatedAssetPathsToCreatorBusIds;
 
-            bool GetEntryIndex(AssetBrowserEntry* entry, QModelIndex& index) const;
+            void WatchForExpectedAssets(AssetBrowserEntry* entry);
+
+            bool m_isResetting = false;
         };
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

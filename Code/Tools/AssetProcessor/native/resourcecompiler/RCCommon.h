@@ -8,54 +8,46 @@
 #ifndef ASSETPROCESSOR_RCCOMMON_H
 #define ASSETPROCESSOR_RCCOMMON_H
 
+#include <AzCore/std/functional.h>
 #include <QString>
+#include <AssetManager/SourceAssetReference.h>
 
 namespace AssetProcessor
 {
-    // RCCommon contains common structs used by the RC Job System
-
-    //! Job Exit codes.
-    // note that this is NOT a complete list of return codes, and RC.EXE itself may return unknown return codes here.
-
-    enum JobExitCodes : int
-    {
-        JobExitCode_Success = 0,
-        JobExitCode_Failed = -10,
-        JobExitCode_InvalidParams = -9,
-        JobExitCode_UnableToCreateTempDir = -8,
-        JobExitCode_CopyFailed = -6,
-        JobExitCode_Unknown = -1,
-        JobExitCode_RCNotFound = -4,
-        JobExitCode_RCCouldNotBeLaunched = -5,
-        JobExitCode_JobCancelled = -7,
-    };
-
-
     //! Identifies a queued job uniquely.  Not a case sensitive compare
     class QueueElementID
     {
     public:
         QueueElementID() = default;
-        
-        ///! note that inputAssetName is a database name, not a relative path.
-        QueueElementID(QString inputAssetName, QString platform, QString jobDescriptor);
+        QueueElementID(SourceAssetReference sourceAssetReference, QString platform, QString jobDescriptor);
 
-        
-        QString GetInputAssetName() const; ///< This is the database name, with output prefix.
+        SourceAssetReference GetSourceAssetReference() const;
         QString GetPlatform() const;
         QString GetJobDescriptor() const;
-        void SetInputAssetName(QString inputAssetName);
+        void SetSourceAssetReference(SourceAssetReference sourceAssetReference);
         void SetPlatform(QString platform);
         void SetJobDescriptor(QString jobDescriptor);
         bool operator==(const QueueElementID& other) const;
         bool operator<(const QueueElementID& other) const;
 
     protected:
-        QString m_inputAssetName;
+        SourceAssetReference m_sourceAssetReference;
         QString m_platform;
         QString m_jobDescriptor;
     };
     uint qHash(const AssetProcessor::QueueElementID& key, uint seed = 0);
 } // namespace AssetProcessor
+
+namespace AZStd {
+    // Implement the hash for QueueElementID, so it can be used as the key of AZStd::unordered_map
+    template <>
+    struct hash<AssetProcessor::QueueElementID>
+    {
+        inline size_t operator()(const AssetProcessor::QueueElementID& key) const
+        {
+            return AssetProcessor::qHash(key);
+        }
+    };
+} // namespace AZStd
 
 #endif //ASSETPROCESSOR_RCQUEUESORTMODEL_H

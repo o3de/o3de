@@ -6,21 +6,11 @@
  *
  */
 
+#include <AzCore/Memory/ChildAllocatorSchema.h>
 #include <AzCore/Memory/SystemAllocator.h>
 
 namespace NvCloth
 {
     //! System allocator to be used for all nvcloth library allocations.
-    class AzClothAllocator
-        : public AZ::SystemAllocator
-    {
-        friend class AZ::AllocatorInstance<AzClothAllocator>;
-
-    public:
-        AZ_TYPE_INFO(AzClothAllocator, "{F2C6C61F-587E-4EBB-A377-A5E57BB6B849}");
-
-        // AZ::SystemAllocator overrides ...
-        const char* GetName() const override { return "NvCloth System Allocator"; }
-        const char* GetDescription() const override { return "NvCloth library memory allocator"; }
-    };
+    AZ_CHILD_ALLOCATOR_WITH_NAME(AzClothAllocator, "AzClothAllocator", "{F2C6C61F-587E-4EBB-A377-A5E57BB6B849}", AZ::SystemAllocator);
 } // namespace NvCloth

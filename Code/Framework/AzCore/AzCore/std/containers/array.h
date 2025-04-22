@@ -242,7 +242,7 @@ namespace AZStd
     template<class T, size_t N>
     bool operator==(const array<T, N>& a, const array<T, N>& b)
     {
-        return equal(a.begin(), a.end(), b.begin());
+        return AZStd::equal(a.begin(), a.end(), b.begin(), b.end());
     }
 
     template<class T, size_t N>
@@ -251,6 +251,32 @@ namespace AZStd
         return !(a == b);
     }
     //#pragma endregion
+
+    // std::to_array
+    namespace Internal
+    {
+        template<class T, size_t N, size_t... Is>
+        constexpr array<remove_cv_t<T>, sizeof...(Is)> to_array(T (&arr)[N], index_sequence<Is...>)
+        {
+            return { {arr[Is] ...} };
+        }
+        template<class T, size_t N, size_t... Is>
+        constexpr array<remove_cv_t<T>, sizeof...(Is)> to_array(T (&&arr)[N], index_sequence<Is...>)
+        {
+            return { {AZStd::move(arr[Is]) ...} };
+        }
+    }
+    template<class T, size_t N>
+    constexpr array<remove_cv_t<T>, N> to_array(T (&arr)[N])
+    {
+        return Internal::to_array(arr, make_index_sequence<N>{});
+    }
+
+    template<class T, size_t N>
+    constexpr array<remove_cv_t<T>, N> to_array(T (&&arr)[N])
+    {
+        return Internal::to_array(AZStd::move(arr), make_index_sequence<N>{});
+    }
 }
 
 #undef AZSTD_CONTAINER_COMPILETIME_ASSERT

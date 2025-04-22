@@ -11,7 +11,6 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
-
 #include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentConstants.h>
 
 namespace AZ
@@ -29,7 +28,6 @@ namespace AZ
 
                 serializeContext->Class<EditorMeshComponent, BaseClass>()
                     ->Version(2, ConvertToEditorRenderComponentAdapter<1>)
-                    ->Field("addMaterialComponentFlag", &EditorMeshComponent::m_addMaterialComponentFlag)
                     ->Field("meshStats", &EditorMeshComponent::m_stats)
                     ;
 
@@ -43,19 +41,19 @@ namespace AZ
                     editContext->Class<EditorMeshComponent>(
                         "Mesh", "The mesh component is the primary method of adding visual geometry to entities")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                            ->Attribute(AZ::Edit::Attributes::Category, "Atom")
+                            ->Attribute(AZ::Edit::Attributes::Category, "Graphics/Mesh")
                             ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Mesh.svg")
                             ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Mesh.svg")
-                            ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
+                            ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                            ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/atom/mesh/")
+                            ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/components/reference/atom/mesh/")
                             ->Attribute(AZ::Edit::Attributes::PrimaryAssetType, AZ::AzTypeInfo<RPI::ModelAsset>::Uuid())
-                        ->DataElement(AZ::Edit::UIHandlers::Button, &EditorMeshComponent::m_addMaterialComponentFlag, "Add Material Component", "Add Material Component")
+                        ->UIElement(AZ::Edit::UIHandlers::Button, "Add Material Component", "Add Material Component")
                             ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
                             ->Attribute(AZ::Edit::Attributes::ButtonText, "Add Material Component")
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorMeshComponent::AddEditorMaterialComponent)
                             ->Attribute(AZ::Edit::Attributes::Visibility, &EditorMeshComponent::GetEditorMaterialComponentVisibility)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &EditorMeshComponent::m_stats, "Mesh Stats", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &EditorMeshComponent::m_stats, "Model Stats", "")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
                         ;
 
@@ -71,33 +69,46 @@ namespace AZ
                         "MeshComponentConfig", "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                            ->DataElement(AZ::Edit::UIHandlers::Default, &MeshComponentConfig::m_modelAsset, "Mesh Asset", "Mesh asset reference")
-                            ->DataElement(AZ::Edit::UIHandlers::Default, &MeshComponentConfig::m_sortKey, "Sort Key", "Transparent meshes are drawn by sort key then depth. Used this to force certain transparent meshes to draw before or after others.")
-                                ->Attribute(AZ::Edit::Attributes::Visibility, &MeshComponentConfig::IsAssetSet)
-                            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &MeshComponentConfig::m_excludeFromReflectionCubeMaps, "Exclude from reflection cubemaps", "Mesh will not be visible in baked reflection probe cubemaps")
+                            ->DataElement(AZ::Edit::UIHandlers::Default, &MeshComponentConfig::m_modelAsset, "Model Asset", "Model asset reference", "Mesh Asset")
+                                ->Attribute(AZ_CRC_CE("EditButton"), "")
+                                ->Attribute(AZ_CRC_CE("EditDescription"), "Open in Scene Settings")
+                                ->Attribute(AZ_CRC_CE("DisableEditButtonWhenNoAssetSelected"), true)
+                            ->DataElement(AZ::Edit::UIHandlers::Default, &MeshComponentConfig::m_sortKey, "Sort Key", "Transparent meshes are first drawn by sort key, then depth. Use this to force certain transparent meshes to draw before or after others.")
+                            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &MeshComponentConfig::m_excludeFromReflectionCubeMaps, "Exclude from reflection cubemaps", "Model will not be visible in baked reflection probe cubemaps")
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &MeshComponentConfig::m_useForwardPassIblSpecular, "Use Forward Pass IBL Specular",
-                                "Renders IBL specular reflections in the forward pass, using only the most influential probe (based on the position of the entity) and the global IBL cubemap.  Can reduce rendering costs, but only recommended for static objects that are affected by at most one reflection probe.")
+                                "Renders image-based lighting (IBL) specular reflections in the forward pass, by using only the most influential probe (based on the position of the entity) and the global IBL cubemap. It can reduce rendering costs, but is only recommended for static objects that are affected by at most one reflection probe.  Note that this will also disable SSR on the mesh.")
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
-                            ->DataElement(AZ::Edit::UIHandlers::ComboBox, &MeshComponentConfig::m_lodType, "Lod Type", "Lod Method.")
+                            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &MeshComponentConfig::m_isRayTracingEnabled, "Use ray tracing",
+                                "Includes this mesh in ray tracing calculations.")
+                                ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+                            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &MeshComponentConfig::m_enableRayIntersection, "Support ray intersection",
+                                "Set to true when the entity has UiCanvasOnMeshComponent")
+                                ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+                            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &MeshComponentConfig::m_isAlwaysDynamic, "Always Moving", "Forces this mesh to be considered to always be moving, even if the transform didn't update. Useful for meshes with vertex shader animation.")
+                            ->DataElement(AZ::Edit::UIHandlers::ComboBox, &MeshComponentConfig::m_lodType, "Lod Type", "Determines how level of detail (LOD) will be selected during rendering.")
+                                ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "LOD Type")
                                 ->EnumAttribute(RPI::Cullable::LodType::Default, "Default")
                                 ->EnumAttribute(RPI::Cullable::LodType::ScreenCoverage, "Screen Coverage")
-                                ->EnumAttribute(RPI::Cullable::LodType::SpecificLod, "Specific Lod")
-                                ->Attribute(AZ::Edit::Attributes::Visibility, &MeshComponentConfig::IsAssetSet)
+                                ->EnumAttribute(RPI::Cullable::LodType::SpecificLod, "Specific LOD")
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::EntireTree)
+                            ->DataElement(AZ::Edit::UIHandlers::Default, &MeshComponentConfig::m_lightingChannelConfig, "Lighting Channels", "")
+                                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
                         ->ClassElement(AZ::Edit::ClassElements::Group, "Lod Configuration")
+                            ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "LOD Configuration")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
                             ->Attribute(AZ::Edit::Attributes::Visibility, &MeshComponentConfig::ShowLodConfig)
-                            ->DataElement(AZ::Edit::UIHandlers::ComboBox, &MeshComponentConfig::m_lodOverride, "Lod Override", "Allows the rendered LOD to be overridden instead of being calculated automatically.")
+                            ->DataElement(AZ::Edit::UIHandlers::ComboBox, &MeshComponentConfig::m_lodOverride, "Lod Override", "Specifies the LOD to render, overriding the automatic LOD calculations")
+                                ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "LOD Override")
                                 ->Attribute(AZ::Edit::Attributes::EnumValues, &MeshComponentConfig::GetLodOverrideValues)
                                 ->Attribute(AZ::Edit::Attributes::Visibility, &MeshComponentConfig::LodTypeIsSpecificLOD)
-                            ->DataElement(AZ::Edit::UIHandlers::Slider, &MeshComponentConfig::m_minimumScreenCoverage, "Minimum Screen Coverage", "Minimum proportion of screen area an entitiy takes up, after that the entitiy is culled.")
+                            ->DataElement(AZ::Edit::UIHandlers::Slider, &MeshComponentConfig::m_minimumScreenCoverage, "Minimum Screen Coverage", "Minimum proportion of the screen that the entity will cover. If the entity is smaller than the minimum coverage, it is culled.")
                                 ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                                 ->Attribute(AZ::Edit::Attributes::Max, 1.f)
                                 ->Attribute(AZ::Edit::Attributes::Suffix, " percent")
                                 ->Attribute(AZ::Edit::Attributes::Visibility, &MeshComponentConfig::LodTypeIsScreenCoverage)
                             ->DataElement(AZ::Edit::UIHandlers::Slider, &MeshComponentConfig::m_qualityDecayRate, "Quality Decay Rate",
-                                "Rate at which mesh quality decays (0 -> always stay highest quality, 1 -> quality falls off to lowest quality immediately).")
+                                "Rate at which the mesh quality decays. 0 - Always stays at highest quality LOD. 1 - Immediately falls off to lowest quality LOD.")
                                 ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                                 ->Attribute(AZ::Edit::Attributes::Max, 1.f)
                                 ->Attribute(AZ::Edit::Attributes::Visibility, &MeshComponentConfig::LodTypeIsScreenCoverage)
@@ -122,6 +133,7 @@ namespace AZ
 
         void EditorMeshComponent::Activate()
         {
+            m_controller.m_configuration.m_editorRayIntersection = true;
             BaseClass::Activate();
             AzToolsFramework::EditorComponentSelectionRequestsBus::Handler::BusConnect(GetEntityId());
             AzFramework::EntityDebugDisplayEventBus::Handler::BusConnect(GetEntityId());
@@ -198,6 +210,7 @@ namespace AZ
 
             debugDisplay.PushMatrix(worldTM);
 
+            debugDisplay.SetColor(AZ::Colors::White);
             debugDisplay.DrawWireBox(localAabb.GetMin(), localAabb.GetMax());
 
             debugDisplay.PopMatrix();
@@ -234,18 +247,23 @@ namespace AZ
                 EditorMeshStatsForLod stats;
                 const auto& meshes = lodAsset->GetMeshes();
                 stats.m_meshCount = static_cast<AZ::u32>(meshes.size());
+                stats.m_subMeshStatsForLod.reserve(stats.m_meshCount);
                 for (const auto& mesh : meshes)
                 {
-                    stats.m_vertCount += mesh.GetVertexCount();
-                    stats.m_triCount += mesh.GetIndexCount() / 3;
+                    const auto vertexCount = mesh.GetVertexCount();
+                    const auto triCount = mesh.GetIndexCount() / 3;
+                    stats.m_subMeshStatsForLod.push_back({});
+                    stats.m_subMeshStatsForLod.back().m_vertCount = vertexCount;
+                    stats.m_subMeshStatsForLod.back().m_triCount = triCount;
+                    stats.m_vertCount += vertexCount;
+                    stats.m_triCount += triCount;
                 }
                 m_stats.m_meshStatsForLod.emplace_back(AZStd::move(stats));
             }
 
             // Refresh the tree when the model loads to update UI based on the model.
-            AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
-                &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay,
-                AzToolsFramework::Refresh_EntireTree);
+            InvalidatePropertyDisplay(AzToolsFramework::Refresh_EntireTree);
+
         }
 
         AZ::u32 EditorMeshComponent::OnConfigurationChanged()
@@ -256,7 +274,7 @@ namespace AZ
             // This is a bug with AssetManager [LYN-2249]
             auto temp = m_controller.m_configuration.m_modelAsset;
 
-            m_stats.m_meshStatsForLod.swap({});
+            m_stats.m_meshStatsForLod = {};
             SetDirty();
 
             return BaseClass::OnConfigurationChanged();

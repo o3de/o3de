@@ -13,7 +13,6 @@
 #include <AzCore/std/optional.h>
 #include <MCore/Source/MemoryFile.h>
 #include <MCore/Source/Endian.h>
-#include <MCore/Source/Color.h>
 #include <EMotionFX/Source/MorphTarget.h>
 #include <EMotionFX/Source/Actor.h>
 #include <EMotionFX/Source/Importer/SharedFileFormatStructs.h>
@@ -29,7 +28,6 @@ namespace EMotionFX
     class Actor;
     class Node;
     class NodeGroup;
-    class Material;
     class MorphTarget;
     class AnimGraph;
     class MotionEventTable;
@@ -53,7 +51,6 @@ namespace ExporterLib
     void CopyQuaternion(EMotionFX::FileFormat::FileQuaternion& to, const AZ::Quaternion& from);
     void Copy16BitQuaternion(EMotionFX::FileFormat::File16BitQuaternion& to, const AZ::Quaternion& from);
     void Copy16BitQuaternion(EMotionFX::FileFormat::File16BitQuaternion& to, const MCore::Compressed16BitQuaternion& from);
-    void CopyColor(const MCore::RGBAColor& from, EMotionFX::FileFormat::FileColor& to);
 
     // endian conversion
     void ConvertUnsignedInt(uint32* value, MCore::Endian::EEndianType targetEndianType);
@@ -70,7 +67,6 @@ namespace ExporterLib
     void ConvertFile16BitQuaternion(EMotionFX::FileFormat::File16BitQuaternion* value, MCore::Endian::EEndianType targetEndianType);
     void ConvertFileMotionEvent(EMotionFX::FileFormat::FileMotionEvent* value, MCore::Endian::EEndianType targetEndianType);
     void ConvertFileMotionEventTable(EMotionFX::FileFormat::FileMotionEventTrack* value, MCore::Endian::EEndianType targetEndianType);
-    void ConvertRGBAColor(MCore::RGBAColor* value, MCore::Endian::EEndianType targetEndianType);
     void ConvertVector3(AZ::PackedVector3f* value, MCore::Endian::EEndianType targetEndianType);
 
     uint32 GetFileHighVersion();

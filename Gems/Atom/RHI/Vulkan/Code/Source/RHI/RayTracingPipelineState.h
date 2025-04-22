@@ -8,7 +8,7 @@
 #pragma once
 
 #include <Atom_RHI_Vulkan_Platform.h>
-#include <Atom/RHI/RayTracingPipelineState.h>
+#include <Atom/RHI/DeviceRayTracingPipelineState.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
@@ -17,10 +17,10 @@ namespace AZ
     namespace Vulkan
     {
         class RayTracingPipelineState final
-            : public RHI::RayTracingPipelineState
+            : public RHI::DeviceRayTracingPipelineState
         {
         public:
-            AZ_CLASS_ALLOCATOR(RayTracingPipelineState, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(RayTracingPipelineState, AZ::SystemAllocator);
 
             static RHI::Ptr<RayTracingPipelineState> Create();
 
@@ -34,8 +34,8 @@ namespace AZ
             RayTracingPipelineState() = default;
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::PipelineState
-            RHI::ResultCode InitInternal(RHI::Device& deviceBase, const RHI::RayTracingPipelineStateDescriptor* descriptor) override;
+            // RHI::DevicePipelineState
+            RHI::ResultCode InitInternal(RHI::Device& deviceBase, const RHI::DeviceRayTracingPipelineStateDescriptor* descriptor) override;
             void ShutdownInternal() override;
             //////////////////////////////////////////////////////////////////////////
 

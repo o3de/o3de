@@ -17,6 +17,7 @@ namespace GraphCanvas
         : public EditorContextMenu
     {
     public:
+        AZ_CLASS_ALLOCATOR(BookmarkContextMenu, AZ::SystemAllocator)
         BookmarkContextMenu(EditorId editorId, QWidget* parent = nullptr);
         ~BookmarkContextMenu() override = default;
 

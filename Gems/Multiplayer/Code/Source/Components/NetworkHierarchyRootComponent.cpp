@@ -298,7 +298,18 @@ namespace Multiplayer
                         return;
                     }
 
-                    const AZStd::vector<AZ::EntityId> allChildren = candidate->GetTransform()->GetChildren();
+                    AZStd::vector<AZ::EntityId> allChildren;
+                    if (candidate->GetTransform())
+                    {
+                        allChildren = candidate->GetTransform()->GetChildren();
+                    }
+                    else
+                    {
+                        // Child entities may not be in the Active state so skip for now.
+                        // They will notify when ready causing another rebuild.
+                        continue;
+                    }
+
                     for (const AZ::EntityId& newChildId : allChildren)
                     {
                         candidates.push_back(componentApplicationRequests->FindEntity(newChildId));
@@ -330,12 +341,8 @@ namespace Multiplayer
             {
                 m_rootEntity = newHierarchyRoot;
 
-                if (HasController() && GetNetBindComponent()->GetNetEntityRole() == NetEntityRole::Authority)
-                {
-                    NetworkHierarchyRootComponentController* controller = static_cast<NetworkHierarchyRootComponentController*>(GetController());
-                    const NetEntityId netRootId = GetNetworkEntityManager()->GetNetEntityIdById(m_rootEntity->GetId());
-                    controller->SetHierarchyRoot(netRootId);
-                }
+                const NetEntityId netRootId = GetNetworkEntityManager()->GetNetEntityIdById(m_rootEntity->GetId());
+                TrySetControllerRoot(netRootId);
 
                 GetNetBindComponent()->SetOwningConnectionId(m_rootEntity->FindComponent<NetBindComponent>()->GetOwningConnectionId());
                 m_networkHierarchyChangedEvent.Signal(m_rootEntity->GetId());
@@ -345,11 +352,7 @@ namespace Multiplayer
         {
             m_rootEntity = nullptr;
 
-            if (HasController() && GetNetBindComponent()->GetNetEntityRole() == NetEntityRole::Authority)
-            {
-                NetworkHierarchyRootComponentController* controller = static_cast<NetworkHierarchyRootComponentController*>(GetController());
-                controller->SetHierarchyRoot(InvalidNetEntityId);
-            }
+            TrySetControllerRoot(InvalidNetEntityId);
 
             GetNetBindComponent()->SetOwningConnectionId(m_previousOwningConnectionId);
             m_networkHierarchyLeaveEvent.Signal();
@@ -357,6 +360,17 @@ namespace Multiplayer
             // We lost the parent hierarchical entity, so as a root we need to re-build our own hierarchy.
             RebuildHierarchy();
         }
+    }
+
+    void NetworkHierarchyRootComponent::TrySetControllerRoot([[maybe_unused]] const NetEntityId rootNetId)
+    {
+#if AZ_TRAIT_SERVER
+        if (HasController() && GetNetBindComponent()->GetNetEntityRole() == NetEntityRole::Authority)
+        {
+            NetworkHierarchyRootComponentController* controller = static_cast<NetworkHierarchyRootComponentController*>(GetController());
+            controller->SetHierarchyRoot(rootNetId);
+        }
+#endif
     }
 
     void NetworkHierarchyRootComponent::SetOwningConnectionId(AzNetworking::ConnectionId connectionId)
@@ -444,7 +458,7 @@ namespace Multiplayer
             AZ_Assert(networkEntityManager, "NetworkEntityManager must be created.");
 
             // Build a set of Net IDs for the children
-            AZStd::unordered_set<NetEntityId> currentChildren;
+            NetEntityIdSet currentChildren;
             NetworkHierarchyRootComponent& component = GetParent();
             for (AZ::Entity* child : component.m_hierarchicalEntities)
             {

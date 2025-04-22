@@ -1,0 +1,43 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "id": "{9041104C-C659-46FB-A363-84F4E733C766}",
+        "category": "Math Functions",
+        "title": "Hyperbolic Sine",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Returns the hyperbolic sine of the input value (per component)",
+        "slotDataTypeGroups": [
+            "inValue|outValue"
+        ],
+        "inputSlots": [
+            {
+                "name": "inValue",
+                "displayName": "Value",
+                "description": "Value",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
+                "defaultDataType": "float4",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            }
+        ],
+        "outputSlots": [
+            {
+                "name": "outValue",
+                "displayName": "Value",
+                "description": "Value",
+                "supportedDataTypeRegex": "float4",
+                "defaultDataType": "float4",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = sinh(inValue);"
+                    ]
+                }
+            }
+        ]
+    }
+}

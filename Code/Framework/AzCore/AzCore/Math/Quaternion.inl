@@ -66,34 +66,47 @@ namespace AZ
         return Quaternion(Simd::Vec4::FromVec3(v.GetSimdValue()));
     }
 
+    AZ_MATH_INLINE Quaternion Quaternion::CreateFromEulerDegreesXYZ(const Vector3& eulerDegrees)
+    {
+        return CreateFromEulerRadiansXYZ(Vector3DegToRad(eulerDegrees));
+    }
+
+    AZ_MATH_INLINE Quaternion Quaternion::CreateFromEulerDegreesYXZ(const Vector3& eulerDegrees)
+    {
+        return CreateFromEulerRadiansYXZ(Vector3DegToRad(eulerDegrees));
+    }
+
+    AZ_MATH_INLINE Quaternion Quaternion::CreateFromEulerDegreesZYX(const Vector3& eulerDegrees)
+    {
+        return CreateFromEulerRadiansZYX(Vector3DegToRad(eulerDegrees));
+    }
 
     AZ_MATH_INLINE Quaternion Quaternion::CreateFromVector3AndValue(const Vector3& v, float w)
     {
         return Quaternion(v, w);
     }
 
-
-    AZ_MATH_INLINE Quaternion Quaternion::CreateRotationX(float angle)
+    AZ_MATH_INLINE Quaternion Quaternion::CreateRotationX(float angleInRadians)
     {
-        const float halfAngle = 0.5f * angle;
+        const float halfAngle = 0.5f * angleInRadians;
         float sin, cos;
         SinCos(halfAngle, sin, cos);
         return Quaternion(sin, 0.0f, 0.0f, cos);
     }
 
 
-    AZ_MATH_INLINE Quaternion Quaternion::CreateRotationY(float angle)
+    AZ_MATH_INLINE Quaternion Quaternion::CreateRotationY(float angleInRadians)
     {
-        const float halfAngle = 0.5f * angle;
+        const float halfAngle = 0.5f * angleInRadians;
         float sin, cos;
         SinCos(halfAngle, sin, cos);
         return Quaternion(0.0f, sin, 0.0f, cos);
     }
 
 
-    AZ_MATH_INLINE Quaternion Quaternion::CreateRotationZ(float angle)
+    AZ_MATH_INLINE Quaternion Quaternion::CreateRotationZ(float angleInRadians)
     {
-        const float halfAngle = 0.5f * angle;
+        const float halfAngle = 0.5f * angleInRadians;
         float sin, cos;
         SinCos(halfAngle, sin, cos);
         return Quaternion(0.0f, 0.0f, sin, cos);
@@ -266,7 +279,7 @@ namespace AZ
 #if AZ_TRAIT_USE_PLATFORM_SIMD_SCALAR
         return m_x * q.m_x + m_y * q.m_y + m_z * q.m_z + m_w * q.m_w;
 #else
-        return Simd::Vec1::SelectFirst(Simd::Vec4::Dot(m_value, q.m_value));
+        return Simd::Vec1::SelectIndex0(Simd::Vec4::Dot(m_value, q.m_value));
 #endif
     }
 
@@ -280,28 +293,28 @@ namespace AZ
     AZ_MATH_INLINE float Quaternion::GetLength() const
     {
         const Simd::Vec1::FloatType lengthSq = Simd::Vec4::Dot(m_value, m_value);
-        return Simd::Vec1::SelectFirst(Simd::Vec1::Sqrt(lengthSq));
+        return Simd::Vec1::SelectIndex0(Simd::Vec1::Sqrt(lengthSq));
     }
 
 
     AZ_MATH_INLINE float Quaternion::GetLengthEstimate() const
     {
         const Simd::Vec1::FloatType lengthSq = Simd::Vec4::Dot(m_value, m_value);
-        return Simd::Vec1::SelectFirst(Simd::Vec1::SqrtEstimate(lengthSq));
+        return Simd::Vec1::SelectIndex0(Simd::Vec1::SqrtEstimate(lengthSq));
     }
 
 
     AZ_MATH_INLINE float Quaternion::GetLengthReciprocal() const
     {
         const Simd::Vec1::FloatType lengthSq = Simd::Vec4::Dot(m_value, m_value);
-        return Simd::Vec1::SelectFirst(Simd::Vec1::SqrtInv(lengthSq));
+        return Simd::Vec1::SelectIndex0(Simd::Vec1::SqrtInv(lengthSq));
     }
 
 
     AZ_MATH_INLINE float Quaternion::GetLengthReciprocalEstimate() const
     {
         const Simd::Vec1::FloatType lengthSq = Simd::Vec4::Dot(m_value, m_value);
-        return Simd::Vec1::SelectFirst(Simd::Vec1::SqrtInvEstimate(lengthSq));
+        return Simd::Vec1::SelectIndex0(Simd::Vec1::SqrtInvEstimate(lengthSq));
     }
 
 
@@ -331,17 +344,36 @@ namespace AZ
 
     AZ_MATH_INLINE float Quaternion::NormalizeWithLength()
     {
-        const Simd::Vec1::FloatType length = Simd::Vec1::Sqrt(Simd::Vec4::Dot(m_value, m_value));
-        m_value = Simd::Vec4::Div(m_value, Simd::Vec4::FromVec1(length));
-        return Simd::Vec1::SelectFirst(length);
+        const float length = Simd::Vec1::SelectIndex0(
+            Simd::Vec1::Sqrt(Simd::Vec4::Dot(m_value, m_value)));
+        m_value = Simd::Vec4::Div(m_value, Simd::Vec4::Splat(length));
+        return length;
     }
 
 
     AZ_MATH_INLINE float Quaternion::NormalizeWithLengthEstimate()
     {
-        const Simd::Vec1::FloatType length = Simd::Vec1::SqrtEstimate(Simd::Vec4::Dot(m_value, m_value));
-        m_value = Simd::Vec4::Div(m_value, Simd::Vec4::FromVec1(length));
-        return Simd::Vec1::SelectFirst(length);
+        const float length = Simd::Vec1::SelectIndex0(
+            Simd::Vec1::SqrtEstimate(Simd::Vec4::Dot(m_value, m_value)));
+        m_value = Simd::Vec4::Div(m_value, Simd::Vec4::Splat(length));
+        return length;
+    }
+
+
+    AZ_MATH_INLINE Quaternion Quaternion::GetShortestEquivalent() const
+    {
+        if (GetW() < 0.0f)
+        {
+            return -(*this);
+        }
+
+        return *this;
+    }
+
+
+    AZ_MATH_INLINE void Quaternion::ShortestEquivalent()
+    {
+        *this = GetShortestEquivalent();
     }
 
 
@@ -399,7 +431,8 @@ namespace AZ
 #if AZ_TRAIT_USE_PLATFORM_SIMD_SCALAR
         return (fabsf(m_x) <= tolerance) && (fabsf(m_y) <= tolerance) && (fabsf(m_z) <= tolerance) && (fabsf(m_w) <= tolerance);
 #else
-        return IsClose(CreateZero(), tolerance);
+        Simd::Vec4::FloatType absDiff = Simd::Vec4::Abs(m_value);
+        return Simd::Vec4::CmpAllLt(absDiff, Simd::Vec4::Splat(tolerance));
 #endif
     }
 
@@ -517,19 +550,21 @@ namespace AZ
     }
 
 
-    AZ_MATH_INLINE Vector3 Quaternion::GetEulerRadians() const
+    AZ_MATH_INLINE Vector3 Quaternion::GetEulerDegreesXYZ() const
     {
-        // roll (x-axis rotation)
-        const float roll = Atan2(2.0f * (m_w * m_x - m_z * m_y), 1.0f - 2.0f * (m_x * m_x + m_y * m_y));
+        return Vector3RadToDeg(GetEulerRadiansXYZ());
+    }
 
-        // pitch (y-axis rotation)
-        const float sinp = 2.0f * (m_w * m_y + m_z * m_x);
-        const float pitch = (sinp >= 1.0f) ? Constants::HalfPi : ((sinp <= -1.0f) ? -Constants::HalfPi : asinf(sinp));
 
-        // yaw (z-axis rotation)
-        const float yaw = Atan2(2.0f * (m_w * m_z - m_x * m_y), 1.0f - 2.0f * (m_y * m_y + m_z * m_z));
+    AZ_MATH_INLINE Vector3 Quaternion::GetEulerDegreesYXZ() const
+    {
+        return Vector3RadToDeg(GetEulerRadiansYXZ());
+    }
 
-        return Vector3(roll, pitch, yaw);
+
+    AZ_MATH_INLINE Vector3 Quaternion::GetEulerDegreesZYX() const
+    {
+        return Vector3RadToDeg(GetEulerRadiansZYX());
     }
 
 

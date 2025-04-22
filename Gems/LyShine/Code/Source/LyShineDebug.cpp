@@ -7,7 +7,7 @@
  */
 #include "LyShineDebug.h"
 #include "IConsole.h"
-#include <LyShine/Draw2d.h>
+#include <LyShine/IDraw2d.h>
 
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
 
@@ -375,9 +375,9 @@ static void DebugDrawColoredBox(AZ::Vector2 pos, AZ::Vector2 size, AZ::Color col
     IDraw2d::HAlign horizontalAlignment = IDraw2d::HAlign::Left,
     IDraw2d::VAlign verticalAlignment = IDraw2d::VAlign::Top)
 {
-    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
+    IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
-    CDraw2d::ImageOptions imageOptions = draw2d->GetDefaultImageOptions();
+    IDraw2d::ImageOptions imageOptions = draw2d->GetDefaultImageOptions();
     imageOptions.color = color.GetAsVector3();
     auto whiteTexture = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::White);
     draw2d->DrawImageAligned(whiteTexture, pos, size, horizontalAlignment, verticalAlignment,
@@ -390,9 +390,9 @@ static void DebugDrawColoredBox(AZ::Vector2 pos, AZ::Vector2 size, AZ::Color col
 static void DebugDrawStringWithSizeBox(AZStd::string_view font, unsigned int effectIndex, const char* sizeString,
     const char* testString, AZ::Vector2 pos, float spacing, float size)
 {
-    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
+    IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
-    CDraw2d::TextOptions textOptions = draw2d->GetDefaultTextOptions();
+    IDraw2d::TextOptions textOptions = draw2d->GetDefaultTextOptions();
     if (!font.empty())
     {
         textOptions.fontName = font;
@@ -424,7 +424,7 @@ static void DebugDrawStringWithSizeBox(AZStd::string_view font, unsigned int eff
 #if !defined(_RELEASE)
 static void DebugDraw2dFontSizes(AZStd::string_view font, unsigned int effectIndex)
 {
-    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
+    IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
     float xOffset = 20.0f;
     float yOffset = 20.0f;
@@ -546,7 +546,7 @@ static void DebugDrawAlignedTextWithOriginBox(AZ::Vector2 pos,
 #if !defined(_RELEASE)
 static void DebugDraw2dFontAlignment()
 {
-    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
+    IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
     float w = draw2d->GetViewportWidth();
     float yPos = 20;
 
@@ -613,12 +613,12 @@ static void DebugDraw2dFontAlignment()
 #if !defined(_RELEASE)
 static AZ::Vector2 DebugDrawFontColorTestBox(AZ::Vector2 pos, const char* string, AZ::Vector3 color, float opacity)
 {
-    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
+    IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
     float pointSize = 32.0f;
     const float spacing = 6.0f;
 
-    CDraw2d::TextOptions textOptions = draw2d->GetDefaultTextOptions();
+    IDraw2d::TextOptions textOptions = draw2d->GetDefaultTextOptions();
     textOptions.effectIndex = 1;    // no drop shadow baked in
     textOptions.color = color;
 
@@ -648,7 +648,7 @@ static AZ::Vector2 DebugDrawFontColorTestBox(AZ::Vector2 pos, const char* string
 #if !defined(_RELEASE)
 static void DebugDraw2dFontColorAndOpacity()
 {
-    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
+    IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
     AZ::Vector2 size;
     AZ::Vector2 pos(20.0f, 20.0f);
@@ -686,7 +686,7 @@ static void DebugDraw2dFontColorAndOpacity()
 #if !defined(_RELEASE)
 static void DebugDraw2dImageRotations()
 {
-    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
+    IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
     AZ::Data::Instance<AZ::RPI::Image> texture = GetMonoTestTexture();
 
@@ -738,11 +738,11 @@ static void DebugDraw2dImageRotations()
 #if !defined(_RELEASE)
 static void DebugDraw2dImageColor()
 {
-    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
+    IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
     AZ::Data::Instance<AZ::RPI::Image> texture = GetMonoAlphaTestTexture();
 
-    CDraw2d::ImageOptions imageOptions = draw2d->GetDefaultImageOptions();
+    IDraw2d::ImageOptions imageOptions = draw2d->GetDefaultImageOptions();
 
     draw2d->DrawText(
         "Testing image colors, image is black and white, top row is opacity=1, bottom row is opacity = 0.5",
@@ -774,13 +774,13 @@ static void DebugDraw2dImageColor()
 #if !defined(_RELEASE)
 static void DebugDraw2dImageBlendMode()
 {
-    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
+    IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
     auto whiteTexture = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::White);
 
     AZ::Data::Instance<AZ::RPI::Image> texture = GetColorAlphaTestTexture();
 
-    CDraw2d::ImageOptions imageOptions = draw2d->GetDefaultImageOptions();
+    IDraw2d::ImageOptions imageOptions = draw2d->GetDefaultImageOptions();
 
     draw2d->DrawText("Testing blend modes, src blend changes across x-axis, dst blend changes across y axis",
         AZ::Vector2(20, 20), 16);
@@ -801,7 +801,7 @@ static void DebugDraw2dImageBlendMode()
             AZ::Vector2 pos(xStart + xSpacing * srcIndex, yStart + ySpacing * dstIndex);
 
             // first draw a background with varying color and alpha
-            CDraw2d::VertexPosColUV verts[4] =
+            IDraw2d::VertexPosColUV verts[4] =
             {
                 { // top left
                     AZ::Vector2(pos.GetX(), pos.GetY()),
@@ -828,7 +828,7 @@ static void DebugDraw2dImageBlendMode()
 
             // Draw the image with this color
 
-            CDraw2d::RenderState renderState;
+            IDraw2d::RenderState renderState;
             renderState.m_blendState.m_blendSource = g_srcBlendModes[srcIndex];
             renderState.m_blendState.m_blendDest = g_dstBlendModes[dstIndex];
             draw2d->DrawImage(texture, pos, size, 1.0f, 0.0f, 0, 0, &imageOptions);
@@ -841,11 +841,9 @@ static void DebugDraw2dImageBlendMode()
 #if !defined(_RELEASE)
 static void DebugDraw2dImageUVs()
 {
-    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
+    IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
     AZ::Data::Instance<AZ::RPI::Image> texture = GetColorTestTexture();
-
-    CDraw2d::ImageOptions imageOptions = draw2d->GetDefaultImageOptions();
 
     draw2d->DrawText(
         "Testing DrawImage with minMaxTexCoords. Full image, top left quadrant, middle section, full flipped",
@@ -890,11 +888,11 @@ static void DebugDraw2dImageUVs()
 #if !defined(_RELEASE)
 static void DebugDraw2dImagePixelRounding()
 {
-    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
+    IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
     AZ::Data::Instance<AZ::RPI::Image> texture = GetColorTestTexture();
 
-    CDraw2d::ImageOptions imageOptions = draw2d->GetDefaultImageOptions();
+    IDraw2d::ImageOptions imageOptions = draw2d->GetDefaultImageOptions();
 
     draw2d->DrawText("Testing DrawImage pixel rounding options", AZ::Vector2(20, 20), 16);
 
@@ -931,9 +929,7 @@ static void DebugDraw2dImagePixelRounding()
 #if !defined(_RELEASE)
 static void DebugDraw2dLineBasic()
 {
-    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
-
-    CDraw2d::ImageOptions imageOptions = draw2d->GetDefaultImageOptions();
+    IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
     draw2d->DrawText("Testing DrawLine", AZ::Vector2(20, 20), 16);
 
@@ -971,11 +967,11 @@ static AZ::Entity* CreateButton(const char* name, bool atRoot, AZ::EntityId pare
     AZ::Entity* buttonElem = nullptr;
     if (atRoot)
     {
-        EBUS_EVENT_ID_RESULT(buttonElem, parent, UiCanvasBus, CreateChildElement, name);
+        UiCanvasBus::EventResult(buttonElem, parent, &UiCanvasBus::Events::CreateChildElement, name);
     }
     else
     {
-        EBUS_EVENT_ID_RESULT(buttonElem, parent, UiElementBus, CreateChildElement, name);
+        UiElementBus::EventResult(buttonElem, parent, &UiElementBus::Events::CreateChildElement, name);
     }
 
     {
@@ -987,26 +983,38 @@ static AZ::Entity* CreateButton(const char* name, bool atRoot, AZ::EntityId pare
 
         AZ_Assert(UiTransform2dBus::FindFirstHandler(buttonId), "Transform2d component missing");
 
-        EBUS_EVENT_ID(buttonId, UiTransform2dBus, SetAnchors, anchors, false, false);
-        EBUS_EVENT_ID(buttonId, UiTransform2dBus, SetOffsets, offsets);
-        EBUS_EVENT_ID(buttonId, UiImageBus, SetColor, baseColor);
+        UiTransform2dBus::Event(buttonId, &UiTransform2dBus::Events::SetAnchors, anchors, false, false);
+        UiTransform2dBus::Event(buttonId, &UiTransform2dBus::Events::SetOffsets, offsets);
+        UiImageBus::Event(buttonId, &UiImageBus::Events::SetColor, baseColor);
 
-        EBUS_EVENT_ID(buttonId, UiInteractableStatesBus, SetStateColor, UiInteractableStatesInterface::StateHover, buttonId, selectedColor);
-        EBUS_EVENT_ID(buttonId, UiInteractableStatesBus, SetStateAlpha, UiInteractableStatesInterface::StateHover, buttonId,  selectedColor.GetA());
-        EBUS_EVENT_ID(buttonId, UiInteractableStatesBus, SetStateColor, UiInteractableStatesInterface::StatePressed, buttonId, pressedColor);
-        EBUS_EVENT_ID(buttonId, UiInteractableStatesBus, SetStateAlpha, UiInteractableStatesInterface::StatePressed, buttonId, pressedColor.GetA());
+        UiInteractableStatesBus::Event(
+            buttonId, &UiInteractableStatesBus::Events::SetStateColor, UiInteractableStatesInterface::StateHover, buttonId, selectedColor);
+        UiInteractableStatesBus::Event(
+            buttonId,
+            &UiInteractableStatesBus::Events::SetStateAlpha,
+            UiInteractableStatesInterface::StateHover,
+            buttonId,
+            selectedColor.GetA());
+        UiInteractableStatesBus::Event(
+            buttonId, &UiInteractableStatesBus::Events::SetStateColor, UiInteractableStatesInterface::StatePressed, buttonId, pressedColor);
+        UiInteractableStatesBus::Event(
+            buttonId,
+            &UiInteractableStatesBus::Events::SetStateAlpha,
+            UiInteractableStatesInterface::StatePressed,
+            buttonId,
+            pressedColor.GetA());
 
         AZStd::string pathname = "Textures/Basic/Button_Sliced_Normal.sprite";
-        ISprite* sprite = gEnv->pLyShine->LoadSprite(pathname);
+        ISprite* sprite = AZ::Interface<ILyShine>::Get()->LoadSprite(pathname);
 
-        EBUS_EVENT_ID(buttonId, UiImageBus, SetSprite, sprite);
-        EBUS_EVENT_ID(buttonId, UiImageBus, SetImageType, UiImageInterface::ImageType::Sliced);
+        UiImageBus::Event(buttonId, &UiImageBus::Events::SetSprite, sprite);
+        UiImageBus::Event(buttonId, &UiImageBus::Events::SetImageType, UiImageInterface::ImageType::Sliced);
     }
 
     {
         // create child text element for the button
         AZ::Entity* textElem = nullptr;
-        EBUS_EVENT_ID_RESULT(textElem, buttonElem->GetId(), UiElementBus, CreateChildElement, "ButtonText");
+        UiElementBus::EventResult(textElem, buttonElem->GetId(), &UiElementBus::Events::CreateChildElement, "ButtonText");
         AZ::EntityId textId = textElem->GetId();
 
         CreateComponent(textElem, LyShine::UiTransform2dComponentUuid);
@@ -1014,13 +1022,14 @@ static AZ::Entity* CreateButton(const char* name, bool atRoot, AZ::EntityId pare
 
         AZ_Assert(UiTransform2dBus::FindFirstHandler(textId), "Transform component missing");
 
-        EBUS_EVENT_ID(textId, UiTransform2dBus, SetAnchors, UiTransform2dInterface::Anchors(0.5, 0.5, 0.5, 0.5), false, false);
-        EBUS_EVENT_ID(textId, UiTransform2dBus, SetOffsets, UiTransform2dInterface::Offsets(0, 0, 0, 0));
+        UiTransform2dBus::Event(
+            textId, &UiTransform2dBus::Events::SetAnchors, UiTransform2dInterface::Anchors(0.5, 0.5, 0.5, 0.5), false, false);
+        UiTransform2dBus::Event(textId, &UiTransform2dBus::Events::SetOffsets, UiTransform2dInterface::Offsets(0, 0, 0, 0));
 
-        EBUS_EVENT_ID(textId, UiTextBus, SetText, text);
-        EBUS_EVENT_ID(textId, UiTextBus, SetTextAlignment, IDraw2d::HAlign::Center, IDraw2d::VAlign::Center);
-        EBUS_EVENT_ID(textId, UiTextBus, SetColor, textColor);
-        EBUS_EVENT_ID(textId, UiTextBus, SetFontSize, 24.0f);
+        UiTextBus::Event(textId, &UiTextBus::Events::SetText, text);
+        UiTextBus::Event(textId, &UiTextBus::Events::SetTextAlignment, IDraw2d::HAlign::Center, IDraw2d::VAlign::Center);
+        UiTextBus::Event(textId, &UiTextBus::Events::SetColor, textColor);
+        UiTextBus::Event(textId, &UiTextBus::Events::SetFontSize, 24.0f);
     }
 
     return buttonElem;
@@ -1035,11 +1044,11 @@ static AZ::Entity* CreateText(const char* name, bool atRoot, AZ::EntityId parent
     AZ::Entity* textElem = nullptr;
     if (atRoot)
     {
-        EBUS_EVENT_ID_RESULT(textElem, parent, UiCanvasBus, CreateChildElement, name);
+        UiCanvasBus::EventResult(textElem, parent, &UiCanvasBus::Events::CreateChildElement, name);
     }
     else
     {
-        EBUS_EVENT_ID_RESULT(textElem, parent, UiElementBus, CreateChildElement, name);
+        UiElementBus::EventResult(textElem, parent, &UiElementBus::Events::CreateChildElement, name);
     }
     AZ_Assert(textElem, "Failed to create child element for text");
     AZ::EntityId textId = textElem->GetId();
@@ -1049,12 +1058,12 @@ static AZ::Entity* CreateText(const char* name, bool atRoot, AZ::EntityId parent
 
     AZ_Assert(UiTransform2dBus::FindFirstHandler(textId), "Transform component missing");
 
-    EBUS_EVENT_ID(textId, UiTransform2dBus, SetAnchors, anchors, false, false);
-    EBUS_EVENT_ID(textId, UiTransform2dBus, SetOffsets, offsets);
+    UiTransform2dBus::Event(textId, &UiTransform2dBus::Events::SetAnchors, anchors, false, false);
+    UiTransform2dBus::Event(textId, &UiTransform2dBus::Events::SetOffsets, offsets);
 
-    EBUS_EVENT_ID(textId, UiTextBus, SetText, text);
-    EBUS_EVENT_ID(textId, UiTextBus, SetTextAlignment, hAlign, vAlign);
-    EBUS_EVENT_ID(textId, UiTextBus, SetColor, textColor);
+    UiTextBus::Event(textId, &UiTextBus::Events::SetText, text);
+    UiTextBus::Event(textId, &UiTextBus::Events::SetTextAlignment, hAlign, vAlign);
+    UiTextBus::Event(textId, &UiTextBus::Events::SetColor, textColor);
 
     return textElem;
 }
@@ -1069,11 +1078,11 @@ static AZ::Entity* CreateTextInput(const char* name, bool atRoot, AZ::EntityId p
     AZ::Entity* textInputElem = nullptr;
     if (atRoot)
     {
-        EBUS_EVENT_ID_RESULT(textInputElem, parent, UiCanvasBus, CreateChildElement, name);
+        UiCanvasBus::EventResult(textInputElem, parent, &UiCanvasBus::Events::CreateChildElement, name);
     }
     else
     {
-        EBUS_EVENT_ID_RESULT(textInputElem, parent, UiElementBus, CreateChildElement, name);
+        UiElementBus::EventResult(textInputElem, parent, &UiElementBus::Events::CreateChildElement, name);
     }
 
     {
@@ -1085,21 +1094,41 @@ static AZ::Entity* CreateTextInput(const char* name, bool atRoot, AZ::EntityId p
 
         AZ_Assert(UiTransform2dBus::FindFirstHandler(textInputId), "Transform2d component missing");
 
-        EBUS_EVENT_ID(textInputId, UiTransform2dBus, SetAnchors, anchors, false, false);
-        EBUS_EVENT_ID(textInputId, UiTransform2dBus, SetOffsets, offsets);
-        EBUS_EVENT_ID(textInputId, UiImageBus, SetColor, baseColor);
+        UiTransform2dBus::Event(textInputId, &UiTransform2dBus::Events::SetAnchors, anchors, false, false);
+        UiTransform2dBus::Event(textInputId, &UiTransform2dBus::Events::SetOffsets, offsets);
+        UiImageBus::Event(textInputId, &UiImageBus::Events::SetColor, baseColor);
 
-        EBUS_EVENT_ID(textInputId, UiInteractableStatesBus, SetStateColor, UiInteractableStatesInterface::StateHover, textInputId, selectedColor);
-        EBUS_EVENT_ID(textInputId, UiInteractableStatesBus, SetStateAlpha, UiInteractableStatesInterface::StateHover, textInputId, selectedColor.GetA());
+        UiInteractableStatesBus::Event(
+            textInputId,
+            &UiInteractableStatesBus::Events::SetStateColor,
+            UiInteractableStatesInterface::StateHover,
+            textInputId,
+            selectedColor);
+        UiInteractableStatesBus::Event(
+            textInputId,
+            &UiInteractableStatesBus::Events::SetStateAlpha,
+            UiInteractableStatesInterface::StateHover,
+            textInputId,
+            selectedColor.GetA());
 
-        EBUS_EVENT_ID(textInputId, UiInteractableStatesBus, SetStateColor, UiInteractableStatesInterface::StatePressed, textInputId, pressedColor);
-        EBUS_EVENT_ID(textInputId, UiInteractableStatesBus, SetStateAlpha, UiInteractableStatesInterface::StatePressed, textInputId, pressedColor.GetA());
+        UiInteractableStatesBus::Event(
+            textInputId,
+            &UiInteractableStatesBus::Events::SetStateColor,
+            UiInteractableStatesInterface::StatePressed,
+            textInputId,
+            pressedColor);
+        UiInteractableStatesBus::Event(
+            textInputId,
+            &UiInteractableStatesBus::Events::SetStateAlpha,
+            UiInteractableStatesInterface::StatePressed,
+            textInputId,
+            pressedColor.GetA());
 
         AZStd::string pathname = "Textures/Basic/Button_Sliced_Normal.sprite";
-        ISprite* sprite = gEnv->pLyShine->LoadSprite(pathname);
+        ISprite* sprite = AZ::Interface<ILyShine>::Get()->LoadSprite(pathname);
 
-        EBUS_EVENT_ID(textInputId, UiImageBus, SetSprite, sprite);
-        EBUS_EVENT_ID(textInputId, UiImageBus, SetImageType, UiImageInterface::ImageType::Sliced);
+        UiImageBus::Event(textInputId, &UiImageBus::Events::SetSprite, sprite);
+        UiImageBus::Event(textInputId, &UiImageBus::Events::SetImageType, UiImageInterface::ImageType::Sliced);
     }
 
     // create child text element
@@ -1109,10 +1138,10 @@ static AZ::Entity* CreateTextInput(const char* name, bool atRoot, AZ::EntityId p
             text, textColor, IDraw2d::HAlign::Center, IDraw2d::VAlign::Center);
 
     // reduce the font size
-    EBUS_EVENT_ID(textElem->GetId(), UiTextBus, SetFontSize, 24.0f);
+    UiTextBus::Event(textElem->GetId(), &UiTextBus::Events::SetFontSize, 24.0f);
 
     // now link the textInputComponent to the child text entity
-    EBUS_EVENT_ID(textInputElem->GetId(), UiTextInputBus, SetTextEntity, textElem->GetId());
+    UiTextInputBus::Event(textInputElem->GetId(), &UiTextInputBus::Events::SetTextEntity, textElem->GetId());
 
     // create child placeholder text element
     AZ::Entity* placeHolderElem = CreateText("PlaceholderText", false, textInputElem->GetId(),
@@ -1121,15 +1150,15 @@ static AZ::Entity* CreateTextInput(const char* name, bool atRoot, AZ::EntityId p
             placeHolderText, placeHolderColor, IDraw2d::HAlign::Center, IDraw2d::VAlign::Center);
 
     // reduce the font size
-    EBUS_EVENT_ID(placeHolderElem->GetId(), UiTextBus, SetFontSize, 24.0f);
+    UiTextBus::Event(placeHolderElem->GetId(), &UiTextBus::Events::SetFontSize, 24.0f);
 
     // now link the textInputComponent to the child placeholder text entity
-    EBUS_EVENT_ID(textInputElem->GetId(), UiTextInputBus, SetPlaceHolderTextEntity, placeHolderElem->GetId());
+    UiTextInputBus::Event(textInputElem->GetId(), &UiTextInputBus::Events::SetPlaceHolderTextEntity, placeHolderElem->GetId());
 
     // Trigger all InGamePostActivate
-    EBUS_EVENT_ID(textInputElem->GetId(), UiInitializationBus, InGamePostActivate);
-    EBUS_EVENT_ID(textElem->GetId(), UiInitializationBus, InGamePostActivate);
-    EBUS_EVENT_ID(placeHolderElem->GetId(), UiInitializationBus, InGamePostActivate);
+    UiInitializationBus::Event(textInputElem->GetId(), &UiInitializationBus::Events::InGamePostActivate);
+    UiInitializationBus::Event(textElem->GetId(), &UiInitializationBus::Events::InGamePostActivate);
+    UiInitializationBus::Event(placeHolderElem->GetId(), &UiInitializationBus::Events::InGamePostActivate);
 
     return textInputElem;
 }
@@ -1192,7 +1221,7 @@ static void DestroyTestCanvas()
         delete g_testActionListener2;
         g_testActionListener2 = nullptr;
 
-        gEnv->pLyShine->ReleaseCanvas(g_testCanvasId, false);
+        AZ::Interface<ILyShine>::Get()->ReleaseCanvas(g_testCanvasId, false);
         g_testCanvasId.SetInvalid();
     }
 }
@@ -1216,7 +1245,7 @@ static void TestCanvasCreate ([[maybe_unused]] IConsoleCmdArgs* Cmd)
     DestroyTestCanvas();
 
     // test creation of canvas and some simple elements
-    AZ::EntityId canvasEntityId = gEnv->pLyShine->CreateCanvas();
+    AZ::EntityId canvasEntityId = AZ::Interface<ILyShine>::Get()->CreateCanvas();
     UiCanvasInterface* canvas = UiCanvasBus::FindFirstHandler(canvasEntityId);
     if (!canvas)
     {
@@ -1232,9 +1261,10 @@ static void TestCanvasCreate ([[maybe_unused]] IConsoleCmdArgs* Cmd)
 
     AZ_Assert(UiTransform2dBus::FindFirstHandler(pauseMenuId), "Transform component missing");
 
-    EBUS_EVENT_ID(pauseMenuId, UiTransform2dBus, SetAnchors, UiTransform2dInterface::Anchors(0.25, 0.25, 0.75, 0.75), false, false);
-    EBUS_EVENT_ID(pauseMenuId, UiTransform2dBus, SetOffsets, UiTransform2dInterface::Offsets(0, 0, 0, 0));
-    EBUS_EVENT_ID(pauseMenuId, UiImageBus, SetColor, grey);
+    UiTransform2dBus::Event(
+        pauseMenuId, &UiTransform2dBus::Events::SetAnchors, UiTransform2dInterface::Anchors(0.25, 0.25, 0.75, 0.75), false, false);
+    UiTransform2dBus::Event(pauseMenuId, &UiTransform2dBus::Events::SetOffsets, UiTransform2dInterface::Offsets(0, 0, 0, 0));
+    UiImageBus::Event(pauseMenuId, &UiImageBus::Events::SetColor, grey);
 
     // create a title, centered at top of menu
     CreateText("Heading", false, pauseMenuId, UiTransform2dInterface::Anchors(0.5f, 0.0f, 0.5f, 0.0f), UiTransform2dInterface::Offsets(0, 20, 0, 50),
@@ -1278,9 +1308,15 @@ static void TestCanvasCreate ([[maybe_unused]] IConsoleCmdArgs* Cmd)
     AZ::Entity* testImageElem = canvas->CreateChildElement("TestImage");
     CreateComponent(testImageElem, LyShine::UiTransform2dComponentUuid);
     CreateComponent(testImageElem, LyShine::UiImageComponentUuid);
-    EBUS_EVENT_ID(testImageElem->GetId(), UiTransform2dBus, SetAnchors, UiTransform2dInterface::Anchors(0.78f, 0.25f, 0.95f, 0.75f), false, false);
-    EBUS_EVENT_ID(testImageElem->GetId(), UiTransform2dBus, SetOffsets, UiTransform2dInterface::Offsets(0.0f, 0.0f, 0.0f, 0.0f));
-    EBUS_EVENT_ID(testImageElem->GetId(), UiImageBus, SetColor, yellow);
+    UiTransform2dBus::Event(
+        testImageElem->GetId(),
+        &UiTransform2dBus::Events::SetAnchors,
+        UiTransform2dInterface::Anchors(0.78f, 0.25f, 0.95f, 0.75f),
+        false,
+        false);
+    UiTransform2dBus::Event(
+        testImageElem->GetId(), &UiTransform2dBus::Events::SetOffsets, UiTransform2dInterface::Offsets(0.0f, 0.0f, 0.0f, 0.0f));
+    UiImageBus::Event(testImageElem->GetId(), &UiImageBus::Events::SetColor, yellow);
 
     // create some text items that the textInputItem will edit,
     AZ::Color colGreen(0.000f, 0.502f, 0.000f, 1.0f);
@@ -1295,80 +1331,81 @@ static void TestCanvasCreate ([[maybe_unused]] IConsoleCmdArgs* Cmd)
 
     // First button uses a simple callback
     AZ::Entity* buttonElem = nullptr;
-    EBUS_EVENT_ID_RESULT(buttonElem, pauseMenuId, UiElementBus, FindDescendantByName, "ShowImage");
+    UiElementBus::EventResult(buttonElem, pauseMenuId, &UiElementBus::Events::FindDescendantByName, "ShowImage");
     auto setEnabledCallbackFn = [testImageElem]([[maybe_unused]] AZ::EntityId clickedEntityId, [[maybe_unused]] AZ::Vector2 point)
         {
-            EBUS_EVENT_ID(testImageElem->GetId(), UiElementBus, SetIsEnabled, true);
+            UiElementBus::Event(testImageElem->GetId(), &UiElementBus::Events::SetIsEnabled, true);
         };
-    EBUS_EVENT_ID(buttonElem->GetId(), UiButtonBus, SetOnClickCallback, setEnabledCallbackFn);
+    UiButtonBus::Event(buttonElem->GetId(), &UiButtonBus::Events::SetOnClickCallback, setEnabledCallbackFn);
 
     // Second button uses an ActionListener
-    EBUS_EVENT_ID_RESULT(buttonElem, pauseMenuId, UiElementBus, FindDescendantByName, "HideImage");
+    UiElementBus::EventResult(buttonElem, pauseMenuId, &UiElementBus::Events::FindDescendantByName, "HideImage");
     LyShine::ActionName actionName1("ShowImage");
     auto setDisabledActionFn = [testImageElem](void)
         {
-            EBUS_EVENT_ID(testImageElem->GetId(), UiElementBus, SetIsEnabled, false);
+            UiElementBus::Event(testImageElem->GetId(), &UiElementBus::Events::SetIsEnabled, false);
         };
     g_testActionListener1 = new ActionListener(canvasEntityId, actionName1, setDisabledActionFn);
-    EBUS_EVENT_ID(buttonElem->GetId(), UiButtonBus, SetOnClickActionName, actionName1);
+    UiButtonBus::Event(buttonElem->GetId(), &UiButtonBus::Events::SetOnClickActionName, actionName1);
 
     // Setup callbacks for the text input field
     auto setChangedTextFn = [changedTextElem]([[maybe_unused]] AZ::EntityId textInputEntityId, LyShine::StringType textString)
         {
-            EBUS_EVENT_ID(changedTextElem->GetId(), UiTextBus, SetText, textString);
+            UiTextBus::Event(changedTextElem->GetId(), &UiTextBus::Events::SetText, textString);
         };
     auto setEditedTextFn = [editedTextElem]([[maybe_unused]] AZ::EntityId textInputEntityId, LyShine::StringType textString)
         {
-            EBUS_EVENT_ID(editedTextElem->GetId(), UiTextBus, SetText, textString);
+            UiTextBus::Event(editedTextElem->GetId(), &UiTextBus::Events::SetText, textString);
         };
     auto setEnteredTextFn = [enteredTextElem]([[maybe_unused]] AZ::EntityId textInputEntityId, LyShine::StringType textString)
         {
-            EBUS_EVENT_ID(enteredTextElem->GetId(), UiTextBus, SetText, textString);
+            UiTextBus::Event(enteredTextElem->GetId(), &UiTextBus::Events::SetText, textString);
         };
-    EBUS_EVENT_ID(textInputElem->GetId(), UiTextInputBus, SetOnChangeCallback, setChangedTextFn);
-    EBUS_EVENT_ID(textInputElem->GetId(), UiTextInputBus, SetOnEndEditCallback, setEditedTextFn);
-    EBUS_EVENT_ID(textInputElem->GetId(), UiTextInputBus, SetOnEnterCallback, setEnteredTextFn);
+    UiTextInputBus::Event(textInputElem->GetId(), &UiTextInputBus::Events::SetOnChangeCallback, setChangedTextFn);
+    UiTextInputBus::Event(textInputElem->GetId(), &UiTextInputBus::Events::SetOnEndEditCallback, setEditedTextFn);
+    UiTextInputBus::Event(textInputElem->GetId(), &UiTextInputBus::Events::SetOnEnterCallback, setEnteredTextFn);
 
     // test clone feature by cloning the whole pause menu
     AZ::Entity* clonedMenuElem = nullptr;
-    EBUS_EVENT_ID_RESULT(clonedMenuElem, canvasEntityId, UiCanvasBus, CloneElement, pauseMenuElem, nullptr);
+    UiCanvasBus::EventResult(clonedMenuElem, canvasEntityId, &UiCanvasBus::Events::CloneElement, pauseMenuElem, nullptr);
     AZ::EntityId clonedMenuId = clonedMenuElem->GetId();
-    EBUS_EVENT_ID(clonedMenuId, UiTransform2dBus, SetAnchors, UiTransform2dInterface::Anchors(0.0f, 0.25f, 0.23f, 0.75f), false, false);
-    EBUS_EVENT_ID(clonedMenuId, UiImageBus, SetColor, grey);
+    UiTransform2dBus::Event(
+        clonedMenuId, &UiTransform2dBus::Events::SetAnchors, UiTransform2dInterface::Anchors(0.0f, 0.25f, 0.23f, 0.75f), false, false);
+    UiImageBus::Event(clonedMenuId, &UiImageBus::Events::SetColor, grey);
 
     // The clone will copy the action name on the Hide button but not the callback on the
     // Show button, so set that up on the cloned menu
     buttonElem = nullptr;
-    EBUS_EVENT_ID_RESULT(buttonElem, clonedMenuId, UiElementBus, FindDescendantByName, "ShowImage");
-    EBUS_EVENT_ID(buttonElem->GetId(), UiButtonBus, SetOnClickCallback, setEnabledCallbackFn);
+    UiElementBus::EventResult(buttonElem, clonedMenuId, &UiElementBus::Events::FindDescendantByName, "ShowImage");
+    UiButtonBus::Event(buttonElem->GetId(), &UiButtonBus::Events::SetOnClickCallback, setEnabledCallbackFn);
 
     //! test GUIDs
     LyShine::ElementId id = 0;
-    EBUS_EVENT_ID_RESULT(id, buttonElem->GetId(), UiElementBus, GetElementId);
+    UiElementBus::EventResult(id, buttonElem->GetId(), &UiElementBus::Events::GetElementId);
     AZ::Entity* foundElem = canvas->FindElementById(id);
     AZ_Assert(foundElem == buttonElem, "FindElementById failed");
 
     //! test find by name
-    EBUS_EVENT_ID_RESULT(foundElem, canvasEntityId, UiCanvasBus, FindElementByName, "ChangedText");
+    UiCanvasBus::EventResult(foundElem, canvasEntityId, &UiCanvasBus::Events::FindElementByName, "ChangedText");
     AZ_Assert(foundElem == changedTextElem, "FindElementByName failed");
 
     LyShine::EntityArray foundElements;
-    EBUS_EVENT_ID(canvasEntityId, UiCanvasBus, FindElementsByName, "ShowImage", foundElements);
+    UiCanvasBus::Event(canvasEntityId, &UiCanvasBus::Events::FindElementsByName, "ShowImage", foundElements);
     AZ_Assert(foundElements.size() == 2, "FindElementsByName failed, should find 2 elements");
 
-    EBUS_EVENT_ID_RESULT(foundElem, canvasEntityId, UiCanvasBus, FindElementByHierarchicalName, "Menu1/ShowImage");
+    UiCanvasBus::EventResult(foundElem, canvasEntityId, &UiCanvasBus::Events::FindElementByHierarchicalName, "Menu1/ShowImage");
     AZ_Assert(foundElem == showImageButtonElem, "FindElementByHierarchicalName failed to find Menu1/ShowImage");
 
-    EBUS_EVENT_ID_RESULT(foundElem, canvasEntityId, UiCanvasBus, FindElementByHierarchicalName, "/Menu1/ShowImage");
+    UiCanvasBus::EventResult(foundElem, canvasEntityId, &UiCanvasBus::Events::FindElementByHierarchicalName, "/Menu1/ShowImage");
     AZ_Assert(foundElem == showImageButtonElem, "FindElementByHierarchicalName failed to find /Menu1/ShowImage");
 
-    EBUS_EVENT_ID_RESULT(foundElem, canvasEntityId, UiCanvasBus, FindElementByHierarchicalName, "Menu1/ShowImage/ButtonText");
+    UiCanvasBus::EventResult(foundElem, canvasEntityId, &UiCanvasBus::Events::FindElementByHierarchicalName, "Menu1/ShowImage/ButtonText");
     AZ_Assert(foundElem, "FindElementByHierarchicalName failed to find Menu1/ShowImage/ButtonText");
 
-    EBUS_EVENT_ID_RESULT(foundElem, canvasEntityId, UiCanvasBus, FindElementByHierarchicalName, "Menu1/ShowImage/ButtonText/");
+    UiCanvasBus::EventResult(foundElem, canvasEntityId, &UiCanvasBus::Events::FindElementByHierarchicalName, "Menu1/ShowImage/ButtonText/");
     AZ_Assert(!foundElem, "FindElementByHierarchicalName succeeded with bad path");
 
-    EBUS_EVENT_ID_RESULT(foundElem, canvasEntityId, UiCanvasBus, FindElementByHierarchicalName, "ShowImage");
+    UiCanvasBus::EventResult(foundElem, canvasEntityId, &UiCanvasBus::Events::FindElementByHierarchicalName, "ShowImage");
     AZ_Assert(!foundElem, "FindElementByHierarchicalName found ShowImage when it should not");
 }
 
@@ -1422,7 +1459,7 @@ void LyShineDebug::RenderDebug()
 #if !defined(_RELEASE)
 
 #ifndef EXCLUDE_DOCUMENTATION_PURPOSE
-    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
+    IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
     if (!draw2d)
     {
         return;

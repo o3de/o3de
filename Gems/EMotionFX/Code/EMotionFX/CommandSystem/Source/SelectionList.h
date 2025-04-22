@@ -394,6 +394,9 @@ namespace CommandSystem
         void Log();
         void MakeValid();
 
+        //! Collect all motion instances of selected motions played on any of the selected actor instances.
+        const AZStd::vector<EMotionFX::MotionInstance*>& GetSelectedMotionInstances();
+
     private:
         // ActorNotificationBus overrides
         void OnActorDestroyed(EMotionFX::Actor* actor) override;
@@ -407,5 +410,7 @@ namespace CommandSystem
         AZStd::vector<EMotionFX::MotionInstance*>   m_selectedMotionInstances;   /**< Array of selected motion instances. */
         AZStd::vector<EMotionFX::Motion*>           m_selectedMotions;           /**< Array of selected motions. */
         AZStd::vector<EMotionFX::AnimGraph*>        m_selectedAnimGraphs;        /**< Array of selected anim graphs. */
+
+        AZStd::vector<EMotionFX::MotionInstance*> m_cachedSelectedMotionInstances;
     };
 } // namespace CommandSystem

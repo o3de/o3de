@@ -144,10 +144,5 @@ namespace AZ
         {
             // Not currently supported
         }
-
-        AZ::EnvironmentInstance Platform::GetTestRunnerEnvironment()
-        {
-            return nullptr;
-        }
     } // Test
 } // AZ

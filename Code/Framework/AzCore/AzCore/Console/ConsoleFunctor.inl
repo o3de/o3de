@@ -43,7 +43,7 @@ namespace AZ
             return resultCode;
         }
 
-        return ConsoleTypeHelpers::StringToValue(outResult, buffer)
+        return ConsoleTypeHelpers::ToValue(outResult, buffer)
             ? GetValueResult::Success
             : GetValueResult::TypeNotConvertible;
     }
@@ -142,6 +142,69 @@ namespace AZ
         static void ValueToString(_TYPE& instance, CVarFixedString& outString)
         {
             instance.ValueToString(outString);
+        }
+    };
+
+    template<>
+    struct ConsoleReplicateHelper<int, true>
+    {
+        static bool GetReplicationString(int& instance, const char* name, CVarFixedString& outString)
+        {
+            CVarFixedString valueString;
+            ValueToString(instance, valueString);
+            outString = CVarFixedString(name) + " " + valueString;
+            return true;
+        }
+
+        static bool StringToValue(int& instance, const ConsoleCommandContainer& arguments)
+        {
+            return ConsoleTypeHelpers::ToValue(instance, arguments);
+        }
+
+        static void ValueToString(int& instance, CVarFixedString& outString)
+        {
+            outString = ConsoleTypeHelpers::ToString(instance);
+        }
+    };
+
+    template<>
+    struct ConsoleReplicateHelper<float, true>
+    {
+        static bool GetReplicationString(float& instance, const char* name, CVarFixedString& outString)
+        {
+            CVarFixedString valueString;
+            ValueToString(instance, valueString);
+            outString = CVarFixedString(name) + " " + valueString;
+            return true;
+        }
+
+        static bool StringToValue(float& instance, const ConsoleCommandContainer& arguments)
+        {
+            return ConsoleTypeHelpers::ToValue(instance, arguments);
+        }
+
+        static void ValueToString(float& instance, CVarFixedString& outString)
+        {
+            outString = ConsoleTypeHelpers::ToString(instance);
+        }
+    };
+
+    template<>
+    struct ConsoleReplicateHelper<AZStd::string, true>
+    {
+        static bool GetReplicationString(AZStd::string&, const char*, CVarFixedString&)
+        {
+            return true;
+        }
+
+        static bool StringToValue(AZStd::string& instance, const ConsoleCommandContainer& arguments)
+        {
+            return ConsoleTypeHelpers::ToValue(instance, arguments);
+        }
+
+        static void ValueToString(AZStd::string& instance, CVarFixedString& outString)
+        {
+            outString = instance;
         }
     };
 

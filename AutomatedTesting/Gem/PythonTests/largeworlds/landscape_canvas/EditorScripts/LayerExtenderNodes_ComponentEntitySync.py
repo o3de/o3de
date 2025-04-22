@@ -63,7 +63,6 @@ def LayerExtenderNodes_ComponentEntitySync():
 
     import editor_python_test_tools.hydra_editor_utils as hydra
     from editor_python_test_tools.utils import Report
-    from editor_python_test_tools.utils import TestHelper as helper
 
     editorId = azlmbr.globals.property.LANDSCAPE_CANVAS_EDITOR_ID
 
@@ -72,8 +71,7 @@ def LayerExtenderNodes_ComponentEntitySync():
         newEntityId = parameters[0]
 
     # Open an existing simple level
-    helper.init_idle()
-    helper.open_level("Physics", "Base")
+    hydra.open_base_level()
 
     # Open Landscape Canvas tool and verify
     general.open_pane('Landscape Canvas')
@@ -139,7 +137,6 @@ def LayerExtenderNodes_ComponentEntitySync():
             extenderNode = landscapecanvas.LandscapeCanvasNodeFactoryRequestBus(bus.Broadcast,
                                                                                 'CreateNodeForTypeName', newGraph,
                                                                                 extenderName)
-            graph.GraphControllerRequestBus(bus.Event, 'AddNode', newGraphId, extenderNode, nodePosition)
             graph.GraphControllerRequestBus(bus.Event, 'WrapNode', newGraphId, areaNode, extenderNode)
 
             # Check that the appropriate Component was added when the extender node was added

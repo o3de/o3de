@@ -63,8 +63,8 @@ def LayerBlender_NodeConstruction():
     import azlmbr.math as math
 
     import editor_python_test_tools.hydra_editor_utils as hydra
+    from editor_python_test_tools.wait_utils import PrefabWaiter
     from editor_python_test_tools.utils import Report
-    from editor_python_test_tools.utils import TestHelper as helper
 
     editorId = azlmbr.globals.property.LANDSCAPE_CANVAS_EDITOR_ID
 
@@ -73,8 +73,7 @@ def LayerBlender_NodeConstruction():
         newEntityId = parameters[0]
 
     # Open an existing simple level
-    helper.init_idle()
-    helper.open_level("Physics", "Base")
+    hydra.open_base_level()
 
     # Open Landscape Canvas tool and verify
     general.open_pane('Landscape Canvas')
@@ -127,6 +126,8 @@ def LayerBlender_NodeConstruction():
     positionX += offsetX
     positionY += offsetY
 
+    PrefabWaiter.wait_for_propagation()
+
     outboundAreaSlotId = graph.GraphModelSlotId('OutboundArea')
     inboundAreaSlotId = graph.GraphModelSlotId('InboundArea')
     inboundAreaSlotId2 = graph.GraphControllerRequestBus(bus.Event, 'ExtendSlot', newGraphId, layerBlenderNode,
@@ -138,8 +139,9 @@ def LayerBlender_NodeConstruction():
     graph.GraphControllerRequestBus(bus.Event, 'AddConnectionBySlotId', newGraphId, layerBlockerNode, outboundAreaSlotId,
                                     layerBlenderNode, inboundAreaSlotId2)
 
-    # Delay to allow all the underlying component properties to be updated after the slot connections are made
-    general.idle_wait(1.0)
+    # Delay 2 frames to allow for underlying component properties to be updated after the slot connections are made and
+    # propagation to occur
+    general.idle_wait_frames(2)
 
     # Get component info
     layerBlenderTypeId = hydra.get_component_type_id("Vegetation Layer Blender")
@@ -149,9 +151,13 @@ def LayerBlender_NodeConstruction():
 
     # Verify the Vegetation Areas properties on our Vegetation Layer Blender component have been set to our area EntityIds
     area1EntityId = hydra.get_component_property_value(layerBlenderComponent, 'Configuration|Vegetation Areas|[0]')
+    Report.info(f"First pinned entity ID: {area1EntityId.ToString()}")
+    Report.info(f"Layer Spawner entity ID: {layerSpawnerEntityId.ToString()}")
     Report.result(Tests.blender_first_layer_set, area1EntityId and layerSpawnerEntityId.invoke("Equal", area1EntityId))
 
     area2EntityId = hydra.get_component_property_value(layerBlenderComponent, 'Configuration|Vegetation Areas|[1]')
+    Report.info(f"Second pinned entity ID: {area2EntityId.ToString()}")
+    Report.info(f"Layer Blocker entity ID: {layerBlockerEntityId.ToString()}")
     Report.result(Tests.blender_second_layer_set, area2EntityId and layerBlockerEntityId.invoke("Equal", area2EntityId))
 
     # Stop listening for entity creation notifications

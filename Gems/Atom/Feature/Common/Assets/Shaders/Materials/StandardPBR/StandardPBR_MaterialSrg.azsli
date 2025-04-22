@@ -1,0 +1,76 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once 
+
+#include <Atom/Features/PBR/LightingOptions.azsli>
+#include <Atom/Features/PBR/AlphaUtils.azsli>
+
+#include "../MaterialInputs/BaseColorInput.azsli"
+#include "../MaterialInputs/VertexColorInput.azsli"
+#include "../MaterialInputs/RoughnessInput.azsli"
+#include "../MaterialInputs/MetallicInput.azsli"
+#include "../MaterialInputs/SpecularInput.azsli"
+#include "../MaterialInputs/NormalInput.azsli"
+#include "../MaterialInputs/ClearCoatInput.azsli"
+#include "../MaterialInputs/OcclusionInput.azsli"
+#include "../MaterialInputs/EmissiveInput.azsli"
+#include "../MaterialInputs/ParallaxInput.azsli"
+#include "../MaterialInputs/UvSetCount.azsli"
+#include "../MaterialInputs/SilhouetteBlockerInput.azsli"
+
+#include <Atom/Features/SrgSemantics.azsli>
+
+ShaderResourceGroup MaterialSrg : SRG_PerMaterial
+{
+    // Auto-generate material SRG fields for common inputs
+    COMMON_SRG_INPUTS_BASE_COLOR()
+    COMMON_SRG_INPUTS_VERTEX_COLOR()
+    COMMON_SRG_INPUTS_ROUGHNESS()
+    COMMON_SRG_INPUTS_METALLIC()
+    COMMON_SRG_INPUTS_SPECULAR_F0()
+    COMMON_SRG_INPUTS_NORMAL()
+    COMMON_SRG_INPUTS_CLEAR_COAT()
+    COMMON_SRG_INPUTS_OCCLUSION()     
+    COMMON_SRG_INPUTS_EMISSIVE()      
+    COMMON_SRG_INPUTS_PARALLAX()
+    
+    uint m_parallaxUvIndex;
+    float m_parallax_pdo_shadowFactor;
+
+    float3x3 m_uvMatrix;
+    float4 m_pad1; // [GFX TODO][ATOM-14595] This is a workaround for a data stomping bug. Remove once it's fixed.
+    float3x3 m_uvMatrixInverse;
+    float4 m_pad2; // [GFX TODO][ATOM-14595] This is a workaround for a data stomping bug. Remove once it's fixed.
+
+    float m_opacityFactor;
+    float m_opacityAffectsSpecularFactor;
+    Texture2D m_opacityMap;
+    uint m_opacityMapUvIndex;
+
+    Sampler m_sampler
+    {
+        AddressU = Wrap;
+        AddressV = Wrap;
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        MaxAnisotropy = 16;
+    };
+
+    Texture2D m_brdfMap;
+
+    Sampler m_samplerBrdf
+    {
+        AddressU = Clamp;
+        AddressV = Clamp;
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+    };
+}

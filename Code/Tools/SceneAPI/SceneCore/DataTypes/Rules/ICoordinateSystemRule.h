@@ -8,14 +8,8 @@
 
 #pragma once
 
-#include <AzCore/Serialization/SerializeContext.h>
 #include <SceneAPI/SceneCore/DataTypes/Rules/IRule.h>
 #include <SceneAPI/SceneCore/Utilities/CoordinateSystemConverter.h>
-
-namespace AZ
-{
-    class ReflectContext;
-}
 
 namespace AZ::SceneAPI::DataTypes
 {

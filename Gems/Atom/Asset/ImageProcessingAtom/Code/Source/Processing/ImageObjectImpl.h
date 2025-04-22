@@ -15,16 +15,18 @@
 namespace ImageProcessingAtom
 {
     // ImageObject allows the abstraction of different kinds of
-    // images generated during conversion
+    // images generated during conversion. Supports 3D Image.
     class CImageObject
         : public IImageObject
     {
     public:
-        AZ_CLASS_ALLOCATOR(CImageObject, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CImageObject, AZ::SystemAllocator);
 
     public:
         // Constructors
         CImageObject(AZ::u32 width, AZ::u32 height, AZ::u32 maxMipCount, EPixelFormat pixelFormat);
+        CImageObject(AZ::u32 width, AZ::u32 height, AZ::u32 depth, AZ::u32 maxMipCount, EPixelFormat pixelFormat);
+
         ~CImageObject();
 
         //virtual functions from IImageObject
@@ -35,6 +37,7 @@ namespace ImageProcessingAtom
         AZ::u32 GetPixelCount(AZ::u32 mip) const override;
         AZ::u32 GetWidth(AZ::u32 mip) const override;
         AZ::u32 GetHeight(AZ::u32 mip) const override;
+        AZ::u32 GetDepth(AZ::u32 mip) const override;
         AZ::u32 GetMipCount() const override;
 
         void GetImagePointer(AZ::u32 mip, AZ::u8*& pMem, AZ::u32& pitch) const override;
@@ -71,6 +74,8 @@ namespace ImageProcessingAtom
         void SetColorRange(const AZ::Color& minColor, const AZ::Color& maxColor) override;
         float GetAverageBrightness() const override;
         void SetAverageBrightness(float avgBrightness) override;
+        AZ::Color GetAverageColor() const override;
+        void SetAverageColor(const AZ::Color& averageColor) override;
         AZ::u32 GetNumPersistentMips() const override;
         void SetNumPersistentMips(AZ::u32 nMips) override;
 
@@ -97,10 +102,12 @@ namespace ImageProcessingAtom
         class MipLevel
         {
         public:
-            AZ_CLASS_ALLOCATOR(MipLevel, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(MipLevel, AZ::SystemAllocator);
 
             AZ::u32 m_width;
             AZ::u32 m_height;
+            AZ::u32 m_depth;
+            // m_rowCount is the number of rows for each depth slice.
             AZ::u32 m_rowCount;  // for compressed textures m_rowCount is usually less than m_height
             AZ::u32 m_pitch;     // row size in bytes
             AZ::u8* m_pData;
@@ -109,6 +116,7 @@ namespace ImageProcessingAtom
             MipLevel()
                 : m_width(0)
                 , m_height(0)
+                , m_depth(1)
                 , m_rowCount(0)
                 , m_pitch(0)
                 , m_pData(0)
@@ -124,21 +132,21 @@ namespace ImageProcessingAtom
             void Alloc()
             {
                 AZ_Assert(m_pData == 0, "Mip data must be empty before Allocation!");
-                m_pData = new AZ::u8[m_pitch * m_rowCount];
+                m_pData = new AZ::u8[GetSize()];
             }
 
             AZ::u32 GetSize() const
             {
                 AZ_Assert(m_pitch, "Pitch must be greater than zero!");
-                return m_pitch * m_rowCount;
+                return m_pitch * m_rowCount * m_depth;
             }
 
             bool operator==(const MipLevel& other)
             {
-                if (m_width == other.m_width && m_height == other.m_height
+                if (m_width == other.m_width && m_height == other.m_height && m_depth == other.m_depth
                     && m_rowCount == other.m_rowCount && m_pitch == other.m_pitch)
                 {
-                    return (memcmp(m_pData, other.m_pData, m_pitch * m_rowCount) == 0);
+                    return (memcmp(m_pData, other.m_pData, GetSize()) == 0);
                 }
                 return false;
             }
@@ -150,16 +158,20 @@ namespace ImageProcessingAtom
 
         AZ::Color         m_colMinARGB;             // ARGB will be added the properties of the DDS file
         AZ::Color         m_colMaxARGB;             // ARGB will be added the properties of the DDS file
+        AZ::Color         m_averageColor;
         float        m_averageBrightness;           // will be added to the properties of the DDS file
         AZ::u32       m_imageFlags;                  //
         AZ::u32       m_numPersistentMips;           // number of mipmaps won't be splitted
 
     public:
-        //reset this image object to specified format and size
+        // Reset this image object to specified format and size. Calling this function on a pre-existing
+        // 3D Image, will result in a new 2D image.
         void ResetImage(AZ::u32 width, AZ::u32 height, AZ::u32 maxMipCount, EPixelFormat pixelFormat);
+        void ResetImage(AZ::u32 width, AZ::u32 height, AZ::u32 depth, AZ::u32 maxMipCount, EPixelFormat pixelFormat);
 
         //get mip count and the origin (top mip) size
         void GetExtent(AZ::u32& width, AZ::u32& height, AZ::u32& mipCount) const;
+        void GetExtent(AZ::u32& width, AZ::u32& height, AZ::u32& depth, AZ::u32& mipCount) const;
 
         AZ::u32 GetMipDataSize(AZ::u32 mip) const;
 

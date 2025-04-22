@@ -117,7 +117,7 @@ namespace UnitTest
             m_materialAsset = AZ::Data::Asset<AZ::RPI::MaterialAsset>(assetId, typeId, "");
 
             // Some tests attempt to serialize-in the model asset, which should not attempt to actually load this dummy asset reference.
-            m_materialAsset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehaviorNamespace::NoLoad); 
+            m_materialAsset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehaviorNamespace::NoLoad);
         }
 
         AZ::RHI::ShaderSemantic GetPositionSemantic() const
@@ -257,7 +257,7 @@ namespace UnitTest
 
             creator.Begin(Data::AssetId(AZ::Uuid::CreateRandom()));
             creator.SetName("TestModel");
-            
+
             for (RPI::ModelMaterialSlot::StableId materialSlotId = 0; materialSlotId < sharedMeshCount + separateMeshCount; ++materialSlotId)
             {
                 RPI::ModelMaterialSlot slot;
@@ -302,7 +302,8 @@ namespace UnitTest
 
             for (size_t i = 0; i < lodAsset->GetMeshes().size(); ++i)
             {
-                const AZ::RPI::ModelLodAsset::Mesh& mesh = lodAsset->GetMeshes()[i];
+                const auto meshes = lodAsset->GetMeshes();
+                const AZ::RPI::ModelLodAsset::Mesh& mesh = meshes[i];
                 const ExpectedMesh& expectedMesh = expectedLod.m_meshes[i];
 
                 ValidateMesh(mesh, expectedMesh);
@@ -976,14 +977,14 @@ namespace UnitTest
         EXPECT_EQ(uvStreamTangentBitmask.GetFullTangentBitmask(), 0x70000F51);
     }
 
-    //
-    //   +----+
-    //  /    /|
-    // +----+ |
-    // |    | +
-    // |    |/
-    // +----+
-    //
+    /*
+         +----+
+        /    /|
+       +----+ |
+       |    | +
+       |    |/
+       +----+
+    */
     static constexpr AZStd::array CubePositions = { -1.0f, 1.0f, 1.0f,  1.0f, 1.0f, 1.0f,  -1.0f, -1.0f, 1.0f,  1.0f, -1.0f, 1.0f,
                                                     -1.0f, 1.0f, -1.0f, 1.0f, 1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f, -1.0f, -1.0f };
     static constexpr AZStd::array CubeIndices = {
@@ -993,23 +994,25 @@ namespace UnitTest
     static constexpr AZStd::array QuadPositions = { -1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, -1.0f, -1.0f, 0.0f, 1.0f, -1.0f, 0.0f };
     static constexpr AZStd::array QuadIndices = { uint32_t{ 0 }, 2, 1, 1, 2, 3 };
 
-    // This class creates a Model with one LOD, whose mesh contains 2 planes. Plane 1 is in the XY plane at Z=-0.5, and
-    // plane 2 is in the XY plane at Z=0.5. The two planes each have 9 quads which have been triangulated. It only has
-    // a position and index buffer.
-    //
-    //      -0.33
-    //    -1     0.33  1
-    // 0.5 *---*---*---*
-    //      \ / \ / \ / \
-    //       *---*---*---*
-    //        \ / \ / \ / \
-    // -0.5 *- *---*---*---*
-    //       \  \ / \ / \ / \
-    //        *- *---*---*---*
-    //         \   \   \   \
-    //          *---*---*---*
-    //           \ / \ / \ / \
-    //            *---*---*---*
+    /*
+       This class creates a Model with one LOD, whose mesh contains 2 planes. Plane 1 is in the XY plane at Z=-0.5, and
+       plane 2 is in the XY plane at Z=0.5. The two planes each have 9 quads which have been triangulated. It only has
+       a position and index buffer.
+
+            -0.33
+          -1     0.33  1
+       0.5 *---*---*---*
+            \ / \ / \ / \
+             *---*---*---*
+              \ / \ / \ / \
+       -0.5 *- *---*---*---*
+             \  \ / \ / \ / \
+              *- *---*---*---*
+               \   \   \   \
+                *---*---*---*
+                 \ / \ / \ / \
+                  *---*---*---*
+    */
     static constexpr AZStd::array TwoSeparatedPlanesPositions{
         -1.0f,   -0.333f, -0.5f, -0.333f, -1.0f,   -0.5f, -0.333f, -0.333f, -0.5f, 0.333f, -0.333f, -0.5f, 1.0f,    -1.0f,   -0.5f,
         1.0f,    -0.333f, -0.5f, 0.333f,  -1.0f,   -0.5f, 0.333f,  1.0f,    -0.5f, 1.0f,   0.333f,  -0.5f, 1.0f,    1.0f,    -0.5f,
@@ -1203,7 +1206,7 @@ namespace UnitTest
         IntersectParams{ 0.778f, 0.778f, 1.0f, 0.0f, 0.0f, -1.0f, 0.5f, true },
     };
 
-    INSTANTIATE_TEST_CASE_P(KdTreeIntersectsPlane, KdTreeIntersectsParameterizedFixture, ::testing::ValuesIn(KdTreeIntersectTestData));
+    INSTANTIATE_TEST_SUITE_P(KdTreeIntersectsPlane, KdTreeIntersectsParameterizedFixture, ::testing::ValuesIn(KdTreeIntersectTestData));
 
     class KdTreeIntersectsFixture
         : public ModelTests
@@ -1297,7 +1300,7 @@ namespace UnitTest
         IntersectParams{ 0.0f,  20.0f, 0.0f, 0.0f, -19.0f, 0.0f, 1.0f, true },
     };
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         BruteForceIntersects, BruteForceIntersectsParameterizedFixture, ::testing::ValuesIn(BruteForceIntersectTestData));
 
     class BruteForceModelIntersectsFixture

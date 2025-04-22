@@ -7,8 +7,6 @@
 #
 
 import argparse
-import json
-import os
 import pathlib
 import sys
 import logging
@@ -17,31 +15,6 @@ from o3de import manifest, utils
 
 logger = logging.getLogger('o3de.gem_properties')
 logging.basicConfig(format=utils.LOG_FORMAT)
-
-
-def update_values_in_key_list(existing_values: list, new_values: list or str, remove_values: list or str,
-                      replace_values: list or str):
-    """
-    Updates values within a list by first appending values in the new_values list, removing values in the remove_values
-    list and then replacing values in the replace_values list
-    :param existing_values list with existing values to modify
-    :param new_values list with values to add to the existing value list
-    :param remove_values list with values to remove from the existing value list
-    :param replace_values list with values to replace in the existing value list
-
-    returns updated existing value list
-    """
-    if new_values:
-        new_values = new_values.split() if isinstance(new_values, str) else new_values
-        existing_values.extend(new_values)
-    if remove_values:
-        remove_values = remove_values.split() if isinstance(remove_values, str) else remove_values
-        existing_values = list(filter(lambda value: value not in remove_values, existing_values))
-    if replace_values:
-        replace_values = replace_values.split() if isinstance(replace_values, str) else replace_values
-        existing_values = replace_values
-
-    return existing_values
 
 
 def edit_gem_props(gem_path: pathlib.Path = None,
@@ -56,10 +29,50 @@ def edit_gem_props(gem_path: pathlib.Path = None,
                    new_documentation_url: str = None,
                    new_license: str = None,
                    new_license_url: str = None,
+                   new_version: str = None,
+                   new_compatible_engines: list or str = None,
+                   remove_compatible_engines: list or str = None,
+                   replace_compatible_engines: list or str = None,
+                   new_repo_uri: str = None,
                    new_tags: list or str = None,
                    remove_tags: list or str = None,
                    replace_tags: list or str = None,
+                   new_platforms: list or str = None,
+                   remove_platforms: list or str = None,
+                   replace_platforms: list or str = None,
+                   new_engine_api_dependencies: list or str = None,
+                   remove_engine_api_dependencies: list or str = None,
+                   replace_engine_api_dependencies: list or str = None
                    ) -> int:
+    """
+    Edits and modifies the gem properties for the gem located at 'gem_path' or with the name 'gem_name'.
+    :param gem_path: The path to the gem folder
+    :param gem_name: The name of the gem
+    :param new_name: The new name for the gem
+    :param new_display: The new display name for the gem
+    :param new_origin: The new origin for the gem
+    :param new_type: The new gem type
+    :param new_summary: The new gem summary text
+    :param new_icon: The new path to the gem's icon file 
+    :param new_requirements: The new gem requirements text
+    :param new_documentation_url: The new URL to the gem documentation
+    :param new_license: The new gem license type
+    :param new_license_url: The new URL to the gem license
+    :param new_version: The new gem version e.g. 1.2.3
+    :param new_compatible_engines: Compatible engine version specifiers to add e.g. o3de==1.2.3
+    :param remove_compatible_engines: Engine version specifiers to remove from 'compatible_engines'
+    :param replace_compatible_engines: Engine version specifiers to replace everything in'compatible_engines' 
+    :param new_repo_uri: The new URI to the remote object repository
+    :param new_tags: New tags to add to 'user_tags'
+    :param remove_tags: Tags to remove from 'user_tags'
+    :param replace_tags: Tags to replace 'user_tags' with
+    :param new_platforms: New platforms to add to 'platforms'
+    :param remove_platforms: Platforms to remove from 'platforms'
+    :param replace_platforms: Platforms to replace 'platforms' with
+    :param new_engine_api_dependencies: Engine API version specifiers to add e.g. launcher==1.2.3
+    :param remove_engine_api_dependencies: Version specifiers to remove from 'engine_api_dependencies'
+    :param replace_engine_api_dependencies: Version specifiers to replace 'engine_api_dependencies' with
+    """
 
     if not gem_path and not gem_name:
         logger.error(f'Either a gem path or a gem name must be supplied to lookup gem.json')
@@ -82,27 +95,56 @@ def edit_gem_props(gem_path: pathlib.Path = None,
                          f' characters, and start with a letter.  {new_name}')
             return 1
         update_key_dict['gem_name'] = new_name
-    if new_display:
+    if isinstance(new_display, str):
         update_key_dict['display_name'] = new_display
-    if new_origin:
+    if isinstance(new_origin, str):
         update_key_dict['origin'] = new_origin
-    if new_type:
+    if isinstance(new_type, str):
         update_key_dict['type'] = new_type
-    if new_summary:
+    if isinstance(new_summary, str):
         update_key_dict['summary'] = new_summary
-    if new_icon:
+    if isinstance(new_icon, str):
         update_key_dict['icon_path'] = new_icon
-    if new_requirements:
+    if isinstance(new_requirements, str):
         update_key_dict['requirements'] = new_requirements
-    if new_documentation_url:
+    if isinstance(new_documentation_url,str):
         update_key_dict['documentation_url'] = new_documentation_url
-    if new_license:
-        update_key_dict['license'] = new_license
-    if new_license_url:
+    if isinstance(new_license, str):
+        update_key_dict['license'] = new_license 
+    if isinstance(new_license_url, str):
         update_key_dict['license_url'] = new_license_url
+    if isinstance(new_repo_uri, str):
+        update_key_dict['repo_uri'] = new_repo_uri
+    if isinstance(new_version, str):
+        update_key_dict['version'] = new_version
 
-    update_key_dict['user_tags'] = update_values_in_key_list(gem_json_data.get('user_tags', []), new_tags,
-                                                     remove_tags, replace_tags)
+    if new_tags or remove_tags or replace_tags != None:
+        update_key_dict['user_tags'] = utils.update_values_in_key_list(gem_json_data.get('user_tags', []), new_tags,
+                                                        remove_tags, replace_tags)
+
+    if new_platforms or remove_platforms or replace_platforms != None:
+        update_key_dict['platforms'] = utils.update_values_in_key_list(gem_json_data.get('platforms', []), new_platforms,
+                                                        remove_platforms, replace_platforms)
+
+    if new_compatible_engines or remove_compatible_engines or replace_compatible_engines != None:
+        if (new_compatible_engines and not utils.validate_version_specifier_list(new_compatible_engines)) or \
+           (remove_compatible_engines and not utils.validate_version_specifier_list(remove_compatible_engines)) or \
+           (replace_compatible_engines and not utils.validate_version_specifier_list(replace_compatible_engines)):
+            return 1
+
+        update_key_dict['compatible_engines'] = utils.update_values_in_key_list(gem_json_data.get('compatible_engines', []), 
+                                                        new_compatible_engines, remove_compatible_engines, 
+                                                        replace_compatible_engines)
+
+    if new_engine_api_dependencies or remove_engine_api_dependencies or replace_engine_api_dependencies != None: 
+        if (new_engine_api_dependencies and not utils.validate_version_specifier_list(new_engine_api_dependencies)) or \
+           (remove_engine_api_dependencies and not utils.validate_version_specifier_list(remove_engine_api_dependencies)) or \
+           (replace_engine_api_dependencies and not utils.validate_version_specifier_list(replace_engine_api_dependencies)):
+            return 1
+
+        update_key_dict['engine_api_dependencies'] = utils.update_values_in_key_list(gem_json_data.get('engine_api_dependencies', []), 
+                                                        new_engine_api_dependencies, remove_engine_api_dependencies, 
+                                                        replace_engine_api_dependencies)
 
     gem_json_data.update(update_key_dict)
 
@@ -122,9 +164,21 @@ def _edit_gem_props(args: argparse) -> int:
                           args.gem_documentation_url,
                           args.gem_license,
                           args.gem_license_url,
+                          args.gem_version,
+                          args.add_compatible_engines,
+                          args.remove_compatible_engines,
+                          args.replace_compatible_engines,
+                          None, # repo_uri
                           args.add_tags,
                           args.remove_tags,
-                          args.replace_tags)
+                          args.replace_tags,
+                          args.add_platforms,
+                          args.remove_platforms,
+                          args.replace_platforms,
+                          args.add_engine_api_dependencies,
+                          args.remove_engine_api_dependencies,
+                          args.replace_engine_api_dependencies
+                          )
 
 
 def add_parser_args(parser):
@@ -154,6 +208,22 @@ def add_parser_args(parser):
                        help='Sets the name for the license of the gem.')
     group.add_argument('-glu', '--gem-license-url', type=str, required=False,
                        help='Sets the url for the license of the gem.')
+    group.add_argument('-gv', '--gem-version', type=str, required=False,
+                       help='Sets the version of the gem.')
+    group = parser.add_mutually_exclusive_group(required=False)
+    group.add_argument('-aev', '--add-compatible-engines', type=str, nargs='*', required=False,
+                       help='Add engine version(s) this gem is compatible with. Can be specified multiple times.')
+    group.add_argument('-dev', '--remove-compatible-engines', type=str, nargs='*', required=False,
+                       help='Removes engine version(s) from the compatible_engines property. Can be specified multiple times.')
+    group.add_argument('-rev', '--replace-compatible-engines', type=str, nargs='*', required=False,
+                       help='Replace engine version(s) in the compatible_engines property. Can be specified multiple times.')
+    group = parser.add_mutually_exclusive_group(required=False)
+    group.add_argument('-aav', '--add-engine-api-dependencies', type=str, nargs='*', required=False,
+                       help='Add engine api dependency version(s) this gem is compatible with. Can be specified multiple times.')
+    group.add_argument('-dav', '--remove-engine-api-dependencies', type=str, nargs='*', required=False,
+                       help='Removes engine api dependency version(s) from the compatible_engines property. Can be specified multiple times.')
+    group.add_argument('-rav', '--replace-engine-api-dependencies', type=str, nargs='*', required=False,
+                       help='Replace engine api dependency(s) in the compatible_engines property. Can be specified multiple times.')
     group = parser.add_mutually_exclusive_group(required=False)
     group.add_argument('-at', '--add-tags', type=str, nargs='*', required=False,
                        help='Adds tag(s) to user_tags property. Can be specified multiple times.')
@@ -161,6 +231,12 @@ def add_parser_args(parser):
                        help='Removes tag(s) from the user_tags property. Can be specified multiple times.')
     group.add_argument('-rt', '--replace-tags', type=str, nargs='*', required=False,
                        help='Replace tag(s) in user_tags property. Can be specified multiple times.')
+    group.add_argument('-apl', '--add-platforms', type=str, nargs='*', required=False,
+                       help='Adds platform(s) to platforms property. Can be specified multiple times.')
+    group.add_argument('-dpl', '--remove-platforms', type=str, nargs='*', required=False,
+                       help='Removes platform(s) from the platforms property. Can be specified multiple times.')
+    group.add_argument('-rpl', '--replace-platforms', type=str, nargs='*', required=False,
+                       help='Replace platform(s) in platforms property. Can be specified multiple times.')
     parser.set_defaults(func=_edit_gem_props)
 
 

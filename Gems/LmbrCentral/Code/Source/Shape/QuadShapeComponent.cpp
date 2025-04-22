@@ -15,19 +15,19 @@ namespace LmbrCentral
 {
     void QuadShapeComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("ShapeService", 0xe86aa5fe));
-        provided.push_back(AZ_CRC("QuadShapeService", 0xe449b0fc));
+        provided.push_back(AZ_CRC_CE("ShapeService"));
+        provided.push_back(AZ_CRC_CE("QuadShapeService"));
     }
 
     void QuadShapeComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("ShapeService", 0xe86aa5fe));
-        incompatible.push_back(AZ_CRC("QuadShapeService", 0xe449b0fc));
+        incompatible.push_back(AZ_CRC_CE("ShapeService"));
+        incompatible.push_back(AZ_CRC_CE("QuadShapeService"));
     }
 
     void QuadShapeComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("TransformService", 0x8ee22c50));
+        required.push_back(AZ_CRC_CE("TransformService"));
     }
 
     void QuadShapeComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)

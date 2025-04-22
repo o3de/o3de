@@ -13,7 +13,9 @@
 #include <Atom/Feature/SkinnedMesh/SkinnedMeshVertexStreams.h>
 #include <Atom/Feature/SkinnedMesh/SkinnedMeshFeatureProcessorBus.h>
 
+#include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RPI.Reflect/Buffer/BufferAssetCreator.h>
+#include <Atom_Feature_Traits_Platform.h>
 #include <numeric>
 
 namespace AZ
@@ -59,7 +61,8 @@ namespace AZ
             creator.SetPoolAsset(SkinnedMeshVertexStreamPropertyInterface::Get()->GetOutputStreamResourcePool());
 
             RHI::BufferDescriptor bufferDescriptor;
-            bufferDescriptor.m_bindFlags = RHI::BufferBindFlags::InputAssembly | RHI::BufferBindFlags::ShaderReadWrite;
+            bufferDescriptor.m_bindFlags = RHI::BufferBindFlags::InputAssembly | RHI::BufferBindFlags::ShaderReadWrite |
+                RHI::BufferBindFlags::CopyRead | RHI::BufferBindFlags::CopyWrite;
             bufferDescriptor.m_byteCount = m_sizeInBytes;
             bufferDescriptor.m_alignment = m_alignment;
             creator.SetBuffer(nullptr, 0, bufferDescriptor);
@@ -80,7 +83,7 @@ namespace AZ
         AZ_CVAR(
             int,
             r_skinnedMeshInstanceMemoryPoolSize,
-            256,
+            AZ_TRAIT_DEFAULT_SKINNING_MEMORY_SIZE,
             nullptr,
             AZ::ConsoleFunctorFlags::NeedsReload,
             "The amount of memory in Mb available for all actor skinning data. Note that this must only be set once at application startup"
@@ -105,6 +108,14 @@ namespace AZ
             }
 
             m_sizeInBytes = sizeInMb * (1024u * 1024u);
+
+            RHI::Device* device = AZ::RHI::RHISystemInterface::Get()->GetDevice();
+            AZ_Assert(device != nullptr, "Invalid RHI device");
+            const size_t maxBufferSize = static_cast<size_t>(device->GetLimits().m_maxBufferSize);
+            AZ_Warning("SkinnedMeshOutputStreamManager", m_sizeInBytes <= maxBufferSize,
+                "Amount of memory available for actor skinning data capped from the requested %zu bytes to %zu bytes due to max buffer size limit.",
+                m_sizeInBytes, maxBufferSize);
+            m_sizeInBytes = AZStd::min(m_sizeInBytes, maxBufferSize);
 
             CalculateAlignment();
 

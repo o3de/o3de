@@ -7,8 +7,6 @@
 #
 
 set(FILES
-    Source/Ai/NavigationSystemComponent.h
-    Source/Ai/NavigationSystemComponent.cpp
     Source/Audio/AudioAreaEnvironmentComponent.h
     Source/Audio/AudioAreaEnvironmentComponent.cpp
     Source/Audio/AudioEnvironmentComponent.h
@@ -41,8 +39,6 @@ set(FILES
     Source/Rendering/EntityDebugDisplayComponent.cpp
     Source/Scripting/LookAtComponent.h
     Source/Scripting/LookAtComponent.cpp
-    Source/Scripting/RandomTimedSpawnerComponent.cpp
-    Source/Scripting/RandomTimedSpawnerComponent.h
     Source/Scripting/SimpleStateComponent.h
     Source/Scripting/SimpleStateComponent.cpp
     Source/Scripting/TagComponent.h

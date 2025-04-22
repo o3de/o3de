@@ -6,9 +6,9 @@
  */
 
 #include <Atom/Features/SrgSemantics.azsli>
-#include <viewsrg.srgi>
-#include "TerrainCommon.azsli"
-#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
+#include <scenesrg_all.srgi>
+#include <viewsrg_all.srgi>
+#include <TerrainCommon.azsli>
 
 struct VSDepthOutput
 {
@@ -18,9 +18,14 @@ struct VSDepthOutput
 VSDepthOutput MainVS(in VertexInput input)
 {
     VSDepthOutput output;
-    ObjectSrg::TerrainData terrainData = ObjectSrg::m_terrainData;
 
-    float2 origUv = lerp(terrainData.m_uvMin, terrainData.m_uvMax, input.m_uv);
-    output.m_position = GetTerrainProjectedPosition(terrainData, input.m_position, origUv);
+    float3 worldPosition; // ignored
+    float3 normal; // ignored
+
+    CalculateTerrainPosition(
+        SceneSrg::m_terrainWorldData, ObjectSrg::m_patchData, input, // input params
+        worldPosition, output.m_position, normal // output params
+        );
+
     return output;
 }

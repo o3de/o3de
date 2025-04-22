@@ -23,24 +23,50 @@ namespace AZ
          */
         struct InstanceId
         {
+        public:
+            friend typename AZStd::hash<AZ::Data::InstanceId>;
+
             AZ_TYPE_INFO(InstanceId, "{0E59A635-07E8-419F-A0F2-90E0CE9C0AD6}");
 
             /**
-             * Creates an instance id from an asset id. The two will share the same guid and
-             * sub id. This is an explicit create method rather than a constructor in order
-             * to make it explicit.
+             * Support assigning multiple sub IDs for additional uniqueness between instances. For asset related instances, the first two
+             * sub IDs are reserved for the asset id sub id and the creation token, if available. Otherwise, any unreserved or unused sub
+             * IDs can be assigned according to the needs of the system managing instances.
              */
-            static InstanceId CreateFromAssetId(const AssetId& assetId);
+            static constexpr const int SubIdCapacity = 4;
+            using SubIdContainer = AZStd::fixed_vector<uint32_t, SubIdCapacity>;
 
             /**
-             * Creates an InstanceId by hashing the provided name.
+             * Creates an instance id from an asset. The GUID will be copied from the asset id. The first sub id will be the asset id sub
+             * id. The second sub id will be the asset creation token, or AZ::Data::s_defaultCreationToken if it is not available. Any
+             * additional sub IDs will be added after that.
              */
-            static InstanceId CreateName(const char* name);
+            static InstanceId CreateFromAsset(const Asset<AssetData>& asset, const SubIdContainer& subIds = {});
 
             /**
-             * Creates an InstanceId by hashing the provided data.
+             * Creates an instance id from an asset id. The GUID will be copied from the asset id. The first sub id will be the asset id sub
+             * id. The second sub id will be AZ::Data::s_defaultCreationToken so that it is uniform with CreateFromAsset. Any additional sub
+             * IDs will be added after that.
              */
-            static InstanceId CreateData(const void* data, size_t dataSize);
+            static InstanceId CreateFromAssetId(const AssetId& assetId, const SubIdContainer& subIds = {});
+
+            /**
+             * Creates an InstanceId with a GUID constructed from the name string. Additional sub IDs can be provided by the system creating
+             * the instances.
+             */
+            static InstanceId CreateName(const char* name, const SubIdContainer& subIds = {});
+
+            /**
+             * Creates an InstanceId with a GUID constructed from the data buffer. Additional sub IDs can be provided by the system creating
+             * the instances.
+             */
+            static InstanceId CreateData(const void* data, size_t dataSize, const SubIdContainer& subIds = {});
+
+            /**
+             * Creates an InstanceId with a GUID constructed from the UUID. Additional sub IDs can be provided by the system creating
+             * the instances.
+             */
+            static InstanceId CreateUuid(const AZ::Uuid& guid, const SubIdContainer& subIds = {});
 
             /**
              * Creates a random InstanceId.
@@ -50,11 +76,9 @@ namespace AZ
             // Create a null id by default.
             InstanceId() = default;
 
-            explicit InstanceId(const Uuid& guid);
-            explicit InstanceId(const Uuid& guid, uint32_t subId);
-
             bool IsValid() const;
 
+            bool operator<(const InstanceId& rhs) const;
             bool operator==(const InstanceId& rhs) const;
             bool operator!=(const InstanceId& rhs) const;
 
@@ -64,8 +88,14 @@ namespace AZ
             template<class StringType>
             void ToString(StringType& result) const;
 
+            const Uuid& GetGuid() const;
+
+        private:
+            explicit InstanceId(const Uuid& guid, const SubIdContainer& subIds);
+
             Uuid m_guid = Uuid::CreateNull();
-            uint32_t  m_subId = 0;
+
+            SubIdContainer m_subIds;
         };
 
         template<class StringType>
@@ -79,22 +109,33 @@ namespace AZ
         template<class StringType>
         inline void InstanceId::ToString(StringType& result) const
         {
-            result = StringType::format("%s:%x", m_guid.ToString<StringType>().c_str(), m_subId);
+            StringType combinedStr = m_guid.ToString<StringType>();
+            for (const auto subId : m_subIds)
+            {
+                combinedStr += StringType::format(":%x", subId);
+            }
+            result = combinedStr;
         }
-    }
-}
+    } // namespace Data
+} // namespace AZ
 
 namespace AZStd
 {
     // hash specialization
-    template <>
+    template<>
     struct hash<AZ::Data::InstanceId>
     {
-        typedef AZ::Uuid    argument_type;
-        typedef size_t      result_type;
-        AZ_FORCE_INLINE size_t operator()(const AZ::Data::InstanceId& id) const
+        using argument_type = AZ::Data::InstanceId;
+        using result_type = size_t;
+
+        result_type operator()(const argument_type& id) const
         {
-            return id.m_guid.GetHash() ^ static_cast<size_t>(id.m_subId);
+            size_t combinedHash = id.m_guid.GetHash();
+            for (const auto subId : id.m_subIds)
+            {
+                hash_combine(combinedHash, subId);
+            }
+            return combinedHash;
         }
     };
-}
+} // namespace AZStd

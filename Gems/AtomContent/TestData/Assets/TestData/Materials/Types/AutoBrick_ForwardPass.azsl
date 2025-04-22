@@ -1,0 +1,241 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#define FORCE_OPAQUE 1
+
+#include <scenesrg_all.srgi>
+#include <viewsrg_all.srgi>
+#include <Atom/Features/PBR/DefaultObjectSrg.azsli>
+#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
+#include <Atom/Features/InstancedTransforms.azsli>
+#include "AutoBrick_Common.azsli"
+#include <Atom/Features/Pipeline/Forward/ForwardPassSrg.azsli>
+#include <Atom/Features/Pipeline/Forward/ForwardPassOutput.azsli>
+#include <Atom/Features/ColorManagement/TransformColor.azsli>
+#include <Atom/Features/ParallaxMapping.azsli>
+#include <Atom/Features/PBR/Lighting/StandardLighting.azsli>
+#include <Atom/Features/PBR/Lights/IblForward.azsli>
+#include <Atom/Features/PBR/Decals.azsli>
+
+struct VSInput
+{
+    float3 m_position : POSITION;
+    float3 m_normal : NORMAL;
+    float4 m_tangent : TANGENT;
+    float2 m_uv : UV0;
+};
+
+struct VSOutput
+{
+    precise linear centroid float4 m_position : SV_Position;
+    float3 m_normal: NORMAL;
+    float4 m_tangent : TANGENT;
+    float3 m_worldPosition : UV0;
+    float2 m_uv : UV1;
+    uint m_instanceId : SV_InstanceID;
+};
+
+VSOutput AutoBrick_ForwardPassVS(VSInput IN, uint instanceId : SV_InstanceID)
+{
+    VSOutput OUT;
+ 
+    float3 worldPosition = mul(GetObjectToWorldMatrix(instanceId), float4(IN.m_position, 1.0)).xyz;
+ 
+    OUT.m_uv = IN.m_uv;
+
+    OUT.m_worldPosition = worldPosition;
+    OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(OUT.m_worldPosition, 1.0));
+    OUT.m_normal = IN.m_normal;
+    OUT.m_tangent = IN.m_tangent;
+    OUT.m_instanceId = instanceId;
+    return OUT;
+}
+
+// Returns the brick size including half the grout line on each side
+float2 GetBrickSpan()
+{
+    return float2(AutoBrickSrg::m_brickWidth, AutoBrickSrg::m_brickHeight);
+}
+
+// The size of the actual block not including the grout lines
+float2 GetBrickSize()
+{
+    return float2( AutoBrickSrg::m_brickWidth - AutoBrickSrg::m_lineWidth,
+                   AutoBrickSrg::m_brickHeight - AutoBrickSrg::m_lineWidth);
+}
+
+// Returns coordinates within the nearest brick, in UV units, where (0.0,0.0) is the center of the brick.
+float2 ToBrickCoords(float2 uv)
+{
+    float2 brickSpan = GetBrickSpan(); 
+
+    float stackIndex = floor(uv.y / brickSpan.y);
+    uv.x += stackIndex * AutoBrickSrg::m_brickOffset * brickSpan.x;
+
+    return fmod(uv, brickSpan) - sign(uv) * (brickSpan * 0.5);
+}
+
+// Returns grout-line coordinates normalized to half the width of the grout line, 
+// such that (1.0,1.0) is the center of the grout line to top-right of a brick,
+// (0.0,0.0) is anywhere inside a brick,
+// and (-1.0,-1.0) is the center of the grout line to the bottom-left of a brick.
+float2 GetNormalizedGroutLinePosition(float2 uv)
+{
+    const float2 brickPosition = ToBrickCoords(uv);
+    float2 brickEdge = GetBrickSize() * 0.5;
+    float2 groutLineCenter = GetBrickSpan() * 0.5;
+    float2 groutLinePosition = clamp(abs(brickPosition) - brickEdge, 0, 100000);
+    float2 normalized = groutLinePosition / (AutoBrickSrg::m_lineWidth * 0.5);
+    return sign(brickPosition) * normalized;
+}
+
+// Returns the distance from the nearest brick, 
+// where 0.0 is inside (or on the edge) of a brick, 
+// and 1.0 is the exact middle of a grout line.
+float GetNormalizedDistanceFromBrick(float2 uv)
+{
+    float2 distance = abs(GetNormalizedGroutLinePosition(uv));
+    return max(distance.x, distance.y);
+}
+
+// Returns the depth value (range 0-1) and normal vector (in TBN space) at any uv point on the surface. 
+void GetSurfaceShape(float2 uv, out float depth, out float3 normal)
+{
+    float2 pos = GetNormalizedGroutLinePosition(uv);
+
+    depth = max(abs(pos).x, abs(pos).y);
+
+    if(abs(pos).x > abs(pos).y)
+    {
+        normal = normalize(float3(sign(pos.x), 0, 1));
+    }
+    else
+    {
+        normal = normalize(float3(0, sign(pos.y), 1));
+    }
+}
+
+// Callback function for ParallaxMapping.azsli
+DepthResult GetDepth(float2 uv, float2 uv_ddx, float2 uv_ddy)
+{
+    float depth;
+    float3 normal;
+    GetSurfaceShape(uv, depth, normal);
+    return DepthResultNormalized(depth);
+}
+
+ForwardPassOutput AutoBrick_ForwardPassPS(VSOutput IN)
+{
+    real4x4 objectToWorld = real4x4(GetObjectToWorldMatrix(IN.m_instanceId));
+    real3x3 objectToWorldIT = real3x3(GetObjectToWorldMatrixInverseTranspose(IN.m_instanceId));
+
+    float3 normalWS, tangentWS, bitangentWS;
+    ConstructTBN(real3(IN.m_normal), real4(IN.m_tangent), objectToWorld, objectToWorldIT, normalWS, tangentWS, bitangentWS);
+
+    float3x3 identityUvMatrix = 
+        { 1,0,0,
+          0,1,0,
+          0,0,1 };
+          
+    float depthOffset = 0.0;
+
+    ParallaxOffset tangentOffset = GetParallaxOffset( AutoBrickSrg::m_lineDepth,
+                                                      depthOffset,
+                                                      IN.m_uv,
+                                                      ViewSrg::m_worldPosition.xyz - IN.m_worldPosition, 
+                                                      tangentWS,
+                                                      bitangentWS,
+                                                      normalWS,
+                                                      identityUvMatrix);
+    
+    IN.m_uv += tangentOffset.m_offsetTS.xy;
+ 
+    float3 baseColor = float3(1,1,1);
+    const float noise = AutoBrickSrg::m_noise.Sample(AutoBrickSrg::m_sampler, IN.m_uv).r;
+
+    float distanceFromBrick = GetNormalizedDistanceFromBrick(IN.m_uv);
+    if(distanceFromBrick > AutoBrickSrg::m_brickColorBleed) 
+    {
+        baseColor = AutoBrickSrg::m_lineColor * lerp(1.0, noise, AutoBrickSrg::m_lineNoiseFactor);
+    }
+    else
+    {
+        baseColor = AutoBrickSrg::m_brickColor * lerp(1.0, noise, AutoBrickSrg::m_brickNoiseFactor);
+    }
+
+    float surfaceDepth;
+    float3 surfaceNormal;
+    GetSurfaceShape(IN.m_uv, surfaceDepth, surfaceNormal);
+    const float3 surfaceNormalWorld = TangentSpaceToWorld(surfaceNormal, normalWS, tangentWS, bitangentWS);
+    
+    // ------- Surface -------
+
+    Surface surface;
+    
+    // Position, Normal, Roughness
+    surface.position = IN.m_worldPosition.xyz;
+    surface.normal = normalize(surfaceNormalWorld);
+    surface.vertexNormal = surfaceNormal;
+    surface.roughnessLinear = 1.0f;
+    surface.CalculateRoughnessA();
+
+    // Albedo, SpecularF0
+    const float metallic = 0.0f;
+    const float specularF0Factor = 0.5f;
+    surface.SetAlbedoAndSpecularF0(baseColor, specularF0Factor, metallic);
+
+    // Clear Coat
+    surface.clearCoat.InitializeToZero();
+
+    // ------- LightingData -------
+
+    LightingData lightingData;
+
+    // Light iterator
+    lightingData.tileIterator.Init(IN.m_position, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
+    lightingData.Init(surface.position, surface.normal, surface.roughnessLinear, ViewSrg::m_worldPosition.xyz);
+
+    // Shadow
+    lightingData.diffuseAmbientOcclusion = 1.0f - surfaceDepth * AutoBrickSrg::m_aoFactor;
+
+    // Diffuse and Specular response
+    lightingData.specularResponse = FresnelSchlickWithRoughness(lightingData.NdotV, surface.specularF0, surface.roughnessLinear);
+    lightingData.diffuseResponse = 1.0f - lightingData.specularResponse;
+
+    const float alpha = 1.0f;
+
+    // ------- Lighting Calculation -------
+
+    // Apply Decals
+    ApplyDecals(lightingData.tileIterator, surface);
+
+    // Apply Direct Lighting
+    ApplyDirectLighting(surface, lightingData, IN.m_position);
+
+    // Apply Image Based Lighting (IBL)
+    ApplyIblForward(surface, lightingData);
+
+    // Finalize Lighting
+    lightingData.FinalizeLighting();
+
+    PbrLightingOutput lightingOutput = GetPbrLightingOutput(surface, lightingData, alpha);
+
+    // ------- Output -------
+
+    ForwardPassOutput OUT;
+
+    OUT.m_diffuseColor = lightingOutput.m_diffuseColor;
+    OUT.m_diffuseColor.w = -1; // Subsurface scattering is disabled
+    OUT.m_specularColor = lightingOutput.m_specularColor;
+    OUT.m_specularF0 = lightingOutput.m_specularF0;
+    OUT.m_albedo = lightingOutput.m_albedo;
+    OUT.m_normal = lightingOutput.m_normal;
+
+    return OUT;
+}
+

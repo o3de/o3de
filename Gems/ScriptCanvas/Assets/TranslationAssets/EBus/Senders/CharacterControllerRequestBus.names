@@ -20,13 +20,15 @@
                         "tooltip": "Signaled after Set Slope Limit Degrees is invoked"
                     },
                     "details": {
-                        "name": "Set Slope Limit Degrees"
+                        "name": "Set Slope Limit Degrees",
+                        "tooltip": "Set the maximum slope angle (in degrees) which the character can ascend"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Slope Limit"
+                                "name": "Slope Limit",
+                                "tooltip": "The maximum slope angle (in degrees) which the character can ascend"
                             }
                         }
                     ]
@@ -42,13 +44,24 @@
                         "tooltip": "Signaled after Get Slope Limit Degrees is invoked"
                     },
                     "details": {
-                        "name": "Get Slope Limit Degrees"
+                        "name": "Get Slope Limit Degrees",
+                        "tooltip": "Get the maximum slope angle (in degrees) which the character can ascend"
                     },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Id for the entity the character is associated with"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Slope Limit"
+                                "name": "Slope Limit",
+                                "tooltip": "The maximum slope angle (in degrees) which the character can ascend"
                             }
                         }
                     ]
@@ -64,13 +77,15 @@
                         "tooltip": "Signaled after Set Maximum Speed is invoked"
                     },
                     "details": {
-                        "name": "Set Maximum Speed"
+                        "name": "Set Maximum Speed",
+                        "tooltip": "Set the speed (in metres per second) above which the character's movement will be clamped"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Maximum Speed"
+                                "name": "Maximum Speed",
+                                "tooltip": "The speed (in metres per second) above which the character's movement will be clamped"
                             }
                         }
                     ]
@@ -86,13 +101,24 @@
                         "tooltip": "Signaled after Get Up Direction is invoked"
                     },
                     "details": {
-                        "name": "Get Up Direction"
+                        "name": "Get Up Direction",
+                        "tooltip": "Get the direction considered to be upward when evaluating character movement, for example on slopes or steps"
                     },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Id for the entity the character is associated with"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Up"
+                                "name": "Up",
+                                "tooltip": "The direction considered to be upward when evaluating character movement"
                             }
                         }
                     ]
@@ -108,13 +134,63 @@
                         "tooltip": "Signaled after Add Velocity is invoked"
                     },
                     "details": {
-                        "name": "Add Velocity"
+                        "name": "Add Velocity",
+                        "tooltip": "Add velocity to the character, to be accumulated with other velocity requests"
                     },
                     "params": [
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Velocity"
+                                "name": "Velocity",
+                                "tooltip": "Velocity to be added to the character"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "AddVelocityForPhysicsTimestep",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Add Velocity For Physics Timestep"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Add Velocity For Physics Timestep is invoked"
+                    },
+                    "details": {
+                        "name": "Add Velocity For Physics Timestep",
+                        "tooltip": "Add velocity to the character, to be accumulated with other velocity requests, lasting until the end of the next physics timestep"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Velocity",
+                                "tooltip": "Velocity to be added to the character, lasting until the end of the next physics timestep"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "AddVelocityForTick",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Add Velocity For Tick"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Add Velocity For Tick is invoked"
+                    },
+                    "details": {
+                        "name": "Add Velocity For Tick",
+                        "tooltip": "Add velocity to the character, to be accumulated with other velocity requests, lasting until the end of the next update of the tick bus"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Velocity",
+                                "tooltip": "Velocity to be added to the character, lasting until the end of the next update of the tick bus"
                             }
                         }
                     ]
@@ -130,13 +206,15 @@
                         "tooltip": "Signaled after Set Base Position is invoked"
                     },
                     "details": {
-                        "name": "Set Base Position"
+                        "name": "Set Base Position",
+                        "tooltip": "Set the position of the base (feet) of the character"
                     },
                     "params": [
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Position"
+                                "name": "Position",
+                                "tooltip": "The desired position for the base (feet) of the character"
                             }
                         }
                     ]
@@ -152,13 +230,24 @@
                         "tooltip": "Signaled after Get Center Position is invoked"
                     },
                     "details": {
-                        "name": "Get Center Position"
+                        "name": "Get Center Position",
+                        "tooltip": "Get the position of the character's center"
                     },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Id for the entity the character is associated with"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Position"
+                                "name": "Position",
+                                "tooltip": "The position of the character's center"
                             }
                         }
                     ]
@@ -174,13 +263,24 @@
                         "tooltip": "Signaled after Get Step Height is invoked"
                     },
                     "details": {
-                        "name": "Get Step Height"
+                        "name": "Get Step Height",
+                        "tooltip": "Get the maximum height of steps the character can ascend"
                     },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Id for the entity the character is associated with"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Step Height"
+                                "name": "Step Height",
+                                "tooltip": "The maximum height of steps the character can ascend"
                             }
                         }
                     ]
@@ -196,13 +296,24 @@
                         "tooltip": "Signaled after Get Base Position is invoked"
                     },
                     "details": {
-                        "name": "Get Base Position"
+                        "name": "Get Base Position",
+                        "tooltip": "Get the position of the base (feet) of the character"
                     },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Id for the entity the character is associated with"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Position"
+                                "name": "Position",
+                                "tooltip": "The position of the base (feet) of the character"
                             }
                         }
                     ]
@@ -218,13 +329,15 @@
                         "tooltip": "Signaled after Set Step Height is invoked"
                     },
                     "details": {
-                        "name": "Set Step Height"
+                        "name": "Set Step Height",
+                        "tooltip": "Set the maximum height of steps the character can ascend"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Step Height"
+                                "name": "Step Height",
+                                "tooltip": "The maximum height of steps the character can ascend"
                             }
                         }
                     ]
@@ -240,13 +353,24 @@
                         "tooltip": "Signaled after Get Maximum Speed is invoked"
                     },
                     "details": {
-                        "name": "Get Maximum Speed"
+                        "name": "Get Maximum Speed",
+                        "tooltip": "Get the speed (in metres per second) above which the character's movement will be clamped"
                     },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Id for the entity the character is associated with"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Maximum Speed"
+                                "name": "Maximum Speed",
+                                "tooltip": "The speed (in metres per second) above which the character's movement will be clamped"
                             }
                         }
                     ]
@@ -262,13 +386,24 @@
                         "tooltip": "Signaled after Get Velocity is invoked"
                     },
                     "details": {
-                        "name": "Get Velocity"
+                        "name": "Get Velocity",
+                        "tooltip": "Get the velocity of the character at its last update"
                     },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Id for the entity the character is associated with"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Velocity"
+                                "name": "Velocity",
+                                "tooltip": "The velocity of the character at its last update"
                             }
                         }
                     ]

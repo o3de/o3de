@@ -19,12 +19,12 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/RTTI/ReflectContext.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/any.h>
 #include <AzCore/std/hash.h>
 #include <Core/NamedId.h>
 #include <ScriptCanvas/Grammar/PrimitivesDeclarations.h>
 #include <AzCore/Console/IConsole.h>
+#include <ScriptCanvas/Data/Constants.h>
 
 #define OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED
 
@@ -46,19 +46,7 @@ namespace ScriptCanvas
     AZ_CVAR_EXTERNED(bool, g_saveRuntimeAssetsAsPlainTextForDebug);
     AZ_CVAR_EXTERNED(bool, g_saveEditorAssetsAsPlainTextForDebug);
 
-    // A place holder identifier for the AZ::Entity that owns the graph.
-    // The actual value in each location initialized to GraphOwnerId is populated with the owning entity at editor-time, Asset Processor-time, or runtime, as soon as the owning entity is known.
-    using GraphOwnerIdType = AZ::EntityId;
-    static const GraphOwnerIdType GraphOwnerId = AZ::EntityId(0xacedc0de);
-
-    // A place holder identifier for unique runtime graph on Entity that is running more than one instance of the same graph.
-    // This allows multiple instances of the same graph to be addressed individually on the same entity.
-    // The actual value in each location initialized to UniqueId is populated at run-time.
-    using RuntimeIdType = AZ::EntityId;
-    static const RuntimeIdType UniqueId = AZ::EntityId(0xfee1baad);
-
     constexpr const char* k_EventOutPrefix = "ExecutionSlot:";
-
     constexpr const char* k_OnVariableWriteEventName = "OnVariableValueChanged";
     constexpr const char* k_OnVariableWriteEbusName = "VariableNotification";
 
@@ -202,7 +190,7 @@ namespace ScriptCanvas
 
     struct GraphIdentifier final
     {
-        AZ_CLASS_ALLOCATOR(GraphIdentifier, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GraphIdentifier, AZ::SystemAllocator);
         AZ_TYPE_INFO(GraphIdentifier, "{0DAFC7EF-D23A-4353-8DA5-7D0CC186D8E3}");
 
         AZ::ComponentId m_componentId = 0;
@@ -235,7 +223,7 @@ namespace ScriptCanvas
     struct RuntimeVariable
     {
         AZ_TYPE_INFO(RuntimeVariable, "{6E969359-5AF5-4ECA-BE89-A96AB30A624E}");
-        AZ_CLASS_ALLOCATOR(RuntimeVariable, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(RuntimeVariable, AZ::SystemAllocator);
 
         static void Reflect(AZ::ReflectContext* reflectContext);
 
@@ -302,8 +290,6 @@ namespace ScriptCanvas
         bool m_wasAdded = false;
         AZ::Entity* m_buildEntity = nullptr;
     };
-
-    void ReflectEventTypeOnDemand(const AZ::TypeId& typeId, AZStd::string_view name, AZ::IRttiHelper* rttiHelper = nullptr);
 }
 
 namespace ScriptCanvas
@@ -316,11 +302,14 @@ namespace ScriptCanvas
 
 namespace ScriptCanvasEditor
 {
-    class Graph;
-    
-    using GraphPtr = Graph*;
-    using GraphPtrConst = const Graph*;
+    class EditorGraph;
 
+    using GraphPtr = EditorGraph*;
+    using GraphPtrConst = const EditorGraph*;
+}
+
+namespace ScriptCanvas
+{
     class SourceDescription
     {
     public:
@@ -343,12 +332,71 @@ namespace ScriptCanvasEditor
     {
     public:
         AZ_TYPE_INFO(SourceHandle, "{65855A98-AE2F-427F-BFC8-69D45265E312}");
-        AZ_CLASS_ALLOCATOR(SourceHandle, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SourceHandle, AZ::SystemAllocator);
 
         static void Reflect(AZ::ReflectContext* context);
 
+        static SourceHandle FromRelativePath(const SourceHandle& data, const AZ::Uuid& id, const AZ::IO::Path& path);
+
+        static SourceHandle FromRelativePath(ScriptCanvas::DataPtr graph, const AZ::Uuid& id, const AZ::IO::Path& path);
+
+        static SourceHandle FromRelativePath(const SourceHandle& data, const AZ::IO::Path& path);
+
+        static SourceHandle FromRelativePath(ScriptCanvas::DataPtr graph, const AZ::IO::Path& path);
+
+        static SourceHandle FromRelativePathAndScanFolder
+            ( AZStd::string_view relativePath
+            , AZStd::string_view scanFolder
+            , const AZ::Uuid& sourceId);
+
+        static SourceHandle MarkAbsolutePath(const SourceHandle& data, const AZ::IO::Path& path);
+
         SourceHandle();
 
+        SourceHandle(const SourceHandle& source);
+
+        SourceHandle(const SourceHandle& data, const AZ::Uuid& id);
+
+        SourceHandle(ScriptCanvas::DataPtr graph, const AZ::Uuid& id);
+
+        // this can be empty, even if the relative path is not
+        const AZ::IO::Path& AbsolutePath() const;
+
+        bool AnyEquals(const SourceHandle& other) const;
+
+        void Clear();
+
+        DataPtr Data() const;
+
+        // return a SourceHandle with only the Id and Path, but without a pointer to the data
+        SourceHandle Describe() const;
+
+        ScriptCanvasEditor::GraphPtrConst Get() const;
+
+        const AZ::Uuid& Id() const;
+
+        bool IsDescriptionValid() const;
+
+        bool IsGraphValid() const;
+
+        ScriptCanvasEditor::GraphPtr Mod() const;
+
+        AZStd::string Name() const;
+
+        bool operator==(const SourceHandle& other) const;
+
+        bool operator!=(const SourceHandle& other) const;
+
+        const AZ::IO::Path& RelativePath() const;
+
+        bool PathEquals(const SourceHandle& other) const;
+
+        AZStd::string ToString() const;
+
+        AZStd::string GetSuggestedFileName() const;
+        void SetSuggestedFileName(const AZStd::string_view suggestedFileName);
+
+    private:
         SourceHandle(const SourceHandle& data, const AZ::Uuid& id, const AZ::IO::Path& path);
 
         SourceHandle(ScriptCanvas::DataPtr graph, const AZ::Uuid& id, const AZ::IO::Path& path);
@@ -357,49 +405,22 @@ namespace ScriptCanvasEditor
 
         SourceHandle(ScriptCanvas::DataPtr graph, const AZ::IO::Path& path);
 
-        bool AnyEquals(const SourceHandle& other) const;
-
-        void Clear();
-
-        // return a SourceHandle with only the Id and Path, but without a pointer to the data
-        SourceHandle Describe() const;
-
-        GraphPtrConst Get() const;
-
-        const AZ::Uuid& Id() const;
-
-        bool IsDescriptionValid() const;
-
-        bool IsGraphValid() const;
-
-        GraphPtr Mod() const;
-
-        bool operator==(const SourceHandle& other) const;
-
-        bool operator!=(const SourceHandle& other) const;
-
-        const AZ::IO::Path& Path() const;
-
-        bool PathEquals(const SourceHandle& other) const;
-
-        AZStd::string ToString() const;
-
-    private:
-        ScriptCanvas::DataPtr m_data;
+        DataPtr m_data;
         AZ::Uuid m_id = AZ::Uuid::CreateNull();
-        AZ::IO::Path m_path;
-    };
-}
+        AZ::IO::Path m_relativePath;
+        AZ::IO::Path m_absolutePath;
+        AZStd::string m_suggestedFileName;
 
-namespace ScriptCanvas
-{
+        void SanitizePath();
+    };
+
     class ScriptCanvasData
         : public AZStd::intrusive_refcount<AZStd::atomic_uint, AZStd::intrusive_default_delete>
     {
     public:
 
         AZ_RTTI(ScriptCanvasData, "{1072E894-0C67-4091-8B64-F7DB324AD13C}");
-        AZ_CLASS_ALLOCATOR(ScriptCanvasData, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptCanvasData, AZ::SystemAllocator);
         ScriptCanvasData() = default;
         virtual ~ScriptCanvasData() = default;
         ScriptCanvasData(ScriptCanvasData&& other);
@@ -411,16 +432,23 @@ namespace ScriptCanvas
 
         const Graph* GetGraph() const;
 
-        const ScriptCanvasEditor::Graph* GetEditorGraph() const;
+        const ScriptCanvasEditor::EditorGraph* GetEditorGraph() const;
 
         Graph* ModGraph();
 
-        ScriptCanvasEditor::Graph* ModEditorGraph();
+        ScriptCanvasEditor::EditorGraph* ModEditorGraph();
 
         AZStd::unique_ptr<AZ::Entity> m_scriptCanvasEntity;
+
     private:
         ScriptCanvasData(const ScriptCanvasData&) = delete;
     };
+}
+
+namespace ScriptCanvasEditor
+{
+    using SourceHandle = ScriptCanvas::SourceHandle;
+    using SourceDescription = ScriptCanvas::SourceDescription;
 }
 
 namespace AZStd
@@ -438,20 +466,21 @@ namespace AZStd
     };
 
     template<>
-    struct hash<ScriptCanvasEditor::SourceHandle>
+    struct hash<ScriptCanvas::SourceHandle>
     {
-        using argument_type = ScriptCanvasEditor::SourceHandle;
+        using argument_type = ScriptCanvas::SourceHandle;
         using result_type = AZStd::size_t;
 
         inline size_t operator()(const argument_type& handle) const
         {
             size_t h = 0;
             hash_combine(h, handle.Id());
-            hash_combine(h, handle.Path());
+            hash_combine(h, handle.RelativePath());
             hash_combine(h, handle.Get());
             return h;
         }
     };
 }
+
 
 #define SCRIPT_CANVAS_INFINITE_LOOP_DETECTION_COUNT (2000000)

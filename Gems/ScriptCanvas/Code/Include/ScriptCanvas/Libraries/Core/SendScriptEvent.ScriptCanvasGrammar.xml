@@ -2,16 +2,14 @@
 
 <ScriptCanvas Include="Include/ScriptCanvas/Libraries/Core/SendScriptEvent.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <Class Name="SendScriptEvent"
-	       QualifiedName="ScriptCanvas::Nodes::Core::SendScriptEvent"
-	       PreferredClassName="Send Script Event"
-           Uuid="{64A97CC3-2BEA-4B47-809B-6C7DA34FD00F}"
-           Base="ScriptCanvas::Nodes::Core::Internal::ScriptEventBase"
-           Icon="Icons/ScriptCanvas/Bus.png"
-           Version="4"
-           DynamicSlotOrdering="True"
-           EditAttributes="AZ::Script::Attributes::ExcludeFrom@AZ::Script::Attributes::ExcludeFlags::All"
-           GeneratePropertyFriend="True"
-           Description="Allows you to send an event.">
+        QualifiedName="ScriptCanvas::Nodes::Core::SendScriptEvent"
+        PreferredClassName="Send Script Event"
+        Uuid="{64A97CC3-2BEA-4B47-809B-6C7DA34FD00F}"
+        Base="ScriptCanvas::Nodes::Core::Internal::ScriptEventBase"
+        Version="4"
+        DynamicSlotOrdering="True"
+        EditAttributes="AZ::Script::Attributes::ExcludeFrom@AZ::Script::Attributes::ExcludeFlags::All"
+        Description="Allows you to send an event.">
         <SerializedProperty Name="m_namespaces" />
         <SerializedProperty Name="m_busId" />
         <SerializedProperty Name="m_eventId" />

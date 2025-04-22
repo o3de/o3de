@@ -40,6 +40,11 @@ namespace EMotionFX
                 // AssetImportRequest
                 AZ::SceneAPI::Events::ProcessingResult UpdateManifest(AZ::SceneAPI::Containers::Scene& scene, ManifestAction action,
                     RequestingApplication requester) override;
+
+                void GetPolicyName(AZStd::string& result) const override
+                {
+                    result = "MotionRangeRuleBehavior";
+                }
             };
         } // Behavior
     } // Pipeline

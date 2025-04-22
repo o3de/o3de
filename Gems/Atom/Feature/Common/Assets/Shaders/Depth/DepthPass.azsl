@@ -6,7 +6,30 @@
  *
  */
 
+#include <scenesrg_all.srgi>
+#include <viewsrg_all.srgi>
 #include <Atom/Features/PBR/DefaultObjectSrg.azsli>
-#include <DepthPassCommon.azsli>
+#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
+#include <Atom/Features/InstancedTransforms.azsli>
 
-// Use the depth pass shader with the default object srg
+struct VSInput
+{
+    float3 m_position : POSITION;
+};
+ 
+struct VSDepthOutput
+{
+    precise float4 m_position : SV_Position;
+};
+
+VSDepthOutput DepthPassVS(VSInput IN, uint instanceId : SV_InstanceID)
+{
+    VSDepthOutput OUT;
+ 
+    float4x4 objectToWorld = GetObjectToWorldMatrix(instanceId);
+    float4 worldPosition = mul(objectToWorld, float4(IN.m_position, 1.0));
+    OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, worldPosition);
+
+    return OUT;
+}
+

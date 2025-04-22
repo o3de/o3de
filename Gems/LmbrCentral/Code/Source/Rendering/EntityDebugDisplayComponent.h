@@ -23,7 +23,7 @@ namespace LmbrCentral
         , private AzFramework::EntityDebugDisplayEventBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(EntityDebugDisplayComponent, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EntityDebugDisplayComponent, AZ::SystemAllocator);
         AZ_RTTI(EntityDebugDisplayComponent, "{091EA609-13E9-4553-83BA-36878CBAB950}", AZ::Component);
 
         EntityDebugDisplayComponent() = default;
@@ -37,7 +37,7 @@ namespace LmbrCentral
     protected:
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC("TransformService", 0x8ee22c50));
+            required.push_back(AZ_CRC_CE("TransformService"));
         }
 
         // AZ::TransformNotificationBus::Handler

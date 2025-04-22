@@ -13,7 +13,10 @@
 
 void PropertyHandlerVecRegister()
 {
-    EBUS_EVENT(AzToolsFramework::PropertyTypeRegistrationMessages::Bus, RegisterPropertyType, aznew PropertyHandlerVec2());
-    EBUS_EVENT(AzToolsFramework::PropertyTypeRegistrationMessages::Bus, RegisterPropertyType, aznew PropertyHandlerVec3());
-    EBUS_EVENT(AzToolsFramework::PropertyTypeRegistrationMessages::Bus, RegisterPropertyType, aznew PropertyHandlerVec4());
+    AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Broadcast(
+        &AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew PropertyHandlerVec2());
+    AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Broadcast(
+        &AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew PropertyHandlerVec3());
+    AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Broadcast(
+        &AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew PropertyHandlerVec4());
 }

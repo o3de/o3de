@@ -7,10 +7,10 @@
  */
 #pragma once
 
+#include <AzCore/std/ranges/ranges.h>
 #include <AzCore/std/createdestroy.h>
 #include <AzCore/std/iterator.h>
 #include <AzCore/std/limits.h>
-
 
 namespace AZStd
 {
@@ -280,18 +280,38 @@ namespace AZStd
         static constexpr char_type* assign(char_type* dest, size_t count, char_type ch) noexcept
         {
             AZ_Assert(dest, "Invalid input!");
-            for (char_type* iter = dest; count; --count, ++iter)
+
+            if constexpr (AZStd::is_same_v<char_type, char>)
             {
-                assign(*iter, ch);
+                // Use builtin_memset if available for char type
+                if (az_builtin_is_constant_evaluated())
+                {
+                    for (char_type* iter = dest; count; --count, ++iter)
+                    {
+                        assign(*iter, ch);
+                    }
+                }
+                else
+                {
+                    ::memset(dest, ch, count);
+                }
             }
+            else
+            {
+                for (char_type* iter = dest; count; --count, ++iter)
+                {
+                    assign(*iter, ch);
+                }
+            }
+
             return dest;
         }
         static constexpr bool eq(char_type left, char_type right) noexcept { return left == right; }
         static constexpr bool lt(char_type left, char_type right) noexcept { return left < right; }
         static constexpr int compare(const char_type* s1, const char_type* s2, size_t count) noexcept
         {
-            // Regression in VS2017 15.8 and 15.9 where __builtin_memcmp fails in valid checks in constexpr evaluation
-#if !defined(AZ_COMPILER_MSVC) || AZ_COMPILER_MSVC < 1915 || AZ_COMPILER_MSVC > 1916
+            // In GCC versions , __builtin_memcmp fails in valid checks in constexpr evaluation
+#if az_has_builtin_memcmp
             if constexpr (AZStd::is_same_v<char_type, char>)
             {
                 return __builtin_memcmp(s1, s2, count);
@@ -303,29 +323,72 @@ namespace AZStd
             else
 #endif
             {
-                for (; count; --count, ++s1, ++s2)
+                if (az_builtin_is_constant_evaluated())
                 {
-                    if (lt(*s1, *s2))
+                    for (; count; --count, ++s1, ++s2)
                     {
-                        return -1;
+                        if (lt(*s1, *s2))
+                        {
+                            return -1;
+                        }
+                        else if (lt(*s2, *s1))
+                        {
+                            return 1;
+                        }
                     }
-                    else if (lt(*s2, *s1))
-                    {
-                        return 1;
-                    }
+                    return 0;
                 }
-                return 0;
+                else
+                {
+                    return ::memcmp(s1, s2, count * sizeof(char_type));
+                }
             }
         }
+
         static constexpr size_t length(const char_type* s) noexcept
         {
+            // For GCC versions less than 10, __builtin_strlen and __builtin_wcslen is not supported as const expressions
+            // so for that case it will need to manually count the characters (at compile time) instead
+
             if constexpr (AZStd::is_same_v<char_type, char>)
             {
+#if !az_has_builtin_strlen
+                if (!az_builtin_is_constant_evaluated())
+                {
+                    return strlen(s);
+                }
+                else
+                {
+                    size_t strLength{};
+                    for (; *s; ++s, ++strLength)
+                    {
+                        ;
+                    }
+                    return strLength;
+                }
+#else
                 return __builtin_strlen(s);
+#endif
             }
             else if constexpr (AZStd::is_same_v<char_type, wchar_t>)
             {
+#if !az_has_builtin_wcslen
+                if (!az_builtin_is_constant_evaluated())
+                {
+                    return wcslen(s);
+                }
+                else
+                {
+                    size_t strLength{};
+                    for (; *s; ++s, ++strLength)
+                    {
+                        ;
+                    }
+                    return strLength;
+                }
+#else
                 return __builtin_wcslen(s);
+#endif
             }
             else
             {
@@ -336,24 +399,61 @@ namespace AZStd
                 }
                 return strLength;
             }
+
         }
+
         static constexpr const char_type* find(const char_type* s, size_t count, const char_type& ch) noexcept
         {
-                // There is a bug with the __builtin_char_memchr intrinsic in Visual Studio 2017 15.8.x and 15.9.x
-                // It reads in one more additional character than the value of count.
-                // This is probably due to assuming null-termination
-#if !defined(AZ_COMPILER_MSVC) || AZ_COMPILER_MSVC < 1915 || AZ_COMPILER_MSVC > 1916
+            // For GCC versions less than 10, __builtin_char_memchr and __builtin_wmemchr is not supported, and
+            // __builtin_memchr is not supported as const expressions. In those cases we will manually locate and
+            // return the pointer to 's' (at compile time)
             if constexpr (AZStd::is_same_v<char_type, char>)
             {
+#if !az_has_builtin_char_memchr
+                if (!az_builtin_is_constant_evaluated())
+                {
+                    return static_cast<const char_type*>(__builtin_memchr(s, ch, count));
+                }
+                else
+                {
+                    for (; count; --count, ++s)
+                    {
+                        if (eq(*s, ch))
+                        {
+                            return s;
+                        }
+                    }
+
+                    return nullptr;
+                }
+#else
                 return __builtin_char_memchr(s, ch, count);
+#endif
             }
             else if constexpr (AZStd::is_same_v<char_type, wchar_t>)
             {
-                return __builtin_wmemchr(s, ch, count);
+#if !az_has_builtin_wmemchr
+                if (!az_builtin_is_constant_evaluated())
+                {
+                    return wmemchr(s, ch, count);
+                }
+                else
+                {
+                    for (; count; --count, ++s)
+                    {
+                        if (eq(*s, ch))
+                        {
+                            return s;
+                        }
+                    }
 
+                    return nullptr;
+                }
+#else
+                return __builtin_wmemchr(s, ch, count);
+#endif
             }
             else
-#endif
             {
                 for (; count; --count, ++s)
                 {
@@ -362,70 +462,118 @@ namespace AZStd
                         return s;
                     }
                 }
+
                 return nullptr;
             }
         }
         static constexpr char_type* move(char_type* dest, const char_type* src, size_t count) noexcept
         {
             AZ_Assert(dest != nullptr && src != nullptr, "Invalid input!");
-            if (count == 0)
+            if (count == 0 || src == dest)
             {
                 return dest;
             }
-            char_type* result = dest;
-            // The less than(<), greater than(>) and other variants(<=, >=)
-            // Cannot be compare pointers within a constexpr due to the potential for undefined behavior
-            // per the bullet linked in the C++ standard at http://eel.is/c++draft/expr.compound#expr.rel-5
-            // Now clang and gcc compilers allow the use of this relation operators in a constexpr, but
-            // msvc is not so forgiving
-            // So a workaround of iterating the src pointer, checking for equality with the dest pointer
-            // is used to check for overlap
-            auto should_copy_forward = [](const char_type* dest1, const char_type* src2, size_t count2) constexpr -> bool
+
+        #if az_has_builtin_memmove
+            __builtin_memmove(dest, src, count * sizeof(char_type));
+        #else
+            auto NonBuiltinMove = [](char_type* dest1, const char_type* src1, size_t count1) constexpr
+                -> char_type*
             {
-                bool dest_less_than_src{ true };
-                for(const char_type* src_iter = src2; src_iter != src2 + count2; ++src_iter)
+                if (az_builtin_is_constant_evaluated())
                 {
-                    if (src_iter == dest1)
+                    // The less than(<), greater than(>) and other variants(<=, >=)
+                    // Cannot be compare pointers within a constexpr due to the potential for undefined behavior
+                    // per the bullet linked in the C++ standard at http://eel.is/c++draft/expr.compound#expr.rel-5
+                    // Now clang and gcc compilers allow the use of this relation operators in a constexpr, but
+                    // msvc is not so forgiving
+                    // So a workaround of iterating the src pointer, checking for equality with the dest pointer
+                    // is used to check for overlap
+                    auto should_copy_forward = [](const char_type* dest2, const char_type* src2, size_t count2) constexpr -> bool
                     {
-                        dest_less_than_src = false;
-                        break;
+                        bool dest_less_than_src{ true };
+                        for (const char_type* src_iter = src2; src_iter != src2 + count2; ++src_iter)
+                        {
+                            if (src_iter == dest2)
+                            {
+                                dest_less_than_src = false;
+                                break;
+                            }
+                        }
+                        return dest_less_than_src;
+                    };
+
+                    if (should_copy_forward(dest1, src1, count1))
+                    {
+                        copy(dest1, src1, count1);
+                    }
+                    else
+                    {
+                        copy_backward(dest1, src1, count1);
                     }
                 }
-                return dest_less_than_src;
+                else
+                {
+                    // Use the faster ::memmove operation at runtime
+                    ::memmove(dest1, src1, count1 * sizeof(char_type));
+                }
+
+                return dest1;
             };
+            NonBuiltinMove(dest, src, count);
+        #endif
 
-            if (should_copy_forward(dest, src, count))
-            {
-                copy(dest, src, count);
-            }
-            else
-            {
-                copy_backward(dest, src, count);
-            }
-
-            return result;
+            return dest;
         }
         static constexpr char_type* copy(char_type* dest, const char_type* src, size_t count) noexcept
         {
-            AZ_Assert(dest != nullptr && src != nullptr, "Invalid input!");
-            char_type* result = dest;
-            for(; count; --count, ++dest, ++src)
+        #if az_has_builtin_memcpy
+            __builtin_memcpy(dest, src, count * sizeof(char_type));
+        #else
+            auto NonBuiltinCopy = [](char_type* dest1, const char_type* src1, size_t count1) constexpr
+                -> char_type*
             {
-                assign(*dest, *src);
-            }
-            return result;
+                if (az_builtin_is_constant_evaluated())
+                {
+                    for (; count1; --count1, ++dest1, ++src1)
+                    {
+                        assign(*dest1, *src1);
+                    }
+                }
+                else
+                {
+                    AZ_Assert(dest1 != nullptr && src1 != nullptr, "Invalid input!");
+                    ::memcpy(dest1, src1, count1 * sizeof(char_type));
+                }
+                return dest1;
+            };
+            NonBuiltinCopy(dest, src, count);
+        #endif
+
+            return dest;
         }
         // Extension for constexpr workarounds: Addresses of a string literal cannot be compared at compile time and MSVC and clang will just refuse to compile the constexpr
         // Adding a copy_backwards overload that always copies backwards.
-        static constexpr char_type* copy_backward(char_type* dest, const char_type*src, size_t count) noexcept
+        static constexpr char_type* copy_backward(char_type* dest, const char_type* src, size_t count) noexcept
         {
             char_type* result = dest;
-            dest += count;
-            src += count;
-            for (; count; --count)
+        #if az_has_builtin_memmove
+            __builtin_memmove(dest, src, count * sizeof(char_type));
+        #else
+            if (az_builtin_is_constant_evaluated())
             {
-                assign(*--dest, *--src);
+                dest += count;
+                src += count;
+                for (; count; --count)
+                {
+                    assign(*--dest, *--src);
+                }
             }
+            else
+            {
+                ::memmove(dest, src, count);
+            }
+        #endif
             return result;
         }
 
@@ -445,9 +593,27 @@ namespace AZStd
         static constexpr int_type eof() noexcept { return static_cast<int_type>(-1); }
         static constexpr int_type not_eof(int_type c) noexcept { return c != eof() ? c : !eof(); }
     };
+}
 
+namespace AZStd::Internal
+{
+    template <class Element, class Traits, class R, class = void>
+    constexpr bool convertible_to_string_view = false;
+
+    // If the range has a traits_type element, it must match
+    template <class Element, class Traits, class R, class = void>
+    static constexpr bool range_trait_type_matches = true;
+    template <class Element, class Traits, class R>
+    inline constexpr bool range_trait_type_matches<Element, Traits, R,
+        enable_if_t<conjunction_v<
+        Internal::sfinae_trigger<typename remove_reference_t<R>::traits_type>,
+        bool_constant<!same_as<typename remove_reference_t<R>::traits_type, Traits>>
+        >>> = false;
+}
+namespace AZStd
+{
     /**
-     * Immutable string wrapper based on boost::const_string and std::string_view. When we operate on
+     * Immutable string wrapper based on std::string_view. When we operate on
      * const char* we don't know if this points to NULL terminated string or just a char array.
      * to have a clear distinction between them we provide this wrapper.
      */
@@ -487,13 +653,33 @@ namespace AZStd
         {}
 
         template <typename It, typename End, typename = AZStd::enable_if_t<
-            Internal::satisfies_contiguous_iterator_concept_v<It>
-            && is_same_v<typename AZStd::iterator_traits<It>::value_type, value_type>
+            contiguous_iterator<It>
+            && sized_sentinel_for<End, It>
+            && is_same_v<iter_value_t<It>, value_type>
             && !is_convertible_v<End, size_type>>
         >
         constexpr basic_string_view(It first, End last)
             : m_begin(AZStd::to_address(first))
             , m_size(AZStd::to_address(last) - AZStd::to_address(first))
+        {}
+
+        // double SFINAE is used to defer evaluation of the contiguous range
+        // until after validating the input type isn't basic_string_view
+        template <typename R,
+            typename = enable_if_t<conjunction_v<
+            bool_constant<!same_as<remove_cvref_t<R>, basic_string_view>>,
+            bool_constant<!convertible_to<R, const_pointer>>
+            >>,
+            typename = enable_if_t<conjunction_v<
+            bool_constant<ranges::contiguous_range<R>>,
+            bool_constant<ranges::sized_range<R>>,
+            bool_constant<same_as<ranges::range_value_t<R>, value_type>>,
+            bool_constant<!Internal::convertible_to_string_view<Element, Traits, R>>,
+            bool_constant<Internal::range_trait_type_matches<Element, Traits, R>>
+            >>>
+        constexpr basic_string_view(R&& r)
+            : m_begin(ranges::data(r))
+            , m_size(ranges::size(r))
         {}
 
         constexpr basic_string_view(const basic_string_view&) noexcept = default;
@@ -832,25 +1018,14 @@ namespace AZStd
         size_type m_size{};
     };
 
+    // AZStd::basic_string_view deduction guides
+    template<class It, class End>
+    basic_string_view(It, End)->basic_string_view<iter_value_t<It>>;
+    template<class R>
+    basic_string_view(R&&)->basic_string_view<ranges::range_value_t<R>>;
+
     using string_view = basic_string_view<char>;
     using wstring_view = basic_string_view<wchar_t>;
-
-    template<class Element, class Traits = AZStd::char_traits<Element>>
-    using basic_const_string = basic_string_view<Element, Traits>;
-    using const_string = string_view;
-    using const_wstring = wstring_view;
-
-    template <class Element, class Traits = AZStd::char_traits<Element>>
-    constexpr typename basic_string_view<Element, Traits>::const_iterator begin(basic_string_view<Element, Traits> sv)
-    {
-        return sv.begin();
-    }
-
-    template <class Element, class Traits = AZStd::char_traits<Element>>
-    constexpr typename basic_string_view<Element, Traits>::const_iterator end(basic_string_view<Element, Traits> sv)
-    {
-        return sv.end();
-    }
 
     inline namespace literals
     {
@@ -898,9 +1073,28 @@ namespace AZStd
 
 } // namespace AZStd
 
+namespace AZStd::Internal
+{
+    // Specialize the convertible_to_string_view after the class declaration
+    // of basic_string_view, as it neds to reference the complete type
+    template <class Element, class Traits, class R>
+    inline constexpr bool convertible_to_string_view<Element, Traits, R, enable_if_t<
+        same_as<::AZStd::basic_string_view<Element, Traits>, decltype(declval<remove_cvref_t<R>&>().operator ::AZStd::basic_string_view<Element, Traits>())>
+        >> = true;
+}
+
+namespace AZStd::ranges
+{
+    template <class Element, class Traits>
+    inline constexpr bool enable_borrowed_range<basic_string_view<Element, Traits>> = true;
+
+    template <class Element, class Traits>
+    inline constexpr bool enable_view<basic_string_view<Element, Traits>> = true;
+}
+
 //! Use this macro to simplify safe printing of a string_view which may not be null-terminated.
 //! Example: AZStd::string::format("Safely formatted: %.*s", AZ_STRING_ARG(myString));
-#define AZ_STRING_ARG(str) aznumeric_cast<int>(str.size()), str.data()
+#define AZ_STRING_ARG(str) static_cast<int>(str.size()), str.data()
 
 //! Can be used with AZ_STRING_ARG for convenience, rather than manually including "%.*s" in format strings
 //! Example: AZStd::string::format("Safely formatted: " AZ_STRING_FORMAT, AZ_STRING_ARG(myString));

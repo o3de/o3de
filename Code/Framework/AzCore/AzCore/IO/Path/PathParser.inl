@@ -10,6 +10,8 @@
 
 #include <AzCore/AzCore_Traits_Platform.h>
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/std/ranges/ranges_algorithm.h>
+#include <AzCore/std/concepts/concepts.h>
 
 namespace AZ::IO::Internal
 {
@@ -17,7 +19,7 @@ namespace AZ::IO::Internal
     {
         return elem == '/' || elem == '\\';
     }
-    template <typename InputIt, typename EndIt, typename = AZStd::enable_if_t<AZStd::Internal::is_input_iterator_v<InputIt>>>
+    template <typename InputIt, typename EndIt, typename = AZStd::enable_if_t<AZStd::input_iterator<InputIt>>>
     static constexpr bool HasDrivePrefix(InputIt first, EndIt last)
     {
         size_t prefixSize = AZStd::distance(first, last);
@@ -42,11 +44,25 @@ namespace AZ::IO::Internal
         return HasDrivePrefix(prefix.begin(), prefix.end());
     }
 
+    // Returns whether the path prefix models a Windows UNC Path
+    // https://learn.microsoft.com/en-us/dotnet/standard/io/file-path-formats#unc-paths
+    static constexpr bool IsUncPath(AZStd::string_view path, const char preferredSeparator)
+    {
+        // Posix paths are never a Windows UNC path
+        if (preferredSeparator == PosixPathSeparator)
+        {
+            return false;
+        }
+
+        // A windows network drive has the form of \\<text> such as "\\server"
+        return path.size() >= 3 && IsSeparator(path[0]) && IsSeparator(path[1]) && !IsSeparator(path[2]);
+    }
+
     //! Returns an iterator past the end of the consumed root name
     //! Windows root names can have include drive letter within them
     template <typename InputIt>
     constexpr auto ConsumeRootName(InputIt entryBeginIter, InputIt entryEndIter, const char preferredSeparator)
-        -> AZStd::enable_if_t<AZStd::Internal::is_forward_iterator_v<InputIt>, InputIt>
+        -> AZStd::enable_if_t<AZStd::forward_iterator<InputIt>, InputIt>
     {
         if (preferredSeparator == PosixPathSeparator)
         {
@@ -117,7 +133,7 @@ namespace AZ::IO::Internal
                 }
             }
 
-            if (path.size() >= 3 && Internal::IsSeparator(path[1]) && !Internal::IsSeparator(path[2]))
+            if (IsUncPath(path, preferredSeparator))
             {
                 // Find the next path separator for network paths that have the form of \\server\share
                 constexpr AZStd::string_view PathSeparators = { "/\\" };
@@ -147,7 +163,7 @@ namespace AZ::IO::Internal
     //! If the preferred separator is '/' just checks if the path starts with a '/
     //! Otherwise a check for a Windows absolute path occurs
     //! Windows absolute paths can include a RootName
-    template <typename InputIt, typename EndIt, typename = AZStd::enable_if_t<AZStd::Internal::is_input_iterator_v<InputIt>>>
+    template <typename InputIt, typename EndIt, typename = AZStd::enable_if_t<AZStd::input_iterator<InputIt>>>
     static constexpr bool IsAbsolute(InputIt first, EndIt last, const char preferredSeparator)
     {
         size_t pathSize = AZStd::distance(first, last);
@@ -184,16 +200,66 @@ namespace AZ::IO::Internal
     }
 
     // Compares path segments using either Posix or Windows path rules based on the exactCaseCompare option
-    static int ComparePathSegment(AZStd::string_view left, AZStd::string_view right, bool exactCaseCompare)
+    static constexpr int ComparePathSegment(AZStd::string_view left, AZStd::string_view right, bool exactCaseCompare)
     {
         const size_t maxCharsToCompare = (AZStd::min)(left.size(), right.size());
 
-        int charCompareResult = exactCaseCompare
-            ? maxCharsToCompare ? strncmp(left.data(), right.data(), maxCharsToCompare) : 0
-            : maxCharsToCompare ? azstrnicmp(left.data(), right.data(), maxCharsToCompare) : 0;
-        return charCompareResult == 0
-            ? static_cast<int>(aznumeric_cast<ptrdiff_t>(left.size()) - aznumeric_cast<ptrdiff_t>(right.size()))
-            : charCompareResult;
+        if (exactCaseCompare)
+        {
+            const int charCompareResult = maxCharsToCompare
+                ? AZStd::char_traits<char>::compare(left.data(), right.data(), maxCharsToCompare)
+                : 0;
+            return charCompareResult == 0
+                ? static_cast<int>(static_cast<ptrdiff_t>(left.size()) - static_cast<ptrdiff_t>(right.size()))
+                : charCompareResult;
+        }
+        else
+        {
+            if (az_builtin_is_constant_evaluated())
+            {
+                // compile time implementation
+                auto ToLower = [](const char element) constexpr -> char
+                {
+                    return element >= 'A' && element <= 'Z' ? (element - 'A') + 'a' : element;
+                };
+                const auto mismatchResult = AZStd::ranges::mismatch(left, right, AZStd::char_traits<char>::eq, ToLower, ToLower);
+                const size_t leftMismatchCount = AZStd::ranges::distance(mismatchResult.in1, left.end());
+                const size_t rightMismatchCount = AZStd::ranges::distance(mismatchResult.in2, right.end());
+                if (leftMismatchCount == 0 && rightMismatchCount == 0)
+                {
+                    // Both path segments are equal return 0
+                    return 0;
+                }
+                else
+                {
+                    // There is a mismatch, so determine if it was due to characters not comparing equal
+                    if (leftMismatchCount != 0 && rightMismatchCount != 0)
+                    {
+                        return ToLower(*mismatchResult.in1) < ToLower(*mismatchResult.in2) ? -1 : 1;
+                    }
+                    else if (leftMismatchCount != 0)
+                    {
+                        // The left path segment has more characters left so it is greater than the right
+                        return 1;
+                    }
+                    else
+                    {
+                        // The left path segment has less characters left so it is less than the right
+                        return -1;
+                    }
+                }
+
+            }
+            else
+            {
+                const int charCompareResult = maxCharsToCompare
+                    ? azstrnicmp(left.data(), right.data(), maxCharsToCompare)
+                    : 0;
+                return charCompareResult == 0
+                    ? static_cast<int>(aznumeric_cast<ptrdiff_t>(left.size()) - aznumeric_cast<ptrdiff_t>(right.size()))
+                    : charCompareResult;
+            }
+        }
     }
 }
 
@@ -208,11 +274,11 @@ namespace AZ::IO::parser
     enum ParserState : uint8_t
     {
         // Zero is a special sentinel value used by default constructed iterators.
-        PS_BeforeBegin = PathIterator<PathView>::BeforeBegin,
-        PS_InRootName = PathIterator<PathView>::InRootName,
-        PS_InRootDir = PathIterator<PathView>::InRootDir,
-        PS_InFilenames = PathIterator<PathView>::InFilenames,
-        PS_AtEnd = PathIterator<PathView>::AtEnd
+        PS_BeforeBegin = PathView::const_iterator::BeforeBegin,
+        PS_InRootName = PathView::const_iterator::InRootName,
+        PS_InRootDir = PathView::const_iterator::InRootDir,
+        PS_InFilenames = PathView::const_iterator::InFilenames,
+        PS_AtEnd = PathView::const_iterator::AtEnd
     };
 
     struct PathParser
@@ -250,11 +316,13 @@ namespace AZ::IO::parser
             return pathParser;
         }
 
+        //! Returns the pointer to the beginning of the next parser token
+        //! If there are no more tokens, nullptr is returned
         constexpr PosPtr Peek() const noexcept
         {
             auto tokenEnd = getNextTokenStartPos();
-            auto End = m_path_view.end();
-            return tokenEnd == End ? nullptr : tokenEnd;
+            auto pathEnd = m_path_view.end();
+            return tokenEnd == pathEnd ? nullptr : tokenEnd;
         }
 
         constexpr void Increment() noexcept
@@ -444,7 +512,7 @@ namespace AZ::IO::parser
             case PS_BeforeBegin:
                 [[fallthrough]];
             case PS_AtEnd:
-                [[fallthrough]];
+                break;
             case PS_InRootDir:
                 return m_preferred_separator == '/' ? "/" : "\\";
             case PS_InRootName:
@@ -558,6 +626,46 @@ namespace AZ::IO::parser
         return string_view_pair{ srcView.substr(0, pos), srcView.substr(pos) };
     }
 
+    // path part decomposition
+    enum class PathPartKind : uint8_t
+    {
+        PK_None,
+        PK_RootName,
+        PK_RootSep,
+        PK_Filename,
+        PK_Dot,
+        PK_DotDot,
+    };
+
+    constexpr PathPartKind ClassifyPathPart(const PathParser& parser)
+    {
+        // Check each parser state to determine the PathPartKind
+        if (parser.m_parser_state == PS_InRootDir)
+        {
+            return PathPartKind::PK_RootSep;
+        }
+        if (parser.m_parser_state == PS_InRootName)
+        {
+            return PathPartKind::PK_RootName;
+        }
+
+        // Fallback to checking parser pathEntry view value
+        // to determine if the special "." or ".." values are being used
+        AZStd::string_view pathPart = *parser;
+        if (pathPart == ".")
+        {
+            return PathPartKind::PK_Dot;
+        }
+        if (pathPart == "..")
+        {
+            return PathPartKind::PK_DotDot;
+        }
+
+        // Return PathPartKind of PK_Filename if the parser state doesn't match
+        // the states of InRootDir or InRootName and the filename
+        // isn't made up of the special directory values of "." and ".."
+        return PathPartKind::PK_Filename;
+    }
 
     // path part consumption
     constexpr bool ConsumeRootName(PathParser* pathParser)
@@ -627,6 +735,32 @@ namespace AZ::IO::parser
             || rhsPathParser.m_preferred_separator == PosixPathSeparator;
         while (lhsPathParser && rhsPathParser)
         {
+            bool leftDotPathSkipped{};
+            for (PathPartKind lhsPartKind = ClassifyPathPart(lhsPathParser); lhsPathParser && lhsPartKind == PathPartKind::PK_Dot;
+                lhsPartKind = ClassifyPathPart(lhsPathParser))
+            {
+                ++lhsPathParser;
+                leftDotPathSkipped = true;
+            }
+
+            if (leftDotPathSkipped)
+            {
+                continue;
+            }
+
+            bool rightDotPathSkipped{};
+            for (PathPartKind rhsPartKind = ClassifyPathPart(rhsPathParser); rhsPathParser && rhsPartKind == PathPartKind::PK_Dot;
+                rhsPartKind = ClassifyPathPart(rhsPathParser))
+            {
+                ++rhsPathParser;
+                rightDotPathSkipped = true;
+            }
+
+            if (rightDotPathSkipped)
+            {
+                continue;
+            }
+
             if (int res = Internal::ComparePathSegment(*lhsPathParser, *rhsPathParser, exactCaseCompare);
                 res != 0)
             {
@@ -634,6 +768,29 @@ namespace AZ::IO::parser
             }
             ++lhsPathParser;
             ++rhsPathParser;
+        }
+
+        // Advance past any trailing single dot segements of a path
+        // Such as /foo/bar/.
+        // This make sure that paths that end with a dot('.')
+        // will properly advance to the PS_AtEnd state
+        for (; lhsPathParser; ++lhsPathParser)
+        {
+            if (PathPartKind lhsPartKind = ClassifyPathPart(lhsPathParser);
+                lhsPartKind != PathPartKind::PK_Dot)
+            {
+                break;
+            }
+        }
+
+        // Advance logic for the right path argument
+        for (; rhsPathParser; ++rhsPathParser)
+        {
+            if (PathPartKind rhsPartKind = ClassifyPathPart(rhsPathParser);
+                rhsPartKind != PathPartKind::PK_Dot)
+            {
+                break;
+            }
         }
         return 0;
     }
@@ -652,14 +809,27 @@ namespace AZ::IO::parser
 
     //path.hash
     /// Path is using FNV-1a algorithm 64 bit version.
-    inline size_t HashSegment(AZStd::string_view pathSegment, bool hashExactPath)
+    constexpr size_t HashSegment(AZStd::string_view pathSegment, bool hashExactPath)
     {
         size_t hash = 14695981039346656037ULL;
         constexpr size_t fnvPrime = 1099511628211ULL;
+        auto ToLower = [](const char element) constexpr -> char
+        {
+            if (az_builtin_is_constant_evaluated())
+            {
+                // compile time implementation
+                return element >= 'A' && element <= 'Z' ? (element - 'A') + 'a' : element;
+            }
+            else
+            {
+                // run time implementation
+                return static_cast<char>(tolower(element));
+            }
+        };
 
         for (const char first : pathSegment)
         {
-            hash ^= static_cast<size_t>(hashExactPath ? first : tolower(first));
+            hash ^= static_cast<size_t>(hashExactPath ? first : ToLower(first));
             hash *= fnvPrime;
         }
         return hash;
@@ -706,45 +876,5 @@ namespace AZ::IO::parser
             }
         }
         return count;
-    }
-
-    enum class PathPartKind : uint8_t
-    {
-        PK_None,
-        PK_RootName,
-        PK_RootSep,
-        PK_Filename,
-        PK_Dot,
-        PK_DotDot,
-    };
-
-    constexpr PathPartKind ClassifyPathPart(const PathParser& parser)
-    {
-        // Check each parser state to determine the PathPartKind
-        if (parser.m_parser_state == PS_InRootDir)
-        {
-            return PathPartKind::PK_RootSep;
-        }
-        if (parser.m_parser_state == PS_InRootName)
-        {
-            return PathPartKind::PK_RootName;
-        }
-
-        // Fallback to checking parser pathEntry view value
-        // to determine if the special "." or ".." values are being used
-        AZStd::string_view pathPart = *parser;
-        if (pathPart == ".")
-        {
-            return PathPartKind::PK_Dot;
-        }
-        if (pathPart == "..")
-        {
-            return PathPartKind::PK_DotDot;
-        }
-
-        // Return PathPartKind of PK_ilename if the parser state doesn't match
-        // the states of InRootDir or InRootName and the filename
-        // isn't made up of the special directory values of "." and ".."
-        return PathPartKind::PK_Filename;
     }
 }

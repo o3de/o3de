@@ -17,7 +17,7 @@
 #include <Atom/RPI.Public/Buffer/Buffer.h>
 
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/BufferView.h>
+#include <Atom/RHI/DeviceBufferView.h>
 
 #include <limits>
 
@@ -45,15 +45,15 @@ namespace AZ
                     elementsAmount, 1, 1,
                     TRESSFX_SIM_THREAD_GROUP_SIZE, 1, 1
                 );
-                m_dispatchItem.m_arguments = dispatchArgs;
+                m_dispatchItem.SetArguments(dispatchArgs);
                 RHI::PipelineStateDescriptorForDispatch pipelineDesc;
                 m_shader->GetVariant(RPI::ShaderAsset::RootShaderVariantStableId).ConfigurePipelineState(pipelineDesc);
-                m_dispatchItem.m_pipelineState = m_shader->AcquirePipelineState(pipelineDesc);
-                m_dispatchItem.m_shaderResourceGroupCount = 2;      // the per pass will be added by each pass.
-                m_dispatchItem.m_shaderResourceGroups = {
+                m_dispatchItem.SetPipelineState(m_shader->AcquirePipelineState(pipelineDesc));
+                AZStd::array<const RHI::ShaderResourceGroup*, 2> srgs{
                     hairGenerationSrg->GetRHIShaderResourceGroup(), // Static generation data
-                    hairSimSrg->GetRHIShaderResourceGroup()         // Dynamic data changed between passes
+                    hairSimSrg->GetRHIShaderResourceGroup() // Dynamic data changed between passes
                 };
+                m_dispatchItem.SetShaderResourceGroups(srgs);
             }
 
         } // namespace Hair

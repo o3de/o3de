@@ -13,6 +13,7 @@
 
 #include <GraphCanvas/Components/Nodes/NodeBus.h>
 #include <GraphCanvas/Components/Nodes/NodeTitleBus.h>
+#include <GraphCanvas/GraphCanvasBus.h>
 
 #include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
 #include <ScriptCanvas/Core/NodelingBus.h>
@@ -30,6 +31,7 @@
 
 namespace ScriptCanvasEditor::Nodes
 {
+
     NodeIdPair CreateFunctionDefinitionNode(const ScriptCanvas::ScriptCanvasId& scriptCanvasId, bool isInput, AZStd::string rootName)
     {
         ScriptCanvasEditor::Nodes::StyleConfiguration styleConfiguration;
@@ -107,6 +109,7 @@ namespace ScriptCanvasEditor::Nodes
         scriptCanvasEntity->Init();
         nodeIdPair.m_scriptCanvasId = scriptCanvasEntity->GetId();
         ScriptCanvas::SystemRequestBus::BroadcastResult(node, &ScriptCanvas::SystemRequests::CreateNodeOnEntity, scriptCanvasEntity->GetId(), scriptCanvasId, classId);
+        
         if (onCreateCallback)
         {
             onCreateCallback(node);
@@ -186,7 +189,7 @@ namespace ScriptCanvasEditor::Nodes
         return nodeIds;
     }
 
-    NodeIdPair CreateGlobalMethodNode(AZStd::string_view methodName, const ScriptCanvas::ScriptCanvasId& scriptCanvasId)
+    NodeIdPair CreateGlobalMethodNode(AZStd::string_view methodName, bool isProperty, const ScriptCanvas::ScriptCanvasId& scriptCanvasId)
     {
         AZ_PROFILE_FUNCTION(ScriptCanvas);
         NodeIdPair nodeIds;
@@ -208,7 +211,7 @@ namespace ScriptCanvasEditor::Nodes
         AZ::EntityId graphCanvasGraphId;
         EditorGraphRequestBus::EventResult(graphCanvasGraphId, scriptCanvasId, &EditorGraphRequests::GetGraphCanvasGraphId);
 
-        nodeIds.m_graphCanvasId = DisplayMethodNode(graphCanvasGraphId, methodNode);
+        nodeIds.m_graphCanvasId = DisplayMethodNode(graphCanvasGraphId, methodNode, isProperty);
 
         return nodeIds;
     }
@@ -300,7 +303,7 @@ namespace ScriptCanvasEditor::Nodes
         return nodeIdPair;
     }
 
-    NodeIdPair CreateGetVariableNode(const ScriptCanvas::VariableId& variableId, ScriptCanvas::ScriptCanvasId scriptCanvasId)
+    CreateNodeResult CreateGetVariableNodeResult(const ScriptCanvas::VariableId& variableId, ScriptCanvas::ScriptCanvasId scriptCanvasId)
     {
         AZ_PROFILE_FUNCTION(ScriptCanvas);
         const AZ::Uuid k_VariableNodeTypeId = azrtti_typeid<ScriptCanvas::Nodes::Core::GetVariableNode>();
@@ -328,10 +331,13 @@ namespace ScriptCanvasEditor::Nodes
 
         scriptCanvasEntity->SetName(AZStd::string::format("SC Node(GetVariable)"));
 
-        return nodeIds;
+        CreateNodeResult result;
+        result.node = node;
+        result.nodeIdPair = nodeIds;
+        return result;
     }
 
-    NodeIdPair CreateSetVariableNode(const ScriptCanvas::VariableId& variableId, ScriptCanvas::ScriptCanvasId scriptCanvasId)
+    CreateNodeResult CreateSetVariableNodeResult(const ScriptCanvas::VariableId& variableId, ScriptCanvas::ScriptCanvasId scriptCanvasId)
     {
         AZ_PROFILE_FUNCTION(ScriptCanvas);
         const AZ::Uuid k_VariableNodeTypeId = azrtti_typeid<ScriptCanvas::Nodes::Core::SetVariableNode>();
@@ -359,7 +365,20 @@ namespace ScriptCanvasEditor::Nodes
 
         scriptCanvasEntity->SetName(AZStd::string::format("SC Node(SetVariable)"));
 
-        return nodeIds;
+        CreateNodeResult result;
+        result.node = node;
+        result.nodeIdPair = nodeIds;
+        return result;
+    }
+
+    NodeIdPair CreateGetVariableNode(const ScriptCanvas::VariableId& variableId, ScriptCanvas::ScriptCanvasId scriptCanvasGraphId)
+    {
+        return CreateGetVariableNodeResult(variableId, scriptCanvasGraphId).nodeIdPair;
+    }
+
+    NodeIdPair CreateSetVariableNode(const ScriptCanvas::VariableId& variableId, ScriptCanvas::ScriptCanvasId scriptCanvasGraphId)
+    {
+        return CreateSetVariableNodeResult(variableId, scriptCanvasGraphId).nodeIdPair;
     }
 
     NodeIdPair CreateFunctionNode(const ScriptCanvas::ScriptCanvasId& scriptCanvasGraphId, const AZ::Data::AssetId& assetId, const ScriptCanvas::Grammar::FunctionSourceId& sourceId)

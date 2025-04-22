@@ -1,6 +1,0 @@
-<download name="LY-103623-ForceRegion-LocalSpaceForceOnRigidBodies" type="Map">
- <index src="filelist.xml" dest="filelist.xml"/>
- <files>
-  <file src="level.pak" dest="level.pak" size="9757" md5="43b1b7d5240245e6fa9d8dfd8725d379"/>
- </files>
-</download>

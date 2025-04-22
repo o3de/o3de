@@ -13,6 +13,7 @@
 #include <Atom/Feature/Utils/GpuBufferHandler.h>
 #include <Atom/Feature/Utils/IndexedDataVector.h>
 #include <Atom/Feature/CoreLights/DirectionalLightFeatureProcessorInterface.h>
+#include <Atom/Feature/CoreLights/DirectionalLightShadowNotificationBus.h>
 #include <Atom/RPI.Public/AuxGeom/AuxGeomFeatureProcessorInterface.h>
 #include <Atom/RPI.Public/Buffer/Buffer.h>
 #include <AzCore/Math/Aabb.h>
@@ -21,10 +22,16 @@
 
 namespace AZ
 {
+    namespace RPI
+    {
+        class ParentPass;
+    }
+
     namespace Render
     {
         class CascadedShadowmapsPass;
         class EsmShadowmapsPass;
+        class FullscreenShadowPass;
 
         //! Cascaded shadow specific camera configuration.
         struct CascadeShadowCameraConfiguration
@@ -66,7 +73,12 @@ namespace AZ
             AZStd::array<float, 3> m_direction = { { 1.0f, 0.0f, 0.0f } };
             float m_angularRadius = 0.0f;
             AZStd::array<float, 3> m_rgbIntensity = { { 0.0f, 0.0f, 0.0f } };
-            float padding2 = 0.0f; // Padding between float3s in shader, can be used for other data later.
+            float m_affectsGIFactor = 1.0f;
+
+            bool m_affectsGI = true;
+            uint32_t m_lightingChannelMask = 1;
+            float m_padding0 = 0.0f;
+            float m_padding1 = 0.0f;
         };
 
         // [GFX TODO][ATOM-15172] Look into compacting struct DirectionalLightShadowData
@@ -92,10 +104,10 @@ namespace AZ
             uint32_t m_shadowmapSize = 1; // width and height of shadowmap
             uint32_t m_cascadeCount = 1;
             // Reduce acne by applying a small amount of bias to apply along shadow-space z.
-            float m_shadowBias = 0.0f;
+            float m_shadowBias = 0.0015f;
             // Reduces acne by biasing the shadowmap lookup along the geometric normal.
-            float m_normalShadowBias;
-            uint32_t m_filteringSampleCount = 0;
+            float m_normalShadowBias = 2.5f;
+            uint32_t m_filteringSampleCountMode = 0;
             uint32_t m_debugFlags = 0;
             uint32_t m_shadowFilterMethod = 0; 
             float m_far_minus_near = 0;
@@ -108,6 +120,7 @@ namespace AZ
             : public DirectionalLightFeatureProcessorInterface
         {
         public:
+            AZ_CLASS_ALLOCATOR(DirectionalLightFeatureProcessor, AZ::SystemAllocator)
             AZ_RTTI(AZ::Render::DirectionalLightFeatureProcessor, "61610178-8DAA-4BF2-AF17-597F20D527DD", AZ::Render::DirectionalLightFeatureProcessorInterface);
 
             struct CascadeSegment
@@ -176,6 +189,19 @@ namespace AZ
                 // If true, this will reduce the shadow acne introduced by large pcf kernels by estimating the angle of the triangle being shaded
                 // with the ddx/ddy functions. 
                 bool m_isReceiverPlaneBiasEnabled = true;
+
+                bool m_blendBetweenCascades = false;
+
+                // Fullscreen Blur...
+
+                bool m_fullscreenBlurEnabled = true;
+
+                //! How much a value is reduced from pixel to pixel on a perfectly flat surface
+                float m_fullscreenBlurConstFalloff = 2.0f / 3.0f;
+
+                //! How much the difference in depth slopes between pixels affects the blur falloff.
+                //! The higher this value, the sharper edges will appear
+                float m_fullscreenBlurDepthFalloffStrength = 50.0f;
             };
 
             static void Reflect(ReflectContext* context);
@@ -196,6 +222,7 @@ namespace AZ
             void SetRgbIntensity(LightHandle handle, const PhotometricColor<PhotometricUnit::Lux>& lightColor) override;
             void SetDirection(LightHandle handle, const Vector3& lightDirection) override;
             void SetAngularDiameter(LightHandle handle, float angularDiameter) override;
+            void SetShadowEnabled(LightHandle handle, bool enable) override;
             void SetShadowmapSize(LightHandle handle, ShadowmapSize size) override;
             void SetCascadeCount(LightHandle handle, uint16_t cascadeCount) override;
             void SetShadowmapFrustumSplitSchemeRatio(LightHandle handle, float ratio) override;
@@ -215,17 +242,28 @@ namespace AZ
             void SetShadowFilterMethod(LightHandle handle, ShadowFilterMethod method) override;
             void SetFilteringSampleCount(LightHandle handle, uint16_t count) override;
             void SetShadowReceiverPlaneBiasEnabled(LightHandle handle, bool enable) override;
+            void SetCascadeBlendingEnabled(LightHandle handle, bool enable) override;
             void SetShadowBias(LightHandle handle, float bias) override;
             void SetNormalShadowBias(LightHandle handle, float normalShadowBias) override;
+            void SetFullscreenBlurEnabled(LightHandle handle, bool enable) override;
+            void SetFullscreenBlurConstFalloff(LightHandle handle, float blurConstFalloff) override;
+            void SetFullscreenBlurDepthFalloffStrength(LightHandle handle, float blurDepthFalloffStrength) override;
+            void SetAffectsGI(LightHandle handle, bool affectsGI) override;
+            void SetAffectsGIFactor(LightHandle handle, float affectsGIFactor) override;
+            void SetLightingChannelMask(LightHandle handle, uint32_t lightingChannelMask) override;
 
-            const Data::Instance<RPI::Buffer> GetLightBuffer() const;
-            uint32_t GetLightCount() const;
+            const Data::Instance<RPI::Buffer> GetLightBuffer() const override { return m_lightBufferHandler.GetBuffer(); }
+            uint32_t GetLightCount() const override { return m_lightBufferHandler.GetElementCount(); }
+            ShadowProperty& GetShadowProperty(LightHandle handle) { return m_shadowProperties.GetData(handle.GetIndex()); }
 
         private:
+
+            // This is currently fixed, but could be exposed to allow for user configuration
+            // See DirectionalLightShadowCalculator.azsli : DirectionalShadowCalculator::CalculateCascadeBlendAmount()
+            static constexpr const float CascadeBlendArea = 0.015;
+
             // RPI::SceneNotificationBus::Handler overrides...
-            void OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline) override;
-            void OnRenderPipelineRemoved(RPI::RenderPipeline* pipeline) override;
-            void OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline) override;
+            void OnRenderPipelineChanged(AZ::RPI::RenderPipeline* pipeline, RPI::SceneNotification::RenderPipelineChangeType changeType) override;
             void OnRenderPipelinePersistentViewChanged(RPI::RenderPipeline* renderPipeline, RPI::PipelineViewTag viewTag, RPI::ViewPtr newView, RPI::ViewPtr previousView) override;
 
             //! This prepare for change of render pipelines and camera views.
@@ -234,6 +272,7 @@ namespace AZ
             void CacheCascadedShadowmapsPass();
             //! This caches valid EsmShadowmapsPass.
             void CacheEsmShadowmapsPass();
+            void CacheFullscreenPass();
             //! This add/remove camera views in shadow properties.
             void PrepareCameraViews();
             //! This create/destruct shadow buffer for each render pipeline.
@@ -285,6 +324,7 @@ namespace AZ
             void UpdateShadowmapViews(LightHandle handle);
 
             void UpdateViewsOfCascadeSegments();
+            void SetFullscreenPassSettings();
 
             //! This calculate shadow view AABB.
             Aabb CalculateShadowViewAabb(
@@ -358,15 +398,21 @@ namespace AZ
 
             RPI::AuxGeomFeatureProcessorInterface* m_auxGeomFeatureProcessor = nullptr;
             AZStd::vector<const RPI::View*> m_viewsRetainingAuxGeomDraw;
+            FullscreenShadowPass* m_fullscreenShadowPass = nullptr;
+
+            RPI::ParentPass* m_fullscreenShadowBlurPass = nullptr;
 
             bool m_lightBufferNeedsUpdate = false;
             bool m_shadowBufferNeedsUpdate = false;
+            bool m_previousExcludeCvarValue = false;
             uint32_t m_shadowBufferNameIndex = 0;
             uint32_t m_shadowmapIndexTableBufferNameIndex = 0;
 
             Name m_lightTypeName = Name("directional");
             Name m_directionalShadowFilteringMethodName = Name("o_directional_shadow_filtering_method");
+            Name m_directionalShadowFilteringSamplecountName = Name("o_directional_shadow_filtering_sample_count");
             Name m_directionalShadowReceiverPlaneBiasEnableName = Name("o_directional_shadow_receiver_plane_bias_enable");
+            Name m_BlendBetweenCascadesEnableName = Name("o_blend_between_cascades_enable");
             static constexpr const char* FeatureProcessorName = "DirectionalLightFeatureProcessor";
         };
     } // namespace Render

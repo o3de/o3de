@@ -36,14 +36,18 @@ namespace AZ
                 void InitializeObject(const Containers::Scene& scene, DataTypes::IManifestObject& target) override;
                 Events::ProcessingResult UpdateManifest(Containers::Scene& scene, ManifestAction action,
                     RequestingApplication requester) override;
+                void GetPolicyName(AZStd::string& result) const override
+                {
+                    result = "SkeletonGroup";
+                }
 
             private:
                 Events::ProcessingResult BuildDefault(Containers::Scene& scene);
                 Events::ProcessingResult UpdateSkeletonGroups(Containers::Scene& scene) const;
 
                 bool SceneHasSkeletonGroup(const Containers::Scene& scene) const;
-                
-                static const int s_rigsPreferredTabOrder;
+
+                static constexpr int s_rigsPreferredTabOrder{ 1 };
                 bool m_isDefaultConstructing{ false };
             };
         } // namespace Behaviors

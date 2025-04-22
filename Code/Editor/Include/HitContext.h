@@ -14,10 +14,7 @@
 #define CRYINCLUDE_EDITOR_INCLUDE_HITCONTEXT_H
 #pragma once
 
-class CGizmo;
-class CBaseObject;
 struct IDisplayViewport;
-class CDeepSelection;
 struct AABB;
 
 #include <QRect>
@@ -76,8 +73,6 @@ struct HitContext
     bool bOnlyGizmo;
     //! Test objects using advanced selection helpers.
     bool bUseSelectionHelpers;
-    //! an object excluded in hittest.
-    CBaseObject* pExcludedObject;
 
     // Input parameters.
 
@@ -101,12 +96,6 @@ struct HitContext
     int manipulatorMode;
     //! distance to the object from src.
     float dist;
-    //! object that have been hit.
-    CBaseObject* object;
-    //! gizmo object that have been hit.
-    CGizmo* gizmo;
-    //! for deep selection mode
-    CDeepSelection* pDeepSelection;
     //! For linking tool
     const char* name;
     //! true if this hit was from the object icon
@@ -123,7 +112,6 @@ struct HitContext
         raySrc(0, 0, 0);
         rayDir(0, 0, 0);
         dist = 0;
-        object = 0;
         weakHit = false;
         manipulatorMode = 0;
         nSubObjFlags = 0;
@@ -131,7 +119,6 @@ struct HitContext
         bIgnoreAxis = false;
         bOnlyGizmo = false;
         bUseSelectionHelpers = false;
-        pDeepSelection = 0;
         name = nullptr;
         iconHit = false;
     }

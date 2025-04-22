@@ -15,7 +15,11 @@ namespace AZ
 {
     namespace RPI
     {
-        void ShaderVariantAssetCreator::Begin(const AZ::Data::AssetId& assetId, const ShaderVariantId& shaderVariantId, RPI::ShaderVariantStableId stableId, bool isFullyBaked)
+        void ShaderVariantAssetCreator::Begin(
+            const AZ::Data::AssetId& assetId,
+            const ShaderVariantId& shaderVariantId,
+            RPI::ShaderVariantStableId stableId,
+            bool isFullyBaked)
         {
             BeginCommon(assetId);
 
@@ -40,17 +44,11 @@ namespace AZ
                 return false;
             }
 
-            if (!m_asset->m_buildTimestamp)
-            {
-                ReportError("Invalid timestamp");
-                return false;
-            }
-
             bool foundDrawFunctions = false;
             bool foundDispatchFunctions = false;
 
             if (m_asset->GetShaderStageFunction(RHI::ShaderStage::Vertex) ||
-                m_asset->GetShaderStageFunction(RHI::ShaderStage::Tessellation) ||
+                m_asset->GetShaderStageFunction(RHI::ShaderStage::Geometry) ||
                 m_asset->GetShaderStageFunction(RHI::ShaderStage::Fragment))
             {
                 foundDrawFunctions = true;
@@ -75,14 +73,12 @@ namespace AZ
                 return false;
             }
 
-            if (m_asset->GetShaderStageFunction(RHI::ShaderStage::Tessellation) &&
+            if (m_asset->GetShaderStageFunction(RHI::ShaderStage::Geometry) &&
                 !m_asset->GetShaderStageFunction(RHI::ShaderStage::Vertex))
             {
-                ReportError("Shader Variant with StableId '%u' has a tessellation function but no vertex function.", m_asset->m_stableId);
+                ReportError("Shader Variant with StableId '%u' has a geometry function but no vertex function.", m_asset->m_stableId);
                 return false;
             }
-
-
 
             m_asset->SetReady();
             return EndCommon(result);
@@ -91,14 +87,6 @@ namespace AZ
 
         /////////////////////////////////////////////////////////////////////
         // Methods for all shader variant types
-
-        void ShaderVariantAssetCreator::SetBuildTimestamp(AZ::u64 buildTimestamp)
-        {
-            if (ValidateIsReady())
-            {
-                m_asset->m_buildTimestamp = buildTimestamp;
-            }
-        }
 
         void ShaderVariantAssetCreator::SetShaderFunction(RHI::ShaderStage shaderStage, RHI::Ptr<RHI::ShaderStageFunction> shaderStageFunction)
         {

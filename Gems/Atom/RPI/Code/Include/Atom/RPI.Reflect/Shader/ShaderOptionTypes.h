@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/Name/Name.h>
 #include <Atom/RHI.Reflect/Handle.h>
@@ -18,6 +19,7 @@ namespace AZ
         using ShaderOptionIndex = RHI::Handle<uint32_t, class ShaderOptionIndexNamespace>;  //!< ShaderOption index in the group layout
         using ShaderOptionValue = RHI::Handle<uint32_t, class ShaderOptionValueNamespace>;  //!< Numerical representation for a single value in the ShaderOption
         using ShaderOptionValuePair = AZStd::pair<Name/*valueName*/, ShaderOptionValue>;  //!< Provides a string representation for a ShaderOptionValue
+        using ShaderOptionValues = AZStd::vector<ShaderOptionValuePair>; //!< List of possible values for a shader option
 
         enum class ShaderOptionType : uint32_t
         {
@@ -27,7 +29,7 @@ namespace AZ
             IntegerRange,
         };
 
-        const char* ToString(ShaderOptionType shaderOptionType);
+        ATOM_RPI_REFLECT_API const char* ToString(ShaderOptionType shaderOptionType);
 
     } // namespace RPI
 

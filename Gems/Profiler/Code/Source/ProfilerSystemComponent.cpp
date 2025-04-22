@@ -19,11 +19,11 @@ namespace Profiler
 {
     static constexpr AZ::Crc32 profilerServiceCrc = AZ_CRC_CE("ProfilerService");
 
-    struct DeplayedFunction
+    struct DelayedFunction
     {
         using func_type = AZStd::function<void()>;
 
-        DeplayedFunction(int framesToDelay, func_type&& function)
+        DelayedFunction(int framesToDelay, func_type&& function)
             : m_function(AZStd::move(function))
             , m_framesLeft(framesToDelay)
         {
@@ -38,7 +38,7 @@ namespace Profiler
             else
             {
                 AZ::SystemTickBus::QueueFunction(
-                    [](DeplayedFunction&& delayedFunc)
+                    [](DelayedFunction&& delayedFunc)
                     {
                         delayedFunc.Run();
                     },
@@ -51,7 +51,7 @@ namespace Profiler
         int m_framesLeft{ 0 };
     };
 
-    bool SerializeCpuProfilingData(const AZStd::ring_buffer<CpuProfiler::TimeRegionMap>& data, AZStd::string outputFilePath, bool wasEnabled)
+    bool SerializeCpuProfilingData(const AZStd::ring_buffer<TimeRegionMap>& data, AZStd::string outputFilePath, bool wasEnabled)
     {
         AZ_TracePrintf("ProfilerSystemComponent", "Beginning serialization of %zu frames of profiling data\n", data.size());
         AZ::JsonSerializerSettings serializationSettings;
@@ -78,7 +78,7 @@ namespace Profiler
         // Disable the profiler again
         if (!wasEnabled)
         {
-            CpuProfiler::Get()->SetProfilerEnabled(false);
+            AZ::Debug::ProfilerSystemInterface::Get()->SetActive(false);
         }
 
         // Notify listeners that the profiler capture has finished.
@@ -100,7 +100,6 @@ namespace Profiler
             {
                 ec->Class<ProfilerSystemComponent>("Profiler", "Provides a custom implementation of the AZ::Debug::Profiler interface for capturing performance data")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("System"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
             }
         }
@@ -184,11 +183,11 @@ namespace Profiler
         }
 
         const int frameDelay = 5; // arbitrary number
-        DeplayedFunction delayedFunc(frameDelay,
+        DelayedFunction delayedFunc(frameDelay,
             [this, outputFilePath, wasEnabled]()
             {
                 // Blocking call for a single frame of data, avoid thread overhead
-                AZStd::ring_buffer<CpuProfiler::TimeRegionMap> singleFrameData(1);
+                AZStd::ring_buffer<TimeRegionMap> singleFrameData(1);
                 singleFrameData.push_back(m_cpuProfiler.GetTimeRegionMap());
                 SerializeCpuProfilingData(singleFrameData, outputFilePath, wasEnabled);
                 m_cpuCaptureInProgress.store(false);
@@ -216,7 +215,7 @@ namespace Profiler
             return false;
         }
 
-        AZStd::ring_buffer<CpuProfiler::TimeRegionMap> captureResult;
+        AZStd::ring_buffer<TimeRegionMap> captureResult;
         const bool captureEnded = m_cpuProfiler.EndContinuousCapture(captureResult);
         if (!captureEnded)
         {
@@ -244,5 +243,10 @@ namespace Profiler
         m_cpuDataSerializationThread = AZStd::move(thread);
 
         return true;
+    }
+
+    bool ProfilerSystemComponent::IsCaptureInProgress() const
+    {
+        return m_cpuProfiler.IsContinuousCaptureInProgress();
     }
 } // namespace Profiler

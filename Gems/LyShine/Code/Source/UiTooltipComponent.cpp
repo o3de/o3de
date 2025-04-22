@@ -33,7 +33,7 @@ void UiTooltipComponent::Update([[maybe_unused]] float deltaTime)
 {
     if (m_curDisplayElementId.IsValid())
     {
-        EBUS_EVENT_ID(m_curDisplayElementId, UiTooltipDisplayBus, Update);
+        UiTooltipDisplayBus::Event(m_curDisplayElementId, &UiTooltipDisplayBus::Events::Update);
     }
 }
 
@@ -105,11 +105,11 @@ void UiTooltipComponent::OnCanvasPrimaryReleased([[maybe_unused]] AZ::EntityId e
 void UiTooltipComponent::PushDataToDisplayElement(AZ::EntityId displayEntityId)
 {
     AZ::EntityId textEntityId;
-    EBUS_EVENT_ID_RESULT(textEntityId, displayEntityId, UiTooltipDisplayBus, GetTextEntity);
+    UiTooltipDisplayBus::EventResult(textEntityId, displayEntityId, &UiTooltipDisplayBus::Events::GetTextEntity);
 
     if (textEntityId.IsValid())
     {
-        EBUS_EVENT_ID(textEntityId, UiTextBus, SetText, m_text);
+        UiTextBus::Event(textEntityId, &UiTextBus::Events::SetText, m_text);
     }
 }
 
@@ -161,7 +161,7 @@ void UiTooltipComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::Category, "UI")
                 ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/UiTooltip.png")
                 ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/UiTooltip.png")
-                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("UI", 0x27ff46b0))
+                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
             editInfo->DataElement(0, &UiTooltipComponent::m_text, "Text", "The text string.");

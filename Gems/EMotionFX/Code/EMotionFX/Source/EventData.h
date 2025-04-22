@@ -41,7 +41,7 @@ namespace EMotionFX
      *     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
      *         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
      *         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-     *         ->Attribute(AZ_CRC("Creatable", 0x47bff8c4), true)
+     *         ->Attribute(AZ_CRC_CE("Creatable"), true)
      * @endcode
      *
      * @sa MotionEvent EventDataSyncable
@@ -175,19 +175,19 @@ namespace AZ
                 return 1;
             }
 
-            const Uuid& GetTemplatedTypeId(size_t element) override
+            AZ::TypeId GetTemplatedTypeId(size_t element) override
             {
                 (void)element;
                 return SerializeGenericTypeInfo<const EMotionFX::EventData>::GetClassTypeId();
             }
 
             // AZStdSmartPtrContainer uses the underlying smart_ptr container value_type typedef type id for serialization
-            const Uuid& GetSpecializedTypeId() const override
+            AZ::TypeId GetSpecializedTypeId() const override
             {
                 return azrtti_typeid<ContainerType>();
             }
 
-            const Uuid& GetGenericTypeId() const override
+            AZ::TypeId GetGenericTypeId() const override
             {
                 return TYPEINFO_Uuid();
             }
@@ -224,7 +224,7 @@ namespace AZ
             return GenericClassSharedPtr::Instance();
         }
 
-        static const Uuid& GetClassTypeId()
+        static AZ::TypeId GetClassTypeId()
         {
             return GenericClassSharedPtr::Instance()->m_classData.m_typeId;
         }

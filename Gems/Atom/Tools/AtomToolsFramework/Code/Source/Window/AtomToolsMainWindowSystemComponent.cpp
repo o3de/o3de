@@ -6,7 +6,6 @@
  *
  */
 
-#include <AtomToolsFramework/Window/AtomToolsMainWindowFactoryRequestBus.h>
 #include <AtomToolsFramework/Window/AtomToolsMainWindowRequestBus.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -25,14 +24,6 @@ namespace AtomToolsFramework
 
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
-            behaviorContext->EBus<AtomToolsMainWindowFactoryRequestBus>("AtomToolsMainWindowFactoryRequestBus")
-                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
-                ->Attribute(AZ::Script::Attributes::Category, "Editor")
-                ->Attribute(AZ::Script::Attributes::Module, "atomtools")
-                ->Event("CreateMainWindow", &AtomToolsMainWindowFactoryRequestBus::Events::CreateMainWindow)
-                ->Event("DestroyMainWindow", &AtomToolsMainWindowFactoryRequestBus::Events::DestroyMainWindow)
-                ;
-
             behaviorContext->EBus<AtomToolsMainWindowRequestBus>("AtomToolsMainWindowRequestBus")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Category, "Editor")
@@ -41,6 +32,10 @@ namespace AtomToolsFramework
                 ->Event("SetDockWidgetVisible", &AtomToolsMainWindowRequestBus::Events::SetDockWidgetVisible)
                 ->Event("IsDockWidgetVisible", &AtomToolsMainWindowRequestBus::Events::IsDockWidgetVisible)
                 ->Event("GetDockWidgetNames", &AtomToolsMainWindowRequestBus::Events::GetDockWidgetNames)
+                ->Event("QueueUpdateMenus", &AtomToolsMainWindowRequestBus::Events::QueueUpdateMenus)
+                ->Event("SetStatusMessage", &AtomToolsMainWindowRequestBus::Events::SetStatusMessage)
+                ->Event("SetStatusWarning", &AtomToolsMainWindowRequestBus::Events::SetStatusWarning)
+                ->Event("SetStatusError", &AtomToolsMainWindowRequestBus::Events::SetStatusError)
                 ->Event("ResizeViewportRenderTarget", &AtomToolsMainWindowRequestBus::Events::ResizeViewportRenderTarget)
                 ->Event("LockViewportRenderTargetSize", &AtomToolsMainWindowRequestBus::Events::LockViewportRenderTargetSize)
                 ->Event("UnlockViewportRenderTargetSize", &AtomToolsMainWindowRequestBus::Events::UnlockViewportRenderTargetSize)

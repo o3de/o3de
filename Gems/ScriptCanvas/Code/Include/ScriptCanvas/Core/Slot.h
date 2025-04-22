@@ -33,9 +33,17 @@ namespace ScriptCanvas
 
         int m_index = 0;
     };
-    
+
+    struct SlotState
+    {
+        CombinedSlotType type;
+        AZStd::string name;
+        VariableId variableReference;
+        Datum value;
+    };
+
     class Slot final
-        : public VariableNotificationBus::Handler
+        : public VariableNotificationBus::MultiHandler
     {
         friend class Node;
     public:
@@ -47,7 +55,7 @@ namespace ScriptCanvas
             VariableReference
         };
 
-        AZ_CLASS_ALLOCATOR(Slot, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Slot, AZ::SystemAllocator);
         AZ_TYPE_INFO(Slot, "{FBFE0F02-4C26-475F-A28B-18D3A533C13C}");
 
         static void Reflect(AZ::ReflectContext* reflection);
@@ -136,20 +144,31 @@ namespace ScriptCanvas
         bool IsData() const;
 
         const Datum* FindDatum() const;
-        void FindModifiableDatumView(ModifiableDatumView& datumView);
+        bool FindModifiableDatumView(ModifiableDatumView& datumView);
 
         // If you are data. You could be a reference pin(i.e. must be a variable)
         // Or a value data pin.
         bool IsVariableReference() const;
+
+        bool CanHaveInputField() const;
+
+        bool CreatesImplicitConnections() const;
+
+        bool IsNameHidden() const;
 
         bool CanConvertTypes() const;
 
         bool CanConvertToValue() const;
         bool ConvertToValue();
 
-        bool CanConvertToReference() const;
-        bool ConvertToReference();
-        void SetVariableReference(const VariableId& variableId);
+        bool CanConvertToReference(bool isNewSlot = false) const;
+        bool ConvertToReference(bool isNewSlot = false);
+        enum class IsVariableTypeChange
+        {
+            No,
+            Yes
+        };
+        void SetVariableReference(const VariableId& variableId, IsVariableTypeChange isTypeChange = IsVariableTypeChange::No);
         const VariableId& GetVariableReference() const;
         GraphVariable* GetVariable() const;
 
@@ -211,9 +230,17 @@ namespace ScriptCanvas
         ////
 
     protected:
+
+        // VariableNotificationBus...
+        void OnVariableRenamed(AZStd::string_view /*newVariableName*/) override;
+        ///
+
+        void DisconnectVariableNotificationBus();
+
         bool m_isOverload = false;
         bool m_isVisible = true;
         bool m_isUserAdded = false;
+        bool m_createsImplicitConnections = false;
 
         void SetDynamicGroup(const AZ::Crc32& dynamicGroup);
 
@@ -221,6 +248,10 @@ namespace ScriptCanvas
         AZStd::string m_toolTip;
         AZ::Crc32 m_displayGroup;
         AZ::Crc32 m_dynamicGroup;
+
+        bool m_canHaveInputField = true;
+
+        bool m_isNameHidden = false;
 
         bool               m_isLatentSlot  = false;
         SlotDescriptor     m_descriptor;
@@ -238,5 +269,7 @@ namespace ScriptCanvas
         Node*  m_node;
 
         AZStd::vector<AZStd::unique_ptr<Contract>> m_contracts;
+
+        bool m_needsNodePropertyDisplay = true;
     };
 } 

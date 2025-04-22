@@ -1,0 +1,68 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "id": "{7FBA0105-F37E-4E23-A884-EBBC7CB2D817}",
+        "category": "Math Functions",
+        "title": "Lighting Vector",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Returns a lighting vector (ambient, diffuse, specular, 1)",
+        "slotDataTypeGroups": [
+            "inValue1|inValue2|inValue3",
+            "outValue"
+        ],
+        "inputSlots": [
+            {
+                "name": "inValue1",
+                "displayName": "Value1",
+                "description": "Value1",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            },
+            {
+                "name": "inValue2",
+                "displayName": "Value2",
+                "description": "Value2",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            },
+            {
+                "name": "inValue3",
+                "displayName": "Value3",
+                "description": "Value3",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            }
+        ],
+        "outputSlots": [
+            {
+                "name": "outValue",
+                "displayName": "Value",
+                "description": "Value",
+                "supportedDataTypeRegex": "float4",
+                "defaultDataType": "float4",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = lit(inValue1, inValue2, inValue3);"
+                    ]
+                }
+            }
+        ]
+    }
+}

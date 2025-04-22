@@ -26,7 +26,7 @@ namespace AZ
         {
             if (m_assetInfo.m_assetId.IsValid())
             {
-                AzToolsFramework::Thumbnailer::ThumbnailerRendererNotificationBus::Handler::BusConnect(key);
+                AzToolsFramework::Thumbnailer::ThumbnailerRendererNotificationBus::Handler::BusConnect(m_key);
                 AzFramework::AssetCatalogEventBus::Handler::BusConnect();
                 return;
             }
@@ -35,40 +35,49 @@ namespace AZ
             m_state = State::Failed;
         }
 
-        void SharedThumbnail::LoadThread()
-        {
-            AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::QueueEvent(
-                m_assetInfo.m_assetType, &AzToolsFramework::Thumbnailer::ThumbnailerRendererRequests::RenderThumbnail, m_key,
-                SharedThumbnailSize);
-
-            // wait for response from thumbnail renderer
-            m_renderWait.acquire();
-        }
-
         SharedThumbnail::~SharedThumbnail()
         {
             AzToolsFramework::Thumbnailer::ThumbnailerRendererNotificationBus::Handler::BusDisconnect();
             AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
         }
 
+        void SharedThumbnail::Load()
+        {
+            m_state = State::Loading;
+            AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::QueueEvent(
+                m_assetInfo.m_assetType, &AzToolsFramework::Thumbnailer::ThumbnailerRendererRequests::RenderThumbnail, m_key,
+                SharedThumbnailSize);
+        }
+
         void SharedThumbnail::ThumbnailRendered(const QPixmap& thumbnailImage)
         {
             m_pixmap = thumbnailImage;
-            m_renderWait.release();
+            m_state = State::Ready;
+            QueueThumbnailUpdated();
         }
 
         void SharedThumbnail::ThumbnailFailedToRender()
         {
             m_state = State::Failed;
-            m_renderWait.release();
+            QueueThumbnailUpdated();
         }
 
         void SharedThumbnail::OnCatalogAssetChanged([[maybe_unused]] const AZ::Data::AssetId& assetId)
         {
-            if (m_assetInfo.m_assetId == assetId && m_state == State::Ready)
+            if (m_assetInfo.m_assetId == assetId && (m_state == State::Ready || m_state == State::Failed))
             {
                 m_state = State::Unloaded;
                 Load();
+            }
+        }
+
+        void SharedThumbnail::OnCatalogAssetRemoved(const AZ::Data::AssetId& assetId, const AZ::Data::AssetInfo& /*assetInfo*/)
+        {
+            if (m_assetInfo.m_assetId == assetId)
+            {
+                // Removing the thumbnail from the catalog asset doesn't remove it from the thumbnail cache.
+                // Therefore marking the state as unloaded ensures that a new pixmap will be rendered on the next access.
+                m_state = State::Unloaded;
             }
         }
 

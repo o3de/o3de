@@ -13,6 +13,6 @@ namespace ScriptCanvas
     namespace GraphTranslationValidationIds
     {
         constexpr const char* InvalidFunctionCallNameId = "GT-0001";
-        static const AZ::Crc32 InvalidFunctionCallNameCrc = AZ_CRC(InvalidFunctionCallNameId);
+        static const AZ::Crc32 InvalidFunctionCallNameCrc = AZ_CRC_CE(InvalidFunctionCallNameId);
     }
 }

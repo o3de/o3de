@@ -20,9 +20,12 @@
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/std/sort.h>
 
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Commands/SelectionCommand.h>
-#include <AzToolsFramework/Editor/EditorContextMenuBus.h>
+#include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorMenuIdentifiers.h>
+#include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
@@ -134,7 +137,6 @@ namespace AzToolsFramework
         , m_gui(nullptr)
         , m_listModel(nullptr)
         , m_proxyModel(nullptr)
-        , m_selectionContextId(0)
         , m_selectedEntityIds()
         , m_inObjectPickMode(false)
         , m_scrollToNewContentQueued(false)
@@ -193,7 +195,6 @@ namespace AzToolsFramework
         m_listModel->SetSortMode(m_sortMode);
 
         const int autoExpandDelayMilliseconds = 2500;
-        m_gui->m_objectTree->setSelectionMode(QAbstractItemView::ExtendedSelection);
         SetDefaultTreeViewEditTriggers();
         m_gui->m_objectTree->setAutoExpandDelay(autoExpandDelayMilliseconds);
         m_gui->m_objectTree->setDragEnabled(true);
@@ -208,6 +209,7 @@ namespace AzToolsFramework
         m_gui->m_objectTree->setAutoScrollMargin(20);
         m_gui->m_objectTree->setIndentation(24);
         m_gui->m_objectTree->setRootIsDecorated(false);
+        m_gui->m_objectTree->setSelectionMode(QAbstractItemView::ExtendedSelection);
         connect(m_gui->m_objectTree, &QTreeView::customContextMenuRequested, this, &EntityOutlinerWidget::OnOpenTreeContextMenu);
 
         // custom item delegate
@@ -224,7 +226,6 @@ namespace AzToolsFramework
         connect(m_gui->m_objectTree, &QTreeView::expanded, this, &EntityOutlinerWidget::OnTreeItemExpanded);
         connect(m_gui->m_objectTree, &QTreeView::collapsed, this, &EntityOutlinerWidget::OnTreeItemCollapsed);
         connect(m_gui->m_objectTree, &EntityOutlinerTreeView::ItemDropped, this, &EntityOutlinerWidget::OnDropEvent);
-        connect(m_listModel, &EntityOutlinerListModel::ExpandEntity, this, &EntityOutlinerWidget::OnExpandEntity);
         connect(m_listModel, &EntityOutlinerListModel::SelectEntity, this, &EntityOutlinerWidget::OnSelectEntity);
         connect(m_listModel, &EntityOutlinerListModel::EnableSelectionUpdates, this, &EntityOutlinerWidget::OnEnableSelectionUpdates);
         connect(m_listModel, &EntityOutlinerListModel::ResetFilter, this, &EntityOutlinerWidget::ClearFilter);
@@ -261,6 +262,8 @@ namespace AzToolsFramework
         m_gui->m_objectTree->header()->resizeSection(EntityOutlinerListModel::ColumnVisibilityToggle, 20);
         m_gui->m_objectTree->header()->setSectionResizeMode(EntityOutlinerListModel::ColumnLockToggle, QHeaderView::Fixed);
         m_gui->m_objectTree->header()->resizeSection(EntityOutlinerListModel::ColumnLockToggle, 24);
+        m_gui->m_objectTree->header()->setSectionResizeMode(EntityOutlinerListModel::ColumnSpacing, QHeaderView::Fixed);
+        m_gui->m_objectTree->header()->resizeSection(EntityOutlinerListModel::ColumnSpacing, 16);
 
         connect(m_gui->m_objectTree->selectionModel(),
             &QItemSelectionModel::selectionChanged,
@@ -271,13 +274,13 @@ namespace AzToolsFramework
         connect(m_gui->m_searchWidget, &AzQtComponents::FilteredSearchWidget::TypeFilterChanged, this, &EntityOutlinerWidget::OnFilterChanged);
 
         AZ::SerializeContext* serializeContext = nullptr;
-        EBUS_EVENT_RESULT(serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
 
         if (serializeContext)
         {
             ComponentPaletteUtil::ComponentDataTable componentDataTable;
             ComponentPaletteUtil::ComponentIconTable componentIconTable;
-            AZStd::vector<AZ::ComponentServiceType> serviceFilter;
+            AZ::ComponentDescriptor::DependencyArrayType serviceFilter;
 
             ComponentPaletteUtil::BuildComponentTables(serializeContext, AppearsInGameComponentMenu, serviceFilter, componentDataTable, componentIconTable);
 
@@ -291,8 +294,6 @@ namespace AzToolsFramework
             }
         }
 
-        SetupActions();
-
         m_emptyIcon = QIcon();
         m_clearIcon = QIcon(":/AssetBrowser/Resources/close.png");
 
@@ -305,14 +306,18 @@ namespace AzToolsFramework
         EditorEntityContextNotificationBus::Handler::BusConnect();
         ViewportEditorModeNotificationsBus::Handler::BusConnect(GetEntityContextId());
         EditorEntityInfoNotificationBus::Handler::BusConnect();
+        Prefab::PrefabFocusNotificationBus::Handler::BusConnect(GetEntityContextId());
         Prefab::PrefabPublicNotificationBus::Handler::BusConnect();
         EditorWindowUIRequestBus::Handler::BusConnect();
+        EntityOutlinerRequestBus::Handler::BusConnect();
     }
 
     EntityOutlinerWidget::~EntityOutlinerWidget()
     {
+        EntityOutlinerRequestBus::Handler::BusDisconnect();
         EditorWindowUIRequestBus::Handler::BusDisconnect();
         Prefab::PrefabPublicNotificationBus::Handler::BusDisconnect();
+        Prefab::PrefabFocusNotificationBus::Handler::BusDisconnect();
         ViewportEditorModeNotificationsBus::Handler::BusDisconnect();
         EditorEntityInfoNotificationBus::Handler::BusDisconnect();
         EditorPickModeNotificationBus::Handler::BusDisconnect();
@@ -325,6 +330,11 @@ namespace AzToolsFramework
         delete m_gui;
     }
 
+    void EntityOutlinerWidget::OnPrefabEditScopeChanged()
+    {
+        update();
+    }
+
     // Users should be able to drag an entity in the outliner without selecting it.
     // This is useful to allow for dragging entities into AZ::EntityId fields in the component editor.
     // There are two obvious ways to allow for this:
@@ -334,6 +344,13 @@ namespace AzToolsFramework
     //  Currently, the first behavior is implemented.
     void EntityOutlinerWidget::OnSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
     {
+        // If we have an open context menu when the selection changes, it is no longer relevant and needs closing.
+        QMenu* menu = qobject_cast<QMenu*>(QApplication::activePopupWidget());
+        if (menu && menu->parentWidget() == this)
+        {
+            menu->close();
+        }
+
         if (m_selectionChangeInProgress || !m_enableSelectionUpdates
             || (selected.empty() && deselected.empty()))
         {
@@ -348,41 +365,47 @@ namespace AzToolsFramework
         EntityIdList newlyDeselected;
         ExtractEntityIdsFromSelection(deselected, newlyDeselected);
 
-        ScopedUndoBatch undo("Select Entity");
+        // This function could be called during undo/redo, in which case, we don't want to MAKE new undo/redo commands
+        // but we still want to update our own internal state.
+        AZStd::unique_ptr<ScopedUndoBatch> undo;
+        AZStd::unique_ptr<SelectionCommand> selectionCommand;
+        if (!m_isDuringUndoRedo)
+        {
+            // initialize the selection command here to store the current selection before
+            // new entities are selected or deselected below
+            // (SelectionCommand calls GetSelectedEntities in the constructor)
 
-        // initialize the selection command here to store the current selection before
-        // new entities are selected or deselected below
-        // (SelectionCommand calls GetSelectedEntities in the constructor)
-        auto selectionCommand =
-            AZStd::make_unique<SelectionCommand>(AZStd::vector<AZ::EntityId>{}, "");
+            undo = AZStd::make_unique<ScopedUndoBatch>("Select Entity");
+            selectionCommand = AZStd::make_unique<SelectionCommand>(AZStd::vector<AZ::EntityId>{}, "");
+        }
 
+    
         // Add the newly selected and deselected entities from the outliner to the appropriate selection buffer.
         for (const AZ::EntityId& entityId : newlySelected)
         {
             m_entitiesSelectedByOutliner.insert(entityId);
         }
 
-        ToolsApplicationRequestBus::Broadcast(
-            &ToolsApplicationRequests::MarkEntitiesSelected, newlySelected);
+        ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequests::MarkEntitiesSelected, newlySelected);
 
         for (const AZ::EntityId& entityId : newlyDeselected)
         {
             m_entitiesDeselectedByOutliner.insert(entityId);
         }
 
-        ToolsApplicationRequestBus::Broadcast(
-            &ToolsApplicationRequests::MarkEntitiesDeselected, newlyDeselected);
+        ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequests::MarkEntitiesDeselected, newlyDeselected);
 
         // call GetSelectedEntities again after all changes, and then update the selection
         // command  so the 'after' state is valid and up to date
         EntityIdList selectedEntities;
-        ToolsApplicationRequests::Bus::BroadcastResult(
-            selectedEntities, &ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
+        ToolsApplicationRequests::Bus::BroadcastResult(selectedEntities, &ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
 
-        selectionCommand->UpdateSelection(selectedEntities);
-
-        selectionCommand->SetParent(undo.GetUndoBatch());
-        selectionCommand.release();
+        if ((undo) && (selectionCommand))
+        {
+            selectionCommand->UpdateSelection(selectedEntities);
+            selectionCommand->SetParent(undo->GetUndoBatch());
+            selectionCommand.release(); // SetParent is an ownership transfer, the undo batch will now own deletion of this memory.
+        }
 
         m_entitiesDeselectedByOutliner.clear();
         m_entitiesSelectedByOutliner.clear();
@@ -557,7 +580,7 @@ namespace AzToolsFramework
         AZ_PROFILE_FUNCTION(Editor);
 
         bool isDocumentOpen = false;
-        EBUS_EVENT_RESULT(isDocumentOpen, EditorRequests::Bus, IsLevelDocumentOpen);
+        EditorRequests::Bus::BroadcastResult(isDocumentOpen, &EditorRequests::Bus::Events::IsLevelDocumentOpen);
         if (!isDocumentOpen)
         {
             return;
@@ -570,103 +593,16 @@ namespace AzToolsFramework
             return;
         }
 
-        QMenu* contextMenu = new QMenu(this);
-
-        // Populate global context menu.
-        AzToolsFramework::EditorContextMenuBus::Broadcast(&AzToolsFramework::EditorContextMenuEvents::PopulateEditorGlobalContextMenu,
-            contextMenu,
-            AZ::Vector2::CreateZero(),
-            EditorEvents::eECMF_HIDE_ENTITY_CREATION | EditorEvents::eECMF_USE_VIEWPORT_CENTER);
-
-        PrepareSelection();
-
-        // Remove the "Find in Entity Outliner" option from the context menu
-        for (QAction* action : contextMenu->actions())
+        if (auto menuManagerInterface = AZ::Interface<MenuManagerInterface>::Get())
         {
-            if (action->text() == "Find in Entity Outliner")
-            {
-                contextMenu->removeAction(action);
-                break;
-            }
+            menuManagerInterface->DisplayMenuUnderCursor(EditorIdentifiers::EntityOutlinerContextMenuIdentifier);
         }
-
-        //register rename menu action
-        if (!m_selectedEntityIds.empty())
-        {
-            contextMenu->addSeparator();
-
-            if (m_selectedEntityIds.size() == 1)
-            {
-                auto entityId = m_selectedEntityIds.front();
-
-                // Only allow renaming the entity if the UI Handler did not block it.
-                auto entityUiHandler = m_editorEntityUiInterface->GetHandler(entityId);
-                bool canRename = !entityUiHandler || entityUiHandler->CanRename(entityId);
-
-                // Disable renaming for read-only entities.
-                bool isReadOnly = m_readOnlyEntityPublicInterface->IsReadOnly(entityId);
-
-                if (canRename && !isReadOnly)
-                {
-                    contextMenu->addAction(m_actionToRenameSelection);
-                }
-            }
-
-            if (m_selectedEntityIds.size() == 1)
-            {
-                AZ::EntityId entityId = m_selectedEntityIds[0];
-
-                // Don't allow moving the entity if it's the focus root.
-                if (m_focusModeInterface->GetFocusRoot(m_editorEntityContextId) != entityId)
-                {
-                    AZ::EntityId parentId;
-                    EditorEntityInfoRequestBus::EventResult(parentId, entityId, &EditorEntityInfoRequestBus::Events::GetParent);
-
-                    EntityOrderArray entityOrderArray = GetEntityChildOrder(parentId);
-
-                    if (entityOrderArray.size() > 1)
-                    {
-                        if (AZStd::find(entityOrderArray.begin(), entityOrderArray.end(), entityId) != entityOrderArray.end())
-                        {
-                            if (entityOrderArray.front() != entityId)
-                            {
-                                contextMenu->addAction(m_actionToMoveEntityUp);
-                            }
-
-                            if (entityOrderArray.back() != entityId)
-                            {
-                                contextMenu->addAction(m_actionToMoveEntityDown);
-                            }
-                        }
-                    }
-                }
-            }
-
-            contextMenu->addSeparator();
-
-            bool canGoToEntitiesInViewport = true;
-            EditorRequestBus::BroadcastResult(canGoToEntitiesInViewport, &EditorRequestBus::Events::CanGoToSelectedEntitiesInViewports);
-            if (!canGoToEntitiesInViewport)
-            {
-                m_actionGoToEntitiesInViewport->setEnabled(false);
-                m_actionGoToEntitiesInViewport->setToolTip(QObject::tr("The selection contains no entities that exist in the viewport."));
-            }
-            else
-            {
-                m_actionGoToEntitiesInViewport->setEnabled(true);
-                m_actionGoToEntitiesInViewport->setToolTip(QObject::tr("Moves the viewports to the bounding box for the selection."));
-            }
-            contextMenu->addAction(m_actionGoToEntitiesInViewport);
-        }
-
-        contextMenu->exec(m_gui->m_objectTree->mapToGlobal(pos));
-        delete contextMenu;
     }
 
     AzFramework::EntityContextId EntityOutlinerWidget::GetPickModeEntityContextId()
     {
         AzFramework::EntityContextId editorEntityContextId = AzFramework::EntityContextId::CreateNull();
-        EBUS_EVENT_RESULT(editorEntityContextId, EditorRequests::Bus, GetEntityContextId);
+        EditorRequests::Bus::BroadcastResult(editorEntityContextId, &EditorRequests::Bus::Events::GetEntityContextId);
 
         return editorEntityContextId;
     }
@@ -674,7 +610,7 @@ namespace AzToolsFramework
     void EntityOutlinerWidget::PrepareSelection()
     {
         m_selectedEntityIds.clear();
-        EBUS_EVENT_RESULT(m_selectedEntityIds, ToolsApplicationRequests::Bus, GetSelectedEntities);
+        ToolsApplicationRequests::Bus::BroadcastResult(m_selectedEntityIds, &ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
     }
 
     void EntityOutlinerWidget::DoCreateEntity()
@@ -699,7 +635,7 @@ namespace AzToolsFramework
         PrepareSelection();
 
         AZ::EntityId entityId;
-        EBUS_EVENT_RESULT(entityId, EditorRequests::Bus, CreateNewEntity, parentId);
+        EditorRequests::Bus::BroadcastResult(entityId, &EditorRequests::Bus::Events::CreateNewEntity, parentId);
     }
 
     void EntityOutlinerWidget::DoDuplicateSelection()
@@ -711,7 +647,7 @@ namespace AzToolsFramework
             ScopedUndoBatch undo("Duplicate Entity(s)");
 
             bool handled = false;
-            EBUS_EVENT(EditorRequests::Bus, CloneSelection, handled);
+            EditorRequests::Bus::Broadcast(&EditorRequests::Bus::Events::CloneSelection, handled);
         }
     }
 
@@ -719,7 +655,7 @@ namespace AzToolsFramework
     {
         PrepareSelection();
 
-        EBUS_EVENT(EditorRequests::Bus, DeleteSelectedEntities, false);
+        EditorRequests::Bus::Broadcast(&EditorRequests::Bus::Events::DeleteSelectedEntities, false);
 
         PrepareSelection();
     }
@@ -728,7 +664,7 @@ namespace AzToolsFramework
     {
         PrepareSelection();
 
-        EBUS_EVENT(EditorRequests::Bus, DeleteSelectedEntities, true);
+        EditorRequests::Bus::Broadcast(&EditorRequests::Bus::Events::DeleteSelectedEntities, true);
 
         PrepareSelection();
     }
@@ -847,53 +783,6 @@ namespace AzToolsFramework
             &ToolsApplicationRequests::SetSelectedEntities, EntityIdList{ entityId });
     }
 
-    void EntityOutlinerWidget::SetupActions()
-    {
-        m_actionToCreateEntity = new QAction(tr("Create Entity"), this);
-        m_actionToCreateEntity->setShortcut(tr("Ctrl+Alt+N"));
-        m_actionToCreateEntity->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-        connect(m_actionToCreateEntity, &QAction::triggered, this, &EntityOutlinerWidget::DoCreateEntity);
-        addAction(m_actionToCreateEntity);
-
-        m_actionToDeleteSelection = new QAction(tr("Delete"), this);
-        m_actionToDeleteSelection->setShortcut(QKeySequence("Shift+Delete"));
-        m_actionToDeleteSelection->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-        connect(m_actionToDeleteSelection, &QAction::triggered, this, &EntityOutlinerWidget::DoDeleteSelection);
-        addAction(m_actionToDeleteSelection);
-
-        m_actionToDeleteSelectionAndDescendants = new QAction(tr("Delete Selection And Descendants"), this);
-        m_actionToDeleteSelectionAndDescendants->setShortcut(QKeySequence::Delete);
-        m_actionToDeleteSelectionAndDescendants->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-        connect(m_actionToDeleteSelectionAndDescendants, &QAction::triggered, this, &EntityOutlinerWidget::DoDeleteSelectionAndDescendants);
-        addAction(m_actionToDeleteSelectionAndDescendants);
-
-        m_actionToRenameSelection = new QAction(tr("Rename"), this);
-    #if defined(Q_OS_MAC)
-        // "Alt+Return" translates to Option+Return on macOS
-        m_actionToRenameSelection->setShortcut(tr("Alt+Return"));
-    #elif defined(Q_OS_WIN)
-        m_actionToRenameSelection->setShortcut(tr("F2"));
-    #endif
-        m_actionToRenameSelection->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-        connect(m_actionToRenameSelection, &QAction::triggered, this, &EntityOutlinerWidget::DoRenameSelection);
-        addAction(m_actionToRenameSelection);
-
-        m_actionToMoveEntityUp = new QAction(tr("Move up"), this);
-        m_actionToMoveEntityUp->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-        connect(m_actionToMoveEntityUp, &QAction::triggered, this, &EntityOutlinerWidget::DoMoveEntityUp);
-        addAction(m_actionToMoveEntityUp);
-
-        m_actionToMoveEntityDown = new QAction(tr("Move down"), this);
-        m_actionToMoveEntityDown->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-        connect(m_actionToMoveEntityDown, &QAction::triggered, this, &EntityOutlinerWidget::DoMoveEntityDown);
-        addAction(m_actionToMoveEntityDown);
-
-        m_actionGoToEntitiesInViewport = new QAction(tr("Find in viewport"), this);
-        m_actionGoToEntitiesInViewport->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-        connect(m_actionGoToEntitiesInViewport, &QAction::triggered, this, &EntityOutlinerWidget::GoToEntitiesInViewport);
-        addAction(m_actionGoToEntitiesInViewport);
-    }
-
     void EntityOutlinerWidget::SetDefaultTreeViewEditTriggers()
     {
         m_gui->m_objectTree->setEditTriggers(QAbstractItemView::SelectedClicked | QAbstractItemView::EditKeyPressed);
@@ -901,6 +790,18 @@ namespace AzToolsFramework
 
     void EntityOutlinerWidget::OnEntityPickModeStarted()
     {
+        // If we're in component mode, it's possible the outliner isn't currently enabled. If so,
+        // make sure to enable it while in pick mode.
+        if (!isEnabled())
+        {
+            AZ_Assert(
+                AzToolsFramework::ComponentModeFramework::InComponentMode(),
+                "Unexpectedly starting pick mode with a disabled UI while not in component mode. This likely means that "
+                "the outliner will not re-disable itself after pick mode correctly. Fix the code in OnEntityPickModeStarted/Stopped to "
+                "account for this new case.");
+            EnableUi(true);
+        }
+
         m_gui->m_objectTree->setDragEnabled(false);
         m_gui->m_objectTree->setSelectionMode(QAbstractItemView::NoSelection);
         m_gui->m_objectTree->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -909,6 +810,12 @@ namespace AzToolsFramework
 
     void EntityOutlinerWidget::OnEntityPickModeStopped()
     {
+        // If we're in component mode, the outliner shouldn't be enabled once pick mode ends.
+        if (AzToolsFramework::ComponentModeFramework::InComponentMode())
+        {
+            EnableUi(false);
+        }
+
         m_gui->m_objectTree->setDragEnabled(true);
         m_gui->m_objectTree->setSelectionMode(QAbstractItemView::ExtendedSelection);
         SetDefaultTreeViewEditTriggers();
@@ -943,9 +850,10 @@ namespace AzToolsFramework
 
     void EntityOutlinerWidget::OnTreeItemDoubleClicked(const QModelIndex& index)
     {
+        AzToolsFramework::EditorRequestBus::Broadcast(&AzToolsFramework::EditorRequestBus::Events::GoToSelectedEntitiesInViewports);
         if (AZ::EntityId entityId = GetEntityIdFromIndex(index); auto entityUiHandler = m_editorEntityUiInterface->GetHandler(entityId))
         {
-            entityUiHandler->OnEntityDoubleClick(entityId);
+            entityUiHandler->OnOutlinerItemDoubleClick(index);
         }
     }
 
@@ -971,17 +879,15 @@ namespace AzToolsFramework
         m_listModel->OnEntityCollapsed(entityId);
     }
 
-    void EntityOutlinerWidget::OnExpandEntity(const AZ::EntityId& entityId, bool expand)
-    {
-        m_gui->m_objectTree->setExpanded(GetIndexFromEntityId(entityId), expand);
-    }
 
     void EntityOutlinerWidget::OnSelectEntity(const AZ::EntityId& entityId, bool selected)
     {
+        bool selectionChanged = false;
         if (selected)
         {
             if (m_entitiesSelectedByOutliner.find(entityId) == m_entitiesSelectedByOutliner.end())
             {
+                selectionChanged = true;
                 m_entitiesToSelect.insert(entityId);
                 m_entitiesToDeselect.erase(entityId);
             }
@@ -990,11 +896,15 @@ namespace AzToolsFramework
         {
             if (m_entitiesDeselectedByOutliner.find(entityId) == m_entitiesDeselectedByOutliner.end())
             {
+                selectionChanged = true;
                 m_entitiesToSelect.erase(entityId);
                 m_entitiesToDeselect.insert(entityId);
             }
         }
-        QueueUpdateSelection();
+        if (selectionChanged)
+        {
+            QueueUpdateSelection();
+        }
     }
 
     void EntityOutlinerWidget::OnEnableSelectionUpdates(bool enable)
@@ -1117,6 +1027,8 @@ namespace AzToolsFramework
 
         m_listModel->SearchStringChanged(filterString);
         m_proxyModel->UpdateFilter();
+
+        m_gui->m_objectTree->expandAll();
     }
 
     void EntityOutlinerWidget::OnFilterChanged(const AzQtComponents::SearchTypeFilterList& activeTypeFilters)
@@ -1175,6 +1087,26 @@ namespace AzToolsFramework
         EnableUi(enable);
     }
 
+    void EntityOutlinerWidget::TriggerRenameEntityUi(const AZ::EntityId& entityId)
+    {
+        // Only allow renaming the entity if the UI Handler did not block it.
+        auto entityUiHandler = m_editorEntityUiInterface->GetHandler(entityId);
+        bool canRename = !entityUiHandler || entityUiHandler->CanRename(entityId);
+
+        // Disable renaming for read-only entities.
+        bool isReadOnly = m_readOnlyEntityPublicInterface->IsReadOnly(entityId);
+
+        if (canRename && !isReadOnly)
+        {
+            const QModelIndex proxyIndex = GetIndexFromEntityId(entityId);
+            if (proxyIndex.isValid())
+            {
+                m_gui->m_objectTree->setCurrentIndex(proxyIndex);
+                m_gui->m_objectTree->QTreeView::edit(proxyIndex);
+            }
+        }
+    }
+
     void EntityOutlinerWidget::OnEditorModeActivated(
         [[maybe_unused]] const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode)
     {
@@ -1204,6 +1136,12 @@ namespace AzToolsFramework
             m_gui->m_objectTree->setUpdatesEnabled(true);
             m_gui->m_objectTree->expand(m_proxyModel->index(0,0));
         });
+    }
+
+    void EntityOutlinerWidget::OnPrefabTemplateDirtyFlagUpdated(
+        [[maybe_unused]] Prefab::TemplateId templateId, [[maybe_unused]] bool status)
+    {
+        m_gui->m_objectTree->update();
     }
 
     void EntityOutlinerWidget::OnEntityInfoUpdatedAddChildEnd(AZ::EntityId /*parentId*/, AZ::EntityId childId)
@@ -1307,6 +1245,16 @@ namespace AzToolsFramework
         }
 
         QueueScrollToNewContent(GetEntityIdFromIndex(firstSelectedEntityIndex));
+    }
+
+    // ToolsApplicationEventBus handler
+    void EntityOutlinerWidget::BeforeUndoRedo()
+    {
+        m_isDuringUndoRedo = true;
+    }
+    void EntityOutlinerWidget::AfterUndoRedo()
+    {
+        m_isDuringUndoRedo = false;
     }
 
 }

@@ -29,14 +29,20 @@ namespace AZ
             return *m_compiledArgBuffers[m_compiledDataIndex];
         }
     
-        void ShaderResourceGroup::CollectUntrackedResources(id<MTLCommandEncoder> commandEncoder,
-                                                            const ShaderResourceGroupVisibility& srgResourcesVisInfo,
-                                                            ArgumentBuffer::ComputeResourcesToMakeResidentMap& resourcesToMakeResidentCompute,
-                                                            ArgumentBuffer::GraphicsResourcesToMakeResidentMap& resourcesToMakeResidentGraphics) const
+        void ShaderResourceGroup::CollectUntrackedResources(const ShaderResourceGroupVisibility& srgResourcesVisInfo,
+                                                            ArgumentBuffer::ResourcesForCompute& untrackedResourceComputeRead,
+                                                            ArgumentBuffer::ResourcesForCompute& untrackedResourceComputeReadWrite) const
         {
-            GetCompiledArgumentBuffer().CollectUntrackedResources(commandEncoder, srgResourcesVisInfo, resourcesToMakeResidentCompute, resourcesToMakeResidentGraphics);
+            GetCompiledArgumentBuffer().CollectUntrackedResources(srgResourcesVisInfo, untrackedResourceComputeRead, untrackedResourceComputeReadWrite);
         }
     
+        void ShaderResourceGroup::CollectUntrackedResources(const ShaderResourceGroupVisibility& srgResourcesVisInfo,
+                                                            ArgumentBuffer::ResourcesPerStageForGraphics& untrackedResourcesRead,
+                                                            ArgumentBuffer::ResourcesPerStageForGraphics& untrackedResourcesReadWrite) const
+        {
+            GetCompiledArgumentBuffer().CollectUntrackedResources(srgResourcesVisInfo, untrackedResourcesRead, untrackedResourcesReadWrite);
+        }
+  
         bool ShaderResourceGroup::IsNullHeapNeededForVertexStage(const ShaderResourceGroupVisibility& srgResourcesVisInfo) const
         {
             return GetCompiledArgumentBuffer().IsNullHeapNeededForVertexStage(srgResourcesVisInfo);

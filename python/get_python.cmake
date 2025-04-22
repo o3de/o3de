@@ -13,18 +13,21 @@
 # example:
 # cmake -DPAL_PLATFORM_NAME:string=Windows -DLY_3RDPARTY_PATH:string=%CMD_DIR% -P get_python.cmake
 
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.22)
 
 if(LY_3RDPARTY_PATH)
     file(TO_CMAKE_PATH ${LY_3RDPARTY_PATH} LY_3RDPARTY_PATH)
+    cmake_path(NORMAL_PATH LY_3RDPARTY_PATH)
 endif()
 
-function(o3de_current_file_path path)
-    set(${path} ${CMAKE_CURRENT_FUNCTION_LIST_DIR} PARENT_SCOPE)
-endfunction()
+if (LY_ROOT_FOLDER)
+    file(TO_CMAKE_PATH ${LY_ROOT_FOLDER} LY_ROOT_FOLDER)
+    cmake_path(NORMAL_PATH LY_ROOT_FOLDER)
+endif()
 
-o3de_current_file_path(current_path)
-file(REAL_PATH ${current_path}/.. LY_ROOT_FOLDER)
+set(PAL_HOST_PLATFORM_NAME ${PAL_PLATFORM_NAME})
+string(TOLOWER ${PAL_HOST_PLATFORM_NAME} PAL_HOST_PLATFORM_NAME_LOWERCASE)
 
-set(LY_PACKAGE_KEEP_AFTER_DOWNLOADING FALSE)
+string(TOLOWER ${PAL_PLATFORM_NAME} PAL_PLATFORM_NAME_LOWERCASE)
+
 include(cmake/LYPython.cmake)

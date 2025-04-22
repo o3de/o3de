@@ -26,7 +26,7 @@ namespace AZ
          */
         struct SerializableEntityContainer
         {
-            AZ_CLASS_ALLOCATOR(SerializableEntityContainer, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SerializableEntityContainer, SystemAllocator);
             AZ_TYPE_INFO(SerializableEntityContainer, "{E98CF1B5-6B72-46C5-AB87-3DB85FD1B48D}");
 
             AZStd::vector<AZ::Entity*> m_entities;
@@ -213,6 +213,12 @@ namespace AZ
             const ComponentDescriptor::DependencyArrayType::iterator& iterator,
             ComponentDescriptor::DependencyArrayType& providedServiceArray,
             const Entity* entity);
+
+        //! Converts a vector of components to a map of pairs of component alias and component.
+        //! \param components Component vector to be converted.
+        //! \param[out] componentMapOut Component map that stores a component alias as key and a component as value.
+        void ConvertComponentVectorToMap(
+            AZStd::span<AZ::Component* const> components, AZStd::unordered_map<AZStd::string, AZ::Component*>& componentMapOut);
 
     } // namespace EntityUtils
 }   // namespace AZ

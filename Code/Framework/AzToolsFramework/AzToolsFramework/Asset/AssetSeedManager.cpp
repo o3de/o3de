@@ -12,11 +12,12 @@
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/Math/Sha1.h>
 #include <AzCore/Serialization/Utils.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/Slice/SliceAsset.h>
+#include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzFramework/FileTag/FileTagBus.h>
 #include <AzFramework/FileTag/FileTag.h>
-#include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/Asset/AssetDebugInfo.h>
 #include <AzToolsFramework/AssetCatalog/PlatformAddressedAssetCatalogBus.h>
 #include <AzToolsFramework/AssetCatalog/PlatformAddressedAssetCatalog.h>
@@ -31,7 +32,6 @@ const char ScriptCanvasFunctionCompiled[] = "scriptcanvas_fn_compiled";
 
 namespace AzToolsFramework
 {
-
     AZStd::string GetSeedPath(AZ::Data::AssetId assetId, AzFramework::PlatformFlags platformFlags)
     {
         using namespace AzToolsFramework;
@@ -45,7 +45,7 @@ namespace AzToolsFramework
                 return assetPath;
             }
         }
-        
+
         AZ_Warning("AssetSeedManager", false, "Unable to resolve path of Seed asset (%s) for the given platforms (%s).\n", assetId.ToString<AZStd::string>().c_str(), AzFramework::PlatformHelper::GetCommaSeparatedPlatformList(platformFlags).c_str());
 
         return {};
@@ -289,7 +289,7 @@ namespace AzToolsFramework
     {
         for (auto iter = m_assetSeedList.begin(); iter != m_assetSeedList.end(); ++iter)
         {
-            if (AzFramework::StringFunc::Equal(iter->m_assetRelativePath.c_str(), pathHint.c_str()))
+            if (AZ::StringFunc::Equal(iter->m_assetRelativePath.c_str(), pathHint.c_str()))
             {
                 return iter->m_assetId;
             }
@@ -409,12 +409,12 @@ namespace AzToolsFramework
             // source asset type, we will fix the fileextension.
 
             AZStd::string fileExtension;
-            AzFramework::StringFunc::Path::GetExtension(seedPath.c_str(), fileExtension, false);
+            AZ::StringFunc::Path::GetExtension(seedPath.c_str(), fileExtension, false);
             auto found = m_sourceAssetTypeToRuntimeAssetTypeMap.find(fileExtension);
 
             if (found != m_sourceAssetTypeToRuntimeAssetTypeMap.end())
             {
-                AzFramework::StringFunc::Path::ReplaceExtension(seedPath, found->second.c_str());
+                AZ::StringFunc::Path::ReplaceExtension(seedPath, found->second.c_str());
                 AZ_Warning("AssetSeedManager", false, "( %s ) is an editor only asset. We wil use seed asset( %s ) instead.\n", assetPath.c_str(), seedPath.c_str());
             }
             else
@@ -431,10 +431,10 @@ namespace AzToolsFramework
     void AssetSeedManager::PopulateAssetTypeMap()
     {
         AZStd::string sliceFileExtension;
-        AzFramework::StringFunc::Path::GetExtension(AZ::SliceAsset::GetFileFilter(), sliceFileExtension, false);
+        AZ::StringFunc::Path::GetExtension(AZ::SliceAsset::GetFileFilter(), sliceFileExtension, false);
 
         AZStd::string dynamicSliceFileExtension;
-        AzFramework::StringFunc::Path::GetExtension(AZ::DynamicSliceAsset::GetFileFilter(), dynamicSliceFileExtension, false);
+        AZ::StringFunc::Path::GetExtension(AZ::DynamicSliceAsset::GetFileFilter(), dynamicSliceFileExtension, false);
 
         m_sourceAssetTypeToRuntimeAssetTypeMap[sliceFileExtension] = dynamicSliceFileExtension;
         m_sourceAssetTypeToRuntimeAssetTypeMap[ScriptCanvas] = ScriptCanvasCompiled;
@@ -484,7 +484,7 @@ namespace AzToolsFramework
 
             AZ::Data::AssetInfo seedAssetInfo = GetAssetInfoById(m_assetSeedList[idx].m_assetId, platformIndex, m_assetSeedList[idx].m_seedListFilePath, m_assetSeedList[idx].m_assetRelativePath);
 
-            if (optionalDebugList && 
+            if (optionalDebugList &&
                 optionalDebugList->m_fileDebugInfoList.find(seedAssetInfo.m_assetId) == optionalDebugList->m_fileDebugInfoList.end())
             {
                 optionalDebugList->m_fileDebugInfoList[seedAssetInfo.m_assetId].m_assetId = seedAssetInfo.m_assetId;
@@ -546,7 +546,7 @@ namespace AzToolsFramework
     }
 
     AssetFileInfoList AssetSeedManager::GetDependencyList(AzFramework::PlatformId platformIndex, const AZStd::unordered_set<AZ::Data::AssetId>& exclusionList, AssetFileDebugInfoList* optionalDebugList, const AZStd::vector<AZStd::string>& wildcardPatternExclusionList) const
-    {     
+    {
         AssetSeedManager::AssetsInfoList  assetInfoList = AZStd::move(GetDependenciesInfo(platformIndex, exclusionList, optionalDebugList, wildcardPatternExclusionList));
 
         AssetFileInfoList assetFileInfoList;
@@ -561,7 +561,7 @@ namespace AzToolsFramework
                 if (!assetInfo.m_relativePath.empty())
                 {
                     AZStd::string assetPath;
-                    AzFramework::StringFunc::Path::Join(assetRoot.c_str(), assetInfo.m_relativePath.c_str(), assetPath);
+                    AZ::StringFunc::Path::Join(assetRoot.c_str(), assetInfo.m_relativePath.c_str(), assetPath);
                     if (!fileIO->Exists(assetPath.c_str()))
                     {
                         AZ_Warning("AssetSeedManager", false, "Asset ( %s ) does not exist in the cache folder.\n", assetPath.c_str());
@@ -592,7 +592,7 @@ namespace AzToolsFramework
                             continue;
                         }
 
-                        hash.ProcessBytes(buffer.data(), buffer.size());
+                        hash.ProcessBytes(AZStd::as_bytes(AZStd::span(buffer)));
                         hash.GetDigest(digestArray);
 
                         for (int idx = 0; idx < digest.size(); idx++)
@@ -680,7 +680,7 @@ namespace AzToolsFramework
 
     AZ::Outcome<void, AZStd::string> AssetSeedManager::ValidateSeedFileExtension(const AZStd::string& path)
     {
-        if (!AzFramework::StringFunc::EndsWith(path, SeedFileExtension))
+        if (!AZ::StringFunc::EndsWith(path, SeedFileExtension))
         {
             return AZ::Failure(AZStd::string::format(
                 "Invalid Seed List file path ( %s ). Invalid file extension, Seed List files can only have ( .%s ) extension.\n",
@@ -699,14 +699,20 @@ namespace AzToolsFramework
     const AZStd::string& AssetSeedManager::GetReadablePlatformList(const AzFramework::SeedInfo& seed)
     {
         using namespace AzFramework;
-        auto readablePlatformListIter = m_platformFlagsToReadablePlatformList.find(seed.m_platformFlags);
+
+        PlatformFlags visiblePlatforms = seed.m_platformFlags;
+#ifndef AZ_TOOLS_EXPAND_FOR_RESTRICTED_PLATFORMS
+        // don't include restricted platforms when they are not enabled
+        visiblePlatforms &= PlatformFlags::UnrestrictedPlatforms;
+#endif
+        auto readablePlatformListIter = m_platformFlagsToReadablePlatformList.find(visiblePlatforms);
         if (readablePlatformListIter != m_platformFlagsToReadablePlatformList.end())
         {
             return readablePlatformListIter->second;
         }
 
-        m_platformFlagsToReadablePlatformList[seed.m_platformFlags] = PlatformHelper::GetCommaSeparatedPlatformList(seed.m_platformFlags);
-        return m_platformFlagsToReadablePlatformList.at(seed.m_platformFlags);
+        m_platformFlagsToReadablePlatformList[visiblePlatforms] = PlatformHelper::GetCommaSeparatedPlatformList(visiblePlatforms);
+        return m_platformFlagsToReadablePlatformList.at(visiblePlatforms);
     }
 
     void AssetSeedManager::Reflect(AZ::ReflectContext* context)
@@ -739,7 +745,7 @@ namespace AzToolsFramework
             return false;
         }
 
-        return AZ::Utils::SaveObjectToFile(destinationPath, AZ::DataStream::StreamType::ST_XML, &m_assetSeedList);
+        return static_cast<bool>(AZ::JsonSerializationUtils::SaveObjectToFile(&m_assetSeedList, destinationPath));
     }
 
     void AssetSeedManager::UpdateSeedPath()
@@ -772,9 +778,40 @@ namespace AzToolsFramework
         }
 
         AzFramework::AssetSeedList assetSeedList;
-        if (!AZ::Utils::LoadObjectFromFileInPlace(sourceFilePath.c_str(), assetSeedList))
+
+        // As the seed file can support both JSON and ObjectStream XML
+        // It is opened and read into memory first
+        AZ::IO::FileIOStream assetSeedStream;
+        if (!assetSeedStream.Open(sourceFilePath.c_str(), AZ::IO::OpenMode::ModeRead | AZ::IO::OpenMode::ModeBinary))
         {
             return false;
+        }
+
+        auto ReadAssetSeedData = [&assetSeedStream](char* buffer, size_t size) -> size_t
+        {
+            return assetSeedStream.Read(size, buffer);
+        };
+
+        AZStd::string assetSeedData;
+        assetSeedData.resize_and_overwrite(assetSeedStream.GetLength(), ReadAssetSeedData);
+
+        // If the asset seed file starts with the ObjectStream XML stream tag
+        // then load the data using the ObjectStream
+        constexpr AZ::u8 xmlObjectStreamTag = '<';
+        if (assetSeedData.starts_with(xmlObjectStreamTag))
+        {
+            if (!AZ::Utils::LoadObjectFromBufferInPlace(assetSeedData.c_str(), assetSeedData.size(), assetSeedList))
+            {
+                return false;
+            }
+        }
+        else
+        {
+            // Load the asset seed file using Json Serialization
+            if (!AZ::JsonSerializationUtils::LoadObjectFromString(assetSeedList, assetSeedData))
+            {
+                return false;
+            }
         }
 
         for (AzFramework::SeedInfo& seedInfo : assetSeedList)
@@ -843,7 +880,7 @@ namespace AzToolsFramework
 
     AZ::Outcome<void, AZStd::string> AssetFileInfoList::ValidateAssetListFileExtension(const AZStd::string& path)
     {
-        if (!AzFramework::StringFunc::EndsWith(path, AssetListFileExtension))
+        if (!AZ::StringFunc::EndsWith(path, AssetListFileExtension))
         {
             return AZ::Failure(AZStd::string::format(
                 "Invalid Asset List file path ( %s ). Invalid file extension, Asset List files can only have ( .%s ) extension.\n",

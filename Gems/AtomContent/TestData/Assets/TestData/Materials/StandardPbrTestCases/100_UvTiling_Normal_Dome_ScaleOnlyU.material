@@ -1,0 +1,10 @@
+{
+    "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardPBR.materialtype",
+    "materialTypeVersion": 5,
+    "propertyValues": {
+        "normal.factor": 0.15000000596046448,
+        "normal.flipY": true,
+        "normal.textureMap": "../../Textures/test_dome_normal.tiff",
+        "uv.tileU": 2.0
+    }
+}

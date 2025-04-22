@@ -22,20 +22,18 @@ namespace GraphModel
     using NodeId = int;
 
     // Slot ID that is unique within the context of a Node
-    struct SlotIdData;
-    using SlotId = SlotIdData;
+    struct SlotId;
 
     // An Endpoint is a specific Slot within a specific Node.
     // It's basically a Slot ID that is unique within the context of an entire Graph.
     using Endpoint = AZStd::pair<NodeId, SlotId>;
 
     class DataType;
-    using DataTypePtr = AZStd::shared_ptr<const DataType>; //!< All pointers are const since this data is immutable anyway
+    using DataTypePtr = AZStd::shared_ptr<DataType>;
     using DataTypeList = AZStd::vector<DataTypePtr>;
 
-    class IGraphContext;
-    using IGraphContextPtr = AZStd::shared_ptr<IGraphContext>;
-    using ConstIGraphContextPtr = AZStd::shared_ptr<const IGraphContext>;
+    class GraphContext;
+    using GraphContextPtr = AZStd::shared_ptr<GraphContext>;
 
     class Graph;
     using GraphPtr = AZStd::shared_ptr<Graph>;

@@ -497,11 +497,11 @@ namespace UiSerialize
                 ->Field("SerializeString", &AnimationData::m_serializeData);
 
             // deprecate old classes that no longer exist
-            serializeContext->ClassDeprecate("UiCanvasEditor", "{65682E87-B573-435B-88CB-B4C12B71EEEE}");
-            serializeContext->ClassDeprecate("ImageAsset", "{138E471A-F3AE-404A-9075-EDC7488C97FC}");
+            serializeContext->ClassDeprecate("UiCanvasEditor", AZ::Uuid("{65682E87-B573-435B-88CB-B4C12B71EEEE}"));
+            serializeContext->ClassDeprecate("ImageAsset", AZ::Uuid("{138E471A-F3AE-404A-9075-EDC7488C97FC}"));
 
             // Allow loading FontAssets and CanvasAssets with previous Uuid specializations of AZ_TYPE_INFO_SPECIALIZE
-            serializeContext->ClassDeprecate("SimpleAssetReference_FontAsset", "{D6342379-A5FA-4B18-B890-702C2FE99A5A}",
+            serializeContext->ClassDeprecate("SimpleAssetReference_FontAsset", AZ::Uuid("{D6342379-A5FA-4B18-B890-702C2FE99A5A}"),
                 [](AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& rootElement)
             {
                 AZStd::vector<AZ::SerializeContext::DataElementNode> childNodeElements;
@@ -552,7 +552,7 @@ namespace UiSerialize
         // Note, we can assume that srcClassElement will stay in the same place in memory during this function
         // But the base class (and everything in it) will move around in memory as we remove elements from
         // srcClassElement. So it is improtant not to hold only any indicies or references to the base class.
-        int interactableBaseClassIndex = srcClassElement.FindElement(AZ_CRC("BaseClass1", 0xd4925735));
+        int interactableBaseClassIndex = srcClassElement.FindElement(AZ_CRC_CE("BaseClass1"));
 
         // Add a new element for the state actions.
         int stateActionsIndex = srcClassElement.GetSubElement(interactableBaseClassIndex)
@@ -565,7 +565,7 @@ namespace UiSerialize
         }
 
         {
-            interactableBaseClassIndex = srcClassElement.FindElement(AZ_CRC("BaseClass1", 0xd4925735));
+            interactableBaseClassIndex = srcClassElement.FindElement(AZ_CRC_CE("BaseClass1"));
             AZ::SerializeContext::DataElementNode& dstClassElement = srcClassElement.GetSubElement(interactableBaseClassIndex);
 
             stateActionsIndex = dstClassElement.FindElement(AZ_CRC(stateActionsElementName));
@@ -585,11 +585,11 @@ namespace UiSerialize
                 // as Vector3. Since the UiInteractableStateColor we just created will be at the latest version
                 // we need to convert the color to an AZ::Color now.
                 // Note that indices will have changed since MoveElement was called.
-                interactableBaseClassIndex = srcClassElement.FindElement(AZ_CRC("BaseClass1", 0xd4925735));
+                interactableBaseClassIndex = srcClassElement.FindElement(AZ_CRC_CE("BaseClass1"));
                 AZ::SerializeContext::DataElementNode& dstBaseClassElement = srcClassElement.GetSubElement(interactableBaseClassIndex);
                 stateActionsIndex = dstBaseClassElement.FindElement(AZ_CRC(stateActionsElementName));
                 AZ::SerializeContext::DataElementNode& dstStateActionsNode = dstBaseClassElement.GetSubElement(stateActionsIndex);
-                colorIndex = dstStateActionsNode.FindElement(AZ_CRC("element"));
+                colorIndex = dstStateActionsNode.FindElement(AZ_CRC_CE("element"));
                 AZ::SerializeContext::DataElementNode& dstColorNode = dstStateActionsNode.GetSubElement(colorIndex);
 
                 if (!LyShine::ConvertSubElementFromVector3ToAzColor(context, dstColorNode, "Color"))
@@ -600,7 +600,7 @@ namespace UiSerialize
         }
 
         {
-            interactableBaseClassIndex = srcClassElement.FindElement(AZ_CRC("BaseClass1", 0xd4925735));
+            interactableBaseClassIndex = srcClassElement.FindElement(AZ_CRC_CE("BaseClass1"));
             AZ::SerializeContext::DataElementNode& dstClassElement = srcClassElement.GetSubElement(interactableBaseClassIndex);
 
             stateActionsIndex = dstClassElement.FindElement(AZ_CRC(stateActionsElementName));
@@ -615,7 +615,7 @@ namespace UiSerialize
         }
 
         {
-            interactableBaseClassIndex = srcClassElement.FindElement(AZ_CRC("BaseClass1", 0xd4925735));
+            interactableBaseClassIndex = srcClassElement.FindElement(AZ_CRC_CE("BaseClass1"));
             AZ::SerializeContext::DataElementNode& dstClassElement = srcClassElement.GetSubElement(interactableBaseClassIndex);
 
             stateActionsIndex = dstClassElement.FindElement(AZ_CRC(stateActionsElementName));

@@ -1,0 +1,118 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+// This #define magic allows you to use the EvaluateVertexGeometry function in this file without making it the final
+// EvaluateVertexGeometry used in your shader. Simply #define EvaluateVertexGeometry before including this file
+//
+#ifndef EvaluateVertexGeometry
+#define EvaluateVertexGeometry EvaluateVertexGeometry_MaterialGraphName
+#endif
+
+#include <Atom/RPI/TangentSpace.azsli>
+#include <Atom/Features/InstancedTransforms.azsli>
+
+VsOutput EvaluateVertexGeometry_MaterialGraphName(
+    float3 position,
+    real3 normal,
+    real4 tangent,
+    float2 uv0,
+    float2 uv1,
+    uint instanceId,
+    bool useVertexColor0,
+    float4 color0)
+{
+    const float4x4 objectToWorld = GetObjectToWorldMatrix(instanceId);
+    const float3x3 objectToWorldIT = GetObjectToWorldMatrixInverseTranspose(instanceId);
+    const real4 positionWS = mul(objectToWorld, real4(position, 1.0));
+    const real3 bitangent = cross(normal, (real3)tangent);
+
+    real3 normalWS, tangentWS, bitangentWS;
+    ConstructTBN(normal, tangent, objectToWorld, objectToWorldIT, normalWS, tangentWS, bitangentWS);
+
+    const float3 O3DE_MC_POSITION = position;
+    const float3 O3DE_MC_NORMAL = normal;
+    const float3 O3DE_MC_TANGENT = tangent.xyz;
+    const float3 O3DE_MC_BITANGENT = bitangent;
+    const float3 O3DE_MC_POSITION_WS = positionWS.xyz;
+    const float3 O3DE_MC_NORMAL_WS = normalWS;
+    const float3 O3DE_MC_TANGENT_WS = tangentWS;
+    const float3 O3DE_MC_BITANGENT_WS = bitangentWS;
+    const float4 O3DE_MC_COLOR = color0;
+    #define O3DE_MC_UV(index) (index == 0 ? uv0 : uv1);
+
+    // m_placeHolder keeps MaterialSrg from being compiled out when iterating on graphs
+    const bool placeHolder = MaterialSrg::m_placeHolder;
+
+    // O3DE_GENERATED_INSTRUCTIONS_BEGIN: inPositionOffset
+    float3 inPositionOffset = {0.0, 0.0, 0.0};
+    // O3DE_GENERATED_INSTRUCTIONS_END
+
+    #undef O3DE_MC_UV
+
+    VsOutput output;
+    output.worldPosition = (float3)positionWS + (float3)inPositionOffset;
+    output.position = mul(ViewSrg::m_viewProjectionMatrix, float4(output.worldPosition, 1.0));
+    output.uvs[0] = uv0;
+    output.uvs[1] = uv1;
+    output.normal = normal;
+    output.tangent = tangent;
+    output.m_instanceId = instanceId;
+#if ENABLE_VERTEX_COLOR
+    if(useVertexColor0)
+    {
+        output.color0 =  color0;
+    }
+    else
+    {
+        output.color0 = float4(1,1,1,1);
+    }
+#endif
+
+    return output;
+}
+
+VsOutput EvaluateVertexGeometry_MaterialGraphName(VsInput IN, VsSystemValues SV)
+{
+#if ENABLE_VERTEX_COLOR
+    float4 color0 = IN.m_optional_color0;
+    bool useVertexColor = o_color0_isBound;
+#else
+    float4 color0 = float4(1.0f, 1.0f, 1.0f, 1.0f);
+    bool useVertexColor = false;
+#endif
+    return EvaluateVertexGeometry_MaterialGraphName(
+        IN.position,
+        real3(IN.normal),
+        real4(IN.tangent),
+        IN.uv0,
+        IN.uv1,
+        SV.m_instanceId,
+        useVertexColor,
+        color0);
+}
+
+VsOutput EvaluateVertexGeometry_MaterialGraphName(
+    float3 position,
+    real3 normal,
+    real4 tangent,
+    float2 uv0,
+    float2 uv1,
+    uint instanceId)
+{
+    return EvaluateVertexGeometry_MaterialGraphName(
+        position,
+        normal,
+        tangent,
+        uv0,
+        uv1,
+        instanceId,
+        false,
+        float4(1.0f, 1.0f, 1.0f, 1.0f));
+}

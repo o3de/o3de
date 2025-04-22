@@ -8,11 +8,11 @@
 
 #include <Atom/Feature/SkinnedMesh/SkinnedMeshFeatureProcessorBus.h>
 #include <Atom/Feature/SkinnedMesh/SkinnedMeshStatsBus.h>
-#include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
 
 #include <SkinnedMesh/SkinnedMeshFeatureProcessor.h>
 #include <SkinnedMesh/SkinnedMeshRenderProxy.h>
 #include <SkinnedMesh/SkinnedMeshComputePass.h>
+#include <Mesh/MeshFeatureProcessor.h>
 #include <MorphTargets/MorphTargetComputePass.h>
 #include <MorphTargets/MorphTargetDispatchItem.h>
 
@@ -83,10 +83,10 @@ namespace AZ
                 for (SkinnedMeshRenderProxy& renderProxy : m_renderProxies)
                 {
                     renderProxy.m_isQueuedForCompile = false;
-
-                    if (renderProxy.m_inputBuffers->IsUploadPending())
+                    
+                    if (renderProxy.m_inputBuffers->GetModel()->IsUploadPending())
                     {
-                        renderProxy.m_inputBuffers->WaitForUpload();
+                        renderProxy.m_inputBuffers->GetModel()->WaitForUpload();
                     }
 
                     if (renderProxy.m_instance->m_model->IsUploadPending())
@@ -149,7 +149,15 @@ namespace AZ
                                         if (approxScreenPercentage >= minScreenPercentage && approxScreenPercentage <= maxScreenPercentage)
                                         {
                                             AZStd::lock_guard lock(m_dispatchItemMutex);
-                                            m_skinningDispatches.insert(&renderProxy->m_dispatchItemsByLod[lodIndex]->GetRHIDispatchItem());
+                                            for (const AZStd::unique_ptr<SkinnedMeshDispatchItem>& skinnedMeshDispatchItem : renderProxy.m_dispatchItemsByLod[lodIndex])
+                                            {
+                                                // Add one skinning dispatch item for each mesh in the lod
+                                                if (skinnedMeshDispatchItem->IsEnabled())
+                                                {
+                                                    m_skinningDispatches.insert(skinnedMeshDispatchItem->GetRHIDispatchItem());
+                                                }
+                                            }
+                                            
                                             for (size_t morphTargetIndex = 0; morphTargetIndex < renderProxy->m_morphTargetDispatchItemsByLod[lodIndex].size(); morphTargetIndex++)
                                             {
                                                 const MorphTargetDispatchItem* dispatchItem = renderProxy->m_morphTargetDispatchItemsByLod[lodIndex][morphTargetIndex].get();
@@ -174,11 +182,9 @@ namespace AZ
 #else  //[GFX_TODO][ATOM-13564] This is a temporary implementation that submits all of the skinning compute shaders without any culling:
             for (SkinnedMeshRenderProxy& renderProxy : m_renderProxies)
             {
-                renderProxy.m_isQueuedForCompile = false;
-
-                if (renderProxy.m_inputBuffers->IsUploadPending())
+                if (renderProxy.m_inputBuffers->GetModel()->IsUploadPending())
                 {
-                    renderProxy.m_inputBuffers->WaitForUpload();
+                    renderProxy.m_inputBuffers->GetModel()->WaitForUpload();
                 }
 
                 if (renderProxy.m_instance->m_model->IsUploadPending())
@@ -186,8 +192,7 @@ namespace AZ
                     renderProxy.m_instance->m_model->WaitForUpload();
                 }
 
-                ModelDataInstance& modelDataInstance = **renderProxy.m_meshHandle;
-                const RPI::Cullable& cullable = modelDataInstance.GetCullable();
+                const RPI::Cullable& cullable = (*renderProxy.m_meshHandle)->GetCullable();
 
                 for (const RPI::ViewPtr& viewPtr : packet.m_views)
                 {
@@ -204,49 +209,87 @@ namespace AZ
                     //  do the enumeration for each view, keep track of the lowest lod for each entry,
                     //  and submit the appropriate dispatch item
 
-                    //the [1][1] element of a perspective projection matrix stores cot(FovY/2) (equal to 2*nearPlaneDistance/nearPlaneHeight),
-                    //which is used to determine the (vertical) projected size in screen space
-                    const float yScale = viewToClip.GetElement(1, 1);
-                    const bool isPerspective = viewToClip.GetElement(3, 3) == 0.f;
-                    const Vector3 cameraPos = view->GetViewToWorldMatrix().GetTranslation();
-
-                    const Vector3 pos = cullable.m_cullData.m_boundingSphere.GetCenter();
-
-                    const float approxScreenPercentage = RPI::ModelLodUtils::ApproxScreenPercentage(
-                        pos, cullable.m_lodData.m_lodSelectionRadius, cameraPos, yScale, isPerspective);
-
-                    for (size_t lodIndex = 0; lodIndex < cullable.m_lodData.m_lods.size(); ++lodIndex)
+                    switch (cullable.m_lodData.m_lodConfiguration.m_lodType)
                     {
-                        const RPI::Cullable::LodData::Lod& lod = cullable.m_lodData.m_lods[lodIndex];
-
-                        //Note that this supports overlapping lod ranges (to support cross-fading lods, for example)
-                        if (approxScreenPercentage >= lod.m_screenCoverageMin && approxScreenPercentage <= lod.m_screenCoverageMax)
+                    case RPI::Cullable::LodType::SpecificLod:
+                    {
+                        AZStd::lock_guard lock(m_dispatchItemMutex);
+                        auto lodIndex = cullable.m_lodData.m_lodConfiguration.m_lodOverride;
+                        
+                        for (const AZStd::unique_ptr<SkinnedMeshDispatchItem>& skinnedMeshDispatchItem : renderProxy.m_dispatchItemsByLod[lodIndex])
                         {
-                            AZStd::lock_guard lock(m_dispatchItemMutex);
-                            m_skinningDispatches.insert(&renderProxy.m_dispatchItemsByLod[lodIndex]->GetRHIDispatchItem());
-                            for (size_t morphTargetIndex = 0; morphTargetIndex < renderProxy.m_morphTargetDispatchItemsByLod[lodIndex].size(); morphTargetIndex++)
+                            // Add one skinning dispatch item for each mesh in the lod
+                            if (skinnedMeshDispatchItem->IsEnabled())
                             {
-                                const MorphTargetDispatchItem* dispatchItem = renderProxy.m_morphTargetDispatchItemsByLod[lodIndex][morphTargetIndex].get();
-                                if (dispatchItem && dispatchItem->GetWeight() > AZ::Constants::FloatEpsilon)
+                                m_skinningDispatches.insert(&skinnedMeshDispatchItem->GetRHIDispatchItem());
+                            }
+                        }
+                        
+                        for (size_t morphTargetIndex = 0; morphTargetIndex < renderProxy.m_morphTargetDispatchItemsByLod[lodIndex].size(); morphTargetIndex++)
+                        {
+                            const MorphTargetDispatchItem* dispatchItem = renderProxy.m_morphTargetDispatchItemsByLod[lodIndex][morphTargetIndex].get();
+                            if (dispatchItem && dispatchItem->GetWeight() > AZ::Constants::FloatEpsilon)
+                            {
+                                m_morphTargetDispatches.insert(&dispatchItem->GetRHIDispatchItem());
+                            }
+                        }
+                    }
+                    break;
+                    case RPI::Cullable::LodType::ScreenCoverage:
+                    default:
+                        //the [1][1] element of a perspective projection matrix stores cot(FovY/2) (equal to 2*nearPlaneDistance/nearPlaneHeight),
+                        //which is used to determine the (vertical) projected size in screen space
+                        const float yScale = viewToClip.GetElement(1, 1);
+                        const bool isPerspective = viewToClip.GetElement(3, 3) == 0.f;
+                        const Vector3 cameraPos = view->GetViewToWorldMatrix().GetTranslation();
+
+                        const Vector3 pos = cullable.m_cullData.m_boundingSphere.GetCenter();
+
+                        const float approxScreenPercentage = RPI::ModelLodUtils::ApproxScreenPercentage(
+                            pos, cullable.m_lodData.m_lodSelectionRadius, cameraPos, yScale, isPerspective);
+
+                        for (size_t lodIndex = 0; lodIndex < cullable.m_lodData.m_lods.size(); ++lodIndex)
+                        {
+                            const RPI::Cullable::LodData::Lod& lod = cullable.m_lodData.m_lods[lodIndex];
+
+                            //Note that this supports overlapping lod ranges (to support cross-fading lods, for example)
+                            if (approxScreenPercentage >= lod.m_screenCoverageMin && approxScreenPercentage <= lod.m_screenCoverageMax)
+                            {
+                                AZStd::lock_guard lock(m_dispatchItemMutex);
+                                for (const AZStd::unique_ptr<SkinnedMeshDispatchItem>& skinnedMeshDispatchItem : renderProxy.m_dispatchItemsByLod[lodIndex])
                                 {
-                                    m_morphTargetDispatches.insert(&dispatchItem->GetRHIDispatchItem());
+                                    // Add one skinning dispatch item for each mesh in the lod
+                                    if (skinnedMeshDispatchItem->IsEnabled())
+                                    {
+                                        m_skinningDispatches.insert(&skinnedMeshDispatchItem->GetRHIDispatchItem());
+                                    }
+                                }
+
+                                for (size_t morphTargetIndex = 0; morphTargetIndex < renderProxy.m_morphTargetDispatchItemsByLod[lodIndex].size(); morphTargetIndex++)
+                                {
+                                    const MorphTargetDispatchItem* dispatchItem = renderProxy.m_morphTargetDispatchItemsByLod[lodIndex][morphTargetIndex].get();
+                                    if (dispatchItem && dispatchItem->GetWeight() > AZ::Constants::FloatEpsilon)
+                                    {
+                                        m_morphTargetDispatches.insert(&dispatchItem->GetRHIDispatchItem());
+                                    }
                                 }
                             }
                         }
+                        break;
                     }
                 }
             }
 #endif
         }
 
-        void SkinnedMeshFeatureProcessor::OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline)
+        void SkinnedMeshFeatureProcessor::OnRenderPipelineChanged(RPI::RenderPipeline* renderPipeline,
+            RPI::SceneNotification::RenderPipelineChangeType changeType)
         {
-            InitSkinningAndMorphPass(pipeline.get());
-        }
-
-        void SkinnedMeshFeatureProcessor::OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline)
-        {
-            InitSkinningAndMorphPass(renderPipeline);
+            if (changeType == RPI::SceneNotification::RenderPipelineChangeType::Added
+                || changeType == RPI::SceneNotification::RenderPipelineChangeType::PassChanged)
+            {
+                InitSkinningAndMorphPass(renderPipeline);
+            }
         }
 
         void SkinnedMeshFeatureProcessor::OnBeginPrepareRender()
@@ -265,12 +308,15 @@ namespace AZ
             // because they execute at a lower frequency
             m_skinningDispatches.clear();
             m_morphTargetDispatches.clear();
+
+            m_alreadyCreatedSkinningScopeThisFrame = false;
+            m_alreadyCreatedMorphTargetScopeThisFrame = false;
         }
 
-        SkinnedMeshRenderProxyHandle SkinnedMeshFeatureProcessor::AcquireRenderProxy(const SkinnedMeshRenderProxyDesc& desc)
+        SkinnedMeshFeatureProcessor::SkinnedMeshHandle SkinnedMeshFeatureProcessor::AcquireSkinnedMesh(const SkinnedMeshHandleDescriptor& desc)
         {
             // don't need to check the concurrency during emplace() because the StableDynamicArray won't move the other elements during insertion
-            SkinnedMeshRenderProxyHandle handle = m_renderProxies.emplace(desc);
+            SkinnedMeshHandle handle = m_renderProxies.emplace(desc);
             if (!handle->Init(*GetParentScene(), this))
             {
                 m_renderProxies.erase(handle);
@@ -278,7 +324,7 @@ namespace AZ
             return handle;
         }
 
-        bool SkinnedMeshFeatureProcessor::ReleaseRenderProxy(SkinnedMeshRenderProxyHandle& handle)
+        bool SkinnedMeshFeatureProcessor::ReleaseSkinnedMesh(SkinnedMeshHandle& handle)
         {
             if (handle.IsValid())
             {
@@ -287,6 +333,39 @@ namespace AZ
                 return true;
             }
             return false;
+        }
+
+        void SkinnedMeshFeatureProcessor::SetSkinningMatrices(const SkinnedMeshHandle& handle, const AZStd::vector<float>& data)
+        {
+            if (handle.IsValid())
+            {
+                handle->SetSkinningMatrices(data);
+            }
+        }
+
+        void SkinnedMeshFeatureProcessor::SetMorphTargetWeights(
+            const SkinnedMeshHandle& handle, uint32_t lodIndex, const AZStd::vector<float>& weights)
+        {
+            if (handle.IsValid())
+            {
+                handle->SetMorphTargetWeights(lodIndex, weights);
+            }
+        }
+
+        void SkinnedMeshFeatureProcessor::EnableSkinning(const SkinnedMeshHandle& handle, uint32_t lodIndex, uint32_t meshIndex)
+        {
+            if (handle.IsValid())
+            {
+                handle->EnableSkinning(lodIndex, meshIndex);
+            }
+        }
+
+        void SkinnedMeshFeatureProcessor::DisableSkinning(const SkinnedMeshHandle& handle, uint32_t lodIndex, uint32_t meshIndex)
+        {
+            if (handle.IsValid())
+            {
+                handle->DisableSkinning(lodIndex, meshIndex);
+            }
         }
 
         void SkinnedMeshFeatureProcessor::InitSkinningAndMorphPass(RPI::RenderPipeline* renderPipeline)
@@ -340,35 +419,57 @@ namespace AZ
             m_cachedSkinningShaderOptions.SetShader(m_skinningShader);
         }
 
-        void SkinnedMeshFeatureProcessor::SubmitSkinningDispatchItems(RHI::CommandList* commandList)
+        void SkinnedMeshFeatureProcessor::SetupSkinningScope(RHI::FrameGraphInterface frameGraph)
+        {
+            if (m_alreadyCreatedSkinningScopeThisFrame)
+            {
+                frameGraph.SetEstimatedItemCount(0);
+            }
+            else
+            {
+                frameGraph.SetEstimatedItemCount((u32)m_skinningDispatches.size());
+                m_alreadyCreatedSkinningScopeThisFrame = true;
+            }
+        }
+
+        void SkinnedMeshFeatureProcessor::SetupMorphTargetScope(RHI::FrameGraphInterface frameGraph)
+        {
+            if (m_alreadyCreatedMorphTargetScopeThisFrame)
+            {
+                frameGraph.SetEstimatedItemCount(0);
+            }
+            else
+            {
+                frameGraph.SetEstimatedItemCount((u32)m_morphTargetDispatches.size());
+                m_alreadyCreatedMorphTargetScopeThisFrame = true;
+            }
+        }
+
+        void SkinnedMeshFeatureProcessor::SubmitSkinningDispatchItems(const RHI::FrameGraphExecuteContext& context, uint32_t startIndex, uint32_t endIndex)
         {
             AZStd::lock_guard lock(m_dispatchItemMutex);
-            for (const RHI::DispatchItem* dispatchItem : m_skinningDispatches)
+
+            auto it = m_skinningDispatches.begin();
+            AZStd::advance(it, startIndex);
+            for (uint32_t index = startIndex; index < endIndex; ++index, ++it)
             {
-                commandList->Submit(*dispatchItem);
+                const auto* dispatchItem = *it;
+                context.GetCommandList()->Submit(dispatchItem->GetDeviceDispatchItem(context.GetDeviceIndex()), index);
             }
-            m_skinningDispatches.clear();
         }
 
-        void SkinnedMeshFeatureProcessor::SubmitMorphTargetDispatchItems(RHI::CommandList* commandList)
+        void SkinnedMeshFeatureProcessor::SubmitMorphTargetDispatchItems(
+            const RHI::FrameGraphExecuteContext& context, uint32_t startIndex, uint32_t endIndex)
         {
             AZStd::lock_guard lock(m_dispatchItemMutex);
-            for (const RHI::DispatchItem* dispatchItem : m_morphTargetDispatches)
+
+            auto it = m_morphTargetDispatches.begin();
+            AZStd::advance(it, startIndex);
+            for (uint32_t index = startIndex; index < endIndex; ++index, ++it)
             {
-                commandList->Submit(*dispatchItem);
+                const auto* dispatchItem = *it;
+                context.GetCommandList()->Submit(dispatchItem->GetDeviceDispatchItem(context.GetDeviceIndex()), index);
             }
-            m_morphTargetDispatches.clear();
-        }
-
-        SkinnedMeshRenderProxyInterfaceHandle SkinnedMeshFeatureProcessor::AcquireRenderProxyInterface(const SkinnedMeshRenderProxyDesc& desc)
-        {
-            return AcquireRenderProxy(desc);
-        }
-
-        bool SkinnedMeshFeatureProcessor::ReleaseRenderProxyInterface(SkinnedMeshRenderProxyInterfaceHandle& interfaceHandle)
-        {
-            SkinnedMeshRenderProxyHandle handle(AZStd::move(interfaceHandle));
-            return ReleaseRenderProxy(handle);
         }
 
         Data::Instance<RPI::Shader> SkinnedMeshFeatureProcessor::GetSkinningShader() const

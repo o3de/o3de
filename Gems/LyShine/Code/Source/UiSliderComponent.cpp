@@ -104,22 +104,22 @@ void UiSliderComponent::SetValue(float value)
         // Offsets.
         {
             UiTransform2dInterface::Offsets offsets;
-            EBUS_EVENT_ID_RESULT(offsets, m_fillEntity, UiTransform2dBus, GetOffsets);
+            UiTransform2dBus::EventResult(offsets, m_fillEntity, &UiTransform2dBus::Events::GetOffsets);
 
             offsets.m_left = offsets.m_right = 0.0f;
 
-            EBUS_EVENT_ID(m_fillEntity, UiTransform2dBus, SetOffsets, offsets);
+            UiTransform2dBus::Event(m_fillEntity, &UiTransform2dBus::Events::SetOffsets, offsets);
         }
 
         // Anchors.
         {
             UiTransform2dInterface::Anchors anchors;
-            EBUS_EVENT_ID_RESULT(anchors, m_fillEntity, UiTransform2dBus, GetAnchors);
+            UiTransform2dBus::EventResult(anchors, m_fillEntity, &UiTransform2dBus::Events::GetAnchors);
 
             anchors.m_left = 0.0f;
             anchors.m_right = unitValue;
 
-            EBUS_EVENT_ID(m_fillEntity, UiTransform2dBus, SetAnchors, anchors, false, true);
+            UiTransform2dBus::Event(m_fillEntity, &UiTransform2dBus::Events::SetAnchors, anchors, false, true);
         }
     }
 
@@ -128,11 +128,11 @@ void UiSliderComponent::SetValue(float value)
         // Anchors.
         {
             UiTransform2dInterface::Anchors anchors;
-            EBUS_EVENT_ID_RESULT(anchors, m_manipulatorEntity, UiTransform2dBus, GetAnchors);
+            UiTransform2dBus::EventResult(anchors, m_manipulatorEntity, &UiTransform2dBus::Events::GetAnchors);
 
             anchors.m_left = anchors.m_right = unitValue;
 
-            EBUS_EVENT_ID(m_manipulatorEntity, UiTransform2dBus, SetAnchors, anchors, false, true);
+            UiTransform2dBus::Event(m_manipulatorEntity, &UiTransform2dBus::Events::SetAnchors, anchors, false, true);
         }
     }
 }
@@ -349,7 +349,7 @@ bool UiSliderComponent::HandleKeyInputBegan(const AzFramework::InputChannel::Sna
         float delta = (m_stepValue != 0.0f) ? m_stepValue : (m_maxValue - m_minValue) / keySteps;
 
         UiTransformInterface::RectPoints points;
-        EBUS_EVENT_ID(GetEntityId(), UiTransformBus, GetViewportSpacePoints, points);
+        UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::GetViewportSpacePoints, points);
 
         AZ::Vector2 dir = points.TopRight() - points.TopLeft();
         bool isHorizontal = fabs(dir.GetX()) >= fabs(dir.GetY());
@@ -432,7 +432,7 @@ bool UiSliderComponent::DoesSupportDragHandOff(AZ::Vector2 startPoint)
 {
     // this component does support hand-off, so long as the start point is in its bounds
     bool isPointInRect = false;
-    EBUS_EVENT_ID_RESULT(isPointInRect, GetEntityId(), UiTransformBus, IsPointInRect, startPoint);
+    UiTransformBus::EventResult(isPointInRect, GetEntityId(), &UiTransformBus::Events::IsPointInRect, startPoint);
     return isPointInRect;
 }
 
@@ -452,7 +452,8 @@ bool UiSliderComponent::OfferDragHandOff(AZ::EntityId currentActiveInteractable,
             m_isDragging = true;
 
             // tell the canvas that this is now the active interactable
-            EBUS_EVENT_ID(currentActiveInteractable, UiInteractableActiveNotificationBus, ActiveChanged, GetEntityId(), false);
+            UiInteractableActiveNotificationBus::Event(
+                currentActiveInteractable, &UiInteractableActiveNotificationBus::Events::ActiveChanged, GetEntityId(), false);
         }
     }
 
@@ -560,7 +561,7 @@ void UiSliderComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::Category, "UI")
                 ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/UiSlider.png")
                 ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/UiSlider.png")
-                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("UI", 0x27ff46b0))
+                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
             // Elements group
@@ -648,8 +649,13 @@ UiSliderComponent::EntityComboBoxVec UiSliderComponent::PopulateChildEntityList(
 
     // Get a list of all child elements
     LyShine::EntityArray matchingElements;
-    EBUS_EVENT_ID(GetEntityId(), UiElementBus, FindDescendantElements,
-        []([[maybe_unused]] const AZ::Entity* entity) { return true; },
+    UiElementBus::Event(
+        GetEntityId(),
+        &UiElementBus::Events::FindDescendantElements,
+        []([[maybe_unused]] const AZ::Entity* entity)
+        {
+            return true;
+        },
         matchingElements);
 
     // add their names to the StringList and their IDs to the id list
@@ -668,10 +674,10 @@ float UiSliderComponent::GetValueFromPoint(AZ::Vector2 point)
     float value = 0.0f;
 
     UiTransformInterface::RectPoints points;
-    EBUS_EVENT_ID(m_trackEntity, UiTransformBus, GetCanvasSpacePointsNoScaleRotate, points);
+    UiTransformBus::Event(m_trackEntity, &UiTransformBus::Events::GetCanvasSpacePointsNoScaleRotate, points);
 
     // apply scale and rotation to points
-    EBUS_EVENT_ID(m_trackEntity, UiTransformBus, RotateAndScalePoints, points);
+    UiTransformBus::Event(m_trackEntity, &UiTransformBus::Events::RotateAndScalePoints, points);
 
     const AZ::Vector2& tl = points.TopLeft();
     const AZ::Vector2& tr = points.TopRight();
@@ -706,7 +712,7 @@ float UiSliderComponent::GetValidDragDistanceInPixels(AZ::Vector2 startPoint, AZ
 
     // convert the drag vector to local space
     AZ::Matrix4x4 transformFromViewport;
-    EBUS_EVENT_ID(m_trackEntity, UiTransformBus, GetTransformFromViewport, transformFromViewport);
+    UiTransformBus::Event(m_trackEntity, &UiTransformBus::Events::GetTransformFromViewport, transformFromViewport);
     AZ::Vector2 dragVec = endPoint - startPoint;
     AZ::Vector3 dragVec3(dragVec.GetX(), dragVec.GetY(), 0.0f);
     AZ::Vector3 localDragVec = transformFromViewport.Multiply3x3(dragVec3);
@@ -716,7 +722,7 @@ float UiSliderComponent::GetValidDragDistanceInPixels(AZ::Vector2 startPoint, AZ
 
     // convert back to viewport space
     AZ::Matrix4x4 transformToViewport;
-    EBUS_EVENT_ID(m_trackEntity, UiTransformBus, GetTransformToViewport, transformToViewport);
+    UiTransformBus::Event(m_trackEntity, &UiTransformBus::Events::GetTransformToViewport, transformToViewport);
     AZ::Vector3 validDragVec = transformToViewport.Multiply3x3(localDragVec);
 
     float validDistance = validDragVec.GetLengthSq();
@@ -738,7 +744,7 @@ bool UiSliderComponent::CheckForDragOrHandOffToParent(AZ::EntityId currentActive
     bool result = false;
 
     AZ::EntityId parentDraggable;
-    EBUS_EVENT_ID_RESULT(parentDraggable, GetEntityId(), UiElementBus, FindParentInteractableSupportingDrag, startPoint);
+    UiElementBus::EventResult(parentDraggable, GetEntityId(), &UiElementBus::Events::FindParentInteractableSupportingDrag, startPoint);
 
     // if this interactable is inside another interactable that supports drag then we use
     // a threshold value before starting a drag on this interactable
@@ -765,8 +771,14 @@ bool UiSliderComponent::CheckForDragOrHandOffToParent(AZ::EntityId currentActive
     else if (parentDraggable.IsValid())
     {
         // offer the parent draggable the chance to become the active interactable
-        EBUS_EVENT_ID_RESULT(handOffDone, parentDraggable, UiInteractableBus,
-            OfferDragHandOff, currentActiveInteractable, startPoint, currentPoint, containedDragThreshold);
+        UiInteractableBus::EventResult(
+            handOffDone,
+            parentDraggable,
+            &UiInteractableBus::Events::OfferDragHandOff,
+            currentActiveInteractable,
+            startPoint,
+            currentPoint,
+            containedDragThreshold);
 
         if (handOffDone)
         {
@@ -790,11 +802,11 @@ void UiSliderComponent::DoChangedActions()
     if (!m_valueChangedActionName.empty())
     {
         AZ::EntityId canvasEntityId;
-        EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
-        EBUS_EVENT_ID(canvasEntityId, UiCanvasNotificationBus, OnAction, GetEntityId(), m_valueChangedActionName);
+        UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
+        UiCanvasNotificationBus::Event(canvasEntityId, &UiCanvasNotificationBus::Events::OnAction, GetEntityId(), m_valueChangedActionName);
     }
 
-    EBUS_EVENT_ID(GetEntityId(), UiSliderNotificationBus, OnSliderValueChanged, m_value);
+    UiSliderNotificationBus::Event(GetEntityId(), &UiSliderNotificationBus::Events::OnSliderValueChanged, m_value);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -809,11 +821,11 @@ void UiSliderComponent::DoChangingActions()
     if (!m_valueChangingActionName.empty())
     {
         AZ::EntityId canvasEntityId;
-        EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
-        EBUS_EVENT_ID(canvasEntityId, UiCanvasNotificationBus, OnAction, GetEntityId(), m_valueChangingActionName);
+        UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
+        UiCanvasNotificationBus::Event(canvasEntityId, &UiCanvasNotificationBus::Events::OnAction, GetEntityId(), m_valueChangingActionName);
     }
 
-    EBUS_EVENT_ID(GetEntityId(), UiSliderNotificationBus, OnSliderValueChanging, m_value);
+    UiSliderNotificationBus::Event(GetEntityId(), &UiSliderNotificationBus::Events::OnSliderValueChanging, m_value);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -844,7 +856,7 @@ bool UiSliderComponent::VersionConverter(AZ::SerializeContext& context,
     {
         // find the base class (AZ::Component)
         // NOTE: in very old versions there may not be a base class because the base class was not serialized
-        int componentBaseClassIndex = classElement.FindElement(AZ_CRC("BaseClass1", 0xd4925735));
+        int componentBaseClassIndex = classElement.FindElement(AZ_CRC_CE("BaseClass1"));
 
         // If there was a base class, make a copy and remove it
         AZ::SerializeContext::DataElementNode componentBaseClassNode;

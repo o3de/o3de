@@ -6,24 +6,18 @@
  *
  */
 
+#include <AzCore/Math/MathUtils.h>
 #include <AzCore/Time/TimeSystem.h>
 #include <AzCore/UnitTest/TestTypes.h>
 
 namespace UnitTest
 {
-    class TimeTests : public AllocatorsFixture
+    class TimeTests : public LeakDetectionFixture
     {
     public:
         void SetUp() override
         {
-            SetupAllocator();
             m_timeSystem = AZStd::make_unique<AZ::TimeSystem>();
-        }
-
-        void TearDown() override
-        {
-            m_timeSystem.reset();
-            TeardownAllocator();
         }
 
         AZStd::unique_ptr<AZ::TimeSystem> m_timeSystem;
@@ -77,191 +71,22 @@ namespace UnitTest
         EXPECT_LT(abs(delta), 1);
     }
 
-    class TimeSystemTests : public AllocatorsTestFixture
+    TEST_F(TimeTests, QueryCPUThreadTime_ReturnsNonZero)
     {
-    public:
-        void SetUp() override
-        {
-            SetupAllocator();
-            m_controlTime = static_cast<AZ::TimeUs>(AZStd::GetTimeNowMicroSecond());
-            m_timeSystem = AZStd::make_unique<AZ::TimeSystem>();
-        }
+        (void)AZStd::GetCpuThreadTimeNowMicrosecond();
 
-        void TearDown() override
-        {
-            m_controlTime = AZ::Time::ZeroTimeUs;
-            m_timeSystem.reset();
-            TeardownAllocator();
-        }
+        // Windows need at least 50 milliseconds of running time to measure the processer tick scale
+        AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(50));
 
-        AZ::TimeUs GetDiff(AZ::TimeUs time1, AZ::TimeUs time2) const
-        {
-            // AZ::TimeUs is unsigned so make sure to not underflow.
-            return time1 > time2 ? time1 - time2 : time2 - time1;
-        }
+        // The cpu thread time should now return non-zero values
+        AZStd::chrono::microseconds initialCpuThreadTime = AZStd::GetCpuThreadTimeNowMicrosecond();
+        // Sleep for 1 millisecond (or 1000 microseconds) and check the CPU time
+        // less than 1 miilisecond of CPU should have elapsed
+        // Now due to the fact that thread sleep can last got longer than it's duration
+        // this test is only checking that the new CPUThreadTime is at least greater than or equal to the initial
+        AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(1));
+        AZStd::chrono::microseconds newCpuThreadTime = AZStd::GetCpuThreadTimeNowMicrosecond();
 
-        AZ::TimeUs m_controlTime;
-        AZStd::unique_ptr<AZ::TimeSystem> m_timeSystem;
-    };
-    
-    TEST_F(TimeSystemTests, GetRealElapsedTimeUs)
-    {
-        // sleep for a bit to advance time.
-        AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(2));
-
-        // find the delta for the control and from GetRealElapsedTimeUs
-        const AZ::TimeUs baseline = static_cast<AZ::TimeUs>(AZStd::GetTimeNowMicroSecond()) - m_controlTime;
-        const AZ::TimeUs elapsedTime = m_timeSystem->GetRealElapsedTimeUs();
-
-        const AZ::TimeUs diff = GetDiff(baseline, elapsedTime);
-
-        // elapsedTime should be within 10 microseconds from baseline.
-        EXPECT_LT(diff, AZ::TimeUs{ 10 });
-    }
-
-    TEST_F(TimeSystemTests, GetElapsedTimeUs)
-    {
-        // sleep for a bit to advance time.
-        AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(2));
-
-        // find the delta for the control and from GetElapsedTimeUs
-        const AZ::TimeUs baseline = static_cast<AZ::TimeUs>(AZStd::GetTimeNowMicroSecond()) - m_controlTime;
-        const AZ::TimeUs elapsedTime = m_timeSystem->GetElapsedTimeUs();
-
-        const AZ::TimeUs diff = GetDiff(baseline, elapsedTime);
-
-        // elapsedTime should be within 10 microseconds from baseline.
-        EXPECT_LT(diff, AZ::TimeUs{ 10 });
-    }
-
-    TEST_F(TimeSystemTests, ElapsedTimeScales)
-    {
-        // slow down 'time'
-        m_timeSystem->SetSimulationTickScale(0.5f);
-
-        // sleep for a bit to advance time.
-        AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(2));
-
-        // find the delta for the control and from GetElapsedTimeUs
-        const AZ::TimeUs baseline = static_cast<AZ::TimeUs>(AZStd::GetTimeNowMicroSecond()) - m_controlTime;
-        const AZ::TimeUs elapsedTime = m_timeSystem->GetElapsedTimeUs();
-        const AZ::TimeUs halfBaseline = (baseline / AZ::TimeUs{ 2 });
-
-        // elapsedTime should be about half of the control.
-        const AZ::TimeUs diff = GetDiff(halfBaseline, elapsedTime);
-
-        // elapsedTime should be within 10 microseconds from baseline.
-        EXPECT_LT(diff, AZ::TimeUs{ 10 });
-
-        // reset time scale
-        m_timeSystem->SetSimulationTickScale(1.0f);
-    }
-
-    TEST_F(TimeSystemTests, AdvanceTickDeltaTimes)
-    {
-        // advance the tick delta to get a clean base.
-        m_timeSystem->AdvanceTickDeltaTimes();
-        const AZ::TimeUs baselineStart = static_cast<AZ::TimeUs>(AZStd::GetTimeNowMicroSecond());
-
-        // sleep for a bit to advance time.
-        AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(2));
-
-        // advance the tick delta.
-        const AZ::TimeUs delta = m_timeSystem->AdvanceTickDeltaTimes();
-        const AZ::TimeUs baselineDelta = static_cast<AZ::TimeUs>(AZStd::GetTimeNowMicroSecond()) - baselineStart;
-
-        // the delta should be close to the baselineDelta.
-        const AZ::TimeUs diff = GetDiff(delta, baselineDelta);
-        EXPECT_LT(diff, AZ::TimeUs{ 10 });
-    }
-
-    TEST_F(TimeSystemTests, SimulationAndRealTickDeltaTimesWithNoTimeScale)
-    {
-        // advance the tick delta to get a clean base.
-        m_timeSystem->AdvanceTickDeltaTimes();
-        const AZ::TimeUs baselineStart = static_cast<AZ::TimeUs>(AZStd::GetTimeNowMicroSecond());
-
-        // sleep for a bit to advance time.
-        AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(2));
-
-        // advance the tick delta.
-        const AZ::TimeUs delta = m_timeSystem->AdvanceTickDeltaTimes();
-        const AZ::TimeUs baselineDelta = static_cast<AZ::TimeUs>(AZStd::GetTimeNowMicroSecond()) - baselineStart;
-
-        // the delta should be close to the baselineDelta.
-        AZ::TimeUs diff = GetDiff(delta, baselineDelta);
-        EXPECT_LT(diff, AZ::TimeUs{ 10 });
-
-        // the delta should be the same as GetSimulationTickDeltaTimeUs and near GetRealTickDeltaTimeUs
-        const AZ::TimeUs simDeltaTime = m_timeSystem->GetSimulationTickDeltaTimeUs();
-        EXPECT_EQ(delta, simDeltaTime);
-
-        const AZ::TimeUs realDeltaTime = m_timeSystem->GetRealTickDeltaTimeUs();
-        diff = GetDiff(delta, realDeltaTime);
-        EXPECT_LT(diff, AZ::TimeUs{ 10 });
-    }
-
-    TEST_F(TimeSystemTests, SimulationAndRealTickDeltaTimesWithTimeScale)
-    {
-        // advance the tick delta to get a clean base.
-        m_timeSystem->AdvanceTickDeltaTimes();
-        const AZ::TimeUs baselineStart = static_cast<AZ::TimeUs>(AZStd::GetTimeNowMicroSecond());
-
-        // slow down 'time';
-        m_timeSystem->SetSimulationTickScale(0.5f);
-
-        // sleep for a bit to advance time.
-        AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(2));
-
-        // advance the tick delta.
-        const AZ::TimeUs delta = m_timeSystem->AdvanceTickDeltaTimes();
-        const AZ::TimeUs baselineDelta = static_cast<AZ::TimeUs>(AZStd::GetTimeNowMicroSecond()) - baselineStart;
-        const AZ::TimeUs halfBaselineDelta = (baselineDelta / AZ::TimeUs{ 2 });
-
-        // the delta should be half the baselineDelta
-        AZ::TimeUs diff = GetDiff(delta, halfBaselineDelta);
-        EXPECT_LT(diff, AZ::TimeUs{ 10 });
-
-        // the delta should be the same as GetSimulationTickDeltaTimeUs
-        const AZ::TimeUs simDeltaTime = m_timeSystem->GetSimulationTickDeltaTimeUs();
-        EXPECT_EQ(delta, simDeltaTime);
-
-        // the delta should be near half the GetRealTickDeltaTimeUs
-        const AZ::TimeUs realDeltaTime = m_timeSystem->GetRealTickDeltaTimeUs();
-        const AZ::TimeUs halfRealDeltaTime = (realDeltaTime / AZ::TimeUs{ 2 });
-        diff = GetDiff(delta, halfRealDeltaTime);
-        EXPECT_LT(diff, AZ::TimeUs{ 10 });
-
-        // reset time scale
-        m_timeSystem->SetSimulationTickScale(1.0f);
-    }
-
-    TEST_F(TimeSystemTests, SimulationTickDeltaOverride)
-    {
-        // advance the tick delta to get a clean base.
-        m_timeSystem->AdvanceTickDeltaTimes();
-        const AZ::TimeUs baselineStart = static_cast<AZ::TimeUs>(AZStd::GetTimeNowMicroSecond());
-
-        // set the tick delta override
-        const AZ::TimeMs tickOverride = AZ::TimeMs{ 3462 };
-        m_timeSystem->SetSimulationTickDeltaOverride(tickOverride);
-
-        // sleep for a bit to advance time.
-        AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(2));
-
-        // advance the tick delta.
-        const AZ::TimeUs delta = m_timeSystem->AdvanceTickDeltaTimes();
-        const AZ::TimeUs baselineDelta = static_cast<AZ::TimeUs>(AZStd::GetTimeNowMicroSecond()) - baselineStart;
-
-        // the delta should be equal to the tickOverride
-        EXPECT_EQ(delta, AZ::TimeMsToUs(tickOverride));
-
-        // real tick delta should be near the baselineDelta
-        const AZ::TimeUs realDeltaTime = m_timeSystem->GetRealTickDeltaTimeUs();
-        const AZ::TimeUs diff = GetDiff(realDeltaTime, baselineDelta);
-        EXPECT_LT(diff, AZ::TimeUs{ 10 });
-
-        // reset the tick delta override
-        m_timeSystem->SetSimulationTickDeltaOverride(AZ::Time::ZeroTimeMs);
+        EXPECT_GT((newCpuThreadTime - initialCpuThreadTime).count(), 0);
     }
 } // namespace UnitTest

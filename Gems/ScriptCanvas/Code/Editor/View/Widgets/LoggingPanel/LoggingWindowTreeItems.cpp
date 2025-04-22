@@ -23,6 +23,10 @@
 #include <Editor/View/Widgets/NodePalette/NodePaletteModel.h>
 
 #include <ScriptCanvas/Bus/RequestBus.h>
+#include <ScriptCanvas/Core/ExecutionNotificationsBus.h>
+#include <ScriptCanvas/Execution/ExecutionState.h>
+#include <ScriptCanvas/Execution/ExecutionStateDeclarations.h>
+#include <ScriptCanvas/Execution/RuntimeComponent.h>
 #include <ScriptCanvas/GraphCanvas/MappingBus.h>
 #include <Editor/GraphCanvas/GraphCanvasEditorNotificationBusId.h>
 
@@ -122,11 +126,11 @@ namespace ScriptCanvasEditor
     {
     }
 
-    ExecutionLogTreeItem* DebugLogRootItem::CreateExecutionItem
-        ( [[maybe_unused]] const LoggingDataId& loggingDataId
-        , [[maybe_unused]] const ScriptCanvas::NodeTypeIdentifier& nodeType
-        , [[maybe_unused]] const ScriptCanvas::GraphInfo& graphInfo
-        , [[maybe_unused]] const ScriptCanvas::NamedNodeId& nodeId)
+    ExecutionLogTreeItem* DebugLogRootItem::CreateExecutionItem(
+        const LoggingDataId& loggingDataId,
+        const ScriptCanvas::NodeTypeIdentifier& nodeType,
+        const ScriptCanvas::GraphInfo& graphInfo,
+        const ScriptCanvas::NamedNodeId& nodeId)
     {
         ExecutionLogTreeItem* treeItem = nullptr;
 
@@ -136,6 +140,15 @@ namespace ScriptCanvasEditor
             {
                 m_additionTimer.start();
             }
+        }
+
+        if (m_updatePolicy == UpdatePolicy::SingleTime)
+        {
+            treeItem = CreateChildNodeWithoutAddSignal<ExecutionLogTreeItem>(loggingDataId, nodeType, graphInfo, nodeId);
+        }
+        else
+        {
+            treeItem = CreateChildNode<ExecutionLogTreeItem>(loggingDataId, nodeType, graphInfo, nodeId);
         }
 
         return treeItem;
@@ -183,7 +196,7 @@ namespace ScriptCanvasEditor
     ExecutionLogTreeItem::ExecutionLogTreeItem
         ( const LoggingDataId& loggingDataId
         , const ScriptCanvas::NodeTypeIdentifier& nodeType
-        , const SourceHandle& graphInfo
+        , const ScriptCanvas::GraphInfo& graphInfo
         , const ScriptCanvas::NamedNodeId& nodeId)
         : m_loggingDataId(loggingDataId)
         , m_nodeType(nodeType)
@@ -195,6 +208,7 @@ namespace ScriptCanvasEditor
         m_paletteConfiguration.SetColorPalette("MethodNodeTitlePalette");
 
         AZ::NamedEntityId entityName;
+        LoggingDataRequestBus::EventResult(entityName, m_loggingDataId, &LoggingDataRequests::FindNamedEntityId, m_graphInfo.m_runtimeEntity);
 
         m_sourceEntityName = entityName.ToString().c_str();
         m_displayName = nodeId.m_name.c_str();
@@ -205,7 +219,7 @@ namespace ScriptCanvasEditor
         m_inputName = "---";
         m_outputName = "---";
 
-        GeneralAssetNotificationBus::Handler::BusConnect(graphInfo);
+        // GeneralAssetNotificationBus::Handler::BusConnect(GetAssetId());
     }
 
     QVariant ExecutionLogTreeItem::Data(const QModelIndex& index, int role) const
@@ -500,12 +514,12 @@ namespace ScriptCanvasEditor
 
     const ScriptCanvas::GraphIdentifier& ExecutionLogTreeItem::GetGraphIdentifier() const
     {
-        return m_graphIdentifier;
+        return m_graphInfo.m_graphIdentifier;
     }
 
     AZ::Data::AssetId ExecutionLogTreeItem::GetAssetId() const
     {
-        return m_graphInfo.Id();
+        return m_graphInfo.m_graphIdentifier.m_assetId;
     }
 
     AZ::EntityId ExecutionLogTreeItem::GetScriptCanvasAssetNodeId() const
@@ -622,13 +636,13 @@ namespace ScriptCanvasEditor
         if (!m_graphCanvasGraphId.IsValid())
         {
             GeneralRequestBus::BroadcastResult(m_graphCanvasGraphId
-                , &GeneralRequests::FindGraphCanvasGraphIdByAssetId, SourceHandle(nullptr, GetAssetId().m_guid, ""));
+                , &GeneralRequests::FindGraphCanvasGraphIdByAssetId, SourceHandle(nullptr, GetAssetId().m_guid));
 
             if (!EditorGraphNotificationBus::Handler::BusIsConnected())
             {
                 ScriptCanvas::ScriptCanvasId scriptCanvasId;
                 GeneralRequestBus::BroadcastResult(scriptCanvasId
-                    , &GeneralRequests::FindScriptCanvasIdByAssetId, SourceHandle(nullptr, GetAssetId().m_guid, ""));
+                    , &GeneralRequests::FindScriptCanvasIdByAssetId, SourceHandle(nullptr, GetAssetId().m_guid));
 
                 EditorGraphNotificationBus::Handler::BusConnect(scriptCanvasId);
             }
@@ -640,7 +654,7 @@ namespace ScriptCanvasEditor
             {
                 AssetGraphSceneBus::BroadcastResult(m_scriptCanvasNodeId
                     , &AssetGraphScene::FindEditorNodeIdByAssetNodeId
-                    , SourceHandle(nullptr, GetAssetId().m_guid, ""), m_scriptCanvasAssetNodeId);
+                    , SourceHandle(nullptr, GetAssetId().m_guid), m_scriptCanvasAssetNodeId);
                 SceneMemberMappingRequestBus::EventResult(m_graphCanvasNodeId, m_scriptCanvasNodeId, &SceneMemberMappingRequests::GetGraphCanvasEntityId);
             }
 
@@ -809,7 +823,7 @@ namespace ScriptCanvasEditor
         if (!m_graphCanvasGraphId.IsValid())
         {
             GeneralRequestBus::BroadcastResult(m_graphCanvasGraphId
-                , &GeneralRequests::FindGraphCanvasGraphIdByAssetId, SourceHandle(nullptr, m_graphIdentifier.m_assetId.m_guid, ""));
+                , &GeneralRequests::FindGraphCanvasGraphIdByAssetId, SourceHandle(nullptr, m_graphIdentifier.m_assetId.m_guid));
         }
 
         ScrapeInputName();
@@ -831,7 +845,7 @@ namespace ScriptCanvasEditor
         if (m_graphCanvasGraphId.IsValid() && m_assetInputEndpoint.IsValid())
         {
             AZ::EntityId scriptCanvasNodeId;
-            AssetGraphSceneBus::BroadcastResult(scriptCanvasNodeId, &AssetGraphScene::FindEditorNodeIdByAssetNodeId, SourceHandle(nullptr, GetAssetId().m_guid, ""), m_assetInputEndpoint.GetNodeId());
+            AssetGraphSceneBus::BroadcastResult(scriptCanvasNodeId, &AssetGraphScene::FindEditorNodeIdByAssetNodeId, SourceHandle(nullptr, GetAssetId().m_guid), m_assetInputEndpoint.GetNodeId());
 
             GraphCanvas::NodeId graphCanvasNodeId;
             SceneMemberMappingRequestBus::EventResult(graphCanvasNodeId, scriptCanvasNodeId, &SceneMemberMappingRequests::GetGraphCanvasEntityId);
@@ -855,7 +869,7 @@ namespace ScriptCanvasEditor
         {
             AZ::EntityId scriptCanvasNodeId;
             AssetGraphSceneBus::BroadcastResult(scriptCanvasNodeId, &AssetGraphScene::FindEditorNodeIdByAssetNodeId
-                , SourceHandle(nullptr, GetAssetId().m_guid, ""), m_assetOutputEndpoint.GetNodeId());
+                , SourceHandle(nullptr, GetAssetId().m_guid), m_assetOutputEndpoint.GetNodeId());
             
             GraphCanvas::NodeId graphCanvasNodeId;
             SceneMemberMappingRequestBus::EventResult(graphCanvasNodeId, scriptCanvasNodeId, &SceneMemberMappingRequests::GetGraphCanvasEntityId);

@@ -8,12 +8,15 @@
 #include "UiImageComponent.h"
 
 #include <AzCore/Math/Crc.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 
-#include <LyShine/Draw2d.h>
+#include <Atom/RPI.Reflect/Image/AttachmentImageAsset.h>
+
+#include <LyShine/IDraw2d.h>
 #include <LyShine/UiSerializeHelpers.h>
 #include <LyShine/Bus/UiElementBus.h>
 #include <LyShine/Bus/UiCanvasBus.h>
@@ -353,7 +356,6 @@ void UiImageComponent::SetOverrideSprite(ISprite* sprite, AZ::u32 cellIndex)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiImageComponent::Render(LyShine::IRenderGraph* renderGraph)
 {
-
     // get fade value (tracked by UiRenderer) and compute the desired alpha for the image
     float fade = renderGraph->GetAlphaFade();
     float desiredAlpha = m_overrideAlpha * fade;
@@ -376,9 +378,8 @@ void UiImageComponent::Render(LyShine::IRenderGraph* renderGraph)
 
         ImageType imageType = m_imageType;
 
-#ifdef LYSHINE_ATOM_TODO // support default white texture
         // if there is no texture we will just use a white texture and want to stretch it
-        const bool spriteOrTextureIsNull = sprite == nullptr || sprite->GetTexture() == nullptr;
+        const bool spriteOrTextureIsNull = sprite == nullptr || sprite->GetImage() == nullptr;
 
         // Zero texture size may occur even if the UiImageComponent has a valid non-zero-sized texture,
         // because a canvas can be requested to Render() before the texture asset is done loading.
@@ -399,12 +400,6 @@ void UiImageComponent::Render(LyShine::IRenderGraph* renderGraph)
         {
             imageType = ImageType::Stretched;
         }
-#else
-        if (sprite == nullptr)
-        {
-            imageType = ImageType::Stretched;
-        }
-#endif
 
         switch (imageType)
         {
@@ -436,7 +431,7 @@ void UiImageComponent::Render(LyShine::IRenderGraph* renderGraph)
         if (!UiCanvasPixelAlignmentNotificationBus::Handler::BusIsConnected())
         {
             AZ::EntityId canvasEntityId;
-            EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
+            UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
             UiCanvasPixelAlignmentNotificationBus::Handler::BusConnect(canvasEntityId);
         }
     }
@@ -465,21 +460,12 @@ void UiImageComponent::Render(LyShine::IRenderGraph* renderGraph)
             }
         }
 
-#ifdef LYSHINE_ATOM_TODO // [GHI #6270] Support RTT using Atom
-        ITexture* texture = (sprite) ? sprite->GetTexture() : nullptr;
-        bool isClampTextureMode = m_imageType == ImageType::Tiled ? false : true;
-        bool isTextureSRGB = IsSpriteTypeRenderTarget() && m_isRenderTargetSRGB;
-        bool isTexturePremultipliedAlpha = false; // we are not rendering from a render target with alpha in it
-
-        renderGraph->AddPrimitive(&m_cachedPrimitive, texture, isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, m_blendMode);
-#else
         AZ::Data::Instance<AZ::RPI::Image> image = GetSpriteImage(sprite);
         bool isClampTextureMode = m_imageType == ImageType::Tiled ? false : true;
         bool isTextureSRGB = IsSpriteTypeRenderTarget() && m_isRenderTargetSRGB;
         bool isTexturePremultipliedAlpha = false; // we are not rendering from a render target with alpha in it
 
         renderGraph->AddPrimitive(&m_cachedPrimitive, image, isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, m_blendMode);
-#endif
     }
 }
 
@@ -573,7 +559,7 @@ void UiImageComponent::SetSprite(ISprite* sprite)
     }
 
     InvalidateLayouts();
-    EBUS_EVENT_ID(GetEntityId(), UiSpriteSourceNotificationBus, OnSpriteSourceChanged);
+    UiSpriteSourceNotificationBus::Event(GetEntityId(), &UiSpriteSourceNotificationBus::Events::OnSpriteSourceChanged);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -596,7 +582,7 @@ void UiImageComponent::SetSpritePathname(AZStd::string spritePath)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 bool UiImageComponent::SetSpritePathnameIfExists(AZStd::string spritePath)
 {
-    if (gEnv->pLyShine->DoesSpriteTextureAssetExist(spritePath))
+    if (AZ::Interface<ILyShine>::Get()->DoesSpriteTextureAssetExist(spritePath))
     {
         SetSpritePathname(spritePath);
         return true;
@@ -606,19 +592,19 @@ bool UiImageComponent::SetSpritePathnameIfExists(AZStd::string spritePath)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-AZStd::string UiImageComponent::GetRenderTargetName()
+AZ::Data::Asset<AZ::RPI::AttachmentImageAsset> UiImageComponent::GetAttachmentImageAsset()
 {
-    return m_renderTargetName;
+    return m_attachmentImageAsset;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void UiImageComponent::SetRenderTargetName(AZStd::string renderTargetName)
+void UiImageComponent::SetAttachmentImageAsset(const AZ::Data::Asset<AZ::RPI::AttachmentImageAsset>& attachmentImageAsset)
 {
-    m_renderTargetName = renderTargetName;
+    m_attachmentImageAsset = attachmentImageAsset;
 
     if (m_spriteType == UiImageInterface::SpriteType::RenderTarget)
     {
-        OnSpriteRenderTargetNameChange();
+        OnSpriteAttachmentImageAssetChange();
     }
 }
 
@@ -929,7 +915,7 @@ float UiImageComponent::GetTargetHeight(float /*maxHeight*/)
             {
                 // Get element size
                 AZ::Vector2 size(0.0f, 0.0f);
-                EBUS_EVENT_ID_RESULT(size, GetEntityId(), UiTransformBus, GetCanvasSpaceSizeNoScaleRotate);
+                UiTransformBus::EventResult(size, GetEntityId(), &UiTransformBus::Events::GetCanvasSpaceSizeNoScaleRotate);
 
                 targetHeight = textureSize.GetY() * (size.GetX() / textureSize.GetX());
             }
@@ -987,11 +973,11 @@ void UiImageComponent::Reflect(AZ::ReflectContext* context)
     if (serializeContext)
     {
         serializeContext->Class<UiImageComponent, AZ::Component>()
-            ->Version(7, &VersionConverter)
+            ->Version(8, &VersionConverter)
             ->Field("SpriteType", &UiImageComponent::m_spriteType)
             ->Field("SpritePath", &UiImageComponent::m_spritePathname)
             ->Field("Index", &UiImageComponent::m_spriteSheetCellIndex)
-            ->Field("RenderTargetName", &UiImageComponent::m_renderTargetName)
+            ->Field("AttachmentImageAsset", &UiImageComponent::m_attachmentImageAsset)
             ->Field("IsRenderTargetSRGB", &UiImageComponent::m_isRenderTargetSRGB)
             ->Field("Color", &UiImageComponent::m_color)
             ->Field("Alpha", &UiImageComponent::m_alpha)
@@ -1015,14 +1001,14 @@ void UiImageComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::Category, "UI")
                 ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/UiImage.png")
                 ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/UiImage.png")
-                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("UI", 0x27ff46b0))
+                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
             editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiImageComponent::m_spriteType, "SpriteType", "The sprite type.")
                 ->EnumAttribute(UiImageInterface::SpriteType::SpriteAsset, "Sprite/Texture asset")
                 ->EnumAttribute(UiImageInterface::SpriteType::RenderTarget, "Render target")
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageComponent::OnEditorSpriteTypeChange)
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c));
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
             editInfo->DataElement("Sprite", &UiImageComponent::m_spritePathname, "Sprite path", "The sprite path. Can be overridden by another component such as an interactable.")
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiImageComponent::IsSpriteTypeAsset)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageComponent::OnEditorSpritePathnameChange);
@@ -1030,9 +1016,9 @@ void UiImageComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiImageComponent::IsSpriteTypeSpriteSheet)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageComponent::OnIndexChange)
                 ->Attribute("EnumValues", &UiImageComponent::PopulateIndexStringList);
-            editInfo->DataElement(0, &UiImageComponent::m_renderTargetName, "Render target name", "The name of the render target associated with the sprite.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::Default, &UiImageComponent::m_attachmentImageAsset, "Attachment Image Asset", "The render target associated with the sprite.")
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiImageComponent::IsSpriteTypeRenderTarget)
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageComponent::OnSpriteRenderTargetNameChange);
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageComponent::OnSpriteAttachmentImageAssetChange);
             editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiImageComponent::m_isRenderTargetSRGB, "Render Target sRGB", "Check this box if the render target is in sRGB space instead of linear RGB space.")
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiImageComponent::IsSpriteTypeRenderTarget)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageComponent::OnEditorRenderSettingChange);
@@ -1049,7 +1035,7 @@ void UiImageComponent::Reflect(AZ::ReflectContext* context)
                 ->EnumAttribute(UiImageInterface::ImageType::Tiled, "Tiled")
                 ->EnumAttribute(UiImageInterface::ImageType::StretchedToFit, "Stretched To Fit")
                 ->EnumAttribute(UiImageInterface::ImageType::StretchedToFill, "Stretched To Fill")
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c))
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageComponent::OnEditorImageTypeChange);
             editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiImageComponent::m_fillCenter, "Fill Center", "Sliced image center is filled.")
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiImageComponent::IsSliced)
@@ -1071,7 +1057,7 @@ void UiImageComponent::Reflect(AZ::ReflectContext* context)
                 ->EnumAttribute(UiImageComponent::FillType::Radial, "Radial")
                 ->EnumAttribute(UiImageComponent::FillType::RadialCorner, "RadialCorner")
                 ->EnumAttribute(UiImageComponent::FillType::RadialEdge, "RadialEdge")
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c))
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageComponent::OnEditorRenderSettingChange);
             editInfo->DataElement(AZ::Edit::UIHandlers::Slider, &UiImageComponent::m_fillAmount, "Fill Amount", "The amount of the image to be filled.")
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiImageComponent::IsFilled)
@@ -1138,8 +1124,8 @@ void UiImageComponent::Reflect(AZ::ReflectContext* context)
             ->Event("GetSpritePathname", &UiImageBus::Events::GetSpritePathname)
             ->Event("SetSpritePathname", &UiImageBus::Events::SetSpritePathname)
             ->Event("SetSpritePathnameIfExists", &UiImageBus::Events::SetSpritePathnameIfExists)
-            ->Event("GetRenderTargetName", &UiImageBus::Events::GetRenderTargetName)
-            ->Event("SetRenderTargetName", &UiImageBus::Events::SetRenderTargetName)
+            ->Event("GetAttachmentImageAsset", &UiImageBus::Events::GetAttachmentImageAsset)
+            ->Event("SetAttachmentImageAsset", &UiImageBus::Events::SetAttachmentImageAsset)
             ->Event("GetIsRenderTargetSRGB", &UiImageBus::Events::GetIsRenderTargetSRGB)
             ->Event("SetIsRenderTargetSRGB", &UiImageBus::Events::SetIsRenderTargetSRGB)
             ->Event("GetSpriteType", &UiImageBus::Events::GetSpriteType)
@@ -1187,7 +1173,7 @@ void UiImageComponent::Init()
     // If this is called from RC.exe for example these pointers will not be set. In that case
     // we only need to be able to load, init and save the component. It will never be
     // activated.
-    if (!(gEnv && gEnv->pLyShine))
+    if (!AZ::Interface<ILyShine>::Get())
     {
         return;
     }
@@ -1200,14 +1186,14 @@ void UiImageComponent::Init()
         {
             if (!m_spritePathname.GetAssetPath().empty())
             {
-                m_sprite = gEnv->pLyShine->LoadSprite(m_spritePathname.GetAssetPath().c_str());
+                m_sprite = AZ::Interface<ILyShine>::Get()->LoadSprite(m_spritePathname.GetAssetPath().c_str());
             }
         }
         else if (m_spriteType == UiImageInterface::SpriteType::RenderTarget)
         {
-            if (!m_renderTargetName.empty())
+            if (m_attachmentImageAsset)
             {
-                m_sprite = gEnv->pLyShine->CreateSprite(m_renderTargetName.c_str());
+                m_sprite = AZ::Interface<ILyShine>::Get()->CreateSprite(m_attachmentImageAsset);
             }
         }
         else
@@ -1286,7 +1272,7 @@ void UiImageComponent::ResetSpriteSheetCellIndex()
 void UiImageComponent::RenderStretchedSprite(ISprite* sprite, int cellIndex, uint32 packedColor)
 {
     UiTransformInterface::RectPoints points;
-    EBUS_EVENT_ID(GetEntityId(), UiTransformBus, GetViewportSpacePoints, points);
+    UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::GetViewportSpacePoints, points);
 
     if (sprite)
     {
@@ -1330,7 +1316,7 @@ void UiImageComponent::RenderSlicedSprite(ISprite* sprite, int cellIndex, uint32
 
     // get the untransformed rect for the element plus it's transform matrix
     UiTransformInterface::RectPoints points;
-    EBUS_EVENT_ID(GetEntityId(), UiTransformBus, GetCanvasSpacePointsNoScaleRotate, points);
+    UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::GetCanvasSpacePointsNoScaleRotate, points);
 
     ISprite::Borders cellUvBorders(sprite->GetCellUvBorders(cellIndex));
     float leftBorder = cellUvBorders.m_left;
@@ -1364,7 +1350,7 @@ void UiImageComponent::RenderSlicedSprite(ISprite* sprite, int cellIndex, uint32
     }
 
     AZ::Matrix4x4 transform;
-    EBUS_EVENT_ID(GetEntityId(), UiTransformBus, GetTransformToViewport, transform);
+    UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::GetTransformToViewport, transform);
 
     if (m_isSlicingStretched)
     {
@@ -1401,10 +1387,10 @@ void UiImageComponent::RenderFixedSprite(ISprite* sprite, int cellIndex, uint32 
     AZ::Vector2 textureSize(sprite->GetCellSize(cellIndex));
 
     UiTransformInterface::RectPoints points;
-    EBUS_EVENT_ID(GetEntityId(), UiTransformBus, GetCanvasSpacePointsNoScaleRotate, points);
+    UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::GetCanvasSpacePointsNoScaleRotate, points);
 
     AZ::Vector2 pivot;
-    EBUS_EVENT_ID_RESULT(pivot, GetEntityId(), UiTransformBus, GetPivot);
+    UiTransformBus::EventResult(pivot, GetEntityId(), &UiTransformBus::Events::GetPivot);
 
     // change width and height to match texture
     AZ::Vector2 rectSize = points.GetAxisAlignedSize();
@@ -1419,7 +1405,7 @@ void UiImageComponent::RenderFixedSprite(ISprite* sprite, int cellIndex, uint32 
     points.BottomLeft() = AZ::Vector2(points.TopLeft().GetX(), points.BottomRight().GetY());
 
     // now apply scale and rotation
-    EBUS_EVENT_ID(GetEntityId(), UiTransformBus, RotateAndScalePoints, points);
+    UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::RotateAndScalePoints, points);
 
     // now draw the same as Stretched
     const UiTransformInterface::RectPoints& uvCoords = sprite->GetCellUvCoords(cellIndex);
@@ -1446,14 +1432,14 @@ void UiImageComponent::RenderTiledSprite(ISprite* sprite, uint32 packedColor)
     AZ::Vector2 textureSize = sprite->GetSize();
 
     UiTransformInterface::RectPoints points;
-    EBUS_EVENT_ID(GetEntityId(), UiTransformBus, GetCanvasSpacePointsNoScaleRotate, points);
+    UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::GetCanvasSpacePointsNoScaleRotate, points);
 
     // scale UV's so that one texel is one pixel on screen
     AZ::Vector2 rectSize = points.GetAxisAlignedSize();
     AZ::Vector2 uvScale(rectSize.GetX() / textureSize.GetX(), rectSize.GetY() / textureSize.GetY());
 
     // now apply scale and rotation to points
-    EBUS_EVENT_ID(GetEntityId(), UiTransformBus, RotateAndScalePoints, points);
+    UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::RotateAndScalePoints, points);
 
     // now draw the same as Stretched but with UV's adjusted
     const AZ::Vector2 uvs[4] = { AZ::Vector2(0, 0), AZ::Vector2(uvScale.GetX(), 0), AZ::Vector2(uvScale.GetX(), uvScale.GetY()), AZ::Vector2(0, uvScale.GetY()) };
@@ -1473,10 +1459,10 @@ void UiImageComponent::RenderStretchedToFitOrFillSprite(ISprite* sprite, int cel
     AZ::Vector2 textureSize = sprite->GetCellSize(cellIndex);
 
     UiTransformInterface::RectPoints points;
-    EBUS_EVENT_ID(GetEntityId(), UiTransformBus, GetCanvasSpacePointsNoScaleRotate, points);
+    UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::GetCanvasSpacePointsNoScaleRotate, points);
 
     AZ::Vector2 pivot;
-    EBUS_EVENT_ID_RESULT(pivot, GetEntityId(), UiTransformBus, GetPivot);
+    UiTransformBus::EventResult(pivot, GetEntityId(), &UiTransformBus::Events::GetPivot);
 
     // scale the texture so it either fits or fills the enclosing rect
     AZ::Vector2 rectSize = points.GetAxisAlignedSize();
@@ -1498,7 +1484,7 @@ void UiImageComponent::RenderStretchedToFitOrFillSprite(ISprite* sprite, int cel
     points.BottomLeft() = AZ::Vector2(points.TopLeft().GetX(), points.BottomRight().GetY());
 
     // now apply scale and rotation
-    EBUS_EVENT_ID(GetEntityId(), UiTransformBus, RotateAndScalePoints, points);
+    UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::RotateAndScalePoints, points);
 
     // now draw the same as Stretched
     const UiTransformInterface::RectPoints& uvCoords = sprite->GetCellUvCoords(cellIndex);
@@ -1875,7 +1861,7 @@ void UiImageComponent::RenderSlicedFixedSprite(ISprite* sprite, int cellIndex, u
     };
 
     AZ::Vector2 pivot;
-    EBUS_EVENT_ID_RESULT(pivot, GetEntityId(), UiTransformBus, GetPivot);
+    UiTransformBus::EventResult(pivot, GetEntityId(), &UiTransformBus::Events::GetPivot);
 
     float sValues[numValues];
     float tValues[numValues];
@@ -2335,8 +2321,8 @@ void UiImageComponent::MarkRenderGraphDirty()
 {
     // tell the canvas to invalidate the render graph (never want to do this while rendering)
     AZ::EntityId canvasEntityId;
-    EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
-    EBUS_EVENT_ID(canvasEntityId, UiCanvasComponentImplementationBus, MarkRenderGraphDirty);
+    UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
+    UiCanvasComponentImplementationBus::Event(canvasEntityId, &UiCanvasComponentImplementationBus::Events::MarkRenderGraphDirty);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2357,9 +2343,9 @@ void UiImageComponent::SnapOffsetsToFixedImage()
 
     // Check that this element is not controlled by a parent layout component
     AZ::EntityId parentElementId;
-    EBUS_EVENT_ID_RESULT(parentElementId, GetEntityId(), UiElementBus, GetParentEntityId);
+    UiElementBus::EventResult(parentElementId, GetEntityId(), &UiElementBus::Events::GetParentEntityId);
     bool isControlledByParent = false;
-    EBUS_EVENT_ID_RESULT(isControlledByParent, parentElementId, UiLayoutBus, IsControllingChild, GetEntityId());
+    UiLayoutBus::EventResult(isControlledByParent, parentElementId, &UiLayoutBus::Events::IsControllingChild, GetEntityId());
     if (isControlledByParent)
     {
         return;
@@ -2368,12 +2354,12 @@ void UiImageComponent::SnapOffsetsToFixedImage()
     // get the anchors and offsets from the element's transform component
     UiTransform2dInterface::Anchors anchors;
     UiTransform2dInterface::Offsets offsets;
-    EBUS_EVENT_ID_RESULT(anchors, GetEntityId(), UiTransform2dBus, GetAnchors);
-    EBUS_EVENT_ID_RESULT(offsets, GetEntityId(), UiTransform2dBus, GetOffsets);
+    UiTransform2dBus::EventResult(anchors, GetEntityId(), &UiTransform2dBus::Events::GetAnchors);
+    UiTransform2dBus::EventResult(offsets, GetEntityId(), &UiTransform2dBus::Events::GetOffsets);
 
     // Get the size of the element rect before scale/rotate
     UiTransformInterface::RectPoints points;
-    EBUS_EVENT_ID(GetEntityId(), UiTransformBus, GetCanvasSpacePointsNoScaleRotate, points);
+    UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::GetCanvasSpacePointsNoScaleRotate, points);
     AZ::Vector2 rectSize = points.GetAxisAlignedSize();
 
     // get the texture size
@@ -2384,7 +2370,7 @@ void UiImageComponent::SnapOffsetsToFixedImage()
 
     // get the pivot of the element, the fixed image will render the texture aligned with the pivot
     AZ::Vector2 pivot;
-    EBUS_EVENT_ID_RESULT(pivot, GetEntityId(), UiTransformBus, GetPivot);
+    UiTransformBus::EventResult(pivot, GetEntityId(), &UiTransformBus::Events::GetPivot);
 
     // if the anchors are together (no stretching) in either dimension
     // and that dimension is not controlled by a LayoutFitter
@@ -2406,8 +2392,8 @@ void UiImageComponent::SnapOffsetsToFixedImage()
 
     if (offsetsChanged)
     {
-        EBUS_EVENT_ID(GetEntityId(), UiTransform2dBus, SetOffsets, offsets);
-        EBUS_EVENT(UiEditorChangeNotificationBus, OnEditorTransformPropertiesNeedRefresh);
+        UiTransform2dBus::Event(GetEntityId(), &UiTransform2dBus::Events::SetOffsets, offsets);
+        UiEditorChangeNotificationBus::Broadcast(&UiEditorChangeNotificationBus::Events::OnEditorTransformPropertiesNeedRefresh);
     }
 }
 
@@ -2415,9 +2401,9 @@ void UiImageComponent::SnapOffsetsToFixedImage()
 bool UiImageComponent::IsPixelAligned()
 {
     AZ::EntityId canvasEntityId;
-    EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
+    UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
     bool isPixelAligned = true;
-    EBUS_EVENT_ID_RESULT(isPixelAligned, canvasEntityId, UiCanvasBus, GetIsPixelAligned);
+    UiCanvasBus::EventResult(isPixelAligned, canvasEntityId, &UiCanvasBus::Events::GetIsPixelAligned);
     return isPixelAligned;
 }
 
@@ -2491,7 +2477,7 @@ void UiImageComponent::OnEditorSpritePathnameChange()
         SnapOffsetsToFixedImage();
     }
 
-    EBUS_EVENT(UiEditorChangeNotificationBus, OnEditorPropertiesRefreshEntireTree);
+    UiEditorChangeNotificationBus::Broadcast(&UiEditorChangeNotificationBus::Events::OnEditorPropertiesRefreshEntireTree);
     CheckLayoutFitterAndRefreshEditorTransformProperties();
 }
 
@@ -2535,7 +2521,7 @@ void UiImageComponent::OnSpritePathnameChange()
     if (!m_spritePathname.GetAssetPath().empty())
     {
         // Load the new texture.
-        newSprite = gEnv->pLyShine->LoadSprite(m_spritePathname.GetAssetPath().c_str());
+        newSprite = AZ::Interface<ILyShine>::Get()->LoadSprite(m_spritePathname.GetAssetPath().c_str());
     }
 
     // if listening for notifications from a current sprite then disconnect
@@ -2555,17 +2541,17 @@ void UiImageComponent::OnSpritePathnameChange()
 
     InvalidateLayouts();
     ResetSpriteSheetCellIndex();
-    EBUS_EVENT_ID(GetEntityId(), UiSpriteSourceNotificationBus, OnSpriteSourceChanged);
+    UiSpriteSourceNotificationBus::Event(GetEntityId(), &UiSpriteSourceNotificationBus::Events::OnSpriteSourceChanged);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void UiImageComponent::OnSpriteRenderTargetNameChange()
+void UiImageComponent::OnSpriteAttachmentImageAssetChange()
 {
     ISprite* newSprite = nullptr;
 
-    if (!m_renderTargetName.empty())
+    if (m_attachmentImageAsset)
     {
-        newSprite = gEnv->pLyShine->CreateSprite(m_renderTargetName.c_str());
+        newSprite = AZ::Interface<ILyShine>::Get()->CreateSprite(m_attachmentImageAsset);
     }
 
     SAFE_RELEASE(m_sprite);
@@ -2583,7 +2569,7 @@ void UiImageComponent::OnSpriteTypeChange()
     }
     else if (m_spriteType == UiImageInterface::SpriteType::RenderTarget)
     {
-        OnSpriteRenderTargetNameChange();
+        OnSpriteAttachmentImageAssetChange();
     }
     else
     {
@@ -2603,9 +2589,10 @@ void UiImageComponent::OnColorChange()
 void UiImageComponent::InvalidateLayouts()
 {
     AZ::EntityId canvasEntityId;
-    EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
-    EBUS_EVENT_ID(canvasEntityId, UiLayoutManagerBus, MarkToRecomputeLayoutsAffectedByLayoutCellChange, GetEntityId(), true);
-    EBUS_EVENT_ID(canvasEntityId, UiLayoutManagerBus, MarkToRecomputeLayout, GetEntityId());
+    UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
+    UiLayoutManagerBus::Event(
+        canvasEntityId, &UiLayoutManagerBus::Events::MarkToRecomputeLayoutsAffectedByLayoutCellChange, GetEntityId(), true);
+    UiLayoutManagerBus::Event(canvasEntityId, &UiLayoutManagerBus::Events::MarkToRecomputeLayout, GetEntityId());
 
     MarkRenderCacheDirty();
 }
@@ -2678,6 +2665,16 @@ bool UiImageComponent::VersionConverter(AZ::SerializeContext& context,
     if (classElement.GetVersion() <= 4)
     {
         if (!LyShine::ConvertSubElementFromVector3ToAzColor(context, classElement, "Color"))
+        {
+            return false;
+        }
+    }
+
+    // conversion to version 8:
+    // - Need to remove render target name as it was replaced with attachment image asset
+    if (classElement.GetVersion() <= 7)
+    {
+        if (!LyShine::RemoveRenderTargetAsString(context, classElement, "RenderTargetName"))
         {
             return false;
         }

@@ -13,7 +13,7 @@
 #include <AzCore/std/containers/vector.h>
 #include <MCore/Source/Distance.h>
 #include "ThreadData.h"
-#include "BaseObject.h"
+#include <MCore/Source/RefCounted.h>
 
 #include <AzCore/Module/Environment.h>
 
@@ -37,6 +37,7 @@ namespace EMotionFX
     class MotionInstancePool;
     class EventDataFactory;
     class DebugDraw;
+    class PoseDataFactory;
 
     // versions
 #define EMFX_HIGHVERSION 4
@@ -54,7 +55,7 @@ namespace EMotionFX
      * the EMotionFX related memory categories to the Core memory manager.
      */
     class EMFX_API EMotionFXManager
-        : public BaseObject
+        : public MCore::RefCounted
     {
         AZ_CLASS_ALLOCATOR_DECL
         friend class Initializer;
@@ -187,6 +188,8 @@ namespace EMotionFX
          * @result A pointer to the wavelet cache.
          */
         MCORE_INLINE DebugDraw* GetDebugDraw() const                                { return m_debugDraw; }
+
+        MCORE_INLINE PoseDataFactory* GetPoseDataFactory() const                    { return m_poseDataFactory; }
 
         /**
          * Get the render actor settings
@@ -357,6 +360,7 @@ namespace EMotionFX
         EventManager*               m_eventManager;          /**< The motion event manager. */
         SoftSkinManager*            m_softSkinManager;       /**< The softskin manager. */
         AnimGraphManager*           m_animGraphManager;      /**< The animgraph manager. */
+        PoseDataFactory*            m_poseDataFactory;
         Recorder*                   m_recorder;              /**< The recorder. */
         MotionInstancePool*         m_motionInstancePool;    /**< The motion instance pool. */        
         DebugDraw*                  m_debugDraw;             /**< The debug drawing system. */
@@ -432,6 +436,8 @@ namespace EMotionFX
          * @param pool The motion instance pool.
          */
         void SetMotionInstancePool(MotionInstancePool* pool);
+
+        void SetPoseDataFactory(PoseDataFactory* poseDataFactory) { m_poseDataFactory = poseDataFactory; }
 
         /**
          * Set the number of threads to use.
@@ -520,5 +526,6 @@ namespace EMotionFX
     MCORE_INLINE Recorder&                  GetRecorder()               { return *GetEMotionFX().GetRecorder(); }           /**< Get the recorder. */
     MCORE_INLINE MotionInstancePool&        GetMotionInstancePool()     { return *GetEMotionFX().GetMotionInstancePool(); } /**< Get the motion instance pool. */
     MCORE_INLINE DebugDraw&                 GetDebugDraw()              { return *GetEMotionFX().GetDebugDraw(); }          /**< Get the debug drawing. */
+    MCORE_INLINE PoseDataFactory&           GetPoseDataFactory()        { return *GetEMotionFX().GetPoseDataFactory(); }
     MCORE_INLINE AZ::Render::RenderActorSettings& GetRenderActorSettings() { return *GetEMotionFX().GetRenderActorSettings(); }/**< Get the render actor settings. */
 }   // namespace EMotionFX

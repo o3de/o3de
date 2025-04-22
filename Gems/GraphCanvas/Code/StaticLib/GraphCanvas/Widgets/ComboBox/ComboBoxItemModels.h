@@ -31,7 +31,7 @@ namespace GraphCanvas
 
     public:
     
-        AZ_CLASS_ALLOCATOR(GraphCanvasListComboBoxModel, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GraphCanvasListComboBoxModel, AZ::SystemAllocator);
 
         enum ColumnIndex
         {
@@ -117,7 +117,10 @@ namespace GraphCanvas
             {
                 QFont sizedFont;
                 int pointSize = sizedFont.pointSize();
-                sizedFont.setPointSizeF(pointSize * m_fontScale);
+                if (pointSize >= 0)
+                {
+                    sizedFont.setPointSizeF(pointSize * m_fontScale);
+                }
                 return sizedFont;
             }
             default:
@@ -314,7 +317,7 @@ namespace GraphCanvas
         , public ComboBoxItemModelInterface
     {
     public:
-        AZ_CLASS_ALLOCATOR(GraphCanvasSortFilterComboBoxProxyModel, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GraphCanvasSortFilterComboBoxProxyModel, AZ::SystemAllocator);
 
         void SetModelInterface(ComboBoxItemModelInterface* modelInterface)
         {

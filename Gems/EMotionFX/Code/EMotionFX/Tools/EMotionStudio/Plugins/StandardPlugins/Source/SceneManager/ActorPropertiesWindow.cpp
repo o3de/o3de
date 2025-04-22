@@ -334,6 +334,12 @@ namespace EMStudio
             return;
         }
 
+        // If the names are the same, do not change them.
+        if (m_nameEdit->text().compare(m_actor->GetName()) == 0)
+        {
+            return;
+        }
+ 
         // execute the command
         const AZStd::string command = AZStd::string::format("AdjustActor -actorID %i -name \"%s\"", m_actor->GetID(), m_nameEdit->text().toUtf8().data());
 

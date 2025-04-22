@@ -138,6 +138,10 @@ namespace EMotionFX
             case QtWarningMsg:
             case QtCriticalMsg:
             case QtFatalMsg:
+                if (msg.contains("has active key-value observers (KVO)! These will stop working now that the window is recreated, and will result in exceptions when the observers are removed"))
+                {
+                    break;
+                }
                 FAIL() << msg.toStdString();
                 break;
             }
@@ -233,11 +237,10 @@ namespace EMotionFX
     {
         {
             AZStd::string result;
-            EXPECT_TRUE(CommandSystem::GetCommandManager()->ExecuteCommand("CreateAnimGraph -animGraphId 0", result)) << result.c_str();
+            EXPECT_TRUE(CommandSystem::GetCommandManager()->ExecuteCommand("CreateAnimGraph -animGraphId 100", result)) << result.c_str();
         }
 
-        auto* animGraph = EMotionFX::GetAnimGraphManager().FindAnimGraphByID(0);
-
+        auto* animGraph = EMotionFX::GetAnimGraphManager().FindAnimGraphByID(100);
         CommandSystem::CreateAnimGraphNode(nullptr, animGraph, azrtti_typeid<EMotionFX::AnimGraphMotionNode>(), "Motion", animGraph->GetRootStateMachine(), 0, 0);
     }
 
@@ -245,10 +248,10 @@ namespace EMotionFX
     {
         {
             AZStd::string result;
-            EXPECT_TRUE(CommandSystem::GetCommandManager()->ExecuteCommand("CreateAnimGraph -animGraphId 0", result)) << result.c_str();
+            EXPECT_TRUE(CommandSystem::GetCommandManager()->ExecuteCommand("CreateAnimGraph -animGraphId 100", result)) << result.c_str();
         }
 
-        auto* animGraph = EMotionFX::GetAnimGraphManager().FindAnimGraphByID(0);
+        auto* animGraph = EMotionFX::GetAnimGraphManager().FindAnimGraphByID(100);
 
         CommandSystem::CreateAnimGraphNode(nullptr, animGraph, azrtti_typeid<EMotionFX::AnimGraphMotionNode>(), "Motion", animGraph->GetRootStateMachine(), 0, 0);
 
@@ -259,10 +262,10 @@ namespace EMotionFX
     {
         {
             AZStd::string result;
-            EXPECT_TRUE(CommandSystem::GetCommandManager()->ExecuteCommand("CreateAnimGraph -animGraphId 0", result)) << result.c_str();
+            EXPECT_TRUE(CommandSystem::GetCommandManager()->ExecuteCommand("CreateAnimGraph -animGraphId 100", result)) << result.c_str();
         }
 
-        auto* animGraph = EMotionFX::GetAnimGraphManager().FindAnimGraphByID(0);
+        auto* animGraph = EMotionFX::GetAnimGraphManager().FindAnimGraphByID(100);
 
         CommandSystem::CreateAnimGraphNode(nullptr, animGraph, azrtti_typeid<EMotionFX::BlendTree>(), "BlendTree", animGraph->GetRootStateMachine(), 0, 0);
         AnimGraphNode* blendTree = animGraph->RecursiveFindNodeByName("BlendTree0");
@@ -278,10 +281,10 @@ namespace EMotionFX
 
         {
             AZStd::string result;
-            EXPECT_TRUE(CommandSystem::GetCommandManager()->ExecuteCommand("CreateAnimGraph -animGraphId 0", result)) << result.c_str();
+            EXPECT_TRUE(CommandSystem::GetCommandManager()->ExecuteCommand("CreateAnimGraph -animGraphId 100", result)) << result.c_str();
         }
 
-        auto* animGraph = EMotionFX::GetAnimGraphManager().FindAnimGraphByID(0);
+        auto* animGraph = EMotionFX::GetAnimGraphManager().FindAnimGraphByID(100);
 
         CommandSystem::CreateAnimGraphNode(nullptr, animGraph, azrtti_typeid<EMotionFX::AnimGraphReferenceNode>(), "Reference", animGraph->GetRootStateMachine(), 0, 0);
         auto* referenceNode = static_cast<AnimGraphReferenceNode*>(animGraph->RecursiveFindNodeByName("Reference0"));
@@ -339,10 +342,10 @@ namespace EMotionFX
 
         {
             AZStd::string result;
-            EXPECT_TRUE(CommandSystem::GetCommandManager()->ExecuteCommand("CreateAnimGraph -animGraphId 0", result)) << result.c_str();
+            EXPECT_TRUE(CommandSystem::GetCommandManager()->ExecuteCommand("CreateAnimGraph -animGraphId 100", result)) << result.c_str();
         }
 
-        auto* animGraph = EMotionFX::GetAnimGraphManager().FindAnimGraphByID(0);
+        auto* animGraph = EMotionFX::GetAnimGraphManager().FindAnimGraphByID(100);
 
         CommandSystem::CreateAnimGraphNode(nullptr, animGraph, azrtti_typeid<EMotionFX::AnimGraphReferenceNode>(), "Reference", animGraph->GetRootStateMachine(), 0, 0);
         auto* referenceNode = static_cast<AnimGraphReferenceNode*>(animGraph->RecursiveFindNodeByName("Reference0"));
@@ -431,10 +434,10 @@ namespace EMotionFX
 
         {
             AZStd::string result;
-            EXPECT_TRUE(CommandSystem::GetCommandManager()->ExecuteCommand("CreateAnimGraph -animGraphId 0", result)) << result.c_str();
+            EXPECT_TRUE(CommandSystem::GetCommandManager()->ExecuteCommand("CreateAnimGraph -animGraphId 100", result)) << result.c_str();
         }
 
-        auto* animGraph = EMotionFX::GetAnimGraphManager().FindAnimGraphByID(0);
+        auto* animGraph = EMotionFX::GetAnimGraphManager().FindAnimGraphByID(100);
         auto* actorInstance = EMotionFX::ActorInstance::Create(actorAsset->GetActor());
         auto* animGraphInstance = EMotionFX::AnimGraphInstance::Create(animGraph, actorInstance, motionSet.get());
         actorInstance->SetAnimGraphInstance(animGraphInstance);

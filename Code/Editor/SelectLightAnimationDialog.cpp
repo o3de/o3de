@@ -34,10 +34,15 @@ void CSelectLightAnimationDialog::OnInitDialog()
 //////////////////////////////////////////////////////////////////////////
 void CSelectLightAnimationDialog::GetItems(std::vector<SItem>& outItems)
 {
-    IMovieSystem* pMovieSystem = GetIEditor()->GetMovieSystem();
-    for (int i = 0; i < pMovieSystem->GetNumSequences(); ++i)
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+    if (!movieSystem)
     {
-        IAnimSequence* pSequence = pMovieSystem->GetSequence(i);
+        return;
+    }
+
+    for (int i = 0; i < movieSystem->GetNumSequences(); ++i)
+    {
+        IAnimSequence* pSequence = movieSystem->GetSequence(i);
         if ((pSequence->GetFlags() & IAnimSequence::eSeqFlags_LightAnimationSet) == 0)
         {
             continue;
@@ -45,7 +50,7 @@ void CSelectLightAnimationDialog::GetItems(std::vector<SItem>& outItems)
 
         for (int k = 0; k < pSequence->GetNodeCount(); ++k)
         {
-            assert(pSequence->GetNode(k)->GetType() == AnimNodeType::Light);
+            AZ_Assert(pSequence->GetNode(k)->GetType() == AnimNodeType::Light, "Expected Node Type Light");
             if (pSequence->GetNode(k)->GetType() != AnimNodeType::Light)
             {
                 continue;

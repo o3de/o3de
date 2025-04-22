@@ -6,9 +6,27 @@
  *
  */
 
-#include "ConnectionUnitTests.h"
+#include <native/unittests/AssetProcessorUnitTests.h>
 
-void ConnectionUnitTest::StartTest()
+class ConnectionForSendTest : public Connection
+{
+public:
+    ConnectionForSendTest() : Connection() {}
+    ~ConnectionForSendTest() = default;
+
+    ConnectionForSendTest(ConnectionForSendTest&) = delete;
+    ConnectionForSendTest(ConnectionForSendTest&&) = delete;
+    MOCK_METHOD2(Send, size_t(unsigned int /*serial*/, const AzFramework::AssetSystem::BaseAssetProcessorMessage& /*message*/));
+};
+
+class ConnectionUnitTest
+    : public UnitTest::AssetProcessorUnitTestBase
+{
+protected:
+    ::testing::NiceMock<ConnectionForSendTest> m_testConnection;
+};
+
+TEST_F(ConnectionUnitTest, SendPerPlatform_SendMessage_Succeeds)
 {
     m_testConnection.SetAssetPlatformsString("pc");
     AzFramework::AssetSystem::AssetNotificationMessage testMessage;
@@ -26,18 +44,4 @@ void ConnectionUnitTest::StartTest()
     EXPECT_CALL(m_testConnection, Send(testing::_, testing::_)).Times(0);
     // Intended partial string match test - shouldn't send
     m_testConnection.SendPerPlatform(0, testMessage, "es");
-
-    Q_EMIT UnitTestPassed();
 }
-
-int ConnectionUnitTest::UnitTestPriority() const
-{
-    return -10;
-}
-
-ConnectionUnitTest::~ConnectionUnitTest()
-{
-
-}
-
-// REGISTER_UNIT_TEST(ConnectionUnitTest) // disabling due to intermittent test failure - LYN-3368

@@ -84,7 +84,11 @@ public:
         AudioObjectPropertyAddress theAddress = {
             kAudioHardwarePropertyDefaultInputDevice,
             kAudioObjectPropertyScopeGlobal,
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 120000 // Needs to be 120000 instead of __MAC_12_0 because that will not be defined in earlier versions on the SDK.
+            kAudioObjectPropertyElementMain
+#else
             kAudioObjectPropertyElementMaster
+#endif
         };
         
         status = AudioObjectGetPropertyData(kAudioObjectSystemObject,
@@ -324,9 +328,7 @@ private:
         
         // Obtain recorded samples
         
-        OSStatus status;
-        
-        status = AudioUnitRender(impl->m_audioUnit, 
+        AudioUnitRender(impl->m_audioUnit, 
             ioActionFlags, 
             inTimeStamp, 
             inBusNumber, 

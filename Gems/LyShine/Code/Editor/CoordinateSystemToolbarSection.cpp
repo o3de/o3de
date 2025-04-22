@@ -31,7 +31,7 @@ CoordinateSystemToolbarSection::CoordinateSystemToolbarSection(QToolBar* parent,
     AZ_Assert(m_editorWindow, "Invalid hierarchy of windows.");
 
     m_combobox->setToolTip(QString("Reference coordinate system (%1)").arg(UICANVASEDITOR_COORDINATE_SYSTEM_CYCLE_SHORTCUT_KEY_SEQUENCE.toString()));
-    m_combobox->setMinimumContentsLength(5);
+    m_combobox->setMinimumContentsLength(6);
 
     // Combobox.
     {
@@ -133,7 +133,7 @@ void CoordinateSystemToolbarSection::UpdateCanvasSnapEnabled()
 
     // Add an undo command
     AZStd::string canvasUndoXml = CanvasHelpers::BeginUndoableCanvasChange(m_editorWindow->GetCanvas());
-    EBUS_EVENT_ID(m_editorWindow->GetCanvas(), UiEditorCanvasBus, SetIsSnapEnabled, checked);
+    UiEditorCanvasBus::Event(m_editorWindow->GetCanvas(), &UiEditorCanvasBus::Events::SetIsSnapEnabled, checked);
     CanvasHelpers::EndUndoableCanvasChange(m_editorWindow, "toggle snapping", canvasUndoXml);
 }
 

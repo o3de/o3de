@@ -34,9 +34,9 @@ namespace EMotionFX
             virtual RenderActorInstance* CreateActorInstance(AZ::EntityId entityId,
                 const EMotionFXPtr<EMotionFX::ActorInstance>& actorInstance,
                 const AZ::Data::Asset<ActorAsset>& asset,
-                const ActorAsset::MaterialList& materialPerLOD,
                 SkinningMethod skinningMethod,
-                const AZ::Transform& worldTransform) = 0;
+                const AZ::Transform& worldTransform,
+                bool rayTracingEnabled) = 0;
         };
     } // namespace Integration
 } // namespace EMotionFX

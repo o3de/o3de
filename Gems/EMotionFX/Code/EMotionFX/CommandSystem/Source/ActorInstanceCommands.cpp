@@ -6,14 +6,14 @@
  *
  */
 
-// include the required headers
 #include "ActorInstanceCommands.h"
-#include <EMotionFX/Source/Attachment.h>
+
+#include <AzCore/Serialization/Locale.h>
+
 #include <EMotionFX/Source/ActorManager.h>
 #include <MCore/Source/LogManager.h>
 #include <MCore/Source/StringConversions.h>
 #include "CommandManager.h"
-
 
 namespace CommandSystem
 {
@@ -439,6 +439,12 @@ namespace CommandSystem
             return false;
         }
 
+        if (actorInstance->GetEntity())
+        {
+            outResult = AZStd::string::format("Cannot remove actor instance. Actor instance %i belongs to an entity.", actorInstanceID);
+            return false;
+        }
+
         // store the old values before removing the instance
         m_oldPosition            = actorInstance->GetLocalSpaceTransform().m_position;
         m_oldRotation            = actorInstance->GetLocalSpaceTransform().m_rotation;
@@ -546,6 +552,8 @@ namespace CommandSystem
             const AZ::Vector3 scale = AZ::Vector3::CreateOne();
         #endif
 
+        AZ::Locale::ScopedSerializationLocale localeScope;  // make sure '%f' uses the "C" Locale.
+
         const AZStd::string command = AZStd::string::format("CreateActorInstance -actorID %i -xPos %f -yPos %f -zPos %f -xScale %f -yScale %f -zScale %f -rot \"%s\"",
             actorInstance->GetActor()->GetID(),
             static_cast<float>(pos.GetX()), static_cast<float>(pos.GetY()), static_cast<float>(pos.GetZ()),
@@ -618,12 +626,24 @@ namespace CommandSystem
         MCore::CommandGroup commandGroup("Remove actor instances", numActorInstances);
         AZStd::string tempString;
 
-        // iterate over the selected instances and clone them
+        // iterate over the selected instances and remove them
         for (size_t i = 0; i < numActorInstances; ++i)
         {
             // get the current actor instance
             EMotionFX::ActorInstance* actorInstance = selection.GetActorInstance(i);
             if (actorInstance == nullptr)
+            {
+                continue;
+            }
+
+            // Do not remove any runtime instance from the manager using the commands.
+            if (actorInstance->GetIsOwnedByRuntime())
+            {
+                continue;
+            }
+
+            // Do not remove the any instances owned by an entity from the manager using the commands.
+            if (actorInstance->GetEntity())
             {
                 continue;
             }

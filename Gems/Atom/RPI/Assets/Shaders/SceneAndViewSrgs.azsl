@@ -10,6 +10,7 @@
 // The only purpose of this shader is to have a shader asset that can be used
 // at runtime to find the SceneSrg & ViewSrg layouts.
 
-#include <scenesrg.srgi>
-#include <viewsrg.srgi>
+#include <scenesrg_all.srgi>
+#include <viewsrg_all.srgi>
+#include <Atom/Features/Bindless.azsli>
 #include <Atom/RPI/DummyEntryFunctions.azsli>

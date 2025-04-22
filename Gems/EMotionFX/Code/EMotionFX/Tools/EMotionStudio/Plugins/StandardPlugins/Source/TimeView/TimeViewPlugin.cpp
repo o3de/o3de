@@ -1,12 +1,13 @@
-/*
- * Copyright (c) Contributors to the Open 3D Engine Project.
+/* Copyright (c) Contributors to the Open 3D Engine Project.
  * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
+#include <Editor/InspectorBus.h>
 #include <AzCore/Math/MathUtils.h>
+#include <AzCore/Serialization/Locale.h>
 #include "TimeViewPlugin.h"
 #include "TrackDataHeaderWidget.h"
 #include "TrackDataWidget.h"
@@ -14,14 +15,12 @@
 #include "TimeInfoWidget.h"
 #include "TimeViewToolBar.h"
 
-#include "../MotionWindow/MotionWindowPlugin.h"
-#include "../MotionWindow/MotionListWindow.h"
-#include "../MotionSetsWindow/MotionSetsWindowPlugin.h"
-#include "../MotionEvents/MotionEventsPlugin.h"
-#include "../MotionEvents/MotionEventPresetsWidget.h"
+#include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/MotionSetsWindow/MotionSetsWindowPlugin.h>
+#include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/MotionEvents/MotionEventPresetsWidget.h>
+#include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/MotionEvents/MotionEventWidget.h>
 
-#include "../../../../EMStudioSDK/Source/EMStudioManager.h"
-#include "../../../../EMStudioSDK/Source/MainWindow.h"
+#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
+#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/MainWindow.h>
 
 #include <QCheckBox>
 #include <QDir>
@@ -42,47 +41,13 @@
 #include <EMotionFX/Source/Recorder.h>
 #include <EMotionFX/Source/MotionEventTable.h>
 
+#include <AzQtComponents/Utilities/Conversions.h>
+
 namespace EMStudio
 {
     TimeViewPlugin::TimeViewPlugin()
         : EMStudio::DockWidgetPlugin()
     {
-        m_pixelsPerSecond    = 60;
-        m_curTime            = 0;
-        m_fps                = 32;
-        m_timeScale          = 1.0;
-        m_targetTimeScale    = 1.0;
-        m_scrollX            = 0.0;
-        m_targetScrollX      = 0.0;
-        m_maxTime            = 0.0;
-        m_maxHeight          = 0.0;
-        m_minScale           = 0.25;
-        m_maxScale           = 100.0;
-        m_curMouseX          = 0;
-        m_curMouseY          = 0;
-        m_totalTime          = FLT_MAX;
-        m_zoomInCursor       = nullptr;
-        m_zoomOutCursor      = nullptr;
-        m_isAnimating        = false;
-        m_dirty              = true;
-
-        m_trackDataHeaderWidget = nullptr;
-        m_trackDataWidget    = nullptr;
-        m_trackHeaderWidget  = nullptr;
-        m_timeInfoWidget     = nullptr;
-
-        m_nodeHistoryItem    = nullptr;
-        m_eventHistoryItem   = nullptr;
-        m_actorInstanceData  = nullptr;
-        m_eventEmitterNode   = nullptr;
-
-        m_mainWidget                 = nullptr;
-        m_motionWindowPlugin         = nullptr;
-        m_motionEventsPlugin         = nullptr;
-        m_motionListWindow           = nullptr;
-        m_motionSetPlugin           = nullptr;
-        m_motion                     = nullptr;
-
         m_brushCurTimeHandle = QBrush(QColor(255, 180, 0));
         m_penCurTimeHandle   = QPen(QColor(255, 180, 0));
         m_penTimeHandles     = QPen(QColor(150, 150, 150), 1, Qt::DotLine);
@@ -91,6 +56,12 @@ namespace EMStudio
 
     TimeViewPlugin::~TimeViewPlugin()
     {
+        if (m_motionEventWidget)
+        {
+            delete m_motionEventWidget;
+            m_motionEventWidget = nullptr;
+        }
+
         EMotionFX::AnimGraphEditorNotificationBus::Handler::BusDisconnect();
 
         for (MCore::Command::Callback* callback : m_commandCallbacks)
@@ -113,18 +84,16 @@ namespace EMStudio
         }
     }
 
-
-    // get the compile date
-    const char* TimeViewPlugin::GetCompileDate() const
-    {
-        return MCORE_DATE;
-    }
-
-
     // get the name
     const char* TimeViewPlugin::GetName() const
     {
         return "Time View";
+    }
+
+    void EMStudio::TimeViewPlugin::Reflect(AZ::ReflectContext * context)
+    {
+        MotionEventPreset::Reflect(context);
+        MotionEventPresetManager::Reflect(context);
     }
 
 
@@ -132,43 +101,6 @@ namespace EMStudio
     uint32 TimeViewPlugin::GetClassID() const
     {
         return TimeViewPlugin::CLASS_ID;
-    }
-
-
-    // get the creator name
-    const char* TimeViewPlugin::GetCreatorName() const
-    {
-        return "O3DE";
-    }
-
-
-    // get the version
-    float TimeViewPlugin::GetVersion() const
-    {
-        return 1.0f;
-    }
-
-
-    // clone the log window
-    EMStudioPlugin* TimeViewPlugin::Clone()
-    {
-        TimeViewPlugin* newPlugin = new TimeViewPlugin();
-        return newPlugin;
-    }
-
-
-    // on before remove plugin
-    void TimeViewPlugin::OnBeforeRemovePlugin(uint32 classID)
-    {
-        if (classID == MotionWindowPlugin::CLASS_ID)
-        {
-            m_motionWindowPlugin = nullptr;
-        }
-
-        if (classID == MotionEventsPlugin::CLASS_ID)
-        {
-            m_motionEventsPlugin = nullptr;
-        }
     }
 
     // init after the parent dock window has been created
@@ -199,14 +131,21 @@ namespace EMStudio
         m_zoomInCursor = new QCursor(QPixmap(QDir{ QString(MysticQt::GetDataDir().c_str()) }.filePath("Images/Rendering/ZoomInCursor.png")).scaled(32, 32));
         m_zoomOutCursor = new QCursor(QPixmap(QDir{ QString(MysticQt::GetDataDir().c_str()) }.filePath("Images/Rendering/ZoomOutCursor.png")).scaled(32, 32));
 
+        m_togglePresetsView = new QAction(QIcon{":EMotionFX/List.svg"}, tr("Show/Hide Presets"), this);
+        connect(m_togglePresetsView, &QAction::triggered, this, &TimeViewPlugin::toggleMotionEventPresetsPane);
+        m_togglePresetsView->setCheckable(true);
+        m_togglePresetsView->setChecked(true);
+
         // create main widget
         m_mainWidget = new QWidget(m_dock);
         m_dock->setWidget(m_mainWidget);
+
+        // main content layout
         QGridLayout* mainLayout = new QGridLayout();
         mainLayout->setMargin(0);
         mainLayout->setSpacing(0);
-        m_mainWidget->setLayout(mainLayout);
 
+        m_mainWidget->setLayout(mainLayout);
         // create widgets in the header
         QHBoxLayout* topLayout = new QHBoxLayout();
         // Top
@@ -215,14 +154,17 @@ namespace EMStudio
         // Top-left
         m_timeInfoWidget = new TimeInfoWidget(this);
         m_timeInfoWidget->setFixedWidth(175);
+        // Top-right
+        auto rightSideToolbar = new QToolBar{};
+        rightSideToolbar->addAction(m_togglePresetsView);
         topLayout->addWidget(m_timeInfoWidget);
         topLayout->addWidget(m_timeViewToolBar);
+        topLayout->addWidget(rightSideToolbar);
         mainLayout->addLayout(topLayout, 0, 0, 1, 2);
 
         // Top-right
         m_trackDataHeaderWidget = new TrackDataHeaderWidget(this, m_dock);
         m_trackDataHeaderWidget->setFixedHeight(40);
-
         // create widgets in the body. For the body we are going to put a scroll area
         // so we can get a vertical scroll bar when we have more tracks than what the
         // view can show
@@ -239,7 +181,6 @@ namespace EMStudio
         bodyLayout->setSpacing(0);
         innerWidget->setLayout(bodyLayout);
         bodyWidget->setWidget(innerWidget);
-        mainLayout->addWidget(bodyWidget, 2, 0, 1, 2);
 
         // Bottom-left
         m_trackHeaderWidget = new TrackHeaderWidget(this, m_dock);
@@ -247,19 +188,43 @@ namespace EMStudio
         bodyLayout->addWidget(m_trackHeaderWidget);
 
         // Left
+        auto* trackAndTrackDataWidget = new QWidget;
         QHBoxLayout* addTrackAndTrackDataLayout = new QHBoxLayout;
+        addTrackAndTrackDataLayout->setMargin(0);
+        addTrackAndTrackDataLayout->setSpacing(0);
         addTrackAndTrackDataLayout->addWidget(m_trackHeaderWidget->GetAddTrackWidget());
         m_trackHeaderWidget->GetAddTrackWidget()->setFixedWidth(175);
         addTrackAndTrackDataLayout->addWidget(m_trackDataHeaderWidget);
-
-        mainLayout->addLayout(addTrackAndTrackDataLayout, 1, 0, 1, 2);
+        trackAndTrackDataWidget->setLayout(addTrackAndTrackDataLayout);
 
         // bottom-right
         m_trackDataWidget = new TrackDataWidget(this, m_dock);
         bodyLayout->addWidget(m_trackDataWidget);
 
-        connect(m_trackDataWidget, &TrackDataWidget::SelectionChanged, this, &TimeViewPlugin::OnSelectionChanged);
+        auto* contentContainer = new QWidget;
+        auto* contentLayout = new QVBoxLayout;
+        contentContainer->setLayout(contentLayout);
+        contentLayout->setMargin(0);
+        contentLayout->setSpacing(0);
+        contentLayout->addWidget(trackAndTrackDataWidget);
+        contentLayout->addWidget(bodyWidget);
 
+        // create the motion event presets pane
+        // create a slider for motion events presets pane
+        m_paneSplitter = new QSplitter(Qt::Horizontal, m_mainWidget);
+        m_motionEventsPresetsWidget = new MotionEventPresetsWidget{m_paneSplitter, this};
+        m_paneSplitter->addWidget(contentContainer);
+        m_paneSplitter->addWidget(m_motionEventsPresetsWidget);
+        m_paneSplitter->setCollapsible(0, false);
+        m_paneSplitter->setStretchFactor(0, 16);
+        m_paneSplitter->setStretchFactor(1, 1);
+        connect(m_paneSplitter, &QSplitter::splitterMoved,
+                this,
+                [=]{m_togglePresetsView->setChecked(m_paneSplitter->sizes().at(1) > 0 );});
+        mainLayout->addWidget(m_paneSplitter, 1, 0, 1, 2);
+
+        // connect TrackDataWidget
+        connect(m_trackDataWidget, &TrackDataWidget::SelectionChanged, this, &TimeViewPlugin::OnSelectionChanged);
         connect(m_trackDataWidget, &TrackDataWidget::ElementTrackChanged, this, &TimeViewPlugin::MotionEventTrackChanged);
         connect(m_trackDataWidget, &TrackDataWidget::MotionEventChanged, this, &TimeViewPlugin::MotionEventChanged);
         connect(this, &TimeViewPlugin::DeleteKeyPressed, this, &TimeViewPlugin::RemoveSelectedMotionEvents);
@@ -277,6 +242,35 @@ namespace EMStudio
         m_timeViewToolBar->UpdateInterface();
 
         EMotionFX::AnimGraphEditorNotificationBus::Handler::BusConnect();
+
+        // Create the motion event properties widget.
+        m_motionEventWidget = new MotionEventWidget();
+        m_motionEventWidget->hide();
+        connect(this, &TimeViewPlugin::SelectionChanged, this, [=]
+            {
+                if (!m_motionEventWidget)
+                {
+                    return;
+                }
+
+                UpdateSelection();
+                if (GetNumSelectedEvents() != 1)
+                {
+                    m_motionEventWidget->ReInit();
+                    m_motionEventWidget->hide();
+                    EMStudio::InspectorRequestBus::Broadcast(&EMStudio::InspectorRequestBus::Events::Clear); // This also gets called when just switching a motion
+                }
+                else
+                {
+                    EventSelectionItem selectionItem = GetSelectedEvent(0);
+                    m_motionEventWidget->ReInit(selectionItem.m_motion, selectionItem.GetMotionEvent());
+                    EMStudio::InspectorRequestBus::Broadcast(&EMStudio::InspectorRequestBus::Events::UpdateWithHeader,
+                        "Motion Event",
+                        MotionEventWidget::s_headerIcon,
+                        m_motionEventWidget);
+                }
+            });
+
         return true;
     }
 
@@ -814,11 +808,11 @@ namespace EMStudio
                 }
                 else
                 {
-                    const AZStd::vector<EMotionFX::MotionInstance*>& motionInstances = MotionWindowPlugin::GetSelectedMotionInstances();
-                    if (motionInstances.size() == 1 &&
-                        motionInstances[0]->GetMotion() == m_motion)
+                    const AZStd::vector<EMotionFX::MotionInstance*>& selectedMotionInstances = CommandSystem::GetCommandManager()->GetCurrentSelection().GetSelectedMotionInstances();
+                    if (selectedMotionInstances.size() == 1 &&
+                        selectedMotionInstances[0]->GetMotion() == m_motion)
                     {
-                        EMotionFX::MotionInstance* motionInstance = motionInstances[0];
+                        EMotionFX::MotionInstance* motionInstance = selectedMotionInstances[0];
                         if (!AZ::IsClose(aznumeric_cast<float>(m_curTime), motionInstance->GetCurrentTime(), MCore::Math::epsilon))
                         {
                             newCurrentTime = motionInstance->GetCurrentTime();
@@ -1059,20 +1053,10 @@ namespace EMStudio
 
     void TimeViewPlugin::ValidatePluginLinks()
     {
-        m_motionWindowPlugin = nullptr;
-        m_motionListWindow = nullptr;
         m_motionEventsPlugin = nullptr;
         m_motionSetPlugin = nullptr;
 
         EMStudio::PluginManager* pluginManager = EMStudio::GetPluginManager();
-
-        EMStudioPlugin* motionBasePlugin = pluginManager->FindActivePlugin(MotionWindowPlugin::CLASS_ID);
-        if (motionBasePlugin)
-        {
-            m_motionWindowPlugin = static_cast<MotionWindowPlugin*>(motionBasePlugin);
-            m_motionListWindow   = m_motionWindowPlugin->GetMotionListWindow();
-            connect(m_motionListWindow, &MotionListWindow::MotionSelectionChanged, this, &TimeViewPlugin::MotionSelectionChanged, Qt::UniqueConnection); // UniqueConnection as we could connect multiple times.
-        }
 
         EMStudioPlugin* motionSetBasePlugin = pluginManager->FindActivePlugin(MotionSetsWindowPlugin::CLASS_ID);
         if (motionSetBasePlugin)
@@ -1080,21 +1064,14 @@ namespace EMStudio
             m_motionSetPlugin = static_cast<MotionSetsWindowPlugin*>(motionSetBasePlugin);
             connect(m_motionSetPlugin->GetMotionSetWindow(), &MotionSetWindow::MotionSelectionChanged, this, &TimeViewPlugin::MotionSelectionChanged, Qt::UniqueConnection); // UniqueConnection as we could connect multiple times.
         }
-
-        EMStudioPlugin* motionEventsBasePlugin = pluginManager->FindActivePlugin(MotionEventsPlugin::CLASS_ID);
-        if (motionEventsBasePlugin)
-        {
-            m_motionEventsPlugin = static_cast<MotionEventsPlugin*>(motionEventsBasePlugin);
-            m_motionEventsPlugin->ValidatePluginLinks();
-        }
     }
 
 
     void TimeViewPlugin::MotionSelectionChanged()
     {
         ValidatePluginLinks();
-        if ((m_motionListWindow && m_motionListWindow->isVisible()) ||
-            (m_motionSetPlugin && m_motionSetPlugin->GetMotionSetWindow() && m_motionSetPlugin->GetMotionSetWindow()->isVisible()))
+        if (m_motionSetPlugin && m_motionSetPlugin->GetMotionSetWindow() &&
+            m_motionSetPlugin->GetMotionSetWindow()->isVisible())
         {
             SetMode(TimeViewMode::Motion);
         }
@@ -1234,7 +1211,7 @@ namespace EMStudio
                                 break;
                             }
                         }
-                        
+
                         text = '{';
                         AZStd::string delimiter;
                         const EMotionFX::EventDataSet& eventDatas = motionEvent.GetEventDatas();
@@ -1250,8 +1227,7 @@ namespace EMStudio
                             }
                             delimiter = ", {";
                         }
-                        uint32 color = GetEventPresetManager()->GetEventColor(motionEvent.GetEventDatas());
-                        QColor qColor = QColor(MCore::ExtractRed(color), MCore::ExtractGreen(color), MCore::ExtractBlue(color));
+                        QColor qColor = AzQtComponents::toQColor(GetEventPresetManager()->GetEventColor(motionEvent.GetEventDatas()));
 
                         element->SetIsVisible(true);
                         element->SetName(text.c_str());
@@ -1335,6 +1311,8 @@ namespace EMStudio
                     element->SetIsVisible(false);
                 }
             }
+
+            m_motionEventWidget->ReInit();
         }
 
         // update the time view plugin
@@ -1492,6 +1470,8 @@ namespace EMStudio
 
     void TimeViewPlugin::MotionEventChanged(TimeTrackElement* element, double startTime, double endTime)
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale; // Ensures that %f uses "." as decimal separator
+
         if (element == nullptr)
         {
             return;
@@ -2049,6 +2029,24 @@ namespace EMStudio
         GetMainWindow()->OnUpdateRenderPlugins();
     }
 
+    void TimeViewPlugin::toggleMotionEventPresetsPane()
+    {
+        QList<int> sizes = m_paneSplitter->sizes();
+        if (sizes[1] == 0)
+        {
+            sizes[1] = m_motionEventsPresetsWidget->minimumSizeHint().width();
+            sizes[0] = m_paneSplitter->width() - sizes[1];
+        }
+        else
+        {
+            // hide the nav pane
+            sizes[0] = m_paneSplitter->width();
+            sizes[1] = 0;
+        }
+        m_paneSplitter->setSizes(sizes);
+        m_togglePresetsView->setChecked(sizes[1] != 0);
+    }
+
     void TimeViewPlugin::OnFocusIn()
     {
         SetMode(TimeViewMode::AnimGraph);
@@ -2093,5 +2091,86 @@ namespace EMStudio
         }
 
         m_timeViewToolBar->UpdateInterface();
+    }
+
+    bool TimeViewPlugin::CheckIfMotionEventPresetReadyToDrop()
+    {
+        // get the motion event presets table
+        QTableWidget* eventPresetsTable = m_motionEventsPresetsWidget->GetMotionEventPresetsTable();
+        if (eventPresetsTable == nullptr)
+        {
+            return false;
+        }
+
+        // get the number of motion event presets and iterate through them
+        const uint32 numRows = eventPresetsTable->rowCount();
+        for (uint32 i = 0; i < numRows; ++i)
+        {
+            QTableWidgetItem* itemType = eventPresetsTable->item(i, 1);
+
+            if (itemType->isSelected())
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+    void TimeViewPlugin::OnEventPresetDroppedOnTrackData(QPoint mousePoint)
+    {
+        EMotionFX::Motion* motion = GetCommandManager()->GetCurrentSelection().GetSingleMotion();
+        if (!motion)
+        {
+            return;
+        }
+
+        // calculate the start time for the motion event
+        double dropTimeInSeconds = PixelToTime(mousePoint.x());
+
+        // get the time track on which we dropped the preset
+        TimeTrack* timeTrack = GetTrackAt(mousePoint.y());
+        if (!timeTrack)
+        {
+            return;
+        }
+
+        // get the corresponding motion event track
+        EMotionFX::MotionEventTable* eventTable = motion->GetEventTable();
+        EMotionFX::MotionEventTrack* eventTrack = eventTable->FindTrackByName(timeTrack->GetName());
+        if (eventTrack == nullptr)
+        {
+            return;
+        }
+
+        // get the motion event presets table
+        QTableWidget* eventPresetsTable = m_motionEventsPresetsWidget->GetMotionEventPresetsTable();
+        if (eventPresetsTable == nullptr)
+        {
+            return;
+        }
+
+        // get the number of motion event presets and iterate through them
+        const size_t numRows = EMStudio::GetEventPresetManager()->GetNumPresets();
+        AZStd::string result;
+        for (size_t i = 0; i < numRows; ++i)
+        {
+            const MotionEventPreset* preset = EMStudio::GetEventPresetManager()->GetPreset(i);
+            QTableWidgetItem* itemName = eventPresetsTable->item(static_cast<int>(i), 1);
+
+            if (itemName->isSelected())
+            {
+                CommandSystem::CommandCreateMotionEvent* createMotionEventCommand = aznew CommandSystem::CommandCreateMotionEvent();
+                createMotionEventCommand->SetMotionID(motion->GetID());
+                createMotionEventCommand->SetEventTrackName(eventTrack->GetName());
+                createMotionEventCommand->SetStartTime(aznumeric_cast<float>(dropTimeInSeconds));
+                createMotionEventCommand->SetEndTime(aznumeric_cast<float>(dropTimeInSeconds));
+                createMotionEventCommand->SetEventDatas(preset->GetEventDatas());
+
+                if (!EMStudio::GetCommandManager()->ExecuteCommand(createMotionEventCommand, result))
+                {
+                    AZ_Error("EMotionFX", false, result.c_str());
+                }
+            }
+        }
     }
 } // namespace EMStudio

@@ -7,7 +7,6 @@
 #
 
 set(FILES
-    Source/AABB.h
     Source/Algorithms.cpp
     Source/Algorithms.h
     Source/Algorithms.inl
@@ -15,7 +14,6 @@ set(FILES
     Source/Array2D.inl
     Source/Attribute.cpp
     Source/Attribute.h
-    Source/AttributeAllocator.cpp
     Source/AttributeAllocator.h
     Source/AttributeBool.cpp
     Source/AttributeBool.h
@@ -34,10 +32,7 @@ set(FILES
     Source/AttributeVector3.h
     Source/AttributeVector4.h
     Source/AzCoreConversions.h
-    Source/BoundingSphere.cpp
     Source/BoundingSphere.h
-    Source/Color.cpp
-    Source/Color.h
     Source/Command.cpp
     Source/Command.h
     Source/CommandGroup.cpp
@@ -80,9 +75,6 @@ set(FILES
     Source/LogManager.cpp
     Source/LogManager.h
     Source/Macros.h
-    Source/Matrix4.cpp
-    Source/Matrix4.h
-    Source/Matrix4.inl
     Source/MCoreSystem.cpp
     Source/MCoreSystem.h
     Source/MemoryCategoriesCore.h
@@ -90,18 +82,16 @@ set(FILES
     Source/MemoryFile.h
     Source/MemoryManager.cpp
     Source/MemoryManager.h
-    Source/MemoryObject.cpp
-    Source/MemoryObject.h
     Source/MemoryTracker.cpp
     Source/MemoryTracker.h
     Source/MultiThreadManager.h
-    Source/PlaneEq.cpp
     Source/PlaneEq.h
-    Source/PlaneEq.inl
     Source/Random.cpp
     Source/Random.h
     Source/Ray.cpp
     Source/Ray.h
+    Source/RefCounted.cpp
+    Source/RefCounted.h
     Source/StaticAllocator.cpp
     Source/StaticAllocator.h
     Source/StaticString.h
@@ -113,6 +103,5 @@ set(FILES
     Source/StringIdPool.h
     Source/ReflectionSerializer.cpp
     Source/ReflectionSerializer.h
-    Source/TriangleListOptimizer.h
     Source/Vector.h
 )

@@ -86,6 +86,31 @@ namespace Multiplayer
         return m_hostBlendFactor;
     }
 
+    AZStd::vector<MultiplayerAuditingElement> NetworkInput::GetComponentInputDeltaLogs() const
+    {
+        AZStd::vector<MultiplayerAuditingElement> logs;
+        for (uint16_t idx = 0; idx < m_componentInputs.size(); ++idx)
+        {
+            MultiplayerAuditingElement log = m_componentInputs[idx].get()->GetInputDeltaLog();
+            if (!log.m_elements.empty())
+            {
+                logs.push_back(AZStd::move(log));
+            }
+        }
+
+        return logs;
+    }
+
+    const AZStd::string NetworkInput::GetOwnerName() const
+    {
+        const AZ::Entity* owner = m_owner.GetEntity();
+        if (owner != nullptr)
+        {
+            return owner->GetName();
+        }
+        return "";
+    }
+
     void NetworkInput::AttachNetBindComponent(NetBindComponent* netBindComponent)
     {
         m_wasAttached = true;
@@ -121,7 +146,7 @@ namespace Multiplayer
                 // However in the delta serializer case, we use the previous input as our initial value
                 // which will have the NetworkInputs setup and therefore won't write out the componentId
                 NetComponentId componentId = m_componentInputs[i] ? m_componentInputs[i]->GetNetComponentId() : InvalidNetComponentId;
-                serializer.Serialize(componentId, "ComponentType");
+                serializer.Serialize(componentId, "ComponentId");
                 // Create a new input if we don't have one or the types do not match
                 if ((m_componentInputs[i] == nullptr) || (componentId != m_componentInputs[i]->GetNetComponentId()))
                 {

@@ -1,0 +1,53 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "LyShineChildPassTemplate",
+            "PassClass": "LyShineChildPass",
+            "Slots": [
+                {
+                    "Name": "ColorInputOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "RenderTarget"
+                },
+                {
+                    "Name": "DepthInputOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "DepthStencil",
+                    "LoadStoreAction": {
+                        "ClearValue": {
+                            "Type": "DepthStencil"
+                        },
+                        "LoadAction": "None",
+                        "LoadActionStencil": "Clear",
+                        "StoreAction": "None",
+                        "StoreActionStencil": "DontCare"
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "ColorInputOutput",
+                    "AttachmentRef": {
+                        "Pass": "Parent",
+                        "Attachment": "ColorInputOutput"
+                    }
+                },
+                {
+                    "LocalSlot": "DepthInputOutput",
+                    "AttachmentRef": {
+                        "Pass": "Parent",
+                        "Attachment": "DepthInputOutput"
+                    }
+                }
+            ],
+            "PassData": {
+                "$type": "RasterPassData",
+                "DrawListTag": "lyshinepass",
+                "BindViewSrg": true
+            }
+        }
+    }
+}

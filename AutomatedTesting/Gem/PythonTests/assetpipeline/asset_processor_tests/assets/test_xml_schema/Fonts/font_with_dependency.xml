@@ -1,0 +1,17 @@
+<fontshader>
+  <font path="font_dependency.ttf" w="512" h="256"/>
+  <effect name="default">
+    <pass>
+      <blend type="additive" />
+    </pass>
+    <pass>
+      <color r="0" g="0" b="0" a="1" />
+      <pos x="1" y="1" />
+      <blend type="additive" />
+    </pass>
+  </effect>
+  <effect name="simple">
+    <pass>
+    </pass>
+  </effect>
+</fontshader>

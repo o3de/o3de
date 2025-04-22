@@ -17,6 +17,8 @@
 
 namespace AzNetworking
 {
+    AZ_CVAR(bool, net_validateSerializedTypes, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Validate that all serialized types are correct");
+
     void NetworkingSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
@@ -43,6 +45,7 @@ namespace AzNetworking
         AZ::Interface<INetworking>::Register(this);
 
         m_listenThread = AZStd::make_unique<TcpListenThread>();
+        m_heartbeatThread = AZStd::make_unique<UdpHeartbeatThread>();
         m_readerThread = AZStd::make_unique<UdpReaderThread>();
     }
 
@@ -54,6 +57,7 @@ namespace AzNetworking
         m_compressorFactories.clear();
 
         m_readerThread = nullptr;
+        m_heartbeatThread = nullptr;
         m_listenThread = nullptr;
 
         AZ::Interface<INetworking>::Unregister(this);
@@ -63,30 +67,24 @@ namespace AzNetworking
 
     void NetworkingSystemComponent::Activate()
     {
-        AZ::TickBus::Handler::BusConnect();
+        AZ::SystemTickBus::Handler::BusConnect();
     }
 
     void NetworkingSystemComponent::Deactivate()
     {
-        AZ::TickBus::Handler::BusDisconnect();
+        AZ::SystemTickBus::Handler::BusDisconnect();
     }
 
-    void NetworkingSystemComponent::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
+    void NetworkingSystemComponent::OnSystemTick()
     {
-        AZ::TimeMs elapsedMs = aznumeric_cast<AZ::TimeMs>(aznumeric_cast<int64_t>(deltaTime / 1000.0f));
         m_readerThread->SwapBuffers();
         for (auto& networkInterface : m_networkInterfaces)
         {
-            networkInterface.second->Update(elapsedMs);
+            networkInterface.second->Update();
         }
     }
 
-    int NetworkingSystemComponent::GetTickOrder()
-    {
-        return AZ::TICK_PLACEMENT;
-    }
-
-    INetworkInterface* NetworkingSystemComponent::CreateNetworkInterface(AZ::Name name, ProtocolType protocolType, TrustZone trustZone, IConnectionListener& listener)
+    INetworkInterface* NetworkingSystemComponent::CreateNetworkInterface(const AZ::Name& name, ProtocolType protocolType, TrustZone trustZone, IConnectionListener& listener)
     {
         AZ_Assert(RetrieveNetworkInterface(name) == nullptr, "A network interface with this name already exists");
 
@@ -97,7 +95,7 @@ namespace AzNetworking
             result = AZStd::make_unique<TcpNetworkInterface>(name, listener, trustZone, *m_listenThread);
             break;
         case ProtocolType::Udp:
-            result = AZStd::make_unique<UdpNetworkInterface>(name, listener, trustZone, *m_readerThread);
+            result = AZStd::make_unique<UdpNetworkInterface>(name, listener, trustZone, *m_readerThread, *m_heartbeatThread);
             break;
         }
         INetworkInterface* returnResult = result.get();
@@ -108,7 +106,7 @@ namespace AzNetworking
         return returnResult;
     }
 
-    INetworkInterface* NetworkingSystemComponent::RetrieveNetworkInterface(AZ::Name name)
+    INetworkInterface* NetworkingSystemComponent::RetrieveNetworkInterface(const AZ::Name& name)
     {
         auto networkInterface = m_networkInterfaces.find(name);
         if (networkInterface != m_networkInterfaces.end())
@@ -118,21 +116,23 @@ namespace AzNetworking
         return nullptr;
     }
 
-    bool NetworkingSystemComponent::DestroyNetworkInterface(AZ::Name name)
+    bool NetworkingSystemComponent::DestroyNetworkInterface(const AZ::Name& name)
     {
         return m_networkInterfaces.erase(name) > 0;
     }
 
     void NetworkingSystemComponent::RegisterCompressorFactory(ICompressorFactory* factory)
     {
-        AZ_Assert(m_compressorFactories.find(factory->GetFactoryName()) == m_compressorFactories.end(), "A compressor factory with this name already exists");
+        const AZ::Crc32 factorKey = AZ::Crc32(factory->GetFactoryName());
+        AZ_Assert(m_compressorFactories.find(factorKey) == m_compressorFactories.end(),
+            "A compressor factory with this name already exists");
 
-        m_compressorFactories.emplace(factory->GetFactoryName(), factory);
+        m_compressorFactories.emplace(factorKey, factory);
     }
 
-    AZStd::unique_ptr<ICompressor> NetworkingSystemComponent::CreateCompressor(AZ::Name name)
+    AZStd::unique_ptr<ICompressor> NetworkingSystemComponent::CreateCompressor(const AZStd::string_view name)
     {
-        auto compressorFactory = m_compressorFactories.find(name);
+        auto compressorFactory = m_compressorFactories.find(AZ::Crc32(name));
         if(compressorFactory != m_compressorFactories.end())
         {
             return compressorFactory->second->Create();
@@ -141,9 +141,9 @@ namespace AzNetworking
         return nullptr;
     }
 
-    bool NetworkingSystemComponent::UnregisterCompressorFactory(AZ::Name name)
+    bool NetworkingSystemComponent::UnregisterCompressorFactory(const AZStd::string_view name)
     {
-        return m_compressorFactories.erase(name) > 0;
+        return m_compressorFactories.erase(AZ::Crc32(name)) > 0;
     }
 
     const NetworkInterfaces& NetworkingSystemComponent::GetNetworkInterfaces() const
@@ -169,6 +169,11 @@ namespace AzNetworking
     AZ::TimeMs NetworkingSystemComponent::GetUdpReaderThreadUpdateTime() const
     {
         return m_readerThread->GetUpdateTimeMs();
+    }
+
+    void NetworkingSystemComponent::ForceUpdate()
+    {
+        OnSystemTick();
     }
 
     void NetworkingSystemComponent::DumpStats([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)

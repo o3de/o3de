@@ -36,6 +36,9 @@ namespace UnitTest
         MOCK_METHOD1(UnregisterArea, void(AZ::EntityId areaId));
         MOCK_METHOD2(
             RefreshArea, void(AZ::EntityId areaId, AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask changeMask));
+        MOCK_METHOD2(
+            RefreshRegion,
+            void(const AZ::Aabb& dirtyRegion, AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask changeMask));
     };
 
     class MockTerrainAreaHeightRequests : public Terrain::TerrainAreaHeightRequestBus::Handler
@@ -52,6 +55,7 @@ namespace UnitTest
         }
 
         MOCK_METHOD3(GetHeight, void(const AZ::Vector3& inPosition, AZ::Vector3& outPosition, bool& terrainExists));
+        MOCK_METHOD2(GetHeights, void(AZStd::span<AZ::Vector3> inOutPositionList, AZStd::span<bool> terrainExistsList));
     };
 
     class MockTerrainSpawnerRequests : public Terrain::TerrainSpawnerRequestBus::Handler
@@ -67,7 +71,7 @@ namespace UnitTest
             Terrain::TerrainSpawnerRequestBus::Handler::BusDisconnect();
         }
 
-        MOCK_METHOD2(GetPriority, void(AZ::u32& outLayer, AZ::u32& outPriority));
+        MOCK_METHOD2(GetPriority, void(uint32_t& outLayer, int32_t& outPriority));
         MOCK_METHOD0(GetUseGroundPlane, bool());
     };
 

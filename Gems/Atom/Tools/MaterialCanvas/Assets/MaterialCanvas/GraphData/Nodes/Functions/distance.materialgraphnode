@@ -1,0 +1,56 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "id": "{31BEA4FF-36E1-4EB0-A0C3-B53F79AA31C7}",
+        "category": "Math Functions",
+        "title": "Distance",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Returns the distance between two points",
+        "slotDataTypeGroups": [
+            "inValue1|inValue2",
+            "outValue"
+        ],
+        "inputSlots": [
+            {
+                "name": "inValue1",
+                "displayName": "Value1",
+                "description": "Value1",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
+                "defaultDataType": "float4",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            },
+            {
+                "name": "inValue2",
+                "displayName": "Value2",
+                "description": "Value2",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
+                "defaultDataType": "float4",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            }
+        ],
+        "outputSlots": [
+            {
+                "name": "outValue",
+                "displayName": "Value",
+                "description": "Value",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = distance(inValue1, inValue2);"
+                    ]
+                }
+            }
+        ]
+    }
+}

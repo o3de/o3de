@@ -32,7 +32,7 @@ namespace AzToolsFramework
 
             static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
             {
-                dependent.push_back(AZ_CRC("EditorEntityContextService", 0x28d93a43));
+                dependent.push_back(AZ_CRC_CE("EditorEntityContextService"));
             }
 
         private:

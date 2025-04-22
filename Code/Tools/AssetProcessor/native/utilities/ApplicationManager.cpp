@@ -18,6 +18,7 @@
 
 #include <native/resourcecompiler/RCBuilder.h>
 #include <native/utilities/StatsCapture.h>
+#include <native/utilities/PlatformConfiguration.h>
 
 #include <QLocale>
 #include <QTranslator>
@@ -25,12 +26,15 @@
 
 #include <QSettings>
 
+#include <AzToolsFramework/Archive/ArchiveComponent.h>
 #include <AzFramework/Asset/AssetCatalogComponent.h>
 #include <AzToolsFramework/Entity/EditorEntityFixupComponent.h>
 #include <AzToolsFramework/ToolsComponents/ToolsAssetCatalogComponent.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserComponent.h>
 #include <AzToolsFramework/SourceControl/PerforceComponent.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponent.h>
+#include <AzToolsFramework/Metadata/MetadataManager.h>
+#include <AzToolsFramework/Metadata/UuidUtils.h>
 
 namespace AssetProcessor
 {
@@ -58,6 +62,7 @@ namespace AssetProcessor
         : public AzFramework::LogComponent
     {
     public:
+        AZ_CLASS_ALLOCATOR(FilteredLogComponent, AZ::SystemAllocator)
         void OutputMessage(AzFramework::LogFile::SeverityLevel severity, const char* window, const char* message) override
         {
             // if we receive an exception it means we are likely to crash.  in that case, even if it occurred in a job thread
@@ -107,10 +112,19 @@ namespace AssetProcessorBuildTarget
     AZStd::string_view GetBuildTargetName();
 }
 
-
 AssetProcessorAZApplication::AssetProcessorAZApplication(int* argc, char*** argv, QObject* parent)
+    : AssetProcessorAZApplication(argc, argv, parent, {})
+{
+}
+
+AssetProcessorAZApplication::AssetProcessorAZApplication(int* argc, char*** argv, AZ::ComponentApplicationSettings componentAppSettings)
+    : AssetProcessorAZApplication(argc, argv, nullptr, AZStd::move(componentAppSettings))
+{
+}
+
+AssetProcessorAZApplication::AssetProcessorAZApplication(int* argc, char*** argv, QObject* parent, AZ::ComponentApplicationSettings componentAppSettings)
     : QObject(parent)
-    , AzToolsFramework::ToolsApplication(argc, argv)
+    , AzToolsFramework::ToolsApplication(argc, argv, AZStd::move(componentAppSettings))
 {
     // The settings registry has been created at this point, so add the CMake target
     // specialization to the settings
@@ -152,6 +166,9 @@ AZ::ComponentTypeList AssetProcessorAZApplication::GetRequiredSystemComponents()
 
     components.push_back(azrtti_typeid<AzToolsFramework::PerforceComponent>());
     components.push_back(azrtti_typeid<AzToolsFramework::Prefab::PrefabSystemComponent>());
+    components.push_back(azrtti_typeid<AzToolsFramework::ArchiveComponent>()); // AP manages compressed files using ArchiveComponent
+    components.push_back(azrtti_typeid<AzToolsFramework::MetadataManager>());
+    components.push_back(azrtti_typeid<AzToolsFramework::UuidUtilComponent>());
 
     return components;
 }
@@ -179,8 +196,18 @@ void AssetProcessorAZApplication::SetSettingsRegistrySpecializations(AZ::Setting
 }
 
 ApplicationManager::ApplicationManager(int* argc, char*** argv, QObject* parent)
+    : ApplicationManager(argc, argv, parent, {})
+{
+}
+
+ApplicationManager::ApplicationManager(int* argc, char*** argv, AZ::ComponentApplicationSettings componentAppSettings)
+    : ApplicationManager(argc, argv, nullptr, AZStd::move(componentAppSettings))
+{
+}
+
+ApplicationManager::ApplicationManager(int* argc, char*** argv, QObject* parent, AZ::ComponentApplicationSettings componentAppSettings)
     : QObject(parent)
-    , m_frameworkApp(argc, argv)
+    , m_frameworkApp(argc, argv, AZStd::move(componentAppSettings))
 {
     qInstallMessageHandler(&AssetProcessor::MessageHandler);
 }
@@ -219,7 +246,7 @@ ApplicationManager::~ApplicationManager()
     }
 
     //Unregistering and deleting all the components
-    EBUS_EVENT_ID(azrtti_typeid<AzFramework::LogComponent>(), AZ::ComponentDescriptorBus, ReleaseDescriptor);
+    AZ::ComponentDescriptorBus::Event(azrtti_typeid<AzFramework::LogComponent>(), &AZ::ComponentDescriptorBus::Events::ReleaseDescriptor);
 
     //Stop AZFramework
     m_frameworkApp.Stop();
@@ -230,44 +257,6 @@ bool ApplicationManager::InitiatedShutdown() const
 {
     return m_duringShutdown;
 }
-
-void ApplicationManager::GetExternalBuilderFileList(QStringList& externalBuilderModules)
-{
-    externalBuilderModules.clear();
-
-    static const char* builder_folder_name = "Builders";
-
-    // LY_ASSET_BUILDERS is defined by the CMakeLists.txt. The asset builders add themselves to a variable that
-    // is populated to allow selective building of those asset builder targets.
-    // This allows left over Asset builders in the output directory to not be loaded by the AssetProcessor
-#if !defined(LY_ASSET_BUILDERS)
-    #error LY_ASSET_BUILDERS was not defined for ApplicationManager.cpp
-#endif
-
-    QDir builderDir = QDir::toNativeSeparators(QString(this->m_frameworkApp.GetExecutableFolder()));
-    builderDir.cd(QString(builder_folder_name));
-    if (builderDir.exists())
-    {
-        AZStd::vector<AZStd::string> tokens;
-        AZ::StringFunc::Tokenize(AZStd::string_view(LY_ASSET_BUILDERS), tokens, ',');
-        AZStd::string builderLibrary;
-        for (const AZStd::string& token : tokens)
-        {
-            QString assetBuilderPath(token.c_str());
-            if (builderDir.exists(assetBuilderPath))
-            {
-                externalBuilderModules.push_back(builderDir.absoluteFilePath(assetBuilderPath));
-            }
-        }
-    }
-
-    if (externalBuilderModules.empty())
-    {
-        AZ_TracePrintf(AssetProcessor::ConsoleChannel, "AssetProcessor was unable to locate any external builders\n");
-    }
-}
-
-
 
 QDir ApplicationManager::GetSystemRoot() const
 {
@@ -358,10 +347,11 @@ void ApplicationManager::QuitRequested()
     m_duringShutdown = true;
 
     //Inform all the builders to shutdown
-    EBUS_EVENT(AssetBuilderSDK::AssetBuilderCommandBus, ShutDown);
+    AssetBuilderSDK::AssetBuilderCommandBus::Broadcast(&AssetBuilderSDK::AssetBuilderCommandBus::Events::ShutDown);
 
     // the following call will invoke on the main thread of the application, since its a direct bus call.
-    EBUS_EVENT(AssetProcessor::ApplicationManagerNotifications::Bus, ApplicationShutdownRequested);
+    AssetProcessor::ApplicationManagerNotifications::Bus::Broadcast(
+        &AssetProcessor::ApplicationManagerNotifications::Bus::Events::ApplicationShutdownRequested);
 
     // while it may be tempting to just collapse all of this to a bus call,  Qt Objects have the advantage of being
     // able to automatically queue calls onto their own thread, and a lot of these involved objects are in fact
@@ -450,7 +440,7 @@ void ApplicationManager::PopulateApplicationDependencies()
     // Note that its not necessary for any of these files to actually exist.  It is considered a "change" if they
     // change their file modtime, or if they go from existing to not existing, or if they go from not existing, to existing.
     // any of those should cause AP to drop.
-    for (const QString& pathName : { "CrySystem",
+    for (QString pathName : { "CrySystem",
                                      "SceneCore", "SceneData",
                                      "SceneBuilder", "AzQtComponents"
                                      })
@@ -458,15 +448,6 @@ void ApplicationManager::PopulateApplicationDependencies()
         QString pathWithPlatformExtension = pathName + QString(AZ_DYNAMIC_LIBRARY_EXTENSION);
         m_filesOfInterest.push_back(dir.absoluteFilePath(pathWithPlatformExtension));
     }
-
-    // Get the external builder modules to add to the files of interest
-    QStringList builderModuleFileList;
-    GetExternalBuilderFileList(builderModuleFileList);
-    for (const QString& builderModuleFile : builderModuleFileList)
-    {
-        m_filesOfInterest.push_back(builderModuleFile);
-    }
-
 
     QDir assetRoot;
     AssetUtilities::ComputeAssetRoot(assetRoot);
@@ -484,7 +465,7 @@ void ApplicationManager::PopulateApplicationDependencies()
             AZ::DynamicModuleHandle* handle = moduleData.GetDynamicModuleHandle();
             if (handle)
             {
-                QFileInfo fi(handle->GetFilename().c_str());
+                QFileInfo fi(handle->GetFilename());
                 if (fi.exists())
                 {
                     m_filesOfInterest.push_back(fi.absoluteFilePath());
@@ -627,14 +608,14 @@ ApplicationManager::BeforeRunStatus ApplicationManager::BeforeRun()
         return ApplicationManager::BeforeRunStatus::Status_Failure;
     }
 
-    // enable stats capture from this point on
-    AssetProcessor::StatsCapture::Initialize();
-
     return ApplicationManager::BeforeRunStatus::Status_Success;
 }
 
 bool ApplicationManager::Activate()
 {
+    // enable stats capture from this point on
+    AssetProcessor::StatsCapture::Initialize();
+
     if (!AssetUtilities::ComputeAssetRoot(m_systemRoot))
     {
         AZ_Error(AssetProcessor::ConsoleChannel, false, "Unable to compute the asset root for the project, this application cannot launch until this is fixed.");
@@ -651,7 +632,7 @@ bool ApplicationManager::Activate()
     // the following controls what registry keys (or on mac or linux what entries in home folder) are used
     // so they should not be translated!
     qApp->setOrganizationName(GetOrganizationName());
-    qApp->setOrganizationDomain("amazon.com");
+    qApp->setOrganizationDomain("o3de.org");
     qApp->setApplicationName(GetApplicationName());
 
     return true;

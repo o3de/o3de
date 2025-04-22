@@ -14,6 +14,7 @@
 #include <AzToolsFramework/UI/PropertyEditor/PropertyQTConstants.h>
 #include <AzToolsFramework/UI/PropertyEditor/QtWidgetLimits.h>
 #include <QtWidgets/QWidget>
+#include <QLocale> 
 
 namespace AzToolsFramework
 {   
@@ -49,7 +50,7 @@ namespace AzToolsFramework
         , protected HandlerQObject
     {
     public:
-        AZ_CLASS_ALLOCATOR(IntWidgetHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(IntWidgetHandler, AZ::SystemAllocator);
     protected:
         QWidget* GetFirstInTabOrder(PropertyControl* widget) override;
         QWidget* GetLastInTabOrder(PropertyControl* widget) override;
@@ -92,25 +93,11 @@ namespace AzToolsFramework
             {
                 toolTipString += "\n";
             }
-            toolTipString += "[";
-            if (propertyControl->minimum() <= aznumeric_cast<AZ::s64>(QtWidgetLimits<T>::Min()))
-            {
-                toolTipString += "-" + QObject::tr(PropertyQTConstant_InfinityString);
-            }
-            else
-            {
-                toolTipString += QString::number(propertyControl->minimum());
-            }
-            toolTipString += ", ";
-            if (propertyControl->maximum() >= aznumeric_cast<AZ::s64>(QtWidgetLimits<T>::Max()))
-            {
-                toolTipString += QObject::tr(PropertyQTConstant_InfinityString);
-            }
-            else
-            {
-                toolTipString += QString::number(propertyControl->maximum());
-            }
-            toolTipString += "]";
+
+            const QString minString = QLocale().toString(propertyControl->minimum());
+            const QString maxString = QLocale().toString(propertyControl->maximum());
+            toolTipString += QString("[%1, %2]").arg(minString).arg(maxString);
+
             return true;
         }
         return false;
@@ -128,16 +115,11 @@ namespace AzToolsFramework
             {
                 toolTipString += "\n";
             }
-            toolTipString += "[" + QString::number(propertyControl->minimum()) + ", ";
-            if (propertyControl->maximum() >= aznumeric_cast<AZ::s64>(QtWidgetLimits<T>::Max()))
-            {
-                toolTipString += QObject::tr(PropertyQTConstant_InfinityString);
-            }
-            else
-            {
-                toolTipString += QString::number(propertyControl->maximum());
-            }
-            toolTipString += "]";
+
+            const QString minString = QLocale().toString(propertyControl->minimum());
+            const QString maxString = QLocale().toString(propertyControl->maximum());
+            toolTipString += QString("[%1, %2]").arg(minString).arg(maxString);
+
             return true;
         }
         return false;
@@ -196,7 +178,7 @@ namespace AzToolsFramework
             }
             else
             {
-                AZ_WarningOnce("AzToolsFramework", false, "Property %s: 'Min' attribute from property '%s' into widget", debugName);
+                AZ_WarningOnce("AzToolsFramework", false, "Failed to read 'Min' attribute from property '%s' into widget", debugName);
             }
         }
         else if (attrib == AZ::Edit::Attributes::Max)
@@ -222,7 +204,7 @@ namespace AzToolsFramework
                 AZ_WarningOnce("AzToolsFramework", false, "Failed to read 'Step' attribute from property '%s' into widget", debugName);
             }
         }
-        else if (attrib == AZ_CRC("Multiplier", 0xa49aa95b))
+        else if (attrib == AZ_CRC_CE("Multiplier"))
         {
             if (attrValue->Read<AZ::s64>(value))
             {
@@ -245,7 +227,7 @@ namespace AzToolsFramework
                 AZ_WarningOnce("AzToolsFramework", false, "Failed to read 'Suffix' attribute from property '%s' into widget", debugName);
             }
         }
-        else if (attrib == AZ_CRC("Prefix", 0x93b1868e))
+        else if (attrib == AZ_CRC_CE("Prefix"))
         {
             AZStd::string stringValue;
             if (attrValue->Read<AZStd::string>(stringValue))

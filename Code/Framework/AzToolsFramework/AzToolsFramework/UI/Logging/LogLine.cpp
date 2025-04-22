@@ -382,7 +382,7 @@ namespace AzToolsFramework
             using namespace AZ::Debug;
 
             const AZStd::string separator = " | ";
-            const AZStd::string From = " from ";
+            const AZStd::string Origin = "origin: ";
             const AZStd::string EOL = "\n";
 
             AZStd::string dateTime = QLocale::system().toString(QDateTime::fromMSecsSinceEpoch(m_messageTime), QLocale::ShortFormat).toUtf8().data();
@@ -405,7 +405,7 @@ namespace AzToolsFramework
                 severity = "Context";
                 break;
             }
-            return dateTime + separator + severity + separator + m_message.c_str() + From + m_window.c_str() + EOL;
+            return dateTime + separator + severity + separator + Origin + m_window.c_str() + separator + m_message.c_str() + EOL;
         }
 
         QVariant LogLine::data(int column, int role) const

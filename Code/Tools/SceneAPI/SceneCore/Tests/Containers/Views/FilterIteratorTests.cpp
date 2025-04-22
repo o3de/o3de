@@ -59,7 +59,7 @@ namespace AZ
                     AZStd::function<bool(const BaseIteratorReference)> m_testPredicate;
                 };
 
-                TYPED_TEST_CASE_P(FilterIteratorBasicTests);
+                TYPED_TEST_SUITE_P(FilterIteratorBasicTests);
 
                 TYPED_TEST_P(FilterIteratorBasicTests,
                     Constructor_InputIsEmptyValidBaseIterator_NoCrash)
@@ -502,7 +502,7 @@ namespace AZ
                     }
                 }
 
-                REGISTER_TYPED_TEST_CASE_P(FilterIteratorBasicTests,
+                REGISTER_TYPED_TEST_SUITE_P(FilterIteratorBasicTests,
                     Constructor_InputIsEmptyValidBaseIterator_NoCrash,
                     OperatorStar_GetValueByDereferencingIterator_ExpectFirstValueInArray,
                     Constructor_MovesForwardBasedOnPredicate_ExpectSkipFirstEntryAndReturnSecond,
@@ -525,7 +525,7 @@ namespace AZ
                     Algorithms_PartialSortCopyFilteredContainer_AllValuesLargerOrEqualThan10AreCopiedAndSorted
                     );
 
-                INSTANTIATE_TYPED_TEST_CASE_P(CommonTests,
+                INSTANTIATE_TYPED_TEST_SUITE_P(CommonTests,
                     FilterIteratorBasicTests,
                     BasicCollectionTypes);
 
@@ -554,7 +554,7 @@ namespace AZ
                     AZStd::function<bool(const BaseIteratorReference)> m_testPredicate;
                 };
 
-                TYPED_TEST_CASE_P(FilterIteratorMapTests);
+                TYPED_TEST_SUITE_P(FilterIteratorMapTests);
 
                 TYPED_TEST_P(FilterIteratorMapTests,
                     MakeFilterView_InputIsIterator_CorrectFilteredElements)
@@ -578,11 +578,11 @@ namespace AZ
                     EXPECT_TRUE(expectedElements.empty());
                 }
 
-                REGISTER_TYPED_TEST_CASE_P(FilterIteratorMapTests,
+                REGISTER_TYPED_TEST_SUITE_P(FilterIteratorMapTests,
                     MakeFilterView_InputIsIterator_CorrectFilteredElements
                     );
 
-                INSTANTIATE_TYPED_TEST_CASE_P(CommonTests,
+                INSTANTIATE_TYPED_TEST_SUITE_P(CommonTests,
                     FilterIteratorMapTests,
                     MapCollectionTypes);
 

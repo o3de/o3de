@@ -36,6 +36,26 @@ partial ShaderResourceGroup SceneSrg
     float4 m_iblOrientation;
     float m_iblExposure;
     
+    // --- Debugging ---
+
+    bool m_debuggingEnabled;
+
+    // Material debug overrides...
+    float3 m_debugOverrideBaseColor;
+    float m_debugOverrideRoughness;
+    float m_debugOverrideMetallic;
+
+    // Specifies a lighting direction and intensity for debug purposes 
+    float3 m_debugLightingDirection;
+    float3 m_debugLightingIntensity;
+
+    float m_customDebugFloat01;
+    float m_customDebugFloat02;
+    float m_customDebugFloat03;
+    float m_customDebugFloat04;
+
+    // --- Samplers ---
+
     Sampler m_samplerEnv
     {
         AddressU = Wrap;
@@ -45,6 +65,8 @@ partial ShaderResourceGroup SceneSrg
         MipFilter = Linear;
     };
     
+    // --- Functions ---
+
     float4x4 GetObjectToWorldMatrix(uint objectId)
     {
         return float4x4(

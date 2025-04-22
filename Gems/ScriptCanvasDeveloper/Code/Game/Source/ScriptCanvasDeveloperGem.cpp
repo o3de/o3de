@@ -9,7 +9,7 @@
 #include <ScriptCanvasDeveloper/ScriptCanvasDeveloperGem.h>
 #include <ScriptCanvasDeveloper/ScriptCanvasDeveloperComponent.h>
 
-namespace ScriptCanvasDeveloper
+namespace ScriptCanvas::Developer
 {
     ////////////////////////////////////////////////////////////////////////////
     // ScriptCanvasDeveloperModule
@@ -22,7 +22,7 @@ namespace ScriptCanvasDeveloper
         : AZ::Module()
     {
         m_descriptors.insert(m_descriptors.end(), {
-            ScriptCanvasDeveloper::SystemComponent::CreateDescriptor()
+            ScriptCanvas::Developer::SystemComponent::CreateDescriptor()
         });
     }
 
@@ -35,11 +35,15 @@ namespace ScriptCanvasDeveloper
         AZ::ComponentTypeList components;
 
         components.insert(components.end(), std::initializer_list<AZ::Uuid> {
-            azrtti_typeid<ScriptCanvasDeveloper::SystemComponent>(),
+            azrtti_typeid<ScriptCanvas::Developer::SystemComponent>(),
         });
 
         return components;
     }
 }
 
-AZ_DECLARE_MODULE_CLASS(Gem_ScriptCanvasDeveloperGem, ScriptCanvasDeveloper::ScriptCanvasDeveloperModule)
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME), ScriptCanvas::Developer::ScriptCanvasDeveloperModule)
+#else
+AZ_DECLARE_MODULE_CLASS(Gem_ScriptCanvasDeveloper, ScriptCanvas::Developer::ScriptCanvasDeveloperModule)
+#endif

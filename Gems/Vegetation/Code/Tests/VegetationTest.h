@@ -11,7 +11,6 @@
 #include <AzCore/Math/Random.h>
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Asset/AssetManagerComponent.h>
-#include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/std/functional.h>
 
@@ -21,20 +20,9 @@
 namespace UnitTest
 {
     class VegetationComponentTests
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
     protected:
-        VegetationComponentTests()
-            : ScopedAllocatorSetupFixture(
-                []() {
-                    AZ::SystemAllocator::Descriptor desc;
-                    desc.m_heap.m_fixedMemoryBlocksByteSize[0] = 20 * 1024 * 1024;
-                    desc.m_stackRecordLevels = 20;
-                    return desc;
-                }()
-            )
-        {
-        }
 
         AZ::ComponentApplication m_app;
 
@@ -42,13 +30,15 @@ namespace UnitTest
 
         void SetUp() override
         {
-            if (AZ::Debug::AllocationRecords* records = AZ::AllocatorInstance<AZ::SystemAllocator>::GetAllocator().GetRecords();
+            if (AZ::Debug::AllocationRecords* records = AZ::AllocatorInstance<AZ::SystemAllocator>::Get().GetRecords();
                 records != nullptr)
             {
-                records->SetMode(AZ::Debug::AllocationRecords::RECORD_NO_RECORDS);
+                records->SetMode(AZ::Debug::AllocationRecords::Mode::RECORD_NO_RECORDS);
             }
 
-            m_app.Create({});
+            AZ::ComponentApplication::StartupParameters startupParameters;
+            startupParameters.m_loadSettingsRegistry = false;
+            m_app.Create({}, startupParameters);
             RegisterComponentDescriptors();
         }
 

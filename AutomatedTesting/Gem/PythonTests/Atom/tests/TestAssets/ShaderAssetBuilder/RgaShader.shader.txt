@@ -1,0 +1,26 @@
+// This is a dummy shader used to validate detection of "#included files"
+{
+    "Source" : "RgaShader.azsl",
+
+    "DepthStencilState" : {
+        "Depth" : { "Enable" : false, "CompareFunc" : "GreaterEqual" }
+    },
+
+    "DrawList" : "forward",
+
+    "ProgramSettings":
+    {
+      "EntryPoints":
+      [
+        {
+          "name": "MainVS",
+          "type": "Vertex"
+        },
+        {
+          "name": "MainPS",
+          "type": "Fragment"
+        }
+      ]
+    }
+
+}

@@ -6,6 +6,8 @@
 #
 #
 
+set(O3DE_RADEON_GPU_ANALYZER_ENABLED FALSE CACHE BOOL "Whether to download Radeon GPU Analyzer from Github.")
+
 define_property(TARGET PROPERTY LY_SYSTEM_LIBRARY
     BRIEF_DOCS "Defines a 3rdParty library as a system library"
     FULL_DOCS [[
@@ -28,7 +30,7 @@ function(get_default_third_party_folder output_third_party_path)
     
     # 1. Highest priority, cache variable, that will override the value of any of the cases below
     # 2. if defined in an env variable, take it from there
-    if($ENV{LY_3RDPARTY_PATH})
+    if(DEFINED ENV{LY_3RDPARTY_PATH})
         set(${output_third_party_path} $ENV{LY_3RDPARTY_PATH} PARENT_SCOPE)
         return()
     endif()
@@ -186,7 +188,7 @@ function(ly_add_external_target)
         endif()
 
         # Check if there is a pal file
-        ly_get_absolute_pal_filename(pal_file ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME}/${ly_add_external_target_PACKAGE}_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
+        o3de_pal_dir(pal_file ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME}/${ly_add_external_target_PACKAGE}_${PAL_PLATFORM_NAME_LOWERCASE}.cmake "${O3DE_ENGINE_RESTRICTED_PATH}" "${LY_ROOT_FOLDER}")
         if(NOT EXISTS ${pal_file})
             set(pal_file ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME}/${ly_add_external_target_PACKAGE}_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
         endif()
@@ -357,12 +359,15 @@ endfunction()
 
 # Add the 3rdParty folder to find the modules
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/3rdParty)
-ly_get_absolute_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/3rdParty/Platform/${PAL_PLATFORM_NAME})
+o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/3rdParty/Platform/${PAL_PLATFORM_NAME} "${O3DE_ENGINE_RESTRICTED_PATH}" "${LY_ROOT_FOLDER}")
 list(APPEND CMAKE_MODULE_PATH ${pal_dir})
 
 if(NOT INSTALLED_ENGINE)
     # Add the 3rdParty cmake files to the IDE
     ly_include_cmake_file_list(cmake/3rdParty/cmake_files.cmake)
-    ly_get_absolute_pal_filename(pal_3rdparty_dir ${CMAKE_CURRENT_SOURCE_DIR}/cmake/3rdParty/Platform/${PAL_PLATFORM_NAME})
+    o3de_pal_dir(pal_3rdparty_dir ${CMAKE_CURRENT_SOURCE_DIR}/cmake/3rdParty/Platform/${PAL_PLATFORM_NAME} "${O3DE_ENGINE_RESTRICTED_PATH}" "${LY_ROOT_FOLDER}")
     ly_include_cmake_file_list(${pal_3rdparty_dir}/cmake_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake)
+    if(O3DE_RADEON_GPU_ANALYZER_ENABLED)
+        include(cmake/3rdParty/FetchRGA.cmake)
+    endif()
 endif()

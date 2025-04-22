@@ -9,6 +9,7 @@
 #include "EditorDefs.h"
 
 #include "ErrorReportTableModel.h"
+#include <QIcon>
 
 // Editor
 #include "ErrorReport.h"
@@ -149,15 +150,7 @@ QVariant CErrorReportTableModel::data(const CErrorRecord& record, int column, in
         case ColumnFile:
             return record.file;
         case ColumnObject:
-            if (record.pItem)
-            {
-                return record.pItem->GetFullName();
-            }
-            else if (record.pObject)
-            {
-                return record.pObject->GetName();
-            }
-            else if (!record.error.isEmpty())
+            if (!record.error.isEmpty())
             {
                 float x, y, z;
                 if (GetPositionFromString(record.error, &x, &y, &z))

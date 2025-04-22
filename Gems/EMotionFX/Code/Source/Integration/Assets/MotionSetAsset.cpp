@@ -20,8 +20,8 @@ namespace EMotionFX
 {
     namespace Integration
     {
-        AZ_CLASS_ALLOCATOR_IMPL(MotionSetAsset, EMotionFXAllocator, 0)
-        AZ_CLASS_ALLOCATOR_IMPL(MotionSetAssetHandler, EMotionFXAllocator, 0)
+        AZ_CLASS_ALLOCATOR_IMPL(MotionSetAsset, EMotionFXAllocator)
+        AZ_CLASS_ALLOCATOR_IMPL(MotionSetAssetHandler, EMotionFXAllocator)
 
         /**
          * Custom callback registered with EMotion FX for the purpose of intercepting
@@ -32,7 +32,7 @@ namespace EMotionFX
             : public EMotionFX::MotionSetCallback
         {
         public:
-            AZ_CLASS_ALLOCATOR(CustomMotionSetCallback, EMotionFXAllocator, 0);
+            AZ_CLASS_ALLOCATOR(CustomMotionSetCallback, EMotionFXAllocator);
 
             CustomMotionSetCallback(const AZ::Data::Asset<MotionSetAsset>& asset)
                 : MotionSetCallback(asset.Get()->m_emfxMotionSet.get())
@@ -46,7 +46,12 @@ namespace EMotionFX
                 // It should already be loaded through a motion set.
                 const char* motionFile = entry->GetFilename();
                 AZ::Data::AssetId motionAssetId;
-                EBUS_EVENT_RESULT(motionAssetId, AZ::Data::AssetCatalogRequestBus, GetAssetIdByPath, motionFile, azrtti_typeid<MotionAsset>(), false);
+                AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                    motionAssetId,
+                    &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath,
+                    motionFile,
+                    azrtti_typeid<MotionAsset>(),
+                    false);
 
                 // if it failed to find it, it might be still compiling - try forcing an immediate compile:
                 if (!motionAssetId.IsValid())
@@ -149,7 +154,8 @@ namespace EMotionFX
             // The following code is required to be set so the FileManager detects changes to the files loaded
             // through this method. Once EMotionFX is integrated to the asset system this can go away.
             AZStd::string assetFilename;
-            EBUS_EVENT_RESULT(assetFilename, AZ::Data::AssetCatalogRequestBus, GetAssetPathById, asset.GetId());
+            AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                assetFilename, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, asset.GetId());
 
             AZ::IO::FixedMaxPath projectPath = AZ::Utils::GetProjectPath();
             if (!projectPath.empty())
@@ -187,7 +193,12 @@ namespace EMotionFX
                 // Find motion file in catalog and grab the asset.
                 // Jump on the AssetBus for the asset, and queue load.
                 AZ::Data::AssetId motionAssetId;
-                EBUS_EVENT_RESULT(motionAssetId, AZ::Data::AssetCatalogRequestBus, GetAssetIdByPath, motionFilename, AZ::Data::s_invalidAssetType, false);
+                AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                    motionAssetId,
+                    &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath,
+                    motionFilename,
+                    AZ::Data::s_invalidAssetType,
+                    false);
 
                 // if it failed to find it, it might be still compiling - try forcing an immediate compile.  CompileAssetSync
                 // will block until the compilation completes AND the catalog is up to date.
@@ -252,7 +263,7 @@ namespace EMotionFX
         //////////////////////////////////////////////////////////////////////////
         const char* MotionSetAssetHandler::GetBrowserIcon() const
         {
-            return "Editor/Images/AssetBrowser/MotionSet_16.svg";
+            return "Editor/Images/AssetBrowser/MotionSet_80.svg";
         }
         //////////////////////////////////////////////////////////////////////////
         void MotionSetAssetBuilderHandler::InitAsset(const AZ::Data::Asset<AZ::Data::AssetData>& asset, bool loadStageSucceeded, bool isReload)

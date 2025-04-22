@@ -25,7 +25,7 @@ namespace UnitTest
 {
     using namespace AzToolsFramework;
 
-    class ManipulatorViewTest : public AllocatorsTestFixture
+    class ManipulatorViewTest : public LeakDetectionFixture
     {
         AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
 
@@ -33,7 +33,9 @@ namespace UnitTest
         void SetUp() override
         {
             m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
-            m_app.Start(AzFramework::Application::Descriptor());
+            AZ::ComponentApplication::StartupParameters startupParameters;
+            startupParameters.m_loadSettingsRegistry = false;
+            m_app.Start(AzFramework::Application::Descriptor(), startupParameters);
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
             // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash
             // in the unit tests.
@@ -121,7 +123,7 @@ namespace UnitTest
         const AzFramework::CameraState cameraState = AzFramework::CreateDefaultCamera(
             AZ::Transform::CreateFromMatrix3x3AndTranslation(
                 AZ::Matrix3x3::CreateRotationX(AZ::DegToRad(-90.0f)), AZ::Vector3(10.0f, -15.0f, 6.0f)),
-            AZ::Vector2(1280, 720));
+            AzFramework::ScreenSize(1280, 720));
 
         // test debug display instance to record vertices that were output
         auto testDebugDisplayRequests = AZStd::make_shared<TestDebugDisplayRequests>();

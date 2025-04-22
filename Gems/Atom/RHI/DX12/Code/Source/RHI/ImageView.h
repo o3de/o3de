@@ -9,7 +9,7 @@
 
 #include <RHI/Descriptor.h>
 #include <Atom/RHI.Reflect/AttachmentEnums.h>
-#include <Atom/RHI/ImageView.h>
+#include <Atom/RHI/DeviceImageView.h>
 #include <AzCore/Memory/PoolAllocator.h>
 
 namespace AZ
@@ -19,11 +19,11 @@ namespace AZ
         class Image;
 
         class ImageView final
-            : public RHI::ImageView
+            : public RHI::DeviceImageView
         {
-            using Base = RHI::ImageView;
+            using Base = RHI::DeviceImageView;
         public:
-            AZ_CLASS_ALLOCATOR(ImageView, AZ::ThreadPoolAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ImageView, AZ::ThreadPoolAllocator);
             AZ_RTTI(ImageView, "{FEC44057-C031-4454-9326-94758C4F729A}", Base);
 
             static RHI::Ptr<ImageView> Create();
@@ -44,12 +44,18 @@ namespace AZ
             DescriptorHandle GetColorDescriptor() const;
             DescriptorHandle GetDepthStencilDescriptor(RHI::ScopeAttachmentAccess access) const;
 
+            //////////////////////////////////////////////////////////////////////////
+            // RHI::DeviceImageView
+            uint32_t GetBindlessReadIndex() const override;
+            uint32_t GetBindlessReadWriteIndex() const override;
+            //////////////////////////////////////////////////////////////////////////
+
         private:
             ImageView() = default;
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::ImageView
-            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::Resource& resourceBase) override;
+            // RHI::DeviceImageView
+            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::DeviceResource& resourceBase) override;
             RHI::ResultCode InvalidateInternal() override;
             void ShutdownInternal() override;
             //////////////////////////////////////////////////////////////////////////
@@ -62,6 +68,9 @@ namespace AZ
             DescriptorHandle m_colorDescriptor;
             DescriptorHandle m_depthStencilDescriptor;
             DescriptorHandle m_depthStencilReadDescriptor;
+
+            DescriptorHandle m_staticReadDescriptor;
+            DescriptorHandle m_staticReadWriteDescriptor;
         };
     }
 }

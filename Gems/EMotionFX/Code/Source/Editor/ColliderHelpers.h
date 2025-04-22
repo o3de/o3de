@@ -24,12 +24,14 @@ namespace EMotionFX
     public:
         static QString GetMimeTypeForColliderShape()
         {
-            return QString("com.amazon.lumberyard/%1").arg(azrtti_typeid<AzPhysics::ShapeColliderPair>().ToString<QString>());
+            return QString("com.amazon.lumberyard/%1").arg(azrtti_typeid<AzPhysics::ShapeColliderPair>().ToFixedString().c_str());
         }
 
         static void AddCopyColliderCommandToGroup(const Actor* actor, const Node* joint, PhysicsSetup::ColliderConfigType copyFrom, PhysicsSetup::ColliderConfigType copyTo, MCore::CommandGroup& commandGroup);
         static void CopyColliders(const QModelIndexList& modelIndices, PhysicsSetup::ColliderConfigType copyFrom, PhysicsSetup::ColliderConfigType copyTo, bool removeExistingColliders = true);
         static void AddCollider(const QModelIndexList& modelIndices, PhysicsSetup::ColliderConfigType addTo, const AZ::TypeId& colliderType);
+        static void AddToRagdoll(const QModelIndexList& modelIndices);
+        static void RemoveFromRagdoll(const QModelIndexList &modelIndices);
         static void ClearColliders(const QModelIndexList& modelIndices, PhysicsSetup::ColliderConfigType removeFrom);
         static bool AreCollidersReflected();
         static bool CanCopyFrom(const QModelIndexList& modelIndices, PhysicsSetup::ColliderConfigType copyFrom);
@@ -40,5 +42,9 @@ namespace EMotionFX
 
         static void CopyColliderToClipboard(const QModelIndex& modelIndex, size_t shapeIndex, PhysicsSetup::ColliderConfigType type);
         static void PasteColliderFromClipboard(const QModelIndex& modelIndex, size_t shapeIndex, PhysicsSetup::ColliderConfigType type, bool replace);
+
+        static bool NodeHasRagdoll(const QModelIndex& modelIndex);
+        static bool NodeHasClothCollider(const QModelIndex& modelIndex);
+        static bool NodeHasHitDetection(const QModelIndex& modelIndex);
     };
 } // namespace EMotionFX

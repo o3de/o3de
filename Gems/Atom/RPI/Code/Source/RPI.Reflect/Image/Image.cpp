@@ -10,8 +10,6 @@
 
 #include <Atom/RPI.Reflect/Image/ImageAsset.h>
 
-#include <Atom/RHI/Factory.h>
-
 namespace AZ
 {
     namespace RPI
@@ -29,8 +27,7 @@ namespace AZ
              * pointer around at all times, and then only initialize the image view once.
              */
 
-            auto& factory = RHI::Factory::Get();
-            m_image = factory.CreateImage();
+            m_image = aznew RHI::Image;
             AZ_Assert(m_image, "Failed to acquire an image instance from the RHI. Is the RHI initialized?");
         }
 
@@ -66,7 +63,7 @@ namespace AZ
 
         RHI::ResultCode Image::UpdateImageContents(const RHI::ImageUpdateRequest& request)
         {
-            RHI::ImagePool* imagePool = azrtti_cast<RHI::ImagePool*> (m_image->GetPool());
+            RHI::ImagePool* imagePool = azrtti_cast<RHI::ImagePool*>(m_image->GetPool());
             return imagePool->UpdateImageContents(request);
         }     
     }

@@ -19,7 +19,7 @@ public: // types
     using GetNavigableEntitiesFn = AZStd::function<LyShine::EntityArray(AZ::EntityId)>;
 
 public: // member functions
-    AZ_CLASS_ALLOCATOR(UiNavigationSettings, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(UiNavigationSettings, AZ::SystemAllocator);
     AZ_RTTI(UiNavigationSettings, "{E28DDC8B-F7C6-406F-966C-2F0825471641}");
 
     UiNavigationSettings();

@@ -62,9 +62,9 @@ namespace WhiteBox
         AZStd::shared_ptr<ManipulatorViewPolygon>
             m_polygonView; //!< Manipulator view used to represent a mesh polygon for translation.
         AZ::Color m_fillColor =
-            cl_whiteBoxPolygonHoveredColor; //!< The color to use for the highlighted filled section of the polygon.
+            ed_whiteBoxPolygonHover; //!< The color to use for the highlighted filled section of the polygon.
         AZ::Color m_outlineColor =
-            cl_whiteBoxPolygonHoveredOutlineColor; //!< The color to use for the outline of the polygon.
+            ed_whiteBoxOutlineHover; //!< The color to use for the outline of the polygon.
     };
 
     inline Api::PolygonHandle PolygonTranslationModifier::GetHandle() const

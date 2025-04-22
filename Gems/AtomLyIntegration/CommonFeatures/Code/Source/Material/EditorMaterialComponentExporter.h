@@ -8,10 +8,15 @@
 
 #pragma once
 
-#include <AzCore/std/string/string.h>
-#include <AzCore/std/containers/vector.h>
-
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Asset/AssetManagerBus.h>
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzCore/std/string/string.h>
+
+AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
+#include <QProgressDialog>
+AZ_POP_DISABLE_WARNING
 
 namespace AZ
 {
@@ -27,10 +32,12 @@ namespace AZ
             public:
                 //! @param originalAssetId   AssetId of the original built-in material, which will be exported.
                 //! @param materialSlotName  The name of the material slot will be used as part of the exported file name.
-                ExportItem(AZ::Data::AssetId originalAssetId, const AZStd::string& materialSlotName)
+                ExportItem(AZ::Data::AssetId originalAssetId, const AZStd::string& materialSlotName, const AZStd::string& exportPath = {})
                     : m_originalAssetId(originalAssetId)
                     , m_materialSlotName(materialSlotName)
-                {}
+                    , m_exportPath(!exportPath.empty() ? exportPath : GetExportPathByAssetId(originalAssetId, materialSlotName))
+                {
+                }
 
                 void SetEnabled(bool enabled) { m_enabled = enabled; }
                 void SetExists(bool exists) { m_exists = exists; }
@@ -62,6 +69,23 @@ namespace AZ
 
             //! Attemts to construct and save material source data from a product asset
             bool ExportMaterialSourceData(const ExportItem& exportItem);
+
+            //! Create a progress dialog for displaying the status of generated material assets.
+            class ProgressDialog
+            {
+            public:
+                ProgressDialog(const AZStd::string& title, const AZStd::string& label, const int itemCount);
+                ~ProgressDialog() = default;
+
+                //! Blocking call that polls for asset info until valid or the user cancels the operation.
+                AZ::Data::AssetInfo ProcessItem(const ExportItem& exportItem);
+
+                //! Increment the progress bar in the dialog.
+                void CompleteItem();
+
+            private:
+                AZStd::unique_ptr<QProgressDialog> m_progressDialog;
+            };
         } // namespace EditorMaterialComponentExporter
     } // namespace Render
 } // namespace AZ

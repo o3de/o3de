@@ -1,0 +1,87 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include <Atom/Features/RayTracing/RayTracingIntersectionAttributes.azsli>
+#include <Atom/Features/RayTracing/RayTracingSrgs.azsli>
+#include <Atom/Features/RayTracing/RayTracingSceneUtils.azsli>
+#include <Atom/RPI/Math.azsli>
+
+// https://gamedev.stackexchange.com/a/96487
+bool IntersectRaySphere(float3 p, float3 d, float3 center, float radius, out float t)
+{
+    t = 0.f;
+
+    float3 m = p - center;
+    float b = dot(m, d);
+    float c = dot(m, m) - radius * radius;
+
+    // Exit if r’s origin outside s (c > 0) and r pointing away from s (b > 0)
+    if (c > 0.f && b > 0.f)
+        return false;
+    float discr = b * b - c;
+
+    // A negative discriminant corresponds to ray missing sphere
+    if (discr < 0.f)
+        return false;
+
+    // Ray now found to intersect sphere, compute smallest t value of intersection
+    t = -b - sqrt(discr);
+
+    // If t is negative, ray started inside sphere so clamp t to zero
+    if (t < 0.f)
+        t = 0.f;
+
+    return true;
+}
+
+float3 ExtractScale(float3x4 m)
+{
+    const float sx = length(float3(m[0][0], m[1][0], m[2][0]));
+    const float sy = length(float3(m[0][1], m[1][1], m[2][1]));
+    const float sz = length(float3(m[0][2], m[1][2], m[2][2]));
+    return float3(sx, sy, sz);
+}
+
+float2 NormalToAzimuthElevation(float3 normal)
+{
+    float azimuth = atan2(normal.y, normal.x); // Azimuth in range [-PI, PI]
+    float elevation = asin(normal.z); // Elevation in range [-PI/2, PI/2]
+    return float2(azimuth / TWO_PI + 0.5f, elevation / PI + 0.5f);
+}
+
+[shader("intersection")]
+void SphereIntersection()
+{
+    const float3 nonUniformScale = ExtractScale(ObjectToWorld3x4());
+    const float objectUniformScale = max(max(nonUniformScale.x, nonUniformScale.y), nonUniformScale.z);
+
+    const float3 sphereCenter = float3(0, 0, 0);
+    const float sphereRadius = 1.f;
+
+    const float3 sphereCenterWS = mul(ObjectToWorld3x4(), float4(sphereCenter, 1.f));
+
+    // These two methods of calculating the world-space radius are equivalent:
+    //    const float sphereRadiusWS = sphereRadius * objectUniformScale;
+    //    const float sphereRadiusWS = asfloat(Bindless::GetByteAddressBuffer(GetBindlessBufferIndex()).Load(GetLocalInstanceIndex() * 4));
+    // The second method is used to make sure that accessing the bindless buffer and local index work correctly
+    const float sphereRadiusWS = asfloat(Bindless::GetByteAddressBuffer(GetBindlessBufferIndex()).Load(GetLocalInstanceIndex() * 4));
+
+    float t;
+    if (IntersectRaySphere(WorldRayOrigin(), WorldRayDirection(), sphereCenterWS, sphereRadiusWS, t))
+    {
+        float3 position = ObjectRayOrigin() + ObjectRayDirection() * t;
+        float3 normal = normalize(position - sphereCenter);
+
+        ProceduralGeometryIntersectionAttributes attrib;
+        attrib.SetPosition(position);
+        attrib.SetNormal(normal);
+        attrib.SetUv(NormalToAzimuthElevation(normal));
+        attrib.SetTangent(float4(1, 0, 0, 1));
+        ReportHit(t, 0, attrib);
+    }
+}

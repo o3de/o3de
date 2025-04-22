@@ -26,11 +26,15 @@ namespace AZ
         void Deactivate();
 
         AZStd::shared_ptr<SceneAPI::Containers::Scene> LoadScene(
-            const AZStd::string& sceneFilePath, Uuid sceneSourceGuid) override;
+            const AZStd::string& sceneFilePath,
+            Uuid sceneSourceGuid,
+            const AZStd::string& watchFolder) override;
+        bool IsSceneCached(const AZStd::string& sceneFilePath) override;
 
     private:
         bool IsValidExtension(const AZStd::string& filePath) const;
         void CleanSceneMap();
+        AZ::IO::Path BuildCleanPathFromFilePath(const AZStd::string& filePath) const;
 
         AZStd::unordered_map<AZStd::string, AZStd::weak_ptr<SceneAPI::Containers::Scene>> m_scenes;
     };

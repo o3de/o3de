@@ -10,7 +10,6 @@
 #include <Vegetation/Ebuses/AreaNotificationBus.h>
 #include <Vegetation/Ebuses/AreaRequestBus.h>
 #include <Vegetation/Ebuses/AreaSystemRequestBus.h>
-#include <Vegetation/Ebuses/DependencyRequestBus.h>
 #include <Vegetation/Ebuses/DescriptorProviderRequestBus.h>
 #include <Vegetation/Ebuses/DescriptorSelectorRequestBus.h>
 #include <Vegetation/Ebuses/FilterRequestBus.h>
@@ -204,28 +203,28 @@ namespace UnitTest
         {
         }
 
-        void GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds) override
+        void GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds) const override
         {
             transform = AZ::Transform::CreateTranslation(m_aabb.GetCenter());
             bounds = m_aabb;
         }
 
-        AZ::Crc32 GetShapeType() override
+        AZ::Crc32 GetShapeType() const override
         {
             return AZ::Crc32();
         }
 
-        AZ::Aabb GetEncompassingAabb() override
+        AZ::Aabb GetEncompassingAabb() const override
         {
             return m_aabb;
         }
 
-        bool IsPointInside(const AZ::Vector3& point) override
+        bool IsPointInside(const AZ::Vector3& point) const override
         {
             return m_aabb.Contains(point);
         }
 
-        float DistanceSquaredFromPoint(const AZ::Vector3& point) override
+        float DistanceSquaredFromPoint(const AZ::Vector3& point) const override
         {
             return m_aabb.GetDistanceSq(point);
         }
@@ -320,29 +319,35 @@ namespace UnitTest
 
         MockSurfaceHandler()
         {
-            SurfaceData::SurfaceDataSystemRequestBus::Handler::BusConnect();
+            AZ::Interface<SurfaceData::SurfaceDataSystem>::Register(this);
         }
 
         ~MockSurfaceHandler()
         {
-            SurfaceData::SurfaceDataSystemRequestBus::Handler::BusDisconnect();
+            AZ::Interface<SurfaceData::SurfaceDataSystem>::Unregister(this);
         }
 
         AZ::Vector3 m_outPosition = {};
         AZ::Vector3 m_outNormal = {};
-        SurfaceData::SurfaceTagWeightMap m_outMasks;
+        SurfaceData::SurfaceTagWeights m_outMasks;
         void GetSurfacePoints([[maybe_unused]] const AZ::Vector3& inPosition, [[maybe_unused]] const SurfaceData::SurfaceTagVector& masks, SurfaceData::SurfacePointList& surfacePointList) const override
         {
             ++m_count;
-            SurfaceData::SurfacePoint outPoint;
-            outPoint.m_position = m_outPosition;
-            outPoint.m_normal = m_outNormal;
-            SurfaceData::AddMaxValueForMasks(outPoint.m_masks, m_outMasks);
-            surfacePointList.push_back(outPoint);
+            surfacePointList.Clear();
+            surfacePointList.StartListConstruction(AZStd::span<const AZ::Vector3>(&inPosition, 1), 1, {});
+            surfacePointList.AddSurfacePoint(AZ::EntityId(), inPosition, m_outPosition, m_outNormal, m_outMasks);
+            surfacePointList.EndListConstruction();
         }
 
         void GetSurfacePointsFromRegion([[maybe_unused]] const AZ::Aabb& inRegion, [[maybe_unused]] const AZ::Vector2 stepSize, [[maybe_unused]] const SurfaceData::SurfaceTagVector& desiredTags,
-            [[maybe_unused]] SurfaceData::SurfacePointListPerPosition& surfacePointListPerPosition) const override
+            [[maybe_unused]] SurfaceData::SurfacePointList& surfacePointListPerPosition) const override
+        {
+        }
+
+        void GetSurfacePointsFromList(
+            [[maybe_unused]] AZStd::span<const AZ::Vector3> inPositions,
+            [[maybe_unused]] const SurfaceData::SurfaceTagVector& desiredTags,
+            [[maybe_unused]] SurfaceData::SurfacePointList& surfacePointLists) const override
         {
         }
 
@@ -378,9 +383,20 @@ namespace UnitTest
             ++m_count;
         }
 
-        void RefreshSurfaceData([[maybe_unused]] const AZ::Aabb& dirtyBounds) override
+        void RefreshSurfaceData(
+            [[maybe_unused]] const SurfaceData::SurfaceDataRegistryHandle& handle, [[maybe_unused]] const AZ::Aabb& dirtyBounds) override
         {
             ++m_count;
+        }
+
+        SurfaceData::SurfaceDataRegistryHandle GetSurfaceDataProviderHandle([[maybe_unused]] const AZ::EntityId& providerEntityId) override
+        {
+            return {};
+        }
+
+        SurfaceData::SurfaceDataRegistryHandle GetSurfaceDataModifierHandle([[maybe_unused]] const AZ::EntityId& modifierEntityId) override
+        {
+            return {};
         }
     };
 
@@ -388,7 +404,7 @@ namespace UnitTest
         : public AZ::RPI::ModelAsset
     {
         AZ_RTTI(MockMeshAsset, "{C314B960-9B54-468D-B37C-065738E7487C}", AZ::RPI::ModelAsset);
-        AZ_CLASS_ALLOCATOR(ModelAsset, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ModelAsset, AZ::SystemAllocator);
 
         MockMeshAsset()
         {
@@ -413,13 +429,13 @@ namespace UnitTest
         : public AZ::Render::MeshComponentRequestBus::Handler
     {
         AZ::Aabb m_GetWorldBoundsOutput;
-        AZ::Aabb GetWorldBounds() override
+        AZ::Aabb GetWorldBounds() const override
         {
             return m_GetWorldBoundsOutput;
         }
 
         AZ::Aabb m_GetLocalBoundsOutput;
-        AZ::Aabb GetLocalBounds() override
+        AZ::Aabb GetLocalBounds() const override
         {
             return m_GetLocalBoundsOutput;
         }
@@ -442,6 +458,24 @@ namespace UnitTest
         void SetVisibility(bool visibility) override
         {
             m_GetVisibilityOutput = visibility;
+        }
+
+        void SetRayTracingEnabled([[maybe_unused]] bool enabled) override
+        {
+        }
+
+        bool GetRayTracingEnabled() const override
+        {
+            return false;
+        }
+
+        void SetExcludeFromReflectionCubeMaps([[maybe_unused]] bool excludeFromReflectionCubeMaps) override
+        {
+        }
+
+        bool GetExcludeFromReflectionCubeMaps() const override
+        {
+            return false;
         }
 
         AZ::Data::AssetId m_assetIdOutput;
@@ -477,6 +511,16 @@ namespace UnitTest
         AZ::RHI::DrawItemSortKey GetSortKey() const override
         {
             return m_drawItemSortKeyOutput;
+        }
+
+        bool m_isAlwaysDynamic = false;
+        void SetIsAlwaysDynamic(bool isAlwaysDynamic) override
+        {
+            m_isAlwaysDynamic = isAlwaysDynamic;
+        }
+        bool GetIsAlwaysDynamic() const override
+        {
+            return m_isAlwaysDynamic;
         }
 
         AZ::RPI::Cullable::LodType m_lodTypeOutput;
@@ -567,8 +611,8 @@ namespace UnitTest
         static void Reflect(AZ::ReflectContext* reflect) { AZ_UNUSED(reflect); }
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("ShapeService", 0xe86aa5fe));
-            provided.push_back(AZ_CRC("VegetationDescriptorProviderService", 0x62e51209));
+            provided.push_back(AZ_CRC_CE("ShapeService"));
+            provided.push_back(AZ_CRC_CE("VegetationDescriptorProviderService"));
         }
     };
 
@@ -584,7 +628,7 @@ namespace UnitTest
         static void Reflect(AZ::ReflectContext* reflect) { AZ_UNUSED(reflect); }
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("VegetationAreaService", 0x6a859504));
+            provided.push_back(AZ_CRC_CE("VegetationAreaService"));
         }
     };
 
@@ -600,7 +644,7 @@ namespace UnitTest
         static void Reflect(AZ::ReflectContext* reflect) { AZ_UNUSED(reflect); }
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("MeshService", 0x71d8a455));
+            provided.push_back(AZ_CRC_CE("MeshService"));
         }
     };
 }

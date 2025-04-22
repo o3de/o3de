@@ -25,8 +25,6 @@ set(FILES
     Source/AttachmentNode.h
     Source/AttachmentSkin.cpp
     Source/AttachmentSkin.h
-    Source/BaseObject.cpp
-    Source/BaseObject.h
     Source/CompressedKeyFrames.h
     Source/Constraint.h
     Source/ConstraintTransform.h
@@ -36,12 +34,9 @@ set(FILES
     Source/DebugDraw.cpp
     Source/DualQuatSkinDeformer.cpp
     Source/DualQuatSkinDeformer.h
-    Source/EMotionFX.h
     Source/EMotionFXConfig.h
     Source/EMotionFXManager.cpp
     Source/EMotionFXManager.h
-    Source/EMotionFXAllocatorInitializer.cpp
-    Source/EMotionFXAllocatorInitializer.h
     Source/JointSelectionBus.h
     Source/KeyFrame.h
     Source/KeyFrame.inl
@@ -50,8 +45,6 @@ set(FILES
     Source/KeyTrackLinearDynamic.h
     Source/KeyTrackLinearDynamic.inl
     Source/LayerPass.h
-    Source/Material.cpp
-    Source/Material.h
     Source/MemoryCategories.h
     Source/Mesh.cpp
     Source/Mesh.h
@@ -120,6 +113,8 @@ set(FILES
     Source/SimulatedObjectBus.h
     Source/SimulatedObjectSetup.cpp
     Source/SimulatedObjectSetup.h
+    Source/SimulatedObjectSetup_Impl.inl
+    Source/SimulatedObjectSetup_Interface.inl
     Source/SingleThreadScheduler.cpp
     Source/SingleThreadScheduler.h
     Source/Skeleton.cpp
@@ -132,8 +127,6 @@ set(FILES
     Source/SoftSkinManager.h
     Source/SpringSolver.cpp
     Source/SpringSolver.h
-    Source/StandardMaterial.cpp
-    Source/StandardMaterial.h
     Source/SubMesh.cpp
     Source/SubMesh.h
     Source/ThreadData.cpp
@@ -144,6 +137,8 @@ set(FILES
     Source/TransformData.h
     Source/TriggerActionSetup.cpp
     Source/TriggerActionSetup.h
+    Source/Velocity.cpp
+    Source/Velocity.h
     Source/VertexAttributeLayer.cpp
     Source/VertexAttributeLayer.h
     Source/VertexAttributeLayerAbstractData.cpp
@@ -161,8 +156,6 @@ set(FILES
     Source/AnimGraphEventBuffer.h
     Source/AnimGraphExitNode.cpp
     Source/AnimGraphExitNode.h
-    Source/AnimGraphGameControllerSettings.cpp
-    Source/AnimGraphGameControllerSettings.h
     Source/AnimGraphHubNode.cpp
     Source/AnimGraphHubNode.h
     Source/AnimGraphInstance.cpp
@@ -327,6 +320,8 @@ set(FILES
     Source/AnimGraphTriggerAction.h
     Source/AnimGraphParameterAction.cpp
     Source/AnimGraphParameterAction.h
+    Source/AnimGraphSimpleStateAction.cpp
+    Source/AnimGraphSimpleStateAction.h
     Source/AnimGraphVector2Condition.cpp
     Source/AnimGraphVector2Condition.h
     Source/AnimGraphFollowerParameterAction.cpp
@@ -339,6 +334,8 @@ set(FILES
     Source/EventData.h
     Source/EventDataFootIK.cpp
     Source/EventDataFootIK.h
+    Source/EventDataFloatArray.h
+    Source/EventDataFloatArray.cpp
     Source/EventDataSyncable.cpp
     Source/EventDataSyncable.h
     Source/EventHandler.cpp
@@ -355,6 +352,8 @@ set(FILES
     Source/MotionData/NonUniformMotionData.h
     Source/MotionData/UniformMotionData.cpp
     Source/MotionData/UniformMotionData.h
+    Source/MotionData/RootMotionExtractionData.h
+    Source/MotionData/RootMotionExtractionData.cpp
     Source/MotionEvent.cpp
     Source/MotionEvent.h
     Source/MotionEventTable.cpp

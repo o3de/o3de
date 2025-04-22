@@ -13,6 +13,8 @@
 
 namespace Multiplayer
 {
+    AZ_CVAR(bool, net_useInputDeltaSerialization, false, nullptr, AZ::ConsoleFunctorFlags::Null, "If true, inputs will use delta-serialization to reduce RPC bandwidth");
+
     NetworkInputArray::NetworkInputArray()
         : m_owner()
         , m_inputs()
@@ -46,47 +48,55 @@ namespace Multiplayer
 
     bool NetworkInputArray::Serialize(AzNetworking::ISerializer& serializer)
     {
-        // Always serialize the full first element
-        if (!m_inputs[0].m_networkInput.Serialize(serializer))
+        if (net_useInputDeltaSerialization)
         {
-            return false;
-        }
+            // Use delta-serialization to compress input RPC bandwidth usage
+            // Always serialize the full first element
+            if (!m_inputs[0].m_networkInput.Serialize(serializer))
+            {
+                return false;
+            }
 
-        // For each subsequent element
-        for (uint32_t i = 1; i < m_inputs.size(); ++i)
+            // For each subsequent element
+            for (uint32_t i = 1; i < m_inputs.size(); ++i)
+            {
+                if (serializer.GetSerializerMode() == AzNetworking::SerializerMode::WriteToObject)
+                {
+                    AzNetworking::SerializerDelta deltaSerializer;
+                    // Read out the delta
+                    if (!deltaSerializer.Serialize(serializer))
+                    {
+                        return false;
+                    }
+                    // Start with previous value
+                    m_inputs[i].m_networkInput = m_inputs[i - 1].m_networkInput;
+                    // Then apply delta
+                    AzNetworking::DeltaSerializerApply applySerializer(deltaSerializer);
+                    if (!applySerializer.ApplyDelta(m_inputs[i].m_networkInput))
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    AzNetworking::SerializerDelta deltaSerializer;
+                    // Create the delta
+                    AzNetworking::DeltaSerializerCreate createSerializer(deltaSerializer);
+                    if (!createSerializer.CreateDelta(m_inputs[i - 1].m_networkInput, m_inputs[i].m_networkInput))
+                    {
+                        return false;
+                    }
+                    // Then write out the delta
+                    if (!deltaSerializer.Serialize(serializer))
+                    {
+                        return false;
+                    }
+                }
+            }
+        }
+        else
         {
-            if (serializer.GetSerializerMode() == AzNetworking::SerializerMode::WriteToObject)
-            {
-                AzNetworking::SerializerDelta deltaSerializer;
-                // Read out the delta
-                if (!deltaSerializer.Serialize(serializer))
-                {
-                    return false;
-                }
-                // Start with previous value
-                m_inputs[i].m_networkInput = m_inputs[i - 1].m_networkInput;
-                // Then apply delta
-                AzNetworking::DeltaSerializerApply applySerializer(deltaSerializer);
-                if (!applySerializer.ApplyDelta(m_inputs[i].m_networkInput))
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                AzNetworking::SerializerDelta deltaSerializer;
-                // Create the delta
-                AzNetworking::DeltaSerializerCreate createSerializer(deltaSerializer);
-                if (!createSerializer.CreateDelta(m_inputs[i - 1].m_networkInput, m_inputs[i].m_networkInput))
-                {
-                    return false;
-                }
-                // Then write out the delta
-                if (!deltaSerializer.Serialize(serializer))
-                {
-                    return false;
-                }
-            }
+            return serializer.Serialize(m_inputs, "InputArray");
         }
         return true;
     }

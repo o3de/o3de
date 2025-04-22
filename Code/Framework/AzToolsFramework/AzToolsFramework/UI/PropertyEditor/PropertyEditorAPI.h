@@ -13,28 +13,23 @@
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/EBus/EBus.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Component/ComponentBus.h>
 #include "PropertyEditorAPI_Internals.h"
+#include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyHandlerWidget.h>
+#include <AzToolsFramework/UI/PropertyEditor/InstanceDataHierarchy.h>
 
 class QWidget;
 class QCheckBox;
 class QLabel;
 
+namespace AZ
+{
+    class SerializeContext;
+}
+
 namespace AzToolsFramework
 {
     class InstanceDataNode;
-
-    // when a property is modified, we attempt to retrieve the value that comes out in response to the Property Modification function that you may supply
-    // if you return anything other than Refresh_None, the tree may be queued for update:
-    enum PropertyModificationRefreshLevel : int
-    {
-        Refresh_None,
-        Refresh_Values,
-        Refresh_AttributesAndValues,
-        Refresh_EntireTree,
-        Refresh_EntireTree_NewContent,
-    };
 
     // only ONE property handler is ever created for each kind of property.
     // so do not store state for a particular GUI, inside your property handler.  Your one handler may be responsible for translating
@@ -62,6 +57,23 @@ namespace AzToolsFramework
         // you may not cache the pointer to anything.
         bool ReadValuesIntoGUI(size_t index, WidgetType* GUI, const PropertyType& instance, InstanceDataNode* node) override = 0;
 
+        // Sometimes the widget is reused but its attributes and values are refreshed, for example
+        // when the property tree is refreshed with only the "attributes and values" being asked for rebuild instead
+        // of the entire tree, which is cheaper than destroying and resetting the widget.
+        // You should only need to override this function in the situation where your widget
+        // has stored state from attributes that can affect how other attributes or values are set.
+        // An example of this would be a slider having a min and max attribute, and then being reused
+        // for a different min and max range.  Because it gets ConsumeAttribute called one by one
+        // it might receive a new min value that is outside the range for the max value it has cached state for
+        // and might clamp it, causing a different behavior compared to a fresh new instance.  
+        // Do as little as possible in your overrides of this function as it is called frequently.  
+        // The only requirement is that you reset any internal state that would cause it to behave differently
+        // compared to a fresh instance.
+        // You can assume that every time this function is called, all attributes are re-sent to your handler via
+        // ConsumeAttribute, one at a time, followed by a call to ReadValuesIntoGUI
+        // see documentation in PropertyEditorAPI.h in the base class.
+        void BeforeConsumeAttributes(WidgetType* /*widget*/, InstanceDataNode* /*attrValue*/) override {}
+
         // this will be called in order to initialize or refresh your gui.  Your class will be fed one attribute at a time
         // you may override this to interpret the attributes as you wish - use attrValue->Read<int>() for example, to interpret it as an int.
         // all attributes can either be a flat value, or a function which returns that same type.  In the case of the function
@@ -75,7 +87,7 @@ namespace AzToolsFramework
         //     if (attrValue->Read<int>(maxValue)) GUI->SetMax(maxValue);
         // }
         // you may not cache the pointer to anything.
-        //virtual void ConsumeAttribute(WidgetType* widget, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName) override;
+        virtual void ConsumeAttribute(WidgetType* /*widget*/, AZ::u32 /*attrib*/, PropertyAttributeReader* /*attrValue*/, const char* /*debugName*/) override {}
 
         // override GetFirstInTabOrder, GetLastInTabOrder in your base class to define which widget gets focus first when pressing tab,
         // and also what widget is last.
@@ -105,11 +117,50 @@ namespace AzToolsFramework
         //virtual QWidget* DestroyGUI(QWidget* object) override;
     };
 
-    // A GenericPropertyHandler may be used to register a widget for a property handler ID that is always used, regardless of the underlying type
-    // This is useful for UI elements that don't have any specific underlying storage, like buttons
-    template <class WidgetType>
-    class GenericPropertyHandler
-        : public PropertyHandler_Internal<WidgetType>
+    // You can also talk to the property editor GUI itself, using your widget as the key to control which one you're talking to.
+    // the reason you need to feed your widget in as the key is that there is likely many property editor guis
+    // and multiple copies of your widget, in any of them.
+    class PropertyEditorGUIMessages : public AZ::EBusTraits
+    {
+    public:
+        //////////////////////////////////////////////////////////////////////////
+        // Bus configuration
+        static const AZ::EBusAddressPolicy AddressPolicy =
+            AZ::EBusAddressPolicy::Single; // there's only one address to this bus, its always broadcast
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple; // each Property Editor GUI connects to it.
+        //////////////////////////////////////////////////////////////////////////
+
+        using Bus = AZ::EBus<PropertyEditorGUIMessages>;
+
+        virtual ~PropertyEditorGUIMessages()
+        {
+        }
+
+        // the GUI can call this to request that WriteGUIValuesIntoProperty is iterated on its handler.
+        // Alternatively, the handler (if its a QT object), can call this too, connecting the value changed
+        // messages in the GUI.
+        // calling this will result in WriteGUIValuesIntoProperty() being called on your handler
+        // and undo stack capture to occur.
+        virtual void RequestWrite([[maybe_unused]] QWidget* editorGUI) {}
+        virtual void RequestRefresh(PropertyModificationRefreshLevel) {}
+
+        virtual void AddElementsToParentContainer(
+            [[maybe_unused]] QWidget* editorGUI, [[maybe_unused]] size_t numElements, [[maybe_unused]] const InstanceDataNode::FillDataClassCallback& fillDataCallback) {}
+
+        // Invokes a Property Notification without writing modifying the property
+        virtual void RequestPropertyNotify([[maybe_unused]] QWidget* editorGUI) {}
+
+        // Invoked by widgets to notify the property editor that the editing session has finished
+        // This can be used to end an undo batch operation
+        virtual void OnEditingFinished([[maybe_unused]] QWidget* editorGUI) {}
+    };
+
+    using PropertyEditorGUIMessagesBus = AZ::EBus<PropertyEditorGUIMessages>;
+
+    // A GenericPropertyHandler may be used to register a widget for a property handler ID that is always used, regardless of the underlying
+    // type This is useful for UI elements that don't have any specific underlying storage, like buttons
+    template<class WidgetType>
+    class GenericPropertyHandler : public PropertyHandler_Internal<WidgetType>
     {
     public:
         virtual void WriteGUIValuesIntoProperty(size_t index, WidgetType* GUI, void* value, const AZ::Uuid& propertyType)
@@ -129,9 +180,57 @@ namespace AzToolsFramework
             return false;
         }
 
+        void BeforeConsumeAttributes(WidgetType* widget, InstanceDataNode* attrValue) override
+        {
+            (void)widget;
+            (void)attrValue;
+        }
+
         QWidget* GetFirstInTabOrder(WidgetType* widget) override { return widget; }
         QWidget* GetLastInTabOrder(WidgetType* widget) override { return widget; }
         void UpdateWidgetInternalTabbing(WidgetType* /*widget*/) override {}
+
+        void RegisterDpeHandler() override
+        {
+            AZ_Assert(m_registeredDpeHandlerId == nullptr, "RegisterDpeHandler called multiple times for the same handler");
+
+            auto dpeSystemInterface = AZ::Interface<PropertyEditorToolsSystemInterface>::Get();
+            if (dpeSystemInterface == nullptr)
+            {
+                AZ_WarningOnce("dpe", false, "RegisterDpeHandler failed, PropertyEditorToolsSystemInterface was not found");
+                return;
+            }
+
+            using HandlerType = RpePropertyHandlerWrapper<void*>;
+            PropertyEditorToolsSystemInterface::HandlerData registrationInfo;
+            registrationInfo.m_name = HandlerType::GetHandlerName(*this);
+            registrationInfo.m_shouldHandleType = [this](const AZ::TypeId& typeId)
+            {
+                return HandlerType::ShouldHandleType(*this, typeId);
+            };
+            registrationInfo.m_factory = [this]()
+            {
+                return AZStd::make_unique<HandlerType>(*this);
+            };
+            registrationInfo.m_isDefaultHandler = this->IsDefaultHandler();
+            m_registeredDpeHandlerId = dpeSystemInterface->RegisterHandler(AZStd::move(registrationInfo));
+        }
+
+        // unregisters this handler from the DocumentPropertyEditor
+        void UnregisterDpeHandler() override
+        {
+            AZ_Assert(m_registeredDpeHandlerId != nullptr, "UnregisterDpeHandler called for a handler that's not registered");
+
+            auto dpeSystemInterface = AZ::Interface<PropertyEditorToolsSystemInterface>::Get();
+            if (dpeSystemInterface == nullptr)
+            {
+                AZ_WarningOnce("dpe", false, "UnregisterDpeHandler failed, PropertyEditorToolsSystemInterface was not found");
+                return;
+            }
+
+            dpeSystemInterface->UnregisterHandler(m_registeredDpeHandlerId);
+            m_registeredDpeHandlerId = nullptr;
+        }
 
         QWidget* CreateGUI(QWidget *pParent) override = 0;
     protected:
@@ -141,9 +240,9 @@ namespace AzToolsFramework
             return true;
         }
 
-        const AZ::Uuid& GetHandledType() const override
+        AZ::TypeId GetHandledType() const override
         {
-            return nullUuid;
+            return {};
         }
 
         void WriteGUIValuesIntoProperty_Internal(QWidget* widget, InstanceDataNode* node) override
@@ -154,9 +253,8 @@ namespace AzToolsFramework
             }
         }
 
-        void WriteGUIValuesIntoTempProperty_Internal(QWidget* widget, void* tempValue, const AZ::Uuid& propertyType, AZ::SerializeContext* serializeContext) override
+        void WriteGUIValuesIntoTempProperty_Internal(QWidget* widget, void* tempValue, const AZ::Uuid& propertyType, AZ::SerializeContext*) override
         {
-            (void)serializeContext;
             WriteGUIValuesIntoProperty(0, reinterpret_cast<WidgetType*>(widget), tempValue, propertyType);
         }
 
@@ -173,8 +271,7 @@ namespace AzToolsFramework
             }
         }
 
-        // Needed since GetHandledType returns a reference
-        AZ::Uuid nullUuid = AZ::Uuid::CreateNull();
+        PropertyEditorToolsSystemInterface::PropertyHandlerId m_registeredDpeHandlerId = PropertyEditorToolsSystemInterface::InvalidHandlerId;
     };
 
     // your components talk to the property manager in this way:
@@ -198,7 +295,7 @@ namespace AzToolsFramework
         // like this, which will cause the property manager to be ready first:
         // virtual void GetRequiredServices(DependencyArrayType& required) const
         //{
-        //      required.push_back(AZ_CRC("PropertyManagerService"));
+        //      required.push_back(AZ_CRC_CE("PropertyManagerService"));
         //}
 
         virtual void RegisterPropertyType(PropertyHandlerBase* pHandler) = 0;
@@ -208,41 +305,7 @@ namespace AzToolsFramework
         virtual PropertyHandlerBase* ResolvePropertyHandler(AZ::u32 handlerName, const AZ::Uuid& handlerType) = 0;
     };
 
-    // You can also talk to the property editor GUI itself, using your widget as the key to control which one you're talking to.
-    // the reason you need to feed your widget in as the key is that there is likely many property editor guis
-    // and multiple copies of your widget, in any of them.
-    class PropertyEditorGUIMessages
-        : public AZ::EBusTraits
-    {
-    public:
-        //////////////////////////////////////////////////////////////////////////
-        // Bus configuration
-        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single; // there's only one address to this bus, its always broadcast
-        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple; // each Property Editor GUI connects to it.
-        //////////////////////////////////////////////////////////////////////////
-
-        using Bus = AZ::EBus<PropertyEditorGUIMessages>;
-
-        virtual ~PropertyEditorGUIMessages() {}
-
-        // the GUI can call this to request that WriteGUIValuesIntoProperty is iterated on its handler.
-        // Alternatively, the handler (if its a QT object), can call this too, connecting the value changed
-        // messages in the GUI.
-        // calling this will result in WriteGUIValuesIntoProperty() being called on your handler
-        // and undo stack capture to occur.
-        virtual void RequestWrite(QWidget* editorGUI) = 0;
-        virtual void RequestRefresh(PropertyModificationRefreshLevel) = 0;
-
-        virtual void AddElementsToParentContainer(QWidget* editorGUI, size_t numElements, const InstanceDataNode::FillDataClassCallback& fillDataCallback) = 0;
-
-        // Invokes a Property Notification without writing modifying the property
-        virtual void RequestPropertyNotify(QWidget* editorGUI) = 0;
-
-        // Invoked by widgets to notify the property editor that the editing session has finished
-        // This can be used to end an undo batch operation
-        virtual void OnEditingFinished(QWidget* editorGUI) = 0;
-
-    };
+    using PropertyTypeRegistrationMessageBus = AZ::EBus<PropertyTypeRegistrationMessages>;
 
     /**
      * Events/bus for listening externally for property changes on a specific entity.

@@ -46,7 +46,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         uint32_t GetSubId() const;
 
         bool HasAsset() const;
-        const AZ::Data::AssetType& GetAssetType() const;
+        AZ::Data::AssetType GetAssetType() const;
         const AZ::Data::AssetData& GetAsset() const;
         AZ::Data::AssetData& GetAsset();
         AssetSmartPtr ReleaseAsset();
@@ -75,6 +75,6 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         auto instance = AssetSmartPtr(aznew T(assetId, AZ::Data::AssetData::AssetStatus::Ready));
         ProcessedObjectStore resultLeft(AZStd::move(uniqueId), AZStd::move(instance), AZStd::move(assetSerializer));
         T* resultRight = static_cast<T*>(&resultLeft.GetAsset());
-        return AZStd::make_pair<ProcessedObjectStore, T*>(AZStd::move(resultLeft), resultRight);
+        return AZStd::make_pair(AZStd::move(resultLeft), resultRight);
     }
 } // namespace AzToolsFramework::Prefab::PrefabConversionUtils

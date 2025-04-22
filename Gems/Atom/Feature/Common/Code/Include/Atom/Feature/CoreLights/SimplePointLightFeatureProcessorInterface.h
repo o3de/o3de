@@ -8,8 +8,9 @@
 
 #pragma once
 
-#include <Atom/RPI.Public/FeatureProcessor.h>
 #include <Atom/Feature/CoreLights/PhotometricValue.h>
+#include <Atom/RPI.Public/Buffer/Buffer.h>
+#include <Atom/RPI.Public/FeatureProcessor.h>
 
 namespace AZ
 {
@@ -40,6 +41,16 @@ namespace AZ
             virtual void SetPosition(LightHandle handle, const AZ::Vector3& lightPosition) = 0;
             //! Sets the radius in meters at which the provided LightHandle will no longer have an effect.
             virtual void SetAttenuationRadius(LightHandle handle, float attenuationRadius) = 0;
+            //! Specifies if this light affects the diffuse global illumination in the scene.
+            virtual void SetAffectsGI(LightHandle handle, bool affectsGI) = 0;
+            //! Specifies the contribution of this light to the diffuse global illumination in the scene.
+            virtual void SetAffectsGIFactor(LightHandle handle, float affectsGIFactor) = 0;
+            //! Sets the lighting channel mask
+            virtual void SetLightingChannelMask(LightHandle handle, uint32_t lightingChannelMask) = 0;
+            //! Returns the buffer containing the light data for all simple point lights
+            virtual const Data::Instance<RPI::Buffer> GetLightBuffer() const = 0;
+            //! Returns the number of simple point lights
+            virtual uint32_t GetLightCount() const = 0;
         };
     } // namespace Render
 } // namespace AZ

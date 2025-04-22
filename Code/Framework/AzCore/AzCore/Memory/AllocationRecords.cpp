@@ -46,23 +46,6 @@ namespace AZ::Debug
     }
 
     //=========================================================================
-    // ~AllocationRecords
-    // [9/16/2009]
-    //=========================================================================
-    AllocationRecords::~AllocationRecords()
-    {
-        if (!AllocatorManager::Instance().m_isAllocatorLeaking)
-        {
-            // dump all allocation (we should not have any at this point).
-            bool includeNameAndFilename = (m_saveNames || m_mode == RECORD_FULL);
-            EnumerateAllocations(PrintAllocationsCB(true, includeNameAndFilename));
-            AZ_Error(
-                "Memory", m_records.empty(), "We still have %d allocations on record! They must be freed prior to destroy!",
-                m_records.size());
-        }
-    }
-
-    //=========================================================================
     // lock
     // [9/16/2009]
     //=========================================================================
@@ -97,9 +80,6 @@ namespace AZ::Debug
         void* address,
         size_t byteSize,
         size_t alignment,
-        const char* name,
-        const char* fileName,
-        int lineNum,
         unsigned int stackSuppressCount)
     {
         (void)stackSuppressCount;
@@ -126,58 +106,37 @@ namespace AZ::Debug
         }
 
         Debug::AllocationRecordsType::pair_iter_bool iterBool;
+        size_t numRecords;
         {
             AZStd::scoped_lock lock(m_recordsMutex);
             iterBool = m_records.insert_key(address);
+            numRecords = m_records.size();
         }
 
         if (!iterBool.second)
         {
             // If that memory address was already registered, print the stack trace of the previous registration
-            PrintAllocationsCB(true, (m_saveNames || m_mode == RECORD_FULL))(address, iterBool.first->second, m_numStackLevels);
+            PrintAllocationsCB(true, (m_saveNames || m_mode == RECORD_FULL))(address, iterBool.first->second, m_numStackLevels, numRecords);
             AZ_Assert(iterBool.second, "Memory address 0x%p is already allocated and in the records!", address);
         }
 
         Debug::AllocationInfo& ai = iterBool.first->second;
         ai.m_byteSize = byteSize;
         ai.m_alignment = static_cast<unsigned int>(alignment);
-        if ((m_saveNames || m_mode == RECORD_FULL) && name && fileName)
-        {
-            // In RECORD_FULL mode or when specifically enabled in app descriptor with
-            // m_allocationRecordsSaveNames, we allocate our own memory to save off name and fileName.
-            // When testing for memory leaks, on process shutdown AllocationRecords::~AllocationRecords
-            // gets called to enumerate the remaining (leaked) allocations. Unfortunately, any names
-            // referenced in dynamic module memory whose modules are unloaded won't be valid
-            // references anymore and we won't get useful information from the enumeration print.
-            // This code block ensures we keep our name/fileName valid for when we need it.
-            const size_t nameLength = strlen(name);
-            const size_t fileNameLength = strlen(fileName);
-            const size_t totalLength = nameLength + fileNameLength + 2; // + 2 for terminating null characters
-            ai.m_namesBlock = m_records.get_allocator().allocate(totalLength, 1);
-            ai.m_namesBlockSize = totalLength;
-            char* savedName = reinterpret_cast<char*>(ai.m_namesBlock);
-            char* savedFileName = savedName + nameLength + 1;
-            memcpy(reinterpret_cast<void*>(savedName), reinterpret_cast<const void*>(name), nameLength + 1);
-            memcpy(reinterpret_cast<void*>(savedFileName), reinterpret_cast<const void*>(fileName), fileNameLength + 1);
-            ai.m_name = savedName;
-            ai.m_fileName = savedFileName;
-        }
-        else
-        {
-            ai.m_name = name;
-            ai.m_fileName = fileName;
-            ai.m_namesBlock = nullptr;
-            ai.m_namesBlockSize = 0;
-        }
-        ai.m_lineNum = lineNum;
+        ai.m_name = nullptr;
+        ai.m_fileName = nullptr;
+        ai.m_namesBlock = nullptr;
+        ai.m_namesBlockSize = 0;
+        ai.m_lineNum = 0;
         ai.m_timeStamp = AZStd::GetTimeNowMicroSecond();
 
         // if we don't have a fileName,lineNum record the stack or if the user requested it.
-        if ((fileName == nullptr && m_mode == RECORD_STACK_IF_NO_FILE_LINE) || m_mode == RECORD_FULL)
+        if (m_mode == RECORD_STACK_IF_NO_FILE_LINE || m_mode == RECORD_FULL)
         {
             ai.m_stackFrames = m_numStackLevels ? reinterpret_cast<AZ::Debug::StackFrame*>(m_records.get_allocator().allocate(
                                                       sizeof(AZ::Debug::StackFrame) * m_numStackLevels, 1))
                                                 : nullptr;
+            ai.m_stackFramesCount = m_numStackLevels;
             if (ai.m_stackFrames)
             {
                 Debug::StackRecorder::Record(ai.m_stackFrames, m_numStackLevels, stackSuppressCount + 1);
@@ -397,12 +356,113 @@ namespace AZ::Debug
         allocationInfo->m_byteSize = newSize;
     }
 
+    void AllocationRecords::RegisterReallocation(void* address, void* newAddress, size_t byteSize, size_t alignment, unsigned int stackSuppressCount)
+    {
+        if (m_mode == RECORD_NO_RECORDS)
+        {
+            return;
+        }
+        if (!address && !newAddress)
+        {
+            return;
+        }
+        if (!address)
+        {
+            RegisterAllocation(newAddress, byteSize, alignment, stackSuppressCount);
+            return;
+        }
+
+        const auto [addressAlreadyRecorded, ai] = [this, address, newAddress]() -> std::pair<bool, Debug::AllocationInfo*>
+        {
+            AZStd::scoped_lock lock(m_recordsMutex);
+            auto node = m_records.extract(address);
+            if (node.empty())
+            {
+                return {false, nullptr};
+            }
+
+            // Make a best effort to avoid reallocations from mutating the
+            // records map when recording a reallocation
+            node.key() = newAddress;
+            auto ai = &m_records.insert(AZStd::move(node)).position->second;
+            return {true, ai};
+        }();
+        if (!addressAlreadyRecorded)
+        {
+            RegisterAllocation(newAddress, byteSize, alignment, stackSuppressCount);
+            return;
+        }
+
+        m_requestedBytes += (byteSize - ai->m_byteSize);
+
+        ai->m_byteSize = byteSize;
+        ai->m_alignment = static_cast<unsigned int>(alignment);
+        ai->m_name = nullptr;
+        ai->m_fileName = nullptr;
+        ai->m_namesBlock = nullptr;
+        ai->m_namesBlockSize = 0;
+        ai->m_lineNum = 0;
+        ai->m_timeStamp = AZStd::GetTimeNowMicroSecond();
+
+        // if we don't have a fileName,lineNum record the stack or if the user requested it.
+        if (m_mode == RECORD_STACK_IF_NO_FILE_LINE || m_mode == RECORD_FULL)
+        {
+            if (ai->m_stackFrames)
+            {
+                Debug::StackRecorder::Record(ai->m_stackFrames, m_numStackLevels, stackSuppressCount + 1);
+
+                if (m_decodeImmediately)
+                {
+                    // OPTIONAL DEBUGGING CODE - enable in app descriptor m_allocationRecordsAttemptDecodeImmediately
+                    // This is optionally-enabled code for tracking down memory allocations
+                    // that fail to be decoded. DecodeFrames() typically runs at the end of
+                    // your application when leaks were found. Sometimes you have stack prints
+                    // full of "(module-name not available)" and "(function-name not available)"
+                    // that are not actionable. If you have those, enable this code. It'll slow
+                    // down your process significantly because for every allocation recorded
+                    // we get the stack trace on the spot. Put a breakpoint in DecodeFrames()
+                    // at the "(module-name not available)" and "(function-name not available)"
+                    // locations and now at the moment those allocations happen you'll have the
+                    // full stack trace available and the ability to debug what could be causing it
+                    {
+                        const unsigned char decodeStep = 40;
+                        Debug::SymbolStorage::StackLine lines[decodeStep];
+                        unsigned char iFrame = 0;
+                        unsigned char numStackLevels = m_numStackLevels;
+                        while (numStackLevels > 0)
+                        {
+                            unsigned char numToDecode = AZStd::GetMin(decodeStep, numStackLevels);
+                            Debug::SymbolStorage::DecodeFrames(&ai->m_stackFrames[iFrame], numToDecode, lines);
+                            numStackLevels -= numToDecode;
+                            iFrame += numToDecode;
+                        }
+                    }
+                }
+            }
+        }
+
+        AllocatorManager::Instance().DebugBreak(address, *ai);
+
+        size_t currentRequestedBytePeak;
+        size_t newRequestedBytePeak;
+        do
+        {
+            currentRequestedBytePeak = m_requestedBytesPeak.load(std::memory_order::memory_order_relaxed);
+            newRequestedBytePeak = AZStd::GetMax(currentRequestedBytePeak, m_requestedBytes.load(std::memory_order::memory_order_relaxed));
+        } while (!m_requestedBytesPeak.compare_exchange_weak(currentRequestedBytePeak, newRequestedBytePeak));
+    }
+
     //=========================================================================
     // EnumerateAllocations
     // [9/29/2009]
     //=========================================================================
     void AllocationRecords::SetMode(Mode mode)
     {
+        // If records recording was previously disabled and is now being enabled, some allocations
+        // may not be properly recorded. No need to print out a warning or log here, because an assert will occur
+        // later if that's a problem. There was previously a warning here to catch this situation earlier,
+        // but this warning was frequently being triggered in automated tests, and the assert was not occuring because
+        // the allocations were being properly handled.
         if (mode == RECORD_NO_RECORDS)
         {
             {
@@ -413,12 +473,6 @@ namespace AZ::Debug
             m_requestedBytesPeak = 0;
             m_requestedAllocs = 0;
         }
-
-        AZ_Warning(
-            "Memory", m_mode != RECORD_NO_RECORDS || mode == RECORD_NO_RECORDS,
-            "Records recording was disabled and now it's enabled! You might get assert when you free memory, if a you have allocations "
-            "which were not recorded!");
-
         m_mode = mode;
     }
 
@@ -426,7 +480,7 @@ namespace AZ::Debug
     // EnumerateAllocations
     // [9/29/2009]
     //=========================================================================
-    void AllocationRecords::EnumerateAllocations(AllocationInfoCBType cb)
+    void AllocationRecords::EnumerateAllocations(AllocationInfoCBType cb) const
     {
         // enumerate all allocations and stop if requested.
         // Since allocations can change during the iteration (code that prints out the records could allocate, which will
@@ -438,7 +492,7 @@ namespace AZ::Debug
         }
         for (Debug::AllocationRecordsType::const_iterator iter = recordsCopy.begin(); iter != recordsCopy.end(); ++iter)
         {
-            if (!cb(iter->first, iter->second, m_numStackLevels))
+            if (!cb(iter->first, iter->second, m_numStackLevels, recordsCopy.size()))
             {
                 break;
             }
@@ -483,17 +537,17 @@ namespace AZ::Debug
     // operator()
     // [9/29/2009]
     //=========================================================================
-    bool PrintAllocationsCB::operator()(void* address, const AllocationInfo& info, unsigned char numStackLevels)
+    bool PrintAllocationsCB::operator()(void* address, const AllocationInfo& info, unsigned char numStackLevels, size_t numRecords)
     {
         if (m_includeNameAndFilename && info.m_name)
         {
             AZ_Printf(
-                "Memory", "Allocation Name: \"%s\" Addr: 0%p Size: %d Alignment: %d\n", info.m_name, address, info.m_byteSize,
+                "Memory", "Allocation Name: \"%s\" Addr: 0%p Size: %zu Alignment: %u\n", info.m_name, address, info.m_byteSize,
                 info.m_alignment);
         }
         else
         {
-            AZ_Printf("Memory", "Allocation Addr: 0%p Size: %d Alignment: %d\n", address, info.m_byteSize, info.m_alignment);
+            AZ_Printf("Memory", "Allocation Addr: 0%p Size: %zu Alignment: %u\n", address, info.m_byteSize, info.m_alignment);
         }
 
         if (m_isDetailed)
@@ -523,6 +577,8 @@ namespace AZ::Debug
                     iFrame += numToDecode;
                 }
             }
+
+            AZ_Printf("Memory", "Total number of allocation records %zu\n", numRecords);
         }
         return true; // continue enumerating
     }

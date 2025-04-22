@@ -60,6 +60,11 @@ class TestCheckFreeSpace(unittest.TestCase):
 class TestSafeMakedirs(unittest.TestCase):
 
     @mock.patch('os.makedirs')
+    def test_SafeMakedirs_ValidCreation_Success(self, mock_makedirs):
+        file_system.safe_makedirs('dummy')
+        mock_makedirs.assert_called_once()
+
+    @mock.patch('os.makedirs')
     def test_SafeMakedirs_RaisedOSErrorErrnoEEXIST_DoesNotPropagate(self, mock_makedirs):
         error = OSError()
         error.errno = errno.EEXIST
@@ -93,21 +98,19 @@ class TestGetNewestFileInDir(unittest.TestCase):
 
     @mock.patch('os.path.getctime')
     @mock.patch('glob.iglob')
-    def test_GetNewestFileInDir_TwoResultsFound_ReturnsNewer(self, mock_glob, mock_ctime):
-        mock_glob.return_value = ['fileA.zip', 'fileB.zip']
-        mock_ctime.side_effect = [1, 2]
-        result = file_system.get_newest_file_in_dir('', [''])
-
-        self.assertEqual(result, 'fileB.zip')
-
-    @mock.patch('os.path.getctime')
-    @mock.patch('glob.iglob')
     def test_GetNewestFileInDir_ThreeResultsTwoExts_CtimeCalledSixTimes(self, mock_glob, mock_ctime):
         mock_glob.return_value = ['fileA.zip', 'fileB.zip', 'fileC.zip']
         mock_ctime.side_effect = range(6)
         file_system.get_newest_file_in_dir('', ['.zip', '.tgz'])
 
         self.assertEqual(len(mock_ctime.mock_calls), 6)
+
+
+class TestRemovePathAndExtension(unittest.TestCase):
+
+    def test_GetNewestFileInDir_ValidPath_ReturnsStripped(self):
+        result = file_system.remove_path_and_extension(os.path.join("C", "packages", "lumberyard-XXXX.zip"))
+        self.assertEqual(result, "lumberyard-XXXX")
 
 
 class TestUnZip(unittest.TestCase):
@@ -139,23 +142,11 @@ class TestUnZip(unittest.TestCase):
     def call_decomp(self, dest, src, force=True, allow_exists=False):
         return file_system.unzip(dest, src, force, allow_exists)
 
-    @mock.patch('os.path.exists')
-    @mock.patch('ly_test_tools.environment.file_system.check_free_space')
-    @mock.patch('os.path.join')
-    @mock.patch(decomp_obj_name)
-    def test_Unzip_DefaultArgs_CallsDecompressorWithSrc(self, mock_decomp, mock_join, mock_check_free, mock_exists):
-
-        mock_exists.return_value = self.exists
-
-        self.call_decomp(self.dest_path, self.src_path)
-
-        mock_decomp.assert_called_once_with(self.src_path, 'r')
 
     @mock.patch('os.path.exists')
     @mock.patch('ly_test_tools.environment.file_system.check_free_space')
     @mock.patch('os.path.join')
-    def test_Unzip_DefaultArgs_CheckFreeSpaceCalledOnceWithOneGiBAdded(self, mock_join,
-                                                                       mock_check_free, mock_exists):
+    def test_Unzip_NotEnoughSpaceInDestination_FailsWithErrorMessage(self, mock_join, mock_check_free, mock_exists):
 
         mock_exists.return_value = self.exists
         total_size = sum(info.file_size for info in self.file_list)
@@ -166,33 +157,6 @@ class TestUnZip(unittest.TestCase):
         mock_check_free.assert_called_once_with(self.dest_path,
                                                 total_size + file_system.ONE_GIB,
                                                 'Not enough space to safely extract: ')
-
-    @mock.patch('os.path.exists')
-    @mock.patch('ly_test_tools.environment.file_system.check_free_space')
-    @mock.patch('os.path.join')
-    def test_Unzip_DefaultArgs_JoinCalledWithNoPathNoExtension(self, mock_join, mock_check_free, mock_exists):
-        expected_name, _ = os.path.splitext(self.src_path)
-
-        mock_exists.return_value = self.exists
-
-        with mock.patch(self.decomp_obj_name, self.mock_decomp):
-            self.call_decomp(self.dest_path, self.src_path)
-
-        mock_join.assert_called_once_with(self.dest_path, expected_name)
-
-    @mock.patch('ly_test_tools.environment.file_system.check_free_space')
-    @mock.patch('os.path.join')
-    def test_Unzip_DefaultArgs_ReturnsCorrectPath(self, mock_join, mock_check_free):
-
-        build_name = 'build_name'
-        expected_path = self.dest_path+'\\'+build_name
-        mock_join.return_value = expected_path
-
-        path = ''
-        with mock.patch(self.decomp_obj_name, self.mock_decomp):
-            path = self.call_decomp(self.dest_path, self.src_path)
-
-        self.assertEqual(path, expected_path)
 
     @mock.patch('ly_test_tools.environment.file_system.check_free_space')
     @mock.patch('os.path.join')
@@ -229,9 +193,9 @@ class TestUnZip(unittest.TestCase):
 
     @mock.patch('ly_test_tools.environment.file_system.logger')
     @mock.patch('os.path.exists')
-    @mock.patch('ly_test_tools.environment.file_system.check_free_space')
-    @mock.patch('os.path.join')
-    def test_Unzip_AllowExistsSet_INFOLogged(self, mock_join, mock_check_free, mock_exists, mock_log):
+    @mock.patch('ly_test_tools.environment.file_system.check_free_space', mock.MagicMock())
+    @mock.patch('os.path.join', mock.MagicMock())
+    def test_Unzip_AllowExistsSet_INFOLogged(self, mock_exists, mock_log):
 
         force = False
         allow_exists = True
@@ -246,9 +210,9 @@ class TestUnZip(unittest.TestCase):
 
     @mock.patch('ly_test_tools.environment.file_system.logger')
     @mock.patch('os.path.exists')
-    @mock.patch('ly_test_tools.environment.file_system.check_free_space')
-    @mock.patch('os.path.join')
-    def test_Unzip_BuildDirExistsForceSetTrue_INFOLogged(self, mock_join, mock_check_free, mock_exists, mock_log):
+    @mock.patch('ly_test_tools.environment.file_system.check_free_space', mock.MagicMock())
+    @mock.patch('os.path.join', mock.MagicMock())
+    def test_Unzip_BuildDirExistsForceSetTrue_INFOLogged(self, mock_exists, mock_log):
 
         path = ''
         self.exists = True
@@ -293,60 +257,6 @@ class TestUnTgz(unittest.TestCase):
 
     @mock.patch('ly_test_tools.environment.file_system.check_free_space')
     @mock.patch('os.path.join')
-    @mock.patch(decomp_obj_name)
-    @mock.patch('os.stat')
-    def test_UnTgz_DefaultArgs_CallsDecompressorWithSrc(self, mock_stat, mock_decomp, mock_join, mock_check_free):
-
-        mock_stat.return_value = self.src_stat
-        self.call_decomp(self.dest_path, self.src_path)
-
-        mock_decomp.assert_called_once_with(self.src_path)
-
-    @mock.patch('ly_test_tools.environment.file_system.check_free_space')
-    @mock.patch('os.path.join')
-    @mock.patch('os.stat')
-    def test_UnTgz_DefaultArgs_CheckFreeSpaceCalledOnceWithOneGiBAdded(self, mock_stat, mock_join, mock_check_free):
-
-        mock_stat.return_value = self.src_stat
-        total_size = sum(info.size for info in self.file_list)
-
-        with mock.patch(self.decomp_obj_name, self.mock_decomp):
-            self.call_decomp(self.dest_path, self.src_path, True)
-
-        mock_check_free.assert_called_once_with(self.dest_path,
-                                                total_size + file_system.ONE_GIB,
-                                                'Not enough space to safely extract: ')
-
-    @mock.patch('ly_test_tools.environment.file_system.check_free_space')
-    @mock.patch('os.path.join')
-    @mock.patch('os.stat')
-    def test_UnTgz_DefaultArgs_JoinCalledWithNoPathNoExtension(self, mock_stat, mock_join, mock_check_free):
-        expected_path, _ = os.path.splitext(os.path.basename(self.src_path))
-
-        mock_stat.return_value = self.src_stat
-        with mock.patch(self.decomp_obj_name, self.mock_decomp):
-            self.call_decomp(self.dest_path, self.src_path)
-
-        mock_join.assert_called_once_with(self.dest_path, expected_path)
-
-    @mock.patch('ly_test_tools.environment.file_system.check_free_space')
-    @mock.patch('os.path.join')
-    @mock.patch('os.stat')
-    def test_Untgz_DefaultArgs_ReturnsCorrectPath(self, mock_stat, mock_join, mock_check_free):
-
-        build_name = 'build_name'
-        expected_path = self.dest_path+'\\'+build_name
-        mock_join.return_value = expected_path
-        mock_stat.return_value = self.src_stat
-
-        path = ''
-        with mock.patch(self.decomp_obj_name, self.mock_decomp):
-            path = self.call_decomp(self.dest_path, self.src_path)
-
-        self.assertEqual(path, expected_path)
-
-    @mock.patch('ly_test_tools.environment.file_system.check_free_space')
-    @mock.patch('os.path.join')
     @mock.patch('os.stat')
     def test_Untgz_ReleaseBuild_ReturnsCorrectPath(self, mock_stat, mock_join, mock_check_free):
 
@@ -364,11 +274,10 @@ class TestUnTgz(unittest.TestCase):
 
     @mock.patch('ly_test_tools.environment.file_system.logger')
     @mock.patch('os.path.exists')
-    @mock.patch('ly_test_tools.environment.file_system.check_free_space')
-    @mock.patch('os.path.join')
+    @mock.patch('ly_test_tools.environment.file_system.check_free_space', mock.MagicMock())
+    @mock.patch('os.path.join', mock.MagicMock())
     @mock.patch('os.stat')
-    def test_Untgz_BuildDirExistsForceAndAllowExistsNotSet_CRITICALLogged(self, mock_stat, mock_join,
-                                                                          mock_check_free, mock_exists, mock_log):
+    def test_Untgz_BuildDirExistsForceAndAllowExistsNotSet_CRITICALLogged(self, mock_stat, mock_exists, mock_log):
 
         force = False
         mock_exists.return_value = True
@@ -382,10 +291,10 @@ class TestUnTgz(unittest.TestCase):
 
     @mock.patch('ly_test_tools.environment.file_system.logger')
     @mock.patch('os.path.exists')
-    @mock.patch('ly_test_tools.environment.file_system.check_free_space')
-    @mock.patch('os.path.join')
+    @mock.patch('ly_test_tools.environment.file_system.check_free_space', mock.MagicMock())
+    @mock.patch('os.path.join', mock.MagicMock())
     @mock.patch('os.stat')
-    def test_Untgz_AllowExiststSet_INFOLogged(self, mock_stat, mock_join, mock_check_free, mock_exists, mock_log):
+    def test_Untgz_AllowExiststSet_INFOLogged(self, mock_stat, mock_exists, mock_log):
 
         allow_exists = True
         force = False
@@ -458,6 +367,7 @@ class TestChangePermissions(unittest.TestCase):
 class MockStatResult():
     def __init__(self, st_mode):
         self.st_mode = st_mode
+
 
 class TestUnlockFile(unittest.TestCase):
 
@@ -634,6 +544,59 @@ class TestDelete(unittest.TestCase):
         mock_isfile.return_value = False
         file_system.delete(self.path_list, del_files=True, del_dirs=False)
         self.assertEqual(mock_remove.called, False)
+
+
+class TestRename(unittest.TestCase):
+
+    def setUp(self):
+        self.file1 = 'file1'
+        self.file2 = 'file2'
+
+    def tearDown(self):
+        self.file1 = None
+        self.file2 = None
+
+    @mock.patch('os.path')
+    @mock.patch('os.chmod')
+    @mock.patch('os.rename')
+    def test_Rename_TwoFiles_SuccessfulRename(self, mock_rename, mock_chmod, mock_path):
+        mock_path.exists.side_effect = [True, False]
+
+        self.assertTrue(file_system.rename(self.file1, self.file2))
+        self.assertTrue(mock_rename.called)
+
+    @mock.patch('os.rename')
+    def test_Rename_SourceDoesNotExist_ErrorReported(self, mock_rename):
+        with self.assertLogs('ly_test_tools.environment.file_system', 'ERROR') as captured_logs:
+            with mock.patch('os.path') as mock_path:
+                mock_path.exists.return_value = False
+                self.assertFalse(file_system.rename(self.file1, self.file2))
+        self.assertTrue(mock_path.exists.called)
+        self.assertIn("No file located at:", captured_logs.records[0].getMessage())
+        self.assertFalse(mock_rename.called)
+
+    @mock.patch('os.rename')
+    def test_Rename_DestinationExists_ErrorReported(self, mock_rename):
+        with self.assertLogs('ly_test_tools.environment.file_system', 'ERROR') as captured_logs:
+            with mock.patch('os.path') as mock_path:
+                mock_path.exists.return_value = True
+                self.assertFalse(file_system.rename(self.file1, self.file2))
+        self.assertEqual(2, mock_path.exists.call_count)
+        self.assertIn("File already exists at:", captured_logs.records[0].getMessage())
+        self.assertFalse(mock_rename.called)
+
+    @mock.patch('os.rename')
+    @mock.patch('os.chmod')
+    def test_Rename_PermissionsError_ErrorReported(self, mock_chmod, mock_rename):
+        with self.assertLogs('ly_test_tools.environment.file_system', 'ERROR') as captured_logs:
+            with mock.patch('os.path') as mock_path:
+                mock_path.exists.side_effect = [True, False]
+                mock_path.isfile.return_value = True
+                mock_chmod.side_effect = OSError()
+                self.assertFalse(file_system.rename(self.file1, self.file2))
+        self.assertEqual(2, mock_path.exists.call_count)
+        self.assertIn('Could not rename', captured_logs.records[0].getMessage())
+        self.assertEqual(mock_rename.called, False)
 
 
 class TestDeleteOldest(unittest.TestCase):
@@ -900,3 +863,14 @@ class TestReduceFileName(unittest.TestCase):
 
         with pytest.raises(TypeError):
             file_system.reduce_file_name_length(file_name=target_name)
+
+class TestFindAncestorFile(unittest.TestCase):
+
+    @mock.patch('os.path.exists', mock.MagicMock(side_effect=[False, False, True, True]))
+    def test_Find_OneLevel_ReturnsPath(self):
+        mock_file = 'mock_file.txt'
+        mock_start_path = os.path.join('foo1', 'foo2', 'foo3')
+        expected = os.path.abspath(os.path.join('foo1', mock_file))
+
+        actual = file_system.find_ancestor_file(mock_file, mock_start_path)
+        assert actual == expected

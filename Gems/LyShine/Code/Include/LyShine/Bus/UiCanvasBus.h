@@ -13,6 +13,7 @@
 #include <AzFramework/Input/Channels/InputChannelDigitalWithSharedModifierKeyStates.h>
 #include <AzFramework/Input/User/LocalUserId.h>
 #include <LyShine/UiBase.h>
+#include <Atom/RPI.Reflect/Image/AttachmentImageAsset.h>
 
 // Forward declarations
 struct IUiAnimationSystem;
@@ -161,6 +162,9 @@ public: // member functions
     //! Get the transformation from viewport space to canvas space
     virtual void GetViewportToCanvasMatrix(AZ::Matrix4x4& matrix) = 0;
 
+    // Returns the authoered size of the canvas
+    virtual AZ::Vector2 GetAuthoredCanvasSize() = 0;
+
     //! Returns the "target" size of the canvas (in pixels)
     //
     //! The target canvas size changes depending on whether you're running in
@@ -216,11 +220,11 @@ public: // member functions
     //! Set flag that controls whether the canvas is rendering to a texture
     virtual void SetIsRenderToTexture(bool isRenderToTexture) = 0;
 
-    //! Get the render target name that this canvas will render to
-    virtual AZStd::string GetRenderTargetName() = 0;
+    //! Get the attachment image that this canvas will render to
+    virtual const AZ::Data::Asset<AZ::RPI::AttachmentImageAsset>& GetAttachmentImageAsset() = 0;
 
-    //! Set the render target name that this canvas will render to
-    virtual void SetRenderTargetName(const AZStd::string& name) = 0;
+    //! Set the attachment image that this canvas will render to
+    virtual void SetAttachmentImageAsset(const AZ::Data::Asset<AZ::RPI::AttachmentImageAsset>& attachmentImageAsset) = 0;
 
     //! Get flag that controls whether this canvas automatically handles positional input (mouse/touch)
     virtual bool GetIsPositionalInputSupported() = 0;
@@ -365,6 +369,14 @@ public: // member functions
 
     //! Called when the canvas sends an action to the listener
     virtual void OnAction(AZ::EntityId entityId, const LyShine::ActionName& actionName) = 0;
+    //! Called when the canvas sends an action to the listener (With bonus multitouch info)
+    virtual void OnActionMultitouch(
+        [[maybe_unused]] AZ::EntityId entityId,
+        [[maybe_unused]] const LyShine::ActionName& actionName,
+        [[maybe_unused]] const AZ::Vector2& actionPosition,
+        [[maybe_unused]] int multiTouchIndex){};
+    //! Called when the canvas's enabled state changed
+    virtual void OnEnableStateChanged([[maybe_unused]] AZ::EntityId entityId, [[maybe_unused]] bool state){};
 };
 
 typedef AZ::EBus<UiCanvasActionNotification> UiCanvasNotificationBus;

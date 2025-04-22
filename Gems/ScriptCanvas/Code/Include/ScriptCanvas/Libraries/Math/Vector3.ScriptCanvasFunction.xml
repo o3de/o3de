@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScriptCanvas>
+    <Library
+        Include="Include/ScriptCanvas/Libraries/Math/Vector3.h"
+        Namespace="ScriptCanvas::Vector3Functions"
+        Category="Math/Vector3">
+        
+        <Function Name="Absolute">
+            <Parameter Name="Source"/>
+        </Function>
+        
+        <Function Name="BuildTangentBasis">
+            <Parameter Name="Normal"/>
+        </Function>
+        
+        <Function Name="Clamp">
+            <Parameter Name="Source"/>
+            <Parameter Name="Min"/>
+            <Parameter Name="Max"/>
+        </Function>
+        
+        <Function Name="Cross">
+            <Parameter Name="A"/>
+            <Parameter Name="B"/>
+        </Function>
+        
+        <Function Name="Distance">
+            <Parameter Name="A"/>
+            <Parameter Name="B"/>
+        </Function>
+        
+        <Function Name="DistanceSquared">
+            <Parameter Name="A"/>
+            <Parameter Name="B"/>
+        </Function>
+        
+        <Function Name="Dot">
+            <Parameter Name="A"/>
+            <Parameter Name="B"/>
+        </Function>
+        
+        <Function Name="FromValues">
+            <Parameter Name="X"/>
+            <Parameter Name="Y"/>
+            <Parameter Name="Z"/>
+        </Function>
+        
+        <Function Name="GetElement">
+            <Parameter Name="Source"/>
+            <Parameter Name="Index"/>
+        </Function>
+        
+        <Function Name="IsClose">
+            <Parameter Name="A"/>
+            <Parameter Name="B"/>
+            <Parameter Name="Tolerance" DefaultValue="0.01"/>
+        </Function>
+        
+        <Function Name="IsFinite">
+            <Parameter Name="Source"/>
+        </Function>
+        
+        <Function Name="IsNormalized">
+            <Parameter Name="Source"/>
+            <Parameter Name="Tolerance" DefaultValue="0.01"/>
+        </Function>
+        
+        <Function Name="IsPerpendicular">
+            <Parameter Name="A"/>
+            <Parameter Name="B"/>
+            <Parameter Name="Tolerance" DefaultValue="0.01"/>
+        </Function>
+        
+        <Function Name="IsZero">
+            <Parameter Name="Source"/>
+            <Parameter Name="Tolerance" DefaultValue="Data::ToleranceEpsilon()"/>
+        </Function>
+        
+        <Function Name="Length">
+            <Parameter Name="Source"/>
+        </Function>
+        
+        <Function Name="LengthReciprocal">
+            <Parameter Name="Source"/>
+        </Function>
+        
+        <Function Name="LengthSquared">
+            <Parameter Name="Source"/>
+        </Function>
+        
+        <Function Name="Lerp">
+            <Parameter Name="From"/>
+            <Parameter Name="To"/>
+            <Parameter Name="T"/>
+        </Function>
+        
+        <Function Name="Max">
+            <Parameter Name="A"/>
+            <Parameter Name="B"/>
+        </Function>
+        
+        <Function Name="Min">
+            <Parameter Name="A"/>
+            <Parameter Name="B"/>
+        </Function>
+        
+        <Function Name="SetX">
+            <Parameter Name="Source"/>
+            <Parameter Name="X"/>
+        </Function>
+        
+        <Function Name="SetY">
+            <Parameter Name="Source"/>
+            <Parameter Name="Y"/>
+        </Function>
+        
+        <Function Name="SetZ">
+            <Parameter Name="Source"/>
+            <Parameter Name="Z"/>
+        </Function>
+        
+        <Function Name="MultiplyByNumber">
+            <Parameter Name="Source"/>
+            <Parameter Name="Multiplier"/>
+        </Function>
+        
+        <Function Name="Negate">
+            <Parameter Name="Source"/>
+        </Function>
+        
+        <Function Name="Normalize">
+            <Parameter Name="Source"/>
+        </Function>
+        
+        <Function Name="Project">
+            <Parameter Name="A"/>
+            <Parameter Name="B"/>
+        </Function>
+        
+        <Function Name="Reciprocal">
+            <Parameter Name="Source"/>
+        </Function>
+        
+        <Function Name="Slerp">
+            <Parameter Name="From"/>
+            <Parameter Name="To"/>
+            <Parameter Name="T"/>
+        </Function>
+        
+        <Function Name="DirectionTo">
+            <Parameter Name="From" DefaultValue="Data::Vector3Type()"/>
+            <Parameter Name="To" DefaultValue="Data::Vector3Type()"/>
+            <Parameter Name="Scale" DefaultValue="1.0"/>
+        </Function>
+    </Library>
+</ScriptCanvas>

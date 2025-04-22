@@ -7,8 +7,6 @@
  */
 #pragma once
 
-#pragma once
-
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 #include <AzFramework/XcbEventHandler.h>
 #include <AzFramework/XcbInterface.h>
@@ -25,7 +23,7 @@ namespace AzFramework
         , public XcbEventHandlerBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(XcbInputDeviceKeyboard, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(XcbInputDeviceKeyboard, AZ::SystemAllocator);
 
         using InputDeviceKeyboard::Implementation::Implementation;
         XcbInputDeviceKeyboard(InputDeviceKeyboard& inputDevice);

@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/PipelineLibrary.h>
+#include <Atom/RHI/DevicePipelineLibrary.h>
 #include <AzCore/Memory/SystemAllocator.h>
 
 namespace AZ
@@ -15,10 +15,10 @@ namespace AZ
     namespace DX12
     {
         class PipelineLibrary final
-            : public RHI::PipelineLibrary
+            : public RHI::DevicePipelineLibrary
         {
         public:
-            AZ_CLASS_ALLOCATOR(PipelineLibrary, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PipelineLibrary, AZ::SystemAllocator);
             AZ_DISABLE_COPY_MOVE(PipelineLibrary);
 
             static RHI::Ptr<PipelineLibrary> Create();
@@ -30,12 +30,13 @@ namespace AZ
             PipelineLibrary() = default;
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::PipelineLibrary
-            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::PipelineLibraryData* serializedData) override;
+            // RHI::DevicePipelineLibrary
+            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::DevicePipelineLibraryDescriptor& descriptor) override;
             void ShutdownInternal() override;
-            RHI::ResultCode MergeIntoInternal(AZStd::array_view<const RHI::PipelineLibrary*> libraries) override;
+            RHI::ResultCode MergeIntoInternal(AZStd::span<const RHI::DevicePipelineLibrary* const> libraries) override;
             RHI::ConstPtr<RHI::PipelineLibraryData> GetSerializedDataInternal() const override;
             bool IsMergeRequired() const;
+            bool SaveSerializedDataInternal(const AZStd::string& filePath) const override;
             //////////////////////////////////////////////////////////////////////////
 
             ID3D12DeviceX* m_dx12Device = nullptr;

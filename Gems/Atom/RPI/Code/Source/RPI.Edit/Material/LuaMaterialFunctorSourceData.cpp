@@ -11,6 +11,7 @@
 #include <Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Script/ScriptAsset.h>
+#include <AzCore/Script/ScriptSystemBus.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 
 namespace AZ
@@ -115,16 +116,26 @@ namespace AZ
 
         RPI::LuaMaterialFunctorSourceData::FunctorResult LuaMaterialFunctorSourceData::CreateFunctor(
                 const AZStd::string& materialTypeSourceFilePath,
-                const MaterialPropertiesLayout* propertiesLayout
+                const MaterialPropertiesLayout* propertiesLayout,
+                const MaterialNameContext* materialNameContext
             ) const
         {
             using namespace RPI;
 
             RPI::Ptr<LuaMaterialFunctor> functor = aznew LuaMaterialFunctor;
 
-            functor->m_propertyNamePrefix = m_propertyNamePrefix;
-            functor->m_srgNamePrefix = m_srgNamePrefix;
-            functor->m_optionsNamePrefix = m_optionsNamePrefix;
+            if (materialNameContext->IsDefault())
+            {
+                // This is a legacy feature that was used for a while to support reusing the same functor for multiple layers in StandardMultilayerPbr.materialtype.
+                // Now that we have support for nested property groups, this functionality is only supported for functors at the top level, for backward compatibility.
+                functor->m_materialNameContext.ExtendPropertyIdContext(m_propertyNamePrefix, false);
+                functor->m_materialNameContext.ExtendSrgInputContext(m_srgNamePrefix);
+                functor->m_materialNameContext.ExtendShaderOptionContext(m_optionsNamePrefix);
+            }
+            else
+            {
+                functor->m_materialNameContext = *materialNameContext;
+            }
 
             if (!m_luaScript.empty() && !m_luaSourceFile.empty())
             {
@@ -137,8 +148,6 @@ namespace AZ
             }
             else if (!m_luaSourceFile.empty())
             {
-                // The sub ID for script assets must be explicit.
-                // LUA source files output a compiled as well as an uncompiled asset, sub Ids of 1 and 2.
                 auto loadOutcome =
                     RPI::AssetUtils::LoadAsset<ScriptAsset>(materialTypeSourceFilePath, m_luaSourceFile, ScriptAsset::CompiledAssetSubId);
                 if (!loadOutcome)
@@ -155,10 +164,19 @@ namespace AZ
                 return Failure();
             }
 
-            AZ::ScriptContext scriptContext;
+            ScriptContext* scriptContext{};
+            ScriptSystemRequestBus::BroadcastResult(scriptContext, &ScriptSystemRequests::GetContext, ScriptContextIds::DefaultScriptContextId);
+            if (scriptContext == nullptr)
+            {
+                AZ_ErrorOnce("LuaMaterialFunctorSourceData", false, "Global script context is not available. Cannot execute script");
+                return Failure();
+            }
 
             auto scriptBuffer = functor->GetScriptBuffer();
-            if (!scriptContext.Execute(scriptBuffer.data(), functor->GetScriptDescription(), scriptBuffer.size()))
+            // Remove any GetMaterialPropertyDependencies and GetShaderOptionDependencies functions on the global table
+            scriptContext->RemoveGlobal("GetMaterialPropertyDependencies");
+            scriptContext->RemoveGlobal("GetShaderOptionDependencies");
+            if (!scriptContext->Execute(scriptBuffer.data(), functor->GetScriptDescription(), scriptBuffer.size()))
             {
                 AZ_Error("LuaMaterialFunctorSourceData", false, "Error initializing script '%s'.", functor->m_scriptAsset.ToString<AZStd::string>().c_str());
                 return Failure();
@@ -166,8 +184,8 @@ namespace AZ
 
             // [GFX TODO][ATOM-6012]: Figure out how to make shader option dependencies and material property dependencies get automatically reported
 
-            auto materialPropertyDependencies = GetNameListFromLuaScript(scriptContext, "GetMaterialPropertyDependencies");
-            auto shaderOptionDependencies = GetNameListFromLuaScript(scriptContext, "GetShaderOptionDependencies");
+            auto materialPropertyDependencies = GetNameListFromLuaScript(*scriptContext, "GetMaterialPropertyDependencies");
+            auto shaderOptionDependencies = GetNameListFromLuaScript(*scriptContext, "GetShaderOptionDependencies");
 
             if (!materialPropertyDependencies.IsSuccess() || !shaderOptionDependencies.IsSuccess())
             {
@@ -188,14 +206,17 @@ namespace AZ
 
             for (const Name& materialProperty : materialPropertyDependencies.GetValue())
             {
-                MaterialPropertyIndex index = propertiesLayout->FindPropertyIndex(Name{m_propertyNamePrefix + materialProperty.GetCStr()});
-                if (!index.IsValid())
-                {
-                    AZ_Error("LuaMaterialFunctorSourceData", false, "Property '%s' is not found in material type.", materialProperty.GetCStr());
-                    return Failure();
-                }
+                Name propertyName{materialProperty};
+                functor->m_materialNameContext.ContextualizeProperty(propertyName);
 
-                AddMaterialPropertyDependency(functor, index);
+                MaterialPropertyIndex index = propertiesLayout->FindPropertyIndex(propertyName);
+                if (index.IsValid())
+                {
+                    AddMaterialPropertyDependency(functor, index);
+                }
+                // This allows missing dependencies to make scripts more flexible - they can depend on properties that may
+                // or may not exist, and it's up to the script to call HasMaterialProperty() before accessing a property
+                // if necessary.
             }
 
             return Success(RPI::Ptr<MaterialFunctor>(functor));
@@ -205,14 +226,16 @@ namespace AZ
         {
             return CreateFunctor(
                 context.GetMaterialTypeSourceFilePath(),
-                context.GetMaterialPropertiesLayout());
+                context.GetMaterialPropertiesLayout(),
+                context.GetNameContext());
         }
 
         RPI::LuaMaterialFunctorSourceData::FunctorResult LuaMaterialFunctorSourceData::CreateFunctor(const EditorContext& context) const
         {
             return CreateFunctor(
                 context.GetMaterialTypeSourceFilePath(),
-                context.GetMaterialPropertiesLayout());
+                context.GetMaterialPropertiesLayout(),
+                context.GetNameContext());
         }
     }
 }

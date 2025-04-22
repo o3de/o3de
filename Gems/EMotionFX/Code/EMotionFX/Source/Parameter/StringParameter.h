@@ -12,12 +12,15 @@
 
 namespace EMotionFX
 {
+    class StringParameter;
+    AZ_TYPE_INFO_SPECIALIZE(StringParameter, "{2ADFD165-B5F9-4C6F-977C-2879610B2445}");
+
     class StringParameter
         : public DefaultValueParameter<AZStd::string, StringParameter>
     {
         using BaseType = DefaultValueParameter<AZStd::string, StringParameter>;
     public:
-        AZ_RTTI(StringParameter, "{2ADFD165-B5F9-4C6F-977C-2879610B2445}", ValueParameter);
+        AZ_RTTI_NO_TYPE_INFO_DECL();
         AZ_CLASS_ALLOCATOR_DECL
         StringParameter()
             : BaseType("")

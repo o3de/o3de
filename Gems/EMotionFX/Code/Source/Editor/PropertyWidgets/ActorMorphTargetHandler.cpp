@@ -19,9 +19,9 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(ActorMorphTargetPicker, EditorAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(ActorSingleMorphTargetHandler, EditorAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(ActorMultiMorphTargetHandler, EditorAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(ActorMorphTargetPicker, EditorAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(ActorSingleMorphTargetHandler, EditorAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(ActorMultiMorphTargetHandler, EditorAllocator)
 
     ActorMorphTargetPicker::ActorMorphTargetPicker(bool multiSelection, QWidget* parent)
         : QWidget(parent)
@@ -162,7 +162,7 @@ namespace EMotionFX
 
     AZ::u32 ActorSingleMorphTargetHandler::GetHandlerName() const
     {
-        return AZ_CRC("ActorMorphTargetName", 0xed53e3a5);
+        return AZ_CRC_CE("ActorMorphTargetName");
     }
 
 
@@ -172,7 +172,8 @@ namespace EMotionFX
 
         connect(picker, &ActorMorphTargetPicker::SelectionChanged, this, [picker]()
         {
-            EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, picker);
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, picker);
         });
 
         return picker;
@@ -216,7 +217,7 @@ namespace EMotionFX
 
     AZ::u32 ActorMultiMorphTargetHandler::GetHandlerName() const
     {
-        return AZ_CRC("ActorMorphTargetNames", 0xbd5fcb8f);
+        return AZ_CRC_CE("ActorMorphTargetNames");
     }
 } // namespace EMotionFX
 

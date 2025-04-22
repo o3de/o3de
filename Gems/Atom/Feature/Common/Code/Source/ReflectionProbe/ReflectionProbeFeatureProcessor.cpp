@@ -6,17 +6,20 @@
  *
  */
 
+#include <ReflectionProbe/ReflectionProbeFeatureProcessor.h>
+
 #include <AzCore/Serialization/SerializeContext.h>
 #include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
-#include <Atom/Feature/ReflectionProbe/ReflectionProbeFeatureProcessor.h>
-#include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RHISystemInterface.h>
-#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/DevicePipelineState.h>
 #include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>
+#include <Atom/Feature/RenderCommon.h>
+#include <Mesh/MeshFeatureProcessor.h>
+
 namespace AZ
 {
     namespace Render
@@ -27,23 +30,21 @@ namespace AZ
             {
                 serializeContext
                     ->Class<ReflectionProbeFeatureProcessor, FeatureProcessor>()
-                    ->Version(0);
+                    ->Version(1);
             }
         }
 
         void ReflectionProbeFeatureProcessor::Activate()
         {
-            RHI::RHISystemInterface* rhiSystem = RHI::RHISystemInterface::Get();
-
             m_reflectionProbes.reserve(InitialProbeAllocationSize);
 
             RHI::BufferPoolDescriptor desc;
             desc.m_heapMemoryLevel = RHI::HeapMemoryLevel::Device;
             desc.m_bindFlags = RHI::BufferBindFlags::InputAssembly;
 
-            m_bufferPool = RHI::Factory::Get().CreateBufferPool();
+            m_bufferPool = aznew RHI::BufferPool;
             m_bufferPool->SetName(Name("ReflectionProbeBoxBufferPool"));
-            [[maybe_unused]] RHI::ResultCode resultCode = m_bufferPool->Init(*rhiSystem->GetDevice(), desc);
+            [[maybe_unused]] RHI::ResultCode resultCode = m_bufferPool->Init(desc);
             AZ_Error("ReflectionProbeFeatureProcessor", resultCode == RHI::ResultCode::Success, "Failed to initialize buffer pool");
 
             // create box mesh vertices and indices
@@ -137,7 +138,7 @@ namespace AZ
                 AZ_PROFILE_SCOPE(AzRender, "Sort reflection probes");
 
                 // sort the probes by descending inner volume size, so the smallest volumes are rendered last
-                auto sortFn = [](AZStd::shared_ptr<ReflectionProbe> const& probe1, AZStd::shared_ptr<ReflectionProbe> const& probe2) -> bool
+                auto sortFn = [](ReflectionProbePtr const& probe1, ReflectionProbePtr const& probe2) -> bool
                 {
                     const Obb& obb1 = probe1->GetInnerObbWs();
                     const Obb& obb2 = probe2->GetInnerObbWs();
@@ -149,82 +150,249 @@ namespace AZ
 
                 AZStd::sort(m_reflectionProbes.begin(), m_reflectionProbes.end(), sortFn);
                 m_probeSortRequired = false;
-
-                // notify the MeshFeatureProcessor that the reflection probes changed
-                MeshFeatureProcessor* meshFeatureProcessor = GetParentScene()->GetFeatureProcessor<MeshFeatureProcessor>();
-                meshFeatureProcessor->UpdateMeshReflectionProbes();
+                m_meshFeatureProcessorUpdateRequired = true;
             }
 
             // call Simulate on all reflection probes
             for (uint32_t probeIndex = 0; probeIndex < m_reflectionProbes.size(); ++probeIndex)
             {
-                AZStd::shared_ptr<ReflectionProbe>& reflectionProbe = m_reflectionProbes[probeIndex];
+                ReflectionProbePtr& reflectionProbe = m_reflectionProbes[probeIndex];
                 AZ_Assert(reflectionProbe.use_count() > 1, "ReflectionProbe found with no corresponding owner, ensure that RemoveProbe() is called before releasing probe handles");
 
                 reflectionProbe->Simulate(probeIndex);
             }
         }
 
-        ReflectionProbeHandle ReflectionProbeFeatureProcessor::AddProbe(const AZ::Transform& transform, bool useParallaxCorrection)
+        void ReflectionProbeFeatureProcessor::OnRenderEnd()
         {
-            AZStd::shared_ptr<ReflectionProbe> reflectionProbe = AZStd::make_shared<ReflectionProbe>();
+            // call OnRenderEnd on all reflection probes
+            for (auto& reflectionProbe : m_reflectionProbes)
+            {
+                AZ_Assert(reflectionProbe.use_count() > 1, "ReflectionProbe found with no corresponding owner, ensure that RemoveProbe() is called before releasing probe handles");
+
+                reflectionProbe->OnRenderEnd();
+            }
+
+            // notify the MeshFeatureProcessor if there were changes to the ReflectionProbes
+            // Note: This is done in OnRenderEnd to avoid a race between the two feature processors in Simulate, and any changes
+            // will be applied on the next frame by the MeshFeatureProcessor.
+            if (m_meshFeatureProcessorUpdateRequired)
+            {
+                MeshFeatureProcessor* meshFeatureProcessor = GetParentScene()->GetFeatureProcessor<MeshFeatureProcessor>();
+                meshFeatureProcessor->UpdateMeshReflectionProbes();
+
+                m_meshFeatureProcessorUpdateRequired = false;
+            }
+        }
+
+        ReflectionProbeHandle ReflectionProbeFeatureProcessor::AddReflectionProbe(const AZ::Transform& transform, bool useParallaxCorrection)
+        {
+            ReflectionProbePtr reflectionProbe = AZStd::make_shared<ReflectionProbe>();
             reflectionProbe->Init(GetParentScene(), &m_reflectionRenderData);
             reflectionProbe->SetTransform(transform);
             reflectionProbe->SetUseParallaxCorrection(useParallaxCorrection);
+
             m_reflectionProbes.push_back(reflectionProbe);
+            m_reflectionProbeMap[reflectionProbe->GetUuid()] = reflectionProbe;
+
             m_probeSortRequired = true;
 
-            return reflectionProbe;
+            return reflectionProbe->GetUuid();
         }
 
-        void ReflectionProbeFeatureProcessor::RemoveProbe(ReflectionProbeHandle& probe)
+        void ReflectionProbeFeatureProcessor::RemoveReflectionProbe(ReflectionProbeHandle& handle)
         {
-            AZ_Assert(probe.get(), "RemoveProbe called with an invalid handle");
-
-            auto itEntry = AZStd::find_if(m_reflectionProbes.begin(), m_reflectionProbes.end(), [&](AZStd::shared_ptr<ReflectionProbe> const& entry)
+            if (!ValidateHandle(handle))
             {
-                return (entry == probe);
+                return;
+            }
+
+            ReflectionProbePtr reflectionProbe = m_reflectionProbeMap[handle];
+            auto itEntry = AZStd::find_if(m_reflectionProbes.begin(), m_reflectionProbes.end(), [&](ReflectionProbePtr const& entry)
+            {
+                return (entry == reflectionProbe);
             });
 
             AZ_Assert(itEntry != m_reflectionProbes.end(), "RemoveProbe called with a probe that is not in the probe list");
+
             m_reflectionProbes.erase(itEntry);
+            m_reflectionProbeMap.erase(handle);
+
+            m_meshFeatureProcessorUpdateRequired = true;
         }
 
-        void ReflectionProbeFeatureProcessor::SetProbeOuterExtents(const ReflectionProbeHandle& probe, const Vector3& outerExtents)
+        void ReflectionProbeFeatureProcessor::SetOuterExtents(const ReflectionProbeHandle& handle, const Vector3& outerExtents)
         {
-            AZ_Assert(probe.get(), "SetProbeOuterExtents called with an invalid handle");
-            probe->SetOuterExtents(outerExtents);
+            if (!ValidateHandle(handle))
+            {
+                return;
+            }
+
+            m_reflectionProbeMap[handle]->SetOuterExtents(outerExtents);
             m_probeSortRequired = true;
         }
 
-        void ReflectionProbeFeatureProcessor::SetProbeInnerExtents(const ReflectionProbeHandle& probe, const Vector3& innerExtents)
+        AZ::Vector3 ReflectionProbeFeatureProcessor::GetOuterExtents(const ReflectionProbeHandle& handle) const
         {
-            AZ_Assert(probe.get(), "SetProbeInnerExtents called with an invalid handle");
-            probe->SetInnerExtents(innerExtents);
+            if (!ValidateHandle(handle))
+            {
+                return AZ::Vector3::CreateZero();
+            }
+
+            ReflectionProbeMap::const_iterator it = m_reflectionProbeMap.find(handle);
+            return it->second->GetOuterExtents();
+        }
+
+        void ReflectionProbeFeatureProcessor::SetInnerExtents(const ReflectionProbeHandle& handle, const Vector3& innerExtents)
+        {
+            if (!ValidateHandle(handle))
+            {
+                return;
+            }
+
+            m_reflectionProbeMap[handle]->SetInnerExtents(innerExtents);
             m_probeSortRequired = true;
         }
 
-        void ReflectionProbeFeatureProcessor::SetProbeCubeMap(const ReflectionProbeHandle& probe, Data::Instance<RPI::Image>& cubeMapImage, const AZStd::string& relativePath)
+        AZ::Vector3 ReflectionProbeFeatureProcessor::GetInnerExtents(const ReflectionProbeHandle& handle) const
         {
-            AZ_Assert(probe.get(), "SetProbeCubeMap called with an invalid handle");
-            probe->SetCubeMapImage(cubeMapImage, relativePath);
+            if (!ValidateHandle(handle))
+            {
+                return AZ::Vector3::CreateZero();
+            }
 
-            // notify the MeshFeatureProcessor that the reflection probe changed
-            MeshFeatureProcessor* meshFeatureProcessor = GetParentScene()->GetFeatureProcessor<MeshFeatureProcessor>();
-            meshFeatureProcessor->UpdateMeshReflectionProbes();
+            ReflectionProbeMap::const_iterator it = m_reflectionProbeMap.find(handle);
+            return it->second->GetInnerExtents();
         }
 
-        void ReflectionProbeFeatureProcessor::SetProbeTransform(const ReflectionProbeHandle& probe, const AZ::Transform& transform)
+        AZ::Obb ReflectionProbeFeatureProcessor::GetOuterObbWs(const ReflectionProbeHandle& handle) const
         {
-            AZ_Assert(probe.get(), "SetProbeTransform called with an invalid handle");
-            probe->SetTransform(transform);
+            if (!ValidateHandle(handle))
+            {
+                return AZ::Obb();
+            }
+
+            ReflectionProbeMap::const_iterator it = m_reflectionProbeMap.find(handle);
+            return it->second->GetOuterObbWs();
+        }
+
+        AZ::Obb ReflectionProbeFeatureProcessor::GetInnerObbWs(const ReflectionProbeHandle& handle) const
+        {
+            if (!ValidateHandle(handle))
+            {
+                return AZ::Obb();
+            }
+
+            ReflectionProbeMap::const_iterator it = m_reflectionProbeMap.find(handle);
+            return it->second->GetInnerObbWs();
+        }
+
+        void ReflectionProbeFeatureProcessor::SetTransform(const ReflectionProbeHandle& handle, const AZ::Transform& transform)
+        {
+            if (!ValidateHandle(handle))
+            {
+                return;
+            }
+
+            m_reflectionProbeMap[handle]->SetTransform(transform);
             m_probeSortRequired = true;
         }
 
-        void ReflectionProbeFeatureProcessor::BakeProbe(const ReflectionProbeHandle& probe, BuildCubeMapCallback callback, const AZStd::string& relativePath)
+        AZ::Transform ReflectionProbeFeatureProcessor::GetTransform(const ReflectionProbeHandle& handle) const
         {
-            AZ_Assert(probe.get(), "BakeProbe called with an invalid handle");
-            probe->BuildCubeMap(callback);
+            if (!ValidateHandle(handle))
+            {
+                return AZ::Transform::CreateIdentity();
+            }
+
+            ReflectionProbeMap::const_iterator it = m_reflectionProbeMap.find(handle);
+            return it->second->GetTransform();
+        }
+
+        void ReflectionProbeFeatureProcessor::SetCubeMap(const ReflectionProbeHandle& handle, Data::Instance<RPI::Image>& cubeMapImage, const AZStd::string& relativePath)
+        {
+            if (!ValidateHandle(handle))
+            {
+                return;
+            }
+
+            m_reflectionProbeMap[handle]->SetCubeMapImage(cubeMapImage, relativePath);
+
+            m_meshFeatureProcessorUpdateRequired = true;
+        }
+
+        Data::Instance<RPI::Image> ReflectionProbeFeatureProcessor::GetCubeMap(const ReflectionProbeHandle& handle) const
+        {
+            if (!ValidateHandle(handle))
+            {
+                return nullptr;
+            }
+
+            ReflectionProbeMap::const_iterator it = m_reflectionProbeMap.find(handle);
+            return it->second->GetCubeMapImage();
+        }
+
+        void ReflectionProbeFeatureProcessor::SetRenderExposure(const ReflectionProbeHandle& handle, float renderExposure)
+        {
+            if (!ValidateHandle(handle))
+            {
+                return;
+            }
+
+            m_reflectionProbeMap[handle]->SetRenderExposure(renderExposure);
+        }
+
+        float ReflectionProbeFeatureProcessor::GetRenderExposure(const ReflectionProbeHandle& handle) const
+        {
+            if (!ValidateHandle(handle))
+            {
+                return 0.0f;
+            }
+
+            ReflectionProbeMap::const_iterator it = m_reflectionProbeMap.find(handle);
+            return it->second->GetRenderExposure();
+        }
+
+        void ReflectionProbeFeatureProcessor::SetBakeExposure(const ReflectionProbeHandle& handle, float bakeExposure)
+        {
+            if (!ValidateHandle(handle))
+            {
+                return;
+            }
+
+            m_reflectionProbeMap[handle]->SetBakeExposure(bakeExposure);
+        }
+
+        float ReflectionProbeFeatureProcessor::GetBakeExposure(const ReflectionProbeHandle& handle) const
+        {
+            if (!ValidateHandle(handle))
+            {
+                return 0.0f;
+            }
+
+            ReflectionProbeMap::const_iterator it = m_reflectionProbeMap.find(handle);
+            return it->second->GetBakeExposure();
+        }
+
+        bool ReflectionProbeFeatureProcessor::GetUseParallaxCorrection(const ReflectionProbeHandle& handle) const
+        {
+            if (!ValidateHandle(handle))
+            {
+                return false;
+            }
+
+            ReflectionProbeMap::const_iterator it = m_reflectionProbeMap.find(handle);
+            return it->second->GetUseParallaxCorrection();
+        }
+
+        void ReflectionProbeFeatureProcessor::Bake(const ReflectionProbeHandle& handle, RenderCubeMapCallback callback, const AZStd::string& relativePath)
+        {
+            if (!ValidateHandle(handle))
+            {
+                return;
+            }
+
+            m_reflectionProbeMap[handle]->Bake(callback);
 
             // check to see if this is an existing asset
             AZ::Data::AssetId assetId;
@@ -275,38 +443,92 @@ namespace AZ
             return false;
         }
 
-        void ReflectionProbeFeatureProcessor::ShowProbeVisualization(const ReflectionProbeHandle& probe, bool showVisualization)
+        void ReflectionProbeFeatureProcessor::ShowVisualization(const ReflectionProbeHandle& handle, bool showVisualization)
         {
-            AZ_Assert(probe.get(), "ShowProbeVisualization called with an invalid handle");
-            probe->ShowVisualization(showVisualization);
-        }
-
-        void ReflectionProbeFeatureProcessor::SetRenderExposure(const ReflectionProbeHandle& probe, float renderExposure)
-        {
-            AZ_Assert(probe.get(), "SetRenderExposure called with an invalid handle");
-            probe->SetRenderExposure(renderExposure);
-        }
-
-        void ReflectionProbeFeatureProcessor::SetBakeExposure(const ReflectionProbeHandle& probe, float bakeExposure)
-        {
-            AZ_Assert(probe.get(), "SetBakeExposure called with an invalid handle");
-            probe->SetBakeExposure(bakeExposure);
-        }
-
-        void ReflectionProbeFeatureProcessor::FindReflectionProbes(const Vector3& position, ReflectionProbeVector& reflectionProbes)
-        {
-            reflectionProbes.clear();
-
-            // simple AABB check to find the reflection probes that contain the position
-            for (auto& reflectionProbe : m_reflectionProbes)
+            if (!ValidateHandle(handle))
             {
-                if (reflectionProbe->GetOuterObbWs().Contains(position)
-                    && reflectionProbe->GetCubeMapImage()
-                    && reflectionProbe->GetCubeMapImage()->IsInitialized())
-                {
-                    reflectionProbes.push_back(reflectionProbe);
-                }
+                return;
             }
+
+            m_reflectionProbeMap[handle]->ShowVisualization(showVisualization);
+        }
+
+        void ReflectionProbeFeatureProcessor::FindReflectionProbes(const AZ::Vector3& position, ReflectionProbeHandleVector& reflectionProbeHandles)
+        {
+            FindReflectionProbesInternal(Aabb::CreateCenterRadius(position, 0.5f), reflectionProbeHandles, [&](const ReflectionProbe* reflectionProbe) -> bool
+            {
+                return reflectionProbe->GetOuterObbWs().Contains(position);
+            });
+        }
+
+        void ReflectionProbeFeatureProcessor::FindReflectionProbes(const AZ::Aabb& aabb, ReflectionProbeHandleVector& reflectionProbeHandles)
+        {
+            FindReflectionProbesInternal(aabb, reflectionProbeHandles, [&](const ReflectionProbe* reflectionProbe) -> bool
+            {
+                // [GFX TODO] Implement Obb-Aabb intersection test in ShapeIntersectionTests (AzCore)
+                AZ::Aabb outerAabb = AZ::Aabb::CreateFromObb(reflectionProbe->GetOuterObbWs());
+                return outerAabb.Overlaps(aabb);
+            });
+        }
+
+        void ReflectionProbeFeatureProcessor::FindReflectionProbesInternal(const AZ::Aabb& aabb, ReflectionProbeHandleVector& reflectionProbeHandles, AZStd::function<bool(const ReflectionProbe*)> filter)
+        {
+            reflectionProbeHandles.clear();
+
+            AZStd::vector<AzFramework::VisibilityEntry*> visibilityEntries;
+            GetParentScene()->GetCullingScene()->GetVisibilityScene()->Enumerate(
+                aabb,
+                [&](const AzFramework::IVisibilityScene::NodeData& nodeData)
+                {
+                    for (AzFramework::VisibilityEntry* entry : nodeData.m_entries)
+                    {
+                        if (entry->m_typeFlags & AzFramework::VisibilityEntry::TypeFlags::TYPE_RPI_Cullable)
+                        {
+                            if (RPI::Cullable* cullable = static_cast<RPI::Cullable*>(entry->m_userData);
+                                cullable && cullable->m_cullData.m_componentType == Culling::ComponentType::ReflectionProbe)
+                            {
+                                AZ::Uuid uuid = cullable->m_cullData.m_componentUuid;
+                                ReflectionProbePtr reflectionProbe = m_reflectionProbeMap[cullable->m_cullData.m_componentUuid];
+                                AZ_Assert(reflectionProbe, "Unable to find reflection probe by Uuid");
+
+                                if (reflectionProbe
+                                    && reflectionProbe->GetCubeMapImage()
+                                    && reflectionProbe->GetCubeMapImage()->IsInitialized())
+                                {
+                                    if (!filter || filter(reflectionProbe.get()))
+                                    {
+                                        reflectionProbeHandles.push_back(uuid);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            );
+
+            // sort the probes by descending inner volume size
+            auto sortFn = [&](const ReflectionProbeHandle& handle1, const ReflectionProbeHandle& handle2) -> bool
+            {
+                const Obb& obb1 = m_reflectionProbeMap[handle1]->GetInnerObbWs();
+                const Obb& obb2 = m_reflectionProbeMap[handle2]->GetInnerObbWs();
+                float size1 = obb1.GetHalfLengthX() * obb1.GetHalfLengthZ() * obb1.GetHalfLengthY();
+                float size2 = obb2.GetHalfLengthX() * obb2.GetHalfLengthZ() * obb2.GetHalfLengthY();
+
+                return (size1 > size2);
+            };
+
+            AZStd::sort(reflectionProbeHandles.begin(), reflectionProbeHandles.end(), sortFn);
+        }
+
+        bool ReflectionProbeFeatureProcessor::ValidateHandle(const ReflectionProbeHandle& handle) const
+        {
+            if (handle.IsNull() || m_reflectionProbeMap.find(handle) == m_reflectionProbeMap.end())
+            {
+                AZ_Assert(false, "Invalid ReflectionProbeHandle passed to the ReflectionProbeFeatureProcessor");
+                return false;
+            }
+
+            return true;
         }
 
         void ReflectionProbeFeatureProcessor::CreateBoxMesh()
@@ -393,11 +615,11 @@ namespace AZ
 
             // create index buffer
             AZ::RHI::BufferInitRequest request;
-            m_boxIndexBuffer = AZ::RHI::Factory::Get().CreateBuffer();
+            m_boxIndexBuffer = aznew RHI::Buffer;
             request.m_buffer = m_boxIndexBuffer.get();
             request.m_descriptor = AZ::RHI::BufferDescriptor{ AZ::RHI::BufferBindFlags::InputAssembly, m_boxIndices.size() * sizeof(uint16_t) };
             request.m_initialData = m_boxIndices.data();
-            AZ::RHI::ResultCode result = m_bufferPool->InitBuffer(request);
+            [[maybe_unused]] AZ::RHI::ResultCode result = m_bufferPool->InitBuffer(request);
             AZ_Error("ReflectionProbeFeatureProcessor", result == RHI::ResultCode::Success, "Failed to initialize box index buffer - error [%d]", result);
 
             // create index buffer view
@@ -408,11 +630,12 @@ namespace AZ
                 sizeof(indices),
                 AZ::RHI::IndexFormat::Uint16,
             };
-            m_reflectionRenderData.m_boxIndexBufferView = indexBufferView;
-            m_reflectionRenderData.m_boxIndexCount = numIndices;
+
+            m_reflectionRenderData.m_geometryView.SetIndexBufferView(indexBufferView);
+            m_reflectionRenderData.m_geometryView.SetDrawArguments(RHI::DrawIndexed{ 0, numIndices, 0 });
 
             // create position buffer
-            m_boxPositionBuffer = AZ::RHI::Factory::Get().CreateBuffer();
+            m_boxPositionBuffer = aznew RHI::Buffer;
             request.m_buffer = m_boxPositionBuffer.get();
             request.m_descriptor = AZ::RHI::BufferDescriptor{ AZ::RHI::BufferBindFlags::InputAssembly, m_boxPositions.size() * sizeof(Position) };
             request.m_initialData = m_boxPositions.data();
@@ -427,9 +650,10 @@ namespace AZ
                 (uint32_t)(m_boxPositions.size() * sizeof(Position)),
                 sizeof(Position),
             };
-            m_reflectionRenderData.m_boxPositionBufferView = { { positionBufferView } };
+            m_reflectionRenderData.m_geometryView.ClearStreamBufferViews();
+            m_reflectionRenderData.m_geometryView.AddStreamBufferView(positionBufferView);
 
-            AZ::RHI::ValidateStreamBufferViews(m_boxStreamLayout, m_reflectionRenderData.m_boxPositionBufferView);
+            AZ::RHI::ValidateStreamBufferViews(m_boxStreamLayout, m_reflectionRenderData.m_geometryView.GetStreamBufferViews());
         }
 
         void ReflectionProbeFeatureProcessor::LoadShader(
@@ -463,22 +687,16 @@ namespace AZ
             AZ_Error("ReflectionProbeFeatureProcessor", srgLayout != nullptr, "Failed to find ObjectSrg layout from shader [%s]", filePath);
         }
 
-        void ReflectionProbeFeatureProcessor::OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline)
+        void ReflectionProbeFeatureProcessor::OnRenderPipelineChanged(RPI::RenderPipeline* renderPipeline,
+            RPI::SceneNotification::RenderPipelineChangeType changeType)
         {
-            for (auto& reflectionProbe : m_reflectionProbes)
+            if (changeType == RPI::SceneNotification::RenderPipelineChangeType::PassChanged)
             {
-                reflectionProbe->OnRenderPipelinePassesChanged(renderPipeline);
+                for (auto& reflectionProbe : m_reflectionProbes)
+                {
+                    reflectionProbe->OnRenderPipelinePassesChanged(renderPipeline);
+                }
             }
-            m_needUpdatePipelineStates = true;
-        }
-
-        void ReflectionProbeFeatureProcessor::OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline)
-        {
-            m_needUpdatePipelineStates = true;
-        }
-
-        void ReflectionProbeFeatureProcessor::OnRenderPipelineRemoved([[maybe_unused]] RPI::RenderPipeline* pipeline)
-        {
             m_needUpdatePipelineStates = true;
         }
 

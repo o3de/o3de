@@ -11,7 +11,6 @@
 #include <AzFramework/Asset/AssetSystemBus.h>
 
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/DrawPacketBuilder.h>
 #include <Atom/RHI/RHISystemInterface.h>
 
 #include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>
@@ -25,7 +24,7 @@
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
 
-#include <Atom/Feature/SkyBox/SkyBoxLUT.h>
+#include <SkyBox/SkyBoxLUT.h>
 
 namespace AZ
 {
@@ -89,7 +88,8 @@ namespace AZ
 
             if (m_buffer)
             {
-                m_sceneSrg->SetBufferView(m_physicalSkyBufferIndex, m_buffer->GetBufferView());
+                m_sceneSrg->SetBufferView(
+                    m_physicalSkyBufferIndex, m_buffer->GetBufferView());
             }
         }
 

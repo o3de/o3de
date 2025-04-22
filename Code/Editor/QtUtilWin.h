@@ -22,9 +22,6 @@
 # include <QtWinExtras/QtWin>
 # include <QtGui/qpa/qplatformnativeinterface.h>
 # include <objidl.h>
-AZ_PUSH_DISABLE_WARNING(4458, "-Wunknown-warning-option")
-# include <GdiPlus.h>
-AZ_POP_DISABLE_WARNING
 #endif // Q_OS_WIN
 
 #include "Util/EditorUtils.h"

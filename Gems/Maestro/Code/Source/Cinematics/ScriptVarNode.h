@@ -6,40 +6,39 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_CRYMOVIE_SCRIPTVARNODE_H
-#define CRYINCLUDE_CRYMOVIE_SCRIPTVARNODE_H
 #pragma once
 
 #include "AnimNode.h"
 
-class CAnimScriptVarNode
-    : public CAnimNode
+namespace Maestro
 {
-public:
-    AZ_CLASS_ALLOCATOR(CAnimScriptVarNode, AZ::SystemAllocator, 0);
-    AZ_RTTI(CAnimScriptVarNode, "{D93FC866-A158-4C00-AB03-29DC7D3CCCFF}", CAnimNode);
 
-    CAnimScriptVarNode(const int id);
-    CAnimScriptVarNode();
+    class CAnimScriptVarNode : public CAnimNode
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(CAnimScriptVarNode, AZ::SystemAllocator);
+        AZ_RTTI(CAnimScriptVarNode, "{D93FC866-A158-4C00-AB03-29DC7D3CCCFF}", CAnimNode);
 
-    //////////////////////////////////////////////////////////////////////////
-    // Overrides from CAnimNode
-    //////////////////////////////////////////////////////////////////////////
-    void Animate(SAnimContext& ec);
-    void CreateDefaultTracks();
-    void OnReset();
-    void OnResume();
+        CAnimScriptVarNode(const int id);
+        CAnimScriptVarNode();
 
-    //////////////////////////////////////////////////////////////////////////
-    virtual unsigned int GetParamCount() const;
-    virtual CAnimParamType GetParamType(unsigned int nIndex) const;
-    virtual bool GetParamInfoFromType(const CAnimParamType& paramId, SParamInfo& info) const;
+        //////////////////////////////////////////////////////////////////////////
+        // Overrides from CAnimNode
+        //////////////////////////////////////////////////////////////////////////
+        void Animate(SAnimContext& ec) override;
+        void CreateDefaultTracks() override;
+        void OnReset() override;
+        void OnResume() override;
 
-    static void Reflect(AZ::ReflectContext* context);
+        //////////////////////////////////////////////////////////////////////////
+        unsigned int GetParamCount() const override;
+        CAnimParamType GetParamType(unsigned int nIndex) const override;
+        bool GetParamInfoFromType(const CAnimParamType& paramId, SParamInfo& info) const override;
 
-private:
-    float m_value;
-};
+        static void Reflect(AZ::ReflectContext* context);
 
-#endif // CRYINCLUDE_CRYMOVIE_SCRIPTVARNODE_H
+    private:
+        float m_value;
+    };
+
+} // namespace Maestro

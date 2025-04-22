@@ -6,12 +6,9 @@
  *
  */
 
-#include "LuaEditor.h"
 #include <Source/LuaIDEApplication.h>
 
-#if defined(AZ_COMPILER_MSVC)
-#include "resource.h"
-#endif
+#include <AzQtComponents/Utilities/HandleDpiAwareness.h>
 
 #include <QtCore/QCoreApplication>
 
@@ -19,6 +16,7 @@
 #include <ToolsCrashHandler.h>
 #endif
 
+#include <QApplication>
 #include <QDir>
 #include <QFileInfo>
 
@@ -26,22 +24,20 @@
 
 int main(int argc, char* argv[])
 {
+    const AZ::Debug::Trace tracer;
     // here we free the console (and close the console window) in release.
 
     int exitCode = 0;
 
     {
-        if (!AZ::AllocatorInstance<AZ::OSAllocator>::IsReady())
-        {
-            AZ::AllocatorInstance<AZ::OSAllocator>::Create();
-        }
-        if (!AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady())
-        {
-            AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
-        }
-
         AZStd::unique_ptr<AZ::IO::LocalFileIO> fileIO = AZStd::unique_ptr<AZ::IO::LocalFileIO>(aznew AZ::IO::LocalFileIO());
         AZ::IO::FileIOBase::SetInstance(fileIO.get());
+
+        QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+        QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
+        QCoreApplication::setAttribute(Qt::AA_DontCreateNativeWidgetSiblings);
+        QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
+        AzQtComponents::Utilities::HandleDpiAwareness(AzQtComponents::Utilities::PerScreenDpiAware);
 
         LUAEditor::Application app(argc, argv);
 
@@ -66,21 +62,13 @@ int main(int argc, char* argv[])
         // but make a component which does your processing, in response to RestoreState(). in the  CoreMessages bus.
         // RestoreState will always be called right before the main message pump activates.
         // and will then block until someone calls:
-        /*EBUS_EVENT(UIFramework::FrameworkMessages::Bus, UserWantsToQuit); */
+        /*UIFramework::FrameworkMessages::Bus::Broadcast(&UIFramework::FrameworkMessages::Bus::Events::UserWantsToQuit); */
         // so ideally to make a file processor or something, simply call app.Initialize(.... but with false as the gui mode ... )
         // and make at least one component which starts processing in response to CoreMessages::RestoreState(), and then sends UserWantsToQuit() once it has done its processing.
         // calling UserWantsToQuit will simply queue the quit, so its safe to call from any thread.
-        // your components can query EBUS_EVENT_RESULT(res, LegacyFramework::FrameworkApplicationMessages::IsRunningInGUIMode) to determine
-        // if its in GUI mode or not.
-    }
-
-    if (AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady())
-    {
-        AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
-    }
-    if (AZ::AllocatorInstance<AZ::OSAllocator>::IsReady())
-    {
-        AZ::AllocatorInstance<AZ::OSAllocator>::Destroy();
+        // your components can query
+        // FrameworkApplicationMessages::Bus::BroadcastResult(result, &FrameworkApplicationMessages::Bus::Events::IsRunningInGUIMode) to
+        // determine if its in GUI mode or not.
     }
 
     return exitCode;

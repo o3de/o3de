@@ -1,0 +1,170 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+// This #define magic lets you use the EvaluateSurface function in this file without making it the final EvaluateSurface
+// used in your shader. Simply #define EvaluateSurface to your custom definition before including this file
+//
+#ifndef EvaluateSurface
+#define EvaluateSurface EvaluateSurface_MaterialGraphName
+#endif
+
+#include <Atom/Features/PBR/LightingOptions.azsli>
+#include <Atom/Features/MatrixUtility.azsli>
+#include <Atom/RPI/TangentSpace.azsli>
+
+Surface EvaluateSurface_MaterialGraphName(
+    VsOutput IN,
+    float3 positionWS,
+    real3 normalWS,
+    float3 tangents[UvSetCount],
+    float3 bitangents[UvSetCount],
+    float2 uvs[UvSetCount],
+    bool isFrontFace,
+    bool isDisplacementClipped,
+    float4 uvDxDy,
+    bool customDerivatives)
+{
+    const float3 bitangent = cross((float3)IN.normal, (float3)IN.tangent);
+    const float3 O3DE_MC_POSITION = (float3)IN.position;
+    const float3 O3DE_MC_NORMAL = (float3)IN.normal;
+    const float3 O3DE_MC_TANGENT = (float3)IN.tangent;
+    const float3 O3DE_MC_BITANGENT = (float3)bitangent;
+    const float3 O3DE_MC_POSITION_WS = positionWS;
+    const float3 O3DE_MC_NORMAL_WS = normalWS;
+    const float3 O3DE_MC_TANGENT_WS = tangents[0];
+    const float3 O3DE_MC_BITANGENT_WS = bitangents[0];
+#if ENABLE_VERTEX_COLOR
+    const float4 O3DE_MC_COLOR = IN.color0;
+#else
+    const float4 O3DE_MC_COLOR = float4(1.0f, 1.0f, 1.0f, 1.0f);
+#endif
+    #define O3DE_MC_UV(index) uvs[clamp(index, 0, UvSetCount-1)];
+
+    // m_placeHolder keeps MaterialSrg from being compiled out when iterating on graphs
+    const bool placeHolder = MaterialSrg::m_placeHolder;
+
+    // O3DE_GENERATED_INSTRUCTIONS_BEGIN: inNormal, inBaseColor, inMetallic, inRoughness, inSpecularF0Factor, inEmissive, inAlpha, inOpacityFactor, inDiffuseAmbientOcclusion, inSpecularOcclusion, inClearCoatFactor, inClearCoatRoughness, inClearCoatNormal, 
+    real3 inNormal = normalWS;
+    real3 inBaseColor = {1.0, 1.0, 1.0};
+    real inMetallic = 0.0;
+    real inRoughness = 0.0;
+    real inSpecularF0Factor = 0.0;
+    real3 inEmissive = {0.0, 0.0, 0.0};
+    real inAlpha = 1.0;
+    real inOpacityFactor = 1.0;
+    real inDiffuseAmbientOcclusion = 1.0;
+    real inSpecularOcclusion = 1.0;
+    real inClearCoatFactor = 0.0;
+    real inClearCoatRoughness = 0.0;
+    real3 inClearCoatNormal = normalWS;
+    // O3DE_GENERATED_INSTRUCTIONS_END
+
+    #undef O3DE_MC_UV
+
+    CheckClipping((real)inAlpha, (real)inOpacityFactor);
+
+    Surface surface;
+    surface.position = positionWS;
+    surface.vertexNormal = normalWS;
+    surface.normal = normalize(o_normal_override_enabled ? GetWorldSpaceNormal((real2)inNormal, normalWS, tangents[0], bitangents[0]) : normalWS);
+    surface.normal *= real(mad(isFrontFace, 2.0, -1.0));
+    surface.roughnessLinear = inRoughness;
+    surface.SetAlbedoAndSpecularF0(inBaseColor, inSpecularF0Factor, inMetallic);
+    surface.CalculateRoughnessA();
+
+    // ------- Parallax Clipping -------
+
+#if ENABLE_PARALLAX
+    if(o_parallax_highlightClipping && isDisplacementClipped)
+    {
+        ApplyParallaxClippingHighlight(surface.albedo);
+    }
+#endif
+
+    surface.alpha = (real)inAlpha * (real)inOpacityFactor;
+    surface.emissiveLighting = inEmissive;
+    surface.diffuseAmbientOcclusion = inDiffuseAmbientOcclusion;
+    surface.specularOcclusion = inSpecularOcclusion;
+    surface.opacityAffectsSpecularFactor = o_opacity_affects_specular_factor;
+
+    // ------- Clearcoat -------
+
+#if ENABLE_CLEAR_COAT
+    if(o_clearCoat_enabled)
+    {
+        surface.clearCoat.factor = inClearCoatFactor;
+        surface.clearCoat.roughness = max(inClearCoatRoughness, 1e-3);
+
+        // Flip normal if back face is rendered   
+        surface.clearCoat.normal = normalize(o_clearCoat_normal_override_enabled ? GetWorldSpaceNormal((real2)inClearCoatNormal, normalWS, tangents[0], bitangents[0]) : normalWS);
+        surface.clearCoat.normal *= real(mad(isFrontFace, 2.0, -1.0));
+
+        ApplyClearCoatToSpecularF0(surface.specularF0, surface.clearCoat.factor);
+    }
+#endif
+
+    return surface;
+}
+
+// helper function to keep compatible with the previous version
+// because dxc compiler doesn't allow default parameters on functions with overloads
+Surface EvaluateSurface_MaterialGraphName(
+    VsOutput IN,
+    float3 positionWS,
+    real3 normalWS,
+    float3 tangents[UvSetCount],
+    float3 bitangents[UvSetCount],
+    float2 uvs[UvSetCount],
+    bool isFrontFace,
+    bool isDisplacementClipped)
+{
+    return EvaluateSurface_MaterialGraphName(
+        IN,
+        positionWS,
+        normalWS,
+        tangents,
+        bitangents,
+        uvs,
+        isFrontFace,
+        isDisplacementClipped,
+        float4(0.0f, 0.0f, 0.0f, 0.0f),
+        false); 
+}
+
+
+Surface EvaluateSurface_MaterialGraphName(VsOutput IN, PixelGeometryData geoData, float4 uvDxDy, bool customDerivatives)
+{
+    return EvaluateSurface_MaterialGraphName(
+        IN,
+        geoData.positionWS,
+        geoData.vertexNormal,
+        geoData.tangents,
+        geoData.bitangents,
+        geoData.uvs,
+        geoData.isFrontFace,
+        geoData.isDisplacementClipped,
+        uvDxDy,
+        customDerivatives);
+}
+
+Surface EvaluateSurface_MaterialGraphName(VsOutput IN, PixelGeometryData geoData)
+{
+    return EvaluateSurface_MaterialGraphName(
+        IN,
+        geoData.positionWS,
+        geoData.vertexNormal,
+        geoData.tangents,
+        geoData.bitangents,
+        geoData.uvs,
+        geoData.isFrontFace,
+        geoData.isDisplacementClipped,
+        float4(0.0f, 0.0f, 0.0f, 0.0f),
+        false);
+}

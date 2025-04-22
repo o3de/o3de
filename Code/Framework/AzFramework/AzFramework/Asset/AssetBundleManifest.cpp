@@ -15,7 +15,7 @@ namespace AzFramework
 {
     // Redirects writing of the AssetBundleManifest to an older version if the bundle version
     // is not set to the current version
-    static void OldBundleManifestWriter(AZ::SerializeContext::EnumerateInstanceCallContext& callContext, const void* bundleManifestPointer,
+    static AZ::ObjectStreamWriteOverrideResponse OldBundleManifestWriter(AZ::SerializeContext::EnumerateInstanceCallContext& callContext, const void* bundleManifestPointer,
         const AZ::SerializeContext::ClassData&, const AZ::SerializeContext::ClassElement* assetBundleManifestClassElement);
 
     static bool BundleManifestVersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& rootElement);
@@ -67,7 +67,17 @@ namespace AzFramework
         return true;
     }
 
-    void OldBundleManifestWriter(AZ::SerializeContext::EnumerateInstanceCallContext& callContext, const void* bundleManifestPointer,
+    struct AssetBundleManifestV2
+    {
+        // Use the same ClassName and typeid as the AssetBundleManifest
+        AZ_TYPE_INFO(AssetBundleManifestV2, AssetBundleManifestTypeId);
+        AZStd::string m_catalogName;
+        AZStd::vector<AZStd::string> m_dependentBundleNames;
+        AZStd::vector<AZStd::string> m_levelDirs;
+        int m_bundleVersion{};
+    };
+
+    AZ::ObjectStreamWriteOverrideResponse OldBundleManifestWriter(AZ::SerializeContext::EnumerateInstanceCallContext& callContext, const void* bundleManifestPointer,
         const AZ::SerializeContext::ClassData&, const AZ::SerializeContext::ClassElement* assetBundleManifestClassElement)
     {
         // Copy the AssetBundleManifest current version instance to the AssetBundleManifest V2 instance
@@ -76,15 +86,6 @@ namespace AzFramework
         {
             auto serializeContext = const_cast<AZ::SerializeContext*>(callContext.m_context);
 
-            struct AssetBundleManifestV2
-            {
-                // Use the same ClassName and typeid as the AssetBundleManifest
-                AZ_TYPE_INFO(AssetBundleManifest, azrtti_typeid<AssetBundleManifest>());
-                AZStd::string m_catalogName;
-                AZStd::vector<AZStd::string> m_dependentBundleNames;
-                AZStd::vector<AZStd::string> m_levelDirs;
-                int m_bundleVersion{};
-            };
             auto ReflectAssetBundleManifestV2 = [](AZ::SerializeContext* serializeContext)
             {
                 serializeContext->Class<AssetBundleManifestV2>()
@@ -145,7 +146,10 @@ namespace AzFramework
             ReflectAssetBundleManifestV2(serializeContext);
             serializeContext->DisableRemoveReflection();
             AssetBundleManifest::ReflectSerialize(serializeContext);
+            return AZ::ObjectStreamWriteOverrideResponse::CompletedWrite;
         }
+
+        return AZ::ObjectStreamWriteOverrideResponse::FallbackToDefaultWrite;
     }
 
     const AZStd::vector<AZ::IO::Path>& AssetBundleManifest::GetLevelDirectories() const

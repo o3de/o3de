@@ -40,7 +40,7 @@ namespace ScriptCanvas
 
                 Method() = default;
 
-                ~Method() = default;
+                ~Method() override = default;
 
                 bool BranchesOnResult() const;
 
@@ -169,6 +169,8 @@ namespace ScriptCanvas
                 AZ_INLINE void SetWarnOnMissingFunction(bool enabled) { m_warnOnMissingFunction = enabled; }
 
                 bool GetBehaviorContextClassMethod(const AZ::BehaviorClass*& outClass, const AZ::BehaviorMethod*& outMethod, EventType& outType) const;
+
+                bool IsDeprecated() const override;
 
             private:
                 friend struct ScriptCanvas::BehaviorContextMethodHelper;

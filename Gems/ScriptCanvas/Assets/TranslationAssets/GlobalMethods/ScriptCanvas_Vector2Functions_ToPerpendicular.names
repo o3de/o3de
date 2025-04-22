@@ -1,0 +1,38 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_Vector2Functions_ToPerpendicular",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "To Perpendicular",
+                "category": "Math/Vector2"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_Vector2Functions_ToPerpendicular",
+                    "details": {
+                        "name": "To Perpendicular",
+                        "tooltip": "Returns the vector (-Source.y, Source.x), a 90 degree, positive rotation."
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Source"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Vector2"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

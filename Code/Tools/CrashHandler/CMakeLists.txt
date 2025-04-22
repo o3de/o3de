@@ -6,7 +6,7 @@
 #
 #
 
-ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME})
+o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} ${O3DE_ENGINE_RESTRICTED_PATH} ${LY_ROOT_FOLDER})
 
 include(${pal_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
 
@@ -36,7 +36,7 @@ ly_add_target(
             AZ::AzFramework
 )
 
-string(REPLACE "." ";" version_list "${LY_VERSION_STRING}")
+string(REPLACE "." ";" version_list "${O3DE_INSTALL_VERSION_STRING}")
 list(GET version_list 0 EXE_VERSION_INFO_0)
 list(GET version_list 1 EXE_VERSION_INFO_1)
 
@@ -57,7 +57,7 @@ ly_add_source_properties(
     SOURCES Shared/CrashHandler.cpp
     PROPERTY COMPILE_DEFINITIONS 
     VALUES
-        LY_BUILD=${LY_VERSION_BUILD_NUMBER}
+        LY_BUILD=${O3DE_INSTALL_BUILD_VERSION}
         EXE_VERSION_INFO_0=${EXE_VERSION_INFO_0}
         EXE_VERSION_INFO_1=${EXE_VERSION_INFO_1}
         EXE_VERSION_INFO_2=${EXE_VERSION_INFO_2}

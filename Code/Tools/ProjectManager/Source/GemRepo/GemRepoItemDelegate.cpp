@@ -9,20 +9,28 @@
 #include <GemRepo/GemRepoItemDelegate.h>
 #include <GemRepo/GemRepoModel.h>
 #include <ProjectManagerDefs.h>
+#include <AdjustableHeaderWidget.h>
 
 #include <QEvent>
 #include <QPainter>
 #include <QMouseEvent>
+#include <QHeaderView>
+#include <QLocale>
 
 namespace O3DE::ProjectManager
 {
-    GemRepoItemDelegate::GemRepoItemDelegate(QAbstractItemModel* model, QObject* parent)
+    GemRepoItemDelegate::GemRepoItemDelegate(QAbstractItemModel* model, AdjustableHeaderWidget* header, QObject* parent)
         : QStyledItemDelegate(parent)
         , m_model(model)
+        , m_headerWidget(header)
     {
         m_refreshIcon   = QIcon(":/Refresh.svg").pixmap(s_refreshIconSize, s_refreshIconSize);
         m_editIcon      = QIcon(":/Edit.svg").pixmap(s_iconSize, s_iconSize);
         m_deleteIcon    = QIcon(":/Delete.svg").pixmap(s_iconSize, s_iconSize);
+        m_hiddenIcon    = QIcon(":/Hidden.svg").pixmap(s_iconSize, s_iconSize);
+        m_visibleIcon   = QIcon(":/Visible.svg").pixmap(s_iconSize, s_iconSize);
+        m_blueBadge   = QIcon(":/BannerBlue.svg").pixmap(s_badgeWidth, s_badgeHeight);
+        m_greenBadge   = QIcon(":/BannerGreen.svg").pixmap(s_badgeWidth, s_badgeHeight);
     }
 
     void GemRepoItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& modelIndex) const
@@ -43,6 +51,11 @@ namespace O3DE::ProjectManager
         QFont standardFont(options.font);
         standardFont.setPixelSize(static_cast<int>(s_fontSize));
         QFontMetrics standardFontMetrics(standardFont);
+
+        QFont standardBoldFont(options.font);
+        standardBoldFont.setPixelSize(static_cast<int>(s_fontSize));
+        standardBoldFont.setBold(true);
+        QFontMetrics standardFontBoldMetrics(standardFont);
 
         painter->save();
         painter->setClipping(true);
@@ -69,49 +82,101 @@ namespace O3DE::ProjectManager
             painter->restore();
         }
 
+        int currentHorizontalOffset = CalcColumnXBounds(HeaderOrder::Name).first + s_contentMargins.left() ;
+
         // Repo name
         QString repoName = GemRepoModel::GetName(modelIndex);
-        repoName = QFontMetrics(standardFont).elidedText(repoName, Qt::TextElideMode::ElideRight, s_nameMaxWidth);
+        int sectionSize = m_headerWidget->m_header->sectionSize(static_cast<int>(HeaderOrder::Name)) - s_contentMargins.left();
+        repoName = standardFontMetrics.elidedText(repoName, Qt::TextElideMode::ElideRight,
+            sectionSize - AdjustableHeaderWidget::s_headerTextIndent);
 
         QRect repoNameRect = GetTextRect(standardFont, repoName, s_fontSize);
-        int currentHorizontalOffset = contentRect.left();
-        repoNameRect.moveTo(currentHorizontalOffset, contentRect.center().y() - repoNameRect.height() / 2);
+        repoNameRect.moveTo(currentHorizontalOffset,
+            contentRect.center().y() - repoNameRect.height() / 2);
         repoNameRect = painter->boundingRect(repoNameRect, Qt::TextSingleLine, repoName);
 
         painter->drawText(repoNameRect, Qt::TextSingleLine, repoName);
 
-        // Rem repo creator
+        // Repo creator
+        currentHorizontalOffset += sectionSize;
+        sectionSize = m_headerWidget->m_header->sectionSize(static_cast<int>(HeaderOrder::Creator));
+
         QString repoCreator = GemRepoModel::GetCreator(modelIndex);
-        repoCreator = standardFontMetrics.elidedText(repoCreator, Qt::TextElideMode::ElideRight, s_creatorMaxWidth);
+        repoCreator = standardFontMetrics.elidedText(repoCreator, Qt::TextElideMode::ElideRight,
+            sectionSize - AdjustableHeaderWidget::s_headerTextIndent);
 
         QRect repoCreatorRect = GetTextRect(standardFont, repoCreator, s_fontSize);
-        currentHorizontalOffset += s_nameMaxWidth + s_contentSpacing;
-        repoCreatorRect.moveTo(currentHorizontalOffset, contentRect.center().y() - repoCreatorRect.height() / 2);
+        repoCreatorRect.moveTo(currentHorizontalOffset + AdjustableHeaderWidget::s_headerTextIndent,
+            contentRect.center().y() - repoCreatorRect.height() / 2);
         repoCreatorRect = painter->boundingRect(repoCreatorRect, Qt::TextSingleLine, repoCreator);
 
         painter->drawText(repoCreatorRect, Qt::TextSingleLine, repoCreator);
 
-        // Repo update
-        QString repoUpdatedDate = GemRepoModel::GetLastUpdated(modelIndex).toString(RepoTimeFormat);
-        repoUpdatedDate = standardFontMetrics.elidedText(repoUpdatedDate, Qt::TextElideMode::ElideRight, s_updatedMaxWidth);
+        // Badge
+        currentHorizontalOffset += sectionSize;
+        sectionSize = m_headerWidget->m_header->sectionSize(static_cast<int>(HeaderOrder::Badge));
+        auto badgeType = GemRepoModel::GetBadgeType(modelIndex);
+        const QPixmap* badge = nullptr;
+        QString badgeText;
+        if (badgeType == GemRepoInfo::BadgeType::BlueBadge)
+        {
+            badge = &m_blueBadge;
+            badgeText = tr("O3DE Official");
+        }
+        else if (badgeType == GemRepoInfo::BadgeType::GreenBadge)
+        {
+            badge = &m_greenBadge;
+
+            // this text should be made dynamic at some point
+            badgeText = tr("O3DF Recommended");
+        }
+
+        if (badge)
+        {
+            const QRect badgeRect = CalcBadgeRect(contentRect);
+            painter->drawPixmap(badgeRect, m_blueBadge);
+
+            painter->setFont(standardBoldFont);
+
+            QRect badgeLabelRect = GetTextRect(standardBoldFont, badgeText, s_fontSize);
+            badgeLabelRect.moveTo(currentHorizontalOffset + s_badgeLeftMargin,
+                contentRect.center().y() - (badgeLabelRect.height() / 2) - 1);
+            badgeLabelRect = painter->boundingRect(badgeLabelRect, Qt::TextSingleLine, badgeText);
+            painter->drawText(badgeLabelRect, Qt::TextSingleLine, badgeText);
+
+            painter->setFont(standardFont);
+        }
+
+        // Last updated
+        currentHorizontalOffset += sectionSize;
+        sectionSize = m_headerWidget->m_header->sectionSize(static_cast<int>(HeaderOrder::Updated));
+        auto lastUpdated = GemRepoModel::GetLastUpdated(modelIndex);
+
+        // get the month day and year in the preferred locale's format (QLocale defaults to the OS locale)
+        QString monthDayYear = lastUpdated.toString(QLocale().dateFormat(QLocale::ShortFormat));
+
+        // always show 12 hour + minutes + am/pm
+        QString hourMinuteAMPM = lastUpdated.toString("h:mmap");
+
+        QString repoUpdatedDate = QString("%1 %2").arg(monthDayYear, hourMinuteAMPM);
+        repoUpdatedDate = standardFontMetrics.elidedText(
+            repoUpdatedDate, Qt::TextElideMode::ElideRight,
+            sectionSize - AdjustableHeaderWidget::s_headerTextIndent);
 
         QRect repoUpdatedDateRect = GetTextRect(standardFont, repoUpdatedDate, s_fontSize);
-        currentHorizontalOffset += s_creatorMaxWidth + s_contentSpacing;
-        repoUpdatedDateRect.moveTo(currentHorizontalOffset, contentRect.center().y() - repoUpdatedDateRect.height() / 2);
+        repoUpdatedDateRect.moveTo(currentHorizontalOffset + AdjustableHeaderWidget::s_headerTextIndent,
+            contentRect.center().y() - repoUpdatedDateRect.height() / 2);
         repoUpdatedDateRect = painter->boundingRect(repoUpdatedDateRect, Qt::TextSingleLine, repoUpdatedDate);
 
         painter->drawText(repoUpdatedDateRect, Qt::TextSingleLine, repoUpdatedDate);
 
-        // Draw refresh button
-        painter->drawPixmap(
-            repoUpdatedDateRect.left() + s_updatedMaxWidth + s_refreshIconSpacing,
-            contentRect.center().y() - s_refreshIconSize / 3, // Dividing size by 3 centers much better
-            m_refreshIcon);
+        // Refresh button
+        const QRect refreshButtonRect = CalcRefreshButtonRect(contentRect);
+        painter->drawPixmap(refreshButtonRect.topLeft(), m_refreshIcon);
 
-        if (options.state & QStyle::State_MouseOver)
-        {
-            DrawEditButtons(painter, contentRect);
-        }
+        // Visibility button
+        const QRect visibilityButtonRect = CalcVisibilityButtonRect(contentRect);
+        painter->drawPixmap(visibilityButtonRect, GemRepoModel::IsEnabled(modelIndex) ? m_visibleIcon  : m_hiddenIcon);
 
         painter->restore();
     }
@@ -121,8 +186,8 @@ namespace O3DE::ProjectManager
         QStyleOptionViewItem options(option);
         initStyleOption(&options, modelIndex);
 
-        int marginsHorizontal = s_itemMargins.left() + s_itemMargins.right() + s_contentMargins.left() + s_contentMargins.right();
-        return QSize(marginsHorizontal + s_nameMaxWidth + s_creatorMaxWidth + s_updatedMaxWidth + s_contentSpacing * 3, s_height);
+        const int marginsHorizontal = s_itemMargins.left() + s_itemMargins.right() + s_contentMargins.left() + s_contentMargins.right();
+        return QSize(marginsHorizontal + s_nameDefaultWidth + s_creatorDefaultWidth + s_buttonsDefaultWidth, s_height);
     }
 
     bool GemRepoItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option, const QModelIndex& modelIndex)
@@ -154,12 +219,13 @@ namespace O3DE::ProjectManager
 
             QRect fullRect, itemRect, contentRect;
             CalcRects(option, fullRect, itemRect, contentRect);
-            const QRect deleteButtonRect = CalcDeleteButtonRect(contentRect);
+            const QRect visibilityButtonRect = CalcVisibilityButtonRect(contentRect);
             const QRect refreshButtonRect = CalcRefreshButtonRect(contentRect);
 
-            if (deleteButtonRect.contains(mouseEvent->pos()))
+            if (visibilityButtonRect.contains(mouseEvent->pos()))
             {
-                emit RemoveRepo(modelIndex);
+                bool isAdded = GemRepoModel::IsEnabled(modelIndex);
+                GemRepoModel::SetEnabled(*model, modelIndex, !isAdded);
                 return true;
             }
             else if (refreshButtonRect.contains(mouseEvent->pos()))
@@ -185,22 +251,34 @@ namespace O3DE::ProjectManager
         return QFontMetrics(font).boundingRect(text);
     }
 
-    QRect GemRepoItemDelegate::CalcDeleteButtonRect(const QRect& contentRect) const
+    QPair<int, int> GemRepoItemDelegate::CalcColumnXBounds(HeaderOrder header) const
     {
-        const QPoint topLeft = QPoint(contentRect.right() - s_iconSize, contentRect.center().y() - s_iconSize / 2);
+        return m_headerWidget->CalcColumnXBounds(static_cast<int>(header));
+    }
+
+    QRect GemRepoItemDelegate::CalcBadgeRect(const QRect& contentRect) const
+    {
+        const auto bounds = CalcColumnXBounds(HeaderOrder::Badge);
+        const QPoint topLeft = QPoint(bounds.first, contentRect.center().y() - s_badgeHeight / 2);
+        return QRect(topLeft, QSize(s_badgeWidth, s_badgeHeight));
+    }
+
+    QRect GemRepoItemDelegate::CalcVisibilityButtonRect(const QRect& contentRect) const
+    {
+        const auto bounds = CalcColumnXBounds(HeaderOrder::Buttons);
+        const int centerX = (bounds.first + bounds.second) / 2;
+
+        const QPoint topLeft = QPoint(centerX + s_refreshIconSpacing, contentRect.center().y() - s_iconSize / 2);
         return QRect(topLeft, QSize(s_iconSize, s_iconSize));
     }
 
     QRect GemRepoItemDelegate::CalcRefreshButtonRect(const QRect& contentRect) const
     {
-        const int topLeftX = contentRect.left() + s_nameMaxWidth + s_creatorMaxWidth + s_updatedMaxWidth + s_contentSpacing * 2 + s_refreshIconSpacing;
-        const QPoint topLeft = QPoint(topLeftX, contentRect.center().y() - s_refreshIconSize / 3);
-        return QRect(topLeft, QSize(s_refreshIconSize, s_refreshIconSize));
-    }
+        const auto bounds = CalcColumnXBounds(HeaderOrder::Buttons);
+        const int centerX = (bounds.first + bounds.second) / 2;
 
-    void GemRepoItemDelegate::DrawEditButtons(QPainter* painter, const QRect& contentRect) const
-    {
-        painter->drawPixmap(contentRect.right() - s_iconSize, contentRect.center().y() - s_iconSize / 2, m_deleteIcon);
+        const QPoint topLeft = QPoint(centerX - s_refreshIconSpacing - s_refreshIconSize, contentRect.center().y() - s_refreshIconSize / 2 + 1);
+        return QRect(topLeft, QSize(s_refreshIconSize, s_refreshIconSize));
     }
 
 } // namespace O3DE::ProjectManager

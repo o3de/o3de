@@ -8,7 +8,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 def AssetPicker_UI_UX():
 
-    import editor_python_test_tools.pyside_utils as pyside_utils
+    import pyside_utils
 
     @pyside_utils.wrap_async
     async def run_test():
@@ -21,14 +21,14 @@ def AssetPicker_UI_UX():
         The Asset Picker window can be resized and moved around the screen.
         The file tree expands/retracts appropriately and a scroll bar is present when the menus extend 
         beyond the length of the window.
-        The assets are limited to a valid type for the field selected (mesh assets in this instance)
+        The assets are limited to a valid type for the field selected (model assets in this instance)
         The asset picker is closed and the selected asset is assigned to the mesh component.
 
         Test Steps:
         1) Open a simple level
         2) Create entity and add Mesh component
         3) Access Entity Inspector
-        4) Click Asset Picker (Mesh Asset)
+        4) Click Asset Picker (Model Asset)
             a) Collapse all the files initially and verify if scroll bar is not visible
             b) Expand/Verify Top folder of file path
             c) Expand/Verify Nested folder of file path
@@ -37,8 +37,8 @@ def AssetPicker_UI_UX():
             f) Verify if the correct files are appearing in the Asset Picker
             g) Move the widget and verify position
             h) Resize the widget
-            g) Assign Mesh asset
-        5) Verify if Mesh Asset is assigned via both OK/Enter options
+            g) Assign Model asset
+        5) Verify if Model Asset is assigned via both OK/Enter options
 
         Note:
         - This test file must be called from the O3DE Editor command terminal
@@ -54,6 +54,8 @@ def AssetPicker_UI_UX():
 
         import azlmbr.asset as asset
         import azlmbr.bus as bus
+        import azlmbr.editor as editor
+        import azlmbr.entity as entity
         import azlmbr.legacy.general as general
         import azlmbr.math as math
 
@@ -63,11 +65,17 @@ def AssetPicker_UI_UX():
 
         file_path = ["AutomatedTesting", "Assets", "Objects", "Foliage"]
 
+        def select_entity_by_name(entity_name):
+            searchFilter = entity.SearchFilter()
+            searchFilter.names = [entity_name]
+            entities = entity.SearchBus(bus.Broadcast, 'SearchEntities', searchFilter)
+            editor.ToolsApplicationRequestBus(bus.Broadcast, 'MarkEntitySelected', entities[0])
+            
         def is_asset_assigned(component, interaction_option):
-            path = os.path.join("assets", "objects", "foliage", "cedar.azmodel")
+            path = os.path.join("assets", "objects", "foliage", "cedar.fbx.azmodel")
             expected_asset_id = asset.AssetCatalogRequestBus(bus.Broadcast, 'GetAssetIdByPath', path, math.Uuid(),
                                                              False)
-            result = hydra.get_component_property_value(component, "Controller|Configuration|Mesh Asset")
+            result = hydra.get_component_property_value(component, "Controller|Configuration|Model Asset")
             expected_asset_str = expected_asset_id.invoke("ToString")
             result_str = result.invoke("ToString")
             Report.info(f"Asset assigned for {interaction_option} option: {expected_asset_str == result_str}")
@@ -215,8 +223,7 @@ def AssetPicker_UI_UX():
                     QtTest.QTest.keyClick(tree, Qt.Key_Enter, Qt.NoModifier)
 
         # 1) Open an existing simple level
-        helper.init_idle()
-        helper.open_level("Physics", "Base")
+        hydra.open_base_level()
 
         # 2) Create entity and add Mesh component
         entity_position = math.Vector3(125.0, 136.0, 32.0)
@@ -225,55 +232,53 @@ def AssetPicker_UI_UX():
 
         # 3) Access Entity Inspector
         editor_window = pyside_utils.get_editor_main_window()
-        entity_inspector = editor_window.findChild(QtWidgets.QDockWidget, "Entity Inspector")
+        entity_inspector = editor_window.findChild(QtWidgets.QDockWidget, "Inspector")
         component_list_widget = entity_inspector.findChild(QtWidgets.QWidget, "m_componentListContents")
 
-        # 4) Click on Asset Picker (Mesh Asset)
-        general.select_object("TestEntity")
+        # 4) Click on Asset Picker (Model Asset)
+        select_entity_by_name("TestEntity")
         general.idle_wait(0.5)
-        mesh_asset = component_list_widget.findChildren(QtWidgets.QFrame, "Mesh Asset")[0]
-        attached_button = mesh_asset.findChildren(QtWidgets.QPushButton, "attached-button")[0]
+        attached_button = component_list_widget.findChildren(QtWidgets.QPushButton, "attached-button")[0]
 
-        # Assign Mesh Asset via OK button
+        # Assign Model Asset via OK button
         pyside_utils.click_button_async(attached_button)
-        await asset_picker(["azmodel", "fbx"], "cedar (ModelAsset)", "ok")
+        await asset_picker(["azmodel", "fbx"], "cedar.fbx (ModelAsset)", "ok")
 
-        # 5) Verify if Mesh Asset is assigned
+        # 5) Verify if Model Asset is assigned
         try:
             mesh_success = await pyside_utils.wait_for_condition(lambda: is_asset_assigned(entity.components[0],
                                                                                            "ok"))
         except pyside_utils.EventLoopTimeoutException as err:
             print(err)
             mesh_success = False
-        mesh_asset_assigned_ok = (
-            "Successfully assigned Mesh asset via OK button",
-            "Failed to assign Mesh asset via OK button"
+        model_asset_assigned_ok = (
+            "Successfully assigned Model asset via OK button",
+            "Failed to assign Model asset via OK button"
         )
-        Report.result(mesh_asset_assigned_ok, mesh_success)
+        Report.result(model_asset_assigned_ok, mesh_success)
 
-        # Clear Mesh Asset
-        hydra.get_set_test(entity, 0, "Controller|Configuration|Mesh Asset", None)
-        general.select_object("TestEntity")
+        # Clear Model Asset
+        hydra.get_set_test(entity, 0, "Controller|Configuration|Model Asset", None)
+        select_entity_by_name("TestEntity")
         general.idle_wait(0.5)
-        mesh_asset = component_list_widget.findChildren(QtWidgets.QFrame, "Mesh Asset")[0]
-        attached_button = mesh_asset.findChildren(QtWidgets.QPushButton, "attached-button")[0]
+        attached_button = component_list_widget.findChildren(QtWidgets.QPushButton, "attached-button")[0]
 
-        # Assign Mesh Asset via Enter
+        # Assign Model Asset via Enter
         pyside_utils.click_button_async(attached_button)
-        await asset_picker(["azmodel", "fbx"], "cedar (ModelAsset)", "enter")
+        await asset_picker(["azmodel", "fbx"], "cedar.fbx (ModelAsset)", "enter")
 
-        # 5) Verify if Mesh Asset is assigned
+        # 5) Verify if Model Asset is assigned
         try:
             mesh_success = await pyside_utils.wait_for_condition(lambda: is_asset_assigned(entity.components[0],
                                                                                            "enter"))
         except pyside_utils.EventLoopTimeoutException as err:
             print(err)
             mesh_success = False
-        mesh_asset_assigned_enter = (
-            "Successfully assigned Mesh asset via Enter button",
-            "Failed to assign Mesh asset via Enter button"
+        model_asset_assigned_enter = (
+            "Successfully assigned Model Asset via Enter button",
+            "Failed to assign Model Asset via Enter button"
         )
-        Report.result(mesh_asset_assigned_enter, mesh_success)
+        Report.result(model_asset_assigned_enter, mesh_success)
 
     run_test()
 

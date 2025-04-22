@@ -8,7 +8,12 @@
 
 #pragma once
 
-#include <scenesrg.srgi>
+#include <scenesrg_all.srgi>
+#include <Atom/Features/PBR/Lights/ReflectionProbeData.azsli>
+
+#ifndef MATERIAL_PIPELINE_OBJECT_SRG_MEMBERS
+#define MATERIAL_PIPELINE_OBJECT_SRG_MEMBERS
+#endif
 
 ShaderResourceGroup ObjectSrg : SRG_PerObject
 {
@@ -27,47 +32,14 @@ ShaderResourceGroup ObjectSrg : SRG_PerObject
         return SceneSrg::GetObjectToWorldInverseTransposeMatrix(m_objectId);
     }
 
-    //! Reflection Probe (smallest probe volume that overlaps the object position)
-    struct ReflectionProbeData
+    float4x4 GetWorldMatrixPrev()
     {
-        row_major float3x4 m_modelToWorld;
-        row_major float3x4 m_modelToWorldInverse; // does not include extents
-        float3 m_outerObbHalfLengths;
-        float3 m_innerObbHalfLengths;
-        float m_padding;
-        bool m_useReflectionProbe;
-        bool m_useParallaxCorrection;
-        float m_exposure;
-    };
+        return SceneSrg::GetObjectToWorldMatrixPrev(m_objectId);
+    }
 
     ReflectionProbeData m_reflectionProbeData;
     TextureCube m_reflectionProbeCubeMap;
 
-    float4x4 GetReflectionProbeWorldMatrix()
-    {
-        float4x4 modelToWorld = float4x4(
-            float4(1, 0, 0, 0),
-            float4(0, 1, 0, 0),
-            float4(0, 0, 1, 0),
-            float4(0, 0, 0, 1));
-
-        modelToWorld[0] = m_reflectionProbeData.m_modelToWorld[0];
-        modelToWorld[1] = m_reflectionProbeData.m_modelToWorld[1];
-        modelToWorld[2] = m_reflectionProbeData.m_modelToWorld[2];
-        return modelToWorld;
-    }
-
-    float4x4 GetReflectionProbeWorldMatrixInverse()
-    {
-        float4x4 modelToWorldInverse = float4x4(
-            float4(1, 0, 0, 0),
-            float4(0, 1, 0, 0),
-            float4(0, 0, 1, 0),
-            float4(0, 0, 0, 1));
-
-        modelToWorldInverse[0] = m_reflectionProbeData.m_modelToWorldInverse[0];
-        modelToWorldInverse[1] = m_reflectionProbeData.m_modelToWorldInverse[1];
-        modelToWorldInverse[2] = m_reflectionProbeData.m_modelToWorldInverse[2];
-        return modelToWorldInverse;
-    }
+    uint m_lightingChannelMask;
+    MATERIAL_PIPELINE_OBJECT_SRG_MEMBERS
 }

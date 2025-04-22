@@ -19,13 +19,15 @@
                         "tooltip": "Signaled after Set Linear Velocity is invoked"
                     },
                     "details": {
-                        "name": "Set Linear Velocity"
+                        "name": "Set Linear Velocity",
+                        "tooltip": "Set the linear velocity for the rigid body (overwriting the velocity determined by the simulation)"
                     },
                     "params": [
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Linear Velocity"
+                                "name": "Linear Velocity",
+                                "tooltip": "Linear velocity for the rigid body"
                             }
                         }
                     ]
@@ -41,13 +43,15 @@
                         "tooltip": "Signaled after Set Kinematic is invoked"
                     },
                     "details": {
-                        "name": "Set Kinematic"
+                        "name": "Set Kinematic",
+                        "tooltip": "Set the rigid body to be kinematic (movable only by setting a kinematic target position) or dynamic"
                     },
                     "params": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "Enabled"
+                                "name": "Enabled",
+                                "tooltip": "If true, the rigid body will be kinematic"
                             }
                         }
                     ]
@@ -63,13 +67,15 @@
                         "tooltip": "Signaled after Set Mass is invoked"
                     },
                     "details": {
-                        "name": "Set Mass"
+                        "name": "Set Mass",
+                        "tooltip": "Set the mass of the rigid body in kg"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Mass"
+                                "name": "Mass",
+                                "tooltip": "The mass of the rigid body in kg"
                             }
                         }
                     ]
@@ -85,13 +91,15 @@
                         "tooltip": "Signaled after Set Gravity Enabled is invoked"
                     },
                     "details": {
-                        "name": "Set Gravity Enabled"
+                        "name": "Set Gravity Enabled",
+                        "tooltip": "Set whether this rigid body is affected by the scene gravity"
                     },
                     "params": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "Enabled"
+                                "name": "Enabled",
+                                "tooltip": "If true, this rigid body is affected by the scene gravity"
                             }
                         }
                     ]
@@ -107,13 +115,24 @@
                         "tooltip": "Signaled after Get AABB is invoked"
                     },
                     "details": {
-                        "name": "Get AABB"
+                        "name": "Get AABB",
+                        "tooltip": "Get the axis-aligned bounding box for the rigid body"
                     },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Id for the rigid body entity"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
                             "details": {
-                                "name": "AABB"
+                                "name": "AABB",
+                                "tooltip": "The axis-aligned bounding box for the rigid body"
                             }
                         }
                     ]
@@ -128,8 +147,18 @@
                         "name": "Out",
                         "tooltip": "Signaled after Force Awake is invoked"
                     },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Id for the rigid body entity"
+                            }
+                        }
+                    ],
                     "details": {
-                        "name": "Force Awake"
+                        "name": "Force Awake",
+                        "tooltip": "Set the rigid body to be awake (bodies may be considered asleep if they have been consistently inactive)"
                     }
                 },
                 {
@@ -143,13 +172,15 @@
                         "tooltip": "Signaled after Set Angular Damping is invoked"
                     },
                     "details": {
-                        "name": "Set Angular Damping"
+                        "name": "Set Angular Damping",
+                        "tooltip": "Set the angular damping value, which affects how quickly angular velocity dissipates"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Angular Damping"
+                                "name": "Angular Damping",
+                                "tooltip": "Angular damping value, which affects how quickly angular velocity dissipates"
                             }
                         }
                     ]
@@ -165,13 +196,15 @@
                         "tooltip": "Signaled after Apply Angular Impulse is invoked"
                     },
                     "details": {
-                        "name": "Apply Angular Impulse"
+                        "name": "Apply Angular Impulse",
+                        "tooltip": "Apply an angular impulse (torque integrated over time)"
                     },
                     "params": [
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Angular Impulse"
+                                "name": "Angular Impulse",
+                                "tooltip": "Angular impulse (torque integrated over time)"
                             }
                         }
                     ]
@@ -187,8 +220,18 @@
                         "tooltip": "Signaled after Disable Physics is invoked"
                     },
                     "details": {
-                        "name": "Disable Physics"
-                    }
+                        "name": "Disable Physics",
+                        "tooltip": "Disable simulation for this rigid body"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Id for the rigid body entity"
+                            }
+                        }
+                    ]
                 },
                 {
                     "base": "SetSimulationEnabled",
@@ -201,13 +244,15 @@
                         "tooltip": "Signaled after Set Simulation Enabled is invoked"
                     },
                     "details": {
-                        "name": "Set Simulation Enabled"
+                        "name": "Set Simulation Enabled",
+                        "tooltip": "Set whether simulation is enabled or not for this rigid body"
                     },
                     "params": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "Enabled"
+                                "name": "Enabled",
+                                "tooltip": "If true, simulation will be enabled for this rigid body"
                             }
                         }
                     ]
@@ -223,13 +268,15 @@
                         "tooltip": "Signaled after Get Linear Velocity At World Point is invoked"
                     },
                     "details": {
-                        "name": "Get Linear Velocity At World Point"
+                        "name": "Get Linear Velocity At World Point",
+                        "tooltip": "Get the overall linear velocity at a point in world space, combining the effect of the rigid body's linear velocity and its rotation about its center of mass"
                     },
                     "params": [
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Linear Velocity"
+                                "name": "World Point",
+                                "tooltip": "Point in world space at which the linear velocity is required"
                             }
                         }
                     ],
@@ -237,7 +284,8 @@
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "World Point"
+                                "name": "Linear Velocity",
+                                "tooltip": "The overall linear velocity at the requested point in world space, combining the effect of the rigid body's linear velocity and its rotation about its center of mass"
                             }
                         }
                     ]
@@ -253,13 +301,15 @@
                         "tooltip": "Signaled after Set Angular Velocity is invoked"
                     },
                     "details": {
-                        "name": "Set Angular Velocity"
+                        "name": "Set Angular Velocity",
+                        "tooltip": "Set the angular velocity for the rigid body (overwriting the angular velocity determined by the simulation)"
                     },
                     "params": [
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Angular Velocity"
+                                "name": "Angular Velocity",
+                                "tooltip": "Angular velocity for the rigid body"
                             }
                         }
                     ]
@@ -275,13 +325,15 @@
                         "tooltip": "Signaled after Set Center Of Mass Offset is invoked"
                     },
                     "details": {
-                        "name": "Set Center Of Mass Offset"
+                        "name": "Set Center Of Mass Offset",
+                        "tooltip": "Set the position of the rigid body's center of mass relative to the entity position"
                     },
                     "params": [
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Offset"
+                                "name": "Offset",
+                                "tooltip": "The position of the rigid body's center of mass relative to the entity position"
                             }
                         }
                     ]
@@ -297,13 +349,24 @@
                         "tooltip": "Signaled after Is Physics Enabled is invoked"
                     },
                     "details": {
-                        "name": "Is Physics Enabled"
+                        "name": "Is Physics Enabled",
+                        "tooltip": "Whether physics is enabled for this rigid body"
                     },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Id for the rigid body entity"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "Enabled"
+                                "name": "Enabled",
+                                "tooltip": "If true, physics is enabled for this rigid body"
                             }
                         }
                     ]
@@ -319,13 +382,24 @@
                         "tooltip": "Signaled after Get Sleep Threshold is invoked"
                     },
                     "details": {
-                        "name": "Get Sleep Threshold"
+                        "name": "Get Sleep Threshold",
+                        "tooltip": "Get the sleep threshold, which affects how little velocity the body needs to have before the simulation considers putting it to sleep"
                     },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Id for the rigid body entity"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Sleep Threshold"
+                                "name": "Sleep Threshold",
+                                "tooltip": "Sleep threshold, which affects how little velocity the body needs to have before the simulation considers putting it to sleep"
                             }
                         }
                     ]
@@ -341,13 +415,15 @@
                         "tooltip": "Signaled after Set Kinematic Target is invoked"
                     },
                     "details": {
-                        "name": "Set Kinematic Target"
+                        "name": "Set Kinematic Target",
+                        "tooltip": "Set the position to which the body will move, pushing any intervening objects out of its path (only valid for kinematic bodies)"
                     },
                     "params": [
                         {
                             "typeid": "{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}",
                             "details": {
-                                "name": "Kinematic Target"
+                                "name": "Kinematic Target",
+                                "tooltip": "The position to which the body will move, pushing any intervening objects out of its path (only valid for kinematic bodies)"
                             }
                         }
                     ]
@@ -363,8 +439,18 @@
                         "tooltip": "Signaled after Enable Physics is invoked"
                     },
                     "details": {
-                        "name": "Enable Physics"
-                    }
+                        "name": "Enable Physics",
+                        "tooltip": "Enable simulation for this rigid body"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Id for the rigid body entity"
+                            }
+                        }
+                    ]
                 },
                 {
                     "base": "GetLinearDamping",
@@ -377,13 +463,24 @@
                         "tooltip": "Signaled after Get Linear Damping is invoked"
                     },
                     "details": {
-                        "name": "Get Linear Damping"
+                        "name": "Get Linear Damping",
+                        "tooltip": "Get the linear damping value, which affects how quickly linear velocity dissipates"
                     },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Id for the rigid body entity"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Linear Damping"
+                                "name": "Linear Damping",
+                                "tooltip": "Linear damping value, which affects how quickly linear velocity dissipates"
                             }
                         }
                     ]
@@ -399,19 +496,22 @@
                         "tooltip": "Signaled after Apply Linear Impulse At World Point is invoked"
                     },
                     "details": {
-                        "name": "Apply Linear Impulse At World Point"
+                        "name": "Apply Linear Impulse At World Point",
+                        "tooltip": "Apply a linear impulse at a point in world space, which may also apply a torque to the rigid body if the impulse does not pass through its center of mass"
                     },
                     "params": [
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Linear Impulse"
+                                "name": "Linear Impulse",
+                                "tooltip": "Linear impulse (force integrated over time)"
                             }
                         },
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "World Point"
+                                "name": "World Point",
+                                "tooltip": "Point in world space at which to apply the impulse"
                             }
                         }
                     ]
@@ -427,13 +527,24 @@
                         "tooltip": "Signaled after Get Center Of Mass World is invoked"
                     },
                     "details": {
-                        "name": "Get Center Of Mass World"
+                        "name": "Get Center Of Mass World",
+                        "tooltip": "Get the rigid body's center of mass in world space"
                     },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Id for the rigid body entity"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Center of Mass (World)"
+                                "name": "Center of Mass (World)",
+                                "tooltip": "The rigid body's center of mass in world space"
                             }
                         }
                     ]
@@ -449,13 +560,24 @@
                         "tooltip": "Signaled after Get Center Of Mass Local is invoked"
                     },
                     "details": {
-                        "name": "Get Center Of Mass Local"
+                        "name": "Get Center Of Mass Local",
+                        "tooltip": "Get the rigid body's center of mass in the entity's local space"
                     },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Id for the rigid body entity"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Center Of Mass (Local)"
+                                "name": "Center Of Mass (Local)",
+                                "tooltip": "The rigid body's center of mass in the entity's local space"
                             }
                         }
                     ]
@@ -471,13 +593,15 @@
                         "tooltip": "Signaled after Set Linear Damping is invoked"
                     },
                     "details": {
-                        "name": "Set Linear Damping"
+                        "name": "Set Linear Damping",
+                        "tooltip": "Set the linear damping value, which affects how quickly linear velocity dissipates"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Linear Damping"
+                                "name": "Linear Damping",
+                                "tooltip": "Linear damping value, which affects how quickly linear velocity dissipates"
                             }
                         }
                     ]
@@ -493,13 +617,24 @@
                         "tooltip": "Signaled after Get Angular Damping is invoked"
                     },
                     "details": {
-                        "name": "Get Angular Damping"
+                        "name": "Get Angular Damping",
+                        "tooltip": "Get the angular damping value, which affects how quickly angular velocity dissipates"
                     },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Id for the rigid body entity"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Angular Damping"
+                                "name": "Angular Damping",
+                                "tooltip": "Angular damping value, which affects how quickly angular velocity dissipates"
                             }
                         }
                     ]
@@ -515,13 +650,24 @@
                         "tooltip": "Signaled after Get Linear Velocity is invoked"
                     },
                     "details": {
-                        "name": "Get Linear Velocity"
+                        "name": "Get Linear Velocity",
+                        "tooltip": "Get the linear velocity for this rigid body"
                     },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Id for the rigid body entity"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Linear Velocity"
+                                "name": "Linear Velocity",
+                                "tooltip": "Linear velocity for this rigid body"
                             }
                         }
                     ]
@@ -537,13 +683,24 @@
                         "tooltip": "Signaled after Is Awake is invoked"
                     },
                     "details": {
-                        "name": "Is Awake"
+                        "name": "Is Awake",
+                        "tooltip": "Whether the rigid body is awake (bodies may be considered asleep if they have been consistently inactive)"
                     },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Id for the rigid body entity"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "Is Awake"
+                                "name": "Is Awake",
+                                "tooltip": "True if this rigid body is awake"
                             }
                         }
                     ]
@@ -559,13 +716,24 @@
                         "tooltip": "Signaled after Is Gravity Enabled is invoked"
                     },
                     "details": {
-                        "name": "Is Gravity Enabled"
+                        "name": "Is Gravity Enabled",
+                        "tooltip": "Whether this rigid body is affected by the scene gravity"
                     },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Id for the rigid body entity"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "Is Gravity Enabled"
+                                "name": "Is Gravity Enabled",
+                                "tooltip": "True if this rigid body is affected by the scene gravity"
                             }
                         }
                     ]
@@ -581,13 +749,24 @@
                         "tooltip": "Signaled after Get Inverse Mass is invoked"
                     },
                     "details": {
-                        "name": "Get Inverse Mass"
+                        "name": "Get Inverse Mass",
+                        "tooltip": "Get one divided by the mass of this rigid body"
                     },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Id for the rigid body entity"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Inverse Mass"
+                                "name": "Inverse Mass",
+                                "tooltip": "One divided by the mass of this rigid body"
                             }
                         }
                     ]
@@ -603,13 +782,15 @@
                         "tooltip": "Signaled after Set Sleep Threshold is invoked"
                     },
                     "details": {
-                        "name": "Set Sleep Threshold"
+                        "name": "Set Sleep Threshold",
+                        "tooltip": "Set the sleep threshold, which affects how little velocity the body needs to have before the simulation considers putting it to sleep"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Sleep Threshold"
+                                "name": "Sleep Threshold",
+                                "tooltip": "Sleep threshold, which affects how little velocity the body needs to have before the simulation considers putting it to sleep"
                             }
                         }
                     ]
@@ -625,8 +806,18 @@
                         "tooltip": "Signaled after Force Asleep is invoked"
                     },
                     "details": {
-                        "name": "Force Asleep"
-                    }
+                        "name": "Force Asleep",
+                        "tooltip": "Set the rigid body to be asleep (bodies may be considered asleep if they have been consistently inactive)"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Id for the rigid body entity"
+                            }
+                        }
+                    ]
                 },
                 {
                     "base": "GetMass",
@@ -639,13 +830,24 @@
                         "tooltip": "Signaled after Get Mass is invoked"
                     },
                     "details": {
-                        "name": "Get Mass"
+                        "name": "Get Mass",
+                        "tooltip": "Get the mass of the rigid body in kg"
                     },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Id for the rigid body entity"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Mass"
+                                "name": "Mass",
+                                "tooltip": "Mass of the rigid body in kg"
                             }
                         }
                     ]
@@ -661,13 +863,24 @@
                         "tooltip": "Signaled after Is Kinematic is invoked"
                     },
                     "details": {
-                        "name": "Is Kinematic"
+                        "name": "Is Kinematic",
+                        "tooltip": "Whether the rigid body is kinematic (movable only by setting a kinematic target position) or dynamic"
                     },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Id for the rigid body entity"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "Is Kinematic"
+                                "name": "Is Kinematic",
+                                "tooltip": "True if the rigid body is kinematic (movable only by setting a kinematic target position)"
                             }
                         }
                     ]
@@ -683,13 +896,15 @@
                         "tooltip": "Signaled after Apply Linear Impulse is invoked"
                     },
                     "details": {
-                        "name": "Apply Linear Impulse"
+                        "name": "Apply Linear Impulse",
+                        "tooltip": "Apply a linear impulse (force integrated over time)"
                     },
                     "params": [
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Linear Impulse"
+                                "name": "Linear Impulse",
+                                "tooltip": "Linear impulse (force integrated over time)"
                             }
                         }
                     ]
@@ -705,13 +920,24 @@
                         "tooltip": "Signaled after Get Angular Velocity is invoked"
                     },
                     "details": {
-                        "name": "Get Angular Velocity"
+                        "name": "Get Angular Velocity",
+                        "tooltip": "Get the angular velocity for this rigid body in radians per second"
                     },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Id for the rigid body entity"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Angular Velocity"
+                                "name": "Angular Velocity",
+                                "tooltip": "Angular velocity for this rigid body in radians per second"
                             }
                         }
                     ]

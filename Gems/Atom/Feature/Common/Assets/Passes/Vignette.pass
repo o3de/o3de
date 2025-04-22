@@ -1,0 +1,70 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "VignetteTemplate",
+            "PassClass": "VignettePass",
+            "Slots": [
+                {
+                    "Name": "Input",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "Output",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "Shader",
+                    "LoadStoreAction": {
+                        "LoadAction": "Clear"
+                    }
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "Vignette",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "This",
+                            "Attachment": "Input"
+                        }
+                    },
+                    "FormatSource": {
+                        "Pass": "This",
+                        "Attachment": "Input"
+                    },
+                    "ImageDescriptor": {
+                        "SharedQueueMask": "Graphics",
+                        "BindFlags": [
+                            "Color",
+                            "ShaderReadWrite"
+                        ]
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "Output",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "Vignette"
+                    }
+                }
+            ],
+            "FallbackConnections": [
+                {
+                    "Input": "Input",
+                    "Output": "Output"
+                }
+            ],
+            "PassData": {
+                "$type": "ComputePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/PostProcessing/Vignette.shader"
+                },
+                "FullscreenDispatch": true
+            }
+        }
+    }
+}

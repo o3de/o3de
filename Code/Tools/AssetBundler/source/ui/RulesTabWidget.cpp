@@ -230,8 +230,8 @@ namespace AssetBundler
         AZStd::vector<AZStd::string> outputFilePaths;
         bool hasFileGenerationErrors = false;
 
-        AZStd::fixed_vector<AZStd::string, AzFramework::NumPlatforms> selectedPlatformNames =
-            AzFramework::PlatformHelper::GetPlatforms(runRuleDialog.GetPlatformFlags());
+        AZStd::fixed_vector<AZStd::string, AzFramework::NumPlatforms> selectedPlatformNames{ AZStd::from_range,
+            AzFramework::PlatformHelper::GetPlatforms(runRuleDialog.GetPlatformFlags()) };
         for (const AZStd::string& platformName : selectedPlatformNames)
         {
             // We do not want to modify the original Rules file, as we do not save Asset List file paths to disk

@@ -1,0 +1,44 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_QuaternionFunctions_ShortestArc",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "Shortest Arc",
+                "category": "Math/Quaternion"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_QuaternionFunctions_ShortestArc",
+                    "details": {
+                        "name": "Shortest Arc",
+                        "tooltip": "Creates a rotation representing the shortest arc between From and To"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "From"
+                            }
+                        },
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "To"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

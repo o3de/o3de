@@ -25,7 +25,7 @@ namespace LandscapeCanvas
     class ScaleModifierNode : public BaseAreaModifierNode
     {
     public:
-        AZ_CLASS_ALLOCATOR(ScaleModifierNode, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScaleModifierNode, AZ::SystemAllocator);
         AZ_RTTI(ScaleModifierNode, "{470E2762-A7DF-4500-B4BE-B705ED7EDEDC}", BaseAreaModifierNode);
 
         static void Reflect(AZ::ReflectContext* context);
@@ -33,10 +33,10 @@ namespace LandscapeCanvas
         ScaleModifierNode() = default;
         explicit ScaleModifierNode(GraphModel::GraphPtr graph);
 
-        static const QString TITLE;
+        static const char* TITLE;
         const char* GetTitle() const override
         {
-            return TITLE.toUtf8().constData();
+            return TITLE;
         }
 
     protected:

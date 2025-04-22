@@ -18,21 +18,12 @@ from ly_test_tools._internal.managers.abstract_resource_locator import AbstractR
 logger = logging.getLogger(__name__)
 
 CACHE_DIR = 'mac'
-CONFIG_FILE = 'system_osx_mac.cfg'
 
 
 class _MacResourceLocator(AbstractResourceLocator):
     """
     Override for locating resources in a Mac operating system running LyTestTools.
     """
-
-    def platform_config_file(self):
-        """
-        Return the path to the platform config file.
-        ex. engine_root/dev/system_osx_mac.cfg
-        :return: path to the platform config file
-        """
-        return os.path.join(self.engine_root(), CONFIG_FILE)
 
     def platform_cache(self):
         """
@@ -55,19 +46,13 @@ class _MacResourceLocator(AbstractResourceLocator):
         """
         return os.path.join(self.project(), 'user', 'ScreenShots')
 
-    def editor_log(self):
-        """
-        Return path to the project's editor log dir using the builds project and platform
-        :return: path to Editor.log
-        """
-        return os.path.join(self.project_log(), "Editor.log")
-
     def crash_log(self):
         """
         Return path to the project's crash log dir using the builds project and platform
         :return: path to crash.log
         """
         return os.path.join(self.project_log(), "crash.log")
+
 
 class MacWorkspaceManager(AbstractWorkspaceManager):
     """

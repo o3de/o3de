@@ -25,7 +25,7 @@ namespace AZ
     {
         namespace SceneData
         {
-            AZ_CLASS_ALLOCATOR_IMPL(SkinGroup, AZ::SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR_IMPL(SkinGroup, AZ::SystemAllocator)
 
             SkinGroup::SkinGroup()
                 : m_id(Uuid::CreateRandom())
@@ -98,14 +98,14 @@ namespace AZ
                         ->ClassElement(Edit::ClassElements::EditorData, "")
                             ->Attribute("AutoExpand", true)
                             ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
-                        ->DataElement(AZ_CRC("ManifestName", 0x5215b349), &SkinGroup::m_name, "Name skin",
+                        ->DataElement(AZ_CRC_CE("ManifestName"), &SkinGroup::m_name, "Name skin",
                             "Name the skin as you want it to appear in the Open 3D Engine Asset Browser.")
                             ->Attribute("FilterType", DataTypes::ISkinGroup::TYPEINFO_Uuid())
-                        ->DataElement(AZ_CRC("ManifestName", 0x5215b349), &SkinGroup::m_nodeSelectionList, "Select skins", "Select 1 or more skins to add to this asset in the Open 3D Engine Asset Browser.")
+                        ->DataElement(AZ_CRC_CE("ManifestName"), &SkinGroup::m_nodeSelectionList, "Select skins", "Select 1 or more skins to add to this asset in the Open 3D Engine Asset Browser.")
                             ->Attribute("FilterName", "skins")
                             ->Attribute("FilterVirtualType", Behaviors::SkinGroup::s_skinVirtualType)
                         ->DataElement(Edit::UIHandlers::Default, &SkinGroup::m_rules, "", "Add or remove rules to fine-tune the export process.")
-                            ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC("PropertyVisibility_ShowChildrenOnly", 0xef428f20));
+                            ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC_CE("PropertyVisibility_ShowChildrenOnly"));
                 }
             }
 

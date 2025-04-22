@@ -17,7 +17,7 @@ SOURCE_DIRECTORY=${PWD}
 pushd $OUTPUT_DIRECTORY
 
 LAST_CONFIGURE_CMD_FILE=ci_last_configure_cmd.txt
-CONFIGURE_CMD="cmake ${SOURCE_DIRECTORY} ${CMAKE_OPTIONS} ${EXTRA_CMAKE_OPTIONS}"
+CONFIGURE_CMD="cmake '${SOURCE_DIRECTORY}' ${CMAKE_OPTIONS} ${EXTRA_CMAKE_OPTIONS}"
 if [[ -n "$CMAKE_LY_PROJECTS" ]]; then
     CONFIGURE_CMD="${CONFIGURE_CMD} -DLY_PROJECTS='${CMAKE_LY_PROJECTS}'"
 fi
@@ -48,7 +48,11 @@ if [[ ! -z "$RUN_CONFIGURE" ]]; then
     echo "${CONFIGURE_CMD}" > ${LAST_CONFIGURE_CMD_FILE}
 fi
 
-echo [ci_build] cmake --build . --target ${CMAKE_TARGET} --config ${CONFIGURATION} -j $(sysctl -n hw.ncpu) -- ${CMAKE_NATIVE_BUILD_ARGS}
-cmake --build . --target ${CMAKE_TARGET} --config ${CONFIGURATION} -j $(sysctl -n hw.ncpu) -- ${CMAKE_NATIVE_BUILD_ARGS}
+# Split the configuration on semi-colon and use the cmake --build wrapper to run the underlying build command for each
+for config in $(echo $CONFIGURATION | sed "s/;/ /g")
+do
+    echo [ci_build] cmake --build . --target ${CMAKE_TARGET} --config ${config} -j $(/usr/sbin/sysctl -n hw.ncpu) -- ${CMAKE_NATIVE_BUILD_ARGS}
+    cmake --build . --target ${CMAKE_TARGET} --config ${config} -j $(/usr/sbin/sysctl -n hw.ncpu) -- ${CMAKE_NATIVE_BUILD_ARGS}
+done
 
 popd

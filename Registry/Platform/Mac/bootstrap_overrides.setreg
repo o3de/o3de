@@ -2,6 +2,9 @@
     "Amazon": {
         "AzCore": {
             "Bootstrap": {
+                "assets": "mac",
+                "connect_to_remote": 1,
+                "wait_for_connect": 1,
                 // The first time an application is launched on MacOS, each
                 // dynamic library is inspected by the OS before being loaded.
                 // This can take a while on some Macs.

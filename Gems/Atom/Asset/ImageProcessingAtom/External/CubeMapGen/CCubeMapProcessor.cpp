@@ -5,7 +5,7 @@
 
 #include "CCubeMapProcessor.h"
 
-#include <AzCore/std/bind/bind.h>
+#include <AzCore/Math/MathUtils.h>
 #include <AzCore/std/string/string.h>
 
 #define CP_PI   3.14159265358979323846f
@@ -16,10 +16,10 @@ namespace ImageProcessingAtom
 
     //------------------------------------------------------------------------------
     // D3D cube map face specification
-    //   mapping from 3D x,y,z cube map lookup coordinates 
+    //   mapping from 3D x,y,z cube map lookup coordinates
     //   to 2D within face u,v coordinates
     //
-    //   --------------------> U direction 
+    //   --------------------> U direction
     //   |                   (within-face texture space)
     //   |         _____
     //   |        |     |
@@ -36,8 +36,8 @@ namespace ImageProcessingAtom
     //      (within-face texture space)
     //------------------------------------------------------------------------------
 
-    //Information about neighbors and how texture coorrdinates change across faces 
-    //  in ORDER of left, right, top, bottom (e.g. edges corresponding to u=0, 
+    //Information about neighbors and how texture coorrdinates change across faces
+    //  in ORDER of left, right, top, bottom (e.g. edges corresponding to u=0,
     //  u=1, v=0, v=1 in the 2D coordinate system of the particular face.
     //Note this currently assumes the D3D cube face ordering and orientation
     CPCubeMapNeighbor sg_CubeNgh[6][4] =
@@ -75,8 +75,8 @@ namespace ImageProcessingAtom
     };
 
 
-    //3x2 matrices that map cube map indexing vectors in 3d 
-    // (after face selection and divide through by the 
+    //3x2 matrices that map cube map indexing vectors in 3d
+    // (after face selection and divide through by the
     //  _ABSOLUTE VALUE_ of the max coord)
     // into NVC space
     //Note this currently assumes the D3D cube face ordering and orientation
@@ -88,27 +88,27 @@ namespace ImageProcessingAtom
         //XPOS face
         {{ 0,  0, -1},   //u towards negative Z
          { 0, -1,  0},   //v towards negative Y
-         {1,  0,  0}},  //pos X axis  
+         {1,  0,  0}},  //pos X axis
         //XNEG face
          {{0,  0,  1},   //u towards positive Z
           {0, -1,  0},   //v towards negative Y
-          {-1,  0,  0}},  //neg X axis       
+          {-1,  0,  0}},  //neg X axis
         //YPOS face
         {{1, 0, 0},     //u towards positive X
          {0, 0, 1},     //v towards positive Z
-         {0, 1 , 0}},   //pos Y axis  
+         {0, 1 , 0}},   //pos Y axis
         //YNEG face
         {{1, 0, 0},     //u towards positive X
          {0, 0 , -1},   //v towards negative Z
-         {0, -1 , 0}},  //neg Y axis  
+         {0, -1 , 0}},  //neg Y axis
         //ZPOS face
         {{1, 0, 0},     //u towards positive X
          {0, -1, 0},    //v towards negative Y
-         {0, 0,  1}},   //pos Z axis  
+         {0, 0,  1}},   //pos Z axis
         //ZNEG face
         {{-1, 0, 0},    //u towards negative X
          {0, -1, 0},    //v towards negative Y
-         {0, 0, -1}},   //neg Z axis  
+         {0, 0, -1}},   //neg Z axis
     };
 
 
@@ -132,7 +132,7 @@ namespace ImageProcessingAtom
     };
 
 
-    //Information about which of the 8 cube corners are correspond to the 
+    //Information about which of the 8 cube corners are correspond to the
     //  the 4 corners in each cube face
     //  the order is upper left, upper right, lower left, lower right
     int32 sg_CubeCornerList[6][4] = {
@@ -158,10 +158,10 @@ namespace ImageProcessingAtom
        //scale up to [-1, 1] range (inclusive)
        nvcU = (2.0f * ((float)a_U + 0.5f) / a_Size ) - 1.0f;
        nvcV = (2.0f * ((float)a_V + 0.5f) / a_Size ) - 1.0f;
-   
+
        //generate x,y,z vector (xform 2d NVC coord to 3D vector)
        //U contribution
-       VM_SCALE3(a_XYZ, sgFace2DMapping[a_FaceIdx][CP_UDIR], nvcU);    
+       VM_SCALE3(a_XYZ, sgFace2DMapping[a_FaceIdx][CP_UDIR], nvcU);
        //V contribution
        VM_SCALE3(tempVec, sgFace2DMapping[a_FaceIdx][CP_VDIR], nvcV);
        VM_ADD3(a_XYZ, tempVec, a_XYZ);
@@ -174,7 +174,7 @@ namespace ImageProcessingAtom
 
 
     //--------------------------------------------------------------------------------------
-    // Convert 3D vector to cubemap face texel coordinates and face idx 
+    // Convert 3D vector to cubemap face texel coordinates and face idx
     // note the U and V coords are integer coords and range from 0 to size-1
     //  this routine can be used to generate a normalizer cube map
     //
@@ -198,11 +198,11 @@ namespace ImageProcessingAtom
 
           if(a_XYZ[0] >= 0) //face = XPOS
           {
-             faceIdx = CP_FACE_X_POS;            
-          }    
+             faceIdx = CP_FACE_X_POS;
+          }
           else
           {
-             faceIdx = CP_FACE_X_NEG;                    
+             faceIdx = CP_FACE_X_NEG;
           }
        }
        else if ( (absXYZ[1] >= absXYZ[0]) && (absXYZ[1] >= absXYZ[2]) )
@@ -211,12 +211,12 @@ namespace ImageProcessingAtom
 
           if(a_XYZ[1] >= 0) //face = XPOS
           {
-             faceIdx = CP_FACE_Y_POS;            
-          }    
+             faceIdx = CP_FACE_Y_POS;
+          }
           else
           {
-             faceIdx = CP_FACE_Y_NEG;                    
-          }    
+             faceIdx = CP_FACE_Y_NEG;
+          }
        }
        else  // if( (absXYZ[2] > absXYZ[0]) && (absXYZ[2] > absXYZ[1]) )
        {
@@ -224,12 +224,12 @@ namespace ImageProcessingAtom
 
           if(a_XYZ[2] >= 0) //face = XPOS
           {
-             faceIdx = CP_FACE_Z_POS;            
-          }    
+             faceIdx = CP_FACE_Z_POS;
+          }
           else
           {
-             faceIdx = CP_FACE_Z_NEG;                    
-          }    
+             faceIdx = CP_FACE_Z_NEG;
+          }
        }
 
        //divide through by max coord so face vector lies on cube face
@@ -247,9 +247,9 @@ namespace ImageProcessingAtom
 
 
     //--------------------------------------------------------------------------------------
-    // gets texel ptr in a cube map given a direction vector, and an array of 
+    // gets texel ptr in a cube map given a direction vector, and an array of
     //  CImageSurfaces that represent the cube faces.
-    //   
+    //
     //--------------------------------------------------------------------------------------
     CP_ITYPE *GetCubeMapTexelPtr(float *a_XYZ, CImageSurface *a_Surface)
     {
@@ -267,13 +267,13 @@ namespace ImageProcessingAtom
 
     //--------------------------------------------------------------------------------------
     // returns a bilinear filtered texel value
-    //   
+    //
     //--------------------------------------------------------------------------------------
     void GetCubeMapTexelBilinear(float *a_XYZ, CImageSurface *a_Surface, CP_ITYPE* result, int32 numChannels)
     {
         float u, v;
         int32 faceIdx;
-    
+
         //get face idx and u, v texel coordinate in face
         VectToTexelCoord(a_XYZ, a_Surface[0].m_Width, &faceIdx, &u, &v);
 
@@ -314,12 +314,12 @@ namespace ImageProcessingAtom
     }
 
     //--------------------------------------------------------------------------------------
-    //  Compute solid angle of given texel in cubemap face for weighting taps in the 
+    //  Compute solid angle of given texel in cubemap face for weighting taps in the
     //   kernel by the area they project to on the unit sphere.
     //
-    //  Note that this code uses an approximation to the solid angle, by treating the 
+    //  Note that this code uses an approximation to the solid angle, by treating the
     //   two triangles that make up the quad comprising the texel as planar.  If more
-    //   accuracy is required, the solid angle per triangle lying on the sphere can be 
+    //   accuracy is required, the solid angle per triangle lying on the sphere can be
     //   computed using the sum of the interior angles - PI.
     //
     //--------------------------------------------------------------------------------------
@@ -328,7 +328,7 @@ namespace ImageProcessingAtom
        float cornerVect[4][3];
        double cornerVect64[4][3];
 
-       float halfTexelStep = 0.5f;  //note u, and v are in texel coords (where each texel is one unit)  
+       float halfTexelStep = 0.5f;  //note u, and v are in texel coords (where each texel is one unit)
        double edgeVect0[3];
        double edgeVect1[3];
        double xProdVect[3];
@@ -339,7 +339,7 @@ namespace ImageProcessingAtom
        TexelCoordToVect(a_FaceIdx, a_U - halfTexelStep, a_V + halfTexelStep, a_Size, cornerVect[1] );
        TexelCoordToVect(a_FaceIdx, a_U + halfTexelStep, a_V - halfTexelStep, a_Size, cornerVect[2] );
        TexelCoordToVect(a_FaceIdx, a_U + halfTexelStep, a_V + halfTexelStep, a_Size, cornerVect[3] );
-   
+
        VM_NORM3_UNTYPED(cornerVect64[0], cornerVect[0] );
        VM_NORM3_UNTYPED(cornerVect64[1], cornerVect[1] );
        VM_NORM3_UNTYPED(cornerVect64[2], cornerVect[2] );
@@ -347,7 +347,7 @@ namespace ImageProcessingAtom
 
        //area of triangle defined by corners 0, 1, and 2
        VM_SUB3_UNTYPED(edgeVect0, cornerVect64[1], cornerVect64[0] );
-       VM_SUB3_UNTYPED(edgeVect1, cornerVect64[2], cornerVect64[0] );    
+       VM_SUB3_UNTYPED(edgeVect1, cornerVect64[2], cornerVect64[0] );
        VM_XPROD3_UNTYPED(xProdVect, edgeVect0, edgeVect1 );
        texelArea = 0.5f * sqrt( VM_DOTPROD3_UNTYPED(xProdVect, xProdVect ) );
 
@@ -394,7 +394,7 @@ namespace ImageProcessingAtom
                 //VM_BIAS3(texelPtr, texelPtr, 0.5f);
 
                 texelPtr += a_Surface[iCubeFace].m_NumChannels;
-             }         
+             }
           }
        }
     }
@@ -438,7 +438,7 @@ namespace ImageProcessingAtom
                 *(texelPtr + 3) = TexelCoordSolidAngle(iCubeFace, (float)u, (float)v, a_Size);
 
                 texelPtr += a_Surface[iCubeFace].m_NumChannels;
-             }         
+             }
           }
        }
     }
@@ -453,7 +453,7 @@ namespace ImageProcessingAtom
 
        for(iCubeFaces=0; iCubeFaces<6; iCubeFaces++)
        {
-          aFilterExtents[iCubeFaces].Clear();    
+          aFilterExtents[iCubeFaces].Clear();
        }
     }
 
@@ -461,13 +461,13 @@ namespace ImageProcessingAtom
     //--------------------------------------------------------------------------------------
     //Define per-face bounding box filter extents
     //
-    // These define conservative texel regions in each of the faces the filter can possibly 
-    // process.  When the pixels in the regions are actually processed, the dot product  
-    // between the tap vector and the center tap vector is used to determine the weight of 
+    // These define conservative texel regions in each of the faces the filter can possibly
+    // process.  When the pixels in the regions are actually processed, the dot product
+    // between the tap vector and the center tap vector is used to determine the weight of
     // the tap and whether or not the tap is within the cone.
     //
     //--------------------------------------------------------------------------------------
-    void CCubeMapProcessor::DetermineFilterExtents(float *a_CenterTapDir, int32 a_SrcSize, int32 a_BBoxSize, 
+    void CCubeMapProcessor::DetermineFilterExtents(float *a_CenterTapDir, int32 a_SrcSize, int32 a_BBoxSize,
                                                    CBBoxInt32 *a_FilterExtents )
     {
        int32 u, v;
@@ -503,12 +503,12 @@ namespace ImageProcessingAtom
        maxU = a_FilterExtents[faceIdx].m_maxCoord[0];
        maxV = a_FilterExtents[faceIdx].m_maxCoord[1];
 
-       //bleed over amounts for face across u=0 edge (left)    
+       //bleed over amounts for face across u=0 edge (left)
        bleedOverAmount[0] = (a_BBoxSize - u);
        bleedOverBBoxMin[0] = minV;
        bleedOverBBoxMax[0] = maxV;
 
-       //bleed over amounts for face across u=1 edge (right)    
+       //bleed over amounts for face across u=1 edge (right)
        bleedOverAmount[1] = (u + a_BBoxSize) - (a_SrcSize-1);
        bleedOverBBoxMin[1] = minV;
        bleedOverBBoxMax[1] = maxV;
@@ -531,19 +531,19 @@ namespace ImageProcessingAtom
              neighborFace = sg_CubeNgh[faceIdx][i].m_Face;
              neighborEdge = sg_CubeNgh[faceIdx][i].m_Edge;
 
-             //For certain types of edge abutments, the bleedOverBBoxMin, and bleedOverBBoxMax need to 
-             //  be flipped: the cases are 
+             //For certain types of edge abutments, the bleedOverBBoxMin, and bleedOverBBoxMax need to
+             //  be flipped: the cases are
              // if a left   edge mates with a left or bottom  edge on the neighbor
              // if a top    edge mates with a top or right edge on the neighbor
              // if a right  edge mates with a right or top edge on the neighbor
              // if a bottom edge mates with a bottom or left  edge on the neighbor
-             //Seeing as the edges are enumerated as follows 
-             // left   =0 
-             // right  =1 
-             // top    =2 
-             // bottom =3            
-             // 
-             // so if the edge enums are the same, or the sum of the enums == 3, 
+             //Seeing as the edges are enumerated as follows
+             // left   =0
+             // right  =1
+             // top    =2
+             // bottom =3
+             //
+             // so if the edge enums are the same, or the sum of the enums == 3,
              //  the bbox needs to be flipped
              if( (i == neighborEdge) || ((i+neighborEdge) == 3) )
              {
@@ -560,17 +560,17 @@ namespace ImageProcessingAtom
                    a_FilterExtents[neighborFace].Augment(0, bleedOverBBoxMin[i], 0);
                    a_FilterExtents[neighborFace].Augment(bleedOverAmount[i], bleedOverBBoxMax[i], 0);
                 break;
-                case CP_EDGE_RIGHT:                
+                case CP_EDGE_RIGHT:
                    a_FilterExtents[neighborFace].Augment( (a_SrcSize-1), bleedOverBBoxMin[i], 0);
                    a_FilterExtents[neighborFace].Augment( (a_SrcSize-1) - bleedOverAmount[i], bleedOverBBoxMax[i], 0);
                 break;
-                case CP_EDGE_TOP:   
+                case CP_EDGE_TOP:
                    a_FilterExtents[neighborFace].Augment(bleedOverBBoxMin[i], 0, 0);
                    a_FilterExtents[neighborFace].Augment(bleedOverBBoxMax[i], bleedOverAmount[i], 0);
                 break;
-                case CP_EDGE_BOTTOM:   
+                case CP_EDGE_BOTTOM:
                    a_FilterExtents[neighborFace].Augment(bleedOverBBoxMin[i], (a_SrcSize-1), 0);
-                   a_FilterExtents[neighborFace].Augment(bleedOverBBoxMax[i], (a_SrcSize-1) - bleedOverAmount[i], 0);            
+                   a_FilterExtents[neighborFace].Augment(bleedOverBBoxMax[i], (a_SrcSize-1) - bleedOverAmount[i], 0);
                 break;
              }
 
@@ -579,16 +579,16 @@ namespace ImageProcessingAtom
              a_FilterExtents[neighborFace].ClampMax(a_SrcSize-1, a_SrcSize-1, 0);
           }
 
-          //If the bleed over amount bleeds past the adjacent face onto the opposite face 
-          // from the center tap face, then process the opposite face entirely for now. 
-          //Note that the cases in which this happens, what usually happens is that 
-          // more than one edge bleeds onto the opposite face, and the bounding box 
+          //If the bleed over amount bleeds past the adjacent face onto the opposite face
+          // from the center tap face, then process the opposite face entirely for now.
+          //Note that the cases in which this happens, what usually happens is that
+          // more than one edge bleeds onto the opposite face, and the bounding box
           // encompasses the entire cube map face.
           if(bleedOverAmount[i] > a_SrcSize)
           {
-             uint32 oppositeFaceIdx; 
+             uint32 oppositeFaceIdx;
 
-             //determine opposite face 
+             //determine opposite face
              switch(faceIdx)
              {
                 case CP_FACE_X_POS:
@@ -610,26 +610,26 @@ namespace ImageProcessingAtom
                    oppositeFaceIdx = CP_FACE_Z_POS;
                 break;
              }
-   
+
              //just encompass entire face for now
              a_FilterExtents[oppositeFaceIdx].Augment(0, 0, 0);
-             a_FilterExtents[oppositeFaceIdx].Augment((a_SrcSize-1), (a_SrcSize-1), 0);            
+             a_FilterExtents[oppositeFaceIdx].Augment((a_SrcSize-1), (a_SrcSize-1), 0);
           }
        }
     }
 
 
     //--------------------------------------------------------------------------------------
-    //ProcessFilterExtents 
-    //  Process bounding box in each cube face 
+    //ProcessFilterExtents
+    //  Process bounding box in each cube face
     //
     //--------------------------------------------------------------------------------------
-    void CCubeMapProcessor::ProcessFilterExtents(float *a_CenterTapDir, float a_DotProdThresh, 
-        CBBoxInt32 *a_FilterExtents, CImageSurface *a_NormCubeMap, CImageSurface *a_SrcCubeMap, 
+    void CCubeMapProcessor::ProcessFilterExtents(float *a_CenterTapDir, float a_DotProdThresh,
+        CBBoxInt32 *a_FilterExtents, CImageSurface *a_NormCubeMap, CImageSurface *a_SrcCubeMap,
         CP_ITYPE *a_DstVal, uint32 a_FilterType, bool a_bUseSolidAngleWeighting, float a_SpecularPower)
     {
-       //accumulators are 64-bit floats in order to have the precision needed 
-       // over a summation of a large number of pixels 
+       //accumulators are 64-bit floats in order to have the precision needed
+       // over a summation of a large number of pixels
        double dstAccumFace[6][4];
        double weightAccumFace[6];
 
@@ -654,7 +654,7 @@ namespace ImageProcessingAtom
           weightAccumFace[iFaceIdx] = 0.0f;
 
           //if bbox is non empty
-          if(a_FilterExtents[iFaceIdx].Empty() == false) 
+          if(a_FilterExtents[iFaceIdx].Empty() == false)
           {
              //pointers used to walk across the image surface to accumulate taps
              CP_ITYPE *normCubeRowStartPtr;
@@ -668,10 +668,10 @@ namespace ImageProcessingAtom
              uEnd = a_FilterExtents[iFaceIdx].m_maxCoord[0];
              vEnd = a_FilterExtents[iFaceIdx].m_maxCoord[1];
 
-             normCubeRowStartPtr = a_NormCubeMap[iFaceIdx].m_ImgData + (a_NormCubeMap[iFaceIdx].m_NumChannels * 
+             normCubeRowStartPtr = a_NormCubeMap[iFaceIdx].m_ImgData + (a_NormCubeMap[iFaceIdx].m_NumChannels *
                 ((vStart * faceWidth) + uStart) );
 
-             srcCubeRowStartPtr = a_SrcCubeMap[iFaceIdx].m_ImgData + (a_SrcCubeMap[iFaceIdx].m_NumChannels * 
+             srcCubeRowStartPtr = a_SrcCubeMap[iFaceIdx].m_ImgData + (a_SrcCubeMap[iFaceIdx].m_NumChannels *
                 ((vStart * faceWidth) + uStart) );
 
              //note that <= is used to ensure filter extents always encompass at least one pixel if bbox is non empty
@@ -704,11 +704,11 @@ namespace ImageProcessingAtom
                       // weight should be proportional to the solid angle of the tap
                       if(a_bUseSolidAngleWeighting == true)
                       {   //solid angle stored in 4th channel of normalizer/solid angle cube map
-                         weight = *(texelVect+3); 
+                         weight = *(texelVect+3);
                       }
                       else
                       {   //all taps equally weighted
-                         weight = 1.0f;          
+                         weight = 1.0f;
                       }
 
                       switch(a_FilterType)
@@ -725,7 +725,7 @@ namespace ImageProcessingAtom
                             }
                          }
                          break;
-                      case CP_FILTER_TYPE_CONE:                                
+                      case CP_FILTER_TYPE_CONE:
                       case CP_FILTER_TYPE_ANGULAR_GAUSSIAN:
                          {
                             //weights are in same lookup table for both of these filter types
@@ -750,18 +750,18 @@ namespace ImageProcessingAtom
                       }
 
                       //iterate over channels
-                      for(int32 k=0; k<nSrcChannels; k++)   //(aSrcCubeMap[iFaceIdx].m_NumChannels) //up to 4 channels 
+                      for(int32 k=0; k<nSrcChannels; k++)   //(aSrcCubeMap[iFaceIdx].m_NumChannels) //up to 4 channels
                       {
                          dstAccumFace[iFaceIdx][k] += weight * *(srcCubeRowStartPtr + srcCubeRowWalk);
-                         srcCubeRowWalk++;                            
-                      } 
+                         srcCubeRowWalk++;
+                      }
 
                       weightAccumFace[iFaceIdx] += weight; //accumulate weight
                    }
                    else
-                   {   
+                   {
                       //step across source pixel
-                      srcCubeRowWalk += nSrcChannels;                    
+                      srcCubeRowWalk += nSrcChannels;
                    }
 
                    normCubeRowWalk += a_NormCubeMap[iFaceIdx].m_NumChannels;
@@ -769,7 +769,7 @@ namespace ImageProcessingAtom
 
                 normCubeRowStartPtr += normCubePitch;
                 srcCubeRowStartPtr += srcCubePitch;
-             }       
+             }
           }
        }
 
@@ -792,7 +792,7 @@ namespace ImageProcessingAtom
          {
            dstAccum[k] += dstAccumFace[iFaceIdx][k];
          }
-  
+
          weightAccum += weightAccumFace[iFaceIdx];
        }
 
@@ -848,9 +848,9 @@ namespace ImageProcessingAtom
 
        //number of texels inward towards cubeface center to apply fixup to
        int32 fixupDist;
-       int32 iFixup;   
+       int32 iFixup;
 
-       // note that if functionality to filter across the three texels for each corner, then 
+       // note that if functionality to filter across the three texels for each corner, then
        CP_ITYPE *cornerPtr[8][3];      //indexed by corner and face idx
        CP_ITYPE *faceCornerPtrs[4];    //corner pointers for face
        int32 cornerNumPtrs[8];         //indexed by corner and face idx
@@ -870,7 +870,7 @@ namespace ImageProcessingAtom
        {
           //iterate over channels
           for(k=0; k<nChannels; k++)
-          {   
+          {
              CP_ITYPE accum = 0.0f;
 
              //iterate over faces to accumulate face colors
@@ -911,7 +911,7 @@ namespace ImageProcessingAtom
           //iterate over face corners to collect cube corner pointers
           for(i=0; i<4; i++ )
           {
-             corner = sg_CubeCornerList[iFace][i];   
+             corner = sg_CubeCornerList[iFace][i];
              cornerPtr[corner][ cornerNumPtrs[corner] ] = faceCornerPtrs[i];
              cornerNumPtrs[corner]++;
           }
@@ -922,7 +922,7 @@ namespace ImageProcessingAtom
        for(iCorner = 0; iCorner < 8; iCorner++ )
        {
           for(k=0; k<nChannels; k++)
-          {             
+          {
              CP_ITYPE cornerTapAccum;
 
              cornerTapAccum = 0.0f;
@@ -942,7 +942,7 @@ namespace ImageProcessingAtom
                 *(cornerPtr[iCorner][i] + k) = cornerTapAccum;
              }
           }
-       }   
+       }
 
 
        //maximum width of fixup region is one half of the cube face size
@@ -972,7 +972,7 @@ namespace ImageProcessingAtom
           switch(edge)
           {
              case CP_EDGE_LEFT:
-                // no change to faceEdgeStartPtr  
+                // no change to faceEdgeStartPtr
                 edgeWalk = nChannels * size;
                 edgePerpWalk = nChannels;
              break;
@@ -982,7 +982,7 @@ namespace ImageProcessingAtom
                 edgePerpWalk = -nChannels;
              break;
              case CP_EDGE_TOP:
-                // no change to faceEdgeStartPtr  
+                // no change to faceEdgeStartPtr
                 edgeWalk = nChannels;
                 edgePerpWalk = nChannels * size;
              break;
@@ -993,19 +993,19 @@ namespace ImageProcessingAtom
              break;
           }
 
-          //For certain types of edge abutments, the neighbor edge walk needs to 
-          //  be flipped: the cases are 
+          //For certain types of edge abutments, the neighbor edge walk needs to
+          //  be flipped: the cases are
           // if a left   edge mates with a left or bottom  edge on the neighbor
           // if a top    edge mates with a top or right edge on the neighbor
           // if a right  edge mates with a right or top edge on the neighbor
           // if a bottom edge mates with a bottom or left  edge on the neighbor
-          //Seeing as the edges are enumerated as follows 
-          // left   =0 
-          // right  =1 
-          // top    =2 
-          // bottom =3            
-          // 
-          //If the edge enums are the same, or the sum of the enums == 3, 
+          //Seeing as the edges are enumerated as follows
+          // left   =0
+          // right  =1
+          // top    =2
+          // bottom =3
+          //
+          //If the edge enums are the same, or the sum of the enums == 3,
           //  the neighbor edge walk needs to be flipped
           if( (edge == neighborEdge) || ((edge + neighborEdge) == 3) )
           {   //swapped direction neighbor edge walk
@@ -1031,14 +1031,14 @@ namespace ImageProcessingAtom
                    neighborEdgeWalk = -nChannels;
                    neighborEdgePerpWalk = -(nChannels * size);
                 break;
-             }            
+             }
           }
           else
           { //swapped direction neighbor edge walk
              switch(neighborEdge)
              {
                 case CP_EDGE_LEFT: //start at upper left and walk down
-                   //no change to neighborEdgeStartPtr for this case since it points 
+                   //no change to neighborEdgeStartPtr for this case since it points
                    // to the upper left corner already
                    neighborEdgeWalk = nChannels * size;
                    neighborEdgePerpWalk = nChannels;
@@ -1049,7 +1049,7 @@ namespace ImageProcessingAtom
                    neighborEdgePerpWalk = -nChannels;
                 break;
                 case CP_EDGE_TOP:   //start at upper left and walk left
-                   //no change to neighborEdgeStartPtr for this case since it points 
+                   //no change to neighborEdgeStartPtr for this case since it points
                    // to the upper left corner already
                    neighborEdgeWalk = nChannels;
                    neighborEdgePerpWalk = (nChannels * size);
@@ -1063,7 +1063,7 @@ namespace ImageProcessingAtom
           }
 
 
-          //Perform edge walk, to average across the 12 edges and smoothly propagate change to 
+          //Perform edge walk, to average across the 12 edges and smoothly propagate change to
           //nearby neighborhood
 
           //step ahead one texel on edge
@@ -1072,12 +1072,12 @@ namespace ImageProcessingAtom
 
           // note that this loop does not process the corner texels, since they have already been
           //  averaged across faces across earlier
-          for(j=1; j<(size - 1); j++)       
-          {             
+          for(j=1; j<(size - 1); j++)
+          {
              //for each set of taps along edge, average them
              // and rewrite the results into the edges
              for(k = 0; k<nChannels; k++)
-             {             
+             {
                 CP_ITYPE edgeTap, neighborEdgeTap, avgTap;  //edge tap, neighborEdgeTap and the average of the two
                 CP_ITYPE edgeTapDev, neighborEdgeTapDev;
 
@@ -1094,14 +1094,14 @@ namespace ImageProcessingAtom
                 edgeTapDev = edgeTap - avgTap;
                 neighborEdgeTapDev = neighborEdgeTap - avgTap;
 
-                //iterate over taps in direction perpendicular to edge, and 
-                //  adjust intensity values gradualy to obscure change in intensity values of 
+                //iterate over taps in direction perpendicular to edge, and
+                //  adjust intensity values gradualy to obscure change in intensity values of
                 //  edge averaging.
                 for(iFixup = 1; iFixup < fixupDist; iFixup++)
                 {
-                   //fractional amount to apply change in tap intensity along edge to taps 
-                   //  in a perpendicular direction to edge 
-                   CP_ITYPE fixupFrac = (CP_ITYPE)(fixupDist - iFixup) / (CP_ITYPE)(fixupDist); 
+                   //fractional amount to apply change in tap intensity along edge to taps
+                   //  in a perpendicular direction to edge
+                   CP_ITYPE fixupFrac = (CP_ITYPE)(fixupDist - iFixup) / (CP_ITYPE)(fixupDist);
                    CP_ITYPE fixupWeight = 0.0f;
 
                    switch(a_FixupType )
@@ -1113,15 +1113,15 @@ namespace ImageProcessingAtom
                       break;
                       case CP_FIXUP_PULL_HERMITE:
                       {
-                         //hermite spline interpolation between 1 and 0 with both pts derivatives = 0 
+                         //hermite spline interpolation between 1 and 0 with both pts derivatives = 0
                          // e.g. smooth step
                          // the full formula for hermite interpolation is:
-                         //              
-                         //                  [  2  -2   1   1 ][ p0 ] 
+                         //
+                         //                  [  2  -2   1   1 ][ p0 ]
                          // [t^3  t^2  t  1 ][ -3   3  -2  -1 ][ p1 ]
                          //                  [  0   0   1   0 ][ d0 ]
                          //                  [  1   0   0   0 ][ d1 ]
-                         // 
+                         //
                          // Where p0 and p1 are the point locations and d0, and d1 are their respective derivatives
                          // t is the parameteric coordinate used to specify an interpoltion point on the spline
                          // and ranges from 0 to 1.
@@ -1137,9 +1137,9 @@ namespace ImageProcessingAtom
 
                          //perform weighted average of edge tap value and current tap
                          // fade off weight linearly as a function of distance from edge
-                         edgeTapDev = 
+                         edgeTapDev =
                             (*(edgeStartPtr + (iFixup * edgePerpWalk) + k)) - avgTap;
-                         neighborEdgeTapDev = 
+                         neighborEdgeTapDev =
                             (*(neighborEdgeStartPtr + (iFixup * neighborEdgePerpWalk) + k)) - avgTap;
                       }
                       break;
@@ -1150,9 +1150,9 @@ namespace ImageProcessingAtom
                          //perform weighted average of edge tap value and current tap
                          // fade off weight using hermite spline with distance from edge
                          //  as parametric coordinate
-                         edgeTapDev = 
+                         edgeTapDev =
                             (*(edgeStartPtr + (iFixup * edgePerpWalk) + k)) - avgTap;
-                         neighborEdgeTapDev = 
+                         neighborEdgeTapDev =
                             (*(neighborEdgeStartPtr + (iFixup * neighborEdgePerpWalk) + k)) - avgTap;
                       }
                       break;
@@ -1167,7 +1167,7 @@ namespace ImageProcessingAtom
 
              edgeStartPtr += edgeWalk;
              neighborEdgeStartPtr += neighborEdgeWalk;
-          }        
+          }
        }
     }
 
@@ -1179,7 +1179,7 @@ namespace ImageProcessingAtom
     {
        int32 i;
 
-       //If zero filtering threads are specified then all filtering is performed in the 
+       //If zero filtering threads are specified then all filtering is performed in the
        // process that called the cubemap filtering routines.
        //Otherwise, the filtering is performed in separate filtering threads that cubemap generates
        m_NumFilterThreads = CP_INITIAL_NUM_FILTER_THREADS;
@@ -1191,10 +1191,10 @@ namespace ImageProcessingAtom
           m_ThreadID[i] = 0;
        }
 
-       m_InputSize = 0;             
-       m_OutputSize = 0;             
-       m_NumMipLevels = 0;     
-       m_NumChannels = 0; 
+       m_InputSize = 0;
+       m_OutputSize = 0;
+       m_NumMipLevels = 0;
+       m_NumChannels = 0;
 
        m_NumFilterLUTEntries = 0;
        m_FilterLUT = NULL;
@@ -1215,10 +1215,10 @@ namespace ImageProcessingAtom
 
 
     //--------------------------------------------------------------------------------------
-    // Stop any currently running threads, and clear all allocated data from cube map 
+    // Stop any currently running threads, and clear all allocated data from cube map
     //   processor.
     //
-    // To use the cube map processor after calling Clear(....), you need to call Init(....) 
+    // To use the cube map processor after calling Clear(....), you need to call Init(....)
     //   again
     //--------------------------------------------------------------------------------------
     void CCubeMapProcessor::Clear(void)
@@ -1232,10 +1232,10 @@ namespace ImageProcessingAtom
           m_bThreadInitialized[i] = false;
        }
 
-       m_InputSize = 0;             
-       m_OutputSize = 0;             
-       m_NumMipLevels = 0;     
-       m_NumChannels = 0; 
+       m_InputSize = 0;
+       m_OutputSize = 0;
+       m_NumMipLevels = 0;
+       m_NumChannels = 0;
 
        //Iterate over faces for input images
        for (j = 0; j < CP_MAX_MIPLEVELS; j++)
@@ -1252,7 +1252,7 @@ namespace ImageProcessingAtom
           //Iterate over faces for output images
           for(i=0; i<6; i++)
           {
-             m_OutputSurface[j][i].Clear();            
+             m_OutputSurface[j][i].Clear();
           }
        }
 
@@ -1271,7 +1271,7 @@ namespace ImageProcessingAtom
 
         //signal all the threads to terminate
         m_shutdownWorkerThreadSignal = true;
-    
+
         for(i=0; i<CP_MAX_FILTER_THREADS; i++)
         {
             if( m_bThreadInitialized[i] == true)
@@ -1281,7 +1281,7 @@ namespace ImageProcessingAtom
                 m_Status = CP_STATUS_FILTER_TERMINATED;
              }
         }
-    
+
         //reset the shutdown signal
         m_shutdownWorkerThreadSignal = false;
     }
@@ -1307,7 +1307,7 @@ namespace ImageProcessingAtom
         m_NumChannels = a_NumChannels;
         m_NumMipLevels = a_MaxNumMipLevels;
 
-        //first miplevel size 
+        //first miplevel size
         mipLevelSize = m_OutputSize;
 
         //Iterate over mip chain, and init CImageSurfaces for mip-chain
@@ -1325,7 +1325,7 @@ namespace ImageProcessingAtom
 
             //terminate if mip chain becomes too small
             if(mipLevelSize == 0)
-            {            
+            {
                 return;
             }
         }
@@ -1344,13 +1344,13 @@ namespace ImageProcessingAtom
     // a_Degamma        = original gamma level of input image to undo by degamma
     // a_Scale          = scale to apply to pixel values after degamma (in linear space)
     //--------------------------------------------------------------------------------------
-    void CCubeMapProcessor::SetInputFaceData(int32 a_FaceIdx, int32 a_MipIdx, int32 a_SrcType, int32 a_SrcNumChannels, 
+    void CCubeMapProcessor::SetInputFaceData(int32 a_FaceIdx, int32 a_MipIdx, int32 a_SrcType, int32 a_SrcNumChannels,
         int32 a_SrcPitch, void *a_SrcDataPtr, float a_MaxClamp, float a_Degamma, float a_Scale)
     {
         //since input is being modified, terminate any active filtering threads
         TerminateActiveThreads();
-  
-        m_InputSurface[a_MipIdx][a_FaceIdx].SetImageDataClampDegammaScale( a_SrcType, a_SrcNumChannels, a_SrcPitch, 
+
+        m_InputSurface[a_MipIdx][a_FaceIdx].SetImageDataClampDegammaScale( a_SrcType, a_SrcNumChannels, a_SrcPitch,
            a_SrcDataPtr, a_MaxClamp, a_Degamma, a_Scale );
     }
 
@@ -1367,10 +1367,10 @@ namespace ImageProcessingAtom
     // a_Scale          = scale to apply to pixel values (in linear space) before gamma for output
     // a_Gamma          = gamma level to apply to pixels after scaling
     //--------------------------------------------------------------------------------------
-    void CCubeMapProcessor::GetInputFaceData(int32 a_FaceIdx, int32 a_MipIdx, int32 a_DstType, int32 a_DstNumChannels, 
+    void CCubeMapProcessor::GetInputFaceData(int32 a_FaceIdx, int32 a_MipIdx, int32 a_DstType, int32 a_DstNumChannels,
         int32 a_DstPitch, void *a_DstDataPtr, float a_Scale, float a_Gamma)
     {
-        m_InputSurface[a_MipIdx][a_FaceIdx].GetImageDataScaleGamma( a_DstType, a_DstNumChannels, a_DstPitch, 
+        m_InputSurface[a_MipIdx][a_FaceIdx].GetImageDataScaleGamma( a_DstType, a_DstNumChannels, a_DstPitch,
            a_DstDataPtr, a_Scale, a_Gamma );
     }
 
@@ -1380,7 +1380,7 @@ namespace ImageProcessingAtom
     //  swizzle data in first 4 channels for input faces
     //
     //--------------------------------------------------------------------------------------
-    void CCubeMapProcessor::ChannelSwapInputFaceData(int32 a_Channel0Src, int32 a_Channel1Src, 
+    void CCubeMapProcessor::ChannelSwapInputFaceData(int32 a_Channel0Src, int32 a_Channel1Src,
                                                      int32 a_Channel2Src, int32 a_Channel3Src )
     {
        int32 iMip, iFace, u, v, k;
@@ -1434,7 +1434,7 @@ namespace ImageProcessingAtom
     //  swizzle data in first 4 channels for input faces
     //
     //--------------------------------------------------------------------------------------
-    void CCubeMapProcessor::ChannelSwapOutputFaceData(int32 a_Channel0Src, int32 a_Channel1Src, 
+    void CCubeMapProcessor::ChannelSwapOutputFaceData(int32 a_Channel0Src, int32 a_Channel1Src,
         int32 a_Channel2Src, int32 a_Channel3Src )
     {
         int32 iFace, iMipLevel, u, v, k;
@@ -1483,13 +1483,13 @@ namespace ImageProcessingAtom
     // a_Level          = mip level to copy from
     // a_DstType        = data type of image to copyed into (one of the CP_TYPE_? types)
     // a_DstNumChannels = number of channels of the image to copyed into  (usually 1 to 4)
-    // a_DstPitch       = number of bytes per row of the source image to copyed into 
-    // a_DstDataPtr     = pointer to the image data to copyed into 
+    // a_DstPitch       = number of bytes per row of the source image to copyed into
+    // a_DstDataPtr     = pointer to the image data to copyed into
     // a_Scale          = scale to apply to pixel values (in linear space) before gamma for output
     // a_Gamma          = gamma level to apply to pixels after scaling
     //--------------------------------------------------------------------------------------
-    void CCubeMapProcessor::GetOutputFaceData(int32 a_FaceIdx, int32 a_Level, int32 a_DstType, 
-       int32 a_DstNumChannels, int32 a_DstPitch, void *a_DstDataPtr, float a_Scale, float a_Gamma )   
+    void CCubeMapProcessor::GetOutputFaceData(int32 a_FaceIdx, int32 a_Level, int32 a_DstType,
+       int32 a_DstNumChannels, int32 a_DstPitch, void *a_DstDataPtr, float a_Scale, float a_Gamma )
     {
        switch(a_DstType)
        {
@@ -1499,8 +1499,8 @@ namespace ImageProcessingAtom
           case CP_VAL_FLOAT16:
           case CP_VAL_FLOAT32:
           {
-             m_OutputSurface[a_Level][a_FaceIdx].GetImageDataScaleGamma( a_DstType, a_DstNumChannels, 
-                a_DstPitch, a_DstDataPtr, a_Scale, a_Gamma ); 
+             m_OutputSurface[a_Level][a_FaceIdx].GetImageDataScaleGamma( a_DstType, a_DstNumChannels,
+                a_DstPitch, a_DstDataPtr, a_Scale, a_Gamma );
           }
           break;
           default:
@@ -1512,18 +1512,18 @@ namespace ImageProcessingAtom
     //--------------------------------------------------------------------------------------
     //Cube map filtering and mip chain generation.
     // the cube map filtereing is specified using a number of parameters:
-    // Filtering per miplevel is specified using 2D cone angle (in degrees) that 
-    //  indicates the region of the hemisphere to filter over for each tap. 
-    //                
-    // Note that the top mip level is also a filtered version of the original input images 
+    // Filtering per miplevel is specified using 2D cone angle (in degrees) that
+    //  indicates the region of the hemisphere to filter over for each tap.
+    //
+    // Note that the top mip level is also a filtered version of the original input images
     //  as well in order to create mip chains for diffuse environment illumination.
     // The cone angle for the top level is specified by a_BaseAngle.  This can be used to
     //  generate mipchains used to store the resutls of preintegration across the hemisphere.
     //
-    // Then the mip angle used to genreate the next level of the mip chain from the first level 
+    // Then the mip angle used to genreate the next level of the mip chain from the first level
     //  is a_InitialMipAngle
     //
-    // The angle for the subsequent levels of the mip chain are specified by their parents 
+    // The angle for the subsequent levels of the mip chain are specified by their parents
     //  filtering angle and a per-level scale and bias
     //   newAngle = oldAngle * a_MipAnglePerLevelScale;
     //
@@ -1542,14 +1542,14 @@ namespace ImageProcessingAtom
     inline float RadicalInverse2(uint32 bits)
     {
         // Van der Corput radical inverse in base 2
-    
+
         // Reverse bits
         bits = (bits << 16u) | (bits >> 16u);
         bits = ((bits & 0x55555555u) << 1u) | ((bits & 0xAAAAAAAAu) >> 1u);
         bits = ((bits & 0x33333333u) << 2u) | ((bits & 0xCCCCCCCCu) >> 2u);
         bits = ((bits & 0x0F0F0F0Fu) << 4u) | ((bits & 0xF0F0F0F0u) >> 4u);
         bits = ((bits & 0x00FF00FFu) << 8u) | ((bits & 0xFF00FF00u) >> 8u);
-    
+
         return float(bits) * 2.3283064365386963e-10f;  // float(bits) * 2^-32
     }
 
@@ -1575,12 +1575,12 @@ namespace ImageProcessingAtom
         float vTangentX[3];
         float vTangentY[3];
         float vTempVec[3];
-    
+
         // Build local frame
         VM_XPROD3(vTempVec, fabs(vNormal[2]) < 0.999f ? vUpVectorZ : vUpVectorX, vNormal);
         VM_NORM3(vTangentX, vTempVec);
         VM_XPROD3(vTangentY, vNormal, vTangentX);
-    
+
         // Convert from tangent to world space
         vOut[0] = vTangentX[0] * vH[0] + vTangentY[0] * vH[1] + vNormal[0] * vH[2];
         vOut[1] = vTangentX[1] * vH[0] + vTangentY[1] * vH[1] + vNormal[1] * vH[2];
@@ -1601,7 +1601,7 @@ namespace ImageProcessingAtom
         // Convert smoothness to roughness (needs to match shader code)
         // The roughness value in microfacet calculations (called "alpha" in the literature) does not give perceptually
         // linear results. Disney found that squaring the roughness value before using it in microfacet equations causes
-        // the user-provided roughness parameter to be more perceptually linear. 
+        // the user-provided roughness parameter to be more perceptually linear.
         // See Burley's Disney PBR: https://pdfs.semanticscholar.org/eeee/3b125c09044d3e2f58ed0e4b1b66a677886d.pdf
         float smoothness          = VM_MAX(1.0f - ((float)a_MipIdx / maxMipIndex), 0.0f);
         float perceptualRoughness = 1.0f - smoothness;
@@ -1642,18 +1642,18 @@ namespace ImageProcessingAtom
                         float vXi[2];
                         HammersleySequence(i, a_SampleCount, vXi);
                         ImportanceSampleGGX(vXi, alphaRoughnessSqr, vCenterTapDir, vH);
-                    
+
                         float fVdotH = VM_DOTPROD3(vCenterTapDir, vH);
                         vL[0] = 2 * fVdotH * vH[0] - vCenterTapDir[0];
                         vL[1] = 2 * fVdotH * vH[1] - vCenterTapDir[1];
                         vL[2] = 2 * fVdotH * vH[2] - vCenterTapDir[2];
-                    
+
                         float fNdotL = VM_DOTPROD3(vCenterTapDir, vL);
                         if (fNdotL > 0)
                         {
                             //compute specular D term (must match shader BRDF)
                             float dh = alphaRoughnessSqr / (CP_PI * powf(fVdotH * fVdotH * (alphaRoughnessSqr - 1.0f) + 1.0f, 2.0f));
-                           
+
                             //calculate the PDF (probability distribution) of the sample to determine the best mip level.
                             //lower probability sample directions use a smaller mip so they cover a larger sample area, which will
                             //blend the sample values and reduce artifacts
@@ -1691,7 +1691,7 @@ namespace ImageProcessingAtom
                     {
                         texelPtr[k] = color[k] / totalWeight;
                     }
-                
+
                     texelPtr += dstCubeMap[iCubeFace].m_NumChannels;
                 }
             }
@@ -1702,7 +1702,7 @@ namespace ImageProcessingAtom
     }
 
 
-    void CCubeMapProcessor::FilterCubeMapMipChain(float a_BaseFilterAngle, float a_InitialMipAngle, float a_MipAnglePerLevelScale, 
+    void CCubeMapProcessor::FilterCubeMapMipChain(float a_BaseFilterAngle, float a_InitialMipAngle, float a_MipAnglePerLevelScale,
         int32 a_FilterType, int32 a_FixupType, int32 a_FixupWidth, bool a_bUseSolidAngle, float a_GlossScale, float a_GlossBias,
         int32 a_SampleCountGGX)
     {
@@ -1722,10 +1722,10 @@ namespace ImageProcessingAtom
        m_ThreadProgress[0].m_CurrentMipLevel = 0;
        m_ThreadProgress[0].m_CurrentRow = 0;
        m_ThreadProgress[0].m_CurrentFace = 0;
-       
+
        //Filter the top mip level (initial filtering used for diffuse or blurred specular lighting )
-       FilterCubeSurfaces(m_InputSurface[0], m_OutputSurface[0], a_BaseFilterAngle, a_FilterType, a_bUseSolidAngle, 
-            0,  //start at face 0 
+       FilterCubeSurfaces(m_InputSurface[0], m_OutputSurface[0], a_BaseFilterAngle, a_FilterType, a_bUseSolidAngle,
+            0,  //start at face 0
             5,  //end at face 5
             0); //thread 0 is processing
 
@@ -1750,7 +1750,7 @@ namespace ImageProcessingAtom
           {
             FilterCubeSurfacesGGX(i + 1,
               a_SampleCountGGX,
-              0,  //start at face 0 
+              0,  //start at face 0
               5,  //end at face 5
               0   //thread 0 is processing
               );
@@ -1780,7 +1780,7 @@ namespace ImageProcessingAtom
 
             //filter cube surfaces
             FilterCubeSurfaces(srcCubeImage, m_OutputSurface[i+1], coneAngle, a_FilterType, a_bUseSolidAngle,
-              0,  //start at face 0 
+              0,  //start at face 0
               5,  //end at face 5
               0,  //thread 0 is processing
               specPow);
@@ -1790,7 +1790,7 @@ namespace ImageProcessingAtom
           m_ThreadProgress[0].m_CurrentRow = 0;
           m_ThreadProgress[0].m_CurrentFace = 0;
 
-          FixupCubeEdges(m_OutputSurface[i+1], a_FixupType, a_FixupWidth);        
+          FixupCubeEdges(m_OutputSurface[i+1], a_FixupType, a_FixupWidth);
 
           coneAngle = coneAngle * a_MipAnglePerLevelScale;
        }
@@ -1803,18 +1803,18 @@ namespace ImageProcessingAtom
     //Builds the following lookup tables prior to filtering:
     //  -normalizer cube map
     //  -tap weight lookup table
-    // 
+    //
     //--------------------------------------------------------------------------------------
     void CCubeMapProcessor::PrecomputeFilterLookupTables(uint32 a_FilterType, int32 a_SrcCubeMapWidth, float a_FilterConeAngle)
     {
         float srcTexelAngle;
         int32   iCubeFace;
-        
+
         //angle about center tap that defines filter cone
         float filterAngle;
 
         //min angle a src texel can cover (in degrees)
-        srcTexelAngle = (180.0f / CP_PI) * atan2f(1.0f, (float)a_SrcCubeMapWidth);  
+        srcTexelAngle = (180.0f / CP_PI) * atan2f(1.0f, (float)a_SrcCubeMapWidth);
 
         //filter angle is 1/2 the cone angle
         filterAngle = a_FilterConeAngle / 2.0f;
@@ -1822,7 +1822,7 @@ namespace ImageProcessingAtom
         //ensure filter angle is larger than a texel
         if(filterAngle < srcTexelAngle)
         {
-            filterAngle = srcTexelAngle;    
+            filterAngle = srcTexelAngle;
         }
 
         //ensure filter cone is always smaller than the hemisphere
@@ -1837,35 +1837,35 @@ namespace ImageProcessingAtom
         //clear pre-existing normalizer cube map
         for(iCubeFace=0; iCubeFace<6; iCubeFace++)
         {
-            m_NormCubeMap[iCubeFace].Clear();            
+            m_NormCubeMap[iCubeFace].Clear();
         }
 
-        //Normalized vectors per cubeface and per-texel solid angle 
+        //Normalized vectors per cubeface and per-texel solid angle
         BuildNormalizerSolidAngleCubemap(a_SrcCubeMapWidth, m_NormCubeMap);
 
     }
 
     //--------------------------------------------------------------------------------------
-    //The key to the speed of these filtering routines is to quickly define a per-face 
-    //  bounding box of pixels which enclose all the taps in the filter kernel efficiently.  
-    //  Later these pixels are selectively processed based on their dot products to see if 
+    //The key to the speed of these filtering routines is to quickly define a per-face
+    //  bounding box of pixels which enclose all the taps in the filter kernel efficiently.
+    //  Later these pixels are selectively processed based on their dot products to see if
     //  they reside within the filtering cone.
     //
-    //This is done by computing the smallest per-texel angle to get a conservative estimate 
+    //This is done by computing the smallest per-texel angle to get a conservative estimate
     // of the number of texels needed to be covered in width and height order to filter the
-    // region.  the bounding box for the center taps face is defined first, and if the 
-    // filtereing region bleeds onto the other faces, bounding boxes for the other faces are 
+    // region.  the bounding box for the center taps face is defined first, and if the
+    // filtereing region bleeds onto the other faces, bounding boxes for the other faces are
     // defined next
     //--------------------------------------------------------------------------------------
-    void CCubeMapProcessor::FilterCubeSurfaces(CImageSurface *a_SrcCubeMap, CImageSurface *a_DstCubeMap, 
-        float a_FilterConeAngle, int32 a_FilterType, bool a_bUseSolidAngle, int32 a_FaceIdxStart, 
+    void CCubeMapProcessor::FilterCubeSurfaces(CImageSurface *a_SrcCubeMap, CImageSurface *a_DstCubeMap,
+        float a_FilterConeAngle, int32 a_FilterType, bool a_bUseSolidAngle, int32 a_FaceIdxStart,
         int32 a_FaceIdxEnd, int32 a_ThreadIdx, float a_SpecularPower)
     {
         const int32 srcSize = a_SrcCubeMap[0].m_Width;
         const int32 dstSize = a_DstCubeMap[0].m_Width;
 
         //min angle a src texel can cover (in degrees)
-        const float srcTexelAngle = (180.0f / CP_PI) * atan2f(1.0f, (float)srcSize);  
+        const float srcTexelAngle = (180.0f / CP_PI) * atan2f(1.0f, (float)srcSize);
 
         //angle about center tap to define filter cone
         float filterAngle;
@@ -1876,7 +1876,7 @@ namespace ImageProcessingAtom
         //ensure filter angle is larger than a texel
         if(filterAngle < srcTexelAngle)
         {
-            filterAngle = srcTexelAngle;    
+            filterAngle = srcTexelAngle;
         }
 
         //ensure filter cone is always smaller than the hemisphere
@@ -1888,9 +1888,9 @@ namespace ImageProcessingAtom
         //the maximum number of texels in 1D the filter cone angle will cover
         //  used to determine bounding box size for filter extents
         //ensure conservative region always covers at least one texel
-        const int32 filterSize = AZ::GetMax((int32)ceil(filterAngle / srcTexelAngle), 1);   
+        const int32 filterSize = AZ::GetMax((int32)ceil(filterAngle / srcTexelAngle), 1);
 
-        //dotProdThresh threshold based on cone angle to determine whether or not taps 
+        //dotProdThresh threshold based on cone angle to determine whether or not taps
         // reside within the cone angle
         const float dotProdThresh = cosf( (CP_PI / 180.0f) * filterAngle );
 
@@ -1910,11 +1910,11 @@ namespace ImageProcessingAtom
                m_ThreadProgress[a_ThreadIdx].m_CurrentRow = v;
 
                 for(int32 u=0; u<dstSize && !m_shutdownWorkerThreadSignal; u++)
-                {                
+                {
                     //CImageSurface normCubeMap[6];     //
                     CBBoxInt32    filterExtents[6];   //bounding box per face to specify region to process
-                                                      // note that pixels within these regions may be rejected 
-                                                      // based on the     
+                                                      // note that pixels within these regions may be rejected
+                                                      // based on the
                     float centerTapDir[3];  //direction of center tap
 
                     //get center tap direction
@@ -1925,12 +1925,12 @@ namespace ImageProcessingAtom
 
                     //define per-face filter extents
                     DetermineFilterExtents(centerTapDir, srcSize, filterSize, filterExtents );
-                    
-                    //perform filtering of src faces using filter extents 
+
+                    //perform filtering of src faces using filter extents
                     ProcessFilterExtents(centerTapDir, dotProdThresh, filterExtents, m_NormCubeMap, a_SrcCubeMap, texelPtr, a_FilterType, a_bUseSolidAngle, a_SpecularPower);
 
                     texelPtr += a_DstCubeMap[iCubeFace].m_NumChannels;
-                }            
+                }
             }
         }
     }
@@ -1941,20 +1941,20 @@ namespace ImageProcessingAtom
     //starts a new thread to execute the filtering options
     //
     //--------------------------------------------------------------------------------------
-    void CCubeMapProcessor::InitiateFiltering(float a_BaseFilterAngle, float a_InitialMipAngle, 
+    void CCubeMapProcessor::InitiateFiltering(float a_BaseFilterAngle, float a_InitialMipAngle,
           float a_MipAnglePerLevelScale, int32 a_FilterType, int32 a_FixupType, int32 a_FixupWidth, bool a_bUseSolidAngle,
           float a_GlossScale, float a_GlossBias, int32 a_SampleCountGGX)
-    {   
-       //set filtering options in main class to determine 
+    {
+       //set filtering options in main class to determine
        m_BaseFilterAngle = a_BaseFilterAngle;
        m_InitialMipAngle = a_InitialMipAngle;
        m_MipAnglePerLevelScale = a_MipAnglePerLevelScale;
-       
+
        //terminate preexisting threads if needed
        TerminateActiveThreads();
 
        //call filtering function from the current process
-        FilterCubeMapMipChain(a_BaseFilterAngle, a_InitialMipAngle, a_MipAnglePerLevelScale, a_FilterType, 
+        FilterCubeMapMipChain(a_BaseFilterAngle, a_InitialMipAngle, a_MipAnglePerLevelScale, a_FilterType,
             a_FixupType, a_FixupWidth, a_bUseSolidAngle, a_GlossScale, a_GlossBias, a_SampleCountGGX);
     }
 
@@ -1972,10 +1972,10 @@ namespace ImageProcessingAtom
         m_NumFilterLUTEntries = 4096; //a_NumFilterLUTEntries;
         m_FilterLUT = new CP_ITYPE [m_NumFilterLUTEntries];
 
-        // note that CP_FILTER_TYPE_DISC weights all taps equally and does not need a lookup table    
+        // note that CP_FILTER_TYPE_DISC weights all taps equally and does not need a lookup table
         if( a_FilterType == CP_FILTER_TYPE_CONE )
         {
-            //CP_FILTER_TYPE_CONE is a cone centered around the center tap and falls off to zero 
+            //CP_FILTER_TYPE_CONE is a cone centered around the center tap and falls off to zero
             //  over the filtering radius
             CP_ITYPE filtAngleRad = a_FilterAngle * CP_PI / 180.0f;
 
@@ -1983,7 +1983,7 @@ namespace ImageProcessingAtom
             {
                 CP_ITYPE angle = acos( (float)iLUTEntry / (float)(m_NumFilterLUTEntries - 1) );
                 CP_ITYPE filterVal;
-        
+
                 filterVal = (filtAngleRad - angle) / filtAngleRad;
 
                 if(filterVal < 0)
@@ -2001,12 +2001,12 @@ namespace ImageProcessingAtom
             //fit 3 standard deviations within angular extent of filter
             CP_ITYPE stdDev = (a_FilterAngle * CP_PI / 180.0f) / 3.0f;
             CP_ITYPE inv2Variance = 1.0f / (2.0f * stdDev * stdDev);
-        
+
             for(iLUTEntry=0; iLUTEntry<m_NumFilterLUTEntries; iLUTEntry++ )
             {
                 CP_ITYPE angle = acos( (float)iLUTEntry / (float)(m_NumFilterLUTEntries - 1) );
                 CP_ITYPE filterVal;
-        
+
                 filterVal = exp( -(angle * angle) * inv2Variance );
 
                 //note that gaussian is not weighted by 1.0 / (sigma* sqrt(2 * PI)) seen as weights
@@ -2020,7 +2020,7 @@ namespace ImageProcessingAtom
     //--------------------------------------------------------------------------------------
     // WriteMipLevelIntoAlpha
     //
-    //  Writes the current mip level into alpha in order for 2.0 shaders that need to 
+    //  Writes the current mip level into alpha in order for 2.0 shaders that need to
     //  know the current mip-level
     //--------------------------------------------------------------------------------------
     void CCubeMapProcessor::WriteMipLevelIntoAlpha(void)
@@ -2094,7 +2094,7 @@ namespace ImageProcessingAtom
        {
           return false;
        }
-       else 
+       else
        {
            if(m_ThreadHandle[a_ThreadIdx].joinable())
            {
@@ -2111,7 +2111,7 @@ namespace ImageProcessingAtom
     //--------------------------------------------------------------------------------------
     void CCubeMapProcessor::EstimateFilterThreadProgress(SFilterProgress *a_FilterProgress)
     {
-       float totalMipComputation = 0.0f;     //time to compute all mip levels as a function of the time it takes 
+       float totalMipComputation = 0.0f;     //time to compute all mip levels as a function of the time it takes
                                                 //to compute the top mip level
 
        float progressMipComputation = 0.0f;	//progress based on entirely computed mip levels
@@ -2120,19 +2120,19 @@ namespace ImageProcessingAtom
        float currentFaceComputation = 0.0f;	//amount of computation it takes to process this entire face
        float progressRowComputation = 0.0f;	//progress based on entirely computed rows for this face
                                                 //estimated fraction of total computation time the current face will take
-   
+
        int32 i;
 
        float filterAngle = 1.0f;					//filter angle for given miplevel
        int32 dstSize = 1;						//destination cube map size of given mip level
        int32 currentMipSize = 1;				//size of mip level currently being processed
 
-       //compuate total compuation time as a function of the time  
-       // cubemap processing for each miplevel is roughly O(n^2 * m^2) 
-       //  where n is the cube map size, and m is the filter size   
-       // Each miplevel is half the size of the previous level,  
-       //  and the filter size in texels is roughly proportional to the 
-       // (filter angle size * size of source cubemap texels are fetched from) ^2 
+       //compuate total compuation time as a function of the time
+       // cubemap processing for each miplevel is roughly O(n^2 * m^2)
+       //  where n is the cube map size, and m is the filter size
+       // Each miplevel is half the size of the previous level,
+       //  and the filter size in texels is roughly proportional to the
+       // (filter angle size * size of source cubemap texels are fetched from) ^2
 
        // computation to generate base mip level (generated from input cube map)
        if(m_BaseFilterAngle > 0.0f)
@@ -2194,22 +2194,22 @@ namespace ImageProcessingAtom
        }
 
        //fraction of compuation time processing the entire current mip level will take
-       currentMipComputation  /= totalMipComputation; 
+       currentMipComputation  /= totalMipComputation;
        progressMipComputation /= totalMipComputation;
 
-       progressFaceComputation = currentMipComputation * 
+       progressFaceComputation = currentMipComputation *
           (float)(a_FilterProgress->m_CurrentFace - a_FilterProgress->m_StartFace) /
           (float)(1 + a_FilterProgress->m_EndFace - a_FilterProgress->m_StartFace);
 
-       currentFaceComputation = currentMipComputation * 
+       currentFaceComputation = currentMipComputation *
           1.0f /
           (1 + a_FilterProgress->m_EndFace - a_FilterProgress->m_StartFace);
 
-       progressRowComputation = currentFaceComputation * 
-          ((float)a_FilterProgress->m_CurrentRow / (float)currentMipSize);  
+       progressRowComputation = currentFaceComputation *
+          ((float)a_FilterProgress->m_CurrentRow / (float)currentMipSize);
 
        //progress completed
-       a_FilterProgress->m_FractionCompleted = 
+       a_FilterProgress->m_FractionCompleted =
           progressMipComputation +
           progressFaceComputation +
           progressRowComputation;
@@ -2246,23 +2246,23 @@ namespace ImageProcessingAtom
        {
           if(IsFilterThreadActive(i))
           {
-          
+
              EstimateFilterThreadProgress(&(m_ThreadProgress[i]) );
 
              azsnwprintf(threadProgressString[i],
                 CP_MAX_PROGRESS_STRING,
-                L"%5.2f%% Complete (Level %3d, Face %3d, Row %3d)", 
+                L"%5.2f%% Complete (Level %3d, Face %3d, Row %3d)",
                 100.0f * m_ThreadProgress[i].m_FractionCompleted,
-                m_ThreadProgress[i].m_CurrentMipLevel, 
+                m_ThreadProgress[i].m_CurrentMipLevel,
                 m_ThreadProgress[i].m_CurrentFace,
-                m_ThreadProgress[i].m_CurrentRow        
+                m_ThreadProgress[i].m_CurrentRow
                 );
           }
           else
           {
               azsnwprintf(threadProgressString[i],
                 CP_MAX_PROGRESS_STRING,
-                L"Ready");   
+                L"Ready");
           }
        }
 
@@ -2270,7 +2270,7 @@ namespace ImageProcessingAtom
        {  //display information about both threads
            azsnwprintf(m_ProgressString,
              CP_MAX_PROGRESS_STRING,
-             L"Thread0: %s \nThread1: %s", 
+             L"Thread0: %s \nThread1: %s",
              threadProgressString[0],
              threadProgressString[1]);
        }
@@ -2278,7 +2278,7 @@ namespace ImageProcessingAtom
        {  //only display information about one thread
            azsnwprintf(m_ProgressString,
              CP_MAX_PROGRESS_STRING,
-             L"Thread 0: %s ", 
+             L"Thread 0: %s ",
              threadProgressString[0]);
        }
        return m_ProgressString;
@@ -2304,7 +2304,7 @@ namespace ImageProcessingAtom
        if(m_Status != CP_STATUS_PROCESSING )
        {
           m_Status = CP_STATUS_READY;
-   
+
        }
     }
 } //namespace ImageProcessingAtom

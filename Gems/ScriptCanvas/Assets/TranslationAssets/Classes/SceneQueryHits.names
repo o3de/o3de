@@ -1,0 +1,40 @@
+{
+    "entries": [
+        {
+            "base": "SceneQueryHits",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "Scene Query Hits"
+            },
+            "methods": [
+                {
+                    "base": "GetHitArray",
+                    "context": "Getter",
+                    "details": {
+                        "name": "Get Hit Array",
+                        "tooltip": "Get the array of hits from the result of a scene query"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{BAFCC4E7-A06B-4909-B2AE-C89D9E84FE4E}",
+                            "details": {
+                                "name": "Scene Query Hits",
+                                "tooltip": "The result of a scene query"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{E3B6686C-306E-5C7F-9274-196CC18E1284}",
+                            "details": {
+                                "name": "Hit Array",
+                                "tooltip": "The array of hits from the result of a scene query"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,204 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "id": "{C0ADB0F0-39DD-48D9-A4D2-58B40C76C285}",
+        "category": "Texturing",
+        "title": "Sample Texture 2d",
+        "titlePaletteName": "TexturingNodeTitlePalette",
+        "description": "Look up a value on a 2d texture",
+        "settings": {
+            "includePaths": [
+                "Atom/Features/ColorManagement/TransformColor.azsli"
+            ],
+            "instructions": [
+                "SLOTTYPE(outColor) outColor = TransformColor4(MaterialSrg::inValue.Sample(MaterialSrg::inSampler, (float2)inUV), inColorSpaceFrom, inColorSpaceTo);"
+            ]
+        },
+        "propertySlots": [
+            {
+                "name": "inGroup",
+                "displayName": "Group",
+                "description": "Material type group name that will contain the property corresponding to this input.",
+                "supportedDataTypeRegex": "string",
+                "defaultDataType": "string",
+                "visibleOnNode": false,
+                "editableOnNode": false
+            },
+            {
+                "name": "inName",
+                "displayName": "Name",
+                "description": "Property name that will be added to the material type for this input. The shader variable name and display name will be derived from this.",
+                "supportedDataTypeRegex": "string",
+                "defaultDataType": "string"
+            },
+            {
+                "name": "inDescription",
+                "displayName": "Description",
+                "description": "Description about what this material input does and how it should be used.",
+                "supportedDataTypeRegex": "string",
+                "defaultDataType": "string",
+                "visibleOnNode": false,
+                "editableOnNode": false
+            },
+            {
+                "name": "inValue",
+                "displayName": "Image",
+                "description": "Image",
+                "supportedDataTypeRegex": "image",
+                "defaultDataType": "image",
+                "visibleOnNode": false,
+                "editableOnNode": false,
+                "settings": {
+                    "materialPropertyConnectionType": [
+                        "ShaderInput"
+                    ],
+                    "materialPropertySrgMember": [
+                        "STANDARD_SRG_MEMBER"
+                    ]
+                }
+            },
+            {
+                "name": "inColorSpaceFrom",
+                "displayName": "Color Space From",
+                "description": "Indicates the source color space of the texture being sampled.",
+                "supportedDataTypeRegex": "string",
+                "defaultDataType": "string",
+                "defaultValue": {
+                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                    "Value": "ColorSpaceId::LinearSRGB"
+                },
+                "enumValues": [
+                    "ColorSpaceId::SRGB",
+                    "ColorSpaceId::LinearSRGB",
+                    "ColorSpaceId::ACEScc",
+                    "ColorSpaceId::ACEScg",
+                    "ColorSpaceId::ACES2065",
+                    "ColorSpaceId::XYZ"
+                ],
+                "visibleOnNode": false,
+                "editableOnNode": false,
+                "settings": {
+                    "instructions": [
+                        "const ColorSpaceId SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            },
+            {
+                "name": "inColorSpaceTo",
+                "displayName": "Color Space To",
+                "description": "Indicates the target color space of the color samples from the texture.",
+                "supportedDataTypeRegex": "string",
+                "defaultDataType": "string",
+                "defaultValue": {
+                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                    "Value": "ColorSpaceId::ACEScg"
+                },
+                "enumValues": [
+                    "ColorSpaceId::SRGB",
+                    "ColorSpaceId::LinearSRGB",
+                    "ColorSpaceId::ACEScc",
+                    "ColorSpaceId::ACEScg",
+                    "ColorSpaceId::ACES2065",
+                    "ColorSpaceId::XYZ"
+                ],
+                "visibleOnNode": false,
+                "editableOnNode": false,
+                "settings": {
+                    "instructions": [
+                        "const ColorSpaceId SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            },
+            {
+                "name": "inSampler",
+                "displayName": "Sampler",
+                "description": "Sampler",
+                "supportedDataTypeRegex": "sampler",
+                "defaultDataType": "sampler",
+                "visibleOnNode": false,
+                "editableOnNode": false,
+                "settings": {
+                    "materialPropertyConnectionType": [
+                        "ShaderInput"
+                    ],
+                    "materialPropertySrgMember": [
+                        "STANDARD_SRG_MEMBER"
+                    ]
+                }
+            }
+        ],
+        "inputSlots": [
+            {
+                "name": "inUV",
+                "displayName": "UV",
+                "description": "UV",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
+                "defaultDataType": "float2",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            }
+        ],
+        "outputSlots": [
+            {
+                "name": "outColor",
+                "displayName": "Color",
+                "description": "Color",
+                "supportedDataTypeRegex": "color",
+                "defaultDataType": "color"
+            },
+            {
+                "name": "outR",
+                "displayName": "R",
+                "description": "R",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = outColor.r;"
+                    ]
+                }
+            },
+            {
+                "name": "outG",
+                "displayName": "G",
+                "description": "G",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = outColor.g;"
+                    ]
+                }
+            },
+            {
+                "name": "outB",
+                "displayName": "B",
+                "description": "B",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = outColor.b;"
+                    ]
+                }
+            },
+            {
+                "name": "outA",
+                "displayName": "A",
+                "description": "A",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = outColor.a;"
+                    ]
+                }
+            }
+        ]
+    }
+}

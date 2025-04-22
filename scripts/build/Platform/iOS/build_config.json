@@ -19,8 +19,8 @@
   },
   "debug": {
     "TAGS": [
-      "nightly-incremental",
-      "nightly-clean",
+      "periodic-incremental-daily-internal",
+      "periodic-clean-weekly-internal",
       "weekly-build-metrics"
     ],
     "COMMAND": "../Mac/build_mac.sh",
@@ -35,8 +35,8 @@
   },
   "profile": {
     "TAGS": [
-      "nightly-incremental",
-      "nightly-clean",
+      "periodic-incremental-daily-internal",
+      "periodic-clean-weekly-internal",
       "daily-pipeline-metrics",
       "weekly-build-metrics"
     ],
@@ -52,8 +52,8 @@
   },
   "profile_nounity": {
     "TAGS": [
-      "nightly-incremental",
-      "nightly-clean",
+      "periodic-incremental-daily-internal",
+      "periodic-clean-weekly-internal",
       "weekly-build-metrics"
     ],
     "COMMAND": "../Mac/build_mac.sh",
@@ -68,8 +68,8 @@
   },
   "asset_profile": {
     "TAGS": [
-      "nightly-incremental",
-      "nightly-clean",
+      "periodic-incremental-daily-internal",
+      "periodic-clean-weekly-internal",
       "weekly-build-metrics"
     ],
     "COMMAND": "../Mac/build_asset_mac.sh",
@@ -80,14 +80,14 @@
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "AssetProcessorBatch",
       "ASSET_PROCESSOR_BINARY": "bin/profile/AssetProcessorBatch",
-      "ASSET_PROCESSOR_OPTIONS": "/zeroAnalysisMode",
+      "ASSET_PROCESSOR_OPTIONS": "--zeroAnalysisMode --ignoreFutureAssetDatabaseVersionError",
       "ASSET_PROCESSOR_PLATFORMS": "ios"
     }
   },
   "release": {
     "TAGS": [
-      "nightly-incremental",
-      "nightly-clean",
+      "periodic-incremental-daily-internal",
+      "periodic-clean-weekly-internal",
       "weekly-build-metrics"
     ],
     "COMMAND": "../Mac/build_mac.sh",

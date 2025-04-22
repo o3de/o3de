@@ -40,15 +40,15 @@ namespace ImageProcessingAtomEditor
         Q_OBJECT
     public:
 
-        AZ_CLASS_ALLOCATOR(TexturePropertyEditor, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TexturePropertyEditor, AZ::SystemAllocator);
         explicit TexturePropertyEditor(const AZ::Uuid& sourceTextureId, QWidget* parent = nullptr);
         ~TexturePropertyEditor();
 
         bool HasValidImage();
 
     protected:
-        void OnSave();
         void OnHelp();
+        void OnSave();
 
         ////////////////////////////////////////////////////////////////////////
         //EditorInternalNotificationBus

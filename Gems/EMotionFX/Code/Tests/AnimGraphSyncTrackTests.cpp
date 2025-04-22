@@ -90,7 +90,7 @@ namespace EMotionFX
         EXPECT_EQ(indexRight, params.m_expectedRight);
     }
 
-    INSTANTIATE_TEST_CASE_P(TestFindEventIndices, TestFindEventIndicesFixture,
+    INSTANTIATE_TEST_SUITE_P(TestFindEventIndices, TestFindEventIndicesFixture,
         ::testing::ValuesIn(std::vector<FindEventIndicesParams> {
             {
                 MakeNoEvents,
@@ -162,7 +162,7 @@ namespace EMotionFX
                 1,
                 2
             },
-        });
+        })
     );
 
     struct FindMatchingEventsParams
@@ -258,7 +258,7 @@ namespace EMotionFX
         EXPECT_EQ(outRight, params.m_expectedEventB);
     }
 
-    INSTANTIATE_TEST_CASE_P(TestFindMatchingEvents, TestFindMatchingEventsFixture,
+    INSTANTIATE_TEST_SUITE_P(TestFindMatchingEvents, TestFindMatchingEventsFixture,
         ::testing::ValuesIn(std::vector<FindMatchingEventsParams> {
             // With no events, it shouldn't matter what we put in, we'll get
             // back invalid indices

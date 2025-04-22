@@ -37,7 +37,7 @@ namespace AzToolsFramework
         {
         public:
             AZ_RTTI(URSequencePoint, "{D6A52DA5-DF44-43BE-B42C-B6E88BDF476A}")
-            AZ_CLASS_ALLOCATOR(URSequencePoint, AZ::SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR(URSequencePoint, AZ::SystemAllocator)
 
             typedef AZStd::vector<URSequencePoint*> ChildVec;
 
@@ -127,7 +127,7 @@ namespace AzToolsFramework
         {
         public:
             AZ_RTTI(BatchCommand, "{3CA8855C-C6A5-4395-9B47-D3F5A13EFB2D}", URSequencePoint)
-            AZ_CLASS_ALLOCATOR(BatchCommand, AZ::SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR(BatchCommand, AZ::SystemAllocator)
 
             explicit BatchCommand(const AZStd::string& friendlyName, URCommandID id = 0)
                 : URSequencePoint(friendlyName, id) {}
@@ -144,7 +144,7 @@ namespace AzToolsFramework
         {
         public:
 
-            AZ_CLASS_ALLOCATOR(UndoStack, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(UndoStack, AZ::SystemAllocator);
 
             UndoStack(IUndoNotify* notify);
             UndoStack(int /*no longer used*/, IUndoNotify* notify);

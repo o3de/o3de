@@ -1,9 +1,11 @@
 {
     "gem_name": "MaterialEditor",
+    "version": "0.0.0",
     "display_name": "Atom Material Editor",
     "license": "Apache-2.0 Or MIT",
     "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
     "origin": "Open 3D Engine - o3de.org",
+    "origin_url": "https://github.com/o3de/o3de",
     "type": "Tool",
     "summary": "Editor for creating, modifying, and previewing materials",
     "canonical_tags": [
@@ -11,6 +13,7 @@
     ],
     "user_tags": [],
     "requirements": "",
+    "documentation_url": "",
     "dependencies": [
         "AtomToolsFramework",
         "Atom_RPI",
@@ -18,7 +21,6 @@
         "Atom_Feature_Common",
         "ImageProcessingAtom",
         "Atom_Component_DebugCamera",
-        "CommonFeaturesAtom",
-        "LyShine"
+        "CommonFeaturesAtom"
     ]
 }

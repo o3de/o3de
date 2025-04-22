@@ -16,7 +16,7 @@ namespace O3DE::ProjectManager
         const QDateTime& lastUpdated,
         bool isEnabled = true)
         : m_name(name)
-        , m_creator(creator)
+        , m_origin(creator)
         , m_lastUpdated(lastUpdated)
         , m_isEnabled(isEnabled)
     {

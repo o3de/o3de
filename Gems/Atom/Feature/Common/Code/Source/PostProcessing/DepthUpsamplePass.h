@@ -22,7 +22,7 @@ namespace AZ
         
         public:
             AZ_RTTI(AZ::Render::DepthUpsamplePass, "{CE22C02E-7F6C-4C70-845C-839A8B51479E}", AZ::RPI::ComputePass);
-            AZ_CLASS_ALLOCATOR(DepthUpsamplePass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DepthUpsamplePass, SystemAllocator);
             virtual ~DepthUpsamplePass() = default;
         
             //! Create function registered with the pass system (see PassSystem::AddPassCreator)

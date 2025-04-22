@@ -20,8 +20,8 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeMotionFrameNode, AnimGraphAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeMotionFrameNode::UniqueData, AnimGraphObjectUniqueDataAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeMotionFrameNode, AnimGraphAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeMotionFrameNode::UniqueData, AnimGraphObjectUniqueDataAllocator)
 
     BlendTreeMotionFrameNode::BlendTreeMotionFrameNode()
         : AnimGraphNode()
@@ -172,14 +172,14 @@ namespace EMotionFX
         BlendTreeConnection* timeConnection = m_inputPorts[INPUTPORT_TIME].m_connection;
         if (timeConnection)
         {
-            timeConnection->GetSourceNode()->PerformPostUpdate(animGraphInstance, timePassedInSeconds);
+            PostUpdateIncomingNode(animGraphInstance, timeConnection->GetSourceNode(), timePassedInSeconds);
         }
 
         // update the input motion
         BlendTreeConnection* motionConnection = m_inputPorts[INPUTPORT_MOTION].m_connection;
         if (motionConnection)
         {
-            motionConnection->GetSourceNode()->PerformPostUpdate(animGraphInstance, timePassedInSeconds);
+            PostUpdateIncomingNode(animGraphInstance, motionConnection->GetSourceNode(), timePassedInSeconds);
 
             RequestRefDatas(animGraphInstance);
             UniqueData* uniqueData = static_cast<UniqueData*>(FindOrCreateUniqueNodeData(animGraphInstance));

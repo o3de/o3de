@@ -7,47 +7,31 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
-# -- This line is 75 characters -------------------------------------------
+# -------------------------------------------------------------------------
+"""! @brief
+<DCCsi>/azpy/shared/__init__.py
 
-"""azpy.shared.__init__"""
-
+DCCsi package for shared packages.
+"""
+# standard imports
+from pathlib import Path
 import logging as _logging
+# -------------------------------------------------------------------------
 
-import azpy.env_bool as env_bool
-from azpy.constants import ENVAR_DCCSI_GDEBUG
-from azpy.constants import ENVAR_DCCSI_DEV_MODE
-from azpy.constants import FRMT_LOG_LONG
 
-#  global space
-_DCCSI_GDEBUG = env_bool.env_bool(ENVAR_DCCSI_GDEBUG, False)
-_DCCSI_DEV_MODE = env_bool.env_bool(ENVAR_DCCSI_DEV_MODE, False)
-
-_PACKAGENAME = __name__
-if _PACKAGENAME is '__main__':
-    _PACKAGENAME = 'azpy.shared'
-
-# set up module logging
-for handler in _logging.root.handlers[:]:
-    _logging.root.removeHandler(handler)
+# -------------------------------------------------------------------------
+# global scope
+from DccScriptingInterface.azpy import _PACKAGENAME
+_PACKAGENAME = f'{_PACKAGENAME}.shared'
 _LOGGER = _logging.getLogger(_PACKAGENAME)
-_logging.basicConfig(format=FRMT_LOG_LONG)
-_LOGGER.debug('Initializing: {0}.'.format({_PACKAGENAME}))
+_LOGGER.debug(f'Initializing: {_PACKAGENAME}')
 
-# -------------------------------------------------------------------------
+__all__ = ['common', 'ui', 'utils']
 
-__all__ = ['common', 'ui']
+from DccScriptingInterface.azpy.env_bool import env_bool
+from DccScriptingInterface.azpy.constants import ENVAR_DCCSI_GDEBUG
+from DccScriptingInterface.globals import *
 
-# -------------------------------------------------------------------------
+_MODULE_PATH = Path(__file__)  # To Do: what if frozen?
+_LOGGER.debug(f'_MODULE_PATH: {_MODULE_PATH}')
 
-
-# -------------------------------------------------------------------------
-if _DCCSI_DEV_MODE:
-    # If in dev mode this will test imports of __all__
-    from azpy import test_imports
-    _LOGGER.debug('Testing Imports from {0}'.format(_PACKAGENAME))
-    test_imports(__all__,
-                 _pkg=_PACKAGENAME,
-                 _logger=_LOGGER)
-# -------------------------------------------------------------------------
-
-del _LOGGER

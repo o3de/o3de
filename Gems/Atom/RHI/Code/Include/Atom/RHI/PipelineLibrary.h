@@ -8,89 +8,120 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/Handle.h>
-#include <Atom/RHI/DeviceObject.h>
+#include <Atom/RHI/MultiDeviceObject.h>
+#include <Atom/RHI/DevicePipelineLibrary.h>
 
+#include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI.Reflect/PipelineLibraryData.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    //! A handle typed to the pipeline library. Used by the PipelineStateCache to abstract access.
+    using PipelineLibraryHandle = Handle<uint32_t, class PipelineLibrary>;
+
+    //! A descriptor struct containing a map of device-specific PipelineLibraryDescriptors, used in
+    //! PipelineLibrary
+    struct PipelineLibraryDescriptor
     {
-        /// A handle typed to the pipeline library. Used by the PipelineStateCache to abstract access.
-        using PipelineLibraryHandle = Handle<uint32_t, class PipelineLibrary>;
-
-        
-        //! PipelineState initialization is an expensive operation on certain platforms. If multiple pipeline states
-        //! are created with little variation between them, the contents are still duplicated. This class is an allocation
-        //! context for pipeline states, provided at PipelineState::Init, which will perform de-duplication of
-        //! internal pipeline state components and cache the results.
-        //!
-        //! Practically speaking, if many pipeline states are created with shared data between them (e.g. permutations
-        //! of the same shader), then providing a PipelineLibrary instance will reduce the memory footprint and cost
-        //! of compilation.
-        //!
-        //! Additionally, the PipelineLibrary is able to serialize the internal driver-contents to and from an opaque
-        //! data blob. This enables building up a pipeline state cache on disk, which can dramatically reduce pipeline
-        //! state compilation cost when run from a pre-warmed cache.
-        //!
-        //! PipelineLibrary is thread-safe, in the sense that it will take a lock during compilation. It is possible
-        //! to initialize pipeline states across threads using the same PipelineLibrary instance, but this will
-        //! result in the two calls serializing on the mutex. Instead, see PipelineStateCache which stores
-        //! a PipelineLibrary instance per thread to avoid this contention.
-        class PipelineLibrary
-            : public DeviceObject
+        void Init(
+            MultiDevice::DeviceMask deviceMask,
+            const AZStd::unordered_map<int, ConstPtr<RHI::PipelineLibraryData>>& serializedData,
+            const AZStd::unordered_map<int, AZStd::string>& filePaths)
         {
-        public:
-            AZ_RTTI(PipelineLibrary, "{843579BE-57E4-4527-AB00-C0217885AEA9}");
-            virtual ~PipelineLibrary() = default;
+            int deviceCount = RHI::RHISystemInterface::Get()->GetDeviceCount();
 
-            //! Initializes the pipeline library from a platform-specific data payload. This data is generated
-            //! by calling GetSerializedData in a previous run of the application. When run for the first
-            //! time, the serialized data should be empty. When the application completes, the library can be
-            //! serialized and the contents saved to disk. Subsequent loads will experience much faster pipeline
-            //! state creation times (on supported platforms). On success, the library is transitioned to the
-            //! initialized state. On failure, the library remains uninitialized.
-            //! @param serializedData The initial serialized data used to initialize the library. It can be null.
-            ResultCode Init(Device& device, const PipelineLibraryData* serializedData);
+            for (auto deviceIndex { 0 }; deviceIndex < deviceCount; ++deviceIndex)
+            {
+                if (CheckBit(deviceMask, deviceIndex))
+                {
+                    m_devicePipelineLibraryDescriptors[deviceIndex] = {
+                        serializedData.contains(deviceIndex) ? serializedData.at(deviceIndex) : nullptr,
+                        filePaths.contains(deviceIndex) ? filePaths.at(deviceIndex) : AZStd::string("")
+                    };
+                }
+            }
+        }
 
-            //! Merges the contents of other libraries into this library. This method must be called
-            //! on an initialized library. A common use case for this method is to construct thread-local
-            //! libraries and merge them into a single unified library. The serialized data can then be
-            //! extracted from the unified library. An error code is returned on failure and the behavior
-            //! is as if the method was never called.
-            ResultCode MergeInto(AZStd::array_view<const PipelineLibrary*> librariesToMerge);
+        //! Returns the device-specific DevicePipelineLibraryDescriptor for the given index
+        inline DevicePipelineLibraryDescriptor GetDevicePipelineLibraryDescriptor(int deviceIndex) const
+        {
+            AZ_Assert(
+                m_devicePipelineLibraryDescriptors.find(deviceIndex) != m_devicePipelineLibraryDescriptors.end(),
+                "No DevicePipelineLibraryDescriptor found for device index %d\n",
+                deviceIndex);
 
-            //! Serializes the platform-specific data and returns it as a new PipelineLibraryData instance.
-            //! The data is opaque to the user and can only be used to re-initialize the library. Use
-            //! this method to extract serialized data prior to application shutdown, save it to disk, and
-            //! use it when initializing on subsequent runs.
-            ConstPtr<PipelineLibraryData> GetSerializedData() const;
+            if (m_devicePipelineLibraryDescriptors.contains(deviceIndex))
+            {
+                return m_devicePipelineLibraryDescriptors.at(deviceIndex);
+            }
+            else
+            {
+                return DevicePipelineLibraryDescriptor{};
+            }
+        }
 
-            //! Returns whether the current library need to be merged
-            virtual bool IsMergeRequired() const;
+        //! A map of all device-specific PipelineLibraryDescriptors, indexed by the device index
+        AZStd::unordered_map<int, DevicePipelineLibraryDescriptor> m_devicePipelineLibraryDescriptors;
+    };
 
-        private:
-            bool ValidateIsInitialized() const;
+    //! PipelineLibrary is a multi-device class (representing a DevicePipelineLibrary on multiple devices).
+    //! It holds a map of device-specific DevicePipelineLibrary objects, which can be addressed with a device index.
+    //! The class is initialized with a device mask (1 bit per device), which initializes one DevicePipelineLibrary
+    //! for each bit set and stores them in a map.
+    //! The API then forwards all calls to the all device-specific DevicePipelineLibrary objects by iterating over them
+    //! and forwarding the call.
+    //! A device-specific DevicePipelineLibrary can be accessed by calling GetDevicePipelineLibrary
+    //! with the corresponding device index
+    class PipelineLibrary : public MultiDeviceObject
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(PipelineLibrary, AZ::SystemAllocator, 0);
+        AZ_RTTI(PipelineLibrary, "{B48B6A46-5976-4D7D-AA14-2179D871C567}");
+        AZ_RHI_MULTI_DEVICE_OBJECT_GETTER(PipelineLibrary);
+        PipelineLibrary() = default;
+        virtual ~PipelineLibrary() = default;
 
-            // Explicit shutdown is not allowed for this type.
-            void Shutdown() override final;
+        //! For all devices selected via the deviceMask, a DevicePipelineLibrary is initialized and stored internally
+        //! in a map (mapping from device index to a device-specific DevicePipelineLibrary).
+        //! A device-specific descriptor (retrieved from PipelineLibraryDescriptor) is passed to the 
+        //! respective initialized methods of the device-specific DevicePipelineLibrary.
+        //! @param deviceMask A bitmask selecting on which devices a DevicePipelineLibrary should be initialized
+        //! @param descriptor The descriptor needed to init the PipelineLibrary.
+        ResultCode Init(MultiDevice::DeviceMask deviceMask, const PipelineLibraryDescriptor& descriptor);
 
-            //////////////////////////////////////////////////////////////////////////
-            // Platform API
+        //! Forwards the call to all device-specific PipelineLibraries, for each device-specific DevicePipelineLibrary,
+        //! extracting the corresponding DevicePipelineLibrary(ies) from librariesToMerge and passing them on.
+        //! @param librariesToMerge A span of libraries to merge into this library
+        ResultCode MergeInto(AZStd::span<const PipelineLibrary* const> librariesToMerge);
 
-            /// Called when the library is being created.
-            virtual ResultCode InitInternal(Device& device, const PipelineLibraryData* serializedData) = 0;
+        //! Serializes the platform-specific data and returns it as a new PipelineLibraryData instance
+        //! for a specific device
+        //! @param deviceIndex Denotes from which device the serialized data should be retrieved
+        auto GetSerializedDataMap() const
+        {
+            AZStd::unordered_map<int, ConstPtr<PipelineLibraryData>> serializedData;
 
-            /// Called when the library is being shutdown.
-            virtual void ShutdownInternal() = 0;
+            IterateObjects<DevicePipelineLibrary>(
+                [&serializedData]([[maybe_unused]] auto deviceIndex, auto devicePipelineLibrary)
+                {
+                    serializedData[deviceIndex] = devicePipelineLibrary->GetSerializedData();
+                });
 
-            /// Called when libraries are being merged into this one.
-            virtual ResultCode MergeIntoInternal(AZStd::array_view<const PipelineLibrary*> libraries) = 0;
+            return serializedData;
+        }
 
-            /// Called when the library is serializing out platform-specific data.
-            virtual ConstPtr<PipelineLibraryData> GetSerializedDataInternal() const = 0;
+        //! Saves the platform-specific data to disk using the device-specific filePath provided. This is done through RHI backend drivers
+        //! for each device.
+        bool SaveSerializedData(const AZStd::unordered_map<int, AZStd::string>& filePaths) const;
 
-            //////////////////////////////////////////////////////////////////////////
-        };
-    }
-}
+        //! Returns whether the current library need to be merged
+        //! Returns true if any of the device-specific DevicePipelineLibrary objects needs to be merged
+        virtual bool IsMergeRequired() const;
+
+    private:
+        bool ValidateIsInitialized() const;
+
+        //! Explicit shutdown is not allowed for this type.
+        void Shutdown() override final;
+    };
+} // namespace AZ::RHI

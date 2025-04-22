@@ -23,7 +23,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeBlend2LegacyNode, AnimGraphAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeBlend2LegacyNode, AnimGraphAllocator)
 
 
     BlendTreeBlend2LegacyNode::BlendTreeBlend2LegacyNode()
@@ -303,7 +303,7 @@ namespace EMotionFX
             AnimGraphNodeData* sourceNodeUniqueData = con->GetSourceNode()->FindOrCreateUniqueNodeData(animGraphInstance);
             sourceNodeUniqueData->SetGlobalWeight(uniqueData->GetGlobalWeight());
             sourceNodeUniqueData->SetLocalWeight(1.0f);
-            con->GetSourceNode()->PerformTopDownUpdate(animGraphInstance, timePassedInSeconds);
+            TopDownUpdateIncomingNode(animGraphInstance, con->GetSourceNode(), timePassedInSeconds);
         }
 
         AnimGraphNode* nodeA;
@@ -402,11 +402,11 @@ namespace EMotionFX
                 AnimGraphNodeData* uniqueDataNodeB = nodeWeightUpdateB->FindOrCreateUniqueNodeData(animGraphInstance);
                 uniqueDataNodeB->SetGlobalWeight(uniqueData->GetGlobalWeight() * weight);
                 uniqueDataNodeB->SetLocalWeight(weight);
-                nodeWeightUpdateB->PerformTopDownUpdate(animGraphInstance, timePassedInSeconds);
+                TopDownUpdateIncomingNode(animGraphInstance, nodeWeightUpdateB, timePassedInSeconds);
             }
         }
 
-        nodeWeightUpdateA->PerformTopDownUpdate(animGraphInstance, timePassedInSeconds);
+        TopDownUpdateIncomingNode(animGraphInstance, nodeWeightUpdateA, timePassedInSeconds);
     }
 
 
@@ -425,7 +425,7 @@ namespace EMotionFX
         const BlendTreeConnection* con = GetInputPort(INPUTPORT_WEIGHT).m_connection;
         if (con)
         {
-            con->GetSourceNode()->PerformPostUpdate(animGraphInstance, timePassedInSeconds);
+            PostUpdateIncomingNode(animGraphInstance, con->GetSourceNode(), timePassedInSeconds);
         }
 
         AnimGraphNode* nodeA;
@@ -443,10 +443,10 @@ namespace EMotionFX
             return;
         }
 
-        nodeA->PerformPostUpdate(animGraphInstance, timePassedInSeconds);
+        PostUpdateIncomingNode(animGraphInstance, nodeA, timePassedInSeconds);
         if (nodeB && nodeA != nodeB)
         {
-            nodeB->PerformPostUpdate(animGraphInstance, timePassedInSeconds);
+            PostUpdateIncomingNode(animGraphInstance, nodeB, timePassedInSeconds);
         }
 
         RequestRefDatas(animGraphInstance);
@@ -484,7 +484,7 @@ namespace EMotionFX
         if (rootElementNode.GetVersion() < 3)
         {
             // Changed base class from AnimGraphNode to BlendTreeBlend2NodeBase
-            const int currentBaseClass1Index = rootElementNode.FindElement(AZ_CRC("BaseClass1", 0xd4925735));
+            const int currentBaseClass1Index = rootElementNode.FindElement(AZ_CRC_CE("BaseClass1"));
             if (currentBaseClass1Index >= 0)
             {
                 // If AnimGraphNode is the BaseClass1, move it to be a child of BlendTreeBlend2NodeBase
@@ -500,7 +500,7 @@ namespace EMotionFX
                     newBaseClass1.AddElement(currentBaseClass1Copy);
 
                     // Move the members: syncMode, eventMode, extractionMode and mask to the newBaseClass1
-                    static const AZStd::vector<AZ::u32> membersToMove = { AZ_CRC("syncMode", 0x64ef27e2), AZ_CRC("eventMode", 0xcb6e9b82), AZ_CRC("extractionMode", 0xbce1ceb4), AZ_CRC("mask", 0x7f6fc330) };
+                    static const AZStd::vector<AZ::u32> membersToMove = { AZ_CRC_CE("syncMode"), AZ_CRC_CE("eventMode"), AZ_CRC_CE("extractionMode"), AZ_CRC_CE("mask") };
 
                     for (const AZ::u32 member : membersToMove)
                     {

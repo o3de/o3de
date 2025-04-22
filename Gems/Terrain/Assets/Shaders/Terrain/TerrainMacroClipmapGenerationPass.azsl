@@ -1,0 +1,67 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+#include <TerrainSrg.azsli>
+#include <TerrainMaterialSrg.azsli>
+#include "ClipmapComputeHelpers.azsli"
+#include "TerrainMacroHelpers.azsli"
+
+#define THREAD_NUM_X 8
+#define THREAD_NUM_Y 8
+
+ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
+{
+    RWTexture2DArray<float4> m_macroColorClipmaps;
+    RWTexture2DArray<float2> m_macroNormalClipmaps;
+}
+
+[numthreads(THREAD_NUM_X,THREAD_NUM_Y,1)]
+void MainCS(
+    uint3 groupID : SV_GroupID,
+    uint3 groupThreadID : SV_GroupThreadID)
+{
+    uint numberOfGroups = TerrainSrg::m_clipmapData.m_macroDispatchGroupCountX * TerrainSrg::m_clipmapData.m_macroDispatchGroupCountY;
+    uint numberOfGroupThreads = THREAD_NUM_X * THREAD_NUM_Y;
+
+    for (uint regionIndex = 0; regionIndex < TerrainSrg::m_clipmapData.m_macroClipmapUpdateRegionCount; ++regionIndex)
+    {
+        TerrainSrg::ClipmapUpdateRegion updateRegion = TerrainSrg::m_macroClipmapUpdateRegions[regionIndex];
+        uint clipmapLevel = updateRegion.m_clipmapLevel;
+        uint4 aabb = updateRegion.m_clipmapRegion;
+        uint2 size = uint2(aabb.z - aabb.x, aabb.w - aabb.y);
+        uint totalNumberOfTexels = size.x * size.y;
+
+        uint totalStride = (totalNumberOfTexels + numberOfGroups - 1) / numberOfGroups;
+        uint totalBegin = min(totalStride * (groupID.x + groupID.y * TerrainSrg::m_clipmapData.m_macroDispatchGroupCountX), totalNumberOfTexels);
+        uint totalEnd = min(totalBegin + totalStride, totalNumberOfTexels);
+
+        uint groupTotal = totalEnd - totalBegin;
+        uint groupStride = (groupTotal + numberOfGroupThreads - 1) / numberOfGroupThreads;
+        uint groupBegin = min(groupStride * (groupThreadID.x + groupThreadID.y * THREAD_NUM_X), groupTotal);
+        uint groupEnd = min(groupBegin + groupStride, groupTotal);
+
+        for (uint i = groupBegin; i < groupEnd; ++i)
+        {
+            uint texelFlatIndex = totalBegin + i;
+            uint2 texelPosition = uint2(texelFlatIndex % size.x + aabb.x, texelFlatIndex / size.x + aabb.y);
+            uint3 texelIndex = uint3(texelPosition, clipmapLevel);
+
+            float2 worldPosition = GetWorldPositionFromMacroClipmaps(texelPosition, clipmapLevel);
+            float clipmapToWorldScale = GetMacroClipmapToWorldScale(clipmapLevel);
+            float2 positionDdx = float2(clipmapToWorldScale, 0.0);
+            float2 positionDdy = float2(0.0, clipmapToWorldScale);
+
+            float3 macroColor = TerrainMaterialSrg::m_baseColor.rgb;
+            float3 macroNormal = float3(0.0, 0.0, 1.0);
+            bool hasNormal;
+            SampleMacroTexture(worldPosition, positionDdx, positionDdy, macroColor, macroNormal, hasNormal);
+
+            PassSrg::m_macroColorClipmaps[texelIndex] = float4(macroColor, hasNormal ? HAS_NORMAL : NO_NORMAL);
+            PassSrg::m_macroNormalClipmaps[texelIndex] = macroNormal.xy;
+        }
+    }
+}

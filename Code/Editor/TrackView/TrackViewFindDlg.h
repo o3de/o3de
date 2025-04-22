@@ -6,17 +6,16 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_TRACKVIEW_TRACKVIEWFINDDLG_H
-#define CRYINCLUDE_EDITOR_TRACKVIEW_TRACKVIEWFINDDLG_H
 #pragma once
 
 // TrackViewFindDlg.h : header file
-//
+
 #if !defined(Q_MOC_RUN)
 #include <QDialog>
 #include <QScopedPointer>
 #endif
+
+#include <AzCore/std/containers/vector.h>
 
 class CTrackViewDialog;
 
@@ -24,7 +23,7 @@ namespace Ui {
     class TrackViewFindDlg;
 }
 
-/////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
 // CTrackViewFindDlg dialog
 class CTrackViewFindDlg
     : public QDialog
@@ -55,12 +54,11 @@ protected:
         QString m_seqName;
     };
 
-    std::vector<ObjName> m_objs;
+    AZStd::vector<ObjName> m_objs;
+    AZStd::vector<int> m_objsSourceIndex;
     CTrackViewDialog* m_tvDlg;
 
     int m_numSeqs;
 
     QScopedPointer<Ui::TrackViewFindDlg> ui;
 };
-
-#endif // CRYINCLUDE_EDITOR_TRACKVIEW_TRACKVIEWFINDDLG_H

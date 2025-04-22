@@ -14,6 +14,11 @@
 
 namespace ImageProcessingAtom
 {
+    namespace Utils
+    {
+        class AsyncImageAssetLoader;
+    }
+
     namespace Thumbnails
     {
         //! System component for image thumbnails.
@@ -44,13 +49,15 @@ namespace ImageProcessingAtom
             // AzFramework::ApplicationLifecycleEvents overrides...
             void OnApplicationAboutToStop() override;
 
-            // ThumbnailerRendererRequestsBus::Handler interface overrides...
+            // ThumbnailerRendererRequestBus::Handler interface overrides...
             bool Installed() const override;
             void RenderThumbnail(AzToolsFramework::Thumbnailer::SharedThumbnailKey thumbnailKey, int thumbnailSize) override;
 
             template<class MkImageFn>
             void RenderThumbnailFromImage(
                 AzToolsFramework::Thumbnailer::SharedThumbnailKey thumbnailKey, int thumbnailSize, MkImageFn mkPreviewImage) const;
+
+            AZStd::shared_ptr<Utils::AsyncImageAssetLoader> m_imageAssetLoader;
         };
     } // namespace Thumbnails
 } // namespace ImageProcessingAtom

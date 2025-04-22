@@ -39,9 +39,9 @@ namespace AZ
                 msgBoxMessage.append(errMsg.c_str());
             }
 
-            Trace::Output(nullptr, "\n==================================================================\n");
-            Trace::Output(nullptr, msgBoxMessage.c_str());
-            Trace::Output(nullptr, "\n==================================================================\n");
+            Trace::Instance().Output(AZ::Debug::Trace::GetDefaultSystemWindow(), "\n==================================================================\n");
+            Trace::Instance().Output(AZ::Debug::Trace::GetDefaultSystemWindow(), msgBoxMessage.c_str());
+            Trace::Instance().Output(AZ::Debug::Trace::GetDefaultSystemWindow(), "\n==================================================================\n");
 
             EBUS_EVENT(AZ::NativeUI::NativeUIRequestBus, DisplayOkDialog, "O3DE Initialization Failed", msgBoxMessage.c_str(), false);
         }

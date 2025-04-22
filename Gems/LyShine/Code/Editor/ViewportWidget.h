@@ -72,6 +72,12 @@ public: // member functions
     //! Used by ViewportInteraction for drawing
     ViewportHighlight* GetViewportHighlight() { return m_viewportHighlight.get(); }
 
+    //! Get the size of the RPI render viewport
+    AZ::Vector2 GetRenderViewportSize() const;
+
+    //! Get the widget to viewport scale factor
+    float WidgetToViewportFactor() const;
+
     bool IsInObjectPickMode() { return m_inObjectPickMode; }
     void PickItem(AZ::EntityId entityId);
 
@@ -156,6 +162,7 @@ private: // member functions
 
     // AZ::RPI::ViewportContextNotificationBus::Handler overrides...
     void OnRenderTick() override;
+    void OnViewportDpiScalingChanged(float dpiScale) override;
 
     //! Update UI canvases when in edit mode
     void UpdateEditMode(float deltaTime);
@@ -186,12 +193,6 @@ private: // data
     void dropEvent(QDropEvent* event) override;
 
     bool AcceptsMimeData(const QMimeData* mimeData);
-
-    double WidgetToViewportFactor() const
-    {
-        // Needed for high DPI mode on windows
-        return devicePixelRatioF();
-    }
 
     QPointF WidgetToViewport(const QPointF &point) const;
 

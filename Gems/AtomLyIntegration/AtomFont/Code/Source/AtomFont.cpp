@@ -486,7 +486,10 @@ FontFamilyPtr AZ::AtomFont::LoadFontFamily(const char* fontFamilyName)
                     fontFamily.reset(new FontFamily(),
                         [this](FontFamily* fontFamily)
                     {
-                        ReleaseFontFamily(fontFamily);
+                        if (AZ::Interface<AzFramework::FontQueryInterface>::Get())
+                        {
+                            ReleaseFontFamily(fontFamily);
+                        }
                     });
 
                     // Map the font family name both by path and by name defined
@@ -532,7 +535,10 @@ FontFamilyPtr AZ::AtomFont::LoadFontFamily(const char* fontFamilyName)
             fontFamily.reset(new FontFamily(),
                 [this](FontFamily* fontFamily)
             {
-                ReleaseFontFamily(fontFamily);
+                if (AZ::Interface<AzFramework::FontQueryInterface>::Get())
+                {
+                    ReleaseFontFamily(fontFamily);
+                }
             });
 
             // Use filepath as familyName so font loading/unloading doesn't break with duplicate file names
@@ -641,7 +647,7 @@ void AZ::AtomFont::OnLanguageChanged()
 {
     ReloadAllFonts();
 
-    EBUS_EVENT(LanguageChangeNotificationBus, LanguageChanged);
+    LanguageChangeNotificationBus::Broadcast(&LanguageChangeNotificationBus::Events::LanguageChanged);
 }
 
 void AZ::AtomFont::ReloadAllFonts()
@@ -673,7 +679,7 @@ void AZ::AtomFont::ReloadAllFonts()
 
     // All UI text components need to reload their font assets (both in-game
     // and in-editor).
-    EBUS_EVENT(FontNotificationBus, OnFontsReloaded);
+    FontNotificationBus::Broadcast(&FontNotificationBus::Events::OnFontsReloaded);
 }
 
 void AZ::AtomFont::UnregisterFont(const char* fontName)

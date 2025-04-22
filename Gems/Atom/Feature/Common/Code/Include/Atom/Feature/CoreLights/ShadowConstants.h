@@ -9,6 +9,7 @@
 
 #include <AzCore/base.h>
 #include <AzCore/Preprocessor/Enum.h>
+#include <AzCore/RTTI/TypeInfo.h>
 
 namespace AZ
 {
@@ -26,13 +27,25 @@ namespace AZ
         static constexpr ShadowmapSize MinShadowmapImageSize = ShadowmapSize::Size256;
         static constexpr ShadowmapSize MaxShadowmapImageSize = ShadowmapSize::Size2048;
 
-        // This matchs ShadowFilterMethod in CoreLights/ViewSrg.azsli
+        // This matches ShadowFilterMethod in DirectionalLightShadowCalculator.azsli
+        // and represents m_shadowFilterMethod in CoreLights/ViewSrg.azsli
         enum class ShadowFilterMethod : uint32_t
         {
             None = 0,
             Pcf, // Percentage Closer Filtering
             Esm, // Exponential Shadow Maps
             EsmPcf, // ESM with PCF fallback
+
+            Count
+        };
+
+        // This matches ShadowFilterSampleCount in DirectionalLightShadowCalculator.azsli
+        // and represents m_filteringSampleCountMode in CoreLights/ViewSrg.azsli
+        enum class ShadowFilterSampleCount : uint32_t
+        {
+            PcfTap4 = 0,
+            PcfTap9,
+            PcfTap16,
 
             Count
         };
@@ -47,5 +60,5 @@ namespace AZ
     } // namespace Render
 
     AZ_TYPE_INFO_SPECIALIZE(Render::ShadowmapSize, "{3EC1CE83-483D-41FD-9909-D22B03E56F4E}");
-    
+
 } // namespace AZ

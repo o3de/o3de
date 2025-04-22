@@ -1,0 +1,43 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "id": "{3F152CFF-504F-43FE-9102-3DB8A6DB3C12}",
+        "category": "Math Functions",
+        "title": "Cosine",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Returns the cosine of the input value (per component)",
+        "slotDataTypeGroups": [
+            "inValue|outValue"
+        ],
+        "inputSlots": [
+            {
+                "name": "inValue",
+                "displayName": "Value",
+                "description": "Value",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
+                "defaultDataType": "float4",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            }
+        ],
+        "outputSlots": [
+            {
+                "name": "outValue",
+                "displayName": "Value",
+                "description": "Value",
+                "supportedDataTypeRegex": "float4",
+                "defaultDataType": "float4",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = cos(inValue);"
+                    ]
+                }
+            }
+        ]
+    }
+}

@@ -66,5 +66,8 @@ void DHStackWidget::OnDoubleClicked(const QModelIndex& modelIdx)
     QTableWidgetItem* line = item(modelIdx.row(), 0);
     QTableWidgetItem* file = item(modelIdx.row(), 1);
 
-    EBUS_EVENT(LUAEditor::LUAStackRequestMessages::Bus, RequestStackClicked, AZStd::string(file->data(Qt::DisplayRole).toString().toUtf8().data()), line->data(Qt::DisplayRole).toInt());
+    LUAEditor::LUAStackRequestMessages::Bus::Broadcast(
+        &LUAEditor::LUAStackRequestMessages::Bus::Events::RequestStackClicked,
+        AZStd::string(file->data(Qt::DisplayRole).toString().toUtf8().data()),
+        line->data(Qt::DisplayRole).toInt());
 }

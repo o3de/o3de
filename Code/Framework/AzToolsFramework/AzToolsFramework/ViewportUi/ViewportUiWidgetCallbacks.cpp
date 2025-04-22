@@ -31,6 +31,7 @@ namespace AzToolsFramework::ViewportUi::Internal
     {
         // deregister and remove the widget
         m_widgets.erase(AZStd::find(m_widgets.begin(), m_widgets.end(), widget));
+        m_updateCallbacks.erase(widget);
     }
 
     void ViewportUiWidgetCallbacks::RegisterUpdateCallback(

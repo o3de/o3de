@@ -10,23 +10,23 @@
 
 #include <Atom/Features/LightCulling/LightCullingTileIterator.azsli>
 
-void ApplySimplePointLight(ViewSrg::SimplePointLight light, Surface surface, inout LightingData lightingData)
+void ApplySimplePointLight(SimplePointLight light, Surface surface, inout LightingData lightingData)
 {
-    float3 posToLight = light.m_position - surface.position;
-    float d2 = dot(posToLight, posToLight); // light distance squared
-    float falloff = d2 * light.m_invAttenuationRadiusSquared;
+    real3 posToLight = real3(light.m_position - surface.position);
+    real d2 = dot(posToLight, posToLight); // light distance squared
+    real falloff = d2 * real(light.m_invAttenuationRadiusSquared);
     
     // Only calculate shading if light is in range
     if (falloff < 1.0f)
     {
         // Smoothly adjusts the light intensity so it reaches 0 at light.m_attenuationRadius distance
-        float radiusAttenuation = 1.0 - (falloff * falloff);
+        real radiusAttenuation = 1.0 - (falloff * falloff);
         radiusAttenuation = radiusAttenuation * radiusAttenuation;
         
         // Standard quadratic falloff
         d2 = max(0.001 * 0.001, d2); // clamp the light to at least 1mm away to avoid extreme values.
-        float3 lightIntensity = (light.m_rgbIntensityCandelas / d2) * radiusAttenuation;
-        float3 posToLightDir = normalize(posToLight);
+        real3 lightIntensity = (real3(light.m_rgbIntensityCandelas) / d2) * radiusAttenuation;
+        real3 posToLightDir = normalize(posToLight);
 
         // Diffuse contribution
         lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, lightIntensity, posToLightDir);
@@ -36,16 +36,43 @@ void ApplySimplePointLight(ViewSrg::SimplePointLight light, Surface surface, ino
     }
 }
 
+void ApplySimplePointLightInternal(uint lightIndex, Surface surface, inout LightingData lightingData)
+{
+    if (o_enableSimplePointLights)
+    {
+        SimplePointLight light = ViewSrg::m_simplePointLights[lightIndex];
+        if(!IsSameLightChannel(lightingData.lightingChannels, light.m_lightingChannelMask))
+        {
+            return;
+        }
+        ApplySimplePointLight(light, surface, lightingData);
+    }
+}
+
 void ApplySimplePointLights(Surface surface, inout LightingData lightingData)
 {
-    lightingData.tileIterator.LoadAdvance();
-                
+#if ENABLE_LIGHT_CULLING
+    lightingData.tileIterator.LoadAdvance();    
     while( !lightingData.tileIterator.IsDone() ) 
     { 
         uint currLightIndex = lightingData.tileIterator.GetValue(); 
         lightingData.tileIterator.LoadAdvance();
     
-        ViewSrg::SimplePointLight light = ViewSrg::m_simplePointLights[currLightIndex];
-        ApplySimplePointLight(light, surface, lightingData);
+        ApplySimplePointLightInternal(currLightIndex, surface, lightingData);
     }
+#else
+
+    // For perf we cap light count. If it was not set by the pipeline it will use the value specified below
+    // This is only applicable if ENABLE_LIGHT_CULLING is disabled (i.e no gpu culling)
+    #ifndef ENABLE_SIMPLE_POINTLIGHTS_CAP
+        #define ENABLE_SIMPLE_POINTLIGHTS_CAP 20 
+    #endif
+
+    // Since there's no GPU culling for simple point lights, we rely on culling done by CPU
+    // Only apply visible point lights
+    for(uint lightIndex = 0; (lightIndex < ENABLE_SIMPLE_POINTLIGHTS_CAP && lightIndex < ViewSrg::m_visibleSimplePointLightCount); lightIndex++)
+    {
+        ApplySimplePointLightInternal(ViewSrg::m_visibleSimplePointLightIndices[lightIndex], surface, lightingData);
+    }
+#endif
 }

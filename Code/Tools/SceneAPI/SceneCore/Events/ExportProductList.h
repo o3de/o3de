@@ -58,7 +58,7 @@ namespace AZ
             class ExportProductList
             {
             public:
-                static void Reflect(ReflectContext* context);
+                SCENE_CORE_API static void Reflect(ReflectContext* context);
 
                 SCENE_CORE_API ExportProduct& AddProduct(const AZStd::string& filename, Uuid id, Data::AssetType assetType, AZStd::optional<u8> lod, AZStd::optional<u32> subId,
                     Data::ProductDependencyInfo::ProductDependencyFlags dependencyFlags = Data::ProductDependencyInfo::CreateFlags(Data::AssetLoadBehavior::NoLoad));

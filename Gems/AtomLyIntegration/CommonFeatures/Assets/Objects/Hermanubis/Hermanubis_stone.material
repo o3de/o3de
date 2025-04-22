@@ -1,0 +1,36 @@
+{
+    "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardPBR.materialtype",
+    "materialTypeVersion": 5,
+    "parentMaterial": "@gemroot:Atom_Feature_Common@/Assets/Materials/Presets/PBR/metal_brass.material",
+    "propertyValues": {
+        "baseColor.color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "baseColor.factor": 1.0,
+        "baseColor.textureBlendMode": "Lerp",
+        "baseColor.textureMap": "Hermanubis_Stone_BaseColor.png",
+        "baseColor.textureMapUv": "Unwrapped",
+        "clearCoat.roughness": 0.10000000149011612,
+        "general.applySpecularAA": true,
+        "irradiance.manualColor": [
+            0.7304646372795105,
+            0.6938735246658325,
+            0.6866865158081055,
+            1.0
+        ],
+        "metallic.factor": 0.0,
+        "normal.flipY": true,
+        "normal.textureMap": "Hermanubis_Normal.png",
+        "normal.textureMapUv": "Unwrapped",
+        "occlusion.diffuseTextureMap": "Hermanubis_ao.tif",
+        "occlusion.diffuseTextureMapUv": "Unwrapped",
+        "roughness.factor": 1.0,
+        "roughness.lowerBound": 0.15000000596046448,
+        "roughness.textureMap": "Hermanubis_bronze_Roughness.png",
+        "roughness.textureMapUv": "Unwrapped",
+        "roughness.upperBound": 0.7300000190734863
+    }
+}

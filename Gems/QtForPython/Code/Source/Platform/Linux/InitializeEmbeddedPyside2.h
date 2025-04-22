@@ -12,9 +12,11 @@
 
 namespace QtForPython
 {
-    const char* s_libPythonLibraryFile = "libpython3.7m.so.1.0";
-    const char* s_libPyside2LibraryFile = "libpyside2.abi3.so.5.14";
-    const char* s_libShibokenLibraryFile = "libshiboken2.abi3.so.5.14";
+    // s_libPythonLibraryFile must match the library name listed in (O3DE Engine Root)/python/runtime/.../python-config.cmake
+    // in the set(${MY}_LIBRARY_xxxx sections.
+    const char* s_libPythonLibraryFile = "libpython3.10.so.1.0"; 
+    const char* s_libPyside2LibraryFile = "libpyside2.abi3.so.5.15";
+    const char* s_libShibokenLibraryFile = "libshiboken2.abi3.so.5.15";
     const char* s_libQt5TestLibraryFile = "libQt5Test.so.5";
 
     class InitializeEmbeddedPyside2

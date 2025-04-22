@@ -12,13 +12,14 @@
 #include <AzCore/Math/Matrix4x4.h>
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/Math/Sphere.h>
-#include <AzCore/Math/ToString.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Vector4.h>
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/Color.h>
+
+#include <iomanip> // for std::setw
 
 // make gtest/gmock aware of these types so when a failure occurs we get more useful output
 namespace AZ

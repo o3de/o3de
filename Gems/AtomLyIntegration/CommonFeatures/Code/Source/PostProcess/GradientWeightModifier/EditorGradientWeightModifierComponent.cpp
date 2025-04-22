@@ -27,12 +27,12 @@ namespace AZ
                     editContext->Class<EditorGradientWeightModifierComponent>(
                         "PostFX Gradient Weight Modifier", "Modifies PostFX override factor based on a gradient signal sampled from an entity")
                         ->ClassElement(Edit::ClassElements::EditorData, "")
-                        ->Attribute(Edit::Attributes::Category, "Atom")
+                        ->Attribute(Edit::Attributes::Category, "Graphics/PostFX")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Component_Placeholder.svg")
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Component_Placeholder.svg")
-                        ->Attribute(Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
+                        ->Attribute(Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                         ->Attribute(Edit::Attributes::AutoExpand, true)
-                        ->Attribute(Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/atom/postfx-gradient-weight-modifier/")
+                        ->Attribute(Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/components/reference/atom/postfx-gradient-weight-modifier/")
                         ;
 
                     editContext->Class<GradientWeightModifierComponentController>("GradientWeightModifierComponentController", "")

@@ -23,6 +23,11 @@
 #include <AzCore/EBus/Results.h>
 #include <AzCore/EBus/Internal/Debug.h>
 
+ // Included for backwards compatibility purposes
+#include <AzCore/std/typetraits/typetraits.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzCore/std/containers/unordered_set.h>
+
 #include <AzCore/std/typetraits/is_same.h>
 
 #include <AzCore/std/utils.h>
@@ -141,6 +146,9 @@ namespace AZ
          * - For simple multithreaded cases, use AZStd::mutex.
          * - For multithreaded cases where an event handler sends a new event on the same bus
          *   or connects/disconnects while handling an event on the same bus, use AZStd::recursive_mutex.
+         * - For specialized multithreading cases, such as allowing events to execute in parallel with each other but not with
+         *   connects / disconnects, use custom mutex types along with custom LockGuard policies to control the specific locking
+         *   requirements for each mutex use case (connection, dispatch, binding, callstack tracking).
          */
         using MutexType = NullMutex;
 
@@ -240,15 +248,53 @@ namespace AZ
         using EventProcessingPolicy = EBusEventProcessingPolicy;
 
         /**
-        * Template Lock Guard class that wraps around the Mutex
-        * The EBus Context uses the LockGuard when dispatching
-        * (either AZStd::scoped_lock<MutexType> or NullLockGuard<MutexType>)
+         * The following Lock Guard classes are exposed so that it's possible to redefine them with custom lock/unlock functionality
+         * when using custom types for the EBus MutexType.
+         */
+
+       /**
+        * Template Lock Guard class to use during event dispatches.
+        * By default it will use a scoped_lock, but IsLocklessDispatch=true will cause it to use a NullLockGuard.
         * The IsLocklessDispatch bool is there to defer evaluation of the LocklessDispatch constant
         * Otherwise the value above in EBusTraits.h is always used and not the value
         * that the derived trait class sets.
         */
         template <typename DispatchMutex, bool IsLocklessDispatch>
         using DispatchLockGuard = AZStd::conditional_t<IsLocklessDispatch, AZ::Internal::NullLockGuard<DispatchMutex>, AZStd::scoped_lock<DispatchMutex>>;
+
+        /**
+         * Template Lock Guard class to use during connection / disconnection.
+         * By default it will use a unique_lock if the ContextMutex is anything but a NullMutex.
+         * This can be overridden to provide a different locking policy with custom EBus MutexType settings.
+         * Also, some specialized policies execute handler methods which can cause unnecessary delays holding
+         * the context mutex, such as performing blocking waits. These methods must unlock the context mutex before
+         * doing so to prevent deadlocks, especially when the wait is for an event in another thread which is trying
+         * to connect to the same bus before it can complete.
+         */
+        template<typename ContextMutex>
+        using ConnectLockGuard = AZStd::conditional_t<
+            AZStd::is_same_v<ContextMutex, AZ::NullMutex>,
+            AZ::Internal::NullLockGuard<ContextMutex>,
+            AZStd::unique_lock<ContextMutex>>;
+
+        /**
+         * Template Lock Guard class to use for EBus bind calls.
+         * By default it will use a scoped_lock.
+         * This can be overridden to provide a different locking policy with custom EBus MutexType settings.
+         */
+        template<typename ContextMutex>
+        using BindLockGuard = AZStd::scoped_lock<ContextMutex>;
+
+        /**
+         * Template Lock Guard class to use for EBus callstack tracking.
+         * By default it will use a unique_lock if the ContextMutex is anything but a NullMutex.
+         * This can be overridden to provide a different locking policy with custom EBus MutexType settings.
+         */
+        template<typename ContextMutex>
+        using CallstackTrackerLockGuard = AZStd::conditional_t<
+            AZStd::is_same_v<ContextMutex, AZ::NullMutex>,
+            AZ::Internal::NullLockGuard<ContextMutex>,
+            AZStd::unique_lock<ContextMutex>>;
     };
 
     namespace Internal
@@ -515,7 +561,25 @@ namespace AZ
         * This is not EBus Context Mutex when LocklessDispatch is set
         */
         template <typename DispatchMutex>
-        using DispatchLockGuard = typename ImplTraits::template DispatchLockGuard<DispatchMutex>;
+        using DispatchLockGuardTemplate = typename ImplTraits::template DispatchLockGuard<DispatchMutex>;
+
+        /**
+         * Template Lock Guard class that wraps around the Mutex the EBus uses for Bus Connects / Disconnects.
+         */
+        template<typename ContextMutexType>
+        using ConnectLockGuardTemplate = typename ImplTraits::template ConnectLockGuard<ContextMutexType>;
+
+        /**
+         * Template Lock Guard class that wraps around the Mutex the EBus uses for Bus Bind calls.
+         */
+        template<typename ContextMutexType>
+        using BindLockGuardTemplate = typename ImplTraits::template BindLockGuard<ContextMutexType>;
+
+        /**
+         * Template Lock Guard class that wraps around the Mutex the EBus uses for Bus callstack tracking.
+         */
+        template<typename ContextMutexType>
+        using CallstackTrackerLockGuardTemplate = typename ImplTraits::template CallstackTrackerLockGuard<ContextMutexType>;
 
         //////////////////////////////////////////////////////////////////////////
         // Check to help identify common mistakes
@@ -568,21 +632,21 @@ namespace AZ
          * @return True if there are any handlers connected to the
          * EBus. Otherwise, false.
          */
-        static inline bool HasHandlers();
+        static bool HasHandlers();
 
         /**
          * Returns whether handlers are connected to this specific address.
          * @return True if there are any handlers connected at the address.
          * Otherwise, false.
          */
-        static inline bool HasHandlers(const BusIdType& id);
+        static bool HasHandlers(const BusIdType& id);
 
         /**
          * Returns whether handlers are connected to the specific cached address.
          * @return True if there are any handlers connected at the cached address.
          * Otherwise, false.
          */
-        static inline bool HasHandlers(const BusPtr& ptr);
+        static bool HasHandlers(const BusPtr& ptr);
 
         /**
          * Gets the ID of the address that is currently receiving an event.
@@ -594,6 +658,16 @@ namespace AZ
          * or the EBus does not use an AZ::EBusAddressPolicy that has multiple addresses.
          */
         static const BusIdType* GetCurrentBusId();
+
+        /**
+         * Checks to see if an EBus with a given Bus ID appears twice in the callstack.
+         * This can be used to detect infinite recursive loops and other reentrancy problems.
+         * This method only checks EBus and ID, not the specific EBus event, so two different
+         * nested event calls on the same EBus and ID will still return true.
+         * @param busId The bus ID to check for reentrancy on this thread.
+         * @return true if the EBus has been called more than once on this thread's callstack, false if not.
+         */
+        static bool HasReentrantEBusUseThisThread(const BusIdType* busId = GetCurrentBusId());
 
         /// @cond EXCLUDE_DOCS
         /**
@@ -645,15 +719,25 @@ namespace AZ
              * during broadcast/event dispatch.
              * @see EBusTraits::LocklessDispatch
              */
-            using DispatchLockGuard = DispatchLockGuard<ContextMutexType>;
+            using DispatchLockGuard = DispatchLockGuardTemplate<ContextMutexType>;
 
             /**
-            * The scoped lock guard to use during connection.  Some specialized policies execute handler methods which
+            * The scoped lock guard to use during connection / disconnection.  Some specialized policies execute handler methods which
             * can cause unnecessary delays holding the context mutex or in some cases perform blocking waits and
             * must unlock the context mutex before doing so to prevent deadlock when the wait is for
             * an event in another thread which is trying to connect to the same bus before it can complete
             */
-            using ConnectLockGuard = AZStd::conditional_t<AZStd::is_same_v<ContextMutexType, AZ::NullMutex>, AZ::Internal::NullLockGuard<ContextMutexType>, AZStd::unique_lock<ContextMutexType>>;
+            using ConnectLockGuard = ConnectLockGuardTemplate<ContextMutexType>;
+
+            /**
+             * The scoped lock guard to use for bind calls.
+             */
+            using BindLockGuard = BindLockGuardTemplate<ContextMutexType>;
+
+            /**
+             * The scoped lock guard to use for callstack tracking.
+             */
+            using CallstackTrackerLockGuard = CallstackTrackerLockGuardTemplate<ContextMutexType>;
 
             BusesContainer          m_buses;         ///< The actual bus container, which is a static map for each bus type.
             ContextMutexType        m_contextMutex;  ///< Mutex to control access when modifying the context
@@ -954,12 +1038,6 @@ namespace AZ
     //////////////////////////////////////////////////////////////////////////
     // EBus implementations
 
-    namespace Internal
-    {
-        template <class C>
-        AZ_THREAD_LOCAL C* EBusCallstackStorage<C, true>::s_entry = nullptr;
-    }
-
     //=========================================================================
     // Context::Context
     //=========================================================================
@@ -1036,7 +1114,7 @@ AZ_PUSH_DISABLE_WARNING(4127, "-Wunknown-warning-option")
         if (Context* context = GetContext())
         {
             // scoped lock guard in case of exception / other odd situation
-            AZStd::scoped_lock<decltype(context->m_contextMutex)> lock(context->m_contextMutex);
+            ConnectLockGuard lock(context->m_contextMutex);
             DisconnectInternal(*context, handler);
         }
     }
@@ -1134,11 +1212,42 @@ AZ_POP_DISABLE_WARNING
     const typename EBus<Interface, Traits>::BusIdType * EBus<Interface, Traits>::GetCurrentBusId()
     {
         Context* context = GetContext();
-        if (IsInDispatch(context))
+        if (IsInDispatchThisThread(context))
         {
             return context->s_callstack->m_prev->m_busId;
         }
         return nullptr;
+    }
+
+    //=========================================================================
+    // HasReentrantEBusUseThisThread
+    //=========================================================================
+    template<class Interface, class Traits>
+    bool EBus<Interface, Traits>::HasReentrantEBusUseThisThread(const BusIdType* busId)
+    {
+        Context* context = GetContext();
+
+        if (busId && IsInDispatchThisThread(context))
+        {
+            bool busIdInCallstack = false;
+
+            // If we're in a dispatch, callstack->m_prev contains the entry for the current bus call. Start the search for the given
+            // bus ID and look upwards. If we find the given ID more than once in the callstack, we've got a reentrant call.
+            for (auto callstackEntry = context->s_callstack->m_prev; callstackEntry != nullptr; callstackEntry = callstackEntry->m_prev)
+            {
+                if ((*busId) == (*callstackEntry->m_busId))
+                {
+                    if (busIdInCallstack)
+                    {
+                        return true;
+                    }
+
+                    busIdInCallstack = true;
+                }
+            }
+        }
+
+        return false;
     }
 
     //=========================================================================
@@ -1202,8 +1311,9 @@ AZ_POP_DISABLE_WARNING
         Context* context = StoragePolicy::Get();
         if (trackCallstack && context && !context->s_callstack)
         {
-            // cache the callstack into this thread/dll
-            AZStd::scoped_lock<decltype(context->m_contextMutex)> lock(context->m_contextMutex);
+            // Cache the callstack root into this thread/dll. Even though s_callstack is thread-local, we need a mutex lock
+            // for the modifications to m_callstackRoots, which is NOT thread-local.
+            typename Context::CallstackTrackerLockGuard lock(context->m_contextMutex);
             context->s_callstack = &context->m_callstackRoots[AZStd::this_thread::get_id().m_id];
         }
         return context;
@@ -1218,8 +1328,9 @@ AZ_POP_DISABLE_WARNING
         Context& context = StoragePolicy::GetOrCreate();
         if (trackCallstack && !context.s_callstack)
         {
-            // cache the callstack into this thread/dll
-            AZStd::scoped_lock<decltype(context.m_contextMutex)> lock(context.m_contextMutex);
+            // Cache the callstack root into this thread/dll. Even though s_callstack is thread-local, we need a mutex lock
+            // for the modifications to m_callstackRoots, which is NOT thread-local.
+            typename Context::CallstackTrackerLockGuard lock(context.m_contextMutex);
             context.s_callstack = &context.m_callstackRoots[AZStd::this_thread::get_id().m_id];
         }
         return context;
@@ -1277,6 +1388,64 @@ AZ_POP_DISABLE_WARNING
     {
         //////////////////////////////////////////////////////////////////////////
         // NonIdHandler
+
+        template<typename Interface, typename Traits, typename ContainerType>
+        NonIdHandler<Interface, Traits, ContainerType>::NonIdHandler()
+            : m_node(nullptr)
+        {
+        }
+
+        template <typename Interface, typename Traits, typename ContainerType>
+        NonIdHandler<Interface, Traits, ContainerType>::NonIdHandler(const NonIdHandler& rhs)
+            : m_node(nullptr)
+        {
+            *this = rhs;
+        }
+
+        template <typename Interface, typename Traits, typename ContainerType>
+        NonIdHandler<Interface, Traits, ContainerType>& NonIdHandler<Interface, Traits, ContainerType>::operator=(const NonIdHandler& rhs)
+        {
+            BusDisconnect();
+            if (rhs.BusIsConnected())
+            {
+                BusConnect();
+            }
+            return *this;
+        }
+
+        template <typename Interface, typename Traits, typename ContainerType>
+        NonIdHandler<Interface, Traits, ContainerType>::NonIdHandler(NonIdHandler&& rhs)
+            : m_node(nullptr)
+        {
+            *this = AZStd::move(rhs);
+        }
+
+        template <typename Interface, typename Traits, typename ContainerType>
+        NonIdHandler<Interface, Traits, ContainerType>& NonIdHandler<Interface, Traits, ContainerType>::operator=(NonIdHandler&& rhs)
+        {
+            BusDisconnect();
+            if (rhs.BusIsConnected())
+            {
+                rhs.BusDisconnect();
+                BusConnect();
+            }
+            return *this;
+        }
+
+        template <typename Interface, typename Traits, typename ContainerType>
+        NonIdHandler<Interface, Traits, ContainerType>::~NonIdHandler()
+        {
+            AZ_PUSH_DISABLE_WARNING(4127, "-Wunknown-warning-option") // conditional expression is constant (for Traits::LocklessDispatch in asserts)
+            AZ_Assert((!AZStd::is_polymorphic<typename BusType::InterfaceType>::value || AZStd::is_same<typename BusType::MutexType, AZ::NullMutex>::value || !BusIsConnected()), "EBus handlers must be disconnected prior to destruction on multi-threaded buses with virtual functions");
+            AZ_POP_DISABLE_WARNING
+
+            if (BusIsConnected())
+            {
+                BusDisconnect();
+            }
+            EBUS_ASSERT(!BusIsConnected(), "Internal error: Bus was not properly disconnected!");
+        }
+
         template <typename Interface, typename Traits, typename ContainerType>
         void NonIdHandler<Interface, Traits, ContainerType>::BusConnect()
         {
@@ -1289,12 +1458,13 @@ AZ_POP_DISABLE_WARNING
                 BusType::ConnectInternal(context, m_node, contextLock, id);
             }
         }
+
         template <typename Interface, typename Traits, typename ContainerType>
         void NonIdHandler<Interface, Traits, ContainerType>::BusDisconnect()
         {
             if (typename BusType::Context* context = BusType::GetContext())
             {
-                AZStd::scoped_lock<decltype(context->m_contextMutex)> contextLock(context->m_contextMutex);
+                typename BusType::Context::ConnectLockGuard contextLock(context->m_contextMutex);
                 if (BusIsConnected())
                 {
                     BusType::DisconnectInternal(*context, m_node);
@@ -1302,8 +1472,76 @@ AZ_POP_DISABLE_WARNING
             }
         }
 
+        template <typename Interface, typename Traits, typename ContainerType>
+        bool NonIdHandler<Interface, Traits, ContainerType>::BusIsConnected() const
+        {
+            return static_cast<Interface*>(m_node) != nullptr;
+        }
+
+        // End of NonIdHandler
+        //////////////////////////////////////////////////////////////////////////
+
         //////////////////////////////////////////////////////////////////////////
         // IdHandler
+
+        template <typename Interface, typename Traits, typename ContainerType>
+        IdHandler<Interface, Traits, ContainerType>::IdHandler()
+            : m_node(nullptr)
+        {
+        }
+
+        template <typename Interface, typename Traits, typename ContainerType>
+        IdHandler<Interface, Traits, ContainerType>::IdHandler(const IdHandler& rhs)
+            : m_node(nullptr)
+        {
+            *this = rhs;
+        }
+
+        template <typename Interface, typename Traits, typename ContainerType>
+        IdHandler<Interface, Traits, ContainerType>& IdHandler<Interface, Traits, ContainerType>::operator=(const IdHandler& rhs)
+        {
+            BusDisconnect();
+            if (rhs.BusIsConnected())
+            {
+                BusConnect(rhs.m_node.GetBusId());
+            }
+            return *this;
+        }
+
+        template <typename Interface, typename Traits, typename ContainerType>
+        IdHandler<Interface, Traits, ContainerType>::IdHandler(IdHandler&& rhs)
+            : m_node(nullptr)
+        {
+            *this = AZStd::move(rhs);
+        }
+
+        template <typename Interface, typename Traits, typename ContainerType>
+        IdHandler<Interface, Traits, ContainerType>& IdHandler<Interface, Traits, ContainerType>::operator=(IdHandler&& rhs)
+        {
+            BusDisconnect();
+            if (rhs.BusIsConnected())
+            {
+                IdType id = rhs.m_node.GetBusId();
+                rhs.BusDisconnect(id);
+                BusConnect(id);
+            }
+            return *this;
+        }
+
+        template <typename Interface, typename Traits, typename ContainerType>
+        IdHandler<Interface, Traits, ContainerType>::~IdHandler()
+        {
+            AZ_PUSH_DISABLE_WARNING(4127, "-Wunknown-warning-option") // conditional expression is constant (for Traits::LocklessDispatch in asserts)
+            AZ_Assert((!AZStd::is_polymorphic<typename BusType::InterfaceType>::value || AZStd::is_same_v<typename BusType::MutexType, AZ::NullMutex> || !BusIsConnected()), "EBus handlers must be disconnected prior to destruction on multi-threaded buses with virtual functions");
+            AZ_POP_DISABLE_WARNING
+
+            if (BusIsConnected())
+            {
+                BusDisconnect();
+            }
+            EBUS_ASSERT(!BusIsConnected(), "Internal error: Bus was not properly disconnected!");
+        }
+
         template <typename Interface, typename Traits, typename ContainerType>
         void IdHandler<Interface, Traits, ContainerType>::BusConnect(const IdType& id)
         {
@@ -1323,24 +1561,26 @@ AZ_POP_DISABLE_WARNING
             m_node = this;
             BusType::ConnectInternal(context, m_node, contextLock, id);
         }
+
         template <typename Interface, typename Traits, typename ContainerType>
         void IdHandler<Interface, Traits, ContainerType>::BusDisconnect(const IdType& id)
         {
             if (typename BusType::Context* context = BusType::GetContext())
             {
-                AZStd::scoped_lock<decltype(context->m_contextMutex)> contextLock(context->m_contextMutex);
+                typename BusType::Context::ConnectLockGuard contextLock(context->m_contextMutex);
                 if (BusIsConnectedId(id))
                 {
                     BusType::DisconnectInternal(*context, m_node);
                 }
             }
         }
+
         template <typename Interface, typename Traits, typename ContainerType>
         void IdHandler<Interface, Traits, ContainerType>::BusDisconnect()
         {
             if (typename BusType::Context* context = BusType::GetContext())
             {
-                AZStd::scoped_lock<decltype(context->m_contextMutex)> contextLock(context->m_contextMutex);
+                typename BusType::Context::ConnectLockGuard contextLock(context->m_contextMutex);
                 if (BusIsConnected())
                 {
                     BusType::DisconnectInternal(*context, m_node);
@@ -1348,8 +1588,76 @@ AZ_POP_DISABLE_WARNING
             }
         }
 
+        template <typename Interface, typename Traits, typename ContainerType>
+        bool IdHandler<Interface, Traits, ContainerType>::BusIsConnectedId(const IdType& id) const
+        {
+            return BusIsConnected() && m_node.GetBusId() == id;
+        }
+
+        template <typename Interface, typename Traits, typename ContainerType>
+        bool IdHandler<Interface, Traits, ContainerType>::BusIsConnected() const
+        {
+            return m_node.m_holder != nullptr;
+        }
+
+        // End of IdHandler
+        //////////////////////////////////////////////////////////////////////////
+
         //////////////////////////////////////////////////////////////////////////
         // MultiHandler
+
+        template <typename Interface, typename Traits, typename ContainerType>
+        MultiHandler<Interface, Traits, ContainerType>::MultiHandler() = default;
+
+        template <typename Interface, typename Traits, typename ContainerType>
+        MultiHandler<Interface, Traits, ContainerType>::MultiHandler(const MultiHandler& rhs)
+        {
+            *this = rhs;
+        }
+
+        template <typename Interface, typename Traits, typename ContainerType>
+        MultiHandler<Interface, Traits, ContainerType>& MultiHandler<Interface, Traits, ContainerType>::operator=(const MultiHandler& rhs)
+        {
+            BusDisconnect();
+            for (const auto& nodePair : rhs.m_handlerNodes)
+            {
+                BusConnect(nodePair.first);
+            }
+            return *this;
+        }
+
+        template <typename Interface, typename Traits, typename ContainerType>
+        MultiHandler<Interface, Traits, ContainerType>::MultiHandler(MultiHandler&& rhs)
+        {
+            *this = AZStd::move(rhs);
+        }
+
+        template <typename Interface, typename Traits, typename ContainerType>
+        MultiHandler<Interface, Traits, ContainerType>& MultiHandler<Interface, Traits, ContainerType>::operator=(MultiHandler&& rhs)
+        {
+            BusDisconnect();
+            for (const auto& nodePair : rhs.m_handlerNodes)
+            {
+                BusConnect(nodePair.first);
+            }
+            rhs.BusDisconnect();
+            return *this;
+        }
+
+        template <typename Interface, typename Traits, typename ContainerType>
+        MultiHandler<Interface, Traits, ContainerType>::~MultiHandler()
+        {
+            AZ_PUSH_DISABLE_WARNING(4127, "-Wunknown-warning-option") // conditional expression is constant (for Traits::LocklessDispatch in asserts)
+            AZ_Assert((!AZStd::is_polymorphic<typename BusType::InterfaceType>::value || AZStd::is_same<typename BusType::MutexType, AZ::NullMutex>::value || !BusIsConnected()), "EBus handlers must be disconnected prior to destruction on multi-threaded buses with virtual functions");
+            AZ_POP_DISABLE_WARNING
+
+            if (BusIsConnected())
+            {
+                BusDisconnect();
+            }
+            EBUS_ASSERT(!BusIsConnected(), "Internal error: Bus was not properly disconnected!");
+        }
+
         template <typename Interface, typename Traits, typename ContainerType>
         void MultiHandler<Interface, Traits, ContainerType>::BusConnect(const IdType& id)
         {
@@ -1363,12 +1671,13 @@ AZ_POP_DISABLE_WARNING
                 BusType::ConnectInternal(context, *handlerNode, contextLock, id);
             }
         }
+
         template <typename Interface, typename Traits, typename ContainerType>
         void MultiHandler<Interface, Traits, ContainerType>::BusDisconnect(const IdType& id)
         {
             if (typename BusType::Context* context = BusType::GetContext())
             {
-                AZStd::scoped_lock<decltype(context->m_contextMutex)> contextLock(context->m_contextMutex);
+                typename BusType::Context::ConnectLockGuard contextLock(context->m_contextMutex);
                 auto nodeIt = m_handlerNodes.find(id);
                 if (nodeIt != m_handlerNodes.end())
                 {
@@ -1380,13 +1689,14 @@ AZ_POP_DISABLE_WARNING
                 }
             }
         }
+
         template <typename Interface, typename Traits, typename ContainerType>
         void MultiHandler<Interface, Traits, ContainerType>::BusDisconnect()
         {
             decltype(m_handlerNodes) handlerNodesToDisconnect;
             if (typename BusType::Context* context = BusType::GetContext())
             {
-                AZStd::scoped_lock<decltype(context->m_contextMutex)> contextLock(context->m_contextMutex);
+                typename BusType::Context::ConnectLockGuard contextLock(context->m_contextMutex);
                 handlerNodesToDisconnect = AZStd::move(m_handlerNodes);
 
                 for (const auto& nodePair : handlerNodesToDisconnect)
@@ -1398,6 +1708,21 @@ AZ_POP_DISABLE_WARNING
                 }
             }
         }
+
+        template <typename Interface, typename Traits, typename ContainerType>
+        bool MultiHandler<Interface, Traits, ContainerType>::BusIsConnectedId(const IdType& id) const
+        {
+            return m_handlerNodes.end() != m_handlerNodes.find(id);
+        }
+
+        template <typename Interface, typename Traits, typename ContainerType>
+        bool MultiHandler<Interface, Traits, ContainerType>::BusIsConnected() const
+        {
+            return !m_handlerNodes.empty();
+        }
+
+        // End of MultiHandler
+        //////////////////////////////////////////////////////////////////////////
 
         template <class EBus, class TargetEBus, class BusIdType>
         struct EBusRouterQueueEventForwarder
@@ -1881,4 +2206,139 @@ AZ_POP_DISABLE_WARNING
             EBusRouterForwarderHelper<EBus, TargetEBus>::ForwardEventResult(result, event, args...);
         }
     } // namespace Internal
+}
+
+// The following allow heavily-used busses to be declared extern, in order to speed up compile time where the same header
+// with the same bus is included in many different source files.
+// to use it, declare the EBus extern using DECLARE_EBUS_EXTERN or DECLARE_EBUS_EXTERN_WITH_TRAITS in the header file
+// and then use DECLARE_EBUS_INSTANTIATION or DECLARE_EBUS_INSTANTIATION_WITH_TRAITS in a file that everything that includes the header
+// will link to (for example, in a static library, dynamic library with export library, or .inl that everyone must include in a compile unit).
+
+// The following must be declared AT GLOBAL SCOPE and the namespace AZ is assumed due to the rule that extern template declarations must occur
+// in their enclosing scope.
+
+//! Externs an EBus class template with both the interface and bus traits arguments
+#define DECLARE_EBUS_EXTERN_WITH_TRAITS(a,b) \
+namespace AZ \
+{ \
+   extern template class EBus<a, b>; \
+}
+
+//! Externs an EBus class template using only the interface argument
+//! for both the EBus Interface and BusTraits template parameters
+#define DECLARE_EBUS_EXTERN(a) \
+namespace AZ \
+{ \
+   extern template class EBus<a, a>; \
+}
+
+//! Instantiates an EBus class template with both the interface and bus traits arguments
+#define DECLARE_EBUS_INSTANTIATION_WITH_TRAITS(a,b) \
+namespace AZ \
+{ \
+   template class EBus<a, b>; \
+}
+
+//! Instantiates an EBus class template using only the interface argument
+//! for both the EBus Interface and BusTraits template parameters
+#define DECLARE_EBUS_INSTANTIATION(a) \
+namespace AZ \
+{ \
+   template class EBus<a, a>; \
+}
+
+//! Declares an EBus class template, which uses EBusAddressPolicy::Single and is instantiated in a shared library, as extern using only the
+//! interface argument for both the EBus Interface and BusTraits template parameters
+#define DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(a) \
+namespace AZ \
+{ \
+   extern template class AZCORE_API_EXTERN EBus<a, a>; \
+   AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING \
+   extern template class AZCORE_API_EXTERN Internal::NonIdHandler<a, a, EBus<a, a>::BusesContainer>; \
+   extern template struct AZCORE_API_EXTERN Internal::EBusCallstackStorage<Internal::CallstackEntryBase<a, a>, true>; \
+   AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING \
+}
+
+//! Explicitly instantiates an EBus which was declared with the function directly above
+#define DECLARE_EBUS_INSTANTIATION_DLL_SINGLE_ADDRESS(a) \
+namespace AZ \
+{ \
+   template class AZ_DLL_EXPORT EBus<a, a>; \
+   AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING \
+   template class AZ_DLL_EXPORT Internal::NonIdHandler<a, a, EBus<a, a>::BusesContainer>; \
+   template struct AZ_DLL_EXPORT Internal::EBusCallstackStorage<Internal::CallstackEntryBase<a, a>, true>; \
+   AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING \
+}
+
+//! Declares an EBus class template, which uses an address policy different from EBusAddressPolicy::Single and is instantiated in a shared
+//! library, as extern using only the interface argument for both the EBus Interface and BusTraits template parameters
+#define DECLARE_EBUS_EXTERN_DLL_MULTI_ADDRESS(a) \
+namespace AZ \
+{ \
+   extern template class AZCORE_API_EXTERN EBus<a, a>;  \
+   AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING \
+   extern template class AZCORE_API_EXTERN Internal::IdHandler<a, a, EBus<a, a>::BusesContainer>; \
+   extern template class AZCORE_API_EXTERN Internal::MultiHandler<a, a, EBus<a, a>::BusesContainer>; \
+   extern template struct AZCORE_API_EXTERN Internal::EBusCallstackStorage<Internal::CallstackEntryBase<a, a>, true>; \
+   AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING \
+}
+
+//! Explicitly instantiates an EBus which was declared with the function directly above
+#define DECLARE_EBUS_INSTANTIATION_DLL_MULTI_ADDRESS(a) \
+namespace AZ \
+{ \
+   template class AZ_DLL_EXPORT EBus<a, a>; \
+   AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING \
+   template class AZ_DLL_EXPORT Internal::IdHandler<a, a, EBus<a, a>::BusesContainer>; \
+   template class AZ_DLL_EXPORT Internal::MultiHandler<a, a, EBus<a, a>::BusesContainer>; \
+   template struct AZ_DLL_EXPORT Internal::EBusCallstackStorage<Internal::CallstackEntryBase<a, a>, true>; \
+   AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING \
+}
+
+//! Declares an EBus class template, which uses EBusAddressPolicy::Single and is instantiated in a shared library, as extern with both the
+//! interface and bus traits arguments
+#define DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS_WITH_TRAITS(a, b) \
+namespace AZ \
+{ \
+   extern template class AZCORE_API_EXTERN EBus<a, b>;     \
+   AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING \
+   extern template class AZCORE_API_EXTERN Internal::NonIdHandler<a, b, EBus<a, b>::BusesContainer>; \
+   extern template struct AZCORE_API_EXTERN Internal::EBusCallstackStorage<Internal::CallstackEntryBase<a, b>, true>; \
+   AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING \
+}
+
+//! Explicitly instantiates an EBus which was declared with the function directly above
+#define DECLARE_EBUS_INSTANTIATION_DLL_SINGLE_ADDRESS_WITH_TRAITS(a, b) \
+namespace AZ \
+{ \
+   template class AZ_DLL_EXPORT EBus<a, b>; \
+   AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING \
+   template class AZ_DLL_EXPORT Internal::NonIdHandler<a, b, EBus<a, b>::BusesContainer>; \
+   template struct AZ_DLL_EXPORT Internal::EBusCallstackStorage<Internal::CallstackEntryBase<a, b>, true>; \
+   AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING \
+}
+
+//! Declares an EBus class template, which uses an address policy different from EBusAddressPolicy::Single and is instantiated in a shared
+//! library, as extern with both the interface and bus traits arguments
+#define DECLARE_EBUS_EXTERN_DLL_MULTI_ADDRESS_WITH_TRAITS(a, b) \
+namespace AZ \
+{ \
+   extern template class AZCORE_API_EXTERN EBus<a, b>;  \
+   AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING \
+   extern template class AZCORE_API_EXTERN Internal::IdHandler<a, b, EBus<a, b>::BusesContainer>; \
+   extern template class AZCORE_API_EXTERN Internal::MultiHandler<a, b, EBus<a, b>::BusesContainer>; \
+   extern template struct AZCORE_API_EXTERN Internal::EBusCallstackStorage<Internal::CallstackEntryBase<a, b>, true>; \
+   AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING \
+}
+
+//! Explicitly instantiates an EBus which was declared with the function directly above
+#define DECLARE_EBUS_INSTANTIATION_DLL_MULTI_ADDRESS_WITH_TRAITS(a, b) \
+namespace AZ \
+{ \
+   template class AZ_DLL_EXPORT EBus<a, b>; \
+   AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING \
+   template class AZ_DLL_EXPORT Internal::IdHandler<a, b, EBus<a, b>::BusesContainer>; \
+   template class AZ_DLL_EXPORT Internal::MultiHandler<a, b, EBus<a, b>::BusesContainer>; \
+   template struct AZ_DLL_EXPORT Internal::EBusCallstackStorage<Internal::CallstackEntryBase<a, b>, true>; \
+   AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING \
 }

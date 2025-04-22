@@ -16,7 +16,7 @@ namespace AZ
 {
     using namespace UnitTest;
 
-    using StringFuncTest = AllocatorsFixture;
+    using StringFuncTest = LeakDetectionFixture;
 
     TEST_F(StringFuncTest, Equal_CaseSensitive_OnNonNullTerminatedStringView_Success)
     {
@@ -194,6 +194,19 @@ namespace AZ
         AZ::StringFunc::Path::Join(path1.c_str(), path2.c_str(), joinResult);
 
         ASSERT_EQ(joinResult, expectedResult);
+    }
+
+    TEST_F(StringFuncTest, Join_NonPathJoin_CanJoinRange)
+    {
+        AZStd::string result;
+        AZ::StringFunc::Join(result, AZStd::initializer_list<const char*>{ "1", "2", "3", "4", "3" }, '/');
+        EXPECT_EQ("1/2/3/4/3", result);
+
+        result.clear();
+
+        // Try joining with a string literal instead of a char literal
+        AZ::StringFunc::Join(result, AZStd::initializer_list<const char*>{ "1", "2", "3", "4", "3" }, "/");
+        EXPECT_EQ("1/2/3/4/3", result);
     }
 
     TEST_F(StringFuncTest, Tokenize_SingleDelimeter_Empty)
@@ -871,7 +884,7 @@ namespace AZ
     }
 
 
-    using StringFuncPathTest = AllocatorsFixture;
+    using StringFuncPathTest = LeakDetectionFixture;
 
     TEST_F(StringFuncPathTest, GetParentDir_InvokedOnAbsoluteDirectory_ReturnsSameDirectory)
     {
@@ -953,6 +966,34 @@ namespace AZ
 #endif
     }
 
+    TEST_F(StringFuncPathTest, ReplaceExtension_WithoutDot)
+    {
+        AZStd::string s = "D:\\p4\\some.file";
+        AZ::StringFunc::Path::ReplaceExtension(s, "xml");
+        EXPECT_STREQ("D:\\p4\\some.xml", s.c_str());
+    }
+
+    TEST_F(StringFuncPathTest, ReplaceExtension_WithDot)
+    {
+        AZStd::string s = "D:\\p4\\some.file";
+        AZ::StringFunc::Path::ReplaceExtension(s, ".xml");
+        EXPECT_STREQ("D:\\p4\\some.xml", s.c_str());
+    }
+
+    TEST_F(StringFuncPathTest, ReplaceExtension_Empty)
+    {
+        AZStd::string s = "D:\\p4\\some.file";
+        AZ::StringFunc::Path::ReplaceExtension(s, "");
+        EXPECT_STREQ("D:\\p4\\some", s.c_str());
+    }
+
+    TEST_F(StringFuncPathTest, ReplaceExtension_Null)
+    {
+        AZStd::string s = "D:\\p4\\some.file";
+        AZ::StringFunc::Path::ReplaceExtension(s, nullptr);
+        EXPECT_STREQ("D:\\p4\\some", s.c_str());
+    }
+
     class TestPathStringArgs
     {
     public:
@@ -988,17 +1029,16 @@ namespace AZ
         EXPECT_STREQ(input.c_str(), expected.c_str());
     }
 
-
 #if AZ_TRAIT_OS_USE_WINDOWS_FILE_PATHS
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         PathWithSingleDotSubFolders,
         StringPathFuncTest, 
         ::testing::Values(
             TestPathStringArgs("F:\\test\\to\\get\\.\\drive\\", "F:\\test\\to\\get\\drive\\")
         ));
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         PathWithDoubleDotSubFolders,
         StringPathFuncTest, 
         ::testing::Values(
@@ -1013,13 +1053,13 @@ namespace AZ
             TestPathStringArgs("F:\\..\\",                                                           "F:\\")
    ));
 #else
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         PathWithSingleDotSubFolders,
         StringPathFuncTest, ::testing::Values(
             TestPathStringArgs("/test/to/get/./drive/", "/test/to/get/drive/")
         ));
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         PathWithDoubleDotSubFolders,
         StringPathFuncTest, 
         ::testing::Values(

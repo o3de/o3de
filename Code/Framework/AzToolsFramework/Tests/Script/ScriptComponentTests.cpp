@@ -31,7 +31,7 @@ namespace UnitTest
     int myReloadValue = 0;
 
     class ScriptComponentTest
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         AZ_TYPE_INFO(ScriptComponentTest, "{85CDBD49-70FF-416A-8154-B5525EDD30D4}");
@@ -42,21 +42,22 @@ namespace UnitTest
             appDesc.m_memoryBlocksByteSize = 100 * 1024 * 1024;
             //appDesc.m_recordsMode = AllocationRecords::RECORD_FULL;
             //appDesc.m_stackRecordLevels = 20;
-            Entity* systemEntity = m_app.Create(appDesc);
+            AZ::ComponentApplication::StartupParameters startupParameters;
+            startupParameters.m_loadSettingsRegistry = false;
+            Entity* systemEntity = m_app.Create(appDesc, startupParameters);
 
-            systemEntity->CreateComponent<MemoryComponent>();
-            systemEntity->CreateComponent("{CAE3A025-FAC9-4537-B39E-0A800A2326DF}"); // JobManager component
+            systemEntity->CreateComponent(AZ::TypeId{ "{CAE3A025-FAC9-4537-B39E-0A800A2326DF}" }); // JobManager component
             systemEntity->CreateComponent<StreamerComponent>();
             systemEntity->CreateComponent<AssetManagerComponent>();
-            systemEntity->CreateComponent("{A316662A-6C3E-43E6-BC61-4B375D0D83B4}"); // Usersettings component
+            systemEntity->CreateComponent(AZ::TypeId{ "{A316662A-6C3E-43E6-BC61-4B375D0D83B4}" }); // Usersettings component
             systemEntity->CreateComponent<ScriptSystemComponent>();
 
             systemEntity->Init();
             systemEntity->Activate();
 
-            EBUS_EVENT_RESULT(m_scriptContext, ScriptSystemRequestBus, GetContext, DefaultScriptContextId);
-            EBUS_EVENT_RESULT(m_behaviorContext, AZ::ComponentApplicationBus, GetBehaviorContext);
-            EBUS_EVENT_RESULT(m_serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
+            ScriptSystemRequestBus::BroadcastResult(m_scriptContext, &ScriptSystemRequestBus::Events::GetContext, DefaultScriptContextId);
+            AZ::ComponentApplicationBus::BroadcastResult(m_behaviorContext, &AZ::ComponentApplicationBus::Events::GetBehaviorContext);
+            AZ::ComponentApplicationBus::BroadcastResult(m_serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
 
             AzToolsFramework::Components::ScriptEditorComponent::CreateDescriptor(); // descriptor is deleted by app
             AzToolsFramework::Components::ScriptEditorComponent::Reflect(m_serializeContext);
@@ -70,16 +71,26 @@ namespace UnitTest
             m_app.Destroy();
         }
 
-        Data::Asset<ScriptAsset> CreateAndLoadScriptAsset(const AZStd::string& script)
+        AZStd::optional<Data::Asset<ScriptAsset>> CreateAndLoadScriptAsset(const AZStd::string& script, ScriptContext& scriptContext, Uuid id = Uuid::CreateRandom())
         {
-            Data::Asset<ScriptAsset> scriptAsset = Data::AssetManager::Instance().CreateAsset<ScriptAsset>(Uuid::CreateRandom());
-            scriptAsset.Get()->m_scriptBuffer.insert(scriptAsset.Get()->m_scriptBuffer.begin(), script.begin(), script.end());
-            EBUS_EVENT(Data::AssetManagerBus, OnAssetReady, scriptAsset);
+            AzFramework::ScriptCompileRequest compileRequest;
+            compileRequest.m_errorWindow = "LuaTests";
+            AZ::IO::MemoryStream inputStream(script.data(), script.size());
+            compileRequest.m_input = &inputStream;
 
-            m_app.Tick();
-            m_app.TickSystem(); // flush assets etc.
+            if (CompileScript(compileRequest, scriptContext))
+            {
+                Data::Asset<ScriptAsset> scriptAsset = Data::AssetManager::Instance().CreateAsset<ScriptAsset>(Data::AssetId(id));
+                scriptAsset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
+                scriptAsset.Get()->m_data = compileRequest.m_luaScriptDataOut;
+                Data::AssetManagerBus::Broadcast(&Data::AssetManagerBus::Events::OnAssetReady, scriptAsset);
+                m_app.Tick();
+                m_app.TickSystem(); // flush assets etc.
 
-            return scriptAsset;
+                return scriptAsset;
+            }
+
+            return AZStd::nullopt;
         }
 
         static ScriptComponent* BuildGameEntity(const Data::Asset<ScriptAsset>& scriptAsset, Entity& gameEntity)
@@ -92,16 +103,11 @@ namespace UnitTest
             scriptEditorComponent->SetScript(scriptAsset);
             editorEntity.Init();
             editorEntity.Activate();
-
+            scriptEditorComponent->LoadScript();
             scriptEditorComponent->BuildGameEntity(&gameEntity);
 
             auto* scriptComponent = gameEntity.FindComponent<ScriptComponent>();
             return scriptComponent;
-        }
-
-        static void OverwriteScriptBuffer(Data::Asset<ScriptAsset> scriptAsset, AZStd::string newScript)
-        {
-            scriptAsset.Get()->m_scriptBuffer.insert(scriptAsset.Get()->m_scriptBuffer.begin(), newScript.begin(), newScript.end());
         }
 
         ComponentApplication m_app;
@@ -128,7 +134,9 @@ namespace UnitTest
                         end\
                         return test;";
 
-        Data::Asset<ScriptAsset> scriptAsset = CreateAndLoadScriptAsset(script);
+        auto scriptAssetOpt = CreateAndLoadScriptAsset(script, *m_scriptContext);
+        AZ_TEST_ASSERT(scriptAssetOpt);
+        auto& scriptAsset = *scriptAssetOpt;
 
         auto* entity1 = aznew Entity();
         entity1->CreateComponent<ScriptComponent>()->SetScript(scriptAsset);
@@ -163,7 +171,9 @@ namespace UnitTest
                                   myReloadValue = 0\
                                 end\
                                 return testReload;";
-        Data::Asset<ScriptAsset> scriptAsset1 = CreateAndLoadScriptAsset(script1);
+        auto scriptAssetOpt = CreateAndLoadScriptAsset(script1, *m_scriptContext);
+        AZ_TEST_ASSERT(scriptAssetOpt);
+        auto& scriptAsset1 = *scriptAssetOpt;
 
         auto* entity = aznew Entity();
         entity->CreateComponent<ScriptComponent>()->SetScript(scriptAsset1);
@@ -175,14 +185,22 @@ namespace UnitTest
         AZ_TEST_ASSERT(myReloadValue == 1);
 
         const AZStd::string script2 ="local testReload = {}\
-                                function testReload:OnActivate()\
-                                   myReloadValue = 5\
-                                end\
+                                myReloadValue = 5\
                                 return testReload";
 
-        // modify the asset
+        // modify the asset, re-use the previous ID
         Data::Asset<ScriptAsset> scriptAsset2(aznew ScriptAsset(scriptAsset1.GetId()), AZ::Data::AssetLoadBehavior::Default);
-        OverwriteScriptBuffer(scriptAsset2, script2);
+        {
+            AzFramework::ScriptCompileRequest compileRequest;
+            compileRequest.m_errorWindow = "LuaTests";
+            AZ::IO::MemoryStream inputStream(script2.data(), script2.size());
+            compileRequest.m_input = &inputStream;
+
+            if (CompileScript(compileRequest, *m_scriptContext))
+            {
+                scriptAsset2.Get()->m_data = compileRequest.m_luaScriptDataOut;
+            }
+        }
 
         // When reloading script assets from files, ScriptSystemComponent would clear old script caches automatically in the
         // function `ScriptSystemComponent::LoadAssetData()`. But here we are changing script directly in memory, therefore we 
@@ -215,10 +233,11 @@ namespace UnitTest
                                     end\
                                     return test";
 
-        const Data::Asset<ScriptAsset> scriptAsset = CreateAndLoadScriptAsset(script);
+        auto scriptAssetOpt = CreateAndLoadScriptAsset(script, *m_scriptContext);
+        AZ_TEST_ASSERT(scriptAssetOpt);
+        auto& scriptAsset = *scriptAssetOpt;
         Entity editorEntity, gameEntity;
         auto* scriptComponent = BuildGameEntity(scriptAsset, gameEntity);
-
         EXPECT_NE(scriptComponent->GetScriptProperty("myNum"), nullptr);
     }
 } // namespace UnitTest

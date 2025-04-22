@@ -161,11 +161,49 @@ namespace AzFramework
         }
     }
 
+    void OctreeNode::Enumerate(const AZ::Hemisphere& hemisphere, const IVisibilityScene::EnumerateCallback& callback) const
+    {
+        if (AZ::ShapeIntersection::Overlaps(hemisphere, m_bounds))
+        {
+            EnumerateHelper(hemisphere, callback);
+        }
+    }
+
+    void OctreeNode::Enumerate(const AZ::Capsule& capsule, const IVisibilityScene::EnumerateCallback& callback) const
+    {
+        if (AZ::ShapeIntersection::Overlaps(capsule, m_bounds))
+        {
+            EnumerateHelper(capsule, callback);
+        }
+    }
+
     void OctreeNode::Enumerate(const AZ::Frustum& frustum, const IVisibilityScene::EnumerateCallback& callback) const
     {
         if (AZ::ShapeIntersection::Overlaps(frustum, m_bounds))
         {
             EnumerateHelper(frustum, callback);
+        }
+    }
+
+    void OctreeNode::Enumerate(const AZ::Frustum& includeFrustum, const AZ::Frustum& excludeFrustum, const IVisibilityScene::EnumerateCallback& callback) const
+    {
+        if (AZ::ShapeIntersection::Overlaps(includeFrustum, m_bounds) && !AZ::ShapeIntersection::Contains(excludeFrustum, m_bounds))
+        {
+            // Invoke the callback for the current node
+            if (!m_entries.empty())
+            {
+                callback({ m_bounds, m_entries });
+            }
+
+            if (m_children != nullptr)
+            {
+                // If this is not a leaf node, recurse into the children
+                const uint32_t childCount = GetChildNodeCount();
+                for (uint32_t child = 0; child < childCount; ++child)
+                {
+                    m_children[child].Enumerate(includeFrustum, excludeFrustum, callback);
+                }
+            }
         }
     }
 
@@ -384,10 +422,28 @@ namespace AzFramework
         m_root.Enumerate(sphere, callback);
     }
 
+    void OctreeScene::Enumerate(const AZ::Hemisphere& hemisphere, const IVisibilityScene::EnumerateCallback& callback) const
+    {
+        AZStd::shared_lock<AZStd::shared_mutex> lock(m_sharedMutex);
+        m_root.Enumerate(hemisphere, callback);
+    }
+
+    void OctreeScene::Enumerate(const AZ::Capsule & capsule, const IVisibilityScene::EnumerateCallback& callback) const
+    {
+        AZStd::shared_lock<AZStd::shared_mutex> lock(m_sharedMutex);
+        m_root.Enumerate(capsule, callback);
+    }
+
     void OctreeScene::Enumerate(const AZ::Frustum& frustum, const IVisibilityScene::EnumerateCallback& callback) const
     {
         AZStd::shared_lock<AZStd::shared_mutex> lock(m_sharedMutex);
         m_root.Enumerate(frustum, callback);
+    }
+
+    void OctreeScene::Enumerate(const AZ::Frustum& includeFrustum, const AZ::Frustum& excludeFrustum, const EnumerateCallback& callback) const
+    {
+        AZStd::shared_lock<AZStd::shared_mutex> lock(m_sharedMutex);
+        m_root.Enumerate(includeFrustum, excludeFrustum, callback);
     }
 
     void OctreeScene::EnumerateNoCull(const IVisibilityScene::EnumerateCallback& callback) const
@@ -511,12 +567,12 @@ namespace AzFramework
 
     void OctreeSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("OctreeService"));
+        provided.push_back(AZ_CRC_CE("OctreeService"));
     }
 
     void OctreeSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("OctreeService"));
+        incompatible.push_back(AZ_CRC_CE("OctreeService"));
     }
 
     OctreeSystemComponent::OctreeSystemComponent()        

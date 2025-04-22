@@ -7,8 +7,8 @@
  */
 #pragma once
 
-#include <Atom/RHI/RayTracingAccelerationStructure.h>
-#include <Atom/RHI/RayTracingBufferPools.h>
+#include <Atom/RHI/DeviceRayTracingAccelerationStructure.h>
+#include <Atom/RHI/DeviceRayTracingBufferPools.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
@@ -19,21 +19,34 @@ namespace AZ
         class Buffer;
 
         class RayTracingBlas final
-            : public RHI::RayTracingBlas
+            : public RHI::DeviceRayTracingBlas
         {
         public:
-            AZ_CLASS_ALLOCATOR(RayTracingBlas, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(RayTracingBlas, AZ::SystemAllocator);
 
             static RHI::Ptr<RayTracingBlas> Create();
 
-            // RHI::RayTracingBlas overrides...
+            // RHI::DeviceRayTracingBlas overrides...
             virtual bool IsValid() const override { return true; }
+
+            uint64_t GetAccelerationStructureByteSize() override
+            {
+                return 0;
+            }
 
         private:
             RayTracingBlas() = default;
 
-            // RHI::RayTracingBlas overrides...
-            RHI::ResultCode CreateBuffersInternal([[maybe_unused]] RHI::Device& deviceBase, [[maybe_unused]] const RHI::RayTracingBlasDescriptor* descriptor, [[maybe_unused]] const RHI::RayTracingBufferPools& rayTracingBufferPools) override {return RHI::ResultCode::Success;}
+            // RHI::DeviceRayTracingBlas overrides...
+            RHI::ResultCode CreateBuffersInternal([[maybe_unused]] RHI::Device& deviceBase, [[maybe_unused]] const RHI::DeviceRayTracingBlasDescriptor* descriptor, [[maybe_unused]] const RHI::DeviceRayTracingBufferPools& rayTracingBufferPools) override {return RHI::ResultCode::Success;}
+            RHI::ResultCode CreateCompactedBuffersInternal(
+                [[maybe_unused]] RHI::Device& device,
+                [[maybe_unused]] RHI::Ptr<RHI::DeviceRayTracingBlas> sourceBlas,
+                [[maybe_unused]] uint64_t compactedBufferSize,
+                [[maybe_unused]] const RHI::DeviceRayTracingBufferPools& rayTracingBufferPools) override
+            {
+                return RHI::ResultCode::Success;
+            }
         };
     }
 }

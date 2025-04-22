@@ -17,6 +17,7 @@
 
 #include <QATLControlsTreeModel.h>
 #include <Undo/IUndoObject.h>
+#include <Util/UndoUtil.h>
 
 #include <QAbstractItemModel>
 #include <QString>
@@ -107,6 +108,21 @@ namespace AudioControls
     };
 
     //-------------------------------------------------------------------------------------------//
+    class CUndoFolderRename
+        : public IUndoFolderOperation
+    {
+    public:
+        explicit CUndoFolderRename(QStandardItem* pItem);
+    protected:
+        int GetSize() override { return sizeof(*this); }
+
+        void Undo(bool bUndo) override;
+        void Redo() override;
+
+        void SwapNames();
+    };
+
+    //-------------------------------------------------------------------------------------------//
     class CUndoControlModified
         : public IUndoObject
     {
@@ -145,4 +161,5 @@ namespace AudioControls
 
         bool bModifiedInitialised;
     };
+
 } //namespace AudioControls

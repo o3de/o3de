@@ -1,0 +1,85 @@
+name: o3de
+version: '${CPACK_PACKAGE_VERSION}'
+summary: O3DE Engine
+description: |
+  Open 3D Engine (O3DE) is an Apache 2.0-licensed multi-platform 3D engine that enables developers and content creators to build AAA games, cinema-quality 3D worlds, and high-fidelity simulations without any fees or commercial obligations. 
+license: Apache-2.0
+confinement: classic
+base: core22
+
+parts:
+  o3de:
+    plugin: dump
+    source: ./${CPACK_PACKAGE_NAME}
+    source-type: local
+    build-attributes:
+      - enable-patchelf
+    stage-packages:
+      - clang
+      - libatomic1
+      - libcurl4
+      - libdbus-1-3
+      - libfontconfig1
+      - libgl1-mesa-glx
+      - libglu1-mesa
+      - libopengl0
+      - libpcre2-16-0
+      - libpng16-16
+      - libsm6
+      - libssl3
+      - libtcl8.6
+      - libtk8.6
+      - libunwind-dev
+      - libxcb-icccm4
+      - libxcb-image0
+      - libxcb-keysyms1
+      - libxcb-randr0
+      - libxcb-render-util0
+      - libxcb-shape0
+      - libxcb-xfixes0
+      - libxcb-xinerama0
+      - libxcb-xinput0
+      - libxcb-xkb1
+      - libxkbcommon0
+      - libxkbcommon-x11-0
+      - libzstd1
+      - llvm-runtime
+      - pkg-config
+      - zlib1g
+    stage:
+      # The libraries in .../dri need no-patchelf, so they must come from the mesa-unpatched part
+      - -usr/lib/x86_64-linux-gnu/dri
+  
+  mesa-no-patchelf:
+    plugin: nil
+    after: [o3de]
+    build-attributes:
+      - no-patchelf # Otherwise snapcraft may strip the build ID and cause the driver to crash
+    stage-packages:
+      - libdrm-common
+      - libgl1-mesa-dri
+      - mesa-vulkan-drivers
+    stage:
+      # Only the libraries in .../dri need to not be patched, the rest come from the mesa part
+      - usr/lib/x86_64-linux-gnu/dri
+    
+apps:
+  o3de:
+    command: ${CPACK_PACKAGE_VERSION}/bin/Linux/profile/Default/o3de
+    environment:
+      O3DE_SNAP: 1
+      SNAP_BUILD: ${CPACK_PACKAGE_VERSION}
+      PKG_CONFIG: $SNAP/usr/bin/pkg-config --define-variable=libdir=$SNAP/usr/lib/x86_64-linux-gnu
+      DISABLE_WAYLAND: 1
+  editor:
+    command: ${CPACK_PACKAGE_VERSION}/bin/Linux/profile/Default/Editor
+    environment:
+      O3DE_SNAP: 1
+      SNAP_BUILD: ${CPACK_PACKAGE_VERSION}
+      DISABLE_WAYLAND: 1
+  assetprocessor:
+    command: ${CPACK_PACKAGE_VERSION}/bin/Linux/profile/Default/AssetProcessor
+    environment:
+      O3DE_SNAP: 1
+      SNAP_BUILD: ${CPACK_PACKAGE_VERSION}
+      DISABLE_WAYLAND: 1

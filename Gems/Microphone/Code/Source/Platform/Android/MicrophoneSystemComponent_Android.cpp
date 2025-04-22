@@ -25,8 +25,6 @@
 #include <AzCore/Android/Utils.h>
 #include <AzCore/Android/JNI/Object.h>
 
-#include <Microphone/WAVUtil.h>
-
 namespace Audio
 {
     class MicrophoneSystemEventsAndroid : public AZ::EBusTraits 
@@ -53,7 +51,7 @@ namespace Audio
                                            , public MicrophoneSystemEventsAndroidBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(MicrophoneSystemComponentAndroid, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MicrophoneSystemComponentAndroid, AZ::SystemAllocator);
 
         bool InitializeDevice() override
         {

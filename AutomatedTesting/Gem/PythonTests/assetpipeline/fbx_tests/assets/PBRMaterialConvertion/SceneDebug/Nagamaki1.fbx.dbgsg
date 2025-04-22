@@ -1,0 +1,164 @@
+ProductName: nagamaki1.fbx.dbgsg
+debugSceneGraphVersion: 1
+nagamaki1
+Node Name: RootNode
+Node Path: RootNode
+Node Type: RootBoneData
+	WorldTransform:
+		BasisX: < 1.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000,  1.000000,  0.000000>
+		BasisZ: < 0.000000,  0.000000,  1.000000>
+		Transl: < 0.000000,  0.000000,  0.000000>
+
+Node Name: Nagamaki
+Node Path: RootNode.Nagamaki
+Node Type: MeshData
+	Positions: Count 10206. Hash: 977918784207836393
+	Normals: Count 10206. Hash: 10219143529928814157
+	FaceList: Count 3402. Hash: 16515016381876123410
+	FaceMaterialIds: Count 3402. Hash: 17864985511992565708
+
+Node Name: Nagamaki_nagamaki1_optimized
+Node Path: RootNode.Nagamaki_nagamaki1_optimized
+Node Type: MeshData
+	Positions: Count 4202. Hash: 8920731671490425541
+	Normals: Count 4202. Hash: 7898992574776051095
+	FaceList: Count 3402. Hash: 3028379969840576301
+	FaceMaterialIds: Count 3402. Hash: 17864985511992565708
+
+Node Name: transform
+Node Path: RootNode.Nagamaki.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 0.001321,  0.000000,  0.000000>
+		BasisY: < 0.000000, -0.000000, -0.001321>
+		BasisZ: < 0.000000,  0.001321, -0.000000>
+		Transl: < 0.000000,  0.000000,  0.000000>
+
+Node Name: custom_properties
+Node Path: RootNode.Nagamaki.custom_properties
+Node Type: CustomPropertyData
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	currentUVSet: map1
+	UserProperties: 
+	InheritType: 1
+
+Node Name: map1
+Node Path: RootNode.Nagamaki.map1
+Node Type: MeshVertexUVData
+	UVs: Count 10206. Hash: 3465461633630158064
+	UVCustomName: map1
+
+Node Name: Nagamaki1
+Node Path: RootNode.Nagamaki.Nagamaki1
+Node Type: MaterialData
+	MaterialName: Nagamaki1
+	UniqueId: 14804771672297453866
+	IsNoDraw: false
+	DiffuseColor: < 0.000000,  0.000000,  0.000000>
+	SpecularColor: < 0.000000,  0.000000,  0.000000>
+	EmissiveColor: < 0.000000,  0.000000,  0.000000>
+	Opacity: 1.000000
+	Shininess: 0.000000
+	UseColorMap: true
+	BaseColor: < 0.000000,  0.000000,  0.000000>
+	UseMetallicMap: true
+	MetallicFactor: 0.000000
+	UseRoughnessMap: true
+	RoughnessFactor: 0.330000
+	UseEmissiveMap: false
+	EmissiveIntensity: 0.000000
+	UseAOMap: true
+	DiffuseTexture: 
+	SpecularTexture: 
+	BumpTexture: 
+	NormalTexture: PBRMaterialConvertion/Nagamaki1.fbm/Nagamaki_Normal.png
+	MetallicTexture: PBRMaterialConvertion/Nagamaki1.fbm/Nagamaki_Metallic.png
+	RoughnessTexture: PBRMaterialConvertion/Nagamaki1.fbm/Nagamaki_Roughness.png
+	AmbientOcclusionTexture: PBRMaterialConvertion/Nagamaki1.fbm/Nagamaki_AO.png
+	EmissiveTexture: 
+	BaseColorTexture: PBRMaterialConvertion/Nagamaki1.fbm/Nagamaki_Basecolor.png
+
+Node Name: TangentSet_0
+Node Path: RootNode.Nagamaki.TangentSet_0
+Node Type: MeshVertexTangentData
+	Tangents: Count 10206. Hash: 11332957122396513960
+	GenerationMethod: 1
+	SetIndex: 0
+
+Node Name: BitangentSet_0
+Node Path: RootNode.Nagamaki.BitangentSet_0
+Node Type: MeshVertexBitangentData
+	Bitangents: Count 10206. Hash: 16459606451773569318
+	GenerationMethod: 1
+
+Node Name: custom_properties
+Node Path: RootNode.Nagamaki_nagamaki1_optimized.custom_properties
+Node Type: CustomPropertyData
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	currentUVSet: map1
+	UserProperties: 
+	InheritType: 1
+
+Node Name: map1
+Node Path: RootNode.Nagamaki_nagamaki1_optimized.map1
+Node Type: MeshVertexUVData
+	UVs: Count 4202. Hash: 14516325986727381559
+	UVCustomName: map1
+
+Node Name: TangentSet_0
+Node Path: RootNode.Nagamaki_nagamaki1_optimized.TangentSet_0
+Node Type: MeshVertexTangentData
+	Tangents: Count 4202. Hash: 3479077145409004170
+	GenerationMethod: 1
+	SetIndex: 0
+
+Node Name: BitangentSet_0
+Node Path: RootNode.Nagamaki_nagamaki1_optimized.BitangentSet_0
+Node Type: MeshVertexBitangentData
+	Bitangents: Count 4202. Hash: 14639337907117105646
+	GenerationMethod: 1
+
+Node Name: transform
+Node Path: RootNode.Nagamaki_nagamaki1_optimized.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 0.001321,  0.000000,  0.000000>
+		BasisY: < 0.000000, -0.000000, -0.001321>
+		BasisZ: < 0.000000,  0.001321, -0.000000>
+		Transl: < 0.000000,  0.000000,  0.000000>
+
+Node Name: Nagamaki1
+Node Path: RootNode.Nagamaki_nagamaki1_optimized.Nagamaki1
+Node Type: MaterialData
+	MaterialName: Nagamaki1
+	UniqueId: 14804771672297453866
+	IsNoDraw: false
+	DiffuseColor: < 0.000000,  0.000000,  0.000000>
+	SpecularColor: < 0.000000,  0.000000,  0.000000>
+	EmissiveColor: < 0.000000,  0.000000,  0.000000>
+	Opacity: 1.000000
+	Shininess: 0.000000
+	UseColorMap: true
+	BaseColor: < 0.000000,  0.000000,  0.000000>
+	UseMetallicMap: true
+	MetallicFactor: 0.000000
+	UseRoughnessMap: true
+	RoughnessFactor: 0.330000
+	UseEmissiveMap: false
+	EmissiveIntensity: 0.000000
+	UseAOMap: true
+	DiffuseTexture: 
+	SpecularTexture: 
+	BumpTexture: 
+	NormalTexture: PBRMaterialConvertion/Nagamaki1.fbm/Nagamaki_Normal.png
+	MetallicTexture: PBRMaterialConvertion/Nagamaki1.fbm/Nagamaki_Metallic.png
+	RoughnessTexture: PBRMaterialConvertion/Nagamaki1.fbm/Nagamaki_Roughness.png
+	AmbientOcclusionTexture: PBRMaterialConvertion/Nagamaki1.fbm/Nagamaki_AO.png
+	EmissiveTexture: 
+	BaseColorTexture: PBRMaterialConvertion/Nagamaki1.fbm/Nagamaki_Basecolor.png
+

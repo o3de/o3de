@@ -13,48 +13,43 @@
 #include <Atom/RHI/ObjectCache.h>
 #include <AzCore/Memory/PoolAllocator.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    class DeviceBufferView;
+    class BufferScopeAttachment;
+
+    //! A specialization of Attachment for a buffer. Provides access to the buffer.
+    class BufferFrameAttachment
+        : public FrameAttachment
     {
-        class BufferView;
-        class BufferScopeAttachment;
+    public:
+        AZ_RTTI(BufferFrameAttachment, "{2E6463F2-AB93-46C4-AD3C-30C3DD0B7151}", FrameAttachment);
+        AZ_CLASS_ALLOCATOR(BufferFrameAttachment, SystemAllocator);
+        virtual ~BufferFrameAttachment() override = default;
 
-        /**
-         * A specialization of Attachment for a buffer. Provides access to the buffer.
-         */
-        class BufferFrameAttachment
-            : public FrameAttachment
-        {
-        public:
-            AZ_RTTI(BufferFrameAttachment, "{2E6463F2-AB93-46C4-AD3C-30C3DD0B7151}", FrameAttachment);
-            AZ_CLASS_ALLOCATOR(BufferFrameAttachment, AZ::PoolAllocator, 0);
-            virtual ~BufferFrameAttachment() override = default;
+        /// Initialization for imported buffers.
+        BufferFrameAttachment(const AttachmentId& attachmentId, Ptr<Buffer> buffer);
 
-            /// Initialization for imported buffers.
-            BufferFrameAttachment(const AttachmentId& attachmentId, Ptr<Buffer> buffer);
+        /// Initialization for transient buffers.
+        BufferFrameAttachment(const TransientBufferDescriptor& descriptor);
 
-            /// Initialization for transient buffers.
-            BufferFrameAttachment(const TransientBufferDescriptor& descriptor);
+        /// Returns the first scope attachment in the linked list.
+        const BufferScopeAttachment* GetFirstScopeAttachment(int deviceIndex) const;
+        BufferScopeAttachment* GetFirstScopeAttachment(int deviceIndex);
 
-            /// Returns the first scope attachment in the linked list.
-            const BufferScopeAttachment* GetFirstScopeAttachment() const;
-            BufferScopeAttachment* GetFirstScopeAttachment();
+        /// Returns the last scope attachment in the linked list.
+        const BufferScopeAttachment* GetLastScopeAttachment(int deviceIndex) const;
+        BufferScopeAttachment* GetLastScopeAttachment(int deviceIndex);
 
-            /// Returns the last scope attachment in the linked list.
-            const BufferScopeAttachment* GetLastScopeAttachment() const;
-            BufferScopeAttachment* GetLastScopeAttachment();
+        /// Returns the buffer resource assigned to this attachment. This is not guaranteed to exist
+        /// until after frame graph compilation.
+        const Buffer* GetBuffer() const;
+        Buffer* GetBuffer();
 
-            /// Returns the buffer resource assigned to this attachment. This is not guaranteed to exist
-            /// until after frame graph compilation.
-            const Buffer* GetBuffer() const;
-            Buffer* GetBuffer();
+        /// Returns the buffer descriptor assigned to this attachment.
+        const BufferDescriptor& GetBufferDescriptor() const;
 
-            /// Returns the buffer descriptor assigned to this attachment.
-            const BufferDescriptor& GetBufferDescriptor() const;
-
-        protected:
-            BufferDescriptor m_bufferDescriptor;
-        };
-    }
+    protected:
+        BufferDescriptor m_bufferDescriptor;
+    };
 }

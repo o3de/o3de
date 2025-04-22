@@ -18,13 +18,22 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 
-UISliceLibraryFilter::UISliceLibraryFilter(const AZ::Data::AssetType& assetType, const char* pathToSearch)
+UISliceLibraryFilter::UISliceLibraryFilter(const AZ::Data::AssetType& assetType, const AZStd::string& pathToSearch)
     : m_assetType(assetType)
     , m_pathToSearch(pathToSearch)
 {
     // propagation = Down means the filter will examine all children recursively until it satisfies or no more children are left
     // in our case we start from root entry and examine everything underneath it
-    SetFilterPropagation(AzToolsFramework::AssetBrowser::AssetBrowserEntryFilter::Down);
+    SetFilterPropagation(AzToolsFramework::AssetBrowser::AssetBrowserEntryFilter::PropagateDirection::Down);
+}
+
+AzToolsFramework::AssetBrowser::AssetBrowserEntryFilter* UISliceLibraryFilter::Clone() const
+{
+    auto clone = new UISliceLibraryFilter(m_assetType, m_pathToSearch.c_str());
+    clone->m_name = m_name;
+    clone->m_tag = m_tag;
+    clone->m_direction = m_direction;
+    return clone;
 }
 
 QString UISliceLibraryFilter::GetNameInternal() const
@@ -46,7 +55,9 @@ bool UISliceLibraryFilter::MatchInternal(const AzToolsFramework::AssetBrowser::A
         return false;
     }
     // entry must be located within m_pathToSearch
-    if (AzFramework::StringFunc::Find(product->GetRelativePath().c_str(), m_pathToSearch.c_str()) == AZStd::string::npos)
+    AZStd::string relativePath = product->GetRelativePath();
+    AzFramework::StringFunc::AssetDatabasePath::Normalize(relativePath);
+    if (AzFramework::StringFunc::Find(relativePath, m_pathToSearch.c_str()) == AZStd::string::npos)
     {
         return false;
     }
@@ -122,22 +133,24 @@ AssetTreeEntry* AssetTreeEntry::BuildAssetTree(const AZ::Data::AssetType& assetT
 
     // UISliceLibraryFilter::Filter function returns all assets (recursively) that match the specified filter
     // in this case we are only looking for ui slices.
-    AZStd::vector<const AssetBrowserEntry*> entries;
-    UISliceLibraryFilter filter(assetType, pathToSearch.c_str());
+    AZStd::unordered_set<const AssetBrowserEntry*> entries;
+    UISliceLibraryFilter filter(assetType, pathToSearch);
     filter.Filter(entries, rootEntry.get());
 
     AssetTreeEntry* assetTree = new AssetTreeEntry;
     for (const auto& entry : entries)
     {
-        auto product = azrtti_cast<const ProductAssetBrowserEntry*>(entry);
-        AZStd::string name;
-        AZStd::string path;
-        // split the product relative path into name and path. Note that product's parent (source entry) is used because
-        // product name stored in db is in all lower case, but we want to preserve case here
-        AzFramework::StringFunc::Path::Split(product->GetParent()->GetRelativePath().c_str(), nullptr, &path, &name);
-        // find next character position after default slice path in order to generate hierarchical sub-menus matching the subfolders
-        const size_t pos = AzFramework::StringFunc::Find(path.c_str(), pathToSearch.c_str()) + pathToSearch.length();
-        assetTree->Insert(path.substr(pos), name, product->GetAssetId());
+        if (auto product = azrtti_cast<const ProductAssetBrowserEntry*>(entry); product)
+        {
+            AZStd::string name;
+            AZStd::string path;
+            // split the product relative path into name and path. Note that product's parent (source entry) is used because
+            // product name stored in db is in all lower case, but we want to preserve case here
+            AzFramework::StringFunc::Path::Split(product->GetParent()->GetRelativePath().c_str(), nullptr, &path, &name);
+            // find next character position after default slice path in order to generate hierarchical sub-menus matching the subfolders
+            const size_t pos = AzFramework::StringFunc::Find(path, pathToSearch) + pathToSearch.length();
+            assetTree->Insert(path.substr(pos), name, product->GetAssetId());
+        }
     }
     return assetTree;
 }
