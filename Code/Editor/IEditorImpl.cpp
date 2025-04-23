@@ -579,16 +579,6 @@ float CEditorImpl::GetTerrainElevation(float x, float y)
     return terrainElevation;
 }
 
-void CEditorImpl::SetSelectedRegion(const AABB& box)
-{
-    m_selectedRegion = box;
-}
-
-void CEditorImpl::GetSelectedRegion(AABB& box)
-{
-    box = m_selectedRegion;
-}
-
 const QtViewPane* CEditorImpl::OpenView(QString sViewClassName, bool reuseOpened)
 {
     auto openMode = reuseOpened ? QtViewPane::OpenMode::None : QtViewPane::OpenMode::MultiplePanes;
