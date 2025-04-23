@@ -184,16 +184,16 @@ namespace AZ
             {
                 if (textureFilePath.empty())
                 {
-                    AZ_TracePrintf(AZ::SceneAPI::Utilities::LogWindow, "Material %.*s has no associated texture.", AZ_STRING_ARG(materialName));
+                    AZ_Info(AZ::SceneAPI::Utilities::LogWindow, "Material %.*s has no associated texture.", AZ_STRING_ARG(materialName));
                     return textureFilePath;
                 }
                 const AZStd::string& sceneFilePath = scene.GetSceneFileName();
-                const aiTexture* embeddedTexture = scene.GetAssImpScene()->GetEmbeddedTexture(textureFilePath.c_str())
+                const aiTexture* embeddedTexture = scene.GetAssImpScene()->GetEmbeddedTexture(textureFilePath.c_str());
                 if (scene.GetExtractEmbeddedTextures() && embeddedTexture != nullptr)
                 {
                     if (embeddedTexture->mHeight == 0)
                     {
-                        AZ_TracePrintf(
+                        AZ_Info(
                             AZ::SceneAPI::Utilities::LogWindow,
                             "Material %.*s has an embedded texture compressed as %s format",
                             AZ_STRING_ARG(materialName), embeddedTexture->achFormatHint);
@@ -204,7 +204,7 @@ namespace AZ
                             sceneFilePath.c_str(), relativeTexturePath, rootPath);
 
                         AZStd::string textureFileName;
-                        if (embeddedTexture->mFileName.length == 0)
+                        if (embeddedTexture->mFilename.length == 0)
                         {
                             // Set texture path as ${relative scene folder}/${scene filename}_${embedded texture index}
                             // for embedded texture, path starts with asterisk (like *1, *2, ...).
@@ -214,15 +214,9 @@ namespace AZ
                         }
                         else
                         {
-                            AZ::StringFunc::Path::GetFileName(embeddedTexture->mFileName.C_Str(), textureFileName);
+                            AZ::StringFunc::Path::GetFileName(embeddedTexture->mFilename.C_Str(), textureFileName);
                         }
                         AZ::StringFunc::Path::ReplaceFullName(relativeTexturePath, textureFileName.c_str(), embeddedTexture->achFormatHint);
-                        AZ_TracePrintf(
-                            AZ::SceneAPI::Utilities::LogWindow,
-                            "Material %.*s has a compressed texture that shall be saved at '%.*s'",
-                            AZ_STRING_ARG(materialName),
-                            AZ_STRING_ARG(relativeTexturePath));
-
                         // Save the texture
                         IO::FileIOBase* fileIO = IO::FileIOBase::GetInstance();
                         AZStd::string fullTexturePath;
@@ -230,7 +224,7 @@ namespace AZ
 
                         if (fileIO->Exists(fullTexturePath.c_str()))
                         {
-                            // don't override if the file already exists.
+                            // don't overwrite if the file already exists.
                             return relativeTexturePath;
                         }
 
@@ -260,8 +254,9 @@ namespace AZ
                     }
                     else
                     {
-                        AZ_TracePrintf(
-                            AZ::SceneAPI::Utilities::LogWindow,
+                        AZ_Warning(
+                            "AtomFeatureCommon",
+                            false,
                             "Material %.*s has a uncompressed texture with absolute path '%.*s', which is not supported",
                             AZ_STRING_ARG(materialName),
                             AZ_STRING_ARG(textureFilePath));
