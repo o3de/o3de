@@ -6,7 +6,7 @@
 	"theme_properties":
 	{
 		"BackgroundColor": "#F5F5F6",
-		"SecondaryBackgroundColor": "#DDDDDD"
+		"SecondaryBackgroundColor": "#DDDDDD",
 		"FontFamily": "OpenSans",
 		"FontSize": "12px",
 		"Text":

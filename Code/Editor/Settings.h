@@ -27,6 +27,12 @@
 //////////////////////////////////////////////////////////////////////////
 // Settings for snapping in the viewports.
 //////////////////////////////////////////////////////////////////////////
+
+namespace AzQtComponents
+{
+    enum class EditorTheme;
+}
+
 struct SSnapSettings
 {
     SSnapSettings()
@@ -179,6 +185,7 @@ struct SSelectObjectDialogSettings
 struct SGUI_Settings
 {
     int nToolbarIconSize;      // Override size of the toolbar icons
+    AzQtComponents::EditorTheme editorTheme;
 };
 
 //////////////////////////////////////////////////////////////////////////

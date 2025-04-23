@@ -45,6 +45,7 @@ namespace AzQtComponents
     constexpr QStringView g_styleSheetResourcePath {u":AzQtComponents/Widgets"};
     constexpr QStringView g_globalStyleSheetName {u"BaseStyleSheet.qss"};
     constexpr QStringView g_searchPathPrefix {u"AzQtComponentWidgets"};
+    constexpr QStringView g_themePropertiesPath {u"Code/Framework/AzQtComponents/AzQtComponents/Themes"};
 
     StyleManager* StyleManager::s_instance = nullptr;
 
@@ -134,6 +135,38 @@ namespace AzQtComponents
         return true;
     }
 
+    bool StyleManager::setThemeProperties(AzQtComponents::EditorTheme editorTheme)
+    {
+        if (!s_instance)
+        {
+            AZ_Warning("StyleManager", false, "StyleManager::setThemeProperties called before instance was created");
+            return false;
+        }
+        AZStd::string themeName;
+        switch (editorTheme)
+        {
+        case AzQtComponents::EditorTheme::Original:
+            themeName = "O3DE_Original";
+            break;
+        case AzQtComponents::EditorTheme::Light:
+            themeName = "O3DE_Light";
+            break;
+        case AzQtComponents::EditorTheme::Dark:
+            themeName = "O3DE_Dark";
+            break;
+        default:
+            AZ_Warning("StyleManager", false, "StyleManager::setThemeProperties called with invalid AzQtComponents::EditorTheme %d", (int)editorTheme);
+            return false;
+        }
+
+        AZStd::string themePropertiesPath = AZStd::string::format(
+            "THEMES:%s/themeProperties.json",
+             themeName.c_str());
+
+        return s_instance->LoadThemePropertiesFromFile(themePropertiesPath.c_str());
+    }
+
+
     QStyleSheetStyle* StyleManager::styleSheetStyle(const QWidget* widget)
     {
         Q_UNUSED(widget);
@@ -192,7 +225,7 @@ namespace AzQtComponents
         }
     }
 
-    void StyleManager::InitializeThemeProperties([[maybe_unused]] QFileSystemWatcher* watcher, const QString& filePath)
+    bool StyleManager::LoadThemePropertiesFromFile(const QString& filePath)
     {
         if (QFile::exists(filePath))
         {
@@ -202,8 +235,12 @@ namespace AzQtComponents
             {
                 QString loadedThemeFile = themeFile.readAll();
                 LoadThemeProperties(loadedThemeFile);
+                refresh();
+                return true;
             }
         }
+        AZ_Warning("StyleManager", false, "StyleManager::InitializeThemeProperties can not find theme properties file: %s", filePath.toUtf8().data());
+        return false;
     }
 
     void StyleManager::initialize([[maybe_unused]] QApplication* application, const AZ::IO::PathView& engineRootPath)
@@ -238,21 +275,13 @@ namespace AzQtComponents
         m_autoCustomWindowDecorations = new AutoCustomWindowDecorations(this);
         m_autoCustomWindowDecorations->setMode(AutoCustomWindowDecorations::Mode_AnyWindow);
 
-        AZStd::string themeName = "O3DE_Original";
-
-        AZStd::string themePropertiesPath = AZStd::string::format(
-            "D:\\GitRepos\\O3DE\\o3de\\Code\\Framework\\AzQtComponents\\AzQtComponents\\Themes\\%s\\themeProperties.json",
-             themeName.c_str());
-
-        InitializeThemeProperties(nullptr, themePropertiesPath.c_str());
-
         // Style is chained as: Style -> QStyleSheetStyle -> native, meaning any CSS limitation can be tackled in Style.cpp
         m_styleSheetStyle = new QStyleSheetStyle(createBaseStyle());
         m_style = new Style(m_styleSheetStyle);
 
         QApplication::setStyle(m_style);
         m_style->setParent(this);
-        refresh();
+        setThemeProperties(EditorTheme::Original);
 
         connect(m_stylesheetCache, &StyleSheetCache::styleSheetsChanged, this, [this]
         {
@@ -318,6 +347,7 @@ namespace AzQtComponents
             QDir::addSearchPath("STYLESHEETIMAGES", appPath.filePath("Assets/Editor/Styles/StyleSheetImages"));
             QDir::addSearchPath("UI", appPath.filePath("Assets/Editor/UI"));
             QDir::addSearchPath("EDITOR", appPath.filePath("Assets/Editor"));
+            QDir::addSearchPath("THEMES", appPath.absoluteFilePath(g_themePropertiesPath.toString()));
         }
     }
 

@@ -32,6 +32,15 @@ class QWidget;
 
 namespace AzQtComponents
 {
+    
+    // For Editor Theme
+    enum class EditorTheme
+    {
+        Original,
+        Light,
+        Dark,
+    };
+
     class StyleSheetCache;
     class StylesheetPreprocessor;
     class TitleBarOverdrawHandler;
@@ -88,13 +97,14 @@ namespace AzQtComponents
 
         static void repolishStyleSheet(QWidget* widget);
 
+        static bool setThemeProperties(EditorTheme editorTheme);
+
         /*!
         * Call to initialize the StyleManager, allowing it to hook into the application and apply the global style
         * The AzQtComponents does not hook in the AZ::Environment, so the Settings Registry isn't available
         * Therefore the engine root path must be supplied via function arguments
         */
         void initialize(QApplication* application, const AZ::IO::PathView& engineRootPath);
-        void InitializeThemeProperties(QFileSystemWatcher* watcher, const QString& filePath);
 
         /*!
         * Call this to force a refresh of the global stylesheet and a reload of any settings files.
@@ -103,6 +113,7 @@ namespace AzQtComponents
         void refresh();
         // deprecated; introduced before the new camelCase Qt based method names were adopted.
         void Refresh() { refresh(); }
+
 
     private Q_SLOTS:
         void cleanupStyles();
@@ -114,6 +125,7 @@ namespace AzQtComponents
 
         void LoadThemeProperties(const QString& jsonString);
         void LoadThemePropertiesRecursively(const QString prefix, const QJsonObject& jsonObject);
+        bool LoadThemePropertiesFromFile(const QString& filePath);
 
         void resetWidgetSheets();
 
