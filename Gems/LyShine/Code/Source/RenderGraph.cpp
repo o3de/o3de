@@ -53,7 +53,7 @@ namespace LyShine
         m_textures[0].m_isClampTextureMode = isClampTextureMode;
 
 #if defined(CARBONATED)
-        m_combinedVertices.reserve(1024);
+        m_combinedVertices.reserve(672);  // typically we have 1.5+ times more indices than vertices, sometimes it is even 2 times more
         m_combinedIndices.reserve(1024);
 #endif
     }
@@ -165,7 +165,10 @@ namespace LyShine
         drawSrg->Compile();
 
 #if defined(CARBONATED)
-        dynamicDraw->DrawIndexed(&m_combinedVertices[0], (uint32_t)m_combinedVertices.size(), &m_combinedIndices[0],  (uint32_t)m_combinedIndices.size(), AZ::RHI::IndexFormat::Uint16, drawSrg);
+        if (m_combinedIndices.size() > 0 && m_combinedVertices.size() > 0)
+        {
+            dynamicDraw->DrawIndexed(&m_combinedVertices[0], (uint32_t)m_combinedVertices.size(), &m_combinedIndices[0],  (uint32_t)m_combinedIndices.size(), AZ::RHI::IndexFormat::Uint16, drawSrg);
+        }
 #else
         // Add the indexed primitives to the dynamic draw context for drawing
         //
@@ -743,6 +746,40 @@ namespace LyShine
         int texUnit = -1;
         if (renderNodeList)
         {
+#if defined(CARBONATED) && defined(CARBONATED_DROP_LYSHINE_OFFSCREEN_PRIMITIVES)
+            if (m_viewportSize.GetX() >= 0.001f && m_viewportSize.GetY() >= 0.001f)
+            {
+                float minX = primitive->m_vertices[0].xy.x;
+                float maxX = minX;
+                float minY = primitive->m_vertices[0].xy.y;
+                float maxY = minY;
+                for (int i = 1; i < primitive->m_numVertices; i++)
+                {
+                    const float x = primitive->m_vertices[i].xy.x;
+                    const float y = primitive->m_vertices[i].xy.y;
+                    if (x < minX)
+                    {
+                        minX = x;
+                    }
+                    else if (x > maxX)
+                    {
+                        maxX = x;
+                    }
+                    if (y < minY)
+                    {
+                        minY = y;
+                    }
+                    else if (y > maxY)
+                    {
+                        maxY = y;
+                    }
+                }
+                if (maxX < 0 || maxY < 0 || minX > m_viewportSize.GetX() || minY > m_viewportSize.GetY())
+                {
+                    return;
+                }
+            }
+#endif
             // we want to pre-multiply alpha if we are rendering to a render target AND we are not rendering from a render target
             bool isPreMultiplyAlpha = m_renderTargetNestLevel > 0 && !isTexturePremultipliedAlpha;
 
@@ -1076,6 +1113,12 @@ namespace LyShine
         }
     }
 
+#if defined(CARBONATED) && defined(CARBONATED_DROP_LYSHINE_OFFSCREEN_PRIMITIVES)
+    void RenderGraph::SetViewportSize(AZ::Vector2 viewportSize)
+    {
+        m_viewportSize = viewportSize;
+    }
+#endif
 #ifndef _RELEASE
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     void RenderGraph::ValidateGraph()

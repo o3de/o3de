@@ -322,6 +322,9 @@ namespace LyShine
         bool IsEmpty();
 
         void GetRenderTargetsAndDependencies(LyShine::AttachmentImagesAndDependencies& attachmentImagesAndDependencies);
+#if defined(CARBONATED) && defined(CARBONATED_DROP_LYSHINE_OFFSCREEN_PRIMITIVES)
+        void SetViewportSize(AZ::Vector2 viewportSize);
+#endif
 
 #ifndef _RELEASE
         // A debug-only function useful for debugging, not called but calls can be added during debugging
@@ -371,6 +374,10 @@ namespace LyShine
 
         AZStd::vector<RenderTargetRenderNode*>  m_renderTargetRenderNodes;
         int                         m_renderTargetNestLevel = 0;
+
+#if defined(CARBONATED) && defined(CARBONATED_DROP_LYSHINE_OFFSCREEN_PRIMITIVES)
+        AZ::Vector2                  m_viewportSize = AZ::Vector2(0.0f, 0.0f);
+#endif
 
 #ifndef _RELEASE
         // A debug-only variable used to track whether the rendergraph was rebuilt this frame
