@@ -343,7 +343,7 @@ void ReflectedPropertyControl::CreateItems(XmlNodeRef node, CVarBlockPtr& outBlo
             else if (!azstricmp(type, "vector4"))
             {
                 CSmartVariable<AZ::Vector4> vec4Var;
-                AddVariable( group, vec4Var, child->getTag(), humanReadableName.toUtf8().data(), strDescription.toUtf8().data(), func, pUserData);
+                AddVariable(group, vec4Var, child->getTag(), humanReadableName.toUtf8().data(), strDescription.toUtf8().data(), func, pUserData);
                 Vec4 vValue(0, 0, 0, 0);
                 if (child->getAttr("value", vValue))
                 {
