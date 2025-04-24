@@ -262,9 +262,9 @@ void ReflectedVarVector2Adapter::SetVariable(IVariable *pVariable)
 
 void ReflectedVarVector2Adapter::SyncReflectedVarToIVar(IVariable *pVariable)
 {
-    Vec2 vec;
+    AZ::Vector2 vec;
     pVariable->Get(vec);
-    m_reflectedVar->m_value = AZ::Vector2(vec.x, vec.y);
+    m_reflectedVar->m_value = vec;
 }
 
 void ReflectedVarVector2Adapter::SyncIVarToReflectedVar(IVariable *pVariable)
@@ -282,9 +282,7 @@ void ReflectedVarVector3Adapter::SetVariable(IVariable *pVariable)
 
 void ReflectedVarVector3Adapter::SyncReflectedVarToIVar(IVariable *pVariable)
 {
-    Vec3 vec;
-    pVariable->Get(vec);
-    m_reflectedVar->m_value = AZ::Vector3(vec.x, vec.y, vec.z);
+    pVariable->Get(m_reflectedVar->m_value);
 }
 
 void ReflectedVarVector3Adapter::SyncIVarToReflectedVar(IVariable *pVariable)
@@ -302,14 +300,12 @@ void ReflectedVarVector4Adapter::SetVariable(IVariable *pVariable)
 
 void ReflectedVarVector4Adapter::SyncReflectedVarToIVar(IVariable *pVariable)
 {
-    Vec4 vec;
-    pVariable->Get(vec);
-    m_reflectedVar->m_value = AZ::Vector4(vec.x, vec.y, vec.z, vec.w);
+    pVariable->Get(m_reflectedVar->m_value);
 }
 
 void ReflectedVarVector4Adapter::SyncIVarToReflectedVar(IVariable *pVariable)
 {
-    pVariable->Set(Vec4(m_reflectedVar->m_value.GetX(), m_reflectedVar->m_value.GetY(), m_reflectedVar->m_value.GetZ(), m_reflectedVar->m_value.GetW()));
+    pVariable->Set(m_reflectedVar->m_value);
 }
 
 void ReflectedVarResourceAdapter::SetVariable(IVariable *pVariable)

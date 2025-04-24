@@ -14,6 +14,7 @@
 #include <AzToolsFramework/UI/PropertyEditor/PropertyRowWidget.hxx>
 
 // Editor
+#include "MathConversion.h"
 #include "ReflectedVarWrapper.h"
 #include "ReflectedPropertyCtrl.h"
 #include "Undo/UndoVariableChange.h"
@@ -608,7 +609,8 @@ void ReflectedPropertyItem::SetValue(const QString& sValue, bool bRecordUndo, bo
                 ColorF color = StringToColor(value);
                 if (m_pVariable->GetType() == IVariable::VECTOR)
                 {
-                    m_pVariable->Set(color.toVec3());
+
+                    m_pVariable->Set(LYVec3ToAZVec3(color.toVec3()));
                 }
                 else
                 {

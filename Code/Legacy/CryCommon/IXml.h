@@ -305,6 +305,12 @@ public:
     virtual void setAttr(const char* key, const Vec3& value) = 0;
     virtual void setAttr(const char* key, const Vec4& value) = 0;
     virtual void setAttr(const char* key, const Quat& value) = 0;
+
+    virtual void setAttr(const char* key, const AZ::Vector4& value) = 0;
+    virtual void setAttr(const char* key, const AZ::Vector3& value) = 0;
+    virtual void setAttr(const char* key, const AZ::Vector2& value) = 0;
+    virtual void setAttr(const char* key, const AZ::Quaternion& value) = 0;
+    
 #if defined(LINUX64) || defined(APPLE)
     // Compatibility functions, on Linux and Mac long int is the default int64_t
     ILINE void setAttr(const char* key, unsigned long int value, bool useHexFormat = true)
@@ -347,6 +353,12 @@ public:
     virtual bool getAttr(const char* key, uint64& value, bool useHexFormat = true) const = 0;
     virtual bool getAttr(const char* key, float& value) const = 0;
     virtual bool getAttr(const char* key, double& value) const = 0;
+
+    virtual bool getAttr(const char* key, AZ::Vector2& value) const = 0;
+    virtual bool getAttr(const char* key, AZ::Vector3& value) const = 0;
+    virtual bool getAttr(const char* key, AZ::Vector4& value) const = 0;
+    virtual bool getAttr(const char* key, AZ::Quaternion& value) const = 0;
+    
     virtual bool getAttr(const char* key, Vec2& value) const = 0;
     virtual bool getAttr(const char* key, Ang3& value) const = 0;
     virtual bool getAttr(const char* key, Vec3& value) const = 0;

@@ -3664,7 +3664,7 @@ void CTrackViewDopeSheetBase::DrawKeyDuration(CTrackViewTrack* pTrack, QPainter*
     {
         ISoundKey soundKey;
         keyHandle.GetKey(&soundKey);
-        colorFrom.setRgbF(soundKey.customColor.x, soundKey.customColor.y, soundKey.customColor.z);
+        colorFrom.setRgbF(soundKey.customColor.GetX(), soundKey.customColor.GetY(), soundKey.customColor.GetZ());
     }
     QLinearGradient gradient(x, rc.top() + 3, x, rc.bottom() - 3);
     gradient.setColorAt(0, colorFrom);
