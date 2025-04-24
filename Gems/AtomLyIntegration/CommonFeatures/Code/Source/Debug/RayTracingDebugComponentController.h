@@ -38,6 +38,8 @@ namespace AZ::Render
 
     private:
         void OnConfigurationChanged();
+        bool IsRayTracingSupported() const;
+        bool IsRayTracingNotSupported() const;
 
         RayTracingDebugSettingsInterface* m_rayTracingDebugSettingsInterface{ nullptr };
         EntityId m_entityId{ EntityId::InvalidEntityId };
