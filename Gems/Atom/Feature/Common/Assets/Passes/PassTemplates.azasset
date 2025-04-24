@@ -589,6 +589,22 @@
                 "Path": "Passes/Mobile/DisplayMapper.pass"
             },
             {
+                "Name": "SubpassesParentTemplate",
+                "Path": "Passes/Mobile/SubpassesParent.pass"
+            },
+            {
+                "Name": "MobileSubpass1ParentPassTemplate",
+                "Path": "Passes/Mobile/Subpass1Parent.pass"
+            },
+            {
+                "Name": "MobileSubpass2ParentPassTemplate",
+                "Path": "Passes/Mobile/Subpass2Parent.pass"
+            },
+            {
+                "Name": "MobileSubpass3ParentPassTemplate",
+                "Path": "Passes/Mobile/Subpass3Parent.pass"
+            },
+            {
                 "Name": "KawaseShadowBlurTemplate",
                 "Path": "Passes/KawaseShadowBlur.pass"
             },

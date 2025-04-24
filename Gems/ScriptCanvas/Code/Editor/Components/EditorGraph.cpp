@@ -180,7 +180,7 @@ namespace ScriptCanvasEditor
         GeneralEditorNotificationBus::Handler::BusConnect(scriptCanvasId);
 
         ScriptCanvas::Graph::Activate();
-        PostActivate();
+
         m_undoHelper.SetSource(this);
     }
 
@@ -2371,7 +2371,11 @@ namespace ScriptCanvasEditor
             ScriptCanvas::GraphVariableManagerRequestBus::EventResult(hasValidDefault, GetScriptCanvasId(), &ScriptCanvas::GraphVariableManagerRequests::IsNameValid, defaultName);
         } while (!hasValidDefault);
 
-        bool nameAvailable = false;
+        bool nameAvailable = hasValidDefault.IsSuccess();
+        if (nameAvailable)
+        {
+            variableName = defaultName;
+        }
 
         QWidget* mainWindow = nullptr;
         UIRequestBus::BroadcastResult(mainWindow, &UIRequests::GetMainWindow);
@@ -2424,7 +2428,8 @@ namespace ScriptCanvasEditor
 
         AZ::Outcome<ScriptCanvas::VariableId, AZStd::string> addOutcome;
 
-        ScriptCanvas::GraphVariableManagerRequestBus::EventResult(addOutcome, GetScriptCanvasId(), &ScriptCanvas::GraphVariableManagerRequests::AddVariable, variableName, variableDatum, true);
+        constexpr bool functionScope = false; // Promoted variables are used as references, thus they need to be a member variable
+        ScriptCanvas::GraphVariableManagerRequestBus::EventResult(addOutcome, GetScriptCanvasId(), &ScriptCanvas::GraphVariableManagerRequests::AddVariable, variableName, variableDatum, functionScope);
 
         if (addOutcome.IsSuccess())
         {
@@ -3379,6 +3384,47 @@ namespace ScriptCanvasEditor
         GraphCanvas::SlotRequestBus::EventResult(graphCanvasEndpoint.m_nodeId, graphCanvasEndpoint.GetSlotId(), &GraphCanvas::SlotRequests::GetNode);
 
         return graphCanvasEndpoint;
+    }
+
+    void EditorGraph::SetOriginalToNewIdsMap(const AZStd::unordered_map<AZ::EntityId, AZ::EntityId>& originalIdToNewIds)
+    {
+        m_originalIdToNewIds = originalIdToNewIds;
+    }
+
+    void EditorGraph::GetOriginalToNewIdsMap(AZStd::unordered_map<AZ::EntityId, AZ::EntityId>& originalIdToNewIdsOut) const
+    {
+        originalIdToNewIdsOut = m_originalIdToNewIds;
+    }
+
+    AZ::EntityId EditorGraph::FindNewIdFromOriginal(const AZ::EntityId& originalId) const
+    {
+        if (m_originalIdToNewIds.empty())
+        {
+            return originalId;
+        }
+
+        if (!m_originalIdToNewIds.contains(originalId))
+        {
+            return AZ::EntityId();
+        }
+
+        return m_originalIdToNewIds.at(originalId);
+    }
+
+    AZ::EntityId EditorGraph::FindOriginalIdFromNew(const AZ::EntityId& newId) const
+    {
+        if (m_originalIdToNewIds.empty())
+        {
+            return newId;
+        }
+
+        const auto it = m_originalIdToNewIds.find(newId);
+        if (it == m_originalIdToNewIds.end())
+        {
+            return AZ::EntityId();
+        }
+
+        return it->first;
     }
 
     void EditorGraph::OnSaveDataDirtied(const AZ::EntityId& savedElement)

@@ -54,9 +54,7 @@ namespace AZ::RHI
         //! This is called at the beginning of the compile phase for the current frame,
         //! before any allocations occur. The user should clear the backing allocator to
         //! a fresh state.
-        void Begin(
-            const TransientAttachmentPoolCompileFlags flags = TransientAttachmentPoolCompileFlags::None,
-            const TransientAttachmentStatistics::MemoryUsage* memoryHint = nullptr);
+        void Begin(const TransientAttachmentPoolCompileFlags flags = TransientAttachmentPoolCompileFlags::None);
 
         //! Called when a new scope is being allocated. Scopes are allocated in submission order.
         void BeginScope(Scope& scopeBase);
@@ -78,6 +76,12 @@ namespace AZ::RHI
         //! Called when a image is being de-allocated from the pool. Called during the last scope the attachment
         //! is used, after all allocations for that scope have been processed. It will also be removed from the cache.
         void DeactivateImage(const AttachmentId& attachmentId);
+
+        //! Called when a buffer is not used on a specific device this frame
+        void RemoveDeviceBuffer(int deviceIndex, Buffer* buffer);
+
+        //! Called when an image is not used on a specific device this frame
+        void RemoveDeviceImage(int deviceIndex, Image* image);
 
         //! Called when all allocations for the current scope have completed.
         void EndScope();

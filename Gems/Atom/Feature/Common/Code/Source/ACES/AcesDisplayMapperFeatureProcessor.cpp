@@ -8,7 +8,7 @@
 
 #include <Atom/Feature/ACES/AcesDisplayMapperFeatureProcessor.h>
 #include <ACES/Aces.h>
-#include <Atom/Feature/LookupTable/LookupTableAsset.h>
+#include <LookupTable/LookupTableAsset.h>
 
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RHISystemInterface.h>
@@ -384,7 +384,7 @@ namespace AZ::Render
         }
 
         lutResource.m_lutImageViewDescriptor = RHI::ImageViewDescriptor::Create(LutFormat, 0, 0);
-        lutResource.m_lutImageView = lutResource.m_lutImage->BuildImageView(lutResource.m_lutImageViewDescriptor);
+        lutResource.m_lutImageView = lutResource.m_lutImage->GetImageView(lutResource.m_lutImageViewDescriptor);
         if (!lutResource.m_lutImageView.get())
         {
             AZ_Error("AcesDisplayMapperFeatureProcessor", false, "Failed to initialize LUT image view.");

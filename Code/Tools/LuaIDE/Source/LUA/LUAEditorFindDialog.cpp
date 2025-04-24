@@ -234,6 +234,9 @@ namespace LUAEditor
         m_gui->findAllButton->setDefault(!m_gui->findNextButton->isEnabled());
         m_gui->findNextButton->setAutoDefault(m_gui->findNextButton->isEnabled());
         m_gui->findAllButton->setAutoDefault(!m_gui->findNextButton->isEnabled());
+        m_gui->findAllButton->setEnabled(pLUAEditorMainWindow->HasAtLeastOneFileOpen());
+        m_gui->replaceButton->setEnabled(pLUAEditorMainWindow->HasAtLeastOneFileOpen());
+        m_gui->replaceAllButton->setEnabled(pLUAEditorMainWindow->HasAtLeastOneFileOpen());
 
         if (m_bWasFindInAll)
         {

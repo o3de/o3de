@@ -66,6 +66,10 @@ namespace UnitTest
             {
                 return AZStd::chrono::microseconds();
             }
+            AZStd::pair<uint64_t, uint64_t> GetCalibratedTimestamp([[maybe_unused]] AZ::RHI::HardwareQueueClass queueClass) override
+            {
+                return { 0ull, AZStd::chrono::microseconds().count() };
+            };
             void FillFormatsCapabilitiesInternal([[maybe_unused]] FormatCapabilitiesList& formatsCapabilities) override {}
             AZ::RHI::ResultCode InitializeLimits() override { return AZ::RHI::ResultCode::Success; }
             void PreShutdown() override {}
@@ -407,8 +411,8 @@ namespace UnitTest
         private:
             void SetVertexViewInternal([[maybe_unused]] AZ::RHI::IndirectCommandIndex index, [[maybe_unused]] const AZ::RHI::DeviceStreamBufferView& view) override {}
             void SetIndexViewInternal([[maybe_unused]] AZ::RHI::IndirectCommandIndex index, [[maybe_unused]] const AZ::RHI::DeviceIndexBufferView& view) override {}
-            void DrawInternal([[maybe_unused]] AZ::RHI::IndirectCommandIndex index, [[maybe_unused]] const AZ::RHI::DrawLinear& arguments) override {}
-            void DrawIndexedInternal([[maybe_unused]] AZ::RHI::IndirectCommandIndex index, [[maybe_unused]] const AZ::RHI::DrawIndexed& arguments) override {}
+            void DrawInternal([[maybe_unused]] AZ::RHI::IndirectCommandIndex index, [[maybe_unused]] const AZ::RHI::DrawLinear& arguments, [[maybe_unused]] const AZ::RHI::DrawInstanceArguments& drawInstanceArgs) override {}
+            void DrawIndexedInternal([[maybe_unused]] AZ::RHI::IndirectCommandIndex index, [[maybe_unused]] const AZ::RHI::DrawIndexed& arguments, [[maybe_unused]] const AZ::RHI::DrawInstanceArguments& drawInstanceArgs) override {}
             void DispatchInternal([[maybe_unused]] AZ::RHI::IndirectCommandIndex index, [[maybe_unused]] const AZ::RHI::DispatchDirect& arguments) override {}
             void SetRootConstantsInternal([[maybe_unused]] AZ::RHI::IndirectCommandIndex index, [[maybe_unused]] const uint8_t* data, [[maybe_unused]] uint32_t byteSize) override {}
         };

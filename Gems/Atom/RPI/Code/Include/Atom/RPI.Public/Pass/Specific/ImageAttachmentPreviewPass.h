@@ -13,6 +13,7 @@
 #include <Atom/RHI/ScopeProducer.h>
 
 #include <Atom/RPI.Public/Buffer/Buffer.h>
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/Image/AttachmentImage.h>
 #include <Atom/RPI.Public/Pass/Pass.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
@@ -25,9 +26,11 @@ namespace AZ
         class RenderPass;
 
         //! A scope producer to copy the input attachment and output a copy of this attachment
-        class ImageAttachmentCopy final
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+        class ATOM_RPI_PUBLIC_API ImageAttachmentCopy final
             : public RHI::ScopeProducer
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             friend class ImageAttachmentPreviewPass;
         public:
             AZ_RTTI(ImageAttachmentCopy, "{27E35230-48D1-4950-8489-F301A45D4A0B}", RHI::ScopeProducer);
@@ -62,11 +65,13 @@ namespace AZ
         };
 
         //! Render preview of specified image attachment to the selected output attachment.
-        class ImageAttachmentPreviewPass final
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+        class ATOM_RPI_PUBLIC_API ImageAttachmentPreviewPass final
             : public Pass
             , public RHI::ScopeProducer
             , public Data::AssetBus::Handler
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             AZ_RPI_PASS(ImageAttachmentPreviewPass);
 
         public:
@@ -135,6 +140,9 @@ namespace AZ
                 RHI::PipelineStateDescriptorForDraw m_pipelineStateDescriptor;
                 // The draw item for drawing the image preview for this type of image
                 RHI::DrawItem m_item{RHI::MultiDevice::AllDevices};
+
+                // Holds the geometry info for the draw call
+                RHI::GeometryView m_geometryView;
 
                 // Key to pass to the SRG when desired shader variant isn't found
                 ShaderVariantKey m_shaderVariantKeyFallback;

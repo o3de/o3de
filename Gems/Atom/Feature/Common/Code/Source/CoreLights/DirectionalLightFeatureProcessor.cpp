@@ -721,13 +721,9 @@ namespace AZ
             }
         }
 
-        void DirectionalLightFeatureProcessor::OnRenderPipelinePersistentViewChanged(RPI::RenderPipeline* pipeline, RPI::PipelineViewTag, RPI::ViewPtr, RPI::ViewPtr)
+        void DirectionalLightFeatureProcessor::OnRenderPipelinePersistentViewChanged(RPI::RenderPipeline*, RPI::PipelineViewTag, RPI::ViewPtr, RPI::ViewPtr)
         {
-            if (m_cascadedShadowmapsPasses.find(pipeline->GetId()) != m_cascadedShadowmapsPasses.end() ||
-                m_esmShadowmapsPasses.find(pipeline->GetId()) != m_esmShadowmapsPasses.end())
-            {
-                PrepareForChangingRenderPipelineAndCameraView();
-            }
+            PrepareForChangingRenderPipelineAndCameraView();
         }
 
         void DirectionalLightFeatureProcessor::PrepareForChangingRenderPipelineAndCameraView() 
@@ -1825,8 +1821,8 @@ namespace AZ
 
                 if(fullscreenBlurEnabled)
                 {
-                    RPI::Pass* child_0 = m_fullscreenShadowBlurPass->GetChildren()[0].get();
-                    RPI::Pass* child_1 = m_fullscreenShadowBlurPass->GetChildren()[1].get();
+                    RPI::Pass* child_0 = m_fullscreenShadowBlurPass->FindChildPass(Name("VerticalBlur")).get();
+                    RPI::Pass* child_1 = m_fullscreenShadowBlurPass->FindChildPass(Name("HorizontalBlur")).get();
 
                     FastDepthAwareBlurVerPass* verBlurPass = azrtti_cast<FastDepthAwareBlurVerPass*>(child_0);
                     FastDepthAwareBlurHorPass* horBlurPass = azrtti_cast<FastDepthAwareBlurHorPass*>(child_1);

@@ -95,7 +95,7 @@ namespace AZ::Vulkan
         scope->ProcessClearRequests(*m_commandList);
         scope->EmitScopeBarriers(*m_commandList, Scope::BarrierSlot::Prologue);
         scope->ResetQueryPools(*m_commandList);
-        scope->Begin(*m_commandList);
+        scope->Begin(*m_commandList, context);
 
         // Begin the render pass if the scope uses one.
         const RenderPassContext& renderPassContext = m_renderPassContexts[contextIndex];
@@ -122,7 +122,7 @@ namespace AZ::Vulkan
             commandList->EndRenderPass();
         }
         scope->ResolveMSAAAttachments(*commandList);
-        scope->End(*commandList);
+        scope->End(*commandList, context);
         scope->EmitScopeBarriers(*m_commandList, Scope::BarrierSlot::Epilogue);
 
         commandList->EndDebugLabel();

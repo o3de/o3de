@@ -520,9 +520,19 @@ namespace AzToolsFramework
             const auto& selectedIndexes = selected.indexes();
             if (!selectedIndexes.empty())
             {
-                auto newRootIndex = m_tableViewProxyModel->mapFromSource(
-                    m_assetFilterModel->mapFromSource(treeViewFilterModel->mapToSource(selectedIndexes[0])));
-                m_tableViewWidget->setRootIndex(newRootIndex);
+                auto indexInTreeView = treeViewFilterModel->mapToSource(selectedIndexes[0]);
+                auto indexInFilterModel = m_assetFilterModel->mapFromSource(indexInTreeView);
+                if (m_tableViewProxyModel->sourceModel() == m_treeToTableProxyModel)
+                {
+                    auto indexInProxyModel = m_treeToTableProxyModel->mapFromSource(indexInFilterModel);
+                    auto newRootIndex = m_tableViewProxyModel->mapFromSource(indexInProxyModel);
+                    m_tableViewWidget->setRootIndex(newRootIndex);
+                }
+                else
+                {
+                    auto newRootIndex = m_tableViewProxyModel->mapFromSource(indexInFilterModel);
+                    m_tableViewWidget->setRootIndex(newRootIndex);
+                }
             }
             else
             {
@@ -603,10 +613,10 @@ namespace AzToolsFramework
                 clonedFilter->AddFilter(FilterConstType(customTypeFilter));
 
                 clonedFilter->SetFilterPropagation(AssetBrowserEntryFilter::PropagateDirection::Down);
-                m_assetFilterModel->SetFilter(FilterConstType(clonedFilter));
                 m_tableViewWidget->expandAll();
                 m_tableViewProxyModel->setSourceModel(m_treeToTableProxyModel);
                 m_treeToTableProxyModel->ConnectSignals();
+                m_assetFilterModel->SetFilter(FilterConstType(clonedFilter));
             }
             else
             {

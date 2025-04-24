@@ -8,6 +8,7 @@
 #pragma once
 
 #include <Atom/RPI.Reflect/Asset/AssetReference.h>
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/Pass/PassData.h>
 
 namespace AZ
@@ -15,7 +16,7 @@ namespace AZ
     namespace RPI
     {
         //! Custom data for the DownsampleMipChainPass. Should be specified in the PassRequest.
-        struct DownsampleMipChainPassData
+        struct ATOM_RPI_REFLECT_API DownsampleMipChainPassData
             : public PassData
         {
             AZ_RTTI(DownsampleMipChainPassData, "{EB240B6F-91CB-401A-A099-8F06329BDF35}", PassData);

@@ -12,6 +12,9 @@
 
 #pragma once
 
+// Disable specular AA as ddx_fine and ddy_fine functions are not supported in ray tracing shader
+#define ENABLE_SPECULARAA 0
+
 #include "ReflectionScreenSpaceRayTracingCommon.azsli"
 #include <Atom/RPI/Assets/ShaderLib/Atom/RPI/TangentSpace.azsli>
 #include <Atom/Features/PBR/Microfacet/Fresnel.azsli>
@@ -119,9 +122,10 @@ void ScreenSpaceClosestHitImpl(inout PayloadData payload, VertexData vertexData,
         float NdotV = saturate(dot(normalWS, hitToCamera));
         float3 albedo = GetAlbedo(textureData.m_baseColor.rgb, textureData.m_metallic);
         float3 specularF0 = CalculateSpecularF0(textureData.m_baseColor.rgb, textureData.m_metallic, 1.0f);
+
         float roughnessLinear = textureData.m_roughness;
-        float roughnessA = max(roughnessLinear * roughnessLinear, MinRoughnessA);
-        float roughnessA2 = roughnessA * roughnessA;
+        float roughnessA, roughnessA2;
+        CalculateRoughnessValues(normalWS, roughnessLinear, roughnessA, roughnessA2);
 
         RayTracingLightingData rayTracingLightingData;
         rayTracingLightingData.m_albedo = albedo;

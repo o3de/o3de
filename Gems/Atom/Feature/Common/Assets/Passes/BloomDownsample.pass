@@ -100,7 +100,7 @@
                 "ShaderAsset": {
                     "FilePath": "Shaders/PostProcessing/BloomDownsampleCS.shader"
                 },
-                "Make Fullscreen Pass": true
+                "FullscreenDispatch": true
             }
         }
     }

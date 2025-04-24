@@ -117,7 +117,8 @@ void CDraw2d::OnBootstrapSceneReady(AZ::RPI::Scene* bootstrapScene)
         {"TEXCOORD0", AZ::RHI::Format::R32G32_FLOAT} });
     m_dynamicDraw->AddDrawStateOptions(AZ::RPI::DynamicDrawContext::DrawStateOptions::PrimitiveType
         | AZ::RPI::DynamicDrawContext::DrawStateOptions::BlendMode
-        | AZ::RPI::DynamicDrawContext::DrawStateOptions::DepthState);
+        | AZ::RPI::DynamicDrawContext::DrawStateOptions::DepthState
+        | AZ::RPI::DynamicDrawContext::DrawStateOptions::ShaderVariant);
     // Use scene as output scope (will render to the UiCanvas child pass of the LyShine pass)
     m_dynamicDraw->SetOutputScope(scene);
     m_dynamicDraw->InitDrawListTag(uiCanvasPass->GetDrawListTag());

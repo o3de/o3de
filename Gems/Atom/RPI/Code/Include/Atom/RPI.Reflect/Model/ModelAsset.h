@@ -9,6 +9,7 @@
 #pragma once
 
 #include <Atom/RPI.Reflect/Asset/AssetHandler.h>
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/Model/ModelLodAsset.h>
 
 #include <AzCore/Asset/AssetCommon.h>
@@ -27,16 +28,18 @@ namespace AZ
         //! Contains a set of RPI::ModelLodAsset objects.
         //! Serialized to a .azmodel file.
         //! Actual model data is stored in the BufferAssets referenced by ModelLodAssets.
-        class ModelAsset
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+        class ATOM_RPI_REFLECT_API ModelAsset
             : public AZ::Data::AssetData
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             friend class ModelAssetCreator;
             friend class ModelAssetHelpers;
 
         public:
-            static const char* DisplayName;
-            static const char* Extension;
-            static const char* Group;
+            static constexpr const char* DisplayName{ "ModelAsset" };
+            static constexpr const char* Group{ "Model" };
+            static constexpr const char* Extension{ "azmodel" };
 
             AZ_RTTI(ModelAsset, "{2C7477B6-69C5-45BE-8163-BCD6A275B6D8}", AZ::Data::AssetData);
             AZ_CLASS_ALLOCATOR(ModelAsset, AZ::SystemAllocator);
@@ -146,7 +149,7 @@ namespace AZ
             // Various model information used in raycasting
             AZ::Name m_positionName{ "POSITION" };
             // there is a tradeoff between memory use and performance but anywhere under a few thousand triangles or so remains under a few milliseconds per ray cast
-            static const AZ::u32 s_minimumModelTriangleCountToOptimize = 100;
+            static constexpr AZ::u32 s_minimumModelTriangleCountToOptimize = 100;
             mutable AZStd::unique_ptr<ModelKdTree> m_kdTree;
             volatile mutable bool m_isKdTreeCalculationRunning = false;
             mutable AZStd::mutex m_kdTreeLock;
@@ -169,9 +172,12 @@ namespace AZ
             AZStd::vector<AZ::Name> m_tags;
         };
 
-        class ModelAssetHandler
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+        class ATOM_RPI_REFLECT_API ModelAssetHandler
             : public AssetHandler<ModelAsset>
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+
         public:
             AZ_RTTI(ModelAssetHandler, "{993B8CE3-1BBF-4712-84A0-285DB9AE808F}", AssetHandler<ModelAsset>);
 

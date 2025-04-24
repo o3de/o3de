@@ -260,7 +260,6 @@ set(FILES
     Include/HitContext.h
     Include/ICommandManager.h
     Include/IDisplayViewport.h
-    Include/ILogFile.h
     Include/IKeyTimeSet.h
     Include/IPlugin.h
     Include/IPreferencesPage.h
@@ -397,8 +396,6 @@ set(FILES
     Util/GeometryUtil.h
     LevelIndependentFileMan.cpp
     LevelIndependentFileMan.h
-    LogFileImpl.cpp
-    LogFileImpl.h
     PythonEditorFuncs.cpp
     PythonEditorFuncs.h
     QtUI/WaitCursor.h
@@ -500,6 +497,7 @@ set(FILES
     TrackView/SelectKeyUIControls.cpp
     TrackView/SequenceKeyUIControls.cpp
     TrackView/SoundKeyUIControls.cpp
+    TrackView/StringKeyUIControls.cpp
     TrackView/TrackEventKeyUIControls.cpp
     TrackView/TrackViewTrackPropsDlg.ui
     TrackView/TVEventsDialog.cpp
@@ -523,6 +521,9 @@ set(FILES
     TrackView/TrackViewSequence.h
     TrackView/TrackViewNodeFactories.h
     TrackView/TrackViewEventNode.h
+    TrackView/TrackViewMessageBox.cpp
+    TrackView/TrackViewMessageBox.h
+    TrackView/VectorKeyUIControls.cpp
     Util/AffineParts.h
     Util/AutoLogTime.cpp
     Util/AutoLogTime.h

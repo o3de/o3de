@@ -646,7 +646,7 @@ namespace ConsoleSettingsRegistryTests
             ]
         )";
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         ExecuteCommandFromSettingsFile,
         ConsoleSettingsRegistryFixture,
         ::testing::Values(

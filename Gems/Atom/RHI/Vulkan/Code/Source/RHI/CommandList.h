@@ -11,6 +11,7 @@
 #include <Atom/RHI/CommandListValidator.h>
 #include <Atom/RHI/CommandListStates.h>
 #include <Atom/RHI/DeviceObject.h>
+#include <Atom/RHI/DeviceGeometryView.h>
 #include <Atom/RHI/PipelineStateDescriptor.h>
 #include <Atom/RHI/Resource.h>
 #include <Atom/RHI/DeviceRayTracingAccelerationStructure.h>
@@ -88,6 +89,10 @@ namespace AZ
             void EndPredication() override;
             void BuildBottomLevelAccelerationStructure(const RHI::DeviceRayTracingBlas& rayTracingBlas) override;
             void UpdateBottomLevelAccelerationStructure(const RHI::DeviceRayTracingBlas& rayTracingBlas) override;
+            void QueryBlasCompactionSizes(
+                const AZStd::vector<AZStd::pair<RHI::DeviceRayTracingBlas*, RHI::DeviceRayTracingCompactionQuery*>>& blasToQuery) override;
+            void CompactBottomLevelAccelerationStructure(
+                const RHI::DeviceRayTracingBlas& sourceBlas, const RHI::DeviceRayTracingBlas& compactBlas) override;
             void BuildTopLevelAccelerationStructure(
                 const RHI::DeviceRayTracingTlas& rayTracingTlas, const AZStd::vector<const RHI::DeviceRayTracingBlas*>& changedBlasList) override;
             void SetFragmentShadingRate(
@@ -163,7 +168,7 @@ namespace AZ
             RHI::ResultCode BuildNativeCommandBuffer();
 
             void SetShaderResourceGroup(const RHI::DeviceShaderResourceGroup& shaderResourceGroup, RHI::PipelineStateType type);
-            void SetStreamBuffers(const RHI::DeviceStreamBufferView* streams, uint32_t count);
+            void SetStreamBuffers(const RHI::DeviceGeometryView& geometryView, const RHI::StreamBufferIndices& streamIndices);
             void SetIndexBuffer(const RHI::DeviceIndexBufferView& indexBufferView);
             void SetStencilRef(uint8_t stencilRef);
             void BindPipeline(const PipelineState* pipelineState);
@@ -196,12 +201,14 @@ namespace AZ
             AZ_Assert(pipelineState, "Pipeline state is null.");
             if(!pipelineState)
             {
+                AZ_Warning("CommandList", false, "Pipeline state is null.");
                 return false;
             }
             
             AZ_Assert(pipelineState->GetPipelineLayout(), "Pipeline layout is null.");
             if(!pipelineState->GetPipelineLayout())
             {
+                AZ_Warning("CommandList", false, "Pipeline layout is null.");
                 return false;
             }
             

@@ -20,11 +20,11 @@ namespace AZ::RHI
         return m_drawItems.size();
     }
 
-    s32 DrawPacket::GetDrawListIndex(DrawListTag drawListTag) const
+    s32 DrawPacket::GetDrawListIndex(DrawListTag drawListTag, DrawFilterMask materialPipelineMask) const
     {
         for (size_t i = 0; i < m_drawItems.size(); ++i)
         {
-            if (GetDrawListTag(i) == drawListTag)
+            if ((GetDrawListTag(i) == drawListTag) && (GetDrawFilterMask(i) & materialPipelineMask))
             {
                 return s32(i);
             }
@@ -37,9 +37,24 @@ namespace AZ::RHI
         return (index < m_drawItems.size()) ? &m_drawItems[index] : nullptr;
     }
 
-    DrawItem* DrawPacket::GetDrawItem(DrawListTag drawListTag)
+    const DrawItem* DrawPacket::GetDrawItem(size_t index) const
     {
-        s32 index = GetDrawListIndex(drawListTag);
+        return (index < m_drawItems.size()) ? &m_drawItems[index] : nullptr;
+    }
+
+    DrawItem* DrawPacket::GetDrawItem(DrawListTag drawListTag, DrawFilterMask materialPipelineMask)
+    {
+        s32 index = GetDrawListIndex(drawListTag, materialPipelineMask);
+        if (index > -1)
+        {
+            return GetDrawItem(index);
+        }
+        return nullptr;
+    }
+
+    const DrawItem* DrawPacket::GetDrawItem(DrawListTag drawListTag, DrawFilterMask materialPipelineMask) const
+    {
+        s32 index = GetDrawListIndex(drawListTag, materialPipelineMask);
         if (index > -1)
         {
             return GetDrawItem(index);
@@ -80,9 +95,9 @@ namespace AZ::RHI
 
     void DrawPacket::SetInstanceCount(uint32_t instanceCount)
     {
-        for (auto& drawItem : m_drawItems)
+        for (auto& [_, deviceDrawPacket] : m_deviceDrawPackets)
         {
-            drawItem.SetIndexedArgumentsInstanceCount(instanceCount);
+            deviceDrawPacket->SetInstanceCount(instanceCount);
         }
     }
 } // namespace AZ::RHI

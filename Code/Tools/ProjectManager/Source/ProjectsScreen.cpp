@@ -253,6 +253,11 @@ namespace O3DE::ProjectManager
     {
         PythonBindingsInterface::Get()->RemoveInvalidProjects();
 
+        if(projects.isEmpty() && !m_projectButtons.empty())
+        {
+            RemoveProjectButtonsFromFlowLayout(projects);
+        }
+
         if (!projects.isEmpty())
         {
             // Remove all existing buttons before adding them back in the correct order
@@ -813,12 +818,6 @@ namespace O3DE::ProjectManager
 
     void ProjectsScreen::QueueExportProject(const ProjectInfo& projectInfo, const QString& exportScript, bool skipDialogBox)
     {
-        auto requiredIter = RequiresBuildProjectIterator(projectInfo.m_path);
-        if (requiredIter != m_requiresBuild.end())
-        {
-            m_requiresBuild.erase(requiredIter);
-        }
-
         if (!ExportQueueContainsProject(projectInfo.m_path))
         {
             if (m_exportQueue.empty() && !m_currentExporter)
@@ -1063,7 +1062,7 @@ namespace O3DE::ProjectManager
 
     bool ProjectsScreen::StartProjectBuild(const ProjectInfo& projectInfo, bool skipDialogBox)
     {
-        if (ProjectUtils::FindSupportedCompiler(this))
+        if (ProjectUtils::FindSupportedCompiler(projectInfo, this))
         {
             bool proceedToBuild = skipDialogBox;
             if (!proceedToBuild)

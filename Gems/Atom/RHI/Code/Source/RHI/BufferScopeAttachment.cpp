@@ -6,8 +6,9 @@
  *
  */
 
-#include <Atom/RHI/BufferScopeAttachment.h>
-#include <Atom/RHI/BufferFrameAttachment.h>
+ #include <Atom/RHI/BufferScopeAttachment.h>
+ #include <Atom/RHI/BufferFrameAttachment.h>
+ #include <Atom/RHI/BufferView.h>
 #include <Atom/RHI/DeviceBuffer.h>
 
 namespace AZ::RHI
@@ -29,7 +30,10 @@ namespace AZ::RHI
 
         if (m_descriptor.m_loadStoreAction.m_loadAction == AttachmentLoadAction::Clear)
         {
-            AZ_Error("FrameScheduler", access == ScopeAttachmentAccess::ReadWrite, "Attempting to clear an attachment that is read-only");
+            AZ_Error(
+                "FrameScheduler",
+                CheckBitsAny(access, ScopeAttachmentAccess::Write),
+                "Attempting to clear an attachment that is read-only");
         }
     }
 

@@ -6,8 +6,8 @@
  *
  */
     
-#include <scenesrg.srgi>
-#include <viewsrg.srgi>
+#include <scenesrg_all.srgi>
+#include <viewsrg_all.srgi>
 #include <Atom/Features/PBR/DefaultObjectSrg.azsli>
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 #include <Atom/Features/InstancedTransforms.azsli>
@@ -83,7 +83,7 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
         uint instanceId,
         bool useVertexBlendMask)
     {
-        VsOutput output = EvaluateVertexGeometry_BasePBR(position, normal, tangent, uv0, uv1, float4(1.0f, 1.0f, 1.0f, 1.0f), instanceId, false);
+        VsOutput output = EvaluateVertexGeometry_BasePBR(position, normal, tangent, uv0, uv1, instanceId, false, float4(1.0f, 1.0f, 1.0f, 1.0f));
 
         if(useVertexBlendMask)
         {
@@ -95,6 +95,20 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
         }
     
         return output;
+    }
+
+    // Added this version to make it compatible with the number of arguments in BasePBR.
+    // Avoids compilation errors for compute shaders, listed in a materialpipeline,
+    // that call EvaluateVertexGeometry().
+    VsOutput EvaluateVertexGeometry_StandardMultilayerPBR(
+        float3 position,
+        float3 normal,
+        float4 tangent,
+        float2 uv0_tiled,
+        float2 uv1_unwrapped,
+        uint instanceId)
+    {
+        return EvaluateVertexGeometry_StandardMultilayerPBR(position, normal, tangent, uv0_tiled, uv1_unwrapped, float3(0, 0, 0), instanceId, false);
     }
 
     VsOutput EvaluateVertexGeometry_StandardMultilayerPBR(VsInput IN, VsSystemValues SV)

@@ -347,7 +347,10 @@ class MainWindow(tkp.Tk):
         project_build_options_frame.columnconfigure(1, weight=1)
         project_build_options_frame.grid(padx=8, sticky=tk.EW)
 
-        build_config_choices = ['debug', 'profile', 'release']
+        build_config_choices = ['profile', 'release']
+        if not self.is_sdk:
+            build_config_choices.insert(0, 'debug')
+
         self.add_dropdown_entry(parent=project_build_options_frame,
                                 label_text='Project Build Configuration',
                                 config_key='project.build.config',
@@ -429,9 +432,13 @@ class MainWindow(tkp.Tk):
                                   row_number=1,
                                   column_number=1)
         
-        self.add_labeled_checkbox(parent=pc_build_options_frame,
-                                  label_text="Build Monolithic",
-                                  config_key='option.build.monolithic')
+        # For pre-built SDKs builds, the monolithic build are determined by whether or not the 
+        # build configuration is profile (false) or release (true), so only display the option
+        # for source builds
+        if not self.is_sdk:
+            self.add_labeled_checkbox(parent=pc_build_options_frame,
+                                      label_text="Build Monolithic",
+                                      config_key='option.build.monolithic')
         
         self.add_labeled_checkbox(parent=pc_build_options_frame,
                                   label_text='Allow Asset Processor Registry Overrides',

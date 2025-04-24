@@ -92,6 +92,7 @@ namespace AZ
 
             // Skip reset since the pass just got created
             m_state = PassState::Reset;
+            m_flags.m_lastFrameEnabled = m_flags.m_enabled;
         }
 
         Pass::~Pass()
@@ -143,8 +144,11 @@ namespace AZ
 
         void Pass::SetEnabled(bool enabled)
         {
-            m_flags.m_enabled = enabled;
-            OnHierarchyChange();
+            if (enabled != m_flags.m_enabled)
+            {
+                m_flags.m_enabled = enabled;
+                OnHierarchyChange();
+            }
         }
 
         // --- Error Logging ---
@@ -196,6 +200,7 @@ namespace AZ
                 {
                     QueueForBuildAndInitialization();
                 }
+                OnDescendantChange(PassDescendantChangeFlags::Hierarchy);
             }
             AZ_RPI_BREAK_ON_TARGET_PASS;
         }
@@ -209,6 +214,14 @@ namespace AZ
             m_state = PassState::Orphaned;
         }
 
+        void Pass::OnDescendantChange(PassDescendantChangeFlags flags)
+        {
+            if (m_parent)
+            {
+                m_parent->OnDescendantChange(flags);
+            }
+        }
+
         void Pass::OnOrphan()
         {
             AZ_RPI_BREAK_ON_TARGET_PASS;
@@ -217,6 +230,7 @@ namespace AZ
                 m_pipeline->RemovePipelineGlobalConnectionsFromPass(this);
             }
 
+            OnDescendantChange(PassDescendantChangeFlags::Hierarchy);
             m_parent = nullptr;
             m_flags.m_partOfHierarchy = false;
             m_treeDepth = 0;
@@ -239,25 +253,27 @@ namespace AZ
 
         PassAttachmentBinding& Pass::GetInputBinding(uint32_t index)
         {
+            AZ_Assert(m_inputBindingIndices.size() > index, "Index out of bounds.");
             uint32_t bindingIndex = m_inputBindingIndices[index];
             return m_attachmentBindings[bindingIndex];
         }
 
         PassAttachmentBinding& Pass::GetInputOutputBinding(uint32_t index)
         {
+            AZ_Assert(m_inputOutputBindingIndices.size() > index, "Index out of bounds.");
             uint32_t bindingIndex = m_inputOutputBindingIndices[index];
             return m_attachmentBindings[bindingIndex];
         }
 
         PassAttachmentBinding& Pass::GetOutputBinding(uint32_t index)
         {
+            AZ_Assert(m_outputBindingIndices.size() > index, "Index out of bounds.");
             uint32_t bindingIndex = m_outputBindingIndices[index];
             return m_attachmentBindings[bindingIndex];
         }
 
         void Pass::AddAttachmentBinding(PassAttachmentBinding attachmentBinding)
         {
-            auto index = static_cast<uint8_t>(m_attachmentBindings.size());
             if (attachmentBinding.m_scopeAttachmentStage == RHI::ScopeAttachmentStage::Uninitialized)
             {
                 attachmentBinding.m_scopeAttachmentStage = attachmentBinding.m_scopeAttachmentUsage == RHI::ScopeAttachmentUsage::Shader
@@ -265,7 +281,7 @@ namespace AZ
                     : RHI::ScopeAttachmentStage::Any;
             }
 
-            // Add the binding. This will assert if the fixed size array is full.
+            auto index = aznumeric_cast<uint8_t>(m_attachmentBindings.size());
             m_attachmentBindings.push_back(attachmentBinding);
 
             // Add the index of the binding to the input, output or input/output list based on the slot type
@@ -320,7 +336,7 @@ namespace AZ
 
         PassAttachmentBinding* Pass::FindAttachmentBinding(const Name& slotName)
         {
-            for (PassAttachmentBinding& binding : m_attachmentBindings)
+            for (auto& binding : m_attachmentBindings)
             {
                 if (slotName == binding.m_name)
                 {
@@ -332,7 +348,7 @@ namespace AZ
 
         const PassAttachmentBinding* Pass::FindAttachmentBinding(const Name& slotName) const
         {
-            for (const PassAttachmentBinding& binding : m_attachmentBindings)
+            for (const auto& binding : m_attachmentBindings)
             {
                 if (slotName == binding.m_name)
                 {
@@ -871,7 +887,8 @@ namespace AZ
             }
         }
 
-        void Pass::DeclareAttachmentsToFrameGraph(RHI::FrameGraphInterface frameGraph, PassSlotType slotType) const
+        void Pass::DeclareAttachmentsToFrameGraph(
+            RHI::FrameGraphInterface frameGraph, PassSlotType slotType, RHI::ScopeAttachmentAccess accessMask) const
         {
             for (size_t slotIndex = 0; slotIndex < m_attachmentBindings.size(); ++slotIndex)
             {
@@ -889,9 +906,6 @@ namespace AZ
                                     attachmentBinding.m_unifiedScopeDesc.GetAsImage();
                                 if (attachmentBinding.m_scopeAttachmentUsage == RHI::ScopeAttachmentUsage::SubpassInput)
                                 {
-                                    AZ_Assert(
-                                        m_flags.m_mergeChildrenAsSubpasses,
-                                        "SubpassInputs are only allowed in RenderPasses that are mergeable as subpass.");
                                     frameGraph.UseSubpassInputAttachment(
                                         imageScopeAttachmentDescriptor, attachmentBinding.m_scopeAttachmentStage);
                                 }
@@ -910,7 +924,7 @@ namespace AZ
                                 {
                                     frameGraph.UseAttachment(
                                         imageScopeAttachmentDescriptor,
-                                        attachmentBinding.GetAttachmentAccess(),
+                                        attachmentBinding.GetAttachmentAccess() & accessMask,
                                         attachmentBinding.m_scopeAttachmentUsage,
                                         attachmentBinding.m_scopeAttachmentStage);
                                 }
@@ -920,7 +934,7 @@ namespace AZ
                             {
                                 frameGraph.UseAttachment(
                                     attachmentBinding.m_unifiedScopeDesc.GetAsBuffer(),
-                                    attachmentBinding.GetAttachmentAccess(),
+                                    attachmentBinding.GetAttachmentAccess() & accessMask,
                                     attachmentBinding.m_scopeAttachmentUsage,
                                     attachmentBinding.m_scopeAttachmentStage);
                                 break;
@@ -1140,7 +1154,7 @@ namespace AZ
         {
             // Depending on whether a pass is enabled or not, it may switch it's bindings to become a pass-through
             // For this reason we update connecting bindings on a per-frame basis
-            for (PassAttachmentBinding& binding : m_attachmentBindings)
+            for (auto& binding : m_attachmentBindings)
             {
                 UpdateConnectedBinding(binding);
             }
@@ -1328,9 +1342,8 @@ namespace AZ
             UpdateOwnedAttachments();
             UpdateAttachmentUsageIndices();
 
-
-            m_state = PassState::Built;
-            m_queueState = PassQueueState::NoQueue;
+            OnDescendantChange(PassDescendantChangeFlags::Build);
+            OnBuildFinished();
 
             // If this pass's Build() wasn't called from the Pass System, then it was called by it's parent pass
             // In which case we don't need to queue for initialization because the parent will already be queued
@@ -1375,6 +1388,33 @@ namespace AZ
             OnInitializationFinishedInternal();
 
             m_state = PassState::Idle;
+        }
+
+        void Pass::OnBuildFinished()
+        {
+            bool subpassInputSupported = false;
+            if (auto* renderPipeline = GetRenderPipeline())
+            {
+                subpassInputSupported = renderPipeline->SubpassMergingSupported();
+            }
+            
+            RHI::SubpassInputSupportType supportedTypes = RHI::RHISystemInterface::Get()->GetDevice()->GetFeatures().m_subpassInputSupport;
+            if (!subpassInputSupported)
+            {
+                supportedTypes = RHI::SubpassInputSupportType::None;
+            }
+            ReplaceSubpassInputs(supportedTypes);
+            OnBuildFinishedInternal();
+
+            m_flags.m_hasSubpassInput = AZStd::any_of(
+                m_attachmentBindings.begin(),
+                m_attachmentBindings.end(),
+                [](const auto& element)
+                {
+                    return element.m_scopeAttachmentUsage == RHI::ScopeAttachmentUsage::SubpassInput;
+                });
+            m_state = PassState::Built;
+            m_queueState = PassQueueState::NoQueue;
         }
 
         void Pass::Validate(PassValidationResults& validationResults)
@@ -1425,8 +1465,14 @@ namespace AZ
         {
             AZ_RPI_BREAK_ON_TARGET_PASS;
 
-            bool earlyOut = !IsEnabled();
-
+            bool isEnabled = IsEnabled();
+            bool earlyOut = !isEnabled;
+            // Since IsEnabled can be virtual and we need to detect HierarchyChange, we can't use the m_flags.m_enabled flag
+            if (isEnabled != m_flags.m_lastFrameEnabled)
+            {
+                OnHierarchyChange();
+            }
+            m_flags.m_lastFrameEnabled = isEnabled;
             // Skip if this pass is the root of the pipeline and the pipeline is set to not render
             if (m_flags.m_isPipelineRoot)
             {
@@ -1439,7 +1485,7 @@ namespace AZ
                 return;
             }
 
-            AZ_Error("PassSystem", m_state == PassState::Idle,
+            AZ_Error("PassSystem", m_state == PassState::Idle || m_state == PassState::Queued,
                 "Pass::FrameBegin - Pass [%s] is attempting to render, and should be in the 'Idle' or 'Queued' state, but is in the '%s' state.",
                 m_path.GetCStr(), ToString(m_state).data());
 
@@ -1609,7 +1655,7 @@ namespace AZ
                 return false;
             }
             uint32_t bindingIndex = 0;
-            for (auto& binding : m_attachmentBindings)
+            for (auto& binding :  m_attachmentBindings)
             {
                 if (slotName == binding.m_name)
                 {
@@ -1709,6 +1755,35 @@ namespace AZ
             return false;
         }
 
+        AZ::Name Pass::GetSuperVariantName() const
+        {
+            return AZ::Name(m_flags.m_hasSubpassInput ? RPI::SubpassInputSupervariantName : "");
+        }
+
+        void Pass::ReplaceSubpassInputs(RHI::SubpassInputSupportType supportedTypes)
+        {
+            m_flags.m_hasSubpassInput = false;
+            for (auto& binding :  m_attachmentBindings)
+            {
+                if (binding.m_scopeAttachmentUsage == RHI::ScopeAttachmentUsage::SubpassInput)
+                {
+                    const RHI::ImageViewDescriptor& descriptor = binding.m_unifiedScopeDesc.GetImageViewDescriptor();
+                    if ((RHI::CheckBitsAny(descriptor.m_aspectFlags, RHI::ImageAspectFlags::Color) &&
+                         RHI::CheckBitsAny(supportedTypes, RHI::SubpassInputSupportType::Color)) ||
+                        (RHI::CheckBitsAny(descriptor.m_aspectFlags, RHI::ImageAspectFlags::DepthStencil) &&
+                         RHI::CheckBitsAny(supportedTypes, RHI::SubpassInputSupportType::DepthStencil)))
+                    {
+                        m_flags.m_hasSubpassInput = true;
+                    }
+                    else
+                    {
+                        binding.m_scopeAttachmentUsage = RHI::ScopeAttachmentUsage::Shader;
+                        continue;
+                    }
+                }
+            }
+        }
+
         void Pass::PrintIndent(AZStd::string& stringOutput, uint32_t indent) const
         {
             if (PassValidation::IsEnabled())
@@ -1776,7 +1851,7 @@ namespace AZ
                 AZStd::string stringOutput;
                 PrintPassName(stringOutput);
 
-                for (const PassAttachmentBinding& binding : m_attachmentBindings)
+                for (auto& binding : m_attachmentBindings)
                 {
                     uint32_t bindingMask = (1 << uint32_t(binding.m_slotType));
                     if ((bindingMask & slotTypeMask) && (binding.GetAttachment() == nullptr))
@@ -1789,6 +1864,33 @@ namespace AZ
                 }
                 AZ_Printf("PassSystem", stringOutput.c_str());
             }
+        }
+
+        void Pass::ChangeConnection(const Name& localSlot, const Name& passName, const Name& attachment, RenderPipeline* pipeline)
+        {
+            Pass* otherPass{ nullptr };
+
+            if (passName == PassNameParent)
+            {
+                otherPass = GetParent();
+            }
+            else if (passName == PipelineGlobalKeyword)
+            {
+                const AZ::RPI::PipelineGlobalBinding* globalBinding = pipeline->GetPipelineGlobalConnection(attachment);
+                otherPass = globalBinding->m_pass;
+            }
+            else if (passName == PassNameThis)
+            {
+                otherPass = this;
+            }
+            else
+            {
+                otherPass = GetParent()->FindChildPass(passName).get();
+            }
+
+            AZ_Assert(otherPass, "Pass %s not found.", passName.GetCStr());
+
+            ChangeConnection(localSlot, otherPass, attachment);
         }
 
         void Pass::ChangeConnection(const Name& localSlot, Pass* pass, const Name& attachment)

@@ -14,6 +14,7 @@
 
 #include <png.h>
 #include <xcb/xcb.h>
+#include <xcb/randr.h>
 #include <xcb/xcb_image.h>
 #ifdef SPLASH_IMAGE_EXISTS
 #include <Splash.h>
@@ -70,8 +71,8 @@ namespace AzFramework
         m_xcbWindow = xcb_generate_id(m_xcbConnection);
 
         uint16_t borderWidth = 0;
-        const uint32_t mask = styleMasks.m_platformAgnosticStyleMask;
-        if ((mask & WindowStyleMasks::WINDOW_STYLE_BORDERED) || (mask & WindowStyleMasks::WINDOW_STYLE_RESIZEABLE))
+        m_styleMask = styleMasks.m_platformAgnosticStyleMask;
+        if ((m_styleMask & WindowStyleMasks::WINDOW_STYLE_BORDERED) || (m_styleMask & WindowStyleMasks::WINDOW_STYLE_RESIZEABLE))
         {
             borderWidth = s_DefaultXcbWindowBorderWidth;
         }
@@ -99,6 +100,8 @@ namespace AzFramework
         m_width = geometry.m_width;
         m_height = geometry.m_height;
 
+        SetWindowSizeHints();
+
         InitializeAtoms();
 
         xcb_client_message_event_t event;
@@ -122,6 +125,58 @@ namespace AzFramework
         xcb_change_property(m_xcbConnection, XCB_PROP_MODE_REPLACE, m_xcbWindow, _NET_WM_PID, XCB_ATOM_CARDINAL, 32, 1, &pid);
 
         xcb_flush(m_xcbConnection);
+    }
+
+    void XcbNativeWindow::SetWindowSizeHints()
+    {
+        struct XcbSizeHints
+        {
+            uint32_t flags;
+            int32_t  x, y;
+            int32_t  width, height;
+            int32_t  minWidth, minHeight;
+            int32_t  maxWidth, maxHeight;
+            int32_t  widthInc, heightInc;
+            int32_t  minAspectNum, minAspectDen;
+            int32_t  maxAspectNum, maxAspectDen;
+            int32_t  baseWidth, baseHeight;
+            uint32_t winGravity;
+        };
+
+        enum XcbSizeHintsFlags
+        {
+            USPosition  = 1U << 0,
+            USSize      = 1U << 1,
+            PPosition   = 1U << 2,
+            PSize       = 1U << 3,
+            PMinSize    = 1U << 4,
+            PMaxSize    = 1U << 5,
+            PResizeInc  = 1U << 6,
+            PAspect     = 1U << 7,
+            PWinGravity = 1U << 9
+        };
+
+        XcbSizeHints hints{};
+
+        if ((m_styleMask & WindowStyleMasks::WINDOW_STYLE_RESIZEABLE) == 0)
+        {
+            hints.flags      |= XcbSizeHintsFlags::PMaxSize | XcbSizeHintsFlags::PMinSize,
+            hints.minWidth   = static_cast<int32_t>(m_width);
+            hints.minHeight  = static_cast<int32_t>(m_height);
+            hints.maxWidth   = static_cast<int32_t>(m_width);
+            hints.maxHeight  = static_cast<int32_t>(m_height);
+        }
+
+        xcb_void_cookie_t xcbCheckResult;
+        xcbCheckResult = xcb_change_property(m_xcbConnection,
+                                             XCB_PROP_MODE_REPLACE,
+                                             m_xcbWindow,
+                                             XCB_ATOM_WM_NORMAL_HINTS,
+                                             XCB_ATOM_WM_SIZE_HINTS,
+                                             32,
+                                             18,
+                                             &hints);
+        AZ_Assert(ValidateXcbResult(xcbCheckResult), "Failed to set window size hints.");
     }
 
     xcb_atom_t XcbNativeWindow::GetAtom(const char* atomName)
@@ -438,10 +493,127 @@ namespace AzFramework
     ////////////////////////////////////////////////////////////////////////////////////////////////
     uint32_t XcbNativeWindow::GetDisplayRefreshRate() const
     {
-        // [GFX TODO][GHI - 2678]
-        // Using 60 for now until proper support is added
+        constexpr uint32_t defaultRefreshRate = 60;
+        xcb_generic_error_t* error = nullptr;
 
-        return 60;
+        xcb_screen_iterator_t iter = xcb_setup_roots_iterator(xcb_get_setup(m_xcbConnection));
+        xcb_screen_t* screen = iter.data;
+
+        const xcb_query_extension_reply_t* extReply = xcb_get_extension_data(m_xcbConnection, &xcb_randr_id);
+        if (!extReply || !extReply->present)
+        {
+            AZ_WarningOnce(XcbErrorWindow, extReply != nullptr, "Failed to get extension RandR, defaulting to display rate of %d", defaultRefreshRate);
+            return defaultRefreshRate;
+        }
+
+        int positionX = 0;
+        int positionY = 0;
+
+        //Get the position of the window globally.
+        {
+            xcb_translate_coordinates_cookie_t translateCookie = xcb_translate_coordinates(
+                m_xcbConnection,
+                m_xcbWindow,
+                screen->root,
+                0,
+                0
+                );
+            xcb_translate_coordinates_reply_t* translateReply = xcb_translate_coordinates_reply(
+                m_xcbConnection,
+                translateCookie,
+                &error
+                );
+
+            if (error || translateReply == nullptr)
+            {
+                AZ_Warning(XcbErrorWindow, error != nullptr, "Failed to translate window coordinates.");
+                free(error);
+                free(translateReply);
+                return defaultRefreshRate;
+            }
+
+            positionX = translateReply->dst_x;
+            positionY = translateReply->dst_y;
+            free(translateReply);
+        }
+
+        xcb_randr_get_screen_resources_current_cookie_t resCookie = xcb_randr_get_screen_resources_current(m_xcbConnection, screen->root);
+        xcb_randr_get_screen_resources_current_reply_t* resReply = xcb_randr_get_screen_resources_current_reply(
+            m_xcbConnection,
+            resCookie,
+            &error);
+
+        if (error || resReply == nullptr)
+        {
+            AZ_Warning(XcbErrorWindow, error != nullptr, "Failed to get screen resources.");
+            free(error);
+            return defaultRefreshRate;
+        }
+
+        xcb_randr_crtc_t* crtcs = xcb_randr_get_screen_resources_current_crtcs(resReply);
+        int crtcLength = xcb_randr_get_screen_resources_current_crtcs_length(resReply);
+
+        uint32_t refreshRate = 0;
+
+        for (int i = 0; i < crtcLength; i++)
+        {
+            xcb_randr_get_crtc_info_cookie_t crtcInfoCookie = xcb_randr_get_crtc_info(m_xcbConnection, crtcs[i], XCB_TIME_CURRENT_TIME);
+            xcb_randr_get_crtc_info_reply_t* crtcInfoReply = xcb_randr_get_crtc_info_reply(m_xcbConnection, crtcInfoCookie, &error);
+
+            if (error || crtcInfoReply == nullptr)
+            {
+                free(error);
+                continue;
+            }
+
+            int crtcX = crtcInfoReply->x;
+            int crtcY = crtcInfoReply->y;
+            int crtcW = crtcInfoReply->width;
+            int crtcH = crtcInfoReply->height;
+
+            if (positionX + m_width > crtcX && positionX < crtcX + crtcW &&
+                positionY + m_height > crtcY && positionY < crtcY + crtcH)
+            {
+                const uint32_t modeId = crtcInfoReply->mode;
+
+                xcb_randr_mode_info_t* modes = xcb_randr_get_screen_resources_current_modes(resReply);
+                int modesLength = xcb_randr_get_screen_resources_current_modes_length(resReply);
+
+                for (int mi = 0; mi < modesLength; mi++)
+                {
+                    auto mode = modes[mi];
+                    if (mode.id != modeId)
+                        continue;
+
+                    if(mode.htotal == 0 || mode.vtotal == 0)
+                    {
+                        AZ_WarningOnce(XcbErrorWindow, false, "V/H total is 0");
+                        return defaultRefreshRate;
+                    }
+
+                    double refreshRatePrecise = static_cast<double>(mode.dot_clock) /
+                        (mode.htotal * mode.vtotal);
+
+                    //Most of the time the refresh rate is 159.798 or 59.98
+                    refreshRate = static_cast<uint32_t>(ceil(refreshRatePrecise));
+                }
+
+                free(crtcInfoReply);
+                break;
+            }
+
+            free(crtcInfoReply);
+        }
+
+        if (refreshRate == 0)
+        {
+            AZ_Warning(XcbErrorWindow, refreshRate == 0, "Failed to get CRTC refresh rate for window.");
+            free(resReply);
+            return defaultRefreshRate;
+        }
+
+        free(resReply);
+        return refreshRate;
     }
 
     bool XcbNativeWindow::GetFullScreenState() const

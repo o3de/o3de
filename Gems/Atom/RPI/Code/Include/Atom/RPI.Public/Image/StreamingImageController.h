@@ -15,6 +15,7 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/parallel/mutex.h>
 
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/Image/StreamingImage.h>
 #include <Atom/RPI.Public/Image/StreamingImageContext.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageControllerAsset.h>
@@ -30,7 +31,7 @@ namespace AZ
     {
         class StreamingImage;
 
-        class StreamingImageController
+        class ATOM_RPI_PUBLIC_API StreamingImageController
         {
             friend class StreamingImagePool;
             friend class StreamingImage;

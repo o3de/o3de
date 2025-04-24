@@ -85,6 +85,8 @@
 #include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
+#include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
+#include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
@@ -1555,6 +1557,7 @@ namespace ScriptCanvasEditor
         AZ::Uuid assetId = AZ::Uuid::CreateRandom();
         auto relativeOption = ScriptCanvasEditor::CreateFromAnyPath(SourceHandle(graph, assetId), assetPath);
         SourceHandle handle = relativeOption ? *relativeOption : SourceHandle(graph, assetId);
+        handle.SetSuggestedFileName(assetPath);
 
         outTabIndex = InsertTabForAsset(assetPath, handle, tabIndex);
 
@@ -1650,7 +1653,7 @@ namespace ScriptCanvasEditor
         bool isValidFileName = false;
 
         AZ::IO::FixedMaxPath projectSourcePath = AZ::Utils::GetProjectPath();
-        projectSourcePath /= "ScriptCanvas//";
+        projectSourcePath /= "Assets/ScriptCanvas";
         QString selectedFile;
 
         if (save == Save::InPlace)
@@ -1688,41 +1691,38 @@ namespace ScriptCanvasEditor
 
         while (!isValidFileName)
         {
-            selectedFile = AzQtComponents::FileDialog::GetSaveFileName(this, QObject::tr("Save As..."), suggestedDirectoryPath.data(), QObject::tr("All ScriptCanvas Files (*.scriptcanvas)"));
+            AzFramework::StringFunc::Path::Normalize(suggestedDirectoryPath);
+
+            QDir dir(suggestedDirectoryPath.c_str());
+            if (!dir.exists())
+            {
+                auto result = AZ::IO::SystemFile::CreateDir(suggestedDirectoryPath.c_str());
+                if (!result)
+                {
+                    AZ_Error("Script Canvas", false, "Failed to make new folder: %s", suggestedDirectoryPath.c_str());
+                    return false;
+                }
+            }
+
+            AZ::IO::FixedMaxPath fullPath = suggestedDirectoryPath.c_str();
+            AZStd::string suggestedFileName = sourceHandle.GetSuggestedFileName() + SourceDescription::GetFileExtension();
+            fullPath /= suggestedFileName;
+
+            QString localSelectedFilter;
+            QFileDialog::Options options;
+            QString filePath = AzQtComponents::FileDialog::GetSaveFileName(this, QObject::tr("Save As..."), fullPath.c_str(), QObject::tr("All ScriptCanvas Files (*.scriptcanvas)"), &localSelectedFilter, options);
+
+            selectedFile = filePath.toUtf8().toStdString().c_str();
 
             // If the selected file is empty that means we just cancelled.
             // So we want to break out.
-            if (!selectedFile.isEmpty())
+            if (selectedFile.isEmpty())
             {
-                AZStd::string filePath = selectedFile.toUtf8().data();
-
-                if (!AZ::StringFunc::EndsWith(filePath, SourceDescription::GetFileExtension(), false))
-                {
-                    filePath += SourceDescription::GetFileExtension();
-                }
-
-                AZStd::string fileName;
-
-                if (AzFramework::StringFunc::Path::GetFileName(filePath.c_str(), fileName))
-                {
-                    isValidFileName = !(fileName.empty());
-                    if (isValidFileName)
-                    {
-                        if (AzFramework::StringFunc::FirstCharacter(fileName.c_str()) >= '0' &&
-                            AzFramework::StringFunc::FirstCharacter(fileName.c_str()) <= '9')
-                        {
-                            QMessageBox::warning(this, QObject::tr("Unable to Save"), QObject::tr("File name cannot start with a number"));
-                            return false;
-                        }
-                    }
-                }
-                else
-                {
-                    QMessageBox::information(this, "Unable to Save", "File name cannot be empty");
-                }
+                QMessageBox::information(this, "Unable to Save", "File name cannot be empty");
             }
             else
             {
+                isValidFileName = true;
                 break;
             }
         }
@@ -1730,7 +1730,6 @@ namespace ScriptCanvasEditor
         if (isValidFileName)
         {
             AZStd::string internalStringFile = selectedFile.toUtf8().data();
-
 
             if (!AZ::StringFunc::EndsWith(internalStringFile, SourceDescription::GetFileExtension(), false))
             {
@@ -1887,22 +1886,33 @@ namespace ScriptCanvasEditor
 
     void MainWindow::OnFileOpen()
     {
-        const auto sourcePath = AZ::IO::FixedMaxPath(AZ::Utils::GetProjectPath()) / "scriptcanvas";
-        const QStringList nameFilters = { "All ScriptCanvas Files (*.scriptcanvas)" };
+        AssetSelectionModel selection;
 
-        QFileDialog dialog(nullptr, tr("Open..."), sourcePath.c_str());
-        dialog.setFileMode(QFileDialog::ExistingFiles);
-        dialog.setNameFilters(nameFilters);
+        StringFilter* stringFilter = new StringFilter();
+        stringFilter->SetName("Script Canvas (*.scriptcanvas)");
+        stringFilter->SetFilterString(".scriptcanvas");
+        stringFilter->SetFilterPropagation(AssetBrowserEntryFilter::PropagateDirection::Down);
+        auto stringFilterPtr = FilterConstType(stringFilter);
 
-        if (dialog.exec() == QDialog::Accepted)
+        selection.SetDisplayFilter(stringFilterPtr);
+        selection.SetSelectionFilter(stringFilterPtr);
+        selection.SetMultiselect(true);
+
+        AssetBrowserComponentRequestBus::Broadcast(
+            &AssetBrowserComponentRequests::PickAssets, selection, AzToolsFramework::GetActiveWindow());
+
+        if (!selection.IsValid())
         {
-            m_filesToOpen = dialog.selectedFiles();
-
-            OpenNextFile();
+            return;
         }
 
-        EnableOpenDocumentActions(true);
+        for (const auto& result : selection.GetResults())
+        {
+            m_filesToOpen.push_back(result->GetFullPath().c_str());
+        }
 
+        OpenNextFile();
+        EnableOpenDocumentActions(true);
     }
 
     void MainWindow::EnableOpenDocumentActions(bool enable)
@@ -3555,24 +3565,20 @@ namespace ScriptCanvasEditor
         return findChild<QObject*>(elementName);
     }
 
-    AZ::EntityId MainWindow::FindEditorNodeIdByAssetNodeId([[maybe_unused]] const SourceHandle& assetId
-        , [[maybe_unused]] AZ::EntityId assetNodeId) const
+    AZ::EntityId MainWindow::FindEditorNodeIdByAssetNodeId([[maybe_unused]] const SourceHandle& assetId, [[maybe_unused]] AZ::EntityId assetNodeId) const
     {
-        AZ::EntityId editorEntityId{};
-//         AssetTrackerRequestBus::BroadcastResult
-//             ( editorEntityId, &AssetTrackerRequests::GetEditorEntityIdFromSceneEntityId, assetId.Id(), assetNodeId);
-        // #sc_editor_asset_redux fix logger
-        return editorEntityId;
+        const ScriptCanvas::ScriptCanvasId scriptId = GetActiveScriptCanvasId();
+        AZ::EntityId newNodeId;
+        EditorGraphRequestBus::EventResult(newNodeId, scriptId, &EditorGraphRequests::FindNewIdFromOriginal, assetNodeId);
+        return newNodeId;
     }
 
-    AZ::EntityId MainWindow::FindAssetNodeIdByEditorNodeId([[maybe_unused]] const SourceHandle& assetId
-        , [[maybe_unused]] AZ::EntityId editorNodeId) const
+    AZ::EntityId MainWindow::FindAssetNodeIdByEditorNodeId([[maybe_unused]] const SourceHandle& assetId, [[maybe_unused]] AZ::EntityId editorNodeId) const
     {
-        AZ::EntityId sceneEntityId{};
-        // AssetTrackerRequestBus::BroadcastResult
-        // ( sceneEntityId, &AssetTrackerRequests::GetSceneEntityIdFromEditorEntityId, assetId.Id(), editorNodeId);
-        // #sc_editor_asset_redux fix logger
-        return sceneEntityId;
+        const ScriptCanvas::ScriptCanvasId scriptId = GetActiveScriptCanvasId();
+        AZ::EntityId originalNodeId;
+        EditorGraphRequestBus::EventResult(originalNodeId, scriptId, &EditorGraphRequests::FindOriginalIdFromNew, editorNodeId);
+        return originalNodeId;
     }
 
     GraphCanvas::Endpoint MainWindow::CreateNodeForProposalWithGroup(const AZ::EntityId& connectionId

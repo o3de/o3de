@@ -9,6 +9,7 @@
 #pragma once
 
 #include <Atom/RHI/DeviceDrawPacket.h>
+#include <Atom/RHI/DeviceGeometryView.h>
 #include <Atom/RHI.Reflect/Scissor.h>
 #include <Atom/RHI.Reflect/Viewport.h>
 
@@ -32,8 +33,8 @@ namespace AZ::RHI
             //! The stencil ref value used for this draw item.
             uint8_t m_stencilRef = 0;
 
-            //! The array of stream buffers to bind for this draw item.
-            AZStd::span<const DeviceStreamBufferView> m_streamBufferViews;
+            //! Indices of the StreamBufferViews the draw item will use.
+            StreamBufferIndices m_streamIndices;
 
             //! Shader resource group unique for this draw request
             const DeviceShaderResourceGroup* m_uniqueShaderResourceGroup = nullptr;
@@ -55,9 +56,9 @@ namespace AZ::RHI
 
         void Begin(IAllocator* allocator);
 
-        void SetDrawArguments(const DeviceDrawArguments& drawArguments);
+        void SetGeometryView(const DeviceGeometryView* geometryView);
 
-        void SetIndexBufferView(const DeviceIndexBufferView& indexBufferView);
+        void SetDrawInstanceArguments(const DrawInstanceArguments& drawInstanceArgs);
 
         void SetRootConstants(AZStd::span<const uint8_t> rootConstants);
 
@@ -85,10 +86,9 @@ namespace AZ::RHI
         void ClearData();
 
         IAllocator* m_allocator = nullptr;
-        DeviceDrawArguments m_drawArguments;
+        const DeviceGeometryView* m_geometryView = nullptr;
+        DrawInstanceArguments m_drawInstanceArgs;
         DrawListMask m_drawListMask = 0;
-        size_t m_streamBufferViewCount = 0;
-        DeviceIndexBufferView m_indexBufferView;
         AZStd::fixed_vector<DeviceDrawRequest, DrawItemCountMax> m_drawRequests;
         AZStd::fixed_vector<const DeviceShaderResourceGroup*, Limits::Pipeline::ShaderResourceGroupCountMax> m_shaderResourceGroups;
         AZStd::span<const uint8_t> m_rootConstants;

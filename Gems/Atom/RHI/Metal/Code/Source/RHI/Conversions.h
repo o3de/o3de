@@ -47,8 +47,9 @@ namespace AZ
         };
 
         MTLPixelFormat ConvertPixelFormat(RHI::Format format);
+        RHI::Format  ConvertPixelFormat(MTLPixelFormat format);
         MTLTextureUsage ConvertTextureUsageFlags(RHI::BufferBindFlags flags, RHI::Format format);
-        MTLTextureType ConvertTextureType(RHI::ImageDimension dimension, int arraySize, bool isCubeMap);
+        MTLTextureType ConvertTextureType(RHI::ImageDimension dimension, int arraySize, bool isCubeMap, bool isViewArray=false);
         MTLPixelFormat ConvertImageViewFormat( const Image& image, const RHI::ImageViewDescriptor& imageViewDescriptor);
         MTLBlendOperation ConvertBlendOp(RHI::BlendOp op);
         MTLBlendFactor ConvertBlendFactor(RHI::BlendFactor factor);
@@ -94,6 +95,7 @@ namespace AZ
         bool IsDepthStencilMerged(MTLPixelFormat mtlFormat);
         bool GetVertexFormatSizeInBytes(const MTLVertexFormat vertexFormat, uint32_t& size);
         bool GetIndexTypeSizeInBytes(const MTLIndexType indexType, uint32_t& size);
+        bool IsTextureTypeAnArray(MTLTextureType textureType);
         uint32_t GetArrayLength(int arraySize, bool isCubeMap);
         
         ResourceDescriptor ConvertBufferDescriptor(const RHI::BufferDescriptor& descriptor, RHI::HeapMemoryLevel heapMemoryLevel = RHI::HeapMemoryLevel::Device);

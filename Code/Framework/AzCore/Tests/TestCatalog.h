@@ -103,8 +103,6 @@ namespace UnitTest
             return &m_assetDefinitions.back();
         }
 
-        void AddLegacyAssetId(const Uuid& legacyAssetId, const Uuid& canonicalAssetId);
-
         AZStd::atomic_int m_numCreations = 0;
         AZStd::atomic_int m_numDestructions = 0;
         AZStd::atomic_int m_numLoads = 0;
@@ -118,6 +116,5 @@ namespace UnitTest
         AZ::IO::IStreamerTypes::Priority m_defaultPriority = AZ::IO::IStreamerTypes::s_priorityMedium;
 
         AZStd::vector<AssetDefinition> m_assetDefinitions;
-        AZStd::unordered_map<AZ::Data::AssetId, AZ::Data::AssetId> m_legacyAssetIds;
     };
 }

@@ -14,6 +14,9 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
+extern "C" void CleanUpRpiPublicGenericClassInfo();
+extern "C" void CleanUpRpiEditGenericClassInfo();
+
 namespace UnitTest
 {
     void AssetManagerTestFixture::SetUp()
@@ -43,6 +46,9 @@ namespace UnitTest
 
         m_reflectionManager->Clear();
         m_reflectionManager.reset();
+
+        CleanUpRpiPublicGenericClassInfo();
+        CleanUpRpiEditGenericClassInfo();
 
         LeakDetectionFixture::TearDown();
     }

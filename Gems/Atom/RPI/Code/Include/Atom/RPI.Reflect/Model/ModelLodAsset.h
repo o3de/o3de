@@ -9,6 +9,7 @@
 #pragma once
 
 #include <Atom/RPI.Reflect/Asset/AssetHandler.h>
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/Buffer/BufferAsset.h>
 
 #include <Atom/RHI.Reflect/Limits.h>
@@ -29,18 +30,20 @@ namespace AZ
         //! Contains a set of ModelLodAsset::Mesh objects and BufferAsset objects, representing the data a single level-of-detail for a Model.
         //! Serialized to a .azlod file.
         //! Actual vertex and index buffer data is stored in the BufferAssets.
-        class ModelLodAsset final
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+        class ATOM_RPI_REFLECT_API ModelLodAsset final
             : public Data::AssetData
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             friend class ModelLodAssetCreator;
             friend class ModelAsset;
 
         public:
             static constexpr size_t LodCountMax = 10;
 
-            static const char* DisplayName;
-            static const char* Extension;
-            static const char* Group;
+            static constexpr const char* DisplayName{ "ModelLodAsset" };
+            static constexpr const char* Group{ "Model" };
+            static constexpr const char* Extension{ "azlod" };
 
             AZ_RTTI(ModelLodAsset, "{65B5A801-B9B9-4160-9CB4-D40DAA50B15C}", Data::AssetData);
             AZ_CLASS_ALLOCATOR(ModelLodAsset, AZ::SystemAllocator);
@@ -52,7 +55,7 @@ namespace AZ
 
             //! Associates stream views (vertex buffer views and an index buffer view) with material data.
             //! A ModelLodAsset::Mesh can have many Streams but only one material id.
-            class Mesh final
+            class ATOM_RPI_REFLECT_API Mesh final
             {
                 friend class ModelLodAssetCreator;
                 friend class ModelLodAsset;

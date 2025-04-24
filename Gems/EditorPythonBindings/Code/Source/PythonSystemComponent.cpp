@@ -573,12 +573,6 @@ namespace EditorPythonBindings
         AZStd::to_wstring(pyHomePath, pyBasePath);
         Py_SetPythonHome(pyHomePath.c_str());
 
-        // display basic Python information
-        AZ_TracePrintf("python", "Py_GetVersion=%s \n", Py_GetVersion());
-        AZ_TracePrintf("python", "Py_GetPath=%ls \n", Py_GetPath());
-        AZ_TracePrintf("python", "Py_GetExecPrefix=%ls \n", Py_GetExecPrefix());
-        AZ_TracePrintf("python", "Py_GetProgramFullPath=%ls \n", Py_GetProgramFullPath());
-
         PyImport_AppendInittab("azlmbr_redirect", RedirectOutput::PyInit_RedirectOutput);
         try
         {
@@ -586,9 +580,16 @@ namespace EditorPythonBindings
             Py_IsolatedFlag = 1; // -I - Also sets Py_NoUserSiteDirectory.  If removed PyNoUserSiteDirectory should be set.
             Py_IgnoreEnvironmentFlag = 1; // -E
             Py_InspectFlag = 1; // unhandled SystemExit will terminate the process unless Py_InspectFlag is set
+            Py_DontWriteBytecodeFlag = 1; // Do not generate precompiled bytecode
 
             const bool initializeSignalHandlers = true;
             pybind11::initialize_interpreter(initializeSignalHandlers);
+
+            // display basic Python information
+            AZ_Trace("python", "Py_GetVersion=%s \n", Py_GetVersion());
+            AZ_Trace("python", "Py_GetPath=%ls \n", Py_GetPath());
+            AZ_Trace("python", "Py_GetExecPrefix=%ls \n", Py_GetExecPrefix());
+            AZ_Trace("python", "Py_GetProgramFullPath=%ls \n", Py_GetProgramFullPath());
 
             // Add custom site packages after initializing the interpreter above.  Calling Py_SetPath before initialization
             // alters the behavior of the initializer to not compute default search paths. See https://docs.python.org/3/c-api/init.html#c.Py_SetPath
@@ -817,6 +818,7 @@ namespace EditorPythonBindings
             const int updatePath = 1;
             PySys_SetArgvEx(argc, argv, updatePath);
 
+            Py_DontWriteBytecodeFlag = 1;
             PyCompilerFlags flags;
             flags.cf_flags = 0;
             const int bAutoCloseFile = true;

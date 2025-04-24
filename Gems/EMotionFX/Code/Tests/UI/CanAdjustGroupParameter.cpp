@@ -10,7 +10,7 @@
 
 namespace EMotionFX
 {
-    INSTANTIATE_TEST_CASE_P(CanAdjustGroupParameter, CommandRunnerFixture,
+    INSTANTIATE_TEST_SUITE_P(CanAdjustGroupParameter, CommandRunnerFixture,
         ::testing::Values(std::vector<std::string> {
             R"str(CreateAnimGraph -animGraphID 100)str",
             R"str(AnimGraphAddGroupParameter -animGraphID 100 -name Group0)str",

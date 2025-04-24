@@ -21,7 +21,7 @@ ly_add_target(
             AZ::AzFramework
             Gem::Atom_RPI.Public
             Gem::Atom_Utils.Static
-            Gem::Atom_Feature_Common.Static
+            Gem::Atom_Feature_Common.Public
             Gem::CommonFeaturesAtom.Static
             Gem::GradientSignal.Static
             Gem::SurfaceData.Static
@@ -131,7 +131,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzFrameworkTestShared
                 AZ::AzTestShared
                 AZ::AzFramework
-                Gem::Atom_RPI.TestUtils.Static
+                Gem::Atom_RPI.TestUtils
                 Gem::GradientSignal.Tests.Static
                 Gem::LmbrCentral.Mocks
                 Gem::GradientSignal.Mocks

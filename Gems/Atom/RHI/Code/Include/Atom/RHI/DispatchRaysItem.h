@@ -9,6 +9,7 @@
 
 #include <Atom/RHI.Reflect/Limits.h>
 #include <Atom/RHI/DeviceDispatchRaysItem.h>
+#include <Atom/RHI/IndirectArguments.h>
 #include <Atom/RHI/DispatchRaysIndirectBuffer.h>
 #include <Atom/RHI/RayTracingAccelerationStructure.h>
 #include <Atom/RHI/RayTracingPipelineState.h>
@@ -182,7 +183,7 @@ namespace AZ::RHI
 
                 auto& [index, deviceShaderResourceGroup]{ *it };
 
-                for (int i = 0; i < shaderResourceGroupCount; ++i)
+                for (int i = 0; i < static_cast<int>(shaderResourceGroupCount); ++i)
                 {
                     deviceShaderResourceGroup[i] = shaderResourceGroups[i]->GetDeviceShaderResourceGroup(deviceIndex).get();
                 }

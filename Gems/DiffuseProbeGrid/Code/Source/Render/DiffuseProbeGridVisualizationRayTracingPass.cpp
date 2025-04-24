@@ -6,6 +6,7 @@
  *
  */
 
+#include <Atom/Feature/RayTracing/RayTracingFeatureProcessorInterface.h>
 #include <Atom/RHI/CommandList.h>
 #include <Atom/RHI/DeviceDispatchRaysItem.h>
 #include <Atom/RHI/Factory.h>
@@ -17,7 +18,6 @@
 #include <DiffuseProbeGrid_Traits_Platform.h>
 #include <Render/DiffuseProbeGridFeatureProcessor.h>
 #include <Render/DiffuseProbeGridVisualizationRayTracingPass.h>
-#include <RayTracing/RayTracingFeatureProcessor.h>
 
 namespace AZ
 {
@@ -95,7 +95,7 @@ namespace AZ
 
             // create the ray tracing pipeline state object
             m_rayTracingPipelineState = aznew RHI::RayTracingPipelineState;
-            m_rayTracingPipelineState->Init(RHI::MultiDevice::AllDevices, descriptor);
+            m_rayTracingPipelineState->Init(RHI::RHISystemInterface::Get()->GetRayTracingSupport(), descriptor);
         }
 
         bool DiffuseProbeGridVisualizationRayTracingPass::IsEnabled() const
@@ -142,7 +142,7 @@ namespace AZ
                 RHI::RayTracingBufferPools& rayTracingBufferPools = diffuseProbeGridFeatureProcessor->GetVisualizationBufferPools();
 
                 m_rayTracingShaderTable = aznew RHI::RayTracingShaderTable;
-                m_rayTracingShaderTable->Init(RHI::MultiDevice::AllDevices, rayTracingBufferPools);
+                m_rayTracingShaderTable->Init(RHI::RHISystemInterface::Get()->GetRayTracingSupport(), rayTracingBufferPools);
 
                 AZStd::shared_ptr<RHI::RayTracingShaderTableDescriptor> descriptor = AZStd::make_shared<RHI::RayTracingShaderTableDescriptor>();
 
@@ -264,7 +264,10 @@ namespace AZ
                 // the DiffuseProbeGridVisualization Srg must be updated in the Compile phase in order to successfully bind the ReadWrite shader
                 // inputs (see line ValidateSetImageView() in ShaderResourceGroupData.cpp)
                 diffuseProbeGrid->UpdateVisualizationRayTraceSrg(m_rayTracingShader, m_globalSrgLayout, outputImageView);
-                diffuseProbeGrid->GetVisualizationRayTraceSrg()->Compile();
+                if (!diffuseProbeGrid->GetVisualizationRayTraceSrg()->IsQueuedForCompile())
+                {
+                    diffuseProbeGrid->GetVisualizationRayTraceSrg()->Compile();
+                }
             }
 
             if (auto viewSRG = diffuseProbeGridFeatureProcessor->GetViewSrg(m_pipeline, GetPipelineViewTag()))
@@ -277,7 +280,7 @@ namespace AZ
         {
             RPI::Scene* scene = m_pipeline->GetScene();
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
-            RayTracingFeatureProcessor* rayTracingFeatureProcessor = scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
+            auto* rayTracingFeatureProcessor = scene->GetFeatureProcessor<RayTracingFeatureProcessorInterface>();
             AZ_Assert(rayTracingFeatureProcessor, "DiffuseProbeGridVisualizationRayTracingPass requires the RayTracingFeatureProcessor");
 
             const AZStd::vector<RPI::ViewPtr>& views = m_pipeline->GetViews(RPI::PipelineViewTag{ "MainCamera" });

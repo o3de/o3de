@@ -6,6 +6,7 @@
  *
  */
 
+#include <Atom/Feature/RayTracing/RayTracingFeatureProcessorInterface.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/DevicePipelineState.h>
 #include <Atom/RHI/FrameGraphInterface.h>
@@ -20,7 +21,6 @@
 #include <DiffuseProbeGrid_Traits_Platform.h>
 #include <Render/DiffuseProbeGridFeatureProcessor.h>
 #include <Render/DiffuseProbeGridRelocationPass.h>
-#include <RayTracing/RayTracingFeatureProcessor.h>
 
 namespace AZ
 {
@@ -87,7 +87,7 @@ namespace AZ
                 return false;
             }
 
-            RayTracingFeatureProcessor* rayTracingFeatureProcessor = scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
+            auto* rayTracingFeatureProcessor = scene->GetFeatureProcessor<RayTracingFeatureProcessorInterface>();
             if (!rayTracingFeatureProcessor || !rayTracingFeatureProcessor->GetSubMeshCount())
             {
                 // empty scene
@@ -124,7 +124,7 @@ namespace AZ
         {
             RPI::Scene* scene = m_pipeline->GetScene();
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
-            RayTracingFeatureProcessor* rayTracingFeatureProcessor = scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
+            auto* rayTracingFeatureProcessor = scene->GetFeatureProcessor<RayTracingFeatureProcessorInterface>();
             AZ_Assert(rayTracingFeatureProcessor, "DiffuseProbeGridRelocationPass requires the RayTracingFeatureProcessor");
 
             // reset the relocation iterations on the grids if the TLAS was updated
@@ -194,7 +194,10 @@ namespace AZ
                 // the diffuse probe grid Srg must be updated in the Compile phase in order to successfully bind the ReadWrite shader inputs
                 // (see ValidateSetImageView() in ShaderResourceGroupData.cpp)
                 diffuseProbeGrid->UpdateRelocationSrg(m_shader, m_srgLayout);
-                diffuseProbeGrid->GetRelocationSrg()->Compile();
+                if (!diffuseProbeGrid->GetRelocationSrg()->IsQueuedForCompile())
+                {
+                    diffuseProbeGrid->GetRelocationSrg()->Compile();
+                }
             }
         }
 

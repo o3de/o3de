@@ -15,6 +15,7 @@
 #include <Atom/RHI.Reflect/Format.h>
 #include <Atom/RHI.Reflect/SwapChainDescriptor.h>
 
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/Pass/ParentPass.h>
 #include <Atom/RPI.Public/WindowContext.h>
 
@@ -30,7 +31,7 @@ namespace AZ
         //! - The pass template should have a slot name "PipelineOutput"
         //! - To support explicit render resolution ( swapchain has different size than the render pipeline's resolution),
         //!     the pass template should have a pass request which creates the "CopyToSwapChain" pass
-        class SwapChainPass final
+        class ATOM_RPI_PUBLIC_API SwapChainPass final
             : public ParentPass
             , public AzFramework::WindowNotificationBus::Handler
         {

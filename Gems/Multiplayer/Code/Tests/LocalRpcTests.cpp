@@ -73,7 +73,7 @@ namespace Multiplayer
         EXPECT_EQ(component->GetTestController()->m_serverToAuthorityCalls, 1);
     }
 
-    TEST_F(LocalRpcTests, LocalRpcAuthorityToClients)
+    TEST_F(LocalRpcTests, LocalRpcAuthorityToClient)
     {
         const auto component = m_root->m_entity->FindComponent<MultiplayerTest::RpcUnitTesterComponent>();
         component->GetTestController()->RPC_AuthorityToClient();
@@ -92,6 +92,21 @@ namespace Multiplayer
         m_networkEntityManager->DispatchLocalDeferredRpcMessages();        
 
         EXPECT_EQ(component->GetTestController()->m_authorityToAutonomousCalls, 1);
+    }
+
+    TEST_F(LocalRpcTests, LocalRpcAuthorityToRemoteAutonomous)
+    {
+        // Turn off player host autonomy.
+        // This simulates a host machine (authority) sending an RPC to a remote autonomous client
+        // For example, a local prediction player input correction RPC
+        m_root->m_entity->FindComponent<NetBindComponent>()->EnablePlayerHostAutonomy(false);
+
+        const auto component = m_root->m_entity->FindComponent<MultiplayerTest::RpcUnitTesterComponent>();
+        component->GetTestController()->RPC_AuthorityToAutonomous();
+
+        m_networkEntityManager->DispatchLocalDeferredRpcMessages();
+
+        EXPECT_EQ(component->GetTestController()->m_authorityToAutonomousCalls, 0);
     }
 
     TEST_F(LocalRpcTests, LocalRpcAutonomousToAuthority)

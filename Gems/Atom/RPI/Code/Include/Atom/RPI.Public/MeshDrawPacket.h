@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
 #include <Atom/RPI.Public/Material/Material.h>
 #include <Atom/RPI.Public/Model/ModelLod.h>
@@ -33,7 +34,7 @@ namespace AZ
         class Scene;
 
         //! Holds and manages an RHI DrawPacket for a specific mesh, and the resources that are needed to build and maintain it.
-        class MeshDrawPacket
+        class ATOM_RPI_PUBLIC_API MeshDrawPacket
         {
         public:
             struct ShaderData
@@ -58,6 +59,8 @@ namespace AZ
 
             AZ_DEFAULT_COPY(MeshDrawPacket);
             AZ_DEFAULT_MOVE(MeshDrawPacket);
+
+            static Data::Instance<RPI::ShaderResourceGroup> InvalidSrg;
 
             bool Update(const Scene& parentScene, bool forceUpdate = false);
 
@@ -84,9 +87,21 @@ namespace AZ
 
             void DebugOutputShaderVariants();
 
+            //! Returns the DrawSrg from the DrawItem that corresponds to @drawItemIndex.
+            Data::Instance<RPI::ShaderResourceGroup>& GetDrawSrg(uint32_t drawItemIndex);
+
         private:
             bool DoUpdate(const Scene& parentScene);
             void ForValidShaderOptionName(const Name& shaderOptionName, const AZStd::function<bool(const ShaderCollection::Item&, ShaderOptionIndex)>& callback);
+
+            // To enable this shader constant in DrawSrg, a shader must:
+            // #define USE_DRAWSRG_MESHLOD_MESHINDEX 1
+            // By default it is NOT defined.
+            // When defined, the value of @m_modelLodMeshIndex (aka subMesh index) is written
+            // to the shader constant.
+            // REMARK: Unfortunately can't use RHI::ShaderInputNameIndex as it would cause
+            //         a crash in the UnitTest: MeshInstanceManagerTestFixture.AddInstance
+            static constexpr char DrawSrgModelLodMeshIndex[] = "m_modelLodMeshIndex";
 
             Ptr<RHI::DrawPacket> m_drawPacket;
 

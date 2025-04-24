@@ -58,7 +58,13 @@ namespace AzQtComponents
         region.moveCenter(point);
         CGRect bounds = CGRectMake(region.x(), region.y(), region.width(), region.height());
 
+        //TODO - Add proper support for macOS 14.0+.
+        //Try looking into SCScreenshotManager (https://developer.apple.com/documentation/screencapturekit/scscreenshotmanager?language=objc)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
         CGImageRef cgImage = CGWindowListCreateImageFromArray(bounds, windows, kCGWindowImageNominalResolution);
+#pragma clang diagnostic pop
+
         CFRelease(windows);
 
         QImage result = QtMac::fromCGImageRef(cgImage).toImage();

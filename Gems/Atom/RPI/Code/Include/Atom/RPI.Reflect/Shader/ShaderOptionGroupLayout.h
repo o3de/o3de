@@ -7,8 +7,9 @@
  */
 #pragma once
 
-#include <Atom/RPI.Reflect/Shader/ShaderOptionTypes.h>
 #include <Atom/RPI.Reflect/Base.h>
+#include <Atom/RPI.Reflect/Configuration.h>
+#include <Atom/RPI.Reflect/Shader/ShaderOptionTypes.h>
 #include <Atom/RPI.Reflect/Shader/ShaderVariantKey.h>
 
 #include <Atom/RHI.Reflect/NameIdReflectionMap.h>
@@ -42,7 +43,7 @@ namespace AZ
          * This struct describes compile time hints for the shader option group layout building.
          * The builder (ShaderAssetBuilder or other) is free to ignore or enforce these options.
          */
-        struct ShaderOptionGroupHints
+        struct ATOM_RPI_REFLECT_API ShaderOptionGroupHints
         {
             AZ_TYPE_INFO(AZ::RPI::ShaderOptionGroupHints, "{09FB2541-DD10-46B9-AAF0-FF8EE8B59FEB}");
 
@@ -56,15 +57,15 @@ namespace AZ
         };
 
         //! Creates a list of shader option values that can be used to construct a ShaderOptionDescriptor.
-        ShaderOptionValues CreateEnumShaderOptionValues(AZStd::span<const AZStd::string_view> enumNames);
-        ShaderOptionValues CreateEnumShaderOptionValues(AZStd::initializer_list<AZStd::string_view> enumNames);
-        ShaderOptionValues CreateBoolShaderOptionValues();
-        ShaderOptionValues CreateIntRangeShaderOptionValues(uint32_t min, uint32_t max);
+        ATOM_RPI_REFLECT_API ShaderOptionValues CreateEnumShaderOptionValues(AZStd::span<const AZStd::string_view> enumNames);
+        ATOM_RPI_REFLECT_API ShaderOptionValues CreateEnumShaderOptionValues(AZStd::initializer_list<AZStd::string_view> enumNames);
+        ATOM_RPI_REFLECT_API ShaderOptionValues CreateBoolShaderOptionValues();
+        ATOM_RPI_REFLECT_API ShaderOptionValues CreateIntRangeShaderOptionValues(uint32_t min, uint32_t max);
 
         //! Describes a shader option to the ShaderOptionGroupLayout class. Maps a shader option
         //! to a set of bits in a mask in order to facilitate packing values into a mask to
         //! form a ShaderKey.
-        class ShaderOptionDescriptor final
+        class ATOM_RPI_REFLECT_API ShaderOptionDescriptor final
         {
         public:
             AZ_TYPE_INFO(AZ::RPI::ShaderOptionDescriptor, "{07B9E2F7-5408-49E9-904D-CC1A9C33230E}");
@@ -179,7 +180,7 @@ namespace AZ
             uint32_t DecodeBits(ShaderVariantKey key) const;
 
         private:
-            static const char* DebugCategory;
+            static constexpr const char* DebugCategory = "ShaderOption";
 
             //! Adds a new option value to the (name, index) map. Only to use from the constructor.
             void AddValue(const Name& name, const ShaderOptionValue value);
@@ -211,7 +212,7 @@ namespace AZ
         //! Describes a complete layout of shader options and how they map to a ShaderKey.
         //! Contains information on how to construct shader keys from shader option key/value
         //! pair data. Does not contain actual shader option values (those reside in ShaderOptionGroup).
-        class ShaderOptionGroupLayout final
+        class ATOM_RPI_REFLECT_API ShaderOptionGroupLayout final
             : public AZStd::intrusive_base
         {
         public:
@@ -283,7 +284,7 @@ namespace AZ
             template <typename, bool, bool>
             friend struct Serialize::InstanceFactory;
 
-            static const char* DebugCategory;
+            static constexpr const char* DebugCategory = "ShaderOption";
 
             bool ValidateIsFinalized() const;
             bool ValidateIsNotFinalized() const;

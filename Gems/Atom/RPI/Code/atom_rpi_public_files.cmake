@@ -12,6 +12,7 @@ set(FILES
     Include/Atom/RPI.Public/AssetTagBus.h
     Include/Atom/RPI.Public/Base.h
     Include/Atom/RPI.Public/BlockCompression.h
+    Include/Atom/RPI.Public/Configuration.h
     Include/Atom/RPI.Public/Culling.h
     Include/Atom/RPI.Public/FeatureProcessor.h
     Include/Atom/RPI.Public/FeatureProcessorFactory.h
@@ -109,7 +110,9 @@ set(FILES
     Include/Atom/RPI.Public/GpuQuery/GpuPassProfiler.h
     Include/Atom/RPI.Public/XR/XRRenderingInterface.h
     Include/Atom/RPI.Public/XR/XRSpaceNotificationBus.h
+    Include/Atom/RPI.Public/PerformanceCollectionNotificationBus.h
     Source/RPI.Public/Culling.cpp
+    Source/RPI.Public/DllMain.cpp
     Source/RPI.Public/FeatureProcessor.cpp
     Source/RPI.Public/FeatureProcessorFactory.cpp
     Source/RPI.Public/MeshDrawPacket.cpp
@@ -193,4 +196,5 @@ set(FILES
     Source/RPI.Public/GpuQuery/QueryPool.cpp
     Source/RPI.Public/GpuQuery/TimestampQueryPool.cpp
     Source/RPI.Public/GpuQuery/GpuPassProfiler.cpp
+    Source/RPI.Public/PerformanceCollectionNotificationBus.cpp
 )

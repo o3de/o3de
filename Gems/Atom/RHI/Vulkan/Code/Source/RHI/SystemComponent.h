@@ -74,6 +74,8 @@ namespace AZ
             RHI::Ptr<RHI::DeviceRayTracingPipelineState> CreateRayTracingPipelineState() override;
             RHI::Ptr<RHI::DeviceRayTracingShaderTable> CreateRayTracingShaderTable() override;
             RHI::Ptr<RHI::DeviceDispatchRaysIndirectBuffer> CreateDispatchRaysIndirectBuffer() override;
+            RHI::Ptr<RHI::DeviceRayTracingCompactionQueryPool> CreateRayTracingCompactionQueryPool() override;
+            RHI::Ptr<RHI::DeviceRayTracingCompactionQuery> CreateRayTracingCompactionQuery() override;
             ///////////////////////////////////////////////////////////////////
 
         private:

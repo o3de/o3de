@@ -24,15 +24,19 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
+#include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
+#include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h>
 #include <AzToolsFramework/UI/UICore/ProgressShield.hxx>
 #include <AzToolsFramework/UI/UICore/SaveChangesDialog.hxx>
 #include <AzToolsFramework/UI/LegacyFramework/Core/EditorFrameworkAPI.h>
 #include <AzToolsFramework/UI/LegacyFramework/MainWindowSavedState.h>
 #include <AzToolsFramework/UI/UICore/TargetSelectorButton.hxx>
+#include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 #include <AzToolsFramework/UI/LegacyFramework/CustomMenus/CustomMenusAPI.h>
 #include <Source/LUA/TargetContextButton.hxx>
 #include <Source/LUA/LUAEditorDebuggerMessages.h>
+
 #include "DebugAttachmentButton.hxx"
 #include "ClassReferenceFilter.hxx"
 #include "WatchesPanel.hxx"
@@ -41,6 +45,7 @@
 #include "LUAEditorContextMessages.h"
 #include "LUABreakpointTrackerMessages.h"
 #include "LUAEditorSettingsDialog.hxx"
+#include "RecentFiles.h"
 
 #include <Source/AssetDatabaseLocationListener.h>
 #include <Source/LUA/ui_LUAEditorMainWindow.h>
@@ -78,6 +83,7 @@ namespace LUAEditor
         , m_lastFocusedAssetId()
         , m_ptrFindDialog(nullptr)
         , m_settingsDialog(nullptr)
+        , m_actionClearRecentFiles(nullptr)
     {
         initSharedResources();
         auto settingsRegistry = AZ::SettingsRegistry::Get();
@@ -211,6 +217,8 @@ namespace LUAEditor
 
         connect(m_gui->actionOpen, SIGNAL(triggered(bool)), this, SLOT(OnFileMenuOpen()));
 
+        UpdateOpenRecentMenu();
+
         connect(m_gui->actionAutocomplete, SIGNAL(triggered(bool)), this, SLOT(OnAutocompleteChanged(bool)));
 
         auto newState = AZ::UserSettings::CreateFind<LUAEditorMainWindowSavedState>(AZ_CRC_CE("LUA EDITOR MAIN WINDOW STATE"), AZ::UserSettings::CT_LOCAL);
@@ -288,6 +296,53 @@ namespace LUAEditor
         m_gui->actionAutocomplete->setCheckable(true);
         m_gui->actionAutocomplete->setChecked(m_bAutocompleteEnabled);
         m_gui->actionAutocomplete->blockSignals(false);
+    }
+
+    void LUAEditorMainWindow::UpdateOpenRecentMenu()
+    {
+        const QStringList recentFiles = ReadRecentFiles();
+
+        QList<QAction*> actions = m_gui->menuOpenRecent->actions();
+
+        for (int i = actions.size() - 1; i >= 0; i--)
+        {
+            m_gui->menuOpenRecent->removeAction(actions[i]);
+        }
+
+        for (auto& fileName : recentFiles)
+        {
+            QAction* action = new QAction(fileName, this);
+            connect(
+                action,
+                &QAction::triggered,
+                this,
+                [fileName]([[maybe_unused]] bool checked)
+                {
+                    constexpr bool errorOnNotFound = true;
+                    Context_DocumentManagement::Bus::Broadcast(
+                        &Context_DocumentManagement::Bus::Events::OnLoadDocument, fileName.toStdString().c_str(), errorOnNotFound);
+                });
+            m_gui->menuOpenRecent->addAction(action);
+        }
+
+        m_gui->menuOpenRecent->addSeparator();
+
+        m_actionClearRecentFiles = new QAction("Clear Recent Files", this);
+
+        connect(
+            m_actionClearRecentFiles,
+            &QAction::triggered,
+            this,
+            [this]([[maybe_unused]] bool checked)
+            {
+                ClearRecentFile();
+                UpdateOpenRecentMenu();
+            });
+
+        m_gui->menuOpenRecent->addAction(m_actionClearRecentFiles);
+
+        m_gui->menuOpenRecent->setEnabled(!recentFiles.isEmpty());
+        m_actionClearRecentFiles->setEnabled(!recentFiles.isEmpty());
     }
 
     LUAEditorMainWindow::~LUAEditorMainWindow(void)
@@ -818,20 +873,38 @@ namespace LUAEditor
 
     void LUAEditorMainWindow::OnFileMenuOpen()
     {
-        const QDir rootDir { AZ::Utils::GetProjectPath().c_str() };
-        const QString name = QFileDialog::getOpenFileName(this,
-                                                          "Open lua file",
-                                                          m_lastOpenFilePath.empty() ? rootDir.absolutePath() : m_lastOpenFilePath.c_str(),
-                                                          "Lua files (*.lua)");
-        if (name.isEmpty())
+        AssetSelectionModel selection;
+
+        StringFilter* stringFilter = new StringFilter();
+        stringFilter->SetName("Lua file (*.lua)");
+        stringFilter->SetFilterString(".lua");
+        stringFilter->SetFilterPropagation(AssetBrowserEntryFilter::PropagateDirection::Down);
+        auto stringFilterPtr = FilterConstType(stringFilter);
+
+        selection.SetDisplayFilter(stringFilterPtr);
+        selection.SetSelectionFilter(stringFilterPtr);
+
+        AssetBrowserComponentRequestBus::Broadcast(
+            &AssetBrowserComponentRequests::PickAssets, selection, AzToolsFramework::GetActiveWindow());
+
+        if (!selection.IsValid())
         {
             return;
         }
 
-        const AZStd::string assetId(name.toUtf8().data());
-        Context_DocumentManagement::Bus::Broadcast(&Context_DocumentManagement::Bus::Events::OnLoadDocument, assetId, true);
+        auto* result = selection.GetResult();
 
+        if (!result)
+        {
+            AZ_Assert(false, "Lua script - Incorrect entry type selected during script instantiation.");
+            return;
+        }
+
+        const AZStd::string assetId(result->GetFullPath().data());
+        Context_DocumentManagement::Bus::Broadcast(&Context_DocumentManagement::Bus::Events::OnLoadDocument, assetId, true);
         AzFramework::StringFunc::Path::Split(assetId.c_str(), nullptr, &m_lastOpenFilePath);
+        AddRecentFile(result->GetFullPath().c_str());
+        UpdateOpenRecentMenu();
     }
 
     void LUAEditorMainWindow::OnFileMenuNew()
@@ -1069,7 +1142,7 @@ namespace LUAEditor
         TrackedLUAViewMap::iterator viewIter = m_dOpenLUAView.find(assetId);
         if (viewIter != m_dOpenLUAView.end())
         {
-            delete viewIter->second.luaDockWidget();
+            viewIter->second.luaDockWidget()->deleteLater();
             m_dOpenLUAView.erase(viewIter);
             TrackedLUACtrlTabOrder::iterator tabIter = m_CtrlTabOrder.begin();
             while (tabIter != m_CtrlTabOrder.end())
@@ -2126,6 +2199,11 @@ namespace LUAEditor
                 }
             }
         }
+    }
+
+    bool LUAEditorMainWindow::HasAtLeastOneFileOpen() const
+    {
+        return m_StateTrack.atLeastOneFileOpen;
     }
 
     bool LUAEditorMainWindow::eventFilter(QObject* obj, QEvent* event)

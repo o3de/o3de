@@ -114,7 +114,7 @@ namespace AZ
                 return;
             }
 
-            m_shader = Shader::FindOrCreate(shaderAsset);
+            m_shader = Shader::FindOrCreate(shaderAsset, GetSuperVariantName());
             if (m_shader == nullptr)
             {
                 AZ_Error("PassSystem", false, "[FullscreenTrianglePass '%s']: Failed to create shader instance from asset '%s'!",
@@ -184,10 +184,9 @@ namespace AZ
             // This draw item purposefully does not reference any geometry buffers.
             // Instead it's expected that the extended class uses a vertex shader 
             // that generates a full-screen triangle completely from vertex ids.
-            RHI::DrawLinear draw = RHI::DrawLinear();
-            draw.m_vertexCount = 3;
+            m_geometryView.SetDrawArguments(RHI::DrawLinear(3, 0));
 
-            m_item.SetArguments(RHI::DrawArguments(draw));
+            m_item.SetGeometryView(& m_geometryView);
             m_item.SetPipelineState(m_pipelineStateForDraw.Finalize());
             m_item.SetStencilRef(static_cast<uint8_t>(m_stencilRef));
         }
@@ -212,6 +211,12 @@ namespace AZ
 
         void FullscreenTrianglePass::InitializeInternal()
         {
+            BuildRenderAttachmentConfiguration();
+            if (m_shader->GetSupervariantIndex() != m_shader->GetAsset()->GetSupervariantIndex(GetSuperVariantName()))
+            {
+                LoadShader();
+            }
+
             RenderPass::InitializeInternal();
             
             ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->FullscreenTrianglePass::InitializeInternal", this);

@@ -75,7 +75,8 @@ namespace UnitTest
             QueryResultCode resultCode = query->AddToFrameGraph(frameGraph);
             EXPECT_EQ(resultCode, QueryResultCode::Success);
             resultCode = query->AddToFrameGraph(frameGraph);
-            EXPECT_EQ(resultCode, QueryResultCode::Fail);
+            // Adding query multiple times in a frame is allowed after introduced multi-device.
+            EXPECT_EQ(resultCode, QueryResultCode::Success);
 
             // Next frame
             queryPool->Update();

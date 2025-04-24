@@ -488,6 +488,6 @@ namespace AZ
     /// @endcond
 }
 
-DECLARE_EBUS_EXTERN(TransformInterface);
-DECLARE_EBUS_EXTERN(TransformNotification);
-DECLARE_EBUS_EXTERN(TransformHierarchyInformation);
+DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(TransformInterface);
+DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(TransformNotification);
+DECLARE_EBUS_EXTERN_DLL_MULTI_ADDRESS(TransformHierarchyInformation);

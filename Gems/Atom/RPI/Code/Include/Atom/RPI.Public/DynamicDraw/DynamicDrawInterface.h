@@ -11,6 +11,7 @@
 #include <Atom/RHI/DrawPacket.h>
 
 #include <Atom/RPI.Public/Base.h>
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/DynamicDraw/DynamicBuffer.h>
 #include <Atom/RPI.Public/DynamicDraw/DynamicDrawContext.h>
 #include <Atom/RPI.Public/Material/Material.h>
@@ -36,7 +37,7 @@ namespace AZ
 
         //! Interface of dynamic draw system which provide access to system dynamic buffer
         //! and some draw functions
-        class DynamicDrawInterface
+        class ATOM_RPI_PUBLIC_API DynamicDrawInterface
         {
         public:
             AZ_RTTI(DynamicDrawInterface, "{0883B8A7-9D25-418A-8F98-B33C52FF21CC}");

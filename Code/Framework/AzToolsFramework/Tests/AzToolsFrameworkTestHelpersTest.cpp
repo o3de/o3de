@@ -78,7 +78,7 @@ namespace UnitTest
         EXPECT_THAT(mouseLocalPositionFromGlobal.y(), Eq(expectedPosition.y()));
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         All,
         MouseMoveAzToolsFrameworkTestHelperFixture,
         testing::Values(

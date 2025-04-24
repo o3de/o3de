@@ -10,6 +10,8 @@
 
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/RTTI/ReflectContext.h>
+#include <AzCore/Serialization/Json/ByteStreamSerializer.h>
+#include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
 namespace AZ
@@ -18,16 +20,14 @@ namespace AZ
 
     namespace RPI
     {
-        const char* BufferAsset::DisplayName = "BufferAsset";
-        const char* BufferAsset::Group = "Buffer";
-        const char* BufferAsset::Extension = "azbuffer";
+        AZ_CLASS_ALLOCATOR_IMPL(BufferAsset, BufferAssetAllocator)
 
         void BufferAsset::Reflect(ReflectContext* context)
         {
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<BufferAsset>()
-                    ->Version(2)
+                    ->Version(3)
                     ->Field("Name", &BufferAsset::m_name)
                     ->Field("Buffer", &BufferAsset::m_buffer)
                     ->Field("BufferDescriptor", &BufferAsset::m_bufferDescriptor)
@@ -47,6 +47,10 @@ namespace AZ
                     ->Value("Indirect", CommonBufferPoolType::Indirect)
                     ->Value("Invalid", CommonBufferPoolType::Invalid)
                     ;
+            }
+            if (JsonRegistrationContext* jsonContext = azrtti_cast<JsonRegistrationContext*>(context))
+            {
+                jsonContext->Serializer<JsonByteStreamSerializer<Allocator>>()->HandlesType<AZStd::vector<uint8_t, Allocator>>();
             }
         }
 

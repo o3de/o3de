@@ -10,10 +10,12 @@
 #include <AtomCore/Instance/Instance.h>
 
 #include <Atom/RHI.Reflect/RenderAttachmentLayout.h>
+#include <Atom/RHI.Reflect/ScopeId.h>
 #include <Atom/RHI/DrawList.h>
 #include <Atom/RHI/ScopeProducer.h>
 #include <Atom/RHI.Reflect/RenderAttachmentLayoutBuilder.h>
 
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/Pass/Pass.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 
@@ -33,10 +35,12 @@ namespace AZ
 
         //! A RenderPass is a leaf Pass (i.e. a Pass that has no children) that 
         //! implements rendering functionality (raster, compute, copy)
-        class RenderPass :
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+        class ATOM_RPI_PUBLIC_API RenderPass :
             public Pass,
             public RHI::ScopeProducer
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             AZ_RPI_PASS(RenderPass);
 
             using ScopeQuery = AZStd::array<RHI::Ptr<Query>, static_cast<size_t>(ScopeQueryType::Count)>;
@@ -49,6 +53,9 @@ namespace AZ
             //! Returns the RenderAttachmentConfiguration of this pass from its render attachments
             //! This function usually need to be called after pass attachments rebuilt to reflect latest layout
             RHI::RenderAttachmentConfiguration GetRenderAttachmentConfiguration();
+
+            void SetRenderAttachmentConfiguration(
+                const RHI::RenderAttachmentConfiguration& configuration, const AZ::RHI::ScopeGroupId& subpassGroupId);
 
             //! Get MultisampleState of this pass from its output attachments
             RHI::MultisampleState GetMultisampleState() const;
@@ -67,15 +74,13 @@ namespace AZ
             explicit RenderPass(const PassDescriptor& descriptor);
 
             //! Can instances of this class be merged as subpasses?
-            virtual bool CanBecomeSubpass() { return false; }
+            bool CanBecomeSubpass() const;
 
             //! Builds Subpass Attachment Layout data into @subpassLayoutBuilder.
             //! @returns true if successful.
             bool BuildSubpassLayout(RHI::RenderAttachmentLayoutBuilder::SubpassAttachmentLayoutBuilder& subpassLayoutBuilder);
 
-            //! Sets the final RenderAttachmentLayout that this RasterPass should use.
-            //! @param subpassIndex Used for validation purposes. It should match the current value of @m_subpassIndex.
-            void SetRenderAttachmentLayout(const AZStd::shared_ptr<RHI::RenderAttachmentLayout>& renderAttachmentLayout, uint32_t subpassIndex);
+            void BuildRenderAttachmentConfiguration();
 
             // RHI::ScopeProducer overrides...
             void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph) override;
@@ -96,6 +101,7 @@ namespace AZ
             void InitializeInternal() override;
             void FrameBeginInternal(FramePrepareParams params) override;
             void FrameEndInternal() override;
+            void ResetInternal() override;
 
             // Helper functions for srgs used for pass
             // Collect low frequency srgs for draw or compute. These srgs include scene srg, view srg and pass srg
@@ -114,6 +120,8 @@ namespace AZ
 
             // Add the ScopeQuery's QueryPool to the FrameGraph
             void AddScopeQueryToFrameGraph(RHI::FrameGraphInterface frameGraph);
+
+            const AZ::RHI::ScopeGroupId& GetSubpassGroupId() const;
 
             // The shader resource group for this pass
             Data::Instance<ShaderResourceGroup> m_shaderResourceGroup = nullptr;
@@ -169,9 +177,8 @@ namespace AZ
             //! Stores the RenderAttachmentLayout that should be used when GetRenderAttachmentConfiguration() is called.
             //! If this pointer is invalid when GetRenderAttachmentConfiguration() is called then the pass will build
             //! the RanderAttachmentLayout at that moment.
-            AZStd::shared_ptr<RHI::RenderAttachmentLayout> m_renderAttachmentLayout;
-            //! Stores the Subpass Index for this subpass.
-            uint32_t m_subpassIndex = 0;
+            AZStd::optional<RHI::RenderAttachmentConfiguration> m_renderAttachmentConfiguration;
+            AZ::RHI::ScopeGroupId m_subpassGroupId;
         };
     }   // namespace RPI
 }   // namespace AZ

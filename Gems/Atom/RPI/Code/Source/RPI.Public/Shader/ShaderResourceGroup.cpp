@@ -16,7 +16,6 @@ namespace AZ
 {
     namespace RPI
     {
-        const char* ShaderResourceGroup::s_traceCategoryName = "ShaderResourceGroup";
         const Data::Instance<Image> ShaderResourceGroup::s_nullImage;
         const Data::Instance<Buffer> ShaderResourceGroup::s_nullBuffer;
 
@@ -117,6 +116,7 @@ namespace AZ
             m_shaderResourceGroup->SetName(m_pool->GetRHIPool()->GetName());
             m_data = RHI::ShaderResourceGroupData(RHI::MultiDevice::AllDevices, m_layout);
             m_asset = { &shaderAsset, AZ::Data::AssetLoadBehavior::PreLoad };
+            m_supervariantIndex = supervariantIndex;
 
             // The RPI groups match the same dimensions as the RHI group.
             m_imageGroup.resize(m_layout->GetGroupSizeForImages());
@@ -138,6 +138,11 @@ namespace AZ
         bool ShaderResourceGroup::IsQueuedForCompile() const
         {
             return m_shaderResourceGroup->IsQueuedForCompile();
+        }
+
+        bool ShaderResourceGroup::IsInitialized() const
+        {
+            return m_isInitialized;
         }
 
         RHI::ShaderInputBufferIndex ShaderResourceGroup::FindShaderInputBufferIndex(const Name& name) const
@@ -872,7 +877,7 @@ namespace AZ
                         indirectResourceBufferIndex,
                         indirectResourceBuffer.get(),
                         bufferViewPtrArray,
-                        nullptr,
+                        {},
                         isReadOnlyBuffer,
                         entry.first.second);
                 }
@@ -883,7 +888,7 @@ namespace AZ
                         indirectResourceBufferIndex,
                         indirectResourceBuffer.get(),
                         imageViewPtrArray,
-                        nullptr,
+                        {},
                         isReadOnlyImage,
                         entry.first.second);
                 }
@@ -892,11 +897,21 @@ namespace AZ
             return isFullCopy;
         }
 
+        const Data::Asset<ShaderAsset>& ShaderResourceGroup::GetShaderAsset() const
+        {
+            return m_asset;
+        }
+
+        SupervariantIndex ShaderResourceGroup::GetSupervariantIndex() const
+        {
+            return m_supervariantIndex;
+        }
+
         void ShaderResourceGroup::SetBindlessViews(
             RHI::ShaderInputBufferIndex indirectResourceBufferIndex,
             const RHI::BufferView* indirectResourceBuffer,
             AZStd::span<const RHI::ImageView* const> imageViews,
-            uint32_t* outIndices,
+            AZStd::unordered_map<int, uint32_t*> outIndices,
             AZStd::span<bool> isViewReadOnly,
             uint32_t arrayIndex)
         {
@@ -908,7 +923,7 @@ namespace AZ
             RHI::ShaderInputBufferIndex indirectResourceBufferIndex,
             const RHI::BufferView* indirectResourceBuffer,
             AZStd::span<const RHI::BufferView* const> bufferViews,
-            uint32_t* outIndices,
+            AZStd::unordered_map<int, uint32_t*> outIndices,
             AZStd::span<bool> isViewReadOnly,
             uint32_t arrayIndex)
         {

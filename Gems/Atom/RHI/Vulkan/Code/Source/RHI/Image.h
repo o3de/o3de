@@ -180,6 +180,8 @@ namespace AZ
                 TrySparse = AZ_BIT(0)  // Try to create a sparse image first
             };
 
+            const MemoryView& GetMemoryView();
+
         private:
             Image() = default;
 

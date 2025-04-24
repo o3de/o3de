@@ -18,6 +18,7 @@ set(FILES
     Include/Atom/RHI/DeviceBuffer.h
     Include/Atom/RHI/Buffer.h
     Include/Atom/RHI/DeviceBufferView.h
+    Include/Atom/RHI/BufferView.h
     Include/Atom/RHI/DeviceIndexBufferView.h
     Include/Atom/RHI/IndexBufferView.h
     Include/Atom/RHI/DeviceStreamBufferView.h
@@ -25,6 +26,7 @@ set(FILES
     Source/RHI/DeviceBuffer.cpp
     Source/RHI/Buffer.cpp
     Source/RHI/DeviceBufferView.cpp
+    Source/RHI/BufferView.cpp
     Source/RHI/DeviceIndexBufferView.cpp
     Source/RHI/IndexBufferView.cpp
     Source/RHI/DeviceStreamBufferView.cpp
@@ -46,6 +48,7 @@ set(FILES
     Include/Atom/RHI/DeviceDispatchItem.h
     Include/Atom/RHI/DispatchItem.h
     Include/Atom/RHI/DrawFilterTagRegistry.h
+    Include/Atom/RHI/DrawArguments.h
     Include/Atom/RHI/DeviceDrawItem.h
     Include/Atom/RHI/DrawItem.h
     Source/RHI/DrawItem.cpp
@@ -54,10 +57,13 @@ set(FILES
     Include/Atom/RHI/DrawListContext.h
     Include/Atom/RHI/DeviceDrawPacket.h
     Include/Atom/RHI/DrawPacket.h
+    Include/Atom/RHI/GeometryView.h
     Include/Atom/RHI/DeviceDrawPacketBuilder.h
     Include/Atom/RHI/DrawPacketBuilder.h
     Include/Atom/RHI/DeviceIndirectArguments.h
     Include/Atom/RHI/IndirectArguments.h
+    Include/Atom/RHI/DeviceGeometryView.h
+    Include/Atom/RHI/DeviceDrawArguments.h
     Source/RHI/CommandList.cpp
     Source/RHI/CommandListValidator.cpp
     Source/RHI/ConstantsData.cpp
@@ -65,6 +71,7 @@ set(FILES
     Source/RHI/DrawListContext.cpp
     Source/RHI/DeviceDrawPacket.cpp
     Source/RHI/DrawPacket.cpp
+    Source/RHI/GeometryView.cpp
     Source/RHI/DeviceDrawPacketBuilder.cpp
     Source/RHI/DrawPacketBuilder.cpp
     Source/RHI/DrawItem.cpp
@@ -119,9 +126,11 @@ set(FILES
     Include/Atom/RHI/DeviceImage.h
     Include/Atom/RHI/Image.h
     Include/Atom/RHI/DeviceImageView.h
+    Include/Atom/RHI/ImageView.h
     Source/RHI/DeviceImage.cpp
     Source/RHI/Image.cpp
     Source/RHI/DeviceImageView.cpp
+    Source/RHI/ImageView.cpp
     Include/Atom/RHI/DeviceImagePool.h
     Include/Atom/RHI/ImagePool.h
     Include/Atom/RHI/DeviceImagePoolBase.h
@@ -180,10 +189,14 @@ set(FILES
     Source/RHI/QueryPoolSubAllocator.cpp
     Include/Atom/RHI/DeviceResource.h
     Include/Atom/RHI/Resource.h
+    Include/Atom/RHI/ResourceView.h
+    Include/Atom/RHI/ResourceViewCache.h
     Include/Atom/RHI/ResourceInvalidateBus.h
     Include/Atom/RHI/DeviceResourceView.h
     Source/RHI/DeviceResource.cpp
     Source/RHI/Resource.cpp
+    Source/RHI/ResourceView.cpp
+    Source/RHI/ResourceViewCache.cpp
     Source/RHI/DeviceResourceView.cpp
     Include/Atom/RHI/DeviceResourcePool.h
     Include/Atom/RHI/ResourcePool.h
@@ -191,6 +204,7 @@ set(FILES
     Source/RHI/DeviceResourcePool.cpp
     Source/RHI/ResourcePool.cpp
     Source/RHI/ResourcePoolDatabase.cpp
+    Include/Atom/RHI/RHIBus.h
     Include/Atom/RHI/MemoryAllocation.h
     Include/Atom/RHI/MemorySubAllocator.h
     Include/Atom/RHI/MemoryLinearSubAllocator.h
@@ -278,4 +292,8 @@ set(FILES
     Include/Atom/RHI/DispatchRaysIndirectBuffer.h
     Include/Atom/RHI/SpecializationConstant.h
     Source/RHI/SpecializationConstant.cpp
+    Source/RHI/RayTracingCompactionQueryPool.cpp
+    Include/Atom/RHI/RayTracingCompactionQueryPool.h
+    Source/RHI/DeviceRayTracingCompactionQueryPool.cpp
+    Include/Atom/RHI/DeviceRayTracingCompactionQueryPool.h
 )

@@ -93,6 +93,7 @@ namespace AZ::RHI
             descriptor.Instance()
                 ->InstanceID(instance.m_instanceID)
                 ->HitGroupIndex(instance.m_hitGroupIndex)
+                ->InstanceMask(instance.m_instanceMask)
                 ->Transform(instance.m_transform)
                 ->NonUniformScale(instance.m_nonUniformScale)
                 ->Transparent(instance.m_transparent)
@@ -225,6 +226,49 @@ namespace AZ::RHI
         return resultCode;
     }
 
+    ResultCode RayTracingBlas::CreateCompactedBuffers(
+        const RayTracingBlas& sourceBlas,
+        const AZStd::unordered_map<int, uint64_t>& compactedSizes,
+        const RayTracingBufferPools& rayTracingBufferPools)
+    {
+        m_descriptor = sourceBlas.m_descriptor;
+
+        MultiDeviceObject::Init(sourceBlas.GetDeviceMask());
+        ResultCode resultCode{ ResultCode::Success };
+
+        IterateDevices(
+            [&](auto deviceIndex)
+            {
+                auto device = RHISystemInterface::Get()->GetDevice(deviceIndex);
+                this->m_deviceObjects[deviceIndex] = Factory::Get().CreateRayTracingBlas();
+
+                auto deviceDescriptor{ m_descriptor.GetDeviceRayTracingBlasDescriptor(deviceIndex) };
+
+                resultCode = GetDeviceRayTracingBlas(deviceIndex)
+                                 ->CreateCompactedBuffers(
+                                     *device,
+                                     sourceBlas.GetDeviceRayTracingBlas(deviceIndex),
+                                     compactedSizes.at(deviceIndex),
+                                     *rayTracingBufferPools.GetDeviceRayTracingBufferPools(deviceIndex).get());
+
+                return resultCode == ResultCode::Success;
+            });
+
+        if (resultCode != ResultCode::Success)
+        {
+            // Reset already initialized device-specific DeviceRayTracingBlas and set deviceMask to 0
+            m_deviceObjects.clear();
+            MultiDeviceObject::Init(static_cast<MultiDevice::DeviceMask>(0u));
+        }
+
+        if (const auto& name = GetName(); !name.IsEmpty())
+        {
+            SetName(name);
+        }
+
+        return resultCode;
+    }
+
     bool RayTracingBlas::IsValid() const
     {
         if (m_deviceObjects.empty())
@@ -258,13 +302,16 @@ namespace AZ::RHI
             [this, &descriptor, &rayTracingBufferPools, &resultCode](int deviceIndex)
             {
                 auto device = RHISystemInterface::Get()->GetDevice(deviceIndex);
-                auto deviceRayTracingTlas{Factory::Get().CreateRayTracingTlas()};
-                this->m_deviceObjects[deviceIndex] = deviceRayTracingTlas;
+                if (!m_deviceObjects.contains(deviceIndex))
+                {
+                    this->m_deviceObjects[deviceIndex] = Factory::Get().CreateRayTracingTlas().get();
+                }
 
                 auto deviceDescriptor{ descriptor->GetDeviceRayTracingTlasDescriptor(deviceIndex) };
 
-                resultCode = deviceRayTracingTlas->CreateBuffers(
-                    *device, &deviceDescriptor, *rayTracingBufferPools.GetDeviceRayTracingBufferPools(deviceIndex).get());
+                resultCode = GetDeviceRayTracingTlas(deviceIndex)
+                                 ->CreateBuffers(
+                                     *device, &deviceDescriptor, *rayTracingBufferPools.GetDeviceRayTracingBufferPools(deviceIndex).get());
                 return resultCode == ResultCode::Success;
             });
 

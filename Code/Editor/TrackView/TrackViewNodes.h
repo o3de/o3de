@@ -10,13 +10,13 @@
 // Description : TrackView's tree control.
 
 
-#ifndef CRYINCLUDE_EDITOR_TRACKVIEW_TRACKVIEWNODES_H
-#define CRYINCLUDE_EDITOR_TRACKVIEW_TRACKVIEWNODES_H
 #pragma once
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/Component/Entity.h>
-
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/containers/unordered_map.h>
+#include "AnimationContext.h"
 #include "TrackViewNode.h"
 #include "TrackViewSequence.h"
 #include "Undo/Undo.h"
@@ -29,12 +29,12 @@
 #endif
 
 // forward declarations.
-class CTrackViewNode;
 class CTrackViewAnimNode;
-class CTrackViewTrack;
-class CTrackViewSequence;
-class CTrackViewDopeSheetBase;
 class CTrackViewDialog;
+class CTrackViewDopeSheetBase;
+class CTrackViewNode;
+class CTrackViewSequence;
+class CTrackViewTrack;
 
 class QLineEdit;
 
@@ -48,6 +48,8 @@ class CTrackViewNodesCtrl
     : public QWidget
     , public ITrackViewSequenceListener
     , public IUndoManagerListener
+    , public IAnimationContextListener
+    , public ITrackViewSequenceManagerListener
 {
     Q_OBJECT
 public:
@@ -97,15 +99,21 @@ public:
     virtual void OnFillItems();
 
     // ITrackViewSequenceListener
-    virtual void OnNodeChanged(CTrackViewNode* pNode, ITrackViewSequenceListener::ENodeChangeType type) override;
-    virtual void OnNodeRenamed(CTrackViewNode* pNode, const char* pOldName) override;
-    virtual void OnNodeSelectionChanged(CTrackViewSequence* pSequence) override;
-    virtual void OnKeysChanged(CTrackViewSequence* pSequence) override;
-    virtual void OnKeySelectionChanged(CTrackViewSequence* pSequence) override;
+    void OnNodeChanged(CTrackViewNode* pNode, ITrackViewSequenceListener::ENodeChangeType type) override;
+    void OnNodeRenamed(CTrackViewNode* pNode, const char* pOldName) override;
+    void OnNodeSelectionChanged(CTrackViewSequence* pSequence) override;
+    void OnKeysChanged(CTrackViewSequence* pSequence) override;
+    void OnKeySelectionChanged(CTrackViewSequence* pSequence) override;
 
     // IUndoManagerListener
-    virtual void BeginUndoTransaction() override;
-    virtual void EndUndoTransaction() override;
+    void BeginUndoTransaction() override;
+    void EndUndoTransaction() override;
+
+    // IAnimationContextListener
+    void OnSequenceChanged(CTrackViewSequence* pNewSequence) override;
+
+    // ITrackViewSequenceManagerListener
+    void OnSequenceRemoved(CTrackViewSequence* pSequence) override;
 
     // Helper for dialog
     QIcon GetIconForTrack(const CTrackViewTrack* pTrack);
@@ -180,7 +188,7 @@ private:
     CTrackViewDopeSheetBase* m_pDopeSheet;
     CTrackViewDialog* m_pTrackViewDialog;
 
-    typedef std::vector<CRecord*> ItemInfos;
+    typedef AZStd::vector<CRecord*> ItemInfos;
     ItemInfos m_itemInfos;
 
     bool m_bSelectionChanging;
@@ -199,8 +207,8 @@ private:
     // Drag and drop
     CTrackViewAnimNodeBundle m_draggedNodes;
 
-    std::unordered_map<unsigned int, CAnimParamType> m_menuParamTypeMap;
-    std::unordered_map<const CTrackViewNode*, CRecord*> m_nodeToRecordMap;
+    AZStd::unordered_map<unsigned int, CAnimParamType> m_menuParamTypeMap;
+    AZStd::unordered_map<const CTrackViewNode*, CRecord*> m_nodeToRecordMap;
 
     QScopedPointer<Ui::CTrackViewNodesCtrl> ui;
 
@@ -216,4 +224,3 @@ Q_DECLARE_METATYPE(CTrackViewNodePtr);
 QDataStream& operator<<(QDataStream& out, const CTrackViewNodePtr& obj);
 QDataStream& operator>>(QDataStream& in, CTrackViewNodePtr& obj);
 
-#endif // CRYINCLUDE_EDITOR_TRACKVIEW_TRACKVIEWNODES_H

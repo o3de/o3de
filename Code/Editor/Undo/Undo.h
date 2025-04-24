@@ -138,6 +138,7 @@ private: // ------------------------------------------------------
 AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 /*!
  *  CUndoManager is keeping and operating on CUndo class instances.
+ *  TODO: this class is superseded by AzToolsFramework::UndoSystem
  */
 class EDITOR_CORE_API CUndoManager
 {

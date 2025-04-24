@@ -16,11 +16,14 @@
 #include <PythonMarshalComponent.h>
 #include <PythonLogSymbolsComponent.h>
 
+#include <InitializePython.h>
+
 namespace EditorPythonBindings
 {
     class EditorPythonBindingsModule
         : public AZ::Module
         , public AzToolsFramework::EmbeddedPython::PythonLoader
+        , private InitializePython
     {
     public:
         AZ_RTTI(EditorPythonBindingsModule, "{851B9E35-4FD5-49B1-8207-E40D4BBA36CC}", AZ::Module);
@@ -28,6 +31,7 @@ namespace EditorPythonBindings
 
         EditorPythonBindingsModule()
             : AZ::Module()
+            , InitializePython()
         {
             m_descriptors.insert(m_descriptors.end(), 
             {

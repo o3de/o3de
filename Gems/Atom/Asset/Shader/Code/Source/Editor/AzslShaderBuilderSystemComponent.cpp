@@ -83,7 +83,7 @@ namespace AZ
             // Register Shader Asset Builder
             AssetBuilderSDK::AssetBuilderDesc shaderAssetBuilderDescriptor;
             shaderAssetBuilderDescriptor.m_name = "Shader Asset Builder";
-            shaderAssetBuilderDescriptor.m_version = 124; // Add specialization constants for shader options
+            shaderAssetBuilderDescriptor.m_version = 126; // ShaderStageFunction allocator
             shaderAssetBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern( AZStd::string::format("*.%s", RPI::ShaderSourceData::Extension), AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             shaderAssetBuilderDescriptor.m_busId = azrtti_typeid<ShaderAssetBuilder>();
             shaderAssetBuilderDescriptor.m_createJobFunction = AZStd::bind(&ShaderAssetBuilder::CreateJobs, &m_shaderAssetBuilder, AZStd::placeholders::_1, AZStd::placeholders::_2);
@@ -108,7 +108,7 @@ namespace AZ
                 shaderVariantAssetBuilderDescriptor.m_name = "Shader Variant Asset Builder";
                 // Both "Shader Variant Asset Builder" and "Shader Asset Builder" produce ShaderVariantAsset products. If you update
                 // ShaderVariantAsset you will need to update BOTH version numbers, not just "Shader Variant Asset Builder".
-                shaderVariantAssetBuilderDescriptor.m_version = 42; // Add batching to shader variant assets
+                shaderVariantAssetBuilderDescriptor.m_version = 43; // ShaderStageFunction allocator
                 shaderVariantAssetBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern(AZStd::string::format("*.%s", HashedVariantListSourceData::Extension), AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
                 shaderVariantAssetBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern(AZStd::string::format("*.%s", HashedVariantInfoSourceData::Extension), AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
                 shaderVariantAssetBuilderDescriptor.m_busId = azrtti_typeid<ShaderVariantAssetBuilder>();
@@ -121,7 +121,7 @@ namespace AZ
                 // Register Shader Variant List Builder
                 AssetBuilderSDK::AssetBuilderDesc shaderVariantListBuilderDescriptor;
                 shaderVariantListBuilderDescriptor.m_name = "Shader Variant List Builder";
-                shaderVariantListBuilderDescriptor.m_version = 3; // Add batching to shader variant assets
+                shaderVariantListBuilderDescriptor.m_version = 4; // ShaderStageFunction allocator
                 shaderVariantListBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern(AZStd::string::format("*.%s", RPI::ShaderVariantListSourceData::Extension), AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
                 shaderVariantListBuilderDescriptor.m_busId = azrtti_typeid<ShaderVariantListBuilder>();
                 shaderVariantListBuilderDescriptor.m_createJobFunction = AZStd::bind(&ShaderVariantListBuilder::CreateJobs, &m_shaderVariantListBuilder, AZStd::placeholders::_1, AZStd::placeholders::_2);
@@ -135,7 +135,7 @@ namespace AZ
             // Register Precompiled Shader Builder
             AssetBuilderSDK::AssetBuilderDesc precompiledShaderBuilderDescriptor;
             precompiledShaderBuilderDescriptor.m_name = "Precompiled Shader Builder";
-            precompiledShaderBuilderDescriptor.m_version = 14; // Fixing warnings from having both source and job dependencies
+            precompiledShaderBuilderDescriptor.m_version = 15; // ShaderStageFunction allocator
             precompiledShaderBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern(AZStd::string::format("*.%s", AZ::PrecompiledShaderBuilder::Extension), AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             precompiledShaderBuilderDescriptor.m_busId = azrtti_typeid<PrecompiledShaderBuilder>();
             precompiledShaderBuilderDescriptor.m_createJobFunction = AZStd::bind(&PrecompiledShaderBuilder::CreateJobs, &m_precompiledShaderBuilder, AZStd::placeholders::_1, AZStd::placeholders::_2);

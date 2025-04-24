@@ -46,6 +46,7 @@ namespace AzFramework
     private:
         bool ValidateXcbResult(xcb_void_cookie_t cookie);
         void WindowSizeChanged(const uint32_t width, const uint32_t height);
+        void SetWindowSizeHints();
         int SetAtom(xcb_window_t window, xcb_atom_t atom, xcb_atom_t type, size_t len, void* data);
 
         // Initialize one atom.
@@ -61,6 +62,7 @@ namespace AzFramework
         xcb_screen_t* m_xcbRootScreen = nullptr;
         xcb_window_t m_xcbWindow = 0;
         xcb_gcontext_t m_xcbGraphicContext = 0;
+        uint32_t m_styleMask;
         int32_t m_posX;
         int32_t m_posY;
         bool m_fullscreenState = false;

@@ -9,10 +9,11 @@
 
 #include <AtomCore/Instance/Instance.h>
 #include <AtomCore/Instance/InstanceData.h>
-
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RHI.Reflect/ShaderInputNameIndex.h>
-
 #include <Atom/RPI.Reflect/Pass/PassAttachmentReflect.h>
+
+#include <AzCore/std/containers/deque.h>
 
 namespace AZ
 {
@@ -23,8 +24,8 @@ namespace AZ
         class RenderPipeline;
 
         //! Describes an attachment to be used by a Pass.
-        struct PassAttachment final
-            : AZStd::intrusive_refcount<AZStd::atomic_uint, AZStd::intrusive_default_delete>
+        struct ATOM_RPI_PUBLIC_API PassAttachment final
+            : AZStd::intrusive_base
         {
             AZ_CLASS_ALLOCATOR(PassAttachment, SystemAllocator);
 
@@ -135,7 +136,7 @@ namespace AZ
         //! that binding. In this case, the attachment pointed to by the connected binding will be used.
         //! Example: an input binding can point to another Pass's output binding, in which case the
         //! input binding will refer to the same attachment at the connected output binding.
-        struct PassAttachmentBinding final
+        struct ATOM_RPI_PUBLIC_API PassAttachmentBinding final
         {
             PassAttachmentBinding() { };
             PassAttachmentBinding(const PassSlot& slot);
@@ -156,6 +157,9 @@ namespace AZ
 
             //! Updates the set attachment from the binding connection
             void UpdateConnection(bool useFallback);
+
+            //! Clears the smart pointers within to holding the memory too long.
+            void Clear();
 
             //! Name of the attachment binding so we can find it in a list of attachment binding
             Name m_name;
@@ -186,8 +190,8 @@ namespace AZ
             //! this is the fallback we will use when the pass is disabled.
             PassAttachmentBinding* m_fallbackBinding = nullptr;
 
-            static const int16_t ShaderInputAutoBind = -1;
-            static const int16_t ShaderInputNoBind = -2;
+            static constexpr int16_t ShaderInputAutoBind = -1;
+            static constexpr int16_t ShaderInputNoBind = -2;
 
             //! This tracks which SRG slot to bind the attachment to. This value gets applied in RenderPass::BindPassSrg
             //! after being converted to either an RHI::ShaderInputImageIndex or an RHI::ShaderInputBufferIndex using
@@ -211,9 +215,41 @@ namespace AZ
             Ptr<PassAttachment> m_originalAttachment = nullptr;
         };
 
-        using PassAttachmentBindingList = AZStd::vector<PassAttachmentBinding>;
-        using PassAttachmentBindingListView = AZStd::span<const PassAttachmentBinding>;
+        //! A convenience class for storing pass attachment bindings which ensures existing pointers to already added pass attachment
+        //! bindings are not invalidated when new pass attachment bindings are added, as well as ensuring pass attachment bindings are
+        //! stored at the same addresses when a pass is rebuilt.
+        //! @see [GFX TODO][GHI-18438]
+        class ATOM_RPI_PUBLIC_API PassAttachmentBindingList final
+        {
+            using ContainerType = AZStd::deque<PassAttachmentBinding>;
+
+        public:
+            using size_type = ContainerType::size_type;
+            using iterator = ContainerType::iterator;
+            using const_iterator = ContainerType::const_iterator;
+
+            // clang-format off
+            size_type size()  const noexcept { return m_attachmentBindingCount; }
+            bool      empty() const noexcept { return size() == 0; }
+            PassAttachmentBinding&       operator[](size_type index)       { return m_attachmentBindings[index]; }
+            const PassAttachmentBinding& operator[](size_type index) const { return m_attachmentBindings[index]; }
+            iterator       begin()        noexcept { return m_attachmentBindings.begin(); }
+            iterator       end()          noexcept { return m_attachmentBindings.begin() + m_attachmentBindingCount; }
+            const_iterator begin()  const noexcept { return m_attachmentBindings.begin(); }
+            const_iterator end()    const noexcept { return m_attachmentBindings.begin() + m_attachmentBindingCount; }
+            const_iterator cbegin() const noexcept { return m_attachmentBindings.cbegin(); }
+            const_iterator cend()   const noexcept { return m_attachmentBindings.cbegin() + m_attachmentBindingCount; }
+            // clang-format on
+
+            void push_back(const PassAttachmentBinding& attachmentBinding);
+            void clear();
+
+        private:
+            ContainerType m_attachmentBindings;
+            size_type m_attachmentBindingCount{ 0 };
+        };
+
+        using PassAttachmentBindingListView = const PassAttachmentBindingList&;
 
     }   // namespace RPI
-
 }   // namespace AZ

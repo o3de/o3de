@@ -78,7 +78,7 @@ namespace UnitTest
         }
     };
     using AnySizedTestTypes = ::testing::Types<Small0, Large0, Align0>;
-    TYPED_TEST_CASE(AnySizedTest, AnySizedTestTypes);
+    TYPED_TEST_SUITE(AnySizedTest, AnySizedTestTypes);
 
     // Fixture for tests with 2 types (for converting between types)
     template <typename StructPair>
@@ -108,7 +108,7 @@ namespace UnitTest
         AZStd::pair<Align0, Small0>, // Align -> Small
         AZStd::pair<Align0, Large0>  // Align -> Large
     >;
-    TYPED_TEST_CASE(AnyConversionTest, AnyConversionTestTypes);
+    TYPED_TEST_SUITE(AnyConversionTest, AnyConversionTestTypes);
 
     //////////////////////////////////////////////////////////////////////////
     // Tests for constructors

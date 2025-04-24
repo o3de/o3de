@@ -8,6 +8,7 @@
 #pragma once
 
 #include <Atom/RPI.Reflect/AssetCreator.h>
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Reflect/Image/AttachmentImageAssetCreator.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
@@ -19,7 +20,7 @@ namespace AZ
         //! Use a MaterialAssetCreator to create and configure a new MaterialAsset.
         //!
         //! This requires the MaterialTypeAsset to be fully populated so it can read the property layout.
-        class MaterialAssetCreator  
+        class ATOM_RPI_REFLECT_API MaterialAssetCreator
             : public AssetCreator<MaterialAsset>
         {
         public:

@@ -417,10 +417,25 @@ namespace Multiplayer
         return false;
     }
 
-    bool MultiplayerSystemComponent::Connect(const AZStd::string& remoteAddress, uint16_t port)
+    bool MultiplayerSystemComponent::Connect(const AZStd::string& remoteAddress, uint16_t port, const AZStd::string& connectionTicket)
     {
-        InitializeMultiplayer(MultiplayerAgentType::Client);
         const IpAddress address(remoteAddress.c_str(), port, m_networkInterface->GetType());
+
+        if (!address.IsValid())
+        {
+            AZLOG_ERROR(
+                "Failed to connect. Invalid IP-address (remote address='%s', port=%i). Please provide a valid DNS or IP address.",
+                remoteAddress.c_str(),
+                port);
+            return false;
+        }
+
+        if (!connectionTicket.empty())
+        {
+            m_pendingConnectionTickets.push(connectionTicket);
+        }
+
+        InitializeMultiplayer(MultiplayerAgentType::Client);
         return m_networkInterface->Connect(address, cl_clientport) != InvalidConnectionId;
     }
 
@@ -452,11 +467,8 @@ namespace Multiplayer
 
     bool MultiplayerSystemComponent::RequestPlayerJoinSession(const SessionConnectionConfig& config)
     {
-        m_pendingConnectionTickets.push(config.m_playerSessionId);
-        AZStd::string hostname = config.m_dnsName.empty() ? config.m_ipAddress : config.m_dnsName;
-        Connect(hostname.c_str(), config.m_port);
-
-        return true;
+        const AZStd::string remoteAddress = config.m_dnsName.empty() ? config.m_ipAddress : config.m_dnsName;
+        return Connect(remoteAddress, config.m_port, config.m_playerSessionId);
     }
 
     void MultiplayerSystemComponent::RequestPlayerLeaveSession()
@@ -481,7 +493,8 @@ namespace Multiplayer
     bool MultiplayerSystemComponent::OnCreateSessionBegin(const SessionConfig& sessionConfig)
     {
         // Check if session manager has a certificate for us and pass it along if so
-        if (auto console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
+        auto console = AZ::Interface<AZ::IConsole>::Get();
+        if (console != nullptr)
         {
             bool tcpUseEncryption = false;
             console->GetCvarValue("net_TcpUseEncryption", tcpUseEncryption);
@@ -501,6 +514,15 @@ namespace Multiplayer
 
         Multiplayer::MultiplayerAgentType serverType = sv_isDedicated ? MultiplayerAgentType::DedicatedServer : MultiplayerAgentType::ClientServer;
         InitializeMultiplayer(serverType);
+
+        // Load a multiplayer level if there's a session property called the "level"...
+        if (const auto& levelName = sessionConfig.m_sessionProperties.find("level");
+            console != nullptr && levelName != sessionConfig.m_sessionProperties.end())
+        {
+            AZStd::string loadLevelCommand = "loadlevel " + levelName->second;
+            console->PerformCommand(loadLevelCommand.c_str());
+        }
+
         return m_networkInterface->Listen(sessionConfig.m_port);
     }
 
@@ -1947,29 +1969,51 @@ namespace Multiplayer
 
     void MultiplayerSystemComponent::ConnectConsoleCommand(const AZ::ConsoleCommandContainer& arguments)
     {
-        if (arguments.size() < 1)
+        // Handle possible connect arguments:
+        // 1. connect
+        // 2. connect <ip_address>
+        // 3. connect <ip_address>:<port>
+        // 4. connect <ip_address>:<port>:<connection_ticket>
+
+        if (arguments.empty() || arguments.front().empty())
         {
-            const AZ::CVarFixedString remoteAddress = cl_serveraddr;
+            // 1. connect
+            // no arguments, use default cvar for ip-address and port
+            AZ::CVarFixedString remoteAddress = cl_serveraddr;
             Connect(remoteAddress.c_str(), cl_serverport);
+            return;
         }
-        else
+
+        AZ::CVarFixedString firstArgument{ arguments.front() };
+        const AZStd::size_t portSeparator = firstArgument.find_first_of(':');
+        if (portSeparator == AZStd::string::npos)
         {
-            AZ::CVarFixedString remoteAddress{ arguments.front() };
-            const AZStd::size_t portSeparator = remoteAddress.find_first_of(':');
-            if (portSeparator == AZStd::string::npos)
-            {
-                Connect(remoteAddress.c_str(), cl_serverport);
-            }
-            else
-            {
-                char* mutableAddress = remoteAddress.data();
-                mutableAddress[portSeparator] = '\0';
-                const char* addressStr = mutableAddress;
-                const char* portStr = &(mutableAddress[portSeparator + 1]);
-                const uint16_t portNumber = aznumeric_cast<uint16_t>(atol(portStr));
-                Connect(addressStr, portNumber);
-            }
+            // 2. connect <ip_address>, use default cvar for port
+            Connect(firstArgument.c_str(), cl_serverport);
+            return;
         }
+
+        char* mutableAddress = firstArgument.data();
+        mutableAddress[portSeparator] = '\0';
+        const char* portStr = &(mutableAddress[portSeparator + 1]);
+
+        const AZStd::size_t ticketSeparator = firstArgument.find_first_of(':', portSeparator + 1);
+        if (ticketSeparator == AZStd::string::npos)
+        {
+            // 3. connect <ip_address>:<port>
+            uint16_t portNumber = aznumeric_cast<uint16_t>(atol(portStr)); 
+            Connect(mutableAddress, portNumber);
+            return;
+        }
+
+        // Remaining case:
+        // 4. connect <ip_address>:<port>:<connection_ticket>
+        mutableAddress[ticketSeparator] = '\0';
+
+        const AZStd::string connectionTicket = &(mutableAddress[ticketSeparator + 1]);
+        const uint16_t portNumber = aznumeric_cast<uint16_t>(atol(portStr));
+
+        Connect(mutableAddress, portNumber, connectionTicket);
     }
 
     void disconnect([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)

@@ -49,6 +49,7 @@ elseif("$ENV{O3DE_PACKAGE_TYPE}" STREQUAL "DEB")
         libxcb-xfixes0-dev                      # For mouse input
         libxcb-xinput-dev                       # For mouse input
         libxcb-image0-dev                       # For xcb image support
+        libxcb-randr0-dev                       # For xcb display
         libpcre2-16-0
         zlib1g-dev
         mesa-common-dev

@@ -190,7 +190,7 @@ namespace AZ
                 AZ_Assert(false, "Wrong input parameter");
             }
 
-            auto* image = static_cast<Image*>(request.m_image);
+            auto* image = static_cast<Image*>(request.m_image.get());
             auto& device = static_cast<Device&>(GetDevice());
 
             const uint16_t startMip = static_cast<uint16_t>(residentMip - 1);
@@ -293,6 +293,7 @@ namespace AZ
                                 copyDescriptor.m_sourceBytesPerImage = stagingSlicePitch;
                                 copyDescriptor.m_sourceSize = subresourceLayout.m_size;
                                 copyDescriptor.m_sourceSize.m_depth = 1;
+                                copyDescriptor.m_sourceFormat = image->GetDescriptor().m_format;
                                 copyDescriptor.m_destinationImage = image;
                                 copyDescriptor.m_destinationSubresource.m_mipSlice = curMip;
                                 copyDescriptor.m_destinationSubresource.m_arraySlice = static_cast<uint16_t>(arraySlice);
@@ -325,6 +326,7 @@ namespace AZ
                                 copyDescriptor.m_sourceBytesPerImage = stagingSlicePitch;
                                 copyDescriptor.m_sourceSize = subresourceLayout.m_size;
                                 copyDescriptor.m_sourceSize.m_depth = 1;
+                                copyDescriptor.m_sourceFormat = image->GetDescriptor().m_format;
                                 copyDescriptor.m_destinationImage = image;
                                 copyDescriptor.m_destinationSubresource.m_mipSlice = curMip;
                                 copyDescriptor.m_destinationSubresource.m_arraySlice = static_cast<uint16_t>(arraySlice);

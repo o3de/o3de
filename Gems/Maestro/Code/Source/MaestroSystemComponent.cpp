@@ -100,20 +100,13 @@ namespace Maestro
     {
         if (!startupParams.bSkipMovie)
         {
-            // Create the movie System
             m_movieSystem.reset(new CMovieSystem(&system));
-            gEnv->pMovieSystem = m_movieSystem.get();
         }
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
     void MaestroSystemComponent::OnCrySystemShutdown([[maybe_unused]] ISystem& system)
     {
-        if (gEnv && gEnv->pMovieSystem)
-        {
-            gEnv->pMovieSystem = nullptr;
-            // delete m_movieSystem
-            m_movieSystem.reset();
-        }
+        m_movieSystem.reset();
     }
 }

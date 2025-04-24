@@ -71,7 +71,6 @@ namespace AzToolsFramework
          */
         class AssetEditorWidget
             : public QWidget
-            , private AZ::SystemTickBus::Handler
         {
             Q_OBJECT
 
@@ -131,8 +130,6 @@ namespace AzToolsFramework
 
             void PopulateRecentMenu();
 
-            // AZ::SystemTickBus
-            void OnSystemTick() override;
             void CloseOnNextTick();
 
             AzQtComponents::TabWidget* m_tabs;

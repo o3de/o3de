@@ -18,6 +18,7 @@ namespace AzToolsFramework
         class TransformComponent;
     }
 }
+
 namespace Maestro
 {
     class EditorSequenceAgentComponent
@@ -84,4 +85,5 @@ namespace Maestro
         // set of ids of all unique Entities with SequenceComponent instances connected to this Agent
         AZStd::unordered_set<AZ::EntityId>             m_sequenceEntityIds;
     };
+
 } // namespace Maestro

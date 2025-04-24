@@ -207,10 +207,12 @@ namespace AZ::RHI
         {
         // Remap read/write to write for Color scope attachments. This is because from a user standpoint, an attachment
         // might be an input/output to a pass (which maps to read/write) but still be used as a render target (write).
-        // We disallow read access and throw an error because having a read access on a render target is nonsensical.
         case ScopeAttachmentUsage::RenderTarget:
-            AZ_Error("ScopeAttachment", access != ScopeAttachmentAccess::Read, "ScopeAttachmentAccess cannot be 'Read' when usage is 'RenderTarget'.");
-            return ScopeAttachmentAccess::Write;
+            if (access == ScopeAttachmentAccess::ReadWrite)
+            {
+                return ScopeAttachmentAccess::Write;
+            }
+            return access;
 
         // Remap read/write to write for DepthStencil scope attachments. This is because from a user standpoint, an attachment
         // might be an input/output to a pass (which maps to read/write) but still be used as a render target (write).
@@ -236,14 +238,8 @@ namespace AZ::RHI
             }
             return access;
 
-        // Disallow read/write access for Copy scope attachments as this is nonsensical, Copy operations
-        // have only sources and destinations. We remap read/write to write as a fallback.
+        // Read/write access for Copy scope attachments can happen when copying between two devices.
         case ScopeAttachmentUsage::Copy:
-            AZ_Error("ScopeAttachment", access != ScopeAttachmentAccess::ReadWrite, "ScopeAttachmentAccess cannot be 'ReadWrite' when usage is 'Copy'.");
-            if (access == ScopeAttachmentAccess::ReadWrite)
-            {
-                return ScopeAttachmentAccess::Write;
-            }
             return access;
 
         case ScopeAttachmentUsage::InputAssembly:

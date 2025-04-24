@@ -9,6 +9,7 @@
 
 #include <Atom/RHI.Reflect/ImageScopeAttachmentDescriptor.h>
 #include <Atom/RHI/Image.h>
+#include <Atom/RHI/ImageView.h>
 #include <Atom/RHI/ScopeAttachment.h>
 #include <AzCore/Memory/PoolAllocator.h>
 
@@ -21,6 +22,8 @@ namespace AZ::RHI
     class ImageScopeAttachment
         : public ScopeAttachment
     {
+        friend class FrameGraphCompiler;
+
     public:
         AZ_RTTI(ImageScopeAttachment, "{C2268A3B-BAED-4A63-BB49-E3FF762BA8F0}", ScopeAttachment);
         AZ_CLASS_ALLOCATOR(ImageScopeAttachment, SystemAllocator);

@@ -6,6 +6,7 @@
  *
  */
 
+#include <Atom/Feature/RayTracing/RayTracingFeatureProcessorInterface.h>
 #include <Atom/RHI.Reflect/ShaderResourceGroupLayoutDescriptor.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Render/DiffuseProbeGrid.h>
@@ -14,7 +15,6 @@
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/Factory.h>
 #include <AzCore/Math/MathUtils.h>
-#include <RayTracing/RayTracingFeatureProcessor.h>
 
 namespace AZ
 {
@@ -84,21 +84,14 @@ namespace AZ
                         m_sortKey = sortKey;
 
                         RHI::DrawPacketBuilder drawPacketBuilder{RHI::MultiDevice::AllDevices};
-
-                        RHI::DrawIndexed drawIndexed;
-                        drawIndexed.m_indexCount = aznumeric_cast<uint32_t>(m_renderData->m_boxIndexCount);
-                        drawIndexed.m_indexOffset = 0;
-                        drawIndexed.m_vertexOffset = 0;
-
                         drawPacketBuilder.Begin(nullptr);
-                        drawPacketBuilder.SetDrawArguments(drawIndexed);
-                        drawPacketBuilder.SetIndexBufferView(m_renderData->m_boxIndexBufferView);
+                        drawPacketBuilder.SetGeometryView(&m_renderData->m_geometryView);
                         drawPacketBuilder.AddShaderResourceGroup(m_renderObjectSrg->GetRHIShaderResourceGroup());
 
                         RHI::DrawPacketBuilder::DrawRequest drawRequest;
+                        drawRequest.m_streamIndices = m_renderData->m_geometryView.GetFullStreamBufferIndices();
                         drawRequest.m_listTag = m_renderData->m_drawListTag;
                         drawRequest.m_pipelineState = m_renderData->m_pipelineState->GetRHIPipelineState();
-                        drawRequest.m_streamBufferViews = m_renderData->m_boxPositionBufferView;
                         drawRequest.m_sortKey = m_sortKey;
                         drawPacketBuilder.AddDrawItem(drawRequest);
 
@@ -337,6 +330,19 @@ namespace AZ
 
             if (m_mode == DiffuseProbeGridMode::RealTime)
             {
+                AZStd::vector<uint8_t> initData;
+                auto initImage = [&](const RHI::ImageInitRequest& request)
+                {
+                    initData.resize(
+                        request.m_descriptor.m_size.m_width * request.m_descriptor.m_size.m_height *
+                            RHI::GetFormatSize(request.m_descriptor.m_format),
+                        0);
+                    RHI::ImageUpdateRequest updateRequest;
+                    updateRequest.m_image = request.m_image;
+                    updateRequest.m_image->GetSubresourceLayout(updateRequest.m_sourceSubresourceLayout);
+                    updateRequest.m_sourceData = initData.data();
+                    m_renderData->m_imagePool->UpdateImageContents(updateRequest);
+                };
                 // advance to the next image in the frame image array
                 m_currentImageIndex = (m_currentImageIndex + 1) % ImageFrameCount;
 
@@ -352,6 +358,8 @@ namespace AZ
                     request.m_descriptor = RHI::ImageDescriptor::Create2D(RHI::ImageBindFlags::ShaderReadWrite | RHI::ImageBindFlags::CopyRead, width, height, DiffuseProbeGridRenderData::RayTraceImageFormat);
                     [[maybe_unused]] RHI::ResultCode result = m_renderData->m_imagePool->InitImage(request);
                     AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialize m_probeRayTraceImage image");
+                    m_rayTraceImage[m_currentImageIndex]->SetName(AZ::Name("ProbeRaytrace"));
+                    initImage(request);
                 }
 
                 // probe irradiance
@@ -368,6 +376,8 @@ namespace AZ
                     request.m_optimizedClearValue = &clearValue;
                     [[maybe_unused]] RHI::ResultCode result = m_renderData->m_imagePool->InitImage(request);
                     AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialize m_probeIrradianceImage image");
+                    m_irradianceImage[m_currentImageIndex]->SetName(AZ::Name("ProbeIrradiance"));
+                    initImage(request);
                 }
 
                 // probe distance
@@ -382,6 +392,8 @@ namespace AZ
                     request.m_descriptor = RHI::ImageDescriptor::Create2D(RHI::ImageBindFlags::ShaderReadWrite | RHI::ImageBindFlags::CopyRead, width, height, DiffuseProbeGridRenderData::DistanceImageFormat);
                     [[maybe_unused]] RHI::ResultCode result = m_renderData->m_imagePool->InitImage(request);
                     AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialize m_probeDistanceImage image");
+                    m_distanceImage[m_currentImageIndex]->SetName(AZ::Name("ProbeDistance"));
+                    initImage(request);
                 }
 
                 // probe data
@@ -396,6 +408,8 @@ namespace AZ
                     request.m_descriptor = RHI::ImageDescriptor::Create2D(RHI::ImageBindFlags::ShaderReadWrite | RHI::ImageBindFlags::CopyRead, width, height, DiffuseProbeGridRenderData::ProbeDataImageFormat);
                     [[maybe_unused]] RHI::ResultCode result = m_renderData->m_imagePool->InitImage(request);
                     AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialize m_probeDataImage image");
+                    m_probeDataImage[m_currentImageIndex]->SetName(AZ::Name("ProbeData"));
+                    initImage(request);
                 }
 
                 // probes need to be relocated since the textures changed
@@ -406,9 +420,6 @@ namespace AZ
 
             // textures have changed so we need to update the render Srg to bind the new ones
             m_updateRenderObjectSrg = true;
-
-            // we need to clear the Irradiance, Distance, and ProbeData textures
-            m_textureClearRequired = true;
         }
 
         void DiffuseProbeGrid::ComputeProbeCount(const AZ::Vector3& extents, const AZ::Vector3& probeSpacing, uint32_t& probeCountX, uint32_t& probeCountY, uint32_t& probeCountZ)
@@ -481,7 +492,9 @@ namespace AZ
             uint32_t packed3 = 0;
             uint32_t packed4 = (m_scrolling << 16) | (1 << 17) | (1 << 18) | (1 << 19) | (1 << 20); // scrolling, rayFormat, irradianceFormat, relocation, classification
 
-            m_prepareSrg->SetBufferView(m_renderData->m_prepareSrgGridDataNameIndex, m_gridDataBuffer->BuildBufferView(m_renderData->m_gridDataBufferViewDescriptor).get());
+            m_prepareSrg->SetBufferView(
+                m_renderData->m_prepareSrgGridDataNameIndex,
+                m_gridDataBuffer->GetBufferView(m_renderData->m_gridDataBufferViewDescriptor).get());
             m_prepareSrg->SetConstant(m_renderData->m_prepareSrgGridDataInitializedNameIndex, m_gridDataInitialized);
             m_prepareSrg->SetConstant(m_renderData->m_prepareSrgProbeGridOriginNameIndex, m_transform.GetTranslation());
             m_prepareSrg->SetConstant(m_renderData->m_prepareSrgProbeGridProbeHysteresisNameIndex, m_probeHysteresis);
@@ -513,11 +526,21 @@ namespace AZ
                 AZ_Error("DiffuseProbeGrid", m_rayTraceSrg.get(), "Failed to create RayTrace shader resource group");
             }
 
-            m_rayTraceSrg->SetBufferView(m_renderData->m_rayTraceSrgGridDataNameIndex, m_gridDataBuffer->BuildBufferView(m_renderData->m_gridDataBufferViewDescriptor).get());
-            m_rayTraceSrg->SetImageView(m_renderData->m_rayTraceSrgProbeRayTraceNameIndex, m_rayTraceImage[m_currentImageIndex]->BuildImageView(m_renderData->m_probeRayTraceImageViewDescriptor).get());
-            m_rayTraceSrg->SetImageView(m_renderData->m_rayTraceSrgProbeIrradianceNameIndex, m_irradianceImage[m_currentImageIndex]->BuildImageView(m_renderData->m_probeIrradianceImageViewDescriptor).get());
-            m_rayTraceSrg->SetImageView(m_renderData->m_rayTraceSrgProbeDistanceNameIndex, m_distanceImage[m_currentImageIndex]->BuildImageView(m_renderData->m_probeDistanceImageViewDescriptor).get());
-            m_rayTraceSrg->SetImageView(m_renderData->m_rayTraceSrgProbeDataNameIndex, m_probeDataImage[m_currentImageIndex]->BuildImageView(m_renderData->m_probeDataImageViewDescriptor).get());
+            m_rayTraceSrg->SetBufferView(
+                m_renderData->m_rayTraceSrgGridDataNameIndex,
+                m_gridDataBuffer->GetBufferView(m_renderData->m_gridDataBufferViewDescriptor).get());
+            m_rayTraceSrg->SetImageView(
+                m_renderData->m_rayTraceSrgProbeRayTraceNameIndex,
+                m_rayTraceImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeRayTraceImageViewDescriptor).get());
+            m_rayTraceSrg->SetImageView(
+                m_renderData->m_rayTraceSrgProbeIrradianceNameIndex,
+                m_irradianceImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeIrradianceImageViewDescriptor).get());
+            m_rayTraceSrg->SetImageView(
+                m_renderData->m_rayTraceSrgProbeDistanceNameIndex,
+                m_distanceImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeDistanceImageViewDescriptor).get());
+            m_rayTraceSrg->SetImageView(
+                m_renderData->m_rayTraceSrgProbeDataNameIndex,
+                m_probeDataImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeDataImageViewDescriptor).get());
             m_rayTraceSrg->SetConstant(m_renderData->m_rayTraceSrgAmbientMultiplierNameIndex, m_ambientMultiplier);
             m_rayTraceSrg->SetConstant(m_renderData->m_rayTraceSrgGiShadowsNameIndex, m_giShadows);
             m_rayTraceSrg->SetConstant(m_renderData->m_rayTraceSrgUseDiffuseIblNameIndex, m_useDiffuseIbl);
@@ -535,10 +558,18 @@ namespace AZ
                 AZ_Error("DiffuseProbeGrid", m_blendIrradianceSrg.get(), "Failed to create BlendIrradiance shader resource group");
             }
 
-            m_blendIrradianceSrg->SetBufferView(m_renderData->m_blendIrradianceSrgGridDataNameIndex, m_gridDataBuffer->BuildBufferView(m_renderData->m_gridDataBufferViewDescriptor).get());
-            m_blendIrradianceSrg->SetImageView(m_renderData->m_blendIrradianceSrgProbeRayTraceNameIndex, m_rayTraceImage[m_currentImageIndex]->BuildImageView(m_renderData->m_probeRayTraceImageViewDescriptor).get());
-            m_blendIrradianceSrg->SetImageView(m_renderData->m_blendIrradianceSrgProbeIrradianceNameIndex, m_irradianceImage[m_currentImageIndex]->BuildImageView(m_renderData->m_probeIrradianceImageViewDescriptor).get());
-            m_blendIrradianceSrg->SetImageView(m_renderData->m_blendIrradianceSrgProbeDataNameIndex, m_probeDataImage[m_currentImageIndex]->BuildImageView(m_renderData->m_probeDataImageViewDescriptor).get());
+            m_blendIrradianceSrg->SetBufferView(
+                m_renderData->m_blendIrradianceSrgGridDataNameIndex,
+                m_gridDataBuffer->GetBufferView(m_renderData->m_gridDataBufferViewDescriptor).get());
+            m_blendIrradianceSrg->SetImageView(
+                m_renderData->m_blendIrradianceSrgProbeRayTraceNameIndex,
+                m_rayTraceImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeRayTraceImageViewDescriptor).get());
+            m_blendIrradianceSrg->SetImageView(
+                m_renderData->m_blendIrradianceSrgProbeIrradianceNameIndex,
+                m_irradianceImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeIrradianceImageViewDescriptor).get());
+            m_blendIrradianceSrg->SetImageView(
+                m_renderData->m_blendIrradianceSrgProbeDataNameIndex,
+                m_probeDataImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeDataImageViewDescriptor).get());
             m_blendIrradianceSrg->SetConstant(m_renderData->m_blendIrradianceSrgFrameUpdateCountNameIndex, m_frameUpdateCount);
             m_blendIrradianceSrg->SetConstant(m_renderData->m_blendIrradianceSrgFrameUpdateIndexNameIndex, m_frameUpdateIndex);
         }
@@ -551,10 +582,18 @@ namespace AZ
                 AZ_Error("DiffuseProbeGrid", m_blendDistanceSrg.get(), "Failed to create BlendDistance shader resource group");
             }
 
-            m_blendDistanceSrg->SetBufferView(m_renderData->m_blendDistanceSrgGridDataNameIndex, m_gridDataBuffer->BuildBufferView(m_renderData->m_gridDataBufferViewDescriptor).get());
-            m_blendDistanceSrg->SetImageView(m_renderData->m_blendDistanceSrgProbeRayTraceNameIndex, m_rayTraceImage[m_currentImageIndex]->BuildImageView(m_renderData->m_probeRayTraceImageViewDescriptor).get());
-            m_blendDistanceSrg->SetImageView(m_renderData->m_blendDistanceSrgProbeDistanceNameIndex, m_distanceImage[m_currentImageIndex]->BuildImageView(m_renderData->m_probeDistanceImageViewDescriptor).get());
-            m_blendDistanceSrg->SetImageView(m_renderData->m_blendDistanceSrgProbeDataNameIndex, m_probeDataImage[m_currentImageIndex]->BuildImageView(m_renderData->m_probeDataImageViewDescriptor).get());
+            m_blendDistanceSrg->SetBufferView(
+                m_renderData->m_blendDistanceSrgGridDataNameIndex,
+                m_gridDataBuffer->GetBufferView(m_renderData->m_gridDataBufferViewDescriptor).get());
+            m_blendDistanceSrg->SetImageView(
+                m_renderData->m_blendDistanceSrgProbeRayTraceNameIndex,
+                m_rayTraceImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeRayTraceImageViewDescriptor).get());
+            m_blendDistanceSrg->SetImageView(
+                m_renderData->m_blendDistanceSrgProbeDistanceNameIndex,
+                m_distanceImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeDistanceImageViewDescriptor).get());
+            m_blendDistanceSrg->SetImageView(
+                m_renderData->m_blendDistanceSrgProbeDataNameIndex,
+                m_probeDataImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeDataImageViewDescriptor).get());
             m_blendDistanceSrg->SetConstant(m_renderData->m_blendDistanceSrgFrameUpdateCountNameIndex, m_frameUpdateCount);
             m_blendDistanceSrg->SetConstant(m_renderData->m_blendDistanceSrgFrameUpdateIndexNameIndex, m_frameUpdateIndex);
         }
@@ -571,7 +610,9 @@ namespace AZ
                     AZ_Error("DiffuseProbeGrid", m_borderUpdateRowIrradianceSrg.get(), "Failed to create BorderUpdateRowIrradiance shader resource group");
                 }
 
-                m_borderUpdateRowIrradianceSrg->SetImageView(m_renderData->m_borderUpdateRowIrradianceSrgProbeTextureNameIndex, m_irradianceImage[m_currentImageIndex]->BuildImageView(m_renderData->m_probeIrradianceImageViewDescriptor).get());
+                m_borderUpdateRowIrradianceSrg->SetImageView(
+                    m_renderData->m_borderUpdateRowIrradianceSrgProbeTextureNameIndex,
+                    m_irradianceImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeIrradianceImageViewDescriptor).get());
                 m_borderUpdateRowIrradianceSrg->SetConstant(m_renderData->m_borderUpdateRowIrradianceSrgNumTexelsNameIndex, DefaultNumIrradianceTexels);
             }
 
@@ -583,7 +624,9 @@ namespace AZ
                     AZ_Error("DiffuseProbeGrid", m_borderUpdateColumnIrradianceSrg.get(), "Failed to create BorderUpdateColumnRowIrradiance shader resource group");
                 }
 
-                m_borderUpdateColumnIrradianceSrg->SetImageView(m_renderData->m_borderUpdateColumnIrradianceSrgProbeTextureNameIndex, m_irradianceImage[m_currentImageIndex]->BuildImageView(m_renderData->m_probeIrradianceImageViewDescriptor).get());
+                m_borderUpdateColumnIrradianceSrg->SetImageView(
+                    m_renderData->m_borderUpdateColumnIrradianceSrgProbeTextureNameIndex,
+                    m_irradianceImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeIrradianceImageViewDescriptor).get());
                 m_borderUpdateColumnIrradianceSrg->SetConstant(m_renderData->m_borderUpdateColumnIrradianceSrgNumTexelsNameIndex, DefaultNumIrradianceTexels);
             }
 
@@ -595,7 +638,9 @@ namespace AZ
                     AZ_Error("DiffuseProbeGrid", m_borderUpdateRowDistanceSrg.get(), "Failed to create BorderUpdateRowDistance shader resource group");
                 }
 
-                m_borderUpdateRowDistanceSrg->SetImageView(m_renderData->m_borderUpdateRowDistanceSrgProbeTextureNameIndex, m_distanceImage[m_currentImageIndex]->BuildImageView(m_renderData->m_probeDistanceImageViewDescriptor).get());
+                m_borderUpdateRowDistanceSrg->SetImageView(
+                    m_renderData->m_borderUpdateRowDistanceSrgProbeTextureNameIndex,
+                    m_distanceImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeDistanceImageViewDescriptor).get());
                 m_borderUpdateRowDistanceSrg->SetConstant(m_renderData->m_borderUpdateRowDistanceSrgNumTexelsNameIndex, DefaultNumDistanceTexels);
             }
 
@@ -607,7 +652,9 @@ namespace AZ
                     AZ_Error("DiffuseProbeGrid", m_borderUpdateColumnDistanceSrg.get(), "Failed to create BorderUpdateColumnRowDistance shader resource group");
                 }
 
-                m_borderUpdateColumnDistanceSrg->SetImageView(m_renderData->m_borderUpdateColumnDistanceSrgProbeTextureNameIndex, m_distanceImage[m_currentImageIndex]->BuildImageView(m_renderData->m_probeDistanceImageViewDescriptor).get());
+                m_borderUpdateColumnDistanceSrg->SetImageView(
+                    m_renderData->m_borderUpdateColumnDistanceSrgProbeTextureNameIndex,
+                    m_distanceImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeDistanceImageViewDescriptor).get());
                 m_borderUpdateColumnDistanceSrg->SetConstant(m_renderData->m_borderUpdateColumnDistanceSrgNumTexelsNameIndex, DefaultNumDistanceTexels);
             }
         }
@@ -620,9 +667,15 @@ namespace AZ
                 AZ_Error("DiffuseProbeGrid", m_relocationSrg.get(), "Failed to create Relocation shader resource group");
             }
 
-            m_relocationSrg->SetBufferView(m_renderData->m_relocationSrgGridDataNameIndex, m_gridDataBuffer->BuildBufferView(m_renderData->m_gridDataBufferViewDescriptor).get());
-            m_relocationSrg->SetImageView(m_renderData->m_relocationSrgProbeRayTraceNameIndex, m_rayTraceImage[m_currentImageIndex]->BuildImageView(m_renderData->m_probeRayTraceImageViewDescriptor).get());
-            m_relocationSrg->SetImageView(m_renderData->m_relocationSrgProbeDataNameIndex, m_probeDataImage[m_currentImageIndex]->BuildImageView(m_renderData->m_probeDataImageViewDescriptor).get());
+            m_relocationSrg->SetBufferView(
+                m_renderData->m_relocationSrgGridDataNameIndex,
+                m_gridDataBuffer->GetBufferView(m_renderData->m_gridDataBufferViewDescriptor).get());
+            m_relocationSrg->SetImageView(
+                m_renderData->m_relocationSrgProbeRayTraceNameIndex,
+                m_rayTraceImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeRayTraceImageViewDescriptor).get());
+            m_relocationSrg->SetImageView(
+                m_renderData->m_relocationSrgProbeDataNameIndex,
+                m_probeDataImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeDataImageViewDescriptor).get());
             m_relocationSrg->SetConstant(m_renderData->m_relocationSrgFrameUpdateCountNameIndex, m_frameUpdateCount);
             m_relocationSrg->SetConstant(m_renderData->m_relocationSrgFrameUpdateIndexNameIndex, m_frameUpdateIndex);
         }
@@ -635,9 +688,15 @@ namespace AZ
                 AZ_Error("DiffuseProbeGrid", m_classificationSrg.get(), "Failed to create Classification shader resource group");
             }
 
-            m_classificationSrg->SetBufferView(m_renderData->m_classificationSrgGridDataNameIndex, m_gridDataBuffer->BuildBufferView(m_renderData->m_gridDataBufferViewDescriptor).get());
-            m_classificationSrg->SetImageView(m_renderData->m_classificationSrgProbeRayTraceNameIndex, m_rayTraceImage[m_currentImageIndex]->BuildImageView(m_renderData->m_probeRayTraceImageViewDescriptor).get());
-            m_classificationSrg->SetImageView(m_renderData->m_classificationSrgProbeDataNameIndex, m_probeDataImage[m_currentImageIndex]->BuildImageView(m_renderData->m_probeDataImageViewDescriptor).get());
+            m_classificationSrg->SetBufferView(
+                m_renderData->m_classificationSrgGridDataNameIndex,
+                m_gridDataBuffer->GetBufferView(m_renderData->m_gridDataBufferViewDescriptor).get());
+            m_classificationSrg->SetImageView(
+                m_renderData->m_classificationSrgProbeRayTraceNameIndex,
+                m_rayTraceImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeRayTraceImageViewDescriptor).get());
+            m_classificationSrg->SetImageView(
+                m_renderData->m_classificationSrgProbeDataNameIndex,
+                m_probeDataImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeDataImageViewDescriptor).get());
             m_classificationSrg->SetConstant(m_renderData->m_classificationSrgFrameUpdateCountNameIndex, m_frameUpdateCount);
             m_classificationSrg->SetConstant(m_renderData->m_classificationSrgFrameUpdateIndexNameIndex, m_frameUpdateIndex);
         }
@@ -655,7 +714,9 @@ namespace AZ
                 AZ_Error("DiffuseProbeGrid", m_renderObjectSrg.get(), "Failed to create render shader resource group");
             }
 
-            m_renderObjectSrg->SetBufferView(m_renderData->m_renderSrgGridDataNameIndex, m_gridDataBuffer->BuildBufferView(m_renderData->m_gridDataBufferViewDescriptor).get());
+            m_renderObjectSrg->SetBufferView(
+                m_renderData->m_renderSrgGridDataNameIndex,
+                m_gridDataBuffer->GetBufferView(m_renderData->m_gridDataBufferViewDescriptor).get());
 
             AZ::Matrix3x4 modelToWorld = AZ::Matrix3x4::CreateFromTransform(m_transform) * AZ::Matrix3x4::CreateScale(m_renderExtents);
             m_renderObjectSrg->SetConstant(m_renderData->m_renderSrgModelToWorldNameIndex, modelToWorld);
@@ -667,9 +728,15 @@ namespace AZ
             m_renderObjectSrg->SetConstant(m_renderData->m_renderSrgEnableDiffuseGiNameIndex, m_enabled);
             m_renderObjectSrg->SetConstant(m_renderData->m_renderSrgAmbientMultiplierNameIndex, m_ambientMultiplier);
             m_renderObjectSrg->SetConstant(m_renderData->m_renderSrgEdgeBlendIblNameIndex, m_edgeBlendIbl);
-            m_renderObjectSrg->SetImageView(m_renderData->m_renderSrgProbeIrradianceNameIndex, GetIrradianceImage()->BuildImageView(m_renderData->m_probeIrradianceImageViewDescriptor).get());
-            m_renderObjectSrg->SetImageView(m_renderData->m_renderSrgProbeDistanceNameIndex, GetDistanceImage()->BuildImageView(m_renderData->m_probeDistanceImageViewDescriptor).get());
-            m_renderObjectSrg->SetImageView(m_renderData->m_renderSrgProbeDataNameIndex, GetProbeDataImage()->BuildImageView(m_renderData->m_probeDataImageViewDescriptor).get());
+            m_renderObjectSrg->SetImageView(
+                m_renderData->m_renderSrgProbeIrradianceNameIndex,
+                GetIrradianceImage()->GetImageView(m_renderData->m_probeIrradianceImageViewDescriptor).get());
+            m_renderObjectSrg->SetImageView(
+                m_renderData->m_renderSrgProbeDistanceNameIndex,
+                GetDistanceImage()->GetImageView(m_renderData->m_probeDistanceImageViewDescriptor).get());
+            m_renderObjectSrg->SetImageView(
+                m_renderData->m_renderSrgProbeDataNameIndex,
+                GetProbeDataImage()->GetImageView(m_renderData->m_probeDataImageViewDescriptor).get());
 
             m_updateRenderObjectSrg = false;
 
@@ -687,10 +754,16 @@ namespace AZ
 
             uint32_t tlasInstancesBufferByteCount = aznumeric_cast<uint32_t>(m_visualizationTlas->GetTlasInstancesBuffer()->GetDescriptor().m_byteCount);
             RHI::BufferViewDescriptor bufferViewDescriptor = RHI::BufferViewDescriptor::CreateStructured(0, tlasInstancesBufferByteCount / RayTracingTlasInstanceElementSize, RayTracingTlasInstanceElementSize);
-            m_visualizationPrepareSrg->SetBufferView(m_renderData->m_visualizationPrepareSrgTlasInstancesNameIndex, m_visualizationTlas->GetTlasInstancesBuffer()->BuildBufferView(bufferViewDescriptor).get());
+            m_visualizationPrepareSrg->SetBufferView(
+                m_renderData->m_visualizationPrepareSrgTlasInstancesNameIndex,
+                m_visualizationTlas->GetTlasInstancesBuffer()->GetBufferView(bufferViewDescriptor).get());
 
-            m_visualizationPrepareSrg->SetBufferView(m_renderData->m_visualizationPrepareSrgGridDataNameIndex, m_gridDataBuffer->BuildBufferView(m_renderData->m_gridDataBufferViewDescriptor).get());
-            m_visualizationPrepareSrg->SetImageView(m_renderData->m_visualizationPrepareSrgProbeDataNameIndex, GetProbeDataImage()->BuildImageView(m_renderData->m_probeDataImageViewDescriptor).get());
+            m_visualizationPrepareSrg->SetBufferView(
+                m_renderData->m_visualizationPrepareSrgGridDataNameIndex,
+                m_gridDataBuffer->GetBufferView(m_renderData->m_gridDataBufferViewDescriptor).get());
+            m_visualizationPrepareSrg->SetImageView(
+                m_renderData->m_visualizationPrepareSrgProbeDataNameIndex,
+                GetProbeDataImage()->GetImageView(m_renderData->m_probeDataImageViewDescriptor).get());
             m_visualizationPrepareSrg->SetConstant(m_renderData->m_visualizationPrepareSrgProbeSphereRadiusNameIndex, m_visualizationSphereRadius);
         }
 
@@ -704,12 +777,22 @@ namespace AZ
 
             uint32_t tlasBufferByteCount = aznumeric_cast<uint32_t>(m_visualizationTlas->GetTlasBuffer()->GetDescriptor().m_byteCount);
             RHI::BufferViewDescriptor bufferViewDescriptor = RHI::BufferViewDescriptor::CreateRayTracingTLAS(tlasBufferByteCount);
-            m_visualizationRayTraceSrg->SetBufferView(m_renderData->m_visualizationRayTraceSrgTlasNameIndex, m_visualizationTlas->GetTlasBuffer()->BuildBufferView(bufferViewDescriptor).get());
+            m_visualizationRayTraceSrg->SetBufferView(
+                m_renderData->m_visualizationRayTraceSrgTlasNameIndex,
+                m_visualizationTlas->GetTlasBuffer()->GetBufferView(bufferViewDescriptor).get());
 
-            m_visualizationRayTraceSrg->SetBufferView(m_renderData->m_visualizationRayTraceSrgGridDataNameIndex, m_gridDataBuffer->BuildBufferView(m_renderData->m_gridDataBufferViewDescriptor).get());
-            m_visualizationRayTraceSrg->SetImageView(m_renderData->m_visualizationRayTraceSrgProbeIrradianceNameIndex, GetIrradianceImage()->BuildImageView(m_renderData->m_probeIrradianceImageViewDescriptor).get());
-            m_visualizationRayTraceSrg->SetImageView(m_renderData->m_visualizationRayTraceSrgProbeDistanceNameIndex, GetDistanceImage()->BuildImageView(m_renderData->m_probeDistanceImageViewDescriptor).get());
-            m_visualizationRayTraceSrg->SetImageView(m_renderData->m_visualizationRayTraceSrgProbeDataNameIndex, GetProbeDataImage()->BuildImageView(m_renderData->m_probeDataImageViewDescriptor).get());
+            m_visualizationRayTraceSrg->SetBufferView(
+                m_renderData->m_visualizationRayTraceSrgGridDataNameIndex,
+                m_gridDataBuffer->GetBufferView(m_renderData->m_gridDataBufferViewDescriptor).get());
+            m_visualizationRayTraceSrg->SetImageView(
+                m_renderData->m_visualizationRayTraceSrgProbeIrradianceNameIndex,
+                GetIrradianceImage()->GetImageView(m_renderData->m_probeIrradianceImageViewDescriptor).get());
+            m_visualizationRayTraceSrg->SetImageView(
+                m_renderData->m_visualizationRayTraceSrgProbeDistanceNameIndex,
+                GetDistanceImage()->GetImageView(m_renderData->m_probeDistanceImageViewDescriptor).get());
+            m_visualizationRayTraceSrg->SetImageView(
+                m_renderData->m_visualizationRayTraceSrgProbeDataNameIndex,
+                GetProbeDataImage()->GetImageView(m_renderData->m_probeDataImageViewDescriptor).get());
             m_visualizationRayTraceSrg->SetConstant(m_renderData->m_visualizationRayTraceSrgShowInactiveProbesNameIndex, m_visualizationShowInactiveProbes);
             m_visualizationRayTraceSrg->SetImageView(m_renderData->m_visualizationRayTraceSrgOutputNameIndex, outputImageView);
         }
@@ -722,10 +805,18 @@ namespace AZ
                 AZ_Error("DiffuseProbeGrid", m_querySrg.get(), "Failed to create Query shader resource group");
             }
 
-            m_querySrg->SetBufferView(m_renderData->m_querySrgGridDataNameIndex, m_gridDataBuffer->BuildBufferView(m_renderData->m_gridDataBufferViewDescriptor).get());
-            m_querySrg->SetImageView(m_renderData->m_querySrgProbeIrradianceNameIndex, GetIrradianceImage()->BuildImageView(m_renderData->m_probeIrradianceImageViewDescriptor).get());
-            m_querySrg->SetImageView(m_renderData->m_querySrgProbeDistanceNameIndex, GetDistanceImage()->BuildImageView(m_renderData->m_probeDistanceImageViewDescriptor).get());
-            m_querySrg->SetImageView(m_renderData->m_querySrgProbeDataNameIndex, GetProbeDataImage()->BuildImageView(m_renderData->m_probeDataImageViewDescriptor).get());
+            m_querySrg->SetBufferView(
+                m_renderData->m_querySrgGridDataNameIndex,
+                m_gridDataBuffer->GetBufferView(m_renderData->m_gridDataBufferViewDescriptor).get());
+            m_querySrg->SetImageView(
+                m_renderData->m_querySrgProbeIrradianceNameIndex,
+                GetIrradianceImage()->GetImageView(m_renderData->m_probeIrradianceImageViewDescriptor).get());
+            m_querySrg->SetImageView(
+                m_renderData->m_querySrgProbeDistanceNameIndex,
+                GetDistanceImage()->GetImageView(m_renderData->m_probeDistanceImageViewDescriptor).get());
+            m_querySrg->SetImageView(
+                m_renderData->m_querySrgProbeDataNameIndex,
+                GetProbeDataImage()->GetImageView(m_renderData->m_probeDataImageViewDescriptor).get());
             m_querySrg->SetConstant(m_renderData->m_querySrgAmbientMultiplierNameIndex, m_ambientMultiplier);
         }
 

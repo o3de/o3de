@@ -37,7 +37,9 @@ namespace MiniAudio
     private:
         class SerializationEvents : public AZ::SerializeContext::IEventHandler
         {
-            void OnReadEnd(void* classPtr) override
+            // OnWriteEnd happens after the object pointed at by classPtr
+            // has finished being deserialized and is fully loaded.
+            void OnWriteEnd(void* classPtr) override
             {
                 SoundAssetRef* SoundAssetRef = reinterpret_cast<class SoundAssetRef*>(classPtr);
                 // Call SetAsset to connect AssetBus handler as soon as m_asset field is set

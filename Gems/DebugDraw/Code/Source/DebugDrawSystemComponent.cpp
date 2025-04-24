@@ -1125,7 +1125,7 @@ namespace DebugDraw
         if (!m_sphereRayTracingTypeHandle.IsValid())
         {
             m_rayTracingFeatureProcessor =
-                AZ::RPI::Scene::GetFeatureProcessorForEntity<AZ::Render::RayTracingFeatureProcessor>(element.m_targetEntityId);
+                AZ::RPI::Scene::GetFeatureProcessorForEntity<AZ::Render::RayTracingFeatureProcessorInterface>(element.m_targetEntityId);
 
             auto shaderAsset = AZ::RPI::FindShaderAsset("shaders/sphereintersection.azshader");
             auto rayTracingShader = AZ::RPI::Shader::FindOrCreate(shaderAsset, AZ::RHI::GetDefaultSupervariantNameWithNoFloat16Fallback());
@@ -1166,7 +1166,7 @@ namespace DebugDraw
 
         m_spheresRayTracingIndicesBuffer->UpdateData(&element.m_radius, sizeof(float), element.m_localInstanceIndex * sizeof(float));
 
-        AZ::Render::RayTracingFeatureProcessor::SubMeshMaterial material;
+        AZ::Render::RayTracingFeatureProcessorInterface::SubMeshMaterial material;
         material.m_baseColor = element.m_color;
         material.m_roughnessFactor = 0.9f;
 
@@ -1189,7 +1189,7 @@ namespace DebugDraw
         if (!m_obbRayTracingTypeHandle.IsValid())
         {
             m_rayTracingFeatureProcessor =
-                AZ::RPI::Scene::GetFeatureProcessorForEntity<AZ::Render::RayTracingFeatureProcessor>(element.m_targetEntityId);
+                AZ::RPI::Scene::GetFeatureProcessorForEntity<AZ::Render::RayTracingFeatureProcessorInterface>(element.m_targetEntityId);
 
             auto shaderAsset = AZ::RPI::FindShaderAsset("shaders/obbintersection.azshader");
             auto rayTracingShader = AZ::RPI::Shader::FindOrCreate(shaderAsset, AZ::RHI::GetDefaultSupervariantNameWithNoFloat16Fallback());
@@ -1198,7 +1198,7 @@ namespace DebugDraw
                 m_rayTracingFeatureProcessor->RegisterProceduralGeometryType("DebugDraw::Obb", rayTracingShader, "ObbIntersection");
         }
 
-        AZ::Render::RayTracingFeatureProcessor::SubMeshMaterial material;
+        AZ::Render::RayTracingFeatureProcessorInterface::SubMeshMaterial material;
         material.m_baseColor = element.m_color;
         material.m_roughnessFactor = 0.9f;
 

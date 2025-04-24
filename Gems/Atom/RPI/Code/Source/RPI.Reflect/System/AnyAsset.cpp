@@ -15,10 +15,6 @@ namespace AZ
 {
     namespace RPI
     {
-        const char* AnyAsset::DisplayName = "AnyAsset";
-        const char* AnyAsset::Group = "Common";
-        const char* AnyAsset::Extension = "azasset";
-
         void AnyAsset::SetReady()
         {
             m_status = AssetStatus::Ready;

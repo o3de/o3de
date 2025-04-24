@@ -13,12 +13,12 @@
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
-#include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/DevicePipelineState.h>
 #include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>
 #include <Atom/Feature/RenderCommon.h>
+#include <Mesh/MeshFeatureProcessor.h>
 
 namespace AZ
 {
@@ -630,8 +630,9 @@ namespace AZ
                 sizeof(indices),
                 AZ::RHI::IndexFormat::Uint16,
             };
-            m_reflectionRenderData.m_boxIndexBufferView = indexBufferView;
-            m_reflectionRenderData.m_boxIndexCount = numIndices;
+
+            m_reflectionRenderData.m_geometryView.SetIndexBufferView(indexBufferView);
+            m_reflectionRenderData.m_geometryView.SetDrawArguments(RHI::DrawIndexed{ 0, numIndices, 0 });
 
             // create position buffer
             m_boxPositionBuffer = aznew RHI::Buffer;
@@ -649,9 +650,10 @@ namespace AZ
                 (uint32_t)(m_boxPositions.size() * sizeof(Position)),
                 sizeof(Position),
             };
-            m_reflectionRenderData.m_boxPositionBufferView = { { positionBufferView } };
+            m_reflectionRenderData.m_geometryView.ClearStreamBufferViews();
+            m_reflectionRenderData.m_geometryView.AddStreamBufferView(positionBufferView);
 
-            AZ::RHI::ValidateStreamBufferViews(m_boxStreamLayout, m_reflectionRenderData.m_boxPositionBufferView);
+            AZ::RHI::ValidateStreamBufferViews(m_boxStreamLayout, m_reflectionRenderData.m_geometryView.GetStreamBufferViews());
         }
 
         void ReflectionProbeFeatureProcessor::LoadShader(

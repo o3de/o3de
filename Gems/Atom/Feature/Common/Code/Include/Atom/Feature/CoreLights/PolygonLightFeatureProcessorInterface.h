@@ -8,8 +8,9 @@
 
 #pragma once
 
-#include <Atom/RPI.Public/FeatureProcessor.h>
 #include <Atom/Feature/CoreLights/PhotometricValue.h>
+#include <Atom/RPI.Public/Buffer/Buffer.h>
+#include <Atom/RPI.Public/FeatureProcessor.h>
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/std/containers/vector.h>
 
@@ -92,6 +93,13 @@ namespace AZ
             virtual void SetAttenuationRadius(LightHandle handle, float attenuationRadius) = 0;
             //! Sets the lighting channel mask
             virtual void SetLightingChannelMask(LightHandle handle, uint32_t lightingChannelMask) = 0;
+
+            //! Returns the buffer containing the light data for all polygon lights
+            virtual const Data::Instance<RPI::Buffer> GetLightBuffer() const = 0;
+            //! Returns the buffer containing the points of all polygon lights
+            virtual const Data::Instance<RPI::Buffer> GetLightPointBuffer() const = 0;
+            //! Returns the number of directional lights
+            virtual uint32_t GetLightCount() const = 0;
         };
     } // namespace Render
 } // namespace AZ

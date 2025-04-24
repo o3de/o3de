@@ -28,8 +28,6 @@ namespace AZ
 {
     namespace RPI
     {
-        const char* Material::s_debugTraceName = "Material";
-
         Data::Instance<Material> Material::FindOrCreate(const Data::Asset<MaterialAsset>& materialAsset)
         {
             return Data::InstanceDatabase<Material>::Instance().FindOrCreate(materialAsset);
@@ -66,6 +64,7 @@ namespace AZ
             m_generalShaderCollection = {};
             m_materialPipelineData = {};
             m_materialAsset = { &materialAsset, AZ::Data::AssetLoadBehavior::PreLoad };
+
             ShaderReloadNotificationBus::MultiHandler::BusDisconnect();
             if (!m_materialAsset.IsReady())
             {
@@ -140,6 +139,8 @@ namespace AZ
 
             return RHI::ResultCode::Success;
         }
+
+        Material::Material() = default;
 
         Material::~Material()
         {
@@ -322,10 +323,32 @@ namespace AZ
         {
             ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->Material::OnShaderVariantReinitialized %s", this, shaderVariant.GetShaderVariantAsset().GetHint().c_str());
 
+            // Move m_shaderVariantReadyEvent to a local AZ::Event in order to allow
+            // the handlers to be signaled outside of the mutex lock.
+            // This allows other threads to register their handlers while this thread
+            // is invoking Signal() on the current snapshot of handlers.
+            decltype(m_shaderVariantReadyEvent) localShaderVariantReadyEvent;
+            {
+                AZStd::scoped_lock lock(m_shaderVariantReadyEventMutex);
+                localShaderVariantReadyEvent = AZStd::move(m_shaderVariantReadyEvent);
+            }
+
             // Note: we don't need to re-compile the material if a shader variant is ready or changed
             // The DrawPacket created for the material need to be updated since the PSO need to be re-creaed.
-            // This event can be used to notify the owners to update their DrawPackets
-            m_shaderVariantReadyEvent.Signal();
+            // This event can be used to notify the owners to update their DrawPackets.
+            localShaderVariantReadyEvent.Signal();
+
+            // Finally restore m_shaderVariantReadyEvent but making sure to claim any new handlers that were added
+            // in other threads while Signal() was being called.
+            {
+                // Swap the local handlers with the current m_notifiers which
+                // will contain any handlers added during the signaling of the
+                // local event
+                AZStd::scoped_lock lock(m_shaderVariantReadyEventMutex);
+                AZStd::swap(m_shaderVariantReadyEvent, localShaderVariantReadyEvent);
+                // Append any added handlers to the m_notifier structure
+                m_shaderVariantReadyEvent.ClaimHandlers(AZStd::move(localShaderVariantReadyEvent));
+            }
         }
 
         void Material::ReInitKeepPropertyValues()
@@ -377,6 +400,7 @@ namespace AZ
 
         void Material::ConnectEvent(OnMaterialShaderVariantReadyEvent::Handler& handler)
         {
+            AZStd::scoped_lock lock(m_shaderVariantReadyEventMutex);
             handler.Connect(m_shaderVariantReadyEvent);
         }
 
@@ -808,15 +832,15 @@ namespace AZ
 
         // Using explicit instantiation to restrict SetPropertyValue to the set of types that we support
 
-        template bool Material::SetPropertyValue<bool>     (MaterialPropertyIndex index, const bool&     value);
-        template bool Material::SetPropertyValue<int32_t>  (MaterialPropertyIndex index, const int32_t&  value);
-        template bool Material::SetPropertyValue<uint32_t> (MaterialPropertyIndex index, const uint32_t& value);
-        template bool Material::SetPropertyValue<float>    (MaterialPropertyIndex index, const float&    value);
-        template bool Material::SetPropertyValue<Vector2>  (MaterialPropertyIndex index, const Vector2&  value);
-        template bool Material::SetPropertyValue<Vector3>  (MaterialPropertyIndex index, const Vector3&  value);
-        template bool Material::SetPropertyValue<Vector4>  (MaterialPropertyIndex index, const Vector4&  value);
-        template bool Material::SetPropertyValue<Color>    (MaterialPropertyIndex index, const Color&    value);
-        template bool Material::SetPropertyValue<Data::Instance<Image>> (MaterialPropertyIndex index, const Data::Instance<Image>& value);
+        template AZ_DLL_EXPORT bool Material::SetPropertyValue<bool>     (MaterialPropertyIndex index, const bool&     value);
+        template AZ_DLL_EXPORT bool Material::SetPropertyValue<int32_t>  (MaterialPropertyIndex index, const int32_t&  value);
+        template AZ_DLL_EXPORT bool Material::SetPropertyValue<uint32_t> (MaterialPropertyIndex index, const uint32_t& value);
+        template AZ_DLL_EXPORT bool Material::SetPropertyValue<float>    (MaterialPropertyIndex index, const float&    value);
+        template AZ_DLL_EXPORT bool Material::SetPropertyValue<Vector2>  (MaterialPropertyIndex index, const Vector2&  value);
+        template AZ_DLL_EXPORT bool Material::SetPropertyValue<Vector3>  (MaterialPropertyIndex index, const Vector3&  value);
+        template AZ_DLL_EXPORT bool Material::SetPropertyValue<Vector4>  (MaterialPropertyIndex index, const Vector4&  value);
+        template AZ_DLL_EXPORT bool Material::SetPropertyValue<Color>    (MaterialPropertyIndex index, const Color&    value);
+        template AZ_DLL_EXPORT bool Material::SetPropertyValue<Data::Instance<Image>> (MaterialPropertyIndex index, const Data::Instance<Image>& value);
 
         bool Material::SetPropertyValue(MaterialPropertyIndex propertyIndex, const MaterialPropertyValue& value)
         {
@@ -838,15 +862,15 @@ namespace AZ
 
         // Using explicit instantiation to restrict GetPropertyValue to the set of types that we support
 
-        template const bool&     Material::GetPropertyValue<bool>     (MaterialPropertyIndex index) const;
-        template const int32_t&  Material::GetPropertyValue<int32_t>  (MaterialPropertyIndex index) const;
-        template const uint32_t& Material::GetPropertyValue<uint32_t> (MaterialPropertyIndex index) const;
-        template const float&    Material::GetPropertyValue<float>    (MaterialPropertyIndex index) const;
-        template const Vector2&  Material::GetPropertyValue<Vector2>  (MaterialPropertyIndex index) const;
-        template const Vector3&  Material::GetPropertyValue<Vector3>  (MaterialPropertyIndex index) const;
-        template const Vector4&  Material::GetPropertyValue<Vector4>  (MaterialPropertyIndex index) const;
-        template const Color&    Material::GetPropertyValue<Color>    (MaterialPropertyIndex index) const;
-        template const Data::Instance<Image>& Material::GetPropertyValue<Data::Instance<Image>>(MaterialPropertyIndex index) const;
+        template AZ_DLL_EXPORT const bool&     Material::GetPropertyValue<bool>     (MaterialPropertyIndex index) const;
+        template AZ_DLL_EXPORT const int32_t&  Material::GetPropertyValue<int32_t>  (MaterialPropertyIndex index) const;
+        template AZ_DLL_EXPORT const uint32_t& Material::GetPropertyValue<uint32_t> (MaterialPropertyIndex index) const;
+        template AZ_DLL_EXPORT const float&    Material::GetPropertyValue<float>    (MaterialPropertyIndex index) const;
+        template AZ_DLL_EXPORT const Vector2&  Material::GetPropertyValue<Vector2>  (MaterialPropertyIndex index) const;
+        template AZ_DLL_EXPORT const Vector3&  Material::GetPropertyValue<Vector3>  (MaterialPropertyIndex index) const;
+        template AZ_DLL_EXPORT const Vector4&  Material::GetPropertyValue<Vector4>  (MaterialPropertyIndex index) const;
+        template AZ_DLL_EXPORT const Color&    Material::GetPropertyValue<Color>    (MaterialPropertyIndex index) const;
+        template AZ_DLL_EXPORT const Data::Instance<Image>& Material::GetPropertyValue<Data::Instance<Image>>(MaterialPropertyIndex index) const;
         
         const MaterialPropertyFlags& Material::GetPropertyDirtyFlags() const
         {

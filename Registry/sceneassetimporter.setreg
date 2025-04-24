@@ -10,7 +10,12 @@
                     ".fbx",
                     ".stl",
                     ".gltf",
-                    ".glb"
+                    ".glb",
+                    ".usd",
+                    ".usda",
+                    ".usdz",
+                    ".usdc",
+                    ".obj"
                 ]
             },
             "MaterialConverter": 

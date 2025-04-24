@@ -26,8 +26,8 @@ namespace UnitTest
 
         MOCK_METHOD2(SetVertexViewInternal, void(AZ::RHI::IndirectCommandIndex index, const AZ::RHI::DeviceStreamBufferView& view));
         MOCK_METHOD2(SetIndexViewInternal, void(AZ::RHI::IndirectCommandIndex index, const AZ::RHI::DeviceIndexBufferView& view));
-        MOCK_METHOD2(DrawInternal, void(AZ::RHI::IndirectCommandIndex index, const AZ::RHI::DrawLinear& arguments));
-        MOCK_METHOD2(DrawIndexedInternal, void(AZ::RHI::IndirectCommandIndex index, const AZ::RHI::DrawIndexed& arguments));
+        MOCK_METHOD3(DrawInternal, void(AZ::RHI::IndirectCommandIndex index, const AZ::RHI::DrawLinear& arguments, const AZ::RHI::DrawInstanceArguments& drawInstanceArgs));
+        MOCK_METHOD3(DrawIndexedInternal, void(AZ::RHI::IndirectCommandIndex index, const AZ::RHI::DrawIndexed& arguments, const AZ::RHI::DrawInstanceArguments& drawInstanceArgs));
         MOCK_METHOD2(DispatchInternal, void(AZ::RHI::IndirectCommandIndex index, const AZ::RHI::DispatchDirect& arguments));
         MOCK_METHOD3(SetRootConstantsInternal, void(AZ::RHI::IndirectCommandIndex index, const uint8_t* data, uint32_t byteSize));
     };

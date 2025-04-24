@@ -22,14 +22,14 @@ namespace AZ::RHI
         m_allocator = allocator ? allocator : &AllocatorInstance<SystemAllocator>::Get();
     }
 
-    void DeviceDrawPacketBuilder::SetDrawArguments(const DeviceDrawArguments& drawArguments)
+    void DeviceDrawPacketBuilder::SetGeometryView(const DeviceGeometryView* geometryView)
     {
-        m_drawArguments = drawArguments;
+        m_geometryView = geometryView;
     }
 
-    void DeviceDrawPacketBuilder::SetIndexBufferView(const DeviceIndexBufferView& indexBufferView)
+    void DeviceDrawPacketBuilder::SetDrawInstanceArguments(const DrawInstanceArguments& drawInstanceArgs)
     {
-        m_indexBufferView = indexBufferView;
+        m_drawInstanceArgs = drawInstanceArgs;
     }
 
     void DeviceDrawPacketBuilder::SetRootConstants(AZStd::span<const uint8_t> rootConstants)
@@ -83,7 +83,6 @@ namespace AZ::RHI
         {
             m_drawRequests.push_back(request);
             m_drawListMask.set(request.m_listTag.GetIndex());
-            m_streamBufferViewCount += request.m_streamBufferViews.size();
         }
         else
         {
@@ -145,10 +144,6 @@ namespace AZ::RHI
             sizeof(uint8_t) * m_rootConstants.size(),
             AZStd::alignment_of<uint8_t>::value);
 
-        const VirtualAddress streamBufferViewsOffset = linearAllocator.Allocate(
-            sizeof(DeviceStreamBufferView) * m_streamBufferViewCount,
-            AZStd::alignment_of<DeviceStreamBufferView>::value);
-
         const VirtualAddress scissorOffset = linearAllocator.Allocate(
             sizeof(Scissor) * m_scissors.size(),
             AZStd::alignment_of<Scissor>::value);
@@ -162,7 +157,8 @@ namespace AZ::RHI
 
         auto drawPacket = new (allocationData) DeviceDrawPacket();
         drawPacket->m_allocator = m_allocator;
-        drawPacket->m_indexBufferView =  m_indexBufferView;
+        drawPacket->m_geometryView =  m_geometryView;
+        drawPacket->m_drawInstanceArgs = m_drawInstanceArgs;
         drawPacket->m_drawListMask = m_drawListMask;
 
         if (shaderResourceGroupsOffset.IsValid())
@@ -242,45 +238,20 @@ namespace AZ::RHI
 
             DeviceDrawItem& drawItem = drawItems[i];
             drawItem.m_enabled = !drawListTagDisabled;
-            drawItem.m_arguments = m_drawArguments;
+            drawItem.m_geometryView = m_geometryView;
+            drawItem.m_streamIndices = drawRequest.m_streamIndices;
+            drawItem.m_drawInstanceArgs = m_drawInstanceArgs;
             drawItem.m_stencilRef = drawRequest.m_stencilRef;
-            drawItem.m_streamBufferViewCount = 0;
             drawItem.m_shaderResourceGroupCount = drawPacket->m_shaderResourceGroupCount;
             drawItem.m_rootConstantSize = drawPacket->m_rootConstantSize;
             drawItem.m_scissorsCount = drawPacket->m_scissorsCount;
             drawItem.m_viewportsCount = drawPacket->m_viewportsCount;
             drawItem.m_pipelineState = drawRequest.m_pipelineState;
-            drawItem.m_indexBufferView = &drawPacket->m_indexBufferView;
-            drawItem.m_streamBufferViews = nullptr;
             drawItem.m_rootConstants = drawPacket->m_rootConstants;
             drawItem.m_shaderResourceGroups = drawPacket->m_shaderResourceGroups;
             drawItem.m_uniqueShaderResourceGroup = drawPacket->m_uniqueShaderResourceGroups[i];
             drawItem.m_scissors = drawPacket->m_scissors;
             drawItem.m_viewports = drawPacket->m_viewports;
-        }
-
-        if (streamBufferViewsOffset.IsValid())
-        {
-            auto streamBufferViews = reinterpret_cast<DeviceStreamBufferView*>(allocationData + streamBufferViewsOffset.m_ptr);
-
-            drawPacket->m_streamBufferViews = streamBufferViews;
-            drawPacket->m_streamBufferViewCount = aznumeric_caster(m_streamBufferViewCount);
-
-            for (size_t i = 0; i < m_drawRequests.size(); ++i)
-            {
-                const DeviceDrawRequest& drawRequest = m_drawRequests[i];
-
-                if (!drawRequest.m_streamBufferViews.empty())
-                {
-                    drawItems[i].m_streamBufferViews = streamBufferViews;
-                    drawItems[i].m_streamBufferViewCount = aznumeric_caster(drawRequest.m_streamBufferViews.size());
-
-                    for (const DeviceStreamBufferView& streamBufferView : drawRequest.m_streamBufferViews)
-                    {
-                        *streamBufferViews++ = streamBufferView;
-                    }
-                }
-            }
         }
 
         ClearData();
@@ -291,9 +262,7 @@ namespace AZ::RHI
     void DeviceDrawPacketBuilder::ClearData()
     {
         m_allocator = nullptr;
-        m_drawArguments = {};
         m_drawListMask.reset();
-        m_streamBufferViewCount = 0;
         m_drawRequests.clear();
         m_shaderResourceGroups.clear();
         m_rootConstants = {};
@@ -304,8 +273,8 @@ namespace AZ::RHI
     DeviceDrawPacket* DeviceDrawPacketBuilder::Clone(const DeviceDrawPacket* original)
     {
         Begin(original->m_allocator);
-        SetDrawArguments(original->GetDrawItemProperties(0).m_item->m_arguments);
-        SetIndexBufferView(original->m_indexBufferView);
+        SetGeometryView(original->m_geometryView);
+        SetDrawInstanceArguments(original->m_drawInstanceArgs);
         SetRootConstants(AZStd::span<const uint8_t>(original->m_rootConstants, original->m_rootConstantSize));
         SetScissors(AZStd::span<const Scissor>(original->m_scissors, original->m_scissorsCount));
         SetViewports(AZStd::span<const Viewport>(original->m_viewports, original->m_viewportsCount));
@@ -318,12 +287,12 @@ namespace AZ::RHI
         {
             const DeviceDrawItem* drawItem = original->m_drawItems + i;
             DeviceDrawRequest drawRequest;
+            drawRequest.m_streamIndices = drawItem->m_streamIndices;
             drawRequest.m_drawFilterMask = *(original->m_drawFilterMasks + i);
             drawRequest.m_listTag = *(original->m_drawListTags + i);
             drawRequest.m_pipelineState = drawItem->m_pipelineState;
             drawRequest.m_sortKey = *(original->m_drawItemSortKeys + i);
             drawRequest.m_stencilRef = drawItem->m_stencilRef;
-            drawRequest.m_streamBufferViews = AZStd::span(drawItem->m_streamBufferViews, drawItem->m_streamBufferViewCount);
             drawRequest.m_uniqueShaderResourceGroup = drawItem->m_uniqueShaderResourceGroup;
             AddDrawItem(drawRequest);
         }

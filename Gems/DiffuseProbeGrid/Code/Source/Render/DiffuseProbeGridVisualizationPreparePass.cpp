@@ -6,6 +6,7 @@
  *
  */
 
+#include <Atom/Feature/RayTracing/RayTracingFeatureProcessorInterface.h>
 #include <Atom/RHI/CommandList.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
@@ -14,7 +15,6 @@
 #include <DiffuseProbeGrid_Traits_Platform.h>
 #include <Render/DiffuseProbeGridFeatureProcessor.h>
 #include <Render/DiffuseProbeGridVisualizationPreparePass.h>
-#include <RayTracing/RayTracingFeatureProcessor.h>
 
 namespace AZ
 {
@@ -246,7 +246,10 @@ namespace AZ
                 // the DiffuseProbeGrid Srg must be updated in the Compile phase in order to successfully bind the ReadWrite shader inputs
                 // (see ValidateSetImageView() in ShaderResourceGroupData.cpp)
                 diffuseProbeGrid->UpdateVisualizationPrepareSrg(m_shader, m_srgLayout);
-                diffuseProbeGrid->GetVisualizationPrepareSrg()->Compile();
+                if (!diffuseProbeGrid->GetVisualizationPrepareSrg()->IsQueuedForCompile())
+                {
+                    diffuseProbeGrid->GetVisualizationPrepareSrg()->Compile();
+                }
             }
         }
 

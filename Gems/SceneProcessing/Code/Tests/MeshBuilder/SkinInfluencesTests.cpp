@@ -134,7 +134,7 @@ namespace AZ::MeshBuilder
         SkinInfluencesTestParam {/*.numOrgVertices =*/700, /*.maxSourceInfluences =*/12, /*.maxInfluencesAfterOptimization =*/3},
     };
 
-    INSTANTIATE_TEST_CASE_P(SkinInfluenceOptimizeTests,
+    INSTANTIATE_TEST_SUITE_P(SkinInfluenceOptimizeTests,
         SkinInfluencesFixture,
         ::testing::ValuesIn(skinInfluenceTestData)
     );

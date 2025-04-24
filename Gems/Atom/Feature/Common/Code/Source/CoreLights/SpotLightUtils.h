@@ -9,7 +9,7 @@
 #pragma once
 
 #include <Atom/Feature/Mesh/MeshCommon.h>
-#include <Atom/Feature/CoreLights/LightCommon.h>
+#include <CoreLights/LightCommon.h>
 #include <Shadows/ProjectedShadowFeatureProcessor.h>
 
 namespace AZ

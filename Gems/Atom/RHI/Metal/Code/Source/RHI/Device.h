@@ -30,6 +30,7 @@
 #include <RHI/MetalViewController.h>
 #include <RHI/MetalView_Platform.h>
 #include <RHI/NullDescriptorManager.h>
+#include <RHI/ClearAttachments.h>
 
 namespace AZ
 {
@@ -155,6 +156,8 @@ namespace AZ
             
             BindlessArgumentBuffer& GetBindlessArgumentBuffer();
             
+            RHI::ResultCode ClearRenderAttachments(CommandList& commandList, MTLRenderPassDescriptor* renderpassDesc, const AZStd::vector<ClearAttachments::ClearData>& clearAttachmentData);
+            
         private:
             Device();
             
@@ -169,6 +172,7 @@ namespace AZ
             void EndFrameInternal() override;
             void WaitForIdleInternal() override;
             AZStd::chrono::microseconds GpuTimestampToMicroseconds(uint64_t gpuTimestamp, RHI::HardwareQueueClass queueClass) const override;
+            AZStd::pair<uint64_t, uint64_t> GetCalibratedTimestamp([[maybe_unused]] RHI::HardwareQueueClass queueClass) override { return {0ull, 0ull}; }
             void FillFormatsCapabilitiesInternal(FormatCapabilitiesList& formatsCapabilities) override;
             RHI::ResultCode InitializeLimits() override;
             void PreShutdown() override;
@@ -205,6 +209,9 @@ namespace AZ
             // This object helps manage the global bindless argument buffer that stores
             // all the bindless views
             BindlessArgumentBuffer m_bindlessArgumentBuffer;
+
+            // Used for clearing attachments when using subpasses.
+            ClearAttachments m_clearAttachments;
         };
     }
 }

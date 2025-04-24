@@ -9,7 +9,8 @@
 #pragma once
 
 #include <Atom/RPI.Reflect/Asset/AssetHandler.h>
-
+#include <Atom/RPI.Reflect/Allocators.h>
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RHI.Reflect/ImageSubresource.h>
 
 #include <Atom/RHI/StreamingImagePool.h>
@@ -34,21 +35,26 @@ namespace AZ
         //! a parent image mip slice to the local container slice index.
         //! This is an immutable, serialized asset. It can be either serialized-in or created dynamically using ImageMipChainAssetCreator.
         //! See RPI::ImageMipChain for runtime features based on this asset.
-        class ImageMipChainAsset final
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+        class ATOM_RPI_REFLECT_API ImageMipChainAsset final
             : public Data::AssetData
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             friend class ImageMipChainAssetCreator;
             friend class ImageMipChainAssetHandler;
             friend class ImageMipChainAssetTester;
             friend class StreamingImageAssetCreator;
             friend class StreamingImageAssetHandler;
+
         public:
-            static const char* DisplayName;
-            static const char* Extension;
-            static const char* Group;
+            static constexpr const char* DisplayName{ "ImageMipChain" };
+            static constexpr const char* Group{ "Image" };
+            static constexpr const char* Extension{ "imagemipchain" };
+
+            using Allocator = ImageMipChainAssetAllocator_for_std_t;
 
             AZ_RTTI(ImageMipChainAsset, "{CB403C8A-6982-4C9F-8090-78C9C36FBEDB}", Data::AssetData);
-            AZ_CLASS_ALLOCATOR(ImageMipChainAsset, AZ::SystemAllocator);
+            AZ_CLASS_ALLOCATOR_DECL
 
             static void Reflect(AZ::ReflectContext* context);
 
@@ -85,7 +91,6 @@ namespace AZ
             bool HandleAutoReload() override { return false; }
 
         private:
-
             // Copy content from another ImageMipChainAsset
             void CopyFrom(const ImageMipChainAsset& source);
 
@@ -99,7 +104,7 @@ namespace AZ
             MipSliceList m_mipSlices;
 
             // The list of subresource data, fixed up from serialization.
-            AZStd::vector<RHI::StreamingImageSubresourceData> m_subImageDatas;
+            AZStd::vector<RHI::StreamingImageSubresourceData, Allocator> m_subImageDatas;
 
             // [Serialized] Topology of sub-images in the mip group.
             uint16_t m_mipLevels = 0;
@@ -112,15 +117,17 @@ namespace AZ
             AZStd::array<RHI::DeviceImageSubresourceLayout, RHI::Limits::Image::MipCountMax> m_subImageLayouts;
 
             // [Serialized] Contains a flat list of sub-images which reference the flat data blob.
-            AZStd::vector<AZ::u64> m_subImageDataOffsets;
+            AZStd::vector<AZ::u64, Allocator> m_subImageDataOffsets;
 
             // [Serialized] Flat image data interpreted by m_subImages.
-            AZStd::vector<uint8_t> m_imageData;
+            AZStd::vector<uint8_t, Allocator> m_imageData;
         };
 
-        class ImageMipChainAssetHandler final
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+        class ATOM_RPI_REFLECT_API ImageMipChainAssetHandler final
             : public AssetHandler<ImageMipChainAsset>
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             using Base = AssetHandler<ImageMipChainAsset>;
         public:
             ImageMipChainAssetHandler() = default;

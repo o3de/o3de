@@ -6,20 +6,19 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_TRACKVIEW_TRACKVIEWKEYPROPERTIESDLG_H
-#define CRYINCLUDE_EDITOR_TRACKVIEW_TRACKVIEWKEYPROPERTIESDLG_H
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include "TrackViewSequence.h"
-#include "TrackViewNode.h"
 #include "TrackViewDopeSheetBase.h"
+#include "TrackViewNode.h"
+#include "TrackViewSequence.h"
 
-#include <QScopedPointer>
 #include <QDockWidget>
+#include <QScopedPointer>
 #include "Util/Variable.h"
 #endif
+
+#include <AzCore/std/containers/vector.h>
 
 namespace Ui {
     class CTrackViewTrackPropsDlg;
@@ -58,7 +57,7 @@ public:
 
     // Called when user changes selected keys.
     // Return true if control update UI values
-    virtual bool OnKeySelectionChange(CTrackViewKeyBundle& keys) = 0;
+    virtual bool OnKeySelectionChange(const CTrackViewKeyBundle& keys) = 0;
 
     // Called when UI variable changes.
     virtual void OnUIChange(IVariable* pVar, CTrackViewKeyBundle& keys) = 0;
@@ -112,7 +111,7 @@ protected:
 
 protected:
     _smart_ptr<CVarBlock> m_pVarBlock;
-    std::vector<_smart_ptr<IVariable> > m_registeredVariables;
+    AZStd::vector<_smart_ptr<IVariable> > m_registeredVariables;
     CTrackViewKeyPropertiesDlg* m_pKeyPropertiesDlg;
     IVariable::OnSetCallback m_onSetCallback;
 };
@@ -127,14 +126,13 @@ public:
     ~CTrackViewTrackPropsDlg();
 
     void OnSequenceChanged();
-    bool OnKeySelectionChange(CTrackViewKeyBundle& keys);
-    void ReloadKey();
+    bool OnKeySelectionChange(const CTrackViewKeyBundle& keys);
 
 protected slots:
     void OnUpdateTime();
 
 protected:
-    CTrackViewKeyHandle m_keyHandle;
+    CTrackViewKeyBundle m_selectedKeys;
     QScopedPointer<Ui::CTrackViewTrackPropsDlg> ui;
 };
 
@@ -163,8 +161,8 @@ public:
     void PopulateVariables(ReflectedPropertyControl* propCtrl);
 
     // ITrackViewSequenceListener
-    virtual void OnKeysChanged(CTrackViewSequence* pSequence) override;
-    virtual void OnKeySelectionChanged(CTrackViewSequence* pSequence) override;
+    void OnKeysChanged(CTrackViewSequence* pSequence) override;
+    void OnKeySelectionChanged(CTrackViewSequence* pSequence) override;
 
 protected:
     //////////////////////////////////////////////////////////////////////////
@@ -174,7 +172,7 @@ protected:
     void ReloadValues();
 
 protected:
-    std::vector< _smart_ptr<CTrackViewKeyUIControls> > m_keyControls;
+    AZStd::vector< _smart_ptr<CTrackViewKeyUIControls> > m_keyControls;
 
     _smart_ptr<CVarBlock> m_pVarBlock;
 
@@ -186,5 +184,3 @@ protected:
     CTrackViewTrack* m_pLastTrackSelected;
     CTrackViewSequence* m_sequence;
 };
-
-#endif // CRYINCLUDE_EDITOR_TRACKVIEW_TRACKVIEWKEYPROPERTIESDLG_H

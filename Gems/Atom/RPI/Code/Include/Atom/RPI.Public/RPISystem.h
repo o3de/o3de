@@ -9,6 +9,7 @@
 #pragma once
 
 #include <Atom/RPI.Public/Buffer/BufferSystem.h>
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/FeatureProcessorFactory.h>
 #include <Atom/RPI.Public/DynamicDraw/DynamicDrawSystem.h>
 #include <Atom/RPI.Public/Image/ImageSystem.h>
@@ -46,11 +47,13 @@ namespace AZ
     {
         class FeatureProcessor;
 
-        class RPISystem final
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+        class ATOM_RPI_PUBLIC_API RPISystem final
             : public RPISystemInterface
             , public AZ::SystemTickBus::Handler
             , public AZ::Debug::TraceMessageBus::Handler
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             friend class UnitTest::RPITestFixture;
 
         public:

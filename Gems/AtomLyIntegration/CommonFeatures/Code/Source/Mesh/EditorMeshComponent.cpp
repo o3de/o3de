@@ -46,7 +46,7 @@ namespace AZ
                             ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Mesh.svg")
                             ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                            ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/atom/mesh/")
+                            ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/components/reference/atom/mesh/")
                             ->Attribute(AZ::Edit::Attributes::PrimaryAssetType, AZ::AzTypeInfo<RPI::ModelAsset>::Uuid())
                         ->UIElement(AZ::Edit::UIHandlers::Button, "Add Material Component", "Add Material Component")
                             ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
@@ -247,10 +247,16 @@ namespace AZ
                 EditorMeshStatsForLod stats;
                 const auto& meshes = lodAsset->GetMeshes();
                 stats.m_meshCount = static_cast<AZ::u32>(meshes.size());
+                stats.m_subMeshStatsForLod.reserve(stats.m_meshCount);
                 for (const auto& mesh : meshes)
                 {
-                    stats.m_vertCount += mesh.GetVertexCount();
-                    stats.m_triCount += mesh.GetIndexCount() / 3;
+                    const auto vertexCount = mesh.GetVertexCount();
+                    const auto triCount = mesh.GetIndexCount() / 3;
+                    stats.m_subMeshStatsForLod.push_back({});
+                    stats.m_subMeshStatsForLod.back().m_vertCount = vertexCount;
+                    stats.m_subMeshStatsForLod.back().m_triCount = triCount;
+                    stats.m_vertCount += vertexCount;
+                    stats.m_triCount += triCount;
                 }
                 m_stats.m_meshStatsForLod.emplace_back(AZStd::move(stats));
             }

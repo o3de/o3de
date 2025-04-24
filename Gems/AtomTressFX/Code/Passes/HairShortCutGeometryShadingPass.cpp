@@ -105,8 +105,8 @@ namespace AZ
 
             void HairShortCutGeometryShadingPass::InitializeInternal()
             {
-                LoadShaderAndPipelineState();
                 HairGeometryRasterPass::InitializeInternal();
+                LoadShaderAndPipelineState();
             }
 
         } // namespace Hair

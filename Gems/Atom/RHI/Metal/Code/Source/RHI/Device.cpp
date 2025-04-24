@@ -51,6 +51,7 @@ namespace AZ
             m_eventListener = [[MTLSharedEventListener alloc] init];
 
             InitFeatures();
+            m_clearAttachments.Init(*this);
             return RHI::ResultCode::Success;
         }
 
@@ -107,6 +108,7 @@ namespace AZ
             m_asyncUploadQueue.Shutdown();
             m_stagingBufferPool.reset();
             m_nullDescriptorManager.Shutdown();
+            m_clearAttachments.Shutdown();
             m_bindlessArgumentBuffer.GarbageCollect();
         }
 
@@ -400,6 +402,8 @@ namespace AZ
  
             m_features.m_swapchainScalingFlags = RHI::ScalingFlags::Stretch;
             AZ_Assert(m_metalDevice.argumentBuffersSupport >= MTLArgumentBuffersTier1, "Atom needs Argument buffer support to run");
+            
+            m_features.m_subpassInputSupport = RHI::SubpassInputSupportType::Color;
         }
 
         CommandList* Device::AcquireCommandList(RHI::HardwareQueueClass hardwareQueueClass)
@@ -465,6 +469,11 @@ namespace AZ
         BindlessArgumentBuffer& Device::GetBindlessArgumentBuffer()
         {
             return m_bindlessArgumentBuffer;
+        }
+    
+        RHI::ResultCode Device::ClearRenderAttachments(CommandList& commandList, MTLRenderPassDescriptor* renderpassDesc, const AZStd::vector<ClearAttachments::ClearData>& clearAttachmentData)
+        {
+            return m_clearAttachments.Clear(commandList, renderpassDesc, clearAttachmentData);
         }
     }
 }

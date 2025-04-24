@@ -256,6 +256,24 @@ namespace AzToolsFramework
         virtual void ClearDirtyEntities() = 0;
 
         /*!
+         * Marks an entity as ignored suppressing entity addition to the dirty entity set.
+         * \param target - The Id of the entity to mark as ignored.
+         */
+        virtual void AddIgnoredEntity(AZ::EntityId target) = 0;
+
+        /*!
+         * Removes an entity from the ignored entity set.
+         * \param target - The Id of the entity to remove
+         * \return 1 if target EntityId was removed successfully, otherwise 0
+         */
+        virtual int RemoveIgnoredEntity(AZ::EntityId target) = 0;
+
+        /*!
+         * Clears the ignored entity set.
+         */
+        virtual void ClearIgnoredEntities() = 0;
+
+        /*!
          * \return true if an undo/redo operation is in progress.
          */
         virtual bool IsDuringUndoRedo() = 0;
@@ -334,8 +352,9 @@ namespace AzToolsFramework
         /*!
          * Completes the current undo batch.
          * It's still possible to resume the batch as long as it's still the most recent one.
+         * Returns false if the undo batch was discarded because it was empty, true in all other cases.
          */
-        virtual void EndUndoBatch() = 0;
+        virtual bool EndUndoBatch() = 0;
 
         /*!
          * \return true if the entity (or entities) can be edited/modified.

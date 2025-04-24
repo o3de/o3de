@@ -52,7 +52,7 @@ namespace AZ::RHI
     {
         if (Validation::IsEnabled())
         {
-            if (!ValidateIsRegistered(expandRequest.m_image))
+            if (!ValidateIsRegistered(expandRequest.m_image.get()))
             {
                 return false;
             }
@@ -132,7 +132,7 @@ namespace AZ::RHI
                             }
 
                             DeviceStreamingImageInitRequest streamingImageInitRequest(
-                                *initRequest.m_image->GetDeviceImage(deviceIndex), initRequest.m_descriptor, initRequest.m_tailMipSlices);
+                                initRequest.m_image->GetDeviceImage(deviceIndex), initRequest.m_descriptor, initRequest.m_tailMipSlices);
                             return deviceStreamingImagePool->InitImage(streamingImageInitRequest);
                         }
                         else
@@ -168,7 +168,7 @@ namespace AZ::RHI
                         request.m_image->m_deviceObjects[deviceIndex] = Factory::Get().CreateImage();
 
                         DeviceStreamingImageInitRequest imageInitRequest(
-                            *request.m_image->GetDeviceImage(deviceIndex), request.m_image->m_descriptor, request.m_tailMipSlices);
+                            request.m_image->GetDeviceImage(deviceIndex), request.m_image->m_descriptor, request.m_tailMipSlices);
                         auto result = deviceStreamingImagePool->InitImage(imageInitRequest);
 
                         if (result == ResultCode::Success)
@@ -215,7 +215,7 @@ namespace AZ::RHI
         {
             DeviceStreamingImageExpandRequest expandRequest;
 
-            expandRequest.m_image = request.m_image->GetDeviceImage(deviceIndex).get();
+            expandRequest.m_image = request.m_image->GetDeviceImage(deviceIndex);
             expandRequest.m_mipSlices = request.m_mipSlices;
             expandRequest.m_waitForUpload = request.m_waitForUpload;
             expandRequest.m_completeCallback = completeCallback;

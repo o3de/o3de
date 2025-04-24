@@ -6,7 +6,7 @@
  *
  */
 
-#include <Atom/Feature/AuxGeom/AuxGeomFeatureProcessor.h>
+#include <AuxGeom/AuxGeomFeatureProcessor.h>
 
 #include "AuxGeomDrawQueue.h"
 #include "DynamicPrimitiveProcessor.h"

@@ -16,7 +16,9 @@
 #endif
 
 #include "../BasePBR/BasePBR_PixelGeometryEval.azsli"
+#if ENABLE_PARALLAX
 #include "../MaterialFunctions/ParallaxDepth.azsli"
+#endif
 #include <Atom/Features/InstancedTransforms.azsli>
 
 #include <Atom/Features/Debug.azsli>

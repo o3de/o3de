@@ -7,7 +7,11 @@
  */
 #pragma once
 
+#ifdef __APPLE__
+#include <xlocale.h>
+#else
 #include <locale.h>
+#endif
 
 namespace AZ
 {

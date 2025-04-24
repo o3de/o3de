@@ -30,13 +30,13 @@ namespace AZ
             virtual void Compile([[maybe_unused]] const RHI::HardwareQueueClass hardwareClass) {}
 
             /// Queues transition barriers at the beginning of a scope.
-            virtual void QueuePrologueTransitionBarriers(CommandList&) {}
+            virtual void QueuePrologueTransitionBarriers(CommandList&, BarrierTypeFlags) {}
 
             /// Performs resolve-specific copy / streaming operations.
             virtual void Resolve(CommandList&) {}
 
             /// Queues transition barriers at the end of a scope.
-            virtual void QueueEpilogueTransitionBarriers(CommandList&) {}
+            virtual void QueueEpilogueTransitionBarriers(CommandList&, BarrierTypeFlags) {}
 
             /// Called at the end of the frame after execution.
             virtual void Deactivate() {}

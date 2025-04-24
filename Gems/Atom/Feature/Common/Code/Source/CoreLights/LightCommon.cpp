@@ -7,7 +7,7 @@
  */
 
 
-#include <Atom/Feature/CoreLights/LightCommon.h>
+#include <CoreLights/LightCommon.h>
 
 namespace AZ::Render::LightCommon
 {

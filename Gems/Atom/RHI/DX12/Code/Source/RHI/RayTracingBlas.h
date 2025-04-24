@@ -43,11 +43,18 @@ namespace AZ
             // RHI::DeviceRayTracingBlas overrides...
             virtual bool IsValid() const override { return GetBuffers().m_blasBuffer != nullptr; }
 
+            uint64_t GetAccelerationStructureByteSize() override;
+
         private:
             RayTracingBlas() = default;
 
             // RHI::DeviceRayTracingBlas overrides...
             RHI::ResultCode CreateBuffersInternal(RHI::Device& deviceBase, const RHI::DeviceRayTracingBlasDescriptor* descriptor, const RHI::DeviceRayTracingBufferPools& rayTracingBufferPools) override;
+            RHI::ResultCode CreateCompactedBuffersInternal(
+                RHI::Device& device,
+                RHI::Ptr<RHI::DeviceRayTracingBlas> sourceBlas,
+                uint64_t compactedBufferSize,
+                const RHI::DeviceRayTracingBufferPools& rayTracingBufferPools) override;
 
 #ifdef AZ_DX12_DXR_SUPPORT
             AZStd::vector<D3D12_RAYTRACING_GEOMETRY_DESC> m_geometryDescs;
