@@ -143,7 +143,7 @@ namespace Maestro
     CAnimPostFXNode::FxNodeDescriptionMap CAnimPostFXNode::s_fxNodeDescriptions;
 
     CAnimPostFXNode::CAnimPostFXNode()
-        : CAnimPostFXNode(0, AnimNodeType::Invalid, nullptr)
+        : CAnimNode(0, AnimNodeType::Invalid), m_pDescription(nullptr)
     {
     }
 
@@ -151,7 +151,9 @@ namespace Maestro
         : CAnimNode(id, nodeType)
         , m_pDescription(pDesc)
     {
-    }
+        AZ_Assert(id > 0, "Expected a valid node id.");
+        AZ_Assert(pDesc, "Expected a valid description pointer.");
+    }        
 
     void CAnimPostFXNode::Initialize()
     {
@@ -252,8 +254,7 @@ namespace Maestro
         {
             // This is not ideal - we should never get here unless someone is tampering with data. We can't remove the node at this point,
             // we can't use a default description without crashing later, so we simply assert.
-            AZ_Assert(
-                false, "Unrecognized PostFX nodeType in Track View node %s. Please remove this node from the sequence.", m_name.c_str());
+            AZ_Assert(false, "Unrecognized PostFX nodeType in Track View node %s. Please remove this node from the sequence.", m_name.c_str());
         }
     }
 
@@ -287,22 +288,33 @@ namespace Maestro
 
     unsigned int CAnimPostFXNode::GetParamCount() const
     {
+        if (!m_pDescription)
+        {
+            AZ_Assert(false, "Unrecognized PostFX nodeType in Track View node %s. Please remove this node from the sequence.", m_name.c_str());
+            return 0;
+        }
         return static_cast<unsigned int>(m_pDescription->m_nodeParams.size());
     }
 
     CAnimParamType CAnimPostFXNode::GetParamType(unsigned int nIndex) const
     {
-        if (nIndex < m_pDescription->m_nodeParams.size())
+        if (!m_pDescription)
         {
-            return m_pDescription->m_nodeParams[nIndex].paramType;
+            AZ_Assert(false, "Unrecognized PostFX nodeType in Track View node %s. Please remove this node from the sequence.", m_name.c_str());
+            return AnimParamType::Invalid;
+        }
+        if (nIndex >= GetParamCount())
+        {
+            AZ_Assert(false, "Invalid parameter index %u (of %u) in Track View node %s.", nIndex, GetParamCount(), m_name.c_str());
+            return AnimParamType::Invalid;
         }
 
-        return AnimParamType::Invalid;
+        return m_pDescription->m_nodeParams[nIndex].paramType;
     }
 
     bool CAnimPostFXNode::GetParamInfoFromType(const CAnimParamType& paramId, SParamInfo& info) const
     {
-        for (size_t i = 0; i < m_pDescription->m_nodeParams.size(); ++i)
+        for (unsigned int i = 0; i < GetParamCount(); ++i)
         {
             if (m_pDescription->m_nodeParams[i].paramType == paramId)
             {
@@ -315,10 +327,14 @@ namespace Maestro
 
     void CAnimPostFXNode::CreateDefaultTracks()
     {
-        for (size_t i = 0; i < m_pDescription->m_nodeParams.size(); ++i)
+        for (unsigned int i = 0; i < GetParamCount(); ++i)
         {
-            IAnimTrack* pTrack = CreateTrackInternal(
-                m_pDescription->m_nodeParams[i].paramType, eAnimCurveType_BezierFloat, m_pDescription->m_nodeParams[i].valueType);
+            IAnimTrack* pTrack = CreateTrackInternal(m_pDescription->m_nodeParams[i].paramType, eAnimCurveType_BezierFloat, m_pDescription->m_nodeParams[i].valueType);
+            if (!pTrack)
+            {
+                AZ_Assert(false, "Failed to create a track for Track View node %s.", m_name.c_str());
+                continue;
+            }
 
             // Setup default value
             AnimValueType valueType = m_pDescription->m_nodeParams[i].valueType;
@@ -348,13 +364,21 @@ namespace Maestro
 
     void CAnimPostFXNode::Animate(SAnimContext& ac)
     {
-        for (size_t i = 0; i < m_tracks.size(); ++i)
+        for (int i = 0; i < static_cast<int>(m_tracks.size()); ++i)
         {
             IAnimTrack* pTrack = m_tracks[i].get();
-            AZ_Assert(pTrack, "pTrack is null");
-            size_t paramIndex =
-                (size_t) static_cast<int>(m_tracks[i]->GetParameterType().GetType()) - static_cast<int>(AnimParamType::User);
-            AZ_Assert(paramIndex < m_pDescription->m_nodeParams.size(), "paramIndex is out of range");
+            if (!pTrack)
+            {
+                AZ_Assert(false, "Track #%d is null for Track View node %s.", i, m_name.c_str());
+                continue;
+            }
+
+            const auto paramIndex = static_cast<int>(m_tracks[i]->GetParameterType().GetType()) - static_cast<int>(AnimParamType::User);
+            if (paramIndex < 0 || paramIndex >= static_cast<int>(GetParamCount()))
+            {
+                AZ_Assert(false, "paramIndex %d is out of range (0 .. %u) for Track View node %s.", i, m_name.c_str());
+                continue;
+            }
 
             if (pTrack->GetFlags() & IAnimTrack::eAnimTrackFlags_Disabled)
             {
@@ -366,6 +390,11 @@ namespace Maestro
                 continue;
             }
 
+            if (!pTrack->HasKeys())
+            {
+                continue;
+            }
+
             AnimValueType valueType = m_pDescription->m_nodeParams[paramIndex].valueType;
 
             // sorry: quick & dirty solution for c2 shipping - custom type handling for shadows - make this properly after shipping
@@ -373,21 +402,30 @@ namespace Maestro
             {
                 bool val(false);
                 pTrack->GetValue(ac.time, val);
+                // TODO : https://github.com/o3de/o3de/issues/6169, legacy code was:
+                //gEnv->p3DEngine->SetShadowsGSMCache(val);
             }
             else if (valueType == AnimValueType::Float)
             {
                 float val(0);
                 pTrack->GetValue(ac.time, val);
+                // TODO : https://github.com/o3de/o3de/issues/6169, legacy code was:
+                //gEnv->p3DEngine->GetPostEffectBaseGroup()->SetParam(m_pDescription->m_controlParams[paramIndex]->m_name.c_str(), val);
+
             }
             else if (valueType == AnimValueType::Bool)
             {
                 bool val(false);
                 pTrack->GetValue(ac.time, val);
+                // TODO : https://github.com/o3de/o3de/issues/6169, legacy code was:
+                //gEnv->p3DEngine->GetPostEffectBaseGroup()->SetParam(m_pDescription->m_controlParams[paramIndex]->m_name.c_str(), (val ? 1.f : 0.f));
             }
             else if (valueType == AnimValueType::Vector4)
             {
                 AZ::Vector4 val(0.0f, 0.0f, 0.0f, 0.0f);
                 static_cast<CCompoundSplineTrack*>(pTrack)->GetValue(ac.time, val);
+                // TODO : https://github.com/o3de/o3de/issues/6169, legacy code was:
+                //gEnv->p3DEngine->GetPostEffectBaseGroup()->SetParam(m_pDescription->m_controlParams[paramIndex]->m_name.c_str(), val);
             }
         }
     }
@@ -397,12 +435,20 @@ namespace Maestro
         CAnimNode::OnReset();
 
         // Reset each postFX param to its default.
-        for (size_t i = 0; i < m_tracks.size(); ++i)
+        for (int i = 0; i < static_cast<int>(m_tracks.size()); ++i)
         {
-            AZ_Assert(m_tracks[i].get(), "AnimTrack at %i is null", i);
-            size_t paramIndex =
-                (size_t) static_cast<int>(m_tracks[i]->GetParameterType().GetType()) - static_cast<int>(AnimParamType::User);
-            AZ_Assert(paramIndex < m_pDescription->m_nodeParams.size(), "paramIndex is out of range");
+            if (!m_tracks[i])
+            {
+                AZ_Assert(false, "AnimTrack at %i is null", i);
+                continue;
+            }
+
+            const auto paramIndex = static_cast<int>(m_tracks[i]->GetParameterType().GetType()) - static_cast<int>(AnimParamType::User);
+            if (paramIndex < 0 || paramIndex >= static_cast<int>(GetParamCount()))
+            {
+                AZ_Assert(false, "paramIndex %d is out of range (0 .. %u) for Track View node %s.", i, m_name.c_str());
+                continue;
+            }
 
             AnimValueType valueType = m_pDescription->m_nodeParams[paramIndex].valueType;
 
@@ -411,21 +457,29 @@ namespace Maestro
             {
                 bool val(false);
                 m_pDescription->m_controlParams[paramIndex]->GetDefault(val);
+                // TODO : https://github.com/o3de/o3de/issues/6169, legacy code was:
+                //gEnv->p3DEngine->SetShadowsGSMCache(val);
             }
             else if (valueType == AnimValueType::Float)
             {
                 float val(0);
                 m_pDescription->m_controlParams[paramIndex]->GetDefault(val);
+                // TODO : https://github.com/o3de/o3de/issues/6169, legacy code was:
+                //gEnv->p3DEngine->GetPostEffectBaseGroup()->SetParam(m_pDescription->m_controlParams[paramIndex]->m_name.c_str(), val);
             }
             else if (valueType == AnimValueType::Bool)
             {
                 bool val(false);
                 m_pDescription->m_controlParams[paramIndex]->GetDefault(val);
+                // TODO : https://github.com/o3de/o3de/issues/6169, legacy code was:
+                //gEnv->p3DEngine->GetPostEffectBaseGroup()->SetParam(m_pDescription->m_controlParams[paramIndex]->m_name.c_str(), (val ? 1.f : 0.f));
             }
             else if (valueType == AnimValueType::Vector4)
             {
                 Vec4 val(0.0f, 0.0f, 0.0f, 0.0f);
                 m_pDescription->m_controlParams[paramIndex]->GetDefault(val);
+                // TODO : https://github.com/o3de/o3de/issues/6169, legacy code was:
+                //gEnv->p3DEngine->GetPostEffectBaseGroup()->SetParam(m_pDescription->m_controlParams[paramIndex]->m_name.c_str(), val);
             }
         }
     }

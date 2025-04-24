@@ -179,11 +179,11 @@ namespace Maestro
 
         //! Get key at specified location.
         //! @param key Must be valid pointer to compatible key structure, to be filled with specified key location.
-        void GetKey(int index, IKey* key) const override;
+        void GetKey(int keyIndex, IKey* key) const override;
 
         //! Get time of specified key.
         //! @return key time.
-        float GetKeyTime(int index) const override;
+        float GetKeyTime(int keyIndex) const override;
 
         //! Get minimal legal time delta between keys.
         //! @return Minimal legal time delta between keys.
@@ -195,17 +195,17 @@ namespace Maestro
 
         //! Get flags of specified key.
         //! @return key time.
-        int GetKeyFlags(int index) override;
+        int GetKeyFlags(int keyIndex) override;
 
         //! Set key at specified location.
         //! @param key Must be valid pointer to compatible key structure.
-        void SetKey(int index, IKey* key) override;
+        void SetKey(int keyIndex, IKey* key) override;
 
         //! Set time of specified key.
-        void SetKeyTime(int index, float time) override;
+        void SetKeyTime(int keyIndex, float time) override;
 
         //! Set flags of specified key.
-        void SetKeyFlags(int index, int flags) override;
+        void SetKeyFlags(int keyIndex, int flags) override;
 
         //! Sort keys in track (after time of keys was modified).
         void SortKeys() override;

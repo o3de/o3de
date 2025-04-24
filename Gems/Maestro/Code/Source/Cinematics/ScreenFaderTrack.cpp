@@ -6,22 +6,26 @@
  *
  */
 
+#include <Atom/RPI.Public/Image/StreamingImage.h>
+#include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
+
 #include <AzCore/Serialization/SerializeContext.h>
+
 #include "ScreenFaderTrack.h"
-#include <ITexture.h>
+
 
 namespace Maestro
 {
 
     CScreenFaderTrack::CScreenFaderTrack()
     {
-        m_lastTextureID = -1;
+        m_activeTextureNumber = -1;
         SetScreenFaderTrackDefaults();
     }
 
     CScreenFaderTrack::~CScreenFaderTrack()
     {
-        ReleasePreloadedTextures();
+        m_preloadedTextures.clear();
     }
 
     void CScreenFaderTrack::GetKeyInfo(int keyIndex, const char*& description, float& duration) const
@@ -61,8 +65,7 @@ namespace Maestro
             {
                 key.m_fadeChangeType = IScreenFaderKey::eFCT_Linear;
             }
-            const char* str;
-            str = keyNode->getAttr("texture");
+            const char* str = keyNode->getAttr("texture");
             key.m_strTexture = str;
             keyNode->getAttr("useCurColor", key.m_bUseCurColor);
         }
@@ -88,15 +91,32 @@ namespace Maestro
         {
             // when we disable, 'clear' the screen fader effect to avoid the possibility of leaving the Editor in a faded state
             m_bTextureVisible = false;
-            m_drawColor = Vec4(.0f, .0f, .0f, .0f);
+            m_drawColor = AZ::Vector4(.0f, .0f, .0f, .0f);
         }
+    }
+
+    void CScreenFaderTrack::SetKey(int keyIndex, IKey* key)
+    {
+        if (!key || keyIndex < 0 || keyIndex >= GetNumKeys())
+        {
+            AZ_Assert(key, "Invalid key pointer.");
+            AZ_Assert(keyIndex >= 0 && keyIndex < GetNumKeys(), "Key index (%d) is out of range (0 .. %d).", keyIndex, GetNumKeys());
+            return;
+        }
+
+        IScreenFaderKey& screenFaderKey = *(static_cast<IScreenFaderKey*>(key));
+        screenFaderKey.m_fadeTime = AZStd::clamp(screenFaderKey.m_fadeTime, GetMinKeyTimeDelta(), m_timeRange.end - screenFaderKey.time);
+
+        m_keys[keyIndex] = screenFaderKey;
+
+        SortKeys();
     }
 
     void CScreenFaderTrack::PreloadTextures()
     {
         if (!m_preloadedTextures.empty())
         {
-            ReleasePreloadedTextures();
+            m_preloadedTextures.clear();
         }
 
         const int nKeysCount = GetNumKeys();
@@ -107,59 +127,80 @@ namespace Maestro
             {
                 IScreenFaderKey key;
                 GetKey(nKeyIndex, &key);
-                if (!key.m_strTexture.empty())
-                {
-                }
-                else
+                const auto& texturePath = key.m_strTexture;
+                if (texturePath.empty())
                 {
                     m_preloadedTextures.push_back(nullptr);
+                    continue;
                 }
+
+                // The file may not be in the AssetCatalog at this point if it is still processing or doesn't exist on disk.
+                // Use GenerateAssetIdTEMP instead of GetAssetIdByPath so that it will return a valid AssetId anyways
+                AZ::Data::AssetId streamingImageAssetId;
+                AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                    streamingImageAssetId, &AZ::Data::AssetCatalogRequestBus::Events::GenerateAssetIdTEMP, texturePath.c_str());
+                streamingImageAssetId.m_subId = AZ::RPI::StreamingImageAsset::GetImageAssetSubId();
+
+                auto streamingImageAsset = AZ::Data::AssetManager::Instance().FindOrCreateAsset<AZ::RPI::StreamingImageAsset>(
+                    streamingImageAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
+
+                AZ::Data::Instance<AZ::RPI::Image> image = AZ::RPI::StreamingImage::FindOrCreate(streamingImageAsset);
+
+                AZ_Error("ScreenFaderTrack", image, "PreloadTextures(): Failed to find or create an image instance from image asset '%s'", texturePath.c_str());
+
+                m_preloadedTextures.push_back(image);
             }
         }
     }
 
-    ITexture* CScreenFaderTrack::GetActiveTexture() const
+    AZ::Data::Instance<AZ::RPI::Image> CScreenFaderTrack::GetActiveTexture() const
     {
-        int index = GetLastTextureID();
-        return (index >= 0 && (size_t)index < m_preloadedTextures.size()) ? m_preloadedTextures[index] : 0;
+        return (m_activeTextureNumber >= 0 && m_activeTextureNumber < static_cast<int>(m_preloadedTextures.size()))
+            ? m_preloadedTextures[m_activeTextureNumber]
+            : nullptr;
     }
 
     void CScreenFaderTrack::SetScreenFaderTrackDefaults()
     {
         m_bTextureVisible = false;
-        m_drawColor = Vec4(1, 1, 1, 1);
+        m_drawColor = AZ::Vector4(1, 1, 1, 1);
     }
 
-    void CScreenFaderTrack::ReleasePreloadedTextures()
+    bool CScreenFaderTrack::SetActiveTexture(int keyIndex)
     {
-        const size_t size = m_preloadedTextures.size();
-        for (size_t i = 0; i < size; ++i)
+        if (keyIndex < 0 || keyIndex >= GetNumKeys())
         {
-            SAFE_RELEASE(m_preloadedTextures[i]);
+            AZ_Assert(false, "Key index (%d) is out of range (0 .. %d)", keyIndex, GetNumKeys());
+            return false;
         }
-        m_preloadedTextures.resize(0);
-    }
 
-    bool CScreenFaderTrack::SetActiveTexture(int index)
-    {
-        ITexture* pTexture = GetActiveTexture();
-
-        SetLastTextureID(index);
+        auto pTexture = GetActiveTexture();
+        m_activeTextureNumber = keyIndex;
 
         // Check if textures should be reloaded.
         bool bNeedTexReload = pTexture == nullptr; // Not yet loaded
         if (pTexture)
         {
             IScreenFaderKey key;
-            GetKey(index, &key);
-            if (strcmp(key.m_strTexture.c_str(), pTexture->GetName()) != 0)
+            GetKey(keyIndex, &key);
+            const auto& texturePath = key.m_strTexture;
+            if (texturePath.empty())
+            {
+                return true; // nothing to do
+            }
+
+            AZStd::string activeTexturePath;
+            AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                activeTexturePath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, pTexture->GetAssetId());
+
+            if (texturePath != activeTexturePath)
             {
                 bNeedTexReload = true; // Loaded, but a different texture
             }
         }
         if (bNeedTexReload)
         {
-            // Ok, try to reload.
+            // OK, try to reload.
             PreloadTextures();
             pTexture = GetActiveTexture();
         }
