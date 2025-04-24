@@ -179,6 +179,36 @@ class RemoteConsole:
             diagnostic_logger.debug(f'Remote console connection never became ready after scanning {from_port_to_port}. Trying again')
         return False
 
+    def reconnect(self):
+        # terminate
+        self.stop_pump.set()
+        self.socket.shutdown(socket.SHUT_WR)
+        self.socket.close()
+        self.pump_thread.join()
+
+        # re-create
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.pump_thread = threading.Thread(target=self.pump)
+
+        # connecting untill success
+        while True:
+            try:
+                diagnostic_logger.debug(f'Reconnecting {self.addr}:{self.port}')
+                self.socket.connect((self.addr, self.port))
+                diagnostic_logger.info(f'Successfully reconnected to {self.addr}:{self.port}')
+                break
+            except Exception as e:
+                diagnostic_logger.info(f'Connection exception {e}')
+
+        self.stop_pump.clear()
+        self.pump_thread.start()
+        timeout = 30
+        if not self.ready.wait(timeout):
+            raise Exception(f'remote_console_commands.py:start: Remote console connection never became ready. Waited for {timeout} seconds.')
+
+        self.connected = True
+        diagnostic_logger.info(f'Remote Console reconnected at port {self.port}')
+
     def stop(self):
         """
         Stops and closes the socket connection to the Launcher instance.
@@ -214,7 +244,7 @@ class RemoteConsole:
             try:
                 # Sending a NOOP message in order to get log lines
                 self._send_message(self._create_message(CONSOLE_MESSAGE_MAP['NOOP']))
-                
+
                 self._handle_message(self.socket.recv(4096))
             except Exception as e:
                 diagnostic_logger.debug(f'disconnect because of an exception {e}')

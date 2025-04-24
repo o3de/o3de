@@ -28,6 +28,7 @@ diagnostic_logger.addHandler(diagnostic_handler)
 
 remote_console = None
 messages_to_console = False
+try_reconnect = False
 
 
 def inputCommand():
@@ -45,11 +46,13 @@ def main():
     global remote_console
     global client_message_logger
     global messages_to_console
+    global try_reconnect
 
     parser = argparse.ArgumentParser(description="Provides common dev functionality", add_help=False)
     parser.add_argument('--addr', default='127.0.0.1', dest='address', help="Address for Remote Console to connect")
     parser.add_argument('--port', default='4600', dest='port', help="Port for Remote Console to connect")
     parser.add_argument('--console', action='store_true', dest='console', help="Log all the client messages to console in addition to remote_console.log")
+    parser.add_argument('--reconnect', action='store_true', dest='reconnect', help="try reconnect to the same port forever if client get disconnected")
 
     args, unknown = parser.parse_known_args(sys.argv[1:])
 
@@ -61,6 +64,9 @@ def main():
         message_handler.setFormatter(message_formatter)
         client_message_logger.addHandler(message_handler)
 
+    if args.reconnect:
+        try_reconnect = True
+
     remote_console = remote_console_commands.RemoteConsole(addr=args.address, port=int(args.port), on_message_received=printLog)
     remote_console.start()
 
@@ -70,8 +76,16 @@ def main():
     while remote_console.connected:
         time.sleep(0.5)
 
-    if not remote_console.connected:
-        os.kill(os.getpid(), signal.SIGINT)
+    if try_reconnect:
+        while True:  # intentional infinite cycle
+            if not remote_console.connected:
+                remote_console.reconnect()
+            else:
+                while remote_console.connected:
+                    time.sleep(0.5)
+    else:
+        if not remote_console.connected:
+            os.kill(os.getpid(), signal.SIGINT)
 
 
 def printLog(raw: str):
