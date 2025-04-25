@@ -50,7 +50,7 @@ ly_add_target(
 ################################################################################
 # Tests
 ################################################################################
-if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
+if(PAL_TRAIT_TEST_GOOGLE_TEST_SUPPORTED)
 
     ly_add_target(
         NAME AzToolsFrameworkTestCommon STATIC
@@ -71,39 +71,41 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzTest
     )
 
-    ly_add_target(
-        NAME AzToolsFramework.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
-        NAMESPACE AZ
-        AUTOMOC
-        FILES_CMAKE
-            Tests/aztoolsframeworktests_files.cmake
-        INCLUDE_DIRECTORIES
-            PRIVATE
-                Tests
-        COMPILE_DEFINITIONS
-            PRIVATE
-                O3DE_PYTHON_SITE_PACKAGE_SUBPATH="${LY_PYTHON_VENV_SITE_PACKAGES}"
-        BUILD_DEPENDENCIES
-            PUBLIC
-                AZ::AzTestShared
-            PRIVATE
+    if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
+        ly_add_target(
+            NAME AzToolsFramework.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+            NAMESPACE AZ
+            AUTOMOC
+            FILES_CMAKE
+                Tests/aztoolsframeworktests_files.cmake
+            INCLUDE_DIRECTORIES
+                PRIVATE
+                    Tests
+            COMPILE_DEFINITIONS
+                PRIVATE
+                    O3DE_PYTHON_SITE_PACKAGE_SUBPATH="${LY_PYTHON_VENV_SITE_PACKAGES}"
+            BUILD_DEPENDENCIES
+                PUBLIC
+                    AZ::AzTestShared
+                PRIVATE
+                    3rdParty::Qt::Test
+                    AZ::AzFrameworkTestShared
+                    AZ::AzToolsFramework
+                    AZ::AzToolsFrameworkTestCommon
+                    AZ::AzManipulatorTestFramework.Static
+                    AZ::AzCoreTestCommon
+                    AZ::AzTest
+                    AZ::AzQtComponents
+            RUNTIME_DEPENDENCIES
                 3rdParty::Qt::Test
-                AZ::AzFrameworkTestShared
-                AZ::AzToolsFramework
-                AZ::AzToolsFrameworkTestCommon
-                AZ::AzManipulatorTestFramework.Static
-                AZ::AzCoreTestCommon
-                AZ::AzTest
-                AZ::AzQtComponents
-        RUNTIME_DEPENDENCIES
-            3rdParty::Qt::Test
-    )
-    ly_add_googletest(
-        NAME AZ::AzToolsFramework.Tests
-        LABELS REQUIRES_tiaf
-    )
-    ly_add_googlebenchmark(
-        NAME AZ::AzToolsFramework.Benchmarks
-        TARGET AZ::AzToolsFramework.Tests
-    )
+        )
+        ly_add_googletest(
+            NAME AZ::AzToolsFramework.Tests
+            LABELS REQUIRES_tiaf
+        )
+        ly_add_googlebenchmark(
+            NAME AZ::AzToolsFramework.Benchmarks
+            TARGET AZ::AzToolsFramework.Tests
+        )
+    endif()
 endif()
