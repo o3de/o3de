@@ -595,6 +595,20 @@ namespace AZ
             return true;
         }
 
+        bool ShaderAsset::UpdateRootShaderVariantAsset(Data::Asset<ShaderVariantAsset> shaderVariantAsset)
+        {
+            auto& supervariants = GetCurrentShaderApiData().m_supervariants;
+            for (auto& supervariant : supervariants)
+            {
+                if (supervariant.m_rootShaderVariantAsset.GetId() == shaderVariantAsset.GetId())
+                {
+                    supervariant.m_rootShaderVariantAsset = shaderVariantAsset;
+                    return true;
+                }
+            }
+            return false;
+        }
+
         bool ShaderAsset::PostLoadInit()
         {
             ShaderVariantFinderNotificationBus::Handler::BusConnect(GetId());

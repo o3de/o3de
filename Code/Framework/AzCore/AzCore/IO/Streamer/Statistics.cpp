@@ -140,21 +140,17 @@ namespace AZ::IO
         [[maybe_unused]] AZStd::string_view name,
         [[maybe_unused]] double value)
     {
-#if defined(CARBONATED)
-        // Asan fix: The original code passed narrow strings to L" " format. In this case %s is interpreted
-        // as a wide string. This resulted in reading the given number of wide characters instead of narrow ones 
-        // what caused respective buffer overrun.
-        [[maybe_unused]] AZStd::wstring counterName;
-        AZStd::to_wstring(counterName,
-            AZStd::string::format("Streamer/%.*s/%.*s (Raw)", aznumeric_cast<int>(owner.size()), owner.data(), aznumeric_cast<int>(name.size()), name.data()).data());
+        // AZ_PROFILE_DATAPOINT requires a wstring as input, but you can't feed non-wstring parameters to wstring::format.
+        const size_t MaxStatNameLength = 256;
+        wchar_t statBufferStack[MaxStatNameLength];
+        statBufferStack[MaxStatNameLength - 1] = 0; // make sure it is null terminated
 
-        AZ_PROFILE_DATAPOINT(AzCore, value, counterName.c_str());
-#else
-        AZ_PROFILE_DATAPOINT(AzCore, value,
-            AZStd::wstring::format(L"Streamer/%.*s/%.*s (Raw)",
-            aznumeric_cast<int>(owner.size()), owner.data(),
-            aznumeric_cast<int>(name.size()), name.data()).data());
-#endif
+        AZStd::to_wstring(statBufferStack, MaxStatNameLength - 1,
+            AZStd::string::format("Streamer/%.*s/%.*s (Raw)",
+                aznumeric_cast<int>(owner.size()), owner.data(),
+                aznumeric_cast<int>(name.size()), name.data()));
+        
+        AZ_PROFILE_DATAPOINT(AzCore, value,statBufferStack);
     }
 
     AZStd::string_view Statistic::GetOwner() const

@@ -34,7 +34,9 @@ namespace ScriptCanvas
 
         void Logger::ClearLog()
         {
+#if defined(SC_EXECUTION_TRACE_ENABLED)
             m_logAsset.GetData().Clear();
+#endif // SC_EXECUTION_TRACE_ENABLED
         }
 
         void Logger::ClearLogExecutionOverride()
