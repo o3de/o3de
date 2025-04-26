@@ -11,4 +11,8 @@ set(FILES
     Pipeline/LyShineBuilder/LyShineBuilderComponent.cpp
     Pipeline/LyShineBuilder/UiCanvasBuilderWorker.h
     Pipeline/LyShineBuilder/UiCanvasBuilderWorker.cpp
+    Pipeline/SliceBuilder/SliceBuilderComponent.cpp
+    Pipeline/SliceBuilder/SliceBuilderComponent.h
+    Pipeline/SliceBuilder/SliceBuilderWorker.cpp
+    Pipeline/SliceBuilder/SliceBuilderWorker.h
 )
