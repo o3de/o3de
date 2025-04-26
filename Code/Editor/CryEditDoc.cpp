@@ -1487,8 +1487,7 @@ bool CCryEditDoc::LoadXmlArchiveArray(TDocMultiArchive& arrXmlAr, const QString&
         return false;
     }
 
-    CXmlArchive& xmlAr = *pXmlAr;
-    xmlAr.bLoading = true;
+    pXmlAr->bLoading = true;
 
     // bound to the level folder, as if it were the assets folder.
     // this mounts (whateverlevelname.ly) as @products@/Levels/whateverlevelname/ and thus it works...
@@ -1499,21 +1498,24 @@ bool CCryEditDoc::LoadXmlArchiveArray(TDocMultiArchive& arrXmlAr, const QString&
     }
 
     CPakFile pakFile;
-    bool loadFromPakSuccess = xmlAr.LoadFromPak(levelPath, pakFile);
+    bool loadFromPakSuccess = pXmlAr->LoadFromPak(levelPath, pakFile);
     pIPak->ClosePack(absoluteLevelPath.toUtf8().data());
     if (!loadFromPakSuccess)
     {
         return false;
     }
 
-    FillXmlArArray(arrXmlAr, &xmlAr);
+    FillXmlArArray(arrXmlAr, pXmlAr);
 
     return true;
 }
 
 void CCryEditDoc::ReleaseXmlArchiveArray(TDocMultiArchive& arrXmlAr)
 {
-    SAFE_DELETE(arrXmlAr[0]);
+    for (int i = 0; i < DMAS_COUNT; ++i)
+    {
+        SAFE_DELETE(arrXmlAr[i]);
+    }
 }
 
 namespace AzToolsFramework
