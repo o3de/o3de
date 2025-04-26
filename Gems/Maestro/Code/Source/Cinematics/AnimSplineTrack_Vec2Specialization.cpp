@@ -55,7 +55,7 @@ namespace Maestro
     }
 
     template<>
-    void TAnimSplineTrack<Vec2>::GetValue(float time, float& value, bool applyMultiplier)
+    void TAnimSplineTrack<Vec2>::GetValue(float time, float& value, bool applyMultiplier) const
     {
         if (GetNumKeys() == 0)
         {
@@ -67,20 +67,21 @@ namespace Maestro
             m_spline->Interpolate(time, tmp);
             value = tmp[0];
         }
-        if (applyMultiplier && m_trackMultiplier != 1.0f)
+
+        if (applyMultiplier && m_trackMultiplier != 1.0f && m_trackMultiplier > AZ::Constants::Tolerance)
         {
             value /= m_trackMultiplier;
         }
     }
 
     template<>
-    EAnimCurveType TAnimSplineTrack<Vec2>::GetCurveType()
+    EAnimCurveType TAnimSplineTrack<Vec2>::GetCurveType() const
     {
         return eAnimCurveType_BezierFloat;
     }
 
     template<>
-    AnimValueType TAnimSplineTrack<Vec2>::GetValueType()
+    AnimValueType TAnimSplineTrack<Vec2>::GetValueType() const
     {
         return kAnimValueDefault;
     }
@@ -88,6 +89,14 @@ namespace Maestro
     template<>
     void TAnimSplineTrack<Vec2>::SetValue(float time, const float& value, bool bDefault, bool applyMultiplier)
     {
+        const Range timeRange(GetTimeRange().start, GetTimeRange().end);
+        if ((timeRange.end - timeRange.start > AZ::Constants::Tolerance) && (time < timeRange.start || time > timeRange.end))
+        {
+            AZ_WarningOnce("AnimSplineTrack", false, "SetValue(%f): Time is out of range (%f .. %f) in track (%s), clamped.",
+                time, timeRange.start, timeRange.end, (GetNode() ? GetNode()->GetName() : ""));
+            AZStd::clamp(time, timeRange.start, timeRange.end);
+        }
+
         if (!bDefault)
         {
             I2DBezierKey key;
@@ -105,21 +114,27 @@ namespace Maestro
         {
             if (applyMultiplier && m_trackMultiplier != 1.0f)
             {
-                m_defaultValue = Vec2(time, value * m_trackMultiplier);
+                m_defaultValue.set(time, value * m_trackMultiplier);
             }
             else
             {
-                m_defaultValue = Vec2(time, value);
+                m_defaultValue.set(time, value);
             }
         }
     }
 
     template<>
-    void TAnimSplineTrack<Vec2>::GetKey(int index, IKey* key) const
+    void TAnimSplineTrack<Vec2>::GetKey(int keyIndex, IKey* key) const
     {
-        AZ_Assert(index >= 0 && index < GetNumKeys(), "Key index %i is out of range", index);
-        AZ_Assert(key, "Key is null");
-        Spline::key_type& k = m_spline->key(index);
+        if (keyIndex < 0 || keyIndex >= GetNumKeys() || !key || !(m_spline))
+        {
+            AZ_Assert(keyIndex >= 0 && keyIndex < GetNumKeys(), "Key index (%d) is out of range (0 .. %d).", keyIndex, GetNumKeys());
+            AZ_Assert(key, "Key is null");
+            AZ_Assert((m_spline), "Invalid spline.");
+            return;
+        }
+
+        Spline::key_type& k = m_spline->key(keyIndex);
         I2DBezierKey* bezierkey = (I2DBezierKey*)key;
         bezierkey->time = k.time;
         bezierkey->flags = k.flags;
@@ -128,34 +143,74 @@ namespace Maestro
     }
 
     template<>
-    void TAnimSplineTrack<Vec2>::SetKey(int index, IKey* key)
+    void TAnimSplineTrack<Vec2>::SetKey(int keyIndex, IKey* key)
     {
-        AZ_Assert(index >= 0 && index < GetNumKeys(), "Key index %i is out of range", index);
-        AZ_Assert(key, "Key is null");
-        Spline::key_type& k = m_spline->key(index);
+        if (keyIndex < 0 || keyIndex >= GetNumKeys() || !key || !(m_spline))
+        {
+            AZ_Assert(keyIndex >= 0 && keyIndex < GetNumKeys(), "Key index (%d) is out of range (0 .. %d).", keyIndex, GetNumKeys());
+            AZ_Assert(key, "Key is null");
+            AZ_Assert((m_spline), "Invalid spline.");
+            return;
+        }
+
+        Spline::key_type& k = m_spline->key(keyIndex);
         I2DBezierKey* bezierkey = (I2DBezierKey*)key;
         k.time = bezierkey->time;
         k.flags = bezierkey->flags;
         k.value = bezierkey->value;
         UpdateTrackValueRange(k.value.y);
+
         Invalidate();
+        SortKeys();
     }
 
     //! Create key at given time, and return its index.
     template<>
     int TAnimSplineTrack<Vec2>::CreateKey(float time)
     {
+        const Range timeRange(GetTimeRange());
+        if ((timeRange.end - timeRange.start > AZ::Constants::Tolerance) && (time < timeRange.start || time > timeRange.end))
+        {
+            AZ_WarningOnce("AnimSplineTrack", false, "CreateKey(%f): Time is out of range (%f .. %f) in track (%s), clamped.",
+                time, timeRange.start, timeRange.end, (GetNode() ? GetNode()->GetName() : ""));
+            AZStd::clamp(time, timeRange.start, timeRange.end);
+        }
+
         float value;
 
-        int nkey = GetNumKeys();
+        const int numKeys = GetNumKeys();
 
-        if (nkey > 0)
+        bool bUseDefault = true;
+        if (numKeys > 0)
         {
-            GetValue(time, value);
+            SortKeys();
+            // Check that no keys exist at the same time
+            auto prevKeyIdx = numKeys - 1;
+            while ((prevKeyIdx > 0) && (GetKeyTime(prevKeyIdx) > time))
+            {
+                --prevKeyIdx;
+            }
+            float dt = AZStd::abs(time - GetKeyTime(prevKeyIdx)); // delta time to previous key
+            if (prevKeyIdx < numKeys - 1) // Is there next key?
+            {
+                dt = AZStd::min(dt, AZStd::abs(time - GetKeyTime(prevKeyIdx + 1))); // delta time to closest key
+            }
+            if (dt < GetMinKeyTimeDelta())
+            {
+                AZ_Error("AnimSplineTrack", false, "CreateKey(%f): A key at this time exists in track (%s).", time, (GetNode() ? GetNode()->GetName() : ""));
+                return -1; // a key is too close in time, reject adding a key
+            }
+            // Check if Default Value was recently updated, and is closer in time than existing keys
+            bUseDefault = AZStd::abs(time - m_defaultValue.x) < dt;
+        }
+
+        if (bUseDefault)
+        {
+            value = m_defaultValue.y;
         }
         else
         {
-            value = m_defaultValue.y;
+            GetValue(time, value);
         }
 
         UpdateTrackValueRange(value);
@@ -165,21 +220,138 @@ namespace Maestro
         tmp[1] = 0.f;
         tmp[2] = 0.f;
         tmp[3] = 0.f;
-        return m_spline->InsertKey(time, tmp);
+        m_spline->InsertKey(time, tmp);
+
+        Invalidate();
+        SortKeys();
+
+        return FindKey(time);
     }
 
     template<>
-    int TAnimSplineTrack<Vec2>::CopyKey(IAnimTrack* pFromTrack, int nFromKey)
+    int TAnimSplineTrack<Vec2>::CloneKey(int srcKeyIndex, float timeOffset)
     {
-        // This small time offset is applied to prevent the generation of singular tangents.
-        float timeOffset = 0.01f;
+        const auto numKeys = GetNumKeys();
+        if (srcKeyIndex < 0 || srcKeyIndex >= numKeys)
+        {
+            AZ_Assert(false, "Key index (%d) is out of range (0 .. %d).", srcKeyIndex, numKeys);
+            return -1;
+        }
+
         I2DBezierKey key;
-        pFromTrack->GetKey(nFromKey, &key);
-        float t = key.time + timeOffset;
-        int newIndex = CreateKey(t);
-        key.time = key.value.x = t;
+        GetKey(srcKeyIndex, &key);
+
+        // Key time offset must be big enough to prevent generation of singular tangents
+        const auto minTimeOffset = AZStd::max(0.01f, GetMinKeyTimeDelta() * 1.1f);
+        if (AZStd::abs(timeOffset) < minTimeOffset)
+        {
+            timeOffset = timeOffset >= 0.0f ? minTimeOffset : minTimeOffset;
+        }
+
+        key.time += timeOffset;
+
+        const auto timeRange = GetTimeRange();
+        AZStd::clamp(key.time, timeRange.start, timeRange.end);
+
+        // Check that no key is too close
+        for (int i = 0; i < numKeys; ++i)
+        {
+            I2DBezierKey aKey;
+            GetKey(i, &aKey);
+
+            const auto dt = AZStd::abs(aKey.time - key.time);
+            if (dt < minTimeOffset)
+            {
+                AZ_Error("AnimSplineTrack", false,
+                    "CloneKey(%d, %f): A key at time (%f) with index (%d) in this track (%s) is too close to cloned key time (%f).",
+                    srcKeyIndex, timeOffset, aKey.time, i, (GetNode() ? GetNode()->GetName() : ""), key.time);
+                return -1;
+            }
+        }
+
+        const auto newIndex = CreateKey(key.time);
+        if (newIndex < 0)
+        {
+            return -1;
+        }
+
+        key.value.x = key.time;
         SetKey(newIndex, &key);
-        return newIndex;
+
+        SortKeys();
+
+        return FindKey(key.time);
+    }
+
+    template<>
+    int TAnimSplineTrack<Vec2>::CopyKey(IAnimTrack* pFromTrack, int fromKeyIndex)
+    {
+        if (!pFromTrack ||  fromKeyIndex < 0 || fromKeyIndex >= pFromTrack->GetNumKeys())
+        {
+            AZ_Assert(pFromTrack != nullptr, "Expected valid track pointer.");
+            AZ_Assert(fromKeyIndex >= 0 && fromKeyIndex < pFromTrack->GetNumKeys(), "Key index (%d) is out of range (0 .. %d).", fromKeyIndex, GetNumKeys());
+            return -1;
+        }
+
+        I2DBezierKey key;
+        pFromTrack->GetKey(fromKeyIndex, &key);
+
+        if (this == pFromTrack)
+        {
+            // Shift key time to prevent generation of singular tangents, with offset selected bigger than minimal legal key time delta.
+            const float timeOffset = AZStd::max(0.01f, GetMinKeyTimeDelta() * 1.1f);
+            const auto timeRange = GetTimeRange();
+            bool allowToAddKey = timeRange.end - timeRange.start > timeOffset;
+            if (allowToAddKey)
+            {
+                key.time += timeOffset;
+                if (key.time > timeRange.end)
+                {
+                    key.time -= timeOffset * 2.0f;
+                    if (key.time < timeRange.start)
+                    {
+                        allowToAddKey = false;
+                    }
+                }
+            }
+            if (!allowToAddKey)
+            {
+                AZ_Error("AnimSplineTrack", false, "CopyKey(%s, %d): Too narrow time range (%f .. %f) to clone key in this track.",
+                    (GetNode() ? GetNode()->GetName() : ""), fromKeyIndex, timeRange.start, timeRange.end);
+                return -1;
+            }
+
+            const auto existingKeyIndex = FindKey(key.time);
+            if (existingKeyIndex >= 0)
+            {
+                AZ_Error("AnimSplineTrack", false, "CopyKey(%s, %d): A key at time (%f) with index (%d) already exists in this track.",
+                    (GetNode() ? GetNode()->GetName() : ""), fromKeyIndex, key.time, existingKeyIndex);
+                return -1;
+            }
+        }
+        else
+        {
+            const auto existingKeyIndex = FindKey(key.time);
+            if (existingKeyIndex >= 0)
+            {
+                AZ_Error("AnimSplineTrack", false, "CopyKey(%s, %d): A key at time (%f) with index (%d) already exists in this track (%s).",
+                    (pFromTrack->GetNode() ? pFromTrack->GetNode()->GetName() : ""), fromKeyIndex, key.time, existingKeyIndex, (GetNode() ? GetNode()->GetName() : ""));
+                return -1;
+            }
+        }
+
+        const auto newIndex = CreateKey(key.time);
+        if (newIndex < 0)
+        {
+            return -1;
+        }
+
+        key.value.x = key.time;
+        SetKey(newIndex, &key);
+
+        SortKeys();
+
+        return FindKey(key.time);
     }
 
     /// @deprecated Serialization for Sequence data in Component Entity Sequences now occurs through AZ::SerializeContext and the Sequence
@@ -286,10 +458,11 @@ namespace Maestro
     template<>
     bool TAnimSplineTrack<Vec2>::SerializeSelection(XmlNodeRef& xmlNode, bool bLoading, bool bCopySelected, float fTimeOffset)
     {
+        bool result = true;
         if (bLoading)
         {
-            int numCur = GetNumKeys();
-            int num = xmlNode->getChildCount();
+            int numKeys = GetNumKeys();
+            int numNewKeys = xmlNode->getChildCount();
 
             unsigned int type;
             xmlNode->getAttr("TrackType", type);
@@ -299,43 +472,61 @@ namespace Maestro
                 return false;
             }
 
-            SetNumKeys(num + numCur);
-            for (int i = 0; i < num; i++)
+            SetNumKeys(numNewKeys + numKeys);
+            for (int i = 0; i < numNewKeys; i++)
             {
                 I2DBezierKey key; // Must be inside loop.
 
                 XmlNodeRef keyNode = xmlNode->getChild(i);
                 keyNode->getAttr("time", key.time);
                 keyNode->getAttr("value", key.value);
-                AZ_Assert(key.time == key.value.x, "Invalid Bezier key at %i", i);
+                if (AZStd::abs(key.time - key.value.x) > AZ::Constants::FloatEpsilon)
+                {
+                    AZ_Assert(false, "Invalid Bezier key at %i", i);
+                    result = false;
+                    continue;
+                }
+
                 key.time += fTimeOffset;
                 key.value.x += fTimeOffset;
 
                 keyNode->getAttr("flags", key.flags);
 
-                SetKey(i + numCur, &key);
+                SetKey(i + numKeys, &key);
+
+                const int newKeyIndex = FindKey(key.time);
+                if (newKeyIndex < 0)
+                {
+                    AZ_Assert(false, "Failed to set a new key.");
+                    result = false;
+                    continue;
+                }
 
                 if (bCopySelected)
                 {
-                    SelectKey(i + numCur, true);
+                    SelectKey(newKeyIndex, true);
                 }
 
                 // In-/Out-tangent
-                keyNode->getAttr("ds", m_spline->key(i + numCur).ds);
-                keyNode->getAttr("dd", m_spline->key(i + numCur).dd);
+                keyNode->getAttr("ds", m_spline->key(newKeyIndex).ds);
+                keyNode->getAttr("dd", m_spline->key(newKeyIndex).dd);
             }
-            SortKeys();
         }
         else
         {
-            int num = GetNumKeys();
+            int numKeys = GetNumKeys();
             xmlNode->setAttr("TrackType", GetCurveType());
 
             I2DBezierKey key;
-            for (int i = 0; i < num; i++)
+            for (int i = 0; i < numKeys; i++)
             {
                 GetKey(i, &key);
-                AZ_Assert(key.time == key.value.x, "Invalid Bezier key at %i", i);
+                if (AZStd::abs(key.time - key.value.x) > AZ::Constants::FloatEpsilon)
+                {
+                    AZ_Assert(false, "Invalid Bezier key at %i", i);
+                    result = false;
+                    continue;
+                }
 
                 if (!bCopySelected || IsKeySelected(i))
                 {
@@ -357,19 +548,28 @@ namespace Maestro
                 }
             }
         }
-        return true;
+
+        SortKeys();
+
+        return result;
     }
 
     template<>
-    void TAnimSplineTrack<Vec2>::GetKeyInfo(int index, const char*& description, float& duration)
+    void TAnimSplineTrack<Vec2>::GetKeyInfo(int keyIndex, const char*& description, float& duration) const
     {
         duration = 0;
 
         static char str[64];
         description = str;
-        AZ_Assert(index >= 0 && index < GetNumKeys(), "Key index %i is out of range", index);
-        Spline::key_type& k = m_spline->key(index);
-        sprintf_s(str, "%.2f", k.value.y);
+
+        if (keyIndex < 0 || keyIndex >= GetNumKeys())
+        {
+            AZ_Assert(false, "Key index (%d) is out of range (0 .. %d).", keyIndex, GetNumKeys());
+            return;
+        }
+
+        Spline::key_type& k = m_spline->key(keyIndex);
+        azsprintf(str, "%.2f", k.value.y);
     }
 
 } // namespace Maestro

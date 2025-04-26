@@ -28,8 +28,8 @@ public:
         , m_bHasRotationTrack(false) {}
 
     unsigned int GetCount() const { return static_cast<unsigned int>(m_tracks.size()); }
-    CTrackViewTrack* GetTrack(const unsigned int index) { return m_tracks[index]; }
-    const CTrackViewTrack* GetTrack(const unsigned int index) const { return m_tracks[index]; }
+    CTrackViewTrack* GetTrack(unsigned int index) { return m_tracks[index]; }
+    const CTrackViewTrack* GetTrack(unsigned int index) const { return m_tracks[index]; }
 
     void AppendTrack(CTrackViewTrack* pTrack);
     void AppendTrackBundle(const CTrackViewTrackBundle& bundle);
@@ -99,51 +99,57 @@ public:
     bool GetExpanded() const override;
 
     // Key getters
-    virtual unsigned int GetKeyCount() const { return m_pAnimTrack->GetNumKeys(); }
-    virtual CTrackViewKeyHandle GetKey(unsigned int index);
-    virtual CTrackViewKeyConstHandle GetKey(unsigned int index) const;
+    virtual unsigned int GetKeyCount() const { return (m_pAnimTrack) ? static_cast<unsigned int>(m_pAnimTrack->GetNumKeys()) : 0; }
+    virtual CTrackViewKeyHandle GetKey(unsigned int keyIndex);
+    virtual CTrackViewKeyConstHandle GetKey(unsigned int keyIndex) const;
 
-    virtual CTrackViewKeyHandle GetKeyByTime(const float time);
-    virtual CTrackViewKeyHandle GetNearestKeyByTime(const float time);
+    virtual CTrackViewKeyHandle GetKeyByTime(float time);
+    virtual CTrackViewKeyHandle GetNearestKeyByTime(float time);
 
     CTrackViewKeyBundle GetSelectedKeys() override;
     CTrackViewKeyBundle GetAllKeys() override;
-    CTrackViewKeyBundle GetKeysInTimeRange(const float t0, const float t1) override;
+    CTrackViewKeyBundle GetKeysInTimeRange(float t0, float t1) override;
 
     // Key modifications
-    virtual CTrackViewKeyHandle CreateKey(const float time);
-    virtual void SlideKeys(const float time0, const float timeOffset);
+    virtual CTrackViewKeyHandle CreateKey(float time);
+    virtual void SlideKeys(float time0, float timeOffset);
     void UpdateKeyDataAfterParentChanged(const AZ::Transform& oldParentWorldTM, const AZ::Transform& newParentWorldTM);
 
     // Value getters
     template <class Type>
-    void GetValue(const float time, Type& value, bool applyMultiplier) const
+    void GetValue(float time, Type& value, bool applyMultiplier) const
     {
         AZ_Assert(m_pAnimTrack.get(), "m_pAnimTrack is null");
-        return m_pAnimTrack->GetValue(time, value, applyMultiplier);
+        if (m_pAnimTrack)
+        {
+            m_pAnimTrack->GetValue(time, value, applyMultiplier);
+        }
     }
     template <class Type>
-    void GetValue(const float time, Type& value) const
+    void GetValue(float time, Type& value) const
     {
         AZ_Assert(m_pAnimTrack.get(), "m_pAnimTrack is null");
-        return m_pAnimTrack->GetValue(time, value);
+        if (m_pAnimTrack)
+        {
+            m_pAnimTrack->GetValue(time, value);
+        }
     }
 
     void GetKeyValueRange(float& min, float& max) const;
 
     // Type getters
-    const CAnimParamType& GetParameterType() const { return m_pAnimTrack->GetParameterType(); }
-    AnimValueType GetValueType() const { return m_pAnimTrack->GetValueType(); }
-    EAnimCurveType GetCurveType() const { return m_pAnimTrack->GetCurveType(); }
+    CAnimParamType GetParameterType() const { return (m_pAnimTrack) ? m_pAnimTrack->GetParameterType() : CAnimParamType(); }
+    AnimValueType GetValueType() const { return (m_pAnimTrack) ? m_pAnimTrack->GetValueType() : AnimValueType::Unknown; }
+    EAnimCurveType GetCurveType() const { return (m_pAnimTrack) ? m_pAnimTrack->GetCurveType() : EAnimCurveType::eAnimCurveType_Unknown; }
 
     // Mask
-    bool IsMasked(uint32 mask) const { return m_pAnimTrack->IsMasked(mask); }
+    bool IsMasked(uint32 mask) const { return (m_pAnimTrack) ?m_pAnimTrack->IsMasked(mask) : false; }
 
     // Flag getter
     IAnimTrack::EAnimTrackFlags GetFlags() const;
 
     // Spline getter
-    ISplineInterpolator* GetSpline() const { return m_pAnimTrack->GetSpline(); }
+    ISplineInterpolator* GetSpline() const { return (m_pAnimTrack) ? m_pAnimTrack->GetSpline() : nullptr; }
 
     // Color
     ColorB GetCustomColor() const;
@@ -164,16 +170,16 @@ public:
     bool IsMuted() const;
 
     // Returns if the contained AnimTrack responds to muting
-    bool UsesMute() const { return m_pAnimTrack.get() ? m_pAnimTrack->UsesMute() : false; }
+    bool UsesMute() const { return (m_pAnimTrack) ? m_pAnimTrack->UsesMute() : false; }
 
     // Key selection
-    void SelectKeys(const bool bSelected);
+    void SelectKeys(bool bSelected);
 
     // Paste from XML representation with time offset
     void PasteKeys(XmlNodeRef xmlNode, const float timeOffset);
 
     // Animation layer index
-    void SetAnimationLayerIndex(const int index);
+    void SetAnimationLayerIndex(int index);
     int GetAnimationLayerIndex() const;
 
     //////////////////////////////////////////////////////////////////////////
@@ -189,17 +195,21 @@ public:
 
     unsigned int GetId() const
     {
-        return m_pAnimTrack->GetId();
+        return (m_pAnimTrack) ?m_pAnimTrack->GetId() : 0;
     }
 
     void SetId(unsigned int id)
     {
-        m_pAnimTrack->SetId(id);
+        AZ_Assert(m_pAnimTrack.get(), "m_pAnimTrack is null");
+        if (m_pAnimTrack)
+        {
+            m_pAnimTrack->SetId(id);
+        }
     }
 
 private:
-    CTrackViewKeyHandle GetPrevKey(const float time);
-    CTrackViewKeyHandle GetNextKey(const float time);
+    CTrackViewKeyHandle GetPrevKey(float time);
+    CTrackViewKeyHandle GetNextKey(float time);
 
     // Those are called from CTrackViewKeyHandle
     void SetKey(unsigned int keyIndex, IKey* pKey);
@@ -211,14 +221,14 @@ private:
     void SetSortMarkerKey(unsigned int keyIndex, bool enabled);
     bool IsSortMarkerKey(unsigned int keyIndex) const;
 
-    void SetKeyTime(const int index, const float time, bool notifyListeners = true);
-    float GetKeyTime(const int index) const;
+    void SetKeyTime(unsigned int keyIndex, float time, bool notifyListeners = true);
+    float GetKeyTime(unsigned int keyIndex) const;
 
-    void RemoveKey(const int index);
-    int CloneKey(const int index);
+    void RemoveKey(unsigned int keyIndex);
+    int CloneKey(unsigned int keyIndex, float timeOffset);
 
     CTrackViewKeyBundle GetKeys(bool bOnlySelected, float t0, float t1);
-    CTrackViewKeyHandle GetSubTrackKeyHandle(unsigned int index) const;
+    CTrackViewKeyHandle GetSubTrackKeyHandle(unsigned int keyIndex) const;
 
     // Copy selected keys to XML representation for clipboard
     void CopyKeysToClipboard(XmlNodeRef& xmlNode, const bool bOnlySelectedKeys, const bool bOnlyFromSelectedTracks) override;

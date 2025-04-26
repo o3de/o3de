@@ -36,17 +36,15 @@ namespace AZ::Render
         void Render(const RenderPacket& packet) override;
 
     private:
-        // Adds the debug ray tracing pass to the pipeline (The debug ray tracing pass is not part of the main pipeline and is only added if
-        // a "Debug Ray Tracing" level component is added to the scene).
-        void AddDebugPass();
-
-        // Removes the debug ray tracing pass from the pipeline.
-        void RemoveDebugPass();
+        // Forces a rebuild of the pipeline so the FeatureProcessor can add the debug ray tracing pass to the pipeline.
+        // The debug ray tracing pass is not generally part of the main pipeline and is only added if
+        // a "Debug Ray Tracing" level component is added to the scene.
+        void MarkPipelineNeedsRebuild();
 
         AZStd::unique_ptr<RayTracingDebugSettings> m_settings;
         Data::Instance<RPI::ShaderResourceGroup> m_sceneSrg; // The ray tracing scene SRG (RayTracingSceneSrg)
         RPI::RenderPipeline* m_pipeline{ nullptr };
-        RPI::Ptr<RPI::Pass> m_rayTracingPass;
+        bool m_isEnabled{ false };
         int m_debugComponentCount{ 0 };
         RHI::ShaderInputNameIndex m_debugOptionsIndex{ "m_debugViewMode" };
     };

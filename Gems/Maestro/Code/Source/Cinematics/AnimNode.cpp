@@ -29,6 +29,7 @@
 #include "CaptureTrack.h"
 #include "CommentTrack.h"
 #include "ScreenFaderTrack.h"
+#include "StringTrack.h"
 #include "TimeRangesTrack.h"
 
 #include <AzCore/std/sort.h>
@@ -422,6 +423,9 @@ namespace Maestro
             case AnimValueType::AssetBlend:
                 pTrack = aznew CAssetBlendTrack;
                 break;
+            case AnimValueType::String:
+                pTrack = aznew CStringTrack;
+                break;
             }
         }
 
@@ -444,10 +448,11 @@ namespace Maestro
         return pTrack;
     }
 
-    IAnimTrack* CAnimNode::CreateTrack(const CAnimParamType& paramType)
+    IAnimTrack* CAnimNode::CreateTrack(const CAnimParamType& paramType, AnimValueType remapValueType)
     {
-        IAnimTrack* pTrack = CreateTrackInternal(paramType, DEFAULT_TRACK_TYPE, AnimValueType::Unknown);
-        InitializeTrackDefaultValue(pTrack, paramType);
+        IAnimTrack* pTrack = CreateTrackInternal(paramType, DEFAULT_TRACK_TYPE, remapValueType);
+        SetTrackMultiplier(pTrack, remapValueType);
+        InitializeTrackDefaultValue(pTrack, paramType, remapValueType);
         return pTrack;
     }
 
@@ -963,17 +968,13 @@ namespace Maestro
             pTrack->SetSubTrackName(2, "BlurAmount");
             return pTrack;
         }
-        else if (animValue == AnimValueType::RGB || paramType == AnimParamType::LightDiffuse ||
-                 paramType == AnimParamType::MaterialDiffuse || paramType == AnimParamType::MaterialSpecular
-                 || paramType == AnimParamType::MaterialEmissive)
+        else if (animValue == AnimValueType::RGB || paramType == AnimParamType::LightDiffuse
+                 || paramType == AnimParamType::MaterialDiffuse || paramType == AnimParamType::MaterialSpecular || paramType == AnimParamType::MaterialEmissive)
         {
             subTrackParamTypes[0] = AnimParamType::ColorR;
             subTrackParamTypes[1] = AnimParamType::ColorG;
             subTrackParamTypes[2] = AnimParamType::ColorB;
             IAnimTrack* pTrack = aznew CCompoundSplineTrack(3, AnimValueType::RGB, subTrackParamTypes, false);
-            pTrack->SetSubTrackName(0, "Red");
-            pTrack->SetSubTrackName(1, "Green");
-            pTrack->SetSubTrackName(2, "Blue");
             return pTrack;
         }
 

@@ -351,7 +351,7 @@ bool CTrackViewAnimNode::IsBoundToEditorObjects() const
     {
         if (m_animNode->GetType() == AnimNodeType::AzEntity)
         {
-            // check if bound to comoponent entity
+            // check if bound to component entity
             return m_animNode->GetAzEntityId().IsValid();
         }
         else
@@ -382,7 +382,7 @@ CTrackViewAnimNode* CTrackViewAnimNode::CreateSubNode(
     AZ::ComponentId componentId)
 {
     const bool isGroupNode = IsGroupNode();
-    AZ_Assert(isGroupNode, "Expected CreateSubNode to be called on a group capible node.");
+    AZ_Assert(isGroupNode, "Expected CreateSubNode to be called on a group capable node.");
     if (!isGroupNode)
     {
         return nullptr;
@@ -640,6 +640,17 @@ void CTrackViewAnimNode::RemoveTrack(CTrackViewTrack* track)
             undoBatch.MarkEntityDirty(sequence->GetSequenceComponentEntityId());            
         }
     }
+}
+
+void CTrackViewAnimNode::UpdateTrackDefaultValue(float time, IAnimTrack* pTrack)
+{
+    if (!pTrack)
+    {
+        AZ_Assert(pTrack, "Invalid Track");
+        return;
+    }
+
+    GetAnimNode()->UpdateTrackDefaultValue(time, pTrack);
 }
 
 bool CTrackViewAnimNode::SnapTimeToPrevKey(float& time) const
@@ -1225,14 +1236,37 @@ CTrackViewAnimNodeBundle CTrackViewAnimNode::AddSelectedEntities(const AZStd::ve
     AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
         entityIds, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
 
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+    if (!movieSystem)
+    {
+        AZ_Assert(false, "AddSelectedEntities(): invalid movie system.");
+        return addedNodes;
+    }
+
+    const auto pSequence = GetSequence();
+    if (!pSequence)
+    {
+        movieSystem->LogUserNotificationMsg("Could not add selected entity, because sequence is invalid.");
+        return addedNodes;
+    }
+        
     // Add selected nodes.
     for (const AZ::EntityId& entityId : entityIds)
     {
+
+        // Check if object is not the same sequence, to avoid cyclic dependencies
+        if (pSequence->GetSequenceComponentEntityId() == entityId)
+        {
+            movieSystem->LogUserNotificationMsg("Could not add self to self.");
+            continue;
+        }
+
         AZ::Entity* entity = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, entityId);
 
         if (entity == nullptr)
         {
+            movieSystem->LogUserNotificationMsg("Could not add selected entity, because could not find the entity.");
             continue;
         }
 
@@ -1242,12 +1276,8 @@ CTrackViewAnimNodeBundle CTrackViewAnimNode::AddSelectedEntities(const AZStd::ve
             // If it has the same director than the current node, reject it
             if (existingNode->GetDirector() == GetDirector())
             {
-                IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
-                if (movieSystem)
-                {
-                    movieSystem->LogUserNotificationMsg(AZStd::string::format(
-                        "'%s' was already added to '%s', skipping...", entity->GetName().c_str(), GetDirector()->GetName().c_str()));
-                }
+                movieSystem->LogUserNotificationMsg(AZStd::string::format("'%s' was already added to '%s', skipping...",
+                    entity->GetName().c_str(), GetDirector()->GetName().c_str()));
 
                 continue;
             }

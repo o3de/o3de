@@ -6,9 +6,6 @@
  *
  */
 
-
-
-
 #include "AnimAZEntityNode.h"
 #include "AnimComponentNode.h"
 #include "AnimSequence.h"
@@ -59,41 +56,61 @@ namespace Maestro
         {
         public:
             CComponentEntitySceneCamera(const AZ::EntityId& entityId)
-                : m_cameraEntityId(entityId) {}
+                : m_cameraEntityId(entityId)
+            {
+                AZ_Assert(entityId.IsValid(), "CComponentEntitySceneCamera ctor: invalid camera EntityId.");
+                AZ::TransformBus::EventResult(m_cameraParentEntityId, m_cameraEntityId, &AZ::TransformBus::Events::GetParentId);
+            }
 
             virtual ~CComponentEntitySceneCamera() = default;
 
-            const Vec3& GetPosition() const override
+            const AZ::Vector3 GetWorldPosition() const override
             {
-                AZ::Vector3 pos;
-                AZ::TransformBus::EventResult(pos, m_cameraEntityId, &AZ::TransformBus::Events::GetWorldTranslation);
-                m_vec3Buffer.Set(pos.GetX(), pos.GetY(), pos.GetZ());
-                return m_vec3Buffer;
+                AZ::Vector3 worldPosition = AZ::Vector3::CreateZero();
+                AZ::TransformBus::EventResult(worldPosition, m_cameraEntityId, &AZ::TransformBus::Events::GetWorldTranslation);
+                return worldPosition;
             }
 
-            const Quat& GetRotation() const override
+            const AZ::Quaternion GetWorldRotation() const override
             {
-                AZ::Quaternion quat(AZ::Quaternion::CreateIdentity());
-                AZ::TransformBus::EventResult(quat, m_cameraEntityId, &AZ::TransformBus::Events::GetWorldRotationQuaternion);
-                m_quatBuffer = AZQuaternionToLYQuaternion(quat);
-                return m_quatBuffer;
+                AZ::Quaternion worldRotation = AZ::Quaternion::CreateIdentity();
+                AZ::TransformBus::EventResult(worldRotation, m_cameraEntityId, &AZ::TransformBus::Events::GetWorldRotationQuaternion);
+                return worldRotation;
             }
 
-            void SetPosition(const Vec3& localPosition) override
+            void SetWorldPosition(const AZ::Vector3& worldPosition) override
             {
-                AZ::Vector3 pos(localPosition.x, localPosition.y, localPosition.z);
-                AZ::TransformBus::Event(m_cameraEntityId, &AZ::TransformBus::Events::SetWorldTranslation, pos);
+                if (GetWorldPosition().IsClose(worldPosition))
+                {
+                    return;
+                }
+                AZ::TransformBus::Event(m_cameraEntityId, &AZ::TransformBus::Events::SetWorldTranslation, worldPosition);
             }
 
-            void SetRotation(const Quat& localRotation) override
+            void SetWorldRotation(const AZ::Quaternion& worldRotation) override
             {
-                AZ::Quaternion quat = LYQuaternionToAZQuaternion(localRotation);
-                AZ::TransformBus::Event(m_cameraEntityId, &AZ::TransformBus::Events::SetLocalRotationQuaternion, quat);
+                if (GetWorldRotation().IsClose(worldRotation))
+                {
+                    return;
+                }
+                if (!m_cameraParentEntityId.IsValid())
+                {
+                    AZ::TransformBus::Event(m_cameraEntityId, &AZ::TransformBus::Events::SetLocalRotationQuaternion, worldRotation);
+                    return;
+                }
+
+                AZ::Transform parentWorldTM;
+                AZ::Transform worldTM;
+                AZ::TransformBus::EventResult(parentWorldTM, m_cameraParentEntityId, &AZ::TransformBus::Events::GetWorldTM);
+                AZ::TransformBus::EventResult(worldTM, m_cameraEntityId, &AZ::TransformBus::Events::GetWorldTM);
+                parentWorldTM.SetRotation(worldRotation);
+                parentWorldTM.SetTranslation(worldTM.GetTranslation());
+                AZ::TransformBus::Event(m_cameraEntityId, &AZ::TransformBus::Events::SetWorldTM, parentWorldTM);
             }
 
             float GetFoV() const override
             {
-                float retFoV = DEFAULT_FOV;
+                float retFoV = -1;
                 Camera::CameraRequestBus::EventResult(retFoV, m_cameraEntityId, &Camera::CameraComponentRequests::GetFovDegrees);
                 return retFoV;
             }
@@ -105,102 +122,27 @@ namespace Maestro
                 return retNearZ;
             }
 
-            void SetNearZAndFOVIfChanged(float fov, float nearZ) override
+            void SetFovAndNearZ(float degreesFoV, float nearZ) override
             {
-                float degFoV = AZ::RadToDeg(fov);
-                if (!AZ::IsClose(GetFoV(), degFoV, FLT_EPSILON))
+                if ((degreesFoV >= 1.0f && degreesFoV < 180.0f) && !AZ::IsClose(GetFoV(), degreesFoV, AZ::Constants::FloatEpsilon))
                 {
-                    Camera::CameraRequestBus::Event(m_cameraEntityId, &Camera::CameraComponentRequests::SetFovDegrees, degFoV);
+                    Camera::CameraRequestBus::Event(m_cameraEntityId, &Camera::CameraComponentRequests::SetFovDegrees, degreesFoV);
                 }
-                if (!AZ::IsClose(GetNearZ(), nearZ, FLT_EPSILON))
+                if ((nearZ > AZ::Constants::Tolerance) && !AZ::IsClose(GetNearZ(), nearZ, AZ::Constants::FloatEpsilon))
                 {
                     Camera::CameraRequestBus::Event(m_cameraEntityId, &Camera::CameraComponentRequests::SetNearClipDistance, nearZ);
                 }
             }
 
-            void TransformPositionFromLocalToWorldSpace(Vec3& position) override
-            {
-                AZ::EntityId parentId;
-                AZ::TransformBus::EventResult(parentId, m_cameraEntityId, &AZ::TransformBus::Events::GetParentId);
-                if (parentId.IsValid())
-                {
-                    AZ::Vector3 pos(position.x, position.y, position.z);
-                    AZ::Transform worldTM;
-                    AZ::TransformBus::EventResult(worldTM, parentId, &AZ::TransformBus::Events::GetWorldTM);
-                    pos = worldTM.TransformPoint(pos);
-                    position.Set(pos.GetX(), pos.GetY(), pos.GetZ());
-                }
-            }
-
-            void TransformPositionFromWorldToLocalSpace(Vec3& position) override
-            {
-                AZ::EntityId parentId;
-                AZ::TransformBus::EventResult(parentId, m_cameraEntityId, &AZ::TransformBus::Events::GetParentId);
-                if (parentId.IsValid())
-                {
-                    AZ::Vector3 pos(position.x, position.y, position.z);
-                    AZ::Transform worldTM;
-                    AZ::TransformBus::EventResult(worldTM, parentId, &AZ::TransformBus::Events::GetWorldTM);
-                    worldTM = worldTM.GetInverse();
-                    pos = worldTM.TransformPoint(pos);
-                    position.Set(pos.GetX(), pos.GetY(), pos.GetZ());
-                }
-            }
-
-            void TransformRotationFromLocalToWorldSpace(Quat& rotation) override
-            {
-                AZ::EntityId parentId;
-                AZ::TransformBus::EventResult(parentId, m_cameraEntityId, &AZ::TransformBus::Events::GetParentId);
-                if (parentId.IsValid())
-                {
-                    AZ::Quaternion rot = LYQuaternionToAZQuaternion(rotation);
-                    AZ::Transform worldTM;
-                    AZ::TransformBus::EventResult(worldTM, parentId, &AZ::TransformBus::Events::GetWorldTM);
-                    AZ::Quaternion worldRot = worldTM.GetRotation();
-                    rot = worldRot * rot;
-                    rotation = AZQuaternionToLYQuaternion(rot);
-                }
-            }
-
-            void SetWorldRotation(const Quat& rotation) override
-            {
-                AZ::EntityId parentId;
-                AZ::TransformBus::EventResult(parentId, m_cameraEntityId, &AZ::TransformBus::Events::GetParentId);
-                if (parentId.IsValid())
-                {
-                    AZ::Quaternion rot = LYQuaternionToAZQuaternion(rotation);
-                    AZ::Transform parentWorldTM;
-                    AZ::Transform worldTM;
-                    AZ::TransformBus::EventResult(parentWorldTM, parentId, &AZ::TransformBus::Events::GetWorldTM);
-                    AZ::TransformBus::EventResult(worldTM, m_cameraEntityId, &AZ::TransformBus::Events::GetWorldTM);
-                    parentWorldTM.SetRotation(rot);
-                    parentWorldTM.SetTranslation(worldTM.GetTranslation());
-                    AZ::TransformBus::Event(m_cameraEntityId, &AZ::TransformBus::Events::SetWorldTM, parentWorldTM);
-                }
-                else
-                {
-                    SetRotation(rotation);
-                }
-            }
-
-            bool HasParent() const override
-            {
-                AZ::EntityId parentId;
-                AZ::TransformBus::EventResult(parentId, m_cameraEntityId, &AZ::TransformBus::Events::GetParentId);
-                return parentId.IsValid();
-            }
-
         private:
-            AZ::EntityId    m_cameraEntityId;
-            mutable Vec3    m_vec3Buffer;       // buffer for returning references
-            mutable Quat    m_quatBuffer;       // buffer for returning references
+            AZ::EntityId m_cameraEntityId;
+            AZ::EntityId m_cameraParentEntityId;
         };
     }
 
     CAnimSceneNode::CAnimSceneNode(const int id)
         : CAnimNode(id, AnimNodeType::Director)
     {
-        m_lastCameraKey = -1;
         m_lastEventKey = -1;
         m_lastConsoleKey = -1;
         m_lastSequenceKey = -1;
@@ -208,10 +150,7 @@ namespace Maestro
         m_lastCaptureKey = -1;
         m_bLastCapturingEnded = true;
         m_captureFrameCount = 0;
-        m_pCamNodeOnHoldForInterp = nullptr;
         m_CurrentSelectTrack = nullptr;
-        m_CurrentSelectTrackKeyNumber = 0;
-        m_lastPrecachePoint = -1.f;
         SetName("Scene");
 
         CAnimSceneNode::Initialize();
@@ -287,47 +226,91 @@ namespace Maestro
     {
         CAnimNode::Activate(bActivate);
 
-        int trackCount = NumTracks();
+        if (!bActivate)
+        {
+            RestoreOverriddenCameraIdNeeded(); // In case of an override, 1st restore the overridden camera, order is significant
+        }
+
+        const int trackCount = NumTracks();
         for (int paramIndex = 0; paramIndex < trackCount; paramIndex++)
         {
-            CAnimParamType paramId = m_tracks[paramIndex]->GetParameterType();
+            const CAnimParamType paramId = m_tracks[paramIndex]->GetParameterType();
             IAnimTrack* pTrack = m_tracks[paramIndex].get();
-
-            if (paramId.GetType() != AnimParamType::Sequence)
+            if (!pTrack)
             {
                 continue;
             }
 
-            CSequenceTrack* pSequenceTrack = (CSequenceTrack*)pTrack;
-
-            for (int currKey = 0; currKey < pSequenceTrack->GetNumKeys(); currKey++)
+            switch (paramId.GetType())
             {
-                ISequenceKey key;
-                pSequenceTrack->GetKey(currKey, &key);
-
-                IAnimSequence* pSequence = GetSequenceFromSequenceKey(key);
-                if (pSequence)
+            case AnimParamType::Sequence:
                 {
-                    if (bActivate)
+                    CSequenceTrack* pSequenceTrack = (CSequenceTrack*)pTrack;
+                    for (int currKey = 0; currKey < pSequenceTrack->GetNumKeys(); currKey++)
                     {
-                        pSequence->Activate();
+                        ISequenceKey key;
+                        pSequenceTrack->GetKey(currKey, &key);
 
-                        if (key.bOverrideTimes)
+                        IAnimSequence* pSequence = GetSequenceFromSequenceKey(key);
+                        if (pSequence)
                         {
-                            key.fDuration = (key.fEndTime - key.fStartTime) > 0.0f ? (key.fEndTime - key.fStartTime) : 0.0f;
+                            if (bActivate)
+                            {
+                                pSequence->Activate();
+
+                                if (key.bOverrideTimes)
+                                {
+                                    key.fDuration = (key.fEndTime - key.fStartTime) > 0.0f ? (key.fEndTime - key.fStartTime) : 0.0f;
+                                }
+                                else
+                                {
+                                    key.fDuration = pSequence->GetTimeRange().Length();
+                                }
+
+                                pTrack->SetKey(currKey, &key);
+                            }
+                            else
+                            {
+                                pSequence->Deactivate();
+                            }
+                        }
+                    }
+                }
+                break;
+            case AnimParamType::Camera:
+                {
+                    CSelectTrack* pSelectTrack = (CSelectTrack*)pTrack;
+
+                    const int numKeys = pSelectTrack->GetNumKeys();
+                    for (int currKeyIdx = 0; currKeyIdx < numKeys; ++currKeyIdx)
+                    {
+                        ISelectKey currKey;
+                        pSelectTrack->GetKey(currKeyIdx, &currKey);
+
+                        if (bActivate)
+                        {
+                            // Store camera properties in key, if not yet stored (the key is not initialized)
+                            if (InitializeCameraProperties(currKey))
+                            {
+                                // {re-}set the key, recalculating fDuration for all keys
+                                pSelectTrack->SetKey(currKeyIdx, &currKey);
+                            }
                         }
                         else
                         {
-                            key.fDuration = pSequence->GetTimeRange().Length();
+                            // When deactivating, restore cameras' properties, if the key was initialized
+                            RestoreCameraProperties(currKey);
                         }
-
-                        pTrack->SetKey(currKey, &key);
                     }
-                    else
+
+                    if (bActivate)
                     {
-                        pSequence->Deactivate();
+                        pSelectTrack->CalculateDurationForEachKey(); // Ensure keys are sorted by time and fDuration is calculated.
                     }
                 }
+                break;
+            default:
+                break;
             }
         }
     }
@@ -345,11 +328,6 @@ namespace Maestro
         CConsoleTrack* pConsoleTrack = nullptr;
         CGotoTrack* pGotoTrack = nullptr;
         CCaptureTrack* pCaptureTrack = nullptr;
-
-        if (gEnv->IsEditor() && m_time > ec.time)
-        {
-            m_lastPrecachePoint = -1.f;
-        }
 
         PrecacheDynamic(ec.time);
 
@@ -444,38 +422,37 @@ namespace Maestro
         }
 
         // Animate Camera Track (aka Select Track)
+        const auto overriden = OverrideCameraIdNeeded(); // Check if a camera override is set by CVar, an apply it when needed
 
-        // Check if a camera override is set by CVar
-        const char* overrideCamName = m_movieSystem->GetOverrideCamName();
-        AZ::EntityId overrideCamId;
-        if (overrideCamName != nullptr && strlen(overrideCamName) > 0)
-        {
-            // overriding with a Camera Component entity is done by entityId (as names are not unique among AZ::Entities) - try to convert string to u64 to see if it's an id
-            AZ::u64 u64Id = strtoull(overrideCamName, nullptr, /*base (radix)*/ 10);
-            if (u64Id)
-            {
-                overrideCamId = AZ::EntityId(u64Id);
-            }
-        }
-
-        if (overrideCamId.IsValid())      // There is a valid overridden camera.
-        {
-            if (overrideCamId != m_movieSystem->GetCameraParams().cameraEntityId)
-            {
-                ISelectKey key;
-                key.szSelection = overrideCamName;
-                key.cameraAzEntityId = overrideCamId;
-                ApplyCameraKey(key, ec);
-            }
-        }
-        else if (cameraTrack)           // No camera override by CVar, use the camera track
+        // If no camera override by CVar, use the camera track
+        // In Editor, the "Autostart" sequence flag may state that camera must be switched to when playing, made in Animation context.
+        const bool isAutostart = (m_pSequence->GetFlags() & IAnimSequence::eSeqFlags_PlayOnReset) != 0;
+        if (!overriden && cameraTrack && isAutostart)
         {
             ISelectKey key;
-            int cameraKey = cameraTrack->GetActiveKey(ec.time, &key);
-            m_CurrentSelectTrackKeyNumber = cameraKey;
-            m_CurrentSelectTrack = cameraTrack;
-            ApplyCameraKey(key, ec);
-            m_lastCameraKey = cameraKey;
+            int currCameraKeyIdx = cameraTrack->GetActiveKey(ec.time, &key);
+
+            if (currCameraKeyIdx >= 0 && key.CheckValid())
+            {
+                if (!key.IsInitialized())
+                {
+                    if (InitializeCameraProperties(key))
+                    {
+                        cameraTrack->SetKey(currCameraKeyIdx, &key);
+                        currCameraKeyIdx = cameraTrack->GetActiveKey(ec.time, &key);
+                    }
+                    else
+                    {
+                        currCameraKeyIdx = -1;
+                    }
+                }
+
+                if (currCameraKeyIdx >= 0)
+                {
+                    m_CurrentSelectTrack = cameraTrack;
+                    ApplyCameraKey(currCameraKeyIdx, key, ec);
+                }
+            }
         }
 
         if (pEventTrack)
@@ -571,32 +548,148 @@ namespace Maestro
         }
     }
 
+    bool CAnimSceneNode::OverrideCameraIdNeeded()
+    {
+        // Check if a valid camera override is set by ICVar in CMovieSystem
+        if (!m_OverrideCamId.IsValid())
+        {
+            AZ::EntityId overrideCamId = AZ::EntityId();
+            const char* overrideCamName = m_movieSystem->GetOverrideCamName();
+            if (overrideCamName != nullptr && strlen(overrideCamName) > 0)
+            {
+                // overriding with a Camera Component entity is done by entityId (as names are not unique among AZ::Entities) - try to
+                // convert string to u64 to see if it's an id
+                AZ::u64 u64Id = strtoull(overrideCamName, nullptr, /*base (radix)*/ 10);
+                if (u64Id)
+                {
+                    overrideCamId = AZ::EntityId(u64Id);
+                }
+            }
+            if (overrideCamId.IsValid()) 
+            {
+                AZ::Entity* cameraEntity = nullptr;
+                AZ::ComponentApplicationBus::BroadcastResult(cameraEntity, &AZ::ComponentApplicationBus::Events::FindEntity, overrideCamId);
+                if (cameraEntity)
+                {
+                    m_OverrideCamId = overrideCamId;
+                }
+            }
+        }
+        if (!m_OverrideCamId.IsValid())
+        {
+            m_overriddenCameraProperties.Reset();
+            return false;
+        }
+
+        const auto lastCameraEntityId = m_movieSystem->GetActiveCamera();
+        if (lastCameraEntityId == m_OverrideCamId)
+        {
+            return true; // no need to change camera
+        }
+
+        if (gEnv->IsEditor() && gEnv->IsEditing())
+        {
+            // Broadcast camera changes: works in editing mode only (when animating in Track View)
+            if (lastCameraEntityId != m_OverrideCamId)
+            {
+                SequenceComponentNotificationBus::Event(m_pSequence->GetSequenceEntityId(),
+                    &SequenceComponentNotificationBus::Events::OnCameraChanged, lastCameraEntityId, m_OverrideCamId);
+
+                // note: only update the active view if we're currently exporting/capturing a sequence
+                if (m_movieSystem->IsInBatchRenderMode())
+                {
+                    Camera::CameraRequestBus::Event(m_OverrideCamId, &Camera::CameraRequestBus::Events::MakeActiveView);
+                }
+            }
+            m_movieSystem->SetActiveCamera(m_OverrideCamId);
+            m_overriddenCameraProperties.Reset();
+            return true;
+        }
+
+        if (!lastCameraEntityId.IsValid())
+        {
+            AZ_Error("AnimSceneNode", false, "OverrideCameraIdNeeded(): invalid active camera EntityId in Game mode.");
+            m_overriddenCameraProperties.Reset();
+            return false;
+        }
+
+        // In Play Game mode the active camera parameters are to be stored and then changed.
+        auto activeCameraHelper = static_cast<ISceneCamera*>(new AnimSceneNodeHelper::CComponentEntitySceneCamera(lastCameraEntityId));
+        m_overriddenCameraProperties.szSelection = "StoredCamera";
+        m_overriddenCameraProperties.cameraAzEntityId = lastCameraEntityId;
+        m_overriddenCameraProperties.m_position = activeCameraHelper->GetWorldPosition(); // stash Transform
+        m_overriddenCameraProperties.m_rotation = activeCameraHelper->GetWorldRotation();
+        m_overriddenCameraProperties.m_FoV = activeCameraHelper->GetFoV(); // stash FoV from the first camera entity
+        m_overriddenCameraProperties.m_nearZ = activeCameraHelper->GetNearZ(); // stash nearZ
+
+        auto overrideCameraHelper = static_cast<ISceneCamera*>(new AnimSceneNodeHelper::CComponentEntitySceneCamera(m_OverrideCamId));
+        activeCameraHelper->SetWorldPosition(overrideCameraHelper->GetWorldPosition());
+        activeCameraHelper->SetWorldRotation(overrideCameraHelper->GetWorldRotation());
+        activeCameraHelper->SetFovAndNearZ(overrideCameraHelper->GetFoV(), overrideCameraHelper->GetNearZ());
+        delete overrideCameraHelper;
+
+        delete activeCameraHelper;
+        return true;
+    }
+
+    bool CAnimSceneNode::RestoreOverriddenCameraIdNeeded()
+    {
+        const auto invalidId = AZ::EntityId();
+        m_OverrideCamId = invalidId;
+        if (!m_overriddenCameraProperties.CheckValid())
+        {
+            return false;
+        }
+        auto overridenCameraHelper = static_cast<ISceneCamera*>(new AnimSceneNodeHelper::CComponentEntitySceneCamera(m_OverrideCamId));
+        overridenCameraHelper->SetWorldPosition(m_overriddenCameraProperties.m_position);
+        overridenCameraHelper->SetWorldRotation(m_overriddenCameraProperties.m_rotation);
+        overridenCameraHelper->SetFovAndNearZ(m_overriddenCameraProperties.m_FoV, m_overriddenCameraProperties.m_nearZ);
+        delete overridenCameraHelper;
+        return true;
+    }
+
+
     void CAnimSceneNode::OnReset()
     {
-        if (m_lastSequenceKey >= 0)
+        RestoreOverriddenCameraIdNeeded(); // In case of an override, 1st restore the overridden camera, order is significant
+
+        const int trackCount = NumTracks();
+        for (int paramIndex = 0; paramIndex < trackCount; paramIndex++)
         {
+            CAnimParamType paramId = m_tracks[paramIndex]->GetParameterType();
+            IAnimTrack* pTrack = m_tracks[paramIndex].get();
+
+            switch (paramId.GetType())
             {
-                int trackCount = NumTracks();
-                for (int paramIndex = 0; paramIndex < trackCount; paramIndex++)
+            case AnimParamType::Sequence:
+                if (pTrack && m_lastSequenceKey >= 0)
                 {
-                    CAnimParamType paramId = m_tracks[paramIndex]->GetParameterType();
-                    IAnimTrack* pTrack = m_tracks[paramIndex].get();
-
-                    if (paramId.GetType() != AnimParamType::Sequence)
-                    {
-                        continue;
-                    }
-
-                    CSequenceTrack* pSequenceTrack = (CSequenceTrack*)pTrack;
+                    CSequenceTrack* pSequenceTrack = (CSequenceTrack*)m_tracks[paramIndex].get();
                     ISequenceKey prevKey;
-
                     pSequenceTrack->GetKey(m_lastSequenceKey, &prevKey);
                     IAnimSequence* sequence = GetSequenceFromSequenceKey(prevKey);
                     if (sequence)
                     {
                         GetMovieSystem()->StopSequence(sequence);
                     }
+                    m_lastSequenceKey = -1;
                 }
+                break;
+            case AnimParamType::Camera:
+                if (pTrack)
+                {
+                    // restore cameras' properties, if available
+                    CSelectTrack* pSelectTrack = (CSelectTrack*)pTrack;
+                    for (int currKeyIdx = 0; currKeyIdx < pSelectTrack->GetNumKeys(); ++currKeyIdx)
+                    {
+                        ISelectKey currKey;
+                        pSelectTrack->GetKey(currKeyIdx, &currKey);
+                        RestoreCameraProperties(currKey);
+                    }
+                }
+                break;
+            default:
+                break;
             }
         }
 
@@ -628,6 +721,43 @@ namespace Maestro
                 timeSystem->SetSimulationTickDeltaOverride(m_simulationTickOverrideBackup);
             }
         }
+    }
+
+    bool CAnimSceneNode::InitializeCameraProperties(ISelectKey& key) const
+    {
+        if (!key.CheckValid() || key.IsInitialized())
+        {
+            return false;
+        }
+
+        ISceneCamera* currCamera =static_cast<ISceneCamera*>(new AnimSceneNodeHelper::CComponentEntitySceneCamera(key.cameraAzEntityId));
+        const auto degreesFoV = currCamera->GetFoV();
+        const auto nearZ = currCamera->GetNearZ();
+        if (degreesFoV < 1.0f || nearZ <= AZ::Constants::Tolerance)
+        {
+            return false; // Invalid camera properties
+        }
+        key.m_FoV = degreesFoV;
+        key.m_nearZ = nearZ;
+        key.m_position = currCamera->GetWorldPosition();
+        key.m_rotation = currCamera->GetWorldRotation();
+        delete currCamera;
+
+        return true;
+    }
+
+    void CAnimSceneNode::RestoreCameraProperties(ISelectKey& key) const
+    {
+        if (!key.IsInitialized())
+        {
+            return;
+        }
+
+        ISceneCamera* currCamera = static_cast<ISceneCamera*>(new AnimSceneNodeHelper::CComponentEntitySceneCamera(key.cameraAzEntityId));
+        currCamera->SetFovAndNearZ(key.m_FoV, key.m_nearZ);
+        currCamera->SetWorldPosition(key.m_position);
+        currCamera->SetWorldRotation(key.m_rotation);
+        delete currCamera;
     }
 
     void CAnimSceneNode::OnStart()
@@ -672,213 +802,123 @@ namespace Maestro
         }
     }
 
-    // InterpolateCameras()
-    //
-    // This rather long function takes care of the interpolation (or blending) of
-    // two camera keys, specifically FoV, nearZ, position and rotation blending.
-    //
-    void CAnimSceneNode::InterpolateCameras(SCameraParams& retInterpolatedCameraParams, ISceneCamera* firstCamera,
-                                            ISelectKey& firstKey, ISelectKey& secondKey, float time)
+    void CAnimSceneNode::ApplyCameraKey(int currKeyIdx, ISelectKey& currKey, const SAnimContext& ec)
     {
-        if (!secondKey.cameraAzEntityId.IsValid())
+        if (!m_movieSystem || !m_pSequence || !m_CurrentSelectTrack)
         {
-            // abort - can't interpolate if there isn't a valid Id for a component entity camera
+            AZ_Assert(m_movieSystem, "Invalid movie system pointer.");
+            AZ_Assert(m_pSequence, "Invalid sequence pointer.");
+            AZ_Assert(m_CurrentSelectTrack, "Invalid track pointer.");
             return;
         }
 
-        float interpolatedFoV;
-
-        ISceneCamera* secondCamera =
-            static_cast<ISceneCamera*>(new AnimSceneNodeHelper::CComponentEntitySceneCamera(secondKey.cameraAzEntityId));
-
-        float t = 1 - ((secondKey.time - time) / firstKey.fBlendTime);
-        t = min(t, 1.0f);
-        t = aznumeric_cast<float>(pow(t, 3) * (t * (t * 6 - 15) + 10));                // use a cubic curve for the camera blend
-
-        bool haveStashedInterpData = (m_InterpolatingCameraStartStates.find(m_CurrentSelectTrackKeyNumber) != m_InterpolatingCameraStartStates.end());
-
-        // at the start of the blend, stash the starting point first camera data to use throughout the interpolation
-        if (!haveStashedInterpData)
+        if (!currKey.IsInitialized())
         {
-            InterpolatingCameraStartState camData;
-
-            camData.m_interpolatedCamFirstPos = firstCamera->GetPosition();
-            camData.m_interpolatedCamFirstRot = firstCamera->GetRotation();
-
-            // stash FoV from the first camera entity
-            camData.m_FoV = firstCamera->GetFoV();
-
-            // stash nearZ
-            camData.m_nearZ = firstCamera->GetNearZ();
-
-            m_InterpolatingCameraStartStates.insert(AZStd::make_pair(m_CurrentSelectTrackKeyNumber, camData));
-        }
-
-        const auto& retStashedInterpCamData = m_InterpolatingCameraStartStates.find(m_CurrentSelectTrackKeyNumber);
-        InterpolatingCameraStartState stashedInterpCamData = retStashedInterpCamData->second;
-
-        // interpolate FOV
-        float secondCameraFOV = secondCamera->GetFoV();
-
-        interpolatedFoV = stashedInterpCamData.m_FoV + (secondCameraFOV - stashedInterpCamData.m_FoV) * t;
-        // store the interpolated FoV to be returned, in radians
-        retInterpolatedCameraParams.fov = DEG2RAD(interpolatedFoV);
-
-        // interpolate NearZ
-        float secondCameraNearZ = secondCamera->GetNearZ();
-
-        retInterpolatedCameraParams.nearZ = stashedInterpCamData.m_nearZ + (secondCameraNearZ - stashedInterpCamData.m_nearZ) * t;
-
-        // update the Camera entity's component FOV and nearZ directly if needed (if they weren't set via anim node SetParamValue() above)
-        firstCamera->SetNearZAndFOVIfChanged(retInterpolatedCameraParams.fov, retInterpolatedCameraParams.nearZ);
-
-        ////////////////////////
-        // interpolate Position
-        Vec3 vFirstCamPos = stashedInterpCamData.m_interpolatedCamFirstPos;
-        Vec3 secondKeyPos = secondCamera->GetPosition();
-        Vec3 interpolatedPos = vFirstCamPos + (secondKeyPos - vFirstCamPos) * t;
-
-        firstCamera->SetPosition(interpolatedPos);
-
-        ////////////////////////
-        // interpolate Rotation
-        Quat firstCameraRotation = stashedInterpCamData.m_interpolatedCamFirstRot;
-        Quat secondCameraRotation = secondCamera->GetRotation();
-
-        Quat interpolatedRotation;
-        interpolatedRotation.SetSlerp(firstCameraRotation, secondCameraRotation, t);
-
-        firstCamera->SetWorldRotation(interpolatedRotation);
-
-        // clean-up
-        if (secondCamera)
-        {
-            delete secondCamera;
-        }
-    }
-
-    void CAnimSceneNode::ApplyCameraKey(ISelectKey& key, SAnimContext& ec)
-    {
-        ISelectKey nextKey;
-        int nextCameraKeyNumber = m_CurrentSelectTrackKeyNumber + 1;
-        bool bInterpolateCamera = false;
-
-        if (nextCameraKeyNumber < m_CurrentSelectTrack->GetNumKeys())
-        {
-            m_CurrentSelectTrack->GetKey(nextCameraKeyNumber, &nextKey);
-
-            float fInterTime = nextKey.time - ec.time;
-            if (fInterTime >= 0 && fInterTime <= key.fBlendTime)
+            // Try lazy initialization, useful for a sequence in a separate prefab instance
+            if (!InitializeCameraProperties(currKey))
             {
-                bInterpolateCamera = true;
+                AZ_Error("AnimSceneNode", false, "ApplyCameraKey(%d, %s, time=%f): Invalid key.",
+                    currKeyIdx, currKey.cameraAzEntityId.ToString().c_str(), ec.time);
+                return;
             }
         }
 
-        // check if we're finished interpolating and there is a camera node on hold for interpolation. If so, unset it from hold.
-        if (!bInterpolateCamera && m_pCamNodeOnHoldForInterp)
+        const auto numKeys = m_CurrentSelectTrack->GetNumKeys();
+        if (numKeys < 1)
         {
-            m_pCamNodeOnHoldForInterp->SetSkipInterpolatedCameraNode(false);
-            m_pCamNodeOnHoldForInterp = nullptr;
+            AZ_Assert(false, "ApplyCameraKey(%d, %s, time=%f): no keys in track.", currKeyIdx, currKey.cameraAzEntityId.ToString().c_str(), ec.time);
+            return; // internal error
         }
 
-        SCameraParams cameraParams;
-        cameraParams.cameraEntityId.SetInvalid();
-        cameraParams.fov = 0;
-        cameraParams.justActivated = true;
-
-        // With component entities, the fov and near plane may be animated on an
-        // entity with a Camera component. Don't stomp the values if this update happens
-        // after those properties are animated.
-
-        ///////////////////////////////////////////////////////////////////
-        // find the Scene Camera (Camera Component Camera)
-        ISceneCamera* firstSceneCamera = nullptr;
-
-        if (key.cameraAzEntityId.IsValid())
+        // Find 2nd key to interpolate to, skipping invalid keys.
+        int secondKeyIdx = -1;
+        ISelectKey secondKey;
+        for (int nextKeyIdx = currKeyIdx + 1; nextKeyIdx < numKeys; ++nextKeyIdx)
         {
-            // camera component entity
-            cameraParams.cameraEntityId = key.cameraAzEntityId;
-            firstSceneCamera = static_cast<ISceneCamera*>(new AnimSceneNodeHelper::CComponentEntitySceneCamera(key.cameraAzEntityId));
-        }
-
-        if (firstSceneCamera)
-        {
-            cameraParams.fov = DEG2RAD(firstSceneCamera->GetFoV());
-        }
-
-        if (bInterpolateCamera && firstSceneCamera)
-        {
-            InterpolateCameras(cameraParams, firstSceneCamera, key, nextKey, ec.time);
-        }
-
-        // Broadcast camera changes
-        const SCameraParams& lastCameraParams = m_movieSystem->GetCameraParams();
-        if (lastCameraParams.cameraEntityId != cameraParams.cameraEntityId)
-        {
-            SequenceComponentNotificationBus::Event(
-                m_pSequence->GetSequenceEntityId(), &SequenceComponentNotificationBus::Events::OnCameraChanged,
-                lastCameraParams.cameraEntityId, cameraParams.cameraEntityId);
-
-            // note: only update the active view if we're currently exporting/capturing a sequence
-            if (m_movieSystem->IsInBatchRenderMode())
+            m_CurrentSelectTrack->GetKey(nextKeyIdx, &secondKey);
+            if (secondKey.CheckValid())
             {
-                Camera::CameraRequestBus::Event(
-                    cameraParams.cameraEntityId, &Camera::CameraRequestBus::Events::MakeActiveView);
+                secondKeyIdx = nextKeyIdx;
+                break;
             }
         }
 
-        m_movieSystem->SetCameraParams(cameraParams);
-
-        // This detects when we've switched from one Camera to another on the Camera Track
-        // If cameras were interpolated (blended), reset cameras to their pre-interpolated positions and
-        // clean up cached data used for the interpolation
-        if (m_lastCameraKey != m_CurrentSelectTrackKeyNumber && m_lastCameraKey >= 0)
+        if (secondKeyIdx < 0) // No valid differing key after the current key -> enforce the pair of same keys
         {
-            const auto& retStashedData = m_InterpolatingCameraStartStates.find(m_lastCameraKey);
-            if (retStashedData != m_InterpolatingCameraStartStates.end())
+            secondKeyIdx = currKeyIdx;
+            secondKey = currKey;
+        }
+
+        // In Play Game mode switching cameras is unsupported, so the active camera parameters are to be changed.
+        const bool isEditing = gEnv->IsEditor() && gEnv->IsEditing();
+        // In Editor, the "Autostart" sequence flag may state that camera must be switched to when playing, made in Animation context.
+        const bool isAutostart = (m_pSequence->GetFlags() & IAnimSequence::eSeqFlags_PlayOnReset) != 0;
+
+        // Find the active camera
+        AZ::EntityId activeCameraId; 
+        Camera::CameraSystemRequestBus::BroadcastResult(activeCameraId, &Camera::CameraSystemRequests::GetActiveCamera);
+
+        if (!activeCameraId.IsValid()) // Invalid camera EntityId means that a default Editor view is in use.
+        {
+            if (!isEditing)
             {
-                InterpolatingCameraStartState stashedData = retStashedData->second;
-                ISelectKey prevKey;
-                ISceneCamera* prevSceneCamera = nullptr;
+                return; // When starting Play Game in Editor, camera EntityId may still be invalid for a couple of frames.
+            }
 
-                m_CurrentSelectTrack->GetKey(m_lastCameraKey, &prevKey);
-
-                if (prevKey.cameraAzEntityId.IsValid())
-                {
-                    prevSceneCamera = static_cast<ISceneCamera*>(new AnimSceneNodeHelper::CComponentEntitySceneCamera(prevKey.cameraAzEntityId));
-                }
-
-                if (prevSceneCamera)
-                {
-                    prevSceneCamera->SetPosition(stashedData.m_interpolatedCamFirstPos);
-                    prevSceneCamera->SetRotation(stashedData.m_interpolatedCamFirstRot);
-                }
-
-                IAnimNode* prevCameraAnimNode = m_pSequence->FindNodeByName(prevKey.szSelection.c_str(), this);
-                if (prevCameraAnimNode == nullptr)
-                {
-                    prevCameraAnimNode = m_pSequence->FindNodeByName(prevKey.szSelection.c_str(), nullptr);
-                }
-
-                if (prevSceneCamera)
-                {
-                    prevSceneCamera->SetNearZAndFOVIfChanged(DEG2RAD(stashedData.m_FoV), stashedData.m_nearZ);
-                }
-
-                m_InterpolatingCameraStartStates.erase(m_lastCameraKey);
-
-                // clean up
-                if (prevSceneCamera)
-                {
-                    delete prevSceneCamera;
-                }
+            // Corner case: user switched to the default Editor camera before starting animation
+            activeCameraId = currKey.cameraAzEntityId;
+            m_movieSystem->SetActiveCamera(activeCameraId);
+            if (isAutostart)
+            {
+                SequenceComponentNotificationBus::Event(m_pSequence->GetSequenceEntityId(),
+                    &SequenceComponentNotificationBus::Events::OnCameraChanged, activeCameraId, activeCameraId);
+                Camera::CameraRequestBus::Event(activeCameraId, &Camera::CameraRequestBus::Events::MakeActiveView);
+                m_movieSystem->SetActiveCamera(activeCameraId);
             }
         }
 
-        // clean up
-        if (firstSceneCamera)
+        // Switch to the current camera if needed.
+        const auto lastCameraEntityId = m_movieSystem->GetActiveCamera();
+        if (lastCameraEntityId != currKey.cameraAzEntityId)
         {
-            delete firstSceneCamera;
+            // Broadcast camera changes: works in editing mode only, when animating in Track View with the "Autostart" (eSeqFlags_PlayOnReset) flag cleared
+            if (isEditing && !isAutostart)
+            {
+                SequenceComponentNotificationBus::Event(m_pSequence->GetSequenceEntityId(),
+                    &SequenceComponentNotificationBus::Events::OnCameraChanged, lastCameraEntityId, currKey.cameraAzEntityId);
+                // note: only update the active view if we're currently exporting/capturing a sequence
+                if (m_movieSystem->IsInBatchRenderMode())
+                {
+                    Camera::CameraRequestBus::Event(currKey.cameraAzEntityId, &Camera::CameraRequestBus::Events::MakeActiveView);
+                }
+            }
+            m_movieSystem->SetActiveCamera(currKey.cameraAzEntityId);
+        }
+
+        // Interpolate and apply camera properties always, unchanged values will not actually be transferred. 
+        {
+            // A valid Scene Camera (Camera Component Camera) helper is needed to apply camera properties.
+            auto activeCamera = static_cast<ISceneCamera*>(new AnimSceneNodeHelper::CComponentEntitySceneCamera(activeCameraId));
+
+            // time interpolation parameter
+            float t = (currKey.fBlendTime < AZ::Constants::Tolerance)
+                ? 0.0f // corner case for no blending
+                : 1.0f - (secondKey.time - ec.time) / currKey.fBlendTime;
+            t = AZ::GetClamp(t, 0.0f, 1.0f); // "t" can be negative when interpolating before blending starts;
+            t = aznumeric_cast<float>(pow(t, 3) * (t * (t * 6 - 15) + 10)); // use a cubic curve for the camera blend
+
+            // Interpolate and update camera's FOV (in degrees) and Near Clip Distance
+            const float interpolatedFoV = currKey.m_FoV + (secondKey.m_FoV - currKey.m_FoV) * t;
+            const float interpolatedNearZ = currKey.m_nearZ + (secondKey.m_nearZ - currKey.m_nearZ) * t;
+            activeCamera->SetFovAndNearZ(interpolatedFoV, interpolatedNearZ);
+            // Interpolate and update camera's Position linearly
+            const AZ::Vector3& firstKeyPos = currKey.m_position;
+            activeCamera->SetWorldPosition(firstKeyPos + (secondKey.m_position - firstKeyPos) * t);
+            // Interpolate and update camera's Rotation linearly-spherically
+            activeCamera->SetWorldRotation(currKey.m_rotation.Slerp(secondKey.m_rotation, t).GetNormalized());
+
+            // clean-up
+            delete activeCamera;
         }
     }
 
@@ -998,8 +1038,6 @@ namespace Maestro
 
     void CAnimSceneNode::PrecacheStatic(float startTime)
     {
-        m_lastPrecachePoint = -1.f;
-
         const uint numTracks = GetTrackCount();
         for (uint trackIndex = 0; trackIndex < numTracks; ++trackIndex)
         {
@@ -1027,7 +1065,6 @@ namespace Maestro
     void CAnimSceneNode::PrecacheDynamic(float time)
     {
         const uint numTracks = GetTrackCount();
-        float fLastPrecachePoint = m_lastPrecachePoint;
 
         for (uint trackIndex = 0; trackIndex < numTracks; ++trackIndex)
         {
@@ -1049,28 +1086,10 @@ namespace Maestro
                     }
                 }
             }
-            else if (pAnimTrack->GetParameterType() == AnimParamType::Camera)
-            {
-                const float fPrecacheCameraTime = CMovieSystem::GetCameraPrecacheTime();
-                if (fPrecacheCameraTime > 0.f)
-                {
-                    CSelectTrack* pCameraTrack = static_cast<CSelectTrack*>(pAnimTrack);
-
-                    ISelectKey key;
-                    pCameraTrack->GetActiveKey(time + fPrecacheCameraTime, &key);
-
-                    if (time < key.time && (time + fPrecacheCameraTime) > key.time && key.time > m_lastPrecachePoint)
-                    {
-                        fLastPrecachePoint = max(key.time, fLastPrecachePoint);
-                    }
-                }
-            }
         }
-
-        m_lastPrecachePoint = fLastPrecachePoint;
     }
 
-    void CAnimSceneNode::InitializeTrackDefaultValue(IAnimTrack* pTrack, const CAnimParamType& paramType)
+    void CAnimSceneNode::InitializeTrackDefaultValue(IAnimTrack* pTrack, const CAnimParamType& paramType, [[maybe_unused]] AnimValueType remapValueType)
     {
         if (paramType.GetType() == AnimParamType::TimeWarp)
         {

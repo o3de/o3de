@@ -80,7 +80,7 @@ namespace AzToolsFramework
                 float m_sortOrder; // Sort order of the property as defined by using the "order" attribute, by default the order is FLT_MAX which means alphabetical sort will be used
             };
 
-            void LoadProperties();
+            bool LoadProperties(); // returns true if properties have changed.
             void LoadProperties(AZ::ScriptDataContext& sdc, AzFramework::ScriptPropertyGroup& group);
             void RemovedOldProperties(AzFramework::ScriptPropertyGroup& group);
             void SortProperties(AzFramework::ScriptPropertyGroup& group);
@@ -110,6 +110,7 @@ namespace AzToolsFramework
             AZ::Data::Asset<AZ::ScriptAsset> m_scriptAsset;
 
             AZStd::string m_customName;
+            bool m_loadingNewScript = false;
         };
     } // namespace Component
 } // namespace AzToolsFramework

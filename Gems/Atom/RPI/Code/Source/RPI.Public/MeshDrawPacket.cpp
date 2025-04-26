@@ -21,6 +21,8 @@ namespace AZ
 {
     namespace RPI
     {
+        Data::Instance<RPI::ShaderResourceGroup> MeshDrawPacket::InvalidSrg;
+
         AZ_CVAR(bool,
             r_forceRootShaderVariantUsage,
             false,
@@ -245,6 +247,15 @@ namespace AZ
 #endif
         }
 
+        Data::Instance<RPI::ShaderResourceGroup>& MeshDrawPacket::GetDrawSrg(uint32_t drawItemIndex)
+        {
+            if (drawItemIndex >= aznumeric_cast<uint32_t>(m_perDrawSrgs.size()))
+            {
+                return InvalidSrg;
+            }
+            return m_perDrawSrgs[drawItemIndex];
+        }
+
         bool MeshDrawPacket::DoUpdate(const Scene& parentScene)
         {
             auto meshes = m_modelLod->GetMeshes();
@@ -422,6 +433,17 @@ namespace AZ
                         drawSrg->SetConstant(index, uvStreamTangentBitmask.GetFullTangentBitmask());
                     }
 
+                    AZ::Name drawSrgModelLodMeshIndex = AZ::Name(DrawSrgModelLodMeshIndex);
+                    index = drawSrg->FindShaderInputConstantIndex(drawSrgModelLodMeshIndex);
+
+                    if (index.IsValid())
+                    {
+                        drawSrg->SetConstant(index, aznumeric_cast<uint32_t>(m_modelLodMeshIndex));
+                    }
+
+                    // TODO: Does it make sense to call Compile() in the case where both SetConstant() calls above fail?
+                    // Leaving it as always calling Compile() as precaution that there's code somewhere else that assumes
+                    // Compile() was already called on DrawSrg.
                     drawSrg->Compile();
                 };
 

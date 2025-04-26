@@ -223,7 +223,7 @@ namespace JsonSerializationTests
         MathMatrixSerializerTestDescription<AZ::Matrix3x4, 3, 4, AZ::JsonMatrix3x4Serializer>,
         MathMatrixSerializerTestDescription<AZ::Matrix4x4, 4, 4, AZ::JsonMatrix4x4Serializer>
     >;
-    IF_JSON_CONFORMITY_ENABLED(INSTANTIATE_TYPED_TEST_CASE_P(JsonMathMatrixSerializer, JsonSerializerConformityTests, MathMatrixSerializerConformityTestTypes));
+    IF_JSON_CONFORMITY_ENABLED(INSTANTIATE_TYPED_TEST_SUITE_P(JsonMathMatrixSerializer, JsonSerializerConformityTests, MathMatrixSerializerConformityTestTypes));
 
     template<typename T>
     class JsonMathMatrixSerializerTests
@@ -280,7 +280,7 @@ namespace JsonSerializationTests
 
     using JsonMathMatrixSerializerTypes = ::testing::Types <
         Matrix3x3Descriptor, Matrix3x4Descriptor, Matrix4x4Descriptor>;
-    TYPED_TEST_CASE(JsonMathMatrixSerializerTests, JsonMathMatrixSerializerTypes);
+    TYPED_TEST_SUITE(JsonMathMatrixSerializerTests, JsonMathMatrixSerializerTypes);
 
     // Load array tests
 

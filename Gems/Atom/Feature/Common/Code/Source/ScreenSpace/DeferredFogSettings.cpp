@@ -37,12 +37,6 @@ namespace AZ
             m_needUpdate = true;   // even if disabled, mark it for when it'll become enabled
         }
 
-        void DeferredFogSettings::SetEnabled(bool value) 
-        {
-            m_enabled = value;
-            OnSettingsChanged();
-        }
-
         //-------------------------------------------
         // Getters / setters macro
 #define AZ_GFX_COMMON_PARAM(ValueType, Name, MemberName, DefaultValue)                              \

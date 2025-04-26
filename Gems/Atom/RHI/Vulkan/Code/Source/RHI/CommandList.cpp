@@ -1398,9 +1398,8 @@ namespace AZ
                     buffer.GetBufferMemoryView()->GetNativeBuffer(),
                     buffer.GetBufferMemoryView()->GetOffset() +
                         static_cast<size_t>(bufferViewDesc.m_elementOffset) * bufferViewDesc.m_elementSize,
-                    buffer.GetBufferMemoryView()->GetSize(),
+                    static_cast<size_t>(bufferViewDesc.m_elementCount) * bufferViewDesc.m_elementSize,
                     vkClearValue.i);
         }
-
     }
 }

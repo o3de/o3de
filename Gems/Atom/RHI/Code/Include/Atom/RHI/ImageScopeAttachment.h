@@ -9,6 +9,7 @@
 
 #include <Atom/RHI.Reflect/ImageScopeAttachmentDescriptor.h>
 #include <Atom/RHI/Image.h>
+#include <Atom/RHI/ImageView.h>
 #include <Atom/RHI/ScopeAttachment.h>
 #include <AzCore/Memory/PoolAllocator.h>
 

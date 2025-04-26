@@ -90,7 +90,7 @@ namespace Maestro
         }
 
         // Return Animation Node that owns this Track.
-        IAnimNode* GetNode() override
+        IAnimNode* GetNode() const override
         {
             return m_node;
         }
@@ -122,55 +122,77 @@ namespace Maestro
             return m_spline.get();
         }
 
-        bool IsKeySelected(int key) const override
+        bool IsKeySelected(int keyIndex) const override
         {
-            if (GetSpline() && GetSpline()->IsKeySelectedAtAnyDimension(key))
+            if (!(m_spline) || keyIndex < 0 || keyIndex >= GetNumKeys())
             {
-                return true;
+                AZ_Assert(keyIndex >= 0 && keyIndex < GetNumKeys(), "Key index (%d) is out of range (0 .. %d).", keyIndex, GetNumKeys());
+                AZ_Assert((m_spline), "Invalid spline.");
+                return false;
             }
-            return false;
+
+            return m_spline->IsKeySelectedAtAnyDimension(keyIndex);
         }
 
-        void SelectKey(int key, bool select) override
+        void SelectKey(int keyIndex, bool select) override
         {
-            if (GetSpline())
+            if (!(m_spline) || keyIndex < 0 || keyIndex >= GetNumKeys())
             {
-                GetSpline()->SelectKeyAllDimensions(key, select);
+                AZ_Assert(keyIndex >= 0 && keyIndex < GetNumKeys(), "Key index (%d) is out of range (0 .. %d).", keyIndex, GetNumKeys());
+                AZ_Assert((m_spline), "Invalid spline.");
+                return;
             }
+
+            m_spline->SelectKeyAllDimensions(keyIndex, select);
         }
 
         int GetNumKeys() const override
         {
-            return m_spline->num_keys();
+            return (m_spline) ? m_spline->num_keys() : 0;
         }
 
         void SetNumKeys(int numKeys) override
         {
+            if (!m_spline)
+            {
+                AZ_Assert(false, "Invalid spline.");
+                return;
+            }
+
             m_spline->resize(numKeys);
         }
 
         bool HasKeys() const override
         {
-            return GetNumKeys() != 0;
+            return GetNumKeys() > 0;
         }
 
-        void RemoveKey(int num) override
+        void RemoveKey(int keyIndex) override
         {
-            if (m_spline && m_spline->num_keys() > num)
+            if (!(m_spline) || keyIndex < 0 || keyIndex >= GetNumKeys())
             {
-                m_spline->erase(num);
+                AZ_Assert(keyIndex >= 0 && keyIndex < GetNumKeys(), "Key index (%d) is out of range (0 .. %d).", keyIndex, GetNumKeys());
+                AZ_Assert((m_spline), "Invalid spline.");
+                return;
             }
-            else
-            {
-                AZ_Assert(false, "Key index %i is out of range", num);
-            }
+
+            m_spline->erase(keyIndex);
+
+            Invalidate();
+            SortKeys();
         }
 
-        void GetKey(int index, IKey* key) const override
+        void GetKey(int keyIndex, IKey* key) const override
         {
-            AZ_Assert(index >= 0 && index < GetNumKeys(), "Key index %i is out of range", index);
-            AZ_Assert(key, "Key is null");
-            typename Spline::key_type& k = m_spline->key(index);
+            if (!(m_spline) || keyIndex < 0 || keyIndex >= GetNumKeys() || !key)
+            {
+                AZ_Assert(keyIndex >= 0 && keyIndex < GetNumKeys(), "Key index (%d) is out of range (0 .. %d).", keyIndex, GetNumKeys());
+                AZ_Assert((m_spline), "Invalid spline.");
+                AZ_Assert(key, "Key pointer is null");
+                return;
+            }
+
+            typename Spline::key_type& k = m_spline->key(keyIndex);
             ITcbKey* tcbkey = (ITcbKey*)key;
             tcbkey->time = k.time;
             tcbkey->flags = k.flags;
@@ -184,11 +206,17 @@ namespace Maestro
             tcbkey->SetValue(k.value);
         }
 
-        void SetKey(int index, IKey* key) override
+        void SetKey(int keyIndex, IKey* key) override
         {
-            AZ_Assert(index >= 0 && index < GetNumKeys(), "Key index %i is out of range", index);
-            AZ_Assert(key, "Key is null");
-            typename Spline::key_type& k = m_spline->key(index);
+            if (!(m_spline) || keyIndex < 0 || keyIndex >= GetNumKeys() || !key)
+            {
+                AZ_Assert(keyIndex >= 0 && keyIndex < GetNumKeys(), "Key index (%d) is out of range (0 .. %d).", keyIndex, GetNumKeys());
+                AZ_Assert((m_spline), "Invalid spline.");
+                AZ_Assert(key, "Key pointer is null");
+                return;
+            }
+
+            typename Spline::key_type& k = m_spline->key(keyIndex);
             ITcbKey* tcbkey = (ITcbKey*)key;
             k.time = tcbkey->time;
             k.flags = tcbkey->flags;
@@ -198,103 +226,141 @@ namespace Maestro
             k.easeto = tcbkey->easeto;
             k.easefrom = tcbkey->easefrom;
             tcbkey->GetValue(k.value);
+
             Invalidate();
+            SortKeys();
         }
 
-        float GetKeyTime(int index) const override
+        float GetKeyTime(int keyIndex) const override
         {
-            AZ_Assert(index >= 0 && index < GetNumKeys(), "Key index %i is out of range", index);
-            return m_spline->time(index);
+            if (!(m_spline) || keyIndex < 0 || keyIndex >= GetNumKeys())
+            {
+                AZ_Assert(keyIndex >= 0 && keyIndex < GetNumKeys(), "Key index (%d) is out of range (0 .. %d).", keyIndex, m_spline->num_keys());
+                AZ_Assert((m_spline), "Invalid spline.");
+                return -1.0f;
+            }
+
+            return m_spline->time(keyIndex);
         }
 
-        void SetKeyTime(int index, float time) override
+        void SetKeyTime(int keyIndex, float time) override
         {
-            AZ_Assert(index >= 0 && index < GetNumKeys(), "Key index %i is out of range", index);
-            m_spline->SetKeyTime(index, time);
+            if (!(m_spline) || keyIndex < 0 || keyIndex >= GetNumKeys())
+            {
+                AZ_Assert(keyIndex >= 0 && keyIndex < GetNumKeys(), "Key index (%d) is out of range (0 .. %d).", keyIndex, m_spline->num_keys());
+                AZ_Assert((m_spline), "Invalid spline.");
+                return;
+            }
+
+            const Range timeRange(GetTimeRange());
+            if (((timeRange.end - timeRange.start) > AZ::Constants::Tolerance) && (time < timeRange.start || time > timeRange.end))
+            {
+                AZ_WarningOnce("AnimSplineTrack", false, "SetKeyTime(%d, %f): Key time is out of range (%f .. %f) in track (%s), clamped.",
+                    keyIndex, time, timeRange.start, timeRange.end, (GetNode() ? GetNode()->GetName() : ""));
+                AZStd::clamp(time, timeRange.start, timeRange.end);
+            }
+
+            const int existingKeyIndex = FindKey(time);
+            if (existingKeyIndex >= 0)
+            {
+                AZ_Error("AnimSplineTrack", existingKeyIndex == keyIndex, "SetKeyTime(%d, %f): A key with this time exists in track (%s).",
+                    keyIndex, time, (GetNode() ? GetNode()->GetName() : ""));
+                return;
+            }
+
+            m_spline->SetKeyTime(keyIndex, time);
+
             Invalidate();
+            SortKeys();
         }
 
-        int GetKeyFlags(int index) override
+        int GetKeyFlags(int keyIndex) override
         {
-            AZ_Assert(index >= 0 && index < GetNumKeys(), "Key index %i is out of range", index);
-            return m_spline->key(index).flags;
+            if (!(m_spline) || keyIndex < 0 || keyIndex >= GetNumKeys())
+            {
+                AZ_Assert(keyIndex >= 0 && keyIndex < GetNumKeys(), "Key index (%d) is out of range (0 .. %d).", keyIndex, m_spline->num_keys());
+                AZ_Assert((m_spline), "Invalid spline.");
+                return 0;
+            }
+
+            return m_spline->key(keyIndex).flags;
         }
 
-        void SetKeyFlags(int index, int flags) override
+        void SetKeyFlags(int keyIndex, int flags) override
         {
-            AZ_Assert(index >= 0 && index < GetNumKeys(), "Key index %i is out of range", index);
-            m_spline->key(index).flags = flags;
+            if (!(m_spline) || keyIndex < 0 || keyIndex >= GetNumKeys())
+            {
+                AZ_Assert(keyIndex >= 0 && keyIndex < GetNumKeys(), "Key index (%d) is out of range (0 .. %d).", keyIndex, m_spline->num_keys());
+                AZ_Assert((m_spline), "Invalid spline.");
+                return;
+            }
+
+            m_spline->key(keyIndex).flags = flags;
         }
 
-        EAnimCurveType GetCurveType() override
+        EAnimCurveType GetCurveType() const override
         {
             AZ_Assert(false, "Not expected to be used");
             return eAnimCurveType_Unknown;
         }
 
-        AnimValueType GetValueType() override
+        AnimValueType GetValueType() const override
         {
             AZ_Assert(false, "Not expected to be used");
             return static_cast<AnimValueType>(0xFFFFFFFF);
         }
 
-        void GetValue(float time, float& value, bool applyMultiplier = false) override
+        void GetValue([[maybe_unused]] float time, [[maybe_unused]] float& value, [[maybe_unused]] bool applyMultiplier = false) const override
         {
             AZ_Assert(false, "Not expected to be used");
         }
 
-        void GetValue(
-            [[maybe_unused]] float time, [[maybe_unused]] AZ::Vector3& value, [[maybe_unused]] bool applyMultiplier = false) override
+        void GetValue([[maybe_unused]] float time, [[maybe_unused]] AZ::Vector3& value, [[maybe_unused]] bool applyMultiplier = false) const override
         {
             AZ_Assert(false, "Not expected to be used");
         }
 
-        void GetValue(
-            [[maybe_unused]] float time, [[maybe_unused]] AZ::Vector4& value, [[maybe_unused]] bool applyMultiplier = false) override
+        void GetValue([[maybe_unused]] float time, [[maybe_unused]] AZ::Vector4& value, [[maybe_unused]] bool applyMultiplier = false) const override
         {
             AZ_Assert(false, "Not expected to be used");
         }
 
-        void GetValue([[maybe_unused]] float time, [[maybe_unused]] AZ::Quaternion& value) override
+        void GetValue([[maybe_unused]] float time, [[maybe_unused]] AZ::Quaternion& value) const override
         {
             AZ_Assert(false, "Not expected to be used");
         }
 
-        void GetValue([[maybe_unused]] float time, [[maybe_unused]] bool& value) override
+        void GetValue([[maybe_unused]] float time, [[maybe_unused]] bool& value) const override
         {
             AZ_Assert(false, "Not expected to be used");
         }
 
-        void GetValue([[maybe_unused]] float time, [[maybe_unused]] AssetBlends<AZ::Data::AssetData>& value) override
+        void GetValue([[maybe_unused]] float time, [[maybe_unused]] AssetBlends<AZ::Data::AssetData>& value) const override
         {
             AZ_Assert(false, "Not expected to be used");
         }
 
-        void SetValue(float time, const float& value, bool bDefault = false, bool applyMultiplier = false) override
+        void GetValue([[maybe_unused]] float time, [[maybe_unused]] AZStd::string& value) const override
         {
             AZ_Assert(false, "Not expected to be used");
         }
 
-        void SetValue(
-            [[maybe_unused]] float time,
-            [[maybe_unused]] const AZ::Vector3& value,
-            [[maybe_unused]] bool bDefault = false,
-            [[maybe_unused]] bool applyMultiplier = false) override
+        void SetValue([[maybe_unused]] float time, [[maybe_unused]] const float& value,  [[maybe_unused]] bool bDefault = false, [[maybe_unused]] bool applyMultiplier = false) override
         {
             AZ_Assert(false, "Not expected to be used");
         }
 
-        void SetValue(
-            [[maybe_unused]] float time,
-            [[maybe_unused]] const AZ::Vector4& value,
-            [[maybe_unused]] bool bDefault = false,
-            [[maybe_unused]] bool applyMultiplier = false) override
+        void SetValue([[maybe_unused]] float time, [[maybe_unused]] const AZ::Vector3& value, [[maybe_unused]] bool bDefault = false, [[maybe_unused]] bool applyMultiplier = false) override
         {
             AZ_Assert(false, "Not expected to be used");
         }
 
-        void SetValue(
-            [[maybe_unused]] float time, [[maybe_unused]] const AZ::Quaternion& value, [[maybe_unused]] bool bDefault = false) override
+        void SetValue([[maybe_unused]] float time, [[maybe_unused]] const AZ::Vector4& value, [[maybe_unused]] bool bDefault = false, [[maybe_unused]] bool applyMultiplier = false) override
+        {
+            AZ_Assert(false, "Not expected to be used");
+        }
+
+        void SetValue([[maybe_unused]] float time, [[maybe_unused]] const AZ::Quaternion& value, [[maybe_unused]] bool bDefault = false) override
         {
             AZ_Assert(false, "Not expected to be used");
         }
@@ -304,10 +370,12 @@ namespace Maestro
             AZ_Assert(false, "Not expected to be used");
         }
 
-        void SetValue(
-            [[maybe_unused]] float time,
-            [[maybe_unused]] const AssetBlends<AZ::Data::AssetData>& value,
-            [[maybe_unused]] bool bDefault = false) override
+        void SetValue([[maybe_unused]] float time, [[maybe_unused]] const AssetBlends<AZ::Data::AssetData>& value, [[maybe_unused]] bool bDefault = false) override
+        {
+            AZ_Assert(false, "Not expected to be used");
+        }
+
+        void SetValue([[maybe_unused]] float time, [[maybe_unused]] const AZStd::string& value, [[maybe_unused]] bool bDefault = false) override
         {
             AZ_Assert(false, "Not expected to be used");
         }
@@ -326,20 +394,24 @@ namespace Maestro
         bool Serialize(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTracks) override;
         bool SerializeSelection(XmlNodeRef& xmlNode, bool bLoading, bool bCopySelected, float fTimeOffset) override;
 
-        void GetKeyInfo(int key, const char*& description, float& duration) override
+        void GetKeyInfo([[maybe_unused]] int keyIndex, const char*& description, float& duration) const override
         {
             description = 0;
             duration = 0;
+            AZ_Assert(false, "Not expected to be used");
         }
 
         //! Sort keys in track (after time of keys was modified).
         void SortKeys() override
         {
-            m_spline->sort_keys();
+            if (m_spline)
+            {
+                m_spline->sort_keys();
+            }
         }
 
         //! Get track flags.
-        int GetFlags() override
+        int GetFlags() const override
         {
             return m_flags;
         }
@@ -353,6 +425,12 @@ namespace Maestro
         //! Set track flags.
         void SetFlags(int flags) override
         {
+            if (!m_spline)
+            {
+                AZ_Assert(false, "Invalid spline.");
+                return;
+            }
+
             m_flags = flags;
             if (m_flags & eAnimTrackFlags_Loop)
             {
@@ -370,22 +448,52 @@ namespace Maestro
 
         void Invalidate()
         {
-            m_spline->flag_set(Spline::MODIFIED);
+            if (m_spline)
+            {
+                m_spline->flag_set(Spline::MODIFIED);
+            }
         }
 
         void SetTimeRange(const Range& timeRange) override
         {
-            m_spline->SetRange(timeRange.start, timeRange.end);
+            if (m_spline)
+            {
+                m_spline->SetRange(timeRange.start, timeRange.end);
+                Invalidate();
+            }
         }
 
-        int FindKey(float time) override
+        Range GetTimeRange() const override
         {
+            Range timeRange = {0.0f, 1.0f};
+
+            if (m_spline)
+            {
+                timeRange.start = m_spline->GetRangeStart();
+                timeRange.end   = m_spline->GetRangeEnd();
+            }
+
+            return timeRange;
+        }
+
+        float GetMinKeyTimeDelta() const override
+        {
+            return 0.01f;
+        };
+
+        int FindKey(float time) const override
+        {
+            if (!m_spline)
+            {
+                AZ_Assert(false, "Invalid spline.");
+                return -1;
+            }
+
             // Find key with given time.
-            int num = m_spline->num_keys();
-            for (int i = 0; i < num; i++)
+            for (int i = 0; i < GetNumKeys(); ++i)
             {
                 float keyt = m_spline->key(i).time;
-                if (fabs(keyt - time) < MinTimePrecision)
+                if (AZStd::abs(keyt - time) < AZ::Constants::Tolerance)
                 {
                     return i;
                 }
@@ -396,11 +504,26 @@ namespace Maestro
         //! Create key at given time, and return its index.
         int CreateKey(float time) override
         {
+            const Range timeRange(GetTimeRange());
+            if (((timeRange.end - timeRange.start) > AZ::Constants::Tolerance) && (time < timeRange.start || time > timeRange.end))
+            {
+                AZ_WarningOnce("AnimSplineTrack", false, "CreateKey(%f): Time is out of range (%f .. %f) in track (%s), clamped.",
+                    time, timeRange.start, timeRange.end, (GetNode() ? GetNode()->GetName() : ""));
+                AZStd::clamp(time, timeRange.start, timeRange.end);
+            }
+
+            const auto existingKeyIndex = FindKey(time);
+            if (existingKeyIndex >= 0)
+            {
+                AZ_Error("AnimSplineTrack", false, "CreateKey(%f): Key (%d) with this time exists in track (%s).",
+                    time, existingKeyIndex, (GetNode() ? GetNode()->GetName() : ""));
+                return -1;
+            }
+
             ValueType value;
 
-            int nkey = GetNumKeys();
-
-            if (nkey > 0)
+            const int numKeys = GetNumKeys();
+            if (numKeys > 0)
             {
                 GetValue(time, value);
             }
@@ -411,29 +534,134 @@ namespace Maestro
 
             typename Spline::ValueType tmp;
             m_spline->ToValueType(value, tmp);
-            return m_spline->InsertKey(time, tmp);
+            const auto newKeyIndex = m_spline->InsertKey(time, tmp);
+
+            Invalidate();
+            SortKeys();
+
+            return newKeyIndex;
         }
 
-        int CloneKey(int srcKey) override
+        int CloneKey(int srcKeyIndex, float timeOffset) override
         {
-            return CopyKey(this, srcKey);
-        }
+            const auto numKeys = GetNumKeys();
+            if (srcKeyIndex < 0 || srcKeyIndex >= numKeys)
+            {
+                AZ_Assert(false, "Key index (%d) is out of range (0 .. %d).", srcKeyIndex, numKeys);
+                return -1;
+            }
 
-        int CopyKey(IAnimTrack* pFromTrack, int nFromKey) override
-        {
             ITcbKey key;
-            pFromTrack->GetKey(nFromKey, &key);
-            int nkey = GetNumKeys();
-            SetNumKeys(nkey + 1);
-            SetKey(nkey, &key);
-            return nkey;
+            GetKey(srcKeyIndex, &key);
+
+            if (AZStd::abs(timeOffset) < GetMinKeyTimeDelta())
+            {
+                timeOffset = timeOffset >= 0.0f ? GetMinKeyTimeDelta() : -GetMinKeyTimeDelta();
+            }
+
+            key.time += timeOffset;
+
+            const auto existingKeyIndex = FindKey(key.time);
+            if (existingKeyIndex >= 0)
+            {
+                AZ_Error("AnimSplineTrack", false, "CloneKey(%d, %f): A key at this time already exists in this track (%s).", srcKeyIndex, key.time, (GetNode() ? GetNode()->GetName() : ""));
+                return -1;
+            }
+
+            SetNumKeys(numKeys + 1);
+            SetKey(numKeys, &key);
+
+            SortKeys();
+
+            return FindKey(key.time);
+        }
+
+        int CopyKey(IAnimTrack* pFromTrack, int fromKeyIndex) override
+        {
+            if (!pFromTrack)
+            {
+                AZ_Assert(false, "Expected valid track pointer.");
+                return -1;
+            }
+
+            const int numKeysFromTrack = pFromTrack->GetNumKeys();
+            if (fromKeyIndex < 0 || fromKeyIndex >= numKeysFromTrack)
+            {
+                AZ_Assert(false, "Key index (%d) is out of range (0 .. %d).", fromKeyIndex, m_spline->num_keys());
+                return -1;
+            }
+
+            ITcbKey key;
+            pFromTrack->GetKey(fromKeyIndex, &key);
+
+            if (this == pFromTrack) // Used in CloneKey()
+            {
+                // Shift key time to avoid fully equal keys, with offset selected bigger than minimal legal key time delta
+                const float timeOffset = GetMinKeyTimeDelta() * 1.1f;
+                const auto timeRange = GetTimeRange();
+                bool allowToAddKey = timeRange.end - timeRange.start > timeOffset;
+                if (allowToAddKey)
+                {
+                    key.time += timeOffset;
+                    if (key.time > timeRange.end)
+                    {
+                        key.time -= timeOffset * 2.0f;
+                        allowToAddKey = key.time >= timeRange.start;
+                    }
+                }
+                if (!allowToAddKey)
+                {
+                    AZ_Error("AnimSplineTrack", false, "CopyKey(%s, %d): Too narrow time range (%f .. %f) to clone key in this track.",
+                        (GetNode() ? GetNode()->GetName() : ""), fromKeyIndex, timeRange.start, timeRange.end);
+                    return -1;
+                }
+
+                const auto existingKeyIndex = FindKey(key.time);
+                if (existingKeyIndex >= 0)
+                {
+                    AZ_Error("AnimSplineTrack", false, "CopyKey(%s, %d): A key at time (%f) with index (%d) already exists in this track.",
+                        (GetNode() ? GetNode()->GetName() : ""), fromKeyIndex, key.time, existingKeyIndex);
+                    return -1;
+                }
+            }
+            else
+            {
+                const auto existingKeyIndex = FindKey(key.time);
+                if (existingKeyIndex >= 0)
+                {
+                    AZ_Error("AnimSplineTrack", false, "CopyKey(%s, %d): A key at time (%f) with index (%d) already exists in this track (%s).",
+                        (pFromTrack->GetNode() ? pFromTrack->GetNode()->GetName() : ""), fromKeyIndex, key.time, existingKeyIndex, (GetNode() ? GetNode()->GetName() : ""));
+                    return -1;
+                }
+            }
+
+            const int numKeys = GetNumKeys();
+            SetNumKeys(numKeys + 1);
+            SetKey(numKeys, &key);
+
+            Invalidate();
+            SortKeys();
+
+            return FindKey(key.time);
         }
 
         //! Get key at given time,
-        //! If key not exist adds key at this time.
+        //! If key does not exist, adds key at this time.
         void SetKeyAtTime(float time, IKey* key)
         {
-            AZ_Assert(key, "Key is null");
+            if (!key)
+            {
+                AZ_Assert(key, "Expected valid key pointer.");
+                return;
+            }
+
+            const Range timeRange(GetTimeRange());
+            if (((timeRange.end - timeRange.start) > AZ::Constants::Tolerance) && (time < timeRange.start || time > timeRange.end))
+            {
+                AZ_WarningOnce("AnimSplineTrack", false, "SetKeyAtTime(%f): Time is out of range (%f .. %f) in track (%s), clamped.",
+                    time, timeRange.start, timeRange.end, (GetNode() ? GetNode()->GetName() : ""));
+                AZStd::clamp(time, timeRange.start, timeRange.end);
+            }
 
             key->time = time;
 
@@ -442,15 +670,13 @@ namespace Maestro
             for (int i = 0; i < m_spline->num_keys(); i++)
             {
                 float keyt = m_spline->key(i).time;
-                if (fabs(keyt - time) < MinTimePrecision)
+                if (AZStd::abs(keyt - time) < GetMinKeyTimeDelta())
                 {
                     key->flags = m_spline->key(i).flags; // Reserve the flag value.
                     SetKey(i, key);
                     found = true;
                     break;
                 }
-                // if (keyt > time)
-                // break;
             }
             if (!found)
             {
@@ -461,6 +687,9 @@ namespace Maestro
                 key->flags = m_spline->key(keyIndex).flags; // Reserve the flag value.
                 SetKey(keyIndex, key);
             }
+
+            Invalidate();
+            SortKeys();
         }
 
         virtual void SetDefaultValue(const ValueType& value)
@@ -493,7 +722,10 @@ namespace Maestro
 
         void SetMultiplier(float trackMultiplier) override
         {
-            m_trackMultiplier = trackMultiplier;
+            if (AZStd::abs(trackMultiplier) > AZ::Constants::Tolerance)
+            {
+                m_trackMultiplier = trackMultiplier;
+            }
         }
 
         void SetExpanded([[maybe_unused]] bool expanded) override
@@ -525,10 +757,10 @@ namespace Maestro
         {
             m_fMinKeyValue = (newValue < m_fMinKeyValue) ? newValue : m_fMinKeyValue;
             m_fMaxKeyValue = (newValue > m_fMaxKeyValue) ? newValue : m_fMaxKeyValue;
-            if ((m_fMaxKeyValue - m_fMinKeyValue) < MinValueRange)
+            if ((m_fMaxKeyValue - m_fMinKeyValue) < s_MinValueRange)
             {
                 // prevents fill sliders from being inoperable when min and max are identical (or close to it)
-                m_fMaxKeyValue = (m_fMinKeyValue + MinValueRange);
+                m_fMaxKeyValue = (m_fMinKeyValue + s_MinValueRange);
             }
         }
 
@@ -556,12 +788,11 @@ namespace Maestro
 
         IAnimNode* m_node;
 
-        float m_trackMultiplier;
+        float m_trackMultiplier = 1.0f;
 
         unsigned int m_id = 0;
 
-        static constexpr float MinTimePrecision = 0.01f;
-        static constexpr float MinValueRange = 1.0f; // prevents fill sliders from being inoperable on the first key frame
+        static constexpr float s_MinValueRange = 1.0f; // prevents fill sliders from being inoperable on the first key frame
     };
 
     //////////////////////////////////////////////////////////////////////////
@@ -637,6 +868,9 @@ namespace Maestro
             {
                 return false;
             }
+
+            Invalidate();
+            SortKeys();
         }
         else
         {
@@ -748,7 +982,6 @@ namespace Maestro
                 keyNode->getAttr("ds", m_spline->key(i + numCur).ds);
                 keyNode->getAttr("dd", m_spline->key(i + numCur).dd);
             }
-            SortKeys();
         }
         else
         {
@@ -804,31 +1037,38 @@ namespace Maestro
                 }
             }
         }
+
+        Invalidate();
+        SortKeys();
+
         return true;
     }
 
     template<>
     TAnimSplineTrack<Vec2>::TAnimSplineTrack();
     template<>
-    void TAnimSplineTrack<Vec2>::GetValue(float time, float& value, bool applyMultiplier);
+    void TAnimSplineTrack<Vec2>::GetValue(float time, float& value, bool applyMultiplier) const;
     template<>
-    EAnimCurveType TAnimSplineTrack<Vec2>::GetCurveType();
+    EAnimCurveType TAnimSplineTrack<Vec2>::GetCurveType() const;
     template<>
-    AnimValueType TAnimSplineTrack<Vec2>::GetValueType();
+    AnimValueType TAnimSplineTrack<Vec2>::GetValueType() const;
     template<>
     void TAnimSplineTrack<Vec2>::SetValue(float time, const float& value, bool bDefault, bool applyMultiplier);
     template<>
-    void TAnimSplineTrack<Vec2>::GetKey(int index, IKey* key) const;
+    void TAnimSplineTrack<Vec2>::GetKey(int keyIndex, IKey* key) const;
 
     template<>
-    void TAnimSplineTrack<Vec2>::SetKey(int index, IKey* key);
+    void TAnimSplineTrack<Vec2>::SetKey(int keyIndex, IKey* key);
 
     //! Create key at given time, and return its index.
     template<>
     int TAnimSplineTrack<Vec2>::CreateKey(float time);
 
     template<>
-    int TAnimSplineTrack<Vec2>::CopyKey(IAnimTrack* pFromTrack, int nFromKey);
+    int TAnimSplineTrack<Vec2>::CloneKey(int srcKeyIndex, float timeOffset);
+
+    template<>
+    int TAnimSplineTrack<Vec2>::CopyKey(IAnimTrack* pFromTrack, int fromKeyIndex);
 
     /// @deprecated Serialization for Sequence data in Component Entity Sequences now occurs through AZ::SerializeContext and the Sequence
     /// Component
@@ -839,7 +1079,7 @@ namespace Maestro
     bool TAnimSplineTrack<Vec2>::SerializeSelection(XmlNodeRef& xmlNode, bool bLoading, bool bCopySelected, float fTimeOffset);
 
     template<>
-    void TAnimSplineTrack<Vec2>::GetKeyInfo(int index, const char*& description, float& duration);
+    void TAnimSplineTrack<Vec2>::GetKeyInfo(int keyIndex, const char*& description, float& duration) const;
 
     template<>
     void TAnimSplineTrack<Vec2>::add_ref();

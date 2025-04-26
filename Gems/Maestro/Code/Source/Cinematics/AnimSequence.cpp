@@ -167,7 +167,12 @@ namespace Maestro
 
     IAnimNode* CAnimSequence::GetNode(int index) const
     {
-        AZ_Assert(index >= 0 && index < (int)m_nodes.size(), "Node index %i is out of range", index);
+        if (index < 0 || index >= GetNodeCount())
+        {
+            AZ_Assert(false, "Node index (%d) is out of range (0 .. %d)", index, GetNodeCount());
+            return nullptr;
+        }
+
         return m_nodes[index].get();
     }
 
@@ -212,6 +217,11 @@ namespace Maestro
         {
             IAnimTrack* track = animNode->GetTrackByIndex(trackIndex);
             AZ_Assert(track, "Expected valid track");
+            if (!track)
+            {
+                continue;
+            }
+
             if (track->GetId() >= m_nextTrackId)
             {
                 m_nextTrackId = track->GetId() + 1;
@@ -222,6 +232,11 @@ namespace Maestro
             {
                 IAnimTrack* subTrack = track->GetSubTrack(subTrackIndex);
                 AZ_Assert(subTrack, "Expected valid subtrack");
+                if (!subTrack)
+                {
+                    continue;
+                }
+
                 if (subTrack->GetId() >= m_nextTrackId)
                 {
                     m_nextTrackId = subTrack->GetId() + 1;
@@ -367,6 +382,10 @@ namespace Maestro
     void CAnimSequence::RemoveNode(IAnimNode* node, bool removeChildRelationships)
     {
         AZ_Assert(node, "AnimNode is null");
+        if (!node)
+        {
+            return;
+        }
 
         node->Activate(false);
         node->OnReset();
@@ -829,7 +848,7 @@ namespace Maestro
             return;
         }
 
-        AZ_Printf("CAnimSequence::PrecacheStatic", "Precaching render data for cutscene: %s", GetName());
+        AZ_Trace("AnimSequence", "PrecacheStatic(%f): For cut-scene: %s", startTime, GetName());
 
         m_precached = true;
     }
@@ -940,6 +959,11 @@ namespace Maestro
                 {
                     IAnimTrack* track = animNode->GetTrackByIndex(trackIndex);
                     AZ_Assert(track, "Expected valid track.");
+                    if (!track)
+                    {
+                        continue;
+                    }
+
                     if (track->GetId() == 0)
                     {
                         track->SetId(GetUniqueTrackIdAndGenerateNext());
@@ -950,6 +974,11 @@ namespace Maestro
                     {
                         IAnimTrack* subTrack = track->GetSubTrack(subTrackIndex);
                         AZ_Assert(subTrack, "Expected valid sub track.");
+                        if (!subTrack)
+                        {
+                            continue;
+                        }
+
                         if (subTrack->GetId() == 0)
                         {
                             subTrack->SetId(GetUniqueTrackIdAndGenerateNext());
@@ -1040,6 +1069,11 @@ namespace Maestro
     bool CAnimSequence::AddTrackEvent(const char* szEvent)
     {
         AZ_Assert(szEvent && szEvent[0], "Event name is null or empty");
+        if (!szEvent || !szEvent[0])
+        {
+            return false;
+        }
+
         if (stl::push_back_unique(m_events, szEvent))
         {
             NotifyTrackEvent(ITrackEventListener::eTrackEventReason_Added, szEvent);
@@ -1052,6 +1086,11 @@ namespace Maestro
     bool CAnimSequence::RemoveTrackEvent(const char* szEvent)
     {
         AZ_Assert(szEvent && szEvent[0], "Event name is null or empty");
+        if (!szEvent || !szEvent[0])
+        {
+            return false;
+        }
+
         if (stl::find_and_erase(m_events, szEvent))
         {
             NotifyTrackEvent(ITrackEventListener::eTrackEventReason_Removed, szEvent);
@@ -1064,7 +1103,16 @@ namespace Maestro
     bool CAnimSequence::RenameTrackEvent(const char* szEvent, const char* szNewEvent)
     {
         AZ_Assert(szEvent && szEvent[0], "Event name is null or empty");
+        if (!szEvent || !szEvent[0])
+        {
+            return false;
+        }
+
         AZ_Assert(szNewEvent && szNewEvent[0], "New event name is null or empty");
+        if (!szNewEvent || !szNewEvent[0])
+        {
+            return false;
+        }
 
         for (size_t i = 0; i < m_events.size(); ++i)
         {
@@ -1082,6 +1130,10 @@ namespace Maestro
     bool CAnimSequence::MoveUpTrackEvent(const char* szEvent)
     {
         AZ_Assert(szEvent && szEvent[0], "Event name is null or empty");
+        if (!szEvent || !szEvent[0])
+        {
+            return false;
+        }
 
         for (size_t i = 0; i < m_events.size(); ++i)
         {
@@ -1103,6 +1155,10 @@ namespace Maestro
     bool CAnimSequence::MoveDownTrackEvent(const char* szEvent)
     {
         AZ_Assert(szEvent && szEvent[0], "Event name is null or empty");
+        if (!szEvent || !szEvent[0])
+        {
+            return false;
+        }
 
         for (size_t i = 0; i < m_events.size(); ++i)
         {
@@ -1185,7 +1241,7 @@ namespace Maestro
         for (const auto& node : m_nodes)
         {
             IAnimNode* animNode = node.get();
-            if (animNode->GetId() == nNodeId)
+            if (animNode && (animNode->GetId() == nNodeId))
             {
                 return animNode;
             }
@@ -1199,7 +1255,7 @@ namespace Maestro
         {
             IAnimNode* animNode = node.get();
             // Case insensitive name comparison.
-            if (azstricmp(animNode->GetName(), sNodeName) == 0)
+            if (animNode && (azstricmp(animNode->GetName(), sNodeName) == 0))
             {
                 bool bParentDirectorCheck = animNode->HasDirectorAsParent() == pParentDirector;
                 if (bParentDirectorCheck)
@@ -1247,7 +1303,7 @@ namespace Maestro
 
     void CAnimSequence::CopyNodeChildren(XmlNodeRef& xmlNode, IAnimNode* animNode)
     {
-        for (int k = 0; k < GetNodeCount(); ++k)
+        for (int k = 0; k < GetNodeCount() && animNode; ++k)
         {
             if (GetNode(k)->GetParent() == animNode)
             {
@@ -1264,7 +1320,7 @@ namespace Maestro
 
     void CAnimSequence::CopyNodes(XmlNodeRef& xmlNode, IAnimNode** pSelectedNodes, uint32 count)
     {
-        for (uint32 i = 0; i < count; ++i)
+        for (uint32 i = 0; i < count && pSelectedNodes; ++i)
         {
             IAnimNode* animNode = pSelectedNodes[i];
             if (animNode)
@@ -1325,13 +1381,28 @@ namespace Maestro
     bool CAnimSequence::AddNodeNeedToRender(IAnimNode* pNode)
     {
         AZ_Assert(pNode, "pNode is null");
+        if (!pNode)
+        {
+            return false;
+        }
+
         return stl::push_back_unique(m_nodesNeedToRender, AZStd::intrusive_ptr<IAnimNode>(pNode));
     }
 
     void CAnimSequence::RemoveNodeNeedToRender(IAnimNode* pNode)
     {
         AZ_Assert(pNode, "pNode is null");
-        stl::find_and_erase_if(m_nodesNeedToRender, [pNode](const AZStd::intrusive_ptr<IAnimNode>& sp) { return sp.get() == pNode; });
+        if (!pNode)
+        {
+            return;
+        }
+
+        stl::find_and_erase_if(
+            m_nodesNeedToRender,
+            [pNode](const AZStd::intrusive_ptr<IAnimNode>& sp)
+            {
+                return sp.get() == pNode;
+            });
     }
 
     void CAnimSequence::SetSequenceEntityId(const AZ::EntityId& sequenceEntityId)
@@ -1382,7 +1453,7 @@ namespace Maestro
         for (const auto& node : m_nodes)
         {
             IAnimNode* pNode = node.get();
-            if (pNode->GetType() == AnimNodeType::Director)
+            if (pNode && (pNode->GetType() == AnimNodeType::Director))
             {
                 IAnimTrack* pSequenceTrack = pNode->GetTrackForParameter(AnimParamType::Sequence);
                 if (pSequenceTrack)

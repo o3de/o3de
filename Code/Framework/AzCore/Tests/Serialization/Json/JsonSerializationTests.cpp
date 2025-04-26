@@ -37,7 +37,7 @@ namespace JsonSerializationTests
         bool m_fullyReflected = true;
     };
 
-    TYPED_TEST_CASE(TypedJsonSerializationTests, JsonSerializationTestCases);
+    TYPED_TEST_SUITE(TypedJsonSerializationTests, JsonSerializationTestCases);
 
     TYPED_TEST(TypedJsonSerializationTests, Store_SerializedDefaultInstance_EmptyJsonReturned)
     {

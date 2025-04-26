@@ -427,8 +427,8 @@ namespace UnitTest
         return MultiDeviceBufferBindFlagsToString(info.param.bufferBindFlags) + "BufferWith" + MultiDeviceBufferBindFlagsToString(info.param.viewBindFlags) + "BufferView";
     }
 
-    INSTANTIATE_TEST_CASE_P(BufferView, MultiDeviceBufferBindFlagTests, ::testing::ValuesIn(GenerateCompatibleMultiDeviceBufferBindFlagCombinations()), GenerateMultiDeviceBufferBindFlagTestCaseName);
-    INSTANTIATE_TEST_CASE_P(BufferView, MultiDeviceBufferBindFlagFailureCases, ::testing::ValuesIn(GenerateIncompatibleMultiDeviceBufferBindFlagCombinations()), GenerateMultiDeviceBufferBindFlagTestCaseName);
+    INSTANTIATE_TEST_SUITE_P(BufferView, MultiDeviceBufferBindFlagTests, ::testing::ValuesIn(GenerateCompatibleMultiDeviceBufferBindFlagCombinations()), GenerateMultiDeviceBufferBindFlagTestCaseName);
+    INSTANTIATE_TEST_SUITE_P(BufferView, MultiDeviceBufferBindFlagFailureCases, ::testing::ValuesIn(GenerateIncompatibleMultiDeviceBufferBindFlagCombinations()), GenerateMultiDeviceBufferBindFlagTestCaseName);
 
     enum class MultiDeviceParallelGetBufferViewTestCases
     {

@@ -178,7 +178,7 @@ namespace SettingsRegistryVisitorUtilsTests
     }
 
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         VisitField,
         SettingsRegistryVisitCallbackFixture,
         ::testing::Values(

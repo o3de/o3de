@@ -30,6 +30,7 @@ static const char kNewLevelDialog_LevelsFolder[] = "Levels";
 static constexpr const char* RegistryKey_CustomTemplatePaths = "/O3DE/Preferences/Prefab/CustomTemplatePaths";
 static constexpr const char* DefaultTemplate = "Default_Level.prefab";
 
+
 class LevelFolderValidator : public QValidator
 {
 public:
@@ -297,7 +298,20 @@ void CNewLevelDialog::OnLevelNameChange()
     UpdateData(true);
 
     // QRegExpValidator means the string will always be valid as long as it's not empty:
-    const bool valid = !m_level.isEmpty() && ValidateLevel();
+    bool valid = !m_level.isEmpty() && ValidateLevel();
+    if (valid)
+    {
+        QDir levelDir(QString("%1/%2/").arg(m_levelFolders, m_level));
+        QString strLevelPath = levelDir.absoluteFilePath(m_level + EditorUtils::LevelFile::GetDefaultFileExtension());
+        
+        if (strLevelPath.length() >= AZ::IO::MaxPathLength)
+        {
+            valid = false;
+
+            int levelMaxLength = (AZ::IO::MaxPathLength - m_levelFolders.length() - QString(EditorUtils::LevelFile::GetDefaultFileExtension()).length() - 2) / 2;
+            QMessageBox::warning(this, tr("Unable to Save Level"), QObject::tr("The level name is too long, the maximum is '%1'.").arg(levelMaxLength), QMessageBox::Ok, QMessageBox::Ok);
+        }
+    }
 
     // Use the validity to dynamically change the Ok button's enabled state
     if (QPushButton* button = ui->buttonBox->button(QDialogButtonBox::Ok))

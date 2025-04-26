@@ -87,14 +87,17 @@ namespace Maestro
 
         //////////////////////////////////////////////////////////////////////////
         // Override CreateTrack to handle trackMultipliers for Component Tracks
-        IAnimTrack* CreateTrack(const CAnimParamType& paramType) override;
+        IAnimTrack* CreateTrack(const CAnimParamType& paramType, AnimValueType remapValueType = AnimValueType::Unknown) override;
         bool RemoveTrack(IAnimTrack* pTrack) override;
+
+        void UpdateTrackDefaultValue(float time, IAnimTrack* pTrack) override;
 
         //////////////////////////////////////////////////////////////////////////
         // EditorSequenceAgentComponentNotificationBus::Handler Interface
         void OnSequenceAgentConnected() override;
 
         void Serialize(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTracks) override;
+        void InitPostLoad(IAnimSequence* sequence) override; // additional checks after loading a prefab
 
         const AZ::Uuid& GetComponentTypeId() const
         {
@@ -117,9 +120,14 @@ namespace Maestro
         void UpdateDynamicParams_Editor();
         void UpdateDynamicParams_Game();
 
-        void InitializeTrackDefaultValue(IAnimTrack* pTrack, const CAnimParamType& paramType) override;
+        void InitializeTrackDefaultValue(IAnimTrack* pTrack, const CAnimParamType& paramType, AnimValueType remapValueType = AnimValueType::Unknown) override;
 
         bool GetParamInfoFromType(const CAnimParamType& paramId, SParamInfo& info) const override;
+
+        // Utility function to query the units for a track and set the track multiplier if needed:
+        // when underlying animated class is AZ::Color or when AZ::Vector3 is remapped to have remapValueType = AnimValueType::RGB.
+        // Returns true if track multiplier was set.
+        bool SetTrackMultiplier(IAnimTrack* track, AnimValueType remapValueType = AnimValueType::Unknown) const override;
 
     private:
         enum ETransformSpaceConversionDirection
@@ -139,9 +147,6 @@ namespace Maestro
         AZ::Quaternion TransformFromWorldToLocalRotation(const AZ::Quaternion& rotation) const;
         AZ::Vector3 TransformFromWorldToLocalScale(const AZ::Vector3& scale) const;
 
-        // Utility function to query the units for a track and set the track multiplier if needed. Returns true if track multiplier was set.
-        bool SetTrackMultiplier(IAnimTrack* track) const;
-
         void ForceAnimKeyChangeInCharacterTrackAnimator();
 
         // typed support functions for SetKeysForChangedTrackValues()
@@ -154,6 +159,9 @@ namespace Maestro
             bool applyTrackMultiplier = true,
             float isChangedTolerance = AZ::Constants::Tolerance);
         int SetKeysForChangedQuaternionTrackValue(IAnimTrack* track, int keyIdx, float time);
+        int SetKeysForChangedStringTrackValue(IAnimTrack* track, int keyIdx, float time);
+
+        static const float s_rgbMultiplier; // standard value for tracks' multiplier with AnimValueType::RGB 
 
         // Helper function to set individual properties on Simple Motion Component from an AssetBlend Track.
         void AnimateAssetBlendSubProperties(const AssetBlends<AZ::Data::AssetData>& assetBlendValue);

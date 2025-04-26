@@ -31,6 +31,7 @@
 #include <Cinematics/SelectTrack.h>
 #include <Cinematics/SequenceTrack.h>
 #include <Cinematics/SoundTrack.h>
+#include <Cinematics/StringTrack.h>
 #include <Cinematics/TimeRangesTrack.h>
 #include <Cinematics/TrackEventTrack.h>
 
@@ -167,6 +168,7 @@ namespace Maestro
         CSelectTrack::Reflect(context);
         CSequenceTrack::Reflect(context);
         CSoundTrack::Reflect(context);
+        CStringTrack::Reflect(context);
         CTrackEventTrack::Reflect(context);
         CAssetBlendTrack::Reflect(context);
         CTimeRangesTrack::Reflect(context);

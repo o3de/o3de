@@ -427,7 +427,11 @@ void LtcQuadEvaluate(
 
             // Apply BRDF scale terms (BRDF magnitude and Schlick Fresnel)
             const float clearCoatSpecularF0 = 0.04;
+        #ifdef CS_SAMPLERS
+            float2 schlickCc = ltcAmpMatrix.SampleLevel(SceneSrg::LtcSampler, ltcCoordsCc, 0).xy;
+        #else
             float2 schlickCc = ltcAmpMatrix.Sample(SceneSrg::LtcSampler, ltcCoordsCc).xy;
+        #endif
             float F = schlickCc.x * clearCoatSpecularF0 + (1.0 - clearCoatSpecularF0) * schlickCc.y;
             F *= surface.clearCoat.factor;
 
@@ -679,7 +683,11 @@ void LtcPolygonEvaluate(
 
             // Apply BRDF scale terms (BRDF magnitude and Schlick Fresnel)
             const float clearCoatSpecularF0 = 0.04;
+        #ifdef CS_SAMPLERS
+            float2 schlickCc = ltcAmpMatrix.SampleLevel(SceneSrg::LtcSampler, ltcCoordsCc, 0).xy;
+        #else
             float2 schlickCc = ltcAmpMatrix.Sample(SceneSrg::LtcSampler, ltcCoordsCc).xy;
+        #endif
             float F = clearCoatSpecularF0 * schlickCc.x + (1.0 - clearCoatSpecularF0) * schlickCc.y;
             F *= surface.clearCoat.factor;
 

@@ -22,6 +22,8 @@
 #include <AzCore/Time/ITime.h>
 
 #include <AzToolsFramework/API/EditorCameraBus.h>
+#include <Maestro/Bus/EditorSequenceComponentBus.h>
+#include <Maestro/Types/AnimNodeType.h>
 
 //////////////////////////////////////////////////////////////////////////
 // Movie Callback.
@@ -226,6 +228,11 @@ void CAnimationContext::SetSequence(CTrackViewSequence* sequence, bool force, bo
     {
         // Set the last valid sequence that was selected.
         m_mostRecentSequenceId = m_pSequence->GetSequenceComponentEntityId();
+        if (!m_mostRecentSequenceId.IsValid())
+        {
+            m_pSequence = nullptr;
+            return;
+        }
 
         // Get ready to handle camera switching in this sequence, if ever, in order to switch camera in Editor Viewport Widget
         Maestro::SequenceComponentNotificationBus::Handler::BusConnect(m_mostRecentSequenceId);
@@ -280,7 +287,8 @@ bool CAnimationContext::IsInGameMode() const
 bool CAnimationContext::IsInEditingMode() const
 {
     const auto editor = GetIEditor();
-    const bool isNotEditing = !editor || editor->IsInConsolewMode() || editor->IsInTestMode() || editor->IsInLevelLoadTestMode() || editor->IsInPreviewMode();
+    const bool isNotEditing = !editor || editor->IsInConsolewMode() || editor->IsInTestMode() || editor->IsInLevelLoadTestMode() ||
+        editor->IsInPreviewMode() || editor->IsInSimulationMode();
     return !m_bIsInGameMode && !isNotEditing;
 }
 
@@ -388,40 +396,74 @@ void CAnimationContext::TimeChanged(float newTime)
 //////////////////////////////////////////////////////////////////////////
 void CAnimationContext::OnSequenceActivated(AZ::EntityId entityId)
 {
+    if (!entityId.IsValid())
+    {
+        AZ_Assert(false, "Expected valid sequence EntityId.");
+        return;
+    }
+
+    const auto editor = GetIEditor();
+    if (!editor)
+    {
+        AZ_Assert(false, "No Editor.");
+        return;
+    }
+    const auto manager = editor->GetSequenceManager();
+    if (!manager)
+    {
+        AZ_Assert(false, "No SequenceManager.");
+        return;
+    }
+    const auto sequence = manager->GetSequenceByEntityId(entityId);
+    if (!sequence)
+    {
+        AZ_Assert(false, "No sequence with EntityId=%s.", entityId.ToString().c_str());
+        return;
+    }
+
+    // Store initial Editor Viewport camera EntityId
+    Camera::EditorCameraRequestBus::BroadcastResult(m_defaulViewCameraEntityId, &Camera::EditorCameraRequestBus::Events::GetCurrentViewEntityId);
+
     // If nothing is selected and there is a valid most recent selected
     // try to find that sequence by id and select it. This is useful
     // for restoring the selected sequence during undo and redo.
-    if (m_pSequence == nullptr && m_mostRecentSequenceId.IsValid())
+    if (m_pSequence == nullptr && m_mostRecentSequenceId.IsValid() && entityId == m_mostRecentSequenceId)
     {
-        if (entityId == m_mostRecentSequenceId)
-        {
-            auto editor = GetIEditor();
-            if (editor != nullptr)
-            {
-                auto manager = editor->GetSequenceManager();
-                if (manager != nullptr)
-                {
-                    auto sequence = manager->GetSequenceByEntityId(m_mostRecentSequenceId);
-                    if (sequence != nullptr)
-                    {
-                        // Hang onto this because SetSequence() will reset it.
-                        float lastTime = m_mostRecentSequenceTime;
+        // Hang onto this because SetSequence() will reset it.
+        float lastTime = m_mostRecentSequenceTime;
 
-                        SetSequence(sequence, false, false);
+        SetSequence(sequence, false, false);
 
-                        // Restore the current time.
-                        SetTime(lastTime);
+        // Restore the current time.
+        SetTime(lastTime);
 
-                        // Notify time may have changed, use m_currTime in case it was clamped by SetTime()
-                        TimeChanged(m_currTime);
-                    }
-                }
-            }
-        }
+        // Notify time may have changed, use m_currTime in case it was clamped by SetTime()
+        TimeChanged(m_currTime);
+
+        return;
     }
 
-    // Store initial Editor Viewport camera EntityId 
-    Camera::EditorCameraRequestBus::BroadcastResult(m_defaulViewCameraEntityId, &Camera::EditorCameraRequestBus::Events::GetCurrentViewEntityId);
+    // This method could be invoked after Undoing a sequence deletion, so try to find this sequence and reconnect it
+    const auto entityNodes = sequence->GetAnimNodesByType(AnimNodeType::AzEntity);
+    const auto numNodes = entityNodes.GetCount();
+    for (unsigned int i = 0; i < numNodes; ++i)
+    {
+        const auto animatedEntityId = entityNodes.GetNode(i)->GetAzEntityId();
+        if (!animatedEntityId.IsValid())
+        {
+            AZ_Error("AnimationContext", false, "OnSequenceActivated('%s' %s): AzEntityNode has invalid EntityId %s.",
+                sequence->GetName().c_str(), entityId.ToString().c_str(), animatedEntityId.ToString().c_str());
+            continue;
+        }
+        bool wasInvoked = false;
+        Maestro::EditorSequenceComponentRequestBus::EventResult(
+            wasInvoked, entityId, &Maestro::EditorSequenceComponentRequestBus::Events::AddEntityToAnimate, animatedEntityId);
+        if (!wasInvoked)
+        {
+            AZ_Error("AnimationContext", false, "OnSequenceActivated('%s' %s): Failed to connect to animated EntityId %s.",
+                sequence->GetName().c_str(), entityId.ToString().c_str(), animatedEntityId.ToString().c_str());
+        }
+    }
 }
 
 void CAnimationContext::OnSequenceDeactivated(AZ::EntityId entityId)
@@ -851,13 +893,11 @@ void CAnimationContext::OnEditorNotifyEvent(EEditorNotifyEvent event)
     case eNotify_OnBeginGameMode:
         if (m_pSequence)
         {
-            // Restart sequence at the beginning
-            auto savedTime = m_currTime;
-            AnimateActiveSequence();
-            m_currTime = savedTime;
+            // Reset the sequence, so that changed camera positions are restored
+            m_pSequence->Reset(false);
 
             // Force recent changes made in TrackView, updating in-memory prefab using Undo/Redo framework
-            AzToolsFramework::ScopedUndoBatch undoBatch("Update TrackView Sequence");
+            AzToolsFramework::ScopedUndoBatch undoBatch("Update TrackView Sequence Before Playing Game");
             undoBatch.MarkEntityDirty(m_pSequence->GetSequenceComponentEntityId());
         }
         {
@@ -873,9 +913,18 @@ void CAnimationContext::OnEditorNotifyEvent(EEditorNotifyEvent event)
 
     case eNotify_OnBeginSceneSave:
     case eNotify_OnBeginLayerExport:
+        if (m_pSequence)
         {
-            constexpr const bool isSwitchingToGameMode = false;
+            // Reset the sequence, so that changed camera positions are restored
+            m_pSequence->Reset(false);
+
+            // Force recent changes made in TrackView, updating in-memory prefab using Undo/Redo framework
+            AzToolsFramework::ScopedUndoBatch undoBatch("Update TrackView Sequence Before Saving");
+            undoBatch.MarkEntityDirty(m_pSequence->GetSequenceComponentEntityId());
+        }
+        {
             // Store active sequence and camera Ids and drop this sequence.
+            constexpr const bool isSwitchingToGameMode = false;
             StoreSequenceOnExitingEditMode(isSwitchingToGameMode);
         }
         break;
@@ -907,7 +956,7 @@ void CAnimationContext::OnEditorNotifyEvent(EEditorNotifyEvent event)
         m_mostRecentSequenceTime = 0.0f;
         m_bSavedRecordingState = m_recording;
         SetRecordingInternal(false);
-        GetIEditor()->GetAnimation()->SetSequence(nullptr, false, false);
+        SetSequence(nullptr, false, false);
         break;
 
     case eNotify_OnEndLoad:

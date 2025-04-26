@@ -5,14 +5,15 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <RHI/DescriptorContext.h>
+#include <Atom/RHI.Reflect/DX12/PlatformLimitsDescriptor.h>
+#include <Atom/RHI/DeviceShaderResourceGroupPool.h>
+#include <AtomCore/std/containers/small_vector.h>
 #include <RHI/Buffer.h>
 #include <RHI/Conversions.h>
+#include <RHI/DescriptorContext.h>
 #include <RHI/Device.h>
 #include <RHI/Image.h>
 #include <RHI/ShaderResourceGroupPool.h>
-#include <Atom/RHI.Reflect/DX12/PlatformLimitsDescriptor.h>
-#include <Atom/RHI/DeviceShaderResourceGroupPool.h>
 
 namespace AZ
 {
@@ -470,7 +471,7 @@ namespace AZ
         {
             GetPool(table.GetType(), table.GetFlags()).ReleaseTable(table);
         }
-        
+
         void DescriptorContext::UpdateDescriptorTableRange(
             DescriptorTable gpuDestinationTable,
             const DescriptorHandle* cpuSourceDescriptors,
@@ -479,7 +480,8 @@ namespace AZ
             const uint32_t DescriptorCount = gpuDestinationTable.GetSize();
 
             // Resolve source descriptors to platform handles.
-            AZStd::vector<D3D12_CPU_DESCRIPTOR_HANDLE> cpuSourceHandles;
+            constexpr size_t FixedSize = 16;
+            AZStd::small_vector<D3D12_CPU_DESCRIPTOR_HANDLE, FixedSize> cpuSourceHandles;
             cpuSourceHandles.reserve(DescriptorCount);
             for (uint32_t i = 0; i < DescriptorCount; ++i)
             {
@@ -490,16 +492,17 @@ namespace AZ
             D3D12_CPU_DESCRIPTOR_HANDLE gpuDestinationHandle = GetCpuPlatformHandleForTable(gpuDestinationTable);
 
             // An array of descriptor sizes for each range. We just want N ranges with 1 descriptor each.
-            AZStd::vector<uint32_t> rangeCounts(DescriptorCount, 1);
+            AZStd::small_vector<uint32_t, FixedSize> rangeCountsFixed;
+            rangeCountsFixed.resize(DescriptorCount, 1);
 
             //We are gathering N source descriptors into a contiguous destination table.
             m_device->CopyDescriptors(
-                1,                      // Number of destination ranges.
-                &gpuDestinationHandle,  // Destination range array.
-                &DescriptorCount,       // Number of destination table elements in each range.
-                DescriptorCount,        // Number of source ranges.
-                cpuSourceHandles.data(),// Source range array
-                rangeCounts.data(),     // Number of elements in each source range.
+                1, // Number of destination ranges.
+                &gpuDestinationHandle, // Destination range array.
+                &DescriptorCount, // Number of destination table elements in each range.
+                DescriptorCount, // Number of source ranges.
+                cpuSourceHandles.span().data(), // Source range array
+                rangeCountsFixed.span().data(), // Number of elements in each source range.
                 heapType);
         }
 

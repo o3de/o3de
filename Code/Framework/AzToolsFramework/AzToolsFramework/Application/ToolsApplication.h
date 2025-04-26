@@ -95,7 +95,7 @@ namespace AzToolsFramework
         void FlushRedo() override;
         UndoSystem::URSequencePoint* BeginUndoBatch(const char* label) override;
         UndoSystem::URSequencePoint* ResumeUndoBatch(UndoSystem::URSequencePoint* token, const char* label) override;
-        void EndUndoBatch() override;
+        bool EndUndoBatch() override;
 
         bool IsEntityEditable(AZ::EntityId entityId) override;
         bool AreEntitiesEditable(const EntityIdList& entityIds) override;
