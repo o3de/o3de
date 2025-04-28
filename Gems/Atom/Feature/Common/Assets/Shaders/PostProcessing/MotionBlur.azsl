@@ -1,0 +1,93 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include <scenesrg_all.srgi>
+#include <Atom/Features/PostProcessing/PostProcessUtil.azsli>
+
+#define TILE_DIM_X 16
+#define TILE_DIM_Y 16
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2D<float4> m_inputColor;
+    Texture2D<float4> m_inputDepth;
+    Texture2D<float2> m_motionVectors;
+
+    RWTexture2D<float4> m_outputColor;
+
+    Sampler LinearSampler
+    {
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+
+    struct Constants
+    {
+        uint m_sampleNumber;
+        float m_shutterAngle; // [0, 1)
+        uint2 m_outputSize; // texture size of output
+    };
+    Constants m_constants;
+}
+
+// [Jimenez, 2014]
+float FullscreenGradientNoise(uint2 coord)
+{
+    float2 uv = float2(coord);
+    float f = dot(float2(0.06711056f, 0.00583715f), uv);
+    return frac(52.9829189f * frac(f));
+}
+
+[numthreads(TILE_DIM_X, TILE_DIM_Y, 1)]
+void MainCS(
+    uint3 dispatchThreadID : SV_DispatchThreadID, 
+    uint3 groupID : SV_GroupID, 
+    uint groupIndex : SV_GroupIndex)
+{
+    uint2 pixelCoord = dispatchThreadID.xy;
+    if (pixelCoord.x >= PassSrg::m_constants.m_outputSize.x || pixelCoord.y >= PassSrg::m_constants.m_outputSize.y)
+    {
+        return;
+    }
+
+    float3 color = PassSrg::m_inputColor[pixelCoord].rgb;
+    const float2 velocity = PassSrg::m_motionVectors[pixelCoord] * PassSrg::m_constants.m_shutterAngle;
+    
+    if (length(velocity) < 1){
+        PassSrg::m_outputColor[pixelCoord].rgb = color;
+        return;
+    }
+
+    // Calculate noise to make it look better with less samples per pixel
+	float noise = FullscreenGradientNoise(pixelCoord);
+
+    const int maxSampleCount = PassSrg::m_constants.m_sampleNumber;
+    float sampleCount = 1.0;
+    
+    float3 accumulatedColor = float3(0.0, 0.0, 0.0);
+    for (int i = 0; i < maxSampleCount; ++i)
+    {
+        int2 coord = pixelCoord + int2((i + noise) * velocity / maxSampleCount);
+        if(coord.x < 0 || coord.y < 0 || coord.x >= PassSrg::m_constants.m_outputSize.x || coord.y >= PassSrg::m_constants.m_outputSize.y){
+            break;
+        }
+        
+        accumulatedColor += PassSrg::m_inputColor[uint2(coord)].rgb;
+        sampleCount += 1.0;
+    }
+    
+    accumulatedColor /= sampleCount;
+    // NaN protection (without this NaNs could get in the history buffer and quickly consume the frame)
+    accumulatedColor = max(0.0, accumulatedColor);
+
+    PassSrg::m_outputColor[pixelCoord].rgb = accumulatedColor;
+}

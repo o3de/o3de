@@ -621,6 +621,10 @@
                 "Path": "Passes/ChromaticAberration.pass"
             },
             {
+                "Name": "MotionBlurTemplate",
+                "Path": "Passes/MotionBlur.pass"
+            },
+            {
                 "Name": "PaniniProjectionTemplate",
                 "Path": "Passes/PaniniProjection.pass"
             }, 

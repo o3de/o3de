@@ -152,6 +152,7 @@ set(FILES
     Passes/MeshMotionVector.pass
     Passes/ModulateTexture.pass
     Passes/MorphTarget.pass
+    Passes/MotionBlur.pass
     Passes/MotionVectorParent.pass
     Passes/MSAAResolveColor.pass
     Passes/MSAAResolveCustom.pass
@@ -532,6 +533,8 @@ set(FILES
     Shaders/PostProcessing/LuminanceHistogramGenerator.shader
     Shaders/PostProcessing/ModulateTexture.azsl
     Shaders/PostProcessing/ModulateTexture.shader
+    Shaders/PostProcessing/MotionBlur.azsl
+    Shaders/PostProcessing/MotionBlur.shader
     Shaders/PostProcessing/MSAAResolveCustom.azsl
     Shaders/PostProcessing/MSAAResolveCustom.shader
     Shaders/PostProcessing/MSAAResolveDepth.azsl

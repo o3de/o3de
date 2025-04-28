@@ -169,6 +169,8 @@ set(FILES
     Source/PostProcess/ExposureControl/ExposureControlSettings.h
     Source/PostProcess/FilmGrain/FilmGrainSettings.cpp
     Source/PostProcess/FilmGrain/FilmGrainSettings.h
+    Source/PostProcess/MotionBlur/MotionBlurSettings.cpp
+    Source/PostProcess/MotionBlur/MotionBlurSettings.h
     Source/PostProcess/PaniniProjection/PaniniProjectionSettings.cpp
     Source/PostProcess/PaniniProjection/PaniniProjectionSettings.h
     Source/PostProcess/Ssao/SsaoSettings.cpp
@@ -195,6 +197,8 @@ set(FILES
     Source/PostProcessing/ChromaticAberrationPass.cpp
     Source/PostProcessing/FilmGrainPass.h
     Source/PostProcessing/FilmGrainPass.cpp
+    Source/PostProcessing/MotionBlurPass.h
+    Source/PostProcessing/MotionBlurPass.cpp
     Source/PostProcessing/PaniniProjectionPass.h
     Source/PostProcessing/PaniniProjectionPass.cpp
     Source/PostProcessing/VignettePass.h
