@@ -1291,24 +1291,19 @@ namespace AzToolsFramework
         }
 
         // if we are in an undo already, and its already the expected one, just return it.
-        if ((m_currentBatchUndo) && (m_currentBatchUndo == expected))
+        UndoSystem::URSequencePoint* searchNode = m_currentBatchUndo;
+        while (searchNode)
         {
-            if (m_undoStack->GetTop() == m_currentBatchUndo)
+            if (searchNode == expected)
             {
-                m_undoStack->PopTop();
+                return searchNode;
             }
-
-            return m_currentBatchUndo;
+            searchNode = searchNode->GetParent(); // walk up the tree.
         }
 
-        const auto ptr = m_undoStack->GetTop();
-        if (ptr && ptr == expected)
-        {
-            m_currentBatchUndo = ptr;
-            m_undoStack->PopTop();
-
-            return m_currentBatchUndo;
-        }
+        // note that when resuming an undo batch, we do not pop any values, this allows the node to
+        // continue adding data to nodes without creating new undos.
+        // we only create a new undo node if the one we are trying to resume is not anywhere in the current undo tree.
 
         return BeginUndoBatch(label);
     }
