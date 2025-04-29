@@ -66,6 +66,8 @@ set(FILES
     Source/PostProcess/Bloom/EditorBloomComponent.h
     Source/PostProcess/ChromaticAberration/EditorChromaticAberrationComponent.cpp
     Source/PostProcess/ChromaticAberration/EditorChromaticAberrationComponent.h
+    Source/PostProcess/MotionBlur/EditorMotionBlurComponent.cpp
+    Source/PostProcess/MotionBlur/EditorMotionBlurComponent.h
     Source/PostProcess/PaniniProjection/EditorPaniniProjectionComponent.cpp
     Source/PostProcess/PaniniProjection/EditorPaniniProjectionComponent.h
     Source/PostProcess/FilmGrain/EditorFilmGrainComponent.cpp

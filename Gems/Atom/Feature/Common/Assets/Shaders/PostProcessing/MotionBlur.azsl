@@ -33,14 +33,13 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     struct Constants
     {
         uint m_sampleNumber;
-        float m_shutterAngle; // [0, 1)
+        float m_strength; // [0, 1)
         uint2 m_outputSize; // texture size of output
     };
     Constants m_constants;
 }
 
-// [Jimenez, 2014]
-float FullscreenGradientNoise(uint2 coord)
+float GetGradientNoise(uint2 coord)
 {
     float2 uv = float2(coord);
     float f = dot(float2(0.06711056f, 0.00583715f), uv);
@@ -60,7 +59,10 @@ void MainCS(
     }
 
     float3 color = PassSrg::m_inputColor[pixelCoord].rgb;
-    const float2 velocity = PassSrg::m_motionVectors[pixelCoord] * PassSrg::m_constants.m_shutterAngle;
+    float2 velocity = -PassSrg::m_motionVectors[pixelCoord];
+    velocity.x *= float(PassSrg::m_constants.m_outputSize.x);
+    velocity.y *= float(PassSrg::m_constants.m_outputSize.y);
+    velocity *= PassSrg::m_constants.m_strength;
     
     if (length(velocity) < 1){
         PassSrg::m_outputColor[pixelCoord].rgb = color;
@@ -68,10 +70,10 @@ void MainCS(
     }
 
     // Calculate noise to make it look better with less samples per pixel
-	float noise = FullscreenGradientNoise(pixelCoord);
+	float noise = GetGradientNoise(pixelCoord);
 
     const int maxSampleCount = PassSrg::m_constants.m_sampleNumber;
-    float sampleCount = 1.0;
+    float sampleCount = 0.0;
     
     float3 accumulatedColor = float3(0.0, 0.0, 0.0);
     for (int i = 0; i < maxSampleCount; ++i)
@@ -85,9 +87,14 @@ void MainCS(
         sampleCount += 1.0;
     }
     
-    accumulatedColor /= sampleCount;
-    // NaN protection (without this NaNs could get in the history buffer and quickly consume the frame)
-    accumulatedColor = max(0.0, accumulatedColor);
+    if(sampleCount == 0){
+        PassSrg::m_outputColor[pixelCoord].rgb = color;
+    }else{
+        accumulatedColor /= sampleCount;
+        // NaN protection (without this NaNs could get in the history buffer and quickly consume the frame)
+        accumulatedColor = max(0.0, accumulatedColor);
 
-    PassSrg::m_outputColor[pixelCoord].rgb = accumulatedColor;
+        PassSrg::m_outputColor[pixelCoord].rgb = accumulatedColor;
+    }
+    
 }

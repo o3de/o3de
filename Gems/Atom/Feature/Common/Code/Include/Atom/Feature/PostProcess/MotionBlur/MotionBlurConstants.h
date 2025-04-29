@@ -14,7 +14,8 @@ namespace AZ
     {
         namespace MotionBlur
         {
-            static constexpr float DefaultShutterAngle = 0.5f;
+            static constexpr float DefaultStrength = 5.f;
+            static constexpr u32 DefaultSampleNumber = 5;
         } // namespace PaniniProjection
     } // namespace Render
 } // namespace AZ

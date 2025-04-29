@@ -36,6 +36,7 @@
 #include <PostProcess/ShapeWeightModifier/ShapeWeightModifierComponent.h>
 #include <PostProcess/GradientWeightModifier/GradientWeightModifierComponent.h>
 #include <PostProcess/ChromaticAberration/ChromaticAberrationComponent.h>
+#include <PostProcess/MotionBlur/MotionBlurComponent.h>
 #include <PostProcess/PaniniProjection/PaniniProjectionComponent.h>
 #include <PostProcess/FilmGrain/FilmGrainComponent.h>
 #include <PostProcess/WhiteBalance/WhiteBalanceComponent.h>
@@ -78,6 +79,7 @@
 #include <PostProcess/ShapeWeightModifier/EditorShapeWeightModifierComponent.h>
 #include <PostProcess/GradientWeightModifier/EditorGradientWeightModifierComponent.h>
 #include <PostProcess/ChromaticAberration/EditorChromaticAberrationComponent.h>
+#include <PostProcess/MotionBlur/EditorMotionBlurComponent.h>
 #include <PostProcess/PaniniProjection/EditorPaniniProjectionComponent.h>
 #include <PostProcess/FilmGrain/EditorFilmGrainComponent.h>
 #include <PostProcess/WhiteBalance/EditorWhiteBalanceComponent.h>
@@ -138,6 +140,7 @@ namespace AZ
                         AttachmentComponent::CreateDescriptor(),
                         OcclusionCullingPlaneComponent::CreateDescriptor(),
                         ChromaticAberrationComponent::CreateDescriptor(),
+                        MotionBlurComponent::CreateDescriptor(),
                         PaniniProjectionComponent::CreateDescriptor(),
                         FilmGrainComponent::CreateDescriptor(),
                         WhiteBalanceComponent::CreateDescriptor(),
@@ -180,6 +183,7 @@ namespace AZ
                         EditorAttachmentComponent::CreateDescriptor(),
                         EditorOcclusionCullingPlaneComponent::CreateDescriptor(),
                         EditorChromaticAberrationComponent::CreateDescriptor(),
+                        EditorMotionBlurComponent::CreateDescriptor(),
                         EditorPaniniProjectionComponent::CreateDescriptor(),
                         EditorFilmGrainComponent::CreateDescriptor(),
                         EditorWhiteBalanceComponent::CreateDescriptor(),

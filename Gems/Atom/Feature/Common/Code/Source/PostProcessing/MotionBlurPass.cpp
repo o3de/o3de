@@ -61,8 +61,8 @@ namespace AZ
             // Must match the struct in MotionBlur.azsl
             struct Constants
             {
-                u32 m_sampleNumber = 5;
-                float m_shutterAngle = MotionBlur::DefaultShutterAngle;
+                u32 m_sampleNumber = MotionBlur::DefaultSampleNumber;
+                float m_strength = MotionBlur::DefaultStrength;
                 AZStd::array<u32, 2> m_outputSize;
             } constants{};
 
@@ -77,7 +77,8 @@ namespace AZ
                     MotionBlurSettings* MotionBlurSettings = postProcessSettings->GetMotionBlurSettings();
                     if (MotionBlurSettings)
                     {
-                        constants.m_shutterAngle = MotionBlurSettings->GetShutterAngle();
+                        constants.m_sampleNumber = MotionBlurSettings->GetSampleNumber();
+                        constants.m_strength = MotionBlurSettings->GetStrength();
                     }
                 }
             }
