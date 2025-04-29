@@ -1349,7 +1349,9 @@ namespace AZ
             m_rayTracingMaterialSrg->Compile();
         }
 
-        void RayTracingFeatureProcessor::OnRenderPipelineChanged([[maybe_unused]] RPI::RenderPipeline* renderPipeline, RPI::SceneNotification::RenderPipelineChangeType changeType)
+        void RayTracingFeatureProcessor::OnRenderPipelineChanged(
+            [[maybe_unused]] RPI::RenderPipeline* renderPipeline,
+            [[maybe_unused]] RPI::SceneNotification::RenderPipelineChangeType changeType)
         {
             if (!m_rayTracingEnabled)
             {
