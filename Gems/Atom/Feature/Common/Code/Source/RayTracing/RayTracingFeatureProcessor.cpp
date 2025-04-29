@@ -1367,6 +1367,8 @@ namespace AZ
                     auto deviceIndex = pass->GetDeviceIndex();
                     if (deviceIndex == AZ::RHI::MultiDevice::InvalidDeviceIndex)
                     {
+                        // We assume that the whole pipelines runs on device 0 here
+                        // Pipelines that might be scheduled on other devices have to take care to set the device index of RTAS passes
                         deviceIndex = 0;
                     }
                     if (m_blasInstanceMap.empty())
@@ -1378,7 +1380,7 @@ namespace AZ
                         // Adding new RTAS passes when a scene is already loaded is currently not supported
                         // We would need to build all current BLAS on this new device
                         // Additionally we would need to find a way to have a compacted BLAS on one device and an uncompacted on another
-                        auto newDeviceMask = AZ::RHI::SetBit(m_deviceMask, deviceIndex);
+                        [[maybe_unused]] auto newDeviceMask = AZ::RHI::SetBit(m_deviceMask, deviceIndex);
                         AZ_Assert(
                             newDeviceMask == m_deviceMask,
                             "RaytracingAccelerationStructurePasses cannot be added while the scene already contains objects");
