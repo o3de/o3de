@@ -280,7 +280,7 @@ namespace AZ
             BindlessDescriptorPool m_bindlessDescriptorPool;
             ShadingRateImageMode m_imageShadingRateMode = ShadingRateImageMode::None;
 
-            VkTimeDomainEXT m_hostTimeDomain = VK_TIME_DOMAIN_MAX_ENUM_EXT;
+            VkTimeDomainEXT m_hostTimeDomain = VK_TIME_DOMAIN_MAX_ENUM_KHR;
         };
 
         template<typename ObjectType, typename ...Args>

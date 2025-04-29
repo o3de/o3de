@@ -43,6 +43,7 @@ namespace AZ::RHI
     class DeviceTransientAttachmentPool;
     class DeviceRayTracingBufferPools;
     class DeviceRayTracingBlas;
+    class DeviceRayTracingClusterBlas;
     class DeviceRayTracingTlas;
     class DeviceRayTracingPipelineState;
     class DeviceRayTracingShaderTable;
@@ -188,6 +189,8 @@ namespace AZ::RHI
         virtual Ptr<DeviceRayTracingBufferPools> CreateRayTracingBufferPools() = 0;
 
         virtual Ptr<DeviceRayTracingBlas> CreateRayTracingBlas() = 0;
+
+        virtual Ptr<DeviceRayTracingClusterBlas> CreateRayTracingClusterBlas() = 0;
 
         virtual Ptr<DeviceRayTracingTlas> CreateRayTracingTlas() = 0;
 

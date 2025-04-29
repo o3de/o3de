@@ -229,6 +229,11 @@ namespace AZ
             return RayTracingBlas::Create();
         }
 
+        RHI::Ptr<RHI::DeviceRayTracingClusterBlas> SystemComponent::CreateRayTracingClusterBlas()
+        {
+            return RHI::DeviceRayTracingClusterBlas::CreateRHIRayTracingClusterBlas();
+        }
+
         RHI::Ptr<RHI::DeviceRayTracingTlas> SystemComponent::CreateRayTracingTlas()
         {
             return RayTracingTlas::Create();

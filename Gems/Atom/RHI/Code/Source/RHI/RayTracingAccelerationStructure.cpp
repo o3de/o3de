@@ -311,4 +311,68 @@ namespace AZ::RHI
 
         return m_tlasInstancesBuffer;
     }
+
+    DeviceRayTracingClusterBlasDescriptor RayTracingClusterBlasDescriptor::GetDeviceRayTracingClusterBlasDescriptor([[maybe_unused]] int deviceIndex) const
+    {
+        DeviceRayTracingClusterBlasDescriptor descriptor;
+
+        descriptor.VertexFormat(m_vertexFormat);
+        descriptor.BuildFlags(m_buildFlags);
+
+        return descriptor;
+    }
+
+    RayTracingClusterBlasDescriptor* RayTracingClusterBlasDescriptor::Build()
+    {
+        return this;
+    }
+
+    RayTracingClusterBlasDescriptor* RayTracingClusterBlasDescriptor::VertexFormat(RHI::Format vertexFormat)
+    {
+        m_vertexFormat = vertexFormat;
+        return this;
+    }
+
+    RayTracingClusterBlasDescriptor* RayTracingClusterBlasDescriptor::BuildFlags(const RHI::RayTracingAccelerationStructureBuildFlags& buildFlags)
+    {
+        m_buildFlags = buildFlags;
+        return this;
+    }
+
+    ResultCode RayTracingClusterBlas::CreateBuffers(MultiDevice::DeviceMask deviceMask, const RHI::RayTracingClusterBlasDescriptor* descriptor, const RayTracingBufferPools& rayTracingBufferPools)
+    {
+        m_descriptor = *descriptor;
+        ResultCode resultCode{ ResultCode::Success };
+
+        MultiDeviceObject::Init(deviceMask);
+
+        IterateDevices(
+            [this, &resultCode, &descriptor, &rayTracingBufferPools](auto deviceIndex)
+            {
+                auto device = RHISystemInterface::Get()->GetDevice(deviceIndex);
+                this->m_deviceObjects[deviceIndex] = Factory::Get().CreateRayTracingClusterBlas();
+
+                auto deviceDescriptor{ descriptor->GetDeviceRayTracingClusterBlasDescriptor(deviceIndex) };
+
+                resultCode = GetDeviceRayTracingClusterBlas(deviceIndex)
+                    ->CreateBuffers(
+                        *device, &deviceDescriptor, *rayTracingBufferPools.GetDeviceRayTracingBufferPools(deviceIndex).get());
+
+                return resultCode == ResultCode::Success;
+            });
+
+        if (resultCode != ResultCode::Success)
+        {
+            // Reset already initialized device-specific DeviceRayTracingBlas and set deviceMask to 0
+            m_deviceObjects.clear();
+            MultiDeviceObject::Init(static_cast<MultiDevice::DeviceMask>(0u));
+        }
+
+        if (const auto& name = GetName(); !name.IsEmpty())
+        {
+            SetName(name);
+        }
+
+        return resultCode;
+    }
 } // namespace AZ::RHI

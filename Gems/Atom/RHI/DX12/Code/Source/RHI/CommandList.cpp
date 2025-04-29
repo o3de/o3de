@@ -705,6 +705,16 @@ namespace AZ
 #endif
         }
 
+        void CommandList::BuildClusterAccelerationStructures(RHI::DeviceRayTracingClusterBlas& rayTracingClusterBlas)
+        {
+            AZ_UNUSED(rayTracingClusterBlas);
+        }
+
+        void CommandList::BuildClusterBottomLevelAccelerationStructure(RHI::DeviceRayTracingClusterBlas& rayTracingClusterBlas)
+        {
+            AZ_UNUSED(rayTracingClusterBlas);
+        }
+
         void CommandList::QueryBlasCompactionSizes(
             const AZStd::vector<AZStd::pair<RHI::DeviceRayTracingBlas*, RHI::DeviceRayTracingCompactionQuery*>>& blasToQuery)
         {

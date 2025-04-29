@@ -57,6 +57,7 @@ namespace AZ
             AccelerationStructure,
             RayTracingPipeline,
             RayQuery,
+            ClusterAccelerationStructure,
             BufferDeviceAddress,
             DeferredHostOperations,
             DescriptorIndexing,
@@ -106,6 +107,7 @@ namespace AZ
             const VkPhysicalDeviceShaderImageAtomicInt64FeaturesEXT& GetShaderImageAtomicInt64Features() const;
             const VkPhysicalDeviceAccelerationStructurePropertiesKHR& GetPhysicalDeviceAccelerationStructureProperties() const;
             const VkPhysicalDeviceAccelerationStructureFeaturesKHR& GetPhysicalDeviceAccelerationStructureFeatures() const;
+            const VkPhysicalDeviceClusterAccelerationStructureFeaturesNV& GetPhysicalDeviceClusterAccelerationStructureFeatures() const;
             const VkPhysicalDeviceRayTracingPipelinePropertiesKHR& GetPhysicalDeviceRayTracingPipelineProperties() const;
             const VkPhysicalDeviceRayTracingPipelineFeaturesKHR& GetPhysicalDeviceRayTracingPipelineFeatures() const;
             const VkPhysicalDeviceRayQueryFeaturesKHR& GetRayQueryFeatures() const;
@@ -157,6 +159,7 @@ namespace AZ
             VkPhysicalDeviceShaderImageAtomicInt64FeaturesEXT m_shaderImageAtomicInt64Features{};
             VkPhysicalDeviceAccelerationStructurePropertiesKHR m_accelerationStructureProperties{};
             VkPhysicalDeviceAccelerationStructureFeaturesKHR m_accelerationStructureFeatures{};
+            VkPhysicalDeviceClusterAccelerationStructureFeaturesNV m_clusterAccelerationStructureFeatures{};
             VkPhysicalDeviceRayTracingPipelinePropertiesKHR m_rayTracingPipelineProperties{};
             VkPhysicalDeviceRayTracingPipelineFeaturesKHR m_rayTracingPipelineFeatures{};
             VkPhysicalDeviceRayQueryFeaturesKHR m_rayQueryFeatures{};

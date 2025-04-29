@@ -16,6 +16,7 @@
 #include <RHI/Device.h>
 #include <RHI/RayTracingAccelerationStructure.h>
 #include <RHI/RayTracingBlas.h>
+#include <RHI/RayTracingClusterBlas.h>
 #include <RHI/RayTracingTlas.h>
 
 namespace AZ
@@ -90,19 +91,35 @@ namespace AZ
                     AZ::Matrix3x4 matrix3x4 = AZ::Matrix3x4::CreateFromTransform(instance.m_transform);
                     matrix3x4.MultiplyByScale(instance.m_nonUniformScale);
                     matrix3x4.StoreToRowMajorFloat12(&mappedData[i].transform.matrix[0][0]);
-            
-                    RayTracingBlas* blas = static_cast<RayTracingBlas*>(instance.m_blas.get());
-                    VkAccelerationStructureDeviceAddressInfoKHR addressInfo = {};
-                    addressInfo.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_DEVICE_ADDRESS_INFO_KHR;
-                    addressInfo.pNext = nullptr;
-                    addressInfo.accelerationStructure = blas->GetBuffers().m_accelerationStructure->GetNativeAccelerationStructure();
-                    mappedData[i].accelerationStructureReference =
-                        device.GetContext().GetAccelerationStructureDeviceAddressKHR(device.GetNativeDevice(), &addressInfo);
 
                     mappedData[i].mask = instance.m_instanceMask;
                     mappedData[i].flags = instance.m_transparent ? VK_GEOMETRY_INSTANCE_FORCE_NO_OPAQUE_BIT_KHR : 0;
 
-                    blasBuffers.emplace_back(blas->GetBuffers().m_blasBuffer);
+                    if (!instance.m_isCluster)
+                    {
+                        RayTracingBlas* blas = static_cast<RayTracingBlas*>(instance.m_blas.get());
+                        VkAccelerationStructureDeviceAddressInfoKHR addressInfo = {};
+                        addressInfo.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_DEVICE_ADDRESS_INFO_KHR;
+                        addressInfo.pNext = nullptr;
+                        addressInfo.accelerationStructure = blas->GetBuffers().m_accelerationStructure->GetNativeAccelerationStructure();
+                        mappedData[i].accelerationStructureReference =
+                            device.GetContext().GetAccelerationStructureDeviceAddressKHR(device.GetNativeDevice(), &addressInfo);
+                        
+                        blasBuffers.emplace_back(blas->GetBuffers().m_blasBuffer);
+                    }
+                    else
+                    {
+                        // for cluster BLAS, mappedData[i].accelerationStructureReference will be filled on GPU later
+                        // 
+                        //// in explicit mode, the address of acceleration structure is pre-determined in CPU
+                        //RayTracingClusterBlas* clusterBlas = static_cast<RayTracingClusterBlas*>(instance.m_clusterBlas.get());
+                        //VkBufferDeviceAddressInfo addressInfo = {};
+                        //addressInfo.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
+                        //addressInfo.pNext = nullptr;
+                        //addressInfo.buffer = static_cast<Buffer*>(clusterBlas->GetBuffers().m_clusterBlasBuffer.get())->GetBufferMemoryView()->GetNativeBuffer();
+                        //// TODO: is it correct?
+                        //mappedData[i].accelerationStructureReference = device.GetContext().GetBufferDeviceAddress(device.GetNativeDevice(), &addressInfo);
+                    }
                 }
             
                 bufferPools.GetTlasInstancesBufferPool()->UnmapBuffer(*buffers.m_tlasInstancesBuffer);

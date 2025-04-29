@@ -31,6 +31,7 @@
 #include <RHI/QueryPool.h>
 #include <RHI/RayTracingAccelerationStructure.h>
 #include <RHI/RayTracingBlas.h>
+#include <RHI/RayTracingClusterBlas.h>
 #include <RHI/RayTracingCompactionQueryPool.h>
 #include <RHI/RayTracingPipelineState.h>
 #include <RHI/RayTracingShaderTable.h>
@@ -1286,6 +1287,49 @@ namespace AZ
             // submit the command to build the BLAS
             const VkAccelerationStructureBuildRangeInfoKHR* rangeInfos = blasBuffers.m_rangeInfos.data();
             context.CmdBuildAccelerationStructuresKHR(GetNativeCommandBuffer(), 1, &tempBuildInfo, &rangeInfos);
+        }
+
+        void CommandList::BuildClusterAccelerationStructures(RHI::DeviceRayTracingClusterBlas& rayTracingClusterBlas)
+        {
+            RayTracingClusterBlas& vulkanRayTracingClusterBlas = static_cast<RayTracingClusterBlas&>(rayTracingClusterBlas);
+            vulkanRayTracingClusterBlas.PrepareBuildClases();
+
+            const RayTracingClusterBlas::ClusterBlasBuffers& clusterBlasBuffers = vulkanRayTracingClusterBlas.GetBuffers();
+            const auto& context = static_cast<Device&>(GetDevice()).GetContext();
+            // submit the command to build the CLASes
+            context.CmdBuildClusterAccelerationStructureIndirectNV(GetNativeCommandBuffer(), &clusterBlasBuffers.m_commandInfo);
+        }
+
+        void CommandList::BuildClusterBottomLevelAccelerationStructure(RHI::DeviceRayTracingClusterBlas& rayTracingClusterBlas)
+        {
+            const auto& context = static_cast<Device&>(GetDevice()).GetContext();
+
+            VkMemoryBarrier memoryBarrier = {};
+            memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+            memoryBarrier.pNext = nullptr;
+            memoryBarrier.srcAccessMask = VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR | VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR;
+            memoryBarrier.dstAccessMask = VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR | VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR;
+
+            // we need to have a barrier on VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR to ensure that the CLAS objects
+            // are built prior to building the cluster BLAS
+            context.CmdPipelineBarrier(
+                GetNativeCommandBuffer(),
+                VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR,
+                VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR,
+                0,
+                1,
+                &memoryBarrier,
+                0,
+                nullptr,
+                0,
+                nullptr);
+
+            RayTracingClusterBlas& vulkanRayTracingClusterBlas = static_cast<RayTracingClusterBlas&>(rayTracingClusterBlas);
+            vulkanRayTracingClusterBlas.PrepareBuildClusterBlas();
+
+            const RayTracingClusterBlas::ClusterBlasBuffers& clusterBlasBuffers = vulkanRayTracingClusterBlas.GetBuffers();
+            // submit the command to build the Cluster BLAS
+            context.CmdBuildClusterAccelerationStructureIndirectNV(GetNativeCommandBuffer(), &clusterBlasBuffers.m_commandInfo);
         }
 
         void CommandList::QueryBlasCompactionSizes(

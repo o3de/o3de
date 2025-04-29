@@ -85,6 +85,12 @@ namespace AZ::RHI
         /// Updates a Bottom Level Acceleration Structure (BLAS) for ray tracing operations, which is made up of DeviceRayTracingGeometry entries
         virtual void UpdateBottomLevelAccelerationStructure(const RHI::DeviceRayTracingBlas& rayTracingBlas) = 0;
 
+        /// Builds a Cluster Level Acceleration Structure (CLAS) for ray tracing operations
+        virtual void BuildClusterAccelerationStructures(RHI::DeviceRayTracingClusterBlas& rayTracingClusterBlas) = 0;
+
+        /// Builds a Cluster Bottom Level Acceleration Structure (cluster-BLAS) for ray tracing operations
+        virtual void BuildClusterBottomLevelAccelerationStructure(RHI::DeviceRayTracingClusterBlas& rayTracingClusterBlas) = 0;
+
         /// Inserts queries for the size of the compacted Blas
         virtual void QueryBlasCompactionSizes(
             const AZStd::vector<AZStd::pair<RHI::DeviceRayTracingBlas*, RHI::DeviceRayTracingCompactionQuery*>>& blasToQuery) = 0;
