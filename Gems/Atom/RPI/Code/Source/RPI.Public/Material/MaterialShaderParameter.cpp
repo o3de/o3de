@@ -9,6 +9,8 @@
 #include <Atom/RPI.Public/Material/MaterialShaderParameter.h>
 #include <AzCore/Utils/Utils.h>
 
+#include <Atom_RPI_Traits_Platform.h>
+
 namespace AZ::RPI
 {
     // utility class to reduce compile time by keeping some of the template functions away from the header
@@ -349,8 +351,11 @@ namespace AZ::RPI
             if (instanceHandler)
             {
                 auto sharedSampler = instanceHandler->RegisterTextureSampler(m_materialTypeIndex, m_materialInstanceIndex, samplerState);
-                m_sharedSamplerStates[index] = sharedSampler;
-                samplerIndex = sharedSampler->m_samplerIndex;
+                if (sharedSampler)
+                {
+                    m_sharedSamplerStates[index] = sharedSampler;
+                    samplerIndex = sharedSampler->m_samplerIndex;
+                }
             }
             return TypedParameterHelper{ this }.SetBasicParameter(index, samplerIndex);
         }

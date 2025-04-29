@@ -14,6 +14,9 @@
 #define UNBOUNDED_SIZE
 static const float4 s_AzslDebugColor = float4(165.0 / 255.0, 30.0 / 255.0, 36.0 / 255.0, 1);
 
+// size of the sampler array in the SceneMaterialSrg
+#define AZ_TRAITS_SCENE_MATERIALS_MAX_SAMPLERS 16
+
 // Full floats for Linux
 #define real float
 #define real2 float2

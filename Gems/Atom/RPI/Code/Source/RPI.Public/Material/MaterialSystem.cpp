@@ -18,6 +18,12 @@
 #include <AtomCore/Instance/InstanceDatabase.h>
 #include <AzCore/Name/NameDictionary.h>
 
+#include <Atom_RPI_Traits_Platform.h>
+
+#ifndef AZ_TRAITS_SCENE_MATERIALS_MAX_SAMPLERS
+#define AZ_TRAITS_SCENE_MATERIALS_MAX_SAMPLERS 0
+#endif
+
 // enable this if you want debug-prints whenever a material-Instance is registered
 // #define DEBUG_MATERIALINSTANCES
 
@@ -77,11 +83,10 @@ namespace AZ::RPI
                 auto desc = m_sceneMaterialSrg->GetLayout()->GetShaderInput(samplerIndex);
                 maxTextureSamplerStates = desc.m_count;
             }
-            AZ_Assert(maxTextureSamplerStates >= 1, "SceneMaterialSrg::m_samplers[] doesn't exist or is too small (min size is 1)");
-            // TODO: we are losing all texture samplers on a hot reload here
-            auto defaultSampler = RHI::SamplerState::Create(RHI::FilterMode::Linear, RHI::FilterMode::Linear, RHI::AddressMode::Wrap);
-            defaultSampler.m_anisotropyMax = 16;
-            m_sceneTextureSamplers.Init(maxTextureSamplerStates, defaultSampler);
+            AZ_Assert(
+                maxTextureSamplerStates == m_sceneTextureSamplers.GetMaxNumSamplerStates(),
+                "SceneMaterialSrg::m_samplers[] has size %d, expected size is AZ_TRAITS_SCENE_MATERIALS_MAX_SAMPLERS (%d)",
+                AZ_TRAITS_SCENE_MATERIALS_MAX_SAMPLERS);
         }
     }
 
@@ -601,6 +606,10 @@ namespace AZ::RPI
             return Material::CreateInternal(*(azrtti_cast<MaterialAsset*>(materialAsset)));
         };
         Data::InstanceDatabase<Material>::Create(azrtti_typeid<MaterialAsset>(), handler);
+
+        auto defaultSampler = RHI::SamplerState::Create(RHI::FilterMode::Linear, RHI::FilterMode::Linear, RHI::AddressMode::Wrap);
+        defaultSampler.m_anisotropyMax = 16;
+        m_sceneTextureSamplers.Init(AZ_TRAITS_SCENE_MATERIALS_MAX_SAMPLERS, defaultSampler);
     }
 
     void MaterialSystem::Shutdown()

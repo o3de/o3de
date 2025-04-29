@@ -10,14 +10,27 @@
 
 #include <Atom/Features/SrgSemantics.azsli>
 
-// Note: This limit is arbitrary, but the samplers will exist in the SRG even if they are unused, so try to keep it low.
-#define SCENE_MATERIALS_MAX_SAMPLERS 16
+#if AZ_TRAITS_SCENE_MATERIALS_MAX_SAMPLERS
+#define USE_SAMPLER_ARRAY
+#endif 
 
 ShaderResourceGroup SceneMaterialSrg : SRG_PerMaterial
 {
     ByteAddressBuffer m_materialTypeBufferIndices;
+#ifdef USE_SAMPLER_ARRAY
     // sampler 0 is the default wrap sampler, the others are initialized by the MaterialSystem as needed
-    Sampler m_samplers[SCENE_MATERIALS_MAX_SAMPLERS];
+    Sampler m_samplers[AZ_TRAITS_SCENE_MATERIALS_MAX_SAMPLERS];
+#else
+    Sampler m_defaultSampler
+    {
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+#endif
 }
 
 // If we are using the SceneMaterialSrg, we implicitly need BindlessSRG support 
@@ -55,15 +68,19 @@ const MaterialParameters GetMaterialParameters()
 
 // All MaterialProperties with the type TextureSampler are collected from all active Materials and stored in the SceneMaterialSrg::m_samplers array.
 // The Shader - Parameter (in the Srg or the Parameter-Buffer) is then the sampler-index.
-// Note that the size of m_samplers is limited to SCENE_MATERIALS_MAX_SAMPLERS, but samplers are deduplicated based on their settings, so this should
+// Note that the size of m_samplers is limited to AZ_TRAITS_SCENE_MATERIALS_MAX_SAMPLERS, but samplers are deduplicated based on their settings, so this should
 // be enough.
 // Sampler-Index 0 is always the default Wrap - sampler with linear filtering.
 sampler GetMaterialTextureSampler(const int samplerIndex = 0)
 {
+#ifdef USE_SAMPLER_ARRAY
     int localIndex = samplerIndex;
-    if (samplerIndex >= SCENE_MATERIALS_MAX_SAMPLERS)
+    if (samplerIndex >= AZ_TRAITS_SCENE_MATERIALS_MAX_SAMPLERS)
     {
         localIndex = 0;
     }
     return SceneMaterialSrg::m_samplers[localIndex];
+#else
+    return SceneMaterialSrg::m_defaultSampler;
+#endif
 }

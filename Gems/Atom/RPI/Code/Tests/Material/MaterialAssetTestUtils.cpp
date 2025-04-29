@@ -94,6 +94,9 @@ namespace UnitTest
         srgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{Name{ "m_image" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 2, 2});
         srgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{Name{ "m_attachmentImage" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 2, 2});
 
+        // add space for 4 texture samplers
+        srgLayout->AddShaderInput(RHI::ShaderInputSamplerDescriptor(Name{ "m_samplers" }, 4, 3, 0));
+
         EXPECT_TRUE(srgLayout->Finalize());
 
         return srgLayout;

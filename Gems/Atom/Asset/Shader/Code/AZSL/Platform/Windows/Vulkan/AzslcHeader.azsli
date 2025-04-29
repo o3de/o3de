@@ -20,6 +20,9 @@ static const float4 s_AzslDebugColor = float4(165.0 / 255.0, 30.0 / 255.0, 36.0 
 //PC supports unbounded array
 #define UNBOUNDED_SIZE
 
+// size of the sampler array in the SceneMaterialSrg
+#define AZ_TRAITS_SCENE_MATERIALS_MAX_SAMPLERS 16
+
 // Full floats for windows vulkan PC
 #define real float
 #define real2 float2

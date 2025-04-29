@@ -22,6 +22,10 @@ namespace AZ::RPI
         AZStd::shared_ptr<SharedSamplerState> RegisterTextureSampler(const RHI::SamplerState& samplerState);
         AZStd::shared_ptr<SharedSamplerState> GetSharedSamplerState(const uint32_t index);
         AZStd::vector<RHI::SamplerState> CollectSamplerStates();
+        const uint32_t GetMaxNumSamplerStates() const
+        {
+            return m_maxSamplerStates;
+        }
 
     private:
         AZStd::shared_ptr<SharedSamplerState> MakeSharedSamplerState(const RHI::SamplerState& samplerState);

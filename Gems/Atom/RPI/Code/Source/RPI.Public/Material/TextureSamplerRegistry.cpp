@@ -16,8 +16,11 @@ namespace AZ::RPI
         // we might be re-using this registry, so reset everything
         *this = {};
         m_maxSamplerStates = maxSamplerStates;
-        // create a shared_ptr to the default sampler, so it never expires
-        m_defaultSamplerState = RegisterTextureSampler(defaultSamplerState);
+        if (m_maxSamplerStates > 0)
+        {
+            // create a shared_ptr to the default sampler, so it never expires
+            m_defaultSamplerState = RegisterTextureSampler(defaultSamplerState);
+        }
     }
 
     void TextureSamplerRegistry::CleanupSamplerLookup(const uint32_t indexToRemove)
@@ -69,6 +72,10 @@ namespace AZ::RPI
 
     AZStd::shared_ptr<SharedSamplerState> TextureSamplerRegistry::MakeSharedSamplerState(const RHI::SamplerState& samplerState)
     {
+        if (m_maxSamplerStates == 0) // shared sampler states are disabled
+        {
+            return nullptr;
+        }
         // find an expired sampler state and replace it
         for (int index = 0; index < m_samplerStates.size(); ++index)
         {
@@ -83,7 +90,7 @@ namespace AZ::RPI
                 return sharedSampler;
             }
         }
-        // append a new sampler state
+        // No expired sampler state found: append a new sampler state
         if (m_samplerStates.size() < m_maxSamplerStates)
         {
             uint32_t index = static_cast<uint32_t>(m_samplerStates.size());
@@ -105,7 +112,10 @@ namespace AZ::RPI
         if (it == m_samplerLookup.end())
         {
             auto result = MakeSharedSamplerState(samplerState);
-            m_samplerLookup[result->m_samplerState] = result->m_samplerIndex;
+            if (result)
+            {
+                m_samplerLookup[result->m_samplerState] = result->m_samplerIndex;
+            }
             return result;
         }
         else
