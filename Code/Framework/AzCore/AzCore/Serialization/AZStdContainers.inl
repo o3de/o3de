@@ -161,7 +161,7 @@ namespace AZ
             TRValue m_data;
         };
 
-        class NullFactory
+        class AZCORE_API NullFactory
             : public SerializeContext::IObjectFactory
         {
             void* Create(const char* name) override
@@ -175,11 +175,7 @@ namespace AZ
             {
             }
         public:
-            static NullFactory* GetInstance()
-            {
-                static NullFactory s_nullFactory;
-                return &s_nullFactory;
-            }
+            static NullFactory* GetInstance();
         };
 
         template<size_t Index, size_t... Digits>

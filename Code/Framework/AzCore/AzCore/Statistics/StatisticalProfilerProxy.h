@@ -71,6 +71,7 @@ namespace AZ::Statistics
                     {
                         return;
                     }
+                    TimedScope::SetProfilerProxy(profilerProxy);
                 }
                 if (!profilerProxy->IsProfilerActive(profilerId))
                 {

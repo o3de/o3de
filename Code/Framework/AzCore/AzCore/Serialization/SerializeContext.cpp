@@ -2294,6 +2294,12 @@ namespace AZ
         return s_indices == nullptr;
     }
 
+    Internal::NullFactory* Internal::NullFactory::GetInstance()
+    {
+        static Internal::NullFactory s_nullFactory;
+        return &s_nullFactory;
+    }
+
     bool SerializeContext::IsTypeReflected(AZ::Uuid typeId) const
     {
         const AZ::SerializeContext::ClassData* reflectedClassData = FindClassData(typeId);
