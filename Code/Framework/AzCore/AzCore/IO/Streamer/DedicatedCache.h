@@ -17,7 +17,6 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/limits.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ::IO
 {

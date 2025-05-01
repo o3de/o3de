@@ -10,7 +10,6 @@
 
 #include <AzCore/Metrics/IEventLogger.h>
 #include <AzCore/Metrics/IEventLoggerFactory.h>
-#include <AzCore/AzCoreAPI.h>
 
 
 namespace AZ::Metrics

@@ -13,7 +13,6 @@
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/string/fixed_string.h>
 #include <AzCore/std/string/string_view.h>
-#include <AzCore/AzCoreAPI.h>
 
 // On IOS builds IOS will be defined and interfere with the below enums
 #pragma push_macro("IOS")

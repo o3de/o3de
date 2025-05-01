@@ -20,7 +20,6 @@
 #include <AzCore/std/string/string_view.h>
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Outcome/Outcome.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {

@@ -13,7 +13,6 @@
 
 #include <AzCore/Socket/AzSocket_fwd.h>
 #include <AzCore/std/string/string.h>
-#include <AzCore/AzCoreAPI.h>
 
 typedef fd_set  AZFD_SET;
 typedef timeval AZTIMEVAL;

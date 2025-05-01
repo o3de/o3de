@@ -11,7 +11,6 @@
 #include <AzCore/Math/Crc.h>
 #include <AzCore/Task/TaskExecutor.h>
 #include <AzCore/Task/TaskGraph.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {

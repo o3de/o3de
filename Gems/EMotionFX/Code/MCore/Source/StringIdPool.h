@@ -90,6 +90,6 @@ namespace MCore
         static void Reflect(AZ::ReflectContext* context);
     };
 
-    AZ_TYPE_INFO_SPECIALIZE_WITH_NAME_DECL(StringIdPoolIndex);
+    AZ_TYPE_INFO_SPECIALIZE_WITH_NAME_DECL_API(AZCORE_API, StringIdPoolIndex);
 
 } // namespace MCore

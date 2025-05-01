@@ -14,7 +14,7 @@
 
 namespace AZ
 {
-    class NameJsonSerializer
+    class AZCORE_API NameJsonSerializer
         : public BaseJsonSerializer
     {
     public:

@@ -15,7 +15,7 @@
 namespace AZ
 {
     //! A color class with 4 components, RGBA.
-    class Color
+    class AZCORE_API Color
     {
     public:
 

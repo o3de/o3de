@@ -18,7 +18,6 @@
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/deque.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ::IO
 {

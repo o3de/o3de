@@ -11,7 +11,6 @@
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/functional.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {

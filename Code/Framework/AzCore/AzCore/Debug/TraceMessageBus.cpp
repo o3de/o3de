@@ -7,7 +7,7 @@
  */
 #include <AzCore/Debug/TraceMessageBus.h>
 
-// AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZ::Debug::TraceMessageEvents);
+AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZCORE_API, AZ::Debug::TraceMessageEvents);
 template class AZ::EBus<AZ::Debug::TraceMessageEvents>;
 template class AZ::Internal::NonIdHandler<
     AZ::Debug::TraceMessageEvents,

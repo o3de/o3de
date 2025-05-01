@@ -8,7 +8,6 @@
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {

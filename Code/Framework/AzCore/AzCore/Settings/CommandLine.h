@@ -15,7 +15,6 @@
 #include <AzCore/std/string/fixed_string.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/string_view.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {

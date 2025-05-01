@@ -8,7 +8,7 @@
 
 #include <AzCore/Asset/AssetBus.h>
 
-AZ_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(AZ::Data::AssetEvents);
+AZ_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(AZCORE_API, AZ::Data::AssetEvents);
 
 namespace AZ::Data
 {

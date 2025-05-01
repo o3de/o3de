@@ -13,7 +13,6 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/bitset.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {

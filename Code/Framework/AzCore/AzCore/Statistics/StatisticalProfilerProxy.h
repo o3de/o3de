@@ -11,7 +11,6 @@
 #include <AzCore/Statistics/StatisticalProfiler.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/parallel/shared_mutex.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ::Statistics
 {

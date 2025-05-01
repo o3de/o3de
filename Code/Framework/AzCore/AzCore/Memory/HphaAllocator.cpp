@@ -2617,6 +2617,11 @@ namespace AZ
     }
 
     // explicitly instantiate both the non-debug and debug schema classes
+#if defined(AZ_MONOLITHIC_BUILD)
     template class HphaSchemaBase<false>;
     template class HphaSchemaBase<true>;
+#else
+    template class AZ_DLL_EXPORT HphaSchemaBase<false>;
+    template class AZ_DLL_EXPORT HphaSchemaBase<true>;
+#endif
 } // namespace AZ

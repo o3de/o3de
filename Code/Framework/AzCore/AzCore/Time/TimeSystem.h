@@ -10,7 +10,6 @@
 
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Time/ITime.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {

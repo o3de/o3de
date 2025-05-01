@@ -15,7 +15,7 @@ namespace AZ
 {
     namespace Debug
     {
-        struct StackFrame
+        struct AZCORE_API StackFrame
         {
             StackFrame()
                 : m_programCounter(0)  {}
@@ -27,7 +27,7 @@ namespace AZ
         /**
          *
          */
-        class StackRecorder
+        class AZCORE_API StackRecorder
         {
         public:
             /**
@@ -40,13 +40,13 @@ namespace AZ
             static unsigned int Record(StackFrame* frames, unsigned int maxNumOfFrames, unsigned int suppressCount = 0, void* nativeThread = 0);
         };
 
-        class StackConverter
+        class AZCORE_API StackConverter
         {
         public:
             static unsigned int FromNative(StackFrame* frames, unsigned int maxNumOfFrames, void* nativeContext);
         };
 
-        class SymbolStorage
+        class AZCORE_API SymbolStorage
         {
         public:
             struct ModuleDataInfoHeader

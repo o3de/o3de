@@ -9,7 +9,6 @@
 
 #include <AzCore/base.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
-#include <AzCore/AzCoreAPI.h>
 
 #define ZSTD_STATIC_LINKING_ONLY
 

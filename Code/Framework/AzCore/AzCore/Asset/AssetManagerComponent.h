@@ -10,7 +10,6 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Math/Crc.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {

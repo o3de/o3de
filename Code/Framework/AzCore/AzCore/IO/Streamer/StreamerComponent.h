@@ -16,7 +16,6 @@
 #include <AzCore/Math/Crc.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/string/string_view.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {

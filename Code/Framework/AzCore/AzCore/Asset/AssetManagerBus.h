@@ -297,6 +297,6 @@ namespace AZ
     }   // namespace Data
 }   // namespace AZ
 
-//AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZ::Data::AssetManagerNotifications);
-//AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZ::Data::AssetCatalogRequests);
-//AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZ::Data::AssetManagerEvents);
+AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZCORE_API, AZ::Data::AssetManagerNotifications);
+AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZCORE_API, AZ::Data::AssetCatalogRequests);
+AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZCORE_API, AZ::Data::AssetManagerEvents);

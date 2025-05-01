@@ -8,7 +8,6 @@
 #pragma once
 
 #include <AzCore/std/string/osstring.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {

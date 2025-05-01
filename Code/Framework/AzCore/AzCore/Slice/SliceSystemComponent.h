@@ -9,7 +9,6 @@
 
 #include <AzCore/Component/Component.h>
 #include "SliceAssetHandler.h"
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {

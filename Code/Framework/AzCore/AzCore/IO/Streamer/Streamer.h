@@ -14,7 +14,6 @@
 #include <AzCore/IO/Streamer/StreamerContext.h>
 #include <AzCore/Memory/PoolAllocator.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZStd
 {

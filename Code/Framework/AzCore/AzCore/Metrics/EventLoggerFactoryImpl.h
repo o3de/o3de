@@ -12,7 +12,6 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Metrics/IEventLoggerFactory.h>
 #include <AzCore/std/parallel/mutex.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ::Metrics
 {

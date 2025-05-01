@@ -9,7 +9,6 @@
 #pragma once
 
 #include <AzCore/Math/Vector3.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {

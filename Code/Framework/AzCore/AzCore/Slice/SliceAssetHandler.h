@@ -10,7 +10,6 @@
 
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetTypeInfoBus.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {

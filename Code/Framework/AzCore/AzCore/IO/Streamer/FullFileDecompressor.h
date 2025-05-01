@@ -18,7 +18,6 @@
 #include <AzCore/std/containers/deque.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/Statistics/RunningStatistic.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ::IO
 {

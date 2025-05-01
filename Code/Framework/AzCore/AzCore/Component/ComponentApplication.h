@@ -28,7 +28,6 @@
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/string/osstring.h>
-#include <AzCore/AzCoreAPI.h>
 
 
 namespace AZ

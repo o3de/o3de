@@ -13,7 +13,6 @@
 
 #include <AzCore/IPC/SharedMemory_Common.h>
 #include <AzCore/IPC/SharedMemory_Platform.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {

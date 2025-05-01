@@ -42,10 +42,11 @@ namespace AZ::Dom::Json
     AZ_DEFINE_ENUM_BITWISE_OPERATORS(ParseFlags);
 
     //! Visitor that feeds into a rapidjson::Value
-    class RapidJsonValueWriter final : public Visitor
+    class AZCORE_API RapidJsonValueWriter final : public Visitor
     {
     public:
         RapidJsonValueWriter(rapidjson::Value& outputValue, rapidjson::Value::AllocatorType& allocator);
+        AZ_DISABLE_COPY(RapidJsonValueWriter);
 
         VisitorFlags GetVisitorFlags() const override;
         Result Null() override;
@@ -69,7 +70,6 @@ namespace AZ::Dom::Json
         struct ValueInfo
         {
             ValueInfo(bool isObject, rapidjson::Value& container);
-
             rapidjson::Value m_key;
             rapidjson::Value m_value;
             rapidjson::Value& m_container;
@@ -83,7 +83,7 @@ namespace AZ::Dom::Json
     };
 
     //! Handler for a rapidjson::Reader that translates reads into an AZ::Dom::Visitor
-    struct RapidJsonReadHandler
+    struct AZCORE_API RapidJsonReadHandler
     {
     public:
         RapidJsonReadHandler(Visitor* visitor, Lifetime stringLifetime);
@@ -115,7 +115,7 @@ namespace AZ::Dom::Json
     //! rapidjson stream wrapper for AZStd::string suitable for in-situ parsing
     //! Faster than rapidjson::MemoryStream for reading from AZStd::string / AZStd::string_view (because it requires a null terminator)
     //! \note This needs to be inlined for performance reasons.
-    struct NullDelimitedStringStream
+    struct AZCORE_API NullDelimitedStringStream
     {
         using Ch = char; //<! Denotes the string character storage type for rapidjson
 
@@ -182,7 +182,7 @@ namespace AZ::Dom::Json
     //! \param stream The stream the visitor will write to.
     //! \param format The format to write in.
     //! \return A Visitor that will write to stream when visited.
-    AZStd::unique_ptr<Visitor> CreateJsonStreamWriter(
+    AZCORE_API AZStd::unique_ptr<Visitor> CreateJsonStreamWriter(
         AZ::IO::GenericStream& stream, OutputFormatting format = OutputFormatting::PrettyPrintedJson);
     //! Reads serialized JSON from a string and applies it to a visitor.
     //! \param buffer The UTF-8 serialized JSON to read.
@@ -207,13 +207,13 @@ namespace AZ::Dom::Json
     //! Takes a visitor specified by a callback and produces a rapidjson::Document.
     //! \param writeCallback A callback specifying a visitor to accept to build the resulting document.
     //! \return An outcome with either the rapidjson::Document or an error message.
-    AZ::Outcome<rapidjson::Document, AZStd::string> WriteToRapidJsonDocument(Backend::WriteCallback writeCallback);
+    AZCORE_API AZ::Outcome<rapidjson::Document, AZStd::string> WriteToRapidJsonDocument(Backend::WriteCallback writeCallback);
     //! Takes a visitor specified by a callback and reads them into a rapidjson::Value.
     //! \param value The value to read into, its contents will be overridden.
     //! \param allocator The allocator to use when performing rapidjson allocations (generally provded by the rapidjson::Document).
     //! \param writeCallback A callback specifying a visitor to accept to build the resulting document.
     //! \return An outcome with either the rapidjson::Document or an error message.
-    Visitor::Result WriteToRapidJsonValue(
+    AZCORE_API Visitor::Result WriteToRapidJsonValue(
         rapidjson::Value& value, rapidjson::Value::AllocatorType& allocator, Backend::WriteCallback writeCallback);
     //! Accepts a visitor with the contents of a rapidjson::Value.
     //! \param value The rapidjson::Value to apply to visitor.
@@ -221,7 +221,7 @@ namespace AZ::Dom::Json
     //! \param lifetime The lifetime to specify for visiting strings. If the rapidjson::Value might be destroyed or changed
     //! before the visitor is finished using these values, Lifetime::Temporary should be specified.
     //! \return The aggregate result specifying whether the visitor operations were successful.
-    Visitor::Result VisitRapidJsonValue(const rapidjson::Value& value, Visitor& visitor, Lifetime lifetime);
+    AZCORE_API Visitor::Result VisitRapidJsonValue(const rapidjson::Value& value, Visitor& visitor, Lifetime lifetime);
 
     template<ParseFlags parseFlags>
     Visitor::Result VisitSerializedJson(AZStd::string_view buffer, Lifetime lifetime, Visitor& visitor)

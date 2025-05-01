@@ -56,7 +56,7 @@ namespace AZ
         class AssetDatabaseJob;
         class WaitForAsset;
 
-        struct IDebugAssetEvent
+        struct AZCORE_API IDebugAssetEvent
         {
             AZ_RTTI(IDebugAssetEvent, "{1FEF8289-C730-426D-B3B9-4BBA66339D66}");
 
@@ -67,7 +67,7 @@ namespace AZ
             virtual void ReleaseAsset(AZ::Data::AssetId id) = 0;
         };
 
-        struct AssetContainerKey
+        struct AZCORE_API AssetContainerKey
         {
             AssetId m_assetId;
             AssetLoadParameters m_loadParameters;
@@ -78,7 +78,7 @@ namespace AZ
             }
         };
 
-        class AssetStreamInfo
+        class AZCORE_API AssetStreamInfo
         {
         public:
             AssetStreamInfo()
@@ -98,7 +98,7 @@ namespace AZ
             u64             m_dataOffset;
         };
 
-        struct AssetDependencyEntry
+        struct AZCORE_API AssetDependencyEntry
         {
             AssetId     m_assetId;
             AssetType   m_assetType;
@@ -108,7 +108,7 @@ namespace AZ
         /*
          * This is the base class for Async AssetDatabase jobs
          */
-        class AssetDatabaseJob
+        class AZCORE_API AssetDatabaseJob
             : public AZStd::intrusive_list_node<AssetDatabaseJob>
         {
             friend class AssetManager;
@@ -133,7 +133,7 @@ namespace AZ
          * If an asset is ready at the time you connect to AssetBus or GetAsset() is called,
          * your handler will be notified immediately, otherwise all events are dispatched asynchronously.
          */
-        class AssetManager
+        class AZCORE_API AssetManager
             : private AssetManagerBus::Handler
         {
             friend class AssetData;
@@ -145,7 +145,7 @@ namespace AZ
             friend class WaitForAsset;
 
         public:
-            struct Descriptor
+            struct AZCORE_API Descriptor
             {
                 Descriptor() = default;
             };
@@ -514,7 +514,7 @@ namespace AZ
          }
 
          */
-        class AssetHandler
+        class AZCORE_API  AssetHandler
         {
             friend class AssetManager;
             friend class AssetData;

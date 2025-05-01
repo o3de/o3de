@@ -10,7 +10,6 @@
 
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/std/string/string_view.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ::ComponentApplicationLifecycle
 {

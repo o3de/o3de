@@ -22,7 +22,7 @@ namespace AZ
         class AddressTypeSerializer;
         
         // Class to store information used in determining version, typeId and location in patch hierarchy for each class element examined between patch target (root) and patched element (leaf)
-        class AddressTypeElement
+        class AZCORE_API AddressTypeElement
         {
         public:
             AZ_TYPE_INFO(AddressTypeElement, "{6882E51A-6A3E-4CE8-AF80-0989F0AE61FF}")
@@ -60,11 +60,11 @@ namespace AZ
             void SetAddressElement(const u64 address) { m_addressElement = address; }
             void SetAddressClassVersion(const AZ::u32 version) { m_addressClassVersion = version; }
 
-            friend bool operator==(const AddressTypeElement& lhs, const AddressTypeElement& rhs);
-            friend bool operator!=(const AddressTypeElement& lhs, const AddressTypeElement& rhs);
+            friend AZCORE_API bool operator==(const AddressTypeElement& lhs, const AddressTypeElement& rhs);
+            friend AZCORE_API bool operator!=(const AddressTypeElement& lhs, const AddressTypeElement& rhs);
 
         private:
-            friend class AddressTypeSerializer;
+            friend class AZCORE_API AddressTypeSerializer;
 
             AddressTypeElement();               // Default constructor to supply an empty Element to AddressTypeSerializer to fill out
             AZ::TypeId m_addressClassTypeId;    // TypeId of the class element at the time it was stored
@@ -100,6 +100,9 @@ namespace AZ
             bool m_isLegacy = false;
         };
 
+        //AZCORE_API bool operator==(const AddressTypeElement& lhs, const AddressTypeElement& rhs);
+        //AZCORE_API bool operator!=(const AddressTypeElement& lhs, const AddressTypeElement& rhs);
+
         using PatchMap = AZStd::unordered_map<AddressType, AZStd::any>;
         using ChildPatchMap = AZStd::unordered_map<AddressType, AZStd::vector<AddressType> >;
 
@@ -120,7 +123,7 @@ namespace AZ
         * Custom serializer for our address type, as we want to be more space efficient and not store every element of the container
         * separately.
         */
-        class AddressTypeSerializer
+        class AZCORE_API AddressTypeSerializer
             : public AZ::Internal::AZBinaryData
         {
         public:
@@ -141,6 +144,10 @@ namespace AZ
 
             bool CompareValueData(const void* lhs, const void* rhs) override;
         };
+
+        AZCORE_API bool operator==(const AddressTypeElement& lhs, const AddressTypeElement& rhs);
+        AZCORE_API bool operator!=(const AddressTypeElement& lhs, const AddressTypeElement& rhs);
+
     }
 }
 
@@ -177,7 +184,7 @@ namespace AZ
     * object is to help with tools (slices and undo/redo), this structure is not recommended to
     * runtime due to efficiency. If you want dynamically configure objects, use data overlay which are more efficient and generic.
     */
-    class DataPatch
+    class AZCORE_API DataPatch
     {
     public:
 

@@ -14,7 +14,6 @@
 #include <AzCore/Slice/SliceAsset.h>
 #include <AzCore/Serialization/DataPatch.h>
 #include <AzCore/Serialization/IdUtils.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {

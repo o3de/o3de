@@ -11,7 +11,6 @@
 #include <AzCore/std/functional.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/string/string.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {

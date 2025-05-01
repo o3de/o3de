@@ -18,7 +18,7 @@ namespace AZ
         /**
          * \todo use AZStd::chrono
          */
-        class Timer
+        class AZCORE_API Timer
         {
         public:
             /// Stores the current time in the timer.
@@ -49,7 +49,7 @@ namespace AZ
 
         //! Utility type that updates the given variable with the lifetime of the object in cycles.
         //! Useful for quick scope based timing.
-        struct ScopedTimer
+        struct AZCORE_API ScopedTimer
         {
             explicit ScopedTimer(AZStd::sys_time_t& variable)
                 : m_variable(variable)

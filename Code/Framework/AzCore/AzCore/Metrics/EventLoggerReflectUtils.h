@@ -9,7 +9,6 @@
 #pragma once
 
 #include <AzCore/RTTI/TypeInfo.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {

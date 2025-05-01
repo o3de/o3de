@@ -21,7 +21,7 @@ namespace AZ
 
     namespace Internal
     {
-        class NameData final
+        class AZCORE_API NameData final
         {
             friend NameDictionary;
             friend Name;

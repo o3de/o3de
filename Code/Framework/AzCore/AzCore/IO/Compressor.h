@@ -8,7 +8,6 @@
 #pragma once
 
 #include <AzCore/base.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ::IO
 {

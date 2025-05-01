@@ -14,7 +14,6 @@
 
 #include <AzCore/std/smart_ptr/intrusive_ptr.h>
 #include <AzCore/std/string/string.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {

@@ -9,7 +9,6 @@
 #define AZCORE_JOB_MANAGER_BUS_H
 
 #include <AzCore/EBus/EBus.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {

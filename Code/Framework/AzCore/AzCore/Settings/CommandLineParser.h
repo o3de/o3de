@@ -14,7 +14,6 @@
 #include <AzCore/std/string/fixed_string.h>
 #include <AzCore/std/string/string_view.h>
 #include <AzCore/std/utility/expected.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ::Settings
 {

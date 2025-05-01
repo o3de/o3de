@@ -18,7 +18,6 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/string/string.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {

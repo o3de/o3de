@@ -12,7 +12,6 @@
 #include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/Settings/CommandLine.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ::IO
 {

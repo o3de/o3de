@@ -8,7 +8,7 @@
 #pragma once
 
 #include <stdint.h>
-#include <AzCore/AzCoreAPI.h>
+#include <AzCore/base.h>
 
 namespace AZ
 {

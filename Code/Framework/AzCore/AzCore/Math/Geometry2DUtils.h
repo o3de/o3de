@@ -9,7 +9,6 @@
 #pragma once
 #include <AzCore/std/containers/span.h>
 #include <AzCore/Math/Vector2.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {

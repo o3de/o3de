@@ -14,7 +14,6 @@
 #include <AzCore/std/typetraits/is_destructible.h>
 #include <AzCore/std/parallel/atomic.h>
 #include <AzCore/Memory/PoolAllocator.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ::Internal
 {

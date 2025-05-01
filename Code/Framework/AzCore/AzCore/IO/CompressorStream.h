@@ -10,7 +10,6 @@
 #include <AzCore/IO/GenericStreams.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/Memory/SystemAllocator.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {

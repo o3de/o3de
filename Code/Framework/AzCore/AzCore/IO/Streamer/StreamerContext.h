@@ -23,7 +23,7 @@ namespace AZ::IO
 
     using FileRequestPtr = AZStd::intrusive_ptr<ExternalFileRequest>;
 
-    class StreamerContext
+    class AZCORE_API StreamerContext
     {
     public:
         using PreparedQueue = AZStd::deque<FileRequest*>;

@@ -9,7 +9,6 @@
 #define AZCORE_SLICE_ASSET_H
 
 #include <AzCore/Asset/AssetCommon.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {

@@ -18,7 +18,7 @@ namespace AZ
     class ReflectContext;
 
     //! 2-dimensional vector class.
-    class Vector2
+    class AZCORE_API Vector2
     {
     public:
 

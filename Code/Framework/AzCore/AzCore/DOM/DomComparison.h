@@ -9,7 +9,6 @@
 #pragma once
 
 #include <AzCore/DOM/DomPatch.h>
-#include <AzCore/AzCoreAPI.h>
 
 
 namespace AZ::Dom

@@ -17,7 +17,6 @@
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/Entity.h>
-//#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
@@ -186,4 +185,4 @@ namespace AZ
     using EntityBus = AZ::EBus<EntityEvents>;
 } // namespace AZ
 
-AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZ::EntityEvents);
+AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZCORE_API, AZ::EntityEvents);

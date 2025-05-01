@@ -16,7 +16,6 @@
 #include <AzCore/Math/Plane.h>
 #include <AzCore/Math/Sphere.h>
 #include <AzCore/Math/Vector3.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {

@@ -11,7 +11,6 @@
 #include <AzCore/base.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/delegate/delegate.h>
-#include <AzCore/AzCoreAPI.h>
 
 /**
  * Can be called from the user to automatically stinganize the state name, when a set is set

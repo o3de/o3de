@@ -12,7 +12,6 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
@@ -20,7 +19,7 @@ namespace AZ
      * Bus for acquiring information about a given asset type, usually serviced by the relevant asset handler.
      * Extensions, load parameters, custom stream settings, etc.
      */
-    class AssetTypeInfo
+    class AZCORE_API AssetTypeInfo
         : public AZ::EBusTraits
     {
     public:
@@ -73,4 +72,4 @@ namespace AZ
     using AssetTypeInfoBus = AZ::EBus<AssetTypeInfo>;
 } // namespace AZ
 
-AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZ::AssetTypeInfo);
+AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZCORE_API, AZ::AssetTypeInfo);

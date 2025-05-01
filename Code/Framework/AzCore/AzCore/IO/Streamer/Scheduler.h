@@ -20,7 +20,6 @@
 #include <AzCore/std/parallel/thread.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/Statistics/RunningStatistic.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ::IO
 {

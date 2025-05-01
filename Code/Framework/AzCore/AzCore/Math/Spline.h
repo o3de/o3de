@@ -14,7 +14,6 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/functional.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {

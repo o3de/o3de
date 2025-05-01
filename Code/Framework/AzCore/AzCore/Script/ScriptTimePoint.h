@@ -12,7 +12,6 @@
 #include <AzCore/std/chrono/chrono.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/Memory/SystemAllocator.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {

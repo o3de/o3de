@@ -30,7 +30,7 @@ namespace AZ
         inline constexpr const char* NoWindow = "";
         namespace Platform
         {
-            void OutputToDebugger(AZStd::basic_string_view<char, AZStd::char_traits<char>> window, AZStd::basic_string_view<char, AZStd::char_traits<char>> message);
+            AZCORE_API void OutputToDebugger(AZStd::basic_string_view<char, AZStd::char_traits<char>> window, AZStd::basic_string_view<char, AZStd::char_traits<char>> message);
         }
 
         enum class LogLevel { Disabled = 0, Errors = 1, Warnings = 2, Info = 3, Debug = 4, Trace = 5 };
@@ -148,7 +148,7 @@ namespace AZ
             bool m_printCallstack = false;
         };
 
-        class Trace
+        class AZCORE_API Trace
             : public ITrace
         {
         public:

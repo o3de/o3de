@@ -14,7 +14,6 @@
 #include <AzCore/std/functional.h>
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ::IO
 {

@@ -22,7 +22,6 @@
 #include <math.h>
 #include <utility>
 #include <inttypes.h>
-#include <AzCore/AzCoreAPI.h>
 
 // We have a separate inline define for math functions.
 // The performance of these functions is very sensitive to inlining, and some compilers don't deal well with this.

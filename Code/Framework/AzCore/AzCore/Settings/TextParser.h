@@ -11,7 +11,6 @@
 #include <AzCore/std/functional.h>
 #include <AzCore/std/string/string_view.h>
 #include <AzCore/std/utility/expected.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZStd
 {

@@ -12,7 +12,6 @@
 #include <AzCore/Console/ConsoleFunctor.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/Settings/SettingsRegistryOriginTracker.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ::SettingsRegistryConsoleUtils
 {

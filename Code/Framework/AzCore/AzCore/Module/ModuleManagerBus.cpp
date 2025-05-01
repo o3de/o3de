@@ -7,4 +7,4 @@
  */
 #include <AzCore/Module/ModuleManagerBus.h>
  
-AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AZ::ModuleManagerRequests);
+AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AZCORE_API, AZ::ModuleManagerRequests);

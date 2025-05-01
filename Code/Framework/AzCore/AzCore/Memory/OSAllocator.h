@@ -23,7 +23,7 @@ namespace AZ
      * created by the SystemAllocator when it is needed. In addition this allocator is used for
      * debug data (like memory tracking, etc.)
      */
-    class OSAllocator
+    class AZCORE_API OSAllocator
         : public AllocatorBase
     {
     public:

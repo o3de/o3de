@@ -30,7 +30,7 @@ namespace AZ
     //! Smaller than Name but requires a memory indirection to look up
     //! the name text or hash.
     //! \see Name
-    class NameRef final
+    class AZCORE_API NameRef final
     {
         friend Name;
 
@@ -71,7 +71,7 @@ namespace AZ
     //! Names require the dictionary to be initialized before they are created, unless they are created from a
     //! string literal via Name::FromStringLiteral, in which they'll store their string for deferred initialization.
     //! A Name instance may only be statically declared using Name::FromStringLiteral (or the AZ_NAME_LITERAL helper macro).
-    class Name final
+    class AZCORE_API Name final
     {
         friend NameRef;
         friend NameDictionary;

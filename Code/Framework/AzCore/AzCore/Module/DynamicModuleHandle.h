@@ -12,7 +12,6 @@
 #include <AzCore/IO/Path/Path_fwd.h>
 #include <AzCore/Module/Environment.h>
 #include <AzCore/PlatformDef.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {

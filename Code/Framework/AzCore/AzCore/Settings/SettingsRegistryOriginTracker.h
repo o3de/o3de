@@ -18,7 +18,6 @@
 #include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzCore/DOM/DomPrefixTree.h>
 #include <AzCore/Serialization/Json/JsonSerializationResult.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {

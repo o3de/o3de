@@ -20,7 +20,6 @@
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/string_view.h>
 #include <AzCore/Statistics/RunningStatistic.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ::IO::Requests
 {

@@ -15,7 +15,6 @@
 #include <AzCore/std/containers/deque.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/limits.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {

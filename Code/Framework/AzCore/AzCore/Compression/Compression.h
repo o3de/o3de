@@ -9,7 +9,6 @@
 #define AZCORE_COMPRESSOR_H
 
 #include <AzCore/base.h>
-#include <AzCore/AzCoreAPI.h>
 
 struct z_stream_s;
 

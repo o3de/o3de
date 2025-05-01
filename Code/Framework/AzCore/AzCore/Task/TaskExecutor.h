@@ -15,7 +15,6 @@
 #include <AzCore/std/parallel/atomic.h>
 #include <AzCore/std/parallel/binary_semaphore.h>
 #include <AzCore/Memory/PoolAllocator.h>
-#include <AzCore/AzCoreAPI.h>
 
 #ifdef AZ_DEBUG_BUILD
 #define ENABLE_COMPILED_TASK_GRAPH_EVENT_TRACKING

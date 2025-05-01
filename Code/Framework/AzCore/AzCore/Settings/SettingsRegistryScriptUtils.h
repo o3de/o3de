@@ -9,7 +9,6 @@
 #pragma once
 
 #include <AzCore/Settings/SettingsRegistry.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {

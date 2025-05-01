@@ -26,7 +26,7 @@ namespace AZ
     
     namespace ScriptCanvasOnDemandReflection
     {
-        AZStd::string GetPrettyNameForAZTypeId(AZ::BehaviorContext& context, AZ::Uuid typeId);
+        AZCORE_API AZStd::string GetPrettyNameForAZTypeId(AZ::BehaviorContext& context, AZ::Uuid typeId);
 
         template<typename T>
         struct OnDemandPrettyName

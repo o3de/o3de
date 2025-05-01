@@ -89,14 +89,14 @@ namespace AZ
         * \param[in] prefixValue The prefix value to examine searchValue for
         * \param[in] bCaseSensitive If true, comparison will be case sensitive
         */
-        bool StartsWith(AZStd::string_view searchValue, AZStd::string_view prefixValue, bool bCaseSensitive = false);
+        AZCORE_API bool StartsWith(AZStd::string_view searchValue, AZStd::string_view prefixValue, bool bCaseSensitive = false);
 
         /*! Checks if the string ends with the given suffix, if suffixValue is a suffix of searchValue, this function will return true
         * \param[in] searchValue The input string to examine for a given suffix
         * \param[in] suffixValue The suffix value to examine searchValue for
         * \param[in] bCaseSensitive If true, comparison will be case sensitive
         */
-        bool EndsWith(AZStd::string_view searchValue, AZStd::string_view suffixValue, bool bCaseSensitive = false);
+        AZCORE_API bool EndsWith(AZStd::string_view searchValue, AZStd::string_view suffixValue, bool bCaseSensitive = false);
 
         //! Equal
         /*! Equality for non AZStd::strings.
@@ -108,8 +108,8 @@ namespace AZ
         Example: Case Sensitive compare of the first 3 characters of a c-string with "Hello"
         StringFunc::Equal("Hello World", "Hello", true, 3) = true
         */
-        bool Equal(const char* inA, const char* inB, bool bCaseSensitive = false, size_t n = 0);
-        bool Equal(AZStd::string_view inA, AZStd::string_view inB, bool bCaseSensitive = false);
+        AZCORE_API bool Equal(const char* inA, const char* inB, bool bCaseSensitive = false, size_t n = 0);
+        AZCORE_API bool Equal(AZStd::string_view inA, AZStd::string_view inB, bool bCaseSensitive = false);
 
         //! Contains
         /*! Checks if the supplied character or string is contained within the @in parameter
@@ -123,8 +123,8 @@ namespace AZ
         Example: Case Sensitive contains does not find character
         StringFunc::Contains("HeLlo", 'h', true) == false
         */
-        bool Contains(AZStd::string_view in, char ch, bool bCaseSensitive = false);
-        bool Contains(AZStd::string_view in, AZStd::string_view sv, bool bCaseSensitive = false);
+        AZCORE_API bool Contains(AZStd::string_view in, char ch, bool bCaseSensitive = false);
+        AZCORE_API bool Contains(AZStd::string_view in, AZStd::string_view sv, bool bCaseSensitive = false);
 
         //! Find
         /*! Find for non AZStd::strings. Ease of use to find the first or last occurrence of a character or substring in a c-string with case sensitivity.
@@ -137,8 +137,8 @@ namespace AZ
         Example: Case Sensitive find first occurrence of substring "Hello" a in a c-string
         StringFunc::Find("Well Hello", "Hello", false, true) == 5
         */
-        size_t Find(AZStd::string_view in, char c, size_t pos = 0, bool bReverse = false, bool bCaseSensitive = false);
-        size_t Find(AZStd::string_view in, AZStd::string_view str, size_t pos = 0, bool bReverse = false, bool bCaseSensitive = false);
+        AZCORE_API size_t Find(AZStd::string_view in, char c, size_t pos = 0, bool bReverse = false, bool bCaseSensitive = false);
+        AZCORE_API size_t Find(AZStd::string_view in, AZStd::string_view str, size_t pos = 0, bool bReverse = false, bool bCaseSensitive = false);
 
         //! First and Last Character
         /*! First and Last Characters in a c-string. Ease of use to get the first or last character
@@ -148,8 +148,8 @@ namespace AZ
          Example: If the last character in a c-string is a AZ_CORRECT_FILESYSTEM_SEPARATOR do something
          StringFunc::LastCharacter("Hello") == 'o'
          */
-        char FirstCharacter(const char* in);
-        char LastCharacter(const char* in);
+        AZCORE_API char FirstCharacter(const char* in);
+        AZCORE_API char LastCharacter(const char* in);
 
         //! Append and Prepend
         /*! Append and Prepend to a AZStd::string. Increase readability and error checking.
@@ -161,10 +161,10 @@ namespace AZ
          Example: Prepend string AZ_NETWORK_PATH_START to a AZStd::string
          StringFunc::Prepend(s = "18machine", AZ_NETWORK_PATH_START); s = "\\\\18machine"
          */
-        AZStd::string& Append(AZStd::string& inout, const char s);
-        AZStd::string& Append(AZStd::string& inout, const char* str);
-        AZStd::string& Prepend(AZStd::string& inout, const char s);
-        AZStd::string& Prepend(AZStd::string& inout, const char* str);
+        AZCORE_API AZStd::string& Append(AZStd::string& inout, const char s);
+        AZCORE_API AZStd::string& Append(AZStd::string& inout, const char* str);
+        AZCORE_API AZStd::string& Prepend(AZStd::string& inout, const char s);
+        AZCORE_API AZStd::string& Prepend(AZStd::string& inout, const char* str);
 
         //! LChop and RChop a AZStd::string
         /*! Increase readability and error checking. RChop removes n characters from the right
@@ -175,11 +175,11 @@ namespace AZ
          Example: Remove (Chop off) the first 3 characters from a AZStd::string
          StringFunc::LChop(s = "Hello", 3); s == "lo"
          */
-        AZStd::string& LChop(AZStd::string& inout, size_t num = 1);
-        AZStd::string& RChop(AZStd::string& inout, size_t num = 1);
+        AZCORE_API AZStd::string& LChop(AZStd::string& inout, size_t num = 1);
+        AZCORE_API AZStd::string& RChop(AZStd::string& inout, size_t num = 1);
 
-        AZStd::string_view LChop(AZStd::string_view in, size_t num = 1);
-        AZStd::string_view RChop(AZStd::string_view in, size_t num = 1);
+        AZCORE_API AZStd::string_view LChop(AZStd::string_view in, size_t num = 1);
+        AZCORE_API AZStd::string_view RChop(AZStd::string_view in, size_t num = 1);
 
         //! LKeep and RKeep a AZStd::string
         /*! Increase readability and error checking. RKeep keeps the string to the right of a position
@@ -190,8 +190,8 @@ namespace AZ
          Example: Keep the string to the left of the 3rd character
          StringFunc::LKeep(s = "Hello", 3); s == "Hel"
          */
-        AZStd::string& LKeep(AZStd::string& inout, size_t pos, bool bKeepPosCharacter = false);
-        AZStd::string& RKeep(AZStd::string& inout, size_t pos, bool bKeepPosCharacter = false);
+        AZCORE_API AZStd::string& LKeep(AZStd::string& inout, size_t pos, bool bKeepPosCharacter = false);
+        AZCORE_API AZStd::string& RKeep(AZStd::string& inout, size_t pos, bool bKeepPosCharacter = false);
 
         //! Replace
         /*! Replace the first, last or all character(s) or substring(s) in a AZStd::string with
@@ -201,8 +201,8 @@ namespace AZ
          Example: Case Sensitive Replace all 'o' characters with 'a' character
          StringFunc::Replace(s = "HellO World", 'O', 'o'); s == "Hello World"
          */
-        bool Replace(AZStd::string& inout, const char replaceA, const char withB, bool bCaseSensitive = false, bool bReplaceFirst = false, bool bReplaceLast = false);
-        bool Replace(AZStd::string& inout, const char* replaceA, const char* withB, bool bCaseSensitive = false, bool bReplaceFirst = false, bool bReplaceLast = false);
+        AZCORE_API bool Replace(AZStd::string& inout, const char replaceA, const char withB, bool bCaseSensitive = false, bool bReplaceFirst = false, bool bReplaceLast = false);
+        AZCORE_API bool Replace(AZStd::string& inout, const char* replaceA, const char* withB, bool bCaseSensitive = false, bool bReplaceFirst = false, bool bReplaceLast = false);
 
         /**
         * Simple string trimming (trims spaces, tabs, and line-feed/cr characters from both ends)
@@ -212,7 +212,7 @@ namespace AZ
         * \param[in] trailing       Flag to trim the trailing whitespace characters from the string
         * \returns The reference to the trimmed value
         */
-        AZStd::string& TrimWhiteSpace(AZStd::string& value, bool leading, bool trailing);
+        AZCORE_API AZStd::string& TrimWhiteSpace(AZStd::string& value, bool leading, bool trailing);
 
         //! LStrip
         /*! Strips leading characters in the stripCharacters set
@@ -237,9 +237,9 @@ namespace AZ
         Example: Case Sensitive Strip all 'a' characters
         StringFunc::StripEnds(s = "Abracadabra", 'a'); s == "Abracadabr"
         */
-        AZStd::string_view LStrip(AZStd::string_view in, AZStd::string_view stripCharacters = " ");
-        AZStd::string_view RStrip(AZStd::string_view in, AZStd::string_view stripCharacters = " ");
-        AZStd::string_view StripEnds(AZStd::string_view in, AZStd::string_view stripCharacters = " ");
+        AZCORE_API AZStd::string_view LStrip(AZStd::string_view in, AZStd::string_view stripCharacters = " ");
+        AZCORE_API AZStd::string_view RStrip(AZStd::string_view in, AZStd::string_view stripCharacters = " ");
+        AZCORE_API AZStd::string_view StripEnds(AZStd::string_view in, AZStd::string_view stripCharacters = " ");
 
         //! Strip
         /*! Strip away the leading, trailing or all character(s) or substring(s) in a AZStd::string with
@@ -259,8 +259,8 @@ namespace AZ
         Example: Case Insensitive Strip first and last "hello" character
         StringFunc::Strip(s = "HeLlo HeLlo HELlO", "hello", false, true, true); s == " HeLlo "
         */
-        bool Strip(AZStd::string& inout, const char stripCharacter = ' ', bool bCaseSensitive = false, bool bStripBeginning = false, bool bStripEnding = false);
-        bool Strip(AZStd::string& inout, const char* stripCharacters = " ", bool bCaseSensitive = false, bool bStripBeginning = false, bool bStripEnding = false);
+        AZCORE_API bool Strip(AZStd::string& inout, const char stripCharacter = ' ', bool bCaseSensitive = false, bool bStripBeginning = false, bool bStripEnding = false);
+        AZCORE_API bool Strip(AZStd::string& inout, const char* stripCharacters = " ", bool bCaseSensitive = false, bool bStripBeginning = false, bool bStripEnding = false);
 
         //! Tokenize
         /*! Tokenize a c-string, into a vector of AZStd::string(s) optionally keeping empty string
@@ -271,9 +271,9 @@ namespace AZ
          StringFunc::Tokenize("Hello,World\nHello,World", d, ' '); s[0] == "Hello", s[1] == "World"
          s[2] == "Hello", s[3] == "World"
          */
-        void Tokenize(AZStd::string_view in, AZStd::vector<AZStd::string>& tokens, const char delimiter, bool keepEmptyStrings = false, bool keepSpaceStrings = false);
-        void Tokenize(AZStd::string_view in, AZStd::vector<AZStd::string>& tokens, AZStd::string_view delimiters = "\\//, \t\n", bool keepEmptyStrings = false, bool keepSpaceStrings = false);
-        void Tokenize(AZStd::string_view in, AZStd::vector<AZStd::string>& tokens, const AZStd::vector<AZStd::string_view>& delimiters, bool keepEmptyStrings = false, bool keepSpaceStrings = false);
+        AZCORE_API void Tokenize(AZStd::string_view in, AZStd::vector<AZStd::string>& tokens, const char delimiter, bool keepEmptyStrings = false, bool keepSpaceStrings = false);
+        AZCORE_API void Tokenize(AZStd::string_view in, AZStd::vector<AZStd::string>& tokens, AZStd::string_view delimiters = "\\//, \t\n", bool keepEmptyStrings = false, bool keepSpaceStrings = false);
+        AZCORE_API void Tokenize(AZStd::string_view in, AZStd::vector<AZStd::string>& tokens, const AZStd::vector<AZStd::string_view>& delimiters, bool keepEmptyStrings = false, bool keepSpaceStrings = false);
 
         //! TokenizeVisitor
         /*! Tokenize a string_view and invoke a handler for each token found.
@@ -292,8 +292,8 @@ namespace AZ
         /*! Callback which is invoked each time a token is found within the string
         */
         using TokenVisitor = AZStd::function<void(AZStd::string_view)>;
-        void TokenizeVisitor(AZStd::string_view in, const TokenVisitor& tokenVisitor, const char delimiter, bool keepEmptyStrings = false, bool keepSpaceStrings = false);
-        void TokenizeVisitor(AZStd::string_view in, const TokenVisitor& tokenVisitor, AZStd::string_view delimiters = AZ_CORRECT_AND_WRONG_DATABASE_SEPARATOR ",\t\n",
+        AZCORE_API void TokenizeVisitor(AZStd::string_view in, const TokenVisitor& tokenVisitor, const char delimiter, bool keepEmptyStrings = false, bool keepSpaceStrings = false);
+        AZCORE_API void TokenizeVisitor(AZStd::string_view in, const TokenVisitor& tokenVisitor, AZStd::string_view delimiters = AZ_CORRECT_AND_WRONG_DATABASE_SEPARATOR ",\t\n",
             bool keepEmptyStrings = false, bool keepSpaceStrings = false);
 
         //! TokenizeVisitorReverse
@@ -309,8 +309,8 @@ namespace AZ
         StringFunc::TokenizeVisitorReverse("Hello World  More   Tokens", visitor, ' ', true, true); Invokes visitor("Tokens"), visitor(""), visitor(""),
             visitor("More"), visitor(""), visitor("World"), "visitor("Hello")
         */
-        void TokenizeVisitorReverse(AZStd::string_view in, const TokenVisitor& tokenVisitor, const char delimiter, bool keepEmptyStrings = false, bool keepSpaceStrings = false);
-        void TokenizeVisitorReverse(AZStd::string_view in, const TokenVisitor& tokenVisitor, AZStd::string_view delimiters = AZ_CORRECT_AND_WRONG_DATABASE_SEPARATOR ",\t\n",
+        AZCORE_API void TokenizeVisitorReverse(AZStd::string_view in, const TokenVisitor& tokenVisitor, const char delimiter, bool keepEmptyStrings = false, bool keepSpaceStrings = false);
+        AZCORE_API void TokenizeVisitorReverse(AZStd::string_view in, const TokenVisitor& tokenVisitor, AZStd::string_view delimiters = AZ_CORRECT_AND_WRONG_DATABASE_SEPARATOR ",\t\n",
             bool keepEmptyStrings = false, bool keepSpaceStrings = false);
 
         //! TokenizeFirst
@@ -335,8 +335,8 @@ namespace AZ
          output = StringFunc::TokenizeNext(input, ' '); input = "", output(valid) = "Tokens"
          output = StringFunc::TokenizeNext(input, ' '); input = "", output(invalid)
          */
-        AZStd::optional<AZStd::string_view> TokenizeNext(AZStd::string_view& inout, const char delimiter);
-        AZStd::optional<AZStd::string_view> TokenizeNext(AZStd::string_view& inout, AZStd::string_view delimiters);
+        AZCORE_API AZStd::optional<AZStd::string_view> TokenizeNext(AZStd::string_view& inout, const char delimiter);
+        AZCORE_API AZStd::optional<AZStd::string_view> TokenizeNext(AZStd::string_view& inout, AZStd::string_view delimiters);
 
         //! TokenizeLast
         /*! Returns an optional to a string_view of the characters that is after the last delimiter found in the set of delimiters.
@@ -361,8 +361,8 @@ namespace AZ
          output = StringFunc::TokenizeLast(input, ' '); input = "", output(valid) = "Hello"
          output = StringFunc::TokenizeLast(input, ' '); input = "", output(invalid)
          */
-        AZStd::optional<AZStd::string_view> TokenizeLast(AZStd::string_view& inout, const char delimiter);
-        AZStd::optional<AZStd::string_view> TokenizeLast(AZStd::string_view& inout, AZStd::string_view delimiters);
+        AZCORE_API AZStd::optional<AZStd::string_view> TokenizeLast(AZStd::string_view& inout, const char delimiter);
+        AZCORE_API AZStd::optional<AZStd::string_view> TokenizeLast(AZStd::string_view& inout, AZStd::string_view delimiters);
 
         //recognition and conversion from text
 
@@ -378,23 +378,23 @@ namespace AZ
         StringFunc::LooksLikeFloat("1.23") == true
         StringFunc::ToFloat("1.23") == 1.23f
         */
-        int ToInt(const char* in);
-        bool LooksLikeInt(const char* in, int* pInt = nullptr);
-        double ToDouble(const char* in);
-        bool LooksLikeDouble(const char* in, double* pDouble = nullptr);
-        float ToFloat(const char* in);
-        bool LooksLikeFloat(const char* in, float* pFloat = nullptr);
-        bool ToBool(const char* in);
-        bool LooksLikeBool(const char* in, bool* pBool = nullptr);
+        AZCORE_API int ToInt(const char* in);
+        AZCORE_API bool LooksLikeInt(const char* in, int* pInt = nullptr);
+        AZCORE_API double ToDouble(const char* in);
+        AZCORE_API bool LooksLikeDouble(const char* in, double* pDouble = nullptr);
+        AZCORE_API float ToFloat(const char* in);
+        AZCORE_API bool LooksLikeFloat(const char* in, float* pFloat = nullptr);
+        AZCORE_API bool ToBool(const char* in);
+        AZCORE_API bool LooksLikeBool(const char* in, bool* pBool = nullptr);
 
-        bool LooksLikeVector2(const char* in, AZ::Vector2* outVector = nullptr);
-        AZ::Vector2 ToVector2(const char* in);
+        AZCORE_API bool LooksLikeVector2(const char* in, AZ::Vector2* outVector = nullptr);
+        AZCORE_API AZ::Vector2 ToVector2(const char* in);
 
-        bool LooksLikeVector3(const char* in, AZ::Vector3* outVector = nullptr);
-        AZ::Vector3 ToVector3(const char* in);
+        AZCORE_API bool LooksLikeVector3(const char* in, AZ::Vector3* outVector = nullptr);
+        AZCORE_API AZ::Vector3 ToVector3(const char* in);
 
-        bool LooksLikeVector4(const char* in, AZ::Vector4* outVector = nullptr);
-        AZ::Vector4 ToVector4(const char* in);
+        AZCORE_API bool LooksLikeVector4(const char* in, AZ::Vector4* outVector = nullptr);
+        AZCORE_API AZ::Vector4 ToVector4(const char* in);
 
         //! ToHexDump and FromHexDump
         /*! Convert a c-string to and from hex
@@ -402,8 +402,8 @@ namespace AZ
         StringFunc::ToHexDump("abcCcdeEfFF",a); a=="6162634363646545664646"
         StringFunc::FromHexDump("6162634363646545664646", a); a=="abcCcdeEfFF"
         */
-        bool ToHexDump(const char* in, AZStd::string& out);
-        bool FromHexDump(const char* in, AZStd::string& out);
+        AZCORE_API bool ToHexDump(const char* in, AZStd::string& out);
+        AZCORE_API bool FromHexDump(const char* in, AZStd::string& out);
 
 
         //! Join
@@ -482,7 +482,7 @@ namespace AZ
             * \param firstGroupingSize - If > 0, an alternative grouping size to use for the first group (some languages use this, e.g. Hindi groups 12,34,56,789.00)
             * \returns The length of the string in the buffer (including terminating null byte) after modifications
             */
-            int GroupDigits(char* buffer, size_t bufferSize, size_t decimalPosHint = 0, char digitSeparator = ',', char decimalSeparator = '.', int groupingSize = 3, int firstGroupingSize = 0);
+            AZCORE_API int GroupDigits(char* buffer, size_t bufferSize, size_t decimalPosHint = 0, char digitSeparator = ',', char decimalSeparator = '.', int groupingSize = 3, int firstGroupingSize = 0);
         }
 
         //////////////////////////////////////////////////////////////////////////
@@ -497,8 +497,8 @@ namespace AZ
             * \param engineRootPath - The absolute path to the engine root to base the token calculation on
             * \param token       - The result of the branch token calculation
             */
-            void CalculateBranchToken(AZStd::string_view engineRootPath, AZStd::string& token);
-            void CalculateBranchToken(AZStd::string_view engineRootPath, AZ::IO::FixedMaxPathString& token);
+            AZCORE_API void CalculateBranchToken(AZStd::string_view engineRootPath, AZStd::string& token);
+            AZCORE_API void CalculateBranchToken(AZStd::string_view engineRootPath, AZ::IO::FixedMaxPathString& token);
         }
 
         //////////////////////////////////////////////////////////////////////////
@@ -524,7 +524,7 @@ namespace AZ
             StringFunc::Root::Normalize(a="/p4/game/") == false; Doesn't have a drive
             StringFunc::Root::Normalize(a="C:/p4/game") == true; a=="C:/p4/game/"
             */
-            bool Normalize(AZStd::string& inout);
+            AZCORE_API bool Normalize(AZStd::string& inout);
 
             //! IsValid
             /*! Returns if this string has the requirements to be a root
@@ -538,13 +538,13 @@ namespace AZ
             StringFunc::Root::IsValid(a="/p4/game/") == false; Doesn't have a drive
             StringFunc::Root::IsValid(a="C:/p4/game") == false; Doesn't have an ending separator
             */
-            bool IsValid(const char* in);
+            AZCORE_API bool IsValid(const char* in);
 
             //! Split
             /*! Splits a full path into pieces, returns if it was successful
             *! EX: StringFunc::AssetDatabasePath::Split("C:/project/intermediateassets/somesubdir/anothersubdir/someFile.ext", &root, &path, &file, &extension) = true; root=="intermediateassets", path=="somesubdir/anothersubdir/", file=="someFile", extension==".ext"
             */
-            bool Split(const char* in, AZStd::string* pDstProjectRootOut = nullptr, AZStd::string* pDstDatabaseRootOut = nullptr, AZStd::string* pDstDatabasePathOut = nullptr, AZStd::string* pDstDatabaseFileOut = nullptr, AZStd::string* pDstFileExtensionOut = nullptr);
+            AZCORE_API bool Split(const char* in, AZStd::string* pDstProjectRootOut = nullptr, AZStd::string* pDstDatabaseRootOut = nullptr, AZStd::string* pDstDatabasePathOut = nullptr, AZStd::string* pDstDatabaseFileOut = nullptr, AZStd::string* pDstFileExtensionOut = nullptr);
 
             //! Join
             /*! Joins two pieces of a asset database path returns if it was successful
@@ -558,7 +558,7 @@ namespace AZ
             *! EX: StringFunc::AssetDataPathPath::Join("p4/game/info", "/game/info/some.file", a) == true; a== "/game/info/some.file"
             *! (Replaces root directory part)
             */
-            bool Join(const char* pFirstPart, const char* pSecondPart, AZStd::string& out, bool bCaseInsensitive = true, bool bNormalize = true);
+            AZCORE_API bool Join(const char* pFirstPart, const char* pSecondPart, AZStd::string& out, bool bCaseInsensitive = true, bool bNormalize = true);
         };
 
         //////////////////////////////////////////////////////////////////////////
@@ -578,7 +578,7 @@ namespace AZ
              StringFunc::Root::Normalize(a="\\p4/game/") == false; Doesn't have a drive
              StringFunc::Root::Normalize(a="C:\\p4/game") == true; a=="C:\\p4\\game\\"
              */
-            bool Normalize(AZStd::string& inout);
+            AZCORE_API bool Normalize(AZStd::string& inout);
 
             //! IsValid
             /*! Returns if this string has the requirements to be a root
@@ -592,7 +592,7 @@ namespace AZ
             StringFunc::Root::IsValid(a="\\p4\\game\\") == false; Doesn't have a drive
             StringFunc::Root::IsValid(a="C:\\p4\\game") == false; Doesn't have an ending separator
             */
-            bool IsValid(const char* in);
+            AZCORE_API bool IsValid(const char* in);
         }
 
         //////////////////////////////////////////////////////////////////////////
@@ -613,7 +613,7 @@ namespace AZ
              StringFunc::RelativePath::Normalize(a="p4/game/") == true; a=="p4\\game\\"
              StringFunc::RelativePath::Normalize(a="C:\\p4/game") == false; Has a drive
              */
-            bool Normalize(AZStd::string& inout);
+            AZCORE_API bool Normalize(AZStd::string& inout);
 
             //! IsValid
             /*! Returns if this string has the requirements to be a relative path
@@ -628,7 +628,7 @@ namespace AZ
              StringFunc::Root::IsValid(a="\\p4\\game\\") == false; Starts with a separator
              StringFunc::Root::IsValid(a="C:\\p4\\game") == false; Has a drive
              */
-            bool IsValid(const char* in);
+            AZCORE_API bool IsValid(const char* in);
         }
 
         //////////////////////////////////////////////////////////////////////////
@@ -732,8 +732,8 @@ namespace AZ
              StringFunc::Path::Normalize(a="p4/game/") == true; a=="p4\\game\\"
              StringFunc::Path::Normalize(a="C:\\p4/game") == true; a=="C:\\p4\\game\\"
              */
-            bool Normalize(AZStd::string& inout);
-            bool Normalize(FixedString& inout);
+            AZCORE_API bool Normalize(AZStd::string& inout);
+            AZCORE_API bool Normalize(FixedString& inout);
 
             //! IsValid
             /*! Returns if this string has the requirements to be a path
@@ -750,7 +750,7 @@ namespace AZ
              StringFunc::Path::IsValid(a="C:\\p4\\game") == true
              StringFunc::Path::IsValid(a="C:\\p4\\game\\some.file") == true
              */
-            bool IsValid(const char* in, bool bHasDrive = false, bool bHasExtension = false, AZStd::string* errors = NULL);
+            AZCORE_API bool IsValid(const char* in, bool bHasDrive = false, bool bHasExtension = false, AZStd::string* errors = NULL);
 
             //! ConstructFull
             /*! Constructs a full path from pieces and does some minimal smart normalization to make it easier, returns if it was successful
@@ -760,15 +760,15 @@ namespace AZ
              *! EX: StringFunc::Path::ContructFull("C:\\p4", "some", ".file", a) == true; a== "C:\\p4\\some.file"
              *! EX: StringFunc::Path::ContructFull("C:\\p4", "info", "some", "file", a) == true; a=="C:\\p4\\info\\some.file"
              */
-            bool ConstructFull(const char* pRootPath, const char* pFileName, AZStd::string& out, bool bNormalize = false);
-            bool ConstructFull(const char* pRootPath, const char* pFileName, const char* pFileExtension, AZStd::string& out, bool bNormalize = false);
-            bool ConstructFull(const char* pRoot, const char* pRelativePath, const char* pFileName, const char* pFileExtension, AZStd::string& out, bool bNormalize = false);
+            AZCORE_API bool ConstructFull(const char* pRootPath, const char* pFileName, AZStd::string& out, bool bNormalize = false);
+            AZCORE_API bool ConstructFull(const char* pRootPath, const char* pFileName, const char* pFileExtension, AZStd::string& out, bool bNormalize = false);
+            AZCORE_API bool ConstructFull(const char* pRoot, const char* pRelativePath, const char* pFileName, const char* pFileExtension, AZStd::string& out, bool bNormalize = false);
 
             //! Split
             /*! Splits a full path into pieces, returns if it was successful
             *! EX: StringFunc::Path::Split("C:\\p4\\game\\info\\some.file", &drive, &folderPath, &fileName, &extension) = true; drive==C: , folderPath=="\\p4\\game\\info\\", filename=="some", extension==".file"
             */
-            bool Split(const char* in, AZStd::string* pDstDriveOut = nullptr, AZStd::string* pDstFolderPathOut = nullptr, AZStd::string* pDstNameOut = nullptr, AZStd::string* pDstExtensionOut = nullptr);
+            AZCORE_API bool Split(const char* in, AZStd::string* pDstDriveOut = nullptr, AZStd::string* pDstFolderPathOut = nullptr, AZStd::string* pDstNameOut = nullptr, AZStd::string* pDstExtensionOut = nullptr);
 
             //! Join
             /*! Joins two pieces of a path returns if it was successful
@@ -782,8 +782,8 @@ namespace AZ
             *! EX: StringFunc::Path::Join("C:\\p4\\game\\info", "\\game\\info\\some.file", a) == true; a== "C:\\game\\info\\some.file"
             *! (Replaces root directory part)
             */
-            bool Join(const char* pFirstPart, const char* pSecondPart, AZStd::string& out, bool bCaseInsensitive = true, bool bNormalize = true);
-            bool Join(const char* pFirstPart, const char* pSecondPart, FixedString& out, bool bCaseInsensitive = true, bool bNormalize = true);
+            AZCORE_API bool Join(const char* pFirstPart, const char* pSecondPart, AZStd::string& out, bool bCaseInsensitive = true, bool bNormalize = true);
+            AZCORE_API bool Join(const char* pFirstPart, const char* pSecondPart, FixedString& out, bool bCaseInsensitive = true, bool bNormalize = true);
 
             //! HasDrive
             /*! returns if the c-string has a "drive"
@@ -791,7 +791,7 @@ namespace AZ
             *! EX: StringFunc::Path::HasDrive("\\p4\\game\\info\\some.file") == false
             *! EX: StringFunc::Path::HasDrive("\\\\18usernam\\p4\\game\\info\\some.file") == true
             */
-            bool HasDrive(const char* in, bool bCheckAllFileSystemFormats = false);
+            AZCORE_API bool HasDrive(const char* in, bool bCheckAllFileSystemFormats = false);
 
             //! HasExtension
             /*! returns if the c-string has an "extension"
@@ -802,7 +802,7 @@ namespace AZ
             *! EX: StringFunc::Path::HasExtension("C:\\p4\\game\\info\\some.file") == true
             *! EX: StringFunc::Path::HasExtension("\\p4\\game\\info\\some") == false
             */
-            bool HasExtension(const char* in);
+            AZCORE_API bool HasExtension(const char* in);
 
             //! IsExtension
             /*! returns if the c-string has an "extension", optionally case case sensitive
@@ -813,7 +813,7 @@ namespace AZ
             *! EX: StringFunc::Path::IsExtension("\\p4\\game\\info\\some") == false
             *! EX: StringFunc::Path::IsExtension("\\p4\\game\\info\\some.file", ".FILE", true) == false
             */
-            bool IsExtension(const char* in, const char* pExtension, bool bCaseInsenitive = true);
+            AZCORE_API bool IsExtension(const char* in, const char* pExtension, bool bCaseInsenitive = true);
 
             //! IsRelative
             /*! returns if the c-string fulfills the requirements to be "relative"
@@ -824,31 +824,31 @@ namespace AZ
             *! EX: StringFunc::Path::IsRelative("\\p4\\game\\info\\some.file") == false
             *! EX: StringFunc::Path::IsRelative("C:\\p4\\game\\info\\some.file") == false
             */
-            bool IsRelative(const char* in);
+            AZCORE_API bool IsRelative(const char* in);
 
             //! StripDrive
             /*! gets rid of the drive component if it has one, returns if it removed one or not
             *! EX: StringFunc::Path::StripDrive(a="C:\\p4\\game\\info\\some.file") == true; a=="\\p4\\game\\info\\some.file"
             */
-            bool StripDrive(AZStd::string& inout);
+            AZCORE_API bool StripDrive(AZStd::string& inout);
 
             //! StripPath
             /*! gets rid of the path if it has one, returns if it removed one or not
             *! EX: StringFunc::Path::StripPath(a="C:\\p4\\game\\info\\some.file") == true; a=="some.file"
             */
-            void StripPath(AZStd::string& out);
+            AZCORE_API void StripPath(AZStd::string& out);
 
             //! StripFullName
             /*! gets rid of the full file name if it has one, returns if it removed one or not
             *! EX: StringFunc::Path::StripFullName(a="C:\\p4\\game\\info\\some.file") == true; a=="C:\\p4\\game\\info"
             */
-            void StripFullName(AZStd::string& out);
+            AZCORE_API void StripFullName(AZStd::string& out);
 
             //! StripExtension
             /*! gets rid of the extension if it has one, returns if it removed one or not
             *! EX: StringFunc::Path::StripExtension(a="C:\\p4\\game\\info\\some.file") == true; a=="C:\\p4\\game\\info\\some"
             */
-            void StripExtension(AZStd::string& inout);
+            AZCORE_API void StripExtension(AZStd::string& inout);
 
             //! StripComponent
             /*! gets rid of the first or last if it has one, returns if it removed one or not
@@ -858,14 +858,14 @@ namespace AZ
             *!  EX: StringFunc::Path::StripComponent(a="Main\\Source\\GameAssets\\gameinfo\\Characters\\some.xml", true) == true; a=="Main\\Source\\GameAssets\\gameinfo\\Characters"
             *!  EX: StringFunc::Path::StripComponent(a="Main\\Source\\GameAssets\\gameinfo\\Characters", true) == true; a=="Main\\Source\\GameAssets\\gameinfo"
             */
-            bool StripComponent(AZStd::string& inout, bool bLastComponent = false);
+            AZCORE_API bool StripComponent(AZStd::string& inout, bool bLastComponent = false);
 
             //! GetDrive
             /*! if a c-string has a drive put it in AZStd::string, returns if it was sucessful
             *! EX: StringFunc::Path::GetDrive("C:\\p4\\game\\info\\some.file",a) == true; a=="C:"
             *! EX: StringFunc::Path::GetDrive("\\\\18username\\p4\\game\\info\\some.file",a) == true; a=="\\\18username"
             */
-            bool GetDrive(const char* in, AZStd::string& out);
+            AZCORE_API bool GetDrive(const char* in, AZStd::string& out);
 
             //! GetParentDir
             /*! Retrieves the parent directory using the supplied @in string
@@ -875,40 +875,40 @@ namespace AZ
             *!  EX: StringFunc::Path::GetParentDir("D:\\p4\\Main\\Source\\GameAssets\\gameinfo\\Characters",a) == true; a=="D:\\p4\\Main\\Source\\GameAssets\\gameinfo"
             *!  EX: StringFunc::Path::GetParentDir("D:\\",a) == true; a=="D:\\"
             */
-            AZStd::optional<AZStd::string_view> GetParentDir(AZStd::string_view path);
+            AZCORE_API AZStd::optional<AZStd::string_view> GetParentDir(AZStd::string_view path);
 
             //! GetFullPath
             /*! if a c-string has a fullpath put it in AZStd::string, returns if it was sucessful
             *! EX: StringFunc::Path::GetFullPath("D:\\p4\\Main\\Source\\GameAssets\\gameinfo\\Characters\\some.xml",a) == true; a=="D:\\p4\\Main\\Source\\GameAssets\\gameinfo\\Characters"
             */
-            bool GetFullPath(const char* in, AZStd::string& out);
+            AZCORE_API bool GetFullPath(const char* in, AZStd::string& out);
 
             //! GetFolderPath
             /*! if a c-string has a folderpath put it in AZStd::string, returns if it was sucessful
             *! EX: StringFunc::Path::GetFolderPath("D:\\p4\\Main\\Source\\GameAssets\\gameinfo\\Characters\\some.xml",a) == true; a=="\\p4\\Main\\Source\\GameAssets\\gameinfo\\Characters"
             */
-            bool GetFolderPath(const char* in, AZStd::string& out);
+            AZCORE_API bool GetFolderPath(const char* in, AZStd::string& out);
 
             //! GetFolder
             /*! if a c-string has a beginning or ending folder put it in AZStd::string, returns if it was sucessful
             *! EX: StringFunc::Path::GetFolder("D:\\p4\\Main\\Source\\GameAssets\\gameinfo\\Characters\\some.xml", a) == true; a=="p4"
             *! EX: StringFunc::Path::GetFolder("D:\\p4\\Main\\Source\\GameAssets\\gameinfo\\Characters\\some.xml", a, true) == true; a=="Characters"
             */
-            bool GetFolder(const char* in, AZStd::string& out, bool bFirst = false);
+            AZCORE_API bool GetFolder(const char* in, AZStd::string& out, bool bFirst = false);
 
             //! GetFullFileName
             /*! if a c-string has afull file name put it in AZStd::string, returns if it was sucessful
             *! EX: StringFunc::Path::GetFullFileName("D:\\p4\\Main\\Source\\GameAssets\\gameinfo\\Characters\\some.xml", a) == true; a=="some.xml"
             *! EX: StringFunc::Path::GetFullFileName("D:\\p4\\Main\\Source\\GameAssets\\gameinfo\\Characters\\", a) == false;
             */
-            bool GetFullFileName(const char* in, AZStd::string& out);
+            AZCORE_API bool GetFullFileName(const char* in, AZStd::string& out);
 
             //! GetFileName
             /*! if a c-string has a file name put it in AZStd::string, returns if it was sucessful
             *! EX: StringFunc::Path::GetFileName("D:\\p4\\Main\\Source\\GameAssets\\gameinfo\\Characters\\some.xml", a) == true; a=="some"
             *! EX: StringFunc::Path::GetFileName("D:\\p4\\Main\\Source\\GameAssets\\gameinfo\\Characters\\", a) == false;
             */
-            bool GetFileName(const char* in, AZStd::string& out);
+            AZCORE_API bool GetFileName(const char* in, AZStd::string& out);
 
             //! GetExtension
             /*! if a c-string has an extension put it in AZStd::string, returns if it was sucessful
@@ -916,7 +916,7 @@ namespace AZ
             *! EX: StringFunc::Path::GetFileName("D:\\p4\\Main\\Source\\GameAssets\\gameinfo\\Characters\\", a) == false;
             *! EX: StringFunc::Path::GetExtension("D:\\p4\\Main\\Source\\GameAssets\\gameinfo\\Characters\\some.xml", a, false) == true; a=="xml"
             */
-            bool GetExtension(const char* in, AZStd::string& out, bool includeDot = true);
+            AZCORE_API bool GetExtension(const char* in, AZStd::string& out, bool includeDot = true);
 
             //! ReplaceFullName
             /*! if a AZStd::string has a full name then replace it with pFileName and optionally with pExtension
@@ -925,7 +925,7 @@ namespace AZ
             *! EX: StringFunc::Path::ReplaceFullName(a="D:\\p4\\some.file", "other.file", "xml"); a=="D:\\p4\\other.xml"
             *! EX: StringFunc::Path::ReplaceFullName(a="D:\\p4\\some.file", "other.file", ""); a=="D:\\p4\\other"
             */
-            void ReplaceFullName(AZStd::string& inout, const char* pFileName, const char* pFileExtension = nullptr);
+            AZCORE_API void ReplaceFullName(AZStd::string& inout, const char* pFileName, const char* pFileExtension = nullptr);
 
             //! ReplaceExtension
             /*! if a AZStd::string HasExtension() then replace it with pDrive
@@ -933,14 +933,14 @@ namespace AZ
             *! EX: StringFunc::Path::ReplaceExtension(a="D:\\p4\\some.file", ".xml"); a=="D:\\p4\\some.xml"
             *! EX: StringFunc::Path::ReplaceExtension(a="D:\\p4\\some.file", ""); a=="D:\\p4\\some"
             */
-            void ReplaceExtension(AZStd::string& inout, const char* pFileExtension);
+            AZCORE_API void ReplaceExtension(AZStd::string& inout, const char* pFileExtension);
 
             //! AppendSeparator
             /*! Appends the correct separator to the path
             *! EX: StringFunc::Path::AppendSeparator("C:\\project\\intermediateassets", &path);
             *! path=="C:\\project\\intermediateassets\\"
             */
-            AZStd::string& AppendSeparator(AZStd::string& inout);
+            AZCORE_API AZStd::string& AppendSeparator(AZStd::string& inout);
 
             //! MakeUniqueFilenameWithSuffix
             /*! given a directory path and an optional extension will return a unique filename
@@ -949,7 +949,7 @@ namespace AZ
             *! if "NewFile.txt" exists, returns "c:\\folder\\Newfile-copy1.txt"
             *! if both "NewFile.txt" and "NewFile-copy1.txt" exist, returns "c:\\folder\\Newfile-copy2.txt" etc.
             */
-            AZ::IO::FixedMaxPath MakeUniqueFilenameWithSuffix(const AZ::IO::PathView& basePath, const AZStd::string_view& suffix = "");
+            AZCORE_API AZ::IO::FixedMaxPath MakeUniqueFilenameWithSuffix(const AZ::IO::PathView& basePath, const AZStd::string_view& suffix = "");
 
         } // namespace Path
 
@@ -960,7 +960,7 @@ namespace AZ
             *! EX: StringFunc::Json::ToEscapeString(""'"")
             *! output=="\"'\""
             */
-            AZStd::string& ToEscapedString(AZStd::string& inout);
+            AZCORE_API AZStd::string& ToEscapedString(AZStd::string& inout);
         } // namespace Json
 
         namespace Base64
@@ -970,14 +970,14 @@ namespace AZ
             *! EX: StringFunc::Base64::Base64Encode(reinterpret_cast<AZ::u8*>("NUL\0InString"), AZ_ARRAY_SIZE("NUL\0InString") - 1);
             *! output = "TlVMAEluU3RyaW5n"
             */
-            AZStd::string Encode(const AZ::u8* in, const size_t size);
+            AZCORE_API AZStd::string Encode(const AZ::u8* in, const size_t size);
             //! Base64Decode
             /* Decodes Base64 Text data to binary data and appends result int out array
             *! If the the supplied text is not valid Base64 then false will be result @out array will be unmodified
             *! EX: StringFunc::Base64::Base64Decode("TlVMAEluU3RyaW5n", strlen("TlVMAEluU3RyaW5n"));
             *! output = {'N','U', 'L', '\0', 'I', 'n', 'S', 't', 'r', 'i', 'n', 'g'}
             */
-            bool Decode(AZStd::vector<AZ::u8>& out, const char* in, const size_t size);
+            AZCORE_API bool Decode(AZStd::vector<AZ::u8>& out, const char* in, const size_t size);
 
         };
 
@@ -988,7 +988,7 @@ namespace AZ
              * @param in A string with UTF-8 encoding.
              * @return true if the string passed in contains any byte that cannot be encoded in 7-bit ASCII, otherwise false.
              */
-            bool CheckNonAsciiChar(const AZStd::string& in);
+            AZCORE_API bool CheckNonAsciiChar(const AZStd::string& in);
         }
     } // namespace StringFunc
 } // namespace AzFramework

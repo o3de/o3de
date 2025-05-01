@@ -17,7 +17,6 @@
 #include <AzCore/Component/EntityBus.h>
 #include <AzCore/Slice/SliceMetadataInfoBus.h>
 #include <AzCore/Component/ComponentExport.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {

@@ -14,7 +14,6 @@
 #include <AzCore/IO/Compressor.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Compression/Compression.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {

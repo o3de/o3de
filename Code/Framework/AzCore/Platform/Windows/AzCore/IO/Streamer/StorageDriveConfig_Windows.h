@@ -9,7 +9,6 @@
 #pragma once
 
 #include <AzCore/IO/Streamer/StreamerConfiguration.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ::IO
 {

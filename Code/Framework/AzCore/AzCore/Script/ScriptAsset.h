@@ -11,7 +11,6 @@
 #include <AzCore/IO/GenericStreams.h>
 #include <AzCore/IO/ByteContainerStream.h>
 #include <AzCore/std/containers/vector.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace UnitTest
 {

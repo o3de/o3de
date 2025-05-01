@@ -53,9 +53,9 @@ namespace AZ
         IfPresent,
     };
 
-    struct BehaviorObject // same as DynamicSerializableField, make sure we merge them... so we can store the object easily
+    struct AZCORE_API BehaviorObject // same as DynamicSerializableField, make sure we merge them... so we can store the object easily
     {
-        AZ_TYPE_INFO_WITH_NAME_DECL(BehaviorObject);
+        AZ_TYPE_INFO_WITH_NAME_DECL_API(AZCORE_API, BehaviorObject);
 
         BehaviorObject();
         BehaviorObject(void* address, const Uuid& typeId);
@@ -66,6 +66,7 @@ namespace AZ
         Uuid m_typeId;
         IRttiHelper* m_rttiHelper{};
     };
+    AZ_TYPE_INFO_WITH_NAME_DECL_EXT_API(AZCORE_API, BehaviorObject);
 
     /**
      * Reflects information about a C++ function parameter, mostly for use in BehaviorContext Methods and Events. It only provides a
@@ -74,9 +75,9 @@ namespace AZ
      * \note During actual runtime calls, using the BehaviorContext generic calling mechanism, use \ref BehaviorArgument to wrap arguments
      * to the generic function call.
      */
-    struct BehaviorParameter
+    struct AZCORE_API BehaviorParameter
     {
-        AZ_TYPE_INFO_WITH_NAME_DECL(BehaviorParameter);
+        AZ_TYPE_INFO_WITH_NAME_DECL_API(AZCORE_API, BehaviorParameter);
         /// Temporary POD buffer when we convert parameters on the stack.
         typedef AZStd::static_buffer_allocator<32, 32> TempValueParameterAllocator;
 
@@ -102,11 +103,12 @@ namespace AZ
         IRttiHelper* m_azRtti;
         u32 m_traits;
     };
+    AZ_TYPE_INFO_WITH_NAME_DECL_EXT_API(AZCORE_API, BehaviorParameter);
 
     /*
      * struct to help with Additional data to be associated with parameters(Argument names and tooltips, type traits and default values), these are usually in arrays
      */
-    struct BehaviorParameterMetadata
+    struct AZCORE_API BehaviorParameterMetadata
     {
         BehaviorParameterMetadata(AZStd::string_view name = {}, AZStd::string_view toolTip = {}, BehaviorDefaultValuePtr defaultValue = {})
             : m_name(name)
@@ -123,7 +125,7 @@ namespace AZ
      * \param addTraits - OR'ed against the traits of the BehaviorParameter being overridden. This specifies which flags to add.
      * \param keepTraits - AND'ed against the traits of the BehaviorParameter being overridden. This specifies which flags to keep.
      */
-    struct BehaviorParameterOverrides
+    struct AZCORE_API BehaviorParameterOverrides
     {
         BehaviorParameterOverrides(AZStd::string_view name = {}, AZStd::string_view toolTip = {}, BehaviorDefaultValuePtr defaultValue = {},
             u32 addTraits = BehaviorParameter::Traits::TR_NONE, u32 removeTraits = BehaviorParameter::Traits::TR_NONE);
@@ -146,9 +148,9 @@ namespace AZ
     struct BehaviorArgumentValueTypeTag_t {};
     constexpr BehaviorArgumentValueTypeTag_t BehaviorArgumentValueTypeTag;
 
-    struct BehaviorArgument : public BehaviorParameter
+    struct AZCORE_API BehaviorArgument : public BehaviorParameter
     {
-        AZ_TYPE_INFO_WITH_NAME_DECL(BehaviorArgument);
+        AZ_TYPE_INFO_WITH_NAME_DECL_API(AZCORE_API, BehaviorArgument);
 
         BehaviorArgument();
         BehaviorArgument(const BehaviorArgument&) = default;
@@ -206,11 +208,12 @@ namespace AZ
         template<typename T>
         void StoreInTempDataEvenIfNonTrivial(T&& value);
     };
+    AZ_TYPE_INFO_WITH_NAME_DECL_EXT_API(AZCORE_API, BehaviorArgument);
 
     /**
     * Class that handles a single default value. The Value type is verified to match parameter signature
     */
-    class BehaviorDefaultValue
+    class AZCORE_API BehaviorDefaultValue
         : public AZStd::intrusive_base
     {
     public:
@@ -262,7 +265,7 @@ namespace AZ
      * Base class that handles default values. Values types are verified to match exactly the function signature.
      * the order of the default values is the same as in C++ (going in reverse the back).
      */
-    class BehaviorValues
+    class AZCORE_API BehaviorValues
     {
     public:
         virtual ~BehaviorValues() {}
@@ -275,27 +278,28 @@ namespace AZ
      * Stores the name of an AZ::Event<Params...> and names for each of it's parameters
      * For use in scripting to annotate functions and nodes with user-friendly names
      */
-    struct BehaviorAzEventDescription
+    struct AZCORE_API BehaviorAzEventDescription
     {
-        AZ_TYPE_INFO_WITH_NAME_DECL(BehaviorAzEventDescription);
+        AZ_TYPE_INFO_WITH_NAME_DECL_API(AZCORE_API, BehaviorAzEventDescription);
         AZStd::string m_eventName;
         AZStd::vector<AZStd::string> m_parameterNames;
     };
+    AZ_TYPE_INFO_WITH_NAME_DECL_EXT_API(AZCORE_API, BehaviorAzEventDescription);
 
     //! Checks if the supplied BehaviorMethod returns AZ::Event by either pointer or reference
-    bool MethodReturnsAzEventByReferenceOrPointer(const AZ::BehaviorMethod& method);
+    AZCORE_API bool MethodReturnsAzEventByReferenceOrPointer(const AZ::BehaviorMethod& method);
 
     //! Validates that a method that returns an AZ::Event fulfills the following conditions.
     //! 1. It has an AzEventDescription that stores a BehaviorAzEventDescription instance
     //! 2. The number of parameters that the method accepts, matches the number of elements
     //!    in the parameter names array
     //! 3. Neither the AZ::Event name nor any of it's parameters are an empty string
-    bool ValidateAzEventDescription(const AZ::BehaviorContext& context, const AZ::BehaviorMethod& method);
+    AZCORE_API bool ValidateAzEventDescription(const AZ::BehaviorContext& context, const AZ::BehaviorMethod& method);
 
     /**
      * Use behavior method to get type information and invoke reflected methods.
      */
-    class BehaviorMethod
+    class AZCORE_API BehaviorMethod
         : public OnDemandReflectionOwner
     {
     public:
@@ -358,9 +362,9 @@ namespace AZ
 
     using InputIndices = AZStd::vector<AZ::u8>;
 
-    struct InputRestriction
+    struct AZCORE_API InputRestriction
     {
-        AZ_TYPE_INFO_WITH_NAME_DECL(InputRestriction);
+        AZ_TYPE_INFO_WITH_NAME_DECL_API(AZCORE_API, InputRestriction);
         AZ_CLASS_ALLOCATOR(InputRestriction, AZ::SystemAllocator);
 
         bool m_listExcludes = true;
@@ -372,10 +376,11 @@ namespace AZ
             , m_indices(indices)
         {}
     };
+    AZ_TYPE_INFO_WITH_NAME_DECL_EXT_API(AZCORE_API, InputRestriction);
 
-    struct BranchOnResultInfo
+    struct AZCORE_API BranchOnResultInfo
     {
-        AZ_TYPE_INFO_WITH_NAME_DECL(BranchOnResultInfo);
+        AZ_TYPE_INFO_WITH_NAME_DECL_API(AZCORE_API, BranchOnResultInfo);
         AZ_CLASS_ALLOCATOR(BranchOnResultInfo, AZ::SystemAllocator);
 
         AZStd::string m_trueName = "True";
@@ -387,10 +392,11 @@ namespace AZ
 
         BranchOnResultInfo() = default;
     };
+    AZ_TYPE_INFO_WITH_NAME_DECL_EXT_API(AZCORE_API, BranchOnResultInfo);
 
-    struct CheckedOperationInfo
+    struct AZCORE_API CheckedOperationInfo
     {
-        AZ_TYPE_INFO_WITH_NAME_DECL(CheckedOperationInfo);
+        AZ_TYPE_INFO_WITH_NAME_DECL_API(AZCORE_API, CheckedOperationInfo);
         AZ_CLASS_ALLOCATOR(CheckedOperationInfo, AZ::SystemAllocator);
 
         AZStd::string m_safetyCheckName;
@@ -412,10 +418,11 @@ namespace AZ
         bool operator==(const CheckedOperationInfo& other) const;
         bool operator!=(const CheckedOperationInfo& other) const;
     };
+    AZ_TYPE_INFO_WITH_NAME_DECL_EXT_API(AZCORE_API, CheckedOperationInfo);
 
-    struct OverloadArgumentGroupInfo
+    struct AZCORE_API OverloadArgumentGroupInfo
     {
-        AZ_TYPE_INFO_WITH_NAME_DECL(OverloadArgumentGroupInfo);
+        AZ_TYPE_INFO_WITH_NAME_DECL_API(AZCORE_API, OverloadArgumentGroupInfo);
         AZ_CLASS_ALLOCATOR(OverloadArgumentGroupInfo, AZ::SystemAllocator);
 
         AZStd::vector<AZStd::string> m_parameterGroupNames;
@@ -425,10 +432,11 @@ namespace AZ
 
         OverloadArgumentGroupInfo(const AZStd::vector<AZStd::string>&& parameterGroupNames, const AZStd::vector<AZStd::string>&& resultGroupName);
     };
+    AZ_TYPE_INFO_WITH_NAME_DECL_EXT_API(AZCORE_API, OverloadArgumentGroupInfo);
 
-    struct ExplicitOverloadInfo
+    struct AZCORE_API ExplicitOverloadInfo
     {
-        AZ_TYPE_INFO_WITH_NAME_DECL(ExplicitOverloadInfo);
+        AZ_TYPE_INFO_WITH_NAME_DECL_API(AZCORE_API, ExplicitOverloadInfo);
         AZ_CLASS_ALLOCATOR(ExplicitOverloadInfo, AZ::SystemAllocator);
 
         AZStd::string m_name;
@@ -450,6 +458,7 @@ namespace AZ
         bool operator==(const ExplicitOverloadInfo& other) const;
         bool operator!=(const ExplicitOverloadInfo& other) const;
     };
+    AZ_TYPE_INFO_WITH_NAME_DECL_EXT_API(AZCORE_API, ExplicitOverloadInfo);
 }
 
 namespace AZ
@@ -458,20 +467,21 @@ namespace AZ
     using BehaviorFunction = AZStd::function<void(BehaviorArgument* result, BehaviorArgument* arguments, int numArguments)>;
     using EventHandlerCreationFunction = AZStd::function<BehaviorObject(void*, BehaviorFunction&&)>;
 
-    struct EventHandlerCreationFunctionHolder
+    struct AZCORE_API EventHandlerCreationFunctionHolder
     {
-        AZ_TYPE_INFO_WITH_NAME_DECL(EventHandlerCreationFunctionHolder);
+        AZ_TYPE_INFO_WITH_NAME_DECL_API(AZCORE_API, EventHandlerCreationFunctionHolder);
         AZ_CLASS_ALLOCATOR(EventHandlerCreationFunctionHolder, AZ::SystemAllocator);
 
         EventHandlerCreationFunction m_function;
     };
+    AZ_TYPE_INFO_WITH_NAME_DECL_EXT_API(AZCORE_API, EventHandlerCreationFunctionHolder);
 }
 namespace AZ::Internal
 {
-    AZ::TypeId GetUnderlyingTypeId(const IRttiHelper& enumRttiHelper);
+    AZCORE_API AZ::TypeId GetUnderlyingTypeId(const IRttiHelper& enumRttiHelper);
 
     // Converts sourceAddress to targetType
-    bool ConvertValueTo(void* sourceAddress, const IRttiHelper* sourceRtti, const AZ::Uuid& targetType, void*& targetAddress, BehaviorParameter::TempValueParameterAllocator& tempAllocator);
+    AZCORE_API bool ConvertValueTo(void* sourceAddress, const IRttiHelper* sourceRtti, const AZ::Uuid& targetType, void*& targetAddress, BehaviorParameter::TempValueParameterAllocator& tempAllocator);
 
     // Assumes parameters array is big enough to store all parameters
     template<class... Args>
@@ -487,7 +497,7 @@ namespace AZ::Internal
     //! BehaviorMethod reflection will only support functions up to 32 parameters
     constexpr size_t MaxBehaviorParameters = 32;
 
-    class BehaviorMethodImpl : public BehaviorMethod
+    class AZCORE_API BehaviorMethodImpl : public BehaviorMethod
     {
     public:
         using ClassType = void;
@@ -566,7 +576,7 @@ namespace AZ::Internal
         BE_QUEUE_EVENT_ID,
     };
 
-    class BehaviorEBusEvent : public BehaviorMethod
+    class AZCORE_API BehaviorEBusEvent : public BehaviorMethod
     {
     public:
         static const int s_startArgumentIndex = 1; // +1 for result type
@@ -849,7 +859,7 @@ namespace AZ
         };
     } // namespace Internal
 
-    struct UnwrapperFuncDeleter
+    struct AZCORE_API UnwrapperFuncDeleter
     {
         using Deleter = void(*)(void*);
 
@@ -860,7 +870,7 @@ namespace AZ
     // Wraps storage for the unwrapper functor that cannot be
     // stored within the <= sizeof(void*) amount of storage
     using UnwrapperPtr = AZStd::unique_ptr<void, UnwrapperFuncDeleter>;
-    struct UnwrapperUserData
+    struct AZCORE_API UnwrapperUserData
     {
         UnwrapperUserData();
         UnwrapperUserData(UnwrapperUserData&&);
@@ -875,7 +885,7 @@ namespace AZ
     /**
      * Behavior representation of reflected class.
      */
-    class BehaviorClass
+    class AZCORE_API BehaviorClass
     {
     public:
         AZ_CLASS_ALLOCATOR(BehaviorClass, SystemAllocator);
@@ -898,7 +908,7 @@ namespace AZ
         /// Compare values
         using EqualityComparisonType = bool(*)(const void* lhs, const void* rhs, void* userData);
 
-        struct ScopedBehaviorObject
+        struct AZCORE_API ScopedBehaviorObject
         {
             using CleanupFunction = AZStd::function<void(const AZ::BehaviorObject&)>;
             ScopedBehaviorObject();
@@ -1009,7 +1019,7 @@ namespace AZ
      * why we "push" people to use functions is that in most cases when we manipulate an object, you will need to do more than just set a value
      * to a new value.
      */
-    class BehaviorProperty
+    class AZCORE_API BehaviorProperty
         : public OnDemandReflectionOwner
     {
         template<class Getter>
@@ -1041,7 +1051,7 @@ namespace AZ
         AttributeArray m_attributes;
     };
 
-    struct BehaviorEBusEventSender
+    struct AZCORE_API BehaviorEBusEventSender
     {
         template<class EBus, class Event>
         void Set(Event e, const char* eventName, BehaviorContext* context);
@@ -1076,7 +1086,7 @@ namespace AZ
      * RAII class which keeps track of functions reflected to the BehaviorContext
      * when it is supplied as an OnDemandReflectionOwner
      */
-    class ScopedBehaviorOnDemandReflector
+    class AZCORE_API ScopedBehaviorOnDemandReflector
         : public OnDemandReflectionOwner
     {
     public:
@@ -1086,7 +1096,7 @@ namespace AZ
     /**
      * EBus behavior wrapper.
      */
-    class BehaviorEBus
+    class AZCORE_API BehaviorEBus
     {
     public:
         AZ_CLASS_ALLOCATOR(BehaviorEBus, SystemAllocator);
@@ -1132,10 +1142,10 @@ namespace AZ
     template<class Function>
     using BehaviorParameterOverridesArray = AZStd::array<BehaviorParameterOverrides, AZStd::function_traits<Function>::num_args>;
 
-    class BehaviorEBusHandler
+    class AZCORE_API BehaviorEBusHandler
     {
     public:
-        AZ_TYPE_INFO_WITH_NAME_DECL(BehaviorEBusHandler);
+        AZ_TYPE_INFO_WITH_NAME_DECL_API(AZCORE_API, BehaviorEBusHandler);
         AZ_RTTI_NO_TYPE_INFO_DECL();
 
         // Since we can share hooks we should probably pass the event name
@@ -1215,13 +1225,14 @@ namespace AZ
 
         EventArray m_events;
     };
+    AZ_TYPE_INFO_WITH_NAME_DECL_EXT_API(AZCORE_API, BehaviorEBusHandler);
 } // namespace AZ
 
 
 namespace AZ
 {
     // Behavior context events you can listen for
-    class BehaviorContextEvents : public EBusTraits
+    class AZCORE_API BehaviorContextEvents : public EBusTraits
     {
     public:
         //////////////////////////////////////////////////////////////////////////
@@ -1257,7 +1268,7 @@ namespace AZ
      * setup, it handles version conversion and so thing, this related to storing the object to a persistent storage. Behavior context, doesn't need to deal with versions as
      * no data is stored, just methods for manipulating the object state.
      */
-    class BehaviorContext : public ReflectContext
+    class AZCORE_API BehaviorContext : public ReflectContext
     {
         template<class Bus, typename AZStd::enable_if<!AZStd::is_same<typename Bus::BusIdType, AZ::NullBusId>::value>::type* = nullptr>
         void EBusSetIdFeatures(BehaviorEBus* ebus)
@@ -1439,12 +1450,12 @@ namespace AZ
 
     public:
         AZ_CLASS_ALLOCATOR(BehaviorContext, SystemAllocator);
-        AZ_TYPE_INFO_WITH_NAME_DECL(BehaviorContext);
+        AZ_TYPE_INFO_WITH_NAME_DECL_API(AZCORE_API, BehaviorContext);
         AZ_RTTI_NO_TYPE_INFO_DECL();
 
         bool IsTypeReflected(AZ::Uuid typeId) const override;
 
-        struct GlobalMethodBuilder : public AZ::Internal::GenericAttributes<GlobalMethodBuilder>
+        struct AZCORE_API GlobalMethodBuilder : public AZ::Internal::GenericAttributes<GlobalMethodBuilder>
         {
             typedef AZ::Internal::GenericAttributes<GlobalMethodBuilder> Base;
             GlobalMethodBuilder(BehaviorContext* context, const char* methodName, BehaviorMethod* method);
@@ -1455,7 +1466,7 @@ namespace AZ
             BehaviorMethod* m_method;
         };
 
-        struct GlobalPropertyBuilder : public AZ::Internal::GenericAttributes<GlobalPropertyBuilder>
+        struct AZCORE_API GlobalPropertyBuilder : public AZ::Internal::GenericAttributes<GlobalPropertyBuilder>
         {
             typedef AZ::Internal::GenericAttributes<GlobalPropertyBuilder> Base;
 
@@ -1569,6 +1580,7 @@ namespace AZ
         bool MethodImpl(BehaviorMethod* method, const char* name, const BehaviorParameterOverrides* args, size_t argsSize, const char* deprecatedName);
         void InitializeParameterOverrides(BehaviorValues* defaultValues, BehaviorParameterOverrides* paramOverrides, size_t paramOverridesCount);
     };
+    AZ_TYPE_INFO_WITH_NAME_DECL_EXT_API(AZCORE_API, BehaviorContext);
 
     //////////////////////////////////////////////////////////////////////////
 
@@ -1580,13 +1592,13 @@ namespace AZ
             return GetClass(behaviorContext, AZ::AzTypeInfo<T>::Uuid());
         }
 
-        bool IsBehaviorClass(BehaviorContext* behaviorContext, const AZ::TypeId& typeID);
-        AZ::BehaviorClass* GetClass(BehaviorContext* behaviorContext, const AZ::TypeId& typeID);
-        const BehaviorClass* GetClass(const AZStd::string& classNameString);
-        const BehaviorClass* GetClass(const AZ::TypeId& typeID);
-        AZStd::pair<const BehaviorClass*, BehaviorContext*> GetClassAndContext(const AZ::TypeId& typeID);
-        AZ::TypeId GetClassType(const AZStd::string& classNameString);
-        bool IsStringParameter(const BehaviorParameter& parameter);
+        AZCORE_API bool IsBehaviorClass(BehaviorContext* behaviorContext, const AZ::TypeId& typeID);
+        AZCORE_API AZ::BehaviorClass* GetClass(BehaviorContext* behaviorContext, const AZ::TypeId& typeID);
+        AZCORE_API const BehaviorClass* GetClass(const AZStd::string& classNameString);
+        AZCORE_API const BehaviorClass* GetClass(const AZ::TypeId& typeID);
+        AZCORE_API AZStd::pair<const BehaviorClass*, BehaviorContext*> GetClassAndContext(const AZ::TypeId& typeID);
+        AZCORE_API AZ::TypeId GetClassType(const AZStd::string& classNameString);
+        AZCORE_API bool IsStringParameter(const BehaviorParameter& parameter);
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -2882,4 +2894,4 @@ namespace AZ
 #include <AzCore/RTTI/AzStdOnDemandPrettyName.inl>
 #include <AzCore/RTTI/AzStdOnDemandReflection.inl>
 
-DECLARE_EBUS_EXTERN_DLL_MULTI_ADDRESS(BehaviorContextEvents);
+AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZCORE_API, AZ::BehaviorContextEvents);

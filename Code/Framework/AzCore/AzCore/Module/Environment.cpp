@@ -10,8 +10,8 @@
 
 #include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/std/containers/unordered_map.h>
-#include <AzCore/Math/Crc.h>
 #include <AzCore/std/parallel/scoped_lock.h>
+#include <AzCore/Math/CrcInternal.h>
 
 namespace AZ
 {
@@ -371,7 +371,13 @@ namespace AZ
 
         O3DEKERNEL_API u32 EnvironmentVariableNameToId(const char* uniqueName)
         {
-            return Crc32(uniqueName);
+            AZStd::string_view uniqueNameView(uniqueName);
+            u32 result {0};
+            if (!uniqueNameView.empty())
+            {
+                Internal::Crc32Set(uniqueNameView.data(), uniqueNameView.size(), true, result);
+            }
+            return result;
         }
     } // namespace Internal
 

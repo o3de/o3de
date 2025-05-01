@@ -12,7 +12,7 @@
 
 namespace AZ
 {
-    class Quaternion
+    class AZCORE_API Quaternion
     {
     public:
 

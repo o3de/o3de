@@ -12,7 +12,6 @@
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/VertexContainer.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {

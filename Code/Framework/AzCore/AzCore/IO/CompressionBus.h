@@ -84,4 +84,4 @@ namespace AZ
     } // namespace IO
 } // namespace AZ
 
-// AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZ::IO::Compression);
+AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZCORE_API, AZ::IO::Compression);

@@ -7,12 +7,6 @@
 #
 
 set(FILES
-    AzCore/AzCore_Traits_Platform.h
-    AzCore/AzCore_Traits_Windows.h
-    AzCore/base_Platform.h
-    AzCore/base_Windows.h
-    AzCore/PlatformId/PlatformId_Platform.h
-    AzCore/PlatformId/PlatformId_Windows.h
     ../Common/WinAPI/AzCore/std/parallel/internal/condition_variable_WinAPI.h
     ../Common/WinAPI/AzCore/std/parallel/internal/mutex_WinAPI.h
     ../Common/WinAPI/AzCore/std/parallel/internal/semaphore_WinAPI.h
@@ -30,35 +24,5 @@ set(FILES
     ../Common/VisualStudio/AzCore/Natvis/azcore.natvis
     ../Common/VisualStudio/AzCore/Natvis/azcore.natstepfilter
     ../Common/VisualStudio/AzCore/Natvis/azcore.natjmc
-    ../Common/VisualStudio/AzCore/Natvis/rapidjson.natvis
-    AzCore/Debug/StackTracer_Windows.cpp
-    ../Common/WinAPI/AzCore/Debug/Trace_WinAPI.cpp
-    ../Common/WinAPI/AzCore/IO/Streamer/StreamerContext_WinAPI.cpp
-    ../Common/WinAPI/AzCore/IO/Streamer/StreamerContext_WinAPI.h
-    ../Common/WinAPI/AzCore/Memory/OSAllocator_WinAPI.h
-    AzCore/Memory/OSAllocator_Platform.h
-    AzCore/Math/Internal/MathTypes_Windows.h
-    AzCore/Platform_Windows.cpp
-    AzCore/PlatformIncl_Platform.h
-    AzCore/PlatformIncl_Windows.h
-    AzCore/Serialization/Locale_Platform.h
-    AzCore/Settings/CommandLineParser_Platform.h
-    ../Common/WinAPI/AzCore/Serialization/Locale_WinAPI.h
-    ../Common/WinAPI/AzCore/Serialization/Locale_WinAPI.cpp
-    ../Common/WinAPI/AzCore/Settings/CommandLineParser_WinAPI.cpp
-    ../Common/WinAPI/AzCore/Settings/CommandLineParser_WinAPI.h
-    ../Common/WinAPI/AzCore/Socket/AzSocket_fwd_WinAPI.h
-    ../Common/WinAPI/AzCore/Socket/AzSocket_WinAPI.cpp
-    ../Common/WinAPI/AzCore/Socket/AzSocket_WinAPI.h
-    AzCore/Socket/AzSocket_Platform.h
-    AzCore/Socket/AzSocket_fwd_Platform.h
-    AzCore/Socket/AzSocket_fwd_Windows.h
     AzCore/std/time_Windows.cpp
-    AzCore/Debug/Profiler_Platform.inl
-    ../Common/WinAPI/AzCore/Debug/Profiler_WinAPI.inl
-    AzCore/Math/Random_Windows.cpp
-    AzCore/Math/Random_Windows.h
-    ../Common/WinAPI/AzCore/Utils/Utils_WinAPI.cpp
-    AzCore/Utils/Utils_Windows.cpp
-    ../Common/WinAPI/AzCore/IO/FileIO_WinAPI.cpp
 )

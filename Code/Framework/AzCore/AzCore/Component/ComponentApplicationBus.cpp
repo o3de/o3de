@@ -6,7 +6,7 @@
  *
  */
 
- #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/Component/ComponentApplicationBus.h>
 
- // AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS_WITH_TRAITS(ComponentApplicationRequests, ComponentApplicationRequestsEBusTraits);
+AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS_WITH_TRAITS(AZCORE_API, ComponentApplicationRequests, ComponentApplicationRequestsEBusTraits);
  

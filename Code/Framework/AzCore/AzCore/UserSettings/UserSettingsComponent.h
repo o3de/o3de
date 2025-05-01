@@ -8,7 +8,6 @@
 #pragma once
 #include <AzCore/UserSettings/UserSettingsProvider.h>
 #include <AzCore/Component/Component.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {

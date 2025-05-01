@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <AzCore/AzCoreAPI.h>
+#include <AzCore/base.h>
 
 namespace AZ
 {

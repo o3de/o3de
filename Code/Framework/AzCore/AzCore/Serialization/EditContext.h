@@ -66,7 +66,7 @@ namespace AZ::Edit
      * generic attributes. You can have elements for class members called DataElements or Elements which define
      * attributes for the class itself called ClassElement.
      */
-    struct ElementData
+    struct AZCORE_API ElementData
     {
         ElementData()
             : m_elementId(0)
@@ -93,7 +93,7 @@ namespace AZ::Edit
      * ElementData. Elements contains class Elements (like groups, etc.) while the ElementData
      * contains attributes related to ehe SerializeContext::ClassBuilder::Field.
      */
-    struct ClassData
+    struct AZCORE_API ClassData
     {
         ClassData()
             : m_name(nullptr)
@@ -454,7 +454,7 @@ namespace AZ
         *
         *
         */
-        class EnumBuilder
+        class AZCORE_API EnumBuilder
         {
             friend EditContext;
 
@@ -486,7 +486,7 @@ namespace AZ
         };
 
         /// Analog to SerializeContext::EnumerateInstanceCallContext for enumerating an EditContext
-        struct EnumerateInstanceCallContext
+        struct AZCORE_API EnumerateInstanceCallContext
         {
             AZ_TYPE_INFO(EnumerateInstanceCallContext, "{FCC1DB4B-72BD-4D78-9C23-C84B91589D33}");
             EnumerateInstanceCallContext(

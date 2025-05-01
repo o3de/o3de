@@ -8,7 +8,6 @@
 
 #pragma once
 #include <AzCore/base.h>
-#include <AzCore/AzCoreAPI.h>
 
 /** Stores information about memory usage of process,
  * All size values are in bytes.

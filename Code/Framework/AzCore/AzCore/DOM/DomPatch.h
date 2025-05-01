@@ -11,7 +11,6 @@
 #include <AzCore/DOM/DomPath.h>
 #include <AzCore/DOM/DomValue.h>
 #include <AzCore/std/containers/deque.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ::Dom
 {

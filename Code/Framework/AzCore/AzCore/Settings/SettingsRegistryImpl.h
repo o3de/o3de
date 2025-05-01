@@ -18,7 +18,6 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/parallel/scoped_lock.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {

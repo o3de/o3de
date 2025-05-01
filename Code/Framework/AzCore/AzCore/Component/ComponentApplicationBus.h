@@ -13,7 +13,6 @@
  #include <AzCore/Component/EntityId.h>
  #include <AzCore/std/parallel/mutex.h>
  #include <AzCore/std/string/osstring.h>
- #include <AzCore/AzCoreAPI.h>
  
  namespace AZ
  {
@@ -38,7 +37,7 @@
          class ComponentFactoryInterface;
      }
  
-     struct ApplicationTypeQuery
+     struct AZCORE_API  ApplicationTypeQuery
      {
          //! Signals if the application is the Editor.
          bool IsEditor() const;
@@ -85,7 +84,7 @@
      using EntityDeactivatedEvent = AZ::Event<AZ::Entity*>;
  
      //! Interface that components can use to make requests of the main application.
-     class ComponentApplicationRequests
+     class AZCORE_API ComponentApplicationRequests
      {
      public:
          AZ_RTTI(ComponentApplicationRequests, "{E8BE41B7-615F-4FE8-B611-8A9E441290A8}");
@@ -211,7 +210,7 @@
          virtual void QueryApplicationType(ApplicationTypeQuery& appType) const = 0;
      };
  
-     class ComponentApplicationRequestsEBusTraits
+     class AZCORE_API ComponentApplicationRequestsEBusTraits
          : public AZ::EBusTraits
      {
      public:
@@ -230,5 +229,5 @@
      using ComponentApplicationBus = AZ::EBus<ComponentApplicationRequests, ComponentApplicationRequestsEBusTraits>;
  }
  
- // AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS_WITH_TRAITS(ComponentApplicationRequests, ComponentApplicationRequestsEBusTraits);
+ AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS_WITH_TRAITS(AZCORE_API, ComponentApplicationRequests, ComponentApplicationRequestsEBusTraits);
  

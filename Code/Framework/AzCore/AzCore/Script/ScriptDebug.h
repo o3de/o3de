@@ -10,7 +10,6 @@
 
 #include <AzCore/base.h>
 #include <AzCore/Memory/SystemAllocator.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {

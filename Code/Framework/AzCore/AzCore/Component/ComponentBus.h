@@ -94,7 +94,7 @@ namespace AZ
      * A pair of entity and component IDs that are used to access an address 
      * of an AZ::EntityComponentBus.
      */
-    class EntityComponentIdPair 
+    class AZCORE_API EntityComponentIdPair 
     {
     public:
 

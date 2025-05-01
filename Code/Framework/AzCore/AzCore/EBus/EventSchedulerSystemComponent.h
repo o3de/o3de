@@ -16,7 +16,6 @@
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/queue.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
