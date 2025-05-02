@@ -96,3 +96,22 @@ VsOutput EvaluateVertexGeometry_MaterialGraphName(VsInput IN, VsSystemValues SV)
         useVertexColor,
         color0);
 }
+
+VsOutput EvaluateVertexGeometry_MaterialGraphName(
+    float3 position,
+    real3 normal,
+    real4 tangent,
+    float2 uv0,
+    float2 uv1,
+    uint instanceId)
+{
+    return EvaluateVertexGeometry_MaterialGraphName(
+        position,
+        normal,
+        tangent,
+        uv0,
+        uv1,
+        instanceId,
+        false,
+        float4(1.0f, 1.0f, 1.0f, 1.0f));
+}

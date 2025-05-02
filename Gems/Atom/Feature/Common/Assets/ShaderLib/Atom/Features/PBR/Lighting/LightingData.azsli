@@ -70,7 +70,7 @@ class LightingData
     real GetSpecularNdotV(uint i) { return NdotV[i]; }
 };
 
-void LightingData::Init(real3 positionWS, real3 specularNormal, real roughnessLinear, float3 viewPosition[SHADING_VIEW_COUNT])
+void LightingData::Init(float3 positionWS, real3 specularNormal, real roughnessLinear, float3 viewPosition[SHADING_VIEW_COUNT])
 {
     diffuseLighting = real3(0.0, 0.0, 0.0);
     translucentBackLighting = real3(0.0, 0.0, 0.0);

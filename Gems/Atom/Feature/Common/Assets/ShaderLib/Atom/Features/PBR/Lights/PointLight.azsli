@@ -167,9 +167,9 @@ void ValidatePointLight(PointLight light, Surface surface, inout LightingData li
 {
     const uint sampleCount = 512;
 
-    float3 diffuseAcc = float3(0.0, 0.0, 0.0);
-    float3 translucentAcc = float3(0.0, 0.0, 0.0);
-    float3 specularAcc[SHADING_VIEW_COUNT];
+    real3 diffuseAcc = float3(0.0, 0.0, 0.0);
+    real3 translucentAcc = float3(0.0, 0.0, 0.0);
+    real3 specularAcc[SHADING_VIEW_COUNT];
     
     [unroll]
     for(uint viewIndex = 0; viewIndex < SHADING_VIEW_COUNT; ++viewIndex)

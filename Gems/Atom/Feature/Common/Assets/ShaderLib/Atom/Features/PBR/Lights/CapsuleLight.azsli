@@ -201,9 +201,9 @@ void ValidateCapsuleLight(CapsuleLight light, Surface surface, inout LightingDat
     }
     localToWorld[1]= cross(localToWorld[0], localToWorld[2]);
 
-    float3 diffuseAcc = float3(0.0, 0.0, 0.0);
-    float3 translucentAcc = float3(0.0, 0.0, 0.0);
-    float3 specularAcc[SHADING_VIEW_COUNT]; 
+    real3 diffuseAcc = float3(0.0, 0.0, 0.0);
+    real3 translucentAcc = float3(0.0, 0.0, 0.0);
+    real3 specularAcc[SHADING_VIEW_COUNT]; 
 
     [unroll]
     for (uint viewIndex = 0; viewIndex < SHADING_VIEW_COUNT; ++viewIndex)
