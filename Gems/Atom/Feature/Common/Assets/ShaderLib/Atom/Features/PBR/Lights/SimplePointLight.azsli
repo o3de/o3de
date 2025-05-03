@@ -33,7 +33,7 @@ void ApplySimplePointLight(SimplePointLight light, Surface surface, inout Lighti
 
         // Calculate specular lighting for each view
         [unroll]
-        for (uint viewIndex = 0; viewIndex < SHADING_VIEW_COUNT; ++viewIndex)
+        for (uint viewIndex = 0; viewIndex < GET_SHADING_VIEW_COUNT; ++viewIndex)
         {
             // Specular contribution
             lightingData.specularLighting[viewIndex] += GetSpecularLighting(surface, lightingData, lightIntensity, posToLightDir, viewIndex);

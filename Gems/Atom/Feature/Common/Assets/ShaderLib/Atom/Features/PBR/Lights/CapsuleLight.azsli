@@ -98,7 +98,7 @@ void ApplyCapsuleLight(CapsuleLight light, Surface surface, inout LightingData l
 
         // Calculate specular lighting for each view
         [unroll]
-        for (uint viewIndex = 0; viewIndex < SHADING_VIEW_COUNT; ++viewIndex)
+        for (uint viewIndex = 0; viewIndex < GET_SHADING_VIEW_COUNT; ++viewIndex)
         {
             // Calculate the reflection of the normal from the view direction
             float3 reflectionDir = reflect(-lightingData.dirToCamera[viewIndex], surface.GetSpecularNormal());
@@ -203,10 +203,10 @@ void ValidateCapsuleLight(CapsuleLight light, Surface surface, inout LightingDat
 
     real3 diffuseAcc = float3(0.0, 0.0, 0.0);
     real3 translucentAcc = float3(0.0, 0.0, 0.0);
-    real3 specularAcc[SHADING_VIEW_COUNT]; 
+    real3 specularAcc[MAX_SHADING_VIEWS]; 
 
     [unroll]
-    for (uint viewIndex = 0; viewIndex < SHADING_VIEW_COUNT; ++viewIndex)
+    for (uint viewIndex = 0; viewIndex < GET_SHADING_VIEW_COUNT; ++viewIndex)
         specularAcc[viewIndex] = float3(0.0, 0.0, 0.0);
 
     for (uint i = 0; i < sampleCount; ++i)
@@ -228,7 +228,7 @@ void ValidateCapsuleLight(CapsuleLight light, Surface surface, inout LightingDat
     lightingData.diffuseLighting += (diffuseAcc / float(sampleCount)) * intensity;
 
     [unroll]
-    for (uint viewIndex = 0; viewIndex < SHADING_VIEW_COUNT; ++viewIndex)
+    for (uint viewIndex = 0; viewIndex < GET_SHADING_VIEW_COUNT; ++viewIndex)
         lightingData.specularLighting[viewIndex] += (specularAcc[viewIndex] / float(sampleCount)) * intensity;
 
 #if ENABLE_TRANSMISSION

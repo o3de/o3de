@@ -192,7 +192,7 @@ float3 CalculateLighting(
     float3 vPositionWS, float3 vViewDirWS, float3 vTangent, 
     float thickness, in HairShadeParams material )
 {    
-    float3 views[SHADING_VIEW_COUNT];
+    float3 views[MAX_SHADING_VIEWS];
     views[0] = ViewSrg::m_worldPosition.xyz;    // Assume one view for forward pass for now
 
     //-------- Surface init --------
@@ -235,7 +235,7 @@ float3 CalculateLighting(
 
     float3 ligthingOutput = lightingData.diffuseLighting;
 
-    for(uint i = 0; i < SHADING_VIEW_COUNT; ++i)
+    for(uint i = 0; i < GET_SHADING_VIEW_COUNT; ++i)
         ligthingOutput += lightingData.specularLighting[i];
 
     return ligthingOutput;

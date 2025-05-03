@@ -57,7 +57,7 @@ void ApplyDirectLighting(Surface surface, inout LightingData lightingData, float
 
         // Calculate specular lighting for each view
         [unroll]
-        for (uint viewIndex = 0; viewIndex < SHADING_VIEW_COUNT; ++viewIndex)
+        for (uint viewIndex = 0; viewIndex < GET_SHADING_VIEW_COUNT; ++viewIndex)
         {
             lightingData.specularLighting[viewIndex] += GetSpecularLighting(surface, lightingData, lightIntensity, lightDirection, viewIndex);
         }

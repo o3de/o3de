@@ -48,7 +48,7 @@ void ApplyPoylgonLight(PolygonLight light, Surface surface, inout LightingData l
 
     // Calculate lighting for each view
     [unroll]
-    for (uint viewIndex = 0; viewIndex < SHADING_VIEW_COUNT; ++viewIndex)
+    for (uint viewIndex = 0; viewIndex < GET_SHADING_VIEW_COUNT; ++viewIndex)
     {
         float diffuse = 0.0;
         float3 specularRgb = 0.0;

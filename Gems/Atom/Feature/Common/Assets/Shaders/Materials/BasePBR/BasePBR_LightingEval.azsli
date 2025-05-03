@@ -19,7 +19,7 @@
 #include <Atom/Features/PBR/Lights/IblForward.azsli>
 #include <Atom/Features/PBR/Decals.azsli>
 
-void InitializeLightingData_BasePBR(inout Surface surface, float4 screenPosition, float3 viewPositions[SHADING_VIEW_COUNT], inout LightingData lightingData)
+void InitializeLightingData_BasePBR(inout Surface surface, float4 screenPosition, float3 viewPositions[MAX_SHADING_VIEWS], inout LightingData lightingData)
 {
     // Light iterator
 #if ENABLE_LIGHT_CULLING
@@ -55,7 +55,7 @@ void CalculateLighting_BasePBR(inout Surface surface, float4 screenPosition, ino
     lightingData.FinalizeLighting(surface);
 }
 
-LightingData EvaluateLighting_BasePBR(inout Surface surface, float4 screenPosition, float3 viewPositions[SHADING_VIEW_COUNT])
+LightingData EvaluateLighting_BasePBR(inout Surface surface, float4 screenPosition, float3 viewPositions[MAX_SHADING_VIEWS])
 {
     LightingData lightingData;
     InitializeLightingData_BasePBR(surface, screenPosition, viewPositions, lightingData);

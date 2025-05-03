@@ -125,7 +125,7 @@ void ApplyIBL(Surface surface, inout LightingData lightingData, bool useDiffuseI
         {
             // Calculate specular lighting for each view
             [unroll]
-            for (uint viewIndex = 0; viewIndex < SHADING_VIEW_COUNT; ++viewIndex)
+            for (uint viewIndex = 0; viewIndex < GET_SHADING_VIEW_COUNT; ++viewIndex)
             {
                 real3 iblSpecular = GetIblSpecular(surface.position, surface.GetSpecularNormal(), surface.GetSpecularF0(), surface.roughnessLinear, lightingData.dirToCamera[viewIndex], lightingData.brdf, reflectionProbe, reflectionProbeCubemap);
                 iblSpecular *= lightingData.multiScatterCompensation;

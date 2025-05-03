@@ -128,7 +128,7 @@ void ApplyDiskLight(DiskLight light, Surface surface, inout LightingData lightin
 
         // Calculate specular lighting for each view
         [unroll]
-        for (uint viewIndex = 0; viewIndex < SHADING_VIEW_COUNT; ++viewIndex)
+        for (uint viewIndex = 0; viewIndex < GET_SHADING_VIEW_COUNT; ++viewIndex)
         {
             // Calculate the reflection off the normal from the view direction
             float3 reflectionDir = reflect(-lightingData.dirToCamera[viewIndex], surface.GetSpecularNormal());
@@ -201,10 +201,10 @@ void ValidateDiskLight(DiskLight light, Surface surface, inout LightingData ligh
 
     real3 diffuseAcc = float3(0.0, 0.0, 0.0);
     real3 translucentAcc = float3(0.0, 0.0, 0.0);
-    real3 specularAcc[SHADING_VIEW_COUNT];
+    real3 specularAcc[MAX_SHADING_VIEWS];
     
     [unroll]
-    for(uint viewIndex = 0; viewIndex < SHADING_VIEW_COUNT; ++viewIndex)
+    for(uint viewIndex = 0; viewIndex < GET_SHADING_VIEW_COUNT; ++viewIndex)
         specularAcc[viewIndex] = float3(0.0, 0.0, 0.0);
 
     for (uint i = 0; i < sampleCount; ++i)
@@ -217,7 +217,7 @@ void ValidateDiskLight(DiskLight light, Surface surface, inout LightingData ligh
     lightingData.diffuseLighting += (diffuseAcc / float(sampleCount)) * light.m_rgbIntensityCandelas;
     
     [unroll]
-    for(uint viewIndex = 0; viewIndex < SHADING_VIEW_COUNT; ++viewIndex)
+    for(uint viewIndex = 0; viewIndex < GET_SHADING_VIEW_COUNT; ++viewIndex)
         lightingData.specularLighting[viewIndex] += (specularAcc[viewIndex] / float(sampleCount)) * light.m_rgbIntensityCandelas;
 
 #if ENABLE_TRANSMISSION

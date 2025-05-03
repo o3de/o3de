@@ -29,7 +29,7 @@ void AddSampleContribution(
     in real3 lightSampleDirection,
     in real bothDirectionsFactor,
     inout real3 diffuseAcc,
-    inout real3 specularAcc[SHADING_VIEW_COUNT],
+    inout real3 specularAcc[MAX_SHADING_VIEWS],
     inout real3 translucentAcc)
 {
     real3 posToLightSample = lightSamplePoint - real3(surface.position);
@@ -62,7 +62,7 @@ void AddSampleContribution(
 
     // Calculate specular lighting for each view
     [unroll]
-    for (uint viewIndex = 0; viewIndex < SHADING_VIEW_COUNT; ++viewIndex)
+    for (uint viewIndex = 0; viewIndex < GET_SHADING_VIEW_COUNT; ++viewIndex)
     {
         specularAcc[viewIndex] += GetSpecularLighting(surface, lightingData, intensityRgb, posToLightSampleDir, viewIndex);
     }

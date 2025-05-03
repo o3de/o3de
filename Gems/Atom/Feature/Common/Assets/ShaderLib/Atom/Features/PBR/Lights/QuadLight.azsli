@@ -112,7 +112,7 @@ void ApplyQuadLight(QuadLight light, Surface surface, inout LightingData lightin
 
             // Calculate lighting for each view
             [unroll]
-            for (uint viewIndex = 0; viewIndex < SHADING_VIEW_COUNT; ++viewIndex)
+            for (uint viewIndex = 0; viewIndex < GET_SHADING_VIEW_COUNT; ++viewIndex)
             {
                 float viewDiffuse = 0.0;
                 float3 viewSpecular = float3(0.0, 0.0, 0.0);
@@ -179,7 +179,7 @@ void ApplyQuadLight(QuadLight light, Surface surface, inout LightingData lightin
 
             // Calculate specular lighting for each view
             [unroll]
-            for (uint viewIndex = 0; viewIndex < SHADING_VIEW_COUNT; ++viewIndex)
+            for (uint viewIndex = 0; viewIndex < GET_SHADING_VIEW_COUNT; ++viewIndex)
             {
                 // Calculate the reflection ray from the view direction and surface normal
                 float3 reflectionDir = reflect(-lightingData.dirToCamera[viewIndex], surface.GetSpecularNormal());
@@ -227,10 +227,10 @@ void ValidateQuadLight(QuadLight light, Surface surface, inout LightingData ligh
 
     real3 diffuseAcc = float3(0.0, 0.0, 0.0);
     real3 translucentAcc = float3(0.0, 0.0, 0.0);
-    real3 specularAcc[SHADING_VIEW_COUNT];
+    real3 specularAcc[MAX_SHADING_VIEWS];
     
     [unroll]
-    for(uint viewIndex = 0; viewIndex < SHADING_VIEW_COUNT; ++viewIndex)
+    for(uint viewIndex = 0; viewIndex < GET_SHADING_VIEW_COUNT; ++viewIndex)
         specularAcc[viewIndex] = float3(0.0, 0.0, 0.0);
 
     bool emitsBothDirections = (light.m_flags & EmitsBothDirections) > 0;
@@ -249,7 +249,7 @@ void ValidateQuadLight(QuadLight light, Surface surface, inout LightingData ligh
     lightingData.diffuseLighting += (diffuseAcc / float(sampleCount)) * intensityCandelas;
 
     [unroll]
-    for(uint viewIndex = 0; viewIndex < SHADING_VIEW_COUNT; ++viewIndex)
+    for(uint viewIndex = 0; viewIndex < GET_SHADING_VIEW_COUNT; ++viewIndex)
         lightingData.specularLighting[viewIndex] += (specularAcc[viewIndex] / float(sampleCount)) * intensityCandelas;
 
 #if ENABLE_TRANSMISSION

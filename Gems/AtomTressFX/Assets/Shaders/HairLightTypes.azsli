@@ -105,11 +105,11 @@ float3 GetDiffuseLighting(Surface surface, LightingData lightingData, float3 lig
 
 void UpdateLightingParameters(
     inout LightingData lightingData, 
-    float3 positionWS, float3 normal, float roughnessLinear, const float3 views[SHADING_VIEW_COUNT])
+    float3 positionWS, float3 normal, float roughnessLinear, const float3 views[MAX_SHADING_VIEWS])
 {
 
     [unroll]
-    for(uint i = 0; i < SHADING_VIEW_COUNT; ++i)
+    for(uint i = 0; i < GET_SHADING_VIEW_COUNT; ++i)
     {
         lightingData.dirToCamera[i] = normalize(views[i] - positionWS);
 
@@ -123,7 +123,7 @@ void UpdateLightingParameters(
 }
 
 void SetNormalAndUpdateLightingParams(
-    in float3 tangent, in float3 dirToLight, in const float3 views[SHADING_VIEW_COUNT],
+    in float3 tangent, in float3 dirToLight, in const float3 views[MAX_SHADING_VIEWS],
     inout Surface surface, 
     inout LightingData lightingData)
 {
@@ -159,7 +159,7 @@ void SetNormalAndUpdateLightingParams(
 //==============================================================================
 //                         Simple Point Light 
 //==============================================================================
-void ApplySimplePointLight(SimplePointLight light, Surface surface, inout LightingData lightingData, const float3 views[SHADING_VIEW_COUNT])
+void ApplySimplePointLight(SimplePointLight light, Surface surface, inout LightingData lightingData, const float3 views[MAX_SHADING_VIEWS])
 {  
     float3 posToLight = light.m_position - surface.position;
     float d2 = dot(posToLight, posToLight); // light distance squared
@@ -184,7 +184,7 @@ void ApplySimplePointLight(SimplePointLight light, Surface surface, inout Lighti
 
         // Specular contribution
         [unroll]
-        for (uint viewIndex = 0; viewIndex < SHADING_VIEW_COUNT; ++viewIndex)
+        for (uint viewIndex = 0; viewIndex < GET_SHADING_VIEW_COUNT; ++viewIndex)
             lightingData.specularLighting[viewIndex] += GetSpecularLighting(surface, lightingData, lightIntensity, dirToLight, viewIndex);
     }
 }
@@ -194,7 +194,7 @@ void ApplySimplePointLight(SimplePointLight light, Surface surface, inout Lighti
 // and once done, all light types can use the culling. 
 // Not that the current culling scheme assumes light types lists order and is bogus if 
 // some light types are not used or out of order (Atom's To Do list)
-void ApplyCulledSimplePointLights(Surface surface, inout LightingData lightingData, const float3 views[SHADING_VIEW_COUNT])
+void ApplyCulledSimplePointLights(Surface surface, inout LightingData lightingData, const float3 views[MAX_SHADING_VIEWS])
 {
     lightingData.tileIterator.LoadAdvance();
 
@@ -210,7 +210,7 @@ void ApplyCulledSimplePointLights(Surface surface, inout LightingData lightingDa
     }
 }
 
-void ApplyAllSimplePointLights(Surface surface, inout LightingData lightingData, const float3 views[SHADING_VIEW_COUNT])
+void ApplyAllSimplePointLights(Surface surface, inout LightingData lightingData, const float3 views[MAX_SHADING_VIEWS])
 {
     for (int l = 0; l < ViewSrg::m_simplePointLightCount; ++l)
     {
@@ -222,7 +222,7 @@ void ApplyAllSimplePointLights(Surface surface, inout LightingData lightingData,
 //==============================================================================
 //                           Simple Spot Light 
 //==============================================================================
-void ApplySimpleSpotLight(SimpleSpotLight light, Surface surface, inout LightingData lightingData, const float3 views[SHADING_VIEW_COUNT])
+void ApplySimpleSpotLight(SimpleSpotLight light, Surface surface, inout LightingData lightingData, const float3 views[MAX_SHADING_VIEWS])
 {
     float3 posToLight = light.m_position - surface.position;
     float3 dirToLight = normalize(posToLight);
@@ -269,12 +269,12 @@ void ApplySimpleSpotLight(SimpleSpotLight light, Surface surface, inout Lighting
 
         // Specular contribution
         [unroll]
-        for (uint viewIndex = 0; viewIndex < SHADING_VIEW_COUNT; ++viewIndex)
+        for (uint viewIndex = 0; viewIndex < GET_SHADING_VIEW_COUNT; ++viewIndex)
             lightingData.specularLighting[viewIndex] += GetSpecularLighting(surface, lightingData, lightIntensity, dirToLight, viewIndex);
     }
 }
 
-void ApplyAllSimpleSpotLights(Surface surface, inout LightingData lightingData, const float3 views[SHADING_VIEW_COUNT])
+void ApplyAllSimpleSpotLights(Surface surface, inout LightingData lightingData, const float3 views[MAX_SHADING_VIEWS])
 {
     for (int l = 0; l < ViewSrg::m_simpleSpotLightCount; ++l)
     {
@@ -285,7 +285,7 @@ void ApplyAllSimpleSpotLights(Surface surface, inout LightingData lightingData, 
 //==============================================================================
 //                              Point Light 
 //==============================================================================
-void ApplyPointLight(PointLight light, Surface surface, inout LightingData lightingData, const float3 views[SHADING_VIEW_COUNT])
+void ApplyPointLight(PointLight light, Surface surface, inout LightingData lightingData, const float3 views[MAX_SHADING_VIEWS])
 {
     float3 posToLight = light.m_position - surface.position;
     float d2 = dot(posToLight, posToLight); // light distance squared
@@ -327,12 +327,12 @@ void ApplyPointLight(PointLight light, Surface surface, inout LightingData light
 
         // Specular contribution
         [unroll]
-        for (uint viewIndex = 0; viewIndex < SHADING_VIEW_COUNT; ++viewIndex)
+        for (uint viewIndex = 0; viewIndex < GET_SHADING_VIEW_COUNT; ++viewIndex)
             lightingData.specularLighting[viewIndex] += sphereIntensityNormalization * GetSpecularLighting(surface, lightingData, lightIntensity, normalize(posToLight), viewIndex);
     }
 }
 
-void ApplyAllPointLights(Surface surface, inout LightingData lightingData, const float3 views[SHADING_VIEW_COUNT])
+void ApplyAllPointLights(Surface surface, inout LightingData lightingData, const float3 views[MAX_SHADING_VIEWS])
 {
     for (int l = 0; l < ViewSrg::m_pointLightCount; ++l)
     {
@@ -346,7 +346,7 @@ void ApplyAllPointLights(Surface surface, inout LightingData lightingData, const
 //==============================================================================
 #include <Atom/Features/PBR/Lights/DiskLight.azsli>
 
-void ApplyAllDiskLights(Surface surface, inout LightingData lightingData, const float3 views[SHADING_VIEW_COUNT])
+void ApplyAllDiskLights(Surface surface, inout LightingData lightingData, const float3 views[MAX_SHADING_VIEWS])
 {    
     SetNormalAndUpdateLightingParams(surface.tangent, lightingData.dirToCamera[0], views, surface, lightingData);
     for (int l = 0; l < ViewSrg::m_diskLightCount; ++l)
@@ -359,7 +359,7 @@ void ApplyAllDiskLights(Surface surface, inout LightingData lightingData, const 
 //==============================================================================
 //                            Directional Lights
 //==============================================================================
-void ApplyDirectionalLights(Surface surface, inout LightingData lightingData, float4 screenUv, const float3 views[SHADING_VIEW_COUNT])
+void ApplyDirectionalLights(Surface surface, inout LightingData lightingData, float4 screenUv, const float3 views[MAX_SHADING_VIEWS])
 {
     // Shadowed check
     const uint shadowIndex = ViewSrg::m_shadowIndexDirectionalLight;
@@ -409,7 +409,7 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData, fl
         lightingData.translucentBackLighting += GetHairBackLighting(surface, lightingData, light.m_rgbIntensityLux, dirToLight, currentBackShadowRatio);
 
         [unroll]
-        for (uint viewIndex = 0; viewIndex < SHADING_VIEW_COUNT; ++viewIndex)
+        for (uint viewIndex = 0; viewIndex < GET_SHADING_VIEW_COUNT; ++viewIndex)
             lightingData.specularLighting[viewIndex] += GetSpecularLighting(surface, lightingData, light.m_rgbIntensityLux, dirToLight, viewIndex) * currentLitRatio;
     }
 }
@@ -451,7 +451,7 @@ float3 ApplyIblSpecular(Surface surface, LightingData lightingData, const uint v
 }
 
 // Remark: IBL is still WIP and this part will change in the near future
-void ApplyIBL(Surface surface, inout LightingData lightingData, const float3 views[SHADING_VIEW_COUNT])
+void ApplyIBL(Surface surface, inout LightingData lightingData, const float3 views[MAX_SHADING_VIEWS])
 {
 //    float3 normal = normalize(float3(surface.tangent.z, -surface.tangent.x, surface.tangent.y));
 //    SetNormalAndUpdateLightingParams(surface.tangent, normal, surface, lightingData);
@@ -464,7 +464,7 @@ void ApplyIBL(Surface surface, inout LightingData lightingData, const float3 vie
     lightingData.diffuseLighting += (iblDiffuse * iblExposureFactor * lightingData.diffuseAmbientOcclusion);
 
     [unroll]
-    for (uint viewIndex = 0; viewIndex < SHADING_VIEW_COUNT; ++viewIndex)
+    for (uint viewIndex = 0; viewIndex < GET_SHADING_VIEW_COUNT; ++viewIndex)
     {
         float3 iblSpecular = ApplyIblSpecular(surface, lightingData, viewIndex);
         lightingData.specularLighting[viewIndex] += (iblSpecular * iblExposureFactor);
@@ -477,7 +477,7 @@ void ApplyIBL(Surface surface, inout LightingData lightingData, const float3 vie
 //                       Light Types Application
 // 
 //==============================================================================
-void ApplyLighting(inout Surface surface, inout LightingData lightingData, float4 screenCoords, const float3 views[SHADING_VIEW_COUNT])
+void ApplyLighting(inout Surface surface, inout LightingData lightingData, float4 screenCoords, const float3 views[MAX_SHADING_VIEWS])
 {
     // Shadow coordinates generation for the directional light
     const uint shadowIndex = ViewSrg::m_shadowIndexDirectionalLight;

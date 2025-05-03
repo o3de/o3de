@@ -89,7 +89,7 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData, fl
 
         // Calculate specular lighting for each view
         [unroll]
-        for (uint viewIndex = 0; viewIndex < SHADING_VIEW_COUNT; ++viewIndex)
+        for (uint viewIndex = 0; viewIndex < GET_SHADING_VIEW_COUNT; ++viewIndex)
         {
             // Adjust the direction of the light based on its angular diameter for this view
             real3 reflectionDir = reflect(-lightingData.dirToCamera[viewIndex], surface.GetSpecularNormal());
@@ -117,7 +117,7 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData, fl
     {
         // Apply debug coloring to all views
         [unroll]
-        for (uint viewIndex = 0; viewIndex < SHADING_VIEW_COUNT; ++viewIndex)
+        for (uint viewIndex = 0; viewIndex < GET_SHADING_VIEW_COUNT; ++viewIndex)
         {
             lightingData.specularLighting[viewIndex] = DirectionalLightShadow::AddDebugColoring(lightingData.specularLighting[viewIndex], shadowIndex, real3(surface.position), surface.vertexNormal);
         }
