@@ -96,9 +96,6 @@ namespace AZ
 
         DecalComponentController::DecalComponentController(const DecalComponentConfig& config)
             : m_configuration(config)
-#if defined(CARBONATED) && defined(CARBONATED_DECAL_VISTOGGLE)
-            , m_isHidden(false)
-#endif
         {
         }
 
