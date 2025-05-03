@@ -35,7 +35,7 @@ namespace AzToolsFramework
 namespace AZ
 {
     class ReflectContext;
-    class ScriptProperties
+    class AZCORE_API ScriptProperties
     {
     public:
         static void Reflect(AZ::ReflectContext* reflection);
@@ -44,7 +44,7 @@ namespace AZ
     /**
     * Base class for all script properties.
     */
-    class ScriptProperty
+    class AZCORE_API ScriptProperty
     {
     public:
         static void UpdateScriptProperty(AZ::ScriptDataContext& sdc, int valueIndex, ScriptProperty** targetProperty);
@@ -96,7 +96,7 @@ namespace AZ
     // that can modify the underlying data type, and would need to be handled
     // specially in the case of an 'in place' operation when being stored for
     // network functionality.
-    class FunctionalScriptProperty
+    class AZCORE_API FunctionalScriptProperty
         : public ScriptProperty
     {
     public:
@@ -125,7 +125,7 @@ namespace AZ
     };
     AZ_TYPE_INFO_WITH_NAME_DECL_EXT_API(AZCORE_API, FunctionalScriptProperty);
 
-    class ScriptPropertyNil
+    class AZCORE_API ScriptPropertyNil
         : public ScriptProperty
     {
     public:
@@ -152,7 +152,7 @@ namespace AZ
     };
     AZ_TYPE_INFO_WITH_NAME_DECL_EXT_API(AZCORE_API, ScriptPropertyNil);
 
-    class ScriptPropertyBoolean
+    class AZCORE_API ScriptPropertyBoolean
         : public ScriptProperty
     {
     public:
@@ -186,7 +186,7 @@ namespace AZ
     };
     AZ_TYPE_INFO_WITH_NAME_DECL_EXT_API(AZCORE_API, ScriptPropertyBoolean);
 
-    class ScriptPropertyNumber
+    class AZCORE_API ScriptPropertyNumber
         : public ScriptProperty
     {
     public:
@@ -220,7 +220,7 @@ namespace AZ
     };
     AZ_TYPE_INFO_WITH_NAME_DECL_EXT_API(AZCORE_API, ScriptPropertyNumber);
 
-    class ScriptPropertyString
+    class AZCORE_API ScriptPropertyString
         : public ScriptProperty
     {
     public:
@@ -253,7 +253,7 @@ namespace AZ
     };
     AZ_TYPE_INFO_WITH_NAME_DECL_EXT_API(AZCORE_API, ScriptPropertyString);
 
-    class ScriptPropertyGenericClass
+    class AZCORE_API ScriptPropertyGenericClass
         : public FunctionalScriptProperty
         , public BehaviorObjectSignals::Handler
     {
@@ -329,7 +329,7 @@ namespace AZ
     };
     AZ_TYPE_INFO_WITH_NAME_DECL_EXT_API(AZCORE_API, ScriptPropertyGenericClass);
 
-    class ScriptPropertyNumberArray
+    class AZCORE_API ScriptPropertyNumberArray
         : public ScriptProperty
     {
     public:
@@ -363,7 +363,7 @@ namespace AZ
     };
     AZ_TYPE_INFO_WITH_NAME_DECL_EXT_API(AZCORE_API, ScriptPropertyNumberArray);
 
-    class ScriptPropertyBooleanArray
+    class AZCORE_API ScriptPropertyBooleanArray
         : public ScriptProperty
     {
     public:
@@ -396,7 +396,7 @@ namespace AZ
     };
     AZ_TYPE_INFO_WITH_NAME_DECL_EXT_API(AZCORE_API, ScriptPropertyBooleanArray);
 
-    class ScriptPropertyStringArray
+    class AZCORE_API ScriptPropertyStringArray
         : public ScriptProperty
     {
     public:
@@ -429,7 +429,7 @@ namespace AZ
     };
     AZ_TYPE_INFO_WITH_NAME_DECL_EXT_API(AZCORE_API, ScriptPropertyStringArray);
 
-    class ScriptPropertyGenericClassArray
+    class AZCORE_API ScriptPropertyGenericClassArray
         : public ScriptProperty
     {
     public:
@@ -477,7 +477,7 @@ namespace AZ
     };
     AZ_TYPE_INFO_WITH_NAME_DECL_EXT_API(AZCORE_API, ScriptPropertyGenericClassArray);
 
-    class ScriptPropertyAsset
+    class AZCORE_API ScriptPropertyAsset
         : public ScriptProperty
     {
     public:

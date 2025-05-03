@@ -12,9 +12,17 @@
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Windowing/WindowBus.h>
-#include <AzFramework/AzFrameworkStatic.h>
+
 namespace AzFramework
 {
+    AZ_CVAR(
+        bool,
+        ed_cameraSystemUseCursor,
+        true,
+        nullptr,
+        AZ::ConsoleFunctorFlags::Null,
+        "Should the camera use cursor absolute positions or motion deltas");
+
     //! return -1.0f if inverted, 1.0f otherwise
     constexpr static float Invert(const bool invert)
     {

@@ -111,5 +111,5 @@ namespace Physics
 
 } // namespace Physics
 
-AZF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS_WITH_TRAITS(Physics::CollisionRequests, Physics::CollisionRequestsTraits);
-AZF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(Physics::CollisionFilteringRequests);
+AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS_WITH_TRAITS(AZF_API,Physics::CollisionRequests, Physics::CollisionRequestsTraits);
+AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZF_API,Physics::CollisionFilteringRequests);

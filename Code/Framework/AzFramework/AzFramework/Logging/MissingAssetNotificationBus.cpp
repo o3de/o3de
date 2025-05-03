@@ -8,4 +8,4 @@
 
  #include <AzFramework/Logging/MissingAssetNotificationBus.h>
 
- AZF_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AzFramework::MissingAssetNotifications);
+ AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AZF_API, AzFramework::MissingAssetNotifications);

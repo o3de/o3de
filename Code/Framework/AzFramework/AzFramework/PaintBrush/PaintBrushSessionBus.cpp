@@ -8,4 +8,4 @@
 
 #include <AzFramework/PaintBrush/PaintBrushSessionBus.h>
 
-AZF_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AzFramework::PaintBrushSession);
+AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AZF_API, AzFramework::PaintBrushSession);

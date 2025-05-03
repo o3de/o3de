@@ -137,4 +137,4 @@ namespace AzFramework
     using PaintBrushNotificationBus = AZ::EBus<PaintBrushNotifications>;
 } // namespace AzFramework
 
-AZF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzFramework::PaintBrushNotifications);
+AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZF_API, AzFramework::PaintBrushNotifications);

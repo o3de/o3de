@@ -8,4 +8,4 @@
 
 #include <AzFramework/Spawnable/Script/SpawnableScriptBus.h>
 
-AZF_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(AzFramework::Scripts::SpawnableScriptNotifications);
+AZ_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(AZF_API, AzFramework::Scripts::SpawnableScriptNotifications);

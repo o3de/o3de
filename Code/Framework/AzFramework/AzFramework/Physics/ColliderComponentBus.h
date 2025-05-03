@@ -23,4 +23,4 @@ namespace Physics
     using ColliderComponentEventBus = AZ::EBus<ColliderComponentEvents>;
 } // namespace Physics
 
-AZF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(Physics::ColliderComponentEvents);
+AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZF_API,Physics::ColliderComponentEvents);

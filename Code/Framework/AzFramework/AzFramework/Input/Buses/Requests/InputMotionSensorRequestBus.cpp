@@ -8,4 +8,4 @@
 
 #include <AzFramework/Input/Buses/Requests/InputMotionSensorRequestBus.h>
 
-AZF_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(AzFramework::InputMotionSensorRequests);
+AZ_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(AZF_API, AzFramework::InputMotionSensorRequests);

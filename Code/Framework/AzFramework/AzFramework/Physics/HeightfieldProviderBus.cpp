@@ -11,8 +11,8 @@
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
-// AZF_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(Physics::HeightfieldProviderRequests);
-// AZF_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(Physics::HeightfieldProviderNotifications);
+// AZ_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(AZF_API,Physics::HeightfieldProviderRequests);
+// AZ_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(AZF_API,Physics::HeightfieldProviderNotifications);
 
 namespace Physics
 {

@@ -7,4 +7,4 @@
  */
 #include <AzFramework/Input/Buses/Notifications/InputSystemNotificationBus.h>
 
-AZF_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AzFramework::InputSystemNotifications);
+AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AZF_API, AzFramework::InputSystemNotifications);

@@ -342,7 +342,7 @@ namespace AzFramework
     using DebugDisplayEventBus = AZ::EBus<DebugDisplayEvents>;
 } // namespace AzFramework
 
-AZF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzFramework::DebugDisplayRequests)
-AZF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzFramework::EntityDebugDisplayEvents)
-AZF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzFramework::ViewportDebugDisplayEvents)
-AZF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzFramework::DebugDisplayEvents)
+AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZF_API, AzFramework::DebugDisplayRequests)
+AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZF_API, AzFramework::EntityDebugDisplayEvents)
+AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZF_API, AzFramework::ViewportDebugDisplayEvents)
+AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZF_API, AzFramework::DebugDisplayEvents)

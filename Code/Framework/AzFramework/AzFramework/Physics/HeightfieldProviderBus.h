@@ -171,5 +171,5 @@ namespace Physics
     using HeightfieldProviderNotificationBus = AZ::EBus<HeightfieldProviderNotifications>;
 } // namespace Physics
 
-//AZF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(Physics::HeightfieldProviderRequests);
-//AZF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(Physics::HeightfieldProviderNotifications);
+//AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZF_API,Physics::HeightfieldProviderRequests);
+//AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZF_API,Physics::HeightfieldProviderNotifications);

@@ -22,6 +22,8 @@
 
 namespace AzFramework
 {
+    AZ_CVAR_API_EXTERNED(AZF_API, bool, ed_cameraSystemUseCursor);
+
     struct WindowSize;
 
     //! Tolerance to use when limiting pitch to avoid reaching +/-Pi/2 exactly.

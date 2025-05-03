@@ -14,13 +14,18 @@
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/IO/Path/Path_fwd.h>
 #include <AzFramework/FileTag/FileTagBus.h>
-#include <AzFramework/FileTag/FileTagConstants.h>
 #include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
     namespace FileTag
     {
+        //! These are list of some common file tags
+        AZF_API extern const char* FileTags[];
+
+        AZF_API extern const char* ExcludeFileName;
+        AZF_API extern const char* IncludeFileName;
+
         //! helper enum for retrieving indexes in FileTags array 
         enum class FileTagsIndex : unsigned int
         {

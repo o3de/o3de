@@ -53,4 +53,4 @@ namespace AzFramework
     } // namespace StreamingInstall
 } // namespace AzFramework
 
-AZF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzFramework::StreamingInstall::StreamingInstallRequests);
+AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZF_API, AzFramework::StreamingInstall::StreamingInstallRequests);

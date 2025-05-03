@@ -255,8 +255,8 @@ namespace AzFramework
     using WindowSystemNotificationBus = AZ::EBus<WindowSystemNotifications>;
 } // namespace AzFramework
 
-AZF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzFramework::WindowRequests)
-AZF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzFramework::WindowNotifications)
-AZF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzFramework::ExclusiveFullScreenRequests)
-AZF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzFramework::WindowSystemRequests)
-AZF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzFramework::WindowSystemNotifications)
+AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZF_API, AzFramework::WindowRequests)
+AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZF_API, AzFramework::WindowNotifications)
+AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZF_API, AzFramework::ExclusiveFullScreenRequests)
+AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZF_API, AzFramework::WindowSystemRequests)
+AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZF_API, AzFramework::WindowSystemNotifications)

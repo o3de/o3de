@@ -19,6 +19,8 @@ set(FILES
     Archive/ArchiveFileIO.h
     Archive/ArchiveFindData.cpp
     Archive/ArchiveFindData.h
+    Archive/ArchiveVars.cpp
+    Archive/ArchiveVars.h
     Archive/Codec.h
     Archive/IArchive.h
     Archive/INestedArchive.h
@@ -510,6 +512,8 @@ set(FILES
     Viewport/SingleViewportController.h
     Viewport/ViewportBus.cpp
     Viewport/ViewportBus.h
+    Viewport/ViewportColors.h
+    Viewport/ViewportColors.cpp    
     Viewport/ViewportConstants.cpp
     Viewport/ViewportConstants.h
     Viewport/ViewportControllerInterface.h

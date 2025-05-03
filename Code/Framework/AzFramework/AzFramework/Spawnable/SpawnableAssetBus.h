@@ -38,4 +38,4 @@ namespace AzFramework
     using SpawnableAssetEventsBus = AZ::EBus<SpawnableAssetEvents>;
 } // namespace AzFramework
 
-AZF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzFramework::SpawnableAssetEvents);
+AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZF_API, AzFramework::SpawnableAssetEvents);

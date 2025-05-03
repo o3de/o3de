@@ -85,4 +85,4 @@ namespace AzFramework
     using SliceInstantiationResultBus = AZ::EBus<SliceInstantiationResults>;
 } // namespace AzFramework
 
-AZF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzFramework::SliceInstantiationResults);
+AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZF_API, AzFramework::SliceInstantiationResults);

@@ -185,7 +185,7 @@ namespace AZ
      * it's ABSTRACT. Please refer to your editor/edit tools to check what are the "id"
      * for the uiElements and their respective properties "id" and values.
      */
-    class EditContext
+    class AZCORE_API EditContext
     {
     public:
         /// @cond EXCLUDE_DOCS
@@ -258,7 +258,7 @@ namespace AZ
          *
          */
     public:
-        class ClassBuilder
+        class AZCORE_API ClassBuilder
         {
             friend EditContext;
             ClassBuilder(EditContext* context, SerializeContext::ClassData* classData, Edit::ClassData* classElement)
@@ -1219,5 +1219,10 @@ namespace AZ
 
 #include <AzCore/Serialization/EditContext.inl>
 
+#if defined(AZ_MONOLITHIC_BUILD)
 extern template AZ::EditContext::ClassBuilder* AZ::EditContext::ClassBuilder::Attribute<AZ::Crc32>(const char *, AZ::Crc32);
 extern template AZ::EditContext::ClassBuilder* AZ::EditContext::ClassBuilder::Attribute<AZ::Crc32>(AZ::Crc32, AZ::Crc32);
+#else
+AZ_TEMPLATE_EXTERN template AZCORE_API AZ::EditContext::ClassBuilder* AZ::EditContext::ClassBuilder::Attribute<AZ::Crc32>(const char*, AZ::Crc32);
+AZ_TEMPLATE_EXTERN template AZCORE_API AZ::EditContext::ClassBuilder* AZ::EditContext::ClassBuilder::Attribute<AZ::Crc32>(AZ::Crc32, AZ::Crc32);
+#endif // defined(AZ_MONOLITHIC_BUILD)

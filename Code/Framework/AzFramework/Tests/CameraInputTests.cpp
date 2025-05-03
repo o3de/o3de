@@ -12,7 +12,6 @@
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Viewport/CameraInput.h>
-#include <AzFramework/AzFrameworkStatic.h>
 
 namespace UnitTest
 {
@@ -138,6 +137,7 @@ namespace UnitTest
     TEST_F(CameraInputFixture, BeginAndEndOrbitCameraInputConsumesCorrectEvents)
     {
         const AzFramework::ModifierKeyStates orbitModifierKeystate = OrbitModifierKeyStates(m_orbitChannelId);
+
 
         // begin orbit camera
         const bool consumed1 = HandleEventAndUpdate(AzFramework::InputState{

@@ -10,6 +10,7 @@ set(FILES
     Math/Uuid.cpp
     Math/Uuid.h
     Math/Uuid.inl
+    Module/AZStdInstantiations.cpp
     AzCoreModuleStatic.h
     AzCoreModuleStatic.cpp
 )

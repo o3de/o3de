@@ -1424,7 +1424,7 @@ namespace AZ::Serialize
     * EnumerateInstance is used in high frequency performance-sensitive scenarios, and this ensures
     * minimal interaction with the memory manager for things like bound functors.
     */
-    struct EnumerateInstanceCallContext
+    struct AZCORE_API EnumerateInstanceCallContext
     {
         AZ_TYPE_INFO_WITH_NAME_DECL_API(AZCORE_API, EnumerateInstanceCallContext);
         EnumerateInstanceCallContext(const SerializeContext::BeginElemEnumCB& beginElemCB,

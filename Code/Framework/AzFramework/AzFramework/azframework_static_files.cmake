@@ -7,14 +7,6 @@
 #
 
 set(FILES
-    DocumentPropertyEditor/Reflection/LegacyReflectionBridgeConstants.cpp
-    DocumentPropertyEditor/Reflection/LegacyReflectionBridgeConstants.h
-    FileTag/FileTagConstants.cpp
-    FileTag/FileTagConstants.h
-    Viewport/ViewportColors.h
-    Viewport/ViewportColors.cpp    
-    Archive/ArchiveVars.cpp
-    Archive/ArchiveVars.h
     AzFrameworkStatic.cpp
     AzFrameworkStatic.h
 )

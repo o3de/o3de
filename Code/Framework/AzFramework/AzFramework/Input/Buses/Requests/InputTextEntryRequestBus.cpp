@@ -8,4 +8,4 @@
 
 #include <AzFramework/Input/Buses/Requests/InputTextEntryRequestBus.h>
 
-AZF_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(AzFramework::InputTextEntryRequests);
+AZ_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(AZF_API, AzFramework::InputTextEntryRequests);

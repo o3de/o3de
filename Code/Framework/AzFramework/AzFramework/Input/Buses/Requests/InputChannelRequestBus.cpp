@@ -8,7 +8,7 @@
 
 #include <AzFramework/Input/Buses/Requests/InputChannelRequestBus.h>
 
-AZF_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(AzFramework::InputChannelRequests);
+AZ_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(AZF_API, AzFramework::InputChannelRequests);
 
 namespace AzFramework
 {

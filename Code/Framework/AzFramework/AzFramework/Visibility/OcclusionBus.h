@@ -133,4 +133,4 @@ namespace AzFramework
     AZ_TYPE_INFO_SPECIALIZE(OcclusionState, "{1F6EE4E1-FD5C-4D80-AC72-E2C6C5E4A53F}");
 } // namespace AzFramework
 
-AZF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzFramework::OcclusionRequests);
+AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZF_API, AzFramework::OcclusionRequests);

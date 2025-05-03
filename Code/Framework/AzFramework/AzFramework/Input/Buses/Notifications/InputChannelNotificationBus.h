@@ -61,4 +61,4 @@ namespace AzFramework
     using InputChannelNotificationBus = AZ::EBus<InputChannelNotifications>;
 } // namespace AzFramework
 
-AZF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzFramework::InputChannelNotifications);
+AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZF_API, AzFramework::InputChannelNotifications);

@@ -74,5 +74,5 @@ namespace AzFramework
     } //namespace StreamingInstall
 } // namespace AzFramework
 
-AZF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzFramework::StreamingInstall::StreamingInstallChunkNotifications);
-AZF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzFramework::StreamingInstall::StreamingInstallPackageNotifications);
+AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZF_API, AzFramework::StreamingInstall::StreamingInstallChunkNotifications);
+AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZF_API, AzFramework::StreamingInstall::StreamingInstallPackageNotifications);

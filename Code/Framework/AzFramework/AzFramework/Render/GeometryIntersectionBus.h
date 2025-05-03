@@ -119,5 +119,5 @@ namespace AZStd
     };
 }
 
-AZF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzFramework::RenderGeometry::IntersectionRequests);
-AZF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzFramework::RenderGeometry::IntersectionNotifications);
+AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZF_API, AzFramework::RenderGeometry::IntersectionRequests);
+AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZF_API, AzFramework::RenderGeometry::IntersectionNotifications);

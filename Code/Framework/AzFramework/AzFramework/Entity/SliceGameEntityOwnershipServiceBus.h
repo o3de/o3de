@@ -79,5 +79,5 @@ namespace AzFramework
     using SliceGameEntityOwnershipServiceNotificationBus = AZ::EBus<SliceGameEntityOwnershipServiceNotifications>;
 }
 
-AZF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzFramework::SliceGameEntityOwnershipServiceRequests);
-AZF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzFramework::SliceGameEntityOwnershipServiceNotifications);
+AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZF_API, AzFramework::SliceGameEntityOwnershipServiceRequests);
+AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZF_API, AzFramework::SliceGameEntityOwnershipServiceNotifications);

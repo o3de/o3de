@@ -7,4 +7,4 @@
  */
 #include <AzFramework/Physics/ColliderComponentBus.h>
 
-AZF_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(Physics::ColliderComponentEvents);
+AZ_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(AZF_API,Physics::ColliderComponentEvents);

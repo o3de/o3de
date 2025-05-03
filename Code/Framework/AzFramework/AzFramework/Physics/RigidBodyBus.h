@@ -148,5 +148,5 @@ namespace Physics
     using RigidBodyNotificationBus = AZ::EBus<RigidBodyNotifications>;
 }
 
-AZF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(Physics::RigidBodyRequests);
-AZF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(Physics::RigidBodyNotifications);
+AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZF_API,Physics::RigidBodyRequests);
+AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZF_API,Physics::RigidBodyNotifications);
