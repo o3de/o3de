@@ -133,7 +133,7 @@ namespace AZ::Edit
     //! Visitor invoked when calling the EnumerateAll function
     //! @return true from the visitor to indicate that visitation should continue,
     //! otherwise false should be returned to halt visitation
-    struct TypeVisitor
+    struct AZCORE_API TypeVisitor
     {
         //! Default constructs the TypeVisitor with a no-op function
         TypeVisitor();

@@ -766,6 +766,9 @@ AZStd::string CEditorImpl::LoadProjectIdFromProjectData()
 void CEditorImpl::DetectVersion()
 {
 #if defined(AZ_PLATFORM_WINDOWS)
+
+#pragma comment(lib, "version.lib") // for "GetFileVersionInfoSizeW"
+
     char exe[_MAX_PATH];
     DWORD dwHandle;
     UINT len;

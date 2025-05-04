@@ -28,7 +28,7 @@ namespace AZStd
     class intrusive_refcount
     {
     public:
-        inline uint32_t use_count() const
+        AZ_FORCE_INLINE uint32_t use_count() const
         {
             return static_cast<uint32_t>(m_refCount);
         }

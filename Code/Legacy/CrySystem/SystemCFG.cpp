@@ -106,6 +106,9 @@ void CSystem::QueryVersionInfo()
     m_fileVersion.v[3] = m_productVersion.v[3] = EXE_VERSION_INFO_0;
     m_buildVersion = m_fileVersion;
 #else  //WIN32
+    
+#pragma comment(lib, "version.lib")
+
     char moduleName[_MAX_PATH];
     DWORD dwHandle;
     UINT len;

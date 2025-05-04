@@ -1151,7 +1151,7 @@ namespace AZ
         // Since we can share hooks we should probably pass the event name
         using GenericHookType = void(*)(void* /*userData*/, const char* /*eventName*/, int /*eventIndex*/, BehaviorArgument* /*result*/, int /*numParameters*/, BehaviorArgument* /*parameters*/);
 
-        struct BusForwarderEvent
+        struct AZCORE_API BusForwarderEvent
         {
             BusForwarderEvent() = default;
 
@@ -2872,7 +2872,7 @@ namespace AZ
             return static_cast<Owner*>(this);
         }
 
-        bool IsInScope(const AttributeArray& attributes, const AZ::Script::Attributes::ScopeFlags scope);
+        AZCORE_API bool IsInScope(const AttributeArray& attributes, const AZ::Script::Attributes::ScopeFlags scope);
 
     } // namespace Internal
 } // namespace AZ

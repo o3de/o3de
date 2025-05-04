@@ -104,7 +104,7 @@ class CAnimParamType
     friend class AnimSerializer;
 
 public:
-    AZ_TYPE_INFO_WITH_NAME_DECL_API(AZCORE_API, CAnimParamType);
+    AZ_TYPE_INFO_WITH_NAME_DECL(CAnimParamType);
 
     static const uint kParamTypeVersion = 9;
 
@@ -150,7 +150,6 @@ private:
     AnimParamType m_type;
     AZStd::string m_name;
 };
-AZ_TYPE_INFO_WITH_NAME_DECL_EXT_API(AZCORE_API, CAnimParamType);
 
 
 
@@ -235,7 +234,7 @@ struct IMovieCallback
 */
 struct IAnimTrack
 {
-    AZ_TYPE_INFO_WITH_NAME_DECL_API(AZCORE_API, IAnimTrack);
+    AZ_TYPE_INFO_WITH_NAME_DECL(IAnimTrack);
     AZ_RTTI_NO_TYPE_INFO_DECL();
     AZ_CLASS_ALLOCATOR_DECL
 
@@ -456,7 +455,6 @@ struct IAnimTrack
 
     // </interfuscator:shuffle>
 };
-AZ_TYPE_INFO_WITH_NAME_DECL_EXT_API(AZCORE_API, IAnimTrack);
 
 
 /** Callback called by animation node when its animated.
@@ -481,7 +479,7 @@ struct IAnimNodeOwner
 struct IAnimNode
 {
 public:
-    AZ_TYPE_INFO_WITH_NAME_DECL_API(AZCORE_API, IAnimNode);
+    AZ_TYPE_INFO_WITH_NAME_DECL(IAnimNode);
     AZ_RTTI_NO_TYPE_INFO_DECL()
     AZ_CLASS_ALLOCATOR_DECL;
 
@@ -749,7 +747,6 @@ public:
     // Return the node id. This id is unique within a given sequence.
     virtual int GetId() const = 0;
 };
-AZ_TYPE_INFO_WITH_NAME_DECL_EXT_API(AZCORE_API, IAnimNode);
 
 //! Track event listener
 struct ITrackEventListener
@@ -789,7 +786,7 @@ struct IAnimLegacySequenceObject
 
 struct IAnimStringTable
 {
-    AZ_TYPE_INFO_WITH_NAME_DECL_API(AZCORE_API, IAnimStringTable);
+    AZ_TYPE_INFO_WITH_NAME_DECL(IAnimStringTable);
     AZ_RTTI_NO_TYPE_INFO_DECL();
     virtual ~IAnimStringTable() {}
 
@@ -799,13 +796,12 @@ struct IAnimStringTable
 
     virtual const char* Add(const char* p) = 0;
 };
-AZ_TYPE_INFO_WITH_NAME_DECL_EXT_API(AZCORE_API, IAnimStringTable);
 
 /** Animation sequence, operates on animation nodes contained in it.
  */
 struct IAnimSequence
 {
-    AZ_TYPE_INFO_WITH_NAME_DECL_API(AZCORE_API, IAnimSequence);
+    AZ_TYPE_INFO_WITH_NAME_DECL(IAnimSequence);
     AZ_RTTI_NO_TYPE_INFO_DECL();
     AZ_CLASS_ALLOCATOR_DECL;
 
@@ -1020,7 +1016,6 @@ struct IAnimSequence
 
     // </interfuscator:shuffle>
 };
-AZ_TYPE_INFO_WITH_NAME_DECL_EXT_API(AZCORE_API, IAnimSequence);
 
 /** Movie Listener interface.
     Register at movie system to get notified about movie events
@@ -1050,7 +1045,7 @@ struct IMovieListener
  */
 struct IMovieSystem
 {
-    AZ_TYPE_INFO_WITH_NAME_DECL_API(AZCORE_API, IMovieSystem);
+    AZ_TYPE_INFO_WITH_NAME_DECL(IMovieSystem);
     AZ_RTTI_NO_TYPE_INFO_DECL();
 
     enum ESequenceStopBehavior
@@ -1291,7 +1286,6 @@ struct IMovieSystem
 
     // </interfuscator:shuffle>
 };
-AZ_TYPE_INFO_WITH_NAME_DECL_EXT_API(AZCORE_API, IMovieSystem);
 
 
 

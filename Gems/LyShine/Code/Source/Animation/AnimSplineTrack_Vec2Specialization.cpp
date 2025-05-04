@@ -339,7 +339,7 @@ namespace UiSpline
     //////////////////////////////////////////////////////////////////////////
     template <>
     void BezierSplineVec2::Reflect(AZ::ReflectContext* context);
-    AZ_TYPE_INFO_SPECIALIZE_WITH_NAME_DECL_API(AZCORE_API, TrackSplineInterpolator<Vec2>);
+    AZ_TYPE_INFO_SPECIALIZE_WITH_NAME_DECL(TrackSplineInterpolator<Vec2>);
     AZ_TYPE_INFO_SPECIALIZE_WITH_NAME_IMPL(TrackSplineInterpolator<Vec2>, "TrackSplineInterpolator<Vec2>", "{38F814D4-6041-4442-9704-9F68E996D55B}");
     AZ_TYPE_INFO_SPECIALIZE(SplineKey<Vec2>, "{E2301E81-6BAF-4A17-886C-76F1A9C37118}");
     AZ_TYPE_INFO_SPECIALIZE(SplineKeyEx<Vec2>, "{1AE37C63-D5C2-4E65-A08B-7020E7696233}");

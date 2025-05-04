@@ -138,17 +138,17 @@ namespace AZ::Debug
     }
 
     // Explicitly instantiate ReportCounter<T>-function for all possible integral types
-    template void Profiler::ReportCounter(const Budget* budget, const wchar_t* counterName, const bool& value);
-    template void Profiler::ReportCounter(const Budget* budget, const wchar_t* counterName, const float& value);
-    template void Profiler::ReportCounter(const Budget* budget, const wchar_t* counterName, const double& value);
-    template void Profiler::ReportCounter(const Budget* budget, const wchar_t* counterName, const AZ::s8& value);
-    template void Profiler::ReportCounter(const Budget* budget, const wchar_t* counterName, const AZ::s16& value);
-    template void Profiler::ReportCounter(const Budget* budget, const wchar_t* counterName, const AZ::s32& value);
-    template void Profiler::ReportCounter(const Budget* budget, const wchar_t* counterName, const AZ::s64& value);
-    template void Profiler::ReportCounter(const Budget* budget, const wchar_t* counterName, const AZ::u8& value);
-    template void Profiler::ReportCounter(const Budget* budget, const wchar_t* counterName, const AZ::u16& value);
-    template void Profiler::ReportCounter(const Budget* budget, const wchar_t* counterName, const AZ::u32& value);
-    template void Profiler::ReportCounter(const Budget* budget, const wchar_t* counterName, const AZ::u64& value);
+    template AZCORE_API_EXPORT void Profiler::ReportCounter(const Budget* budget, const wchar_t* counterName, const bool& value);
+    template AZCORE_API_EXPORT void Profiler::ReportCounter(const Budget* budget, const wchar_t* counterName, const float& value);
+    template AZCORE_API_EXPORT void Profiler::ReportCounter(const Budget* budget, const wchar_t* counterName, const double& value);
+    template AZCORE_API_EXPORT void Profiler::ReportCounter(const Budget* budget, const wchar_t* counterName, const AZ::s8& value);
+    template AZCORE_API_EXPORT void Profiler::ReportCounter(const Budget* budget, const wchar_t* counterName, const AZ::s16& value);
+    template AZCORE_API_EXPORT void Profiler::ReportCounter(const Budget* budget, const wchar_t* counterName, const AZ::s32& value);
+    template AZCORE_API_EXPORT void Profiler::ReportCounter(const Budget* budget, const wchar_t* counterName, const AZ::s64& value);
+    template AZCORE_API_EXPORT void Profiler::ReportCounter(const Budget* budget, const wchar_t* counterName, const AZ::u8& value);
+    template AZCORE_API_EXPORT void Profiler::ReportCounter(const Budget* budget, const wchar_t* counterName, const AZ::u16& value);
+    template AZCORE_API_EXPORT void Profiler::ReportCounter(const Budget* budget, const wchar_t* counterName, const AZ::u32& value);
+    template AZCORE_API_EXPORT void Profiler::ReportCounter(const Budget* budget, const wchar_t* counterName, const AZ::u64& value);
 
     void Profiler::ReportProfileEvent([[maybe_unused]] const Budget* budget, [[maybe_unused]] const char* eventName)
     {
