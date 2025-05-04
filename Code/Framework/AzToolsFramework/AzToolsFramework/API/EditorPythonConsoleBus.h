@@ -53,4 +53,4 @@ namespace AzToolsFramework
     using EditorPythonConsoleNotificationBus = AZ::EBus<EditorPythonConsoleNotifications>;
 } // AzToolsFramework
 
-AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::EditorPythonConsoleNotifications);
+AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EditorPythonConsoleNotifications);

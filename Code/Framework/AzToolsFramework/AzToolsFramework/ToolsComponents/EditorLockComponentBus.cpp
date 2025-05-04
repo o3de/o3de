@@ -8,5 +8,5 @@
 
 #include <AzToolsFramework/ToolsComponents/EditorLockComponentBus.h>
  
-AZTF_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(AzToolsFramework::EditorLockComponentRequests);
-AZTF_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(AzToolsFramework::EditorEntityLockComponentNotifications);
+AZ_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(AZTF_API, AzToolsFramework::EditorLockComponentRequests);
+AZ_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(AZTF_API, AzToolsFramework::EditorEntityLockComponentNotifications);

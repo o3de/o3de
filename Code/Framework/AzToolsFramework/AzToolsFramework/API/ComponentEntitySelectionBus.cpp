@@ -8,4 +8,4 @@
 
 #include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
 
-AZTF_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(AzToolsFramework::EditorComponentSelectionRequests);
+AZ_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(AZTF_API, AzToolsFramework::EditorComponentSelectionRequests);

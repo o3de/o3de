@@ -8,5 +8,5 @@
 
 #include <AzToolsFramework/API/AssetDatabaseBus.h>
 
-AZTF_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AzToolsFramework::AssetDatabase::AssetDatabaseRequests);
-AZTF_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AzToolsFramework::AssetDatabase::AssetDatabaseNotifications);
+AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::AssetDatabase::AssetDatabaseRequests);
+AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::AssetDatabase::AssetDatabaseNotifications);

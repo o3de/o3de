@@ -8,4 +8,4 @@
 
 #include <AzToolsFramework/Manipulators/ShapeManipulatorRequestBus.h>
 
-AZTF_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(AzToolsFramework::ShapeManipulatorRequests);
+AZ_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(AZTF_API, AzToolsFramework::ShapeManipulatorRequests);

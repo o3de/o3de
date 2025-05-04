@@ -8,4 +8,4 @@
 
  #include <AzToolsFramework/Thumbnails/SourceControlThumbnailBus.h>
 
- AZTF_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AzToolsFramework::Thumbnailer::SourceControlThumbnailRequests);
+ AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::Thumbnailer::SourceControlThumbnailRequests);

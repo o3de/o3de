@@ -78,6 +78,6 @@ namespace AzToolsFramework
     } // namespace Thumbnailer
 } // namespace AzToolsFramework
 
-AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::Thumbnailer::ThumbnailerRequests);
-AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::Thumbnailer::ThumbnailerRendererRequests);
-AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::Thumbnailer::ThumbnailerRendererNotifications);
+AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::Thumbnailer::ThumbnailerRequests);
+AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::Thumbnailer::ThumbnailerRendererRequests);
+AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::Thumbnailer::ThumbnailerRendererNotifications);

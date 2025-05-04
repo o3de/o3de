@@ -7,5 +7,5 @@
  */
 #include <AzToolsFramework/ToolsComponents/EditorOnlyEntityComponentBus.h>
 
-AZTF_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(AzToolsFramework::EditorOnlyEntityComponentRequests);
-AZTF_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AzToolsFramework::EditorOnlyEntityComponentNotifications);
+AZ_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(AZTF_API, AzToolsFramework::EditorOnlyEntityComponentRequests);
+AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EditorOnlyEntityComponentNotifications);

@@ -37,4 +37,4 @@ namespace AzToolsFramework
     using EditorAnimationSystemRequestsBus = AZ::EBus<EditorAnimationSystemRequests>;
 } // EditorAnimationSystemRequests
 
-AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::EditorAnimationSystemRequests);
+AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EditorAnimationSystemRequests);

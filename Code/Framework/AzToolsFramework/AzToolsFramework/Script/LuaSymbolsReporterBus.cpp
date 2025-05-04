@@ -8,5 +8,5 @@
 
 #include <AzToolsFramework/Script/LuaSymbolsReporterBus.h>
 
-AZTF_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS_WITH_TRAITS(AzToolsFramework::Script::LuaSymbolsReporterRequests, AzToolsFramework::Script::LuaSymbolsReporterBusTraits);
+AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS_WITH_TRAITS(AZTF_API, AzToolsFramework::Script::LuaSymbolsReporterRequests, AzToolsFramework::Script::LuaSymbolsReporterBusTraits);
 

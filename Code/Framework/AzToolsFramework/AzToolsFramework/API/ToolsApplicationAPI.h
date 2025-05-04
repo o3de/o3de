@@ -24,7 +24,6 @@
 
 #include <AzToolsFramework/Entity/EntityTypes.h>
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
-#include <AzToolsFramework/API/ToolsApplicationBus.h>
 #include <QObject>
 
 namespace AZ
@@ -1076,3 +1075,12 @@ namespace AzToolsFramework
 } // namespace AzToolsFramework
 
 AZ_DECLARE_BUDGET_SHARED(AzToolsFramework);
+
+AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::ToolsApplicationEvents);
+AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::ToolsApplicationRequests);
+AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZTF_API, AzToolsFramework::EntitySelectionEvents);
+AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZTF_API, AzToolsFramework::EditorPickModeRequests);
+AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZTF_API, AzToolsFramework::EditorPickModeNotifications);
+AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EditorRequests);
+AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EditorEvents);
+AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZTF_API, AzToolsFramework::ViewPaneCallbacks);

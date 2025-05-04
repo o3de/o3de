@@ -9,4 +9,4 @@
 #include <AzToolsFramework/Manipulators/BoxManipulatorRequestBus.h>
 #include <AzCore/Component/ComponentBus.h>
 
-AZTF_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(AzToolsFramework::BoxManipulatorRequests);
+AZ_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(AZTF_API, AzToolsFramework::BoxManipulatorRequests);

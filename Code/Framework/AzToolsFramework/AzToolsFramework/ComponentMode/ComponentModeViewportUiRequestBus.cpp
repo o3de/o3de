@@ -8,4 +8,4 @@
 
 #include <AzToolsFramework/ComponentMode/ComponentModeViewportUiRequestBus.h>
 
-AZTF_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(AzToolsFramework::ComponentModeFramework::ComponentModeViewportUiRequests);
+AZ_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(AZTF_API, AzToolsFramework::ComponentModeFramework::ComponentModeViewportUiRequests);

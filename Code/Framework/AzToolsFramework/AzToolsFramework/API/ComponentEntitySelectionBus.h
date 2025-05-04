@@ -106,4 +106,4 @@ namespace AzToolsFramework
 
 } // namespace AzToolsFramework
 
-AZTF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzToolsFramework::EditorComponentSelectionRequests);
+AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZTF_API, AzToolsFramework::EditorComponentSelectionRequests);

@@ -45,4 +45,4 @@ namespace AzToolsFramework
     } // namespace Prefab
 } // namespace AzToolsFramework
 
-AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::Prefab::PrefabLoaderScriptingTraits);
+AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::Prefab::PrefabLoaderScriptingTraits);

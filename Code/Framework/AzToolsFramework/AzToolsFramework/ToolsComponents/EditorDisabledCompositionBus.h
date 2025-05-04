@@ -27,4 +27,4 @@ namespace AzToolsFramework
     using EditorDisabledCompositionRequestBus = AZ::EBus<EditorDisabledCompositionRequests>;
 } // namespace AzToolsFramework
 
-AZTF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzToolsFramework::EditorDisabledCompositionRequests);
+AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZTF_API, AzToolsFramework::EditorDisabledCompositionRequests);

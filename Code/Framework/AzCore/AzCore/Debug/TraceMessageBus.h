@@ -63,5 +63,4 @@ namespace AZ
 
  AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZCORE_API, AZ::Debug::TraceMessageEvents);
 
-// extern template class AZ::EBus<AZ::Debug::TraceMessageEvents>;
 

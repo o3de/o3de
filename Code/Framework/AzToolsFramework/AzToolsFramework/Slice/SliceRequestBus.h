@@ -36,4 +36,4 @@ namespace AzToolsFramework
     using SliceRequestBus = AZ::EBus<SliceRequests>;
 } // namespace AzToolsFramework
 
-AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::SliceRequests);
+AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::SliceRequests);

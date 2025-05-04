@@ -90,7 +90,7 @@ namespace AzToolsFramework
     } // namespace AssetEditor
 } // namespace AzToolsFramework
 
-AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::AssetEditor::AssetEditorRequests);
-AZTF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzToolsFramework::AssetEditor::AssetEditorValidationRequests);
-AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::AssetEditor::AssetEditorWidgetRequests);
-AZTF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzToolsFramework::AssetEditor::AssetEditorNotifications);
+AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::AssetEditor::AssetEditorRequests);
+AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZTF_API, AzToolsFramework::AssetEditor::AssetEditorValidationRequests);
+AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::AssetEditor::AssetEditorWidgetRequests);
+AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZTF_API, AzToolsFramework::AssetEditor::AssetEditorNotifications);

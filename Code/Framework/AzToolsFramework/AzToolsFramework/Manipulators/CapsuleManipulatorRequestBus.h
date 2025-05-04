@@ -37,4 +37,4 @@ namespace AzToolsFramework
     using CapsuleManipulatorRequestBus = AZ::EBus<CapsuleManipulatorRequests>;
 } // namespace AzToolsFramework
 
-AZTF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzToolsFramework::CapsuleManipulatorRequests);
+AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZTF_API, AzToolsFramework::CapsuleManipulatorRequests);

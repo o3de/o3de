@@ -40,4 +40,4 @@ namespace AzToolsFramework
     using BoxManipulatorRequestBus = AZ::EBus<BoxManipulatorRequests>;
 } // namespace AzToolsFramework
 
-AZTF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzToolsFramework::BoxManipulatorRequests);
+AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZTF_API, AzToolsFramework::BoxManipulatorRequests);

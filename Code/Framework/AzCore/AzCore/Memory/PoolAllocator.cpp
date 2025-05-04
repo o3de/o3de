@@ -44,10 +44,11 @@ namespace AZ::Internal
     //BEGIN AZ_RTTI_NO_TYPE_INFO_IMPL((PoolAllocatorHelper, AZ_TYPE_INFO_CLASS), Base);
     //END AZ_RTTI_NO_TYPE_INFO_IMPL((PoolAllocatorHelper, AZ_TYPE_INFO_CLASS), Base);
 
-    template class AZ_DLL_EXPORT PoolAllocatorHelper<PoolSchema>;
+    template class AZCORE_API_EXPORT PoolAllocatorHelper<PoolSchema>;
 
     // Also instantiate the PoolAllocatorHelper for the Thread Pool Allocator
-    template class AZ_DLL_EXPORT PoolAllocatorHelper<ThreadPoolSchemaHelper<ThreadPoolAllocator>>;
+    template class AZCORE_API_EXPORT PoolAllocatorHelper<ThreadPoolSchemaHelper<ThreadPoolAllocator>>;
+
 
     
 }

@@ -201,4 +201,4 @@ namespace AzToolsFramework
     using EntityCompositionRequestBus = AZ::EBus<EntityCompositionRequests>;
 }
 
-AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::EntityCompositionRequests);
+AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EntityCompositionRequests);

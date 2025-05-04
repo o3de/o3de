@@ -43,14 +43,17 @@ namespace AZ::Internal
 
 #if defined(AZ_MONOLITHIC_BUILD)
     #define AZCORE_API
-    #define AZCORE_API_EXTERN
+    #define AZCORE_API_EXTERN           extern
+    #define AZCORE_API_EXPORT
 #else
     #if defined(AZCORE_EXPORTS)
-        #define AZCORE_API        AZ_DLL_EXPORT
-        #define AZCORE_API_EXTERN AZ_DLL_EXPORT_EXTERN
+        #define AZCORE_API              AZ_DLL_EXPORT
+        #define AZCORE_API_EXTERN       
+        #define AZCORE_API_EXPORT       AZ_DLL_EXPORT
     #else
-        #define AZCORE_API        AZ_DLL_IMPORT
-        #define AZCORE_API_EXTERN AZ_DLL_IMPORT_EXTERN
+        #define AZCORE_API              AZ_DLL_IMPORT
+        #define AZCORE_API_EXTERN       
+        #define AZCORE_API_EXPORT       
     #endif
 #endif
 

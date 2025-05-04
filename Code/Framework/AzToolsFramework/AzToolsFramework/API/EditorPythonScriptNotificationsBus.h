@@ -40,4 +40,4 @@ namespace AzToolsFramework
     using EditorPythonScriptNotificationsBus = AZ::EBus<EditorPythonScriptNotifications>;
 }
 
-AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::EditorPythonScriptNotifications);
+AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EditorPythonScriptNotifications);

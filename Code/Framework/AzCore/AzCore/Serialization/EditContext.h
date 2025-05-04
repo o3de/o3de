@@ -36,7 +36,7 @@ namespace AZ::Edit
      * Enumerates the serialization context and inserts component Uuids which match at least one tag in requiredTags
      * for the AZ::Edit::SystemComponentsTag attribute on the reflected class data
      */
-    void GetComponentUuidsWithSystemComponentTag(
+    AZCORE_API void GetComponentUuidsWithSystemComponentTag(
         const SerializeContext* serializeContext,
         const AZStd::vector<AZ::Crc32>& requiredTags,
         AZStd::unordered_set<AZ::Uuid>& componentUuids);
@@ -167,8 +167,8 @@ namespace AZ::Edit::Internal
 {
     struct ConsoleFunctorHandle
     {
-        ConsoleFunctorHandle();
-        ~ConsoleFunctorHandle();
+        ConsoleFunctorHandle() = default;
+        ~ConsoleFunctorHandle() = default;
         using ConsoleFunctor = AZ::ConsoleFunctor<const EditContext, false>;
         using ConsoleFunctorContainer = AZStd::vector<ConsoleFunctor>;
 
@@ -1219,10 +1219,5 @@ namespace AZ
 
 #include <AzCore/Serialization/EditContext.inl>
 
-#if defined(AZ_MONOLITHIC_BUILD)
-extern template AZ::EditContext::ClassBuilder* AZ::EditContext::ClassBuilder::Attribute<AZ::Crc32>(const char *, AZ::Crc32);
-extern template AZ::EditContext::ClassBuilder* AZ::EditContext::ClassBuilder::Attribute<AZ::Crc32>(AZ::Crc32, AZ::Crc32);
-#else
-AZ_TEMPLATE_EXTERN template AZCORE_API AZ::EditContext::ClassBuilder* AZ::EditContext::ClassBuilder::Attribute<AZ::Crc32>(const char*, AZ::Crc32);
-AZ_TEMPLATE_EXTERN template AZCORE_API AZ::EditContext::ClassBuilder* AZ::EditContext::ClassBuilder::Attribute<AZ::Crc32>(AZ::Crc32, AZ::Crc32);
-#endif // defined(AZ_MONOLITHIC_BUILD)
+template AZCORE_API_EXPORT AZ::EditContext::ClassBuilder* AZ::EditContext::ClassBuilder::Attribute<AZ::Crc32>(const char*, AZ::Crc32);
+template AZCORE_API_EXPORT AZ::EditContext::ClassBuilder* AZ::EditContext::ClassBuilder::Attribute<AZ::Crc32>(AZ::Crc32, AZ::Crc32);

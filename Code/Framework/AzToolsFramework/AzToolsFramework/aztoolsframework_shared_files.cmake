@@ -61,8 +61,7 @@ set(FILES
     API/EditorAnimationSystemRequestBus.cpp
     API/EditorAnimationSystemRequestBus.h
     API/EditorAssetSystemAPI.h
-    API/EditorAssetSystemBus.cpp
-    API/EditorAssetSystemBus.h
+    API/EditorAssetSystemAPI.cpp
     API/EditorCameraBus.cpp
     API/EditorCameraBus.h
     API/EditorEntityAPI.h
@@ -93,8 +92,6 @@ set(FILES
     API/SettingsRegistryUtils.h
     API/ToolsApplicationAPI.cpp
     API/ToolsApplicationAPI.h
-    API/ToolsApplicationBus.cpp
-    API/ToolsApplicationBus.h
     API/ViewPaneOptions.h
     API/ViewportEditorModeTrackerInterface.h
     API/ViewportEditorModeTrackerNotificationBus.cpp

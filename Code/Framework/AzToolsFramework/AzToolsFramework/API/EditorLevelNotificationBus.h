@@ -25,4 +25,4 @@ namespace AzToolsFramework
     using EditorLevelNotificationBus = AZ::EBus<EditorLevelNotifications>;
 }
 
-AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::EditorLevelNotifications);
+AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EditorLevelNotifications);

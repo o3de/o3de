@@ -7,5 +7,5 @@
  */
 #include <AzToolsFramework/Slice/SliceDependencyBrowserBus.h>
 
-AZTF_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AzToolsFramework::SliceDependencyBrowserRequests);
-AZTF_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AzToolsFramework::SliceDependencyBrowserNotifications);
+AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::SliceDependencyBrowserRequests);
+AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::SliceDependencyBrowserNotifications);

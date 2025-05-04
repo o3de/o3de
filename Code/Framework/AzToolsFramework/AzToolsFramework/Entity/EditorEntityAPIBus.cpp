@@ -8,4 +8,4 @@
 
 #include <AzToolsFramework/Entity/EditorEntityAPIBus.h>
 
-AZTF_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(AzToolsFramework::EditorEntityAPIRequests);
+AZ_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(AZTF_API, AzToolsFramework::EditorEntityAPIRequests);

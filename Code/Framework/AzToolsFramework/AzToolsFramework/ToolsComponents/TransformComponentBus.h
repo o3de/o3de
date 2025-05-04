@@ -70,4 +70,4 @@ namespace AzToolsFramework
     } // namespace Components
 } // namespace AzToolsFramework
 
-AZTF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzToolsFramework::Components::TransformComponentMessages);
+AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZTF_API, AzToolsFramework::Components::TransformComponentMessages);

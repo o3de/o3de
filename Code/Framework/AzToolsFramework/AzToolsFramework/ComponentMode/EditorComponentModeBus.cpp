@@ -8,6 +8,6 @@
 
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 
-AZTF_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequests);
-AZTF_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS_WITH_TRAITS(AzToolsFramework::ComponentModeFramework::ComponentModeDelegateRequests, AzToolsFramework::ComponentModeFramework::ComponentModeMouseViewportRequests)
+AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequests);
+AZ_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS_WITH_TRAITS(AZTF_API, AzToolsFramework::ComponentModeFramework::ComponentModeDelegateRequests, AzToolsFramework::ComponentModeFramework::ComponentModeMouseViewportRequests)
  

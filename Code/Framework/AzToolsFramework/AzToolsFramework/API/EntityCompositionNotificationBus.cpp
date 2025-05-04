@@ -8,4 +8,4 @@
 
 #include <AzToolsFramework/API/EntityCompositionNotificationBus.h>
 
-AZTF_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AzToolsFramework::EntityCompositionNotifications);
+AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EntityCompositionNotifications);

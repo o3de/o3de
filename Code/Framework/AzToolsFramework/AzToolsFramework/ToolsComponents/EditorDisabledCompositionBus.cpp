@@ -8,4 +8,4 @@
 
 #include <AzToolsFramework/ToolsComponents/EditorDisabledCompositionBus.h>
 
-AZTF_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AzToolsFramework::EditorDisabledCompositionRequests);
+AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EditorDisabledCompositionRequests);

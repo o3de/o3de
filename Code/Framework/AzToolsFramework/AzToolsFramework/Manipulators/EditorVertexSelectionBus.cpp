@@ -8,4 +8,4 @@
 
 #include <AzToolsFramework/Manipulators/EditorVertexSelectionBus.h>
 
-AZTF_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(AzToolsFramework::EditorVertexSelectionVariableRequests);
+AZ_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(AZTF_API, AzToolsFramework::EditorVertexSelectionVariableRequests);

@@ -31,4 +31,4 @@ namespace AzToolsFramework
     using CylinderManipulatorRequestBus = AZ::EBus<CylinderManipulatorRequests>;
 } // namespace AzToolsFramework
 
-AZTF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzToolsFramework::CylinderManipulatorRequests);
+AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZTF_API, AzToolsFramework::CylinderManipulatorRequests);

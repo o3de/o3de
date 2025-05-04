@@ -42,4 +42,4 @@ namespace AzToolsFramework
     using ShapeManipulatorRequestBus = AZ::EBus<ShapeManipulatorRequests>;
 } // namespace AzToolsFramework
 
-AZTF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzToolsFramework::ShapeManipulatorRequests);
+AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZTF_API, AzToolsFramework::ShapeManipulatorRequests);

@@ -8,4 +8,4 @@
 
 #include <AzToolsFramework/PaintBrush/GlobalPaintBrushSettingsNotificationBus.h>
 
-AZTF_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AzToolsFramework::GlobalPaintBrushSettingsNotifications);
+AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::GlobalPaintBrushSettingsNotifications);
