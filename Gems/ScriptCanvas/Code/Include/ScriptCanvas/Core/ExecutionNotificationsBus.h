@@ -649,3 +649,16 @@ namespace ScriptCanvas
         visitor.Visit(*this);
     }
 } // namespace ScriptCanvas
+
+namespace AZStd
+{
+    template<>
+    struct hash<ScriptCanvas::Breakpoint>
+    {
+        AZ_FORCE_INLINE size_t operator()(const ScriptCanvas::Breakpoint& argument) const
+        {
+            // AZ::EntityId overloads the u64 cast to return the stored id
+            return static_cast<AZ::u64>(argument);
+        }
+    };
+}
