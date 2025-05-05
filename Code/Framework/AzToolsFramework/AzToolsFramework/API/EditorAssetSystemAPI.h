@@ -34,7 +34,8 @@ namespace AzToolsFramework
         //! If you want to talk to it as if a game engine component or runtime component
         //! \ref AssetSystemBus.h
         //! in the common header location.
-        class AssetSystemRequest : public AZ::EBusTraits
+        class AssetSystemRequest 
+           : public AZ::EBusTraits
         {
         public:
             static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single; // single listener
@@ -156,7 +157,8 @@ namespace AzToolsFramework
 
         //! AssetSystemBusTraits
         //! This bus is for events that concern individual assets and is addressed by file extension
-        class AssetSystemNotifications : public AZ::EBusTraits
+        class AssetSystemNotifications 
+            : public AZ::EBusTraits
         {
         public:
             typedef AZStd::recursive_mutex MutexType;
@@ -190,8 +192,7 @@ namespace AzToolsFramework
             Queued, // its in the queue and will be built shortly
             InProgress, // its being compiled right now.
             Failed,
-            Failed_InvalidSourceNameExceedsMaxLimit, // use this enum to indicate that the job failed because the source file name length
-                                                     // exceeds the maximum length allowed
+            Failed_InvalidSourceNameExceedsMaxLimit, // use this enum to indicate that the job failed because the source file name length exceeds the maximum length allowed
             Completed, // built successfully (no failure occurred)
             Missing // indicate that the job is not present for example if the source file is not there, or if job key is not there
         };
@@ -249,7 +250,8 @@ namespace AzToolsFramework
         using JobInfoContainer = ::AZStd::vector<JobInfo>;
 
         //! This Ebus will be used to retrieve all the job related information from AP
-        class AssetSystemJobRequest : public AZ::EBusTraits
+        class AssetSystemJobRequest 
+            : public AZ::EBusTraits
         {
         public:
             static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single; // single listener

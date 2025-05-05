@@ -49,8 +49,6 @@ set(FILES
     ActionManager/ToolBar/ToolBarManagerInternalInterface.h
     API/AssetDatabaseBus.cpp
     API/AssetDatabaseBus.h
-    API/AssetSystemJobInfo.cpp
-    API/AssetSystemJobInfo.h
     API/ComponentEntityObjectBus.cpp
     API/ComponentEntityObjectBus.h
     API/ComponentEntitySelection.cpp
