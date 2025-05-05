@@ -30,6 +30,11 @@ namespace AZ
     AZ_TYPE_INFO_SPECIALIZE_WITH_NAME_IMPL(double, "double", "{110C4B14-11A8-4e9d-8638-5051013A56AC}");
     AZ_TYPE_INFO_SPECIALIZE_WITH_NAME_IMPL(bool, "bool", "{A0CA880C-AFE4-43cb-926C-59AC48496112}");
     AZ_TYPE_INFO_SPECIALIZE_WITH_NAME_IMPL(void, "void", "{C0F1AFAD-5CB3-450E-B0F5-ADB5D46B0E22}");
+
+    namespace Internal
+    {
+        AZ_TEMPLATE_EXTERN template struct AZCORE_API_EXPORT AggregateTypes<Crc32>;
+    }
 }
 
 namespace AZStd

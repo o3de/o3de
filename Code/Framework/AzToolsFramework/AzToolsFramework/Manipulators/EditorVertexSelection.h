@@ -381,12 +381,12 @@ namespace AzToolsFramework
     extern template void InsertVertexAfter(const AZ::EntityComponentIdPair& entityComponentIdPair, size_t, const AZ::Vector3&);
     extern template void SafeRemoveVertex<AZ::Vector2>(const AZ::EntityComponentIdPair& entityComponentIdPair, size_t vertexIndex);
     extern template void SafeRemoveVertex<AZ::Vector3>(const AZ::EntityComponentIdPair& entityComponentIdPair, size_t vertexIndex);
-
-    //AZTF_API_EXTERN template class AZTF_API EditorVertexSelectionBase<AZ::Vector2>;
-    //AZTF_API_EXTERN template class AZTF_API EditorVertexSelectionBase<AZ::Vector3>;
-    //AZTF_API_EXTERN template class AZTF_API EditorVertexSelectionFixed<AZ::Vector2>;
-    //AZTF_API_EXTERN template class AZTF_API EditorVertexSelectionFixed<AZ::Vector3>;
-    //AZTF_API_EXTERN template class AZTF_API EditorVertexSelectionVariable<AZ::Vector2>;
-    //AZTF_API_EXTERN template class AZTF_API EditorVertexSelectionVariable<AZ::Vector3>;
-
+/*
+    AZTF_TEMPLATE_EXTERN template class AZTF_API EditorVertexSelectionBase<AZ::Vector2>;
+    AZTF_TEMPLATE_EXTERN template class AZTF_API EditorVertexSelectionBase<AZ::Vector3>;
+    AZTF_TEMPLATE_EXTERN template class AZTF_API EditorVertexSelectionFixed<AZ::Vector2>;
+    AZTF_TEMPLATE_EXTERN template class AZTF_API EditorVertexSelectionFixed<AZ::Vector3>;
+    AZTF_TEMPLATE_EXTERN template class AZTF_API EditorVertexSelectionVariable<AZ::Vector2>;
+    AZTF_TEMPLATE_EXTERN template class AZTF_API EditorVertexSelectionVariable<AZ::Vector3>;
+*/
 } // namespace AzToolsFramework

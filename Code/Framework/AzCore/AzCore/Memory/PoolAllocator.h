@@ -47,7 +47,7 @@ namespace AZ
 
         size_type NumAllocatedBytes() const override;
 
-        AZ_DISABLE_COPY(PoolSchema);
+        AZ_DISABLE_COPY_MOVE(PoolSchema);
     protected:
 
         class PoolSchemaImpl*             m_impl;

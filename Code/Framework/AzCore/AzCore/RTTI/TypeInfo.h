@@ -261,7 +261,7 @@ namespace AZ
             }
         };
 
-        extern template struct AggregateTypes<Crc32>;
+        AZ_TEMPLATE_EXTERN template struct AZCORE_API AggregateTypes<Crc32>;
 
         template<typename T>
         constexpr AZStd::string_view GetTypeName()

@@ -26,7 +26,8 @@ if (${PAL_TRAIT_LINUX_WINDOW_MANAGER} STREQUAL "xcb")
             3rdParty::X11::xkbcommon
             3rdParty::X11::xkbcommon_X11
             3rdParty::X11::xcb_randr
-            xcb-xinput
+            3rdParty::X11::xcb_xinput
+            3rdParty::X11::xcb_util
     )
 
 elseif(PAL_TRAIT_LINUX_WINDOW_MANAGER STREQUAL "wayland")

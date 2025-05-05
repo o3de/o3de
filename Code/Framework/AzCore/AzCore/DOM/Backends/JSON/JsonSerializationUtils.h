@@ -46,7 +46,7 @@ namespace AZ::Dom::Json
     {
     public:
         RapidJsonValueWriter(rapidjson::Value& outputValue, rapidjson::Value::AllocatorType& allocator);
-        AZ_DISABLE_COPY(RapidJsonValueWriter);
+        AZ_DISABLE_COPY_MOVE(RapidJsonValueWriter);
 
         VisitorFlags GetVisitorFlags() const override;
         Result Null() override;

@@ -74,15 +74,15 @@ namespace AZ::IO
     }
     
     // Class template instantations
-    template AZCORE_API_EXPORT class BasicPath<AZStd::string>;
-    template AZCORE_API_EXPORT class BasicPath<FixedMaxPathString>;
-    template AZCORE_API_EXPORT class PathIterator<const PathView>;
-    template AZCORE_API_EXPORT class PathIterator<const Path>;
-    template AZCORE_API_EXPORT class PathIterator<const FixedMaxPath>;
+    template class AZCORE_API_EXPORT BasicPath<AZStd::string>;
+    template class AZCORE_API_EXPORT BasicPath<FixedMaxPathString>;
+    template class AZCORE_API_EXPORT PathIterator<const PathView>;
+    template class AZCORE_API_EXPORT PathIterator<const Path>;
+    template class AZCORE_API_EXPORT PathIterator<const FixedMaxPath>;
 
     // Swap function instantiations
-    template AZCORE_API_EXPORT void swap<AZStd::string>(Path& lhs, Path& rhs) noexcept;
-    template AZCORE_API_EXPORT void swap<FixedMaxPathString>(FixedMaxPath& lhs, FixedMaxPath& rhs) noexcept;
+    template void swap<AZStd::string>(Path& lhs, Path& rhs) noexcept;
+    template void swap<FixedMaxPathString>(FixedMaxPath& lhs, FixedMaxPath& rhs) noexcept;
 
     // Hash function instantiations
     template AZCORE_API_EXPORT size_t hash_value<AZStd::string>(const Path& pathToHash);

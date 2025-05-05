@@ -16,7 +16,7 @@
  
  namespace AZStd
  {
-     template class vector<AzToolsFramework::AssetSystem::JobInfo>;
+     template class AZTF_API_EXPORT  vector<AzToolsFramework::AssetSystem::JobInfo>;
  }
  
  namespace AzToolsFramework

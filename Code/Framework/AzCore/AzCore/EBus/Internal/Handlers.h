@@ -205,7 +205,7 @@ namespace AZ
                 typename BusType::Context::ConnectLockGuard contextLock(context.m_contextMutex);
                 if (!BusIsConnected())
                 {
-                    typename Traits::BusIdType id;
+                    typename Traits::BusIdType id{};
                     m_node = this;
                     BusType::ConnectInternal(context, m_node, contextLock, id);
                 }

@@ -5,6 +5,16 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <AzCore/Debug/TraceMessageBus.h>
 
-AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AZCORE_API, AZ::Debug::TraceMessageEvents)
+#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
+
+namespace AzToolsFramework
+{
+    namespace AssetSystem
+    {
+        const char* GetHostAssetPlatform()
+        {
+            return "linux";
+        }
+    }
+}

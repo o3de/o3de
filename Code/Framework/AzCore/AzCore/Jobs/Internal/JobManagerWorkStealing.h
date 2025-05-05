@@ -29,7 +29,7 @@ namespace AZ
 
     namespace Internal
     {
-        class WorkQueue final
+        class AZCORE_API WorkQueue final
         {
         public:
             void LocalInsert(Job *job);
@@ -56,7 +56,7 @@ namespace AZ
          * those sticky points (if they are a problem). In addition we can think about writing a more advanced
          * scheduler or use some off the shelf.
          */
-        class JobManagerWorkStealing final
+        class AZCORE_API JobManagerWorkStealing final
             : public JobManagerBase
         {
         public:

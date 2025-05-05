@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/base.h>
 #include <AzCore/Serialization/Locale_Platform.h>
 
 namespace AZ

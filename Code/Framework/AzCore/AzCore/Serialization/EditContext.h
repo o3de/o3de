@@ -1219,5 +1219,5 @@ namespace AZ
 
 #include <AzCore/Serialization/EditContext.inl>
 
-template AZCORE_API_EXPORT AZ::EditContext::ClassBuilder* AZ::EditContext::ClassBuilder::Attribute<AZ::Crc32>(const char*, AZ::Crc32);
-template AZCORE_API_EXPORT AZ::EditContext::ClassBuilder* AZ::EditContext::ClassBuilder::Attribute<AZ::Crc32>(AZ::Crc32, AZ::Crc32);
+AZ_TEMPLATE_EXTERN template AZCORE_API_EXPORT AZ::EditContext::ClassBuilder* AZ::EditContext::ClassBuilder::Attribute<AZ::Crc32>(const char*, AZ::Crc32);
+AZ_TEMPLATE_EXTERN template AZCORE_API_EXPORT AZ::EditContext::ClassBuilder* AZ::EditContext::ClassBuilder::Attribute<AZ::Crc32>(AZ::Crc32, AZ::Crc32);

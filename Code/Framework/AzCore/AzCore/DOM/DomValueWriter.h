@@ -20,7 +20,7 @@ namespace AZ::Dom
     public:
         ValueWriter(Value& outputValue);
 
-        AZ_DISABLE_COPY(ValueWriter);
+        AZ_DISABLE_COPY_MOVE(ValueWriter);
 
         VisitorFlags GetVisitorFlags() const override;
         Result Null() override;

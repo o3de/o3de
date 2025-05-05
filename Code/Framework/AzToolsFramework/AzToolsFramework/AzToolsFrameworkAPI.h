@@ -11,10 +11,18 @@
 
 #if defined(AZ_MONOLITHIC_BUILD)
     #define AZTF_API
+    #define AZTF_TEMPLATE_EXTERN
+    #define AZTF_API_EXTERN           extern
 #else
     #if defined(AZTF_EXPORTS)
         #define AZTF_API        AZ_DLL_EXPORT
+        #define AZTF_TEMPLATE_EXTERN  AZ_TRAIT_OS_TEMPLATE_EXTERN
+        #define AZTF_API_EXTERN       AZ_TRAIT_OS_TEMPLATE_EXTERN
+        #define AZTF_API_EXPORT       AZ_DLL_EXPORT
     #else
-        #define AZTF_API        AZ_DLL_IMPORT
+        #define AZTF_API              AZ_DLL_IMPORT
+        #define AZTF_TEMPLATE_EXTERN  AZ_TRAIT_OS_TEMPLATE_EXTERN
+        #define AZTF_API_EXTERN       AZ_TRAIT_OS_TEMPLATE_EXTERN
+        #define AZTF_API_EXPORT       
     #endif
 #endif

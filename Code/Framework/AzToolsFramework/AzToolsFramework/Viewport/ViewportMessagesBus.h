@@ -379,7 +379,6 @@ namespace AzToolsFramework
 } // namespace AzToolsFramework
 
 AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS_WITH_TRAITS(AZTF_API, AzToolsFramework::ViewportInteraction::MouseViewportRequests, AzToolsFramework::ViewportInteraction::ViewportRequestsEBusTraits);
-AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS_WITH_TRAITS(AZTF_API, AzToolsFramework::ViewportInteraction::ViewportInteractionRequests, AzToolsFramework::ViewportInteraction::ViewportRequestsEBusTraits);
 AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS_WITH_TRAITS(AZTF_API, AzToolsFramework::ViewportInteraction::ViewportInteractionRequests, AzToolsFramework::ViewportInteraction::ViewportRequestsEBusTraits);
 AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS_WITH_TRAITS(AZTF_API, AzToolsFramework::ViewportInteraction::ViewportInteractionNotifications, AzToolsFramework::ViewportInteraction::ViewportNotificationsEBusTraits);
 AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS_WITH_TRAITS(AZTF_API, AzToolsFramework::ViewportInteraction::ViewportSettingNotifications, AzToolsFramework::ViewportInteraction::ViewportNotificationsEBusTraits);
