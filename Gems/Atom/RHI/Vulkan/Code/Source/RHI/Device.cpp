@@ -1456,6 +1456,7 @@ namespace AZ
             // to determine if ray tracing is supported on this device
             StringList deviceExtensions = physicalDevice.GetDeviceExtensionNames();
             StringList::iterator itRayTracingExtension = AZStd::find(deviceExtensions.begin(), deviceExtensions.end(), VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME);
+            StringList::iterator itRayTracingClasExtension = AZStd::find(deviceExtensions.begin(), deviceExtensions.end(), VK_NV_CLUSTER_ACCELERATION_STRUCTURE_EXTENSION_NAME);
             m_features.m_unboundedArrays = vulkan12
                 ? physicalDevice.GetPhysicalDeviceVulkan12Features().shaderStorageTexelBufferArrayNonUniformIndexing
                 : physicalDevice.GetPhysicalDeviceDescriptorIndexingFeatures().shaderStorageTexelBufferArrayNonUniformIndexing;
@@ -1463,6 +1464,7 @@ namespace AZ
             {
                 // Ray tracing needs raytracing extensions and unbounded arrays to work
                 m_features.m_rayTracing = (itRayTracingExtension != deviceExtensions.end());
+                m_features.m_rayTracingClas = (itRayTracingClasExtension != deviceExtensions.end());
             }
 
             m_features.m_float16 = vulkan12 ? physicalDevice.GetPhysicalDeviceVulkan12Features().shaderFloat16

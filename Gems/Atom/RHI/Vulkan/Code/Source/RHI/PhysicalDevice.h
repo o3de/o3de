@@ -160,6 +160,7 @@ namespace AZ
             VkPhysicalDeviceAccelerationStructurePropertiesKHR m_accelerationStructureProperties{};
             VkPhysicalDeviceAccelerationStructureFeaturesKHR m_accelerationStructureFeatures{};
             VkPhysicalDeviceClusterAccelerationStructureFeaturesNV m_clusterAccelerationStructureFeatures{};
+            VkPhysicalDeviceClusterAccelerationStructurePropertiesNV m_clusterAccelerationStructureProperties{};
             VkPhysicalDeviceRayTracingPipelinePropertiesKHR m_rayTracingPipelineProperties{};
             VkPhysicalDeviceRayTracingPipelineFeaturesKHR m_rayTracingPipelineFeatures{};
             VkPhysicalDeviceRayQueryFeaturesKHR m_rayQueryFeatures{};
