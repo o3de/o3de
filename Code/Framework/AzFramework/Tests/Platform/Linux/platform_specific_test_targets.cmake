@@ -22,6 +22,10 @@ if (${PAL_TRAIT_LINUX_WINDOW_MANAGER} STREQUAL "xcb")
                 ${pal_dir}
         BUILD_DEPENDENCIES
             PRIVATE
+                3rdParty::X11::xcb
+                3rdParty::X11::xcb_xkb
+                3rdParty::X11::xcb_xfixes
+                3rdParty::X11::xcb_xinput
                 AZ::AzFramework
                 AZ::AzFramework.NativeUI
                 AZ::AzTest
