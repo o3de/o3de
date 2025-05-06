@@ -42,6 +42,8 @@ namespace AZ
 
             uint32_t GetBindlessReadWriteIndex() const override;
 
+            uint64_t GetDeviceAddress() const override;
+
         private:
             friend class BindlessDescriptorPool;
 

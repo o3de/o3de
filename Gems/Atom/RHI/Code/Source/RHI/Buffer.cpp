@@ -45,6 +45,21 @@ namespace AZ::RHI
         return hash;
     }
 
+    AZStd::unordered_map<int, uint64_t> Buffer::GetDeviceAddress() const
+    {
+        AZStd::unordered_map<int, uint64_t> result;
+
+        MultiDeviceObject::IterateDevices(
+            GetDeviceMask(),
+            [this, &result](int deviceIndex)
+            {
+                result[deviceIndex] = GetDeviceBuffer(deviceIndex)->GetDeviceAddress();
+                return true;
+            });
+
+        return result;
+    }
+
     void Buffer::Shutdown()
     {
         Resource::Shutdown();
