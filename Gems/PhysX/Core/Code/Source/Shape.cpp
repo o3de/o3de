@@ -8,15 +8,17 @@
 
 #include <Source/Shape.h>
 
+#include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
 #include <AzFramework/Physics/Material/PhysicsMaterial.h>
+#include <AzFramework/Physics/ShapeConfiguration.h>
 #include <Common/PhysXSceneQueryHelpers.h>
+#include <PhysX/Material/PhysXMaterial.h>
+#include <PhysX/MathConversion.h>
 #include <PhysX/PhysXLocks.h>
 #include <PhysX/Utils.h>
-#include <PhysX/Material/PhysXMaterial.h>
 #include <Source/Collision.h>
 #include <Source/Utils.h>
-#include <PhysX/MathConversion.h>
 
 namespace PhysX
 {
@@ -26,7 +28,7 @@ namespace PhysX
         // we default to these values for consistency
         constexpr size_t NumStacks = 48;
         constexpr size_t NumSlices = 48;
-    }
+    } // namespace ShapeConstants
 
     Shape::Shape(Shape&& shape)
         : m_pxShape(AZStd::move(shape.m_pxShape))
@@ -68,6 +70,7 @@ namespace PhysX
     Shape::Shape(const Physics::ColliderConfiguration& colliderConfiguration, const Physics::ShapeConfiguration& shapeConfiguration)
         : m_collisionLayer(colliderConfiguration.m_collisionLayer)
     {
+        m_shapeConfiguration = shapeConfiguration.Clone();
         if (physx::PxShape* newShape = Utils::CreatePxShapeFromConfig(colliderConfiguration, shapeConfiguration, m_collisionGroup))
         {
             m_pxShape = PxShapeUniquePtr(newShape, AZStd::bind(&Shape::ReleasePxShape, this, newShape));
@@ -90,7 +93,8 @@ namespace PhysX
 
     Shape::~Shape()
     {
-        //release the shape here, so when Shape::ReleasePxShape is called to delete the physx::PxShape* we can still acquire the scene lock.
+        // release the shape here, so when Shape::ReleasePxShape is called to delete the physx::PxShape* we can still acquire the scene
+        // lock.
         m_pxShape.reset();
         m_pxShape = nullptr;
         m_attachedActor = nullptr;
@@ -163,7 +167,10 @@ namespace PhysX
                 pxMaterials.emplace_back(material->GetPxMaterial());
             }
 
-            AZ_Warning("PhysX Shape", m_materials.size() < std::numeric_limits<AZ::u16>::max(), "Trying to assign too many materials, cutting down");
+            AZ_Warning(
+                "PhysX Shape",
+                m_materials.size() < std::numeric_limits<AZ::u16>::max(),
+                "Trying to assign too many materials, cutting down");
             size_t materialsCount = AZStd::GetMin(m_materials.size(), static_cast<size_t>(std::numeric_limits<AZ::u16>::max()));
 
             {
@@ -193,14 +200,21 @@ namespace PhysX
         {
             if (assignedMaterials[i]->userData == nullptr)
             {
-                AZ_Error("PhysX Shape", false, "Trying to assign material with no user data. Make sure you are creating materials using MaterialManager");
+                AZ_Error(
+                    "PhysX Shape",
+                    false,
+                    "Trying to assign material with no user data. Make sure you are creating materials using MaterialManager");
                 continue;
             }
 
-            AZStd::shared_ptr<PhysX::Material> physxMaterial = static_cast<PhysX::Material*>(PhysX::Utils::GetUserData(assignedMaterials[i]))->shared_from_this();
+            AZStd::shared_ptr<PhysX::Material> physxMaterial =
+                static_cast<PhysX::Material*>(PhysX::Utils::GetUserData(assignedMaterials[i]))->shared_from_this();
             if (!physxMaterial)
             {
-                AZ_Error("PhysX Shape", false, "Invalid user data of a physx material. Make sure you are creating materials using MaterialManager");
+                AZ_Error(
+                    "PhysX Shape",
+                    false,
+                    "Invalid user data of a physx material. Make sure you are creating materials using MaterialManager");
                 continue;
             }
 
@@ -292,8 +306,7 @@ namespace PhysX
         float contactOffset = GetContactOffset();
         if (restOffset >= contactOffset)
         {
-            AZ_Error("PhysX Shape", false, "Requested rest offset (%e) must be less than contact offset (%e).",
-                restOffset, contactOffset);
+            AZ_Error("PhysX Shape", false, "Requested rest offset (%e) must be less than contact offset (%e).", restOffset, contactOffset);
             return;
         }
         m_pxShape->setRestOffset(restOffset);
@@ -310,8 +323,7 @@ namespace PhysX
         float restOffset = GetRestOffset();
         if (contactOffset <= restOffset)
         {
-            AZ_Error("PhysX Shape", false, "Requested contact offset (%e) must exceed rest offset (%e).",
-                contactOffset, restOffset);
+            AZ_Error("PhysX Shape", false, "Requested contact offset (%e) must exceed rest offset (%e).", contactOffset, restOffset);
             return;
         }
         m_pxShape->setContactOffset(contactOffset);
@@ -357,8 +369,7 @@ namespace PhysX
 
     AzPhysics::SceneQueryHit Shape::RayCastInternal(const AzPhysics::RayCastRequest& worldSpaceRequest, const physx::PxTransform& pose)
     {
-        if (const bool shouldCollide = worldSpaceRequest.m_collisionGroup.GetMask() & m_collisionLayer.GetMask();
-            !shouldCollide)
+        if (const bool shouldCollide = worldSpaceRequest.m_collisionGroup.GetMask() & m_collisionLayer.GetMask(); !shouldCollide)
         {
             return AzPhysics::SceneQueryHit();
         }
@@ -384,7 +395,8 @@ namespace PhysX
         if (hit)
         {
             // Fill actor and shape, as they won't be filled from PxGeometryQuery
-            hitInfo.actor = static_cast<physx::PxRigidActor*>(m_attachedActor); // This cast is safe since GetHitFromPxHit() only uses PxActor:: functions
+            hitInfo.actor = static_cast<physx::PxRigidActor*>(
+                m_attachedActor); // This cast is safe since GetHitFromPxHit() only uses PxActor:: functions
             hitInfo.shape = GetPxShape();
             return SceneQueryHelpers::GetHitFromPxHit(hitInfo, hitInfo);
         }
@@ -415,9 +427,11 @@ namespace PhysX
     {
         PHYSX_SCENE_READ_LOCK(GetScene());
 #if (PX_PHYSICS_VERSION_MAJOR == 5)
-        return PxMathConvert(physx::PxGeometryQuery::getWorldBounds(m_pxShape->getGeometry(), PxMathConvert(worldTransform) * m_pxShape->getLocalPose(), 1.0f));
+        return PxMathConvert(physx::PxGeometryQuery::getWorldBounds(
+            m_pxShape->getGeometry(), PxMathConvert(worldTransform) * m_pxShape->getLocalPose(), 1.0f));
 #else
-        return PxMathConvert(physx::PxGeometryQuery::getWorldBounds(m_pxShape->getGeometry().any(), PxMathConvert(worldTransform) * m_pxShape->getLocalPose(), 1.0f));
+        return PxMathConvert(physx::PxGeometryQuery::getWorldBounds(
+            m_pxShape->getGeometry().any(), PxMathConvert(worldTransform) * m_pxShape->getLocalPose(), 1.0f));
 #endif
     }
 
@@ -440,8 +454,12 @@ namespace PhysX
         return nullptr;
     }
 
-    void Shape::GetGeometry(AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices,
-        const AZ::Aabb* optionalBounds) const
+    AZStd::shared_ptr<Physics::ShapeConfiguration> Shape::GetShapeConfiguration() const
+    {
+        return m_shapeConfiguration;
+    }
+
+    void Shape::GetGeometry(AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices, const AZ::Aabb* optionalBounds) const
     {
         if (!m_pxShape)
         {
@@ -467,7 +485,7 @@ namespace PhysX
             }
         }
         else if (m_pxShape->getGeometryType() == physx::PxGeometryType::eHEIGHTFIELD)
-        { 
+        {
             physx::PxHeightFieldGeometry geometry{};
             if (m_pxShape->getHeightFieldGeometry(geometry) && geometry.heightField && geometry.isValid())
             {
@@ -503,4 +521,4 @@ namespace PhysX
             AZ_TracePrintf("Shape", "GetGeometry for PxGeometryType %d is not supported", static_cast<int>(m_pxShape->getGeometryType()));
         }
     }
-}
+} // namespace PhysX
