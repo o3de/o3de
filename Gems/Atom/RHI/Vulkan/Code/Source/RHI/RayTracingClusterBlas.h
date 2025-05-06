@@ -72,6 +72,7 @@ namespace AZ
                 uint32_t m_dstSizesArrayBufferStride = 0;
 
                 RHI::Ptr<RHI::DeviceBuffer> m_srcInfosArrayBuffer;
+                RHI::Ptr<RHI::DeviceBuffer> m_blasSrcInfosBuffer;
                 uint64_t m_srcInfosArrayBufferDeviceAddress;
                 uint32_t m_srcInfosArrayBufferSize = 0;
                 uint32_t m_srcInfosArrayBufferStride = 0;

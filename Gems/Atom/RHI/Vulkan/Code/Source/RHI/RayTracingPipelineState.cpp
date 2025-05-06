@@ -191,9 +191,14 @@ namespace AZ
             m_pipelineLayout = static_cast<const PipelineState*>(descriptor->m_pipelineState)->GetPipelineLayout()->GetNativePipelineLayout();
 
             // create the ray tracing pipeline
+            VkRayTracingPipelineClusterAccelerationStructureCreateInfoNV clasCreateInfo = {};
+            clasCreateInfo.sType = VK_STRUCTURE_TYPE_RAY_TRACING_PIPELINE_CLUSTER_ACCELERATION_STRUCTURE_CREATE_INFO_NV;
+            clasCreateInfo.pNext = nullptr;
+            clasCreateInfo.allowClusterAccelerationStructure = true;
+
             VkRayTracingPipelineCreateInfoKHR createInfo = {};
             createInfo.sType = VK_STRUCTURE_TYPE_RAY_TRACING_PIPELINE_CREATE_INFO_KHR;
-            createInfo.pNext = nullptr;
+            createInfo.pNext = &clasCreateInfo;
             createInfo.flags = 0;
             createInfo.stageCount = static_cast<uint32_t>(stages.size());
             createInfo.pStages = stages.data();

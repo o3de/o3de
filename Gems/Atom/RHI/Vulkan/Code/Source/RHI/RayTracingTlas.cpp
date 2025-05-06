@@ -112,13 +112,13 @@ namespace AZ
                         // for cluster BLAS, mappedData[i].accelerationStructureReference will be filled on GPU later
                         // 
                         //// in explicit mode, the address of acceleration structure is pre-determined in CPU
-                        //RayTracingClusterBlas* clusterBlas = static_cast<RayTracingClusterBlas*>(instance.m_clusterBlas.get());
-                        //VkBufferDeviceAddressInfo addressInfo = {};
-                        //addressInfo.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
-                        //addressInfo.pNext = nullptr;
-                        //addressInfo.buffer = static_cast<Buffer*>(clusterBlas->GetBuffers().m_clusterBlasBuffer.get())->GetBufferMemoryView()->GetNativeBuffer();
-                        //// TODO: is it correct?
-                        //mappedData[i].accelerationStructureReference = device.GetContext().GetBufferDeviceAddress(device.GetNativeDevice(), &addressInfo);
+                        RayTracingClusterBlas* clusterBlas = static_cast<RayTracingClusterBlas*>(instance.m_clusterBlas.get());
+                        VkBufferDeviceAddressInfo addressInfo = {};
+                        addressInfo.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
+                        addressInfo.pNext = nullptr;
+                        addressInfo.buffer = static_cast<Buffer*>(clusterBlas->GetBuffers().m_clusterBlasBuffer.get())->GetBufferMemoryView()->GetNativeBuffer();
+                        mappedData[i].accelerationStructureReference = device.GetContext().GetBufferDeviceAddress(device.GetNativeDevice(), &addressInfo);
+                        blasBuffers.emplace_back(clusterBlas->GetBuffers().m_clusterBlasBuffer);
                     }
                 }
             

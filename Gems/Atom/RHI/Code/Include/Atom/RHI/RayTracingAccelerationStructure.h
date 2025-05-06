@@ -128,7 +128,7 @@ namespace AZ::RHI
         RayTracingClusterBlasDescriptor* VertexFormat(RHI::Format vertexFormat);
         RayTracingClusterBlasDescriptor* BuildFlags(const RHI::RayTracingAccelerationStructureBuildFlags& buildFlags);
 
-    private:
+    //private:
         RHI::Format m_vertexFormat;
         uint32_t m_maxGeometryIndexValue;
         uint32_t m_maxClusterUniqueGeometryCount;

@@ -163,7 +163,7 @@ namespace AZ::RHI
         DeviceRayTracingClusterBlasDescriptor* VertexFormat(RHI::Format vertexFormat);
         DeviceRayTracingClusterBlasDescriptor* BuildFlags(const RHI::RayTracingAccelerationStructureBuildFlags& buildFlags);
 
-    private:
+    //private:
         RHI::Format m_vertexFormat;
         uint32_t m_maxGeometryIndexValue;
         uint32_t m_maxClusterUniqueGeometryCount;

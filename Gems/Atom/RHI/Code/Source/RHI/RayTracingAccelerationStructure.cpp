@@ -316,8 +316,19 @@ namespace AZ::RHI
     {
         DeviceRayTracingClusterBlasDescriptor descriptor;
 
-        descriptor.VertexFormat(m_vertexFormat);
-        descriptor.BuildFlags(m_buildFlags);
+        //descriptor.VertexFormat(m_vertexFormat);
+        //descriptor.BuildFlags(m_buildFlags);
+
+        descriptor.m_vertexFormat = m_vertexFormat;
+        descriptor.m_maxGeometryIndexValue = m_maxGeometryIndexValue;
+        descriptor.m_maxClusterUniqueGeometryCount = m_maxClusterUniqueGeometryCount;
+        descriptor.m_maxClusterTriangleCount = m_maxClusterTriangleCount;
+        descriptor.m_maxClusterVertexCount = m_maxClusterVertexCount;
+        descriptor.m_maxTotalTriangleCount = m_maxTotalTriangleCount;
+        descriptor.m_maxTotalVertexCount = m_maxTotalVertexCount;
+        descriptor.m_minPositionTruncateBitCount = m_minPositionTruncateBitCount;
+        descriptor.m_maxClusterCount = m_maxClusterCount;
+        descriptor.m_buildFlags = m_buildFlags;
 
         return descriptor;
     }
