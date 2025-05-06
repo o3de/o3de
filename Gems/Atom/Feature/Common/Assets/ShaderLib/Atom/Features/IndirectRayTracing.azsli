@@ -1,0 +1,103 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+// VkClusterAccelerationStructureClusterFlagBitsNV
+enum class RayTracingClasClusterFlags
+{
+    AllowDisableOpacityMicromaps = 1,
+};
+
+// VkClusterAccelerationStructureIndexFormatFlagBitsNV
+enum class RayTracingClasGeometryFlags
+{
+    CullDisable = 1,
+    NoDuplicateAnyHitInvocation = 2,
+    Opaque = 4,
+};
+
+// VkClusterAccelerationStructureIndexFormatFlagBitsNV
+enum class RayTracingClasIndexFormat
+{
+    UINT8 = 1,
+    UINT16 = 2,
+    UINT32 = 4,
+};
+
+// VkClusterAccelerationStructureBuildTriangleClusterInfoNV
+// Bit-packed fields expanded such that each member can be written to individually.
+struct RayTracingClasBuildTriangleClusterInfoExpanded
+{
+    uint                        m_clusterID;
+    RayTracingClasClusterFlags  m_clusterFlags;
+    uint                        m_triangleCount;
+    uint                        m_vertexCount;
+    uint                        m_positionTruncateBitCount;
+    RayTracingClasIndexFormat   m_indexType;
+    RayTracingClasIndexFormat   m_opacityMicromapIndexType;
+    uint                        m_baseGeometryIndex;
+    RayTracingClasGeometryFlags m_geometryFlags;
+    uint                        m_indexBufferStride;
+    uint                        m_vertexBufferStride;
+    uint                        m_geometryIndexAndFlagsBufferStride;
+    uint                        m_opacityMicromapIndexBufferStride;
+    uint64_t                    m_indexBufferAddress;
+    uint64_t                    m_vertexBufferAddress;
+    uint64_t                    m_geometryIndexAndFlagsBufferAddress;
+    uint64_t                    m_opacityMicromapArrayAddress;
+    uint64_t                    m_opacityMicromapIndexBufferAddress;
+};
+
+// VkClusterAccelerationStructureBuildTriangleClusterInfoNV
+// Packed struct which matches the size of the Vulkan struct such that it can be used directly for calls to the Vulkan API.
+struct RayTracingClasBuildTriangleClusterInfo
+{
+    uint     m_clusterID;
+    uint     m_clusterFlags;
+    uint     m_vertexAndIndexConfiguration;
+    uint     m_baseGeometryIndexAndGeometryFlags;
+    uint     m_indexAndVertexBufferStride;
+    uint     m_geometryIndexAndOpacityIndexIndexBufferStride;
+    uint64_t m_indexBufferAddress;
+    uint64_t m_vertexBufferAddress;
+    uint64_t m_geometryIndexAndFlagsBufferAddress;
+    uint64_t m_opacityMicromapArrayAddress;
+    uint64_t m_opacityMicromapIndexBufferAddress;
+};
+
+inline RayTracingClasBuildTriangleClusterInfo RayTracingClasConvertBuildTriangleClusterInfo(
+    RayTracingClasBuildTriangleClusterInfoExpanded sourceInfo)
+{
+    RayTracingClasBuildTriangleClusterInfo targetInfo;
+
+    targetInfo.m_clusterID = sourceInfo.m_clusterID;
+    targetInfo.m_clusterFlags = (uint)sourceInfo.m_clusterFlags;
+    targetInfo.m_vertexAndIndexConfiguration =
+        (sourceInfo.m_triangleCount                  & 0x1FF) |
+        ((sourceInfo.m_vertexCount                   & 0x1FF) <<  9) |
+        ((sourceInfo.m_positionTruncateBitCount      & 0x3F)  << 18) |
+        ((uint)sourceInfo.m_indexType                & 0xF)   << 24 |
+        ((uint)sourceInfo.m_opacityMicromapIndexType & 0xF)   << 28;
+    targetInfo.m_baseGeometryIndexAndGeometryFlags =
+        (sourceInfo.m_baseGeometryIndex    & 0xFFFFFF) |
+        (((uint)sourceInfo.m_geometryFlags & 0x7) << 29);
+    targetInfo.m_indexAndVertexBufferStride =
+        (sourceInfo.m_indexBufferStride   & 0xFFFF) |
+        ((sourceInfo.m_vertexBufferStride & 0xFFFF) << 16);
+    targetInfo.m_geometryIndexAndOpacityIndexIndexBufferStride =
+        (sourceInfo.m_geometryIndexAndFlagsBufferStride & 0xFFFF) |
+        ((sourceInfo.m_opacityMicromapIndexBufferStride & 0xFFFF) << 16);
+    targetInfo.m_indexBufferAddress = sourceInfo.m_indexBufferAddress;
+    targetInfo.m_vertexBufferAddress = sourceInfo.m_vertexBufferAddress;
+    targetInfo.m_geometryIndexAndFlagsBufferAddress = sourceInfo.m_geometryIndexAndFlagsBufferAddress;
+    targetInfo.m_opacityMicromapArrayAddress = sourceInfo.m_opacityMicromapArrayAddress;
+    targetInfo.m_opacityMicromapIndexBufferAddress = sourceInfo.m_opacityMicromapIndexBufferAddress;
+
+    return targetInfo;
+}
