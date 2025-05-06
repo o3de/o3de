@@ -182,6 +182,9 @@ namespace AZ::Internal
         PoolAllocatorHelper& operator=(const PoolAllocatorHelper&) = delete;
     };
 
+    AZ_TYPE_INFO_TEMPLATE_WITH_NAME_IMPL_INLINE(PoolAllocatorHelper, "PoolAllocatorHelper", PoolAllocatorHelperTemplateId, AZ_TYPE_INFO_CLASS);
+
+
     AZCORE_API_EXTERN template class AZCORE_API PoolAllocatorHelper<PoolSchema>;
 }
 

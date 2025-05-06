@@ -13,7 +13,8 @@
 
 namespace AZ::Internal
 {
-    AZ_TEMPLATE_EXTERN template struct AZCORE_API_EXPORT AggregateTypes<Crc32>;
+    // TODO: Disable for linux linker error for now
+    //AZ_TEMPLATE_EXTERN template struct AZCORE_API_EXPORT AggregateTypes<Crc32>;
 }
 
 namespace AZ

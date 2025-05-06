@@ -716,7 +716,7 @@ namespace AZ::Internal
 {
     // Add implementation of PoolAllocatorHelper Class Template RTTI functions inside
     // of this translation unit to as the MyThreadPoolAllocator derived class requires linkage to those functions.
-    AZ_TYPE_INFO_TEMPLATE_WITH_NAME_IMPL(PoolAllocatorHelper, "PoolAllocatorHelper", PoolAllocatorHelperTemplateId, AZ_TYPE_INFO_CLASS);
+    // AZ_TYPE_INFO_TEMPLATE_WITH_NAME_IMPL(PoolAllocatorHelper, "PoolAllocatorHelper", PoolAllocatorHelperTemplateId, AZ_TYPE_INFO_CLASS);
     // AZ_RTTI_NO_TYPE_INFO_IMPL((PoolAllocatorHelper, AZ_TYPE_INFO_CLASS), Base);
 }
 namespace UnitTest
