@@ -102,7 +102,8 @@ float IntegrateEdge(float3 v1, float3 v2)
         theta_sinTheta = PI * rsqrt(clamp(1.0 - cosTheta * cosTheta, EPSILON, 1.0)) - theta_sinTheta;
     }
 
-    return theta_sinTheta * cross(v1, v2).z;
+    float ans = theta_sinTheta * cross(v1, v2).z;
+    return clamp(ans, -PI, PI);
 }
 
 // Cheaper version of above which is good enough for diffuse
@@ -118,7 +119,8 @@ float IntegrateEdgeDiffuse(float3 v1, float3 v2)
         theta_sinTheta = PI * rsqrt(clamp(1.0 - cosTheta * cosTheta, EPSILON, 1.0)) - theta_sinTheta;
     }
 
-    return theta_sinTheta * cross(v1, v2).z;
+    float ans = theta_sinTheta * cross(v1, v2).z;
+    return clamp(ans, -PI, PI);
 }
 
 // Returns the unnormalized z plane intersection point between pointAboveHorizon and pointBelowHorizon.
@@ -387,7 +389,7 @@ void LtcQuadEvaluate(
     out float3 specularOut)
 {
     diffuseOut = 0.0f;
-    specularOut = 0.0f;
+    specularOut = float3(0.0f, 0.0f, 0.0f);
 
     // Initialize quad with dummy point at end in case one corner is clipped (resulting in 5 sided polygon)
     float3 polygon[5];
@@ -396,8 +398,6 @@ void LtcQuadEvaluate(
     int vertexCount = LtcQuadTransformAndClip(surface.GetDefaultNormal(), lightingData.dirToCamera, p, polygon);
     if (vertexCount == 0)
     {
-        diffuseOut = 0.0f;
-        specularOut = float3(0.0f, 0.0f, 0.0f);
         // Entire light is below the horizon.
         return;
     }
@@ -460,7 +460,7 @@ void LtcQuadEvaluate(
 //    - Save the intersection point for later
 // 3. The first point is below the horizon, but the second point is above.
 //    - Find the point along the edge that intersects the horizon.
-//    - Integate from the previous saved insection (see option 2 above) to this new insection
+//    - Integrate from the previous saved insection (see option 2 above) to this new insection
 //    - Integrate from the new insection to the second point.
 // 4. Both points are below the horizon
 //    - Do nothing.
@@ -522,7 +522,7 @@ void EvaluatePolyEdgeSpecularOnly(in float3 p0, in float3 p1, in float3x3 ltcMat
     }
 }
 
-// Evaluates the intial points to start looping through a polygon light. The first point in polygon may be below the surface
+// Evaluates the initial points to start looping through a polygon light. The first point in polygon may be below the surface
 // so care must be taking to figure out which point to start with and what point to use to close the polygon.
 void LtcPolygonEvaluateInitialPoints(
     in float3 surfacePosition,
