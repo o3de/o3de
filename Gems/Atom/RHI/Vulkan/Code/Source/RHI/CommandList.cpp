@@ -844,7 +844,19 @@ namespace AZ
 
         void CommandList::SetStreamBuffers(const RHI::DeviceGeometryView& geometryView, const RHI::StreamBufferIndices& streamIndices)
         {
-            auto streamIter = geometryView.CreateStreamIterator(streamIndices);
+            // its possible that streamIndices is empty if we're in a situation where we're
+            // doing non-indexed (linear) geometry.  So if that's the case, use the full stream buffer indices instead of
+            // the passed-in streamIndices.
+            RHI::StreamBufferIndices indicesToUse;
+            AZ::u8 indexSize = streamIndices.Size();
+            bool hasAnyIndices = indexSize != 0;
+            if (!hasAnyIndices)
+            {
+                indicesToUse = geometryView.GetFullStreamBufferIndices();
+                indexSize = indicesToUse.Size();
+            }
+            auto streamIter = geometryView.CreateStreamIterator(hasAnyIndices ? streamIndices : indicesToUse);
+
             RHI::Interval interval = InvalidInterval;
 
             for (u8 index = 0; !streamIter.HasEnded(); ++streamIter, ++index)

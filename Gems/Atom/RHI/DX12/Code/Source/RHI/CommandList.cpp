@@ -943,7 +943,18 @@ namespace AZ
 
         void CommandList::SetStreamBuffers(const RHI::DeviceGeometryView& geometryBufferViews, const RHI::StreamBufferIndices& streamIndices)
         {
-            auto streamIter = geometryBufferViews.CreateStreamIterator(streamIndices);
+            // its possible that streamIndices is empty if we're in a situation where we're
+            // doing non-indexed (linear) geometry.  So if that's the case, use the full stream buffer indices instead of
+            // the passed-in streamIndices.
+            RHI::StreamBufferIndices indicesToUse;
+            AZ::u8 indexSize = streamIndices.Size();
+            bool hasAnyIndices = indexSize != 0;
+            if (!hasAnyIndices)
+            {
+                indicesToUse = geometryBufferViews.GetFullStreamBufferIndices();
+                indexSize = indicesToUse.Size();
+            }
+            auto streamIter = geometryBufferViews.CreateStreamIterator(hasAnyIndices ? streamIndices : indicesToUse);
 
             bool needsBinding = false;
 
@@ -976,7 +987,7 @@ namespace AZ
                     }
                 }
 
-                GetCommandList()->IASetVertexBuffers(0, streamIndices.Size(), views);
+                GetCommandList()->IASetVertexBuffers(0, indexSize, views);
             }
         }
 
