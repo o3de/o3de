@@ -52,6 +52,8 @@ ly_add_target(
     FILES_CMAKE
         AzToolsFramework/aztoolsframework_shared_files.cmake
         Platform/${PAL_PLATFORM_NAME}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
+    PLATFORM_INCLUDE_FILES
+        ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
     INCLUDE_DIRECTORIES
         PUBLIC
             .

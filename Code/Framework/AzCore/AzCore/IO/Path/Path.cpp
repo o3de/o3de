@@ -81,8 +81,8 @@ namespace AZ::IO
     template class AZCORE_API_EXPORT PathIterator<const FixedMaxPath>;
 
     // Swap function instantiations
-    template void swap<AZStd::string>(Path& lhs, Path& rhs) noexcept;
-    template void swap<FixedMaxPathString>(FixedMaxPath& lhs, FixedMaxPath& rhs) noexcept;
+    template void AZCORE_API_EXPORT swap<AZStd::string>(Path& lhs, Path& rhs) noexcept;
+    template void AZCORE_API_EXPORT swap<FixedMaxPathString>(FixedMaxPath& lhs, FixedMaxPath& rhs) noexcept;
 
     // Hash function instantiations
     template AZCORE_API_EXPORT size_t hash_value<AZStd::string>(const Path& pathToHash);
