@@ -379,6 +379,25 @@ namespace AZ
                 // Note: the build flags are set to be the same for each BLAS created for the mesh
                 RHI::RayTracingAccelerationStructureBuildFlags buildFlags =
                     CreateRayTracingAccelerationStructureBuildFlags(mesh.m_isSkinnedMesh);
+
+                auto rpiDesc = RPI::RPISystemInterface::Get()->GetDescriptor();
+                if (mesh.m_subMeshIndices.size() > rpiDesc.m_rayTracingSystemDescriptor.m_rayTracingCompactionQueryPoolSize)
+                {
+                    AZ_Warning(
+                        "RaytracingFeatureProcessor",
+                        false,
+                        "CompactionQueryPool is not large enough for model %s.\n"
+                        "Pool size: %d\n"
+                        "Num meshes in model: %d\n"
+                        "Raytracing Acceleration Structure Compaction will be disabled for this model\n"
+                        "Consider increasing the size of the pool through the registry setting "
+                        "O3DE/Atom/RPI/Initialization/RayTracingSystemDescriptor/RayTracingCompactionQueryPoolSize",
+                        mesh.m_assetId.ToFixedString().c_str(),
+                        rpiDesc.m_rayTracingSystemDescriptor.m_rayTracingCompactionQueryPoolSize,
+                        mesh.m_subMeshIndices.size());
+                    buildFlags = buildFlags & ~RHI::RayTracingAccelerationStructureBuildFlags::ENABLE_COMPACTION;
+                }
+
                 for (uint32_t subMeshIndex = 0; subMeshIndex < mesh.m_subMeshIndices.size(); ++subMeshIndex)
                 {
                     const SubMesh& subMesh = m_subMeshes[mesh.m_subMeshIndices[subMeshIndex]];
