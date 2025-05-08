@@ -8,13 +8,13 @@
 
 #pragma once
 
-#include "AzCore/std/smart_ptr/make_shared.h"
-#include "AzCore/std/smart_ptr/shared_ptr.h"
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
+#include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzFramework/Physics/HeightfieldProviderBus.h>
 
 namespace AZ

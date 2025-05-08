@@ -8,11 +8,12 @@
 
 #pragma once
 
-#include "AzCore/std/smart_ptr/shared_ptr.h"
+
 #include <PxPhysicsAPI.h>
 #include <AzFramework/Physics/Shape.h>
 #include <AzFramework/Physics/ShapeConfiguration.h>
 #include <AzCore/std/smart_ptr/enable_shared_from_this.h>
+#include <AzCore/std/smart_ptr/shared_ptr.h>
 
 #include <AzFramework/Physics/Collision/CollisionGroups.h>
 #include <AzFramework/Physics/Collision/CollisionLayers.h>
