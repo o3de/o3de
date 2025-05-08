@@ -118,6 +118,8 @@ namespace AZ
             bool HasProceduralGeometry() const override { return !m_proceduralGeometry.empty(); }
             bool HasGeometry() const override { return HasMeshGeometry() || HasProceduralGeometry(); }
 
+            RHI::MultiDevice::DeviceMask GetDeviceMask() const override { return m_deviceMask; }
+
         private:
             AZ_DISABLE_COPY_MOVE(RayTracingFeatureProcessor);
 
@@ -295,6 +297,8 @@ namespace AZ
             AZStd::unordered_map<Uuid, size_t> m_proceduralGeometryLookup;
 
             RHI::Ptr<RHI::RayTracingCompactionQueryPool> m_compactionQueryPool;
+
+            RHI::MultiDevice::DeviceMask m_deviceMask = {};
 
             void ConvertMaterial(MaterialInfo& materialInfo, const SubMeshMaterial& subMeshMaterial, int deviceIndex);
         };
