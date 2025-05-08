@@ -6,7 +6,7 @@
  *
  */
 
-#if defined(AZ_ENABLE_TRACING) && !defined(_RELEASE) && defined(CARBONATED)  // without tracing definition engine's memory tracking is off
+#if defined(AZ_ENABLE_TRACING) && defined(AZ_MEMORY_TAG_TRACING) && !defined(_RELEASE) && defined(CARBONATED)
 
 #include <AzCore/Memory/AllocatorManager.h>
 #include <AzCore/Memory/MemoryMarker.h>
@@ -60,4 +60,4 @@ namespace AZ
 
 } // namespace AZ
 
-#endif  // AZ_ENABLE_TRACING  && !_RELEASE && CARBONATED
+#endif  // AZ_ENABLE_TRACING && AZ_MEMORY_TAG_TRACING && !_RELEASE CARBONATED

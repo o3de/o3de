@@ -23,10 +23,15 @@ if(CARBONATED)
 endif(CARBONATED)
 
 # memory and performance tracking options
+OPTION(MEMORY_TAG_TRACING "Enable asset and mmeory tags" OFF)
 OPTION(START_MEMORY_TRACING "Start memory tracing from app start" OFF)
 OPTION(ADVANCED_ASSET_TRACING "Take more CPU time to find asset names for precise asset size tracing" OFF)
 OPTION(LOD_REMOVAL "Enable conditional LOD removal at runtime to save RAM" ON)
 OPTION(MIP_REMOVAL "Enable conditional mipmap level removal at runtime to save RAM" ON)
+
+if(MEMORY_TAG_TRACING)
+    add_compile_definitions(AZ_MEMORY_TAG_TRACING)
+endif(MEMORY_TAG_TRACING)
 
 if(START_MEMORY_TRACING)
     add_compile_definitions(AZ_START_MEMORY_TRACING)  # enables memory tracing at startup, sys_LogMemoryMap command can dump allocations at any moment

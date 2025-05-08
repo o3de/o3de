@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#if defined(AZ_ENABLE_TRACING) && !defined(_RELEASE) && defined(CARBONATED)
+#if defined(AZ_ENABLE_TRACING) && defined(AZ_MEMORY_TAG_TRACING) && !defined(_RELEASE) && defined(CARBONATED)
 
 namespace AZ
 {
