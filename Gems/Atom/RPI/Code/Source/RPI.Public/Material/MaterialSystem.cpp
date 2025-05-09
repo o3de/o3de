@@ -74,7 +74,7 @@ namespace AZ::RPI
         {
             m_sceneMaterialSrg = ShaderResourceGroup::Create(m_sceneMaterialSrgShaderAsset, AZ_NAME_LITERAL("SceneMaterialSrg"));
 
-            uint32_t maxTextureSamplerStates = 0;
+            [[maybe_unused]] uint32_t maxTextureSamplerStates = 0;
 
             // get the size of the m_samplers[] array from the SRG layout
             auto samplerIndex = m_sceneMaterialSrg->GetLayout()->FindShaderInputSamplerIndex(AZ_NAME_LITERAL("m_samplers"));
@@ -574,7 +574,10 @@ namespace AZ::RPI
             auto samplerIndex = m_sceneMaterialSrg->FindShaderInputSamplerIndex(AZ::Name{ "m_samplers" });
 
             auto samplerStates = m_sceneTextureSamplers.CollectSamplerStates();
-            m_sceneMaterialSrg->SetSamplerArray(samplerIndex, { samplerStates.begin(), samplerStates.end() });
+            if (!samplerStates.empty())
+            {
+                m_sceneMaterialSrg->SetSamplerArray(samplerIndex, { samplerStates.begin(), samplerStates.end() });
+            }
 
             // register the buffer in the SRG and compile it
             m_sceneMaterialSrg->SetBuffer(m_materialTypeBufferInputIndex, m_materialTypeBufferIndicesBuffer);
