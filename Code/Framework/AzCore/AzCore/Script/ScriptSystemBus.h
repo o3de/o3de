@@ -11,6 +11,7 @@
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Script/ScriptAsset.h>
 #include <AzCore/Script/ScriptContext.h>
+#include <AzCore/AzCoreAPI.h>
 
 struct lua_State;
 
@@ -112,4 +113,4 @@ namespace AZ
 #endif // AZCORE_SCRIPT_SYSTEM_BUS_H
 #pragma once
 
-AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZCORE_API, AZ::ScriptSystemRequests);
+AZCORE_DECLARE_EBUS_SINGLE_ADDRESS(AZ::ScriptSystemRequests);

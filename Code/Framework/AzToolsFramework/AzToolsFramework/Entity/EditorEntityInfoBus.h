@@ -108,5 +108,5 @@ namespace AzToolsFramework
     using EditorEntityInfoNotificationBus = AZ::EBus<EditorEntityInfoNotifications>;
 }
 
-AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZTF_API, AzToolsFramework::EditorEntityInfoRequests);
-AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EditorEntityInfoNotifications);
+AZTF_DECLARE_EBUS_MULTI_ADDRESS(AzToolsFramework::EditorEntityInfoRequests);
+AZTF_DECLARE_EBUS_SINGLE_ADDRESS(AzToolsFramework::EditorEntityInfoNotifications);

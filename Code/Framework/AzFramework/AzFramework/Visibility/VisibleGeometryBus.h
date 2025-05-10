@@ -73,4 +73,4 @@ namespace AzFramework
     using VisibleGeometryRequestBus = AZ::EBus<VisibleGeometryRequests>;
 } // namespace AzFramework
 
-AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZF_API, AzFramework::VisibleGeometryRequests);
+AZF_DECLARE_EBUS_MULTI_ADDRESS(AzFramework::VisibleGeometryRequests);

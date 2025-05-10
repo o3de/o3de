@@ -266,8 +266,8 @@ namespace Camera
 
 } // namespace Camera
 
-AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZF_API,Camera::CameraComponentRequests);
-AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZF_API,Camera::CameraRequests);
-AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZF_API,Camera::CameraSystemRequests);
-AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZF_API,Camera::ActiveCameraRequests);
-AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZF_API,Camera::CameraNotifications);
+AZF_DECLARE_EBUS_MULTI_ADDRESS(Camera::CameraComponentRequests);
+AZF_DECLARE_EBUS_SINGLE_ADDRESS(Camera::CameraRequests);
+AZF_DECLARE_EBUS_SINGLE_ADDRESS(Camera::CameraSystemRequests);
+AZF_DECLARE_EBUS_SINGLE_ADDRESS(Camera::ActiveCameraRequests);
+AZF_DECLARE_EBUS_SINGLE_ADDRESS(Camera::CameraNotifications);

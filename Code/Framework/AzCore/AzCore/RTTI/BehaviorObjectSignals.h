@@ -8,6 +8,7 @@
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
@@ -30,4 +31,4 @@ namespace AZ
     using BehaviorObjectSignals =  AZ::EBus<BehaviorObjectSignalsInterface>;
 }
 
-AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZCORE_API, AZ::BehaviorObjectSignalsInterface);
+AZCORE_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZ::BehaviorObjectSignalsInterface);

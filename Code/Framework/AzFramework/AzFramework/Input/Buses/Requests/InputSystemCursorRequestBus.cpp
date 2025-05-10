@@ -7,5 +7,5 @@
  */
 #include <AzFramework/Input/Buses/Requests/InputSystemCursorRequestBus.h>
 
-AZ_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(AZF_API, AzFramework::InputSystemCursorRequests);
-AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AZF_API, AzFramework::InputSystemCursorConstraintRequests);
+AZF_INSTANTIATE_EBUS_MULTI_ADDRESS(AzFramework::InputSystemCursorRequests);
+AZF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzFramework::InputSystemCursorConstraintRequests);

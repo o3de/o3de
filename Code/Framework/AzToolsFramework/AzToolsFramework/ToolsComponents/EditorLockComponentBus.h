@@ -63,5 +63,5 @@ namespace AzToolsFramework
 
 } // namespace AzToolsFramework
 
-AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZTF_API, AzToolsFramework::EditorLockComponentRequests);
-AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZTF_API, AzToolsFramework::EditorEntityLockComponentNotifications);
+AZTF_DECLARE_EBUS_MULTI_ADDRESS(AzToolsFramework::EditorLockComponentRequests);
+AZTF_DECLARE_EBUS_MULTI_ADDRESS(AzToolsFramework::EditorEntityLockComponentNotifications);

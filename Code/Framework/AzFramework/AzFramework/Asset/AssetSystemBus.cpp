@@ -8,7 +8,7 @@
 
  #include <AzFramework/Asset/AssetSystemBus.h>
   
- AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AZF_API, AzFramework::AssetSystem::AssetSystemInfoNotifications)
- AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AZF_API, AzFramework::AssetSystem::AssetSystemRequests)
- AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AZF_API, AzFramework::AssetSystem::AssetSystemConnectionNotifications)
- AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AZF_API, AzFramework::AssetSystem::AssetSystemStatus)
+ AZF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzFramework::AssetSystem::AssetSystemInfoNotifications)
+ AZF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzFramework::AssetSystem::AssetSystemRequests)
+ AZF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzFramework::AssetSystem::AssetSystemConnectionNotifications)
+ AZF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzFramework::AssetSystem::AssetSystemStatus)

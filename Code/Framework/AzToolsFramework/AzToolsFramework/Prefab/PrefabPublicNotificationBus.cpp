@@ -8,5 +8,5 @@
 
 #include <AzToolsFramework/Prefab/PrefabPublicNotificationBus.h>
 
-AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::Prefab::PrefabPublicNotifications);
-AZ_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(AZTF_API, AzToolsFramework::Prefab::PrefabTemplateNotifications);
+AZTF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzToolsFramework::Prefab::PrefabPublicNotifications);
+AZTF_INSTANTIATE_EBUS_MULTI_ADDRESS(AzToolsFramework::Prefab::PrefabTemplateNotifications);

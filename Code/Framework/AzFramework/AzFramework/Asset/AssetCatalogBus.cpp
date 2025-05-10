@@ -8,5 +8,5 @@
 
 #include <AzFramework/Asset/AssetCatalogBus.h>
 
-AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AZF_API, AzFramework::AssetCatalogEvents);
-AZ_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(AZF_API, AzFramework::LegacyAssetEvents);
+AZF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzFramework::AssetCatalogEvents);
+AZF_INSTANTIATE_EBUS_MULTI_ADDRESS(AzFramework::LegacyAssetEvents);

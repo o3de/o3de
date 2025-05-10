@@ -60,4 +60,4 @@ namespace AzFramework
     AZF_API AZ::Aabb CalculateEntityWorldBoundsUnion(const AZ::Entity* entity);
 } // namespace AzFramework
 
-AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZF_API, AzFramework::BoundsRequests);
+AZF_DECLARE_EBUS_SINGLE_ADDRESS(AzFramework::BoundsRequests);

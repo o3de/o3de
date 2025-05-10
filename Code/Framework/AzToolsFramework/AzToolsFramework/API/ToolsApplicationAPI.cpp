@@ -8,14 +8,14 @@
 
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
-AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::ToolsApplicationEvents);
-AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::ToolsApplicationRequests);
-AZ_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(AZTF_API, AzToolsFramework::EntitySelectionEvents);
-AZ_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(AZTF_API, AzToolsFramework::EditorPickModeRequests);
-AZ_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(AZTF_API, AzToolsFramework::EditorPickModeNotifications);
-AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EditorRequests);
-AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EditorEvents);
-AZ_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(AZTF_API, AzToolsFramework::ViewPaneCallbacks);
+AZTF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzToolsFramework::ToolsApplicationEvents);
+AZTF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzToolsFramework::ToolsApplicationRequests);
+AZTF_INSTANTIATE_EBUS_MULTI_ADDRESS(AzToolsFramework::EntitySelectionEvents);
+AZTF_INSTANTIATE_EBUS_MULTI_ADDRESS(AzToolsFramework::EditorPickModeRequests);
+AZTF_INSTANTIATE_EBUS_MULTI_ADDRESS(AzToolsFramework::EditorPickModeNotifications);
+AZTF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzToolsFramework::EditorRequests);
+AZTF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzToolsFramework::EditorEvents);
+AZTF_INSTANTIATE_EBUS_MULTI_ADDRESS(AzToolsFramework::ViewPaneCallbacks);
 
 namespace AzToolsFramework
 {

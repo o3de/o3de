@@ -8,4 +8,4 @@
 
  #include <AzFramework/Input/Buses/Requests/InputSystemRequestBus.h>
 
-AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AZF_API, AzFramework::InputSystemRequests);
+AZF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzFramework::InputSystemRequests);

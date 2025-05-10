@@ -69,5 +69,5 @@ namespace AzToolsFramework
     using SliceDependencyBrowserNotificationsBus = AZ::EBus<SliceDependencyBrowserNotifications>;
 } // AzToolsFramework
 
-AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::SliceDependencyBrowserRequests);
-AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::SliceDependencyBrowserNotifications);
+AZTF_DECLARE_EBUS_SINGLE_ADDRESS(AzToolsFramework::SliceDependencyBrowserRequests);
+AZTF_DECLARE_EBUS_SINGLE_ADDRESS(AzToolsFramework::SliceDependencyBrowserNotifications);

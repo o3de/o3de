@@ -8,5 +8,5 @@
 
  #include <AzFramework/Physics/CharacterBus.h>
 
- AZ_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(AZF_API,Physics::CharacterRequests);
- AZ_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(AZF_API,Physics::CharacterNotifications);
+ AZF_INSTANTIATE_EBUS_MULTI_ADDRESS(Physics::CharacterRequests);
+ AZF_INSTANTIATE_EBUS_MULTI_ADDRESS(Physics::CharacterNotifications);

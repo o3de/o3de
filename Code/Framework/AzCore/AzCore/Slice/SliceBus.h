@@ -11,6 +11,7 @@
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Slice/SliceComponent.h>
 #include <AzCore/std/parallel/mutex.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
@@ -137,6 +138,6 @@ namespace AZ
     using PrefabBus = SliceBus;
 } // namespace AZ
 
-AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZCORE_API, AZ::SliceInstanceEvents);
-AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZCORE_API, AZ::SliceAssetSerializationNotifications);
-AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZCORE_API, AZ::SliceEntityHierarchyInterface);
+AZCORE_DECLARE_EBUS_SINGLE_ADDRESS(AZ::SliceInstanceEvents);
+AZCORE_DECLARE_EBUS_SINGLE_ADDRESS(AZ::SliceAssetSerializationNotifications);
+AZCORE_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZ::SliceEntityHierarchyInterface);

@@ -60,4 +60,4 @@ namespace AzFramework
     using IEntityBoundsUnionRequestBus = AZ::EBus<IEntityBoundsUnion, IEntityBoundsUnionTraits>;
 } // namespace AzFramework
 
-AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS_WITH_TRAITS(AZF_API, AzFramework::IEntityBoundsUnion, AzFramework::IEntityBoundsUnionTraits);
+AZF_DECLARE_EBUS_SINGLE_ADDRESS_WITH_TRAITS(AzFramework::IEntityBoundsUnion, AzFramework::IEntityBoundsUnionTraits);

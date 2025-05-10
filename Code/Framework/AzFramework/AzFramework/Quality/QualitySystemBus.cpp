@@ -7,4 +7,4 @@
  */
 #include <AzFramework/Quality/QualitySystemBus.h>
 
-AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AZF_API, AzFramework::QualitySystemEvents);
+AZF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzFramework::QualitySystemEvents);

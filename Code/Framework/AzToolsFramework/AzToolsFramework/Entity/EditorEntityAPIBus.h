@@ -34,4 +34,4 @@ namespace AzToolsFramework
     using EditorEntityAPIBus = AZ::EBus<EditorEntityAPIRequests>;
 } // namespace AzToolsFramework
 
-AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZTF_API, AzToolsFramework::EditorEntityAPIRequests);
+AZTF_DECLARE_EBUS_MULTI_ADDRESS(AzToolsFramework::EditorEntityAPIRequests);

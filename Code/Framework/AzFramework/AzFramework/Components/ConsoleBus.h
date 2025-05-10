@@ -64,5 +64,5 @@ namespace AzFramework
 
 } // namespace AzFramework
 
-AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZF_API, AzFramework::ConsoleRequests);
-AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZF_API, AzFramework::ConsoleNotifications);
+AZF_DECLARE_EBUS_SINGLE_ADDRESS(AzFramework::ConsoleRequests);
+AZF_DECLARE_EBUS_SINGLE_ADDRESS(AzFramework::ConsoleNotifications);

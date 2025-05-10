@@ -7,5 +7,5 @@
  */
  #include <AzFramework/FileTag/FileTagBus.h>
 
- AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AZF_API, AzFramework::FileTag::FileTagsEvent);
- AZ_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(AZF_API, AzFramework::FileTag::QueryFileTagsEvent);
+ AZF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzFramework::FileTag::FileTagsEvent);
+ AZF_INSTANTIATE_EBUS_MULTI_ADDRESS(AzFramework::FileTag::QueryFileTagsEvent);

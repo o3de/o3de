@@ -8,4 +8,4 @@
 
 #include <AzToolsFramework/API/EditorLevelNotificationBus.h>
 
-AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EditorLevelNotifications);
+AZTF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzToolsFramework::EditorLevelNotifications);

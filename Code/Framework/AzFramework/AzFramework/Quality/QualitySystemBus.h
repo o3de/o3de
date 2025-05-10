@@ -58,4 +58,4 @@ namespace AzFramework
     };
 } //AzFramework
 
-AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZF_API, AzFramework::QualitySystemEvents);
+AZF_DECLARE_EBUS_SINGLE_ADDRESS(AzFramework::QualitySystemEvents);

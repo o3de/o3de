@@ -10,7 +10,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Math/Vector3.h>
 
-AZ_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(AZCORE_API, AZ::NonUniformScaleRequests);
+AZCORE_INSTANTIATE_EBUS_MULTI_ADDRESS(AZ::NonUniformScaleRequests);
 
 namespace AZ
 {

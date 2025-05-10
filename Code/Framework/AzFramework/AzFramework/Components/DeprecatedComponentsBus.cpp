@@ -7,4 +7,4 @@
  */
 #include <AzFramework/Components/DeprecatedComponentsBus.h>
 
-AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AZF_API, AzFramework::Components::DeprecatedComponents);
+AZF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzFramework::Components::DeprecatedComponents);

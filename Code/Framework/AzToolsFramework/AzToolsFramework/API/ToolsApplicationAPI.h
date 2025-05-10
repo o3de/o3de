@@ -1076,11 +1076,11 @@ namespace AzToolsFramework
 
 AZ_DECLARE_BUDGET_SHARED(AzToolsFramework);
 
-AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::ToolsApplicationEvents);
-AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::ToolsApplicationRequests);
-AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZTF_API, AzToolsFramework::EntitySelectionEvents);
-AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZTF_API, AzToolsFramework::EditorPickModeRequests);
-AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZTF_API, AzToolsFramework::EditorPickModeNotifications);
-AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EditorRequests);
-AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EditorEvents);
-AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZTF_API, AzToolsFramework::ViewPaneCallbacks);
+AZTF_DECLARE_EBUS_SINGLE_ADDRESS(AzToolsFramework::ToolsApplicationEvents);
+AZTF_DECLARE_EBUS_SINGLE_ADDRESS(AzToolsFramework::ToolsApplicationRequests);
+AZTF_DECLARE_EBUS_MULTI_ADDRESS(AzToolsFramework::EntitySelectionEvents);
+AZTF_DECLARE_EBUS_MULTI_ADDRESS(AzToolsFramework::EditorPickModeRequests);
+AZTF_DECLARE_EBUS_MULTI_ADDRESS(AzToolsFramework::EditorPickModeNotifications);
+AZTF_DECLARE_EBUS_SINGLE_ADDRESS(AzToolsFramework::EditorRequests);
+AZTF_DECLARE_EBUS_SINGLE_ADDRESS(AzToolsFramework::EditorEvents);
+AZTF_DECLARE_EBUS_MULTI_ADDRESS(AzToolsFramework::ViewPaneCallbacks);

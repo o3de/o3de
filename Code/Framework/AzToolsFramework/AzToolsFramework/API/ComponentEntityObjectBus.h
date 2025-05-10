@@ -65,5 +65,5 @@ namespace AzToolsFramework
     using ComponentEntityObjectRequestBus = AZ::EBus<ComponentEntityObjectRequests>;
 } // namespace AzToolsFramework
 
-AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZTF_API, AzToolsFramework::ComponentEntityEditorRequests);
-AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZTF_API, AzToolsFramework::ComponentEntityObjectRequests);
+AZTF_DECLARE_EBUS_MULTI_ADDRESS(AzToolsFramework::ComponentEntityEditorRequests);
+AZTF_DECLARE_EBUS_MULTI_ADDRESS(AzToolsFramework::ComponentEntityObjectRequests);

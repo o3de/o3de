@@ -21,7 +21,8 @@
 #include <Atom/RPI.Public/Shader/ShaderReloadDebugTracker.h>
 #include <Atom/RPI.Public/Shader/ShaderReloadNotificationBus.h>
 
-DECLARE_EBUS_INSTANTIATION_DLL_MULTI_ADDRESS(RPI::ShaderVariantFinderNotification);
+ATOMRPI_REFLECT_INSTANTIATE_EBUS_MULTI_ADDRESS(AZ::RPI::ShaderVariantFinderNotification);
+
 
 namespace AZ
 {

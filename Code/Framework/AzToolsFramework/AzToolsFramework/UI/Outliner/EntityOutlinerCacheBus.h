@@ -73,6 +73,6 @@ namespace AzToolsFramework
 
 } // namespace AzToolsFramework
 
-AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EntityOutlinerCacheRequests);
-AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EntityOutlinerCacheNotifications);
-AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EntityOutlinerModelNotifications);
+AZTF_DECLARE_EBUS_SINGLE_ADDRESS(AzToolsFramework::EntityOutlinerCacheRequests);
+AZTF_DECLARE_EBUS_SINGLE_ADDRESS(AzToolsFramework::EntityOutlinerCacheNotifications);
+AZTF_DECLARE_EBUS_SINGLE_ADDRESS(AzToolsFramework::EntityOutlinerModelNotifications);

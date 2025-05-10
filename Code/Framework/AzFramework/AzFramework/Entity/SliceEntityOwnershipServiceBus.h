@@ -109,4 +109,4 @@ namespace AzFramework
     using SliceEntityOwnershipServiceRequestBus = AZ::EBus<SliceEntityOwnershipServiceRequests>;
 }
 
-AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZF_API, AzFramework::SliceEntityOwnershipServiceRequests);
+AZF_DECLARE_EBUS_MULTI_ADDRESS(AzFramework::SliceEntityOwnershipServiceRequests);

@@ -8,4 +8,4 @@
 
 #include <AzToolsFramework/Prefab/PrefabFocusNotificationBus.h>
 
-AZ_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(AZTF_API, AzToolsFramework::Prefab::PrefabFocusNotifications);
+AZTF_INSTANTIATE_EBUS_MULTI_ADDRESS(AzToolsFramework::Prefab::PrefabFocusNotifications);

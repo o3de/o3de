@@ -10,6 +10,7 @@
 
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Memory/OSAllocator.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
@@ -61,6 +62,6 @@ namespace AZ
     } // namespace Debug
 } // namespace AZ
 
-AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZCORE_API, AZ::Debug::TraceMessageEvents);
+AZCORE_DECLARE_EBUS_SINGLE_ADDRESS(AZ::Debug::TraceMessageEvents);
 
 

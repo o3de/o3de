@@ -35,4 +35,4 @@ namespace AzToolsFramework
     }
 } // namespace AzToolsFramework
 
-AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS_WITH_TRAITS(AZTF_API, AZ::Data::AssetCatalogRequests, AzToolsFramework::AssetCatalog::PlatformAddressedAssetCatalogBusTraits);
+AZTF_DECLARE_EBUS_MULTI_ADDRESS_WITH_TRAITS(AZ::Data::AssetCatalogRequests, AzToolsFramework::AssetCatalog::PlatformAddressedAssetCatalogBusTraits);

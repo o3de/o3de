@@ -8,4 +8,4 @@
 
 #include <AzToolsFramework/Manipulators/ManipulatorBus.h>
 
-AZ_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(AZTF_API, AzToolsFramework::ManipulatorManagerRequests);
+AZTF_INSTANTIATE_EBUS_MULTI_ADDRESS(AzToolsFramework::ManipulatorManagerRequests);

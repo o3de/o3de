@@ -34,4 +34,4 @@ namespace AzToolsFramework
 
 } // namespace AzToolsFramework
 
-AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::ActionManagerNotifications)
+AZTF_DECLARE_EBUS_SINGLE_ADDRESS(AzToolsFramework::ActionManagerNotifications)

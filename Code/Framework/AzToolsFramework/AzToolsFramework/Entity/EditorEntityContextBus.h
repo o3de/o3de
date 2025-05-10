@@ -233,6 +233,6 @@ namespace AzToolsFramework
     using EditorLegacyGameModeNotificationBus = AZ::EBus<EditorLegacyGameModeNotifications>;
 } // namespace AzToolsFramework
 
-AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EditorEntityContextRequests);
-AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EditorEntityContextNotification);
-AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EditorLegacyGameModeNotifications);
+AZTF_DECLARE_EBUS_SINGLE_ADDRESS(AzToolsFramework::EditorEntityContextRequests);
+AZTF_DECLARE_EBUS_SINGLE_ADDRESS(AzToolsFramework::EditorEntityContextNotification);
+AZTF_DECLARE_EBUS_SINGLE_ADDRESS(AzToolsFramework::EditorLegacyGameModeNotifications);

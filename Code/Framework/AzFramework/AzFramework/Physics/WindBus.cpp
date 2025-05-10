@@ -7,5 +7,5 @@
  */
 #include <AzFramework/Physics/WindBus.h>
 
-AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS_WITH_TRAITS(AZF_API,Physics::WindRequests, Physics::WindRequestsTraits)
-AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AZF_API,Physics::WindNotifications)
+AZF_INSTANTIATE_EBUS_SINGLE_ADDRESS_WITH_TRAITS(Physics::WindRequests, Physics::WindRequestsTraits)
+AZF_INSTANTIATE_EBUS_SINGLE_ADDRESS(Physics::WindNotifications)

@@ -49,4 +49,4 @@ namespace AzToolsFramework
     using EntityPropertyEditorRequestBus = AZ::EBus<EntityPropertyEditorRequests>;
 } // namespace AzToolsFramework
 
-AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EntityPropertyEditorRequests);
+AZTF_DECLARE_EBUS_SINGLE_ADDRESS(AzToolsFramework::EntityPropertyEditorRequests);

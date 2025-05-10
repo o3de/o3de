@@ -8,5 +8,5 @@
 
  #include <AzToolsFramework/ToolsComponents/EditorComponentBus.h>
 
- AZ_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS_WITH_TRAITS(AZTF_API, AzToolsFramework::Components::EditorComponentDescriptor, AZ::ComponentDescriptorBusTraits);
+ AZTF_INSTANTIATE_EBUS_MULTI_ADDRESS_WITH_TRAITS(AzToolsFramework::Components::EditorComponentDescriptor, AZ::ComponentDescriptorBusTraits);
   

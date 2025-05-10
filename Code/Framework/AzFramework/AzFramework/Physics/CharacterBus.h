@@ -179,5 +179,5 @@ namespace Physics
 
 } // namespace Physics
 
-AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZF_API,Physics::CharacterRequests);
-AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZF_API,Physics::CharacterNotifications);
+AZF_DECLARE_EBUS_MULTI_ADDRESS(Physics::CharacterRequests);
+AZF_DECLARE_EBUS_MULTI_ADDRESS(Physics::CharacterNotifications);

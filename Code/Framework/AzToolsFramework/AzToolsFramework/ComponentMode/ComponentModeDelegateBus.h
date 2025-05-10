@@ -31,4 +31,4 @@ namespace AzFramework
     using ComponentModeDelegateNotificationBus = AZ::EBus<ComponentModeDelegateNotifications>;
 } // namespace AzFramework
 
-AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZTF_API, AzFramework::ComponentModeDelegateNotifications);
+AZTF_DECLARE_EBUS_SINGLE_ADDRESS(AzFramework::ComponentModeDelegateNotifications);

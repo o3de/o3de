@@ -13,10 +13,10 @@
 
 #include <QtCore/QString>
 
-AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AZTF_API, LegacyFramework::CoreMessages);
-AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AZTF_API, LegacyFramework::FrameworkApplicationMessages);
-AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AZTF_API, LegacyFramework::LogComponentAPI);
-AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AZTF_API, LegacyFramework::IPCCommandAPI);
+AZTF_INSTANTIATE_EBUS_SINGLE_ADDRESS(LegacyFramework::CoreMessages);
+AZTF_INSTANTIATE_EBUS_SINGLE_ADDRESS(LegacyFramework::FrameworkApplicationMessages);
+AZTF_INSTANTIATE_EBUS_SINGLE_ADDRESS(LegacyFramework::LogComponentAPI);
+AZTF_INSTANTIATE_EBUS_SINGLE_ADDRESS(LegacyFramework::IPCCommandAPI);
 
 namespace LegacyFramework
 {

@@ -36,4 +36,4 @@ namespace AzFramework::Scripts
     using SpawnableScriptNotificationsBus = AZ::EBus<SpawnableScriptNotifications>;
 } // namespace AzFramework
 
-AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZF_API, AzFramework::Scripts::SpawnableScriptNotifications);
+AZF_DECLARE_EBUS_MULTI_ADDRESS(AzFramework::Scripts::SpawnableScriptNotifications);

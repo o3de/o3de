@@ -46,4 +46,4 @@ namespace AzToolsFramework::Prefab
 
 } // namespace AzToolsFramework::Prefab
 
-AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZTF_API, AzToolsFramework::Prefab::PrefabFocusNotifications);
+AZTF_DECLARE_EBUS_MULTI_ADDRESS(AzToolsFramework::Prefab::PrefabFocusNotifications);

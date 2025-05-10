@@ -84,4 +84,4 @@ namespace AzFramework
     using RootSpawnableInterface = AZ::Interface<RootSpawnableDefinition>;
 } // namespace AzFramework
 
-AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZF_API, AzFramework::RootSpawnableNotifications);
+AZF_DECLARE_EBUS_SINGLE_ADDRESS(AzFramework::RootSpawnableNotifications);

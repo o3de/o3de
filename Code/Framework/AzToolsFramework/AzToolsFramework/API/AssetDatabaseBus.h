@@ -62,5 +62,5 @@ namespace AzToolsFramework
     } // namespace AssetDatabase
 } // namespace AzToolsFramework
 
-AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::AssetDatabase::AssetDatabaseRequests);
-AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::AssetDatabase::AssetDatabaseNotifications);
+AZTF_DECLARE_EBUS_SINGLE_ADDRESS(AzToolsFramework::AssetDatabase::AssetDatabaseRequests);
+AZTF_DECLARE_EBUS_SINGLE_ADDRESS(AzToolsFramework::AssetDatabase::AssetDatabaseNotifications);

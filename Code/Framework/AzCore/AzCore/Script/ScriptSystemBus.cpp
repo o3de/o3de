@@ -8,4 +8,4 @@
 
  #include <AzCore/Script/ScriptSystemBus.h>
 
- AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AZCORE_API, AZ::ScriptSystemRequests);
+ AZCORE_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZ::ScriptSystemRequests);

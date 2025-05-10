@@ -8,4 +8,4 @@
 
 #include <AzToolsFramework/AssetBrowser/Previewer/PreviewerBus.h>
 
-AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::AssetBrowser::PreviewerRequests);
+AZTF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzToolsFramework::AssetBrowser::PreviewerRequests);

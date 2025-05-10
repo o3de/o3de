@@ -45,4 +45,4 @@ namespace AzToolsFramework
     } // namespace ComponentModeFramework
 } // namespace AzToolsFramework
 
-AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZTF_API, AzToolsFramework::ComponentModeFramework::ComponentModeViewportUiRequests);
+AZTF_DECLARE_EBUS_MULTI_ADDRESS(AzToolsFramework::ComponentModeFramework::ComponentModeViewportUiRequests);

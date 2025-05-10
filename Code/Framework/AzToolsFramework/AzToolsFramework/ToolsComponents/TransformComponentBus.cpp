@@ -8,4 +8,4 @@
 
  #include <AzToolsFramework/ToolsComponents/TransformComponentBus.h>
 
- AZ_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(AZTF_API, AzToolsFramework::Components::TransformComponentMessages);
+ AZTF_INSTANTIATE_EBUS_MULTI_ADDRESS(AzToolsFramework::Components::TransformComponentMessages);

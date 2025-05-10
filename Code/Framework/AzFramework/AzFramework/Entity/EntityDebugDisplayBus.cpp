@@ -7,7 +7,7 @@
  */
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 
-AZ_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(AZF_API, AzFramework::DebugDisplayRequests)
-AZ_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(AZF_API, AzFramework::EntityDebugDisplayEvents)
-AZ_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(AZF_API, AzFramework::ViewportDebugDisplayEvents)
-AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AZF_API, AzFramework::DebugDisplayEvents)
+AZF_INSTANTIATE_EBUS_MULTI_ADDRESS(AzFramework::DebugDisplayRequests)
+AZF_INSTANTIATE_EBUS_MULTI_ADDRESS(AzFramework::EntityDebugDisplayEvents)
+AZF_INSTANTIATE_EBUS_MULTI_ADDRESS(AzFramework::ViewportDebugDisplayEvents)
+AZF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzFramework::DebugDisplayEvents)

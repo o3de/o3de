@@ -7,4 +7,4 @@
  */
 #include <AzFramework/InGameUI/UiFrameworkBus.h>
 
-AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AZF_API,UiFrameworkInterface);
+AZF_INSTANTIATE_EBUS_SINGLE_ADDRESS(UiFrameworkInterface);

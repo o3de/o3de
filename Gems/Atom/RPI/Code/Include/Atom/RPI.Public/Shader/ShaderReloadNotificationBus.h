@@ -57,4 +57,4 @@ namespace AZ
     } // namespace RPI
 } //namespace AZ
 
-AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(ATOM_RPI_PUBLIC_API, RPI::ShaderReloadNotifications);
+ATOMRPI_REFLECT_DECLARE_EBUS_MULTI_ADDRESS(RPI::ShaderReloadNotifications);

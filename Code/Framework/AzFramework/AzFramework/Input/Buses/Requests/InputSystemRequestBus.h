@@ -43,4 +43,4 @@ namespace AzFramework
     using InputSystemRequestBus = AZ::EBus<InputSystemRequests>;
 } // namespace AzFramework
 
-AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZF_API, AzFramework::InputSystemRequests);
+AZF_DECLARE_EBUS_SINGLE_ADDRESS(AzFramework::InputSystemRequests);

@@ -7,5 +7,5 @@
  */
 #include <AzFramework/Entity/SliceGameEntityOwnershipServiceBus.h>
 
-AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AZF_API, AzFramework::SliceGameEntityOwnershipServiceRequests);
-AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AZF_API, AzFramework::SliceGameEntityOwnershipServiceNotifications);
+AZF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzFramework::SliceGameEntityOwnershipServiceRequests);
+AZF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzFramework::SliceGameEntityOwnershipServiceNotifications);

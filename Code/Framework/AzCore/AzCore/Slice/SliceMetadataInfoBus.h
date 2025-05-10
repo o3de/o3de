@@ -141,6 +141,6 @@ namespace AZ
     using SliceMetadataInfoNotificationBus = EBus<SliceMetadataInfoNotifications>;
 } // namespace AZ
 
-AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZCORE_API, AZ::SliceMetadataInfoRequests)
-AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZCORE_API, AZ::SliceMetadataInfoManipulationRequests)
-AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZCORE_API, AZ::SliceMetadataInfoNotifications)
+AZCORE_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZ::SliceMetadataInfoRequests)
+AZCORE_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZ::SliceMetadataInfoManipulationRequests)
+AZCORE_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZ::SliceMetadataInfoNotifications)

@@ -91,5 +91,5 @@ namespace AzFramework
     } // namespace FileTag
 } // namespace AzFramework
 
-AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZF_API, AzFramework::FileTag::FileTagsEvent);
-AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZF_API, AzFramework::FileTag::QueryFileTagsEvent);
+AZF_DECLARE_EBUS_SINGLE_ADDRESS(AzFramework::FileTag::FileTagsEvent);
+AZF_DECLARE_EBUS_MULTI_ADDRESS(AzFramework::FileTag::QueryFileTagsEvent);

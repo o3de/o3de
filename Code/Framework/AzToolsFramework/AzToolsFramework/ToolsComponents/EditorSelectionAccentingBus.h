@@ -40,4 +40,4 @@ namespace AzToolsFramework
     } // namespace Components
 } // namespace AzToolsFramework
 
-AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::Components::EditorSelectionAccentingRequests);
+AZTF_DECLARE_EBUS_SINGLE_ADDRESS(AzToolsFramework::Components::EditorSelectionAccentingRequests);

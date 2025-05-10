@@ -8,4 +8,4 @@
 
 #include <AzToolsFramework/FocusMode/FocusModeNotificationBus.h>
 
-AZ_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(AZTF_API, AzToolsFramework::FocusModeNotifications);
+AZTF_INSTANTIATE_EBUS_MULTI_ADDRESS(AzToolsFramework::FocusModeNotifications);

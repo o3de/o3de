@@ -116,4 +116,4 @@ namespace AzToolsFramework
     using EditorComponentAPIBus = AZ::EBus<EditorComponentAPIRequests>;
 } // namespace AzToolsFramework
 
-AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EditorComponentAPIRequests)
+AZTF_DECLARE_EBUS_SINGLE_ADDRESS(AzToolsFramework::EditorComponentAPIRequests)

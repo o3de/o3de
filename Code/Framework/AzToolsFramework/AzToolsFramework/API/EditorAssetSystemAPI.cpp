@@ -10,9 +10,9 @@
  #include <AzToolsFramework/AzToolsFramework_Traits_Platform.h>
  #include <AzCore/Serialization/SerializeContext.h>
  
- AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::AssetSystem::AssetSystemNotifications);
- AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::AssetSystem::AssetSystemRequest);
- AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::AssetSystem::AssetSystemJobRequest);
+ AZTF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzToolsFramework::AssetSystem::AssetSystemNotifications);
+ AZTF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzToolsFramework::AssetSystem::AssetSystemRequest);
+ AZTF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzToolsFramework::AssetSystem::AssetSystemJobRequest);
  
  namespace AZStd
  {

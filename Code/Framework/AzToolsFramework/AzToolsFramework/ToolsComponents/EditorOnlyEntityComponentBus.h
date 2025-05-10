@@ -38,5 +38,5 @@ namespace AzToolsFramework
 
 } // namespace AzToolsFramework
 
-AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZTF_API, AzToolsFramework::EditorOnlyEntityComponentRequests);
-AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EditorOnlyEntityComponentNotifications);
+AZTF_DECLARE_EBUS_MULTI_ADDRESS(AzToolsFramework::EditorOnlyEntityComponentRequests);
+AZTF_DECLARE_EBUS_SINGLE_ADDRESS(AzToolsFramework::EditorOnlyEntityComponentNotifications);

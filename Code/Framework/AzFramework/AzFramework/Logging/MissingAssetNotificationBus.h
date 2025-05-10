@@ -25,4 +25,4 @@ namespace AzFramework
     using MissingAssetNotificationBus = AZ::EBus<MissingAssetNotifications>;
 }
 
-AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZF_API, AzFramework::MissingAssetNotifications);
+AZF_DECLARE_EBUS_SINGLE_ADDRESS(AzFramework::MissingAssetNotifications);

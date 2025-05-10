@@ -30,4 +30,4 @@ namespace AzToolsFramework
     using RadiusManipulatorRequestBus = AZ::EBus<RadiusManipulatorRequests>;
 } // namespace AzToolsFramework
 
-AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZTF_API, AzToolsFramework::RadiusManipulatorRequests);
+AZTF_DECLARE_EBUS_MULTI_ADDRESS(AzToolsFramework::RadiusManipulatorRequests);

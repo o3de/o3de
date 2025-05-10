@@ -8,7 +8,8 @@
 
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/AzCoreAPI.h>
 
 // RTTI buses
-DECLARE_EBUS_INSTANTIATION_DLL_MULTI_ADDRESS(BehaviorContextEvents);
-DECLARE_EBUS_INSTANTIATION_DLL_MULTI_ADDRESS(BehaviorObjectSignalsInterface);
+AZCORE_INSTANTIATE_EBUS_MULTI_ADDRESS(AZ::BehaviorContextEvents);
+AZCORE_INSTANTIATE_EBUS_MULTI_ADDRESS(AZ::BehaviorObjectSignalsInterface);

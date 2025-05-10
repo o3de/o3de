@@ -8,4 +8,4 @@
 // Description : Ebus for querying thermal information of the device.
 #include <AzFramework/Thermal/ThermalInfo.h>
 
-AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AZF_API,ThermalInfoHandler);
+AZF_INSTANTIATE_EBUS_SINGLE_ADDRESS(ThermalInfoHandler);

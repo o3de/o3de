@@ -10,8 +10,8 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 
-AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AZF_API, AzFramework::Terrain::TerrainDataRequests);
-AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AZF_API, AzFramework::Terrain::TerrainDataNotifications);
+AZF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzFramework::Terrain::TerrainDataRequests);
+AZF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzFramework::Terrain::TerrainDataNotifications);
 
 namespace AzFramework::Terrain
 {

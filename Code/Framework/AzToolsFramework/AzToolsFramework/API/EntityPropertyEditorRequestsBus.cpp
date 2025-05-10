@@ -8,5 +8,5 @@
 
 #include <AzToolsFramework/API/EntityPropertyEditorRequestsBus.h>
  
-AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EntityPropertyEditorRequests);
+AZTF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzToolsFramework::EntityPropertyEditorRequests);
  

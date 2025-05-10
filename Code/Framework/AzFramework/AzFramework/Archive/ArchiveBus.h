@@ -37,4 +37,4 @@ namespace AZ::IO
 
 }
 
-AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZF_API, AZ::IO::ArchiveNotifications);
+AZF_DECLARE_EBUS_SINGLE_ADDRESS(AZ::IO::ArchiveNotifications);

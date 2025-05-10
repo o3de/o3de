@@ -50,5 +50,5 @@ namespace AzToolsFramework
     using EditorInspectorComponentNotificationBus = AZ::EBus<EditorInspectorComponentNotifications>;
 } // namespace AzToolsFramework
 
-AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZTF_API, AzToolsFramework::EditorInspectorComponentRequests);
-AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZTF_API, AzToolsFramework::EditorInspectorComponentNotifications);
+AZTF_DECLARE_EBUS_MULTI_ADDRESS(AzToolsFramework::EditorInspectorComponentRequests);
+AZTF_DECLARE_EBUS_MULTI_ADDRESS(AzToolsFramework::EditorInspectorComponentNotifications);

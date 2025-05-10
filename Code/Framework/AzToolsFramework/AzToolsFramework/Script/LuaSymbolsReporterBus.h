@@ -48,4 +48,4 @@ namespace AzToolsFramework
     } // namespace Script
 } // namespace AzToolsFramework
 
-AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS_WITH_TRAITS(AZTF_API, AzToolsFramework::Script::LuaSymbolsReporterRequests, AzToolsFramework::Script::LuaSymbolsReporterBusTraits);
+AZTF_DECLARE_EBUS_SINGLE_ADDRESS_WITH_TRAITS(AzToolsFramework::Script::LuaSymbolsReporterRequests, AzToolsFramework::Script::LuaSymbolsReporterBusTraits);

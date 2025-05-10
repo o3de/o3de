@@ -245,6 +245,6 @@ namespace AzFramework
     }
 }
 
-AZ_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(AZF_API, AzFramework::StreamingInstall::StreamingInstallChunkNotifications);
-AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AZF_API, AzFramework::StreamingInstall::StreamingInstallPackageNotifications);
-AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AZF_API, AzFramework::StreamingInstall::StreamingInstallRequests);
+AZF_INSTANTIATE_EBUS_MULTI_ADDRESS(AzFramework::StreamingInstall::StreamingInstallChunkNotifications);
+AZF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzFramework::StreamingInstall::StreamingInstallPackageNotifications);
+AZF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzFramework::StreamingInstall::StreamingInstallRequests);

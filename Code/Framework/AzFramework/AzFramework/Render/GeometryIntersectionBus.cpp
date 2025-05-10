@@ -7,5 +7,5 @@
  */
 #include <AzFramework/Render/GeometryIntersectionBus.h>
 
-AZ_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(AZF_API, AzFramework::RenderGeometry::IntersectionRequests);
-AZ_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(AZF_API, AzFramework::RenderGeometry::IntersectionNotifications);
+AZF_INSTANTIATE_EBUS_MULTI_ADDRESS(AzFramework::RenderGeometry::IntersectionRequests);
+AZF_INSTANTIATE_EBUS_MULTI_ADDRESS(AzFramework::RenderGeometry::IntersectionNotifications);

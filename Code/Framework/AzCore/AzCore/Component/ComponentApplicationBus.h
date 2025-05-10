@@ -13,6 +13,7 @@
  #include <AzCore/Component/EntityId.h>
  #include <AzCore/std/parallel/mutex.h>
  #include <AzCore/std/string/osstring.h>
+#include <AzCore/AzCoreAPI.h>
  
  namespace AZ
  {
@@ -229,5 +230,4 @@
      using ComponentApplicationBus = AZ::EBus<ComponentApplicationRequests, ComponentApplicationRequestsEBusTraits>;
  }
  
- AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS_WITH_TRAITS(AZCORE_API, ComponentApplicationRequests, ComponentApplicationRequestsEBusTraits);
- 
+ AZCORE_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS_WITH_TRAITS(AZ::ComponentApplicationRequests, AZ::ComponentApplicationRequestsEBusTraits);

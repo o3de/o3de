@@ -115,5 +115,5 @@ namespace AzToolsFramework
 } // namespace AzToolsFramework
 
 
-AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::SliceMetadataEntityContextRequests);
-AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::SliceMetadataEntityContextNotifications);
+AZTF_DECLARE_EBUS_SINGLE_ADDRESS(AzToolsFramework::SliceMetadataEntityContextRequests);
+AZTF_DECLARE_EBUS_SINGLE_ADDRESS(AzToolsFramework::SliceMetadataEntityContextNotifications);

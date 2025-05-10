@@ -8,4 +8,4 @@
 
 #include <AzFramework/Archive/ArchiveBus.h>
 
-AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AZF_API, AZ::IO::ArchiveNotifications);
+AZF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZ::IO::ArchiveNotifications);

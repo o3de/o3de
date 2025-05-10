@@ -9,6 +9,7 @@
 
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
@@ -172,4 +173,4 @@ namespace AZ
     }  // namespace Data
 }   // namespace AZ
 
-AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZCORE_API, AZ::Data::AssetEvents);
+AZCORE_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZ::Data::AssetEvents);

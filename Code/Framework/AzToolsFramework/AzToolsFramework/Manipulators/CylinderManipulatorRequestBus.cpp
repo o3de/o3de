@@ -8,4 +8,4 @@
 
 #include <AzToolsFramework/Manipulators/CylinderManipulatorRequestBus.h>
 
-AZ_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(AZTF_API, AzToolsFramework::CylinderManipulatorRequests);
+AZTF_INSTANTIATE_EBUS_MULTI_ADDRESS(AzToolsFramework::CylinderManipulatorRequests);

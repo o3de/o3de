@@ -60,5 +60,5 @@ namespace AzToolsFramework
     using EditorPreferencesNotificationBus = AZ::EBus<EditorPreferencesNotifications>;
 }
 
-AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EditorSettingsAPIRequests);
-AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EditorPreferencesNotifications);
+AZTF_DECLARE_EBUS_SINGLE_ADDRESS(AzToolsFramework::EditorSettingsAPIRequests);
+AZTF_DECLARE_EBUS_SINGLE_ADDRESS(AzToolsFramework::EditorPreferencesNotifications);

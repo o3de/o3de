@@ -110,6 +110,6 @@ namespace AzFramework
     using ViewportImGuiNotificationBus = AZ::EBus<ViewportImGuiNotifications>;
 } // namespace AzFramework
 
-AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZF_API, AzFramework::ViewportRequests);
-AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZF_API, AzFramework::ViewportBorderRequests);
-AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZF_API, AzFramework::ViewportImGuiNotifications);
+AZF_DECLARE_EBUS_MULTI_ADDRESS(AzFramework::ViewportRequests);
+AZF_DECLARE_EBUS_MULTI_ADDRESS(AzFramework::ViewportBorderRequests);
+AZF_DECLARE_EBUS_SINGLE_ADDRESS(AzFramework::ViewportImGuiNotifications);

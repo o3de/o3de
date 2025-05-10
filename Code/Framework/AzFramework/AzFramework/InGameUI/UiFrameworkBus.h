@@ -45,4 +45,4 @@ public:
 
 using UiFrameworkBus = AZ::EBus<UiFrameworkInterface>;
 
-AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZF_API,UiFrameworkInterface);
+AZF_DECLARE_EBUS_SINGLE_ADDRESS(UiFrameworkInterface);

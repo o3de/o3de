@@ -93,5 +93,5 @@ namespace AzToolsFramework
     using ToastRequestBus = AZ::EBus<ToastRequests>;
 }
 
-AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZTF_API, AzToolsFramework::ToastNotifications);
-AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZTF_API, AzToolsFramework::ToastRequests);
+AZTF_DECLARE_EBUS_MULTI_ADDRESS(AzToolsFramework::ToastNotifications);
+AZTF_DECLARE_EBUS_MULTI_ADDRESS(AzToolsFramework::ToastRequests);
