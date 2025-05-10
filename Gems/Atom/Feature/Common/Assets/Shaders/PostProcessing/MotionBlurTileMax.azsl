@@ -1,0 +1,64 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include <scenesrg_all.srgi>
+#include <Atom/Features/PostProcessing/PostProcessUtil.azsli>
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2D<float2> m_inputVelocity;
+    RWTexture2D<float2> m_outputVelocity;
+}
+
+float2 vmax(float2 a, float2 b)
+{
+	return dot(a, a) > dot(b, b) ? a : b;
+}
+
+[numthreads(8, 8, 1)]
+void MainCS(
+    uint3 dispatchThreadID : SV_DispatchThreadID, 
+    uint3 groupID : SV_GroupID, 
+    uint groupIndex : SV_GroupIndex)
+{
+    uint2 outPixel = dispatchThreadID.xy;
+    uint2 inputDimensions;
+    uint2 outputDimensions;
+    
+    PassSrg::m_inputVelocity.GetDimensions(inputDimensions.x, inputDimensions.y);
+    PassSrg::m_outputVelocity.GetDimensions(outputDimensions.x, outputDimensions.y);
+
+    if (outPixel.x >= outputDimensions.x || outPixel.y >= outputDimensions.y)
+    {
+        return;
+    }
+    
+    const uint2 tileSize = uint2(20, 20);
+    uint2 inPixel = outPixel * tileSize;
+
+    if (inPixel.x >= inputDimensions.x || inPixel.y >= inputDimensions.y)
+    {
+        return;
+    }
+
+    float2 maxVelocity = float2(0, 0);
+    [unroll]
+    for(int i = 0; i < tileSize.x; i++) {
+        [unroll]
+        for(int j = 0; j < tileSize.y; j++) {
+            if (inPixel.x + i >= inputDimensions.x || inPixel.y + j >= inputDimensions.y){
+                continue;
+            }
+
+            float2 sampleVelocity = PassSrg::m_inputVelocity[inPixel + uint2(i, j)];
+            maxVelocity = vmax(maxVelocity, sampleVelocity);
+        }
+    }
+
+    PassSrg::m_outputVelocity[outPixel] = maxVelocity;
+}

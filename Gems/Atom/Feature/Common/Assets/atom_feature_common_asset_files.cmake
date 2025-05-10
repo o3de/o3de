@@ -535,6 +535,10 @@ set(FILES
     Shaders/PostProcessing/ModulateTexture.shader
     Shaders/PostProcessing/MotionBlur.azsl
     Shaders/PostProcessing/MotionBlur.shader
+    Shaders/PostProcessing/MotionBlurTileMax.azsl
+    Shaders/PostProcessing/MotionBlurTileMax.shader
+    Shaders/PostProcessing/MotionBlurTileFilter.azsl
+    Shaders/PostProcessing/MotionBlurTileFilter.shader
     Shaders/PostProcessing/MSAAResolveCustom.azsl
     Shaders/PostProcessing/MSAAResolveCustom.shader
     Shaders/PostProcessing/MSAAResolveDepth.azsl

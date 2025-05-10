@@ -158,7 +158,7 @@
                 },
                 {
                     "Name": "MotionBlurPass",
-                    "TemplateName": "MotionBlurTemplate",
+                    "TemplateName": "MotionBlurParentTemplate",
                     "Enabled": true,
                     "Connections": [
                         {
@@ -166,13 +166,6 @@
                             "AttachmentRef": {
                                 "Pass": "DepthOfFieldPass",
                                 "Attachment": "LightingBuffer"
-                            }
-                        },
-                        {
-                            "LocalSlot": "InputDepth",
-                            "AttachmentRef": {
-                                "Pass": "Parent",
-                                "Attachment": "Depth"
                             }
                         },
                         {

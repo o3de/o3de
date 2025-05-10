@@ -15,20 +15,11 @@
 ShaderResourceGroup PassSrg : SRG_PerPass
 {
     Texture2D<float4> m_inputColor;
-    Texture2D<float4> m_inputDepth;
-    Texture2D<float2> m_motionVectors;
+    Texture2D<float4> m_linearDepth;
+    Texture2D<float2> m_inputVelocity;
+    Texture2D<float2> m_inputTileVelocity;
 
     RWTexture2D<float4> m_outputColor;
-
-    Sampler LinearSampler
-    {
-        MinFilter = Linear;
-        MagFilter = Linear;
-        MipFilter = Linear;
-        AddressU = Clamp;
-        AddressV = Clamp;
-        AddressW = Clamp;
-    };
 
     struct Constants
     {
@@ -46,6 +37,38 @@ float GetGradientNoise(uint2 coord)
     return frac(52.9829189f * frac(f));
 }
 
+float2 DepthCmp(float centerDepth, float sampleDepth, float depthScale)
+{
+	return saturate(0.5f + float2(depthScale, -depthScale) * (sampleDepth - centerDepth));
+}
+
+float2 SpreadCmp(float offsetLen, float2 spreadLen, float pixelToSampleUnitsScale)
+{
+	return saturate(pixelToSampleUnitsScale * spreadLen - offsetLen + 1.0f);
+}
+
+float SampleWeight(float centerDepth, float sampleDepth, float offsetLen, float centerSpreadLen, float sampleSpreadLen, float pixelToSampleUnitsScale, float depthScale)
+{
+	float2 depthCmp = DepthCmp(centerDepth, sampleDepth, depthScale);
+	float2 spreadCmp = SpreadCmp(offsetLen, float2(centerSpreadLen, sampleSpreadLen), pixelToSampleUnitsScale);
+	return dot(depthCmp, spreadCmp);
+}
+
+
+uint2 ClampCoords(int2 coord){
+    uint2 clampedCoords;
+    clampedCoords.x = uint(clamp(coord.x, 0, PassSrg::m_constants.m_outputSize.x - 1));
+    clampedCoords.y = uint(clamp(coord.y, 0, PassSrg::m_constants.m_outputSize.y - 1));
+    return clampedCoords;
+}
+
+float2 ToPixelVelocity(float2 velocity){
+    velocity *= float2(PassSrg::m_constants.m_outputSize);
+    velocity *= PassSrg::m_constants.m_strength;
+    return velocity;
+}
+
+
 [numthreads(TILE_DIM_X, TILE_DIM_Y, 1)]
 void MainCS(
     uint3 dispatchThreadID : SV_DispatchThreadID, 
@@ -59,42 +82,66 @@ void MainCS(
     }
 
     float3 color = PassSrg::m_inputColor[pixelCoord].rgb;
-    float2 velocity = -PassSrg::m_motionVectors[pixelCoord];
-    velocity.x *= float(PassSrg::m_constants.m_outputSize.x);
-    velocity.y *= float(PassSrg::m_constants.m_outputSize.y);
-    velocity *= PassSrg::m_constants.m_strength;
-    
-    if (length(velocity) < 1){
-        PassSrg::m_outputColor[pixelCoord].rgb = color;
+    PassSrg::m_outputColor[pixelCoord].rgb = color;
+
+    float depth = PassSrg::m_linearDepth[pixelCoord].r;
+
+    float2 tileVelocity = PassSrg::m_inputTileVelocity[pixelCoord / uint2(20, 20)];
+    tileVelocity = ToPixelVelocity(tileVelocity);
+    float tileVelocityLength = length(tileVelocity);
+
+    // Omit effect for velocities that are too small
+    if (tileVelocityLength < 1){
         return;
     }
 
     // Calculate noise to make it look better with less samples per pixel
 	float noise = GetGradientNoise(pixelCoord);
 
-    const int maxSampleCount = PassSrg::m_constants.m_sampleNumber;
-    float sampleCount = 0.0;
-    
-    float3 accumulatedColor = float3(0.0, 0.0, 0.0);
-    for (int i = 0; i < maxSampleCount; ++i)
-    {
-        int2 coord = pixelCoord + int2((i + noise) * velocity / maxSampleCount);
-        if(coord.x < 0 || coord.y < 0 || coord.x >= PassSrg::m_constants.m_outputSize.x || coord.y >= PassSrg::m_constants.m_outputSize.y){
-            break;
-        }
-        
-        accumulatedColor += PassSrg::m_inputColor[uint2(coord)].rgb;
-        sampleCount += 1.0;
-    }
-    
-    if(sampleCount == 0){
-        PassSrg::m_outputColor[pixelCoord].rgb = color;
-    }else{
-        accumulatedColor /= sampleCount;
-        // NaN protection (without this NaNs could get in the history buffer and quickly consume the frame)
-        accumulatedColor = max(0.0, accumulatedColor);
+    int2 ditherCoord = int2(pixelCoord.x % 2, pixelCoord.y % 2);
+    float samplingDither = (-0.25 + 2.0 * 0.25 * ditherCoord.x) * (-1.0 + 2.0 * ditherCoord.y);
+    // PassSrg::m_outputColor[pixelCoord].rgb = float3(samplingDither, samplingDither, samplingDither);
 
-        PassSrg::m_outputColor[pixelCoord].rgb = accumulatedColor;
+    const int iterationCount = PassSrg::m_constants.m_sampleNumber / 2;
+    const float2 sampleStep = tileVelocity / (float)iterationCount;
+    const float pixelToSampleUnitsScale = rsqrt(dot(sampleStep, sampleStep));
+    float4 accumulatedColor = float4(0.0, 0.0, 0.0, 0.0);
+    
+    for (int i = 0; i < iterationCount; ++i)
+    {
+        int2 offset = int2((i + samplingDither) * sampleStep);
+        uint2 coord1 = ClampCoords(pixelCoord + offset);
+        uint2 coord2 = ClampCoords(pixelCoord - offset);
+
+        float2 sampleVelocity1 = PassSrg::m_inputVelocity[coord1];
+        float2 sampleVelocity2 = PassSrg::m_inputVelocity[coord2];
+        sampleVelocity1 = ToPixelVelocity(sampleVelocity1);
+        sampleVelocity2 = ToPixelVelocity(sampleVelocity2);
+
+        float sampleVelocityLength1 = length(sampleVelocity1);
+        float sampleVelocityLength2 = length(sampleVelocity2);
+
+        float sampleDepth1 = PassSrg::m_linearDepth[coord1].r;
+        float sampleDepth2 = PassSrg::m_linearDepth[coord2].r;
+
+        float weight1 = SampleWeight(depth, sampleDepth1, i + samplingDither, tileVelocityLength, sampleVelocityLength1, pixelToSampleUnitsScale, 1);
+        float weight2 = SampleWeight(depth, sampleDepth2, i + samplingDither, tileVelocityLength, sampleVelocityLength2, pixelToSampleUnitsScale, 1);
+
+        bool2 doMirror = bool2(sampleDepth1 > sampleDepth2, sampleVelocityLength2 > sampleVelocityLength1);
+		weight1 = all(doMirror) ? weight2 : weight1;
+		weight2 = any(doMirror) ? weight2 : weight1;
+
+        accumulatedColor += weight1 * float4(PassSrg::m_inputColor[coord1].rgb, 1.0);
+        accumulatedColor += weight2 * float4(PassSrg::m_inputColor[coord2].rgb, 1.0);
     }
     
+    if(accumulatedColor.w == 0)
+    {
+        return;
+    }
+    
+    accumulatedColor /= float(iterationCount * 2);
+    accumulatedColor.rgb = max(0.0, accumulatedColor.rgb);
+    // PassSrg::m_outputColor[pixelCoord].rgb = 100 * float3(velocityLength, velocityLength, velocityLength);
+    PassSrg::m_outputColor[pixelCoord].rgb = accumulatedColor.rgb + (1. - accumulatedColor.w) * color;
 }

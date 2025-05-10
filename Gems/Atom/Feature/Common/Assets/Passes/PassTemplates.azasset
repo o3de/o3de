@@ -625,6 +625,18 @@
                 "Path": "Passes/MotionBlur.pass"
             },
             {
+                "Name": "MotionBlurTileMaxTemplate",
+                "Path": "Passes/MotionBlurTileMax.pass"
+            },
+            {
+                "Name": "MotionBlurTileFilterTemplate",
+                "Path": "Passes/MotionBlurTileFilter.pass"
+            },
+            {
+                "Name": "MotionBlurParentTemplate",
+                "Path": "Passes/MotionBlurParent.pass"
+            },
+            {
                 "Name": "PaniniProjectionTemplate",
                 "Path": "Passes/PaniniProjection.pass"
             }, 

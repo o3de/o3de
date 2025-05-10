@@ -14,20 +14,21 @@
                     "ScopeAttachmentUsage": "Shader"
                 },
                 {
-                    "Name": "InputDepth",
+                    "Name": "InputLinearDepth",
                     "SlotType": "Input",
-                    "ShaderInputName": "m_inputDepth",
-                    "ScopeAttachmentUsage": "Shader",
-                    "ImageViewDesc": {
-                        "AspectFlags": [
-                            "Depth"
-                        ]
-                    }
+                    "ShaderInputName": "m_linearDepth",
+                    "ScopeAttachmentUsage": "Shader"
                 },
                 {
-                    "Name": "MotionVectors",
+                    "Name": "InputVelocity",
                     "SlotType": "Input",
-                    "ShaderInputName": "m_motionVectors",
+                    "ShaderInputName": "m_inputVelocity",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "InputTileVelocity",
+                    "SlotType": "Input",
+                    "ShaderInputName": "m_inputTileVelocity",
                     "ScopeAttachmentUsage": "Shader"
                 },
                 {
