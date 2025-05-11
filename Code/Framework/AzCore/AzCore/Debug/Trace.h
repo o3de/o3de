@@ -9,7 +9,6 @@
 
 #include <AzCore/PlatformDef.h>
 #include <AzCore/base.h>
-#include <AzCore/O3DEKernelConfiguration.h>
 #include <cstdarg>
 
 namespace AZStd
@@ -43,7 +42,7 @@ namespace AZ
             None
         };
 
-        class O3DEKERNEL_API ITrace
+        class AZCORE_API ITrace
         {
         public:
             ITrace();

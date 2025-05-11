@@ -14,7 +14,7 @@
 
 namespace AZStd
 {
-    template class AZStd::basic_fixed_string<char, AZ::Uuid::MaxStringBuffer>;
+    template class AZCORE_API_EXPORT AZStd::basic_fixed_string<char, AZ::Uuid::MaxStringBuffer>;
 }
 
 namespace AZ

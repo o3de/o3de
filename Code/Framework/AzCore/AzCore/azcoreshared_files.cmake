@@ -7,6 +7,9 @@
 #
 
 set(FILES
+    Module/Environment.cpp
+    Module/Environment.h
+    Debug/ITrace.cpp
     AzCoreModule.h
     AzCoreModule.cpp
     Asset/AssetBus.cpp

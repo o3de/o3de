@@ -75,7 +75,7 @@ namespace AZ
         bool operator==(const OSStdAllocator& a, const OSStdAllocator& b) { (void)a; (void)b; return true; }
         bool operator!=(const OSStdAllocator& a, const OSStdAllocator& b) { (void)a; (void)b; return false; }
 
-        O3DEKERNEL_API void EnvironmentVariableHolderBase::UnregisterAndDestroy(DestructFunc destruct, bool moduleRelease)
+        AZCORE_API void EnvironmentVariableHolderBase::UnregisterAndDestroy(DestructFunc destruct, bool moduleRelease)
         {
             const bool releaseByUseCount = (--m_useCount == 0);
             // We take over the lock, and release it before potentially destroying/freeing ourselves
@@ -354,22 +354,22 @@ namespace AZ
             return &environment;
         }
 
-        O3DEKERNEL_API EnvironmentVariableResult AddAndAllocateVariable(u32 guid, size_t byteSize, size_t alignment, AZStd::recursive_mutex** addedVariableLock)
+        AZCORE_API EnvironmentVariableResult AddAndAllocateVariable(u32 guid, size_t byteSize, size_t alignment, AZStd::recursive_mutex** addedVariableLock)
         {
             return EnvironmentImpl::Get()->AddAndAllocateVariable(guid, byteSize, alignment, addedVariableLock);
         }
 
-        O3DEKERNEL_API EnvironmentVariableResult GetVariable(u32 guid)
+        AZCORE_API EnvironmentVariableResult GetVariable(u32 guid)
         {
             return EnvironmentImpl::Get()->GetVariable(guid);
         }
 
-        O3DEKERNEL_API Environment::AllocatorInterface* GetAllocator()
+        AZCORE_API Environment::AllocatorInterface* GetAllocator()
         {
             return EnvironmentImpl::Get()->GetAllocator();
         }
 
-        O3DEKERNEL_API u32 EnvironmentVariableNameToId(const char* uniqueName)
+        AZCORE_API u32 EnvironmentVariableNameToId(const char* uniqueName)
         {
             AZStd::string_view uniqueNameView(uniqueName);
             u32 result {0};
@@ -383,7 +383,7 @@ namespace AZ
 
     namespace Environment
     {
-        O3DEKERNEL_API EnvironmentInstance GetInstance()
+        AZCORE_API EnvironmentInstance GetInstance()
         {
             return Internal::EnvironmentImpl::Get();
         }

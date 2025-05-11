@@ -11,6 +11,4 @@ set(FILES
     Math/Uuid.h
     Math/Uuid.inl
     Module/AZStdInstantiations.cpp
-    AzCoreModuleStatic.h
-    AzCoreModuleStatic.cpp
 )

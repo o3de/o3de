@@ -9,7 +9,6 @@
 #include <cctype>
 
 #include <AzCore/AzCoreModule.h>
-#include <AzCore/AzCoreModuleStatic.h>
 
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Casting/lossy_cast.h>
@@ -1441,7 +1440,6 @@ namespace AZ
         }
 
         outModules.emplace_back(aznew AzCoreModule());
-        outModules.emplace_back(aznew AzCoreModuleStatic());
     }
 
     void ComponentApplication::LoadModules()
