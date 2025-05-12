@@ -198,7 +198,11 @@ namespace AZ
              * It does not wait for the AssetManager to notify external listeners via the AssetBus OnAsset* events.
              * If the asset is loaded successfully, the return state may be ReadyPreNotify or Ready depending on thread timing
              */
+#if defined(CARBONATED) && defined(CARBONATED_ASSET_WAIT_TIMEOUT)
+            AssetData::AssetStatus BlockUntilLoadComplete(const Asset<AssetData>& asset, unsigned int timeoutMillis = 0);
+#else
             AssetData::AssetStatus BlockUntilLoadComplete(const Asset<AssetData>& asset);
+#endif
 
             /**
              * Gets an asset from the database, if not present it loads it from the catalog/stream. For events register a handler by calling RegisterEventHandler().

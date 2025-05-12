@@ -189,7 +189,11 @@ namespace AZ
 
                 if (mipChain.m_asset.QueueLoad())
                 {
+#if defined(CARBONATED) && defined(CARBONATED_ASSET_WAIT_TIMEOUT)
+                    mipChain.m_asset.BlockUntilLoadComplete(1000);  // this is long enough to be sure that something is broken
+#else
                     mipChain.m_asset.BlockUntilLoadComplete();
+#endif
                 }
 
                 mipChainAsset = GetImageMipChainAsset(mip);

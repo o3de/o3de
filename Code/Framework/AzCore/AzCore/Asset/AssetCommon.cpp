@@ -117,6 +117,12 @@ namespace AZ::Data
             return AssetManager::Instance().GetAsset(id, type, assetReferenceLoadBehavior, loadParams);
         }
 
+#if defined(CARBONATED) && defined(CARBONATED_ASSET_WAIT_TIMEOUT)
+        AssetData::AssetStatus BlockUntilLoadComplete(const Asset<AssetData>& asset, unsigned int timeoutMillis)
+        {
+            return AssetManager::Instance().BlockUntilLoadComplete(asset, timeoutMillis);
+        }
+#endif
         AssetData::AssetStatus BlockUntilLoadComplete(const Asset<AssetData>& asset)
         {
             return AssetManager::Instance().BlockUntilLoadComplete(asset);
