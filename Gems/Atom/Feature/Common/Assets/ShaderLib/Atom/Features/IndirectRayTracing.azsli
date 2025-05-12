@@ -79,11 +79,11 @@ inline RayTracingClasBuildTriangleClusterInfo RayTracingClasConvertBuildTriangle
     targetInfo.m_clusterID = sourceInfo.m_clusterID;
     targetInfo.m_clusterFlags = (uint)sourceInfo.m_clusterFlags;
     targetInfo.m_vertexAndIndexConfiguration =
-        (sourceInfo.m_triangleCount                  & 0x1FF) |
-        ((sourceInfo.m_vertexCount                   & 0x1FF) <<  9) |
-        ((sourceInfo.m_positionTruncateBitCount      & 0x3F)  << 18) |
-        ((uint)sourceInfo.m_indexType                & 0xF)   << 24 |
-        ((uint)sourceInfo.m_opacityMicromapIndexType & 0xF)   << 28;
+        (sourceInfo.m_triangleCount                   & 0x1FF) |
+        ((sourceInfo.m_vertexCount                    & 0x1FF) <<  9) |
+        ((sourceInfo.m_positionTruncateBitCount       & 0x3F)  << 18) |
+        (((uint)sourceInfo.m_indexType                & 0xF)   << 24) |
+        (((uint)sourceInfo.m_opacityMicromapIndexType & 0xF)   << 28);
     targetInfo.m_baseGeometryIndexAndGeometryFlags =
         (sourceInfo.m_baseGeometryIndex    & 0xFFFFFF) |
         (((uint)sourceInfo.m_geometryFlags & 0x7) << 29);

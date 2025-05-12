@@ -107,6 +107,7 @@ namespace AZ
             const VkPhysicalDeviceShaderImageAtomicInt64FeaturesEXT& GetShaderImageAtomicInt64Features() const;
             const VkPhysicalDeviceAccelerationStructurePropertiesKHR& GetPhysicalDeviceAccelerationStructureProperties() const;
             const VkPhysicalDeviceAccelerationStructureFeaturesKHR& GetPhysicalDeviceAccelerationStructureFeatures() const;
+            const VkPhysicalDeviceClusterAccelerationStructurePropertiesNV& GetPhysicalDeviceClusterAccelerationStructureProperties() const;
             const VkPhysicalDeviceClusterAccelerationStructureFeaturesNV& GetPhysicalDeviceClusterAccelerationStructureFeatures() const;
             const VkPhysicalDeviceRayTracingPipelinePropertiesKHR& GetPhysicalDeviceRayTracingPipelineProperties() const;
             const VkPhysicalDeviceRayTracingPipelineFeaturesKHR& GetPhysicalDeviceRayTracingPipelineFeatures() const;

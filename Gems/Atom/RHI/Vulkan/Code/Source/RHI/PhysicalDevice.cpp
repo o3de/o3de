@@ -133,6 +133,11 @@ namespace AZ
             return m_accelerationStructureFeatures;
         }
 
+        const VkPhysicalDeviceClusterAccelerationStructurePropertiesNV& PhysicalDevice::GetPhysicalDeviceClusterAccelerationStructureProperties() const
+        {
+            return m_clusterAccelerationStructureProperties;
+        }
+
         const VkPhysicalDeviceClusterAccelerationStructureFeaturesNV& PhysicalDevice::GetPhysicalDeviceClusterAccelerationStructureFeatures() const
         {
             return m_clusterAccelerationStructureFeatures;

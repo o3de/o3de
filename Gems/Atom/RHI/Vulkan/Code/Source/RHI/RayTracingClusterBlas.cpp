@@ -89,14 +89,12 @@ namespace AZ
         {
             auto& device = static_cast<Device&>(deviceBase);
             auto& physicalDevice = static_cast<const PhysicalDevice&>(device.GetPhysicalDevice());
-            const VkPhysicalDeviceAccelerationStructurePropertiesKHR& accelerationStructureProperties = physicalDevice.GetPhysicalDeviceAccelerationStructureProperties();
+            const auto& accelerationStructureProperties = physicalDevice.GetPhysicalDeviceAccelerationStructureProperties();
+            const auto& clusterAccelerationStructureProperties = physicalDevice.GetPhysicalDeviceClusterAccelerationStructureProperties();
 
             // advance to the next buffer
             ClusterBlasBuffers& buffers = m_buffers.AdvanceCurrentElement();
-
-            VkBufferDeviceAddressInfo addressInfo = {};
-            addressInfo.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
-            addressInfo.pNext = nullptr;
+            uint64_t scratchBufferSize = 0;
 
             {
                 // fill input for builindg CLASes
@@ -128,6 +126,7 @@ namespace AZ
                     &buildSizesInfo);
                 buildSizesInfo.accelerationStructureSize = RHI::AlignUp(buildSizesInfo.accelerationStructureSize, 256);
                 buildSizesInfo.buildScratchSize = RHI::AlignUp(buildSizesInfo.buildScratchSize, accelerationStructureProperties.minAccelerationStructureScratchOffsetAlignment);
+                scratchBufferSize = AZStd::max(scratchBufferSize, buildSizesInfo.buildScratchSize);
 
                 // create destination implicit data buffer
                 buffers.m_dstImplicitDataBuffer = RHI::Factory::Get().CreateBuffer();
@@ -135,6 +134,7 @@ namespace AZ
                 AZ::RHI::BufferDescriptor implicitBufferDescriptor;
                 implicitBufferDescriptor.m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite | RHI::BufferBindFlags::RayTracingAccelerationStructure;
                 implicitBufferDescriptor.m_byteCount = buildSizesInfo.accelerationStructureSize;
+                implicitBufferDescriptor.m_alignment = clusterAccelerationStructureProperties.clusterByteAlignment;
 
                 AZ::RHI::DeviceBufferInitRequest implicitBufferRequest;
                 implicitBufferRequest.m_buffer = buffers.m_dstImplicitDataBuffer.get();
@@ -142,27 +142,7 @@ namespace AZ
                 RHI::ResultCode resultCode = bufferPools.GetDstImplicitBufferPool()->InitBuffer(implicitBufferRequest);
                 AZ_Assert(resultCode == RHI::ResultCode::Success, "failed to create destination implicit buffer");
 
-                addressInfo.buffer = static_cast<const Vulkan::Buffer*>(buffers.m_dstImplicitDataBuffer.get())->GetBufferMemoryView()->GetNativeBuffer();
-                buffers.m_dstImplicitDataBufferDeviceAddress = device.GetContext().GetBufferDeviceAddress(device.GetNativeDevice(), &addressInfo);
-
-                // create scratch data buffer
-                buffers.m_scratchDataBuffer = RHI::Factory::Get().CreateBuffer();
-                buffers.m_scratchDataBuffer->SetName(Name("CLAS scratch data buffer"));
-                AZ::RHI::BufferDescriptor scratchBufferDescriptor;
-                scratchBufferDescriptor.m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite | RHI::BufferBindFlags::RayTracingScratchBuffer;
-                // TODO: check whether the size is enough also for other operations
-                scratchBufferDescriptor.m_byteCount = buildSizesInfo.buildScratchSize;
-                //scratchBufferDescriptor.m_byteCount = 128 * 1000; // TODO: Combine scratch buffer of CLAS and Cluster-BLAS build??
-                scratchBufferDescriptor.m_alignment = accelerationStructureProperties.minAccelerationStructureScratchOffsetAlignment;
-
-                AZ::RHI::DeviceBufferInitRequest scratchBufferRequest;
-                scratchBufferRequest.m_buffer = buffers.m_scratchDataBuffer.get();
-                scratchBufferRequest.m_descriptor = scratchBufferDescriptor;
-                resultCode = bufferPools.GetScratchBufferPool()->InitBuffer(scratchBufferRequest);
-                AZ_Assert(resultCode == RHI::ResultCode::Success, "failed to create Cluster BLAS scratch buffer");
-
-                addressInfo.buffer = static_cast<const Vulkan::Buffer*>(buffers.m_scratchDataBuffer.get())->GetBufferMemoryView()->GetNativeBuffer();
-                buffers.m_scratchDataBufferDeviceAddress = device.GetContext().GetBufferDeviceAddress(device.GetNativeDevice(), &addressInfo);
+                buffers.m_dstImplicitDataBufferDeviceAddress = buffers.m_dstImplicitDataBuffer->GetDeviceAddress();
             }
 
             {
@@ -189,6 +169,23 @@ namespace AZ
                     &buildSizesInfo);
                 buildSizesInfo.accelerationStructureSize = RHI::AlignUp(buildSizesInfo.accelerationStructureSize, 256);
                 buildSizesInfo.buildScratchSize = RHI::AlignUp(buildSizesInfo.buildScratchSize, accelerationStructureProperties.minAccelerationStructureScratchOffsetAlignment);
+                scratchBufferSize = AZStd::max(scratchBufferSize, buildSizesInfo.buildScratchSize);
+
+                // create scratch data buffer
+                buffers.m_scratchDataBuffer = RHI::Factory::Get().CreateBuffer();
+                buffers.m_scratchDataBuffer->SetName(Name("CLAS scratch data buffer"));
+                AZ::RHI::BufferDescriptor scratchBufferDescriptor;
+                scratchBufferDescriptor.m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite | RHI::BufferBindFlags::RayTracingScratchBuffer;
+                scratchBufferDescriptor.m_byteCount = scratchBufferSize;
+                scratchBufferDescriptor.m_alignment = accelerationStructureProperties.minAccelerationStructureScratchOffsetAlignment;
+
+                AZ::RHI::DeviceBufferInitRequest scratchBufferRequest;
+                scratchBufferRequest.m_buffer = buffers.m_scratchDataBuffer.get();
+                scratchBufferRequest.m_descriptor = scratchBufferDescriptor;
+                RHI::ResultCode resultCode = bufferPools.GetScratchBufferPool()->InitBuffer(scratchBufferRequest);
+                AZ_Assert(resultCode == RHI::ResultCode::Success, "failed to create Cluster BLAS scratch buffer");
+
+                buffers.m_scratchDataBufferDeviceAddress = buffers.m_scratchDataBuffer->GetDeviceAddress();
 
                 // create cluster blas buffer
                 buffers.m_clusterBlasBuffer = RHI::Factory::Get().CreateBuffer();
@@ -200,11 +197,10 @@ namespace AZ
                 AZ::RHI::DeviceBufferInitRequest clusterBlasBufferRequest;
                 clusterBlasBufferRequest.m_buffer = buffers.m_clusterBlasBuffer.get();
                 clusterBlasBufferRequest.m_descriptor = clusterBlasBufferDescriptor;
-                RHI::ResultCode resultCode = bufferPools.GetBlasBufferPool()->InitBuffer(clusterBlasBufferRequest);
+                resultCode = bufferPools.GetBlasBufferPool()->InitBuffer(clusterBlasBufferRequest);
                 AZ_Assert(resultCode == RHI::ResultCode::Success, "failed to create cluster blas buffer");
 
-                addressInfo.buffer = static_cast<const Vulkan::Buffer*>(buffers.m_clusterBlasBuffer.get())->GetBufferMemoryView()->GetNativeBuffer();
-                buffers.m_clusterBlasBufferBufferDeviceAddress = device.GetContext().GetBufferDeviceAddress(device.GetNativeDevice(), &addressInfo);
+                buffers.m_clusterBlasBufferBufferDeviceAddress = buffers.m_clusterBlasBuffer->GetDeviceAddress();
             }
 
             // create destination addresses array buffer
@@ -222,8 +218,7 @@ namespace AZ
             RHI::ResultCode resultCode = bufferPools.GetDstAddressesArrayBufferPool()->InitBuffer(dstAddressesBufferRequest);
             AZ_Assert(resultCode == RHI::ResultCode::Success, "failed to create destination addresses buffer");
 
-            addressInfo.buffer = static_cast<const Vulkan::Buffer*>(buffers.m_dstAddressesArrayBuffer.get())->GetBufferMemoryView()->GetNativeBuffer();
-            buffers.m_dstAddressesArrayBufferDeviceAddress = device.GetContext().GetBufferDeviceAddress(device.GetNativeDevice(), &addressInfo);
+            buffers.m_dstAddressesArrayBufferDeviceAddress = buffers.m_dstAddressesArrayBuffer->GetDeviceAddress();
 
             // create destination sizes array buffer
             buffers.m_dstSizesArrayBuffer = RHI::Factory::Get().CreateBuffer();
@@ -240,8 +235,7 @@ namespace AZ
             resultCode = bufferPools.GetDstSizesArrayBufferPool()->InitBuffer(dstSizesBufferRequest);
             AZ_Assert(resultCode == RHI::ResultCode::Success, "failed to create destination sizes buffer");
 
-            addressInfo.buffer = static_cast<const Vulkan::Buffer*>(buffers.m_dstSizesArrayBuffer.get())->GetBufferMemoryView()->GetNativeBuffer();
-            buffers.m_dstSizesArrayBufferDeviceAddress = device.GetContext().GetBufferDeviceAddress(device.GetNativeDevice(), &addressInfo);
+            buffers.m_dstSizesArrayBufferDeviceAddress = buffers.m_dstSizesArrayBuffer->GetDeviceAddress();
 
             {
                 // Create source info buffer for cluster-BLAS
@@ -288,8 +282,7 @@ namespace AZ
             resultCode = bufferPools.GetSrcInfosArrayBufferPool()->InitBuffer(srcInfosBufferRequest);
             AZ_Assert(resultCode == RHI::ResultCode::Success, "failed to create source infos buffer");
 
-            addressInfo.buffer = static_cast<const Vulkan::Buffer*>(buffers.m_srcInfosArrayBuffer.get())->GetBufferMemoryView()->GetNativeBuffer();
-            buffers.m_srcInfosArrayBufferDeviceAddress = device.GetContext().GetBufferDeviceAddress(device.GetNativeDevice(), &addressInfo);
+            buffers.m_srcInfosArrayBufferDeviceAddress = buffers.m_srcInfosArrayBuffer->GetDeviceAddress();
 
             // create source info count buffer
             buffers.m_srcInfosCountBuffer = RHI::Factory::Get().CreateBuffer();
@@ -304,8 +297,7 @@ namespace AZ
             resultCode = bufferPools.GetSrcInfosCountBufferPool()->InitBuffer(srcInfosCountBufferRequest);
             AZ_Assert(resultCode == RHI::ResultCode::Success, "failed to create destination sizes buffer");
 
-            addressInfo.buffer = static_cast<const Vulkan::Buffer*>(buffers.m_srcInfosCountBuffer.get())->GetBufferMemoryView()->GetNativeBuffer();
-            buffers.m_srcInfosCountBufferDeviceAddress = device.GetContext().GetBufferDeviceAddress(device.GetNativeDevice(), &addressInfo);
+            buffers.m_srcInfosCountBufferDeviceAddress = buffers.m_srcInfosCountBuffer->GetDeviceAddress();
 
             {
                 // assign buffer addresses to command info
@@ -313,11 +305,8 @@ namespace AZ
                 buffers.m_commandInfo.sType = VK_STRUCTURE_TYPE_CLUSTER_ACCELERATION_STRUCTURE_COMMANDS_INFO_NV;
                 buffers.m_commandInfo.pNext = nullptr;
 
-                addressInfo.buffer = static_cast<const Vulkan::Buffer*>(buffers.m_dstImplicitDataBuffer.get())->GetBufferMemoryView()->GetNativeBuffer();
-                buffers.m_commandInfo.dstImplicitData = device.GetContext().GetBufferDeviceAddress(device.GetNativeDevice(), &addressInfo);
-
-                addressInfo.buffer = static_cast<const Vulkan::Buffer*>(buffers.m_scratchDataBuffer.get())->GetBufferMemoryView()->GetNativeBuffer();
-                buffers.m_commandInfo.scratchData = device.GetContext().GetBufferDeviceAddress(device.GetNativeDevice(), &addressInfo);
+                buffers.m_commandInfo.dstImplicitData = buffers.m_dstImplicitDataBuffer->GetDeviceAddress();
+                buffers.m_commandInfo.scratchData = buffers.m_scratchDataBuffer->GetDeviceAddress();
 
                 VkStridedDeviceAddressRegionKHR dstAddressesArray;
                 dstAddressesArray.deviceAddress = buffers.m_dstAddressesArrayBufferDeviceAddress;
@@ -337,8 +326,7 @@ namespace AZ
                 srcInfosArray.size = buffers.m_srcInfosArrayBufferSize;
                 buffers.m_commandInfo.srcInfosArray = srcInfosArray;
 
-                addressInfo.buffer = static_cast<const Vulkan::Buffer*>(buffers.m_srcInfosCountBuffer.get())->GetBufferMemoryView()->GetNativeBuffer();
-                buffers.m_commandInfo.srcInfosCount = device.GetContext().GetBufferDeviceAddress(device.GetNativeDevice(), &addressInfo);
+                buffers.m_commandInfo.srcInfosCount = buffers.m_srcInfosCountBuffer->GetDeviceAddress();
                 // Dont use m_srcInfosCountBuffer for now; TODO: Enable this again
                 buffers.m_commandInfo.srcInfosCount = 0;
 
