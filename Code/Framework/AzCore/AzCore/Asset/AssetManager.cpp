@@ -350,6 +350,7 @@ namespace AZ::Data
             int currentWaitForAssetUpdate = MaxWaitForAssetUpdateMs;
 #if defined(CARBONATED) && defined(CARBONATED_ASSET_WAIT_TIMEOUT)
             const int64_t startTime = m_timeoutMillis ? static_cast<int64_t>(AZ::GetRealElapsedTimeMs()) : 0;
+            int jobCount = 0;
 #endif
 
             // Continue to loop until the load completes.  (Most of the time in the loop will be spent in a thread-blocking state)
@@ -390,10 +391,15 @@ namespace AZ::Data
 #if defined(CARBONATED) && defined(CARBONATED_ASSET_WAIT_TIMEOUT)
                 if (m_timeoutMillis)
                 {
-                    if ((unsigned int)(static_cast<int64_t>(AZ::GetRealElapsedTimeMs()) - startTime) > m_timeoutMillis)
+                    if (jobCount++ > 0)  // do not check after the first job, most cases it is loaded
                     {
-                        AZ_Info("AssetManager", "Blocking loading wait timeout %d exceeded for %s", m_timeoutMillis, m_assetData.GetHint().c_str());
-                        break;
+                        const int64_t curTime = m_timeoutMillis ? static_cast<int64_t>(AZ::GetRealElapsedTimeMs()) : 0;
+                        if ((unsigned int)(curTime - startTime) > m_timeoutMillis)
+                        {
+                            AZ_Info("AssetManager", "Blocking loading wait timeout %d exceeded for %s, job count %d, time %u",
+                                    m_timeoutMillis, m_assetData.GetHint().c_str(), jobCount, (unsigned int)(curTime - startTime));
+                            break;
+                        }
                     }
                 }
 #endif
