@@ -35,7 +35,7 @@ namespace AZ
             void GarbageCollect();
 
             // Allocate space for a buffer
-            BufferMemoryView Allocate(size_t sizeInBytes, size_t overrideAlignment = 0);
+            BufferMemoryView Allocate(size_t sizeInBytes, size_t overrideAlignment = 0, bool allocateForCrossDeviceUsage = false);
 
             // Release space previously allocated for a buffer
             void DeAllocate(const BufferMemoryView& memory);

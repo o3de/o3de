@@ -10,6 +10,7 @@
 #include <Atom/RHI.Reflect/Vulkan/VulkanBus.h>
 #include <RHI/Device.h>
 #include <RHI/TimelineSemaphoreFence.h>
+#include <Vulkan_Fence_Platform.h>
 
 namespace AZ
 {
@@ -27,7 +28,7 @@ namespace AZ
 
         uint64_t TimelineSemaphoreFence::GetPendingValue() const
         {
-            return m_pendingValue;
+            return m_originalDeviceFence ? m_originalDeviceFence->m_pendingValue : m_pendingValue;
         }
 
         void TimelineSemaphoreFence::SetNameInternal(const AZStd::string_view& name)
@@ -39,32 +40,41 @@ namespace AZ
             }
         }
 
-        RHI::ResultCode TimelineSemaphoreFence::InitInternal(RHI::Device& baseDevice, RHI::FenceState initialState)
+        RHI::ResultCode TimelineSemaphoreFence::InitInternal(RHI::Device& baseDevice, RHI::FenceState initialState, bool usedForCrossDevice)
         {
-            RETURN_RESULT_IF_UNSUCCESSFUL(Base::InitInternal(baseDevice, initialState));
+            RETURN_RESULT_IF_UNSUCCESSFUL(Base::InitInternal(baseDevice, initialState, usedForCrossDevice));
 
             auto& device = static_cast<Device&>(baseDevice);
 
+            void* pNext = nullptr;
             VkSemaphoreTypeCreateInfo timelineCreateInfo{};
             timelineCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO;
             timelineCreateInfo.pNext = nullptr;
             timelineCreateInfo.semaphoreType = VK_SEMAPHORE_TYPE_TIMELINE;
             timelineCreateInfo.initialValue = 0;
+            pNext = &timelineCreateInfo;
 
             VkExternalSemaphoreHandleTypeFlags externalHandleTypeFlags = 0;
             ExternalHandleRequirementBus::Broadcast(
                 &ExternalHandleRequirementBus::Events::CollectSemaphoreExportHandleTypes, externalHandleTypeFlags);
+#if AZ_VULKAN_CROSS_DEVICE_SEMAPHORES_SUPPORTED
+            if (usedForCrossDevice)
+            {
+                externalHandleTypeFlags |= ExternalSemaphoreHandleTypeBit;
+            }
+#endif
             VkExportSemaphoreCreateInfoKHR createExport{};
             if (externalHandleTypeFlags != 0)
             {
                 createExport.sType = VK_STRUCTURE_TYPE_EXPORT_SEMAPHORE_CREATE_INFO;
                 createExport.handleTypes = externalHandleTypeFlags;
-                timelineCreateInfo.pNext = &createExport;
+                createExport.pNext = pNext;
+                pNext = &createExport;
             }
 
             VkSemaphoreCreateInfo createInfo{};
             createInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-            createInfo.pNext = &timelineCreateInfo;
+            createInfo.pNext = pNext;
             createInfo.flags = 0;
 
             const VkResult result =
@@ -75,6 +85,40 @@ namespace AZ
 
             m_pendingValue = (initialState == RHI::FenceState::Signaled) ? 0 : 1;
             return RHI::ResultCode::Success;
+        }
+
+        RHI::ResultCode TimelineSemaphoreFence::InitCrossDeviceInternal(RHI::Device& baseDevice, RHI::Ptr<Fence> originalDeviceFence)
+        {
+#if AZ_VULKAN_CROSS_DEVICE_SEMAPHORES_SUPPORTED
+            auto originalTimelineSemaphoreFence = azrtti_cast<TimelineSemaphoreFence*>(&originalDeviceFence->GetFenceBase());
+            if (originalTimelineSemaphoreFence == nullptr)
+            {
+                AZ_Assert(false, "Cannot create a cross device TimelineSemaphoreFence from a BinaryFence");
+            }
+            m_originalDeviceFence = originalTimelineSemaphoreFence;
+
+            InitInternal(baseDevice, RHI::FenceState::Reset, true);
+            auto& device = static_cast<Device&>(baseDevice);
+            auto& originalDevice = static_cast<Device&>(originalDeviceFence->GetDevice());
+            AZ_Assert(
+                static_cast<const PhysicalDevice&>(device.GetPhysicalDevice())
+                    .IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::ExternalSemaphore),
+                "External semaphores are not supported on device %d",
+                device.GetDeviceIndex());
+            AZ_Assert(
+                static_cast<const PhysicalDevice&>(originalDevice.GetPhysicalDevice())
+                    .IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::ExternalSemaphore),
+                "External semaphores are not supported on device %d",
+                originalDevice.GetDeviceIndex());
+
+            auto result =
+                ImportCrossDeviceSemaphore(originalDevice, originalTimelineSemaphoreFence->GetNativeSemaphore(), device, m_nativeSemaphore);
+            AZ_Assert(result == VK_SUCCESS, "Importing semaphore failed");
+            return ConvertResult(result);
+#else
+            AZ_Assert(false, "Cross Device Fences are not supported on this platform");
+            return RHI::ResultCode::Fail;
+#endif
         }
 
         void TimelineSemaphoreFence::ShutdownInternal()
@@ -93,7 +137,7 @@ namespace AZ
             signalInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_SIGNAL_INFO;
             signalInfo.pNext = nullptr;
             signalInfo.semaphore = m_nativeSemaphore;
-            signalInfo.value = m_pendingValue;
+            signalInfo.value = GetPendingValue();
 
             auto& device = static_cast<Device&>(GetDevice());
             device.GetContext().SignalSemaphore(device.GetNativeDevice(), &signalInfo);
@@ -112,7 +156,7 @@ namespace AZ
             // If another thread resets this Semaphore while we are waiting, m_pendingValue is changed, which might interfere
             // with the WaitSemaphore here, depending on how this is implemented in the driver.
             // To avoid this, make a local copy of the pending value
-            auto pendingValue = m_pendingValue;
+            auto pendingValue = GetPendingValue();
             waitInfo.pValues = &pendingValue;
 
             auto& device = static_cast<Device&>(GetDevice());
@@ -127,10 +171,17 @@ namespace AZ
 
         RHI::FenceState TimelineSemaphoreFence::GetFenceStateInternal() const
         {
-            auto& device = static_cast<Device&>(GetDevice());
-            uint64_t completedValue = 0;
-            device.GetContext().GetSemaphoreCounterValue(device.GetNativeDevice(), m_nativeSemaphore, &completedValue);
-            return (m_pendingValue <= completedValue) ? RHI::FenceState::Signaled : RHI::FenceState::Reset;
+            if (m_originalDeviceFence)
+            {
+                return m_originalDeviceFence->GetFenceStateInternal();
+            }
+            else
+            {
+                auto& device = static_cast<Device&>(GetDevice());
+                uint64_t completedValue = 0;
+                device.GetContext().GetSemaphoreCounterValue(device.GetNativeDevice(), m_nativeSemaphore, &completedValue);
+                return (m_pendingValue <= completedValue) ? RHI::FenceState::Signaled : RHI::FenceState::Reset;
+            }
         }
     } // namespace Vulkan
 } // namespace AZ

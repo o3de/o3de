@@ -107,11 +107,7 @@ namespace AZ
             Buffer* buffer = static_cast<Buffer*>(request.m_buffer);
 
             MemoryView memoryView =
-                GetDX12RHIDevice().CreateBufferPlaced(
-                    descriptor,
-                    D3D12_RESOURCE_STATE_COMMON,
-                    m_heap.get(),
-                    heapOffset);
+                GetDX12RHIDevice().CreateBufferPlaced(descriptor, D3D12_RESOURCE_STATE_COMMON, m_heap.get(), heapOffset, false);
 
             if (!memoryView.IsValid())
             {

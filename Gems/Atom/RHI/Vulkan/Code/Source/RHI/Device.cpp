@@ -11,10 +11,10 @@
 #include <Atom/RHI.Reflect/Vulkan/PlatformLimitsDescriptor.h>
 #include <Atom/RHI.Reflect/Vulkan/VulkanBus.h>
 #include <Atom/RHI.Reflect/Vulkan/XRVkDescriptors.h>
+#include <Atom/RHI/DeviceTransientAttachmentPool.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RHIMemoryStatisticsInterface.h>
 #include <Atom/RHI/RHISystemInterface.h>
-#include <Atom/RHI/DeviceTransientAttachmentPool.h>
 #include <Atom_RHI_Vulkan_Platform.h>
 #include <AzCore/Debug/Trace.h>
 #include <AzCore/std/containers/set.h>
@@ -32,6 +32,7 @@
 #include <RHI/SwapChain.h>
 #include <RHI/WSISurface.h>
 #include <RHI/WindowSurfaceBus.h>
+#include <Vulkan_Fence_Platform.h>
 #include <Vulkan_Traits_Platform.h>
 
 namespace AZ
@@ -1362,6 +1363,35 @@ namespace AZ
 #else
             m_features.m_signalFenceFromCPU = physicalDevice.GetPhysicalDeviceTimelineSemaphoreFeatures().timelineSemaphore;
 #endif
+#if AZ_VULKAN_CROSS_DEVICE_SEMAPHORES_SUPPORTED
+            if (physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::ExternalSemaphore))
+            {
+                VkExternalSemaphoreProperties externalSemaphoreProperties{};
+                externalSemaphoreProperties.sType = VK_STRUCTURE_TYPE_EXTERNAL_SEMAPHORE_PROPERTIES;
+
+                VkPhysicalDeviceExternalSemaphoreInfo externalSemaphoreInfo{};
+                externalSemaphoreInfo.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_SEMAPHORE_INFO;
+                externalSemaphoreInfo.handleType = ExternalSemaphoreHandleTypeBit;
+
+                VkSemaphoreTypeCreateInfo semaphoreCreateInfo{};
+                semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO;
+                semaphoreCreateInfo.semaphoreType = VK_SEMAPHORE_TYPE_TIMELINE;
+                externalSemaphoreInfo.pNext = &semaphoreCreateInfo;
+                GetContext().GetPhysicalDeviceExternalSemaphoreProperties(
+                    physicalDevice.GetNativePhysicalDevice(), &externalSemaphoreInfo, &externalSemaphoreProperties);
+
+                m_features.m_crossDeviceFences = RHI::CheckBitsAll<VkExternalSemaphoreFeatureFlags>(
+                    externalSemaphoreProperties.externalSemaphoreFeatures,
+                    VK_EXTERNAL_SEMAPHORE_FEATURE_IMPORTABLE_BIT | VK_EXTERNAL_SEMAPHORE_FEATURE_EXPORTABLE_BIT);
+
+                // This feature was only tested on Nvidia and it's not clear if it work for other Vendors
+                // We disable it for other vendors for the time being
+                m_features.m_crossDeviceFences =
+                    m_features.m_crossDeviceFences && physicalDevice.GetDescriptor().m_vendorId == RHI::VendorId::nVidia;
+            }
+#endif
+            m_features.m_crossDeviceHostMemory =
+                physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::ExternalMemoryHost);
 
             const auto& deviceLimits = physicalDevice.GetDeviceLimits();
             m_limits.m_maxImageDimension1D = deviceLimits.maxImageDimension1D;

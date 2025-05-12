@@ -34,7 +34,10 @@ namespace AZ
         {
         }
 
-        BufferMemoryView BufferD3D12MemoryAllocator::Allocate([[maybe_unused]] size_t sizeInBytes, [[maybe_unused]] size_t overrideSubAllocAlignment)
+        BufferMemoryView BufferD3D12MemoryAllocator::Allocate(
+            [[maybe_unused]] size_t sizeInBytes,
+            [[maybe_unused]] size_t overrideSubAllocAlignment,
+            [[maybe_unused]] bool allocateForCrossDeviceUsage)
         {
             AZ_PROFILE_FUNCTION(RHI);
 
@@ -66,7 +69,15 @@ namespace AZ
 
             const D3D12_HEAP_TYPE heapType = ConvertHeapType(m_descriptor.m_heapMemoryLevel, m_descriptor.m_hostMemoryAccess);
 
-            MemoryView memoryView = m_descriptor.m_device->CreateD3d12maBuffer(bufferDescriptor, initialResourceState, heapType);
+            MemoryView memoryView = {};
+            if (allocateForCrossDeviceUsage)
+            {
+                memoryView = m_descriptor.m_device->CreateCrossDeviceCapableBuffer(bufferDescriptor, initialResourceState, heapType);
+            }
+            else
+            {
+                memoryView = m_descriptor.m_device->CreateD3d12maBuffer(bufferDescriptor, initialResourceState, heapType);
+            }
             if (memoryView.IsValid())
             {
                 const size_t sizeAllocated = memoryView.GetSize();

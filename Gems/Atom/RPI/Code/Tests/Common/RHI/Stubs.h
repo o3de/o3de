@@ -159,7 +159,18 @@ namespace UnitTest
         private:
             AZ::RHI::ResultCode InitInternal(AZ::RHI::Device&, const AZ::RHI::BufferPoolDescriptor&) override { return AZ::RHI::ResultCode::Success;}
 
-            AZ::RHI::ResultCode InitBufferInternal(AZ::RHI::DeviceBuffer& bufferBase, const AZ::RHI::BufferDescriptor& descriptor) override
+            AZ::RHI::ResultCode InitBufferCrossDeviceInternal(
+                AZ::RHI::DeviceBuffer& bufferBase, AZ::RHI::DeviceBuffer& originalDeviceBuffer) override
+            {
+                AZ_Assert(IsInitialized(), "Buffer Pool is not initialized");
+
+                Buffer& buffer = static_cast<Buffer&>(bufferBase);
+                buffer.m_data.resize(originalDeviceBuffer.GetDescriptor().m_byteCount);
+                return AZ::RHI::ResultCode::Success;
+            }
+
+            AZ::RHI::ResultCode InitBufferInternal(
+                AZ::RHI::DeviceBuffer& bufferBase, const AZ::RHI::BufferDescriptor& descriptor, bool usedForCrossDevice) override
             {
                 AZ_Assert(IsInitialized(), "Buffer Pool is not initialized");
 
@@ -246,7 +257,16 @@ namespace UnitTest
             AZ_CLASS_ALLOCATOR(Fence, AZ::SystemAllocator);
 
         private:
-            AZ::RHI::ResultCode InitInternal(AZ::RHI::Device&, AZ::RHI::FenceState, [[maybe_unused]] bool usedForWaitingOnDevice) override
+            AZ::RHI::ResultCode InitInternal(
+                [[maybe_unused]] AZ::RHI::Device& device,
+                [[maybe_unused]] AZ::RHI::FenceState initialState,
+                [[maybe_unused]] bool usedForWaitingOnDevice,
+                [[maybe_unused]] bool usedForCrossDevice) override
+            {
+                return AZ::RHI::ResultCode::Success;
+            }
+            AZ::RHI::ResultCode InitCrossDeviceInternal(
+                [[maybe_unused]] AZ::RHI::Device& device, [[maybe_unused]] AZ::RHI::Ptr<AZ::RHI::DeviceFence> originalDeviceFence) override
             {
                 return AZ::RHI::ResultCode::Success;
             }

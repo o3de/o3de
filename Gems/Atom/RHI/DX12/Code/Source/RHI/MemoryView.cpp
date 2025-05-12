@@ -149,7 +149,7 @@ namespace AZ
             }
         }
 
-        ID3D12Heap* MemoryView::GetHeap()
+        ID3D12Heap* MemoryView::GetHeap() const
         {
             if (m_d3d12maAllocation)
             {
@@ -171,6 +171,18 @@ namespace AZ
             {
                 return m_heapOffset;
             }
+        }
+
+        void MemoryView::MarkHeapAsOwnedByMemoryView()
+        {
+            AZ_Assert(!m_d3d12maAllocation, "D3D12MA heaps cannot be owned by a MemoryView");
+            AZ_Assert(m_heap != nullptr, "MemoryView does not have a heap");
+            m_heapOwnedByMemoryView = true;
+        }
+
+        bool MemoryView::IsHeapOwnedByMemoryView() const
+        {
+            return m_heapOwnedByMemoryView;
         }
 
         void MemoryView::Construct()

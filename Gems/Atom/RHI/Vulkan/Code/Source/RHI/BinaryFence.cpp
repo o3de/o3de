@@ -33,10 +33,11 @@ namespace AZ
             }
         }
 
-        RHI::ResultCode BinaryFence::InitInternal(RHI::Device& baseDevice, RHI::FenceState initialState)
+        RHI::ResultCode BinaryFence::InitInternal(RHI::Device& baseDevice, RHI::FenceState initialState, bool usedForCrossDevice)
         {
-            RETURN_RESULT_IF_UNSUCCESSFUL(Base::InitInternal(baseDevice, initialState));
+            RETURN_RESULT_IF_UNSUCCESSFUL(Base::InitInternal(baseDevice, initialState, usedForCrossDevice));
             auto& device = static_cast<Device&>(baseDevice);
+            AZ_Assert(!usedForCrossDevice, "BinaryFence is not supported for Cross Device operations");
 
             VkFenceCreateInfo createInfo{};
             createInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
@@ -61,6 +62,12 @@ namespace AZ
             m_signalEvent = {};
             SetName(GetName());
             return RHI::ResultCode::Success;
+        }
+
+        RHI::ResultCode BinaryFence::InitCrossDeviceInternal(RHI::Device& baseDevice, RHI::Ptr<Fence> originalDeviceFence)
+        {
+            AZ_Assert(false, "BinaryFence is not supported for Cross Device operations");
+            return RHI::ResultCode::Fail;
         }
 
         void BinaryFence::ShutdownInternal()

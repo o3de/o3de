@@ -51,12 +51,24 @@ namespace UnitTest
 
     void BufferPool::ShutdownInternal() {}
 
-    RHI::ResultCode BufferPool::InitBufferInternal(RHI::DeviceBuffer& bufferBase, const RHI::BufferDescriptor& descriptor)
+    RHI::ResultCode BufferPool::InitBufferInternal(
+        RHI::DeviceBuffer& bufferBase, const RHI::BufferDescriptor& descriptor, bool usedForCrossDevice)
     {
         AZ_Assert(IsInitialized(), "Buffer Pool is not initialized");
 
         Buffer& buffer = static_cast<Buffer&>(bufferBase);
         buffer.m_data.resize(descriptor.m_byteCount);
+
+        return RHI::ResultCode::Success;
+    }
+
+    AZ::RHI::ResultCode BufferPool::InitBufferCrossDeviceInternal(
+        AZ::RHI::DeviceBuffer& bufferBase, AZ::RHI::DeviceBuffer& originalDeviceBuffer)
+    {
+        AZ_Assert(IsInitialized(), "Buffer Pool is not initialized");
+
+        Buffer& buffer = static_cast<Buffer&>(bufferBase);
+        buffer.m_data.resize(originalDeviceBuffer.GetDescriptor().m_byteCount);
 
         return RHI::ResultCode::Success;
     }
