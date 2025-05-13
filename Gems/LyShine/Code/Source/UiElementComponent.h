@@ -104,6 +104,11 @@ public: // member functions
     bool IsRenderEnabled() override;
     void SetIsRenderEnabled(bool isRenderEnabled) override;
 
+    #if defined(CARBONATED)
+    bool IsHandlingAreaInverted() override { return m_isHandlingAreaInverted; }
+    void SetHandlingAreaInverted(bool isInverted) override { m_isHandlingAreaInverted = isInverted; }
+    #endif
+
     // ~UiElementInterface
 
     // UiEditorInterface
@@ -292,6 +297,10 @@ private: // data
 
     bool m_isEnabled = true;
     bool m_isRenderEnabled = true;
+
+    #if defined(CARBONATED)
+    bool m_isHandlingAreaInverted = false;
+    #endif
 
     // this data is only relevant when running in the editor, it is accessed through UiEditorBus
     bool m_isVisibleInEditor = true;
