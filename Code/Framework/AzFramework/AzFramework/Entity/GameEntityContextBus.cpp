@@ -8,5 +8,5 @@
 
 #include <AzFramework/Entity/GameEntityContextBus.h>
 
-AZF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzFramework::GameEntityContextRequests);
-AZF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzFramework::GameEntityContextEvents);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::GameEntityContextRequests);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::GameEntityContextEvents);

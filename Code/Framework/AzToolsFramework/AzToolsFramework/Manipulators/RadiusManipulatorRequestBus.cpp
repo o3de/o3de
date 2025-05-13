@@ -8,4 +8,4 @@
 
 #include <AzToolsFramework/Manipulators/RadiusManipulatorRequestBus.h>
 
-AZTF_INSTANTIATE_EBUS_MULTI_ADDRESS(AzToolsFramework::RadiusManipulatorRequests);
+AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::RadiusManipulatorRequests);

@@ -8,4 +8,4 @@
 
 #include <AzToolsFramework/ToolsMessaging/EntityHighlightBus.h>
 
-AZTF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzToolsFramework::EntityHighlightMessages);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EntityHighlightMessages);

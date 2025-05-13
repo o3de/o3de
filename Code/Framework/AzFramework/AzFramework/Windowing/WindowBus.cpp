@@ -7,8 +7,8 @@
  */
 #include <AzFramework/Windowing/WindowBus.h>
 
-AZF_INSTANTIATE_EBUS_MULTI_ADDRESS(AzFramework::WindowRequests)
-AZF_INSTANTIATE_EBUS_MULTI_ADDRESS(AzFramework::WindowNotifications)
-AZF_INSTANTIATE_EBUS_MULTI_ADDRESS(AzFramework::ExclusiveFullScreenRequests)
-AZF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzFramework::WindowSystemRequests)
-AZF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzFramework::WindowSystemNotifications)
+AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(AZF_API, AzFramework::WindowRequests)
+AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(AZF_API, AzFramework::WindowNotifications)
+AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(AZF_API, AzFramework::ExclusiveFullScreenRequests)
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::WindowSystemRequests)
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::WindowSystemNotifications)

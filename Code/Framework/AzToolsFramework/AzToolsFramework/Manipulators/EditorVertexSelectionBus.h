@@ -28,4 +28,4 @@ namespace AzToolsFramework
     using EditorVertexSelectionVariableRequestBus = AZ::EBus<EditorVertexSelectionVariableRequests>;
 }
 
-AZTF_DECLARE_EBUS_MULTI_ADDRESS(AzToolsFramework::EditorVertexSelectionVariableRequests);
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::EditorVertexSelectionVariableRequests);

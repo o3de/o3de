@@ -8,6 +8,6 @@
 
 #include <AzCore/Slice/SliceBus.h>
 
-AZCORE_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZ::SliceInstanceEvents);
-AZCORE_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZ::SliceAssetSerializationNotifications);
-AZCORE_INSTANTIATE_EBUS_MULTI_ADDRESS(AZ::SliceEntityHierarchyInterface);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZCORE_API, AZ::SliceInstanceEvents);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZCORE_API, AZ::SliceAssetSerializationNotifications);
+AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(AZCORE_API, AZ::SliceEntityHierarchyInterface);

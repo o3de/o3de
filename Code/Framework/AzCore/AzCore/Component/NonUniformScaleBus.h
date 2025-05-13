@@ -10,7 +10,6 @@
 
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/EBus/Event.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
@@ -39,4 +38,4 @@ namespace AZ
     using NonUniformScaleRequestBus = AZCORE_API AZ::EBus<NonUniformScaleRequests>;
 } // namespace AZ
 
-AZCORE_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZ::NonUniformScaleRequests);
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZCORE_API, AZ::NonUniformScaleRequests);

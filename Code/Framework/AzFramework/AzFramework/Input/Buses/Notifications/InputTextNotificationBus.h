@@ -60,4 +60,4 @@ namespace AzFramework
     using InputTextNotificationBus = AZ::EBus<InputTextNotifications>;
 } // namespace AzFramework
 
-AZF_DECLARE_EBUS_SINGLE_ADDRESS(AzFramework::InputTextNotifications);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::InputTextNotifications);

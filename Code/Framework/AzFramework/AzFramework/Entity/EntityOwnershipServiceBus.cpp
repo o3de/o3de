@@ -8,4 +8,4 @@
 
 #include <AzFramework/Entity/EntityOwnershipServiceBus.h>
 
-AZF_INSTANTIATE_EBUS_MULTI_ADDRESS(AzFramework::EntityOwnershipServiceNotifications);
+AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(AZF_API, AzFramework::EntityOwnershipServiceNotifications);

@@ -8,4 +8,4 @@
 
 #include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
 
-AZTF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzToolsFramework::EditorPythonRunnerRequests);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EditorPythonRunnerRequests);

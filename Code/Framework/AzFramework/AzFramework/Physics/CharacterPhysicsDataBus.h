@@ -65,5 +65,5 @@ namespace AzFramework
     using CharacterPhysicsDataNotificationBus = AZ::EBus<CharacterPhysicsDataNotifications>;
 } // namespace AzFramework
 
-AZF_DECLARE_EBUS_MULTI_ADDRESS(AzFramework::CharacterPhysicsDataRequests);
-AZF_DECLARE_EBUS_MULTI_ADDRESS(AzFramework::CharacterPhysicsDataNotifications);
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZF_API, AzFramework::CharacterPhysicsDataRequests);
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZF_API, AzFramework::CharacterPhysicsDataNotifications);

@@ -185,4 +185,4 @@ namespace AZ
     using EntityBus = AZ::EBus<EntityEvents>;
 } // namespace AZ
 
-AZCORE_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZ::EntityEvents);
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZCORE_API, AZ::EntityEvents);

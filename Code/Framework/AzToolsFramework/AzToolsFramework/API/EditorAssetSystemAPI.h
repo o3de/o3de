@@ -299,6 +299,6 @@ namespace AZStd
     AZ_TEMPLATE_EXTERN template class AZTF_API vector<AzToolsFramework::AssetSystem::JobInfo>;
 }
 
-AZTF_DECLARE_EBUS_SINGLE_ADDRESS(AzToolsFramework::AssetSystem::AssetSystemNotifications);
-AZTF_DECLARE_EBUS_SINGLE_ADDRESS(AzToolsFramework::AssetSystem::AssetSystemRequest);
-AZTF_DECLARE_EBUS_SINGLE_ADDRESS(AzToolsFramework::AssetSystem::AssetSystemJobRequest);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::AssetSystem::AssetSystemNotifications);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::AssetSystem::AssetSystemRequest);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::AssetSystem::AssetSystemJobRequest);

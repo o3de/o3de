@@ -9,7 +9,7 @@
 
 #include <AzToolsFramework/AssetEditor/AssetEditorBus.h>
 
-AZTF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzToolsFramework::AssetEditor::AssetEditorRequests);
-AZTF_INSTANTIATE_EBUS_MULTI_ADDRESS(AzToolsFramework::AssetEditor::AssetEditorValidationRequests);
-AZTF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzToolsFramework::AssetEditor::AssetEditorWidgetRequests);
-AZTF_INSTANTIATE_EBUS_MULTI_ADDRESS(AzToolsFramework::AssetEditor::AssetEditorNotifications);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::AssetEditor::AssetEditorRequests);
+AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::AssetEditor::AssetEditorValidationRequests);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::AssetEditor::AssetEditorWidgetRequests);
+AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::AssetEditor::AssetEditorNotifications);

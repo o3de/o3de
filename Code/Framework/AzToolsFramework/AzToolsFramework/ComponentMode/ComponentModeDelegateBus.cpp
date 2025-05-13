@@ -8,5 +8,5 @@
 
 #include <AzToolsFramework/ComponentMode/ComponentModeDelegateBus.h>
 
-AZTF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzFramework::ComponentModeDelegateNotifications);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZTF_API, AzFramework::ComponentModeDelegateNotifications);
 

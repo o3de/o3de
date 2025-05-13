@@ -8,7 +8,7 @@
 
 #include <AzToolsFramework/Viewport/ActionBus.h>
 
-AZTF_INSTANTIATE_EBUS_MULTI_ADDRESS(AzToolsFramework::ActionOverrideRequests);
-AZTF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzToolsFramework::EditorActionRequests);
-AZTF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzToolsFramework::EditorMenuRequests);
-AZTF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzToolsFramework::EditorMenuNotifications);
+AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::ActionOverrideRequests);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EditorActionRequests);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EditorMenuRequests);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EditorMenuNotifications);

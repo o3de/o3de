@@ -105,4 +105,4 @@ namespace AzFramework
     };
 } // namespace AzFramework
 
-AZF_DECLARE_EBUS_SINGLE_ADDRESS(AzFramework::EngineConnectionEvents);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::EngineConnectionEvents);

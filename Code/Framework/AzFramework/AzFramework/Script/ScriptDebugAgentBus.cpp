@@ -7,4 +7,4 @@
  */
 #include <AzFramework/Script/ScriptDebugAgentBus.h>
 
-AZF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzFramework::ScriptDebugAgentEvents)
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::ScriptDebugAgentEvents)

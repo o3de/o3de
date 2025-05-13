@@ -128,5 +128,5 @@ namespace AzFramework
     using RagdollPhysicsNotificationBus = AZ::EBus<RagdollPhysicsNotifications>;
 } // namespace AzFramework
 
-AZF_DECLARE_EBUS_MULTI_ADDRESS(AzFramework::RagdollPhysicsRequests);
-AZF_DECLARE_EBUS_MULTI_ADDRESS(AzFramework::RagdollPhysicsNotifications);
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZF_API, AzFramework::RagdollPhysicsRequests);
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZF_API, AzFramework::RagdollPhysicsNotifications);

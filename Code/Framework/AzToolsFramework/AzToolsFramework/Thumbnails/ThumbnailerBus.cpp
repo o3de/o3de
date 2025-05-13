@@ -8,6 +8,6 @@
 
 #include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
 
-AZTF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzToolsFramework::Thumbnailer::ThumbnailerRequests);
-AZTF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzToolsFramework::Thumbnailer::ThumbnailerRendererRequests);
-AZTF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzToolsFramework::Thumbnailer::ThumbnailerRendererNotifications);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::Thumbnailer::ThumbnailerRequests);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::Thumbnailer::ThumbnailerRendererRequests);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::Thumbnailer::ThumbnailerRendererNotifications);

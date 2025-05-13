@@ -8,4 +8,4 @@
 
 #include <AzToolsFramework/Entity/EditorEntityTransformBus.h>
 
-AZTF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzToolsFramework::EditorTransformChangeNotifications);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EditorTransformChangeNotifications);

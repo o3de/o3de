@@ -8,5 +8,5 @@
 
 #include <AzToolsFramework/ToolsComponents/EditorInspectorComponentBus.h>
 
-AZTF_INSTANTIATE_EBUS_MULTI_ADDRESS(AzToolsFramework::EditorInspectorComponentRequests);
-AZTF_INSTANTIATE_EBUS_MULTI_ADDRESS(AzToolsFramework::EditorInspectorComponentNotifications);
+AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::EditorInspectorComponentRequests);
+AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::EditorInspectorComponentNotifications);

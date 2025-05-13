@@ -8,4 +8,4 @@
 
  #include <AzToolsFramework/ContainerEntity/ContainerEntityNotificationBus.h>
  
- AZTF_INSTANTIATE_EBUS_MULTI_ADDRESS(AzToolsFramework::ContainerEntityNotifications);
+ AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::ContainerEntityNotifications);

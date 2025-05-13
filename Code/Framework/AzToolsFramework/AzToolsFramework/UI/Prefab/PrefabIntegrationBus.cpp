@@ -8,4 +8,4 @@
 
 #include <AzToolsFramework/UI/Prefab/PrefabIntegrationBus.h>
 
-AZTF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzToolsFramework::Prefab::PrefabInstanceContainerNotifications);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::Prefab::PrefabInstanceContainerNotifications);

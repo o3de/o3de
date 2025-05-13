@@ -7,5 +7,5 @@
  */
 #include <AzToolsFramework/UI/Notifications/ToastBus.h>
 
-AZTF_INSTANTIATE_EBUS_MULTI_ADDRESS(AzToolsFramework::ToastNotifications);
-AZTF_INSTANTIATE_EBUS_MULTI_ADDRESS(AzToolsFramework::ToastRequests);
+AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::ToastNotifications);
+AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::ToastRequests);

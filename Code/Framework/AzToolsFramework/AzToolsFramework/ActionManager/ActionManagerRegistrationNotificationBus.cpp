@@ -8,5 +8,5 @@
 
 #include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
 
-AZTF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzToolsFramework::ActionManagerRegistrationNotifications)
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::ActionManagerRegistrationNotifications)
  

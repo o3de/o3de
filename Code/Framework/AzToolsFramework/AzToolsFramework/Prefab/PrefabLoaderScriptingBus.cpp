@@ -8,4 +8,4 @@
 
 #include <AzToolsFramework/Prefab/PrefabLoaderScriptingBus.h>
 
-AZTF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzToolsFramework::Prefab::PrefabLoaderScriptingTraits);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::Prefab::PrefabLoaderScriptingTraits);

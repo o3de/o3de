@@ -8,4 +8,4 @@
 
 #include <AzToolsFramework/API/EditorAnimationSystemRequestBus.h>
 
-AZTF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzToolsFramework::EditorAnimationSystemRequests);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EditorAnimationSystemRequests);

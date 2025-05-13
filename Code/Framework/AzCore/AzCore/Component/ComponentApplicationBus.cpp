@@ -8,5 +8,5 @@
 
 #include <AzCore/Component/ComponentApplicationBus.h>
 
-AZCORE_INSTANTIATE_EBUS_SINGLE_ADDRESS_WITH_TRAITS(ComponentApplicationRequests, ComponentApplicationRequestsEBusTraits);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS_WITH_TRAITS(AZCORE_API, ComponentApplicationRequests, ComponentApplicationRequestsEBusTraits);
  

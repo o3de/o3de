@@ -186,5 +186,5 @@ namespace AzFramework
 
 } // namespace AzFramework
 
-AZF_DECLARE_EBUS_SINGLE_ADDRESS(AzFramework::GameEntityContextRequests);
-AZF_DECLARE_EBUS_SINGLE_ADDRESS(AzFramework::GameEntityContextEvents);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::GameEntityContextRequests);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::GameEntityContextEvents);

@@ -8,4 +8,4 @@
 
 #include <AzToolsFramework/Component/EditorLevelComponentAPIBus.h>
 
-AZTF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzToolsFramework::EditorLevelComponentAPIRequests)
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EditorLevelComponentAPIRequests)

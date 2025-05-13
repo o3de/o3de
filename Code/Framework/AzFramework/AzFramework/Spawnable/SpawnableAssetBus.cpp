@@ -7,4 +7,4 @@
  */
 #include <AzFramework/Spawnable/SpawnableAssetBus.h>
 
-AZF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzFramework::SpawnableAssetEvents);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::SpawnableAssetEvents);

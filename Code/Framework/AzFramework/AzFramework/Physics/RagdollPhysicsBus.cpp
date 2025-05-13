@@ -7,5 +7,5 @@
  */
 #include <AzFramework/Physics/RagdollPhysicsBus.h>
 
-AZF_INSTANTIATE_EBUS_MULTI_ADDRESS(AzFramework::RagdollPhysicsRequests);
-AZF_INSTANTIATE_EBUS_MULTI_ADDRESS(AzFramework::RagdollPhysicsNotifications);
+AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(AZF_API, AzFramework::RagdollPhysicsRequests);
+AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(AZF_API, AzFramework::RagdollPhysicsNotifications);

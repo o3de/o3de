@@ -13,7 +13,6 @@
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/functional.h>
 #include <AzCore/std/string/string_view.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
@@ -85,4 +84,4 @@ namespace AZ
     } // namespace IO
 } // namespace AZ
 
-AZCORE_DECLARE_EBUS_SINGLE_ADDRESS(AZ::IO::Compression);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZCORE_API, AZ::IO::Compression);

@@ -8,7 +8,7 @@
 
 #include <AzCore/IO/CompressionBus.h>
 
-AZCORE_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZ::IO::Compression);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZCORE_API, AZ::IO::Compression);
 
 namespace AZ::IO
 {

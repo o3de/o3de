@@ -1110,4 +1110,4 @@ namespace AZStd
     };
 }
 
-// AZCORE_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZ::Data::AssetEvents);
+// AZ_DECLARE_EBUS_MULTI_ADDRESS(AZCORE_API, AZ::Data::AssetEvents);

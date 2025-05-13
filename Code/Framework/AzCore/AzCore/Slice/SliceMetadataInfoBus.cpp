@@ -8,6 +8,6 @@
 
  #include <AzCore/Slice/SliceMetadataInfoBus.h>
 
-AZCORE_INSTANTIATE_EBUS_MULTI_ADDRESS(AZ::SliceMetadataInfoRequests)
-AZCORE_INSTANTIATE_EBUS_MULTI_ADDRESS(AZ::SliceMetadataInfoManipulationRequests)
-AZCORE_INSTANTIATE_EBUS_MULTI_ADDRESS(AZ::SliceMetadataInfoNotifications)
+AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(AZCORE_API, AZ::SliceMetadataInfoRequests)
+AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(AZCORE_API, AZ::SliceMetadataInfoManipulationRequests)
+AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(AZCORE_API, AZ::SliceMetadataInfoNotifications)

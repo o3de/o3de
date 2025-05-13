@@ -39,7 +39,7 @@
 #define ASSET_DEBUG_OUTPUT(OUTPUT)
 #endif
 
-AZCORE_INSTANTIATE_EBUS_MULTI_ADDRESS(AZ::Data::AssetLoadEvents);
+AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(AZCORE_API, AZ::Data::AssetLoadEvents);
 
 namespace AZ::Data
 {

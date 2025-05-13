@@ -8,5 +8,5 @@
 
  #include <AzToolsFramework/SQLite/SQLiteQueryLogBus.h>
 
- AZTF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzToolsFramework::SQLite::SQLiteQueryLogEvents);
+ AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::SQLite::SQLiteQueryLogEvents);
  

@@ -31,4 +31,4 @@ namespace AzToolsFramework
     using EditorTransformChangeNotificationBus = AZ::EBus<EditorTransformChangeNotifications>;
 } // namespace AzToolsFramework
 
-AZTF_DECLARE_EBUS_SINGLE_ADDRESS(AzToolsFramework::EditorTransformChangeNotifications);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EditorTransformChangeNotifications);

@@ -64,4 +64,4 @@ namespace AzFramework
 
 } // namespace AzFramework
 
-AZF_DECLARE_EBUS_SINGLE_ADDRESS(AzFramework::CommandRegistration);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::CommandRegistration);

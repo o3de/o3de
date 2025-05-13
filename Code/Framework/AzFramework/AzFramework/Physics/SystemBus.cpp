@@ -7,7 +7,7 @@
  */
 #include <AzFramework/Physics/SystemBus.h>
 
-AZF_INSTANTIATE_EBUS_SINGLE_ADDRESS(Physics::DefaultWorldRequests)
-AZF_INSTANTIATE_EBUS_SINGLE_ADDRESS(Physics::EditorWorldRequests)
-AZF_INSTANTIATE_EBUS_SINGLE_ADDRESS_WITH_TRAITS(Physics::SystemRequests, Physics::SystemRequestsTraits);
-AZF_INSTANTIATE_EBUS_SINGLE_ADDRESS(Physics::SystemDebugRequests);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZF_API, Physics::DefaultWorldRequests)
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZF_API, Physics::EditorWorldRequests)
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS_WITH_TRAITS(AZF_API, Physics::SystemRequests, Physics::SystemRequestsTraits);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZF_API, Physics::SystemDebugRequests);

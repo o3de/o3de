@@ -9,7 +9,7 @@
 #include <AzCore/Module/Environment.h>
 #include <AzFramework/Network/SocketConnection.h>
 
-AZF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzFramework::EngineConnectionEvents);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::EngineConnectionEvents);
 
 namespace AzFramework
 {

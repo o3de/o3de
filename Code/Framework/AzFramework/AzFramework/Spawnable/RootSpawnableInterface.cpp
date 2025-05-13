@@ -8,4 +8,4 @@
 
 #include <AzFramework/Spawnable/RootSpawnableInterface.h>
 
-AZF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzFramework::RootSpawnableNotifications);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::RootSpawnableNotifications);

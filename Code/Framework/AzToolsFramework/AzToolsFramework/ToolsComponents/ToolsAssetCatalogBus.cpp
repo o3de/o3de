@@ -8,4 +8,4 @@
 
 #include <AzToolsFramework/ToolsComponents/ToolsAssetCatalogBus.h>
 
-AZTF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzToolsFramework::ToolsAssetSystemRequests);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::ToolsAssetSystemRequests);

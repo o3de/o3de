@@ -8,5 +8,5 @@
 
 #include <AzFramework/Physics/RigidBodyBus.h>
 
-AZF_INSTANTIATE_EBUS_MULTI_ADDRESS(Physics::RigidBodyRequests);
-AZF_INSTANTIATE_EBUS_MULTI_ADDRESS(Physics::RigidBodyNotifications);
+AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(AZF_API, Physics::RigidBodyRequests);
+AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(AZF_API, Physics::RigidBodyNotifications);

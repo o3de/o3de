@@ -43,4 +43,4 @@ namespace AzPhysics
     using SimulatedBodyComponentRequestsBus = AZ::EBus<SimulatedBodyComponentRequests>;
 } // AzPhysics
 
-AZF_DECLARE_EBUS_SINGLE_ADDRESS(AzPhysics::SimulatedBodyComponentRequests);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZF_API, AzPhysics::SimulatedBodyComponentRequests);

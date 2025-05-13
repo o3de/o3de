@@ -142,5 +142,5 @@ namespace AzFramework
     using InputSystemCursorConstraintRequestBus = AZ::EBus<InputSystemCursorConstraintRequests>;
 } // namespace AzFramework
 
-AZF_DECLARE_EBUS_MULTI_ADDRESS(AzFramework::InputSystemCursorRequests);
-AZF_DECLARE_EBUS_SINGLE_ADDRESS(AzFramework::InputSystemCursorConstraintRequests);
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZF_API, AzFramework::InputSystemCursorRequests);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::InputSystemCursorConstraintRequests);

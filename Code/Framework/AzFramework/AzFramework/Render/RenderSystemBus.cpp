@@ -7,4 +7,4 @@
  */
 #include <AzFramework/Render/RenderSystemBus.h>
 
-AZF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzFramework::Render::RenderSystemRequests);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::Render::RenderSystemRequests);

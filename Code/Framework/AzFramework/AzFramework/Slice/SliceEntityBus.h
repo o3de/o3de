@@ -42,4 +42,4 @@ namespace AzFramework
     using SliceEntityRequestBus = AZ::EBus<SliceEntityRequests>;
 } // namespace AzFramework
 
-AZF_DECLARE_EBUS_MULTI_ADDRESS(AzFramework::SliceEntityRequests)
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZF_API, AzFramework::SliceEntityRequests)

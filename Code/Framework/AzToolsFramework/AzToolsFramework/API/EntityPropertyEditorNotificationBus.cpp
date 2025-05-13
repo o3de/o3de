@@ -8,5 +8,5 @@
 
  #include <AzToolsFramework/API/EntityPropertyEditorNotificationBus.h>
 
-AZTF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzToolsFramework::EntityPropertyEditorNotifications);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EntityPropertyEditorNotifications);
 

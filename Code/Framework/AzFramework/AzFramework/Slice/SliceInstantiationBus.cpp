@@ -7,4 +7,4 @@
  */
 #include <AzFramework/Slice/SliceInstantiationBus.h>
 
-AZF_INSTANTIATE_EBUS_MULTI_ADDRESS(AzFramework::SliceInstantiationResults);
+AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(AZF_API, AzFramework::SliceInstantiationResults);

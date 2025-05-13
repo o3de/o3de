@@ -8,8 +8,8 @@
 
 #include <AzFramework/Components/CameraBus.h>
 
-AZF_INSTANTIATE_EBUS_MULTI_ADDRESS(Camera::CameraComponentRequests);
-AZF_INSTANTIATE_EBUS_SINGLE_ADDRESS(Camera::CameraRequests);
-AZF_INSTANTIATE_EBUS_SINGLE_ADDRESS(Camera::CameraSystemRequests);
-AZF_INSTANTIATE_EBUS_SINGLE_ADDRESS(Camera::ActiveCameraRequests);
-AZF_INSTANTIATE_EBUS_SINGLE_ADDRESS(Camera::CameraNotifications);
+AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(AZF_API, Camera::CameraComponentRequests);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZF_API, Camera::CameraRequests);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZF_API, Camera::CameraSystemRequests);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZF_API, Camera::ActiveCameraRequests);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZF_API, Camera::CameraNotifications);

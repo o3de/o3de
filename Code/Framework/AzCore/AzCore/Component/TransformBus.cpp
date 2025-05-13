@@ -8,6 +8,6 @@
 
 #include <AzCore/Component/TransformBus.h>
 
-AZCORE_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZ::TransformInterface);
-AZCORE_INSTANTIATE_EBUS_MULTI_ADDRESS(AZ::TransformNotification);
-AZCORE_INSTANTIATE_EBUS_MULTI_ADDRESS(AZ::TransformHierarchyInformation);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZCORE_API, AZ::TransformInterface);
+AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(AZCORE_API, AZ::TransformNotification);
+AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(AZCORE_API, AZ::TransformHierarchyInformation);

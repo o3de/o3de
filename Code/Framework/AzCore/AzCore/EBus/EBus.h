@@ -1913,14 +1913,14 @@ namespace AZ \
 
 //! Declares an EBus class template, which uses EBusAddressPolicy::Single and is instantiated in a shared library, as extern using only the
 //! interface argument for both the EBus Interface and BusTraits template parameters
-#define AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(a) \
+#define AZ_DECLARE_EBUS_SINGLE_ADDRESS(_API, a) \
 namespace AZ \
 { \
     extern template class EBus<a, a>; \
 }
  
 //! Explicitly instantiates an EBus which was declared with the function directly above
-#define AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(a) \
+#define AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(_API, a) \
 namespace AZ \
 { \
     template class EBus<a, a>; \
@@ -1928,14 +1928,14 @@ namespace AZ \
  
 //! Declares an EBus class template, which uses an address policy different from EBusAddressPolicy::Single and is instantiated in a shared
 //! library, as extern using only the interface argument for both the EBus Interface and BusTraits template parameters
-#define AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(a) \
+#define AZ_DECLARE_EBUS_MULTI_ADDRESS(_API, a) \
 namespace AZ \
 { \
     extern template class EBus<a, a>; \
 }
 
 //! Explicitly instantiates an EBus which was declared with the function directly above
-#define AZ_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(a) \
+#define AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(_API, a) \
 namespace AZ \
 { \
     template class EBus<a, a>; \
@@ -1943,14 +1943,14 @@ namespace AZ \
 
 //! Declares an EBus class template, which uses EBusAddressPolicy::Single and is instantiated in a shared library, as extern with both the
 //! interface and bus traits arguments
-#define AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS_WITH_TRAITS(a, b) \
+#define AZ_DECLARE_EBUS_SINGLE_ADDRESS_WITH_TRAITS(_API, a, b) \
 namespace AZ \
 { \
     extern template class EBus<a, b>; \
 }
 
 //! Explicitly instantiates an EBus which was declared with the function directly above
-#define AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS_WITH_TRAITS(a, b) \
+#define AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS_WITH_TRAITS(_API, a, b) \
 namespace AZ \
 { \
     template class EBus<a, b>; \
@@ -1958,14 +1958,14 @@ namespace AZ \
 
 //! Declares an EBus class template, which uses an address policy different from EBusAddressPolicy::Single and is instantiated in a shared
 //! library, as extern with both the interface and bus traits arguments
-#define AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS_WITH_TRAITS(a, b) \
+#define AZ_DECLARE_EBUS_MULTI_ADDRESS_WITH_TRAITS(_API, a, b) \
 namespace AZ \
 { \
     extern template class EBus<a, b>; \
 }
 
 //! Explicitly instantiates an EBus which was declared with the function directly above
-#define AZ_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS_WITH_TRAITS(a, b) \
+#define AZ_INSTANTIATE_EBUS_MULTI_ADDRESS_WITH_TRAITS(_API, a, b) \
 namespace AZ \
 { \
     template class EBus<a, b>; \
@@ -1975,7 +1975,7 @@ namespace AZ \
 
 //! Declares an EBus class template, which uses EBusAddressPolicy::Single and is instantiated in a shared library, as extern using only the
 //! interface argument for both the EBus Interface and BusTraits template parameters
-#define AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(_API, a) \
+#define AZ_DECLARE_EBUS_SINGLE_ADDRESS(_API, a) \
 namespace AZ \
 { \
    AZ_TEMPLATE_EXTERN template class _API EBus<a, a>; \
@@ -1986,7 +1986,7 @@ namespace AZ \
 }
 
 //! Explicitly instantiates an EBus which was declared with the function directly above
-#define AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(_API, a) \
+#define AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(_API, a) \
 namespace AZ \
 { \
    template class AZ_DLL_EXPORT EBus<a, a>; \
@@ -1998,7 +1998,7 @@ namespace AZ \
 
 //! Declares an EBus class template, which uses an address policy different from EBusAddressPolicy::Single and is instantiated in a shared
 //! library, as extern using only the interface argument for both the EBus Interface and BusTraits template parameters
-#define AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(_API, a) \
+#define AZ_DECLARE_EBUS_MULTI_ADDRESS(_API, a) \
 namespace AZ \
 { \
    AZ_TEMPLATE_EXTERN template class _API EBus<a, a>;  \
@@ -2010,7 +2010,7 @@ namespace AZ \
 }
 
 //! Explicitly instantiates an EBus which was declared with the function directly above
-#define AZ_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(_API, a) \
+#define AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(_API, a) \
 namespace AZ \
 { \
    template class AZ_DLL_EXPORT EBus<a, a>; \
@@ -2023,7 +2023,7 @@ namespace AZ \
 
 //! Declares an EBus class template, which uses EBusAddressPolicy::Single and is instantiated in a shared library, as extern with both the
 //! interface and bus traits arguments
-#define AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS_WITH_TRAITS(_API, a, b) \
+#define AZ_DECLARE_EBUS_SINGLE_ADDRESS_WITH_TRAITS(_API, a, b) \
 namespace AZ \
 { \
    AZ_TEMPLATE_EXTERN template class _API EBus<a, b>;     \
@@ -2034,7 +2034,7 @@ namespace AZ \
 }
 
 //! Explicitly instantiates an EBus which was declared with the function directly above
-#define AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS_WITH_TRAITS(_API, a, b) \
+#define AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS_WITH_TRAITS(_API, a, b) \
 namespace AZ \
 { \
    template class AZ_DLL_EXPORT EBus<a, b>; \
@@ -2046,7 +2046,7 @@ namespace AZ \
 
 //! Declares an EBus class template, which uses an address policy different from EBusAddressPolicy::Single and is instantiated in a shared
 //! library, as extern with both the interface and bus traits arguments
-#define AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS_WITH_TRAITS(_API, a, b) \
+#define AZ_DECLARE_EBUS_MULTI_ADDRESS_WITH_TRAITS(_API, a, b) \
 namespace AZ \
 { \
    AZ_TEMPLATE_EXTERN template class _API EBus<a, b>;  \
@@ -2058,7 +2058,7 @@ namespace AZ \
 }
 
 //! Explicitly instantiates an EBus which was declared with the function directly above
-#define AZ_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS_WITH_TRAITS(_API, a, b) \
+#define AZ_INSTANTIATE_EBUS_MULTI_ADDRESS_WITH_TRAITS(_API, a, b) \
 namespace AZ \
 { \
    template class AZ_DLL_EXPORT EBus<a, b>; \

@@ -8,5 +8,5 @@
 
 #include <AzToolsFramework/API/ComponentEntityObjectBus.h>
 
-AZTF_INSTANTIATE_EBUS_MULTI_ADDRESS(AzToolsFramework::ComponentEntityEditorRequests);
-AZTF_INSTANTIATE_EBUS_MULTI_ADDRESS(AzToolsFramework::ComponentEntityObjectRequests);
+AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::ComponentEntityEditorRequests);
+AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::ComponentEntityObjectRequests);

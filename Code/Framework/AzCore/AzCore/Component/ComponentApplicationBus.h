@@ -8,12 +8,11 @@
 
  #pragma once
 
- #include <AzCore/EBus/EBus.h>
- #include <AzCore/EBus/Event.h>
- #include <AzCore/Component/EntityId.h>
- #include <AzCore/std/parallel/mutex.h>
- #include <AzCore/std/string/osstring.h>
-#include <AzCore/AzCoreAPI.h>
+#include <AzCore/EBus/EBus.h>
+#include <AzCore/EBus/Event.h>
+#include <AzCore/Component/EntityId.h>
+#include <AzCore/std/parallel/mutex.h>
+#include <AzCore/std/string/osstring.h>
  
  namespace AZ
  {
@@ -230,4 +229,4 @@
      using ComponentApplicationBus = AZ::EBus<ComponentApplicationRequests, ComponentApplicationRequestsEBusTraits>;
  }
  
- AZCORE_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS_WITH_TRAITS(AZ::ComponentApplicationRequests, AZ::ComponentApplicationRequestsEBusTraits);
+ AZ_DECLARE_EBUS_SINGLE_ADDRESS_WITH_TRAITS(AZCORE_API, AZ::ComponentApplicationRequests, AZ::ComponentApplicationRequestsEBusTraits);

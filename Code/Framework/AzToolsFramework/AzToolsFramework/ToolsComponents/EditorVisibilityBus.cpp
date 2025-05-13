@@ -8,5 +8,5 @@
 
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityBus.h>
 
-AZTF_INSTANTIATE_EBUS_MULTI_ADDRESS(AzToolsFramework::EditorVisibilityRequests);
-AZTF_INSTANTIATE_EBUS_MULTI_ADDRESS(AzToolsFramework::EditorEntityVisibilityNotifications);
+AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::EditorVisibilityRequests);
+AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::EditorEntityVisibilityNotifications);

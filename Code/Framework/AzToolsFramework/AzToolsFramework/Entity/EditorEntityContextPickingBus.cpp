@@ -8,4 +8,4 @@
 
 #include <AzToolsFramework/Entity/EditorEntityContextPickingBus.h>
 
-AZTF_INSTANTIATE_EBUS_MULTI_ADDRESS(AzToolsFramework::EditorEntityContextPickingRequests);
+AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::EditorEntityContextPickingRequests);

@@ -7,4 +7,4 @@
  */
 #include <AzCore/Jobs/JobManagerBus.h>
 
-// AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AZ::JobManagerEvents);
+// AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZ::JobManagerEvents);

@@ -8,4 +8,4 @@
 
 #include <AzToolsFramework/Prefab/PrefabPublicRequestBus.h>
 
-AZTF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzToolsFramework::Prefab::PrefabPublicRequests);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::Prefab::PrefabPublicRequests);

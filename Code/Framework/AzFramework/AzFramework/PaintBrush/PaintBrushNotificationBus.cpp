@@ -8,4 +8,4 @@
 
 #include <AzFramework/PaintBrush/PaintBrushNotificationBus.h>
 
-AZF_INSTANTIATE_EBUS_MULTI_ADDRESS(AzFramework::PaintBrushNotifications);
+AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(AZF_API, AzFramework::PaintBrushNotifications);

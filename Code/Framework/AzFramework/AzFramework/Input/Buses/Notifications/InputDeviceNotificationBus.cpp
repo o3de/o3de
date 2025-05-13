@@ -8,4 +8,4 @@
 
 #include <AzFramework/Input/Buses/Notifications/InputDeviceNotificationBus.h>
 
-AZF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzFramework::InputDeviceNotifications);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::InputDeviceNotifications);

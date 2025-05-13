@@ -8,4 +8,4 @@
 
 #include <AzCore/Script/ScriptPropertyWatcherBus.h>
 
-//AZ_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(AZ::ScriptPropertyWatcherInterface);
+//AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(AZ::ScriptPropertyWatcherInterface);

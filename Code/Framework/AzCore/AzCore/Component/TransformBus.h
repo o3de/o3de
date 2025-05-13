@@ -17,7 +17,6 @@
 #include <AzCore/Math/InterpolationSample.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/EBus/Event.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
@@ -489,6 +488,6 @@ namespace AZ
     /// @endcond
 }
 
-AZCORE_DECLARE_EBUS_SINGLE_ADDRESS(AZ::TransformInterface);
-AZCORE_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZ::TransformNotification);
-AZCORE_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZ::TransformHierarchyInformation);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZCORE_API, AZ::TransformInterface);
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZCORE_API, AZ::TransformNotification);
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZCORE_API, AZ::TransformHierarchyInformation);

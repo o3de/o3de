@@ -8,5 +8,5 @@
 
 #include <AzToolsFramework/Slice/SliceRequestBus.h>
 
-AZTF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzToolsFramework::SliceRequests);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::SliceRequests);
 

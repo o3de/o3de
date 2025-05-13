@@ -8,4 +8,4 @@
 
 #include <AzToolsFramework/Prefab/Spawnable/PrefabToInMemorySpawnableNotificationBus.h>
 
-AZTF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzToolsFramework::Prefab::PrefabToInMemorySpawnableNotifications);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::Prefab::PrefabToInMemorySpawnableNotifications);

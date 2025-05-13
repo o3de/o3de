@@ -8,4 +8,4 @@
 
 #include <AzToolsFramework/Entity/EditorEntityModelBus.h>
 
-AZTF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzToolsFramework::EditorEntityModelRequests);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EditorEntityModelRequests);

@@ -64,4 +64,4 @@ namespace AzFramework
     using InputLightBarRequestBus = AZ::EBus<InputLightBarRequests>;
 } // namespace AzFramework
 
-AZF_DECLARE_EBUS_MULTI_ADDRESS(AzFramework::InputLightBarRequests);
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZF_API, AzFramework::InputLightBarRequests);

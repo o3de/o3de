@@ -741,9 +741,11 @@ AZ_POP_DISABLE_WARNING
  */
 #define AZ_RTTI_NO_TYPE_INFO_DECL() AZ_RTTI_NO_TYPE_INFO_DECL_()
 
+/*
+ * Macro which adds the inline implementations of the virtual functions required for RTTI to
+ * the class declaration. This does add overloads required for TypeInfo to the class.
+ */
 #define AZ_RTTI_NO_TYPE_INFO_TEMPLATE_INLINE(_Template, _Type, _Base) AZ_RTTI_NO_TYPE_INFO_TEMPLATE_INLINE_(_Template, _Type, _Base)
-
-
 
 /*
  * Adds implementation of RTTI functions to the current file

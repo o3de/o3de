@@ -62,4 +62,4 @@ namespace AzFramework
     using InputDeviceNotificationBus = AZ::EBus<InputDeviceNotifications>;
 } // namespace AzFramework
 
-AZF_DECLARE_EBUS_SINGLE_ADDRESS(AzFramework::InputDeviceNotifications);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::InputDeviceNotifications);

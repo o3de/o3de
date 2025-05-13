@@ -8,4 +8,4 @@
 
 #include <AzFramework/Slice/SliceEntityBus.h>
 
-AZF_INSTANTIATE_EBUS_MULTI_ADDRESS(AzFramework::SliceEntityRequests)
+AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(AZF_API, AzFramework::SliceEntityRequests)

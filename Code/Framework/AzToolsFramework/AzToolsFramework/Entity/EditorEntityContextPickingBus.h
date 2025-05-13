@@ -35,4 +35,4 @@ namespace AzToolsFramework
 
 } // namespace AzToolsFramework
 
-AZTF_DECLARE_EBUS_MULTI_ADDRESS(AzToolsFramework::EditorEntityContextPickingRequests);
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::EditorEntityContextPickingRequests);

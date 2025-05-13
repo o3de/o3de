@@ -8,7 +8,7 @@
 
 #include <AzFramework/API/ApplicationAPI.h>
 
-AZF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzFramework::ApplicationRequests);
-AZF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzFramework::ApplicationLifecycleEvents);
-AZF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzFramework::LevelLoadBlockerRequests);
-AZF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzFramework::LevelSystemLifecycleNotifications);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::ApplicationRequests);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::ApplicationLifecycleEvents);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::LevelLoadBlockerRequests);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::LevelSystemLifecycleNotifications);

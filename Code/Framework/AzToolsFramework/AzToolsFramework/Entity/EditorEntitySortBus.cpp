@@ -8,5 +8,5 @@
 
 #include <AzToolsFramework/Entity/EditorEntitySortBus.h>
 
-AZTF_INSTANTIATE_EBUS_MULTI_ADDRESS(AzToolsFramework::EditorEntitySortRequests);
-AZTF_INSTANTIATE_EBUS_MULTI_ADDRESS(AzToolsFramework::EditorEntitySortNotifications);
+AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::EditorEntitySortRequests);
+AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::EditorEntitySortNotifications);

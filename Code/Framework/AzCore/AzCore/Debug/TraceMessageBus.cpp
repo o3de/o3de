@@ -7,4 +7,4 @@
  */
 #include <AzCore/Debug/TraceMessageBus.h>
 
-AZCORE_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZ::Debug::TraceMessageEvents)
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZCORE_API, AZ::Debug::TraceMessageEvents)

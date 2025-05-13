@@ -8,4 +8,4 @@
 
 #include <AzFramework/Input/Buses/Requests/InputHapticFeedbackRequestBus.h>
 
-AZF_INSTANTIATE_EBUS_MULTI_ADDRESS(AzFramework::InputHapticFeedbackRequests);
+AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(AZF_API, AzFramework::InputHapticFeedbackRequests);

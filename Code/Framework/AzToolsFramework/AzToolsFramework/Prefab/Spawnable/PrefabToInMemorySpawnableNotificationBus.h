@@ -40,4 +40,4 @@ namespace AzToolsFramework::Prefab
 
 } // namespace AzToolsFramework::Prefab
 
-AZTF_DECLARE_EBUS_SINGLE_ADDRESS(AzToolsFramework::Prefab::PrefabToInMemorySpawnableNotifications);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::Prefab::PrefabToInMemorySpawnableNotifications);

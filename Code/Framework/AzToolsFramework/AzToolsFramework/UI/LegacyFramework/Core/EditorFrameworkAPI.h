@@ -320,9 +320,9 @@ namespace LegacyFramework
     typedef AZ::EBus<IPCCommandAPI> IPCCommandBus;
 };
 
-AZTF_DECLARE_EBUS_SINGLE_ADDRESS(LegacyFramework::CoreMessages);
-AZTF_DECLARE_EBUS_SINGLE_ADDRESS(LegacyFramework::FrameworkApplicationMessages);
-AZTF_DECLARE_EBUS_SINGLE_ADDRESS(LegacyFramework::LogComponentAPI);
-AZTF_DECLARE_EBUS_SINGLE_ADDRESS(LegacyFramework::IPCCommandAPI);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, LegacyFramework::CoreMessages);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, LegacyFramework::FrameworkApplicationMessages);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, LegacyFramework::LogComponentAPI);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, LegacyFramework::IPCCommandAPI);
 
 

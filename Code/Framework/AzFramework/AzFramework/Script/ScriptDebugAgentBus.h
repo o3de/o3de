@@ -28,4 +28,4 @@ namespace AzFramework
     typedef AZ::EBus<ScriptDebugAgentEvents> ScriptDebugAgentBus;
 }   // namespace AzFramework
 
-AZF_DECLARE_EBUS_SINGLE_ADDRESS(AzFramework::ScriptDebugAgentEvents)
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::ScriptDebugAgentEvents)

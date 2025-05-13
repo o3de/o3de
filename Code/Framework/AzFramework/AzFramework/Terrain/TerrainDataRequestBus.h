@@ -402,5 +402,5 @@ namespace AZ
     AZ_TYPE_INFO_SPECIALIZE(AzFramework::Terrain::TerrainDataRequests::Sampler, "{D29BB6D7-3006-4114-858D-355EAA256B86}");
 } // namespace AZ
 
-AZF_DECLARE_EBUS_SINGLE_ADDRESS(AzFramework::Terrain::TerrainDataRequests);
-AZF_DECLARE_EBUS_SINGLE_ADDRESS(AzFramework::Terrain::TerrainDataNotifications);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::Terrain::TerrainDataRequests);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::Terrain::TerrainDataNotifications);

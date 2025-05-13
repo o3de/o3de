@@ -8,4 +8,4 @@
 
 #include <AzToolsFramework/API/EditorPythonScriptNotificationsBus.h>
 
-AZTF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzToolsFramework::EditorPythonScriptNotifications);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EditorPythonScriptNotifications);

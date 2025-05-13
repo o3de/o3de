@@ -7,4 +7,4 @@
  */
 #include <AzToolsFramework/ToolsComponents/EditorPendingCompositionBus.h>
 
-AZTF_INSTANTIATE_EBUS_MULTI_ADDRESS(AzToolsFramework::EditorPendingCompositionRequests);
+AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::EditorPendingCompositionRequests);

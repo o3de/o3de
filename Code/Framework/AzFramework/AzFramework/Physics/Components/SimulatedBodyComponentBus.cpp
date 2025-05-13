@@ -7,4 +7,4 @@
  */
 #include <AzFramework/Physics/Components/SimulatedBodyComponentBus.h>
 
-AZF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzPhysics::SimulatedBodyComponentRequests);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZF_API, AzPhysics::SimulatedBodyComponentRequests);

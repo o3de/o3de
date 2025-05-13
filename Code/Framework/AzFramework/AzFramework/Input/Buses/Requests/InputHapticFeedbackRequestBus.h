@@ -57,4 +57,4 @@ namespace AzFramework
     using InputHapticFeedbackRequestBus = AZ::EBus<InputHapticFeedbackRequests>;
 } // namespace AzFramework
 
-AZF_DECLARE_EBUS_MULTI_ADDRESS(AzFramework::InputHapticFeedbackRequests);
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZF_API, AzFramework::InputHapticFeedbackRequests);

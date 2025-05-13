@@ -2894,4 +2894,4 @@ namespace AZ
 #include <AzCore/RTTI/AzStdOnDemandPrettyName.inl>
 #include <AzCore/RTTI/AzStdOnDemandReflection.inl>
 
-AZCORE_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZ::BehaviorContextEvents);
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZCORE_API, AZ::BehaviorContextEvents);

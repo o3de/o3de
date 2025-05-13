@@ -8,4 +8,4 @@
 
 #include <AzFramework/Entity/SliceEntityOwnershipService.h>
 
-AZF_INSTANTIATE_EBUS_MULTI_ADDRESS(AzFramework::SliceEntityOwnershipServiceRequests);
+AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(AZF_API, AzFramework::SliceEntityOwnershipServiceRequests);

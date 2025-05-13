@@ -8,4 +8,4 @@
 
 #include <AzFramework/Visibility/EntityBoundsUnionBus.h>
 
-AZF_INSTANTIATE_EBUS_SINGLE_ADDRESS_WITH_TRAITS(AzFramework::IEntityBoundsUnion, AzFramework::IEntityBoundsUnionTraits);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS_WITH_TRAITS(AZF_API, AzFramework::IEntityBoundsUnion, AzFramework::IEntityBoundsUnionTraits);

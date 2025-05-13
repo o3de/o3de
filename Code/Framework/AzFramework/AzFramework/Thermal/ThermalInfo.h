@@ -48,4 +48,4 @@ public:
 
 using ThermalInfoRequestsBus = AZ::EBus<ThermalInfoHandler>;
 
-AZF_DECLARE_EBUS_SINGLE_ADDRESS(ThermalInfoHandler);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZF_API, ThermalInfoHandler);

@@ -7,5 +7,5 @@
  */
 #include <AzToolsFramework/Slice/SliceMetadataEntityContextBus.h>
 
-AZTF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzToolsFramework::SliceMetadataEntityContextRequests);
-AZTF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzToolsFramework::SliceMetadataEntityContextNotifications);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::SliceMetadataEntityContextRequests);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::SliceMetadataEntityContextNotifications);

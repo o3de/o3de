@@ -38,4 +38,4 @@ namespace AzFramework
     } // namespace Components
 } // namespace AzFramework
 
-AZF_DECLARE_EBUS_SINGLE_ADDRESS(AzFramework::Components::DeprecatedComponents);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::Components::DeprecatedComponents);

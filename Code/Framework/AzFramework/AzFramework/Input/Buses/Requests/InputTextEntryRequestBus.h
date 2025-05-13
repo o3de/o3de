@@ -85,4 +85,4 @@ namespace AzFramework
     using InputTextEntryRequestBus = AZ::EBus<InputTextEntryRequests>;
 } // namespace AzFramework
 
-AZF_DECLARE_EBUS_MULTI_ADDRESS(AzFramework::InputTextEntryRequests);
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZF_API, AzFramework::InputTextEntryRequests);

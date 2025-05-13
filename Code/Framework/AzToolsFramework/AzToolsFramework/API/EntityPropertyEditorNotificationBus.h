@@ -35,4 +35,4 @@ namespace AzToolsFramework
     using EntityPropertyEditorNotificationBus = AZ::EBus<EntityPropertyEditorNotifications>;
 } // namespace AzToolsFramework
 
-AZTF_DECLARE_EBUS_SINGLE_ADDRESS(AzToolsFramework::EntityPropertyEditorNotifications);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EntityPropertyEditorNotifications);

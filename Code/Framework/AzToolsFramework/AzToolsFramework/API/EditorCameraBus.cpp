@@ -28,7 +28,7 @@ namespace Camera
     }
 }
 
-AZTF_INSTANTIATE_EBUS_SINGLE_ADDRESS(Camera::EditorCameraRequests);
-AZTF_INSTANTIATE_EBUS_SINGLE_ADDRESS(Camera::EditorCameraSystemRequests);
-AZTF_INSTANTIATE_EBUS_SINGLE_ADDRESS(Camera::EditorCameraNotifications);
-AZTF_INSTANTIATE_EBUS_SINGLE_ADDRESS(Camera::EditorCameraViewRequests);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZTF_API, Camera::EditorCameraRequests);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZTF_API, Camera::EditorCameraSystemRequests);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZTF_API, Camera::EditorCameraNotifications);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZTF_API, Camera::EditorCameraViewRequests);

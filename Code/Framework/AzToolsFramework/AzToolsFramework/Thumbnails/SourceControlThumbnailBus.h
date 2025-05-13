@@ -28,4 +28,4 @@ namespace AzToolsFramework
     } // namespace Thumbnailer
 } // namespace AzToolsFramework
 
-AZTF_DECLARE_EBUS_SINGLE_ADDRESS(AzToolsFramework::Thumbnailer::SourceControlThumbnailRequests);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::Thumbnailer::SourceControlThumbnailRequests);

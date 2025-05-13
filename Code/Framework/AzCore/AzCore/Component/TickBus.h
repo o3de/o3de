@@ -17,7 +17,6 @@
 #include <AzCore/std/chrono/chrono.h>
 #include <AzCore/std/parallel/mutex.h> // For TickBus thread events.
 #include <AzCore/Script/ScriptTimePoint.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
@@ -227,7 +226,9 @@ namespace AZ
     using SystemTickBus = AZ::EBus<SystemTickEvents>;
 }
 
-AZCORE_DECLARE_EBUS_SINGLE_ADDRESS(AZ::TickEvents);
-AZCORE_DECLARE_EBUS_SINGLE_ADDRESS(AZ::SystemTickEvents);
-AZCORE_DECLARE_EBUS_SINGLE_ADDRESS(AZ::TickRequests);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZCORE_API, AZ::TickEvents);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZCORE_API, AZ::SystemTickEvents);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZCORE_API, AZ::TickRequests);
+
+
 

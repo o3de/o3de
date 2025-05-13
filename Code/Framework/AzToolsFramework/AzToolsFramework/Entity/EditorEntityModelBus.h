@@ -26,4 +26,4 @@ namespace AzToolsFramework
     using EditorEntityModelRequestBus = AZ::EBus<EditorEntityModelRequests>;
 }
 
-AZTF_DECLARE_EBUS_SINGLE_ADDRESS(AzToolsFramework::EditorEntityModelRequests);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EditorEntityModelRequests);

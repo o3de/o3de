@@ -28,4 +28,4 @@ namespace AzToolsFramework
     using EditorEntityRuntimeActivationChangeNotificationBus = AZ::EBus<EditorEntityRuntimeActivationChangeNotifications>;
 }
 
-AZTF_DECLARE_EBUS_SINGLE_ADDRESS(AzToolsFramework::EditorEntityRuntimeActivationChangeNotifications);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EditorEntityRuntimeActivationChangeNotifications);

@@ -8,5 +8,5 @@
 
  #include <AzToolsFramework/Entity/EditorEntityRuntimeActivationBus.h>
 
- AZTF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzToolsFramework::EditorEntityRuntimeActivationChangeNotifications);
+ AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EditorEntityRuntimeActivationChangeNotifications);
 

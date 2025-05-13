@@ -14,7 +14,7 @@
 #include <AzCore/std/parallel/lock.h>
 #include <AzCore/std/string/conversions.h>
 
-AZCORE_INSTANTIATE_EBUS_MULTI_ADDRESS(AZ::Data::AssetEvents);
+AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(AZCORE_API, AZ::Data::AssetEvents);
 
 namespace AZ::Data
 {

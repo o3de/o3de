@@ -7,6 +7,6 @@
  */
 #include <AzFramework/Entity/GameEntityContextBus.h>
 
-AZF_INSTANTIATE_EBUS_MULTI_ADDRESS(AzFramework::EntityContextRequests);
-AZF_INSTANTIATE_EBUS_MULTI_ADDRESS(AzFramework::EntityContextEvents);
-AZF_INSTANTIATE_EBUS_MULTI_ADDRESS(AzFramework::EntityIdContextQueries);
+AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(AZF_API, AzFramework::EntityContextRequests);
+AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(AZF_API, AzFramework::EntityContextEvents);
+AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(AZF_API, AzFramework::EntityIdContextQueries);

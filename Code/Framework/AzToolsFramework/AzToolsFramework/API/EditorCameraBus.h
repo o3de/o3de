@@ -150,7 +150,7 @@ namespace Camera
 
 } // namespace Camera
 
-AZTF_DECLARE_EBUS_SINGLE_ADDRESS(Camera::EditorCameraRequests);
-AZTF_DECLARE_EBUS_SINGLE_ADDRESS(Camera::EditorCameraSystemRequests);
-AZTF_DECLARE_EBUS_SINGLE_ADDRESS(Camera::EditorCameraNotifications);
-AZTF_DECLARE_EBUS_SINGLE_ADDRESS(Camera::EditorCameraViewRequests);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, Camera::EditorCameraRequests);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, Camera::EditorCameraSystemRequests);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, Camera::EditorCameraNotifications);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, Camera::EditorCameraViewRequests);

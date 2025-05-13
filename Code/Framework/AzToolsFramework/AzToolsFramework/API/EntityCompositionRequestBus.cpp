@@ -8,4 +8,4 @@
 
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 
-AZTF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzToolsFramework::EntityCompositionRequests);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EntityCompositionRequests);

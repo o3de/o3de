@@ -8,4 +8,4 @@
 
  #include <AzFramework/Input/Buses/Requests/InputLightBarRequestBus.h>
 
- AZF_INSTANTIATE_EBUS_MULTI_ADDRESS(AzFramework::InputLightBarRequests);
+ AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(AZF_API, AzFramework::InputLightBarRequests);

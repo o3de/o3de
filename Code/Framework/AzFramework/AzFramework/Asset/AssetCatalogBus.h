@@ -69,5 +69,5 @@ namespace AzFramework
     using LegacyAssetEventBus = AZ::EBus<LegacyAssetEvents>;
 } // namespace AzFramework
 
-AZF_DECLARE_EBUS_SINGLE_ADDRESS(AzFramework::AssetCatalogEvents);
-AZF_DECLARE_EBUS_MULTI_ADDRESS(AzFramework::LegacyAssetEvents);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::AssetCatalogEvents);
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZF_API, AzFramework::LegacyAssetEvents);

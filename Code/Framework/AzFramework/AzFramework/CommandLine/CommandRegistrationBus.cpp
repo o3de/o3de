@@ -7,4 +7,4 @@
  */
 #include <AzFramework/CommandLine/CommandRegistrationBus.h>
 
-AZF_INSTANTIATE_EBUS_SINGLE_ADDRESS(AzFramework::CommandRegistration);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::CommandRegistration);

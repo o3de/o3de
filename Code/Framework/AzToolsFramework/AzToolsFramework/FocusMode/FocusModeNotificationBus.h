@@ -41,4 +41,4 @@ namespace AzToolsFramework
 
 } // namespace AzToolsFramework
 
-AZTF_DECLARE_EBUS_MULTI_ADDRESS(AzToolsFramework::FocusModeNotifications);
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::FocusModeNotifications);

@@ -8,4 +8,4 @@
 
  #include <AzCore/Component/EntityBus.h>
 
-AZCORE_INSTANTIATE_EBUS_MULTI_ADDRESS(AZ::EntityEvents);
+AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(AZCORE_API, AZ::EntityEvents);

@@ -62,5 +62,5 @@ namespace AzToolsFramework
     } // namespace Prefab
 } // namespace AzToolsFramework
 
-AZTF_DECLARE_EBUS_SINGLE_ADDRESS(AzToolsFramework::Prefab::PrefabPublicNotifications);
-AZTF_DECLARE_EBUS_MULTI_ADDRESS(AzToolsFramework::Prefab::PrefabTemplateNotifications);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::Prefab::PrefabPublicNotifications);
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::Prefab::PrefabTemplateNotifications);

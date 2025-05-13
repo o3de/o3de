@@ -27,4 +27,4 @@ namespace AzToolsFramework
     using EditorPendingCompositionRequestBus = AZ::EBus<EditorPendingCompositionRequests>;
 } // namespace AzToolsFramework
 
-AZTF_DECLARE_EBUS_MULTI_ADDRESS(AzToolsFramework::EditorPendingCompositionRequests);
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::EditorPendingCompositionRequests);

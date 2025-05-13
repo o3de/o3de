@@ -70,4 +70,4 @@ namespace AzFramework
     using InputMotionSensorRequestBus = AZ::EBus<InputMotionSensorRequests>;
 } // namespace AzFramework
 
-AZF_DECLARE_EBUS_MULTI_ADDRESS(AzFramework::InputMotionSensorRequests);
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZF_API, AzFramework::InputMotionSensorRequests);

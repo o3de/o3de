@@ -7,6 +7,6 @@
  */
 #include <AzCore/Asset/AssetManagerBus.h>
 
-AZCORE_INSTANTIATE_EBUS_SINGLE_ADDRESS(Data::AssetManagerNotifications);
-AZCORE_INSTANTIATE_EBUS_SINGLE_ADDRESS(Data::AssetCatalogRequests);
-AZCORE_INSTANTIATE_EBUS_SINGLE_ADDRESS(Data::AssetManagerEvents);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZCORE_API, Data::AssetManagerNotifications);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZCORE_API, Data::AssetCatalogRequests);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZCORE_API, Data::AssetManagerEvents);

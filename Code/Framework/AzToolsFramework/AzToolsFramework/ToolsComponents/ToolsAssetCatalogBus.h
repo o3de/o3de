@@ -36,4 +36,4 @@ namespace AzToolsFramework
     using ToolsAssetSystemBus = AZ::EBus<ToolsAssetSystemRequests>;
 }
 
-AZTF_DECLARE_EBUS_SINGLE_ADDRESS(AzToolsFramework::ToolsAssetSystemRequests);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::ToolsAssetSystemRequests);

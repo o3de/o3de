@@ -13,7 +13,6 @@
 
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/string/osstring.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
@@ -138,4 +137,4 @@ namespace AZ
     using ModuleManagerRequestBus = AZ::EBus<ModuleManagerRequests>;
 } //namespace AZ
 
-AZCORE_DECLARE_EBUS_SINGLE_ADDRESS(AZ::ModuleManagerRequests);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZCORE_API, AZ::ModuleManagerRequests);
