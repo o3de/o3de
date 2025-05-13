@@ -56,8 +56,8 @@ IF DEFINED RUN_CONFIGURE (
 
 REM Split the configuration on semi-colon and use the cmake --build wrapper to run the underlying build command for each
 FOR %%C in (%CONFIGURATION%) do (
-    call ECHO [ci_build] cmake --build . --target %CMAKE_TARGET% --config %%C %CMAKE_BUILD_ARGS% -- %CMAKE_NATIVE_BUILD_ARGS%
-    call cmake --build . --target %CMAKE_TARGET% --config %%C %CMAKE_BUILD_ARGS% -- %CMAKE_NATIVE_BUILD_ARGS%
+    call ECHO [ci_build] cmake --build . --target %CMAKE_TARGET% --config %%C %CMAKE_BUILD_ARGS% -- %CMAKE_NATIVE_BUILD_ARGS% /p:CL_MPCount=%HALF_PROCESSORS%
+    call cmake --build . --target %CMAKE_TARGET% --config %%C %CMAKE_BUILD_ARGS% -- %CMAKE_NATIVE_BUILD_ARGS% /p:CL_MPCount=%HALF_PROCESSORS%
     IF NOT !ERRORLEVEL! EQU 0 GOTO :error
 )
 
