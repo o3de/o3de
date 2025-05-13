@@ -1,5 +1,5 @@
 {
-    "Source": "MotionBlurTileMax.azsl",
+    "Source": "MotionBlurTileMaxVer.azsl",
 
     "ProgramSettings": 
     {

@@ -625,8 +625,12 @@
                 "Path": "Passes/MotionBlur.pass"
             },
             {
-                "Name": "MotionBlurTileMaxTemplate",
-                "Path": "Passes/MotionBlurTileMax.pass"
+                "Name": "MotionBlurTileMaxHorTemplate",
+                "Path": "Passes/MotionBlurTileMaxHor.pass"
+            },
+            {
+                "Name": "MotionBlurTileMaxVerTemplate",
+                "Path": "Passes/MotionBlurTileMaxVer.pass"
             },
             {
                 "Name": "MotionBlurTileFilterTemplate",

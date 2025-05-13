@@ -23,28 +23,31 @@ void MainCS(
     uint groupIndex : SV_GroupIndex)
 {
     uint2 outPixel = dispatchThreadID.xy;
-    uint2 dimensions;
+    uint2 inputDimensions;
+    uint2 outputDimensions;
     
-    PassSrg::m_outputVelocity.GetDimensions(dimensions.x, dimensions.y);
-
-    if (outPixel.x >= dimensions.x || outPixel.y >= dimensions.y)
+    PassSrg::m_inputVelocity.GetDimensions(inputDimensions.x, inputDimensions.y);
+    PassSrg::m_outputVelocity.GetDimensions(outputDimensions.x, outputDimensions.y);
+    if (outPixel.x >= outputDimensions.x || outPixel.y >= outputDimensions.y)
     {
         return;
     }
     
-    
+    uint2 inPixel = outPixel * uint2(1, TILE_SIZE);
+    if (inPixel.x >= inputDimensions.x || inPixel.y >= inputDimensions.y)
+    {
+        return;
+    }
+
     float2 maxVelocity = float2(0, 0);
     [unroll]
-    for(int i = -1; i <= 1; i++) {
-        [unroll]
-        for(int j = -1; j <= 1; j++) {
-            if (outPixel.x + i >= dimensions.x || outPixel.y + j >= dimensions.y || (int)outPixel.x + i < 0 || (int)outPixel.y + j < 0){
-                continue;
-            }
-
-            float2 sampleVelocity = PassSrg::m_inputVelocity[outPixel + uint2(i, j)];
-            maxVelocity = vmax(maxVelocity, sampleVelocity);
+    for(int y = 0; y < TILE_SIZE; y++) {
+        if (inPixel.y + y >= inputDimensions.y){
+            continue;
         }
+
+        float2 sampleVelocity = PassSrg::m_inputVelocity[inPixel + uint2(0, y)];
+        maxVelocity = vmax(maxVelocity, sampleVelocity);
     }
 
     PassSrg::m_outputVelocity[outPixel] = maxVelocity;

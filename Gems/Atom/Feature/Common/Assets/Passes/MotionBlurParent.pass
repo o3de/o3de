@@ -40,8 +40,8 @@
             ],
             "PassRequests": [
                 {
-                    "Name": "VelocityTileMax",
-                    "TemplateName": "MotionBlurTileMaxTemplate",
+                    "Name": "VelocityTileMaxHor",
+                    "TemplateName": "MotionBlurTileMaxHorTemplate",
                     "Connections": [
                         {
                             "LocalSlot": "Input",
@@ -53,13 +53,26 @@
                     ]
                 },
                 {
+                    "Name": "VelocityTileMaxVer",
+                    "TemplateName": "MotionBlurTileMaxVerTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "Input",
+                            "AttachmentRef": {
+                                "Pass": "VelocityTileMaxHor",
+                                "Attachment": "Output"
+                            }
+                        }
+                    ]
+                },
+                {
                     "Name": "VelocityTileFilter",
                     "TemplateName": "MotionBlurTileFilterTemplate",
                     "Connections": [
                         {
                             "LocalSlot": "Input",
                             "AttachmentRef": {
-                                "Pass": "VelocityTileMax",
+                                "Pass": "VelocityTileMaxVer",
                                 "Attachment": "Output"
                             }
                         }

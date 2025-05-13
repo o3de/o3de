@@ -8,16 +8,12 @@
 
 #include <scenesrg_all.srgi>
 #include <Atom/Features/PostProcessing/PostProcessUtil.azsli>
+#include "MotionBlur.azsli"
 
 ShaderResourceGroup PassSrg : SRG_PerPass
 {
     Texture2D<float2> m_inputVelocity;
     RWTexture2D<float2> m_outputVelocity;
-}
-
-float2 vmax(float2 a, float2 b)
-{
-	return dot(a, a) > dot(b, b) ? a : b;
 }
 
 [numthreads(8, 8, 1)]
@@ -32,15 +28,12 @@ void MainCS(
     
     PassSrg::m_inputVelocity.GetDimensions(inputDimensions.x, inputDimensions.y);
     PassSrg::m_outputVelocity.GetDimensions(outputDimensions.x, outputDimensions.y);
-
     if (outPixel.x >= outputDimensions.x || outPixel.y >= outputDimensions.y)
     {
         return;
     }
     
-    const uint2 tileSize = uint2(20, 20);
-    uint2 inPixel = outPixel * tileSize;
-
+    uint2 inPixel = outPixel * uint2(TILE_SIZE, 1);
     if (inPixel.x >= inputDimensions.x || inPixel.y >= inputDimensions.y)
     {
         return;
@@ -48,16 +41,13 @@ void MainCS(
 
     float2 maxVelocity = float2(0, 0);
     [unroll]
-    for(int i = 0; i < tileSize.x; i++) {
-        [unroll]
-        for(int j = 0; j < tileSize.y; j++) {
-            if (inPixel.x + i >= inputDimensions.x || inPixel.y + j >= inputDimensions.y){
-                continue;
-            }
-
-            float2 sampleVelocity = PassSrg::m_inputVelocity[inPixel + uint2(i, j)];
-            maxVelocity = vmax(maxVelocity, sampleVelocity);
+    for(int x = 0; x < TILE_SIZE; x++) {
+        if (inPixel.x + x >= inputDimensions.x){
+            continue;
         }
+
+        float2 sampleVelocity = PassSrg::m_inputVelocity[inPixel + uint2(x, 0)];
+        maxVelocity = vmax(maxVelocity, sampleVelocity);
     }
 
     PassSrg::m_outputVelocity[outPixel] = maxVelocity;

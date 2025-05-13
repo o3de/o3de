@@ -1,0 +1,9 @@
+
+// Also modify the size multiplier in `.pass` files after modifying this value
+#define TILE_SIZE 20
+
+// Returns the larger value of two velocities
+float2 vmax(float2 a, float2 b)
+{
+	return dot(a, a) > dot(b, b) ? a : b;
+}
