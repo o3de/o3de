@@ -383,7 +383,9 @@ namespace AZ
              * - Invalid id
              */
             bool QueueLoad(const AssetLoadParameters& loadParams = {});
-
+#if defined(CARBONATED) && defined(CARBONATED_ASSET_WAIT_TIMEOUT)
+            AssetData::AssetStatus BlockUntilLoadComplete(unsigned int timeoutMillis);
+#endif
             AssetData::AssetStatus BlockUntilLoadComplete();
 
             /**
@@ -512,6 +514,9 @@ namespace AZ
             Asset<AssetData> FindOrCreateAsset(const AssetId& id, const AssetType& type, AssetLoadBehavior assetReferenceLoadBehavior);
             Asset<AssetData> GetAsset(const AssetId& id, const AssetType& type, AssetLoadBehavior assetReferenceLoadBehavior,
                 const AZ::Data::AssetLoadParameters& assetLoadFilterCB = AssetLoadParameters{});
+#if defined(CARBONATED) && defined(CARBONATED_ASSET_WAIT_TIMEOUT)
+            AssetData::AssetStatus BlockUntilLoadComplete(const Asset<AssetData>& asset, unsigned int timeoutMillis);
+#endif
             AssetData::AssetStatus BlockUntilLoadComplete(const Asset<AssetData>& asset);
             void UpdateAssetInfo(AssetId& id, AZStd::string& assetHint);
             bool ReloadAsset(AssetData* assetData, AssetLoadBehavior assetReferenceLoadBehavior);
@@ -1146,7 +1151,14 @@ namespace AZ
             return queueLoadSuccessful;
         }
 
+#if defined(CARBONATED) && defined(CARBONATED_ASSET_WAIT_TIMEOUT)
         template <class T>
+        AssetData::AssetStatus Asset<T>::BlockUntilLoadComplete(unsigned int timeoutMillis)
+        {
+            return AssetInternal::BlockUntilLoadComplete(*this, timeoutMillis);
+        }
+#endif
+        template<class T>
         AssetData::AssetStatus Asset<T>::BlockUntilLoadComplete()
         {
             return AssetInternal::BlockUntilLoadComplete(*this);

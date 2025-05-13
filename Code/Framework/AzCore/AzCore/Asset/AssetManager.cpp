@@ -34,6 +34,9 @@
 #include <AzCore/Utils/LogNotification.h> // AE -- update log while waiting for assets
 #include <AzCore/Utils/AssetLoadNotification.h> // update subscribers while waiting for assets
 #include <AzCore/Memory/MemoryMarker.h>
+#if defined(CARBONATED_ASSET_WAIT_TIMEOUT)
+#include <AzCore/Time/ITime.h>
+#endif
 #endif
 
 // Set this to 1 to enable debug logging for asset loads/unloads
@@ -260,10 +263,16 @@ namespace AZ::Data
     public:
         AZ_CLASS_ALLOCATOR(WaitForAsset, ThreadPoolAllocator);
 
-
+#if defined(CARBONATED) && defined(CARBONATED_ASSET_WAIT_TIMEOUT)
+        WaitForAsset(const Asset<AssetData>& assetToWaitFor, bool shouldDispatchEvents, unsigned int timeoutMillis)
+            : m_assetData(assetToWaitFor)
+            , m_shouldDispatchEvents(shouldDispatchEvents)
+            , m_timeoutMillis(timeoutMillis)
+#else
         WaitForAsset(const Asset<AssetData>& assetToWaitFor, bool shouldDispatchEvents)
             : m_assetData(assetToWaitFor)
             , m_shouldDispatchEvents(shouldDispatchEvents)
+#endif
         {
             // Track all blocking requests with the AssetManager.  This enables load jobs to potentially get routed
             // to the thread that's currently blocking waiting on the load job to complete.
@@ -339,6 +348,10 @@ namespace AZ::Data
             AZ_PROFILE_SCOPE(AzCore, "WaitForAsset - %s", m_assetData.GetHint().c_str());
             constexpr int MaxWaitForAssetUpdateMs = 20;
             int currentWaitForAssetUpdate = MaxWaitForAssetUpdateMs;
+#if defined(CARBONATED) && defined(CARBONATED_ASSET_WAIT_TIMEOUT)
+            const int64_t startTime = m_timeoutMillis ? static_cast<int64_t>(AZ::GetRealElapsedTimeMs()) : 0;
+            int jobCount = 0;
+#endif
 
             // Continue to loop until the load completes.  (Most of the time in the loop will be spent in a thread-blocking state)
             while (!m_loadCompleted)
@@ -374,6 +387,22 @@ namespace AZ::Data
                 // Check to see if any load jobs have been provided for this thread to process.
                 // (Load jobs will attempt to reuse blocked threads before spinning off new job threads)
                 ProcessLoadJob();
+
+#if defined(CARBONATED) && defined(CARBONATED_ASSET_WAIT_TIMEOUT)
+                if (m_timeoutMillis)
+                {
+                    if (jobCount++ > 0)  // do not check after the first job, most cases it is loaded
+                    {
+                        const int64_t curTime = m_timeoutMillis ? static_cast<int64_t>(AZ::GetRealElapsedTimeMs()) : 0;
+                        if ((unsigned int)(curTime - startTime) > m_timeoutMillis)
+                        {
+                            AZ_Info("AssetManager", "Blocking loading wait timeout %d exceeded for %s, job count %d, time %u",
+                                    m_timeoutMillis, m_assetData.GetHint().c_str(), jobCount, (unsigned int)(curTime - startTime));
+                            break;
+                        }
+                    }
+                }
+#endif
             }
 
             // Pump the AssetBus function queue once more after the load has completed in case additional
@@ -417,6 +446,9 @@ namespace AZ::Data
         LoadAssetJob* m_loadJob{ nullptr };
         AZStd::mutex m_loadJobMutex;
         AZStd::atomic_bool m_loadCompleted{ false };
+#if defined(CARBONATED) && defined(CARBONATED_ASSET_WAIT_TIMEOUT)
+        unsigned int m_timeoutMillis;
+#endif    
     };
 
 
@@ -852,7 +884,11 @@ namespace AZ::Data
         }
     }
 
+#if defined(CARBONATED) && defined(CARBONATED_ASSET_WAIT_TIMEOUT)
+    AssetData::AssetStatus AssetManager::BlockUntilLoadComplete(const Asset<AssetData>& asset, unsigned int timeoutMillis)
+#else
     AssetData::AssetStatus AssetManager::BlockUntilLoadComplete(const Asset<AssetData>& asset)
+#endif
     {
         if(asset.GetStatus() == AssetData::AssetStatus::NotLoaded)
         {
@@ -866,8 +902,11 @@ namespace AZ::Data
             const bool shouldDispatch = AZStd::this_thread::get_id() == m_mainThreadId;
 
             // Wait for the asset and all queued dependencies to finish loading.
+#if defined(CARBONATED) && defined(CARBONATED_ASSET_WAIT_TIMEOUT)
+            WaitForAsset blockingWait(asset, shouldDispatch, timeoutMillis);
+#else
             WaitForAsset blockingWait(asset, shouldDispatch);
-
+#endif
             blockingWait.WaitUntilReady();
         }
 
