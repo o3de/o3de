@@ -129,6 +129,9 @@ namespace AZ::RHI
     /////////////////////////////////////////////////////////////////////////////////////////////
     // Cluster Bottom Level Acceleration Structure (Cluster BLAS)
 
+    //! DeviceRayTracingClusterBlasDescriptor
+    //!
+    //! Describes a single-device cluster ray tracing bottom-level acceleration structure.
     struct DeviceRayTracingClusterBlasDescriptor
     {
         RHI::Format m_vertexFormat;
@@ -159,19 +162,6 @@ namespace AZ::RHI
 
         //! Creates the internal CLAS buffers from the descriptor
         ResultCode CreateBuffers(Device& device, const RHI::DeviceRayTracingClusterBlasDescriptor* descriptor, const DeviceRayTracingBufferPools& rayTracingBufferPools);
-
-        //ResultCode ReleaseScratchBuffer(uint64_t frameCount);
-
-        // return some exposed indirect buffers
-        virtual const RHI::Ptr<RHI::DeviceBuffer> GetDstAddressesArrayBuffer() const = 0;
-        virtual const RHI::Ptr<RHI::DeviceBuffer> GetDstSizesArrayBuffer() const = 0;
-
-        //! Returns true if the DeviceRayTracingClusterBlas has been initialized
-        //virtual bool IsValid() const = 0;
-
-        virtual void PrepareBuildClases() = 0;
-        virtual void PrepareBuildClusterBlas() = 0;
-        virtual void PrepareCopyClases() = 0;
 
         virtual uint64_t GetAccelerationStructureByteSize() = 0;
 

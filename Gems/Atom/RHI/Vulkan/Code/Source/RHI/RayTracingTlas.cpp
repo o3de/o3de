@@ -116,9 +116,9 @@ namespace AZ
                         VkBufferDeviceAddressInfo addressInfo = {};
                         addressInfo.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
                         addressInfo.pNext = nullptr;
-                        addressInfo.buffer = static_cast<Buffer*>(clusterBlas->GetBuffers().m_clusterBlasBuffer.get())->GetBufferMemoryView()->GetNativeBuffer();
+                        addressInfo.buffer = static_cast<Buffer*>(clusterBlas->GetBuffers().m_clusterBlasDstImplicitBuffer.get())->GetBufferMemoryView()->GetNativeBuffer();
                         mappedData[i].accelerationStructureReference = device.GetContext().GetBufferDeviceAddress(device.GetNativeDevice(), &addressInfo);
-                        blasBuffers.emplace_back(clusterBlas->GetBuffers().m_clusterBlasBuffer);
+                        blasBuffers.emplace_back(clusterBlas->GetBuffers().m_clusterBlasDstImplicitBuffer);
                     }
                 }
             

@@ -90,6 +90,9 @@ namespace AZ::RHI
     /////////////////////////////////////////////////////////////////////////////////////////////
     // Cluster Bottom Level Acceleration Structure (Cluster BLAS)
 
+    //! RayTracingClusterBlasDescriptor
+    //!
+    //! Describes a ray tracing cluster bottom-level acceleration structure.
     struct RayTracingClusterBlasDescriptor final
     {
         //! Returns the device-specific DeviceRayTracingBlasDescriptor for the given index
@@ -109,9 +112,9 @@ namespace AZ::RHI
         RHI::Ptr<RHI::BufferView> m_srcInfosCountBufferView;
     };
 
-    //! DeviceRayTracingClusterBlas
+    //! RayTracingClusterBlas
     //!
-    //! A DeviceRayTracingClusterBlas is created from the information in the DeviceRayTracingClusterBlasDescriptor.
+    //! A RayTracingClusterBlas is created from the information in the RayTracingClusterBlasDescriptor.
     class RayTracingClusterBlas
         : public MultiDeviceObject
     {
