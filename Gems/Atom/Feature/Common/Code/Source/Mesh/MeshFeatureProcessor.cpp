@@ -2927,7 +2927,7 @@ namespace AZ
                     else
                     {
                         //  the mesh is not fully initialized, ModelDataInstance::Init that sets m_postCullingInstanceDataByLod.resize was not called yet
-                        AZ_Warning("BuildCullable", "Lod index %lu out of range, m_postCullingInstanceDataByLod %lu lods, lodCount %lu, asset %s",
+                        AZ_Warning("BuildCullable", false, "Lod index %lu out of range, m_postCullingInstanceDataByLod %lu lods, lodCount %lu, asset %s",
                                         static_cast<unsigned int>(index), static_cast<unsigned int>(m_postCullingInstanceDataByLod.size()),
                                         static_cast<unsigned int>(lodCount), GetAssetHint().c_str());
                     }
