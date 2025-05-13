@@ -51,6 +51,16 @@ namespace EMotionFX
         virtual MotionInstance* PlayMotion(Motion * motion, class PlayBackInfo * info = nullptr);
 
         /**
+         * Start playing the specified motion instance on this actor.
+         * @param motionInsance The motion instance to play.
+         * @param info A pointer to an object containing playback information. This pointer is NOT allowed to be nullptr here.
+         * @result A pointer to the played motion instance object or null if the argument was invalid.
+         * You can use this motion instance object to adjust and retrieve playback information at any time.
+         * @see PlayBackInfo
+         */
+        virtual MotionInstance* PlayMotion(MotionInstance* motionInsance, class PlayBackInfo* info = nullptr);
+
+        /**
          * Get the unique motion system type ID.
          * @result The motion system type identification number.
          */
