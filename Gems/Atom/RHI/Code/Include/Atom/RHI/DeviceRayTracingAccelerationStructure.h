@@ -10,6 +10,7 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Transform.h>
+#include <Atom/RHI/DeviceBufferView.h>
 #include <Atom/RHI/DeviceIndexBufferView.h>
 #include <Atom/RHI/DeviceStreamBufferView.h>
 #include <Atom/RHI.Reflect/VertexFormat.h>
@@ -128,42 +129,8 @@ namespace AZ::RHI
     /////////////////////////////////////////////////////////////////////////////////////////////
     // Cluster Bottom Level Acceleration Structure (Cluster BLAS)
 
-    //! DeviceRayTracingClusterBlasDescriptor
-    //!
-    //! The Build() operation in the descriptor allows the BLAS to be initialized
-    //! using the following pattern:
-    //!
-    //! RHI::DeviceRayTracingBlasDescriptor descriptor;
-    //! descriptor.Build()
-    //!    ->Geometry()
-    //!        ->VertexFormat(RHI::Format::R32G32B32_FLOAT)
-    //!        ->VertexBuffer(vertexBufferView)
-    //!        ->IndexBuffer(indexBufferView)
-    //!    ;
-    class DeviceRayTracingClusterBlasDescriptor final
+    struct DeviceRayTracingClusterBlasDescriptor
     {
-    public:
-        DeviceRayTracingClusterBlasDescriptor() = default;
-        ~DeviceRayTracingClusterBlasDescriptor() = default;
-
-        // accessors
-        RHI::Format GetVertexFormat() const { return m_vertexFormat; }
-        uint32_t GetMaxGeometryIndexValue() const { return m_maxGeometryIndexValue; }
-        uint32_t GetMaxClusterUniqueGeometryCount() const { return m_maxClusterUniqueGeometryCount; }
-        uint32_t GetMaxClusterTriangleCount() const { return m_maxClusterTriangleCount; }
-        uint32_t GetMaxClusterVertexCount() const { return m_maxClusterVertexCount; }
-        uint32_t GetMaxTotalTriangleCount() const { return m_maxTotalTriangleCount; }
-        uint32_t GetMaxTotalVertexCount() const { return m_maxTotalVertexCount; }
-        uint32_t GetMinPositionTruncateBitCount() const { return m_minPositionTruncateBitCount; }
-        uint32_t GetMaxClusterCount() const { return m_maxClusterCount; }
-        [[nodiscard]] const RayTracingAccelerationStructureBuildFlags& GetBuildFlags() const { return m_buildFlags; }
-
-        // build operations
-        DeviceRayTracingClusterBlasDescriptor* Build();
-        DeviceRayTracingClusterBlasDescriptor* VertexFormat(RHI::Format vertexFormat);
-        DeviceRayTracingClusterBlasDescriptor* BuildFlags(const RHI::RayTracingAccelerationStructureBuildFlags& buildFlags);
-
-    //private:
         RHI::Format m_vertexFormat;
         uint32_t m_maxGeometryIndexValue;
         uint32_t m_maxClusterUniqueGeometryCount;
@@ -174,6 +141,8 @@ namespace AZ::RHI
         uint32_t m_minPositionTruncateBitCount;
         uint32_t m_maxClusterCount;
         RayTracingAccelerationStructureBuildFlags m_buildFlags = AZ::RHI::RayTracingAccelerationStructureBuildFlags::FAST_TRACE;
+        RHI::Ptr<RHI::DeviceBufferView> m_srcInfosArrayBufferView;
+        RHI::Ptr<RHI::DeviceBufferView> m_srcInfosCountBufferView;
     };
 
     //! DeviceRayTracingClusterBlas
@@ -196,8 +165,6 @@ namespace AZ::RHI
         // return some exposed indirect buffers
         virtual const RHI::Ptr<RHI::DeviceBuffer> GetDstAddressesArrayBuffer() const = 0;
         virtual const RHI::Ptr<RHI::DeviceBuffer> GetDstSizesArrayBuffer() const = 0;
-        virtual const RHI::Ptr<RHI::DeviceBuffer> GetSrcInfosArrayBuffer() const = 0;
-        virtual const RHI::Ptr<RHI::DeviceBuffer> GetSrcInfosCountBuffer() const = 0;
 
         //! Returns true if the DeviceRayTracingClusterBlas has been initialized
         //virtual bool IsValid() const = 0;

@@ -71,14 +71,10 @@ namespace AZ
                 uint32_t m_dstSizesArrayBufferSize = 0;
                 uint32_t m_dstSizesArrayBufferStride = 0;
 
-                RHI::Ptr<RHI::DeviceBuffer> m_srcInfosArrayBuffer;
                 RHI::Ptr<RHI::DeviceBuffer> m_blasSrcInfosBuffer;
                 uint64_t m_srcInfosArrayBufferDeviceAddress;
                 uint32_t m_srcInfosArrayBufferSize = 0;
                 uint32_t m_srcInfosArrayBufferStride = 0;
-
-                RHI::Ptr<RHI::DeviceBuffer> m_srcInfosCountBuffer;
-                uint64_t m_srcInfosCountBufferDeviceAddress;
 
                 VkClusterAccelerationStructureClustersBottomLevelInputNV m_ClustersBottomLevelInput;
                 VkClusterAccelerationStructureTriangleClusterInputNV m_TriangleClustersInput;
@@ -95,8 +91,6 @@ namespace AZ
 
             const RHI::Ptr<RHI::DeviceBuffer> GetDstAddressesArrayBuffer() const override { return GetBuffers().m_dstAddressesArrayBuffer; }
             const RHI::Ptr<RHI::DeviceBuffer> GetDstSizesArrayBuffer() const override { return GetBuffers().m_dstSizesArrayBuffer; }
-            const RHI::Ptr<RHI::DeviceBuffer> GetSrcInfosArrayBuffer() const override { return GetBuffers().m_srcInfosArrayBuffer; }
-            const RHI::Ptr<RHI::DeviceBuffer> GetSrcInfosCountBuffer() const override { return GetBuffers().m_srcInfosCountBuffer; }
 
             // RHI::DeviceRayTracingClusterBlas overrides...
             //virtual bool IsValid() const override { return GetBuffers().m_accelerationStructure != VK_NULL_HANDLE; }

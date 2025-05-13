@@ -79,21 +79,4 @@ namespace AZ::RHI
         }
         return resultCode;
     }
-
-    DeviceRayTracingClusterBlasDescriptor* DeviceRayTracingClusterBlasDescriptor::Build()
-    {
-        return this;
-    }
-
-    DeviceRayTracingClusterBlasDescriptor* DeviceRayTracingClusterBlasDescriptor::VertexFormat(RHI::Format vertexFormat)
-    {
-        m_vertexFormat = vertexFormat;
-        return this;
-    }
-
-    DeviceRayTracingClusterBlasDescriptor* DeviceRayTracingClusterBlasDescriptor::BuildFlags(const RHI::RayTracingAccelerationStructureBuildFlags& buildFlags)
-    {
-        m_buildFlags = buildFlags;
-        return this;
-    }
 }

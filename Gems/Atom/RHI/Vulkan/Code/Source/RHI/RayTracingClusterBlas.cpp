@@ -100,21 +100,21 @@ namespace AZ
                 // fill input for builindg CLASes
                 buffers.m_TriangleClustersInput.sType = VK_STRUCTURE_TYPE_CLUSTER_ACCELERATION_STRUCTURE_TRIANGLE_CLUSTER_INPUT_NV;
                 buffers.m_TriangleClustersInput.pNext = nullptr;
-                buffers.m_TriangleClustersInput.vertexFormat = ConvertFormat(descriptor->GetVertexFormat());
-                buffers.m_TriangleClustersInput.maxGeometryIndexValue = descriptor->GetMaxGeometryIndexValue();
-                buffers.m_TriangleClustersInput.maxClusterUniqueGeometryCount = descriptor->GetMaxClusterUniqueGeometryCount();
-                buffers.m_TriangleClustersInput.maxClusterTriangleCount = descriptor->GetMaxClusterTriangleCount();
-                buffers.m_TriangleClustersInput.maxClusterVertexCount = descriptor->GetMaxClusterVertexCount();
-                buffers.m_TriangleClustersInput.maxTotalTriangleCount = descriptor->GetMaxTotalTriangleCount();
-                buffers.m_TriangleClustersInput.maxTotalVertexCount = descriptor->GetMaxTotalVertexCount();
-                buffers.m_TriangleClustersInput.minPositionTruncateBitCount = descriptor->GetMinPositionTruncateBitCount();
+                buffers.m_TriangleClustersInput.vertexFormat = ConvertFormat(descriptor->m_vertexFormat);
+                buffers.m_TriangleClustersInput.maxGeometryIndexValue = descriptor->m_maxGeometryIndexValue;
+                buffers.m_TriangleClustersInput.maxClusterUniqueGeometryCount = descriptor->m_maxClusterUniqueGeometryCount;
+                buffers.m_TriangleClustersInput.maxClusterTriangleCount = descriptor->m_maxClusterTriangleCount;
+                buffers.m_TriangleClustersInput.maxClusterVertexCount = descriptor->m_maxClusterVertexCount;
+                buffers.m_TriangleClustersInput.maxTotalTriangleCount = descriptor->m_maxTotalTriangleCount;
+                buffers.m_TriangleClustersInput.maxTotalVertexCount = descriptor->m_maxTotalVertexCount;
+                buffers.m_TriangleClustersInput.minPositionTruncateBitCount = descriptor->m_minPositionTruncateBitCount;
 
                 // query buffer size for building CLASes with implicit destination mode
                 VkClusterAccelerationStructureInputInfoNV& inputInfo = buffers.m_buildClasesInputInfo;
                 inputInfo.sType = VK_STRUCTURE_TYPE_CLUSTER_ACCELERATION_STRUCTURE_INPUT_INFO_NV;
                 inputInfo.pNext = nullptr;
-                inputInfo.maxAccelerationStructureCount = descriptor->GetMaxClusterCount();
-                inputInfo.flags = GetAccelerationStructureBuildFlags(descriptor->GetBuildFlags());
+                inputInfo.maxAccelerationStructureCount = descriptor->m_maxClusterCount;
+                inputInfo.flags = GetAccelerationStructureBuildFlags(descriptor->m_buildFlags);
                 inputInfo.opType = VK_CLUSTER_ACCELERATION_STRUCTURE_OP_TYPE_BUILD_TRIANGLE_CLUSTER_NV;
                 inputInfo.opMode = VK_CLUSTER_ACCELERATION_STRUCTURE_OP_MODE_IMPLICIT_DESTINATIONS_NV;
                 inputInfo.opInput.pTriangleClusters = &buffers.m_TriangleClustersInput;
@@ -149,15 +149,15 @@ namespace AZ
                 // fill input for builindg cluster BLAS
                 buffers.m_ClustersBottomLevelInput.sType = VK_STRUCTURE_TYPE_CLUSTER_ACCELERATION_STRUCTURE_CLUSTERS_BOTTOM_LEVEL_INPUT_NV;
                 buffers.m_ClustersBottomLevelInput.pNext = nullptr;
-                buffers.m_ClustersBottomLevelInput.maxClusterCountPerAccelerationStructure = descriptor->GetMaxClusterCount();
-                buffers.m_ClustersBottomLevelInput.maxTotalClusterCount = descriptor->GetMaxClusterCount();
+                buffers.m_ClustersBottomLevelInput.maxClusterCountPerAccelerationStructure = descriptor->m_maxClusterCount;
+                buffers.m_ClustersBottomLevelInput.maxTotalClusterCount = descriptor->m_maxClusterCount;
 
                 // query buffer size for building cluster BLAS with implicit destination mode
                 VkClusterAccelerationStructureInputInfoNV& inputInfo = buffers.m_buildClusterBlasInputInfo;
                 inputInfo.sType = VK_STRUCTURE_TYPE_CLUSTER_ACCELERATION_STRUCTURE_INPUT_INFO_NV;
                 inputInfo.pNext = nullptr;
                 inputInfo.maxAccelerationStructureCount = 1;
-                inputInfo.flags = GetAccelerationStructureBuildFlags(descriptor->GetBuildFlags());
+                inputInfo.flags = GetAccelerationStructureBuildFlags(descriptor->m_buildFlags);
                 inputInfo.opType = VK_CLUSTER_ACCELERATION_STRUCTURE_OP_TYPE_BUILD_CLUSTERS_BOTTOM_LEVEL_NV;
                 inputInfo.opMode = VK_CLUSTER_ACCELERATION_STRUCTURE_OP_MODE_IMPLICIT_DESTINATIONS_NV;
                 inputInfo.opInput.pClustersBottomLevel = &buffers.m_ClustersBottomLevelInput;
@@ -206,11 +206,11 @@ namespace AZ
             // create destination addresses array buffer
             buffers.m_dstAddressesArrayBuffer = RHI::Factory::Get().CreateBuffer();
             buffers.m_dstAddressesArrayBuffer->SetName(Name("CLAS destination addresses array"));
-            buffers.m_dstAddressesArrayBufferSize = descriptor->GetMaxClusterCount() * sizeof(uint64_t);
+            buffers.m_dstAddressesArrayBufferSize = descriptor->m_maxClusterCount * sizeof(uint64_t);
             buffers.m_dstAddressesArrayBufferStride = sizeof(uint64_t);
             AZ::RHI::BufferDescriptor dstAddressesBufferDescriptor;
             dstAddressesBufferDescriptor.m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite | RHI::BufferBindFlags::RayTracingAccelerationStructure;
-            dstAddressesBufferDescriptor.m_byteCount = descriptor->GetMaxClusterCount() * sizeof(uint64_t);
+            dstAddressesBufferDescriptor.m_byteCount = descriptor->m_maxClusterCount * sizeof(uint64_t);
 
             AZ::RHI::DeviceBufferInitRequest dstAddressesBufferRequest;
             dstAddressesBufferRequest.m_buffer = buffers.m_dstAddressesArrayBuffer.get();
@@ -223,11 +223,11 @@ namespace AZ
             // create destination sizes array buffer
             buffers.m_dstSizesArrayBuffer = RHI::Factory::Get().CreateBuffer();
             buffers.m_dstSizesArrayBuffer->SetName(Name("CLAS destination sizes array"));
-            buffers.m_dstSizesArrayBufferSize = descriptor->GetMaxClusterCount() * sizeof(uint32_t);
+            buffers.m_dstSizesArrayBufferSize = descriptor->m_maxClusterCount * sizeof(uint32_t);
             buffers.m_dstSizesArrayBufferStride = sizeof(uint32_t);
             AZ::RHI::BufferDescriptor dstSizesBufferDescriptor;
             dstSizesBufferDescriptor.m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite | RHI::BufferBindFlags::RayTracingAccelerationStructure;
-            dstSizesBufferDescriptor.m_byteCount = descriptor->GetMaxClusterCount() * sizeof(uint32_t);
+            dstSizesBufferDescriptor.m_byteCount = descriptor->m_maxClusterCount * sizeof(uint32_t);
 
             AZ::RHI::DeviceBufferInitRequest dstSizesBufferRequest;
             dstSizesBufferRequest.m_buffer = buffers.m_dstSizesArrayBuffer.get();
@@ -247,7 +247,7 @@ namespace AZ
                 blasSrcInfoBufferDescriptor.m_byteCount = sizeof(VkClusterAccelerationStructureBuildClustersBottomLevelInfoNV);
 
                 VkClusterAccelerationStructureBuildClustersBottomLevelInfoNV blasSrcInfoData = {};
-                blasSrcInfoData.clusterReferencesCount = descriptor->GetMaxClusterCount();
+                blasSrcInfoData.clusterReferencesCount = descriptor->m_maxClusterCount;
                 blasSrcInfoData.clusterReferencesStride = buffers.m_dstAddressesArrayBufferStride;
                 blasSrcInfoData.clusterReferences = buffers.m_dstAddressesArrayBuffer->GetDeviceAddress();
 
@@ -259,45 +259,7 @@ namespace AZ
                 AZ_Assert(resultCode == RHI::ResultCode::Success, "failed to create CLAS blas source infos buffer");
             }
 
-
-            // create source info array buffer
-            /*union SrcInfoFormat
-            {
-                VkClusterAccelerationStructureMoveObjectsInfoNV m_moveInfo;
-                VkClusterAccelerationStructureBuildClustersBottomLevelInfoNV m_clusterBlasInfo;
-                VkClusterAccelerationStructureBuildTriangleClusterInfoNV m_;
-            };*/
-            buffers.m_srcInfosArrayBuffer = RHI::Factory::Get().CreateBuffer();
-            buffers.m_srcInfosArrayBuffer->SetName(Name("CLAS source infos array"));
-            //buffers.m_srcInfosArrayBufferSize = descriptor->GetMaxClusterCount() * sizeof(VkClusterAccelerationStructureBuildTriangleClusterInfoNV);
-            //buffers.m_srcInfosArrayBufferStride = sizeof(uint32_t);
-            AZ::RHI::BufferDescriptor srcInfosBufferDescriptor;
-            srcInfosBufferDescriptor.m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite | RHI::BufferBindFlags::Indirect;
-            // TODO: check whether is the max size
-            srcInfosBufferDescriptor.m_byteCount = descriptor->GetMaxClusterCount() * sizeof(VkClusterAccelerationStructureBuildTriangleClusterInfoNV);
-
-            AZ::RHI::DeviceBufferInitRequest srcInfosBufferRequest;
-            srcInfosBufferRequest.m_buffer = buffers.m_srcInfosArrayBuffer.get();
-            srcInfosBufferRequest.m_descriptor = srcInfosBufferDescriptor;
-            resultCode = bufferPools.GetSrcInfosArrayBufferPool()->InitBuffer(srcInfosBufferRequest);
-            AZ_Assert(resultCode == RHI::ResultCode::Success, "failed to create source infos buffer");
-
-            buffers.m_srcInfosArrayBufferDeviceAddress = buffers.m_srcInfosArrayBuffer->GetDeviceAddress();
-
-            // create source info count buffer
-            buffers.m_srcInfosCountBuffer = RHI::Factory::Get().CreateBuffer();
-            buffers.m_srcInfosCountBuffer->SetName(Name("CLAS source infos count"));
-            AZ::RHI::BufferDescriptor srcInfosCountBufferDescriptor;
-            srcInfosCountBufferDescriptor.m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite | RHI::BufferBindFlags::Indirect;
-            srcInfosCountBufferDescriptor.m_byteCount = descriptor->GetMaxClusterCount() * sizeof(uint32_t);
-
-            AZ::RHI::DeviceBufferInitRequest srcInfosCountBufferRequest;
-            srcInfosCountBufferRequest.m_buffer = buffers.m_srcInfosCountBuffer.get();
-            srcInfosCountBufferRequest.m_descriptor = srcInfosCountBufferDescriptor;
-            resultCode = bufferPools.GetSrcInfosCountBufferPool()->InitBuffer(srcInfosCountBufferRequest);
-            AZ_Assert(resultCode == RHI::ResultCode::Success, "failed to create destination sizes buffer");
-
-            buffers.m_srcInfosCountBufferDeviceAddress = buffers.m_srcInfosCountBuffer->GetDeviceAddress();
+            buffers.m_srcInfosArrayBufferDeviceAddress = descriptor->m_srcInfosArrayBufferView->GetDeviceAddress();
 
             {
                 // assign buffer addresses to command info
@@ -326,9 +288,8 @@ namespace AZ
                 srcInfosArray.size = buffers.m_srcInfosArrayBufferSize;
                 buffers.m_commandInfo.srcInfosArray = srcInfosArray;
 
-                buffers.m_commandInfo.srcInfosCount = buffers.m_srcInfosCountBuffer->GetDeviceAddress();
-                // Dont use m_srcInfosCountBuffer for now; TODO: Enable this again
-                buffers.m_commandInfo.srcInfosCount = 0;
+                buffers.m_commandInfo.srcInfosCount =
+                    descriptor->m_srcInfosCountBufferView ? descriptor->m_srcInfosCountBufferView->GetDeviceAddress() : 0;
 
                 buffers.m_commandInfo.addressResolutionFlags = 0;
             }
