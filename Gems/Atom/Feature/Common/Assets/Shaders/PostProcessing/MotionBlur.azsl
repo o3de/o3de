@@ -13,7 +13,7 @@
 #define TILE_DIM_X 16
 #define TILE_DIM_Y 16
 
-ShaderResourceGroup PassSrg : SRG_PerPass
+ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 {
     Texture2D<float4> m_inputColor;
     Texture2D<float4> m_linearDepth;
@@ -24,52 +24,58 @@ ShaderResourceGroup PassSrg : SRG_PerPass
 
     struct Constants
     {
-        uint m_sampleNumber;
-        float m_strength; // [0, 1)
-        uint2 m_outputSize; // texture size of output
+        uint2 m_outputSize; // Texture size of output
+        float m_strength; // Multiplier for sampling offset
+        [[pad_to(16)]]
     };
     Constants m_constants;
 }
 
-float GetGradientNoise(uint2 coord)
+option enum class SampleNumber
 {
-    float2 uv = float2(coord);
-    float f = dot(float2(0.06711056f, 0.00583715f), uv);
-    return frac(52.9829189f * frac(f));
+    Sample6,
+    Sample14,
+    Sample24,
+    Sample36
 }
+o_sampleNumber = SampleNumber::Sample14;
 
 float2 DepthCmp(float centerDepth, float sampleDepth, float depthScale)
 {
-	return saturate(0.5f + float2(depthScale, -depthScale) * (sampleDepth - centerDepth));
+    return saturate(0.5f + float2(depthScale, -depthScale) * (sampleDepth - centerDepth));
 }
 
 float2 SpreadCmp(float offsetLen, float2 spreadLen, float pixelToSampleUnitsScale)
 {
-	return saturate(pixelToSampleUnitsScale * spreadLen - offsetLen + 1.0f);
+    return saturate(pixelToSampleUnitsScale * spreadLen - offsetLen + 1.0f);
 }
 
 float SampleWeight(float centerDepth, float sampleDepth, float offsetLen, float centerSpreadLen, float sampleSpreadLen, float pixelToSampleUnitsScale, float depthScale)
 {
-	float2 depthCmp = DepthCmp(centerDepth, sampleDepth, depthScale);
-	float2 spreadCmp = SpreadCmp(offsetLen, float2(centerSpreadLen, sampleSpreadLen), pixelToSampleUnitsScale);
-	return dot(depthCmp, spreadCmp);
+    float2 depthCmp = DepthCmp(centerDepth, sampleDepth, depthScale);
+    float2 spreadCmp = SpreadCmp(offsetLen, float2(centerSpreadLen, sampleSpreadLen), pixelToSampleUnitsScale);
+    return dot(depthCmp, spreadCmp);
 }
 
 
-uint2 ClampCoords(int2 coord){
+uint2 ClampCoords(int2 coord)
+{
     uint2 clampedCoords;
     clampedCoords.x = uint(clamp(coord.x, 0, PassSrg::m_constants.m_outputSize.x - 1));
     clampedCoords.y = uint(clamp(coord.y, 0, PassSrg::m_constants.m_outputSize.y - 1));
     return clampedCoords;
 }
 
-float2 ToPixelVelocity(float2 velocity){
+float2 ToPixelVelocity(float2 velocity)
+{
     velocity *= float2(PassSrg::m_constants.m_outputSize);
     velocity *= PassSrg::m_constants.m_strength;
     return velocity;
 }
 
-
+// This shader calculates motion blur effect from tile max speeds. 
+// See https://advances.realtimerendering.com/s2014/index.html#_NEXT_GENERATION_POST
+// for a detailed overview of the technique. 
 [numthreads(TILE_DIM_X, TILE_DIM_Y, 1)]
 void MainCS(
     uint3 dispatchThreadID : SV_DispatchThreadID, 
@@ -92,22 +98,45 @@ void MainCS(
     float tileVelocityLength = length(tileVelocity);
 
     // Omit effect for velocities that are too small
-    if (tileVelocityLength < 1){
+    if (tileVelocityLength < 1)
+    {
         return;
     }
 
-    // Calculate noise to make it look better with less samples per pixel
-	float noise = GetGradientNoise(pixelCoord);
-
+    // Introduce some dithering according to the slides
     int2 ditherCoord = int2(pixelCoord.x % 2, pixelCoord.y % 2);
     float samplingDither = (-0.25 + 2.0 * 0.25 * ditherCoord.x) * (-1.0 + 2.0 * ditherCoord.y);
-    // PassSrg::m_outputColor[pixelCoord].rgb = float3(samplingDither, samplingDither, samplingDither);
 
-    const int iterationCount = PassSrg::m_constants.m_sampleNumber / 2;
-    const float2 sampleStep = tileVelocity / (float)iterationCount;
+    int iterationCount;
+    switch(o_sampleNumber){
+        case SampleNumber::Sample6:
+        {
+            iterationCount = 3;
+            break;
+        }
+        case SampleNumber::Sample14:
+        {
+            iterationCount = 7;
+            break;
+        }
+        case SampleNumber::Sample24:
+        {
+            iterationCount = 12;
+            break;
+        }
+        case SampleNumber::Sample36:
+        {
+            iterationCount = 18;
+            break;
+        }
+    }
+    
+    const float invIterationCount = 1 / (float)iterationCount;
+    const float2 sampleStep = tileVelocity * invIterationCount;
     const float pixelToSampleUnitsScale = rsqrt(dot(sampleStep, sampleStep));
     float4 accumulatedColor = float4(0.0, 0.0, 0.0, 0.0);
     
+    [unroll]
     for (int i = 0; i < iterationCount; ++i)
     {
         int2 offset = int2((i + samplingDither) * sampleStep);
@@ -129,8 +158,8 @@ void MainCS(
         float weight2 = SampleWeight(depth, sampleDepth2, i + samplingDither, tileVelocityLength, sampleVelocityLength2, pixelToSampleUnitsScale, 1);
 
         bool2 doMirror = bool2(sampleDepth1 > sampleDepth2, sampleVelocityLength2 > sampleVelocityLength1);
-		weight1 = all(doMirror) ? weight2 : weight1;
-		weight2 = any(doMirror) ? weight2 : weight1;
+        weight1 = all(doMirror) ? weight2 : weight1;
+        weight2 = any(doMirror) ? weight2 : weight1;
 
         accumulatedColor += weight1 * float4(PassSrg::m_inputColor[coord1].rgb, 1.0);
         accumulatedColor += weight2 * float4(PassSrg::m_inputColor[coord2].rgb, 1.0);
@@ -141,8 +170,7 @@ void MainCS(
         return;
     }
     
-    accumulatedColor /= float(iterationCount * 2);
+    accumulatedColor *= (0.5 * invIterationCount);
     accumulatedColor.rgb = max(0.0, accumulatedColor.rgb);
-    // PassSrg::m_outputColor[pixelCoord].rgb = 100 * float3(velocityLength, velocityLength, velocityLength);
     PassSrg::m_outputColor[pixelCoord].rgb = accumulatedColor.rgb + (1. - accumulatedColor.w) * color;
 }

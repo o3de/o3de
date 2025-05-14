@@ -16,6 +16,8 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     RWTexture2D<float2> m_outputVelocity;
 }
 
+// This shader applies a 3x3 max filter to tile max velocities, 
+// which is the second pass, originally called `Tile Neighborhood`. 
 [numthreads(8, 8, 1)]
 void MainCS(
     uint3 dispatchThreadID : SV_DispatchThreadID, 
@@ -32,13 +34,15 @@ void MainCS(
         return;
     }
     
-    
     float2 maxVelocity = float2(0, 0);
     [unroll]
-    for(int i = -1; i <= 1; i++) {
+    for(int i = -1; i <= 1; i++) 
+    {
         [unroll]
-        for(int j = -1; j <= 1; j++) {
-            if (outPixel.x + i >= dimensions.x || outPixel.y + j >= dimensions.y || (int)outPixel.x + i < 0 || (int)outPixel.y + j < 0){
+        for(int j = -1; j <= 1; j++) 
+        {
+            if (outPixel.x + i >= dimensions.x || outPixel.y + j >= dimensions.y || (int)outPixel.x + i < 0 || (int)outPixel.y + j < 0)
+            {
                 continue;
             }
 

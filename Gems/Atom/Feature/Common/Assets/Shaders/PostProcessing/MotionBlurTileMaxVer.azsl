@@ -16,6 +16,9 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     RWTexture2D<float2> m_outputVelocity;
 }
 
+// The first pass of motion blur calculates max velocity in NxN tiles, called `Tile Max`. 
+// The NxN max operation could be split into a 1xN max and a Nx1 max. 
+// This shader performs the vertical part (1xN) of calculating tile max velocity. 
 [numthreads(8, 8, 1)]
 void MainCS(
     uint3 dispatchThreadID : SV_DispatchThreadID, 
@@ -41,8 +44,10 @@ void MainCS(
 
     float2 maxVelocity = float2(0, 0);
     [unroll]
-    for(int y = 0; y < TILE_SIZE; y++) {
-        if (inPixel.y + y >= inputDimensions.y){
+    for(int y = 0; y < TILE_SIZE; y++) 
+    {
+        if (inPixel.y + y >= inputDimensions.y)
+        {
             continue;
         }
 

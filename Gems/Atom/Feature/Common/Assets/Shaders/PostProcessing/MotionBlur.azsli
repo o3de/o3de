@@ -1,4 +1,5 @@
 
+// The size of the NxN tile max filter, set to 20 according to the original slide
 // Also modify the size multiplier in `.pass` files after modifying this value
 #define TILE_SIZE 20
 

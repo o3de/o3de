@@ -56,12 +56,6 @@ namespace AZ
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                         ->Attribute(Edit::Attributes::ReadOnly, &MotionBlurComponentConfig::ArePropertiesReadOnly)
 
-                        ->DataElement(AZ::Edit::UIHandlers::Slider, &MotionBlurComponentConfig::m_sampleNumber, "Sample Number", "Number of Sample Points Per Pixel")
-                        ->Attribute(AZ::Edit::Attributes::Min, 0)
-                        ->Attribute(AZ::Edit::Attributes::Max, 50)
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
-                        ->Attribute(Edit::Attributes::ReadOnly, &MotionBlurComponentConfig::ArePropertiesReadOnly)
-
                         // Overrides
                         ->ClassElement(AZ::Edit::ClassElements::Group, "Overrides")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
