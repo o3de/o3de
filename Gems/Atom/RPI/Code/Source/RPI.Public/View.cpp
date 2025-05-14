@@ -686,10 +686,10 @@ namespace AZ
             if (m_shaderResourceGroup)
             {
                 m_shaderResourceGroup->SetConstant(m_worldToClipPrevMatrixConstantIndex, m_worldToClipPrevMatrixWithOffset);
-                m_shaderResourceGroup->SetConstant(m_viewProjectionMatrixConstantIndex, m_worldToClipMatrix);
-                m_shaderResourceGroup->SetConstant(m_projectionMatrixConstantIndex, m_viewToClipMatrix);
-                m_shaderResourceGroup->SetConstant(m_clipToWorldMatrixConstantIndex, m_clipToWorldMatrix);
-                m_shaderResourceGroup->SetConstant(m_projectionMatrixInverseConstantIndex, m_clipToViewMatrix);
+                m_shaderResourceGroup->SetConstant(m_viewProjectionMatrixConstantIndex, m_worldToClipMatrixWithOffset);
+                m_shaderResourceGroup->SetConstant(m_projectionMatrixConstantIndex, m_viewToClipMatrixWithOffset);
+                m_shaderResourceGroup->SetConstant(m_clipToWorldMatrixConstantIndex, m_clipToWorldMatrixWithOffset);
+                m_shaderResourceGroup->SetConstant(m_projectionMatrixInverseConstantIndex, m_clipToViewMatrixWithOffset);
 
                 m_shaderResourceGroup->SetConstant(m_worldPositionConstantIndex, m_position);
                 m_shaderResourceGroup->SetConstant(m_viewMatrixConstantIndex, m_worldToViewMatrix);
