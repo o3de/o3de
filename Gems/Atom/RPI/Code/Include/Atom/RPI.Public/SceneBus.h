@@ -121,4 +121,4 @@ namespace AZ
     } // namespace RPI
 } // namespace AZ
 
-ATOMRPI_PUBLIC_DECLARE_EBUS_MULTI_ADDRESS(AZ::RPI::SceneNotification);
+AZ_DECLARE_EBUS_MULTI_ADDRESS(ATOM_RPI_PUBLIC_API, AZ::RPI::SceneNotification);
