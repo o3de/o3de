@@ -95,7 +95,7 @@ namespace AZ
                     mappedData[i].mask = instance.m_instanceMask;
                     mappedData[i].flags = instance.m_transparent ? VK_GEOMETRY_INSTANCE_FORCE_NO_OPAQUE_BIT_KHR : 0;
 
-                    if (!instance.m_isCluster)
+                    if (instance.m_blas)
                     {
                         RayTracingBlas* blas = static_cast<RayTracingBlas*>(instance.m_blas.get());
                         VkAccelerationStructureDeviceAddressInfoKHR addressInfo = {};
@@ -109,15 +109,10 @@ namespace AZ
                     }
                     else
                     {
-                        // for cluster BLAS, mappedData[i].accelerationStructureReference will be filled on GPU later
-                        // 
-                        //// in explicit mode, the address of acceleration structure is pre-determined in CPU
                         RayTracingClusterBlas* clusterBlas = static_cast<RayTracingClusterBlas*>(instance.m_clusterBlas.get());
-                        VkBufferDeviceAddressInfo addressInfo = {};
-                        addressInfo.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
-                        addressInfo.pNext = nullptr;
-                        addressInfo.buffer = static_cast<Buffer*>(clusterBlas->GetBuffers().m_clusterBlasDstImplicitBuffer.get())->GetBufferMemoryView()->GetNativeBuffer();
-                        mappedData[i].accelerationStructureReference = device.GetContext().GetBufferDeviceAddress(device.GetNativeDevice(), &addressInfo);
+                        mappedData[i].accelerationStructureReference =
+                            clusterBlas->GetBuffers().m_clusterBlasDstImplicitBuffer->GetDeviceAddress();
+
                         blasBuffers.emplace_back(clusterBlas->GetBuffers().m_clusterBlasDstImplicitBuffer);
                     }
                 }

@@ -187,7 +187,6 @@ namespace AZ::RHI
         AZ::Transform m_transform = AZ::Transform::CreateIdentity();
         AZ::Vector3 m_nonUniformScale = AZ::Vector3::CreateOne();
         bool m_transparent = false;
-        bool m_isCluster = false;
         RHI::Ptr<RHI::DeviceRayTracingBlas> m_blas;
         RHI::Ptr<RHI::DeviceRayTracingClusterBlas> m_clusterBlas;
     };

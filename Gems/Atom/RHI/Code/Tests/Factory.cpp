@@ -185,6 +185,12 @@ namespace UnitTest
         return nullptr;
     }
 
+    AZ::RHI::Ptr<AZ::RHI::DeviceRayTracingClusterBlas> Factory::CreateRayTracingClusterBlas()
+    {
+        AZ_Assert(false, "Not implemented");
+        return nullptr;
+    }
+
     AZ::RHI::Ptr<AZ::RHI::DeviceRayTracingTlas> Factory::CreateRayTracingTlas()
     {
         AZ_Assert(false, "Not implemented");

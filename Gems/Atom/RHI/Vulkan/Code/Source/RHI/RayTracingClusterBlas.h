@@ -8,21 +8,16 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/FrameCountMaxRingBuffer.h>
-#include <Atom_RHI_Vulkan_Platform.h>
 #include <Atom/RHI/DeviceRayTracingAccelerationStructure.h>
+#include <Atom_RHI_Vulkan_Platform.h>
 #include <AzCore/Memory/SystemAllocator.h>
-#include <AzCore/std/smart_ptr/unique_ptr.h>
 
 namespace AZ
 {
     namespace Vulkan
     {
-        class Buffer;
-        class RayTracingAccelerationStructure;
-
         //! This class builds and contains the Vulkan RayTracing Cluster BLAS buffers.
-        class RayTracingClusterBlas final
-            : public RHI::DeviceRayTracingClusterBlas
+        class RayTracingClusterBlas final : public RHI::DeviceRayTracingClusterBlas
         {
         public:
             AZ_CLASS_ALLOCATOR(RayTracingClusterBlas, AZ::SystemAllocator);
@@ -45,7 +40,10 @@ namespace AZ
                 VkClusterAccelerationStructureCommandsInfoNV m_buildClusterBlasCommandInfo = {};
             };
 
-            const ClusterBlasBuffers& GetBuffers() const { return m_buffers.GetCurrentElement(); }
+            const ClusterBlasBuffers& GetBuffers() const
+            {
+                return m_buffers.GetCurrentElement();
+            }
 
             uint64_t GetAccelerationStructureByteSize() override;
 
@@ -53,12 +51,16 @@ namespace AZ
             RayTracingClusterBlas() = default;
 
             // RHI::DeviceRayTracingClusterBlas overrides
-            RHI::ResultCode CreateBuffersInternal(RHI::Device& deviceBase, const RHI::DeviceRayTracingClusterBlasDescriptor* descriptor, const RHI::DeviceRayTracingBufferPools& rayTracingBufferPools) override;
+            RHI::ResultCode CreateBuffersInternal(
+                RHI::Device& deviceBase,
+                const RHI::DeviceRayTracingClusterBlasDescriptor* descriptor,
+                const RHI::DeviceRayTracingBufferPools& rayTracingBufferPools) override;
 
-            static VkBuildAccelerationStructureFlagsKHR GetAccelerationStructureBuildFlags(const RHI::RayTracingAccelerationStructureBuildFlags &buildFlags);
+            static VkBuildAccelerationStructureFlagsKHR GetAccelerationStructureBuildFlags(
+                const RHI::RayTracingAccelerationStructureBuildFlags& buildFlags);
 
             // Buffer list to keep buffers alive for several frames
             RHI::FrameCountMaxRingBuffer<ClusterBlasBuffers> m_buffers;
         };
-    }
-}
+    } // namespace Vulkan
+} // namespace AZ

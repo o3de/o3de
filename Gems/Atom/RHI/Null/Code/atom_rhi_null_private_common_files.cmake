@@ -61,6 +61,7 @@ set(FILES
     Source/RHI/RayTracingBufferPools.h
     Source/RHI/RayTracingBlas.cpp
     Source/RHI/RayTracingBlas.h
+    Source/RHI/RayTracingClusterBlas.h
     Source/RHI/RayTracingTlas.cpp
     Source/RHI/RayTracingTlas.h
     Source/RHI/RayTracingPipelineState.cpp

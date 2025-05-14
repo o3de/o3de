@@ -6,14 +6,12 @@
  *
  */
 
-#include <Atom/RHI.Reflect/VkAllocator.h>
 #include <Atom/RHI.Reflect/Vulkan/Conversion.h>
-#include <Atom/RHI/DeviceBufferPool.h>
+#include <Atom/RHI/DeviceRayTracingAccelerationStructure.h>
 #include <Atom/RHI/DeviceRayTracingBufferPools.h>
 #include <Atom/RHI/Factory.h>
 #include <RHI/Buffer.h>
 #include <RHI/Device.h>
-#include <RHI/RayTracingAccelerationStructure.h>
 #include <RHI/RayTracingClusterBlas.h>
 
 namespace AZ
@@ -30,7 +28,10 @@ namespace AZ
             return m_buffers.GetCurrentElement().m_clusterBlasDstImplicitBuffer->GetDescriptor().m_byteCount;
         }
 
-        RHI::ResultCode RayTracingClusterBlas::CreateBuffersInternal(RHI::Device& deviceBase, const RHI::DeviceRayTracingClusterBlasDescriptor* descriptor, const RHI::DeviceRayTracingBufferPools& bufferPools)
+        RHI::ResultCode RayTracingClusterBlas::CreateBuffersInternal(
+            RHI::Device& deviceBase,
+            const RHI::DeviceRayTracingClusterBlasDescriptor* descriptor,
+            const RHI::DeviceRayTracingBufferPools& bufferPools)
         {
             auto& device = static_cast<Device&>(deviceBase);
             auto& physicalDevice = static_cast<const PhysicalDevice&>(device.GetPhysicalDevice());
@@ -102,7 +103,6 @@ namespace AZ
                 buffers.m_clustersBottomLevelInput.maxClusterCountPerAccelerationStructure = descriptor->m_maxClusterCount;
                 buffers.m_clustersBottomLevelInput.maxTotalClusterCount = descriptor->m_maxClusterCount;
             }
-
 
             // Query buffer size for building cluster BLAS with implicit destination
             VkAccelerationStructureBuildSizesInfoKHR clusterBlasBuildSizesInfo = {};
