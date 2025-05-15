@@ -14,10 +14,18 @@ set(FILES
     SceneImporter.cpp
     SceneSystem.h
     SceneSystem.cpp
+    SceneBuilderSystemComponent.h
+    SceneBuilderSystemComponent.cpp
+    ImportContextRegistry.h
+    ImportContextRegistryManager.h
+    ImportContextRegistryManager.cpp
     ImportContexts/ImportContexts.h
     ImportContexts/ImportContexts.cpp
+    ImportContexts/ImportContextProvider.h
     ImportContexts/AssImpImportContexts.h
     ImportContexts/AssImpImportContexts.cpp
+    ImportContexts/AssImpImportContextProvider.h
+    ImportContexts/AssImpImportContextProvider.cpp
     Importers/Utilities/AssImpMeshImporterUtilities.h
     Importers/Utilities/AssImpMeshImporterUtilities.cpp
     Importers/Utilities/RenamedNodesMap.h

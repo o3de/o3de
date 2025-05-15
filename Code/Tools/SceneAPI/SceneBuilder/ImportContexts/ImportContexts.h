@@ -8,12 +8,13 @@
 
 #pragma once
 
+#include "ImportContextProvider.h"
+
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/string/string.h>
-#include <SceneAPI/SceneCore/Events/CallProcessorBus.h>
-#include <SceneAPI/SceneCore/Containers/SceneGraph.h>
 #include <SceneAPI/SceneCore/Containers/Scene.h>
-
+#include <SceneAPI/SceneCore/Containers/SceneGraph.h>
+#include <SceneAPI/SceneCore/Events/CallProcessorBus.h>
 
 namespace AZ
 {    
@@ -36,6 +37,7 @@ namespace AZ
 
         namespace SceneBuilder
         {
+            struct ImportContextProvider;
             class RenamedNodesMap;
 
             //  ImportContext
@@ -52,6 +54,7 @@ namespace AZ
                 Containers::Scene& m_scene;
                 Containers::SceneGraph::NodeIndex m_currentGraphPosition;
                 RenamedNodesMap& m_nodeNameMap; // Map of the nodes that have received a new name.
+                ImportContextProvider* m_contextProvider; // The provider that created this context.
             };
 
             //  NodeEncounteredContext
@@ -177,4 +180,3 @@ namespace AZ
         } // namespace SceneBuilder
     } // namespace SceneAPI
 } // namespace AZ
-
