@@ -54,7 +54,6 @@ namespace AZ
                 }
                 const aiNode* currentNode = context.m_sourceNode.GetAssImpNode();
                 const aiScene* scene = context.m_sourceScene.GetAssImpScene();
-                
                 const auto meshHasTangentsAndBitangents = [&scene](const unsigned int meshIndex)
                 {
                     return scene->mMeshes[meshIndex]->HasTangentsAndBitangents();
@@ -118,12 +117,13 @@ namespace AZ
                     context.m_scene.GetGraph().AddChild(context.m_currentGraphPosition, m_defaultNodeName);
 
                 Events::ProcessingResult tangentResults;
-                AssImpSceneAttributeDataPopulatedContext dataPopulated(context, tangentStream, newIndex, m_defaultNodeName);
-                tangentResults = Events::Process(dataPopulated);
+                auto dataPopulated = context.m_contextProvider->CreateSceneAttributeDataPopulatedContext(
+                    context, tangentStream, newIndex, m_defaultNodeName);
+                tangentResults = Events::Process(*dataPopulated);
 
                 if (tangentResults != Events::ProcessingResult::Failure)
                 {
-                    tangentResults = AddAttributeDataNodeWithContexts(dataPopulated);
+                    tangentResults = AddAttributeDataNodeWithContexts(*dataPopulated);
                 }
                 return tangentResults;
             }

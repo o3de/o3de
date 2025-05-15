@@ -11,8 +11,6 @@
 #include <AzCore/std/string/string.h>
 #include <AzCore/Math/Vector3.h>
 
-struct aiMaterial;
-
 namespace AZ
 {
     namespace SDKMaterial

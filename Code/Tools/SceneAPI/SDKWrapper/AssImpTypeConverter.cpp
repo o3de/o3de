@@ -34,20 +34,6 @@ namespace AZ
             return transform;
         }
 
-        SceneAPI::DataTypes::MatrixType AssImpTypeConverter::ToTransform(const AZ::Matrix4x4& matrix)
-        {
-            SceneAPI::DataTypes::MatrixType transform;
-            for (int row = 0; row < 3; ++row)
-            {
-                for (int column = 0; column < 4; ++column)
-                {
-                    transform.SetElement(row, column, matrix.GetElement(row, column));
-                }
-            }
-
-            return transform;
-        }
-
         SceneAPI::DataTypes::Color AssImpTypeConverter::ToColor(const aiColor4D& color)
         {
             return AZ::SceneAPI::DataTypes::Color(color.r, color.g, color.b, color.a);

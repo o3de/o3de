@@ -86,12 +86,13 @@ namespace AZ
                         }
 
                         Events::ProcessingResult transformAttributeResult;
-                        AssImpSceneAttributeDataPopulatedContext dataPopulated(context, transformData, newIndex, nodeName);
-                        transformAttributeResult = Events::Process(dataPopulated);
+                        auto dataPopulated =
+                            context.m_contextProvider->CreateSceneAttributeDataPopulatedContext(context, transformData, newIndex, nodeName);
+                        transformAttributeResult = Events::Process(*dataPopulated);
 
                         if (transformAttributeResult != Events::ProcessingResult::Failure)
                         {
-                            transformAttributeResult = AddAttributeDataNodeWithContexts(dataPopulated);
+                            transformAttributeResult = AddAttributeDataNodeWithContexts(*dataPopulated);
                         }
 
                         return transformAttributeResult;

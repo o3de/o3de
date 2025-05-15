@@ -21,12 +21,14 @@ namespace AZ
                 : m_scene(scene)
                 , m_currentGraphPosition(currentGraphPosition)
                 , m_nodeNameMap(nodeNameMap)
+                , m_contextProvider(nullptr)
             {
             }
 
             ImportContext::ImportContext(Containers::Scene& scene, RenamedNodesMap& nodeNameMap)
                 : m_scene(scene)
                 , m_nodeNameMap(nodeNameMap)
+                , m_contextProvider(nullptr)
             {
                 m_currentGraphPosition = Containers::SceneGraph::NodeIndex();
             }
