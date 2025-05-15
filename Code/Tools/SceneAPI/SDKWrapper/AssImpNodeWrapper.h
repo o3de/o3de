@@ -11,6 +11,8 @@
 
 struct aiScene;
 
+struct aiNode;
+
 namespace AZ
 {
     namespace AssImpSDKWrapper
