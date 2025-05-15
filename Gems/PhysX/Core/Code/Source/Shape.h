@@ -8,7 +8,6 @@
 
 #pragma once
 
-
 #include <PxPhysicsAPI.h>
 #include <AzFramework/Physics/Shape.h>
 #include <AzFramework/Physics/ShapeConfiguration.h>
