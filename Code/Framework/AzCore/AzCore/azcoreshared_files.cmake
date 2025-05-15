@@ -734,5 +734,8 @@ set(FILES
     StringFunc/StringFunc.h
     Utils/Utils.cpp
     Utils/Utils.h
+)
 
+set(SKIP_UNITY_BUILD_INCLUSION_FILES
+    Platform.cpp
 )

@@ -104,5 +104,5 @@ namespace AzToolsFramework
         return newCtrl;
     }
 
-    void RegisterIntSpinBoxHandlers();
+    AZTF_API void RegisterIntSpinBoxHandlers();
 };
