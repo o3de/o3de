@@ -621,7 +621,11 @@ AZ::EntityId UiElementComponent::FindInteractableToHandleEvent(AZ::Vector2 point
         if (UiInteractableBus::FindFirstHandler(GetEntityId()))
         {
             bool isInRect = GetTransform2dComponent()->IsPointInRect(point);
-            if (isInRect)
+#if defined(CARBONATED) && defined(CARBONATED_UIELEMENT_INVERT_INPUT)
+            if (isInRect != m_isHandlingAreaInverted)
+#else
+            if(isInRect)
+#endif
             {
                 // check if this interactable component is in a state where it can handle an event at the given point
                 bool canHandle = false;
@@ -1412,7 +1416,11 @@ void UiElementComponent::Reflect(AZ::ReflectContext* context)
             ->Event("FindDescendantByName", &UiElementBus::Events::FindDescendantEntityIdByName)
             ->Event("IsAncestor", &UiElementBus::Events::IsAncestor)
             ->Event("IsEnabled", &UiElementBus::Events::IsEnabled)
-            ->Event("SetIsEnabled", &UiElementBus::Events::SetIsEnabled);
+            ->Event("SetIsEnabled", &UiElementBus::Events::SetIsEnabled)
+#if defined(CARBONATED) && defined(CARBONATED_UIELEMENT_INVERT_INPUT)
+            ->Event("SetIsHandlingAreaInverted", &UiElementBus::Events::SetHandlingAreaInverted)
+#endif
+            ;
     }
 }
 

@@ -373,8 +373,10 @@ namespace AzFramework
         {
             LSV_BEGIN(lua, 1);
 
+#if !defined(CARBONATED) //This log is so incredibly spammy if you add a property to a very common script
             AZ::ScriptContext::FromNativeContext(lua)->Error(AZ::ScriptContext::ErrorType::Warning, true,
-                "Property %s not found in entity table. Please push this property to your slice to avoid decrease in performance.", lua_tostring(lua, -1));
+                "Property %s not found in entity table. Please push this property to your slice to avoid decrease in performance.", lua_tostring(lua, -1)); 
+#endif
             int lookupKey = lua_gettop(lua);
 
             int lookupTable = lookupKey - 1;
