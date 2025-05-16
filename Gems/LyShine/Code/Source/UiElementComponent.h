@@ -104,7 +104,7 @@ public: // member functions
     bool IsRenderEnabled() override;
     void SetIsRenderEnabled(bool isRenderEnabled) override;
 
-#if defined(CARBONATED)
+#if defined(CARBONATED) && defined(CARBONATED_UIELEMENT_INVERT_INPUT)
     bool IsHandlingAreaInverted() override { return m_isHandlingAreaInverted; }
     void SetHandlingAreaInverted(bool isInverted) override { m_isHandlingAreaInverted = isInverted; }
 #endif
@@ -298,7 +298,7 @@ private: // data
     bool m_isEnabled = true;
     bool m_isRenderEnabled = true;
 
-#if defined(CARBONATED)
+#if defined(CARBONATED) && defined(CARBONATED_UIELEMENT_INVERT_INPUT)
     bool m_isHandlingAreaInverted = false;
 #endif
 
