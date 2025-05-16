@@ -1045,12 +1045,10 @@ namespace AZ
 
             // create the BLAS object
             RHI::RayTracingBlasDescriptor blasDescriptor;
-            blasDescriptor.Build()
-                ->Geometry()
-                ->VertexFormat(PositionStreamFormat)
-                ->VertexBuffer(m_visualizationVB)
-                ->IndexBuffer(m_visualizationIB)
-            ;
+            RHI::RayTracingGeometry& blasGeometry = blasDescriptor.m_geometries.emplace_back();
+            blasGeometry.m_vertexFormat = PositionStreamFormat;
+            blasGeometry.m_vertexBuffer = m_visualizationVB;
+            blasGeometry.m_indexBuffer = m_visualizationIB;
 
             m_visualizationBlas = aznew RHI::RayTracingBlas;
             auto deviceMask = RHI::RHISystemInterface::Get()->GetRayTracingSupport();
