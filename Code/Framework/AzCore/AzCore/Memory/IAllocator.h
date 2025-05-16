@@ -275,6 +275,14 @@ namespace AZ
         /// Returns true if profiling calls will be made.
         virtual bool IsProfilingActive() const { return false; }
 
+#if defined(CARBONATED)
+        /// Returns memory used by the allocator including overhead (if possible)
+        /// the traget is to calculate efficiency factor as NumAllocatedBytes() / NumUsedBytes()
+        virtual size_type NumUsedBytes() const
+        {
+            return 0;
+        }
+#endif
     protected:
         /// All conforming allocators must call PostCreate() after their custom Create() method in order to be properly registered.
         virtual void PostCreate() {}

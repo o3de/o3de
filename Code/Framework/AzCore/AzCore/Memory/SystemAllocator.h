@@ -50,7 +50,9 @@ namespace AZ
         void            GarbageCollect() override                 { m_subAllocator->GarbageCollect(); }
 
         size_type       NumAllocatedBytes() const override;
-
+#if defined(CARBONATED)
+        size_type       NumUsedBytes() const override;
+#endif
         //////////////////////////////////////////////////////////////////////////
 
     protected:

@@ -36,6 +36,9 @@ namespace AZ
         size_type get_allocated_size(pointer ptr, align_type alignment = 1) const override;
 
         size_type       NumAllocatedBytes() const override;
+#if defined(CARBONATED)
+        size_type       NumUsedBytes() const override;
+#endif
 
         /// Return unused memory to the OS. Don't call this unless you really need free memory, it is slow.
         void            GarbageCollect() override;

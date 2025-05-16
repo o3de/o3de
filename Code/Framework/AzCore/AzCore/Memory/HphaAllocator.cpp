@@ -945,6 +945,12 @@ namespace AZ
         {
             return mTotalAllocatedSizeBuckets + mTotalAllocatedSizeTree;
         }
+#if defined(CARBONATED)
+        inline size_t used() const
+        {
+            return mTotalCapacitySizeBuckets + mTotalCapacitySizeTree;
+        }
+#endif
 
         /// returns allocation size for the pointer if it belongs to the allocator. result is undefined if the pointer doesn't belong to the allocator.
         size_t  AllocationSize(void* ptr);
@@ -2594,6 +2600,17 @@ namespace AZ
         return m_allocator->allocated();
     }
 
+#if defined(CARBONATED)
+    //=========================================================================
+    // NumUsedBytes
+    // [5/12/2025]
+    //=========================================================================
+    template<bool DebugAllocator>
+    auto HphaSchemaBase<DebugAllocator>::NumUsedBytes() const -> size_type
+    {
+        return m_allocator->used();
+    }
+#endif
     //=========================================================================
     // GarbageCollect
     // [2/22/2011]
