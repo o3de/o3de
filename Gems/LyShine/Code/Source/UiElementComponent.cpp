@@ -1417,9 +1417,9 @@ void UiElementComponent::Reflect(AZ::ReflectContext* context)
             ->Event("IsAncestor", &UiElementBus::Events::IsAncestor)
             ->Event("IsEnabled", &UiElementBus::Events::IsEnabled)
             ->Event("SetIsEnabled", &UiElementBus::Events::SetIsEnabled)
-            #if defined(CARBONATED)
+#if defined(CARBONATED)
             ->Event("SetIsHandlingAreaInverted", &UiElementBus::Events::SetHandlingAreaInverted)
-            #endif
+#endif
             ;
     }
 }

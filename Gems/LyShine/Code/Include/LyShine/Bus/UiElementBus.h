@@ -151,10 +151,10 @@ public: // member functions
     virtual bool IsRenderEnabled() = 0;
     virtual void SetIsRenderEnabled(bool isRenderEnabled) = 0;
 
-    #if defined(CARBONATED)
+#if defined(CARBONATED)
     virtual bool IsHandlingAreaInverted() = 0;
     virtual void SetHandlingAreaInverted(bool isInverted) = 0;
-    #endif
+#endif
 public: // static member data
 
     //! Only one component on a entity can implement the events
