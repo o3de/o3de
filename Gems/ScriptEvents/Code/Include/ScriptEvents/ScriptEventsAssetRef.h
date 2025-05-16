@@ -84,7 +84,7 @@ namespace ScriptEvents
 
         void OnAssetSaved(AZ::Data::Asset<AZ::Data::AssetData> asset, [[maybe_unused]] bool isSuccessful) override
         {
-            SetAsset(m_asset);
+            SetAsset(asset);
         }
         //=====================================================================
 

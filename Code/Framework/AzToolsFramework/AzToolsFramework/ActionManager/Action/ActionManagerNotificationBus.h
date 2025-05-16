@@ -24,7 +24,7 @@ namespace AzToolsFramework
         //////////////////////////////////////////////////////////////////////////
 
         //! Triggered when an action's enabled or checked state changes.
-        virtual void OnActionStateChanged(AZStd::string actionIdentifier) {}
+        virtual void OnActionStateChanged([[maybe_unused]] AZStd::string actionIdentifier) {}
 
     protected:
         ~ActionManagerNotifications() = default;

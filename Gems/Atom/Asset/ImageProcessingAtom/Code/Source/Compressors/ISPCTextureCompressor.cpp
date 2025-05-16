@@ -248,7 +248,7 @@ namespace ImageProcessingAtom
         return destinationImage;
     }
 
-    IImageObjectPtr ISPCCompressor::DecompressImage(IImageObjectPtr sourceImage, [[maybe_unused]] EPixelFormat destinationFormat) const
+    IImageObjectPtr ISPCCompressor::DecompressImage([[maybe_unused]]IImageObjectPtr sourceImage, [[maybe_unused]] EPixelFormat destinationFormat) const
     {
         return nullptr;
     }

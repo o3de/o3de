@@ -233,11 +233,11 @@ namespace GraphModelIntegration
 
         //! Sent whenever a graph model slot value changes
         //! \param slot The slot that was modified in the graph.
-        virtual void OnGraphModelSlotModified(GraphModel::SlotPtr slot){};
+        virtual void OnGraphModelSlotModified(GraphModel::SlotPtr /*slot*/) {};
 
         //! Something in the graph has been modified
         //! \param node The node that was modified in the graph.  If this is nullptr, some metadata on the graph itself was modified
-        virtual void OnGraphModelGraphModified(GraphModel::NodePtr node){};
+        virtual void OnGraphModelGraphModified(GraphModel::NodePtr /*node*/) {};
 
         //! A request has been made to record data for an undoable operation 
         virtual void OnGraphModelRequestUndoPoint(){};

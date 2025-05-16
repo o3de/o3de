@@ -10,6 +10,8 @@
 
 namespace AZStd
 {
+#if !defined(AZ_COMPILER_MSVC)
+
 #define AZ_REGEX_CHAR_CLASS_NAME(n, c) { n, sizeof(n) / sizeof(n[0]) - 1, c }
 
     template<>
@@ -54,7 +56,7 @@ namespace AZStd
         { nullptr, 0, 0 },
     };
 #undef AZ_REGEX_CHAR_CLASS_NAME
-
+#endif
     template struct AZCORE_API_EXPORT ClassNames<char>;
     template struct AZCORE_API_EXPORT ClassNames<wchar_t>;
     template class AZCORE_API_EXPORT RegexTraits<char>;
