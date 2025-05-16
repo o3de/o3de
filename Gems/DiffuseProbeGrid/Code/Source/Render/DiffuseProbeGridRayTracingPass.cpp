@@ -85,20 +85,16 @@ namespace AZ
 
             // build the ray tracing pipeline state descriptor
             RHI::RayTracingPipelineStateDescriptor descriptor;
-            descriptor.Build()
-                ->PipelineState(m_globalPipelineState.get())
-                ->MaxPayloadSize(96)
-                ->MaxAttributeSize(32)
-                ->MaxRecursionDepth(MaxRecursionDepth)
-                ->ShaderLibrary(rayGenerationShaderDescriptor)
-                    ->RayGenerationShaderName(AZ::Name("RayGen"))
-                ->ShaderLibrary(missShaderDescriptor)
-                    ->MissShaderName(AZ::Name("Miss"))
-                ->ShaderLibrary(closestHitShaderDescriptor)
-                    ->ClosestHitShaderName(AZ::Name("ClosestHit"))
-                ->HitGroup(AZ::Name("HitGroup"))
-                    ->ClosestHitShaderName(AZ::Name("ClosestHit"))
-            ;
+            descriptor.m_pipelineState = m_globalPipelineState.get();
+            descriptor.m_configuration.m_maxPayloadSize = 96;
+            descriptor.m_configuration.m_maxAttributeSize = 32;
+            descriptor.m_configuration.m_maxRecursionDepth = MaxRecursionDepth;
+
+            descriptor.AddRayGenerationShaderLibrary(rayGenerationShaderDescriptor, Name("RayGen"));
+            descriptor.AddMissShaderLibrary(missShaderDescriptor, Name("Miss"));
+            descriptor.AddClosestHitShaderLibrary(closestHitShaderDescriptor, Name("ClosestHit"));
+
+            descriptor.AddHitGroup(Name("HitGroup"), Name("ClosestHit"));
 
             // create the ray tracing pipeline state object
             m_rayTracingPipelineState = aznew RHI::RayTracingPipelineState;

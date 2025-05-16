@@ -171,32 +171,36 @@ namespace AZ
 
             // build the ray tracing pipeline state descriptor
             RHI::RayTracingPipelineStateDescriptor descriptor;
-            descriptor.Build()
-                ->PipelineState(m_globalPipelineState.get())
-                ->MaxPayloadSize(m_passData->m_maxPayloadSize)
-                ->MaxAttributeSize(m_passData->m_maxAttributeSize)
-                ->MaxRecursionDepth(m_passData->m_maxRecursionDepth);
+
+            descriptor.m_pipelineState = m_globalPipelineState.get();
+            descriptor.m_configuration.m_maxPayloadSize = m_passData->m_maxPayloadSize;
+            descriptor.m_configuration.m_maxAttributeSize = m_passData->m_maxAttributeSize;
+            descriptor.m_configuration.m_maxRecursionDepth = m_passData->m_maxRecursionDepth;
+
             for (auto& shaderLib : shaderLibs)
             {
-                descriptor.ShaderLibrary(shaderLib.m_pipelineStateDescriptor);
+                RHI::RayTracingShaderLibrary& shaderLibrary = descriptor.m_shaderLibraries.emplace_back();
+                shaderLibrary.m_descriptor = shaderLib.m_pipelineStateDescriptor;
+
                 if (!shaderLib.m_rayGenerationShaderName.IsEmpty())
                 {
-                    descriptor.RayGenerationShaderName(AZ::Name{ m_passData->m_rayGenerationShaderName });
+                    shaderLibrary.m_rayGenerationShaderName = Name(m_passData->m_rayGenerationShaderName);
                 }
                 if (!shaderLib.m_closestHitShaderName.IsEmpty())
                 {
-                    descriptor.ClosestHitShaderName(AZ::Name{ m_passData->m_closestHitShaderName });
+                    shaderLibrary.m_closestHitShaderName = Name(m_passData->m_closestHitShaderName);
                 }
                 if (!shaderLib.m_closestHitProceduralShaderName.IsEmpty())
                 {
-                    descriptor.ClosestHitShaderName(AZ::Name{ m_passData->m_closestHitProceduralShaderName });
+                    shaderLibrary.m_closestHitShaderName = Name(m_passData->m_closestHitProceduralShaderName);
                 }
                 if (!shaderLib.m_missShaderName.IsEmpty())
                 {
-                    descriptor.MissShaderName(AZ::Name{ m_passData->m_missShaderName });
+                    shaderLibrary.m_missShaderName = Name(m_passData->m_missShaderName);
                 }
             }
-            descriptor.HitGroup(AZ::Name("HitGroup"))->ClosestHitShaderName(AZ::Name(m_passData->m_closestHitShaderName.c_str()));
+
+            descriptor.AddHitGroup(Name("HitGroup"), Name(m_passData->m_closestHitShaderName));
 
             RayTracingFeatureProcessor* rayTracingFeatureProcessor =
                 GetScene() ? GetScene()->GetFeatureProcessor<RayTracingFeatureProcessor>() : nullptr;
@@ -208,12 +212,9 @@ namespace AZ
                     auto shaderVariant{ it->m_intersectionShader->GetVariant(AZ::RPI::ShaderAsset::RootShaderVariantStableId) };
                     AZ::RHI::PipelineStateDescriptorForRayTracing pipelineStateDescriptor;
                     shaderVariant.ConfigurePipelineState(pipelineStateDescriptor);
-                    descriptor.ShaderLibrary(pipelineStateDescriptor);
-                    descriptor.IntersectionShaderName(it->m_intersectionShaderName);
 
-                    descriptor.HitGroup(it->m_name)
-                        ->ClosestHitShaderName(AZ::Name(m_passData->m_closestHitProceduralShaderName))
-                        ->IntersectionShaderName(it->m_intersectionShaderName);
+                    descriptor.AddIntersectionShaderLibrary(pipelineStateDescriptor, it->m_intersectionShaderName);
+                    descriptor.AddHitGroup(it->m_name, Name(m_passData->m_closestHitProceduralShaderName), it->m_intersectionShaderName);
                 }
             }
 
