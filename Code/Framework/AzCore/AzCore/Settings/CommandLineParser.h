@@ -29,7 +29,7 @@ namespace AZ::Settings
 
 namespace AZ::Settings::Platform
 {
-    CommandLineOptionPrefixArray GetDefaultOptionPrefixes();
+    AZCORE_API CommandLineOptionPrefixArray GetDefaultOptionPrefixes();
 }
 
 namespace AZ::Settings
