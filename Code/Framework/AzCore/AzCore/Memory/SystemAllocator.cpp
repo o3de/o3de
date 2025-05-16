@@ -113,7 +113,16 @@ namespace AZ
  #endif
     }
 
-
+#if defined(CARBONATED)
+    SystemAllocator::size_type SystemAllocator::NumUsedBytes() const
+    {
+#if (AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_MALLOC)
+        return SystemAllocatorPrivate::g_AllocatedBytes;
+#else
+        return m_subAllocator->NumUsedBytes();
+#endif
+    }
+#endif
     //=========================================================================
     // Allocate
     // [9/2/2009]
@@ -129,6 +138,12 @@ namespace AZ
         AZ_Assert((alignment & (alignment - 1)) == 0, "Alignment must be power of 2!");
 
 #if (AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_MALLOC)
+#if defined(CARBONATED)
+        if (alignment == 0)  // Windows produces an error if the alignment is zero
+        {
+            alignment = 1;
+        }
+#endif
         AllocateAddress address(AZ_OS_MALLOC(byteSize, alignment), byteSize);
         if (address)
         {
@@ -169,6 +184,13 @@ namespace AZ
     auto SystemAllocator::deallocate(pointer ptr, size_type byteSize, [[maybe_unused]] size_type alignment) -> size_type
     {
         #if (AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_MALLOC)
+#if defined(CARBONATED)
+            if (ptr == nullptr)
+            {
+                AZ_Assert(byteSize == 0, "SystemAllocator: Deallocating nullptr with non-zero size %u", byteSize);
+                return byteSize;
+            }
+#endif
             AZ_PROFILE_MEMORY_FREE(MemoryReserved, ptr);
             byteSize = byteSize == 0 ? AZ_OS_MSIZE(ptr, alignment) : byteSize;
             AZ_MEMORY_PROFILE(ProfileDeallocation(ptr, byteSize, alignment, nullptr));
@@ -191,9 +213,18 @@ namespace AZ
     AllocateAddress SystemAllocator::reallocate(pointer ptr, size_type newSize, size_type newAlignment)
     {
         #if (AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_MALLOC)
+#if defined(CARBONATED)
+            if (ptr != nullptr)
+            {
+                AZ_PROFILE_MEMORY_FREE(MemoryReserved, ptr);
+                AZ_Assert(SystemAllocatorPrivate::g_AllocatedBytes >= AZ_OS_MSIZE(ptr, newAlignment), "SystemAllocator: Deallocating more memory than allocated!");
+                SystemAllocatorPrivate::g_AllocatedBytes -= AZ_OS_MSIZE(ptr, newAlignment);
+            }
+#else
             AZ_PROFILE_MEMORY_FREE(MemoryReserved, ptr);
             AZ_Assert(SystemAllocatorPrivate::g_AllocatedBytes >= AZ_OS_MSIZE(ptr, newAlignment), "SystemAllocator: Deallocating more memory than allocated!");
             SystemAllocatorPrivate::g_AllocatedBytes -= AZ_OS_MSIZE(ptr, newAlignment);
+#endif
             AllocateAddress newAddress(AZ_OS_REALLOC(ptr, newSize, newAlignment), newSize);
             if (newAddress)
             {

@@ -129,9 +129,14 @@ namespace AZ
         {
 #if defined(CARBONATED)
             AZ_MEMORY_PROFILE(ProfileReallocationBegin(ptr));
-#endif
-
+            if (newAlignment == 0)  // Windows produces an error if the alignment is zero
+            {
+                newAlignment = 1;
+            }
+            const size_type oldAllocatedSize = (ptr != nullptr) ? get_allocated_size(ptr, 1) : 0;
+#else
             const size_type oldAllocatedSize = get_allocated_size(ptr, 1);
+#endif
             AllocateAddress newAddress = AZ::AllocatorInstance<Parent>::Get().reallocate(ptr, newSize, newAlignment);
             // The reallocation might have clamped the newSize to be at least the minimum allocation size
             // used by the parent schema. For example the HphaSchemaBase has a minimum allocation size of 8 bytes
