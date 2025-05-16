@@ -425,8 +425,9 @@ namespace AzToolsFramework
             const auto& selectedIndexes = selected.indexes();
             if (!selectedIndexes.empty())
             {
-                const auto newRootIndex = m_thumbnailViewProxyModel->mapFromSource(
-                    m_assetFilterModel->mapFromSource(treeViewFilterModel->mapToSource(selectedIndexes[0])));
+                const auto indexInSourceModel = treeViewFilterModel->mapToSource(selectedIndexes[0]);
+                const auto indexInFilterModel = m_assetFilterModel->mapFromSource(indexInSourceModel);
+                const auto newRootIndex = m_thumbnailViewProxyModel->mapFromSource(indexInFilterModel);
                 m_thumbnailViewWidget->setRootIndex(newRootIndex);
             }
             else

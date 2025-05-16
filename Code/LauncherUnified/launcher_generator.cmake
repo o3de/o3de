@@ -69,6 +69,7 @@ foreach(project_name project_path IN ZIP_LISTS O3DE_PROJECTS_NAME launcher_gener
         if(PAL_TRAIT_BUILD_HOST_TOOLS)
             add_custom_target(${project_name}.Assets
                 COMMENT "Processing ${project_name} assets..."
+                USES_TERMINAL # Do not buffer output of run command
                 COMMAND "${CMAKE_COMMAND}"
                     -DLY_LOCK_FILE=$<GENEX_EVAL:$<TARGET_FILE_DIR:AZ::AssetProcessorBatch>>/project_assets.lock
                     -P ${LY_ROOT_FOLDER}/cmake/CommandExecution.cmake

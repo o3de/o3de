@@ -175,7 +175,7 @@ namespace O3DE::ProjectManager
         {
             m_dependingGemsSpacer->changeSize(0, 20, QSizePolicy::Fixed, QSizePolicy::Fixed);
             m_dependingGems->show();
-            m_dependingGems->Update(tr("Depending Gems"), tr("The following Gems will be automatically enabled with this Gem."), dependingGemTags);
+            m_dependingGems->Update(tr("Gem Dependencies"), tr("Enabling this Gem will automatically enable the following Gems."), dependingGemTags);
         }
         else
         {

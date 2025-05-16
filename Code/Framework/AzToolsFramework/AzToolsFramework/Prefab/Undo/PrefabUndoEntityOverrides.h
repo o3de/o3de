@@ -40,7 +40,7 @@ namespace AzToolsFramework::Prefab
         void CaptureAndRedo(
             const AZStd::vector<const AZ::Entity*>& entityList,
             Instance& owningInstance,
-            const Instance& focusedInstance);
+            Instance& focusedInstance);
 
     private:
         // The function to update link during undo and redo.

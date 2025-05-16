@@ -187,6 +187,8 @@ namespace AzToolsFramework
         AZ::Crc32 m_savedKeySeed;
 
         AZ::DocumentPropertyEditor::ReflectionAdapter::PropertyChangeEvent::Handler m_propertyChangeHandler;
+
+        bool m_preventDataAccess = false;
     };
 
 } // namespace AzToolsFramework

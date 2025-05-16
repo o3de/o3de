@@ -33,8 +33,6 @@ namespace AZ
 
             Data::Instance<RPI::Shader> GetShader() const;
 
-            void SetFeatureProcessor(SkinnedMeshFeatureProcessor* m_skinnedMeshFeatureProcessor);
-
         private:
             void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph) override;
             void BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context) override;
@@ -43,7 +41,7 @@ namespace AZ
             void OnShaderReinitialized(const RPI::Shader& shader) override;
             void OnShaderVariantReinitialized(const RPI::ShaderVariant& shaderVariant) override;
 
-            SkinnedMeshFeatureProcessor* m_skinnedMeshFeatureProcessor = nullptr;
+            SkinnedMeshFeatureProcessor* GetSkinnedMeshFeatureProcessor();
         };
     }
 }

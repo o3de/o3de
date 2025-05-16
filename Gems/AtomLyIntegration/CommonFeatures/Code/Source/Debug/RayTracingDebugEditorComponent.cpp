@@ -38,7 +38,9 @@ namespace AZ::Render
                     ->ClassElement(Edit::ClassElements::EditorData, "")
                         ->Attribute(Edit::Attributes::AutoExpand, true)
                     ->DataElement(Edit::UIHandlers::Default, &RayTracingDebugComponentController::m_configuration, "Configuration", "")
-                        ->Attribute(Edit::Attributes::Visibility, Edit::PropertyVisibility::ShowChildrenOnly)
+                        ->Attribute(Edit::Attributes::Visibility, &RayTracingDebugComponentController::IsRayTracingSupported)
+                    ->UIElement(Edit::UIHandlers::LineEdit, "Ray Tracing is not supported on this device.")
+                        ->Attribute(Edit::Attributes::Visibility, &RayTracingDebugComponentController::IsRayTracingNotSupported)
                 ;
 
                 editContext->Class<RayTracingDebugComponentConfig>("RayTracingDebugComponentConfig", "")

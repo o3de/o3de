@@ -86,7 +86,7 @@ namespace AzToolsFramework
             AZTF_API void UpdateEntitiesAsOverrides(
                 const AZStd::vector<const AZ::Entity*>& entityList,
                 Instance& owningInstance,
-                const Instance& focusedInstance,
+                Instance& focusedInstance,
                 UndoSystem::URSequencePoint* undoBatch);
 
             //! Helper function for deleting entities and update parents to prefab template with undo-redo support.

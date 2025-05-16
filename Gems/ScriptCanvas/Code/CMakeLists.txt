@@ -16,6 +16,10 @@ set(SCRIPT_CANVAS_EXECUTION_NOTIFICATION_DEFINES
     $<$<NOT:$<CONFIG:Release>>:SC_EXECUTION_TRACE_ENABLED> # this is REQUIRED for debugging/execution logging
 )
 
+# note that the above define controls whether the debug static library has member variables in its classes, in its API,
+# and thus must be transmitted to all users of the static library or else the sizeof the structs will mismatch.
+# It must thus be an INTERFACE or PUBLIC compile definition
+
 set(SCRIPT_CANVAS_DEBUG_DEBUGGER_DEFINES
 $<$<NOT:$<CONFIG:Release>>:
 #   SCRIPT_CANVAS_DEBUGGER_IS_ALWAYS_OBSERVING # for aggressive logging that ignores filtering (probably only for debug/development purposes)
@@ -36,10 +40,10 @@ ly_add_target(
     COMPILE_DEFINITIONS
         PUBLIC
             SCRIPTCANVAS_ERRORS_ENABLED
+            ${SCRIPT_CANVAS_EXECUTION_NOTIFICATION_DEFINES}
         PRIVATE
             ${SCRIPT_CANVAS_COMMON_DEFINES}
             ${SCRIPT_CANVAS_DEBUG_DEBUGGER_DEFINES}
-            ${SCRIPT_CANVAS_EXECUTION_NOTIFICATION_DEFINES}
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AzCore
@@ -86,10 +90,10 @@ ly_add_target(
     COMPILE_DEFINITIONS
         PUBLIC
             SCRIPTCANVAS_ERRORS_ENABLED
+            ${SCRIPT_CANVAS_EXECUTION_NOTIFICATION_DEFINES}
         PRIVATE
             ${SCRIPT_CANVAS_COMMON_DEFINES}
             ${SCRIPT_CANVAS_DEBUG_DEBUGGER_DEFINES}
-            ${SCRIPT_CANVAS_EXECUTION_NOTIFICATION_DEFINES}
     BUILD_DEPENDENCIES
         PUBLIC
             Gem::ScriptEvents.Static

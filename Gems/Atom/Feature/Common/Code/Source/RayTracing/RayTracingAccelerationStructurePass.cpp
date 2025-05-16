@@ -27,7 +27,8 @@ namespace AZ
     {
         RPI::Ptr<RayTracingAccelerationStructurePass> RayTracingAccelerationStructurePass::Create(const RPI::PassDescriptor& descriptor)
         {
-            RPI::Ptr<RayTracingAccelerationStructurePass> rayTracingAccelerationStructurePass = aznew RayTracingAccelerationStructurePass(descriptor);
+            RPI::Ptr<RayTracingAccelerationStructurePass> rayTracingAccelerationStructurePass =
+                aznew RayTracingAccelerationStructurePass(descriptor);
             return AZStd::move(rayTracingAccelerationStructurePass);
         }
 
@@ -95,8 +96,7 @@ namespace AZ
                     break;
                 case RPI::ScopeQueryType::PipelineStatistics:
                     query = RPI::GpuQuerySystemInterface::Get()->CreateQuery(
-                        RHI::QueryType::PipelineStatistics, RHI::QueryPoolScopeAttachmentType::Global,
-                        RHI::ScopeAttachmentAccess::Write);
+                        RHI::QueryType::PipelineStatistics, RHI::QueryPoolScopeAttachmentType::Global, RHI::ScopeAttachmentAccess::Write);
                     break;
                 }
 
@@ -161,19 +161,22 @@ namespace AZ
                         AZ::RHI::AttachmentId tlasAttachmentId = rayTracingFeatureProcessor->GetTlasAttachmentId();
                         if (frameGraph.GetAttachmentDatabase().IsAttachmentValid(tlasAttachmentId) == false)
                         {
-                            [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportBuffer(tlasAttachmentId, rayTracingTlasBuffer);
+                            [[maybe_unused]] RHI::ResultCode result =
+                                frameGraph.GetAttachmentDatabase().ImportBuffer(tlasAttachmentId, rayTracingTlasBuffer);
                             AZ_Assert(result == RHI::ResultCode::Success, "Failed to import ray tracing TLAS buffer with error %d", result);
                         }
 
                         uint32_t tlasBufferByteCount = aznumeric_cast<uint32_t>(rayTracingTlasBuffer->GetDescriptor().m_byteCount);
-                        RHI::BufferViewDescriptor tlasBufferViewDescriptor = RHI::BufferViewDescriptor::CreateRayTracingTLAS(tlasBufferByteCount);
+                        RHI::BufferViewDescriptor tlasBufferViewDescriptor =
+                            RHI::BufferViewDescriptor::CreateRayTracingTLAS(tlasBufferByteCount);
 
                         RHI::BufferScopeAttachmentDescriptor desc;
                         desc.m_attachmentId = tlasAttachmentId;
                         desc.m_bufferViewDescriptor = tlasBufferViewDescriptor;
                         desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::DontCare;
 
-                        frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::Write, RHI::ScopeAttachmentStage::RayTracingShader);
+                        frameGraph.UseShaderAttachment(
+                            desc, RHI::ScopeAttachmentAccess::Write, RHI::ScopeAttachmentStage::RayTracingShader);
                     }
                 }
 
@@ -181,10 +184,24 @@ namespace AZ
                 // the skinning pass has finished. We assume that the pipeline has a skinning pass with this output available.
                 if (rayTracingFeatureProcessor->GetSkinnedMeshCount() > 0)
                 {
-                    auto skinningPassPtr = FindAdjacentPass(AZ::Name("SkinningPass"));
+                    RHI::Ptr<RPI::Pass> skinningPassPtr;
+                    for (const auto& sibling : m_parent->GetChildren())
+                    {
+                        if (sibling->GetPassTemplate() && sibling->GetPassTemplate()->m_name == AZ::Name{ "SkinningPassTemplate" } &&
+                            sibling->GetDeviceIndex() == Pass::GetDeviceIndex())
+                        {
+                            skinningPassPtr = sibling;
+                            break;
+                        }
+                    }
+                    AZ_Assert(skinningPassPtr, "Failed to find SkinningPass");
                     auto skinnedMeshOutputStreamBindingPtr = skinningPassPtr->FindAttachmentBinding(AZ::Name("SkinnedMeshOutputStream"));
-                    [[maybe_unused]] auto result = frameGraph.UseShaderAttachment(skinnedMeshOutputStreamBindingPtr->m_unifiedScopeDesc.GetAsBuffer(), RHI::ScopeAttachmentAccess::Read, RHI::ScopeAttachmentStage::RayTracingShader);
-                    AZ_Assert(result == AZ::RHI::ResultCode::Success, "Failed to attach SkinnedMeshOutputStream buffer with error %d", result);
+                    [[maybe_unused]] auto result = frameGraph.UseShaderAttachment(
+                        skinnedMeshOutputStreamBindingPtr->m_unifiedScopeDesc.GetAsBuffer(),
+                        RHI::ScopeAttachmentAccess::Read,
+                        RHI::ScopeAttachmentStage::RayTracingShader);
+                    AZ_Assert(
+                        result == AZ::RHI::ResultCode::Success, "Failed to attach SkinnedMeshOutputStream buffer with error %d", result);
                 }
 
                 AddScopeQueryToFrameGraph(frameGraph);
@@ -348,7 +365,7 @@ namespace AZ
         {
             const auto addToFrameGraph = [&frameGraph](RHI::Ptr<RPI::Query> query)
             {
-              query->AddToFrameGraph(frameGraph);
+                query->AddToFrameGraph(frameGraph);
             };
 
             ExecuteOnTimestampQuery(addToFrameGraph);
@@ -359,15 +376,16 @@ namespace AZ
         {
             const auto beginQuery = [&context, this](RHI::Ptr<RPI::Query> query)
             {
-              if (query->BeginQuery(context) == RPI::QueryResultCode::Fail)
-              {
-                  AZ_UNUSED(this); // Prevent unused warning in release builds
-                  AZ_WarningOnce(
-                      "RayTracingAccelerationStructurePass", false,
-                      "BeginScopeQuery failed. Make sure AddScopeQueryToFrameGraph was called in SetupFrameGraphDependencies"
-                      " for this pass: %s",
-                      this->RTTI_GetTypeName());
-              }
+                if (query->BeginQuery(context) == RPI::QueryResultCode::Fail)
+                {
+                    AZ_UNUSED(this); // Prevent unused warning in release builds
+                    AZ_WarningOnce(
+                        "RayTracingAccelerationStructurePass",
+                        false,
+                        "BeginScopeQuery failed. Make sure AddScopeQueryToFrameGraph was called in SetupFrameGraphDependencies"
+                        " for this pass: %s",
+                        this->RTTI_GetTypeName());
+                }
             };
 
             ExecuteOnTimestampQuery(beginQuery);
@@ -378,7 +396,7 @@ namespace AZ
         {
             const auto endQuery = [&context](const RHI::Ptr<RPI::Query>& query)
             {
-              query->EndQuery(context);
+                query->EndQuery(context);
             };
 
             // This scope query implementation should be replaced by the feature linked below on GitHub:
@@ -406,5 +424,5 @@ namespace AZ
                     query->GetLatestResult(&m_statisticsResult, sizeof(RPI::PipelineStatisticsResult), m_lastDeviceIndex);
                 });
         }
-    }   // namespace RPI
-}   // namespace AZ
+    } // namespace Render
+} // namespace AZ

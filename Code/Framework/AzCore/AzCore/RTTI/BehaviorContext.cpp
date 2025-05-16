@@ -337,6 +337,151 @@ namespace AZ
         }
     }
 
+    bool BehaviorProperty::SetGetterImpl(bool isClassType, BehaviorClass* currentClass)
+    {
+        if (isClassType)
+        {
+            AZ_Assert(currentClass, "We should declare class property with in the class!");
+
+            // check getter to have only return value (and this pointer)
+            if (m_getter->GetNumArguments() != 1 || m_getter->GetArgument(0)->m_typeId != currentClass->m_typeId)
+            {
+                AZ_Assert(false, "Member Getter can't have any argument but thisPointer and just return type!");
+                delete m_getter;
+                m_getter = nullptr;
+                return false;
+            }
+
+            // assure that TR_THIS_PTR is set on the first parameter
+            m_getter->OverrideParameterTraits(0, AZ::BehaviorParameter::TR_THIS_PTR, 0);
+        }
+        else
+        {
+            // check getter to have only return value
+            if (m_getter->GetNumArguments() > 0)
+            {
+                bool isValidSignature = false;
+                if (currentClass && m_getter->GetNumArguments() == 1)
+                {
+                    AZ::TypeId thisPtrType = m_getter->GetArgument(0)->m_typeId;
+                    // Check that the class is either the same as the first argument, or they are convertible
+                    if (currentClass->m_azRtti)
+                    {
+                        isValidSignature = currentClass->m_azRtti->IsTypeOf(thisPtrType);
+                    }
+                    else
+                    {
+                        // No rtti, need to ensure types are the same
+                        isValidSignature = thisPtrType == currentClass->m_typeId;
+                    }
+                }
+
+                // assure that TR_THIS_PTR is set on the first parameter
+                m_getter->OverrideParameterTraits(0, AZ::BehaviorParameter::TR_THIS_PTR, 0);
+
+                if (!isValidSignature)
+                {
+                    AZ_Assert(false, "Getter can't have any argument just return type: %s!", currentClass->m_name.c_str());
+                    delete m_getter;
+                    m_getter = nullptr;
+                    return false;
+                }
+
+                // assure that TR_THIS_PTR is set on the first parameter
+                m_getter->OverrideParameterTraits(0, AZ::BehaviorParameter::TR_THIS_PTR, 0);
+            }
+        }
+        return true;
+    }
+
+    bool BehaviorProperty::SetSetterImpl(bool isClassType, BehaviorClass* currentClass)
+    {
+        if (isClassType)
+        {
+            AZ_Assert(currentClass, "We should declare class property with in the class!");
+
+            // check setter have only 1 argument + 1 this pointer
+            if (m_setter->GetNumArguments() != 2 || m_setter->GetArgument(0)->m_typeId != currentClass->m_typeId)
+            {
+                AZ_Assert(false, "Member Setter should have 2 arguments, thisPointer and dataValue to be set!");
+                delete m_setter;
+                m_setter = nullptr;
+                return false;
+            }
+            // check getter result type is equal to setter input type
+            if (m_getter && m_getter->GetResult()->m_typeId != m_setter->GetArgument(1)->m_typeId)
+            {
+                AZStd::string getterType, setterType;
+                m_getter->GetResult()->m_typeId.ToString(getterType);
+                m_setter->GetArgument(1)->m_typeId.ToString(setterType);
+                AZ_Assert(
+                    false,
+                    "Getter return type and Setter input argument should be the same type! (getter: %s, setter: %s)",
+                    getterType.c_str(),
+                    setterType.c_str());
+                delete m_setter;
+                m_setter = nullptr;
+                return false;
+            }
+
+            // assure that TR_THIS_PTR is set on the first parameter
+            m_setter->OverrideParameterTraits(0, AZ::BehaviorParameter::TR_THIS_PTR, 0);
+        }
+        else
+        {
+            size_t valueIndex = 0;
+            // check setter have only 1 argument
+            if (m_setter->GetNumArguments() != 1)
+            {
+                bool isValidSignature = false;
+                if (currentClass && m_setter->GetNumArguments() == 2)
+                {
+                    AZ::TypeId thisPtrType = m_setter->GetArgument(0)->m_typeId;
+                    // Check that the class is either the same as the first argument, or they are convertible
+                    if (currentClass->m_azRtti)
+                    {
+                        isValidSignature = currentClass->m_azRtti->IsTypeOf(thisPtrType);
+                    }
+                    else
+                    {
+                        // No rtti, need to ensure types are the same
+                        isValidSignature = thisPtrType == currentClass->m_typeId;
+                    }
+                }
+
+                if (!isValidSignature)
+                {
+                    AZ_Assert(false, "Setter should have 1 argument, data value to be set!");
+                    delete m_setter;
+                    m_setter = nullptr;
+                    return false;
+                }
+
+                // it's ok as this is a different way to represent a member function
+                valueIndex = 1; // since this pointer is at 0
+
+                // assure that TR_THIS_PTR is set on the first parameter
+                m_setter->OverrideParameterTraits(0, AZ::BehaviorParameter::TR_THIS_PTR, 0);
+            }
+
+            // check getter result type is equal to setter input type
+            if (m_getter && m_getter->GetResult()->m_typeId != m_setter->GetArgument(valueIndex)->m_typeId)
+            {
+                AZStd::string getterType, setterType;
+                m_getter->GetResult()->m_typeId.ToString(getterType);
+                m_setter->GetArgument(valueIndex)->m_typeId.ToString(setterType);
+                AZ_Assert(
+                    false,
+                    "Getter return type and Setter input argument should be the same type! (getter: %s, setter: %s)",
+                    getterType.c_str(),
+                    setterType.c_str());
+                delete m_setter;
+                m_setter = nullptr;
+                return false;
+            }
+        }
+        return true;
+    }
 
     // BehaviorMethod legacy Call forwarder
     bool BehaviorMethod::Call(BehaviorArgument* arguments, unsigned int numArguments, BehaviorArgument* result) const
@@ -835,6 +980,73 @@ namespace AZ
         }
     }
 
+    BehaviorEBus* BehaviorContext::BuildBehaviorEBus(const char* name, const char* deprecatedName, const char* toolTip)
+    {
+        // should we require AzTypeInfo for EBus, technically we should if we want to work around the compiler issue that made us to do it
+        // in first place
+        if (IsRemovingReflection())
+        {
+            auto ebusIt = m_ebuses.find(name);
+            if (ebusIt != m_ebuses.end())
+            {
+                BehaviorContextBus::Event(this, &BehaviorContextBus::Events::OnRemoveEBus, name, ebusIt->second);
+
+                // Erase the deprecated name as well
+                auto deprecatedIt = m_ebuses.find(ebusIt->second->m_deprecatedName);
+                if (deprecatedIt != m_ebuses.end())
+                {
+                    m_ebuses.erase(deprecatedIt);
+                }
+
+                delete ebusIt->second;
+                m_ebuses.erase(ebusIt);
+            }
+
+            return nullptr;
+        }
+        else
+        {
+            AZ_Error(
+                "BehaviorContext",
+                m_ebuses.find(name) == m_ebuses.end(),
+                "You shouldn't reflect an EBus multiple times (%s), subsequent reflections will not be registered!",
+                name);
+
+            BehaviorEBus* behaviorEBus = aznew BehaviorEBus();
+            behaviorEBus->m_name = name;
+
+            if (toolTip != nullptr)
+            {
+                behaviorEBus->m_toolTip = toolTip;
+            }
+
+            /*
+            ** If we have a deprecated name, lets make sure the its not in use as an existing bus.
+            */
+
+            if (deprecatedName != nullptr)
+            {
+                if (*deprecatedName == '\0')
+                {
+                    AZ_Warning("BehaviorContext", false, "Deprecated name can't be a empty string!", deprecatedName);
+                }
+                else if (m_ebuses.find(deprecatedName) != m_ebuses.end())
+                {
+                    AZ_Warning(
+                        "BehaviorContext",
+                        false,
+                        "EBus %s is attempting to use the deprecated name (%s) that is already used! Ignored!",
+                        name,
+                        deprecatedName);
+                }
+                else
+                {
+                    behaviorEBus->m_deprecatedName = deprecatedName;
+                }
+            }
+            return behaviorEBus;
+        }
+    }
 
     //=========================================================================
     // BehaviorClass

@@ -21,6 +21,7 @@ libxkbcommon-dev                        # For xcb keyboard input
 libxcb-xfixes0-dev                      # For mouse input
 libxcb-xinput-dev                       # For mouse input
 libxcb-image0-dev                       # For xcb image support
+libxcb-randr0-dev                       # For xcb display info
 xxd
 zlib1g-dev
 mesa-common-dev

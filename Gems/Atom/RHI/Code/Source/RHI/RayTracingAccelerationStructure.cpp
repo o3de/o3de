@@ -302,13 +302,16 @@ namespace AZ::RHI
             [this, &descriptor, &rayTracingBufferPools, &resultCode](int deviceIndex)
             {
                 auto device = RHISystemInterface::Get()->GetDevice(deviceIndex);
-                auto deviceRayTracingTlas{Factory::Get().CreateRayTracingTlas()};
-                this->m_deviceObjects[deviceIndex] = deviceRayTracingTlas;
+                if (!m_deviceObjects.contains(deviceIndex))
+                {
+                    this->m_deviceObjects[deviceIndex] = Factory::Get().CreateRayTracingTlas().get();
+                }
 
                 auto deviceDescriptor{ descriptor->GetDeviceRayTracingTlasDescriptor(deviceIndex) };
 
-                resultCode = deviceRayTracingTlas->CreateBuffers(
-                    *device, &deviceDescriptor, *rayTracingBufferPools.GetDeviceRayTracingBufferPools(deviceIndex).get());
+                resultCode = GetDeviceRayTracingTlas(deviceIndex)
+                                 ->CreateBuffers(
+                                     *device, &deviceDescriptor, *rayTracingBufferPools.GetDeviceRayTracingBufferPools(deviceIndex).get());
                 return resultCode == ResultCode::Success;
             });
 
