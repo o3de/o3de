@@ -144,11 +144,11 @@ namespace AZ
                 AZStd::shared_ptr<RHI::RayTracingShaderTableDescriptor> descriptor = AZStd::make_shared<RHI::RayTracingShaderTableDescriptor>();
 
                 // build the ray tracing shader table descriptor
-                descriptor->Build(AZ::Name("RayTracingShaderTable"), m_rayTracingPipelineState)
-                    ->RayGenerationRecord(AZ::Name("RayGen"))
-                    ->MissRecord(AZ::Name("Miss"))
-                    ->HitGroupRecord(AZ::Name("HitGroup"))
-                ;
+                descriptor->m_name = Name("RayTracingShaderTable");
+                descriptor->m_rayTracingPipelineState = m_rayTracingPipelineState;
+                descriptor->m_rayGenerationRecord.emplace_back(Name("RayGen"));
+                descriptor->m_missRecords.emplace_back(Name("Miss"));
+                descriptor->m_hitGroupRecords.emplace_back(Name("HitGroup"));
 
                 m_rayTracingShaderTable->Build(descriptor);
             }

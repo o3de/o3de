@@ -499,18 +499,19 @@ namespace AZ
                 if (rayTracingFeatureProcessor->HasGeometry())
                 {
                     // build the ray tracing shader table descriptor
-                    RHI::RayTracingShaderTableDescriptor* descriptorBuild = descriptor->Build(AZ::Name("RayTracingShaderTable"), m_rayTracingPipelineState)
-                        ->RayGenerationRecord(AZ::Name(m_passData->m_rayGenerationShaderName.c_str()))
-                        ->MissRecord(AZ::Name(m_passData->m_missShaderName.c_str()));
+                    descriptor->m_name = Name("RayTracingShaderTable");
+                    descriptor->m_rayTracingPipelineState = m_rayTracingPipelineState;
+                    descriptor->m_rayGenerationRecord.emplace_back(Name(m_passData->m_rayGenerationShaderName));
+                    descriptor->m_missRecords.emplace_back(Name(m_passData->m_missShaderName));
 
                     // add a hit group for standard meshes mesh to the shader table
-                    descriptorBuild->HitGroupRecord(AZ::Name("HitGroup"));
+                    descriptor->m_hitGroupRecords.emplace_back(Name("HitGroup"));
 
                     // add a hit group for each procedural geometry type to the shader table
                     const auto& proceduralGeometryTypes = rayTracingFeatureProcessor->GetProceduralGeometryTypes();
                     for (auto it = proceduralGeometryTypes.cbegin(); it != proceduralGeometryTypes.cend(); ++it)
                     {
-                        descriptorBuild->HitGroupRecord(it->m_name);
+                        descriptor->m_hitGroupRecords.emplace_back(it->m_name);
                         // TODO(intersection): Set per-hitgroup SRG once RayTracingPipelineState supports local root signatures
                     }
                 }
