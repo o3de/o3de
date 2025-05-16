@@ -794,8 +794,6 @@ set(FILES
     ToolsComponents/EditorInspectorComponentBus.h
     ToolsComponents/EditorLockComponent.cpp
     ToolsComponents/EditorLockComponent.h
-    ToolsComponents/EditorLockComponentBus.cpp
-    ToolsComponents/EditorLockComponentBus.h
     ToolsComponents/EditorNonUniformScaleComponent.cpp
     ToolsComponents/EditorNonUniformScaleComponent.h
     ToolsComponents/EditorNonUniformScaleComponentMode.cpp
@@ -1160,4 +1158,12 @@ set(SKIP_UNITY_BUILD_INCLUSION_FILES
     # The following files are skipped from unity to avoid duplicated symbols related to an ebus
     AzToolsFrameworkModule.cpp
     Application/ToolsApplication.cpp
+    ComponentMode/EditorComponentModeBus.cpp
+    ComponentMode/EditorComponentModeBus.h
+    ToolsComponents/EditorComponentBus.cpp
+    ToolsComponents/EditorComponentBus.h
+    ToolsComponents/EditorLockComponentBus.cpp
+    ToolsComponents/EditorLockComponentBus.h
+    ToolsComponents/EditorSelectionAccentSystemComponent.cpp
+    ToolsComponents/EditorSelectionAccentSystemComponent.h
 )

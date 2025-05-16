@@ -63,8 +63,6 @@ set(FILES
     Asset/AssetSeedList.h
 	Asset/AssetSystemBus.cpp
     Asset/AssetSystemBus.h
-    Asset/AssetSystemComponent.cpp
-    Asset/AssetSystemComponent.h
     Asset/AssetSystemComponentHelper.cpp
     Asset/AssetSystemTypes.h
     Asset/CustomAssetTypeComponent.cpp
@@ -546,3 +544,9 @@ set(FILES
     AzFrameworkModule.cpp
     AzFrameworkModule.h
 )
+
+set(SKIP_UNITY_BUILD_INCLUSION_FILES
+    Asset/AssetSystemComponent.cpp
+    Asset/AssetSystemComponent.h
+)
+
