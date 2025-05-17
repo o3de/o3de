@@ -7,13 +7,14 @@
 #
 
 set(FILES
+    AzFrameworkAPI.h
     API/ApplicationAPI.cpp
     API/ApplicationAPI.h
     Application/Application.cpp
     Application/Application.h
     Archive/Archive.cpp
     Archive/Archive.h
-	Archive/ArchiveBus.cpp
+    Archive/ArchiveBus.cpp
     Archive/ArchiveBus.h
     Archive/ArchiveFileIO.cpp
     Archive/ArchiveFileIO.h
@@ -51,7 +52,7 @@ set(FILES
     Asset/AssetBundleManifest.h
     Asset/AssetCatalog.cpp
     Asset/AssetCatalog.h
-	Asset/AssetCatalogBus.cpp
+    Asset/AssetCatalogBus.cpp
     Asset/AssetCatalogBus.h
     Asset/AssetCatalogComponent.cpp
     Asset/AssetCatalogComponent.h
@@ -61,7 +62,7 @@ set(FILES
     Asset/AssetRegistry.h
     Asset/AssetSeedList.cpp
     Asset/AssetSeedList.h
-	Asset/AssetSystemBus.cpp
+    Asset/AssetSystemBus.cpp
     Asset/AssetSystemBus.h
     Asset/AssetSystemComponentHelper.cpp
     Asset/AssetSystemTypes.h
@@ -76,18 +77,18 @@ set(FILES
     Asset/XmlSchemaAsset.cpp
     Asset/XmlSchemaAsset.h
     CommandLine/CommandLine.h
-	CommandLine/CommandRegistrationBus.cpp
+    CommandLine/CommandRegistrationBus.cpp
     CommandLine/CommandRegistrationBus.h
     Components/AzFrameworkConfigurationSystemComponent.cpp
     Components/AzFrameworkConfigurationSystemComponent.h
-	Components/CameraBus.cpp
+    Components/CameraBus.cpp
     Components/CameraBus.h
     Components/ComponentAdapter.h
     Components/ComponentAdapter.inl
     Components/ComponentAdapterHelpers.h
     Components/ConsoleBus.cpp
     Components/ConsoleBus.h
-	Components/DeprecatedComponentsBus.cpp
+    Components/DeprecatedComponentsBus.cpp
     Components/DeprecatedComponentsBus.h
     Components/EditorEntityEvents.h
     Components/NonUniformScaleComponent.cpp
@@ -153,8 +154,8 @@ set(FILES
     Entity/EntityDebugDisplayBus.h
     Entity/EntityOwnershipService.h
     Entity/EntityOwnershipServiceBus.cpp
-	Entity/EntityOwnershipServiceBus.h
-	Entity/GameEntityContextBus.cpp
+    Entity/EntityOwnershipServiceBus.h
+    Entity/GameEntityContextBus.cpp
     Entity/GameEntityContextBus.h
     Entity/GameEntityContextComponent.cpp
     Entity/GameEntityContextComponent.h
@@ -162,11 +163,11 @@ set(FILES
     Entity/SliceEntityOwnershipService.cpp
     Entity/SliceEntityOwnershipService.h
     Entity/SliceEntityOwnershipServiceBus.cpp
-	Entity/SliceEntityOwnershipServiceBus.h
+    Entity/SliceEntityOwnershipServiceBus.h
     Entity/SliceGameEntityOwnershipService.cpp
     Entity/SliceGameEntityOwnershipService.h
     Entity/SliceGameEntityOwnershipServiceBus.cpp
-	Entity/SliceGameEntityOwnershipServiceBus.h
+    Entity/SliceGameEntityOwnershipServiceBus.h
     FileFunc/FileFunc.cpp
     FileFunc/FileFunc.h
     FileTag/FileTag.cpp
@@ -175,34 +176,34 @@ set(FILES
     FileTag/FileTagBus.h
     FileTag/FileTagComponent.cpp
     FileTag/FileTagComponent.h
-#    Font/FontInterface.h
+    Font/FontInterface.h
     Gem/GemInfo.cpp
     Gem/GemInfo.h
-	InGameUI/UiFrameworkBus.cpp
+    InGameUI/UiFrameworkBus.cpp
     InGameUI/UiFrameworkBus.h
     Input/Buses/Notifications/InputChannelNotificationBus.cpp
-	Input/Buses/Notifications/InputChannelNotificationBus.h
+    Input/Buses/Notifications/InputChannelNotificationBus.h
     Input/Buses/Notifications/InputDeviceNotificationBus.cpp
-	Input/Buses/Notifications/InputDeviceNotificationBus.h
-	Input/Buses/Notifications/InputSystemNotificationBus.cpp
+    Input/Buses/Notifications/InputDeviceNotificationBus.h
+    Input/Buses/Notifications/InputSystemNotificationBus.cpp
     Input/Buses/Notifications/InputSystemNotificationBus.h
-	Input/Buses/Notifications/InputTextNotificationBus.cpp
+    Input/Buses/Notifications/InputTextNotificationBus.cpp
     Input/Buses/Notifications/InputTextNotificationBus.h
     Input/Buses/Requests/InputChannelRequestBus.cpp
     Input/Buses/Requests/InputChannelRequestBus.h
     Input/Buses/Requests/InputDeviceRequestBus.cpp
     Input/Buses/Requests/InputDeviceRequestBus.h
     Input/Buses/Requests/InputHapticFeedbackRequestBus.cpp
-	Input/Buses/Requests/InputHapticFeedbackRequestBus.h
-	Input/Buses/Requests/InputLightBarRequestBus.cpp
+    Input/Buses/Requests/InputHapticFeedbackRequestBus.h
+    Input/Buses/Requests/InputLightBarRequestBus.cpp
     Input/Buses/Requests/InputLightBarRequestBus.h
-	Input/Buses/Requests/InputMotionSensorRequestBus.cpp
+    Input/Buses/Requests/InputMotionSensorRequestBus.cpp
     Input/Buses/Requests/InputMotionSensorRequestBus.h
-	Input/Buses/Requests/InputSystemCursorRequestBus.cpp
+    Input/Buses/Requests/InputSystemCursorRequestBus.cpp
     Input/Buses/Requests/InputSystemCursorRequestBus.h
-	Input/Buses/Requests/InputSystemRequestBus.cpp
+    Input/Buses/Requests/InputSystemRequestBus.cpp
     Input/Buses/Requests/InputSystemRequestBus.h
-	Input/Buses/Requests/InputTextEntryRequestBus.cpp
+    Input/Buses/Requests/InputTextEntryRequestBus.cpp
     Input/Buses/Requests/InputTextEntryRequestBus.h
     Input/Channels/InputChannel.cpp
     Input/Channels/InputChannel.h
@@ -287,7 +288,7 @@ set(FILES
     Logging/LoggingComponent.h
     Logging/MissingAssetLogger.cpp
     Logging/MissingAssetLogger.h
-	Logging/MissingAssetNotificationBus.cpp
+    Logging/MissingAssetNotificationBus.cpp
     Logging/MissingAssetNotificationBus.h
     Logging/StartupLogSinkReporter.cpp
     Logging/StartupLogSinkReporter.h
@@ -301,9 +302,9 @@ set(FILES
     Network/SocketConnection.h
     PaintBrush/PaintBrush.cpp
     PaintBrush/PaintBrush.h
-	PaintBrush/PaintBrushNotificationBus.cpp
+    PaintBrush/PaintBrushNotificationBus.cpp
     PaintBrush/PaintBrushNotificationBus.h
-	PaintBrush/PaintBrushSessionBus.cpp
+    PaintBrush/PaintBrushSessionBus.cpp
     PaintBrush/PaintBrushSessionBus.h
     PaintBrush/PaintBrushSettings.cpp
     PaintBrush/PaintBrushSettings.h
@@ -327,7 +328,7 @@ set(FILES
     Physics/Common/PhysicsSimulatedBodyEvents.cpp
     Physics/Common/PhysicsSimulatedBodyEvents.h
     Physics/Common/PhysicsTypes.h
-	Physics/Components/SimulatedBodyComponentBus.cpp
+    Physics/Components/SimulatedBodyComponentBus.cpp
     Physics/Components/SimulatedBodyComponentBus.h
     Physics/Configuration/CollisionConfiguration.cpp
     Physics/Configuration/CollisionConfiguration.h
@@ -367,13 +368,13 @@ set(FILES
     Physics/AnimationConfiguration.h
     Physics/Character.cpp
     Physics/Character.h
-	Physics/CharacterBus.cpp
+    Physics/CharacterBus.cpp
     Physics/CharacterBus.h
-	Physics/CharacterPhysicsDataBus.cpp
+    Physics/CharacterPhysicsDataBus.cpp
     Physics/CharacterPhysicsDataBus.h
     Physics/ClassConverters.cpp
     Physics/ClassConverters.h
-	Physics/ColliderComponentBus.cpp
+    Physics/ColliderComponentBus.cpp
     Physics/ColliderComponentBus.h
     Physics/CollisionBus.cpp
     Physics/CollisionBus.h
@@ -385,22 +386,22 @@ set(FILES
     Physics/PhysicsScene.h
     Physics/PhysicsSystem.h
     Physics/PhysicsSystem.cpp
-	Physics/PropertyTypes.h
+    Physics/PropertyTypes.h
     Physics/Ragdoll.cpp
     Physics/Ragdoll.h
-	Physics/RagdollPhysicsBus.cpp
+    Physics/RagdollPhysicsBus.cpp
     Physics/RagdollPhysicsBus.h
-	Physics/RigidBodyBus.cpp
+    Physics/RigidBodyBus.cpp
     Physics/RigidBodyBus.h
     Physics/Shape.cpp
     Physics/Shape.h
     Physics/ShapeConfiguration.cpp
     Physics/ShapeConfiguration.h
-	Physics/SystemBus.cpp
+    Physics/SystemBus.cpp
     Physics/SystemBus.h
     Physics/Utils.cpp
     Physics/Utils.h
-	Physics/WindBus.cpp
+    Physics/WindBus.cpp
     Physics/WindBus.h
     Platform/PlatformDefaults.h
     Process/ProcessCommon_fwd.h
@@ -415,20 +416,20 @@ set(FILES
     ProjectManager/ProjectManager.h
     Quality/QualityCVarGroup.cpp
     Quality/QualityCVarGroup.h
-	Quality/QualitySystemBus.cpp
+    Quality/QualitySystemBus.cpp
     Quality/QualitySystemBus.h
     Quality/QualitySystemComponent.cpp
     Quality/QualitySystemComponent.h
     Render/GameIntersectorComponent.cpp
     Render/GameIntersectorComponent.h
-	Render/GeometryIntersectionBus.cpp
+    Render/GeometryIntersectionBus.cpp
     Render/GeometryIntersectionBus.h
     Render/GeometryIntersectionStructures.h
     Render/Intersector.cpp
     Render/Intersector.h
     Render/IntersectorInterface.h
-	Render/RenderSystemBus.cpp
-	Render/RenderSystemBus.h
+    Render/RenderSystemBus.cpp
+    Render/RenderSystemBus.h
     Scene/Scene.cpp
     Scene/Scene.h
     Scene/Scene.inl
@@ -437,7 +438,7 @@ set(FILES
     Scene/SceneSystemInterface.h
     Script/ScriptComponent.cpp
     Script/ScriptComponent.h
-	Script/ScriptDebugAgentBus.cpp
+    Script/ScriptDebugAgentBus.cpp
     Script/ScriptDebugAgentBus.h
     Script/ScriptDebugMsgReflection.cpp
     Script/ScriptDebugMsgReflection.h
@@ -445,25 +446,25 @@ set(FILES
     Script/ScriptRemoteDebugging.h
     Script/ScriptRemoteDebuggingConstants.h
     Slice/SliceEntityBus.cpp
-	Slice/SliceEntityBus.h
+    Slice/SliceEntityBus.h
     Slice/SliceInstantiationBus.cpp
-	Slice/SliceInstantiationBus.h
+    Slice/SliceInstantiationBus.h
     Slice/SliceInstantiationTicket.cpp
     Slice/SliceInstantiationTicket.h
     Spawnable/Script/SpawnableScriptAssetRef.cpp
     Spawnable/Script/SpawnableScriptAssetRef.h
-	Spawnable/Script/SpawnableScriptBus.cpp
+    Spawnable/Script/SpawnableScriptBus.cpp
     Spawnable/Script/SpawnableScriptBus.h
     Spawnable/Script/SpawnableScriptMediator.cpp
     Spawnable/Script/SpawnableScriptMediator.h
     Spawnable/Script/SpawnableScriptNotificationsHandler.h
     Spawnable/InMemorySpawnableAssetContainer.cpp
     Spawnable/InMemorySpawnableAssetContainer.h
-	Spawnable/RootSpawnableInterface.cpp
+    Spawnable/RootSpawnableInterface.cpp
     Spawnable/RootSpawnableInterface.h
     Spawnable/Spawnable.cpp
     Spawnable/Spawnable.h
-	Spawnable/SpawnableAssetBus.cpp
+    Spawnable/SpawnableAssetBus.cpp
     Spawnable/SpawnableAssetBus.h
     Spawnable/SpawnableAssetHandler.cpp
     Spawnable/SpawnableAssetHandler.h
@@ -490,7 +491,7 @@ set(FILES
     SurfaceData/SurfaceData.h
     Terrain/TerrainDataRequestBus.cpp
     Terrain/TerrainDataRequestBus.h
-	Thermal/ThermalInfo.cpp
+    Thermal/ThermalInfo.cpp
     Thermal/ThermalInfo.h
     UnitTest/FrameworkTestTypes.h
     UnitTest/TestDebugDisplayRequests.cpp
@@ -519,10 +520,10 @@ set(FILES
     Viewport/ViewportControllerList.h
     Viewport/ViewportId.h
     Viewport/ViewportScreen.cpp
-	Viewport/ViewportScreen.h
+    Viewport/ViewportScreen.h
     Visibility/BoundsBus.cpp
     Visibility/BoundsBus.h
-	Visibility/EntityBoundsUnionBus.cpp
+    Visibility/EntityBoundsUnionBus.cpp
     Visibility/EntityBoundsUnionBus.h
     Visibility/EntityVisibilityBoundsUnionSystem.cpp
     Visibility/EntityVisibilityBoundsUnionSystem.h
@@ -539,7 +540,7 @@ set(FILES
     Visibility/VisibleGeometryBus.h
     Windowing/NativeWindow.cpp
     Windowing/NativeWindow.h
-	Windowing/WindowBus.cpp
+    Windowing/WindowBus.cpp
     Windowing/WindowBus.h
     AzFrameworkModule.cpp
     AzFrameworkModule.h
