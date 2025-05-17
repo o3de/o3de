@@ -108,8 +108,6 @@ set(FILES
     Source/DisplayMapper/DisplayMapperFullScreenPass.cpp
     Source/DisplayMapper/BakeAcesOutputTransformLutPass.cpp
     Source/DisplayMapper/OutputTransformPass.cpp
-    Source/ImGui/ImGuiPass.cpp
-    Source/ImGui/ImGuiPass.h
     Source/ImGui/ImGuiSystemComponent.cpp
     Source/ImGui/ImGuiSystemComponent.h
     Source/ImageBasedLights/ImageBasedLightFeatureProcessor.cpp
