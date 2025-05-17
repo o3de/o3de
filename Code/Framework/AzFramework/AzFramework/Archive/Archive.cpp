@@ -1536,7 +1536,7 @@ namespace AZ::IO
     //////////////////////////////////////////////////////////////////////////
     // open the physical archive file - creates if it doesn't exist
     // returns nullptr if it's invalid or can't open the file
-    AZStd::intrusive_ptr<INestedArchive> Archive::OpenArchive(AZStd::string_view szPath, AZStd::string_view bindRoot, uint32_t nFlags, AZStd::intrusive_ptr<AZ::IO::MemoryBlock> pData)
+    AZStd::intrusive_ptr<INestedArchive> Archive::OpenArchive(AZStd::string_view szPath, AZStd::string_view bindRoot, uint32_t nFlags, [[maybe_unused]] AZStd::intrusive_ptr<AZ::IO::MemoryBlock> pData)
     {
         auto szFullPath = AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(szPath);
         if (!szFullPath)
