@@ -149,7 +149,7 @@ namespace EMotionFX
         return AnimGraphObject::CATEGORY_CONTROLLERS;
     }
 
-    bool BlendTreeFabrikNode::SolveFabrik(const AZ::Vector3& goal, AZStd::vector<AZ::Vector3>& positions, const AZ::Vector3& bendDir, bool hasBendDir, int iterations, float delta)
+    bool BlendTreeFabrikNode::SolveFabrik(const AZ::Vector3& goal, AZStd::vector<AZ::Vector3>& positions, const AZ::Vector3& bendDir, int iterations, float delta)
     {
         // initial position of the root bone
         AZ::Vector3 rootPosition = positions[0];
@@ -205,19 +205,28 @@ namespace EMotionFX
             }
         }
 
-        if (!hasBendDir)
+        if (bendDir.GetLengthSq() < AZ::Constants::Tolerance)
         {
             return true;
         }
-
+        
+        // bend the joints towards bendDir with axis of the adjacent joints on the chain
         for (int i = 1; i < boneSize - 1; i++)
         {
-            // bend the joint towards bendDir with axis of the adjacent joints on the chain
             AZ::Vector3 axis = (positions[i + 1] - positions[i - 1]).GetNormalizedSafe();
             AZ::Vector3 currentDir = positions[i] - positions[i - 1];
+
+            // decompose the directions to the components orthogonal to the axis
             AZ::Vector3 v1 = currentDir - axis * (axis.Dot(currentDir));
             AZ::Vector3 v2 = bendDir - axis * (axis.Dot(bendDir));
-            AZ::Quaternion bendRotation = AZ::Quaternion::CreateShortestArc(v1, v2);
+
+            // get the angle that rotates from v1 to v2 along axis.
+            float angle = v1.AngleSafe(v2);
+            if ((v1 * v2).Dot(axis) < 0)
+            {
+                angle = -angle;
+            }
+            AZ::Quaternion bendRotation = AZ::Quaternion::CreateFromAxisAngle(axis, angle);
             positions[i] = bendRotation.TransformVector(currentDir) + positions[i - 1];
         }
         return true;
@@ -364,26 +373,18 @@ namespace EMotionFX
         Transform& endNodeTransform = transforms.back();
 
         // extract the bend direction from the input pose?
-        AZ::Vector3 bendDir;
-        bool hasBendDir = true;
+        AZ::Vector3 bendDir(0.0f, 0.0f, 0.0f);
         if (m_extractBendDir)
         {
             if (bendDirIndex != InvalidIndex)
             {
                 bendDir = outTransformPose.GetWorldSpaceTransform(bendDirIndex).m_position - transforms[0].m_position;
             }
-            else
-            {
-                hasBendDir = false;
-            }
         }
         else
         {
             OutputIncomingNode(animGraphInstance, GetInputNode(INPUTPORT_BENDDIR));
-            if (!TryGetInputVector3(animGraphInstance, INPUTPORT_BENDDIR, bendDir))
-            {
-                hasBendDir = false;
-            }
+            TryGetInputVector3(animGraphInstance, INPUTPORT_BENDDIR, bendDir);
         }
 
         // if we want a relative bend dir, rotate it with the actor (only do this if we don't extract the bend dir)
@@ -481,7 +482,7 @@ namespace EMotionFX
         {
             positions.back() = endEffectorNodePos;
         }
-        SolveFabrik(goal, positions, bendDir, hasBendDir, m_iterations, m_precision);
+        SolveFabrik(goal, positions, bendDir, m_iterations, m_precision);
         // --------------------------------------
         // calculate the new node transforms
         // --------------------------------------

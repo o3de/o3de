@@ -102,7 +102,7 @@ namespace EMotionFX
     private:
         void Output(AnimGraphInstance* animGraphInstance) override;
 
-        static bool SolveFabrik(const AZ::Vector3& goal, AZStd::vector<AZ::Vector3>& positions, const AZ::Vector3& bendDir, bool hasBendDir, int iterations, float delta);
+        static bool SolveFabrik(const AZ::Vector3& goal, AZStd::vector<AZ::Vector3>& positions, const AZ::Vector3& bendDir, int iterations, float delta);
 
         AZ::Crc32 GetRelativeBendDirVisibility() const;
 
