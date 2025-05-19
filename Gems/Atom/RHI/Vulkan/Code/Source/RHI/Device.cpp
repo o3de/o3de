@@ -925,13 +925,25 @@ namespace AZ
             AssertSuccess(GetContext().GetPhysicalDeviceSurfaceFormatsKHR(
                 physicalDevice.GetNativePhysicalDevice(), vkSurface, &surfaceFormatCount, surfaceFormats.data()));
 
+            bool colorSpaceExt = false;
+#ifndef AZ_PLATFORM_LINUX
+            for (const char* loaded_extension : Instance::GetInstance().GetLoadedExtensions())
+            {
+                if (strcmp(loaded_extension, VK_EXT_SWAPCHAIN_COLOR_SPACE_EXTENSION_NAME) == 0)
+                {
+                    colorSpaceExt = true;
+                    break;
+                }
+            }
+#endif
+
             AZStd::set<RHI::Format> formats;
             for (const VkSurfaceFormatKHR& surfaceFormat : surfaceFormats)
             {
                 // Don't expose formats for HDR output when the extension is missing
                 // This can happen on Linux with Wayland.
                 if (surfaceFormat.format == VK_FORMAT_A2R10G10B10_UNORM_PACK32 &&
-                    m_loaderContext->GetContext().SetHdrMetadataEXT == nullptr)
+                    (m_loaderContext->GetContext().SetHdrMetadataEXT == nullptr || colorSpaceExt == false))
                 {
                     continue;
                 }

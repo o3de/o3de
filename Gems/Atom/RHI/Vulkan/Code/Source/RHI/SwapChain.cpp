@@ -7,6 +7,8 @@
  */
 
 #include "Atom_RHI_Vulkan_Platform.h"
+#include "Instance.h"
+
 #include <Atom/RHI/PipelineStateDescriptor.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/XRRenderingInterface.h>
@@ -387,7 +389,7 @@ namespace AZ
             }
 
             const DisplayChromacities& Chroma = DisplayChromacityList[selectedChroma];
-            VkHdrMetadataEXT hdrMetadata;
+            VkHdrMetadataEXT hdrMetadata = {};
             hdrMetadata.sType = VK_STRUCTURE_TYPE_HDR_METADATA_EXT;
             //DX12 RHI scales these by 50000 but VKD3D removes that so just use the raw values.
             hdrMetadata.displayPrimaryRed = {Chroma.RedX, Chroma.RedY};
@@ -426,7 +428,7 @@ namespace AZ
                 dimensions.m_imageHeight <= m_surfaceCapabilities.maxImageExtent.height);
         }
 
-        VkSurfaceFormatKHR SwapChain::GetSupportedSurfaceFormat(const RHI::Format rhiFormat) const
+        VkSurfaceFormatKHR SwapChain::GetSupportedSurfaceFormat(const RHI::Format rhiFormat, const VkColorSpaceKHR preferredColorSpace) const
         {
             AZ_Assert(m_surface, "Surface has not been initialized.");
             auto& device = static_cast<Device&>(GetDevice());
@@ -440,12 +442,25 @@ namespace AZ
                 physicalDevice.GetNativePhysicalDevice(), m_surface->GetNativeSurface(), &surfaceFormatCount, surfaceFormats.data()));
 
             const VkFormat format = ConvertFormat(rhiFormat);
+            VkSurfaceFormatKHR matchedFormat = { .format = VK_FORMAT_UNDEFINED };
             for (uint32_t index = 0; index < surfaceFormatCount; ++index)
             {
                 if (surfaceFormats[index].format == format)
                 {
-                    return surfaceFormats[index];
+                    if (surfaceFormats[index].colorSpace == preferredColorSpace)
+                    {
+                        return surfaceFormats[index];
+                    }
+
+                    if (matchedFormat.format != VK_FORMAT_UNDEFINED)
+                    {
+                        matchedFormat = surfaceFormats[index];
+                    }
                 }
+            }
+            if (matchedFormat.format != VK_FORMAT_UNDEFINED)
+            {
+                return matchedFormat;
             }
             AZ_Warning("Vulkan", false, "Given format is not supported, so it uses a supported format.");
             return surfaceFormats[0];
@@ -557,13 +572,12 @@ namespace AZ
                 }
             }
 
-            VkColorSpaceKHR colorSpace = m_surfaceFormat.colorSpace;
             bool hdrEnabled = false;
 
-            if(device.GetContext().SetHdrMetadataEXT != nullptr &&
-                dimensions.m_imageFormat == RHI::Format::R10G10B10A2_UNORM)
+            if (device.GetContext().SetHdrMetadataEXT != nullptr &&
+                m_surfaceFormat.format == VK_FORMAT_A2R10G10B10_UNORM_PACK32 &&
+                m_surfaceFormat.colorSpace == VK_COLOR_SPACE_HDR10_ST2084_EXT)
             {
-                colorSpace = VK_COLOR_SPACE_HDR10_ST2084_EXT;
                 hdrEnabled = true;
             }
 
@@ -576,7 +590,7 @@ namespace AZ
             // need to be less than or equal to the difference between the number of images in swapchain and the value of VkSurfaceCapabilitiesKHR::minImageCount
             createInfo.minImageCount = AZStd::max(dimensions.m_imageCount, simultaneousAcquiredImages + m_surfaceCapabilities.minImageCount);
             createInfo.imageFormat = m_surfaceFormat.format;
-            createInfo.imageColorSpace = colorSpace;
+            createInfo.imageColorSpace = m_surfaceFormat.colorSpace;
             createInfo.imageExtent = extent;
             createInfo.imageArrayLayers = 1; // non-stereoscopic
             createInfo.imageUsage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
@@ -663,8 +677,20 @@ namespace AZ
         {
             auto& device = static_cast<Device&>(GetDevice());
 
+            VkColorSpaceKHR preferredColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
+#ifndef AZ_PLATFORM_LINUX
+            for (const char* loaded_extension : Instance::GetInstance().GetLoadedExtensions())
+            {
+                if (strcmp(loaded_extension, VK_EXT_SWAPCHAIN_COLOR_SPACE_EXTENSION_NAME) == 0)
+                {
+                    preferredColorSpace = VK_COLOR_SPACE_HDR10_ST2084_EXT;
+                    break;
+                }
+            }
+#endif
+
             m_surfaceCapabilities = GetSurfaceCapabilities();
-            m_surfaceFormat = GetSupportedSurfaceFormat(m_dimensions.m_imageFormat);
+            m_surfaceFormat = GetSupportedSurfaceFormat(m_dimensions.m_imageFormat, preferredColorSpace);
             m_presentMode = GetSupportedPresentMode(GetDescriptor().m_verticalSyncInterval);
             m_compositeAlphaFlagBits = GetSupportedCompositeAlpha();
 
