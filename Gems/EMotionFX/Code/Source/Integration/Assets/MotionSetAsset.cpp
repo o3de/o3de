@@ -223,7 +223,11 @@ namespace EMotionFX
 
                     if (motionAsset)
                     {
+#if defined(CARBONATED) && defined(CARBONATED_ASSET_WAIT_TIMEOUT)
+                        motionAsset.BlockUntilLoadComplete(10000);
+#else
                         motionAsset.BlockUntilLoadComplete();
+#endif
                         assetData->BusConnect(motionAssetId);
                         assetData->m_motionAssets.push_back(motionAsset);
                     }

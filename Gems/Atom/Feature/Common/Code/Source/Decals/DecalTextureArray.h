@@ -101,6 +101,9 @@ namespace AZ
             AZStd::array<Data::Instance<RPI::StreamingImage>, DecalMapType_Num> m_textureArrayPacked;
              
             AZStd::unordered_set<AZ::Data::AssetId> m_assetsCurrentlyLoading;
+#if defined(CARBONATED) && defined(CARBONATED_ASSET_WAIT_TIMEOUT)
+            bool m_queueAssetsInProgress = false;
+#endif
         };
 
     } // namespace Render

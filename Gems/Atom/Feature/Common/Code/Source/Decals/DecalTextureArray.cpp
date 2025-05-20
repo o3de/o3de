@@ -391,12 +391,23 @@ namespace AZ
 
         void DecalTextureArray::QueueAssetLoads()
         {
+#if defined(CARBONATED) && defined(CARBONATED_ASSET_WAIT_TIMEOUT)
+            if (m_queueAssetsInProgress)
+            {
+                AZ_Info("DecalTextureArray", "QueueAssetLoads recursion, loading %d assets", m_assetsCurrentlyLoading.size());
+                return;
+            }
+            m_queueAssetsInProgress = true;
+#endif
             int iter = m_materials.begin();
             while (iter != -1)
             {
                 QueueAssetLoad(m_materials[iter]);
                 iter = m_materials.next(iter);
             }
+#if defined(CARBONATED) && defined(CARBONATED_ASSET_WAIT_TIMEOUT)
+            m_queueAssetsInProgress = false;
+#endif
         }
 
         bool DecalTextureArray::NeedsPacking() const
