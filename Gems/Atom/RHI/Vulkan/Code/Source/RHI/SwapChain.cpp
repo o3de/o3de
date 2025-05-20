@@ -678,16 +678,17 @@ namespace AZ
             auto& device = static_cast<Device&>(GetDevice());
 
             VkColorSpaceKHR preferredColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
-#ifndef AZ_PLATFORM_LINUX
-            for (const char* loaded_extension : Instance::GetInstance().GetLoadedExtensions())
+            if (r_hdrOutput)
             {
-                if (strcmp(loaded_extension, VK_EXT_SWAPCHAIN_COLOR_SPACE_EXTENSION_NAME) == 0)
+                for (const char* loaded_extension : Instance::GetInstance().GetLoadedExtensions())
                 {
-                    preferredColorSpace = VK_COLOR_SPACE_HDR10_ST2084_EXT;
-                    break;
+                    if (strcmp(loaded_extension, VK_EXT_SWAPCHAIN_COLOR_SPACE_EXTENSION_NAME) == 0)
+                    {
+                        preferredColorSpace = VK_COLOR_SPACE_HDR10_ST2084_EXT;
+                        break;
+                    }
                 }
             }
-#endif
 
             m_surfaceCapabilities = GetSurfaceCapabilities();
             m_surfaceFormat = GetSupportedSurfaceFormat(m_dimensions.m_imageFormat, preferredColorSpace);

@@ -926,16 +926,17 @@ namespace AZ
                 physicalDevice.GetNativePhysicalDevice(), vkSurface, &surfaceFormatCount, surfaceFormats.data()));
 
             bool colorSpaceExt = false;
-#ifndef AZ_PLATFORM_LINUX
-            for (const char* loaded_extension : Instance::GetInstance().GetLoadedExtensions())
+            if (r_hdrOutput)
             {
-                if (strcmp(loaded_extension, VK_EXT_SWAPCHAIN_COLOR_SPACE_EXTENSION_NAME) == 0)
+                for (const char* loaded_extension : Instance::GetInstance().GetLoadedExtensions())
                 {
-                    colorSpaceExt = true;
-                    break;
+                    if (strcmp(loaded_extension, VK_EXT_SWAPCHAIN_COLOR_SPACE_EXTENSION_NAME) == 0)
+                    {
+                        colorSpaceExt = true;
+                        break;
+                    }
                 }
             }
-#endif
 
             AZStd::set<RHI::Format> formats;
             for (const VkSurfaceFormatKHR& surfaceFormat : surfaceFormats)
