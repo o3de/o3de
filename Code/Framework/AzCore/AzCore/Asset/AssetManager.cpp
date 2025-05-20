@@ -381,7 +381,7 @@ namespace AZ::Data
                             const int64_t curTime = static_cast<int64_t>(AZ::GetRealElapsedTimeMs());
                             if ((unsigned int)(curTime - startTime) > m_timeoutMillis)
                             {
-                                AZ_Info("AssetManager", "Blocking loading wait timeout %d exceeded for %s, time %u",
+                                AZ_Info("AssetManager", "Main thread blocking loading wait timeout %d exceeded for %s, time %u",
                                         m_timeoutMillis, m_assetData.GetHint().c_str(), (unsigned int)(curTime - startTime));
                                 break;
                             }
@@ -391,9 +391,23 @@ namespace AZ::Data
                 }
                 else
                 {
-
+#if defined(CARBONATED) && defined(CARBONATED_ASSET_WAIT_TIMEOUT)
+                    if (m_timeoutMillis)
+                    {
+                        if (!m_waitEvent.try_acquire_for(AZStd::chrono::milliseconds(m_timeoutMillis)))
+                        {
+                            AZ_Info("AssetManager", "Non-main thread blocking loading wait timeout %d exceeded for %s",
+                                    m_timeoutMillis, m_assetData.GetHint().c_str());
+                        }
+                    }
+                    else
+                    {
+                        m_waitEvent.acquire();
+                    }
+#else
                     // Don't wake up until a load job is queued for processing or the load is entirely finished.
                     m_waitEvent.acquire();
+#endif
                 }
 
                 // Check to see if any load jobs have been provided for this thread to process.
@@ -401,15 +415,27 @@ namespace AZ::Data
                 ProcessLoadJob();
 
 #if defined(CARBONATED) && defined(CARBONATED_ASSET_WAIT_TIMEOUT)
-                if (m_shouldDispatchEvents && m_timeoutMillis)
+                if (m_timeoutMillis)
                 {
-                    if (jobCount++ > 0)  // do not check after the first job, most cases it is loaded
+                    if (m_shouldDispatchEvents)
                     {
+                        if (jobCount++ > 0)  // do not check after the first job, most cases it is loaded
+                        {
+                            const int64_t curTime = static_cast<int64_t>(AZ::GetRealElapsedTimeMs());
+                            if ((unsigned int)(curTime - startTime) > m_timeoutMillis)
+                            {
+                                AZ_Info("AssetManager", "Timeout %d exceeded for %s, job count %d, time %u",
+                                        m_timeoutMillis, m_assetData.GetHint().c_str(), jobCount, (unsigned int)(curTime - startTime));
+                                break;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // next cycle can double the timeout, so let check immediatelly
                         const int64_t curTime = static_cast<int64_t>(AZ::GetRealElapsedTimeMs());
                         if ((unsigned int)(curTime - startTime) > m_timeoutMillis)
                         {
-                            AZ_Info("AssetManager", "Blocking loading wait timeout %d exceeded for %s, job count %d, time %u",
-                                    m_timeoutMillis, m_assetData.GetHint().c_str(), jobCount, (unsigned int)(curTime - startTime));
                             break;
                         }
                     }
