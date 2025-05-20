@@ -4,7 +4,7 @@
     "O3DEVersion": "0.1.0.0",
     "O3DEBuildNumber": 0,
     "display_version": "00.00",
-    "version": "4.2.0",
+    "version": "2.4.0",
     "api_versions": {
         "editor": "1.0.0",
         "framework": "1.2.1",
@@ -12,7 +12,7 @@
         "tools": "1.1.0"
     },
     "file_version": 2,
-    "copyright_year": 2023,
+    "copyright_year": 2025,
     "build": 0,
     "external_subdirectories": [
         "Gems/Achievements",
