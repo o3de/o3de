@@ -10,5 +10,5 @@
 #define AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED 1
 
 // size of the sampler array in the SceneMaterialSrg
-// Note: this must be the same value as the AZ_TRAITS_SCENE_MATERIALS_MAX_SAMPLERS define in the AzslcHeader.azsli
-#define AZ_TRAITS_SCENE_MATERIALS_MAX_SAMPLERS 16
+// Note: this must be the same value as the AZ_TRAITS_SCENE_MATERIALS_MAX_SAMPLERS define in the AzslcPlatformHeader.azsli
+#define AZ_TRAITS_SCENE_MATERIALS_MAX_SAMPLERS 8

@@ -11,4 +11,4 @@
 
 // size of the sampler array in the SceneMaterialSrg
 // Note: this must be the same value as the AZ_TRAITS_SCENE_MATERIALS_MAX_SAMPLERS define in the AzslcHeader.azsli
-#define AZ_TRAITS_SCENE_MATERIALS_MAX_SAMPLERS 16
+#define AZ_TRAITS_SCENE_MATERIALS_MAX_SAMPLERS 8
