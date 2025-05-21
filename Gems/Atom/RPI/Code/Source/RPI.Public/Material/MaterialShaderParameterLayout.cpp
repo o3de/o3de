@@ -407,13 +407,8 @@ namespace AZ::RPI
             };
 
             // Note: the (new) shader material functions provided by the engine take all parameters from a MaterialParameter - struct.
-            // The materials generally fetch the parameters from a Bindless ByteAdressBuffer via the SceneMaterialSrg before calling the
-            // material functions, but we can fill these buffers if we know the exact layout of the Parameter struct on the
-            // GPU, and we only know that if we generated the struct during the materialpipeline processing, when we turn an abstract
-            // materialtype into a non-abstract materialtype.
-            // Shaders that do not use an abstract material-type (e.g. the SilhouetteGather - shader) can still use the (new) shader
-            // material functions by manually defining a MaterialParameter - struct. If that struct is part of the SRG with the name
-            // "m_params", we set the parameter values directly in the SRG.
+            // The materials generally fetch the parameters from a Bindless ByteAdressBuffer via the SceneMaterialSrg.
+            // If the shaders use the SingleMaterialSrg, these parameters come from a struct called 'm_params' in the srg.
 
             auto inputName = AZ::Name{ AZStd::string::format("m_params.%s", desc->m_name.c_str()) };
             if (!assignSrgIndex(inputName))

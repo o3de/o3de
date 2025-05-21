@@ -359,11 +359,18 @@ namespace AZ
 
         void MaterialTypeAssetCreator::UpdateShaderParameterConnections()
         {
-            if (!m_materialShaderResourceGroupLayout && m_asset->m_materialShaderParameterLayout.GetNonPseudoParameterCount() > 0)
+            if (!m_materialShaderResourceGroupLayout)
             {
-                ReportError("Could not map properties to shader inputs because there is no material ShaderResourceGroup.");
+                if (m_asset->m_materialShaderParameterLayout.GetNonPseudoParameterCount() > 0)
+                {
+                    ReportError("Could not map properties to shader inputs because there is no material ShaderResourceGroup.");
+                }
                 return;
             }
+
+            // connect all shader parameters to an SRG constant if possible
+            m_asset->m_materialShaderParameterLayout.ConnectParametersToSrg(m_materialShaderResourceGroupLayout);
+
             for (auto& propertyDescriptor : m_materialPropertiesLayout->m_materialPropertyDescriptors)
             {
                 for (auto& connection : propertyDescriptor.m_outputConnections)
@@ -397,10 +404,10 @@ namespace AZ
                                 ToString(propertyDescriptor.GetDataType()),
                                 paramDesc->m_typeName.c_str());
 
-                            if (m_asset->m_materialShaderParameterLayout.ConnectParameterToSrg(
-                                    paramDesc, m_materialShaderResourceGroupLayout))
+                            // we could connect to the SRG based on the name, so now check if we arent binding an image to an SRG constant
+                            // or vice versa.
+                            if (!AZStd::holds_alternative<AZStd::monostate>(paramDesc->m_srgInputIndex))
                             {
-                                // we could connect based on the name, so now check if the types are compatible
                                 [[maybe_unused]] bool srgCompatible =
                                     m_asset->m_materialShaderParameterLayout.IsPropertyTypeCompatibleWithSrg(
                                         paramDesc, propertyDescriptor.GetDataType());
