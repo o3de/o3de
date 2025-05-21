@@ -8,7 +8,6 @@
 #pragma once
 
 #include <Atom/RPI.Public/Pass/ComputePass.h>
-#include <PostProcessing/PostProcessingShaderOptionBase.h>
 
 namespace AZ
 {
@@ -16,7 +15,6 @@ namespace AZ
     {
         // Class for controlling MotionBlur effect
         class MotionBlurPass final : public RPI::ComputePass
-            , public PostProcessingShaderOptionBase
         {
             AZ_RPI_PASS(MotionBlurPass);
 
@@ -28,11 +26,9 @@ namespace AZ
             static RPI::Ptr<MotionBlurPass> Create(const RPI::PassDescriptor& descriptor);
 
             bool IsEnabled() const override;
-            void SetQualityLevel(uint8_t qualityLevel);
 
         protected:
-            // Behaviour functions override...
-            void InitializeInternal() override;
+            // Behavior functions override...
             void FrameBeginInternal(FramePrepareParams params) override;
 
         private:
@@ -40,18 +36,7 @@ namespace AZ
             void InitializeShaderVariant();
             void UpdateCurrentShaderVariant();
 
-            uint8_t m_qualityLevel = 1;
-
-            // Scope producer functions...
-            void CompileResources(const RHI::FrameGraphCompileContext& context) override;
-
-            // SRG binding indices...
             AZ::RHI::ShaderInputNameIndex m_constantsIndex = "m_constants";
-
-            bool m_needToUpdateShaderVariant = true;
-
-            const AZ::Name m_optionName;
-            const AZStd::vector<AZ::Name> m_optionValues;
         };
     } // namespace Render
 } // namespace AZ
