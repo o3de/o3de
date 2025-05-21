@@ -442,7 +442,8 @@ namespace AZ
                 physicalDevice.GetNativePhysicalDevice(), m_surface->GetNativeSurface(), &surfaceFormatCount, surfaceFormats.data()));
 
             const VkFormat format = ConvertFormat(rhiFormat);
-            VkSurfaceFormatKHR matchedFormat = { .format = VK_FORMAT_UNDEFINED };
+            VkSurfaceFormatKHR matchedFormat = {};
+            matchedFormat.format = VK_FORMAT_UNDEFINED;
             for (uint32_t index = 0; index < surfaceFormatCount; ++index)
             {
                 if (surfaceFormats[index].format == format)
