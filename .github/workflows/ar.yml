@@ -11,6 +11,22 @@ name: AR
 on:
   pull_request:
   workflow_dispatch:
+    inputs:
+      windows_build:
+        description: 'Build Windows'
+        required: false
+        default: true
+        type: boolean
+      linux_build:
+        description: 'Build Linux'
+        required: false
+        default: true
+        type: boolean
+      android_build:
+        description: 'Build Android'
+        required: false
+        default: true
+        type: boolean
   push:
     branches:
       - main
@@ -32,6 +48,7 @@ jobs:
 
 #### Windows Build ####
     Windows-Profile:
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.windows_build }}
         uses: ./.github/workflows/windows-build.yml
         with:
             compiler: msvc
@@ -42,6 +59,7 @@ jobs:
             last_artifact: true
     
     Windows-Asset:
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.windows_build }}
         needs: Windows-Profile
         uses: ./.github/workflows/windows-build.yml
         with:
@@ -52,6 +70,7 @@ jobs:
             type: asset_profile
 
     Windows-Test:
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.windows_build }}
         needs: Windows-Asset
         uses: ./.github/workflows/windows-build.yml
         with:
@@ -62,6 +81,7 @@ jobs:
             type: test_cpu_profile
 
     Windows-Release:
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.windows_build }}
         uses: ./.github/workflows/windows-build.yml
         with:
             compiler: msvc
@@ -73,6 +93,7 @@ jobs:
 
 #### Linux Build ####
     Linux-Profile:
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.linux_build }}
         uses: ./.github/workflows/linux-build.yml
         with:
             compiler: clang
@@ -83,6 +104,7 @@ jobs:
             last_artifact: true
 
     Linux-Asset:
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.linux_build }}
         needs: Linux-Profile
         uses: ./.github/workflows/linux-build.yml
         with:
@@ -93,6 +115,7 @@ jobs:
             type: asset_profile
 
     Linux-Test:
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.linux_build }}
         needs: Linux-Asset
         uses: ./.github/workflows/linux-build.yml
         with:
@@ -105,6 +128,7 @@ jobs:
 
 #### Android Build ####
     Android-Profile:
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.android_build }}
         uses: ./.github/workflows/android-build.yml
         with:
             compiler: clang
@@ -115,6 +139,7 @@ jobs:
             last_artifact: true
 
     Android-Asset:
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.android_build }}
         uses: ./.github/workflows/android-build.yml
         with:
             compiler: msvc
@@ -125,6 +150,7 @@ jobs:
             last_artifact: true
             
     Android-Gradle:
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.android_build }}
         uses: ./.github/workflows/android-build.yml
         with:
             compiler: clang
