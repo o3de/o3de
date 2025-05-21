@@ -61,6 +61,7 @@ set(FILES
     Include/Atom/RPI.Public/Material/MaterialShaderParameter.h
     Include/Atom/RPI.Public/Material/MaterialSystem.h
     Include/Atom/RPI.Public/Material/TextureSamplerRegistry.h
+    Include/Atom/RPI.Public/Material/MaterialTextureRegistry.h
     Include/Atom/RPI.Public/Model/Model.h
     Include/Atom/RPI.Public/Model/ModelLod.h
     Include/Atom/RPI.Public/Model/ModelLodUtils.h
@@ -153,6 +154,7 @@ set(FILES
     Source/RPI.Public/Material/MaterialShaderParameter.cpp
     Source/RPI.Public/Material/MaterialSystem.cpp
     Source/RPI.Public/Material/TextureSamplerRegistry.cpp
+    Source/RPI.Public/Material/MaterialTextureRegistry.cpp
     Source/RPI.Public/Model/Model.cpp
     Source/RPI.Public/Model/ModelLod.cpp
     Source/RPI.Public/Model/ModelLodUtils.cpp

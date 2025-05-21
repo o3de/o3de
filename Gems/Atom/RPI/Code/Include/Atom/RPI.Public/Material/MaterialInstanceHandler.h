@@ -52,6 +52,10 @@ namespace AZ::RPI
             [[maybe_unused]] const int materialTypeIndex,
             [[maybe_unused]] const int materialInstanceIndex,
             [[maybe_unused]] Data::Instance<Image> image) = 0;
+        virtual void ReleaseMaterialTexture(
+            [[maybe_unused]] const int materialTypeIndex,
+            [[maybe_unused]] const int materialInstanceIndex,
+            [[maybe_unused]] int32_t textureIndex) = 0;
         virtual AZStd::shared_ptr<SharedSamplerState> RegisterTextureSampler(
             [[maybe_unused]] const int materialTypeIndex,
             [[maybe_unused]] const int materialInstanceIndex,

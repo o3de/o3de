@@ -30,3 +30,4 @@
 #define real4 float4
 #define real3x3 float3x3
 #define real3x4 float3x4
+#define real4x4 half4x4

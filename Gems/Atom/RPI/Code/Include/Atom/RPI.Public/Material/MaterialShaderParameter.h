@@ -197,6 +197,9 @@ namespace AZ::RPI
 
         // keep a reference to the used sampler states
         AZStd::unordered_map<MaterialShaderParameterLayout::Index, AZStd::shared_ptr<SharedSamplerState>> m_sharedSamplerStates;
+
+        // keep a reference to the registered non-bindless textures, if AZ_TRAIT_REGISTER_TEXTURES_PER_MATERIAL is defined
+        AZStd::unordered_map<MaterialShaderParameterLayout::Index, int32_t> m_materialTextureIndices;
     };
 
 } // namespace AZ::RPI

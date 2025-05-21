@@ -74,19 +74,18 @@ namespace AZ::RPI
         {
             m_sceneMaterialSrg = ShaderResourceGroup::Create(m_sceneMaterialSrgShaderAsset, AZ_NAME_LITERAL("SceneMaterialSrg"));
 
-            [[maybe_unused]] uint32_t maxTextureSamplerStates = 0;
-
             // get the size of the m_samplers[] array from the SRG layout
             auto samplerIndex = m_sceneMaterialSrg->GetLayout()->FindShaderInputSamplerIndex(AZ_NAME_LITERAL("m_samplers"));
             if (samplerIndex.IsValid())
             {
                 auto desc = m_sceneMaterialSrg->GetLayout()->GetShaderInput(samplerIndex);
-                maxTextureSamplerStates = desc.m_count;
+                [[maybe_unused]] uint32_t maxTextureSamplerStates = desc.m_count;
+                AZ_Assert(
+                    maxTextureSamplerStates == m_sceneTextureSamplers.GetMaxNumSamplerStates(),
+                    "SceneMaterialSrg::m_samplers[] has size %d, expected size is AZ_TRAITS_SCENE_MATERIALS_MAX_SAMPLERS (%d)",
+                    maxTextureSamplerStates,
+                    AZ_TRAITS_SCENE_MATERIALS_MAX_SAMPLERS);
             }
-            AZ_Assert(
-                maxTextureSamplerStates == m_sceneTextureSamplers.GetMaxNumSamplerStates(),
-                "SceneMaterialSrg::m_samplers[] has size %d, expected size is AZ_TRAITS_SCENE_MATERIALS_MAX_SAMPLERS (%d)",
-                AZ_TRAITS_SCENE_MATERIALS_MAX_SAMPLERS);
         }
     }
 
@@ -108,7 +107,6 @@ namespace AZ::RPI
     {
         int32_t textureIndex{ -1 };
 #ifdef AZ_TRAIT_REGISTER_TEXTURES_PER_MATERIAL
-
         if (!image)
         {
             return textureIndex;
@@ -116,20 +114,29 @@ namespace AZ::RPI
 
         auto& materialTypeData = m_materialTypeData[materialTypeIndex];
         auto& instanceData = materialTypeData.m_instanceData[materialInstanceIndex];
-
-        auto textureIterator = instanceData.m_materialTexturesMap.find(image->GetAssetId());
-        if (textureIterator == instanceData.m_materialTexturesMap.end())
+        if (instanceData.m_materialTextureRegistry)
         {
-            textureIndex = static_cast<int32_t>(instanceData.m_materialTextures.size());
-            instanceData.m_materialTextures.emplace_back(image);
+            textureIndex = instanceData.m_materialTextureRegistry->RegisterMaterialTexture(image);
+            // we only need to update the material-textures if we actually register a new texture
             instanceData.m_materialTexturesDirty = true;
-        }
-        else
-        {
-            textureIndex = textureIterator->second;
         }
 #endif
         return textureIndex;
+    }
+
+    void MaterialSystem::ReleaseMaterialTexture(
+        [[maybe_unused]] const int materialTypeIndex,
+        [[maybe_unused]] const int materialInstanceIndex,
+        [[maybe_unused]] int32_t textureIndex)
+    {
+#ifdef AZ_TRAIT_REGISTER_TEXTURES_PER_MATERIAL
+        auto& materialTypeData = m_materialTypeData[materialTypeIndex];
+        auto& instanceData = materialTypeData.m_instanceData[materialInstanceIndex];
+        if (instanceData.m_materialTextureRegistry)
+        {
+            instanceData.m_materialTextureRegistry->ReleaseMaterialTexture(textureIndex);
+        }
+#endif
     }
 
     AZStd::shared_ptr<SharedSamplerState> MaterialSystem::RegisterTextureSampler(
@@ -147,7 +154,7 @@ namespace AZ::RPI
         else
         {
             auto& materialInstanceData = materialTypeData.m_instanceData[materialInstanceIndex];
-            registry = &materialInstanceData.m_textureSamplers;
+            registry = materialInstanceData.m_textureSamplers.get();
         }
 
         return registry->RegisterTextureSampler(samplerState);
@@ -165,7 +172,7 @@ namespace AZ::RPI
         else
         {
             auto& materialInstanceData = materialTypeData.m_instanceData[materialInstanceIndex];
-            registry = &materialInstanceData.m_textureSamplers;
+            registry = materialInstanceData.m_textureSamplers.get();
         }
         auto sharedSamplerState = registry->GetSharedSamplerState(samplerIndex);
         if (sharedSamplerState == nullptr)
@@ -224,7 +231,7 @@ namespace AZ::RPI
         MaterialTypeData& materialTypeData = m_materialTypeData[materialTypeIndex];
 
         auto materialInstanceIndex = materialTypeData.m_instanceIndices.Aquire();
-        materialTypeData.m_instanceData.resize(materialTypeData.m_instanceIndices.Max(), {});
+        materialTypeData.m_instanceData.resize(materialTypeData.m_instanceIndices.Max());
         auto& instanceData = materialTypeData.m_instanceData[materialInstanceIndex];
 
         instanceData.m_material = material.get();
@@ -246,8 +253,21 @@ namespace AZ::RPI
                     auto defaultSampler =
                         RHI::SamplerState::Create(RHI::FilterMode::Linear, RHI::FilterMode::Linear, RHI::AddressMode::Wrap);
                     defaultSampler.m_anisotropyMax = 16;
-                    instanceData.m_textureSamplers.Init(desc.m_count, defaultSampler);
+                    instanceData.m_textureSamplers = AZStd::make_unique<TextureSamplerRegistry>();
+                    instanceData.m_textureSamplers->Init(desc.m_count, defaultSampler);
                 }
+
+#ifdef AZ_TRAIT_REGISTER_TEXTURES_PER_MATERIAL
+                // get the size of the m_samplers[] array from the SRG layout
+                auto materialTexturesIndex =
+                    instanceData.m_shaderResourceGroup->GetLayout()->FindShaderInputImageIndex(AZ::Name{ "m_textures" });
+                if (materialTexturesIndex.IsValid())
+                {
+                    auto desc = instanceData.m_shaderResourceGroup->GetLayout()->GetShaderInput(materialTexturesIndex);
+                    instanceData.m_materialTextureRegistry = AZStd::make_unique<MaterialTextureRegistry>();
+                    instanceData.m_materialTextureRegistry->Init(desc.m_count);
+                }
+#endif
             }
         }
         else
@@ -433,16 +453,31 @@ namespace AZ::RPI
                     {
                         // The material doesn't use the SceneMaterialSrg: make sure the custom SRG still gets compiled
 
+#ifdef AZ_TRAIT_REGISTER_TEXTURES_PER_MATERIAL
+                        if (instanceData.m_materialTexturesDirty && instanceData.m_materialTextureRegistry)
+                        {
+                            auto texturesIndex = instanceData.m_shaderResourceGroup->FindShaderInputImageIndex(AZ::Name{ "m_textures" });
+                            if (texturesIndex.IsValid())
+                            {
+                                AZStd::vector<const RHI::ImageView*> imageViews =
+                                    instanceData.m_materialTextureRegistry->CollectTextureViews();
+                                instanceData.m_shaderResourceGroup->SetImageViewArray(texturesIndex, imageViews);
+                            }
+                            instanceData.m_materialTexturesDirty = false;
+                        }
+#endif
+
                         // register the sampler array if the material requires it
                         auto samplerIndex = instanceData.m_shaderResourceGroup->FindShaderInputSamplerIndex(AZ::Name{ "m_samplers" });
-                        if (samplerIndex.IsValid())
+                        if (samplerIndex.IsValid() && instanceData.m_textureSamplers)
                         {
-                            auto samplerStates = instanceData.m_textureSamplers.CollectSamplerStates();
+                            auto samplerStates = instanceData.m_textureSamplers->CollectSamplerStates();
                             instanceData.m_shaderResourceGroup->SetSamplerArray(
                                 samplerIndex, { samplerStates.begin(), samplerStates.end() });
                         }
 
                         instanceData.m_shaderResourceGroup->Compile();
+                        instanceData.m_compiledChangeId = instanceData.m_material->GetCurrentChangeId();
                     }
                 }
             }
@@ -573,10 +608,13 @@ namespace AZ::RPI
 
             auto samplerIndex = m_sceneMaterialSrg->FindShaderInputSamplerIndex(AZ::Name{ "m_samplers" });
 
-            auto samplerStates = m_sceneTextureSamplers.CollectSamplerStates();
-            if (!samplerStates.empty())
+            if (samplerIndex.IsValid())
             {
-                m_sceneMaterialSrg->SetSamplerArray(samplerIndex, { samplerStates.begin(), samplerStates.end() });
+                auto samplerStates = m_sceneTextureSamplers.CollectSamplerStates();
+                if (!samplerStates.empty())
+                {
+                    m_sceneMaterialSrg->SetSamplerArray(samplerIndex, { samplerStates.begin(), samplerStates.end() });
+                }
             }
 
             // register the buffer in the SRG and compile it

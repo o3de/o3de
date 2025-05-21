@@ -78,6 +78,21 @@ namespace AZ::RPI
             return false;
         }
 
+        template<typename T>
+        bool SetMaterialSrgMatrix(const MaterialShaderParameterDescriptor* desc, const T& value)
+        {
+            if (!params->m_shaderResourceGroup)
+            {
+                return false;
+            }
+            auto* index = AZStd::get_if<RHI::ShaderInputConstantIndex>(&desc->m_srgInputIndex);
+            if (index && index->IsValid())
+            {
+                return params->m_shaderResourceGroup->SetConstantMatrixRows(*index, value, T::RowCount);
+            }
+            return false;
+        }
+
         bool SetMaterialSrgImage(const MaterialShaderParameterDescriptor* desc, const Data::Instance<Image> value)
         {
             if (!params->m_shaderResourceGroup)
@@ -266,7 +281,7 @@ namespace AZ::RPI
             matrix.StoreToRowMajorFloat9(&values[0]);
             AZStd::span<const uint8_t> data(reinterpret_cast<const uint8_t*>(&values[0]), sizeof(float) * 9);
             SetStructuredBufferData(desc, data);
-            TypedParameterHelper{ this }.SetMaterialSrgConstant(desc, matrix);
+            TypedParameterHelper{ this }.SetMaterialSrgMatrix(desc, matrix);
             return true;
         }
         return false;
@@ -281,7 +296,7 @@ namespace AZ::RPI
             matrix.StoreToRowMajorFloat16(&values[0]);
             AZStd::span<const uint8_t> data(reinterpret_cast<const uint8_t*>(&values[0]), sizeof(float) * 16);
             SetStructuredBufferData(desc, data);
-            TypedParameterHelper{ this }.SetMaterialSrgConstant(desc, matrix);
+            TypedParameterHelper{ this }.SetMaterialSrgMatrix(desc, matrix);
             return true;
         }
         return false;
@@ -304,26 +319,36 @@ namespace AZ::RPI
                 }
                 return result;
             };
-
-            if (image)
-            {
 #ifdef AZ_TRAIT_REGISTER_TEXTURES_PER_MATERIAL
-                // register the texture for the material instance
-                int imageReadIndex{ -1 };
-                auto* instanceHandler = MaterialInstanceHandlerInterface::Get();
-                if (instanceHandler)
+            int imageReadIndex{ -1 };
+            auto* instanceHandler = MaterialInstanceHandlerInterface::Get();
+            // register the texture for the material instance
+            if (instanceHandler)
+            {
+                auto oldIndexIterator = m_materialTextureIndices.find(index);
+                if (oldIndexIterator != m_materialTextureIndices.end())
+                {
+                    instanceHandler->ReleaseMaterialTexture(m_materialTypeIndex, m_materialInstanceIndex, oldIndexIterator->second);
+                }
+                if (image)
                 {
                     imageReadIndex = instanceHandler->RegisterMaterialTexture(m_materialTypeIndex, m_materialInstanceIndex, image);
                 }
-                deviceReadIndex = SameForAllDevices(imageReadIndex);
+                // keep track of which textures were already assigned
+                m_materialTextureIndices[index] = imageReadIndex;
+            }
+            deviceReadIndex = SameForAllDevices(imageReadIndex);
 #else
+            if (image)
+            {
                 deviceReadIndex = image->GetImageView()->GetBindlessReadIndex();
-#endif
             }
             else
             {
                 deviceReadIndex = SameForAllDevices(RHI::DeviceImageView::InvalidBindlessIndex);
             }
+#endif // AZ_TRAIT_REGISTER_TEXTURES_PER_MATERIAL
+
             for (auto deviceIndex{ 0 }; deviceIndex < deviceCount; ++deviceIndex)
             {
                 AZStd::span<const uint8_t> data(reinterpret_cast<const uint8_t*>(&deviceReadIndex[deviceIndex]), sizeof(int32_t));

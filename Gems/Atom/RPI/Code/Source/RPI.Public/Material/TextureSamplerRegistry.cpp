@@ -6,8 +6,9 @@
  *
  */
 
-#include "AzCore/std/smart_ptr/make_shared.h"
 #include <Atom/RPI.Public/Material/TextureSamplerRegistry.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
+
 
 namespace AZ::RPI
 {

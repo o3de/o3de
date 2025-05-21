@@ -9,6 +9,7 @@
 
 #include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/Material/MaterialInstanceHandler.h>
+#include <Atom/RPI.Public/Material/MaterialTextureRegistry.h>
 #include <Atom/RPI.Public/Material/PersistentIndexAllocator.h>
 #include <Atom/RPI.Public/Material/TextureSamplerRegistry.h>
 #include <Atom/RPI.Reflect/Asset/AssetHandler.h>
@@ -43,6 +44,7 @@ namespace AZ::RPI
         MaterialInstanceData RegisterMaterialInstance(const Data::Instance<Material> material) override;
         void ReleaseMaterialInstance(const MaterialInstanceData& materialInstance) override;
         int32_t RegisterMaterialTexture(const int materialTypeIndex, const int materialInstanceIndex, Data::Instance<Image> image) override;
+        void ReleaseMaterialTexture(const int materialTypeIndex, const int materialInstanceIndex, int32_t textureIndex) override;
         AZStd::shared_ptr<SharedSamplerState> RegisterTextureSampler(
             const int materialTypeIndex, const int materialInstanceIndex, const RHI::SamplerState& samplerState) override;
         const RHI::SamplerState GetRegisteredTextureSampler(
@@ -74,16 +76,13 @@ namespace AZ::RPI
             // either the sceneMaterialSRG, or a separate MaterialSrg for this Material-Instance only
             Data::Instance<ShaderResourceGroup> m_shaderResourceGroup;
 
-            // #ifndef AZ_TRAIT_REGISTER_TEXTURES_PER_MATERIAL
-            // this is only used if "Atom_RPI_Traits_Platform.h" defines this, but we don't want to make
-            // the structs in this header dependent on this, since the platform traits include isn't full public
-            AZStd::vector<Data::Instance<Image>> m_materialTextures;
-            AZStd::unordered_map<Data::AssetId, int32_t> m_materialTexturesMap;
+            // this is only used if "Atom_RPI_Traits_Platform.h" defines AZ_TRAIT_REGISTER_TEXTURES_PER_MATERIAL, and
+            // the material uses the SingleMaterial - Srg
+            AZStd::unique_ptr<MaterialTextureRegistry> m_materialTextureRegistry = nullptr;
             bool m_materialTexturesDirty = false;
-            // #endif
 
             // Texture samplers for this material instance. Used only if the material isn't using the SceneMaterialSrg
-            TextureSamplerRegistry m_textureSamplers;
+            AZStd::unique_ptr<TextureSamplerRegistry> m_textureSamplers = nullptr;
 
             Data::Instance<MaterialShaderParameter> m_shaderParameter;
             Material* m_material{ nullptr }; // can't use a smart pointer here, since the material de-registers itself in the destructor
