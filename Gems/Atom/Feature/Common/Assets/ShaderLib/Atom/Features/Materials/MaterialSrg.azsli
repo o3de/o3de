@@ -12,14 +12,16 @@
 // or the Single-Material-SRG, which contains the parameters of one material in the constant buffer
 // Either way, this effectively provides the functions 'GetMaterialTexture(const int readIndex)', 'GetMaterialParameters()' and 'GetMaterialTextureSampler()' 
 
-// relevant defines
+// relevant defines in AzslcPlatformHeader.azsli
 // USE_SINGLE_MATERIAL_SRG
 //      Optionally defined per material: Override to use the single material SRG
+// AZ_TRAITS_MATERIALS_USE_SAMPLER_ARRAY
+//      Allows multiple texture samplers per material-srg.
 // AZ_TRAIT_FORCE_SINGLE_MATERIAL_SRG
-//      defined in AzslcHeader.azsli: Platform override to always use the single material SRG
-// AZ_TRAIT_MAX_TEXTURES_PER_MATERIAL
-//      defined in AzslcHeader.azsli, generally only useful together with AZ_TRAIT_FORCE_SINGLE_MATERIAL_SRG:
-//      Forces the single material SRG to register the textures in the SRG directly, and use a fixed size array
+//      Platform override to always use the single material SRG
+// AZ_TRAIT_SINGLE_MATERIAL_USE_TEXTURE_ARRAY
+//      Forces the single material SRG to register the textures in the SRG directly, and use a fixed size array.
+//      Needs to be set together with AZ_TRAIT_REGISTER_TEXTURES_PER_MATERIAL
 //      This is relevant if the platform has no support for bindless resources, and the workarround in the 
 //      BindlessSRG with large fixed-size arrays isn't supported either (e.g. IPhone 10 limits the array size to ~96)
 

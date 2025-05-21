@@ -10,15 +10,10 @@
 
 #include <Atom/Features/SrgSemantics.azsli>
 
-#if defined(AZ_TRAIT_MAX_TEXTURES_PER_MATERIAL)
-#undef SINGLE_MATERIAL_USE_BINDLESS_SRG
-#else
-#define SINGLE_MATERIAL_USE_BINDLESS_SRG
-#include <Atom/Features/Bindless.azsli>
-#endif
 
-// Note: This limit is arbitrary, but the samplers will exist in the SRG even if they are unused, so try to keep it low.
+// Note: These limits are arbitrary, but the arrays will exist in the SRG even if they are unused, so try to keep it low.
 #define SINGLE_MATERIAL_MAX_SAMPLERS 4
+#define SINGLE_MATERIAL_MAX_TEXTURES 6
 
 // MaterialSrg for a single Material Instance: The parameters are placed in constant memory.
 // This is either a Fallback if the Bindless SRG isnt supported, or an opt-in: 
@@ -27,17 +22,29 @@ ShaderResourceGroup MaterialSrg : SRG_PerMaterial
 {
     MaterialParameters m_params;
 
-#ifndef SINGLE_MATERIAL_USE_BINDLESS_SRG
+#ifdef AZ_TRAIT_SINGLE_MATERIAL_USE_TEXTURE_ARRAY
     // the MaterialParameters - struct can only contain texture indices, and no Texture2D directly.
     // if we can't use the bindless SRG at all, we register the Textures in this fixed-size array, and the texture-indices refer to this array 
-    Texture2D m_textures[AZ_TRAIT_MAX_TEXTURES_PER_MATERIAL];
+    Texture2D m_textures[SINGLE_MATERIAL_MAX_TEXTURES];
 #endif
 
-    // sampler 0 is the default wrap sampler, the others are initialized by the MaterialSystem as needed
+#ifdef AZ_TRAITS_MATERIALS_USE_SAMPLER_ARRAY
+    // sampler 0 is the default linear clamp sampler, the others are initialized by the MaterialSystem as needed
     Sampler m_samplers[SINGLE_MATERIAL_MAX_SAMPLERS];
+#else
+    Sampler m_defaultSampler
+    {
+        AddressU = Wrap;
+        AddressV = Wrap;
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        MaxAnisotropy = 16;
+    };
+#endif
 }
 
-#ifdef SINGLE_MATERIAL_USE_BINDLESS_SRG
+#ifndef AZ_TRAIT_SINGLE_MATERIAL_USE_TEXTURE_ARRAY
 #include <Atom/Features/Bindless.azsli>
 #endif
 
@@ -49,10 +56,14 @@ Texture2D GetMaterialTexture(const int readIndex)
         // TODO: choose a suitable fallback texture here.
         localReadIndex = 0;
     }
-#ifdef SINGLE_MATERIAL_USE_BINDLESS_SRG
-    return BindlessSrg::GetTexture2D(localReadIndex);
-#else
+#ifdef AZ_TRAIT_SINGLE_MATERIAL_USE_TEXTURE_ARRAY
+    if (localReadIndex >= SINGLE_MATERIAL_MAX_TEXTURES)
+    {
+        localReadIndex = 0;
+    }
     return MaterialSrg::m_textures[localReadIndex];
+#else
+    return BindlessSrg::GetTexture2D(localReadIndex);
 #endif
 }
 
@@ -68,11 +79,15 @@ const MaterialParameters GetMaterialParameters()
 // Sampler-Index 0 is always the default Wrap - sampler with linear filtering.
 sampler GetMaterialTextureSampler(const uint samplerIndex = 0)
 {
+#ifdef AZ_TRAITS_MATERIALS_USE_SAMPLER_ARRAY
     int localIndex = samplerIndex;
     if (samplerIndex >= SINGLE_MATERIAL_MAX_SAMPLERS)
     {
         localIndex = 0;
     }
     return MaterialSrg::m_samplers[localIndex];
+#else
+    return MaterialSrg::m_defaultSampler;
+#endif
 }
 
