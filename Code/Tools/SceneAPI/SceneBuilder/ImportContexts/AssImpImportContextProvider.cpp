@@ -8,6 +8,7 @@
 
 #include "AssImpImportContextProvider.h"
 #include <SceneAPI/SceneBuilder/ImportContexts/AssImpImportContexts.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 
 namespace AZ
 {

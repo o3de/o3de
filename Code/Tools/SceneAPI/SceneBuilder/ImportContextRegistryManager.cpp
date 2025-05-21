@@ -8,6 +8,8 @@
 
 #include "ImportContextRegistryManager.h"
 
+#include <SceneAPI/SceneBuilder/ImportContexts/AssImpImportContextProvider.h>
+
 namespace AZ
 {
     namespace SceneAPI
