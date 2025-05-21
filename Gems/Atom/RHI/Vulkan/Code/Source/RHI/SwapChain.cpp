@@ -575,8 +575,7 @@ namespace AZ
 
             bool hdrEnabled = false;
 
-            if (device.GetContext().SetHdrMetadataEXT != nullptr &&
-                m_surfaceFormat.format == VK_FORMAT_A2R10G10B10_UNORM_PACK32 &&
+            if (m_surfaceFormat.format == VK_FORMAT_A2R10G10B10_UNORM_PACK32 &&
                 m_surfaceFormat.colorSpace == VK_COLOR_SPACE_HDR10_ST2084_EXT)
             {
                 hdrEnabled = true;
