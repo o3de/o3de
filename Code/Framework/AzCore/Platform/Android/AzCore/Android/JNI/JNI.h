@@ -43,46 +43,46 @@ namespace AZ
         {
             //! Request a thread specific JNIEnv pointer from the Android environment.
             //! \return A pointer to the JNIEnv on the current thread.
-            JNIEnv* GetEnv();
+            AZCORE_API JNIEnv* GetEnv();
 
             //! Loads a Java class as opposed to attempting to find a loaded class from the call stack.
             //! \param classPath The fully qualified forward slash separated Java class path.
             //! \return A global reference to the desired jclass.  Caller is responsible for making a
             //!         call do DeleteGlobalJniRef when the jclass is no longer needed.
-            jclass LoadClass(const char* classPath);
+            AZCORE_API jclass LoadClass(const char* classPath);
 
             //! Get the fully qualified forward slash separated Java class path of Java class ref.
             //! e.g. android.app.NativeActivity ==> android/app/NativeActivity
             //! \param classRef A valid reference to a java class
             //! \return A copy of the class name
-            AZStd::string GetClassName(jclass classRef);
+            AZCORE_API AZStd::string GetClassName(jclass classRef);
 
             //! Get just the name of the Java class from a Java class ref.
             //! e.g. android.app.NativeActivity ==> NativeActivity
             //! \param classRef A valid reference to a java class
             //! \return A copy of the class name
-            AZStd::string GetSimpleClassName(jclass classRef);
+            AZCORE_API AZStd::string GetSimpleClassName(jclass classRef);
 
             //! Converts a jstring to a AZStd::string
             //! \param stringValue A local or global reference to a jstring object
             //! \return A copy of the converted string
-            AZStd::string ConvertJstringToString(jstring stringValue);
+            AZCORE_API AZStd::string ConvertJstringToString(jstring stringValue);
 
             //! Converts a string to a jstring
             //! \param stringValue The native string value to be converted
             //! \return A global reference to the converted jstring.  The caller is responsible for
             //!         deleting it when no longer needed
-            jstring ConvertStringToJstring(const AZStd::string& stringValue);
+            AZCORE_API jstring ConvertStringToJstring(const AZStd::string& stringValue);
 
             //! Gets the reference type of the Java object.  Can be Local, Global or Weak Global.
             //! \param javaRef Raw Java object reference, can be null.
             //! \return The result of GetObjectRefType as long as the object is valid,
             //!         otherwise JNIInvalidRefType.
-            int GetRefType(jobject javaRef);
+            AZCORE_API int GetRefType(jobject javaRef);
 
             //! Deletes a JNI object/class reference.  Will handle local, global and weak global references.
             //! \param javaRef Raw java object reference.
-            void DeleteRef(jobject javaRef);
+            AZCORE_API void DeleteRef(jobject javaRef);
         }
     }
 }

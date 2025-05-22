@@ -23,73 +23,73 @@ namespace AZ
         namespace Utils
         {
             //! Request the global reference to the activity class
-            jclass GetActivityClassRef();
+            AZCORE_API jclass GetActivityClassRef();
 
             //! Request the global reference to the activity instance
-            jobject GetActivityRef();
+            AZCORE_API jobject GetActivityRef();
 
             //! Get the global pointer to the Android asset manager, which is used for APK file i/o.
-            AAssetManager* GetAssetManager();
+            AZCORE_API AAssetManager* GetAssetManager();
 
             //! Get the global pointer to the device/application configuration,
-            AConfiguration* GetConfiguration();
+            AZCORE_API AConfiguration* GetConfiguration();
 
             //! If the AndroidEnv owns the native configuration, it will be updated with the latest configuration
             //! information, otherwise nothing will happen.
-            void UpdateConfiguration();
+            AZCORE_API void UpdateConfiguration();
 
             //! Get the hidden internal storage, typically this is where the application is installed
             //! on the device.
             //! e.g. /data/data/<package_name>/files
-            const char* GetAppPrivateStoragePath();
+            AZCORE_API const char* GetAppPrivateStoragePath();
 
             //! Get the application specific directory for public public storage.
             //! e.g. <public_storage>/Android/data/<package_name>/files
-            const char* GetAppPublicStoragePath();
+            AZCORE_API const char* GetAppPublicStoragePath();
 
             //! Get the application specific directory for obb files.
             //! e.g. <public_storage>/Android/obb/<package_name>/files
-            const char* GetObbStoragePath();
+            AZCORE_API const char* GetObbStoragePath();
 
             //! Get the dot separated package name for the current application.
             //! e.g. org.o3de.samples for SamplesProject
-            const char* GetPackageName();
+            AZCORE_API const char* GetPackageName();
 
             //! Get the app version code (android:versionCode in the manifest).
-            int GetAppVersionCode();
+            AZCORE_API int GetAppVersionCode();
 
             //! Get the filename of the obb. This doesn't include the path to the obb folder.
-            const char* GetObbFileName(bool mainFile);
+            AZCORE_API const char* GetObbFileName(bool mainFile);
 
             //! Check to see if the path is prefixed with "/APK"
-            bool IsApkPath(const char* filePath);
+            AZCORE_API bool IsApkPath(const char* filePath);
 
             //! Will first check to verify the argument is an apk asset path and if so
             //! will strip the prefix from the path.
             //! \return The pointer position of the relative asset path
-            AZ::IO::FixedMaxPath StripApkPrefix(const char* filePath);
+            AZCORE_API AZ::IO::FixedMaxPath StripApkPrefix(const char* filePath);
 
             //! Searches application storage and the APK for engine.json.  Will return nullptr
             //! if engine.json is not found.
-            const char* FindAssetsDirectory();
+            AZCORE_API const char* FindAssetsDirectory();
 
             //! Calls into Java to show the splash screen on the main UI (Java) thread
-            void ShowSplashScreen();
+            AZCORE_API void ShowSplashScreen();
 
             //! Calls into Java to dismiss the splash screen on the main UI (Java) thread
-            void DismissSplashScreen();
+            AZCORE_API void DismissSplashScreen();
 
             //! Get the native android window
-            ANativeWindow* GetWindow();
+            AZCORE_API ANativeWindow* GetWindow();
 
             //! Query the pixel dimensions of the window
             //! \param[out] widthPixels Returns the pixel width of the window
             //! \param[out] heightPixels Returns the pixel height of the window
             //! \return True if successful, False otherwise
-            bool GetWindowSize(int& widthPixels, int& heightPixels);
+            AZCORE_API bool GetWindowSize(int& widthPixels, int& heightPixels);
 
             //! Set the filenames for files to be loaded to memory
-            void SetLoadFilesToMemory(const char* fileNames);
+            AZCORE_API void SetLoadFilesToMemory(const char* fileNames);
         }
     }
 }
