@@ -569,7 +569,7 @@ namespace Maestro
         }
 
         Spline::key_type& k = m_spline->key(keyIndex);
-        azsprintf(str, "%.2f", k.value.y);
+        azsnprintf(str, AZ_ARRAY_SIZE(str), "%.2f", k.value.y);
     }
 
 } // namespace Maestro
