@@ -74,9 +74,9 @@ namespace AZ
                 rayTracingFeatureProcessor->BeginFrame();
                 auto revision = rayTracingFeatureProcessor->GetRevision();
                 m_rayTracingRevisionOutDated = revision != m_rayTracingRevision;
-                if (m_rayTracingRevisionOutDated)
+                m_rayTracingRevision = revision;
+                if (m_rayTracingRevisionOutDated || rayTracingFeatureProcessor->GetSkinnedMeshCount() != 0)
                 {
-                    m_rayTracingRevision = revision;
                     ReadbackScopeQueryResults();
                 }
             }
