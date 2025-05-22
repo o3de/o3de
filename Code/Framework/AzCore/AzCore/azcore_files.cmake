@@ -446,8 +446,10 @@ set(FILES
     Metrics/IEventLogger.cpp
     Metrics/IEventLogger.inl
     Metrics/IEventLoggerFactory.h
+    Module/AZStdInstantiations.cpp
     Module/DynamicModuleHandle.cpp
     Module/DynamicModuleHandle.h
+    Module/EBusInstantiations.cpp
     Module/Module.cpp
     Module/Module.h
     Module/ModuleManagerBus.h
