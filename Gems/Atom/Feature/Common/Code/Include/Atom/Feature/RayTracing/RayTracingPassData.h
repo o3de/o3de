@@ -39,8 +39,6 @@ namespace AZ
                         ->Field("ClosestHitProceduralShaderName", &RayTracingPassData::m_closestHitProceduralShaderName)
                         ->Field("MissShaderAsset", &RayTracingPassData::m_missShaderAssetReference)
                         ->Field("MissShaderName", &RayTracingPassData::m_missShaderName)
-                        ->Field("IntersectionShaderAsset", &RayTracingPassData::m_intersectionShaderAssetReference)
-                        ->Field("IntersectionShaderName", &RayTracingPassData::m_intersectionShaderName)
                         ->Field("MaxPayloadSize", &RayTracingPassData::m_maxPayloadSize)
                         ->Field("MaxAttributeSize", &RayTracingPassData::m_maxAttributeSize)
                         ->Field("MaxRecursionDepth", &RayTracingPassData::m_maxRecursionDepth)

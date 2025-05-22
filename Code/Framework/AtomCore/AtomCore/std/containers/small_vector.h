@@ -199,7 +199,7 @@ namespace AZStd
         const T& operator[](size_t pos) const
         {
             return AZStd::visit(
-                [&](auto& vector) -> T&
+                [&](auto& vector) -> const T&
                 {
                     return vector[pos];
                 },
