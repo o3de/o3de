@@ -102,7 +102,7 @@ namespace AZ
         // Ensure our module's static name list is up-to-date with what's in our deferred list.
         // This allows the NameDictionary to be recreated and restore and name literals that still exist
         // in e.g. unit tests.
-        Name::s_staticNameBegin = m_deferredHead.m_nextName;
+        Name::SetStaticNameBegin(m_deferredHead.m_nextName);
 
         [[maybe_unused]] bool leaksDetected = false;
 

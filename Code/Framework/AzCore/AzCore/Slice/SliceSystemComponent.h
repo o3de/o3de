@@ -17,7 +17,7 @@ namespace AZ
     /**
      * Performs management for the Slice (aka Prefab) system.
      */
-    class SliceSystemComponent : public Component
+    class AZCORE_API SliceSystemComponent : public Component
     {
     public:
         AZ_COMPONENT(SliceSystemComponent, "{1712C054-1C84-4995-BA06-AFE99CCFE08B}");

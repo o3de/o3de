@@ -75,7 +75,7 @@ namespace AZ
         FallbackToDefaultWrite,
         AbortWrite
     };
-    AZ_TYPE_INFO_SPECIALIZE_WITH_NAME_DECL(ObjectStreamWriteOverrideResponse);
+    AZ_TYPE_INFO_SPECIALIZE_WITH_NAME_DECL_API(AZCORE_API, ObjectStreamWriteOverrideResponse);
 }
 namespace AZ::Edit
 {
@@ -100,8 +100,8 @@ namespace AZ::Serialize
 
     namespace Attributes
     {
-        extern const Crc32 EnumValueKey;
-        extern const Crc32 EnumUnderlyingType;
+        const Crc32 EnumValueKey(AZ_CRC_CE("EnumValueKey"));
+        const Crc32 EnumUnderlyingType(AZ_CRC_CE("EnumUnderlyingType"));
     }
 
     inline constexpr unsigned int VersionClassDeprecated = (unsigned int)-1;
@@ -122,7 +122,7 @@ namespace AZ
      * for all related information when you declare you data
      * for serialization. In addition it will handle data version control.
      */
-    class SerializeContext
+    class AZCORE_API SerializeContext
         : public ReflectContext
     {
     public:
@@ -144,7 +144,7 @@ namespace AZ
         using IDataConverter = Serialize::IDataConverter;
 
         AZ_CLASS_ALLOCATOR(SerializeContext, SystemAllocator);
-        AZ_TYPE_INFO_WITH_NAME_DECL(SerializeContext);
+        AZ_TYPE_INFO_WITH_NAME_DECL_API(AZCORE_API, SerializeContext);
         AZ_RTTI_NO_TYPE_INFO_DECL();
 
         /// Callback to process data conversion.
@@ -228,7 +228,7 @@ namespace AZ
         /**
          * Debug stack element when we enumerate a class hierarchy so we can report better errors!
          */
-        struct DbgStackEntry
+        struct AZCORE_API DbgStackEntry
         {
             void  ToString(AZStd::string& str) const;
             const void*         m_dataPtr;
@@ -238,7 +238,7 @@ namespace AZ
             const ClassElement* m_classElement;
         };
 
-        class ErrorHandler
+        class AZCORE_API ErrorHandler
         {
         public:
 
@@ -468,7 +468,7 @@ namespace AZ
             const DeprecatedNameVisitWrapper& callback
             );
     public:
-        class ClassBuilder
+        class AZCORE_API ClassBuilder
         {
             friend class SerializeContext;
             ClassBuilder(SerializeContext* context, const UuidToClassMap::iterator& classMapIter);
@@ -606,7 +606,7 @@ namespace AZ
          *      ->Value("Second",&MyEnum::Second)
          *      ->Value("Fourth",&MyEnum::Fourth);
          */
-        class EnumBuilder
+        class AZCORE_API EnumBuilder
         {
             friend class SerializeContext;
             EnumBuilder(SerializeContext* context, const UuidToClassMap::iterator& classMapIter);
@@ -681,10 +681,11 @@ namespace AZ
         class PerModuleGenericClassInfo;
         AZStd::unordered_set<PerModuleGenericClassInfo*>  m_perModuleSet; ///< Stores the static PerModuleGenericClass structures keeps track of reflected GenericClassInfo per module
 
-        friend PerModuleGenericClassInfo& GetCurrentSerializeContextModule();
+        friend AZCORE_API PerModuleGenericClassInfo& GetCurrentSerializeContextModule();
     };
+    AZ_TYPE_INFO_WITH_NAME_DECL_EXT_API(AZCORE_API, SerializeContext);
 
-    SerializeContext::PerModuleGenericClassInfo& GetCurrentSerializeContextModule();
+    AZCORE_API SerializeContext::PerModuleGenericClassInfo& GetCurrentSerializeContextModule();
 } // namespace AZ
 
 namespace AZ
@@ -697,11 +698,11 @@ namespace AZ
     };
 
     // Base type used for single-node version upgrades
-    class SerializeContext::DataPatchUpgrade
+    class AZCORE_API SerializeContext::DataPatchUpgrade
     {
     public:
         AZ_CLASS_ALLOCATOR(DataPatchUpgrade, SystemAllocator);
-        AZ_TYPE_INFO_WITH_NAME_DECL(DataPatchUpgrade);
+        AZ_TYPE_INFO_WITH_NAME_DECL_API(AZCORE_API, DataPatchUpgrade);
         AZ_RTTI_NO_TYPE_INFO_DECL();
 
         DataPatchUpgrade(AZStd::string_view fieldName, unsigned int fromVersion, unsigned int toVersion);
@@ -741,11 +742,12 @@ namespace AZ
 
         DataPatchUpgradeType m_upgradeType;
     };
+    AZ_TYPE_INFO_WITH_NAME_DECL_EXT_API(AZCORE_API, SerializeContext::DataPatchUpgrade);
 
     // Binary predicate for ordering per-version upgrades
     // When multiple upgrades exist from a particular version, we only want
     // to apply the one that upgrades to the maximum possible version.
-    struct SerializeContext::NodeUpgradeSortFunctor
+    struct AZCORE_API SerializeContext::NodeUpgradeSortFunctor
     {
         // Provides sorting of lists of node upgrade pointers
         bool operator()(const DataPatchUpgrade* LHS, const DataPatchUpgrade* RHS)
@@ -768,7 +770,7 @@ namespace AZ
     // A class to maintain and apply all of the per-field node upgrades that apply to one single field.
     // Performs error checking when building the field array, manages the lifetime of the upgrades, and
     // deals with application of the upgrades to both nodes and raw values.
-    class SerializeContext::DataPatchUpgradeHandler
+    class AZCORE_API SerializeContext::DataPatchUpgradeHandler
     {
     public:
         DataPatchUpgradeHandler()
@@ -785,11 +787,11 @@ namespace AZ
         DataPatchFieldUpgrades m_upgrades;
     };
 
-    class SerializeContext::DataPatchNameUpgrade : public DataPatchUpgrade
+    class AZCORE_API SerializeContext::DataPatchNameUpgrade : public DataPatchUpgrade
     {
     public:
         AZ_CLASS_ALLOCATOR(DataPatchNameUpgrade, SystemAllocator);
-        AZ_TYPE_INFO_WITH_NAME_DECL(DataPatchNameUpgrade);
+        AZ_TYPE_INFO_WITH_NAME_DECL_API(AZCORE_API, DataPatchNameUpgrade);
         AZ_RTTI_NO_TYPE_INFO_DECL();
 
         DataPatchNameUpgrade(unsigned int fromVersion, unsigned int toVersion, AZStd::string_view oldName, AZStd::string_view newName)
@@ -815,6 +817,8 @@ namespace AZ
     private:
         AZStd::string m_newNodeName;
     };
+    AZ_TYPE_INFO_WITH_NAME_DECL_EXT_API(AZCORE_API, SerializeContext::DataPatchNameUpgrade);
+
     // As the SerializeContext::DataPatchTypeUpgrade class was forward declared
     // in the SerializeContext class definition, TypeInfo GetO3de* functions can be now declared as well
     AZ_TYPE_INFO_TEMPLATE_WITH_NAME_DECL(SerializeContext::DataPatchTypeUpgrade, AZ_TYPE_INFO_CLASS, AZ_TYPE_INFO_CLASS);
@@ -875,9 +879,9 @@ namespace AZ::Serialize
      * Class element. When a class doesn't have a direct serializer,
      * he is an aggregation of ClassElements (which can be another classes).
      */
-    struct ClassElement
+    struct AZCORE_API ClassElement
     {
-        AZ_TYPE_INFO_WITH_NAME_DECL(ClassElement);
+        AZ_TYPE_INFO_WITH_NAME_DECL_API(AZCORE_API, ClassElement);
         enum Flags
         {
             FLG_POINTER = (1 << 0),       ///< Element is stored as pointer (it's not a value).
@@ -918,17 +922,18 @@ namespace AZ::Serialize
         AttributeOwnership m_attributeOwnership = AttributeOwnership::Parent;
         int m_flags{};    ///<
     };
+    AZ_TYPE_INFO_WITH_NAME_DECL_EXT_API(AZCORE_API, ClassElement);
 
     /**
      * Class Data contains the data/info for each registered class
      * all if it members (their offsets, etc.), creator, version converts, etc.
      */
-    class ClassData
+    class AZCORE_API ClassData
     {
         friend SerializeContext;
         using ClassElementArray = AZStd::vector<ClassElement>;
     public:
-        AZ_TYPE_INFO_WITH_NAME_DECL(ClassData);
+        AZ_TYPE_INFO_WITH_NAME_DECL_API(AZCORE_API, ClassData);
 
         ClassData();
         ~ClassData() { ClearAttributes(); }
@@ -998,11 +1003,12 @@ namespace AZ::Serialize
             return AZ::AllocatorInstance<AZ::SystemAllocator>::Get();
         }
     };
+    AZ_TYPE_INFO_WITH_NAME_DECL_EXT_API(AZCORE_API, ClassData);
 
     /**
      * Interface for creating and destroying object from the serializer.
      */
-    class IObjectFactory
+    class AZCORE_API IObjectFactory
     {
     public:
 
@@ -1024,7 +1030,7 @@ namespace AZ::Serialize
      * of data. Once this implementation is detected, the class will not be drilled
      * down. We will assume this implementation covers the full class.
      */
-    class IDataSerializer
+    class AZCORE_API IDataSerializer
     {
     public:
         static IDataSerializerDeleter CreateDefaultDeleteDeleter();
@@ -1057,10 +1063,10 @@ namespace AZ::Serialize
     * Interface for a data container. This might be an AZStd container or just a class with
     * elements defined in some template manner (usually with templates :) )
     */
-    class IDataContainer
+    class AZCORE_API IDataContainer
     {
     public:
-        AZ_TYPE_INFO_WITH_NAME_DECL(IDataContainer);
+        AZ_TYPE_INFO_WITH_NAME_DECL_API(AZCORE_API, IDataContainer);
         AZ_RTTI_NO_TYPE_INFO_DECL()
 
         using ElementCB = AZStd::function< bool(void* /* instance pointer */, const Uuid& /*elementClassId*/, const ClassData* /* elementGenericClassData */, const ClassElement* /* genericClassElement */) >;
@@ -1087,7 +1093,7 @@ namespace AZ::Serialize
                 UnorderedSet,
                 UnorderedMap
             };
-            AZ_TYPE_INFO_WITH_NAME_DECL(IAssociativeDataContainer);
+            AZ_TYPE_INFO_WITH_NAME_DECL_API(AZCORE_API, IAssociativeDataContainer);
             virtual ~IAssociativeDataContainer() {}
 
             struct KeyPtrDeleter
@@ -1188,6 +1194,8 @@ namespace AZ::Serialize
         /// Free element data (when the class elements are pointers).
         void DeletePointerData(SerializeContext* context, const ClassElement* classElement, const void* element);
     };
+    AZ_TYPE_INFO_WITH_NAME_DECL_EXT_API(AZCORE_API, IDataContainer::IAssociativeDataContainer);
+    AZ_TYPE_INFO_WITH_NAME_DECL_EXT_API(AZCORE_API, IDataContainer);
 
     /**
      * Serialize class events.
@@ -1215,7 +1223,7 @@ namespace AZ::Serialize
      * since it is "reading from" the objects.  However, if you pass the ENUM_ACCESS_FOR_WRITE flag, it will INSTEAD call OnWriteBegin
      * and OnWriteEnd for the c++ objects it is visiting, despite the fact that you are technically enumerating them.
      */
-    class IEventHandler
+    class AZCORE_API IEventHandler
     {
     public:
         virtual ~IEventHandler() {}
@@ -1254,7 +1262,7 @@ namespace AZ::Serialize
      * derived class to base class casting is taken care of through the RTTI system so those relations should not be
      * check within this class
      */
-    class IDataConverter
+    class AZCORE_API IDataConverter
     {
     public:
         virtual ~IDataConverter() = default;
@@ -1287,7 +1295,7 @@ namespace AZ::Serialize
       * An element representing an int will have a data value, but an element
       * representing a vector or class will not (their contents are stored in sub-elements).
       */
-    struct DataElement
+    struct AZCORE_API DataElement
     {
         DataElement();
         ~DataElement();
@@ -1322,7 +1330,7 @@ namespace AZ::Serialize
      * For example, a class would be represented as a parent node
      * with its member variables in sub nodes.
      */
-    class DataElementNode
+    class AZCORE_API DataElementNode
     {
         friend class AZ::ObjectStreamInternal::ObjectStreamImpl;
         friend class AZ::DataOverlayTarget;
@@ -1416,9 +1424,9 @@ namespace AZ::Serialize
     * EnumerateInstance is used in high frequency performance-sensitive scenarios, and this ensures
     * minimal interaction with the memory manager for things like bound functors.
     */
-    struct EnumerateInstanceCallContext
+    struct AZCORE_API EnumerateInstanceCallContext
     {
-        AZ_TYPE_INFO_WITH_NAME_DECL(EnumerateInstanceCallContext);
+        AZ_TYPE_INFO_WITH_NAME_DECL_API(AZCORE_API, EnumerateInstanceCallContext);
         EnumerateInstanceCallContext(const SerializeContext::BeginElemEnumCB& beginElemCB,
             const SerializeContext::EndElemEnumCB& endElemCB,
             const SerializeContext* context, unsigned int accessflags,
@@ -1433,7 +1441,8 @@ namespace AZ::Serialize
         IDataContainer::ElementCB m_elementCallback;      ///< Pre-bound functor computed internally to avoid allocating closures during traversal.
         SerializeContext::ErrorHandler m_defaultErrorHandler;  ///< If no custom error handler is provided, the context provides one.
     };
-} // namespace AZ::Serialize
+    AZ_TYPE_INFO_WITH_NAME_DECL_EXT_API(AZCORE_API, EnumerateInstanceCallContext);
+    } // namespace AZ::Serialize
 
 namespace AZ
 {
@@ -2205,7 +2214,7 @@ namespace AZ
     * PerModuleGenericClassInfo tracks module specific reflections of GenericClassInfo for each serializeContext
     * registered with this module(.dll)
     */
-    class SerializeContext::PerModuleGenericClassInfo final
+    class AZCORE_API SerializeContext::PerModuleGenericClassInfo final
     {
     public:
         using GenericInfoModuleMap = AZStd::unordered_map<AZ::Uuid, AZ::GenericClassInfo*>;

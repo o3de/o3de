@@ -18,7 +18,7 @@ namespace AZ
     /**
      * Manages prefab assets.
      */
-    class SliceAssetHandler
+    class AZCORE_API SliceAssetHandler
         : public Data::AssetHandler
         , AZ::AssetTypeInfoBus::MultiHandler
     {

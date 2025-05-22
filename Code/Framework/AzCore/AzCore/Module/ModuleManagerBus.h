@@ -55,7 +55,7 @@ namespace AZ
     /**
      * Describes a dynamic module used by the application.
      */
-    class DynamicModuleDescriptor
+    class AZCORE_API DynamicModuleDescriptor
     {
     public:
         AZ_TYPE_INFO(DynamicModuleDescriptor, "{D2932FA3-9942-4FD2-A703-2E750F57C003}");

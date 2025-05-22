@@ -16,7 +16,7 @@ namespace AZ
 {
     class JsonSerializerContext;
 
-    class JsonSerializer final
+    class AZCORE_API JsonSerializer final
     {
         friend class JsonSerialization;
         friend class BaseJsonSerializer;

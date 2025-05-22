@@ -161,7 +161,7 @@ namespace AZ
             TRValue m_data;
         };
 
-        class NullFactory
+        class AZCORE_API NullFactory
             : public SerializeContext::IObjectFactory
         {
             void* Create(const char* name) override
@@ -175,11 +175,7 @@ namespace AZ
             {
             }
         public:
-            static NullFactory* GetInstance()
-            {
-                static NullFactory s_nullFactory;
-                return &s_nullFactory;
-            }
+            static NullFactory* GetInstance();
         };
 
         template<size_t Index, size_t... Digits>
@@ -502,7 +498,7 @@ namespace AZ
             }
         };
 
-        class AZStdArrayEvents : public SerializeContext::IEventHandler
+        class AZCORE_API AZStdArrayEvents : public SerializeContext::IEventHandler
         {
         public:
             using Stack = AZStd::stack<size_t, AZStd::vector<size_t, AZ::OSStdAllocator>>;
@@ -519,7 +515,7 @@ namespace AZ
             // store an integer value for the index, or when there's nested AZStd::arrays, an AZStd::stack. To tell the two apart
             // the least significant bit is set to 1 if an integer value is stored and 0 if m_indices points to an AZStd::stack.
             // Because the lsb is used for storing the indicator bit, the stored value needs to be shifted down to get the actual index.
-            static AZ_THREAD_LOCAL void* m_indices;
+            // static AZ_THREAD_LOCAL void* m_indices;
         };
         template<typename T, size_t N>
         class AZStdArrayContainer

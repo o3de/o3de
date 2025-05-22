@@ -105,7 +105,7 @@ namespace AZ::Internal
     // data, in which case the data is inlined in this structure. Attempting to capture more data
     // will result in a compile failure, so use indirection and capture a pointer/reference to your
     // data if you run into this.
-    class alignas(alignof(max_align_t)) Task final
+    class alignas(alignof(max_align_t)) AZCORE_API Task final
     {
     public:
         AZ_CLASS_ALLOCATOR(Task, ThreadPoolAllocator);

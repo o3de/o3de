@@ -19,7 +19,5 @@ namespace AZStd
      */
     using intrusive_base = intrusive_refcount<atomic_uint>;
 
-    AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
-    extern template class AZCORE_API_EXTERN intrusive_refcount<atomic_uint>;
-    AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
+    AZCORE_API_EXTERN template class AZCORE_API intrusive_refcount<atomic_uint>;
 } // namespace AZStd

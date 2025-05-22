@@ -30,6 +30,6 @@ namespace AZ
         /** Retrieve information about memory usage of current process.
          * @param meminfo Output parameter where information is saved.
          */
-        bool QueryMemInfo(ProcessMemInfo& meminfo);
+        AZCORE_API bool QueryMemInfo(ProcessMemInfo& meminfo);
     }
 }

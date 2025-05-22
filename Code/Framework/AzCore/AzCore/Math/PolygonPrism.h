@@ -22,7 +22,7 @@ namespace AZ
     //! Formal Definition: A (right) polygonal prism is a 3-dimensional prism made from two translated polygons connected by rectangles. Parallelogram sides are not allowed.
     //! Here the representation is defined by one polygon (internally represented as a vertex container - list of vertices) and a height (extrusion) property.
     //! All vertices lie on the local plane Z = 0.
-    class PolygonPrism
+    class AZCORE_API PolygonPrism
     {
     public:
         AZ_RTTI(PolygonPrism, "{F01C8BDD-6F24-4344-8945-521A8750B30B}")

@@ -19,7 +19,7 @@ namespace AZ::Debug
     //! The metrics can be recorded as raw events (DataLogType::LogAllSamples)
     //! or aggregated as statistical summaries (DataLogType::LogStatistics).
     //! Performance is captured in batches of frames.
-    class PerformanceCollector final
+    class AZCORE_API PerformanceCollector final
     {
     public:
         PerformanceCollector() = delete;
@@ -144,7 +144,7 @@ namespace AZ::Debug
 
     //! A Convenience class used to measure time performance of scopes of code
     //! with constructor/destructor.
-    class ScopeDuration
+    class AZCORE_API ScopeDuration
     {
     public:
         ScopeDuration() = delete;

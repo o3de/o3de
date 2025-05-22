@@ -22,7 +22,7 @@ namespace AZ
     //! Total time duration between queuing and the scheduled event triggering is not guaranteed, and will at least be quantized to frametime.
     //! This event can trigger continuously at the specified interval in ms if set with the auto-re-queue function.
     //! This event should be declared as a member of class, not in a local function as it will not trigger if it goes out of scope.
-    class ScheduledEvent
+    class AZCORE_API ScheduledEvent
     {
     public:
         //! Default constructor only for AZStd::deque compatibility.

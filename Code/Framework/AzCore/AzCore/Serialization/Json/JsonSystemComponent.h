@@ -13,7 +13,7 @@
 
 namespace AZ
 {
-    class JsonSystemComponent
+    class AZCORE_API JsonSystemComponent
         : public Component
     {
     public:

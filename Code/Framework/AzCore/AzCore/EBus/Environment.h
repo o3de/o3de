@@ -30,7 +30,7 @@ namespace AZ
         /**
         * Base for EBus<T>::Context. We use it to support multiple EBusEnvironments (have collection of contexts and manage state).
         */
-        class ContextBase
+        class AZCORE_API ContextBase
         {
             template<class Context>
             friend struct AZ::EBusEnvironmentStoragePolicy;
@@ -57,7 +57,7 @@ namespace AZ
         * If this happens make sure you create this structure in the environment from the main executable
         * or a module that will be loaded before and unloaded before any EBuses are used.
         */
-        struct EBusEnvironmentTLSAccessors
+        struct AZCORE_API EBusEnvironmentTLSAccessors
         {
             EBusEnvironmentTLSAccessors();
 
@@ -83,7 +83,7 @@ namespace AZ
      * EBusEnvironment is very similar to the way OpenGL contexts operate. You can manage their livecycle from any thread at anytime by calling EBusEnvironment::Create/Destroy. You can activate/deactivate an environment by calling
      * ActivateOnCurrentThread/DeactivateOnCurrentThread. Every EBusEnvironment can be activated to only one thread at a time.
      */
-    class EBusEnvironment
+    class AZCORE_API EBusEnvironment
     {
         template<class Context>
         friend struct EBusEnvironmentStoragePolicy;

@@ -14,7 +14,7 @@
 
 namespace AZ
 {
-    class JsonUnsupportedTypesSerializer : public BaseJsonSerializer
+    class AZCORE_API JsonUnsupportedTypesSerializer : public BaseJsonSerializer
     {
     public:
         AZ_RTTI(JsonUnsupportedTypesSerializer, "{AFCC76B9-1F28-429D-8B4E-020BFD95ADAC}", BaseJsonSerializer);
@@ -36,7 +36,7 @@ namespace AZ
         virtual AZStd::string_view GetMessage() const = 0;
     };
 
-    class JsonVariantSerializer : public JsonUnsupportedTypesSerializer
+    class AZCORE_API JsonVariantSerializer : public JsonUnsupportedTypesSerializer
     {
     public:
         AZ_RTTI(JsonVariantSerializer, "{08F8E746-F8A4-4E83-8902-713E90F3F498}", JsonUnsupportedTypesSerializer);
@@ -46,7 +46,7 @@ namespace AZ
         AZStd::string_view GetMessage() const override;
     };
 
-    class JsonOptionalSerializer : public JsonUnsupportedTypesSerializer
+    class AZCORE_API JsonOptionalSerializer : public JsonUnsupportedTypesSerializer
     {
     public:
         AZ_RTTI(JsonOptionalSerializer, "{F8AF1C95-BD1B-44D2-9B4A-F5726133A104}", JsonUnsupportedTypesSerializer);
@@ -56,7 +56,7 @@ namespace AZ
         AZStd::string_view GetMessage() const override;
     };
 
-    class JsonBitsetSerializer : public JsonUnsupportedTypesSerializer
+    class AZCORE_API JsonBitsetSerializer : public JsonUnsupportedTypesSerializer
     {
     public:
         AZ_RTTI(JsonBitsetSerializer, "{10CE969D-D69E-4B3F-8593-069736F8F705}", JsonUnsupportedTypesSerializer);

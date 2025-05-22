@@ -94,7 +94,7 @@ namespace AZ
      * you to remove the template parameter and set you interface on demand.
      * of course at a cost of a pointer.
      */
-    class AZStdIAllocator
+    class AZCORE_API AZStdIAllocator
     {
     public:
         AZ_ALLOCATOR_DEFAULT_TRAITS
@@ -135,7 +135,7 @@ namespace AZ
     * you to remove the template parameter and retrieve the allocator from a supplied function
     * pointer
     */
-    class AZStdFunctorAllocator
+    class AZCORE_API AZStdFunctorAllocator
     {
     public:
         using pointer = void*;

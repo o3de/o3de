@@ -6,7 +6,7 @@
  *
  */
 
-#pragma once
+ #pragma once
 
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/EBus/Event.h>
@@ -37,7 +37,7 @@ namespace AZ
         class ComponentFactoryInterface;
     }
 
-    struct ApplicationTypeQuery
+    struct AZCORE_API ApplicationTypeQuery
     {
         //! Signals if the application is the Editor.
         bool IsEditor() const;
@@ -84,7 +84,7 @@ namespace AZ
     using EntityDeactivatedEvent = AZ::Event<AZ::Entity*>;
 
     //! Interface that components can use to make requests of the main application.
-    class ComponentApplicationRequests
+    class AZCORE_API ComponentApplicationRequests
     {
     public:
         AZ_RTTI(ComponentApplicationRequests, "{E8BE41B7-615F-4FE8-B611-8A9E441290A8}");

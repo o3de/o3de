@@ -38,7 +38,7 @@ namespace AZ::Settings
     [Section Header1]
     sectionKey1 = value2
     */
-    struct ConfigParserSettings
+    struct AZCORE_API ConfigParserSettings
     {
         //! Struct which contains a string view to the key part and the value part
         //! of a parsed INI file line.
@@ -147,5 +147,5 @@ namespace AZ::Settings
     //! @param configParseSettings struct defining configuration on how the INI style file should be parsed
     //! @return success outcome if the configuration file was parsed without error,
     //! otherwise a failure string is provided with the parse error
-    ParseOutcome ParseConfigFile(AZ::IO::GenericStream& stream, const ConfigParserSettings& configParserSettings);
+    AZCORE_API ParseOutcome ParseConfigFile(AZ::IO::GenericStream& stream, const ConfigParserSettings& configParserSettings);
 } // namespace AZ::Settings

@@ -17,7 +17,7 @@ namespace AZ
     /**
      *
      */
-    class JobManagerComponent
+    class AZCORE_API JobManagerComponent
         : public Component
         , public JobManagerBus::Handler
     {

@@ -164,6 +164,6 @@ namespace AZ
         }
     }
 
-    template class AttributeData<Crc32>;
+    template class AZCORE_API_EXPORT AttributeData<Crc32>;
 
 }

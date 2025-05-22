@@ -24,7 +24,7 @@ namespace AZ
     class StackedString;
     struct JsonImportSettings;
 
-    class SettingsRegistryImpl final
+    class AZCORE_API SettingsRegistryImpl final
         : public SettingsRegistryInterface
     {
     public:

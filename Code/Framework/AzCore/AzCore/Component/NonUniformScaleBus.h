@@ -18,7 +18,7 @@ namespace AZ
     using NonUniformScaleChangedEvent = AZ::Event<const AZ::Vector3&>;
 
     //! Requests for working with non-uniform scale.
-    class NonUniformScaleRequests
+    class AZCORE_API NonUniformScaleRequests
         : public AZ::ComponentBus
     {
     public:

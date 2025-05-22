@@ -2098,7 +2098,7 @@ namespace AZStd
 #if !defined(AZ_STRING_EXPLICIT_SPECIALIZATION) && defined(AZ_COMPILER_MSVC)
 
     // extern explicit specialization - to speed up build time.
-    extern template class basic_string<char>;
+    AZCORE_API_EXTERN template class AZCORE_API basic_string<char>;
     //extern template class basic_string<wchar_t>;
 
 #endif // defined(AZ_STRING_EXPLICIT_SPECIALIZATION) && defined(AZ_COMPILER_MSVC)

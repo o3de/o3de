@@ -18,7 +18,7 @@
 namespace AZ::Dom
 {
     //! Backends are registered centrally and used to transition DOM formats to and from a textual format.
-    class Backend
+    class AZCORE_API Backend
     {
     public:
         virtual ~Backend() = default;

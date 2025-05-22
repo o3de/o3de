@@ -32,7 +32,7 @@ namespace AZ::IO
         struct RescheduleData;
     } // namespace Requests
 
-    class Scheduler final
+    class AZCORE_API Scheduler final
     {
     public:
         explicit Scheduler(AZStd::shared_ptr<StreamStackEntry> streamStack, u64 memoryAlignment = AZCORE_GLOBAL_NEW_ALIGNMENT,

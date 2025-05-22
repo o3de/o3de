@@ -15,10 +15,12 @@ namespace AZ::Dom
 {
     //! Visitor that writes to a Value.
     //! Supports all Visitor operations.
-    class ValueWriter : public Visitor
+    class AZCORE_API  ValueWriter : public Visitor
     {
     public:
         ValueWriter(Value& outputValue);
+
+        AZ_DISABLE_COPY_MOVE(ValueWriter);
 
         VisitorFlags GetVisitorFlags() const override;
         Result Null() override;
@@ -45,7 +47,7 @@ namespace AZ::Dom
         Value& CurrentValue();
         Visitor::Result EndContainer(Type containerType, AZ::u64 attributeCount, AZ::u64 elementCount);
 
-        struct ValueInfo
+        struct AZCORE_API ValueInfo
         {
             ValueInfo(Value& container);
 
@@ -54,7 +56,7 @@ namespace AZ::Dom
             Value& m_container;
         };
 
-        struct ValueBuffer
+        struct AZCORE_API ValueBuffer
         {
             Array::ContainerType m_elements;
             Object::ContainerType m_attributes;

@@ -23,9 +23,9 @@ namespace AZ
     {
         typedef AZ::ObjectStream::FilterDescriptor FilterDescriptor;
 
-        void* LoadObjectFromStream(IO::GenericStream& stream, SerializeContext* context = nullptr, const Uuid* targetClassId = nullptr, const FilterDescriptor& filterDesc = FilterDescriptor());
-        bool LoadObjectFromStreamInPlace(IO::GenericStream& stream, AZ::SerializeContext* context, const Uuid& targetClassId, void* targetPointer, const FilterDescriptor& filterDesc = FilterDescriptor());
-        bool LoadObjectFromStreamInPlace(IO::GenericStream& stream, AZ::SerializeContext* context, const SerializeContext::ClassData* objectClassData, void* targetPointer, const FilterDescriptor& filterDesc = FilterDescriptor());
+        AZCORE_API void* LoadObjectFromStream(IO::GenericStream& stream, SerializeContext* context = nullptr, const Uuid* targetClassId = nullptr, const FilterDescriptor& filterDesc = FilterDescriptor());
+        AZCORE_API bool LoadObjectFromStreamInPlace(IO::GenericStream& stream, AZ::SerializeContext* context, const Uuid& targetClassId, void* targetPointer, const FilterDescriptor& filterDesc = FilterDescriptor());
+        AZCORE_API bool LoadObjectFromStreamInPlace(IO::GenericStream& stream, AZ::SerializeContext* context, const SerializeContext::ClassData* objectClassData, void* targetPointer, const FilterDescriptor& filterDesc = FilterDescriptor());
 
         template <typename ObjectType>
         ObjectType* LoadObjectFromStream(IO::GenericStream& stream, SerializeContext* context = nullptr, const FilterDescriptor& filterDesc = FilterDescriptor())
@@ -41,7 +41,7 @@ namespace AZ
             return LoadObjectFromStream<ObjectType>(stream, context, filterDesc);
         }
 
-        void* LoadObjectFromFile(const AZStd::string& filePath, const Uuid& targetClassId, SerializeContext* context = nullptr, const FilterDescriptor& filterDesc = FilterDescriptor(), int platformFlags = 0);
+        AZCORE_API void* LoadObjectFromFile(const AZStd::string& filePath, const Uuid& targetClassId, SerializeContext* context = nullptr, const FilterDescriptor& filterDesc = FilterDescriptor(), int platformFlags = 0);
 
         template <typename ObjectType>
         ObjectType* LoadObjectFromFile(const AZStd::string& filePath, SerializeContext* context = nullptr, const FilterDescriptor& filterDesc = FilterDescriptor(), int platformFlags = 0)
@@ -49,7 +49,7 @@ namespace AZ
             return reinterpret_cast<ObjectType*>(LoadObjectFromFile(filePath, AzTypeInfo<ObjectType>::Uuid(), context, filterDesc, platformFlags));
         }
 
-        bool SaveObjectToStream(IO::GenericStream& stream, DataStream::StreamType streamType, const void* classPtr, const Uuid& classId, SerializeContext* context = nullptr, const SerializeContext::ClassData* classData = nullptr);
+        AZCORE_API bool SaveObjectToStream(IO::GenericStream& stream, DataStream::StreamType streamType, const void* classPtr, const Uuid& classId, SerializeContext* context = nullptr, const SerializeContext::ClassData* classData = nullptr);
 
         template <typename ObjectType>
         bool SaveObjectToStream(IO::GenericStream& stream, DataStream::StreamType streamType, const ObjectType* classPtr, SerializeContext* context = nullptr, const SerializeContext::ClassData* classData = nullptr)
@@ -57,9 +57,9 @@ namespace AZ
             return SaveObjectToStream(stream, streamType, classPtr, AzTypeInfo<ObjectType>::Uuid(), context, classData);
         }
 
-        bool SaveStreamToFile(const AZStd::string& filePath, const AZStd::vector<AZ::u8>& streamData, int platformFlags = 0);
+        AZCORE_API bool SaveStreamToFile(const AZStd::string& filePath, const AZStd::vector<AZ::u8>& streamData, int platformFlags = 0);
 
-        bool SaveObjectToFile(const AZStd::string& filePath, DataStream::StreamType fileType, const void* classPtr, const Uuid& classId, SerializeContext* context = nullptr, int platformFlags = 0);
+        AZCORE_API bool SaveObjectToFile(const AZStd::string& filePath, DataStream::StreamType fileType, const void* classPtr, const Uuid& classId, SerializeContext* context = nullptr, int platformFlags = 0);
 
         template <typename ObjectType>
         bool SaveObjectToFile(const AZStd::string& filePath, DataStream::StreamType fileType, const ObjectType* classPtr, SerializeContext* context = nullptr, int platformFlags = 0)
@@ -80,9 +80,9 @@ namespace AZ
             return LoadObjectFromStreamInPlace(stream, context, AzTypeInfo<ObjectType>::Uuid(), &destination, filterDesc);
         }
 
-        AZStd::vector<AZ::SerializeContext::DataElementNode*> FindDescendantElements(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement, const AZStd::vector<AZ::Crc32>& elementCrcQueue);
-        void FindDescendantElements(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement, AZStd::vector<AZ::SerializeContext::DataElementNode*>& dataElementNodes, AZStd::vector<AZ::Crc32>::const_iterator first, AZStd::vector<AZ::Crc32>::const_iterator last);
-        bool LoadObjectFromFileInPlace(const AZStd::string& filePath, const Uuid& targetClassId, void* destination, AZ::SerializeContext* context = nullptr, const FilterDescriptor& filterDesc = FilterDescriptor());
+        AZCORE_API AZStd::vector<AZ::SerializeContext::DataElementNode*> FindDescendantElements(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement, const AZStd::vector<AZ::Crc32>& elementCrcQueue);
+        AZCORE_API void FindDescendantElements(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement, AZStd::vector<AZ::SerializeContext::DataElementNode*>& dataElementNodes, AZStd::vector<AZ::Crc32>::const_iterator first, AZStd::vector<AZ::Crc32>::const_iterator last);
+        AZCORE_API bool LoadObjectFromFileInPlace(const AZStd::string& filePath, const Uuid& targetClassId, void* destination, AZ::SerializeContext* context = nullptr, const FilterDescriptor& filterDesc = FilterDescriptor());
 
         template <typename ObjectType>
         bool LoadObjectFromFileInPlace(const AZStd::string& filePath, ObjectType& destination, AZ::SerializeContext* context = nullptr, const FilterDescriptor& filterDesc = FilterDescriptor())
@@ -123,27 +123,27 @@ namespace AZ
                 GetEnumStringRepresentation<T2, TRest...>(value, data, instance, storageTypeId);
         }
 
-        bool IsVectorContainerType(const AZ::Uuid& type);
-        bool IsSetContainerType(const AZ::Uuid& type);
-        bool IsMapContainerType(const AZ::Uuid& type);
-        bool IsContainerType(const AZ::Uuid& type);
-        bool IsOutcomeType(const AZ::Uuid& type);
-        bool IsPairContainerType(const AZ::Uuid& type);
-        bool IsTupleContainerType(const AZ::Uuid& type);
+        AZCORE_API bool IsVectorContainerType(const AZ::Uuid& type);
+        AZCORE_API bool IsSetContainerType(const AZ::Uuid& type);
+        AZCORE_API bool IsMapContainerType(const AZ::Uuid& type);
+        AZCORE_API bool IsContainerType(const AZ::Uuid& type);
+        AZCORE_API bool IsOutcomeType(const AZ::Uuid& type);
+        AZCORE_API bool IsPairContainerType(const AZ::Uuid& type);
+        AZCORE_API bool IsTupleContainerType(const AZ::Uuid& type);
 
-        AZ::TypeId GetGenericContainerType(const AZ::TypeId& type);
-        bool IsGenericContainerType(const AZ::TypeId& type);
-        AZStd::pair<AZ::Uuid, AZ::Uuid> GetOutcomeTypes(const AZ::Uuid& type);
-        AZStd::vector<AZ::Uuid> GetContainedTypes(const AZ::Uuid& type);
+        AZCORE_API AZ::TypeId GetGenericContainerType(const AZ::TypeId& type);
+        AZCORE_API bool IsGenericContainerType(const AZ::TypeId& type);
+        AZCORE_API AZStd::pair<AZ::Uuid, AZ::Uuid> GetOutcomeTypes(const AZ::Uuid& type);
+        AZCORE_API AZStd::vector<AZ::Uuid> GetContainedTypes(const AZ::Uuid& type);
 
         /// Resolve the instance pointer for a given ClassElement by casting it to the actual type
         /// expected by the ClassData for this element
-        void* ResolvePointer(void* ptr, const SerializeContext::ClassElement& classElement, const SerializeContext& context);
+        AZCORE_API void* ResolvePointer(void* ptr, const SerializeContext::ClassElement& classElement, const SerializeContext& context);
 
         //! Open the given file and load it into an ObjectStream that you can inspect
         //! @param classCallback Called for each root object loaded via the ObjectStream. Use it to read values from the file.
         //! @param assetFilterCallback Limit the processing/loading to specific asset type(s)
-        bool InspectSerializedFile(
+        AZCORE_API bool InspectSerializedFile(
             const char* filePath,
             SerializeContext* sc,
             const ObjectStream::ClassReadyCB& classCallback,
@@ -169,25 +169,25 @@ namespace AZ::Utils
     //! @param elementEditData Edit Context data element for a specific field. This is added via the EditContext Class Builder `DataElement`
     //! function
     //! @return first attribute which matches the specified attribute ID or nullptr
-    AZ::Attribute* FindEditOrSerializeContextAttribute(
+    AZCORE_API AZ::Attribute* FindEditOrSerializeContextAttribute(
         AZ::AttributeId attributeId,
         const AZ::SerializeContext::ClassData* classData,
         const AZ::SerializeContext::ClassElement* classElement,
         const AZ::Edit::ClassData* editClassData,
         const AZ::Edit::ElementData* elementEditData);
-    AZ::Attribute* FindEditOrSerializeContextAttribute(
+    AZCORE_API AZ::Attribute* FindEditOrSerializeContextAttribute(
         AZ::AttributeId attributeId,
         const AZ::SerializeContext::ClassData* classData,
         const AZ::SerializeContext::ClassElement* classElement,
         const AZ::Edit::ElementData* elementEditData);
 
-    AZ::Attribute* FindEditOrSerializeContextAttribute(
+    AZCORE_API AZ::Attribute* FindEditOrSerializeContextAttribute(
         AZ::AttributeId attributeId,
         const AZ::SerializeContext::ClassData* classData,
         const AZ::SerializeContext::ClassElement* classElement,
         const AZ::Edit::ClassData* editClassData);
 
-    AZ::Attribute* FindEditOrSerializeContextAttribute(
+    AZCORE_API AZ::Attribute* FindEditOrSerializeContextAttribute(
         AZ::AttributeId attributeId,
         const AZ::SerializeContext::ClassData* classData,
         const AZ::SerializeContext::ClassElement* classElement);

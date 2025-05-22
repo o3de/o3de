@@ -18,7 +18,7 @@
 
 namespace AZ::IO
 {
-    class Statistic
+    class AZCORE_API Statistic
     {
     public:
         using TimeValue = AZStd::chrono::microseconds;

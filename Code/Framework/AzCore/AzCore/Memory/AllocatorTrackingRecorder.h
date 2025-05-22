@@ -25,7 +25,7 @@ namespace AZ
     struct IAllocatorTrackingRecorderData;
 #endif
 
-    class IAllocatorTrackingRecorder
+    class AZCORE_API IAllocatorTrackingRecorder
     {
     public:
         AZ_RTTI(IAllocatorTrackingRecorder, "{10468A58-A4E3-4FD0-8121-60F6DD13981C}")
@@ -53,7 +53,7 @@ namespace AZ
     };
 
 #if defined(AZ_ENABLE_TRACING)
-    struct AllocationRecord
+    struct AZCORE_API AllocationRecord
     {
         AllocationRecord(void* address, AZStd::size_t requested, AZStd::size_t allocated, AZStd::size_t alignment)
             : m_address(address)
@@ -94,7 +94,7 @@ namespace AZ
 
     /// Default implementation of IAllocatorTrackingRecorder.
     /// We also inherit from IAllocator to prevent derived classes from having to inherit a dreaded diamond
-    class IAllocatorWithTracking
+    class AZCORE_API IAllocatorWithTracking
         : public IAllocator
         , public IAllocatorTrackingRecorder
     {

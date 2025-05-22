@@ -13,7 +13,7 @@
 
 namespace AZ
 {
-    class JsonTupleSerializer
+    class AZCORE_API JsonTupleSerializer
         : public BaseJsonSerializer
     {
     public:

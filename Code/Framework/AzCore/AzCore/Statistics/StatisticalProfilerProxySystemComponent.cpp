@@ -14,7 +14,17 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AZ::Statistics
 {
-    StatisticalProfilerProxy* StatisticalProfilerProxy::TimedScope::m_profilerProxy = nullptr;
+    static StatisticalProfilerProxy* s_profilerProxy = nullptr;
+
+    StatisticalProfilerProxy* StatisticalProfilerProxy::TimedScope::GetProfilerProxy()
+    {
+        return s_profilerProxy;
+    }
+
+    void StatisticalProfilerProxy::TimedScope::SetProfilerProxy(StatisticalProfilerProxy* profilerProxy)
+    {
+        s_profilerProxy = profilerProxy;
+    }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void StatisticalProfilerProxySystemComponent::Reflect(AZ::ReflectContext* context)

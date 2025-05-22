@@ -46,13 +46,13 @@ namespace AZ
         bool Overlaps(const Frustum& frustum, const Obb& obb);
         bool Overlaps(const Frustum& frustum, const Aabb& aabb);
         bool Overlaps(const Capsule& capsule1, const Capsule& capsule2);
-        bool Overlaps(const Capsule& capsule, const Obb& obb);
+        AZCORE_API bool Overlaps(const Capsule& capsule, const Obb& obb);
         bool Overlaps(const Capsule& capsule, const Sphere& sphere);
         bool Overlaps(const Capsule& capsule, const Aabb& aabb);
         bool Overlaps(const Aabb& aabb, const Capsule& capsule);
-        bool Overlaps(const Obb& obb1, const Obb& obb2);
-        bool Overlaps(const Obb& obb, const Capsule& capsule);
-        bool Overlaps(const Obb& obb, const Sphere& sphere);
+        AZCORE_API bool Overlaps(const Obb& obb1, const Obb& obb2);
+        AZCORE_API bool Overlaps(const Obb& obb, const Capsule& capsule);
+        AZCORE_API bool Overlaps(const Obb& obb, const Sphere& sphere);
         //! @}
 
         //! Tests to see if Arg1 contains Arg2. Non Symmetric.

@@ -14,6 +14,6 @@ namespace AZ
     namespace Debug
     {
         //! Reflects the profiler bus script bindings
-        void ProfilerReflect(AZ::ReflectContext* context);
+        AZCORE_API void ProfilerReflect(AZ::ReflectContext* context);
     } // namespace Debug
 } // namespace AZ

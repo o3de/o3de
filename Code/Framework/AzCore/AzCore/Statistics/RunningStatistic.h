@@ -39,7 +39,7 @@ namespace AZ
          * https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance
          * The algorithm here is the Two-pass algorithm which is numerically stable.
          */
-        class RunningStatistic
+        class AZCORE_API RunningStatistic
         {
         public:
             RunningStatistic()

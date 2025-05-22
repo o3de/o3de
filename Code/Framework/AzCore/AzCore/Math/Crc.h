@@ -52,10 +52,10 @@ namespace AZ
     /**
      * Class for all of our crc32 types, better than just using ints everywhere.
      */
-    class Crc32
+    class AZCORE_API Crc32
     {
     public:
-        AZ_TYPE_INFO_WITH_NAME_DECL(Crc32)
+        AZ_TYPE_INFO_WITH_NAME_DECL_API(AZCORE_API, Crc32);
 
         /**
          * Initializes to 0.
@@ -108,6 +108,7 @@ namespace AZ
 
         u32 m_value;
     };
+    AZ_TYPE_INFO_WITH_NAME_DECL_EXT_API(AZCORE_API, Crc32);
 }
 
 namespace AZStd

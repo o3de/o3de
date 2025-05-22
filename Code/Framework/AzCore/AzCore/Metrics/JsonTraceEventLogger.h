@@ -34,7 +34,7 @@ namespace AZ::Metrics
         AZ::SettingsRegistryInterface* m_settingsRegistry{};
     };
 
-    class JsonTraceEventLogger
+    class AZCORE_API JsonTraceEventLogger
         : public IEventLogger
     {
     public:
