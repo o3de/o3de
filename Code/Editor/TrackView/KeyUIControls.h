@@ -67,15 +67,13 @@ public:
     CSmartVariableArray mv_table;
     CSmartVariable<QString> mv_asset;
     CSmartVariable<bool> mv_loop;
-    CSmartVariable<float> mv_startTime;
-    CSmartVariable<float> mv_endTime;
     CSmartVariable<float> mv_timeScale;
     CSmartVariable<float> mv_blendInTime;
     CSmartVariable<float> mv_blendOutTime;
 
     void OnCreateVars() override
     {
-        // Init to an invalid id
+        // Initialize to an invalid id
         AZ::Data::AssetId assetId;
         assetId.SetInvalid();
         mv_asset->SetUserData(assetId.m_subId);
@@ -86,12 +84,9 @@ public:
         // "motion" for the Simple Motion Component is the only instance.
         AddVariable(mv_table, mv_asset, "Motion", IVariable::DT_MOTION);
         AddVariable(mv_table, mv_loop, "Loop");
-        AddVariable(mv_table, mv_startTime, "Start Time");
-        AddVariable(mv_table, mv_endTime, "End Time");
         AddVariable(mv_table, mv_timeScale, "Time Scale");
         AddVariable(mv_table, mv_blendInTime, "Blend In Time");
         AddVariable(mv_table, mv_blendOutTime, "Blend Out Time");
-        mv_timeScale->SetLimits(0.001f, 100.f);
     }
 
     bool SupportTrackType([[maybe_unused]] const CAnimParamType& paramType, [[maybe_unused]] EAnimCurveType trackType, AnimValueType valueType) const override
@@ -116,6 +111,7 @@ public:
 
 protected:
     void ResetStartEndLimits(float AssetBlendKeyDuration);
+    bool m_skipOnUIChange = false;
 };
 
 //////////////////////////////////////////////////////////////////////////

@@ -166,7 +166,7 @@ namespace AZ
             blasDescriptor.Build()
                 ->AABB(aabb)
                 ;
-            rayTracingBlas->CreateBuffers(RHI::MultiDevice::AllDevices, &blasDescriptor, *m_bufferPools);
+            rayTracingBlas->CreateBuffers(m_deviceMask, &blasDescriptor, *m_bufferPools);
 
             ProceduralGeometry proceduralGeometry;
             proceduralGeometry.m_uuid = uuid;
@@ -198,7 +198,7 @@ namespace AZ
             m_blasInstanceMap.emplace(Data::AssetId(uuid), meshBlasInstance);
 
             RHI::MultiDeviceObject::IterateDevices(
-                RHI::RHISystemInterface::Get()->GetRayTracingSupport(),
+                m_deviceMask,
                 [&](int deviceIndex)
                 {
                     m_blasToBuild[deviceIndex].insert(Data::AssetId(uuid));
@@ -379,6 +379,25 @@ namespace AZ
                 // Note: the build flags are set to be the same for each BLAS created for the mesh
                 RHI::RayTracingAccelerationStructureBuildFlags buildFlags =
                     CreateRayTracingAccelerationStructureBuildFlags(mesh.m_isSkinnedMesh);
+
+                auto rpiDesc = RPI::RPISystemInterface::Get()->GetDescriptor();
+                if (mesh.m_subMeshIndices.size() > rpiDesc.m_rayTracingSystemDescriptor.m_rayTracingCompactionQueryPoolSize)
+                {
+                    AZ_Warning(
+                        "RaytracingFeatureProcessor",
+                        false,
+                        "CompactionQueryPool is not large enough for model %s.\n"
+                        "Pool size: %d\n"
+                        "Num meshes in model: %d\n"
+                        "Raytracing Acceleration Structure Compaction will be disabled for this model\n"
+                        "Consider increasing the size of the pool through the registry setting "
+                        "O3DE/Atom/RPI/Initialization/RayTracingSystemDescriptor/RayTracingCompactionQueryPoolSize",
+                        mesh.m_assetId.ToFixedString().c_str(),
+                        rpiDesc.m_rayTracingSystemDescriptor.m_rayTracingCompactionQueryPoolSize,
+                        mesh.m_subMeshIndices.size());
+                    buildFlags = buildFlags & ~RHI::RayTracingAccelerationStructureBuildFlags::ENABLE_COMPACTION;
+                }
+
                 for (uint32_t subMeshIndex = 0; subMeshIndex < mesh.m_subMeshIndices.size(); ++subMeshIndex)
                 {
                     const SubMesh& subMesh = m_subMeshes[mesh.m_subMeshIndices[subMeshIndex]];
@@ -818,7 +837,7 @@ namespace AZ
 
                 // create the TLAS buffers based on the descriptor
                 RHI::Ptr<RHI::RayTracingTlas>& rayTracingTlas = m_tlas;
-                rayTracingTlas->CreateBuffers(RHI::RHISystemInterface::Get()->GetRayTracingSupport(), &tlasDescriptor, *m_bufferPools);
+                rayTracingTlas->CreateBuffers(m_deviceMask, &tlasDescriptor, *m_bufferPools);
             }
 
             // update and compile the RayTracingSceneSrg and RayTracingMaterialSrg
@@ -956,8 +975,7 @@ namespace AZ
                         }
                         subMeshInstance.m_blas = rayTracingBlas;
                         // create the buffers from the BLAS descriptor
-                        subMeshInstance.m_blas->CreateBuffers(
-                            RHI::RHISystemInterface::Get()->GetRayTracingSupport(), &subMeshInstance.m_blasDescriptor, *m_bufferPools);
+                        subMeshInstance.m_blas->CreateBuffers(m_deviceMask, &subMeshInstance.m_blasDescriptor, *m_bufferPools);
                     }
 
                     if (instance.m_isSkinnedMesh)
@@ -1006,7 +1024,7 @@ namespace AZ
                                 auto& subMeshInstance = it->second.m_subMeshes[subMeshIdx];
                                 AZ_Assert(!subMeshInstance.m_compactBlas, "Trying to compact a Blas twice");
                                 AZ_Assert(
-                                    frameEvent.m_deviceMask == RHI::RHISystemInterface::Get()->GetRayTracingSupport(),
+                                    frameEvent.m_deviceMask == m_deviceMask,
                                     "All device Blas of a SubMesh must be compacted in the same frame");
                                 AZStd::unordered_map<int, uint64_t> sizes;
                                 RHI::MultiDeviceObject::IterateDevices(
@@ -1024,7 +1042,7 @@ namespace AZ
                                 changed = true;
                             }
                             RHI::MultiDeviceObject::IterateDevices(
-                                RHI::RHISystemInterface::Get()->GetRayTracingSupport(),
+                                m_deviceMask,
                                 [&, assetId = assetId](int deviceIndex)
                                 {
                                     m_blasToCompact[deviceIndex].insert(assetId);
@@ -1350,71 +1368,52 @@ namespace AZ
             m_rayTracingMaterialSrg->Compile();
         }
 
-        void RayTracingFeatureProcessor::OnRenderPipelineChanged([[maybe_unused]] RPI::RenderPipeline* renderPipeline, RPI::SceneNotification::RenderPipelineChangeType changeType)
+        void RayTracingFeatureProcessor::OnRenderPipelineChanged(
+            [[maybe_unused]] RPI::RenderPipeline* renderPipeline,
+            [[maybe_unused]] RPI::SceneNotification::RenderPipelineChangeType changeType)
         {
             if (!m_rayTracingEnabled)
             {
                 return;
             }
 
-            // determine which devices need RayTracingAccelerationStructurePasses and distribute multiple existing ones to the devices
-            AZ::RPI::Pass* firstRayTracingAccelerationStructurePass{ nullptr };
-            auto rayTracingDeviceMask{ RHI::RHISystemInterface::Get()->GetRayTracingSupport() };
-            AZ::RHI::MultiDevice::DeviceMask devicesToAdd{ rayTracingDeviceMask };
-
-            // only enable the RayTracingAccelerationStructurePass for each device on the first pipeline in this scene, this will avoid
-            // multiple updates to the same AS
-            AZ::RPI::PassFilter passFilter =
-                AZ::RPI::PassFilter::CreateWithTemplateName(AZ::Name("RayTracingAccelerationStructurePassTemplate"), GetParentScene());
+            // Find out which devices have a RayTracingAccelerationStructurePass
+            // We then only build the BLAS and TLAS objects on these devices
+            AZ::RPI::PassFilter passFilter = AZ::RPI::PassFilter::CreateWithTemplateName(
+                AZ_NAME_LITERAL("RayTracingAccelerationStructurePassTemplate"), renderPipeline->GetScene());
             AZ::RPI::PassSystemInterface::Get()->ForEachPass(
                 passFilter,
-                [&devicesToAdd, &firstRayTracingAccelerationStructurePass, &rayTracingDeviceMask](
-                    AZ::RPI::Pass* pass) -> AZ::RPI::PassFilterExecutionFlow
+                [this](AZ::RPI::Pass* pass) -> AZ::RPI::PassFilterExecutionFlow
                 {
-                    if (!firstRayTracingAccelerationStructurePass)
+                    auto deviceIndex = pass->GetDeviceIndex();
+                    if (deviceIndex == AZ::RHI::MultiDevice::InvalidDeviceIndex)
                     {
-                        firstRayTracingAccelerationStructurePass = pass;
+                        // We assume that the whole pipelines runs on device 0 here
+                        // Pipelines that might be scheduled on other devices have to take care to set the device index of RTAS passes
+                        deviceIndex = 0;
+                    }
+                    if (m_blasInstanceMap.empty())
+                    {
+                        m_deviceMask = AZ::RHI::SetBit(m_deviceMask, deviceIndex);
+                    }
+                    else
+                    {
+                        // Adding new RTAS passes when a scene is already loaded is currently not supported
+                        // We would need to build all current BLAS on this new device
+                        // Additionally we would need to find a way to have a compacted BLAS on one device and an uncompacted on another
+                        [[maybe_unused]] auto newDeviceMask = AZ::RHI::SetBit(m_deviceMask, deviceIndex);
+                        AZ_Assert(
+                            newDeviceMask == m_deviceMask,
+                            "RaytracingAccelerationStructurePasses cannot be added while the scene already contains objects");
                     }
 
-                    // we always set an invalid device index to the first available device
-                    if (pass->GetDeviceIndex() == RHI::MultiDevice::InvalidDeviceIndex)
-                    {
-                        pass->SetDeviceIndex(az_ctz_u32(AZStd::to_underlying(rayTracingDeviceMask)));
-                    }
+                    AZ_Assert(
+                        RHI::CheckBit(RHI::RHISystemInterface::Get()->GetRayTracingSupport(), deviceIndex),
+                        "Pass %s does not run on a raytracing capable device",
+                        pass->GetName().GetCStr());
 
-                    auto mask = RHI::MultiDevice::DeviceMask(AZ_BIT(pass->GetDeviceIndex()));
-
-                    // only have one RayTracingAccelerationStructurePass per device
-                    pass->SetEnabled((mask & devicesToAdd) != RHI::MultiDevice::NoDevices);
-                    devicesToAdd &= ~mask;
-
-                    return AZ::RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
+                    return AZ::RPI::ContinueVisitingPasses;
                 });
-
-            // we only add the passes on the other devices if the pipeline contains one in the first place
-            if (firstRayTracingAccelerationStructurePass && changeType != RPI::SceneNotification::RenderPipelineChangeType::Removed &&
-                renderPipeline->FindFirstPass(firstRayTracingAccelerationStructurePass->GetName()))
-            {
-                // add passes for the remaining devices
-                while (devicesToAdd != RHI::MultiDevice::NoDevices)
-                {
-                    auto deviceIndex{ az_ctz_u32(AZStd::to_underlying(devicesToAdd)) };
-
-                    AZStd::shared_ptr<RPI::PassRequest> passRequest = AZStd::make_shared<RPI::PassRequest>();
-                    passRequest->m_templateName = Name("RayTracingAccelerationStructurePassTemplate");
-                    passRequest->m_passName = Name("RayTracingAccelerationStructurePass" + AZStd::to_string(deviceIndex));
-
-                    AZStd::shared_ptr<RPI::PassData> passData = AZStd::make_shared<RPI::PassData>();
-                    passData->m_deviceIndex = deviceIndex;
-                    passRequest->m_passData = passData;
-
-                    auto pass = RPI::PassSystemInterface::Get()->CreatePassFromRequest(passRequest.get());
-
-                    renderPipeline->AddPassAfter(pass, firstRayTracingAccelerationStructurePass->GetName());
-
-                    devicesToAdd &= RHI::MultiDevice::DeviceMask(~AZ_BIT(deviceIndex));
-                }
-            }
         }
 
         void RayTracingFeatureProcessor::RemoveBlasInstance(Data::AssetId id)

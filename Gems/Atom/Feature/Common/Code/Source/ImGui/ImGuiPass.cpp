@@ -6,7 +6,7 @@
  *
  */
 
-#include <ImGui/ImGuiPass.h>
+#include <Atom/Feature/ImGui/ImGuiPass.h>
 
 #include <AzFramework/Input/Devices/Gamepad/InputDeviceGamepad.h>
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>

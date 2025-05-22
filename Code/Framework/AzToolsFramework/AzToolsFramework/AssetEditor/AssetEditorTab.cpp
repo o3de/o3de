@@ -705,13 +705,9 @@ namespace AzToolsFramework
             AZ::IO::ByteContainerStream<AZStd::vector<AZ::u8>> dstByteStream(&newSaveData);
 
             AssetEditorValidationRequestBus::Event(m_sourceAssetId, &AssetEditorValidationRequests::PreAssetSave, m_inMemoryAsset);
+            auto assetHandler = const_cast<AZ::Data::AssetHandler*>(AZ::Data::AssetManager::Instance().GetHandler(m_inMemoryAsset.GetType()));
 
-            if (AZ::Utils::SaveObjectToStream(
-                    dstByteStream,
-                    AZ::DataStream::ST_XML,
-                    m_inMemoryAsset.Get(),
-                    m_inMemoryAsset.Get()->RTTI_GetType(),
-                    m_serializeContext))
+            if (m_inMemoryAsset && assetHandler && assetHandler->SaveAssetData(m_inMemoryAsset, &dstByteStream))
             {
                 AZStd::swap(newSaveData, m_saveData);
             }

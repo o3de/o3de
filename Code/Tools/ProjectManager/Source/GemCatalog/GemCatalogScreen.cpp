@@ -310,6 +310,9 @@ namespace O3DE::ProjectManager
     {
         QSet<QPersistentModelIndex> validIndexes;
 
+        // Clear the model to avoid duplicated entries that may cause incompatibilities
+        m_gemModel->Clear();
+
         if (const auto& outcome = PythonBindingsInterface::Get()->GetAllGemInfos(m_projectPath); outcome.IsSuccess())
         {
             const auto& indexes = m_gemModel->AddGems(outcome.GetValue(), /*updateExisting=*/true);

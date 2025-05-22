@@ -563,6 +563,9 @@ namespace AZ
             RPI::Scene* scene = m_pipeline->GetScene();
             RayTracingFeatureProcessor* rayTracingFeatureProcessor = scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
             AZ_Assert(rayTracingFeatureProcessor, "RayTracingPass requires the RayTracingFeatureProcessor");
+            AZ_Assert(
+                RHI::CheckBit(rayTracingFeatureProcessor->GetDeviceMask(), context.GetDeviceIndex()),
+                "RayTracingPass cannot run on a device without a RayTracingAccelerationStructurePass");
 
             if (!rayTracingFeatureProcessor || !rayTracingFeatureProcessor->GetTlas()->GetTlasBuffer() ||
                 !rayTracingFeatureProcessor->HasGeometry() || !m_rayTracingShaderTable)
