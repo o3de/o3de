@@ -70,8 +70,6 @@ namespace AZ
             static void SetTLSEnvironment(EBusEnvironment* environment);
 
             AZStd::atomic_int m_numUniqueEBuses; ///< Used to provide unique index for the TLS table
-
-            static AZ_THREAD_LOCAL EBusEnvironment* s_tlsCurrentEnvironment; ///< Pointer to the current environment for the current thread.
         };
 
         using EBusEnvironmentAllocator = AZStd::stateless_allocator;
