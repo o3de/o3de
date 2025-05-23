@@ -131,6 +131,7 @@ namespace AZ::Render
         // Geometry buffers and index buffer
         AZStd::unordered_map<RHI::ShaderSemantic, BufferViewIndexAndOffset> m_meshBuffers{};
         IndexBufferViewIndexAndOffset m_indexBuffer{};
+        RHI::Ptr<AZ::RHI::BufferView> m_clusterOffsetBuffer{};
 
         // additional data per mesh
         int32_t m_materialTypeId = -1;

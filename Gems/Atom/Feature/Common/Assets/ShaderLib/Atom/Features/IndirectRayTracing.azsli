@@ -71,6 +71,17 @@ struct RayTracingClasBuildTriangleClusterInfo
     uint64_t m_opacityMicromapIndexBufferAddress;
 };
 
+// Stores mesh-local per-cluster offsets
+struct RayTracingClasClusterOffsetInfo
+{
+    uint m_indexBufferOffset;
+    uint m_positionBufferOffset;
+    uint m_normalBufferOffset;
+    uint m_tangentBufferOffset;
+    uint m_bitangentBufferOffset;
+    uint m_uvBufferOffset;
+};
+
 inline RayTracingClasBuildTriangleClusterInfo RayTracingClasConvertBuildTriangleClusterInfo(
     RayTracingClasBuildTriangleClusterInfoExpanded sourceInfo)
 {

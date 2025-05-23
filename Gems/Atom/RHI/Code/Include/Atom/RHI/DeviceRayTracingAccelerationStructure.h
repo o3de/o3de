@@ -151,7 +151,7 @@ namespace AZ::RHI
     //! DeviceRayTracingClusterBlas
     //!
     //! A DeviceRayTracingClusterBlas is created from the information in the DeviceRayTracingClusterBlasDescriptor.
-    class DeviceRayTracingClusterBlas
+    class ATOM_RHI_PUBLIC_API DeviceRayTracingClusterBlas
         : public DeviceObject
     {
     public:

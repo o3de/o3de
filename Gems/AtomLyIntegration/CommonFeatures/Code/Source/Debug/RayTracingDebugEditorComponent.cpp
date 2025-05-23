@@ -50,6 +50,7 @@ namespace AZ::Render
                     ->DataElement(Edit::UIHandlers::ComboBox, &RayTracingDebugComponentConfig::m_debugViewMode, "View mode", "What property to output to the view")
                         ->EnumAttribute(RayTracingDebugViewMode::InstanceIndex, "Instance Index")
                         ->EnumAttribute(RayTracingDebugViewMode::InstanceID, "Instance ID")
+                        ->EnumAttribute(RayTracingDebugViewMode::ClusterID, "Cluster ID")
                         ->EnumAttribute(RayTracingDebugViewMode::PrimitiveIndex, "Primitive Index")
                         ->EnumAttribute(RayTracingDebugViewMode::Barycentrics, "Barycentric Coordinates")
                         ->EnumAttribute(RayTracingDebugViewMode::Normals, "Normals")

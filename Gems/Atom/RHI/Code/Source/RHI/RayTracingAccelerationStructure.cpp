@@ -346,7 +346,7 @@ namespace AZ::RHI
             [this, &resultCode, &descriptor, &rayTracingBufferPools](auto deviceIndex)
             {
                 auto device = RHISystemInterface::Get()->GetDevice(deviceIndex);
-                m_deviceObjects[deviceIndex] = Factory::Get().CreateRayTracingClusterBlas();
+                this->m_deviceObjects[deviceIndex] = Factory::Get().CreateRayTracingClusterBlas();
 
                 auto deviceDescriptor{ descriptor->GetDeviceRayTracingClusterBlasDescriptor(deviceIndex) };
 
@@ -370,5 +370,18 @@ namespace AZ::RHI
         }
 
         return resultCode;
+    }
+
+    ResultCode RayTracingClusterBlas::AddDevice(int deviceIndex, const RayTracingBufferPools& rayTracingBufferPools)
+    {
+        MultiDeviceObject::Init(SetBit(GetDeviceMask(), deviceIndex));
+
+        auto device = RHISystemInterface::Get()->GetDevice(deviceIndex);
+        this->m_deviceObjects[deviceIndex] = Factory::Get().CreateRayTracingClusterBlas();
+
+        auto deviceDescriptor{ m_descriptor.GetDeviceRayTracingClusterBlasDescriptor(deviceIndex) };
+
+        return GetDeviceRayTracingClusterBlas(deviceIndex)
+            ->CreateBuffers(*device, &deviceDescriptor, *rayTracingBufferPools.GetDeviceRayTracingBufferPools(deviceIndex).get());
     }
 } // namespace AZ::RHI

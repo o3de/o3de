@@ -307,24 +307,35 @@ namespace AZ
                 for (auto submeshIndex = 0; submeshIndex < blasInstance.m_subMeshes.size(); ++submeshIndex)
                 {
                     auto& submeshBlasInstance = blasInstance.m_subMeshes[submeshIndex];
-                    // Determine if a skinned mesh BLAS needs to be updated or completely rebuilt. For now, we want to rebuild a BLAS
-                    // every SKINNED_BLAS_REBUILD_FRAME_INTERVAL frames, while updating it all other frames. This is based on the
-                    // assumption that by adding together the asset ID hash, submesh index, and frame count, we get a value that allows
-                    // us to uniformly distribute rebuilding all skinned mesh BLASs over all frames.
-                    auto assetGuid = it->first.m_guid.GetHash();
-                    if (!buildBlas && ((assetGuid + submeshIndex + m_frameCount) % SKINNED_BLAS_REBUILD_FRAME_INTERVAL != 0))
+
+                    if (submeshBlasInstance.IsClusterMesh())
                     {
-                        // Skinned mesh that simply needs an update
-                        context.GetCommandList()->UpdateBottomLevelAccelerationStructure(
-                            *submeshBlasInstance.m_blas->GetDeviceRayTracingBlas(context.GetDeviceIndex()));
+                        context.GetCommandList()->BuildClusterAccelerationStructures(
+                            *submeshBlasInstance.m_clusterBlas->GetDeviceRayTracingClusterBlas(context.GetDeviceIndex()));
+                        context.GetCommandList()->BuildClusterBottomLevelAccelerationStructure(
+                            *submeshBlasInstance.m_clusterBlas->GetDeviceRayTracingClusterBlas(context.GetDeviceIndex()));
                     }
                     else
                     {
-                        // Fall back to building the BLAS in any case
-                        context.GetCommandList()->BuildBottomLevelAccelerationStructure(
-                            *submeshBlasInstance.m_blas->GetDeviceRayTracingBlas(context.GetDeviceIndex()));
+                        // Determine if a skinned mesh BLAS needs to be updated or completely rebuilt. For now, we want to rebuild a BLAS
+                        // every SKINNED_BLAS_REBUILD_FRAME_INTERVAL frames, while updating it all other frames. This is based on the
+                        // assumption that by adding together the asset ID hash, submesh index, and frame count, we get a value that allows
+                        // us to uniformly distribute rebuilding all skinned mesh BLASs over all frames.
+                        auto assetGuid = it->first.m_guid.GetHash();
+                        if (!buildBlas && ((assetGuid + submeshIndex + m_frameCount) % SKINNED_BLAS_REBUILD_FRAME_INTERVAL != 0))
+                        {
+                            // Skinned mesh that simply needs an update
+                            context.GetCommandList()->UpdateBottomLevelAccelerationStructure(
+                                *submeshBlasInstance.m_blas->GetDeviceRayTracingBlas(context.GetDeviceIndex()));
+                        }
+                        else
+                        {
+                            // Fall back to building the BLAS in any case
+                            context.GetCommandList()->BuildBottomLevelAccelerationStructure(
+                                *submeshBlasInstance.m_blas->GetDeviceRayTracingBlas(context.GetDeviceIndex()));
+                        }
+                        changedBlasList.push_back(submeshBlasInstance.m_blas->GetDeviceRayTracingBlas(context.GetDeviceIndex()).get());
                     }
-                    changedBlasList.push_back(submeshBlasInstance.m_blas->GetDeviceRayTracingBlas(context.GetDeviceIndex()).get());
                 }
                 {
                     // Lock is needed because multiple RayTracingAccelerationPasses for multiple devices may be built simultaneously

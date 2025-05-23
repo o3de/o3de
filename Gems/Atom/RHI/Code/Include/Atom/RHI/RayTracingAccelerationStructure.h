@@ -115,7 +115,7 @@ namespace AZ::RHI
     //! RayTracingClusterBlas
     //!
     //! A RayTracingClusterBlas is created from the information in the RayTracingClusterBlasDescriptor.
-    class RayTracingClusterBlas
+    class ATOM_RHI_PUBLIC_API RayTracingClusterBlas
         : public MultiDeviceObject
     {
     public:
@@ -127,6 +127,8 @@ namespace AZ::RHI
 
         //! Creates the internal Cluster BLAS buffers from the descriptor
         ResultCode CreateBuffers(MultiDevice::DeviceMask deviceMask, const RHI::RayTracingClusterBlasDescriptor* descriptor, const RayTracingBufferPools& rayTracingBufferPools);
+
+        ResultCode AddDevice(int deviceIndex, const RayTracingBufferPools& rayTracingBufferPools);
 
     private:
         RayTracingClusterBlasDescriptor m_descriptor;

@@ -68,8 +68,17 @@ namespace AZ::Render
             Data::Instance<RPI::ModelLod> m_modelLod;
             size_t m_modelLodMeshIndex;
 
+            // optional: A cluster-BLAS descriptor
+            AZStd::optional<RHI::RayTracingClusterBlasDescriptor> m_clusterBlasDescriptor;
+
             // parent mesh
             Mesh* m_mesh = nullptr;
+
+            // convenience function to check if this SubMesh is a cluster mesh
+            bool IsClusterMesh() const
+            {
+                return m_clusterBlasDescriptor.has_value();
+            }
 
         private:
             friend class RayTracingFeatureProcessor;
@@ -283,6 +292,10 @@ namespace AZ::Render
             // When acceleration structure compaction is enabled, this will be deleted after the compacted Blas is ready
             RHI::Ptr<RHI::RayTracingBlas> m_blas;
 
+            // Cluster-BLAS for the subMesh
+            // This only exists if m_clusterBlasDescriptor is set, in this case m_blas is unused
+            RHI::Ptr<RHI::RayTracingClusterBlas> m_clusterBlas;
+
             // Compacted Blas
             // Should be empty after creation
             // This is created after the uncompacted Blas is built, if compaction is enabled for this submesh
@@ -293,8 +306,17 @@ namespace AZ::Render
             // Either none, or all SubMeshBlasInstances in a MeshBlasInstance must have compaction enabled
             RHI::Ptr<RHI::RayTracingCompactionQuery> m_compactionSizeQuery;
 
-            //! Descriptor from which the m_blas is built
+            // Descriptor from which the m_blas is built
             RHI::RayTracingBlasDescriptor m_blasDescriptor;
+
+            // Descriptor from which the m_clusterBlas is built
+            AZStd::optional<RHI::RayTracingClusterBlasDescriptor> m_clusterBlasDescriptor;
+
+            // convenience function to check if this SubMeshBlasInstance is a cluster mesh
+            bool IsClusterMesh() const
+            {
+                return m_clusterBlasDescriptor.has_value();
+            }
         };
 
         struct MeshBlasInstance

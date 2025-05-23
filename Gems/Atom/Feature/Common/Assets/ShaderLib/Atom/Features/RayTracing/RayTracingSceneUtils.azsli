@@ -7,6 +7,7 @@
  */
 
 #include <Atom/Features/Bindless.azsli>
+#include <Atom/Features/IndirectRayTracing.azsli>
 
 // returns the normalized camera view ray into the scene for this raytracing dispatch thread
 float3 GetViewRayDirection(float4x4 projectionInverseMatrix, float4x4 viewInverseMatrix)
@@ -42,7 +43,40 @@ VsInput GetHitInterpolatedVertexData(const MeshInfo meshInfo, const uint primiti
 {
     float3 barycentrics = float3((1.0f - builtInBarycentrics.x - builtInBarycentrics.y), builtInBarycentrics.x, builtInBarycentrics.y);
     VsInput vertex;
-    LoadInterpolatedVertexData(meshInfo, primitiveIndex, barycentrics, vertex);
+
+    if (meshInfo.m_clusterBufferIndex != -1)
+    {
+        ByteAddressBuffer clusterOffsetBuffer = Bindless::GetByteAddressBuffer(meshInfo.m_clusterBufferIndex);
+        RayTracingClasClusterOffsetInfo clusterInfo =
+            clusterOffsetBuffer.Load<RayTracingClasClusterOffsetInfo>(GetClusterId() * sizeof(RayTracingClasClusterOffsetInfo));
+
+        MeshInfo clusterMeshInfo = meshInfo;
+
+        // Overwrite mesh strides with cluster stride
+        clusterMeshInfo.m_indexBufferByteStride = clusterInfo.m_indexStride;
+        clusterMeshInfo.m_positionBufferByteStride = clusterInfo.m_positionStride;
+        clusterMeshInfo.m_normalBufferByteStride = clusterInfo.m_normalStride;
+        clusterMeshInfo.m_uv0BufferByteStride = clusterInfo.m_uv0Stride;
+        clusterMeshInfo.m_uv1BufferByteStride = clusterInfo.m_uv1Stride;
+        clusterMeshInfo.m_tangentBufferByteStride = clusterInfo.m_tangentStride;
+        clusterMeshInfo.m_bitangentBufferByteStride = clusterInfo.m_bitangentStride;
+
+        // Add cluster offset to mesh offset
+        clusterMeshInfo.m_indexBufferByteOffset += clusterInfo.m_indexOffset;
+        clusterMeshInfo.m_positionBufferByteOffset += clusterInfo.m_positionOffset;
+        clusterMeshInfo.m_normalBufferByteOffset += clusterInfo.m_normalOffset;
+        clusterMeshInfo.m_uv0BufferByteOffset += clusterInfo.m_uv0Offset;
+        clusterMeshInfo.m_uv1BufferByteOffset += clusterInfo.m_uv1Offset;
+        clusterMeshInfo.m_tangentBufferByteOffset += clusterInfo.m_tangentOffset;
+        clusterMeshInfo.m_bitangentBufferByteOffset += clusterInfo.m_bitangentOffset;
+
+        LoadInterpolatedVertexData(clusterMeshInfo, primitiveIndex, barycentrics, vertex);
+    }
+    else
+    {
+        LoadInterpolatedVertexData(meshInfo, primitiveIndex, barycentrics, vertex);
+    }
+
     return vertex;
 }
 
