@@ -525,8 +525,13 @@ public:
     void OnCreateVars() override
     {
         AddVariable(mv_table, "Key Properties");
+#if defined(CARBONATED) //The other ui type does not work as expected
+        AddVariable(mv_table, mv_startTrigger, "StartTrigger", IVariable::DT_SIMPLE);
+        AddVariable(mv_table, mv_stopTrigger, "StopTrigger", IVariable::DT_SIMPLE);
+#else
         AddVariable(mv_table, mv_startTrigger, "StartTrigger", IVariable::DT_AUDIO_TRIGGER);
         AddVariable(mv_table, mv_stopTrigger, "StopTrigger", IVariable::DT_AUDIO_TRIGGER);
+#endif
         AddVariable(mv_table, mv_duration, "Duration");
         AddVariable(mv_options, "Options");
         AddVariable(mv_options, mv_customColor, "Custom Color", IVariable::DT_COLOR);
