@@ -6,11 +6,12 @@
  *
  */
 
-#include "ToolsFileUtils.h"
+
 #include <sys/stat.h>
 #include <utime.h>
-
 #include <QStorageInfo>
+
+#include <AzToolsFramework/ToolsFileUtils/ToolsFileUtils.h>
 
 namespace AzToolsFramework
 {

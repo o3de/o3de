@@ -5,16 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#pragma once
 
-#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
-
-namespace AzToolsFramework
-{
-    namespace AssetSystem
-    {
-        const char* GetHostAssetPlatform()
-        {
-            return "pc";
-        }
-    }
-}
+#define AZ_TRAIT_HOST_ASSET_PLATFORM     "pc"

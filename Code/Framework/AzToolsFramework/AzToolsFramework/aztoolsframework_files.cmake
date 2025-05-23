@@ -63,6 +63,7 @@ set(FILES
     UI/SearchWidget/SearchCriteriaWidget.hxx
     UI/SearchWidget/SearchCriteriaWidget.cpp
     UI/SearchWidget/SearchWidgetTypes.hxx
+    AzToolsFrameworkAPI.h
     AzToolsFrameworkModule.h
     AzToolsFrameworkModule.cpp
     API/ToolsApplicationAPI.h
@@ -937,6 +938,22 @@ set(FILES
     Prefab/Undo/PrefabUndoUpdateLink.cpp
     Prefab/Undo/PrefabUndoUtils.h
     Prefab/Undo/PrefabUndoUtils.cpp
+    UI/LegacyFramework/MainWindowSavedState.h
+    UI/LegacyFramework/MainWindowSavedState.cpp
+    UI/LegacyFramework/UIFramework.hxx
+    UI/LegacyFramework/UIFramework.cpp
+    UI/LegacyFramework/UIFrameworkAPI.h
+    UI/LegacyFramework/UIFrameworkPreferences.cpp
+    UI/LegacyFramework/Resources/sharedResources.qrc
+    UI/LegacyFramework/Core/EditorContextBus.h
+    UI/LegacyFramework/Core/EditorFrameworkAPI.h
+    UI/LegacyFramework/Core/EditorFrameworkAPI.cpp
+    UI/LegacyFramework/Core/EditorFrameworkApplication.h
+    UI/LegacyFramework/Core/EditorFrameworkApplication.cpp
+    UI/LegacyFramework/Core/IPCComponent.h
+    UI/LegacyFramework/Core/IPCComponent.cpp
+    UI/LegacyFramework/CustomMenus/CustomMenusAPI.h
+    UI/LegacyFramework/CustomMenus/CustomMenusComponent.cpp
     UI/Outliner/EntityOutlinerDisplayOptionsMenu.h
     UI/Outliner/EntityOutlinerDisplayOptionsMenu.cpp
     UI/Outliner/EntityOutlinerTreeView.hxx
@@ -981,6 +998,12 @@ set(FILES
     UI/Notifications/ToastNotificationsView.cpp
     UI/Notifications/ToastNotificationsView.h
     UI/Notifications/ToastBus.h
+    UI/UICore/OverwritePromptDialog.hxx
+    UI/UICore/OverwritePromptDialog.cpp
+    UI/UICore/OverwritePromptDialog.ui
+    UI/UICore/SaveChangesDialog.hxx
+    UI/UICore/SaveChangesDialog.cpp
+    UI/UICore/SaveChangesDialog.ui
     PythonTerminal/ScriptHelpDialog.cpp
     PythonTerminal/ScriptHelpDialog.h
     PythonTerminal/ScriptHelpDialog.ui

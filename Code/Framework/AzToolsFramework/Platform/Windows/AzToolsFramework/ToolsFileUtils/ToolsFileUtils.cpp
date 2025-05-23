@@ -7,7 +7,7 @@
  */
 
 #include <AzCore/PlatformIncl.h>
-#include "ToolsFileUtils.h"
+#include <AzToolsFramework/ToolsFileUtils/ToolsFileUtils.h>
 
 namespace AzToolsFramework
 {
