@@ -8,6 +8,7 @@
 
 set(FILES
     Asset/AssetSystemComponentHelper.cpp
+    AzFrameworkAPI.h
     AzFrameworkModule.h
     AzFrameworkModule.cpp
     API/ApplicationAPI.h
