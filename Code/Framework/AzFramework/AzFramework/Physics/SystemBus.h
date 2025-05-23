@@ -200,7 +200,6 @@ namespace Physics
 
 } // namespace Physics
 
-
 AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZF_API, Physics::DefaultWorldRequests)
 AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZF_API, Physics::EditorWorldRequests)
 AZ_DECLARE_EBUS_SINGLE_ADDRESS_WITH_TRAITS(AZF_API, Physics::SystemRequests, Physics::SystemRequestsTraits);

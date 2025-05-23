@@ -12,7 +12,7 @@
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Asset/AssetCommon.h>
-#include <AzCore/Asset/AssetBus.h>
+
 #include <AzFramework/Spawnable/Spawnable.h>
 #include <AzFramework/AzFrameworkAPI.h>
 

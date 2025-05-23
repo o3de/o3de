@@ -11,6 +11,7 @@
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
+// Disable exporting specialized EBus types due to an issue with the EBusSharedDispatchTraits.
 // AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(AZF_API, Physics::HeightfieldProviderRequests);
 // AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(AZF_API, Physics::HeightfieldProviderNotifications);
 
@@ -47,4 +48,3 @@ namespace Physics
     }
 
 } // namespace Physics
-

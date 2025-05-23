@@ -105,6 +105,10 @@ namespace AzFramework
         return true;
     }
 
+    TransformComponent::TransformComponent() = default;
+
+    TransformComponent ::~TransformComponent() = default;
+
     TransformComponent::TransformComponent(const TransformComponent& copy)
         : m_localTM(copy.m_localTM)
         , m_worldTM(copy.m_worldTM)

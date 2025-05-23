@@ -152,11 +152,11 @@ namespace AzFramework
         inline static constexpr const char* FileExtension = "spawnable";
         inline static constexpr const char* DotFileExtension = ".spawnable";
 
-        Spawnable() = default;
+        Spawnable();
         explicit Spawnable(const AZ::Data::AssetId& id, AssetStatus status = AssetStatus::NotLoaded);
         Spawnable(const Spawnable& rhs) = delete;
         Spawnable(Spawnable&& other) = delete;
-        ~Spawnable() override = default;
+        ~Spawnable() override;
 
         Spawnable& operator=(const Spawnable& rhs) = delete;
         Spawnable& operator=(Spawnable&& other) = delete;

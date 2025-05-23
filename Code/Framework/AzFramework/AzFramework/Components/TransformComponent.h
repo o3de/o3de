@@ -45,9 +45,9 @@ namespace AzFramework
 
         using ParentActivationTransformMode = AZ::TransformConfig::ParentActivationTransformMode;
 
-        TransformComponent() = default;
+        TransformComponent();
         TransformComponent(const TransformComponent& copy);
-        ~TransformComponent() override = default;
+        ~TransformComponent() override;
 
         // TransformBus events (publicly accessible)
         void BindTransformChangedEventHandler(AZ::TransformChangedEvent::Handler& handler) override;

@@ -210,8 +210,7 @@ namespace AZ::IO::ZipDir
 
         using FileEntryBase::FileEntryBase;
 
-        FileEntry(const FileEntry&) = delete;
-        FileEntry& operator=(const FileEntry&) = delete;
+        AZ_DISABLE_COPY(FileEntry);
 
         bool IsInitialized()
         {

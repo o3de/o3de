@@ -9,6 +9,7 @@
 
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/EBus/EBus.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
@@ -253,3 +254,9 @@ namespace AzFramework
     };
     using WindowSystemNotificationBus = AZ::EBus<WindowSystemNotifications>;
 } // namespace AzFramework
+
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZF_API, AzFramework::WindowRequests)
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZF_API, AzFramework::WindowNotifications)
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZF_API, AzFramework::ExclusiveFullScreenRequests)
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::WindowSystemRequests)
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::WindowSystemNotifications)

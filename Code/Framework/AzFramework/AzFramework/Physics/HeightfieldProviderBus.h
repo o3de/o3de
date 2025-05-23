@@ -171,5 +171,8 @@ namespace Physics
     using HeightfieldProviderNotificationBus = AZ::EBus<HeightfieldProviderNotifications>;
 } // namespace Physics
 
-//AZ_DECLARE_EBUS_MULTI_ADDRESS(AZF_API, Physics::HeightfieldProviderRequests);
-//AZ_DECLARE_EBUS_MULTI_ADDRESS(AZF_API, Physics::HeightfieldProviderNotifications);
+// Disable exporting specialized EBus types due to an issue with the EBusSharedDispatchTraits not being
+// able to inherit the custom mutex type from the EBusTraits.
+
+// AZ_DECLARE_EBUS_MULTI_ADDRESS(AZF_API, Physics::HeightfieldProviderRequests);
+// AZ_DECLARE_EBUS_MULTI_ADDRESS(AZF_API, Physics::HeightfieldProviderNotifications);

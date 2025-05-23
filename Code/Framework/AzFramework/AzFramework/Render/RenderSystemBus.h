@@ -7,7 +7,9 @@
  */
 #pragma once
 
+#include <AzCore/std/string/string.h>
 #include <AzCore/EBus/EBus.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
@@ -31,3 +33,5 @@ namespace AzFramework
 
     } // namespace Render
 } // namespace AzFramework
+
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::Render::RenderSystemRequests);
