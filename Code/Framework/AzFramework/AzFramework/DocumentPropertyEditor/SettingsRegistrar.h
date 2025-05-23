@@ -98,6 +98,6 @@ namespace AZ::DocumentPropertyEditor
         bool RemoveSettingFromRegistry(AZStd::string_view registryPath, AZ::SettingsRegistryInterface* registry = nullptr) const;
 
         //! The file extension expected for SettingsRegistry files.
-        static constexpr const char* SettingsRegistryFileExt = AZ::SettingsRegistryInterface::Extension;
+        static constexpr const char* SettingsRegistryFileExt = AZ::SettingsRegistryConstants::Extension;
     };
 } // namespace AZ::DocumentPropertyEditor

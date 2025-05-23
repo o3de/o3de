@@ -136,3 +136,5 @@ namespace AZ
     };
     using ModuleManagerRequestBus = AZ::EBus<ModuleManagerRequests>;
 } //namespace AZ
+
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZCORE_API, AZ::ModuleManagerRequests);

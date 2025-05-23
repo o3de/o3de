@@ -111,3 +111,5 @@ namespace AZ
 
 #endif // AZCORE_SCRIPT_SYSTEM_BUS_H
 #pragma once
+
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZCORE_API, AZ::ScriptSystemRequests);

@@ -243,7 +243,6 @@ static constexpr AZ::ThreadSafety ConsoleThreadSafety<_TYPE, std::enable_if_t<st
     extern CVarDataWrapperType##_NAME _NAME;
 
 //! Cvar macro that dll externs a console variable.
-//! @param _API the API Macro for the Shared Library target that is dll externing this CVAR
 //! @param _TYPE the data type of the cvar to extern
 //! @param _NAME the name of the cvar to extern
 #define AZ_CVAR_API_EXTERNED(_API, _TYPE, _NAME) \

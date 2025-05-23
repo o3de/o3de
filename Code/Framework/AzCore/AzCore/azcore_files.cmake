@@ -20,11 +20,13 @@ set(FILES
     Asset/AssetManager.cpp
     Asset/AssetManager.h
     Asset/AssetManager_private.h
+    Asset/AssetManagerBus.cpp
     Asset/AssetManagerBus.h
     Asset/AssetManagerComponent.cpp
     Asset/AssetManagerComponent.h
     Asset/AssetSerializer.cpp
     Asset/AssetSerializer.h
+    Asset/AssetTypeInfoBus.cpp
     Asset/AssetTypeInfoBus.h
     Asset/AssetInternal/WeakAsset.h
     base.h
@@ -35,6 +37,7 @@ set(FILES
     Component/Component.h
     Component/ComponentApplication.cpp
     Component/ComponentApplication.h
+    Component/ComponentApplicationBus.cpp
     Component/ComponentApplicationBus.h
     Component/ComponentApplicationLifecycle.cpp
     Component/ComponentApplicationLifecycle.h
@@ -43,6 +46,7 @@ set(FILES
     Component/ComponentExport.h
     Component/Entity.cpp
     Component/Entity.h
+    Component/EntityBus.cpp
     Component/EntityBus.h
     Component/EntityId.h
     Component/EntityIdSerializer.cpp
@@ -55,7 +59,9 @@ set(FILES
     Component/NamedEntityId.h
     Component/NonUniformScaleBus.cpp
     Component/NonUniformScaleBus.h
+    Component/TickBus.cpp
     Component/TickBus.h
+    Component/TransformBus.cpp
     Component/TransformBus.h
     Compression/compression.cpp
     Compression/Compression.h
@@ -81,6 +87,7 @@ set(FILES
     Debug/Budget.cpp
     Debug/BudgetTracker.h
     Debug/BudgetTracker.cpp
+    Debug/ITrace.cpp
     Debug/MemoryProfiler.h
     Debug/PerformanceCollector.h
     Debug/PerformanceCollector.cpp
@@ -93,6 +100,7 @@ set(FILES
     Debug/Timer.h
     Debug/Trace.cpp
     Debug/Trace.h
+    Debug/TraceMessageBus.cpp
     Debug/TraceMessageBus.h
     Debug/TraceReflection.cpp
     Debug/TraceReflection.h
@@ -235,6 +243,7 @@ set(FILES
     Jobs/JobFunction.h
     Jobs/JobManager.cpp
     Jobs/JobManager.h
+    Jobs/JobManagerBus.cpp
     Jobs/JobManagerBus.h
     Jobs/JobManagerComponent.cpp
     Jobs/JobManagerComponent.h
@@ -279,6 +288,7 @@ set(FILES
     Math/Crc.cpp
     Math/Crc.inl
     Math/Crc.h
+    Math/CrcInternal.h
     Math/DocsMath.h
     Math/Frustum.cpp
     Math/Frustum.h
@@ -450,8 +460,10 @@ set(FILES
     Module/DynamicModuleHandle.cpp
     Module/DynamicModuleHandle.h
     Module/EBusInstantiations.cpp
+    Module/Environment.cpp
     Module/Module.cpp
     Module/Module.h
+    Module/ModuleManagerBus.cpp
     Module/ModuleManagerBus.h
     Module/ModuleManager.cpp
     Module/ModuleManager.h
@@ -469,6 +481,7 @@ set(FILES
     Name/Internal/NameData.cpp
     NativeUI/NativeUISystemComponent.cpp
     NativeUI/NativeUISystemComponent.h
+    NativeUI/NativeUIRequests.cpp
     NativeUI/NativeUIRequests.h
     Outcome/Outcome.h
     Outcome/Internal/OutcomeImpl.h
@@ -526,6 +539,7 @@ set(FILES
     Script/ScriptContextAttributes.h
     Script/ScriptContextDebug.cpp
     Script/ScriptContextDebug.h
+    Script/ScriptSystemBus.cpp
     Script/ScriptSystemBus.h
     Script/ScriptSystemComponent.cpp
     Script/ScriptSystemComponent.h
@@ -537,6 +551,7 @@ set(FILES
     Script/ScriptPropertySerializer.cpp
     Script/ScriptPropertyTable.h
     Script/ScriptPropertyTable.cpp
+    Script/ScriptPropertyWatcherBus.cpp
     Script/ScriptPropertyWatcherBus.h
     Script/ScriptDebug.cpp
     Script/ScriptDebug.h
@@ -663,11 +678,13 @@ set(FILES
     Slice/SliceAsset.h
     Slice/SliceAssetHandler.cpp
     Slice/SliceAssetHandler.h
+    Slice/SliceBus.cpp
     Slice/SliceBus.h
     Slice/SliceComponent.cpp
     Slice/SliceComponent.h
     Slice/SliceSystemComponent.h
     Slice/SliceSystemComponent.cpp
+    Slice/SliceMetadataInfoBus.cpp
     Slice/SliceMetadataInfoBus.h
     Slice/SliceMetadataInfoComponent.h
     Slice/SliceMetadataInfoComponent.cpp

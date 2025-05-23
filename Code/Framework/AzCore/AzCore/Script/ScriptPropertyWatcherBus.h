@@ -34,4 +34,6 @@ namespace AZ
     };
     
     typedef AZ::EBus<ScriptPropertyWatcherInterface> ScriptPropertyWatcherBus;
-}
+} // namespace AZ
+
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZCORE_API, AZ::ScriptPropertyWatcherInterface);

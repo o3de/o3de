@@ -229,4 +229,4 @@ namespace AZ
     using ComponentApplicationBus = AZ::EBus<ComponentApplicationRequests, ComponentApplicationRequestsEBusTraits>;
 }
 
-DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS_WITH_TRAITS(ComponentApplicationRequests, ComponentApplicationRequestsEBusTraits);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS_WITH_TRAITS(AZCORE_API, AZ::ComponentApplicationRequests, AZ::ComponentApplicationRequestsEBusTraits);

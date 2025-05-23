@@ -13,8 +13,10 @@ namespace AZ::Internal
 {
     // Add implementation of PoolAllocatorHelper base class template RTTI functions
     // needed by the derived EMotionFX Pool allocators
-    AZ_TYPE_INFO_TEMPLATE_WITH_NAME_IMPL(PoolAllocatorHelper, "EMotionFX::PoolAllocatorHelper", PoolAllocatorHelperTemplateId, AZ_TYPE_INFO_CLASS);
-    AZ_RTTI_NO_TYPE_INFO_IMPL((PoolAllocatorHelper, AZ_TYPE_INFO_CLASS), Base);
+
+    // NOTE: The following is disabled now that the PoolAllocationHelper now implements the functions inline
+    // AZ_TYPE_INFO_TEMPLATE_WITH_NAME_IMPL(PoolAllocatorHelper, "EMotionFX::PoolAllocatorHelper", PoolAllocatorHelperTemplateId, AZ_TYPE_INFO_CLASS);
+    // AZ_RTTI_NO_TYPE_INFO_IMPL((PoolAllocatorHelper, AZ_TYPE_INFO_CLASS), Base);
 
     // Explicitly instantite the PoolAllocator schemas for the EMotionFX Allocators
     template class PoolAllocatorHelper<ThreadPoolSchemaHelper<EMotionFX::AnimGraphConditionAllocator>>;

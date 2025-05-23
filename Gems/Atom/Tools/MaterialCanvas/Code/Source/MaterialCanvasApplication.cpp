@@ -374,15 +374,15 @@ namespace MaterialCanvas
         {
             const AZ::IO::FixedMaxPath materialCanvasGemPath = AZ::Utils::GetGemPath("MaterialCanvas");
             const auto settingsPathStub(
-                materialCanvasGemPath / AZ::SettingsRegistryInterface::RegistryFolder / "user_minimal_shader_build.setregstub");
+                materialCanvasGemPath / AZ::SettingsRegistryConstants::RegistryFolder / "user_minimal_shader_build.setregstub");
             const auto settingsPathDx12Stub(
-                materialCanvasGemPath / AZ::SettingsRegistryInterface::RegistryFolder / "user_minimal_shader_build_dx12.setregstub");
+                materialCanvasGemPath / AZ::SettingsRegistryConstants::RegistryFolder / "user_minimal_shader_build_dx12.setregstub");
 
             const AZ::IO::FixedMaxPath projectPath = AZ::Utils::GetProjectPath();
             const auto settingsPath(
-                projectPath / AZ::SettingsRegistryInterface::DevUserRegistryFolder / "user_minimal_shader_build.setreg");
+                projectPath / AZ::SettingsRegistryConstants::DevUserRegistryFolder / "user_minimal_shader_build.setreg");
             const auto settingsPathDx12(
-                projectPath / AZ::SettingsRegistryInterface::DevUserRegistryFolder / "user_minimal_shader_build_dx12.setreg");
+                projectPath / AZ::SettingsRegistryConstants::DevUserRegistryFolder / "user_minimal_shader_build_dx12.setreg");
 
             const bool enableFasterShaderBuilds =
                 AtomToolsFramework::GetSettingsValue<bool>("/O3DE/Atom/MaterialCanvas/EnableFasterShaderBuilds", false);

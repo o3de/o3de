@@ -42,11 +42,6 @@ namespace AZ
 
         typedef Uuid AssetType;
 
-        namespace AssetInternal
-        {
-            bool IsValidAssetType(const AssetType& type, AZ::SerializeContext* serializeContext = nullptr);
-        }
-
         /**
          * Asset ID types
          */
@@ -510,8 +505,7 @@ namespace AZ
         namespace AssetInternal
         {
             AZCORE_API Asset<AssetData> FindOrCreateAsset(const AssetId& id, const AssetType& type, AssetLoadBehavior assetReferenceLoadBehavior);
-            AZCORE_API Asset<AssetData> GetAsset(const AssetId& id, const AssetType& type, AssetLoadBehavior assetReferenceLoadBehavior,
-                const AZ::Data::AssetLoadParameters& assetLoadFilterCB = AssetLoadParameters{});
+            AZCORE_API Asset<AssetData> GetAsset(const AssetId& id, const AssetType& type, AssetLoadBehavior assetReferenceLoadBehavior, const AZ::Data::AssetLoadParameters& assetLoadFilterCB = AssetLoadParameters{});
             AZCORE_API AssetData::AssetStatus BlockUntilLoadComplete(const Asset<AssetData>& asset);
             AZCORE_API void UpdateAssetInfo(AssetId& id, AZStd::string& assetHint);
             AZCORE_API bool ReloadAsset(AssetData* assetData, AssetLoadBehavior assetReferenceLoadBehavior);
@@ -631,7 +625,7 @@ namespace AZ
         /*
          * AssetBusCallbacks is a utility class that maps AssetBus events to user callbacks
          */
-        class AssetBusCallbacks
+        class AZCORE_API AssetBusCallbacks
             : public AssetBus::Handler
         {
         public:
@@ -1266,4 +1260,4 @@ namespace AZStd
     };
 }
 
-DECLARE_EBUS_EXTERN_DLL_MULTI_ADDRESS(Data::AssetEvents);
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZCORE_API, AZ::Data::AssetEvents);

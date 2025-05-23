@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <AzCore/Asset/AssetBus.h>
+#include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/EntityUtils.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/Slice/SliceAsset.h>

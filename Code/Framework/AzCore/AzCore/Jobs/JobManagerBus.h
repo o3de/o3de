@@ -5,8 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZCORE_JOB_MANAGER_BUS_H
-#define AZCORE_JOB_MANAGER_BUS_H
+#pragma once
 
 #include <AzCore/EBus/EBus.h>
 
@@ -35,7 +34,6 @@ namespace AZ
     };
 
     typedef AZ::EBus<JobManagerEvents>  JobManagerBus;
-}
+} // namespace AZ
 
-#endif // AZCORE_JOB_MANAGER_BUS_H
-#pragma once
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZCORE_API, AZ::JobManagerEvents);

@@ -827,4 +827,4 @@ namespace AZ
     };
 }
 
-DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS_WITH_TRAITS(ComponentDescriptor, ComponentDescriptorBusTraits);
+AZ_DECLARE_EBUS_MULTI_ADDRESS_WITH_TRAITS(AZCORE_API, AZ::ComponentDescriptor, AZ::ComponentDescriptorBusTraits);
