@@ -14,6 +14,7 @@
 #include <AzCore/std/string/string_view.h>
 
 #include <AzFramework/Quality/QualitySystemBus.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
@@ -48,7 +49,7 @@ namespace AzFramework
     // console settings defined in the SettingsRegistry for that
     // group at level 2 (high).
     //
-    class QualityCVarGroup
+    class AZF_API QualityCVarGroup
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL;

@@ -10,6 +10,7 @@
 
 #include <AzCore/EBus/EBus.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework::Scripts
 {
@@ -34,3 +35,5 @@ namespace AzFramework::Scripts
     
     using SpawnableScriptNotificationsBus = AZ::EBus<SpawnableScriptNotifications>;
 } // namespace AzFramework
+
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZF_API, AzFramework::Scripts::SpawnableScriptNotifications);

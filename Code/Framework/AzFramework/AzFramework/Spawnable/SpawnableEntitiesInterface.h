@@ -19,12 +19,13 @@
 #include <AzCore/RTTI/TypeSafeIntegral.h>
 #include <AzCore/std/functional.h>
 #include <AzFramework/Spawnable/Spawnable.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ
 {
     class Entity;
     class SerializeContext;
-}
+} // namespace AZ
 
 namespace AzFramework
 {
@@ -36,7 +37,7 @@ namespace AzFramework
     inline static constexpr SpawnablePriority SpawnablePriority_Low      { 192 };
     inline static constexpr SpawnablePriority SpawnablePriority_Lowest   { 255 };
 
-    class SpawnableEntityContainerView
+    class AZF_API SpawnableEntityContainerView
     {
     public:
         SpawnableEntityContainerView(AZ::Entity** begin, size_t length);
@@ -60,7 +61,7 @@ namespace AzFramework
         AZ::Entity** m_end;
     };
 
-    class SpawnableConstEntityContainerView
+    class AZF_API SpawnableConstEntityContainerView
     {
     public:
         SpawnableConstEntityContainerView(AZ::Entity** begin, size_t length);
@@ -84,7 +85,7 @@ namespace AzFramework
         AZ::Entity** m_end;
     };
 
-    class SpawnableIndexEntityPair
+    class AZF_API SpawnableIndexEntityPair
     {
     public:
         friend class SpawnableIndexEntityIterator;
@@ -106,7 +107,7 @@ namespace AzFramework
         uint32_t* m_index { nullptr };
     };
 
-    class SpawnableIndexEntityIterator
+    class AZF_API SpawnableIndexEntityIterator
     {
     public:
         // Limited to bidirectional iterator as there's no use case for extending it further, but can be extended if a use case is found.
@@ -135,7 +136,7 @@ namespace AzFramework
         SpawnableIndexEntityPair m_value;
     };
 
-    class SpawnableConstIndexEntityContainerView
+    class AZF_API SpawnableConstIndexEntityContainerView
     {
     public:
         SpawnableConstIndexEntityContainerView(AZ::Entity** beginEntity, uint32_t* beginIndices, size_t length);
@@ -151,7 +152,7 @@ namespace AzFramework
     };
 
     //! Information used when updating the type of an entity alias.
-    struct EntityAliasTypeChange
+    struct AZF_API EntityAliasTypeChange
     {
         //! The index of the alias in the spawnable. Note that due to optimizations done on the entity aliases the index of an alias
         //! can change over time.
@@ -165,7 +166,7 @@ namespace AzFramework
     //! from the spawnable may be tracked by the ticket and so using the same ticket is needed to despawn the exact entities created
     //! by a call to spawn entities. The life cycle of the spawned entities is tied to the ticket and all entities spawned using a
     //! ticket will be despawned when it's deleted.
-    class EntitySpawnTicket final
+    class AZF_API EntitySpawnTicket final
     {
     public:
         friend class SpawnableEntitiesDefinition;
@@ -212,7 +213,7 @@ namespace AzFramework
     using ClaimEntitiesCallback = AZStd::function<void(EntitySpawnTicket::Id, SpawnableEntityContainerView)>;
     using BarrierCallback = AZStd::function<void(EntitySpawnTicket::Id)>;
 
-    struct SpawnAllEntitiesOptionalArgs final
+    struct AZF_API SpawnAllEntitiesOptionalArgs final
     {
         //! Callback that's called after instances of entities have been created, but before they're spawned into the world. This
         //!     gives the opportunity to modify the entities if needed such as injecting additional components or modifying components.
@@ -226,7 +227,7 @@ namespace AzFramework
         SpawnablePriority m_priority { SpawnablePriority_Default };
     };
 
-    struct SpawnEntitiesOptionalArgs final
+    struct AZF_API SpawnEntitiesOptionalArgs final
     {
         //! Callback that's called after instances of entities have been created, but before they're spawned into the world. This
         //!     gives the opportunity to modify the entities if needed such as injecting additional components or modifying components.
@@ -247,7 +248,7 @@ namespace AzFramework
         bool m_referencePreviouslySpawnedEntities{ true };
     };
 
-    struct DespawnAllEntitiesOptionalArgs final
+    struct AZF_API DespawnAllEntitiesOptionalArgs final
     {
         //! Callback that's called when despawning entities has completed. This can be triggered from a different thread than the one that
         //! made the function call to despawn.
@@ -256,7 +257,7 @@ namespace AzFramework
         SpawnablePriority m_priority { SpawnablePriority_Default };
     };
 
-    struct DespawnEntityOptionalArgs final
+    struct AZF_API DespawnEntityOptionalArgs final
     {
         //! Callback that's called when despawning entity has completed. This can be triggered from a different thread than the one that
         //! made the function call to despawn.
@@ -265,13 +266,13 @@ namespace AzFramework
         SpawnablePriority m_priority{ SpawnablePriority_Default };
     };
 
-    struct RetrieveTicketOptionalArgs final
+    struct AZF_API RetrieveTicketOptionalArgs final
     {
         //! The priority at which this call will be executed.
         SpawnablePriority m_priority{ SpawnablePriority_Default };
     };
 
-    struct ReloadSpawnableOptionalArgs final
+    struct AZF_API ReloadSpawnableOptionalArgs final
     {
         //! Callback that's called when respawning entities has completed. This can be triggered from a different thread than the one that
         //!     made the function call to respawn. The returned list of entities contains all the newly created entities.
@@ -282,7 +283,7 @@ namespace AzFramework
         SpawnablePriority m_priority { SpawnablePriority_Default };
     };
 
-    struct UpdateEntityAliasTypesOptionalArgs final
+    struct AZF_API UpdateEntityAliasTypesOptionalArgs final
     {
         //! Callback that's called when entity aliases are updated. This can be triggered from a different thread than the one that
         //!     made the function call to update.
@@ -291,25 +292,25 @@ namespace AzFramework
         SpawnablePriority m_priority{ SpawnablePriority_Default };
     };
 
-    struct ListEntitiesOptionalArgs final
+    struct AZF_API ListEntitiesOptionalArgs final
     {
         //! The priority at which this call will be executed.
         SpawnablePriority m_priority{ SpawnablePriority_Default };
     };
 
-    struct ClaimEntitiesOptionalArgs final
+    struct AZF_API ClaimEntitiesOptionalArgs final
     {
         //! The priority at which this call will be executed.
         SpawnablePriority m_priority{ SpawnablePriority_Default };
     };
 
-    struct BarrierOptionalArgs final
+    struct AZF_API BarrierOptionalArgs final
     {
         //! The priority at which this call will be executed.
         SpawnablePriority m_priority{ SpawnablePriority_Default };
     };
 
-    struct LoadBarrierOptionalArgs final
+    struct AZF_API LoadBarrierOptionalArgs final
     {
         //! The priority at which this call will be executed.
         SpawnablePriority m_priority{ SpawnablePriority_Default };
@@ -331,7 +332,7 @@ namespace AzFramework
     //! differ between platforms. Note that if a call happened on a ticket with lower priority followed by a one with a higher priority
     //! the first lower priority call will still need to complete before the second higher priority call can be executed and the priority
     //! of the first call will not be updated.
-    class SpawnableEntitiesDefinition
+    class AZF_API SpawnableEntitiesDefinition
     {
     public:
         AZ_RTTI(AzFramework::SpawnableEntitiesDefinition, "{A9ED3F1F-4D69-4182-B0CD-EB561EEA7068}");
@@ -473,4 +474,4 @@ namespace AZStd
             return h;
         }
     };
-}
+} // namespace AZStd

@@ -8,10 +8,11 @@
 #pragma once
 
 #include <AzCore/Module/Module.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
-    class AzFrameworkNativeUIModule
+    class AZF_API AzFrameworkNativeUIModule
         : public AZ::Module
     {
     public:

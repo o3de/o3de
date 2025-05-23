@@ -5,9 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-#ifndef HEXFRAMEWORK_SCRIPT_DEBUGGER_CLASSES_H
-#define HEXFRAMEWORK_SCRIPT_DEBUGGER_CLASSES_H
+#pragma once
 
 #include <AzFramework/Script/ScriptRemoteDebugging.h>
 #include <AzFramework/Network/IRemoteTools.h>
@@ -17,14 +15,12 @@
 #include <AzCore/std/string/string.h>
 #include <AzCore/Math/Crc.h>
 #include <AzCore/RTTI/RTTI.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
-namespace DH {
-    struct ClassDataReflection;
-}   // namespace DH
 
 namespace AzFramework
 {
-    class ScriptDebugRequest
+    class AZF_API ScriptDebugRequest
         : public RemoteToolsMessage
     {
     public:
@@ -45,7 +41,7 @@ namespace AzFramework
         AZStd::string   m_context;
     };
 
-    class ScriptDebugBreakpointRequest
+    class AZF_API ScriptDebugBreakpointRequest
         : public ScriptDebugRequest
     {
     public:
@@ -60,7 +56,7 @@ namespace AzFramework
         AZ::u32 m_line;
     };
 
-    class ScriptDebugSetValue
+    class AZF_API ScriptDebugSetValue
         : public RemoteToolsMessage
     {
     public:
@@ -73,7 +69,7 @@ namespace AzFramework
         AZ::ScriptContextDebug::DebugValue  m_value;
     };
 
-    class ScriptDebugAck
+    class AZF_API ScriptDebugAck
         : public RemoteToolsMessage
     {
     public:
@@ -90,7 +86,7 @@ namespace AzFramework
         AZ::u32 m_ackCode;
     };
 
-    class ScriptDebugAckBreakpoint
+    class AZF_API ScriptDebugAckBreakpoint
         : public RemoteToolsMessage
     {
     public:
@@ -105,7 +101,7 @@ namespace AzFramework
         AZ::u32         m_line;
     };
 
-    class ScriptDebugAckExecute
+    class AZF_API ScriptDebugAckExecute
         : public RemoteToolsMessage
     {
     public:
@@ -119,7 +115,7 @@ namespace AzFramework
         bool            m_result;
     };
 
-    class ScriptDebugEnumLocalsResult
+    class AZF_API ScriptDebugEnumLocalsResult
         : public RemoteToolsMessage
     {
     public:
@@ -132,7 +128,7 @@ namespace AzFramework
         AZStd::vector<AZStd::string>    m_names;
     };
 
-    class ScriptDebugEnumContextsResult
+    class AZF_API ScriptDebugEnumContextsResult
         : public RemoteToolsMessage
     {
     public:
@@ -145,7 +141,7 @@ namespace AzFramework
         AZStd::vector<AZStd::string>    m_names;
     };
 
-    class ScriptDebugGetValueResult
+    class AZF_API ScriptDebugGetValueResult
         : public RemoteToolsMessage
     {
     public:
@@ -158,7 +154,7 @@ namespace AzFramework
         AZ::ScriptContextDebug::DebugValue  m_value;
     };
 
-    class ScriptDebugSetValueResult
+    class AZF_API ScriptDebugSetValueResult
         : public RemoteToolsMessage
     {
     public:
@@ -172,7 +168,7 @@ namespace AzFramework
         bool            m_result;
     };
 
-    class ScriptDebugCallStackResult
+    class AZF_API ScriptDebugCallStackResult
         : public RemoteToolsMessage
     {
     public:
@@ -185,7 +181,7 @@ namespace AzFramework
         AZStd::string   m_callstack;
     };
 
-    class ScriptDebugRegisteredGlobalsResult
+    class AZF_API ScriptDebugRegisteredGlobalsResult
         : public RemoteToolsMessage
     {
     public:
@@ -199,7 +195,7 @@ namespace AzFramework
         ScriptUserPropertyList  m_properties;
     };
 
-    class ScriptDebugRegisteredClassesResult
+    class AZF_API ScriptDebugRegisteredClassesResult
         : public RemoteToolsMessage
     {
     public:
@@ -212,7 +208,7 @@ namespace AzFramework
         ScriptUserClassList m_classes;
     };
 
-    class ScriptDebugRegisteredEBusesResult
+    class AZF_API ScriptDebugRegisteredEBusesResult
         : public RemoteToolsMessage
     {
     public:
@@ -225,8 +221,5 @@ namespace AzFramework
         ScriptUserEBusList m_ebusList;
     };
 
-    void ReflectScriptDebugClasses(AZ::ReflectContext* reflection);
+    AZF_API void ReflectScriptDebugClasses(AZ::ReflectContext* reflection);
 }   // namespace AzFramework
-
-#endif  // HEXFRAMEWORK_SCRIPT_DEBUGGER_CLASSES_H
-#pragma once

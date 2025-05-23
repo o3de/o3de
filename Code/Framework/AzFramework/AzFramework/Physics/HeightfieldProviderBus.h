@@ -14,6 +14,7 @@
 #include <AzCore/Math/Aabb.h>
 #include <AzFramework/Physics/Material/PhysicsMaterialAsset.h>
 #include <AzCore/EBus/EBusSharedDispatchTraits.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace Physics
 {
@@ -169,3 +170,6 @@ namespace Physics
 
     using HeightfieldProviderNotificationBus = AZ::EBus<HeightfieldProviderNotifications>;
 } // namespace Physics
+
+//AZ_DECLARE_EBUS_MULTI_ADDRESS(AZF_API, Physics::HeightfieldProviderRequests);
+//AZ_DECLARE_EBUS_MULTI_ADDRESS(AZF_API, Physics::HeightfieldProviderNotifications);

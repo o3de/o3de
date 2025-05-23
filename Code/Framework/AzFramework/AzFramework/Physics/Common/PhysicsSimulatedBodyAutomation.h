@@ -13,6 +13,7 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <AzFramework/Physics/Collision/CollisionEvents.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBodyEvents.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ
 {
@@ -24,7 +25,7 @@ namespace AzPhysics::Automation
 {
     //! Buses to expose Collision and Trigger event to Automation
     //! @{
-    class AutomationCollisionNotifications
+    class AZF_API AutomationCollisionNotifications
         : public AZ::ComponentBus
     {
     public:
@@ -35,7 +36,7 @@ namespace AzPhysics::Automation
     };
     using AutomationCollisionNotificationsBus = AZ::EBus<AutomationCollisionNotifications>;
 
-    class AutomationTriggerNotifications
+    class AZF_API AutomationTriggerNotifications
         : public AZ::ComponentBus
     {
     public:
@@ -49,7 +50,7 @@ namespace AzPhysics::Automation
     //! Collision Event Handler for Automation
     //! @note this class is not using the usual AZ_EBUS_BEHAVIOR_BINDER macro as the signature
     //! needs to be changed for script canvas.
-    class SimulatedBodyCollisionAutomationHandler
+    class AZF_API SimulatedBodyCollisionAutomationHandler
         : public AutomationCollisionNotificationsBus::Handler
         , public AZ::BehaviorEBusHandler
     {
@@ -99,7 +100,7 @@ namespace AzPhysics::Automation
     //! Trigger Event Handler for Automation
     //! @note this class is not using the usual AZ_EBUS_BEHAVIOR_BINDER macro as the signature
     //! needs to be changed for script canvas.
-    class SimulatedBodyTriggerAutomationHandler
+    class AZF_API SimulatedBodyTriggerAutomationHandler
         : public AutomationTriggerNotificationsBus::Handler
         , public AZ::BehaviorEBusHandler
     {

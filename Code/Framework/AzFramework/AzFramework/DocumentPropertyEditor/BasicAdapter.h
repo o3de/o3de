@@ -9,13 +9,14 @@
 #pragma once
 
 #include <AzFramework/DocumentPropertyEditor/DocumentAdapter.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ::DocumentPropertyEditor
 {
     //! BasicAdapter is a DocumentAdapter that simply provides a fixed DOM provided
     //! by a call to SetContents. The consumer is responsible for listening to change
     //! and reset events and handling them accordingly to provide interactivity.
-    class BasicAdapter : public DocumentAdapter
+    class AZF_API BasicAdapter : public DocumentAdapter
     {
     public:
         //! Resets the contents of this adapter with a new DOM.

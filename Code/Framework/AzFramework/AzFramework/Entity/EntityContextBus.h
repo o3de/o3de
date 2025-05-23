@@ -12,17 +12,21 @@
  * Entity contexts are collections of entities. Examples of entity contexts are 
  * the editor context, game context, a custom context, and so on.
  */
-
-#ifndef AZFRAMEWORK_ENTITYCONTEXTBUS_H
-#define AZFRAMEWORK_ENTITYCONTEXTBUS_H
+#pragma once
 
 #include <AzCore/Debug/Budget.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/ComponentBus.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
+
+#if defined(AZ_MONOLITHIC_BUILD)
 AZ_DECLARE_BUDGET(AzFramework);
+#else
+AZ_DECLARE_BUDGET_SHARED(AzFramework);
+#endif // defined(AZ_MONOLITHIC_BUILD)
 
 namespace AZ
 {
@@ -235,4 +239,6 @@ namespace AzFramework
     using EntityIdContextQueryBus = AZ::EBus<EntityIdContextQueries>;
 } // namespace AzFramework
 
-#endif // AZFRAMEWORK_ENTITYCONTEXTBUS_H
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZF_API, AzFramework::EntityContextRequests);
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZF_API, AzFramework::EntityContextEvents);
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZF_API, AzFramework::EntityIdContextQueries);

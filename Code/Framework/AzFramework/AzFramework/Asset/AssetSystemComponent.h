@@ -15,6 +15,7 @@
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/Network/SocketConnection.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
@@ -32,7 +33,7 @@ namespace AzFramework
         * Currently used to request synchronous asset compilation, provide notifications
         * when assets are updated, and to query asset status
         */
-        class AssetSystemComponent
+        class AZF_API AssetSystemComponent
             : public AZ::Component
             , private AssetSystemRequestBus::Handler
             , private AZ::SystemTickBus::Handler

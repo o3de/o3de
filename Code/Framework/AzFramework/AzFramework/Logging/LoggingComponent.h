@@ -6,11 +6,11 @@
  *
  */
 
-#ifndef LOGGINGCOMPONENT_H
-#define LOGGINGCOMPONENT_H
+#pragma once
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Debug/TraceMessageBus.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 #include "LogFile.h"
 
@@ -18,7 +18,7 @@ namespace AzFramework
 {
     //! LogComponent
     //! LogComponent listens to AZ trace messages and forwards them to a log file
-    class LogComponent
+    class AZF_API LogComponent
         : public AZ::Component
         , private AZ::Debug::TraceMessageBus::Handler
     {
@@ -69,5 +69,3 @@ namespace AzFramework
         LogFile* m_logFile;
     };
 }
-
-#endif

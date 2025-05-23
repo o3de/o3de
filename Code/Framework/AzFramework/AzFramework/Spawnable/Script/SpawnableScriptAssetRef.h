@@ -12,12 +12,14 @@
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Asset/AssetBus.h>
 #include <AzFramework/Spawnable/Spawnable.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework::Scripts
 {
     //! A wrapper around Spawnable asset that can be used by Script Canvas and Lua
-    class SpawnableScriptAssetRef final
+    class AZF_API SpawnableScriptAssetRef final
         : private AZ::Data::AssetBus::Handler
     {
     public:
@@ -61,4 +63,4 @@ namespace AzFramework::Scripts
 
         AZ::Data::Asset<Spawnable> m_asset;
     };
-}
+} // namespace AzFramework::Scripts

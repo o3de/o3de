@@ -17,6 +17,7 @@
 
 #include <AzFramework/Asset/AssetSystemTypes.h>
 #include <AzFramework/Asset/AssetProcessorMessages.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
@@ -124,15 +125,15 @@ namespace AzFramework
 
         //! Convenience function which can be used to read the AssetProcessor connection settings
         //! from the /Amazon/AzCore/Bootstrap section of the SettingsRegistry
-        bool ReadConnectionSettingsFromSettingsRegistry(ConnectionSettings& outputConnectionSettings);
+        AZF_API bool ReadConnectionSettingsFromSettingsRegistry(ConnectionSettings& outputConnectionSettings);
 
         //! Launch the asset processor
         //! \return Whether or not the asset processor launched
-        bool LaunchAssetProcessor();
+        AZF_API bool LaunchAssetProcessor();
 
         //! AssetSystemRequestBusTraits
         //! This bus is for making requests to the asset system
-        class AssetSystemRequests
+        class AZF_API AssetSystemRequests
             : public AZ::EBusTraits
         {
         public:
@@ -344,4 +345,8 @@ namespace AzFramework
     using AssetSystemStatusBus = AZ::EBus<AssetSystem::AssetSystemStatus>;
 } // namespace AzFramework
 
-DECLARE_EBUS_EXTERN(AzFramework::AssetSystem::AssetSystemRequests);
+
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::AssetSystem::AssetSystemInfoNotifications)
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::AssetSystem::AssetSystemRequests)
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::AssetSystem::AssetSystemConnectionNotifications)
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::AssetSystem::AssetSystemStatus)

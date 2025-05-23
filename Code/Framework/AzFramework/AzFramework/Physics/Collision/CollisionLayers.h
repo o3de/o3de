@@ -12,6 +12,7 @@
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/string/string.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ
 {
@@ -23,7 +24,7 @@ namespace AzPhysics
     //! This class represents which layer a collider exists on.
     //! A collider can only exist on a single layer, defined by the index.
     //! There is a maximum of 64 layers.
-    class CollisionLayer
+    class AZF_API CollisionLayer
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL;
@@ -61,7 +62,7 @@ namespace AzPhysics
     };
 
     //! Collision layers defined for the project.
-    class CollisionLayers
+    class AZF_API CollisionLayers
     {
     public:
         static const AZ::u8 MaxCollisionLayers = 64;

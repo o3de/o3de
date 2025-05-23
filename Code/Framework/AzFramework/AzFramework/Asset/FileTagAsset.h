@@ -12,6 +12,7 @@
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/string/string.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 
 namespace AZ
@@ -34,7 +35,7 @@ namespace AzFramework
         };
 
         //! File Tag Data stores all the information related to the FileTagAsset.
-        struct FileTagData
+        struct AZF_API FileTagData
         {
             AZ_TYPE_INFO(FileTagData, "{5F66E43B-548B-4AA8-8CD8-F6924F6031E6}");
             FileTagData(AZStd::set<AZStd::string> fileTags, FilePatternType filePatternType = FilePatternType::Exact, const AZStd::string& comment = "");
@@ -48,7 +49,7 @@ namespace AzFramework
 
         using FileTagMap = AZStd::map<AZStd::string, AzFramework::FileTag::FileTagData>;
 
-        class FileTagAsset
+        class AZF_API FileTagAsset
             : public AZ::Data::AssetData
         {
         public:

@@ -14,6 +14,7 @@
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzFramework/Physics/HeightfieldProviderBus.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ
 {
@@ -52,7 +53,7 @@ namespace Physics
         static constexpr AZ::u8 DefaultCylinderSubdivisionCount = 16;
     } // namespace ShapeConstants
 
-    class ShapeConfiguration
+    class AZF_API ShapeConfiguration
     {
     public:
         AZ_CLASS_ALLOCATOR(ShapeConfiguration, AZ::SystemAllocator);
@@ -65,7 +66,7 @@ namespace Physics
         AZ::Vector3 m_scale = ShapeConstants::DefaultScale;
     };
 
-    class SphereShapeConfiguration : public ShapeConfiguration
+    class AZF_API SphereShapeConfiguration : public ShapeConfiguration
     {
     public:
         AZ_CLASS_ALLOCATOR(SphereShapeConfiguration, AZ::SystemAllocator);
@@ -80,7 +81,7 @@ namespace Physics
         float m_radius = ShapeConstants::DefaultSphereRadius;
     };
 
-    class BoxShapeConfiguration : public ShapeConfiguration
+    class AZF_API BoxShapeConfiguration : public ShapeConfiguration
     {
     public:
         AZ_CLASS_ALLOCATOR(BoxShapeConfiguration, AZ::SystemAllocator);
@@ -96,7 +97,7 @@ namespace Physics
         AZ::Vector3 m_dimensions = ShapeConstants::DefaultBoxDimensions;
     };
 
-    class CapsuleShapeConfiguration : public ShapeConfiguration
+    class AZF_API CapsuleShapeConfiguration : public ShapeConfiguration
     {
     public:
         AZ_CLASS_ALLOCATOR(CapsuleShapeConfiguration, AZ::SystemAllocator);
@@ -118,7 +119,7 @@ namespace Physics
         void OnRadiusChanged();
     };
 
-    class ConvexHullShapeConfiguration : public ShapeConfiguration
+    class AZF_API ConvexHullShapeConfiguration : public ShapeConfiguration
     {
     public:
         AZ_CLASS_ALLOCATOR(ConvexHullShapeConfiguration, AZ::SystemAllocator);
@@ -140,7 +141,7 @@ namespace Physics
         bool m_copyData = true; ///< If set, vertex buffer will be copied in the native physics implementation,
     };
 
-    class TriangleMeshShapeConfiguration : public ShapeConfiguration
+    class AZF_API TriangleMeshShapeConfiguration : public ShapeConfiguration
     {
     public:
         AZ_CLASS_ALLOCATOR(TriangleMeshShapeConfiguration, AZ::SystemAllocator);
@@ -159,7 +160,7 @@ namespace Physics
                                 ///< and don't need to be kept alive by the caller;
     };
 
-    class PhysicsAssetShapeConfiguration
+    class AZF_API PhysicsAssetShapeConfiguration
         : public ShapeConfiguration
     {
     public:
@@ -174,7 +175,7 @@ namespace Physics
         AZ::u8 m_subdivisionLevel = 4; ///< The level of subdivision if a primitive shape is replaced with a convex mesh due to scaling.
     };
 
-    class NativeShapeConfiguration : public ShapeConfiguration
+    class AZF_API NativeShapeConfiguration : public ShapeConfiguration
     {
     public:
         AZ_CLASS_ALLOCATOR(NativeShapeConfiguration, AZ::SystemAllocator);
@@ -187,7 +188,7 @@ namespace Physics
         AZ::Vector3 m_nativeShapeScale = AZ::Vector3::CreateOne(); ///< Native shape scale. This will be serialised
     };
 
-    class CookedMeshShapeConfiguration
+    class AZF_API CookedMeshShapeConfiguration
         : public ShapeConfiguration
     {
     public:
@@ -230,7 +231,7 @@ namespace Physics
         void* m_cachedNativeMesh = nullptr;
     };
 
-    class HeightfieldShapeConfiguration
+    class AZF_API HeightfieldShapeConfiguration
         : public ShapeConfiguration
     {
     public:

@@ -8,6 +8,7 @@
 #pragma once
 
 #include <AzFramework/Input/Buses/Notifications/InputTextNotificationBus.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 // Start: fix for windows defining max/min macros
 #pragma push_macro("max")
@@ -20,7 +21,7 @@ namespace AzFramework
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //! Class that handles input text event notifications by priority
-    class InputTextEventListener : public InputTextNotificationBus::Handler
+    class AZF_API InputTextEventListener : public InputTextNotificationBus::Handler
     {
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////

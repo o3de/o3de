@@ -14,11 +14,12 @@
 #include <AzCore/Component/TransformBus.h>
 #include <AzFramework/Visibility/EntityBoundsUnionBus.h>
 #include <AzFramework/Visibility/IVisibilitySystem.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
     //! Provide a unified hook between entities and the visibility system.
-    class EntityVisibilityBoundsUnionSystem
+    class AZF_API EntityVisibilityBoundsUnionSystem
         : public IEntityBoundsUnionRequestBus::Handler
         , private AZ::TickBus::Handler
     {

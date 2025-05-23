@@ -7,6 +7,7 @@
  */
 
 #pragma once
+#include <AzFramework/AzFrameworkAPI.h>
 #include <AzCore/std/string/string.h>
 
 namespace Physics
@@ -14,19 +15,19 @@ namespace Physics
     /// Constants for naming such as unit suffixes for physics properties.
     namespace NameConstants
     {
-        const AZStd::string& GetSuperscriptMinus();
-        const AZStd::string& GetSuperscriptOne();
-        const AZStd::string& GetSuperscriptTwo();
-        const AZStd::string& GetSuperscriptThree();
-        const AZStd::string& GetInterpunct();
-        const AZStd::string& GetBulletPoint();
-        const AZStd::string& GetSpeedUnit();
-        const AZStd::string& GetAngularVelocityUnit();
-        const AZStd::string& GetLengthUnit();
-        const AZStd::string& GetVolumeUnit();
-        const AZStd::string& GetMassUnit();
-        const AZStd::string& GetInertiaUnit();
-        const AZStd::string& GetSleepThresholdUnit();
-        const AZStd::string& GetDensityUnit();
+        AZF_API const AZStd::string& GetSuperscriptMinus();
+        AZF_API const AZStd::string& GetSuperscriptOne();
+        AZF_API const AZStd::string& GetSuperscriptTwo();
+        AZF_API const AZStd::string& GetSuperscriptThree();
+        AZF_API const AZStd::string& GetInterpunct();
+        AZF_API const AZStd::string& GetBulletPoint();
+        AZF_API const AZStd::string& GetSpeedUnit();
+        AZF_API const AZStd::string& GetAngularVelocityUnit();
+        AZF_API const AZStd::string& GetLengthUnit();
+        AZF_API const AZStd::string& GetVolumeUnit();
+        AZF_API const AZStd::string& GetMassUnit();
+        AZF_API const AZStd::string& GetInertiaUnit();
+        AZF_API const AZStd::string& GetSleepThresholdUnit();
+        AZF_API const AZStd::string& GetDensityUnit();
     } // namespace NameConstants
 } // namespace Physics

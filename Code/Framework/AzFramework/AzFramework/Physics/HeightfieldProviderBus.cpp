@@ -11,6 +11,9 @@
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
+// AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(AZF_API, Physics::HeightfieldProviderRequests);
+// AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(AZF_API, Physics::HeightfieldProviderNotifications);
+
 namespace Physics
 {
     void HeightfieldProviderRequests::Reflect(AZ::ReflectContext* context)
@@ -44,3 +47,4 @@ namespace Physics
     }
 
 } // namespace Physics
+

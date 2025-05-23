@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzFramework/Input/Channels/InputChannelId.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 #include <AzCore/EBus/EBus.h>
 
@@ -19,7 +20,7 @@ namespace AzFramework
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //! EBus interface used to query for available input channels
-    class InputChannelRequests : public AZ::EBusTraits
+    class AZF_API InputChannelRequests : public AZ::EBusTraits
     {
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
@@ -36,7 +37,7 @@ namespace AzFramework
         //! EBus Trait: requests should be addressed to a specific channel id / device index pair.
         //! While input channel ids must be unique across different input devices, multiple devices
         //! of the same type can exist, so requests must be addressed using an id/device index pair.
-        class BusIdType
+        class AZF_API BusIdType
         {
         public:
             ////////////////////////////////////////////////////////////////////////////////////////
@@ -216,4 +217,4 @@ namespace AzFramework
 
 } // namespace AzFramework
 
-DECLARE_EBUS_EXTERN(AzFramework::InputChannelRequests);
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZF_API, AzFramework::InputChannelRequests);

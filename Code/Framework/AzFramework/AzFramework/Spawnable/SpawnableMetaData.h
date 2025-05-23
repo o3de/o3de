@@ -14,6 +14,7 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/utils.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ
 {
@@ -28,7 +29,7 @@ namespace AzFramework
     //! Simple meta data that can be stored along with a spawnable.
     //! This class is designed to be read-only and is expected to be serialized. AzToolsFramework provides a class for
     //! constructing meta data.
-    class SpawnableMetaData final
+    class AZF_API SpawnableMetaData final
     {
     public:
         static inline constexpr uint64_t ArrayKeyRoot = 146223222818353; // Random prime number

@@ -15,6 +15,7 @@
 #include <AzFramework/Physics/Common/PhysicsJoint.h>
 #include <AzFramework/Physics/Configuration/JointConfiguration.h>
 #include <AzFramework/Physics/Configuration/SimulatedBodyConfiguration.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzPhysics
 {
@@ -254,7 +255,7 @@ namespace AzPhysics
     };
 
     //! Interface of a Physics Scene
-    class Scene
+    class AZF_API Scene
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL;

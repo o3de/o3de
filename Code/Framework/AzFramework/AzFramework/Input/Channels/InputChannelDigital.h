@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzFramework/Input/Channels/InputChannel.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AzFramework
@@ -16,7 +17,7 @@ namespace AzFramework
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //! Class representing input channels that emit one dimensional digital input values.
     //! Examples: game-pad button, keyboard key
-    class InputChannelDigital : public InputChannel
+    class AZF_API InputChannelDigital : public InputChannel
     {
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////

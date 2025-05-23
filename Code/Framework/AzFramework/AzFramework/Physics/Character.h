@@ -18,6 +18,7 @@
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <AzFramework/Physics/Configuration/SimulatedBodyConfiguration.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ
 {
@@ -28,7 +29,7 @@ namespace Physics
 {
     class Character;
 
-    class CharacterColliderNodeConfiguration
+    class AZF_API CharacterColliderNodeConfiguration
     {
     public:
         AZ_RTTI(Physics::CharacterColliderNodeConfiguration, "{C16F3301-0979-400C-B734-692D83755C39}");
@@ -42,7 +43,7 @@ namespace Physics
         AzPhysics::ShapeColliderPairList m_shapes;
     };
 
-    class CharacterColliderConfiguration
+    class AZF_API CharacterColliderConfiguration
     {
     public:
         AZ_RTTI(Physics::CharacterColliderConfiguration, "{4DFF1434-DF5B-4ED5-BE0F-D3E66F9B331A}");
@@ -61,7 +62,7 @@ namespace Physics
     };
 
     /// Information required to create the basic physics representation of a character.
-    class CharacterConfiguration
+    class AZF_API CharacterConfiguration
         : public AzPhysics::SimulatedBodyConfiguration
     {
     public:
@@ -89,7 +90,7 @@ namespace Physics
     /// Basic implementation of common character-style needs as a WorldBody. Is not a full-functional ship-ready
     /// all-purpose character controller implementation. This class just abstracts some common functionality amongst
     /// typical characters, and is take-it-or-leave it style; useful as a starting point or reference.
-    class Character
+    class AZF_API Character
         : public AzPhysics::SimulatedBody
     {
     public:
