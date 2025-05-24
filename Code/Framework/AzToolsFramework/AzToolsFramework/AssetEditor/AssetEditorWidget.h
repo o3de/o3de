@@ -48,9 +48,11 @@ namespace AzToolsFramework
     {
         class AssetEditorTab;
 
+        //! Stores the recent used folder and file settings used by the Asset Editor
         class AssetEditorWidgetUserSettings final
         {
         public:
+
             AZ_RTTI(AssetEditorWidgetUserSettings, "{382FE424-4541-4D93-9BA4-DE17A6DF8676}");
             AZ_CLASS_ALLOCATOR(AssetEditorWidgetUserSettings, AZ::SystemAllocator);
 
@@ -60,30 +62,17 @@ namespace AzToolsFramework
             ~AssetEditorWidgetUserSettings() = default;
 
             void AddRecentPath(AZ::Data::AssetType, const AZStd::string& recentPath);
+            void Clear();
+            const AZStd::string GetRecentPathForAssetType(AZ::Data::AssetType assetType) const;
 
-            void Clear()
-            {
-                m_recentFiles.clear();
-                m_recentPathPerAssetType.clear();
-            }
-
-            const AZStd::string GetRecentPathForAssetType(AZ::Data::AssetType assetType) const
-            {
-                if (m_recentPathPerAssetType.contains(assetType))
-                {
-                    return m_recentPathPerAssetType.find(assetType)->second;
-                }
-                return {};
-            }
+        private:
 
             AZStd::unordered_map<AZ::Data::AssetType, AZStd::string> m_recentPathPerAssetType;
             AZStd::vector<AZStd::string> m_recentFiles;
 
         };
 
-        /**
-         * Provides ability to create, edit, and save reflected assets.
-         */
+         //! Provides ability to create, edit, and save reflected assets.
         class AssetEditorWidget
             : public QWidget
         {
@@ -119,6 +108,7 @@ namespace AzToolsFramework
             void CreateAsset(AZ::Data::AssetType assetType);
 
         public Q_SLOTS:
+
             void OpenAssetWithDialog();
             void OpenAssetFromPath(const AZStd::string& fullPath);
             void OnAssetSaveFailed(const AZStd::string& error);
@@ -133,10 +123,12 @@ namespace AzToolsFramework
             void onTabCloseButtonPressed(int tabIndexToClose);
 
         Q_SIGNALS:
+
             void OnAssetSaveFailedSignal(const AZStd::string& error);
             void OnAssetOpenedSignal(const AZ::Data::Asset<AZ::Data::AssetData>& asset);
 
-        protected: // IPropertyEditorNotify
+        protected:
+
             void UpdateRecentFileListState();
 
         private:

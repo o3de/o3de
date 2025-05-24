@@ -137,6 +137,21 @@ namespace AzToolsFramework
 
         }
 
+        void AssetEditorWidgetUserSettings::Clear()
+        {
+            m_recentFiles.clear();
+            m_recentPathPerAssetType.clear();
+        }
+
+        const AZStd::string AssetEditorWidgetUserSettings::GetRecentPathForAssetType(AZ::Data::AssetType assetType) const
+        {
+            if (m_recentPathPerAssetType.contains(assetType))
+            {
+                return m_recentPathPerAssetType.find(assetType)->second;
+            }
+            return {};
+        }
+
         //////////////////////////////////////////////////////////////////////////
         // AssetEditorWidget
         //////////////////////////////////////////////////////////////////////////
