@@ -63,7 +63,6 @@ namespace AzToolsFramework
 
             void Clear()
             {
-                m_lastSavePath.clear();
                 m_recentFiles.clear();
                 m_recentPathPerAssetType.clear();
             }
@@ -78,8 +77,6 @@ namespace AzToolsFramework
             }
 
             AZStd::unordered_map<AZ::Data::AssetType, AZStd::string> m_recentPathPerAssetType;
-
-            AZStd::string m_lastSavePath;
             AZStd::vector<AZStd::string> m_recentFiles;
 
         };
