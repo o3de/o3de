@@ -101,7 +101,10 @@ real3 SpecularGGX( real3 dirToCamera, real3 dirToLight, real3 normal, real3 spec
     G = max(0.0, G);
 
     // Multiply with multiscattering compensation in order to take account for several specular light bounces.
-    return multiScatterCompensation * (D * G * F * NdotL);
+    // Note: the specific order and placement of real() here is deliberate and prevents half precision issues on mobile/Quest
+    real3 specularLighting = (real((D * G) * NdotL) * F) * multiScatterCompensation;
+
+    return specularLighting;
 }
 
 real3 AnisotropicGGX( real3 dirToCamera, real3 dirToLight, real3 normal, real3 tangent, real3 bitangent, real2 anisotropyFactors,
