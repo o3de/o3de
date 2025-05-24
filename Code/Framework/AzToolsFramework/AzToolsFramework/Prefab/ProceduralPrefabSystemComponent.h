@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzCore/Component/Component.h>
 #include <Prefab/ProceduralPrefabSystemComponentInterface.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>
@@ -17,7 +18,7 @@ namespace AzToolsFramework
 {
     namespace Prefab
     {
-        class ProceduralPrefabSystemComponent
+        class AZTF_API ProceduralPrefabSystemComponent
             : public AZ::Component
             , ProceduralPrefabSystemComponentInterface
             , AzFramework::AssetCatalogEventBus::Handler

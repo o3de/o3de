@@ -16,6 +16,7 @@
 
 #include <AzFramework/Asset/AssetCatalogBus.h>
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzFramework/Network/SocketConnection.h>
@@ -43,7 +44,7 @@ namespace AzToolsFramework
             Database entries are cached so that they can be quickly accessed by asset browser views.
             Additionally this class watches for any changes to the database and updates the views if such changes happen
         */
-        class AssetBrowserComponent
+        class AZTF_API AssetBrowserComponent
             : public AZ::Component
             , public AssetBrowserComponentRequestBus::Handler
             , public AssetDatabaseLocationNotificationBus::Handler

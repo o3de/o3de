@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <AzCore/Math/VertexContainer.h>
 #include <AzCore/Math/VertexContainerInterface.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
@@ -23,7 +25,7 @@ namespace AzToolsFramework
 {
     //! Registers the Actions provided by the EditorVertexSelection while it is active to the Action Manager.
     //! e.g. Vertex deletion, duplication etc.
-    struct EditorVertexSelectionActionManagement
+    struct AZTF_API EditorVertexSelectionActionManagement
     {
         static void RegisterEditorVertexSelectionActions();
         static void BindEditorVertexSelectionActionsToMenus();
@@ -301,7 +303,7 @@ namespace AzToolsFramework
     //! EditorVertexSelectionFixed provides selection and editing for a fixed length number of
     //! vertices. New vertices cannot be inserted/added or removed.
     template<typename Vertex>
-    class EditorVertexSelectionFixed
+    class AZTF_API EditorVertexSelectionFixed
         : public EditorVertexSelectionBase<Vertex>
     {
     public:
@@ -324,7 +326,7 @@ namespace AzToolsFramework
     //! EditorVertexSelectionVariable provides selection and editing for a variable length number of
     //! vertices. New vertices can be inserted/added or removed from the collection.
     template<typename Vertex>
-    class EditorVertexSelectionVariable
+    class AZTF_API EditorVertexSelectionVariable
         : public EditorVertexSelectionBase<Vertex>
         , private AzToolsFramework::EditorVertexSelectionVariableRequestBus::Handler
     {
@@ -374,4 +376,9 @@ namespace AzToolsFramework
     template<typename Vertex>
     void SafeRemoveVertex(const AZ::EntityComponentIdPair& entityComponentIdPair, size_t vertexIndex);
 
+
+    extern template void InsertVertexAfter(const AZ::EntityComponentIdPair& entityComponentIdPair, size_t, const AZ::Vector2&);
+    extern template void InsertVertexAfter(const AZ::EntityComponentIdPair& entityComponentIdPair, size_t, const AZ::Vector3&);
+    extern template void SafeRemoveVertex<AZ::Vector2>(const AZ::EntityComponentIdPair& entityComponentIdPair, size_t vertexIndex);
+    extern template void SafeRemoveVertex<AZ::Vector3>(const AZ::EntityComponentIdPair& entityComponentIdPair, size_t vertexIndex);
 } // namespace AzToolsFramework

@@ -12,6 +12,7 @@
 
 #include <AzFramework/Asset/AssetCatalogBus.h>
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/Entries/FolderAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Favorites/EntryAssetBrowserFavoriteItem.h>
@@ -27,7 +28,7 @@ namespace AzToolsFramework
         class EntryAssetBrowserFavoriteItem;
         class AssetBrowserFavoritesView;
 
-        class AssetBrowserFavoritesManager
+        class AZTF_API AssetBrowserFavoritesManager
             : private AzFramework::AssetCatalogEventBus::Handler
             , private AssetBrowserFavoriteRequestBus::Handler
             , private AzToolsFramework::AssetBrowser::AssetBrowserComponentNotificationBus::Handler

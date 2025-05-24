@@ -6,10 +6,9 @@
  *
  */
 
-#ifndef ENTITY_PROPERTY_EDITOR_H
-#define ENTITY_PROPERTY_EDITOR_H
-
 #pragma once
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
@@ -103,7 +102,7 @@ namespace AzToolsFramework
      * so this widget is actually only interested in specifically what entities are selected, what their components are,
      * and what is in common.
      */
-    class EntityPropertyEditor
+    class AZTF_API EntityPropertyEditor
         : public QWidget
         , private ToolsApplicationEvents::Bus::Handler
         , public IPropertyEditorNotify
@@ -690,12 +689,12 @@ namespace AzToolsFramework
         AZ::Entity* GetSelectedEntityById(AZ::EntityId& entityId) const;
     };
 
-    void SortComponentsByOrder(AZ::EntityId entityId, AZ::Entity::ComponentArrayType& componentsOnEntity);
+    //void SortComponentsByOrder(AZ::EntityId entityId, AZ::Entity::ComponentArrayType& componentsOnEntity);
     void SaveComponentOrder(AZ::EntityId entityId, AZStd::span<AZ::Component* const> componentsInOrder);
 
 } // namespace AzToolsFramework
 
-class StatusComboBox : public QComboBox
+class AZTF_API StatusComboBox : public QComboBox
 {
     Q_OBJECT
 public:
@@ -712,5 +711,3 @@ protected:
     QString m_headerOverride = "";
     bool m_italic = false;
 };
-
-#endif

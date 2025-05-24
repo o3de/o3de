@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #if !defined(Q_MOC_RUN)
 #include <AzToolsFramework/Thumbnails/Thumbnail.h>
 #include <AzToolsFramework/Thumbnails/SourceControlThumbnailBus.h>
@@ -19,7 +21,7 @@ namespace AzToolsFramework
 
     namespace Thumbnailer
     {
-        class SourceControlThumbnailKey
+        class AZTF_API SourceControlThumbnailKey
             : public ThumbnailKey
         {
             Q_OBJECT
@@ -45,7 +47,7 @@ namespace AzToolsFramework
 
         //! SourceControlThumbnail currently replicates the source control functionality within Material Browser
         //! Additionally source control status is refreshed whenever an operation is performed through context menu
-        class SourceControlThumbnail
+        class AZTF_API SourceControlThumbnail
             : public Thumbnail
             , public SourceControlThumbnailRequestBus::Handler
         {
@@ -104,7 +106,7 @@ namespace AzToolsFramework
         }
 
         //! Stores products' thumbnails
-        class SourceControlThumbnailCache
+        class AZTF_API SourceControlThumbnailCache
             : public ThumbnailCache<SourceControlThumbnail>
         {
         public:

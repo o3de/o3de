@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzToolsFramework/Prefab/Link/Link.h>
 #include <AzToolsFramework/Undo/UndoSystem.h>
 
@@ -15,7 +16,7 @@ namespace AzToolsFramework::Prefab
 {
     class PrefabSystemComponentInterface;
 
-    class PrefabUndoRevertOverrides : public UndoSystem::URSequencePoint
+    class AZTF_API PrefabUndoRevertOverrides : public UndoSystem::URSequencePoint
     {
     public:
         AZ_RTTI(PrefabUndoRevertOverrides, "{E244A5F1-22F9-480F-9A75-AEBEFE33EF98}", UndoSystem::URSequencePoint);

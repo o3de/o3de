@@ -10,10 +10,11 @@
 
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Serialization/Json/BaseJsonSerializer.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework::Components
 {
-    class JsonEditorEntitySortComponentSerializer
+    class AZTF_API JsonEditorEntitySortComponentSerializer
         : public AZ::BaseJsonSerializer
     {
     public:

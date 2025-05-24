@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 namespace AZ
 {
     class Vector3;
@@ -21,9 +23,9 @@ namespace AzFramework
 
 namespace AzToolsFramework
 {
-    void DrawAxis(
+    AZTF_API void DrawAxis(
         AzFramework::DebugDisplayRequests& display, const AZ::Vector3& position, const AZ::Vector3& direction);
 
-    void DrawTransformAxes(
+    AZTF_API void DrawTransformAxes(
         AzFramework::DebugDisplayRequests& display, const AZ::Transform& transform);
 } // namespace AzToolsFramework

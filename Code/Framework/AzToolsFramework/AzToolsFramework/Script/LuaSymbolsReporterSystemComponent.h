@@ -7,9 +7,10 @@
  */
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <AzCore/Script/ScriptContext.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
-
 #include <AzToolsFramework/Script/LuaSymbolsReporterBus.h>
 
 namespace AzToolsFramework
@@ -17,7 +18,7 @@ namespace AzToolsFramework
     namespace Script
     {
         /// System component for LuaSymbolsReporterRequestBus
-        class LuaSymbolsReporterSystemComponent
+        class AZTF_API LuaSymbolsReporterSystemComponent
             : public AZ::Component
             , public LuaSymbolsReporterRequestBus::Handler
             , private AzToolsFramework::EditorEvents::Bus::Handler

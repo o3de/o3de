@@ -10,13 +10,14 @@
 
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <AzToolsFramework/Undo/UndoSystem.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
     namespace ComponentModeFramework
     {
         /// Undo command to track entering and leaving ComponentMode.
-        class ComponentModeCommand
+        class AZTF_API ComponentModeCommand
             : public UndoSystem::URSequencePoint
         {
         public:

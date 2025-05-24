@@ -1,5 +1,3 @@
-#pragma once
-
 /*
  * Copyright (c) Contributors to the Open 3D Engine Project.
  * For complete copyright and license terms please see the LICENSE at the root of this distribution.
@@ -8,7 +6,12 @@
  *
  */
 
-#if !defined(Q_MOC_RUN)
+ #pragma once
+ 
+ 
+ #include <AzToolsFramework/AzToolsFrameworkAPI.h>
+ 
+ #if !defined(Q_MOC_RUN)
 #include <AzCore/std/string/string.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
@@ -32,7 +35,7 @@ Available Attributes:
 
 namespace AzToolsFramework
 {
-    class MultiLineTextEditHandler
+    class AZTF_API MultiLineTextEditHandler
         : public QObject, public AzToolsFramework::PropertyHandler<AZStd::string, GrowTextEdit>
     {
         Q_OBJECT
@@ -49,5 +52,5 @@ namespace AzToolsFramework
         bool ReadValuesIntoGUI(size_t index, GrowTextEdit* GUI, const property_t& instance, AzToolsFramework::InstanceDataNode* node) override;
     };
 
-    void RegisterMultiLineEditHandler();
+    AZTF_API void RegisterMultiLineEditHandler();
 }

@@ -5,9 +5,10 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef PROPERTY_EDITOR_INSTANCE_DATA_HIERARCHY_H
-#define PROPERTY_EDITOR_INSTANCE_DATA_HIERARCHY_H
+#pragma once
 
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/std/containers/vector.h>
@@ -30,7 +31,7 @@ namespace AzToolsFramework
      * is built.
      * Once data
      */
-    class InstanceDataNode
+    class AZTF_API InstanceDataNode
     {
         friend class InstanceDataHierarchy;
         template<typename WrappedType>
@@ -266,13 +267,14 @@ namespace AzToolsFramework
      *  3) Call GetRootNode() to retrieve the resulting root node. If the
      *     return value is NULL, no intersecting hierarchy was found (root types differ).
      */
-    class InstanceDataHierarchy
+    class AZTF_API InstanceDataHierarchy
         : public InstanceDataNode
     {
     public:
         AZ_CLASS_ALLOCATOR(InstanceDataHierarchy, AZ::PoolAllocator)
 
         InstanceDataHierarchy();
+        virtual ~InstanceDataHierarchy() = default;
 
         enum Flags
         {
@@ -383,7 +385,7 @@ namespace AzToolsFramework
     protected:
         struct SupplementalEditData
         {
-            using AttributePtr = AZStd::unique_ptr<AZ::Edit::Attribute>;
+            using AttributePtr = AZStd::shared_ptr<AZ::Edit::Attribute>;
 
             AZ::Edit::ElementData               m_editElementData;
             AZStd::string                       m_displayLabel;
@@ -445,11 +447,8 @@ namespace AzToolsFramework
         SupplementalEditDataContainer                           m_supplementalEditData;     ///< List of additional edit data generated during traversal for elements.
         EditDataOverrideStack                                   m_editDataOverrides;
         InstanceDataArray                                       m_comparisonInstances;      ///< Optional comparison instance for Override recognition.
-        AZStd::vector<AZStd::unique_ptr<InstanceDataHierarchy>> m_comparisonHierarchies;    ///< Hierarchy representing comparison instance.
+        AZStd::vector<AZStd::shared_ptr<InstanceDataHierarchy>> m_comparisonHierarchies;    ///< Hierarchy representing comparison instance.
         ValueComparisonFunction                                 m_valueComparisonFunction;  ///< Customizable function for comparing value nodes.
         AZ::u8                                                  m_buildFlags = 0;           ///< Flags to customize behavior during Build.
     };
 } // namespace AZ
-
-#endif  // PROPERTY_EDITOR_INSTANCE_DATA_HIERARCHY_H
-#pragma once

@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzCore/base.h>
 #include <AzCore/std/parallel/semaphore.h>
 #include <AzCore/std/parallel/atomic.h>
@@ -19,7 +20,7 @@ namespace AzToolsFramework
 {
     class PerforceConnection;
 
-    class PerforceJobRequest
+    class AZTF_API PerforceJobRequest
     {
     public:
         enum RequestType
@@ -81,7 +82,7 @@ namespace AzToolsFramework
         PerforceJobResult() = default;
     };
 
-    class PerforceSettingResult
+    class AZTF_API PerforceSettingResult
     {
     public:
         PerforceSettingResult() = default;
@@ -99,7 +100,7 @@ namespace AzToolsFramework
     // for example, if a file is checked out and needs to be deleted, it knows that it will need to both revert the file and mark it for delete
     // in order to get to where we want it to be, from where we are now.
     // it does not keep track of individual files or watch directories or anything
-    class PerforceComponent
+    class AZTF_API PerforceComponent
         : public AZ::Component
         , private SourceControlCommandBus::Handler
         , private SourceControlConnectionRequestBus::Handler

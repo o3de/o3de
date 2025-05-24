@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <AzCore/base.h>
 #include <AzCore/std/tuple.h>
 #include "SQLiteConnection.h"
@@ -45,34 +47,34 @@ namespace AzToolsFramework
             }
 
             template<>
-            AZStd::string GetColumnValue(SQLite::Statement* statement, int index);
+            AZTF_API AZStd::string GetColumnValue(SQLite::Statement* statement, int index);
 
             template<>
-            AZ::Uuid GetColumnValue(SQLite::Statement* statement, int index);
+            AZTF_API AZ::Uuid GetColumnValue(SQLite::Statement* statement, int index);
 
             template<>
-            AzToolsFramework::AssetDatabase::PathOrUuid GetColumnValue(SQLite::Statement* statement, int index);
+            AZTF_API AzToolsFramework::AssetDatabase::PathOrUuid GetColumnValue(SQLite::Statement* statement, int index);
 
             template<>
-            double GetColumnValue(SQLite::Statement* statement, int index);
+            AZTF_API double GetColumnValue(SQLite::Statement* statement, int index);
 
             template<>
-            AZ::s32 GetColumnValue(SQLite::Statement* statement, int index);
+            AZTF_API AZ::s32 GetColumnValue(SQLite::Statement* statement, int index);
 
             template<>
-            AZ::u32 GetColumnValue(SQLite::Statement* statement, int index);
+            AZTF_API AZ::u32 GetColumnValue(SQLite::Statement* statement, int index);
 
             template<>
-            AZ::s64 GetColumnValue(SQLite::Statement* statement, int index);
+            AZTF_API AZ::s64 GetColumnValue(SQLite::Statement* statement, int index);
 
             template<>
-            AZ::u64 GetColumnValue(SQLite::Statement* statement, int index);
+            AZTF_API AZ::u64 GetColumnValue(SQLite::Statement* statement, int index);
 
             template<>
-            const void* GetColumnValue(SQLite::Statement* statement, int index);
+            AZTF_API const void* GetColumnValue(SQLite::Statement* statement, int index);
 
             template<>
-            AZStd::bitset<64> GetColumnValue(SQLite::Statement* statement, int index);
+            AZTF_API AZStd::bitset<64> GetColumnValue(SQLite::Statement* statement, int index);
         }
 
         // Represents a single column in an SQLite result which is bound to a variable reference where the result will be stored

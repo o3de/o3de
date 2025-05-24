@@ -13,6 +13,7 @@
 
 #include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -21,7 +22,7 @@ namespace AzToolsFramework
     //! to closed, all descendants of the entity will be treated as part of the entity itself. Selecting any
     //! descendant will result in the container being selected, and descendants will be hidden until the
     //! container is opened.
-    class ContainerEntitySystemComponent final
+    class AZTF_API ContainerEntitySystemComponent final
         : public AZ::Component
         , private ContainerEntityInterface
         , private EditorEntityContextNotificationBus::Handler

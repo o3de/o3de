@@ -7,6 +7,8 @@
  */
 
 #pragma once
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/Prefab/Undo/PrefabUndoBase.h>
 
@@ -18,7 +20,7 @@ namespace AzToolsFramework
     namespace Prefab
     {
         //! handles the addition and removal of entities from instances
-        class PrefabUndoInstance
+        class AZTF_API PrefabUndoInstance
             : public PrefabUndoBase
         {
         public:
@@ -31,7 +33,7 @@ namespace AzToolsFramework
         };
 
         //! Undo class for handling addition of entity DOMs to a prefab template.
-        class PrefabUndoAddEntityDoms : public PrefabUndoBase
+        class AZTF_API PrefabUndoAddEntityDoms : public PrefabUndoBase
         {
         public:
             explicit PrefabUndoAddEntityDoms(const AZStd::string& undoOperationName);
@@ -40,7 +42,7 @@ namespace AzToolsFramework
         };
 
         //! Undo class for handling removal of entity DOMs to a prefab template.
-        class PrefabUndoRemoveEntityDoms
+        class AZTF_API PrefabUndoRemoveEntityDoms
             : public PrefabUndoBase
         {
         public:
@@ -51,7 +53,7 @@ namespace AzToolsFramework
         };
 
         //! Undo class for handling update of an entity to a prefab template.
-        class PrefabUndoEntityUpdate
+        class AZTF_API PrefabUndoEntityUpdate
             : public PrefabUndoBase
         {
         public:
@@ -72,7 +74,7 @@ namespace AzToolsFramework
         };
 
         //! handles link changes on instances
-        class PrefabUndoInstanceLink
+        class AZTF_API PrefabUndoInstanceLink
             : public PrefabUndoBase
         {
         public:

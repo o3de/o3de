@@ -7,6 +7,8 @@
  */
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include "EditorComponentBase.h"
 #include "EditorDisabledCompositionBus.h"
 
@@ -17,7 +19,7 @@ namespace AzToolsFramework
     namespace Components
     {
         //! Custom serializer to handle component data in the composition component.
-        class EditorDisabledCompositionComponentSerializer
+        class AZTF_API EditorDisabledCompositionComponentSerializer
             : public AZ::BaseJsonSerializer
         {
         public:
@@ -32,7 +34,7 @@ namespace AzToolsFramework
         };
 
         //! Contains Disabled components to be added to the entity we are attached to.
-        class EditorDisabledCompositionComponent
+        class AZTF_API EditorDisabledCompositionComponent
             : public AzToolsFramework::Components::EditorComponentBase
             , public EditorDisabledCompositionRequestBus::Handler
         {

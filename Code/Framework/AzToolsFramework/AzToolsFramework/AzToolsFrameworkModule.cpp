@@ -63,7 +63,7 @@
 #include <Prefab/ProceduralPrefabSystemComponent.h>
 #include <AzToolsFramework/Metadata/UuidUtils.h>
 
-AZ_DEFINE_BUDGET(AzToolsFramework);
+AZ_DEFINE_BUDGET_SHARED(AzToolsFramework);
 
 namespace AzToolsFramework
 {

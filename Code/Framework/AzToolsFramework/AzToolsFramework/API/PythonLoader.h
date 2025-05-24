@@ -18,7 +18,7 @@ namespace AzToolsFramework::EmbeddedPython
 {
     // When using embedded Python, some platforms need to explicitly load the python library.
     // For any modules that depend on 3rdParty::Python package, the AZ::Module should inherit this class.
-    class PythonLoader
+    class AZTF_API PythonLoader
     {
     public:
         PythonLoader();

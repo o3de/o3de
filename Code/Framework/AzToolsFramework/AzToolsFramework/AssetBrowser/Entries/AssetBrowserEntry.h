@@ -7,6 +7,8 @@
  */
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #if !defined(Q_MOC_RUN)
 #include <AzCore/std/string/string.h>
 #include <AzCore/Asset/AssetCommon.h>
@@ -35,7 +37,7 @@ namespace AzToolsFramework
         class ProductAssetBrowserEntry;
 
         //! AssetBrowserEntry is a base class for asset tree view entry
-        class AssetBrowserEntry
+        class AZTF_API AssetBrowserEntry
             : public QObject
         {
             friend class AssetBrowserModel;

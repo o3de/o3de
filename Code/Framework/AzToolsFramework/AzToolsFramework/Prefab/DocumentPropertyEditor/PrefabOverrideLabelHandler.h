@@ -11,6 +11,7 @@
 #include <AzToolsFramework/Prefab/DocumentPropertyEditor/PrefabPropertyEditorNodes.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyHandlerWidget.h>
 #include <AzQtComponents/Components/Widgets/ElidingLabel.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <QHBoxLayout>
 #include <QIcon>
@@ -22,7 +23,7 @@ namespace AzToolsFramework::Prefab
 {
     //! Class to handle the override label property when encountered in a DPE DOM.
     //! Responsible for setting the ui/ux for overridden properties.
-    class PrefabOverrideLabelHandler
+    class AZTF_API PrefabOverrideLabelHandler
         : public PropertyHandlerWidget<QWidget>
     {
     public:

@@ -6,8 +6,9 @@
  *
  */
 
-#ifndef QWIDGETSAVEDSTATE_H
-#define QWIDGETSAVEDSTATE_H
+ #pragma once
+ 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <AzCore/base.h>
 #include <AzCore/RTTI/RTTI.h>
@@ -17,13 +18,12 @@
 
 class QWidget;
 
-#pragma once
 
 namespace AzToolsFramework
 {
     // the QWidgetSavedState is a nice base class for you to derive your own dialog or other widget's saved state from
     // it takes care of the geometry save and restore, using CaptureGeometry(widget) and RestoreGeometry(widget).
-    class QWidgetSavedState : public AZ::UserSettings
+    class AZTF_API QWidgetSavedState : public AZ::UserSettings
     {
     public:
         AZ_RTTI(QWidgetSavedState, "{ED8EEF58-C577-4FCC-AE84-66FF63A1BDEB}", AZ::UserSettings);
@@ -39,5 +39,3 @@ namespace AzToolsFramework
         AZStd::vector<AZ::u8> m_windowGeometry;
     };
 }
-
-#endif

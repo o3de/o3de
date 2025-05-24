@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #if !defined(Q_MOC_RUN)
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/base.h>
@@ -55,7 +57,7 @@ namespace AzToolsFramework
         enum class DisplayOption : unsigned char;
     }
 
-    class EntityOutlinerWidget
+    class AZTF_API EntityOutlinerWidget
         : public QWidget
         , private EditorPickModeNotificationBus::Handler
         , private EntityHighlightMessages::Bus::Handler

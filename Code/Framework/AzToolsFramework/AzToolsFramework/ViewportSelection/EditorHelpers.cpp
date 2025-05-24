@@ -9,6 +9,8 @@
 #include "EditorHelpers.h"
 
 #include <AzCore/Console/Console.h>
+#include <AzCore/std/smart_ptr/shared_ptr.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Viewport/CameraState.h>
 #include <AzFramework/Viewport/ViewportScreen.h>
@@ -175,9 +177,9 @@ namespace AzToolsFramework
             "Focus Mode Interface could not be found. "
             "Check that it is being correctly initialized.");
 
-        AZStd::vector<AZStd::unique_ptr<InvalidClick>> invalidClicks;
-        invalidClicks.push_back(AZStd::make_unique<FadingText>("Not in focus"));
-        invalidClicks.push_back(AZStd::make_unique<ExpandingFadingCircles>());
+        AZStd::vector<AZStd::shared_ptr<InvalidClick>> invalidClicks;
+        invalidClicks.push_back(AZStd::make_shared<FadingText>("Not in focus"));
+        invalidClicks.push_back(AZStd::make_shared<ExpandingFadingCircles>());
         m_invalidClicks = AZStd::make_unique<InvalidClicks>(AZStd::move(invalidClicks));
     }
 

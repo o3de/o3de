@@ -14,6 +14,7 @@
 #define CRYINCLUDE_EDITOR_SCRIPTHELPDIALOG_H
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzCore/Debug/Trace.h>
 
 #if !defined(Q_MOC_RUN)
@@ -24,20 +25,21 @@
 #include <QSortFilterProxyModel>
 #include <QTableView>
 #include <QVector>
+#include <QSize>
 #include <QMouseEvent>
 #include <QHeaderView>
 #include <QScopedPointer>
 #endif
-
 class QResizeEvent;
 
-namespace Ui {
+namespace Ui
+{
     class ScriptDialog;
 }
 
 namespace AzToolsFramework
 {
-    class HeaderView
+    class AZTF_API HeaderView
         : public QHeaderView
     {
         Q_OBJECT
@@ -61,7 +63,7 @@ namespace AzToolsFramework
         int m_lineEditHeightOffset;
     };
 
-    class ScriptHelpProxyModel
+    class AZTF_API ScriptHelpProxyModel
         : public QSortFilterProxyModel
     {
         Q_OBJECT
@@ -80,7 +82,7 @@ namespace AzToolsFramework
         QString m_exampleFilter;
     };
 
-    class ScriptHelpModel
+    class AZTF_API ScriptHelpModel
         : public QAbstractTableModel
     {
         Q_OBJECT
@@ -115,7 +117,7 @@ namespace AzToolsFramework
         Items m_items;
     };
 
-    class ScriptTableView
+    class AZTF_API ScriptTableView
         : public QTableView
     {
         Q_OBJECT
@@ -127,11 +129,12 @@ namespace AzToolsFramework
         ScriptHelpProxyModel* const m_proxyModel;
     };
 
-    class CScriptHelpDialog
+    class AZTF_API CScriptHelpDialog
         : public QDialog
     {
         Q_OBJECT
     public:
+        ~CScriptHelpDialog();
         static CScriptHelpDialog* GetInstance();
     private Q_SLOTS:
         void OnDoubleClick(const QModelIndex&);

@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/std/optional.h>
@@ -18,7 +20,7 @@
 #include <AzFramework/Viewport/ViewportId.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Viewport/ViewportTypes.h>
-
+#include <AzToolsFramework/Viewport/ViewportMessagesBus.h>
 namespace AzFramework
 {
     struct ScreenPoint;
@@ -369,7 +371,7 @@ namespace AzToolsFramework
     } // namespace ViewportInteraction
 
     //! Utility function to return EntityContextId.
-    AzFramework::EntityContextId GetEntityContextId();
+    AZTF_API AzFramework::EntityContextId GetEntityContextId();
 
     //! Performs an intersection test against meshes in the scene, if there is a hit (the ray intersects
     //! a mesh), that position is returned, otherwise a point projected defaultDistance from the
@@ -380,7 +382,7 @@ namespace AzToolsFramework
     //! @param rayLength The length of the ray in meters.
     //! @param defaultDistance The distance to use for the result point if no hit is found.
     //! @return The world position of the intersection point (either from a hit or from the default distance)
-    AZ::Vector3 FindClosestPickIntersection(
+    AZTF_API AZ::Vector3 FindClosestPickIntersection(
         AzFramework::ViewportId viewportId, const AzFramework::ScreenPoint& screenPoint, float rayLength, float defaultDistance);
 
     //! Performs an intersection test against meshes in the scene and returns the his position only if there
@@ -390,7 +392,7 @@ namespace AzToolsFramework
     //! @param screenPoint The starting point of the ray in screen space. (The ray will cast into the screen)
     //! @param rayLength The length of the ray in meters.
     //! @return The world position of the intersection if there is a hit, or nothing if not.
-    AZStd::optional<AZ::Vector3> FindClosestPickIntersection(
+    AZTF_API AZStd::optional<AZ::Vector3> FindClosestPickIntersection(
         AzFramework::ViewportId viewportId, const AzFramework::ScreenPoint& screenPoint, float rayLength);
 
     //! Overload of FindClosestPickIntersection taking a RenderGeometry::RayRequest directly.
@@ -398,30 +400,30 @@ namespace AzToolsFramework
     //! @param rayRequest Information describing the start/end positions and which entities to raycast against.
     //! @param defaultDistance The distance to use for the result point if no hit is found.
     //! @return The world position of the intersection point (either from a hit or from the default distance)
-    AZ::Vector3 FindClosestPickIntersection(const AzFramework::RenderGeometry::RayRequest& rayRequest, float defaultDistance);
+    AZTF_API AZ::Vector3 FindClosestPickIntersection(const AzFramework::RenderGeometry::RayRequest& rayRequest, float defaultDistance);
 
     //! Overload of FindClosestPickIntersection taking a RenderGeometry::RayRequest directly.
     //! @note rayRequest must contain a valid ray/line segment (start/endWorldPosition must not be at the same position).
     //! @param rayRequest Information describing the start/end positions and which entities to raycast against.
     //! @return The world position of the intersection if there is a hit, or nothing if not.
-    AZStd::optional<AZ::Vector3> FindClosestPickIntersection(const AzFramework::RenderGeometry::RayRequest& rayRequest);
+    AZTF_API AZStd::optional<AZ::Vector3> FindClosestPickIntersection(const AzFramework::RenderGeometry::RayRequest& rayRequest);
 
     //! Update the in/out parameter rayRequest based on the latest viewport ray.
-    void RefreshRayRequest(
+    AZTF_API void RefreshRayRequest(
         AzFramework::RenderGeometry::RayRequest& rayRequest, const ViewportInteraction::ProjectedViewportRay& viewportRay, float rayLength);
 
     //! Maps a mouse interaction event to a ClickDetector event.
     //! @note Function only cares about up or down events, all other events are mapped to Nil (ignored).
-    AzFramework::ClickDetector::ClickEvent ClickDetectorEventFromViewportInteraction(
+    AZTF_API AzFramework::ClickDetector::ClickEvent ClickDetectorEventFromViewportInteraction(
         const ViewportInteraction::MouseInteractionEvent& mouseInteraction);
 
     //! Wrap EBus call to retrieve manipulator line bound width.
     //! @note It is possible to pass AzFramework::InvalidViewportId (the default) to perform a Broadcast as opposed to a targeted Event.
-    float ManipulatorLineBoundWidth(AzFramework::ViewportId viewportId = AzFramework::InvalidViewportId);
+    AZTF_API float ManipulatorLineBoundWidth(AzFramework::ViewportId viewportId = AzFramework::InvalidViewportId);
 
     //! Wrap EBus call to retrieve manipulator circle bound width.
     //! @note It is possible to pass AzFramework::InvalidViewportId (the default) to perform a Broadcast as opposed to a targeted Event.
-    float ManipulatorCicleBoundWidth(AzFramework::ViewportId viewportId = AzFramework::InvalidViewportId);
+    AZTF_API float ManipulatorCicleBoundWidth(AzFramework::ViewportId viewportId = AzFramework::InvalidViewportId);
 } // namespace AzToolsFramework
 
 DECLARE_EBUS_EXTERN_WITH_TRAITS(AzToolsFramework::ViewportInteraction::ViewportInteractionRequests, AzToolsFramework::ViewportInteraction::ViewportRequestsEBusTraits);

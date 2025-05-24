@@ -8,13 +8,14 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzFramework/DocumentPropertyEditor/PropertyEditorSystem.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyEditorToolsSystemInterface.h>
 
 namespace AzToolsFramework
 {
     //! Implementation of PropertyEditorToolsSystemInterface, 
-    class PropertyEditorToolsSystem : public PropertyEditorToolsSystemInterface
+    class AZTF_API PropertyEditorToolsSystem : public PropertyEditorToolsSystemInterface
     {
     public:
         AZ_RTTI(PropertyEditorToolsSystem, "{78954B5C-D147-411F-BBDA-A28D2CA50A3A}", PropertyEditorToolsSystemInterface);

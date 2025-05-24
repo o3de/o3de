@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 
 #include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
@@ -23,7 +25,7 @@ namespace AzToolsFramework::Prefab
     class PrefabFocusPublicInterface;
 
     // Displays the Prefab Path to the currently focused prefab file.
-    class PrefabFocusPathWidget
+    class AZTF_API PrefabFocusPathWidget
         : public AzQtComponents::BreadCrumbs
         , private PrefabFocusNotificationBus::Handler
         , private ViewportEditorModeNotificationsBus::Handler

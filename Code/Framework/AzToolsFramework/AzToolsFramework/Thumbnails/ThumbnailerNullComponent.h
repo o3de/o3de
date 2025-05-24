@@ -7,6 +7,8 @@
  */
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Component/Component.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
@@ -19,7 +21,7 @@ namespace AzToolsFramework
 {
     namespace Thumbnailer
     {
-        class ThumbnailerNullComponent
+        class AZTF_API ThumbnailerNullComponent
             : public AZ::Component
             , public AzToolsFramework::Thumbnailer::ThumbnailerRequestBus::Handler
         {

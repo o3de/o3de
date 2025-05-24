@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <AzToolsFramework/Prefab/Undo/PrefabUndoBase.h>
 
@@ -18,7 +19,7 @@ namespace AzToolsFramework
         class InstanceEntityMapperInterface;
         class PrefabSystemComponentInterface;
 
-        class PrefabUndoUpdateLink
+        class AZTF_API PrefabUndoUpdateLink
             : public PrefabUndoBase
         {
         public:

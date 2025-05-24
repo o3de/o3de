@@ -11,6 +11,7 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Math/Uuid.h>
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
 #include <AzToolsFramework/Thumbnails/Thumbnail.h>
 
@@ -22,7 +23,7 @@ namespace AzToolsFramework
     namespace AssetBrowser
     {       
         //! ProductAssetBrowserEntry represents product entry.
-        class ProductAssetBrowserEntry
+        class AZTF_API ProductAssetBrowserEntry
             : public AssetBrowserEntry
         {
             friend class RootAssetBrowserEntry;

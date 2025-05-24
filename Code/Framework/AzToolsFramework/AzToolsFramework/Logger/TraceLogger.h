@@ -11,11 +11,12 @@
 #include <AzFramework/Logging/LogFile.h>
 #include <AzToolsFramework/API/EditorPythonConsoleBus.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
     //! Connects and disconnects TraceMessageBus and allows for logging for O3DE Tools Applications
-    class TraceLogger
+    class AZTF_API TraceLogger
         : public AZ::Debug::TraceMessageBus::Handler
     {
     public:

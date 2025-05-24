@@ -11,12 +11,14 @@
 #include <QAbstractProxyModel>
 #include <QSet>
 #endif
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 
 namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
-        class AssetBrowserTreeToTableProxyModel
+        class AZTF_API AssetBrowserTreeToTableProxyModel
             : public QAbstractProxyModel
         {
             Q_OBJECT

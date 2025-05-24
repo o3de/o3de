@@ -8,9 +8,11 @@
 
 #pragma once
 
+#include <AzCore/EBus/EBus.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Component/Component.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzFramework
 {
@@ -22,7 +24,7 @@ namespace Camera
     /**
      * This bus allows you to get and set the current editor viewport camera
      */
-    class EditorCameraRequests : public AZ::EBusTraits
+    class AZTF_API EditorCameraRequests : public AZ::EBusTraits
     {
     public:
         using Bus = AZ::EBus<EditorCameraRequests>;

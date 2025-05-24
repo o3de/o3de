@@ -11,6 +11,7 @@
 #include <AzToolsFramework/Thumbnails/Thumbnail.h>
 #include <QObject>
 #endif
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -19,7 +20,7 @@ namespace AzToolsFramework
     namespace AssetBrowser
     {
         //! FolderAssetBrowserEntry thumbnail key
-        class FolderThumbnailKey
+        class AZTF_API FolderThumbnailKey
             : public ThumbnailKey
         {
             Q_OBJECT
@@ -36,7 +37,7 @@ namespace AzToolsFramework
             AZStd::string m_folderPath;
         };
 
-        class FolderThumbnail
+        class AZTF_API FolderThumbnail
             : public Thumbnail
         {
             Q_OBJECT
@@ -47,7 +48,7 @@ namespace AzToolsFramework
 
 
         //! FolderAssetBrowserEntry thumbnails
-        class FolderThumbnailCache
+        class AZTF_API FolderThumbnailCache
             : public ThumbnailCache<FolderThumbnail>
         {
         public:

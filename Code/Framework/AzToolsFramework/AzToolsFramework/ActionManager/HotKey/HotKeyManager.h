@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
 #include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInternalInterface.h>
 
@@ -26,7 +27,7 @@ namespace AzToolsFramework
 
     //! HotKey Manager class definition.
     //! Handles Editor HotKeys and allows access across tools.
-    class HotKeyManager final
+    class AZTF_API HotKeyManager final
         : public HotKeyManagerInterface
         , public HotKeyManagerInternalInterface
     {

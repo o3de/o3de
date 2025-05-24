@@ -7,9 +7,11 @@
  */
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 namespace AzToolsFramework
 {
     static constexpr const char* s_paintBrushSettingsName = "Paint Brush Settings";
 
-    extern void RegisterPaintBrushSettingsWindow();
+    AZTF_API void RegisterPaintBrushSettingsWindow();
 } // namespace PaintBrush

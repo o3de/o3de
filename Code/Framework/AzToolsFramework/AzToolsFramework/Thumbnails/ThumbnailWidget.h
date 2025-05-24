@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #if !defined(Q_MOC_RUN)
 #include <AzCore/PlatformDef.h>
 
@@ -23,7 +25,7 @@ namespace AzToolsFramework
     namespace Thumbnailer
     {
         //! A widget used to display thumbnail
-        class ThumbnailWidget
+        class AZTF_API ThumbnailWidget
             : public QWidget
         {
             Q_OBJECT

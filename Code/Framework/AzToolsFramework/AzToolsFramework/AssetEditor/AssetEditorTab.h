@@ -15,6 +15,7 @@
 #include <AzFramework/Asset/AssetCatalogBus.h>
 #include <AzQtComponents/Components/Widgets/TabWidget.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI_Internals.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <QTimer>
 #include <QWidget>
@@ -48,7 +49,7 @@ namespace AzToolsFramework
         /**
          * Provides ability to create, edit, and save reflected assets.
          */
-        class AssetEditorTab
+        class AZTF_API AssetEditorTab
             : public QWidget
             , private AZ::Data::AssetBus::MultiHandler
             , private AzFramework::AssetCatalogEventBus::Handler

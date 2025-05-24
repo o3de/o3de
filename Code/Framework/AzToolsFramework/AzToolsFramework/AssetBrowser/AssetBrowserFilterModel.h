@@ -7,6 +7,8 @@
  */
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #if !defined(Q_MOC_RUN)
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
@@ -22,6 +24,8 @@ AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: class '...' n
 #include <QCollator>
 #endif
 AZ_POP_DISABLE_WARNING
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 
 namespace AzToolsFramework
 {
@@ -29,7 +33,7 @@ namespace AzToolsFramework
     {
         using ShownColumnsSet = AZStd::fixed_unordered_set<int, 3, aznumeric_cast<int>(AssetBrowserEntry::Column::Count)>;
 
-        class AssetBrowserFilterModel
+        class AZTF_API AssetBrowserFilterModel
             : public QSortFilterProxyModel
             , public AssetBrowserComponentNotificationBus::Handler
         {

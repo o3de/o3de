@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <AzToolsFramework/ViewportUi/Button.h>
 #include <AzToolsFramework/ViewportUi/ButtonGroup.h>
 #include <AzToolsFramework/ViewportUi/TextField.h>
@@ -32,7 +34,7 @@ class QPoint;
 namespace AzToolsFramework::ViewportUi::Internal
 {
     //! Used to track info for each widget in the Viewport UI.
-    struct ViewportUiElementInfo
+    struct AZTF_API ViewportUiElementInfo
     {
         ViewportUiElementInfo();
         ViewportUiElementInfo(AZStd::shared_ptr<QWidget> widget, ViewportUiElementId elementId,
@@ -52,15 +54,15 @@ namespace AzToolsFramework::ViewportUi::Internal
     using ViewportUiElementIdInfoLookup = AZStd::unordered_map<ViewportUiElementId, ViewportUiElementInfo>;
 
     //! Helper function to give a widget a transparent background
-    void SetTransparentBackground(QWidget* widget);
+    AZTF_API void SetTransparentBackground(QWidget* widget);
 
     //! Creates a transparent widget over a viewport render overlay, and adds/manages other Qt widgets
     //! to display on top of the viewport.
-    class ViewportUiDisplay : private AzFramework::ViewportImGuiNotificationBus::Handler
+    class AZTF_API ViewportUiDisplay : private AzFramework::ViewportImGuiNotificationBus::Handler
     {
     public:
         ViewportUiDisplay(QWidget* parent, QWidget* renderOverlay);
-        ~ViewportUiDisplay();
+        ~ViewportUiDisplay() override;
 
         void AddCluster(AZStd::shared_ptr<ButtonGroup> buttonGroup, Alignment alignment);
         void AddClusterButton(ViewportUiElementId clusterId, Button* button);
