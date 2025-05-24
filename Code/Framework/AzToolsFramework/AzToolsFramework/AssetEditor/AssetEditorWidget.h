@@ -18,7 +18,6 @@
 
 namespace AZ
 {
-    class SerializeContext;
     namespace DocumentPropertyEditor
     {
         class ReflectionAdapter;
@@ -60,10 +59,31 @@ namespace AzToolsFramework
             AssetEditorWidgetUserSettings();
             ~AssetEditorWidgetUserSettings() override = default;
 
-            void AddRecentPath(const AZStd::string& recentPath);
+            void AddRecentPath(AZ::Data::AssetType, const AZStd::string& recentPath);
+
+            void Clear()
+            {
+                m_lastSavePath.clear();
+                m_recentFiles.clear();
+                m_recentPathPerAssetType.clear();
+            }
+
+            void Save();
+             
+            const AZStd::string GetRecentPathForAssetType(AZ::Data::AssetType assetType) const
+            {
+                if (m_recentPathPerAssetType.contains(assetType))
+                {
+                    return m_recentPathPerAssetType.find(assetType)->second;
+                }
+                return {};
+            }
+
+            AZStd::unordered_map<AZ::Data::AssetType, AZStd::string> m_recentPathPerAssetType;
 
             AZStd::string m_lastSavePath;
-            AZStd::vector<AZStd::string> m_recentPaths;
+            AZStd::vector<AZStd::string> m_recentFiles;
+
         };
 
         /**
@@ -92,9 +112,10 @@ namespace AzToolsFramework
             void SetCurrentTab(AssetEditorTab* tab);
 
             void UpdateTabTitle(AssetEditorTab* tab);
-            void SetLastSavePath(const AZStd::string& savePath);
-            const QString GetLastSavePath() const;
-            void AddRecentPath(const AZStd::string& recentPath);
+
+            const QString GetRecentPathForAssetType(AZ::Data::AssetType) const;
+
+            void AddRecentPath(AZ::Data::AssetType, const AZStd::string& recentPath);
 
             void CloseTab(AssetEditorTab* tab);
             void CloseTabAndContainerIfEmpty(AssetEditorTab* tab);
@@ -164,13 +185,15 @@ namespace AzToolsFramework
 
             unsigned int m_nextNewAssetIndex = 1;
 
-            AZStd::intrusive_ptr<AssetEditorWidgetUserSettings> m_userSettings;
+            AssetEditorWidgetUserSettings m_userSettings;
+
             AZStd::unique_ptr<Ui::AssetEditorStatusBar> m_statusBar;
 
             AZ::DocumentPropertyEditor::ReflectionAdapter::PropertyChangeEvent::Handler m_propertyChangeHandler;
             AZ::Crc32 m_savedStateKey;
 
             void PopulateGenericAssetTypes();
+            void SaveSettings();
         };
     } // namespace AssetEditor
 } // namespace AzToolsFramework
