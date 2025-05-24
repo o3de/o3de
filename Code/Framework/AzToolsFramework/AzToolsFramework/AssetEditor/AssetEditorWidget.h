@@ -48,16 +48,16 @@ namespace AzToolsFramework
     {
         class AssetEditorTab;
 
-        class AssetEditorWidgetUserSettings : public AZ::UserSettings
+        class AssetEditorWidgetUserSettings final
         {
         public:
-            AZ_RTTI(AssetEditorWidgetUserSettings, "{382FE424-4541-4D93-9BA4-DE17A6DF8676}", AZ::UserSettings);
+            AZ_RTTI(AssetEditorWidgetUserSettings, "{382FE424-4541-4D93-9BA4-DE17A6DF8676}");
             AZ_CLASS_ALLOCATOR(AssetEditorWidgetUserSettings, AZ::SystemAllocator);
 
             static void Reflect(AZ::ReflectContext* context);
 
             AssetEditorWidgetUserSettings();
-            ~AssetEditorWidgetUserSettings() override = default;
+            ~AssetEditorWidgetUserSettings() = default;
 
             void AddRecentPath(AZ::Data::AssetType, const AZStd::string& recentPath);
 
@@ -68,8 +68,6 @@ namespace AzToolsFramework
                 m_recentPathPerAssetType.clear();
             }
 
-            void Save();
-             
             const AZStd::string GetRecentPathForAssetType(AZ::Data::AssetType assetType) const
             {
                 if (m_recentPathPerAssetType.contains(assetType))

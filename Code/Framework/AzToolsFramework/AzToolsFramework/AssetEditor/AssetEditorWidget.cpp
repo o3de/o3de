@@ -33,7 +33,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzCore/Serialization/EditContextConstants.inl>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Utils.h>
-#include <AzCore/UserSettings/UserSettings.h>
+
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/sort.h>
 
@@ -77,7 +77,7 @@ namespace AzToolsFramework
         {
             if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
             {
-                serialize->Class<AssetEditorWidgetUserSettings, AZ::UserSettings>()
+                serialize->Class<AssetEditorWidgetUserSettings>()
                     ->Version(1)
                     ->Field("m_recentFiles", &AssetEditorWidgetUserSettings::m_recentFiles)
                     ->Field("m_recentPathPerAssetType", &AssetEditorWidgetUserSettings::m_recentPathPerAssetType)
@@ -688,6 +688,7 @@ namespace AzToolsFramework
         {
             m_userSettings.AddRecentPath(assetType, recentPath);
             UpdateRecentFileListState();
+            SaveSettings();
         }
 
         void AssetEditorWidget::PopulateRecentMenu()
