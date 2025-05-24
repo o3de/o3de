@@ -53,7 +53,7 @@ namespace AZ::RHI
         template<typename T>
         static AZ_FORCE_INLINE void IterateDevices(MultiDevice::DeviceMask deviceMask, T callback)
         {
-            AZ_Error(
+            AZ_Warning(
                 "RPI::MultiDeviceObject::IterateDevices",
                 AZStd::to_underlying(deviceMask) != 0u,
                 "Device mask is not initialized with a valid value.");
