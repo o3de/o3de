@@ -501,9 +501,14 @@ namespace PhysX
     }
 
     void CharacterController::SetUpDirection([[maybe_unused]] const AZ::Vector3& upDirection)
-    {
-        AZ_Warning("PhysX Character Controller", false, "Setting up direction is not currently supported.");
-        return;
+    {   
+        if (!m_pxController)
+        {
+            return;
+        }
+
+        PHYSX_SCENE_READ_LOCK(m_pxController->getScene());
+        m_pxController->setUpDirection(PxMathConvert(upDirection));
     }
 
     float CharacterController::GetSlopeLimitDegrees() const
