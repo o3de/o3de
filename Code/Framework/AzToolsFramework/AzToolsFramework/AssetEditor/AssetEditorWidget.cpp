@@ -39,10 +39,12 @@ AZ_POP_DISABLE_WARNING
 
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Asset/GenericAssetHandler.h>
+#include <AzFramework/DocumentPropertyEditor/ReflectionAdapter.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
 #include <AzQtComponents/Components/Widgets/FileDialog.h>
 
+#include <AzToolsFramework/Editor/EditorSettingsAPIBus.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 
 #include <SourceControl/SourceControlAPI.h>
@@ -50,7 +52,6 @@ AZ_POP_DISABLE_WARNING
 #include <UI/PropertyEditor/PropertyRowWidget.hxx>
 #include <UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 
-#include <AzFramework/DocumentPropertyEditor/ReflectionAdapter.h>
 #include <UI/DocumentPropertyEditor/DocumentPropertyEditor.h>
 #include <UI/DocumentPropertyEditor/FilteredDPE.h>
 
@@ -59,8 +60,6 @@ AZ_POP_DISABLE_WARNING
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QVBoxLayout>
-
-#include <AzToolsFramework/Editor/EditorSettingsAPIBus.h>
 
 namespace AzToolsFramework
 {
@@ -710,7 +709,7 @@ namespace AzToolsFramework
         {
             m_recentFileMenu->clear();
 
-            if (m_userSettings.m_recentFiles.empty())
+            if (m_userSettings.GetRecentFiles().empty())
             {
                 m_recentFileMenu->setEnabled(false);
             }
@@ -718,7 +717,7 @@ namespace AzToolsFramework
             {
                 m_recentFileMenu->setEnabled(true);
 
-                for (const AZStd::string& recentFile : m_userSettings.m_recentFiles)
+                for (const AZStd::string& recentFile : m_userSettings.GetRecentFiles())
                 {
                     bool hasResult = false;
                     AZStd::string relativePath;
@@ -795,7 +794,7 @@ namespace AzToolsFramework
         {
             if (m_recentFileMenu)
             {
-                if (m_userSettings.m_recentFiles.empty())
+                if (m_userSettings.GetRecentFiles().empty())
                 {
                     m_recentFileMenu->setEnabled(false);
                 }

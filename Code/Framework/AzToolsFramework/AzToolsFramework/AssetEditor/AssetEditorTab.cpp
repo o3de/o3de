@@ -33,29 +33,31 @@
 
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Asset/GenericAssetHandler.h>
+#include <AzFramework/DocumentPropertyEditor/ReflectionAdapter.h>
 #include <AzFramework/StringFunc/StringFunc.h>
+
+#include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 
 #include <SourceControl/SourceControlAPI.h>
 
+#include <UI/DocumentPropertyEditor/DocumentPropertyEditor.h>
+#include <UI/DocumentPropertyEditor/FilteredDPE.h>
 #include <UI/PropertyEditor/PropertyRowWidget.hxx>
 #include <UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 
-#include <AzFramework/DocumentPropertyEditor/ReflectionAdapter.h>
-#include <UI/DocumentPropertyEditor/DocumentPropertyEditor.h>
-#include <UI/DocumentPropertyEditor/FilteredDPE.h>
-
 #include <AzQtComponents/Components/Widgets/FileDialog.h>
-#include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 
+#include <QAction>
+#include <QDir>
 #include <QMenu>
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QVBoxLayout>
+
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 'QFileInfo::d_ptr': class 'QSharedDataPointer<QFileInfoPrivate>' needs to have
                                                           // dll-interface to be used by clients of class 'QFileInfo'
 #include <QFileDialog>
 AZ_POP_DISABLE_WARNING
-#include <QAction>
 
 namespace AzToolsFramework
 {
