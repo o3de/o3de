@@ -1012,11 +1012,5 @@ namespace AzToolsFramework
                 registry->SetObject(s_saveAllPrefabsKey, saveAllPrefabsPreference);
             }
         }
-
-        AZ::IO::Path PrefabLoaderInterface::GeneratePath()
-        {
-            return AZStd::string::format("Prefab_%s", AZ::Entity::MakeId().ToString().c_str());
-        }
-
     } // namespace Prefab
 } // namespace AzToolsFramework

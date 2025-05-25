@@ -159,15 +159,15 @@ namespace AzToolsFramework
     /// Return root slice containing this entity
     AZTF_API AZ::SliceComponent* GetEntityRootSlice(AZ::EntityId entityId);
 
-    bool EntityHasComponentOfType(const AZ::EntityId& entityId, AZ::Uuid componentType, bool checkPendingComponents = false, bool checkDisabledComponents = false);
-    bool IsComponentWithServiceRegistered(const AZ::Crc32& serviceId);
+    AZTF_API bool EntityHasComponentOfType(const AZ::EntityId& entityId, AZ::Uuid componentType, bool checkPendingComponents = false, bool checkDisabledComponents = false);
+    AZTF_API bool IsComponentWithServiceRegistered(const AZ::Crc32& serviceId);
 
     /// Clones the passed in set of instantiated entities. Note that this will have unexpected results
     /// if given any entities that are not instantiated.
     /// @param entitiesToClone The container of entities to clone.
     /// @param clonedEntities An output parameter containing the IDs of all cloned entities.
     /// @return True if anything was cloned, false if no cloning occurred.
-    bool CloneInstantiatedEntities(const EntityIdSet& entitiesToClone, EntityIdSet& clonedEntities);
+    AZTF_API bool CloneInstantiatedEntities(const EntityIdSet& entitiesToClone, EntityIdSet& clonedEntities);
 
     /// Clones the passed in set of instantiated entities. Note that this will have unexpected results
     /// if given any entities that are not instantiated.

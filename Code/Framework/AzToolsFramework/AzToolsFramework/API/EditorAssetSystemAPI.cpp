@@ -7,8 +7,12 @@
  */
 
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
-#include <AzToolsFramework/AzToolsFramework_Traits_Platform.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzCore/Serialization/SerializeContext.h>
+ 
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::AssetSystem::AssetSystemNotifications);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::AssetSystem::AssetSystemRequest);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::AssetSystem::AssetSystemJobRequest);
 
 namespace AZStd
 {

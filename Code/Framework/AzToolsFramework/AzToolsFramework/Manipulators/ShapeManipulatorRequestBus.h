@@ -9,6 +9,10 @@
 #pragma once
 
 #include <AzCore/Component/ComponentBus.h>
+#include <AzCore/Math/Transform.h>
+#include <AzCore/Math/Quaternion.h>
+#include <AzCore/Math/Vector3.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AZ
 {
@@ -37,3 +41,5 @@ namespace AzToolsFramework
     //! Type to inherit to implement ShapeOffsetManipulatorRequests
     using ShapeManipulatorRequestBus = AZ::EBus<ShapeManipulatorRequests>;
 } // namespace AzToolsFramework
+
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::ShapeManipulatorRequests);

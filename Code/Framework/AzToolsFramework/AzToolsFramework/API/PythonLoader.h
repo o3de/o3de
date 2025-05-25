@@ -8,6 +8,9 @@
 
 #pragma once
 
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Module/DynamicModuleHandle.h>
 #include <AzCore/std/containers/vector.h>

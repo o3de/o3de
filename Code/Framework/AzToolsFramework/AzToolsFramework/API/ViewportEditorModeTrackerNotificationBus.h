@@ -75,3 +75,5 @@ namespace AzToolsFramework
 
     using ViewportEditorModeNotificationsBus = AZ::EBus<ViewportEditorModeNotifications>;
 } // namespace AzToolsFramework
+
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::ViewportEditorModeNotifications);

@@ -11,6 +11,7 @@
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/UserSettings/UserSettings.h>
 #include <AzCore/std/containers/unordered_set.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AZ::Data
 {
@@ -120,3 +121,8 @@ namespace AzToolsFramework
         using AssetEditorNotificationsBus = AZ::EBus<AssetEditorNotifications>;
     } // namespace AssetEditor
 } // namespace AzToolsFramework
+
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::AssetEditor::AssetEditorRequests);
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::AssetEditor::AssetEditorValidationRequests);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::AssetEditor::AssetEditorWidgetRequests);
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::AssetEditor::AssetEditorNotifications);

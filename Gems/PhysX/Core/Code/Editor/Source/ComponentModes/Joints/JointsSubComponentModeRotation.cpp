@@ -55,7 +55,7 @@ namespace PhysX
                 *m_manipulators[i], colors[i], manipulatorRadius,
                 AzToolsFramework::ManipulatorCicleBoundWidth(), AzToolsFramework::DrawHalfDottedCircle));
 
-            m_manipulators[i]->Register(AzToolsFramework::g_mainManipulatorManagerId);
+            m_manipulators[i]->Register(AzToolsFramework::GetMainManipulatorManagerId());
         }
         InstallManipulatorMouseCallbacks(idPair);
     }

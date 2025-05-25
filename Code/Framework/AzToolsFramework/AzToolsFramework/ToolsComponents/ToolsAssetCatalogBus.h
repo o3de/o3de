@@ -8,6 +8,10 @@
 
 #pragma once
 
+#include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/EBus/EBus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 namespace AzToolsFramework
 {
     //! This EBUS is used to tell the assetprocessor about an asset type that should be retrieved from the source instead of the cache
@@ -31,3 +35,5 @@ namespace AzToolsFramework
 
     using ToolsAssetSystemBus = AZ::EBus<ToolsAssetSystemRequests>;
 }
+
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::ToolsAssetSystemRequests);

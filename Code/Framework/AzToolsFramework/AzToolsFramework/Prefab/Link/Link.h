@@ -81,7 +81,8 @@ namespace AzToolsFramework
             Link();
             Link(LinkId linkId);
 
-            AZ_DISABLE_COPY(Link);
+            Link(const Link&) = delete;
+            Link& operator=(const Link&) = delete;
 
             Link(Link&& other) noexcept;
             Link& operator=(Link&& other) noexcept;

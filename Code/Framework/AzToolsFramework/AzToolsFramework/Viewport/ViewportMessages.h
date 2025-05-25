@@ -20,7 +20,7 @@
 #include <AzFramework/Viewport/ViewportId.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Viewport/ViewportTypes.h>
-#include <AzToolsFramework/Viewport/ViewportMessagesBus.h>
+
 namespace AzFramework
 {
     struct ScreenPoint;
@@ -61,7 +61,7 @@ namespace AzToolsFramework
         };
 
         //! Interface for internal handling mouse viewport events.
-        class InternalMouseViewportRequests
+        class AZTF_API InternalMouseViewportRequests
         {
         public:
             //! @cond
@@ -171,7 +171,7 @@ namespace AzToolsFramework
         using ViewportInteractionRequestBus = AZ::EBus<ViewportInteractionRequests, ViewportRequestsEBusTraits>;
 
         //! Utility function to return a viewport ray using the ViewportInteractionRequestBus.
-        ProjectedViewportRay ViewportScreenToWorldRay(const AzFramework::ViewportId viewportId, const AzFramework::ScreenPoint& screenPoint);
+        AZTF_API ProjectedViewportRay ViewportScreenToWorldRay(const AzFramework::ViewportId viewportId, const AzFramework::ScreenPoint& screenPoint);
 
         //! The EBusTraits for ViewportInteractionNotifications.
         class ViewportNotificationsEBusTraits : public AZ::EBusTraits
@@ -318,7 +318,7 @@ namespace AzToolsFramework
         using EditorModifierKeyRequestBus = AZ::EBus<EditorModifierKeyRequests>;
 
         //! Convenience method to call the above EditorModifierKeyRequestBus's QueryKeyModifiers event
-        KeyboardModifiers QueryKeyboardModifiers();
+        AZTF_API KeyboardModifiers QueryKeyboardModifiers();
 
         //! An interface to deal with time requests relating to viewports.
         //! @note The bus is global and not per viewport.
@@ -426,4 +426,12 @@ namespace AzToolsFramework
     AZTF_API float ManipulatorCicleBoundWidth(AzFramework::ViewportId viewportId = AzFramework::InvalidViewportId);
 } // namespace AzToolsFramework
 
-DECLARE_EBUS_EXTERN_WITH_TRAITS(AzToolsFramework::ViewportInteraction::ViewportInteractionRequests, AzToolsFramework::ViewportInteraction::ViewportRequestsEBusTraits);
+AZ_DECLARE_EBUS_MULTI_ADDRESS_WITH_TRAITS(AZTF_API, AzToolsFramework::ViewportInteraction::MouseViewportRequests, AzToolsFramework::ViewportInteraction::ViewportRequestsEBusTraits);
+AZ_DECLARE_EBUS_MULTI_ADDRESS_WITH_TRAITS(AZTF_API, AzToolsFramework::ViewportInteraction::ViewportInteractionRequests, AzToolsFramework::ViewportInteraction::ViewportRequestsEBusTraits);
+AZ_DECLARE_EBUS_MULTI_ADDRESS_WITH_TRAITS(AZTF_API, AzToolsFramework::ViewportInteraction::ViewportInteractionNotifications, AzToolsFramework::ViewportInteraction::ViewportNotificationsEBusTraits);
+AZ_DECLARE_EBUS_MULTI_ADDRESS_WITH_TRAITS(AZTF_API, AzToolsFramework::ViewportInteraction::ViewportSettingNotifications, AzToolsFramework::ViewportInteraction::ViewportNotificationsEBusTraits);
+AZ_DECLARE_EBUS_MULTI_ADDRESS_WITH_TRAITS(AZTF_API, AzToolsFramework::ViewportInteraction::MainEditorViewportInteractionRequests, AzToolsFramework::ViewportInteraction::ViewportNotificationsEBusTraits);
+AZ_DECLARE_EBUS_MULTI_ADDRESS_WITH_TRAITS(AZTF_API, AzToolsFramework::ViewportInteraction::EditorEntityViewportInteractionRequests, AzToolsFramework::ViewportInteraction::ViewportNotificationsEBusTraits);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::ViewportInteraction::EditorModifierKeyRequests);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::ViewportInteraction::EditorViewportInputTimeNowRequests);
+AZ_DECLARE_EBUS_MULTI_ADDRESS_WITH_TRAITS(AZTF_API, AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequests, AzToolsFramework::ViewportInteraction::ViewportNotificationsEBusTraits);

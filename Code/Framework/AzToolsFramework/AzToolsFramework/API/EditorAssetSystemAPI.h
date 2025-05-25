@@ -38,7 +38,6 @@ namespace AzToolsFramework
             : public AZ::EBusTraits
         {
         public:
-
             static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single; // single listener
             static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single; // single bus
 
@@ -142,10 +141,9 @@ namespace AzToolsFramework
             virtual bool ClearFingerprintForAsset(const AZStd::string& sourcePath) = 0;
         };
 
-
         //! AssetSystemBusTraits
         //! This bus is for events that concern individual assets and is addressed by file extension
-        class AssetSystemNotifications
+        class AssetSystemNotifications 
             : public AZ::EBusTraits
         {
         public:
@@ -277,3 +275,7 @@ namespace AZStd
 {
     AZ_TEMPLATE_EXTERN template class AZTF_API vector<AzToolsFramework::AssetSystem::JobInfo>;
 }
+
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::AssetSystem::AssetSystemNotifications);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::AssetSystem::AssetSystemRequest);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::AssetSystem::AssetSystemJobRequest);

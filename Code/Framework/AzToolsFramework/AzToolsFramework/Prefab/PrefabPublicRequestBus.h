@@ -9,7 +9,6 @@
 #pragma once
 
 #include <AzCore/Asset/AssetCommon.h>
-#include <AzCore/EBus/EBus.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Outcome/Outcome.h>
@@ -18,6 +17,8 @@
 #include <AzCore/std/string/string_view.h>
 
 #include <AzToolsFramework/Entity/EntityTypes.h>
+#include <AzCore/EBus/EBus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -139,3 +140,5 @@ namespace AzToolsFramework
 
     } // namespace Prefab
 } // namespace AzToolsFramework
+
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::Prefab::PrefabPublicRequests);

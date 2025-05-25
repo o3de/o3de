@@ -9,11 +9,9 @@
 #pragma once
 
 #include <AzCore/Component/EntityId.h>
-#include <AzFramework/Render/GeometryIntersectionStructures.h>
-#include <AzToolsFramework/API/ComponentEntitySelection.h>
-#include <AzToolsFramework/ToolsComponents/EditorSelectionAccentSystemComponent.h>
-
 #include <AzCore/EBus/EBus.h>
+#include <AzFramework/Render/GeometryIntersectionStructures.h>
+#include <AzToolsFramework/ToolsComponents/EditorSelectionAccentSystemComponent.h>
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzFramework
@@ -109,4 +107,4 @@ namespace AzToolsFramework
     AZTF_API AZ::Aabb CalculateEditorEntitySelectionBounds(const AZ::EntityId entityId, const AzFramework::ViewportInfo& viewportInfo);
 } // namespace AzToolsFramework
 
-DECLARE_EBUS_EXTERN(AzToolsFramework::EditorComponentSelectionRequests);
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::EditorComponentSelectionRequests);

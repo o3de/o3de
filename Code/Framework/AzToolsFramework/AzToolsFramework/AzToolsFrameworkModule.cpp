@@ -65,6 +65,9 @@
 
 AZ_DEFINE_BUDGET_SHARED(AzToolsFramework);
 
+AZ_CVAR_API(AZTF_API, bool, ed_useNewAssetBrowserListView, true, nullptr, AZ::ConsoleFunctorFlags::Null,
+        "Use the new AssetBrowser ListView for searching assets.");
+
 namespace AzToolsFramework
 {
     AzToolsFrameworkModule::AzToolsFrameworkModule()

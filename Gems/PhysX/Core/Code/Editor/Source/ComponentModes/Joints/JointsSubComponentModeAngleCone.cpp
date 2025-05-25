@@ -260,10 +260,10 @@ namespace PhysX
                 m_xRotationManipulator->SetBoundsDirty();
             });
 
-        m_xRotationManipulator->Register(AzToolsFramework::g_mainManipulatorManagerId);
-        m_yLinearManipulator->Register(AzToolsFramework::g_mainManipulatorManagerId);
-        m_zLinearManipulator->Register(AzToolsFramework::g_mainManipulatorManagerId);
-        m_yzPlanarManipulator->Register(AzToolsFramework::g_mainManipulatorManagerId);
+        m_xRotationManipulator->Register(AzToolsFramework::GetMainManipulatorManagerId());
+        m_yLinearManipulator->Register(AzToolsFramework::GetMainManipulatorManagerId());
+        m_zLinearManipulator->Register(AzToolsFramework::GetMainManipulatorManagerId());
+        m_yzPlanarManipulator->Register(AzToolsFramework::GetMainManipulatorManagerId());
 
         AzFramework::EntityDebugDisplayEventBus::Handler::BusConnect(m_entityComponentIdPair.GetEntityId());
 

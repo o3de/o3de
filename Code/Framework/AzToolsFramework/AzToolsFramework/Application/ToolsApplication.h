@@ -16,7 +16,6 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/API/EditorEntityAPI.h>
 #include <AzToolsFramework/Application/EditorEntityManager.h>
-#include <AzToolsFramework/AssetEditor/AssetEditorWindowSettings.h>
 #include <AzToolsFramework/Prefab/PrefabPublicNotificationBus.h>
 
 namespace AzToolsFramework

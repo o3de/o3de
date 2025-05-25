@@ -9,6 +9,12 @@
 #include "AssetEditorBus.h"
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzToolsFramework/AssetEditor/AssetEditorBus.h>
+
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::AssetEditor::AssetEditorRequests);
+AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::AssetEditor::AssetEditorValidationRequests);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::AssetEditor::AssetEditorWidgetRequests);
+AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::AssetEditor::AssetEditorNotifications);
 
 namespace AzToolsFramework::AssetEditor
 {

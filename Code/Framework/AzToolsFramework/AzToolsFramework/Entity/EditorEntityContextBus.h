@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#include <AzCore/EBus/EBus.h>
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Serialization/ObjectStream.h>
@@ -16,6 +15,8 @@
 #include <AzCore/Component/Component.h>
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzCore/EBus/EBus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AZ
 {
@@ -232,4 +233,6 @@ namespace AzToolsFramework
     using EditorLegacyGameModeNotificationBus = AZ::EBus<EditorLegacyGameModeNotifications>;
 } // namespace AzToolsFramework
 
-DECLARE_EBUS_EXTERN(AzToolsFramework::EditorEntityContextRequests);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EditorEntityContextRequests);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EditorEntityContextNotification);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EditorLegacyGameModeNotifications);

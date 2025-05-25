@@ -149,3 +149,8 @@ namespace Camera
     using EditorCameraViewRequestBus = AZ::EBus<EditorCameraViewRequests>;
 
 } // namespace Camera
+
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, Camera::EditorCameraRequests);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, Camera::EditorCameraSystemRequests);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, Camera::EditorCameraNotifications);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, Camera::EditorCameraViewRequests);

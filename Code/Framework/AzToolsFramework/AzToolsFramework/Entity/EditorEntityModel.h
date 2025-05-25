@@ -151,7 +151,7 @@ namespace AzToolsFramework
 
         void UpdateSliceInfoHierarchy(AZ::EntityId entityId);
 
-        class EditorEntityModelEntry
+        class AZTF_API EditorEntityModelEntry
             : private AZ::EntityBus::Handler
             , private EditorLockComponentNotificationBus::Handler
             , private EditorVisibilityNotificationBus::Handler

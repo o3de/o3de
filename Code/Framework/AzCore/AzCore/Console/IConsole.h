@@ -221,6 +221,22 @@ static constexpr AZ::ThreadSafety ConsoleThreadSafety<_TYPE, std::enable_if_t<st
     using CVarDataWrapperType##_NAME = AZ::ConsoleDataWrapper<_TYPE, ConsoleThreadSafety<_TYPE>>; \
     inline CVarDataWrapperType##_NAME _NAME(_INIT, _CALLBACK, #_NAME, _DESC, _FLAGS)
 
+//! Shared Library exported cvar macro.
+//! This is used in conjunction with the AZ_CVAR_API_EXTERNED
+//! @param _API  the conditional export macro for the shared library that owns the cvar
+//! @param _TYPE the data type of the cvar
+//! @param _TYPE the data type of the cvar
+//! @param _NAME the name of the cvar
+//! @param _INIT the initial value to assign to the cvar
+//! @param _CALLBACK this is an optional callback function to get invoked when a cvar changes value
+//!        You have no guarantees as to what thread will invoke the callback
+//!        It is the responsibility of the implementor of the callback to ensure thread safety
+//! @param _FLAGS a set of AzFramework::ConsoleFunctorFlags used to mutate behaviour
+//! @param _DESC a description of the cvar
+#define AZ_CVAR_API(_API, _TYPE, _NAME, _INIT, _CALLBACK, _FLAGS, _DESC)                                                                             \
+    using CVarDataWrapperType##_NAME = AZ::ConsoleDataWrapper<_TYPE, ConsoleThreadSafety<_TYPE>>;                                          \
+    _API CVarDataWrapperType##_NAME _NAME(_INIT, _CALLBACK, #_NAME, _DESC, _FLAGS)
+
 //! Block-scoped cvar macro.
 //! This declaration should only be used within a block-scope or function body
 //! @param _TYPE the data type of the cvar

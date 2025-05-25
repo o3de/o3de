@@ -12,6 +12,4 @@ set(FILES
     UI/PropertyEditor/Resources/Icons.qrc
     UI/LegacyFramework/CustomMenus/CustomMenusCommon.h    
     UI/LegacyFramework/CustomMenus/CustomMenusCommon.cpp
-    AzToolsFrameworkStatic.cpp
-    AzToolsFrameworkStatic.h
 )
