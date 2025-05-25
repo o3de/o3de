@@ -345,4 +345,7 @@ namespace AzFramework
     using AssetSystemStatusBus = AZ::EBus<AssetSystem::AssetSystemStatus>;
 } // namespace AzFramework
 
-DECLARE_EBUS_EXTERN(AzFramework::AssetSystem::AssetSystemRequests);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::AssetSystem::AssetSystemInfoNotifications)
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::AssetSystem::AssetSystemRequests)
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::AssetSystem::AssetSystemConnectionNotifications)
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::AssetSystem::AssetSystemStatus)
