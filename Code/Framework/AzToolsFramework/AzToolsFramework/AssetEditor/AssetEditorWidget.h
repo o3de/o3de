@@ -65,6 +65,8 @@ namespace AzToolsFramework
             void Clear();
             const AZStd::string GetRecentPathForAssetType(AZ::Data::AssetType assetType) const;
 
+            const AZStd::vector<AZStd::string>& GetRecentFiles() const { return m_recentFiles; }
+
         private:
 
             AZStd::unordered_map<AZ::Data::AssetType, AZStd::string> m_recentPathPerAssetType;
