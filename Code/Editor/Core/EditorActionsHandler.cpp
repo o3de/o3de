@@ -962,6 +962,8 @@ void EditorActionsHandler::OnActionRegistrationHook()
 
         // This action is only accessible outside of Component Modes
         m_actionManagerInterface->AssignModeToAction(AzToolsFramework::DefaultActionContextModeIdentifier, actionIdentifier);
+
+        m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Ctrl+Alt+G");
     }
 
     // Move Player and Camera Separately
