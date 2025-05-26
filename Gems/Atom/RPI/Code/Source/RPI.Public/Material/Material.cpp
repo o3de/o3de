@@ -911,6 +911,10 @@ namespace AZ
         {
             return m_instanceData.m_materialInstanceId;
         }
+        bool Material::UsesSceneMaterialSrg() const
+        {
+            return m_instanceData.m_usesSceneMaterialSrg;
+        }
 
     } // namespace RPI
 } // namespace AZ

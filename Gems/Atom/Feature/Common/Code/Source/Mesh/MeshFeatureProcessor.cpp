@@ -2110,12 +2110,19 @@ namespace AZ
 
                 Data::Instance<RPI::ShaderResourceGroup> meshObjectSrg;
 
-                // See if the object SRG for this mesh is already in our list of object SRGs
-                for (auto& objectSrgIter : m_objectSrgList)
+                // Note: If the material uses the SceneMaterialSrg, the ObjectSRG holds the
+                // materialType and Instance-ID, and needs to be unique for each submesh.
+                // TODO: We can avoid a separate ObjectSRG for each submesh if we move the data from the SceneMaterialSrg to the SceneSrg,
+                // and create a MaterialSrg again that only holds the materialType and Instance-ID
+                if (!material->UsesSceneMaterialSrg())
                 {
-                    if (objectSrgIter->GetLayout()->GetHash() == objectSrgLayout->GetHash())
+                    // See if the object SRG for this mesh is already in our list of object SRGs
+                    for (auto& objectSrgIter : m_objectSrgList)
                     {
-                        meshObjectSrg = objectSrgIter;
+                        if (objectSrgIter->GetLayout()->GetHash() == objectSrgLayout->GetHash())
+                        {
+                            meshObjectSrg = objectSrgIter;
+                        }
                     }
                 }
 
@@ -2130,13 +2137,16 @@ namespace AZ
                         continue;
                     }
                     // Set the material-Id and materialInstance-Id
+                    if (material->UsesSceneMaterialSrg())
                     {
-                        RHI::ShaderInputNameIndex nameIndex(AZ_NAME_LITERAL("m_materialTypeId"));
-                        meshObjectSrg->SetConstant(nameIndex, material->GetMaterialTypeId());
-                    }
-                    {
-                        RHI::ShaderInputNameIndex nameIndex(AZ_NAME_LITERAL("m_materialInstanceId"));
-                        meshObjectSrg->SetConstant(nameIndex, material->GetMaterialInstanceId());
+                        {
+                            RHI::ShaderInputNameIndex nameIndex(AZ_NAME_LITERAL("m_materialTypeId"));
+                            meshObjectSrg->SetConstant(nameIndex, material->GetMaterialTypeId());
+                        }
+                        {
+                            RHI::ShaderInputNameIndex nameIndex(AZ_NAME_LITERAL("m_materialInstanceId"));
+                            meshObjectSrg->SetConstant(nameIndex, material->GetMaterialInstanceId());
+                        }
                     }
 
                     m_objectSrgCreatedEvent.Signal(meshObjectSrg);

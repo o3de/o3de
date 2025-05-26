@@ -288,9 +288,11 @@ namespace AZ::RPI
             instanceData.m_shaderParameter = {};
         }
 
-        MaterialInstanceData result{
-            materialTypeIndex, materialInstanceIndex, instanceData.m_shaderResourceGroup, instanceData.m_shaderParameter
-        };
+        MaterialInstanceData result{ materialTypeIndex,
+                                     materialInstanceIndex,
+                                     materialTypeData.m_useSceneMaterialSrg,
+                                     instanceData.m_shaderResourceGroup,
+                                     instanceData.m_shaderParameter };
 
 #ifdef DEBUG_MATERIALINSTANCES
         AZ_Printf(

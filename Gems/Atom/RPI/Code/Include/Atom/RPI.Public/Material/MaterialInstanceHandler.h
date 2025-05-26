@@ -25,6 +25,7 @@ namespace AZ::RPI
     {
         int32_t m_materialTypeId{ -1 };
         int32_t m_materialInstanceId{ -1 };
+        bool m_usesSceneMaterialSrg{ false };
         Data::Instance<ShaderResourceGroup> m_shaderResourceGroup{ nullptr };
         Data::Instance<MaterialShaderParameter> m_materialShaderParameter{ nullptr };
     };

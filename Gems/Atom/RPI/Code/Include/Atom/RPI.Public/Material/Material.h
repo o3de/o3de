@@ -146,6 +146,8 @@ namespace AZ
             int32_t GetMaterialTypeId() const;
             // Index of the MaterialParameters - entry in the MaterialParameterBuffer of the relevant Material type.
             int32_t GetMaterialInstanceId() const;
+            // whether the MaterialSRG is the SceneMaterialSrg, or a srg unique for the Material
+            bool UsesSceneMaterialSrg() const;
 
             const RHI::ShaderResourceGroup* GetRHIShaderResourceGroup() const;
 
