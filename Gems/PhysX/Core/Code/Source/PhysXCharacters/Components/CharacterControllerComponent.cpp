@@ -176,7 +176,7 @@ namespace PhysX
         return AZ::Vector3::CreateZero();
     }
 
-    void CharacterControllerComponent::SetUpDirection([[maybe_unused]] const AZ::Vector3& upDirection)
+    void CharacterControllerComponent::SetUpDirection(const AZ::Vector3& upDirection)
     {
         if (auto* controller = GetController())
         {

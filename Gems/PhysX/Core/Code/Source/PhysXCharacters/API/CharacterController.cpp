@@ -500,10 +500,11 @@ namespace PhysX
         return PxMathConvert(m_pxController->getUpDirection());
     }
 
-    void CharacterController::SetUpDirection([[maybe_unused]] const AZ::Vector3& upDirection)
+    void CharacterController::SetUpDirection(const AZ::Vector3& upDirection)
     {   
         if (!m_pxController)
         {
+            AZ_Error("PhysX Character Controller", false, "Invalid character controller.");
             return;
         }
 
