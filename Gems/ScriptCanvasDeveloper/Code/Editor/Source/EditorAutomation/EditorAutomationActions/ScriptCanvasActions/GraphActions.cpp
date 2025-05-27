@@ -135,7 +135,9 @@ namespace ScriptCanvas::Developer
     void CreateNewFunctionAction::OnActionsComplete()
     {
         if (m_newGraphAction)
+        {
             m_graphId = m_newGraphAction->GetGraphId();
+        }
     }
 
     ////////////////////////////////
