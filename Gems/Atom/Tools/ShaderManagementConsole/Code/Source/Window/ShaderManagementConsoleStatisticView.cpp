@@ -82,7 +82,7 @@ namespace ShaderManagementConsole
                         int count = m_statisticData.m_shaderOptionUsage[optionName][valueName];
                         AZStd::string itemText = AZStd::string::format("%s     %d", valueName.GetCStr(), count);
                         auto* cellWidget = new QTableWidgetItem(itemText.c_str());
-                        cellWidget->setToolTip(tr(u8"value \u23B5 usage count of this value"));
+                        cellWidget->setToolTip(tr(reinterpret_cast<const char*>(u8"value \u23B5 usage count of this value")));
                         setItem(row, column, cellWidget);
                         break;
                     }

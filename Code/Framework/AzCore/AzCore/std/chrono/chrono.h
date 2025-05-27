@@ -496,7 +496,8 @@ namespace AZStd::chrono
 
     // [time.cal.last](http://eel.is/c++draft/time#cal.last), class last_­spec
 #if __cpp_lib_chrono >= 201907L
-    using std::chrono::last_spec using std::chrono::last;
+    using std::chrono::last_spec;
+    using std::chrono::last;
 #else
     struct last_spec
     {
@@ -1395,7 +1396,6 @@ namespace AZStd::chrono
     // [time.cal.ymd](http://eel.is/c++draft/time#cal.ymd), class year_­month_­day
 #if __cpp_lib_chrono >= 201907L
     using std::chrono::year_month_day;
-    using std::chrono::year_month_last;
 #else
     namespace Internal
     {
