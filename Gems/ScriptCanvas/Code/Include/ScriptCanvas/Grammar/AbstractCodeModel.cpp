@@ -606,7 +606,7 @@ namespace ScriptCanvas
             return AZStd::const_pointer_cast<Scope>(m_graphScope)->AddVariableName(name);
         }
 
-        void AbstractCodeModel::AddUserOutToLeaf(ExecutionTreePtr parent, ExecutionTreeConstPtr root, AZStd::string_view name)
+        void AbstractCodeModel::AddUserOutToLeaf(ExecutionTreePtr parent, [[maybe_unused]] ExecutionTreeConstPtr root, AZStd::string_view name)
         {
             ExecutionTreePtr out;
 

@@ -331,7 +331,7 @@ namespace Terrain
     {
         for (DetailMaterialSurface& surface : materialRegion.m_materialsForSurfaces)
         {
-            if (surface.m_surfaceTag == surfaceTag)
+            if (surface.m_surfaceTag == static_cast<const AZ::Crc32&>(surfaceTag))
             {
                 callback(surface);
                 return true;

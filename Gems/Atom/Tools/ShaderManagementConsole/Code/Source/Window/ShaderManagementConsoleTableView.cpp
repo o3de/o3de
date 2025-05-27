@@ -254,7 +254,7 @@ namespace ShaderManagementConsole
                 setItem(row, column, newItem);
             }
             auto* deleterButton = new QPushButton;
-            deleterButton->setText(u8"\u274C");  // cross sign
+            deleterButton->setText(reinterpret_cast<const char*>(u8"\u274C"));  // cross sign
             deleterButton->setToolTip(tr("delete row"));
             connect(deleterButton, &QPushButton::clicked, this, [this, row](){
                 auto& vec = m_shaderVariantListSourceData.m_shaderVariants;

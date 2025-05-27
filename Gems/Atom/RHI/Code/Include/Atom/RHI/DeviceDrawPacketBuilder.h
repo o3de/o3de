@@ -25,8 +25,6 @@ namespace AZ::RHI
     public:
         struct DeviceDrawRequest
         {
-            DeviceDrawRequest() = default;
-
             //! The filter tag used to direct the draw item.
             DrawListTag m_listTag;
 
