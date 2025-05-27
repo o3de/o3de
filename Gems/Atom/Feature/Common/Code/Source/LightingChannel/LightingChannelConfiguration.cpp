@@ -7,6 +7,7 @@
  */
 
 #include <Atom/Feature/LightingChannel/LightingChannelConfiguration.h>
+#include <Atom/RHI.Reflect/Bits.h>
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -45,8 +46,8 @@ namespace AZ
         void LightingChannelConfiguration::SetLightingChannelMask(const uint32_t mask)
         {
             for (uint32_t index = 0; index < m_lightingChannelFlags.size(); ++index)
-            {
-                m_lightingChannelFlags[index] = (mask & (0x01 << index)) > 0;
+            {                
+                m_lightingChannelFlags[index] = RHI::CheckBit(mask, index);
             }
         }
 
@@ -57,7 +58,7 @@ namespace AZ
             {
                 if (m_lightingChannelFlags[index])
                 {
-                    mask |= static_cast<uint32_t>(0x01 << index);
+                    mask = RHI::SetBit(mask, index);                    
                 }
             }
             return mask;
