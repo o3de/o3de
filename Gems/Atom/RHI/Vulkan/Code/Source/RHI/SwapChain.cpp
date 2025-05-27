@@ -453,7 +453,7 @@ namespace AZ
                         return surfaceFormats[index];
                     }
 
-                    if (matchedFormat.format != VK_FORMAT_UNDEFINED)
+                    if (matchedFormat.format == VK_FORMAT_UNDEFINED)
                     {
                         matchedFormat = surfaceFormats[index];
                     }
