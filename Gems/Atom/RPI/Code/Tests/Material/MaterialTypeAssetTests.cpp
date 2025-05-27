@@ -2106,12 +2106,14 @@ namespace UnitTest
 
         MaterialTypeAssetCreator creator;
         creator.Begin(Uuid::CreateRandom());
-
+        creator.SetMaterialShaderParameterLayout(m_testMaterialShaderParamterLayout);
         creator.BeginMaterialProperty(Name{ "MyColor" }, MaterialPropertyDataType::Color);
         creator.ConnectMaterialPropertyToShaderParameter(Name{ "m_color" });
         creator.EndMaterialProperty();
 
+        AZ_TEST_START_ASSERTTEST;
         creator.UpdateShaderParameterConnections();
+        AZ_TEST_STOP_ASSERTTEST(1);
 
         EXPECT_EQ(1, creator.GetErrorCount());
     }
