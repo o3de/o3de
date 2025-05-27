@@ -69,7 +69,6 @@ namespace AzToolsFramework
         // AssetEditorWidgetUserSettings
         //////////////////////////////////
 
-        const AZ::Crc32 k_assetEditorWidgetSettings = AZ_CRC_CE("AssetEditorSettings");
         static constexpr const char* k_assetEditorSettingsPath = "/O3DE/Preferences/AssetEditor/Settings";
 
         void AssetEditorWidgetUserSettings::Reflect(AZ::ReflectContext* context)
