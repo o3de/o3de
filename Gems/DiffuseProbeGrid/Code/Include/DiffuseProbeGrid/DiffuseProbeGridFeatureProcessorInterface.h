@@ -90,8 +90,8 @@ namespace AZ
             None
         };
 
-        constexpr float DefaultDiffuseProbeGridSpacing = 2.0f;
-        constexpr float DefaultDiffuseProbeGridExtents = 8.0f;
+        constexpr float DefaultDiffuseProbeGridSpacing = 1.0f; //original values = 2.0f
+        constexpr float DefaultDiffuseProbeGridExtents = 1.0f; //original values = 8.0f
         constexpr float DefaultDiffuseProbeGridAmbientMultiplier = 1.0f;
         constexpr float DefaultDiffuseProbeGridEmissiveMultiplier = 1.0f;
         constexpr float DefaultDiffuseProbeGridViewBias = 0.2f;
