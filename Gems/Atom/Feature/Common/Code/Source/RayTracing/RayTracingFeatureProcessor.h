@@ -25,6 +25,7 @@
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Color.h>
 #include <AzCore/Math/Transform.h>
+#include <RayTracing/RayTracingResourceList.h>
 
 // this define specifies that the mesh buffers and material textures are stored in the Bindless Srg
 // Note1: The previous implementation using separate unbounded arrays is preserved since it demonstrates a TDR caused by

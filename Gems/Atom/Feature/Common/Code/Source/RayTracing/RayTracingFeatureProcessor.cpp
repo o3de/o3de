@@ -565,11 +565,11 @@ namespace AZ
                     m_meshBuffers.RemoveResource(subMesh.m_bitangentShaderBufferView.get());
                     m_meshBuffers.RemoveResource(subMesh.m_uvShaderBufferView.get());
 
-                    m_materialTextures.RemoveResource(subMesh.m_baseColorImageView.get());
-                    m_materialTextures.RemoveResource(subMesh.m_normalImageView.get());
-                    m_materialTextures.RemoveResource(subMesh.m_metallicImageView.get());
-                    m_materialTextures.RemoveResource(subMesh.m_roughnessImageView.get());
-                    m_materialTextures.RemoveResource(subMesh.m_emissiveImageView.get());
+                    m_materialTextures.RemoveResource(subMesh.m_material.m_baseColorImageView.get());
+                    m_materialTextures.RemoveResource(subMesh.m_material.m_normalImageView.get());
+                    m_materialTextures.RemoveResource(subMesh.m_material.m_metallicImageView.get());
+                    m_materialTextures.RemoveResource(subMesh.m_material.m_roughnessImageView.get());
+                    m_materialTextures.RemoveResource(subMesh.m_material.m_emissiveImageView.get());
 #endif
 
                     if (globalIndex < m_subMeshes.size() - 1)
@@ -1166,21 +1166,27 @@ namespace AZ
 #if !USE_BINDLESS_SRG
                 // resolve to the true indices using the indirection list
                 // Note: this is done on the CPU to avoid double-indirection in the shader
-                IndexVector resolvedMeshBufferIndices(m_meshBufferIndices.GetIndexList().size());
-                uint32_t resolvedMeshBufferIndex = 0;
-                for (auto& meshBufferIndex : m_meshBufferIndices.GetIndexList())
+                AZStd::unordered_map<int, IndexVector> resolvedMeshBufferIndicesMap;
+
+                for (const auto& [deviceIndex, meshBufferIndices] : m_meshBufferIndices)
                 {
-                    if (!m_meshBufferIndices.IsValidIndex(meshBufferIndex))
+                    IndexVector& resolvedMeshBufferIndices = resolvedMeshBufferIndicesMap[deviceIndex];
+                    resolvedMeshBufferIndices.resize(meshBufferIndices.GetIndexList().size());
+                    uint32_t resolvedMeshBufferIndex = 0;
+                    for (auto& meshBufferIndex : meshBufferIndices.GetIndexList())
                     {
-                        resolvedMeshBufferIndices[resolvedMeshBufferIndex++] = InvalidIndex;
-                    }
-                    else
-                    {
-                        resolvedMeshBufferIndices[resolvedMeshBufferIndex++] = m_meshBuffers.GetIndirectionList()[meshBufferIndex];
+                        if (!meshBufferIndices.IsValidIndex(meshBufferIndex))
+                        {
+                            resolvedMeshBufferIndices[resolvedMeshBufferIndex++] = InvalidIndex;
+                        }
+                        else
+                        {
+                            resolvedMeshBufferIndices[resolvedMeshBufferIndex++] = m_meshBuffers.GetIndirectionList()[meshBufferIndex];
+                        }
                     }
                 }
 
-                m_meshBufferIndicesGpuBuffer.AdvanceCurrentBufferAndUpdateData(resolvedMeshBufferIndices);
+                m_meshBufferIndicesGpuBuffer.AdvanceCurrentBufferAndUpdateData(resolvedMeshBufferIndicesMap);
 #else
                 AZStd::unordered_map<int, const void*> rawMeshData;
 
@@ -1196,21 +1202,27 @@ namespace AZ
 #if !USE_BINDLESS_SRG
                 // resolve to the true indices using the indirection list
                 // Note: this is done on the CPU to avoid double-indirection in the shader
-                IndexVector resolvedMaterialTextureIndices(m_materialTextureIndices.GetIndexList().size());
-                uint32_t resolvedMaterialTextureIndex = 0;
-                for (auto& materialTextureIndex : m_materialTextureIndices.GetIndexList())
+                AZStd::unordered_map<int, IndexVector> resolvedMaterialTextureIndicesMap;
+
+                for (const auto& [deviceIndex, materialTextureIndices] : m_materialTextureIndices)
                 {
-                    if (!m_materialTextureIndices.IsValidIndex(materialTextureIndex))
+                    IndexVector& resolvedMaterialTextureIndices = resolvedMaterialTextureIndicesMap[deviceIndex];
+                    resolvedMaterialTextureIndices.resize(materialTextureIndices.GetIndexList().size());
+                    uint32_t resolvedMaterialTextureIndex = 0;
+                    for (auto& materialTextureIndex : materialTextureIndices.GetIndexList())
                     {
-                        resolvedMaterialTextureIndices[resolvedMaterialTextureIndex++] = InvalidIndex;
-                    }
-                    else
-                    {
-                        resolvedMaterialTextureIndices[resolvedMaterialTextureIndex++] = m_materialTextures.GetIndirectionList()[materialTextureIndex];
+                        if (!materialTextureIndices.IsValidIndex(materialTextureIndex))
+                        {
+                            resolvedMaterialTextureIndices[resolvedMaterialTextureIndex++] = InvalidIndex;
+                        }
+                        else
+                        {
+                            resolvedMaterialTextureIndices[resolvedMaterialTextureIndex++] = m_materialTextures.GetIndirectionList()[materialTextureIndex];
+                        }
                     }
                 }
 
-                m_materialTextureIndicesGpuBuffer.AdvanceCurrentBufferAndUpdateData(resolvedMaterialTextureIndices);
+                m_materialTextureIndicesGpuBuffer.AdvanceCurrentBufferAndUpdateData(resolvedMaterialTextureIndicesMap);
 #else
                 AZStd::unordered_map<int, const void*> rawMaterialData;
 
