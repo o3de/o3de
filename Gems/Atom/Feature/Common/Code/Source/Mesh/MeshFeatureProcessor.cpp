@@ -1841,7 +1841,7 @@ namespace AZ
             OnAssetReady(asset);
         }
 
-        void ModelDataInstance::MeshLoader::OnAssetError(Data::Asset<Data::AssetData> asset)
+        void ModelDataInstance::MeshLoader::OnAssetError([[maybe_unused]] Data::Asset<Data::AssetData> asset)
         {
             // Note: m_modelAsset and asset represents same asset, but only m_modelAsset contains the file path in its hint from serialization
             AZ_Error(

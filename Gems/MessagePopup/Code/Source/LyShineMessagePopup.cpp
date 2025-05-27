@@ -117,7 +117,7 @@ namespace MessagePopup
     }
 
     //-----------------------------------------------------------------------------
-    void LyShineMessagePopup::OnShowPopup(AZ::u32 _popupID, const AZStd::string& _message, EPopupButtons _buttons, EPopupKind _kind, AZStd::function<void(int _button)> _callback, void** _popupClientID)
+    void LyShineMessagePopup::OnShowPopup(AZ::u32 _popupID, const AZStd::string& _message, EPopupButtons _buttons, EPopupKind _kind, [[maybe_unused]] AZStd::function<void(int _button)> _callback, void** _popupClientID)
     {
         AZ::EntityId canvasEntityId;
         bool isNavigationSupported = false;

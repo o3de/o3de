@@ -204,7 +204,7 @@ namespace AZ
             m_boxChangedByGridEvent.Signal(true);
         }
 
-        void DiffuseProbeGridComponentController::OnAssetReady(Data::Asset<Data::AssetData> asset)
+        void DiffuseProbeGridComponentController::OnAssetReady([[maybe_unused]] Data::Asset<Data::AssetData> asset)
         {
             // if all assets are ready we can set the baked texture images
             if (m_configuration.m_bakedIrradianceTextureAsset.IsReady() &&
