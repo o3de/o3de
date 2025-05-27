@@ -46,16 +46,19 @@ namespace AZ
         {
             for (uint32_t index = 0; index < m_lightingChannelFlags.size(); ++index)
             {
-                m_lightingChannelFlags[index] = (static_cast<bool>(mask >> index) & 0x01);
+                m_lightingChannelFlags[index] = (mask & (0x01 << index)) > 0;
             }
         }
 
         uint32_t LightingChannelConfiguration::GetLightingChannelMask() const
         {
-            uint32_t mask = 0;
+            uint32_t mask(0);
             for (uint32_t index = 0; index < m_lightingChannelFlags.size(); ++index)
             {
-                mask |= (static_cast<uint32_t>(m_lightingChannelFlags[index]) << (index));
+                if (m_lightingChannelFlags[index])
+                {
+                    mask |= static_cast<uint32_t>(0x01 << index);
+                }
             }
             return mask;
         }
