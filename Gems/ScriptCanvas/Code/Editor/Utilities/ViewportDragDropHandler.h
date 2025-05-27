@@ -14,7 +14,7 @@
 #include <QDropEvent>
 
 #include <AzCore/std/string/string.h>
-#include <AzCore/math/Vector3.h>
+#include <AzCore/Math/Vector3.h>
 
 #include <AzQtComponents/Buses/DragAndDrop.h>
 
