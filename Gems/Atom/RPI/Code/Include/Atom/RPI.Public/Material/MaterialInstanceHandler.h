@@ -8,33 +8,17 @@
 #pragma once
 
 #include <Atom/RPI.Public/Configuration.h>
+#include <Atom/RPI.Public/Material/MaterialInstanceData.h>
+#include <Atom/RPI.Public/Material/SharedSamplerState.h>
 #include <Atom/RPI.Reflect/Image/Image.h>
 #include <AtomCore/Instance/Instance.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Interface/Interface.h>
-#include <AzCore/std/smart_ptr/shared_ptr.h>
 
 namespace AZ::RPI
 {
     class Material;
-    class ShaderResourceGroup;
     class Buffer;
-    class MaterialShaderParameter;
-
-    struct MaterialInstanceData
-    {
-        int32_t m_materialTypeId{ -1 };
-        int32_t m_materialInstanceId{ -1 };
-        bool m_usesSceneMaterialSrg{ false };
-        Data::Instance<ShaderResourceGroup> m_shaderResourceGroup{ nullptr };
-        Data::Instance<MaterialShaderParameter> m_materialShaderParameter{ nullptr };
-    };
-
-    struct SharedSamplerState
-    {
-        uint32_t m_samplerIndex;
-        RHI::SamplerState m_samplerState;
-    };
 
     // Interface to hold and maintain the global SceneMaterialSrg. Each Material registers itself in the Init() function and
     // gets a 'MaterialInstanceData', which contains either the SceneMaterialSrg and the indices to access the right MaterialParameter -

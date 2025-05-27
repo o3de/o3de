@@ -6,8 +6,12 @@
  *
  */
 
+#include <Atom/RPI.Public/Material/MaterialInstanceData.h>
+#include <Atom/RPI.Public/Material/MaterialInstanceHandler.h>
 #include <Atom/RPI.Public/Material/MaterialShaderParameter.h>
+#include <Atom/RPI.Public/Material/SharedSamplerState.h>
 #include <AzCore/Utils/Utils.h>
+
 
 #include <Atom_RPI_Traits_Platform.h>
 
@@ -385,6 +389,12 @@ namespace AZ::RPI
             return TypedParameterHelper{ this }.SetBasicParameter(index, samplerIndex);
         }
         return false;
+    }
+
+    RHI::SamplerState MaterialShaderParameter::GetSharedSamplerState(const uint32_t samplerIndex) const
+    {
+        return MaterialInstanceHandlerInterface::Get()->GetRegisteredTextureSampler(
+            m_materialTypeIndex, m_materialInstanceIndex, samplerIndex);
     }
 
     AZStd::unordered_map<int, const void*> MaterialShaderParameter::GetStructuredBufferData() const

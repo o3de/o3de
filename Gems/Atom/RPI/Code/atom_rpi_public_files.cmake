@@ -57,11 +57,15 @@ set(FILES
     Include/Atom/RPI.Public/Image/StreamingImageController.h
     Include/Atom/RPI.Public/Image/StreamingImagePool.h
     Include/Atom/RPI.Public/Material/Material.h
-    Include/Atom/RPI.Public/Material/MaterialShaderParameterLayout.h
+    Include/Atom/RPI.Public/Material/MaterialInstanceData.h
+    Include/Atom/RPI.Public/Material/MaterialInstanceHandler.h
     Include/Atom/RPI.Public/Material/MaterialShaderParameter.h
+    Include/Atom/RPI.Public/Material/MaterialShaderParameterLayout.h
     Include/Atom/RPI.Public/Material/MaterialSystem.h
-    Include/Atom/RPI.Public/Material/TextureSamplerRegistry.h
     Include/Atom/RPI.Public/Material/MaterialTextureRegistry.h
+    Include/Atom/RPI.Public/Material/PersistentIndexAllocator.h
+    Include/Atom/RPI.Public/Material/SharedSamplerState.h
+    Include/Atom/RPI.Public/Material/TextureSamplerRegistry.h
     Include/Atom/RPI.Public/Model/Model.h
     Include/Atom/RPI.Public/Model/ModelLod.h
     Include/Atom/RPI.Public/Model/ModelLodUtils.h

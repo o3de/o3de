@@ -9,13 +9,16 @@
 
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RPI.Public/Configuration.h>
-#include <Atom/RPI.Public/Material/MaterialInstanceHandler.h>
 #include <Atom/RPI.Public/Material/MaterialShaderParameterLayout.h>
+#include <Atom/RPI.Public/Material/SharedSamplerState.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Reflect/Image/Image.h>
 #include <AzCore/Math/Color.h>
 #include <AzCore/Name/Name.h>
+
+#include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/std/smart_ptr/intrusive_base.h>
 
 namespace AZ::RPI
 {
@@ -169,8 +172,7 @@ namespace AZ::RPI
         RHI::SamplerState GetShaderParameterData(const MaterialShaderParameterLayout::Index& index, const uint32_t deviceIndex) const
         {
             auto samplerIndex = GetShaderParameterData<uint32_t>(index, deviceIndex);
-            return MaterialInstanceHandlerInterface::Get()->GetRegisteredTextureSampler(
-                m_materialTypeIndex, m_materialInstanceIndex, samplerIndex);
+            return GetSharedSamplerState(samplerIndex);
         }
 
         AZStd::span<const uint8_t> GetRawBufferParameterData(
@@ -182,6 +184,7 @@ namespace AZ::RPI
         }
 
     private:
+        RHI::SamplerState GetSharedSamplerState(const uint32_t samplerIndex) const;
         bool SetMaterialSrgDeviceReadIndex(
             const MaterialShaderParameterDescriptor* desc, [[maybe_unused]] const int deviceIndex, const int32_t readIndex);
 
