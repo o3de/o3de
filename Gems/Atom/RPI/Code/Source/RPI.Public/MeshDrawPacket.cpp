@@ -249,7 +249,7 @@ namespace AZ
 #endif
         }
 
-        Data::Instance<RPI::ShaderResourceGroup>& MeshDrawPacket::GetDrawSrg(uint32_t drawItemIndex)
+        const Data::Instance<RPI::ShaderResourceGroup>& MeshDrawPacket::GetDrawSrg(uint32_t drawItemIndex) const
         {
             if (drawItemIndex >= aznumeric_cast<uint32_t>(m_perDrawSrgs.size()))
             {

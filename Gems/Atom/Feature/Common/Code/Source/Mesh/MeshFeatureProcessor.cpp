@@ -1683,9 +1683,9 @@ namespace AZ
             }
         }
 
-        Data::Instance<RPI::ShaderResourceGroup>& MeshFeatureProcessor::GetDrawSrg(const MeshHandle& meshHandle,
+        const Data::Instance<RPI::ShaderResourceGroup>& MeshFeatureProcessor::GetDrawSrg(const MeshHandle& meshHandle,
             uint32_t lodIndex, uint32_t subMeshIndex,
-            RHI::DrawListTag drawListTag, RHI::DrawFilterMask materialPipelineMask)
+            RHI::DrawListTag drawListTag, RHI::DrawFilterMask materialPipelineMask) const
         {
             if (!meshHandle.IsValid())
             {
