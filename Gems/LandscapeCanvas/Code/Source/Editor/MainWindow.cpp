@@ -674,7 +674,7 @@ namespace LandscapeCanvasEditor
         UpdateConnectionData(connection, false /* added */);
     }
 
-    void MainWindow::PreOnGraphModelNodeWrapped(GraphModel::NodePtr wrapperNode, GraphModel::NodePtr node)
+    void MainWindow::PreOnGraphModelNodeWrapped([[maybe_unused]] GraphModel::NodePtr wrapperNode, GraphModel::NodePtr node)
     {
         if (m_ignoreGraphUpdates)
         {

@@ -1,0 +1,42 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once 
+
+// This is a convenience header that includes either the Scene-Material-SRG, which allows access to all parameters of all materials using bindless buffers,
+// or the Single-Material-SRG, which contains the parameters of one material in the constant buffer
+// Either way, this effectively provides the functions 'GetMaterialTexture(const int readIndex)', 'GetMaterialParameters()' and 'GetMaterialTextureSampler()' 
+
+// relevant defines in AzslcPlatformHeader.azsli
+// USE_SINGLE_MATERIAL_SRG
+//      Optionally defined per material: Override to use the single material SRG
+// AZ_TRAITS_MATERIALS_USE_SAMPLER_ARRAY
+//      Allows multiple texture samplers per material-srg.
+// AZ_TRAIT_FORCE_SINGLE_MATERIAL_SRG
+//      Platform override to always use the single material SRG
+// AZ_TRAIT_SINGLE_MATERIAL_USE_TEXTURE_ARRAY
+//      Forces the single material SRG to register the textures in the SRG directly, and use a fixed size array.
+//      Needs to be set together with AZ_TRAIT_REGISTER_TEXTURES_PER_MATERIAL
+//      This is relevant if the platform has no support for bindless resources, and the workarround in the 
+//      BindlessSRG with large fixed-size arrays isn't supported either (e.g. IPhone 10 limits the array size to ~96)
+
+
+// Platform override to always use the single material SRG
+#if defined(AZ_TRAIT_FORCE_SINGLE_MATERIAL_SRG)
+    #ifndef USE_SINGLE_MATERIAL_SRG
+        #define USE_SINGLE_MATERIAL_SRG
+    #endif
+#endif
+
+// Use the Scene-material SRG by default
+#ifdef USE_SINGLE_MATERIAL_SRG
+    #include <Atom/Features/Materials/SingleMaterialSrg.azsli>
+#else
+    #include <Atom/Features/Materials/SceneMaterialSrg.azsli>
+#endif
+

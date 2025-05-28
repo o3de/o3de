@@ -54,6 +54,8 @@ namespace AzToolsFramework
         AZ_CLASS_ALLOCATOR(TargetSelectorButtonAction, AZ::SystemAllocator);
 
         TargetSelectorButtonAction(AZ::Crc32 key, QObject* pParent); // create default action
+        bool HasTarget() const;
+        void ConnectToFirstTargetIfNotConnected() const;
 
     protected:
         virtual QWidget* createWidget(QWidget* pParent);
