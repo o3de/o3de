@@ -88,7 +88,7 @@ namespace AZ
             void DebugOutputShaderVariants();
 
             //! Returns the DrawSrg from the DrawItem that corresponds to @drawItemIndex.
-            Data::Instance<RPI::ShaderResourceGroup>& GetDrawSrg(uint32_t drawItemIndex);
+            const Data::Instance<RPI::ShaderResourceGroup>& GetDrawSrg(uint32_t drawItemIndex) const;
 
         private:
             bool DoUpdate(const Scene& parentScene);
