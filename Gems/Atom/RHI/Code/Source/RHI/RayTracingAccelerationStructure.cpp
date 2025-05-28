@@ -16,174 +16,55 @@ namespace AZ::RHI
 {
     DeviceRayTracingBlasDescriptor RayTracingBlasDescriptor::GetDeviceRayTracingBlasDescriptor(int deviceIndex) const
     {
+        AZ_Assert(
+            m_geometries.empty() || !m_aabb.has_value(), "Triangle geometry and procedural geometry must not be used in the same BLAS");
+
         DeviceRayTracingBlasDescriptor descriptor;
 
         for (const auto& geometry : m_geometries)
         {
-            descriptor.Geometry()
-                ->VertexFormat(geometry.m_vertexFormat)
-                ->VertexBuffer(geometry.m_vertexBuffer.GetDeviceStreamBufferView(deviceIndex))
-                ->IndexBuffer(geometry.m_indexBuffer.GetDeviceIndexBufferView(deviceIndex));
+            DeviceRayTracingGeometry& deviceGeometry = descriptor.m_geometries.emplace_back();
+            deviceGeometry.m_vertexFormat = geometry.m_vertexFormat;
+            deviceGeometry.m_vertexBuffer = geometry.m_vertexBuffer.GetDeviceStreamBufferView(deviceIndex);
+            deviceGeometry.m_indexBuffer = geometry.m_indexBuffer.GetDeviceIndexBufferView(deviceIndex);
         }
 
-        if(m_aabb.has_value())
+        if (m_aabb.has_value())
         {
-            descriptor.AABB(m_aabb.value());
+            descriptor.m_aabb = m_aabb;
         }
 
-        descriptor.BuildFlags(m_buildFlags);
+        descriptor.m_buildFlags = m_buildFlags;
 
         return descriptor;
-    }
-
-    RayTracingBlasDescriptor* RayTracingBlasDescriptor::Build()
-    {
-        return this;
-    }
-
-    RayTracingBlasDescriptor* RayTracingBlasDescriptor::Geometry()
-    {
-        m_geometries.emplace_back();
-        m_buildContext = &m_geometries.back();
-        return this;
-    }
-
-    RayTracingBlasDescriptor* RayTracingBlasDescriptor::AABB(const Aabb& aabb)
-    {
-        m_aabb = aabb;
-        return this;
-    }
-
-    RayTracingBlasDescriptor* RayTracingBlasDescriptor::VertexBuffer(
-        const RHI::StreamBufferView& vertexBuffer)
-    {
-        AZ_Assert(m_buildContext, "VertexBuffer property can only be added to a Geometry entry");
-        m_buildContext->m_vertexBuffer = vertexBuffer;
-        return this;
-    }
-
-    RayTracingBlasDescriptor* RayTracingBlasDescriptor::VertexFormat(RHI::Format vertexFormat)
-    {
-        AZ_Assert(m_buildContext, "VertexFormat property can only be added to a Geometry entry");
-        m_buildContext->m_vertexFormat = vertexFormat;
-        return this;
-    }
-
-    RayTracingBlasDescriptor* RayTracingBlasDescriptor::IndexBuffer(
-        const RHI::IndexBufferView& indexBuffer)
-    {
-        AZ_Assert(m_buildContext, "IndexBuffer property can only be added to a Geometry entry");
-        m_buildContext->m_indexBuffer = indexBuffer;
-        return this;
-    }
-
-    RayTracingBlasDescriptor* RayTracingBlasDescriptor::BuildFlags(const RHI::RayTracingAccelerationStructureBuildFlags &buildFlags)
-    {
-        AZ_Assert(m_buildContext || m_aabb, "BuildFlags property can only be added to a Geometry or AABB entry");
-        m_buildFlags = buildFlags;
-        return this;
     }
 
     DeviceRayTracingTlasDescriptor RayTracingTlasDescriptor::GetDeviceRayTracingTlasDescriptor(int deviceIndex) const
     {
+        AZ_Assert(m_instances.empty() || !m_instancesBuffer, "Instance list and instance buffer must not be used in the same TLAS");
+
         DeviceRayTracingTlasDescriptor descriptor;
 
         for (const auto& instance : m_instances)
         {
-            descriptor.Instance()
-                ->InstanceID(instance.m_instanceID)
-                ->HitGroupIndex(instance.m_hitGroupIndex)
-                ->InstanceMask(instance.m_instanceMask)
-                ->Transform(instance.m_transform)
-                ->NonUniformScale(instance.m_nonUniformScale)
-                ->Transparent(instance.m_transparent)
-                ->Blas(instance.m_blas->GetDeviceRayTracingBlas(deviceIndex));
+            auto& tlasInstance = descriptor.m_instances.emplace_back();
+
+            tlasInstance.m_instanceID = instance.m_instanceID;
+            tlasInstance.m_hitGroupIndex = instance.m_hitGroupIndex;
+            tlasInstance.m_instanceMask = instance.m_instanceMask;
+            tlasInstance.m_transform = instance.m_transform;
+            tlasInstance.m_nonUniformScale = instance.m_nonUniformScale;
+            tlasInstance.m_transparent = instance.m_transparent;
+            tlasInstance.m_blas = instance.m_blas->GetDeviceRayTracingBlas(deviceIndex);
         }
 
         if (m_instancesBuffer)
         {
-            descriptor.InstancesBuffer(m_instancesBuffer->GetDeviceBuffer(deviceIndex))->NumInstances(m_numInstancesInBuffer);
+            descriptor.m_instancesBuffer = m_instancesBuffer->GetDeviceBuffer(deviceIndex);
+            descriptor.m_numInstancesInBuffer = m_numInstancesInBuffer;
         }
 
         return descriptor;
-    }
-
-    RayTracingTlasDescriptor* RayTracingTlasDescriptor::Build()
-    {
-        return this;
-    }
-
-    RayTracingTlasDescriptor* RayTracingTlasDescriptor::Instance()
-    {
-        AZ_Assert(m_instancesBuffer == nullptr, "Instance cannot be combined with an instances buffer");
-        m_instances.emplace_back();
-        m_buildContext = &m_instances.back();
-        return this;
-    }
-
-    RayTracingTlasDescriptor* RayTracingTlasDescriptor::InstanceID(uint32_t instanceID)
-    {
-        AZ_Assert(m_buildContext, "InstanceID property can only be added to an Instance entry");
-        m_buildContext->m_instanceID = instanceID;
-        return this;
-    }
-
-    RayTracingTlasDescriptor* RayTracingTlasDescriptor::InstanceMask(uint32_t instanceMask)
-    {
-        AZ_Assert(m_buildContext, "InstanceMask property can only be added to an Instance entry");
-        m_buildContext->m_instanceMask = instanceMask;
-        return this;
-    }
-
-    RayTracingTlasDescriptor* RayTracingTlasDescriptor::HitGroupIndex(uint32_t hitGroupIndex)
-    {
-        AZ_Assert(m_buildContext, "HitGroupIndex property can only be added to an Instance entry");
-        m_buildContext->m_hitGroupIndex = hitGroupIndex;
-        return this;
-    }
-
-    RayTracingTlasDescriptor* RayTracingTlasDescriptor::Transform(const AZ::Transform& transform)
-    {
-        AZ_Assert(m_buildContext, "Transform property can only be added to an Instance entry");
-        m_buildContext->m_transform = transform;
-        return this;
-    }
-
-    RayTracingTlasDescriptor* RayTracingTlasDescriptor::NonUniformScale(const AZ::Vector3& nonUniformScale)
-    {
-        AZ_Assert(m_buildContext, "NonUniformSCale property can only be added to an Instance entry");
-        m_buildContext->m_nonUniformScale = nonUniformScale;
-        return this;
-    }
-
-    RayTracingTlasDescriptor* RayTracingTlasDescriptor::Transparent(bool transparent)
-    {
-        AZ_Assert(m_buildContext, "Transparent property can only be added to a Geometry entry");
-        m_buildContext->m_transparent = transparent;
-        return this;
-    }
-
-    RayTracingTlasDescriptor* RayTracingTlasDescriptor::Blas(const RHI::Ptr<RHI::RayTracingBlas>& blas)
-    {
-        AZ_Assert(m_buildContext, "Blas property can only be added to an Instance entry");
-        m_buildContext->m_blas = blas;
-        return this;
-    }
-
-    RayTracingTlasDescriptor* RayTracingTlasDescriptor::InstancesBuffer(
-        RHI::Ptr<RHI::Buffer>& instancesBuffer)
-    {
-        AZ_Assert(!m_buildContext, "InstancesBuffer property can only be added to the top level");
-        AZ_Assert(m_instances.size() == 0, "InstancesBuffer cannot exist with instance entries");
-        m_instancesBuffer = instancesBuffer;
-        return this;
-    }
-
-    RayTracingTlasDescriptor* RayTracingTlasDescriptor::NumInstances(uint32_t numInstancesInBuffer)
-    {
-        AZ_Assert(m_instancesBuffer.get(), "NumInstances property can only be added to the InstancesBuffer entry");
-        m_numInstancesInBuffer = numInstancesInBuffer;
-        return this;
     }
 
     ResultCode RayTracingBlas::CreateBuffers(
@@ -241,8 +122,6 @@ namespace AZ::RHI
             {
                 auto device = RHISystemInterface::Get()->GetDevice(deviceIndex);
                 this->m_deviceObjects[deviceIndex] = Factory::Get().CreateRayTracingBlas();
-
-                auto deviceDescriptor{ m_descriptor.GetDeviceRayTracingBlasDescriptor(deviceIndex) };
 
                 resultCode = GetDeviceRayTracingBlas(deviceIndex)
                                  ->CreateCompactedBuffers(

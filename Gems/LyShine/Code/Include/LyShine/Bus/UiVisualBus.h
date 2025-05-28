@@ -39,7 +39,7 @@ public: // member functions
 
     //! Set the override font, if this visual component uses a font this will override it
     //! \param font   If null the font on the visual component will not be overridden
-    virtual void SetOverrideFont(FontFamilyPtr fontFamily) {};
+    virtual void SetOverrideFont([[maybe_unused]] FontFamilyPtr fontFamily) {};
 
     //! Set the override font effect, if this visual component uses a font this will override it
     virtual void SetOverrideFontEffect([[maybe_unused]] unsigned int fontEffectIndex) {};

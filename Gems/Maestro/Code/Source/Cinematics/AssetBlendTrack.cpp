@@ -10,7 +10,6 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 
 #include <Maestro/Types/AssetBlends.h>
-#include <AnimKey.h>
 #include <Maestro/Types/AssetBlendKey.h>
 #include "AssetBlendTrack.h"
 #include "Maestro/Types/AnimValueType.h"
@@ -82,31 +81,32 @@ namespace Maestro
                 XmlString temp = key.m_description.c_str();
                 keyNode->setAttr("description", temp);
             }
-            if (key.m_duration > 0)
+            if (key.m_duration > AZ::Constants::Tolerance)
             {
                 keyNode->setAttr("length", key.m_duration);
             }
-            if (key.m_endTime > 0)
+            if (key.m_endTime > AZ::Constants::Tolerance)
             {
                 keyNode->setAttr("end", key.m_endTime);
             }
-            if (key.m_speed != 1)
+            if (AZStd::abs(key.m_speed - 1.0f) > AZ::Constants::Tolerance)
             {
+                AZStd::clamp(key.m_speed, AZ::IAssetBlendKey::s_minSpeed, AZ::IAssetBlendKey::s_maxSpeed);
                 keyNode->setAttr("speed", key.m_speed);
             }
             if (key.m_bLoop)
             {
                 keyNode->setAttr("loop", key.m_bLoop);
             }
-            if (key.m_startTime != 0)
+            if (key.m_startTime > AZ::Constants::Tolerance)
             {
                 keyNode->setAttr("start", key.m_startTime);
             }
-            if (key.m_blendInTime != 0)
+            if (key.m_blendInTime > AZ::Constants::Tolerance)
             {
                 keyNode->setAttr("blendInTime", key.m_blendInTime);
             }
-            if (key.m_blendOutTime != 0)
+            if (key.m_blendOutTime > AZ::Constants::Tolerance)
             {
                 keyNode->setAttr("blendOutTime", key.m_blendOutTime);
             }
@@ -224,12 +224,17 @@ namespace Maestro
             if (key.IsInRange(time) && key.m_assetId.IsValid())
             {
                 float segmentPercent = localTime / (segmentLength / key.GetValidSpeed());
-                result.m_assetBlends.push_back(
-                    AssetBlend(key.m_assetId, key.m_startTime + (segmentLength * segmentPercent), key.m_blendInTime, key.m_blendOutTime));
+                result.m_assetBlends.push_back(AssetBlend(
+                    key.m_assetId,
+                    key.m_startTime + (segmentLength * segmentPercent),
+                    key.m_blendInTime,
+                    key.m_blendOutTime,
+                    key.m_speed,
+                    key.m_bLoop));
             }
 
             // Find the nearest previous key
-            if (key.time < time)
+            if (key.time < time && key.m_assetId.IsValid())
             {
                 if (abs(time - key.time) < previousKeyTimeDistance)
                 {
@@ -240,7 +245,7 @@ namespace Maestro
             }
 
             // Find the nearest next key
-            if (key.time > time)
+            if (key.time > time && key.m_assetId.IsValid())
             {
                 if (abs(time - key.time) < nextKeyTimeDistance)
                 {
@@ -265,15 +270,22 @@ namespace Maestro
                     previousKey.m_assetId,
                     previousKey.m_startTime + (segmentLength * segmentPercent),
                     previousKey.m_blendInTime,
-                    previousKey.m_blendOutTime));
+                    previousKey.m_blendOutTime,
+                    previousKey.m_speed,
+                    previousKey.m_bLoop));
             }
             else
             {
                 // Nothing set, just freeze frame on the first or last frame of the nearest animation
                 if (!foundPreviousKey && foundNextKey)
                 {
-                    result.m_assetBlends.push_back(
-                        AssetBlend(nextKey.m_assetId, nextKey.m_startTime, nextKey.m_blendInTime, nextKey.m_blendOutTime));
+                    result.m_assetBlends.push_back(AssetBlend(
+                        nextKey.m_assetId,
+                        nextKey.m_startTime,
+                        nextKey.m_blendInTime,
+                        nextKey.m_blendOutTime,
+                        nextKey.m_speed,
+                        nextKey.m_bLoop));
                 }
                 else if (foundPreviousKey)
                 {
@@ -283,7 +295,9 @@ namespace Maestro
                         previousKey.m_assetId,
                         previousKey.GetValidEndTime() - 0.001f,
                         previousKey.m_blendInTime,
-                        previousKey.m_blendOutTime));
+                        previousKey.m_blendOutTime,
+                        previousKey.m_speed,
+                        previousKey.m_bLoop));
                 }
             }
         }

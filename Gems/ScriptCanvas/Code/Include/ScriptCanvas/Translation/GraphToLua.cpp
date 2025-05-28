@@ -1501,7 +1501,7 @@ namespace ScriptCanvas
             }
         }
 
-        void GraphToLua::WriteDebugInfoVariableChange(Grammar::ExecutionTreeConstPtr execution, Grammar::OutputAssignmentConstPtr output)
+        void GraphToLua::WriteDebugInfoVariableChange([[maybe_unused]] Grammar::ExecutionTreeConstPtr execution, Grammar::OutputAssignmentConstPtr output)
         {
             if (IsDebugInfoWritten())
             {
@@ -1663,7 +1663,7 @@ namespace ScriptCanvas
             }
         }
 
-        void GraphToLua::WriteFunctionCallNullCheckPost(Grammar::ExecutionTreeConstPtr execution)
+        void GraphToLua::WriteFunctionCallNullCheckPost([[maybe_unused]] Grammar::ExecutionTreeConstPtr execution)
         {
             m_dotLua.Outdent();
             m_dotLua.WriteLineIndented("end");

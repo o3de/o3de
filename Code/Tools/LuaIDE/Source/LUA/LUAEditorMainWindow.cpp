@@ -10,55 +10,57 @@
 
 #include "LUAEditorMainWindow.hxx"
 
-#include <AzCore/UserSettings/UserSettings.h>
+#include <AzCore/Component/TickBus.h>
 #include <AzCore/Debug/Trace.h>
+#include <AzCore/IO/Path/Path.h>
+#include <AzCore/Script/ScriptAsset.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/UserSettings/UserSettings.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/delegate/delegate.h>
-#include <AzCore/Script/ScriptAsset.h>
-#include <AzCore/Component/TickBus.h>
-#include <AzCore/IO/Path/Path.h>
-#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
-#include <AzCore/Utils/Utils.h>
 #include <AzFramework/Script/ScriptRemoteDebuggingConstants.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
-#include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h>
+#include <AzToolsFramework/UI/LegacyFramework/Core/EditorFrameworkAPI.h>
+#include <AzToolsFramework/UI/LegacyFramework/CustomMenus/CustomMenusAPI.h>
+#include <AzToolsFramework/UI/LegacyFramework/MainWindowSavedState.h>
 #include <AzToolsFramework/UI/UICore/ProgressShield.hxx>
 #include <AzToolsFramework/UI/UICore/SaveChangesDialog.hxx>
-#include <AzToolsFramework/UI/LegacyFramework/Core/EditorFrameworkAPI.h>
-#include <AzToolsFramework/UI/LegacyFramework/MainWindowSavedState.h>
 #include <AzToolsFramework/UI/UICore/TargetSelectorButton.hxx>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
-#include <AzToolsFramework/UI/LegacyFramework/CustomMenus/CustomMenusAPI.h>
-#include <Source/LUA/TargetContextButton.hxx>
 #include <Source/LUA/LUAEditorDebuggerMessages.h>
+#include <Source/LUA/TargetContextButton.hxx>
 
-#include "DebugAttachmentButton.hxx"
 #include "ClassReferenceFilter.hxx"
-#include "WatchesPanel.hxx"
-#include "LUAEditorGoToLineDialog.hxx"
-#include "LUAEditorView.hxx"
-#include "LUAEditorContextMessages.h"
+#include "DebugAttachmentButton.hxx"
 #include "LUABreakpointTrackerMessages.h"
+#include "LUAEditorContextMessages.h"
+#include "LUAEditorGoToLineDialog.hxx"
 #include "LUAEditorSettingsDialog.hxx"
+#include "LUAEditorView.hxx"
 #include "RecentFiles.h"
+#include "WatchesPanel.hxx"
 
-#include <Source/AssetDatabaseLocationListener.h>
-#include <Source/LUA/ui_LUAEditorMainWindow.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzQtComponents/Components/FilteredSearchWidget.h>
 #include <AzQtComponents/Components/StyleManager.h>
+#include <Source/AssetDatabaseLocationListener.h>
+#include <Source/LUA/ui_LUAEditorMainWindow.h>
 
-#include <QTimer>
+#include <QBoxLayout>
 #include <QDesktopServices>
-#include <QLabel>
 #include <QDir>
 #include <QFileDialog>
+#include <QLabel>
 #include <QMessageBox>
+#include <QString>
+#include <QTimer>
 
 void initSharedResources()
 {
@@ -159,6 +161,7 @@ namespace LUAEditor
         m_pContextButton = aznew LUA::TargetContextButtonAction(this);
         m_gui->debugToolbar->addAction(m_pContextButton);
         m_gui->menuDebug->addAction(m_pContextButton);
+        m_pContextButton->setEnabled(false);
 
         m_pDebugAttachmentButton = aznew LUAEditor::DebugAttachmentButtonAction(this);
         m_gui->debugToolbar->addAction(m_pDebugAttachmentButton);
@@ -173,6 +176,26 @@ namespace LUAEditor
         m_gui->localsDockWidget->hide();
         m_gui->breakpointsDockWidget->hide();
         m_gui->findResultsDockWidget->hide();
+
+        m_remoteToolsEndpointJoinedHandler = AzFramework::RemoteToolsEndpointStatusEvent::Handler(
+            [this]([[maybe_unused]] AzFramework::RemoteToolsEndpointInfo info)
+            {
+                OnRemoteToolsEndpointListChanged();
+            });
+
+        m_remoteToolsEndpointLeftHandler = AzFramework::RemoteToolsEndpointStatusEvent::Handler(
+            [this]([[maybe_unused]] AzFramework::RemoteToolsEndpointInfo info)
+            {
+                OnRemoteToolsEndpointListChanged();
+            });
+
+        if (auto* remoteToolsInterface = AzFramework::RemoteToolsInterface::Get())
+        {
+            remoteToolsInterface->RegisterRemoteToolsEndpointJoinedHandler(AzFramework::LuaToolsKey, m_remoteToolsEndpointJoinedHandler);
+            remoteToolsInterface->RegisterRemoteToolsEndpointLeftHandler(AzFramework::LuaToolsKey, m_remoteToolsEndpointLeftHandler);
+        }
+
+        OnRemoteToolsEndpointListChanged();
 
         QTimer::singleShot(0, this, SLOT(RestoreWindowState()));
 
@@ -799,6 +822,19 @@ namespace LUAEditor
         }
     }
 
+
+    void LUAEditorMainWindow::OnRemoteToolsEndpointListChanged()
+    {
+        const bool hasTarget = m_pTargetButton->HasTarget();
+        m_gui->breakpointsWarning->setHidden(hasTarget);
+        m_gui->stackWarning->setHidden(hasTarget);
+        m_gui->watchWarning->setHidden(hasTarget);
+        m_gui->localsWarning->setHidden(hasTarget);
+        m_gui->classReferenceWarning->setHidden(hasTarget);
+
+        if (hasTarget)
+            m_pTargetButton->ConnectToFirstTargetIfNotConnected();
+    }
 
     void LUAEditorMainWindow::OnDebugExecute()
     {
@@ -2122,6 +2158,7 @@ namespace LUAEditor
 
         if (!track.targetConnected)
         {
+            m_pContextButton->setEnabled(false);
             m_pDebugAttachmentButton->setEnabled(false);
             m_gui->action_continue->setEnabled(false);
             m_gui->action_ExecuteOnTarget->setEnabled(false);
@@ -2135,6 +2172,7 @@ namespace LUAEditor
 
         // TARGET CONNECTED TRUE IS ASSUMED BEYOND THIS POINT
 
+        m_pContextButton->setEnabled(true);
         m_pDebugAttachmentButton->setEnabled(true);
 
         if (!track.debuggerAttached)

@@ -65,6 +65,7 @@
 #include <EMotionFX/Source/BlendTreeFootIKNode.h>
 #include <EMotionFX/Source/BlendTreeRaycastNode.h>
 #include <EMotionFX/Source/BlendTreeSimulatedObjectNode.h>
+#include <EMotionFX/Source/BlendTreeFabrikNode.h>
 
 #include "AnimGraphBindPoseNode.h"
 #include "AnimGraphMotionNode.h"
@@ -193,6 +194,7 @@ namespace EMotionFX
         BlendTreeFootIKNode::Reflect(context);
         BlendTreeRaycastNode::Reflect(context);
         BlendTreeSimulatedObjectNode::Reflect(context);
+        BlendTreeFabrikNode::Reflect(context);
     }
 
     AnimGraphObjectFactory::UITypesSet& AnimGraphObjectFactory::GetUITypes()
@@ -264,7 +266,8 @@ namespace EMotionFX
             azrtti_typeid<AnimGraphSymbolicFollowerParameterAction>(),
             azrtti_typeid<AnimGraphSimpleStateAction>(),
             azrtti_typeid<BlendTreeRotationLimitNode>(),
-            azrtti_typeid<BlendTreeRotationMath2Node>()
+            azrtti_typeid<BlendTreeRotationMath2Node>(),
+            azrtti_typeid<BlendTreeFabrikNode>(),
         };
 
         return uitypes;

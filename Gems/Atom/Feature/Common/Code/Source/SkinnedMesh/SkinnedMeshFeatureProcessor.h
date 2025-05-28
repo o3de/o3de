@@ -68,11 +68,11 @@ namespace AZ
             RPI::ShaderOptionGroup CreateSkinningShaderOptionGroup(const SkinnedMeshShaderOptions shaderOptions, SkinnedMeshShaderOptionNotificationBus::Handler& shaderReinitializedHandler);
             void OnSkinningShaderReinitialized(const Data::Instance<RPI::Shader> skinningShader);
             void SubmitSkinningDispatchItems(const RHI::FrameGraphExecuteContext& context, uint32_t startIndex, uint32_t endIndex);
-            void SetupSkinningScope(RHI::FrameGraphInterface frameGraph);
+            void SetupSkinningScope(RHI::FrameGraphInterface frameGraph, int deviceIndex);
 
             Data::Instance<RPI::Shader> GetMorphTargetShader() const;
             void SubmitMorphTargetDispatchItems(const RHI::FrameGraphExecuteContext& context, uint32_t startIndex, uint32_t endIndex);
-            void SetupMorphTargetScope(RHI::FrameGraphInterface frameGraph);
+            void SetupMorphTargetScope(RHI::FrameGraphInterface frameGraph, int deviceIndex);
 
         private:
             AZ_DISABLE_COPY_MOVE(SkinnedMeshFeatureProcessor);
@@ -91,10 +91,10 @@ namespace AZ
             AZStd::unique_ptr<SkinnedMeshStatsCollector> m_statsCollector;
 
             AZStd::unordered_set<const RHI::DispatchItem*> m_skinningDispatches;
-            bool m_alreadyCreatedSkinningScopeThisFrame = false;
+            RHI::MultiDevice::DeviceMask m_alreadyCreatedSkinningScopeThisFrame;
 
             AZStd::unordered_set<const RHI::DispatchItem*> m_morphTargetDispatches;
-            bool m_alreadyCreatedMorphTargetScopeThisFrame = false;
+            RHI::MultiDevice::DeviceMask m_alreadyCreatedMorphTargetScopeThisFrame;
 
             AZStd::mutex m_dispatchItemMutex;
 

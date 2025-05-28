@@ -24,55 +24,6 @@ namespace AZ::RHI
         }
     }
 
-    DeviceRayTracingShaderTableDescriptor* DeviceRayTracingShaderTableDescriptor::Build(const AZ::Name& name, const RHI::Ptr<DeviceRayTracingPipelineState>& rayTracingPipelineState)
-    {
-        m_name = name;
-        m_rayTracingPipelineState = rayTracingPipelineState;
-        return this;
-    }
-
-    DeviceRayTracingShaderTableDescriptor* DeviceRayTracingShaderTableDescriptor::RayGenerationRecord(const AZ::Name& name)
-    {
-        AZ_Assert(m_rayGenerationRecord.empty(), "Ray generation record already added");
-        m_rayGenerationRecord.emplace_back();
-        m_buildContext = &m_rayGenerationRecord.back();
-        m_buildContext->m_shaderExportName = name;
-        return this;
-    }
-
-    DeviceRayTracingShaderTableDescriptor* DeviceRayTracingShaderTableDescriptor::MissRecord(const AZ::Name& name)
-    {
-        m_missRecords.emplace_back();
-        m_buildContext = &m_missRecords.back();
-        m_buildContext->m_shaderExportName = name;
-        return this;
-    }
-
-    DeviceRayTracingShaderTableDescriptor* DeviceRayTracingShaderTableDescriptor::CallableRecord(const AZ::Name& name)
-    {
-        m_callableRecords.emplace_back();
-        m_buildContext = &m_callableRecords.back();
-        m_buildContext->m_shaderExportName = name;
-        return this;
-    }
-
-    DeviceRayTracingShaderTableDescriptor* DeviceRayTracingShaderTableDescriptor::HitGroupRecord(const AZ::Name& name, uint32_t key /* = DeviceRayTracingShaderTableRecord::InvalidKey */)
-    {
-        m_hitGroupRecords.emplace_back();
-        m_buildContext = &m_hitGroupRecords.back();
-        m_buildContext->m_shaderExportName = name;
-        m_buildContext->m_key = key;
-        return this;
-    }
-
-    DeviceRayTracingShaderTableDescriptor* DeviceRayTracingShaderTableDescriptor::ShaderResourceGroup(const RHI::DeviceShaderResourceGroup* shaderResourceGroup)
-    {
-        AZ_Assert(m_buildContext, "DeviceShaderResourceGroup can only be added to a shader table record");
-        AZ_Assert(m_buildContext->m_shaderResourceGroup == nullptr, "Records can only have one DeviceShaderResourceGroup");
-        m_buildContext->m_shaderResourceGroup = shaderResourceGroup;
-        return this;
-    }
-
     RHI::Ptr<RHI::DeviceRayTracingShaderTable> DeviceRayTracingShaderTable::CreateRHIRayTracingShaderTable()
     {
         RHI::Ptr<RHI::DeviceRayTracingShaderTable> rayTracingShaderTable = RHI::Factory::Get().CreateRayTracingShaderTable();

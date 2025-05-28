@@ -2963,12 +2963,26 @@ void CTrackViewDopeSheetBase::DrawKeys(CTrackViewTrack* pTrack, QPainter* painte
             {
                 // Colorize current key for Select track: green if key is valid, red if invalid
                 bool isValidKey = true;
-                if ((pTrack->GetValueType() == AnimValueType::Select))
+                switch (pTrack->GetValueType())
                 {
-                    ISelectKey cameraKey;
-                    keyHandle.GetKey(&cameraKey);
-                    isValidKey = cameraKey.IsValid();
+                case AnimValueType::Select:
+                    {
+                        ISelectKey cameraKey;
+                        keyHandle.GetKey(&cameraKey);
+                        isValidKey = cameraKey.IsValid();
+                    }
+                    break;
+                case AnimValueType::AssetBlend:
+                    {
+                        AZ::IAssetBlendKey simmpleMotionKey;
+                        keyHandle.GetKey(&simmpleMotionKey);
+                        isValidKey = simmpleMotionKey.m_assetId.IsValid();
+                    }
+                    break;
+                default:
+                    break;
                 }
+
                 if (isValidKey)
                 {
                     painter->drawPixmap(QPoint(x - 6, rect.top() + 2), QPixmap(":/Trackview/trackview_keys_00.png")); // green

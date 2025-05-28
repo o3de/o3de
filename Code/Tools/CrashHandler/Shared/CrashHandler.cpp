@@ -22,6 +22,8 @@
 #include <CrashSupport.h>
 
 #include <AzCore/Module/Environment.h>
+#include <AzCore/Settings/SettingsRegistry.h>
+#include <AzCore/std/string/string.h>
 #include <CrashHandler_Traits_Platform.h>
 
 namespace CrashHandler
@@ -161,8 +163,19 @@ namespace CrashHandler
     {
         ReadConfigFile();
 
-        const std::string url{ crashUrl.length() ? crashUrl : GetCrashSubmissionURL() };
-        const std::string token{ crashToken.length() ? crashToken : GetCrashSubmissionToken() };
+        // If url or token is empty, the client will exit after launch, returning false for WaitForHandlerStart
+        std::string url{ crashUrl.length() ? crashUrl : GetCrashSubmissionURL() };
+        std::string token{ crashToken.length() ? crashToken : GetCrashSubmissionToken() };
+
+        if (url.empty())
+        {
+            url = manualReportUrl;
+        }
+
+        if (token.empty())
+        {
+            token = manualReportToken;
+        }
 
         std::string lyAppRoot{ appRoot };
         AppendSep(lyAppRoot);

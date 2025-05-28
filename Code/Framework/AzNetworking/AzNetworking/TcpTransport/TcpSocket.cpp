@@ -157,7 +157,11 @@ namespace AzNetworking
         if (::bind(aznumeric_cast<int32_t>(m_socketFd), (const sockaddr*)&hints, sizeof(hints)) != 0)
         {
             const int32_t error = GetLastNetworkError();
-            AZLOG_WARN("Failed to bind TCP socket to port %u (%d:%s)", uint32_t(port), error, GetNetworkErrorDesc(error));
+            if (m_warnedBindForPortFailure != port)
+            {
+                m_warnedBindForPortFailure = port;
+                AZLOG_WARN("Failed to bind TCP listen socket to port %u (%d:%s)", uint32_t(port), error, GetNetworkErrorDesc(error));
+            }
             return false;
         }
 
@@ -183,8 +187,12 @@ namespace AzNetworking
 
             if (::bind(aznumeric_cast<int32_t>(m_socketFd), (const sockaddr*)&hints, sizeof(hints)) != 0)
             {
-                const int32_t error = GetLastNetworkError();
-                AZLOG_WARN("Failed to bind TCP socket to port %u (%d:%s)", uint32_t(localPort), error, GetNetworkErrorDesc(error));
+                if (m_warnedBindForPortFailure != localPort)
+                {
+                    m_warnedBindForPortFailure = localPort;
+                    const int32_t error = GetLastNetworkError();
+                    AZLOG_WARN("Failed to bind TCP connect socket to port %u (%d:%s)", uint32_t(localPort), error, GetNetworkErrorDesc(error));
+                }
                 return false;
             }
         }

@@ -66,7 +66,7 @@ namespace AssetProcessor
         }
     }
 
-    void BuilderManager::IncomingBuilderPing(AZ::u32 connId, AZ::u32 /*type*/, AZ::u32 serial, QByteArray payload, QString platform)
+    void BuilderManager::IncomingBuilderPing(AZ::u32 connId, AZ::u32 /*type*/, AZ::u32 serial, QByteArray payload, [[maybe_unused]] QString platform)
     {
         AssetBuilder::BuilderHelloRequest requestPing;
         AssetBuilder::BuilderHelloResponse responsePing;

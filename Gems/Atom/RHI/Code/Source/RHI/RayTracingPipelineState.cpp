@@ -17,7 +17,11 @@ namespace AZ::RHI
     {
         AZ_Assert(m_pipelineState, "No PipelineState available\n");
 
-        DeviceRayTracingPipelineStateDescriptor descriptor{ m_descriptor };
+        DeviceRayTracingPipelineStateDescriptor descriptor;
+
+        descriptor.m_configuration = m_configuration;
+        descriptor.m_shaderLibraries = m_shaderLibraries;
+        descriptor.m_hitGroups = m_hitGroups;
 
         if (m_pipelineState)
         {
@@ -27,82 +31,68 @@ namespace AZ::RHI
         return descriptor;
     }
 
-    RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::Build()
+    void RayTracingPipelineStateDescriptor::AddRayGenerationShaderLibrary(
+        const PipelineStateDescriptorForRayTracing& descriptor, const Name& rayGenerationShaderName)
     {
-        return this;
+        auto& shaderLibrary = m_shaderLibraries.emplace_back();
+        shaderLibrary.m_descriptor = descriptor;
+        shaderLibrary.m_rayGenerationShaderName = rayGenerationShaderName;
     }
 
-    RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::MaxPayloadSize(uint32_t maxPayloadSize)
+    void RayTracingPipelineStateDescriptor::AddMissShaderLibrary(
+        const PipelineStateDescriptorForRayTracing& descriptor, const Name& missShaderName)
     {
-        m_descriptor.MaxPayloadSize(maxPayloadSize);
-        return this;
+        auto& shaderLibrary = m_shaderLibraries.emplace_back();
+        shaderLibrary.m_descriptor = descriptor;
+        shaderLibrary.m_missShaderName = missShaderName;
     }
 
-    RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::MaxAttributeSize(uint32_t maxAttributeSize)
+    void RayTracingPipelineStateDescriptor::AddCallableShaderLibrary(
+        const PipelineStateDescriptorForRayTracing& descriptor, const Name& callableShaderName)
     {
-        m_descriptor.MaxAttributeSize(maxAttributeSize);
-        return this;
+        auto& shaderLibrary = m_shaderLibraries.emplace_back();
+        shaderLibrary.m_descriptor = descriptor;
+        shaderLibrary.m_callableShaderName = callableShaderName;
     }
 
-    RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::MaxRecursionDepth(
-        uint32_t maxRecursionDepth)
+    void RayTracingPipelineStateDescriptor::AddClosestHitShaderLibrary(
+        const PipelineStateDescriptorForRayTracing& descriptor, const Name& closestHitShaderName)
     {
-        m_descriptor.MaxRecursionDepth(maxRecursionDepth);
-        return this;
+        auto& shaderLibrary = m_shaderLibraries.emplace_back();
+        shaderLibrary.m_descriptor = descriptor;
+        shaderLibrary.m_closestHitShaderName = closestHitShaderName;
     }
 
-    RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::PipelineState(
-        const RHI::PipelineState* pipelineState)
+    void RayTracingPipelineStateDescriptor::AddAnyHitShaderLibrary(
+        const PipelineStateDescriptorForRayTracing& descriptor, const Name& anyHitShaderName)
     {
-        m_pipelineState = pipelineState;
-        return this;
+        auto& shaderLibrary = m_shaderLibraries.emplace_back();
+        shaderLibrary.m_descriptor = descriptor;
+        shaderLibrary.m_anyHitShaderName = anyHitShaderName;
     }
 
-    RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::ShaderLibrary(
-        RHI::PipelineStateDescriptorForRayTracing& descriptor)
+    void RayTracingPipelineStateDescriptor::AddIntersectionShaderLibrary(
+        const PipelineStateDescriptorForRayTracing& descriptor, const Name& intersectionShaderName)
     {
-        m_descriptor.ShaderLibrary(descriptor);
-        return this;
+        auto& shaderLibrary = m_shaderLibraries.emplace_back();
+        shaderLibrary.m_descriptor = descriptor;
+        shaderLibrary.m_intersectionShaderName = intersectionShaderName;
     }
 
-    RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::RayGenerationShaderName(
-        const AZ::Name& name)
+    void RayTracingPipelineStateDescriptor::AddHitGroup(const Name& hitGroupName, const Name& closestHitShaderName)
     {
-        m_descriptor.RayGenerationShaderName(name);
-        return this;
+        auto& hitGroup = m_hitGroups.emplace_back();
+        hitGroup.m_hitGroupName = hitGroupName;
+        hitGroup.m_closestHitShaderName = closestHitShaderName;
     }
 
-    RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::MissShaderName(const AZ::Name& name)
+    void RayTracingPipelineStateDescriptor::AddHitGroup(
+        const Name& hitGroupName, const Name& closestHitShaderName, const Name& intersectionShaderName)
     {
-        m_descriptor.MissShaderName(name);
-        return this;
-    }
-
-    RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::ClosestHitShaderName(
-        const AZ::Name& closestHitShaderName)
-    {
-        m_descriptor.ClosestHitShaderName(closestHitShaderName);
-        return this;
-    }
-
-    RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::AnyHitShaderName(
-        const AZ::Name& anyHitShaderName)
-    {
-        m_descriptor.AnyHitShaderName(anyHitShaderName);
-        return this;
-    }
-
-    RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::IntersectionShaderName(
-        const Name& intersectionShaderName)
-    {
-        m_descriptor.IntersectionShaderName(intersectionShaderName);
-        return this;
-    }
-
-    RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::HitGroup(const AZ::Name& hitGroupName)
-    {
-        m_descriptor.HitGroup(hitGroupName);
-        return this;
+        auto& hitGroup = m_hitGroups.emplace_back();
+        hitGroup.m_hitGroupName = hitGroupName;
+        hitGroup.m_closestHitShaderName = closestHitShaderName;
+        hitGroup.m_intersectionShaderName = intersectionShaderName;
     }
 
     ResultCode RayTracingPipelineState::Init(

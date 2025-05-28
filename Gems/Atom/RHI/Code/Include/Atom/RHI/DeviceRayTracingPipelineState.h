@@ -54,77 +54,13 @@ namespace AZ::RHI
 
     //! DeviceRayTracingPipelineStateDescriptor
     //!
-    //! The Build() operation in the descriptor allows the pipeline state to be initialized
-    //! using the following pattern:
-    //!
-    //! RHI::DeviceRayTracingPipelineStateDescriptor descriptor;
-    //! descriptor.Build()
-    //!     ->ShaderLibrary(shaderDescriptor)
-    //!         ->RayGenerationShaderName(AZ::Name("RayGenerationShader"))
-    //!     ->ShaderLibrary(missShaderDescriptor)
-    //!         ->MissShaderName(AZ::Name("MissShader"))
-    //!     ->ShaderLibrary(closestHitShader1Descriptor)
-    //!         ->ClosestHitShaderName(AZ::Name("ClosestHitShader1"))
-    //!     ->ShaderLibrary(closestHitShader2Descriptor)
-    //!         ->ClosestHitShaderName(AZ::Name("ClosestHitShader2"))
-    //!     ->HitGroup(AZ::Name("HitGroup1"))
-    //!         ->ClosestHitShaderName(AZ::Name("ClosestHitShader1"))
-    //!     ->HitGroup(AZ::Name("HitGroup2"))
-    //!         ->ClosestHitShaderName(AZ::Name("ClosestHitShader2"))
-    //!     ;
-    //!
-    class DeviceRayTracingPipelineStateDescriptor final
+    //! Describes a single-device ray tracing pipeline state.
+    struct DeviceRayTracingPipelineStateDescriptor
     {
-        friend class RayTracingPipelineStateDescriptor;
-
-    public:
-        DeviceRayTracingPipelineStateDescriptor() = default;
-        ~DeviceRayTracingPipelineStateDescriptor() = default;
-
-        // accessors
-        const RayTracingConfiguration& GetConfiguration() const { return m_configuration; }
-        RayTracingConfiguration& GetConfiguration() { return m_configuration; }
-
-        const RHI::DevicePipelineState* GetPipelineState() const { return m_pipelineState; }
-
-        const RayTracingShaderLibraryVector& GetShaderLibraries() const { return m_shaderLibraries; }
-        RayTracingShaderLibraryVector& GetShaderLibraries() { return m_shaderLibraries; }
-
-        const RayTracingHitGroupVector& GetHitGroups() const { return m_hitGroups; }
-        RayTracingHitGroupVector& GetHitGroups() { return m_hitGroups; }
-
-        // build operations
-        DeviceRayTracingPipelineStateDescriptor* Build();
-        DeviceRayTracingPipelineStateDescriptor* MaxPayloadSize(uint32_t maxPayloadSize);
-        DeviceRayTracingPipelineStateDescriptor* MaxAttributeSize(uint32_t maxAttributeSize);
-        DeviceRayTracingPipelineStateDescriptor* MaxRecursionDepth(uint32_t maxRecursionDepth);
-        DeviceRayTracingPipelineStateDescriptor* PipelineState(const RHI::DevicePipelineState* pipelineState);
-        DeviceRayTracingPipelineStateDescriptor* ShaderLibrary(RHI::PipelineStateDescriptorForRayTracing& descriptor);
-
-        DeviceRayTracingPipelineStateDescriptor* RayGenerationShaderName(const AZ::Name& name);
-        DeviceRayTracingPipelineStateDescriptor* MissShaderName(const AZ::Name& name);
-        DeviceRayTracingPipelineStateDescriptor* CallableShaderName(const AZ::Name& callableShaderName);
-        DeviceRayTracingPipelineStateDescriptor* ClosestHitShaderName(const AZ::Name& closestHitShaderName);
-        DeviceRayTracingPipelineStateDescriptor* AnyHitShaderName(const AZ::Name& anyHitShaderName);
-        DeviceRayTracingPipelineStateDescriptor* IntersectionShaderName(const AZ::Name& intersectionShaderName);
-
-        DeviceRayTracingPipelineStateDescriptor* HitGroup(const AZ::Name& name);
-
-    private:
-
-        void ClearBuildContext();
-        void ClearParamBuildContext();
-        bool IsTopLevelBuildContext();
-
-        // build contexts
-        RayTracingShaderLibrary* m_shaderLibraryBuildContext = nullptr;
-        RayTracingHitGroup* m_hitGroupBuildContext = nullptr;
-
-        // pipeline state elements
         RayTracingConfiguration m_configuration;
-        const RHI::DevicePipelineState* m_pipelineState = nullptr;
         RayTracingShaderLibraryVector m_shaderLibraries;
         RayTracingHitGroupVector m_hitGroups;
+        const RHI::DevicePipelineState* m_pipelineState = nullptr;
     };
 
     //! Defines the shaders, hit groups, and other parameters required for ray tracing operations.

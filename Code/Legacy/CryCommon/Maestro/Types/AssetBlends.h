@@ -10,6 +10,7 @@
 #pragma once
 
 #include <AzCore/Asset/AssetCommon.h>
+#include <Maestro/Types/AssetBlendKey.h>
 
 namespace Maestro
 {
@@ -28,26 +29,33 @@ namespace Maestro
             m_assetId.SetInvalid();
         }
 
-        AssetBlend(const AZ::Data::AssetId& assetId, float time, float blendInTime, float blendOutTime)
+        AssetBlend(const AZ::Data::AssetId& assetId, float time, float blendInTime, float blendOutTime, float speed = 1.0f, bool loop = false)
             : m_assetId(assetId)
             , m_time(time)
             , m_blendInTime(blendInTime)
             , m_blendOutTime(blendOutTime)
+            , m_speed(speed)
+            , m_bLoop(loop)
         {
+            AZStd::clamp(m_speed, AZ::IAssetBlendKey::s_minSpeed, AZ::IAssetBlendKey::s_maxSpeed);
         }
 
-        bool IsClose(const AssetBlend& rhs, float tolerance) const
+        bool IsClose(const AssetBlend& rhs, float tolerance = AZ::Constants::Tolerance) const
         {
-            return m_assetId == rhs.m_assetId
-                && (fabsf(m_time - rhs.m_time) <= tolerance)
-                && (fabsf(m_blendInTime - rhs.m_blendInTime) <= tolerance)
-                && (fabsf(m_blendOutTime - rhs.m_blendOutTime) <= tolerance);
+            return m_assetId == rhs.m_assetId && m_bLoop == rhs.m_bLoop
+                && (AZStd::abs(m_time - rhs.m_time) <= tolerance)
+                && (AZStd::abs(m_blendInTime - rhs.m_blendInTime) <= tolerance)
+                && (AZStd::abs(m_blendOutTime - rhs.m_blendOutTime) <= tolerance)
+                && (AZStd::abs(m_speed - rhs.m_speed) <= tolerance)
+                ;
         }
 
         AZ::Data::AssetId m_assetId;
         float m_time;
         float m_blendInTime;
         float m_blendOutTime;
+        float m_speed;
+        bool  m_bLoop;
     };
 
     /**

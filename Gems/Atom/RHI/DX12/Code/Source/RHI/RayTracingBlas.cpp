@@ -40,9 +40,9 @@ namespace AZ
             m_geometryDescs.clear();
 
             // A BLAS can contain either triangle geometry or procedural geometry; decide based on the descriptor which one to create
-            if (descriptor->HasAABB())
+            if (descriptor->m_aabb.has_value())
             {
-                const AZ::Aabb& aabb = descriptor->GetAABB();
+                const AZ::Aabb& aabb = *descriptor->m_aabb;
                 buffers.m_aabbBuffer = RHI::Factory::Get().CreateBuffer();
                 AZ::RHI::BufferDescriptor blasBufferDescriptor;
                 blasBufferDescriptor.m_bindFlags = RHI::BufferBindFlags::CopyRead;
@@ -79,7 +79,7 @@ namespace AZ
             }
             else
             {
-                const RHI::DeviceRayTracingGeometryVector& geometries = descriptor->GetGeometries();
+                const RHI::DeviceRayTracingGeometryVector& geometries = descriptor->m_geometries;
 
                 // build the list of D3D12_RAYTRACING_GEOMETRY_DESC structures
                 m_geometryDescs.reserve(geometries.size());
@@ -109,7 +109,7 @@ namespace AZ
             m_inputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
             m_inputs.pGeometryDescs = m_geometryDescs.data();
             m_inputs.NumDescs = aznumeric_cast<UINT>(m_geometryDescs.size());
-            m_inputs.Flags = GetAccelerationStructureBuildFlags(descriptor->GetBuildFlags());
+            m_inputs.Flags = GetAccelerationStructureBuildFlags(descriptor->m_buildFlags);
 
             D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO prebuildInfo = {};
             dx12Device->GetRaytracingAccelerationStructurePrebuildInfo(&m_inputs, &prebuildInfo);

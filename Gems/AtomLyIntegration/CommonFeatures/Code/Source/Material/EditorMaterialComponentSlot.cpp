@@ -464,7 +464,7 @@ namespace AZ
             }
         }
 
-        void EditorMaterialComponentSlot::OnAssetReloaded(Data::Asset<Data::AssetData> asset)
+        void EditorMaterialComponentSlot::OnAssetReloaded([[maybe_unused]] Data::Asset<Data::AssetData> asset)
         {
             UpdatePreview();
         }

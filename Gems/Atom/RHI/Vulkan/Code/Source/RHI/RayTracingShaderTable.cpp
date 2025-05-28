@@ -86,7 +86,7 @@ namespace AZ
             ShaderTableBuffers& buffers = m_buffers.AdvanceCurrentElement();
 
             // clear the shader table if the descriptor has no ray generation shader
-            if (m_descriptor->GetRayGenerationRecord().empty())
+            if (m_descriptor->m_rayGenerationRecord.empty())
             {
                 buffers.m_rayGenerationTable = nullptr;
                 buffers.m_rayGenerationTableStride = 0;
@@ -110,19 +110,19 @@ namespace AZ
             buffers.m_hitGroupTableStride = RHI::AlignUp(alignedShaderHandleSize, rayTracingPipelineProperties.shaderGroupBaseAlignment);
 
             // calculate sub-table sizes
-            buffers.m_rayGenerationTableSize = buffers.m_rayGenerationTableStride * aznumeric_cast<uint32_t>(m_descriptor->GetRayGenerationRecord().size());
-            buffers.m_missTableSize = buffers.m_missTableStride * aznumeric_cast<uint32_t>(m_descriptor->GetMissRecords().size());
-            buffers.m_callableTableSize = buffers.m_callableTableStride * aznumeric_cast<uint32_t>(m_descriptor->GetCallableRecords().size());
-            buffers.m_hitGroupTableSize = buffers.m_hitGroupTableStride * aznumeric_cast<uint32_t>(m_descriptor->GetHitGroupRecords().size());
+            buffers.m_rayGenerationTableSize = buffers.m_rayGenerationTableStride * aznumeric_cast<uint32_t>(m_descriptor->m_rayGenerationRecord.size());
+            buffers.m_missTableSize = buffers.m_missTableStride * aznumeric_cast<uint32_t>(m_descriptor->m_missRecords.size());
+            buffers.m_callableTableSize = buffers.m_callableTableStride * aznumeric_cast<uint32_t>(m_descriptor->m_callableRecords.size());
+            buffers.m_hitGroupTableSize = buffers.m_hitGroupTableStride * aznumeric_cast<uint32_t>(m_descriptor->m_hitGroupRecords.size());
 
-            const RayTracingPipelineState* rayTracingPipelineState = static_cast<const RayTracingPipelineState*>(m_descriptor->GetPipelineState().get());
+            const RayTracingPipelineState* rayTracingPipelineState = static_cast<const RayTracingPipelineState*>(m_descriptor->m_rayTracingPipelineState.get());
 
             // build sub-tables
             buffers.m_rayGenerationTable = BuildTable(
                 rayTracingPipelineProperties,
                 rayTracingPipelineState,
                 *m_bufferPools,
-                m_descriptor->GetRayGenerationRecord(),
+                m_descriptor->m_rayGenerationRecord,
                 buffers.m_rayGenerationTableStride,
                 "RayGenerationTable");
 
@@ -130,7 +130,7 @@ namespace AZ
                 rayTracingPipelineProperties,
                 rayTracingPipelineState,
                 *m_bufferPools,
-                m_descriptor->GetMissRecords(),
+                m_descriptor->m_missRecords,
                 buffers.m_missTableStride,
                 "MissTable");
 
@@ -138,7 +138,7 @@ namespace AZ
                 rayTracingPipelineProperties,
                 rayTracingPipelineState,
                 *m_bufferPools,
-                m_descriptor->GetCallableRecords(),
+                m_descriptor->m_callableRecords,
                 buffers.m_callableTableStride,
                 "CallableTable");
 
@@ -146,7 +146,7 @@ namespace AZ
                 rayTracingPipelineProperties,
                 rayTracingPipelineState,
                 *m_bufferPools,
-                m_descriptor->GetHitGroupRecords(),
+                m_descriptor->m_hitGroupRecords,
                 buffers.m_hitGroupTableStride,
                 "HitGroupTable");
 

@@ -24,6 +24,10 @@
 #include <QInputDialog>
 #include <QIcon>
 
+#if defined(EXTERNAL_CRASH_REPORTING)
+#include <ToolsCrashHandler.h>
+#endif
+
 namespace O3DE::ProjectManager
 {
     Application::~Application()
@@ -33,6 +37,10 @@ namespace O3DE::ProjectManager
 
     bool Application::Init(bool interactive, AZStd::unique_ptr<PythonBindings> pythonBindings)
     {
+#if defined(EXTERNAL_CRASH_REPORTING)
+        CrashHandler::ToolsCrashHandler::InitCrashHandler("o3de", {});
+#endif
+
         constexpr const char* applicationName { "O3DE" };
 
         QApplication::setOrganizationName(applicationName);

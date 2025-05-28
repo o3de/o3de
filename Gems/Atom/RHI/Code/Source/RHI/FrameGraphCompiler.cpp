@@ -616,8 +616,6 @@ namespace AZ::RHI
             transientBufferGraphAttachments.size() + transientImageGraphAttachments.size() < AZ_BIT(ATTACHMENT_BIT_COUNT),
             "Exceeded maximum number of allowed attachments");
 
-        AZStd::vector<Buffer*> transientBuffers(transientBufferGraphAttachments.size());
-        AZStd::vector<Image*> transientImages(transientImageGraphAttachments.size());
         AZStd::vector<Command> commands;
         commands.reserve((transientBufferGraphAttachments.size() + transientImageGraphAttachments.size()) * 2);
         AZStd::vector<AZStd::pair<int, uint32_t>> removeBuffers;
@@ -697,7 +695,9 @@ namespace AZ::RHI
 
             uint32_t currentScopeIndex = static_cast<uint32_t>(-1);
 
-            
+            AZStd::vector<MultiDevice::DeviceMask> transientBuffers(transientBufferGraphAttachments.size(), {});
+            AZStd::vector<MultiDevice::DeviceMask> transientImages(transientImageGraphAttachments.size(), {});
+
             bool beganScope = false;
 
             for (Command command : commands)
@@ -732,30 +732,32 @@ namespace AZ::RHI
                     transientAttachmentPool.BeginScope(*scopes[nextScope]);
                 }
 
+                const int scopeDeviceIndex = scopes[currentScopeIndex]->GetDeviceIndex();
+
                 switch (action)
                 {
 
                 case Action::DeactivateBuffer:
                     {
                         AZ_Assert(
-                            !allocateResources || transientBuffers[attachmentIndex] || IsNullRHI(),
+                            !allocateResources || CheckBit(transientBuffers[attachmentIndex], scopeDeviceIndex) || IsNullRHI(),
                             "DeviceBuffer is not active: %s",
                             transientBufferGraphAttachments[attachmentIndex]->GetId().GetCStr());
                         BufferFrameAttachment* bufferFrameAttachment = transientBufferGraphAttachments[attachmentIndex];
                         transientAttachmentPool.DeactivateBuffer(bufferFrameAttachment->GetId());
-                        transientBuffers[attachmentIndex] = nullptr;
+                        transientBuffers[attachmentIndex] = ResetBit(transientBuffers[attachmentIndex], scopeDeviceIndex);
                         break;
                     }
 
                 case Action::DeactivateImage:
                     {
                         AZ_Assert(
-                            !allocateResources || transientImages[attachmentIndex] || IsNullRHI(),
+                            !allocateResources || CheckBit(transientImages[attachmentIndex], scopeDeviceIndex) || IsNullRHI(),
                             "DeviceImage is not active: %s",
                             transientImageGraphAttachments[attachmentIndex]->GetId().GetCStr());
                         ImageFrameAttachment* imageFrameAttachment = transientImageGraphAttachments[attachmentIndex];
                         transientAttachmentPool.DeactivateImage(imageFrameAttachment->GetId());
-                        transientImages[attachmentIndex] = nullptr;
+                        transientImages[attachmentIndex] = ResetBit(transientImages[attachmentIndex], scopeDeviceIndex);
                         break;
                     }
 
@@ -763,7 +765,7 @@ namespace AZ::RHI
                     {
                         BufferFrameAttachment* bufferFrameAttachment = transientBufferGraphAttachments[attachmentIndex];
                         AZ_Assert(
-                            transientBuffers[attachmentIndex] == nullptr,
+                            !CheckBit(transientBuffers[attachmentIndex], scopeDeviceIndex),
                             "DeviceBuffer has been activated already. %s",
                             bufferFrameAttachment->GetId().GetCStr());
 
@@ -775,7 +777,7 @@ namespace AZ::RHI
                         if (allocateResources && buffer)
                         {
                             bufferFrameAttachment->SetResource(buffer, scopes[currentScopeIndex]->GetDeviceIndex());
-                            transientBuffers[attachmentIndex] = buffer;
+                            transientBuffers[attachmentIndex] = SetBit(transientBuffers[attachmentIndex], scopeDeviceIndex);
                         }
                         break;
                     }
@@ -784,7 +786,7 @@ namespace AZ::RHI
                     {
                         ImageFrameAttachment* imageFrameAttachment = transientImageGraphAttachments[attachmentIndex];
                         AZ_Assert(
-                            transientImages[attachmentIndex] == nullptr,
+                            !CheckBit(transientImages[attachmentIndex], scopeIndex),
                             "DeviceImage has been activated already. %s",
                             imageFrameAttachment->GetId().GetCStr());
 
@@ -807,7 +809,7 @@ namespace AZ::RHI
                         if (allocateResources && image)
                         {
                             imageFrameAttachment->SetResource(image, scopes[currentScopeIndex]->GetDeviceIndex());
-                            transientImages[attachmentIndex] = image;
+                            transientImages[attachmentIndex] = SetBit(transientImages[attachmentIndex], scopeDeviceIndex);
                         }
                         break;
                     }

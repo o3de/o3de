@@ -29,11 +29,13 @@ namespace AZ
         AssImpSceneWrapper::AssImpSceneWrapper()
             : m_assImpScene(nullptr)
             , m_importer(AZStd::make_unique<Assimp::Importer>())
+            , m_extractEmbeddedTextures(false)
         {
         }
         AssImpSceneWrapper::AssImpSceneWrapper(aiScene* aiScene)
             : m_assImpScene(aiScene)
             , m_importer(AZStd::make_unique<Assimp::Importer>())
+            , m_extractEmbeddedTextures(false)
         {
         }
 
@@ -105,6 +107,8 @@ namespace AZ
             }
 
             CalculateAABBandVertices(m_assImpScene, m_aabb, m_vertices);
+
+            m_extractEmbeddedTextures = importSettings.m_extractEmbeddedTextures;
 
             return true;
         }

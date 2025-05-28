@@ -31,8 +31,8 @@ namespace GameState
         //! Called when a game state transition occurs
         //! \param[in] oldGameState The old game state we are transitioning from (can be null)
         //! \param[in] newGameState The new game state we are transitioning into (can be null)
-        virtual void OnActiveGameStateChanged(AZStd::shared_ptr<IGameState> oldGameState,
-                                              AZStd::shared_ptr<IGameState> newGameState) {}
+        virtual void OnActiveGameStateChanged([[maybe_unused]] AZStd::shared_ptr<IGameState> oldGameState,
+                                              [[maybe_unused]] AZStd::shared_ptr<IGameState> newGameState) {}
     };
     using GameStateNotificationBus = AZ::EBus<GameStateNotifications>;
 } // namespace GameState

@@ -30,6 +30,10 @@
 
 #include <QLabel>
 
+#if defined(EXTERNAL_CRASH_REPORTING)
+#include <ToolsCrashHandler.h>
+#endif
+
 void InitMaterialCanvasResources()
 {
     // Must register qt resources from other modules
@@ -52,6 +56,9 @@ namespace MaterialCanvas
     MaterialCanvasApplication::MaterialCanvasApplication(int* argc, char*** argv)
         : Base(GetBuildTargetName(), argc, argv)
     {
+#if defined(EXTERNAL_CRASH_REPORTING)
+        CrashHandler::ToolsCrashHandler::InitCrashHandler("MaterialCanvas", {});
+#endif
         InitMaterialCanvasResources();
 
         QApplication::setOrganizationName("O3DE");

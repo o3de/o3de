@@ -106,6 +106,49 @@ namespace EMotionFX
         return motionInst;
     }
 
+    // play a given motion instance on an actor, and return the instance
+    MotionInstance* MotionSystem::PlayMotion(MotionInstance* motionInstance, PlayBackInfo* info)
+    {
+        if (!motionInstance || (motionInstance->GetReferenceCount() < 1) || !motionInstance->GetActorInstance() || !motionInstance->GetMotion())
+        {
+            return nullptr;
+        }
+
+        PlayBackInfo tempInfo;
+        if (!info)
+        {
+            info = &tempInfo;
+        }
+        auto* motion = motionInstance->GetMotion();
+
+        // trigger the OnPlayMotion event
+        GetEventManager().OnPlayMotion(motion, info);
+
+        // make sure we always mix when using additive blending
+        if (info->m_blendMode == BLENDMODE_ADDITIVE && info->m_mix == false)
+        {
+            MCORE_ASSERT(false); // this shouldn't happen actually, please make sure you always mix additive motions
+            info->m_mix = true;
+        }
+
+
+        // if we want to play it immediately (so if we do NOT want to schedule it for later on)
+        if (info->m_playNow)
+        {
+            // start the motion for real
+            StartMotion(motionInstance, info);
+        }
+        else
+        {
+            // schedule the motion, by adding it to the back of the motion queue
+            m_motionQueue->AddEntry(MotionQueue::QueueEntry(motionInstance, info));
+            motionInstance->Pause();
+            motionInstance->SetIsActive(false);
+            GetEventManager().OnQueueMotionInstance(motionInstance, info);
+        }
+
+        return motionInstance;
+    }
 
     // create the motion instance and add the motion info the this actor
     MotionInstance* MotionSystem::CreateMotionInstance(Motion* motion, PlayBackInfo* info)
@@ -134,7 +177,7 @@ namespace EMotionFX
         }();
 
         // delete the motion instance from memory
-        if (isSuccess)
+        if (isSuccess && instance->GetReferenceCount() > 0)
         {
             GetMotionInstancePool().Free(instance);
         }
@@ -145,11 +188,9 @@ namespace EMotionFX
 
 
     // update motion queue and instances
-    void MotionSystem::Update(float timePassed, bool updateNodes)
+    void MotionSystem::Update(float timePassed, [[maybe_unused]]bool updateNodes)
     {
         AZ_PROFILE_SCOPE(Animation, "MotionSystem::Update");
-
-        MCORE_UNUSED(updateNodes);
 
         // update the motion queue
         m_motionQueue->Update();

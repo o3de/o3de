@@ -13,6 +13,10 @@
 #include <Document/MaterialDocument.h>
 #include <Window/MaterialEditorMainWindow.h>
 
+#if defined(EXTERNAL_CRASH_REPORTING)
+#include <ToolsCrashHandler.h>
+#endif
+
 void InitMaterialEditorResources()
 {
     // Must register qt resources from other modules
@@ -34,6 +38,9 @@ namespace MaterialEditor
     MaterialEditorApplication::MaterialEditorApplication(int* argc, char*** argv)
         : Base(GetBuildTargetName(), argc, argv)
     {
+#if defined(EXTERNAL_CRASH_REPORTING)
+        CrashHandler::ToolsCrashHandler::InitCrashHandler("MaterialEditor", {});
+#endif
         InitMaterialEditorResources();
 
         QApplication::setOrganizationName("O3DE");

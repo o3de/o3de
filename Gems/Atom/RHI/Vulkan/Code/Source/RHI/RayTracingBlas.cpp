@@ -50,9 +50,9 @@ namespace AZ
             AZStd::vector<uint32_t> primitiveCounts;
 
             // A BLAS can contain either triangle geometry or procedural geometry; decide based on the descriptor which one to create
-            if (descriptor->HasAABB())
+            if (descriptor->m_aabb.has_value())
             {
-                const AZ::Aabb& aabb = descriptor->GetAABB();
+                const AZ::Aabb& aabb = *descriptor->m_aabb;
                 buffers.m_aabbBuffer = RHI::Factory::Get().CreateBuffer();
                 AZ::RHI::BufferDescriptor blasBufferDescriptor;
                 blasBufferDescriptor.m_bindFlags = RHI::BufferBindFlags::CopyRead | RHI::BufferBindFlags::RayTracingAccelerationStructure;
@@ -104,7 +104,7 @@ namespace AZ
             }
             else
             {
-                const RHI::DeviceRayTracingGeometryVector& geometries = descriptor->GetGeometries();
+                const RHI::DeviceRayTracingGeometryVector& geometries = descriptor->m_geometries;
 
                 buffers.m_geometryDescs.reserve(geometries.size());
                 buffers.m_rangeInfos.reserve(geometries.size());
@@ -158,7 +158,7 @@ namespace AZ
 
             buffers.m_buildInfo = {};
             buffers.m_buildInfo.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_GEOMETRY_INFO_KHR;
-            buffers.m_buildInfo.flags = GetAccelerationStructureBuildFlags(descriptor->GetBuildFlags());
+            buffers.m_buildInfo.flags = GetAccelerationStructureBuildFlags(descriptor->m_buildFlags);
             buffers.m_buildInfo.geometryCount = aznumeric_cast<uint32_t>(buffers.m_geometryDescs.size());
             buffers.m_buildInfo.pGeometries = buffers.m_geometryDescs.data();
             buffers.m_buildInfo.mode = VK_BUILD_ACCELERATION_STRUCTURE_MODE_BUILD_KHR;

@@ -69,8 +69,8 @@ namespace AZ::RPI
 
         //! Increments the current buffer index, potentially resized the current buffer and updates the data of the current data. This is a
         //! convenience function which calls AdvanceCurrentBuffer(), CreateOrResizeCurrentBuffer(...) and UpdateCurrentBufferData(...)
-        template<typename T>
-        void AdvanceCurrentBufferAndUpdateData(AZStd::unordered_map<int, AZStd::span<const T>> data)
+        template<typename T, typename = AZStd::enable_if_t<AZStd::is_convertible_v<T, AZStd::span<const typename T::value_type>>>>
+        void AdvanceCurrentBufferAndUpdateData(const AZStd::unordered_map<int, T>& data)
         {
             AZStd::unordered_map<int, const void*> rawData;
 
@@ -80,13 +80,6 @@ namespace AZ::RPI
             }
 
             AdvanceCurrentBufferAndUpdateData(rawData, data.begin()->second.size() * sizeof(T));
-        }
-
-        //! Convenience function which allows automatic conversion from vector/array to span
-        template<typename T>
-        void AdvanceCurrentBufferAndUpdateData(const AZStd::unordered_map<int, T>& data)
-        {
-            AdvanceCurrentBufferAndUpdateData<typename T::value_type>(data);
         }
 
         //! Creates or resizes the current buffer to fit the given number of bytes.
@@ -121,7 +114,7 @@ namespace AZ::RPI
 
         //! Updates the data of the current buffer.
         template<typename T>
-        void UpdateCurrentBufferData(AZStd::unordered_map<int, AZStd::span<const T>> data, u64 bufferElementOffset = 0)
+        void UpdateCurrentBufferData(const AZStd::unordered_map<int, AZStd::span<const T>>& data, u64 bufferElementOffset = 0)
         {
             AZStd::unordered_map<int, const void*> rawData;
 

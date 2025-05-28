@@ -33,12 +33,18 @@ namespace AZ::RHI
 
     bool RenderAttachmentDescriptor::operator==(const RenderAttachmentDescriptor& other) const
     {
-        return (m_attachmentIndex == other.m_attachmentIndex)
-            && (m_resolveAttachmentIndex == other.m_resolveAttachmentIndex)
-            && (m_loadStoreAction == other.m_loadStoreAction)
-            && (m_scopeAttachmentAccess == other.m_scopeAttachmentAccess)
-            && (m_scopeAttachmentStage == other.m_scopeAttachmentStage)
-            ;
+        return IsEqual(other, true);
+    }
+
+    bool RenderAttachmentDescriptor::IsEqual(const RenderAttachmentDescriptor& other, const bool compareLoadStoreAction) const
+    {
+        // clang-format off
+        return (m_attachmentIndex == other.m_attachmentIndex) && 
+               (m_resolveAttachmentIndex == other.m_resolveAttachmentIndex) &&
+               (!compareLoadStoreAction || (m_loadStoreAction == other.m_loadStoreAction)) && 
+               (m_scopeAttachmentAccess == other.m_scopeAttachmentAccess) &&
+               (m_scopeAttachmentStage == other.m_scopeAttachmentStage);
+        // clang-format on
     }
 
     bool RenderAttachmentDescriptor::operator!=(const RenderAttachmentDescriptor& other) const
@@ -65,16 +71,20 @@ namespace AZ::RHI
 
     bool SubpassRenderAttachmentLayout::operator==(const SubpassRenderAttachmentLayout& other) const
     {
-        if ((m_rendertargetCount != other.m_rendertargetCount)
-            || (m_subpassInputCount != other.m_subpassInputCount)
-            || (m_depthStencilDescriptor != other.m_depthStencilDescriptor))
+        return IsEqual(other, true);
+    }
+
+    bool SubpassRenderAttachmentLayout::IsEqual(const SubpassRenderAttachmentLayout& other, const bool compareLoadStoreAction) const
+    {
+        if ((m_rendertargetCount != other.m_rendertargetCount) || (m_subpassInputCount != other.m_subpassInputCount) ||
+            (!m_depthStencilDescriptor.IsEqual(other.m_depthStencilDescriptor, compareLoadStoreAction)))
         {
             return false;
         }
 
         for (uint32_t i = 0; i < m_rendertargetCount; ++i)
         {
-            if (m_rendertargetDescriptors[i] != other.m_rendertargetDescriptors[i])
+            if (!m_rendertargetDescriptors[i].IsEqual(other.m_rendertargetDescriptors[i], compareLoadStoreAction))
             {
                 return false;
             }
@@ -118,8 +128,12 @@ namespace AZ::RHI
 
     bool RenderAttachmentLayout::operator==(const RenderAttachmentLayout& other) const
     {
-        if ((m_attachmentCount != other.m_attachmentCount)
-            || (m_subpassCount != other.m_subpassCount))
+        return IsEqual(other, true);
+    }
+
+    bool RenderAttachmentLayout::IsEqual(const RenderAttachmentLayout& other, const bool compareLoadStoreAction) const
+    {
+        if ((m_attachmentCount != other.m_attachmentCount) || (m_subpassCount != other.m_subpassCount))
         {
             return false;
         }
@@ -134,7 +148,7 @@ namespace AZ::RHI
 
         for (uint32_t i = 0; i < m_subpassCount; ++i)
         {
-            if(m_subpassLayouts[i] != other.m_subpassLayouts[i])
+            if (!m_subpassLayouts[i].IsEqual(other.m_subpassLayouts[i], compareLoadStoreAction))
             {
                 return false;
             }
@@ -209,7 +223,13 @@ namespace AZ::RHI
 
     bool RenderAttachmentConfiguration::operator==(const RenderAttachmentConfiguration& other) const
     {
-        return (m_renderAttachmentLayout == other.m_renderAttachmentLayout) && (m_subpassIndex == other.m_subpassIndex);
+        return IsEqual(other, true);
+    }
+
+    bool RenderAttachmentConfiguration::IsEqual(const RenderAttachmentConfiguration& other, const bool compareLoadStoreAction) const
+    {
+        return m_renderAttachmentLayout.IsEqual(other.m_renderAttachmentLayout, compareLoadStoreAction) &&
+            (m_subpassIndex == other.m_subpassIndex);
     }
 
     void SubpassInputDescriptor::Reflect(ReflectContext* context)

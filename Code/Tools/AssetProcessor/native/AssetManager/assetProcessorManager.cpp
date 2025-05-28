@@ -350,7 +350,7 @@ namespace AssetProcessor
     }
 
     //! A network request came in, Given a Job Run Key (from the above Job Request), asking for the actual log for that job.
-    GetAbsoluteAssetDatabaseLocationResponse AssetProcessorManager::ProcessGetAbsoluteAssetDatabaseLocationRequest(MessageData<GetAbsoluteAssetDatabaseLocationRequest> messageData)
+    GetAbsoluteAssetDatabaseLocationResponse AssetProcessorManager::ProcessGetAbsoluteAssetDatabaseLocationRequest([[maybe_unused]] MessageData<GetAbsoluteAssetDatabaseLocationRequest> messageData)
     {
         GetAbsoluteAssetDatabaseLocationResponse response;
 

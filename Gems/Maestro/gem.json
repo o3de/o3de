@@ -20,6 +20,10 @@
     "requirements": "",
     "documentation_url": "https://www.o3de.org/docs/user-guide/gems/reference/animation/maestro/",
     "dependencies": [
-        "LmbrCentral"
+        "LmbrCentral",
+        "Atom",
+        "Atom_Bootstrap",
+        "Atom_RHI",
+        "Atom_RPI"
     ]
 }

@@ -9,6 +9,9 @@
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/MemoryStatisticsBuilder.h>
 #include <Atom/RHI/RHISystemInterface.h>
+
+AZ_CVAR(bool, r_hdrOutput, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Enable HDR output. Restart required");
+
 namespace AZ::RHI
 {
     DeviceSwapChain::DeviceSwapChain() {}

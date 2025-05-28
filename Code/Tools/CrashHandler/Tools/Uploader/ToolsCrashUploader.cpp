@@ -21,8 +21,12 @@
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/std/typetraits/underlying_type.h>
 
-#include <QString>
 #include <QApplication>
+#include <QDesktopServices>
+#include <QDir>
+#include <QFileInfo>
+#include <QString>
+#include <QUrl>
 
 #include <memory>
 
@@ -30,6 +34,9 @@
 
 namespace O3de
 {
+    static const char* settingKey_issueReportLink = "/O3DE/Settings/Links/Issue/Create";
+    static const char* issueReportLinkFallback = "https://github.com/o3de/o3de/issues/new/choose";
+
     void InstallCrashUploader(int& argc, char* argv[])
     {
         O3de::CrashUploader::SetCrashUploader(std::make_shared<O3de::ToolsCrashUploader>(argc, argv));
@@ -99,11 +106,14 @@ namespace O3de
             QString reportString{ GetReportString(report.file_path.value()).toStdString().c_str() };
             QAtomicInt dialogResult{ -1 };
 
-            ::CrashUploader::SendReportDialog confirmDialog{ nullptr };
+            const bool manualReport = m_submissionToken.compare("manual") == 0;
+            ::CrashUploader::SendReportDialog confirmDialog{ manualReport, nullptr };
             confirmDialog.SetApplicationName(m_executableName.c_str());
 
             confirmDialog.setWindowIcon(QIcon(":/Icons/editor_icon.ico"));
-            confirmDialog.SetReportText(reportString.toStdString().c_str());
+
+            QFileInfo fileInfo = QFileInfo(reportPath);
+            confirmDialog.SetReportText(fileInfo.absoluteFilePath());
             confirmDialog.setWindowFlags((confirmDialog.windowFlags() | Qt::WindowStaysOnTopHint) & ~Qt::WindowContextHelpButtonHint);
 
             confirmDialog.exec();
@@ -113,7 +123,25 @@ namespace O3de
                 app.processEvents();
                 dialogResult = confirmDialog.result();
             }
-            return dialogResult == QDialog::Accepted;
+
+            const bool accepted = dialogResult == QDialog::Accepted;
+            if (manualReport && accepted)
+            {
+                QDesktopServices::openUrl(QUrl(fileInfo.absolutePath()));
+
+                AZStd::string reportIssueUrl;
+                if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+                {
+                    settingsRegistry->Get(reportIssueUrl, settingKey_issueReportLink);
+                }
+
+                if (reportIssueUrl.empty())
+                {
+                    reportIssueUrl = issueReportLinkFallback;
+                }
+                QDesktopServices::openUrl(QUrl(reportIssueUrl.data()));
+            }
+            return accepted;
         }
 #endif
         return true;

@@ -10,17 +10,17 @@
 
 namespace UnitTests
 {
-    void MockAssetProcessorManager::AssessAddedFile(QString filePath)
+    void MockAssetProcessorManager::AssessAddedFile([[maybe_unused]] QString filePath)
     {
         m_events[TestEvents::Added].Signal();
     }
 
-    void MockAssetProcessorManager::AssessModifiedFile(QString filePath)
+    void MockAssetProcessorManager::AssessModifiedFile([[maybe_unused]] QString filePath)
     {
         m_events[TestEvents::Modified].Signal();
     }
 
-    void MockAssetProcessorManager::AssessDeletedFile(QString filePath)
+    void MockAssetProcessorManager::AssessDeletedFile([[maybe_unused]] QString filePath)
     {
         m_events[TestEvents::Deleted].Signal();
     }

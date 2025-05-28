@@ -161,7 +161,6 @@ namespace AZ
         void ShadowmapPass::SetClearShadowDrawPacket(AZ::RHI::ConstPtr<RHI::DrawPacket> clearShadowDrawPacket)
         {
             m_clearShadowDrawPacket = clearShadowDrawPacket;
-            m_clearShadowDrawItemProperties = clearShadowDrawPacket->GetDrawItemProperties(0);
         }
 
         void ShadowmapPass::UpdatePipelineViewTag(const RPI::PipelineViewTag& viewTag)
@@ -172,6 +171,9 @@ namespace AZ
         void ShadowmapPass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
         {
             Base::SetupFrameGraphDependencies(frameGraph);
+
+            // Report + 1 to make room for the clear draw packet.
+            uint32_t estimatedItemCount = static_cast<uint32_t>(m_drawListView.size() + 1);
 
             // Override the estimated item count set by the base class. Draw item count is compared against
             // the last frame to detect cases where a moving object leaves the shadow frustum. It wouldn't
@@ -185,15 +187,11 @@ namespace AZ
                     if (view && (view->GetOrFlags() & m_casterMovedBit.GetIndex()) == 0)
                     {
                         // Shadow is static and no casters moved since last frame.
-                        frameGraph.SetEstimatedItemCount(0);
+                        estimatedItemCount = 0;
                     }
                 }
             }
-            else
-            {
-                // Report + 1 to make room for the clear draw packet.
-                frameGraph.SetEstimatedItemCount(static_cast<uint32_t>(m_drawListView.size() + 1));
-            }
+            frameGraph.SetEstimatedItemCount(estimatedItemCount);
         }
 
         void ShadowmapPass::SubmitDrawItems(const RHI::FrameGraphExecuteContext& context, uint32_t startIndex, uint32_t endIndex, uint32_t offset) const

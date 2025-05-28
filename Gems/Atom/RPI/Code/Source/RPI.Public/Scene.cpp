@@ -1116,8 +1116,18 @@ namespace AZ
                                 for (; index < size; ++index)
                                 {
                                     PipelineStateData stateData = pipelineStateList[index];
-                                    if (stateData.m_multisampleState == multisampleState
-                                        && stateData.m_renderAttachmentConfiguration == renderAttachmentConfg)
+
+                                    // don't compare the loadStoreAction of the renderAttachmentConfiguration here for two reasons:
+                                    //
+                                    // - The FrameGraph takes the actual LoadStoreAction from the Pass (or more exactly from the scope), and
+                                    //   not from the Renderattachment - config here
+                                    //
+                                    // - The ShadowMap - Passes are used for both CSM and projected Shadowmaps with the same drawListTag,
+                                    //   but they use different LoadStoreActions, which would cause two separate entries for the same
+                                    //   drawListTag here.
+                                    if (stateData.m_multisampleState == multisampleState &&
+                                        stateData.m_renderAttachmentConfiguration.IsEqual(
+                                            renderAttachmentConfg, false /* compareLoadStoreAction */))
                                     {
                                         break;
                                     }

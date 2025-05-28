@@ -6,7 +6,7 @@
 #
 #
 
-if(NOT PAL_TRAIT_BUILD_TESTS_SUPPORTED OR NOT PAL_TRAIT_BUILD_HOST_TOOLS)
+if(NOT PAL_TRAIT_TEST_GOOGLE_TEST_SUPPORTED OR NOT PAL_TRAIT_BUILD_HOST_TOOLS)
     return()
 endif()
 
@@ -29,6 +29,10 @@ ly_add_target(
             AZ::AzCore
             AZ::AzFramework
 )
+
+if(NOT PAL_TRAIT_BUILD_TESTS_SUPPORTED)
+    return()
+endif()
 
 ly_add_target(
     NAME AzManipulatorTestFramework.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}

@@ -148,7 +148,7 @@ namespace AZ
         template<class T>
         AZ::Outcome<AZStd::shared_ptr<InstancePool<T>>, AZStd::string> CreatePool(
             typename InstancePool<T>::ResetInstance resetFunc = [](T&){}, 
-            typename InstancePool<T>::CreateInstance createFunc = []() { return new T{}; })
+            [[maybe_unused]] typename InstancePool<T>::CreateInstance createFunc = []() { return new T{}; })
         {
             return CreatePool<T>(GetDefaultName<T>(), resetFunc);
         }

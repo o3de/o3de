@@ -146,8 +146,6 @@ EditorWindow::EditorWindow(QWidget* parent, Qt::WindowFlags flags)
     // value while using the UI Editor.
     SaveStartupLocalizationFolderSetting();
 
-    PropertyHandlers::Register();
-
     setAcceptDrops(true);
 
     // Store local copy of startup localization value
