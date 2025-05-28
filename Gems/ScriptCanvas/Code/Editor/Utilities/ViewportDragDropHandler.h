@@ -20,14 +20,6 @@
 
 #include <AzToolsFramework/Entity/EntityTypes.h>
 
-namespace PathUtil
-{
-    AZStd::string GetGameAssetsFolder();
-
-    /// Get the data folder
-    AZStd::string GetEditingGameDataFolder();
-}
-
 class ScriptCanvasAssetDragDropHandler : AzQtComponents::DragAndDropEventsBus::Handler
 {
 public:

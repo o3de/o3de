@@ -26,39 +26,9 @@
 #include <Entity/EditorEntityHelpers.h>
 
 #include <ScriptCanvas/Components/EditorScriptCanvasComponent.h>
+#include <AzCore/Utils/Utils.h>
 
 bool ScriptCanvasAssetDragDropHandler::m_dragAccepted;
-
-namespace PathUtil
-{
-    // Utility to get the game asset folder
-    AZStd::string GetGameAssetsFolder()
-    {
-        AZ::IO::Path projectPath;
-        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
-        {
-            settingsRegistry->Get(projectPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectPath);
-        }
-
-        return projectPath.Native();
-    }
-
-    /// Utility to get the data folder
-    AZStd::string GetEditingGameDataFolder()
-    {
-        static AZ::IO::FixedMaxPathString s_currentModName;
-
-        if (s_currentModName.empty())
-        {
-            return GetGameAssetsFolder();
-        }
-
-        AZStd::string str(GetGameAssetsFolder());
-        str += "Mods\\";
-        str += s_currentModName.c_str();
-        return str;
-    }
-}
 
 ScriptCanvasAssetDragDropHandler::ScriptCanvasAssetDragDropHandler()
 {
@@ -99,8 +69,10 @@ void ScriptCanvasAssetDragDropHandler::DragEnter(QDragEnterEvent* event, AzQtCom
         QString relativePath = dir.relativeFilePath(path);
         QString absPath = dir.absolutePath();
 
-        // check if the files/folders are under the game root directory
-        QDir gameRoot(PathUtil::GetEditingGameDataFolder().c_str());
+        // check if the files/folders are under the project root directory
+        AZ::IO::FixedMaxPathString projectPath = AZ::Utils::GetProjectPath();
+
+        QDir gameRoot(projectPath.c_str());
         QString gameRootAbsPath = gameRoot.absolutePath();
 
         QDirIterator it(absPath, QDir::NoDotAndDotDot | QDir::Files, QDirIterator::Subdirectories);
@@ -160,7 +132,8 @@ void ScriptCanvasAssetDragDropHandler::CreateEntitiesAtPoint(QStringList fileLis
     for (auto& filePath : fileList)
     {
 
-        QDir gameRoot(PathUtil::GetEditingGameDataFolder().c_str());
+        AZ::IO::FixedMaxPathString projectPath = AZ::Utils::GetProjectPath();
+        QDir gameRoot(projectPath.c_str());
         QString relativePath = gameRoot.relativeFilePath(filePath);
 
         AzToolsFramework::ScopedUndoBatch undo("Create entities from assets");
