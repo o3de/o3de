@@ -63,7 +63,7 @@
                 "defaultDataType": "float2",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE SLOTNAME = MaterialSrg::inValue;"
+                        "SLOTTYPE SLOTNAME = params.inValue;"
                     ]
                 }
             },
@@ -75,7 +75,7 @@
                 "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE SLOTNAME = MaterialSrg::inValue.x;"
+                        "SLOTTYPE SLOTNAME = params.inValue.x;"
                     ]
                 }
             },
@@ -87,7 +87,7 @@
                 "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE SLOTNAME = MaterialSrg::inValue.y;"
+                        "SLOTTYPE SLOTNAME = params.inValue.y;"
                     ]
                 }
             }

@@ -85,6 +85,7 @@ real2 ApplyNormalWrinkleMap(bool shouldApply, real2 baseNormalSample, Texture2D 
 }
 
 Surface EvaluateSurface_Skin(
+    const MaterialParameters params,
     float3 positionWS,
     real3 vertexNormal,
     float3 tangents[UvSetCount],
@@ -102,15 +103,15 @@ Surface EvaluateSurface_Skin(
     // ------- Detail Layer Setup -------
     
     // When the detail maps and the detail blend mask are on the same UV, they both use the transformed detail UVs because they are 'attached' to each other
-    const float2 detailBlendMaskUv = (MaterialSrg::m_detail_blendMask_uvIndex == MaterialSrg::m_detail_allMapsUvIndex) ?
-                                     detailUv : uvs[MaterialSrg::m_detail_blendMask_uvIndex];
+    const float2 detailBlendMaskUv = (params.m_detail_blendMask_uvIndex == params.m_detail_allMapsUvIndex) ?
+                                     detailUv : uvs[params.m_detail_blendMask_uvIndex];
         
-    const real detailLayerBlendFactor = GetDetailLayerBlendFactor( MaterialSrg::m_detail_blendMask_texture, MaterialSrg::m_sampler,
-                                                                    detailBlendMaskUv, o_detail_blendMask_useTexture, real(MaterialSrg::m_detail_blendFactor), uvDxDy, customDerivatives);
+    const real detailLayerBlendFactor = GetDetailLayerBlendFactor( GetMaterialTexture(params.m_detail_blendMask_texture), GetMaterialTextureSampler(),
+                                                                    detailBlendMaskUv, o_detail_blendMask_useTexture, real(params.m_detail_blendFactor), uvDxDy, customDerivatives);
   
     // ------- Wrinkle Map Setup -------
 
-    float2 normalUv = uvs[MaterialSrg::m_normalMapUvIndex];
+    float2 normalUv = uvs[params.m_normalMapUvIndex];
 
     if(o_wrinkleLayers_enabled)
     {
@@ -121,14 +122,14 @@ Surface EvaluateSurface_Skin(
         {
             if (customDerivatives)
             {
-                wrinkleMaskBlendFactors += real4(ObjectSrg::m_wrinkle_masks[wrinkleMaskIndex].SampleGrad(MaterialSrg::m_sampler, normalUv, uvDxDy.xy, uvDxDy.zw) * ObjectSrg::GetWrinkleMaskWeight(wrinkleMaskIndex));
+                wrinkleMaskBlendFactors += real4(ObjectSrg::m_wrinkle_masks[wrinkleMaskIndex].SampleGrad(GetMaterialTextureSampler(), normalUv, uvDxDy.xy, uvDxDy.zw) * ObjectSrg::GetWrinkleMaskWeight(wrinkleMaskIndex));
             }
             else
             {
                 #ifdef CS_SAMPLERS
-                wrinkleMaskBlendFactors += real4(ObjectSrg::m_wrinkle_masks[wrinkleMaskIndex].SampleLevel(MaterialSrg::m_sampler, normalUv, 0) * ObjectSrg::GetWrinkleMaskWeight(wrinkleMaskIndex));
+                wrinkleMaskBlendFactors += real4(ObjectSrg::m_wrinkle_masks[wrinkleMaskIndex].SampleLevel(GetMaterialTextureSampler(), normalUv, 0) * ObjectSrg::GetWrinkleMaskWeight(wrinkleMaskIndex));
                 #else
-                wrinkleMaskBlendFactors += real4(ObjectSrg::m_wrinkle_masks[wrinkleMaskIndex].Sample(MaterialSrg::m_sampler, normalUv) * ObjectSrg::GetWrinkleMaskWeight(wrinkleMaskIndex));
+                wrinkleMaskBlendFactors += real4(ObjectSrg::m_wrinkle_masks[wrinkleMaskIndex].Sample(GetMaterialTextureSampler(), normalUv) * ObjectSrg::GetWrinkleMaskWeight(wrinkleMaskIndex));
                 #endif
             }
         }
@@ -143,7 +144,7 @@ Surface EvaluateSurface_Skin(
     // ------- Normal -------
 
     surface.vertexNormal = vertexNormal;
-    real detailLayerNormalFactor = real(MaterialSrg::m_detail_normal_factor) * detailLayerBlendFactor;
+    real detailLayerNormalFactor = real(params.m_detail_normal_factor) * detailLayerBlendFactor;
 
     // Since the wrinkle normal maps should all be in the same tangent space as the main normal map, we should be able to blend the raw normal map
     // texture values before doing all the tangent space transforms, so we only have to do the transforms once, for better performance.
@@ -154,70 +155,70 @@ Surface EvaluateSurface_Skin(
     {
         if (customDerivatives)
         {
-            normalMapSample = SampleNormalXY(MaterialSrg::m_normalMap, MaterialSrg::m_sampler, normalUv, MaterialSrg::m_flipNormalX, MaterialSrg::m_flipNormalY, uvDxDy, customDerivatives);
+            normalMapSample = SampleNormalXY(GetMaterialTexture(params.m_normalMap), GetMaterialTextureSampler(), normalUv, params.m_flipNormalX, params.m_flipNormalY, uvDxDy, customDerivatives);
         }
         else
         {
-            normalMapSample = SampleNormalXY(MaterialSrg::m_normalMap, MaterialSrg::m_sampler, normalUv, MaterialSrg::m_flipNormalX, MaterialSrg::m_flipNormalY, float4(0.0f, 0.0f, 0.0f, 0.0f), false);
+            normalMapSample = SampleNormalXY(GetMaterialTexture(params.m_normalMap), GetMaterialTextureSampler(), normalUv, params.m_flipNormalX, params.m_flipNormalY, float4(0.0f, 0.0f, 0.0f, 0.0f), false);
         }
     }
 
     if(o_wrinkleLayers_enabled && o_wrinkleLayers_normal_enabled)
     {
-        normalMapSample = ApplyNormalWrinkleMap(o_wrinkleLayers_normal_useTexture1, normalMapSample, MaterialSrg::m_wrinkle_normal_texture1, MaterialSrg::m_sampler, normalUv, MaterialSrg::m_flipNormalX, MaterialSrg::m_flipNormalY, wrinkleBlendFactors.r, uvDxDy, customDerivatives);
-        normalMapSample = ApplyNormalWrinkleMap(o_wrinkleLayers_normal_useTexture2, normalMapSample, MaterialSrg::m_wrinkle_normal_texture2, MaterialSrg::m_sampler, normalUv, MaterialSrg::m_flipNormalX, MaterialSrg::m_flipNormalY, wrinkleBlendFactors.g, uvDxDy, customDerivatives);
-        normalMapSample = ApplyNormalWrinkleMap(o_wrinkleLayers_normal_useTexture3, normalMapSample, MaterialSrg::m_wrinkle_normal_texture3, MaterialSrg::m_sampler, normalUv, MaterialSrg::m_flipNormalX, MaterialSrg::m_flipNormalY, wrinkleBlendFactors.b, uvDxDy, customDerivatives);
-        normalMapSample = ApplyNormalWrinkleMap(o_wrinkleLayers_normal_useTexture4, normalMapSample, MaterialSrg::m_wrinkle_normal_texture4, MaterialSrg::m_sampler, normalUv, MaterialSrg::m_flipNormalX, MaterialSrg::m_flipNormalY, wrinkleBlendFactors.a, uvDxDy, customDerivatives);
+        normalMapSample = ApplyNormalWrinkleMap(o_wrinkleLayers_normal_useTexture1, normalMapSample, GetMaterialTexture(params.m_wrinkle_normal_texture1), GetMaterialTextureSampler(), normalUv, params.m_flipNormalX, params.m_flipNormalY, wrinkleBlendFactors.r, uvDxDy, customDerivatives);
+        normalMapSample = ApplyNormalWrinkleMap(o_wrinkleLayers_normal_useTexture2, normalMapSample, GetMaterialTexture(params.m_wrinkle_normal_texture2), GetMaterialTextureSampler(), normalUv, params.m_flipNormalX, params.m_flipNormalY, wrinkleBlendFactors.g, uvDxDy, customDerivatives);
+        normalMapSample = ApplyNormalWrinkleMap(o_wrinkleLayers_normal_useTexture3, normalMapSample, GetMaterialTexture(params.m_wrinkle_normal_texture3), GetMaterialTextureSampler(), normalUv, params.m_flipNormalX, params.m_flipNormalY, wrinkleBlendFactors.b, uvDxDy, customDerivatives);
+        normalMapSample = ApplyNormalWrinkleMap(o_wrinkleLayers_normal_useTexture4, normalMapSample, GetMaterialTexture(params.m_wrinkle_normal_texture4), GetMaterialTextureSampler(), normalUv, params.m_flipNormalX, params.m_flipNormalY, wrinkleBlendFactors.a, uvDxDy, customDerivatives);
     }
 
     real3x3 uvMatrix = CreateIdentity3x3_real();
 
     if(o_detail_normal_useTexture)
     {
-        real3 normalTS = GetTangentSpaceNormal(normalMapSample, uvMatrix, real(MaterialSrg::m_normalFactor));
+        real3 normalTS = GetTangentSpaceNormal(normalMapSample, uvMatrix, real(params.m_normalFactor));
     
         bool applyOverlay = true;
-        surface.normal = ApplyNormalMapOverlayWS(applyOverlay, vertexNormal, normalTS, tangents[MaterialSrg::m_normalMapUvIndex], bitangents[MaterialSrg::m_normalMapUvIndex], 
-                                                 MaterialSrg::m_detail_normal_texture, MaterialSrg::m_sampler, detailUv, MaterialSrg::m_detail_normal_flipX, MaterialSrg::m_detail_normal_flipY, 
-                                                 detailLayerNormalFactor, tangents[MaterialSrg::m_detail_allMapsUvIndex], bitangents[MaterialSrg::m_detail_allMapsUvIndex], real3x3(MaterialSrg::m_detailUvMatrix), uvDxDy, customDerivatives);
+        surface.normal = ApplyNormalMapOverlayWS(applyOverlay, vertexNormal, normalTS, tangents[params.m_normalMapUvIndex], bitangents[params.m_normalMapUvIndex], 
+                                                 GetMaterialTexture(params.m_detail_normal_texture), GetMaterialTextureSampler(), detailUv, params.m_detail_normal_flipX, params.m_detail_normal_flipY, 
+                                                 detailLayerNormalFactor, tangents[params.m_detail_allMapsUvIndex], bitangents[params.m_detail_allMapsUvIndex], real3x3(params.m_detailUvMatrix), uvDxDy, customDerivatives);
     }
     else
     {
-        surface.normal = GetWorldSpaceNormal(normalMapSample, vertexNormal, tangents[MaterialSrg::m_normalMapUvIndex], bitangents[MaterialSrg::m_normalMapUvIndex], uvMatrix, real(MaterialSrg::m_normalFactor));
+        surface.normal = GetWorldSpaceNormal(normalMapSample, vertexNormal, tangents[params.m_normalMapUvIndex], bitangents[params.m_normalMapUvIndex], uvMatrix, real(params.m_normalFactor));
     }
 
 
     //--------------------- Base Color ----------------------
         
-    float2 baseColorUv = uvs[MaterialSrg::m_baseColorMapUvIndex];
-    real detailLayerBaseColorFactor = real(MaterialSrg::m_detail_baseColor_factor) * detailLayerBlendFactor;
+    float2 baseColorUv = uvs[params.m_baseColorMapUvIndex];
+    real detailLayerBaseColorFactor = real(params.m_detail_baseColor_factor) * detailLayerBlendFactor;
     
-    real3 baseColor = GetBaseColorInput(MaterialSrg::m_baseColorMap, MaterialSrg::m_sampler, baseColorUv, real3(MaterialSrg::m_baseColor), o_baseColor_useTexture, uvDxDy, customDerivatives);
+    real3 baseColor = GetBaseColorInput(GetMaterialTexture(params.m_baseColorMap), GetMaterialTextureSampler(), baseColorUv, real3(params.m_baseColor.rgb), o_baseColor_useTexture, uvDxDy, customDerivatives);
     
     bool useSampledBaseColor = o_baseColor_useTexture;
     if(o_wrinkleLayers_enabled && o_wrinkleLayers_baseColor_enabled)
     {
-        // If any of the wrinkle maps are applied, we will use the Base Color blend settings to apply the MaterialSrg::m_baseColor tint to the wrinkle maps,
+        // If any of the wrinkle maps are applied, we will use the Base Color blend settings to apply the params.m_baseColor tint to the wrinkle maps,
         // even if the main base color map is not used.
         useSampledBaseColor = useSampledBaseColor || o_wrinkleLayers_baseColor_useTexture1 || o_wrinkleLayers_baseColor_useTexture2 || o_wrinkleLayers_baseColor_useTexture3 || o_wrinkleLayers_baseColor_useTexture4;
 
-        // There is a particular case where the MaterialSrg::m_baseColor could otherwise be blended twice, making it look too dark,
+        // There is a particular case where the params.m_baseColor could otherwise be blended twice, making it look too dark,
         // we reset the initial baseColor back to white to make sure it will only be applied once.
         if(useSampledBaseColor && !o_baseColor_useTexture)
         {
             baseColor = real3(1,1,1);
         }
 
-        baseColor = ApplyBaseColorWrinkleMap(o_wrinkleLayers_baseColor_useTexture1, baseColor, MaterialSrg::m_wrinkle_baseColor_texture1, MaterialSrg::m_sampler, baseColorUv, wrinkleBlendFactors.r, uvDxDy, customDerivatives);
-        baseColor = ApplyBaseColorWrinkleMap(o_wrinkleLayers_baseColor_useTexture2, baseColor, MaterialSrg::m_wrinkle_baseColor_texture2, MaterialSrg::m_sampler, baseColorUv, wrinkleBlendFactors.g, uvDxDy, customDerivatives);
-        baseColor = ApplyBaseColorWrinkleMap(o_wrinkleLayers_baseColor_useTexture3, baseColor, MaterialSrg::m_wrinkle_baseColor_texture3, MaterialSrg::m_sampler, baseColorUv, wrinkleBlendFactors.b, uvDxDy, customDerivatives);
-        baseColor = ApplyBaseColorWrinkleMap(o_wrinkleLayers_baseColor_useTexture4, baseColor, MaterialSrg::m_wrinkle_baseColor_texture4, MaterialSrg::m_sampler, baseColorUv, wrinkleBlendFactors.a, uvDxDy, customDerivatives);
+        baseColor = ApplyBaseColorWrinkleMap(o_wrinkleLayers_baseColor_useTexture1, baseColor, GetMaterialTexture(params.m_wrinkle_baseColor_texture1), GetMaterialTextureSampler(), baseColorUv, wrinkleBlendFactors.r, uvDxDy, customDerivatives);
+        baseColor = ApplyBaseColorWrinkleMap(o_wrinkleLayers_baseColor_useTexture2, baseColor, GetMaterialTexture(params.m_wrinkle_baseColor_texture2), GetMaterialTextureSampler(), baseColorUv, wrinkleBlendFactors.g, uvDxDy, customDerivatives);
+        baseColor = ApplyBaseColorWrinkleMap(o_wrinkleLayers_baseColor_useTexture3, baseColor, GetMaterialTexture(params.m_wrinkle_baseColor_texture3), GetMaterialTextureSampler(), baseColorUv, wrinkleBlendFactors.b, uvDxDy, customDerivatives);
+        baseColor = ApplyBaseColorWrinkleMap(o_wrinkleLayers_baseColor_useTexture4, baseColor, GetMaterialTexture(params.m_wrinkle_baseColor_texture4), GetMaterialTextureSampler(), baseColorUv, wrinkleBlendFactors.a, uvDxDy, customDerivatives);
     
     }
     
-    baseColor = BlendBaseColor(baseColor, real3(MaterialSrg::m_baseColor), real(MaterialSrg::m_baseColorFactor), o_baseColorTextureBlendMode, useSampledBaseColor);
+    baseColor = BlendBaseColor(baseColor, real3(params.m_baseColor.rgb), real(params.m_baseColorFactor), o_baseColorTextureBlendMode, useSampledBaseColor);
     
-    baseColor = ApplyTextureOverlay(o_detail_baseColor_useTexture, baseColor, MaterialSrg::m_detail_baseColor_texture, MaterialSrg::m_sampler, detailUv, detailLayerBaseColorFactor, uvDxDy, customDerivatives);
+    baseColor = ApplyTextureOverlay(o_detail_baseColor_useTexture, baseColor, GetMaterialTexture(params.m_detail_baseColor_texture), GetMaterialTextureSampler(), detailUv, detailLayerBaseColorFactor, uvDxDy, customDerivatives);
 
     if(o_wrinkleLayers_enabled && o_wrinkleLayers_showBlendMaskValues)
     {
@@ -230,48 +231,48 @@ Surface EvaluateSurface_Skin(
 
     // ------- Specular -------
 
-    float2 specularUv = uvs[MaterialSrg::m_specularF0MapUvIndex];
-    real specularF0Factor = GetSpecularInput(MaterialSrg::m_specularF0Map, MaterialSrg::m_sampler, specularUv, real(MaterialSrg::m_specularF0Factor), o_specularF0_useTexture, uvDxDy, customDerivatives);
+    float2 specularUv = uvs[params.m_specularF0MapUvIndex];
+    real specularF0Factor = GetSpecularInput(GetMaterialTexture(params.m_specularF0Map), GetMaterialTextureSampler(), specularUv, real(params.m_specularF0Factor), o_specularF0_useTexture, uvDxDy, customDerivatives);
 
     surface.SetAlbedoAndSpecularF0(baseColor, specularF0Factor);
 
     // ------- Roughness -------
 
-    float2 roughnessUv = uvs[MaterialSrg::m_roughnessMapUvIndex];
-    surface.roughnessLinear = GetRoughnessInput(MaterialSrg::m_roughnessMap, MaterialSrg::m_sampler, roughnessUv, real(MaterialSrg::m_roughnessFactor),
-                                        real(MaterialSrg::m_roughnessLowerBound), real(MaterialSrg::m_roughnessUpperBound), o_roughness_useTexture, uvDxDy, customDerivatives);
+    float2 roughnessUv = uvs[params.m_roughnessMapUvIndex];
+    surface.roughnessLinear = GetRoughnessInput(GetMaterialTexture(params.m_roughnessMap), GetMaterialTextureSampler(), roughnessUv, real(params.m_roughnessFactor),
+                                        real(params.m_roughnessLowerBound), real(params.m_roughnessUpperBound), o_roughness_useTexture, uvDxDy, customDerivatives);
 
     surface.CalculateRoughnessA();
 
     // ------- Dual Specular -------
 
-    GetDualSpecularInput(surface.GetSpecularNormal(), surface.roughnessLinear, surface.specularF0.x, MaterialSrg::m_dualSpecFactor,
-                          MaterialSrg::m_dualSpecF0Multiplier, MaterialSrg::m_dualSpecRoughnessExponent, MaterialSrg::m_dualSpecRoughnessMultiplier,
+    GetDualSpecularInput(surface.GetSpecularNormal(), surface.roughnessLinear, surface.specularF0.x, params.m_dualSpecFactor,
+                          params.m_dualSpecF0Multiplier, params.m_dualSpecRoughnessExponent, params.m_dualSpecRoughnessMultiplier,
                           surface.dualSpecRoughness, surface.dualSpecRoughnessA2, surface.dualSpecF0, surface.dualSpecFactor);
 
     // ------- Subsurface -------
 
 #if OUTPUT_SUBSURFACE
-    float2 subsurfaceUv = uvs[MaterialSrg::m_subsurfaceScatteringInfluenceMapUvIndex];
-    surface.subsurfaceScatteringFactor = GetSubsurfaceInput(MaterialSrg::m_subsurfaceScatteringInfluenceMap, MaterialSrg::m_sampler, subsurfaceUv, real(MaterialSrg::m_subsurfaceScatteringFactor), uvDxDy, customDerivatives);
-    surface.subsurfaceScatteringQuality = real(MaterialSrg::m_subsurfaceScatteringQuality);
-    surface.scatterDistance = real3(MaterialSrg::m_scatterDistance);
+    float2 subsurfaceUv = uvs[params.m_subsurfaceScatteringInfluenceMapUvIndex];
+    surface.subsurfaceScatteringFactor = GetSubsurfaceInput(GetMaterialTexture(params.m_subsurfaceScatteringInfluenceMap), GetMaterialTextureSampler(), subsurfaceUv, real(params.m_subsurfaceScatteringFactor), uvDxDy, customDerivatives);
+    surface.subsurfaceScatteringQuality = real(params.m_subsurfaceScatteringQuality);
+    surface.scatterDistance = real3(params.m_scatterDistance);
 #endif
 
     // ------- Occlusion -------
     
-    surface.diffuseAmbientOcclusion = GetOcclusionInput(MaterialSrg::m_diffuseOcclusionMap, MaterialSrg::m_sampler, uvs[MaterialSrg::m_diffuseOcclusionMapUvIndex], real(MaterialSrg::m_diffuseOcclusionFactor), o_diffuseOcclusion_useTexture, uvDxDy, customDerivatives);
-    surface.specularOcclusion = GetOcclusionInput(MaterialSrg::m_specularOcclusionMap, MaterialSrg::m_sampler, uvs[MaterialSrg::m_specularOcclusionMapUvIndex], real(MaterialSrg::m_specularOcclusionFactor), o_specularOcclusion_useTexture, uvDxDy, customDerivatives);
+    surface.diffuseAmbientOcclusion = GetOcclusionInput(GetMaterialTexture(params.m_diffuseOcclusionMap), GetMaterialTextureSampler(), uvs[params.m_diffuseOcclusionMapUvIndex], real(params.m_diffuseOcclusionFactor), o_diffuseOcclusion_useTexture, uvDxDy, customDerivatives);
+    surface.specularOcclusion = GetOcclusionInput(GetMaterialTexture(params.m_specularOcclusionMap), GetMaterialTextureSampler(), uvs[params.m_specularOcclusionMapUvIndex], real(params.m_specularOcclusionFactor), o_specularOcclusion_useTexture, uvDxDy, customDerivatives);
 
     // ------- Transmission -------
 
 #if ENABLE_TRANSMISSION
-    float2 transmissionUv = uvs[MaterialSrg::m_transmissionThicknessMapUvIndex];
-    real4 transmissionTintThickness = GeTransmissionInput(MaterialSrg::m_transmissionThicknessMap, MaterialSrg::m_sampler, transmissionUv, real4(MaterialSrg::m_transmissionTintThickness), uvDxDy, customDerivatives);
+    float2 transmissionUv = uvs[params.m_transmissionThicknessMapUvIndex];
+    real4 transmissionTintThickness = GeTransmissionInput(GetMaterialTexture(params.m_transmissionThicknessMap), GetMaterialTextureSampler(), transmissionUv, real4(params.m_transmissionTintThickness), uvDxDy, customDerivatives);
     surface.transmission.tint = transmissionTintThickness.rgb;
     surface.transmission.thickness = transmissionTintThickness.w;
-    surface.transmission.transmissionParams = real4(MaterialSrg::m_transmissionParams);
-    surface.transmission.scatterDistance = real3(MaterialSrg::m_scatterDistance);
+    surface.transmission.transmissionParams = real4(params.m_transmissionParams);
+    surface.transmission.scatterDistance = real3(params.m_scatterDistance);
 #endif
 
     return surface;
@@ -280,6 +281,7 @@ Surface EvaluateSurface_Skin(
 // helper function to keep compatible with the previous version
 // because dxc compiler doesn't allow default parameters on functions with overloads
 Surface EvaluateSurface_Skin(
+    const MaterialParameters params,
     float3 positionWS,
     real3 vertexNormal,
     float3 tangents[UvSetCount],
@@ -290,6 +292,7 @@ Surface EvaluateSurface_Skin(
     bool isFrontFace)
 {
     return EvaluateSurface_Skin(
+        params,
         positionWS,
         vertexNormal,
         tangents,
@@ -302,9 +305,10 @@ Surface EvaluateSurface_Skin(
         false);
 }
 
-Surface EvaluateSurface_Skin(VsOutput IN, PixelGeometryData geoData, float4 uvDxDy, bool customDerivatives)
+Surface EvaluateSurface_Skin(VsOutput IN, PixelGeometryData geoData, const MaterialParameters params, float4 uvDxDy, bool customDerivatives)
 {
     return EvaluateSurface_Skin(
+        params,
         geoData.positionWS,
         geoData.vertexNormal,
         geoData.tangents,
@@ -317,9 +321,10 @@ Surface EvaluateSurface_Skin(VsOutput IN, PixelGeometryData geoData, float4 uvDx
         customDerivatives);
 }
 
-Surface EvaluateSurface_Skin(VsOutput IN, PixelGeometryData geoData)
+Surface EvaluateSurface_Skin(VsOutput IN, PixelGeometryData geoData, const MaterialParameters params)
 {
     return EvaluateSurface_Skin(
+        params,
         geoData.positionWS,
         geoData.vertexNormal,
         geoData.tangents,

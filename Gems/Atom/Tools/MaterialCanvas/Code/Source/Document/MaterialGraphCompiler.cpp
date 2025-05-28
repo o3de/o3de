@@ -141,7 +141,10 @@ namespace MaterialCanvas
             // safely generate the material SRG and material type that only contain variables referenced in the shaders. Without tracking
             // this, all variables would be included in the SRG and material type. The shader compiler would eliminate unused variables from
             // the compiled shader code. The material type would fail to build if it referenced any of the eliminated variables.
-            BuildMaterialSrgForCurrentNode();
+
+            // Note: The MaterialSrg has been replaced with the MaterialParameters - struct, which is generated automatically from the
+            // MaterialProperties with a shaderInput connection.
+            // BuildMaterialSrgForCurrentNode();
 
             // Save all of the generated files except for materials and material types. Generated material type files must be saved after
             // generated shader files to prevent AP errors because of missing dependencies.
@@ -1176,8 +1179,7 @@ namespace MaterialCanvas
             for (const auto& [materialPropertyValueSlot, materialPropertyValueSlotConfig] : materialPropertyValueSlots)
             {
                 // Sampler states are currently not configurable and will not be added added to the material type, just the material SRG.
-                if (!materialPropertyValueSlot || materialPropertyValueSlot->GetValue().empty() ||
-                    materialPropertyValueSlot->GetValue().is<AZ::RHI::SamplerState>())
+                if (!materialPropertyValueSlot || materialPropertyValueSlot->GetValue().empty())
                 {
                     continue;
                 }
