@@ -7,9 +7,7 @@
  */
 
 #include <Decals/DecalTextureArrayFeatureProcessor.h>
-#include <Atom/Feature/CoreLights/LightCommon.h>
 #include <Atom/Feature/Mesh/MeshCommon.h>
-#include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
@@ -24,6 +22,8 @@
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/Math/ShapeIntersection.h>
 #include <AzCore/std/containers/span.h>
+#include <CoreLights/LightCommon.h>
+#include <Mesh/MeshFeatureProcessor.h>
 #include <numeric>
 
 //! If modified, ensure that r_maxVisibleDecals is equal to or lower than ENABLE_DECALS_CAP which is the limit set by the shader on GPU.
@@ -526,27 +526,15 @@ namespace AZ
 
         void DecalTextureArrayFeatureProcessor::SetPackedTexturesToSrg(const RPI::ViewPtr& view)
         {
-            for (int mapType = 0; mapType < DecalMapType_Num; ++mapType)
+            int iter = m_textureArrayList.begin();
+            while (iter != -1)
             {
-                AZStd::bitset<NumTextureArrays> usedTextureArrayIndices;
-                int iter = m_textureArrayList.begin();
-                while (iter != -1)
+                for (int mapType = 0 ; mapType < DecalMapType_Num ; ++mapType)
                 {
                     const auto& packedTexture = m_textureArrayList[iter].second.GetPackedTexture(aznumeric_cast<DecalMapType>(mapType));
                     view->GetShaderResourceGroup()->SetImage(m_decalTextureArrayIndices[iter][mapType], packedTexture);
-                    usedTextureArrayIndices.set(iter);
-                    iter = m_textureArrayList.next(iter);
                 }
-
-                // Need to set to null all the not used texture shader inputs in case the texture array was destroyed
-                // but the SRG cached a copy of it.
-                for (uint32_t i = 0; i < usedTextureArrayIndices.size(); ++i)
-                {
-                    if (!usedTextureArrayIndices[i])
-                    {
-                        view->GetShaderResourceGroup()->SetImage(m_decalTextureArrayIndices[i][mapType], nullptr);
-                    }
-                }
+                iter = m_textureArrayList.next(iter);
             }
         }
 

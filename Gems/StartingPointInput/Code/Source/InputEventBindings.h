@@ -112,7 +112,7 @@ namespace StartingPointInput
                 {
                     edit->Class<InputEventBindingsAsset>("Input to Event Bindings Asset", "")
                         ->DataElement(0, &InputEventBindingsAsset::m_bindings, "Bindings", "")
-                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC("PropertyVisibility_ShowChildrenOnly", 0xef428f20))
+                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC_CE("PropertyVisibility_ShowChildrenOnly"))
                     ;
                 }
             }

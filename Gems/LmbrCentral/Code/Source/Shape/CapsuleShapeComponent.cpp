@@ -19,20 +19,20 @@ namespace LmbrCentral
 {
     void CapsuleShapeComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("ShapeService", 0xe86aa5fe));
-        provided.push_back(AZ_CRC("CapsuleShapeService", 0x9bc1122c));
+        provided.push_back(AZ_CRC_CE("ShapeService"));
+        provided.push_back(AZ_CRC_CE("CapsuleShapeService"));
     }
 
     void CapsuleShapeComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("ShapeService", 0xe86aa5fe));
-        incompatible.push_back(AZ_CRC("CapsuleShapeService", 0x9bc1122c));
+        incompatible.push_back(AZ_CRC_CE("ShapeService"));
+        incompatible.push_back(AZ_CRC_CE("CapsuleShapeService"));
         incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
     }
 
     void CapsuleShapeComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("TransformService", 0x8ee22c50));
+        required.push_back(AZ_CRC_CE("TransformService"));
     }
 
     void CapsuleShapeDebugDisplayComponent::Reflect(AZ::ReflectContext* context)
@@ -250,13 +250,13 @@ namespace LmbrCentral
             float oldHeight = 0.f;
             float oldRadius = 0.f;
 
-            int oldIndex = classElement.FindElement(AZ_CRC("Height", 0xf54de50f));
+            int oldIndex = classElement.FindElement(AZ_CRC_CE("Height"));
             if (oldIndex != -1)
             {
                 classElement.GetSubElement(oldIndex).GetData<float>(oldHeight);
             }
 
-            oldIndex = classElement.FindElement(AZ_CRC("Radius", 0x3b7c6e5a));
+            oldIndex = classElement.FindElement(AZ_CRC_CE("Radius"));
             if (oldIndex != -1)
             {
                 classElement.GetSubElement(oldIndex).GetData<float>(oldRadius);
@@ -309,7 +309,7 @@ namespace LmbrCentral
 
             // Cache the Configuration
             CapsuleShapeConfig configuration;
-            int configIndex = classElement.FindElement(AZ_CRC("Configuration", 0xa5e2a5d7));
+            int configIndex = classElement.FindElement(AZ_CRC_CE("Configuration"));
             if (configIndex != -1)
             {
                 classElement.GetSubElement(configIndex).GetData<CapsuleShapeConfig>(configuration);

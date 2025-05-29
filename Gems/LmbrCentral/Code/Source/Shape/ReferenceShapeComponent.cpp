@@ -32,7 +32,7 @@ namespace LmbrCentral
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(0, &ReferenceShapeConfig::m_shapeEntityId, "Shape Entity Id", "Entity with shape component to reference.")
-                    ->Attribute(AZ::Edit::Attributes::RequiredService, AZ_CRC("ShapeService", 0xe86aa5fe))
+                    ->Attribute(AZ::Edit::Attributes::RequiredService, AZ_CRC_CE("ShapeService"))
                     ;
             }
         }
@@ -49,13 +49,13 @@ namespace LmbrCentral
 
     void ReferenceShapeComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("ShapeService", 0xe86aa5fe));
+        services.push_back(AZ_CRC_CE("ShapeService"));
         services.push_back(AZ_CRC_CE("ReferenceShapeService"));
     }
 
     void ReferenceShapeComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("ShapeService", 0xe86aa5fe));
+        services.push_back(AZ_CRC_CE("ShapeService"));
     }
 
     void ReferenceShapeComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& services)

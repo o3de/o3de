@@ -8,12 +8,12 @@
 
 #pragma once
 
-#include <Atom/Feature/CoreLights/LightCommon.h>
 #include <Atom/Feature/CoreLights/PolygonLightFeatureProcessorInterface.h>
 #include <Atom/Feature/Mesh/MeshCommon.h>
 #include <Atom/Feature/Utils/GpuBufferHandler.h>
 #include <Atom/Feature/Utils/MultiIndexedDataVector.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
+#include <CoreLights/LightCommon.h>
 
 namespace AZ
 {
@@ -51,9 +51,9 @@ namespace AZ
             void SetAttenuationRadius(LightHandle handle, float attenuationRadius) override;
             void SetLightingChannelMask(LightHandle handle, uint32_t lightingChannelMask) override;
 
-            const Data::Instance<RPI::Buffer> GetLightBuffer()const;
-            const Data::Instance<RPI::Buffer> GetLightPointBuffer()const;
-            uint32_t GetLightCount()const;
+            const Data::Instance<RPI::Buffer> GetLightBuffer() const override;
+            const Data::Instance<RPI::Buffer> GetLightPointBuffer() const override;
+            uint32_t GetLightCount() const override;
 
         private:
             PolygonLightFeatureProcessor(const PolygonLightFeatureProcessor&) = delete;

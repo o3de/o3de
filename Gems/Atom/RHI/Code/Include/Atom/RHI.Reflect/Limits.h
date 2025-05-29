@@ -32,7 +32,7 @@ namespace AZ::RHI
             constexpr uint32_t DrawFilterTagCountMax = 32;
             constexpr uint32_t MultiSampleCustomLocationsCountMax = 16;
             constexpr uint32_t MultiSampleCustomLocationGridSize = 16;
-            constexpr uint32_t SubpassCountMax = 10;
+            constexpr uint32_t SubpassCountMax = 13;
             constexpr uint32_t RenderAttachmentCountMax = 2 * AttachmentColorCountMax + 2; // RenderAttachments + ResolveAttachments + DepthStencilAttachment +  ShadingRateAttachment
             constexpr uint32_t UnboundedArraySize = 100000u;
         }
@@ -93,10 +93,12 @@ namespace AZ::RHI
         {
         };
         AZ_DEFINE_ENUM_BITWISE_OPERATORS(DeviceMask);
+        constexpr DeviceMask NoDevices{ 0u };
         constexpr DeviceMask AllDevices{ static_cast<DeviceMask>(AZStd::numeric_limits<uint32_t>::max()) };
         constexpr DeviceMask DefaultDevice{ 1u };
 
         constexpr int DefaultDeviceIndex{ 0 };
+        constexpr int InvalidDeviceIndex{ -1 };
     }
 
     constexpr int InvalidIndex = AZStd::numeric_limits<int>::max();

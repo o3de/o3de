@@ -14,6 +14,7 @@
 #include <CoreLights/AreaLightComponent.h>
 #include <CoreLights/DirectionalLightComponent.h>
 #include <CubeMapCapture/CubeMapCaptureComponent.h>
+#include <Debug/RayTracingDebugComponent.h>
 #include <Debug/RenderDebugComponent.h>
 #include <Decals/DecalComponent.h>
 #include <Grid/GridComponent.h>
@@ -53,6 +54,7 @@
 #include <CoreLights/EditorAreaLightComponent.h>
 #include <CoreLights/EditorDirectionalLightComponent.h>
 #include <CubeMapCapture/EditorCubeMapCaptureComponent.h>
+#include <Debug/RayTracingDebugEditorComponent.h>
 #include <Debug/RenderDebugEditorComponent.h>
 #include <Decals/EditorDecalComponent.h>
 #include <Grid/EditorGridComponent.h>
@@ -125,6 +127,7 @@ namespace AZ
                         PostFxLayerComponent::CreateDescriptor(),
                         ReflectionProbeComponent::CreateDescriptor(),
                         SpecularReflectionsComponent::CreateDescriptor(),
+                        RayTracingDebugComponent::CreateDescriptor(),
                         RenderDebugComponent::CreateDescriptor(),
                         RadiusWeightModifierComponent::CreateDescriptor(),
                         ShapeWeightModifierComponent::CreateDescriptor(),
@@ -166,6 +169,7 @@ namespace AZ
                         EditorPostFxLayerComponent::CreateDescriptor(),
                         EditorReflectionProbeComponent::CreateDescriptor(),
                         EditorSpecularReflectionsComponent::CreateDescriptor(),
+                        RayTracingDebugEditorComponent::CreateDescriptor(),
                         RenderDebugEditorComponent::CreateDescriptor(),
                         EditorRadiusWeightModifierComponent::CreateDescriptor(),
                         EditorShapeWeightModifierComponent::CreateDescriptor(),

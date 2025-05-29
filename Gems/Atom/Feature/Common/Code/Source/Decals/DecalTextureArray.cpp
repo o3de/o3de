@@ -123,6 +123,7 @@ namespace AZ
 
         void DecalTextureArray::RemoveMaterial(const int index)
         {
+            m_materials[index] = {};
             m_materials.erase(index);
         }
 
@@ -259,7 +260,7 @@ namespace AZ
             return imageAsset->GetImageDescriptor().m_mipLevels;
         }
 
-        RHI::ImageSubresourceLayout DecalTextureArray::GetLayout(const DecalMapType mapType, int mip) const
+        RHI::DeviceImageSubresourceLayout DecalTextureArray::GetLayout(const DecalMapType mapType, int mip) const
         {
             AZ_Assert(m_materials.size() > 0, "GetLayout() cannot be called unless at least one material has been added");
 

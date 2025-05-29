@@ -311,7 +311,7 @@ namespace NumericalMethods::Eigenanalysis
         EXPECT_NEAR(v3.Norm(), 1.0, 1e-6);
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         All,
         OrthogonalComplementParams,
         ::testing::Values(
@@ -352,7 +352,7 @@ namespace NumericalMethods::Eigenanalysis
         }
     }
 
-    INSTANTIATE_TEST_CASE_P(All, ComputeEigenvector0Params, ::testing::ValuesIn(testCasesUniqueEigenvalues));
+    INSTANTIATE_TEST_SUITE_P(All, ComputeEigenvector0Params, ::testing::ValuesIn(testCasesUniqueEigenvalues));
 
 
     class ComputeEigenvector1UniqueEigenvalueParams
@@ -394,7 +394,7 @@ namespace NumericalMethods::Eigenanalysis
         }
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         All,
         ComputeEigenvector1UniqueEigenvalueParams,
         ::testing::ValuesIn(testCasesUniqueEigenvalues)
@@ -430,7 +430,7 @@ namespace NumericalMethods::Eigenanalysis
         );
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         All,
         ComputeEigenvector1RepeatedEigenvalueParams,
         ::testing::ValuesIn(testCasesRepeatedEigenvalues)
@@ -467,8 +467,8 @@ namespace NumericalMethods::Eigenanalysis
         }
     }
 
-    INSTANTIATE_TEST_CASE_P(Unique, ComputeEigenvector2Params, ::testing::ValuesIn(testCasesUniqueEigenvalues));
-    INSTANTIATE_TEST_CASE_P(Repeated, ComputeEigenvector2Params, ::testing::ValuesIn(testCasesRepeatedEigenvalues));
+    INSTANTIATE_TEST_SUITE_P(Unique, ComputeEigenvector2Params, ::testing::ValuesIn(testCasesUniqueEigenvalues));
+    INSTANTIATE_TEST_SUITE_P(Repeated, ComputeEigenvector2Params, ::testing::ValuesIn(testCasesRepeatedEigenvalues));
 
 
     class NonIterativeSymmetricEigensolver3x3UniqueEigenvalueParams
@@ -509,7 +509,7 @@ namespace NumericalMethods::Eigenanalysis
         );
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         All,
         NonIterativeSymmetricEigensolver3x3UniqueEigenvalueParams,
         ::testing::ValuesIn(testCasesUniqueEigenvalues)
@@ -574,7 +574,7 @@ namespace NumericalMethods::Eigenanalysis
         );
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         All,
         NonIterativeSymmetricEigensolver3x3RepeatedEigenvalueParams,
         ::testing::ValuesIn(testCasesRepeatedEigenvalues)
@@ -612,7 +612,7 @@ namespace NumericalMethods::Eigenanalysis
         ExpectParallelUnitVector(ArrayToVector(result.m_eigenpairs[2].m_vector), { 0.0, 0.0, 1.0 }, 1e-6);
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         All,
         NonIterativeSymmetricEigensolver3x3DiagonalMatrixParams,
         ::testing::Values(

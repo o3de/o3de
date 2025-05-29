@@ -101,7 +101,7 @@ namespace ScriptCanvas
         }
         if (nodeElementNode.GetVersion() <= 5)
         {
-            auto slotVectorElementNodes = AZ::Utils::FindDescendantElements(context, nodeElementNode, AZStd::vector<AZ::Crc32>{AZ_CRC("Slots", 0xc87435d0), AZ_CRC("m_slots", 0x84838ab4)});
+            auto slotVectorElementNodes = AZ::Utils::FindDescendantElements(context, nodeElementNode, AZStd::vector<AZ::Crc32>{AZ_CRC_CE("Slots"), AZ_CRC_CE("m_slots")});
             if (slotVectorElementNodes.empty())
             {
                 AZ_Error("Script Canvas", false, "Node version %u is missing SlotContainer container structure", nodeElementNode.GetVersion());
@@ -117,7 +117,7 @@ namespace ScriptCanvas
             }
 
             // Datum -> VarDatum
-            int datumArrayElementIndex = nodeElementNode.FindElement(AZ_CRC("m_inputData", 0xba1b1449));
+            int datumArrayElementIndex = nodeElementNode.FindElement(AZ_CRC_CE("m_inputData"));
             if (datumArrayElementIndex == -1)
             {
                 AZ_Error("Script Canvas", false, "Unable to find the Datum array structure on Node class version %u", nodeElementNode.GetVersion());
@@ -133,7 +133,7 @@ namespace ScriptCanvas
             }
 
             // Retrieve the old AZStd::vector<Data::Type>
-            int dataTypeArrayElementIndex = nodeElementNode.FindElement(AZ_CRC("m_outputTypes", 0x6be6d8c2));
+            int dataTypeArrayElementIndex = nodeElementNode.FindElement(AZ_CRC_CE("m_outputTypes"));
             if (dataTypeArrayElementIndex == -1)
             {
                 AZ_Error("Script Canvas", false, "Unable to find the Data::Type array structure on the Node class version %u", nodeElementNode.GetVersion());
@@ -149,7 +149,7 @@ namespace ScriptCanvas
             }
 
             // Retrieve the Slot index -> Datum index map
-            int slotDatumIndexMapElementIndex = nodeElementNode.FindElement(AZ_CRC("m_inputIndexBySlotIndex", 0xf429c4e7));
+            int slotDatumIndexMapElementIndex = nodeElementNode.FindElement(AZ_CRC_CE("m_inputIndexBySlotIndex"));
             if (slotDatumIndexMapElementIndex == -1)
             {
                 AZ_Error("Script Canvas", false, "Unable to find the Slot Index to Data::Type Index Map on the Node class version %u", nodeElementNode.GetVersion());
@@ -165,7 +165,7 @@ namespace ScriptCanvas
             }
 
             // Retrieve the Slot index -> Data::Type index map
-            int slotDataTypeIndexMapElementIndex = nodeElementNode.FindElement(AZ_CRC("m_outputTypeIndexBySlotIndex", 0xc51484b2));
+            int slotDataTypeIndexMapElementIndex = nodeElementNode.FindElement(AZ_CRC_CE("m_outputTypeIndexBySlotIndex"));
             if (slotDataTypeIndexMapElementIndex == -1)
             {
                 AZ_Error("Script Canvas", false, "Unable to find the Slot Index to Data::Type Index Map on the Node class version %u", nodeElementNode.GetVersion());
@@ -203,11 +203,11 @@ namespace ScriptCanvas
             }
 
             // Remove all the version 5 and below DataElements
-            nodeElementNode.RemoveElementByName(AZ_CRC("Slots", 0xc87435d0));
-            nodeElementNode.RemoveElementByName(AZ_CRC("m_outputTypes", 0x6be6d8c2));
-            nodeElementNode.RemoveElementByName(AZ_CRC("m_inputData", 0xba1b1449));
-            nodeElementNode.RemoveElementByName(AZ_CRC("m_inputIndexBySlotIndex", 0xf429c4e7));
-            nodeElementNode.RemoveElementByName(AZ_CRC("m_outputTypeIndexBySlotIndex", 0xc51484b2));
+            nodeElementNode.RemoveElementByName(AZ_CRC_CE("Slots"));
+            nodeElementNode.RemoveElementByName(AZ_CRC_CE("m_outputTypes"));
+            nodeElementNode.RemoveElementByName(AZ_CRC_CE("m_inputData"));
+            nodeElementNode.RemoveElementByName(AZ_CRC_CE("m_inputIndexBySlotIndex"));
+            nodeElementNode.RemoveElementByName(AZ_CRC_CE("m_outputTypeIndexBySlotIndex"));
 
             // Move the old slots from the AZStd::vector to an AZStd::list
             Node::SlotList newSlots{ AZStd::make_move_iterator(oldSlots.begin()), AZStd::make_move_iterator(oldSlots.end()) };
@@ -237,13 +237,13 @@ namespace ScriptCanvas
         {
             // Finds the AZStd::list<VariableDatum> and replaces that with an AZStd::list<VariableDatumBase> which does not have the exposure/or visibility options
             AZStd::list<VariableDatum> oldVarDatums;
-            if (!nodeElementNode.GetChildData(AZ_CRC("Variables", 0x88cb7d11), oldVarDatums))
+            if (!nodeElementNode.GetChildData(AZ_CRC_CE("Variables"), oldVarDatums))
             {
                 AZ_Error("Script Canvas", false, "Unable to retrieve the Variable Datum list structure from Node version %u. Node version conversion has failed", nodeElementNode.GetVersion());
                 return false;
             }
 
-            nodeElementNode.RemoveElementByName(AZ_CRC("Variables", 0x88cb7d11));
+            nodeElementNode.RemoveElementByName(AZ_CRC_CE("Variables"));
 
             AZStd::list<Deprecated::VariableDatumBase> newVarDatumBases;
             for (const auto& oldVarDatum : oldVarDatums)
@@ -263,21 +263,21 @@ namespace ScriptCanvas
         {
             Node::SlotList slots;
 
-            if (!nodeElementNode.GetChildData(AZ_CRC("Slots", 0xc87435d0), slots))
+            if (!nodeElementNode.GetChildData(AZ_CRC_CE("Slots"), slots))
             {
                 return false;
             }
 
             AZStd::list<Deprecated::VariableDatumBase> varDatums;
 
-            if (!nodeElementNode.GetChildData(AZ_CRC("Variables", 0x88cb7d11), varDatums))
+            if (!nodeElementNode.GetChildData(AZ_CRC_CE("Variables"), varDatums))
             {
                 return false;
             }
 
             AZStd::unordered_map<SlotId, Deprecated::VariableInfo> slotIdVarInfoMap;
 
-            if (!nodeElementNode.GetChildData(AZ_CRC("SlotToVariableInfoMap", 0xad197366), slotIdVarInfoMap))
+            if (!nodeElementNode.GetChildData(AZ_CRC_CE("SlotToVariableInfoMap"), slotIdVarInfoMap))
             {
                 return false;
             }
@@ -374,9 +374,9 @@ namespace ScriptCanvas
             }
 
             // Remove the old data.
-            nodeElementNode.RemoveElementByName(AZ_CRC("Slots", 0xc87435d0));
-            nodeElementNode.RemoveElementByName(AZ_CRC("Variables", 0x88cb7d11));
-            nodeElementNode.RemoveElementByName(AZ_CRC("SlotToVariableInfoMap", 0xad197366));
+            nodeElementNode.RemoveElementByName(AZ_CRC_CE("Slots"));
+            nodeElementNode.RemoveElementByName(AZ_CRC_CE("Variables"));
+            nodeElementNode.RemoveElementByName(AZ_CRC_CE("SlotToVariableInfoMap"));
 
             // Push in the new data.
             nodeElementNode.AddElementWithData(context, "Slots", slots);
@@ -386,9 +386,9 @@ namespace ScriptCanvas
         if (nodeElementNode.GetVersion() < 14)
         {
             bool enabled;
-            if (nodeElementNode.GetChildData(AZ_CRC("Enabled", 0x50f9bb84), enabled))
+            if (nodeElementNode.GetChildData(AZ_CRC_CE("Enabled"), enabled))
             {
-                nodeElementNode.RemoveElementByName(AZ_CRC("Enabled", 0x50f9bb84));
+                nodeElementNode.RemoveElementByName(AZ_CRC_CE("Enabled"));
                 NodeDisabledFlag disabledFlag = NodeDisabledFlag::None;
                 if (!enabled)
                 {
@@ -403,8 +403,8 @@ namespace ScriptCanvas
         }
 
         // Deprecated field, just remove without version check
-        nodeElementNode.RemoveElementByName(AZ_CRC("UniqueGraphID", 0x065397aa));
-        nodeElementNode.RemoveElementByName(AZ_CRC("ExecutionType", 0xdb87b19c));
+        nodeElementNode.RemoveElementByName(AZ_CRC_CE("UniqueGraphID"));
+        nodeElementNode.RemoveElementByName(AZ_CRC_CE("ExecutionType"));
 
         return true;
     }

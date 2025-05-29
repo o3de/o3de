@@ -214,7 +214,7 @@ void GpuCrashTracker::OnShaderLookup(
 }
 
 void GpuCrashTracker::OnResolveMarker(
-    [[maybe_unused]] const void* pMarker, [[maybe_unused]] void** resolvedMarkerData, [[maybe_unused]] uint32_t* markerSize) const
+    [[maybe_unused]] const void* pMarker, [[maybe_unused]] const uint32_t markerDataSize, [[maybe_unused]] void** resolvedMarkerData, [[maybe_unused]] uint32_t* markerSize) const
 {
 }
 
@@ -271,12 +271,13 @@ void GpuCrashTracker::ShaderLookupCallback(
 
 void GpuCrashTracker::ResolveMarkerCallback(
     const void* pMarker,
+    const uint32_t markerDataSize,
     void* pUserData,
     void** resolvedMarkerData,
     uint32_t* markerSize)
 {
     GpuCrashTracker* pGpuCrashTracker = reinterpret_cast<GpuCrashTracker*>(pUserData);
-    pGpuCrashTracker->OnResolveMarker(pMarker, resolvedMarkerData, markerSize);
+    pGpuCrashTracker->OnResolveMarker(pMarker, markerDataSize, resolvedMarkerData, markerSize);
 }
 
 void GpuCrashTracker::ShaderSourceDebugInfoLookupCallback(

@@ -120,7 +120,6 @@ namespace AZ
 
                 m_data[positionToRemove].m_next = m_freeListHead;
                 m_freeListHead = positionToRemove;
-                m_data[positionToRemove].m_value = {};
             }
 
             void clear()

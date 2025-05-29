@@ -6,7 +6,7 @@
  *
  */
 
-#include <ImGui/ImGuiPass.h>
+#include <Atom/Feature/ImGui/ImGuiPass.h>
 
 #include <AzFramework/Input/Devices/Gamepad/InputDeviceGamepad.h>
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
@@ -548,6 +548,7 @@ namespace AZ
 
         void ImGuiPass::InitializeInternal()
         {
+            Base::InitializeInternal();
             if (!m_imguiInitialized)
             {
                 InitializeImGui();
@@ -557,8 +558,6 @@ namespace AZ
             // Set output format and finalize pipeline state
             m_pipelineState->SetOutputFromPass(this);
             m_pipelineState->Finalize();
-
-            Base::InitializeInternal();
         }
 
         void ImGuiPass::FrameBeginInternal(FramePrepareParams params)
@@ -594,8 +593,9 @@ namespace AZ
             uint32_t drawCount = UpdateImGuiResources();
             frameGraph.SetEstimatedItemCount(drawCount);
 
-            m_draws.clear();
-            m_draws.reserve(drawCount);
+            m_drawInfos.NextBuffer();
+            m_drawInfos.Get().clear();
+            m_drawInfos.Get().reserve(drawCount);
         }
 
         void ImGuiPass::CompileResources([[maybe_unused]] const RHI::FrameGraphCompileContext& context)
@@ -638,10 +638,16 @@ namespace AZ
                             }
                         }
 
-                        m_draws.push_back(
+                        RHI::GeometryView geometryView;
+                        geometryView.SetDrawArguments(RHI::DrawIndexed(vertexOffset, drawCmd.ElemCount, indexOffset));
+                        geometryView.SetIndexBufferView(m_indexBufferView);
+                        geometryView.AddStreamBufferView(m_vertexBufferView[0]);
+                        geometryView.AddStreamBufferView(m_vertexBufferView[1]);
+
+                        m_drawInfos.Get().push_back(
                             {
-                                // Instance offset is used to index to the correct texture in the shader
-                                RHI::DrawIndexed(1, index, vertexOffset, drawCmd.ElemCount, indexOffset),
+                                RHI::DrawInstanceArguments(1, index),
+                                geometryView,
                                 RHI::Scissor(
                                     static_cast<int32_t>(drawCmd.ClipRect.x),
                                     static_cast<int32_t>(drawCmd.ClipRect.y),
@@ -674,18 +680,18 @@ namespace AZ
             AZ_PROFILE_SCOPE(AzRender, "ImGuiPass: BuildCommandListInternal");
 
             context.GetCommandList()->SetViewport(m_viewportState);
-            context.GetCommandList()->SetShaderResourceGroupForDraw(*m_resourceGroup->GetRHIShaderResourceGroup());
+            context.GetCommandList()->SetShaderResourceGroupForDraw(*m_resourceGroup->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(context.GetDeviceIndex()));
 
             for (uint32_t i = context.GetSubmitRange().m_startIndex; i < context.GetSubmitRange().m_endIndex; ++i)
             {
-                RHI::DrawItem drawItem;
-                drawItem.m_arguments = m_draws.at(i).m_drawIndexed;
-                drawItem.m_pipelineState = m_pipelineState->GetRHIPipelineState();
-                drawItem.m_indexBufferView = &m_indexBufferView;
-                drawItem.m_streamBufferViewCount = 2;
-                drawItem.m_streamBufferViews = m_vertexBufferView.data();
+                DrawInfo& drawInfo = m_drawInfos.Get().at(i);
+                RHI::DeviceDrawItem drawItem;
+                drawItem.m_drawInstanceArgs = drawInfo.m_drawInstanceArgs;
+                drawItem.m_geometryView = drawInfo.m_geometryView.GetDeviceGeometryView(context.GetDeviceIndex());
+                drawItem.m_streamIndices = drawInfo.m_geometryView.GetFullStreamBufferIndices();
+                drawItem.m_pipelineState = m_pipelineState->GetRHIPipelineState()->GetDevicePipelineState(context.GetDeviceIndex()).get();
                 drawItem.m_scissorsCount = 1;
-                drawItem.m_scissors = &m_draws.at(i).m_scissor;
+                drawItem.m_scissors = &drawInfo.m_scissor;
 
                 context.GetCommandList()->Submit(drawItem, i);
             }
@@ -726,8 +732,8 @@ namespace AZ
                 return 0;
             }
 
-            ImDrawIdx* indexBufferData = static_cast<ImDrawIdx*>(indexBuffer->GetBufferAddress());
-            ImDrawVert* vertexBufferData = static_cast<ImDrawVert*>(vertexBuffer->GetBufferAddress());
+            auto indexBufferDataAddress = indexBuffer->GetBufferAddress();
+            auto vertexBufferDataAddress = vertexBuffer->GetBufferAddress();
 
             uint32_t drawCount = 0;
             uint32_t indexBufferOffset = 0;
@@ -740,11 +746,17 @@ namespace AZ
                     const ImDrawList* drawList = drawData.CmdLists[cmdListIndex];
 
                     const uint32_t indexBufferByteSize = drawList->IdxBuffer.size() * indexSize;
-                    memcpy(indexBufferData + indexBufferOffset, drawList->IdxBuffer.Data, indexBufferByteSize);
+                    for(auto [deviceIndex, indexBufferData] : indexBufferDataAddress)
+                    {
+                        memcpy(static_cast<ImDrawIdx*>(indexBufferData) + indexBufferOffset, drawList->IdxBuffer.Data, indexBufferByteSize);
+                    }
                     indexBufferOffset += drawList->IdxBuffer.size();
 
                     const uint32_t vertexBufferByteSize = drawList->VtxBuffer.size() * vertexSize;
-                    memcpy(vertexBufferData + vertexBufferOffset, drawList->VtxBuffer.Data, vertexBufferByteSize);
+                    for(auto [deviceIndex, vertexBufferData] : vertexBufferDataAddress)
+                    {
+                        memcpy(static_cast<ImDrawVert*>(vertexBufferData) + vertexBufferOffset, drawList->VtxBuffer.Data, vertexBufferByteSize);
+                    }
                     vertexBufferOffset += drawList->VtxBuffer.size();
 
                     drawCount += drawList->CmdBuffer.size();

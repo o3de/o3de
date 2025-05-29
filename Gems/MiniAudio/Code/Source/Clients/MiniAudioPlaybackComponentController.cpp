@@ -162,6 +162,7 @@ namespace MiniAudio
     {
         if (m_config.m_sound.GetId() != soundAsset.GetId())
         {
+            UnloadSound();
             m_config.m_sound = soundAsset;
             OnConfigurationUpdated();
         }
@@ -329,13 +330,11 @@ namespace MiniAudio
 
     void MiniAudioPlaybackComponentController::LoadSound()
     {
-        UnloadSound();
-
         if (ma_engine* engine = MiniAudioInterface::Get()->GetSoundEngine())
         {
             if (GetConfiguration().m_sound.IsReady())
             {
-                m_soundName = GetConfiguration().m_sound.GetHint();
+                AZ::Data::AssetId::FixedString soundName = GetConfiguration().m_sound.GetId().ToFixedString();
 
                 const auto& assetBuffer = GetConfiguration().m_sound->m_data;
                 if (assetBuffer.empty())
@@ -344,7 +343,7 @@ namespace MiniAudio
                 }
 
                 ma_result result = ma_resource_manager_register_encoded_data(
-                    ma_engine_get_resource_manager(engine), m_soundName.c_str(), assetBuffer.data(), assetBuffer.size());
+                    ma_engine_get_resource_manager(engine), soundName.c_str(), assetBuffer.data(), assetBuffer.size());
                 if (result != MA_SUCCESS)
                 {
                     // An error occurred.
@@ -359,7 +358,7 @@ namespace MiniAudio
                 m_sound = AZStd::make_unique<ma_sound>();
 
                 const ma_uint32 flags = MA_SOUND_FLAG_DECODE;
-                result = ma_sound_init_from_file(engine, m_soundName.c_str(), flags, nullptr, nullptr, m_sound.get());
+                result = ma_sound_init_from_file(engine, soundName.c_str(), flags, nullptr, nullptr, m_sound.get());
                 if (result != MA_SUCCESS)
                 {
                     // An error occurred.
@@ -434,10 +433,10 @@ namespace MiniAudio
                 m_sound.reset();
             }
 
-            if (m_soundName.empty() == false)
+            AZ::Data::AssetId soundId = GetConfiguration().m_sound.GetId();
+            if (soundId.IsValid())
             {
-                ma_resource_manager_unregister_data(ma_engine_get_resource_manager(engine), m_soundName.c_str());
-                m_soundName.clear();
+                ma_resource_manager_unregister_data(ma_engine_get_resource_manager(engine), soundId.ToFixedString().c_str());
             }
         }
     }

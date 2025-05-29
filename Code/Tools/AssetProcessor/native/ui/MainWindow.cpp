@@ -513,7 +513,7 @@ void MainWindow::Activate()
 
     //Log View
     m_loggingPanel = ui->LoggingPanel;
-    m_loggingPanel->SetStorageID(AZ_CRC("AssetProcessor::LogPanel", 0x75baa468));
+    m_loggingPanel->SetStorageID(AZ_CRC_CE("AssetProcessor::LogPanel"));
 
     connect(ui->logButton, &QPushButton::clicked, this, &MainWindow::DesktopOpenJobLogs);
 
@@ -1557,7 +1557,13 @@ void MainWindow::OnAssetProcessorStatusChanged(const AssetProcessor::AssetProces
 
         if (m_processJobsCount + m_createJobCount > 0)
         {
-            text = tr("Working, analyzing jobs remaining %1, processing jobs remaining %2...").arg(m_createJobCount).arg(m_processJobsCount);
+            text += tr("Working, analyzing jobs remaining %1, processing jobs remaining %2...").arg(m_createJobCount).arg(m_processJobsCount);
+
+            if (!entry.m_extraInfo.isEmpty())
+            {
+                text += tr("<p style='font-size:small;'>%1</p>").arg(entry.m_extraInfo);
+            }
+
             ui->timerContainerWidget->setVisible(false);
             ui->productAssetDetailsPanel->SetScanQueueEnabled(false);
 

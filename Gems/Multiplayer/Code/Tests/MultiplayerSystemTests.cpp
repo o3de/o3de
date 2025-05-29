@@ -163,7 +163,7 @@ namespace Multiplayer
                 return true;
             }
 
-            AZStd::string m_levelName;
+            AZStd::string m_levelName = "MockedMultiplayerLevelName";
         };
 
         AZStd::unique_ptr<MockLevelSystemLifecycle> m_mockLevelSystem;

@@ -182,7 +182,7 @@ namespace AzToolsFramework
             setContentWidget(m_propertyEditor);
         }
 
-        m_savedKeySeed = AZ_CRC("WorldEditorEntityEditor_Component", 0x926c865f);
+        m_savedKeySeed = AZ_CRC_CE("WorldEditorEntityEditor_Component");
         connect(this, &AzQtComponents::Card::expandStateChanged, this, &ComponentEditor::OnExpanderChanged);
         connect(GetHeader(), &ComponentEditorHeader::OnContextMenuClicked, this, &ComponentEditor::OnContextMenuClicked);
         connect(GetHeader(), &ComponentEditorHeader::iconLabelClicked, this, &ComponentEditor::OnIconLabelClicked);
@@ -470,6 +470,11 @@ namespace AzToolsFramework
 
     bool ComponentEditor::AreAnyComponentsDisabled() const
     {
+        if (m_preventDataAccess) // are we during some sort of full ui rebuild?
+        {
+            return false;
+        }
+
         for (auto component : m_components)
         {
             auto entity = component->GetEntity();
@@ -605,6 +610,11 @@ namespace AzToolsFramework
 
     void ComponentEditor::QueuePropertyEditorInvalidationForComponent(AZ::EntityComponentIdPair entityComponentIdPair, PropertyModificationRefreshLevel refreshLevel)
     {
+        if (m_preventDataAccess) // are we during some sort of full ui rebuild?
+        {
+            return;
+        }
+
         for (const auto component : m_components)
         {
             if ((component->GetId() == entityComponentIdPair.GetComponentId()) 
@@ -623,6 +633,7 @@ namespace AzToolsFramework
 
     void ComponentEditor::PreventRefresh(bool shouldPrevent)
     {
+        m_preventDataAccess = shouldPrevent;
         GetPropertyEditor()->PreventDataAccess(shouldPrevent);
     }
 
@@ -878,7 +889,7 @@ namespace AzToolsFramework
                         AZ::u32 visibilityValue;
                         if (reader.Read<AZ::u32>(visibilityValue))
                         {
-                            if (visibilityValue == AZ_CRC("PropertyVisibility_Hide", 0x32ab90f7))
+                            if (visibilityValue == AZ_CRC_CE("PropertyVisibility_Hide"))
                             {
                                 visible = false;
                             }
@@ -979,6 +990,11 @@ namespace AzToolsFramework
 
     bool ComponentEditor::HasComponentWithId(AZ::ComponentId componentId)
     {
+        if (m_preventDataAccess) // are we during some sort of full ui rebuild?
+        {
+            return false;
+        }
+
         for (AZ::Component* component : m_components)
         {
             if (component->GetId() == componentId)

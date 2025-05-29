@@ -110,7 +110,7 @@ namespace AZ
         {
             // Though this is a fullscreen pass, the shader computes 16x16 tiles with groups of 8x8 threads,
             // each thread outputting to a single pixel in the tiled min/max texture
-            m_isFullscreenPass = false;
+            m_fullscreenDispatch = false;
         }
 
         void NewDepthOfFieldTileReducePass::FrameBeginInternal(FramePrepareParams params)

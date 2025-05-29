@@ -89,7 +89,7 @@ namespace Profiler
         AZ::SystemTickBus::Handler::BusDisconnect();
     }
 
-    void CpuProfiler::BeginRegion(const AZ::Debug::Budget* budget, const char* eventName, size_t eventNameArgCount, ...)
+    void CpuProfiler::BeginRegion(const AZ::Debug::Budget* budget, const char* eventName, ...)
     {
         // Try to lock here, the shutdownMutex will only be contested when the CpuProfiler is shutting down.
         if (m_shutdownMutex.try_lock_shared())
@@ -99,7 +99,7 @@ namespace Profiler
                 // Lazy initialization, creates an instance of the Thread local data if it's not created, and registers it
                 RegisterThreadStorage();
                 va_list args;
-                va_start(args, eventNameArgCount);
+                va_start(args, eventName);
                 // Push it to the stack
                 CachedTimeRegion timeRegion({ budget->Name(), AZStd::fixed_string<512>::format_arg(eventName, args).c_str() });
                 ms_threadLocalStorage->RegionStackPushBack(timeRegion);

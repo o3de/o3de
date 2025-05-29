@@ -326,7 +326,7 @@ namespace RemoteTools
     void RemoteToolsSystemComponent::SendRemoteToolsMessage(
         const AzFramework::RemoteToolsEndpointInfo& target, const AzFramework::RemoteToolsMessage& msg)
     {
-        AZ::SerializeContext* serializeContext;
+        AZ::SerializeContext* serializeContext = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
 
         AZStd::vector<char, AZ::OSStdAllocator> msgBuffer;
@@ -560,7 +560,7 @@ namespace RemoteTools
     AzFramework::RemoteToolsMessage* RemoteToolsSystemComponent::DeserializeMessage(
         const AZ::Crc32& key, AZStd::vector<AZStd::byte>& buffer, const uint32_t& totalBufferSize)
     {
-        AZ::SerializeContext* serializeContext;
+        AZ::SerializeContext* serializeContext = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
 
         // Deserialize the complete buffer

@@ -353,7 +353,7 @@ namespace EMotionFX
 
     AZ::u32 AnimGraphMultiTransitionIdHandler::GetHandlerName() const
     {
-        return AZ_CRC("AnimGraphStateTransitionIds", 0x7b2468f7);
+        return AZ_CRC_CE("AnimGraphStateTransitionIds");
     }
 
     QWidget* AnimGraphMultiTransitionIdHandler::CreateGUI(QWidget* parent)

@@ -151,7 +151,7 @@ void UiButtonComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::Category, "UI")
                 ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/UiButton.png")
                 ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/UiButton.png")
-                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("UI", 0x27ff46b0))
+                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
             // Actions group
@@ -253,7 +253,7 @@ bool UiButtonComponent::VersionConverter(AZ::SerializeContext& context,
     {
         // find the base class (AZ::Component)
         // NOTE: in very old versions there may not be a base class because the base class was not serialized
-        int componentBaseClassIndex = classElement.FindElement(AZ_CRC("BaseClass1", 0xd4925735));
+        int componentBaseClassIndex = classElement.FindElement(AZ_CRC_CE("BaseClass1"));
 
         // If there was a base class, make a copy and remove it
         AZ::SerializeContext::DataElementNode componentBaseClassNode;

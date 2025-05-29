@@ -8,10 +8,16 @@
 #pragma once
 
 #include <Atom/RPI.Public/Base.h>
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/Pass/Pass.h>
+#include <Atom/RHI.Reflect/ScopeId.h>
 
 namespace AZ
 {
+    namespace RHI
+    {
+        class RenderAttachmentLayoutBuilder;
+    }
     namespace RPI
     {
         class SwapChainPass;
@@ -19,7 +25,7 @@ namespace AZ
         //! A parent pass doesn't do any rendering itself, but instead contains child passes that it delegates functionality to.
         //! A child can be a RenderPass or it can be a ParentPass itself. This creates a pass tree hierarchy that defines the
         //! the order in which passes and their logic are executed in.
-        class ParentPass
+        class ATOM_RPI_PUBLIC_API ParentPass
             : public Pass
         {
             friend class PassFactory;
@@ -127,9 +133,25 @@ namespace AZ
             // Orphans all children by clearing m_children.
             void RemoveChildren(bool calledFromDestructor = false);
 
+            //! This function will only do work if @m_flags.m_mergeChildrenAsSubpasses is true.
+            //! Will loop through all children passes, make sure they are all RasterPass type,
+            //! and create a common RHI::RenderAttachmentLayout that all subpasses should use.
+            bool CreateRenderAttachmentConfigurationForSubpasses();
+            bool CreateRenderAttachmentConfigurationForSubpasses(AZ::RHI::RenderAttachmentLayoutBuilder& builder);
+
+            void SetRenderAttachmentConfiguration(RHI::RenderAttachmentConfiguration& configuration, const AZ::RHI::ScopeGroupId& groupId);
+
+            //! Can instances of this class be merged as subpasses?
+            bool CanBecomeSubpass() const;
+
+            //! A helper function that clears m_flags.m_mergeChildrenAsSubpasses for this parent pass
+            //! and all its children.
+            void ClearMergeAsSubpassesFlag();
+
         private:
             // RPI::Pass overrides...
             PipelineStatisticsResult GetPipelineStatisticsResultInternal() const override;
+            void OnBuildFinishedInternal() override;
 
             // --- Hierarchy related functions ---
 
@@ -154,6 +176,15 @@ namespace AZ
             // So now we detect clear actions on parent slots and generate a clear pass for them.
             void CreateClearPassFromBinding(PassAttachmentBinding& binding, PassRequest& clearRequest);
             void CreateClearPassesFromBindings();
+
+            // Called when a descendant has changed.
+            void OnDescendantChange(PassDescendantChangeFlags flags) override;
+
+            // Updates the m_flags for the children.
+            void UpdateChildrenFlags();
+
+            // Copies flags from the pass data to the pass.
+            void UpdateFlagsFromPassData();
         };
 
         template<typename PassType>

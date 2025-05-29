@@ -83,6 +83,12 @@ void BatchApplicationManager::OnErrorMessage([[maybe_unused]] const char* error)
 void BatchApplicationManager::Reflect()
 {
     ApplicationManagerBase::Reflect();
+
+    AZ::SerializeContext* context = nullptr;
+    AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
+    AZ_Assert(context, "No serialize context");
+
+    AssetProcessor::PlatformConfiguration::Reflect(context);
 }
 
 const char* BatchApplicationManager::GetLogBaseName()

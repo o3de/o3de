@@ -795,7 +795,7 @@ void UiScrollBarComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::Category, "UI")
                 ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/UiScrollBar.png")
                 ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/UiScrollBar.png")
-                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("UI", 0x27ff46b0))
+                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
             // Elements group
@@ -845,7 +845,7 @@ void UiScrollBarComponent::Reflect(AZ::ReflectContext* context)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
                 editInfo->DataElement(0, &UiScrollBarComponent::m_isAutoFadeEnabled, "Auto Fade When Not In Use", "The scrollbar will automatically fade away when not in use.")
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c));
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
                 editInfo->DataElement(0, &UiScrollBarComponent::m_inactiveSecondsBeforeFade, "Fade Delay", "The delay in seconds before the scrollbar will begin to fade.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiScrollBarComponent::m_isAutoFadeEnabled);
                 editInfo->DataElement(0, &UiScrollBarComponent::m_fadeSpeed, "Fade Speed", "The speed in seconds at which the scrollbar will fade away.")

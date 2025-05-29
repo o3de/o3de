@@ -154,13 +154,13 @@ namespace AzFramework
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void InputSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("InputSystemService", 0x5438d51a));
+        provided.push_back(AZ_CRC_CE("InputSystemService"));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void InputSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("InputSystemService", 0x5438d51a));
+        incompatible.push_back(AZ_CRC_CE("InputSystemService"));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

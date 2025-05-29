@@ -33,6 +33,12 @@ namespace AZ
 
             //! Called to notify the feature processor that changes have been made to it's owned post process settings
             virtual void OnPostProcessSettingsChanged() = 0;
+
+            //! Set an alias for the given sourceView
+            virtual void SetViewAlias(const AZ::RPI::ViewPtr sourceView, const AZ::RPI::ViewPtr targetView) = 0;
+
+            //! Removes the alias for sourceView
+            virtual void RemoveViewAlias(const AZ::RPI::ViewPtr sourceView) = 0;
         };
     }
 }

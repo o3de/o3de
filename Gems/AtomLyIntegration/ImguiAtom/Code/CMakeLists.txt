@@ -19,7 +19,7 @@ ly_add_target(
             AZ::AtomCore
             AZ::AzCore
             Gem::ImGui.Static
-            Gem::Atom_Feature_Common.Static
+            Gem::Atom_Feature_Common.Public
 )
 
 ly_add_target(

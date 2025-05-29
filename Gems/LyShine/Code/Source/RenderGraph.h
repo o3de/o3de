@@ -132,6 +132,10 @@ namespace LyShine
         int             m_totalNumIndices;
 
         LyShine::UiPrimitiveList   m_primitives;
+
+        // Per-frame combined vertex and index buffers
+        AZStd::vector<UiPrimitiveVertex> m_combinedVertices;
+        AZStd::vector<uint16> m_combinedIndices;
     };
 
     // A mask render node handles using one set of render nodes to mask another set of render nodes

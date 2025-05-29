@@ -56,7 +56,7 @@ class PropertyHandlerAnchor
 public:
     AZ_CLASS_ALLOCATOR(PropertyHandlerAnchor, AZ::SystemAllocator);
 
-    AZ::u32 GetHandlerName(void) const override  { return AZ_CRC("Anchor", 0x6751117d); }
+    AZ::u32 GetHandlerName(void) const override  { return AZ_CRC_CE("Anchor"); }
     bool IsDefaultHandler() const override { return true; }
 
     QWidget* CreateGUI(QWidget* pParent) override;

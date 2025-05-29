@@ -28,7 +28,7 @@ fi
 #
 UBUNTU_DISTRO="$(lsb_release -sc)"
 UBUNTU_VER="$(lsb_release -sr)"
-if [ "$UBUNTU_DISTRO" == "bionic" ] || [ "$UBUNTU_DISTRO" == "focal" ] || [ "$UBUNTU_DISTRO" == "jammy" ]
+if [ "$UBUNTU_DISTRO" == "bionic" ] || [ "$UBUNTU_DISTRO" == "focal" ] || [ "$UBUNTU_DISTRO" == "jammy" ] || [ "$UBUNTU_DISTRO" == "noble" ]
 then
     echo "Setup for Ubuntu $UBUNTU_VER LTS ($UBUNTU_DISTRO)"
 else
@@ -56,11 +56,11 @@ fi
 # Add the kitware repository for cmake if necessary
 #
 KITWARE_REPO_COUNT=$(cat /etc/apt/sources.list | grep ^deb | grep https://apt.kitware.com/ubuntu/ | wc -l)
-CMAKE_VER=3.22.1
+MIN_CMAKE_VER=3.22
 
 if [ $KITWARE_REPO_COUNT -eq 0 ]
 then
-    echo Adding Kitware Repository for CMake $CMAKE_VER
+    echo Adding Kitware Repository for CMake (Min version $MIN_CMAKE_VER)
 
     wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | sudo tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null
     CMAKE_DEB_REPO="'deb https://apt.kitware.com/ubuntu/ $UBUNTU_DISTRO main'"
@@ -68,16 +68,23 @@ then
     # Add the appropriate kitware repository to apt
     if [ "$UBUNTU_DISTRO" == "bionic" ] || [ "$UBUNTU_DISTRO" == "focal" ]
     then
-        CMAKE_DISTRO_VERSION=$CMAKE_VER-0kitware1ubuntu$UBUNTU_VER.1
         apt-add-repository "deb https://apt.kitware.com/ubuntu/ $UBUNTU_DISTRO main"
     elif [ "$UBUNTU_DISTRO" == "jammy" ]
     then
-        # Ubuntu 22.04 already has an acceptable version of cmake
-        echo "Ubuntu 22.04's cmake package already at version $CMAKE_VER"
+        # Ubuntu 22.04 already has an acceptable version of cmake 3.22.1 (https://packages.ubuntu.com/jammy/cmake)
+        echo "Ubuntu 22.04's cmake package already at version 3.22.1 (Which is greater than $MIN_CMAKE_VER)"
+    elif [ "$UBUNTU_DISTRO" == "noble" ]
+    then
+        # Ubuntu 24.04 already has an acceptable version of cmake 3.28.3 (https://packages.ubuntu.com/noble/cmake)
+        echo "Ubuntu 24.04's cmake package already at version 3.28.3 (Which is greater than $MIN_CMAKE_VER)"
     fi
 else
     echo  Kitware Repository repo already set
 fi
+
+echo "Installing cmake"
+apt-get install cmake  -y
+
 
 #
 # Add Amazon Corretto repository to install the necessary JDK for Jenkins and Android

@@ -12,6 +12,7 @@
 #include <Atom/RHI/DrawListContext.h>
 
 #include <Atom/RPI.Public/Base.h>
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/Pass/Pass.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Public/VisibleObjectContext.h>
@@ -43,7 +44,7 @@ namespace AZ
         //!  SetWorldToViewMatrix()
         //!  SetCameraTransform()
         //! To have a fully formed set of view transforms you also need to call SetViewToClipMatrix() to set up the projection.
-        class View final
+        class ATOM_RPI_PUBLIC_API View final
         {
         public:
             AZ_TYPE_INFO(View, "{C3FFC8DE-83C4-4E29-8216-D55BE0ACE3E4}");
@@ -133,6 +134,17 @@ namespace AZ
             const AZ::Matrix4x4& GetWorldToClipMatrix() const;
             const AZ::Matrix4x4* GetWorldToClipExcludeMatrix() const;
             const AZ::Matrix4x4& GetClipToWorldMatrix() const;
+            const AZ::Matrix4x4& GetClipToViewMatrix() const;
+
+            //! Functions for getting the matrices that are used in the view srg
+            //! These are different from the matrices returned above as they take clip space offset into account
+            //! They are updated in the UpdateSrg function
+            //! Calling these functions before UpdateSrg will return the last frames values
+            const Matrix4x4& GetWorldToClipPrevMatrixWithOffset() const;
+            const Matrix4x4& GetWorldToClipMatrixWithOffset() const;
+            const Matrix4x4& GetViewToClipMatrixWithOffset() const;
+            const Matrix4x4& GetClipToWorldMatrixWithOffset() const;
+            const Matrix4x4& GetClipToViewMatrixWithOffset() const;
 
             AZ::Matrix3x4 GetWorldToViewMatrixAsMatrix3x4() const;
             AZ::Matrix3x4 GetViewToWorldMatrixAsMatrix3x4() const;
@@ -240,6 +252,12 @@ namespace AZ
             Matrix4x4 m_clipToViewMatrix;
             Matrix4x4 m_clipToWorldMatrix;
             AZStd::optional<Matrix4x4> m_worldToClipExcludeMatrix;
+
+            Matrix4x4 m_worldToClipPrevMatrixWithOffset;
+            Matrix4x4 m_worldToClipMatrixWithOffset;
+            Matrix4x4 m_viewToClipMatrixWithOffset;
+            Matrix4x4 m_clipToWorldMatrixWithOffset;
+            Matrix4x4 m_clipToViewMatrixWithOffset;
 
             // Cached View transform from ViewToWorld matrix 
             AZ::Transform m_viewTransform;

@@ -46,19 +46,19 @@ namespace SurfaceData
 
     void SurfaceDataShapeComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("SurfaceDataProviderService", 0xfe9fb95e));
-        services.push_back(AZ_CRC("SurfaceDataModifierService", 0x68f8aa72));
+        services.push_back(AZ_CRC_CE("SurfaceDataProviderService"));
+        services.push_back(AZ_CRC_CE("SurfaceDataModifierService"));
     }
 
     void SurfaceDataShapeComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("SurfaceDataProviderService", 0xfe9fb95e));
-        services.push_back(AZ_CRC("SurfaceDataModifierService", 0x68f8aa72));
+        services.push_back(AZ_CRC_CE("SurfaceDataProviderService"));
+        services.push_back(AZ_CRC_CE("SurfaceDataModifierService"));
     }
 
     void SurfaceDataShapeComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("ShapeService", 0xe86aa5fe));
+        services.push_back(AZ_CRC_CE("ShapeService"));
     }
 
     void SurfaceDataShapeComponent::Reflect(AZ::ReflectContext* context)

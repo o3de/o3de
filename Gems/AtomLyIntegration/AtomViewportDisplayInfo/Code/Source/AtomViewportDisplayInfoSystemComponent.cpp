@@ -71,17 +71,17 @@ namespace AZ::Render
 
     void AtomViewportDisplayInfoSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("ViewportDisplayInfoService"));
+        provided.push_back(AZ_CRC_CE("ViewportDisplayInfoService"));
     }
 
     void AtomViewportDisplayInfoSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("ViewportDisplayInfoService"));
+        incompatible.push_back(AZ_CRC_CE("ViewportDisplayInfoService"));
     }
 
     void AtomViewportDisplayInfoSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("RPISystem", 0xf2add773));
+        required.push_back(AZ_CRC_CE("RPISystem"));
     }
 
     void AtomViewportDisplayInfoSystemComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
@@ -335,10 +335,24 @@ namespace AZ::Render
         size_t deviceResident = 0;
         size_t deviceReserved = 0;
 
-        for (const auto& pool : stats->m_pools)
+        for (const auto& heap : stats->m_heaps)
         {
-            deviceReserved += pool.m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device).m_totalResidentInBytes;
-            deviceResident += pool.m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device).m_usedResidentInBytes;
+            if (heap.m_heapMemoryType == RHI::HeapMemoryLevel::Device)
+            {
+                deviceResident += heap.m_memoryUsage.m_usedResidentInBytes;                
+                deviceReserved += heap.m_memoryUsage.m_totalResidentInBytes;
+            }
+        }
+
+        // Fallback if the information from the heaps is not available, we use the pools instead.
+        if (deviceResident == 0 || deviceReserved == 0)
+        {
+            deviceResident = deviceReserved = 0;
+            for (const auto& pool : stats->m_pools)
+            {
+                deviceReserved += pool.m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device).m_totalResidentInBytes;
+                deviceResident += pool.m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device).m_usedResidentInBytes;
+            }
         }
 
         // Query for available device memory

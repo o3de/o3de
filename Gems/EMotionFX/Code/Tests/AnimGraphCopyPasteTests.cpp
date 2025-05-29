@@ -284,7 +284,7 @@ namespace EMotionFX
         VerifyAfterOperation();
     }
 
-    INSTANTIATE_TEST_CASE_P(AnimGraphCopyPasteTests,
+    INSTANTIATE_TEST_SUITE_P(AnimGraphCopyPasteTests,
         AnimGraphTransitionConditionCopyPasteFixture,
         ::testing::Bool());
 
@@ -503,7 +503,7 @@ namespace EMotionFX
         }
     }
 
-    INSTANTIATE_TEST_CASE_P(AnimGraphCopyPasteTests,
+    INSTANTIATE_TEST_SUITE_P(AnimGraphCopyPasteTests,
         AnimGraphSimpleCopyPasteFixture,
         ::testing::Bool());
 
@@ -628,7 +628,7 @@ namespace EMotionFX
         }
     }
 
-    INSTANTIATE_TEST_CASE_P(CopyPasteTests,
+    INSTANTIATE_TEST_SUITE_P(CopyPasteTests,
         AnimGraphCopyPasteFixture_CanBeInterruptedBy,
         ::testing::Bool());
 
@@ -793,7 +793,7 @@ namespace EMotionFX
             "New connection's parameter weight should be the weight value of 1.";
     }
 
-    INSTANTIATE_TEST_CASE_P(AnimGraphCopyPasteTests,
+    INSTANTIATE_TEST_SUITE_P(AnimGraphCopyPasteTests,
         AnimGraphCopyPasteFixture_NodeTriggerValue,
         ::testing::Bool());
 } // namespace EMotionFX

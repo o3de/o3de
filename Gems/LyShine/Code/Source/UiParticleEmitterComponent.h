@@ -193,18 +193,18 @@ public:  // static member functions
 
     static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("UiParticleEmitterService"));
-        provided.push_back(AZ_CRC("UiVisualService", 0xa864fdf8));
+        provided.push_back(AZ_CRC_CE("UiParticleEmitterService"));
+        provided.push_back(AZ_CRC_CE("UiVisualService"));
     }
 
     static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("UiTransformService", 0x3a838e34));
+        required.push_back(AZ_CRC_CE("UiTransformService"));
     }
 
     static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("UiVisualService", 0xa864fdf8));
+        incompatible.push_back(AZ_CRC_CE("UiVisualService"));
     }
 
     static void Reflect(AZ::ReflectContext* context);

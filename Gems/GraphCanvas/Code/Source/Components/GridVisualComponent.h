@@ -37,16 +37,16 @@ namespace GraphCanvas
         // AZ::Component
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("GraphCanvas_GridVisualService", 0xd61e8c93));
-            provided.push_back(AZ_CRC("GraphCanvas_RootVisualService", 0x9ec46d3b));
-            provided.push_back(AZ_CRC("GraphCanvas_VisualService", 0xfbb2c871));
+            provided.push_back(AZ_CRC_CE("GraphCanvas_GridVisualService"));
+            provided.push_back(AZ_CRC_CE("GraphCanvas_RootVisualService"));
+            provided.push_back(AZ_CRC_CE("GraphCanvas_VisualService"));
         }
 
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("GraphCanvas_GridVisualService", 0xd61e8c93));
-            incompatible.push_back(AZ_CRC("GraphCanvas_RootVisualService", 0x9ec46d3b));
-            incompatible.push_back(AZ_CRC("GraphCanvas_VisualService", 0xfbb2c871));
+            incompatible.push_back(AZ_CRC_CE("GraphCanvas_GridVisualService"));
+            incompatible.push_back(AZ_CRC_CE("GraphCanvas_RootVisualService"));
+            incompatible.push_back(AZ_CRC_CE("GraphCanvas_VisualService"));
         }
 
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
@@ -56,7 +56,7 @@ namespace GraphCanvas
 
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC("GraphCanvas_GridService", 0x58f7e1d8));
+            required.push_back(AZ_CRC_CE("GraphCanvas_GridService"));
         }
 
         void Init() override;

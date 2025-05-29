@@ -44,34 +44,6 @@ namespace AZ
             void CopySettingsFrom(DeferredFogSettingsInterface* settings);
             void CopySettingsTo(DeferredFogSettingsInterface* settings);
 
-            // DeferredFogComponentConfigInterface overrides...
-            void SetEnabled(bool value)
-            {
-                m_enabled = value;
-            }
-            bool GetIsEnabled()
-            {
-                return m_enabled;
-            }
-
-            void SetUseNoiseTextureShaderOption(bool value)
-            {
-                m_useNoiseTextureShaderOption = value;
-            }
-            bool GetUseNoiseTextureShaderOption()
-            {
-                return m_useNoiseTextureShaderOption;
-            }
-
-            void SetEnableFogLayerShaderOption(bool value)
-            {
-                m_enableFogLayerShaderOption = value;
-            }
-            bool GetEnableFogLayerShaderOption()
-            {
-                return m_enableFogLayerShaderOption;
-            }
-
             bool SupportsFogDensity()
             {
                 return m_fogMode == FogMode::Exponential || m_fogMode == FogMode::ExponentialSquared;
@@ -100,9 +72,6 @@ namespace AZ
 #include <Atom/Feature/ScreenSpace/DeferredFogParams.inl>
 #include <Atom/Feature/ParamMacros/EndParams.inl>
 
-            bool m_enabled = true;
-            bool m_useNoiseTextureShaderOption = false;
-            bool m_enableFogLayerShaderOption = false;
         };
 
     }

@@ -39,7 +39,7 @@ namespace ScriptEvents
             serialize->Class<ScriptEventsSystemComponent, AZ::Component>()
                 ->Version(1)
                 // ScriptEvents avoids a use dependency on the AssetBuilderSDK. Therefore the Crc is used directly to register this component with the Gem builder
-                ->Attribute(AZ::Edit::Attributes::SystemComponentTags, AZStd::vector<AZ::Crc32>({ AZ_CRC("AssetBuilder", 0xc739c7d7) }));
+                ->Attribute(AZ::Edit::Attributes::SystemComponentTags, AZStd::vector<AZ::Crc32>({ AZ_CRC_CE("AssetBuilder") }));
                 ;
         }
 
@@ -55,17 +55,17 @@ namespace ScriptEvents
 
     void ScriptEventsSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("ScriptEventsService", 0x6897c23b));
+        provided.push_back(AZ_CRC_CE("ScriptEventsService"));
     }
 
     void ScriptEventsSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("ScriptEventsService", 0x6897c23b));
+        incompatible.push_back(AZ_CRC_CE("ScriptEventsService"));
     }
 
     void ScriptEventsSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("AssetDatabaseService", 0x3abf5601));
+        required.push_back(AZ_CRC_CE("AssetDatabaseService"));
     }
 
     void ScriptEventsSystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)

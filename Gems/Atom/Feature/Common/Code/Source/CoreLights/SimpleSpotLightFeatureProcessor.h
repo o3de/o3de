@@ -10,12 +10,12 @@
 
 #include <AzCore/Math/Frustum.h>
 #include <AzCore/Math/Hemisphere.h>
-#include <Atom/Feature/CoreLights/LightCommon.h>
 #include <Atom/Feature/CoreLights/PhotometricValue.h>
 #include <Atom/Feature/CoreLights/SimpleSpotLightFeatureProcessorInterface.h>
 #include <Atom/Feature/Mesh/MeshCommon.h>
 #include <Atom/Feature/Utils/GpuBufferHandler.h>
 #include <Atom/Feature/Utils/MultiIndexedDataVector.h>
+#include <CoreLights/LightCommon.h>
 #include <Shadows/ProjectedShadowFeatureProcessor.h>
 
 namespace AZ
@@ -83,8 +83,8 @@ namespace AZ
             void SetUseCachedShadows(LightHandle handle, bool useCachedShadows) override;
             void SetGoboTexture(LightHandle handle, AZ::Data::Instance<AZ::RPI::Image> goboTexture) override;
 
-            const Data::Instance<RPI::Buffer>  GetLightBuffer() const;
-            uint32_t GetLightCount()const;
+            const Data::Instance<RPI::Buffer> GetLightBuffer() const override;
+            uint32_t GetLightCount() const override;
 
             // SceneNotificationBus::Handler overrides...
             void OnRenderPipelinePersistentViewChanged(

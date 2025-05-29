@@ -50,12 +50,12 @@ namespace AZ
 
         void EditorCommonFeaturesSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("EditorCommonFeaturesService", 0x94945c0c));
+            provided.push_back(AZ_CRC_CE("EditorCommonFeaturesService"));
         }
 
         void EditorCommonFeaturesSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("EditorCommonFeaturesService", 0x94945c0c));
+            incompatible.push_back(AZ_CRC_CE("EditorCommonFeaturesService"));
         }
 
         void EditorCommonFeaturesSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)

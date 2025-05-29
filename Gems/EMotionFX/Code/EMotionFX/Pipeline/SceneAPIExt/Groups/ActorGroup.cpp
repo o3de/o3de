@@ -123,13 +123,13 @@ namespace EMotionFX
                             ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
                             ->Attribute(AZ::Edit::Attributes::CategoryStyle, "display divider")
                             ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/assets/scene-settings/actors-tab/")
-                        ->DataElement(AZ_CRC("ManifestName", 0x5215b349), &ActorGroup::m_name, "Name actor",
+                        ->DataElement(AZ_CRC_CE("ManifestName"), &ActorGroup::m_name, "Name actor",
                             "Name for the group. This name will also be used as the name for the generated file.")
                             ->Attribute("FilterType", IActorGroup::TYPEINFO_Uuid())
                         ->DataElement("NodeListSelection", &ActorGroup::m_selectedRootBone, "Select root bone", "The root bone of the animation that will be exported.")
                             ->Attribute("ClassTypeIdFilter", AZ::SceneAPI::DataTypes::IBoneData::TYPEINFO_Uuid())
                         ->DataElement(AZ::Edit::UIHandlers::Default, &ActorGroup::m_rules, "", "Add or remove rules to fine-tune the export process.")
-                            ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC("PropertyVisibility_ShowChildrenOnly", 0xef428f20));
+                            ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC_CE("PropertyVisibility_ShowChildrenOnly"));
                 }
             }
 
@@ -163,12 +163,12 @@ namespace EMotionFX
                 if (version < 2)
                 {
                     result = result && classElement.AddElementWithData<AZ::Uuid>(context, "id", AZ::Uuid::CreateNull()) != -1;
-                    classElement.RemoveElementByName(AZ_CRC("autoCreateTrajectoryNode"));
+                    classElement.RemoveElementByName(AZ_CRC_CE("autoCreateTrajectoryNode"));
                 }
 
                 if (version < 3)
                 {
-                    classElement.RemoveElementByName(AZ_CRC("loadMorphTargets", 0xfd19aef8));
+                    classElement.RemoveElementByName(AZ_CRC_CE("loadMorphTargets"));
                 }
 
                 // Coordinate system rule moved to the SceneAPI
@@ -183,7 +183,7 @@ namespace EMotionFX
 
                 if (version < 6)
                 {
-                    classElement.RemoveElementByName(AZ_CRC("nodeSelectionList"));
+                    classElement.RemoveElementByName(AZ_CRC_CE("nodeSelectionList"));
                 }
 
                 return result;

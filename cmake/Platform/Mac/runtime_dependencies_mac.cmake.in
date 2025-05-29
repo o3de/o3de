@@ -42,7 +42,7 @@ cmake_policy(SET CMP0009 NEW) # do not traverse symlinks on GLOB_RECURSE
 
 # Stores a set of executable, dylib and frameworks to ignore for fixup bundle
 set_property(SOURCE "${CMAKE_CURRENT_LIST_FILE}" PROPERTY BUNDLE_IGNORE_FILES
-    "Python;python3.10m;python3.10;dxc-3.7;dxc;libdxcompiler.3.7.dylib;libdxcompiler.dylib")
+    "Python;python3.10m;python3.10;dxc-3.7;dxc;dxsc-3.7;dxsc;libdxcompiler.3.7.dylib;libdxcompiler.dylib")
 
 # Values configured for the output locations of the target
 # Gathered from the generator expression for TARGET_FILE_DIR, TARGET_BUNDLE_DIR
@@ -383,6 +383,12 @@ if(target_bundle_content_dir)
             execute_process(COMMAND "${LY_INSTALL_NAME_TOOL}"
                 -add_rpath "@executable_path/../../../../Frameworks"
                 "${dxc_path}")
+        endif()
+        cmake_path(SET dxsc_path "${target_file_dir}/Builders/DirectXShaderCompiler/bin/dxsc-3.7")
+        if(EXISTS "${dxsc_path}")
+            execute_process(COMMAND "${LY_INSTALL_NAME_TOOL}"
+                -add_rpath "@executable_path/../../../../Frameworks"
+                "${dxsc_path}")
         endif()
 
         # misplaced .DS_Store files can cause signing to fail

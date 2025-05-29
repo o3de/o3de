@@ -26,6 +26,7 @@
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Public/Pass/PassFactory.h>
+#include <Atom/RPI.Public/PerformanceCollectionNotificationBus.h>
 
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/Device.h>
@@ -76,6 +77,8 @@ namespace AZ
             GpuQuerySystemDescriptor::Reflect(context);
 
             PipelineStatisticsResult::Reflect(context);
+
+            PerformaceCollectionNotification::Reflect(context);
         }
 
         void RPISystem::Initialize(const RPISystemDescriptor& rpiSystemDescriptor)

@@ -19,8 +19,8 @@ ly_associate_package(PACKAGE_NAME xxhash-0.7.4-rev1-multiplatform               
 
 # platform-specific:
 ly_associate_package(PACKAGE_NAME expat-2.4.2-rev2-mac                              TARGETS expat                       PACKAGE_HASH 70f195977a17b08a4dc8687400fd7f2589e3b414d4961b562129166965b6f658)
-ly_associate_package(PACKAGE_NAME assimp-5.2.5-rev1-mac                             TARGETS assimplib                   PACKAGE_HASH 0c96f5bd230a6e8e432a3693a6bae540ad75665eb0187b8525cf63398673ca67)
-ly_associate_package(PACKAGE_NAME DirectXShaderCompilerDxc-1.7.2308-o3de-rev1-mac   TARGETS DirectXShaderCompilerDxc    PACKAGE_HASH 72a27691ce8b413df43eb7fcc41b04c04568507fb715db6a66ea8b782f07e210)
+ly_associate_package(PACKAGE_NAME assimp-5.4.3-rev3-mac                             TARGETS assimp                      PACKAGE_HASH bfda2c319bb4cc26aea8445a9ad33347e0e5ead2a959a5eafb5eed47431f56ef)
+ly_associate_package(PACKAGE_NAME DirectXShaderCompilerDxc-1.7.2308-o3de-rev2-mac   TARGETS DirectXShaderCompilerDxc    PACKAGE_HASH bdbf069d5704cf16079e60421857bda150ba6eed69900d03ac7ffefc2335cda3)
 ly_associate_package(PACKAGE_NAME SPIRVCross-1.3.275.0-rev1-mac                     TARGETS SPIRVCross                  PACKAGE_HASH 5ad9629f677c42847daf8b097728323685d7018d3ac8af0508d1bd0727a81304)
 ly_associate_package(PACKAGE_NAME tiff-4.2.0.15-rev3-mac                            TARGETS TIFF                        PACKAGE_HASH c2615ccdadcc0e1d6c5ed61e5965c4d3a82193d206591b79b805c3b3ff35a4bf)
 ly_associate_package(PACKAGE_NAME freetype-2.11.1-rev1-mac                          TARGETS Freetype                    PACKAGE_HASH b66107d3499f2e9c072bd88db26e0e5c1b8013128699393c6a8495afca3d2548)
@@ -28,7 +28,6 @@ ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.11.288-rev1-mac                
 ly_associate_package(PACKAGE_NAME Lua-5.4.4-rev1-mac                                TARGETS Lua                         PACKAGE_HASH b44daae6bfdf092c7935e4aebafded6772853250c6f0a209866a1ac599857d58)
 ly_associate_package(PACKAGE_NAME mcpp-2.7.2_az.2-rev1-mac                          TARGETS mcpp                        PACKAGE_HASH be9558905c9c49179ef3d7d84f0a5472415acdf7fe2d76eb060d9431723ddf2e)
 ly_associate_package(PACKAGE_NAME mikkelsen-1.0.0.4-mac                             TARGETS mikkelsen                   PACKAGE_HASH 83af99ca8bee123684ad254263add556f0cf49486c0b3e32e6d303535714e505)
-ly_associate_package(PACKAGE_NAME googletest-1.8.1-rev4-mac                         TARGETS googletest                  PACKAGE_HASH cbf020d5ef976c5db8b6e894c6c63151ade85ed98e7c502729dd20172acae5a8)
 ly_associate_package(PACKAGE_NAME googlebenchmark-1.7.0-rev1-mac                    TARGETS GoogleBenchmark             PACKAGE_HASH a1c8793eb1760905290065929b45600a4b4457345fcc129fce253d1a8980bbce)
 ly_associate_package(PACKAGE_NAME openimageio-opencolorio-2.3.17-rev3-mac           TARGETS OpenImageIO OpenColorIO OpenColorIO::Runtime OpenImageIO::Tools::Binaries OpenImageIO::Tools::PythonPlugins PACKAGE_HASH bc322f9e28d519ab5959a638b38ee3b773fefb868802823fad2396ab4f7bcbc8)
 ly_associate_package(PACKAGE_NAME OpenMesh-8.1-rev3-mac                             TARGETS OpenMesh                    PACKAGE_HASH af92db02a25c1f7e1741ec898f49d81d52631e00336bf9bddd1e191590063c2f)
@@ -42,6 +41,6 @@ ly_associate_package(PACKAGE_NAME squish-ccr-deb557d-rev1-mac                   
 ly_associate_package(PACKAGE_NAME astc-encoder-3.2-rev5-mac                         TARGETS astc-encoder                PACKAGE_HASH bdb1146cc6bbacc07901564fe884529d7cacc9bb44895597327341d3b9833ab0)
 ly_associate_package(PACKAGE_NAME ISPCTexComp-36b80aa-rev1-mac                      TARGETS ISPCTexComp                 PACKAGE_HASH 8a4e93277b8face6ea2fd57c6d017bdb55643ed3d6387110bc5f6b3b884dd169)
 ly_associate_package(PACKAGE_NAME lz4-1.9.4-rev1-mac                                TARGETS lz4                         PACKAGE_HASH d52e34e5e2f93acb914fd5f8e5247b67f2e7f15fae0586b5813c2721c8345a0d)
-ly_associate_package(PACKAGE_NAME azslc-1.8.19-rev1-mac                             TARGETS azslc                       PACKAGE_HASH f3ca6bb1dc44ffe3470aa589bbbbb39cc4c2e7faa8c9f7760388aa41f06b4cce)
+ly_associate_package(PACKAGE_NAME azslc-1.8.22-rev1-mac                             TARGETS azslc                       PACKAGE_HASH d34b416b181b4ad5f8bee7c4976fe74dd503318060d2062385351601fa9f967d)
 ly_associate_package(PACKAGE_NAME SQLite-3.37.2-rev2-mac                            TARGETS SQLite                      PACKAGE_HASH b7d9abdb68045003e030e1a9a805db1aefa5e8fde6dccfbb4fab3a06249a41fc)
 ly_associate_package(PACKAGE_NAME AwsIotDeviceSdkCpp-1.15.2-rev2-mac                TARGETS AwsIotDeviceSdkCpp          PACKAGE_HASH 4854edb7b88fa6437b4e69e87d0ee111a25313ac2a2db5bb2f8b674ba0974f95)

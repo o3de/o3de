@@ -167,7 +167,7 @@ namespace EMotionFX
         )
     }
 
-    INSTANTIATE_TEST_CASE_P(Test, TransformConstructFromVec3QuatVec3Fixture,
+    INSTANTIATE_TEST_SUITE_P(Test, TransformConstructFromVec3QuatVec3Fixture,
         ::testing::Combine(
             ::testing::Values(
                 AZ::Vector3::CreateZero(),
@@ -347,7 +347,7 @@ namespace EMotionFX
         );
     }
 
-    INSTANTIATE_TEST_CASE_P(Test, TransformMultiplyFixture,
+    INSTANTIATE_TEST_SUITE_P(Test, TransformMultiplyFixture,
         ::testing::Values(
             TransformMultiplyParams {
                 /* input a */{Transform::CreateIdentity()},
@@ -712,7 +712,7 @@ namespace EMotionFX
         );
     }
 
-    INSTANTIATE_TEST_CASE_P(Test, TransformApplyDeltaFixture,
+    INSTANTIATE_TEST_SUITE_P(Test, TransformApplyDeltaFixture,
         ::testing::ValuesIn(std::vector<ApplyDeltaParams>{
             {
                 {Transform::CreateIdentity()},
@@ -953,7 +953,7 @@ namespace EMotionFX
         AZ::Constants::QuarterPi,
         AZ::Constants::HalfPi
     );
-    INSTANTIATE_TEST_CASE_P(Test, TransformProjectedToGroundPlaneFixture,
+    INSTANTIATE_TEST_SUITE_P(Test, TransformProjectedToGroundPlaneFixture,
         ::testing::Combine(
             ::testing::Values(
                 AZ::Vector3::CreateZero(),

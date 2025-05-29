@@ -7,6 +7,7 @@
  */
 
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
+#include <Atom/RPI.Reflect/Allocators.h>
 
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -15,14 +16,41 @@ namespace AZ
 {
     namespace RPI
     {
-        const char* StreamingImageAsset::DisplayName = "StreamingImage";
-        const char* StreamingImageAsset::Group = "Image";
-        const char* StreamingImageAsset::Extension = "streamingimage";
+
+        AZ_CLASS_ALLOCATOR_IMPL(StreamingImageAsset, StreamingImageAssetAllocator)
+
+        static bool ConvertOldVersions(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
+        {
+            if (classElement.GetVersion() < 3)
+            {
+                auto crc32 = AZ::Crc32("m_tags");
+                auto* vectorElement = classElement.FindSubElement(crc32);
+                if (vectorElement)
+                {
+                    // Get the old data
+                    AZStd::vector<AZ::Name> oldData;
+                    if (classElement.GetChildData(crc32, oldData))
+                    {
+                        // Convert the vector with the new allocator
+                        vectorElement->Convert(context, AZ::AzTypeInfo<StreamingImageAsset::TagList>::Uuid());
+                        for (const auto& element : oldData)
+                        {
+                            // Re add the elements
+                            vectorElement->AddElementWithData<AZ::Name>(context, "element", element);
+                        }
+                    }
+                }
+            }
+            return true;
+        }
 
         void StreamingImageAsset::Reflect(ReflectContext* context)
         {
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
+                // Need to register the old type with the Serializer so we can read it in order to convert it
+                serializeContext->RegisterGenericType<AZStd::vector<AZ::Name>>();
+
                 serializeContext->Class<MipChain>()
                     ->Field("m_mipOffset", &MipChain::m_mipOffset)
                     ->Field("m_mipCount", &MipChain::m_mipCount)
@@ -30,7 +58,7 @@ namespace AZ
                     ;
 
                 serializeContext->Class<StreamingImageAsset, ImageAsset>()
-                    ->Version(2) // Added m_averageColor field
+                    ->Version(3, &ConvertOldVersions) // Added m_averageColor field
                     ->Field("m_mipLevelToChainIndex", &StreamingImageAsset::m_mipLevelToChainIndex)
                     ->Field("m_mipChains", &StreamingImageAsset::m_mipChains)
                     ->Field("m_flags", &StreamingImageAsset::m_flags)
@@ -134,7 +162,7 @@ namespace AZ
             return imageDescriptor;
         }
 
-        const AZStd::vector<AZ::Name>& StreamingImageAsset::GetTags() const
+        const StreamingImageAsset::TagList& StreamingImageAsset::GetTags() const
         {
             return m_tags;
         }

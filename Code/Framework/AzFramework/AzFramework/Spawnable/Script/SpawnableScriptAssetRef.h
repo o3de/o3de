@@ -34,11 +34,21 @@ namespace AzFramework::Scripts
 
         void SetAsset(const AZ::Data::Asset<Spawnable>& asset);
         AZ::Data::Asset<Spawnable> GetAsset() const;
+        //! Sets the Asset by AssetId, which is convenient for automation
+        //! or in-game scripting.
+        void SetAssetId(const AZ::Data::AssetId& assetId);
+        // helpful for automation to get the AssetId.
+        AZ::Data::AssetId GetAssetId() const;
+        // Returns true if the AssetId is valid.
+        // This is for convenience, because the same can be achieved
+        // by calling GetAssetId().IsValid().
+        bool IsValid() const;
 
     private:
         class SerializationEvents : public AZ::SerializeContext::IEventHandler
         {
-            void OnReadEnd(void* classPtr) override
+            // Called when the Serializer has completed writing TO the c++ object in memory.
+            void OnWriteEnd(void* classPtr) override
             {
                 SpawnableScriptAssetRef* spawnableScriptAssetRef = reinterpret_cast<SpawnableScriptAssetRef*>(classPtr);
                 // Call SetAsset to connect AssetBus handler as soon as m_asset field is set

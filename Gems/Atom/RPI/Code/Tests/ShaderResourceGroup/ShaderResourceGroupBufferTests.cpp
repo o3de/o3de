@@ -111,9 +111,9 @@ namespace UnitTest
             m_longBuffer = Buffer::FindOrCreate(m_longBufferAsset);
 
             m_threeBuffers = { m_shortBuffer, m_mediumBuffer, m_longBuffer };
-            m_bufferViewA = m_longBuffer->GetRHIBuffer()->GetBufferView(RHI::BufferViewDescriptor::CreateRaw(5, 6));
-            m_bufferViewB = m_longBuffer->GetRHIBuffer()->GetBufferView(RHI::BufferViewDescriptor::CreateRaw(15, 4));
-            m_bufferViewC = m_longBuffer->GetRHIBuffer()->GetBufferView(RHI::BufferViewDescriptor::CreateRaw(22, 18));
+            m_bufferViewA = m_longBuffer->GetRHIBuffer()->BuildBufferView(RHI::BufferViewDescriptor::CreateRaw(5, 6));
+            m_bufferViewB = m_longBuffer->GetRHIBuffer()->BuildBufferView(RHI::BufferViewDescriptor::CreateRaw(15, 4));
+            m_bufferViewC = m_longBuffer->GetRHIBuffer()->BuildBufferView(RHI::BufferViewDescriptor::CreateRaw(22, 18));
 
             m_threeBufferViews = { m_bufferViewA.get(), m_bufferViewB.get(), m_bufferViewC.get() };
         }
@@ -191,8 +191,8 @@ namespace UnitTest
         EXPECT_EQ(m_mediumBuffer, m_testSrg->GetBuffer(m_indexOfBufferB));
 
         m_testSrg->Compile();
-        EXPECT_EQ(m_shortBuffer->GetBufferView(), m_testSrg->GetRHIShaderResourceGroup()->GetData().GetBufferView(m_indexOfBufferA, 0));
-        EXPECT_EQ(m_mediumBuffer->GetBufferView(), m_testSrg->GetRHIShaderResourceGroup()->GetData().GetBufferView(m_indexOfBufferB, 0));
+        EXPECT_EQ(m_shortBuffer->GetBufferView(), m_testSrg->GetBufferView(m_indexOfBufferA, 0));
+        EXPECT_EQ(m_mediumBuffer->GetBufferView(), m_testSrg->GetBufferView(m_indexOfBufferB, 0));
 
         // Test changing back to null...
 
@@ -201,7 +201,7 @@ namespace UnitTest
         EXPECT_TRUE(m_testSrg->SetBuffer(m_indexOfBufferA, nullptr));
         m_testSrg->Compile();
         EXPECT_EQ(nullptr, m_testSrg->GetBuffer(m_indexOfBufferA));
-        EXPECT_EQ(nullptr, m_testSrg->GetRHIShaderResourceGroup()->GetData().GetBufferView(m_indexOfBufferA, 0));
+        EXPECT_EQ(nullptr, m_testSrg->GetBufferView(m_indexOfBufferA, 0));
     }
 
     TEST_F(ShaderResourceGroupBufferTests, TestSetGetBufferAtOffset)
@@ -216,10 +216,9 @@ namespace UnitTest
         EXPECT_EQ(m_longBuffer, m_testSrg->GetBuffer(m_indexOfBufferArray, 2));
 
         m_testSrg->Compile();
-        EXPECT_EQ(m_shortBuffer->GetBufferView(), m_testSrg->GetRHIShaderResourceGroup()->GetData().GetBufferView(m_indexOfBufferArray, 0));
-        EXPECT_EQ(
-            m_mediumBuffer->GetBufferView(), m_testSrg->GetRHIShaderResourceGroup()->GetData().GetBufferView(m_indexOfBufferArray, 1));
-        EXPECT_EQ(m_longBuffer->GetBufferView(), m_testSrg->GetRHIShaderResourceGroup()->GetData().GetBufferView(m_indexOfBufferArray, 2));
+        EXPECT_EQ(m_shortBuffer->GetBufferView(), m_testSrg->GetBufferView(m_indexOfBufferArray, 0));
+        EXPECT_EQ(m_mediumBuffer->GetBufferView(), m_testSrg->GetBufferView(m_indexOfBufferArray, 1));
+        EXPECT_EQ(m_longBuffer->GetBufferView(), m_testSrg->GetBufferView(m_indexOfBufferArray, 2));
 
         // Test changing back to null...
 
@@ -228,7 +227,7 @@ namespace UnitTest
         EXPECT_TRUE(m_testSrg->SetBuffer(m_indexOfBufferArray, nullptr, 1));
         m_testSrg->Compile();
         EXPECT_EQ(nullptr, m_testSrg->GetBuffer(m_indexOfBufferArray, 1));
-        EXPECT_EQ(nullptr, m_testSrg->GetRHIShaderResourceGroup()->GetData().GetBufferView(m_indexOfBufferArray, 1));
+        EXPECT_EQ(nullptr, m_testSrg->GetBufferView(m_indexOfBufferArray, 1));
     }
 
     TEST_F(ShaderResourceGroupBufferTests, TestSetGetBufferArray)
@@ -245,12 +244,9 @@ namespace UnitTest
         EXPECT_EQ(m_threeBuffers[0], m_testSrg->GetBuffer(m_indexOfBufferArray, 0));
         EXPECT_EQ(m_threeBuffers[1], m_testSrg->GetBuffer(m_indexOfBufferArray, 1));
         EXPECT_EQ(m_threeBuffers[2], m_testSrg->GetBuffer(m_indexOfBufferArray, 2));
-        EXPECT_EQ(
-            m_threeBuffers[0]->GetBufferView(), m_testSrg->GetRHIShaderResourceGroup()->GetData().GetBufferView(m_indexOfBufferArray, 0));
-        EXPECT_EQ(
-            m_threeBuffers[1]->GetBufferView(), m_testSrg->GetRHIShaderResourceGroup()->GetData().GetBufferView(m_indexOfBufferArray, 1));
-        EXPECT_EQ(
-            m_threeBuffers[2]->GetBufferView(), m_testSrg->GetRHIShaderResourceGroup()->GetData().GetBufferView(m_indexOfBufferArray, 2));
+        EXPECT_EQ(m_threeBuffers[0]->GetBufferView(), m_testSrg->GetBufferView(m_indexOfBufferArray, 0));
+        EXPECT_EQ(m_threeBuffers[1]->GetBufferView(), m_testSrg->GetBufferView(m_indexOfBufferArray, 1));
+        EXPECT_EQ(m_threeBuffers[2]->GetBufferView(), m_testSrg->GetBufferView(m_indexOfBufferArray, 2));
 
         // Test replacing just two buffers including changing one buffer back to null...
 
@@ -302,9 +298,9 @@ namespace UnitTest
         EXPECT_EQ(nullptr, m_testSrg->GetBuffer(m_indexOfBufferArray, 0));
         EXPECT_EQ(twoBuffers[0], m_testSrg->GetBuffer(m_indexOfBufferArray, 1));
         EXPECT_EQ(twoBuffers[1], m_testSrg->GetBuffer(m_indexOfBufferArray, 2));
-        EXPECT_EQ(nullptr, m_testSrg->GetRHIShaderResourceGroup()->GetData().GetBufferView(m_indexOfBufferArray, 0));
-        EXPECT_EQ(twoBuffers[0]->GetBufferView(), m_testSrg->GetRHIShaderResourceGroup()->GetData().GetBufferView(m_indexOfBufferArray, 1));
-        EXPECT_EQ(twoBuffers[1]->GetBufferView(), m_testSrg->GetRHIShaderResourceGroup()->GetData().GetBufferView(m_indexOfBufferArray, 2));
+        EXPECT_EQ(nullptr, m_testSrg->GetBufferView(m_indexOfBufferArray, 0));
+        EXPECT_EQ(twoBuffers[0]->GetBufferView(), m_testSrg->GetBufferView(m_indexOfBufferArray, 1));
+        EXPECT_EQ(twoBuffers[1]->GetBufferView(), m_testSrg->GetBufferView(m_indexOfBufferArray, 2));
     }
 
     TEST_F(ShaderResourceGroupBufferTests, TestSetBufferArrayAtOffset_ValidationFailure)
@@ -343,10 +339,10 @@ namespace UnitTest
 
         EXPECT_EQ(m_bufferViewA, m_testSrg->GetBufferView(m_indexOfBufferA));
         EXPECT_EQ(m_bufferViewB, m_testSrg->GetBufferView(m_indexOfBufferB));
-        EXPECT_EQ(m_bufferViewA, m_testSrg->GetRHIShaderResourceGroup()->GetData().GetBufferView(m_indexOfBufferA, 0));
-        EXPECT_EQ(m_bufferViewB, m_testSrg->GetRHIShaderResourceGroup()->GetData().GetBufferView(m_indexOfBufferB, 0));
+        EXPECT_EQ(m_bufferViewA, m_testSrg->GetBufferView(m_indexOfBufferA, 0));
+        EXPECT_EQ(m_bufferViewB, m_testSrg->GetBufferView(m_indexOfBufferB, 0));
 
-        // The RPI::Buffer should get cleared when you set a RHI::BufferView directly
+        // The RPI::Buffer should get cleared when you set a RHI::DeviceBufferView directly
         EXPECT_EQ(nullptr, m_testSrg->GetBuffer(m_indexOfBufferA));
         EXPECT_EQ(nullptr, m_testSrg->GetBuffer(m_indexOfBufferB));
     }
@@ -370,11 +366,11 @@ namespace UnitTest
         EXPECT_EQ(m_bufferViewA, m_testSrg->GetBufferView(m_indexOfBufferArray, 0));
         EXPECT_EQ(m_bufferViewB, m_testSrg->GetBufferView(m_indexOfBufferArray, 1));
         EXPECT_EQ(m_bufferViewC, m_testSrg->GetBufferView(m_indexOfBufferArray, 2));
-        EXPECT_EQ(m_bufferViewA, m_testSrg->GetRHIShaderResourceGroup()->GetData().GetBufferView(m_indexOfBufferArray, 0));
-        EXPECT_EQ(m_bufferViewB, m_testSrg->GetRHIShaderResourceGroup()->GetData().GetBufferView(m_indexOfBufferArray, 1));
-        EXPECT_EQ(m_bufferViewC, m_testSrg->GetRHIShaderResourceGroup()->GetData().GetBufferView(m_indexOfBufferArray, 2));
+        EXPECT_EQ(m_bufferViewA, m_testSrg->GetBufferView(m_indexOfBufferArray, 0));
+        EXPECT_EQ(m_bufferViewB, m_testSrg->GetBufferView(m_indexOfBufferArray, 1));
+        EXPECT_EQ(m_bufferViewC, m_testSrg->GetBufferView(m_indexOfBufferArray, 2));
 
-        // The RPI::Buffer should get cleared when you set a RHI::BufferView directly
+        // The RPI::Buffer should get cleared when you set a RHI::DeviceBufferView directly
         EXPECT_EQ(nullptr, m_testSrg->GetBuffer(m_indexOfBufferArray, 0));
         EXPECT_EQ(nullptr, m_testSrg->GetBuffer(m_indexOfBufferArray, 1));
         EXPECT_EQ(nullptr, m_testSrg->GetBuffer(m_indexOfBufferArray, 2));
@@ -394,9 +390,9 @@ namespace UnitTest
         EXPECT_EQ(m_threeBufferViews[0], m_testSrg->GetBufferView(m_indexOfBufferArray, 0));
         EXPECT_EQ(m_threeBufferViews[1], m_testSrg->GetBufferView(m_indexOfBufferArray, 1));
         EXPECT_EQ(m_threeBufferViews[2], m_testSrg->GetBufferView(m_indexOfBufferArray, 2));
-        EXPECT_EQ(m_threeBufferViews[0], m_testSrg->GetRHIShaderResourceGroup()->GetData().GetBufferView(m_indexOfBufferArray, 0));
-        EXPECT_EQ(m_threeBufferViews[1], m_testSrg->GetRHIShaderResourceGroup()->GetData().GetBufferView(m_indexOfBufferArray, 1));
-        EXPECT_EQ(m_threeBufferViews[2], m_testSrg->GetRHIShaderResourceGroup()->GetData().GetBufferView(m_indexOfBufferArray, 2));
+        EXPECT_EQ(m_threeBufferViews[0], m_testSrg->GetBufferView(m_indexOfBufferArray, 0));
+        EXPECT_EQ(m_threeBufferViews[1], m_testSrg->GetBufferView(m_indexOfBufferArray, 1));
+        EXPECT_EQ(m_threeBufferViews[2], m_testSrg->GetBufferView(m_indexOfBufferArray, 2));
 
         // Test replacing just two buffer views including changing one back to null...
 
@@ -444,9 +440,9 @@ namespace UnitTest
         EXPECT_EQ(nullptr, m_testSrg->GetBufferView(m_indexOfBufferArray, 0));
         EXPECT_EQ(twoBufferViews[0], m_testSrg->GetBufferView(m_indexOfBufferArray, 1));
         EXPECT_EQ(twoBufferViews[1], m_testSrg->GetBufferView(m_indexOfBufferArray, 2));
-        EXPECT_EQ(nullptr, m_testSrg->GetRHIShaderResourceGroup()->GetData().GetBufferView(m_indexOfBufferArray, 0));
-        EXPECT_EQ(twoBufferViews[0], m_testSrg->GetRHIShaderResourceGroup()->GetData().GetBufferView(m_indexOfBufferArray, 1));
-        EXPECT_EQ(twoBufferViews[1], m_testSrg->GetRHIShaderResourceGroup()->GetData().GetBufferView(m_indexOfBufferArray, 2));
+        EXPECT_EQ(nullptr, m_testSrg->GetBufferView(m_indexOfBufferArray, 0));
+        EXPECT_EQ(twoBufferViews[0], m_testSrg->GetBufferView(m_indexOfBufferArray, 1));
+        EXPECT_EQ(twoBufferViews[1], m_testSrg->GetBufferView(m_indexOfBufferArray, 2));
     }
 
     TEST_F(ShaderResourceGroupBufferTests, TestSetBufferViewArrayAtOffset_ValidationFailure)

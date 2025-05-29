@@ -28,7 +28,7 @@ static const real DepthMargin = 1.0 - 1e-3;
 struct SampleShadowMapBicubicParameters
 {
     Texture2DArray<float> shadowMap;
-    real3 shadowPos;
+    float3 shadowPos;
     real shadowMapSize;
     real invShadowMapSize;
     SamplerComparisonState samplerState;

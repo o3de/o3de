@@ -278,7 +278,7 @@ namespace AZ
             m_bakeExposure = bakeExposure;
         }
 
-        const RHI::DrawPacket* ReflectionProbe::BuildDrawPacket(
+        RHI::ConstPtr<RHI::DrawPacket> ReflectionProbe::BuildDrawPacket(
             const Data::Instance<RPI::ShaderResourceGroup>& srg,
             const RPI::Ptr<RPI::PipelineStateForDraw>& pipelineState,
             const RHI::DrawListTag& drawListTag,
@@ -291,22 +291,15 @@ namespace AZ
                 return nullptr;
             }
 
-            RHI::DrawPacketBuilder drawPacketBuilder;
-
-            RHI::DrawIndexed drawIndexed;
-            drawIndexed.m_indexCount = (uint32_t)m_reflectionRenderData->m_boxIndexCount;
-            drawIndexed.m_indexOffset = 0;
-            drawIndexed.m_vertexOffset = 0;
-
+            RHI::DrawPacketBuilder drawPacketBuilder{RHI::MultiDevice::AllDevices};
             drawPacketBuilder.Begin(nullptr);
-            drawPacketBuilder.SetDrawArguments(drawIndexed);
-            drawPacketBuilder.SetIndexBufferView(m_reflectionRenderData->m_boxIndexBufferView);
+            drawPacketBuilder.SetGeometryView(&m_reflectionRenderData->m_geometryView);
             drawPacketBuilder.AddShaderResourceGroup(srg->GetRHIShaderResourceGroup());
 
             RHI::DrawPacketBuilder::DrawRequest drawRequest;
             drawRequest.m_listTag = drawListTag;
+            drawRequest.m_streamIndices = m_reflectionRenderData->m_geometryView.GetFullStreamBufferIndices();
             drawRequest.m_pipelineState = pipelineState->GetRHIPipelineState();
-            drawRequest.m_streamBufferViews = m_reflectionRenderData->m_boxPositionBufferView;
             drawRequest.m_stencilRef = static_cast<uint8_t>(stencilRef);
             drawRequest.m_sortKey = m_sortKey;
             drawPacketBuilder.AddDrawItem(drawRequest);

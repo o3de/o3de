@@ -103,6 +103,65 @@ namespace AZ::RHI
 
     const char* ToString(ScopeAttachmentUsage attachmentUsage);
 
+    //! Describes in which pipeline stages a Scope Attachment is used
+    enum class ScopeAttachmentStage : uint32_t
+    {
+        //! Error value to catch uninitialized usage of this enum
+        Uninitialized = 0,
+
+        //! Vertex shader stage
+        VertexShader = AZ_BIT(0),
+
+        //! Fragment shader stage
+        FragmentShader = AZ_BIT(1),
+
+        //! Compute shader stage
+        ComputeShader = AZ_BIT(2),
+
+        //! Ray tracing shader stage
+        RayTracingShader = AZ_BIT(3),
+
+        //! Early depth/stencil test stage
+        EarlyFragmentTest = AZ_BIT(4),
+
+        //! Late depth/stencil test stage
+        LateFragmentTest = AZ_BIT(5),
+
+        //! Color attachment output stage
+        ColorAttachmentOutput = AZ_BIT(6),
+
+        //! Transfer stage
+        Copy = AZ_BIT(7),
+
+        //! Conditional rendering stage
+        Predication = AZ_BIT(8),
+
+        //! Indirect draw stage
+        DrawIndirect = AZ_BIT(9),
+
+        //! Vertex input stage (when vertex data is fetch from the inputs)
+        //! Runs before the Vertex Shader stage
+        VertexInput = AZ_BIT(10),
+
+        //! Variable shading rate stage
+        ShadingRate = AZ_BIT(11),
+
+        //! All graphics stages
+        AnyGraphics = VertexShader | FragmentShader | ComputeShader | RayTracingShader,
+
+        //! All stages
+        Any = AnyGraphics | EarlyFragmentTest | LateFragmentTest | ColorAttachmentOutput | Copy | Predication | DrawIndirect |
+            VertexInput | ShadingRate
+    };
+
+    AZ_DEFINE_ENUM_BITWISE_OPERATORS(AZ::RHI::ScopeAttachmentStage);
+
+    //! Returns a string describing a stage
+    AZStd::string ToString(ScopeAttachmentStage attachmentStage);
+
+    //! Returns a string describing a usage and an access
+    const char* ToString(ScopeAttachmentUsage usage, ScopeAttachmentAccess acess);
+
     //! Modifies access to fit the constraints of the scope attachment usage. For example, a scope attachment
     //! with the usage 'Shader' and 'Write' access becomes a UAV under the hood, so it should be remapped to 'ReadWrite'.
     ScopeAttachmentAccess AdjustAccessBasedOnUsage(ScopeAttachmentAccess access, ScopeAttachmentUsage usage);
@@ -162,7 +221,11 @@ namespace AZ::RHI
         Clear,
 
         //! The attachment contents are undefined. Use when writing to entire contents of view.
-        DontCare
+        DontCare,
+
+        //! The attachment contents will be undefined inside the current scope and the resource is not accessed.
+        //! Will fallback to a Load op if the platform doesn't support it.
+        None
     };
 
     //! Describes the action the hardware should use when storing an attachment after a scope.
@@ -172,7 +235,12 @@ namespace AZ::RHI
         Store = 0,
 
         //! The attachment contents can be undefined after the current scope.
-        DontCare
+        DontCare,
+
+        //! The attachment contents are read only. This avoid any write back operations.
+        //! If values are written this behaves identically to the DontCare op.
+        //! Will fallback to a Store op if the platform doesn't support it.
+        None
     };
 
     //! Describes the type of data the attachment represents
@@ -201,12 +269,14 @@ namespace AZ::RHI
     };
 
     //! Describes the type of support for Subpass inputs.
-    enum class SubpassInputSupportType : uint8_t
+    enum class SubpassInputSupportType : uint32_t
     {
-        NotSupported = 0,
-        Native,             // Subpass inputs are supported natively by the platform.
-        Emulated            // Subpass inputs are supported through emulation with texture views.
+        None = 0,
+        Color = AZ_BIT(0),          // Subpass inputs for color attachments is supported.
+        DepthStencil = AZ_BIT(1),    // Subpass inputs for depth/stencil attachment is supported.
+        All = Color | DepthStencil
     };
+    AZ_DEFINE_ENUM_BITWISE_OPERATORS(AZ::RHI::SubpassInputSupportType)
 
     AZ_TYPE_INFO_SPECIALIZE(ScopeAttachmentAccess, "{C937CE07-7ADD-423E-BB2B-2ED2AE8DAB8F}");
     AZ_TYPE_INFO_SPECIALIZE(AttachmentLifetimeType, "{DE636A9A-FA57-49E6-B10D-BCEF25093797}");
@@ -216,4 +286,6 @@ namespace AZ::RHI
     AZ_TYPE_INFO_SPECIALIZE(AttachmentLoadAction, "{1DB7E288-1C11-4316-B6A8-8D62BA963541}");
     AZ_TYPE_INFO_SPECIALIZE(AttachmentStoreAction, "{F580ED24-1537-47D8-90D6-2E620087BE14}");
     AZ_TYPE_INFO_SPECIALIZE(AttachmentType, "{41A254E8-C4BF-459A-80D8-5B959501943E}");
+    AZ_TYPE_INFO_SPECIALIZE(ScopeAttachmentStage, "{9F875055-0DA2-49EC-A17F-4C18504A5297}");
+
 }

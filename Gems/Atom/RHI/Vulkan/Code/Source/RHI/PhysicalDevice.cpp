@@ -186,6 +186,11 @@ namespace AZ
             return m_timelineSemaphoreFeatures;
         }
 
+        const VkPhysicalDeviceSubpassMergeFeedbackFeaturesEXT& PhysicalDevice::GetPhysicalSubpassMergeFeedbackFeatures() const
+        {
+            return m_subpassMergeFeedbackFeatures;
+        }
+
         const VkPhysicalDeviceVulkan12Features& PhysicalDevice::GetPhysicalDeviceVulkan12Features() const
         {
             return m_vulkan12Features;
@@ -299,39 +304,44 @@ namespace AZ
                 static_cast<size_t>(DeviceFeature::MemoryBudget),
                 VK_DEVICE_EXTENSION_SUPPORTED(context, EXT_memory_budget) && m_deviceProperties.vendorID != VendorID_Intel);
             m_features.set(static_cast<size_t>(DeviceFeature::SubgroupOperation), (majorVersion >= 1 && minorVersion >= 1));
+            m_features.set(static_cast<size_t>(DeviceFeature::LoadNoneOp), VK_DEVICE_EXTENSION_SUPPORTED(context, EXT_load_store_op_none));
+            m_features.set(
+                static_cast<size_t>(DeviceFeature::StoreNoneOp),
+                VK_DEVICE_EXTENSION_SUPPORTED(context, EXT_load_store_op_none) || (majorVersion >= 1 && minorVersion >= 3));
         }
 
         RawStringList PhysicalDevice::FilterSupportedOptionalExtensions()
         {
             // The order must match the enum OptionalDeviceExtensions
-            RawStringList optionalExtensions = { {
-                VK_EXT_SAMPLE_LOCATIONS_EXTENSION_NAME,
-                VK_EXT_CONDITIONAL_RENDERING_EXTENSION_NAME,
-                VK_EXT_MEMORY_BUDGET_EXTENSION_NAME,
-                VK_EXT_DEPTH_CLIP_ENABLE_EXTENSION_NAME,
-                VK_EXT_CONSERVATIVE_RASTERIZATION_EXTENSION_NAME,
-                VK_KHR_DRAW_INDIRECT_COUNT_EXTENSION_NAME,
-                VK_KHR_RELAXED_BLOCK_LAYOUT_EXTENSION_NAME,
-                VK_EXT_ROBUSTNESS_2_EXTENSION_NAME,
-                VK_KHR_SHADER_FLOAT16_INT8_EXTENSION_NAME,
-                VK_KHR_SHADER_ATOMIC_INT64_EXTENSION_NAME,
-                VK_EXT_SHADER_IMAGE_ATOMIC_INT64_EXTENSION_NAME,
+            RawStringList optionalExtensions = { { VK_EXT_SAMPLE_LOCATIONS_EXTENSION_NAME,
+                                                   VK_EXT_CONDITIONAL_RENDERING_EXTENSION_NAME,
+                                                   VK_EXT_MEMORY_BUDGET_EXTENSION_NAME,
+                                                   VK_EXT_DEPTH_CLIP_ENABLE_EXTENSION_NAME,
+                                                   VK_EXT_CONSERVATIVE_RASTERIZATION_EXTENSION_NAME,
+                                                   VK_KHR_DRAW_INDIRECT_COUNT_EXTENSION_NAME,
+                                                   VK_KHR_RELAXED_BLOCK_LAYOUT_EXTENSION_NAME,
+                                                   VK_EXT_ROBUSTNESS_2_EXTENSION_NAME,
+                                                   VK_KHR_SHADER_FLOAT16_INT8_EXTENSION_NAME,
+                                                   VK_KHR_SHADER_ATOMIC_INT64_EXTENSION_NAME,
+                                                   VK_EXT_SHADER_IMAGE_ATOMIC_INT64_EXTENSION_NAME,
 
-                // ray tracing extensions
-                VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME,
-                VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME,
-                VK_KHR_RAY_QUERY_EXTENSION_NAME,
-                VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME,
-                VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME,
-                VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
-                VK_KHR_SPIRV_1_4_EXTENSION_NAME,
-                VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME,
+                                                   // ray tracing extensions
+                                                   VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME,
+                                                   VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME,
+                                                   VK_KHR_RAY_QUERY_EXTENSION_NAME,
+                                                   VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME,
+                                                   VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME,
+                                                   VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
+                                                   VK_KHR_SPIRV_1_4_EXTENSION_NAME,
+                                                   VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME,
 
-                VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME,
-                VK_EXT_FRAGMENT_DENSITY_MAP_EXTENSION_NAME,
-                VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME,
-                VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME,
-            } };
+                                                   VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME,
+                                                   VK_EXT_FRAGMENT_DENSITY_MAP_EXTENSION_NAME,
+                                                   VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME,
+                                                   VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME,
+                                                   VK_EXT_LOAD_STORE_OP_NONE_EXTENSION_NAME,
+                                                   VK_EXT_SUBPASS_MERGE_FEEDBACK_EXTENSION_NAME,
+                                                   VK_EXT_CALIBRATED_TIMESTAMPS_EXTENSION_NAME } };
 
             [[maybe_unused]] uint32_t optionalExtensionCount = aznumeric_cast<uint32_t>(optionalExtensions.size());
 
@@ -356,6 +366,26 @@ namespace AZ
             }
 
             return filteredOptionalExtensions;
+        }
+
+        AZStd::vector<VkTimeDomainEXT> PhysicalDevice::GetCalibratedTimeDomains(const GladVulkanContext& context) const
+        {
+            AZStd::vector<VkTimeDomainEXT> time_domains;
+
+            // Initialize time domain count:
+            auto time_domain_count{ 0u };
+            // Update time domain count:
+            auto result = context.GetPhysicalDeviceCalibrateableTimeDomainsEXT(m_vkPhysicalDevice, &time_domain_count, nullptr);
+
+            if (result == VK_SUCCESS)
+            {
+                // Resize time domains vector:
+                time_domains.resize(time_domain_count);
+                // Update time_domain vector:
+                result = context.GetPhysicalDeviceCalibrateableTimeDomainsEXT(m_vkPhysicalDevice, &time_domain_count, time_domains.data());
+            }
+
+            return time_domains;
         }
 
         uint32_t PhysicalDevice::GetVulkanVersion() const
@@ -386,6 +416,7 @@ namespace AZ
                 m_shadingRateFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR;
                 m_fragmentDensityMapFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_FEATURES_EXT;
                 m_timelineSemaphoreFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES;
+                m_subpassMergeFeedbackFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBPASS_MERGE_FEEDBACK_FEATURES_EXT;
 
                 VkPhysicalDeviceFeatures2 deviceFeatures2 = {};
                 deviceFeatures2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
@@ -405,7 +436,8 @@ namespace AZ
                       &m_rayTracingPipelineFeatures,
                       &m_shadingRateFeatures,
                       &m_fragmentDensityMapFeatures,
-                      &m_timelineSemaphoreFeatures });
+                      &m_timelineSemaphoreFeatures,
+                      &m_subpassMergeFeedbackFeatures });
 
                 context.GetPhysicalDeviceFeatures2KHR(vkPhysicalDevice, &deviceFeatures2);
                 m_deviceFeatures = deviceFeatures2.features;

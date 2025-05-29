@@ -157,9 +157,13 @@ set(FILES
     Source/RHI/BufferMemory.cpp
     Source/RHI/BufferMemory.h
     Source/RHI/BufferMemoryView.h
+    Source/RHI/RayTracingAccelerationStructure.cpp
+    Source/RHI/RayTracingAccelerationStructure.h
     Source/RHI/RayTracingBufferPools.h
     Source/RHI/RayTracingBlas.cpp
     Source/RHI/RayTracingBlas.h
+    Source/RHI/RayTracingCompactionQueryPool.cpp
+    Source/RHI/RayTracingCompactionQueryPool.h
     Source/RHI/RayTracingTlas.cpp
     Source/RHI/RayTracingTlas.h
     Source/RHI/RayTracingPipelineState.cpp
@@ -169,4 +173,6 @@ set(FILES
     Source/RHI/Conversion.cpp
     Source/RHI/Conversion.h
     Source/RHI/WindowSurfaceBus.h
+    Source/RHI/SpecializationConstantData.cpp
+    Source/RHI/SpecializationConstantData.h
 )

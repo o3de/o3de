@@ -16,7 +16,7 @@ namespace UnitTest
     template <typename ValueType>
     using PropertySpinCtrlFixture = PropertyCtrlFixture<ValueType, PropertyIntSpinCtrl, IntSpinBoxHandler>;
 
-    TYPED_TEST_CASE(PropertySpinCtrlFixture, IntegerPrimtitiveTestConfigs);
+    TYPED_TEST_SUITE(PropertySpinCtrlFixture, IntegerPrimtitiveTestConfigs);
 
     TYPED_TEST(PropertySpinCtrlFixture, PropertySpinCtrlHandlersCreated)
     {

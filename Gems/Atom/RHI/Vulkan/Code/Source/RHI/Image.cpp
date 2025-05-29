@@ -495,7 +495,7 @@ namespace AZ
             return m_ownerQueue.Get(range ? *range : RHI::ImageSubresourceRange(GetDescriptor()));
         }
 
-        AZStd::vector<Image::SubresourceRangeOwner> Image::GetOwnerQueue(const RHI::ImageView& view) const
+        AZStd::vector<Image::SubresourceRangeOwner> Image::GetOwnerQueue(const RHI::DeviceImageView& view) const
         {
             auto range = RHI::ImageSubresourceRange(view.GetDescriptor());
             return GetOwnerQueue(&range);
@@ -507,7 +507,7 @@ namespace AZ
             m_ownerQueue.Set(range ? *range : RHI::ImageSubresourceRange(GetDescriptor()), queueId);
         }
 
-        void Image::SetOwnerQueue(const QueueId& queueId, const RHI::ImageView& view)
+        void Image::SetOwnerQueue(const QueueId& queueId, const RHI::DeviceImageView& view)
         {
             auto range = RHI::ImageSubresourceRange(view.GetDescriptor());
             SetOwnerQueue(queueId , &range);
@@ -525,9 +525,37 @@ namespace AZ
             m_layout.Set(range ? *range : RHI::ImageSubresourceRange(GetDescriptor()), layout);
         }
 
+        PipelineAccessFlags Image::GetPipelineAccess(const RHI::ImageSubresourceRange* range) const
+        {
+            AZStd::lock_guard<AZStd::mutex> lock(m_pipelineAccessMutex);
+            PipelineAccessFlags pipelineAccessFlags = {};
+            for (const auto& propertyRange : m_pipelineAccess.Get(range ? *range : RHI::ImageSubresourceRange(GetDescriptor())))
+            {
+                pipelineAccessFlags.m_pipelineStage |= propertyRange.m_property.m_pipelineStage;
+                pipelineAccessFlags.m_access |= propertyRange.m_property.m_access;
+            }
+            return pipelineAccessFlags;
+        }
+
+        void Image::SetPipelineAccess(const PipelineAccessFlags& pipelineAccess, const RHI::ImageSubresourceRange* range)
+        {
+            AZStd::lock_guard<AZStd::mutex> lock(m_pipelineAccessMutex);
+            m_pipelineAccess.Set(range ? *range : RHI::ImageSubresourceRange(GetDescriptor()), pipelineAccess);
+        }
+
         VkImageUsageFlags Image::GetUsageFlags() const
         {
             return m_usageFlags;
+        }
+
+        VkSharingMode Image::GetSharingMode() const
+        {
+            return m_sharingMode;
+        }
+
+        const MemoryView& Image::GetMemoryView()
+        {
+            return m_memoryView;
         }
 
         void Image::OnPreInit(Device& device, const RHI::ImageDescriptor& descriptor, Image::InitFlags flags)
@@ -752,17 +780,17 @@ namespace AZ
 
             ImageCreateInfo createInfo = device.BuildImageCreateInfo(descriptor);
             // Add flags for sparse binding and sparse memory residency
-            createInfo.m_vkCreateInfo.flags |= VK_IMAGE_CREATE_SPARSE_BINDING_BIT | VK_IMAGE_CREATE_SPARSE_RESIDENCY_BIT; 
+            createInfo.GetCreateInfo()->flags |= VK_IMAGE_CREATE_SPARSE_BINDING_BIT | VK_IMAGE_CREATE_SPARSE_RESIDENCY_BIT;
 
             // We will always handles image's ownership
-            createInfo.m_vkCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-            createInfo.m_vkCreateInfo.queueFamilyIndexCount = 1;
-            createInfo.m_vkCreateInfo.pQueueFamilyIndices = nullptr;
+            createInfo.GetCreateInfo()->sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+            createInfo.GetCreateInfo()->queueFamilyIndexCount = 1;
+            createInfo.GetCreateInfo()->pQueueFamilyIndices = nullptr;
 
-            createInfo.m_vkCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            createInfo.GetCreateInfo()->initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
             const VkResult vkResult =
-                device.GetContext().CreateImage(device.GetNativeDevice(), &createInfo.m_vkCreateInfo, VkSystemAllocator::Get(), &m_vkImage);
+                device.GetContext().CreateImage(device.GetNativeDevice(), createInfo.GetCreateInfo(), VkSystemAllocator::Get(), &m_vkImage);
 
             AssertSuccess(vkResult);
             RHI::ResultCode result = ConvertResult(vkResult);
@@ -771,6 +799,7 @@ namespace AZ
             m_sparseImageInfo = AZStd::make_unique<SparseImageInfo>();
             m_sparseImageInfo->Init(device, m_vkImage, descriptor);
             m_isOwnerOfNativeImage = true;
+            m_sharingMode = createInfo.GetCreateInfo()->sharingMode;
 
             return result;
         }
@@ -783,7 +812,8 @@ namespace AZ
             const RHI::ImageDescriptor& descriptor = GetDescriptor();
 
             ImageCreateInfo createInfo = device.BuildImageCreateInfo(descriptor);
-            m_usageFlags = createInfo.m_vkCreateInfo.usage;
+            m_usageFlags = createInfo.GetCreateInfo()->usage;
+            m_sharingMode = createInfo.GetCreateInfo()->sharingMode;
 
             VkResult result = VK_SUCCESS;
             if (memoryView)
@@ -794,7 +824,7 @@ namespace AZ
                     device.GetVmaAllocator(),
                     memoryView->GetAllocation()->GetVmaAllocation(),
                     memoryView->GetOffset(),
-                    &createInfo.m_vkCreateInfo,
+                    createInfo.GetCreateInfo(),
                     &m_vkImage);
 
                 if (result == VK_SUCCESS)
@@ -808,13 +838,7 @@ namespace AZ
                 VmaAllocationCreateInfo allocInfo = GetVmaAllocationCreateInfo(RHI::HeapMemoryLevel::Device);
                 VmaAllocation vmaAlloc;
                 // Creates a new image, allocates a new memory for it, and binds the memory to the image.
-                result = vmaCreateImage(
-                    device.GetVmaAllocator(),
-                    &createInfo.m_vkCreateInfo,
-                    &allocInfo,
-                    &m_vkImage,
-                    &vmaAlloc,
-                    nullptr);
+                result = vmaCreateImage(device.GetVmaAllocator(), createInfo.GetCreateInfo(), &allocInfo, &m_vkImage, &vmaAlloc, nullptr);
 
                 if (result == VK_SUCCESS)
                 {
@@ -877,7 +901,7 @@ namespace AZ
         // We don't use vkGetImageSubresourceLayout to calculate the subresource layout because we don't use linear images.
         // vkGetImageSubresourceLayout only works for linear images.
         // We always use optimal tiling since it's more efficient. We upload the content of the image using a staging buffer.
-        void Image::GetSubresourceLayoutsInternal(const RHI::ImageSubresourceRange& subresourceRange, RHI::ImageSubresourceLayout* subresourceLayouts, size_t* totalSizeInBytes) const
+        void Image::GetSubresourceLayoutsInternal(const RHI::ImageSubresourceRange& subresourceRange, RHI::DeviceImageSubresourceLayout* subresourceLayouts, size_t* totalSizeInBytes) const
         {
             const RHI::ImageDescriptor& imageDescriptor = GetDescriptor();
             uint32_t byteOffset = 0;
@@ -889,12 +913,12 @@ namespace AZ
                     RHI::ImageSubresource subresource;
                     subresource.m_arraySlice = arraySlice;
                     subresource.m_mipSlice = mipSlice;
-                    RHI::ImageSubresourceLayout subresourceLayout = RHI::GetImageSubresourceLayout(imageDescriptor, subresource);
+                    RHI::DeviceImageSubresourceLayout subresourceLayout = RHI::GetImageSubresourceLayout(imageDescriptor, subresource);
 
                     if (subresourceLayouts)
                     {
                         const uint32_t subresourceIndex = RHI::GetImageSubresourceIndex(mipSlice, arraySlice, imageDescriptor.m_mipLevels);
-                        RHI::ImageSubresourceLayout& layout = subresourceLayouts[subresourceIndex];
+                        RHI::DeviceImageSubresourceLayout& layout = subresourceLayouts[subresourceIndex];
                         layout.m_bytesPerRow = subresourceLayout.m_bytesPerRow;
                         layout.m_bytesPerImage = subresourceLayout.m_rowCount * subresourceLayout.m_bytesPerRow;
                         layout.m_offset = byteOffset;
@@ -918,8 +942,10 @@ namespace AZ
 
             m_ownerQueue.Init(descriptor);
             m_layout.Init(descriptor);
+            m_pipelineAccess.Init(descriptor);
             SetLayout(VK_IMAGE_LAYOUT_UNDEFINED);
             SetInitalQueueOwner();
+            SetPipelineAccess({ VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, VK_ACCESS_NONE });
         }
 
         bool Image::IsStreamableInternal() const
@@ -945,7 +971,6 @@ namespace AZ
                 }
             }
         }
-
     }
 }
 

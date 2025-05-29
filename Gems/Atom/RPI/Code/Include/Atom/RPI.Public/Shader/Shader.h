@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/Shader/ShaderVariant.h>
 #include <Atom/RPI.Public/Shader/ShaderReloadNotificationBus.h>
 
@@ -16,6 +17,7 @@
 
 #include <Atom/RHI/DrawListTagRegistry.h>
 #include <Atom/RHI/PipelineLibrary.h>
+#include <Atom/RHI/PipelineState.h>
 
 #include <AtomCore/Instance/InstanceData.h>
 #include <AzCore/IO/SystemFile.h>
@@ -50,11 +52,13 @@ namespace AZ
         //! 
         //! Remember that the returned RHI::PipelineState instance lifetime is tied to the Shader lifetime.
         //! If you need guarantee lifetime, it is safe to take a reference on the returned pipeline state.
-        class Shader final
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+        class ATOM_RPI_PUBLIC_API Shader final
             : public Data::InstanceData
             , public Data::AssetBus::MultiHandler
             , public ShaderVariantFinderNotificationBus::Handler
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             friend class ShaderSystem;
         public:
             AZ_INSTANCE_DATA(Shader, "{232D8BD6-3BD4-4842-ABD2-F380BD5B0863}");
@@ -168,7 +172,7 @@ namespace AZ
 
             void Shutdown();
 
-            ConstPtr<RHI::PipelineLibraryData> LoadPipelineLibrary() const;
+            AZStd::unordered_map<int, ConstPtr<RHI::PipelineLibraryData>> LoadPipelineLibrary() const;
             void SavePipelineLibrary() const;
             
             const ShaderVariant& GetVariantInternal(ShaderVariantStableId shaderVariantStableId);
@@ -225,8 +229,7 @@ namespace AZ
             RHI::DrawListTag m_drawListTag;
 
             //! PipelineLibrary file name
-            char m_pipelineLibraryPath[AZ_MAX_PATH_LEN] = { 0 };
-
+            AZStd::unordered_map<int, AZStd::string> m_pipelineLibraryPaths;
         };
     }
 }

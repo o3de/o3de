@@ -9,6 +9,7 @@
 
 #include <AzCore/RTTI/ReflectContext.h>
 
+
 class AnimSerializer
 {
 public:

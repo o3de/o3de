@@ -21,7 +21,10 @@ namespace TrackView
 
         CTrackViewTimelineWidget(QWidget* parent = nullptr)
             : TimelineWidget(parent)
-            , m_stashedRecordModeWhileTimeDragging(false) {};
+            , m_stashedRecordModeWhileTimeDragging(false)
+        {
+        }
+
         virtual ~CTrackViewTimelineWidget() = default;
 
     protected:

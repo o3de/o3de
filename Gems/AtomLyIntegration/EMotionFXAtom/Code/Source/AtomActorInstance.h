@@ -204,6 +204,7 @@ namespace AZ
             void UpdateWrinkleMasks();
 
             void HandleObjectSrgCreate(const Data::Instance<RPI::ShaderResourceGroup>& objectSrg);
+            void HandleModelChange(const Data::Instance<RPI::Model>& model);
 
             void UpdateLightingChannelMask();
 
@@ -227,6 +228,11 @@ namespace AZ
 
             AZStd::vector<Data::Instance<RPI::Image>> m_wrinkleMasks;
             AZStd::vector<float> m_wrinkleMaskWeights;
+
+            MeshHandleDescriptor::ModelChangedEvent::Handler m_modelChangedEventHandler
+            {
+                 [&](const Data::Instance<RPI::Model>& model) { HandleModelChange(model); } 
+            };
 
             MeshHandleDescriptor::ObjectSrgCreatedEvent::Handler m_objectSrgCreatedHandler
             {

@@ -51,7 +51,7 @@ namespace ScriptCanvas
     protected:
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("ScriptCanvasRuntimeService", 0x776e1e3a));
+            provided.push_back(AZ_CRC_CE("ScriptCanvasRuntimeService"));
         }
 
         void Activate() override;

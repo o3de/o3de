@@ -31,13 +31,11 @@ struct QtViewPane;
 class QMainWindow;
 struct QMetaObject;
 
-class CBaseObject;
 class CCryEditDoc;
 class CAnimationContext;
 class CTrackViewSequenceManager;
 class CGameEngine;
 class CToolBoxManager;
-class CClassFactory;
 class CMusicManager;
 struct IEditorParticleManager;
 class CEAXPresetManager;
@@ -45,8 +43,6 @@ class CErrorReport;
 class ICommandManager;
 class CEditorCommandManager;
 class CConsoleSynchronization;
-struct ISourceControl;
-struct IEditorClassFactory;
 class CDialog;
 #if defined(AZ_PLATFORM_WINDOWS)
 class C3DConnexionDriver;
@@ -64,9 +60,7 @@ struct AABB;
 struct IErrorReport; // Vladimir@conffx
 struct IFileUtil;  // Vladimir@conffx
 struct IEditorLog;  // Vladimir@conffx
-struct IImageUtil;  // Vladimir@conffx
 struct IEditorParticleUtils;  // Leroy@conffx
-struct ILogFile; // Vladimir@conffx
 
 // Qt
 
@@ -234,17 +228,6 @@ enum AxisConstrains
     AXIS_TERRAIN,
 };
 
-//! Reference coordinate system values
-enum RefCoordSys
-{ // Don't change this order. Should be in the same order as MainWindow::CreateRefCoordComboBox()
-    COORDS_VIEW = 0,
-    COORDS_LOCAL,
-    COORDS_PARENT,
-    COORDS_WORLD,
-    COORDS_USERDEFINED,
-    LAST_COORD_SYSTEM, // Must always be the last member
-};
-
 // Insert locations for menu items
 enum EMenuInsertLocation
 {
@@ -258,14 +241,6 @@ enum EMenuInsertLocation
     eMenuScript,
     eMenuView,
     eMenuHelp
-};
-
-//! Global editor operation mode
-enum EOperationMode
-{
-    eOperationModeNone = 0, // None
-    eCompositingMode, // Normal operation mode where objects are composited in the scene
-    eModellingMode // Geometry modeling mode
 };
 
 //! Mouse events that viewport can send
@@ -318,13 +293,6 @@ enum EModifiedModule
     eModifiedAll = -1
 };
 
-//! Class provided by editor for various registration functions.
-struct CRegistrationContext
-{
-    CEditorCommandManager* pCommandManager;
-    CClassFactory* pClassFactory;
-};
-
 //! Interface provided by editor to reach status bar functionality.
 struct IMainStatusBar
 {
@@ -359,6 +327,7 @@ struct ITrackViewSequenceManager
     virtual void OnCreateSequenceComponent(AZStd::intrusive_ptr<IAnimSequence>& sequence) = 0;
 
     virtual void OnSequenceActivated(const AZ::EntityId& entityId) = 0;
+    virtual void OnSequenceDeactivated(const AZ::EntityId& entityId) = 0;
 };
 
 //! Interface to expose TrackViewSequence functionality to SequenceComponent
@@ -373,8 +342,6 @@ struct IEditor
     virtual void DeleteThis() = 0;
     //! Access to Editor ISystem interface.
     virtual ISystem* GetSystem() = 0;
-    //! Access to class factory.
-    virtual IEditorClassFactory* GetClassFactory() = 0;
     //! Access to commands manager.
     virtual CEditorCommandManager* GetCommandManager() = 0;
     virtual ICommandManager* GetICommandManager() = 0;
@@ -456,11 +423,6 @@ struct IEditor
     virtual CGameEngine* GetGameEngine() = 0;
     virtual CDisplaySettings* GetDisplaySettings() = 0;
     //! Create new object
-    virtual CBaseObject* NewObject(const char* typeName, const char* fileName = "", const char* name = "", float x = 0.0f, float y = 0.0f, float z = 0.0f, bool modifyDoc = true) = 0;
-    //! Delete object
-    virtual void DeleteObject(CBaseObject* obj) = 0;
-    //! Get access to object manager.
-    virtual struct IObjectManager* GetObjectManager() = 0;
     virtual CSettingsManager* GetSettingsManager() = 0;
     //! Get Music Manager.
     virtual CMusicManager* GetMusicManager() = 0;
@@ -468,22 +430,12 @@ struct IEditor
     virtual Editor::EditorQtApplication* GetEditorQtApplication() = 0;
     virtual const QColor& GetColorByName(const QString& name) = 0;
 
-    virtual struct IMovieSystem* GetMovieSystem() = 0;
     virtual class CPluginManager* GetPluginManager() = 0;
     virtual class CViewManager* GetViewManager() = 0;
     virtual class CViewport* GetActiveView() = 0;
     virtual void SetActiveView(CViewport* viewport) = 0;
     virtual struct IEditorFileMonitor* GetFileMonitor() = 0;
 
-    //! QMimeData is used by the Qt clipboard.
-    //! IMPORTANT: Any QMimeData allocated for the clipboard will be deleted
-    //! when the editor exists. If a QMimeData is allocated by a different
-    //! memory allocator (for example, in a different DLL) than the one used
-    //! by the main editor, a crash will occur on exit, if data is left in
-    //! the clipboard. The solution is to enfore all allocations of QMimeData
-    //! using CreateQMimeData().
-    virtual QMimeData* CreateQMimeData() const = 0;
-    virtual void DestroyQMimeData(QMimeData* data) const = 0;
 
     //////////////////////////////////////////////////////////////////////////
     // Access for CLevelIndependentFileMan
@@ -496,42 +448,23 @@ struct IEditor
     virtual void ResetViews() = 0;
     //! Update information in track view dialog.
     virtual void ReloadTrackView() = 0;
-    //! Current position marker
-    virtual Vec3 GetMarkerPosition() = 0;
-    //! Set current position marker.
-    virtual void    SetMarkerPosition(const Vec3& pos) = 0;
-    //! Set current selected region.
-    virtual void    SetSelectedRegion(const AABB& box) = 0;
-    //! Get currently selected region.
-    virtual void    GetSelectedRegion(AABB& box) = 0;
 
-    virtual void SetOperationMode(EOperationMode mode) = 0;
-    virtual EOperationMode GetOperationMode() = 0;
     //! Set constrain on specified axis for objects construction and modifications.
     //! @param axis one of AxisConstrains enumerations.
     virtual void SetAxisConstraints(AxisConstrains axis) = 0;
     //! Get axis constrain for objects construction and modifications.
     virtual AxisConstrains GetAxisConstrains() = 0;
-    //! Set whether axes are forced to the same value when they are changed (x = y = z).
-    virtual void SetAxisVectorLock(bool bAxisVectorLock) = 0;
-    //! Get whether axes are forced to the same value when they are changed (x = y = z).
-    virtual bool IsAxisVectorLocked() = 0;
     //! If set, when axis terrain constrain is selected, snapping only to terrain.
     virtual void SetTerrainAxisIgnoreObjects(bool bIgnore) = 0;
     virtual bool IsTerrainAxisIgnoreObjects() = 0;
-    //! Set current reference coordinate system used when constructing/modifying objects.
-    virtual void SetReferenceCoordSys(RefCoordSys refCoords) = 0;
     //! Get current reference coordinate system used when constructing/modifying objects.
-    virtual RefCoordSys GetReferenceCoordSys() = 0;
     virtual XmlNodeRef FindTemplate(const QString& templateName) = 0;
     virtual void AddTemplate(const QString& templateName, XmlNodeRef& tmpl) = 0;
 
     virtual const QtViewPane* OpenView(QString sViewClassName, bool reuseOpen = true) = 0;
     virtual QWidget* FindView(QString viewClassName) = 0;
 
-    virtual bool CloseView(const char* sViewClassName) = 0;
     virtual bool SetViewFocus(const char* sViewClassName) = 0;
-    virtual void CloseView(const GUID& classId) = 0; // close ALL panels related to classId, used when unloading plugins.
 
     //! Opens standard color selection dialog.
     //! Initialized with the color specified in color parameter.
@@ -603,16 +536,6 @@ struct IEditor
     virtual void RegisterNotifyListener(IEditorNotifyListener* listener) = 0;
     //! Unregister Editor notifications listener.
     virtual void UnregisterNotifyListener(IEditorNotifyListener* listener) = 0;
-    //! Register document notifications listener.
-    virtual void RegisterDocListener(IDocListener* listener) = 0;
-    //! Unregister document notifications listener.
-    virtual void UnregisterDocListener(IDocListener* listener) = 0;
-    //! Retrieve interface to the source control.
-    virtual ISourceControl* GetSourceControl() = 0;
-    //! Retrieve true if source control is provided and enabled in settings
-    virtual bool IsSourceControlAvailable() = 0;
-    //! Only returns true if source control is both available AND currently connected and functioning
-    virtual bool IsSourceControlConnected() = 0;
 
     virtual void ReduceMemory() = 0;
 
@@ -620,15 +543,8 @@ struct IEditor
     virtual void ReloadTemplates() = 0;
     virtual void ShowStatusText(bool bEnable) = 0;
 
-    // Provides a way to extend the context menu of an object. The function gets called every time the menu is opened.
-    typedef AZStd::function<void(QMenu*, const CBaseObject*)> TContextMenuExtensionFunc;
-    virtual void RegisterObjectContextMenuExtension(TContextMenuExtensionFunc func) = 0;
-
     virtual SSystemGlobalEnvironment* GetEnv() = 0;
-    virtual IImageUtil* GetImageUtil() = 0;  // Vladimir@conffx
     virtual SEditorSettings* GetEditorSettings() = 0;
-
-    virtual ILogFile* GetLogFile() = 0;  // Vladimir@conffx
 
     // unload all plugins
     virtual void UnloadPlugins() = 0;

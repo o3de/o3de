@@ -449,6 +449,7 @@ namespace UnitTest
         m1 = Matrix4x4::CreateRotationX(1.0f);
         m1.SetTranslation(Vector3(10.0f, -3.0f, 5.0f));
         m1.SetElement(0, 1, 23.1234f);
+        m1.MultiplyByScale(Vector3(0.1f, 0.07f, 0.09f));
         EXPECT_THAT((m1 * m1.GetInverseTransform()), IsCloseTolerance(Matrix4x4::CreateIdentity(), 0.01f));
     }
 

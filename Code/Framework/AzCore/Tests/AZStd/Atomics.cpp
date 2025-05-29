@@ -135,9 +135,9 @@ namespace UnitTest
     template <class T>
     struct AtomicOpsPointer : public Atomics {};
 
-    TYPED_TEST_CASE(AtomicOps, AllAtomicTypes);
-    TYPED_TEST_CASE(AtomicOpsIntegral, IntegralAtomicTypes);
-    TYPED_TEST_CASE(AtomicOpsPointer, PointerAtomicTypes);
+    TYPED_TEST_SUITE(AtomicOps, AllAtomicTypes);
+    TYPED_TEST_SUITE(AtomicOpsIntegral, IntegralAtomicTypes);
+    TYPED_TEST_SUITE(AtomicOpsPointer, PointerAtomicTypes);
 
     TYPED_TEST(AtomicOps, CompareExchangeStrong)
     {

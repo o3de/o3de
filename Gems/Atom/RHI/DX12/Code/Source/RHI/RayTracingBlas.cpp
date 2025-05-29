@@ -10,8 +10,8 @@
 #include <RHI/Conversions.h>
 #include <RHI/Device.h>
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/BufferPool.h>
-#include <Atom/RHI/RayTracingBufferPools.h>
+#include <Atom/RHI/DeviceBufferPool.h>
+#include <Atom/RHI/DeviceRayTracingBufferPools.h>
 
 
 namespace AZ
@@ -23,7 +23,12 @@ namespace AZ
             return aznew RayTracingBlas;
         }
 
-        RHI::ResultCode RayTracingBlas::CreateBuffersInternal([[maybe_unused]] RHI::Device& deviceBase, [[maybe_unused]] const RHI::RayTracingBlasDescriptor* descriptor, [[maybe_unused]] const RHI::RayTracingBufferPools& bufferPools)
+        uint64_t RayTracingBlas::GetAccelerationStructureByteSize()
+        {
+            return m_buffers.GetCurrentElement().m_blasBuffer->GetDescriptor().m_byteCount;
+        }
+
+        RHI::ResultCode RayTracingBlas::CreateBuffersInternal([[maybe_unused]] RHI::Device& deviceBase, [[maybe_unused]] const RHI::DeviceRayTracingBlasDescriptor* descriptor, [[maybe_unused]] const RHI::DeviceRayTracingBufferPools& bufferPools)
         {
 #ifdef AZ_DX12_DXR_SUPPORT
             Device& device = static_cast<Device&>(deviceBase);
@@ -52,7 +57,7 @@ namespace AZ
                 rtAabb.MaxY = aabb.GetMax().GetY();
                 rtAabb.MaxZ = aabb.GetMax().GetZ();
 
-                AZ::RHI::BufferInitRequest blasBufferRequest;
+                AZ::RHI::DeviceBufferInitRequest blasBufferRequest;
                 blasBufferRequest.m_buffer = buffers.m_aabbBuffer.get();
                 blasBufferRequest.m_initialData = &rtAabb;
                 blasBufferRequest.m_descriptor = blasBufferDescriptor;
@@ -74,12 +79,12 @@ namespace AZ
             }
             else
             {
-                const RHI::RayTracingGeometryVector& geometries = descriptor->GetGeometries();
+                const RHI::DeviceRayTracingGeometryVector& geometries = descriptor->GetGeometries();
 
                 // build the list of D3D12_RAYTRACING_GEOMETRY_DESC structures
                 m_geometryDescs.reserve(geometries.size());
                 D3D12_RAYTRACING_GEOMETRY_DESC geometryDesc = {};
-                for (const RHI::RayTracingGeometry& geometry : geometries)
+                for (const RHI::DeviceRayTracingGeometry& geometry : geometries)
                 {
                     geometryDesc = {};
                     geometryDesc.Type = D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES;
@@ -118,7 +123,7 @@ namespace AZ
             scratchBufferDescriptor.m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite | RHI::BufferBindFlags::RayTracingScratchBuffer;
             scratchBufferDescriptor.m_byteCount = prebuildInfo.ScratchDataSizeInBytes;
 
-            AZ::RHI::BufferInitRequest scratchBufferRequest;
+            AZ::RHI::DeviceBufferInitRequest scratchBufferRequest;
             scratchBufferRequest.m_buffer = buffers.m_scratchBuffer.get();
             scratchBufferRequest.m_descriptor = scratchBufferDescriptor;
             [[maybe_unused]] RHI::ResultCode resultCode = bufferPools.GetScratchBufferPool()->InitBuffer(scratchBufferRequest);
@@ -133,7 +138,7 @@ namespace AZ
             blasBufferDescriptor.m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite | RHI::BufferBindFlags::RayTracingAccelerationStructure;
             blasBufferDescriptor.m_byteCount = prebuildInfo.ResultDataMaxSizeInBytes;
 
-            AZ::RHI::BufferInitRequest blasBufferRequest;
+            AZ::RHI::DeviceBufferInitRequest blasBufferRequest;
             blasBufferRequest.m_buffer = buffers.m_blasBuffer.get();
             blasBufferRequest.m_descriptor = blasBufferDescriptor;
             resultCode = bufferPools.GetBlasBufferPool()->InitBuffer(blasBufferRequest);
@@ -142,6 +147,39 @@ namespace AZ
             MemoryView& blasMemoryView = static_cast<Buffer*>(buffers.m_blasBuffer.get())->GetMemoryView();
             blasMemoryView.SetName(L"BLAS");
 #endif
+            return RHI::ResultCode::Success;
+        }
+
+        RHI::ResultCode RayTracingBlas::CreateCompactedBuffersInternal(
+            [[maybe_unused]] RHI::Device& device,
+            RHI::Ptr<RHI::DeviceRayTracingBlas> sourceBlas,
+            uint64_t compactedBufferSize,
+            const RHI::DeviceRayTracingBufferPools& rayTracingBufferPools)
+        {
+#ifdef AZ_DX12_DXR_SUPPORT
+            // advance to the next buffer
+            BlasBuffers& buffers = m_buffers.AdvanceCurrentElement();
+            // create BLAS buffer
+            buffers.m_blasBuffer = RHI::Factory::Get().CreateBuffer();
+            AZ::RHI::BufferDescriptor blasBufferDescriptor;
+            blasBufferDescriptor.m_bindFlags =
+                RHI::BufferBindFlags::ShaderReadWrite | RHI::BufferBindFlags::RayTracingAccelerationStructure;
+            blasBufferDescriptor.m_byteCount = compactedBufferSize;
+
+            AZ::RHI::DeviceBufferInitRequest blasBufferRequest;
+            blasBufferRequest.m_buffer = buffers.m_blasBuffer.get();
+            blasBufferRequest.m_descriptor = blasBufferDescriptor;
+            [[maybe_unused]] auto resultCode = rayTracingBufferPools.GetBlasBufferPool()->InitBuffer(blasBufferRequest);
+            AZ_Assert(resultCode == RHI::ResultCode::Success, "failed to create BLAS buffer");
+
+            MemoryView& blasMemoryView = static_cast<Buffer*>(buffers.m_blasBuffer.get())->GetMemoryView();
+            blasMemoryView.SetName(L"BLAS");
+
+            const auto* dx12SourceBlas = static_cast<RayTracingBlas*>(sourceBlas.get());
+            m_inputs = dx12SourceBlas->m_inputs;
+            m_geometryDescs = dx12SourceBlas->m_geometryDescs;
+#endif
+
             return RHI::ResultCode::Success;
         }
 
@@ -162,6 +200,11 @@ namespace AZ
             if (RHI::CheckBitsAny(buildFlags, RHI::RayTracingAccelerationStructureBuildFlags::ENABLE_UPDATE))
             {
                 dxBuildFlags |= D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_ALLOW_UPDATE;
+            }
+
+            if (RHI::CheckBitsAny(buildFlags, RHI::RayTracingAccelerationStructureBuildFlags::ENABLE_COMPACTION))
+            {
+                dxBuildFlags |= D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_ALLOW_COMPACTION;
             }
 
             return dxBuildFlags;

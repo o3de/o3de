@@ -73,7 +73,7 @@ namespace AssetBundler
         startupParameters.m_loadDynamicModules = false;
         Start(AzFramework::Application::Descriptor(), startupParameters);
 
-        AZ::SerializeContext* context;
+        AZ::SerializeContext* context = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
         AZ_Assert(context, "No serialize context");
         AzToolsFramework::AssetSeedManager::Reflect(context);

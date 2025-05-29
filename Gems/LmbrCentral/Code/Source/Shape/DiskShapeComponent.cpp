@@ -15,20 +15,20 @@ namespace LmbrCentral
 {
     void DiskShapeComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("ShapeService", 0xe86aa5fe));
-        provided.push_back(AZ_CRC("DiskShapeService", 0xd90c482b));
+        provided.push_back(AZ_CRC_CE("ShapeService"));
+        provided.push_back(AZ_CRC_CE("DiskShapeService"));
     }
 
     void DiskShapeComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("ShapeService", 0xe86aa5fe));
-        incompatible.push_back(AZ_CRC("DiskShapeService", 0xd90c482b));
+        incompatible.push_back(AZ_CRC_CE("ShapeService"));
+        incompatible.push_back(AZ_CRC_CE("DiskShapeService"));
         incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
     }
 
     void DiskShapeComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("TransformService", 0x8ee22c50));
+        required.push_back(AZ_CRC_CE("TransformService"));
     }
 
     void DiskShapeDebugDisplayComponent::Reflect(AZ::ReflectContext* context)

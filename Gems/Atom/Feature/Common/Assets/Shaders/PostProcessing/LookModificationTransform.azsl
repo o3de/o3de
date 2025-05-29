@@ -6,7 +6,7 @@
  *
  */
 
-#include <viewsrg.srgi>
+#include <viewsrg_all.srgi>
 
 #include <Atom/Features/PostProcessing/Aces.azsli>
 #include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
@@ -48,7 +48,7 @@ option bool o_enableColorGradingLut = false;
 // 1 - 7 tap b-spline
 // 2 - 19 tap b-spline
 [[range(0, 2)]]
-option uint o_lutSampleQuality = 0;
+option int o_lutSampleQuality = 0;
 
 // Sample a 3dtexture with a 7 or 19 tap B-Spline. Consider ripping this out and putting in a more general location.
 // This function samples a 4x4x4 neighborhood around the uv. Normally this would take 64 samples, but by taking

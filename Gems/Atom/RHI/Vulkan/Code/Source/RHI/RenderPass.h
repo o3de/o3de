@@ -101,6 +101,11 @@ namespace AZ
                 AZStd::array<SubpassDescriptor, RHI::Limits::Pipeline::SubpassCountMax> m_subpassDescriptors;
                 //! Dependencies of the resources between the subpasses.
                 AZStd::vector<VkSubpassDependency> m_subpassDependencies;
+                //! Necessary to avoid validation errors when Vulkan compares
+                //! the VkRenderPass of the PipelineStateObject vs the VkRenderPass of the VkCmdBeginRenderPass.
+                //! Even if the subpass dependencies are identical but they differ in order, it'd trigger validation errors.
+                //! To make the order irrelevant, the solution is to merge the bitflags. 
+                void MergeSubpassDependencies();
             };
 
             RHI::ResultCode Init(const Descriptor& descriptor);
@@ -119,6 +124,15 @@ namespace AZ
                 Device& device,
                 const RHI::RenderAttachmentLayout& layout,
                 const RHI::MultisampleState& multisampleState);
+
+            //! Contains the layout that the RenderAttachment will used on a subpass.
+            //! This information is used when converting a RenderAttachmentLayout to a Renderpass::Descriptor (ConvertRenderAttachmentLayout)
+            struct RenderAttachmentLayout : RHI::RenderAttachmentExtras
+            {
+                AZ_RTTI(RenderAttachmentLayout, "{EDFE4C66-9780-4752-96CD-CCCE81C029DC}");
+                //! Layout of the attachment in a subpass.
+                VkImageLayout m_layout = VK_IMAGE_LAYOUT_UNDEFINED;
+            };
 
         private:
             RenderPass() = default;

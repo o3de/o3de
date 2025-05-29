@@ -103,7 +103,7 @@ protected:
     protected:
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("TransformService", 0x8ee22c50));
+            provided.push_back(AZ_CRC_CE("TransformService"));
         }
 
         static void Reflect(AZ::ReflectContext* reflection)

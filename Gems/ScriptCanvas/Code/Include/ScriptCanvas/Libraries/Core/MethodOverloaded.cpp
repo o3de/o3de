@@ -44,10 +44,10 @@ namespace ScriptCanvas
             {
                 if (classElement.GetVersion() <= MethodOverloadedCpp::DataDrivingOverloads)
                 {
-                    classElement.RemoveElementByName(AZ_CRC("activeIndex", 0x333685ca));
-                    classElement.RemoveElementByName(AZ_CRC("activePrototype", 0x77266e5b));
-                    classElement.RemoveElementByName(AZ_CRC("overloadSelectionTriggerSlotIds", 0x58b2b75d));
-                    classElement.RemoveElementByName(AZ_CRC("overloadSelectionTriggerIndices", 0x17fbdf12));
+                    classElement.RemoveElementByName(AZ_CRC_CE("activeIndex"));
+                    classElement.RemoveElementByName(AZ_CRC_CE("activePrototype"));
+                    classElement.RemoveElementByName(AZ_CRC_CE("overloadSelectionTriggerSlotIds"));
+                    classElement.RemoveElementByName(AZ_CRC_CE("overloadSelectionTriggerIndices"));
                 }
 
                 return true;

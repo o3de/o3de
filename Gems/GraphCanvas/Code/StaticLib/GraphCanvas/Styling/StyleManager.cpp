@@ -89,7 +89,7 @@ namespace
             painter.drawLine(QPointF(8, 0), QPointF(8, 10));
         }
 
-        AZ::Crc32 GetIconId() const override { return AZ_CRC("HexagonIcon", 0x34053842); }
+        AZ::Crc32 GetIconId() const override { return AZ_CRC_CE("HexagonIcon"); }
     };
 
     class CheckerboardIcon
@@ -112,7 +112,7 @@ namespace
             painter.fillRect(QRectF(8, 8, 8, 8), QColor(0, 0, 0));
         }
 
-        AZ::Crc32 GetIconId() const override { return AZ_CRC("CheckerboardIcon", 0x782adcad); }
+        AZ::Crc32 GetIconId() const override { return AZ_CRC_CE("CheckerboardIcon"); }
     };
 
     class TriColorCheckerboardIcon
@@ -136,7 +136,7 @@ namespace
             painter.fillRect(QRectF(8, 8, 8, 8), QColor(1, 1, 1));
         }
 
-        AZ::Crc32 GetIconId() const override { return AZ_CRC("TriColorCheckerboardIcon", 0x9f93d99d); }
+        AZ::Crc32 GetIconId() const override { return AZ_CRC_CE("TriColorCheckerboardIcon"); }
     };
 }
 

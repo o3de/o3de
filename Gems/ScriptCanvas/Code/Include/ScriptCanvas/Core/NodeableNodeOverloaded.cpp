@@ -85,9 +85,9 @@ namespace ScriptCanvas
         {
             if (classElement.GetVersion() <= DataDrivingOverloads)
             {
-                classElement.RemoveElementByName(AZ_CRC("activeIndex", 0x333685ca));
-                classElement.RemoveElementByName(AZ_CRC("activePrototype", 0x77266e5b));
-                classElement.RemoveElementByName(AZ_CRC("overloadSelectionTriggerSlotIds", 0x58b2b75d));
+                classElement.RemoveElementByName(AZ_CRC_CE("activeIndex"));
+                classElement.RemoveElementByName(AZ_CRC_CE("activePrototype"));
+                classElement.RemoveElementByName(AZ_CRC_CE("overloadSelectionTriggerSlotIds"));
             }
 
             return true;

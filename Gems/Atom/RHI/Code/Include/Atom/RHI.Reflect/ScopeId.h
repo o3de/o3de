@@ -12,4 +12,5 @@
 namespace AZ::RHI
 {
     using ScopeId = AZ::Name;
+    using ScopeGroupId = AZ::Name;
 }

@@ -15,6 +15,7 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/API/EntityCompositionNotificationBus.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
+#include <AzToolsFramework/Prefab/Instance/InstanceUpdateExecutorInterface.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 #include <AzToolsFramework/ToolsComponents/GenericComponentWrapper.h>
 #include <AzCore/std/containers/map.h>
@@ -331,12 +332,22 @@ namespace AzToolsFramework
 
         void EditorEntityActionComponent::EnableComponents(AZStd::span<AZ::Component* const> components)
         {
-            ScopedUndoBatch undoBatch("Enable Component(s)");
+            // Don't create Undo batch while an Undo/Redo operation is in progress or
+            // while an InstanceUpdateExecutor is currently Updating Template Instances In Queue
+            AZStd::unique_ptr<AzToolsFramework::ScopedUndoBatch> undoBatch;
+            if (!AzToolsFramework::UndoRedoOperationInProgress() && !AreInstancesUpdated())
+            {
+                undoBatch = AZStd::make_unique<AzToolsFramework::ScopedUndoBatch>("Enable Component(s)");
+            }
 
             // Enable all the components requested
             for (auto component : components)
             {
                 AZ::Entity* entity = component->GetEntity();
+                if (!entity)
+                {
+                    continue;
+                }
 
                 bool isEntityEditable = false;
                 AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(isEntityEditable,
@@ -345,8 +356,6 @@ namespace AzToolsFramework
                 {
                     continue;
                 }
-
-                undoBatch.MarkEntityDirty(entity->GetId());
 
                 bool reactivate = false;
                 // We must deactivate entities to remove components
@@ -383,17 +392,32 @@ namespace AzToolsFramework
                 }
 
                 EntityCompositionNotificationBus::Broadcast(&EntityCompositionNotificationBus::Events::OnEntityComponentEnabled, entity->GetId(), componentId);
+
+                if (undoBatch)
+                {
+                    undoBatch->MarkEntityDirty(entity->GetId());
+                }
             }
         }
 
         void EditorEntityActionComponent::DisableComponents(AZStd::span<AZ::Component* const> components)
         {
-            ScopedUndoBatch undoBatch("Disable Component(s)");
+            // Don't create Undo batch while an Undo/Redo operation is in progress or
+            // while an InstanceUpdateExecutor is currently Updating Template Instances In Queue
+            AZStd::unique_ptr<AzToolsFramework::ScopedUndoBatch> undoBatch;
+            if (!AzToolsFramework::UndoRedoOperationInProgress() && !AreInstancesUpdated())
+            {
+                undoBatch = AZStd::make_unique<AzToolsFramework::ScopedUndoBatch>("Disable Component(s)");
+            }
 
             // Disable all the components requested
             for (auto component : components)
             {
                 AZ::Entity* entity = component->GetEntity();
+                if (!entity)
+                {
+                    continue;
+                }
 
                 bool isEntityEditable = false;
                 AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(isEntityEditable,
@@ -402,8 +426,6 @@ namespace AzToolsFramework
                 {
                     continue;
                 }
-
-                undoBatch.MarkEntityDirty(entity->GetId());
 
                 bool reactivate = false;
                 // We must deactivate entities to remove components
@@ -440,6 +462,11 @@ namespace AzToolsFramework
                 }
 
                 EntityCompositionNotificationBus::Broadcast(&EntityCompositionNotificationBus::Events::OnEntityComponentDisabled, entity->GetId(), componentId);
+
+                if (undoBatch)
+                {
+                    undoBatch->MarkEntityDirty(entity->GetId());
+                }
             }
         }
 
@@ -447,7 +474,13 @@ namespace AzToolsFramework
         {
             EntityToRemoveComponentsResultMap resultMap;
             {
-                ScopedUndoBatch undoBatch("Remove Component(s)");
+                // Don't create Undo batch while an Undo/Redo operation is in progress or
+                // while an InstanceUpdateExecutor is currently Updating Template Instances In Queue
+                AZStd::unique_ptr<AzToolsFramework::ScopedUndoBatch> undoBatch;
+                if (!AzToolsFramework::UndoRedoOperationInProgress() && !AreInstancesUpdated())
+                {
+                    undoBatch = AZStd::make_unique<AzToolsFramework::ScopedUndoBatch>("Remove Component(s)");
+                }
 
                 // Only remove, do not delete components until we know it was successful
                 AZ::Entity::ComponentArrayType removedComponents;
@@ -466,6 +499,10 @@ namespace AzToolsFramework
                 for (auto componentToRemove : componentsToRemove)
                 {
                     AZ::Entity* entity = componentToRemove->GetEntity();
+                    if (!entity)
+                    {
+                        continue;
+                    }
 
                     bool isEntityEditable = false;
                     AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(isEntityEditable,
@@ -475,7 +512,10 @@ namespace AzToolsFramework
                         continue;
                     }
 
-                    undoBatch.MarkEntityDirty(entity->GetId());
+                    if (undoBatch)
+                    {
+                        undoBatch->MarkEntityDirty(entity->GetId());
+                    }
 
                     bool reactivate = false;
                     // We must deactivate entities to remove components
@@ -506,6 +546,7 @@ namespace AzToolsFramework
                     }
 
                     EntityCompositionNotificationBus::Broadcast(&EntityCompositionNotificationBus::Events::OnEntityComponentRemoved, entity->GetId(), removedComponentId);
+
                 }
 
                 for (auto removedComponent : removedComponents)
@@ -585,7 +626,14 @@ namespace AzToolsFramework
                 componentsToAddClassData.push_back(componentClassData);
             }
 
-            ScopedUndoBatch undo("Add Component(s) to Entity");
+            // Don't create Undo batch while an Undo/Redo operation is in progress or
+            // while an InstanceUpdateExecutor is currently Updating Template Instances In Queue
+            AZStd::unique_ptr<AzToolsFramework::ScopedUndoBatch> undoBatch;
+            if (!AzToolsFramework::UndoRedoOperationInProgress() && !AreInstancesUpdated())
+            {
+                undoBatch = AZStd::make_unique<AzToolsFramework::ScopedUndoBatch>("Add Component(s) to Entity");
+            }
+
             EntityToAddedComponentsMap entityToAddedComponentsMap;
             {
                 for (auto& entityId : entityIds)
@@ -624,9 +672,14 @@ namespace AzToolsFramework
                         componentsToAddToEntity.push_back(component);
                     }
 
+                    if (undoBatch && (componentsToAddToEntity.size() > 0))
+                    {
+                        undoBatch->MarkEntityDirty(entityId);
+                    }
+
                     auto addExistingComponentsResult = AddExistingComponentsToEntityById(entityId, componentsToAddToEntity);
                     // This should never fail since we check the preconditions already (entity is non-null and it ignores null components)
-                    AZ_Assert(addExistingComponentsResult, "Adding the components created to an entity failed");
+                    AZ_Assert(addExistingComponentsResult, "Adding the components created to an entity failed.");
                     if (addExistingComponentsResult)
                     {
                         // Repackage the single-entity result into the overall result
@@ -649,9 +702,20 @@ namespace AzToolsFramework
                 return AZ::Failure(AZStd::string("Null entity provided to AddExistingComponentsToEntity"));
             }
 
-            ScopedUndoBatch undo("Add Existing Component(s) to Entity");
-
             AddComponentsResults addComponentsResults;
+
+            if (componentsToAdd.size() < 1)
+            {
+                return AZ::Success(addComponentsResults); // nothing to do
+            }
+
+            // Don't create Undo batch while an Undo/Redo operation is in progress or
+            // while an InstanceUpdateExecutor is currently Updating Template Instances In Queue
+            AZStd::unique_ptr<AzToolsFramework::ScopedUndoBatch> undoBatch;
+            if (!AzToolsFramework::UndoRedoOperationInProgress() && !AreInstancesUpdated())
+            {
+                undoBatch = AZStd::make_unique<AzToolsFramework::ScopedUndoBatch>("Add Existing Component(s) to Entity");
+            }
 
             EntityCompositionNotificationBus::Broadcast(&EntityCompositionNotificationBus::Events::OnEntityCompositionChanging, AZStd::vector<AZ::EntityId>{ entityId });
 
@@ -713,7 +777,10 @@ namespace AzToolsFramework
                         addComponentsResults.m_componentsAdded.push_back(nullptr);
                 }
 
-                undo.MarkEntityDirty(entityId);
+                if (undoBatch)
+                {
+                    undoBatch->MarkEntityDirty(entityId);
+                }
 
                 EntityCompositionNotificationBus::Broadcast(&EntityCompositionNotificationBus::Events::OnEntityComponentAdded, entityId, component->GetId());
             }
@@ -768,10 +835,12 @@ namespace AzToolsFramework
             }
 
             // We only create undo actions and broadcast change-notifications if the entities are initialized.
-            AZStd::unique_ptr<ScopedUndoBatch> undo;
-            if (!initializedEntityIds.empty())
+            // Don't create Undo batch while an Undo/Redo operation is in progress or
+            // while an InstanceUpdateExecutor is currently Updating Template Instances In Queue
+            AZStd::unique_ptr<ScopedUndoBatch> undoBatch;
+            if (!initializedEntityIds.empty() && !AzToolsFramework::UndoRedoOperationInProgress() && !AreInstancesUpdated())
             {
-                undo.reset(aznew ScopedUndoBatch("Scrubbing entities"));
+                undoBatch.reset(aznew ScopedUndoBatch("Scrubbing entities"));
 
                 EntityCompositionNotificationBus::Broadcast(&EntityCompositionNotificationBus::Events::OnEntityCompositionChanging, initializedEntityIds);
             }
@@ -793,6 +862,16 @@ namespace AzToolsFramework
             return AZ::Success(AZStd::move(results));
         }
 
+        // Helper function to check whether an InstanceUpdateExecutor is currently Updating Template Instances In Queue
+        bool EditorEntityActionComponent::AreInstancesUpdated() const
+        {
+            if (const auto instanceUpdateExecutorInterface = AZ::Interface<Prefab::InstanceUpdateExecutorInterface>::Get())
+            {
+                return instanceUpdateExecutorInterface->IsUpdatingTemplateInstancesInQueue();
+            }
+            return false;
+        }
+
         EntityCompositionRequests::ScrubEntityResults EditorEntityActionComponent::ScrubEntity(AZ::Entity* entity)
         {
             // This function is uncommon in that it may need to handle uninitialized entities.
@@ -805,10 +884,12 @@ namespace AzToolsFramework
             bool entityWasIntialized = entity->GetState() >= AZ::Entity::State::Init;
 
             // Cannot undo changes to an entity that hasn't been initialized yet.
-            AZStd::unique_ptr<ScopedUndoBatch> undo;
-            if (entityWasIntialized)
+            // Don't create Undo batch while an Undo/Redo operation is in progress or
+            // while an InstanceUpdateExecutor is currently Updating Template Instances In Queue
+            AZStd::unique_ptr<ScopedUndoBatch> undoBatch;
+            if (entityWasIntialized && !AzToolsFramework::UndoRedoOperationInProgress() && !AreInstancesUpdated())
             {
-                undo.reset(aznew ScopedUndoBatch("Scrub entity"));
+                undoBatch.reset(aznew ScopedUndoBatch("Scrub entity"));
             }
 
             bool entityWasActive = entity->GetState() == AZ::Entity::State::Active;
@@ -823,9 +904,9 @@ namespace AzToolsFramework
             if (!pendingCompositionHandler)
             {
                 pendingCompositionHandler = entity->CreateComponent<EditorPendingCompositionComponent>();
-                if (undo)
+                if (undoBatch)
                 {
-                    undo->MarkEntityDirty(entity->GetId());
+                    undoBatch->MarkEntityDirty(entity->GetId());
                 }
             }
 
@@ -880,9 +961,9 @@ namespace AzToolsFramework
                         }
                     }
 
-                    if (undo)
+                    if (undoBatch)
                     {
-                        undo->MarkEntityDirty(entity->GetId());
+                        undoBatch->MarkEntityDirty(entity->GetId());
                     }
                 }
             }
@@ -949,11 +1030,12 @@ namespace AzToolsFramework
 
             bool entityWasIntialized = entity->GetState() >= AZ::Entity::State::Init;
 
-            // Don't create undo events for uninitialized entities
-            AZStd::unique_ptr<ScopedUndoBatch> undo;
-            if (entityWasIntialized)
+            // Don't create undo events for uninitialized entities,
+            // or while an Undo/Redo operation is in progress or while an InstanceUpdateExecutor is currently Updating Template Instances In Queue.
+            AZStd::unique_ptr<ScopedUndoBatch> undoBatch;
+            if (entityWasIntialized && !AzToolsFramework::UndoRedoOperationInProgress() && !AreInstancesUpdated())
             {
-                undo.reset(aznew ScopedUndoBatch("Added pending components to entity"));
+                undoBatch.reset(aznew ScopedUndoBatch("Added pending components to entity"));
             }
 
             // Same looping algorithm as the scrubber, but we'll also get the list of added components so we can clean up the pending list if we were successful
@@ -980,9 +1062,9 @@ namespace AzToolsFramework
                     }
                 }
 
-                if (undo)
+                if (undoBatch)
                 {
-                    undo->MarkEntityDirty(entity->GetId());
+                    undoBatch->MarkEntityDirty(entity->GetId());
                 }
             }
 
@@ -1075,12 +1157,12 @@ namespace AzToolsFramework
 
         void EditorEntityActionComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("EntityCompositionRequests", 0x29838b44));
+            provided.push_back(AZ_CRC_CE("EntityCompositionRequests"));
         }
 
         void EditorEntityActionComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("EntityCompositionRequests", 0x29838b44));
+            incompatible.push_back(AZ_CRC_CE("EntityCompositionRequests"));
         }
 
         void EditorEntityActionComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& /*required*/)

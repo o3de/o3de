@@ -130,13 +130,13 @@ namespace ScriptCanvasEditor
 
         if (rootDataElementNode.GetVersion() < 7)
         {
-            rootDataElementNode.RemoveElementByName(AZ_CRC("m_pureDataNodesConvertedToVariables", 0x8823e2c4));
+            rootDataElementNode.RemoveElementByName(AZ_CRC_CE("m_pureDataNodesConvertedToVariables"));
         }
 
         // Always check and remove this unused field to keep asset clean
-        if (rootDataElementNode.FindElement(AZ_CRC("unitTestNodesConverted", 0x4389126a)) != -1)
+        if (rootDataElementNode.FindElement(AZ_CRC_CE("unitTestNodesConverted")) != -1)
         {
-            rootDataElementNode.RemoveElementByName(AZ_CRC("unitTestNodesConverted", 0x4389126a));
+            rootDataElementNode.RemoveElementByName(AZ_CRC_CE("unitTestNodesConverted"));
         }
         return true;
     }
@@ -180,7 +180,7 @@ namespace ScriptCanvasEditor
         GeneralEditorNotificationBus::Handler::BusConnect(scriptCanvasId);
 
         ScriptCanvas::Graph::Activate();
-        PostActivate();
+
         m_undoHelper.SetSource(this);
     }
 
@@ -2371,7 +2371,11 @@ namespace ScriptCanvasEditor
             ScriptCanvas::GraphVariableManagerRequestBus::EventResult(hasValidDefault, GetScriptCanvasId(), &ScriptCanvas::GraphVariableManagerRequests::IsNameValid, defaultName);
         } while (!hasValidDefault);
 
-        bool nameAvailable = false;
+        bool nameAvailable = hasValidDefault.IsSuccess();
+        if (nameAvailable)
+        {
+            variableName = defaultName;
+        }
 
         QWidget* mainWindow = nullptr;
         UIRequestBus::BroadcastResult(mainWindow, &UIRequests::GetMainWindow);
@@ -2424,7 +2428,8 @@ namespace ScriptCanvasEditor
 
         AZ::Outcome<ScriptCanvas::VariableId, AZStd::string> addOutcome;
 
-        ScriptCanvas::GraphVariableManagerRequestBus::EventResult(addOutcome, GetScriptCanvasId(), &ScriptCanvas::GraphVariableManagerRequests::AddVariable, variableName, variableDatum, true);
+        constexpr bool functionScope = false; // Promoted variables are used as references, thus they need to be a member variable
+        ScriptCanvas::GraphVariableManagerRequestBus::EventResult(addOutcome, GetScriptCanvasId(), &ScriptCanvas::GraphVariableManagerRequests::AddVariable, variableName, variableDatum, functionScope);
 
         if (addOutcome.IsSuccess())
         {

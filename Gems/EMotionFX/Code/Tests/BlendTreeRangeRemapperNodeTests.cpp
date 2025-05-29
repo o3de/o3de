@@ -144,7 +144,7 @@ namespace EMotionFX
         }
     };
 
-    INSTANTIATE_TEST_CASE_P(BlendTreeRangeRemapperNode_ValidOutputTests,
+    INSTANTIATE_TEST_SUITE_P(BlendTreeRangeRemapperNode_ValidOutputTests,
         BlendTreeRangeRemapperNodeFixture,
         ::testing::ValuesIn(blendTreeRangeRemapperNodeTestData)
     );

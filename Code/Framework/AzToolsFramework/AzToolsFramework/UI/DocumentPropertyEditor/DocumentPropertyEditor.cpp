@@ -1665,7 +1665,6 @@ namespace AzToolsFramework
             else
             {
                 updateGeometry();
-                emit RequestSizeUpdate();
             }
         }
     }

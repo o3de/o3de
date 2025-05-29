@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <viewsrg.srgi>
+#include <viewsrg_all.srgi>
 #include <Atom/Features/InstancedTransforms.azsli>
 
 // Helper functions for doing common transformations.

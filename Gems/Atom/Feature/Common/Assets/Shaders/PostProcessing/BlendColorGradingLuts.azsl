@@ -61,7 +61,7 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 
 // Option shader variable to select number of source LUTs.
 [[range(0, 4)]]
-option uint o_numSourceLuts = 0;
+option int o_numSourceLuts = 0;
 
 float3 GetSourceLutLinearColor(float3 baseColor, Texture3D<float4> sourceLut, ShaperType shaperType, float shaperBias, float shaperScale)
 {

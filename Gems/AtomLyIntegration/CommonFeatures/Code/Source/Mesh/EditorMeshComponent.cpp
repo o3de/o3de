@@ -8,9 +8,10 @@
 
 #include <Mesh/EditorMeshComponent.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
-#include <AzToolsFramework/API/EntityCompositionRequestBus.h>
+#include <AzToolsFramework/ToolsComponents/EditorVisibilityBus.h>
 #include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentConstants.h>
 
 namespace AZ
@@ -44,15 +45,15 @@ namespace AZ
                             ->Attribute(AZ::Edit::Attributes::Category, "Graphics/Mesh")
                             ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Mesh.svg")
                             ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Mesh.svg")
-                            ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
+                            ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                             ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/atom/mesh/")
                             ->Attribute(AZ::Edit::Attributes::PrimaryAssetType, AZ::AzTypeInfo<RPI::ModelAsset>::Uuid())
-                            ->UIElement(AZ::Edit::UIHandlers::Button, "Add Material Component", "Add Material Component")
-                                ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
-                                ->Attribute(AZ::Edit::Attributes::ButtonText, "Add Material Component")
-                                ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorMeshComponent::AddEditorMaterialComponent)
-                                ->Attribute(AZ::Edit::Attributes::Visibility, &EditorMeshComponent::GetEditorMaterialComponentVisibility)
+                        ->UIElement(AZ::Edit::UIHandlers::Button, "Add Material Component", "Add Material Component")
+                            ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
+                            ->Attribute(AZ::Edit::Attributes::ButtonText, "Add Material Component")
+                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorMeshComponent::AddEditorMaterialComponent)
+                            ->Attribute(AZ::Edit::Attributes::Visibility, &EditorMeshComponent::GetEditorMaterialComponentVisibility)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &EditorMeshComponent::m_stats, "Model Stats", "")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
                         ;
@@ -75,8 +76,6 @@ namespace AZ
                                 ->Attribute(AZ_CRC_CE("DisableEditButtonWhenNoAssetSelected"), true)
                             ->DataElement(AZ::Edit::UIHandlers::Default, &MeshComponentConfig::m_sortKey, "Sort Key", "Transparent meshes are first drawn by sort key, then depth. Use this to force certain transparent meshes to draw before or after others.")
                             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &MeshComponentConfig::m_excludeFromReflectionCubeMaps, "Exclude from reflection cubemaps", "Model will not be visible in baked reflection probe cubemaps")
-                                ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
-                            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &MeshComponentConfig::m_isVisible , "Visibility", "Model will not be visible")
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &MeshComponentConfig::m_useForwardPassIblSpecular, "Use Forward Pass IBL Specular",
                                 "Renders image-based lighting (IBL) specular reflections in the forward pass, by using only the most influential probe (based on the position of the entity) and the global IBL cubemap. It can reduce rendering costs, but is only recommended for static objects that are affected by at most one reflection probe.  Note that this will also disable SSR on the mesh.")
@@ -135,6 +134,11 @@ namespace AZ
 
         void EditorMeshComponent::Activate()
         {
+            using EditorVisibilityRequestBus = AzToolsFramework::EditorVisibilityRequestBus;
+            bool isVisible = true;
+            EditorVisibilityRequestBus::EventResult(isVisible, GetEntityId(), &EditorVisibilityRequestBus::Events::GetVisibilityFlag);
+            m_controller.SetVisibility(isVisible);
+
             m_controller.m_configuration.m_editorRayIntersection = true;
             BaseClass::Activate();
             AzToolsFramework::EditorComponentSelectionRequestsBus::Handler::BusConnect(GetEntityId());

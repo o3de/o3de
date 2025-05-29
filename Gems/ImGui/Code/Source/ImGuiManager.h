@@ -17,7 +17,6 @@
 #include <ISystem.h>
 #include <imgui/imgui.h>
 #include <ImGuiBus.h>
-#include <VertexFormats.h>
 
 #if defined(LOAD_IMGUI_LIB_DYNAMICALLY)  && !defined(AZ_MONOLITHIC_BUILD)
 #   include <AzCore/Module/DynamicModuleHandle.h>
@@ -99,10 +98,6 @@ namespace ImGui
         AzFramework::WindowSize m_windowSize = AzFramework::WindowSize(1920, 1080);
         bool m_overridingWindowSize = false;
 
-        // Rendering buffers
-        std::vector<SVF_P3F_C4B_T2F> m_vertBuffer;
-        std::vector<uint16> m_idxBuffer;
-
         //Controller navigation
         bool m_button1Pressed, m_button2Pressed, m_menuBarStatusChanged;
 
@@ -119,6 +114,7 @@ namespace ImGui
         ImGuiBroadcastState m_imGuiBroadcastState;
 
         AZ::JobCompletion* m_renderJobCompletion = nullptr;
+        AzFramework::InputChannelId m_consoleKeyInputChannelId;
 
 #if defined(LOAD_IMGUI_LIB_DYNAMICALLY)  && !defined(AZ_MONOLITHIC_BUILD)
         AZStd::unique_ptr<AZ::DynamicModuleHandle>  m_imgSharedLib;

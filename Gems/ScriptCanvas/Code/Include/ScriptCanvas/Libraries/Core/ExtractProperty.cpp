@@ -19,9 +19,9 @@ namespace ScriptCanvas
                 if (rootElement.GetVersion() < 1)
                 {
                     SlotMetadata metadata;
-                    rootElement.FindSubElementAndGetData(AZ_CRC("m_sourceAccount", 0x25f29920), metadata);
+                    rootElement.FindSubElementAndGetData(AZ_CRC_CE("m_sourceAccount"), metadata);
 
-                    rootElement.RemoveElementByName(AZ_CRC("m_sourceAccount", 0x25f29920));
+                    rootElement.RemoveElementByName(AZ_CRC_CE("m_sourceAccount"));
                     rootElement.AddElementWithData(serializeContext, "m_dataType", metadata.m_dataType);
                 }
 

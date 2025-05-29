@@ -39,7 +39,7 @@ namespace LmbrCentral
         void Deactivate();
 
         // ShapeComponentRequestsBus
-        AZ::Crc32 GetShapeType() const override { return AZ_CRC("Tube", 0xfd30de9e); }
+        AZ::Crc32 GetShapeType() const override { return AZ_CRC_CE("Tube"); }
         AZ::Aabb GetEncompassingAabb() const override;
         void GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds) const override;
         bool IsPointInside(const AZ::Vector3& point) const  override;

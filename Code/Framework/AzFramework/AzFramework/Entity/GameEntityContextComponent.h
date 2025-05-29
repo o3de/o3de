@@ -78,15 +78,15 @@ namespace AzFramework
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("GameEntityContextService", 0xa6f2c885));
+            provided.push_back(AZ_CRC_CE("GameEntityContextService"));
         }
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("GameEntityContextService", 0xa6f2c885));
+            incompatible.push_back(AZ_CRC_CE("GameEntityContextService"));
         }
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC("SliceSystemService", 0x1a5b7aad));
+            required.push_back(AZ_CRC_CE("SliceSystemService"));
         }
 
     private:

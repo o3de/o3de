@@ -18,19 +18,19 @@ namespace LmbrCentral
 {
     void BoxShapeComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("ShapeService", 0xe86aa5fe));
-        provided.push_back(AZ_CRC("BoxShapeService", 0x946a0032));
+        provided.push_back(AZ_CRC_CE("ShapeService"));
+        provided.push_back(AZ_CRC_CE("BoxShapeService"));
     }
 
     void BoxShapeComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("ShapeService", 0xe86aa5fe));
-        incompatible.push_back(AZ_CRC("BoxShapeService", 0x946a0032));
+        incompatible.push_back(AZ_CRC_CE("ShapeService"));
+        incompatible.push_back(AZ_CRC_CE("BoxShapeService"));
     }
 
     void BoxShapeComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("TransformService", 0x8ee22c50));
+        required.push_back(AZ_CRC_CE("TransformService"));
     }
 
     void BoxShapeComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)

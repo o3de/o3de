@@ -34,13 +34,6 @@
 
 namespace EMotionFX
 {
-    class LODSkinnedMeshFixture
-        : public ::testing::WithParamInterface <int>
-        , public UIFixture
-    {
-    public:
-    };
-
     class LODSystemMock : public SystemMock
     {
     };
@@ -103,8 +96,6 @@ namespace EMotionFX
     public:
         QLabel* GetDefaultLabel() { return m_defaultLabel; }
     };
-
-    INSTANTIATE_TEST_CASE_P(LODSkinnedMeshFixtureTests, LODSkinnedMeshFixture, ::testing::Range<int>(1, 7));
 
     // TODO: Re-enabled the test when we can access viewport context in the SimpleLODComponent.
     TEST_F(LODSkinnedMeshColorFixture, DISABLED_CheckLODDistanceChange)

@@ -51,12 +51,12 @@ namespace AzToolsFramework
 
         void EditorPrefabComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
         {
-            services.push_back(AZ_CRC("EditorPrefabInstanceContainerService"));
+            services.push_back(AZ_CRC_CE("EditorPrefabInstanceContainerService"));
         }
 
         void EditorPrefabComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
         {
-            services.push_back(AZ_CRC("EditorPrefabInstanceContainerService"));
+            services.push_back(AZ_CRC_CE("EditorPrefabInstanceContainerService"));
         }
 
         void EditorPrefabComponent::Activate()

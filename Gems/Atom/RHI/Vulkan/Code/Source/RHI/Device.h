@@ -17,6 +17,7 @@
 #include <AtomCore/std/containers/lru_cache.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/RTTI/TypeInfo.h>
+#include <AzCore/base.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/list.h>
 #include <AzCore/std/containers/unordered_map.h>
@@ -54,17 +55,43 @@ namespace AZ
         //! Helper class to contain a vulkan create info structure
         //! Since the create info points into memory arrays, we need to keep the
         //! arrays alive when returning the create info from a function.
-        template<class T>
+        template<class T, class ExtT>
         struct CreateInfoContainer
         {
-            //! Vulkan create info structure
-            T m_vkCreateInfo = {};
+            CreateInfoContainer() = default;
+            AZ_DEFAULT_COPY_MOVE(CreateInfoContainer);
+
+            void SetCreateInfo(const T& createInfo)
+            {
+                m_vkCreateInfo = createInfo;
+            }
+            void SetExternalCreateInfo(const ExtT& createInfo)
+            {
+                m_vkExtCreateInfo = createInfo;
+            }
+
+            T* GetCreateInfo()
+            {
+                if (m_vkExtCreateInfo.sType != 0)
+                {
+                    // Add the external info to the createInfo if it exists
+                    // We do this here, so the pointer is always valid, even after copying this struct
+                    m_vkCreateInfo.pNext = &m_vkExtCreateInfo;
+                }
+                return &m_vkCreateInfo;
+            }
+
             //! Vector of queue families that the create info structure points to
             AZStd::vector<uint32_t> m_queueFamilyIndices;
+
+        private:
+            //! Vulkan create info structure
+            T m_vkCreateInfo = {};
+            ExtT m_vkExtCreateInfo = {};
         };
 
-        using BufferCreateInfo = CreateInfoContainer<VkBufferCreateInfo>;
-        using ImageCreateInfo = CreateInfoContainer<VkImageCreateInfo>;
+        using BufferCreateInfo = CreateInfoContainer<VkBufferCreateInfo, VkExternalMemoryBufferCreateInfo>;
+        using ImageCreateInfo = CreateInfoContainer<VkImageCreateInfo, VkExternalMemoryImageCreateInfo>;
 
         class Device final
             : public RHI::Device
@@ -172,6 +199,7 @@ namespace AZ
             void UpdateCpuTimingStatisticsInternal() const override;
             AZStd::vector<RHI::Format> GetValidSwapChainImageFormats(const RHI::WindowHandle& windowHandle) const override;
             AZStd::chrono::microseconds GpuTimestampToMicroseconds(uint64_t gpuTimestamp, RHI::HardwareQueueClass queueClass) const override;
+            AZStd::pair<uint64_t, uint64_t> GetCalibratedTimestamp(RHI::HardwareQueueClass queueClass) override;
             void FillFormatsCapabilitiesInternal(FormatCapabilitiesList& formatsCapabilities) override;
             RHI::ResultCode InitializeLimits() override;
             void PreShutdown() override;
@@ -203,6 +231,9 @@ namespace AZ
             VkImageUsageFlags CalculateImageUsageFlags(const RHI::ImageDescriptor& descriptor) const;
             VkImageCreateFlags CalculateImageCreateFlags(const RHI::ImageDescriptor& descriptor) const;
 
+            //! Calibrated Timestamps
+            void InitializeTimeDomains();
+
             VkDevice m_nativeDevice = VK_NULL_HANDLE;
             VmaAllocator m_vmaAllocator = VK_NULL_HANDLE;
             VkPhysicalDeviceFeatures m_enabledDeviceFeatures{};
@@ -214,7 +245,7 @@ namespace AZ
             RHI::Ptr<AsyncUploadQueue> m_asyncUploadQueue;
             CommandListAllocator m_commandListAllocator;
             SemaphoreAllocator m_semaphoreAllocator;
-            SwapChainSemaphoreAllocator m_swapChaiSemaphoreAllocator;
+            SwapChainSemaphoreAllocator m_swapChainSemaphoreAllocator;
 
             // New VkImageUsageFlags are inserted in the map in a lazy way.
             // Because of this, the map containing the usages per formar is mutable to keep the
@@ -248,6 +279,8 @@ namespace AZ
 
             BindlessDescriptorPool m_bindlessDescriptorPool;
             ShadingRateImageMode m_imageShadingRateMode = ShadingRateImageMode::None;
+
+            VkTimeDomainEXT m_hostTimeDomain = VK_TIME_DOMAIN_MAX_ENUM_EXT;
         };
 
         template<typename ObjectType, typename ...Args>
