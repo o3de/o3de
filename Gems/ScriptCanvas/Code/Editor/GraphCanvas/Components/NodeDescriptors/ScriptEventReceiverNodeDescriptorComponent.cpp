@@ -466,7 +466,7 @@ namespace ScriptCanvasEditor
         return this;
     }
 
-    void ScriptEventReceiverNodeDescriptorComponent::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
+    void ScriptEventReceiverNodeDescriptorComponent::OnAssetReloaded([[maybe_unused]] AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
         AZ::EntityId graphCanvasGraphId;
         GraphCanvas::SceneMemberRequestBus::EventResult(graphCanvasGraphId, GetEntityId(), &GraphCanvas::SceneMemberRequests::GetScene);

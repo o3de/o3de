@@ -19,6 +19,7 @@
 #include <Atom/Features/InstancedTransforms.azsli>
 
 VsOutput EvaluateVertexGeometry_Eye(
+    const MaterialParameters params,
     float3 position,
     float3 normal,
     float4 tangent,
@@ -55,6 +56,7 @@ VsOutput EvaluateVertexGeometry_Eye(
 // Avoids compilation errors for compute shaders, listed in a materialpipeline,
 // that call EvaluateVertexGeometry().
 VsOutput EvaluateVertexGeometry_Eye(
+    const MaterialParameters params,
     float3 position,
     float3 normal,
     float4 tangent,
@@ -63,12 +65,13 @@ VsOutput EvaluateVertexGeometry_Eye(
     uint instanceId)
 {
     const float3 bitangent = float3(0, 0, 0);
-    return EvaluateVertexGeometry_Eye(position, normal, tangent, bitangent, uv0, uv1, instanceId);
+    return EvaluateVertexGeometry_Eye(params, position, normal, tangent, bitangent, uv0, uv1, instanceId);
 }
 
-VsOutput EvaluateVertexGeometry_Eye(VsInput IN, VsSystemValues SV)
+VsOutput EvaluateVertexGeometry_Eye(VsInput IN, VsSystemValues SV, const MaterialParameters params)
 {
     return EvaluateVertexGeometry_Eye(
+        params,
         IN.position,
         IN.normal,
         IN.tangent,

@@ -114,7 +114,6 @@ namespace AZ
 
                 // create the TLAS descriptor by adding an instance entry for each probe in the grid
                 RHI::RayTracingTlasDescriptor tlasDescriptor;
-                RHI::RayTracingTlasDescriptor* tlasDescriptorBuild = tlasDescriptor.Build();
 
                 // initialize the transform for each probe to Identity(), they will be updated by the compute shader
                 AZ::Transform transform = AZ::Transform::Identity();
@@ -122,13 +121,12 @@ namespace AZ
                 uint32_t probeCount = diffuseProbeGrid->GetTotalProbeCount();
                 for (uint32_t index = 0; index < probeCount; ++index)
                 {
-                    tlasDescriptorBuild->Instance()
-                        ->InstanceID(index)
-                        ->InstanceMask(1)
-                        ->HitGroupIndex(0)
-                        ->Blas(diffuseProbeGridFeatureProcessor->GetVisualizationBlas())
-                        ->Transform(transform)
-                    ;
+                    RHI::RayTracingTlasInstance& tlasInstance = tlasDescriptor.m_instances.emplace_back();
+                    tlasInstance.m_instanceID = index;
+                    tlasInstance.m_instanceMask = 1;
+                    tlasInstance.m_hitGroupIndex = 0;
+                    tlasInstance.m_blas = diffuseProbeGridFeatureProcessor->GetVisualizationBlas();
+                    tlasInstance.m_transform = transform;
                 }
 
                 // create the TLAS buffers from on the descriptor

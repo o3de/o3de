@@ -163,9 +163,7 @@ namespace AZ
 
             RHI::Ptr<AZ::RHI::RayTracingBlas> rayTracingBlas = aznew AZ::RHI::RayTracingBlas;
             RHI::RayTracingBlasDescriptor blasDescriptor;
-            blasDescriptor.Build()
-                ->AABB(aabb)
-                ;
+            blasDescriptor.m_aabb = aabb;
             rayTracingBlas->CreateBuffers(m_deviceMask, &blasDescriptor, *m_bufferPools);
 
             ProceduralGeometry proceduralGeometry;
@@ -403,12 +401,14 @@ namespace AZ
                     const SubMesh& subMesh = m_subMeshes[mesh.m_subMeshIndices[subMeshIndex]];
 
                     SubMeshBlasInstance subMeshBlasInstance;
-                    subMeshBlasInstance.m_blasDescriptor.Build()
-                        ->Geometry()
-                        ->VertexFormat(subMesh.m_positionFormat)
-                        ->VertexBuffer(subMesh.m_positionVertexBufferView)
-                        ->IndexBuffer(subMesh.m_indexBufferView)
-                        ->BuildFlags(buildFlags);
+
+                    RHI::RayTracingBlasDescriptor& blasDescriptor = subMeshBlasInstance.m_blasDescriptor;
+                    blasDescriptor.m_buildFlags = buildFlags;
+
+                    RHI::RayTracingGeometry& blasGeometry = blasDescriptor.m_geometries.emplace_back();
+                    blasGeometry.m_vertexFormat = subMesh.m_positionFormat;
+                    blasGeometry.m_vertexBuffer = subMesh.m_positionVertexBufferView;
+                    blasGeometry.m_indexBuffer = subMesh.m_indexBufferView;
 
                     itMeshBlasInstance->second.m_subMeshes.push_back(subMeshBlasInstance);
                 }
@@ -565,11 +565,11 @@ namespace AZ
                     m_meshBuffers.RemoveResource(subMesh.m_bitangentShaderBufferView.get());
                     m_meshBuffers.RemoveResource(subMesh.m_uvShaderBufferView.get());
 
-                    m_materialTextures.RemoveResource(subMesh.m_baseColorImageView.get());
-                    m_materialTextures.RemoveResource(subMesh.m_normalImageView.get());
-                    m_materialTextures.RemoveResource(subMesh.m_metallicImageView.get());
-                    m_materialTextures.RemoveResource(subMesh.m_roughnessImageView.get());
-                    m_materialTextures.RemoveResource(subMesh.m_emissiveImageView.get());
+                    m_materialTextures.RemoveResource(subMesh.m_material.m_baseColorImageView.get());
+                    m_materialTextures.RemoveResource(subMesh.m_material.m_normalImageView.get());
+                    m_materialTextures.RemoveResource(subMesh.m_material.m_metallicImageView.get());
+                    m_materialTextures.RemoveResource(subMesh.m_material.m_roughnessImageView.get());
+                    m_materialTextures.RemoveResource(subMesh.m_material.m_emissiveImageView.get());
 #endif
 
                     if (globalIndex < m_subMeshes.size() - 1)
@@ -792,7 +792,6 @@ namespace AZ
 
                 // create the TLAS descriptor
                 RHI::RayTracingTlasDescriptor tlasDescriptor;
-                RHI::RayTracingTlasDescriptor* tlasDescriptorBuild = tlasDescriptor.Build();
 
                 uint32_t instanceIndex = 0;
                 for (auto& subMesh : m_subMeshes)
@@ -802,14 +801,14 @@ namespace AZ
                     auto& blas = blasInstance.m_compactBlas ? blasInstance.m_compactBlas : blasInstance.m_blas;
                     if (blas)
                     {
-                        tlasDescriptorBuild->Instance()
-                            ->InstanceID(instanceIndex)
-                            ->InstanceMask(subMesh.m_mesh->m_instanceMask)
-                            ->HitGroupIndex(0)
-                            ->Blas(blas)
-                            ->Transform(subMesh.m_mesh->m_transform)
-                            ->NonUniformScale(subMesh.m_mesh->m_nonUniformScale)
-                            ->Transparent(subMesh.m_material.m_irradianceColor.GetA() < 1.0f);
+                        RHI::RayTracingTlasInstance& tlasInstance = tlasDescriptor.m_instances.emplace_back();
+                        tlasInstance.m_instanceID = instanceIndex;
+                        tlasInstance.m_instanceMask = subMesh.m_mesh->m_instanceMask;
+                        tlasInstance.m_hitGroupIndex = 0;
+                        tlasInstance.m_blas = blas;
+                        tlasInstance.m_transform = subMesh.m_mesh->m_transform;
+                        tlasInstance.m_nonUniformScale = subMesh.m_mesh->m_nonUniformScale;
+                        tlasInstance.m_transparent = subMesh.m_material.m_irradianceColor.GetA() < 1.0f;
                     }
 
                     instanceIndex++;
@@ -825,13 +824,14 @@ namespace AZ
 
                 for (const auto& proceduralGeometry : m_proceduralGeometry)
                 {
-                    tlasDescriptorBuild->Instance()
-                        ->InstanceID(instanceIndex)
-                        ->InstanceMask(proceduralGeometry.m_instanceMask)
-                        ->HitGroupIndex(geometryTypeMap[proceduralGeometry.m_typeHandle->m_name])
-                        ->Blas(proceduralGeometry.m_blas)
-                        ->Transform(proceduralGeometry.m_transform)
-                        ->NonUniformScale(proceduralGeometry.m_nonUniformScale);
+                    RHI::RayTracingTlasInstance& tlasInstance = tlasDescriptor.m_instances.emplace_back();
+                    tlasInstance.m_instanceID = instanceIndex;
+                    tlasInstance.m_instanceMask = proceduralGeometry.m_instanceMask;
+                    tlasInstance.m_hitGroupIndex = geometryTypeMap[proceduralGeometry.m_typeHandle->m_name];
+                    tlasInstance.m_blas = proceduralGeometry.m_blas;
+                    tlasInstance.m_transform = proceduralGeometry.m_transform;
+                    tlasInstance.m_nonUniformScale = proceduralGeometry.m_nonUniformScale;
+
                     instanceIndex++;
                 }
 
@@ -948,7 +948,7 @@ namespace AZ
                         {
                             // create the BLAS object and store it in the BLAS list
                             if (RHI::CheckBitsAny(
-                                    subMeshInstance.m_blasDescriptor.GetBuildFlags(),
+                                    subMeshInstance.m_blasDescriptor.m_buildFlags,
                                     RHI::RayTracingAccelerationStructureBuildFlags::ENABLE_COMPACTION))
                             {
                                 numSubmeshesWithCompactionQuery++;
@@ -966,7 +966,7 @@ namespace AZ
                         // create the BLAS object and store it in the BLAS list
                         RHI::Ptr<RHI::RayTracingBlas> rayTracingBlas = aznew RHI::RayTracingBlas;
                         if (RHI::CheckBitsAny(
-                                subMeshInstance.m_blasDescriptor.GetBuildFlags(),
+                                subMeshInstance.m_blasDescriptor.m_buildFlags,
                                 RHI::RayTracingAccelerationStructureBuildFlags::ENABLE_COMPACTION))
                         {
                             subMeshInstance.m_compactionSizeQuery = aznew RHI::RayTracingCompactionQuery;
@@ -1166,21 +1166,27 @@ namespace AZ
 #if !USE_BINDLESS_SRG
                 // resolve to the true indices using the indirection list
                 // Note: this is done on the CPU to avoid double-indirection in the shader
-                IndexVector resolvedMeshBufferIndices(m_meshBufferIndices.GetIndexList().size());
-                uint32_t resolvedMeshBufferIndex = 0;
-                for (auto& meshBufferIndex : m_meshBufferIndices.GetIndexList())
+                AZStd::unordered_map<int, IndexVector> resolvedMeshBufferIndicesMap;
+
+                for (const auto& [deviceIndex, meshBufferIndices] : m_meshBufferIndices)
                 {
-                    if (!m_meshBufferIndices.IsValidIndex(meshBufferIndex))
+                    IndexVector& resolvedMeshBufferIndices = resolvedMeshBufferIndicesMap[deviceIndex];
+                    resolvedMeshBufferIndices.resize(meshBufferIndices.GetIndexList().size());
+                    uint32_t resolvedMeshBufferIndex = 0;
+                    for (auto& meshBufferIndex : meshBufferIndices.GetIndexList())
                     {
-                        resolvedMeshBufferIndices[resolvedMeshBufferIndex++] = InvalidIndex;
-                    }
-                    else
-                    {
-                        resolvedMeshBufferIndices[resolvedMeshBufferIndex++] = m_meshBuffers.GetIndirectionList()[meshBufferIndex];
+                        if (!meshBufferIndices.IsValidIndex(meshBufferIndex))
+                        {
+                            resolvedMeshBufferIndices[resolvedMeshBufferIndex++] = InvalidIndex;
+                        }
+                        else
+                        {
+                            resolvedMeshBufferIndices[resolvedMeshBufferIndex++] = m_meshBuffers.GetIndirectionList()[meshBufferIndex];
+                        }
                     }
                 }
 
-                m_meshBufferIndicesGpuBuffer.AdvanceCurrentBufferAndUpdateData(resolvedMeshBufferIndices);
+                m_meshBufferIndicesGpuBuffer.AdvanceCurrentBufferAndUpdateData(resolvedMeshBufferIndicesMap);
 #else
                 AZStd::unordered_map<int, const void*> rawMeshData;
 
@@ -1196,21 +1202,27 @@ namespace AZ
 #if !USE_BINDLESS_SRG
                 // resolve to the true indices using the indirection list
                 // Note: this is done on the CPU to avoid double-indirection in the shader
-                IndexVector resolvedMaterialTextureIndices(m_materialTextureIndices.GetIndexList().size());
-                uint32_t resolvedMaterialTextureIndex = 0;
-                for (auto& materialTextureIndex : m_materialTextureIndices.GetIndexList())
+                AZStd::unordered_map<int, IndexVector> resolvedMaterialTextureIndicesMap;
+
+                for (const auto& [deviceIndex, materialTextureIndices] : m_materialTextureIndices)
                 {
-                    if (!m_materialTextureIndices.IsValidIndex(materialTextureIndex))
+                    IndexVector& resolvedMaterialTextureIndices = resolvedMaterialTextureIndicesMap[deviceIndex];
+                    resolvedMaterialTextureIndices.resize(materialTextureIndices.GetIndexList().size());
+                    uint32_t resolvedMaterialTextureIndex = 0;
+                    for (auto& materialTextureIndex : materialTextureIndices.GetIndexList())
                     {
-                        resolvedMaterialTextureIndices[resolvedMaterialTextureIndex++] = InvalidIndex;
-                    }
-                    else
-                    {
-                        resolvedMaterialTextureIndices[resolvedMaterialTextureIndex++] = m_materialTextures.GetIndirectionList()[materialTextureIndex];
+                        if (!materialTextureIndices.IsValidIndex(materialTextureIndex))
+                        {
+                            resolvedMaterialTextureIndices[resolvedMaterialTextureIndex++] = InvalidIndex;
+                        }
+                        else
+                        {
+                            resolvedMaterialTextureIndices[resolvedMaterialTextureIndex++] = m_materialTextures.GetIndirectionList()[materialTextureIndex];
+                        }
                     }
                 }
 
-                m_materialTextureIndicesGpuBuffer.AdvanceCurrentBufferAndUpdateData(resolvedMaterialTextureIndices);
+                m_materialTextureIndicesGpuBuffer.AdvanceCurrentBufferAndUpdateData(resolvedMaterialTextureIndicesMap);
 #else
                 AZStd::unordered_map<int, const void*> rawMaterialData;
 

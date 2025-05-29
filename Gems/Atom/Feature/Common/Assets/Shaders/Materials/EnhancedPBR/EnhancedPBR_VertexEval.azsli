@@ -19,6 +19,7 @@
 #include "../MaterialFunctions/StandardTransformDetailUvs.azsli"
 
 VsOutput EvaluateVertexGeometry_EnhancedPBR(
+    const MaterialParameters params,
     float3 position,
     float3 normal,
     float4 tangent,
@@ -29,24 +30,25 @@ VsOutput EvaluateVertexGeometry_EnhancedPBR(
     float4 color0)
 {
     // BasePBRP
-    VsOutput output = EvaluateVertexGeometry_BasePBR(position, normal, tangent, uv0, uv1, instanceId, useVertexColor, color0);
+    VsOutput output = EvaluateVertexGeometry_BasePBR(params, position, normal, tangent, uv0, uv1, instanceId, useVertexColor, color0);
 
     // Detail UVs
     float2 detailUvs[UvSetCount] = { uv0, uv1 };
-    TransformDetailUvs(detailUvs, output.detailUvs);
+    TransformDetailUvs(params, detailUvs, output.detailUvs);
 
     return output;
 }
 
 // Helper functions to keep compatible with the previous version
 // because dxc compiler doesn't allow default parameters on functions with overloads
-VsOutput EvaluateVertexGeometry_EnhancedPBR(VsInput IN, VsSystemValues SV)
+VsOutput EvaluateVertexGeometry_EnhancedPBR(VsInput IN, VsSystemValues SV, const MaterialParameters params)
 {
     float4 color0;
     bool useVertexColor0;
     GetVertexColor(IN, color0, useVertexColor0);
 
     return EvaluateVertexGeometry_EnhancedPBR(
+        params,
         IN.position,
         IN.normal,
         IN.tangent,
@@ -58,6 +60,7 @@ VsOutput EvaluateVertexGeometry_EnhancedPBR(VsInput IN, VsSystemValues SV)
 }
 
 VsOutput EvaluateVertexGeometry_EnhancedPBR(
+    const MaterialParameters params,
     float3 position,
     float3 normal,
     float4 tangent,
@@ -66,6 +69,7 @@ VsOutput EvaluateVertexGeometry_EnhancedPBR(
     uint instanceId)
 {
     return EvaluateVertexGeometry_EnhancedPBR(
+        params,
         position,
         normal,
         tangent,
