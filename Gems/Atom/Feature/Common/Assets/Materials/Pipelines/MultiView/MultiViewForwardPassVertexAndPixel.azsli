@@ -55,8 +55,6 @@ ForwardPassOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
     // We could add other forms of tonemapping in future via shader options.
     color = TonemapFilmic(color);
 
-    color.rgb = pow(color.rgb, real3(2.2, 2.2, 2.2));
-
 #endif
 
     OUT.m_color.rgb = color;
