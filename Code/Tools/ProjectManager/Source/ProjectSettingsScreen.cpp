@@ -45,11 +45,11 @@ namespace O3DE::ProjectManager
         m_verticalLayout->setAlignment(Qt::AlignTop);
         scrollWidget->setLayout(m_verticalLayout);
 
-        m_projectName = new FormLineEditWidget(tr("Project name"), "", this);
+        m_projectName = new FormLineEditWidget(tr("Project Name"), "", this);
         connect(m_projectName->lineEdit(), &QLineEdit::textChanged, this, &ProjectSettingsScreen::OnProjectNameUpdated);
         m_verticalLayout->addWidget(m_projectName);
 
-        m_projectVersion = new FormLineEditWidget(tr("Project version"), "1.0.0", this);
+        m_projectVersion = new FormLineEditWidget(tr("Project Version"), "1.0.0", this);
         m_verticalLayout->addWidget(m_projectVersion);
 
         m_projectPath = new FormFolderBrowseEditWidget(tr("Project Location"), "", this);

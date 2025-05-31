@@ -29,6 +29,7 @@ namespace AZ
 
             using RPI::MaterialFunctor::Process;
             void Process(RPI::MaterialFunctorAPI::RuntimeContext& context) override;
+            bool UpdateShaderParameterConnections(const RPI::MaterialShaderParameterLayout* layout) override;
 
         private:
 
@@ -48,9 +49,9 @@ namespace AZ
             RPI::MaterialPropertyIndex m_scatterDistanceIntensity;
 
             // Shader setting output...
-            RHI::ShaderInputConstantIndex m_scatterDistance;
-            RHI::ShaderInputConstantIndex m_transmissionParams;
-            RHI::ShaderInputConstantIndex m_transmissionTintThickness;
+            RPI::MaterialShaderParameterNameIndex m_scatterDistance;
+            RPI::MaterialShaderParameterNameIndex m_transmissionParams;
+            RPI::MaterialShaderParameterNameIndex m_transmissionTintThickness;
         };
     } // namespace Render
 } // namespace AZ

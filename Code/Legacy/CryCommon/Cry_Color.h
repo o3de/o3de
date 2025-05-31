@@ -169,6 +169,8 @@ struct Color_tpl
     ILINE unsigned int pack_abgr8888() const;
     ILINE unsigned int pack_argb8888() const;
     inline Vec3 toVec3() const { return Vec3(r, g, b); }
+    inline AZ::Vector3 toVector3() const { return AZ::Vector3(r, g, b); }
+    inline AZ::Vector4 toVector4() const { return AZ::Vector4(r, g, b, a); }
 
     inline void clamp(T bottom = 0.0f, T top = 1.0f);
 

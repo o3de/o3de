@@ -13,6 +13,14 @@
 
 #include "../../Shaders/Materials/MaterialInputs/UvSetCount.azsli"
 
+
+struct MaterialParameters {};
+
+const MaterialParameters GetMaterialParameters()
+{
+    return (MaterialParameters)0;
+}
+
 #define ENABLE_DEBUG_MODIFY_OUTPUT 0
 
 #if MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE
@@ -37,7 +45,7 @@
         float3 worldPosition : UV0;
     };
     
-    VsOutput EvaluateVertexGeometry(VsInput IN, VsSystemValues SV)
+    VsOutput EvaluateVertexGeometry(VsInput IN, VsSystemValues SV, const MaterialParameters params)
     {        
         VsOutput output;
         output.worldPosition = LocalSpaceToWorldSpace(IN.position, SV.m_instanceId);
@@ -68,7 +76,7 @@
         float3 vertexNormal;
     };
 
-    PixelGeometryData EvaluatePixelGeometry(VsOutput IN, bool isFrontFace)
+    PixelGeometryData EvaluatePixelGeometry(VsOutput IN, bool isFrontFace, const MaterialParameters params)
     {
         PixelGeometryData geoData;
         geoData.positionWS = IN.worldPosition;
@@ -83,7 +91,7 @@
 
     #include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_SurfaceData.azsli>
 
-    Surface EvaluateSurface(VsOutput IN, PixelGeometryData geoData)
+    Surface EvaluateSurface(VsOutput IN, PixelGeometryData geoData, const MaterialParameters params)
     {
         Surface surface;
         surface.position = geoData.positionWS;

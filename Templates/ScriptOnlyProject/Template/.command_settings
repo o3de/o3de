@@ -1,0 +1,4 @@
+[export_project]
+option.build.assets = True
+seedlist.paths = AssetBundling/SeedLists/*.seed
+archive.output.format = zip

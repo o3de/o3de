@@ -16,7 +16,7 @@
 
 namespace AZ::Debug
 {
-    AZStd::optional<Profiler*> ProfileScope::m_cachedProfiler;
+    Profiler* ProfileScope::m_cachedProfiler = nullptr;
 
     AZStd::string GenerateOutputFile(const char* nameHint)
     {
@@ -85,14 +85,14 @@ namespace AZ::Debug
             // Initialize the cached pointer with the current handler or nullptr if no handlers are registered.
             // We do it here because Interface::Get will do a full mutex lock if no handlers are registered
             // causing big performance hit.
-            if (!m_cachedProfiler.has_value())
+            if (!m_cachedProfiler)
             {
                 m_cachedProfiler = AZ::Interface<Profiler>::Get();
             }
 
-            if (m_cachedProfiler.value())
+            if (m_cachedProfiler)
             {
-                m_cachedProfiler.value()->BeginRegion(budget, eventName, args);
+                m_cachedProfiler->BeginRegion(budget, eventName, args);
             }
         }
 #endif // !defined(AZ_RELEASE_BUILD)
@@ -105,9 +105,9 @@ namespace AZ::Debug
         {
             budget->EndProfileRegion();
 
-            if (m_cachedProfiler.value())
+            if (m_cachedProfiler)
             {
-                m_cachedProfiler.value()->EndRegion(budget);
+                m_cachedProfiler->EndRegion(budget);
             }
 
             Platform::EndProfileRegion(budget);

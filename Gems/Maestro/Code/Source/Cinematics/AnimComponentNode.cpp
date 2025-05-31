@@ -738,7 +738,7 @@ namespace Maestro
             }
             // Special case, if an AssetId property named "Motion" is found, create an AssetBlend.
             // The Simple Motion Component exposes a virtual property named "motion" of type AssetId.
-            // We it is detected here create an AssetBlend type in Track View. The Asset Blend has special
+            // When it is detected here create an AssetBlend type in Track View. The Asset Blend has special
             // UI and will be used to drive multiple properties on this component, not just the motion AssetId.
             else if (propertyTypeId == AZ::Data::AssetId::TYPEINFO_Uuid() && 0 == azstricmp(paramType.GetName(), "motion"))
             {
@@ -877,7 +877,7 @@ namespace Maestro
                     }
                     case AnimValueType::AssetBlend:
                     {
-                        // Just init to an empty value.
+                        // Just initialize to an empty value.
                         AssetBlends<AZ::Data::AssetData> assetData;
                         pTrack->SetValue(0, assetData, true);
                         break;
@@ -1240,27 +1240,30 @@ namespace Maestro
 
     void CAnimComponentNode::AnimateAssetBlendSubProperties(const AssetBlends<AZ::Data::AssetData>& assetBlendValue)
     {
-        // These are the params to set for the Simple Motion Component
-        bool previewInEditor = true;
-        float playTime = 0.0f;
-        float playSpeed = 0.0f;
-        AZ::Data::AssetId assetId;
-        float blendInTime = 0.0f;
-        float blendOutTime = 0.0f;
 
-        // Populate params based on the last AssetBlend found.
-        // So new keys will be picked up and played on top of currently
-        // playing animations (resulting in a blend).
-        if (assetBlendValue.m_assetBlends.size() > 0)
+        if (assetBlendValue.m_assetBlends.size() < 1)
         {
-            AssetBlend assetData = assetBlendValue.m_assetBlends.back();
-            playTime = assetData.m_time;
-            assetId = assetData.m_assetId;
-            blendInTime = assetData.m_blendInTime;
-            blendOutTime = assetData.m_blendOutTime;
+            return; // Nothing to do
+        }
+
+        // Populate params based on the last valid AssetBlend found.
+        // So new keys will be picked up and played on top of currently playing animations (resulting in a blend).
+        AssetBlend assetData;
+        for (auto it = assetBlendValue.m_assetBlends.begin(); it != assetBlendValue.m_assetBlends.end(); ++it)
+        {
+            if (it->m_assetId.IsValid())
+            {
+                assetData = *it;
+            }
+        }
+
+        if (!assetData.m_assetId.IsValid())
+        {
+            return; // Invalid key without motion assets assigned
         }
 
         // Set Preview in Editor
+        constexpr const bool previewInEditor = true;
         SequenceComponentRequests::AnimatablePropertyAddress previewInEditorAnimatableAddress(m_componentId, "PreviewInEditor");
         SequenceComponentRequests::AnimatedFloatValue prevPreviewInEditorValue(previewInEditor);
         SequenceComponentRequestBus::Event(m_pSequence->GetSequenceEntityId(), &SequenceComponentRequestBus::Events::GetAnimatedPropertyValue, prevPreviewInEditorValue, GetParentAzEntityId(), previewInEditorAnimatableAddress);
@@ -1272,52 +1275,63 @@ namespace Maestro
 
         // Set Blend In Time before Motion so the Blend In will be used on the Motion that is about to Play.
         SequenceComponentRequests::AnimatablePropertyAddress blendInTimeAnimatableAddress(m_componentId, "BlendInTime");
-        SequenceComponentRequests::AnimatedFloatValue prevBlendInTimeValue(blendInTime);
+        SequenceComponentRequests::AnimatedFloatValue prevBlendInTimeValue(assetData.m_blendInTime);
         SequenceComponentRequestBus::Event(m_pSequence->GetSequenceEntityId(), &SequenceComponentRequestBus::Events::GetAnimatedPropertyValue, prevBlendInTimeValue, GetParentAzEntityId(), blendInTimeAnimatableAddress);
-        SequenceComponentRequests::AnimatedFloatValue blendInTimeValue(blendInTime);
+        SequenceComponentRequests::AnimatedFloatValue blendInTimeValue(assetData.m_blendInTime);
         if (!blendInTimeValue.IsClose(prevBlendInTimeValue))
         {
             SequenceComponentRequestBus::Event(m_pSequence->GetSequenceEntityId(), &SequenceComponentRequestBus::Events::SetAnimatedPropertyValue, GetParentAzEntityId(), blendInTimeAnimatableAddress, blendInTimeValue);
         }
 
-        // Set Motion
-        SequenceComponentRequests::AnimatablePropertyAddress motionAnimatableAddress(m_componentId, "Motion");
-        SequenceComponentRequests::AnimatedAssetIdValue prevMotionValue(assetId);
-        SequenceComponentRequestBus::Event(m_pSequence->GetSequenceEntityId(), &SequenceComponentRequestBus::Events::GetAnimatedPropertyValue, prevMotionValue, GetParentAzEntityId(), motionAnimatableAddress);
-        SequenceComponentRequests::AnimatedAssetIdValue motionValue(assetId);
-        if (!motionValue.IsClose(prevMotionValue))
-        {
-            SequenceComponentRequestBus::Event(m_pSequence->GetSequenceEntityId(), &SequenceComponentRequestBus::Events::SetAnimatedPropertyValue, GetParentAzEntityId(), motionAnimatableAddress, motionValue);
-        }
-
         // Set Blend Out Time after Motion so the Blend Out will not be used on Play, but instead used on that 'last' Motion 'Stop' as fade out.
         SequenceComponentRequests::AnimatablePropertyAddress blendOutTimeAnimatableAddress(m_componentId, "BlendOutTime");
-        SequenceComponentRequests::AnimatedFloatValue prevBlendOutTimeValue(blendOutTime);
+        SequenceComponentRequests::AnimatedFloatValue prevBlendOutTimeValue(assetData.m_blendOutTime);
         SequenceComponentRequestBus::Event(m_pSequence->GetSequenceEntityId(), &SequenceComponentRequestBus::Events::GetAnimatedPropertyValue, prevBlendOutTimeValue, GetParentAzEntityId(), blendOutTimeAnimatableAddress);
-        SequenceComponentRequests::AnimatedFloatValue blendOutTimeValue(blendOutTime);
+        SequenceComponentRequests::AnimatedFloatValue blendOutTimeValue(assetData.m_blendOutTime);
         if (!blendOutTimeValue.IsClose(prevBlendOutTimeValue))
         {
             SequenceComponentRequestBus::Event(m_pSequence->GetSequenceEntityId(), &SequenceComponentRequestBus::Events::SetAnimatedPropertyValue, GetParentAzEntityId(), blendOutTimeAnimatableAddress, blendOutTimeValue);
         }
 
+        // Set Play Speed
+        SequenceComponentRequests::AnimatablePropertyAddress playSpeedAnimatableAddress(m_componentId, "PlaySpeed");
+        SequenceComponentRequests::AnimatedFloatValue prevPlaySpeedValue(assetData.m_speed);
+        SequenceComponentRequestBus::Event(m_pSequence->GetSequenceEntityId(), &SequenceComponentRequestBus::Events::GetAnimatedPropertyValue, prevPlaySpeedValue, GetParentAzEntityId(), playSpeedAnimatableAddress);
+        SequenceComponentRequests::AnimatedFloatValue playSpeedValue(assetData.m_speed);
+        if (!playSpeedValue.IsClose(prevPlaySpeedValue))
+        {
+            SequenceComponentRequestBus::Event(m_pSequence->GetSequenceEntityId(), &SequenceComponentRequestBus::Events::SetAnimatedPropertyValue, GetParentAzEntityId(), playSpeedAnimatableAddress, playSpeedValue);
+        }
+
+        // Set Loop
+        SequenceComponentRequests::AnimatablePropertyAddress loopAnimatableAddress(m_componentId, "LoopMotion");
+        SequenceComponentRequests::AnimatedBoolValue prevLoopValue(assetData.m_bLoop);
+        SequenceComponentRequestBus::Event(m_pSequence->GetSequenceEntityId(), &SequenceComponentRequestBus::Events::GetAnimatedPropertyValue, prevLoopValue, GetParentAzEntityId(), loopAnimatableAddress);
+        SequenceComponentRequests::AnimatedBoolValue loopValue(assetData.m_bLoop);
+        if (!loopValue.IsClose(prevLoopValue))
+        {
+            SequenceComponentRequestBus::Event(m_pSequence->GetSequenceEntityId(), &SequenceComponentRequestBus::Events::SetAnimatedPropertyValue, GetParentAzEntityId(), loopAnimatableAddress, loopValue);
+        }
+
         // Set Play Time
         SequenceComponentRequests::AnimatablePropertyAddress playTimeAnimatableAddress(m_componentId, "PlayTime");
-        SequenceComponentRequests::AnimatedFloatValue prevPlayTimeValue(playTime);
+        SequenceComponentRequests::AnimatedFloatValue prevPlayTimeValue(assetData.m_time);
         SequenceComponentRequestBus::Event(m_pSequence->GetSequenceEntityId(), &SequenceComponentRequestBus::Events::GetAnimatedPropertyValue, prevPlayTimeValue, GetParentAzEntityId(), playTimeAnimatableAddress);
-        SequenceComponentRequests::AnimatedFloatValue playTimeValue(playTime);
+        SequenceComponentRequests::AnimatedFloatValue playTimeValue(assetData.m_time);
         if (!playTimeValue.IsClose(prevPlayTimeValue))
         {
             SequenceComponentRequestBus::Event(m_pSequence->GetSequenceEntityId(), &SequenceComponentRequestBus::Events::SetAnimatedPropertyValue, GetParentAzEntityId(), playTimeAnimatableAddress, playTimeValue);
         }
 
-        // Set Play Speed
-        SequenceComponentRequests::AnimatablePropertyAddress playSpeedAnimatableAddress(m_componentId, "PlaySpeed");
-        SequenceComponentRequests::AnimatedFloatValue prevPlaySpeedValue(playSpeed);
-        SequenceComponentRequestBus::Event(m_pSequence->GetSequenceEntityId(), &SequenceComponentRequestBus::Events::GetAnimatedPropertyValue, prevPlaySpeedValue, GetParentAzEntityId(), playSpeedAnimatableAddress);
-        SequenceComponentRequests::AnimatedFloatValue playSpeedValue(playSpeed);
-        if (!playSpeedValue.IsClose(prevPlaySpeedValue))
+        // Set Motion
+        SequenceComponentRequests::AnimatablePropertyAddress motionAnimatableAddress(m_componentId, "Motion");
+        SequenceComponentRequests::AnimatedAssetIdValue prevMotionValue(assetData.m_assetId);
+        SequenceComponentRequestBus::Event(m_pSequence->GetSequenceEntityId(), &SequenceComponentRequestBus::Events::GetAnimatedPropertyValue, prevMotionValue, GetParentAzEntityId(), motionAnimatableAddress);
+        SequenceComponentRequests::AnimatedAssetIdValue motionValue(assetData.m_assetId);
+        if (!motionValue.IsClose(prevMotionValue))
         {
-            SequenceComponentRequestBus::Event(m_pSequence->GetSequenceEntityId(), &SequenceComponentRequestBus::Events::SetAnimatedPropertyValue, GetParentAzEntityId(), playSpeedAnimatableAddress, playSpeedValue);
+            // This woill create a new motion instance and play it
+            SequenceComponentRequestBus::Event(m_pSequence->GetSequenceEntityId(), &SequenceComponentRequestBus::Events::SetAnimatedPropertyValue, GetParentAzEntityId(), motionAnimatableAddress, motionValue);
         }
     }
 

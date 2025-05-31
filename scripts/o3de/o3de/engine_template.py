@@ -95,6 +95,14 @@ O3DE_LICENSE_TEXT = \
 # {END_LICENSE}
 """
 
+# This is a list of reserved words that should not be used for project names, gem names, etc.
+TEMPLATE_RESERVED_WORDS = [ "project", "project_name", "and", "or", "not", "in", "is", "if", "else", "elif", "while",
+                            "for", "return", "break", "continue", "def", "class", "import", "from", "name", "version",
+                            "as", "with", "try", "except", "finally", "raise", "assert" , "projectid", "o3de", "sdk",
+                            "nameupper", "namelower", "sanitizedcppname", "projectpath", "enginepath", "moduleclassid",
+# and then all the reserved words that you don't want to see in cmake files that mean something to cmake:
+                            "editorsyscompclassid", "module", "shared", "static", "namespace", "target"]
+
 this_script_parent = pathlib.Path(os.path.dirname(os.path.realpath(__file__)))
 
 
@@ -576,6 +584,11 @@ def create_template(source_path: pathlib.Path,
     # template name cannot be the same as a restricted platform name
     if template_name in restricted_platforms:
         logger.error(f'Template path cannot be a restricted name. {template_name}')
+        return 1
+    
+    # there are some reserved words that it is bad idea to use as a template name
+    if template_name.lower() in TEMPLATE_RESERVED_WORDS:
+        logger.error(f'Template name cannot be "{template_name}" as this might cause issues with compilation.  Please try another name.')
         return 1
 
     # if the source restricted name was given and no source restricted path, look up the restricted name to fill
@@ -1724,16 +1737,15 @@ def create_project(project_path: pathlib.Path,
         logger.error(
             f'Project name must be fewer than 64 characters, contain only alphanumeric, "_" or "-" characters, and start with a letter.  {project_name}')
         return 1
+    
+    # there are some reserved words that it is bad idea to use as a project name
+    if project_name.lower() in TEMPLATE_RESERVED_WORDS:
+        logger.error(f'Project name cannot be "{project_name}" as this might cause issues with compilation.  Please try another name.')
+        return 1
 
     # project name cannot be the same as a restricted platform name
     if project_name in restricted_platforms:
         logger.error(f'Project name cannot be a restricted name. {project_name}')
-        return 1
-
-    # the generic launcher (and the engine, often) are referred to as o3de, so prevent the user from 
-    # accidentally creating a confusing error situation.
-    if project_name.lower() == 'o3de':
-        logger.error(f"Project name cannot be 'o3de' as this is reserved for the generic launcher.")
         return 1
 
     # project restricted name
@@ -2143,6 +2155,11 @@ def create_gem(gem_path: pathlib.Path,
     # gem name cannot be the same as a restricted platform name
     if gem_name in restricted_platforms:
         logger.error(f'Gem path cannot be a restricted name. {gem_name}')
+        return 1
+    
+    # there are some reserved words that it is bad idea to use as a gem name
+    if gem_name.lower() in TEMPLATE_RESERVED_WORDS:
+        logger.error(f'Project name cannot be "{gem_name}" as this might cause issues with compilation.  Please try another name.')
         return 1
 
     # gem restricted name

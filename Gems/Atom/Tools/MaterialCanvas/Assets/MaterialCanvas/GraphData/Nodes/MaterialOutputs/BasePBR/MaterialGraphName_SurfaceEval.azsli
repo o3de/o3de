@@ -20,6 +20,7 @@
 
 Surface EvaluateSurface_MaterialGraphName(
     VsOutput IN,
+    const MaterialParameters params,
     float3 positionWS,
     real3 normalWS,
     float3 tangents[UvSetCount],
@@ -45,8 +46,8 @@ Surface EvaluateSurface_MaterialGraphName(
 #endif
     #define O3DE_MC_UV(index) uvs[clamp(index, 0, UvSetCount-1)];
 
-    // m_placeHolder keeps MaterialSrg from being compiled out when iterating on graphs
-    const bool placeHolder = MaterialSrg::m_placeHolder;
+    // placeholder to keep MaterialParams from being compiled out when iterating on graphs
+    const int materialType = params.m_materialType;
 
     // O3DE_GENERATED_INSTRUCTIONS_BEGIN: inNormal, inBaseColor, inMetallic, inRoughness, inSpecularF0Factor
     real3 inNormal = normalWS;
@@ -74,6 +75,7 @@ Surface EvaluateSurface_MaterialGraphName(
 // because dxc compiler doesn't allow default parameters on functions with overloads
 Surface EvaluateSurface_MaterialGraphName(
     VsOutput IN,
+    const MaterialParameters params,
     float3 positionWS,
     real3 normalWS,
     float3 tangents[UvSetCount],
@@ -83,6 +85,7 @@ Surface EvaluateSurface_MaterialGraphName(
 {
     return EvaluateSurface_MaterialGraphName(
         IN,
+        params,
         positionWS,
         normalWS,
         tangents,
@@ -93,10 +96,11 @@ Surface EvaluateSurface_MaterialGraphName(
         false);
 }
 
-Surface EvaluateSurface_MaterialGraphName(VsOutput IN, PixelGeometryData geoData, float4 uvDxDy, bool customDerivatives)
+Surface EvaluateSurface_MaterialGraphName(VsOutput IN, PixelGeometryData geoData, const MaterialParameters params, float4 uvDxDy, bool customDerivatives)
 {
     return EvaluateSurface_MaterialGraphName(
         IN,
+        params,
         geoData.positionWS,
         geoData.vertexNormal,
         geoData.tangents,
@@ -107,10 +111,11 @@ Surface EvaluateSurface_MaterialGraphName(VsOutput IN, PixelGeometryData geoData
         customDerivatives);
 }
 
-Surface EvaluateSurface_MaterialGraphName(VsOutput IN, PixelGeometryData geoData)
+Surface EvaluateSurface_MaterialGraphName(VsOutput IN, PixelGeometryData geoData, const MaterialParameters params)
 {
     return EvaluateSurface_MaterialGraphName(
         IN,
+        params,
         geoData.positionWS,
         geoData.vertexNormal,
         geoData.tangents,
