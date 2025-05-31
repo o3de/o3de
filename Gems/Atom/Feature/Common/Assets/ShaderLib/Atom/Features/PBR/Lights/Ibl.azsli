@@ -127,7 +127,7 @@ void ApplyIBL(Surface surface, inout LightingData lightingData, bool useDiffuseI
             [unroll]
             for (uint viewIndex = 0; viewIndex < GET_SHADING_VIEW_COUNT; ++viewIndex)
             {
-                real3 iblSpecular = GetIblSpecular(surface.position, surface.GetSpecularNormal(), surface.GetSpecularF0(), surface.roughnessLinear, lightingData.dirToCamera[viewIndex], lightingData.brdf, reflectionProbe, reflectionProbeCubemap);
+                real3 iblSpecular = GetIblSpecular(surface.position, surface.GetSpecularNormal(), surface.GetSpecularF0(), surface.roughnessLinear, lightingData.dirToCamera[viewIndex], lightingData.brdf[viewIndex], reflectionProbe, reflectionProbeCubemap);
                 iblSpecular *= lightingData.multiScatterCompensation;
 
 #if ENABLE_CLEAR_COAT

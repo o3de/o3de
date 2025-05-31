@@ -115,11 +115,10 @@ void UpdateLightingParameters(
 
         // sample BRDF map (indexed by smoothness values rather than roughness)
         lightingData.NdotV[i] = saturate(dot(normal, lightingData.dirToCamera[i]));
+        
+        float2 brdfUV = float2(lightingData.GetSpecularNdotV(i), (1.0f - roughnessLinear));
+        lightingData.brdf[i] = PassSrg::m_brdfMap.Sample(PassSrg::LinearSampler, brdfUV).rg;
     }
-
-    float2 brdfUV = float2(lightingData.GetSpecularNdotV(), (1.0f - roughnessLinear));
-
-    lightingData.brdf = PassSrg::m_brdfMap.Sample(PassSrg::LinearSampler, brdfUV).rg;
 }
 
 void SetNormalAndUpdateLightingParams(
