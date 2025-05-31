@@ -24,6 +24,7 @@
 #include <Atom/Features/InstancedTransforms.azsli>
 
 VsOutput EvaluateVertexGeometry_BasePBR(
+    const MaterialParameters params,
     float3 position,
     float3 normal,
     float4 tangent,
@@ -41,7 +42,7 @@ VsOutput EvaluateVertexGeometry_BasePBR(
     output.position = mul(ViewSrg::m_viewProjectionMatrix, worldPosition);
 
     // By design, only UV0 is allowed to apply transforms.
-    output.uvs[0] = mul(MaterialSrg::m_uvMatrix, float3(uv0, 1.0)).xy;
+    output.uvs[0] = mul(params.m_uvMatrix, float3(uv0, 1.0)).xy;
     output.uvs[1] = uv1;
 
     output.normal = normal;
@@ -76,13 +77,14 @@ void GetVertexColor(VsInput IN, out float4 color, out bool useVertexColor)
 #endif
 }
 
-VsOutput EvaluateVertexGeometry_BasePBR(VsInput IN, VsSystemValues SV)
+VsOutput EvaluateVertexGeometry_BasePBR(VsInput IN, VsSystemValues SV, const MaterialParameters params)
 {
     float4 color0;
     bool useVertexColor0;
     GetVertexColor(IN, color0, useVertexColor0);
 
     return EvaluateVertexGeometry_BasePBR(
+        params,
         IN.position,
         IN.normal,
         IN.tangent,
@@ -94,6 +96,7 @@ VsOutput EvaluateVertexGeometry_BasePBR(VsInput IN, VsSystemValues SV)
 }
 
 VsOutput EvaluateVertexGeometry_BasePBR(
+    const MaterialParameters params,
     float3 position,
     float3 normal,
     float4 tangent,
@@ -102,6 +105,7 @@ VsOutput EvaluateVertexGeometry_BasePBR(
     uint instanceId)
 {
     return EvaluateVertexGeometry_BasePBR(
+        params,
         position,
         normal,
         tangent,

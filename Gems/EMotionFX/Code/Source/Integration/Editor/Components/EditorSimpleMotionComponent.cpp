@@ -106,10 +106,10 @@ namespace EMotionFX
             SimpleMotionComponentRequestBus::Handler::BusDisconnect();
             AZ::Data::AssetBus::MultiHandler::BusDisconnect();
 
-            RemoveMotionInstanceFromActor(m_lastMotionInstance);
-            m_lastMotionInstance = nullptr;
             RemoveMotionInstanceFromActor(m_motionInstance);
             m_motionInstance = nullptr;
+            RemoveMotionInstanceFromActor(m_lastMotionInstance);
+            m_lastMotionInstance = nullptr;
 
             m_configuration.m_motionAsset.Release();
             m_lastMotionAsset.Release();
@@ -129,7 +129,7 @@ namespace EMotionFX
 
         void EditorSimpleMotionComponent::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
         {
-            if (asset == m_configuration.m_motionAsset)
+            if (asset.GetId() == m_configuration.m_motionAsset.GetId())
             {
                 m_configuration.m_motionAsset = asset;
                 PlayMotion();
@@ -159,18 +159,36 @@ namespace EMotionFX
 
         void EditorSimpleMotionComponent::PlayMotion()
         {
-            if (m_previewInEditor)
+            if (!m_previewInEditor)
             {
-                // The Editor allows scrubbing back and forth on animation blending transitions, so don't delete 
-                // motion instances if it's blend weight is zero.
-                // The Editor preview should preview the motion in place to prevent off center movement.
-                m_motionInstance = SimpleMotionComponent::PlayMotionInternal(m_actorInstance, m_configuration, /*deleteOnZeroWeight*/false);
+                return;
             }
+
+            // In case of existing motion instance, play it.
+            if (SimpleMotionComponent::CheckMotionInstance(m_motionInstance))
+            {
+                auto motionInstance = SimpleMotionComponent::StartMotionInternal(m_motionInstance, m_configuration);
+                if (SimpleMotionComponent::CheckMotionInstance(motionInstance) && (motionInstance != m_motionInstance))
+                {
+                    if (SimpleMotionComponent::CheckMotionInstance(m_lastMotionInstance))
+                    {
+                        RemoveMotionInstanceFromActor(m_lastMotionInstance);
+                    }
+                }
+                m_lastMotionInstance = m_motionInstance;
+                m_motionInstance = motionInstance;
+                return;
+            }
+
+            // The Editor allows scrubbing back and forth on animation blending transitions, so don't delete  motion instances if it's blend weight is zero.
+            // The Editor preview should preview the motion in place to prevent off center movement.
+            constexpr const bool deleteOnZeroWeight = false;
+            m_motionInstance = SimpleMotionComponent::PlayMotionInternal(m_actorInstance, m_configuration, deleteOnZeroWeight);
         }
 
         void EditorSimpleMotionComponent::RemoveMotionInstanceFromActor(EMotionFX::MotionInstance* motionInstance)
         {
-            if (motionInstance)
+            if (SimpleMotionComponent::CheckMotionInstance(motionInstance))
             {
                 if (m_actorInstance && m_actorInstance->GetMotionSystem())
                 {
@@ -187,7 +205,7 @@ namespace EMotionFX
         void EditorSimpleMotionComponent::LoopMotion(bool enable)
         {
             m_configuration.m_loop = enable;
-            if (m_motionInstance)
+            if (SimpleMotionComponent::CheckMotionInstance(m_motionInstance))
             {
                 m_motionInstance->SetMaxLoops(enable ? EMFX_LOOPFOREVER : 1);
             }
@@ -201,7 +219,7 @@ namespace EMotionFX
         void EditorSimpleMotionComponent::RetargetMotion(bool enable)
         {
             m_configuration.m_retarget = enable;
-            if (m_motionInstance)
+            if (SimpleMotionComponent::CheckMotionInstance(m_motionInstance))
             {
                 m_motionInstance->SetRetargetingEnabled(enable);
             }
@@ -210,7 +228,7 @@ namespace EMotionFX
         void EditorSimpleMotionComponent::ReverseMotion(bool enable)
         {
             m_configuration.m_reverse = enable;
-            if (m_motionInstance)
+            if (SimpleMotionComponent::CheckMotionInstance(m_motionInstance))
             {
                 m_motionInstance->SetPlayMode(enable ? EMotionFX::EPlayMode::PLAYMODE_BACKWARD : EMotionFX::EPlayMode::PLAYMODE_FORWARD);
             }
@@ -219,7 +237,7 @@ namespace EMotionFX
         void EditorSimpleMotionComponent::MirrorMotion(bool enable)
         {
             m_configuration.m_mirror = enable;
-            if (m_motionInstance)
+            if (SimpleMotionComponent::CheckMotionInstance(m_motionInstance))
             {
                 m_motionInstance->SetMirrorMotion(enable);
             }
@@ -228,7 +246,7 @@ namespace EMotionFX
         void EditorSimpleMotionComponent::SetPlaySpeed(float speed)
         {
             m_configuration.m_playspeed = speed;
-            if (m_motionInstance)
+            if (SimpleMotionComponent::CheckMotionInstance(m_motionInstance))
             {
                 m_motionInstance->SetPlaySpeed(speed);
             }
@@ -241,7 +259,7 @@ namespace EMotionFX
         
         float EditorSimpleMotionComponent::GetDuration() const
         {
-            return m_motionInstance ? m_motionInstance->GetDuration() : 0.0f;
+            return SimpleMotionComponent::CheckMotionInstance(m_motionInstance) ? m_motionInstance->GetDuration() : 0.0f;
         }
 
         float EditorSimpleMotionComponent::GetAssetDuration(const AZ::Data::AssetId& assetId)
@@ -264,11 +282,15 @@ namespace EMotionFX
 
         void EditorSimpleMotionComponent::PlayTime(float time)
         {
-            if (m_motionInstance)
+            if (SimpleMotionComponent::CheckMotionInstance(m_motionInstance))
             {
                 float delta = time - m_motionInstance->GetLastCurrentTime();
                 m_motionInstance->SetCurrentTime(time, false);
 
+                if (!SimpleMotionComponent::CheckMotionInstance(m_lastMotionInstance))
+                {
+                    m_lastMotionInstance = nullptr;
+                }
                 // Apply the same time step to the last animation
                 // so blend out will be good. Otherwise we are just blending
                 // from the last frame played of the last animation.
@@ -282,9 +304,9 @@ namespace EMotionFX
         float EditorSimpleMotionComponent::GetPlayTime() const
         {
             float result = 0.0f;
-            if (m_motionInstance)
+            if (SimpleMotionComponent::CheckMotionInstance(m_motionInstance))
             {
-                result = m_motionInstance->GetCurrentTimeNormalized();
+                result = m_motionInstance->GetCurrentTime();
             }
             return result;
         }
@@ -302,7 +324,7 @@ namespace EMotionFX
                 // Save the motion asset that we are about to be remove in case it can be reused.
                 AZ::Data::Asset<MotionAsset> oldLastMotionAsset = m_lastMotionAsset;
 
-                if (m_lastMotionInstance)
+                if (SimpleMotionComponent::CheckMotionInstance(m_lastMotionInstance))
                 {
                     RemoveMotionInstanceFromActor(m_lastMotionInstance);
                 }
@@ -317,7 +339,7 @@ namespace EMotionFX
 
                 // Set the current motion instance as the last motion instance. The new current motion
                 // instance will then be set when the load is complete.
-                m_lastMotionInstance = m_motionInstance;
+                m_lastMotionInstance = SimpleMotionComponent::CheckMotionInstance(m_motionInstance);
                 m_motionInstance = nullptr;
 
                 // Start the fade out if there is a blend out time. Otherwise just leave the
@@ -402,9 +424,10 @@ namespace EMotionFX
             m_lastMotionInstance = nullptr;
             RemoveMotionInstanceFromActor(m_motionInstance);
             m_motionInstance = nullptr;
+
             m_configuration.m_motionAsset.Release();
             VerifyMotionAssetState();
             return AZ::Edit::PropertyRefreshLevels::None;
         }
     }
-}
+} // namespace EMotionFX

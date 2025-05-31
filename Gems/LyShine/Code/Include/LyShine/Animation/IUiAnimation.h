@@ -1060,7 +1060,7 @@ struct IUiAnimationListener
     virtual ~IUiAnimationListener(){}
     //! callback on UI animation events
     virtual void OnUiAnimationEvent(EUiAnimationEvent uiAnimationEvent, IUiAnimSequence* pAnimSequence) = 0;
-    virtual void OnUiTrackEvent(AZStd::string eventName, AZStd::string valueName, [[maybe_unused]] IUiAnimSequence* pAnimSequence) {}
+    virtual void OnUiTrackEvent([[maybe_unused]] AZStd::string eventName, [[maybe_unused]] AZStd::string valueName, [[maybe_unused]] IUiAnimSequence* pAnimSequence) {}
     // </interfuscator:shuffle>
 };
 

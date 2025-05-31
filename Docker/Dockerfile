@@ -75,6 +75,7 @@ RUN apt-get update \
             libfontconfig1-dev \
             libnvidia-gl-470 \
             libxcb-xkb-dev \
+            libxcb-randr0-dev \
             libxkbcommon-x11-dev \
             libxkbcommon-dev \
             libxcb-xfixes0-dev \

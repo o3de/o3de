@@ -263,7 +263,7 @@ namespace EditorPythonBindings
             return aznew AZStd::any(address, valueInfo);
         }
 
-        AZStd::optional<PythonMarshalTypeRequests::BehaviorValueResult> PythonToParameterWithProxy(EditorPythonBindings::PythonProxyObject* proxyObj, pybind11::object pyObj, AZ::BehaviorArgument& outValue)
+        AZStd::optional<PythonMarshalTypeRequests::BehaviorValueResult> PythonToParameterWithProxy(EditorPythonBindings::PythonProxyObject* proxyObj, [[maybe_unused]] pybind11::object pyObj, AZ::BehaviorArgument& outValue)
         {
             auto behaviorObject = proxyObj->GetBehaviorObject();
             if (!behaviorObject)

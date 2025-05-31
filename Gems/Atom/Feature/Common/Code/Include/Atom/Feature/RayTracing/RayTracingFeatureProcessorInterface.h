@@ -413,5 +413,9 @@ namespace AZ::Render
 
         //! Retrieves the list of all procedural geometry instances in the scene
         virtual const ProceduralGeometryList& GetProceduralGeometries() const = 0;
+
+        //! Returns the device mask with the devices that build RayTracingAccelerationStructures
+        //! Only devices present in the mask can use the acceleration structures provided by this FeatureProcessor
+        virtual RHI::MultiDevice::DeviceMask GetDeviceMask() const = 0;
     };
 } // namespace AZ::Render

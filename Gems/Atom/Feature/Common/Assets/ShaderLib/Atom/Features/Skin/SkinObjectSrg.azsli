@@ -18,6 +18,8 @@
 ShaderResourceGroup ObjectSrg : SRG_PerObject
 {
     uint m_objectId;
+    int m_materialTypeId;
+    int m_materialInstanceId;
 
     //! Returns the matrix for transforming points from Object Space to World Space.
     float4x4 GetWorldMatrix()
