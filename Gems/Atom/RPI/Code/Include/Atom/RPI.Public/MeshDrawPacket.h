@@ -88,20 +88,11 @@ namespace AZ
             void DebugOutputShaderVariants();
 
             //! Returns the DrawSrg from the DrawItem that corresponds to @drawItemIndex.
-            Data::Instance<RPI::ShaderResourceGroup>& GetDrawSrg(uint32_t drawItemIndex);
+            const Data::Instance<RPI::ShaderResourceGroup>& GetDrawSrg(uint32_t drawItemIndex) const;
 
         private:
             bool DoUpdate(const Scene& parentScene);
             void ForValidShaderOptionName(const Name& shaderOptionName, const AZStd::function<bool(const ShaderCollection::Item&, ShaderOptionIndex)>& callback);
-
-            // To enable this shader constant in DrawSrg, a shader must:
-            // #define USE_DRAWSRG_MESHLOD_MESHINDEX 1
-            // By default it is NOT defined.
-            // When defined, the value of @m_modelLodMeshIndex (aka subMesh index) is written
-            // to the shader constant.
-            // REMARK: Unfortunately can't use RHI::ShaderInputNameIndex as it would cause
-            //         a crash in the UnitTest: MeshInstanceManagerTestFixture.AddInstance
-            static constexpr char DrawSrgModelLodMeshIndex[] = "m_modelLodMeshIndex";
 
             Ptr<RHI::DrawPacket> m_drawPacket;
 

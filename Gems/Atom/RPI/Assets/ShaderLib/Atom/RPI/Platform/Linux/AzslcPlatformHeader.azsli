@@ -1,0 +1,33 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+/*
+* The shader build pipeline has 2 preprocess stages. The first one happens 
+* after appending the Platform and RHI specific AzslcHeader.azsli, which includes this header.
+* This file contains defines specific to a platform (e.g. Linux) but shared among all RHI implementations on that platform (e.g. Vulkan + Null).
+* Note that the AssetProcessor uses the Null-RHI platform to process Materials, so anything that modifies SRGs has to go in this file.
+*/
+
+// Allow multiple textures samplers in MaterialSrgs
+#define AZ_TRAITS_MATERIALS_USE_SAMPLER_ARRAY
+// use the SceneMaterialSrg where possible 
+// #define AZ_TRAIT_FORCE_SINGLE_MATERIAL_SRG
+// disable using the bindless SRG for material textures in the SingleMaterialSrg
+// #define AZ_TRAIT_SINGLE_MATERIAL_USE_TEXTURE_ARRAY
+
+//Linux supports unbounded array
+#define UNBOUNDED_SIZE
+
+// Full floats for null rhi
+#define real float
+#define real2 float2
+#define real3 float3
+#define real4 float4
+#define real3x3 float3x3
+#define real3x4 float3x4
+#define real4x4 half4x4

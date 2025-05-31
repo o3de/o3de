@@ -33,7 +33,7 @@ namespace AZ
             // advance to the next buffer
             TlasBuffers& buffers = m_buffers.AdvanceCurrentElement();
 
-            const RHI::DeviceRayTracingTlasInstanceVector& instances = descriptor->GetInstances();
+            const RHI::DeviceRayTracingTlasInstanceVector& instances = descriptor->m_instances;
             if (instances.empty())
             {
                 // no instances in the scene, clear the TLAS buffers
@@ -45,7 +45,7 @@ namespace AZ
             
             D3D12_GPU_VIRTUAL_ADDRESS tlasInstancesGpuAddress = 0;
             uint32_t numInstances = 0;
-            if (descriptor->GetInstancesBuffer() == nullptr)
+            if (descriptor->m_instancesBuffer == nullptr)
             {
                 numInstances = aznumeric_caster(instances.size());
                 uint64_t instanceDescsSizeInBytes = RHI::AlignUp(aznumeric_cast<UINT64>(sizeof(D3D12_RAYTRACING_INSTANCE_DESC) * instances.size()), D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BYTE_ALIGNMENT);
@@ -95,10 +95,10 @@ namespace AZ
             }
             else
             {
-                AZ_Assert(descriptor->GetNumInstancesInBuffer(), "TLAS InstancesBuffer set but instances count is zero");
-                tlasInstancesGpuAddress = static_cast<DX12::Buffer*>(descriptor->GetInstancesBuffer().get())->GetMemoryView().GetGpuAddress();
-                buffers.m_tlasInstancesBuffer = descriptor->GetInstancesBuffer();
-                numInstances = descriptor->GetNumInstancesInBuffer();
+                AZ_Assert(descriptor->m_numInstancesInBuffer, "TLAS InstancesBuffer set but instances count is zero");
+                tlasInstancesGpuAddress = static_cast<DX12::Buffer*>(descriptor->m_instancesBuffer.get())->GetMemoryView().GetGpuAddress();
+                buffers.m_tlasInstancesBuffer = descriptor->m_instancesBuffer;
+                numInstances = descriptor->m_numInstancesInBuffer;
             }
             
             // retrieve the required sizes for the scratch and TLAS buffers

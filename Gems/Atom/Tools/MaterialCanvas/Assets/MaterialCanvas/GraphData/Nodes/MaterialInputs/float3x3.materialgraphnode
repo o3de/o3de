@@ -117,7 +117,7 @@
                 "defaultDataType": "float3x3",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE SLOTNAME = float3x3(MaterialSrg::inRow1, MaterialSrg::inRow2, MaterialSrg::inRow3);"
+                        "SLOTTYPE SLOTNAME = float3x3(params.inRow1, params.inRow2, params.inRow3);"
                     ]
                 }
             }

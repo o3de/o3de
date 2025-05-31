@@ -69,7 +69,7 @@ namespace Camera
 
         void OnActiveViewChanged(const AZ::EntityId& cameraId) override
         {
-            Call(FN_OnCameraRemoved, cameraId);
+            Call(FN_OnActiveViewChanged, cameraId);
         };
     };
 
