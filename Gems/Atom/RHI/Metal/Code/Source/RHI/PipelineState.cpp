@@ -100,7 +100,14 @@ namespace AZ
                 {
                     //In case byte code was not generated try to create the lib with source code
                     MTLCompileOptions* compileOptions = [MTLCompileOptions alloc];
+#if defined(__IPHONE_18_0) || defined(__MAC_15_0)
+                    if(@available(iOS 18.0, macOS 15.0, *))
+                    {
+                        compileOptions.mathMode = MTLMathModeFast;
+                    }
+#else
                     compileOptions.fastMathEnabled = YES;
+#endif
                     compileOptions.languageVersion = MTLLanguageVersion2_2;
                     lib = [mtlDevice newLibraryWithSource:source
                                                   options:compileOptions
