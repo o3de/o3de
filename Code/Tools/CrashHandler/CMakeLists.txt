@@ -10,7 +10,7 @@ o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} ${O
 
 include(${pal_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
 
-if(NOT PAL_TRAIT_BUILD_CRASH_HANDLER_SUPPORTED)
+if(NOT PAL_TRAIT_BUILD_EXTERNAL_CRASH_HANDLER_SUPPORTED)
     return()
 endif()
 
@@ -28,6 +28,9 @@ ly_add_target(
             Shared
         PRIVATE
             ${pal_dir}
+    COMPILE_DEFINITIONS
+        PUBLIC
+            EXTERNAL_CRASH_REPORTING
     BUILD_DEPENDENCIES
         PUBLIC
             AZ::CrashSupport

@@ -105,7 +105,7 @@ namespace AZ
 
             //! Signals that the material has changed
             //! @param materialAsset The material asset of the decal
-            virtual void OnMaterialChanged(Data::Asset<RPI::MaterialAsset> materialAsset){ }
+            virtual void OnMaterialChanged([[maybe_unused]] Data::Asset<RPI::MaterialAsset> materialAsset){ }
         };
 
         /// The EBus for decal notification events.

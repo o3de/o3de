@@ -209,6 +209,8 @@ namespace AZ
         template bool MaterialPropertyCollection::SetPropertyValue<Vector4>(MaterialPropertyIndex index, const Vector4& value);
         template bool MaterialPropertyCollection::SetPropertyValue<Color>(MaterialPropertyIndex index, const Color& value);
         template bool MaterialPropertyCollection::SetPropertyValue<Data::Instance<Image>>(MaterialPropertyIndex index, const Data::Instance<Image>& value);
+        template bool MaterialPropertyCollection::SetPropertyValue<RHI::SamplerState>(
+            MaterialPropertyIndex index, const RHI::SamplerState& value);
 
         bool MaterialPropertyCollection::SetPropertyValue(MaterialPropertyIndex propertyIndex, const MaterialPropertyValue& value)
         {
@@ -264,6 +266,10 @@ namespace AZ
             else if (value.Is<Data::Asset<ImageAsset>>())
             {
                 return SetPropertyValue(propertyIndex, value.GetValue<Data::Asset<ImageAsset>>());
+            }
+            else if (value.Is<RHI::SamplerState>())
+            {
+                return SetPropertyValue(propertyIndex, value.GetValue<RHI::SamplerState>());
             }
             else
             {
@@ -323,6 +329,8 @@ namespace AZ
         template const Vector4&  MaterialPropertyCollection::GetPropertyValue<Vector4>  (MaterialPropertyIndex index) const;
         template const Color&    MaterialPropertyCollection::GetPropertyValue<Color>    (MaterialPropertyIndex index) const;
         template const Data::Instance<Image>& MaterialPropertyCollection::GetPropertyValue<Data::Instance<Image>>(MaterialPropertyIndex index) const;
+        template const RHI::SamplerState& MaterialPropertyCollection::GetPropertyValue<RHI::SamplerState>(
+            MaterialPropertyIndex index) const;
 
         const MaterialPropertyFlags& MaterialPropertyCollection::GetPropertyDirtyFlags() const
         {
@@ -350,20 +358,18 @@ namespace AZ
             AZ::TypeId accessDataType = azrtti_typeid<Type>();
 
             // Must align with the order in MaterialPropertyDataType
-            static const AZStd::array<AZ::TypeId, MaterialPropertyDataTypeCount> types =
-            {{
-                AZ::TypeId{}, // Invalid
-                azrtti_typeid<bool>(),
-                azrtti_typeid<int32_t>(),
-                azrtti_typeid<uint32_t>(),
-                azrtti_typeid<float>(),
-                azrtti_typeid<Vector2>(),
-                azrtti_typeid<Vector3>(),
-                azrtti_typeid<Vector4>(),
-                azrtti_typeid<Color>(),
-                azrtti_typeid<Data::Instance<Image>>(),
-                azrtti_typeid<uint32_t>()
-            }};
+            static const AZStd::array<AZ::TypeId, MaterialPropertyDataTypeCount> types = { { AZ::TypeId{}, // Invalid
+                                                                                             azrtti_typeid<bool>(),
+                                                                                             azrtti_typeid<int32_t>(),
+                                                                                             azrtti_typeid<uint32_t>(),
+                                                                                             azrtti_typeid<float>(),
+                                                                                             azrtti_typeid<Vector2>(),
+                                                                                             azrtti_typeid<Vector3>(),
+                                                                                             azrtti_typeid<Vector4>(),
+                                                                                             azrtti_typeid<Color>(),
+                                                                                             azrtti_typeid<Data::Instance<Image>>(),
+                                                                                             azrtti_typeid<uint32_t>(),
+                                                                                             azrtti_typeid<RHI::SamplerState>() } };
 
             AZ::TypeId actualDataType = types[static_cast<size_t>(propertyDescriptor->GetDataType())];
 

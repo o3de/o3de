@@ -51,7 +51,7 @@ namespace AZ
                                                            const RHI::DeviceRayTracingBufferPools& bufferPools,
                                                            const RHI::DeviceRayTracingShaderTableRecordList& recordList,
                                                            uint32_t shaderRecordSize,
-                                                           AZStd::wstring shaderTableName,
+                                                           [[maybe_unused]] AZStd::wstring shaderTableName,
                                                            Microsoft::WRL::ComPtr<ID3D12StateObjectProperties>& stateObjectProperties)
         {
 
