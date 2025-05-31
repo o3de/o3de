@@ -37,7 +37,7 @@ namespace AzFramework
                     editContext->Class<FileTagData>("Definition", "Files/Patterns and their associated tags.")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->DataElement(AZ::Edit::UIHandlers::ComboBox, &FileTagData::m_filePatternType,
-                            "File Pattern", "File Pattern can either be a regex or a wildcard.")
+                            "File Pattern", "File Pattern can either be an exact, a regex or a wildcard.")
                         ->Attribute(AZ::Edit::Attributes::EnumValues,
                             AZStd::vector<AZ::Edit::EnumConstant<FilePatternType>>
                     {
