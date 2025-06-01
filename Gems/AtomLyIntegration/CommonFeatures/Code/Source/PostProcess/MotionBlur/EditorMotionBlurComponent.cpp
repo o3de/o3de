@@ -92,7 +92,7 @@ namespace AZ
         {
         }
 
-        u32 EditorMotionBlurComponent::OnConfigurationChanged()
+        AZ::u32 EditorMotionBlurComponent::OnConfigurationChanged()
         {
             m_controller.OnConfigChanged();
             return Edit::PropertyRefreshLevels::AttributesAndValues;

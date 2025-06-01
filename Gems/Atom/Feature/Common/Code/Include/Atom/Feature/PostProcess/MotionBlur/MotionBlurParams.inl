@@ -18,4 +18,4 @@ AZ_GFX_FLOAT_PARAM_FLOAT_OVERRIDE(float, Strength, m_strength)
 
 // Sample number
 AZ_GFX_UINT32_PARAM(SampleNumber, m_sampleNumber, MotionBlur::DefaultSampleNumber)
-AZ_GFX_INTEGER_PARAM_FLOAT_OVERRIDE(u32, SampleNumber, m_sampleNumber)
+AZ_GFX_INTEGER_PARAM_FLOAT_OVERRIDE(AZ::u32, SampleNumber, m_sampleNumber)

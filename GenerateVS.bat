@@ -1,0 +1,1 @@
+cmake -B build/windows -S . -G "Visual Studio 17" -DLY_3RDPARTY_PATH=C:\Users\x1398\.o3de\3rdParty -DCMAKE_POLICY_VERSION_MINIMUM=3.5

@@ -61,9 +61,9 @@ namespace AZ
             // Must match the struct in MotionBlur.azsl
             struct Constants
             {
-                u32 m_sampleNumber = MotionBlur::DefaultSampleNumber;
+                AZ::u32 m_sampleNumber = MotionBlur::DefaultSampleNumber;
                 float m_strength = MotionBlur::DefaultStrength;
-                AZStd::array<u32, 2> m_outputSize;
+                AZStd::array<AZ::u32, 2> m_outputSize;
             } constants{};
 
             RPI::Scene* scene = GetScene();

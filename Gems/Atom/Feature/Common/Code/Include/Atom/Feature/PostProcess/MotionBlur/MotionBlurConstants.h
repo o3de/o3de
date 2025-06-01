@@ -15,7 +15,7 @@ namespace AZ
         namespace MotionBlur
         {
             static constexpr float DefaultStrength = 5.f;
-            static constexpr u32 DefaultSampleNumber = 5;
-        } // namespace PaniniProjection
+            static constexpr AZ::u32 DefaultSampleNumber = 5;
+        } // namespace MotionBlur
     } // namespace Render
 } // namespace AZ
