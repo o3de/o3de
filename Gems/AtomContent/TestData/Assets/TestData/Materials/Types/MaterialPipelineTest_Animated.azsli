@@ -7,21 +7,21 @@
  */
 
  
-void CalcPositions(const MaterialParamters params, float3 inPosition, VsSystemValues SV, out float3 worldPos, out float4 clipPos)
+void CalcPositions(const MaterialParameters params, float3 inPosition, VsSystemValues SV, out float3 worldPos, out float4 clipPos)
 {        
     float amount = sin(3.14159 * 2 * (SceneSrg::m_time * params.m_animationSpeed + (inPosition.x + inPosition.y + inPosition.z) * params.m_frequency)) * params.m_amplitude;
     float3 dir = normalize(inPosition);
 
     float4x4 objectToWorld = GetObjectToWorldMatrix(SV);
-    worldPos = mul(objectToWorld, float4(inPosition + dir * amount, 1.0));
+    worldPos = mul(objectToWorld, float4(inPosition + dir * amount, 1.0)).xyz;
 
     float4x4 viewProjectionMatrix = GetViewProjectionMatrix(SV);
-    clipPos = mul(viewProjectionMatrix, worldPos);
+    clipPos = mul(viewProjectionMatrix, float4(worldPos, 1.0));
 }
 
 #if MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE
 
-    VsOutput EvaluateVertexGeometry(VsInput IN, VsSystemValues SV, const MaterialParamters params)
+    VsOutput EvaluateVertexGeometry(VsInput IN, VsSystemValues SV, const MaterialParameters params)
     {        
 
         VsOutput output;
@@ -33,16 +33,6 @@ void CalcPositions(const MaterialParamters params, float3 inPosition, VsSystemVa
 
         return output;
     }
-
-    class PixelGeometryData
-    {
-        float3 positionWS;
-        float3 vertexNormal;
-
-        //TODO(MaterialPipeline): use these or remove them
-        float3 tangents[1];
-        float3 bitangents[1];
-    };
 
     PixelGeometryData EvaluatePixelGeometry(VsOutput IN, VsSystemValues SV, bool isFrontFace, const MaterialParameters params)
     {
@@ -77,7 +67,7 @@ void CalcPositions(const MaterialParamters params, float3 inPosition, VsSystemVa
         float3 worldPosition;
 
         VsOutput output;
-        CalcPositions(params, IN.m_position, SV, worldPosition, output.m_position);
+        CalcPositions(params, IN.position, SV, worldPosition, output.position);
         
 #if MATERIALPIPELINE_USES_PREV_VERTEX_POSITION
         output.worldPosition = worldPosition;
