@@ -25,6 +25,11 @@ set(FILES
     Include/Atom/Feature/CoreLights/ShadowConstants.h
     Include/Atom/Feature/CoreLights/SimplePointLightFeatureProcessorInterface.h
     Include/Atom/Feature/CoreLights/SimpleSpotLightFeatureProcessorInterface.h
+    Include/Atom/Feature/CoreLights/EsmShadowmapsPass.h
+    Include/Atom/Feature/CoreLights/ProjectedShadowmapsPass.h
+    Include/Atom/Feature/CoreLights/ShadowmapPass.h
+    Include/Atom/Feature/CoreLights/ShadowmapAtlas.h
+    Include/Atom/Feature/CoreLights/DepthExponentiationPass.h
     Include/Atom/Feature/CubeMapCapture/CubeMapCaptureFeatureProcessorInterface.h
     Include/Atom/Feature/CubeMapCapture/CubeMapCaptureFeatureProcessorInterface.h
     Include/Atom/Feature/Debug/RayTracingDebugConstants.h
@@ -158,4 +163,9 @@ set(FILES
     Source/Utils/GpuBufferHandler.cpp
     Source/Utils/LightingPreset.cpp
     Source/Utils/ModelPreset.cpp
+    Source/CoreLights/EsmShadowmapsPass.cpp
+    Source/CoreLights/ProjectedShadowmapsPass.cpp
+    Source/CoreLights/ShadowmapAtlas.cpp
+    Source/CoreLights/ShadowmapPass.cpp
+    Source/CoreLights/DepthExponentiationPass.cpp
 )

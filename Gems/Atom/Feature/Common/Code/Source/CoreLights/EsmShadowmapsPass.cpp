@@ -6,15 +6,14 @@
  *
  */
 
-#include <CoreLights/EsmShadowmapsPass.h>
-#include <CoreLights/DepthExponentiationPass.h>
-
+#include <Atom/Feature/CoreLights/DepthExponentiationPass.h>
+#include <Atom/Feature/CoreLights/EsmShadowmapsPass.h>
 #include <Atom/Feature/CoreLights/EsmShadowmapsPassData.h>
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
 #include <Atom/RPI.Public/Pass/ComputePass.h>
 #include <Atom/RPI.Public/Pass/PassUtils.h>
-#include <Math/MathFilterDescriptor.h>
 #include <Math/MathFilter.h>
+#include <Math/MathFilterDescriptor.h>
 
 namespace AZ
 {

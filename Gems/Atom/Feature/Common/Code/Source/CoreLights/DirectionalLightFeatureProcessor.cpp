@@ -6,25 +6,24 @@
  *
  */
 
-#include <CoreLights/DirectionalLightFeatureProcessor.h>
-#include <CoreLights/CascadedShadowmapsPass.h>
-#include <CoreLights/EsmShadowmapsPass.h>
-#include <CoreLights/Shadow.h>
-#include <Math/GaussianMathFilter.h>
-
+#include <Atom/Feature/CoreLights/EsmShadowmapsPass.h>
 #include <Atom/RPI.Public/AuxGeom/AuxGeomDraw.h>
 #include <Atom/RPI.Public/ColorManagement/TransformColor.h>
-#include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 #include <Atom/RPI.Public/Pass/PassFilter.h>
+#include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 #include <Atom/RPI.Public/Pass/Specific/EnvironmentCubeMapPass.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/Scene.h>
-#include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Public/Shader/ShaderSystemInterface.h>
+#include <Atom/RPI.Public/View.h>
 #include <AtomCore/Instance/Instance.h>
+#include <AzCore/Console/Console.h>
 #include <AzCore/Math/MatrixUtils.h>
 #include <AzCore/Math/Obb.h>
-#include <AzCore/Console/Console.h>
+#include <CoreLights/CascadedShadowmapsPass.h>
+#include <CoreLights/DirectionalLightFeatureProcessor.h>
+#include <CoreLights/Shadow.h>
+#include <Math/GaussianMathFilter.h>
 #include <PostProcessing/FastDepthAwareBlurPasses.h>
 #include <Shadows/FullscreenShadowPass.h>
 

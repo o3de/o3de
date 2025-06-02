@@ -11,7 +11,7 @@
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Reflect/Pass/RasterPassData.h>
 #include <CoreLights/CascadedShadowmapsPass.h>
-#include <CoreLights/ShadowmapPass.h>
+#include <Atom/Feature/CoreLights/ShadowmapPass.h>
 
 namespace AZ
 {

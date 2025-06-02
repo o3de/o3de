@@ -9,30 +9,30 @@
 #include <CoreLights/CoreLightsSystemComponent.h>
 
 #include <AzCore/Console/Console.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
+#include <AzCore/Serialization/SerializeContext.h>
 
-#include <Atom/Feature/RenderCommon.h>
+#include <Atom/Feature/CoreLights/DepthExponentiationPass.h>
+#include <Atom/Feature/CoreLights/EsmShadowmapsPass.h>
 #include <Atom/Feature/CoreLights/EsmShadowmapsPassData.h>
 #include <Atom/Feature/CoreLights/PhotometricValue.h>
+#include <Atom/Feature/CoreLights/ProjectedShadowmapsPass.h>
 #include <Atom/Feature/CoreLights/ShadowConstants.h>
+#include <Atom/Feature/CoreLights/ShadowmapPass.h>
+#include <Atom/Feature/RenderCommon.h>
 #include <Atom/RPI.Public/FeatureProcessorFactory.h>
-#include <Atom/RPI.Public/Shader/ShaderSystem.h>
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
+#include <Atom/RPI.Public/Shader/ShaderSystem.h>
 
-#include <CoreLights/CascadedShadowmapsPass.h>
-#include <CoreLights/SimplePointLightFeatureProcessor.h>
-#include <CoreLights/SimpleSpotLightFeatureProcessor.h>
 #include <CoreLights/CapsuleLightFeatureProcessor.h>
-#include <CoreLights/DepthExponentiationPass.h>
+#include <CoreLights/CascadedShadowmapsPass.h>
 #include <CoreLights/DirectionalLightFeatureProcessor.h>
 #include <CoreLights/DiskLightFeatureProcessor.h>
-#include <CoreLights/EsmShadowmapsPass.h>
 #include <CoreLights/PointLightFeatureProcessor.h>
 #include <CoreLights/PolygonLightFeatureProcessor.h>
 #include <CoreLights/QuadLightFeatureProcessor.h>
-#include <CoreLights/ShadowmapPass.h>
-#include <CoreLights/ProjectedShadowmapsPass.h>
+#include <CoreLights/SimplePointLightFeatureProcessor.h>
+#include <CoreLights/SimpleSpotLightFeatureProcessor.h>
 
 namespace AZ
 {

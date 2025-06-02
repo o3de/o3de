@@ -6,9 +6,9 @@
  *
  */
 
-#include <CoreLights/ShadowmapPass.h>
-#include <Atom/RPI.Public/Pass/PassUtils.h>
+#include <Atom/Feature/CoreLights/ShadowmapPass.h>
 #include <Atom/RPI.Public/Pass/ParentPass.h>
+#include <Atom/RPI.Public/Pass/PassUtils.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/View.h>
 
