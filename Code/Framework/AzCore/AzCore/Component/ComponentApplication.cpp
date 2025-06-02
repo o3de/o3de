@@ -1030,6 +1030,10 @@ namespace AZ
         // budgets initialized cross boundary are freed properly
         m_budgetTracker.Reset();
 #endif
+        // Cleanup the SerializeContext ClassInfos before we unload the modules since some ClassInfos will have
+        // symbols that were registered from the modules and will cause issues if the modules are unloaded before
+        // we clean them up
+        AZ::GetGlobalSerializeContextModule().Cleanup();
 
         // Uninit and unload any dynamic modules.
         m_moduleManager->UnloadModules();

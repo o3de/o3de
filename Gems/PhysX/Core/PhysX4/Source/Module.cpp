@@ -62,9 +62,9 @@ namespace PhysX
         {
             m_physXSystem.Shutdown();
 
-            UnloadModules();
+            AZ::GetGlobalSerializeContextModule().Cleanup();
 
-            AZ::GetCurrentSerializeContextModule().Cleanup();
+            UnloadModules();
         }
 
         AZ::ComponentTypeList GetRequiredSystemComponents() const override
