@@ -10,6 +10,7 @@
 #include <Atom/Features/SrgSemantics.azsli>
 
 #define MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE 0
+#define PIPELINE_HAS_PASS_SRG 0
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 

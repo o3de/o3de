@@ -5,15 +5,19 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#define PIPELINE_HAS_PASS_SRG 0
 
 #include <viewsrg_all.srgi>
 #include <Atom/Features/PBR/DefaultObjectSrg.azsli>
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 #include <Atom/Feature/Common/Assets/Shaders/Materials/Silhouette/SilhouetteGather_MaterialSrg.azsli>
+
 #include <Atom/Feature/Common/Assets/Shaders/Materials/MaterialInputs/UvSetCount.azsli>
 #include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_VertexData.azsli>
+
 #include <Atom/Features/Pipeline/Forward/ForwardPassVertexData.azsli>
 #include <Atom/Features/Pipeline/Forward/ForwardPassPipelineCallbacks.azsli>
+
 #include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_VertexEval.azsli>
 #include <Atom/Features/ColorManagement/TransformColor.azsli>
 
