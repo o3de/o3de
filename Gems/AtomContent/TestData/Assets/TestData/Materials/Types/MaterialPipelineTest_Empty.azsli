@@ -7,23 +7,22 @@
  */
 
  
-#include <scenesrg_all.srgi>
-#include <viewsrg_all.srgi>
-#include <Atom/Features/PBR/DefaultObjectSrg.azsli>
-#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
-#include <Atom/Features/VertexUtility.azsli>
+void CalcPositions(float3 inPosition, VsSystemValues SV, out float3 worldPos, out float4 clipPos)
+{
+    float4x4 objectToWorld = GetObjectToWorldMatrix(SV);
+    worldPos = mul(objectToWorld, float4(inPosition, 1.0)).xyz;
 
     float4x4 viewProjectionMatrix = GetViewProjectionMatrix(SV);
-    clipPos = mul(viewProjectionMatrix, worldPos);
+    clipPos = mul(viewProjectionMatrix, float4(worldPos, 1.0));
 }
 
 #if MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE
 
-    VsOutput EvaluateVertexGeometry(VsInput IN, VsSystemValues SV)
+    VsOutput EvaluateVertexGeometry(VsInput IN, VsSystemValues SV, const MaterialParameters params)
     {        
         VsOutput output;
 
-        CalcPositions(IN.position, SV.m_instanceId, output.worldPosition, output.position);
+        CalcPositions(IN.position, SV, output.worldPosition, output.position);
 
         output.normal = IN.normal;
 
@@ -41,6 +40,7 @@
     Surface EvaluateSurface(VsOutput IN, PixelGeometryData geoData, const MaterialParameters params)
     {
         Surface surface;
+
         surface.position = geoData.positionWS.xyz;
         surface.vertexNormal = geoData.vertexNormal;
         surface.normal = geoData.vertexNormal;
