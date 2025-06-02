@@ -18,6 +18,7 @@
 #include "../MaterialFunctions/EvaluateTangentFrame.azsli"
 
 PixelGeometryData EvaluatePixelGeometry_BasePBR(
+    VsSystemValues SV,
     const MaterialParameters params,
     float3 positionWS,
     real3 normalWS,
@@ -38,7 +39,7 @@ PixelGeometryData EvaluatePixelGeometry_BasePBR(
     {
         for (int i = 0; i != UvSetCount; ++i)
         {
-            EvaluateTangentFrame(geoData.vertexNormal, positionWS, isFrontFace, uvs[i], i,
+            EvaluateTangentFrame(SV, geoData.vertexNormal, positionWS, isFrontFace, uvs[i], i,
                 tangentWS, bitangentWS, geoData.tangents[i], geoData.bitangents[i]);
         }
     }
@@ -55,6 +56,7 @@ PixelGeometryData EvaluatePixelGeometry_BasePBR(VsOutput IN, VsSystemValues SV, 
     ConstructTBN(real3(IN.normal), real4(IN.tangent), objectToWorld, objectToWorldIT, normalWS, tangentWS, bitangentWS);
 
     return EvaluatePixelGeometry_BasePBR(
+        SV,
         params,
         IN.worldPosition,
         normalWS,

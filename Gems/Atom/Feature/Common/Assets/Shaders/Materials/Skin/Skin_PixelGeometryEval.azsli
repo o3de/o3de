@@ -18,6 +18,7 @@
 #include "../BasePBR/BasePBR_PixelGeometryEval.azsli"
 
 PixelGeometryData EvaluatePixelGeometry_Skin(
+    VsSystemValues SV,
     const MaterialParameters params,
     float3 positionWS,
     real3 normalWS,
@@ -29,7 +30,7 @@ PixelGeometryData EvaluatePixelGeometry_Skin(
     bool isFrontFace)
 {
     // Base PBR Geo Data
-    PixelGeometryData geoData = EvaluatePixelGeometry_BasePBR(params, positionWS, normalWS, tangentWS, bitangentWS, uvs, isFrontFace);
+    PixelGeometryData geoData = EvaluatePixelGeometry_BasePBR(SV, params, positionWS, normalWS, tangentWS, bitangentWS, uvs, isFrontFace);
 
     // Skin specifics
     // skin only has one detail UV channel
@@ -48,6 +49,7 @@ PixelGeometryData EvaluatePixelGeometry_Skin(VsOutput IN, VsSystemValues SV, boo
     ConstructTBN(real3(IN.normal), real4(IN.tangent), objectToWorld, objectToWorldIT, normalWS, tangentWS, bitangentWS);
 
     return EvaluatePixelGeometry_Skin(
+        SV,
         params,
         IN.worldPosition,
         normalWS,
