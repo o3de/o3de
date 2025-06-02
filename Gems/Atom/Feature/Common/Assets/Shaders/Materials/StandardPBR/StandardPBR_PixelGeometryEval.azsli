@@ -23,6 +23,7 @@
 #include <Atom/Features/Debug.azsli>
 
 PixelGeometryData EvaluatePixelGeometry_StandardPBR(
+    VsSystemValues SV,
     const MaterialParameters params,
     inout float4 positionSV,
     float3 positionWS,
@@ -33,7 +34,7 @@ PixelGeometryData EvaluatePixelGeometry_StandardPBR(
     bool isFrontFace,
     real4x4 objectToWorld)
 {
-    PixelGeometryData geoData = EvaluatePixelGeometry_BasePBR(params, positionWS, normalWS, tangentWS, bitangentWS, uvs, isFrontFace);
+    PixelGeometryData geoData = EvaluatePixelGeometry_BasePBR(SV, params, positionWS, normalWS, tangentWS, bitangentWS, uvs, isFrontFace);
 
     // ------- Parallax -------
 
@@ -59,6 +60,7 @@ PixelGeometryData EvaluatePixelGeometry_StandardPBR(inout VsOutput IN, VsSystemV
     ConstructTBN(real3(IN.normal), real4(IN.tangent), objectToWorld, objectToWorldIT, normalWS, tangentWS, bitangentWS);
 
     return EvaluatePixelGeometry_StandardPBR(
+        SV,
         params,
         IN.position,
         IN.worldPosition,

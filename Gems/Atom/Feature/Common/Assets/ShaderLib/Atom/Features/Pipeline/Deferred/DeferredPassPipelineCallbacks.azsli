@@ -12,7 +12,15 @@
 #error "VsSystemValues needs to be declared"
 #endif
 
-// DrawSrg, ObjectSrg, ViewSrg and SceneSrg need to be defined fully before this file 
+// ViewSrg and SceneSrg need to be defined fully before this file. We don't really have an ObjectSrg nor a DrawSrg
+
+#if PIPELINE_HAS_OBJECT_SRG
+#error "Deferred Pipelines don't support an ObjectSrg"
+#endif
+
+#if PIPELINE_HAS_DRAW_SRG
+#error "Deferred Pipelines don't support a DrawSrg"
+#endif
 
 #include <Atom/Features/GoboTexture.azsli>
 #include <Atom/Features/LightingChannels.azsli>
@@ -30,7 +38,7 @@ float4x4 GetObjectToWorldMatrix(VsSystemValues SV)
     }
     else
     {
-        return SceneSrg::GetObjectToWorldMatrix(ObjectSrg::m_objectId);
+        return SceneSrg::GetObjectToWorldMatrix(SV.m_objectId);
     }
 }
 
@@ -42,7 +50,7 @@ float3x3 GetObjectToWorldMatrixInverseTranspose(VsSystemValues SV)
     }
     else
     {
-        return SceneSrg::GetObjectToWorldInverseTransposeMatrix(ObjectSrg::m_objectId);
+        return SceneSrg::GetObjectToWorldInverseTransposeMatrix(SV.m_objectId);
     }
 }
 
@@ -60,7 +68,7 @@ float4x4 GetObjectToWorldMatrixPrev(VsSystemValues SV)
     }
     else
     {
-        return SceneSrg::GetObjectToWorldMatrixPrev(ObjectSrg::m_objectId);
+        return SceneSrg::GetObjectToWorldMatrixPrev(SV.m_objectId);
     }
 }
 
