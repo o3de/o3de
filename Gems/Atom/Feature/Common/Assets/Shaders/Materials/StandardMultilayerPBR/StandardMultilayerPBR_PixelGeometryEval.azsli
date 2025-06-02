@@ -15,6 +15,7 @@
 #include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_PixelGeometryEval.azsli>
 
 PixelGeometryData EvaluatePixelGeometry_StandardMultilayerPBR(
+    VsSystemValues SV,
     const MaterialParameters params,
     inout float4 positionSV,
     float3 positionWS,
@@ -26,7 +27,7 @@ PixelGeometryData EvaluatePixelGeometry_StandardMultilayerPBR(
     real4x4 objectToWorld,
     real3 vertexBlendMask)
 {
-    PixelGeometryData geoData = EvaluatePixelGeometry_BasePBR(params, positionWS, normalWS, tangentWS, bitangentWS, uvs, isFrontFace);
+    PixelGeometryData geoData = EvaluatePixelGeometry_BasePBR(SV, params, positionWS, normalWS, tangentWS, bitangentWS, uvs, isFrontFace);
     geoData.isDisplacementClipped = false;
     geoData.m_vertexBlendMask = vertexBlendMask;
 
@@ -49,6 +50,7 @@ PixelGeometryData EvaluatePixelGeometry_StandardMultilayerPBR(inout VsOutput IN,
     ConstructTBN(real3(IN.normal), real4(IN.tangent), objectToWorld, objectToWorldIT, normalWS, tangentWS, bitangentWS);
     
     return EvaluatePixelGeometry_StandardMultilayerPBR(
+        SV,
         params,
         IN.position,
         IN.worldPosition,

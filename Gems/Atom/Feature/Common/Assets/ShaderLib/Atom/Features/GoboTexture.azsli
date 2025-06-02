@@ -1,0 +1,27 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+#pragma once
+
+float SampleGoboTexture(int goboTexIndex, sampler goboSampler, float4x4 lightViewProjectionMatrix, float3 positionWs)
+{
+    if (goboTexIndex < ViewSrg::MaxGoboTextureCount)
+    {
+        float4 positionInView = mul(lightViewProjectionMatrix, float4(positionWs, 1.0));
+        positionInView /= positionInView.w;
+        float2 goboUv = float2((positionInView.x + 1.0)/2.0, (positionInView.y + 1.0)/2.0);
+
+        #ifdef CS_SAMPLERS
+            return ViewSrg::m_goboTextures[goboTexIndex].SampleLevel(goboSampler, goboUv, 0);
+        #else
+            return ViewSrg::m_goboTextures[goboTexIndex].Sample(goboSampler, goboUv);
+        #endif
+    }
+    else {
+        return 1.0f;
+    }
+}
