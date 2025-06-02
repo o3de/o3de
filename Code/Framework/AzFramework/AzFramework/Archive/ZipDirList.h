@@ -32,7 +32,7 @@ namespace AZ::IO::ZipDir
         AZ_CLASS_ALLOCATOR(FileDataRecord, AZ::SystemAllocator);
         FileDataRecord(const FileRecord& rThat);
 
-        AZ_DISABLE_COPY(FileDataRecord);
+        AZ_DISABLE_COPY_MOVE(FileDataRecord);
 
         void* GetData() {return m_data.get(); }
     private:
