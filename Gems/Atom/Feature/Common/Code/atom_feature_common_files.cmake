@@ -7,122 +7,119 @@
 #
 
 set(FILES
-    Source/AuxGeom/AuxGeomFeatureProcessor.h
-    Source/CoreLights/LightCommon.h
-    Source/CoreLights/LightCommon.cpp
-    Source/DisplayMapper/AcesOutputTransformPass.h
-    Source/DisplayMapper/AcesOutputTransformLutPass.h
-    Source/DisplayMapper/ApplyShaperLookupTablePass.h
-    Source/DisplayMapper/DisplayMapperPass.h
-    Source/DisplayMapper/DisplayMapperFullScreenPass.h
-    Source/DisplayMapper/BakeAcesOutputTransformLutPass.h
-    Source/DisplayMapper/OutputTransformPass.h
-    Source/ImageBasedLights/ImageBasedLightFeatureProcessor.h
-    Source/LookupTable/LookupTableAsset.h
-    Source/SkyBox/SkyBoxLUT.h
-    Source/CommonSystemComponent.cpp
-    Source/FrameCaptureSystemComponent.cpp
-    Source/FrameCaptureSystemComponent.h
-    Source/ProfilingCaptureSystemComponent.cpp
-    Source/ProfilingCaptureSystemComponent.h
     Source/AuxGeom/AuxGeomBase.h
-    Source/AuxGeom/AuxGeomFeatureProcessor.cpp
-    Source/AuxGeom/AuxGeomDrawQueue.cpp
-    Source/AuxGeom/AuxGeomDrawQueue.h
     Source/AuxGeom/AuxGeomDrawProcessorShared.cpp
     Source/AuxGeom/AuxGeomDrawProcessorShared.h
+    Source/AuxGeom/AuxGeomDrawQueue.cpp
+    Source/AuxGeom/AuxGeomDrawQueue.h
+    Source/AuxGeom/AuxGeomFeatureProcessor.cpp
+    Source/AuxGeom/AuxGeomFeatureProcessor.h
     Source/AuxGeom/DynamicPrimitiveProcessor.cpp
     Source/AuxGeom/DynamicPrimitiveProcessor.h
     Source/AuxGeom/FixedShapeProcessor.cpp
     Source/AuxGeom/FixedShapeProcessor.h
-    Source/ColorGrading/LutGenerationPass.cpp
-    Source/ColorGrading/LutGenerationPass.h
-    Source/CoreLights/CapsuleLightFeatureProcessor.h
-    Source/CoreLights/CapsuleLightFeatureProcessor.cpp
-    Source/CoreLights/CascadedShadowmapsPass.h
-    Source/CoreLights/CascadedShadowmapsPass.cpp
-    Source/CoreLights/CoreLightsSystemComponent.h
-    Source/CoreLights/CoreLightsSystemComponent.cpp
-    Source/CoreLights/DirectionalLightFeatureProcessor.h
-    Source/CoreLights/DirectionalLightFeatureProcessor.cpp
-    Source/CoreLights/DiskLightFeatureProcessor.h
-    Source/CoreLights/DiskLightFeatureProcessor.cpp
-    Source/CoreLights/LightCullingPass.cpp
-    Source/CoreLights/LightCullingPass.h
-    Source/CoreLights/LightCullingTilePreparePass.cpp
-    Source/CoreLights/LightCullingTilePreparePass.h
-    Source/CoreLights/LightCullingRemap.cpp
-    Source/CoreLights/LightCullingRemap.h
-    Source/CoreLights/LightCullingConstants.h
-    Source/CoreLights/LtcCommon.h
-    Source/CoreLights/LtcCommon.cpp
-    Source/CoreLights/PointLightFeatureProcessor.h
-    Source/CoreLights/PointLightFeatureProcessor.cpp
-    Source/CoreLights/PolygonLightFeatureProcessor.h
-    Source/CoreLights/PolygonLightFeatureProcessor.cpp
-    Source/CoreLights/QuadLightFeatureProcessor.h
-    Source/CoreLights/QuadLightFeatureProcessor.cpp
-    Source/CoreLights/SimplePointLightFeatureProcessor.h
-    Source/CoreLights/SimplePointLightFeatureProcessor.cpp
-    Source/CoreLights/SimpleSpotLightFeatureProcessor.h
-    Source/CoreLights/SimpleSpotLightFeatureProcessor.cpp
-    Source/CoreLights/Shadow.h
-    Source/CoreLights/Shadow.cpp
-    Source/CoreLights/SpotLightUtils.h
     Source/Checkerboard/CheckerboardColorResolvePass.cpp
     Source/Checkerboard/CheckerboardColorResolvePass.h
     Source/Checkerboard/CheckerboardPass.cpp
     Source/Checkerboard/CheckerboardPass.h
-    Source/CubeMapCapture/CubeMapCaptureFeatureProcessor.h
-    Source/CubeMapCapture/CubeMapCaptureFeatureProcessor.cpp
-    Source/CubeMapCapture/CubeMapCapture.h
+    Source/ColorGrading/LutGenerationPass.cpp
+    Source/ColorGrading/LutGenerationPass.h
+    Source/CommonSystemComponent.cpp
+    Source/CoreLights/CapsuleLightFeatureProcessor.cpp
+    Source/CoreLights/CapsuleLightFeatureProcessor.h
+    Source/CoreLights/CascadedShadowmapsPass.cpp
+    Source/CoreLights/CascadedShadowmapsPass.h
+    Source/CoreLights/CoreLightsSystemComponent.cpp
+    Source/CoreLights/CoreLightsSystemComponent.h
+    Source/CoreLights/DirectionalLightFeatureProcessor.cpp
+    Source/CoreLights/DirectionalLightFeatureProcessor.h
+    Source/CoreLights/DiskLightFeatureProcessor.cpp
+    Source/CoreLights/DiskLightFeatureProcessor.h
+    Source/CoreLights/LightCommon.cpp
+    Source/CoreLights/LightCommon.h
+    Source/CoreLights/LightCullingConstants.h
+    Source/CoreLights/LightCullingPass.cpp
+    Source/CoreLights/LightCullingPass.h
+    Source/CoreLights/LightCullingRemap.cpp
+    Source/CoreLights/LightCullingRemap.h
+    Source/CoreLights/LightCullingTilePreparePass.cpp
+    Source/CoreLights/LightCullingTilePreparePass.h
+    Source/CoreLights/LtcCommon.cpp
+    Source/CoreLights/LtcCommon.h
+    Source/CoreLights/PointLightFeatureProcessor.cpp
+    Source/CoreLights/PointLightFeatureProcessor.h
+    Source/CoreLights/PolygonLightFeatureProcessor.cpp
+    Source/CoreLights/PolygonLightFeatureProcessor.h
+    Source/CoreLights/QuadLightFeatureProcessor.cpp
+    Source/CoreLights/QuadLightFeatureProcessor.h
+    Source/CoreLights/Shadow.cpp
+    Source/CoreLights/Shadow.h
+    Source/CoreLights/SimplePointLightFeatureProcessor.cpp
+    Source/CoreLights/SimplePointLightFeatureProcessor.h
+    Source/CoreLights/SimpleSpotLightFeatureProcessor.cpp
+    Source/CoreLights/SimpleSpotLightFeatureProcessor.h
+    Source/CoreLights/SpotLightUtils.h
     Source/CubeMapCapture/CubeMapCapture.cpp
-    Source/CubeMapCapture/CubeMapRenderer.h
+    Source/CubeMapCapture/CubeMapCapture.h
+    Source/CubeMapCapture/CubeMapCaptureFeatureProcessor.cpp
+    Source/CubeMapCapture/CubeMapCaptureFeatureProcessor.h
     Source/CubeMapCapture/CubeMapRenderer.cpp
-    Source/Debug/RayTracingDebugFeatureProcessor.h
+    Source/CubeMapCapture/CubeMapRenderer.h
     Source/Debug/RayTracingDebugFeatureProcessor.cpp
+    Source/Debug/RayTracingDebugFeatureProcessor.h
     Source/Debug/RayTracingDebugSettings.h
-    Source/Debug/RenderDebugFeatureProcessor.h
     Source/Debug/RenderDebugFeatureProcessor.cpp
-    Source/Debug/RenderDebugSettings.h
+    Source/Debug/RenderDebugFeatureProcessor.h
     Source/Debug/RenderDebugSettings.cpp
-    Source/Decals/DecalTextureArray.h
-    Source/Decals/DecalTextureArray.cpp
+    Source/Debug/RenderDebugSettings.h
     Source/Decals/AsyncLoadTracker.h
-    Source/Decals/DecalTextureArrayFeatureProcessor.h
+    Source/Decals/DecalTextureArray.cpp
+    Source/Decals/DecalTextureArray.h
     Source/Decals/DecalTextureArrayFeatureProcessor.cpp    
-    Source/DisplayMapper/AcesOutputTransformPass.cpp
+    Source/Decals/DecalTextureArrayFeatureProcessor.h
     Source/DisplayMapper/AcesOutputTransformLutPass.cpp
+    Source/DisplayMapper/AcesOutputTransformLutPass.h
+    Source/DisplayMapper/AcesOutputTransformPass.cpp
+    Source/DisplayMapper/AcesOutputTransformPass.h
     Source/DisplayMapper/ApplyShaperLookupTablePass.cpp
-    Source/DisplayMapper/DisplayMapperPass.cpp
-    Source/DisplayMapper/DisplayMapperFullScreenPass.cpp
+    Source/DisplayMapper/ApplyShaperLookupTablePass.h
     Source/DisplayMapper/BakeAcesOutputTransformLutPass.cpp
+    Source/DisplayMapper/BakeAcesOutputTransformLutPass.h
+    Source/DisplayMapper/DisplayMapperFullScreenPass.cpp
+    Source/DisplayMapper/DisplayMapperFullScreenPass.h
+    Source/DisplayMapper/DisplayMapperPass.cpp
+    Source/DisplayMapper/DisplayMapperPass.h
     Source/DisplayMapper/OutputTransformPass.cpp
+    Source/DisplayMapper/OutputTransformPass.h
+    Source/FrameCaptureSystemComponent.cpp
+    Source/FrameCaptureSystemComponent.h
     Source/ImGui/ImGuiPass.cpp
     Source/ImGui/ImGuiPass.h
     Source/ImGui/ImGuiSystemComponent.cpp
     Source/ImGui/ImGuiSystemComponent.h
     Source/ImageBasedLights/ImageBasedLightFeatureProcessor.cpp
+    Source/ImageBasedLights/ImageBasedLightFeatureProcessor.h
     Source/LookupTable/LookupTableAsset.cpp
+    Source/LookupTable/LookupTableAsset.h
     Source/Material/SubsurfaceTransmissionParameterFunctor.cpp
     Source/Material/SubsurfaceTransmissionParameterFunctor.h
     Source/Material/Transform2DFunctor.cpp
     Source/Material/Transform2DFunctor.h
     Source/Material/UseTextureFunctor.cpp
     Source/Material/UseTextureFunctor.h
-    Source/Math/GaussianMathFilter.h
     Source/Math/GaussianMathFilter.cpp
-    Source/Math/MathFilter.h
+    Source/Math/GaussianMathFilter.h
     Source/Math/MathFilter.cpp
+    Source/Math/MathFilter.h
     Source/Math/MathFilterDescriptor.h
+    Source/Mesh/MeshFeatureProcessor.cpp
+    Source/Mesh/MeshFeatureProcessor.h
     Source/Mesh/MeshInstanceGroupKey.cpp
     Source/Mesh/MeshInstanceGroupKey.h
     Source/Mesh/MeshInstanceGroupList.cpp
     Source/Mesh/MeshInstanceGroupList.h
     Source/Mesh/MeshInstanceManager.cpp
-    Source/Mesh/MeshInstanceManager.h
-    Source/Mesh/MeshFeatureProcessor.cpp
-    Source/Mesh/MeshFeatureProcessor.h
+    Source/Mesh/MeshInstanceManager.h 
     Source/Mesh/ModelReloader.cpp
     Source/Mesh/ModelReloader.h
     Source/Mesh/ModelReloaderSystem.cpp
@@ -133,92 +130,86 @@ set(FILES
     Source/MorphTargets/MorphTargetComputePass.h
     Source/MorphTargets/MorphTargetDispatchItem.cpp
     Source/MorphTargets/MorphTargetDispatchItem.h
-    Source/OcclusionCullingPlane/OcclusionCullingPlaneFeatureProcessor.h
-    Source/OcclusionCullingPlane/OcclusionCullingPlaneFeatureProcessor.cpp
-    Source/OcclusionCullingPlane/OcclusionCullingPlane.h
     Source/OcclusionCullingPlane/OcclusionCullingPlane.cpp
-    Source/Silhouette/SilhouetteFeatureProcessor.cpp
-    Source/Silhouette/SilhouetteFeatureProcessor.h
-    Source/Silhouette/SilhouetteCompositePass.cpp
-    Source/Silhouette/SilhouetteCompositePass.h
-    Source/PostProcess/PostProcessBase.cpp
-    Source/PostProcess/PostProcessBase.h
-    Source/PostProcess/PostProcessFeatureProcessor.cpp
-    Source/PostProcess/PostProcessFeatureProcessor.h
-    Source/PostProcess/PostProcessSettings.cpp
-    Source/PostProcess/PostProcessSettings.h
-    Source/PostProcess/ColorGrading/HDRColorGradingSettings.h
-    Source/PostProcess/ColorGrading/HDRColorGradingSettings.cpp
+    Source/OcclusionCullingPlane/OcclusionCullingPlane.h
+    Source/OcclusionCullingPlane/OcclusionCullingPlaneFeatureProcessor.cpp
+    Source/OcclusionCullingPlane/OcclusionCullingPlaneFeatureProcessor.h
     Source/PostProcess/Bloom/BloomSettings.cpp
     Source/PostProcess/Bloom/BloomSettings.h
     Source/PostProcess/ChromaticAberration/ChromaticAberrationSettings.cpp
     Source/PostProcess/ChromaticAberration/ChromaticAberrationSettings.h
+    Source/PostProcess/ColorGrading/HDRColorGradingSettings.cpp
+    Source/PostProcess/ColorGrading/HDRColorGradingSettings.h
     Source/PostProcess/DepthOfField/DepthOfFieldSettings.cpp
     Source/PostProcess/DepthOfField/DepthOfFieldSettings.h
     Source/PostProcess/ExposureControl/ExposureControlSettings.cpp
     Source/PostProcess/ExposureControl/ExposureControlSettings.h
     Source/PostProcess/FilmGrain/FilmGrainSettings.cpp
     Source/PostProcess/FilmGrain/FilmGrainSettings.h
-    Source/PostProcess/PaniniProjection/PaniniProjectionSettings.cpp
-    Source/PostProcess/PaniniProjection/PaniniProjectionSettings.h
-    Source/PostProcess/Ssao/SsaoSettings.cpp
-    Source/PostProcess/Ssao/SsaoSettings.h
-    Source/PostProcess/WhiteBalance/WhiteBalanceSettings.cpp
-    Source/PostProcess/WhiteBalance/WhiteBalanceSettings.h
-    Source/PostProcess/Vignette/VignetteSettings.cpp
-    Source/PostProcess/Vignette/VignetteSettings.h
     Source/PostProcess/LookModification/LookModificationSettings.cpp
     Source/PostProcess/LookModification/LookModificationSettings.h
-    Source/PostProcessing/BlendColorGradingLutsPass.h
+    Source/PostProcess/PaniniProjection/PaniniProjectionSettings.cpp
+    Source/PostProcess/PaniniProjection/PaniniProjectionSettings.h
+    Source/PostProcess/PostProcessBase.cpp
+    Source/PostProcess/PostProcessBase.h
+    Source/PostProcess/PostProcessFeatureProcessor.cpp
+    Source/PostProcess/PostProcessFeatureProcessor.h
+    Source/PostProcess/PostProcessSettings.cpp
+    Source/PostProcess/PostProcessSettings.h
+    Source/PostProcess/Ssao/SsaoSettings.cpp
+    Source/PostProcess/Ssao/SsaoSettings.h
+    Source/PostProcess/Vignette/VignetteSettings.cpp
+    Source/PostProcess/Vignette/VignetteSettings.h
+    Source/PostProcess/WhiteBalance/WhiteBalanceSettings.cpp
+    Source/PostProcess/WhiteBalance/WhiteBalanceSettings.h
     Source/PostProcessing/BlendColorGradingLutsPass.cpp
-    Source/PostProcessing/DepthOfFieldPencilMap.h
-    Source/PostProcessing/DepthOfFieldPencilMap.h
-    Source/PostProcessing/BloomDownsamplePass.h
-    Source/PostProcessing/BloomDownsamplePass.cpp
-    Source/PostProcessing/BloomBlurPass.h
+    Source/PostProcessing/BlendColorGradingLutsPass.h
     Source/PostProcessing/BloomBlurPass.cpp
-    Source/PostProcessing/BloomCompositePass.h
+    Source/PostProcessing/BloomBlurPass.h
     Source/PostProcessing/BloomCompositePass.cpp
-    Source/PostProcessing/BloomParentPass.h
+    Source/PostProcessing/BloomCompositePass.h
+    Source/PostProcessing/BloomDownsamplePass.cpp
+    Source/PostProcessing/BloomDownsamplePass.h
     Source/PostProcessing/BloomParentPass.cpp
-    Source/PostProcessing/ChromaticAberrationPass.h
+    Source/PostProcessing/BloomParentPass.h
     Source/PostProcessing/ChromaticAberrationPass.cpp
-    Source/PostProcessing/FilmGrainPass.h
-    Source/PostProcessing/FilmGrainPass.cpp
-    Source/PostProcessing/PaniniProjectionPass.h
-    Source/PostProcessing/PaniniProjectionPass.cpp
-    Source/PostProcessing/VignettePass.h
-    Source/PostProcessing/VignettePass.cpp
-    Source/PostProcessing/DepthOfFieldCompositePass.h
-    Source/PostProcessing/DepthOfFieldCompositePass.cpp
-    Source/PostProcessing/DepthOfFieldBokehBlurPass.h
+    Source/PostProcessing/ChromaticAberrationPass.h
     Source/PostProcessing/DepthOfFieldBokehBlurPass.cpp
-    Source/PostProcessing/DepthOfFieldMaskPass.h
-    Source/PostProcessing/DepthOfFieldMaskPass.cpp
-    Source/PostProcessing/DepthOfFieldParentPass.h
-    Source/PostProcessing/DepthOfFieldParentPass.cpp
-    Source/PostProcessing/DepthOfFieldReadBackFocusDepthPass.h
-    Source/PostProcessing/DepthOfFieldReadBackFocusDepthPass.cpp
-    Source/PostProcessing/DepthOfFieldWriteFocusDepthFromGpuPass.h
-    Source/PostProcessing/DepthOfFieldWriteFocusDepthFromGpuPass.cpp
-    Source/PostProcessing/DepthOfFieldCopyFocusDepthToCpuPass.h
+    Source/PostProcessing/DepthOfFieldBokehBlurPass.h
+    Source/PostProcessing/DepthOfFieldCompositePass.cpp
+    Source/PostProcessing/DepthOfFieldCompositePass.h
     Source/PostProcessing/DepthOfFieldCopyFocusDepthToCpuPass.cpp
+    Source/PostProcessing/DepthOfFieldCopyFocusDepthToCpuPass.h
+    Source/PostProcessing/DepthOfFieldMaskPass.cpp
+    Source/PostProcessing/DepthOfFieldMaskPass.h
+    Source/PostProcessing/DepthOfFieldParentPass.cpp
+    Source/PostProcessing/DepthOfFieldParentPass.h
+    Source/PostProcessing/DepthOfFieldPencilMap.h
+    Source/PostProcessing/DepthOfFieldPencilMap.h
+    Source/PostProcessing/DepthOfFieldReadBackFocusDepthPass.cpp
+    Source/PostProcessing/DepthOfFieldReadBackFocusDepthPass.h
+    Source/PostProcessing/DepthOfFieldWriteFocusDepthFromGpuPass.cpp
+    Source/PostProcessing/DepthOfFieldWriteFocusDepthFromGpuPass.h
     Source/PostProcessing/DepthUpsamplePass.cpp
     Source/PostProcessing/DepthUpsamplePass.h
     Source/PostProcessing/EyeAdaptationPass.cpp
     Source/PostProcessing/EyeAdaptationPass.h
     Source/PostProcessing/FastDepthAwareBlurPasses.cpp
     Source/PostProcessing/FastDepthAwareBlurPasses.h
+    Source/PostProcessing/FilmGrainPass.cpp
+    Source/PostProcessing/FilmGrainPass.h
     Source/PostProcessing/HDRColorGradingPass.cpp
     Source/PostProcessing/HDRColorGradingPass.h
     Source/PostProcessing/LookModificationCompositePass.cpp
     Source/PostProcessing/LookModificationCompositePass.h
     Source/PostProcessing/LookModificationTransformPass.cpp
     Source/PostProcessing/LookModificationTransformPass.h
-    Source/PostProcessing/LuminanceHistogramGeneratorPass.h
     Source/PostProcessing/LuminanceHistogramGeneratorPass.cpp
+    Source/PostProcessing/LuminanceHistogramGeneratorPass.h
     Source/PostProcessing/NewDepthOfFieldPasses.cpp
     Source/PostProcessing/NewDepthOfFieldPasses.h
+    Source/PostProcessing/PaniniProjectionPass.cpp
+    Source/PostProcessing/PaniniProjectionPass.h
     Source/PostProcessing/PostProcessingShaderOptionBase.cpp
     Source/PostProcessing/PostProcessingShaderOptionBase.h
     Source/PostProcessing/SMAABasePass.cpp
@@ -238,47 +229,53 @@ set(FILES
     Source/PostProcessing/SsaoPasses.h
     Source/PostProcessing/SubsurfaceScatteringPass.cpp
     Source/PostProcessing/SubsurfaceScatteringPass.h
-    Source/PostProcessing/TaaPass.h
     Source/PostProcessing/TaaPass.cpp
-    Source/PostProcessing/WhiteBalancePass.h
+    Source/PostProcessing/TaaPass.h
+    Source/PostProcessing/VignettePass.cpp
+    Source/PostProcessing/VignettePass.h
     Source/PostProcessing/WhiteBalancePass.cpp
-    Source/RayTracing/RayTracingFeatureProcessor.h
-    Source/RayTracing/RayTracingFeatureProcessor.cpp
-    Source/RayTracing/RayTracingResourceList.h
+    Source/PostProcessing/WhiteBalancePass.h
+    Source/ProfilingCaptureSystemComponent.cpp
+    Source/ProfilingCaptureSystemComponent.h
     Source/RayTracing/RayTracingAccelerationStructurePass.cpp
     Source/RayTracing/RayTracingAccelerationStructurePass.h
-    Source/ReflectionProbe/ReflectionProbeFeatureProcessor.h
-    Source/ReflectionProbe/ReflectionProbeFeatureProcessor.cpp
-    Source/ReflectionProbe/ReflectionProbe.h
+    Source/RayTracing/RayTracingFeatureProcessor.cpp
+    Source/RayTracing/RayTracingFeatureProcessor.h
+    Source/RayTracing/RayTracingResourceList.h
     Source/ReflectionProbe/ReflectionProbe.cpp
-    Source/SpecularReflections/SpecularReflectionsFeatureProcessor.h
-    Source/SpecularReflections/SpecularReflectionsFeatureProcessor.cpp
+    Source/ReflectionProbe/ReflectionProbe.h
+    Source/ReflectionProbe/ReflectionProbeFeatureProcessor.cpp
+    Source/ReflectionProbe/ReflectionProbeFeatureProcessor.h
+    Source/ReflectionScreenSpace/ReflectionCopyFrameBufferPass.cpp
+    Source/ReflectionScreenSpace/ReflectionCopyFrameBufferPass.h
+    Source/ReflectionScreenSpace/ReflectionScreenSpaceBlurChildPass.cpp
+    Source/ReflectionScreenSpace/ReflectionScreenSpaceBlurChildPass.h
+    Source/ReflectionScreenSpace/ReflectionScreenSpaceBlurPass.cpp
+    Source/ReflectionScreenSpace/ReflectionScreenSpaceBlurPass.h
+    Source/ReflectionScreenSpace/ReflectionScreenSpaceCompositePass.cpp
+    Source/ReflectionScreenSpace/ReflectionScreenSpaceCompositePass.h
+    Source/ReflectionScreenSpace/ReflectionScreenSpaceDownsampleDepthLinearChildPass.cpp
+    Source/ReflectionScreenSpace/ReflectionScreenSpaceDownsampleDepthLinearChildPass.h
+    Source/ReflectionScreenSpace/ReflectionScreenSpaceDownsampleDepthLinearPass.cpp
+    Source/ReflectionScreenSpace/ReflectionScreenSpaceDownsampleDepthLinearPass.h
+    Source/ReflectionScreenSpace/ReflectionScreenSpaceFilterPass.cpp
+    Source/ReflectionScreenSpace/ReflectionScreenSpaceFilterPass.h
     Source/ReflectionScreenSpace/ReflectionScreenSpacePass.cpp
     Source/ReflectionScreenSpace/ReflectionScreenSpacePass.h
     Source/ReflectionScreenSpace/ReflectionScreenSpaceTracePass.cpp
     Source/ReflectionScreenSpace/ReflectionScreenSpaceTracePass.h
-    Source/ReflectionScreenSpace/ReflectionScreenSpaceDownsampleDepthLinearPass.cpp
-    Source/ReflectionScreenSpace/ReflectionScreenSpaceDownsampleDepthLinearPass.h
-    Source/ReflectionScreenSpace/ReflectionScreenSpaceDownsampleDepthLinearChildPass.cpp
-    Source/ReflectionScreenSpace/ReflectionScreenSpaceDownsampleDepthLinearChildPass.h
-    Source/ReflectionScreenSpace/ReflectionScreenSpaceBlurPass.cpp
-    Source/ReflectionScreenSpace/ReflectionScreenSpaceBlurPass.h
-    Source/ReflectionScreenSpace/ReflectionScreenSpaceBlurChildPass.cpp
-    Source/ReflectionScreenSpace/ReflectionScreenSpaceBlurChildPass.h
-    Source/ReflectionScreenSpace/ReflectionScreenSpaceFilterPass.cpp
-    Source/ReflectionScreenSpace/ReflectionScreenSpaceFilterPass.h
-    Source/ReflectionScreenSpace/ReflectionScreenSpaceCompositePass.cpp
-    Source/ReflectionScreenSpace/ReflectionScreenSpaceCompositePass.h
-    Source/ReflectionScreenSpace/ReflectionCopyFrameBufferPass.cpp
-    Source/ReflectionScreenSpace/ReflectionCopyFrameBufferPass.h
-    Source/ScreenSpace/DeferredFogSettings.cpp
-    Source/ScreenSpace/DeferredFogSettings.h
     Source/ScreenSpace/DeferredFogPass.cpp
     Source/ScreenSpace/DeferredFogPass.h
-    Source/Shadows/FullscreenShadowPass.h
+    Source/ScreenSpace/DeferredFogSettings.cpp
+    Source/ScreenSpace/DeferredFogSettings.h
     Source/Shadows/FullscreenShadowPass.cpp
-    Source/Shadows/ProjectedShadowFeatureProcessor.h
+    Source/Shadows/FullscreenShadowPass.h
     Source/Shadows/ProjectedShadowFeatureProcessor.cpp
+    Source/Shadows/ProjectedShadowFeatureProcessor.h
+    Source/Silhouette/SilhouetteCompositePass.cpp
+    Source/Silhouette/SilhouetteCompositePass.h
+    Source/Silhouette/SilhouetteFeatureProcessor.cpp
+    Source/Silhouette/SilhouetteFeatureProcessor.h
     Source/SkinnedMesh/SkinnedMeshComputePass.cpp
     Source/SkinnedMesh/SkinnedMeshComputePass.h
     Source/SkinnedMesh/SkinnedMeshDispatchItem.cpp
@@ -297,14 +294,17 @@ set(FILES
     Source/SkinnedMesh/SkinnedMeshSystemComponent.h
     Source/SkinnedMesh/SkinnedMeshVertexStreamProperties.cpp
     Source/SkinnedMesh/SkinnedMeshVertexStreamProperties.h
-    Source/SkyBox/SkyBoxFeatureProcessor.cpp
-    Source/SkyBox/SkyBoxFeatureProcessor.h
     Source/SkyAtmosphere/SkyAtmosphereFeatureProcessor.cpp
     Source/SkyAtmosphere/SkyAtmosphereFeatureProcessor.h
     Source/SkyAtmosphere/SkyAtmosphereParentPass.cpp
     Source/SkyAtmosphere/SkyAtmosphereParentPass.h
     Source/SkyAtmosphere/SkyAtmospherePass.cpp
     Source/SkyAtmosphere/SkyAtmospherePass.h
+    Source/SkyBox/SkyBoxFeatureProcessor.cpp
+    Source/SkyBox/SkyBoxFeatureProcessor.h
+    Source/SkyBox/SkyBoxLUT.h
+    Source/SpecularReflections/SpecularReflectionsFeatureProcessor.cpp
+    Source/SpecularReflections/SpecularReflectionsFeatureProcessor.h
     Source/SplashScreen/SplashScreenFeatureProcessor.cpp
     Source/SplashScreen/SplashScreenFeatureProcessor.h
     Source/SplashScreen/SplashScreenPass.cpp

@@ -14,22 +14,22 @@ set(FILES
     Include/Atom/Feature/ColorGrading/LutResolution.h
     Include/Atom/Feature/CoreLights/CapsuleLightFeatureProcessorInterface.h
     Include/Atom/Feature/CoreLights/CoreLightsConstants.h
+    Include/Atom/Feature/CoreLights/DepthExponentiationPass.h
     Include/Atom/Feature/CoreLights/DirectionalLightFeatureProcessorInterface.h
     Include/Atom/Feature/CoreLights/DirectionalLightShadowNotificationBus.h
     Include/Atom/Feature/CoreLights/DiskLightFeatureProcessorInterface.h
+    Include/Atom/Feature/CoreLights/EsmShadowmapsPass.h
     Include/Atom/Feature/CoreLights/EsmShadowmapsPassData.h
     Include/Atom/Feature/CoreLights/PhotometricValue.h
     Include/Atom/Feature/CoreLights/PointLightFeatureProcessorInterface.h
     Include/Atom/Feature/CoreLights/PolygonLightFeatureProcessorInterface.h
+    Include/Atom/Feature/CoreLights/ProjectedShadowmapsPass.h
     Include/Atom/Feature/CoreLights/QuadLightFeatureProcessorInterface.h
     Include/Atom/Feature/CoreLights/ShadowConstants.h
+    Include/Atom/Feature/CoreLights/ShadowmapAtlas.h
+    Include/Atom/Feature/CoreLights/ShadowmapPass.h
     Include/Atom/Feature/CoreLights/SimplePointLightFeatureProcessorInterface.h
     Include/Atom/Feature/CoreLights/SimpleSpotLightFeatureProcessorInterface.h
-    Include/Atom/Feature/CoreLights/EsmShadowmapsPass.h
-    Include/Atom/Feature/CoreLights/ProjectedShadowmapsPass.h
-    Include/Atom/Feature/CoreLights/ShadowmapPass.h
-    Include/Atom/Feature/CoreLights/ShadowmapAtlas.h
-    Include/Atom/Feature/CoreLights/DepthExponentiationPass.h
     Include/Atom/Feature/CubeMapCapture/CubeMapCaptureFeatureProcessorInterface.h
     Include/Atom/Feature/CubeMapCapture/CubeMapCaptureFeatureProcessorInterface.h
     Include/Atom/Feature/Debug/RayTracingDebugConstants.h
@@ -149,11 +149,16 @@ set(FILES
     Include/Atom/Feature/Utils/ProfilingCaptureBus.h
     Include/Atom/Feature/Utils/SparseVector.h
     Source/ACES/AcesDisplayMapperFeatureProcessor.cpp
+    Source/CoreLights/DepthExponentiationPass.cpp
+    Source/CoreLights/EsmShadowmapsPass.cpp
     Source/CoreLights/PhotometricValue.cpp
+    Source/CoreLights/ProjectedShadowmapsPass.cpp
+    Source/CoreLights/ShadowmapAtlas.cpp
+    Source/CoreLights/ShadowmapPass.cpp
     Source/DisplayMapper/DisplayMapperConfigurationDescriptor.cpp
     Source/LightingChannel/LightingChannelConfiguration.cpp
-    Source/MorphTargets/MorphTargetInputBuffers.cpp
     Source/Material/ConvertEmissiveUnitFunctor.cpp
+    Source/MorphTargets/MorphTargetInputBuffers.cpp
     Source/RayTracing/RayTracingPass.cpp
     Source/SkinnedMesh/SkinnedMeshInputBuffers.cpp
     Source/SkinnedMesh/SkinnedMeshInstance.cpp
@@ -163,9 +168,4 @@ set(FILES
     Source/Utils/GpuBufferHandler.cpp
     Source/Utils/LightingPreset.cpp
     Source/Utils/ModelPreset.cpp
-    Source/CoreLights/EsmShadowmapsPass.cpp
-    Source/CoreLights/ProjectedShadowmapsPass.cpp
-    Source/CoreLights/ShadowmapAtlas.cpp
-    Source/CoreLights/ShadowmapPass.cpp
-    Source/CoreLights/DepthExponentiationPass.cpp
 )
