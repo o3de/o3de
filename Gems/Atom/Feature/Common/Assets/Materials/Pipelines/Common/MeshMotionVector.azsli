@@ -11,6 +11,7 @@
 
 #define MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE 0 // Well, it does have a pixel stage, but not one that can be customized.
 #define MATERIALPIPELINE_USES_PREV_VERTEX_POSITION 1
+#define PIPELINE_HAS_PASS_SRG 0
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
