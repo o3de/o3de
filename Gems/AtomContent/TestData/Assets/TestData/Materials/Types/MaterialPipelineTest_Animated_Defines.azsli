@@ -9,18 +9,23 @@
  
 #include <scenesrg_all.srgi>
 #include <viewsrg_all.srgi>
-#include <Atom/Features/PBR/DefaultObjectSrg.azsli>
-#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 
-ShaderResourceGroup MaterialSrg : SRG_PerMaterial
-{
-    float3 m_baseColor;
-    float m_metallic;
-    float m_roughness;
-    float m_animationSpeed;
-    float m_amplitude;
-    float m_frequency;
-}
+#ifndef PIPELINE_HAS_OBJECT_SRG
+#define PIPELINE_HAS_OBJECT_SRG 1
+#endif
+#ifndef PIPELINE_HAS_DRAW_SRG
+#define PIPELINE_HAS_DRAW_SRG 1
+#endif
+
+#if PIPELINE_HAS_OBJECT_SRG
+#include <Atom/Features/PBR/DefaultObjectSrg.azsli>
+#endif
+#if PIPELINE_HAS_DRAW_SRG
+#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
+#endif
+
+#include MATERIAL_PARAMETERS_AZSLI_FILE_PATH
+#include <Atom/Features/Materials/MaterialSrg.azsli>
 
 #if MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE
 
